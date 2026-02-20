@@ -7,51 +7,6 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 // =============================================================================
-// Dynamic Token Effects
-// =============================================================================
-
-/**
- * Create tokens with a dynamic count determined at resolution time.
- * "Create X 1/1 green Insect creature tokens, where X is the damage dealt."
- *
- * @property count Dynamic amount determining how many tokens to create
- * @property power Token power
- * @property toughness Token toughness
- * @property colors Token colors
- * @property creatureTypes Token creature types
- * @property keywords Keywords the token has
- * @property name Optional token name (defaults to creature types + "Token")
- * @property imageUri Optional image URI for the token artwork
- */
-@SerialName("CreateDynamicTokens")
-@Serializable
-data class CreateDynamicTokensEffect(
-    val count: DynamicAmount,
-    val power: Int,
-    val toughness: Int,
-    val colors: Set<Color>,
-    val creatureTypes: Set<String>,
-    val keywords: Set<Keyword> = emptySet(),
-    val name: String? = null,
-    val imageUri: String? = null
-) : Effect {
-    override val description: String = buildString {
-        append("Create ")
-        append(count.description)
-        append(" $power/$toughness ")
-        append(colors.joinToString(" and ") { it.displayName.lowercase() })
-        append(" ")
-        append(creatureTypes.joinToString(" "))
-        append(" creature token")
-        append("s")
-        if (keywords.isNotEmpty()) {
-            append(" with ")
-            append(keywords.joinToString(", ") { it.name.lowercase() })
-        }
-    }
-}
-
-// =============================================================================
 // Chosen Token Effects
 // =============================================================================
 
@@ -83,9 +38,11 @@ data class CreateChosenTokenEffect(
 
 /**
  * Create token effect.
- * "Create a 1/1 white Soldier creature token"
+ * "Create a 1/1 white Soldier creature token" or "Create X 1/1 green Insect creature tokens"
  *
- * @property count Number of tokens to create
+ * Supports both fixed and dynamic counts via [DynamicAmount].
+ *
+ * @property count Number of tokens to create (fixed or dynamic)
  * @property power Token power
  * @property toughness Token toughness
  * @property colors Token colors
@@ -97,7 +54,7 @@ data class CreateChosenTokenEffect(
 @SerialName("CreateToken")
 @Serializable
 data class CreateTokenEffect(
-    val count: Int = 1,
+    val count: DynamicAmount = DynamicAmount.Fixed(1),
     val power: Int,
     val toughness: Int,
     val colors: Set<Color>,
@@ -106,15 +63,38 @@ data class CreateTokenEffect(
     val name: String? = null,
     val imageUri: String? = null
 ) : Effect {
+    constructor(
+        count: Int,
+        power: Int,
+        toughness: Int,
+        colors: Set<Color>,
+        creatureTypes: Set<String>,
+        keywords: Set<Keyword> = emptySet(),
+        name: String? = null,
+        imageUri: String? = null
+    ) : this(DynamicAmount.Fixed(count), power, toughness, colors, creatureTypes, keywords, name, imageUri)
+
     override val description: String = buildString {
         append("Create ")
-        append(if (count == 1) "a" else "$count")
-        append(" $power/$toughness ")
-        append(colors.joinToString(" and ") { it.displayName.lowercase() })
-        append(" ")
-        append(creatureTypes.joinToString(" "))
-        append(" creature token")
-        if (count != 1) append("s")
+        when (val c = count) {
+            is DynamicAmount.Fixed -> {
+                append(if (c.amount == 1) "a" else "${c.amount}")
+                append(" $power/$toughness ")
+                append(colors.joinToString(" and ") { it.displayName.lowercase() })
+                append(" ")
+                append(creatureTypes.joinToString(" "))
+                append(" creature token")
+                if (c.amount != 1) append("s")
+            }
+            else -> {
+                append(c.description)
+                append(" $power/$toughness ")
+                append(colors.joinToString(" and ") { it.displayName.lowercase() })
+                append(" ")
+                append(creatureTypes.joinToString(" "))
+                append(" creature tokens")
+            }
+        }
         if (keywords.isNotEmpty()) {
             append(" with ")
             append(keywords.joinToString(", ") { it.name.lowercase() })

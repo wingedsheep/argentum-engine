@@ -10,14 +10,14 @@ import com.wingedsheep.sdk.scripting.effects.ChooseCreatureTypeEffect
 import com.wingedsheep.sdk.scripting.effects.Chooser
 import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.CreateDelayedTriggerEffect
-import com.wingedsheep.sdk.scripting.effects.CreateDynamicTokensEffect
+import com.wingedsheep.sdk.scripting.effects.CreateTokenEffect
 import com.wingedsheep.sdk.scripting.effects.DealDamageEffect
 import com.wingedsheep.sdk.scripting.effects.DrawCardsEffect
-import com.wingedsheep.sdk.scripting.effects.DynamicModifyStatsEffect
 import com.wingedsheep.sdk.scripting.effects.Effect
 import com.wingedsheep.sdk.scripting.effects.ForEachPlayerEffect
 import com.wingedsheep.sdk.scripting.effects.ForEachTargetEffect
 import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
+import com.wingedsheep.sdk.scripting.effects.ModifyStatsEffect
 import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
 import com.wingedsheep.sdk.scripting.effects.MoveType
@@ -809,7 +809,7 @@ object EffectPatterns {
                 storeRevealed = "allRevealed"
             ),
             // Step 2: Buff self +X/+0 where X is the nonland's mana value
-            DynamicModifyStatsEffect(
+            ModifyStatsEffect(
                 powerModifier = DynamicAmount.StoredCardManaValue("nonland"),
                 toughnessModifier = DynamicAmount.Fixed(0),
                 target = EffectTarget.Self
@@ -1306,7 +1306,7 @@ object EffectPatterns {
      * Then each player creates a token for each card they revealed this way.
      *
      * Creates a ForEachPlayer → Gather(hand, creature) → Select(ChooseAnyNumber)
-     * → CreateDynamicTokens(revealed_count) pipeline.
+     * → CreateToken(revealed_count) pipeline.
      *
      * Edge cases handled by existing pipeline:
      * - Player has no creatures: GatherCards stores empty → Select auto-resolves → tokens with count=0 is no-op
@@ -1340,7 +1340,7 @@ object EffectPatterns {
                 storeSelected = "revealed",
                 prompt = "You may reveal any number of creature cards from your hand"
             ),
-            CreateDynamicTokensEffect(
+            CreateTokenEffect(
                 count = DynamicAmount.VariableReference("revealed_count"),
                 power = tokenPower,
                 toughness = tokenToughness,

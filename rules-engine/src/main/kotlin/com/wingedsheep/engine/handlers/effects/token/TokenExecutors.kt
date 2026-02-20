@@ -11,9 +11,8 @@ class TokenExecutors(
     private val amountEvaluator: DynamicAmountEvaluator = DynamicAmountEvaluator()
 ) : ExecutorModule {
     override fun executors(): List<EffectExecutor<*>> = listOf(
-        CreateTokenExecutor(),
+        CreateTokenExecutor(amountEvaluator),
         CreateTreasureExecutor(),
-        CreateDynamicTokensExecutor(amountEvaluator),
         CreateChosenTokenExecutor(amountEvaluator)
     )
 }

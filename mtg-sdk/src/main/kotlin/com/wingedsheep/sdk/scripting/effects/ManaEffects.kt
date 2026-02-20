@@ -11,27 +11,41 @@ import kotlinx.serialization.Serializable
 
 /**
  * Add mana effect.
- * "Add {G}" or "Add {R}{R}"
+ * "Add {G}" or "Add {R}{R}" or "Add {R} for each Goblin on the battlefield."
+ *
+ * Supports both fixed and dynamic amounts via [DynamicAmount].
  */
 @SerialName("AddMana")
 @Serializable
 data class AddManaEffect(
     val color: Color,
-    val amount: Int = 1
+    val amount: DynamicAmount = DynamicAmount.Fixed(1)
 ) : Effect {
-    override val description: String = "Add ${"{${color.symbol}}".repeat(amount)}"
+    constructor(color: Color, amount: Int) : this(color, DynamicAmount.Fixed(amount))
+
+    override val description: String = when (val a = amount) {
+        is DynamicAmount.Fixed -> "Add ${"{${color.symbol}}".repeat(a.amount)}"
+        else -> "Add {${color.symbol}} for each ${a.description}"
+    }
 }
 
 /**
  * Add colorless mana effect.
- * "Add {C}{C}"
+ * "Add {C}{C}" or "Add an amount of {C} equal to..."
+ *
+ * Supports both fixed and dynamic amounts via [DynamicAmount].
  */
 @SerialName("AddColorlessMana")
 @Serializable
 data class AddColorlessManaEffect(
-    val amount: Int
+    val amount: DynamicAmount
 ) : Effect {
-    override val description: String = "Add ${"{C}".repeat(amount)}"
+    constructor(amount: Int) : this(DynamicAmount.Fixed(amount))
+
+    override val description: String = when (val a = amount) {
+        is DynamicAmount.Fixed -> "Add ${"{C}".repeat(a.amount)}"
+        else -> "Add an amount of {C} equal to ${a.description}"
+    }
 }
 
 /**
@@ -39,16 +53,22 @@ data class AddColorlessManaEffect(
  * "{T}: Add one mana of any color."
  *
  * The player chooses the color when this ability resolves.
+ * Supports both fixed and dynamic amounts via [DynamicAmount].
  */
 @SerialName("AddAnyColorMana")
 @Serializable
 data class AddAnyColorManaEffect(
-    val amount: Int = 1
+    val amount: DynamicAmount = DynamicAmount.Fixed(1)
 ) : Effect {
-    override val description: String = if (amount == 1) {
-        "Add one mana of any color"
-    } else {
-        "Add $amount mana of any color"
+    constructor(amount: Int) : this(DynamicAmount.Fixed(amount))
+
+    override val description: String = when (val a = amount) {
+        is DynamicAmount.Fixed -> if (a.amount == 1) {
+            "Add one mana of any color"
+        } else {
+            "Add ${a.amount} mana of any color"
+        }
+        else -> "Add ${a.description} mana of any color"
     }
 }
 
@@ -72,34 +92,4 @@ data class AddDynamicManaEffect(
     }
 }
 
-/**
- * Add a dynamic amount of mana of a single specific color.
- * "Add {R} for each Goblin on the battlefield."
- *
- * @property color The color of mana to add
- * @property amountSource What determines the amount of mana to add
- */
-@SerialName("AddDynamicColorMana")
-@Serializable
-data class AddDynamicColorManaEffect(
-    val color: Color,
-    val amountSource: DynamicAmount
-) : Effect {
-    override val description: String = buildString {
-        append("Add {${color.symbol}} for each ${amountSource.description}")
-    }
-}
 
-/**
- * Add a dynamic amount of colorless mana.
- * "Add an amount of {C} equal to the number of creatures you control that share a creature type with it."
- *
- * @property amountSource What determines the amount of mana to add
- */
-@SerialName("AddDynamicColorlessMana")
-@Serializable
-data class AddDynamicColorlessManaEffect(
-    val amountSource: DynamicAmount
-) : Effect {
-    override val description: String = "Add an amount of {C} equal to ${amountSource.description}"
-}

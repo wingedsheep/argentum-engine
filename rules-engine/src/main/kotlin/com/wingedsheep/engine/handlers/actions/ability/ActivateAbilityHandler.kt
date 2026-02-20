@@ -355,34 +355,41 @@ class ActivateAbilityHandler(
 
             // Emit ManaAddedEvent
             val manaEvent = when (val effect = finalEffect) {
-                is AddManaEffect -> ManaAddedEvent(
-                    playerId = action.playerId,
-                    sourceId = action.sourceId,
-                    sourceName = cardComponent.name,
-                    white = if (effect.color == Color.WHITE) effect.amount else 0,
-                    blue = if (effect.color == Color.BLUE) effect.amount else 0,
-                    black = if (effect.color == Color.BLACK) effect.amount else 0,
-                    red = if (effect.color == Color.RED) effect.amount else 0,
-                    green = if (effect.color == Color.GREEN) effect.amount else 0,
-                    colorless = 0
-                )
-                is AddColorlessManaEffect -> ManaAddedEvent(
-                    playerId = action.playerId,
-                    sourceId = action.sourceId,
-                    sourceName = cardComponent.name,
-                    colorless = effect.amount
-                )
-                is AddAnyColorManaEffect -> {
-                    val chosenColor = action.manaColorChoice ?: Color.GREEN
+                is AddManaEffect -> {
+                    val amount = dynamicAmountEvaluator.evaluate(state, effect.amount, context)
                     ManaAddedEvent(
                         playerId = action.playerId,
                         sourceId = action.sourceId,
                         sourceName = cardComponent.name,
-                        white = if (chosenColor == Color.WHITE) effect.amount else 0,
-                        blue = if (chosenColor == Color.BLUE) effect.amount else 0,
-                        black = if (chosenColor == Color.BLACK) effect.amount else 0,
-                        red = if (chosenColor == Color.RED) effect.amount else 0,
-                        green = if (chosenColor == Color.GREEN) effect.amount else 0,
+                        white = if (effect.color == Color.WHITE) amount else 0,
+                        blue = if (effect.color == Color.BLUE) amount else 0,
+                        black = if (effect.color == Color.BLACK) amount else 0,
+                        red = if (effect.color == Color.RED) amount else 0,
+                        green = if (effect.color == Color.GREEN) amount else 0,
+                        colorless = 0
+                    )
+                }
+                is AddColorlessManaEffect -> {
+                    val amount = dynamicAmountEvaluator.evaluate(state, effect.amount, context)
+                    ManaAddedEvent(
+                        playerId = action.playerId,
+                        sourceId = action.sourceId,
+                        sourceName = cardComponent.name,
+                        colorless = amount
+                    )
+                }
+                is AddAnyColorManaEffect -> {
+                    val chosenColor = action.manaColorChoice ?: Color.GREEN
+                    val amount = dynamicAmountEvaluator.evaluate(state, effect.amount, context)
+                    ManaAddedEvent(
+                        playerId = action.playerId,
+                        sourceId = action.sourceId,
+                        sourceName = cardComponent.name,
+                        white = if (chosenColor == Color.WHITE) amount else 0,
+                        blue = if (chosenColor == Color.BLUE) amount else 0,
+                        black = if (chosenColor == Color.BLACK) amount else 0,
+                        red = if (chosenColor == Color.RED) amount else 0,
+                        green = if (chosenColor == Color.GREEN) amount else 0,
                         colorless = 0
                     )
                 }

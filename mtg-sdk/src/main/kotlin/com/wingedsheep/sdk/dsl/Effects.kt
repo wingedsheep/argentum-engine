@@ -9,8 +9,6 @@ import com.wingedsheep.sdk.scripting.*
 import com.wingedsheep.sdk.scripting.effects.AddAnyColorManaEffect
 import com.wingedsheep.sdk.scripting.effects.AddColorlessManaEffect
 import com.wingedsheep.sdk.scripting.effects.AddCountersEffect
-import com.wingedsheep.sdk.scripting.effects.AddDynamicColorManaEffect
-import com.wingedsheep.sdk.scripting.effects.AddDynamicColorlessManaEffect
 import com.wingedsheep.sdk.scripting.effects.AddManaEffect
 import com.wingedsheep.sdk.scripting.effects.AnimateLandEffect
 import com.wingedsheep.sdk.scripting.effects.ChooseColorAndGrantProtectionToGroupEffect
@@ -19,7 +17,6 @@ import com.wingedsheep.sdk.scripting.effects.ChooseCreatureTypeGainControlEffect
 import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.DealDamageEffect
 import com.wingedsheep.sdk.scripting.effects.DrawCardsEffect
-import com.wingedsheep.sdk.scripting.effects.DynamicModifyStatsEffect
 import com.wingedsheep.sdk.scripting.effects.EachOpponentDiscardsEffect
 import com.wingedsheep.sdk.scripting.effects.EachPlayerReturnsPermanentToHandEffect
 import com.wingedsheep.sdk.scripting.effects.Effect
@@ -259,7 +256,7 @@ object Effects {
      * Used for effects like "Target creature gets -X/-X where X is the number of Zombies."
      */
     fun ModifyStats(power: DynamicAmount, toughness: DynamicAmount, target: EffectTarget = EffectTarget.ContextTarget(0)): Effect =
-        DynamicModifyStatsEffect(power, toughness, target)
+        ModifyStatsEffect(power, toughness, target)
 
     /**
      * Grant a keyword until end of turn.
@@ -288,7 +285,7 @@ object Effects {
      * Used for effects like "Add {R} for each Goblin on the battlefield."
      */
     fun AddMana(color: Color, amount: DynamicAmount): Effect =
-        AddDynamicColorManaEffect(color, amount)
+        AddManaEffect(color, amount)
 
     /**
      * Add colorless mana.
@@ -300,7 +297,7 @@ object Effects {
      * Add a dynamic amount of colorless mana.
      */
     fun AddColorlessMana(amount: DynamicAmount): Effect =
-        AddDynamicColorlessManaEffect(amount)
+        AddColorlessManaEffect(amount)
 
     /**
      * Add one mana of any color.

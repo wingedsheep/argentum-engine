@@ -731,8 +731,8 @@ class StaticAbilityBuilder {
         // Convert effect to appropriate StaticAbility type
         return when (val e = effect) {
             is ModifyStatsEffect -> ModifyStats(
-                e.powerModifier,
-                e.toughnessModifier,
+                (e.powerModifier as? DynamicAmount.Fixed)?.amount ?: 0,
+                (e.toughnessModifier as? DynamicAmount.Fixed)?.amount ?: 0,
                 filter as? StaticTarget ?: StaticTarget.AttachedCreature
             )
             is GrantKeywordUntilEndOfTurnEffect -> GrantKeyword(
@@ -745,8 +745,8 @@ class StaticAbilityBuilder {
                 val statMod = e.effects.filterIsInstance<ModifyStatsEffect>().firstOrNull()
                 if (statMod != null) {
                     ModifyStats(
-                        statMod.powerModifier,
-                        statMod.toughnessModifier,
+                        (statMod.powerModifier as? DynamicAmount.Fixed)?.amount ?: 0,
+                        (statMod.toughnessModifier as? DynamicAmount.Fixed)?.amount ?: 0,
                         filter as? StaticTarget ?: StaticTarget.AttachedCreature
                     )
                 } else {

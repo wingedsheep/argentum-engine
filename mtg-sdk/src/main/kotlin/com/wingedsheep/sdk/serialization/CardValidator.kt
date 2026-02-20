@@ -12,7 +12,6 @@ import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.ConditionalEffect
 import com.wingedsheep.sdk.scripting.effects.DealDamageEffect
 import com.wingedsheep.sdk.scripting.effects.DestroyAtEndOfCombatEffect
-import com.wingedsheep.sdk.scripting.effects.DynamicModifyStatsEffect
 import com.wingedsheep.sdk.scripting.effects.Effect
 import com.wingedsheep.sdk.scripting.effects.ExileAndReplaceWithTokenEffect
 import com.wingedsheep.sdk.scripting.effects.ExileUntilLeavesEffect
@@ -233,7 +232,6 @@ object CardValidator {
             is RemoveFromCombatEffect -> effect.target
             is ForceSacrificeEffect -> effect.target
             is MarkExileOnDeathEffect -> effect.target
-            is DynamicModifyStatsEffect -> effect.target
             is GainControlEffect -> effect.target
             is TurnFaceDownEffect -> effect.target
             is TurnFaceUpEffect -> effect.target

@@ -1,6 +1,7 @@
 package com.wingedsheep.engine.handlers.effects.mana
 
 import com.wingedsheep.engine.core.ExecutionResult
+import com.wingedsheep.engine.handlers.DynamicAmountEvaluator
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.state.GameState
@@ -16,7 +17,9 @@ import kotlin.reflect.KClass
  * The color is chosen by the player via [EffectContext.manaColorChoice].
  * Defaults to GREEN if no choice is provided (e.g., auto-pay fallback).
  */
-class AddAnyColorManaExecutor : EffectExecutor<AddAnyColorManaEffect> {
+class AddAnyColorManaExecutor(
+    private val amountEvaluator: DynamicAmountEvaluator = DynamicAmountEvaluator()
+) : EffectExecutor<AddAnyColorManaEffect> {
 
     override val effectType: KClass<AddAnyColorManaEffect> = AddAnyColorManaEffect::class
 
@@ -26,10 +29,14 @@ class AddAnyColorManaExecutor : EffectExecutor<AddAnyColorManaEffect> {
         context: EffectContext
     ): ExecutionResult {
         val color = context.manaColorChoice ?: Color.GREEN
+        val amount = amountEvaluator.evaluate(state, effect.amount, context)
+        if (amount <= 0) {
+            return ExecutionResult.success(state)
+        }
 
         val newState = state.updateEntity(context.controllerId) { container ->
             val manaPool = container.get<ManaPoolComponent>() ?: ManaPoolComponent()
-            container.with(manaPool.add(color, effect.amount))
+            container.with(manaPool.add(color, amount))
         }
 
         return ExecutionResult.success(newState)

@@ -32,20 +32,37 @@ data class TapUntapEffect(
 /**
  * Modify power/toughness effect.
  * "Target creature gets +X/+Y until end of turn"
+ *
+ * Supports both fixed and dynamic amounts via [DynamicAmount].
  */
 @SerialName("ModifyStats")
 @Serializable
 data class ModifyStatsEffect(
-    val powerModifier: Int,
-    val toughnessModifier: Int,
+    val powerModifier: DynamicAmount,
+    val toughnessModifier: DynamicAmount,
     val target: EffectTarget,
     val duration: Duration = Duration.EndOfTurn
 ) : Effect {
+    constructor(powerModifier: Int, toughnessModifier: Int, target: EffectTarget, duration: Duration = Duration.EndOfTurn) :
+        this(DynamicAmount.Fixed(powerModifier), DynamicAmount.Fixed(toughnessModifier), target, duration)
+
     override val description: String = buildString {
         append("${target.description} gets ")
-        append(if (powerModifier >= 0) "+$powerModifier" else "$powerModifier")
-        append("/")
-        append(if (toughnessModifier >= 0) "+$toughnessModifier" else "$toughnessModifier")
+        val pDesc = powerModifier.let {
+            if (it is DynamicAmount.Fixed) {
+                if (it.amount >= 0) "+${it.amount}" else "${it.amount}"
+            } else {
+                it.description
+            }
+        }
+        val tDesc = toughnessModifier.let {
+            if (it is DynamicAmount.Fixed) {
+                if (it.amount >= 0) "+${it.amount}" else "${it.amount}"
+            } else {
+                it.description
+            }
+        }
+        append("$pDesc/$tDesc")
         if (duration.description.isNotEmpty()) append(" ${duration.description}")
     }
 }
@@ -247,24 +264,6 @@ data class GrantActivatedAbilityUntilEndOfTurnEffect(
     }
 }
 
-/**
- * Modify power/toughness by a dynamic amount.
- * "Target creature gets -X/-X until end of turn, where X is the number of Zombies on the battlefield."
- */
-@SerialName("DynamicModifyStats")
-@Serializable
-data class DynamicModifyStatsEffect(
-    val powerModifier: DynamicAmount,
-    val toughnessModifier: DynamicAmount,
-    val target: EffectTarget,
-    val duration: Duration = Duration.EndOfTurn
-) : Effect {
-    override val description: String = buildString {
-        append("${target.description} gets ")
-        append("${powerModifier.description}/${toughnessModifier.description}")
-        if (duration.description.isNotEmpty()) append(" ${duration.description}")
-    }
-}
 
 /**
  * Gain control of a permanent based on who controls the most creatures of a subtype.
