@@ -7,7 +7,7 @@ import com.wingedsheep.mtg.sets.definitions.portal.cards.Gravedigger
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.model.Deck
-import com.wingedsheep.sdk.targeting.TargetObject
+import com.wingedsheep.sdk.scripting.targets.TargetObject
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.nulls.shouldNotBeNull

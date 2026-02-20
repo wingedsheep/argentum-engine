@@ -3,7 +3,7 @@ package com.wingedsheep.mtg.sets.definitions.onslaught.cards
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.targeting.TargetOpponent
+import com.wingedsheep.sdk.scripting.targets.TargetOpponent
 
 /**
  * Head Games

@@ -9,8 +9,8 @@ import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.engine.state.components.stack.SpellOnStackComponent
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
-import com.wingedsheep.sdk.targeting.TargetOpponent
-import com.wingedsheep.sdk.targeting.TargetPlayer
+import com.wingedsheep.sdk.scripting.targets.TargetOpponent
+import com.wingedsheep.sdk.scripting.targets.TargetPlayer
 
 class ModalAndCloneContinuationResumer(
     private val ctx: ContinuationContext

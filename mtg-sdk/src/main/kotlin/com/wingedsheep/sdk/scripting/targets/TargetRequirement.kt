@@ -1,7 +1,7 @@
-package com.wingedsheep.sdk.targeting
+package com.wingedsheep.sdk.scripting.targets
 
 import com.wingedsheep.sdk.model.EntityId
-import com.wingedsheep.sdk.scripting.TargetFilter
+import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 

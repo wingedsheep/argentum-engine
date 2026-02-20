@@ -27,8 +27,8 @@ All code lives under `com.wingedsheep.sdk`:
 | `scripting/`          | Sealed interfaces: `Effect`, `Trigger`, `StaticAbility`, `ActivatedAbility`, `TriggeredAbility`, `ReplacementEffect`, `Condition` |
 | `scripting/effects/`  | Concrete `Effect` subtypes grouped by category (Damage, Life, Drawing, Library, etc.)                                             |
 | `scripting/triggers/` | Concrete `Trigger` subtypes grouped by category (ZoneChange, Phase, Combat, etc.)                                                 |
+| `scripting/targets/`  | `EffectTarget` (resolution-time targets) and `TargetRequirement` (cast-time target validation)                                    |
 | `dsl/`                | Facade objects and builders: `CardBuilder`, `Effects`, `Triggers`, `Targets`, `Costs`, `Conditions`, `Filters`, `EffectPatterns`  |
-| `targeting/`          | `TargetRequirement` sealed interface and subtypes                                                                                 |
 | `serialization/`      | kotlinx.serialization support for `CardDefinition`                                                                                |
 
 ## Card DSL
