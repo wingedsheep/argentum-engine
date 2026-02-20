@@ -3,7 +3,7 @@
 
 **Set Size:** 143 cards
 **Release Date:** May 26, 2003
-**Implemented:** 39 / 143
+**Implemented:** 40 / 143
 
 | Color | Count |
 |-------|-------|
@@ -111,7 +111,7 @@
 - [ ] Pemmin's Aura
 - [ ] Primitive Etchings
 - [ ] Proteus Machine
-- [ ] Putrid Raptor
+- [x] Putrid Raptor
 - [ ] Pyrostatic Pillar
 - [x] Rain of Blades
 - [ ] Raven Guild Initiate
