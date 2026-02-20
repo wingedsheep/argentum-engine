@@ -135,7 +135,10 @@ class ContinuationHandler(
             // Card-specific
             is SecretBidContinuation -> cardSpecificResumer.resumeSecretBid(stateAfterPop, continuation, response, cfm)
             is ReadTheRunesContinuation -> cardSpecificResumer.resumeReadTheRunes(stateAfterPop, continuation, response, cfm)
-            is TradeSecretsContinuation -> cardSpecificResumer.resumeTradeSecrets(stateAfterPop, continuation, response, cfm)
+
+            // Generic drawing/repeat
+            is DrawUpToContinuation -> resumeDrawUpTo(stateAfterPop, continuation, response, cfm)
+            is RepeatWhileContinuation -> resumeRepeatWhile(stateAfterPop, continuation, response, cfm)
 
             // Discard and draw
             is DiscardContinuation -> discardAndDrawResumer.resumeDiscard(stateAfterPop, continuation, response, cfm)
@@ -564,7 +567,105 @@ class ContinuationHandler(
             return checkForMoreContinuations(currentState, allEvents)
         }
 
+        if (nextContinuation is RepeatWhileContinuation && nextContinuation.phase == RepeatWhilePhase.AFTER_BODY) {
+            val (_, stateAfterPop) = state.popContinuation()
+            val context = nextContinuation.toEffectContext()
+
+            val result = com.wingedsheep.engine.handlers.effects.composite.RepeatWhileExecutor.askCondition(
+                state = stateAfterPop,
+                body = nextContinuation.body,
+                repeatCondition = nextContinuation.repeatCondition,
+                resolvedDeciderId = nextContinuation.resolvedDeciderId,
+                context = context,
+                sourceName = nextContinuation.sourceName,
+                effectExecutor = effectExecutorRegistry::execute,
+                priorEvents = events
+            )
+
+            if (result.isPaused) {
+                return result
+            }
+
+            return checkForMoreContinuations(result.state, result.events.toList())
+        }
+
         return ExecutionResult.success(state, events)
+    }
+
+    // ─── Generic drawing/repeat ───
+
+    private fun resumeDrawUpTo(
+        state: GameState,
+        continuation: DrawUpToContinuation,
+        response: DecisionResponse,
+        checkForMore: (GameState, List<GameEvent>) -> ExecutionResult
+    ): ExecutionResult {
+        if (response !is NumberChosenResponse) {
+            return ExecutionResult.error(state, "Expected number chosen response for DrawUpTo")
+        }
+
+        val chosenCount = response.number
+        if (chosenCount <= 0) {
+            return checkForMore(state, emptyList())
+        }
+
+        // Draw through the registry so draw replacement effects (Words of Wind, etc.) work
+        val drawEffect = com.wingedsheep.sdk.scripting.effects.DrawCardsEffect(chosenCount, com.wingedsheep.sdk.scripting.targets.EffectTarget.Controller)
+        val drawContext = EffectContext(
+            sourceId = continuation.sourceId,
+            controllerId = continuation.playerId,
+            opponentId = null
+        )
+        val result = effectExecutorRegistry.execute(state, drawEffect, drawContext)
+
+        if (result.isPaused) {
+            return result
+        }
+
+        return checkForMore(result.state, result.events.toList())
+    }
+
+    private fun resumeRepeatWhile(
+        state: GameState,
+        continuation: RepeatWhileContinuation,
+        response: DecisionResponse,
+        checkForMore: (GameState, List<GameEvent>) -> ExecutionResult
+    ): ExecutionResult {
+        return when (continuation.phase) {
+            RepeatWhilePhase.AFTER_BODY -> {
+                // Should not be at top of stack during decision resume
+                ExecutionResult.error(state, "RepeatWhileContinuation AFTER_BODY should not be at top of stack during decision resume")
+            }
+            RepeatWhilePhase.AFTER_DECISION -> {
+                if (response !is YesNoResponse) {
+                    return ExecutionResult.error(state, "Expected yes/no response for RepeatWhile")
+                }
+
+                if (!response.choice) {
+                    // Player chose not to repeat — done
+                    return checkForMore(state, emptyList())
+                }
+
+                // Player chose to repeat — execute another iteration
+                val context = continuation.toEffectContext()
+                val result = com.wingedsheep.engine.handlers.effects.composite.RepeatWhileExecutor.executeIteration(
+                    state = state,
+                    body = continuation.body,
+                    repeatCondition = continuation.repeatCondition,
+                    resolvedDeciderId = continuation.resolvedDeciderId,
+                    context = context,
+                    sourceName = continuation.sourceName,
+                    effectExecutor = effectExecutorRegistry::execute,
+                    priorEvents = emptyList()
+                )
+
+                if (result.isPaused) {
+                    return result
+                }
+
+                return checkForMore(result.state, result.events.toList())
+            }
+        }
     }
 
     // ─── Utility ───

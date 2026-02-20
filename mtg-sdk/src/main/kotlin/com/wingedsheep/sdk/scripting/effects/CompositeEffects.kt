@@ -3,6 +3,7 @@ package com.wingedsheep.sdk.scripting.effects
 import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.model.EntityId
+import com.wingedsheep.sdk.scripting.conditions.Condition
 import com.wingedsheep.sdk.scripting.effects.Effect
 import com.wingedsheep.sdk.scripting.costs.PayCost
 import com.wingedsheep.sdk.scripting.references.Player
@@ -439,6 +440,90 @@ data class FlipCoinEffect(
         }
         if (lostEffect != null) {
             append(" If you lose the flip, ${lostEffect.description.replaceFirstChar { it.lowercase() }}.")
+        }
+    }
+}
+
+// =============================================================================
+// Repeat Conditions
+// =============================================================================
+
+/**
+ * Determines whether a [RepeatWhileEffect] should repeat after each body execution.
+ *
+ * Variants:
+ * - [PlayerChooses]: Interactive — a player decides yes/no each iteration.
+ * - [WhileCondition]: Synchronous — checks a game-state [Condition].
+ */
+@Serializable
+sealed interface RepeatCondition {
+
+    /**
+     * A player decides each iteration whether to repeat.
+     *
+     * @property decider Which player makes the choice (resolved from EffectTarget)
+     * @property prompt Text shown in the yes/no decision
+     * @property yesText Label for the "repeat" button
+     * @property noText Label for the "stop" button
+     */
+    @SerialName("PlayerChooses")
+    @Serializable
+    data class PlayerChooses(
+        val decider: EffectTarget,
+        val prompt: String,
+        val yesText: String = "Repeat",
+        val noText: String = "Stop"
+    ) : RepeatCondition
+
+    /**
+     * Repeat while a game-state condition is true (checked after each body execution).
+     *
+     * @property condition The condition to evaluate
+     */
+    @SerialName("WhileCondition")
+    @Serializable
+    data class WhileCondition(
+        val condition: Condition
+    ) : RepeatCondition
+}
+
+/**
+ * Repeat a body effect in a do-while loop controlled by a [RepeatCondition].
+ *
+ * The body executes at least once. After each iteration, the repeat condition
+ * is evaluated:
+ * - [RepeatCondition.PlayerChooses]: pauses for a yes/no decision
+ * - [RepeatCondition.WhileCondition]: evaluates synchronously
+ *
+ * Example (Trade Secrets):
+ * ```kotlin
+ * RepeatWhileEffect(
+ *     body = CompositeEffect(listOf(
+ *         DrawCardsEffect(2, EffectTarget.ContextTarget(0)),
+ *         DrawUpToEffect(4, EffectTarget.Controller)
+ *     )),
+ *     repeatCondition = RepeatCondition.PlayerChooses(
+ *         decider = EffectTarget.ContextTarget(0),
+ *         prompt = "Repeat the process? (You draw 2 cards, opponent draws up to 4)"
+ *     )
+ * )
+ * ```
+ *
+ * @property body The effect to execute each iteration
+ * @property repeatCondition Determines whether to repeat after each body execution
+ */
+@SerialName("RepeatWhile")
+@Serializable
+data class RepeatWhileEffect(
+    val body: Effect,
+    val repeatCondition: RepeatCondition
+) : Effect {
+    override val description: String = buildString {
+        append(body.description)
+        append(". Repeat this process")
+        when (repeatCondition) {
+            is RepeatCondition.PlayerChooses -> append(" as many times as ${repeatCondition.decider.description} chooses")
+            is RepeatCondition.WhileCondition -> append(" while ${repeatCondition.condition.description}")
         }
     }
 }

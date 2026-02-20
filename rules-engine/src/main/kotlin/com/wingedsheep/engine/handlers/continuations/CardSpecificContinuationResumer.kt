@@ -3,7 +3,6 @@ package com.wingedsheep.engine.handlers.continuations
 import com.wingedsheep.engine.core.*
 import com.wingedsheep.engine.handlers.DecisionHandler
 import com.wingedsheep.engine.handlers.effects.drawing.ReadTheRunesExecutor
-import com.wingedsheep.engine.handlers.effects.drawing.TradeSecretsExecutor
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.identity.CardComponent
@@ -244,81 +243,4 @@ class CardSpecificContinuationResumer(
         }
     }
 
-    /**
-     * Resume Trade Secrets after a decision.
-     *
-     * Two phases:
-     * - CONTROLLER_DRAWS: Controller chose how many cards to draw (0-4). Draw them, then ask opponent to repeat.
-     * - OPPONENT_REPEATS: Opponent chose whether to repeat. If yes, opponent draws 2, then ask controller again.
-     */
-    fun resumeTradeSecrets(
-        state: GameState,
-        continuation: TradeSecretsContinuation,
-        response: DecisionResponse,
-        checkForMore: CheckForMore
-    ): ExecutionResult {
-        return when (continuation.phase) {
-            TradeSecretsPhase.CONTROLLER_DRAWS -> {
-                if (response !is NumberChosenResponse) {
-                    return ExecutionResult.error(state, "Expected number chosen response for Trade Secrets")
-                }
-
-                val chosenCount = response.number
-                val events = mutableListOf<GameEvent>()
-
-                // Draw the chosen number of cards for the controller
-                var currentState = state
-                if (chosenCount > 0) {
-                    val drawResult = TradeSecretsExecutor.drawCards(
-                        currentState, continuation.controllerId, chosenCount
-                    )
-                    currentState = drawResult.state
-                    events.addAll(drawResult.events)
-
-                    if (!drawResult.isSuccess) {
-                        return ExecutionResult(currentState, events, drawResult.error)
-                    }
-                }
-
-                // Now ask opponent whether to repeat
-                TradeSecretsExecutor.askOpponentToRepeat(
-                    state = currentState,
-                    controllerId = continuation.controllerId,
-                    opponentId = continuation.opponentId,
-                    sourceId = continuation.sourceId,
-                    sourceName = continuation.sourceName,
-                    priorEvents = events
-                )
-            }
-
-            TradeSecretsPhase.OPPONENT_REPEATS -> {
-                if (response !is YesNoResponse) {
-                    return ExecutionResult.error(state, "Expected yes/no response for Trade Secrets repeat")
-                }
-
-                if (!response.choice) {
-                    // Opponent chose not to repeat - done
-                    return checkForMore(state, emptyList())
-                }
-
-                // Opponent chose to repeat: draw 2 cards for opponent
-                val drawResult = TradeSecretsExecutor.drawCards(
-                    state, continuation.opponentId, 2
-                )
-                if (!drawResult.isSuccess) {
-                    return drawResult
-                }
-
-                // Ask controller how many cards to draw again
-                TradeSecretsExecutor.askControllerToDraw(
-                    state = drawResult.state,
-                    controllerId = continuation.controllerId,
-                    opponentId = continuation.opponentId,
-                    sourceId = continuation.sourceId,
-                    sourceName = continuation.sourceName,
-                    priorEvents = drawResult.events.toList()
-                )
-            }
-        }
-    }
 }

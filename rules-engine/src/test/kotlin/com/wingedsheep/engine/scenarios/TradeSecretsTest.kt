@@ -9,10 +9,15 @@ import com.wingedsheep.engine.support.TestCards
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.Step
+import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.CardScript
 import com.wingedsheep.sdk.model.Deck
-import com.wingedsheep.sdk.scripting.effects.TradeSecretsEffect
+import com.wingedsheep.sdk.scripting.effects.CompositeEffect
+import com.wingedsheep.sdk.scripting.effects.DrawCardsEffect
+import com.wingedsheep.sdk.scripting.effects.DrawUpToEffect
+import com.wingedsheep.sdk.scripting.effects.RepeatCondition
+import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.targets.TargetOpponent
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
@@ -34,7 +39,18 @@ class TradeSecretsTest : FunSpec({
         oracleText = "Target opponent draws two cards, then you draw up to four cards. That opponent may repeat this process as many times as they choose.",
         script = CardScript.spell(
             targets = arrayOf(TargetOpponent()),
-            effect = TradeSecretsEffect
+            effect = Effects.RepeatWhile(
+                body = Effects.Composite(
+                    DrawCardsEffect(count = 2, target = EffectTarget.ContextTarget(0)),
+                    DrawUpToEffect(maxCards = 4, target = EffectTarget.Controller)
+                ),
+                repeatCondition = RepeatCondition.PlayerChooses(
+                    decider = EffectTarget.ContextTarget(0),
+                    prompt = "Repeat the process? (You draw 2 cards, opponent draws up to 4)",
+                    yesText = "Repeat",
+                    noText = "Stop"
+                )
+            )
         )
     )
 

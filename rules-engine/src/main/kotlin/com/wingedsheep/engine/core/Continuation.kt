@@ -1631,39 +1631,77 @@ data class ForEachPlayerContinuation(
 ) : ContinuationFrame
 
 /**
- * Continuation for Trade Secrets.
- * "Target opponent draws two cards, then you draw up to four cards.
- * That opponent may repeat this process as many times as they choose."
+ * Resume after a player chooses how many cards to draw for DrawUpToEffect.
  *
- * Two phases:
- * - CONTROLLER_DRAWS: Controller is choosing how many cards to draw (0-4)
- * - OPPONENT_REPEATS: Opponent is deciding whether to repeat the process
- *
- * @property controllerId The caster of Trade Secrets (draws up to 4)
- * @property opponentId The target opponent (draws 2, decides to repeat)
- * @property sourceId The spell that caused this effect
+ * @property playerId The player who is drawing
+ * @property sourceId The spell/ability that caused the effect
  * @property sourceName Name of the source for display
- * @property phase Current phase of the Trade Secrets loop
+ * @property maxCards Maximum cards offered (capped by library size)
  */
 @Serializable
-data class TradeSecretsContinuation(
+data class DrawUpToContinuation(
     override val decisionId: String,
-    val controllerId: EntityId,
-    val opponentId: EntityId,
+    val playerId: EntityId,
     val sourceId: EntityId?,
     val sourceName: String?,
-    val phase: TradeSecretsPhase
+    val maxCards: Int
 ) : ContinuationFrame
 
 /**
- * Phase discriminator for TradeSecretsContinuation.
+ * Continuation for RepeatWhileEffect.
+ *
+ * Stores the full body effect and repeat condition so the loop can re-execute.
+ * For PlayerChooses conditions, the decider is resolved once and stored as
+ * resolvedDeciderId to avoid re-resolving EffectTarget on subsequent iterations.
+ *
+ * Two phases:
+ * - AFTER_BODY: Pre-pushed before body executes. Found in checkForMoreContinuations
+ *   after the body (or its sub-effects) complete. Transitions to asking the condition.
+ * - AFTER_DECISION: Waiting for the player's yes/no answer (PlayerChooses only).
+ *
+ * @property body The effect to execute each iteration
+ * @property repeatCondition The serialized repeat condition
+ * @property resolvedDeciderId For PlayerChooses — the resolved player entity ID
+ * @property sourceId The spell/ability that caused this effect
+ * @property sourceName Name of the source for display
+ * @property controllerId The controller of the effect
+ * @property opponentId The opponent (for effect context)
+ * @property xValue The X value (if applicable)
+ * @property targets The chosen targets (for effect context)
+ * @property phase Current phase of the repeat loop
  */
 @Serializable
-enum class TradeSecretsPhase {
-    /** Controller is choosing how many cards to draw (0-4) */
-    CONTROLLER_DRAWS,
-    /** Opponent is deciding whether to repeat the process */
-    OPPONENT_REPEATS
+data class RepeatWhileContinuation(
+    override val decisionId: String,
+    val body: Effect,
+    val repeatCondition: com.wingedsheep.sdk.scripting.effects.RepeatCondition,
+    val resolvedDeciderId: EntityId? = null,
+    val sourceId: EntityId?,
+    val sourceName: String?,
+    val controllerId: EntityId,
+    val opponentId: EntityId?,
+    val xValue: Int?,
+    val targets: List<ChosenTarget> = emptyList(),
+    val phase: RepeatWhilePhase
+) : ContinuationFrame {
+    fun toEffectContext(): EffectContext = EffectContext(
+        sourceId = sourceId,
+        controllerId = controllerId,
+        opponentId = opponentId,
+        xValue = xValue,
+        targets = targets
+    )
+}
+
+/**
+ * Phase discriminator for RepeatWhileContinuation.
+ */
+@Serializable
+enum class RepeatWhilePhase {
+    /** Pre-pushed before body executes; found in checkForMoreContinuations after body completes */
+    AFTER_BODY,
+    /** Waiting for the player's yes/no decision (PlayerChooses only) */
+    AFTER_DECISION
 }
 
 /**

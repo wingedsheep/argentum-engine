@@ -33,8 +33,11 @@ import com.wingedsheep.sdk.scripting.effects.GrantKeywordUntilEndOfTurnEffect
 import com.wingedsheep.sdk.scripting.effects.LoseLifeEffect
 import com.wingedsheep.sdk.scripting.effects.ModifyStatsEffect
 import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
+import com.wingedsheep.sdk.scripting.effects.DrawUpToEffect
 import com.wingedsheep.sdk.scripting.effects.ReadTheRunesEffect
 import com.wingedsheep.sdk.scripting.effects.RemoveFromCombatEffect
+import com.wingedsheep.sdk.scripting.effects.RepeatCondition
+import com.wingedsheep.sdk.scripting.effects.RepeatWhileEffect
 import com.wingedsheep.sdk.scripting.effects.ReplaceNextDrawWithEffect
 import com.wingedsheep.sdk.scripting.effects.SearchDestination
 import com.wingedsheep.sdk.scripting.effects.SelectTargetEffect
@@ -160,6 +163,12 @@ object Effects {
         includeController: Boolean = true,
         includeOpponents: Boolean = true
     ): Effect = EffectPatterns.eachPlayerDrawsX(includeController, includeOpponents)
+
+    /**
+     * Draw up to N cards. The player chooses how many (0 to maxCards).
+     */
+    fun DrawUpTo(maxCards: Int, target: EffectTarget = EffectTarget.Controller): Effect =
+        DrawUpToEffect(maxCards, target)
 
     /**
      * Draw X cards, then for each card drawn, discard a card unless you sacrifice a permanent.
@@ -469,6 +478,23 @@ object Effects {
      */
     fun Composite(effects: List<Effect>): Effect =
         CompositeEffect(effects)
+
+    /**
+     * Repeat a body effect in a do-while loop controlled by a repeat condition.
+     *
+     * The body executes at least once. After each iteration, the condition determines
+     * whether to repeat.
+     *
+     * Example (Trade Secrets):
+     * ```kotlin
+     * RepeatWhile(
+     *     body = Composite(DrawCards(2, target), DrawUpTo(4)),
+     *     repeatCondition = RepeatCondition.PlayerChooses(target, "Repeat?")
+     * )
+     * ```
+     */
+    fun RepeatWhile(body: Effect, repeatCondition: RepeatCondition): Effect =
+        RepeatWhileEffect(body, repeatCondition)
 
     // =========================================================================
     // Counter Effects

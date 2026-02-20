@@ -1,8 +1,13 @@
 package com.wingedsheep.mtg.sets.definitions.onslaught.cards
 
+import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.effects.TradeSecretsEffect
+import com.wingedsheep.sdk.scripting.effects.CompositeEffect
+import com.wingedsheep.sdk.scripting.effects.DrawCardsEffect
+import com.wingedsheep.sdk.scripting.effects.DrawUpToEffect
+import com.wingedsheep.sdk.scripting.effects.RepeatCondition
+import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.targets.TargetOpponent
 
 /**
@@ -19,7 +24,18 @@ val TradeSecrets = card("Trade Secrets") {
 
     spell {
         target = TargetOpponent()
-        effect = TradeSecretsEffect
+        effect = Effects.RepeatWhile(
+            body = Effects.Composite(
+                DrawCardsEffect(count = 2, target = EffectTarget.ContextTarget(0)),
+                DrawUpToEffect(maxCards = 4, target = EffectTarget.Controller)
+            ),
+            repeatCondition = RepeatCondition.PlayerChooses(
+                decider = EffectTarget.ContextTarget(0),
+                prompt = "Repeat the process? (You draw 2 cards, opponent draws up to 4)",
+                yesText = "Repeat",
+                noText = "Stop"
+            )
+        )
     }
 
     metadata {

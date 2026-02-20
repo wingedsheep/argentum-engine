@@ -216,15 +216,22 @@ data object ReadTheRunesEffect : Effect {
 }
 
 /**
- * Trade Secrets effect.
- * "Target opponent draws two cards, then you draw up to four cards.
- * That opponent may repeat this process as many times as they choose."
+ * Draw up to N cards effect.
+ * "Draw up to N cards" - the player chooses how many (0 to maxCards).
+ *
+ * @property maxCards Maximum number of cards the player may draw
+ * @property target The player who draws
  */
-@SerialName("TradeSecrets")
+@SerialName("DrawUpTo")
 @Serializable
-data object TradeSecretsEffect : Effect {
-    override val description: String =
-        "Target opponent draws two cards, then you draw up to four cards. That opponent may repeat this process as many times as they choose."
+data class DrawUpToEffect(
+    val maxCards: Int,
+    val target: EffectTarget = EffectTarget.Controller
+) : Effect {
+    override val description: String = when (target) {
+        EffectTarget.Controller -> "Draw up to $maxCards cards"
+        else -> "${target.description.replaceFirstChar { it.uppercase() }} draws up to $maxCards cards"
+    }
 }
 
 /**
