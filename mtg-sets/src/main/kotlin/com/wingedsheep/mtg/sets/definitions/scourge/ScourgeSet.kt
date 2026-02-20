@@ -45,6 +45,7 @@ object ScourgeSet {
 
         // Blue creatures
         CoastWatcher,
+        RiptideSurvivor,
         ScornfulEgotist,
         ShorelineRanger,
 

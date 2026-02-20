@@ -2,7 +2,7 @@
 
 **Set Size:** 143 cards
 **Release Date:** May 26, 2003
-**Implemented:** 31 / 143
+**Implemented:** 32 / 143
 
 | Color | Count |
 |-------|-------|
@@ -118,7 +118,7 @@
 - [ ] Reaping the Graves
 - [ ] Recuperate
 - [ ] Reward the Faithful
-- [ ] Riptide Survivor
+- [x] Riptide Survivor
 - [ ] Rock Jockey
 - [ ] Root Elemental
 - [x] Rush of Knowledge
