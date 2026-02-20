@@ -3,15 +3,15 @@
 
 **Set Size:** 143 cards
 **Release Date:** May 26, 2003
-**Implemented:** 41 / 143
+**Implemented:** 44 / 143
 
 | Color | Count |
 |-------|-------|
-| White | 5 |
-| Blue | 5 |
-| Black | 6 |
-| Red | 6 |
-| Green | 5 |
+| White | 8 |
+| Blue | 7 |
+| Black | 9 |
+| Red | 9 |
+| Green | 9 |
 | Multicolor | 1 |
 | Colorless | 1 |
 

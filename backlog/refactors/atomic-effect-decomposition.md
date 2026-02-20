@@ -6,8 +6,8 @@ Audit of monolithic effects in `mtg-sdk` that could be decomposed into atomic pi
 
 - [x] Delete dead `DealDamageExileOnDeathEffect` — removed data class, CardValidator branch, reference.md entry
 - [x] Decompose `ShuffleGraveyardIntoLibraryEffect` — replaced with `EffectPatterns.shuffleGraveyardIntoLibrary()` (Gather → Move pipeline), deleted executor
-- [ ] Decompose `EachPlayerReturnsPermanentToHandEffect` — ForEachPlayer → Gather → Select → Move
-- [ ] Wire `EachOpponentDiscardsEffect` to existing `EffectPatterns` pipeline (requires replacement-system refactor)
+- [x] Decompose `EachPlayerReturnsPermanentToHandEffect` — ForEachPlayer → Gather → Select → Move (executor added during unified draw replacement shield refactor)
+- [ ] Wire `EachOpponentDiscardsEffect` to existing `EffectPatterns` pipeline (unblocked by unified draw replacement shield refactor)
 - [ ] Decompose `ExileAndReplaceWithTokenEffect` — needs StoreControllerRef / "Data Bus" infrastructure
 - [ ] Decompose `PutCreatureFromHandSharingTypeWithTappedEffect` — needs context-aware filter
 - [ ] Decompose `HarshMercyEffect` / `PatriarchsBiddingEffect` — needs aggregate-choices primitive
@@ -121,25 +121,14 @@ Had **no executor**, **no cards using it**, **no tests**. Carbonize already used
 
 Replaced with `EffectPatterns.shuffleGraveyardIntoLibrary()` — a Gather(graveyard) → Move(library, Shuffled) pipeline. Deleted `ShuffleGraveyardIntoLibraryExecutor`. All Reminisce tests pass unchanged.
 
-### `EachPlayerReturnsPermanentToHandEffect`
-**File:** `mtg-sdk/.../scripting/effects/DrawingEffects.kt` | **Difficulty:** Easy-Medium
+### ~~`EachPlayerReturnsPermanentToHandEffect`~~ (Done)
 
-Each player returns a permanent they control to its owner's hand (Words of Wind).
-
-```kotlin
-ForEachPlayer(Player.Each) -> [
-    GatherCardsEffect(source = FromZone(Zone.BATTLEFIELD, You), storeAs = "permanents"),
-    SelectFromCollectionEffect(from = "permanents", selection = SelectionMode.ChooseExactly(1), storeSelected = "chosen"),
-    MoveCollectionEffect(from = "chosen", destination = ToZone(Zone.HAND))
-]
-```
-
-Potential blocker: draw-replacement system may check the concrete effect type.
+Added `EachPlayerReturnsPermanentToHandExecutor` that delegates to `EffectPatterns.eachPlayerReturnsPermanentToHand()` pipeline. Created during the unified draw replacement shield refactor, which replaced 5 specific `SerializableModification.ReplaceDrawWith*` variants with a single `ReplaceDrawWithEffect` that stores the replacement `Effect` directly and delegates to the effect execution pipeline at consumption time.
 
 ### `EachOpponentDiscardsEffect`
 **File:** `mtg-sdk/.../scripting/effects/DrawingEffects.kt` | **Difficulty:** Medium
 
-`EffectPatterns.eachOpponentDiscards()` already exists for the basic case but isn't wired to `Effects.EachOpponentDiscards()` because the draw-replacement system checks the concrete type. Syphon Mind variant needs count tracking across ForEachPlayer iterations.
+`EffectPatterns.eachOpponentDiscards()` already exists for the basic case but isn't wired to `Effects.EachOpponentDiscards()`. The draw-replacement system blocker is now resolved (unified `ReplaceDrawWithEffect` delegates to the pipeline, so replacing the concrete effect type is safe). Syphon Mind variant needs count tracking across ForEachPlayer iterations.
 
 ### `ExileAndReplaceWithTokenEffect`
 **File:** `mtg-sdk/.../scripting/effects/RemovalEffects.kt` | **Difficulty:** Medium | **Pattern:** Data Bus
