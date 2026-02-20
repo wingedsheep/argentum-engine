@@ -36,12 +36,18 @@ export function RevealedCardsUI() {
         .filter((card) => card != null)
     : revealedCardsInfo!.cardIds.map((cardId, index) => {
         const card = gameState.cards[cardId]
-        return card ?? {
-          id: cardId,
-          name: revealedCardsInfo!.cardNames[index] ?? 'Unknown Card',
-          imageUri: revealedCardsInfo!.imageUris[index] ?? null,
-          typeLine: null,
-        }
+        // Prefer the event's imageUri over gameState — the event carries the exact per-entity
+        // image (important for basic lands with multiple art variants), while the gameState
+        // version may use a different variant from the card registry.
+        const eventImageUri = revealedCardsInfo!.imageUris[index] ?? null
+        return card
+          ? { ...card, imageUri: eventImageUri ?? card.imageUri }
+          : {
+              id: cardId,
+              name: revealedCardsInfo!.cardNames[index] ?? 'Unknown Card',
+              imageUri: eventImageUri,
+              typeLine: null,
+            }
       })
 
   const onDismiss = isHandReveal ? dismissRevealedHand : dismissRevealedCards
