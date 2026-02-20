@@ -52,6 +52,7 @@ object ScourgeSet {
         RushOfKnowledge,
 
         // Red creatures
+        ChartoothCougar,
         GoblinWarchief,
         SiegeGangCommander,
 
