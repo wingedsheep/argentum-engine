@@ -3,7 +3,7 @@
 
 **Set Size:** 143 cards
 **Release Date:** May 26, 2003
-**Implemented:** 35 / 143
+**Implemented:** 36 / 143
 
 | Color | Count |
 |-------|-------|
@@ -156,7 +156,7 @@
 - [x] Wipe Clean
 - [x] Wirewood Guardian
 - [ ] Wirewood Symbiote
-- [ ] Woodcloaker
+- [x] Woodcloaker
 - [ ] Xantid Swarm
 - [ ] Zealous Inquisitor
 - [x] Zombie Cutthroat
