@@ -3,7 +3,7 @@
 
 **Set Size:** 143 cards
 **Release Date:** May 26, 2003
-**Implemented:** 38 / 143
+**Implemented:** 39 / 143
 
 | Color | Count |
 |-------|-------|
@@ -25,7 +25,7 @@
 - [x] Aphetto Runecaster
 - [x] Ark of Blight
 - [ ] Astral Steel
-- [ ] Aven Farseer
+- [x] Aven Farseer
 - [ ] Aven Liberator
 - [ ] Bladewing's Thrall
 - [x] Bladewing the Risen

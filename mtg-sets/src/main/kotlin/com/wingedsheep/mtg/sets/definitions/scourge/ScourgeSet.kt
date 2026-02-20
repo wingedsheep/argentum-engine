@@ -75,6 +75,7 @@ object ScourgeSet {
         SparkSpray,
 
         // White creatures
+        AvenFarseer,
         AvenLiberator,
         DaruWarchief,
         Dragonstalker,
