@@ -7,6 +7,21 @@ import com.wingedsheep.sdk.scripting.conditions.AnyCondition
 import com.wingedsheep.sdk.scripting.conditions.LifeTotalAtLeast
 import com.wingedsheep.sdk.scripting.conditions.LifeTotalAtMost
 import com.wingedsheep.sdk.scripting.conditions.NotCondition
+import com.wingedsheep.sdk.scripting.conditions.OpponentControlsMoreLands as OpponentControlsMoreLandsCondition
+import com.wingedsheep.sdk.scripting.conditions.OpponentControlsMoreCreatures as OpponentControlsMoreCreaturesCondition
+import com.wingedsheep.sdk.scripting.conditions.OpponentControlsCreature as OpponentControlsCreatureCondition
+import com.wingedsheep.sdk.scripting.conditions.ControlCreature as ControlCreatureCondition
+import com.wingedsheep.sdk.scripting.conditions.ControlEnchantment as ControlEnchantmentCondition
+import com.wingedsheep.sdk.scripting.conditions.ControlArtifact as ControlArtifactCondition
+import com.wingedsheep.sdk.scripting.conditions.MoreLifeThanOpponent as MoreLifeThanOpponentCondition
+import com.wingedsheep.sdk.scripting.conditions.LessLifeThanOpponent as LessLifeThanOpponentCondition
+import com.wingedsheep.sdk.scripting.conditions.EmptyHand as EmptyHandCondition
+import com.wingedsheep.sdk.scripting.conditions.SourceIsAttacking as SourceIsAttackingCondition
+import com.wingedsheep.sdk.scripting.conditions.SourceIsBlocking as SourceIsBlockingCondition
+import com.wingedsheep.sdk.scripting.conditions.SourceIsTapped as SourceIsTappedCondition
+import com.wingedsheep.sdk.scripting.conditions.SourceIsUntapped as SourceIsUntappedCondition
+import com.wingedsheep.sdk.scripting.conditions.IsYourTurn as IsYourTurnCondition
+import com.wingedsheep.sdk.scripting.conditions.IsNotYourTurn as IsNotYourTurnCondition
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
 import com.wingedsheep.sdk.scripting.conditions.Condition as ConditionInterface
 
@@ -30,37 +45,37 @@ object Conditions {
      * If an opponent controls more lands than you.
      */
     val OpponentControlsMoreLands: ConditionInterface =
-        OpponentControlsMoreLands
+        OpponentControlsMoreLandsCondition
 
     /**
      * If an opponent controls more creatures than you.
      */
     val OpponentControlsMoreCreatures: ConditionInterface =
-        OpponentControlsMoreCreatures
+        OpponentControlsMoreCreaturesCondition
 
     /**
      * If an opponent controls a creature.
      */
     val OpponentControlsCreature: ConditionInterface =
-        OpponentControlsCreature
+        OpponentControlsCreatureCondition
 
     /**
      * If you control a creature.
      */
     val ControlCreature: ConditionInterface =
-        ControlCreature
+        ControlCreatureCondition
 
     /**
      * If you control an enchantment.
      */
     val ControlEnchantment: ConditionInterface =
-        ControlEnchantment
+        ControlEnchantmentCondition
 
     /**
      * If you control an artifact.
      */
     val ControlArtifact: ConditionInterface =
-        ControlArtifact
+        ControlArtifactCondition
 
     /**
      * If you control N or more creatures.
@@ -120,13 +135,13 @@ object Conditions {
      * If you have more life than an opponent.
      */
     val MoreLifeThanOpponent: ConditionInterface =
-        MoreLifeThanOpponent
+        MoreLifeThanOpponentCondition
 
     /**
      * If you have less life than an opponent.
      */
     val LessLifeThanOpponent: ConditionInterface =
-        LessLifeThanOpponent
+        LessLifeThanOpponentCondition
 
     // =========================================================================
     // Hand Conditions
@@ -136,7 +151,7 @@ object Conditions {
      * If you have no cards in hand.
      */
     val EmptyHand: ConditionInterface =
-        EmptyHand
+        EmptyHandCondition
 
     /**
      * If you have N or more cards in hand.
@@ -180,25 +195,25 @@ object Conditions {
      * If this creature is attacking.
      */
     val SourceIsAttacking: ConditionInterface =
-        SourceIsAttacking
+        SourceIsAttackingCondition
 
     /**
      * If this creature is blocking.
      */
     val SourceIsBlocking: ConditionInterface =
-        SourceIsBlocking
+        SourceIsBlockingCondition
 
     /**
      * If this permanent is tapped.
      */
     val SourceIsTapped: ConditionInterface =
-        SourceIsTapped
+        SourceIsTappedCondition
 
     /**
      * If this permanent is untapped.
      */
     val SourceIsUntapped: ConditionInterface =
-        SourceIsUntapped
+        SourceIsUntappedCondition
 
     /**
      * As long as this creature is a specific subtype.
@@ -215,13 +230,13 @@ object Conditions {
      * If it's your turn.
      */
     val IsYourTurn: ConditionInterface =
-        IsYourTurn
+        IsYourTurnCondition
 
     /**
      * If it's not your turn.
      */
     val IsNotYourTurn: ConditionInterface =
-        IsNotYourTurn
+        IsNotYourTurnCondition
 
     // =========================================================================
     // Composite Conditions

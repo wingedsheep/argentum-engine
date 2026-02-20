@@ -40,6 +40,13 @@ import com.wingedsheep.sdk.scripting.effects.SearchDestination
 import com.wingedsheep.sdk.scripting.effects.SelectTargetEffect
 import com.wingedsheep.sdk.scripting.effects.SeparatePermanentsIntoPilesEffect
 import com.wingedsheep.sdk.scripting.effects.TapUntapEffect
+import com.wingedsheep.sdk.scripting.effects.ZonePlacement
+import com.wingedsheep.sdk.scripting.effects.CreateTokenEffect
+import com.wingedsheep.sdk.scripting.effects.CreateTreasureTokensEffect
+import com.wingedsheep.sdk.scripting.effects.CounterSpellEffect
+import com.wingedsheep.sdk.scripting.effects.CounterUnlessPaysEffect
+import com.wingedsheep.sdk.scripting.effects.CounterUnlessDynamicPaysEffect
+import com.wingedsheep.sdk.scripting.effects.ChangeSpellTargetEffect
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
