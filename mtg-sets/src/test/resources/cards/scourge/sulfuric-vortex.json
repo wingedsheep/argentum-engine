@@ -6,7 +6,7 @@
     "script": {
         "triggeredAbilities": [
             {
-                "id": "ability_1",
+                "id": "ability_11",
                 "trigger": {
                     "type": "Upkeep",
                     "controllerOnly": false

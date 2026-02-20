@@ -10,7 +10,7 @@
     "script": {
         "triggeredAbilities": [
             {
-                "id": "ability_11",
+                "id": "ability_15",
                 "trigger": "Death",
                 "effect": {
                     "type": "LoseLife",
@@ -25,7 +25,7 @@
                 }
             },
             {
-                "id": "ability_12",
+                "id": "ability_16",
                 "trigger": {
                     "type": "OtherCreatureWithSubtypeDies",
                     "subtype": "Zombie",

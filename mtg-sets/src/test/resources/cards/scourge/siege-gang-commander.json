@@ -10,7 +10,7 @@
     "script": {
         "triggeredAbilities": [
             {
-                "id": "ability_6",
+                "id": "ability_9",
                 "trigger": "EntersBattlefield",
                 "effect": {
                     "type": "CreateToken",
@@ -29,7 +29,7 @@
         ],
         "activatedAbilities": [
             {
-                "id": "ability_7",
+                "id": "ability_10",
                 "cost": {
                     "type": "CostComposite",
                     "costs": [

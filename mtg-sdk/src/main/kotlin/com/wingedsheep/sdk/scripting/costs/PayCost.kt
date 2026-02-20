@@ -1,18 +1,33 @@
 package com.wingedsheep.sdk.scripting
 
+import com.wingedsheep.sdk.core.ManaCost
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 /**
- * Represents a cost that can be paid to avoid a consequence.
- * Used by PayOrSufferEffect to unify "unless" mechanics.
+ * Represents a cost that can be paid in various contexts:
+ * - Morph face-up costs (e.g., "Morph {2}{U}" or "Morph—Pay 5 life")
+ * - "Unless" mechanics via PayOrSufferEffect (e.g., "unless you sacrifice a creature")
+ * - Any future mechanic that requires a payable cost
  */
 @Serializable
 sealed interface PayCost {
     val description: String
 
     /**
-     * Discard one or more cards matching a filter to avoid the consequence.
+     * Pay a mana cost.
+     * "Pay {2}{U}" or "Morph {3}{G}{G}"
+     *
+     * @property cost The mana cost to pay
+     */
+    @SerialName("PayMana")
+    @Serializable
+    data class Mana(val cost: ManaCost) : PayCost {
+        override val description: String = cost.toString()
+    }
+
+    /**
+     * Discard one or more cards matching a filter.
      * "...unless you discard a land card"
      *
      * @property filter Which cards can be discarded

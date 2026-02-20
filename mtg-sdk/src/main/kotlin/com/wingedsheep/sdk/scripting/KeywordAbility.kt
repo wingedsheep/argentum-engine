@@ -364,14 +364,18 @@ sealed interface KeywordAbility {
     // =========================================================================
 
     /**
-     * Morph with a mana cost.
-     * "Morph {2}{U}" - You may cast this card face down as a 2/2 creature for {3}.
+     * Morph with a cost to turn face up.
+     * "Morph {2}{U}" or "Morph—Pay 5 life."
+     * You may cast this card face down as a 2/2 creature for {3}.
      * Turn it face up any time for its morph cost.
      */
     @SerialName("Morph")
     @Serializable
-    data class Morph(val cost: ManaCost) : KeywordAbility {
-        override val description: String = "Morph $cost"
+    data class Morph(val morphCost: PayCost) : KeywordAbility {
+        /** Convenience constructor for mana-based morph costs. */
+        constructor(cost: ManaCost) : this(PayCost.Mana(cost))
+
+        override val description: String = "Morph ${morphCost.description}"
     }
 
     // =========================================================================
@@ -426,5 +430,10 @@ sealed interface KeywordAbility {
          * Create Morph with mana cost from string.
          */
         fun morph(cost: String): KeywordAbility = Morph(ManaCost.parse(cost))
+
+        /**
+         * Create Morph with life payment cost.
+         */
+        fun morphPayLife(amount: Int): KeywordAbility = Morph(PayCost.PayLife(amount))
     }
 }

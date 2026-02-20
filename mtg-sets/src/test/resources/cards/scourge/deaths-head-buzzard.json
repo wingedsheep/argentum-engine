@@ -13,7 +13,7 @@
     "script": {
         "triggeredAbilities": [
             {
-                "id": "ability_10",
+                "id": "ability_13",
                 "trigger": "Death",
                 "effect": {
                     "type": "ForEachInGroup",

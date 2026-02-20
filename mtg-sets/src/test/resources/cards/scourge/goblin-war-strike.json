@@ -1,0 +1,29 @@
+{
+    "name": "Goblin War Strike",
+    "manaCost": "{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Goblin War Strike deals damage to target player equal to the number of Goblins you control.",
+    "script": {
+        "spellEffect": {
+            "type": "DealDamage",
+            "amount": {
+                "type": "AggregateBattlefield",
+                "player": "You",
+                "filter": "creature Goblin"
+            },
+            "target": {
+                "type": "ContextTarget",
+                "index": 0
+            }
+        },
+        "targetRequirements": [
+            "TargetPlayer"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "96",
+        "artist": "Thomas M. Baxa",
+        "flavorText": "\"It's not the strategy or the weapons that make goblin attacks so effective. It's the sheer enthusiasm.\"\n—Aven marshal",
+        "imageUri": "https://cards.scryfall.io/large/front/d/c/dce59945-37a2-4f09-8831-9d44b4a59ea7.jpg?1562535675"
+    }
+}

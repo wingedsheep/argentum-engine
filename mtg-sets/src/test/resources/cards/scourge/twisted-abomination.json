@@ -1,0 +1,38 @@
+{
+    "name": "Twisted Abomination",
+    "manaCost": "{5}{B}",
+    "typeLine": "Creature — Zombie Mutant",
+    "oracleText": "{B}: Regenerate Twisted Abomination.\nSwampcycling {2}",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 3
+    },
+    "keywordAbilities": [
+        {
+            "type": "Typecycling",
+            "subtype": "Swamp",
+            "cost": "{2}"
+        }
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_14",
+                "cost": {
+                    "type": "CostMana",
+                    "cost": "{B}"
+                },
+                "effect": {
+                    "type": "Regenerate",
+                    "target": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "76",
+        "artist": "Daren Bader",
+        "flavorText": "It oozes through the swamps of Otaria, absorbing and discarding body parts.",
+        "imageUri": "https://cards.scryfall.io/large/front/4/4/446e672f-87aa-4308-98bb-d00548c5bcef.jpg?1562528106"
+    }
+}

@@ -584,7 +584,7 @@ class ClientStateTransformer(
             attachedTo = attachedTo,
             attachments = attachments,
             isFaceDown = isFaceDown,
-            morphCost = if (isFaceDown && morphData != null) morphData.morphCost.toString() else null,
+            morphCost = if (isFaceDown && morphData != null) morphData.morphCost.description else null,
             targets = targets,
             imageUri = cardDef?.metadata?.imageUri ?: cardComponent.imageUri,
             activeEffects = activeEffects,

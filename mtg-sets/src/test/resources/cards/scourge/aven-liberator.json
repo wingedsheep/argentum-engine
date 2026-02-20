@@ -13,13 +13,16 @@
     "keywordAbilities": [
         {
             "type": "Morph",
-            "cost": "{3}{W}{W}"
+            "morphCost": {
+                "type": "PayMana",
+                "cost": "{3}{W}{W}"
+            }
         }
     ],
     "script": {
         "triggeredAbilities": [
             {
-                "id": "ability_9",
+                "id": "ability_12",
                 "trigger": "TurnFaceUpTrigger",
                 "effect": {
                     "type": "ChooseColorAndGrantProtectionToTarget",

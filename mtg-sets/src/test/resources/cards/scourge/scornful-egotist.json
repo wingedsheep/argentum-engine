@@ -10,7 +10,10 @@
     "keywordAbilities": [
         {
             "type": "Morph",
-            "cost": "{U}"
+            "morphCost": {
+                "type": "PayMana",
+                "cost": "{U}"
+            }
         }
     ],
     "metadata": {

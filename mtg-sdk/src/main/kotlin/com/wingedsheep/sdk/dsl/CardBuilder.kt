@@ -176,10 +176,18 @@ class CardBuilder(private val name: String) {
     var auraTarget: TargetRequirement? = null
 
     /**
-     * Morph cost as a string (e.g., "{2}{U}").
-     * When set, the card gains the Morph keyword ability.
+     * Morph cost as a mana cost string (e.g., "{2}{U}").
+     * When set, the card gains the Morph keyword ability with a mana cost.
+     * For non-mana morph costs (e.g., pay life), use [morphCost] instead.
      */
     var morph: String? = null
+
+    /**
+     * Morph cost as a [PayCost] for non-mana morph costs (e.g., pay life).
+     * When set, the card gains the Morph keyword ability.
+     * For mana-based morph, the simpler [morph] string property is preferred.
+     */
+    var morphCost: PayCost? = null
 
     /**
      * If set, the caster must choose a creature type during casting.
@@ -387,10 +395,10 @@ class CardBuilder(private val name: String) {
         val metadata = metadataBuilder?.build() ?: ScryfallMetadata()
 
         // Add morph keyword ability if morph cost is specified
-        val finalKeywordAbilities = if (morph != null) {
-            keywordAbilityList + KeywordAbility.Morph(ManaCost.parse(morph!!))
-        } else {
-            keywordAbilityList.toList()
+        val finalKeywordAbilities = when {
+            morph != null -> keywordAbilityList + KeywordAbility.Morph(ManaCost.parse(morph!!))
+            morphCost != null -> keywordAbilityList + KeywordAbility.Morph(morphCost!!)
+            else -> keywordAbilityList.toList()
         }
 
         return CardDefinition(

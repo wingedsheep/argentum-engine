@@ -23,6 +23,7 @@ import com.wingedsheep.engine.state.components.identity.ChosenCreatureTypeCompon
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.identity.FaceDownComponent
 import com.wingedsheep.engine.state.components.identity.MorphDataComponent
+import com.wingedsheep.sdk.scripting.PayCost
 import com.wingedsheep.engine.state.components.identity.TextReplacementComponent
 import com.wingedsheep.engine.state.components.player.LandDropsComponent
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
@@ -698,16 +699,31 @@ class LegalActionsCalculator(
             val cardComponent = container.get<CardComponent>() ?: continue
 
             // Check if player can afford the morph cost
-            if (manaSolver.canPay(state, playerId, morphData.morphCost)) {
-                val autoTapSolution = manaSolver.solve(state, playerId, morphData.morphCost)
-                val autoTapPreview = autoTapSolution?.sources?.map { it.entityId }
-                result.add(LegalActionInfo(
-                    actionType = "ActivateAbility",
-                    description = "Turn face-up (${morphData.morphCost})",
-                    action = TurnFaceUp(playerId, entityId),
-                    manaCostString = morphData.morphCost.toString(),
-                    autoTapPreview = autoTapPreview
-                ))
+            when (val cost = morphData.morphCost) {
+                is PayCost.Mana -> {
+                    if (manaSolver.canPay(state, playerId, cost.cost)) {
+                        val autoTapSolution = manaSolver.solve(state, playerId, cost.cost)
+                        val autoTapPreview = autoTapSolution?.sources?.map { it.entityId }
+                        result.add(LegalActionInfo(
+                            actionType = "ActivateAbility",
+                            description = "Turn face-up (${cost.description})",
+                            action = TurnFaceUp(playerId, entityId),
+                            manaCostString = cost.cost.toString(),
+                            autoTapPreview = autoTapPreview
+                        ))
+                    }
+                }
+                is PayCost.PayLife -> {
+                    // Life-payment morph is always available (paying life that kills you is legal)
+                    result.add(LegalActionInfo(
+                        actionType = "ActivateAbility",
+                        description = "Turn face-up (${cost.description})",
+                        action = TurnFaceUp(playerId, entityId),
+                    ))
+                }
+                else -> {
+                    // Future morph cost types — skip for now
+                }
             }
         }
 

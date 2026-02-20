@@ -1,0 +1,40 @@
+{
+    "name": "Chartooth Cougar",
+    "manaCost": "{5}{R}",
+    "typeLine": "Creature — Cat Beast",
+    "oracleText": "{R}: Chartooth Cougar gets +1/+0 until end of turn.\nMountaincycling {2}",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "keywordAbilities": [
+        {
+            "type": "Typecycling",
+            "subtype": "Mountain",
+            "cost": "{2}"
+        }
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_8",
+                "cost": {
+                    "type": "CostMana",
+                    "cost": "{R}"
+                },
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": 1,
+                    "toughnessModifier": 0,
+                    "target": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "84",
+        "artist": "Tony Szczudlo",
+        "flavorText": "The cats of Otaria are nothing if not adaptable.",
+        "imageUri": "https://cards.scryfall.io/large/front/6/b/6b2c9c07-c3db-46ca-a204-b710c3a34ae9.jpg?1562530181"
+    }
+}

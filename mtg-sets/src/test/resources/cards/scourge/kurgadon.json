@@ -1,0 +1,35 @@
+{
+    "name": "Kurgadon",
+    "manaCost": "{4}{G}",
+    "typeLine": "Creature — Beast",
+    "oracleText": "Whenever you cast a creature spell with mana value 6 or greater, put three +1/+1 counters on Kurgadon.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_7",
+                "trigger": {
+                    "type": "SpellCast",
+                    "spellType": "CREATURE",
+                    "manaValueAtLeast": 6
+                },
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "+1/+1",
+                    "count": 3,
+                    "target": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "121",
+        "rarity": "UNCOMMON",
+        "artist": "Arnie Swekel",
+        "flavorText": "The Mirari's influence turned even the gentlest creatures into savage behemoths.",
+        "imageUri": "https://cards.scryfall.io/large/front/5/2/52a1758c-849a-4de3-b674-857c3c9bf399.jpg?1562529070"
+    }
+}

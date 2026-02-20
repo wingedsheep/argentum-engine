@@ -61,6 +61,7 @@ class PayOrSufferExecutor(
             is PayCost.Discard -> handleDiscardCost(state, effect, context, cost, sourceId, sourceCard.name, controllerId)
             is PayCost.Sacrifice -> handleSacrificeCost(state, effect, context, cost, sourceId, sourceCard.name, controllerId)
             is PayCost.PayLife -> handlePayLifeCost(state, effect, context, cost, sourceId, sourceCard.name, controllerId)
+            is PayCost.Mana -> ExecutionResult.error(state, "Mana payment for PayOrSuffer not yet implemented")
         }
     }
 

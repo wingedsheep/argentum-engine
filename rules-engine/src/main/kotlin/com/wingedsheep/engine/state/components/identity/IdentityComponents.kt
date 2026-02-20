@@ -10,6 +10,7 @@ import com.wingedsheep.sdk.core.TypeLine
 import com.wingedsheep.sdk.model.CreatureStats
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.Effect
+import com.wingedsheep.sdk.scripting.PayCost
 import kotlinx.serialization.Serializable
 
 /**
@@ -111,7 +112,7 @@ data class ProtectionComponent(
  */
 @Serializable
 data class MorphDataComponent(
-    val morphCost: ManaCost,
+    val morphCost: PayCost,
     val originalCardDefinitionId: String
 ) : Component
 

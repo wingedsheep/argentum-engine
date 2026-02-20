@@ -2,13 +2,13 @@
 
 **Set Size:** 143 cards
 **Release Date:** May 26, 2003
-**Implemented:** 28 / 143
+**Implemented:** 29 / 143
 
 | Color | Count |
 |-------|-------|
 | White | 5 |
 | Blue | 5 |
-| Black | 5 |
+| Black | 6 |
 | Red | 6 |
 | Green | 5 |
 | Multicolor | 1 |
@@ -158,4 +158,4 @@
 - [ ] Woodcloaker
 - [ ] Xantid Swarm
 - [ ] Zealous Inquisitor
-- [ ] Zombie Cutthroat
+- [x] Zombie Cutthroat

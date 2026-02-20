@@ -10,7 +10,7 @@
     "script": {
         "triggeredAbilities": [
             {
-                "id": "ability_5",
+                "id": "ability_6",
                 "trigger": "EntersBattlefield",
                 "effect": {
                     "type": "May",

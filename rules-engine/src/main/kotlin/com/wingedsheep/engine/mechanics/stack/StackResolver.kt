@@ -109,7 +109,7 @@ class StackResolver(
             val morphAbility = cardDef?.keywordAbilities?.filterIsInstance<KeywordAbility.Morph>()?.firstOrNull()
             if (morphAbility != null) {
                 updated = updated.with(MorphDataComponent(
-                    morphCost = morphAbility.cost,
+                    morphCost = morphAbility.morphCost,
                     originalCardDefinitionId = cardComponent.cardDefinitionId
                 ))
             }

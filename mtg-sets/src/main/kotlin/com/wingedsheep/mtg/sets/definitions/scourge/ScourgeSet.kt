@@ -83,6 +83,7 @@ object ScourgeSet {
         TwistedAbomination,
         UndeadWarchief,
         VengefulDead,
+        ZombieCutthroat,
 
         // Black sorceries
         Unburden,

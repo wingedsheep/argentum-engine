@@ -1,0 +1,26 @@
+{
+    "name": "Shoreline Ranger",
+    "manaCost": "{5}{U}",
+    "typeLine": "Creature — Bird Soldier",
+    "oracleText": "Flying\nIslandcycling {2}",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 4
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Typecycling",
+            "subtype": "Island",
+            "cost": "{2}"
+        }
+    ],
+    "metadata": {
+        "collectorNumber": "51",
+        "artist": "Glen Angus",
+        "flavorText": "It waits for the weather to change before changing its tactics.",
+        "imageUri": "https://cards.scryfall.io/large/front/e/e/eed813c4-fff0-43f1-bc62-cbc3a126d600.jpg?1562536698"
+    }
+}

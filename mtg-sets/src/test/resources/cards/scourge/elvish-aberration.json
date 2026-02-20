@@ -1,0 +1,38 @@
+{
+    "name": "Elvish Aberration",
+    "manaCost": "{5}{G}",
+    "typeLine": "Creature — Elf Mutant",
+    "oracleText": "{T}: Add {G}{G}{G}.\nForestcycling {2}",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 5
+    },
+    "keywordAbilities": [
+        {
+            "type": "Typecycling",
+            "subtype": "Forest",
+            "cost": "{2}"
+        }
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_5",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddMana",
+                    "color": "GREEN",
+                    "amount": 3
+                },
+                "isManaAbility": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "118",
+        "rarity": "UNCOMMON",
+        "artist": "Anthony S. Waters",
+        "flavorText": "\"It once tended the forest. Now it feeds on it.\"\n—Wirewood tracker",
+        "imageUri": "https://cards.scryfall.io/large/front/1/3/137d326f-83e1-449a-b934-71c7986c64e7.jpg?1562525888"
+    }
+}
