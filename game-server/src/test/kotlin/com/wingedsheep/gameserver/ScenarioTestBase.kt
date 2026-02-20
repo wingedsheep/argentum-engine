@@ -455,6 +455,21 @@ abstract class ScenarioTestBase : FunSpec() {
         }
 
         /**
+         * Typecycle a card by name from a player's hand.
+         * The player pays the typecycling cost, discards the card, and searches their
+         * library for a card of the specified type.
+         */
+        fun typecycleCard(playerNumber: Int, cardName: String): ExecutionResult {
+            val playerId = if (playerNumber == 1) player1Id else player2Id
+            val hand = state.getHand(playerId)
+            val cardId = hand.find { entityId ->
+                state.getEntity(entityId)?.get<CardComponent>()?.name == cardName
+            } ?: error("Card '$cardName' not found in player $playerNumber's hand")
+
+            return execute(TypecycleCard(playerId, cardId))
+        }
+
+        /**
          * Pass priority for the player who currently has it.
          */
         fun passPriority(): ExecutionResult {

@@ -106,7 +106,7 @@ class AutoPassManager {
                     // Permanent spells (creatures, enchantments, artifacts, planeswalkers):
                     // Auto-pass if we have no meaningful instant-speed responses
                     val hasResponses = meaningfulActions.any {
-                        it.actionType == "CastSpell" || it.actionType == "ActivateAbility" || it.actionType == "CycleCard"
+                        it.actionType == "CastSpell" || it.actionType == "ActivateAbility" || it.actionType == "CycleCard" || it.actionType == "TypecycleCard"
                     }
                     if (!hasResponses) {
                         logger.debug("AUTO-PASS: Opponent's permanent spell on stack, no responses")
@@ -148,7 +148,7 @@ class AutoPassManager {
         // by shouldAutoPassOnOpponentTurn which only stops if you have blockers.
         if (state.step == Step.DECLARE_BLOCKERS && isMyTurn) {
             val hasInstantSpeedResponses = meaningfulActions.any { action ->
-                (action.actionType == "CastSpell" || action.actionType == "ActivateAbility" || action.actionType == "CycleCard") &&
+                (action.actionType == "CastSpell" || action.actionType == "ActivateAbility" || action.actionType == "CycleCard" || action.actionType == "TypecycleCard") &&
                 (!action.requiresTargets || !action.validTargets.isNullOrEmpty())
             }
 
@@ -237,8 +237,8 @@ class AutoPassManager {
                 return@filter action.isAffordable
             }
 
-            // Cycling is meaningful only if the player can afford it
-            if (action.actionType == "CycleCard") {
+            // Cycling/typecycling is meaningful only if the player can afford it
+            if (action.actionType == "CycleCard" || action.actionType == "TypecycleCard") {
                 return@filter action.isAffordable
             }
 
@@ -299,7 +299,7 @@ class AutoPassManager {
 
             Step.DECLARE_BLOCKERS -> {
                 val hasResponses = meaningfulActions.any { action ->
-                    (action.actionType == "CastSpell" || action.actionType == "ActivateAbility" || action.actionType == "CycleCard") &&
+                    (action.actionType == "CastSpell" || action.actionType == "ActivateAbility" || action.actionType == "CycleCard" || action.actionType == "TypecycleCard") &&
                     (!action.requiresTargets || !action.validTargets.isNullOrEmpty())
                 }
                 if (hasResponses) {
@@ -351,7 +351,7 @@ class AutoPassManager {
 
         // Check if we have instant-speed responses (spells/abilities, not blockers)
         val hasInstantSpeedResponses = meaningfulActions.any { action ->
-            (action.actionType == "CastSpell" || action.actionType == "ActivateAbility" || action.actionType == "CycleCard") &&
+            (action.actionType == "CastSpell" || action.actionType == "ActivateAbility" || action.actionType == "CycleCard" || action.actionType == "TypecycleCard") &&
             (!action.requiresTargets || !action.validTargets.isNullOrEmpty())
         }
 

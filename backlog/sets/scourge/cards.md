@@ -144,7 +144,7 @@
 - [ ] Torrent of Fire
 - [ ] Trap Digger
 - [x] Treetop Scout
-- [ ] Twisted Abomination
+- [x] Twisted Abomination
 - [x] Unburden
 - [ ] Uncontrolled Infestation
 - [x] Undead Warchief

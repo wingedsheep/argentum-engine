@@ -347,34 +347,48 @@ class LegalActionsCalculator(
             }
         }
 
-        // Check for cycling abilities on cards in hand
+        // Check for cycling and typecycling abilities on cards in hand
         for (cardId in hand) {
             val cardComponent = state.getEntity(cardId)?.get<CardComponent>() ?: continue
-            val cardDef = cardRegistry.getCard(cardComponent.name)
-            if (cardDef == null) {
-                continue
-            }
+            val cardDef = cardRegistry.getCard(cardComponent.name) ?: continue
 
-            // Check for cycling ability - log at info level to ensure visibility
             val allAbilities = cardDef.keywordAbilities
             val cyclingAbility = allAbilities
                 .filterIsInstance<com.wingedsheep.sdk.scripting.KeywordAbility.Cycling>()
                 .firstOrNull()
-            if (cyclingAbility == null) {
+            val typecyclingAbility = allAbilities
+                .filterIsInstance<com.wingedsheep.sdk.scripting.KeywordAbility.Typecycling>()
+                .firstOrNull()
+
+            if (cyclingAbility == null && typecyclingAbility == null) {
                 continue
             }
 
-            // Add cycling action (affordable or not) - client shows greyed out if unaffordable
-            val canAffordCycling = manaSolver.canPay(state, playerId, cyclingAbility.cost)
-            result.add(LegalActionInfo(
-                actionType = "CycleCard",
-                description = "Cycle ${cardComponent.name}",
-                action = CycleCard(playerId, cardId),
-                isAffordable = canAffordCycling,
-                manaCostString = cyclingAbility.cost.toString()
-            ))
+            // Add cycling action if present
+            if (cyclingAbility != null) {
+                val canAffordCycling = manaSolver.canPay(state, playerId, cyclingAbility.cost)
+                result.add(LegalActionInfo(
+                    actionType = "CycleCard",
+                    description = "Cycle ${cardComponent.name}",
+                    action = CycleCard(playerId, cardId),
+                    isAffordable = canAffordCycling,
+                    manaCostString = cyclingAbility.cost.toString()
+                ))
+            }
 
-            // For cards with cycling, also add the normal cast option (matching morph pattern)
+            // Add typecycling action if present
+            if (typecyclingAbility != null) {
+                val canAffordTypecycling = manaSolver.canPay(state, playerId, typecyclingAbility.cost)
+                result.add(LegalActionInfo(
+                    actionType = "TypecycleCard",
+                    description = "${typecyclingAbility.type}cycling ${cardComponent.name}",
+                    action = TypecycleCard(playerId, cardId),
+                    isAffordable = canAffordTypecycling,
+                    manaCostString = typecyclingAbility.cost.toString()
+                ))
+            }
+
+            // For cards with cycling/typecycling, also add the normal cast option (matching morph pattern)
             // This ensures the player sees both options in the cast modal
             if (!cardComponent.typeLine.isLand) {
                 val isInstant = cardComponent.typeLine.isInstant

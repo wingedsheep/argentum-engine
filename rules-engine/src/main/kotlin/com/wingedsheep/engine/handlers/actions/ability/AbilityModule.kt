@@ -14,6 +14,7 @@ import com.wingedsheep.engine.handlers.actions.ActionHandlerModule
 class AbilityModule(private val context: ActionContext) : ActionHandlerModule {
     override fun handlers(): List<ActionHandler<*>> = listOf(
         ActivateAbilityHandler.create(context),
-        CycleCardHandler.create(context)
+        CycleCardHandler.create(context),
+        TypecycleCardHandler.create(context)
     )
 }

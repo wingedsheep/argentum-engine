@@ -144,6 +144,24 @@ data class CycleCard(
     val cardId: EntityId
 ) : GameAction
 
+/**
+ * Player typecycles a card from their hand.
+ *
+ * Typecycling (e.g., Swampcycling, Wizardcycling) is an activated ability from hand.
+ * The player pays the typecycling cost, discards the card, then searches their
+ * library for a card of the specified type, reveals it, puts it into their hand,
+ * then shuffles.
+ *
+ * @property playerId The player typecycling the card
+ * @property cardId The card being typecycled
+ */
+@Serializable
+@SerialName("TypecycleCard")
+data class TypecycleCard(
+    override val playerId: EntityId,
+    val cardId: EntityId
+) : GameAction
+
 // =============================================================================
 // Land Actions
 // =============================================================================

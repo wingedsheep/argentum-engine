@@ -331,7 +331,7 @@ sealed interface KeywordAbility {
      */
     @SerialName("Typecycling")
     @Serializable
-    data class Typecycling(val type: String, val cost: ManaCost) : KeywordAbility {
+    data class Typecycling(@SerialName("subtype") val type: String, val cost: ManaCost) : KeywordAbility {
         override val description: String = "${type}cycling $cost"
     }
 
