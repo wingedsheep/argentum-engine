@@ -60,6 +60,21 @@ data object YouAttackedThisTurn : Condition {
 }
 
 // =============================================================================
+// Land Conditions
+// =============================================================================
+
+/**
+ * Condition: "If you've played a land this turn"
+ * Checks if the player has used any land drops this turn.
+ * Used for cards like Rock Jockey.
+ */
+@SerialName("PlayedLandThisTurn")
+@Serializable
+data object PlayedLandThisTurn : Condition {
+    override val description: String = "if you've played a land this turn"
+}
+
+// =============================================================================
 // Stack Conditions
 // =============================================================================
 

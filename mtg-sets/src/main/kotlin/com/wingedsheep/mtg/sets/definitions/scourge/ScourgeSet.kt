@@ -61,6 +61,7 @@ object ScourgeSet {
         // Red creatures
         ChartoothCougar,
         GoblinWarchief,
+        RockJockey,
         SiegeGangCommander,
 
         // Red enchantments

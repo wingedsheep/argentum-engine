@@ -16,7 +16,7 @@ import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.GiveControlToTargetPlayerEffect
 import com.wingedsheep.sdk.scripting.triggers.OnEnchantedCreatureControllerUpkeep
-import com.wingedsheep.sdk.scripting.PayCost
+import com.wingedsheep.sdk.scripting.costs.PayCost
 import com.wingedsheep.sdk.scripting.effects.PayOrSufferEffect
 import com.wingedsheep.sdk.scripting.TriggeredAbility
 import com.wingedsheep.sdk.scripting.targets.TargetCreature

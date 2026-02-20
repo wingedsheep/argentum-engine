@@ -88,6 +88,17 @@ data class TakeExtraTurnEffect(
 }
 
 /**
+ * Prevent the controller from playing lands for the rest of this turn.
+ * Sets the player's remaining land drops to 0.
+ * Used for cards like Rock Jockey.
+ */
+@SerialName("PreventLandPlaysThisTurn")
+@Serializable
+data object PreventLandPlaysThisTurnEffect : Effect {
+    override val description: String = "You can't play lands this turn"
+}
+
+/**
  * Create a global triggered ability that lasts until end of turn.
  * Used for spells like False Cure that create delayed triggered abilities
  * not attached to any specific permanent.

@@ -5,7 +5,7 @@ import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
 import com.wingedsheep.sdk.core.Zone
-import com.wingedsheep.sdk.scripting.ZonePlacement
+import com.wingedsheep.sdk.scripting.effects.ZonePlacement
 import com.wingedsheep.sdk.scripting.targets.TargetCreature
 
 /**

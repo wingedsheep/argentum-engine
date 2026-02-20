@@ -9,6 +9,7 @@ import com.wingedsheep.engine.state.components.combat.BlockingComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.identity.LifeTotalComponent
+import com.wingedsheep.engine.state.components.player.LandDropsComponent
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.scripting.*
 import com.wingedsheep.sdk.scripting.conditions.APlayerControlsMostOfSubtype
@@ -39,6 +40,7 @@ import com.wingedsheep.sdk.scripting.conditions.OpponentControlsCreature
 import com.wingedsheep.sdk.scripting.conditions.OpponentControlsMoreCreatures
 import com.wingedsheep.sdk.scripting.conditions.OpponentControlsMoreLands
 import com.wingedsheep.sdk.scripting.conditions.OpponentSpellOnStack
+import com.wingedsheep.sdk.scripting.conditions.PlayedLandThisTurn
 import com.wingedsheep.sdk.scripting.conditions.SourceEnteredThisTurn
 import com.wingedsheep.sdk.scripting.conditions.SourceHasDealtCombatDamageToPlayer
 import com.wingedsheep.sdk.scripting.conditions.SourceHasDealtDamage
@@ -113,6 +115,7 @@ class ConditionEvaluator {
             // Turn conditions
             is IsYourTurn -> evaluateIsYourTurn(state, context)
             is IsNotYourTurn -> !evaluateIsYourTurn(state, context)
+            is PlayedLandThisTurn -> evaluatePlayedLandThisTurn(state, context)
             is YouAttackedThisTurn -> evaluateYouAttackedThisTurn(state, context)
             is YouWereAttackedThisStep -> evaluateYouWereAttackedThisStep(state, context)
             is YouWereDealtCombatDamageThisTurn -> evaluateYouWereDealtCombatDamageThisTurn(state, context)
@@ -288,6 +291,12 @@ class ConditionEvaluator {
 
     private fun evaluateIsYourTurn(state: GameState, context: EffectContext): Boolean {
         return state.activePlayerId == context.controllerId
+    }
+
+    private fun evaluatePlayedLandThisTurn(state: GameState, context: EffectContext): Boolean {
+        val landDrops = state.getEntity(context.controllerId)?.get<LandDropsComponent>()
+            ?: return false
+        return landDrops.remaining < landDrops.maxPerTurn
     }
 
     private fun evaluateSourceEnteredThisTurn(state: GameState, context: EffectContext): Boolean {

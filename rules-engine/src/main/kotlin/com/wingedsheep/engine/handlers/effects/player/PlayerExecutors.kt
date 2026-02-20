@@ -14,6 +14,7 @@ class PlayerExecutors(
         AddCombatPhaseExecutor(),
         CreateGlobalTriggeredAbilityUntilEndOfTurnExecutor(),
         PlayAdditionalLandsExecutor(),
+        PreventLandPlaysThisTurnExecutor(),
         SecretBidExecutor(decisionHandler),
         SkipCombatPhasesExecutor(),
         SkipUntapExecutor(),

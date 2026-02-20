@@ -22,7 +22,7 @@ import com.wingedsheep.engine.state.components.identity.ChosenCreatureTypeCompon
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.identity.FaceDownComponent
 import com.wingedsheep.engine.state.components.identity.MorphDataComponent
-import com.wingedsheep.sdk.scripting.PayCost
+import com.wingedsheep.sdk.scripting.costs.PayCost
 import com.wingedsheep.engine.state.components.identity.TextReplacementComponent
 import com.wingedsheep.engine.state.components.player.LandDropsComponent
 import com.wingedsheep.engine.state.components.stack.ChosenTarget

@@ -10,6 +10,7 @@ import com.wingedsheep.sdk.model.CardScript
 import com.wingedsheep.sdk.model.Deck
 import com.wingedsheep.sdk.scripting.*
 import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
+import com.wingedsheep.sdk.scripting.effects.ZonePlacement
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.triggers.OnDeath

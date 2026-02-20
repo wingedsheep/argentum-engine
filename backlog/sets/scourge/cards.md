@@ -3,7 +3,7 @@
 
 **Set Size:** 143 cards
 **Release Date:** May 26, 2003
-**Implemented:** 44 / 143
+**Implemented:** 45 / 143
 
 | Color | Count |
 |-------|-------|
@@ -120,7 +120,7 @@
 - [x] Recuperate
 - [ ] Reward the Faithful
 - [x] Riptide Survivor
-- [ ] Rock Jockey
+- [x] Rock Jockey
 - [ ] Root Elemental
 - [x] Rush of Knowledge
 - [ ] Scattershot

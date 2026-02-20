@@ -12,7 +12,7 @@ import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.CardScript
 import com.wingedsheep.sdk.model.Deck
-import com.wingedsheep.sdk.scripting.ChangeSpellTargetEffect
+import com.wingedsheep.sdk.scripting.effects.ChangeSpellTargetEffect
 import com.wingedsheep.sdk.scripting.targets.TargetSpell
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe

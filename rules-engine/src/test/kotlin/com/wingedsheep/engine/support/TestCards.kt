@@ -13,6 +13,7 @@ import com.wingedsheep.sdk.scripting.effects.AddAnyColorManaEffect
 import com.wingedsheep.sdk.scripting.effects.AddColorlessManaEffect
 import com.wingedsheep.sdk.scripting.effects.AddManaEffect
 import com.wingedsheep.sdk.scripting.effects.CompositeEffect
+import com.wingedsheep.sdk.scripting.effects.CounterSpellEffect
 import com.wingedsheep.sdk.scripting.effects.DealDamageEffect
 import com.wingedsheep.sdk.scripting.effects.DrawCardsEffect
 import com.wingedsheep.sdk.scripting.effects.GainLifeEffect

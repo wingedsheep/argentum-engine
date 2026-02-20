@@ -10,7 +10,7 @@ import com.wingedsheep.sdk.scripting.Duration
 import com.wingedsheep.sdk.scripting.effects.Effect
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
-import com.wingedsheep.sdk.scripting.PayCost
+import com.wingedsheep.sdk.scripting.costs.PayCost
 import com.wingedsheep.sdk.scripting.effects.SearchDestination
 import com.wingedsheep.sdk.scripting.effects.Mode
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
@@ -414,7 +414,7 @@ data class MoveCollectionOrderContinuation(
     val cards: List<EntityId>,
     val destinationZone: com.wingedsheep.sdk.core.Zone,
     val destinationPlayerId: EntityId,
-    val placement: com.wingedsheep.sdk.scripting.ZonePlacement = com.wingedsheep.sdk.scripting.ZonePlacement.Top
+    val placement: com.wingedsheep.sdk.scripting.effects.ZonePlacement = com.wingedsheep.sdk.scripting.effects.ZonePlacement.Top
 ) : ContinuationFrame
 
 /**

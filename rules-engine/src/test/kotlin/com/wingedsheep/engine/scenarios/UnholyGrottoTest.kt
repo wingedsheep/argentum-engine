@@ -16,7 +16,7 @@ import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import com.wingedsheep.sdk.scripting.TimingRule
-import com.wingedsheep.sdk.scripting.ZonePlacement
+import com.wingedsheep.sdk.scripting.effects.ZonePlacement
 import com.wingedsheep.sdk.scripting.targets.TargetObject
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.collections.shouldContain

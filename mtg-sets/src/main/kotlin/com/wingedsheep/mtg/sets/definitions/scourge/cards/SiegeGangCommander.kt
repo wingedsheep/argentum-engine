@@ -5,7 +5,7 @@ import com.wingedsheep.sdk.dsl.Costs
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.CreateTokenEffect
+import com.wingedsheep.sdk.scripting.effects.CreateTokenEffect
 import com.wingedsheep.sdk.scripting.effects.DealDamageEffect
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.GameObjectFilter
