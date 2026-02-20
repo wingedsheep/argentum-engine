@@ -18,8 +18,8 @@ import io.kotest.matchers.shouldBe
  * - Aurification ({2}{W}{W}): Enchantment
  *   Whenever a creature deals damage to you, put a gold counter on it.
  *   Each creature with a gold counter on it is a Wall in addition to its
- *   other creature types and has defender.
- *   When Aurification leaves the battlefield, remove all gold counters
+ *   other creature types and has defender. (Those creatures can't attack.)
+ *   When this enchantment leaves the battlefield, remove all gold counters
  *   from all creatures.
  */
 class AurificationScenarioTest : ScenarioTestBase() {
