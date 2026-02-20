@@ -72,7 +72,7 @@ export function DecisionUI() {
   if (pendingDecision.type === 'OrderObjectsDecision') {
     // Combat phase ordering uses dedicated blocker ordering UI
     if (pendingDecision.context.phase === 'COMBAT') {
-      return <OrderBlockersUI decision={pendingDecision} responsive={responsive} />
+      return <OrderBlockersUI key={pendingDecision.id} decision={pendingDecision} responsive={responsive} />
     }
     // Other ordering decisions could use a generic ordering UI (not yet implemented)
     return null
