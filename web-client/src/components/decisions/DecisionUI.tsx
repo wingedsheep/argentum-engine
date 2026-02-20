@@ -65,7 +65,7 @@ export function DecisionUI() {
 
   // Handle ReorderLibraryDecision with dedicated UI
   if (pendingDecision.type === 'ReorderLibraryDecision') {
-    return <ReorderCardsUI decision={pendingDecision} responsive={responsive} />
+    return <ReorderCardsUI key={pendingDecision.id} decision={pendingDecision} responsive={responsive} />
   }
 
   // Handle OrderObjectsDecision (e.g., damage assignment order for blockers)

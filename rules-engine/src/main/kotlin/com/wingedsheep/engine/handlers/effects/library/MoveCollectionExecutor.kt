@@ -130,10 +130,12 @@ class MoveCollectionExecutor(
             state.getEntity(sourceId)?.get<CardComponent>()?.name
         }
 
+        val isOwnLibrary = destPlayerId == context.controllerId
+        val libraryOwner = if (isOwnLibrary) "your" else "their"
         val promptText = when (placement) {
-            ZonePlacement.Bottom -> "Put the revealed cards on the bottom of your library in any order."
-            else -> if (cards.size == 1) "Look at the top card of your library."
-                else "Look at the top ${cards.size} cards of your library. Put them back in any order."
+            ZonePlacement.Bottom -> "Put the revealed cards on the bottom of $libraryOwner library in any order."
+            else -> if (cards.size == 1) "Look at the top card of $libraryOwner library."
+                else "Look at the top ${cards.size} cards of $libraryOwner library. Put them back in any order."
         }
 
         val decision = ReorderLibraryDecision(
