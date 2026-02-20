@@ -38,5 +38,7 @@ export function getScryfallFallbackUrl(
   cardName: string,
   version: 'small' | 'normal' | 'large' = 'normal'
 ): string {
-  return `https://api.scryfall.com/cards/named?exact=${encodeURIComponent(cardName)}&format=image&version=${version}`
+  // Token names have a " Token" suffix (e.g., "Insect Token") that Scryfall doesn't use
+  const scryfallName = cardName.endsWith(' Token') ? cardName.slice(0, -6) : cardName
+  return `https://api.scryfall.com/cards/named?exact=${encodeURIComponent(scryfallName)}&format=image&version=${version}`
 }
