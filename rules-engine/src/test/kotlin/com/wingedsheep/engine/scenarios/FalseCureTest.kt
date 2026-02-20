@@ -13,7 +13,8 @@ import com.wingedsheep.sdk.scripting.values.DynamicAmount
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.effects.GainLifeEffect
 import com.wingedsheep.sdk.scripting.effects.LoseLifeEffect
-import com.wingedsheep.sdk.scripting.triggers.OnLifeGain
+import com.wingedsheep.sdk.scripting.GameEvent
+import com.wingedsheep.sdk.scripting.TriggerBinding
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.TriggeredAbility
 import io.kotest.core.spec.style.FunSpec
@@ -43,7 +44,8 @@ class FalseCureTest : FunSpec({
         script = CardScript.spell(
             effect = CreateGlobalTriggeredAbilityUntilEndOfTurnEffect(
                 ability = TriggeredAbility.create(
-                    trigger = OnLifeGain(controllerOnly = false),
+                    trigger = GameEvent.LifeGainEvent(Player.Each),
+                    binding = TriggerBinding.ANY,
                     effect = LoseLifeEffect(
                         amount = DynamicAmount.Multiply(DynamicAmount.TriggerLifeGainAmount, 2),
                         target = EffectTarget.PlayerRef(Player.TriggeringPlayer)

@@ -3,7 +3,6 @@ package com.wingedsheep.sdk.scripting
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.scripting.conditions.Condition
 import com.wingedsheep.sdk.scripting.effects.Effect
-import com.wingedsheep.sdk.scripting.triggers.Trigger
 import com.wingedsheep.sdk.scripting.targets.TargetRequirement
 import kotlinx.serialization.Serializable
 
@@ -19,7 +18,8 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class TriggeredAbility(
     val id: AbilityId,
-    val trigger: Trigger,
+    val trigger: GameEvent,
+    val binding: TriggerBinding = TriggerBinding.SELF,
     val effect: Effect,
     val optional: Boolean = false,
     val targetRequirement: TargetRequirement? = null,
@@ -58,7 +58,8 @@ data class TriggeredAbility(
 
     companion object {
         fun create(
-            trigger: Trigger,
+            trigger: GameEvent,
+            binding: TriggerBinding = TriggerBinding.SELF,
             effect: Effect,
             optional: Boolean = false,
             targetRequirement: TargetRequirement? = null,
@@ -70,6 +71,7 @@ data class TriggeredAbility(
             TriggeredAbility(
                 id = AbilityId.generate(),
                 trigger = trigger,
+                binding = binding,
                 effect = effect,
                 optional = optional,
                 targetRequirement = targetRequirement,

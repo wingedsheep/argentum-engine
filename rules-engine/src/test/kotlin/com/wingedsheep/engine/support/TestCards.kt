@@ -21,8 +21,7 @@ import com.wingedsheep.sdk.scripting.effects.ModifyStatsEffect
 import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
-import com.wingedsheep.sdk.scripting.triggers.OnDeath
-import com.wingedsheep.sdk.scripting.triggers.OnTurnFaceUp
+import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.scripting.targets.AnyTarget
 import com.wingedsheep.sdk.scripting.targets.TargetCreature
 import com.wingedsheep.sdk.scripting.targets.TargetSpell
@@ -100,7 +99,8 @@ object TestCards {
         oracleText = "When this creature dies, you gain 3 life.",
         script = CardScript.creature(
             TriggeredAbility.create(
-                trigger = OnDeath(selfOnly = true),
+                trigger = GameEvent.ZoneChangeEvent(from = Zone.BATTLEFIELD, to = Zone.GRAVEYARD),
+                binding = TriggerBinding.SELF,
                 effect = GainLifeEffect(3)
             )
         )
@@ -465,7 +465,8 @@ object TestCards {
             triggeredAbilities = listOf(
                 TriggeredAbility(
                     id = AbilityId("morph-trigger-draw"),
-                    trigger = OnTurnFaceUp(),
+                    trigger = GameEvent.TurnFaceUpEvent,
+                    binding = TriggerBinding.SELF,
                     effect = DrawCardsEffect(1)
                 )
             )

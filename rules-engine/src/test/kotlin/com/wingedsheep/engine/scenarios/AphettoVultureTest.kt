@@ -13,7 +13,6 @@ import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
 import com.wingedsheep.sdk.scripting.effects.ZonePlacement
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
-import com.wingedsheep.sdk.scripting.triggers.OnDeath
 import com.wingedsheep.sdk.scripting.targets.TargetObject
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.collections.shouldContain
@@ -43,7 +42,8 @@ class AphettoVultureTest : FunSpec({
         keywords = setOf(Keyword.FLYING),
         script = CardScript.creature(
             TriggeredAbility.create(
-                trigger = OnDeath(selfOnly = true),
+                trigger = GameEvent.ZoneChangeEvent(from = Zone.BATTLEFIELD, to = Zone.GRAVEYARD),
+                binding = TriggerBinding.SELF,
                 effect = MoveToZoneEffect(
                     target = EffectTarget.ContextTarget(0),
                     destination = Zone.LIBRARY,

@@ -10,7 +10,7 @@ import com.wingedsheep.sdk.scripting.effects.GrantKeywordUntilEndOfTurnEffect
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.scripting.KeywordAbility
 import com.wingedsheep.sdk.scripting.effects.MayEffect
-import com.wingedsheep.sdk.scripting.triggers.OnCycle
+import com.wingedsheep.sdk.dsl.Triggers
 
 /**
  * Dirge of Dread
@@ -35,7 +35,7 @@ val DirgeOfDread = card("Dirge of Dread") {
     keywordAbility(KeywordAbility.cycling("{1}{B}"))
 
     triggeredAbility {
-        trigger = OnCycle(controllerOnly = true)
+        trigger = Triggers.YouCycle
         target = Targets.Creature
         effect = MayEffect(GrantKeywordUntilEndOfTurnEffect(Keyword.FEAR, EffectTarget.ContextTarget(0)))
     }

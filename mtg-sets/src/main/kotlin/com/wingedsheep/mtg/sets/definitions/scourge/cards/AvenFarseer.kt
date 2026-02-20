@@ -5,7 +5,9 @@ import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
-import com.wingedsheep.sdk.scripting.triggers.OnTurnFaceUp
+import com.wingedsheep.sdk.scripting.GameEvent.TurnFaceUpEvent
+import com.wingedsheep.sdk.scripting.TriggerBinding
+import com.wingedsheep.sdk.scripting.TriggerSpec
 
 /**
  * Aven Farseer
@@ -25,7 +27,7 @@ val AvenFarseer = card("Aven Farseer") {
     keywords(Keyword.FLYING)
 
     triggeredAbility {
-        trigger = OnTurnFaceUp(selfOnly = false)
+        trigger = TriggerSpec(TurnFaceUpEvent, TriggerBinding.ANY)
         effect = Effects.ModifyStats(2, 2, EffectTarget.Self)
     }
 

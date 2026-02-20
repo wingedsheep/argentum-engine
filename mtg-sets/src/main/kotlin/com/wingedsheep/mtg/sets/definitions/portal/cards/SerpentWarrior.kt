@@ -4,7 +4,7 @@ import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.effects.LoseLifeEffect
-import com.wingedsheep.sdk.scripting.triggers.OnEnterBattlefield
+import com.wingedsheep.sdk.dsl.Triggers
 
 /**
  * Serpent Warrior
@@ -20,7 +20,7 @@ val SerpentWarrior = card("Serpent Warrior") {
     toughness = 3
 
     triggeredAbility {
-        trigger = OnEnterBattlefield()
+        trigger = Triggers.EntersBattlefield
         effect = LoseLifeEffect(3, EffectTarget.Controller)
     }
 

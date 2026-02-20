@@ -10,8 +10,11 @@
     "script": {
         "triggeredAbilities": [
             {
-                "id": "ability_9",
-                "trigger": "EntersBattlefield",
+                "id": "ability_13",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
                 "effect": {
                     "type": "CreateToken",
                     "count": 3,
@@ -29,7 +32,7 @@
         ],
         "activatedAbilities": [
             {
-                "id": "ability_10",
+                "id": "ability_14",
                 "cost": {
                     "type": "CostComposite",
                     "costs": [

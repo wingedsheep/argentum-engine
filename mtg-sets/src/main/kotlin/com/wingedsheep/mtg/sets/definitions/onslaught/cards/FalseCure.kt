@@ -6,9 +6,9 @@ import com.wingedsheep.sdk.scripting.effects.CreateGlobalTriggeredAbilityUntilEn
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.effects.LoseLifeEffect
-import com.wingedsheep.sdk.scripting.triggers.OnLifeGain
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.TriggeredAbility
+import com.wingedsheep.sdk.dsl.Triggers
 
 /**
  * False Cure
@@ -24,7 +24,8 @@ val FalseCure = card("False Cure") {
     spell {
         effect = CreateGlobalTriggeredAbilityUntilEndOfTurnEffect(
             ability = TriggeredAbility.create(
-                trigger = OnLifeGain(controllerOnly = false),
+                trigger = Triggers.AnyPlayerGainsLife.event,
+                binding = Triggers.AnyPlayerGainsLife.binding,
                 effect = LoseLifeEffect(
                     amount = DynamicAmount.Multiply(DynamicAmount.TriggerLifeGainAmount, 2),
                     target = EffectTarget.PlayerRef(Player.TriggeringPlayer)

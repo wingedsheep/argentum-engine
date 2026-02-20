@@ -15,7 +15,8 @@ import com.wingedsheep.sdk.model.CardScript
 import com.wingedsheep.sdk.model.Deck
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.effects.MayEffect
-import com.wingedsheep.sdk.scripting.triggers.OnBecomesBlocked
+import com.wingedsheep.sdk.scripting.GameEvent
+import com.wingedsheep.sdk.scripting.TriggerBinding
 import com.wingedsheep.sdk.scripting.effects.RemoveFromCombatEffect
 import com.wingedsheep.sdk.scripting.effects.TapUntapEffect
 import com.wingedsheep.sdk.scripting.TriggeredAbility
@@ -44,7 +45,8 @@ class GustcloakHarrierTest : FunSpec({
         oracleText = "Flying\nWhenever Gustcloak Harrier becomes blocked, you may untap it and remove it from combat.",
         script = CardScript.creature(
             TriggeredAbility.create(
-                trigger = OnBecomesBlocked(selfOnly = true),
+                trigger = GameEvent.BecomesBlockedEvent,
+                binding = TriggerBinding.SELF,
                 effect = MayEffect(
                     TapUntapEffect(EffectTarget.Self, tap = false) then
                             RemoveFromCombatEffect(EffectTarget.Self)

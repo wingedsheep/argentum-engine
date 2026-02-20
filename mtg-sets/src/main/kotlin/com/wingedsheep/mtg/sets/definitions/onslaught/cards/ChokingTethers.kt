@@ -4,11 +4,11 @@ import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.KeywordAbility
-import com.wingedsheep.sdk.scripting.triggers.OnCycle
 import com.wingedsheep.sdk.scripting.effects.TapTargetCreaturesEffect
 import com.wingedsheep.sdk.scripting.effects.TapUntapEffect
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import com.wingedsheep.sdk.scripting.targets.TargetCreature
+import com.wingedsheep.sdk.dsl.Triggers
 
 /**
  * Choking Tethers
@@ -31,7 +31,7 @@ val ChokingTethers = card("Choking Tethers") {
     keywordAbility(KeywordAbility.cycling("{1}{U}"))
 
     triggeredAbility {
-        trigger = OnCycle(controllerOnly = true)
+        trigger = Triggers.YouCycle
         optional = true
         target = TargetCreature(filter = TargetFilter.Creature)
         effect = TapUntapEffect(EffectTarget.ContextTarget(0), tap = true)

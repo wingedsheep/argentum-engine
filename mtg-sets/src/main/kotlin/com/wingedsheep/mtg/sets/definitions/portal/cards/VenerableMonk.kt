@@ -3,7 +3,7 @@ package com.wingedsheep.mtg.sets.definitions.portal.cards
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.effects.GainLifeEffect
-import com.wingedsheep.sdk.scripting.triggers.OnEnterBattlefield
+import com.wingedsheep.sdk.dsl.Triggers
 
 /**
  * Venerable Monk
@@ -19,7 +19,7 @@ val VenerableMonk = card("Venerable Monk") {
     toughness = 2
 
     triggeredAbility {
-        trigger = OnEnterBattlefield()
+        trigger = Triggers.EntersBattlefield
         effect = GainLifeEffect(2)
     }
 

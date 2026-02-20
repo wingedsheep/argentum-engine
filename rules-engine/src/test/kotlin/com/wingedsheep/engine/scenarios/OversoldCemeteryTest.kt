@@ -14,7 +14,7 @@ import com.wingedsheep.sdk.scripting.effects.ConditionalEffect
 import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
-import com.wingedsheep.sdk.scripting.triggers.OnUpkeep
+import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.targets.TargetObject
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.collections.shouldContain
@@ -37,7 +37,8 @@ class OversoldCemeteryTest : FunSpec({
         script = CardScript.permanent(
             triggeredAbilities = listOf(
                 TriggeredAbility.create(
-                    trigger = OnUpkeep(controllerOnly = true),
+                    trigger = GameEvent.StepEvent(Step.UPKEEP, Player.You),
+                    binding = TriggerBinding.ANY,
                     optional = true,
                     triggerCondition = CreatureCardsInGraveyardAtLeast(4),
                     targetRequirement = TargetObject(

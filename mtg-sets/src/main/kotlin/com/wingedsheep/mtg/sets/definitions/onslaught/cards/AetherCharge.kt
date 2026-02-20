@@ -7,7 +7,11 @@ import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.scripting.effects.DealDamageEffect
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.effects.MayEffect
-import com.wingedsheep.sdk.scripting.triggers.OnCreatureWithSubtypeEnters
+import com.wingedsheep.sdk.core.Zone
+import com.wingedsheep.sdk.scripting.GameEvent.ZoneChangeEvent
+import com.wingedsheep.sdk.scripting.GameObjectFilter
+import com.wingedsheep.sdk.scripting.TriggerBinding
+import com.wingedsheep.sdk.scripting.TriggerSpec
 
 /**
  * Aether Charge
@@ -22,7 +26,10 @@ val AetherCharge = card("Aether Charge") {
     oracleText = "Whenever a Beast enters the battlefield under your control, you may have it deal 4 damage to target opponent."
 
     triggeredAbility {
-        trigger = OnCreatureWithSubtypeEnters(Subtype("Beast"), youControlOnly = true)
+        trigger = TriggerSpec(
+                ZoneChangeEvent(filter = GameObjectFilter.Creature.withSubtype(Subtype("Beast")).youControl(), to = Zone.BATTLEFIELD),
+                TriggerBinding.ANY
+            )
         target = Targets.Opponent
         effect = MayEffect(
             DealDamageEffect(4, EffectTarget.ContextTarget(0))

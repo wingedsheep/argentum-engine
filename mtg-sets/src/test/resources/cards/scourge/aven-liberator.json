@@ -22,8 +22,8 @@
     "script": {
         "triggeredAbilities": [
             {
-                "id": "ability_12",
-                "trigger": "TurnFaceUpTrigger",
+                "id": "ability_17",
+                "trigger": "TurnFaceUpEvent",
                 "effect": {
                     "type": "ChooseColorAndGrantProtectionToTarget",
                     "target": {

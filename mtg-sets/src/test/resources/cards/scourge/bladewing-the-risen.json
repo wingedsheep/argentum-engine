@@ -14,7 +14,10 @@
         "triggeredAbilities": [
             {
                 "id": "ability_2",
-                "trigger": "EntersBattlefield",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
                 "effect": {
                     "type": "MoveToZone",
                     "target": {

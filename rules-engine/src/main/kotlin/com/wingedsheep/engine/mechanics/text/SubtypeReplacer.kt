@@ -19,11 +19,6 @@ import com.wingedsheep.sdk.scripting.effects.MayEffect
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import com.wingedsheep.sdk.scripting.predicates.CardPredicate
-import com.wingedsheep.sdk.scripting.triggers.OnCreatureWithSubtypeDealsCombatDamageToPlayer
-import com.wingedsheep.sdk.scripting.triggers.OnCreatureWithSubtypeEnters
-import com.wingedsheep.sdk.scripting.triggers.OnOtherCreatureWithSubtypeDies
-import com.wingedsheep.sdk.scripting.triggers.OnOtherCreatureWithSubtypeEnters
-import com.wingedsheep.sdk.scripting.triggers.Trigger
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
 import com.wingedsheep.sdk.scripting.targets.*
 
@@ -43,7 +38,7 @@ object SubtypeReplacer {
         ability: TriggeredAbility,
         component: TextReplacementComponent
     ): TriggeredAbility {
-        val newTrigger = replaceTrigger(ability.trigger, component)
+        val newTrigger = replaceGameEvent(ability.trigger, component)
         val newEffect = replaceEffect(ability.effect, component)
         return if (newTrigger === ability.trigger && newEffect === ability.effect) {
             ability
@@ -53,32 +48,23 @@ object SubtypeReplacer {
     }
 
     /**
-     * Replace creature type references in a trigger.
+     * Replace creature type references in a GameEvent used as a trigger.
      */
-    fun replaceTrigger(trigger: Trigger, component: TextReplacementComponent): Trigger {
-        return when (trigger) {
-            is OnOtherCreatureWithSubtypeEnters -> {
-                val newSubtype = component.applyToSubtype(trigger.subtype)
-                if (newSubtype == trigger.subtype) trigger
-                else trigger.copy(subtype = newSubtype)
+    fun replaceGameEvent(event: GameEvent, component: TextReplacementComponent): GameEvent {
+        return when (event) {
+            is GameEvent.ZoneChangeEvent -> {
+                val newFilter = replaceGameObjectFilter(event.filter, component)
+                if (newFilter === event.filter) event
+                else event.copy(filter = newFilter)
             }
-            is OnOtherCreatureWithSubtypeDies -> {
-                val newSubtype = component.applyToSubtype(trigger.subtype)
-                if (newSubtype == trigger.subtype) trigger
-                else trigger.copy(subtype = newSubtype)
+            is GameEvent.DealsDamageEvent -> {
+                val filter = event.sourceFilter ?: return event
+                val newFilter = replaceGameObjectFilter(filter, component)
+                if (newFilter === filter) event
+                else event.copy(sourceFilter = newFilter)
             }
-            is OnCreatureWithSubtypeEnters -> {
-                val newSubtype = component.applyToSubtype(trigger.subtype)
-                if (newSubtype == trigger.subtype) trigger
-                else trigger.copy(subtype = newSubtype)
-            }
-            is OnCreatureWithSubtypeDealsCombatDamageToPlayer -> {
-                val newSubtype = component.applyToSubtype(trigger.subtype)
-                if (newSubtype == trigger.subtype) trigger
-                else trigger.copy(subtype = newSubtype)
-            }
-            // All other triggers don't reference creature types
-            else -> trigger
+            // All other event types don't reference creature types
+            else -> event
         }
     }
 

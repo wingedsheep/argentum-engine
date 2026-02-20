@@ -13,7 +13,9 @@ import com.wingedsheep.sdk.model.Deck
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.effects.FlipCoinEffect
 import com.wingedsheep.sdk.scripting.KeywordAbility
-import com.wingedsheep.sdk.scripting.triggers.OnUpkeep
+import com.wingedsheep.sdk.scripting.GameEvent
+import com.wingedsheep.sdk.scripting.TriggerBinding
+import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.TriggeredAbility
 import com.wingedsheep.sdk.scripting.effects.TurnFaceDownEffect
 import io.kotest.core.spec.style.FunSpec
@@ -41,7 +43,8 @@ class SkittishValeskTest : FunSpec({
         toughness = 5,
         script = CardScript.creature(
             TriggeredAbility.create(
-                trigger = OnUpkeep(controllerOnly = true),
+                trigger = GameEvent.StepEvent(Step.UPKEEP, Player.You),
+                binding = TriggerBinding.ANY,
                 effect = FlipCoinEffect(
                     lostEffect = TurnFaceDownEffect(EffectTarget.Self)
                 )

@@ -7,11 +7,14 @@ import com.wingedsheep.sdk.scripting.effects.AddCountersEffect
 import com.wingedsheep.sdk.scripting.AddCreatureTypeByCounter
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.GrantKeywordByCounter
-import com.wingedsheep.sdk.scripting.triggers.OnCreatureDealsDamageToYou
+import com.wingedsheep.sdk.dsl.Triggers
+import com.wingedsheep.sdk.scripting.GameEvent.DealsDamageEvent
+import com.wingedsheep.sdk.scripting.TriggerBinding
+import com.wingedsheep.sdk.scripting.TriggerSpec
 import com.wingedsheep.sdk.scripting.effects.ForEachInGroupEffect
-import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
-import com.wingedsheep.sdk.scripting.triggers.OnLeavesBattlefield
 import com.wingedsheep.sdk.scripting.effects.RemoveCountersEffect
+import com.wingedsheep.sdk.scripting.events.RecipientFilter
+import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 
 /**
  * Aurification
@@ -29,7 +32,7 @@ val Aurification = card("Aurification") {
     oracleText = "Whenever a creature deals damage to you, put a gold counter on it.\nEach creature with a gold counter on it is a Wall in addition to its other creature types and has defender.\nWhen Aurification leaves the battlefield, remove all gold counters from all creatures."
 
     triggeredAbility {
-        trigger = OnCreatureDealsDamageToYou
+        trigger = TriggerSpec(DealsDamageEvent(recipient = RecipientFilter.You), TriggerBinding.ANY)
         effect = AddCountersEffect("gold", 1, EffectTarget.TriggeringEntity)
     }
 
@@ -37,7 +40,7 @@ val Aurification = card("Aurification") {
     staticAbility { ability = GrantKeywordByCounter(Keyword.DEFENDER, "gold") }
 
     triggeredAbility {
-        trigger = OnLeavesBattlefield(selfOnly = true)
+        trigger = Triggers.LeavesBattlefield
         effect = ForEachInGroupEffect(GroupFilter.AllCreatures, RemoveCountersEffect("gold", Int.MAX_VALUE, EffectTarget.Self))
     }
 

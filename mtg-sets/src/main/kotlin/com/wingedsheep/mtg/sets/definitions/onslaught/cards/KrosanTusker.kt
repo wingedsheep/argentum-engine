@@ -5,9 +5,9 @@ import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.KeywordAbility
 import com.wingedsheep.sdk.scripting.effects.MayEffect
-import com.wingedsheep.sdk.scripting.triggers.OnCycle
 import com.wingedsheep.sdk.scripting.effects.SearchDestination
 import com.wingedsheep.sdk.dsl.Effects
+import com.wingedsheep.sdk.dsl.Triggers
 
 /**
  * Krosan Tusker
@@ -28,7 +28,7 @@ val KrosanTusker = card("Krosan Tusker") {
     keywordAbility(KeywordAbility.cycling("{2}{G}"))
 
     triggeredAbility {
-        trigger = OnCycle(controllerOnly = true)
+        trigger = Triggers.YouCycle
         effect = MayEffect(
             Effects.SearchLibrary(
                 filter = GameObjectFilter.BasicLand,

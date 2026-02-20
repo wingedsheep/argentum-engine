@@ -6,9 +6,9 @@ import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
 import com.wingedsheep.sdk.core.Zone
-import com.wingedsheep.sdk.scripting.triggers.OnEnterBattlefield
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import com.wingedsheep.sdk.scripting.targets.TargetCreature
+import com.wingedsheep.sdk.dsl.Triggers
 
 /**
  * Serpent Assassin
@@ -24,7 +24,7 @@ val SerpentAssassin = card("Serpent Assassin") {
     toughness = 2
 
     triggeredAbility {
-        trigger = OnEnterBattlefield()
+        trigger = Triggers.EntersBattlefield
         optional = true
         target = TargetCreature(filter = TargetFilter.Creature.notColor(Color.BLACK))
         effect = MoveToZoneEffect(EffectTarget.ContextTarget(0), Zone.GRAVEYARD, byDestruction = true)

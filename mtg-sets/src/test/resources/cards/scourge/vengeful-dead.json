@@ -10,8 +10,12 @@
     "script": {
         "triggeredAbilities": [
             {
-                "id": "ability_15",
-                "trigger": "Death",
+                "id": "ability_20",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
                 "effect": {
                     "type": "LoseLife",
                     "amount": {
@@ -25,12 +29,14 @@
                 }
             },
             {
-                "id": "ability_16",
+                "id": "ability_21",
                 "trigger": {
-                    "type": "OtherCreatureWithSubtypeDies",
-                    "subtype": "Zombie",
-                    "youControlOnly": false
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature Zombie",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
                 },
+                "binding": "OTHER",
                 "effect": {
                     "type": "LoseLife",
                     "amount": {

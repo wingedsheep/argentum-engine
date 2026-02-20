@@ -20,7 +20,9 @@ import com.wingedsheep.sdk.scripting.predicates.CardPredicate
 import com.wingedsheep.sdk.scripting.predicates.ControllerPredicate
 import com.wingedsheep.sdk.scripting.predicates.StatePredicate
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
-import com.wingedsheep.sdk.scripting.triggers.OnOtherCreatureEnters
+import com.wingedsheep.sdk.scripting.GameEvent
+import com.wingedsheep.sdk.scripting.TriggerBinding
+import com.wingedsheep.sdk.scripting.TriggerSpec
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.shouldBe
@@ -80,7 +82,7 @@ class CardSerializationRoundTripTest : DescribeSpec({
             }
 
             val serialized = CardLoader.toJson(card)
-            serialized shouldContain "EntersBattlefield"
+            serialized shouldContain "ZoneChangeEvent"
             serialized shouldContain "CreateToken"
 
             val deserialized = CardLoader.fromJson(serialized)
@@ -121,7 +123,10 @@ class CardSerializationRoundTripTest : DescribeSpec({
                 toughness = 3
 
                 triggeredAbility {
-                    trigger = OnOtherCreatureEnters(youControlOnly = false)
+                    trigger = TriggerSpec(
+                        GameEvent.ZoneChangeEvent(filter = GameObjectFilter.Creature, to = Zone.BATTLEFIELD),
+                        TriggerBinding.OTHER
+                    )
                     effect = LoseLifeEffect(
                         amount = DynamicAmount.Fixed(1),
                         target = EffectTarget.Controller
@@ -132,7 +137,7 @@ class CardSerializationRoundTripTest : DescribeSpec({
             val serialized = CardLoader.toJson(card)
             val deserialized = CardLoader.fromJson(serialized)
             deserialized.name shouldBe "Wretched Anurid"
-            deserialized.script.triggeredAbilities[0].trigger.shouldBeInstanceOf<OnOtherCreatureEnters>()
+            deserialized.script.triggeredAbilities[0].trigger.shouldBeInstanceOf<GameEvent.ZoneChangeEvent>()
         }
     }
 

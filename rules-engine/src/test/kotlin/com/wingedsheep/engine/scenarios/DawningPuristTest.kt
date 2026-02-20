@@ -11,7 +11,10 @@ import com.wingedsheep.sdk.model.CardScript
 import com.wingedsheep.sdk.model.Deck
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
-import com.wingedsheep.sdk.scripting.triggers.OnDealsDamage
+import com.wingedsheep.sdk.scripting.GameEvent
+import com.wingedsheep.sdk.scripting.TriggerBinding
+import com.wingedsheep.sdk.scripting.events.DamageType
+import com.wingedsheep.sdk.scripting.events.RecipientFilter
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import com.wingedsheep.sdk.scripting.TriggeredAbility
 import com.wingedsheep.sdk.scripting.targets.TargetPermanent
@@ -41,7 +44,8 @@ class DawningPuristTest : FunSpec({
         oracleText = "Whenever Dawning Purist deals combat damage to a player, you may destroy target enchantment that player controls.\nMorph {1}{W}",
         script = CardScript.creature(
             TriggeredAbility.create(
-                trigger = OnDealsDamage(selfOnly = true, combatOnly = true, toPlayerOnly = true),
+                trigger = GameEvent.DealsDamageEvent(damageType = DamageType.Combat, recipient = RecipientFilter.AnyPlayer),
+                binding = TriggerBinding.SELF,
                 effect = MoveToZoneEffect(
                     target = EffectTarget.ContextTarget(0),
                     destination = Zone.GRAVEYARD,

@@ -6,7 +6,7 @@ import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.effects.AddCountersEffect
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.effects.MayEffect
-import com.wingedsheep.sdk.scripting.triggers.OnCycle
+import com.wingedsheep.sdk.dsl.Triggers
 
 /**
  * Invigorating Boon
@@ -20,7 +20,7 @@ val InvigoratingBoon = card("Invigorating Boon") {
     oracleText = "Whenever a player cycles a card, you may put a +1/+1 counter on target creature."
 
     triggeredAbility {
-        trigger = OnCycle(controllerOnly = false)
+        trigger = Triggers.AnyPlayerCycles
         target = Targets.Creature
         effect = MayEffect(
             AddCountersEffect(

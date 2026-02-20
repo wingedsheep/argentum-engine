@@ -7,8 +7,8 @@ import com.wingedsheep.sdk.scripting.values.DynamicAmount
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.KeywordAbility
 import com.wingedsheep.sdk.scripting.effects.MayEffect
-import com.wingedsheep.sdk.scripting.triggers.OnCycle
 import com.wingedsheep.sdk.scripting.effects.PreventNextDamageEffect
+import com.wingedsheep.sdk.dsl.Triggers
 
 /**
  * Sunfire Balm
@@ -34,7 +34,7 @@ val SunfireBalm = card("Sunfire Balm") {
     keywordAbility(KeywordAbility.cycling("{1}{W}"))
 
     triggeredAbility {
-        trigger = OnCycle(controllerOnly = true)
+        trigger = Triggers.YouCycle
         target = Targets.Any
         effect = MayEffect(
             PreventNextDamageEffect(

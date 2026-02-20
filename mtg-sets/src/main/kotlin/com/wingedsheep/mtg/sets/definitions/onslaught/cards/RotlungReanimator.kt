@@ -6,7 +6,11 @@ import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.effects.CreateTokenEffect
-import com.wingedsheep.sdk.scripting.triggers.OnOtherCreatureWithSubtypeDies
+import com.wingedsheep.sdk.core.Zone
+import com.wingedsheep.sdk.scripting.GameEvent.ZoneChangeEvent
+import com.wingedsheep.sdk.scripting.GameObjectFilter
+import com.wingedsheep.sdk.scripting.TriggerBinding
+import com.wingedsheep.sdk.scripting.TriggerSpec
 
 /**
  * Rotlung Reanimator
@@ -39,10 +43,14 @@ val RotlungReanimator = card("Rotlung Reanimator") {
 
     // When another Cleric dies (any controller, not just yours)
     triggeredAbility {
-        trigger = OnOtherCreatureWithSubtypeDies(
-            subtype = Subtype("Cleric"),
-            youControlOnly = false
-        )
+        trigger = TriggerSpec(
+                ZoneChangeEvent(
+                    filter = GameObjectFilter.Creature.withSubtype(Subtype("Cleric")),
+                    from = Zone.BATTLEFIELD,
+                    to = Zone.GRAVEYARD
+                ),
+                TriggerBinding.OTHER
+            )
         effect = zombieToken
     }
 

@@ -6,7 +6,7 @@ import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.effects.AddCountersEffect
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.ModifyStatsByCounterOnSource
-import com.wingedsheep.sdk.scripting.triggers.OnCycle
+import com.wingedsheep.sdk.dsl.Triggers
 
 /**
  * Withering Hex
@@ -24,7 +24,7 @@ val WitheringHex = card("Withering Hex") {
     auraTarget = Targets.Creature
 
     triggeredAbility {
-        trigger = OnCycle(controllerOnly = false)
+        trigger = Triggers.AnyPlayerCycles
         effect = AddCountersEffect("plague", 1, EffectTarget.Self)
     }
 

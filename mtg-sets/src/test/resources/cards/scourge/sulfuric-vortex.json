@@ -6,11 +6,13 @@
     "script": {
         "triggeredAbilities": [
             {
-                "id": "ability_11",
+                "id": "ability_15",
                 "trigger": {
-                    "type": "Upkeep",
-                    "controllerOnly": false
+                    "type": "StepEvent",
+                    "step": "UPKEEP",
+                    "player": "Each"
                 },
+                "binding": "ANY",
                 "effect": {
                     "type": "DealDamageToPlayers",
                     "amount": {

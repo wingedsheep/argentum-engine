@@ -7,7 +7,7 @@ import com.wingedsheep.sdk.scripting.effects.DealDamageEffect
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.KeywordAbility
 import com.wingedsheep.sdk.scripting.effects.MayEffect
-import com.wingedsheep.sdk.scripting.triggers.OnCycle
+import com.wingedsheep.sdk.dsl.Triggers
 
 /**
  * Solar Blast
@@ -30,7 +30,7 @@ val SolarBlast = card("Solar Blast") {
     keywordAbility(KeywordAbility.cycling("{1}{R}{R}"))
 
     triggeredAbility {
-        trigger = OnCycle(controllerOnly = true)
+        trigger = Triggers.YouCycle
         target = Targets.Any
         effect = MayEffect(
             DealDamageEffect(1, EffectTarget.ContextTarget(0))

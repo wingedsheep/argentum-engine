@@ -1,13 +1,17 @@
 package com.wingedsheep.mtg.sets.definitions.scourge.cards
 
 import com.wingedsheep.sdk.core.Subtype
+import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.effects.LoseLifeEffect
-import com.wingedsheep.sdk.scripting.triggers.OnOtherCreatureWithSubtypeDies
+import com.wingedsheep.sdk.scripting.GameEvent.ZoneChangeEvent
+import com.wingedsheep.sdk.scripting.GameObjectFilter
+import com.wingedsheep.sdk.scripting.TriggerBinding
+import com.wingedsheep.sdk.scripting.TriggerSpec
 
 /**
  * Vengeful Dead
@@ -31,9 +35,13 @@ val VengefulDead = card("Vengeful Dead") {
 
     // When another Zombie dies (any controller)
     triggeredAbility {
-        trigger = OnOtherCreatureWithSubtypeDies(
-            subtype = Subtype("Zombie"),
-            youControlOnly = false
+        trigger = TriggerSpec(
+            ZoneChangeEvent(
+                filter = GameObjectFilter.Creature.withSubtype(Subtype("Zombie")),
+                from = Zone.BATTLEFIELD,
+                to = Zone.GRAVEYARD
+            ),
+            TriggerBinding.OTHER
         )
         effect = LoseLifeEffect(1, EffectTarget.PlayerRef(Player.EachOpponent))
     }

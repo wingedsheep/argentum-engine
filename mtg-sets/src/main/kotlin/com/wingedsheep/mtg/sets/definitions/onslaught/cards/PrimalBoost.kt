@@ -7,7 +7,7 @@ import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.KeywordAbility
 import com.wingedsheep.sdk.scripting.effects.MayEffect
 import com.wingedsheep.sdk.scripting.effects.ModifyStatsEffect
-import com.wingedsheep.sdk.scripting.triggers.OnCycle
+import com.wingedsheep.sdk.dsl.Triggers
 
 /**
  * Primal Boost
@@ -34,7 +34,7 @@ val PrimalBoost = card("Primal Boost") {
     keywordAbility(KeywordAbility.cycling("{2}{G}"))
 
     triggeredAbility {
-        trigger = OnCycle(controllerOnly = true)
+        trigger = Triggers.YouCycle
         target = Targets.Creature
         effect = MayEffect(
             ModifyStatsEffect(

@@ -4,7 +4,9 @@ import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.effects.DrawCardsEffect
 import com.wingedsheep.sdk.scripting.effects.MayEffect
-import com.wingedsheep.sdk.scripting.triggers.OnTurnFaceUp
+import com.wingedsheep.sdk.scripting.GameEvent.TurnFaceUpEvent
+import com.wingedsheep.sdk.scripting.TriggerBinding
+import com.wingedsheep.sdk.scripting.TriggerSpec
 
 /**
  * Aphetto Runecaster
@@ -21,7 +23,7 @@ val AphettoRunecaster = card("Aphetto Runecaster") {
     oracleText = "Whenever a permanent is turned face up, you may draw a card."
 
     triggeredAbility {
-        trigger = OnTurnFaceUp(selfOnly = false)
+        trigger = TriggerSpec(TurnFaceUpEvent, TriggerBinding.ANY)
         effect = MayEffect(DrawCardsEffect(1))
     }
 

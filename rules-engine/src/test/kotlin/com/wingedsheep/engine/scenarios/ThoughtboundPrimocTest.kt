@@ -14,7 +14,9 @@ import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.conditions.APlayerControlsMostOfSubtype
 import com.wingedsheep.sdk.scripting.effects.ConditionalEffect
 import com.wingedsheep.sdk.scripting.effects.GainControlByMostOfSubtypeEffect
-import com.wingedsheep.sdk.scripting.triggers.OnUpkeep
+import com.wingedsheep.sdk.scripting.GameEvent
+import com.wingedsheep.sdk.scripting.TriggerBinding
+import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.TriggeredAbility
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
@@ -55,7 +57,8 @@ class ThoughtboundPrimocTest : FunSpec({
         toughness = 3,
         script = CardScript.creature(
             TriggeredAbility.create(
-                trigger = OnUpkeep(controllerOnly = true),
+                trigger = GameEvent.StepEvent(Step.UPKEEP, Player.You),
+                binding = TriggerBinding.ANY,
                 effect = ConditionalEffect(
                     condition = APlayerControlsMostOfSubtype(Subtype("Wizard")),
                     effect = GainControlByMostOfSubtypeEffect(Subtype("Wizard"))

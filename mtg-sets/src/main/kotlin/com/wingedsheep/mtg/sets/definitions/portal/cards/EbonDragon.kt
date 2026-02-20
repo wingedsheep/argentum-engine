@@ -5,8 +5,8 @@ import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
-import com.wingedsheep.sdk.scripting.triggers.OnEnterBattlefield
 import com.wingedsheep.sdk.scripting.targets.TargetOpponent
+import com.wingedsheep.sdk.dsl.Triggers
 
 /**
  * Ebon Dragon
@@ -24,7 +24,7 @@ val EbonDragon = card("Ebon Dragon") {
     keywords(Keyword.FLYING)
 
     triggeredAbility {
-        trigger = OnEnterBattlefield()
+        trigger = Triggers.EntersBattlefield
         optional = true
         target = TargetOpponent()
         effect = Effects.Discard(1, EffectTarget.ContextTarget(0))

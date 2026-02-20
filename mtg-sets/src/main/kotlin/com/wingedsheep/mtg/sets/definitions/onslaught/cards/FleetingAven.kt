@@ -6,7 +6,7 @@ import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
-import com.wingedsheep.sdk.scripting.triggers.OnCycle
+import com.wingedsheep.sdk.dsl.Triggers
 
 /**
  * Fleeting Aven
@@ -26,7 +26,7 @@ val FleetingAven = card("Fleeting Aven") {
     keywords(Keyword.FLYING)
 
     triggeredAbility {
-        trigger = OnCycle(controllerOnly = false)
+        trigger = Triggers.AnyPlayerCycles
         effect = MoveToZoneEffect(EffectTarget.Self, Zone.HAND)
     }
 

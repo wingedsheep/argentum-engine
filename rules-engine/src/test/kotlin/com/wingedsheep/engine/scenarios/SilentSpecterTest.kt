@@ -11,7 +11,10 @@ import com.wingedsheep.sdk.model.CardScript
 import com.wingedsheep.sdk.model.Deck
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
-import com.wingedsheep.sdk.scripting.triggers.OnDealsDamage
+import com.wingedsheep.sdk.scripting.GameEvent
+import com.wingedsheep.sdk.scripting.TriggerBinding
+import com.wingedsheep.sdk.scripting.events.DamageType
+import com.wingedsheep.sdk.scripting.events.RecipientFilter
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.TriggeredAbility
 import io.kotest.core.spec.style.FunSpec
@@ -39,7 +42,8 @@ class SilentSpecterTest : FunSpec({
         oracleText = "Flying\nWhenever Silent Specter deals combat damage to a player, that player discards two cards.\nMorph {3}{B}{B}",
         script = CardScript.creature(
             TriggeredAbility.create(
-                trigger = OnDealsDamage(selfOnly = true, combatOnly = true, toPlayerOnly = true),
+                trigger = GameEvent.DealsDamageEvent(damageType = DamageType.Combat, recipient = RecipientFilter.AnyPlayer),
+                binding = TriggerBinding.SELF,
                 effect = Effects.Discard(2, EffectTarget.PlayerRef(Player.Opponent))
             )
         )

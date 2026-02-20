@@ -4,8 +4,8 @@ import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.effects.DealDamageEffect
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
-import com.wingedsheep.sdk.scripting.triggers.OnEnterBattlefield
 import com.wingedsheep.sdk.scripting.targets.TargetCreature
+import com.wingedsheep.sdk.dsl.Triggers
 
 /**
  * Fire Imp
@@ -21,7 +21,7 @@ val FireImp = card("Fire Imp") {
     toughness = 1
 
     triggeredAbility {
-        trigger = OnEnterBattlefield()
+        trigger = Triggers.EntersBattlefield
         target = TargetCreature()
         effect = DealDamageEffect(2, EffectTarget.ContextTarget(0))
     }

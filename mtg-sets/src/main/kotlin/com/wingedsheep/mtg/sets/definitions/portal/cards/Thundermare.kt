@@ -6,8 +6,8 @@ import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.effects.ForEachInGroupEffect
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
-import com.wingedsheep.sdk.scripting.triggers.OnEnterBattlefield
 import com.wingedsheep.sdk.scripting.effects.TapUntapEffect
+import com.wingedsheep.sdk.dsl.Triggers
 
 /**
  * Thundermare
@@ -26,7 +26,7 @@ val Thundermare = card("Thundermare") {
     keywords(Keyword.HASTE)
 
     triggeredAbility {
-        trigger = OnEnterBattlefield()
+        trigger = Triggers.EntersBattlefield
         effect = ForEachInGroupEffect(GroupFilter.AllOtherCreatures, TapUntapEffect(EffectTarget.Self, tap = true))
     }
 

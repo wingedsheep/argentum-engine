@@ -31,7 +31,7 @@ import com.wingedsheep.sdk.scripting.events.RecipientFilter
 import com.wingedsheep.sdk.scripting.events.SourceFilter
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
-import com.wingedsheep.sdk.scripting.triggers.OnEnterBattlefield
+import com.wingedsheep.sdk.scripting.GameEvent
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
 import com.wingedsheep.sdk.scripting.values.EffectVariable
 import io.kotest.core.spec.style.DescribeSpec
@@ -315,7 +315,7 @@ class CardDslTest : DescribeSpec({
             kavu.triggeredAbilities shouldHaveSize 1
 
             val ability = kavu.triggeredAbilities.first()
-            ability.trigger shouldBe OnEnterBattlefield()
+            ability.trigger shouldBe GameEvent.ZoneChangeEvent(to = Zone.BATTLEFIELD)
             ability.effect shouldBe DealDamageEffect(4, EffectTarget.ContextTarget(0))
         }
 

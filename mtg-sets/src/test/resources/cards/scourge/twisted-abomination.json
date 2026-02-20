@@ -17,7 +17,7 @@
     "script": {
         "activatedAbilities": [
             {
-                "id": "ability_14",
+                "id": "ability_19",
                 "cost": {
                     "type": "CostMana",
                     "cost": "{B}"

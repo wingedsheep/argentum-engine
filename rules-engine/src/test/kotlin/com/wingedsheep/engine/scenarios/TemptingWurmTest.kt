@@ -13,7 +13,6 @@ import com.wingedsheep.sdk.model.CardScript
 import com.wingedsheep.sdk.model.CreatureStats
 import com.wingedsheep.sdk.model.Deck
 import com.wingedsheep.sdk.scripting.*
-import com.wingedsheep.sdk.scripting.triggers.OnEnterBattlefield
 import com.wingedsheep.sdk.scripting.targets.TargetCreature
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.collections.shouldContain
@@ -38,7 +37,8 @@ class TemptingWurmTest : FunSpec({
         creatureStats = CreatureStats(5, 5),
         script = CardScript.creature(
             TriggeredAbility.create(
-                trigger = OnEnterBattlefield(),
+                trigger = GameEvent.ZoneChangeEvent(to = Zone.BATTLEFIELD),
+                binding = TriggerBinding.SELF,
                 effect = EffectPatterns.eachOpponentMayPutFromHand(
                     filter = GameObjectFilter.Artifact or GameObjectFilter.Creature or GameObjectFilter.Enchantment or GameObjectFilter.Land
                 )

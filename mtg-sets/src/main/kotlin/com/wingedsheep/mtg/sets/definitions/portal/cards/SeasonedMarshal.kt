@@ -3,9 +3,9 @@ package com.wingedsheep.mtg.sets.definitions.portal.cards
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
-import com.wingedsheep.sdk.scripting.triggers.OnAttack
 import com.wingedsheep.sdk.scripting.effects.TapUntapEffect
 import com.wingedsheep.sdk.scripting.targets.TargetCreature
+import com.wingedsheep.sdk.dsl.Triggers
 
 /**
  * Seasoned Marshal
@@ -21,7 +21,7 @@ val SeasonedMarshal = card("Seasoned Marshal") {
     toughness = 2
 
     triggeredAbility {
-        trigger = OnAttack()
+        trigger = Triggers.Attacks
         optional = true
         target = TargetCreature()
         effect = TapUntapEffect(EffectTarget.ContextTarget(0), tap = true)

@@ -8,7 +8,9 @@ import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.Deck
 import com.wingedsheep.sdk.scripting.effects.DrawCardsEffect
-import com.wingedsheep.sdk.scripting.triggers.OnYouAttack
+import com.wingedsheep.sdk.scripting.GameEvent
+import com.wingedsheep.sdk.scripting.TriggerBinding
+import com.wingedsheep.sdk.scripting.TriggerSpec
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 
@@ -26,7 +28,7 @@ class OverwhelmingInstinctTest : FunSpec({
         typeLine = "Enchantment"
 
         triggeredAbility {
-            trigger = OnYouAttack(minAttackers = 3)
+            trigger = TriggerSpec(event = GameEvent.YouAttackEvent(minAttackers = 3), binding = TriggerBinding.ANY)
             effect = DrawCardsEffect(1)
         }
     }

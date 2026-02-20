@@ -14,8 +14,6 @@ import com.wingedsheep.sdk.scripting.effects.ModalEffect
 import com.wingedsheep.sdk.scripting.effects.Mode
 import com.wingedsheep.sdk.scripting.effects.ModifyStatsEffect
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
-import com.wingedsheep.sdk.scripting.triggers.OnEnterBattlefield
-import com.wingedsheep.sdk.scripting.triggers.Trigger
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
 import com.wingedsheep.sdk.scripting.targets.TargetRequirement
 
@@ -613,7 +611,12 @@ class ModeBuilder(private val description: String) {
 
 @CardDsl
 class TriggeredAbilityBuilder {
-    var trigger: Trigger = OnEnterBattlefield()
+    /**
+     * The trigger specification. Assign a [TriggerSpec] from the [Triggers] facade
+     * (e.g., `trigger = Triggers.EntersBattlefield`).
+     */
+    var trigger: TriggerSpec = Triggers.EntersBattlefield
+
     var effect: Effect? = null
     var target: TargetRequirement? = null
     var optional: Boolean = false
@@ -627,7 +630,8 @@ class TriggeredAbilityBuilder {
     fun build(): TriggeredAbility {
         requireNotNull(effect) { "Triggered ability must have an effect" }
         return TriggeredAbility.create(
-            trigger = trigger,
+            trigger = trigger.event,
+            binding = trigger.binding,
             effect = effect!!,
             optional = optional,
             targetRequirement = target,

@@ -13,8 +13,12 @@
     "script": {
         "triggeredAbilities": [
             {
-                "id": "ability_13",
-                "trigger": "Death",
+                "id": "ability_18",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
                 "effect": {
                     "type": "ForEachInGroup",
                     "filter": {

@@ -7,7 +7,7 @@ import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.effects.DealDamageEffect
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.effects.MayPayManaEffect
-import com.wingedsheep.sdk.scripting.triggers.OnCycle
+import com.wingedsheep.sdk.dsl.Triggers
 
 /**
  * Lightning Rift
@@ -22,7 +22,7 @@ val LightningRift = card("Lightning Rift") {
     oracleText = "Whenever a player cycles a card, you may pay {1}. If you do, Lightning Rift deals 2 damage to any target."
 
     triggeredAbility {
-        trigger = OnCycle(controllerOnly = false)
+        trigger = Triggers.AnyPlayerCycles
         target = Targets.Any
         effect = MayPayManaEffect(
             cost = ManaCost.parse("{1}"),

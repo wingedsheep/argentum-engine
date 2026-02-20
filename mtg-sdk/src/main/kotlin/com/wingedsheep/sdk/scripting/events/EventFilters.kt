@@ -142,11 +142,33 @@ sealed interface SourceFilter {
         override val description = "enchanted creature"
     }
 
+    @SerialName("SourceCreature")
+    @Serializable
+    data object Creature : SourceFilter {
+        override val description = "a creature"
+    }
+
     @SerialName("SourceMatching")
     @Serializable
     data class Matching(val filter: GameObjectFilter) : SourceFilter {
         override val description = filter.description
     }
+}
+
+// =============================================================================
+// Spell Type Filters
+// =============================================================================
+
+/**
+ * Filter for spell types in triggers.
+ */
+@Serializable
+enum class SpellTypeFilter {
+    ANY,
+    CREATURE,
+    NONCREATURE,
+    INSTANT_OR_SORCERY,
+    ENCHANTMENT
 }
 
 // =============================================================================

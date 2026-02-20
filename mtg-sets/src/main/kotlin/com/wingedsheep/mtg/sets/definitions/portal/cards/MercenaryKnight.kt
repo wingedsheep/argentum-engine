@@ -3,10 +3,10 @@ package com.wingedsheep.mtg.sets.definitions.portal.cards
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
-import com.wingedsheep.sdk.scripting.triggers.OnEnterBattlefield
 import com.wingedsheep.sdk.scripting.costs.PayCost
 import com.wingedsheep.sdk.scripting.effects.PayOrSufferEffect
 import com.wingedsheep.sdk.scripting.effects.SacrificeSelfEffect
+import com.wingedsheep.sdk.dsl.Triggers
 
 /**
  * Mercenary Knight
@@ -23,7 +23,7 @@ val MercenaryKnight = card("Mercenary Knight") {
     toughness = 4
 
     triggeredAbility {
-        trigger = OnEnterBattlefield()
+        trigger = Triggers.EntersBattlefield
         effect = PayOrSufferEffect(
             cost = PayCost.Discard(GameObjectFilter.Creature),
             suffer = SacrificeSelfEffect

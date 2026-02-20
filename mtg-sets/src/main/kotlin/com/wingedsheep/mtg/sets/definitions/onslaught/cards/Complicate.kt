@@ -6,7 +6,7 @@ import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.KeywordAbility
 import com.wingedsheep.sdk.scripting.effects.MayEffect
-import com.wingedsheep.sdk.scripting.triggers.OnCycle
+import com.wingedsheep.sdk.dsl.Triggers
 
 /**
  * Complicate
@@ -29,7 +29,7 @@ val Complicate = card("Complicate") {
     keywordAbility(KeywordAbility.cycling("{2}{U}"))
 
     triggeredAbility {
-        trigger = OnCycle(controllerOnly = true)
+        trigger = Triggers.YouCycle
         target = Targets.Spell
         effect = MayEffect(Effects.CounterUnlessPays("{1}"))
     }

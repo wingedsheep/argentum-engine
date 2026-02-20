@@ -7,7 +7,12 @@ import com.wingedsheep.sdk.scripting.Duration
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.effects.MayEffect
 import com.wingedsheep.sdk.scripting.effects.ModifyStatsEffect
-import com.wingedsheep.sdk.scripting.triggers.OnOtherCreatureEnters
+import com.wingedsheep.sdk.dsl.Triggers
+import com.wingedsheep.sdk.scripting.TriggerSpec
+import com.wingedsheep.sdk.scripting.TriggerBinding
+import com.wingedsheep.sdk.core.Zone
+import com.wingedsheep.sdk.scripting.GameEvent.ZoneChangeEvent
+import com.wingedsheep.sdk.scripting.GameObjectFilter
 
 /**
  * Death Match
@@ -22,7 +27,7 @@ val DeathMatch = card("Death Match") {
     oracleText = "Whenever a creature enters, that creature's controller may have target creature of their choice get -3/-3 until end of turn."
 
     triggeredAbility {
-        trigger = OnOtherCreatureEnters(youControlOnly = false)
+        trigger = TriggerSpec(ZoneChangeEvent(filter = GameObjectFilter.Creature, to = Zone.BATTLEFIELD), TriggerBinding.OTHER)
         controlledByTriggeringEntityController = true
         target = Targets.Creature
         effect = MayEffect(

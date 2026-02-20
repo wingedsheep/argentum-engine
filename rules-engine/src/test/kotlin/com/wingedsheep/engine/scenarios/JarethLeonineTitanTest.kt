@@ -20,7 +20,8 @@ import com.wingedsheep.sdk.scripting.AbilityId
 import com.wingedsheep.sdk.scripting.ActivatedAbility
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.effects.ModifyStatsEffect
-import com.wingedsheep.sdk.scripting.triggers.OnBlock
+import com.wingedsheep.sdk.scripting.GameEvent
+import com.wingedsheep.sdk.scripting.TriggerBinding
 import com.wingedsheep.sdk.scripting.TriggeredAbility
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
@@ -56,7 +57,8 @@ class JarethLeonineTitanTest : FunSpec({
             ),
             triggeredAbilities = listOf(
                 TriggeredAbility.create(
-                    trigger = OnBlock(selfOnly = true),
+                    trigger = GameEvent.BlockEvent,
+                    binding = TriggerBinding.SELF,
                     effect = ModifyStatsEffect(7, 7, EffectTarget.Self)
                 )
             )

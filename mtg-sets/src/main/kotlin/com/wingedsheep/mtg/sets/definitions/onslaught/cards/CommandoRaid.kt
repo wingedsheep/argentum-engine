@@ -28,7 +28,8 @@ val CommandoRaid = card("Commando Raid") {
         target = Targets.CreatureYouControl
         effect = GrantTriggeredAbilityUntilEndOfTurnEffect(
             ability = TriggeredAbility.create(
-                trigger = Triggers.DealsCombatDamageToPlayer,
+                trigger = Triggers.DealsCombatDamageToPlayer.event,
+                binding = Triggers.DealsCombatDamageToPlayer.binding,
                 effect = MayEffect(DealDamageEffect(DynamicAmount.SourcePower, EffectTarget.ContextTarget(0))),
                 targetRequirement = Targets.CreatureOpponentControls
             ),

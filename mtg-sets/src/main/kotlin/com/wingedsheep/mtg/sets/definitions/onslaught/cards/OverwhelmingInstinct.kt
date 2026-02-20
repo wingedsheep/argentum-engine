@@ -1,9 +1,12 @@
 package com.wingedsheep.mtg.sets.definitions.onslaught.cards
 
 import com.wingedsheep.sdk.dsl.card
+import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.model.Rarity
+import com.wingedsheep.sdk.scripting.GameEvent.YouAttackEvent
+import com.wingedsheep.sdk.scripting.TriggerBinding
+import com.wingedsheep.sdk.scripting.TriggerSpec
 import com.wingedsheep.sdk.scripting.effects.DrawCardsEffect
-import com.wingedsheep.sdk.scripting.triggers.OnYouAttack
 
 /**
  * Overwhelming Instinct
@@ -17,7 +20,7 @@ val OverwhelmingInstinct = card("Overwhelming Instinct") {
     oracleText = "Whenever you attack with three or more creatures, draw a card."
 
     triggeredAbility {
-        trigger = OnYouAttack(minAttackers = 3)
+        trigger = TriggerSpec(YouAttackEvent(minAttackers = 3), TriggerBinding.ANY)
         effect = DrawCardsEffect(1)
     }
 

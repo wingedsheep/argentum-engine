@@ -14,7 +14,7 @@ import com.wingedsheep.sdk.scripting.effects.ConditionalEffect
 import com.wingedsheep.sdk.scripting.effects.DrawCardsEffect
 import com.wingedsheep.sdk.scripting.effects.GainLifeEffect
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
-import com.wingedsheep.sdk.scripting.triggers.OnUpkeep
+import com.wingedsheep.sdk.scripting.references.Player
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 
@@ -32,7 +32,8 @@ class ConvalescentCareTest : FunSpec({
         script = CardScript.permanent(
             triggeredAbilities = listOf(
                 TriggeredAbility.create(
-                    trigger = OnUpkeep(controllerOnly = true),
+                    trigger = GameEvent.StepEvent(Step.UPKEEP, Player.You),
+                    binding = TriggerBinding.ANY,
                     triggerCondition = LifeTotalAtMost(5),
                     effect = ConditionalEffect(
                         condition = LifeTotalAtMost(5),

@@ -10,7 +10,8 @@ import com.wingedsheep.sdk.model.CreatureStats
 import com.wingedsheep.sdk.model.Deck
 import com.wingedsheep.sdk.scripting.effects.AnyPlayerMayPayEffect
 import com.wingedsheep.sdk.scripting.GameObjectFilter
-import com.wingedsheep.sdk.scripting.triggers.OnEnterBattlefield
+import com.wingedsheep.sdk.scripting.GameEvent
+import com.wingedsheep.sdk.scripting.TriggerBinding
 import com.wingedsheep.sdk.scripting.costs.PayCost
 import com.wingedsheep.sdk.scripting.effects.SacrificeSelfEffect
 import com.wingedsheep.sdk.scripting.TriggeredAbility
@@ -37,7 +38,8 @@ class ProwlingPangolinTest : FunSpec({
         creatureStats = CreatureStats(6, 5),
         script = CardScript.creature(
             TriggeredAbility.create(
-                trigger = OnEnterBattlefield(),
+                trigger = GameEvent.ZoneChangeEvent(to = Zone.BATTLEFIELD),
+                binding = TriggerBinding.SELF,
                 effect = AnyPlayerMayPayEffect(
                     cost = PayCost.Sacrifice(GameObjectFilter.Creature, count = 2),
                     consequence = SacrificeSelfEffect

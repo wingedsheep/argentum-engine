@@ -12,10 +12,11 @@
             {
                 "id": "ability_7",
                 "trigger": {
-                    "type": "SpellCast",
+                    "type": "SpellCastEvent",
                     "spellType": "CREATURE",
                     "manaValueAtLeast": 6
                 },
+                "binding": "ANY",
                 "effect": {
                     "type": "AddCounters",
                     "counterType": "+1/+1",

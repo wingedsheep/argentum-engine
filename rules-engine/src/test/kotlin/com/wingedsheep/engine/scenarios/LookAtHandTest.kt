@@ -9,12 +9,14 @@ import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.core.Subtype
+import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.CardScript
 import com.wingedsheep.sdk.model.Deck
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.effects.LookAtTargetHandEffect
-import com.wingedsheep.sdk.scripting.triggers.OnEnterBattlefield
+import com.wingedsheep.sdk.scripting.GameEvent
+import com.wingedsheep.sdk.scripting.TriggerBinding
 import com.wingedsheep.sdk.scripting.TriggeredAbility
 import com.wingedsheep.sdk.scripting.targets.TargetPlayer
 import io.kotest.core.spec.style.FunSpec
@@ -42,7 +44,8 @@ class LookAtHandTest : FunSpec({
         creatureStats = com.wingedsheep.sdk.model.CreatureStats(1, 1),
         script = CardScript.creature(
             TriggeredAbility.create(
-                trigger = OnEnterBattlefield(),
+                trigger = GameEvent.ZoneChangeEvent(to = Zone.BATTLEFIELD),
+                binding = TriggerBinding.SELF,
                 effect = LookAtTargetHandEffect(EffectTarget.ContextTarget(0)),
                 targetRequirement = TargetPlayer()
             )

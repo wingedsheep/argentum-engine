@@ -1,38 +1,23 @@
 package com.wingedsheep.sdk.dsl
 
+import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.core.Subtype
-import com.wingedsheep.sdk.scripting.triggers.OnAttack
-import com.wingedsheep.sdk.scripting.triggers.OnBecomesBlocked
-import com.wingedsheep.sdk.scripting.triggers.OnBecomesTapped
-import com.wingedsheep.sdk.scripting.triggers.OnBecomesUntapped
-import com.wingedsheep.sdk.scripting.triggers.OnBeginCombat
-import com.wingedsheep.sdk.scripting.triggers.OnBlock
-import com.wingedsheep.sdk.scripting.triggers.OnCycle
-import com.wingedsheep.sdk.scripting.triggers.OnDamageReceived
-import com.wingedsheep.sdk.scripting.triggers.OnDamagedByCreature
-import com.wingedsheep.sdk.scripting.triggers.OnDamagedBySpell
-import com.wingedsheep.sdk.scripting.triggers.OnDealsDamage
-import com.wingedsheep.sdk.scripting.triggers.OnDeath
-import com.wingedsheep.sdk.scripting.triggers.OnDraw
-import com.wingedsheep.sdk.scripting.triggers.OnEnchantedCreatureControllerUpkeep
-import com.wingedsheep.sdk.scripting.triggers.OnEndStep
-import com.wingedsheep.sdk.scripting.triggers.OnEnterBattlefield
-import com.wingedsheep.sdk.scripting.triggers.OnFirstMainPhase
-import com.wingedsheep.sdk.scripting.triggers.OnGainControlOfSelf
-import com.wingedsheep.sdk.scripting.triggers.OnLeavesBattlefield
-import com.wingedsheep.sdk.scripting.triggers.OnLifeGain
-import com.wingedsheep.sdk.scripting.triggers.OnOtherCreatureEnters
-import com.wingedsheep.sdk.scripting.triggers.OnOtherCreatureWithSubtypeDies
-import com.wingedsheep.sdk.scripting.triggers.OnSpellCast
-import com.wingedsheep.sdk.scripting.triggers.OnTransform
-import com.wingedsheep.sdk.scripting.triggers.OnTurnFaceUp
-import com.wingedsheep.sdk.scripting.triggers.OnUpkeep
-import com.wingedsheep.sdk.scripting.triggers.OnYouAttack
-import com.wingedsheep.sdk.scripting.triggers.SpellTypeFilter
-import com.wingedsheep.sdk.scripting.triggers.Trigger
+import com.wingedsheep.sdk.core.Zone
+import com.wingedsheep.sdk.scripting.GameEvent.*
+import com.wingedsheep.sdk.scripting.GameObjectFilter
+import com.wingedsheep.sdk.scripting.TriggerBinding
+import com.wingedsheep.sdk.scripting.TriggerSpec
+import com.wingedsheep.sdk.scripting.events.DamageType
+import com.wingedsheep.sdk.scripting.events.RecipientFilter
+import com.wingedsheep.sdk.scripting.events.SourceFilter
+import com.wingedsheep.sdk.scripting.events.SpellTypeFilter
+import com.wingedsheep.sdk.scripting.predicates.CardPredicate
+import com.wingedsheep.sdk.scripting.references.Player
 
 /**
- * Facade object providing convenient access to Trigger types.
+ * Facade object providing convenient access to trigger specifications.
+ *
+ * Each constant returns a [TriggerSpec] that bundles a [GameEvent] with a [TriggerBinding].
  *
  * Usage:
  * ```kotlin
@@ -50,48 +35,85 @@ object Triggers {
     /**
      * When this permanent enters the battlefield.
      */
-    val EntersBattlefield: Trigger = OnEnterBattlefield(selfOnly = true)
+    val EntersBattlefield: TriggerSpec = TriggerSpec(
+        event = ZoneChangeEvent(to = Zone.BATTLEFIELD),
+        binding = TriggerBinding.SELF
+    )
 
     /**
      * When any permanent enters the battlefield.
      */
-    val AnyEntersBattlefield: Trigger = OnEnterBattlefield(selfOnly = false)
+    val AnyEntersBattlefield: TriggerSpec = TriggerSpec(
+        event = ZoneChangeEvent(to = Zone.BATTLEFIELD),
+        binding = TriggerBinding.ANY
+    )
 
     /**
      * When another creature you control enters the battlefield.
      */
-    val OtherCreatureEnters: Trigger = OnOtherCreatureEnters(youControlOnly = true)
+    val OtherCreatureEnters: TriggerSpec = TriggerSpec(
+        event = ZoneChangeEvent(
+            filter = GameObjectFilter.Creature.youControl(),
+            to = Zone.BATTLEFIELD
+        ),
+        binding = TriggerBinding.OTHER
+    )
 
     /**
      * When this permanent leaves the battlefield.
      */
-    val LeavesBattlefield: Trigger = OnLeavesBattlefield(selfOnly = true)
+    val LeavesBattlefield: TriggerSpec = TriggerSpec(
+        event = ZoneChangeEvent(from = Zone.BATTLEFIELD),
+        binding = TriggerBinding.SELF
+    )
 
     /**
      * When this creature dies.
      */
-    val Dies: Trigger = OnDeath(selfOnly = true)
+    val Dies: TriggerSpec = TriggerSpec(
+        event = ZoneChangeEvent(from = Zone.BATTLEFIELD, to = Zone.GRAVEYARD),
+        binding = TriggerBinding.SELF
+    )
 
     /**
      * When any creature dies.
      */
-    val AnyCreatureDies: Trigger = OnDeath(selfOnly = false)
+    val AnyCreatureDies: TriggerSpec = TriggerSpec(
+        event = ZoneChangeEvent(from = Zone.BATTLEFIELD, to = Zone.GRAVEYARD),
+        binding = TriggerBinding.ANY
+    )
 
     /**
-     * When a creature is put into your graveyard from the battlefield.
+     * When a creature you control dies.
      */
-    val YourCreatureDies: Trigger = OnDeath(selfOnly = false, youControlOnly = true)
+    val YourCreatureDies: TriggerSpec = TriggerSpec(
+        event = ZoneChangeEvent(
+            filter = GameObjectFilter.Creature.youControl(),
+            from = Zone.BATTLEFIELD,
+            to = Zone.GRAVEYARD
+        ),
+        binding = TriggerBinding.ANY
+    )
 
     /**
      * When this is put into the graveyard from the battlefield.
      */
-    val PutIntoGraveyardFromBattlefield: Trigger = OnDeath(selfOnly = true)
+    val PutIntoGraveyardFromBattlefield: TriggerSpec = TriggerSpec(
+        event = ZoneChangeEvent(from = Zone.BATTLEFIELD, to = Zone.GRAVEYARD),
+        binding = TriggerBinding.SELF
+    )
 
     /**
      * When another creature with a specific subtype dies.
      */
-    fun OtherCreatureWithSubtypeDies(subtype: Subtype): Trigger =
-        OnOtherCreatureWithSubtypeDies(subtype, youControlOnly = true)
+    fun OtherCreatureWithSubtypeDies(subtype: Subtype): TriggerSpec = TriggerSpec(
+        event = ZoneChangeEvent(
+            filter = GameObjectFilter.Creature.withSubtype(subtype),
+            from = Zone.BATTLEFIELD,
+            to = Zone.GRAVEYARD
+        ),
+        binding = TriggerBinding.OTHER
+    )
 
     // =========================================================================
     // Combat Triggers
@@ -100,52 +122,82 @@ object Triggers {
     /**
      * When this creature attacks.
      */
-    val Attacks: Trigger = OnAttack(selfOnly = true)
+    val Attacks: TriggerSpec = TriggerSpec(
+        event = AttackEvent,
+        binding = TriggerBinding.SELF
+    )
 
     /**
      * When any creature attacks.
      */
-    val AnyAttacks: Trigger = OnAttack(selfOnly = false)
+    val AnyAttacks: TriggerSpec = TriggerSpec(
+        event = AttackEvent,
+        binding = TriggerBinding.ANY
+    )
 
     /**
      * When you attack (declare attackers).
      */
-    val YouAttack: Trigger = OnYouAttack(minAttackers = 1)
+    val YouAttack: TriggerSpec = TriggerSpec(
+        event = YouAttackEvent(minAttackers = 1),
+        binding = TriggerBinding.ANY
+    )
 
     /**
      * When this creature blocks.
      */
-    val Blocks: Trigger = OnBlock(selfOnly = true)
+    val Blocks: TriggerSpec = TriggerSpec(
+        event = BlockEvent,
+        binding = TriggerBinding.SELF
+    )
 
     /**
      * When this creature becomes blocked.
      */
-    val BecomesBlocked: Trigger = OnBecomesBlocked(selfOnly = true)
+    val BecomesBlocked: TriggerSpec = TriggerSpec(
+        event = BecomesBlockedEvent,
+        binding = TriggerBinding.SELF
+    )
 
     /**
      * When a creature you control becomes blocked.
      */
-    val CreatureYouControlBecomesBlocked: Trigger = OnBecomesBlocked(selfOnly = false)
+    val CreatureYouControlBecomesBlocked: TriggerSpec = TriggerSpec(
+        event = BecomesBlockedEvent,
+        binding = TriggerBinding.ANY
+    )
 
     /**
      * When this creature deals damage.
      */
-    val DealsDamage: Trigger = OnDealsDamage(selfOnly = true)
+    val DealsDamage: TriggerSpec = TriggerSpec(
+        event = DealsDamageEvent(),
+        binding = TriggerBinding.SELF
+    )
 
     /**
      * When this creature deals combat damage.
      */
-    val DealsCombatDamage: Trigger = OnDealsDamage(selfOnly = true, combatOnly = true)
+    val DealsCombatDamage: TriggerSpec = TriggerSpec(
+        event = DealsDamageEvent(damageType = DamageType.Combat),
+        binding = TriggerBinding.SELF
+    )
 
     /**
      * When this creature deals combat damage to a player.
      */
-    val DealsCombatDamageToPlayer: Trigger = OnDealsDamage(selfOnly = true, combatOnly = true, toPlayerOnly = true)
+    val DealsCombatDamageToPlayer: TriggerSpec = TriggerSpec(
+        event = DealsDamageEvent(damageType = DamageType.Combat, recipient = RecipientFilter.AnyPlayer),
+        binding = TriggerBinding.SELF
+    )
 
     /**
      * When this creature deals combat damage to a creature.
      */
-    val DealsCombatDamageToCreature: Trigger = OnDealsDamage(selfOnly = true, combatOnly = true, toCreatureOnly = true)
+    val DealsCombatDamageToCreature: TriggerSpec = TriggerSpec(
+        event = DealsDamageEvent(damageType = DamageType.Combat, recipient = RecipientFilter.AnyCreature),
+        binding = TriggerBinding.SELF
+    )
 
     // =========================================================================
     // Phase/Step Triggers
@@ -154,49 +206,76 @@ object Triggers {
     /**
      * At the beginning of your upkeep.
      */
-    val YourUpkeep: Trigger = OnUpkeep(controllerOnly = true)
+    val YourUpkeep: TriggerSpec = TriggerSpec(
+        event = StepEvent(Step.UPKEEP, Player.You),
+        binding = TriggerBinding.ANY
+    )
 
     /**
      * At the beginning of each upkeep.
      */
-    val EachUpkeep: Trigger = OnUpkeep(controllerOnly = false)
+    val EachUpkeep: TriggerSpec = TriggerSpec(
+        event = StepEvent(Step.UPKEEP, Player.Each),
+        binding = TriggerBinding.ANY
+    )
 
     /**
      * At the beginning of your end step.
      */
-    val YourEndStep: Trigger = OnEndStep(controllerOnly = true)
+    val YourEndStep: TriggerSpec = TriggerSpec(
+        event = StepEvent(Step.END, Player.You),
+        binding = TriggerBinding.ANY
+    )
 
     /**
      * At the beginning of each end step.
      */
-    val EachEndStep: Trigger = OnEndStep(controllerOnly = false)
+    val EachEndStep: TriggerSpec = TriggerSpec(
+        event = StepEvent(Step.END, Player.Each),
+        binding = TriggerBinding.ANY
+    )
 
     /**
      * At the beginning of combat on your turn.
      */
-    val BeginCombat: Trigger = OnBeginCombat(controllerOnly = true)
+    val BeginCombat: TriggerSpec = TriggerSpec(
+        event = StepEvent(Step.BEGIN_COMBAT, Player.You),
+        binding = TriggerBinding.ANY
+    )
 
     /**
      * At the beginning of your first main phase.
      */
-    val FirstMainPhase: Trigger = OnFirstMainPhase(controllerOnly = true)
+    val FirstMainPhase: TriggerSpec = TriggerSpec(
+        event = StepEvent(Step.PRECOMBAT_MAIN, Player.You),
+        binding = TriggerBinding.ANY
+    )
 
     /**
      * At the beginning of enchanted creature's controller's upkeep.
      * Used for auras that grant "At the beginning of your upkeep" to the enchanted creature.
      */
-    val EnchantedCreatureControllerUpkeep: Trigger = OnEnchantedCreatureControllerUpkeep
+    val EnchantedCreatureControllerUpkeep: TriggerSpec = TriggerSpec(
+        event = EnchantedCreatureControllerStepEvent(Step.UPKEEP),
+        binding = TriggerBinding.ANY
+    )
 
     /**
      * When this creature is turned face up.
      */
-    val TurnedFaceUp: Trigger = OnTurnFaceUp(selfOnly = true)
+    val TurnedFaceUp: TriggerSpec = TriggerSpec(
+        event = TurnFaceUpEvent,
+        binding = TriggerBinding.SELF
+    )
 
     /**
      * When you gain control of this permanent from another player.
      * Used by Risky Move.
      */
-    val GainControlOfSelf: Trigger = OnGainControlOfSelf
+    val GainControlOfSelf: TriggerSpec = TriggerSpec(
+        event = ControlChangeEvent,
+        binding = TriggerBinding.SELF
+    )
 
     // =========================================================================
     // Card Drawing Triggers
@@ -205,12 +284,18 @@ object Triggers {
     /**
      * Whenever you draw a card.
      */
-    val YouDraw: Trigger = OnDraw(controllerOnly = true)
+    val YouDraw: TriggerSpec = TriggerSpec(
+        event = DrawEvent(Player.You),
+        binding = TriggerBinding.ANY
+    )
 
     /**
      * Whenever any player draws a card.
      */
-    val AnyPlayerDraws: Trigger = OnDraw(controllerOnly = false)
+    val AnyPlayerDraws: TriggerSpec = TriggerSpec(
+        event = DrawEvent(Player.Each),
+        binding = TriggerBinding.ANY
+    )
 
     // =========================================================================
     // Spell Triggers
@@ -219,28 +304,42 @@ object Triggers {
     /**
      * Whenever you cast a spell.
      */
-    val YouCastSpell: Trigger = OnSpellCast(controllerOnly = true)
+    val YouCastSpell: TriggerSpec = TriggerSpec(
+        event = SpellCastEvent(player = Player.You),
+        binding = TriggerBinding.ANY
+    )
 
     /**
      * Whenever you cast a creature spell.
      */
-    val YouCastCreature: Trigger = OnSpellCast(controllerOnly = true, spellType = SpellTypeFilter.CREATURE)
+    val YouCastCreature: TriggerSpec = TriggerSpec(
+        event = SpellCastEvent(spellType = SpellTypeFilter.CREATURE, player = Player.You),
+        binding = TriggerBinding.ANY
+    )
 
     /**
      * Whenever you cast a noncreature spell.
      */
-    val YouCastNoncreature: Trigger = OnSpellCast(controllerOnly = true, spellType = SpellTypeFilter.NONCREATURE)
+    val YouCastNoncreature: TriggerSpec = TriggerSpec(
+        event = SpellCastEvent(spellType = SpellTypeFilter.NONCREATURE, player = Player.You),
+        binding = TriggerBinding.ANY
+    )
 
     /**
      * Whenever you cast an instant or sorcery.
      */
-    val YouCastInstantOrSorcery: Trigger =
-        OnSpellCast(controllerOnly = true, spellType = SpellTypeFilter.INSTANT_OR_SORCERY)
+    val YouCastInstantOrSorcery: TriggerSpec = TriggerSpec(
+        event = SpellCastEvent(spellType = SpellTypeFilter.INSTANT_OR_SORCERY, player = Player.You),
+        binding = TriggerBinding.ANY
+    )
 
     /**
      * Whenever you cast an enchantment spell.
      */
-    val YouCastEnchantment: Trigger = OnSpellCast(controllerOnly = true, spellType = SpellTypeFilter.ENCHANTMENT)
+    val YouCastEnchantment: TriggerSpec = TriggerSpec(
+        event = SpellCastEvent(spellType = SpellTypeFilter.ENCHANTMENT, player = Player.You),
+        binding = TriggerBinding.ANY
+    )
 
     // =========================================================================
     // Damage Triggers
@@ -249,17 +348,26 @@ object Triggers {
     /**
      * Whenever this creature is dealt damage.
      */
-    val TakesDamage: Trigger = OnDamageReceived(selfOnly = true)
+    val TakesDamage: TriggerSpec = TriggerSpec(
+        event = DamageReceivedEvent(),
+        binding = TriggerBinding.SELF
+    )
 
     /**
      * Whenever a creature deals damage to this creature.
      */
-    val DamagedByCreature: Trigger = OnDamagedByCreature(selfOnly = true)
+    val DamagedByCreature: TriggerSpec = TriggerSpec(
+        event = DamageReceivedEvent(source = SourceFilter.Creature),
+        binding = TriggerBinding.SELF
+    )
 
     /**
      * Whenever a spell deals damage to this creature.
      */
-    val DamagedBySpell: Trigger = OnDamagedBySpell(selfOnly = true)
+    val DamagedBySpell: TriggerSpec = TriggerSpec(
+        event = DamageReceivedEvent(source = SourceFilter.Spell),
+        binding = TriggerBinding.SELF
+    )
 
     // =========================================================================
     // Tap/Untap Triggers
@@ -268,12 +376,18 @@ object Triggers {
     /**
      * Whenever this permanent becomes tapped.
      */
-    val BecomesTapped: Trigger = OnBecomesTapped(selfOnly = true)
+    val BecomesTapped: TriggerSpec = TriggerSpec(
+        event = TapEvent,
+        binding = TriggerBinding.SELF
+    )
 
     /**
      * Whenever this permanent becomes untapped.
      */
-    val BecomesUntapped: Trigger = OnBecomesUntapped(selfOnly = true)
+    val BecomesUntapped: TriggerSpec = TriggerSpec(
+        event = UntapEvent,
+        binding = TriggerBinding.SELF
+    )
 
     // =========================================================================
     // Cycling Triggers
@@ -282,12 +396,18 @@ object Triggers {
     /**
      * Whenever you cycle a card.
      */
-    val YouCycle: Trigger = OnCycle(controllerOnly = true)
+    val YouCycle: TriggerSpec = TriggerSpec(
+        event = CycleEvent(Player.You),
+        binding = TriggerBinding.ANY
+    )
 
     /**
      * Whenever a player cycles a card.
      */
-    val AnyPlayerCycles: Trigger = OnCycle(controllerOnly = false)
+    val AnyPlayerCycles: TriggerSpec = TriggerSpec(
+        event = CycleEvent(Player.Each),
+        binding = TriggerBinding.ANY
+    )
 
     // =========================================================================
     // Transform Triggers
@@ -296,17 +416,26 @@ object Triggers {
     /**
      * When this creature transforms.
      */
-    val Transforms: Trigger = OnTransform(selfOnly = true)
+    val Transforms: TriggerSpec = TriggerSpec(
+        event = TransformEvent(),
+        binding = TriggerBinding.SELF
+    )
 
     /**
      * When this creature transforms into its back face.
      */
-    val TransformsToBack: Trigger = OnTransform(selfOnly = true, intoBackFace = true)
+    val TransformsToBack: TriggerSpec = TriggerSpec(
+        event = TransformEvent(intoBackFace = true),
+        binding = TriggerBinding.SELF
+    )
 
     /**
      * When this creature transforms into its front face.
      */
-    val TransformsToFront: Trigger = OnTransform(selfOnly = true, intoBackFace = false)
+    val TransformsToFront: TriggerSpec = TriggerSpec(
+        event = TransformEvent(intoBackFace = false),
+        binding = TriggerBinding.SELF
+    )
 
     // =========================================================================
     // Life Triggers
@@ -315,10 +444,16 @@ object Triggers {
     /**
      * Whenever you gain life.
      */
-    val YouGainLife: Trigger = OnLifeGain(controllerOnly = true)
+    val YouGainLife: TriggerSpec = TriggerSpec(
+        event = LifeGainEvent(Player.You),
+        binding = TriggerBinding.ANY
+    )
 
     /**
      * Whenever a player gains life.
      */
-    val AnyPlayerGainsLife: Trigger = OnLifeGain(controllerOnly = false)
+    val AnyPlayerGainsLife: TriggerSpec = TriggerSpec(
+        event = LifeGainEvent(Player.Each),
+        binding = TriggerBinding.ANY
+    )
 }

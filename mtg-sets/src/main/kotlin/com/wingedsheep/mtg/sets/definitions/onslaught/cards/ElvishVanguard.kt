@@ -5,7 +5,11 @@ import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.scripting.effects.AddCountersEffect
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
-import com.wingedsheep.sdk.scripting.triggers.OnOtherCreatureWithSubtypeEnters
+import com.wingedsheep.sdk.core.Zone
+import com.wingedsheep.sdk.scripting.GameEvent.ZoneChangeEvent
+import com.wingedsheep.sdk.scripting.GameObjectFilter
+import com.wingedsheep.sdk.scripting.TriggerBinding
+import com.wingedsheep.sdk.scripting.TriggerSpec
 
 /**
  * Elvish Vanguard
@@ -22,7 +26,10 @@ val ElvishVanguard = card("Elvish Vanguard") {
     oracleText = "Whenever another Elf enters the battlefield, put a +1/+1 counter on Elvish Vanguard."
 
     triggeredAbility {
-        trigger = OnOtherCreatureWithSubtypeEnters(Subtype("Elf"))
+        trigger = TriggerSpec(
+                ZoneChangeEvent(filter = GameObjectFilter.Creature.withSubtype(Subtype("Elf")), to = Zone.BATTLEFIELD),
+                TriggerBinding.OTHER
+            )
         effect = AddCountersEffect(
             counterType = "+1/+1",
             count = 1,

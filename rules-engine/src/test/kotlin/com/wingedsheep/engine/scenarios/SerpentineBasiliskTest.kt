@@ -10,7 +10,10 @@ import com.wingedsheep.sdk.model.CardScript
 import com.wingedsheep.sdk.model.Deck
 import com.wingedsheep.sdk.scripting.effects.DestroyAtEndOfCombatEffect
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
-import com.wingedsheep.sdk.scripting.triggers.OnDealsDamage
+import com.wingedsheep.sdk.scripting.GameEvent
+import com.wingedsheep.sdk.scripting.TriggerBinding
+import com.wingedsheep.sdk.scripting.events.DamageType
+import com.wingedsheep.sdk.scripting.events.RecipientFilter
 import com.wingedsheep.sdk.scripting.TriggeredAbility
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.collections.shouldContain
@@ -38,7 +41,8 @@ class SerpentineBasiliskTest : FunSpec({
         oracleText = "Whenever Serpentine Basilisk deals combat damage to a creature, destroy that creature at end of combat.\nMorph {1}{G}{G}",
         script = CardScript.creature(
             TriggeredAbility.create(
-                trigger = OnDealsDamage(selfOnly = true, combatOnly = true, toCreatureOnly = true),
+                trigger = GameEvent.DealsDamageEvent(damageType = DamageType.Combat, recipient = RecipientFilter.AnyCreature),
+                binding = TriggerBinding.SELF,
                 effect = DestroyAtEndOfCombatEffect(EffectTarget.TriggeringEntity)
             )
         )

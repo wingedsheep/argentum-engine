@@ -6,7 +6,7 @@ import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.effects.MayEffect
-import com.wingedsheep.sdk.scripting.triggers.OnCycle
+import com.wingedsheep.sdk.dsl.Triggers
 
 /**
  * Astral Slide
@@ -22,7 +22,7 @@ val AstralSlide = card("Astral Slide") {
     oracleText = "Whenever a player cycles a card, you may exile target creature. If you do, return that card to the battlefield under its owner's control at the beginning of the next end step."
 
     triggeredAbility {
-        trigger = OnCycle(controllerOnly = false)
+        trigger = Triggers.AnyPlayerCycles
         target = Targets.Creature
         effect = MayEffect(Effects.ExileUntilEndStep(EffectTarget.ContextTarget(0)))
     }

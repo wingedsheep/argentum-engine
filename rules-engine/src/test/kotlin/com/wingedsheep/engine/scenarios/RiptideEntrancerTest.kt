@@ -14,7 +14,10 @@ import com.wingedsheep.sdk.model.Deck
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.effects.GainControlEffect
 import com.wingedsheep.sdk.scripting.effects.MayEffect
-import com.wingedsheep.sdk.scripting.triggers.OnDealsDamage
+import com.wingedsheep.sdk.scripting.GameEvent
+import com.wingedsheep.sdk.scripting.TriggerBinding
+import com.wingedsheep.sdk.scripting.events.DamageType
+import com.wingedsheep.sdk.scripting.events.RecipientFilter
 import com.wingedsheep.sdk.scripting.effects.SacrificeSelfEffect
 import com.wingedsheep.sdk.scripting.TriggeredAbility
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
@@ -48,7 +51,8 @@ class RiptideEntrancerTest : FunSpec({
         oracleText = "Whenever Riptide Entrancer deals combat damage to a player, you may sacrifice it. If you do, gain control of target creature that player controls. (This effect lasts indefinitely.)\nMorph {U}{U}",
         script = CardScript.creature(
             TriggeredAbility.create(
-                trigger = OnDealsDamage(selfOnly = true, combatOnly = true, toPlayerOnly = true),
+                trigger = GameEvent.DealsDamageEvent(damageType = DamageType.Combat, recipient = RecipientFilter.AnyPlayer),
+                binding = TriggerBinding.SELF,
                 effect = MayEffect(
                     SacrificeSelfEffect then GainControlEffect(EffectTarget.ContextTarget(0))
                 ),
