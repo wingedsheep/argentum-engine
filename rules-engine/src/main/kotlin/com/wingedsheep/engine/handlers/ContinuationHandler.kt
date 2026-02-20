@@ -130,7 +130,6 @@ class ContinuationHandler(
             is DrawReplacementRemainingDrawsContinuation -> {
                 ExecutionResult.error(state, "DrawReplacementRemainingDrawsContinuation should not be at top of stack during decision resume")
             }
-            is DrawReplacementDiscardContinuation -> drawReplacementResumer.resumeDrawReplacementDiscard(stateAfterPop, continuation, response, cfm)
             is DrawReplacementActivationContinuation -> drawReplacementResumer.resumeDrawReplacementActivation(stateAfterPop, continuation, response, cfm)
             is DrawReplacementTargetContinuation -> drawReplacementResumer.resumeDrawReplacementTarget(stateAfterPop, continuation, response, cfm)
 

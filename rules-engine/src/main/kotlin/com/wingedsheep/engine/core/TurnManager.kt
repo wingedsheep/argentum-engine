@@ -1,7 +1,7 @@
 package com.wingedsheep.engine.core
 
 import com.wingedsheep.engine.handlers.DecisionHandler
-import com.wingedsheep.engine.handlers.effects.drawing.DrawCardsExecutor
+import com.wingedsheep.engine.handlers.effects.drawing.DrawReplacementShieldConsumer
 import com.wingedsheep.engine.mechanics.combat.CombatManager
 import com.wingedsheep.engine.mechanics.layers.StateProjector
 import com.wingedsheep.engine.mechanics.StateBasedActionChecker
@@ -25,14 +25,10 @@ import com.wingedsheep.engine.state.components.player.SkipNextTurnComponent
 import com.wingedsheep.engine.state.components.player.SkipUntapComponent
 import com.wingedsheep.engine.state.components.player.LoseAtEndStepComponent
 import com.wingedsheep.engine.handlers.EffectContext
-import com.wingedsheep.engine.handlers.effects.EffectExecutorUtils
-import com.wingedsheep.engine.mechanics.layers.SerializableModification
-import com.wingedsheep.engine.state.components.identity.LifeTotalComponent
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Phase
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.core.Zone
-import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.Duration
 import com.wingedsheep.sdk.scripting.Effect
@@ -266,205 +262,41 @@ class TurnManager(
         val libraryKey = ZoneKey(playerId, Zone.LIBRARY)
         val handKey = ZoneKey(playerId, Zone.HAND)
 
+        val shieldConsumer = effectExecutor?.let { DrawReplacementShieldConsumer(it) }
+
         for (i in 0 until count) {
-            // Check for draw replacement shields (e.g., Words of Worship)
-            val shieldIndex = newState.floatingEffects.indexOfFirst { effect ->
-                effect.effect.modification is SerializableModification.ReplaceDrawWithLifeGain &&
-                    playerId in effect.effect.affectedEntities
-            }
-            if (shieldIndex != -1) {
-                val shield = newState.floatingEffects[shieldIndex]
-                val mod = shield.effect.modification as SerializableModification.ReplaceDrawWithLifeGain
-                val updatedEffects = newState.floatingEffects.toMutableList()
-                updatedEffects.removeAt(shieldIndex)
-                newState = newState.copy(floatingEffects = updatedEffects)
-                val currentLife = newState.getEntity(playerId)?.get<LifeTotalComponent>()?.life ?: 0
-                val newLife = currentLife + mod.lifeAmount
-                newState = newState.updateEntity(playerId) { container ->
-                    container.with(LifeTotalComponent(newLife))
-                }
-                events.add(LifeChangedEvent(playerId, currentLife, newLife, LifeChangeReason.LIFE_GAIN))
-                continue
-            }
-
-            // Check for damage replacement shields (e.g., Words of War)
-            val damageShieldIndex = newState.floatingEffects.indexOfFirst { effect ->
-                effect.effect.modification is SerializableModification.ReplaceDrawWithDamage &&
-                    playerId in effect.effect.affectedEntities
-            }
-            if (damageShieldIndex != -1) {
-                val damageShield = newState.floatingEffects[damageShieldIndex]
-                val damageMod = damageShield.effect.modification as SerializableModification.ReplaceDrawWithDamage
-                val damageUpdatedEffects = newState.floatingEffects.toMutableList()
-                damageUpdatedEffects.removeAt(damageShieldIndex)
-                newState = newState.copy(floatingEffects = damageUpdatedEffects)
-
-                val damageResult = EffectExecutorUtils.dealDamageToTarget(
-                    newState, damageMod.targetId, damageMod.damageAmount, damageShield.sourceId
+            // Check for unified draw replacement shields (Words of Worship/Wind/War/Waste/Wilding)
+            if (shieldConsumer != null) {
+                val shieldResult = shieldConsumer.consumeShield(
+                    state = newState,
+                    playerId = playerId,
+                    remainingDraws = count - i - 1,
+                    drawnCardsSoFar = drawnCards.toList(),
+                    eventsSoFar = events.toList(),
+                    isDrawStep = true
                 )
-                newState = damageResult.state
-                events.addAll(damageResult.events)
-                continue
-            }
-
-            // Check for discard replacement shields (e.g., Words of Waste)
-            val discardShieldIndex = newState.floatingEffects.indexOfFirst { effect ->
-                effect.effect.modification is SerializableModification.ReplaceDrawWithDiscard &&
-                    playerId in effect.effect.affectedEntities
-            }
-            if (discardShieldIndex != -1) {
-                val discardShield = newState.floatingEffects[discardShieldIndex]
-                val discardUpdatedEffects = newState.floatingEffects.toMutableList()
-                discardUpdatedEffects.removeAt(discardShieldIndex)
-                newState = newState.copy(floatingEffects = discardUpdatedEffects)
-
-                // Each opponent discards a card
-                val opponents = newState.turnOrder.filter { it != playerId }
-                for (opponentId in opponents) {
-                    val handZone = ZoneKey(opponentId, Zone.HAND)
-                    val hand = newState.getZone(handZone)
-                    if (hand.isEmpty()) continue
-
-                    if (hand.size == 1) {
-                        val cardId = hand.first()
-                        val graveyardZone = ZoneKey(opponentId, Zone.GRAVEYARD)
-                        newState = newState.removeFromZone(handZone, cardId)
-                        newState = newState.addToZone(graveyardZone, cardId)
-                        val discardName = newState.getEntity(cardId)?.get<CardComponent>()?.name ?: "Card"
-                        events.add(CardsDiscardedEvent(opponentId, listOf(cardId), listOf(discardName)))
-                    } else {
-                        // Opponent must choose - create decision and pause
-                        if (drawnCards.isNotEmpty()) {
-                            val cardNames = drawnCards.map { newState.getEntity(it)?.get<CardComponent>()?.name ?: "Card" }
-                            events.add(0, CardsDrawnEvent(playerId, drawnCards.size, drawnCards.toList(), cardNames))
-                        }
-                        val sourceName = discardShield.sourceName ?: "Words of Waste"
-                        val decisionHandler = DecisionHandler()
-                        val decisionResult = decisionHandler.createCardSelectionDecision(
-                            state = newState,
-                            playerId = opponentId,
-                            sourceId = discardShield.sourceId,
-                            sourceName = sourceName,
-                            prompt = "Choose a card to discard",
-                            options = hand,
-                            minSelections = 1,
-                            maxSelections = 1,
-                            ordered = false,
-                            phase = DecisionPhase.RESOLUTION
-                        )
-
-                        val continuation = DrawReplacementDiscardContinuation(
-                            decisionId = decisionResult.pendingDecision!!.id,
-                            drawingPlayerId = playerId,
-                            discardingPlayerId = opponentId,
-                            remainingDraws = count - i - 1,
-                            drawnCardsSoFar = drawnCards.toList(),
-                            sourceId = discardShield.sourceId,
-                            sourceName = sourceName
-                        )
-
-                        val stateWithContinuation = decisionResult.state.pushContinuation(continuation)
-                        return ExecutionResult.paused(
-                            stateWithContinuation,
-                            decisionResult.pendingDecision,
-                            events + decisionResult.events
-                        )
-                    }
-                }
-                continue
-            }
-
-            // Check for bounce replacement shields (Words of Wind)
-            val bounceShieldIndex = newState.floatingEffects.indexOfFirst { effect ->
-                effect.effect.modification is SerializableModification.ReplaceDrawWithBounce &&
-                    playerId in effect.effect.affectedEntities
-            }
-            if (bounceShieldIndex != -1) {
-                val executor = effectExecutor
-                if (executor != null) {
-                    val bounceShield = newState.floatingEffects[bounceShieldIndex]
-
-                    // Remove the consumed shield
-                    val bounceUpdatedEffects = newState.floatingEffects.toMutableList()
-                    bounceUpdatedEffects.removeAt(bounceShieldIndex)
-                    newState = newState.copy(floatingEffects = bounceUpdatedEffects)
-
-                    // Emit CardsDrawnEvent for cards drawn before this shield was hit
-                    val allEvents = events.toMutableList()
-                    if (drawnCards.isNotEmpty()) {
-                        val cardNames = drawnCards.map { newState.getEntity(it)?.get<CardComponent>()?.name ?: "Card" }
-                        allEvents.add(0, CardsDrawnEvent(playerId, drawnCards.size, drawnCards.toList(), cardNames))
-                    }
-
-                    // If there are remaining draws, push a continuation so they resume after the pipeline
-                    val remainingDraws = count - i - 1
-                    if (remainingDraws > 0) {
-                        val remainingDrawsContinuation = DrawReplacementRemainingDrawsContinuation(
-                            drawingPlayerId = playerId,
-                            remainingDraws = remainingDraws,
-                            isDrawStep = true
-                        )
-                        newState = newState.pushContinuation(remainingDrawsContinuation)
-                    }
-
-                    // Build and execute the bounce pipeline
-                    val pipeline = EffectPatterns.eachPlayerReturnsPermanentToHand()
-                    val context = EffectContext(
-                        controllerId = playerId,
-                        sourceId = bounceShield.sourceId,
-                        opponentId = null
-                    )
-
-                    val pipelineResult = executor(newState, pipeline, context)
-
-                    if (pipelineResult.isPaused) {
-                        // Pipeline needs a decision — remaining-draws continuation is underneath
-                        return ExecutionResult.paused(
-                            pipelineResult.state,
-                            pipelineResult.pendingDecision!!,
-                            allEvents + pipelineResult.events
-                        )
-                    }
-
-                    // Pipeline completed synchronously
-                    var resultState = pipelineResult.state
-                    val resultEvents = allEvents + pipelineResult.events
-
-                    // Pop the remaining-draws continuation if we pushed one (pipeline didn't use it)
-                    if (remainingDraws > 0) {
-                        val (popped, stateAfterPop) = resultState.popContinuation()
-                        if (popped is DrawReplacementRemainingDrawsContinuation) {
-                            resultState = stateAfterPop
-                            // Continue with remaining draws
-                            val drawResult = drawCards(resultState, playerId, remainingDraws)
-                            return ExecutionResult(
-                                drawResult.state,
-                                resultEvents + drawResult.events,
-                                drawResult.error
+                if (shieldResult != null) {
+                    when (shieldResult) {
+                        is DrawReplacementShieldConsumer.ConsumeResult.Paused -> {
+                            // Emit CardsDrawnEvent for cards drawn before this shield was hit
+                            val allEvents = events.toMutableList()
+                            if (drawnCards.isNotEmpty()) {
+                                val cardNames = drawnCards.map { newState.getEntity(it)?.get<CardComponent>()?.name ?: "Card" }
+                                allEvents.add(0, CardsDrawnEvent(playerId, drawnCards.size, drawnCards.toList(), cardNames))
+                            }
+                            return ExecutionResult.paused(
+                                shieldResult.result.state,
+                                shieldResult.result.pendingDecision!!,
+                                allEvents + shieldResult.result.events
                             )
                         }
-                        // If the continuation was something else, put it back (shouldn't happen)
-                        resultState = pipelineResult.state
+                        is DrawReplacementShieldConsumer.ConsumeResult.Synchronous -> {
+                            newState = shieldResult.state
+                            events.addAll(shieldResult.events)
+                            continue
+                        }
                     }
-
-                    return ExecutionResult.success(resultState, resultEvents)
                 }
-                // No effectExecutor available - skip bounce (shouldn't happen in production)
-            }
-
-            // Check for token replacement shields (Words of Wilding)
-            val tokenShieldIndex = newState.floatingEffects.indexOfFirst { effect ->
-                effect.effect.modification is SerializableModification.ReplaceDrawWithToken &&
-                    playerId in effect.effect.affectedEntities
-            }
-            if (tokenShieldIndex != -1) {
-                val tokenMod = newState.floatingEffects[tokenShieldIndex].effect.modification
-                    as SerializableModification.ReplaceDrawWithToken
-                val tokenUpdatedEffects = newState.floatingEffects.toMutableList()
-                tokenUpdatedEffects.removeAt(tokenShieldIndex)
-                newState = newState.copy(floatingEffects = tokenUpdatedEffects)
-                newState = DrawCardsExecutor.createToken(newState, playerId, tokenMod)
-                continue
             }
 
             val library = newState.getZone(libraryKey)

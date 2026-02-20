@@ -29,6 +29,10 @@ class DrawingExecutors(
         DrawCardsExecutor(amountEvaluator, cardRegistry, effectExecutor)
     }
 
+    private val eachPlayerReturnsPermanentToHandExecutor by lazy {
+        EachPlayerReturnsPermanentToHandExecutor(effectExecutor)
+    }
+
     /**
      * Initialize the module with the parent registry's execute function.
      * Must be called before executors() is accessed for the first time.
@@ -41,6 +45,7 @@ class DrawingExecutors(
         drawCardsExecutor,
         DiscardAndChainCopyExecutor(targetFinder, decisionHandler),
         EachOpponentDiscardsExecutor(decisionHandler),
+        eachPlayerReturnsPermanentToHandExecutor,
         EachPlayerDiscardsOrLoseLifeExecutor(decisionHandler),
         EachPlayerMayDrawExecutor(decisionHandler),
         ReplaceNextDrawWithExecutor(),

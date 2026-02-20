@@ -7,66 +7,16 @@ import com.wingedsheep.engine.handlers.effects.drawing.DrawCardsExecutor
 import com.wingedsheep.engine.mechanics.mana.ManaPool
 import com.wingedsheep.engine.mechanics.mana.ManaSolver
 import com.wingedsheep.engine.state.GameState
-import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.player.ManaPoolComponent
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
-import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
 
 class DrawReplacementContinuationResumer(
     private val ctx: ContinuationContext,
     private val entityIdToChosenTarget: (GameState, EntityId) -> ChosenTarget
 ) {
-
-    /**
-     * Resume after an opponent selects a card to discard for Words of Waste's draw replacement.
-     */
-    fun resumeDrawReplacementDiscard(
-        state: GameState,
-        continuation: DrawReplacementDiscardContinuation,
-        response: DecisionResponse,
-        checkForMore: CheckForMore
-    ): ExecutionResult {
-        if (response !is CardsSelectedResponse) {
-            return ExecutionResult.error(state, "Expected card selection response for discard")
-        }
-
-        val cardToDiscard = response.selectedCards.firstOrNull()
-            ?: return ExecutionResult.error(state, "No card selected for discard")
-
-        // Discard the selected card
-        val handZone = ZoneKey(continuation.discardingPlayerId, Zone.HAND)
-        val graveyardZone = ZoneKey(continuation.discardingPlayerId, Zone.GRAVEYARD)
-        var newState = state.removeFromZone(handZone, cardToDiscard)
-        newState = newState.addToZone(graveyardZone, cardToDiscard)
-        val discardCardName = state.getEntity(cardToDiscard)?.get<CardComponent>()?.name ?: "Card"
-        val events = mutableListOf<GameEvent>(
-            CardsDiscardedEvent(continuation.discardingPlayerId, listOf(cardToDiscard), listOf(discardCardName))
-        )
-
-        // Continue with remaining draws
-        if (continuation.remainingDraws > 0) {
-            val drawExecutor = DrawCardsExecutor(cardRegistry = ctx.stackResolver.cardRegistry, effectExecutor = ctx.effectExecutorRegistry::execute)
-            val drawResult = drawExecutor.executeDraws(
-                newState, continuation.drawingPlayerId, continuation.remainingDraws
-            )
-            if (drawResult.isPaused) {
-                return ExecutionResult.paused(
-                    drawResult.state,
-                    drawResult.pendingDecision!!,
-                    events + drawResult.events
-                )
-            }
-            return ExecutionResult(
-                drawResult.state,
-                events + drawResult.events,
-                drawResult.error
-            )
-        }
-        return checkForMore(newState, events)
-    }
 
     /**
      * Resume after the player selects mana sources (or declines) for a "prompt on draw"

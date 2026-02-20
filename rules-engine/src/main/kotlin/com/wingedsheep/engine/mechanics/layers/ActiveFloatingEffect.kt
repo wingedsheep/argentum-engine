@@ -1,7 +1,9 @@
 package com.wingedsheep.engine.mechanics.layers
 
+import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.Duration
+import com.wingedsheep.sdk.scripting.Effect
 import kotlinx.serialization.Serializable
 
 /**
@@ -211,55 +213,22 @@ sealed interface SerializableModification {
     ) : SerializableModification
 
     /**
-     * Draw replacement shield: the next time the affected player would draw a card this turn,
-     * they gain life instead. Used by Words of Worship and similar effects.
+     * Unified draw replacement shield: the next time the affected player would draw a card
+     * this turn, execute the stored [replacementEffect] instead.
+     * Used by the entire "Words of" cycle (Words of Worship, Wind, War, Waste, Wilding).
      * The shield is consumed after the first draw replacement and removed.
+     *
+     * @property replacementEffect The effect to execute instead of the draw
+     * @property targets Targets chosen at activation time (e.g., Words of War's damage target)
+     * @property sourceId The source permanent that created this shield
+     * @property sourceName The source's name (for UI display)
      */
     @Serializable
-    data class ReplaceDrawWithLifeGain(
-        val lifeAmount: Int
-    ) : SerializableModification
-
-    /**
-     * Draw replacement shield: the next time the affected player would draw a card this turn,
-     * each player returns a permanent they control to its owner's hand instead.
-     * Used by Words of Wind and similar effects.
-     * The shield is consumed after the first draw replacement and removed.
-     */
-    @Serializable
-    data object ReplaceDrawWithBounce : SerializableModification
-
-    /**
-     * Draw replacement shield: the next time the affected player would draw a card this turn,
-     * each opponent discards a card instead. Used by Words of Waste and similar effects.
-     * The shield is consumed after the first draw replacement and removed.
-     */
-    @Serializable
-    data object ReplaceDrawWithDiscard : SerializableModification
-
-    /**
-     * Draw replacement shield: the next time the affected player would draw a card this turn,
-     * the source deals damage to the chosen target instead. Used by Words of War and similar effects.
-     * The target is selected at activation time and stored in the shield.
-     * The shield is consumed after the first draw replacement and removed.
-     */
-    @Serializable
-    data class ReplaceDrawWithDamage(
-        val damageAmount: Int,
-        val targetId: EntityId
-    ) : SerializableModification
-
-    /**
-     * Draw replacement shield: the next time the affected player would draw a card this turn,
-     * they create a creature token instead. Used by Words of Wilding and similar effects.
-     * The shield is consumed after the first draw replacement and removed.
-     */
-    @Serializable
-    data class ReplaceDrawWithToken(
-        val power: Int,
-        val toughness: Int,
-        val colors: Set<com.wingedsheep.sdk.core.Color>,
-        val creatureTypes: Set<String>
+    data class ReplaceDrawWithEffect(
+        val replacementEffect: Effect,
+        val targets: List<ChosenTarget> = emptyList(),
+        val sourceId: EntityId? = null,
+        val sourceName: String? = null
     ) : SerializableModification
 
     /**
@@ -319,16 +288,8 @@ fun SerializableModification.toModification(): Modification = when (this) {
     is SerializableModification.PreventAllDamageDealtBy -> Modification.NoOp
     // RedirectNextDamage doesn't map to a layer modification - it's checked during damage resolution directly
     is SerializableModification.RedirectNextDamage -> Modification.NoOp
-    // ReplaceDrawWithLifeGain doesn't map to a layer modification - it's checked during draw execution directly
-    is SerializableModification.ReplaceDrawWithLifeGain -> Modification.NoOp
-    // ReplaceDrawWithBounce doesn't map to a layer modification - it's checked during draw execution directly
-    is SerializableModification.ReplaceDrawWithBounce -> Modification.NoOp
-    // ReplaceDrawWithDiscard doesn't map to a layer modification - it's checked during draw execution directly
-    is SerializableModification.ReplaceDrawWithDiscard -> Modification.NoOp
-    // ReplaceDrawWithDamage doesn't map to a layer modification - it's checked during draw execution directly
-    is SerializableModification.ReplaceDrawWithDamage -> Modification.NoOp
-    // ReplaceDrawWithToken doesn't map to a layer modification - it's checked during draw execution directly
-    is SerializableModification.ReplaceDrawWithToken -> Modification.NoOp
+    // ReplaceDrawWithEffect doesn't map to a layer modification - it's checked during draw execution directly
+    is SerializableModification.ReplaceDrawWithEffect -> Modification.NoOp
     // PreventNextDamageFromCreatureType doesn't map to a layer modification - it's checked during damage resolution directly
     is SerializableModification.PreventNextDamageFromCreatureType -> Modification.NoOp
     // ExileOnDeath doesn't map to a layer modification - it's checked during SBA creature death
