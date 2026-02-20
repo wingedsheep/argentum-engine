@@ -18,7 +18,13 @@
             "effect": "CounterSpell"
         },
         "targetRequirements": [
-            "TargetSpell"
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": {},
+                    "zone": "Stack"
+                }
+            }
         ]
     },
     "metadata": {

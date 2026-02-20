@@ -29,7 +29,7 @@
                 },
                 "targetRequirements": [
                     {
-                        "type": "TargetPermanent",
+                        "type": "TargetObject",
                         "filter": {
                             "baseFilter": "land"
                         }

@@ -24,7 +24,12 @@
             }
         },
         "targetRequirements": [
-            "TargetCreature"
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                }
+            }
         ]
     },
     "metadata": {

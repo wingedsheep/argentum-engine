@@ -32,7 +32,7 @@
                     }
                 },
                 "targetRequirement": {
-                    "type": "TargetCreature",
+                    "type": "TargetObject",
                     "filter": {
                         "baseFilter": "creature ctrl:you"
                     }
