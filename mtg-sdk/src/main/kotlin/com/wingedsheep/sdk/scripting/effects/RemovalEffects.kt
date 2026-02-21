@@ -224,26 +224,27 @@ data class DestroyAtEndOfCombatEffect(
 }
 
 /**
- * Unified zone-moving effect.
- * Consolidates destroy, exile, bounce, shuffle-into-library, put-on-top, etc.
+ * Destroy all permanents matching a filter.
  *
- * @property target The entity to move
- * @property destination The destination zone
- * @property placement How to place the card in the destination zone
- * @property byDestruction If true, use destruction semantics (indestructible check)
- */
-/**
- * Each player chooses a creature type. Destroy all creatures that aren't of a type chosen this way.
- * They can't be regenerated.
+ * Optionally excludes permanents that have any subtype matching a stored list of strings
+ * (from storedStringLists in the effect context).
  *
- * Used for Harsh Mercy. Each player (in APNAP order) chooses a creature type.
- * After all choices, creatures not matching any chosen type are destroyed.
+ * @property filter Which permanents to destroy (e.g., GameObjectFilter.Creature)
+ * @property canRegenerate Whether destroyed permanents can be regenerated
+ * @property exceptSubtypesFromStored Optional key into storedStringLists; if set, skip
+ *   permanents that have any subtype matching any string in that stored list
  */
-@SerialName("HarshMercy")
+@SerialName("DestroyAll")
 @Serializable
-data object HarshMercyEffect : Effect {
-    override val description: String =
-        "Each player chooses a creature type. Destroy all creatures that aren't of a type chosen this way. They can't be regenerated"
+data class DestroyAllEffect(
+    val filter: GameObjectFilter,
+    val canRegenerate: Boolean = true,
+    val exceptSubtypesFromStored: String? = null
+) : Effect {
+    override val description: String = buildString {
+        append("Destroy all ${filter.description}")
+        if (!canRegenerate) append(". They can't be regenerated")
+    }
 }
 
 /**

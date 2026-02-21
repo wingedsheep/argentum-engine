@@ -6,28 +6,24 @@ import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.sdk.core.Subtype
-import com.wingedsheep.sdk.scripting.effects.HarshMercyEffect
+import com.wingedsheep.sdk.scripting.effects.EachPlayerChoosesCreatureTypeEffect
 import java.util.UUID
 import kotlin.reflect.KClass
 
 /**
- * Executor for HarshMercyEffect.
+ * Executor for EachPlayerChoosesCreatureTypeEffect.
  *
- * "Each player chooses a creature type. Destroy all creatures that aren't of a type
- * chosen this way. They can't be regenerated."
- *
- * This executor:
- * 1. Presents a ChooseOptionDecision to the active player (APNAP order)
- * 2. Pushes a HarshMercyContinuation to track choices
- * 3. On resume, records choice, asks next player or executes destruction
+ * Each player (in APNAP order) chooses a creature type. After all players have chosen,
+ * the accumulated chosen types are stored in storedStringLists[storeAs] on the
+ * EffectContinuation below on the stack.
  */
-class HarshMercyExecutor : EffectExecutor<HarshMercyEffect> {
+class EachPlayerChoosesCreatureTypeExecutor : EffectExecutor<EachPlayerChoosesCreatureTypeEffect> {
 
-    override val effectType: KClass<HarshMercyEffect> = HarshMercyEffect::class
+    override val effectType: KClass<EachPlayerChoosesCreatureTypeEffect> = EachPlayerChoosesCreatureTypeEffect::class
 
     override fun execute(
         state: GameState,
-        effect: HarshMercyEffect,
+        effect: EachPlayerChoosesCreatureTypeEffect,
         context: EffectContext
     ): ExecutionResult {
         val allCreatureTypes = Subtype.ALL_CREATURE_TYPES
@@ -54,7 +50,7 @@ class HarshMercyExecutor : EffectExecutor<HarshMercyEffect> {
             options = allCreatureTypes
         )
 
-        val continuation = HarshMercyContinuation(
+        val continuation = EachPlayerChoosesCreatureTypeContinuation(
             decisionId = decisionId,
             sourceId = context.sourceId,
             sourceName = sourceName,
@@ -62,7 +58,8 @@ class HarshMercyExecutor : EffectExecutor<HarshMercyEffect> {
             currentPlayerId = firstPlayer,
             remainingPlayers = remainingPlayers,
             chosenTypes = emptyList(),
-            creatureTypes = allCreatureTypes
+            creatureTypes = allCreatureTypes,
+            storeAs = effect.storeAs
         )
 
         val stateWithDecision = state.withPendingDecision(decision)

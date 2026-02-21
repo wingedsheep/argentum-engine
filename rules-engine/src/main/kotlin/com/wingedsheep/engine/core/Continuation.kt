@@ -76,7 +76,8 @@ data class EffectContinuation(
     val triggeringEntityId: EntityId? = null,
     val namedTargets: Map<String, ChosenTarget> = emptyMap(),
     val chosenValues: Map<String, String> = emptyMap(),
-    val storedNumbers: Map<String, Int> = emptyMap()
+    val storedNumbers: Map<String, Int> = emptyMap(),
+    val storedStringLists: Map<String, List<String>> = emptyMap()
 ) : ContinuationFrame {
     /**
      * Reconstruct the EffectContext from serialized fields.
@@ -92,7 +93,8 @@ data class EffectContinuation(
         triggeringEntityId = triggeringEntityId,
         namedTargets = namedTargets,
         chosenValues = chosenValues,
-        storedNumbers = storedNumbers
+        storedNumbers = storedNumbers,
+        storedStringLists = storedStringLists
     )
 }
 
@@ -1095,10 +1097,10 @@ data class ChooseCreatureTypeUntapContinuation(
 ) : ContinuationFrame
 
 /**
- * Resume after a player chose a creature type for Harsh Mercy.
+ * Resume after a player chose a creature type for "each player chooses a creature type" effects.
  *
  * Each player (in APNAP order) chooses a creature type. After all players have chosen,
- * destroy all creatures that aren't of any chosen type (can't be regenerated).
+ * the accumulated chosen types are stored in the EffectContinuation below via storedStringLists[storeAs].
  *
  * @property sourceId The spell that created this effect
  * @property sourceName Name of the source for display
@@ -1107,9 +1109,10 @@ data class ChooseCreatureTypeUntapContinuation(
  * @property remainingPlayers Players who still need to choose (APNAP order)
  * @property chosenTypes Creature types chosen so far by each player
  * @property creatureTypes The creature type options list
+ * @property storeAs Key under which the chosen types are stored in storedStringLists
  */
 @Serializable
-data class HarshMercyContinuation(
+data class EachPlayerChoosesCreatureTypeContinuation(
     override val decisionId: String,
     val sourceId: EntityId?,
     val sourceName: String?,
@@ -1117,7 +1120,8 @@ data class HarshMercyContinuation(
     val currentPlayerId: EntityId,
     val remainingPlayers: List<EntityId>,
     val chosenTypes: List<String>,
-    val creatureTypes: List<String>
+    val creatureTypes: List<String>,
+    val storeAs: String
 ) : ContinuationFrame
 
 /**
@@ -1414,7 +1418,8 @@ data class ForEachPlayerContinuation(
     val sourceId: EntityId?,
     val controllerId: EntityId,
     val opponentId: EntityId?,
-    val xValue: Int?
+    val xValue: Int?,
+    val storedStringLists: Map<String, List<String>> = emptyMap()
 ) : ContinuationFrame
 
 /**

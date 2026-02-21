@@ -2,7 +2,9 @@ package com.wingedsheep.mtg.sets.definitions.onslaught.cards
 
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.effects.HarshMercyEffect
+import com.wingedsheep.sdk.scripting.GameObjectFilter
+import com.wingedsheep.sdk.scripting.effects.DestroyAllEffect
+import com.wingedsheep.sdk.scripting.effects.EachPlayerChoosesCreatureTypeEffect
 
 /**
  * Harsh Mercy
@@ -17,7 +19,12 @@ val HarshMercy = card("Harsh Mercy") {
     oracleText = "Each player chooses a creature type. Destroy all creatures that aren't of a type chosen this way. They can't be regenerated."
 
     spell {
-        effect = HarshMercyEffect
+        effect = EachPlayerChoosesCreatureTypeEffect(storeAs = "chosenTypes")
+            .then(DestroyAllEffect(
+                filter = GameObjectFilter.Creature,
+                canRegenerate = false,
+                exceptSubtypesFromStored = "chosenTypes"
+            ))
     }
 
     metadata {

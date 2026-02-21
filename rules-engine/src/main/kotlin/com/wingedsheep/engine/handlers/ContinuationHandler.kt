@@ -113,7 +113,7 @@ class ContinuationHandler(
             is BecomeChosenTypeAllCreaturesContinuation -> creatureTypeResumer.resumeBecomeChosenTypeAllCreatures(stateAfterPop, continuation, response, cfm)
             is ChooseCreatureTypeMustAttackContinuation -> creatureTypeResumer.resumeChooseCreatureTypeMustAttack(stateAfterPop, continuation, response, cfm)
             is ChooseCreatureTypeUntapContinuation -> creatureTypeResumer.resumeChooseCreatureTypeUntap(stateAfterPop, continuation, response, cfm)
-            is HarshMercyContinuation -> creatureTypeResumer.resumeHarshMercy(stateAfterPop, continuation, response, cfm)
+            is EachPlayerChoosesCreatureTypeContinuation -> creatureTypeResumer.resumeEachPlayerChoosesCreatureType(stateAfterPop, continuation, response, cfm)
             is PatriarchsBiddingContinuation -> creatureTypeResumer.resumePatriarchsBidding(stateAfterPop, continuation, response, cfm)
 
             // Draw replacements
@@ -200,7 +200,8 @@ class ContinuationHandler(
                     storedCollections = currentContext.storedCollections,
                     chosenCreatureType = continuation.chosenCreatureType,
                     namedTargets = continuation.namedTargets,
-                    chosenValues = continuation.chosenValues
+                    chosenValues = continuation.chosenValues,
+                    storedStringLists = currentContext.storedStringLists
                 )
                 currentState.pushContinuation(remainingContinuation)
             } else {
@@ -516,7 +517,8 @@ class ContinuationHandler(
                         chosenCreatureType = nextContinuation.chosenCreatureType,
                         namedTargets = nextContinuation.namedTargets,
                         chosenValues = nextContinuation.chosenValues,
-                        storedNumbers = currentContext.storedNumbers
+                        storedNumbers = currentContext.storedNumbers,
+                        storedStringLists = currentContext.storedStringLists
                     )
                     currentState.pushContinuation(remainingContinuation)
                 } else {

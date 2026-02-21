@@ -377,6 +377,23 @@ data class ChooseOptionEffect(
 }
 
 /**
+ * Each player (in APNAP order) chooses a creature type.
+ * All chosen types are accumulated and stored as a List<String> under [storeAs]
+ * in the effect context's storedStringLists.
+ *
+ * Used for cards like Harsh Mercy and similar "each player chooses a creature type" effects.
+ *
+ * @property storeAs Key under which the accumulated list of chosen types is stored
+ */
+@SerialName("EachPlayerChoosesCreatureType")
+@Serializable
+data class EachPlayerChoosesCreatureTypeEffect(
+    val storeAs: String
+) : Effect {
+    override val description: String = "Each player chooses a creature type"
+}
+
+/**
  * Select a target during effect resolution (mid-pipeline targeting).
  *
  * Unlike cast-time targeting (TargetRequirement on spells/abilities), this step

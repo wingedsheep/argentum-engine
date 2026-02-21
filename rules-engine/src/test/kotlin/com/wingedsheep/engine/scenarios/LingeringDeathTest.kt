@@ -65,14 +65,17 @@ class LingeringDeathTest : FunSpec({
     }
 
     fun advanceToPlayerEndStep(driver: GameTestDriver, targetPlayer: EntityId) {
-        // Advance until we reach the end step of the target player's turn
-        var passes = 0
-        while (passes < 200) {
-            if (driver.currentStep == Step.END && driver.activePlayer == targetPlayer) {
-                break
-            }
-            driver.passPriority()
-            passes++
+        // Advance until we reach the end step of the target player's turn.
+        // We loop calling passPriorityUntil(END) which handles combat declarations,
+        // pending decisions, etc. If we land on END but for the wrong player, we
+        // pass once more to get past it and then loop back.
+        var attempts = 0
+        while (attempts < 10) {
+            driver.passPriorityUntil(Step.END, maxPasses = 200)
+            if (driver.activePlayer == targetPlayer) break
+            // Wrong player's end step — pass through to next turn
+            driver.bothPass()
+            attempts++
         }
         driver.currentStep shouldBe Step.END
         driver.activePlayer shouldBe targetPlayer
@@ -114,9 +117,7 @@ class LingeringDeathTest : FunSpec({
         driver.findPermanent(activePlayer, "Test Creature") shouldBe null
 
         // Verify it went to graveyard
-        driver.getGraveyard(activePlayer).any { card ->
-            driver.state.getComponent<com.wingedsheep.engine.state.components.CardComponent>(card)?.name == "Test Creature"
-        } shouldBe true
+        driver.getGraveyardCardNames(activePlayer).any { it == "Test Creature" } shouldBe true
     }
 
     test("trigger fires on enchanted creature's controller's end step, not aura controller's") {

@@ -39,7 +39,9 @@ data class EffectContext(
     /** Named values chosen by the player during pipeline execution (e.g., creature type, color). */
     val chosenValues: Map<String, String> = emptyMap(),
     /** Named numeric values stored by pipeline effects (e.g., cards not drawn). */
-    val storedNumbers: Map<String, Int> = emptyMap()
+    val storedNumbers: Map<String, Int> = emptyMap(),
+    /** Named string lists stored by pipeline effects (e.g., chosen creature types). */
+    val storedStringLists: Map<String, List<String>> = emptyMap()
 ) {
     companion object {
         /**

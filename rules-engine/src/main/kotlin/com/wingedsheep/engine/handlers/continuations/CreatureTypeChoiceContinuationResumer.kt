@@ -528,14 +528,15 @@ class CreatureTypeChoiceContinuationResumer(
     }
 
     /**
-     * Resume after a player chose a creature type for Harsh Mercy.
+     * Resume after a player chose a creature type for "each player chooses a creature type" effects.
      *
      * Records the chosen type, asks the next player if any remain,
-     * or destroys all creatures not of any chosen type.
+     * or injects the chosen types into the EffectContinuation below on the stack
+     * via storedStringLists[storeAs].
      */
-    fun resumeHarshMercy(
+    fun resumeEachPlayerChoosesCreatureType(
         state: GameState,
-        continuation: HarshMercyContinuation,
+        continuation: EachPlayerChoosesCreatureTypeContinuation,
         response: DecisionResponse,
         checkForMore: CheckForMore
     ): ExecutionResult {
@@ -590,32 +591,20 @@ class CreatureTypeChoiceContinuationResumer(
             )
         }
 
-        // All players have chosen — destroy creatures not of any chosen type
-        val chosenSubtypes = updatedChosenTypes.map { Subtype(it) }.toSet()
-
-        var newState = state
-        val events = mutableListOf<GameEvent>()
-
-        for (entityId in state.getBattlefield()) {
-            val container = newState.getEntity(entityId) ?: continue
-            val cardComponent = container.get<CardComponent>() ?: continue
-
-            // Only affects creatures
-            if (!cardComponent.typeLine.isCreature) continue
-
-            // Check if creature has any of the chosen subtypes
-            val hasChosenType = cardComponent.typeLine.subtypes.any { it in chosenSubtypes }
-            if (hasChosenType) continue
-
-            // Destroy (can't be regenerated)
-            val result = EffectExecutorUtils.destroyPermanent(
-                newState, entityId, canRegenerate = false
+        // All players have chosen — inject chosen types into EffectContinuation below
+        val nextFrame = state.peekContinuation()
+        val newState = if (nextFrame is EffectContinuation) {
+            val (_, stateAfterPop) = state.popContinuation()
+            stateAfterPop.pushContinuation(
+                nextFrame.copy(
+                    storedStringLists = nextFrame.storedStringLists + (continuation.storeAs to updatedChosenTypes)
+                )
             )
-            newState = result.newState
-            events.addAll(result.events)
+        } else {
+            state
         }
 
-        return checkForMore(newState, events)
+        return checkForMore(newState, emptyList())
     }
 
     /**

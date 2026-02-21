@@ -37,7 +37,7 @@ class MoveToZoneEffectExecutor : EffectExecutor<MoveToZoneEffect> {
         effect: MoveToZoneEffect,
         context: EffectContext
     ): ExecutionResult {
-        val targetId = resolveTarget(effect.target, context)
+        val targetId = resolveTarget(effect.target, context, state)
             ?: return ExecutionResult.error(state, "No valid target for move to zone")
 
         // byDestruction delegates to destroyPermanent (handles indestructible)

@@ -150,7 +150,7 @@ val engineSerializersModule = SerializersModule {
         subclass(ChainCopyCostContinuation::class)
         subclass(ChainCopyTargetContinuation::class)
         subclass(DamagePreventionContinuation::class)
-        subclass(HarshMercyContinuation::class)
+        subclass(EachPlayerChoosesCreatureTypeContinuation::class)
         subclass(PatriarchsBiddingContinuation::class)
         subclass(ChooseCreatureTypeUntapContinuation::class)
         subclass(ChangeSpellTargetContinuation::class)
