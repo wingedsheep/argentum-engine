@@ -40,7 +40,8 @@ data class GameConfig(
     val startingHandSize: Int = 7,
     val skipMulligans: Boolean = false,
     val useHandSmoother: Boolean = false,
-    val handSmootherCandidates: Int = 3
+    val handSmootherCandidates: Int = 3,
+    val startingPlayerIndex: Int? = null
 )
 
 /**
@@ -115,8 +116,13 @@ class GameInitializer(
             state = state.withEntity(playerId, playerContainer)
         }
 
-        // 2. Set turn order (randomized)
-        val shuffledOrder = playerIds.shuffled()
+        // 2. Set turn order
+        val shuffledOrder = if (config.startingPlayerIndex != null) {
+            val idx = config.startingPlayerIndex
+            playerIds.subList(idx, playerIds.size) + playerIds.subList(0, idx)
+        } else {
+            playerIds.shuffled()
+        }
         state = state.copy(
             turnOrder = shuffledOrder,
             activePlayerId = shuffledOrder.first(),

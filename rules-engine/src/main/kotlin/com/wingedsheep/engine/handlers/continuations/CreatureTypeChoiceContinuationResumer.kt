@@ -136,6 +136,40 @@ class CreatureTypeChoiceContinuationResumer(
     }
 
     /**
+     * Resume after player chose a generic option in a pipeline context.
+     *
+     * Stores the chosen value into the EffectContinuation below on the stack
+     * (via chosenValues map) so subsequent pipeline effects can access it
+     * via EffectContext.chosenValues[storeAs].
+     */
+    fun resumeChooseOptionPipeline(
+        state: GameState,
+        continuation: ChooseOptionPipelineContinuation,
+        response: DecisionResponse,
+        checkForMore: CheckForMore
+    ): ExecutionResult {
+        if (response !is OptionChosenResponse) {
+            return ExecutionResult.error(state, "Expected option choice response for generic option selection")
+        }
+
+        val chosenValue = continuation.options.getOrNull(response.optionIndex)
+            ?: return ExecutionResult.error(state, "Invalid option index: ${response.optionIndex}")
+
+        // Inject the chosen value into the next EffectContinuation on the stack
+        val nextFrame = state.peekContinuation()
+        val newState = if (nextFrame is EffectContinuation) {
+            val (_, stateAfterPop) = state.popContinuation()
+            stateAfterPop.pushContinuation(
+                nextFrame.copy(chosenValues = nextFrame.chosenValues + (continuation.storeAs to chosenValue))
+            )
+        } else {
+            state
+        }
+
+        return checkForMore(newState, emptyList())
+    }
+
+    /**
      * Resume after player chose a creature type for "reveal until creature type" effects.
      *
      * Stores the chosen creature type into the EffectContinuation below on the stack

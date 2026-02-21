@@ -116,6 +116,7 @@ class ContinuationHandler(
             is ChooseFromCreatureTypeContinuation -> creatureTypeResumer.resumeChooseFromCreatureType(stateAfterPop, continuation, response, cfm)
             is ChooseToCreatureTypeContinuation -> creatureTypeResumer.resumeChooseToCreatureType(stateAfterPop, continuation, response, cfm)
             is ChooseCreatureTypePipelineContinuation -> creatureTypeResumer.resumeChooseCreatureTypePipeline(stateAfterPop, continuation, response, cfm)
+            is ChooseOptionPipelineContinuation -> creatureTypeResumer.resumeChooseOptionPipeline(stateAfterPop, continuation, response, cfm)
             is BecomeCreatureTypeContinuation -> creatureTypeResumer.resumeBecomeCreatureType(stateAfterPop, continuation, response, cfm)
             is ChooseCreatureTypeModifyStatsContinuation -> creatureTypeResumer.resumeChooseCreatureTypeModifyStats(stateAfterPop, continuation, response, cfm)
             is ChooseCreatureTypeGainControlContinuation -> creatureTypeResumer.resumeChooseCreatureTypeGainControl(stateAfterPop, continuation, response, cfm)
@@ -209,7 +210,8 @@ class ContinuationHandler(
                     targets = continuation.targets,
                     storedCollections = currentContext.storedCollections,
                     chosenCreatureType = continuation.chosenCreatureType,
-                    namedTargets = continuation.namedTargets
+                    namedTargets = continuation.namedTargets,
+                    chosenValues = continuation.chosenValues
                 )
                 currentState.pushContinuation(remainingContinuation)
             } else {
@@ -523,7 +525,8 @@ class ContinuationHandler(
                         targets = nextContinuation.targets,
                         storedCollections = currentContext.storedCollections,
                         chosenCreatureType = nextContinuation.chosenCreatureType,
-                        namedTargets = nextContinuation.namedTargets
+                        namedTargets = nextContinuation.namedTargets,
+                        chosenValues = nextContinuation.chosenValues
                     )
                     currentState.pushContinuation(remainingContinuation)
                 } else {

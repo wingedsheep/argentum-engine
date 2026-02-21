@@ -35,7 +35,9 @@ data class EffectContext(
     /** When inside a ForEachInGroupEffect, the current iteration entity. EffectTarget.Self resolves to this. */
     val iterationTarget: EntityId? = null,
     /** Named targets map for BoundVariable resolution (target name -> chosen target) */
-    val namedTargets: Map<String, ChosenTarget> = emptyMap()
+    val namedTargets: Map<String, ChosenTarget> = emptyMap(),
+    /** Named values chosen by the player during pipeline execution (e.g., creature type, color). */
+    val chosenValues: Map<String, String> = emptyMap()
 ) {
     companion object {
         /**

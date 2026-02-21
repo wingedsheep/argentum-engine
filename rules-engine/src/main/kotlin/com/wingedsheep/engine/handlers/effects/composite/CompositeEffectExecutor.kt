@@ -54,7 +54,8 @@ class CompositeEffectExecutor(
                     storedCollections = currentContext.storedCollections,
                     chosenCreatureType = currentContext.chosenCreatureType,
                     triggeringEntityId = currentContext.triggeringEntityId,
-                    namedTargets = currentContext.namedTargets
+                    namedTargets = currentContext.namedTargets,
+                    chosenValues = currentContext.chosenValues
                 )
                 currentState.pushContinuation(continuation)
             } else {
