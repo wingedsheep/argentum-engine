@@ -766,7 +766,7 @@ Set via `staticAbility { ability = ... }`:
 
 ### Combat Restrictions
 
-- `CantAttack(target)` / `CantBlock(target)`
+- `CantAttack(target)` / `CantBlock(target)` / `MustAttack(target)`
 - `CantAttackUnlessDefenderControlsLandType(landType, target)`
 - `CantBlockCreaturesWithGreaterPower(target)`
 - `CanOnlyBlockCreaturesWithKeyword(keyword, target)`

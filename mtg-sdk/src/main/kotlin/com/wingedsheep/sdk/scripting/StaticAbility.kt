@@ -151,6 +151,18 @@ data class CantAttack(
 }
 
 /**
+ * Forces a creature to attack each combat if able.
+ * Used for creatures like Goblin Brigand: "This creature attacks each combat if able."
+ */
+@SerialName("MustAttack")
+@Serializable
+data class MustAttack(
+    val target: StaticTarget = StaticTarget.SourceCreature
+) : StaticAbility {
+    override val description: String = "attacks each combat if able"
+}
+
+/**
  * Prevents a creature from blocking.
  * Used for cards like Jungle Lion or effects like "Target creature can't block".
  */

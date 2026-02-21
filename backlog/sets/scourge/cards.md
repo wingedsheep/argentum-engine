@@ -3,14 +3,14 @@
 
 **Set Size:** 143 cards
 **Release Date:** May 26, 2003
-**Implemented:** 52 / 143
+**Implemented:** 53 / 143
 
 | Color | Count |
 |-------|-------|
 | White | 10 |
 | Blue | 10 |
 | Black | 10 |
-| Red | 10 |
+| Red | 11 |
 | Green | 10 |
 | Multicolor | 1 |
 | Colorless | 1 |
@@ -82,7 +82,7 @@
 - [ ] Frontline Strategist
 - [x] Frozen Solid
 - [ ] Gilded Light
-- [ ] Goblin Brigand
+- [x] Goblin Brigand
 - [ ] Goblin Psychopath
 - [x] Goblin Warchief
 - [x] Goblin War Strike
