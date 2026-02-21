@@ -44,5 +44,6 @@ val MistformWall = card("Mistform Wall") {
         artist = "Franz Vohwinkel"
         flavorText = "\"Fellowship, the fourth myth of reality: In times of war, only the shifting allegiances of allies keep the world safe.\""
         imageUri = "https://cards.scryfall.io/large/front/e/b/ebaa7a26-8516-4d71-a524-77b2d3f030d5.jpg?1562941780"
+        ruling("2004-10-04", "As of the Champions of Kamigawa rules update, the Wall creature type no longer inherently prevents attacking. All Walls printed before this update, including Mistform Wall, received errata granting defender conditionally: \"This creature has defender as long as it's a Wall.\" Changing its creature type away from Wall removes defender, allowing it to attack.")
     }
 }

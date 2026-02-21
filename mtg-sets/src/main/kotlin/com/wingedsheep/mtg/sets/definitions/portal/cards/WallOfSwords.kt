@@ -25,5 +25,6 @@ val WallOfSwords = card("Wall of Swords") {
         artist = "Douglas Shuler"
         flavorText = "\"Sharper than wind, lighter than air.\""
         imageUri = "https://cards.scryfall.io/normal/front/3/e/3e8d55a3-0d7f-4fba-9879-9a8264110e78.jpg"
+        ruling("2004-10-04", "As of the Champions of Kamigawa rules update, the Wall creature type no longer inherently prevents attacking. All Walls printed before this update received errata granting the defender keyword.")
     }
 }

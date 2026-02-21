@@ -25,5 +25,6 @@ val WallOfGranite = card("Wall of Granite") {
         artist = "John Matson"
         flavorText = "Solid as the mountain from which it came."
         imageUri = "https://cards.scryfall.io/normal/front/7/0/70c5ac71-bf45-4b99-8184-36ce88dd728a.jpg"
+        ruling("2004-10-04", "As of the Champions of Kamigawa rules update, the Wall creature type no longer inherently prevents attacking. All Walls printed before this update received errata granting the defender keyword.")
     }
 }

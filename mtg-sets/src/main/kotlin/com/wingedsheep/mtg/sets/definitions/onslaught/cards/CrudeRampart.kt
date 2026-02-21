@@ -29,5 +29,6 @@ val CrudeRampart = card("Crude Rampart") {
         artist = "Sam Wood"
         flavorText = "Success is one part inspiration, nine parts desperation."
         imageUri = "https://cards.scryfall.io/normal/front/a/f/af5d1be2-d6ae-4820-aa01-62f261b0f110.jpg?1562936464"
+        ruling("2004-10-04", "As of the Champions of Kamigawa rules update, the Wall creature type no longer inherently prevents attacking. All Walls printed before this update received errata granting the defender keyword.")
     }
 }

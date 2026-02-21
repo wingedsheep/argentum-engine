@@ -18,7 +18,10 @@ Implement the card specified in `$ARGUMENTS`. The card name is the main argument
    - Extract: name, mana_cost, type_line, oracle_text, power, toughness, colors, rarity, collector_number, artist, flavor_text, image_uris.normal
    - Common set codes: `ons` (Onslaught), `lgn` (Legions), `scg` (Scourge), `por` (Portal), `lea` (Alpha), `leb` (Beta), `2ed` (Unlimited), `ktk` (Khans of Tarkir)
 
-2. **Check for Oracle Errata** — `oracle_text` has current wording. Document significant errata (e.g., "Bury" → "Destroy + can't be regenerated", "Remove from game" → "Exile") in a comment above the card definition.
+2. **Check for Oracle Errata & Rulings** — `oracle_text` has current wording. Document significant errata (e.g., "Bury" → "Destroy + can't be regenerated", "Remove from game" → "Exile") in a comment above the card definition.
+   - Fetch rulings: `https://api.scryfall.com/cards/named?exact=<card-name-url-encoded>&set=<set-code>` → use `rulings_uri` from response to fetch rulings list
+   - Add mechanically significant rulings to the `metadata { }` block using `ruling(date, text)` — especially rules updates that changed card behavior (e.g., Champions of Kamigawa Wall/Defender errata, creature type updates, functional errata)
+   - Skip trivial reminder-text rulings that just restate the rules (e.g., "Flying means...")
 
 3. Parse oracle text: card type, abilities (spell/triggered/activated/static/replacement), targeting, keywords, conditions.
 
