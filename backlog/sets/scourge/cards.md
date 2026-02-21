@@ -3,12 +3,12 @@
 
 **Set Size:** 143 cards
 **Release Date:** May 26, 2003
-**Implemented:** 56 / 143
+**Implemented:** 57 / 143
 
 | Color | Count |
 |-------|-------|
 | White | 11 |
-| Blue | 10 |
+| Blue | 11 |
 | Black | 11 |
 | Red | 11 |
 | Green | 11 |
@@ -114,7 +114,7 @@
 - [x] Putrid Raptor
 - [ ] Pyrostatic Pillar
 - [x] Rain of Blades
-- [ ] Raven Guild Initiate
+- [x] Raven Guild Initiate
 - [ ] Raven Guild Master
 - [ ] Reaping the Graves
 - [x] Recuperate

@@ -332,11 +332,13 @@ data class Concede(
  * @property playerId The player turning the creature face up
  * @property sourceId The face-down creature to turn face up (named sourceId for frontend consistency with ActivateAbility)
  * @property paymentStrategy How the player intends to pay the morph cost
+ * @property costTargetIds Permanents chosen for non-mana morph costs (e.g., return a Bird to hand)
  */
 @Serializable
 @SerialName("TurnFaceUp")
 data class TurnFaceUp(
     override val playerId: EntityId,
     val sourceId: EntityId,
-    val paymentStrategy: PaymentStrategy = PaymentStrategy.AutoPay
+    val paymentStrategy: PaymentStrategy = PaymentStrategy.AutoPay,
+    val costTargetIds: List<EntityId> = emptyList()
 ) : GameAction

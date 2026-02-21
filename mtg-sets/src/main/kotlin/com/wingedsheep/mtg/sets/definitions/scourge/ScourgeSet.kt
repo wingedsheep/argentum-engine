@@ -51,6 +51,7 @@ object ScourgeSet {
         AphettoRunecaster,
         CoastWatcher,
         MercurialKite,
+        RavenGuildInitiate,
         RiptideSurvivor,
         ScornfulEgotist,
         ShorelineRanger,

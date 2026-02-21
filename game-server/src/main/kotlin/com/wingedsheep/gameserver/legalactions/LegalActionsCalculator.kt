@@ -731,6 +731,22 @@ class LegalActionsCalculator(
                         action = TurnFaceUp(playerId, entityId),
                     ))
                 }
+                is PayCost.ReturnToHand -> {
+                    val validTargets = findReturnToHandTargets(state, playerId, cost.filter, entityId)
+                    if (validTargets.size >= cost.count) {
+                        result.add(LegalActionInfo(
+                            actionType = "ActivateAbility",
+                            description = "Turn face-up (${cost.description})",
+                            action = TurnFaceUp(playerId, entityId),
+                            additionalCostInfo = AdditionalCostInfo(
+                                description = cost.description,
+                                costType = "Sacrifice",
+                                validSacrificeTargets = validTargets,
+                                sacrificeCount = cost.count
+                            )
+                        ))
+                    }
+                }
                 else -> {
                     // Future morph cost types — skip for now
                 }
@@ -1409,6 +1425,31 @@ class LegalActionsCalculator(
             if (controllerId != playerId) return@filter false
 
             predicateEvaluator.matches(state, entityId, cost.filter, predicateContext)
+        }
+    }
+
+    /**
+     * Find permanents that can be returned to hand for a morph cost.
+     * Uses projected state to account for type-changing effects.
+     */
+    private fun findReturnToHandTargets(
+        state: GameState,
+        playerId: EntityId,
+        filter: GameObjectFilter,
+        excludeEntityId: EntityId
+    ): List<EntityId> {
+        val projected = stateProjector.project(state)
+        val playerBattlefield = ZoneKey(playerId, Zone.BATTLEFIELD)
+        val predicateContext = PredicateContext(controllerId = playerId)
+
+        return state.getZone(playerBattlefield).filter { entityId ->
+            if (entityId == excludeEntityId) return@filter false
+            val container = state.getEntity(entityId) ?: return@filter false
+            container.get<CardComponent>() ?: return@filter false
+            val controllerId = container.get<ControllerComponent>()?.playerId
+            if (controllerId != playerId) return@filter false
+
+            predicateEvaluator.matchesWithProjection(state, projected, entityId, filter, predicateContext)
         }
     }
 

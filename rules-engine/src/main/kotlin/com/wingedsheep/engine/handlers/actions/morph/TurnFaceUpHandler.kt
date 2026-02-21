@@ -12,20 +12,27 @@ import com.wingedsheep.engine.core.TurnFaceUpEvent
 import com.wingedsheep.engine.event.TriggerDetector
 import com.wingedsheep.engine.event.TriggerProcessor
 import com.wingedsheep.engine.handlers.CostHandler
+import com.wingedsheep.engine.handlers.PredicateContext
+import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.handlers.actions.ActionContext
 import com.wingedsheep.engine.handlers.actions.ActionHandler
+import com.wingedsheep.engine.handlers.effects.EffectExecutorUtils
+import com.wingedsheep.engine.mechanics.layers.StateProjector
 import com.wingedsheep.engine.mechanics.mana.ManaPool
 import com.wingedsheep.engine.mechanics.mana.ManaSolver
 import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.GameState
+import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.identity.FaceDownComponent
-import com.wingedsheep.engine.state.components.identity.MorphDataComponent
 import com.wingedsheep.engine.state.components.identity.LifeTotalComponent
+import com.wingedsheep.engine.state.components.identity.MorphDataComponent
 import com.wingedsheep.engine.state.components.player.ManaPoolComponent
 import com.wingedsheep.sdk.core.Color
+import com.wingedsheep.sdk.core.Zone
+import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.costs.PayCost
 import kotlin.reflect.KClass
 
@@ -42,9 +49,12 @@ class TurnFaceUpHandler(
     private val manaSolver: ManaSolver,
     private val costHandler: CostHandler,
     private val triggerDetector: TriggerDetector,
-    private val triggerProcessor: TriggerProcessor
+    private val triggerProcessor: TriggerProcessor,
+    private val stateProjector: StateProjector
 ) : ActionHandler<TurnFaceUp> {
     override val actionType: KClass<TurnFaceUp> = TurnFaceUp::class
+
+    private val predicateEvaluator = PredicateEvaluator()
 
     override fun validate(state: GameState, action: TurnFaceUp): String? {
         if (state.priorityPlayerId != action.playerId) {
@@ -114,6 +124,20 @@ class TurnFaceUpHandler(
                 }
                 // Note: paying life doesn't require a minimum — you can pay life
                 // even if it would reduce you to 0 or below (you lose as SBA)
+            }
+            is PayCost.ReturnToHand -> {
+                val validTargets = findReturnToHandTargets(state, action.playerId, morphData.morphCost, action.sourceId)
+                if (validTargets.size < morphData.morphCost.count) {
+                    return "Not enough permanents to return to pay morph cost"
+                }
+                if (action.costTargetIds.size != morphData.morphCost.count) {
+                    return "Must return exactly ${morphData.morphCost.count} permanent(s) to pay morph cost"
+                }
+                for (targetId in action.costTargetIds) {
+                    if (targetId !in validTargets) {
+                        return "Invalid target for return-to-hand morph cost: $targetId"
+                    }
+                }
             }
             else -> return "Unsupported morph cost type: ${morphData.morphCost::class.simpleName}"
         }
@@ -281,6 +305,16 @@ class TurnFaceUpHandler(
                     }
                 }
             }
+            is PayCost.ReturnToHand -> {
+                for (targetId in action.costTargetIds) {
+                    val result = EffectExecutorUtils.movePermanentToZone(currentState, targetId, Zone.HAND)
+                    if (result.error != null) {
+                        return ExecutionResult.error(currentState, result.error!!)
+                    }
+                    currentState = result.newState
+                    events.addAll(result.events)
+                }
+            }
             else -> return ExecutionResult.error(state, "Unsupported morph cost type: ${morphData.morphCost::class.simpleName}")
         }
 
@@ -322,6 +356,33 @@ class TurnFaceUpHandler(
         return ExecutionResult.success(currentState.withPriority(action.playerId), events)
     }
 
+    /**
+     * Find valid permanents on the battlefield that can be returned to hand to pay a morph cost.
+     * Uses projected state to account for type-changing effects (e.g., Artificial Evolution).
+     *
+     * @param excludeEntityId The face-down creature being turned up (cannot return itself)
+     */
+    fun findReturnToHandTargets(
+        state: GameState,
+        playerId: EntityId,
+        cost: PayCost.ReturnToHand,
+        excludeEntityId: EntityId
+    ): List<EntityId> {
+        val projected = stateProjector.project(state)
+        val playerBattlefield = ZoneKey(playerId, Zone.BATTLEFIELD)
+        val predicateContext = PredicateContext(controllerId = playerId)
+
+        return state.getZone(playerBattlefield).filter { entityId ->
+            if (entityId == excludeEntityId) return@filter false
+            val container = state.getEntity(entityId) ?: return@filter false
+            container.get<CardComponent>() ?: return@filter false
+            val controllerId = container.get<ControllerComponent>()?.playerId
+            if (controllerId != playerId) return@filter false
+
+            predicateEvaluator.matchesWithProjection(state, projected, entityId, cost.filter, predicateContext)
+        }
+    }
+
     companion object {
         fun create(context: ActionContext): TurnFaceUpHandler {
             return TurnFaceUpHandler(
@@ -329,7 +390,8 @@ class TurnFaceUpHandler(
                 context.manaSolver,
                 context.costHandler,
                 context.triggerDetector,
-                context.triggerProcessor
+                context.triggerProcessor,
+                context.stateProjector
             )
         }
     }

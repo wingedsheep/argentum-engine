@@ -101,4 +101,30 @@ sealed interface PayCost {
     ) : PayCost {
         override val description: String = "pay $amount life"
     }
+
+    /**
+     * Return one or more permanents you control matching a filter to their owner's hand.
+     * "Morph—Return a Bird you control to its owner's hand."
+     *
+     * @property filter Which permanents can be returned
+     * @property count How many permanents must be returned (default 1)
+     */
+    @SerialName("ReturnToHand")
+    @Serializable
+    data class ReturnToHand(
+        val filter: GameObjectFilter = GameObjectFilter.Companion.Any,
+        val count: Int = 1
+    ) : PayCost {
+        override val description: String = buildString {
+            append("Return ")
+            val filterDesc = filter.description
+            if (count == 1) {
+                append(if (filterDesc.first().lowercaseChar() in "aeiou") "an" else "a")
+                append(" $filterDesc")
+            } else {
+                append("$count ${filterDesc}s")
+            }
+            append(" you control to its owner's hand")
+        }
+    }
 }

@@ -932,6 +932,7 @@ Used in `OptionalCostEffect`, `MayPayManaEffect`, `AnyPlayerMayPayEffect`, `PayO
 - `PayCost.Discard(filter, count, random)`
 - `PayCost.Sacrifice(filter, count)`
 - `PayCost.PayLife(amount)`
+- `PayCost.ReturnToHand(filter, count)` — Return permanents you control to hand (e.g., morph cost)
 
 ---
 
