@@ -18,6 +18,8 @@ export function StackDisplay() {
   const targetingState = useGameStore((state) => state.targetingState)
   const addTarget = useGameStore((state) => state.addTarget)
   const removeTarget = useGameStore((state) => state.removeTarget)
+  const decisionSelectionState = useGameStore((state) => state.decisionSelectionState)
+  const toggleDecisionSelection = useGameStore((state) => state.toggleDecisionSelection)
   const pendingDecision = useGameStore((state) => state.pendingDecision)
   const gameState = useGameStore((state) => state.gameState)
 
@@ -30,6 +32,16 @@ export function StackDisplay() {
   if (!showStack) return null
 
   const handleStackItemClick = (cardId: EntityId) => {
+    // Decision-time targeting (e.g., cycling Complicate → ChooseTargetsDecision for stack spells)
+    if (decisionSelectionState) {
+      const isValidOption = decisionSelectionState.validOptions.includes(cardId)
+      if (isValidOption) {
+        toggleDecisionSelection(cardId)
+      }
+      return
+    }
+
+    // Cast-time targeting (e.g., casting a counterspell targeting a stack spell)
     if (!targetingState) return
 
     const isValidTarget = targetingState.validTargets.includes(cardId)
@@ -74,8 +86,10 @@ export function StackDisplay() {
           </div>
           <div style={styles.stackItems}>
             {stackCards.map((card, index) => {
-              const isValidTarget = targetingState?.validTargets.includes(card.id) ?? false
-              const isSelectedTarget = targetingState?.selectedTargets.includes(card.id) ?? false
+              const isValidTarget = (targetingState?.validTargets.includes(card.id) ?? false)
+                || (decisionSelectionState?.validOptions.includes(card.id) ?? false)
+              const isSelectedTarget = (targetingState?.selectedTargets.includes(card.id) ?? false)
+                || (decisionSelectionState?.selectedOptions.includes(card.id) ?? false)
 
               return (
                 <div
