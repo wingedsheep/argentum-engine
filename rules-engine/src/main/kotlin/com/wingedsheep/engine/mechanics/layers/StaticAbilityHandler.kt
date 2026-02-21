@@ -20,7 +20,9 @@ import com.wingedsheep.sdk.scripting.GrantKeywordByCounter
 import com.wingedsheep.sdk.scripting.GrantProtection
 import com.wingedsheep.sdk.scripting.ModifyStatsByCounterOnSource
 import com.wingedsheep.sdk.scripting.GrantShroudToController
+import com.wingedsheep.sdk.scripting.conditions.EnchantedCreatureHasSubtype
 import com.wingedsheep.sdk.scripting.conditions.Exists
+import com.wingedsheep.sdk.scripting.conditions.NotCondition
 import com.wingedsheep.sdk.scripting.conditions.SourceHasSubtype
 import com.wingedsheep.sdk.scripting.GlobalEffect
 import com.wingedsheep.sdk.scripting.GlobalEffectType
@@ -249,6 +251,11 @@ class StaticAbilityHandler(
     private fun mapToSourceProjectionCondition(condition: Condition): SourceProjectionCondition? {
         return when (condition) {
             is SourceHasSubtype -> SourceProjectionCondition.HasSubtype(condition.subtype.value)
+            is EnchantedCreatureHasSubtype -> SourceProjectionCondition.EnchantedCreatureHasSubtype(condition.subtype.value)
+            is NotCondition -> {
+                val inner = mapToSourceProjectionCondition(condition.condition) ?: return null
+                SourceProjectionCondition.Not(inner)
+            }
             is Exists -> mapExistsToSourceProjectionCondition(condition)
             else -> null
         }

@@ -95,6 +95,9 @@ object ScourgeSet {
         RewardTheFaithful,
         WipeClean,
 
+        // Black enchantments
+        ClutchOfUndeath,
+
         // Black creatures (additional)
         DeathsHeadBuzzard,
         PutridRaptor,

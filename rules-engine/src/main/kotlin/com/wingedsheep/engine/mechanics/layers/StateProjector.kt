@@ -657,21 +657,7 @@ class StateProjector(
         val sourceCondition = effect.sourceCondition
         if (sourceCondition != null) {
             val sourceValues = projectedValues[effect.sourceId]
-            val conditionMet = when (sourceCondition) {
-                is SourceProjectionCondition.HasSubtype ->
-                    sourceValues?.subtypes?.any { it.equals(sourceCondition.subtype, ignoreCase = true) } == true
-                is SourceProjectionCondition.ControllerControlsCreatureOfType -> {
-                    val controllerId = sourceValues?.controllerId
-                    if (controllerId != null) {
-                        state.getBattlefield(controllerId).any { entityId ->
-                            entityId != effect.sourceId &&
-                            projectedValues[entityId]?.subtypes?.any {
-                                it.equals(sourceCondition.subtype, ignoreCase = true)
-                            } == true
-                        }
-                    } else false
-                }
-            }
+            val conditionMet = evaluateSourceCondition(sourceCondition, effect, state, projectedValues, sourceValues)
             if (!conditionMet) return
         }
 
@@ -785,6 +771,41 @@ class StateProjector(
                 }
             }
         }
+    }
+
+    /**
+     * Evaluate a source projection condition against the current projected state.
+     */
+    private fun evaluateSourceCondition(
+        condition: SourceProjectionCondition,
+        effect: ContinuousEffect,
+        state: GameState,
+        projectedValues: MutableMap<EntityId, MutableProjectedValues>,
+        sourceValues: MutableProjectedValues?
+    ): Boolean = when (condition) {
+        is SourceProjectionCondition.HasSubtype ->
+            sourceValues?.subtypes?.any { it.equals(condition.subtype, ignoreCase = true) } == true
+        is SourceProjectionCondition.ControllerControlsCreatureOfType -> {
+            val controllerId = sourceValues?.controllerId
+            if (controllerId != null) {
+                state.getBattlefield(controllerId).any { entityId ->
+                    entityId != effect.sourceId &&
+                    projectedValues[entityId]?.subtypes?.any {
+                        it.equals(condition.subtype, ignoreCase = true)
+                    } == true
+                }
+            } else false
+        }
+        is SourceProjectionCondition.EnchantedCreatureHasSubtype -> {
+            val attachedTo = state.getEntity(effect.sourceId)
+                ?.get<com.wingedsheep.engine.state.components.battlefield.AttachedToComponent>()
+            if (attachedTo != null) {
+                projectedValues[attachedTo.targetId]?.subtypes?.any {
+                    it.equals(condition.subtype, ignoreCase = true)
+                } == true
+            } else false
+        }
+        is SourceProjectionCondition.Not -> !evaluateSourceCondition(condition.condition, effect, state, projectedValues, sourceValues)
     }
 
     /**
@@ -946,6 +967,20 @@ sealed interface SourceProjectionCondition {
      */
     @Serializable
     data class ControllerControlsCreatureOfType(val subtype: String) : SourceProjectionCondition
+
+    /**
+     * The creature enchanted by the source aura must have a specific subtype.
+     * Used for "Enchanted creature gets X as long as it's a [subtype]."
+     */
+    @Serializable
+    data class EnchantedCreatureHasSubtype(val subtype: String) : SourceProjectionCondition
+
+    /**
+     * Negation wrapper for source projection conditions.
+     * Used for "otherwise" clauses (e.g., "Otherwise, it gets -3/-3").
+     */
+    @Serializable
+    data class Not(val condition: SourceProjectionCondition) : SourceProjectionCondition
 }
 
 /**

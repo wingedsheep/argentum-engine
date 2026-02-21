@@ -3,13 +3,13 @@
 
 **Set Size:** 143 cards
 **Release Date:** May 26, 2003
-**Implemented:** 50 / 143
+**Implemented:** 51 / 143
 
 | Color | Count |
 |-------|-------|
 | White | 10 |
 | Blue | 9 |
-| Black | 9 |
+| Black | 10 |
 | Red | 10 |
 | Green | 10 |
 | Multicolor | 1 |
@@ -40,7 +40,7 @@
 - [x] Chartooth Cougar
 - [ ] Chill Haunting
 - [x] Claws of Wirewood
-- [ ] Clutch of Undeath
+- [x] Clutch of Undeath
 - [x] Coast Watcher
 - [ ] Consumptive Goo
 - [ ] Daru Spiritualist
