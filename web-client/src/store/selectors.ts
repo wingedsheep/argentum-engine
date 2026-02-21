@@ -290,13 +290,17 @@ export function useBattlefieldCards(): {
     const isCreature = (c: ClientCard) => c.cardTypes.includes('CREATURE')
     const isPlaneswalker = (c: ClientCard) => c.cardTypes.includes('PLANESWALKER')
 
+    // Animated lands (both creature + land) should appear in the creatures row
+    const isCreatureOrAnimatedLand = (c: ClientCard) => isCreature(c)
+    const isNonCreatureLand = (c: ClientCard) => isLand(c) && !isCreature(c)
+
     return {
-      playerLands: playerCards.filter((c) => isLand(c) && isNotAttached(c)),
-      playerCreatures: playerCards.filter((c) => isCreature(c) && !isLand(c) && isNotAttached(c)),
+      playerLands: playerCards.filter((c) => isNonCreatureLand(c) && isNotAttached(c)),
+      playerCreatures: playerCards.filter((c) => isCreatureOrAnimatedLand(c) && isNotAttached(c)),
       playerPlaneswalkers: playerCards.filter((c) => isPlaneswalker(c) && !isCreature(c) && !isLand(c) && isNotAttached(c)),
       playerOther: playerCards.filter((c) => !isCreature(c) && !isPlaneswalker(c) && !isLand(c) && isNotAttached(c)),
-      opponentLands: opponentCards.filter((c) => isLand(c) && isNotAttached(c)),
-      opponentCreatures: opponentCards.filter((c) => isCreature(c) && !isLand(c) && isNotAttached(c)),
+      opponentLands: opponentCards.filter((c) => isNonCreatureLand(c) && isNotAttached(c)),
+      opponentCreatures: opponentCards.filter((c) => isCreatureOrAnimatedLand(c) && isNotAttached(c)),
       opponentPlaneswalkers: opponentCards.filter((c) => isPlaneswalker(c) && !isCreature(c) && !isLand(c) && isNotAttached(c)),
       opponentOther: opponentCards.filter((c) => !isCreature(c) && !isPlaneswalker(c) && !isLand(c) && isNotAttached(c)),
     }

@@ -22,7 +22,8 @@ data class ActivatedAbility(
     val isManaAbility: Boolean = false,
     val isPlaneswalkerAbility: Boolean = false,
     val activateFromZone: Zone = Zone.BATTLEFIELD,
-    val promptOnDraw: Boolean = false
+    val promptOnDraw: Boolean = false,
+    val descriptionOverride: String? = null
 ) {
     /** Backward-compatible secondary constructor for single-target abilities. */
     constructor(
@@ -35,7 +36,8 @@ data class ActivatedAbility(
         isManaAbility: Boolean = false,
         isPlaneswalkerAbility: Boolean = false,
         activateFromZone: Zone = Zone.BATTLEFIELD,
-        promptOnDraw: Boolean = false
+        promptOnDraw: Boolean = false,
+        descriptionOverride: String? = null
     ) : this(
         id = id,
         cost = cost,
@@ -46,7 +48,8 @@ data class ActivatedAbility(
         isManaAbility = isManaAbility,
         isPlaneswalkerAbility = isPlaneswalkerAbility,
         activateFromZone = activateFromZone,
-        promptOnDraw = promptOnDraw
+        promptOnDraw = promptOnDraw,
+        descriptionOverride = descriptionOverride
     )
 
     /** Convenience accessor for single-target abilities. */
@@ -54,7 +57,7 @@ data class ActivatedAbility(
         get() = targetRequirements.firstOrNull()
 
     val description: String
-        get() = "${cost.description}: ${effect.description}"
+        get() = descriptionOverride ?: "${cost.description}: ${effect.description}"
 }
 
 /**

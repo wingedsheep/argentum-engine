@@ -189,14 +189,16 @@ class StateBasedActionChecker {
     private fun checkZeroToughness(state: GameState): ExecutionResult {
         var newState = state
         val events = mutableListOf<GameEvent>()
+        val projected = stateProjector.project(state)
 
         for (entityId in state.getBattlefield().toList()) {
             val container = state.getEntity(entityId) ?: continue
             val cardComponent = container.get<CardComponent>() ?: continue
 
-            if (!cardComponent.typeLine.isCreature) continue
+            // Use projected types to handle animated lands etc.
+            if (!projected.isCreature(entityId)) continue
 
-            val effectiveToughness = stateProjector.getProjectedToughness(state, entityId)
+            val effectiveToughness = projected.getToughness(entityId) ?: 0
 
             if (effectiveToughness <= 0) {
                 val result = putCreatureInGraveyard(newState, entityId, cardComponent, "zero toughness")
@@ -222,14 +224,16 @@ class StateBasedActionChecker {
             val cardComponent = container.get<CardComponent>() ?: continue
             val damageComponent = container.get<DamageComponent>() ?: continue
 
-            if (!cardComponent.typeLine.isCreature) continue
+            // Use projected types to handle animated lands etc.
+            val projected = stateProjector.project(newState)
+            if (!projected.isCreature(entityId)) continue
 
             // Check if creature has indestructible
-            if (stateProjector.hasProjectedKeyword(newState, entityId, Keyword.INDESTRUCTIBLE)) {
+            if (projected.hasKeyword(entityId, Keyword.INDESTRUCTIBLE)) {
                 continue // Indestructible creatures can't be destroyed by lethal damage
             }
 
-            val effectiveToughness = stateProjector.getProjectedToughness(newState, entityId)
+            val effectiveToughness = projected.getToughness(entityId) ?: 0
 
             if (damageComponent.amount >= effectiveToughness) {
                 // Check for regeneration shields (lethal damage is destruction, so it can be regenerated)

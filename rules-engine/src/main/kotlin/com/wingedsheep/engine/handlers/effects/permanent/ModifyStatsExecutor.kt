@@ -10,6 +10,7 @@ import com.wingedsheep.engine.mechanics.layers.ActiveFloatingEffect
 import com.wingedsheep.engine.mechanics.layers.FloatingEffectData
 import com.wingedsheep.engine.mechanics.layers.Layer
 import com.wingedsheep.engine.mechanics.layers.SerializableModification
+import com.wingedsheep.engine.mechanics.layers.StateProjector
 import com.wingedsheep.engine.mechanics.layers.Sublayer
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.identity.CardComponent
@@ -39,13 +40,13 @@ class ModifyStatsExecutor(
         val targetId = resolveTarget(effect.target, context)
             ?: return ExecutionResult.error(state, "No valid target for stat modification")
 
-        // Verify target exists and is a creature
+        // Verify target exists and is a creature (use projected types for animated lands etc.)
         val targetContainer = state.getEntity(targetId)
             ?: return ExecutionResult.error(state, "Target creature no longer exists")
         val cardComponent = targetContainer.get<CardComponent>()
             ?: return ExecutionResult.error(state, "Target is not a card")
-        // Face-down permanents are always creatures (Rule 707.2)
-        if (!cardComponent.typeLine.isCreature && !targetContainer.has<FaceDownComponent>()) {
+        val projected = StateProjector().project(state)
+        if (!projected.isCreature(targetId) && !targetContainer.has<FaceDownComponent>()) {
             return ExecutionResult.error(state, "Target is not a creature")
         }
 

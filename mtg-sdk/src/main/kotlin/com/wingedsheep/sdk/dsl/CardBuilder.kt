@@ -657,6 +657,7 @@ class ActivatedAbilityBuilder {
     var restrictions: List<ActivationRestriction> = emptyList()
     var activateFromZone: Zone = Zone.BATTLEFIELD
     var promptOnDraw: Boolean = false
+    var description: String? = null
 
     // Named target bindings (for multi-target abilities)
     private val namedTargets: MutableList<Pair<String, TargetRequirement>> = mutableListOf()
@@ -693,7 +694,8 @@ class ActivatedAbilityBuilder {
             timing = timing,
             restrictions = restrictions,
             activateFromZone = activateFromZone,
-            promptOnDraw = promptOnDraw
+            promptOnDraw = promptOnDraw,
+            descriptionOverride = description
         )
     }
 }

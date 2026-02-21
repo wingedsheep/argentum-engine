@@ -1158,6 +1158,11 @@ class ProjectedState(
         getTypes(entityId).contains(type)
 
     /**
+     * Check if an entity is a creature (using projected types, accounts for animated lands etc.).
+     */
+    fun isCreature(entityId: EntityId): Boolean = hasType(entityId, "CREATURE")
+
+    /**
      * Get projected subtypes for an entity.
      * Face-down creatures have no subtypes (Rule 707.2).
      */

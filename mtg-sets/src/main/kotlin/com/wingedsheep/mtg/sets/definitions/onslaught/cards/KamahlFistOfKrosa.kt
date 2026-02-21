@@ -36,6 +36,7 @@ val KamahlFistOfKrosa = card("Kamahl, Fist of Krosa") {
 
     activatedAbility {
         cost = Costs.Mana("{2}{G}{G}{G}")
+        description = "{2}{G}{G}{G}: Creatures you control get +3/+3 and gain trample until end of turn."
         effect = Effects.Composite(
             ForEachInGroupEffect(
                 filter = GroupFilter(GameObjectFilter.Creature.youControl()),

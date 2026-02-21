@@ -125,13 +125,13 @@ class CombatManager(
         val cardComponent = container.get<CardComponent>()
             ?: return "Not a card: $attackerId"
 
-        // Must be a creature
-        if (!cardComponent.typeLine.isCreature) {
+        // Use projected state for controller, keywords, and types (includes floating effects like animate land)
+        val projected = stateProjector.project(state)
+
+        // Must be a creature (use projected types to handle animated lands etc.)
+        if (!projected.isCreature(attackerId)) {
             return "Only creatures can attack: ${cardComponent.name}"
         }
-
-        // Use projected state for controller and keywords (includes floating effects)
-        val projected = stateProjector.project(state)
 
         // Must be controlled by attacking player (use projected controller for control-changing effects)
         val controller = projected.getController(attackerId)
@@ -312,11 +312,11 @@ class CombatManager(
 
         return battlefield.filter { entityId ->
             val container = state.getEntity(entityId) ?: return@filter false
-            val cardComponent = container.get<CardComponent>() ?: return@filter false
+            container.get<CardComponent>() ?: return@filter false
             val controller = projected.getController(entityId)
 
-            // Must be a creature controlled by the player
-            if (!cardComponent.typeLine.isCreature || controller != playerId) {
+            // Must be a creature controlled by the player (use projected types for animated lands etc.)
+            if (!projected.isCreature(entityId) || controller != playerId) {
                 return@filter false
             }
 
@@ -534,13 +534,13 @@ class CombatManager(
         val cardComponent = container.get<CardComponent>()
             ?: return "Not a card: $blockerId"
 
-        // Must be a creature
-        if (!cardComponent.typeLine.isCreature) {
-            return "Only creatures can block: ${cardComponent.name}"
-        }
-
         // Must be controlled by blocking player (use projected controller for control-changing effects)
         val projected = stateProjector.project(state)
+
+        // Must be a creature (use projected types to handle animated lands etc.)
+        if (!projected.isCreature(blockerId)) {
+            return "Only creatures can block: ${cardComponent.name}"
+        }
         val controller = projected.getController(blockerId)
         if (controller != blockingPlayer) {
             return "You don't control ${cardComponent.name}"
@@ -2052,8 +2052,8 @@ class CombatManager(
         val projected = stateProjector.project(state)
 
         for ((entityId, container) in state.entities) {
-            val cardComponent = container.get<CardComponent>() ?: continue
-            if (!cardComponent.typeLine.isCreature) continue
+            container.get<CardComponent>() ?: continue
+            if (!projected.isCreature(entityId)) continue
 
             // Only check creatures that have actually taken damage
             val damageComponent = container.get<DamageComponent>() ?: continue
@@ -2242,11 +2242,11 @@ class CombatManager(
         return state.getBattlefield()
             .filter { entityId ->
                 val container = state.getEntity(entityId) ?: return@filter false
-                val cardComponent = container.get<CardComponent>() ?: return@filter false
+                container.get<CardComponent>() ?: return@filter false
                 val controller = projected.getController(entityId)
 
-                // Must be a creature controlled by blocking player and untapped
-                cardComponent.typeLine.isCreature &&
+                // Must be a creature controlled by blocking player and untapped (use projected types for animated lands)
+                projected.isCreature(entityId) &&
                     controller == blockingPlayer &&
                     !container.has<TappedComponent>()
             }

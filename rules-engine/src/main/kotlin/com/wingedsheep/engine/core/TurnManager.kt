@@ -1014,11 +1014,12 @@ class TurnManager(
 
         return battlefield.any { entityId ->
             val container = state.getEntity(entityId) ?: return@any false
-            val cardComponent = container.get<CardComponent>() ?: return@any false
+            container.get<CardComponent>() ?: return@any false
             val controller = projected.getController(entityId)
+            val projectedTypes = projected.getProjectedValues(entityId)?.types ?: emptySet()
 
-            // Must be a creature controlled by the player
-            if (!cardComponent.typeLine.isCreature || controller != playerId) {
+            // Must be a creature controlled by the player (use projected types for animated lands etc.)
+            if ("CREATURE" !in projectedTypes || controller != playerId) {
                 return@any false
             }
 
@@ -1061,11 +1062,12 @@ class TurnManager(
 
         return battlefield.filter { entityId ->
             val container = state.getEntity(entityId) ?: return@filter false
-            val cardComponent = container.get<CardComponent>() ?: return@filter false
+            container.get<CardComponent>() ?: return@filter false
             val controller = projected.getController(entityId)
+            val projectedTypes = projected.getProjectedValues(entityId)?.types ?: emptySet()
 
-            // Must be a creature controlled by the player
-            if (!cardComponent.typeLine.isCreature || controller != playerId) {
+            // Must be a creature controlled by the player (use projected types for animated lands etc.)
+            if ("CREATURE" !in projectedTypes || controller != playerId) {
                 return@filter false
             }
 
@@ -1104,11 +1106,12 @@ class TurnManager(
 
         return battlefield.filter { entityId ->
             val container = state.getEntity(entityId) ?: return@filter false
-            val cardComponent = container.get<CardComponent>() ?: return@filter false
+            container.get<CardComponent>() ?: return@filter false
             val controller = projected.getController(entityId)
+            val projectedTypes = projected.getProjectedValues(entityId)?.types ?: emptySet()
 
-            // Must be a creature controlled by the player
-            if (!cardComponent.typeLine.isCreature || controller != playerId) {
+            // Must be a creature controlled by the player (use projected types for animated lands etc.)
+            if ("CREATURE" !in projectedTypes || controller != playerId) {
                 return@filter false
             }
 

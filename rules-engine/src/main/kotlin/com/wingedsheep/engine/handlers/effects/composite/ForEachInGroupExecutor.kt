@@ -10,6 +10,7 @@ import com.wingedsheep.engine.mechanics.layers.ActiveFloatingEffect
 import com.wingedsheep.engine.mechanics.layers.FloatingEffectData
 import com.wingedsheep.engine.mechanics.layers.Layer
 import com.wingedsheep.engine.mechanics.layers.SerializableModification
+import com.wingedsheep.engine.mechanics.layers.StateProjector
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.FaceDownComponent
@@ -90,20 +91,17 @@ class ForEachInGroupExecutor(
     ): List<EntityId> {
         val filter = effect.filter
         val predicateContext = PredicateContext.fromEffectContext(context)
+        val projected = StateProjector().project(state)
         val result = mutableListOf<EntityId>()
 
         for (entityId in state.getBattlefield()) {
             val container = state.getEntity(entityId) ?: continue
-            val cardComponent = container.get<CardComponent>() ?: continue
+            container.get<CardComponent>() ?: continue
 
-            // Face-down permanents are always creatures (Rule 707.2)
-            val isCreature = cardComponent.typeLine.isCreature || container.has<FaceDownComponent>()
-
-            // For creature-only filters, skip non-creatures
-            // The predicate evaluator handles this via the baseFilter
             if (filter.excludeSelf && entityId == context.sourceId) continue
 
-            if (!predicateEvaluator.matches(state, entityId, filter.baseFilter, predicateContext)) {
+            // Use projected state for type checking (handles animated lands etc.)
+            if (!predicateEvaluator.matchesWithProjection(state, projected, entityId, filter.baseFilter, predicateContext)) {
                 continue
             }
 

@@ -1,5 +1,6 @@
 package com.wingedsheep.gameserver.dto
 
+import com.wingedsheep.sdk.core.CardType
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Phase
@@ -537,15 +538,21 @@ class ClientStateTransformer(
             ?.values?.flatten()?.toSet()
             ?.takeIf { it.isNotEmpty() }
 
-        // Build type line string from TypeLine, using projected subtypes if available
+        // Build type line string from TypeLine, using projected types/subtypes if available
         val typeLine = cardComponent.typeLine
         val projectedSubtypes = projectedValues?.subtypes?.toList()
         val displaySubtypes = projectedSubtypes ?: typeLine.subtypes.map { it.value }
+        val projectedTypes = projectedValues?.types
+        val displayCardTypes = if (projectedTypes != null) {
+            projectedTypes.mapNotNull { try { CardType.valueOf(it) } catch (_: Exception) { null } }
+        } else {
+            typeLine.cardTypes.toList()
+        }
         val typeLineParts = mutableListOf<String>()
         if (typeLine.supertypes.isNotEmpty()) {
             typeLineParts.add(typeLine.supertypes.joinToString(" ") { it.displayName })
         }
-        typeLineParts.add(typeLine.cardTypes.joinToString(" ") { it.displayName })
+        typeLineParts.add(displayCardTypes.joinToString(" ") { it.displayName })
         val typeLineString = if (displaySubtypes.isNotEmpty()) {
             "${typeLineParts.joinToString(" ")} — ${displaySubtypes.joinToString(" ")}"
         } else {
@@ -561,7 +568,7 @@ class ClientStateTransformer(
             manaCost = cardComponent.manaCost.toString(),
             manaValue = cardComponent.manaCost.cmc,
             typeLine = typeLineString,
-            cardTypes = typeLine.cardTypes.map { it.name }.toSet(),
+            cardTypes = displayCardTypes.map { it.name }.toSet(),
             subtypes = displaySubtypes.toSet(),
             colors = colors,
             oracleText = cardComponent.oracleText,
