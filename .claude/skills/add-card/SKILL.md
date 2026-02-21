@@ -43,35 +43,12 @@ Parse the arguments: the card name is the main argument, and `--set <set-code>` 
 
 Before implementing anything new, check what already exists. **Always prefer atomic effects over monolithic effects** for reusability.
 
-1. **Check DSL facades first** — these are the primary API:
-   - `Effects.*` — effect construction (`mtg-sdk/.../dsl/Effects.kt`)
-   - `Targets.*` — target requirements (`mtg-sdk/.../dsl/Targets.kt`)
-   - `Triggers.*` — trigger types (`mtg-sdk/.../dsl/Triggers.kt`)
-   - `Filters.*` — filter construction (`mtg-sdk/.../dsl/Filters.kt`)
-   - `Costs.*` — ability costs (`mtg-sdk/.../dsl/Costs.kt`)
-   - `Conditions.*` — conditions (`mtg-sdk/.../dsl/Conditions.kt`)
-   - `DynamicAmounts.*` — dynamic values (`mtg-sdk/.../dsl/DynamicAmounts.kt`)
-   - `EffectPatterns.*` — common patterns (`mtg-sdk/.../dsl/EffectPatterns.kt`)
+1. **Consult [reference.md](reference.md)** — it contains the complete inventory of all DSL facades (`Effects.*`, `Targets.*`, `Triggers.*`, `Filters.*`, `Costs.*`, `Conditions.*`, `DynamicAmounts.*`, `EffectPatterns.*`), all raw effect types, keywords, static abilities, replacement effects, and more.
 
-2. **Check raw effect types** in `mtg-sdk/.../scripting/effect/`:
-   - `DamageEffects.kt`, `LifeEffects.kt`, `DrawingEffects.kt`, `RemovalEffects.kt`
-   - `PermanentEffects.kt`, `LibraryEffects.kt`, `ManaEffects.kt`, `TokenEffects.kt`
-   - `CompositeEffects.kt`, `CombatEffects.kt`, `PlayerEffects.kt`, `StackEffects.kt`
-
-3. **Check other SDK types**:
-   - `Keyword.kt` — keywords
-   - `KeywordAbility.kt` — parameterized keywords (Ward, Protection, Cycling, etc.)
-   - `StaticAbility` types — for permanent/global effects
-   - `ReplacementEffect.kt` — replacement effects
-   - `AdditionalCost.kt` — additional spell costs
-   - `ActivationRestriction.kt` — activation restrictions
-
-4. **Check existing card implementations** with similar mechanics:
+2. **Check existing card implementations** with similar mechanics:
    ```bash
    grep -r "<keyword-or-effect>" mtg-sets/src/main/kotlin/
    ```
-
-For a full inventory, see [reference.md](reference.md).
 
 ---
 
@@ -135,6 +112,8 @@ If the card needs effects, keywords, triggers, conditions, or static abilities t
 
 **4.9 Add Condition** (if needed) in the appropriate file under `mtg-sdk/.../scripting/condition/`
 - Also add a facade entry in `mtg-sdk/.../dsl/Conditions.kt`
+
+**4.10 Update [reference.md](reference.md)** — After adding any new effect, keyword, trigger, condition, static ability, replacement effect, cost, or DSL facade entry, update the reference file so it stays in sync with the codebase.
 
 For code templates, see [examples.md](examples.md).
 
@@ -247,6 +226,7 @@ Create a git commit with all the changes:
 - [ ] Write scenario test
 - [ ] Plan frontend changes if needed
 - [ ] Write E2E test if new frontend/UI mechanic was introduced
+- [ ] **Update [reference.md](reference.md)** with all new effects/types added
 - [ ] Run `just test` — all tests pass
 - [ ] Update set backlog if applicable
 - [ ] Commit
@@ -257,6 +237,7 @@ Create a git commit with all the changes:
 - [ ] Update `web-client/src/types/enums.ts` (enum + display names)
 - [ ] Update keyword handlers if needed
 - [ ] Write scenario test
+- [ ] **Update [reference.md](reference.md)** with the new keyword
 - [ ] Run `just test` — all tests pass
 - [ ] Update set backlog if applicable
 - [ ] Commit
