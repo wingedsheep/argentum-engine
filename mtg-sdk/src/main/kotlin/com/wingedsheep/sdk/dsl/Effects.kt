@@ -121,6 +121,27 @@ object Effects {
     fun LoseLife(amount: DynamicAmount, target: EffectTarget = EffectTarget.PlayerRef(Player.TargetOpponent)): Effect =
         LoseLifeEffect(amount, target)
 
+    /**
+     * Lose half your life, rounded up.
+     * Composes as LoseLifeEffect with Divide(LifeTotal, 2).
+     *
+     * @param roundUp Whether to round up (true) or down (false)
+     * @param target Who loses life (default: Controller)
+     * @param lifePlayer Which player's life total to halve (default: Player.You for controller)
+     */
+    fun LoseHalfLife(
+        roundUp: Boolean = true,
+        target: EffectTarget = EffectTarget.Controller,
+        lifePlayer: Player = Player.You
+    ): Effect = LoseLifeEffect(
+        amount = DynamicAmount.Divide(
+            DynamicAmount.LifeTotal(lifePlayer),
+            DynamicAmount.Fixed(2),
+            roundUp = roundUp
+        ),
+        target = target
+    )
+
     // =========================================================================
     // Card Drawing Effects
     // =========================================================================

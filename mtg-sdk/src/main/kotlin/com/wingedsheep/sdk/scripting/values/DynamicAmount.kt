@@ -391,6 +391,48 @@ sealed interface DynamicAmount {
         }
     }
 
+    // =========================================================================
+    // Target-based Values - Values from targets on the stack
+    // =========================================================================
+
+    /**
+     * Power of a target creature (read from projected state).
+     * Used for conditions like "if its power is less than or equal to X".
+     */
+    @SerialName("TargetPower")
+    @Serializable
+    data class TargetPower(val targetIndex: Int = 0) : DynamicAmount {
+        override val description: String = "target creature's power"
+    }
+
+    /**
+     * Mana value of a target spell on the stack.
+     * Used for conditions like "if its mana value is less than or equal to X".
+     */
+    @SerialName("TargetManaValue")
+    @Serializable
+    data class TargetManaValue(val targetIndex: Int = 0) : DynamicAmount {
+        override val description: String = "target spell's mana value"
+    }
+
+    // =========================================================================
+    // Division
+    // =========================================================================
+
+    /**
+     * Divide one dynamic amount by another, with configurable rounding.
+     * Used for "lose half your life, rounded up" (Divide(LifeTotal, Fixed(2), roundUp=true)).
+     */
+    @SerialName("Divide")
+    @Serializable
+    data class Divide(
+        val numerator: DynamicAmount,
+        val denominator: DynamicAmount,
+        val roundUp: Boolean = true
+    ) : DynamicAmount {
+        override val description: String = "${numerator.description} / ${denominator.description}"
+    }
+
     /**
      * Count creatures the controller controls that share a creature type with the triggering entity.
      * Used for Mana Echoes: "add {C} equal to the number of creatures you control that share a creature type with it."

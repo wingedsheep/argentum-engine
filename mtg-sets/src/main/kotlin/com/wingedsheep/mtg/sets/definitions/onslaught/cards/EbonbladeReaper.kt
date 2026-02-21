@@ -1,10 +1,10 @@
 package com.wingedsheep.mtg.sets.definitions.onslaught.cards
 
+import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
-import com.wingedsheep.sdk.scripting.effects.LoseHalfLifeEffect
 import com.wingedsheep.sdk.scripting.references.Player
 
 /**
@@ -25,12 +25,16 @@ val EbonbladeReaper = card("Ebonblade Reaper") {
 
     triggeredAbility {
         trigger = Triggers.Attacks
-        effect = LoseHalfLifeEffect(roundUp = true, target = EffectTarget.Controller)
+        effect = Effects.LoseHalfLife(roundUp = true, target = EffectTarget.Controller)
     }
 
     triggeredAbility {
         trigger = Triggers.DealsCombatDamageToPlayer
-        effect = LoseHalfLifeEffect(roundUp = true, target = EffectTarget.PlayerRef(Player.Opponent))
+        effect = Effects.LoseHalfLife(
+            roundUp = true,
+            target = EffectTarget.PlayerRef(Player.Opponent),
+            lifePlayer = Player.Opponent
+        )
     }
 
     morph = "{3}{B}{B}"

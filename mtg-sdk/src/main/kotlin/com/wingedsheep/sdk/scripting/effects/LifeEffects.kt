@@ -62,22 +62,6 @@ data class PayLifeEffect(
 }
 
 /**
- * Lose half your life, rounded up.
- * Used for cards like Cruel Bargain.
- */
-@SerialName("LoseHalfLife")
-@Serializable
-data class LoseHalfLifeEffect(
-    val roundUp: Boolean = true,
-    val target: EffectTarget = EffectTarget.Controller
-) : Effect {
-    override val description: String = when (target) {
-        EffectTarget.Controller -> "You lose half your life${if (roundUp) ", rounded up" else ", rounded down"}"
-        else -> "${target.description} loses half their life${if (roundUp) ", rounded up" else ", rounded down"}"
-    }
-}
-
-/**
  * Target player's owner gains life equal to a fixed amount.
  * Used for effects like "Its owner gains 4 life" (Path of Peace).
  * This targets the owner of the previously targeted permanent.

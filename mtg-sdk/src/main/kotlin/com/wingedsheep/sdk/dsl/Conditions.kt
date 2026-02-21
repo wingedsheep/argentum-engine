@@ -113,14 +113,14 @@ object Conditions {
      * Used for cards like Unified Strike.
      */
     fun TargetPowerAtMost(amount: DynamicAmount, targetIndex: Int = 0): ConditionInterface =
-        com.wingedsheep.sdk.scripting.conditions.TargetPowerAtMost(amount, targetIndex)
+        Compare(DynamicAmount.TargetPower(targetIndex), ComparisonOperator.LTE, amount)
 
     /**
      * If the target spell's mana value is at most the given dynamic amount.
      * Used for conditional counterspells like Dispersal Shield.
      */
     fun TargetSpellManaValueAtMost(amount: DynamicAmount, targetIndex: Int = 0): ConditionInterface =
-        com.wingedsheep.sdk.scripting.conditions.TargetSpellManaValueAtMost(amount, targetIndex)
+        Compare(DynamicAmount.TargetManaValue(targetIndex), ComparisonOperator.LTE, amount)
 
     // =========================================================================
     // Life Total Conditions (via Compare)

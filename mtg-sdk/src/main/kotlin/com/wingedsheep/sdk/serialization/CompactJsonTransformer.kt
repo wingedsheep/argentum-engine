@@ -52,6 +52,10 @@ object CompactJsonTransformer {
         "perPlayerAmount", "dynamicPower", "dynamicToughness",
         // Dynamic amount modifiers (sealed interface DynamicAmount)
         "powerModifier", "toughnessModifier",
+        // Compare condition operands (sealed interface DynamicAmount)
+        "left", "right",
+        // Divide operands (sealed interface DynamicAmount)
+        "numerator", "denominator",
     )
 
     /**

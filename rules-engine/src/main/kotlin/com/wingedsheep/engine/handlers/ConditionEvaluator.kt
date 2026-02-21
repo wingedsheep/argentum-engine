@@ -33,8 +33,6 @@ import com.wingedsheep.sdk.scripting.conditions.SourceIsAttacking
 import com.wingedsheep.sdk.scripting.conditions.SourceIsBlocking
 import com.wingedsheep.sdk.scripting.conditions.SourceIsTapped
 import com.wingedsheep.sdk.scripting.conditions.SourceIsUntapped
-import com.wingedsheep.sdk.scripting.conditions.TargetPowerAtMost
-import com.wingedsheep.sdk.scripting.conditions.TargetSpellManaValueAtMost
 import com.wingedsheep.sdk.scripting.conditions.YouAttackedThisTurn
 import com.wingedsheep.sdk.scripting.conditions.YouWereAttackedThisStep
 import com.wingedsheep.sdk.scripting.conditions.YouWereDealtCombatDamageThisTurn
@@ -61,8 +59,6 @@ class ConditionEvaluator {
 
             // Battlefield conditions (non-generic)
             is APlayerControlsMostOfSubtype -> evaluateAPlayerControlsMostOfSubtype(state, condition)
-            is TargetPowerAtMost -> evaluateTargetPowerAtMost(state, condition, context)
-            is TargetSpellManaValueAtMost -> evaluateTargetSpellManaValueAtMost(state, condition, context)
             is EnchantedCreatureHasSubtype -> evaluateEnchantedCreatureHasSubtype(state, condition, context)
 
             // Source conditions
@@ -228,42 +224,6 @@ class ConditionEvaluator {
         if (maxCount == 0) return false
         val playersWithMax = counts.count { it.value == maxCount }
         return playersWithMax == 1
-    }
-
-    private fun evaluateTargetPowerAtMost(
-        state: GameState,
-        condition: TargetPowerAtMost,
-        context: EffectContext
-    ): Boolean {
-        val target = context.targets.getOrNull(condition.targetIndex) ?: return false
-        val targetEntityId = when (target) {
-            is com.wingedsheep.engine.state.components.stack.ChosenTarget.Permanent -> target.entityId
-            else -> return false
-        }
-        val card = state.getEntity(targetEntityId)?.get<CardComponent>() ?: return false
-        val power = when (val p = card.baseStats?.power) {
-            is com.wingedsheep.sdk.model.CharacteristicValue.Fixed -> p.value
-            is com.wingedsheep.sdk.model.CharacteristicValue.Dynamic -> dynamicAmountEvaluator.evaluate(state, p.source, context)
-            is com.wingedsheep.sdk.model.CharacteristicValue.DynamicWithOffset -> dynamicAmountEvaluator.evaluate(state, p.source, context) + p.offset
-            null -> return false
-        }
-        val threshold = dynamicAmountEvaluator.evaluate(state, condition.amount, context)
-        return power <= threshold
-    }
-
-    private fun evaluateTargetSpellManaValueAtMost(
-        state: GameState,
-        condition: TargetSpellManaValueAtMost,
-        context: EffectContext
-    ): Boolean {
-        val target = context.targets.getOrNull(condition.targetIndex) ?: return false
-        val spellEntityId = when (target) {
-            is com.wingedsheep.engine.state.components.stack.ChosenTarget.Spell -> target.spellEntityId
-            else -> return false
-        }
-        val card = state.getEntity(spellEntityId)?.get<CardComponent>() ?: return false
-        val threshold = dynamicAmountEvaluator.evaluate(state, condition.amount, context)
-        return card.manaValue <= threshold
     }
 
     private fun evaluateEnchantedCreatureHasSubtype(

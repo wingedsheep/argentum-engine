@@ -1,10 +1,10 @@
 package com.wingedsheep.mtg.sets.definitions.portal.cards
 
+import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.DrawCardsEffect
-import com.wingedsheep.sdk.scripting.effects.LoseHalfLifeEffect
 
 /**
  * Cruel Bargain
@@ -20,7 +20,7 @@ val CruelBargain = card("Cruel Bargain") {
         effect = CompositeEffect(
             listOf(
                 DrawCardsEffect(4),
-                LoseHalfLifeEffect(roundUp = true)
+                Effects.LoseHalfLife(roundUp = true)
             )
         )
     }

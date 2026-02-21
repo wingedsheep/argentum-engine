@@ -177,6 +177,50 @@ class DynamicAmountEvaluator(
                 if (met) evaluate(state, amount.ifTrue, context) else evaluate(state, amount.ifFalse, context)
             }
 
+            is DynamicAmount.TargetPower -> {
+                val target = context.targets.getOrNull(amount.targetIndex) ?: return 0
+                val targetEntityId = when (target) {
+                    is com.wingedsheep.engine.state.components.stack.ChosenTarget.Permanent -> target.entityId
+                    else -> return 0
+                }
+                // Use projected state for accurate power (accounts for continuous effects)
+                val projected = if (projectForBattlefieldCounting) {
+                    StateProjector(DynamicAmountEvaluator(projectForBattlefieldCounting = false))
+                        .project(state)
+                } else null
+                if (projected != null) {
+                    projected.getPower(targetEntityId) ?: 0
+                } else {
+                    val card = state.getEntity(targetEntityId)?.get<CardComponent>() ?: return 0
+                    when (val power = card.baseStats?.power) {
+                        is com.wingedsheep.sdk.model.CharacteristicValue.Fixed -> power.value
+                        is com.wingedsheep.sdk.model.CharacteristicValue.Dynamic -> evaluate(state, power.source, context)
+                        is com.wingedsheep.sdk.model.CharacteristicValue.DynamicWithOffset -> evaluate(state, power.source, context) + power.offset
+                        null -> 0
+                    }
+                }
+            }
+
+            is DynamicAmount.TargetManaValue -> {
+                val target = context.targets.getOrNull(amount.targetIndex) ?: return 0
+                val spellEntityId = when (target) {
+                    is com.wingedsheep.engine.state.components.stack.ChosenTarget.Spell -> target.spellEntityId
+                    else -> return 0
+                }
+                state.getEntity(spellEntityId)?.get<CardComponent>()?.manaValue ?: 0
+            }
+
+            is DynamicAmount.Divide -> {
+                val num = evaluate(state, amount.numerator, context)
+                val den = evaluate(state, amount.denominator, context)
+                if (den == 0) return 0
+                if (amount.roundUp) {
+                    (num + den - 1) / den
+                } else {
+                    num / den
+                }
+            }
+
             is DynamicAmount.CreaturesSharingTypeWithTriggeringEntity -> {
                 val triggeringId = context.triggeringEntityId ?: return 0
                 // Get the triggering creature's subtypes from projected state

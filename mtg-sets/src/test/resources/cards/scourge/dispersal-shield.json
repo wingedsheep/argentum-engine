@@ -7,8 +7,10 @@
         "spellEffect": {
             "type": "Conditional",
             "condition": {
-                "type": "TargetSpellManaValueAtMost",
-                "amount": {
+                "type": "Compare",
+                "left": "TargetManaValue",
+                "operator": "LTE",
+                "right": {
                     "type": "AggregateBattlefield",
                     "player": "You",
                     "aggregation": "MAX",

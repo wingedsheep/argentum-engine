@@ -3,11 +3,11 @@ package com.wingedsheep.engine.scenarios
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
 import com.wingedsheep.sdk.core.Step
+import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Deck
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
-import com.wingedsheep.sdk.scripting.effects.LoseHalfLifeEffect
 import com.wingedsheep.sdk.scripting.references.Player
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
@@ -32,12 +32,16 @@ class EbonbladeReaperTest : FunSpec({
 
         triggeredAbility {
             trigger = Triggers.Attacks
-            effect = LoseHalfLifeEffect(roundUp = true, target = EffectTarget.Controller)
+            effect = Effects.LoseHalfLife(roundUp = true, target = EffectTarget.Controller)
         }
 
         triggeredAbility {
             trigger = Triggers.DealsCombatDamageToPlayer
-            effect = LoseHalfLifeEffect(roundUp = true, target = EffectTarget.PlayerRef(Player.Opponent))
+            effect = Effects.LoseHalfLife(
+                roundUp = true,
+                target = EffectTarget.PlayerRef(Player.Opponent),
+                lifePlayer = Player.Opponent
+            )
         }
 
         morph = "{3}{B}{B}"
