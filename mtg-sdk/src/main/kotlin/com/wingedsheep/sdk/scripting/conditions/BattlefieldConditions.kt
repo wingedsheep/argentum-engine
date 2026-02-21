@@ -1,96 +1,13 @@
 package com.wingedsheep.sdk.scripting.conditions
 
-import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 // =============================================================================
-// Battlefield Conditions
+// Battlefield Conditions (non-generic — require special evaluation logic)
 // =============================================================================
-
-/**
- * Condition: "If you control a creature"
- */
-@SerialName("ControlCreature")
-@Serializable
-data object ControlCreature : Condition {
-    override val description: String = "if you control a creature"
-}
-
-/**
- * Condition: "If you control X or more creatures"
- */
-@SerialName("ControlCreaturesAtLeast")
-@Serializable
-data class ControlCreaturesAtLeast(val count: Int) : Condition {
-    override val description: String = "if you control $count or more creatures"
-}
-
-/**
- * Condition: "If you control a creature with keyword X"
- */
-@SerialName("ControlCreatureWithKeyword")
-@Serializable
-data class ControlCreatureWithKeyword(val keyword: Keyword) : Condition {
-    override val description: String = "if you control a creature with ${keyword.displayName.lowercase()}"
-}
-
-/**
- * Condition: "If you control a [subtype] creature" (e.g., "If you control a Dragon")
- */
-@SerialName("ControlCreatureOfType")
-@Serializable
-data class ControlCreatureOfType(val subtype: Subtype) : Condition {
-    override val description: String = "if you control a ${subtype.value}"
-}
-
-/**
- * Condition: "If you control an enchantment"
- */
-@SerialName("ControlEnchantment")
-@Serializable
-data object ControlEnchantment : Condition {
-    override val description: String = "if you control an enchantment"
-}
-
-/**
- * Condition: "If you control an artifact"
- */
-@SerialName("ControlArtifact")
-@Serializable
-data object ControlArtifact : Condition {
-    override val description: String = "if you control an artifact"
-}
-
-/**
- * Condition: "If an opponent controls a creature"
- */
-@SerialName("OpponentControlsCreature")
-@Serializable
-data object OpponentControlsCreature : Condition {
-    override val description: String = "if an opponent controls a creature"
-}
-
-/**
- * Condition: "If an opponent controls more creatures than you"
- */
-@SerialName("OpponentControlsMoreCreatures")
-@Serializable
-data object OpponentControlsMoreCreatures : Condition {
-    override val description: String = "if an opponent controls more creatures than you"
-}
-
-/**
- * Condition: "If an opponent controls more lands than you"
- * Used by Gift of Estates and similar cards.
- */
-@SerialName("OpponentControlsMoreLands")
-@Serializable
-data object OpponentControlsMoreLands : Condition {
-    override val description: String = "if an opponent controls more lands than you"
-}
 
 /**
  * Condition: "If a player controls more [subtype] creatures than each other player"

@@ -2,26 +2,21 @@ package com.wingedsheep.sdk.dsl
 
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Subtype
+import com.wingedsheep.sdk.core.Zone
+import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.conditions.AllConditions
 import com.wingedsheep.sdk.scripting.conditions.AnyCondition
-import com.wingedsheep.sdk.scripting.conditions.LifeTotalAtLeast
-import com.wingedsheep.sdk.scripting.conditions.LifeTotalAtMost
+import com.wingedsheep.sdk.scripting.conditions.Compare
+import com.wingedsheep.sdk.scripting.conditions.ComparisonOperator
+import com.wingedsheep.sdk.scripting.conditions.Exists
 import com.wingedsheep.sdk.scripting.conditions.NotCondition
-import com.wingedsheep.sdk.scripting.conditions.OpponentControlsMoreLands as OpponentControlsMoreLandsCondition
-import com.wingedsheep.sdk.scripting.conditions.OpponentControlsMoreCreatures as OpponentControlsMoreCreaturesCondition
-import com.wingedsheep.sdk.scripting.conditions.OpponentControlsCreature as OpponentControlsCreatureCondition
-import com.wingedsheep.sdk.scripting.conditions.ControlCreature as ControlCreatureCondition
-import com.wingedsheep.sdk.scripting.conditions.ControlEnchantment as ControlEnchantmentCondition
-import com.wingedsheep.sdk.scripting.conditions.ControlArtifact as ControlArtifactCondition
-import com.wingedsheep.sdk.scripting.conditions.MoreLifeThanOpponent as MoreLifeThanOpponentCondition
-import com.wingedsheep.sdk.scripting.conditions.LessLifeThanOpponent as LessLifeThanOpponentCondition
-import com.wingedsheep.sdk.scripting.conditions.EmptyHand as EmptyHandCondition
 import com.wingedsheep.sdk.scripting.conditions.SourceIsAttacking as SourceIsAttackingCondition
 import com.wingedsheep.sdk.scripting.conditions.SourceIsBlocking as SourceIsBlockingCondition
 import com.wingedsheep.sdk.scripting.conditions.SourceIsTapped as SourceIsTappedCondition
 import com.wingedsheep.sdk.scripting.conditions.SourceIsUntapped as SourceIsUntappedCondition
 import com.wingedsheep.sdk.scripting.conditions.IsYourTurn as IsYourTurnCondition
 import com.wingedsheep.sdk.scripting.conditions.IsNotYourTurn as IsNotYourTurnCondition
+import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
 import com.wingedsheep.sdk.scripting.conditions.Condition as ConditionInterface
 
@@ -38,62 +33,74 @@ import com.wingedsheep.sdk.scripting.conditions.Condition as ConditionInterface
 object Conditions {
 
     // =========================================================================
-    // Battlefield Conditions
+    // Battlefield Conditions (via Exists / Compare)
     // =========================================================================
 
     /**
      * If an opponent controls more lands than you.
      */
     val OpponentControlsMoreLands: ConditionInterface =
-        OpponentControlsMoreLandsCondition
+        Compare(
+            DynamicAmount.AggregateBattlefield(Player.Opponent, GameObjectFilter.Land),
+            ComparisonOperator.GT,
+            DynamicAmount.AggregateBattlefield(Player.You, GameObjectFilter.Land)
+        )
 
     /**
      * If an opponent controls more creatures than you.
      */
     val OpponentControlsMoreCreatures: ConditionInterface =
-        OpponentControlsMoreCreaturesCondition
+        Compare(
+            DynamicAmount.AggregateBattlefield(Player.Opponent, GameObjectFilter.Creature),
+            ComparisonOperator.GT,
+            DynamicAmount.AggregateBattlefield(Player.You, GameObjectFilter.Creature)
+        )
 
     /**
      * If an opponent controls a creature.
      */
     val OpponentControlsCreature: ConditionInterface =
-        OpponentControlsCreatureCondition
+        Exists(Player.Opponent, Zone.BATTLEFIELD, GameObjectFilter.Creature)
 
     /**
      * If you control a creature.
      */
     val ControlCreature: ConditionInterface =
-        ControlCreatureCondition
+        Exists(Player.You, Zone.BATTLEFIELD, GameObjectFilter.Creature)
 
     /**
      * If you control an enchantment.
      */
     val ControlEnchantment: ConditionInterface =
-        ControlEnchantmentCondition
+        Exists(Player.You, Zone.BATTLEFIELD, GameObjectFilter.Enchantment)
 
     /**
      * If you control an artifact.
      */
     val ControlArtifact: ConditionInterface =
-        ControlArtifactCondition
+        Exists(Player.You, Zone.BATTLEFIELD, GameObjectFilter.Artifact)
 
     /**
      * If you control N or more creatures.
      */
     fun ControlCreaturesAtLeast(count: Int): ConditionInterface =
-        com.wingedsheep.sdk.scripting.conditions.ControlCreaturesAtLeast(count)
+        Compare(
+            DynamicAmount.AggregateBattlefield(Player.You, GameObjectFilter.Creature),
+            ComparisonOperator.GTE,
+            DynamicAmount.Fixed(count)
+        )
 
     /**
      * If you control a creature with a specific keyword.
      */
     fun ControlCreatureWithKeyword(keyword: Keyword): ConditionInterface =
-        com.wingedsheep.sdk.scripting.conditions.ControlCreatureWithKeyword(keyword)
+        Exists(Player.You, Zone.BATTLEFIELD, GameObjectFilter.Creature.withKeyword(keyword))
 
     /**
      * If you control a creature of a specific type.
      */
     fun ControlCreatureOfType(subtype: Subtype): ConditionInterface =
-        com.wingedsheep.sdk.scripting.conditions.ControlCreatureOfType(subtype)
+        Exists(Player.You, Zone.BATTLEFIELD, GameObjectFilter.Creature.withSubtype(subtype))
 
     /**
      * If a player controls more creatures of the given subtype than each other player.
@@ -116,76 +123,80 @@ object Conditions {
         com.wingedsheep.sdk.scripting.conditions.TargetSpellManaValueAtMost(amount, targetIndex)
 
     // =========================================================================
-    // Life Total Conditions
+    // Life Total Conditions (via Compare)
     // =========================================================================
 
     /**
      * If your life total is N or less.
      */
     fun LifeAtMost(threshold: Int): ConditionInterface =
-        LifeTotalAtMost(threshold)
+        Compare(DynamicAmount.LifeTotal(Player.You), ComparisonOperator.LTE, DynamicAmount.Fixed(threshold))
 
     /**
      * If your life total is N or more.
      */
     fun LifeAtLeast(threshold: Int): ConditionInterface =
-        LifeTotalAtLeast(threshold)
+        Compare(DynamicAmount.LifeTotal(Player.You), ComparisonOperator.GTE, DynamicAmount.Fixed(threshold))
 
     /**
      * If you have more life than an opponent.
      */
     val MoreLifeThanOpponent: ConditionInterface =
-        MoreLifeThanOpponentCondition
+        Compare(DynamicAmount.LifeTotal(Player.You), ComparisonOperator.GT, DynamicAmount.LifeTotal(Player.Opponent))
 
     /**
      * If you have less life than an opponent.
      */
     val LessLifeThanOpponent: ConditionInterface =
-        LessLifeThanOpponentCondition
+        Compare(DynamicAmount.LifeTotal(Player.You), ComparisonOperator.LT, DynamicAmount.LifeTotal(Player.Opponent))
 
     // =========================================================================
-    // Hand Conditions
+    // Hand Conditions (via Compare / Exists)
     // =========================================================================
 
     /**
      * If you have no cards in hand.
      */
     val EmptyHand: ConditionInterface =
-        EmptyHandCondition
+        Exists(Player.You, Zone.HAND, negate = true)
 
     /**
      * If you have N or more cards in hand.
      */
     fun CardsInHandAtLeast(count: Int): ConditionInterface =
-        com.wingedsheep.sdk.scripting.conditions.CardsInHandAtLeast(count)
+        Compare(DynamicAmount.Count(Player.You, Zone.HAND), ComparisonOperator.GTE, DynamicAmount.Fixed(count))
 
     /**
      * If you have N or fewer cards in hand.
      */
     fun CardsInHandAtMost(count: Int): ConditionInterface =
-        com.wingedsheep.sdk.scripting.conditions.CardsInHandAtMost(count)
+        Compare(DynamicAmount.Count(Player.You, Zone.HAND), ComparisonOperator.LTE, DynamicAmount.Fixed(count))
 
     // =========================================================================
-    // Graveyard Conditions
+    // Graveyard Conditions (via Compare / Exists)
     // =========================================================================
 
     /**
      * If there are N or more creature cards in your graveyard.
      */
     fun CreatureCardsInGraveyardAtLeast(count: Int): ConditionInterface =
-        com.wingedsheep.sdk.scripting.conditions.CreatureCardsInGraveyardAtLeast(count)
+        Compare(
+            DynamicAmount.Count(Player.You, Zone.GRAVEYARD, GameObjectFilter.Creature),
+            ComparisonOperator.GTE,
+            DynamicAmount.Fixed(count)
+        )
 
     /**
      * If there are N or more cards in your graveyard.
      */
     fun CardsInGraveyardAtLeast(count: Int): ConditionInterface =
-        com.wingedsheep.sdk.scripting.conditions.CardsInGraveyardAtLeast(count)
+        Compare(DynamicAmount.Count(Player.You, Zone.GRAVEYARD), ComparisonOperator.GTE, DynamicAmount.Fixed(count))
 
     /**
      * If there is a card of a specific subtype in your graveyard.
      */
     fun GraveyardContainsSubtype(subtype: Subtype): ConditionInterface =
-        com.wingedsheep.sdk.scripting.conditions.GraveyardContainsSubtype(subtype)
+        Exists(Player.You, Zone.GRAVEYARD, GameObjectFilter.Any.withSubtype(subtype))
 
     // =========================================================================
     // Source Conditions

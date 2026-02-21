@@ -52,6 +52,22 @@ sealed interface DynamicAmount {
     }
 
     /**
+     * Life total of a specific player.
+     * Generalizes [YourLifeTotal] to support opponent comparisons.
+     *
+     * Examples:
+     * ```kotlin
+     * LifeTotal(Player.You)       // your life total
+     * LifeTotal(Player.Opponent)  // opponent's life total
+     * ```
+     */
+    @SerialName("LifeTotal")
+    @Serializable
+    data class LifeTotal(val player: Player) : DynamicAmount {
+        override val description: String = "${player.possessive} life total"
+    }
+
+    /**
      * Fixed amount (for consistency in the type system).
      */
     @SerialName("Fixed")

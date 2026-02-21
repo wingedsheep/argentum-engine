@@ -8,7 +8,7 @@ import com.wingedsheep.sdk.model.CardScript
 import com.wingedsheep.sdk.model.Deck
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.*
-import com.wingedsheep.sdk.scripting.conditions.LifeTotalAtMost
+import com.wingedsheep.sdk.dsl.Conditions
 import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.ConditionalEffect
 import com.wingedsheep.sdk.scripting.effects.DrawCardsEffect
@@ -34,9 +34,9 @@ class ConvalescentCareTest : FunSpec({
                 TriggeredAbility.create(
                     trigger = GameEvent.StepEvent(Step.UPKEEP, Player.You),
                     binding = TriggerBinding.ANY,
-                    triggerCondition = LifeTotalAtMost(5),
+                    triggerCondition = Conditions.LifeAtMost(5),
                     effect = ConditionalEffect(
-                        condition = LifeTotalAtMost(5),
+                        condition = Conditions.LifeAtMost(5),
                         effect = CompositeEffect(
                             listOf(
                                 GainLifeEffect(3, EffectTarget.Controller),

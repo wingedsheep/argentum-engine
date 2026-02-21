@@ -3,8 +3,8 @@ package com.wingedsheep.sdk.dsl
 import com.wingedsheep.sdk.core.*
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.*
-import com.wingedsheep.sdk.scripting.conditions.MoreLifeThanOpponent
 import com.wingedsheep.sdk.scripting.conditions.NotCondition
+import com.wingedsheep.sdk.dsl.Conditions
 import com.wingedsheep.sdk.scripting.conditions.SourceHasDealtDamage
 import com.wingedsheep.sdk.scripting.conditions.SourceIsAttacking
 import com.wingedsheep.sdk.scripting.effects.CompositeEffect
@@ -995,7 +995,7 @@ class CardDslTest : DescribeSpec({
                 // Can't block unless you have more life than an opponent
                 staticAbility {
                     ability = CantBlock(StaticTarget.SourceCreature)
-                    condition = NotCondition(MoreLifeThanOpponent)
+                    condition = Conditions.Not(Conditions.MoreLifeThanOpponent)
                 }
             }
 

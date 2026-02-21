@@ -23,9 +23,9 @@ import com.wingedsheep.engine.mechanics.layers.SerializableModification
 import com.wingedsheep.engine.mechanics.layers.StateProjector
 import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.sdk.scripting.PlayFromTopOfLibrary
-import com.wingedsheep.sdk.scripting.conditions.CardsInGraveyardAtLeast
+import com.wingedsheep.sdk.scripting.conditions.Compare
+import com.wingedsheep.sdk.scripting.conditions.ComparisonOperator
 import com.wingedsheep.sdk.scripting.conditions.Condition
-import com.wingedsheep.sdk.scripting.conditions.CreatureCardsInGraveyardAtLeast
 
 /**
  * Transforms internal game state into client-facing DTOs.
@@ -913,27 +913,27 @@ class ClientStateTransformer(
         controllerId: EntityId
     ): ClientCardEffect? {
         return when (condition) {
-            is CreatureCardsInGraveyardAtLeast -> {
-                val graveyardZone = ZoneKey(controllerId, Zone.GRAVEYARD)
-                val count = state.getZone(graveyardZone).count { entityId ->
-                    state.getEntity(entityId)?.get<CardComponent>()?.typeLine?.isCreature == true
-                }
-                val met = count >= condition.count
-                ClientCardEffect(
-                    effectId = "condition_creatures_in_gy",
-                    name = "$count/${condition.count}",
-                    description = "Creature cards in your graveyard ($count/${condition.count})",
-                    icon = if (met) "condition-met" else "condition-unmet"
+            is Compare -> {
+                val context = com.wingedsheep.engine.handlers.EffectContext(
+                    sourceId = null,
+                    controllerId = controllerId,
+                    opponentId = state.turnOrder.firstOrNull { it != controllerId }
                 )
-            }
-            is CardsInGraveyardAtLeast -> {
-                val graveyardZone = ZoneKey(controllerId, Zone.GRAVEYARD)
-                val count = state.getZone(graveyardZone).size
-                val met = count >= condition.count
+                val evaluator = com.wingedsheep.engine.handlers.DynamicAmountEvaluator()
+                val leftVal = evaluator.evaluate(state, condition.left, context)
+                val rightVal = evaluator.evaluate(state, condition.right, context)
+                val met = when (condition.operator) {
+                    ComparisonOperator.LT -> leftVal < rightVal
+                    ComparisonOperator.LTE -> leftVal <= rightVal
+                    ComparisonOperator.EQ -> leftVal == rightVal
+                    ComparisonOperator.NEQ -> leftVal != rightVal
+                    ComparisonOperator.GT -> leftVal > rightVal
+                    ComparisonOperator.GTE -> leftVal >= rightVal
+                }
                 ClientCardEffect(
-                    effectId = "condition_cards_in_gy",
-                    name = "$count/${condition.count}",
-                    description = "Cards in your graveyard ($count/${condition.count})",
+                    effectId = "condition_compare",
+                    name = "$leftVal/$rightVal",
+                    description = "${condition.left.description} ($leftVal/${rightVal})",
                     icon = if (met) "condition-met" else "condition-unmet"
                 )
             }

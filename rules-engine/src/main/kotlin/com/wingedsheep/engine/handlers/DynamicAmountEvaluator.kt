@@ -59,6 +59,12 @@ class DynamicAmountEvaluator(
                 state.getEntity(context.controllerId)?.get<LifeTotalComponent>()?.life ?: 0
             }
 
+            is DynamicAmount.LifeTotal -> {
+                val playerIds = resolveUnifiedPlayerIds(state, amount.player, context)
+                val playerId = playerIds.firstOrNull() ?: return 0
+                state.getEntity(playerId)?.get<LifeTotalComponent>()?.life ?: 0
+            }
+
             is DynamicAmount.VariableReference -> {
                 val name = amount.variableName
                 if (name.endsWith("_count")) {

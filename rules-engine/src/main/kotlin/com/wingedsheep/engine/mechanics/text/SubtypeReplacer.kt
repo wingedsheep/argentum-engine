@@ -5,8 +5,7 @@ import com.wingedsheep.engine.state.components.identity.TextReplacementComponent
 import com.wingedsheep.sdk.scripting.*
 import com.wingedsheep.sdk.scripting.conditions.APlayerControlsMostOfSubtype
 import com.wingedsheep.sdk.scripting.conditions.Condition
-import com.wingedsheep.sdk.scripting.conditions.ControlCreatureOfType
-import com.wingedsheep.sdk.scripting.conditions.GraveyardContainsSubtype
+import com.wingedsheep.sdk.scripting.conditions.Exists
 import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.ConditionalEffect
 import com.wingedsheep.sdk.scripting.effects.DealDamageEffect
@@ -304,16 +303,28 @@ object SubtypeReplacer {
                 val newSubtype = component.applyToSubtype(condition.subtype)
                 if (newSubtype == condition.subtype) condition else APlayerControlsMostOfSubtype(newSubtype)
             }
-            is ControlCreatureOfType -> {
-                val newSubtype = component.applyToSubtype(condition.subtype)
-                if (newSubtype == condition.subtype) condition else ControlCreatureOfType(newSubtype)
-            }
-            is GraveyardContainsSubtype -> {
-                val newSubtype = component.applyToSubtype(condition.subtype)
-                if (newSubtype == condition.subtype) condition else GraveyardContainsSubtype(newSubtype)
-            }
+            is Exists -> replaceExistsSubtype(condition, component)
             // All other conditions don't reference creature types
             else -> condition
         }
+    }
+
+    /**
+     * Replace subtype references in an Exists condition's filter.
+     */
+    private fun replaceExistsSubtype(condition: Exists, component: TextReplacementComponent): Condition {
+        val subtypePredicate = condition.filter.cardPredicates
+            .filterIsInstance<com.wingedsheep.sdk.scripting.predicates.CardPredicate.HasSubtype>()
+            .singleOrNull() ?: return condition
+        val newSubtype = component.applyToSubtype(subtypePredicate.subtype)
+        if (newSubtype == subtypePredicate.subtype) return condition
+        val newFilter = condition.filter.copy(
+            cardPredicates = condition.filter.cardPredicates.map {
+                if (it is com.wingedsheep.sdk.scripting.predicates.CardPredicate.HasSubtype && it.subtype == subtypePredicate.subtype) {
+                    com.wingedsheep.sdk.scripting.predicates.CardPredicate.HasSubtype(newSubtype)
+                } else it
+            }
+        )
+        return condition.copy(filter = newFilter)
     }
 }

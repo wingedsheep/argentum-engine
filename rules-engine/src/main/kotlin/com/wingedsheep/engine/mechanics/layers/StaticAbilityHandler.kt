@@ -20,7 +20,7 @@ import com.wingedsheep.sdk.scripting.GrantKeywordByCounter
 import com.wingedsheep.sdk.scripting.GrantProtection
 import com.wingedsheep.sdk.scripting.ModifyStatsByCounterOnSource
 import com.wingedsheep.sdk.scripting.GrantShroudToController
-import com.wingedsheep.sdk.scripting.conditions.ControlCreatureOfType
+import com.wingedsheep.sdk.scripting.conditions.Exists
 import com.wingedsheep.sdk.scripting.conditions.SourceHasSubtype
 import com.wingedsheep.sdk.scripting.GlobalEffect
 import com.wingedsheep.sdk.scripting.GlobalEffectType
@@ -249,9 +249,24 @@ class StaticAbilityHandler(
     private fun mapToSourceProjectionCondition(condition: Condition): SourceProjectionCondition? {
         return when (condition) {
             is SourceHasSubtype -> SourceProjectionCondition.HasSubtype(condition.subtype.value)
-            is ControlCreatureOfType -> SourceProjectionCondition.ControllerControlsCreatureOfType(condition.subtype.value)
+            is Exists -> mapExistsToSourceProjectionCondition(condition)
             else -> null
         }
+    }
+
+    /**
+     * Map an Exists condition to a SourceProjectionCondition when possible.
+     * Handles patterns like Exists(You, BATTLEFIELD, Creature.withSubtype(X))
+     * → ControllerControlsCreatureOfType(X).
+     */
+    private fun mapExistsToSourceProjectionCondition(condition: Exists): SourceProjectionCondition? {
+        if (condition.negate || condition.zone != com.wingedsheep.sdk.core.Zone.BATTLEFIELD) return null
+        if (condition.player !is com.wingedsheep.sdk.scripting.references.Player.You) return null
+        // Extract subtype from filter: Creature.withSubtype(X) has IsCreature + HasSubtype predicates
+        val subtypePredicate = condition.filter.cardPredicates
+            .filterIsInstance<CardPredicate.HasSubtype>()
+            .singleOrNull() ?: return null
+        return SourceProjectionCondition.ControllerControlsCreatureOfType(subtypePredicate.subtype.value)
     }
 
     /**

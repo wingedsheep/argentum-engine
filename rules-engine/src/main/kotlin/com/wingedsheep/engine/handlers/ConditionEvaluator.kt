@@ -15,30 +15,14 @@ import com.wingedsheep.sdk.scripting.*
 import com.wingedsheep.sdk.scripting.conditions.APlayerControlsMostOfSubtype
 import com.wingedsheep.sdk.scripting.conditions.AllConditions
 import com.wingedsheep.sdk.scripting.conditions.AnyCondition
-import com.wingedsheep.sdk.scripting.conditions.CardsInGraveyardAtLeast
-import com.wingedsheep.sdk.scripting.conditions.CardsInHandAtLeast
-import com.wingedsheep.sdk.scripting.conditions.CardsInHandAtMost
+import com.wingedsheep.sdk.scripting.conditions.Compare
+import com.wingedsheep.sdk.scripting.conditions.ComparisonOperator
 import com.wingedsheep.sdk.scripting.conditions.Condition
-import com.wingedsheep.sdk.scripting.conditions.ControlArtifact
-import com.wingedsheep.sdk.scripting.conditions.ControlCreature
-import com.wingedsheep.sdk.scripting.conditions.ControlCreatureOfType
-import com.wingedsheep.sdk.scripting.conditions.ControlCreatureWithKeyword
-import com.wingedsheep.sdk.scripting.conditions.ControlCreaturesAtLeast
-import com.wingedsheep.sdk.scripting.conditions.ControlEnchantment
-import com.wingedsheep.sdk.scripting.conditions.CreatureCardsInGraveyardAtLeast
-import com.wingedsheep.sdk.scripting.conditions.EmptyHand
 import com.wingedsheep.sdk.scripting.conditions.EnchantedCreatureHasSubtype
-import com.wingedsheep.sdk.scripting.conditions.GraveyardContainsSubtype
+import com.wingedsheep.sdk.scripting.conditions.Exists
 import com.wingedsheep.sdk.scripting.conditions.IsNotYourTurn
 import com.wingedsheep.sdk.scripting.conditions.IsYourTurn
-import com.wingedsheep.sdk.scripting.conditions.LessLifeThanOpponent
-import com.wingedsheep.sdk.scripting.conditions.LifeTotalAtLeast
-import com.wingedsheep.sdk.scripting.conditions.LifeTotalAtMost
-import com.wingedsheep.sdk.scripting.conditions.MoreLifeThanOpponent
 import com.wingedsheep.sdk.scripting.conditions.NotCondition
-import com.wingedsheep.sdk.scripting.conditions.OpponentControlsCreature
-import com.wingedsheep.sdk.scripting.conditions.OpponentControlsMoreCreatures
-import com.wingedsheep.sdk.scripting.conditions.OpponentControlsMoreLands
 import com.wingedsheep.sdk.scripting.conditions.OpponentSpellOnStack
 import com.wingedsheep.sdk.scripting.conditions.PlayedLandThisTurn
 import com.wingedsheep.sdk.scripting.conditions.SourceEnteredThisTurn
@@ -71,36 +55,15 @@ class ConditionEvaluator {
         context: EffectContext
     ): Boolean {
         return when (condition) {
-            // Life conditions
-            is LifeTotalAtMost -> evaluateLifeAtMost(state, condition, context)
-            is LifeTotalAtLeast -> evaluateLifeAtLeast(state, condition, context)
-            is MoreLifeThanOpponent -> evaluateMoreLife(state, context)
-            is LessLifeThanOpponent -> evaluateLessLife(state, context)
+            // Generic primitives
+            is Compare -> evaluateCompare(state, condition, context)
+            is Exists -> evaluateExists(state, condition, context)
 
-            // Battlefield conditions
-            is ControlCreature -> evaluateControlCreature(state, context)
-            is ControlCreaturesAtLeast -> evaluateControlCreaturesAtLeast(state, condition, context)
-            is ControlCreatureWithKeyword -> evaluateControlCreatureWithKeyword(state, condition, context)
-            is ControlCreatureOfType -> evaluateControlCreatureOfType(state, condition, context)
-            is ControlEnchantment -> evaluateControlEnchantment(state, context)
-            is ControlArtifact -> evaluateControlArtifact(state, context)
-            is OpponentControlsCreature -> evaluateOpponentControlsCreature(state, context)
-            is OpponentControlsMoreCreatures -> evaluateOpponentControlsMoreCreatures(state, context)
-            is OpponentControlsMoreLands -> evaluateOpponentControlsMoreLands(state, context)
+            // Battlefield conditions (non-generic)
             is APlayerControlsMostOfSubtype -> evaluateAPlayerControlsMostOfSubtype(state, condition)
             is TargetPowerAtMost -> evaluateTargetPowerAtMost(state, condition, context)
             is TargetSpellManaValueAtMost -> evaluateTargetSpellManaValueAtMost(state, condition, context)
             is EnchantedCreatureHasSubtype -> evaluateEnchantedCreatureHasSubtype(state, condition, context)
-
-            // Hand conditions
-            is EmptyHand -> evaluateEmptyHand(state, context)
-            is CardsInHandAtLeast -> evaluateCardsInHand(state, condition, context)
-            is CardsInHandAtMost -> evaluateCardsInHandAtMost(state, condition, context)
-
-            // Graveyard conditions
-            is CreatureCardsInGraveyardAtLeast -> evaluateCreatureCardsInGraveyard(state, condition, context)
-            is CardsInGraveyardAtLeast -> evaluateCardsInGraveyard(state, condition, context)
-            is GraveyardContainsSubtype -> evaluateGraveyardContainsSubtype(state, condition, context)
 
             // Source conditions
             is SourceIsAttacking -> evaluateSourceAttacking(state, context)
@@ -130,143 +93,50 @@ class ConditionEvaluator {
         }
     }
 
-    private fun evaluateLifeAtMost(state: GameState, condition: LifeTotalAtMost, context: EffectContext): Boolean {
-        val life = state.getEntity(context.controllerId)?.get<LifeTotalComponent>()?.life ?: return false
-        return life <= condition.threshold
-    }
-
-    private fun evaluateLifeAtLeast(state: GameState, condition: LifeTotalAtLeast, context: EffectContext): Boolean {
-        val life = state.getEntity(context.controllerId)?.get<LifeTotalComponent>()?.life ?: return false
-        return life >= condition.threshold
-    }
-
-    private fun evaluateMoreLife(state: GameState, context: EffectContext): Boolean {
-        val myLife = state.getEntity(context.controllerId)?.get<LifeTotalComponent>()?.life ?: return false
-        val opponentId = context.opponentId ?: return false
-        val opponentLife = state.getEntity(opponentId)?.get<LifeTotalComponent>()?.life ?: return false
-        return myLife > opponentLife
-    }
-
-    private fun evaluateLessLife(state: GameState, context: EffectContext): Boolean {
-        val myLife = state.getEntity(context.controllerId)?.get<LifeTotalComponent>()?.life ?: return false
-        val opponentId = context.opponentId ?: return false
-        val opponentLife = state.getEntity(opponentId)?.get<LifeTotalComponent>()?.life ?: return false
-        return myLife < opponentLife
-    }
-
-    private fun evaluateControlCreature(state: GameState, context: EffectContext): Boolean {
-        return countCreaturesControlledBy(state, context.controllerId) > 0
-    }
-
-    private fun evaluateControlCreaturesAtLeast(
-        state: GameState,
-        condition: ControlCreaturesAtLeast,
-        context: EffectContext
-    ): Boolean {
-        return countCreaturesControlledBy(state, context.controllerId) >= condition.count
-    }
-
-    private fun evaluateControlCreatureWithKeyword(
-        state: GameState,
-        condition: ControlCreatureWithKeyword,
-        context: EffectContext
-    ): Boolean {
-        return state.entities.any { (_, container) ->
-            container.get<ControllerComponent>()?.playerId == context.controllerId &&
-            container.get<CardComponent>()?.typeLine?.isCreature == true &&
-            container.get<CardComponent>()?.baseKeywords?.contains(condition.keyword) == true
+    private fun evaluateCompare(state: GameState, condition: Compare, context: EffectContext): Boolean {
+        val left = dynamicAmountEvaluator.evaluate(state, condition.left, context)
+        val right = dynamicAmountEvaluator.evaluate(state, condition.right, context)
+        return when (condition.operator) {
+            ComparisonOperator.LT -> left < right
+            ComparisonOperator.LTE -> left <= right
+            ComparisonOperator.EQ -> left == right
+            ComparisonOperator.NEQ -> left != right
+            ComparisonOperator.GT -> left > right
+            ComparisonOperator.GTE -> left >= right
         }
     }
 
-    private fun evaluateControlCreatureOfType(
-        state: GameState,
-        condition: ControlCreatureOfType,
-        context: EffectContext
-    ): Boolean {
-        return state.entities.any { (_, container) ->
-            container.get<ControllerComponent>()?.playerId == context.controllerId &&
-            container.get<CardComponent>()?.typeLine?.hasSubtype(condition.subtype) == true
+    private fun evaluateExists(state: GameState, condition: Exists, context: EffectContext): Boolean {
+        val predicateEvaluator = PredicateEvaluator()
+        val predicateContext = PredicateContext.fromEffectContext(context)
+
+        val playerIds = when (condition.player) {
+            is com.wingedsheep.sdk.scripting.references.Player.You -> listOf(context.controllerId)
+            is com.wingedsheep.sdk.scripting.references.Player.Opponent -> state.turnOrder.filter { it != context.controllerId }
+            is com.wingedsheep.sdk.scripting.references.Player.EachOpponent -> state.turnOrder.filter { it != context.controllerId }
+            is com.wingedsheep.sdk.scripting.references.Player.Each -> state.turnOrder
+            else -> listOf(context.controllerId)
         }
-    }
 
-    private fun evaluateControlEnchantment(state: GameState, context: EffectContext): Boolean {
-        return state.entities.any { (_, container) ->
-            container.get<ControllerComponent>()?.playerId == context.controllerId &&
-            container.get<CardComponent>()?.typeLine?.isEnchantment == true
+        val found = playerIds.any { playerId ->
+            val entities = if (condition.zone == Zone.BATTLEFIELD) {
+                state.getBattlefield().filter { entityId ->
+                    state.getEntity(entityId)?.get<ControllerComponent>()?.playerId == playerId
+                }
+            } else {
+                state.getZone(ZoneKey(playerId, condition.zone))
+            }
+
+            if (condition.filter == GameObjectFilter.Any) {
+                entities.isNotEmpty()
+            } else {
+                entities.any { entityId ->
+                    predicateEvaluator.matches(state, entityId, condition.filter, predicateContext)
+                }
+            }
         }
-    }
 
-    private fun evaluateControlArtifact(state: GameState, context: EffectContext): Boolean {
-        return state.entities.any { (_, container) ->
-            container.get<ControllerComponent>()?.playerId == context.controllerId &&
-            container.get<CardComponent>()?.typeLine?.isArtifact == true
-        }
-    }
-
-    private fun evaluateOpponentControlsCreature(state: GameState, context: EffectContext): Boolean {
-        val opponentId = context.opponentId ?: return false
-        return countCreaturesControlledBy(state, opponentId) > 0
-    }
-
-    private fun evaluateOpponentControlsMoreCreatures(state: GameState, context: EffectContext): Boolean {
-        val opponentId = context.opponentId ?: return false
-        val myCreatures = countCreaturesControlledBy(state, context.controllerId)
-        val opponentCreatures = countCreaturesControlledBy(state, opponentId)
-        return opponentCreatures > myCreatures
-    }
-
-    private fun evaluateOpponentControlsMoreLands(state: GameState, context: EffectContext): Boolean {
-        val opponentId = context.opponentId ?: return false
-        val myLands = countLandsControlledBy(state, context.controllerId)
-        val opponentLands = countLandsControlledBy(state, opponentId)
-        return opponentLands > myLands
-    }
-
-    private fun evaluateEmptyHand(state: GameState, context: EffectContext): Boolean {
-        val handZone = ZoneKey(context.controllerId, Zone.HAND)
-        return state.getZone(handZone).isEmpty()
-    }
-
-    private fun evaluateCardsInHand(state: GameState, condition: CardsInHandAtLeast, context: EffectContext): Boolean {
-        val handZone = ZoneKey(context.controllerId, Zone.HAND)
-        return state.getZone(handZone).size >= condition.count
-    }
-
-    private fun evaluateCardsInHandAtMost(state: GameState, condition: CardsInHandAtMost, context: EffectContext): Boolean {
-        val handZone = ZoneKey(context.controllerId, Zone.HAND)
-        return state.getZone(handZone).size <= condition.count
-    }
-
-    private fun evaluateCreatureCardsInGraveyard(
-        state: GameState,
-        condition: CreatureCardsInGraveyardAtLeast,
-        context: EffectContext
-    ): Boolean {
-        val graveyardZone = ZoneKey(context.controllerId, Zone.GRAVEYARD)
-        val creatureCount = state.getZone(graveyardZone).count { entityId ->
-            state.getEntity(entityId)?.get<CardComponent>()?.typeLine?.isCreature == true
-        }
-        return creatureCount >= condition.count
-    }
-
-    private fun evaluateCardsInGraveyard(
-        state: GameState,
-        condition: CardsInGraveyardAtLeast,
-        context: EffectContext
-    ): Boolean {
-        val graveyardZone = ZoneKey(context.controllerId, Zone.GRAVEYARD)
-        return state.getZone(graveyardZone).size >= condition.count
-    }
-
-    private fun evaluateGraveyardContainsSubtype(
-        state: GameState,
-        condition: GraveyardContainsSubtype,
-        context: EffectContext
-    ): Boolean {
-        val graveyardZone = ZoneKey(context.controllerId, Zone.GRAVEYARD)
-        return state.getZone(graveyardZone).any { entityId ->
-            state.getEntity(entityId)?.get<CardComponent>()?.typeLine?.hasSubtype(condition.subtype) == true
-        }
+        return if (condition.negate) !found else found
     }
 
     private fun evaluateSourceAttacking(state: GameState, context: EffectContext): Boolean {
@@ -301,13 +171,11 @@ class ConditionEvaluator {
 
     private fun evaluateSourceEnteredThisTurn(state: GameState, context: EffectContext): Boolean {
         // TODO: Track when permanents entered the battlefield
-        // For now, return false as we don't have this tracking yet
         return false
     }
 
     private fun evaluateSourceHasDealtDamage(state: GameState, context: EffectContext): Boolean {
         // TODO: Track damage dealt by source this turn
-        // For now, return false as we don't have this tracking yet
         return false
     }
 
@@ -318,18 +186,15 @@ class ConditionEvaluator {
 
     private fun evaluateSourceHasDealtCombatDamageToPlayer(state: GameState, context: EffectContext): Boolean {
         // TODO: Track combat damage dealt to players
-        // For now, return false as we don't have this tracking yet
         return false
     }
 
     private fun evaluateYouAttackedThisTurn(state: GameState, context: EffectContext): Boolean {
         // TODO: Track if player attacked this turn
-        // For now, return false as we don't have this tracking yet
         return false
     }
 
     private fun evaluateYouWereAttackedThisStep(state: GameState, context: EffectContext): Boolean {
-        // Check if any creature is attacking the player (has AttackingComponent with defenderId = player)
         return state.entities.any { (_, container) ->
             val attacking = container.get<AttackingComponent>()
             attacking != null && attacking.defenderId == context.controllerId
@@ -338,7 +203,6 @@ class ConditionEvaluator {
 
     private fun evaluateYouWereDealtCombatDamageThisTurn(state: GameState, context: EffectContext): Boolean {
         // TODO: Track if player was dealt combat damage this turn
-        // For now, return false as we don't have this tracking yet
         return false
     }
 
@@ -410,25 +274,5 @@ class ConditionEvaluator {
         val sourceId = context.sourceId ?: return false
         val attachedId = state.getEntity(sourceId)?.get<AttachedToComponent>()?.targetId ?: return false
         return state.getEntity(attachedId)?.get<CardComponent>()?.typeLine?.hasSubtype(condition.subtype) == true
-    }
-
-    // Helper functions
-
-    private fun countCreaturesControlledBy(state: GameState, playerId: com.wingedsheep.sdk.model.EntityId): Int {
-        val battlefieldEntities = state.getBattlefield().toSet()
-        return battlefieldEntities.count { entityId ->
-            val container = state.getEntity(entityId) ?: return@count false
-            container.get<ControllerComponent>()?.playerId == playerId &&
-            container.get<CardComponent>()?.typeLine?.isCreature == true
-        }
-    }
-
-    private fun countLandsControlledBy(state: GameState, playerId: com.wingedsheep.sdk.model.EntityId): Int {
-        val battlefieldEntities = state.getBattlefield().toSet()
-        return battlefieldEntities.count { entityId ->
-            val container = state.getEntity(entityId) ?: return@count false
-            container.get<ControllerComponent>()?.playerId == playerId &&
-            container.get<CardComponent>()?.typeLine?.isLand == true
-        }
     }
 }

@@ -9,7 +9,7 @@ import com.wingedsheep.sdk.model.CardScript
 import com.wingedsheep.sdk.model.Deck
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.*
-import com.wingedsheep.sdk.scripting.conditions.CreatureCardsInGraveyardAtLeast
+import com.wingedsheep.sdk.dsl.Conditions
 import com.wingedsheep.sdk.scripting.effects.ConditionalEffect
 import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
@@ -40,7 +40,7 @@ class OversoldCemeteryTest : FunSpec({
                     trigger = GameEvent.StepEvent(Step.UPKEEP, Player.You),
                     binding = TriggerBinding.ANY,
                     optional = true,
-                    triggerCondition = CreatureCardsInGraveyardAtLeast(4),
+                    triggerCondition = Conditions.CreatureCardsInGraveyardAtLeast(4),
                     targetRequirement = TargetObject(id = "target",
                         filter = TargetFilter(
                             GameObjectFilter.Creature.ownedByYou(),
@@ -48,7 +48,7 @@ class OversoldCemeteryTest : FunSpec({
                         )
                     ),
                     effect = ConditionalEffect(
-                        condition = CreatureCardsInGraveyardAtLeast(4),
+                        condition = Conditions.CreatureCardsInGraveyardAtLeast(4),
                         effect = MoveToZoneEffect(
                             target = EffectTarget.BoundVariable("target"),
                             destination = Zone.HAND
