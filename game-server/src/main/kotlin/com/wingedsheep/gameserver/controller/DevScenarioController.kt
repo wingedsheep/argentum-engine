@@ -684,7 +684,8 @@ class DevScenarioController(
                 baseKeywords = cardDef.keywords,
                 baseStats = cardDef.creatureStats,
                 ownerId = ownerId,
-                spellEffect = cardDef.spellEffect
+                spellEffect = cardDef.spellEffect,
+                imageUri = cardDef.metadata.imageUri
             )
 
             var container = ComponentContainer.of(

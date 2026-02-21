@@ -1,10 +1,14 @@
 package com.wingedsheep.gameserver.scenarios
 
+import com.wingedsheep.engine.core.CardsRevealedEvent
 import com.wingedsheep.gameserver.ScenarioTestBase
 import com.wingedsheep.sdk.core.Phase
 import com.wingedsheep.sdk.core.Step
 import io.kotest.assertions.withClue
+import io.kotest.matchers.collections.shouldNotBeEmpty
+import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.shouldNotBe
 
 /**
  * Scenario tests for Twisted Abomination.
@@ -47,7 +51,20 @@ class TwistedAbominationScenarioTest : ScenarioTestBase() {
                 // Select the Swamp from the library
                 val decision = game.getPendingDecision()!! as com.wingedsheep.engine.core.SelectCardsDecision
                 val swampId = decision.cardInfo!!.entries.first { it.value.name == "Swamp" }.key
-                game.selectCards(listOf(swampId))
+                val selectResult = game.selectCards(listOf(swampId))
+
+                // Verify that CardsRevealedEvent is emitted with imageUris
+                // (opponent relies on event imageUris since the card is in a hidden zone)
+                val revealEvent = selectResult.events.filterIsInstance<CardsRevealedEvent>().firstOrNull()
+                withClue("Should have CardsRevealedEvent in selection result") {
+                    revealEvent.shouldNotBeNull()
+                }
+                withClue("CardsRevealedEvent should have non-empty imageUris") {
+                    revealEvent!!.imageUris.shouldNotBeEmpty()
+                }
+                withClue("CardsRevealedEvent imageUri should not be null for the revealed card") {
+                    revealEvent!!.imageUris[0] shouldNotBe null
+                }
 
                 // Twisted Abomination should be in graveyard (discarded)
                 withClue("Twisted Abomination should be in graveyard") {
