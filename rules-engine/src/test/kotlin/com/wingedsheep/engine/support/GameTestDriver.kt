@@ -121,7 +121,8 @@ class GameTestDriver {
         deck1: Deck,
         deck2: Deck,
         skipMulligans: Boolean = true,
-        startingLife: Int = 20
+        startingLife: Int = 20,
+        startingPlayer: Int = 0
     ) {
         val initializer = GameInitializer(cardRegistry)
         val result = initializer.initializeGame(
@@ -130,7 +131,8 @@ class GameTestDriver {
                     PlayerConfig("Player 1", deck1, startingLife),
                     PlayerConfig("Player 2", deck2, startingLife)
                 ),
-                skipMulligans = skipMulligans
+                skipMulligans = skipMulligans,
+                startingPlayerIndex = startingPlayer
             )
         )
 
@@ -145,8 +147,8 @@ class GameTestDriver {
     /**
      * Initialize a game with both players using the same deck.
      */
-    fun initMirrorMatch(deck: Deck, skipMulligans: Boolean = true, startingLife: Int = 20) {
-        initGame(deck, deck, skipMulligans, startingLife)
+    fun initMirrorMatch(deck: Deck, skipMulligans: Boolean = true, startingLife: Int = 20, startingPlayer: Int = 0) {
+        initGame(deck, deck, skipMulligans, startingLife, startingPlayer)
     }
 
     // =========================================================================
