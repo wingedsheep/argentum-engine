@@ -3,7 +3,7 @@
 
 **Set Size:** 143 cards
 **Release Date:** May 26, 2003
-**Implemented:** 55 / 143
+**Implemented:** 56 / 143
 
 | Color | Count |
 |-------|-------|
@@ -11,7 +11,7 @@
 | Blue | 10 |
 | Black | 11 |
 | Red | 11 |
-| Green | 10 |
+| Green | 11 |
 | Multicolor | 1 |
 | Colorless | 1 |
 
@@ -93,7 +93,7 @@
 - [ ] Karona, False God
 - [ ] Karona's Zealot
 - [ ] Krosan Drover
-- [ ] Krosan Warchief
+- [x] Krosan Warchief
 - [x] Kurgadon
 - [ ] Lethal Vapors
 - [x] Lingering Death

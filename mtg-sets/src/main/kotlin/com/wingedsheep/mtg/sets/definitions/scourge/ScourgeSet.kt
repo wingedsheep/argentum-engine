@@ -33,6 +33,7 @@ object ScourgeSet {
         // Green creatures
         ElvishAberration,
         FierceEmpath,
+        KrosanWarchief,
         Kurgadon,
         TitanicBulvox,
         TreetopScout,
