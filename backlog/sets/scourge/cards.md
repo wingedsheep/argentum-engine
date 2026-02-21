@@ -3,7 +3,7 @@
 
 **Set Size:** 143 cards
 **Release Date:** May 26, 2003
-**Implemented:** 46 / 143
+**Implemented:** 47 / 143
 
 | Color | Count |
 |-------|-------|
@@ -118,7 +118,7 @@
 - [ ] Raven Guild Master
 - [ ] Reaping the Graves
 - [x] Recuperate
-- [ ] Reward the Faithful
+- [x] Reward the Faithful
 - [x] Riptide Survivor
 - [x] Rock Jockey
 - [ ] Root Elemental
