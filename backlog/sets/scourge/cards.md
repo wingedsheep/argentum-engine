@@ -3,12 +3,12 @@
 
 **Set Size:** 143 cards
 **Release Date:** May 26, 2003
-**Implemented:** 51 / 143
+**Implemented:** 52 / 143
 
 | Color | Count |
 |-------|-------|
 | White | 10 |
-| Blue | 9 |
+| Blue | 10 |
 | Black | 10 |
 | Red | 10 |
 | Green | 10 |
@@ -140,7 +140,7 @@
 - [ ] Temple of the False God
 - [ ] Temporal Fissure
 - [ ] Tendrils of Agony
-- [ ] Thundercloud Elemental
+- [x] Thundercloud Elemental
 - [x] Titanic Bulvox
 - [ ] Torrent of Fire
 - [ ] Trap Digger

@@ -27,6 +27,7 @@ import com.wingedsheep.sdk.scripting.effects.GainControlByMostOfSubtypeEffect
 import com.wingedsheep.sdk.scripting.effects.GainControlEffect
 import com.wingedsheep.sdk.scripting.effects.GainLifeEffect
 import com.wingedsheep.sdk.scripting.effects.GrantKeywordUntilEndOfTurnEffect
+import com.wingedsheep.sdk.scripting.effects.RemoveKeywordUntilEndOfTurnEffect
 import com.wingedsheep.sdk.scripting.effects.LoseLifeEffect
 import com.wingedsheep.sdk.scripting.effects.ModifyStatsEffect
 import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
@@ -620,6 +621,20 @@ object Effects {
         ForEachInGroupEffect(
             filter = filter,
             effect = GrantKeywordUntilEndOfTurnEffect(keyword, EffectTarget.Self, duration)
+        )
+
+    /**
+     * Remove a keyword from all creatures matching a filter.
+     * "All other creatures lose flying until end of turn."
+     */
+    fun RemoveKeywordFromAll(
+        keyword: Keyword,
+        filter: GroupFilter,
+        duration: Duration = Duration.EndOfTurn
+    ): Effect =
+        ForEachInGroupEffect(
+            filter = filter,
+            effect = RemoveKeywordUntilEndOfTurnEffect(keyword, EffectTarget.Self, duration)
         )
 
     /**

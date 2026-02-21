@@ -17,6 +17,7 @@ class PermanentExecutors(
         TapTargetCreaturesExecutor(),
         ModifyStatsExecutor(amountEvaluator),
         GrantKeywordUntilEndOfTurnExecutor(),
+        RemoveKeywordUntilEndOfTurnExecutor(),
         AddCountersExecutor(),
         RemoveCountersExecutor(),
         ChooseColorProtectionExecutor(decisionHandler),

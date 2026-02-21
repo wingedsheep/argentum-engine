@@ -54,6 +54,8 @@ object ScourgeSet {
         ScornfulEgotist,
         ShorelineRanger,
 
+        ThundercloudElemental,
+
         // Blue enchantments
         FrozenSolid,
 

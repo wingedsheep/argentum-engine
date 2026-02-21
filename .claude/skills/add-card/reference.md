@@ -70,6 +70,7 @@ constructors.
 
 - `Effects.DestroyAll(filter: GroupFilter, noRegenerate = false)` — board wipe
 - `Effects.GrantKeywordToAll(keyword, filter: GroupFilter, duration)` — keyword to group
+- `Effects.RemoveKeywordFromAll(keyword, filter: GroupFilter, duration)` — remove keyword from group
 - `Effects.ModifyStatsForAll(power, toughness, filter: GroupFilter, duration)` — P/T for group
 - `Effects.DealDamageToAll(amount, filter: GroupFilter)` — also accepts `DynamicAmount`
 
@@ -213,6 +214,7 @@ each player reveals and creates tokens
 | `TapTargetCreaturesEffect`                  | `maxTargets`                                                                | Tap up to X targets                      |
 | `ModifyStatsEffect`                         | `power: DynamicAmount, toughness: DynamicAmount, target, duration`          | P/T for single target                    |
 | `GrantKeywordUntilEndOfTurnEffect`          | `keyword, target, duration`                                                 | Keyword for single target                |
+| `RemoveKeywordUntilEndOfTurnEffect`         | `keyword, target, duration`                                                 | Remove keyword from single target        |
 | `GrantTriggeredAbilityUntilEndOfTurnEffect` | `ability, target, duration`                                                 | Grant triggered ability                  |
 | `GrantActivatedAbilityUntilEndOfTurnEffect` | `ability, target, duration`                                                 | Grant activated ability                  |
 | `GrantActivatedAbilityToGroupEffect`        | `ability, filter, duration`                                                 | Grant activated ability to group         |

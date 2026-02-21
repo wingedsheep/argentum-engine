@@ -131,6 +131,23 @@ data class GrantKeywordUntilEndOfTurnEffect(
 }
 
 /**
+ * Remove a keyword from a target until end of turn.
+ * "All other creatures lose flying until end of turn."
+ */
+@SerialName("RemoveKeywordUntilEndOfTurn")
+@Serializable
+data class RemoveKeywordUntilEndOfTurnEffect(
+    val keyword: Keyword,
+    val target: EffectTarget,
+    val duration: Duration = Duration.EndOfTurn
+) : Effect {
+    override val description: String = buildString {
+        append("${target.description} loses ${keyword.displayName.lowercase()}")
+        if (duration.description.isNotEmpty()) append(" ${duration.description}")
+    }
+}
+
+/**
  * Put -1/-1 counters on a creature.
  * Used for blight effects and wither-style damage.
  *
