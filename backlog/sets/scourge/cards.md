@@ -3,12 +3,12 @@
 
 **Set Size:** 143 cards
 **Release Date:** May 26, 2003
-**Implemented:** 45 / 143
+**Implemented:** 46 / 143
 
 | Color | Count |
 |-------|-------|
 | White | 8 |
-| Blue | 7 |
+| Blue | 8 |
 | Black | 9 |
 | Red | 9 |
 | Green | 9 |
@@ -80,7 +80,7 @@
 - [ ] Forgotten Ancient
 - [ ] Form of the Dragon
 - [ ] Frontline Strategist
-- [ ] Frozen Solid
+- [x] Frozen Solid
 - [ ] Gilded Light
 - [ ] Goblin Brigand
 - [ ] Goblin Psychopath

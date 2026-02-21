@@ -405,6 +405,16 @@ sealed interface GameEvent {
             "at the beginning of enchanted creature's controller's ${step.displayName}"
     }
 
+    /**
+     * When the enchanted creature is dealt damage.
+     * Special case for auras like Frozen Solid.
+     */
+    @SerialName("EnchantedCreatureDamageReceivedEvent")
+    @Serializable
+    data object EnchantedCreatureDamageReceivedEvent : GameEvent {
+        override val description: String = "when enchanted creature is dealt damage"
+    }
+
     // ---- Spell/Card Triggers ----
 
     /**

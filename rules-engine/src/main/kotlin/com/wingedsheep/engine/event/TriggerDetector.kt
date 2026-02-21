@@ -359,6 +359,11 @@ class TriggerDetector(
             detectSubtypeDamageToPlayerTriggers(state, event, triggers, projected)
         }
 
+        // Handle "when enchanted creature is dealt damage" triggers on auras (e.g., Frozen Solid)
+        if (event is DamageDealtEvent && !event.targetIsPlayer) {
+            detectEnchantedCreatureDamageTriggers(state, event, triggers, projected)
+        }
+
         // Handle "when you gain control of this from another player" triggers (e.g., Risky Move)
         if (event is ControlChangedEvent) {
             detectControlChangeTriggers(state, event, triggers)
@@ -583,6 +588,47 @@ class TriggerDetector(
                         triggerContext = TriggerContext.fromEvent(event)
                     )
                 )
+            }
+        }
+    }
+
+    /**
+     * Detect "when enchanted creature is dealt damage" triggers on auras.
+     * Checks all auras attached to the damaged creature for EnchantedCreatureDamageReceivedEvent triggers.
+     */
+    private fun detectEnchantedCreatureDamageTriggers(
+        state: GameState,
+        event: DamageDealtEvent,
+        triggers: MutableList<PendingTrigger>,
+        projected: ProjectedState
+    ) {
+        val damagedEntityId = event.targetId
+
+        // Find all auras attached to the damaged creature
+        for (entityId in state.getBattlefield()) {
+            val container = state.getEntity(entityId) ?: continue
+            val attachedTo = container.get<AttachedToComponent>() ?: continue
+            if (attachedTo.targetId != damagedEntityId) continue
+
+            val cardComponent = container.get<CardComponent>() ?: continue
+            val controllerId = projected.getController(entityId) ?: continue
+
+            if (container.has<FaceDownComponent>()) continue
+
+            val abilities = getTriggeredAbilities(entityId, cardComponent.cardDefinitionId, state)
+
+            for (ability in abilities) {
+                if (ability.trigger is GameEvent.EnchantedCreatureDamageReceivedEvent) {
+                    triggers.add(
+                        PendingTrigger(
+                            ability = ability,
+                            sourceId = entityId,
+                            sourceName = cardComponent.name,
+                            controllerId = controllerId,
+                            triggerContext = TriggerContext.fromEvent(event)
+                        )
+                    )
+                }
             }
         }
     }
@@ -917,6 +963,8 @@ class TriggerDetector(
             // Phase/step triggers are handled separately
             is GameEvent.StepEvent -> false
             is GameEvent.EnchantedCreatureControllerStepEvent -> false
+            // Enchanted creature damage triggers are handled separately
+            is GameEvent.EnchantedCreatureDamageReceivedEvent -> false
             // Replacement-effect-only events never match as triggers
             is GameEvent.DamageEvent -> false
             is GameEvent.CounterPlacementEvent -> false

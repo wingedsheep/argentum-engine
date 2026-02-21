@@ -354,6 +354,15 @@ object Triggers {
     )
 
     /**
+     * Whenever the enchanted creature is dealt damage.
+     * Used for auras like Frozen Solid.
+     */
+    val EnchantedCreatureTakesDamage: TriggerSpec = TriggerSpec(
+        event = EnchantedCreatureDamageReceivedEvent,
+        binding = TriggerBinding.ANY
+    )
+
+    /**
      * Whenever a creature deals damage to this creature.
      */
     val DamagedByCreature: TriggerSpec = TriggerSpec(

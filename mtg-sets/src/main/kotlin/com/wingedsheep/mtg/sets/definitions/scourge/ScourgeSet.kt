@@ -52,6 +52,9 @@ object ScourgeSet {
         ScornfulEgotist,
         ShorelineRanger,
 
+        // Blue enchantments
+        FrozenSolid,
+
         // Blue instants
         DispersalShield,
 
