@@ -3,15 +3,15 @@
 
 **Set Size:** 143 cards
 **Release Date:** May 26, 2003
-**Implemented:** 47 / 143
+**Implemented:** 50 / 143
 
 | Color | Count |
 |-------|-------|
-| White | 8 |
-| Blue | 8 |
+| White | 10 |
+| Blue | 9 |
 | Black | 9 |
-| Red | 9 |
-| Green | 9 |
+| Red | 10 |
+| Green | 10 |
 | Multicolor | 1 |
 | Colorless | 1 |
 
@@ -26,7 +26,7 @@
 - [x] Ark of Blight
 - [ ] Astral Steel
 - [x] Aven Farseer
-- [ ] Aven Liberator
+- [x] Aven Liberator
 - [ ] Bladewing's Thrall
 - [x] Bladewing the Risen
 - [ ] Bonethorn Valesk
@@ -39,7 +39,7 @@
 - [x] Carrion Feeder
 - [x] Chartooth Cougar
 - [ ] Chill Haunting
-- [ ] Claws of Wirewood
+- [x] Claws of Wirewood
 - [ ] Clutch of Undeath
 - [x] Coast Watcher
 - [ ] Consumptive Goo
@@ -98,7 +98,7 @@
 - [ ] Lethal Vapors
 - [ ] Lingering Death
 - [ ] Long-Term Plans
-- [ ] Mercurial Kite
+- [x] Mercurial Kite
 - [ ] Metamorphose
 - [ ] Mind's Desire
 - [ ] Mischievous Quanar

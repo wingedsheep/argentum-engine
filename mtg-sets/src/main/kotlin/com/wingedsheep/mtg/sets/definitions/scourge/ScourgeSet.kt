@@ -44,6 +44,7 @@ object ScourgeSet {
 
         // Green sorceries
         BreakAsunder,
+        ClawsOfWirewood,
 
         // Blue creatures
         AphettoRunecaster,
