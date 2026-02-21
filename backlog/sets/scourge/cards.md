@@ -3,11 +3,11 @@
 
 **Set Size:** 143 cards
 **Release Date:** May 26, 2003
-**Implemented:** 53 / 143
+**Implemented:** 54 / 143
 
 | Color | Count |
 |-------|-------|
-| White | 10 |
+| White | 11 |
 | Blue | 10 |
 | Black | 10 |
 | Red | 11 |
@@ -79,7 +79,7 @@
 - [ ] Force Bubble
 - [ ] Forgotten Ancient
 - [ ] Form of the Dragon
-- [ ] Frontline Strategist
+- [x] Frontline Strategist
 - [x] Frozen Solid
 - [ ] Gilded Light
 - [x] Goblin Brigand

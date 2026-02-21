@@ -15,6 +15,8 @@ import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.identity.FaceDownComponent
 import com.wingedsheep.engine.state.components.identity.LifeTotalComponent
+import com.wingedsheep.engine.handlers.PredicateContext
+import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.model.EntityId
@@ -1421,7 +1423,10 @@ class CombatManager(
 
                 // Check if the defending player is protected from combat damage by attacking creatures
                 val isProtected = isProtectedFromAttackingCreatureDamage(newState, defenderId)
-                if (!isProtected && !allDamagePrevented) {
+
+                // Check if combat damage from this creature is prevented by a group filter
+                val groupPrevented = isCombatDamagePreventedByGroupFilter(newState, attackerId, projected)
+                if (!isProtected && !allDamagePrevented && !groupPrevented) {
                     val damageResult = dealDamageToPlayer(newState, defenderId, power, attackerId)
                     newState = damageResult.newState
                     events.addAll(damageResult.events)
@@ -1483,7 +1488,8 @@ class CombatManager(
             if (blockedBy == null) {
                 // Unblocked: damage goes to defending player
                 val defenderId = attackingComponent.defenderId
-                if (!isProtectedFromAttackingCreatureDamage(state, defenderId)) {
+                if (!isProtectedFromAttackingCreatureDamage(state, defenderId) &&
+                    !isCombatDamagePreventedByGroupFilter(state, attackerId, projected)) {
                     val amplified = EffectExecutorUtils.applyStaticDamageAmplification(state, defenderId, attackerPower, attackerId)
                     incomingDamage.getOrPut(defenderId) { mutableMapOf() }
                         .merge(attackerId, amplified) { a, b -> a + b }
@@ -1694,7 +1700,9 @@ class CombatManager(
         // Apply attacker's damage to blockers (and potentially defending player with trample)
         // Check if all damage from attacker is prevented (Chain of Silence)
         val attackerDamagePrevented = EffectExecutorUtils.isAllDamageFromSourcePrevented(newState, attackerId)
-        if (attackerDealsDamageThisStep && !attackerDamagePrevented) {
+        // Check if combat damage from attacker is prevented by a group filter
+        val attackerGroupPrevented = isCombatDamagePreventedByGroupFilter(newState, attackerId, projected)
+        if (attackerDealsDamageThisStep && !attackerDamagePrevented && !attackerGroupPrevented) {
             for ((targetId, damage) in damageDistribution) {
                 if (damage <= 0) continue
 
@@ -1776,6 +1784,8 @@ class CombatManager(
             if (blockerPower > 0) {
                 // Check if all damage from this blocker is prevented (Chain of Silence)
                 val blockerDamagePrevented = EffectExecutorUtils.isAllDamageFromSourcePrevented(newState, blockerId)
+                // Check if combat damage from this blocker is prevented by a group filter
+                val blockerGroupPrevented = isCombatDamagePreventedByGroupFilter(newState, blockerId, projected)
 
                 // Check protection: attacker protected from blocker's colors or subtypes?
                 val blockerColors = projected.getColors(blockerId)
@@ -1785,7 +1795,7 @@ class CombatManager(
                 } || blockerSubtypes.any { subtype ->
                     projected.hasKeyword(attackerId, "PROTECTION_FROM_SUBTYPE_${subtype.uppercase()}")
                 }
-                if (!attackerProtected && !blockerDamagePrevented) {
+                if (!attackerProtected && !blockerDamagePrevented && !blockerGroupPrevented) {
                     // Apply damage amplification then prevention shields
                     val amplifiedBlockerDamage = EffectExecutorUtils.applyStaticDamageAmplification(newState, attackerId, blockerPower, blockerId)
                     val (shieldState, effectiveBlockerDamage) = EffectExecutorUtils.applyDamagePreventionShields(newState, attackerId, amplifiedBlockerDamage, isCombatDamage = true, sourceId = blockerId)
@@ -1857,7 +1867,12 @@ class CombatManager(
                     }
                 }
 
-                if (damageAssignment != null) {
+                // Check if combat damage from this attacker is prevented by a group filter
+                val attackerGroupPrevented = isCombatDamagePreventedByGroupFilter(newState, attackerId, projected)
+
+                if (attackerGroupPrevented) {
+                    // Combat damage from this attacker is prevented; skip to blocker counterattack
+                } else if (damageAssignment != null) {
                     // Use player's chosen distribution
                     for ((targetId, damage) in damageAssignment.assignments) {
                         if (damage <= 0) continue
@@ -2012,6 +2027,8 @@ class CombatManager(
 
             val blockerPower = projected.getPower(blockerId) ?: 0
             if (blockerPower > 0) {
+                // Check if combat damage from this blocker is prevented by a group filter
+                val counterGroupPrevented = isCombatDamagePreventedByGroupFilter(newState, blockerId, projected)
                 // Check protection
                 val blockerColors = projected.getColors(blockerId)
                 val blockerSubtypes = projected.getSubtypes(blockerId)
@@ -2020,7 +2037,7 @@ class CombatManager(
                 } || blockerSubtypes.any { subtype ->
                     projected.hasKeyword(attackerId, "PROTECTION_FROM_SUBTYPE_${subtype.uppercase()}")
                 }
-                if (!attackerProtected) {
+                if (!attackerProtected && !counterGroupPrevented) {
                     val amplifiedCounterDmg = EffectExecutorUtils.applyStaticDamageAmplification(newState, attackerId, blockerPower, blockerId)
                     val (shieldState, effectiveBlockerDamage) = EffectExecutorUtils.applyDamagePreventionShields(newState, attackerId, amplifiedCounterDmg, isCombatDamage = true, sourceId = blockerId)
                     newState = shieldState
@@ -2213,6 +2230,32 @@ class CombatManager(
         return state.floatingEffects.any { floatingEffect ->
             floatingEffect.effect.modification is SerializableModification.PreventDamageFromAttackingCreatures &&
                 playerId in floatingEffect.effect.affectedEntities
+        }
+    }
+
+    /**
+     * Check if a creature's combat damage is prevented by a group filter effect.
+     * Used by Frontline Strategist and similar effects that prevent combat damage
+     * from creatures matching a filter (e.g., non-Soldier creatures).
+     * The creature type is checked at damage time per the rules.
+     */
+    private fun isCombatDamagePreventedByGroupFilter(
+        state: GameState,
+        creatureId: EntityId,
+        projected: ProjectedState
+    ): Boolean {
+        val predicateEvaluator = PredicateEvaluator()
+        return state.floatingEffects.any { floatingEffect ->
+            val modification = floatingEffect.effect.modification
+            if (modification is SerializableModification.PreventCombatDamageFromGroup) {
+                val controllerId = floatingEffect.controllerId
+                val predicateContext = PredicateContext(controllerId = controllerId)
+                predicateEvaluator.matchesWithProjection(
+                    state, projected, creatureId, modification.filter, predicateContext
+                )
+            } else {
+                false
+            }
         }
     }
 

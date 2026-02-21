@@ -4,6 +4,7 @@ import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.Duration
 import com.wingedsheep.sdk.scripting.effects.Effect
+import com.wingedsheep.sdk.scripting.GameObjectFilter
 import kotlinx.serialization.Serializable
 
 /**
@@ -248,6 +249,16 @@ sealed interface SerializableModification {
      */
     @Serializable
     data object ExileOnDeath : SerializableModification
+
+    /**
+     * Damage prevention: prevent all combat damage that creatures matching the filter would deal this turn.
+     * Used by Frontline Strategist and similar effects.
+     * The filter is stored so that creature type is checked at the time damage would be dealt.
+     */
+    @Serializable
+    data class PreventCombatDamageFromGroup(
+        val filter: GameObjectFilter
+    ) : SerializableModification
 }
 
 /**
@@ -294,4 +305,6 @@ fun SerializableModification.toModification(): Modification = when (this) {
     is SerializableModification.PreventNextDamageFromCreatureType -> Modification.NoOp
     // ExileOnDeath doesn't map to a layer modification - it's checked during SBA creature death
     is SerializableModification.ExileOnDeath -> Modification.NoOp
+    // PreventCombatDamageFromGroup doesn't map to a layer modification - it's checked by CombatManager directly
+    is SerializableModification.PreventCombatDamageFromGroup -> Modification.NoOp
 }

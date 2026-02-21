@@ -89,6 +89,7 @@ object ScourgeSet {
         AvenLiberator,
         DaruWarchief,
         Dragonstalker,
+        FrontlineStrategist,
         NobleTemplar,
         SilverKnight,
 
