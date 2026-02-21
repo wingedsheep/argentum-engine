@@ -3,7 +3,6 @@ package com.wingedsheep.mtg.sets.definitions.portal.cards
 import com.wingedsheep.sdk.dsl.Targets
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
 import com.wingedsheep.sdk.core.Zone
 
@@ -18,8 +17,8 @@ val BreathOfLife = card("Breath of Life") {
     typeLine = "Sorcery"
 
     spell {
-        target = Targets.CreatureCardInYourGraveyard
-        effect = MoveToZoneEffect(EffectTarget.ContextTarget(0), Zone.BATTLEFIELD)
+        val t = target("target", Targets.CreatureCardInYourGraveyard)
+        effect = MoveToZoneEffect(t, Zone.BATTLEFIELD)
     }
 
     metadata {

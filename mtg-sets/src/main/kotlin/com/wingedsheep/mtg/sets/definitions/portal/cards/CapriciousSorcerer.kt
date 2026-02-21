@@ -7,7 +7,6 @@ import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.AbilityCost
 import com.wingedsheep.sdk.scripting.ActivationRestriction
 import com.wingedsheep.sdk.scripting.effects.DealDamageEffect
-import com.wingedsheep.sdk.scripting.targets.EffectTarget
 
 /**
  * Capricious Sorcerer
@@ -25,8 +24,8 @@ val CapriciousSorcerer = card("Capricious Sorcerer") {
 
     activatedAbility {
         cost = AbilityCost.Tap
-        target = Targets.Any
-        effect = DealDamageEffect(1, EffectTarget.ContextTarget(0))
+        val t = target("target", Targets.Any)
+        effect = DealDamageEffect(1, t)
         restrictions = listOf(
             ActivationRestriction.All(
                 ActivationRestriction.OnlyDuringYourTurn,

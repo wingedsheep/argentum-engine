@@ -3,7 +3,6 @@ package com.wingedsheep.mtg.sets.definitions.onslaught.cards
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.effects.ChangeCreatureTypeTextEffect
-import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.targets.TargetSpellOrPermanent
 
 /**
@@ -20,9 +19,9 @@ val ArtificialEvolution = card("Artificial Evolution") {
     oracleText = "Change the text of target spell or permanent by replacing all instances of one creature type with another. The new creature type can't be Wall. (This effect lasts indefinitely.)"
 
     spell {
-        target = TargetSpellOrPermanent()
+        val t = target("target", TargetSpellOrPermanent())
         effect = ChangeCreatureTypeTextEffect(
-            target = EffectTarget.ContextTarget(0),
+            target = t,
             excludedTypes = listOf("Wall")
         )
     }

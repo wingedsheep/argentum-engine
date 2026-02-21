@@ -3,7 +3,6 @@ package com.wingedsheep.mtg.sets.definitions.portal.cards
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.effects.CompositeEffect
-import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.scripting.effects.OwnerGainsLifeEffect
@@ -20,10 +19,10 @@ val PathOfPeace = card("Path of Peace") {
     typeLine = "Sorcery"
 
     spell {
-        target = TargetCreature()
+        val t = target("target", TargetCreature())
         effect = CompositeEffect(
             listOf(
-                MoveToZoneEffect(EffectTarget.ContextTarget(0), Zone.GRAVEYARD, byDestruction = true),
+                MoveToZoneEffect(t, Zone.GRAVEYARD, byDestruction = true),
                 OwnerGainsLifeEffect(4)
             )
         )

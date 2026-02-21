@@ -39,10 +39,10 @@ class ChainOfPlasmaTest : FunSpec({
         script = CardScript.spell(
             effect = DamageAndChainCopyEffect(
                 amount = 3,
-                target = EffectTarget.ContextTarget(0),
+                target = EffectTarget.BoundVariable("target"),
                 spellName = "Chain of Plasma"
             ),
-            AnyTarget()
+            AnyTarget(id = "target")
         )
     )
 

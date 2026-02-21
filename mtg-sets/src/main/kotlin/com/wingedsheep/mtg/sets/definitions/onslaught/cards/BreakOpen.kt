@@ -2,7 +2,6 @@ package com.wingedsheep.mtg.sets.definitions.onslaught.cards
 
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import com.wingedsheep.sdk.scripting.effects.TurnFaceUpEffect
@@ -20,10 +19,10 @@ val BreakOpen = card("Break Open") {
     oracleText = "Turn target face-down creature an opponent controls face up."
 
     spell {
-        target = TargetPermanent(
+        val t = target("target", TargetPermanent(
             filter = TargetFilter(GameObjectFilter.Creature.faceDown().opponentControls())
-        )
-        effect = TurnFaceUpEffect(EffectTarget.ContextTarget(0))
+        ))
+        effect = TurnFaceUpEffect(t)
     }
 
     metadata {

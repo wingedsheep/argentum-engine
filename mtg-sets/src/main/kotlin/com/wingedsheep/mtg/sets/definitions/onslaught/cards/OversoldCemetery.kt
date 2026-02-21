@@ -6,7 +6,6 @@ import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.effects.ConditionalEffect
-import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import com.wingedsheep.sdk.scripting.targets.TargetObject
@@ -27,13 +26,13 @@ val OversoldCemetery = card("Oversold Cemetery") {
         trigger = Triggers.YourUpkeep
         optional = true
         triggerCondition = Conditions.CreatureCardsInGraveyardAtLeast(4)
-        target = TargetObject(
+        val t = target("target", TargetObject(
             filter = TargetFilter.CreatureInYourGraveyard
-        )
+        ))
         effect = ConditionalEffect(
             condition = Conditions.CreatureCardsInGraveyardAtLeast(4),
             effect = MoveToZoneEffect(
-                target = EffectTarget.ContextTarget(0),
+                target = t,
                 destination = Zone.HAND
             )
         )

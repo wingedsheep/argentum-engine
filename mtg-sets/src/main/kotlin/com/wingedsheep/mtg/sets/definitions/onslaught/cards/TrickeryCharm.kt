@@ -6,7 +6,6 @@ import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.effects.BecomeCreatureTypeEffect
-import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.targets.TargetCreature
 
 /**
@@ -26,12 +25,12 @@ val TrickeryCharm = card("Trickery Charm") {
     spell {
         modal(chooseCount = 1) {
             mode("Target creature gains flying until end of turn") {
-                target = TargetCreature()
-                effect = Effects.GrantKeyword(Keyword.FLYING, EffectTarget.ContextTarget(0))
+                val t = target("target", TargetCreature())
+                effect = Effects.GrantKeyword(Keyword.FLYING, t)
             }
             mode("Target creature becomes the creature type of your choice until end of turn") {
-                target = TargetCreature()
-                effect = BecomeCreatureTypeEffect(target = EffectTarget.ContextTarget(0))
+                val t = target("target", TargetCreature())
+                effect = BecomeCreatureTypeEffect(target = t)
             }
             mode("Look at the top four cards of your library, then put them back in any order") {
                 effect = EffectPatterns.lookAtTopAndReorder(4)

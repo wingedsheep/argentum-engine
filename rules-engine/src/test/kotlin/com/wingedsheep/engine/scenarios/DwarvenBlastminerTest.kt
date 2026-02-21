@@ -47,8 +47,8 @@ class DwarvenBlastminerTest : FunSpec({
                 cost = AbilityCost.Composite(
                     listOf(AbilityCost.Mana(ManaCost.parse("{2}{R}")), AbilityCost.Tap)
                 ),
-                effect = MoveToZoneEffect(EffectTarget.ContextTarget(0), Zone.GRAVEYARD, byDestruction = true),
-                targetRequirement = TargetPermanent(
+                effect = MoveToZoneEffect(EffectTarget.BoundVariable("target"), Zone.GRAVEYARD, byDestruction = true),
+                targetRequirement = TargetPermanent(id = "target",
                     filter = TargetFilter(
                         GameObjectFilter(
                             cardPredicates = listOf(

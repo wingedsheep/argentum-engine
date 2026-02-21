@@ -3,7 +3,6 @@ package com.wingedsheep.mtg.sets.definitions.portal.cards
 import com.wingedsheep.sdk.dsl.Targets
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.effects.SkipCombatPhasesEffect
 
 /**
@@ -17,8 +16,8 @@ val FalsePeace = card("False Peace") {
     typeLine = "Sorcery"
 
     spell {
-        target = Targets.Player
-        effect = SkipCombatPhasesEffect(EffectTarget.ContextTarget(0))
+        val t = target("target", Targets.Player)
+        effect = SkipCombatPhasesEffect(t)
     }
 
     metadata {

@@ -11,12 +11,15 @@
                 "amount": 5
             },
             "target": {
-                "type": "ContextTarget",
-                "index": 0
+                "type": "BoundVariable",
+                "name": "target"
             }
         },
         "targetRequirements": [
-            "TargetPlayer"
+            {
+                "type": "TargetPlayer",
+                "id": "target"
+            }
         ]
     },
     "metadata": {

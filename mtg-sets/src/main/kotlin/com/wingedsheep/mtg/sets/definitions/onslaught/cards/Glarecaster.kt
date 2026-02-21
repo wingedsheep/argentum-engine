@@ -28,10 +28,10 @@ val Glarecaster = card("Glarecaster") {
 
     activatedAbility {
         cost = Costs.Mana("{5}{W}")
-        target = AnyTarget()
+        val t = target("target", AnyTarget())
         effect = RedirectNextDamageEffect(
             protectedTargets = listOf(EffectTarget.Self, EffectTarget.Controller),
-            redirectTo = EffectTarget.ContextTarget(0)
+            redirectTo = t
         )
     }
 

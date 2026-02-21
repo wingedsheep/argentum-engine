@@ -6,7 +6,6 @@ import com.wingedsheep.sdk.dsl.Targets
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.Duration
-import com.wingedsheep.sdk.scripting.targets.EffectTarget
 
 /**
  * Threaten
@@ -21,11 +20,11 @@ val Threaten = card("Threaten") {
     oracleText = "Untap target creature and gain control of it until end of turn. That creature gains haste until end of turn."
 
     spell {
-        target = Targets.Creature
+        val t = target("target", Targets.Creature)
         effect = Effects.Composite(
-            Effects.Untap(EffectTarget.ContextTarget(0)),
-            Effects.GainControl(EffectTarget.ContextTarget(0), Duration.EndOfTurn),
-            Effects.GrantKeyword(Keyword.HASTE, EffectTarget.ContextTarget(0))
+            Effects.Untap(t),
+            Effects.GainControl(t, Duration.EndOfTurn),
+            Effects.GrantKeyword(Keyword.HASTE, t)
         )
     }
 

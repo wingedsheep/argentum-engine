@@ -16,6 +16,7 @@ import com.wingedsheep.sdk.scripting.effects.ModifyStatsEffect
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
 import com.wingedsheep.sdk.scripting.targets.TargetRequirement
+import com.wingedsheep.sdk.scripting.targets.withId
 
 /**
  * DSL entry point for defining cards.
@@ -26,8 +27,8 @@ import com.wingedsheep.sdk.scripting.targets.TargetRequirement
  *     manaCost = "{R}"
  *     typeLine = "Instant"
  *     spell {
- *         effect = Effects.DealDamage(3, EffectTarget.ContextTarget(0))
- *         target = Targets.Any
+ *         val any = target("any", Targets.Any)
+ *         effect = Effects.DealDamage(3, any)
  *     }
  * }
  * ```
@@ -438,7 +439,7 @@ class CardBuilder(private val name: String) {
  *
  * Supports two targeting styles:
  *
- * 1. Simple (single target):
+ * 1. Simple (single target, legacy):
  * ```kotlin
  * spell {
  *     target = Targets.Creature
@@ -446,7 +447,7 @@ class CardBuilder(private val name: String) {
  * }
  * ```
  *
- * 2. Named binding (multiple targets):
+ * 2. Named binding (preferred):
  * ```kotlin
  * spell {
  *     val creature = target("creature", TargetCreature())
@@ -499,12 +500,23 @@ class SpellBuilder {
      *
      * @param name A descriptive name for the target (for debugging/documentation)
      * @param requirement The target requirement specification
-     * @return An EffectTarget.ContextTarget that references this target by index
+     * @return An EffectTarget.BoundVariable that references this target by name
      */
-    fun target(name: String, requirement: TargetRequirement): EffectTarget.ContextTarget {
-        val index = namedTargets.size
-        namedTargets.add(name to requirement)
-        return EffectTarget.ContextTarget(index)
+    fun target(name: String, requirement: TargetRequirement): EffectTarget.BoundVariable {
+        namedTargets.add(name to requirement.withId(name))
+        return EffectTarget.BoundVariable(name)
+    }
+
+    /**
+     * Declare a multi-target requirement and get indexed BoundVariable references.
+     *
+     * @param name A descriptive name for the targets
+     * @param requirement The target requirement with count > 1
+     * @return A list of BoundVariable references: name[0], name[1], ...
+     */
+    fun targets(name: String, requirement: TargetRequirement): List<EffectTarget.BoundVariable> {
+        namedTargets.add(name to requirement.withId(name))
+        return (0 until requirement.count).map { i -> EffectTarget.BoundVariable("$name[$i]") }
     }
 
     internal val targetRequirements: List<TargetRequirement>
@@ -588,10 +600,9 @@ class ModeBuilder(private val description: String) {
     /**
      * Add a named target for this mode and get an EffectTarget reference.
      */
-    fun target(name: String, requirement: TargetRequirement): EffectTarget.ContextTarget {
-        val index = targets.size
-        targets.add(requirement)
-        return EffectTarget.ContextTarget(index)
+    fun target(name: String, requirement: TargetRequirement): EffectTarget.BoundVariable {
+        targets.add(requirement.withId(name))
+        return EffectTarget.BoundVariable(name)
     }
 
     internal fun build(): Mode {
@@ -626,6 +637,18 @@ class TriggeredAbilityBuilder {
     var triggerCondition: Condition? = null
     /** When true, the triggered ability is controlled by the triggering entity's controller. */
     var controlledByTriggeringEntityController: Boolean = false
+
+    /**
+     * Declare a named target for this triggered ability and get an EffectTarget reference.
+     *
+     * @param name A descriptive name for the target
+     * @param requirement The target requirement specification
+     * @return An EffectTarget.BoundVariable that references this target by name
+     */
+    fun target(name: String, requirement: TargetRequirement): EffectTarget.BoundVariable {
+        target = requirement.withId(name)
+        return EffectTarget.BoundVariable(name)
+    }
 
     fun build(): TriggeredAbility {
         requireNotNull(effect) { "Triggered ability must have an effect" }
@@ -668,12 +691,11 @@ class ActivatedAbilityBuilder {
      *
      * @param name A descriptive name for the target (for debugging/documentation)
      * @param requirement The target requirement specification
-     * @return An EffectTarget.ContextTarget that references this target by index
+     * @return An EffectTarget.BoundVariable that references this target by name
      */
-    fun target(name: String, requirement: TargetRequirement): EffectTarget.ContextTarget {
-        val index = namedTargets.size
-        namedTargets.add(name to requirement)
-        return EffectTarget.ContextTarget(index)
+    fun target(name: String, requirement: TargetRequirement): EffectTarget.BoundVariable {
+        namedTargets.add(name to requirement.withId(name))
+        return EffectTarget.BoundVariable(name)
     }
 
     internal val targetRequirements: List<TargetRequirement>

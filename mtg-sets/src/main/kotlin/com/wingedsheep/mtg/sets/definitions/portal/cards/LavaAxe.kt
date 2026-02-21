@@ -3,7 +3,6 @@ package com.wingedsheep.mtg.sets.definitions.portal.cards
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.effects.DealDamageEffect
-import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.targets.TargetPlayer
 
 /**
@@ -17,8 +16,8 @@ val LavaAxe = card("Lava Axe") {
     typeLine = "Sorcery"
 
     spell {
-        target = TargetPlayer()
-        effect = DealDamageEffect(5, EffectTarget.ContextTarget(0))
+        val t = target("target", TargetPlayer())
+        effect = DealDamageEffect(5, t)
     }
 
     metadata {

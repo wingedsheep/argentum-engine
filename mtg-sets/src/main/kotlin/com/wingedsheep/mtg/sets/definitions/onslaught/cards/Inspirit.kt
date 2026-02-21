@@ -2,7 +2,6 @@ package com.wingedsheep.mtg.sets.definitions.onslaught.cards
 
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.effects.ModifyStatsEffect
 import com.wingedsheep.sdk.scripting.effects.TapUntapEffect
 
@@ -18,9 +17,9 @@ val Inspirit = card("Inspirit") {
     oracleText = "Untap target creature. It gets +2/+4 until end of turn."
 
     spell {
-        target = com.wingedsheep.sdk.scripting.targets.TargetCreature()
-        effect = TapUntapEffect(EffectTarget.ContextTarget(0), tap = false) then
-                ModifyStatsEffect(2, 4, EffectTarget.ContextTarget(0))
+        val t = target("target", com.wingedsheep.sdk.scripting.targets.TargetCreature())
+        effect = TapUntapEffect(t, tap = false) then
+                ModifyStatsEffect(2, 4, t)
     }
 
     metadata {

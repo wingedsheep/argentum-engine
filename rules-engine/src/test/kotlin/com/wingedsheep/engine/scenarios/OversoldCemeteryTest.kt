@@ -41,7 +41,7 @@ class OversoldCemeteryTest : FunSpec({
                     binding = TriggerBinding.ANY,
                     optional = true,
                     triggerCondition = CreatureCardsInGraveyardAtLeast(4),
-                    targetRequirement = TargetObject(
+                    targetRequirement = TargetObject(id = "target",
                         filter = TargetFilter(
                             GameObjectFilter.Creature.ownedByYou(),
                             zone = Zone.GRAVEYARD
@@ -50,7 +50,7 @@ class OversoldCemeteryTest : FunSpec({
                     effect = ConditionalEffect(
                         condition = CreatureCardsInGraveyardAtLeast(4),
                         effect = MoveToZoneEffect(
-                            target = EffectTarget.ContextTarget(0),
+                            target = EffectTarget.BoundVariable("target"),
                             destination = Zone.HAND
                         )
                     )

@@ -9,7 +9,6 @@ import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.DrawCardsEffect
 import com.wingedsheep.sdk.scripting.effects.RevealHandEffect
 import com.wingedsheep.sdk.scripting.references.Player
-import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
 import com.wingedsheep.sdk.scripting.targets.TargetOpponent
 
@@ -24,10 +23,10 @@ val BalefulStare = card("Baleful Stare") {
     typeLine = "Sorcery"
 
     spell {
-        target = TargetOpponent()
+        val t = target("target", TargetOpponent())
         effect = CompositeEffect(
             listOf(
-                RevealHandEffect(EffectTarget.ContextTarget(0)),
+                RevealHandEffect(t),
                 DrawCardsEffect(
                     count = DynamicAmount.Count(
                         player = Player.TargetOpponent,

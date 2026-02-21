@@ -5,7 +5,6 @@ import com.wingedsheep.sdk.dsl.Targets
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.effects.DealDamageEffect
-import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.effects.MayPayManaEffect
 import com.wingedsheep.sdk.dsl.Triggers
 
@@ -23,10 +22,10 @@ val LightningRift = card("Lightning Rift") {
 
     triggeredAbility {
         trigger = Triggers.AnyPlayerCycles
-        target = Targets.Any
+        val t = target("target", Targets.Any)
         effect = MayPayManaEffect(
             cost = ManaCost.parse("{1}"),
-            effect = DealDamageEffect(2, EffectTarget.ContextTarget(0))
+            effect = DealDamageEffect(2, t)
         )
     }
 

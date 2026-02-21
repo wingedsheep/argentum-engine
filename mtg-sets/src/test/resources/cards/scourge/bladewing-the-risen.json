@@ -21,8 +21,8 @@
                 "effect": {
                     "type": "MoveToZone",
                     "target": {
-                        "type": "ContextTarget",
-                        "index": 0
+                        "type": "BoundVariable",
+                        "name": "target"
                     },
                     "destination": "Battlefield"
                 },
@@ -32,7 +32,8 @@
                     "filter": {
                         "baseFilter": "permanent Dragon own:you",
                         "zone": "Graveyard"
-                    }
+                    },
+                    "id": "target"
                 }
             }
         ],

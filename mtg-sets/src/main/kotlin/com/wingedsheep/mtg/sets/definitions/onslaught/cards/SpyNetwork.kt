@@ -15,7 +15,6 @@ import com.wingedsheep.sdk.scripting.effects.LookAtTargetHandEffect
 import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.ZonePlacement
 import com.wingedsheep.sdk.scripting.references.Player
-import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
 import com.wingedsheep.sdk.scripting.targets.TargetPlayer
 
@@ -33,8 +32,8 @@ val SpyNetwork = card("Spy Network") {
     oracleText = "Look at target player's hand, the top card of that player's library, and any face-down creatures they control. Look at the top four cards of your library, then put them back in any order."
 
     spell {
-        target = TargetPlayer()
-        effect = LookAtTargetHandEffect(EffectTarget.ContextTarget(0))
+        val t = target("target", TargetPlayer())
+        effect = LookAtTargetHandEffect(t)
             .then(
                 CompositeEffect(
                     listOf(
@@ -54,7 +53,7 @@ val SpyNetwork = card("Spy Network") {
                     )
                 )
             )
-            .then(LookAtAllFaceDownCreaturesEffect(EffectTarget.ContextTarget(0)))
+            .then(LookAtAllFaceDownCreaturesEffect(t))
             .then(EffectPatterns.lookAtTopAndReorder(4))
     }
 

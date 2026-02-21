@@ -47,12 +47,12 @@ class DawningPuristTest : FunSpec({
                 trigger = GameEvent.DealsDamageEvent(damageType = DamageType.Combat, recipient = RecipientFilter.AnyPlayer),
                 binding = TriggerBinding.SELF,
                 effect = MoveToZoneEffect(
-                    target = EffectTarget.ContextTarget(0),
+                    target = EffectTarget.BoundVariable("target"),
                     destination = Zone.GRAVEYARD,
                     byDestruction = true
                 ),
                 optional = true,
-                targetRequirement = TargetPermanent(filter = TargetFilter.Enchantment.opponentControls())
+                targetRequirement = TargetPermanent(id = "target", filter = TargetFilter.Enchantment.opponentControls())
             )
         )
     )

@@ -71,7 +71,8 @@ class ForEachTargetExecutor(
                     sourceId = outerContext.sourceId,
                     controllerId = outerContext.controllerId,
                     opponentId = outerContext.opponentId,
-                    xValue = outerContext.xValue
+                    xValue = outerContext.xValue,
+                    namedTargets = outerContext.namedTargets
                 )
                 currentState.pushContinuation(continuation)
             } else {
@@ -129,7 +130,8 @@ class ForEachTargetExecutor(
                     opponentId = currentContext.opponentId,
                     xValue = currentContext.xValue,
                     targets = currentContext.targets,
-                    storedCollections = currentContext.storedCollections
+                    storedCollections = currentContext.storedCollections,
+                    namedTargets = currentContext.namedTargets
                 )
                 currentState.pushContinuation(continuation)
             } else {

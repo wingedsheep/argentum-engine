@@ -49,10 +49,10 @@ val StarlitSanctum = card("Starlit Sanctum") {
             Costs.Tap,
             Costs.Sacrifice(GameObjectFilter.Creature.withSubtype("Cleric"))
         )
-        target = TargetPlayer()
+        val t = target("target", TargetPlayer())
         effect = LoseLifeEffect(
             amount = DynamicAmount.SacrificedPermanentPower,
-            target = EffectTarget.ContextTarget(0)
+            target = t
         )
     }
 

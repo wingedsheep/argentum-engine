@@ -3,7 +3,6 @@ package com.wingedsheep.mtg.sets.definitions.onslaught.cards
 import com.wingedsheep.sdk.dsl.Costs
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.ModifyStatsEffect
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
@@ -26,10 +25,10 @@ val GoblinTaskmaster = card("Goblin Taskmaster") {
 
     activatedAbility {
         cost = Costs.Mana("{1}{R}")
-        target = TargetPermanent(
+        val t = target("target", TargetPermanent(
             filter = TargetFilter(GameObjectFilter.Creature.withSubtype("Goblin"))
-        )
-        effect = ModifyStatsEffect(1, 0, EffectTarget.ContextTarget(0))
+        ))
+        effect = ModifyStatsEffect(1, 0, t)
     }
 
     morph = "{R}"

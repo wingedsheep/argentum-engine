@@ -3,7 +3,6 @@ package com.wingedsheep.mtg.sets.definitions.scourge.cards
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.KeywordAbility
 import com.wingedsheep.sdk.scripting.targets.TargetPlayer
 
@@ -20,8 +19,8 @@ val Unburden = card("Unburden") {
     oracleText = "Target player discards two cards.\nCycling {2}"
 
     spell {
-        target = TargetPlayer()
-        effect = Effects.Discard(2, EffectTarget.ContextTarget(0))
+        val t = target("target", TargetPlayer())
+        effect = Effects.Discard(2, t)
     }
 
     keywordAbility(KeywordAbility.cycling("{2}"))

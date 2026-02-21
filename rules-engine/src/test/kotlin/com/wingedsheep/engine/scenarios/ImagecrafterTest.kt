@@ -50,10 +50,10 @@ class ImagecrafterTest : FunSpec({
                 id = imagecrafterAbilityId,
                 cost = AbilityCost.Tap,
                 effect = BecomeCreatureTypeEffect(
-                    target = EffectTarget.ContextTarget(0),
+                    target = EffectTarget.BoundVariable("target"),
                     excludedTypes = listOf("Wall")
                 ),
-                targetRequirement = TargetCreature()
+                targetRequirement = TargetCreature(id = "target")
             )
         )
     )

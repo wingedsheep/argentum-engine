@@ -54,7 +54,10 @@
             ]
         },
         "targetRequirements": [
-            "TargetPlayer"
+            {
+                "type": "TargetPlayer",
+                "id": "target"
+            }
         ]
     },
     "metadata": {

@@ -227,8 +227,8 @@ object TestCards {
         manaCost = ManaCost.parse("{R}"),
         oracleText = "Lightning Bolt deals 3 damage to any target.",
         script = CardScript.spell(
-            effect = DealDamageEffect(3, EffectTarget.ContextTarget(0)),
-            AnyTarget()
+            effect = DealDamageEffect(3, EffectTarget.BoundVariable("target")),
+            AnyTarget(id = "target")
         )
     )
 
@@ -240,8 +240,8 @@ object TestCards {
         manaCost = ManaCost.parse("{G}"),
         oracleText = "Target creature gets +3/+3 until end of turn.",
         script = CardScript.spell(
-            effect = ModifyStatsEffect(3, 3, EffectTarget.ContextTarget(0), Duration.EndOfTurn),
-            TargetCreature()
+            effect = ModifyStatsEffect(3, 3, EffectTarget.BoundVariable("target"), Duration.EndOfTurn),
+            TargetCreature(id = "target")
         )
     )
 
@@ -283,8 +283,8 @@ object TestCards {
         manaCost = ManaCost.parse("{1}{B}"),
         oracleText = "Destroy target nonblack creature.",
         script = CardScript.spell(
-            effect = MoveToZoneEffect(EffectTarget.ContextTarget(0), Zone.GRAVEYARD, byDestruction = true),
-            TargetCreature(filter = TargetFilter.Creature.notColor(Color.BLACK))
+            effect = MoveToZoneEffect(EffectTarget.BoundVariable("target"), Zone.GRAVEYARD, byDestruction = true),
+            TargetCreature(filter = TargetFilter.Creature.notColor(Color.BLACK), id = "target")
         )
     )
 
@@ -501,8 +501,8 @@ object TestCards {
         oracleText = "Convoke\nStoke the Flames deals 4 damage to any target.",
         keywords = setOf(Keyword.CONVOKE),
         script = CardScript.spell(
-            effect = DealDamageEffect(4, EffectTarget.ContextTarget(0)),
-            AnyTarget()
+            effect = DealDamageEffect(4, EffectTarget.BoundVariable("target")),
+            AnyTarget(id = "target")
         )
     )
 

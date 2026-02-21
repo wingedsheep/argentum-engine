@@ -24,17 +24,17 @@ val RunWild = card("Run Wild") {
     typeLine = "Instant"
 
     spell {
-        target = Targets.Creature
+        val t = target("target", Targets.Creature)
         effect = GrantKeywordUntilEndOfTurnEffect(
             keyword = Keyword.TRAMPLE,
-            target = EffectTarget.ContextTarget(0)
+            target = t
         ) then GrantActivatedAbilityUntilEndOfTurnEffect(
             ability = ActivatedAbility(
                 id = AbilityId.generate(),
                 cost = AbilityCost.Mana(ManaCost.parse("{G}")),
                 effect = RegenerateEffect(EffectTarget.Self)
             ),
-            target = EffectTarget.ContextTarget(0)
+            target = t
         )
     }
 

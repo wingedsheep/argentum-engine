@@ -38,11 +38,11 @@ class ChainOfSilenceTest : FunSpec({
         oracleText = "Prevent all damage target creature would deal this turn. That creature's controller may sacrifice a land of their choice. If the player does, they may copy this spell and may choose a new target for that copy.",
         script = CardScript.spell(
             effect = PreventDamageAndChainCopyEffect(
-                target = EffectTarget.ContextTarget(0),
+                target = EffectTarget.BoundVariable("target"),
                 targetFilter = TargetFilter.Creature,
                 spellName = "Chain of Silence"
             ),
-            TargetPermanent(filter = TargetFilter.Creature)
+            TargetPermanent(id = "target", filter = TargetFilter.Creature)
         )
     )
 

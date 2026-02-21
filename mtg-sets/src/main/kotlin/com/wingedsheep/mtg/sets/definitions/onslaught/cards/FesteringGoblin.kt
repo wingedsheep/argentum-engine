@@ -5,7 +5,6 @@ import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.Duration
-import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.effects.ModifyStatsEffect
 
 /**
@@ -24,11 +23,11 @@ val FesteringGoblin = card("Festering Goblin") {
 
     triggeredAbility {
         trigger = Triggers.Dies
-        target = Targets.Creature
+        val t = target("target", Targets.Creature)
         effect = ModifyStatsEffect(
             powerModifier = -1,
             toughnessModifier = -1,
-            target = EffectTarget.ContextTarget(0),
+            target = t,
             duration = Duration.EndOfTurn
         )
     }

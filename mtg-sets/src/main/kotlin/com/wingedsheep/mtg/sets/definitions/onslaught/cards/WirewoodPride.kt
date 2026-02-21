@@ -5,7 +5,6 @@ import com.wingedsheep.sdk.dsl.DynamicAmounts
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import com.wingedsheep.sdk.scripting.targets.TargetCreature
 
@@ -21,12 +20,12 @@ val WirewoodPride = card("Wirewood Pride") {
     oracleText = "Target creature gets +X/+X until end of turn, where X is the number of Elves on the battlefield."
 
     spell {
-        target = TargetCreature(filter = TargetFilter.Creature)
+        val t = target("target", TargetCreature(filter = TargetFilter.Creature))
         val elfCount = DynamicAmounts.creaturesWithSubtype(Subtype("Elf"))
         effect = Effects.ModifyStats(
             power = elfCount,
             toughness = elfCount,
-            target = EffectTarget.ContextTarget(0)
+            target = t
         )
     }
 

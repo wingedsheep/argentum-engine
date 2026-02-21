@@ -532,6 +532,7 @@ class StackResolver(
             rawSpellEffect
         }
         if (spellEffect != null) {
+            val targetRequirements = state.getEntity(spellId)?.get<TargetsComponent>()?.targetRequirements ?: emptyList()
             val context = EffectContext(
                 sourceId = spellId,
                 controllerId = spellComponent.casterId,
@@ -541,7 +542,8 @@ class StackResolver(
                 sacrificedPermanents = spellComponent.sacrificedPermanents,
                 sacrificedPermanentSubtypes = spellComponent.sacrificedPermanentSubtypes,
                 damageDistribution = spellComponent.damageDistribution,
-                chosenCreatureType = spellComponent.chosenCreatureType
+                chosenCreatureType = spellComponent.chosenCreatureType,
+                namedTargets = EffectContext.buildNamedTargets(targetRequirements, targets)
             )
 
             val effectResult = effectHandler.execute(newState, spellEffect, context)
@@ -675,13 +677,16 @@ class StackResolver(
         }
 
         // Execute the effect
+        val resolvedTargets2 = targetsComponent?.targets ?: emptyList()
+        val targetReqs = targetsComponent?.targetRequirements ?: emptyList()
         val context = EffectContext(
             sourceId = abilityComponent.sourceId,
             controllerId = abilityComponent.controllerId,
             opponentId = state.getOpponent(abilityComponent.controllerId),
-            targets = targetsComponent?.targets ?: emptyList(),
+            targets = resolvedTargets2,
             triggerDamageAmount = abilityComponent.triggerDamageAmount,
-            triggeringEntityId = abilityComponent.triggeringEntityId
+            triggeringEntityId = abilityComponent.triggeringEntityId,
+            namedTargets = EffectContext.buildNamedTargets(targetReqs, resolvedTargets2)
         )
 
         val effectResult = effectHandler.execute(state, abilityComponent.effect, context)
@@ -748,14 +753,17 @@ class StackResolver(
         }
 
         // Execute the effect
+        val activatedTargets = targetsComponent?.targets ?: emptyList()
+        val activatedReqs = targetsComponent?.targetRequirements ?: emptyList()
         val context = EffectContext(
             sourceId = abilityComponent.sourceId,
             controllerId = abilityComponent.controllerId,
             opponentId = state.getOpponent(abilityComponent.controllerId),
-            targets = targetsComponent?.targets ?: emptyList(),
+            targets = activatedTargets,
             sacrificedPermanents = abilityComponent.sacrificedPermanents,
             xValue = abilityComponent.xValue,
-            tappedPermanents = abilityComponent.tappedPermanents
+            tappedPermanents = abilityComponent.tappedPermanents,
+            namedTargets = EffectContext.buildNamedTargets(activatedReqs, activatedTargets)
         )
 
         val effectResult = effectHandler.execute(state, abilityComponent.effect, context)

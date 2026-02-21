@@ -38,11 +38,11 @@ class ChainOfVaporTest : FunSpec({
         oracleText = "Return target nonland permanent to its owner's hand. Then that permanent's controller may sacrifice a land of their choice. If the player does, they may copy this spell and may choose a new target for that copy.",
         script = CardScript.spell(
             effect = BounceAndChainCopyEffect(
-                target = EffectTarget.ContextTarget(0),
+                target = EffectTarget.BoundVariable("target"),
                 targetFilter = TargetFilter.NonlandPermanent,
                 spellName = "Chain of Vapor"
             ),
-            TargetPermanent(filter = TargetFilter.NonlandPermanent)
+            TargetPermanent(id = "target", filter = TargetFilter.NonlandPermanent)
         )
     )
 

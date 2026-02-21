@@ -3,7 +3,6 @@ package com.wingedsheep.mtg.sets.definitions.scourge.cards
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.effects.DealDamageEffect
-import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.KeywordAbility
 import com.wingedsheep.sdk.scripting.targets.AnyTarget
 
@@ -20,8 +19,8 @@ val SparkSpray = card("Spark Spray") {
     oracleText = "Spark Spray deals 1 damage to any target.\nCycling {R}"
 
     spell {
-        target = AnyTarget()
-        effect = DealDamageEffect(1, EffectTarget.ContextTarget(0))
+        val t = target("target", AnyTarget())
+        effect = DealDamageEffect(1, t)
     }
 
     keywordAbility(KeywordAbility.cycling("{R}"))

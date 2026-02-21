@@ -48,8 +48,8 @@ class ElvishPathcutterTest : FunSpec({
             ActivatedAbility(
                 id = pathcutterAbilityId,
                 cost = AbilityCost.Mana(ManaCost.parse("{2}{G}")),
-                effect = GrantKeywordUntilEndOfTurnEffect(Keyword.FORESTWALK, EffectTarget.ContextTarget(0)),
-                targetRequirement = TargetPermanent(
+                effect = GrantKeywordUntilEndOfTurnEffect(Keyword.FORESTWALK, EffectTarget.BoundVariable("target")),
+                targetRequirement = TargetPermanent(id = "target",
                     filter = TargetFilter(GameObjectFilter.Creature.withSubtype("Elf"))
                 )
             )

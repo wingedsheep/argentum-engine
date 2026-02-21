@@ -27,15 +27,16 @@
                 "effect": {
                     "type": "ChooseColorAndGrantProtectionToTarget",
                     "target": {
-                        "type": "ContextTarget",
-                        "index": 0
+                        "type": "BoundVariable",
+                        "name": "target"
                     }
                 },
                 "targetRequirement": {
                     "type": "TargetObject",
                     "filter": {
                         "baseFilter": "creature ctrl:you"
-                    }
+                    },
+                    "id": "target"
                 }
             }
         ]

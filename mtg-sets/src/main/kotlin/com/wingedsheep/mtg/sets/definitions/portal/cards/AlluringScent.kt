@@ -2,7 +2,6 @@ package com.wingedsheep.mtg.sets.definitions.portal.cards
 
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.effects.MustBeBlockedEffect
 import com.wingedsheep.sdk.scripting.targets.TargetCreature
 
@@ -17,8 +16,8 @@ val AlluringScent = card("Alluring Scent") {
     typeLine = "Sorcery"
 
     spell {
-        target = TargetCreature()
-        effect = MustBeBlockedEffect(EffectTarget.ContextTarget(0))
+        val t = target("target", TargetCreature())
+        effect = MustBeBlockedEffect(t)
     }
 
     metadata {

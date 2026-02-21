@@ -3,7 +3,6 @@ package com.wingedsheep.mtg.sets.definitions.onslaught.cards
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.LoseLifeEffect
 import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
@@ -29,28 +28,28 @@ val MiseryCharm = card("Misery Charm") {
     spell {
         modal(chooseCount = 1) {
             mode("Destroy target Cleric") {
-                target = TargetCreature(filter = TargetFilter.Creature.withSubtype("Cleric"))
+                val t = target("target", TargetCreature(filter = TargetFilter.Creature.withSubtype("Cleric")))
                 effect = MoveToZoneEffect(
-                    target = EffectTarget.ContextTarget(0),
+                    target = t,
                     destination = Zone.GRAVEYARD,
                     byDestruction = true
                 )
             }
             mode("Return target Cleric card from your graveyard to your hand") {
-                target = TargetObject(
+                val t = target("target", TargetObject(
                     filter = TargetFilter(
                         GameObjectFilter.Any.withSubtype("Cleric").ownedByYou(),
                         zone = Zone.GRAVEYARD
                     )
-                )
+                ))
                 effect = MoveToZoneEffect(
-                    target = EffectTarget.ContextTarget(0),
+                    target = t,
                     destination = Zone.HAND
                 )
             }
             mode("Target player loses 2 life") {
-                target = TargetPlayer()
-                effect = LoseLifeEffect(2, EffectTarget.ContextTarget(0))
+                val t = target("target", TargetPlayer())
+                effect = LoseLifeEffect(2, t)
             }
         }
     }

@@ -577,13 +577,13 @@ class CardDslTest : DescribeSpec({
             val composite = electrolyze.spellEffect as CompositeEffect
             composite.effects shouldHaveSize 3
 
-            // First effect targets ContextTarget(0)
+            // First effect targets BoundVariable("first target")
             val damage1 = composite.effects[0] as DealDamageEffect
-            damage1.target shouldBe EffectTarget.ContextTarget(0)
+            damage1.target shouldBe EffectTarget.BoundVariable("first target")
 
-            // Second effect targets ContextTarget(1)
+            // Second effect targets BoundVariable("second target")
             val damage2 = composite.effects[1] as DealDamageEffect
-            damage2.target shouldBe EffectTarget.ContextTarget(1)
+            damage2.target shouldBe EffectTarget.BoundVariable("second target")
         }
     }
 

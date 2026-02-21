@@ -57,8 +57,8 @@ class KamahlFistOfKrosaTest : FunSpec({
             ActivatedAbility(
                 id = animateLandAbilityId,
                 cost = AbilityCost.Mana(ManaCost.parse("{G}")),
-                effect = AnimateLandEffect(EffectTarget.ContextTarget(0)),
-                targetRequirement = TargetPermanent(filter = TargetFilter.Land)
+                effect = AnimateLandEffect(EffectTarget.BoundVariable("target")),
+                targetRequirement = TargetPermanent(id = "target", filter = TargetFilter.Land)
             ),
             ActivatedAbility(
                 id = overrunAbilityId,

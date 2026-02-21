@@ -58,9 +58,9 @@ class EvergloveCourierTest : FunSpec({
                     AbilityCost.Mana(ManaCost.parse("{2}{G}")),
                     AbilityCost.Tap
                 )),
-                effect = ModifyStatsEffect(2, 2, EffectTarget.ContextTarget(0), Duration.WhileSourceTapped()) then
-                        GrantKeywordUntilEndOfTurnEffect(Keyword.TRAMPLE, EffectTarget.ContextTarget(0), Duration.WhileSourceTapped()),
-                targetRequirement = TargetPermanent(
+                effect = ModifyStatsEffect(2, 2, EffectTarget.BoundVariable("target"), Duration.WhileSourceTapped()) then
+                        GrantKeywordUntilEndOfTurnEffect(Keyword.TRAMPLE, EffectTarget.BoundVariable("target"), Duration.WhileSourceTapped()),
+                targetRequirement = TargetPermanent(id = "target",
                     filter = TargetFilter(GameObjectFilter.Creature.withSubtype("Elf"))
                 )
             )

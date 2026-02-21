@@ -4,7 +4,6 @@ import com.wingedsheep.sdk.dsl.Costs
 import com.wingedsheep.sdk.dsl.Targets
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.TapUntapEffect
 
@@ -24,9 +23,9 @@ val AphettoGrifter = card("Aphetto Grifter") {
 
     activatedAbility {
         cost = Costs.TapPermanents(2, GameObjectFilter.Creature.withSubtype("Wizard"))
-        target = Targets.Permanent
+        val t = target("target", Targets.Permanent)
         effect = TapUntapEffect(
-            target = EffectTarget.ContextTarget(0),
+            target = t,
             tap = true
         )
     }

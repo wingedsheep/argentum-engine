@@ -3,7 +3,6 @@ package com.wingedsheep.mtg.sets.definitions.onslaught.cards
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.effects.GrantKeywordUntilEndOfTurnEffect
 import com.wingedsheep.sdk.scripting.KeywordAbility
 import com.wingedsheep.sdk.scripting.targets.TargetCreature
@@ -21,8 +20,8 @@ val MagesGuile = card("Mage's Guile") {
     oracleText = "Target creature gains shroud until end of turn.\nCycling {U}"
 
     spell {
-        target = TargetCreature()
-        effect = GrantKeywordUntilEndOfTurnEffect(Keyword.SHROUD, EffectTarget.ContextTarget(0))
+        val t = target("target", TargetCreature())
+        effect = GrantKeywordUntilEndOfTurnEffect(Keyword.SHROUD, t)
     }
 
     keywordAbility(KeywordAbility.cycling("{U}"))

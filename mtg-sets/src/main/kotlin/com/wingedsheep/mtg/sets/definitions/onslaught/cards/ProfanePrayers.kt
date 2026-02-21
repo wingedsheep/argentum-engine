@@ -5,7 +5,6 @@ import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.scripting.effects.DealDamageEffect
-import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.effects.GainLifeEffect
 import com.wingedsheep.sdk.scripting.targets.AnyTarget
 
@@ -22,10 +21,10 @@ val ProfanePrayers = card("Profane Prayers") {
     oracleText = "Profane Prayers deals X damage to any target and you gain X life, where X is the number of Clerics on the battlefield."
 
     spell {
-        target = AnyTarget()
+        val t = target("target", AnyTarget())
         effect = DealDamageEffect(
             DynamicAmounts.creaturesWithSubtype(Subtype("Cleric")),
-            EffectTarget.ContextTarget(0)
+            t
         ) then GainLifeEffect(
             DynamicAmounts.creaturesWithSubtype(Subtype("Cleric"))
         )

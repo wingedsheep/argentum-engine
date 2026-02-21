@@ -28,12 +28,12 @@ val CustodyBattle = card("Custody Battle") {
 
     triggeredAbility {
         trigger = Triggers.EnchantedCreatureControllerUpkeep
-        target = TargetOpponent()
+        val t = target("target", TargetOpponent())
         effect = PayOrSufferEffect(
             cost = PayCost.Sacrifice(GameObjectFilter.Land),
             suffer = GiveControlToTargetPlayerEffect(
                 permanent = EffectTarget.EnchantedCreature,
-                newController = EffectTarget.ContextTarget(0)
+                newController = t
             )
         )
     }

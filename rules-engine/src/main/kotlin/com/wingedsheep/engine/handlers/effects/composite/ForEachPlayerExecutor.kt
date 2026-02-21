@@ -129,7 +129,8 @@ class ForEachPlayerExecutor(
                     opponentId = currentContext.opponentId,
                     xValue = currentContext.xValue,
                     targets = currentContext.targets,
-                    storedCollections = currentContext.storedCollections
+                    storedCollections = currentContext.storedCollections,
+                    namedTargets = currentContext.namedTargets
                 )
                 currentState.pushContinuation(continuation)
             } else {

@@ -28,6 +28,8 @@ sealed interface TargetRequirement {
     val count: Int get() = 1  // Maximum targets
     val minCount: Int get() = count  // Minimum targets (defaults to count)
     val optional: Boolean get() = false  // If true, minCount becomes 0
+    /** Named identifier for this target requirement. When set, enables BoundVariable resolution. */
+    val id: String? get() = null
 
     /** Effective minimum after considering optional flag */
     val effectiveMinCount: Int get() = if (optional) 0 else minCount
@@ -44,7 +46,8 @@ sealed interface TargetRequirement {
 @Serializable
 data class TargetPlayer(
     override val count: Int = 1,
-    override val optional: Boolean = false
+    override val optional: Boolean = false,
+    override val id: String? = null
 ) : TargetRequirement {
     override val description: String = if (count == 1) "target player" else "target $count players"
 }
@@ -56,7 +59,8 @@ data class TargetPlayer(
 @Serializable
 data class TargetOpponent(
     override val count: Int = 1,
-    override val optional: Boolean = false
+    override val optional: Boolean = false,
+    override val id: String? = null
 ) : TargetRequirement {
     override val description: String = if (count == 1) "target opponent" else "target $count opponents"
 }
@@ -73,8 +77,9 @@ fun TargetCreature(
     count: Int = 1,
     minCount: Int = count,
     optional: Boolean = false,
-    filter: TargetFilter = TargetFilter.Creature
-): TargetObject = TargetObject(count = count, minCount = minCount, optional = optional, filter = filter)
+    filter: TargetFilter = TargetFilter.Creature,
+    id: String? = null
+): TargetObject = TargetObject(count = count, minCount = minCount, optional = optional, filter = filter, id = id)
 
 // =============================================================================
 // Permanent Targeting (factory function — returns TargetObject)
@@ -87,8 +92,9 @@ fun TargetCreature(
 fun TargetPermanent(
     count: Int = 1,
     optional: Boolean = false,
-    filter: TargetFilter = TargetFilter.Permanent
-): TargetObject = TargetObject(count = count, optional = optional, filter = filter)
+    filter: TargetFilter = TargetFilter.Permanent,
+    id: String? = null
+): TargetObject = TargetObject(count = count, optional = optional, filter = filter, id = id)
 
 // =============================================================================
 // Combined Targeting
@@ -101,7 +107,8 @@ fun TargetPermanent(
 @Serializable
 data class AnyTarget(
     override val count: Int = 1,
-    override val optional: Boolean = false
+    override val optional: Boolean = false,
+    override val id: String? = null
 ) : TargetRequirement {
     override val description: String = if (count == 1) "any target" else "$count targets"
 }
@@ -113,7 +120,8 @@ data class AnyTarget(
 @Serializable
 data class TargetCreatureOrPlayer(
     override val count: Int = 1,
-    override val optional: Boolean = false
+    override val optional: Boolean = false,
+    override val id: String? = null
 ) : TargetRequirement {
     override val description: String = if (count == 1) "target creature or player" else "$count targets (creatures or players)"
 }
@@ -125,7 +133,8 @@ data class TargetCreatureOrPlayer(
 @Serializable
 data class TargetCreatureOrPlaneswalker(
     override val count: Int = 1,
-    override val optional: Boolean = false
+    override val optional: Boolean = false,
+    override val id: String? = null
 ) : TargetRequirement {
     override val description: String = if (count == 1) "target creature or planeswalker" else "$count targets (creatures or planeswalkers)"
 }
@@ -144,7 +153,8 @@ data class TargetCreatureOrPlaneswalker(
 @Serializable
 data class TargetSpellOrPermanent(
     override val count: Int = 1,
-    override val optional: Boolean = false
+    override val optional: Boolean = false,
+    override val id: String? = null
 ) : TargetRequirement {
     override val description: String = if (count == 1) "target spell or permanent" else "$count target spells or permanents"
 }
@@ -164,8 +174,9 @@ data class TargetSpellOrPermanent(
 fun TargetSpell(
     count: Int = 1,
     optional: Boolean = false,
-    filter: TargetFilter = TargetFilter.SpellOnStack
-): TargetObject = TargetObject(count = count, optional = optional, filter = filter)
+    filter: TargetFilter = TargetFilter.SpellOnStack,
+    id: String? = null
+): TargetObject = TargetObject(count = count, optional = optional, filter = filter, id = id)
 
 // =============================================================================
 // Generic Object Targeting
@@ -186,7 +197,8 @@ data class TargetObject(
     override val count: Int = 1,
     override val minCount: Int = count,
     override val optional: Boolean = false,
-    val filter: TargetFilter
+    val filter: TargetFilter,
+    override val id: String? = null
 ) : TargetRequirement {
     override val description: String = buildString {
         if (optional) {
@@ -211,9 +223,25 @@ data class TargetObject(
 @Serializable
 data class TargetOther(
     val baseRequirement: TargetRequirement,
-    val excludeSourceId: EntityId? = null
+    val excludeSourceId: EntityId? = null,
+    override val id: String? = null
 ) : TargetRequirement {
     override val description: String = "target other ${baseRequirement.description}"
     override val count: Int = baseRequirement.count
     override val optional: Boolean = baseRequirement.optional
+}
+
+/**
+ * Create a copy of this TargetRequirement with the given id set.
+ * Used by the DSL to stamp an id onto requirements passed to target(name, requirement).
+ */
+fun TargetRequirement.withId(name: String): TargetRequirement = when (this) {
+    is TargetPlayer -> copy(id = name)
+    is TargetOpponent -> copy(id = name)
+    is AnyTarget -> copy(id = name)
+    is TargetCreatureOrPlayer -> copy(id = name)
+    is TargetCreatureOrPlaneswalker -> copy(id = name)
+    is TargetSpellOrPermanent -> copy(id = name)
+    is TargetObject -> copy(id = name)
+    is TargetOther -> copy(id = name)
 }

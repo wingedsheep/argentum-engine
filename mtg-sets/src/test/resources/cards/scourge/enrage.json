@@ -12,8 +12,8 @@
                 "amount": 0
             },
             "target": {
-                "type": "ContextTarget",
-                "index": 0
+                "type": "BoundVariable",
+                "name": "target"
             }
         },
         "targetRequirements": [
@@ -21,7 +21,8 @@
                 "type": "TargetObject",
                 "filter": {
                     "baseFilter": "creature"
-                }
+                },
+                "id": "target"
             }
         ]
     },

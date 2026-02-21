@@ -3,7 +3,6 @@ package com.wingedsheep.mtg.sets.definitions.scourge.cards
 import com.wingedsheep.sdk.dsl.Targets
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.effects.ForceSacrificeEffect
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 
@@ -19,8 +18,8 @@ val MisguidedRage = card("Misguided Rage") {
     oracleText = "Target player sacrifices a permanent."
 
     spell {
-        target = Targets.Player
-        effect = ForceSacrificeEffect(GameObjectFilter.Permanent, 1, EffectTarget.ContextTarget(0))
+        val t = target("target", Targets.Player)
+        effect = ForceSacrificeEffect(GameObjectFilter.Permanent, 1, t)
     }
 
     metadata {

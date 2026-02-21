@@ -208,7 +208,8 @@ class ContinuationHandler(
                     xValue = continuation.xValue,
                     targets = continuation.targets,
                     storedCollections = currentContext.storedCollections,
-                    chosenCreatureType = continuation.chosenCreatureType
+                    chosenCreatureType = continuation.chosenCreatureType,
+                    namedTargets = continuation.namedTargets
                 )
                 currentState.pushContinuation(remainingContinuation)
             } else {
@@ -420,7 +421,8 @@ class ContinuationHandler(
                 controllerId = nextContinuation.controllerId,
                 opponentId = nextContinuation.opponentId,
                 xValue = nextContinuation.xValue,
-                targets = nextContinuation.remainingTargets
+                targets = nextContinuation.remainingTargets,
+                namedTargets = nextContinuation.namedTargets
             )
             val result = forEachTargetExecutor.processTargets(
                 stateAfterPop,
@@ -520,7 +522,8 @@ class ContinuationHandler(
                         xValue = nextContinuation.xValue,
                         targets = nextContinuation.targets,
                         storedCollections = currentContext.storedCollections,
-                        chosenCreatureType = nextContinuation.chosenCreatureType
+                        chosenCreatureType = nextContinuation.chosenCreatureType,
+                        namedTargets = nextContinuation.namedTargets
                     )
                     currentState.pushContinuation(remainingContinuation)
                 } else {

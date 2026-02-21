@@ -45,12 +45,12 @@ class AphettoVultureTest : FunSpec({
                 trigger = GameEvent.ZoneChangeEvent(from = Zone.BATTLEFIELD, to = Zone.GRAVEYARD),
                 binding = TriggerBinding.SELF,
                 effect = MoveToZoneEffect(
-                    target = EffectTarget.ContextTarget(0),
+                    target = EffectTarget.BoundVariable("target"),
                     destination = Zone.LIBRARY,
                     placement = ZonePlacement.Top
                 ),
                 optional = true,
-                targetRequirement = TargetObject(
+                targetRequirement = TargetObject(id = "target",
                     filter = TargetFilter(
                         GameObjectFilter.Any.withSubtype("Zombie").ownedByYou(),
                         zone = Zone.GRAVEYARD

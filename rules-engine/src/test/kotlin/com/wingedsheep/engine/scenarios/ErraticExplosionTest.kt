@@ -42,8 +42,8 @@ class ErraticExplosionTest : FunSpec({
         typeLine = TypeLine.sorcery(),
         oracleText = "Choose any target. Reveal cards from the top of your library until you reveal a nonland card. Erratic Explosion deals damage equal to that card's mana value to that permanent or player. Put the revealed cards on the bottom of your library in any order.",
         script = CardScript.spell(
-            effect = EffectPatterns.revealUntilNonlandDealDamage(EffectTarget.ContextTarget(0)),
-            AnyTarget()
+            effect = EffectPatterns.revealUntilNonlandDealDamage(EffectTarget.BoundVariable("target")),
+            AnyTarget(id = "target")
         )
     )
 

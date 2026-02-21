@@ -23,14 +23,14 @@ val TradeSecrets = card("Trade Secrets") {
     oracleText = "Target opponent draws two cards, then you draw up to four cards. That opponent may repeat this process as many times as they choose."
 
     spell {
-        target = TargetOpponent()
+        val t = target("target", TargetOpponent())
         effect = Effects.RepeatWhile(
             body = Effects.Composite(
-                DrawCardsEffect(count = 2, target = EffectTarget.ContextTarget(0)),
+                DrawCardsEffect(count = 2, target = t),
                 DrawUpToEffect(maxCards = 4, target = EffectTarget.Controller)
             ),
             repeatCondition = RepeatCondition.PlayerChooses(
-                decider = EffectTarget.ContextTarget(0),
+                decider = t,
                 prompt = "Repeat the process? (You draw 2 cards, opponent draws up to 4)",
                 yesText = "Repeat",
                 noText = "Stop"

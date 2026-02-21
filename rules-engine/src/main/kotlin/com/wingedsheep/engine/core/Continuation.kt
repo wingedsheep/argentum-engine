@@ -73,7 +73,8 @@ data class EffectContinuation(
     val targets: List<ChosenTarget> = emptyList(),
     val storedCollections: Map<String, List<EntityId>> = emptyMap(),
     val chosenCreatureType: String? = null,
-    val triggeringEntityId: EntityId? = null
+    val triggeringEntityId: EntityId? = null,
+    val namedTargets: Map<String, ChosenTarget> = emptyMap()
 ) : ContinuationFrame {
     /**
      * Reconstruct the EffectContext from serialized fields.
@@ -86,7 +87,8 @@ data class EffectContinuation(
         targets = targets,
         storedCollections = storedCollections,
         chosenCreatureType = chosenCreatureType,
-        triggeringEntityId = triggeringEntityId
+        triggeringEntityId = triggeringEntityId,
+        namedTargets = namedTargets
     )
 }
 
@@ -231,7 +233,8 @@ data class MayAbilityContinuation(
     val xValue: Int?,
     val targets: List<ChosenTarget> = emptyList(),
     val triggeringEntityId: EntityId? = null,
-    val triggerDamageAmount: Int? = null
+    val triggerDamageAmount: Int? = null,
+    val namedTargets: Map<String, ChosenTarget> = emptyMap()
 ) : ContinuationFrame {
     fun toEffectContext(): EffectContext = EffectContext(
         sourceId = sourceId,
@@ -240,7 +243,8 @@ data class MayAbilityContinuation(
         xValue = xValue,
         targets = targets,
         triggeringEntityId = triggeringEntityId,
-        triggerDamageAmount = triggerDamageAmount
+        triggerDamageAmount = triggerDamageAmount,
+        namedTargets = namedTargets
     )
 }
 
@@ -359,7 +363,8 @@ data class PayOrSufferContinuation(
     val requiredCount: Int,
     val filter: GameObjectFilter,
     val random: Boolean = false,
-    val targets: List<ChosenTarget> = emptyList()
+    val targets: List<ChosenTarget> = emptyList(),
+    val namedTargets: Map<String, ChosenTarget> = emptyMap()
 ) : ContinuationFrame
 
 /**
@@ -722,7 +727,8 @@ data class ModalTargetContinuation(
     val sourceName: String?,
     val effect: Effect,
     val xValue: Int? = null,
-    val opponentId: EntityId? = null
+    val opponentId: EntityId? = null,
+    val targetRequirements: List<TargetRequirement> = emptyList()
 ) : ContinuationFrame
 
 /**
@@ -783,7 +789,8 @@ data class MayPayManaContinuation(
     val opponentId: EntityId?,
     val xValue: Int?,
     val targets: List<ChosenTarget> = emptyList(),
-    val triggeringEntityId: EntityId? = null
+    val triggeringEntityId: EntityId? = null,
+    val namedTargets: Map<String, ChosenTarget> = emptyMap()
 ) : ContinuationFrame {
     fun toEffectContext(): EffectContext = EffectContext(
         sourceId = sourceId,
@@ -791,7 +798,8 @@ data class MayPayManaContinuation(
         opponentId = opponentId,
         xValue = xValue,
         targets = targets,
-        triggeringEntityId = triggeringEntityId
+        triggeringEntityId = triggeringEntityId,
+        namedTargets = namedTargets
     )
 }
 
@@ -1602,7 +1610,8 @@ data class ForEachTargetContinuation(
     val sourceId: EntityId?,
     val controllerId: EntityId,
     val opponentId: EntityId?,
-    val xValue: Int?
+    val xValue: Int?,
+    val namedTargets: Map<String, ChosenTarget> = emptyMap()
 ) : ContinuationFrame
 
 /**
@@ -1682,14 +1691,16 @@ data class RepeatWhileContinuation(
     val opponentId: EntityId?,
     val xValue: Int?,
     val targets: List<ChosenTarget> = emptyList(),
-    val phase: RepeatWhilePhase
+    val phase: RepeatWhilePhase,
+    val namedTargets: Map<String, ChosenTarget> = emptyMap()
 ) : ContinuationFrame {
     fun toEffectContext(): EffectContext = EffectContext(
         sourceId = sourceId,
         controllerId = controllerId,
         opponentId = opponentId,
         xValue = xValue,
-        targets = targets
+        targets = targets,
+        namedTargets = namedTargets
     )
 }
 

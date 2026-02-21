@@ -5,7 +5,6 @@ import com.wingedsheep.sdk.dsl.Costs
 import com.wingedsheep.sdk.dsl.DynamicAmounts
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.effects.PreventNextDamageEffect
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import com.wingedsheep.sdk.scripting.targets.TargetPermanent
@@ -27,10 +26,10 @@ val BattlefieldMedic = card("Battlefield Medic") {
 
     activatedAbility {
         cost = Costs.Tap
-        target = TargetPermanent(filter = TargetFilter.Creature)
+        val t = target("target", TargetPermanent(filter = TargetFilter.Creature))
         effect = PreventNextDamageEffect(
             amount = DynamicAmounts.creaturesWithSubtype(Subtype("Cleric")),
-            target = EffectTarget.ContextTarget(0)
+            target = t
         )
     }
 

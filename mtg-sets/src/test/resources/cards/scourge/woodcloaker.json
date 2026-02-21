@@ -25,15 +25,16 @@
                     "type": "GrantKeywordUntilEndOfTurn",
                     "keyword": "TRAMPLE",
                     "target": {
-                        "type": "ContextTarget",
-                        "index": 0
+                        "type": "BoundVariable",
+                        "name": "target"
                     }
                 },
                 "targetRequirement": {
                     "type": "TargetObject",
                     "filter": {
                         "baseFilter": "creature"
-                    }
+                    },
+                    "id": "target"
                 }
             }
         ]

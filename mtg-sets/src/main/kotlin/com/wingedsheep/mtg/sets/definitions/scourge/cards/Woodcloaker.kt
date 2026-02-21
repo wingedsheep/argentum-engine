@@ -6,7 +6,7 @@ import com.wingedsheep.sdk.dsl.Targets
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.targets.EffectTarget
+
 
 /**
  * Woodcloaker
@@ -25,8 +25,8 @@ val Woodcloaker = card("Woodcloaker") {
 
     triggeredAbility {
         trigger = Triggers.TurnedFaceUp
-        target = Targets.Creature
-        effect = Effects.GrantKeyword(Keyword.TRAMPLE, EffectTarget.ContextTarget(0))
+        val t = target("target", Targets.Creature)
+        effect = Effects.GrantKeyword(Keyword.TRAMPLE, t)
     }
 
     morph = "{2}{G}{G}"

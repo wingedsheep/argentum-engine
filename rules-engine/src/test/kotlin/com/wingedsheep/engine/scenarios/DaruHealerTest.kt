@@ -49,9 +49,9 @@ class DaruHealerTest : FunSpec({
                 cost = AbilityCost.Tap,
                 effect = PreventNextDamageEffect(
                     amount = DynamicAmount.Fixed(1),
-                    target = EffectTarget.ContextTarget(0)
+                    target = EffectTarget.BoundVariable("target")
                 ),
-                targetRequirement = AnyTarget()
+                targetRequirement = AnyTarget(id = "target")
             )
         )
     )

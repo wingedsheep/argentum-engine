@@ -5,7 +5,6 @@ import com.wingedsheep.sdk.dsl.Costs
 import com.wingedsheep.sdk.dsl.Targets
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
 
@@ -25,8 +24,8 @@ val CatapultMaster = card("Catapult Master") {
 
     activatedAbility {
         cost = Costs.TapPermanents(5, GameObjectFilter.Creature.withSubtype("Soldier"))
-        target = Targets.Creature
-        effect = MoveToZoneEffect(EffectTarget.ContextTarget(0), Zone.EXILE)
+        val t = target("target", Targets.Creature)
+        effect = MoveToZoneEffect(t, Zone.EXILE)
     }
 
     metadata {

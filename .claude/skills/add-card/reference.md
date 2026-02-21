@@ -2,34 +2,38 @@
 
 ## DSL Facades (Primary API)
 
-Always use these facades for card definitions. They provide type-safe factory methods that abstract away raw constructors.
+Always use these facades for card definitions. They provide type-safe factory methods that abstract away raw
+constructors.
 
-| Facade | Import | Purpose |
-|--------|--------|---------|
-| `Effects` | `com.wingedsheep.sdk.dsl.Effects` | Build effect objects |
-| `Targets` | `com.wingedsheep.sdk.dsl.Targets` | Build target requirements |
-| `Triggers` | `com.wingedsheep.sdk.dsl.Triggers` | Build trigger objects |
-| `Filters` | `com.wingedsheep.sdk.dsl.Filters` | Build filters for search/group/target |
-| `Costs` | `com.wingedsheep.sdk.dsl.Costs` | Build ability activation costs |
-| `Conditions` | `com.wingedsheep.sdk.dsl.Conditions` | Build conditions for conditional effects |
-| `DynamicAmounts` | `com.wingedsheep.sdk.dsl.DynamicAmounts` | Build dynamic value expressions |
-| `EffectPatterns` | `com.wingedsheep.sdk.dsl.EffectPatterns` | Common multi-effect patterns |
+| Facade           | Import                                   | Purpose                                  |
+|------------------|------------------------------------------|------------------------------------------|
+| `Effects`        | `com.wingedsheep.sdk.dsl.Effects`        | Build effect objects                     |
+| `Targets`        | `com.wingedsheep.sdk.dsl.Targets`        | Build target requirements                |
+| `Triggers`       | `com.wingedsheep.sdk.dsl.Triggers`       | Build trigger objects                    |
+| `Filters`        | `com.wingedsheep.sdk.dsl.Filters`        | Build filters for search/group/target    |
+| `Costs`          | `com.wingedsheep.sdk.dsl.Costs`          | Build ability activation costs           |
+| `Conditions`     | `com.wingedsheep.sdk.dsl.Conditions`     | Build conditions for conditional effects |
+| `DynamicAmounts` | `com.wingedsheep.sdk.dsl.DynamicAmounts` | Build dynamic value expressions          |
+| `EffectPatterns` | `com.wingedsheep.sdk.dsl.EffectPatterns` | Common multi-effect patterns             |
 
 ---
 
 ## Effects Facade
 
 ### Damage
+
 - `Effects.DealDamage(amount: Int, target)` / `Effects.DealDamage(amount: DynamicAmount, target)`
 - `Effects.DealXDamage(target)` — shorthand for X-value damage
 - `Effects.Drain(amount, target)` — deal damage + gain life
 - `Effects.Fight(target1, target2)` — two creatures fight
 
 ### Life
+
 - `Effects.GainLife(amount, target = Controller)`
 - `Effects.LoseLife(amount, target = TargetOpponent)` — also accepts `DynamicAmount`
 
 ### Drawing
+
 - `Effects.DrawCards(count, target = Controller)` — also accepts `DynamicAmount`
 - `Effects.DrawUpTo(maxCards, target = Controller)` — draw up to N
 - `Effects.Discard(count, target)`
@@ -43,6 +47,7 @@ Always use these facades for card definitions. They provide type-safe factory me
 - `Effects.Loot(draw = 1, discard = 1)` — draw then discard
 
 ### Zone Movement (via `MoveToZoneEffect`)
+
 - `Effects.Destroy(target)`
 - `Effects.Exile(target)`
 - `Effects.ExileUntilEndStep(target)` — exile, return at end step
@@ -53,6 +58,7 @@ Always use these facades for card definitions. They provide type-safe factory me
 - `Effects.ShuffleGraveyardIntoLibrary(target)` — shuffle graveyard into library
 
 ### Stats & Keywords
+
 - `Effects.ModifyStats(power, toughness, target = ContextTarget(0))` — until end of turn
 - `Effects.ModifyStats(power: DynamicAmount, toughness: DynamicAmount, target)` — dynamic P/T
 - `Effects.GrantKeyword(keyword, target = ContextTarget(0))` — until end of turn
@@ -60,58 +66,71 @@ Always use these facades for card definitions. They provide type-safe factory me
 - `Effects.AnimateLand(target, power, toughness, duration)` — turn land into creature
 
 ### Mass Effects (group)
+
 - `Effects.DestroyAll(filter: GroupFilter, noRegenerate = false)` — board wipe
 - `Effects.GrantKeywordToAll(keyword, filter: GroupFilter, duration)` — keyword to group
 - `Effects.ModifyStatsForAll(power, toughness, filter: GroupFilter, duration)` — P/T for group
 - `Effects.DealDamageToAll(amount, filter: GroupFilter)` — also accepts `DynamicAmount`
 
 ### Control
+
 - `Effects.GainControl(target, duration = Permanent)` — gain control of target
 - `Effects.GainControlByMostOfSubtype(subtype, target)` — control if you have most of subtype
 - `Effects.GainControlOfGroup(filter: GroupFilter, duration)` — gain control of group
 - `Effects.ChooseCreatureTypeGainControl(duration)` — choose type, gain control
 
 ### Protection
+
 - `Effects.ChooseColorAndGrantProtection(filter: GroupFilter, duration)` — protection to group
 - `Effects.ChooseColorAndGrantProtectionToTarget(target, duration)` — protection to target
 
 ### Mana
+
 - `Effects.AddMana(color, amount = 1)` — also accepts `DynamicAmount`
 - `Effects.AddColorlessMana(amount)` — also accepts `DynamicAmount`
 - `Effects.AddAnyColorMana(amount = 1)`
 
 ### Tokens
+
 - `Effects.CreateToken(power, toughness, colors, creatureTypes, keywords, count = 1)`
 - `Effects.CreateTreasure(count = 1)`
 
 ### Library
+
 - `Effects.SearchLibrary(filter, count = 1, destination = HAND, entersTapped, shuffle, reveal)`
 - `Effects.Scry(count)` — returns CompositeEffect (Gather → Select → Move pipeline)
 - `Effects.Surveil(count)` — returns CompositeEffect (Gather → Select → Move pipeline)
 - `Effects.Mill(count, target = Controller)`
 - `Effects.HeadGames(target)` — look at target's hand, rearrange library
-- `Effects.EachPlayerRevealCreaturesCreateTokens(tokenPower, tokenToughness, tokenColors, tokenCreatureTypes, tokenImageUri?)` — each player reveals and creates tokens
+-
+`Effects.EachPlayerRevealCreaturesCreateTokens(tokenPower, tokenToughness, tokenColors, tokenCreatureTypes, tokenImageUri?)` —
+each player reveals and creates tokens
 - `Effects.EachPlayerSearchesLibrary(filter, count: DynamicAmount)` — each player searches
 
 ### Stack
+
 - `Effects.CounterSpell()`
 - `Effects.CounterUnlessPays(cost: String)` — counter unless mana paid
 - `Effects.CounterUnlessDynamicPays(amount: DynamicAmount)` — counter unless dynamic amount paid
 - `Effects.ChangeSpellTarget(targetMustBeSource = false)` — redirect a spell's target
 
 ### Sacrifice
+
 - `Effects.Sacrifice(filter, count = 1, target = Controller)`
 
 ### Tap/Untap
+
 - `Effects.Tap(target)` / `Effects.Untap(target)`
 - `Effects.UntapGroup(filter: GroupFilter)` — untap all matching
 - `Effects.TapAll(filter: GroupFilter)` — tap all matching
 
 ### Permanent Manipulation
+
 - `Effects.SeparatePermanentsIntoPiles(target)` — separate into piles
 - `Effects.RemoveFromCombat(target)` — remove creature from combat
 
 ### Composite & Control Flow
+
 - `Effects.Composite(vararg effects)` — or use `effect1 then effect2` infix operator
 - `Effects.RepeatWhile(body, repeatCondition)` — repeat while condition met
 - `Effects.SelectTarget(requirement, storeAs)` — select and store a target
@@ -121,198 +140,213 @@ Always use these facades for card definitions. They provide type-safe factory me
 ## All Effect Types (in scripting/effect/)
 
 ### Damage
-| Effect | Parameters | Purpose |
-|--------|------------|---------|
-| `DealDamageEffect` | `amount: DynamicAmount, target, cantBePrevented, damageSource?` | Damage to single target |
-| `DealDamageToPlayersEffect` | `amount: DynamicAmount, target` | Damage to players |
-| `DividedDamageEffect` | `totalDamage, minTargets, maxTargets` | Divided damage allocation |
-| `FightEffect` | `target1, target2` | Two creatures fight |
-| `DamageAndChainCopyEffect` | `amount, target, spellName` | Damage + chain copy |
+
+| Effect                      | Parameters                                                      | Purpose                   |
+|-----------------------------|-----------------------------------------------------------------|---------------------------|
+| `DealDamageEffect`          | `amount: DynamicAmount, target, cantBePrevented, damageSource?` | Damage to single target   |
+| `DealDamageToPlayersEffect` | `amount: DynamicAmount, target`                                 | Damage to players         |
+| `DividedDamageEffect`       | `totalDamage, minTargets, maxTargets`                           | Divided damage allocation |
+| `FightEffect`               | `target1, target2`                                              | Two creatures fight       |
+| `DamageAndChainCopyEffect`  | `amount, target, spellName`                                     | Damage + chain copy       |
 
 ### Life
-| Effect | Parameters | Purpose |
-|--------|------------|---------|
-| `GainLifeEffect` | `amount: DynamicAmount, target` | Gain life |
-| `LoseLifeEffect` | `amount: DynamicAmount, target` | Lose life |
-| `PayLifeEffect` | `amount: Int` | Pay life cost |
-| `LoseHalfLifeEffect` | `roundUp, target` | Lose half life total |
-| `OwnerGainsLifeEffect` | `amount: DynamicAmount` | Card owner gains life |
-| `GainLifeForEachLandOnBattlefieldEffect` | `landType, lifePerLand` | Life per lands |
-| `SetLifeTotalForEachPlayerEffect` | `perPlayerAmount: DynamicAmount` | Set life total per player |
+
+| Effect                                   | Parameters                       | Purpose                   |
+|------------------------------------------|----------------------------------|---------------------------|
+| `GainLifeEffect`                         | `amount: DynamicAmount, target`  | Gain life                 |
+| `LoseLifeEffect`                         | `amount: DynamicAmount, target`  | Lose life                 |
+| `PayLifeEffect`                          | `amount: Int`                    | Pay life cost             |
+| `LoseHalfLifeEffect`                     | `roundUp, target`                | Lose half life total      |
+| `OwnerGainsLifeEffect`                   | `amount: DynamicAmount`          | Card owner gains life     |
+| `GainLifeForEachLandOnBattlefieldEffect` | `landType, lifePerLand`          | Life per lands            |
+| `SetLifeTotalForEachPlayerEffect`        | `perPlayerAmount: DynamicAmount` | Set life total per player |
 
 ### Drawing & Hand
-| Effect | Parameters | Purpose |
-|--------|------------|---------|
-| `DrawCardsEffect` | `count: DynamicAmount, target` | Draw cards |
-| `DrawUpToEffect` | `maxCards: Int, target` | Draw up to N |
-| `EachOpponentDiscardsEffect` | `count, controllerDrawsPerDiscard` | Each opponent discards |
-| `EachPlayerMayDrawEffect` | `maxCards, lifePerCardNotDrawn` | Each player may draw |
-| `EachPlayerDiscardsOrLoseLifeEffect` | `lifeLoss: Int` | Discard or lose life |
-| `EachPlayerReturnsPermanentToHandEffect` | (object) | Each player returns a permanent |
-| `LookAtTargetHandEffect` | `target` | Look at target's hand |
-| `LookAtFaceDownCreatureEffect` | `target` | Look at a face-down creature |
-| `LookAtAllFaceDownCreaturesEffect` | `target` | Look at all face-down creatures |
-| `RevealHandEffect` | `target` | Reveal hand |
-| `ReplaceNextDrawWithEffect` | `replacementEffect: Effect` | Replace next draw |
-| `ReadTheRunesEffect` | (object) | Read the Runes |
-| `DiscardAndChainCopyEffect` | `count, target, spellName` | Discard + chain copy |
+
+| Effect                                   | Parameters                         | Purpose                         |
+|------------------------------------------|------------------------------------|---------------------------------|
+| `DrawCardsEffect`                        | `count: DynamicAmount, target`     | Draw cards                      |
+| `DrawUpToEffect`                         | `maxCards: Int, target`            | Draw up to N                    |
+| `EachOpponentDiscardsEffect`             | `count, controllerDrawsPerDiscard` | Each opponent discards          |
+| `EachPlayerMayDrawEffect`                | `maxCards, lifePerCardNotDrawn`    | Each player may draw            |
+| `EachPlayerDiscardsOrLoseLifeEffect`     | `lifeLoss: Int`                    | Discard or lose life            |
+| `EachPlayerReturnsPermanentToHandEffect` | (object)                           | Each player returns a permanent |
+| `LookAtTargetHandEffect`                 | `target`                           | Look at target's hand           |
+| `LookAtFaceDownCreatureEffect`           | `target`                           | Look at a face-down creature    |
+| `LookAtAllFaceDownCreaturesEffect`       | `target`                           | Look at all face-down creatures |
+| `RevealHandEffect`                       | `target`                           | Reveal hand                     |
+| `ReplaceNextDrawWithEffect`              | `replacementEffect: Effect`        | Replace next draw               |
+| `ReadTheRunesEffect`                     | (object)                           | Read the Runes                  |
+| `DiscardAndChainCopyEffect`              | `count, target, spellName`         | Discard + chain copy            |
 
 ### Removal & Zone Movement
-| Effect | Parameters | Purpose |
-|--------|------------|---------|
-| `MoveToZoneEffect` | `target, destination: Zone, placement, byDestruction` | Unified zone movement |
-| `SacrificeEffect` | `filter, count, any` | Sacrifice permanents |
-| `SacrificeSelfEffect` | (object) | Sacrifice this permanent |
-| `ForceSacrificeEffect` | `filter, count, target` | Force opponent sacrifice |
-| `RegenerateEffect` | `target` | Regenerate |
-| `CantBeRegeneratedEffect` | `target` | Prevents regeneration |
-| `MarkExileOnDeathEffect` | `target` | Mark for exile on death |
-| `ExileUntilLeavesEffect` | `target` | O-Ring style exile |
-| `ExileAndReplaceWithTokenEffect` | `target, tokenPower/Toughness/Colors/Types/Keywords` | Exile + token |
-| `SeparatePermanentsIntoPilesEffect` | `target` | Separate into piles |
-| `DestroyAtEndOfCombatEffect` | `target` | Destroy at end of combat |
-| `DestroyAllSharingTypeWithSacrificedEffect` | `noRegenerate` | Destroy all sharing type |
-| `DestroyAndChainCopyEffect` | `target, targetFilter, spellName` | Destroy + chain copy |
-| `BounceAndChainCopyEffect` | `target, targetFilter, spellName` | Bounce + chain copy |
-| `HarshMercyEffect` | (object) | Harsh Mercy |
-| `PatriarchsBiddingEffect` | (object) | Patriarch's Bidding |
+
+| Effect                                      | Parameters                                            | Purpose                  |
+|---------------------------------------------|-------------------------------------------------------|--------------------------|
+| `MoveToZoneEffect`                          | `target, destination: Zone, placement, byDestruction` | Unified zone movement    |
+| `SacrificeEffect`                           | `filter, count, any`                                  | Sacrifice permanents     |
+| `SacrificeSelfEffect`                       | (object)                                              | Sacrifice this permanent |
+| `ForceSacrificeEffect`                      | `filter, count, target`                               | Force opponent sacrifice |
+| `RegenerateEffect`                          | `target`                                              | Regenerate               |
+| `CantBeRegeneratedEffect`                   | `target`                                              | Prevents regeneration    |
+| `MarkExileOnDeathEffect`                    | `target`                                              | Mark for exile on death  |
+| `ExileUntilLeavesEffect`                    | `target`                                              | O-Ring style exile       |
+| `ExileAndReplaceWithTokenEffect`            | `target, tokenPower/Toughness/Colors/Types/Keywords`  | Exile + token            |
+| `SeparatePermanentsIntoPilesEffect`         | `target`                                              | Separate into piles      |
+| `DestroyAtEndOfCombatEffect`                | `target`                                              | Destroy at end of combat |
+| `DestroyAllSharingTypeWithSacrificedEffect` | `noRegenerate`                                        | Destroy all sharing type |
+| `DestroyAndChainCopyEffect`                 | `target, targetFilter, spellName`                     | Destroy + chain copy     |
+| `BounceAndChainCopyEffect`                  | `target, targetFilter, spellName`                     | Bounce + chain copy      |
+| `HarshMercyEffect`                          | (object)                                              | Harsh Mercy              |
+| `PatriarchsBiddingEffect`                   | (object)                                              | Patriarch's Bidding      |
 
 ### Permanent Modification
-| Effect | Parameters | Purpose |
-|--------|------------|---------|
-| `TapUntapEffect` | `target, tap: Boolean` | Tap or untap |
-| `TapTargetCreaturesEffect` | `maxTargets` | Tap up to X targets |
-| `ModifyStatsEffect` | `power: DynamicAmount, toughness: DynamicAmount, target, duration` | P/T for single target |
-| `GrantKeywordUntilEndOfTurnEffect` | `keyword, target, duration` | Keyword for single target |
-| `GrantTriggeredAbilityUntilEndOfTurnEffect` | `ability, target, duration` | Grant triggered ability |
-| `GrantActivatedAbilityUntilEndOfTurnEffect` | `ability, target, duration` | Grant activated ability |
-| `GrantActivatedAbilityToGroupEffect` | `ability, filter, duration` | Grant activated ability to group |
-| `AddCountersEffect` | `counterType, count, target` | Add counters |
-| `RemoveCountersEffect` | `counterType, count, target` | Remove counters |
-| `AddMinusCountersEffect` | `count, target` | Add -1/-1 counters |
-| `LoseAllCreatureTypesEffect` | `target, duration` | Remove all creature types |
-| `TransformAllCreaturesEffect` | `target, loseAllAbilities, addCreatureType, setBasePower, setBaseToughness` | Transform creatures |
-| `ChangeCreatureTypeTextEffect` | `target, excludedTypes` | Change creature type text |
-| `BecomeCreatureTypeEffect` | `target, duration, excludedTypes` | Become a creature type |
-| `BecomeChosenTypeAllCreaturesEffect` | `excludedTypes, duration` | All creatures become chosen type |
-| `SetGroupCreatureSubtypesEffect` | `subtypes, filter, duration` | Set group subtypes |
-| `ChangeGroupColorEffect` | `colors, filter, duration` | Change group color |
-| `ChooseCreatureTypeModifyStatsEffect` | `power: DynamicAmount, toughness: DynamicAmount, duration` | Choose type, modify stats |
-| `ChooseCreatureTypeUntapEffect` | (object) | Choose type, untap all of that type |
-| `GainControlEffect` | `target, duration` | Gain control |
-| `GainControlByActivePlayerEffect` | `target` | Active player gains control |
-| `GainControlByMostOfSubtypeEffect` | `subtype, target` | Control by most of subtype |
-| `GiveControlToTargetPlayerEffect` | `permanent, newController, duration` | Give control to target |
-| `ChooseCreatureTypeGainControlEffect` | `duration` | Choose type, gain control |
-| `GrantToEnchantedCreatureTypeGroupEffect` | `powerModifier, toughnessModifier, keyword?, protectionColors, duration` | Grant to enchanted creature's type group |
-| `AnimateLandEffect` | `target, power, toughness, duration` | Animate land |
-| `TurnFaceDownEffect` | `target` | Turn face down |
-| `TurnFaceUpEffect` | `target` | Turn face up |
-| `TransformEffect` | `target` | Transform DFC |
-| `RemoveFromCombatEffect` | `target` | Remove from combat |
+
+| Effect                                      | Parameters                                                                  | Purpose                                  |
+|---------------------------------------------|-----------------------------------------------------------------------------|------------------------------------------|
+| `TapUntapEffect`                            | `target, tap: Boolean`                                                      | Tap or untap                             |
+| `TapTargetCreaturesEffect`                  | `maxTargets`                                                                | Tap up to X targets                      |
+| `ModifyStatsEffect`                         | `power: DynamicAmount, toughness: DynamicAmount, target, duration`          | P/T for single target                    |
+| `GrantKeywordUntilEndOfTurnEffect`          | `keyword, target, duration`                                                 | Keyword for single target                |
+| `GrantTriggeredAbilityUntilEndOfTurnEffect` | `ability, target, duration`                                                 | Grant triggered ability                  |
+| `GrantActivatedAbilityUntilEndOfTurnEffect` | `ability, target, duration`                                                 | Grant activated ability                  |
+| `GrantActivatedAbilityToGroupEffect`        | `ability, filter, duration`                                                 | Grant activated ability to group         |
+| `AddCountersEffect`                         | `counterType, count, target`                                                | Add counters                             |
+| `RemoveCountersEffect`                      | `counterType, count, target`                                                | Remove counters                          |
+| `AddMinusCountersEffect`                    | `count, target`                                                             | Add -1/-1 counters                       |
+| `LoseAllCreatureTypesEffect`                | `target, duration`                                                          | Remove all creature types                |
+| `TransformAllCreaturesEffect`               | `target, loseAllAbilities, addCreatureType, setBasePower, setBaseToughness` | Transform creatures                      |
+| `ChangeCreatureTypeTextEffect`              | `target, excludedTypes`                                                     | Change creature type text                |
+| `BecomeCreatureTypeEffect`                  | `target, duration, excludedTypes`                                           | Become a creature type                   |
+| `BecomeChosenTypeAllCreaturesEffect`        | `excludedTypes, duration`                                                   | All creatures become chosen type         |
+| `SetGroupCreatureSubtypesEffect`            | `subtypes, filter, duration`                                                | Set group subtypes                       |
+| `ChangeGroupColorEffect`                    | `colors, filter, duration`                                                  | Change group color                       |
+| `ChooseCreatureTypeModifyStatsEffect`       | `power: DynamicAmount, toughness: DynamicAmount, duration`                  | Choose type, modify stats                |
+| `ChooseCreatureTypeUntapEffect`             | (object)                                                                    | Choose type, untap all of that type      |
+| `GainControlEffect`                         | `target, duration`                                                          | Gain control                             |
+| `GainControlByActivePlayerEffect`           | `target`                                                                    | Active player gains control              |
+| `GainControlByMostOfSubtypeEffect`          | `subtype, target`                                                           | Control by most of subtype               |
+| `GiveControlToTargetPlayerEffect`           | `permanent, newController, duration`                                        | Give control to target                   |
+| `ChooseCreatureTypeGainControlEffect`       | `duration`                                                                  | Choose type, gain control                |
+| `GrantToEnchantedCreatureTypeGroupEffect`   | `powerModifier, toughnessModifier, keyword?, protectionColors, duration`    | Grant to enchanted creature's type group |
+| `AnimateLandEffect`                         | `target, power, toughness, duration`                                        | Animate land                             |
+| `TurnFaceDownEffect`                        | `target`                                                                    | Turn face down                           |
+| `TurnFaceUpEffect`                          | `target`                                                                    | Turn face up                             |
+| `TransformEffect`                           | `target`                                                                    | Transform DFC                            |
+| `RemoveFromCombatEffect`                    | `target`                                                                    | Remove from combat                       |
 
 ### Library
-| Effect | Parameters | Purpose |
-|--------|------------|---------|
-| `ShuffleLibraryEffect` | `target` | Shuffle library |
-| `PutCreatureFromHandSharingTypeWithTappedEffect` | (object) | Put creature from hand sharing type |
-| `EffectPatterns.lookAtTopAndKeep(count, keepCount)` | `count, keepCount, keepDest?, restDest?, revealed?` | Look at top N keep some (pipeline) |
-| `EffectPatterns.lookAtTopAndReorder(count)` | `count: Int` or `count: DynamicAmount` | Look at top and reorder (pipeline) |
-| `EffectPatterns.lookAtTopXAndPutOntoBattlefield(countSource, filter, shuffleAfter)` | CoCo-style (pipeline) |
-| `EffectPatterns.lookAtTargetLibraryAndDiscard(count, toGraveyard)` | `count, toGraveyard` | Look at target's library, discard some (pipeline) |
-| `EffectPatterns.searchTargetLibraryExile(count, filter)` | Search target's library and exile (pipeline) |
+
+| Effect                                                                              | Parameters                                          | Purpose                                           |
+|-------------------------------------------------------------------------------------|-----------------------------------------------------|---------------------------------------------------|
+| `ShuffleLibraryEffect`                                                              | `target`                                            | Shuffle library                                   |
+| `PutCreatureFromHandSharingTypeWithTappedEffect`                                    | (object)                                            | Put creature from hand sharing type               |
+| `EffectPatterns.lookAtTopAndKeep(count, keepCount)`                                 | `count, keepCount, keepDest?, restDest?, revealed?` | Look at top N keep some (pipeline)                |
+| `EffectPatterns.lookAtTopAndReorder(count)`                                         | `count: Int` or `count: DynamicAmount`              | Look at top and reorder (pipeline)                |
+| `EffectPatterns.lookAtTopXAndPutOntoBattlefield(countSource, filter, shuffleAfter)` | CoCo-style (pipeline)                               |
+| `EffectPatterns.lookAtTargetLibraryAndDiscard(count, toGraveyard)`                  | `count, toGraveyard`                                | Look at target's library, discard some (pipeline) |
+| `EffectPatterns.searchTargetLibraryExile(count, filter)`                            | Search target's library and exile (pipeline)        |
 
 ### Mana
-| Effect | Parameters | Purpose |
-|--------|------------|---------|
-| `AddManaEffect` | `color, amount: DynamicAmount` | Add colored mana |
-| `AddColorlessManaEffect` | `amount: DynamicAmount` | Add colorless mana |
-| `AddAnyColorManaEffect` | `amount: DynamicAmount` | Add any color mana |
-| `AddDynamicManaEffect` | `amountSource: DynamicAmount, allowedColors` | Dynamic mana |
+
+| Effect                   | Parameters                                   | Purpose            |
+|--------------------------|----------------------------------------------|--------------------|
+| `AddManaEffect`          | `color, amount: DynamicAmount`               | Add colored mana   |
+| `AddColorlessManaEffect` | `amount: DynamicAmount`                      | Add colorless mana |
+| `AddAnyColorManaEffect`  | `amount: DynamicAmount`                      | Add any color mana |
+| `AddDynamicManaEffect`   | `amountSource: DynamicAmount, allowedColors` | Dynamic mana       |
 
 ### Tokens
-| Effect | Parameters | Purpose |
-|--------|------------|---------|
-| `CreateTokenEffect` | `count: DynamicAmount, power, toughness, colors, creatureTypes, keywords, name?, imageUri?` | Create token |
-| `CreateChosenTokenEffect` | `dynamicPower: DynamicAmount, dynamicToughness: DynamicAmount` | Create token with chosen stats |
-| `CreateTreasureTokensEffect` | `count: DynamicAmount` | Create Treasure |
-| `CreateTokenFromGraveyardEffect` | `power, toughness, colors, creatureTypes` | Token from graveyard |
+
+| Effect                           | Parameters                                                                                  | Purpose                        |
+|----------------------------------|---------------------------------------------------------------------------------------------|--------------------------------|
+| `CreateTokenEffect`              | `count: DynamicAmount, power, toughness, colors, creatureTypes, keywords, name?, imageUri?` | Create token                   |
+| `CreateChosenTokenEffect`        | `dynamicPower: DynamicAmount, dynamicToughness: DynamicAmount`                              | Create token with chosen stats |
+| `CreateTreasureTokensEffect`     | `count: DynamicAmount`                                                                      | Create Treasure                |
+| `CreateTokenFromGraveyardEffect` | `power, toughness, colors, creatureTypes`                                                   | Token from graveyard           |
 
 ### Composite & Control Flow
-| Effect | Parameters | Purpose |
-|--------|------------|---------|
-| `CompositeEffect` | `effects: List<Effect>` | Chain multiple effects |
-| `MayEffect` | `effect, descriptionOverride?` | "You may..." |
-| `ModalEffect` | `modes: List<Mode>, chooseCount` | "Choose one/two..." |
-| `OptionalCostEffect` | `cost, ifPaid, ifNotPaid?` | "You may [cost]. If you do..." |
-| `ReflexiveTriggerEffect` | `action, optional, reflexiveEffect` | "When you do..." |
-| `PayOrSufferEffect` | `cost: PayCost, suffer, player` | "Unless [cost], [suffer]" |
-| `StoreResultEffect` | `effect, storeAs: EffectVariable` | Store result for later |
-| `StoreCountEffect` | `effect, storeAs` | Store count for later |
-| `CreateDelayedTriggerEffect` | `step: Step, effect` | Create delayed trigger at step |
-| `BlightEffect` | `blightAmount: DynamicAmount, innerEffect, targetId?` | Blight effect |
-| `TapCreatureForEffectEffect` | `innerEffect, targetId?` | Tap creature for effect |
-| `MayPayManaEffect` | `cost: ManaCost, effect` | May pay mana for effect |
-| `AnyPlayerMayPayEffect` | `cost: PayCost, consequence` | Any player may pay |
-| `ForEachTargetEffect` | `effects: List<Effect>` | Iterate per target |
-| `ForEachPlayerEffect` | `players: Player, effects: List<Effect>` | Iterate per player |
-| `FlipCoinEffect` | `wonEffect?, lostEffect?` | Flip a coin |
-| `RepeatWhileEffect` | `body, repeatCondition` | Repeat while condition |
-| `SelectTargetEffect` | `requirement, storeAs` | Select and store a target |
+
+| Effect                       | Parameters                                            | Purpose                        |
+|------------------------------|-------------------------------------------------------|--------------------------------|
+| `CompositeEffect`            | `effects: List<Effect>`                               | Chain multiple effects         |
+| `MayEffect`                  | `effect, descriptionOverride?`                        | "You may..."                   |
+| `ModalEffect`                | `modes: List<Mode>, chooseCount`                      | "Choose one/two..."            |
+| `OptionalCostEffect`         | `cost, ifPaid, ifNotPaid?`                            | "You may [cost]. If you do..." |
+| `ReflexiveTriggerEffect`     | `action, optional, reflexiveEffect`                   | "When you do..."               |
+| `PayOrSufferEffect`          | `cost: PayCost, suffer, player`                       | "Unless [cost], [suffer]"      |
+| `StoreResultEffect`          | `effect, storeAs: EffectVariable`                     | Store result for later         |
+| `StoreCountEffect`           | `effect, storeAs`                                     | Store count for later          |
+| `CreateDelayedTriggerEffect` | `step: Step, effect`                                  | Create delayed trigger at step |
+| `BlightEffect`               | `blightAmount: DynamicAmount, innerEffect, targetId?` | Blight effect                  |
+| `TapCreatureForEffectEffect` | `innerEffect, targetId?`                              | Tap creature for effect        |
+| `MayPayManaEffect`           | `cost: ManaCost, effect`                              | May pay mana for effect        |
+| `AnyPlayerMayPayEffect`      | `cost: PayCost, consequence`                          | Any player may pay             |
+| `ForEachTargetEffect`        | `effects: List<Effect>`                               | Iterate per target             |
+| `ForEachPlayerEffect`        | `players: Player, effects: List<Effect>`              | Iterate per player             |
+| `FlipCoinEffect`             | `wonEffect?, lostEffect?`                             | Flip a coin                    |
+| `RepeatWhileEffect`          | `body, repeatCondition`                               | Repeat while condition         |
+| `SelectTargetEffect`         | `requirement, storeAs`                                | Select and store a target      |
 
 ### Combat
-| Effect | Parameters | Purpose |
-|--------|------------|---------|
-| `MustBeBlockedEffect` | `target` | Must be blocked |
-| `TauntEffect` | `target` | Lure |
-| `ReflectCombatDamageEffect` | `target` | Reflect combat damage |
-| `PreventCombatDamageFromEffect` | `source: GroupFilter, duration` | Fog |
-| `PreventDamageFromAttackingCreaturesThisTurnEffect` | (object) | Prevent from attackers |
-| `PreventAllCombatDamageThisTurnEffect` | (object) | Prevent all combat damage |
-| `GrantCantBeBlockedExceptByColorEffect` | `filter, canOnlyBeBlockedByColor, duration` | Color evasion |
-| `CantBlockTargetCreaturesEffect` | `duration` | Can't block target creatures |
-| `PreventNextDamageEffect` | `amount: DynamicAmount, target` | Prevent next N damage |
-| `RemoveFromCombatEffect` | `target` | Remove from combat |
-| `ChooseCreatureTypeMustAttackEffect` | (object) | Choose type, must attack |
-| `RedirectNextDamageEffect` | `protectedTargets, redirectTo` | Redirect next damage |
-| `PreventNextDamageFromChosenCreatureTypeEffect` | (object) | Prevent damage from chosen type |
-| `PreventAllDamageDealtByTargetEffect` | `target` | Prevent all damage by target |
-| `PreventDamageAndChainCopyEffect` | `target, targetFilter, spellName` | Prevent damage + chain |
+
+| Effect                                              | Parameters                                  | Purpose                         |
+|-----------------------------------------------------|---------------------------------------------|---------------------------------|
+| `MustBeBlockedEffect`                               | `target`                                    | Must be blocked                 |
+| `TauntEffect`                                       | `target`                                    | Lure                            |
+| `ReflectCombatDamageEffect`                         | `target`                                    | Reflect combat damage           |
+| `PreventCombatDamageFromEffect`                     | `source: GroupFilter, duration`             | Fog                             |
+| `PreventDamageFromAttackingCreaturesThisTurnEffect` | (object)                                    | Prevent from attackers          |
+| `PreventAllCombatDamageThisTurnEffect`              | (object)                                    | Prevent all combat damage       |
+| `GrantCantBeBlockedExceptByColorEffect`             | `filter, canOnlyBeBlockedByColor, duration` | Color evasion                   |
+| `CantBlockTargetCreaturesEffect`                    | `duration`                                  | Can't block target creatures    |
+| `PreventNextDamageEffect`                           | `amount: DynamicAmount, target`             | Prevent next N damage           |
+| `RemoveFromCombatEffect`                            | `target`                                    | Remove from combat              |
+| `ChooseCreatureTypeMustAttackEffect`                | (object)                                    | Choose type, must attack        |
+| `RedirectNextDamageEffect`                          | `protectedTargets, redirectTo`              | Redirect next damage            |
+| `PreventNextDamageFromChosenCreatureTypeEffect`     | (object)                                    | Prevent damage from chosen type |
+| `PreventAllDamageDealtByTargetEffect`               | `target`                                    | Prevent all damage by target    |
+| `PreventDamageAndChainCopyEffect`                   | `target, targetFilter, spellName`           | Prevent damage + chain          |
 
 ### Player
-| Effect | Parameters | Purpose |
-|--------|------------|---------|
-| `SkipCombatPhasesEffect` | `target` | Skip combat |
-| `SkipUntapEffect` | `target, affectsCreatures, affectsLands` | Skip untap |
-| `PlayAdditionalLandsEffect` | `count` | Play extra lands |
-| `AddCombatPhaseEffect` | (object) | Additional combat phase |
-| `TakeExtraTurnEffect` | `loseAtEndStep` | Extra turn |
-| `PreventLandPlaysThisTurnEffect` | (object) | Prevent land plays |
-| `CreateGlobalTriggeredAbilityUntilEndOfTurnEffect` | `ability: TriggeredAbility` | Global triggered ability until EOT |
+
+| Effect                                             | Parameters                               | Purpose                            |
+|----------------------------------------------------|------------------------------------------|------------------------------------|
+| `SkipCombatPhasesEffect`                           | `target`                                 | Skip combat                        |
+| `SkipUntapEffect`                                  | `target, affectsCreatures, affectsLands` | Skip untap                         |
+| `PlayAdditionalLandsEffect`                        | `count`                                  | Play extra lands                   |
+| `AddCombatPhaseEffect`                             | (object)                                 | Additional combat phase            |
+| `TakeExtraTurnEffect`                              | `loseAtEndStep`                          | Extra turn                         |
+| `PreventLandPlaysThisTurnEffect`                   | (object)                                 | Prevent land plays                 |
+| `CreateGlobalTriggeredAbilityUntilEndOfTurnEffect` | `ability: TriggeredAbility`              | Global triggered ability until EOT |
 
 ### Stack
-| Effect | Parameters | Purpose |
-|--------|------------|---------|
-| `CounterSpellEffect` | (object) | Counter target spell |
-| `CounterSpellWithFilterEffect` | `filter: GameObjectFilter` | Counter matching spell |
-| `CounterUnlessPaysEffect` | `cost: ManaCost` | Counter unless pays |
-| `CounterUnlessDynamicPaysEffect` | `amount: DynamicAmount` | Counter unless dynamic pay |
-| `ChangeSpellTargetEffect` | `targetMustBeSource: Boolean` | Redirect spell target |
+
+| Effect                           | Parameters                    | Purpose                    |
+|----------------------------------|-------------------------------|----------------------------|
+| `CounterSpellEffect`             | (object)                      | Counter target spell       |
+| `CounterSpellWithFilterEffect`   | `filter: GameObjectFilter`    | Counter matching spell     |
+| `CounterUnlessPaysEffect`        | `cost: ManaCost`              | Counter unless pays        |
+| `CounterUnlessDynamicPaysEffect` | `amount: DynamicAmount`       | Counter unless dynamic pay |
+| `ChangeSpellTargetEffect`        | `targetMustBeSource: Boolean` | Redirect spell target      |
 
 ### Group
-| Effect | Parameters | Purpose |
-|--------|------------|---------|
+
+| Effect                 | Parameters                                                | Purpose                       |
+|------------------------|-----------------------------------------------------------|-------------------------------|
 | `ForEachInGroupEffect` | `filter: GroupFilter, effect, noRegenerate, simultaneous` | Apply effect to each in group |
 
 ### Protection
-| Effect | Parameters | Purpose |
-|--------|------------|---------|
-| `ChooseColorAndGrantProtectionToGroupEffect` | `filter: GroupFilter, duration` | Protection to group |
-| `ChooseColorAndGrantProtectionToTargetEffect` | `target, duration` | Protection to target |
+
+| Effect                                        | Parameters                      | Purpose              |
+|-----------------------------------------------|---------------------------------|----------------------|
+| `ChooseColorAndGrantProtectionToGroupEffect`  | `filter: GroupFilter, duration` | Protection to group  |
+| `ChooseColorAndGrantProtectionToTargetEffect` | `target, duration`              | Protection to target |
 
 ### Secret Bid
-| Effect | Parameters | Purpose |
-|--------|------------|---------|
+
+| Effect            | Parameters                  | Purpose        |
+|-------------------|-----------------------------|----------------|
 | `SecretBidEffect` | `counterType, counterCount` | Secret bidding |
 
 ---
@@ -320,35 +354,44 @@ Always use these facades for card definitions. They provide type-safe factory me
 ## Targets Facade
 
 ### Player
+
 - `Targets.Player` / `Targets.Opponent` / `Targets.AllPlayers`
 
 ### Creature
+
 - `Targets.Creature` / `Targets.CreatureYouControl` / `Targets.CreatureOpponentControls`
 - `Targets.AttackingCreature` / `Targets.BlockingCreature` / `Targets.TappedCreature`
 - `Targets.CreatureWithKeyword(keyword)` / `Targets.CreatureWithColor(color)`
 - `Targets.CreatureWithPowerAtMost(maxPower)` / `Targets.UpToCreatures(count)`
 
 ### Permanent
+
 - `Targets.Permanent` / `Targets.NonlandPermanent`
 - `Targets.Artifact` / `Targets.Enchantment` / `Targets.Land`
 - `Targets.PermanentOpponentControls`
 
 ### Combined
+
 - `Targets.Any` — creature, player, or planeswalker
 - `Targets.CreatureOrPlayer` / `Targets.CreatureOrPlaneswalker`
 
 ### Graveyard
+
 - `Targets.CardInGraveyard` / `Targets.CreatureCardInGraveyard`
 - `Targets.CreatureCardInYourGraveyard` / `Targets.InstantOrSorceryInGraveyard`
 
 ### Spell (on stack)
+
 - `Targets.Spell` / `Targets.CreatureSpell` / `Targets.NoncreatureSpell`
 - `Targets.CreatureOrSorcerySpell`
 - `Targets.SpellWithManaValueAtMost(manaValue)`
 
 ### Composable (Targets.Unified)
-- `Targets.Unified.creature` / `.creatureYouControl` / `.creatureOpponentControls` / `.otherCreature` / `.otherCreatureYouControl`
-- `Targets.Unified.tappedCreature` / `.untappedCreature` / `.attackingCreature` / `.blockingCreature` / `.attackingOrBlockingCreature`
+
+- `Targets.Unified.creature` / `.creatureYouControl` / `.creatureOpponentControls` / `.otherCreature` /
+  `.otherCreatureYouControl`
+- `Targets.Unified.tappedCreature` / `.untappedCreature` / `.attackingCreature` / `.blockingCreature` /
+  `.attackingOrBlockingCreature`
 - `Targets.Unified.permanent` / `.permanentYouControl` / `.nonlandPermanent` / `.nonlandPermanentOpponentControls`
 - `Targets.Unified.artifact` / `.enchantment` / `.land` / `.planeswalker`
 - `Targets.Unified.cardInGraveyard` / `.creatureInGraveyard` / `.instantOrSorceryInGraveyard`
@@ -361,18 +404,21 @@ Always use these facades for card definitions. They provide type-safe factory me
 ## Triggers Facade
 
 ### Zone Changes
+
 - `Triggers.EntersBattlefield` / `Triggers.AnyEntersBattlefield`
 - `Triggers.OtherCreatureEnters` / `Triggers.OtherCreatureWithSubtypeDies(subtype)`
 - `Triggers.LeavesBattlefield` / `Triggers.Dies` / `Triggers.AnyCreatureDies` / `Triggers.YourCreatureDies`
 - `Triggers.PutIntoGraveyardFromBattlefield`
 
 ### Combat
+
 - `Triggers.Attacks` / `Triggers.AnyAttacks` / `Triggers.YouAttack`
 - `Triggers.Blocks` / `Triggers.BecomesBlocked` / `Triggers.CreatureYouControlBecomesBlocked`
 - `Triggers.DealsDamage` / `Triggers.DealsCombatDamage`
 - `Triggers.DealsCombatDamageToPlayer` / `Triggers.DealsCombatDamageToCreature`
 
 ### Phase/Step
+
 - `Triggers.YourUpkeep` / `Triggers.EachUpkeep`
 - `Triggers.YourEndStep` / `Triggers.EachEndStep`
 - `Triggers.BeginCombat` / `Triggers.FirstMainPhase`
@@ -381,26 +427,33 @@ Always use these facades for card definitions. They provide type-safe factory me
 - `Triggers.GainControlOfSelf` — you gain control of self
 
 ### Spell
+
 - `Triggers.YouCastSpell` / `Triggers.YouCastCreature`
 - `Triggers.YouCastNoncreature` / `Triggers.YouCastInstantOrSorcery`
 - `Triggers.YouCastEnchantment`
 
 ### Card Drawing
+
 - `Triggers.YouDraw` / `Triggers.AnyPlayerDraws`
 
 ### Damage
+
 - `Triggers.TakesDamage` / `Triggers.DamagedByCreature` / `Triggers.DamagedBySpell`
 
 ### Tap/Untap
+
 - `Triggers.BecomesTapped` / `Triggers.BecomesUntapped`
 
 ### Cycle
+
 - `Triggers.YouCycle` / `Triggers.AnyPlayerCycles`
 
 ### Life
+
 - `Triggers.YouGainLife` / `Triggers.AnyPlayerGainsLife`
 
 ### Transform
+
 - `Triggers.Transforms` / `Triggers.TransformsToBack` / `Triggers.TransformsToFront`
 
 ---
@@ -408,6 +461,7 @@ Always use these facades for card definitions. They provide type-safe factory me
 ## Filters Facade
 
 ### Card Filters (`Filters.*`) — for search/library effects
+
 - `Filters.AnyCard` / `Filters.Creature` / `Filters.Land` / `Filters.BasicLand`
 - `Filters.Instant` / `Filters.Sorcery` / `Filters.Permanent` / `Filters.NonlandPermanent`
 - `Filters.PlainsCard` / `.IslandCard` / `.SwampCard` / `.MountainCard` / `.ForestCard`
@@ -415,6 +469,7 @@ Always use these facades for card definitions. They provide type-safe factory me
 - `Filters.GreenCreature`
 
 ### Group Filters (`Filters.Group.*`) — for mass effects
+
 - `Filters.Group.allCreatures` / `.creaturesYouControl` / `.creaturesOpponentsControl`
 - `Filters.Group.otherCreatures` / `.otherCreaturesYouControl`
 - `Filters.Group.attackingCreatures` / `.blockingCreatures` / `.tappedCreatures` / `.untappedCreatures`
@@ -423,10 +478,12 @@ Always use these facades for card definitions. They provide type-safe factory me
 - `Filters.Group.permanents { withSubtype("Goblin") }` — builder for custom filters
 
 ### Static Targets (`Filters.*`) — for equipment/auras/static abilities
+
 - `Filters.AttachedCreature` / `Filters.EquippedCreature` / `Filters.EnchantedCreature`
 - `Filters.Self` / `Filters.Controller` / `Filters.AllControlledCreatures`
 
 ### Target Filters (`Filters.Target.*`) — for targeting
+
 - `Filters.Target.creature` / `.creatureYouControl` / `.creatureOpponentControls` / `.otherCreature`
 - `Filters.Target.tappedCreature` / `.untappedCreature` / `.attackingCreature` / `.blockingCreature`
 - `Filters.Target.permanent` / `.nonlandPermanent` / `.artifact` / `.enchantment` / `.land` / `.planeswalker`
@@ -435,6 +492,7 @@ Always use these facades for card definitions. They provide type-safe factory me
 - `Filters.Target.creature { ... }` / `.permanent { ... }` / `.inZone(zone) { ... }` — builders
 
 ### Composable (`Filters.Unified.*`)
+
 - `Filters.Unified.any` / `.creature` / `.land` / `.basicLand` / `.artifact` / `.enchantment` / `.planeswalker`
 - `Filters.Unified.instant` / `.sorcery` / `.permanent` / `.nonlandPermanent` / `.instantOrSorcery`
 - `Filters.Unified.withColor(color)` / `.withSubtype(subtype)` / `.withKeyword(keyword)`
@@ -460,6 +518,7 @@ Always use these facades for card definitions. They provide type-safe factory me
 ## Conditions Facade
 
 ### Battlefield
+
 - `Conditions.ControlCreature` / `.ControlEnchantment` / `.ControlArtifact`
 - `Conditions.ControlCreaturesAtLeast(count)` / `.ControlCreatureWithKeyword(keyword)`
 - `Conditions.ControlCreatureOfType(subtype)`
@@ -469,23 +528,28 @@ Always use these facades for card definitions. They provide type-safe factory me
 - `Conditions.TargetSpellManaValueAtMost(amount, targetIndex = 0)` — target spell's MV at most N
 
 ### Life Total
+
 - `Conditions.LifeAtMost(threshold)` / `.LifeAtLeast(threshold)`
 - `Conditions.MoreLifeThanOpponent` / `.LessLifeThanOpponent`
 
 ### Hand & Graveyard
+
 - `Conditions.EmptyHand` / `.CardsInHandAtLeast(count)` / `.CardsInHandAtMost(count)`
 - `Conditions.CreatureCardsInGraveyardAtLeast(count)` / `.CardsInGraveyardAtLeast(count)`
 - `Conditions.GraveyardContainsSubtype(subtype)`
 
 ### Source State
+
 - `Conditions.SourceIsAttacking` / `.SourceIsBlocking`
 - `Conditions.SourceIsTapped` / `.SourceIsUntapped`
 - `Conditions.SourceHasSubtype(subtype)` — source has specific subtype
 
 ### Turn
+
 - `Conditions.IsYourTurn` / `.IsNotYourTurn`
 
 ### Composite
+
 - `Conditions.All(cond1, cond2)` — AND
 - `Conditions.Any(cond1, cond2)` — OR
 - `Conditions.Not(cond)` — NOT
@@ -501,65 +565,77 @@ Always use these facades for card definitions. They provide type-safe factory me
 - `DynamicAmounts.otherCreaturesWithSubtypeYouControl(subtype)`
 - `DynamicAmounts.cardsInYourGraveyard()` / `.creatureCardsInYourGraveyard()`
 - `DynamicAmounts.creaturesAttackingYou(multiplier)` / `.tappedCreaturesTargetOpponentControls()`
-- `DynamicAmounts.landsOfTypeTargetOpponentControls(landType, multiplier)` / `.creaturesOfColorTargetOpponentControls(color, multiplier)`
+- `DynamicAmounts.landsOfTypeTargetOpponentControls(landType, multiplier)` /
+  `.creaturesOfColorTargetOpponentControls(color, multiplier)`
 - `DynamicAmounts.handSizeDifferenceFromTargetOpponent()`
 
 ### Raw DynamicAmount types
+
 - `DynamicAmount.XValue` / `DynamicAmount.Fixed(n)` / `DynamicAmount.YourLifeTotal`
 - `DynamicAmount.SacrificedPermanentPower` / `.SacrificedPermanentToughness`
 - `DynamicAmount.SourcePower` / `.TriggerDamageAmount` / `.TriggerLifeGainAmount`
 - `DynamicAmount.ColorsAmongPermanentsYouControl` / `.CardTypesInAllGraveyards`
 - `DynamicAmount.CountersOnSelf(counterType)` / `.CreaturesSharingTypeWithTriggeringEntity`
 - `DynamicAmount.VariableReference(variableName)` / `.StoredCardManaValue(collectionName)`
-- `DynamicAmount.Count(player, zone, filter)` / `DynamicAmount.AggregateBattlefield(player, filter, aggregation?, property?)`
+- `DynamicAmount.Count(player, zone, filter)` /
+  `DynamicAmount.AggregateBattlefield(player, filter, aggregation?, property?)`
 - `DynamicAmount.Conditional(condition, ifTrue, ifFalse)` — conditional amount
-- Fluent: `DynamicAmounts.battlefield(player, filter).count()` / `.maxManaValue()` / `.maxPower()` / `.maxToughness()` / `.minToughness()` / `.sumPower()`
-- Math: `DynamicAmount.Add(l, r)` / `.Subtract(l, r)` / `.Multiply(amt, n)` / `.Max(l, r)` / `.Min(l, r)` / `.IfPositive(amt)`
+- Fluent: `DynamicAmounts.battlefield(player, filter).count()` / `.maxManaValue()` / `.maxPower()` / `.maxToughness()` /
+  `.minToughness()` / `.sumPower()`
+- Math: `DynamicAmount.Add(l, r)` / `.Subtract(l, r)` / `.Multiply(amt, n)` / `.Max(l, r)` / `.Min(l, r)` /
+  `.IfPositive(amt)`
 
 ---
 
 ## EffectPatterns Facade
 
-**IMPORTANT: Always prefer `EffectPatterns.*` and atomic pipelines over creating new monolithic effects.** This keeps the engine extendible — new cards can reuse existing atomic effects with different parameters instead of requiring new executor code.
+**IMPORTANT: Always prefer `EffectPatterns.*` and atomic pipelines over creating new monolithic effects.** This keeps
+the engine extendible — new cards can reuse existing atomic effects with different parameters instead of requiring new
+executor code.
 
 ### Atomic Library Pipelines
 
-The engine uses a `GatherCards → SelectFromCollection → MoveCollection` pipeline for library manipulation. These atomic effects can be composed for any "look at top N" style ability:
+The engine uses a `GatherCards → SelectFromCollection → MoveCollection` pipeline for library manipulation. These atomic
+effects can be composed for any "look at top N" style ability:
 
-| Pattern | Usage |
-|---------|-------|
-| `EffectPatterns.lookAtTopAndReorder(count)` | "Look at top N, put back in any order" (e.g., Sage Aven) |
-| `EffectPatterns.lookAtTopAndReorder(dynamicAmount)` | Same but with dynamic count (e.g., Information Dealer) |
-| `EffectPatterns.lookAtTopAndKeep(count, keepCount)` | "Look at top N, put one into hand, rest on bottom" (e.g., Impulse) |
-| `EffectPatterns.lookAtTopXAndPutOntoBattlefield(countSource, filter, shuffleAfter)` | CoCo-style put onto battlefield |
+| Pattern                                                                             | Usage                                                              |
+|-------------------------------------------------------------------------------------|--------------------------------------------------------------------|
+| `EffectPatterns.lookAtTopAndReorder(count)`                                         | "Look at top N, put back in any order" (e.g., Sage Aven)           |
+| `EffectPatterns.lookAtTopAndReorder(dynamicAmount)`                                 | Same but with dynamic count (e.g., Information Dealer)             |
+| `EffectPatterns.lookAtTopAndKeep(count, keepCount)`                                 | "Look at top N, put one into hand, rest on bottom" (e.g., Impulse) |
+| `EffectPatterns.lookAtTopXAndPutOntoBattlefield(countSource, filter, shuffleAfter)` | CoCo-style put onto battlefield                                    |
 
 For custom pipelines (e.g., looking at another player's library), compose directly:
+
 ```kotlin
-CompositeEffect(listOf(
-    GatherCardsEffect(
-        source = CardSource.TopOfLibrary(DynamicAmount.Fixed(1), Player.ContextPlayer(0)),
-        storeAs = "target_top"
-    ),
-    MoveCollectionEffect(
-        from = "target_top",
-        destination = CardDestination.ToZone(Zone.LIBRARY, Player.ContextPlayer(0), ZonePlacement.Top),
-        order = CardOrder.ControllerChooses
+CompositeEffect(
+    listOf(
+        GatherCardsEffect(
+            source = CardSource.TopOfLibrary(DynamicAmount.Fixed(1), Player.ContextPlayer(0)),
+            storeAs = "target_top"
+        ),
+        MoveCollectionEffect(
+            from = "target_top",
+            destination = CardDestination.ToZone(Zone.LIBRARY, Player.ContextPlayer(0), ZonePlacement.Top),
+            order = CardOrder.ControllerChooses
+        )
     )
-))
+)
 ```
 
 ### Atomic Building Blocks
 
-| Effect | Purpose |
-|--------|---------|
-| `GatherCardsEffect(source, storeAs, revealed)` | Gather cards from a zone into a named collection |
-| `SelectFromCollectionEffect(from, selection, chooser, filter, storeSelected, storeRemainder, matchChosenCreatureType, prompt)` | Player selects from a collection |
-| `MoveCollectionEffect(from, destination, order, revealed, moveType)` | Move a collection to a zone |
-| `RevealUntilEffect(source, matchFilter, storeMatch, storeRevealed, matchChosenCreatureType)` | Reveal until filter matches |
-| `ChooseCreatureTypeEffect` | Choose a creature type (data object) |
-| `SelectTargetEffect(requirement, storeAs)` | Select and store a target |
+| Effect                                                                                                                         | Purpose                                          |
+|--------------------------------------------------------------------------------------------------------------------------------|--------------------------------------------------|
+| `GatherCardsEffect(source, storeAs, revealed)`                                                                                 | Gather cards from a zone into a named collection |
+| `SelectFromCollectionEffect(from, selection, chooser, filter, storeSelected, storeRemainder, matchChosenCreatureType, prompt)` | Player selects from a collection                 |
+| `MoveCollectionEffect(from, destination, order, revealed, moveType)`                                                           | Move a collection to a zone                      |
+| `RevealUntilEffect(source, matchFilter, storeMatch, storeRevealed, matchChosenCreatureType)`                                   | Reveal until filter matches                      |
+| `ChooseCreatureTypeEffect`                                                                                                     | Choose a creature type (data object)             |
+| `SelectTargetEffect(requirement, storeAs)`                                                                                     | Select and store a target                        |
 
-Sources: `CardSource.TopOfLibrary(count, player)`, `CardSource.FromZone(zone, player, filter)`, `CardSource.FromVariable(name)`, `CardSource.ControlledPermanents(player, filter)`
+Sources: `CardSource.TopOfLibrary(count, player)`, `CardSource.FromZone(zone, player, filter)`,
+`CardSource.FromVariable(name)`, `CardSource.ControlledPermanents(player, filter)`
 Destinations: `CardDestination.ToZone(zone, player, placement)`
 Placements: `ZonePlacement.Top`, `.Bottom`, `.Shuffled`, `.Default`, `.Tapped`
 Selection: `SelectionMode.ChooseExactly(count)`, `.ChooseUpTo(count)`, `.All`, `.Random(count)`, `.ChooseAnyNumber`
@@ -587,14 +663,17 @@ MoveType: `MoveType.Default`, `.Discard`, `.Sacrifice`
 - `EffectPatterns.chooseCreatureTypeReturnFromGraveyard(count)` — choose type, return from graveyard
 - `EffectPatterns.headGames(target)` — Head Games effect
 - `EffectPatterns.wheelEffect(players)` — wheel effect
-- `EffectPatterns.discardCards(count, target)` / `.discardRandom(count, target)` / `.discardHand(target)` — discard patterns
+- `EffectPatterns.discardCards(count, target)` / `.discardRandom(count, target)` / `.discardHand(target)` — discard
+  patterns
 - `EffectPatterns.putFromHand(filter, count, entersTapped)` — put card from hand onto battlefield
 - `EffectPatterns.eachOpponentMayPutFromHand(filter)` — each opponent may put from hand
 - `EffectPatterns.eachOpponentDiscards(count)` — each opponent discards
 - `EffectPatterns.eachPlayerDiscardsDraws(controllerBonusDraw)` — each player discards and draws
 - `EffectPatterns.eachPlayerDrawsX(includeController, includeOpponents)` — each player draws X
 - `EffectPatterns.eachPlayerSearchesLibrary(filter, count)` — each player searches
-- `EffectPatterns.eachPlayerRevealCreaturesCreateTokens(tokenPower, tokenToughness, tokenColors, tokenCreatureTypes, tokenImageUri?)` — reveal creatures, create tokens
+-
+`EffectPatterns.eachPlayerRevealCreaturesCreateTokens(tokenPower, tokenToughness, tokenColors, tokenCreatureTypes, tokenImageUri?)` —
+reveal creatures, create tokens
 - `EffectPatterns.eachPlayerReturnsPermanentToHand()` — each player returns a permanent
 - `EffectPatterns.searchTargetLibraryExile(count, filter)` — search target's library, exile
 - `EffectPatterns.mill(count, target)` — mill pipeline
@@ -605,27 +684,36 @@ MoveType: `MoveType.Default`, `.Discard`, `.Sacrifice`
 ## Keywords (Keyword enum)
 
 ### Evasion
-`FLYING`, `MENACE`, `INTIMIDATE`, `FEAR`, `SHADOW`, `HORSEMANSHIP`, `CANT_BE_BLOCKED`, `CANT_BE_BLOCKED_BY_MORE_THAN_ONE`
+
+`FLYING`, `MENACE`, `INTIMIDATE`, `FEAR`, `SHADOW`, `HORSEMANSHIP`, `CANT_BE_BLOCKED`,
+`CANT_BE_BLOCKED_BY_MORE_THAN_ONE`
 
 ### Landwalk
+
 `SWAMPWALK`, `FORESTWALK`, `ISLANDWALK`, `MOUNTAINWALK`, `PLAINSWALK`
 
 ### Combat
+
 `FIRST_STRIKE`, `DOUBLE_STRIKE`, `TRAMPLE`, `DEATHTOUCH`, `LIFELINK`, `VIGILANCE`, `REACH`
 
 ### Defense
+
 `DEFENDER`, `INDESTRUCTIBLE`, `HEXPROOF`, `SHROUD`, `WARD`, `PROTECTION`
 
 ### Speed
+
 `HASTE`, `FLASH`
 
 ### Triggered/Static
+
 `PROWESS`, `CHANGELING`
 
 ### Cost Reduction
+
 `CONVOKE`, `DELVE`, `AFFINITY`
 
 ### Restrictions
+
 `DOESNT_UNTAP`, `MAY_NOT_UNTAP`
 
 ---
@@ -636,7 +724,8 @@ Used via `keywordAbility(...)` or `keywordAbilities(...)` in card DSL:
 
 - `KeywordAbility.Simple(keyword)` — wraps a basic keyword
 - **Ward**: `WardMana(cost)`, `WardLife(amount)`, `WardDiscard(count, random)`, `WardSacrifice(filter)`
-- **Protection**: `ProtectionFromColor(color)`, `ProtectionFromColors(colors)`, `ProtectionFromCardType(type)`, `ProtectionFromCreatureSubtype(subtype)`, `ProtectionFromEverything`
+- **Protection**: `ProtectionFromColor(color)`, `ProtectionFromColors(colors)`, `ProtectionFromCardType(type)`,
+  `ProtectionFromCreatureSubtype(subtype)`, `ProtectionFromEverything`
 - **Combat**: `Annihilator(count)`, `Bushido(count)`, `Rampage(count)`, `Flanking`, `Afflict(count)`
 - **Counters**: `Modular(count)`, `Fabricate(count)`, `Renown(count)`, `Tribute(count)`
 - **Time**: `Fading(count)`, `Vanishing(count)`
@@ -644,7 +733,9 @@ Used via `keywordAbility(...)` or `keywordAbilities(...)` in card DSL:
 - **Cost**: `Affinity(forType)`, `Cycling(cost)`, `Typecycling(type, cost)`, `Kicker(cost)`, `Multikicker(cost)`
 - **Transform**: `Morph(cost)`, `Absorb(count)`
 
-Companion helpers: `KeywordAbility.of(keyword)`, `.ward(cost)`, `.wardLife(amount)`, `.wardDiscard(count, random)`, `.protectionFrom(color)`, `.protectionFrom(vararg colors)`, `.protectionFromSubtype(subtype)`, `.cycling(cost)`, `.morph(cost)`, `.morphPayLife(amount)`
+Companion helpers: `KeywordAbility.of(keyword)`, `.ward(cost)`, `.wardLife(amount)`, `.wardDiscard(count, random)`,
+`.protectionFrom(color)`, `.protectionFrom(vararg colors)`, `.protectionFromSubtype(subtype)`, `.cycling(cost)`,
+`.morph(cost)`, `.morphPayLife(amount)`
 
 ---
 
@@ -653,6 +744,7 @@ Companion helpers: `KeywordAbility.of(keyword)`, `.ward(cost)`, `.wardLife(amoun
 Set via `staticAbility { ability = ... }`:
 
 ### Keywords & Stats
+
 - `GrantKeyword(keyword, target: StaticTarget)` — permanent keyword grant
 - `GrantKeywordToCreatureGroup(keyword, filter: AffectsFilter)` — keyword to group
 - `GrantKeywordForChosenCreatureType(keyword)` — keyword to chosen creature type
@@ -666,6 +758,7 @@ Set via `staticAbility { ability = ... }`:
 - `GrantProtection(color, target)` — grant protection from color
 
 ### Combat Restrictions
+
 - `CantAttack(target)` / `CantBlock(target)`
 - `CantAttackUnlessDefenderControlsLandType(landType, target)`
 - `CantBlockCreaturesWithGreaterPower(target)`
@@ -673,19 +766,23 @@ Set via `staticAbility { ability = ... }`:
 - `CanBlockAnyNumber(target)` — can block any number of creatures
 
 ### Evasion
+
 - `CantBeBlockedByColor(colors, target)` / `CantBeBlockedByPower(minPower, target)`
 - `CantBeBlockedExceptByKeyword(requiredKeyword, target)` / `CantBeBlockedByMoreThan(maxBlockers, target)`
 - `CantBeBlockedUnlessDefenderSharesCreatureType(minSharedCount, target)`
 
 ### Damage
+
 - `AssignDamageEqualToToughness(target, onlyWhenToughnessGreaterThanPower)` — Doran
 - `DivideCombatDamageFreely(target)` — divide damage freely
 
 ### Type & Subtype
+
 - `AddCreatureTypeByCounter(creatureType, counterType)` — add type when counter present
 - `SetEnchantedLandType(landType)` — set enchanted land's type
 
 ### Other
+
 - `CantReceiveCounters(target)`
 - `ControlEnchantedPermanent` — control the enchanted permanent
 - `GrantShroudToController` — controller has shroud
@@ -698,12 +795,17 @@ Set via `staticAbility { ability = ... }`:
 - `ConditionalStaticAbility(ability, condition)` — conditional static
 
 ### GlobalEffectType values
-`ALL_CREATURES_GET_PLUS_ONE_PLUS_ONE`, `YOUR_CREATURES_GET_PLUS_ONE_PLUS_ONE`, `OPPONENT_CREATURES_GET_MINUS_ONE_MINUS_ONE`, `ALL_CREATURES_HAVE_FLYING`, `YOUR_CREATURES_HAVE_VIGILANCE`, `YOUR_CREATURES_HAVE_LIFELINK`, `CREATURES_CANT_ATTACK`, `CREATURES_CANT_BLOCK`
+
+`ALL_CREATURES_GET_PLUS_ONE_PLUS_ONE`, `YOUR_CREATURES_GET_PLUS_ONE_PLUS_ONE`,
+`OPPONENT_CREATURES_GET_MINUS_ONE_MINUS_ONE`, `ALL_CREATURES_HAVE_FLYING`, `YOUR_CREATURES_HAVE_VIGILANCE`,
+`YOUR_CREATURES_HAVE_LIFELINK`, `CREATURES_CANT_ATTACK`, `CREATURES_CANT_BLOCK`
 
 ### StaticTarget values
+
 `StaticTarget.AttachedCreature`, `SourceCreature`, `Controller`, `AllControlledCreatures`, `SpecificCard(entityId)`
 
 ### CostReductionSource values
+
 `ColorsAmongPermanentsYouControl`, `Fixed(amount)`, `CreaturesYouControl`, `TotalPowerYouControl`, `ArtifactsYouControl`
 
 ---
@@ -713,14 +815,17 @@ Set via `staticAbility { ability = ... }`:
 Used in card definitions for effects that intercept events before they happen:
 
 ### Token
+
 - `DoubleTokenCreation(appliesTo)` — Doubling Season
 - `ModifyTokenCount(modifier, appliesTo)`
 
 ### Counter
+
 - `DoubleCounterPlacement(appliesTo)` — Corpsejack Menace
 - `ModifyCounterPlacement(modifier, appliesTo)` — Hardened Scales
 
 ### Zone Change
+
 - `RedirectZoneChange(newDestination, appliesTo)` — Rest in Peace
 - `EntersTapped(appliesTo)` — tap lands
 - `EntersWithCounters(counterType, count, appliesTo)` — Master Biomancer
@@ -731,20 +836,24 @@ Used in card definitions for effects that intercept events before they happen:
 - `EntersWithCreatureTypeChoice(opponentChooses, appliesTo)` — choose creature type on entry
 
 ### Damage
+
 - `PreventDamage(amount?, appliesTo)` — Fog, protection (null = prevent all)
 - `RedirectDamage(redirectTo, appliesTo)` — Pariah
 - `DoubleDamage(appliesTo)` — Furnace of Rath
 
 ### Draw
+
 - `ReplaceDrawWithEffect(replacementEffect, appliesTo)` — Underrealm Lich
 - `PreventDraw(appliesTo)` — Narset
 
 ### Life
+
 - `PreventLifeGain(appliesTo)` — Erebos
 - `ReplaceLifeGain(replacementEffect, appliesTo)` — Tainted Remedy
 - `ModifyLifeGain(multiplier, appliesTo)` — Alhammarret's Archive
 
 ### Generic
+
 - `GenericReplacementEffect(replacement, appliesTo, description)` — complex scenarios
 
 ---
@@ -845,38 +954,38 @@ Used in `OptionalCostEffect`, `MayPayManaEffect`, `AnyPlayerMayPayEffect`, `PayO
 
 ## Key File Paths
 
-| File | Purpose |
-|------|---------|
-| `mtg-sdk/src/main/kotlin/com/wingedsheep/sdk/dsl/` | DSL facades (Effects, Targets, etc.) |
-| `mtg-sdk/src/main/kotlin/com/wingedsheep/sdk/scripting/effect/` | Effect type definitions |
-| `mtg-sdk/src/main/kotlin/com/wingedsheep/sdk/scripting/KeywordAbility.kt` | Parameterized keyword abilities |
-| `mtg-sdk/src/main/kotlin/com/wingedsheep/sdk/scripting/ReplacementEffect.kt` | Replacement effect types |
-| `mtg-sdk/src/main/kotlin/com/wingedsheep/sdk/scripting/AdditionalCost.kt` | Additional cost types |
-| `mtg-sdk/src/main/kotlin/com/wingedsheep/sdk/scripting/ActivationRestriction.kt` | Activation restrictions |
-| `mtg-sdk/src/main/kotlin/com/wingedsheep/sdk/core/Keyword.kt` | Keyword enum |
-| `rules-engine/src/main/kotlin/com/wingedsheep/engine/handlers/effects/` | Effect executors (13 categories) |
-| `rules-engine/src/main/kotlin/com/wingedsheep/engine/handlers/effects/EffectExecutorRegistry.kt` | Executor registry |
-| `mtg-sets/src/main/kotlin/com/wingedsheep/mtg/sets/definitions/{set}/cards/` | Card definitions |
-| `mtg-sets/src/main/kotlin/com/wingedsheep/mtg/sets/definitions/{set}/{Set}Set.kt` | Set card lists |
-| `game-server/src/test/kotlin/com/wingedsheep/gameserver/scenarios/` | Scenario tests |
+| File                                                                                             | Purpose                              |
+|--------------------------------------------------------------------------------------------------|--------------------------------------|
+| `mtg-sdk/src/main/kotlin/com/wingedsheep/sdk/dsl/`                                               | DSL facades (Effects, Targets, etc.) |
+| `mtg-sdk/src/main/kotlin/com/wingedsheep/sdk/scripting/effect/`                                  | Effect type definitions              |
+| `mtg-sdk/src/main/kotlin/com/wingedsheep/sdk/scripting/KeywordAbility.kt`                        | Parameterized keyword abilities      |
+| `mtg-sdk/src/main/kotlin/com/wingedsheep/sdk/scripting/ReplacementEffect.kt`                     | Replacement effect types             |
+| `mtg-sdk/src/main/kotlin/com/wingedsheep/sdk/scripting/AdditionalCost.kt`                        | Additional cost types                |
+| `mtg-sdk/src/main/kotlin/com/wingedsheep/sdk/scripting/ActivationRestriction.kt`                 | Activation restrictions              |
+| `mtg-sdk/src/main/kotlin/com/wingedsheep/sdk/core/Keyword.kt`                                    | Keyword enum                         |
+| `rules-engine/src/main/kotlin/com/wingedsheep/engine/handlers/effects/`                          | Effect executors (13 categories)     |
+| `rules-engine/src/main/kotlin/com/wingedsheep/engine/handlers/effects/EffectExecutorRegistry.kt` | Executor registry                    |
+| `mtg-sets/src/main/kotlin/com/wingedsheep/mtg/sets/definitions/{set}/cards/`                     | Card definitions                     |
+| `mtg-sets/src/main/kotlin/com/wingedsheep/mtg/sets/definitions/{set}/{Set}Set.kt`                | Set card lists                       |
+| `game-server/src/test/kotlin/com/wingedsheep/gameserver/scenarios/`                              | Scenario tests                       |
 
 ### Effect Executor Categories
 
-| Directory | Covers |
-|-----------|--------|
-| `combat/` | Must-block, taunt, reflect, prevent, evasion, remove-from-combat |
-| `composite/` | Composite, conditional, may, for-each, repeat, modal, delayed triggers |
-| `damage/` | Single, group, player, divided, fight |
-| `drawing/` | Draw, discard, wheel, each-player, look-at-hand, reveal |
-| `information/` | Look at hand, reveal, face-down |
-| `library/` | Scry, mill, search, reorder, shuffle, pipeline |
-| `life/` | Gain, lose, half, owner-gains, set-life |
-| `mana/` | Colored, colorless, any-color, dynamic |
-| `permanent/` | Tap, stats, keywords, counters, control, type-change, animate, transform |
-| `player/` | Skip phases, extra turns, extra lands, extra combat, global abilities |
-| `removal/` | Destroy-all, sacrifice, zone-move, can't-regen, exile-until, chain-copy |
-| `stack/` | Counter spell, counter with filter, counter unless pays, change target |
-| `token/` | Create token, create treasure, create chosen token |
+| Directory      | Covers                                                                   |
+|----------------|--------------------------------------------------------------------------|
+| `combat/`      | Must-block, taunt, reflect, prevent, evasion, remove-from-combat         |
+| `composite/`   | Composite, conditional, may, for-each, repeat, modal, delayed triggers   |
+| `damage/`      | Single, group, player, divided, fight                                    |
+| `drawing/`     | Draw, discard, wheel, each-player, look-at-hand, reveal                  |
+| `information/` | Look at hand, reveal, face-down                                          |
+| `library/`     | Scry, mill, search, reorder, shuffle, pipeline                           |
+| `life/`        | Gain, lose, half, owner-gains, set-life                                  |
+| `mana/`        | Colored, colorless, any-color, dynamic                                   |
+| `permanent/`   | Tap, stats, keywords, counters, control, type-change, animate, transform |
+| `player/`      | Skip phases, extra turns, extra lands, extra combat, global abilities    |
+| `removal/`     | Destroy-all, sacrifice, zone-move, can't-regen, exile-until, chain-copy  |
+| `stack/`       | Counter spell, counter with filter, counter unless pays, change target   |
+| `token/`       | Create token, create treasure, create chosen token                       |
 
 ---
 
@@ -936,7 +1045,8 @@ E2E tests use the `GamePage` page object from `e2e-scenarios/helpers/gamePage.ts
 
 ### ScenarioRequest Config
 
-- `player1` / `player2`: `{ hand?: string[], battlefield?: BattlefieldCardConfig[], graveyard?: string[], library?: string[], lifeTotal?: number }`
+- `player1` / `player2`:
+  `{ hand?: string[], battlefield?: BattlefieldCardConfig[], graveyard?: string[], library?: string[], lifeTotal?: number }`
 - `BattlefieldCardConfig`: `{ name: string, tapped?: boolean, summoningSickness?: boolean }`
 - `phase`: `'BEGINNING'` | `'PRECOMBAT_MAIN'` | `'COMBAT'` | `'POSTCOMBAT_MAIN'` | `'ENDING'`
 - `step`: Step name string (e.g., `'UPKEEP'`, `'DECLARE_ATTACKERS'`)

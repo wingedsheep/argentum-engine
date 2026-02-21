@@ -3,7 +3,6 @@ package com.wingedsheep.mtg.sets.definitions.onslaught.cards
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.effects.DamageAndChainCopyEffect
-import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.targets.AnyTarget
 
 /**
@@ -20,10 +19,10 @@ val ChainOfPlasma = card("Chain of Plasma") {
     oracleText = "Chain of Plasma deals 3 damage to any target. Then that player or that permanent's controller may discard a card. If the player does, they may copy this spell and may choose a new target for that copy."
 
     spell {
-        target = AnyTarget()
+        val t = target("target", AnyTarget())
         effect = DamageAndChainCopyEffect(
             amount = 3,
-            target = EffectTarget.ContextTarget(0),
+            target = t,
             spellName = "Chain of Plasma"
         )
     }

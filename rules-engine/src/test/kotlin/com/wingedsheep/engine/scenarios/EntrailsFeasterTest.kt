@@ -46,12 +46,12 @@ class EntrailsFeasterTest : FunSpec({
                     trigger = GameEvent.StepEvent(Step.UPKEEP, Player.You),
                     binding = TriggerBinding.ANY,
                     optional = true,
-                    targetRequirement = TargetObject(
+                    targetRequirement = TargetObject(id = "target",
                         filter = TargetFilter.CreatureInGraveyard
                     ),
                     effect = CompositeEffect(
                         listOf(
-                            MoveToZoneEffect(EffectTarget.ContextTarget(0), Zone.EXILE),
+                            MoveToZoneEffect(EffectTarget.BoundVariable("target"), Zone.EXILE),
                             AddCountersEffect("+1/+1", 1, EffectTarget.Self)
                         )
                     ),

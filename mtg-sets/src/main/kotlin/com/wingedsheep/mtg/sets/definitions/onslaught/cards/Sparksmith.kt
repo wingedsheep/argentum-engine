@@ -26,10 +26,10 @@ val Sparksmith = card("Sparksmith") {
 
     activatedAbility {
         cost = AbilityCost.Tap
-        target = TargetCreature()
+        val t = target("target", TargetCreature())
         effect = DealDamageEffect(
             DynamicAmounts.creaturesWithSubtype(Subtype("Goblin")),
-            EffectTarget.ContextTarget(0)
+            t
         ) then DealDamageEffect(
             DynamicAmounts.creaturesWithSubtype(Subtype("Goblin")),
             EffectTarget.Controller

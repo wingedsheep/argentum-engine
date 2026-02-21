@@ -119,7 +119,8 @@ class PayOrSufferExecutor(
             requiredCount = cost.count,
             filter = cost.filter,
             random = false,
-            targets = context.targets
+            targets = context.targets,
+            namedTargets = context.namedTargets
         )
 
         val stateWithContinuation = decisionResult.state.pushContinuation(continuation)
@@ -178,7 +179,8 @@ class PayOrSufferExecutor(
             requiredCount = cost.count,
             filter = cost.filter,
             random = true,
-            targets = context.targets
+            targets = context.targets,
+            namedTargets = context.namedTargets
         )
 
         val stateWithDecision = state.withPendingDecision(decision)
@@ -246,7 +248,8 @@ class PayOrSufferExecutor(
             requiredCount = cost.count,
             filter = cost.filter,
             random = false,
-            targets = context.targets
+            targets = context.targets,
+            namedTargets = context.namedTargets
         )
 
         val stateWithContinuation = decisionResult.state.pushContinuation(continuation)
@@ -306,7 +309,8 @@ class PayOrSufferExecutor(
             requiredCount = cost.amount,
             filter = GameObjectFilter.Any, // Not used for life payment
             random = false,
-            targets = context.targets
+            targets = context.targets,
+            namedTargets = context.namedTargets
         )
 
         val stateWithDecision = state.withPendingDecision(decision)

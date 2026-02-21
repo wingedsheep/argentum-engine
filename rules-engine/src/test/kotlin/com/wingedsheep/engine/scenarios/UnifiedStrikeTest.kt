@@ -43,9 +43,9 @@ class UnifiedStrikeTest : FunSpec({
                 condition = Conditions.TargetPowerAtMost(
                     DynamicAmounts.creaturesWithSubtype(Subtype("Soldier"))
                 ),
-                effect = MoveToZoneEffect(EffectTarget.ContextTarget(0), Zone.EXILE)
+                effect = MoveToZoneEffect(EffectTarget.BoundVariable("target"), Zone.EXILE)
             ),
-            TargetCreature(filter = TargetFilter.AttackingCreature)
+            TargetCreature(id = "target", filter = TargetFilter.AttackingCreature)
         )
     )
 

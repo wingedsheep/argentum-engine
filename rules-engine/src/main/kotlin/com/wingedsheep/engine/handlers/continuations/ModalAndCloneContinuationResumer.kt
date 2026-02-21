@@ -74,12 +74,14 @@ class ModalAndCloneContinuationResumer(
                 if (isPlayerTarget && targets.size == 1 && req.count == 1) {
                     // Auto-select the single target
                     val chosenTarget = entityIdToChosenTarget(state, targets[0])
+                    val chosenTargets = listOf(chosenTarget)
                     val context = EffectContext(
                         sourceId = sourceId,
                         controllerId = continuation.controllerId,
                         opponentId = continuation.opponentId,
                         xValue = continuation.xValue,
-                        targets = listOf(chosenTarget)
+                        targets = chosenTargets,
+                        namedTargets = EffectContext.buildNamedTargets(chosenMode.targetRequirements, chosenTargets)
                     )
                     val result = ctx.effectExecutorRegistry.execute(state, chosenMode.effect, context)
                     if (result.isPaused) return result
@@ -109,7 +111,8 @@ class ModalAndCloneContinuationResumer(
                 sourceName = sourceName,
                 effect = chosenMode.effect,
                 xValue = continuation.xValue,
-                opponentId = continuation.opponentId
+                opponentId = continuation.opponentId,
+                targetRequirements = chosenMode.targetRequirements
             )
 
             val stateWithDecision = state.withPendingDecision(decision)
@@ -168,7 +171,8 @@ class ModalAndCloneContinuationResumer(
             controllerId = continuation.controllerId,
             opponentId = continuation.opponentId,
             xValue = continuation.xValue,
-            targets = chosenTargets
+            targets = chosenTargets,
+            namedTargets = EffectContext.buildNamedTargets(continuation.targetRequirements, chosenTargets)
         )
 
         val result = ctx.effectExecutorRegistry.execute(state, continuation.effect, context)

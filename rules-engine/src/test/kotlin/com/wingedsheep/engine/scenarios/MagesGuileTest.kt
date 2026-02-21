@@ -31,8 +31,8 @@ class MagesGuileTest : FunSpec({
         manaCost = ManaCost.parse("{1}{U}"),
         oracleText = "Target creature gains shroud until end of turn.\nCycling {U}",
         script = CardScript.spell(
-            effect = GrantKeywordUntilEndOfTurnEffect(Keyword.SHROUD, EffectTarget.ContextTarget(0)),
-            TargetCreature()
+            effect = GrantKeywordUntilEndOfTurnEffect(Keyword.SHROUD, EffectTarget.BoundVariable("target")),
+            TargetCreature(id = "target")
         )
     )
 

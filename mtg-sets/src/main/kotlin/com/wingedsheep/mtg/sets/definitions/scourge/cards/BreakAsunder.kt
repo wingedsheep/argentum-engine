@@ -3,7 +3,6 @@ package com.wingedsheep.mtg.sets.definitions.scourge.cards
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.KeywordAbility
 import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
@@ -23,8 +22,8 @@ val BreakAsunder = card("Break Asunder") {
     oracleText = "Destroy target artifact or enchantment.\nCycling {2}"
 
     spell {
-        target = TargetPermanent(filter = TargetFilter(GameObjectFilter.Artifact or GameObjectFilter.Enchantment))
-        effect = MoveToZoneEffect(EffectTarget.ContextTarget(0), Zone.GRAVEYARD, byDestruction = true)
+        val t = target("target", TargetPermanent(filter = TargetFilter(GameObjectFilter.Artifact or GameObjectFilter.Enchantment)))
+        effect = MoveToZoneEffect(t, Zone.GRAVEYARD, byDestruction = true)
     }
 
     keywordAbility(KeywordAbility.cycling("{2}"))

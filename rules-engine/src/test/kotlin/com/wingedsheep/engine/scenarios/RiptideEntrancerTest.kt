@@ -54,9 +54,9 @@ class RiptideEntrancerTest : FunSpec({
                 trigger = GameEvent.DealsDamageEvent(damageType = DamageType.Combat, recipient = RecipientFilter.AnyPlayer),
                 binding = TriggerBinding.SELF,
                 effect = MayEffect(
-                    SacrificeSelfEffect then GainControlEffect(EffectTarget.ContextTarget(0))
+                    SacrificeSelfEffect then GainControlEffect(EffectTarget.BoundVariable("target"))
                 ),
-                targetRequirement = TargetCreature(filter = TargetFilter.CreatureOpponentControls)
+                targetRequirement = TargetCreature(id = "target", filter = TargetFilter.CreatureOpponentControls)
             )
         )
     )

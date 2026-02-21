@@ -4,7 +4,6 @@ import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Targets
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
 
 /**
@@ -19,8 +18,8 @@ val Enrage = card("Enrage") {
     oracleText = "Target creature gets +X/+0 until end of turn."
 
     spell {
-        target = Targets.Creature
-        effect = Effects.ModifyStats(DynamicAmount.XValue, DynamicAmount.Fixed(0), EffectTarget.ContextTarget(0))
+        val t = target("target", Targets.Creature)
+        effect = Effects.ModifyStats(DynamicAmount.XValue, DynamicAmount.Fixed(0), t)
     }
 
     metadata {

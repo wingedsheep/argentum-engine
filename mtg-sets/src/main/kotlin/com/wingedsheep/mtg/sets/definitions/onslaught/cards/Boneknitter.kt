@@ -3,7 +3,6 @@ package com.wingedsheep.mtg.sets.definitions.onslaught.cards
 import com.wingedsheep.sdk.dsl.Costs
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.RegenerateEffect
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
@@ -27,10 +26,10 @@ val Boneknitter = card("Boneknitter") {
 
     activatedAbility {
         cost = Costs.Mana("{1}{B}")
-        target = TargetPermanent(
+        val t = target("target", TargetPermanent(
             filter = TargetFilter(GameObjectFilter.Creature.withSubtype("Zombie"))
-        )
-        effect = RegenerateEffect(EffectTarget.ContextTarget(0))
+        ))
+        effect = RegenerateEffect(t)
     }
 
     morph = "{2}{B}"

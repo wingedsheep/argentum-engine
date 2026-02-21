@@ -8,11 +8,11 @@ import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.dsl.Costs
 import com.wingedsheep.sdk.dsl.Effects
-import com.wingedsheep.sdk.dsl.Targets
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Deck
 import com.wingedsheep.sdk.scripting.AdditionalCostPayment
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
+import com.wingedsheep.sdk.scripting.targets.TargetPermanent
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
@@ -38,8 +38,8 @@ class DispersingOrbTest : FunSpec({
                 Costs.Mana("{3}{U}"),
                 Costs.Sacrifice(GameObjectFilter.Permanent)
             )
-            target = Targets.Permanent
-            effect = Effects.ReturnToHand(EffectTarget.ContextTarget(0))
+            target = TargetPermanent(id = "target")
+            effect = Effects.ReturnToHand(EffectTarget.BoundVariable("target"))
         }
     }
 

@@ -4,7 +4,6 @@ import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.effects.DealDamageEffect
 import com.wingedsheep.sdk.scripting.Duration
-import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.effects.ModifyStatsEffect
 import com.wingedsheep.sdk.scripting.targets.TargetCreature
 
@@ -19,13 +18,13 @@ val BurningCloak = card("Burning Cloak") {
     typeLine = "Sorcery"
 
     spell {
-        target = TargetCreature()
+        val t = target("target", TargetCreature())
         effect = ModifyStatsEffect(
             powerModifier = 2,
             toughnessModifier = 0,
-            target = EffectTarget.ContextTarget(0),
+            target = t,
             duration = Duration.EndOfTurn
-        ) then DealDamageEffect(2, EffectTarget.ContextTarget(0))
+        ) then DealDamageEffect(2, t)
     }
 
     metadata {

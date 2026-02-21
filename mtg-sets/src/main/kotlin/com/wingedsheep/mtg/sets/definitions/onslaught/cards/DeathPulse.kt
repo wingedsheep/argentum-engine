@@ -4,7 +4,6 @@ import com.wingedsheep.sdk.dsl.Targets
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.Duration
-import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.KeywordAbility
 import com.wingedsheep.sdk.scripting.effects.MayEffect
 import com.wingedsheep.sdk.scripting.effects.ModifyStatsEffect
@@ -24,11 +23,11 @@ val DeathPulse = card("Death Pulse") {
     oracleText = "Target creature gets -4/-4 until end of turn.\nCycling {1}{B}{B}\nWhen you cycle Death Pulse, you may have target creature get -1/-1 until end of turn."
 
     spell {
-        target = Targets.Creature
+        val t = target("target", Targets.Creature)
         effect = ModifyStatsEffect(
             powerModifier = -4,
             toughnessModifier = -4,
-            target = EffectTarget.ContextTarget(0),
+            target = t,
             duration = Duration.EndOfTurn
         )
     }
@@ -37,12 +36,12 @@ val DeathPulse = card("Death Pulse") {
 
     triggeredAbility {
         trigger = Triggers.YouCycle
-        target = Targets.Creature
+        val t = target("target", Targets.Creature)
         effect = MayEffect(
             ModifyStatsEffect(
                 powerModifier = -1,
                 toughnessModifier = -1,
-                target = EffectTarget.ContextTarget(0),
+                target = t,
                 duration = Duration.EndOfTurn
             )
         )

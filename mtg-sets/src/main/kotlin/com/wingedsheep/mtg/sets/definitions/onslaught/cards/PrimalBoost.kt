@@ -3,7 +3,6 @@ package com.wingedsheep.mtg.sets.definitions.onslaught.cards
 import com.wingedsheep.sdk.dsl.Targets
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.KeywordAbility
 import com.wingedsheep.sdk.scripting.effects.MayEffect
 import com.wingedsheep.sdk.scripting.effects.ModifyStatsEffect
@@ -23,11 +22,11 @@ val PrimalBoost = card("Primal Boost") {
     oracleText = "Target creature gets +4/+4 until end of turn.\nCycling {2}{G}\nWhen you cycle Primal Boost, you may have target creature get +1/+1 until end of turn."
 
     spell {
-        target = Targets.Creature
+        val t = target("target", Targets.Creature)
         effect = ModifyStatsEffect(
             powerModifier = 4,
             toughnessModifier = 4,
-            target = EffectTarget.ContextTarget(0)
+            target = t
         )
     }
 
@@ -35,12 +34,12 @@ val PrimalBoost = card("Primal Boost") {
 
     triggeredAbility {
         trigger = Triggers.YouCycle
-        target = Targets.Creature
+        val t = target("target", Targets.Creature)
         effect = MayEffect(
             ModifyStatsEffect(
                 powerModifier = 1,
                 toughnessModifier = 1,
-                target = EffectTarget.ContextTarget(0)
+                target = t
             )
         )
     }

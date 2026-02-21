@@ -122,6 +122,7 @@ object EffectExecutorUtils {
             is EffectTarget.Self -> context.iterationTarget ?: context.sourceId
             is EffectTarget.Controller -> context.controllerId
             is EffectTarget.ContextTarget -> context.targets.getOrNull(effectTarget.index)?.toEntityId()
+            is EffectTarget.BoundVariable -> context.namedTargets[effectTarget.name]?.toEntityId()
             is EffectTarget.SpecificEntity -> effectTarget.entityId
             is EffectTarget.TriggeringEntity -> context.triggeringEntityId
             is EffectTarget.PipelineTarget ->
@@ -158,6 +159,7 @@ object EffectExecutorUtils {
         return when (effectTarget) {
             is EffectTarget.Controller -> context.controllerId
             is EffectTarget.ContextTarget -> context.targets.getOrNull(effectTarget.index)?.toEntityId()
+            is EffectTarget.BoundVariable -> context.namedTargets[effectTarget.name]?.toEntityId()
             is EffectTarget.PipelineTarget ->
                 context.storedCollections[effectTarget.collectionName]?.getOrNull(effectTarget.index)
             is EffectTarget.PlayerRef -> when (effectTarget.player) {
@@ -202,6 +204,7 @@ object EffectExecutorUtils {
     fun resolvePlayerTargets(effectTarget: EffectTarget, state: GameState, context: EffectContext): List<EntityId> {
         return when (effectTarget) {
             is EffectTarget.Controller -> listOf(context.controllerId)
+            is EffectTarget.BoundVariable -> context.namedTargets[effectTarget.name]?.toEntityId()?.let { listOf(it) } ?: emptyList()
             is EffectTarget.PipelineTarget -> {
                 context.storedCollections[effectTarget.collectionName]?.getOrNull(effectTarget.index)
                     ?.let { listOf(it) } ?: emptyList()

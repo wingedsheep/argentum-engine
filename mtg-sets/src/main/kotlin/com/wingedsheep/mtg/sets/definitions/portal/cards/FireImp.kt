@@ -3,7 +3,6 @@ package com.wingedsheep.mtg.sets.definitions.portal.cards
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.effects.DealDamageEffect
-import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.targets.TargetCreature
 import com.wingedsheep.sdk.dsl.Triggers
 
@@ -22,8 +21,8 @@ val FireImp = card("Fire Imp") {
 
     triggeredAbility {
         trigger = Triggers.EntersBattlefield
-        target = TargetCreature()
-        effect = DealDamageEffect(2, EffectTarget.ContextTarget(0))
+        val t = target("target", TargetCreature())
+        effect = DealDamageEffect(2, t)
     }
 
     metadata {

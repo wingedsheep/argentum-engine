@@ -54,6 +54,21 @@ sealed interface EffectTarget {
     }
 
     /**
+     * NAMED TARGET BINDING: Refers to a cast-time target by name rather than positional index.
+     * Safer and more self-documenting than ContextTarget(index).
+     *
+     * The name must match the `id` field of a TargetRequirement in the card script.
+     * For multi-target requirements (count > 1), use indexed names: "creature[0]", "creature[1]".
+     *
+     * @property name The name of the target binding (matches TargetRequirement.id)
+     */
+    @SerialName("BoundVariable")
+    @Serializable
+    data class BoundVariable(val name: String) : EffectTarget {
+        override val description: String = "target"
+    }
+
+    /**
      * VARIABLE BINDING: Refers to an entity stored in a variable during effect execution.
      *
      * This enables Oblivion Ring-style effects:

@@ -2,7 +2,6 @@ package com.wingedsheep.mtg.sets.definitions.onslaught.cards
 
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.effects.GainControlEffect
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import com.wingedsheep.sdk.scripting.targets.TargetPermanent
@@ -21,8 +20,8 @@ val BlatantThievery = card("Blatant Thievery") {
     oracleText = "For each opponent, gain control of target permanent that player controls."
 
     spell {
-        target = TargetPermanent(filter = TargetFilter.PermanentOpponentControls)
-        effect = GainControlEffect(EffectTarget.ContextTarget(0))
+        val t = target("target", TargetPermanent(filter = TargetFilter.PermanentOpponentControls))
+        effect = GainControlEffect(t)
     }
 
     metadata {

@@ -5,7 +5,6 @@ import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.AbilityCost
-import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
 import com.wingedsheep.sdk.scripting.targets.TargetCreature
 
@@ -28,8 +27,8 @@ val VisaraTheDreadful = card("Visara the Dreadful") {
 
     activatedAbility {
         cost = AbilityCost.Tap
-        target = TargetCreature()
-        effect = MoveToZoneEffect(EffectTarget.ContextTarget(0), Zone.GRAVEYARD, byDestruction = true)
+        val t = target("target", TargetCreature())
+        effect = MoveToZoneEffect(t, Zone.GRAVEYARD, byDestruction = true)
     }
 
     metadata {

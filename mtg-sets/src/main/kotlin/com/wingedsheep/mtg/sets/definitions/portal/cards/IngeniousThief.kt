@@ -3,7 +3,6 @@ package com.wingedsheep.mtg.sets.definitions.portal.cards
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.effects.LookAtTargetHandEffect
 import com.wingedsheep.sdk.scripting.targets.TargetOpponent
 import com.wingedsheep.sdk.dsl.Triggers
@@ -26,8 +25,8 @@ val IngeniousThief = card("Ingenious Thief") {
 
     triggeredAbility {
         trigger = Triggers.EntersBattlefield
-        target = TargetOpponent()
-        effect = LookAtTargetHandEffect(EffectTarget.ContextTarget(0))
+        val t = target("target", TargetOpponent())
+        effect = LookAtTargetHandEffect(t)
     }
 
     metadata {

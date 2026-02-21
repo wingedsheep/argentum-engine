@@ -7,7 +7,6 @@ import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
@@ -36,14 +35,14 @@ val BladewingTheRisen = card("Bladewing the Risen") {
     triggeredAbility {
         trigger = Triggers.EntersBattlefield
         optional = true
-        target = TargetObject(
+        val t = target("target", TargetObject(
             filter = TargetFilter(
                 GameObjectFilter.Permanent.withSubtype("Dragon").ownedByYou(),
                 zone = Zone.GRAVEYARD
             )
-        )
+        ))
         effect = MoveToZoneEffect(
-            target = EffectTarget.ContextTarget(0),
+            target = t,
             destination = Zone.BATTLEFIELD
         )
     }

@@ -4,7 +4,6 @@ import com.wingedsheep.sdk.dsl.Targets
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.effects.DealDamageEffect
-import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.KeywordAbility
 import com.wingedsheep.sdk.scripting.effects.MayEffect
 import com.wingedsheep.sdk.dsl.Triggers
@@ -23,17 +22,17 @@ val SolarBlast = card("Solar Blast") {
     oracleText = "Solar Blast deals 3 damage to any target.\nCycling {1}{R}{R}\nWhen you cycle Solar Blast, you may have it deal 1 damage to any target."
 
     spell {
-        target = Targets.Any
-        effect = DealDamageEffect(3, EffectTarget.ContextTarget(0))
+        val t = target("target", Targets.Any)
+        effect = DealDamageEffect(3, t)
     }
 
     keywordAbility(KeywordAbility.cycling("{1}{R}{R}"))
 
     triggeredAbility {
         trigger = Triggers.YouCycle
-        target = Targets.Any
+        val t = target("target", Targets.Any)
         effect = MayEffect(
-            DealDamageEffect(1, EffectTarget.ContextTarget(0))
+            DealDamageEffect(1, t)
         )
     }
 

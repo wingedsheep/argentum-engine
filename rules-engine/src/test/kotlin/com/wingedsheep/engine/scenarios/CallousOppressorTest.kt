@@ -60,8 +60,8 @@ class CallousOppressorTest : FunSpec({
             ActivatedAbility(
                 id = oppressorAbilityId,
                 cost = AbilityCost.Tap,
-                effect = GainControlEffect(EffectTarget.ContextTarget(0), Duration.WhileSourceTapped()),
-                targetRequirement = TargetCreature(
+                effect = GainControlEffect(EffectTarget.BoundVariable("target"), Duration.WhileSourceTapped()),
+                targetRequirement = TargetCreature(id = "target",
                     filter = TargetFilter(GameObjectFilter.Creature.notOfSourceChosenType())
                 )
             ),

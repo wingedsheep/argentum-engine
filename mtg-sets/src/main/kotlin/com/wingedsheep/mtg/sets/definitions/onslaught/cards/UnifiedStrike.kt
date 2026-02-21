@@ -8,7 +8,6 @@ import com.wingedsheep.sdk.dsl.Targets
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.effects.ConditionalEffect
-import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
 
 /**
@@ -24,12 +23,12 @@ val UnifiedStrike = card("Unified Strike") {
     oracleText = "Exile target attacking creature if its power is less than or equal to the number of Soldiers on the battlefield."
 
     spell {
-        target = Targets.AttackingCreature
+        val t = target("target", Targets.AttackingCreature)
         effect = ConditionalEffect(
             condition = Conditions.TargetPowerAtMost(
                 DynamicAmounts.creaturesWithSubtype(Subtype("Soldier"))
             ),
-            effect = MoveToZoneEffect(EffectTarget.ContextTarget(0), Zone.EXILE)
+            effect = MoveToZoneEffect(t, Zone.EXILE)
         )
     }
 

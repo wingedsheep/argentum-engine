@@ -54,10 +54,10 @@ class CustodyBattleTest : FunSpec({
                         cost = PayCost.Sacrifice(GameObjectFilter.Land),
                         suffer = GiveControlToTargetPlayerEffect(
                             permanent = EffectTarget.EnchantedCreature,
-                            newController = EffectTarget.ContextTarget(0)
+                            newController = EffectTarget.BoundVariable("target")
                         )
                     ),
-                    targetRequirement = TargetOpponent()
+                    targetRequirement = TargetOpponent(id = "target")
                 )
             )
         )

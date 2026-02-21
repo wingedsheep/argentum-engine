@@ -34,8 +34,8 @@ class LayWasteTest : FunSpec({
         manaCost = ManaCost.parse("{3}{R}"),
         oracleText = "Destroy target land.\nCycling {2}",
         script = CardScript.spell(
-            effect = MoveToZoneEffect(EffectTarget.ContextTarget(0), Zone.GRAVEYARD, byDestruction = true),
-            TargetPermanent(filter = TargetFilter.Land)
+            effect = MoveToZoneEffect(EffectTarget.BoundVariable("target"), Zone.GRAVEYARD, byDestruction = true),
+            TargetPermanent(id = "target", filter = TargetFilter.Land)
         ),
         metadata = com.wingedsheep.sdk.model.ScryfallMetadata()
     ).let { card ->

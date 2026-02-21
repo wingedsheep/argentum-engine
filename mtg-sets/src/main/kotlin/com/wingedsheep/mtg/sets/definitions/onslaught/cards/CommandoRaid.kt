@@ -25,7 +25,7 @@ val CommandoRaid = card("Commando Raid") {
     oracleText = "Until end of turn, target creature you control gains \"Whenever this creature deals combat damage to a player, you may have it deal damage equal to its power to target creature that player controls.\""
 
     spell {
-        target = Targets.CreatureYouControl
+        val t = target("target", Targets.CreatureYouControl)
         effect = GrantTriggeredAbilityUntilEndOfTurnEffect(
             ability = TriggeredAbility.create(
                 trigger = Triggers.DealsCombatDamageToPlayer.event,
@@ -33,7 +33,7 @@ val CommandoRaid = card("Commando Raid") {
                 effect = MayEffect(DealDamageEffect(DynamicAmount.SourcePower, EffectTarget.ContextTarget(0))),
                 targetRequirement = Targets.CreatureOpponentControls
             ),
-            target = EffectTarget.ContextTarget(0)
+            target = t
         )
     }
 

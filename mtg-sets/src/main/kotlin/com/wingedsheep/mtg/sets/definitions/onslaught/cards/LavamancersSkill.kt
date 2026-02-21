@@ -31,14 +31,14 @@ val LavamancersSkill = card("Lavamancer's Skill") {
 
     activatedAbility {
         cost = AbilityCost.TapAttachedCreature
-        target = TargetCreature()
+        val t = target("target", TargetCreature())
         effect = DealDamageEffect(
             amount = DynamicAmount.Conditional(
                 condition = EnchantedCreatureHasSubtype(Subtype("Wizard")),
                 ifTrue = DynamicAmount.Fixed(2),
                 ifFalse = DynamicAmount.Fixed(1)
             ),
-            target = EffectTarget.ContextTarget(0),
+            target = t,
             damageSource = EffectTarget.EnchantedCreature
         )
     }

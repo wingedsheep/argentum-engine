@@ -7,7 +7,6 @@ import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.DealDamageEffect
 import com.wingedsheep.sdk.scripting.references.Player
-import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.targets.TargetPlayer
 
 /**
@@ -23,13 +22,13 @@ val GoblinWarStrike = card("Goblin War Strike") {
     oracleText = "Goblin War Strike deals damage to target player equal to the number of Goblins you control."
 
     spell {
-        target = TargetPlayer()
+        val t = target("target", TargetPlayer())
         effect = DealDamageEffect(
             amount = DynamicAmounts.battlefield(
                 Player.You,
                 GameObjectFilter.Creature.withSubtype(Subtype.GOBLIN)
             ).count(),
-            target = EffectTarget.ContextTarget(0)
+            target = t
         )
     }
 

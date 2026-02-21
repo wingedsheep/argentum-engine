@@ -4,7 +4,6 @@ import com.wingedsheep.sdk.dsl.Targets
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.effects.DealDamageEffect
-import com.wingedsheep.sdk.scripting.targets.EffectTarget
 
 /**
  * Pinpoint Avalanche
@@ -19,8 +18,8 @@ val PinpointAvalanche = card("Pinpoint Avalanche") {
     oracleText = "Pinpoint Avalanche deals 4 damage to target creature. The damage can't be prevented."
 
     spell {
-        target = Targets.Creature
-        effect = DealDamageEffect(4, EffectTarget.ContextTarget(0), cantBePrevented = true)
+        val t = target("target", Targets.Creature)
+        effect = DealDamageEffect(4, t, cantBePrevented = true)
     }
 
     metadata {

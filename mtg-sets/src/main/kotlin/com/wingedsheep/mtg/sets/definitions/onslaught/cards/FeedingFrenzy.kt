@@ -6,7 +6,6 @@ import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
-import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import com.wingedsheep.sdk.scripting.targets.TargetCreature
 
@@ -22,13 +21,13 @@ val FeedingFrenzy = card("Feeding Frenzy") {
     oracleText = "Target creature gets -X/-X until end of turn, where X is the number of Zombies on the battlefield."
 
     spell {
-        target = TargetCreature(filter = TargetFilter.Creature)
+        val t = target("target", TargetCreature(filter = TargetFilter.Creature))
         val zombieCount = DynamicAmounts.creaturesWithSubtype(Subtype("Zombie"))
         val negativeZombieCount = DynamicAmount.Multiply(zombieCount, -1)
         effect = Effects.ModifyStats(
             power = negativeZombieCount,
             toughness = negativeZombieCount,
-            target = EffectTarget.ContextTarget(0)
+            target = t
         )
     }
 

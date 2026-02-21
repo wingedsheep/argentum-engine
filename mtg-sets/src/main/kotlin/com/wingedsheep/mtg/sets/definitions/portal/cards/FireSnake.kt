@@ -3,7 +3,6 @@ package com.wingedsheep.mtg.sets.definitions.portal.cards
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import com.wingedsheep.sdk.core.Zone
@@ -24,8 +23,8 @@ val FireSnake = card("Fire Snake") {
 
     triggeredAbility {
         trigger = Triggers.Dies
-        target = TargetPermanent(filter = TargetFilter.Land)
-        effect = MoveToZoneEffect(EffectTarget.ContextTarget(0), Zone.GRAVEYARD, byDestruction = true)
+        val t = target("target", TargetPermanent(filter = TargetFilter.Land))
+        effect = MoveToZoneEffect(t, Zone.GRAVEYARD, byDestruction = true)
     }
 
     metadata {

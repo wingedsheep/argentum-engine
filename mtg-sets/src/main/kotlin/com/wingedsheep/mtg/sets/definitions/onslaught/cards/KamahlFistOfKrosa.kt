@@ -30,8 +30,8 @@ val KamahlFistOfKrosa = card("Kamahl, Fist of Krosa") {
 
     activatedAbility {
         cost = Costs.Mana("{G}")
-        target = Targets.Land
-        effect = Effects.AnimateLand(EffectTarget.ContextTarget(0))
+        val t = target("target", Targets.Land)
+        effect = Effects.AnimateLand(t)
     }
 
     activatedAbility {

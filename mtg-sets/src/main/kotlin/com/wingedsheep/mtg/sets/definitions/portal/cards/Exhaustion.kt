@@ -2,7 +2,6 @@ package com.wingedsheep.mtg.sets.definitions.portal.cards
 
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.effects.SkipUntapEffect
 import com.wingedsheep.sdk.scripting.targets.TargetOpponent
 
@@ -17,9 +16,9 @@ val Exhaustion = card("Exhaustion") {
     typeLine = "Sorcery"
 
     spell {
-        target = TargetOpponent()
+        val t = target("target", TargetOpponent())
         effect = SkipUntapEffect(
-            target = EffectTarget.ContextTarget(0),
+            target = t,
             affectsCreatures = true,
             affectsLands = true
         )

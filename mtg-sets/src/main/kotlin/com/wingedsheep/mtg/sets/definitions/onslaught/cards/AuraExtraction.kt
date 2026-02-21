@@ -4,7 +4,6 @@ import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.dsl.Targets
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.KeywordAbility
 import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
 import com.wingedsheep.sdk.scripting.effects.ZonePlacement
@@ -22,8 +21,8 @@ val AuraExtraction = card("Aura Extraction") {
     oracleText = "Put target enchantment on top of its owner's library.\nCycling {2}"
 
     spell {
-        target = Targets.Enchantment
-        effect = MoveToZoneEffect(EffectTarget.ContextTarget(0), Zone.LIBRARY, ZonePlacement.Top)
+        val t = target("target", Targets.Enchantment)
+        effect = MoveToZoneEffect(t, Zone.LIBRARY, ZonePlacement.Top)
     }
 
     keywordAbility(KeywordAbility.cycling("{2}"))

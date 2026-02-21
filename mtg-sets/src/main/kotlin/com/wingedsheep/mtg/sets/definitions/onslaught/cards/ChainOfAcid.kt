@@ -3,7 +3,6 @@ package com.wingedsheep.mtg.sets.definitions.onslaught.cards
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.effects.DestroyAndChainCopyEffect
-import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import com.wingedsheep.sdk.scripting.targets.TargetPermanent
 
@@ -20,9 +19,9 @@ val ChainOfAcid = card("Chain of Acid") {
     oracleText = "Destroy target noncreature permanent. Then that permanent's controller may copy this spell and may choose a new target for that copy."
 
     spell {
-        target = TargetPermanent(filter = TargetFilter.NoncreaturePermanent)
+        val t = target("target", TargetPermanent(filter = TargetFilter.NoncreaturePermanent))
         effect = DestroyAndChainCopyEffect(
-            target = EffectTarget.ContextTarget(0),
+            target = t,
             targetFilter = TargetFilter.NoncreaturePermanent,
             spellName = "Chain of Acid"
         )

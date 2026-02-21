@@ -20,11 +20,11 @@ val WheelAndDeal = card("Wheel and Deal") {
     oracleText = "Any number of target opponents each discard their hands, then draw seven cards. Draw a card."
 
     spell {
-        target = TargetOpponent()
+        val t = target("target", TargetOpponent())
         effect = CompositeEffect(
             listOf(
-                Effects.DiscardHand(EffectTarget.ContextTarget(0)),
-                DrawCardsEffect(7, target = EffectTarget.ContextTarget(0)),
+                Effects.DiscardHand(t),
+                DrawCardsEffect(7, target = t),
                 DrawCardsEffect(1, target = EffectTarget.Controller)
             )
         )

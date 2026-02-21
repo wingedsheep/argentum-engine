@@ -45,13 +45,13 @@ class MiseryCharmTest : FunSpec({
         script = CardScript.spell(
             effect = ModalEffect.chooseOne(
                 Mode.withTarget(
-                    MoveToZoneEffect(EffectTarget.ContextTarget(0), Zone.GRAVEYARD, byDestruction = true),
-                    TargetCreature(filter = TargetFilter.Creature.withSubtype("Cleric")),
+                    MoveToZoneEffect(EffectTarget.BoundVariable("target"), Zone.GRAVEYARD, byDestruction = true),
+                    TargetCreature(id = "target", filter = TargetFilter.Creature.withSubtype("Cleric")),
                     "Destroy target Cleric"
                 ),
                 Mode.withTarget(
-                    MoveToZoneEffect(EffectTarget.ContextTarget(0), Zone.HAND),
-                    TargetObject(
+                    MoveToZoneEffect(EffectTarget.BoundVariable("target"), Zone.HAND),
+                    TargetObject(id = "target",
                         filter = TargetFilter(
                             GameObjectFilter.Any.withSubtype("Cleric").ownedByYou(),
                             zone = Zone.GRAVEYARD
@@ -60,8 +60,8 @@ class MiseryCharmTest : FunSpec({
                     "Return target Cleric card from your graveyard to your hand"
                 ),
                 Mode.withTarget(
-                    LoseLifeEffect(2, EffectTarget.ContextTarget(0)),
-                    TargetPlayer(),
+                    LoseLifeEffect(2, EffectTarget.BoundVariable("target")),
+                    TargetPlayer(id = "target"),
                     "Target player loses 2 life"
                 )
             )

@@ -3,7 +3,6 @@ package com.wingedsheep.mtg.sets.definitions.onslaught.cards
 import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.targets.AnyTarget
 
 /**
@@ -20,8 +19,8 @@ val ErraticExplosion = card("Erratic Explosion") {
     oracleText = "Choose any target. Reveal cards from the top of your library until you reveal a nonland card. Erratic Explosion deals damage equal to that card's mana value to that permanent or player. Put the revealed cards on the bottom of your library in any order."
 
     spell {
-        target = AnyTarget()
-        effect = EffectPatterns.revealUntilNonlandDealDamage(EffectTarget.ContextTarget(0))
+        val t = target("target", AnyTarget())
+        effect = EffectPatterns.revealUntilNonlandDealDamage(t)
     }
 
     metadata {

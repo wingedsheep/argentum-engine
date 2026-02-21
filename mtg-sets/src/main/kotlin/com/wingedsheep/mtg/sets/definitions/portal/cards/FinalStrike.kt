@@ -5,7 +5,6 @@ import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.AdditionalCost
 import com.wingedsheep.sdk.scripting.effects.DealDamageEffect
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
-import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.targets.TargetOpponent
 
@@ -24,10 +23,10 @@ val FinalStrike = card("Final Strike") {
     additionalCost(AdditionalCost.SacrificePermanent(GameObjectFilter.Creature))
 
     spell {
-        target = TargetOpponent()
+        val t = target("target", TargetOpponent())
         effect = DealDamageEffect(
             amount = DynamicAmount.SacrificedPermanentPower,
-            target = EffectTarget.ContextTarget(0)
+            target = t
         )
     }
 

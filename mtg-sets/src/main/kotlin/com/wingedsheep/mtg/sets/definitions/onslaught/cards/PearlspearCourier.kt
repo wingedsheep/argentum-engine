@@ -5,7 +5,6 @@ import com.wingedsheep.sdk.dsl.Costs
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.Duration
-import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.GrantKeywordUntilEndOfTurnEffect
 import com.wingedsheep.sdk.scripting.effects.ModifyStatsEffect
@@ -31,11 +30,11 @@ val PearlspearCourier = card("Pearlspear Courier") {
 
     activatedAbility {
         cost = Costs.Composite(Costs.Mana("{2}{W}"), Costs.Tap)
-        target = TargetPermanent(
+        val t = target("target", TargetPermanent(
             filter = TargetFilter(GameObjectFilter.Creature.withSubtype("Soldier"))
-        )
-        effect = ModifyStatsEffect(2, 2, EffectTarget.ContextTarget(0), Duration.WhileSourceTapped()) then
-                GrantKeywordUntilEndOfTurnEffect(Keyword.VIGILANCE, EffectTarget.ContextTarget(0), Duration.WhileSourceTapped())
+        ))
+        effect = ModifyStatsEffect(2, 2, t, Duration.WhileSourceTapped()) then
+                GrantKeywordUntilEndOfTurnEffect(Keyword.VIGILANCE, t, Duration.WhileSourceTapped())
     }
 
     metadata {

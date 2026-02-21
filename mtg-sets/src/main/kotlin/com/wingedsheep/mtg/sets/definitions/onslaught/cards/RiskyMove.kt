@@ -37,10 +37,10 @@ val RiskyMove = card("Risky Move") {
     // you control and an opponent. Flip a coin. If you lose, opponent gets the creature.
     triggeredAbility {
         trigger = Triggers.GainControlOfSelf
-        target = Targets.CreatureYouControl
+        val t = target("target", Targets.CreatureYouControl)
         effect = FlipCoinEffect(
             lostEffect = GiveControlToTargetPlayerEffect(
-                permanent = EffectTarget.ContextTarget(0),
+                permanent = t,
                 newController = EffectTarget.PlayerRef(Player.Opponent)
             )
         )

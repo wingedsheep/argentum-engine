@@ -54,9 +54,9 @@ class BattlefieldMedicTest : FunSpec({
                 cost = AbilityCost.Tap,
                 effect = PreventNextDamageEffect(
                     amount = DynamicAmounts.creaturesWithSubtype(Subtype("Cleric")),
-                    target = EffectTarget.ContextTarget(0)
+                    target = EffectTarget.BoundVariable("target")
                 ),
-                targetRequirement = TargetPermanent(filter = TargetFilter.Creature)
+                targetRequirement = TargetPermanent(id = "target", filter = TargetFilter.Creature)
             )
         )
     )
@@ -322,8 +322,8 @@ class BattlefieldMedicTest : FunSpec({
             manaCost = ManaCost.parse("{1}{U}"),
             oracleText = "Target creature gains shroud until end of turn.",
             script = CardScript.spell(
-                effect = GrantKeywordUntilEndOfTurnEffect(Keyword.SHROUD, EffectTarget.ContextTarget(0)),
-                TargetCreature()
+                effect = GrantKeywordUntilEndOfTurnEffect(Keyword.SHROUD, EffectTarget.BoundVariable("target")),
+                TargetCreature(id = "target")
             )
         )
 

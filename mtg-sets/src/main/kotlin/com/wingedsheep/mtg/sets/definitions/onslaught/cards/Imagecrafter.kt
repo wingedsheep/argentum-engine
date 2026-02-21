@@ -4,7 +4,6 @@ import com.wingedsheep.sdk.dsl.Costs
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.effects.BecomeCreatureTypeEffect
-import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.targets.TargetCreature
 
 /**
@@ -23,9 +22,9 @@ val Imagecrafter = card("Imagecrafter") {
 
     activatedAbility {
         cost = Costs.Tap
-        target = TargetCreature()
+        val t = target("target", TargetCreature())
         effect = BecomeCreatureTypeEffect(
-            target = EffectTarget.ContextTarget(0),
+            target = t,
             excludedTypes = listOf("Wall")
         )
     }

@@ -3,7 +3,6 @@ package com.wingedsheep.mtg.sets.definitions.portal.cards
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
@@ -25,13 +24,13 @@ val CommandOfUnsummoning = card("Command of Unsummoning") {
         castOnlyDuring(Step.DECLARE_ATTACKERS)
         castOnlyIf(YouWereAttackedThisStep)
 
-        target = TargetCreature(
+        val (c1, c2) = targets("creature", TargetCreature(
             count = 2,
             minCount = 1,
             filter = TargetFilter.AttackingCreature
-        )
-        effect = MoveToZoneEffect(EffectTarget.ContextTarget(0), Zone.HAND) then
-                MoveToZoneEffect(EffectTarget.ContextTarget(1), Zone.HAND)
+        ))
+        effect = MoveToZoneEffect(c1, Zone.HAND) then
+                MoveToZoneEffect(c2, Zone.HAND)
     }
 
     metadata {

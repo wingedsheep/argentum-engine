@@ -20,8 +20,8 @@ val Oblation = card("Oblation") {
     oracleText = "The owner of target nonland permanent shuffles it into their library, then draws two cards."
 
     spell {
-        target = Targets.NonlandPermanent
-        effect = Effects.ShuffleIntoLibrary(EffectTarget.ContextTarget(0)) then
+        val t = target("target", Targets.NonlandPermanent)
+        effect = Effects.ShuffleIntoLibrary(t) then
                 DrawCardsEffect(2, EffectTarget.PlayerRef(Player.OwnerOf("target permanent")))
     }
 

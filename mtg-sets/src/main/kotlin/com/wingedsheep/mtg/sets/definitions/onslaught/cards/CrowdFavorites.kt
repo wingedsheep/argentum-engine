@@ -25,9 +25,9 @@ val CrowdFavorites = card("Crowd Favorites") {
 
     activatedAbility {
         cost = Costs.Mana("{3}{W}")
-        target = TargetCreature()
+        val t = target("target", TargetCreature())
         effect = TapUntapEffect(
-            target = EffectTarget.ContextTarget(0),
+            target = t,
             tap = true
         )
     }

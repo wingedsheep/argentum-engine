@@ -4,7 +4,7 @@ import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Targets
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.targets.EffectTarget
+
 
 /**
  * Recuperate
@@ -18,8 +18,8 @@ val Recuperate = card("Recuperate") {
     oracleText = "Target player gains 5 life."
 
     spell {
-        target = Targets.Player
-        effect = Effects.GainLife(5, EffectTarget.ContextTarget(0))
+        val t = target("target", Targets.Player)
+        effect = Effects.GainLife(5, t)
     }
 
     metadata {

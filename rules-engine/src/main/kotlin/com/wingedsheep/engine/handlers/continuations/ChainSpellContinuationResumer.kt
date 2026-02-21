@@ -112,7 +112,7 @@ class ChainSpellContinuationResumer(
             sourceName = continuation.spellName,
             controllerId = continuation.copyControllerId,
             effect = DestroyAndChainCopyEffect(
-                target = EffectTarget.ContextTarget(0),
+                target = EffectTarget.BoundVariable("chainTarget"),
                 targetFilter = continuation.targetFilter,
                 spellName = continuation.spellName
             ),
@@ -121,7 +121,7 @@ class ChainSpellContinuationResumer(
 
         val targets = listOf(ChosenTarget.Permanent(selectedTarget))
         val targetRequirements = listOf(
-            com.wingedsheep.sdk.scripting.targets.TargetPermanent(filter = continuation.targetFilter)
+            com.wingedsheep.sdk.scripting.targets.TargetPermanent(filter = continuation.targetFilter, id = "chainTarget")
         )
 
         val putResult = ctx.stackResolver.putTriggeredAbility(state, ability, targets, targetRequirements)
@@ -248,7 +248,7 @@ class ChainSpellContinuationResumer(
             sourceName = continuation.spellName,
             controllerId = continuation.copyControllerId,
             effect = BounceAndChainCopyEffect(
-                target = EffectTarget.ContextTarget(0),
+                target = EffectTarget.BoundVariable("chainTarget"),
                 targetFilter = continuation.targetFilter,
                 spellName = continuation.spellName
             ),
@@ -257,7 +257,7 @@ class ChainSpellContinuationResumer(
 
         val targets = listOf(ChosenTarget.Permanent(selectedTarget))
         val targetRequirements = listOf(
-            com.wingedsheep.sdk.scripting.targets.TargetPermanent(filter = continuation.targetFilter)
+            com.wingedsheep.sdk.scripting.targets.TargetPermanent(filter = continuation.targetFilter, id = "chainTarget")
         )
 
         val putResult = ctx.stackResolver.putTriggeredAbility(state, ability, targets, targetRequirements)
@@ -430,7 +430,7 @@ class ChainSpellContinuationResumer(
             controllerId = continuation.copyControllerId,
             effect = DiscardAndChainCopyEffect(
                 count = continuation.count,
-                target = EffectTarget.ContextTarget(0),
+                target = EffectTarget.BoundVariable("chainTarget"),
                 spellName = continuation.spellName
             ),
             description = "Copy of ${continuation.spellName}"
@@ -438,7 +438,7 @@ class ChainSpellContinuationResumer(
 
         val targets = listOf(ChosenTarget.Player(selectedTarget))
         val targetRequirements = listOf(
-            com.wingedsheep.sdk.scripting.targets.TargetPlayer()
+            com.wingedsheep.sdk.scripting.targets.TargetPlayer(id = "chainTarget")
         )
 
         val putResult = ctx.stackResolver.putTriggeredAbility(state, ability, targets, targetRequirements)
@@ -619,7 +619,7 @@ class ChainSpellContinuationResumer(
             controllerId = continuation.copyControllerId,
             effect = DamageAndChainCopyEffect(
                 amount = continuation.amount,
-                target = EffectTarget.ContextTarget(0),
+                target = EffectTarget.BoundVariable("chainTarget"),
                 spellName = continuation.spellName
             ),
             description = "Copy of ${continuation.spellName}"
@@ -627,7 +627,7 @@ class ChainSpellContinuationResumer(
 
         val targets = listOf(chosenTarget)
         val targetRequirements = listOf(
-            com.wingedsheep.sdk.scripting.targets.AnyTarget()
+            com.wingedsheep.sdk.scripting.targets.AnyTarget(id = "chainTarget")
         )
 
         val putResult = ctx.stackResolver.putTriggeredAbility(state, ability, targets, targetRequirements)
@@ -754,7 +754,7 @@ class ChainSpellContinuationResumer(
             sourceName = continuation.spellName,
             controllerId = continuation.copyControllerId,
             effect = PreventDamageAndChainCopyEffect(
-                target = EffectTarget.ContextTarget(0),
+                target = EffectTarget.BoundVariable("chainTarget"),
                 targetFilter = continuation.targetFilter,
                 spellName = continuation.spellName
             ),
@@ -763,7 +763,7 @@ class ChainSpellContinuationResumer(
 
         val targets = listOf(ChosenTarget.Permanent(selectedTarget))
         val targetRequirements = listOf(
-            com.wingedsheep.sdk.scripting.targets.TargetPermanent(filter = continuation.targetFilter)
+            com.wingedsheep.sdk.scripting.targets.TargetPermanent(filter = continuation.targetFilter, id = "chainTarget")
         )
 
         val putResult = ctx.stackResolver.putTriggeredAbility(state, ability, targets, targetRequirements)

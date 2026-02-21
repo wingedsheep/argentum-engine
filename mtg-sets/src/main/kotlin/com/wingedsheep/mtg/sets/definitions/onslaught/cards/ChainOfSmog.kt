@@ -3,7 +3,6 @@ package com.wingedsheep.mtg.sets.definitions.onslaught.cards
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.effects.DiscardAndChainCopyEffect
-import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.targets.TargetPlayer
 
 /**
@@ -19,10 +18,10 @@ val ChainOfSmog = card("Chain of Smog") {
     oracleText = "Target player discards two cards. That player may copy this spell and may choose a new target for that copy."
 
     spell {
-        target = TargetPlayer()
+        val t = target("target", TargetPlayer())
         effect = DiscardAndChainCopyEffect(
             count = 2,
-            target = EffectTarget.ContextTarget(0),
+            target = t,
             spellName = "Chain of Smog"
         )
     }

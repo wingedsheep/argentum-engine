@@ -28,8 +28,8 @@ val CabalArchon = card("Cabal Archon") {
             Costs.Mana("{B}"),
             Costs.Sacrifice(GameObjectFilter.Creature.withSubtype("Cleric"))
         )
-        target = TargetPlayer()
-        effect = LoseLifeEffect(2, EffectTarget.ContextTarget(0)) then
+        val t = target("target", TargetPlayer())
+        effect = LoseLifeEffect(2, t) then
                 GainLifeEffect(2, EffectTarget.Controller)
     }
 

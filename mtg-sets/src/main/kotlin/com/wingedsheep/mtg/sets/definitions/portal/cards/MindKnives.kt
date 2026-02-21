@@ -3,7 +3,6 @@ package com.wingedsheep.mtg.sets.definitions.portal.cards
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.targets.TargetOpponent
 
 /**
@@ -17,8 +16,8 @@ val MindKnives = card("Mind Knives") {
     typeLine = "Sorcery"
 
     spell {
-        target = TargetOpponent()
-        effect = Effects.DiscardRandom(1, EffectTarget.ContextTarget(0))
+        val t = target("target", TargetOpponent())
+        effect = Effects.DiscardRandom(1, t)
     }
 
     metadata {

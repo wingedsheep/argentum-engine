@@ -3,7 +3,6 @@ package com.wingedsheep.mtg.sets.definitions.portal.cards
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.Duration
-import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.effects.ModifyStatsEffect
 import com.wingedsheep.sdk.scripting.targets.TargetCreature
 
@@ -18,11 +17,11 @@ val HowlingFury = card("Howling Fury") {
     typeLine = "Sorcery"
 
     spell {
-        target = TargetCreature()
+        val t = target("target", TargetCreature())
         effect = ModifyStatsEffect(
             powerModifier = 4,
             toughnessModifier = 0,
-            target = EffectTarget.ContextTarget(0),
+            target = t,
             duration = Duration.EndOfTurn
         )
     }

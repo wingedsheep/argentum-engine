@@ -3,7 +3,6 @@ package com.wingedsheep.mtg.sets.definitions.onslaught.cards
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.effects.BounceAndChainCopyEffect
-import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import com.wingedsheep.sdk.scripting.targets.TargetPermanent
 
@@ -21,9 +20,9 @@ val ChainOfVapor = card("Chain of Vapor") {
     oracleText = "Return target nonland permanent to its owner's hand. Then that permanent's controller may sacrifice a land of their choice. If the player does, they may copy this spell and may choose a new target for that copy."
 
     spell {
-        target = TargetPermanent(filter = TargetFilter.NonlandPermanent)
+        val t = target("target", TargetPermanent(filter = TargetFilter.NonlandPermanent))
         effect = BounceAndChainCopyEffect(
-            target = EffectTarget.ContextTarget(0),
+            target = t,
             targetFilter = TargetFilter.NonlandPermanent,
             spellName = "Chain of Vapor"
         )

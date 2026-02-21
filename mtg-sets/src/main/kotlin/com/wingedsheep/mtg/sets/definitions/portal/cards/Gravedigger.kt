@@ -2,7 +2,6 @@ package com.wingedsheep.mtg.sets.definitions.portal.cards
 
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import com.wingedsheep.sdk.core.Zone
@@ -26,8 +25,8 @@ val Gravedigger = card("Gravedigger") {
     triggeredAbility {
         trigger = Triggers.EntersBattlefield
         optional = true
-        target = TargetObject(filter = TargetFilter.CreatureInYourGraveyard)
-        effect = MoveToZoneEffect(EffectTarget.ContextTarget(0), Zone.HAND)
+        val t = target("target", TargetObject(filter = TargetFilter.CreatureInYourGraveyard))
+        effect = MoveToZoneEffect(t, Zone.HAND)
     }
 
     metadata {

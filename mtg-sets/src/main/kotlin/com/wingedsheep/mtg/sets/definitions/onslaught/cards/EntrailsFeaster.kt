@@ -31,12 +31,12 @@ val EntrailsFeaster = card("Entrails Feaster") {
     triggeredAbility {
         trigger = Triggers.YourUpkeep
         optional = true
-        target = TargetObject(
+        val t = target("target", TargetObject(
             filter = TargetFilter.CreatureInGraveyard
-        )
+        ))
         effect = CompositeEffect(
             listOf(
-                MoveToZoneEffect(EffectTarget.ContextTarget(0), Zone.EXILE),
+                MoveToZoneEffect(t, Zone.EXILE),
                 AddCountersEffect("+1/+1", 1, EffectTarget.Self)
             )
         )

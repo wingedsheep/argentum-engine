@@ -4,7 +4,6 @@ import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.dsl.Costs
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.GrantKeywordUntilEndOfTurnEffect
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
@@ -26,10 +25,10 @@ val ElvishPathcutter = card("Elvish Pathcutter") {
 
     activatedAbility {
         cost = Costs.Mana("{2}{G}")
-        target = TargetPermanent(
+        val t = target("target", TargetPermanent(
             filter = TargetFilter(GameObjectFilter.Creature.withSubtype("Elf"))
-        )
-        effect = GrantKeywordUntilEndOfTurnEffect(Keyword.FORESTWALK, EffectTarget.ContextTarget(0))
+        ))
+        effect = GrantKeywordUntilEndOfTurnEffect(Keyword.FORESTWALK, t)
     }
 
     metadata {

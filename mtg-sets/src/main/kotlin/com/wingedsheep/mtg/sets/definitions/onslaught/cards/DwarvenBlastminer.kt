@@ -5,7 +5,6 @@ import com.wingedsheep.sdk.dsl.Costs
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.predicates.CardPredicate
-import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
@@ -28,7 +27,7 @@ val DwarvenBlastminer = card("Dwarven Blastminer") {
 
     activatedAbility {
         cost = Costs.Composite(Costs.Mana("{2}{R}"), Costs.Tap)
-        target = TargetPermanent(
+        val t = target("target", TargetPermanent(
             filter = TargetFilter(
                 GameObjectFilter(
                     cardPredicates = listOf(
@@ -37,8 +36,8 @@ val DwarvenBlastminer = card("Dwarven Blastminer") {
                     )
                 )
             )
-        )
-        effect = MoveToZoneEffect(EffectTarget.ContextTarget(0), Zone.GRAVEYARD, byDestruction = true)
+        ))
+        effect = MoveToZoneEffect(t, Zone.GRAVEYARD, byDestruction = true)
     }
 
     morph = "{R}"

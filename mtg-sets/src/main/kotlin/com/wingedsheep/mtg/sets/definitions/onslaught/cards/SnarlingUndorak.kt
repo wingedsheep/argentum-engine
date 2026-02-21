@@ -3,7 +3,6 @@ package com.wingedsheep.mtg.sets.definitions.onslaught.cards
 import com.wingedsheep.sdk.dsl.Costs
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.ModifyStatsEffect
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
@@ -26,10 +25,10 @@ val SnarlingUndorak = card("Snarling Undorak") {
 
     activatedAbility {
         cost = Costs.Mana("{2}{G}")
-        target = TargetPermanent(
+        val t = target("target", TargetPermanent(
             filter = TargetFilter(GameObjectFilter.Creature.withSubtype("Beast"))
-        )
-        effect = ModifyStatsEffect(1, 1, EffectTarget.ContextTarget(0))
+        ))
+        effect = ModifyStatsEffect(1, 1, t)
     }
 
     morph = "{1}{G}{G}"

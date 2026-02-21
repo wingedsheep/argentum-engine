@@ -4,7 +4,6 @@ import com.wingedsheep.sdk.dsl.Targets
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
-import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.KeywordAbility
 import com.wingedsheep.sdk.scripting.effects.MayEffect
 import com.wingedsheep.sdk.scripting.effects.PreventNextDamageEffect
@@ -24,10 +23,10 @@ val SunfireBalm = card("Sunfire Balm") {
     oracleText = "Prevent the next 4 damage that would be dealt to any target this turn.\nCycling {1}{W}\nWhen you cycle Sunfire Balm, you may prevent the next 1 damage that would be dealt to any target this turn."
 
     spell {
-        target = Targets.Any
+        val t = target("target", Targets.Any)
         effect = PreventNextDamageEffect(
             amount = DynamicAmount.Fixed(4),
-            target = EffectTarget.ContextTarget(0)
+            target = t
         )
     }
 
@@ -35,11 +34,11 @@ val SunfireBalm = card("Sunfire Balm") {
 
     triggeredAbility {
         trigger = Triggers.YouCycle
-        target = Targets.Any
+        val t = target("target", Targets.Any)
         effect = MayEffect(
             PreventNextDamageEffect(
                 amount = DynamicAmount.Fixed(1),
-                target = EffectTarget.ContextTarget(0)
+                target = t
             )
         )
     }

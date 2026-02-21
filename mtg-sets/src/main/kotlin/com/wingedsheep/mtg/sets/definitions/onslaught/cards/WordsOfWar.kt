@@ -4,7 +4,6 @@ import com.wingedsheep.sdk.dsl.Costs
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.targets.TargetCreatureOrPlayer
 
 /**
@@ -20,8 +19,8 @@ val WordsOfWar = card("Words of War") {
 
     activatedAbility {
         cost = Costs.Mana("{1}")
-        target = TargetCreatureOrPlayer()
-        effect = Effects.ReplaceNextDraw(Effects.DealDamage(2, EffectTarget.ContextTarget(0)))
+        val t = target("target", TargetCreatureOrPlayer())
+        effect = Effects.ReplaceNextDraw(Effects.DealDamage(2, t))
         promptOnDraw = true
     }
 

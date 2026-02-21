@@ -924,6 +924,7 @@ object EffectPatterns {
         val player = when (target) {
             EffectTarget.Controller -> Player.You
             is EffectTarget.ContextTarget -> Player.ContextPlayer(target.index)
+            is EffectTarget.BoundVariable -> Player.ContextPlayer(0)
             is EffectTarget.PlayerRef -> target.player
             else -> Player.You
         }
@@ -1384,6 +1385,7 @@ object EffectPatterns {
     private fun effectTargetToPlayer(target: EffectTarget): Player = when (target) {
         EffectTarget.Controller -> Player.You
         is EffectTarget.ContextTarget -> Player.ContextPlayer(target.index)
+        is EffectTarget.BoundVariable -> Player.ContextPlayer(0) // Named targets resolve to first target player
         is EffectTarget.PlayerRef -> target.player
         else -> Player.You
     }
@@ -1395,6 +1397,7 @@ object EffectPatterns {
     private fun effectTargetToChooser(target: EffectTarget): Chooser = when (target) {
         EffectTarget.Controller -> Chooser.Controller
         is EffectTarget.ContextTarget -> Chooser.TargetPlayer
+        is EffectTarget.BoundVariable -> Chooser.TargetPlayer
         is EffectTarget.PlayerRef -> when (target.player) {
             is Player.You -> Chooser.Controller
             is Player.Opponent, is Player.TargetOpponent, is Player.EachOpponent -> Chooser.Opponent

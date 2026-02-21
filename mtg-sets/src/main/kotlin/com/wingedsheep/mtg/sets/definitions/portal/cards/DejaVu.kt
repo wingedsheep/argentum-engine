@@ -2,7 +2,6 @@ package com.wingedsheep.mtg.sets.definitions.portal.cards
 
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
@@ -20,10 +19,10 @@ val DejaVu = card("Déjà Vu") {
     typeLine = "Sorcery"
 
     spell {
-        target = TargetObject(
+        val t = target("target", TargetObject(
             filter = TargetFilter(GameObjectFilter.Sorcery.ownedByYou(), zone = Zone.GRAVEYARD)
-        )
-        effect = MoveToZoneEffect(EffectTarget.ContextTarget(0), Zone.HAND)
+        ))
+        effect = MoveToZoneEffect(t, Zone.HAND)
     }
 
     metadata {

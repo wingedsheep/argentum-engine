@@ -4,7 +4,6 @@ import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.targets.TargetOpponent
 import com.wingedsheep.sdk.dsl.Triggers
 
@@ -26,8 +25,8 @@ val EbonDragon = card("Ebon Dragon") {
     triggeredAbility {
         trigger = Triggers.EntersBattlefield
         optional = true
-        target = TargetOpponent()
-        effect = Effects.Discard(1, EffectTarget.ContextTarget(0))
+        val t = target("target", TargetOpponent())
+        effect = Effects.Discard(1, t)
     }
 
     metadata {

@@ -4,7 +4,6 @@ import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Targets
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.targets.EffectTarget
 
 /**
  * Reminisce
@@ -18,8 +17,8 @@ val Reminisce = card("Reminisce") {
     oracleText = "Target player shuffles their graveyard into their library."
 
     spell {
-        target = Targets.Player
-        effect = Effects.ShuffleGraveyardIntoLibrary(EffectTarget.ContextTarget(0))
+        val t = target("target", Targets.Player)
+        effect = Effects.ShuffleGraveyardIntoLibrary(t)
     }
 
     metadata {

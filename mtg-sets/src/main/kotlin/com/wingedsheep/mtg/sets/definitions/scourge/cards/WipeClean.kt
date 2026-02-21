@@ -3,7 +3,6 @@ package com.wingedsheep.mtg.sets.definitions.scourge.cards
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.KeywordAbility
 import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
@@ -23,8 +22,8 @@ val WipeClean = card("Wipe Clean") {
     oracleText = "Exile target enchantment.\nCycling {3}"
 
     spell {
-        target = TargetPermanent(filter = TargetFilter(GameObjectFilter.Enchantment))
-        effect = MoveToZoneEffect(EffectTarget.ContextTarget(0), Zone.EXILE)
+        val t = target("target", TargetPermanent(filter = TargetFilter(GameObjectFilter.Enchantment)))
+        effect = MoveToZoneEffect(t, Zone.EXILE)
     }
 
     keywordAbility(KeywordAbility.cycling("{3}"))

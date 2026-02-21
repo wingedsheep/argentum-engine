@@ -35,8 +35,8 @@ val GoblinSharpshooter = card("Goblin Sharpshooter") {
 
     activatedAbility {
         cost = AbilityCost.Tap
-        target = AnyTarget()
-        effect = DealDamageEffect(1, EffectTarget.ContextTarget(0))
+        val t = target("target", AnyTarget())
+        effect = DealDamageEffect(1, t)
     }
 
     metadata {

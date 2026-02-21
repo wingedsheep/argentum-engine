@@ -4,7 +4,6 @@ import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.dsl.Targets
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.effects.AddCountersEffect
-import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.effects.MayEffect
 import com.wingedsheep.sdk.dsl.Triggers
 
@@ -21,12 +20,12 @@ val InvigoratingBoon = card("Invigorating Boon") {
 
     triggeredAbility {
         trigger = Triggers.AnyPlayerCycles
-        target = Targets.Creature
+        val t = target("target", Targets.Creature)
         effect = MayEffect(
             AddCountersEffect(
                 counterType = "+1/+1",
                 count = 1,
-                target = EffectTarget.ContextTarget(0)
+                target = t
             )
         )
     }

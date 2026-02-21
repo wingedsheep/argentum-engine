@@ -5,9 +5,9 @@ import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.effects.ForEachInGroupEffect
 import com.wingedsheep.sdk.scripting.effects.GrantKeywordUntilEndOfTurnEffect
+import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
@@ -31,16 +31,16 @@ val PietyCharm = card("Piety Charm") {
     spell {
         modal(chooseCount = 1) {
             mode("Destroy target Aura attached to a creature") {
-                target = TargetPermanent(filter = TargetFilter.Enchantment.withSubtype("Aura"))
+                val t = target("target", TargetPermanent(filter = TargetFilter.Enchantment.withSubtype("Aura")))
                 effect = MoveToZoneEffect(
-                    target = EffectTarget.ContextTarget(0),
+                    target = t,
                     destination = Zone.GRAVEYARD,
                     byDestruction = true
                 )
             }
             mode("Target Soldier creature gets +2/+2 until end of turn") {
-                target = TargetCreature(filter = TargetFilter.Creature.withSubtype("Soldier"))
-                effect = Effects.ModifyStats(2, 2, EffectTarget.ContextTarget(0))
+                val t = target("target", TargetCreature(filter = TargetFilter.Creature.withSubtype("Soldier")))
+                effect = Effects.ModifyStats(2, 2, t)
             }
             mode("Creatures you control gain vigilance until end of turn") {
                 effect = ForEachInGroupEffect(

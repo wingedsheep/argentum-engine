@@ -3,7 +3,6 @@ package com.wingedsheep.mtg.sets.definitions.onslaught.cards
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.AbilityCost
-import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.ModifyStatsEffect
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
@@ -25,15 +24,15 @@ val GrasslandCrusader = card("Grassland Crusader") {
 
     activatedAbility {
         cost = AbilityCost.Tap
-        target = TargetPermanent(
+        val t = target("target", TargetPermanent(
             filter = TargetFilter(
                 GameObjectFilter.Creature.withSubtype("Elf") or GameObjectFilter.Creature.withSubtype("Soldier")
             )
-        )
+        ))
         effect = ModifyStatsEffect(
             powerModifier = 2,
             toughnessModifier = 2,
-            target = EffectTarget.ContextTarget(0)
+            target = t
         )
     }
 

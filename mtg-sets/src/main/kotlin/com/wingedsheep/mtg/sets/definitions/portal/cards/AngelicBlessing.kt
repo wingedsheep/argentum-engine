@@ -5,8 +5,6 @@ import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Targets
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.targets.EffectTarget
-
 /**
  * Angelic Blessing
  * {2}{W}
@@ -18,10 +16,10 @@ val AngelicBlessing = card("Angelic Blessing") {
     typeLine = "Sorcery"
 
     spell {
-        target = Targets.Creature
+        val t = target("target", Targets.Creature)
         effect = Effects.Composite(
-            Effects.ModifyStats(3, 3, EffectTarget.ContextTarget(0)),
-            Effects.GrantKeyword(Keyword.FLYING, EffectTarget.ContextTarget(0))
+            Effects.ModifyStats(3, 3, t),
+            Effects.GrantKeyword(Keyword.FLYING, t)
         )
     }
 

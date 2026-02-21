@@ -4,7 +4,6 @@ import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.effects.CantBeRegeneratedEffect
 import com.wingedsheep.sdk.scripting.effects.DealDamageEffect
-import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.effects.MarkExileOnDeathEffect
 import com.wingedsheep.sdk.scripting.targets.AnyTarget
 
@@ -21,10 +20,10 @@ val Carbonize = card("Carbonize") {
     oracleText = "Carbonize deals 3 damage to any target. If it's a creature, it can't be regenerated this turn, and if it would die this turn, exile it instead."
 
     spell {
-        target = AnyTarget()
-        effect = CantBeRegeneratedEffect(EffectTarget.ContextTarget(0)) then
-                MarkExileOnDeathEffect(EffectTarget.ContextTarget(0)) then
-                DealDamageEffect(3, EffectTarget.ContextTarget(0))
+        val t = target("target", AnyTarget())
+        effect = CantBeRegeneratedEffect(t) then
+                MarkExileOnDeathEffect(t) then
+                DealDamageEffect(3, t)
     }
 
     metadata {

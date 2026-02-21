@@ -4,7 +4,6 @@ import com.wingedsheep.sdk.dsl.Targets
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.effects.GainControlEffect
 import com.wingedsheep.sdk.scripting.effects.MayEffect
 import com.wingedsheep.sdk.scripting.effects.SacrificeSelfEffect
@@ -28,9 +27,9 @@ val RiptideEntrancer = card("Riptide Entrancer") {
 
     triggeredAbility {
         trigger = Triggers.DealsCombatDamageToPlayer
-        target = Targets.CreatureOpponentControls
+        val t = target("target", Targets.CreatureOpponentControls)
         effect = MayEffect(
-            SacrificeSelfEffect then GainControlEffect(EffectTarget.ContextTarget(0))
+            SacrificeSelfEffect then GainControlEffect(t)
         )
     }
 

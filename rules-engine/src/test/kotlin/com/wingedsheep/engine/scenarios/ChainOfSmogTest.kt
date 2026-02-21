@@ -36,10 +36,10 @@ class ChainOfSmogTest : FunSpec({
         script = CardScript.spell(
             effect = DiscardAndChainCopyEffect(
                 count = 2,
-                target = EffectTarget.ContextTarget(0),
+                target = EffectTarget.BoundVariable("target"),
                 spellName = "Chain of Smog"
             ),
-            TargetPlayer()
+            TargetPlayer(id = "target")
         )
     )
 

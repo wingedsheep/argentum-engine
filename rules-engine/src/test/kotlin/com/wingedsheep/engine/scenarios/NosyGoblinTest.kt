@@ -49,8 +49,8 @@ class NosyGoblinTest : FunSpec({
             ActivatedAbility(
                 id = nosyGoblinAbilityId,
                 cost = AbilityCost.Composite(listOf(AbilityCost.Tap, AbilityCost.SacrificeSelf)),
-                effect = MoveToZoneEffect(EffectTarget.ContextTarget(0), Zone.GRAVEYARD, byDestruction = true),
-                targetRequirement = TargetPermanent(
+                effect = MoveToZoneEffect(EffectTarget.BoundVariable("target"), Zone.GRAVEYARD, byDestruction = true),
+                targetRequirement = TargetPermanent(id = "target",
                     filter = TargetFilter(GameObjectFilter.Creature.faceDown())
                 )
             )

@@ -6,7 +6,6 @@ import com.wingedsheep.sdk.dsl.DynamicAmounts
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.effects.DealDamageEffect
-import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.targets.TargetCreature
 import com.wingedsheep.sdk.dsl.Triggers
 
@@ -29,10 +28,10 @@ val FireDragon = card("Fire Dragon") {
 
     triggeredAbility {
         trigger = Triggers.EntersBattlefield
-        target = TargetCreature()
+        val t = target("target", TargetCreature())
         effect = DealDamageEffect(
             amount = DynamicAmounts.landsWithSubtype(Subtype.MOUNTAIN),
-            target = EffectTarget.ContextTarget(0)
+            target = t
         )
     }
 

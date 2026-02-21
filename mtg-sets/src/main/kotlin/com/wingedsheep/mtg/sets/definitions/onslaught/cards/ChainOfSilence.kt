@@ -2,7 +2,6 @@ package com.wingedsheep.mtg.sets.definitions.onslaught.cards
 
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.effects.PreventDamageAndChainCopyEffect
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import com.wingedsheep.sdk.scripting.targets.TargetPermanent
@@ -21,9 +20,9 @@ val ChainOfSilence = card("Chain of Silence") {
     oracleText = "Prevent all damage target creature would deal this turn. That creature's controller may sacrifice a land of their choice. If the player does, they may copy this spell and may choose a new target for that copy."
 
     spell {
-        target = TargetPermanent(filter = TargetFilter.Creature)
+        val t = target("target", TargetPermanent(filter = TargetFilter.Creature))
         effect = PreventDamageAndChainCopyEffect(
-            target = EffectTarget.ContextTarget(0),
+            target = t,
             targetFilter = TargetFilter.Creature,
             spellName = "Chain of Silence"
         )

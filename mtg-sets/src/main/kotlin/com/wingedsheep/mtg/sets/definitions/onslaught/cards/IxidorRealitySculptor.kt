@@ -3,7 +3,6 @@ package com.wingedsheep.mtg.sets.definitions.onslaught.cards
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.dsl.Costs
-import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.scripting.ModifyStatsForCreatureGroup
@@ -36,10 +35,10 @@ val IxidorRealitySculptor = card("Ixidor, Reality Sculptor") {
 
     activatedAbility {
         cost = Costs.Mana("{2}{U}")
-        target = TargetPermanent(
+        val t = target("target", TargetPermanent(
             filter = TargetFilter(GameObjectFilter.Creature.faceDown())
-        )
-        effect = TurnFaceUpEffect(EffectTarget.ContextTarget(0))
+        ))
+        effect = TurnFaceUpEffect(t)
     }
 
     metadata {

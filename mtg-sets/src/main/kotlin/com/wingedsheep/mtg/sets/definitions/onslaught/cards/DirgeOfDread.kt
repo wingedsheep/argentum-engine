@@ -36,8 +36,8 @@ val DirgeOfDread = card("Dirge of Dread") {
 
     triggeredAbility {
         trigger = Triggers.YouCycle
-        target = Targets.Creature
-        effect = MayEffect(GrantKeywordUntilEndOfTurnEffect(Keyword.FEAR, EffectTarget.ContextTarget(0)))
+        val t = target("target", Targets.Creature)
+        effect = MayEffect(GrantKeywordUntilEndOfTurnEffect(Keyword.FEAR, t))
     }
 
     metadata {

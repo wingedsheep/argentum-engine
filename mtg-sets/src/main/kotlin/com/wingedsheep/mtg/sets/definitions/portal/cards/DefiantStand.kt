@@ -5,7 +5,6 @@ import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Targets
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.conditions.YouWereAttackedThisStep
 
 /**
@@ -24,10 +23,10 @@ val DefiantStand = card("Defiant Stand") {
         castOnlyDuring(Step.DECLARE_ATTACKERS)
         castOnlyIf(YouWereAttackedThisStep)
 
-        target = Targets.Creature
+        val t = target("target", Targets.Creature)
         effect = Effects.Composite(
-            Effects.ModifyStats(1, 3, EffectTarget.ContextTarget(0)),
-            Effects.Untap(EffectTarget.ContextTarget(0))
+            Effects.ModifyStats(1, 3, t),
+            Effects.Untap(t)
         )
     }
 

@@ -4,7 +4,6 @@ import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.KeywordAbility
 import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
 import com.wingedsheep.sdk.scripting.targets.TargetCreature
@@ -22,9 +21,9 @@ val EssenceFracture = card("Essence Fracture") {
     oracleText = "Return two target creatures to their owners' hands.\nCycling {2}{U}"
 
     spell {
-        target = TargetCreature(count = 2)
-        effect = MoveToZoneEffect(EffectTarget.ContextTarget(0), Zone.HAND) then
-                MoveToZoneEffect(EffectTarget.ContextTarget(1), Zone.HAND)
+        val (c1, c2) = targets("creature", TargetCreature(count = 2))
+        effect = MoveToZoneEffect(c1, Zone.HAND) then
+                MoveToZoneEffect(c2, Zone.HAND)
     }
 
     keywordAbility(KeywordAbility.Cycling(ManaCost.parse("{2}{U}")))

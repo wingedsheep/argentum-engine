@@ -48,8 +48,8 @@ class DiveBomberTest : FunSpec({
             ActivatedAbility(
                 id = diveBomberAbilityId,
                 cost = AbilityCost.Composite(listOf(AbilityCost.Tap, AbilityCost.SacrificeSelf)),
-                effect = DealDamageEffect(2, EffectTarget.ContextTarget(0)),
-                targetRequirement = TargetPermanent(filter = TargetFilter.AttackingOrBlockingCreature)
+                effect = DealDamageEffect(2, EffectTarget.BoundVariable("target")),
+                targetRequirement = TargetPermanent(id = "target", filter = TargetFilter.AttackingOrBlockingCreature)
             )
         )
     )

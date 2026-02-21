@@ -21,8 +21,8 @@
                 "effect": {
                     "type": "MoveToZone",
                     "target": {
-                        "type": "ContextTarget",
-                        "index": 0
+                        "type": "BoundVariable",
+                        "name": "target"
                     },
                     "destination": "Graveyard",
                     "byDestruction": true
@@ -32,7 +32,8 @@
                         "type": "TargetObject",
                         "filter": {
                             "baseFilter": "land"
-                        }
+                        },
+                        "id": "target"
                     }
                 ]
             }

@@ -6,7 +6,6 @@ import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.AbilityCost
 import com.wingedsheep.sdk.scripting.effects.AddColorlessManaEffect
-import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
@@ -33,14 +32,14 @@ val UnholyGrotto = card("Unholy Grotto") {
 
     activatedAbility {
         cost = Costs.Composite(Costs.Mana("{B}"), Costs.Tap)
-        target = TargetObject(
+        val t = target("target", TargetObject(
             filter = TargetFilter(
                 GameObjectFilter.Any.withSubtype("Zombie").ownedByYou(),
                 zone = Zone.GRAVEYARD
             )
-        )
+        ))
         effect = MoveToZoneEffect(
-            target = EffectTarget.ContextTarget(0),
+            target = t,
             destination = Zone.LIBRARY,
             placement = ZonePlacement.Top
         )

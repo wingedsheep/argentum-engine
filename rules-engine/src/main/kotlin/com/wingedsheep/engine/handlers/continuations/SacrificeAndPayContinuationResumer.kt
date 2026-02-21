@@ -276,7 +276,8 @@ class SacrificeAndPayContinuationResumer(
             sourceId = sourceId,
             controllerId = playerId,
             opponentId = null,
-            targets = continuation.targets
+            targets = continuation.targets,
+            namedTargets = continuation.namedTargets
         )
 
         // Execute the suffer effect using the registry

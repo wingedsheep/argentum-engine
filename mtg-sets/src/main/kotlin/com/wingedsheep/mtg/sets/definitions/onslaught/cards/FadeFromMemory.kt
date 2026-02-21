@@ -4,7 +4,6 @@ import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.dsl.Targets
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.KeywordAbility
 import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
 
@@ -21,8 +20,8 @@ val FadeFromMemory = card("Fade from Memory") {
     oracleText = "Exile target card from a graveyard.\nCycling {B}"
 
     spell {
-        target = Targets.CardInGraveyard
-        effect = MoveToZoneEffect(EffectTarget.ContextTarget(0), Zone.EXILE)
+        val t = target("target", Targets.CardInGraveyard)
+        effect = MoveToZoneEffect(t, Zone.EXILE)
     }
 
     keywordAbility(KeywordAbility.cycling("{B}"))

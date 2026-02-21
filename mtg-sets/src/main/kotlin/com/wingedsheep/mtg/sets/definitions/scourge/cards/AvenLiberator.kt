@@ -6,7 +6,7 @@ import com.wingedsheep.sdk.dsl.Targets
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.targets.EffectTarget
+
 
 /**
  * Aven Liberator
@@ -29,8 +29,8 @@ val AvenLiberator = card("Aven Liberator") {
 
     triggeredAbility {
         trigger = Triggers.TurnedFaceUp
-        target = Targets.CreatureYouControl
-        effect = Effects.ChooseColorAndGrantProtectionToTarget(EffectTarget.ContextTarget(0))
+        val t = target("target", Targets.CreatureYouControl)
+        effect = Effects.ChooseColorAndGrantProtectionToTarget(t)
     }
 
     morph = "{3}{W}{W}"
