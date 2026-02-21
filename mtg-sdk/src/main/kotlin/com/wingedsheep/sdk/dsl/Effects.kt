@@ -37,6 +37,8 @@ import com.wingedsheep.sdk.scripting.effects.RepeatCondition
 import com.wingedsheep.sdk.scripting.effects.RepeatWhileEffect
 import com.wingedsheep.sdk.scripting.effects.ReplaceNextDrawWithEffect
 import com.wingedsheep.sdk.scripting.effects.SearchDestination
+import com.wingedsheep.sdk.scripting.effects.ChooseOptionEffect
+import com.wingedsheep.sdk.scripting.effects.OptionType
 import com.wingedsheep.sdk.scripting.effects.SelectTargetEffect
 import com.wingedsheep.sdk.scripting.effects.SeparatePermanentsIntoPilesEffect
 import com.wingedsheep.sdk.scripting.effects.TapUntapEffect
@@ -668,6 +670,19 @@ object Effects {
      */
     fun SelectTarget(requirement: TargetRequirement, storeAs: String = "pipelineTarget"): Effect =
         SelectTargetEffect(requirement, storeAs)
+
+    /**
+     * Generic pipeline step: choose an option from a set (creature type, color, etc.)
+     * and store the result in EffectContext.chosenValues[storeAs].
+     *
+     * Downstream pipeline effects can read the chosen value to condition their behavior.
+     */
+    fun ChooseOption(
+        optionType: OptionType,
+        storeAs: String = "chosenOption",
+        prompt: String? = null,
+        excludedOptions: List<String> = emptyList()
+    ): Effect = ChooseOptionEffect(optionType, storeAs, prompt, excludedOptions)
 
     // =========================================================================
     // Composite Effect Helpers

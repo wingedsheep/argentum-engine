@@ -73,7 +73,8 @@ data class EffectContinuation(
     val targets: List<ChosenTarget> = emptyList(),
     val storedCollections: Map<String, List<EntityId>> = emptyMap(),
     val chosenCreatureType: String? = null,
-    val triggeringEntityId: EntityId? = null
+    val triggeringEntityId: EntityId? = null,
+    val chosenValues: Map<String, String> = emptyMap()
 ) : ContinuationFrame {
     /**
      * Reconstruct the EffectContext from serialized fields.
@@ -86,7 +87,8 @@ data class EffectContinuation(
         targets = targets,
         storedCollections = storedCollections,
         chosenCreatureType = chosenCreatureType,
-        triggeringEntityId = triggeringEntityId
+        triggeringEntityId = triggeringEntityId,
+        chosenValues = chosenValues
     )
 }
 
@@ -599,6 +601,29 @@ data class ChooseCreatureTypePipelineContinuation(
     val sourceId: EntityId?,
     val sourceName: String?,
     val creatureTypes: List<String>
+) : ContinuationFrame
+
+/**
+ * Resume after player chooses an option in a generic pipeline context.
+ *
+ * Stores the chosen value into the EffectContinuation below on the stack
+ * (via chosenValues map) so subsequent pipeline effects can access it
+ * via EffectContext.chosenValues[storeAs].
+ *
+ * @property controllerId The player choosing
+ * @property sourceId The ability source
+ * @property sourceName Name of the source for display
+ * @property storeAs Key under which to store the chosen value
+ * @property options The option strings (indexed by OptionChosenResponse.optionIndex)
+ */
+@Serializable
+data class ChooseOptionPipelineContinuation(
+    override val decisionId: String,
+    val controllerId: EntityId,
+    val sourceId: EntityId?,
+    val sourceName: String?,
+    val storeAs: String,
+    val options: List<String>
 ) : ContinuationFrame
 
 /**

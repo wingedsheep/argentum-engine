@@ -116,6 +116,7 @@ class ContinuationHandler(
             is ChooseFromCreatureTypeContinuation -> creatureTypeResumer.resumeChooseFromCreatureType(stateAfterPop, continuation, response, cfm)
             is ChooseToCreatureTypeContinuation -> creatureTypeResumer.resumeChooseToCreatureType(stateAfterPop, continuation, response, cfm)
             is ChooseCreatureTypePipelineContinuation -> creatureTypeResumer.resumeChooseCreatureTypePipeline(stateAfterPop, continuation, response, cfm)
+            is ChooseOptionPipelineContinuation -> creatureTypeResumer.resumeChooseOptionPipeline(stateAfterPop, continuation, response, cfm)
             is BecomeCreatureTypeContinuation -> creatureTypeResumer.resumeBecomeCreatureType(stateAfterPop, continuation, response, cfm)
             is ChooseCreatureTypeModifyStatsContinuation -> creatureTypeResumer.resumeChooseCreatureTypeModifyStats(stateAfterPop, continuation, response, cfm)
             is ChooseCreatureTypeGainControlContinuation -> creatureTypeResumer.resumeChooseCreatureTypeGainControl(stateAfterPop, continuation, response, cfm)
@@ -208,7 +209,8 @@ class ContinuationHandler(
                     xValue = continuation.xValue,
                     targets = continuation.targets,
                     storedCollections = currentContext.storedCollections,
-                    chosenCreatureType = continuation.chosenCreatureType
+                    chosenCreatureType = continuation.chosenCreatureType,
+                    chosenValues = continuation.chosenValues
                 )
                 currentState.pushContinuation(remainingContinuation)
             } else {
@@ -520,7 +522,8 @@ class ContinuationHandler(
                         xValue = nextContinuation.xValue,
                         targets = nextContinuation.targets,
                         storedCollections = currentContext.storedCollections,
-                        chosenCreatureType = nextContinuation.chosenCreatureType
+                        chosenCreatureType = nextContinuation.chosenCreatureType,
+                        chosenValues = nextContinuation.chosenValues
                     )
                     currentState.pushContinuation(remainingContinuation)
                 } else {

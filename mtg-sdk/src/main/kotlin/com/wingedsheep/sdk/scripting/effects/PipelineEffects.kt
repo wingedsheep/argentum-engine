@@ -337,6 +337,46 @@ data object ChooseCreatureTypeEffect : Effect {
 }
 
 /**
+ * The type of option to choose from in a ChooseOptionEffect.
+ */
+@Serializable
+enum class OptionType {
+    /** Choose from all creature types */
+    CREATURE_TYPE,
+    /** Choose from the five Magic colors */
+    COLOR
+}
+
+/**
+ * Generic pipeline step that presents a choice from a set of options and stores
+ * the result in a named variable (via EffectContext.chosenValues).
+ *
+ * This is the generic replacement for type-specific choice effects. Downstream
+ * pipeline effects can read the chosen value from chosenValues[storeAs].
+ *
+ * @property optionType What kind of options to present (creature types, colors, etc.)
+ * @property storeAs Key under which the chosen value is stored in EffectContext.chosenValues
+ * @property prompt Custom prompt text. If null, a default is generated from the option type.
+ * @property excludedOptions Options to exclude from the presented list
+ */
+@SerialName("ChooseOption")
+@Serializable
+data class ChooseOptionEffect(
+    val optionType: OptionType,
+    val storeAs: String = "chosenOption",
+    val prompt: String? = null,
+    val excludedOptions: List<String> = emptyList()
+) : Effect {
+    override val description: String = buildString {
+        append("Choose ")
+        append(when (optionType) {
+            OptionType.CREATURE_TYPE -> "a creature type"
+            OptionType.COLOR -> "a color"
+        })
+    }
+}
+
+/**
  * Select a target during effect resolution (mid-pipeline targeting).
  *
  * Unlike cast-time targeting (TargetRequirement on spells/abilities), this step

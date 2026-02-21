@@ -177,6 +177,7 @@ val engineSerializersModule = SerializersModule {
         subclass(SelectFromCollectionContinuation::class)
         subclass(MoveCollectionOrderContinuation::class)
         subclass(ChooseCreatureTypePipelineContinuation::class)
+        subclass(ChooseOptionPipelineContinuation::class)
         subclass(SelectTargetPipelineContinuation::class)
     }
 
