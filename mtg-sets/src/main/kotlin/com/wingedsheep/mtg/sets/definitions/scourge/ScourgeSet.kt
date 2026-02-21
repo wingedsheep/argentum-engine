@@ -101,6 +101,7 @@ object ScourgeSet {
 
         // Black enchantments
         ClutchOfUndeath,
+        LingeringDeath,
 
         // Black creatures (additional)
         DeathsHeadBuzzard,

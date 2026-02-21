@@ -429,6 +429,7 @@ each player reveals and creates tokens
 - `Triggers.YourEndStep` / `Triggers.EachEndStep`
 - `Triggers.BeginCombat` / `Triggers.FirstMainPhase`
 - `Triggers.EnchantedCreatureControllerUpkeep` — enchanted creature's controller's upkeep
+- `Triggers.EnchantedCreatureControllerEndStep` — enchanted creature's controller's end step
 - `Triggers.TurnedFaceUp` — self turns face up
 - `Triggers.GainControlOfSelf` — you gain control of self
 

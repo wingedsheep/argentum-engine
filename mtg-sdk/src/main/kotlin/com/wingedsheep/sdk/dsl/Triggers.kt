@@ -261,6 +261,15 @@ object Triggers {
     )
 
     /**
+     * At the beginning of the end step of enchanted creature's controller.
+     * Used for auras like Lingering Death that trigger on the enchanted creature's controller's end step.
+     */
+    val EnchantedCreatureControllerEndStep: TriggerSpec = TriggerSpec(
+        event = EnchantedCreatureControllerStepEvent(Step.END),
+        binding = TriggerBinding.ANY
+    )
+
+    /**
      * When this creature is turned face up.
      */
     val TurnedFaceUp: TriggerSpec = TriggerSpec(
