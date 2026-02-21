@@ -151,6 +151,99 @@ ordering.
 | `dto/ClientDTO.kt`                  | Data transfer objects for client         |
 | `dto/ClientStateTransformer.kt`     | Transforms engine state to client format |
 
+## Core Architectural Choices
+
+These design decisions elevate the engine from a naive implementation to a professional, scalable rules engine capable
+of handling Magic: The Gathering's notorious complexity.
+
+### SDK: Data-Driven Design (Pure Data vs. Executable Code)
+
+Cards and abilities are defined as purely serializable data structures (`CardDefinition`, `CardScript`, `Effect`,
+`Condition`) completely devoid of execution logic — no `execute(GameState)` methods anywhere. The SDK defines *what*
+happens; the engine defines *how* it happens. Because abilities are pure data, the engine can safely project state
+(Rule 613 layers) without accidentally triggering side effects, and cards can be serialized to JSON, sent over a
+network for multiplayer, or hot-reloaded without recompiling.
+
+### SDK: Data Pipeline Model for Effect Resolution
+
+Instead of writing bespoke classes for every effect variation (e.g., `LookAtTop5Put1InHandRestInGraveyardEffect`), the
+engine uses a functional pipeline: `GatherCardsEffect` → `SelectFromCollectionEffect` → `MoveCollectionEffect`. This
+treats card collections as named variables in an `EffectContext`, allowing almost any library or graveyard manipulation
+to be expressed by composing a handful of atomic primitives.
+
+### SDK: Abstract Syntax Tree (AST) for Dynamic Values
+
+Numbers are represented not as integers or lambdas, but as a sealed interface hierarchy (`DynamicAmount.XValue`,
+`DynamicAmount.AggregateBattlefield`, `CharacteristicValue.Dynamic`). This avoids the "Lambda Trap" — if Tarmogoyf's
+power were a `(GameState) -> Int` lambda, it couldn't be serialized and the engine couldn't inspect *why* the value
+changed. The AST approach (e.g., `DynamicAmount.Add(Fixed(1), Count(...))`) enables lazy evaluation, serialization,
+and dynamic UI text generation.
+
+### SDK: Late-Binding of Targets and Variables
+
+Effects use references like `EffectTarget.ContextTarget(index)` and `EffectTarget.StoredEntityTarget(variableName)`
+instead of storing concrete Entity IDs. This separates declaration from resolution — targets are chosen when a spell
+goes on the stack but resolved later. `StoredEntityTarget` elegantly solves "Oblivion Ring" mechanics by letting a
+leaves-the-battlefield trigger reference the exact entity exiled by the enters-the-battlefield trigger via a stored
+scope variable.
+
+### SDK: Unified Composable Filtering
+
+Instead of hundreds of specific enums (`TargetRedCreature`, `TargetTappedPermanent`), a single compositional
+`GameObjectFilter` combines Card, State, and Controller predicates. This reduces N×M specific classes to N+M composable
+predicates. The Filter Query Language (FQL) provides a compact string representation (`"creature tapped ctrl:opponent"`)
+for lean JSON payloads while keeping the Kotlin side structured.
+
+### SDK: DSL as Abstraction Layer
+
+Kotlin type-safe builders (`cardDef { }`, `spell { }`, `EffectPatterns`) construct the underlying AST. This provides
+excellent developer experience (writing raw AST structures would be error-prone), and critically enables refactoring of
+underlying data structures without rewriting card definitions — the DSL and `Effects` facade act as an API contract.
+
+### Engine: Functional Core and Immutable State
+
+The engine operates as a pure function: `(GameState, GameAction) -> EngineResult`. `GameState` is completely immutable;
+every action returns a brand-new state. This eliminates bugs from concurrent modifications or mid-resolution state
+corruption, makes client-server architecture trivial (send raw state or calculate diffs), and enables "time travel"
+features like undo/redo or AI Monte Carlo Tree Search simulations by simply holding an array of previous states.
+
+### Engine: ECS for Game Objects
+
+Instead of OOP inheritance (`class Creature : Permanent`), every card, token, and player is just an `EntityId` with
+behavioral traits attached via `ComponentContainer`. This is essential for MTG where objects constantly alter their
+fundamental nature — a Land can become a Creature, lose all abilities, gain Flying, then turn face-down. OOP
+hierarchies collapse under this; ECS handles it by adding/removing components. Zone changes strip components cleanly
+via `stripBattlefieldComponents()`.
+
+### Engine: Reentrant State Machine (Continuations)
+
+When resolving a spell that requires player input (e.g., "search your library"), the engine doesn't block. It pauses,
+saves a `PendingDecision`, and pushes a serializable `ContinuationFrame` onto a stack. This enables server scalability
+(no blocked threads waiting for network input — serialize paused state and spin down) and correctly models MTG's nested
+resolution stacks (triggered abilities firing during spell payment).
+
+### Engine: Base State vs. Projected State (Layer System)
+
+The engine explicitly separates *Base State* (physical card text + counters) from *Projected State* (after applying
+continuous effects). The `StateProjector` recalculates projected state on the fly. This is required for Rule 613
+compliance — mutating base stats when Giant Growth applies leads to irreversible corruption when the turn ends.
+Recalculating ensures accuracy for P/T, color, and type changes without touching underlying `CardComponent` data.
+
+### Engine: Explicit Event Emission
+
+Every state mutation emits an explicit `GameEvent` (e.g., `DamageDealtEvent`, `ZoneChangeEvent`). The
+`TriggerDetector` observes these events to determine what abilities go on the stack. This decouples side-effects (the
+`CombatManager` dealing damage doesn't need to know about "Enrage") and enables simultaneous event grouping — MTG
+requires combat damage to happen simultaneously, and batched events allow "look back in time" triggers (Rule 603.10)
+for creatures that die at the same moment.
+
+### Engine: Strategy-Based Registries
+
+Action and effect logic is fully decoupled from the core engine loop via `ActionHandlerRegistry` and
+`EffectExecutorRegistry`. Adding a new mechanic (Storm, Cascade) means creating a new `EffectExecutor` and registering
+it — no changes to `ActionProcessor.kt`. This also enables injecting mock executors during unit tests to verify
+pipeline behavior without loading the entire card database.
+
 ## Card Implementation Pattern
 
 Cards are defined as data + scripts using the **cardDef** DSL, not class inheritance:
