@@ -274,4 +274,60 @@ class MistformWallTest : FunSpec({
         val validAttackers = turnManager.getValidAttackers(driver.state, activePlayer)
         validAttackers shouldBe listOf(wall)
     }
+
+    test("deals combat damage after changing to non-Wall type") {
+        val driver = createDriver()
+        driver.initMirrorMatch(
+            deck = Deck.of("Island" to 40),
+            startingLife = 20
+        )
+
+        val activePlayer = driver.activePlayer!!
+        val opponent = driver.getOpponent(activePlayer)
+        driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
+
+        val wall = driver.putCreatureOnBattlefield(activePlayer, "Mistform Wall")
+        driver.removeSummoningSickness(wall)
+
+        // Give mana to pay the {1} cost
+        driver.giveMana(activePlayer, Color.BLUE, 1)
+
+        // Activate the ability to change type away from Wall
+        driver.submit(
+            ActivateAbility(
+                playerId = activePlayer,
+                sourceId = wall,
+                abilityId = mistformWallAbilityId
+            )
+        )
+        driver.bothPass()
+
+        // Choose "Dragon" (a non-Wall type)
+        val decision = driver.pendingDecision as ChooseOptionDecision
+        val dragonIndex = decision.options.indexOf("Dragon")
+        driver.submitDecision(activePlayer, OptionChosenResponse(decision.id, dragonIndex))
+
+        // Advance to declare attackers
+        driver.passPriorityUntil(Step.DECLARE_ATTACKERS)
+
+        // Attack with the former Wall
+        val attackResult = driver.declareAttackers(activePlayer, listOf(wall), opponent)
+        attackResult.isSuccess shouldBe true
+        driver.bothPass()
+
+        // No blocks
+        driver.declareNoBlockers(opponent)
+        driver.bothPass()
+
+        // Skip first strike damage step
+        driver.currentStep shouldBe Step.FIRST_STRIKE_COMBAT_DAMAGE
+        driver.bothPass()
+
+        // Combat damage step
+        driver.currentStep shouldBe Step.COMBAT_DAMAGE
+        driver.bothPass()
+
+        // Mistform Wall is 1/4, so opponent should take 1 damage
+        driver.getLifeTotal(opponent) shouldBe 19
+    }
 })
