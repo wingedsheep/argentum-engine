@@ -38,7 +38,9 @@ object CompactJsonTransformer {
         // Conditions
         "condition", "triggerCondition",
         // Costs and requirements
-        "cost", "targetRequirement", "baseRequirement",
+        "cost", "targetRequirement", "baseRequirement", "copyTargetRequirement",
+        // Damage
+        "damageType",
         // Filters and predicates
         "controllerPredicate", "statePredicate", "predicate",
         // Static ability references
@@ -50,12 +52,21 @@ object CompactJsonTransformer {
         // DynamicAmount fields (sealed interface used for numeric expressions)
         "amount", "count", "amountSource", "powerModifier", "toughnessModifier",
         "perPlayerAmount", "dynamicPower", "dynamicToughness",
-        // Dynamic amount modifiers (sealed interface DynamicAmount)
-        "powerModifier", "toughnessModifier",
         // Compare condition operands (sealed interface DynamicAmount)
         "left", "right",
         // Divide operands (sealed interface DynamicAmount)
         "numerator", "denominator",
+        // Event and Effect Parameters
+        "recipient", "controller", "timing", "duration",
+        "reductionSource", "copyCost", "repeatCondition"
+    )
+
+    /**
+     * Known singleton names for CounterTypeFilter. Used to disambiguate
+     * CounterTypeFilter objects from standard String counter types.
+     */
+    private val COUNTER_FILTER_SINGLETONS = setOf(
+        "CounterAny", "PlusOnePlusOne", "MinusOneMinusOne", "Loyalty"
     )
 
     /**
@@ -71,7 +82,10 @@ object CompactJsonTransformer {
      * Keys whose values are GameObjectFilter JSON objects that can be
      * compacted to query strings via [FilterQueryLanguage].
      */
-    private val FILTER_KEYS = setOf("filter", "baseFilter")
+    private val FILTER_KEYS = setOf(
+        "filter", "baseFilter", "sourceFilter",
+        "tokenFilter", "cardFilter", "matchFilter", "targetFilter"
+    )
 
     /**
      * Compact a JSON element by replacing singleton polymorphic objects with strings.
@@ -123,15 +137,20 @@ object CompactJsonTransformer {
                     key in FILTER_KEYS && value is JsonPrimitive && value.isString ->
                         expand(FilterQueryLanguage.parseFilter(value.content))
 
+                    // Special case for counterType due to name collision (String vs CounterTypeFilter)
+                    key == "counterType" && value is JsonPrimitive && value.isString
+                            && value.content in COUNTER_FILTER_SINGLETONS ->
+                        buildJsonObject { put("type", value.content) }
+
                     // String value under a polymorphic key → expand to {"type": "..."}
                     key in POLYMORPHIC_OBJECT_KEYS && value is JsonPrimitive && value.isString
-                        && !value.content.contains("{") ->
+                            && !value.content.contains("{") ->
                         buildJsonObject { put("type", value.content) }
 
                     // Integer under a DynamicAmount key → expand to {"type": "Fixed", "amount": n}
                     // (backward compatibility for pre-DynamicAmount JSON files)
                     key in DYNAMIC_AMOUNT_INTEGER_KEYS && value is JsonPrimitive
-                        && !value.isString && value.intOrNull != null ->
+                            && !value.isString && value.intOrNull != null ->
                         buildJsonObject { put("type", "Fixed"); put("amount", value.int) }
 
                     // Array under a polymorphic array key → expand string elements
@@ -159,8 +178,8 @@ object CompactJsonTransformer {
      */
     private fun isSingletonObject(obj: JsonObject): Boolean {
         return obj.size == 1
-            && obj.containsKey("type")
-            && obj["type"] is JsonPrimitive
-            && (obj["type"] as JsonPrimitive).isString
+                && obj.containsKey("type")
+                && obj["type"] is JsonPrimitive
+                && (obj["type"] as JsonPrimitive).isString
     }
 }

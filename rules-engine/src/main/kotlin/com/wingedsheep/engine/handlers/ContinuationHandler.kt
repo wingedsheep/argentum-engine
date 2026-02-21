@@ -135,7 +135,6 @@ class ContinuationHandler(
             is DiscardContinuation -> discardAndDrawResumer.resumeDiscard(stateAfterPop, continuation, response, cfm)
             is HandSizeDiscardContinuation -> discardAndDrawResumer.resumeHandSizeDiscard(stateAfterPop, continuation, response, cfm)
             is EachPlayerDiscardsOrLoseLifeContinuation -> discardAndDrawResumer.resumeEachPlayerDiscardsOrLoseLife(stateAfterPop, continuation, response, cfm)
-            is EachPlayerChoosesDrawContinuation -> discardAndDrawResumer.resumeEachPlayerChoosesDraw(stateAfterPop, continuation, response, cfm)
 
             // Sacrifice and pay
             is SacrificeContinuation -> sacrificeAndPayResumer.resumeSacrifice(stateAfterPop, continuation, response, cfm)
@@ -516,7 +515,8 @@ class ContinuationHandler(
                         storedCollections = currentContext.storedCollections,
                         chosenCreatureType = nextContinuation.chosenCreatureType,
                         namedTargets = nextContinuation.namedTargets,
-                        chosenValues = nextContinuation.chosenValues
+                        chosenValues = nextContinuation.chosenValues,
+                        storedNumbers = currentContext.storedNumbers
                     )
                     currentState.pushContinuation(remainingContinuation)
                 } else {
@@ -601,8 +601,19 @@ class ContinuationHandler(
         }
 
         val chosenCount = response.number
+
+        // Store cards-not-drawn count in the next EffectContinuation if requested
+        var currentState = state
+        if (continuation.storeNotDrawnAs != null) {
+            val cardsNotDrawn = continuation.originalMaxCards - chosenCount
+            val injectResult = com.wingedsheep.engine.handlers.effects.drawing.DrawUpToExecutor.injectStoredNumber(
+                currentState, continuation.storeNotDrawnAs, cardsNotDrawn
+            )
+            currentState = injectResult.state
+        }
+
         if (chosenCount <= 0) {
-            return checkForMore(state, emptyList())
+            return checkForMore(currentState, emptyList())
         }
 
         // Draw through the registry so draw replacement effects (Words of Wind, etc.) work
@@ -612,7 +623,7 @@ class ContinuationHandler(
             controllerId = continuation.playerId,
             opponentId = null
         )
-        val result = effectExecutorRegistry.execute(state, drawEffect, drawContext)
+        val result = effectExecutorRegistry.execute(currentState, drawEffect, drawContext)
 
         if (result.isPaused) {
             return result

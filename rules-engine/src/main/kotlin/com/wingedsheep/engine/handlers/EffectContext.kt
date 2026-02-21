@@ -37,7 +37,9 @@ data class EffectContext(
     /** Named targets map for BoundVariable resolution (target name -> chosen target) */
     val namedTargets: Map<String, ChosenTarget> = emptyMap(),
     /** Named values chosen by the player during pipeline execution (e.g., creature type, color). */
-    val chosenValues: Map<String, String> = emptyMap()
+    val chosenValues: Map<String, String> = emptyMap(),
+    /** Named numeric values stored by pipeline effects (e.g., cards not drawn). */
+    val storedNumbers: Map<String, Int> = emptyMap()
 ) {
     companion object {
         /**

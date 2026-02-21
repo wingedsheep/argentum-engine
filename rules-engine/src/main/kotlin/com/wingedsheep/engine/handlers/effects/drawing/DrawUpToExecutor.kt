@@ -19,6 +19,10 @@ import kotlin.reflect.KClass
  * Creates a ChooseNumberDecision and pushes a DrawUpToContinuation.
  * The continuation handler draws the chosen number of cards via DrawCardsEffect
  * through the registry (so draw replacement effects work correctly).
+ *
+ * If [DrawUpToEffect.storeNotDrawnAs] is set, stores the number of cards NOT drawn
+ * (maxCards - chosen) as a named numeric variable in the effect context, allowing
+ * subsequent pipeline effects to reference it via DynamicAmount.VariableReference.
  */
 class DrawUpToExecutor(
     private val decisionHandler: DecisionHandler = DecisionHandler()
@@ -43,7 +47,13 @@ class DrawUpToExecutor(
         val actualMax = effect.maxCards.coerceAtMost(librarySize)
 
         if (actualMax == 0) {
-            return ExecutionResult.success(state)
+            // Can't draw any cards — store max not drawn and return
+            val storeAs = effect.storeNotDrawnAs
+            return if (storeAs != null) {
+                injectStoredNumber(state, storeAs, effect.maxCards)
+            } else {
+                ExecutionResult.success(state)
+            }
         }
 
         val decisionResult = decisionHandler.createNumberDecision(
@@ -62,7 +72,9 @@ class DrawUpToExecutor(
             playerId = playerId,
             sourceId = context.sourceId,
             sourceName = sourceName,
-            maxCards = actualMax
+            maxCards = actualMax,
+            originalMaxCards = effect.maxCards,
+            storeNotDrawnAs = effect.storeNotDrawnAs
         )
 
         val stateWithContinuation = decisionResult.state.pushContinuation(continuation)
@@ -72,5 +84,24 @@ class DrawUpToExecutor(
             decisionResult.pendingDecision,
             decisionResult.events
         )
+    }
+
+    companion object {
+        /**
+         * Inject a stored number into the next EffectContinuation on the stack,
+         * following the same injection pattern as SelectFromCollectionContinuation.
+         */
+        fun injectStoredNumber(state: GameState, name: String, value: Int): ExecutionResult {
+            val nextFrame = state.peekContinuation()
+            val newState = if (nextFrame is EffectContinuation) {
+                val (_, stateAfterPop) = state.popContinuation()
+                stateAfterPop.pushContinuation(
+                    nextFrame.copy(storedNumbers = nextFrame.storedNumbers + (name to value))
+                )
+            } else {
+                state
+            }
+            return ExecutionResult.success(newState)
+        }
     }
 }

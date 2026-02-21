@@ -58,29 +58,6 @@ data class EachOpponentDiscardsEffect(
 
 
 /**
- * Each player may draw up to a number of cards, gaining life for each card not drawn.
- * "Each player may draw up to two cards. For each card less than two a player draws
- * this way, that player gains 2 life."
- * Used for Temporary Truce.
- *
- * @property maxCards Maximum number of cards each player may draw
- * @property lifePerCardNotDrawn Life gained for each card fewer than maxCards drawn (0 to disable)
- */
-@SerialName("EachPlayerMayDraw")
-@Serializable
-data class EachPlayerMayDrawEffect(
-    val maxCards: Int,
-    val lifePerCardNotDrawn: Int = 0
-) : Effect {
-    override val description: String = buildString {
-        append("Each player may draw up to $maxCards cards")
-        if (lifePerCardNotDrawn > 0) {
-            append(". For each card less than $maxCards a player draws this way, that player gains $lifePerCardNotDrawn life")
-        }
-    }
-}
-
-/**
  * Look at target player's hand.
  * Used for Ingenious Thief and similar "peek" effects.
  */
@@ -199,16 +176,21 @@ data object ReadTheRunesEffect : Effect {
  *
  * @property maxCards Maximum number of cards the player may draw
  * @property target The player who draws
+ * @property storeNotDrawnAs If set, stores the number of cards NOT drawn (maxCards - chosen)
+ *   as a named numeric variable in the effect context for subsequent pipeline effects
  */
 @SerialName("DrawUpTo")
 @Serializable
 data class DrawUpToEffect(
     val maxCards: Int,
-    val target: EffectTarget = EffectTarget.Controller
+    val target: EffectTarget = EffectTarget.Controller,
+    val storeNotDrawnAs: String? = null
 ) : Effect {
-    override val description: String = when (target) {
-        EffectTarget.Controller -> "Draw up to $maxCards cards"
-        else -> "${target.description.replaceFirstChar { it.uppercase() }} draws up to $maxCards cards"
+    override val description: String = buildString {
+        when (target) {
+            EffectTarget.Controller -> append("Draw up to $maxCards cards")
+            else -> append("${target.description.replaceFirstChar { it.uppercase() }} draws up to $maxCards cards")
+        }
     }
 }
 

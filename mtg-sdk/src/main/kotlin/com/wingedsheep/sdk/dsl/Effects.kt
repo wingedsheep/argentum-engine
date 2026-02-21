@@ -191,6 +191,14 @@ object Effects {
         DrawUpToEffect(maxCards, target)
 
     /**
+     * Each player may draw up to N cards. Optionally gain life for each card not drawn.
+     * "Each player may draw up to two cards. For each card less than two a player
+     * draws this way, that player gains 2 life."
+     */
+    fun EachPlayerMayDraw(maxCards: Int, lifePerCardNotDrawn: Int = 0): Effect =
+        EffectPatterns.eachPlayerMayDraw(maxCards, lifePerCardNotDrawn)
+
+    /**
      * Draw X cards, then for each card drawn, discard a card unless you sacrifice a permanent.
      * Used for Read the Runes.
      */

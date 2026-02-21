@@ -36,6 +36,7 @@ constructors.
 
 - `Effects.DrawCards(count, target = Controller)` — also accepts `DynamicAmount`
 - `Effects.DrawUpTo(maxCards, target = Controller)` — draw up to N
+- `Effects.EachPlayerMayDraw(maxCards, lifePerCardNotDrawn = 0)` — each player may draw up to N
 - `Effects.Discard(count, target)`
 - `Effects.DiscardRandom(count, target)` — discard at random
 - `Effects.DiscardHand(target)` — discard entire hand
@@ -174,9 +175,8 @@ each player reveals and creates tokens
 | Effect                                   | Parameters                         | Purpose                         |
 |------------------------------------------|------------------------------------|---------------------------------|
 | `DrawCardsEffect`                        | `count: DynamicAmount, target`     | Draw cards                      |
-| `DrawUpToEffect`                         | `maxCards: Int, target`            | Draw up to N                    |
+| `DrawUpToEffect`                         | `maxCards: Int, target, lifePerCardNotDrawn` | Draw up to N (with optional life gain) |
 | `EachOpponentDiscardsEffect`             | `count, controllerDrawsPerDiscard` | Each opponent discards          |
-| `EachPlayerMayDrawEffect`                | `maxCards, lifePerCardNotDrawn`    | Each player may draw            |
 | `EachPlayerDiscardsOrLoseLifeEffect`     | `lifeLoss: Int`                    | Discard or lose life            |
 | `EachPlayerReturnsPermanentToHandEffect` | (object)                           | Each player returns a permanent |
 | `LookAtTargetHandEffect`                 | `target`                           | Look at target's hand           |
@@ -678,6 +678,7 @@ MoveType: `MoveType.Default`, `.Discard`, `.Sacrifice`
 -
 `EffectPatterns.eachPlayerRevealCreaturesCreateTokens(tokenPower, tokenToughness, tokenColors, tokenCreatureTypes, tokenImageUri?)` —
 reveal creatures, create tokens
+- `EffectPatterns.eachPlayerMayDraw(maxCards, lifePerCardNotDrawn = 0)` — each player may draw up to N
 - `EffectPatterns.eachPlayerReturnsPermanentToHand()` — each player returns a permanent
 - `EffectPatterns.searchTargetLibraryExile(count, filter)` — search target's library, exile
 - `EffectPatterns.mill(count, target)` — mill pipeline

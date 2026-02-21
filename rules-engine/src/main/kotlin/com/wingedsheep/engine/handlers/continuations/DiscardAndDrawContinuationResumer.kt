@@ -4,7 +4,6 @@ import com.wingedsheep.engine.core.*
 import com.wingedsheep.engine.handlers.DecisionHandler
 import com.wingedsheep.engine.handlers.effects.drawing.EachOpponentDiscardsExecutor
 import com.wingedsheep.engine.handlers.effects.drawing.EachPlayerDiscardsOrLoseLifeExecutor
-import com.wingedsheep.engine.handlers.effects.drawing.EachPlayerMayDrawExecutor
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.identity.CardComponent
@@ -304,82 +303,4 @@ class DiscardAndDrawContinuationResumer(
         )
     }
 
-    fun resumeEachPlayerChoosesDraw(
-        state: GameState,
-        continuation: EachPlayerChoosesDrawContinuation,
-        response: DecisionResponse,
-        checkForMore: CheckForMore
-    ): ExecutionResult {
-        if (response !is NumberChosenResponse) {
-            return ExecutionResult.error(state, "Expected number chosen response")
-        }
-
-        val chosenCount = response.number
-        val currentPlayerId = continuation.currentPlayerId
-
-        // Calculate life gain for this player
-        val cardsNotDrawn = continuation.maxCards - chosenCount
-        val lifeGain = cardsNotDrawn * continuation.lifePerCardNotDrawn
-
-        // Update draw amounts and life gain amounts with this player's choice
-        val newDrawAmounts = continuation.drawAmounts + (currentPlayerId to chosenCount)
-        val newLifeGainAmounts = continuation.lifeGainAmounts + (currentPlayerId to lifeGain)
-
-        // Check if there are more players
-        if (continuation.remainingPlayers.isNotEmpty()) {
-            // Ask next player
-            val nextPlayer = continuation.remainingPlayers.first()
-            val nextRemainingPlayers = continuation.remainingPlayers.drop(1)
-
-            // Calculate actual max for next player (can't draw more than library size)
-            val libraryZone = ZoneKey(nextPlayer, Zone.LIBRARY)
-            val librarySize = state.getZone(libraryZone).size
-            val actualMax = continuation.maxCards.coerceAtMost(librarySize)
-
-            val prompt = if (continuation.lifePerCardNotDrawn > 0) {
-                "Choose how many cards to draw (0-$actualMax). Gain ${continuation.lifePerCardNotDrawn} life for each card not drawn."
-            } else {
-                "Choose how many cards to draw (0-$actualMax)"
-            }
-
-            // Create decision for next player
-            val decisionHandler = DecisionHandler()
-            val decisionResult = decisionHandler.createNumberDecision(
-                state = state,
-                playerId = nextPlayer,
-                sourceId = continuation.sourceId,
-                sourceName = continuation.sourceName,
-                prompt = prompt,
-                minValue = 0,
-                maxValue = actualMax,
-                phase = DecisionPhase.RESOLUTION
-            )
-
-            // Push updated continuation
-            val newContinuation = continuation.copy(
-                decisionId = decisionResult.pendingDecision!!.id,
-                currentPlayerId = nextPlayer,
-                remainingPlayers = nextRemainingPlayers,
-                drawAmounts = newDrawAmounts,
-                lifeGainAmounts = newLifeGainAmounts
-            )
-
-            val stateWithContinuation = decisionResult.state.pushContinuation(newContinuation)
-
-            return ExecutionResult.paused(
-                stateWithContinuation,
-                decisionResult.pendingDecision,
-                decisionResult.events
-            )
-        }
-
-        // All players have chosen - execute draws and life gains
-        val result = EachPlayerMayDrawExecutor.executeDrawsAndLifeGains(
-            state,
-            newDrawAmounts,
-            newLifeGainAmounts
-        )
-
-        return checkForMore(result.state, result.events.toList())
-    }
 }

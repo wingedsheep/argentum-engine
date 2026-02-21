@@ -6,6 +6,7 @@ import com.wingedsheep.sdk.core.*
 import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.CardScript
 import com.wingedsheep.sdk.model.Deck
+import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.GameEvent
 import com.wingedsheep.sdk.scripting.GrantKeyword
 import com.wingedsheep.sdk.scripting.TriggerBinding
@@ -64,6 +65,23 @@ class FrozenSolidTest : FunSpec({
         return driver
     }
 
+    /**
+     * Advance the game until a specific player's precombat main phase.
+     */
+    fun advanceToPlayerMain(driver: GameTestDriver, targetPlayer: EntityId) {
+        // Use passPriorityUntil which handles combat declarations automatically
+        driver.passPriorityUntil(Step.END, maxPasses = 200)
+        driver.bothPass() // End current turn
+        if (driver.activePlayer == targetPlayer) {
+            driver.passPriorityUntil(Step.PRECOMBAT_MAIN, maxPasses = 200)
+            return
+        }
+        // Still not target player's turn, advance through one more turn
+        driver.passPriorityUntil(Step.END, maxPasses = 200)
+        driver.bothPass()
+        driver.passPriorityUntil(Step.PRECOMBAT_MAIN, maxPasses = 200)
+    }
+
     test("enchanted creature doesn't untap during untap step") {
         val driver = createDriver()
         driver.initMirrorMatch(
@@ -85,8 +103,8 @@ class FrozenSolidTest : FunSpec({
         driver.castSpell(activePlayer, frozenSolid, listOf(creature))
         driver.bothPass() // Resolve aura
 
-        // Advance to next untap step
-        driver.passPriorityUntil(Step.UPKEEP, maxPasses = 200)
+        // Advance back to active player's next turn
+        advanceToPlayerMain(driver, activePlayer)
 
         // Creature should still be tapped (DOESNT_UNTAP prevents untapping)
         driver.isTapped(creature) shouldBe true
@@ -146,10 +164,11 @@ class FrozenSolidTest : FunSpec({
         driver.removeSummoningSickness(creature)
         driver.tapPermanent(creature)
 
-        // Advance to next untap step
-        driver.passPriorityUntil(Step.UPKEEP, maxPasses = 200)
+        // Advance back to active player's next turn
+        advanceToPlayerMain(driver, activePlayer)
 
-        // Creature should untap normally
+        // Creature should have untapped normally
+        driver.activePlayer shouldBe activePlayer
         driver.isTapped(creature) shouldBe false
     }
 
@@ -177,11 +196,12 @@ class FrozenSolidTest : FunSpec({
         val attacker = driver.putCreatureOnBattlefield(player2, "Test Creature")
         driver.removeSummoningSickness(attacker)
 
-        // Pass to player 2's combat
-        driver.passPriorityUntil(Step.PRECOMBAT_MAIN, maxPasses = 200)
+        // Pass to player 2's turn
+        advanceToPlayerMain(driver, player2)
         driver.activePlayer shouldBe player2
 
-        // Declare attacker
+        // Advance to combat
+        driver.passPriorityUntil(Step.DECLARE_ATTACKERS, maxPasses = 200)
         driver.declareAttackers(player2, listOf(attacker), player1)
         driver.passPriorityUntil(Step.DECLARE_BLOCKERS)
 

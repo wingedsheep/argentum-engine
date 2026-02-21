@@ -308,7 +308,7 @@ class TemporaryTruceScenarioTest : ScenarioTestBase() {
                 val passResult = game.passPriority()
 
                 withClue("Passing priority should fail when there's a pending decision") {
-                    passResult.error shouldBe "Cannot pass priority while there's a pending decision - please respond to: Choose how many cards to draw (0-2). Gain 2 life for each card not drawn."
+                    passResult.error shouldBe "Cannot pass priority while there's a pending decision - please respond to: Choose how many cards to draw (0-2)"
                 }
 
                 // Decision should still be pending

@@ -71,7 +71,7 @@ class DynamicAmountEvaluator(
                     val collectionName = name.removeSuffix("_count")
                     context.storedCollections[collectionName]?.size ?: 0
                 } else {
-                    0
+                    context.storedNumbers[name] ?: 0
                 }
             }
 

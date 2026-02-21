@@ -13,9 +13,11 @@ import com.wingedsheep.sdk.scripting.effects.CreateDelayedTriggerEffect
 import com.wingedsheep.sdk.scripting.effects.CreateTokenEffect
 import com.wingedsheep.sdk.scripting.effects.DealDamageEffect
 import com.wingedsheep.sdk.scripting.effects.DrawCardsEffect
+import com.wingedsheep.sdk.scripting.effects.DrawUpToEffect
 import com.wingedsheep.sdk.scripting.effects.Effect
 import com.wingedsheep.sdk.scripting.effects.ForEachPlayerEffect
 import com.wingedsheep.sdk.scripting.effects.ForEachTargetEffect
+import com.wingedsheep.sdk.scripting.effects.GainLifeEffect
 import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
 import com.wingedsheep.sdk.scripting.effects.ModifyStatsEffect
 import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
@@ -1378,6 +1380,44 @@ object EffectPatterns {
             )
         )
     )
+
+    /**
+     * Each player may draw up to N cards.
+     *
+     * Composed as ForEachPlayer(ActivePlayerFirst) → DrawUpTo → (optionally) GainLife.
+     * When [lifePerCardNotDrawn] > 0, DrawUpTo stores the cards-not-drawn count and
+     * a subsequent GainLife reads it via DynamicAmount.VariableReference.
+     *
+     * Used for Temporary Truce.
+     *
+     * @param maxCards Maximum cards each player may draw
+     * @param lifePerCardNotDrawn Life gained per card not drawn (0 = no life gain)
+     */
+    fun eachPlayerMayDraw(maxCards: Int, lifePerCardNotDrawn: Int = 0): ForEachPlayerEffect {
+        val effects = mutableListOf<Effect>()
+        effects.add(
+            DrawUpToEffect(
+                maxCards = maxCards,
+                target = EffectTarget.Controller,
+                storeNotDrawnAs = if (lifePerCardNotDrawn > 0) "cardsNotDrawn" else null
+            )
+        )
+        if (lifePerCardNotDrawn > 0) {
+            effects.add(
+                GainLifeEffect(
+                    amount = DynamicAmount.Multiply(
+                        DynamicAmount.VariableReference("cardsNotDrawn"),
+                        lifePerCardNotDrawn
+                    ),
+                    target = EffectTarget.Controller
+                )
+            )
+        }
+        return ForEachPlayerEffect(
+            players = Player.ActivePlayerFirst,
+            effects = effects
+        )
+    }
 
     /**
      * Translate an [EffectTarget] to a [Player] reference for use in pipeline effects.

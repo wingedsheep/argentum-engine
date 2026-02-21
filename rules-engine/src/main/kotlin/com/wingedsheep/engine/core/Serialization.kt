@@ -125,7 +125,6 @@ val engineSerializersModule = SerializersModule {
         subclass(MayAbilityContinuation::class)
         subclass(HandSizeDiscardContinuation::class)
         subclass(BlockerOrderContinuation::class)
-        subclass(EachPlayerChoosesDrawContinuation::class)
         subclass(PayOrSufferContinuation::class)
         subclass(ChooseColorProtectionContinuation::class)
         subclass(ChooseColorProtectionTargetContinuation::class)

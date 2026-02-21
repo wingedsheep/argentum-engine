@@ -6,7 +6,7 @@
     "script": {
         "triggeredAbilities": [
             {
-                "id": "ability_15",
+                "id": "ability_17",
                 "trigger": {
                     "type": "StepEvent",
                     "step": "UPKEEP",

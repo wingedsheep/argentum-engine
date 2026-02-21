@@ -75,7 +75,8 @@ data class EffectContinuation(
     val chosenCreatureType: String? = null,
     val triggeringEntityId: EntityId? = null,
     val namedTargets: Map<String, ChosenTarget> = emptyMap(),
-    val chosenValues: Map<String, String> = emptyMap()
+    val chosenValues: Map<String, String> = emptyMap(),
+    val storedNumbers: Map<String, Int> = emptyMap()
 ) : ContinuationFrame {
     /**
      * Reconstruct the EffectContext from serialized fields.
@@ -90,7 +91,8 @@ data class EffectContinuation(
         chosenCreatureType = chosenCreatureType,
         triggeringEntityId = triggeringEntityId,
         namedTargets = namedTargets,
-        chosenValues = chosenValues
+        chosenValues = chosenValues,
+        storedNumbers = storedNumbers
     )
 }
 
@@ -304,40 +306,6 @@ data class BlockerOrderContinuation(
     val attackerId: EntityId,
     val attackerName: String,
     val remainingAttackers: List<EntityId>
-) : ContinuationFrame
-
-/**
- * Resume after a player chooses how many cards to draw for "each player may draw" effects.
- *
- * Used for effects like Temporary Truce where each player chooses how many cards (0-N)
- * to draw, and gains life for each card not drawn.
- *
- * The continuation tracks pending draws/life gains and remaining players. When a player's
- * choice is processed, their draw count and life gain are recorded. After all players
- * have chosen, draws and life gains are executed.
- *
- * @property sourceId The spell/ability causing the effect
- * @property sourceName Name for display
- * @property controllerId The controller of the effect
- * @property currentPlayerId The player whose choice we are waiting for
- * @property remainingPlayers Players who still need to choose after current (APNAP order)
- * @property drawAmounts How many cards each completed player will draw
- * @property lifeGainAmounts How much life each completed player will gain
- * @property maxCards Maximum cards each player may choose to draw
- * @property lifePerCardNotDrawn Life gained for each card not drawn (0 to disable)
- */
-@Serializable
-data class EachPlayerChoosesDrawContinuation(
-    override val decisionId: String,
-    val sourceId: EntityId?,
-    val sourceName: String?,
-    val controllerId: EntityId,
-    val currentPlayerId: EntityId,
-    val remainingPlayers: List<EntityId>,
-    val drawAmounts: Map<EntityId, Int>,
-    val lifeGainAmounts: Map<EntityId, Int>,
-    val maxCards: Int,
-    val lifePerCardNotDrawn: Int
 ) : ContinuationFrame
 
 /**
@@ -1463,7 +1431,9 @@ data class DrawUpToContinuation(
     val playerId: EntityId,
     val sourceId: EntityId?,
     val sourceName: String?,
-    val maxCards: Int
+    val maxCards: Int,
+    val originalMaxCards: Int = 0,
+    val storeNotDrawnAs: String? = null
 ) : ContinuationFrame
 
 /**

@@ -10,7 +10,7 @@
     "script": {
         "triggeredAbilities": [
             {
-                "id": "ability_20",
+                "id": "ability_22",
                 "trigger": {
                     "type": "ZoneChangeEvent",
                     "from": "Battlefield",
@@ -29,7 +29,7 @@
                 }
             },
             {
-                "id": "ability_21",
+                "id": "ability_23",
                 "trigger": {
                     "type": "ZoneChangeEvent",
                     "filter": "creature Zombie",

@@ -47,7 +47,6 @@ class DrawingExecutors(
         EachOpponentDiscardsExecutor(decisionHandler),
         eachPlayerReturnsPermanentToHandExecutor,
         EachPlayerDiscardsOrLoseLifeExecutor(decisionHandler),
-        EachPlayerMayDrawExecutor(decisionHandler),
         ReplaceNextDrawWithExecutor(),
         ReadTheRunesExecutor(amountEvaluator, decisionHandler)
     )

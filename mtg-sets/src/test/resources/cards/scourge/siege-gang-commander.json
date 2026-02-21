@@ -10,7 +10,7 @@
     "script": {
         "triggeredAbilities": [
             {
-                "id": "ability_13",
+                "id": "ability_15",
                 "trigger": {
                     "type": "ZoneChangeEvent",
                     "to": "Battlefield"
@@ -35,7 +35,7 @@
         ],
         "activatedAbilities": [
             {
-                "id": "ability_14",
+                "id": "ability_16",
                 "cost": {
                     "type": "CostComposite",
                     "costs": [

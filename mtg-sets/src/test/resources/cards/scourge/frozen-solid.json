@@ -1,0 +1,39 @@
+{
+    "name": "Frozen Solid",
+    "manaCost": "{1}{U}{U}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature\nEnchanted creature doesn't untap during its controller's untap step.\nWhen enchanted creature is dealt damage, destroy it.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_12",
+                "trigger": "EnchantedCreatureDamageReceivedEvent",
+                "binding": "ANY",
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": "EnchantedCreature",
+                    "destination": "Graveyard",
+                    "byDestruction": true
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantKeyword",
+                "keyword": "DOESNT_UNTAP"
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "36",
+        "artist": "Glen Angus",
+        "flavorText": "\"Ice-sheathing keeps a body fresh. And quiet.\"\n—Burg, Mistform illusionist",
+        "imageUri": "https://cards.scryfall.io/large/front/9/b/9b89b98d-0245-4b64-b835-d101ce2bd3fa.jpg?1562532599"
+    }
+}

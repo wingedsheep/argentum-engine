@@ -840,13 +840,35 @@ class TurnManager(
             )
         }
 
+        // Expire UntilYourNextTurn effects after the untap step completes.
+        // These effects (e.g., Mercurial Kite's freeze) need to be active during
+        // the controller's next untap step, then expire afterward.
+        var postUntapState = expireUntilYourNextTurnEffects(untapResult.newState, nextPlayer)
+
         // Advance to upkeep (this sets priority to the active player)
-        val advanceResult = advanceStep(untapResult.newState)
+        val advanceResult = advanceStep(postUntapState)
 
         return ExecutionResult.success(
             advanceResult.newState,
             turnResult.events + untapResult.events + advanceResult.events
         )
+    }
+
+    /**
+     * Expire UntilYourNextTurn floating effects after the untap step of the
+     * controller's next turn. The effect needs to be active during the untap
+     * step (to prevent untapping), then removed afterward.
+     */
+    private fun expireUntilYourNextTurnEffects(state: GameState, activePlayer: EntityId): GameState {
+        val remaining = state.floatingEffects.filter { floatingEffect ->
+            !(floatingEffect.duration is Duration.UntilYourNextTurn &&
+                floatingEffect.controllerId == activePlayer)
+        }
+        return if (remaining.size != state.floatingEffects.size) {
+            state.copy(floatingEffects = remaining)
+        } else {
+            state
+        }
     }
 
     /**

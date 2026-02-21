@@ -13,7 +13,7 @@
     "script": {
         "triggeredAbilities": [
             {
-                "id": "ability_18",
+                "id": "ability_20",
                 "trigger": {
                     "type": "ZoneChangeEvent",
                     "from": "Battlefield",
