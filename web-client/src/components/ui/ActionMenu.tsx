@@ -52,6 +52,7 @@ function buildActionOptions(
   )
   const morphAction = legalActions.find((a) => a.actionType === 'CastFaceDown')
   const cycleAction = legalActions.find((a) => a.action.type === 'CycleCard')
+  const typecycleAction = legalActions.find((a) => a.action.type === 'TypecycleCard')
   const playLandAction = legalActions.find((a) => a.action.type === 'PlayLand')
 
   // Debug: log found actions
@@ -71,6 +72,17 @@ function buildActionOptions(
       manaCost: castAction.manaCostString || cardInfo.manaCost || null,
       isAvailable: castAction.isAffordable !== false, // default true if not set
       action: castAction,
+      actionType: 'cast',
+    })
+  } else if ((cycleAction || typecycleAction) && !cardInfo.cardTypes.includes('LAND')) {
+    // Non-land card with cycling but no CastSpell action — show grayed-out cast option
+    // so the action menu always presents both choices
+    options.push({
+      key: 'cast',
+      label: `Cast ${cardInfo.name}`,
+      manaCost: cardInfo.manaCost || null,
+      isAvailable: false,
+      action: null,
       actionType: 'cast',
     })
   }
@@ -123,7 +135,6 @@ function buildActionOptions(
   }
 
   // 4b. Typecycling (e.g., Islandcycling, Swampcycling)
-  const typecycleAction = legalActions.find((a) => a.action.type === 'TypecycleCard')
   if (typecycleAction) {
     options.push({
       key: 'typecycle',

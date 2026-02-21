@@ -11,9 +11,9 @@ import com.wingedsheep.sdk.scripting.effects.Effect
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.scripting.costs.PayCost
+import com.wingedsheep.sdk.scripting.effects.ChainCopyEffect
 import com.wingedsheep.sdk.scripting.effects.SearchDestination
 import com.wingedsheep.sdk.scripting.effects.Mode
-import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import com.wingedsheep.sdk.scripting.targets.TargetRequirement
 import kotlinx.serialization.Serializable
 
@@ -1175,291 +1175,76 @@ data class PatriarchsBiddingContinuation(
 ) : ContinuationFrame
 
 /**
- * Resume after the destroyed permanent's controller decides whether to copy Chain of Acid.
+ * Resume after primary discard effect needs card selection (Chain of Smog).
  *
- * When the yes/no decision is answered:
- * - Yes → find legal noncreature permanents, present target selection, push ChainCopyTargetContinuation
- * - No → checkForMoreContinuations (chain ends)
+ * When the card selection is answered, discards the selected cards, then offers
+ * the chain copy via ChainCopyDecisionContinuation.
  *
- * @property targetControllerId The controller of the destroyed permanent (who gets to copy)
- * @property targetFilter The filter for valid chain targets (NoncreaturePermanent)
- * @property spellName The name of the spell being copied (for display)
+ * @property effect The unified chain copy effect (carries all variant info)
+ * @property playerId The player who is discarding
+ * @property sourceId The source entity of the original spell/ability
+ */
+@Serializable
+data class ChainCopyPrimaryDiscardContinuation(
+    override val decisionId: String,
+    val effect: ChainCopyEffect,
+    val playerId: EntityId,
+    val sourceId: EntityId?
+) : ContinuationFrame
+
+/**
+ * Resume after the affected player decides whether to copy the chain spell (yes/no).
+ *
+ * - Yes → present cost payment (if any) or target selection
+ * - No → chain ends
+ *
+ * @property effect The unified chain copy effect
+ * @property copyControllerId The player who gets to copy
  * @property sourceId The source entity of the original spell/ability
  */
 @Serializable
 data class ChainCopyDecisionContinuation(
     override val decisionId: String,
-    val targetControllerId: EntityId,
-    val targetFilter: TargetFilter,
-    val spellName: String,
+    val effect: ChainCopyEffect,
+    val copyControllerId: EntityId,
     val sourceId: EntityId?
+) : ContinuationFrame
+
+/**
+ * Resume after the copying player selects a cost resource (land to sacrifice / card to discard).
+ *
+ * After paying cost, presents target selection for the copy.
+ *
+ * @property effect The unified chain copy effect
+ * @property copyControllerId The player who is creating the copy
+ * @property sourceId The source entity of the original spell/ability
+ * @property candidateOptions The list of valid cost resource entity IDs (for validation)
+ */
+@Serializable
+data class ChainCopyCostContinuation(
+    override val decisionId: String,
+    val effect: ChainCopyEffect,
+    val copyControllerId: EntityId,
+    val sourceId: EntityId?,
+    val candidateOptions: List<EntityId>
 ) : ContinuationFrame
 
 /**
  * Resume after the copying player selects a target for the chain copy.
  *
- * Creates a TriggeredAbilityOnStackComponent with DestroyAndChainCopyEffect targeting
- * the selected permanent, enabling recursive chaining.
+ * Creates a TriggeredAbilityOnStackComponent with ChainCopyEffect targeting
+ * the selected entity, enabling recursive chaining.
  *
+ * @property effect The unified chain copy effect
  * @property copyControllerId The player who is creating the copy
- * @property targetFilter The filter for valid targets
- * @property spellName The name of the spell being copied
  * @property sourceId The source entity of the original spell/ability
  * @property candidateTargets The list of valid target entity IDs (for validation)
  */
 @Serializable
 data class ChainCopyTargetContinuation(
     override val decisionId: String,
+    val effect: ChainCopyEffect,
     val copyControllerId: EntityId,
-    val targetFilter: TargetFilter,
-    val spellName: String,
-    val sourceId: EntityId?,
-    val candidateTargets: List<EntityId>
-) : ContinuationFrame
-
-/**
- * Resume after the bounced permanent's controller decides whether to sacrifice a land
- * to copy Chain of Vapor.
- *
- * When the yes/no decision is answered:
- * - Yes → find controller's lands, present land selection, push BounceChainCopyLandContinuation
- * - No → checkForMoreContinuations (chain ends)
- *
- * @property targetControllerId The controller of the bounced permanent (who gets to copy)
- * @property targetFilter The filter for valid chain targets (NonlandPermanent)
- * @property spellName The name of the spell being copied (for display)
- * @property sourceId The source entity of the original spell/ability
- */
-@Serializable
-data class BounceChainCopyDecisionContinuation(
-    override val decisionId: String,
-    val targetControllerId: EntityId,
-    val targetFilter: TargetFilter,
-    val spellName: String,
-    val sourceId: EntityId?
-) : ContinuationFrame
-
-/**
- * Resume after the copying player selects which land to sacrifice for the chain copy.
- *
- * Sacrifices the selected land, then presents target selection for the copy.
- *
- * @property copyControllerId The player who is creating the copy
- * @property targetFilter The filter for valid targets
- * @property spellName The name of the spell being copied
- * @property sourceId The source entity of the original spell/ability
- * @property candidateLands The list of valid land entity IDs (for validation)
- */
-@Serializable
-data class BounceChainCopyLandContinuation(
-    override val decisionId: String,
-    val copyControllerId: EntityId,
-    val targetFilter: TargetFilter,
-    val spellName: String,
-    val sourceId: EntityId?,
-    val candidateLands: List<EntityId>
-) : ContinuationFrame
-
-/**
- * Resume after the copying player selects a target for the bounce chain copy.
- *
- * Creates a TriggeredAbilityOnStackComponent with BounceAndChainCopyEffect targeting
- * the selected permanent, enabling recursive chaining.
- *
- * @property copyControllerId The player who is creating the copy
- * @property targetFilter The filter for valid targets
- * @property spellName The name of the spell being copied
- * @property sourceId The source entity of the original spell/ability
- * @property candidateTargets The list of valid target entity IDs (for validation)
- */
-@Serializable
-data class BounceChainCopyTargetContinuation(
-    override val decisionId: String,
-    val copyControllerId: EntityId,
-    val targetFilter: TargetFilter,
-    val spellName: String,
-    val sourceId: EntityId?,
-    val candidateTargets: List<EntityId>
-) : ContinuationFrame
-
-/**
- * Resume after the target creature's controller decides whether to sacrifice a land
- * to copy Chain of Silence (prevent damage chain).
- *
- * @property targetControllerId The controller of the target creature (who gets to copy)
- * @property targetFilter The filter for valid chain targets (Creature)
- * @property spellName The name of the spell being copied (for display)
- * @property sourceId The source entity of the original spell/ability
- */
-@Serializable
-data class PreventDamageChainCopyDecisionContinuation(
-    override val decisionId: String,
-    val targetControllerId: EntityId,
-    val targetFilter: TargetFilter,
-    val spellName: String,
-    val sourceId: EntityId?
-) : ContinuationFrame
-
-/**
- * Resume after the copying player selects which land to sacrifice for the prevent damage chain copy.
- *
- * @property copyControllerId The player who is creating the copy
- * @property targetFilter The filter for valid targets
- * @property spellName The name of the spell being copied
- * @property sourceId The source entity of the original spell/ability
- * @property candidateLands The list of valid land entity IDs (for validation)
- */
-@Serializable
-data class PreventDamageChainCopyLandContinuation(
-    override val decisionId: String,
-    val copyControllerId: EntityId,
-    val targetFilter: TargetFilter,
-    val spellName: String,
-    val sourceId: EntityId?,
-    val candidateLands: List<EntityId>
-) : ContinuationFrame
-
-/**
- * Resume after the copying player selects a target for the prevent damage chain copy.
- *
- * @property copyControllerId The player who is creating the copy
- * @property targetFilter The filter for valid targets
- * @property spellName The name of the spell being copied
- * @property sourceId The source entity of the original spell/ability
- * @property candidateTargets The list of valid target entity IDs (for validation)
- */
-@Serializable
-data class PreventDamageChainCopyTargetContinuation(
-    override val decisionId: String,
-    val copyControllerId: EntityId,
-    val targetFilter: TargetFilter,
-    val spellName: String,
-    val sourceId: EntityId?,
-    val candidateTargets: List<EntityId>
-) : ContinuationFrame
-
-/**
- * Resume after player selects cards to discard for a chain-copy spell (Chain of Smog).
- *
- * When the card selection is answered, discards the selected cards, then presents
- * a yes/no decision to copy the spell (pushes DiscardChainCopyDecisionContinuation).
- *
- * @property playerId The player who is discarding
- * @property count Number of cards to discard
- * @property spellName The name of the spell being copied (for display)
- * @property sourceId The source entity of the original spell/ability
- */
-@Serializable
-data class DiscardForChainContinuation(
-    override val decisionId: String,
-    val playerId: EntityId,
-    val count: Int,
-    val spellName: String,
-    val sourceId: EntityId?
-) : ContinuationFrame
-
-/**
- * Resume after the discarding player decides whether to copy Chain of Smog.
- *
- * When the yes/no decision is answered:
- * - Yes → present target selection for copy, push DiscardChainCopyTargetContinuation
- * - No → checkForMoreContinuations (chain ends)
- *
- * @property targetPlayerId The player who discarded (who gets to copy)
- * @property count Number of cards the copy will make the target discard
- * @property spellName The name of the spell being copied (for display)
- * @property sourceId The source entity of the original spell/ability
- */
-@Serializable
-data class DiscardChainCopyDecisionContinuation(
-    override val decisionId: String,
-    val targetPlayerId: EntityId,
-    val count: Int,
-    val spellName: String,
-    val sourceId: EntityId?
-) : ContinuationFrame
-
-/**
- * Resume after the copying player selects a target player for the discard chain copy.
- *
- * Creates a TriggeredAbilityOnStackComponent with DiscardAndChainCopyEffect targeting
- * the selected player, enabling recursive chaining.
- *
- * @property copyControllerId The player who is creating the copy
- * @property count Number of cards the copy will make the target discard
- * @property spellName The name of the spell being copied
- * @property sourceId The source entity of the original spell/ability
- * @property candidateTargets The list of valid target player entity IDs (for validation)
- */
-@Serializable
-data class DiscardChainCopyTargetContinuation(
-    override val decisionId: String,
-    val copyControllerId: EntityId,
-    val count: Int,
-    val spellName: String,
-    val sourceId: EntityId?,
-    val candidateTargets: List<EntityId>
-) : ContinuationFrame
-
-/**
- * Resume after the damaged player/permanent's controller decides whether to discard
- * a card to copy Chain of Plasma.
- *
- * When the yes/no decision is answered:
- * - Yes → present card selection for discard, push DamageChainDiscardContinuation
- * - No → checkForMoreContinuations (chain ends)
- *
- * @property affectedPlayerId The player who was damaged or whose permanent was damaged
- * @property amount The damage amount for the copy
- * @property spellName The name of the spell being copied
- * @property sourceId The source entity of the original spell/ability
- */
-@Serializable
-data class DamageChainCopyDecisionContinuation(
-    override val decisionId: String,
-    val affectedPlayerId: EntityId,
-    val amount: Int,
-    val spellName: String,
-    val sourceId: EntityId?
-) : ContinuationFrame
-
-/**
- * Resume after the affected player selects a card to discard for the chain copy.
- *
- * After discarding, presents target selection for the copy.
- *
- * @property affectedPlayerId The player who is discarding
- * @property amount The damage amount for the copy
- * @property spellName The name of the spell being copied
- * @property sourceId The source entity of the original spell/ability
- */
-@Serializable
-data class DamageChainDiscardContinuation(
-    override val decisionId: String,
-    val affectedPlayerId: EntityId,
-    val amount: Int,
-    val spellName: String,
-    val sourceId: EntityId?
-) : ContinuationFrame
-
-/**
- * Resume after the copying player selects a target for the damage chain copy.
- *
- * Creates a TriggeredAbilityOnStackComponent with DamageAndChainCopyEffect targeting
- * the selected entity, enabling recursive chaining.
- *
- * @property copyControllerId The player who is creating the copy
- * @property amount The damage amount for the copy
- * @property spellName The name of the spell being copied
- * @property sourceId The source entity of the original spell/ability
- * @property candidateTargets The list of valid target entity IDs (for validation)
- */
-@Serializable
-data class DamageChainCopyTargetContinuation(
-    override val decisionId: String,
-    val copyControllerId: EntityId,
-    val amount: Int,
-    val spellName: String,
     val sourceId: EntityId?,
     val candidateTargets: List<EntityId>
 ) : ContinuationFrame

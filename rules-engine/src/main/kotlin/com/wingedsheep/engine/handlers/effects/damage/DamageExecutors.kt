@@ -16,7 +16,6 @@ class DamageExecutors(
         DealDamageExecutor(amountEvaluator),
         DealDamageToPlayersExecutor(amountEvaluator),
         DividedDamageExecutor(decisionHandler),
-        FightEffectExecutor(),
-        DamageAndChainCopyExecutor()
+        FightEffectExecutor()
     )
 }

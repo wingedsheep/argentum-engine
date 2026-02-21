@@ -12,7 +12,7 @@ import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.CardScript
 import com.wingedsheep.sdk.model.Deck
-import com.wingedsheep.sdk.scripting.effects.BounceAndChainCopyEffect
+import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import com.wingedsheep.sdk.scripting.targets.TargetPermanent
@@ -37,7 +37,7 @@ class ChainOfVaporTest : FunSpec({
         manaCost = ManaCost.parse("{U}"),
         oracleText = "Return target nonland permanent to its owner's hand. Then that permanent's controller may sacrifice a land of their choice. If the player does, they may copy this spell and may choose a new target for that copy.",
         script = CardScript.spell(
-            effect = BounceAndChainCopyEffect(
+            effect = Effects.BounceAndChainCopy(
                 target = EffectTarget.BoundVariable("target"),
                 targetFilter = TargetFilter.NonlandPermanent,
                 spellName = "Chain of Vapor"

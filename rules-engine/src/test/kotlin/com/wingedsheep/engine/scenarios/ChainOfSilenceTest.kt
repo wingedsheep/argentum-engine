@@ -12,8 +12,8 @@ import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.CardScript
 import com.wingedsheep.sdk.model.Deck
+import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
-import com.wingedsheep.sdk.scripting.effects.PreventDamageAndChainCopyEffect
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import com.wingedsheep.sdk.scripting.targets.TargetPermanent
 import io.kotest.core.spec.style.FunSpec
@@ -37,7 +37,7 @@ class ChainOfSilenceTest : FunSpec({
         manaCost = ManaCost.parse("{1}{W}"),
         oracleText = "Prevent all damage target creature would deal this turn. That creature's controller may sacrifice a land of their choice. If the player does, they may copy this spell and may choose a new target for that copy.",
         script = CardScript.spell(
-            effect = PreventDamageAndChainCopyEffect(
+            effect = Effects.PreventDamageAndChainCopy(
                 target = EffectTarget.BoundVariable("target"),
                 targetFilter = TargetFilter.Creature,
                 spellName = "Chain of Silence"

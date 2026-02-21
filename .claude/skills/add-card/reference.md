@@ -129,6 +129,14 @@ each player reveals and creates tokens
 - `Effects.SeparatePermanentsIntoPiles(target)` — separate into piles
 - `Effects.RemoveFromCombat(target)` — remove creature from combat
 
+### Chain Copy (Chain of X)
+
+- `Effects.DestroyAndChainCopy(target, targetFilter, spellName)` — destroy + chain copy (Chain of Acid)
+- `Effects.BounceAndChainCopy(target, targetFilter, spellName)` — bounce + sacrifice land to copy (Chain of Vapor)
+- `Effects.DamageAndChainCopy(amount, target, spellName)` — damage + discard to copy (Chain of Plasma)
+- `Effects.DiscardAndChainCopy(count, target, spellName)` — discard + chain copy (Chain of Smog)
+- `Effects.PreventDamageAndChainCopy(target, targetFilter, spellName)` — prevent damage + sacrifice land to copy (Chain of Silence)
+
 ### Composite & Control Flow
 
 - `Effects.Composite(vararg effects)` — or use `effect1 then effect2` infix operator
@@ -147,7 +155,7 @@ each player reveals and creates tokens
 | `DealDamageToPlayersEffect` | `amount: DynamicAmount, target`                                 | Damage to players         |
 | `DividedDamageEffect`       | `totalDamage, minTargets, maxTargets`                           | Divided damage allocation |
 | `FightEffect`               | `target1, target2`                                              | Two creatures fight       |
-| `DamageAndChainCopyEffect`  | `amount, target, spellName`                                     | Damage + chain copy       |
+| `ChainCopyEffect`           | `action, target, targetFilter?, copyRecipient, copyCost, copyTargetRequirement, spellName` | Unified chain copy (all Chain of X) |
 
 ### Life
 
@@ -177,7 +185,6 @@ each player reveals and creates tokens
 | `RevealHandEffect`                       | `target`                           | Reveal hand                     |
 | `ReplaceNextDrawWithEffect`              | `replacementEffect: Effect`        | Replace next draw               |
 | `ReadTheRunesEffect`                     | (object)                           | Read the Runes                  |
-| `DiscardAndChainCopyEffect`              | `count, target, spellName`         | Discard + chain copy            |
 
 ### Removal & Zone Movement
 
@@ -195,8 +202,6 @@ each player reveals and creates tokens
 | `SeparatePermanentsIntoPilesEffect`         | `target`                                              | Separate into piles      |
 | `DestroyAtEndOfCombatEffect`                | `target`                                              | Destroy at end of combat |
 | `DestroyAllSharingTypeWithSacrificedEffect` | `noRegenerate`                                        | Destroy all sharing type |
-| `DestroyAndChainCopyEffect`                 | `target, targetFilter, spellName`                     | Destroy + chain copy     |
-| `BounceAndChainCopyEffect`                  | `target, targetFilter, spellName`                     | Bounce + chain copy      |
 | `HarshMercyEffect`                          | (object)                                              | Harsh Mercy              |
 | `PatriarchsBiddingEffect`                   | (object)                                              | Patriarch's Bidding      |
 
@@ -306,7 +311,6 @@ each player reveals and creates tokens
 | `RedirectNextDamageEffect`                          | `protectedTargets, redirectTo`              | Redirect next damage            |
 | `PreventNextDamageFromChosenCreatureTypeEffect`     | (object)                                    | Prevent damage from chosen type |
 | `PreventAllDamageDealtByTargetEffect`               | `target`                                    | Prevent all damage by target    |
-| `PreventDamageAndChainCopyEffect`                   | `target, targetFilter, spellName`           | Prevent damage + chain          |
 
 ### Player
 
@@ -963,7 +967,7 @@ Used in `OptionalCostEffect`, `MayPayManaEffect`, `AnyPlayerMayPayEffect`, `PayO
 | `mtg-sdk/src/main/kotlin/com/wingedsheep/sdk/scripting/AdditionalCost.kt`                        | Additional cost types                |
 | `mtg-sdk/src/main/kotlin/com/wingedsheep/sdk/scripting/ActivationRestriction.kt`                 | Activation restrictions              |
 | `mtg-sdk/src/main/kotlin/com/wingedsheep/sdk/core/Keyword.kt`                                    | Keyword enum                         |
-| `rules-engine/src/main/kotlin/com/wingedsheep/engine/handlers/effects/`                          | Effect executors (13 categories)     |
+| `rules-engine/src/main/kotlin/com/wingedsheep/engine/handlers/effects/`                          | Effect executors (14 categories)     |
 | `rules-engine/src/main/kotlin/com/wingedsheep/engine/handlers/effects/EffectExecutorRegistry.kt` | Executor registry                    |
 | `mtg-sets/src/main/kotlin/com/wingedsheep/mtg/sets/definitions/{set}/cards/`                     | Card definitions                     |
 | `mtg-sets/src/main/kotlin/com/wingedsheep/mtg/sets/definitions/{set}/{Set}Set.kt`                | Set card lists                       |
@@ -983,7 +987,8 @@ Used in `OptionalCostEffect`, `MayPayManaEffect`, `AnyPlayerMayPayEffect`, `PayO
 | `mana/`        | Colored, colorless, any-color, dynamic                                   |
 | `permanent/`   | Tap, stats, keywords, counters, control, type-change, animate, transform |
 | `player/`      | Skip phases, extra turns, extra lands, extra combat, global abilities    |
-| `removal/`     | Destroy-all, sacrifice, zone-move, can't-regen, exile-until, chain-copy  |
+| `chain/`       | Chain copy (unified Chain of X executor)                                 |
+| `removal/`     | Destroy-all, sacrifice, zone-move, can't-regen, exile-until             |
 | `stack/`       | Counter spell, counter with filter, counter unless pays, change target   |
 | `token/`       | Create token, create treasure, create chosen token                       |
 

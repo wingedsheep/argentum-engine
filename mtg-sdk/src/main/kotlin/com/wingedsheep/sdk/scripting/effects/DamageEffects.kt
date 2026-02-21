@@ -97,27 +97,3 @@ data class FightEffect(
 ) : Effect {
     override val description: String = "${target1.description} fights ${target2.description}"
 }
-
-
-/**
- * Deal damage to any target, then that player or that permanent's controller
- * may discard a card. If they do, they may copy this spell and choose a new target.
- * Used for Chain of Plasma.
- *
- * @property amount The amount of damage to deal
- * @property target The target to deal damage to
- * @property spellName The name of the spell (for the copy's description on the stack)
- */
-@SerialName("DamageAndChainCopy")
-@Serializable
-data class DamageAndChainCopyEffect(
-    val amount: Int,
-    val target: EffectTarget,
-    val spellName: String
-) : Effect {
-    override val description: String = buildString {
-        append("Deal $amount damage to ${target.description}. ")
-        append("Then that player or that permanent's controller may discard a card. ")
-        append("If the player does, they may copy this spell and may choose a new target for that copy")
-    }
-}

@@ -1,8 +1,8 @@
 package com.wingedsheep.mtg.sets.definitions.onslaught.cards
 
+import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.effects.DiscardAndChainCopyEffect
 import com.wingedsheep.sdk.scripting.targets.TargetPlayer
 
 /**
@@ -19,7 +19,7 @@ val ChainOfSmog = card("Chain of Smog") {
 
     spell {
         val t = target("target", TargetPlayer())
-        effect = DiscardAndChainCopyEffect(
+        effect = Effects.DiscardAndChainCopy(
             count = 2,
             target = t,
             spellName = "Chain of Smog"

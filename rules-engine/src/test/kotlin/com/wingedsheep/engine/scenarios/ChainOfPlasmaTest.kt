@@ -14,7 +14,7 @@ import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.CardScript
 import com.wingedsheep.sdk.model.Deck
-import com.wingedsheep.sdk.scripting.effects.DamageAndChainCopyEffect
+import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.targets.AnyTarget
 import io.kotest.core.spec.style.FunSpec
@@ -37,7 +37,7 @@ class ChainOfPlasmaTest : FunSpec({
         manaCost = ManaCost.parse("{1}{R}"),
         oracleText = "Chain of Plasma deals 3 damage to any target. Then that player or that permanent's controller may discard a card. If the player does, they may copy this spell and may choose a new target for that copy.",
         script = CardScript.spell(
-            effect = DamageAndChainCopyEffect(
+            effect = Effects.DamageAndChainCopy(
                 amount = 3,
                 target = EffectTarget.BoundVariable("target"),
                 spellName = "Chain of Plasma"

@@ -136,28 +136,6 @@ data class EachPlayerDiscardsOrLoseLifeEffect(
 }
 
 /**
- * Target player discards cards, then that player may copy this spell
- * and may choose a new target for that copy.
- * Used for Chain of Smog and similar "chain discard" mechanics.
- *
- * @property count Number of cards to discard
- * @property target The player who discards
- * @property spellName The name of the spell (for the copy's description on the stack)
- */
-@SerialName("DiscardAndChainCopy")
-@Serializable
-data class DiscardAndChainCopyEffect(
-    val count: Int,
-    val target: EffectTarget = EffectTarget.PlayerRef(Player.TargetPlayer),
-    val spellName: String
-) : Effect {
-    override val description: String = buildString {
-        append("Target player discards ${if (count == 1) "a card" else "$count cards"}. ")
-        append("That player may copy this spell and may choose a new target for that copy")
-    }
-}
-
-/**
  * Each player returns a permanent they control to its owner's hand.
  * Used as a replacement effect for Words of Wind:
  * "each player returns a permanent they control to its owner's hand instead"

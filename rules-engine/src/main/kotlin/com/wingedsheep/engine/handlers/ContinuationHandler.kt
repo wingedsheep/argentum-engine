@@ -97,20 +97,10 @@ class ContinuationHandler(
             is ChooseColorProtectionTargetContinuation -> colorChoiceResumer.resumeChooseColorProtectionTarget(stateAfterPop, continuation, response, cfm)
 
             // Chain spells
+            is ChainCopyPrimaryDiscardContinuation -> chainSpellResumer.resumeChainCopyPrimaryDiscard(stateAfterPop, continuation, response, cfm)
             is ChainCopyDecisionContinuation -> chainSpellResumer.resumeChainCopyDecision(stateAfterPop, continuation, response, cfm)
+            is ChainCopyCostContinuation -> chainSpellResumer.resumeChainCopyCost(stateAfterPop, continuation, response, cfm)
             is ChainCopyTargetContinuation -> chainSpellResumer.resumeChainCopyTarget(stateAfterPop, continuation, response, cfm)
-            is BounceChainCopyDecisionContinuation -> chainSpellResumer.resumeBounceChainCopyDecision(stateAfterPop, continuation, response, cfm)
-            is BounceChainCopyLandContinuation -> chainSpellResumer.resumeBounceChainCopyLand(stateAfterPop, continuation, response, cfm)
-            is BounceChainCopyTargetContinuation -> chainSpellResumer.resumeBounceChainCopyTarget(stateAfterPop, continuation, response, cfm)
-            is DiscardForChainContinuation -> chainSpellResumer.resumeDiscardForChain(stateAfterPop, continuation, response, cfm)
-            is DiscardChainCopyDecisionContinuation -> chainSpellResumer.resumeDiscardChainCopyDecision(stateAfterPop, continuation, response, cfm)
-            is DiscardChainCopyTargetContinuation -> chainSpellResumer.resumeDiscardChainCopyTarget(stateAfterPop, continuation, response, cfm)
-            is DamageChainCopyDecisionContinuation -> chainSpellResumer.resumeDamageChainCopyDecision(stateAfterPop, continuation, response, cfm)
-            is DamageChainDiscardContinuation -> chainSpellResumer.resumeDamageChainDiscard(stateAfterPop, continuation, response, cfm)
-            is DamageChainCopyTargetContinuation -> chainSpellResumer.resumeDamageChainCopyTarget(stateAfterPop, continuation, response, cfm)
-            is PreventDamageChainCopyDecisionContinuation -> chainSpellResumer.resumePreventDamageChainCopyDecision(stateAfterPop, continuation, response, cfm)
-            is PreventDamageChainCopyLandContinuation -> chainSpellResumer.resumePreventDamageChainCopyLand(stateAfterPop, continuation, response, cfm)
-            is PreventDamageChainCopyTargetContinuation -> chainSpellResumer.resumePreventDamageChainCopyTarget(stateAfterPop, continuation, response, cfm)
 
             // Creature type choices
             is ChooseFromCreatureTypeContinuation -> creatureTypeResumer.resumeChooseFromCreatureType(stateAfterPop, continuation, response, cfm)

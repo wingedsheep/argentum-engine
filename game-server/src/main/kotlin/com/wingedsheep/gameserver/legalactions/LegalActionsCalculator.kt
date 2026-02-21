@@ -394,12 +394,13 @@ class LegalActionsCalculator(
             if (!cardComponent.typeLine.isLand) {
                 val isInstant = cardComponent.typeLine.isInstant
                 val canCastTiming = isInstant || canPlaySorcerySpeed
-                if (canCastTiming) {
-                    // Check if we can afford to cast normally
-                    val canAffordNormal = manaSolver.canPay(state, playerId, cardComponent.manaCost)
-                    // Check if a cast action was already added (affordable, with proper targeting)
-                    val hasCastAction = result.any { it.action is CastSpell && (it.action as CastSpell).cardId == cardId }
-                    if (!hasCastAction) {
+                // Check if a cast action was already added (affordable, with proper targeting)
+                val hasCastAction = result.any { it.action is CastSpell && (it.action as CastSpell).cardId == cardId }
+                if (!hasCastAction) {
+                    if (canCastTiming) {
+                        // Check if we can afford to cast normally
+                        val canAffordNormal = manaSolver.canPay(state, playerId, cardComponent.manaCost)
+
                         // If the spell requires targets, check if valid targets exist.
                         // Without this, a spell with cycling+targeting would be castable
                         // without target selection when no valid targets are found.
@@ -452,6 +453,15 @@ class LegalActionsCalculator(
                                 manaCostString = cardComponent.manaCost.toString()
                             ))
                         }
+                    } else {
+                        // Wrong timing (not main phase / not active player) — show greyed out
+                        result.add(LegalActionInfo(
+                            actionType = "CastSpell",
+                            description = "Cast ${cardComponent.name}",
+                            action = CastSpell(playerId, cardId),
+                            isAffordable = false,
+                            manaCostString = cardComponent.manaCost.toString()
+                        ))
                     }
                 }
             }

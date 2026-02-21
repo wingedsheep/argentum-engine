@@ -12,7 +12,7 @@ import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.CardScript
 import com.wingedsheep.sdk.model.Deck
-import com.wingedsheep.sdk.scripting.effects.DiscardAndChainCopyEffect
+import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.targets.TargetPlayer
 import io.kotest.core.spec.style.FunSpec
@@ -34,7 +34,7 @@ class ChainOfSmogTest : FunSpec({
         manaCost = ManaCost.parse("{1}{B}"),
         oracleText = "Target player discards two cards. That player may copy this spell and may choose a new target for that copy.",
         script = CardScript.spell(
-            effect = DiscardAndChainCopyEffect(
+            effect = Effects.DiscardAndChainCopy(
                 count = 2,
                 target = EffectTarget.BoundVariable("target"),
                 spellName = "Chain of Smog"

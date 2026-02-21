@@ -355,6 +355,12 @@ export function useInteraction() {
         return false
       }
 
+      // Cycling/typecycling should always show the action menu so the player
+      // can choose between casting and cycling
+      if (action.type === 'CycleCard' || action.type === 'TypecycleCard') {
+        return false
+      }
+
       return true
     },
     []

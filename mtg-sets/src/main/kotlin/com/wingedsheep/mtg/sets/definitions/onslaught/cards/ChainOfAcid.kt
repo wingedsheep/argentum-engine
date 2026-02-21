@@ -1,8 +1,8 @@
 package com.wingedsheep.mtg.sets.definitions.onslaught.cards
 
+import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.effects.DestroyAndChainCopyEffect
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import com.wingedsheep.sdk.scripting.targets.TargetPermanent
 
@@ -20,7 +20,7 @@ val ChainOfAcid = card("Chain of Acid") {
 
     spell {
         val t = target("target", TargetPermanent(filter = TargetFilter.NoncreaturePermanent))
-        effect = DestroyAndChainCopyEffect(
+        effect = Effects.DestroyAndChainCopy(
             target = t,
             targetFilter = TargetFilter.NoncreaturePermanent,
             spellName = "Chain of Acid"

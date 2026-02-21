@@ -1,8 +1,8 @@
 package com.wingedsheep.mtg.sets.definitions.onslaught.cards
 
+import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.effects.DamageAndChainCopyEffect
 import com.wingedsheep.sdk.scripting.targets.AnyTarget
 
 /**
@@ -20,7 +20,7 @@ val ChainOfPlasma = card("Chain of Plasma") {
 
     spell {
         val t = target("target", AnyTarget())
-        effect = DamageAndChainCopyEffect(
+        effect = Effects.DamageAndChainCopy(
             amount = 3,
             target = t,
             spellName = "Chain of Plasma"
