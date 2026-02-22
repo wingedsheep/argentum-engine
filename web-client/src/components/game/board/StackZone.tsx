@@ -284,31 +284,39 @@ export function StackDisplay() {
       )}
     </div>
 
-    {/* Ability text in a separate box below the stack — prefer stackText (specific ability) over full oracleText */}
-    {(topCard?.stackText ?? topCard?.oracleText) && (
-      <div style={{
-        padding: responsive.isMobile ? '4px 6px' : '6px 10px',
-        backgroundColor: 'rgba(30, 18, 50, 0.85)',
-        borderRadius: 6,
-        border: '1px solid rgba(150, 100, 200, 0.3)',
-        maxWidth: responsive.isMobile ? 120 : 160,
-        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.4)',
-      }}>
+    {/* Ability text in a separate box below the stack */}
+    {/* stackText = server-provided contextual text for spells (null means "don't show") */}
+    {/* For abilities (activated/triggered), use oracleText which already contains specific ability text */}
+    {(() => {
+      if (!topCard) return null
+      const isAbility = topCard.typeLine === 'Ability' || topCard.typeLine === 'Triggered Ability'
+      const displayText = isAbility ? topCard.oracleText : topCard.stackText
+      if (!displayText) return null
+      return (
         <div style={{
-          color: '#b8a8cc',
-          fontSize: responsive.isMobile ? 8 : 9,
-          lineHeight: 1.35,
-          textAlign: 'center',
-          whiteSpace: 'pre-line',
-          overflow: 'hidden',
-          display: '-webkit-box',
-          WebkitLineClamp: 5,
-          WebkitBoxOrient: 'vertical',
+          padding: responsive.isMobile ? '4px 6px' : '6px 10px',
+          backgroundColor: 'rgba(30, 18, 50, 0.85)',
+          borderRadius: 6,
+          border: '1px solid rgba(150, 100, 200, 0.3)',
+          maxWidth: responsive.isMobile ? 120 : 160,
+          boxShadow: '0 2px 8px rgba(0, 0, 0, 0.4)',
         }}>
-          <AbilityText text={(topCard?.stackText ?? topCard?.oracleText) || ''} size={responsive.isMobile ? 9 : 10} />
+          <div style={{
+            color: '#b8a8cc',
+            fontSize: responsive.isMobile ? 8 : 9,
+            lineHeight: 1.35,
+            textAlign: 'center',
+            whiteSpace: 'pre-line',
+            overflow: 'hidden',
+            display: '-webkit-box',
+            WebkitLineClamp: 5,
+            WebkitBoxOrient: 'vertical',
+          }}>
+            <AbilityText text={displayText} size={responsive.isMobile ? 9 : 10} />
+          </div>
         </div>
-      </div>
-    )}
+      )
+    })()}
     </div>
   )
 }

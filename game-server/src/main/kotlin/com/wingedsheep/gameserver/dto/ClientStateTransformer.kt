@@ -614,9 +614,8 @@ class ClientStateTransformer(
                     // Instants/sorceries always show their spell effect description
                     cardDef.typeLine.cardTypes.any { it == CardType.INSTANT || it == CardType.SORCERY } ->
                         cardDef.script.spellEffect?.description
-                    // Permanents only show text when ambiguous (card has alternate abilities like cycling, morph, etc.)
-                    cardDef.script.activatedAbilities.isNotEmpty()
-                        || cardDef.keywordAbilities.any { it is KeywordAbility.Cycling || it is KeywordAbility.Morph } ->
+                    // Permanents only show text when ambiguous (card has alternate cast modes like cycling or morph)
+                    cardDef.keywordAbilities.any { it is KeywordAbility.Cycling || it is KeywordAbility.Morph } ->
                         cardDef.script.spellEffect?.description ?: cardComponent.oracleText
                     // Unambiguous permanent cast — no text needed
                     else -> null
