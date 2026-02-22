@@ -100,6 +100,18 @@ data class KeywordGrantedEvent(
 ) : GameEvent
 
 /**
+ * A player chose a creature type (e.g., "Choose a creature type" for Walking Desecration).
+ * This is a public announcement visible to all players.
+ */
+@Serializable
+@SerialName("CreatureTypeChosenEvent")
+data class CreatureTypeChosenEvent(
+    val playerId: EntityId,
+    val chosenType: String,
+    val sourceName: String?
+) : GameEvent
+
+/**
  * A creature's type was changed (e.g., "becomes a Goblin until end of turn").
  */
 @Serializable

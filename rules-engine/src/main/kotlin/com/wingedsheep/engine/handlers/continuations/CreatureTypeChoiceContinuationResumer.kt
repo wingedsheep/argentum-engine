@@ -287,7 +287,13 @@ class CreatureTypeChoiceContinuationResumer(
         // (e.g., Mistform Dreamer becoming a Cleric) are taken into account
         val projected = StateProjector().project(state)
         val affectedEntities = mutableSetOf<EntityId>()
-        val events = mutableListOf<GameEvent>()
+        val events = mutableListOf<GameEvent>(
+            CreatureTypeChosenEvent(
+                playerId = continuation.controllerId,
+                chosenType = chosenType,
+                sourceName = continuation.sourceName
+            )
+        )
 
         for (entityId in state.getBattlefield()) {
             val container = state.getEntity(entityId) ?: continue
@@ -462,7 +468,13 @@ class CreatureTypeChoiceContinuationResumer(
             ?: return ExecutionResult.error(state, "Invalid creature type index: ${response.optionIndex}")
 
         var newState = state
-        val events = mutableListOf<GameEvent>()
+        val events = mutableListOf<GameEvent>(
+            CreatureTypeChosenEvent(
+                playerId = continuation.controllerId,
+                chosenType = chosenType,
+                sourceName = continuation.sourceName
+            )
+        )
 
         for (entityId in newState.getBattlefield()) {
             val container = newState.getEntity(entityId) ?: continue
@@ -502,7 +514,13 @@ class CreatureTypeChoiceContinuationResumer(
             ?: return ExecutionResult.error(state, "Invalid creature type index: ${response.optionIndex}")
 
         var newState = state
-        val events = mutableListOf<GameEvent>()
+        val events = mutableListOf<GameEvent>(
+            CreatureTypeChosenEvent(
+                playerId = continuation.controllerId,
+                chosenType = chosenType,
+                sourceName = continuation.sourceName
+            )
+        )
 
         for (entityId in newState.getBattlefield()) {
             val container = newState.getEntity(entityId) ?: continue

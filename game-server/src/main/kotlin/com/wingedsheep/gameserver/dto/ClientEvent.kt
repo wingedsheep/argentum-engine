@@ -337,6 +337,20 @@ sealed interface ClientEvent {
     // =========================================================================
 
     @Serializable
+    @SerialName("creatureTypeChosen")
+    data class CreatureTypeChosen(
+        val playerId: EntityId,
+        val chosenType: String,
+        val sourceName: String?,
+        val isYours: Boolean? = null,
+        override val description: String = when (isYours) {
+            true -> "You chose $chosenType${sourceName?.let { " ($it)" } ?: ""}"
+            false -> "Opponent chose $chosenType${sourceName?.let { " ($it)" } ?: ""}"
+            null -> "Chose $chosenType${sourceName?.let { " ($it)" } ?: ""}"
+        }
+    ) : ClientEvent
+
+    @Serializable
     @SerialName("scryCompleted")
     data class ScryCompleted(
         val playerId: EntityId,
@@ -817,6 +831,13 @@ is PermanentsSacrificedEvent -> {
                 permanentName = event.permanentName,
                 newControllerId = event.newControllerId,
                 isYours = event.newControllerId == viewingPlayerId
+            )
+
+            is CreatureTypeChosenEvent -> ClientEvent.CreatureTypeChosen(
+                playerId = event.playerId,
+                chosenType = event.chosenType,
+                sourceName = event.sourceName,
+                isYours = event.playerId == viewingPlayerId
             )
 
             is CardCycledEvent -> ClientEvent.CardCycled(
