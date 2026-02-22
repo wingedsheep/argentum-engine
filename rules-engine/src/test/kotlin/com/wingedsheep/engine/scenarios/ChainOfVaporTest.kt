@@ -6,6 +6,7 @@ import com.wingedsheep.engine.core.SelectCardsDecision
 import com.wingedsheep.engine.core.CardsSelectedResponse
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
+import com.wingedsheep.mtg.sets.definitions.onslaught.cards.ChainOfVapor
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.Step
@@ -31,20 +32,6 @@ import io.kotest.matchers.types.shouldBeInstanceOf
  * and may choose a new target for that copy.
  */
 class ChainOfVaporTest : FunSpec({
-
-    val ChainOfVapor = CardDefinition.instant(
-        name = "Chain of Vapor",
-        manaCost = ManaCost.parse("{U}"),
-        oracleText = "Return target nonland permanent to its owner's hand. Then that permanent's controller may sacrifice a land of their choice. If the player does, they may copy this spell and may choose a new target for that copy.",
-        script = CardScript.spell(
-            effect = Effects.BounceAndChainCopy(
-                target = EffectTarget.BoundVariable("target"),
-                targetFilter = TargetFilter.NonlandPermanent,
-                spellName = "Chain of Vapor"
-            ),
-            TargetPermanent(id = "target", filter = TargetFilter.NonlandPermanent)
-        )
-    )
 
     fun createDriver(): GameTestDriver {
         val driver = GameTestDriver()
