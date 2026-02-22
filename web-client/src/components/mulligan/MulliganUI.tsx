@@ -3,6 +3,7 @@ import { useGameStore, type MulliganState, type MulliganCardInfo } from '../../s
 import type { EntityId } from '../../types'
 import { useResponsive, calculateFittingCardWidth, type ResponsiveSizes } from '../../hooks/useResponsive'
 import { getCardImageUrl } from '../../utils/cardImages'
+import { StandaloneConcedeButton } from '../game/overlay'
 import styles from './MulliganUI.module.css'
 
 /**
@@ -33,6 +34,7 @@ export function MulliganUI() {
 
   return (
     <div className={styles.overlay}>
+      <StandaloneConcedeButton />
       {mulliganState.phase === 'deciding' ? (
         <MulliganDecision state={mulliganState} responsive={responsive} onHoverCard={setHoveredCardId} />
       ) : (

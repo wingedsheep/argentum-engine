@@ -9,6 +9,7 @@ import { ConvokeSelector } from './components/ui/ConvokeSelector'
 import { DamageDistributionModal } from './components/decisions/DamageDistributionModal'
 import { OpponentDecisionIndicator } from './components/ui/OpponentDecisionIndicator'
 import { DisconnectCountdown } from './components/ui/DisconnectCountdown'
+import { StandaloneConcedeButton } from './components/game/overlay'
 import { DeckBuilderOverlay } from './components/sealed/DeckBuilderOverlay'
 import { DraftPickOverlay } from './components/draft/DraftPickOverlay'
 import { SpectatorGameBoard } from './components/spectating/SpectatorGameBoard'
@@ -214,8 +215,8 @@ export default function App() {
       {/* Opponent decision indicator (shown during game when opponent is deciding) */}
       {showGame && <OpponentDecisionIndicator />}
 
-      {/* Disconnect countdown (shown when opponent disconnects during game) */}
-      {showGame && <DisconnectCountdown />}
+      {/* Disconnect countdown (shown when opponent disconnects during game or mulligan) */}
+      {(showGame || mulliganState || waitingForOpponentMulligan) && <DisconnectCountdown />}
 
       {/* Connection/lobby UI overlay (suppressed during mulligan and game-over) */}
       {showLobby && !gameOverState && !mulliganState && !waitingForOpponentMulligan && <GameUI />}
@@ -422,6 +423,7 @@ function WaitingForMulliganOverlay() {
         zIndex: 1000,
       }}
     >
+      <StandaloneConcedeButton />
       <div
         style={{
           width: 40,

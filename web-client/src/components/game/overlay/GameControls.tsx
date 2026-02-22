@@ -76,6 +76,79 @@ export function ConcedeButton() {
 }
 
 /**
+ * Concede button for use outside GameBoard (e.g. mulligan phase).
+ * Does not depend on ResponsiveProvider.
+ */
+export function StandaloneConcedeButton() {
+  const concede = useGameStore((state) => state.concede)
+  const [confirming, setConfirming] = useState(false)
+
+  const base: React.CSSProperties = {
+    position: 'absolute',
+    top: 12,
+    right: 12,
+    zIndex: 1100,
+    display: 'flex',
+    gap: 4,
+  }
+
+  if (confirming) {
+    return (
+      <div style={base}>
+        <button
+          onClick={() => { concede(); setConfirming(false) }}
+          style={{
+            padding: '8px 14px',
+            fontSize: 13,
+            backgroundColor: '#cc0000',
+            color: 'white',
+            border: 'none',
+            borderRadius: 6,
+            cursor: 'pointer',
+            fontWeight: 600,
+          }}
+        >
+          Confirm
+        </button>
+        <button
+          onClick={() => setConfirming(false)}
+          style={{
+            padding: '8px 14px',
+            fontSize: 13,
+            backgroundColor: '#222',
+            color: '#aaa',
+            border: '1px solid #333',
+            borderRadius: 6,
+            cursor: 'pointer',
+          }}
+        >
+          Cancel
+        </button>
+      </div>
+    )
+  }
+
+  return (
+    <div style={base}>
+      <button
+        onClick={() => setConfirming(true)}
+        style={{
+          padding: '8px 14px',
+          fontSize: 13,
+          backgroundColor: 'transparent',
+          color: '#cc0000',
+          border: '1px solid #cc0000',
+          borderRadius: 6,
+          cursor: 'pointer',
+        }}
+      >
+        Concede
+      </button>
+    </div>
+  )
+}
+
+/**
  * Fullscreen toggle button, positioned top-left.
  */
 export function FullscreenButton() {
