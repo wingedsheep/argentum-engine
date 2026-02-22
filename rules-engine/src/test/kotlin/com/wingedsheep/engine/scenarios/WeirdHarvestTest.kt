@@ -4,15 +4,10 @@ import com.wingedsheep.engine.core.CardsSelectedResponse
 import com.wingedsheep.engine.core.SelectCardsDecision
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
+import com.wingedsheep.mtg.sets.definitions.onslaught.cards.WeirdHarvest
 import com.wingedsheep.sdk.core.Color
-import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.Step
-import com.wingedsheep.sdk.dsl.EffectPatterns
-import com.wingedsheep.sdk.dsl.Filters
-import com.wingedsheep.sdk.model.CardDefinition
-import com.wingedsheep.sdk.model.CardScript
 import com.wingedsheep.sdk.model.Deck
-import com.wingedsheep.sdk.scripting.values.DynamicAmount
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
@@ -28,21 +23,9 @@ import io.kotest.matchers.types.shouldBeInstanceOf
  */
 class WeirdHarvestTest : FunSpec({
 
-    val WeirdHarvest = CardDefinition.sorcery(
-        name = "Weird Harvest",
-        manaCost = ManaCost.parse("{X}{G}{G}"),
-        oracleText = "Each player may search their library for up to X creature cards, reveal those cards, put them into their hand, then shuffle.",
-        script = CardScript.spell(
-            effect = EffectPatterns.eachPlayerSearchesLibrary(
-                filter = Filters.Creature,
-                count = DynamicAmount.XValue
-            )
-        )
-    )
-
     fun createDriver(): GameTestDriver {
         val driver = GameTestDriver()
-        driver.registerCards(TestCards.all + listOf(WeirdHarvest))
+        driver.registerCards(TestCards.all)
         return driver
     }
 

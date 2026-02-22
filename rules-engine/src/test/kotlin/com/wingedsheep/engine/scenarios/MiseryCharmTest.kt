@@ -5,24 +5,13 @@ import com.wingedsheep.engine.core.ChooseTargetsDecision
 import com.wingedsheep.engine.core.OptionChosenResponse
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
+import com.wingedsheep.mtg.sets.definitions.onslaught.cards.MiseryCharm
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.core.Subtype
-import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.CardDefinition
-import com.wingedsheep.sdk.model.CardScript
 import com.wingedsheep.sdk.model.Deck
-import com.wingedsheep.sdk.scripting.targets.EffectTarget
-import com.wingedsheep.sdk.scripting.GameObjectFilter
-import com.wingedsheep.sdk.scripting.effects.LoseLifeEffect
-import com.wingedsheep.sdk.scripting.effects.Mode
-import com.wingedsheep.sdk.scripting.effects.ModalEffect
-import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
-import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
-import com.wingedsheep.sdk.scripting.targets.TargetCreature
-import com.wingedsheep.sdk.scripting.targets.TargetObject
-import com.wingedsheep.sdk.scripting.targets.TargetPlayer
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 
@@ -38,36 +27,6 @@ import io.kotest.matchers.shouldBe
  */
 class MiseryCharmTest : FunSpec({
 
-    val MiseryCharm = CardDefinition.instant(
-        name = "Misery Charm",
-        manaCost = ManaCost.parse("{B}"),
-        oracleText = "Choose one — • Destroy target Cleric. • Return target Cleric card from your graveyard to your hand. • Target player loses 2 life.",
-        script = CardScript.spell(
-            effect = ModalEffect.chooseOne(
-                Mode.withTarget(
-                    MoveToZoneEffect(EffectTarget.BoundVariable("target"), Zone.GRAVEYARD, byDestruction = true),
-                    TargetCreature(id = "target", filter = TargetFilter.Creature.withSubtype("Cleric")),
-                    "Destroy target Cleric"
-                ),
-                Mode.withTarget(
-                    MoveToZoneEffect(EffectTarget.BoundVariable("target"), Zone.HAND),
-                    TargetObject(id = "target",
-                        filter = TargetFilter(
-                            GameObjectFilter.Any.withSubtype("Cleric").ownedByYou(),
-                            zone = Zone.GRAVEYARD
-                        )
-                    ),
-                    "Return target Cleric card from your graveyard to your hand"
-                ),
-                Mode.withTarget(
-                    LoseLifeEffect(2, EffectTarget.BoundVariable("target")),
-                    TargetPlayer(id = "target"),
-                    "Target player loses 2 life"
-                )
-            )
-        )
-    )
-
     val TestCleric = CardDefinition.creature(
         name = "Test Cleric",
         manaCost = ManaCost.parse("{W}"),
@@ -79,7 +38,7 @@ class MiseryCharmTest : FunSpec({
 
     fun createDriver(): GameTestDriver {
         val driver = GameTestDriver()
-        driver.registerCards(TestCards.all + listOf(MiseryCharm, TestCleric))
+        driver.registerCards(TestCards.all + listOf(TestCleric))
         return driver
     }
 

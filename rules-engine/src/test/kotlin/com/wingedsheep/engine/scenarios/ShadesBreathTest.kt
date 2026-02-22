@@ -5,19 +5,10 @@ import com.wingedsheep.engine.mechanics.layers.StateProjector
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
-import com.wingedsheep.sdk.core.*
-import com.wingedsheep.sdk.model.CardDefinition
-import com.wingedsheep.sdk.model.CardScript
+import com.wingedsheep.mtg.sets.definitions.onslaught.cards.ShadesBreath
+import com.wingedsheep.sdk.core.Color
+import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.model.Deck
-import com.wingedsheep.sdk.scripting.AbilityCost
-import com.wingedsheep.sdk.scripting.AbilityId
-import com.wingedsheep.sdk.scripting.ActivatedAbility
-import com.wingedsheep.sdk.scripting.effects.ChangeGroupColorEffect
-import com.wingedsheep.sdk.scripting.Duration
-import com.wingedsheep.sdk.scripting.targets.EffectTarget
-import com.wingedsheep.sdk.scripting.effects.GrantActivatedAbilityToGroupEffect
-import com.wingedsheep.sdk.scripting.effects.ModifyStatsEffect
-import com.wingedsheep.sdk.scripting.effects.SetGroupCreatureSubtypesEffect
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 
@@ -30,35 +21,11 @@ import io.kotest.matchers.shouldBe
  */
 class ShadesBreathTest : FunSpec({
 
-    val ShadesBreath = CardDefinition.instant(
-        name = "Shade's Breath",
-        manaCost = ManaCost.parse("{1}{B}"),
-        oracleText = "Until end of turn, each creature you control becomes a black Shade and gains \"{B}: This creature gets +1/+1 until end of turn.\"",
-        script = CardScript.spell(
-            effect = SetGroupCreatureSubtypesEffect(
-                subtypes = setOf("Shade")
-            ) then ChangeGroupColorEffect(
-                colors = setOf("BLACK")
-            ) then GrantActivatedAbilityToGroupEffect(
-                ability = ActivatedAbility(
-                    id = AbilityId.generate(),
-                    cost = AbilityCost.Mana(ManaCost.parse("{B}")),
-                    effect = ModifyStatsEffect(
-                        powerModifier = 1,
-                        toughnessModifier = 1,
-                        target = EffectTarget.Self,
-                        duration = Duration.EndOfTurn
-                    )
-                )
-            )
-        )
-    )
-
     val projector = StateProjector()
 
     fun createDriver(): GameTestDriver {
         val driver = GameTestDriver()
-        driver.registerCards(TestCards.all + listOf(ShadesBreath))
+        driver.registerCards(TestCards.all)
         return driver
     }
 

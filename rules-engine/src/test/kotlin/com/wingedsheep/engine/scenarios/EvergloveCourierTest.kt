@@ -6,28 +6,17 @@ import com.wingedsheep.engine.mechanics.layers.StateProjector
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
+import com.wingedsheep.mtg.sets.definitions.onslaught.cards.EvergloveCourier
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.core.Subtype
-import com.wingedsheep.sdk.scripting.AbilityId
 import com.wingedsheep.sdk.model.CardDefinition
-import com.wingedsheep.sdk.model.CardScript
 import com.wingedsheep.sdk.model.Deck
-import com.wingedsheep.sdk.scripting.AbilityCost
-import com.wingedsheep.sdk.scripting.ActivatedAbility
-import com.wingedsheep.sdk.scripting.Duration
-import com.wingedsheep.sdk.scripting.targets.EffectTarget
-import com.wingedsheep.sdk.scripting.GameObjectFilter
-import com.wingedsheep.sdk.scripting.effects.GrantKeywordUntilEndOfTurnEffect
-import com.wingedsheep.sdk.scripting.effects.ModifyStatsEffect
-import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
-import com.wingedsheep.sdk.scripting.targets.TargetPermanent
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
-import java.util.UUID
 
 /**
  * Tests for the Everglove Courier card and the MAY_NOT_UNTAP / WhileSourceTapped mechanics.
@@ -41,31 +30,7 @@ import java.util.UUID
  */
 class EvergloveCourierTest : FunSpec({
 
-    val courierAbilityId = AbilityId(UUID.randomUUID().toString())
-
-    val EvergloveCourier = CardDefinition.creature(
-        name = "Everglove Courier",
-        manaCost = ManaCost.parse("{2}{G}"),
-        subtypes = setOf(Subtype("Elf")),
-        power = 2,
-        toughness = 1,
-        keywords = setOf(Keyword.MAY_NOT_UNTAP),
-        oracleText = "You may choose not to untap Everglove Courier during your untap step.\n{2}{G}, {T}: Target Elf creature gets +2/+2 and gains trample for as long as Everglove Courier remains tapped.",
-        script = CardScript.permanent(
-            ActivatedAbility(
-                id = courierAbilityId,
-                cost = AbilityCost.Composite(listOf(
-                    AbilityCost.Mana(ManaCost.parse("{2}{G}")),
-                    AbilityCost.Tap
-                )),
-                effect = ModifyStatsEffect(2, 2, EffectTarget.BoundVariable("target"), Duration.WhileSourceTapped()) then
-                        GrantKeywordUntilEndOfTurnEffect(Keyword.TRAMPLE, EffectTarget.BoundVariable("target"), Duration.WhileSourceTapped()),
-                targetRequirement = TargetPermanent(id = "target",
-                    filter = TargetFilter(GameObjectFilter.Creature.withSubtype("Elf"))
-                )
-            )
-        )
-    )
+    val courierAbilityId = EvergloveCourier.activatedAbilities.first().id
 
     // A simple Elf creature for testing
     val ElvishWarrior = CardDefinition.creature(
@@ -81,7 +46,7 @@ class EvergloveCourierTest : FunSpec({
 
     fun createDriver(): GameTestDriver {
         val driver = GameTestDriver()
-        driver.registerCards(TestCards.all + listOf(EvergloveCourier, ElvishWarrior))
+        driver.registerCards(TestCards.all + listOf(ElvishWarrior))
         return driver
     }
 

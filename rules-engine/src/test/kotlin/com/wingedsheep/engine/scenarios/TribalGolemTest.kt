@@ -4,17 +4,14 @@ import com.wingedsheep.engine.core.ActivateAbility
 import com.wingedsheep.engine.mechanics.layers.StateProjector
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
-import com.wingedsheep.sdk.core.*
-import com.wingedsheep.sdk.dsl.Conditions
-import com.wingedsheep.sdk.dsl.Costs
-import com.wingedsheep.sdk.dsl.card
+import com.wingedsheep.mtg.sets.definitions.onslaught.cards.TribalGolem
+import com.wingedsheep.sdk.core.Color
+import com.wingedsheep.sdk.core.Keyword
+import com.wingedsheep.sdk.core.ManaCost
+import com.wingedsheep.sdk.core.Step
+import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.Deck
-import com.wingedsheep.sdk.scripting.ActivationRestriction
-import com.wingedsheep.sdk.scripting.targets.EffectTarget
-import com.wingedsheep.sdk.scripting.GrantKeyword
-import com.wingedsheep.sdk.scripting.effects.RegenerateEffect
-import com.wingedsheep.sdk.scripting.StaticTarget
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 
@@ -31,38 +28,6 @@ import io.kotest.matchers.shouldBe
  */
 class TribalGolemTest : FunSpec({
 
-    val TribalGolem = card("Tribal Golem") {
-        manaCost = "{6}"
-        typeLine = "Artifact Creature — Golem"
-        power = 4
-        toughness = 4
-
-        staticAbility {
-            ability = GrantKeyword(Keyword.TRAMPLE, StaticTarget.SourceCreature)
-            condition = Conditions.ControlCreatureOfType(Subtype("Beast"))
-        }
-        staticAbility {
-            ability = GrantKeyword(Keyword.HASTE, StaticTarget.SourceCreature)
-            condition = Conditions.ControlCreatureOfType(Subtype("Goblin"))
-        }
-        staticAbility {
-            ability = GrantKeyword(Keyword.FIRST_STRIKE, StaticTarget.SourceCreature)
-            condition = Conditions.ControlCreatureOfType(Subtype("Soldier"))
-        }
-        staticAbility {
-            ability = GrantKeyword(Keyword.FLYING, StaticTarget.SourceCreature)
-            condition = Conditions.ControlCreatureOfType(Subtype("Wizard"))
-        }
-
-        activatedAbility {
-            cost = Costs.Mana("{B}")
-            effect = RegenerateEffect(EffectTarget.Self)
-            restrictions = listOf(
-                ActivationRestriction.OnlyIfCondition(Conditions.ControlCreatureOfType(Subtype("Zombie")))
-            )
-        }
-    }
-
     val regenerateAbilityId = TribalGolem.activatedAbilities.first().id
 
     val TestWizard = CardDefinition.creature(
@@ -77,7 +42,7 @@ class TribalGolemTest : FunSpec({
 
     fun createDriver(): GameTestDriver {
         val driver = GameTestDriver()
-        driver.registerCards(TestCards.all + listOf(TribalGolem, TestWizard))
+        driver.registerCards(TestCards.all + listOf(TestWizard))
         return driver
     }
 

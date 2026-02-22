@@ -2,15 +2,11 @@ package com.wingedsheep.engine.scenarios
 
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
+import com.wingedsheep.mtg.sets.definitions.onslaught.cards.OverwhelmingInstinct
 import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.Step
-import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.Deck
-import com.wingedsheep.sdk.scripting.effects.DrawCardsEffect
-import com.wingedsheep.sdk.scripting.GameEvent
-import com.wingedsheep.sdk.scripting.TriggerBinding
-import com.wingedsheep.sdk.scripting.TriggerSpec
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 
@@ -23,16 +19,6 @@ import io.kotest.matchers.shouldBe
  */
 class OverwhelmingInstinctTest : FunSpec({
 
-    val OverwhelmingInstinct = card("Overwhelming Instinct") {
-        manaCost = "{2}{G}"
-        typeLine = "Enchantment"
-
-        triggeredAbility {
-            trigger = TriggerSpec(event = GameEvent.YouAttackEvent(minAttackers = 3), binding = TriggerBinding.ANY)
-            effect = DrawCardsEffect(1)
-        }
-    }
-
     val TestCreature = CardDefinition.creature(
         name = "Test Creature",
         manaCost = ManaCost.parse("{1}"),
@@ -44,7 +30,7 @@ class OverwhelmingInstinctTest : FunSpec({
 
     fun createDriver(): GameTestDriver {
         val driver = GameTestDriver()
-        driver.registerCards(TestCards.all + listOf(OverwhelmingInstinct, TestCreature))
+        driver.registerCards(TestCards.all + listOf(TestCreature))
         return driver
     }
 

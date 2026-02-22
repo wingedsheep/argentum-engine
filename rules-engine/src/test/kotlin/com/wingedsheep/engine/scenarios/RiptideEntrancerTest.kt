@@ -5,23 +5,9 @@ import com.wingedsheep.engine.core.YesNoDecision
 import com.wingedsheep.engine.mechanics.layers.StateProjector
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
-import com.wingedsheep.sdk.core.ManaCost
+import com.wingedsheep.mtg.sets.definitions.onslaught.cards.RiptideEntrancer
 import com.wingedsheep.sdk.core.Step
-import com.wingedsheep.sdk.core.Subtype
-import com.wingedsheep.sdk.model.CardDefinition
-import com.wingedsheep.sdk.model.CardScript
 import com.wingedsheep.sdk.model.Deck
-import com.wingedsheep.sdk.scripting.targets.EffectTarget
-import com.wingedsheep.sdk.scripting.effects.GainControlEffect
-import com.wingedsheep.sdk.scripting.effects.MayEffect
-import com.wingedsheep.sdk.scripting.GameEvent
-import com.wingedsheep.sdk.scripting.TriggerBinding
-import com.wingedsheep.sdk.scripting.events.DamageType
-import com.wingedsheep.sdk.scripting.events.RecipientFilter
-import com.wingedsheep.sdk.scripting.effects.SacrificeSelfEffect
-import com.wingedsheep.sdk.scripting.TriggeredAbility
-import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
-import com.wingedsheep.sdk.scripting.targets.TargetCreature
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 
@@ -42,30 +28,11 @@ import io.kotest.matchers.shouldBe
  */
 class RiptideEntrancerTest : FunSpec({
 
-    val RiptideEntrancer = CardDefinition.creature(
-        name = "Riptide Entrancer",
-        manaCost = ManaCost.parse("{1}{U}{U}"),
-        subtypes = setOf(Subtype("Human"), Subtype("Wizard")),
-        power = 1,
-        toughness = 1,
-        oracleText = "Whenever Riptide Entrancer deals combat damage to a player, you may sacrifice it. If you do, gain control of target creature that player controls. (This effect lasts indefinitely.)\nMorph {U}{U}",
-        script = CardScript.creature(
-            TriggeredAbility.create(
-                trigger = GameEvent.DealsDamageEvent(damageType = DamageType.Combat, recipient = RecipientFilter.AnyPlayer),
-                binding = TriggerBinding.SELF,
-                effect = MayEffect(
-                    SacrificeSelfEffect then GainControlEffect(EffectTarget.BoundVariable("target"))
-                ),
-                targetRequirement = TargetCreature(id = "target", filter = TargetFilter.CreatureOpponentControls)
-            )
-        )
-    )
-
     val projector = StateProjector()
 
     fun createDriver(): GameTestDriver {
         val driver = GameTestDriver()
-        driver.registerCards(TestCards.all + listOf(RiptideEntrancer))
+        driver.registerCards(TestCards.all)
         return driver
     }
 

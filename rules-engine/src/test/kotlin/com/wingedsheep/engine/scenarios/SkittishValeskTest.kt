@@ -4,20 +4,9 @@ import com.wingedsheep.engine.core.CoinFlipEvent
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
 import com.wingedsheep.engine.state.components.identity.FaceDownComponent
-import com.wingedsheep.sdk.core.ManaCost
+import com.wingedsheep.mtg.sets.definitions.onslaught.cards.SkittishValesk
 import com.wingedsheep.sdk.core.Step
-import com.wingedsheep.sdk.core.Subtype
-import com.wingedsheep.sdk.model.CardDefinition
-import com.wingedsheep.sdk.model.CardScript
 import com.wingedsheep.sdk.model.Deck
-import com.wingedsheep.sdk.scripting.targets.EffectTarget
-import com.wingedsheep.sdk.scripting.effects.FlipCoinEffect
-import com.wingedsheep.sdk.scripting.KeywordAbility
-import com.wingedsheep.sdk.scripting.GameEvent
-import com.wingedsheep.sdk.scripting.TriggerBinding
-import com.wingedsheep.sdk.scripting.references.Player
-import com.wingedsheep.sdk.scripting.TriggeredAbility
-import com.wingedsheep.sdk.scripting.effects.TurnFaceDownEffect
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.booleans.shouldBeFalse
 import io.kotest.matchers.booleans.shouldBeTrue
@@ -34,29 +23,9 @@ import io.kotest.matchers.shouldBe
  */
 class SkittishValeskTest : FunSpec({
 
-    // Recreate the card for rules-engine tests (no mtg-sets dependency)
-    val SkittishValesk = CardDefinition.creature(
-        name = "Skittish Valesk",
-        manaCost = ManaCost.parse("{6}{R}"),
-        subtypes = setOf(Subtype("Beast")),
-        power = 5,
-        toughness = 5,
-        script = CardScript.creature(
-            TriggeredAbility.create(
-                trigger = GameEvent.StepEvent(Step.UPKEEP, Player.You),
-                binding = TriggerBinding.ANY,
-                effect = FlipCoinEffect(
-                    lostEffect = TurnFaceDownEffect(EffectTarget.Self)
-                )
-            )
-        )
-    ).copy(
-        keywordAbilities = listOf(KeywordAbility.Morph(ManaCost.parse("{5}{R}")))
-    )
-
     fun createDriver(): GameTestDriver {
         val driver = GameTestDriver()
-        driver.registerCards(TestCards.all + listOf(SkittishValesk))
+        driver.registerCards(TestCards.all)
         driver.initMirrorMatch(
             deck = Deck.of("Mountain" to 40),
             startingLife = 20

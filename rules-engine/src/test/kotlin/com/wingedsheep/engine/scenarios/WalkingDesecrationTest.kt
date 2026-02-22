@@ -7,20 +7,15 @@ import com.wingedsheep.engine.core.OptionChosenResponse
 import com.wingedsheep.engine.state.components.combat.MustAttackThisTurnComponent
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
+import com.wingedsheep.mtg.sets.definitions.onslaught.cards.WalkingDesecration
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.model.CardDefinition
-import com.wingedsheep.sdk.model.CardScript
 import com.wingedsheep.sdk.model.Deck
-import com.wingedsheep.sdk.scripting.AbilityCost
-import com.wingedsheep.sdk.scripting.AbilityId
-import com.wingedsheep.sdk.scripting.ActivatedAbility
-import com.wingedsheep.sdk.scripting.effects.ChooseCreatureTypeMustAttackEffect
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
-import java.util.UUID
 
 /**
  * Tests for Walking Desecration.
@@ -30,7 +25,7 @@ import java.util.UUID
  */
 class WalkingDesecrationTest : FunSpec({
 
-    val abilityId = AbilityId(UUID.randomUUID().toString())
+    val abilityId = WalkingDesecration.activatedAbilities.first().id
 
     // Simple Elf creature for testing creature type selection
     val ElvishWarrior = CardDefinition.creature(
@@ -42,29 +37,9 @@ class WalkingDesecrationTest : FunSpec({
         subtypes = setOf(Subtype("Elf"), Subtype("Warrior"))
     )
 
-    val WalkingDesecration = CardDefinition.creature(
-        name = "Walking Desecration",
-        manaCost = ManaCost.parse("{2}{B}"),
-        oracleText = "{B}, {T}: Creatures of the creature type of your choice attack this turn if able.",
-        power = 1,
-        toughness = 1,
-        subtypes = setOf(Subtype("Zombie")),
-        script = CardScript.permanent(
-            ActivatedAbility(
-                id = abilityId,
-                cost = AbilityCost.Composite(listOf(
-                    AbilityCost.Mana(ManaCost.parse("{B}")),
-                    AbilityCost.Tap
-                )),
-                effect = ChooseCreatureTypeMustAttackEffect
-            )
-        )
-    )
-
     fun createDriver(): GameTestDriver {
         val driver = GameTestDriver()
         driver.registerCards(TestCards.all)
-        driver.registerCard(WalkingDesecration)
         driver.registerCard(ElvishWarrior)
         driver.initMirrorMatch(
             deck = Deck.of(

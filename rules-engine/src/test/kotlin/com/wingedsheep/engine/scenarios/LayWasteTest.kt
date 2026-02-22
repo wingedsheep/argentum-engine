@@ -2,18 +2,10 @@ package com.wingedsheep.engine.scenarios
 
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
+import com.wingedsheep.mtg.sets.definitions.onslaught.cards.LayWaste
 import com.wingedsheep.sdk.core.Color
-import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.Step
-import com.wingedsheep.sdk.core.Zone
-import com.wingedsheep.sdk.model.CardDefinition
-import com.wingedsheep.sdk.model.CardScript
 import com.wingedsheep.sdk.model.Deck
-import com.wingedsheep.sdk.scripting.targets.EffectTarget
-import com.wingedsheep.sdk.scripting.KeywordAbility
-import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
-import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
-import com.wingedsheep.sdk.scripting.targets.TargetPermanent
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.shouldBe
@@ -29,23 +21,9 @@ import io.kotest.matchers.shouldNotBe
  */
 class LayWasteTest : FunSpec({
 
-    val LayWaste = CardDefinition.sorcery(
-        name = "Lay Waste",
-        manaCost = ManaCost.parse("{3}{R}"),
-        oracleText = "Destroy target land.\nCycling {2}",
-        script = CardScript.spell(
-            effect = MoveToZoneEffect(EffectTarget.BoundVariable("target"), Zone.GRAVEYARD, byDestruction = true),
-            TargetPermanent(id = "target", filter = TargetFilter.Land)
-        ),
-        metadata = com.wingedsheep.sdk.model.ScryfallMetadata()
-    ).let { card ->
-        // Add cycling keyword ability
-        card.copy(keywordAbilities = card.keywordAbilities + KeywordAbility.cycling("{2}"))
-    }
-
     fun createDriver(): GameTestDriver {
         val driver = GameTestDriver()
-        driver.registerCards(TestCards.all + listOf(LayWaste))
+        driver.registerCards(TestCards.all)
         return driver
     }
 

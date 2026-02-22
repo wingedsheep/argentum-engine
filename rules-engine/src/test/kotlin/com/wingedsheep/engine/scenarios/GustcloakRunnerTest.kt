@@ -6,19 +6,9 @@ import com.wingedsheep.engine.state.components.combat.BlockedComponent
 import com.wingedsheep.engine.state.components.combat.BlockingComponent
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
-import com.wingedsheep.sdk.core.ManaCost
-import com.wingedsheep.sdk.core.Subtype
+import com.wingedsheep.mtg.sets.definitions.onslaught.cards.GustcloakRunner
 import com.wingedsheep.sdk.core.Step
-import com.wingedsheep.sdk.model.CardDefinition
-import com.wingedsheep.sdk.model.CardScript
 import com.wingedsheep.sdk.model.Deck
-import com.wingedsheep.sdk.scripting.targets.EffectTarget
-import com.wingedsheep.sdk.scripting.effects.MayEffect
-import com.wingedsheep.sdk.scripting.GameEvent
-import com.wingedsheep.sdk.scripting.TriggerBinding
-import com.wingedsheep.sdk.scripting.effects.RemoveFromCombatEffect
-import com.wingedsheep.sdk.scripting.effects.TapUntapEffect
-import com.wingedsheep.sdk.scripting.TriggeredAbility
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
@@ -33,29 +23,9 @@ import io.kotest.matchers.shouldNotBe
  */
 class GustcloakRunnerTest : FunSpec({
 
-    val GustcloakRunner = CardDefinition.creature(
-        name = "Gustcloak Runner",
-        manaCost = ManaCost.parse("{W}"),
-        subtypes = setOf(Subtype("Human"), Subtype("Soldier")),
-        power = 1,
-        toughness = 1,
-        keywords = emptySet(),
-        oracleText = "Whenever Gustcloak Runner becomes blocked, you may untap it and remove it from combat.",
-        script = CardScript.creature(
-            TriggeredAbility.create(
-                trigger = GameEvent.BecomesBlockedEvent,
-                binding = TriggerBinding.SELF,
-                effect = MayEffect(
-                    TapUntapEffect(EffectTarget.Self, tap = false) then
-                            RemoveFromCombatEffect(EffectTarget.Self)
-                )
-            )
-        )
-    )
-
     fun createDriver(): GameTestDriver {
         val driver = GameTestDriver()
-        driver.registerCards(TestCards.all + listOf(GustcloakRunner))
+        driver.registerCards(TestCards.all)
         return driver
     }
 

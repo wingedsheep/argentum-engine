@@ -4,13 +4,10 @@ import com.wingedsheep.engine.core.CardsDiscardedEvent
 import com.wingedsheep.engine.core.LifeChangedEvent
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
+import com.wingedsheep.mtg.sets.definitions.onslaught.cards.StrongarmTactics
 import com.wingedsheep.sdk.core.Color
-import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.Step
-import com.wingedsheep.sdk.model.CardDefinition
-import com.wingedsheep.sdk.model.CardScript
 import com.wingedsheep.sdk.model.Deck
-import com.wingedsheep.sdk.scripting.effects.EachPlayerDiscardsOrLoseLifeEffect
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 
@@ -23,18 +20,9 @@ import io.kotest.matchers.shouldBe
  */
 class StrongarmTacticsTest : FunSpec({
 
-    val StrongarmTactics = CardDefinition.sorcery(
-        name = "Strongarm Tactics",
-        manaCost = ManaCost.parse("{1}{B}"),
-        oracleText = "Each player discards a card. Then each player who didn't discard a creature card this way loses 4 life.",
-        script = CardScript.spell(
-            effect = EachPlayerDiscardsOrLoseLifeEffect(lifeLoss = 4)
-        )
-    )
-
     fun createDriver(): GameTestDriver {
         val driver = GameTestDriver()
-        driver.registerCards(TestCards.all + listOf(StrongarmTactics))
+        driver.registerCards(TestCards.all)
         return driver
     }
 

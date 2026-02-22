@@ -4,20 +4,14 @@ import com.wingedsheep.engine.core.ActivateAbility
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
-import com.wingedsheep.sdk.core.*
-import com.wingedsheep.sdk.dsl.Costs
-import com.wingedsheep.sdk.dsl.card
+import com.wingedsheep.mtg.sets.definitions.onslaught.cards.UnholyGrotto
+import com.wingedsheep.sdk.core.Color
+import com.wingedsheep.sdk.core.ManaCost
+import com.wingedsheep.sdk.core.Step
+import com.wingedsheep.sdk.core.Subtype
+import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.Deck
-import com.wingedsheep.sdk.scripting.AbilityCost
-import com.wingedsheep.sdk.scripting.effects.AddColorlessManaEffect
-import com.wingedsheep.sdk.scripting.targets.EffectTarget
-import com.wingedsheep.sdk.scripting.GameObjectFilter
-import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
-import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
-import com.wingedsheep.sdk.scripting.TimingRule
-import com.wingedsheep.sdk.scripting.effects.ZonePlacement
-import com.wingedsheep.sdk.scripting.targets.TargetObject
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.collections.shouldNotContain
@@ -33,32 +27,6 @@ import io.kotest.matchers.shouldBe
  * {B}, {T}: Put target Zombie card from your graveyard on top of your library.
  */
 class UnholyGrottoTest : FunSpec({
-
-    val UnholyGrotto = card("Unholy Grotto") {
-        typeLine = "Land"
-
-        activatedAbility {
-            cost = AbilityCost.Tap
-            effect = AddColorlessManaEffect(1)
-            manaAbility = true
-            timing = TimingRule.ManaAbility
-        }
-
-        activatedAbility {
-            cost = Costs.Composite(Costs.Mana("{B}"), Costs.Tap)
-            target = TargetObject(
-                filter = TargetFilter(
-                    GameObjectFilter.Any.withSubtype("Zombie").ownedByYou(),
-                    zone = Zone.GRAVEYARD
-                )
-            )
-            effect = MoveToZoneEffect(
-                target = EffectTarget.ContextTarget(0),
-                destination = Zone.LIBRARY,
-                placement = ZonePlacement.Top
-            )
-        }
-    }
 
     val abilityId = UnholyGrotto.activatedAbilities[1].id
 
@@ -80,7 +48,7 @@ class UnholyGrottoTest : FunSpec({
 
     fun createDriver(): GameTestDriver {
         val driver = GameTestDriver()
-        driver.registerCards(TestCards.all + listOf(UnholyGrotto, FesteringGoblin, GluttonousZombie))
+        driver.registerCards(TestCards.all + listOf(FesteringGoblin, GluttonousZombie))
         return driver
     }
 

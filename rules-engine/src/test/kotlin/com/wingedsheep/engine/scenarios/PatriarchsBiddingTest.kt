@@ -4,13 +4,13 @@ import com.wingedsheep.engine.core.ChooseOptionDecision
 import com.wingedsheep.engine.core.OptionChosenResponse
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
+import com.wingedsheep.mtg.sets.definitions.onslaught.cards.PatriarchsBidding
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.Deck
-import com.wingedsheep.sdk.scripting.effects.PatriarchsBiddingEffect
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
@@ -57,19 +57,10 @@ class PatriarchsBiddingTest : FunSpec({
         toughness = 1
     )
 
-    val PatriarchsBidding = CardDefinition.sorcery(
-        name = "Patriarch's Bidding",
-        manaCost = ManaCost.parse("{3}{B}{B}"),
-        oracleText = "Each player chooses a creature type. Each player returns all creature cards of a type chosen this way from their graveyard to the battlefield.",
-        script = com.wingedsheep.sdk.model.CardScript.spell(
-            effect = PatriarchsBiddingEffect
-        )
-    )
-
     fun createDriver(): GameTestDriver {
         val driver = GameTestDriver()
         driver.registerCards(
-            TestCards.all + listOf(PatriarchsBidding, GoblinWarrior, ElfDruid, HumanKnight, GoblinShaman)
+            TestCards.all + listOf(GoblinWarrior, ElfDruid, HumanKnight, GoblinShaman)
         )
         return driver
     }

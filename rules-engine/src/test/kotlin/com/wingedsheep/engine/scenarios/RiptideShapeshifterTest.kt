@@ -8,23 +8,17 @@ import com.wingedsheep.engine.state.components.battlefield.SummoningSicknessComp
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
+import com.wingedsheep.mtg.sets.definitions.onslaught.cards.RiptideShapeshifter
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.CardDefinition
-import com.wingedsheep.sdk.model.CardScript
 import com.wingedsheep.sdk.model.Deck
-import com.wingedsheep.sdk.dsl.Costs
-import com.wingedsheep.sdk.dsl.EffectPatterns
-import com.wingedsheep.sdk.scripting.AbilityCost
-import com.wingedsheep.sdk.scripting.AbilityId
-import com.wingedsheep.sdk.scripting.ActivatedAbility
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
-import java.util.UUID
 
 /**
  * Tests for Riptide Shapeshifter.
@@ -36,26 +30,7 @@ import java.util.UUID
  */
 class RiptideShapeshifterTest : FunSpec({
 
-    val abilityId = AbilityId(UUID.randomUUID().toString())
-
-    val RiptideShapeshifter = CardDefinition.creature(
-        name = "Riptide Shapeshifter",
-        manaCost = ManaCost.parse("{3}{U}{U}"),
-        oracleText = "{2}{U}{U}, Sacrifice Riptide Shapeshifter: Choose a creature type. Reveal cards from the top of your library until you reveal a creature card of that type. Put that card onto the battlefield and shuffle the rest into your library.",
-        power = 3,
-        toughness = 3,
-        subtypes = setOf(Subtype("Shapeshifter")),
-        script = CardScript.permanent(
-            ActivatedAbility(
-                id = abilityId,
-                cost = AbilityCost.Composite(listOf(
-                    AbilityCost.Mana(ManaCost.parse("{2}{U}{U}")),
-                    AbilityCost.SacrificeSelf
-                )),
-                effect = EffectPatterns.revealUntilCreatureTypeToBattlefield()
-            )
-        )
-    )
+    val abilityId = RiptideShapeshifter.activatedAbilities.first().id
 
     val SilverKnight = CardDefinition.creature(
         name = "Silver Knight",
@@ -69,7 +44,6 @@ class RiptideShapeshifterTest : FunSpec({
     fun createDriver(): GameTestDriver {
         val driver = GameTestDriver()
         driver.registerCards(TestCards.all)
-        driver.registerCard(RiptideShapeshifter)
         driver.registerCard(SilverKnight)
         driver.initMirrorMatch(
             deck = Deck.of("Grizzly Bears" to 40),

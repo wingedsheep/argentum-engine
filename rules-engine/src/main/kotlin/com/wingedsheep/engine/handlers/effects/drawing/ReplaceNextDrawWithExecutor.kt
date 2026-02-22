@@ -37,6 +37,7 @@ class ReplaceNextDrawWithExecutor : EffectExecutor<ReplaceNextDrawWithEffect> {
         val modification = SerializableModification.ReplaceDrawWithEffect(
             replacementEffect = effect.replacementEffect,
             targets = context.targets,
+            namedTargets = context.namedTargets,
             sourceId = context.sourceId,
             sourceName = sourceName
         )

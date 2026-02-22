@@ -5,15 +5,14 @@ import com.wingedsheep.engine.core.OptionChosenResponse
 import com.wingedsheep.engine.mechanics.layers.StateProjector
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
+import com.wingedsheep.mtg.sets.definitions.onslaught.cards.PeerPressure
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.model.CardDefinition
-import com.wingedsheep.sdk.model.CardScript
 import com.wingedsheep.sdk.model.Deck
 import com.wingedsheep.sdk.model.EntityId
-import com.wingedsheep.sdk.scripting.effects.ChooseCreatureTypeGainControlEffect
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
@@ -45,20 +44,11 @@ class PeerPressureTest : FunSpec({
         toughness = 1
     )
 
-    val PeerPressure = CardDefinition.sorcery(
-        name = "Peer Pressure",
-        manaCost = ManaCost.parse("{3}{U}"),
-        oracleText = "Choose a creature type. If you control more creatures of that type than each other player, you gain control of all creatures of that type.",
-        script = CardScript.spell(
-            effect = ChooseCreatureTypeGainControlEffect()
-        )
-    )
-
     val projector = StateProjector()
 
     fun createDriver(): GameTestDriver {
         val driver = GameTestDriver()
-        driver.registerCards(TestCards.all + listOf(PeerPressure, TestElf, TestGoblin))
+        driver.registerCards(TestCards.all + listOf(TestElf, TestGoblin))
         driver.initMirrorMatch(
             deck = Deck.of("Island" to 40),
             startingLife = 20

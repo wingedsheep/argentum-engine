@@ -3,11 +3,12 @@ package com.wingedsheep.engine.scenarios
 import com.wingedsheep.engine.core.ActivateAbility
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
-import com.wingedsheep.sdk.core.*
-import com.wingedsheep.sdk.model.*
-import com.wingedsheep.sdk.scripting.*
-import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
-import com.wingedsheep.sdk.scripting.targets.EffectTarget
+import com.wingedsheep.mtg.sets.definitions.onslaught.cards.UndeadGladiator
+import com.wingedsheep.sdk.core.Color
+import com.wingedsheep.sdk.core.Step
+import com.wingedsheep.sdk.model.Deck
+import com.wingedsheep.sdk.model.EntityId
+import com.wingedsheep.sdk.scripting.AdditionalCostPayment
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 
@@ -22,39 +23,11 @@ import io.kotest.matchers.shouldBe
  */
 class UndeadGladiatorTest : FunSpec({
 
-    val graveyardAbilityId = AbilityId("undead-gladiator-graveyard")
-
-    val UndeadGladiator = CardDefinition.creature(
-        name = "Undead Gladiator",
-        manaCost = ManaCost.parse("{1}{B}{B}"),
-        subtypes = setOf(Subtype("Zombie"), Subtype("Barbarian")),
-        power = 3,
-        toughness = 1,
-        oracleText = "{1}{B}, Discard a card: Return Undead Gladiator from your graveyard to your hand. Activate only during your upkeep.\nCycling {1}{B}",
-        script = CardScript(
-            activatedAbilities = listOf(
-                ActivatedAbility(
-                    id = graveyardAbilityId,
-                    cost = AbilityCost.Composite(listOf(
-                        AbilityCost.Mana(ManaCost.parse("{1}{B}")),
-                        AbilityCost.Discard()
-                    )),
-                    effect = MoveToZoneEffect(EffectTarget.Self, Zone.HAND),
-                    activateFromZone = Zone.GRAVEYARD,
-                    restrictions = listOf(
-                        ActivationRestriction.All(
-                            ActivationRestriction.OnlyDuringYourTurn,
-                            ActivationRestriction.DuringStep(Step.UPKEEP)
-                        )
-                    )
-                )
-            )
-        )
-    )
+    val graveyardAbilityId = UndeadGladiator.activatedAbilities.first().id
 
     fun createDriver(): GameTestDriver {
         val driver = GameTestDriver()
-        driver.registerCards(TestCards.all + listOf(UndeadGladiator))
+        driver.registerCards(TestCards.all)
         return driver
     }
 

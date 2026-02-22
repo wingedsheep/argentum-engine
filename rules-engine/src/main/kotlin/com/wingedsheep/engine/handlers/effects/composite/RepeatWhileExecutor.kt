@@ -94,7 +94,8 @@ class RepeatWhileExecutor(
                 opponentId = context.opponentId,
                 xValue = context.xValue,
                 targets = context.targets,
-                phase = RepeatWhilePhase.AFTER_BODY
+                phase = RepeatWhilePhase.AFTER_BODY,
+                namedTargets = context.namedTargets
             )
 
             val stateWithContinuation = state.pushContinuation(afterBodyContinuation)
@@ -218,7 +219,8 @@ class RepeatWhileExecutor(
                 opponentId = context.opponentId,
                 xValue = context.xValue,
                 targets = context.targets,
-                phase = RepeatWhilePhase.AFTER_DECISION
+                phase = RepeatWhilePhase.AFTER_DECISION,
+                namedTargets = context.namedTargets
             )
 
             val stateWithContinuation = decisionResult.state.pushContinuation(continuation)

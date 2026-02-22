@@ -3,14 +3,10 @@ package com.wingedsheep.engine.scenarios
 import com.wingedsheep.engine.mechanics.layers.StateProjector
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
-import com.wingedsheep.sdk.core.*
-import com.wingedsheep.sdk.model.CardDefinition
-import com.wingedsheep.sdk.model.CardScript
+import com.wingedsheep.mtg.sets.definitions.portal.cards.WarriorsCharge
+import com.wingedsheep.sdk.core.Color
+import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.model.Deck
-import com.wingedsheep.sdk.scripting.targets.EffectTarget
-import com.wingedsheep.sdk.scripting.effects.ForEachInGroupEffect
-import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
-import com.wingedsheep.sdk.scripting.effects.ModifyStatsEffect
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 
@@ -19,20 +15,11 @@ import io.kotest.matchers.shouldBe
  */
 class ModifyStatsForGroupTest : FunSpec({
 
-    val WarriorsCharge = CardDefinition.sorcery(
-        name = "Warrior's Charge",
-        manaCost = ManaCost.parse("{2}{W}"),
-        oracleText = "Creatures you control get +1/+1 until end of turn.",
-        script = CardScript.spell(
-            effect = ForEachInGroupEffect(GroupFilter.AllCreaturesYouControl, ModifyStatsEffect(1, 1, EffectTarget.Self))
-        )
-    )
-
     val projector = StateProjector()
 
     fun createDriver(): GameTestDriver {
         val driver = GameTestDriver()
-        driver.registerCards(TestCards.all + listOf(WarriorsCharge))
+        driver.registerCards(TestCards.all)
         return driver
     }
 

@@ -3,16 +3,11 @@ package com.wingedsheep.engine.scenarios
 import com.wingedsheep.engine.mechanics.layers.StateProjector
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
+import com.wingedsheep.mtg.sets.definitions.onslaught.cards.MagesGuile
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.Keyword
-import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.Step
-import com.wingedsheep.sdk.model.CardDefinition
-import com.wingedsheep.sdk.model.CardScript
 import com.wingedsheep.sdk.model.Deck
-import com.wingedsheep.sdk.scripting.targets.EffectTarget
-import com.wingedsheep.sdk.scripting.effects.GrantKeywordUntilEndOfTurnEffect
-import com.wingedsheep.sdk.scripting.targets.TargetCreature
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 
@@ -26,21 +21,11 @@ import io.kotest.matchers.shouldBe
  */
 class MagesGuileTest : FunSpec({
 
-    val MagesGuile = CardDefinition.instant(
-        name = "Mage's Guile",
-        manaCost = ManaCost.parse("{1}{U}"),
-        oracleText = "Target creature gains shroud until end of turn.\nCycling {U}",
-        script = CardScript.spell(
-            effect = GrantKeywordUntilEndOfTurnEffect(Keyword.SHROUD, EffectTarget.BoundVariable("target")),
-            TargetCreature(id = "target")
-        )
-    )
-
     val projector = StateProjector()
 
     fun createDriver(): GameTestDriver {
         val driver = GameTestDriver()
-        driver.registerCards(TestCards.all + listOf(MagesGuile))
+        driver.registerCards(TestCards.all)
         return driver
     }
 

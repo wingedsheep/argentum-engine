@@ -3,11 +3,10 @@ package com.wingedsheep.engine.scenarios
 import com.wingedsheep.engine.core.ActivateAbility
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
-import com.wingedsheep.sdk.core.*
-import com.wingedsheep.sdk.model.*
-import com.wingedsheep.sdk.scripting.*
-import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
-import com.wingedsheep.sdk.scripting.targets.EffectTarget
+import com.wingedsheep.mtg.sets.definitions.onslaught.cards.GangrenousGoliath
+import com.wingedsheep.sdk.core.Step
+import com.wingedsheep.sdk.model.Deck
+import com.wingedsheep.sdk.scripting.AdditionalCostPayment
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 
@@ -20,30 +19,11 @@ import io.kotest.matchers.shouldBe
  */
 class GangrenousGoliathTest : FunSpec({
 
-    val abilityId = AbilityId("gangrenous-goliath-graveyard")
-
-    val GangrenousGoliath = CardDefinition.creature(
-        name = "Gangrenous Goliath",
-        manaCost = ManaCost.parse("{3}{B}{B}"),
-        subtypes = setOf(Subtype("Zombie"), Subtype("Giant")),
-        power = 4,
-        toughness = 4,
-        oracleText = "Tap three untapped Clerics you control: Return Gangrenous Goliath from your graveyard to your hand.",
-        script = CardScript(
-            activatedAbilities = listOf(
-                ActivatedAbility(
-                    id = abilityId,
-                    cost = AbilityCost.TapPermanents(3, GameObjectFilter.Creature.withSubtype("Cleric")),
-                    effect = MoveToZoneEffect(EffectTarget.Self, Zone.HAND),
-                    activateFromZone = Zone.GRAVEYARD
-                )
-            )
-        )
-    )
+    val abilityId = GangrenousGoliath.activatedAbilities.first().id
 
     fun createDriver(): GameTestDriver {
         val driver = GameTestDriver()
-        driver.registerCards(TestCards.all + listOf(GangrenousGoliath))
+        driver.registerCards(TestCards.all)
         return driver
     }
 

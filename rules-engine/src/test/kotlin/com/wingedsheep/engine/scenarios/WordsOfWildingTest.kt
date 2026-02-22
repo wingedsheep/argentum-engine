@@ -5,12 +5,10 @@ import com.wingedsheep.engine.core.SelectManaSourcesDecision
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
+import com.wingedsheep.mtg.sets.definitions.onslaught.cards.WordsOfWilding
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.Step
-import com.wingedsheep.sdk.dsl.Costs
-import com.wingedsheep.sdk.dsl.Effects
-import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.CardScript
 import com.wingedsheep.sdk.model.Deck
@@ -27,19 +25,6 @@ import io.kotest.matchers.shouldNotBe
  * {1}: The next time you would draw a card this turn, create a 2/2 green Bear creature token instead.
  */
 class WordsOfWildingTest : FunSpec({
-
-    val WordsOfWilding = card("Words of Wilding") {
-        manaCost = "{2}{G}"
-        typeLine = "Enchantment"
-
-        activatedAbility {
-            cost = Costs.Mana("{1}")
-            effect = Effects.ReplaceNextDraw(
-                Effects.CreateToken(power = 2, toughness = 2, colors = setOf(Color.GREEN), creatureTypes = setOf("Bear"))
-            )
-            promptOnDraw = true
-        }
-    }
 
     // A simple draw spell for testing
     val Inspiration = CardDefinition.instant(
@@ -61,7 +46,7 @@ class WordsOfWildingTest : FunSpec({
 
     fun createDriver(): GameTestDriver {
         val driver = GameTestDriver()
-        driver.registerCards(TestCards.all + listOf(WordsOfWilding, Inspiration, Concentrate))
+        driver.registerCards(TestCards.all + listOf(Inspiration, Concentrate))
         return driver
     }
 

@@ -221,6 +221,7 @@ sealed interface SerializableModification {
      *
      * @property replacementEffect The effect to execute instead of the draw
      * @property targets Targets chosen at activation time (e.g., Words of War's damage target)
+     * @property namedTargets Named targets chosen at activation time (for BoundVariable resolution)
      * @property sourceId The source permanent that created this shield
      * @property sourceName The source's name (for UI display)
      */
@@ -228,6 +229,7 @@ sealed interface SerializableModification {
     data class ReplaceDrawWithEffect(
         val replacementEffect: Effect,
         val targets: List<ChosenTarget> = emptyList(),
+        val namedTargets: Map<String, ChosenTarget> = emptyMap(),
         val sourceId: EntityId? = null,
         val sourceName: String? = null
     ) : SerializableModification

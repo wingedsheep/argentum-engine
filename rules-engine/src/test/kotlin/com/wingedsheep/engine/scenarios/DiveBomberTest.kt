@@ -4,24 +4,12 @@ import com.wingedsheep.engine.core.ActivateAbility
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
-import com.wingedsheep.sdk.core.Keyword
-import com.wingedsheep.sdk.core.ManaCost
+import com.wingedsheep.mtg.sets.definitions.onslaught.cards.DiveBomber
 import com.wingedsheep.sdk.core.Step
-import com.wingedsheep.sdk.core.Subtype
-import com.wingedsheep.sdk.model.CardDefinition
-import com.wingedsheep.sdk.model.CardScript
 import com.wingedsheep.sdk.model.Deck
-import com.wingedsheep.sdk.scripting.AbilityCost
-import com.wingedsheep.sdk.scripting.AbilityId
-import com.wingedsheep.sdk.scripting.ActivatedAbility
-import com.wingedsheep.sdk.scripting.effects.DealDamageEffect
-import com.wingedsheep.sdk.scripting.targets.EffectTarget
-import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
-import com.wingedsheep.sdk.scripting.targets.TargetPermanent
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.shouldBe
-import java.util.UUID
 
 /**
  * Tests for Dive Bomber.
@@ -34,29 +22,11 @@ import java.util.UUID
  */
 class DiveBomberTest : FunSpec({
 
-    val diveBomberAbilityId = AbilityId(UUID.randomUUID().toString())
-
-    val DiveBomber = CardDefinition.creature(
-        name = "Dive Bomber",
-        manaCost = ManaCost.parse("{3}{W}"),
-        subtypes = setOf(Subtype("Bird"), Subtype("Soldier")),
-        power = 2,
-        toughness = 2,
-        keywords = setOf(Keyword.FLYING),
-        oracleText = "Flying\n{T}, Sacrifice Dive Bomber: It deals 2 damage to target attacking or blocking creature.",
-        script = CardScript.permanent(
-            ActivatedAbility(
-                id = diveBomberAbilityId,
-                cost = AbilityCost.Composite(listOf(AbilityCost.Tap, AbilityCost.SacrificeSelf)),
-                effect = DealDamageEffect(2, EffectTarget.BoundVariable("target")),
-                targetRequirement = TargetPermanent(id = "target", filter = TargetFilter.AttackingOrBlockingCreature)
-            )
-        )
-    )
+    val diveBomberAbilityId = DiveBomber.activatedAbilities.first().id
 
     fun createDriver(): GameTestDriver {
         val driver = GameTestDriver()
-        driver.registerCards(TestCards.all + listOf(DiveBomber))
+        driver.registerCards(TestCards.all)
         return driver
     }
 

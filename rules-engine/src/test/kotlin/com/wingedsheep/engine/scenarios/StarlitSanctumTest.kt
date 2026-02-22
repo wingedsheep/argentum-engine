@@ -4,24 +4,14 @@ import com.wingedsheep.engine.core.ActivateAbility
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
+import com.wingedsheep.mtg.sets.definitions.onslaught.cards.StarlitSanctum
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.core.Subtype
-import com.wingedsheep.sdk.dsl.Costs
-import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.Deck
-import com.wingedsheep.sdk.scripting.AbilityCost
 import com.wingedsheep.sdk.scripting.AdditionalCostPayment
-import com.wingedsheep.sdk.scripting.effects.AddColorlessManaEffect
-import com.wingedsheep.sdk.scripting.values.DynamicAmount
-import com.wingedsheep.sdk.scripting.targets.EffectTarget
-import com.wingedsheep.sdk.scripting.effects.GainLifeEffect
-import com.wingedsheep.sdk.scripting.GameObjectFilter
-import com.wingedsheep.sdk.scripting.effects.LoseLifeEffect
-import com.wingedsheep.sdk.scripting.TimingRule
-import com.wingedsheep.sdk.scripting.targets.TargetPlayer
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 
@@ -35,42 +25,6 @@ import io.kotest.matchers.shouldBe
  * {B}, {T}, Sacrifice a Cleric creature: Target player loses life equal to the sacrificed creature's power.
  */
 class StarlitSanctumTest : FunSpec({
-
-    val StarlitSanctum = card("Starlit Sanctum") {
-        typeLine = "Land"
-
-        activatedAbility {
-            cost = AbilityCost.Tap
-            effect = AddColorlessManaEffect(1)
-            manaAbility = true
-            timing = TimingRule.ManaAbility
-        }
-
-        activatedAbility {
-            cost = Costs.Composite(
-                Costs.Mana("{W}"),
-                Costs.Tap,
-                Costs.Sacrifice(GameObjectFilter.Creature.withSubtype("Cleric"))
-            )
-            effect = GainLifeEffect(
-                amount = DynamicAmount.SacrificedPermanentToughness,
-                target = EffectTarget.Controller
-            )
-        }
-
-        activatedAbility {
-            cost = Costs.Composite(
-                Costs.Mana("{B}"),
-                Costs.Tap,
-                Costs.Sacrifice(GameObjectFilter.Creature.withSubtype("Cleric"))
-            )
-            target = TargetPlayer()
-            effect = LoseLifeEffect(
-                amount = DynamicAmount.SacrificedPermanentPower,
-                target = EffectTarget.ContextTarget(0)
-            )
-        }
-    }
 
     val gainLifeAbilityId = StarlitSanctum.activatedAbilities[1].id
     val loseLifeAbilityId = StarlitSanctum.activatedAbilities[2].id
@@ -95,7 +49,7 @@ class StarlitSanctumTest : FunSpec({
 
     fun createDriver(): GameTestDriver {
         val driver = GameTestDriver()
-        driver.registerCards(TestCards.all + listOf(StarlitSanctum, GoblinScout, BigCleric))
+        driver.registerCards(TestCards.all + listOf(GoblinScout, BigCleric))
         return driver
     }
 

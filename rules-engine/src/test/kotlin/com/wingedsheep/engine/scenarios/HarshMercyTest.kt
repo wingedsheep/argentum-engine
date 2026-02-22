@@ -4,15 +4,13 @@ import com.wingedsheep.engine.core.ChooseOptionDecision
 import com.wingedsheep.engine.core.OptionChosenResponse
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
+import com.wingedsheep.mtg.sets.definitions.onslaught.cards.HarshMercy
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.Deck
-import com.wingedsheep.sdk.scripting.effects.DestroyAllEffect
-import com.wingedsheep.sdk.scripting.effects.EachPlayerChoosesCreatureTypeEffect
-import com.wingedsheep.sdk.scripting.GameObjectFilter
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
@@ -51,24 +49,10 @@ class HarshMercyTest : FunSpec({
         toughness = 2
     )
 
-    val HarshMercy = CardDefinition.sorcery(
-        name = "Harsh Mercy",
-        manaCost = ManaCost.parse("{2}{W}"),
-        oracleText = "Each player chooses a creature type. Destroy all creatures that aren't of a type chosen this way. They can't be regenerated.",
-        script = com.wingedsheep.sdk.model.CardScript.spell(
-            effect = EachPlayerChoosesCreatureTypeEffect(storeAs = "chosenTypes")
-                .then(DestroyAllEffect(
-                    filter = GameObjectFilter.Creature,
-                    canRegenerate = false,
-                    exceptSubtypesFromStored = "chosenTypes"
-                ))
-        )
-    )
-
     fun createDriver(): GameTestDriver {
         val driver = GameTestDriver()
         driver.registerCards(
-            TestCards.all + listOf(HarshMercy, GoblinWarrior, ElfDruid, HumanKnight)
+            TestCards.all + listOf(GoblinWarrior, ElfDruid, HumanKnight)
         )
         return driver
     }

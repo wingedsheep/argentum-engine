@@ -4,20 +4,18 @@ import com.wingedsheep.engine.core.ActivateAbility
 import com.wingedsheep.engine.mechanics.layers.StateProjector
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
+import com.wingedsheep.mtg.sets.definitions.onslaught.cards.SilvosRogueElemental
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.Step
-import com.wingedsheep.sdk.dsl.Costs
-import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.CardScript
 import com.wingedsheep.sdk.model.Deck
-import com.wingedsheep.sdk.scripting.effects.DealDamageEffect
-import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.GameObjectFilter
-import com.wingedsheep.sdk.scripting.effects.RegenerateEffect
+import com.wingedsheep.sdk.scripting.effects.DealDamageEffect
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
+import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.targets.TargetObject
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.collections.shouldContain
@@ -36,20 +34,6 @@ import io.kotest.matchers.shouldNotBe
  */
 class SilvosRogueElementalTest : FunSpec({
 
-    val SilvosRogueElemental = card("Silvos, Rogue Elemental") {
-        manaCost = "{3}{G}{G}{G}"
-        typeLine = "Legendary Creature — Elemental"
-        power = 8
-        toughness = 5
-
-        keywords(Keyword.TRAMPLE)
-
-        activatedAbility {
-            cost = Costs.Mana("{G}")
-            effect = RegenerateEffect(EffectTarget.Self)
-        }
-    }
-
     // A test spell that deals 5 damage to target creature
     val TestBlast = CardDefinition.instant(
         name = "Test Blast",
@@ -67,7 +51,7 @@ class SilvosRogueElementalTest : FunSpec({
 
     fun createDriver(): GameTestDriver {
         val driver = GameTestDriver()
-        driver.registerCards(TestCards.all + listOf(SilvosRogueElemental, TestBlast))
+        driver.registerCards(TestCards.all + listOf(TestBlast))
         return driver
     }
 

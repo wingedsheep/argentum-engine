@@ -2,18 +2,14 @@ package com.wingedsheep.engine.scenarios
 
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
-import com.wingedsheep.sdk.core.*
+import com.wingedsheep.mtg.sets.definitions.scourge.cards.FrozenSolid
+import com.wingedsheep.sdk.core.Color
+import com.wingedsheep.sdk.core.ManaCost
+import com.wingedsheep.sdk.core.Step
+import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.model.CardDefinition
-import com.wingedsheep.sdk.model.CardScript
 import com.wingedsheep.sdk.model.Deck
 import com.wingedsheep.sdk.model.EntityId
-import com.wingedsheep.sdk.scripting.GameEvent
-import com.wingedsheep.sdk.scripting.GrantKeyword
-import com.wingedsheep.sdk.scripting.TriggerBinding
-import com.wingedsheep.sdk.scripting.TriggeredAbility
-import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
-import com.wingedsheep.sdk.scripting.targets.EffectTarget
-import com.wingedsheep.sdk.scripting.targets.TargetCreature
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 
@@ -28,29 +24,6 @@ import io.kotest.matchers.shouldBe
  */
 class FrozenSolidTest : FunSpec({
 
-    val FrozenSolid = CardDefinition.aura(
-        name = "Frozen Solid",
-        manaCost = ManaCost.parse("{1}{U}{U}"),
-        oracleText = "Enchant creature\nEnchanted creature doesn't untap during its controller's untap step.\nWhen enchanted creature is dealt damage, destroy it.",
-        script = CardScript(
-            auraTarget = TargetCreature(),
-            staticAbilities = listOf(
-                GrantKeyword(Keyword.DOESNT_UNTAP)
-            ),
-            triggeredAbilities = listOf(
-                TriggeredAbility.create(
-                    trigger = GameEvent.EnchantedCreatureDamageReceivedEvent,
-                    binding = TriggerBinding.ANY,
-                    effect = MoveToZoneEffect(
-                        target = EffectTarget.EnchantedCreature,
-                        destination = Zone.GRAVEYARD,
-                        byDestruction = true
-                    )
-                )
-            )
-        )
-    )
-
     val TestCreature = CardDefinition.creature(
         name = "Test Creature",
         manaCost = ManaCost.parse("{1}{R}"),
@@ -61,7 +34,7 @@ class FrozenSolidTest : FunSpec({
 
     fun createDriver(): GameTestDriver {
         val driver = GameTestDriver()
-        driver.registerCards(TestCards.all + listOf(FrozenSolid, TestCreature))
+        driver.registerCards(TestCards.all + listOf(TestCreature))
         return driver
     }
 

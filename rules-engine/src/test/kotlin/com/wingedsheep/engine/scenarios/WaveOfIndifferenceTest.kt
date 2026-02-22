@@ -3,13 +3,9 @@ package com.wingedsheep.engine.scenarios
 import com.wingedsheep.engine.core.DeclareBlockers
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
-import com.wingedsheep.sdk.core.ManaCost
+import com.wingedsheep.mtg.sets.definitions.onslaught.cards.WaveOfIndifference
 import com.wingedsheep.sdk.core.Step
-import com.wingedsheep.sdk.model.CardDefinition
-import com.wingedsheep.sdk.model.CardScript
 import com.wingedsheep.sdk.model.Deck
-import com.wingedsheep.sdk.scripting.effects.CantBlockTargetCreaturesEffect
-import com.wingedsheep.sdk.scripting.targets.TargetCreature
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContainIgnoringCase
@@ -22,19 +18,9 @@ import io.kotest.matchers.string.shouldContainIgnoringCase
  */
 class WaveOfIndifferenceTest : FunSpec({
 
-    val WaveOfIndifference = CardDefinition.sorcery(
-        name = "Wave of Indifference",
-        manaCost = ManaCost.parse("{X}{R}"),
-        oracleText = "X target creatures can't block this turn.",
-        script = CardScript.spell(
-            effect = CantBlockTargetCreaturesEffect(),
-            TargetCreature(count = 20, optional = true)
-        )
-    )
-
     fun createDriver(): GameTestDriver {
         val driver = GameTestDriver()
-        driver.registerCards(TestCards.all + listOf(WaveOfIndifference))
+        driver.registerCards(TestCards.all)
         driver.initMirrorMatch(
             deck = Deck.of(
                 "Mountain" to 10,

@@ -4,17 +4,13 @@ import com.wingedsheep.engine.state.components.battlefield.DamageComponent
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
+import com.wingedsheep.mtg.sets.definitions.onslaught.cards.DauntingDefender
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.model.CardDefinition
-import com.wingedsheep.sdk.model.CardScript
 import com.wingedsheep.sdk.model.Deck
-import com.wingedsheep.sdk.scripting.GameEvent
-import com.wingedsheep.sdk.scripting.GameObjectFilter
-import com.wingedsheep.sdk.scripting.PreventDamage
-import com.wingedsheep.sdk.scripting.events.RecipientFilter
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 
@@ -28,27 +24,6 @@ import io.kotest.matchers.shouldBe
  */
 class DauntingDefenderTest : FunSpec({
 
-    val DauntingDefender = CardDefinition.creature(
-        name = "Daunting Defender",
-        manaCost = ManaCost.parse("{4}{W}"),
-        subtypes = setOf(Subtype("Human"), Subtype("Cleric")),
-        power = 3,
-        toughness = 3,
-        oracleText = "If a source would deal damage to a Cleric creature you control, prevent 1 of that damage.",
-        script = CardScript.permanent(
-            replacementEffects = listOf(
-                PreventDamage(
-                    amount = 1,
-                    appliesTo = GameEvent.DamageEvent(
-                        recipient = RecipientFilter.Matching(
-                            GameObjectFilter.Creature.withSubtype(Subtype("Cleric")).youControl()
-                        )
-                    )
-                )
-            )
-        )
-    )
-
     val TestCleric = CardDefinition.creature(
         name = "Test Cleric",
         manaCost = ManaCost.parse("{W}"),
@@ -60,7 +35,7 @@ class DauntingDefenderTest : FunSpec({
 
     fun createDriver(): GameTestDriver {
         val driver = GameTestDriver()
-        driver.registerCards(TestCards.all + listOf(DauntingDefender, TestCleric))
+        driver.registerCards(TestCards.all + listOf(TestCleric))
         return driver
     }
 

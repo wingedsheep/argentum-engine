@@ -4,22 +4,15 @@ import com.wingedsheep.engine.core.ActivateAbility
 import com.wingedsheep.engine.mechanics.layers.StateProjector
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
+import com.wingedsheep.mtg.sets.definitions.onslaught.cards.CrownOfVigor
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.model.CardDefinition
-import com.wingedsheep.sdk.model.CardScript
 import com.wingedsheep.sdk.model.Deck
-import com.wingedsheep.sdk.scripting.AbilityId
-import com.wingedsheep.sdk.scripting.AbilityCost
-import com.wingedsheep.sdk.scripting.ActivatedAbility
-import com.wingedsheep.sdk.scripting.effects.GrantToEnchantedCreatureTypeGroupEffect
-import com.wingedsheep.sdk.scripting.ModifyStats
-import com.wingedsheep.sdk.scripting.targets.TargetCreature
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
-import java.util.UUID
 
 /**
  * Tests for Crown of Vigor.
@@ -33,29 +26,7 @@ import java.util.UUID
  */
 class CrownOfVigorTest : FunSpec({
 
-    val crownAbilityId = AbilityId(UUID.randomUUID().toString())
-
-    val CrownOfVigor = CardDefinition.aura(
-        name = "Crown of Vigor",
-        manaCost = ManaCost.parse("{1}{G}"),
-        oracleText = "Enchant creature\nEnchanted creature gets +1/+1.\nSacrifice Crown of Vigor: Enchanted creature and other creatures that share a creature type with it get +1/+1 until end of turn.",
-        script = CardScript(
-            auraTarget = TargetCreature(),
-            staticAbilities = listOf(
-                ModifyStats(1, 1)
-            ),
-            activatedAbilities = listOf(
-                ActivatedAbility(
-                    id = crownAbilityId,
-                    cost = AbilityCost.SacrificeSelf,
-                    effect = GrantToEnchantedCreatureTypeGroupEffect(
-                        powerModifier = 1,
-                        toughnessModifier = 1
-                    )
-                )
-            )
-        )
-    )
+    val crownAbilityId = CrownOfVigor.activatedAbilities.first().id
 
     // Elf Warrior - 2/3
     val ElfWarrior = CardDefinition.creature(
@@ -99,7 +70,7 @@ class CrownOfVigorTest : FunSpec({
         val driver = GameTestDriver()
         driver.registerCards(
             TestCards.all + listOf(
-                CrownOfVigor, ElfWarrior, ElfDruid, HumanWarrior, GoblinRogue
+                ElfWarrior, ElfDruid, HumanWarrior, GoblinRogue
             )
         )
         return driver

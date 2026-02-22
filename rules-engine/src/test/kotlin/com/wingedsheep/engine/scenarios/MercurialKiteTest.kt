@@ -2,20 +2,13 @@ package com.wingedsheep.engine.scenarios
 
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
-import com.wingedsheep.sdk.core.*
+import com.wingedsheep.mtg.sets.definitions.scourge.cards.MercurialKite
+import com.wingedsheep.sdk.core.Keyword
+import com.wingedsheep.sdk.core.ManaCost
+import com.wingedsheep.sdk.core.Step
+import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.model.CardDefinition
-import com.wingedsheep.sdk.model.CardScript
 import com.wingedsheep.sdk.model.Deck
-import com.wingedsheep.sdk.scripting.Duration
-import com.wingedsheep.sdk.scripting.GameEvent
-import com.wingedsheep.sdk.scripting.TriggerBinding
-import com.wingedsheep.sdk.scripting.TriggeredAbility
-import com.wingedsheep.sdk.scripting.effects.CompositeEffect
-import com.wingedsheep.sdk.scripting.effects.GrantKeywordUntilEndOfTurnEffect
-import com.wingedsheep.sdk.scripting.effects.TapUntapEffect
-import com.wingedsheep.sdk.scripting.events.DamageType
-import com.wingedsheep.sdk.scripting.events.RecipientFilter
-import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 
@@ -31,26 +24,6 @@ import io.kotest.matchers.shouldBe
  */
 class MercurialKiteTest : FunSpec({
 
-    val MercurialKite = CardDefinition.creature(
-        name = "Mercurial Kite",
-        manaCost = ManaCost.parse("{3}{U}"),
-        subtypes = setOf(Subtype("Bird")),
-        power = 2,
-        toughness = 1,
-        keywords = setOf(Keyword.FLYING),
-        oracleText = "Flying\nWhenever Mercurial Kite deals combat damage to a creature, tap that creature. It doesn't untap during its controller's next untap step.",
-        script = CardScript.creature(
-            TriggeredAbility.create(
-                trigger = GameEvent.DealsDamageEvent(damageType = DamageType.Combat, recipient = RecipientFilter.AnyCreature),
-                binding = TriggerBinding.SELF,
-                effect = CompositeEffect(listOf(
-                    TapUntapEffect(EffectTarget.TriggeringEntity, tap = true),
-                    GrantKeywordUntilEndOfTurnEffect(Keyword.DOESNT_UNTAP, EffectTarget.TriggeringEntity, Duration.UntilYourNextTurn)
-                ))
-            )
-        )
-    )
-
     // A 1/4 with reach so it can block the flying Kite, both survive combat
     val ReachCreature = CardDefinition.creature(
         name = "Reach Creature",
@@ -63,7 +36,7 @@ class MercurialKiteTest : FunSpec({
 
     fun createDriver(): GameTestDriver {
         val driver = GameTestDriver()
-        driver.registerCards(TestCards.all + listOf(MercurialKite, ReachCreature))
+        driver.registerCards(TestCards.all + listOf(ReachCreature))
         return driver
     }
 

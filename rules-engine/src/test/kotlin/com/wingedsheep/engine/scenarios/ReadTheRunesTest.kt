@@ -4,12 +4,8 @@ import com.wingedsheep.engine.core.PermanentsSacrificedEvent
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
 import com.wingedsheep.sdk.core.Color
-import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.Step
-import com.wingedsheep.sdk.model.CardDefinition
-import com.wingedsheep.sdk.model.CardScript
 import com.wingedsheep.sdk.model.Deck
-import com.wingedsheep.sdk.scripting.effects.ReadTheRunesEffect
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 
@@ -22,18 +18,9 @@ import io.kotest.matchers.shouldBe
  */
 class ReadTheRunesTest : FunSpec({
 
-    val ReadTheRunes = CardDefinition.instant(
-        name = "Read the Runes",
-        manaCost = ManaCost.parse("{X}{U}"),
-        oracleText = "Draw X cards. For each card drawn this way, discard a card unless you sacrifice a permanent.",
-        script = CardScript.spell(
-            effect = ReadTheRunesEffect
-        )
-    )
-
     fun createDriver(): GameTestDriver {
         val driver = GameTestDriver()
-        driver.registerCards(TestCards.all + listOf(ReadTheRunes))
+        driver.registerCards(TestCards.all)
         return driver
     }
 

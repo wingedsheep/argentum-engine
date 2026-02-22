@@ -4,21 +4,14 @@ import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
+import com.wingedsheep.mtg.sets.definitions.onslaught.cards.UnifiedStrike
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.core.Zone
-import com.wingedsheep.sdk.dsl.Conditions
-import com.wingedsheep.sdk.dsl.DynamicAmounts
 import com.wingedsheep.sdk.model.CardDefinition
-import com.wingedsheep.sdk.model.CardScript
 import com.wingedsheep.sdk.model.Deck
-import com.wingedsheep.sdk.scripting.effects.ConditionalEffect
-import com.wingedsheep.sdk.scripting.targets.EffectTarget
-import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
-import com.wingedsheep.sdk.scripting.targets.TargetCreature
-import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.shouldBe
@@ -34,21 +27,6 @@ import io.kotest.matchers.shouldNotBe
  */
 class UnifiedStrikeTest : FunSpec({
 
-    val UnifiedStrike = CardDefinition.instant(
-        name = "Unified Strike",
-        manaCost = ManaCost.parse("{W}"),
-        oracleText = "Exile target attacking creature if its power is less than or equal to the number of Soldiers on the battlefield.",
-        script = CardScript.spell(
-            effect = ConditionalEffect(
-                condition = Conditions.TargetPowerAtMost(
-                    DynamicAmounts.creaturesWithSubtype(Subtype("Soldier"))
-                ),
-                effect = MoveToZoneEffect(EffectTarget.BoundVariable("target"), Zone.EXILE)
-            ),
-            TargetCreature(id = "target", filter = TargetFilter.AttackingCreature)
-        )
-    )
-
     val TestSoldier = CardDefinition.creature(
         name = "Test Soldier",
         manaCost = ManaCost.parse("{W}"),
@@ -60,7 +38,7 @@ class UnifiedStrikeTest : FunSpec({
 
     fun createDriver(): GameTestDriver {
         val driver = GameTestDriver()
-        driver.registerCards(TestCards.all + listOf(UnifiedStrike, TestSoldier))
+        driver.registerCards(TestCards.all + listOf(TestSoldier))
         return driver
     }
 

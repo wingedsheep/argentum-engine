@@ -2,21 +2,14 @@ package com.wingedsheep.engine.scenarios
 
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
+import com.wingedsheep.mtg.sets.definitions.scourge.cards.LingeringDeath
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.core.Subtype
-import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.CardDefinition
-import com.wingedsheep.sdk.model.CardScript
 import com.wingedsheep.sdk.model.Deck
 import com.wingedsheep.sdk.model.EntityId
-import com.wingedsheep.sdk.scripting.GameEvent
-import com.wingedsheep.sdk.scripting.TriggerBinding
-import com.wingedsheep.sdk.scripting.TriggeredAbility
-import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
-import com.wingedsheep.sdk.scripting.targets.EffectTarget
-import com.wingedsheep.sdk.scripting.targets.TargetCreature
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 
@@ -31,25 +24,6 @@ import io.kotest.matchers.shouldBe
  */
 class LingeringDeathTest : FunSpec({
 
-    val LingeringDeath = CardDefinition.aura(
-        name = "Lingering Death",
-        manaCost = ManaCost.parse("{1}{B}"),
-        oracleText = "Enchant creature\nAt the beginning of the end step of enchanted creature's controller, that player sacrifices that creature.",
-        script = CardScript(
-            auraTarget = TargetCreature(),
-            triggeredAbilities = listOf(
-                TriggeredAbility.create(
-                    trigger = GameEvent.EnchantedCreatureControllerStepEvent(Step.END),
-                    binding = TriggerBinding.ANY,
-                    effect = MoveToZoneEffect(
-                        target = EffectTarget.EnchantedCreature,
-                        destination = Zone.GRAVEYARD
-                    )
-                )
-            )
-        )
-    )
-
     val TestCreature = CardDefinition.creature(
         name = "Test Creature",
         manaCost = ManaCost.parse("{1}{B}"),
@@ -60,7 +34,7 @@ class LingeringDeathTest : FunSpec({
 
     fun createDriver(): GameTestDriver {
         val driver = GameTestDriver()
-        driver.registerCards(TestCards.all + listOf(LingeringDeath, TestCreature))
+        driver.registerCards(TestCards.all + listOf(TestCreature))
         return driver
     }
 

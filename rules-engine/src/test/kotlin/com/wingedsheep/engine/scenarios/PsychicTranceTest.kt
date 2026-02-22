@@ -4,20 +4,16 @@ import com.wingedsheep.engine.core.ActivateAbility
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
-import com.wingedsheep.sdk.core.*
-import com.wingedsheep.sdk.dsl.Targets
+import com.wingedsheep.mtg.sets.definitions.onslaught.cards.PsychicTrance
+import com.wingedsheep.sdk.core.Color
+import com.wingedsheep.sdk.core.ManaCost
+import com.wingedsheep.sdk.core.Step
+import com.wingedsheep.sdk.core.Subtype
+import com.wingedsheep.sdk.core.TypeLine
 import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.CardScript
 import com.wingedsheep.sdk.model.CreatureStats
 import com.wingedsheep.sdk.model.Deck
-import com.wingedsheep.sdk.scripting.AbilityCost
-import com.wingedsheep.sdk.scripting.AbilityId
-import com.wingedsheep.sdk.scripting.ActivatedAbility
-import com.wingedsheep.sdk.scripting.effects.CounterSpellEffect
-import com.wingedsheep.sdk.scripting.Duration
-import com.wingedsheep.sdk.scripting.GameObjectFilter
-import com.wingedsheep.sdk.scripting.effects.GrantActivatedAbilityToGroupEffect
-import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.shouldBe
@@ -29,24 +25,6 @@ import io.kotest.matchers.shouldBe
  * Until end of turn, Wizards you control gain "{T}: Counter target spell."
  */
 class PsychicTranceTest : FunSpec({
-
-    val PsychicTrance = CardDefinition.instant(
-        name = "Psychic Trance",
-        manaCost = ManaCost.parse("{2}{U}{U}"),
-        oracleText = "Until end of turn, Wizards you control gain \"{T}: Counter target spell.\"",
-        script = CardScript.spell(
-            effect = GrantActivatedAbilityToGroupEffect(
-                ability = ActivatedAbility(
-                    id = AbilityId.generate(),
-                    cost = AbilityCost.Tap,
-                    effect = CounterSpellEffect,
-                    targetRequirement = Targets.Spell
-                ),
-                filter = GroupFilter(GameObjectFilter.Creature.withSubtype("Wizard").youControl()),
-                duration = Duration.EndOfTurn
-            )
-        )
-    )
 
     val TestWizard = CardDefinition(
         name = "Test Wizard",
@@ -66,7 +44,7 @@ class PsychicTranceTest : FunSpec({
 
     fun createDriver(): GameTestDriver {
         val driver = GameTestDriver()
-        driver.registerCards(TestCards.all + listOf(PsychicTrance, TestWizard, TestWarrior))
+        driver.registerCards(TestCards.all + listOf(TestWizard, TestWarrior))
         return driver
     }
 

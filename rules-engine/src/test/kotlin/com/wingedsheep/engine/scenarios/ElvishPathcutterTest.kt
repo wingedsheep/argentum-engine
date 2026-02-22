@@ -4,26 +4,17 @@ import com.wingedsheep.engine.core.ActivateAbility
 import com.wingedsheep.engine.mechanics.layers.StateProjector
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
+import com.wingedsheep.mtg.sets.definitions.onslaught.cards.ElvishPathcutter
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.core.Subtype
-import com.wingedsheep.sdk.scripting.AbilityId
 import com.wingedsheep.sdk.model.CardDefinition
-import com.wingedsheep.sdk.model.CardScript
 import com.wingedsheep.sdk.model.Deck
-import com.wingedsheep.sdk.scripting.AbilityCost
-import com.wingedsheep.sdk.scripting.ActivatedAbility
-import com.wingedsheep.sdk.scripting.targets.EffectTarget
-import com.wingedsheep.sdk.scripting.GameObjectFilter
-import com.wingedsheep.sdk.scripting.effects.GrantKeywordUntilEndOfTurnEffect
-import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
-import com.wingedsheep.sdk.scripting.targets.TargetPermanent
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
-import java.util.UUID
 
 /**
  * Tests for Elvish Pathcutter.
@@ -35,26 +26,7 @@ import java.util.UUID
  */
 class ElvishPathcutterTest : FunSpec({
 
-    val pathcutterAbilityId = AbilityId(UUID.randomUUID().toString())
-
-    val ElvishPathcutter = CardDefinition.creature(
-        name = "Elvish Pathcutter",
-        manaCost = ManaCost.parse("{3}{G}"),
-        subtypes = setOf(Subtype("Elf"), Subtype("Scout")),
-        power = 1,
-        toughness = 2,
-        oracleText = "{2}{G}: Target Elf creature gains forestwalk until end of turn.",
-        script = CardScript.permanent(
-            ActivatedAbility(
-                id = pathcutterAbilityId,
-                cost = AbilityCost.Mana(ManaCost.parse("{2}{G}")),
-                effect = GrantKeywordUntilEndOfTurnEffect(Keyword.FORESTWALK, EffectTarget.BoundVariable("target")),
-                targetRequirement = TargetPermanent(id = "target",
-                    filter = TargetFilter(GameObjectFilter.Creature.withSubtype("Elf"))
-                )
-            )
-        )
-    )
+    val pathcutterAbilityId = ElvishPathcutter.activatedAbilities.first().id
 
     val ElvishWarrior = CardDefinition.creature(
         name = "Elvish Warrior",
@@ -78,7 +50,7 @@ class ElvishPathcutterTest : FunSpec({
 
     fun createDriver(): GameTestDriver {
         val driver = GameTestDriver()
-        driver.registerCards(TestCards.all + listOf(ElvishPathcutter, ElvishWarrior, GlorySeeker))
+        driver.registerCards(TestCards.all + listOf(ElvishWarrior, GlorySeeker))
         return driver
     }
 

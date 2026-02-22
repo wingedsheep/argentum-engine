@@ -6,20 +6,15 @@ import com.wingedsheep.engine.core.OptionChosenResponse
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
+import com.wingedsheep.mtg.sets.definitions.onslaught.cards.RiptideChronologist
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.model.CardDefinition
-import com.wingedsheep.sdk.model.CardScript
 import com.wingedsheep.sdk.model.Deck
-import com.wingedsheep.sdk.scripting.AbilityCost
-import com.wingedsheep.sdk.scripting.AbilityId
-import com.wingedsheep.sdk.scripting.ActivatedAbility
-import com.wingedsheep.sdk.scripting.effects.ChooseCreatureTypeUntapEffect
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
-import java.util.UUID
 
 /**
  * Tests for Riptide Chronologist.
@@ -29,7 +24,7 @@ import java.util.UUID
  */
 class RiptideChronologistTest : FunSpec({
 
-    val abilityId = AbilityId(UUID.randomUUID().toString())
+    val abilityId = RiptideChronologist.activatedAbilities.first().id
 
     val ElvishWarrior = CardDefinition.creature(
         name = "Elvish Warrior",
@@ -40,29 +35,9 @@ class RiptideChronologistTest : FunSpec({
         subtypes = setOf(Subtype("Elf"), Subtype("Warrior"))
     )
 
-    val RiptideChronologist = CardDefinition.creature(
-        name = "Riptide Chronologist",
-        manaCost = ManaCost.parse("{3}{U}{U}"),
-        oracleText = "{U}, Sacrifice Riptide Chronologist: Untap all creatures of the creature type of your choice.",
-        power = 1,
-        toughness = 3,
-        subtypes = setOf(Subtype("Human"), Subtype("Wizard")),
-        script = CardScript.permanent(
-            ActivatedAbility(
-                id = abilityId,
-                cost = AbilityCost.Composite(listOf(
-                    AbilityCost.Mana(ManaCost.parse("{U}")),
-                    AbilityCost.SacrificeSelf
-                )),
-                effect = ChooseCreatureTypeUntapEffect
-            )
-        )
-    )
-
     fun createDriver(): GameTestDriver {
         val driver = GameTestDriver()
         driver.registerCards(TestCards.all)
-        driver.registerCard(RiptideChronologist)
         driver.registerCard(ElvishWarrior)
         driver.initMirrorMatch(
             deck = Deck.of(

@@ -2,21 +2,14 @@ package com.wingedsheep.engine.scenarios
 
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
+import com.wingedsheep.mtg.sets.definitions.onslaught.cards.FalseCure
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.CardScript
 import com.wingedsheep.sdk.model.Deck
-import com.wingedsheep.sdk.scripting.effects.CreateGlobalTriggeredAbilityUntilEndOfTurnEffect
-import com.wingedsheep.sdk.scripting.values.DynamicAmount
-import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.effects.GainLifeEffect
-import com.wingedsheep.sdk.scripting.effects.LoseLifeEffect
-import com.wingedsheep.sdk.scripting.GameEvent
-import com.wingedsheep.sdk.scripting.TriggerBinding
-import com.wingedsheep.sdk.scripting.references.Player
-import com.wingedsheep.sdk.scripting.TriggeredAbility
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 
@@ -37,27 +30,9 @@ class FalseCureTest : FunSpec({
         script = CardScript.spell(effect = GainLifeEffect(4))
     )
 
-    val FalseCure = CardDefinition.instant(
-        name = "False Cure",
-        manaCost = ManaCost.parse("{B}{B}"),
-        oracleText = "Until end of turn, whenever a player gains life, that player loses 2 life for each 1 life they gained.",
-        script = CardScript.spell(
-            effect = CreateGlobalTriggeredAbilityUntilEndOfTurnEffect(
-                ability = TriggeredAbility.create(
-                    trigger = GameEvent.LifeGainEvent(Player.Each),
-                    binding = TriggerBinding.ANY,
-                    effect = LoseLifeEffect(
-                        amount = DynamicAmount.Multiply(DynamicAmount.TriggerLifeGainAmount, 2),
-                        target = EffectTarget.PlayerRef(Player.TriggeringPlayer)
-                    )
-                )
-            )
-        )
-    )
-
     fun createDriver(): GameTestDriver {
         val driver = GameTestDriver()
-        driver.registerCards(TestCards.all + listOf(HealingSalve, FalseCure))
+        driver.registerCards(TestCards.all + listOf(HealingSalve))
         return driver
     }
 
@@ -139,7 +114,7 @@ class FalseCureTest : FunSpec({
         )
 
         val driver = GameTestDriver()
-        driver.registerCards(TestCards.all + listOf(BigHeal, FalseCure))
+        driver.registerCards(TestCards.all + listOf(BigHeal))
         driver.initMirrorMatch(
             deck = Deck.of("Grizzly Bears" to 40),
             startingLife = 20

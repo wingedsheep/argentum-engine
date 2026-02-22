@@ -3,21 +3,13 @@ package com.wingedsheep.engine.scenarios
 import com.wingedsheep.engine.mechanics.layers.StateProjector
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
-import com.wingedsheep.sdk.core.Keyword
+import com.wingedsheep.mtg.sets.definitions.onslaught.cards.ThoughtboundPrimoc
 import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.model.CardDefinition
-import com.wingedsheep.sdk.model.CardScript
 import com.wingedsheep.sdk.model.Deck
 import com.wingedsheep.sdk.model.EntityId
-import com.wingedsheep.sdk.scripting.conditions.APlayerControlsMostOfSubtype
-import com.wingedsheep.sdk.scripting.effects.ConditionalEffect
-import com.wingedsheep.sdk.scripting.effects.GainControlByMostOfSubtypeEffect
-import com.wingedsheep.sdk.scripting.GameEvent
-import com.wingedsheep.sdk.scripting.TriggerBinding
-import com.wingedsheep.sdk.scripting.references.Player
-import com.wingedsheep.sdk.scripting.TriggeredAbility
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 
@@ -47,31 +39,11 @@ class ThoughtboundPrimocTest : FunSpec({
         toughness = 1
     )
 
-    // Recreate Thoughtbound Primoc for rules-engine tests (no mtg-sets dependency)
-    val ThoughtboundPrimoc = CardDefinition.creature(
-        name = "Thoughtbound Primoc",
-        manaCost = ManaCost.parse("{2}{R}"),
-        subtypes = setOf(Subtype("Bird"), Subtype("Beast")),
-        keywords = setOf(Keyword.FLYING),
-        power = 2,
-        toughness = 3,
-        script = CardScript.creature(
-            TriggeredAbility.create(
-                trigger = GameEvent.StepEvent(Step.UPKEEP, Player.You),
-                binding = TriggerBinding.ANY,
-                effect = ConditionalEffect(
-                    condition = APlayerControlsMostOfSubtype(Subtype("Wizard")),
-                    effect = GainControlByMostOfSubtypeEffect(Subtype("Wizard"))
-                )
-            )
-        )
-    )
-
     val projector = StateProjector()
 
     fun createDriver(): GameTestDriver {
         val driver = GameTestDriver()
-        driver.registerCards(TestCards.all + listOf(ThoughtboundPrimoc, TestWizard))
+        driver.registerCards(TestCards.all + listOf(TestWizard))
         driver.initMirrorMatch(
             deck = Deck.of("Mountain" to 40),
             startingLife = 20

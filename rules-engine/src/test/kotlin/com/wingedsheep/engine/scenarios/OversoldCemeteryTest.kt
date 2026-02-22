@@ -3,19 +3,10 @@ package com.wingedsheep.engine.scenarios
 import com.wingedsheep.engine.core.ChooseTargetsDecision
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
-import com.wingedsheep.sdk.core.*
-import com.wingedsheep.sdk.model.CardDefinition
-import com.wingedsheep.sdk.model.CardScript
+import com.wingedsheep.mtg.sets.definitions.onslaught.cards.OversoldCemetery
+import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.model.Deck
 import com.wingedsheep.sdk.model.EntityId
-import com.wingedsheep.sdk.scripting.*
-import com.wingedsheep.sdk.dsl.Conditions
-import com.wingedsheep.sdk.scripting.effects.ConditionalEffect
-import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
-import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
-import com.wingedsheep.sdk.scripting.targets.EffectTarget
-import com.wingedsheep.sdk.scripting.references.Player
-import com.wingedsheep.sdk.scripting.targets.TargetObject
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.collections.shouldNotContain
@@ -30,38 +21,9 @@ import io.kotest.matchers.types.shouldBeInstanceOf
  */
 class OversoldCemeteryTest : FunSpec({
 
-    val OversoldCemetery = CardDefinition.enchantment(
-        name = "Oversold Cemetery",
-        manaCost = ManaCost.parse("{1}{B}"),
-        oracleText = "At the beginning of your upkeep, if you have four or more creature cards in your graveyard, you may return target creature card from your graveyard to your hand.",
-        script = CardScript.permanent(
-            triggeredAbilities = listOf(
-                TriggeredAbility.create(
-                    trigger = GameEvent.StepEvent(Step.UPKEEP, Player.You),
-                    binding = TriggerBinding.ANY,
-                    optional = true,
-                    triggerCondition = Conditions.CreatureCardsInGraveyardAtLeast(4),
-                    targetRequirement = TargetObject(id = "target",
-                        filter = TargetFilter(
-                            GameObjectFilter.Creature.ownedByYou(),
-                            zone = Zone.GRAVEYARD
-                        )
-                    ),
-                    effect = ConditionalEffect(
-                        condition = Conditions.CreatureCardsInGraveyardAtLeast(4),
-                        effect = MoveToZoneEffect(
-                            target = EffectTarget.BoundVariable("target"),
-                            destination = Zone.HAND
-                        )
-                    )
-                )
-            )
-        )
-    )
-
     fun createDriver(): GameTestDriver {
         val driver = GameTestDriver()
-        driver.registerCards(TestCards.all + listOf(OversoldCemetery))
+        driver.registerCards(TestCards.all)
         return driver
     }
 

@@ -160,7 +160,8 @@ class DrawReplacementContinuationResumer(
                     abilityEffect = continuation.abilityEffect,
                     drawCount = continuation.drawCount,
                     isDrawStep = continuation.isDrawStep,
-                    drawnCardsSoFar = continuation.drawnCardsSoFar
+                    drawnCardsSoFar = continuation.drawnCardsSoFar,
+                    targetRequirements = continuation.targetRequirements
                 )
 
                 val stateWithDecision = newState.withPendingDecision(targetDecision)
@@ -326,7 +327,8 @@ class DrawReplacementContinuationResumer(
             controllerId = playerId,
             sourceId = continuation.sourceId,
             opponentId = opponents.firstOrNull(),
-            targets = chosenTargets
+            targets = chosenTargets,
+            namedTargets = EffectContext.buildNamedTargets(continuation.targetRequirements, chosenTargets)
         )
         val effectResult = ctx.effectExecutorRegistry.execute(
             newState, continuation.abilityEffect, effectContext

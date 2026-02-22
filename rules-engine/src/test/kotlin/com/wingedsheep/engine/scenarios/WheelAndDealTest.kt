@@ -4,17 +4,10 @@ import com.wingedsheep.engine.core.CardsDiscardedEvent
 import com.wingedsheep.engine.core.CardsDrawnEvent
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
+import com.wingedsheep.mtg.sets.definitions.onslaught.cards.WheelAndDeal
 import com.wingedsheep.sdk.core.Color
-import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.Step
-import com.wingedsheep.sdk.dsl.Effects
-import com.wingedsheep.sdk.model.CardDefinition
-import com.wingedsheep.sdk.model.CardScript
 import com.wingedsheep.sdk.model.Deck
-import com.wingedsheep.sdk.scripting.effects.CompositeEffect
-import com.wingedsheep.sdk.scripting.effects.DrawCardsEffect
-import com.wingedsheep.sdk.scripting.targets.EffectTarget
-import com.wingedsheep.sdk.scripting.targets.TargetOpponent
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 
@@ -27,25 +20,9 @@ import io.kotest.matchers.shouldBe
  */
 class WheelAndDealTest : FunSpec({
 
-    val WheelAndDeal = CardDefinition.instant(
-        name = "Wheel and Deal",
-        manaCost = ManaCost.parse("{3}{U}"),
-        oracleText = "Any number of target opponents each discard their hands, then draw seven cards. Draw a card.",
-        script = CardScript.spell(
-            targets = arrayOf(TargetOpponent()),
-            effect = CompositeEffect(
-                listOf(
-                    Effects.DiscardHand(EffectTarget.ContextTarget(0)),
-                    DrawCardsEffect(7, target = EffectTarget.ContextTarget(0)),
-                    DrawCardsEffect(1, target = EffectTarget.Controller)
-                )
-            )
-        )
-    )
-
     fun createDriver(): GameTestDriver {
         val driver = GameTestDriver()
-        driver.registerCards(TestCards.all + listOf(WheelAndDeal))
+        driver.registerCards(TestCards.all)
         return driver
     }
 

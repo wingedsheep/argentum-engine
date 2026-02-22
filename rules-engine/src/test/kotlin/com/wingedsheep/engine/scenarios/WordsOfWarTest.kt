@@ -4,21 +4,18 @@ import com.wingedsheep.engine.core.ActivateAbility
 import com.wingedsheep.engine.core.ChooseTargetsDecision
 import com.wingedsheep.engine.core.SelectManaSourcesDecision
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
+import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
+import com.wingedsheep.mtg.sets.definitions.onslaught.cards.WordsOfWar
+import com.wingedsheep.mtg.sets.definitions.onslaught.cards.WordsOfWilding
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.Step
-import com.wingedsheep.sdk.dsl.Costs
-import com.wingedsheep.sdk.dsl.Effects
-import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.CardScript
 import com.wingedsheep.sdk.model.Deck
 import com.wingedsheep.sdk.scripting.effects.DrawCardsEffect
-import com.wingedsheep.sdk.scripting.targets.EffectTarget
-import com.wingedsheep.sdk.scripting.targets.TargetCreatureOrPlayer
-import com.wingedsheep.engine.state.components.identity.CardComponent
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
@@ -31,18 +28,6 @@ import io.kotest.matchers.shouldNotBe
  * {1}: The next time you would draw a card this turn, this enchantment deals 2 damage to any target instead.
  */
 class WordsOfWarTest : FunSpec({
-
-    val WordsOfWar = card("Words of War") {
-        manaCost = "{2}{R}"
-        typeLine = "Enchantment"
-
-        activatedAbility {
-            cost = Costs.Mana("{1}")
-            target = TargetCreatureOrPlayer()
-            effect = Effects.ReplaceNextDraw(Effects.DealDamage(2, EffectTarget.ContextTarget(0)))
-            promptOnDraw = true
-        }
-    }
 
     // A simple draw spell for testing
     val Inspiration = CardDefinition.instant(
@@ -64,7 +49,7 @@ class WordsOfWarTest : FunSpec({
 
     fun createDriver(): GameTestDriver {
         val driver = GameTestDriver()
-        driver.registerCards(TestCards.all + listOf(WordsOfWar, Inspiration, Concentrate))
+        driver.registerCards(TestCards.all + listOf(Inspiration, Concentrate))
         return driver
     }
 
@@ -516,19 +501,6 @@ class WordsOfWarTest : FunSpec({
 
     // --- Multiple Words cards tests ---
 
-    val WordsOfWilding = card("Words of Wilding") {
-        manaCost = "{2}{G}"
-        typeLine = "Enchantment"
-
-        activatedAbility {
-            cost = Costs.Mana("{1}")
-            effect = Effects.ReplaceNextDraw(
-                Effects.CreateToken(power = 2, toughness = 2, colors = setOf(Color.GREEN), creatureTypes = setOf("Bear"))
-            )
-            promptOnDraw = true
-        }
-    }
-
     fun GameTestDriver.countBears(playerId: com.wingedsheep.sdk.model.EntityId): Int {
         return getCreatures(playerId).count { entityId ->
             state.getEntity(entityId)?.get<CardComponent>()?.name == "Bear Token"
@@ -537,7 +509,7 @@ class WordsOfWarTest : FunSpec({
 
     fun createMultiWordsDriver(): GameTestDriver {
         val driver = GameTestDriver()
-        driver.registerCards(TestCards.all + listOf(WordsOfWar, WordsOfWilding, Inspiration, Concentrate))
+        driver.registerCards(TestCards.all + listOf(Inspiration, Concentrate))
         return driver
     }
 

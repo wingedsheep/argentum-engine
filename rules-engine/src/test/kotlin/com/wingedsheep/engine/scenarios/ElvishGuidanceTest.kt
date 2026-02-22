@@ -6,18 +6,14 @@ import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.components.player.ManaPoolComponent
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
+import com.wingedsheep.mtg.sets.definitions.onslaught.cards.ElvishGuidance
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.core.Subtype
-import com.wingedsheep.sdk.dsl.DynamicAmounts
 import com.wingedsheep.sdk.dsl.basicLand
 import com.wingedsheep.sdk.model.CardDefinition
-import com.wingedsheep.sdk.model.CardScript
 import com.wingedsheep.sdk.model.Deck
-import com.wingedsheep.sdk.scripting.AdditionalManaOnTap
-import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
-import com.wingedsheep.sdk.scripting.targets.TargetPermanent
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
@@ -35,21 +31,6 @@ class ElvishGuidanceTest : FunSpec({
 
     // Forest with explicit mana ability (needed for ActivateAbility in tests)
     val TestForest = basicLand("Forest") {}
-
-    val ElvishGuidance = CardDefinition.aura(
-        name = "Elvish Guidance",
-        manaCost = ManaCost.parse("{2}{G}"),
-        oracleText = "Enchant land\nWhenever enchanted land is tapped for mana, its controller adds an additional {G} for each Elf on the battlefield.",
-        script = CardScript(
-            auraTarget = TargetPermanent(filter = TargetFilter.Land),
-            staticAbilities = listOf(
-                AdditionalManaOnTap(
-                    color = Color.GREEN,
-                    amount = DynamicAmounts.creaturesWithSubtype(Subtype("Elf"))
-                )
-            )
-        )
-    )
 
     val TestElf = CardDefinition.creature(
         name = "Test Elf",
@@ -71,7 +52,7 @@ class ElvishGuidanceTest : FunSpec({
 
     fun createDriver(): GameTestDriver {
         val driver = GameTestDriver()
-        driver.registerCards(TestCards.all + listOf(ElvishGuidance, TestElf, TestGoblin, TestForest))
+        driver.registerCards(TestCards.all + listOf(TestElf, TestGoblin, TestForest))
         return driver
     }
 
@@ -204,7 +185,7 @@ class ElvishGuidanceTest : FunSpec({
 
     fun createRegistry(): CardRegistry {
         val registry = CardRegistry()
-        registry.register(TestCards.all + listOf(ElvishGuidance, TestElf, TestGoblin, TestForest))
+        registry.register(TestCards.all + listOf(TestElf, TestGoblin, TestForest))
         return registry
     }
 

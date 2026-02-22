@@ -2,14 +2,13 @@ package com.wingedsheep.engine.scenarios
 
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
+import com.wingedsheep.mtg.sets.definitions.onslaught.cards.EnchantresssPresence
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.Step
-import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.Deck
-import com.wingedsheep.sdk.scripting.effects.DrawCardsEffect
 import com.wingedsheep.sdk.scripting.effects.GainLifeEffect
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
@@ -22,16 +21,6 @@ import io.kotest.matchers.shouldBe
  * Whenever you cast an enchantment spell, draw a card.
  */
 class EnchantresssPresenceTest : FunSpec({
-
-    val EnchantresssPresence = card("Enchantress's Presence") {
-        manaCost = "{2}{G}"
-        typeLine = "Enchantment"
-
-        triggeredAbility {
-            trigger = Triggers.YouCastEnchantment
-            effect = DrawCardsEffect(1)
-        }
-    }
 
     val TestEnchantment = card("Test Enchantment") {
         manaCost = "{G}"
@@ -60,7 +49,7 @@ class EnchantresssPresenceTest : FunSpec({
 
     fun createDriver(): GameTestDriver {
         val driver = GameTestDriver()
-        driver.registerCards(TestCards.all + listOf(EnchantresssPresence, TestEnchantment, TestCreatureSpell, TestInstant))
+        driver.registerCards(TestCards.all + listOf(TestEnchantment, TestCreatureSpell, TestInstant))
         return driver
     }
 

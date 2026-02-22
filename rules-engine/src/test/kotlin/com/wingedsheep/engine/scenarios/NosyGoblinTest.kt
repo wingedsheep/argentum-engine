@@ -6,25 +6,13 @@ import com.wingedsheep.engine.state.components.identity.FaceDownComponent
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
-import com.wingedsheep.sdk.core.ManaCost
+import com.wingedsheep.mtg.sets.definitions.onslaught.cards.NosyGoblin
 import com.wingedsheep.sdk.core.Step
-import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.core.Zone
-import com.wingedsheep.sdk.model.CardDefinition
-import com.wingedsheep.sdk.model.CardScript
 import com.wingedsheep.sdk.model.Deck
-import com.wingedsheep.sdk.scripting.AbilityCost
-import com.wingedsheep.sdk.scripting.AbilityId
-import com.wingedsheep.sdk.scripting.ActivatedAbility
-import com.wingedsheep.sdk.scripting.targets.EffectTarget
-import com.wingedsheep.sdk.scripting.GameObjectFilter
-import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
-import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
-import com.wingedsheep.sdk.scripting.targets.TargetPermanent
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.shouldBe
-import java.util.UUID
 
 /**
  * Tests for Nosy Goblin.
@@ -36,30 +24,11 @@ import java.util.UUID
  */
 class NosyGoblinTest : FunSpec({
 
-    val nosyGoblinAbilityId = AbilityId(UUID.randomUUID().toString())
-
-    val NosyGoblin = CardDefinition.creature(
-        name = "Nosy Goblin",
-        manaCost = ManaCost.parse("{2}{R}"),
-        subtypes = setOf(Subtype("Goblin")),
-        power = 2,
-        toughness = 1,
-        oracleText = "{T}, Sacrifice Nosy Goblin: Destroy target face-down creature.",
-        script = CardScript.permanent(
-            ActivatedAbility(
-                id = nosyGoblinAbilityId,
-                cost = AbilityCost.Composite(listOf(AbilityCost.Tap, AbilityCost.SacrificeSelf)),
-                effect = MoveToZoneEffect(EffectTarget.BoundVariable("target"), Zone.GRAVEYARD, byDestruction = true),
-                targetRequirement = TargetPermanent(id = "target",
-                    filter = TargetFilter(GameObjectFilter.Creature.faceDown())
-                )
-            )
-        )
-    )
+    val nosyGoblinAbilityId = NosyGoblin.activatedAbilities.first().id
 
     fun createDriver(): GameTestDriver {
         val driver = GameTestDriver()
-        driver.registerCards(TestCards.all + listOf(NosyGoblin))
+        driver.registerCards(TestCards.all)
         return driver
     }
 

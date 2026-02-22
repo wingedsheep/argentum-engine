@@ -4,15 +4,12 @@ import com.wingedsheep.engine.core.ActivateAbility
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
+import com.wingedsheep.mtg.sets.definitions.onslaught.cards.ShieldmageElder
 import com.wingedsheep.sdk.core.*
 import com.wingedsheep.sdk.model.*
-import com.wingedsheep.sdk.scripting.*
+import com.wingedsheep.sdk.scripting.AdditionalCostPayment
 import com.wingedsheep.sdk.scripting.effects.DealDamageEffect
-import com.wingedsheep.sdk.scripting.effects.PreventAllDamageDealtByTargetEffect
-import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
-import com.wingedsheep.sdk.scripting.targets.TargetPermanent
-import com.wingedsheep.sdk.scripting.targets.TargetSpell
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 
@@ -26,37 +23,8 @@ import io.kotest.matchers.shouldBe
  */
 class ShieldmageElderTest : FunSpec({
 
-    val clericAbilityId = AbilityId("shieldmage-elder-ability-0")
-    val wizardAbilityId = AbilityId("shieldmage-elder-ability-1")
-
-    val ShieldmageElder = CardDefinition.creature(
-        name = "Shieldmage Elder",
-        manaCost = ManaCost.parse("{5}{W}"),
-        subtypes = setOf(Subtype("Human"), Subtype("Cleric"), Subtype("Wizard")),
-        power = 2,
-        toughness = 3,
-        oracleText = "Tap two untapped Clerics you control: Prevent all damage target creature would deal this turn.\nTap two untapped Wizards you control: Prevent all damage target spell would deal this turn.",
-        script = CardScript(
-            activatedAbilities = listOf(
-                ActivatedAbility(
-                    id = clericAbilityId,
-                    cost = AbilityCost.TapPermanents(2, GameObjectFilter.Creature.withSubtype("Cleric")),
-                    targetRequirements = listOf(TargetPermanent(filter = TargetFilter.Creature)),
-                    effect = PreventAllDamageDealtByTargetEffect(
-                        target = EffectTarget.ContextTarget(0)
-                    )
-                ),
-                ActivatedAbility(
-                    id = wizardAbilityId,
-                    cost = AbilityCost.TapPermanents(2, GameObjectFilter.Creature.withSubtype("Wizard")),
-                    targetRequirements = listOf(TargetSpell()),
-                    effect = PreventAllDamageDealtByTargetEffect(
-                        target = EffectTarget.ContextTarget(0)
-                    )
-                )
-            )
-        )
-    )
+    val clericAbilityId = ShieldmageElder.activatedAbilities[0].id
+    val wizardAbilityId = ShieldmageElder.activatedAbilities[1].id
 
     val TestWizard = CardDefinition.creature(
         name = "Test Wizard",
@@ -78,7 +46,7 @@ class ShieldmageElderTest : FunSpec({
 
     fun createDriver(): GameTestDriver {
         val driver = GameTestDriver()
-        driver.registerCards(TestCards.all + listOf(ShieldmageElder, TestWizard, LightningBolt))
+        driver.registerCards(TestCards.all + listOf(TestWizard, LightningBolt))
         return driver
     }
 

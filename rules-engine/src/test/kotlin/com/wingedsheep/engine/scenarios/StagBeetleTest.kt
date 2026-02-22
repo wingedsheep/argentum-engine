@@ -3,17 +3,10 @@ package com.wingedsheep.engine.scenarios
 import com.wingedsheep.engine.mechanics.layers.StateProjector
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
+import com.wingedsheep.mtg.sets.definitions.onslaught.cards.StagBeetle
 import com.wingedsheep.sdk.core.Color
-import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.Step
-import com.wingedsheep.sdk.core.Subtype
-import com.wingedsheep.sdk.model.CardDefinition
-import com.wingedsheep.sdk.model.CardScript
 import com.wingedsheep.sdk.model.Deck
-import com.wingedsheep.sdk.scripting.values.DynamicAmount
-import com.wingedsheep.sdk.scripting.EntersWithDynamicCounters
-import com.wingedsheep.sdk.scripting.GameObjectFilter
-import com.wingedsheep.sdk.scripting.references.Player
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 
@@ -28,45 +21,11 @@ import io.kotest.matchers.shouldBe
  */
 class StagBeetleTest : FunSpec({
 
-    val StagBeetle = CardDefinition.creature(
-        name = "Stag Beetle",
-        manaCost = ManaCost.parse("{3}{G}{G}"),
-        subtypes = setOf(Subtype("Insect")),
-        power = 0,
-        toughness = 0,
-        oracleText = "Stag Beetle enters the battlefield with X +1/+1 counters on it, where X is the number of other creatures on the battlefield.",
-        script = CardScript.permanent(
-            replacementEffects = listOf(
-                EntersWithDynamicCounters(
-                    count = DynamicAmount.AggregateBattlefield(Player.Each, GameObjectFilter.Creature)
-                )
-            )
-        )
-    )
-
-    val ElvishWarrior = CardDefinition.creature(
-        name = "Elvish Warrior",
-        manaCost = ManaCost.parse("{G}{G}"),
-        subtypes = setOf(Subtype("Elf"), Subtype("Warrior")),
-        power = 2,
-        toughness = 3,
-        oracleText = ""
-    )
-
-    val GrizzlyBears = CardDefinition.creature(
-        name = "Grizzly Bears",
-        manaCost = ManaCost.parse("{1}{G}"),
-        subtypes = setOf(Subtype("Bear")),
-        power = 2,
-        toughness = 2,
-        oracleText = ""
-    )
-
     val projector = StateProjector()
 
     fun createDriver(): GameTestDriver {
         val driver = GameTestDriver()
-        driver.registerCards(TestCards.all + listOf(StagBeetle, ElvishWarrior, GrizzlyBears))
+        driver.registerCards(TestCards.all)
         return driver
     }
 

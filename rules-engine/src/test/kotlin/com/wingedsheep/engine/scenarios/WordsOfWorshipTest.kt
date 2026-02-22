@@ -4,15 +4,13 @@ import com.wingedsheep.engine.core.ActivateAbility
 import com.wingedsheep.engine.core.SelectManaSourcesDecision
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
+import com.wingedsheep.mtg.sets.definitions.onslaught.cards.WordsOfWorship
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.Step
-import com.wingedsheep.sdk.dsl.Costs
-import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.CardScript
 import com.wingedsheep.sdk.model.Deck
-import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.scripting.effects.DrawCardsEffect
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
@@ -26,17 +24,6 @@ import io.kotest.matchers.shouldNotBe
  * {1}: The next time you would draw a card this turn, you gain 5 life instead.
  */
 class WordsOfWorshipTest : FunSpec({
-
-    val WordsOfWorship = card("Words of Worship") {
-        manaCost = "{2}{W}"
-        typeLine = "Enchantment"
-
-        activatedAbility {
-            cost = Costs.Mana("{1}")
-            effect = Effects.ReplaceNextDraw(Effects.GainLife(5))
-            promptOnDraw = true
-        }
-    }
 
     // A simple draw spell for testing
     val Inspiration = CardDefinition.instant(
@@ -58,7 +45,7 @@ class WordsOfWorshipTest : FunSpec({
 
     fun createDriver(): GameTestDriver {
         val driver = GameTestDriver()
-        driver.registerCards(TestCards.all + listOf(WordsOfWorship, Inspiration, Concentrate))
+        driver.registerCards(TestCards.all + listOf(Inspiration, Concentrate))
         return driver
     }
 

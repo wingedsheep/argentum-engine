@@ -6,23 +6,16 @@ import com.wingedsheep.engine.core.OptionChosenResponse
 import com.wingedsheep.engine.mechanics.layers.StateProjector
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
+import com.wingedsheep.mtg.sets.definitions.onslaught.cards.MistformMask
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.model.CardDefinition
-import com.wingedsheep.sdk.model.CardScript
 import com.wingedsheep.sdk.model.Deck
-import com.wingedsheep.sdk.scripting.AbilityCost
-import com.wingedsheep.sdk.scripting.AbilityId
-import com.wingedsheep.sdk.scripting.ActivatedAbility
-import com.wingedsheep.sdk.scripting.effects.BecomeCreatureTypeEffect
-import com.wingedsheep.sdk.scripting.targets.EffectTarget
-import com.wingedsheep.sdk.scripting.targets.TargetCreature
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
-import java.util.UUID
 
 /**
  * Tests for Mistform Mask.
@@ -34,25 +27,7 @@ import java.util.UUID
  */
 class MistformMaskTest : FunSpec({
 
-    val maskAbilityId = AbilityId(UUID.randomUUID().toString())
-
-    val MistformMask = CardDefinition.aura(
-        name = "Mistform Mask",
-        manaCost = ManaCost.parse("{1}{U}"),
-        oracleText = "Enchant creature\n{1}: Enchanted creature becomes the creature type of your choice until end of turn.",
-        script = CardScript(
-            auraTarget = TargetCreature(),
-            activatedAbilities = listOf(
-                ActivatedAbility(
-                    id = maskAbilityId,
-                    cost = AbilityCost.Mana(ManaCost.parse("{1}")),
-                    effect = BecomeCreatureTypeEffect(
-                        target = EffectTarget.EnchantedCreature
-                    )
-                )
-            )
-        )
-    )
+    val maskAbilityId = MistformMask.activatedAbilities.first().id
 
     val GoblinWarrior = CardDefinition.creature(
         name = "Goblin Warrior",
@@ -66,7 +41,7 @@ class MistformMaskTest : FunSpec({
 
     fun createDriver(): GameTestDriver {
         val driver = GameTestDriver()
-        driver.registerCards(TestCards.all + listOf(MistformMask, GoblinWarrior))
+        driver.registerCards(TestCards.all + listOf(GoblinWarrior))
         return driver
     }
 

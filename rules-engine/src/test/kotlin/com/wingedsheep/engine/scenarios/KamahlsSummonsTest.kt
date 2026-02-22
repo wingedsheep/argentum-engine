@@ -3,12 +3,9 @@ package com.wingedsheep.engine.scenarios
 import com.wingedsheep.engine.core.SelectCardsDecision
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
+import com.wingedsheep.mtg.sets.definitions.onslaught.cards.KamahlsSummons
 import com.wingedsheep.sdk.core.Color
-import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.Step
-import com.wingedsheep.sdk.dsl.Effects
-import com.wingedsheep.sdk.model.CardDefinition
-import com.wingedsheep.sdk.model.CardScript
 import com.wingedsheep.sdk.model.Deck
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.collections.shouldHaveSize
@@ -26,23 +23,9 @@ import io.kotest.matchers.types.shouldBeInstanceOf
  */
 class KamahlsSummonsTest : FunSpec({
 
-    val KamahlsSummons = CardDefinition.sorcery(
-        name = "Kamahl's Summons",
-        manaCost = ManaCost.parse("{3}{G}"),
-        oracleText = "Each player may reveal any number of creature cards from their hand. Then each player creates a 2/2 green Bear creature token for each card they revealed this way.",
-        script = CardScript.spell(
-            effect = Effects.EachPlayerRevealCreaturesCreateTokens(
-                tokenPower = 2,
-                tokenToughness = 2,
-                tokenColors = setOf(Color.GREEN),
-                tokenCreatureTypes = setOf("Bear")
-            )
-        )
-    )
-
     fun createDriver(): GameTestDriver {
         val driver = GameTestDriver()
-        driver.registerCards(TestCards.all + listOf(KamahlsSummons))
+        driver.registerCards(TestCards.all)
         return driver
     }
 

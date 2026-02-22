@@ -2,21 +2,9 @@ package com.wingedsheep.engine.scenarios
 
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
-import com.wingedsheep.sdk.core.Keyword
-import com.wingedsheep.sdk.core.ManaCost
+import com.wingedsheep.mtg.sets.definitions.onslaught.cards.SilentSpecter
 import com.wingedsheep.sdk.core.Step
-import com.wingedsheep.sdk.core.Subtype
-import com.wingedsheep.sdk.model.CardDefinition
-import com.wingedsheep.sdk.model.CardScript
 import com.wingedsheep.sdk.model.Deck
-import com.wingedsheep.sdk.dsl.Effects
-import com.wingedsheep.sdk.scripting.targets.EffectTarget
-import com.wingedsheep.sdk.scripting.GameEvent
-import com.wingedsheep.sdk.scripting.TriggerBinding
-import com.wingedsheep.sdk.scripting.events.DamageType
-import com.wingedsheep.sdk.scripting.events.RecipientFilter
-import com.wingedsheep.sdk.scripting.references.Player
-import com.wingedsheep.sdk.scripting.TriggeredAbility
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 
@@ -32,26 +20,9 @@ import io.kotest.matchers.shouldBe
  */
 class SilentSpecterTest : FunSpec({
 
-    val SilentSpecter = CardDefinition.creature(
-        name = "Silent Specter",
-        manaCost = ManaCost.parse("{4}{B}{B}"),
-        subtypes = setOf(Subtype("Specter")),
-        power = 4,
-        toughness = 4,
-        keywords = setOf(Keyword.FLYING),
-        oracleText = "Flying\nWhenever Silent Specter deals combat damage to a player, that player discards two cards.\nMorph {3}{B}{B}",
-        script = CardScript.creature(
-            TriggeredAbility.create(
-                trigger = GameEvent.DealsDamageEvent(damageType = DamageType.Combat, recipient = RecipientFilter.AnyPlayer),
-                binding = TriggerBinding.SELF,
-                effect = Effects.Discard(2, EffectTarget.PlayerRef(Player.Opponent))
-            )
-        )
-    )
-
     fun createDriver(): GameTestDriver {
         val driver = GameTestDriver()
-        driver.registerCards(TestCards.all + listOf(SilentSpecter))
+        driver.registerCards(TestCards.all)
         return driver
     }
 

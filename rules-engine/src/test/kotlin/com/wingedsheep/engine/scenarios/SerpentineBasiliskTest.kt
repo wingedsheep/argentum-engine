@@ -2,19 +2,8 @@ package com.wingedsheep.engine.scenarios
 
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
-import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.Step
-import com.wingedsheep.sdk.core.Subtype
-import com.wingedsheep.sdk.model.CardDefinition
-import com.wingedsheep.sdk.model.CardScript
 import com.wingedsheep.sdk.model.Deck
-import com.wingedsheep.sdk.scripting.effects.DestroyAtEndOfCombatEffect
-import com.wingedsheep.sdk.scripting.targets.EffectTarget
-import com.wingedsheep.sdk.scripting.GameEvent
-import com.wingedsheep.sdk.scripting.TriggerBinding
-import com.wingedsheep.sdk.scripting.events.DamageType
-import com.wingedsheep.sdk.scripting.events.RecipientFilter
-import com.wingedsheep.sdk.scripting.TriggeredAbility
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.shouldBe
@@ -32,25 +21,9 @@ import io.kotest.matchers.shouldNotBe
  */
 class SerpentineBasiliskTest : FunSpec({
 
-    val SerpentineBasilisk = CardDefinition.creature(
-        name = "Serpentine Basilisk",
-        manaCost = ManaCost.parse("{2}{G}{G}"),
-        subtypes = setOf(Subtype("Basilisk")),
-        power = 2,
-        toughness = 3,
-        oracleText = "Whenever Serpentine Basilisk deals combat damage to a creature, destroy that creature at end of combat.\nMorph {1}{G}{G}",
-        script = CardScript.creature(
-            TriggeredAbility.create(
-                trigger = GameEvent.DealsDamageEvent(damageType = DamageType.Combat, recipient = RecipientFilter.AnyCreature),
-                binding = TriggerBinding.SELF,
-                effect = DestroyAtEndOfCombatEffect(EffectTarget.TriggeringEntity)
-            )
-        )
-    )
-
     fun createDriver(): GameTestDriver {
         val driver = GameTestDriver()
-        driver.registerCards(TestCards.all + listOf(SerpentineBasilisk))
+        driver.registerCards(TestCards.all)
         return driver
     }
 

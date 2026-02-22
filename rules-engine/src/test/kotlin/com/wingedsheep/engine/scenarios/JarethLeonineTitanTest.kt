@@ -6,28 +6,14 @@ import com.wingedsheep.engine.core.ColorChosenResponse
 import com.wingedsheep.engine.mechanics.layers.StateProjector
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
+import com.wingedsheep.mtg.sets.definitions.onslaught.cards.JarethLeonineTitan
 import com.wingedsheep.sdk.core.Color
-import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.Step
-import com.wingedsheep.sdk.core.Subtype
-import com.wingedsheep.sdk.core.Supertype
-import com.wingedsheep.sdk.dsl.Effects
-import com.wingedsheep.sdk.model.CardDefinition
-import com.wingedsheep.sdk.model.CardScript
 import com.wingedsheep.sdk.model.Deck
-import com.wingedsheep.sdk.scripting.AbilityCost
-import com.wingedsheep.sdk.scripting.AbilityId
-import com.wingedsheep.sdk.scripting.ActivatedAbility
-import com.wingedsheep.sdk.scripting.targets.EffectTarget
-import com.wingedsheep.sdk.scripting.effects.ModifyStatsEffect
-import com.wingedsheep.sdk.scripting.GameEvent
-import com.wingedsheep.sdk.scripting.TriggerBinding
-import com.wingedsheep.sdk.scripting.TriggeredAbility
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import io.kotest.matchers.types.shouldBeInstanceOf
-import java.util.UUID
 
 /**
  * Tests for Jareth, Leonine Titan.
@@ -40,37 +26,13 @@ import java.util.UUID
  */
 class JarethLeonineTitanTest : FunSpec({
 
-    val protectionAbilityId = AbilityId(UUID.randomUUID().toString())
-
-    val JarethLeonineTitan = CardDefinition.creature(
-        name = "Jareth, Leonine Titan",
-        manaCost = ManaCost.parse("{3}{W}{W}{W}"),
-        subtypes = setOf(Subtype("Cat"), Subtype("Giant")),
-        power = 4,
-        toughness = 7,
-        oracleText = "Whenever Jareth, Leonine Titan blocks, it gets +7/+7 until end of turn.\n{W}: Jareth gains protection from the color of your choice until end of turn.",
-        script = CardScript.permanent(
-            ActivatedAbility(
-                id = protectionAbilityId,
-                cost = AbilityCost.Mana(ManaCost.parse("{W}")),
-                effect = Effects.ChooseColorAndGrantProtectionToTarget(EffectTarget.Self)
-            ),
-            triggeredAbilities = listOf(
-                TriggeredAbility.create(
-                    trigger = GameEvent.BlockEvent,
-                    binding = TriggerBinding.SELF,
-                    effect = ModifyStatsEffect(7, 7, EffectTarget.Self)
-                )
-            )
-        ),
-        supertypes = setOf(Supertype.LEGENDARY)
-    )
+    val protectionAbilityId = JarethLeonineTitan.activatedAbilities.first().id
 
     val projector = StateProjector()
 
     fun createDriver(): GameTestDriver {
         val driver = GameTestDriver()
-        driver.registerCards(TestCards.all + listOf(JarethLeonineTitan))
+        driver.registerCards(TestCards.all)
         return driver
     }
 

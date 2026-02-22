@@ -5,16 +5,15 @@ import com.wingedsheep.engine.core.SelectCardsDecision
 import com.wingedsheep.engine.core.SelectManaSourcesDecision
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
+import com.wingedsheep.mtg.sets.definitions.onslaught.cards.WordsOfWind
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.Step
-import com.wingedsheep.sdk.dsl.Costs
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.CardScript
 import com.wingedsheep.sdk.model.Deck
 import com.wingedsheep.sdk.scripting.AbilityCost
-import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.scripting.effects.DrawCardsEffect
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
@@ -29,17 +28,6 @@ import io.kotest.matchers.shouldNotBe
  * permanent they control to its owner's hand instead.
  */
 class WordsOfWindTest : FunSpec({
-
-    val WordsOfWind = card("Words of Wind") {
-        manaCost = "{2}{U}"
-        typeLine = "Enchantment"
-
-        activatedAbility {
-            cost = Costs.Mana("{1}")
-            effect = Effects.ReplaceNextDraw(Effects.EachPlayerReturnPermanentToHand())
-            promptOnDraw = true
-        }
-    }
 
     // A simple draw spell for testing
     val Inspiration = CardDefinition.instant(
@@ -76,7 +64,7 @@ class WordsOfWindTest : FunSpec({
 
     fun createDriver(): GameTestDriver {
         val driver = GameTestDriver()
-        driver.registerCards(TestCards.all + listOf(WordsOfWind, Inspiration, Concentrate, DrawThreeCreature))
+        driver.registerCards(TestCards.all + listOf(Inspiration, Concentrate, DrawThreeCreature))
         return driver
     }
 

@@ -3,10 +3,13 @@ package com.wingedsheep.engine.scenarios
 import com.wingedsheep.engine.core.ActivateAbility
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
-import com.wingedsheep.sdk.core.*
-import com.wingedsheep.sdk.model.*
-import com.wingedsheep.sdk.scripting.*
-import com.wingedsheep.sdk.scripting.effects.PutCreatureFromHandSharingTypeWithTappedEffect
+import com.wingedsheep.mtg.sets.definitions.onslaught.cards.CrypticGateway
+import com.wingedsheep.sdk.core.ManaCost
+import com.wingedsheep.sdk.core.Step
+import com.wingedsheep.sdk.core.Subtype
+import com.wingedsheep.sdk.model.CardDefinition
+import com.wingedsheep.sdk.model.Deck
+import com.wingedsheep.sdk.scripting.AdditionalCostPayment
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 
@@ -19,22 +22,7 @@ import io.kotest.matchers.shouldBe
  */
 class CrypticGatewayTest : FunSpec({
 
-    val abilityId = AbilityId("cryptic-gateway-0")
-
-    val CrypticGateway = CardDefinition.artifact(
-        name = "Cryptic Gateway",
-        manaCost = ManaCost.parse("{5}"),
-        oracleText = "Tap two untapped creatures you control: You may put a creature card from your hand that shares a creature type with each creature tapped this way onto the battlefield.",
-        script = CardScript(
-            activatedAbilities = listOf(
-                ActivatedAbility(
-                    id = abilityId,
-                    cost = AbilityCost.TapPermanents(2, GameObjectFilter.Creature),
-                    effect = PutCreatureFromHandSharingTypeWithTappedEffect
-                )
-            )
-        )
-    )
+    val abilityId = CrypticGateway.activatedAbilities.first().id
 
     // Goblin Warrior for testing shared types
     val GoblinWarrior = CardDefinition.creature(
@@ -73,7 +61,7 @@ class CrypticGatewayTest : FunSpec({
     )
 
     val allCards = TestCards.all + listOf(
-        CrypticGateway, GoblinWarrior, ElfWarrior, HumanWarrior, PureElf
+        GoblinWarrior, ElfWarrior, HumanWarrior, PureElf
     )
 
     fun createDriver(): GameTestDriver {

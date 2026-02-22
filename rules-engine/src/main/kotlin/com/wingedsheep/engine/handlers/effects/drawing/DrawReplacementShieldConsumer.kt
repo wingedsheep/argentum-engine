@@ -78,7 +78,8 @@ class DrawReplacementShieldConsumer(
             controllerId = playerId,
             sourceId = mod.sourceId,
             opponentId = newState.turnOrder.firstOrNull { it != playerId },
-            targets = mod.targets
+            targets = mod.targets,
+            namedTargets = mod.namedTargets
         )
 
         // Execute the stored replacement effect via the pipeline

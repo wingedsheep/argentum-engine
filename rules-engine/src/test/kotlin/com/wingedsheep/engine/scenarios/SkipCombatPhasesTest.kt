@@ -3,17 +3,11 @@ package com.wingedsheep.engine.scenarios
 import com.wingedsheep.engine.state.components.player.SkipCombatPhasesComponent
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
+import com.wingedsheep.mtg.sets.definitions.portal.cards.FalsePeace
 import com.wingedsheep.sdk.core.Color
-import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.Phase
 import com.wingedsheep.sdk.core.Step
-import com.wingedsheep.sdk.model.CardDefinition
-import com.wingedsheep.sdk.model.CardScript
 import com.wingedsheep.sdk.model.Deck
-import com.wingedsheep.sdk.scripting.targets.EffectTarget
-import com.wingedsheep.sdk.scripting.references.Player
-import com.wingedsheep.sdk.scripting.effects.SkipCombatPhasesEffect
-import com.wingedsheep.sdk.scripting.targets.TargetPlayer
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 
@@ -24,21 +18,9 @@ import io.kotest.matchers.shouldBe
  */
 class SkipCombatPhasesTest : FunSpec({
 
-    // Test card that mimics False Peace
-    val FalsePeace = CardDefinition.sorcery(
-        name = "False Peace",
-        manaCost = ManaCost.parse("{W}"),
-        oracleText = "Target player skips all combat phases of their next turn.",
-        script = CardScript.spell(
-            effect = SkipCombatPhasesEffect(EffectTarget.PlayerRef(Player.TargetPlayer)),
-            TargetPlayer()
-        )
-    )
-
     fun createDriver(): GameTestDriver {
         val driver = GameTestDriver()
         driver.registerCards(TestCards.all)
-        driver.registerCard(FalsePeace)
         driver.initMirrorMatch(
             deck = Deck.of(
                 "Plains" to 20,

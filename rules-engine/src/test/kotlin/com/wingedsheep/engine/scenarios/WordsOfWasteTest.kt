@@ -3,20 +3,18 @@ package com.wingedsheep.engine.scenarios
 import com.wingedsheep.engine.core.ActivateAbility
 import com.wingedsheep.engine.core.SelectCardsDecision
 import com.wingedsheep.engine.core.SelectManaSourcesDecision
+import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
+import com.wingedsheep.mtg.sets.definitions.onslaught.cards.WordsOfWaste
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.Step
-import com.wingedsheep.sdk.dsl.Costs
-import com.wingedsheep.sdk.dsl.card
+import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.CardScript
 import com.wingedsheep.sdk.model.Deck
-import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.scripting.effects.DrawCardsEffect
-import com.wingedsheep.engine.state.ZoneKey
-import com.wingedsheep.sdk.core.Zone
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 
@@ -28,17 +26,6 @@ import io.kotest.matchers.shouldBe
  * {1}: The next time you would draw a card this turn, each opponent discards a card instead.
  */
 class WordsOfWasteTest : FunSpec({
-
-    val WordsOfWaste = card("Words of Waste") {
-        manaCost = "{2}{B}"
-        typeLine = "Enchantment"
-
-        activatedAbility {
-            cost = Costs.Mana("{1}")
-            effect = Effects.ReplaceNextDraw(Effects.EachOpponentDiscards(1))
-            promptOnDraw = true
-        }
-    }
 
     // A simple draw spell for testing
     val Inspiration = CardDefinition.instant(
@@ -60,7 +47,7 @@ class WordsOfWasteTest : FunSpec({
 
     fun createDriver(): GameTestDriver {
         val driver = GameTestDriver()
-        driver.registerCards(TestCards.all + listOf(WordsOfWaste, Inspiration, Concentrate))
+        driver.registerCards(TestCards.all + listOf(Inspiration, Concentrate))
         return driver
     }
 

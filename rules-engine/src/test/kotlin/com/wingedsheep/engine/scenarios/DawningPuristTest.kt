@@ -1,23 +1,12 @@
 package com.wingedsheep.engine.scenarios
 
+import com.wingedsheep.engine.core.ChooseTargetsDecision
+import com.wingedsheep.engine.core.YesNoDecision
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
-import com.wingedsheep.sdk.core.ManaCost
+import com.wingedsheep.mtg.sets.definitions.onslaught.cards.DawningPurist
 import com.wingedsheep.sdk.core.Step
-import com.wingedsheep.sdk.core.Subtype
-import com.wingedsheep.sdk.core.Zone
-import com.wingedsheep.sdk.model.CardDefinition
-import com.wingedsheep.sdk.model.CardScript
 import com.wingedsheep.sdk.model.Deck
-import com.wingedsheep.sdk.scripting.targets.EffectTarget
-import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
-import com.wingedsheep.sdk.scripting.GameEvent
-import com.wingedsheep.sdk.scripting.TriggerBinding
-import com.wingedsheep.sdk.scripting.events.DamageType
-import com.wingedsheep.sdk.scripting.events.RecipientFilter
-import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
-import com.wingedsheep.sdk.scripting.TriggeredAbility
-import com.wingedsheep.sdk.scripting.targets.TargetPermanent
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.shouldBe
@@ -35,31 +24,9 @@ import io.kotest.matchers.shouldNotBe
  */
 class DawningPuristTest : FunSpec({
 
-    val DawningPurist = CardDefinition.creature(
-        name = "Dawning Purist",
-        manaCost = ManaCost.parse("{2}{W}"),
-        subtypes = setOf(Subtype("Human"), Subtype("Cleric")),
-        power = 2,
-        toughness = 2,
-        oracleText = "Whenever Dawning Purist deals combat damage to a player, you may destroy target enchantment that player controls.\nMorph {1}{W}",
-        script = CardScript.creature(
-            TriggeredAbility.create(
-                trigger = GameEvent.DealsDamageEvent(damageType = DamageType.Combat, recipient = RecipientFilter.AnyPlayer),
-                binding = TriggerBinding.SELF,
-                effect = MoveToZoneEffect(
-                    target = EffectTarget.BoundVariable("target"),
-                    destination = Zone.GRAVEYARD,
-                    byDestruction = true
-                ),
-                optional = true,
-                targetRequirement = TargetPermanent(id = "target", filter = TargetFilter.Enchantment.opponentControls())
-            )
-        )
-    )
-
     fun createDriver(): GameTestDriver {
         val driver = GameTestDriver()
-        driver.registerCards(TestCards.all + listOf(DawningPurist))
+        driver.registerCards(TestCards.all)
         return driver
     }
 
@@ -96,11 +63,15 @@ class DawningPuristTest : FunSpec({
         driver.currentStep shouldBe Step.FIRST_STRIKE_COMBAT_DAMAGE
         driver.bothPass()
 
-        // Combat damage is dealt - trigger fires, asking for target
+        // Combat damage is dealt - trigger fires with MayEffect
         driver.currentStep shouldBe Step.COMBAT_DAMAGE
 
-        // The trigger asks us to choose a target (enchantment) - select it
-        driver.pendingDecision shouldNotBe null
+        // Step 1: "May destroy?" — answer yes
+        val yesNoDecision = driver.pendingDecision as YesNoDecision
+        driver.submitYesNo(yesNoDecision.playerId, true)
+
+        // Step 2: Choose target enchantment
+        val chooseTargets = driver.pendingDecision as ChooseTargetsDecision
         driver.submitTargetSelection(attacker, listOf(enchantment))
 
         // Trigger goes on stack - resolve it
@@ -114,7 +85,7 @@ class DawningPuristTest : FunSpec({
         driver.assertLifeTotal(defender, 18)
     }
 
-    test("deals combat damage but declines to destroy enchantment by selecting no targets") {
+    test("deals combat damage but declines to destroy enchantment") {
         val driver = createDriver()
         driver.initMirrorMatch(
             deck = Deck.of("Plains" to 20, "Forest" to 20),
@@ -145,9 +116,9 @@ class DawningPuristTest : FunSpec({
         // Skip first strike damage
         driver.bothPass()
 
-        // Combat damage - trigger fires, decline by selecting no targets
-        driver.pendingDecision shouldNotBe null
-        driver.submitTargetSelection(attacker, emptyList())
+        // Combat damage - trigger fires with MayEffect, decline
+        val yesNoDecision = driver.pendingDecision as YesNoDecision
+        driver.submitYesNo(yesNoDecision.playerId, false)
 
         // Enchantment should still be on the battlefield
         driver.findPermanent(defender, "Test Enchantment") shouldNotBe null

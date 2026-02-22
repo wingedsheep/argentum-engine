@@ -4,32 +4,14 @@ import com.wingedsheep.engine.core.ActivateAbility
 import com.wingedsheep.engine.mechanics.layers.StateProjector
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
+import com.wingedsheep.mtg.sets.definitions.onslaught.cards.KamahlFistOfKrosa
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.Keyword
-import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.Step
-import com.wingedsheep.sdk.core.Supertype
-import com.wingedsheep.sdk.core.Subtype
-import com.wingedsheep.sdk.model.CardDefinition
-import com.wingedsheep.sdk.model.CardScript
 import com.wingedsheep.sdk.model.Deck
-import com.wingedsheep.sdk.scripting.AbilityCost
-import com.wingedsheep.sdk.scripting.AbilityId
-import com.wingedsheep.sdk.scripting.ActivatedAbility
-import com.wingedsheep.sdk.scripting.effects.AnimateLandEffect
-import com.wingedsheep.sdk.scripting.effects.CompositeEffect
-import com.wingedsheep.sdk.scripting.targets.EffectTarget
-import com.wingedsheep.sdk.scripting.GameObjectFilter
-import com.wingedsheep.sdk.scripting.effects.ForEachInGroupEffect
-import com.wingedsheep.sdk.scripting.effects.GrantKeywordUntilEndOfTurnEffect
-import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
-import com.wingedsheep.sdk.scripting.effects.ModifyStatsEffect
-import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
-import com.wingedsheep.sdk.scripting.targets.TargetPermanent
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
-import java.util.UUID
 
 /**
  * Tests for Kamahl, Fist of Krosa.
@@ -42,48 +24,14 @@ import java.util.UUID
  */
 class KamahlFistOfKrosaTest : FunSpec({
 
-    val animateLandAbilityId = AbilityId(UUID.randomUUID().toString())
-    val overrunAbilityId = AbilityId(UUID.randomUUID().toString())
-
-    val KamahlFistOfKrosa = CardDefinition.creature(
-        name = "Kamahl, Fist of Krosa",
-        manaCost = ManaCost.parse("{4}{G}{G}"),
-        subtypes = setOf(Subtype("Human"), Subtype("Druid")),
-        supertypes = setOf(Supertype.LEGENDARY),
-        power = 4,
-        toughness = 3,
-        oracleText = "{G}: Target land becomes a 1/1 creature until end of turn. It's still a land.\n{2}{G}{G}{G}: Creatures you control get +3/+3 and gain trample until end of turn.",
-        script = CardScript.permanent(
-            ActivatedAbility(
-                id = animateLandAbilityId,
-                cost = AbilityCost.Mana(ManaCost.parse("{G}")),
-                effect = AnimateLandEffect(EffectTarget.BoundVariable("target")),
-                targetRequirement = TargetPermanent(id = "target", filter = TargetFilter.Land)
-            ),
-            ActivatedAbility(
-                id = overrunAbilityId,
-                cost = AbilityCost.Mana(ManaCost.parse("{2}{G}{G}{G}")),
-                effect = CompositeEffect(
-                    listOf(
-                        ForEachInGroupEffect(
-                            GroupFilter(GameObjectFilter.Creature.youControl()),
-                            ModifyStatsEffect(3, 3, EffectTarget.Self)
-                        ),
-                        ForEachInGroupEffect(
-                            GroupFilter(GameObjectFilter.Creature.youControl()),
-                            GrantKeywordUntilEndOfTurnEffect(Keyword.TRAMPLE, EffectTarget.Self)
-                        )
-                    )
-                )
-            )
-        )
-    )
+    val animateLandAbilityId = KamahlFistOfKrosa.activatedAbilities[0].id
+    val overrunAbilityId = KamahlFistOfKrosa.activatedAbilities[1].id
 
     val projector = StateProjector()
 
     fun createDriver(): GameTestDriver {
         val driver = GameTestDriver()
-        driver.registerCards(TestCards.all + listOf(KamahlFistOfKrosa))
+        driver.registerCards(TestCards.all)
         return driver
     }
 

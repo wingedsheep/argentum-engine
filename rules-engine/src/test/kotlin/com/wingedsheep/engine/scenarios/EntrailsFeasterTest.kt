@@ -4,20 +4,10 @@ import com.wingedsheep.engine.core.ChooseTargetsDecision
 import com.wingedsheep.engine.mechanics.layers.StateProjector
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
-import com.wingedsheep.sdk.core.*
-import com.wingedsheep.sdk.model.CardDefinition
-import com.wingedsheep.sdk.model.CardScript
+import com.wingedsheep.mtg.sets.definitions.onslaught.cards.EntrailsFeaster
+import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.model.Deck
 import com.wingedsheep.sdk.model.EntityId
-import com.wingedsheep.sdk.scripting.*
-import com.wingedsheep.sdk.scripting.effects.AddCountersEffect
-import com.wingedsheep.sdk.scripting.effects.CompositeEffect
-import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
-import com.wingedsheep.sdk.scripting.effects.TapUntapEffect
-import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
-import com.wingedsheep.sdk.scripting.targets.EffectTarget
-import com.wingedsheep.sdk.scripting.references.Player
-import com.wingedsheep.sdk.scripting.targets.TargetObject
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
@@ -33,39 +23,11 @@ import io.kotest.matchers.types.shouldBeInstanceOf
  */
 class EntrailsFeasterTest : FunSpec({
 
-    val EntrailsFeaster = CardDefinition.creature(
-        name = "Entrails Feaster",
-        manaCost = ManaCost.parse("{B}"),
-        subtypes = setOf(Subtype("Zombie"), Subtype("Cat")),
-        power = 1,
-        toughness = 1,
-        oracleText = "At the beginning of your upkeep, you may exile a creature card from a graveyard. If you do, put a +1/+1 counter on Entrails Feaster. If you don't, tap Entrails Feaster.",
-        script = CardScript.permanent(
-            triggeredAbilities = listOf(
-                TriggeredAbility.create(
-                    trigger = GameEvent.StepEvent(Step.UPKEEP, Player.You),
-                    binding = TriggerBinding.ANY,
-                    optional = true,
-                    targetRequirement = TargetObject(id = "target",
-                        filter = TargetFilter.CreatureInGraveyard
-                    ),
-                    effect = CompositeEffect(
-                        listOf(
-                            MoveToZoneEffect(EffectTarget.BoundVariable("target"), Zone.EXILE),
-                            AddCountersEffect("+1/+1", 1, EffectTarget.Self)
-                        )
-                    ),
-                    elseEffect = TapUntapEffect(EffectTarget.Self, tap = true)
-                )
-            )
-        )
-    )
-
     val projector = StateProjector()
 
     fun createDriver(): GameTestDriver {
         val driver = GameTestDriver()
-        driver.registerCards(TestCards.all + listOf(EntrailsFeaster))
+        driver.registerCards(TestCards.all)
         return driver
     }
 

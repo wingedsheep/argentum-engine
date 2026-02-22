@@ -4,13 +4,10 @@ import com.wingedsheep.engine.core.CardsDiscardedEvent
 import com.wingedsheep.engine.core.CardsDrawnEvent
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
+import com.wingedsheep.mtg.sets.definitions.onslaught.cards.SyphonMind
 import com.wingedsheep.sdk.core.Color
-import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.Step
-import com.wingedsheep.sdk.model.CardDefinition
-import com.wingedsheep.sdk.model.CardScript
 import com.wingedsheep.sdk.model.Deck
-import com.wingedsheep.sdk.scripting.effects.EachOpponentDiscardsEffect
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 
@@ -23,18 +20,9 @@ import io.kotest.matchers.shouldBe
  */
 class SyphonMindTest : FunSpec({
 
-    val SyphonMind = CardDefinition.sorcery(
-        name = "Syphon Mind",
-        manaCost = ManaCost.parse("{3}{B}"),
-        oracleText = "Each other player discards a card. You draw a card for each card discarded this way.",
-        script = CardScript.spell(
-            effect = EachOpponentDiscardsEffect(count = 1, controllerDrawsPerDiscard = 1)
-        )
-    )
-
     fun createDriver(): GameTestDriver {
         val driver = GameTestDriver()
-        driver.registerCards(TestCards.all + listOf(SyphonMind))
+        driver.registerCards(TestCards.all)
         return driver
     }
 

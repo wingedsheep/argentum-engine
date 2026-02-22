@@ -2,14 +2,10 @@ package com.wingedsheep.engine.scenarios
 
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
+import com.wingedsheep.mtg.sets.definitions.onslaught.cards.FutureSight
 import com.wingedsheep.sdk.core.Color
-import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.Step
-import com.wingedsheep.sdk.core.Zone
-import com.wingedsheep.sdk.model.CardDefinition
-import com.wingedsheep.sdk.model.CardScript
 import com.wingedsheep.sdk.model.Deck
-import com.wingedsheep.sdk.scripting.PlayFromTopOfLibrary
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
@@ -24,18 +20,9 @@ import io.kotest.matchers.shouldNotBe
  */
 class FutureSightTest : FunSpec({
 
-    val FutureSight = CardDefinition.enchantment(
-        name = "Future Sight",
-        manaCost = ManaCost.parse("{2}{U}{U}{U}"),
-        oracleText = "Play with the top card of your library revealed. You may play lands and cast spells from the top of your library.",
-        script = CardScript(
-            staticAbilities = listOf(PlayFromTopOfLibrary)
-        )
-    )
-
     fun createDriver(): GameTestDriver {
         val driver = GameTestDriver()
-        driver.registerCards(TestCards.all + listOf(FutureSight))
+        driver.registerCards(TestCards.all)
         return driver
     }
 

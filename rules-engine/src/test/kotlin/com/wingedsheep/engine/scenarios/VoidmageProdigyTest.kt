@@ -4,18 +4,14 @@ import com.wingedsheep.engine.core.ActivateAbility
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
+import com.wingedsheep.mtg.sets.definitions.onslaught.cards.VoidmageProdigy
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.core.Subtype
-import com.wingedsheep.sdk.dsl.Costs
-import com.wingedsheep.sdk.dsl.Targets
-import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.Deck
 import com.wingedsheep.sdk.scripting.AdditionalCostPayment
-import com.wingedsheep.sdk.scripting.effects.CounterSpellEffect
-import com.wingedsheep.sdk.scripting.GameObjectFilter
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.shouldBe
@@ -30,25 +26,6 @@ import io.kotest.matchers.shouldBe
  * Morph {U}
  */
 class VoidmageProdigyTest : FunSpec({
-
-    val VoidmageProdigy = card("Voidmage Prodigy") {
-        manaCost = "{U}{U}"
-        typeLine = "Creature — Human Wizard"
-        power = 2
-        toughness = 1
-        oracleText = "{U}{U}, Sacrifice a Wizard: Counter target spell.\nMorph {U}"
-
-        activatedAbility {
-            cost = Costs.Composite(
-                Costs.Mana("{U}{U}"),
-                Costs.Sacrifice(GameObjectFilter.Creature.withSubtype("Wizard"))
-            )
-            target = Targets.Spell
-            effect = CounterSpellEffect
-        }
-
-        morph = "{U}"
-    }
 
     val counterAbilityId = VoidmageProdigy.activatedAbilities[0].id
 
@@ -72,7 +49,7 @@ class VoidmageProdigyTest : FunSpec({
 
     fun createDriver(): GameTestDriver {
         val driver = GameTestDriver()
-        driver.registerCards(TestCards.all + listOf(VoidmageProdigy, MerfolkWizard, GoblinScout))
+        driver.registerCards(TestCards.all + listOf(MerfolkWizard, GoblinScout))
         return driver
     }
 

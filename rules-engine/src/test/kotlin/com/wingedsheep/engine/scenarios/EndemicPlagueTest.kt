@@ -4,6 +4,7 @@ import com.wingedsheep.engine.core.CastSpell
 import com.wingedsheep.engine.core.PaymentStrategy
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
+import com.wingedsheep.mtg.sets.definitions.onslaught.cards.EndemicPlague
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.Step
@@ -11,7 +12,6 @@ import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.Deck
 import com.wingedsheep.sdk.scripting.AdditionalCostPayment
-import com.wingedsheep.sdk.scripting.effects.DestroyAllSharingTypeWithSacrificedEffect
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.shouldBe
@@ -61,25 +61,11 @@ class EndemicPlagueTest : FunSpec({
         toughness = 2
     )
 
-    val EndemicPlague = CardDefinition.sorcery(
-        name = "Endemic Plague",
-        manaCost = ManaCost.parse("{3}{B}"),
-        oracleText = "As an additional cost to cast this spell, sacrifice a creature. Destroy all creatures that share a creature type with the sacrificed creature. They can't be regenerated.",
-        script = com.wingedsheep.sdk.model.CardScript.spell(
-            effect = DestroyAllSharingTypeWithSacrificedEffect(noRegenerate = true),
-            additionalCosts = listOf(
-                com.wingedsheep.sdk.scripting.AdditionalCost.SacrificePermanent(
-                    com.wingedsheep.sdk.scripting.GameObjectFilter.Creature
-                )
-            )
-        )
-    )
-
     fun createDriver(): GameTestDriver {
         val driver = GameTestDriver()
         driver.registerCards(
             TestCards.all + listOf(
-                EndemicPlague, GoblinWarrior, GoblinShaman, ElfWarrior, HumanKnight
+                GoblinWarrior, GoblinShaman, ElfWarrior, HumanKnight
             )
         )
         return driver

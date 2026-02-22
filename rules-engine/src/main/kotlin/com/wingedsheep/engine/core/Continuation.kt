@@ -1368,7 +1368,8 @@ data class DrawReplacementTargetContinuation(
     val abilityEffect: Effect,
     val drawCount: Int,
     val isDrawStep: Boolean,
-    val drawnCardsSoFar: List<EntityId> = emptyList()
+    val drawnCardsSoFar: List<EntityId> = emptyList(),
+    val targetRequirements: List<com.wingedsheep.sdk.scripting.targets.TargetRequirement> = emptyList()
 ) : ContinuationFrame
 
 
