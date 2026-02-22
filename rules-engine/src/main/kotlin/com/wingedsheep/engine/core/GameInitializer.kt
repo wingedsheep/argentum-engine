@@ -8,6 +8,7 @@ import com.wingedsheep.engine.state.components.identity.*
 import com.wingedsheep.engine.state.components.player.LandDropsComponent
 import com.wingedsheep.engine.state.components.player.ManaPoolComponent
 import com.wingedsheep.engine.state.components.player.MulliganStateComponent
+import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.Deck
@@ -314,8 +315,9 @@ class GameInitializer(
             return drawCards(state, playerId, count)
         }
 
-        // Calculate deck land ratio
+        // Calculate deck land ratios (overall + per-colour)
         val deckLandRatio = calculateDeckLandRatio(state, library)
+        val deckColorRatios = calculateDeckColorRatios(state, library)
 
         // Generate candidate hands
         val candidates = mutableListOf<List<EntityId>>()
@@ -329,7 +331,7 @@ class GameInitializer(
 
         // Score each candidate and select the best one
         val bestCandidate = candidates.minByOrNull { candidate ->
-            scoreHand(state, candidate, deckLandRatio)
+            scoreHand(state, candidate, deckLandRatio, deckColorRatios)
         } ?: candidates.first()
 
         // Apply the selected hand to the state
@@ -386,24 +388,114 @@ class GameInitializer(
     }
 
     /**
-     * Score a candidate hand based on its deviation from the expected land ratio.
+     * Calculate the per-colour land ratios in the deck (among lands only).
+     *
+     * For each colour, this returns what fraction of the deck's lands produce that colour.
+     * Uses basic land subtypes (Plains→W, Island→U, etc.) and the card's color identity
+     * for non-basic lands. Dual lands count toward multiple colours.
+     *
+     * @param state Current game state for entity lookups
+     * @param library List of card entity IDs in the library
+     * @return Map of colour to ratio among lands (0.0 to 1.0), empty if no lands
+     */
+    private fun calculateDeckColorRatios(state: GameState, library: List<EntityId>): Map<Color, Double> {
+        val colorCounts = mutableMapOf<Color, Int>()
+        var totalLands = 0
+
+        for (cardId in library) {
+            val card = state.getEntity(cardId)?.get<CardComponent>() ?: continue
+            if (!card.typeLine.isLand) continue
+            totalLands++
+
+            val colors = getLandColors(card)
+            for (color in colors) {
+                colorCounts[color] = (colorCounts[color] ?: 0) + 1
+            }
+        }
+
+        if (totalLands == 0) return emptyMap()
+        return colorCounts.mapValues { (_, count) -> count.toDouble() / totalLands }
+    }
+
+    /**
+     * Determine which colours of mana a land card can produce.
+     *
+     * Uses basic land subtypes first (Plains→W, Island→U, Swamp→B, Mountain→R, Forest→G).
+     * For non-basic lands without basic land subtypes, falls back to the card's color identity.
+     */
+    private fun getLandColors(card: CardComponent): Set<Color> {
+        val colors = mutableSetOf<Color>()
+        val subtypes = card.typeLine.subtypes.map { it.value }.toSet()
+
+        if ("Plains" in subtypes) colors.add(Color.WHITE)
+        if ("Island" in subtypes) colors.add(Color.BLUE)
+        if ("Swamp" in subtypes) colors.add(Color.BLACK)
+        if ("Mountain" in subtypes) colors.add(Color.RED)
+        if ("Forest" in subtypes) colors.add(Color.GREEN)
+
+        // For non-basic lands without basic land subtypes, use color identity from mana cost
+        if (colors.isEmpty()) {
+            colors.addAll(card.colors)
+        }
+
+        return colors
+    }
+
+    /**
+     * Score a candidate hand based on deviation from both the expected land ratio
+     * and the expected colour distribution among lands.
+     *
+     * The score combines two factors:
+     * - Land ratio deviation: how far the hand's land/spell ratio is from the deck's
+     * - Colour deviation: how far the hand's land colour distribution is from the deck's
      *
      * Lower score = better match to deck composition.
      *
      * @param state Current game state for entity lookups
      * @param hand List of card entity IDs in the candidate hand
      * @param deckLandRatio Expected land ratio based on deck composition
-     * @return Absolute deviation from expected ratio (0.0 = perfect match)
+     * @param deckColorRatios Expected colour distribution among lands
+     * @return Combined deviation score (0.0 = perfect match)
      */
-    private fun scoreHand(state: GameState, hand: List<EntityId>, deckLandRatio: Double): Double {
+    private fun scoreHand(
+        state: GameState,
+        hand: List<EntityId>,
+        deckLandRatio: Double,
+        deckColorRatios: Map<Color, Double>
+    ): Double {
         if (hand.isEmpty()) return Double.MAX_VALUE
 
-        val landCount = hand.count { cardId ->
-            state.getEntity(cardId)?.get<CardComponent>()?.typeLine?.isLand == true
+        val lands = mutableListOf<CardComponent>()
+        for (cardId in hand) {
+            val card = state.getEntity(cardId)?.get<CardComponent>() ?: continue
+            if (card.typeLine.isLand) lands.add(card)
         }
 
-        val handLandRatio = landCount.toDouble() / hand.size
-        return kotlin.math.abs(handLandRatio - deckLandRatio)
+        // Land ratio deviation (same as before)
+        val handLandRatio = lands.size.toDouble() / hand.size
+        val landRatioDeviation = kotlin.math.abs(handLandRatio - deckLandRatio)
+
+        // Colour distribution deviation among lands in hand
+        val colorDeviation = if (lands.isNotEmpty() && deckColorRatios.isNotEmpty()) {
+            val handColorCounts = mutableMapOf<Color, Int>()
+            for (land in lands) {
+                for (color in getLandColors(land)) {
+                    handColorCounts[color] = (handColorCounts[color] ?: 0) + 1
+                }
+            }
+
+            val allColors = deckColorRatios.keys + handColorCounts.keys
+            allColors.sumOf { color ->
+                val deckRatio = deckColorRatios[color] ?: 0.0
+                val handRatio = (handColorCounts[color] ?: 0).toDouble() / lands.size
+                kotlin.math.abs(handRatio - deckRatio)
+            }
+        } else {
+            0.0
+        }
+
+        // Weight: land ratio is most important, colour distribution is secondary
+        return landRatioDeviation + colorDeviation * 0.5
     }
 
     companion object {

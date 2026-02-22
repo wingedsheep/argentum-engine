@@ -210,6 +210,84 @@ class HandSmootherTest : FunSpec({
         }
     }
 
+    context("colour distribution") {
+        test("smoothed hands in multi-colour decks tend to include both land colours") {
+            val registry = createRegistry()
+            val initializer = GameInitializer(registry)
+
+            // 50/50 split: 8 Forest + 8 Mountain + 24 spells
+            // With smoothing, hands with lands should tend to have a mix
+            var handsWithBothColors = 0
+            var handsWithLands = 0
+
+            repeat(200) {
+                val result = initializer.initializeGame(
+                    GameConfig(
+                        players = listOf(
+                            PlayerConfig("Player 1", Deck.of("Forest" to 8, "Mountain" to 8, "Grizzly Bears" to 24)),
+                            PlayerConfig("Player 2", Deck.of("Forest" to 8, "Mountain" to 8, "Grizzly Bears" to 24))
+                        ),
+                        skipMulligans = true,
+                        useHandSmoother = true
+                    )
+                )
+
+                val hand = result.state.getHand(result.playerIds[0])
+                val forests = hand.count { cardId ->
+                    result.state.getEntity(cardId)?.get<CardComponent>()?.name == "Forest"
+                }
+                val mountains = hand.count { cardId ->
+                    result.state.getEntity(cardId)?.get<CardComponent>()?.name == "Mountain"
+                }
+
+                if (forests + mountains > 0) {
+                    handsWithLands++
+                    if (forests > 0 && mountains > 0) handsWithBothColors++
+                }
+            }
+
+            // With 50/50 land split and colour-aware smoothing, most hands with 2+ lands
+            // should have both colours represented
+            val bothColorRate = handsWithBothColors.toDouble() / handsWithLands
+            bothColorRate shouldBeGreaterThanOrEqual 0.40
+        }
+
+        test("smoothed hands respect skewed colour ratios") {
+            val registry = createRegistry()
+            val initializer = GameInitializer(registry)
+
+            // 75/25 split: 12 Forest + 4 Mountain + 24 spells
+            var totalForests = 0
+            var totalMountains = 0
+
+            repeat(200) {
+                val result = initializer.initializeGame(
+                    GameConfig(
+                        players = listOf(
+                            PlayerConfig("Player 1", Deck.of("Forest" to 12, "Mountain" to 4, "Grizzly Bears" to 24)),
+                            PlayerConfig("Player 2", Deck.of("Forest" to 12, "Mountain" to 4, "Grizzly Bears" to 24))
+                        ),
+                        skipMulligans = true,
+                        useHandSmoother = true
+                    )
+                )
+
+                val hand = result.state.getHand(result.playerIds[0])
+                totalForests += hand.count { cardId ->
+                    result.state.getEntity(cardId)?.get<CardComponent>()?.name == "Forest"
+                }
+                totalMountains += hand.count { cardId ->
+                    result.state.getEntity(cardId)?.get<CardComponent>()?.name == "Mountain"
+                }
+            }
+
+            // Forests should outnumber mountains significantly (3:1 in deck)
+            val forestRatio = totalForests.toDouble() / (totalForests + totalMountains)
+            forestRatio shouldBeGreaterThanOrEqual 0.55
+            forestRatio shouldBeLessThanOrEqual 0.95
+        }
+    }
+
     context("edge cases") {
         test("handles deck with 0 lands") {
             val registry = createRegistry()
