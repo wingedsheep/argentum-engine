@@ -10,28 +10,15 @@ import com.wingedsheep.engine.state.components.identity.ChosenCreatureTypeCompon
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
+import com.wingedsheep.mtg.sets.definitions.onslaught.cards.CallousOppressor
+import com.wingedsheep.mtg.sets.definitions.onslaught.cards.ElvishWarrior
+import com.wingedsheep.mtg.sets.definitions.onslaught.cards.GoblinSkyRaider
 import com.wingedsheep.sdk.core.Color
-import com.wingedsheep.sdk.core.Keyword
-import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.Step
-import com.wingedsheep.sdk.core.Subtype
-import com.wingedsheep.sdk.model.CardDefinition
-import com.wingedsheep.sdk.model.CardScript
 import com.wingedsheep.sdk.model.Deck
-import com.wingedsheep.sdk.scripting.AbilityCost
-import com.wingedsheep.sdk.scripting.AbilityId
-import com.wingedsheep.sdk.scripting.ActivatedAbility
-import com.wingedsheep.sdk.scripting.Duration
-import com.wingedsheep.sdk.scripting.targets.EffectTarget
-import com.wingedsheep.sdk.scripting.EntersWithCreatureTypeChoice
-import com.wingedsheep.sdk.scripting.effects.GainControlEffect
-import com.wingedsheep.sdk.scripting.GameObjectFilter
-import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
-import com.wingedsheep.sdk.scripting.targets.TargetCreature
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
-import java.util.UUID
 
 /**
  * Tests for Callous Oppressor.
@@ -46,53 +33,13 @@ import java.util.UUID
  */
 class CallousOppressorTest : FunSpec({
 
-    val oppressorAbilityId = AbilityId(UUID.randomUUID().toString())
-
-    val CallousOppressor = CardDefinition.creature(
-        name = "Callous Oppressor",
-        manaCost = ManaCost.parse("{1}{U}{U}"),
-        subtypes = setOf(Subtype("Cephalid")),
-        power = 1,
-        toughness = 2,
-        keywords = setOf(Keyword.MAY_NOT_UNTAP),
-        oracleText = "You may choose not to untap Callous Oppressor during your untap step.\nAs Callous Oppressor enters the battlefield, an opponent chooses a creature type.\n{T}: Gain control of target creature that isn't of the chosen type for as long as Callous Oppressor remains tapped.",
-        script = CardScript.permanent(
-            ActivatedAbility(
-                id = oppressorAbilityId,
-                cost = AbilityCost.Tap,
-                effect = GainControlEffect(EffectTarget.BoundVariable("target"), Duration.WhileSourceTapped()),
-                targetRequirement = TargetCreature(id = "target",
-                    filter = TargetFilter(GameObjectFilter.Creature.notOfSourceChosenType())
-                )
-            ),
-            replacementEffects = listOf(EntersWithCreatureTypeChoice(opponentChooses = true))
-        )
-    )
-
-    // Simple creatures for testing
-    val GoblinPiker = CardDefinition.creature(
-        name = "Goblin Piker",
-        manaCost = ManaCost.parse("{1}{R}"),
-        subtypes = setOf(Subtype("Goblin"), Subtype("Warrior")),
-        power = 2,
-        toughness = 1,
-        oracleText = ""
-    )
-
-    val ElvishWarrior = CardDefinition.creature(
-        name = "Elvish Warrior",
-        manaCost = ManaCost.parse("{G}{G}"),
-        subtypes = setOf(Subtype("Elf"), Subtype("Warrior")),
-        power = 2,
-        toughness = 3,
-        oracleText = ""
-    )
+    val oppressorAbilityId = CallousOppressor.activatedAbilities.first().id
 
     val projector = StateProjector()
 
     fun createDriver(): GameTestDriver {
         val driver = GameTestDriver()
-        driver.registerCards(TestCards.all + listOf(CallousOppressor, GoblinPiker, ElvishWarrior))
+        driver.registerCards(TestCards.all)
         return driver
     }
 
@@ -190,7 +137,7 @@ class CallousOppressorTest : FunSpec({
         })
 
         // Put a Goblin on the opponent's battlefield
-        val goblin = driver.putCreatureOnBattlefield(opponent, "Goblin Piker")
+        val goblin = driver.putCreatureOnBattlefield(opponent, "Goblin Sky Raider")
 
         // Attempting to activate targeting the Goblin should fail validation
         val result = driver.submit(
