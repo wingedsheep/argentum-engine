@@ -685,115 +685,95 @@ function TournamentOverlay({
     )
   }
 
+  const roundLabel = !tournamentState.isComplete
+    ? isWaitingForReady
+      ? `Round ${tournamentState.currentRound + 1} of ${tournamentState.totalRounds}`
+      : `Round ${tournamentState.currentRound} of ${tournamentState.totalRounds}`
+    : null
+
   return (
     <div className={styles.tournamentOverlay}>
-      <h1 className={styles.title}>
-        {tournamentState.isComplete ? 'Tournament Complete' : 'Tournament Standings'}
-      </h1>
-
-      {!tournamentState.isComplete && (
-        <p className={styles.waitingSubtitle}>
-          {isWaitingForReady
-            ? `Starting Round ${tournamentState.currentRound + 1} of ${tournamentState.totalRounds}`
-            : `Round ${tournamentState.currentRound} of ${tournamentState.totalRounds}`}
-        </p>
-      )}
-
-      {/* Share link + View Replays buttons */}
-      <div style={{ display: 'flex', gap: 8 }}>
-        <button
-          onClick={copyShareLink}
-          className={styles.shareLinkButton}
-        >
-          {linkCopied ? 'Link Copied!' : 'Share Tournament Link'}
-        </button>
-        {tournamentState.lastRoundResults && (
-          <button
-            onClick={() => setShowReplays(true)}
-            className={styles.shareLinkButton}
-          >
-            View Replays
+      {/* ── Header: title + round + toolbar ── */}
+      <div className={styles.trnHeader}>
+        <div className={styles.trnHeaderTop}>
+          <h1 className={styles.trnTitle}>
+            {tournamentState.isComplete ? 'Tournament Complete' : 'Standings'}
+          </h1>
+          {roundLabel && <span className={styles.trnRound}>{roundLabel}</span>}
+        </div>
+        <div className={styles.trnToolbar}>
+          <button onClick={copyShareLink} className={styles.trnToolbarBtn}>
+            {linkCopied ? 'Copied!' : 'Share Link'}
           </button>
-        )}
+          {tournamentState.lastRoundResults && (
+            <button onClick={() => setShowReplays(true)} className={styles.trnToolbarBtn}>
+              Replays
+            </button>
+          )}
+          {!isSpectator && deckBuildingState && (tournamentState.currentRound > 0 || isPlayerReady) && (
+            <button onClick={() => setShowDeckViewer(true)} className={styles.trnToolbarBtn}>
+              View Deck
+            </button>
+          )}
+        </div>
       </div>
 
-      {/* Next opponent info or BYE status (participants only) */}
-      {!isSpectator && isWaitingForReady && !tournamentState.nextRoundHasBye && (
-        <div className={styles.statusBoxMatch}>
-          <div className={styles.statusBoxMatchLabel}>
-            Round {tournamentState.currentRound + 1}
-          </div>
-          <div className={styles.statusBoxMatchOpponent}>
-            {tournamentState.nextOpponentName
-              ? `vs ${tournamentState.nextOpponentName}`
-              : 'Waiting for matchup...'}
-          </div>
-        </div>
-      )}
+      {/* ── Action zone: next match / ready / bye ── */}
+      {!isSpectator && !tournamentState.isComplete && (
+        <div className={styles.trnActionZone}>
+          {/* Next opponent */}
+          {isWaitingForReady && !tournamentState.nextRoundHasBye && (
+            <div className={styles.statusBoxMatch}>
+              <div className={styles.statusBoxMatchLabel}>Next Match</div>
+              <div className={styles.statusBoxMatchOpponent}>
+                {tournamentState.nextOpponentName
+                  ? `vs ${tournamentState.nextOpponentName}`
+                  : 'Waiting for matchup...'}
+              </div>
+            </div>
+          )}
 
-      {/* BYE status (participants only) */}
-      {!isSpectator && ((isWaitingForReady && tournamentState.nextRoundHasBye) || (tournamentState.isBye && !isWaitingForReady)) && (
-        <div className={styles.statusBoxBye}>
-          <span className={styles.byeIcon}>&#x2713;</span>
-          <span>Sitting out this round</span>
-        </div>
-      )}
+          {/* BYE status */}
+          {((isWaitingForReady && tournamentState.nextRoundHasBye) || (tournamentState.isBye && !isWaitingForReady)) && (
+            <div className={styles.statusBoxBye}>
+              <span className={styles.byeIcon}>&#x2713;</span>
+              <span>Sitting out this round</span>
+            </div>
+          )}
 
-      {/* Ready for next round button and status (participants only) */}
-      {!isSpectator && isWaitingForReady && (
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }}>
-          <div style={{ display: 'flex', gap: 12 }}>
-            <button
-              onClick={readyForNextRound}
-              disabled={isPlayerReady}
-              className={styles.readyButton}
-            >
-              {isPlayerReady ? '✓ Ready' : 'Ready for Next Round'}
-            </button>
-            {/* Show Edit Deck button before first round starts (can go back to deck building) */}
-            {tournamentState.currentRound === 0 && !isPlayerReady && (
+          {/* Ready button row */}
+          {isWaitingForReady && (
+            <div className={styles.trnReadyRow}>
               <button
-                onClick={unsubmitDeck}
-                className={styles.editDeckButton}
+                onClick={readyForNextRound}
+                disabled={isPlayerReady}
+                className={styles.readyButton}
               >
-                Edit Deck
+                {isPlayerReady ? '✓ Ready' : 'Ready for Next Round'}
               </button>
-            )}
-          </div>
-          <p className={styles.readyCount}>
-            {readyCount} of {totalPlayers} players ready
-          </p>
+              {tournamentState.currentRound === 0 && !isPlayerReady && (
+                <button onClick={unsubmitDeck} className={styles.editDeckButton}>
+                  Edit Deck
+                </button>
+              )}
+              <span className={styles.readyCount}>
+                {readyCount}/{totalPlayers} ready
+              </span>
+            </div>
+          )}
+
+          {/* Waiting for others */}
+          {!isWaitingForReady && !tournamentState.isBye && !tournamentState.currentMatchGameSessionId && (
+            <div className={styles.statusBoxWaiting}>
+              Waiting for other matches to complete...
+            </div>
+          )}
         </div>
       )}
 
-      {/* View Deck button - show when deck is submitted and Edit Deck is not available */}
-      {!isSpectator && deckBuildingState && (tournamentState.currentRound > 0 || isPlayerReady) && (
-        <button
-          onClick={() => setShowDeckViewer(true)}
-          className={styles.viewDeckButton}
-        >
-          View Deck
-        </button>
-      )}
-
-      {/* Deck Viewer Modal */}
-      {showDeckViewer && deckBuildingState && (
-        <DeckViewerModal
-          deckBuildingState={deckBuildingState}
-          onClose={() => setShowDeckViewer(false)}
-        />
-      )}
-
-      {/* Show "waiting for others" message when in active round but match is done (participants only) */}
-      {!isSpectator && !isWaitingForReady && !tournamentState.isBye && !tournamentState.currentMatchGameSessionId && !tournamentState.isComplete && (
-        <div className={styles.statusBoxWaiting}>
-          Waiting for other matches to complete...
-        </div>
-      )}
-
-      {/* Disconnected players banner */}
+      {/* ── Disconnected players ── */}
       {Object.keys(disconnectedPlayers).length > 0 && (
-        <div className={styles.disconnectedBanner}>
+        <div className={`${styles.disconnectedBanner} ${styles.trnSection}`}>
           {Object.entries(disconnectedPlayers).map(([pid, info]) => {
             const elapsed = Math.floor((Date.now() - info.disconnectedAt) / 1000)
             const remaining = Math.max(0, info.secondsRemaining - elapsed)
@@ -806,17 +786,11 @@ function TournamentOverlay({
                 <span className={styles.disconnectedTimer}>{mins}:{secs.toString().padStart(2, '0')}</span>
                 {!isSpectator && (
                   <>
-                    <button
-                      className={styles.addTimeButton}
-                      onClick={() => addDisconnectTime(pid)}
-                    >
+                    <button className={styles.addTimeButton} onClick={() => addDisconnectTime(pid)}>
                       +1 min
                     </button>
                     {canKick && (
-                      <button
-                        className={styles.kickButton}
-                        onClick={() => kickPlayer(pid)}
-                      >
+                      <button className={styles.kickButton} onClick={() => kickPlayer(pid)}>
                         Kick
                       </button>
                     )}
@@ -828,50 +802,14 @@ function TournamentOverlay({
         </div>
       )}
 
-      {/* Active matches for spectating - show for any player waiting (bye or game finished) */}
-      {!tournamentState.currentMatchGameSessionId && tournamentState.activeMatches && tournamentState.activeMatches.length > 0 && (
-        <div className={styles.matchesSection}>
-          <h3 className={styles.matchesSectionTitle}>
-            Live Matches - Click to Watch
-          </h3>
-          <div className={styles.matchesList}>
-            {tournamentState.activeMatches.map((match) => (
-              <button
-                key={match.gameSessionId}
-                onClick={() => spectateGame(match.gameSessionId)}
-                className={styles.matchButton}
-              >
-                <div className={styles.matchPlayers}>
-                  <span className={styles.matchPlayerName}>{match.player1Name}</span>
-                  <span className={styles.matchVs}>vs</span>
-                  <span className={styles.matchPlayerName}>{match.player2Name}</span>
-                </div>
-                <div className={styles.matchScore}>
-                  <span className={match.player1Life <= 5 ? styles.matchLifeLow : styles.matchLifeHigh}>
-                    {match.player1Life}
-                  </span>
-                  <span className={styles.matchScoreDash}>-</span>
-                  <span className={match.player2Life <= 5 ? styles.matchLifeLow : styles.matchLifeHigh}>
-                    {match.player2Life}
-                  </span>
-                  <span className={styles.matchWatch}>▶ Watch</span>
-                </div>
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Standings table */}
-      <div className={styles.standingsTable}>
+      {/* ── Standings table ── */}
+      <div className={`${styles.standingsTable} ${styles.trnSection}`}>
         <table className={styles.standingsTableInner}>
           <thead className={styles.standingsHeader}>
             <tr>
               <th className={styles.standingsTh}>#</th>
               <th className={styles.standingsThLeft}>Player</th>
-              <th className={styles.standingsTh}>W</th>
-              <th className={styles.standingsTh}>L</th>
-              <th className={styles.standingsTh}>D</th>
+              <th className={styles.standingsTh}>Record</th>
               <th className={styles.standingsTh}>Pts</th>
               <th className={styles.standingsTh} title="Game Win Rate">GWR</th>
               {isWaitingForReady && <th className={styles.standingsTh}>Ready</th>}
@@ -881,10 +819,8 @@ function TournamentOverlay({
             {tournamentState.standings.map((standing, index) => {
               const isMe = standing.playerId === playerId
               const isReady = tournamentState.readyPlayerIds.includes(standing.playerId)
-              // Use server-provided rank or fall back to index+1
               const displayRank = standing.rank ?? index + 1
 
-              // Calculate game win rate
               const gamesWon = standing.gamesWon ?? 0
               const gamesLost = standing.gamesLost ?? 0
               const totalGames = gamesWon + gamesLost
@@ -933,9 +869,13 @@ function TournamentOverlay({
                       <span className={styles.disconnectedIndicator}>DC</span>
                     )}
                   </td>
-                  <td className={`${styles.standingsTd} ${styles.standingsWins}`}>{standing.wins}</td>
-                  <td className={`${styles.standingsTd} ${styles.standingsLosses}`}>{standing.losses}</td>
-                  <td className={`${styles.standingsTd} ${styles.standingsDraws}`}>{standing.draws}</td>
+                  <td className={`${styles.standingsTd} ${styles.standingsRecord}`}>
+                    <span className={styles.standingsWins}>{standing.wins}</span>
+                    {'-'}
+                    <span className={styles.standingsLosses}>{standing.losses}</span>
+                    {'-'}
+                    <span className={styles.standingsDraws}>{standing.draws}</span>
+                  </td>
                   <td className={`${styles.standingsTd} ${styles.standingsPoints}`}>{standing.points}</td>
                   <td className={`${styles.standingsTd} ${styles.standingsGwr}`}>
                     {totalGames > 0 ? `${winRate}%` : '-'}
@@ -1007,9 +947,43 @@ function TournamentOverlay({
         )}
       </div>
 
-      {/* Last round results */}
+      {/* ── Live matches ── */}
+      {!tournamentState.currentMatchGameSessionId && tournamentState.activeMatches && tournamentState.activeMatches.length > 0 && (
+        <div className={`${styles.matchesSection} ${styles.trnSection}`}>
+          <h3 className={styles.matchesSectionTitle}>
+            Live Matches
+          </h3>
+          <div className={styles.matchesList}>
+            {tournamentState.activeMatches.map((match) => (
+              <button
+                key={match.gameSessionId}
+                onClick={() => spectateGame(match.gameSessionId)}
+                className={styles.matchButton}
+              >
+                <div className={styles.matchPlayers}>
+                  <span className={styles.matchPlayerName}>{match.player1Name}</span>
+                  <span className={styles.matchVs}>vs</span>
+                  <span className={styles.matchPlayerName}>{match.player2Name}</span>
+                </div>
+                <div className={styles.matchScore}>
+                  <span className={match.player1Life <= 5 ? styles.matchLifeLow : styles.matchLifeHigh}>
+                    {match.player1Life}
+                  </span>
+                  <span className={styles.matchScoreDash}>-</span>
+                  <span className={match.player2Life <= 5 ? styles.matchLifeLow : styles.matchLifeHigh}>
+                    {match.player2Life}
+                  </span>
+                  <span className={styles.matchWatch}>▶ Watch</span>
+                </div>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* ── Last round results ── */}
       {tournamentState.lastRoundResults && (
-        <div className={styles.resultsSection}>
+        <div className={`${styles.resultsSection} ${styles.trnSection}`}>
           <h3 className={styles.resultsSectionTitle}>
             Round {tournamentState.currentRound} Results
           </h3>
@@ -1029,29 +1003,35 @@ function TournamentOverlay({
         </div>
       )}
 
-      {/* Leave/Return button */}
-      {tournamentState.isComplete ? (
-        <button
-          onClick={leaveTournament}
-          className={styles.returnButton}
-        >
-          Return to Menu
-        </button>
-      ) : (
-        <button
-          onClick={() => {
-            if (confirmLeave) {
-              leaveTournament()
-            } else {
-              setConfirmLeave(true)
-              setTimeout(() => setConfirmLeave(false), 3000)
-            }
-          }}
-          className={confirmLeave ? styles.leaveButtonConfirm : styles.leaveButton}
-          style={{ marginTop: 8 }}
-        >
-          {confirmLeave ? 'Confirm Leave?' : 'Leave Tournament'}
-        </button>
+      {/* ── Footer actions ── */}
+      <div className={styles.trnFooter}>
+        {tournamentState.isComplete ? (
+          <button onClick={leaveTournament} className={styles.returnButton}>
+            Return to Menu
+          </button>
+        ) : (
+          <button
+            onClick={() => {
+              if (confirmLeave) {
+                leaveTournament()
+              } else {
+                setConfirmLeave(true)
+                setTimeout(() => setConfirmLeave(false), 3000)
+              }
+            }}
+            className={confirmLeave ? styles.leaveButtonConfirm : styles.leaveButton}
+          >
+            {confirmLeave ? 'Confirm Leave?' : 'Leave Tournament'}
+          </button>
+        )}
+      </div>
+
+      {/* Deck Viewer Modal */}
+      {showDeckViewer && deckBuildingState && (
+        <DeckViewerModal
+          deckBuildingState={deckBuildingState}
+          onClose={() => setShowDeckViewer(false)}
+        />
       )}
     </div>
   )

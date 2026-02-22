@@ -122,6 +122,126 @@
   }
 }
 
+/* ── Tournament layout: single centered column ── */
+.trnSection {
+  width: 100%;
+  max-width: 600px;
+}
+
+.trnHeader {
+  width: 100%;
+  max-width: 600px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.trnHeaderTop {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-3);
+  min-width: 0;
+}
+
+.trnTitle {
+  margin: 0;
+  font-size: var(--font-2xl);
+  font-weight: var(--font-weight-bold);
+  letter-spacing: -0.02em;
+  white-space: nowrap;
+}
+
+.trnRound {
+  color: var(--text-muted);
+  font-size: var(--font-md);
+  white-space: nowrap;
+}
+
+.trnToolbar {
+  display: flex;
+  gap: var(--space-1);
+  flex-shrink: 0;
+}
+
+.trnToolbarBtn {
+  padding: var(--space-1) var(--space-3);
+  font-size: 11px;
+  font-weight: var(--font-weight-medium);
+  color: var(--text-disabled);
+  background: transparent;
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  white-space: nowrap;
+}
+
+.trnToolbarBtn:hover {
+  color: var(--text-tertiary);
+  background-color: rgba(255, 255, 255, 0.04);
+  border-color: var(--border-medium);
+}
+
+/* Action zone — groups next-match + ready + bye into a card */
+.trnActionZone {
+  width: 100%;
+  max-width: 600px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-xl);
+}
+
+/* Ready row — horizontal with count inline */
+.trnReadyRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+
+.trnFooter {
+  width: 100%;
+  max-width: 600px;
+  display: flex;
+  justify-content: center;
+  padding-top: var(--space-2);
+}
+
+@media (max-width: 639px) {
+  .trnHeader {
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-2);
+  }
+
+  .trnHeaderTop {
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+  }
+
+  .trnTitle {
+    font-size: var(--font-xl);
+  }
+
+  .trnRound {
+    font-size: var(--font-sm);
+  }
+
+  .trnActionZone {
+    padding: var(--space-3);
+  }
+
+  .trnReadyRow {
+    justify-content: center;
+  }
+}
+
 /* =========================================================================
  * Title
  * ========================================================================= */
@@ -751,13 +871,20 @@
  * ========================================================================= */
 .standingsTable {
   width: 100%;
-  max-width: 520px;
   max-height: 60vh;
   overflow-y: auto;
   background: linear-gradient(180deg, rgba(20, 20, 30, 0.95) 0%, rgba(15, 15, 22, 0.98) 100%);
   border-radius: var(--radius-xl);
   border: 1px solid rgba(255, 255, 255, 0.08);
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+/* Record column (merged W-L-D) */
+.standingsRecord {
+  font-size: 14px;
+  font-family: ui-monospace, monospace;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
 }
 
 .standingsTableInner {
@@ -856,6 +983,7 @@
 
 .standingsDraws {
   color: var(--text-muted);
+  font-weight: var(--font-weight-normal);
 }
 
 .standingsPoints {
@@ -981,9 +1109,9 @@
 }
 
 .statusBoxMatch {
-  background-color: rgba(59, 130, 246, 0.1);
-  border: 1px solid rgba(59, 130, 246, 0.2);
-  padding: var(--space-4) var(--space-6);
+  background-color: rgba(59, 130, 246, 0.08);
+  border: 1px solid rgba(59, 130, 246, 0.15);
+  padding: var(--space-3) var(--space-4);
   border-radius: var(--radius-lg);
 }
 
@@ -997,7 +1125,7 @@
 
 .statusBoxMatchOpponent {
   font-weight: var(--font-weight-semibold);
-  font-size: var(--font-xl);
+  font-size: var(--font-lg);
   color: var(--text-primary);
 }
 
@@ -1005,16 +1133,17 @@
  * Ready Button
  * ========================================================================= */
 .readyButton {
-  padding: 14px var(--space-8);
-  font-size: var(--font-lg);
+  padding: var(--space-3) var(--space-6);
+  font-size: var(--font-md);
   font-weight: var(--font-weight-semibold);
   background: linear-gradient(180deg, #f59e0b 0%, #d97706 100%);
   color: #1a1a1a;
   border: none;
-  border-radius: var(--radius-xl);
+  border-radius: var(--radius-lg);
   cursor: pointer;
   transition: all var(--transition-normal);
   box-shadow: 0 4px 16px rgba(245, 158, 11, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  white-space: nowrap;
 }
 
 .readyButton:hover:not(:disabled) {
@@ -1035,19 +1164,20 @@
 }
 
 .readyCount {
-  color: var(--text-muted);
+  color: var(--text-disabled);
   font-size: var(--font-sm);
   margin: 0;
+  margin-left: auto;
 }
 
 .editDeckButton {
-  padding: 14px var(--space-6);
-  font-size: var(--font-lg);
+  padding: var(--space-3) var(--space-5);
+  font-size: var(--font-md);
   font-weight: var(--font-weight-medium);
   background: linear-gradient(180deg, rgba(60, 60, 80, 0.9) 0%, rgba(45, 45, 60, 0.9) 100%);
   color: var(--text-secondary);
   border: 1px solid rgba(255, 255, 255, 0.15);
-  border-radius: var(--radius-xl);
+  border-radius: var(--radius-lg);
   cursor: pointer;
   transition: all var(--transition-normal);
 }
@@ -1339,7 +1469,6 @@
  * ========================================================================= */
 .matchesSection {
   width: 100%;
-  max-width: 520px;
 }
 
 .matchesSectionTitle {
@@ -1430,7 +1559,6 @@
  * ========================================================================= */
 .resultsSection {
   width: 100%;
-  max-width: 520px;
 }
 
 .resultsSectionTitle {
