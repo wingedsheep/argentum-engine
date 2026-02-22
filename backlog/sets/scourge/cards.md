@@ -3,12 +3,12 @@
 
 **Set Size:** 143 cards
 **Release Date:** May 26, 2003
-**Implemented:** 61 / 143
+**Implemented:** 62 / 143
 
 | Color | Count |
 |-------|-------|
 | White | 12 |
-| Blue | 11 |
+| Blue | 12 |
 | Black | 12 |
 | Red | 12 |
 | Green | 12 |
@@ -103,7 +103,7 @@
 - [ ] Mind's Desire
 - [ ] Mischievous Quanar
 - [x] Misguided Rage
-- [ ] Mistform Warchief
+- [x] Mistform Warchief
 - [ ] Nefashu
 - [x] Noble Templar
 - [ ] One with Nature

@@ -255,6 +255,13 @@ sealed interface CardPredicate {
         override val description: String = "that isn't of the chosen type"
     }
 
+    /** Matches spells that share a creature subtype with the source permanent's projected types */
+    @SerialName("SharesCreatureTypeWithSource")
+    @Serializable
+    data object SharesCreatureTypeWithSource : CardPredicate {
+        override val description: String = "that shares a creature type with this creature"
+    }
+
     // =============================================================================
     // Composite Predicates
     // =============================================================================

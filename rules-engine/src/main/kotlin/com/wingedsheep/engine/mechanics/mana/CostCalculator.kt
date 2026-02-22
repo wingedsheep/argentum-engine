@@ -203,15 +203,20 @@ class CostCalculator(
     /**
      * Calculate cost reduction from battlefield permanents with ReduceSpellCostByFilter abilities.
      * Evaluates each filter's card predicates against the spell's CardDefinition.
+     * Passes source entity context for predicates like SharesCreatureTypeWithSource
+     * that need to cross-reference the source permanent's projected state.
      *
      * Used for general filter-based cost reductions like Krosan Drover
-     * ("Creature spells you cast with mana value 6 or greater cost {2} less to cast.").
+     * ("Creature spells you cast with mana value 6 or greater cost {2} less to cast.")
+     * and Mistform Warchief ("Creature spells that share a creature type with this creature cost {1} less").
      */
     private fun calculateFilterCostReduction(
         state: GameState,
         cardDef: CardDefinition,
         casterId: EntityId
     ): Int {
+        val projectedState = stateProjector?.project(state)
+
         var reduction = 0
         for (entityId in state.getBattlefield(casterId)) {
             val card = state.getEntity(entityId)?.get<CardComponent>() ?: continue
@@ -219,7 +224,7 @@ class CostCalculator(
 
             for (ability in permanentDef.script.staticAbilities) {
                 if (ability is ReduceSpellCostByFilter &&
-                    matchesCardDefinition(cardDef, ability.filter)
+                    matchesCardDefinition(cardDef, ability.filter, entityId, state, projectedState)
                 ) {
                     reduction += ability.amount
                 }
@@ -232,17 +237,33 @@ class CostCalculator(
      * Match a CardDefinition against a GameObjectFilter's card predicates.
      * Only evaluates card predicates (type, subtype, color, mana value, etc.)
      * since state and controller predicates don't apply to spells being cast.
+     *
+     * @param sourceEntityId The entity providing the cost reduction (for source-relative predicates)
+     * @param state The current game state (for source-relative predicates)
+     * @param projectedState The projected state (for source-relative predicates using projected types)
      */
-    private fun matchesCardDefinition(cardDef: CardDefinition, filter: GameObjectFilter): Boolean {
+    private fun matchesCardDefinition(
+        cardDef: CardDefinition,
+        filter: GameObjectFilter,
+        sourceEntityId: EntityId? = null,
+        state: GameState? = null,
+        projectedState: com.wingedsheep.engine.mechanics.layers.ProjectedState? = null
+    ): Boolean {
         if (filter.cardPredicates.isEmpty()) return true
         return if (filter.matchAll) {
-            filter.cardPredicates.all { matchesCardPredicate(cardDef, it) }
+            filter.cardPredicates.all { matchesCardPredicate(cardDef, it, sourceEntityId, state, projectedState) }
         } else {
-            filter.cardPredicates.any { matchesCardPredicate(cardDef, it) }
+            filter.cardPredicates.any { matchesCardPredicate(cardDef, it, sourceEntityId, state, projectedState) }
         }
     }
 
-    private fun matchesCardPredicate(cardDef: CardDefinition, predicate: CardPredicate): Boolean {
+    private fun matchesCardPredicate(
+        cardDef: CardDefinition,
+        predicate: CardPredicate,
+        sourceEntityId: EntityId? = null,
+        state: GameState? = null,
+        projectedState: com.wingedsheep.engine.mechanics.layers.ProjectedState? = null
+    ): Boolean {
         val typeLine = cardDef.typeLine
         return when (predicate) {
             CardPredicate.IsCreature -> typeLine.isCreature
@@ -285,9 +306,26 @@ class CostCalculator(
             is CardPredicate.ToughnessAtLeast -> (cardDef.creatureStats?.baseToughness ?: 0) >= predicate.min
 
             CardPredicate.NotOfSourceChosenType -> true
-            is CardPredicate.And -> predicate.predicates.all { matchesCardPredicate(cardDef, it) }
-            is CardPredicate.Or -> predicate.predicates.any { matchesCardPredicate(cardDef, it) }
-            is CardPredicate.Not -> !matchesCardPredicate(cardDef, predicate.predicate)
+
+            CardPredicate.SharesCreatureTypeWithSource -> {
+                if (sourceEntityId == null) return true
+                val spellSubtypes = cardDef.typeLine.subtypes
+                if (spellSubtypes.isEmpty()) return false
+                // Use projected subtypes (accounts for BecomeCreatureType effects)
+                val sourceSubtypes = if (projectedState != null) {
+                    projectedState.getSubtypes(sourceEntityId)
+                } else {
+                    val card = state?.getEntity(sourceEntityId)?.get<CardComponent>()
+                    card?.typeLine?.subtypes?.map { it.value }?.toSet() ?: emptySet()
+                }
+                spellSubtypes.any { spellSubtype ->
+                    sourceSubtypes.any { it.equals(spellSubtype.value, ignoreCase = true) }
+                }
+            }
+
+            is CardPredicate.And -> predicate.predicates.all { matchesCardPredicate(cardDef, it, sourceEntityId, state, projectedState) }
+            is CardPredicate.Or -> predicate.predicates.any { matchesCardPredicate(cardDef, it, sourceEntityId, state, projectedState) }
+            is CardPredicate.Not -> !matchesCardPredicate(cardDef, predicate.predicate, sourceEntityId, state, projectedState)
         }
     }
 

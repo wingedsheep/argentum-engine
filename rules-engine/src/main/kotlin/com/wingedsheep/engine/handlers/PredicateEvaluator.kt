@@ -244,6 +244,16 @@ class PredicateEvaluator {
                 !hasSubtype
             }
 
+            CardPredicate.SharesCreatureTypeWithSource -> {
+                val sourceId = context?.sourceId ?: return false
+                val sourceSubtypes = projected.getSubtypes(sourceId)
+                if (sourceSubtypes.isEmpty()) return false
+                val entitySubtypes = projectedValues?.subtypes ?: card.typeLine.subtypes.map { it.value }.toSet()
+                entitySubtypes.any { entitySubtype ->
+                    sourceSubtypes.any { it.equals(entitySubtype, ignoreCase = true) }
+                }
+            }
+
             // Composite predicates
             is CardPredicate.And -> {
                 predicate.predicates.all { matchesCardPredicateWithProjection(state, projected, entityId, it, context) }
@@ -393,6 +403,17 @@ class PredicateEvaluator {
                     ?.get<ChosenCreatureTypeComponent>()?.creatureType
                     ?: return true
                 !card.typeLine.hasSubtype(Subtype(chosenType))
+            }
+
+            CardPredicate.SharesCreatureTypeWithSource -> {
+                val sourceId = context?.sourceId ?: return false
+                val sourceCard = state.getEntity(sourceId)?.get<CardComponent>() ?: return false
+                val sourceSubtypes = sourceCard.typeLine.subtypes
+                if (sourceSubtypes.isEmpty()) return false
+                val entitySubtypes = card.typeLine.subtypes
+                entitySubtypes.any { entitySubtype ->
+                    sourceSubtypes.any { it.value.equals(entitySubtype.value, ignoreCase = true) }
+                }
             }
 
             // Composite predicates
