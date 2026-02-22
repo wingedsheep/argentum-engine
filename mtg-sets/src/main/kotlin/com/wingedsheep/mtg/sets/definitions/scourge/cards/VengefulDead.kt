@@ -47,7 +47,7 @@ val VengefulDead = card("Vengeful Dead") {
     }
 
     metadata {
-        rarity = Rarity.UNCOMMON
+        rarity = Rarity.COMMON
         collectorNumber = "80"
         artist = "Alex Horley-Orlandelli"
         flavorText = "Those who don't learn from their deaths are destined to repeat them."
