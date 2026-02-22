@@ -2,6 +2,7 @@ package com.wingedsheep.engine.handlers.actions.ability
 
 import com.wingedsheep.engine.core.CardCycledEvent
 import com.wingedsheep.engine.core.CycleCard
+import com.wingedsheep.engine.core.CycleDrawContinuation
 import com.wingedsheep.engine.core.ExecutionResult
 import com.wingedsheep.engine.core.GameEvent
 import com.wingedsheep.engine.core.ManaSpentEvent
@@ -186,7 +187,13 @@ class CycleCardHandler(
         // since the draw may pause for promptOnDraw abilities (e.g., Words of War)
         val preTriggers = triggerDetector.detectTriggers(currentState, events)
         if (preTriggers.isNotEmpty()) {
-            val triggerResult = triggerProcessor.processTriggers(currentState, preTriggers)
+            // Push draw continuation BEFORE processing triggers, so it ends up below
+            // any trigger continuations on the stack. After all triggers resolve,
+            // checkForMoreContinuations() will find this and execute the draw.
+            val stateWithDrawContinuation = currentState.pushContinuation(
+                CycleDrawContinuation(playerId = action.playerId)
+            )
+            val triggerResult = triggerProcessor.processTriggers(stateWithDrawContinuation, preTriggers)
 
             if (triggerResult.isPaused) {
                 return ExecutionResult.paused(
@@ -196,7 +203,9 @@ class CycleCardHandler(
                 )
             }
 
-            currentState = triggerResult.newState
+            // Triggers resolved synchronously — pop the draw continuation and draw inline
+            val (_, stateAfterPop) = triggerResult.newState.popContinuation()
+            currentState = stateAfterPop
             events.addAll(triggerResult.events)
         }
 

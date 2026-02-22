@@ -1273,6 +1273,39 @@ data class SecretBidContinuation(
 ) : ContinuationFrame
 
 /**
+ * Resume the draw step of a cycling action after cycling triggers have resolved.
+ *
+ * When cycling triggers (e.g., Choking Tethers' "you may tap target creature") pause
+ * for player input, the CycleCardHandler returns early before reaching the draw step.
+ * This continuation ensures the draw happens after triggers resolve.
+ *
+ * @property playerId The player who cycled and needs to draw
+ */
+@Serializable
+data class CycleDrawContinuation(
+    override val decisionId: String = "cycle-draw",
+    val playerId: EntityId
+) : ContinuationFrame
+
+/**
+ * Resume the search step of a typecycling action after cycling triggers have resolved.
+ *
+ * Same issue as CycleDrawContinuation but for typecycling, which searches the library
+ * instead of drawing.
+ *
+ * @property playerId The player who typecycled
+ * @property cardId The card that was typecycled (source for search effect)
+ * @property subtypeFilter The creature subtype to search for
+ */
+@Serializable
+data class TypecycleSearchContinuation(
+    override val decisionId: String = "typecycle-search",
+    val playerId: EntityId,
+    val cardId: EntityId,
+    val subtypeFilter: String
+) : ContinuationFrame
+
+/**
  * Resume remaining card draws after a bounce pipeline completes.
  *
  * When a draw is replaced by a bounce (Words of Wind), the pipeline handles the

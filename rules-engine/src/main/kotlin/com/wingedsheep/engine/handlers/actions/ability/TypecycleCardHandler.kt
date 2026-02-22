@@ -6,6 +6,7 @@ import com.wingedsheep.engine.core.GameEvent
 import com.wingedsheep.engine.core.ManaSpentEvent
 import com.wingedsheep.engine.core.TappedEvent
 import com.wingedsheep.engine.core.TypecycleCard
+import com.wingedsheep.engine.core.TypecycleSearchContinuation
 import com.wingedsheep.engine.core.ZoneChangeEvent
 import com.wingedsheep.engine.event.TriggerDetector
 import com.wingedsheep.engine.event.TriggerProcessor
@@ -190,7 +191,17 @@ class TypecycleCardHandler(
         // Detect and process triggers from discard + cycling events before search
         val preTriggers = triggerDetector.detectTriggers(currentState, events)
         if (preTriggers.isNotEmpty()) {
-            val triggerResult = triggerProcessor.processTriggers(currentState, preTriggers)
+            // Push search continuation BEFORE processing triggers, so it ends up below
+            // any trigger continuations on the stack. After all triggers resolve,
+            // checkForMoreContinuations() will find this and execute the search.
+            val stateWithSearchContinuation = currentState.pushContinuation(
+                TypecycleSearchContinuation(
+                    playerId = action.playerId,
+                    cardId = action.cardId,
+                    subtypeFilter = typecyclingAbility.type
+                )
+            )
+            val triggerResult = triggerProcessor.processTriggers(stateWithSearchContinuation, preTriggers)
 
             if (triggerResult.isPaused) {
                 return ExecutionResult.paused(
@@ -200,7 +211,9 @@ class TypecycleCardHandler(
                 )
             }
 
-            currentState = triggerResult.newState
+            // Triggers resolved synchronously — pop the search continuation and search inline
+            val (_, stateAfterPop) = triggerResult.newState.popContinuation()
+            currentState = stateAfterPop
             events.addAll(triggerResult.events)
         }
 

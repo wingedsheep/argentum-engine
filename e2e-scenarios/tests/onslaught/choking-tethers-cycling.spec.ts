@@ -41,11 +41,12 @@ test.describe('Choking Tethers — Cycling Trigger', () => {
     // Trigger is on the stack — opponent resolves
     await p2.resolveStack('Choking Tethers trigger')
 
-    // Verify: Glory Seeker is now tapped
+    // Verify: Glory Seeker is now tapped and a card was drawn from cycling
     await p1.expectTapped('Glory Seeker')
+    await p1.expectHandSize(1)
   })
 
-  test('declining the may effect leaves creature untapped', async ({ createGame }) => {
+  test('declining the may effect leaves creature untapped but still draws', async ({ createGame }) => {
     const { player1, player2 } = await createGame({
       player1Name: 'Player1',
       player2Name: 'Opponent',
@@ -72,7 +73,8 @@ test.describe('Choking Tethers — Cycling Trigger', () => {
     // Decline the optional target (clicks "Decline" button)
     await p1.skipTargets()
 
-    // Verify: Glory Seeker remains untapped on the battlefield
+    // Verify: Glory Seeker remains untapped but a card was still drawn
     await p2.expectOnBattlefield('Glory Seeker')
+    await p1.expectHandSize(1)
   })
 })

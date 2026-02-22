@@ -116,6 +116,14 @@ class ContinuationHandler(
             is EachPlayerChoosesCreatureTypeContinuation -> creatureTypeResumer.resumeEachPlayerChoosesCreatureType(stateAfterPop, continuation, response, cfm)
             is PatriarchsBiddingContinuation -> creatureTypeResumer.resumePatriarchsBidding(stateAfterPop, continuation, response, cfm)
 
+            // Cycling/typecycling deferred actions
+            is CycleDrawContinuation -> {
+                ExecutionResult.error(state, "CycleDrawContinuation should not be at top of stack during decision resume")
+            }
+            is TypecycleSearchContinuation -> {
+                ExecutionResult.error(state, "TypecycleSearchContinuation should not be at top of stack during decision resume")
+            }
+
             // Draw replacements
             is DrawReplacementRemainingDrawsContinuation -> {
                 ExecutionResult.error(state, "DrawReplacementRemainingDrawsContinuation should not be at top of stack during decision resume")
@@ -493,6 +501,44 @@ class ContinuationHandler(
                 }
             }
             return checkForMoreContinuations(stateAfterPop, events)
+        }
+
+        if (nextContinuation is CycleDrawContinuation) {
+            val (_, stateAfterPop) = state.popContinuation()
+            val drawExecutor = com.wingedsheep.engine.handlers.effects.drawing.DrawCardsExecutor(cardRegistry = stackResolver.cardRegistry, effectExecutor = effectExecutorRegistry::execute)
+            val drawResult = drawExecutor.executeDraws(stateAfterPop, nextContinuation.playerId, 1)
+            if (drawResult.isPaused) {
+                return ExecutionResult.paused(
+                    drawResult.state,
+                    drawResult.pendingDecision!!,
+                    events + drawResult.events
+                )
+            }
+            return checkForMoreContinuations(drawResult.state, events + drawResult.events)
+        }
+
+        if (nextContinuation is TypecycleSearchContinuation) {
+            val (_, stateAfterPop) = state.popContinuation()
+            val searchFilter = com.wingedsheep.sdk.scripting.GameObjectFilter.Any.withSubtype(nextContinuation.subtypeFilter)
+            val searchEffect = com.wingedsheep.sdk.dsl.EffectPatterns.searchLibrary(
+                filter = searchFilter,
+                count = 1,
+                reveal = true
+            )
+            val effectContext = EffectContext(
+                sourceId = nextContinuation.cardId,
+                controllerId = nextContinuation.playerId,
+                opponentId = stateAfterPop.getOpponent(nextContinuation.playerId)
+            )
+            val searchResult = effectExecutorRegistry.execute(stateAfterPop, searchEffect, effectContext)
+            if (searchResult.isPaused) {
+                return ExecutionResult.paused(
+                    searchResult.state,
+                    searchResult.pendingDecision!!,
+                    events + searchResult.events
+                )
+            }
+            return checkForMoreContinuations(searchResult.state, events + searchResult.events)
         }
 
         if (nextContinuation is EffectContinuation && nextContinuation.remainingEffects.isNotEmpty()) {
