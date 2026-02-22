@@ -456,6 +456,27 @@ sealed interface GameEvent {
         override val description: String = "${player.description} cycles a card"
     }
 
+    // ---- Targeting Triggers ----
+
+    /**
+     * When a permanent becomes the target of a spell or ability.
+     * Binding SELF = "when this creature becomes the target",
+     * ANY = "whenever a creature you control becomes the target".
+     *
+     * The [targetFilter] restricts what type of permanent can trigger this
+     * (e.g., Cleric creatures you control).
+     */
+    @SerialName("BecomesTargetEvent")
+    @Serializable
+    data class BecomesTargetEvent(
+        val targetFilter: GameObjectFilter = GameObjectFilter.Any
+    ) : GameEvent {
+        override val description: String = buildString {
+            append(describeObjectForEvent(targetFilter))
+            append(" becomes the target of a spell or ability")
+        }
+    }
+
     // ---- State Change Triggers ----
 
     /**

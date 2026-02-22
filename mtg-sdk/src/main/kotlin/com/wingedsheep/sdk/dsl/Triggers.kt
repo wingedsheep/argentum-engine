@@ -456,6 +456,27 @@ object Triggers {
     )
 
     // =========================================================================
+    // Targeting Triggers
+    // =========================================================================
+
+    /**
+     * When this permanent becomes the target of a spell or ability.
+     */
+    val BecomesTarget: TriggerSpec = TriggerSpec(
+        event = BecomesTargetEvent(),
+        binding = TriggerBinding.SELF
+    )
+
+    /**
+     * Whenever a creature you control with a specific filter becomes the target
+     * of a spell or ability.
+     */
+    fun BecomesTarget(filter: GameObjectFilter): TriggerSpec = TriggerSpec(
+        event = BecomesTargetEvent(targetFilter = filter),
+        binding = TriggerBinding.ANY
+    )
+
+    // =========================================================================
     // Life Triggers
     // =========================================================================
 

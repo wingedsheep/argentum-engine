@@ -641,6 +641,22 @@ data class ControlChangedEvent(
 ) : GameEvent
 
 // =============================================================================
+// Targeting Events
+// =============================================================================
+
+/**
+ * A permanent became the target of a spell or ability.
+ */
+@Serializable
+@SerialName("BecomesTargetEvent")
+data class BecomesTargetEvent(
+    val targetEntityId: EntityId,
+    val targetName: String,
+    val sourceEntityId: EntityId,
+    val controllerId: EntityId
+) : GameEvent
+
+// =============================================================================
 // Cycling Events
 // =============================================================================
 

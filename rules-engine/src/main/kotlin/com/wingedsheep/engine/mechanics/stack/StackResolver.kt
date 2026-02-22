@@ -121,9 +121,19 @@ class StackResolver(
         // For face-down creatures, use a generic name in the event
         val eventName = if (castFaceDown) "Face-down creature" else cardComponent.name
 
+        val events = mutableListOf<GameEvent>(SpellCastEvent(cardId, eventName, casterId))
+
+        // Emit BecomesTargetEvent for each permanent target (Rule 601.2c)
+        for (target in targets) {
+            if (target is ChosenTarget.Permanent) {
+                val targetName = newState.getEntity(target.entityId)?.get<CardComponent>()?.name ?: "Unknown"
+                events.add(BecomesTargetEvent(target.entityId, targetName, cardId, casterId))
+            }
+        }
+
         return ExecutionResult.success(
             newState.tick(),
-            listOf(SpellCastEvent(cardId, eventName, casterId))
+            events
         )
     }
 
@@ -148,16 +158,26 @@ class StackResolver(
         newState = newState.pushToStack(abilityId)
             .copy(priorityPassedBy = emptySet())
 
+        val events = mutableListOf<GameEvent>(
+            AbilityTriggeredEvent(
+                ability.sourceId,
+                ability.sourceName,
+                ability.controllerId,
+                ability.description
+            )
+        )
+
+        // Emit BecomesTargetEvent for each permanent target
+        for (target in targets) {
+            if (target is ChosenTarget.Permanent) {
+                val targetName = newState.getEntity(target.entityId)?.get<CardComponent>()?.name ?: "Unknown"
+                events.add(BecomesTargetEvent(target.entityId, targetName, ability.sourceId, ability.controllerId))
+            }
+        }
+
         return ExecutionResult.success(
             newState.tick(),
-            listOf(
-                AbilityTriggeredEvent(
-                    ability.sourceId,
-                    ability.sourceName,
-                    ability.controllerId,
-                    ability.description
-                )
-            )
+            events
         )
     }
 
@@ -181,15 +201,25 @@ class StackResolver(
         newState = newState.pushToStack(abilityId)
             .copy(priorityPassedBy = emptySet())
 
+        val events = mutableListOf<GameEvent>(
+            AbilityActivatedEvent(
+                ability.sourceId,
+                ability.sourceName,
+                ability.controllerId
+            )
+        )
+
+        // Emit BecomesTargetEvent for each permanent target
+        for (target in targets) {
+            if (target is ChosenTarget.Permanent) {
+                val targetName = newState.getEntity(target.entityId)?.get<CardComponent>()?.name ?: "Unknown"
+                events.add(BecomesTargetEvent(target.entityId, targetName, ability.sourceId, ability.controllerId))
+            }
+        }
+
         return ExecutionResult.success(
             newState.tick(),
-            listOf(
-                AbilityActivatedEvent(
-                    ability.sourceId,
-                    ability.sourceName,
-                    ability.controllerId
-                )
-            )
+            events
         )
     }
 

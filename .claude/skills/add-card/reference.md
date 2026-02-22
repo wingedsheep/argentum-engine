@@ -420,6 +420,7 @@ each player reveals and creates tokens
 
 - `Triggers.Attacks` / `Triggers.AnyAttacks` / `Triggers.YouAttack`
 - `Triggers.Blocks` / `Triggers.BecomesBlocked` / `Triggers.CreatureYouControlBecomesBlocked`
+- `Triggers.BecomesTarget` / `Triggers.BecomesTarget(filter: GameObjectFilter)` — when a permanent becomes target of spell/ability
 - `Triggers.DealsDamage` / `Triggers.DealsCombatDamage`
 - `Triggers.DealsCombatDamageToPlayer` / `Triggers.DealsCombatDamageToCreature`
 
@@ -955,6 +956,7 @@ Used in `OptionalCostEffect`, `MayPayManaEffect`, `AnyPlayerMayPayEffect`, `PayO
 - `DrawEvent(player)` / `LifeGainEvent(player)` / `LifeLossEvent(player)`
 - `DiscardEvent(player, cardFilter?)` / `SearchLibraryEvent(player)`
 - `AttackEvent` / `YouAttackEvent(minAttackers)` / `BlockEvent` / `BecomesBlockedEvent`
+- `BecomesTargetEvent(targetFilter)` — when a permanent becomes the target of a spell or ability
 - `StepEvent(step, player)` / `EnchantedCreatureControllerStepEvent(step)`
 - `SpellCastEvent(spellType, manaValueAtLeast?, manaValueAtMost?, manaValueEquals?, player)`
 - `CycleEvent(player)` / `TapEvent` / `UntapEvent`

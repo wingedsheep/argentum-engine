@@ -3,11 +3,11 @@
 
 **Set Size:** 143 cards
 **Release Date:** May 26, 2003
-**Implemented:** 59 / 143
+**Implemented:** 60 / 143
 
 | Color | Count |
 |-------|-------|
-| White | 11 |
+| White | 12 |
 | Blue | 11 |
 | Black | 11 |
 | Red | 12 |
@@ -43,7 +43,7 @@
 - [x] Clutch of Undeath
 - [x] Coast Watcher
 - [ ] Consumptive Goo
-- [ ] Daru Spiritualist
+- [x] Daru Spiritualist
 - [x] Daru Warchief
 - [ ] Dawn Elemental
 - [ ] Day of the Dragons

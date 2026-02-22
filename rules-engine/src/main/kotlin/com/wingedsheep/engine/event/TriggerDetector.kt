@@ -1,6 +1,7 @@
 package com.wingedsheep.engine.event
 
 import com.wingedsheep.engine.core.AttackersDeclaredEvent
+import com.wingedsheep.engine.core.BecomesTargetEvent
 import com.wingedsheep.engine.core.BlockersDeclaredEvent
 import com.wingedsheep.engine.core.CardCycledEvent
 import com.wingedsheep.engine.core.ControlChangedEvent
@@ -951,6 +952,9 @@ class TriggerDetector(
                     event.reason == com.wingedsheep.engine.core.LifeChangeReason.LIFE_GAIN &&
                     matchesPlayer(trigger.player, event.playerId, controllerId)
             }
+            is GameEvent.BecomesTargetEvent -> {
+                event is BecomesTargetEvent && matchesBecomesTargetTrigger(trigger, binding, event, sourceId, controllerId, state)
+            }
             is GameEvent.TurnFaceUpEvent -> {
                 event is TurnFaceUpEvent && (binding != TriggerBinding.SELF || event.entityId == sourceId)
             }
@@ -1114,6 +1118,55 @@ class TriggerDetector(
         return null
     }
 
+    /**
+     * Check if a BecomesTargetEvent matches a BecomesTargetEvent trigger.
+     * Validates binding (SELF = targeted entity is this permanent) and
+     * checks the targetFilter against the targeted entity.
+     */
+    private fun matchesBecomesTargetTrigger(
+        trigger: GameEvent.BecomesTargetEvent,
+        binding: TriggerBinding,
+        event: BecomesTargetEvent,
+        sourceId: EntityId,
+        controllerId: EntityId,
+        state: GameState
+    ): Boolean {
+        // Check binding: SELF means this permanent was targeted
+        when (binding) {
+            TriggerBinding.SELF -> if (event.targetEntityId != sourceId) return false
+            TriggerBinding.OTHER -> if (event.targetEntityId == sourceId) return false
+            TriggerBinding.ANY -> { /* no entity restriction */ }
+        }
+
+        // Check targetFilter against the targeted entity
+        if (trigger.targetFilter != GameObjectFilter.Any) {
+            val projected = stateProjector.project(state)
+            val targetContainer = state.getEntity(event.targetEntityId) ?: return false
+            val targetCard = targetContainer.get<CardComponent>() ?: return false
+
+            // Check card predicates
+            for (predicate in trigger.targetFilter.cardPredicates) {
+                if (!matchesCardPredicate(predicate, targetCard, projected, event.targetEntityId)) return false
+            }
+
+            // Check controller predicate
+            if (trigger.targetFilter.controllerPredicate != null) {
+                val targetController = projected.getController(event.targetEntityId) ?: return false
+                when (trigger.targetFilter.controllerPredicate) {
+                    is com.wingedsheep.sdk.scripting.predicates.ControllerPredicate.ControlledByYou -> {
+                        if (targetController != controllerId) return false
+                    }
+                    is com.wingedsheep.sdk.scripting.predicates.ControllerPredicate.ControlledByOpponent -> {
+                        if (targetController == controllerId) return false
+                    }
+                    else -> {}
+                }
+            }
+        }
+
+        return true
+    }
+
     private fun matchesDealsDamageTrigger(trigger: GameEvent.DealsDamageEvent, event: DamageDealtEvent, state: GameState): Boolean {
         val combatMatches = trigger.damageType == DamageType.Any ||
             (trigger.damageType == DamageType.Combat && event.isCombatDamage) ||
@@ -1275,6 +1328,9 @@ data class TriggerContext(
                 is ControlChangedEvent -> TriggerContext(
                     triggeringEntityId = event.permanentId,
                     triggeringPlayerId = event.newControllerId
+                )
+                is BecomesTargetEvent -> TriggerContext(
+                    triggeringEntityId = event.targetEntityId
                 )
                 else -> TriggerContext()
             }

@@ -851,7 +851,8 @@ is PermanentsSacrificedEvent -> {
             is LibraryReorderedEvent,
             is KeywordGrantedEvent,
             is TurnedFaceDownEvent,
-            is CreatureTypeChangedEvent -> null
+            is CreatureTypeChangedEvent,
+            is BecomesTargetEvent -> null
         }
     }
 }
