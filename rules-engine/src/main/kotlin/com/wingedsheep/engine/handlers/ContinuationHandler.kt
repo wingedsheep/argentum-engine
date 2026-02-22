@@ -179,6 +179,14 @@ class ContinuationHandler(
             is ChooseColorEntersContinuation -> modalAndCloneResumer.resumeChooseColorEnters(stateAfterPop, continuation, response, cfm)
             is ChooseCreatureTypeEntersContinuation -> modalAndCloneResumer.resumeChooseCreatureTypeEnters(stateAfterPop, continuation, response, cfm)
             is CastWithCreatureTypeContinuation -> modalAndCloneResumer.resumeCastWithCreatureType(stateAfterPop, continuation, response, cfm)
+
+            // Cycling/typecycling (non-decision continuations, should not appear during decision resume)
+            is CycleDrawContinuation -> {
+                ExecutionResult.error(state, "CycleDrawContinuation should not be at top of stack during decision resume")
+            }
+            is TypecycleSearchContinuation -> {
+                ExecutionResult.error(state, "TypecycleSearchContinuation should not be at top of stack during decision resume")
+            }
         }
     }
 

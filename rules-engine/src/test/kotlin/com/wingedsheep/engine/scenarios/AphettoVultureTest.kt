@@ -4,6 +4,8 @@ import com.wingedsheep.engine.core.ChooseTargetsDecision
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
+import com.wingedsheep.mtg.sets.definitions.onslaught.cards.AphettoVulture
+import com.wingedsheep.mtg.sets.definitions.onslaught.cards.FesteringGoblin
 import com.wingedsheep.sdk.core.*
 import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.CardScript
@@ -31,44 +33,6 @@ import io.kotest.matchers.types.shouldBeInstanceOf
  * on top of your library.
  */
 class AphettoVultureTest : FunSpec({
-
-    val AphettoVulture = CardDefinition.creature(
-        name = "Aphetto Vulture",
-        manaCost = ManaCost.parse("{4}{B}{B}"),
-        subtypes = setOf(Subtype("Zombie"), Subtype("Bird")),
-        power = 3,
-        toughness = 2,
-        oracleText = "Flying\nWhen Aphetto Vulture dies, you may put target Zombie card from your graveyard on top of your library.",
-        keywords = setOf(Keyword.FLYING),
-        script = CardScript.creature(
-            TriggeredAbility.create(
-                trigger = GameEvent.ZoneChangeEvent(from = Zone.BATTLEFIELD, to = Zone.GRAVEYARD),
-                binding = TriggerBinding.SELF,
-                effect = MoveToZoneEffect(
-                    target = EffectTarget.BoundVariable("target"),
-                    destination = Zone.LIBRARY,
-                    placement = ZonePlacement.Top
-                ),
-                optional = true,
-                targetRequirement = TargetObject(id = "target",
-                    filter = TargetFilter(
-                        GameObjectFilter.Any.withSubtype("Zombie").ownedByYou(),
-                        zone = Zone.GRAVEYARD
-                    )
-                )
-            )
-        )
-    )
-
-    // Also need a Zombie test card for graveyard targeting (Festering Goblin is a Zombie)
-    val FesteringGoblin = CardDefinition.creature(
-        name = "Festering Goblin",
-        manaCost = ManaCost.parse("{B}"),
-        subtypes = setOf(Subtype("Zombie"), Subtype("Goblin")),
-        power = 1,
-        toughness = 1,
-        oracleText = "When Festering Goblin dies, target creature gets -1/-1 until end of turn."
-    )
 
     fun createDriver(): GameTestDriver {
         val driver = GameTestDriver()

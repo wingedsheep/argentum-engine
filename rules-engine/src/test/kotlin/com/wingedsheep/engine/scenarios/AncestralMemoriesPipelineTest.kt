@@ -4,6 +4,7 @@ import com.wingedsheep.engine.core.*
 import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
+import com.wingedsheep.mtg.sets.definitions.portal.cards.AncestralMemories
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.Step
@@ -26,16 +27,6 @@ import io.kotest.matchers.types.shouldBeInstanceOf
  * instead of the deprecated LookAtTopCardsEffect.
  */
 class AncestralMemoriesPipelineTest : FunSpec({
-
-    val AncestralMemories = CardDefinition(
-        name = "Ancestral Memories",
-        manaCost = ManaCost.parse("{2}{U}{U}{U}"),
-        typeLine = TypeLine.sorcery(),
-        oracleText = "Look at the top seven cards of your library. Put two of them into your hand and the rest into your graveyard.",
-        script = CardScript.spell(
-            EffectPatterns.lookAtTopAndKeep(count = 7, keepCount = 2)
-        )
-    )
 
     fun createDriver(): GameTestDriver {
         val driver = GameTestDriver()
