@@ -2,6 +2,7 @@ package com.wingedsheep.engine.scenarios
 
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
+import com.wingedsheep.mtg.sets.definitions.onslaught.cards.ConvalescentCare
 import com.wingedsheep.sdk.core.*
 import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.CardScript
@@ -24,30 +25,6 @@ import io.kotest.matchers.shouldBe
  * At the beginning of your upkeep, if you have 5 or less life, you gain 3 life and draw a card.
  */
 class ConvalescentCareTest : FunSpec({
-
-    val ConvalescentCare = CardDefinition.enchantment(
-        name = "Convalescent Care",
-        manaCost = ManaCost.parse("{1}{W}{W}"),
-        oracleText = "At the beginning of your upkeep, if you have 5 or less life, you gain 3 life and draw a card.",
-        script = CardScript.permanent(
-            triggeredAbilities = listOf(
-                TriggeredAbility.create(
-                    trigger = GameEvent.StepEvent(Step.UPKEEP, Player.You),
-                    binding = TriggerBinding.ANY,
-                    triggerCondition = Conditions.LifeAtMost(5),
-                    effect = ConditionalEffect(
-                        condition = Conditions.LifeAtMost(5),
-                        effect = CompositeEffect(
-                            listOf(
-                                GainLifeEffect(3, EffectTarget.Controller),
-                                DrawCardsEffect(1, EffectTarget.Controller)
-                            )
-                        )
-                    )
-                )
-            )
-        )
-    )
 
     fun createDriver(): GameTestDriver {
         val driver = GameTestDriver()
