@@ -419,6 +419,15 @@ class MoveCollectionExecutor(
             val fromZone = findCurrentZone(newState, cardId, ownerId)
             if (fromZone != null) {
                 newState = newState.removeFromZone(ZoneKey(ownerId, fromZone), cardId)
+
+                // Strip battlefield-specific components when leaving the battlefield
+                // (face-down status, tapped, damage, counters, combat state, etc.)
+                if (fromZone == Zone.BATTLEFIELD) {
+                    newState = EffectExecutorUtils.cleanupCombatReferences(newState, cardId)
+                    newState = newState.updateEntity(cardId) { c ->
+                        EffectExecutorUtils.stripBattlefieldComponents(c)
+                    }
+                }
             }
 
             // For sacrifice, cards always go to their owner's graveyard (MTG rule 701.16a),

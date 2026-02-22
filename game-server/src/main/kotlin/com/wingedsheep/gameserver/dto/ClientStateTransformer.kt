@@ -396,9 +396,12 @@ class ClientStateTransformer(
         // Use projected controller for battlefield permanents (accounts for control-changing effects)
         val controllerId = projectedValues?.controllerId ?: baseControllerId
 
-        // A card is face-down if it has FaceDownComponent (on battlefield) OR is cast face-down on the stack
+        // A card is face-down if it has FaceDownComponent (on battlefield) OR is cast face-down on the stack.
+        // Per MTG rules, face-down cards are always revealed when they leave the battlefield/stack,
+        // so only allow face-down status in those zones (defense-in-depth).
         val spellOnStack = container.get<SpellOnStackComponent>()
-        val isFaceDown = container.has<FaceDownComponent>() || spellOnStack?.castFaceDown == true
+        val isInFaceDownZone = zoneKey.zoneType == Zone.BATTLEFIELD || zoneKey.zoneType == Zone.STACK
+        val isFaceDown = isInFaceDownZone && (container.has<FaceDownComponent>() || spellOnStack?.castFaceDown == true)
         // Use projected P/T which correctly handles face-down base 2/2 + any modifications
         val power = projectedValues?.power ?: if (isFaceDown) 2 else cardComponent.baseStats?.basePower
         val toughness = projectedValues?.toughness ?: if (isFaceDown) 2 else cardComponent.baseStats?.baseToughness
