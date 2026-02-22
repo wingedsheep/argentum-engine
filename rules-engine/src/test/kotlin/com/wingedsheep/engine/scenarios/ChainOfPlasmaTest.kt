@@ -7,6 +7,7 @@ import com.wingedsheep.engine.core.CardsSelectedResponse
 import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
+import com.wingedsheep.mtg.sets.definitions.onslaught.cards.ChainOfPlasma
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.Step
@@ -31,20 +32,6 @@ import io.kotest.matchers.types.shouldBeInstanceOf
  * choose a new target for that copy.
  */
 class ChainOfPlasmaTest : FunSpec({
-
-    val ChainOfPlasma = CardDefinition.instant(
-        name = "Chain of Plasma",
-        manaCost = ManaCost.parse("{1}{R}"),
-        oracleText = "Chain of Plasma deals 3 damage to any target. Then that player or that permanent's controller may discard a card. If the player does, they may copy this spell and may choose a new target for that copy.",
-        script = CardScript.spell(
-            effect = Effects.DamageAndChainCopy(
-                amount = 3,
-                target = EffectTarget.BoundVariable("target"),
-                spellName = "Chain of Plasma"
-            ),
-            AnyTarget(id = "target")
-        )
-    )
 
     fun createDriver(): GameTestDriver {
         val driver = GameTestDriver()
