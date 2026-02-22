@@ -6,6 +6,7 @@ import com.wingedsheep.engine.core.SelectCardsDecision
 import com.wingedsheep.engine.core.CardsSelectedResponse
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
+import com.wingedsheep.mtg.sets.definitions.onslaught.cards.ChainOfSmog
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.Step
@@ -28,20 +29,6 @@ import io.kotest.matchers.types.shouldBeInstanceOf
  * a new target for that copy.
  */
 class ChainOfSmogTest : FunSpec({
-
-    val ChainOfSmog = CardDefinition.sorcery(
-        name = "Chain of Smog",
-        manaCost = ManaCost.parse("{1}{B}"),
-        oracleText = "Target player discards two cards. That player may copy this spell and may choose a new target for that copy.",
-        script = CardScript.spell(
-            effect = Effects.DiscardAndChainCopy(
-                count = 2,
-                target = EffectTarget.BoundVariable("target"),
-                spellName = "Chain of Smog"
-            ),
-            TargetPlayer(id = "target")
-        )
-    )
 
     fun createDriver(): GameTestDriver {
         val driver = GameTestDriver()
