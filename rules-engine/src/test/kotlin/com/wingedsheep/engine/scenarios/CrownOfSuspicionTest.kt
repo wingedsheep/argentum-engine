@@ -4,22 +4,15 @@ import com.wingedsheep.engine.core.ActivateAbility
 import com.wingedsheep.engine.mechanics.layers.StateProjector
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
+import com.wingedsheep.mtg.sets.definitions.onslaught.cards.CrownOfSuspicion
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.model.CardDefinition
-import com.wingedsheep.sdk.model.CardScript
 import com.wingedsheep.sdk.model.Deck
-import com.wingedsheep.sdk.scripting.AbilityId
-import com.wingedsheep.sdk.scripting.AbilityCost
-import com.wingedsheep.sdk.scripting.ActivatedAbility
-import com.wingedsheep.sdk.scripting.effects.GrantToEnchantedCreatureTypeGroupEffect
-import com.wingedsheep.sdk.scripting.ModifyStats
-import com.wingedsheep.sdk.scripting.targets.TargetCreature
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
-import java.util.UUID
 
 /**
  * Tests for Crown of Suspicion.
@@ -33,31 +26,9 @@ import java.util.UUID
  */
 class CrownOfSuspicionTest : FunSpec({
 
-    val crownAbilityId = AbilityId(UUID.randomUUID().toString())
+    val crownAbilityId = CrownOfSuspicion.activatedAbilities.first().id
 
-    val CrownOfSuspicion = CardDefinition.aura(
-        name = "Crown of Suspicion",
-        manaCost = ManaCost.parse("{1}{B}"),
-        oracleText = "Enchant creature\nEnchanted creature gets +2/-1.\nSacrifice Crown of Suspicion: Enchanted creature and other creatures that share a creature type with it get +2/-1 until end of turn.",
-        script = CardScript(
-            auraTarget = TargetCreature(),
-            staticAbilities = listOf(
-                ModifyStats(2, -1)
-            ),
-            activatedAbilities = listOf(
-                ActivatedAbility(
-                    id = crownAbilityId,
-                    cost = AbilityCost.SacrificeSelf,
-                    effect = GrantToEnchantedCreatureTypeGroupEffect(
-                        powerModifier = 2,
-                        toughnessModifier = -1
-                    )
-                )
-            )
-        )
-    )
-
-    // Zombie Warrior - 3/3
+    // No real Zombie Warrior or plain Zombie with the right stats exist in the sets
     val ZombieWarrior = CardDefinition.creature(
         name = "Zombie Warrior",
         manaCost = ManaCost.parse("{2}{B}"),
@@ -66,7 +37,6 @@ class CrownOfSuspicionTest : FunSpec({
         toughness = 3
     )
 
-    // Another Zombie - 2/2
     val ZombieKnight = CardDefinition.creature(
         name = "Zombie Knight",
         manaCost = ManaCost.parse("{1}{B}"),
@@ -75,33 +45,11 @@ class CrownOfSuspicionTest : FunSpec({
         toughness = 2
     )
 
-    // Elf Warrior - shares Warrior type but not Zombie
-    val ElfWarrior = CardDefinition.creature(
-        name = "Elf Warrior",
-        manaCost = ManaCost.parse("{1}{G}"),
-        subtypes = setOf(Subtype("Elf"), Subtype("Warrior")),
-        power = 2,
-        toughness = 3
-    )
-
-    // Elf Druid - shares no type with Zombie Warrior
-    val ElfDruid = CardDefinition.creature(
-        name = "Elf Druid",
-        manaCost = ManaCost.parse("{1}{G}"),
-        subtypes = setOf(Subtype("Elf"), Subtype("Druid")),
-        power = 1,
-        toughness = 1
-    )
-
     val projector = StateProjector()
 
     fun createDriver(): GameTestDriver {
         val driver = GameTestDriver()
-        driver.registerCards(
-            TestCards.all + listOf(
-                CrownOfSuspicion, ZombieWarrior, ZombieKnight, ElfWarrior, ElfDruid
-            )
-        )
+        driver.registerCards(TestCards.all + listOf(ZombieWarrior, ZombieKnight))
         return driver
     }
 
@@ -142,8 +90,10 @@ class CrownOfSuspicionTest : FunSpec({
         // Put creatures on battlefield
         val zombieWarrior = driver.putCreatureOnBattlefield(activePlayer, "Zombie Warrior")
         val zombieKnight = driver.putCreatureOnBattlefield(activePlayer, "Zombie Knight")
-        val elfWarrior = driver.putCreatureOnBattlefield(activePlayer, "Elf Warrior")
-        val elfDruid = driver.putCreatureOnBattlefield(activePlayer, "Elf Druid")
+        // Elvish Warrior: 2/3 Elf Warrior (shares Warrior type but not Zombie)
+        val elfWarrior = driver.putCreatureOnBattlefield(activePlayer, "Elvish Warrior")
+        // Llanowar Elves: 1/1 Elf Druid (shares no type with Zombie Warrior)
+        val elfDruid = driver.putCreatureOnBattlefield(activePlayer, "Llanowar Elves")
 
         // Cast Crown of Suspicion on the Zombie Warrior
         val crown = driver.putCardInHand(activePlayer, "Crown of Suspicion")
@@ -180,11 +130,11 @@ class CrownOfSuspicionTest : FunSpec({
         projector.getProjectedPower(driver.state, zombieKnight) shouldBe 4
         projector.getProjectedToughness(driver.state, zombieKnight) shouldBe 1
 
-        // Elf Warrior: gained +2/-1 (shares Warrior type) = 4/2
+        // Elvish Warrior: gained +2/-1 (shares Warrior type) = 4/2
         projector.getProjectedPower(driver.state, elfWarrior) shouldBe 4
         projector.getProjectedToughness(driver.state, elfWarrior) shouldBe 2
 
-        // Elf Druid: no type shared, should NOT be affected = 1/1
+        // Llanowar Elves: no type shared, should NOT be affected = 1/1
         projector.getProjectedPower(driver.state, elfDruid) shouldBe 1
         projector.getProjectedToughness(driver.state, elfDruid) shouldBe 1
     }
