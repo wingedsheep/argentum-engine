@@ -454,7 +454,7 @@ each player reveals and creates tokens
 
 ### Cycle
 
-- `Triggers.YouCycle` / `Triggers.AnyPlayerCycles`
+- `Triggers.YouCycleThis` (when you cycle this card) / `Triggers.YouCycle` (whenever you cycle any card) / `Triggers.AnyPlayerCycles`
 
 ### Life
 

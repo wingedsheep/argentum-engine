@@ -27,7 +27,7 @@ val RenewedFaith = card("Renewed Faith") {
     keywordAbility(KeywordAbility.cycling("{1}{W}"))
 
     triggeredAbility {
-        trigger = Triggers.YouCycle
+        trigger = Triggers.YouCycleThis
         effect = MayEffect(GainLifeEffect(2))
     }
 

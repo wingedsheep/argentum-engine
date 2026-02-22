@@ -939,7 +939,9 @@ class TriggerDetector(
                     matchesSpellTypeFilter(trigger, event, state)
             }
             is GameEvent.CycleEvent -> {
-                event is CardCycledEvent && matchesPlayer(trigger.player, event.playerId, controllerId)
+                event is CardCycledEvent &&
+                    matchesPlayer(trigger.player, event.playerId, controllerId) &&
+                    (binding != TriggerBinding.SELF || event.cardId == sourceId)
             }
             is GameEvent.TapEvent -> {
                 event is TappedEvent && (binding != TriggerBinding.SELF || event.entityId == sourceId)

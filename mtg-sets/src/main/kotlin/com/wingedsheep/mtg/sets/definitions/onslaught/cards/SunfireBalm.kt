@@ -33,7 +33,7 @@ val SunfireBalm = card("Sunfire Balm") {
     keywordAbility(KeywordAbility.cycling("{1}{W}"))
 
     triggeredAbility {
-        trigger = Triggers.YouCycle
+        trigger = Triggers.YouCycleThis
         val t = target("target", Targets.Any)
         effect = MayEffect(
             PreventNextDamageEffect(

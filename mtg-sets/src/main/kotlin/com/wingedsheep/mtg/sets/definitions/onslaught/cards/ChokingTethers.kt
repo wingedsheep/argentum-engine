@@ -30,7 +30,7 @@ val ChokingTethers = card("Choking Tethers") {
     keywordAbility(KeywordAbility.cycling("{1}{U}"))
 
     triggeredAbility {
-        trigger = Triggers.YouCycle
+        trigger = Triggers.YouCycleThis
         optional = true
         val t = target("target", TargetCreature(filter = TargetFilter.Creature))
         effect = TapUntapEffect(t, tap = true)

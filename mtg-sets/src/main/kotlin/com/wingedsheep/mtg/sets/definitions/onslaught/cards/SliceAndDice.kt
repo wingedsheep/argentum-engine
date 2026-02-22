@@ -30,7 +30,7 @@ val SliceAndDice = card("Slice and Dice") {
     keywordAbility(KeywordAbility.cycling("{2}{R}"))
 
     triggeredAbility {
-        trigger = Triggers.YouCycle
+        trigger = Triggers.YouCycleThis
         effect = MayEffect(ForEachInGroupEffect(GroupFilter.AllCreatures, DealDamageEffect(1, EffectTarget.Self)))
     }
 

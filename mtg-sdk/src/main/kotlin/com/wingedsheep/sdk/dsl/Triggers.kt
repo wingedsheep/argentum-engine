@@ -412,6 +412,14 @@ object Triggers {
     // =========================================================================
 
     /**
+     * When you cycle this card.
+     */
+    val YouCycleThis: TriggerSpec = TriggerSpec(
+        event = CycleEvent(Player.You),
+        binding = TriggerBinding.SELF
+    )
+
+    /**
      * Whenever you cycle a card.
      */
     val YouCycle: TriggerSpec = TriggerSpec(

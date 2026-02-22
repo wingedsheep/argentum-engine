@@ -29,7 +29,7 @@ val Complicate = card("Complicate") {
     keywordAbility(KeywordAbility.cycling("{2}{U}"))
 
     triggeredAbility {
-        trigger = Triggers.YouCycle
+        trigger = Triggers.YouCycleThis
         target = Targets.Spell
         effect = MayEffect(Effects.CounterUnlessPays("{1}"))
     }

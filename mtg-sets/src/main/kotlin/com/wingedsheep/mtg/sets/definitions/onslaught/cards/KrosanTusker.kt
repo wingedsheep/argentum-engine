@@ -28,7 +28,7 @@ val KrosanTusker = card("Krosan Tusker") {
     keywordAbility(KeywordAbility.cycling("{2}{G}"))
 
     triggeredAbility {
-        trigger = Triggers.YouCycle
+        trigger = Triggers.YouCycleThis
         effect = MayEffect(
             Effects.SearchLibrary(
                 filter = GameObjectFilter.BasicLand,

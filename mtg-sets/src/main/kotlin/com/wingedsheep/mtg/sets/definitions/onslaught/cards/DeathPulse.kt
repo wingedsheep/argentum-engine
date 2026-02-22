@@ -35,7 +35,7 @@ val DeathPulse = card("Death Pulse") {
     keywordAbility(KeywordAbility.cycling("{1}{B}{B}"))
 
     triggeredAbility {
-        trigger = Triggers.YouCycle
+        trigger = Triggers.YouCycleThis
         val t = target("target", Targets.Creature)
         effect = MayEffect(
             ModifyStatsEffect(

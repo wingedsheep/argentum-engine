@@ -35,7 +35,7 @@ val DirgeOfDread = card("Dirge of Dread") {
     keywordAbility(KeywordAbility.cycling("{1}{B}"))
 
     triggeredAbility {
-        trigger = Triggers.YouCycle
+        trigger = Triggers.YouCycleThis
         val t = target("target", Targets.Creature)
         effect = MayEffect(GrantKeywordUntilEndOfTurnEffect(Keyword.FEAR, t))
     }
