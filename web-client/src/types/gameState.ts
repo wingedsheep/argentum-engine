@@ -162,6 +162,9 @@ export interface ClientCard {
 
   /** Creature types of the sacrificed permanent (for spells like Endemic Plague on the stack) */
   readonly sacrificedCreatureTypes?: readonly string[] | null
+
+  /** Specific ability text when on the stack (e.g., spell effect description, not full oracle text) */
+  readonly stackText?: string | null
 }
 
 /**

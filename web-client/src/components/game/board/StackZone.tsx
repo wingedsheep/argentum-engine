@@ -3,6 +3,7 @@ import { useStackCards } from '../../../store/selectors'
 import type { EntityId } from '../../../types'
 import { getCardImageUrl } from '../../../utils/cardImages'
 import { ActiveEffectBadges } from '../card/CardOverlays'
+import { AbilityText } from '../../ui/ManaSymbols'
 import { useResponsiveContext, handleImageError } from './shared'
 import { styles } from './styles'
 
@@ -71,9 +72,28 @@ export function StackDisplay() {
 
   return (
     <div style={{
-      ...styles.stackContainer,
+      position: 'fixed',
       left: responsive.isMobile ? 4 : 16,
+      top: '50%',
+      transform: 'translateY(-50%)',
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      gap: 6,
+      zIndex: 50,
+      maxHeight: '80vh',
+    }}>
+    <div style={{
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
       padding: responsive.isMobile ? '4px 6px' : '8px 12px',
+      backgroundColor: 'rgba(100, 50, 150, 0.3)',
+      borderRadius: 8,
+      border: '1px solid rgba(150, 100, 200, 0.4)',
+      maxHeight: '60vh',
+      overflowY: 'auto',
+      maxWidth: 'calc(100vw - 32px)',
     }}>
       {/* Regular stack items */}
       {stackCards.length > 0 && (
@@ -125,7 +145,7 @@ export function StackDisplay() {
                         filter: 'saturate(0.6)',
                       } : {}),
                     }}
-                    title={`${card.name}\n${card.oracleText || ''}`}
+                    title={card.name}
                     onError={(e) => handleImageError(e, card.name, 'small')}
                   />
                   {/* Show chosen X value for X spells */}
@@ -178,37 +198,19 @@ export function StackDisplay() {
                       <ActiveEffectBadges effects={card.activeEffects} />
                     </div>
                   )}
-                  {/* Show oracle text for abilities (activated/triggered) — only on top card since others are overlapped */}
-                  {index === stackCards.length - 1 && card.oracleText && (card.typeLine === 'Ability' || card.typeLine === 'Triggered Ability') && (
-                    <div style={{
-                      color: '#d0c8e0',
-                      fontSize: responsive.isMobile ? 8 : 9,
-                      lineHeight: 1.3,
-                      marginTop: 3,
-                      padding: '3px 4px',
-                      backgroundColor: 'rgba(60, 40, 90, 0.6)',
-                      borderRadius: 4,
-                      maxWidth: responsive.isMobile ? 90 : 120,
-                      overflow: 'hidden',
-                      display: '-webkit-box',
-                      WebkitLineClamp: 3,
-                      WebkitBoxOrient: 'vertical',
-                      textAlign: 'center',
-                      pointerEvents: 'none',
-                    }}>
-                      {card.oracleText}
-                    </div>
-                  )}
                 </div>
               )
             })}
-            {/* Show name of top card (most recently cast) */}
+            {/* Card name below top card */}
             {topCard && (
               <div style={{
-                ...styles.stackItemName,
-                fontSize: responsive.fontSize.small,
+                color: '#e0d4f0',
+                fontSize: responsive.isMobile ? 10 : 11,
+                fontWeight: 600,
                 marginTop: 4,
-                maxWidth: responsive.isMobile ? 90 : 120,
+                textAlign: 'center',
+                maxWidth: responsive.isMobile ? 80 : 100,
+                lineHeight: 1.2,
               }}>
                 {topCard.name}
               </div>
@@ -280,6 +282,33 @@ export function StackDisplay() {
           </div>
         </div>
       )}
+    </div>
+
+    {/* Ability text in a separate box below the stack — prefer stackText (specific ability) over full oracleText */}
+    {(topCard?.stackText ?? topCard?.oracleText) && (
+      <div style={{
+        padding: responsive.isMobile ? '4px 6px' : '6px 10px',
+        backgroundColor: 'rgba(30, 18, 50, 0.85)',
+        borderRadius: 6,
+        border: '1px solid rgba(150, 100, 200, 0.3)',
+        maxWidth: responsive.isMobile ? 120 : 160,
+        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.4)',
+      }}>
+        <div style={{
+          color: '#b8a8cc',
+          fontSize: responsive.isMobile ? 8 : 9,
+          lineHeight: 1.35,
+          textAlign: 'center',
+          whiteSpace: 'pre-line',
+          overflow: 'hidden',
+          display: '-webkit-box',
+          WebkitLineClamp: 5,
+          WebkitBoxOrient: 'vertical',
+        }}>
+          <AbilityText text={(topCard?.stackText ?? topCard?.oracleText) || ''} size={responsive.isMobile ? 9 : 10} />
+        </div>
+      </div>
+    )}
     </div>
   )
 }

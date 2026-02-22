@@ -607,7 +607,21 @@ class ClientStateTransformer(
             chosenX = chosenX,
             chosenCreatureType = chosenCreatureType,
             chosenColor = chosenColor,
-            sacrificedCreatureTypes = sacrificedCreatureTypes
+            sacrificedCreatureTypes = sacrificedCreatureTypes,
+            stackText = if (zoneKey.zoneType == Zone.STACK && spellOnStack != null && cardDef != null) {
+                when {
+                    spellOnStack.castFaceDown -> "Cast as a face-down 2/2 creature"
+                    // Instants/sorceries always show their spell effect description
+                    cardDef.typeLine.cardTypes.any { it == CardType.INSTANT || it == CardType.SORCERY } ->
+                        cardDef.script.spellEffect?.description
+                    // Permanents only show text when ambiguous (card has alternate abilities like cycling, morph, etc.)
+                    cardDef.script.activatedAbilities.isNotEmpty()
+                        || cardDef.keywordAbilities.any { it is KeywordAbility.Cycling || it is KeywordAbility.Morph } ->
+                        cardDef.script.spellEffect?.description ?: cardComponent.oracleText
+                    // Unambiguous permanent cast — no text needed
+                    else -> null
+                }
+            } else null
         )
     }
 

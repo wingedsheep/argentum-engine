@@ -181,7 +181,10 @@ data class ClientCard(
     val sourceZone: String? = null,
 
     /** Creature types of the sacrificed permanent (for spells like Endemic Plague on the stack) */
-    val sacrificedCreatureTypes: Set<String>? = null
+    val sacrificedCreatureTypes: Set<String>? = null,
+
+    /** Specific ability text when on the stack (e.g., spell effect description, not full oracle text) */
+    val stackText: String? = null
 )
 
 /**
