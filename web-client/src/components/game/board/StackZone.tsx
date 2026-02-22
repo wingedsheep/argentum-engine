@@ -178,6 +178,29 @@ export function StackDisplay() {
                       <ActiveEffectBadges effects={card.activeEffects} />
                     </div>
                   )}
+                  {/* Show oracle text for abilities (activated/triggered) so players can distinguish them */}
+                  {card.oracleText && (card.typeLine === 'Ability' || card.typeLine === 'Triggered Ability') && (
+                    <div style={{
+                      position: 'absolute',
+                      bottom: 0,
+                      left: 0,
+                      right: 0,
+                      backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                      color: '#e0e0e0',
+                      fontSize: 8,
+                      padding: '2px 3px',
+                      lineHeight: 1.2,
+                      overflow: 'hidden',
+                      display: '-webkit-box',
+                      WebkitLineClamp: 3,
+                      WebkitBoxOrient: 'vertical',
+                      borderRadius: '0 0 4px 4px',
+                      pointerEvents: 'none',
+                      zIndex: 5,
+                    }}>
+                      {card.oracleText}
+                    </div>
+                  )}
                 </div>
               )
             })}
