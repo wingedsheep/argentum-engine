@@ -17,6 +17,8 @@ export interface GameSummary {
   endedAt: string
   winnerName: string | null
   snapshotCount: number
+  tournamentName: string | null
+  tournamentRound: number | null
 }
 
 export interface SpectatorStateUpdate {
@@ -193,6 +195,38 @@ export function ReplayViewer({ fetchGames, fetchReplay, onBack }: ReplayViewerPr
 // Game List View
 // ============================================================================
 
+interface GameGroup {
+  label: string
+  games: GameSummary[]
+}
+
+function groupByTournament(games: GameSummary[]): GameGroup[] {
+  const groups: GameGroup[] = []
+  const tournamentMap = new Map<string, GameSummary[]>()
+  const casual: GameSummary[] = []
+
+  for (const game of games) {
+    if (game.tournamentName) {
+      const existing = tournamentMap.get(game.tournamentName)
+      if (existing) {
+        existing.push(game)
+      } else {
+        tournamentMap.set(game.tournamentName, [game])
+      }
+    } else {
+      casual.push(game)
+    }
+  }
+
+  for (const [name, tournamentGames] of tournamentMap) {
+    groups.push({ label: name, games: tournamentGames })
+  }
+  if (casual.length > 0) {
+    groups.push({ label: 'Casual Games', games: casual })
+  }
+  return groups
+}
+
 function GameListView({
   games,
   onReplay,
@@ -208,6 +242,9 @@ function GameListView({
   loading: boolean
   error: string | null
 }) {
+  const groups = groupByTournament(games)
+  const hasTournaments = games.some((g) => g.tournamentName)
+
   return (
     <div style={styles.pageContainer}>
       <div style={styles.listContainer}>
@@ -225,38 +262,65 @@ function GameListView({
         {error && <p style={styles.errorText}>{error}</p>}
         {games.length === 0 ? (
           <p style={styles.emptyText}>No completed games yet.</p>
+        ) : hasTournaments ? (
+          groups.map((group) => (
+            <div key={group.label} style={styles.groupContainer}>
+              <h2 style={styles.groupTitle}>{group.label}</h2>
+              <GameTable games={group.games} onReplay={onReplay} showRound />
+            </div>
+          ))
         ) : (
-          <table style={styles.table}>
-            <thead>
-              <tr>
-                <th style={styles.th}>Players</th>
-                <th style={styles.th}>Date</th>
-                <th style={styles.th}>Winner</th>
-                <th style={styles.th}>Steps</th>
-                <th style={styles.th}></th>
-              </tr>
-            </thead>
-            <tbody>
-              {games.map((game) => (
-                <tr key={game.gameId} style={styles.tr}>
-                  <td style={styles.td}>
-                    {game.player1Name} vs {game.player2Name}
-                  </td>
-                  <td style={styles.td}>{formatDate(game.endedAt)}</td>
-                  <td style={styles.td}>{game.winnerName ?? 'Draw'}</td>
-                  <td style={styles.td}>{game.snapshotCount}</td>
-                  <td style={styles.td}>
-                    <button onClick={() => onReplay(game.gameId)} style={styles.replayButton}>
-                      Replay
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          <GameTable games={games} onReplay={onReplay} showRound={false} />
         )}
       </div>
     </div>
+  )
+}
+
+function GameTable({
+  games,
+  onReplay,
+  showRound,
+}: {
+  games: GameSummary[]
+  onReplay: (gameId: string) => void
+  showRound: boolean
+}) {
+  return (
+    <table style={styles.table}>
+      <thead>
+        <tr>
+          {showRound && <th style={styles.th}>Round</th>}
+          <th style={styles.th}>Players</th>
+          <th style={styles.th}>Date</th>
+          <th style={styles.th}>Winner</th>
+          <th style={styles.th}>Steps</th>
+          <th style={styles.th}></th>
+        </tr>
+      </thead>
+      <tbody>
+        {games.map((game) => (
+          <tr key={game.gameId} style={styles.tr}>
+            {showRound && (
+              <td style={styles.td}>
+                {game.tournamentRound != null ? game.tournamentRound + 1 : '-'}
+              </td>
+            )}
+            <td style={styles.td}>
+              {game.player1Name} vs {game.player2Name}
+            </td>
+            <td style={styles.td}>{formatDate(game.endedAt)}</td>
+            <td style={styles.td}>{game.winnerName ?? 'Draw'}</td>
+            <td style={styles.td}>{game.snapshotCount}</td>
+            <td style={styles.td}>
+              <button onClick={() => onReplay(game.gameId)} style={styles.replayButton}>
+                Replay
+              </button>
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
   )
 }
 
@@ -422,6 +486,17 @@ const styles: Record<string, React.CSSProperties> = {
     fontSize: 14,
     textAlign: 'center',
     marginTop: 48,
+  },
+  groupContainer: {
+    marginBottom: 32,
+  },
+  groupTitle: {
+    margin: '0 0 12px 0',
+    fontSize: 16,
+    fontWeight: 500,
+    color: '#8ab4f8',
+    borderBottom: '1px solid #1a1a2e',
+    paddingBottom: 8,
   },
   table: {
     width: '100%',

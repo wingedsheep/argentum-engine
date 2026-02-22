@@ -464,6 +464,17 @@ class GamePlayHandler(
                 listOfNotNull(gameSession.player1, gameSession.player2)
                     .find { it.playerId == wId }?.playerName
             }
+
+            // Look up tournament context for grouping replays
+            val replayLobbyId = lobbyId ?: gameRepository.getLobbyForGame(gameSessionId)
+            val replayLobby = replayLobbyId?.let { lobbyRepository.findLobbyById(it) }
+            val replayTournament = replayLobbyId?.let { lobbyRepository.findTournamentById(it) }
+            val tournamentName = replayLobby?.let {
+                it.setNames.joinToString(" / ") + " " + it.format.name.lowercase()
+                    .replaceFirstChar { c -> c.uppercase() }
+            }
+            val tournamentRound = replayTournament?.getRoundForMatch(gameSessionId)?.roundNumber
+
             val record = GameReplayRecord(
                 gameId = gameSessionId,
                 player1Id = gameSession.player1?.playerId?.value ?: "",
@@ -473,6 +484,8 @@ class GamePlayHandler(
                 startedAt = gameSession.replayStartedAt ?: Instant.now(),
                 endedAt = Instant.now(),
                 winnerName = winnerName,
+                tournamentName = tournamentName,
+                tournamentRound = tournamentRound,
                 snapshots = snapshots
             )
             gameHistoryRepository.save(record)

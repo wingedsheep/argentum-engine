@@ -81,7 +81,9 @@ class AdminController(
         startedAt = startedAt.toString(),
         endedAt = endedAt.toString(),
         winnerName = winnerName,
-        snapshotCount = snapshots.size
+        snapshotCount = snapshots.size,
+        tournamentName = tournamentName,
+        tournamentRound = tournamentRound
     )
 }
 
@@ -92,5 +94,7 @@ data class GameSummary(
     val startedAt: String,
     val endedAt: String,
     val winnerName: String?,
-    val snapshotCount: Int
+    val snapshotCount: Int,
+    val tournamentName: String? = null,
+    val tournamentRound: Int? = null
 )

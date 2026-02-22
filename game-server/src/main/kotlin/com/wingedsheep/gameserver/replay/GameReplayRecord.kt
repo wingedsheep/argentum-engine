@@ -15,5 +15,7 @@ data class GameReplayRecord(
     val startedAt: Instant,
     val endedAt: Instant,
     val winnerName: String?,
+    val tournamentName: String? = null,
+    val tournamentRound: Int? = null,
     val snapshots: List<ServerMessage.SpectatorStateUpdate>
 )

@@ -43,7 +43,9 @@ class PlayerReplayController(
                 startedAt = record.startedAt.toString(),
                 endedAt = record.endedAt.toString(),
                 winnerName = record.winnerName,
-                snapshotCount = record.snapshots.size
+                snapshotCount = record.snapshots.size,
+                tournamentName = record.tournamentName,
+                tournamentRound = record.tournamentRound
             )
         }
         return ResponseEntity.ok(summaries)
