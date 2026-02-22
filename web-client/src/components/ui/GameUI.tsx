@@ -614,6 +614,7 @@ function TournamentOverlay({
   const [linkCopied, setLinkCopied] = useState(false)
   const [showDeckViewer, setShowDeckViewer] = useState(false)
   const [confirmLeave, setConfirmLeave] = useState(false)
+  const [showReplays, setShowReplays] = useState(false)
   // Tick every second to update disconnect countdown timers
   const [, setTick] = useState(0)
   const hasDisconnected = Object.keys(disconnectedPlayers).length > 0
@@ -654,6 +655,36 @@ function TournamentOverlay({
     }
   }, [isSpectator, isWaitingForReady, tournamentState.nextRoundHasBye, isPlayerReady, tournamentState.currentRound, readyForNextRound])
 
+  const fetchTournamentGames = useCallback(async (): Promise<GameSummary[]> => {
+    const token = localStorage.getItem('argentum-token')
+    if (!token) throw new Error('No player token')
+    const res = await fetch(`/api/replays/tournament/${tournamentState.lobbyId}`, {
+      headers: { 'X-Player-Token': token },
+    })
+    if (!res.ok) throw new Error(`Server error: ${res.status}`)
+    return await res.json() as GameSummary[]
+  }, [tournamentState.lobbyId])
+
+  const fetchTournamentReplay = useCallback(async (gameId: string): Promise<SpectatorStateUpdate[]> => {
+    const token = localStorage.getItem('argentum-token')
+    if (!token) throw new Error('No player token')
+    const res = await fetch(`/api/replays/${gameId}?lobbyId=${tournamentState.lobbyId}`, {
+      headers: { 'X-Player-Token': token },
+    })
+    if (!res.ok) throw new Error(`Failed to load replay: ${res.status}`)
+    return await res.json() as SpectatorStateUpdate[]
+  }, [tournamentState.lobbyId])
+
+  if (showReplays) {
+    return (
+      <ReplayViewer
+        fetchGames={fetchTournamentGames}
+        fetchReplay={fetchTournamentReplay}
+        onBack={() => setShowReplays(false)}
+      />
+    )
+  }
+
   return (
     <div className={styles.tournamentOverlay}>
       <h1 className={styles.title}>
@@ -668,13 +699,23 @@ function TournamentOverlay({
         </p>
       )}
 
-      {/* Share link button */}
-      <button
-        onClick={copyShareLink}
-        className={styles.shareLinkButton}
-      >
-        {linkCopied ? 'Link Copied!' : 'Share Tournament Link'}
-      </button>
+      {/* Share link + View Replays buttons */}
+      <div style={{ display: 'flex', gap: 8 }}>
+        <button
+          onClick={copyShareLink}
+          className={styles.shareLinkButton}
+        >
+          {linkCopied ? 'Link Copied!' : 'Share Tournament Link'}
+        </button>
+        {tournamentState.lastRoundResults && (
+          <button
+            onClick={() => setShowReplays(true)}
+            className={styles.shareLinkButton}
+          >
+            View Replays
+          </button>
+        )}
+      </div>
 
       {/* Next opponent info or BYE status (participants only) */}
       {!isSpectator && isWaitingForReady && !tournamentState.nextRoundHasBye && (

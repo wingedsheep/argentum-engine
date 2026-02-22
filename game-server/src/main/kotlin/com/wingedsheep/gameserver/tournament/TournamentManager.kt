@@ -450,6 +450,15 @@ class TournamentManager(
     }
 
     /**
+     * Get all completed game session IDs across all rounds.
+     */
+    fun getCompletedGameSessionIds(): List<String> {
+        return rounds.flatMap { it.matches }
+            .filter { it.isComplete && !it.isBye && it.gameSessionId != null }
+            .mapNotNull { it.gameSessionId }
+    }
+
+    /**
      * Get the non-BYE matches for the current round that need game sessions.
      */
     fun getCurrentRoundGameMatches(): List<TournamentMatch> {
