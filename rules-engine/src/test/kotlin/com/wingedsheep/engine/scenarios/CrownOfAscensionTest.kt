@@ -13,15 +13,8 @@ import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.CardScript
 import com.wingedsheep.sdk.model.Deck
-import com.wingedsheep.sdk.scripting.AbilityId
-import com.wingedsheep.sdk.scripting.AbilityCost
-import com.wingedsheep.sdk.scripting.ActivatedAbility
-import com.wingedsheep.sdk.scripting.GrantKeyword
-import com.wingedsheep.sdk.scripting.effects.GrantToEnchantedCreatureTypeGroupEffect
-import com.wingedsheep.sdk.scripting.targets.TargetCreature
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
-import java.util.UUID
 
 /**
  * Tests for Crown of Ascension.
@@ -35,7 +28,7 @@ import java.util.UUID
  */
 class CrownOfAscensionTest : FunSpec({
 
-    val crownAbilityId = AbilityId(UUID.randomUUID().toString())
+    val crownAbilityId = CrownOfAscension.activatedAbilities.first().id
 
     // Wizard Bird - 1/1
     val WizardBird = CardDefinition.creature(

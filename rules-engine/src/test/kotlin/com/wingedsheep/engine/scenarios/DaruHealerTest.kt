@@ -5,23 +5,12 @@ import com.wingedsheep.engine.state.components.battlefield.DamageComponent
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
+import com.wingedsheep.mtg.sets.definitions.onslaught.cards.DaruHealer
 import com.wingedsheep.sdk.core.Color
-import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.Step
-import com.wingedsheep.sdk.core.Subtype
-import com.wingedsheep.sdk.model.CardDefinition
-import com.wingedsheep.sdk.model.CardScript
 import com.wingedsheep.sdk.model.Deck
-import com.wingedsheep.sdk.scripting.AbilityCost
-import com.wingedsheep.sdk.scripting.AbilityId
-import com.wingedsheep.sdk.scripting.ActivatedAbility
-import com.wingedsheep.sdk.scripting.targets.EffectTarget
-import com.wingedsheep.sdk.scripting.effects.PreventNextDamageEffect
-import com.wingedsheep.sdk.scripting.values.DynamicAmount
-import com.wingedsheep.sdk.scripting.targets.AnyTarget
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
-import java.util.UUID
 
 /**
  * Tests for Daru Healer.
@@ -34,40 +23,11 @@ import java.util.UUID
  */
 class DaruHealerTest : FunSpec({
 
-    val healerAbilityId = AbilityId(UUID.randomUUID().toString())
-
-    val DaruHealer = CardDefinition.creature(
-        name = "Daru Healer",
-        manaCost = ManaCost.parse("{2}{W}"),
-        subtypes = setOf(Subtype("Human"), Subtype("Cleric")),
-        power = 1,
-        toughness = 2,
-        oracleText = "{T}: Prevent the next 1 damage that would be dealt to any target this turn.",
-        script = CardScript.permanent(
-            ActivatedAbility(
-                id = healerAbilityId,
-                cost = AbilityCost.Tap,
-                effect = PreventNextDamageEffect(
-                    amount = DynamicAmount.Fixed(1),
-                    target = EffectTarget.BoundVariable("target")
-                ),
-                targetRequirement = AnyTarget(id = "target")
-            )
-        )
-    )
-
-    val HillGiant = CardDefinition.creature(
-        name = "Hill Giant",
-        manaCost = ManaCost.parse("{3}{R}"),
-        subtypes = setOf(Subtype("Giant")),
-        power = 3,
-        toughness = 3,
-        oracleText = ""
-    )
+    val healerAbilityId = DaruHealer.activatedAbilities.first().id
 
     fun createDriver(): GameTestDriver {
         val driver = GameTestDriver()
-        driver.registerCards(TestCards.all + listOf(DaruHealer, HillGiant))
+        driver.registerCards(TestCards.all)
         return driver
     }
 
