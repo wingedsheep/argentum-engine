@@ -3,14 +3,14 @@
 
 **Set Size:** 143 cards
 **Release Date:** May 26, 2003
-**Implemented:** 57 / 143
+**Implemented:** 58 / 143
 
 | Color | Count |
 |-------|-------|
 | White | 11 |
 | Blue | 11 |
 | Black | 11 |
-| Red | 11 |
+| Red | 12 |
 | Green | 11 |
 | Multicolor | 1 |
 | Colorless | 1 |
@@ -142,7 +142,7 @@
 - [ ] Tendrils of Agony
 - [x] Thundercloud Elemental
 - [x] Titanic Bulvox
-- [ ] Torrent of Fire
+- [x] Torrent of Fire
 - [ ] Trap Digger
 - [x] Treetop Scout
 - [x] Twisted Abomination

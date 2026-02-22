@@ -80,6 +80,7 @@ object ScourgeSet {
         // Red sorceries
         GoblinWarStrike,
         MisguidedRage,
+        TorrentOfFire,
 
         // Red instants
         Carbonize,
