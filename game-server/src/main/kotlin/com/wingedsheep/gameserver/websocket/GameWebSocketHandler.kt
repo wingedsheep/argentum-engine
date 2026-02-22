@@ -29,6 +29,7 @@ class GameWebSocketHandler(
         // Wire cross-handler callbacks to avoid circular dependencies
         gamePlayHandler.handleRoundCompleteCallback = { lobbyId -> lobbyHandler.handleRoundComplete(lobbyId) }
         gamePlayHandler.broadcastActiveMatchesCallback = { lobbyId -> lobbyHandler.broadcastActiveMatchesToWaitingPlayers(lobbyId) }
+        gamePlayHandler.handleMatchCompleteCallback = { lobbyId, gameSessionId -> lobbyHandler.handleMatchComplete(lobbyId, gameSessionId) }
         gamePlayHandler.joinSealedGameCallback = { session, msg -> lobbyHandler.handleJoinSealedGame(session, msg) }
         gamePlayHandler.joinLobbyCallback = { session, msg -> lobbyHandler.handleJoinLobby(session, msg) }
         connectionHandler.handleGameOverCallback = { gameSession, reason -> gamePlayHandler.handleGameOver(gameSession, reason) }

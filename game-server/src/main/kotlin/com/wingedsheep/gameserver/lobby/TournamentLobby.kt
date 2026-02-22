@@ -650,6 +650,13 @@ class TournamentLobby(
     }
 
     /**
+     * Clear the ready state for a single player (called after their match starts).
+     */
+    fun clearPlayerReady(playerId: EntityId) {
+        playersReadyForNextRound.remove(playerId)
+    }
+
+    /**
      * Get the set of player IDs who are ready for the next round.
      */
     fun getReadyPlayerIds(): Set<EntityId> = playersReadyForNextRound.toSet()

@@ -46,6 +46,7 @@ export type ServerMessage =
   | TournamentMatchStartingMessage
   | TournamentByeMessage
   | RoundCompleteMessage
+  | MatchCompleteMessage
   | PlayerReadyForRoundMessage
   | TournamentCompleteMessage
   // Spectating Messages
@@ -787,6 +788,20 @@ export interface RoundCompleteMessage {
   readonly isTournamentComplete?: boolean
 }
 
+export interface MatchCompleteMessage {
+  readonly type: 'matchComplete'
+  readonly lobbyId: string
+  readonly round: number
+  readonly results: readonly MatchResultInfo[]
+  readonly standings: readonly PlayerStandingInfo[]
+  /** Name of next opponent (null if BYE or tournament complete) */
+  readonly nextOpponentName?: string | null
+  /** True if player has a BYE in the next round */
+  readonly nextRoundHasBye?: boolean
+  /** True if the tournament is complete (no more rounds) */
+  readonly isTournamentComplete?: boolean
+}
+
 export interface PlayerReadyForRoundMessage {
   readonly type: 'playerReadyForRound'
   readonly lobbyId: string
@@ -1493,6 +1508,10 @@ export function isTournamentByeMessage(msg: ServerMessage): msg is TournamentBye
 
 export function isRoundCompleteMessage(msg: ServerMessage): msg is RoundCompleteMessage {
   return msg.type === 'roundComplete'
+}
+
+export function isMatchCompleteMessage(msg: ServerMessage): msg is MatchCompleteMessage {
+  return msg.type === 'matchComplete'
 }
 
 export function isTournamentCompleteMessage(msg: ServerMessage): msg is TournamentCompleteMessage {

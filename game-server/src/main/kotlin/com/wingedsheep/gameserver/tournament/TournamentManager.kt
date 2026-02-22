@@ -108,8 +108,7 @@ class TournamentManager(
     val currentRound: TournamentRound? get() =
         if (currentRoundIndex in rounds.indices) rounds[currentRoundIndex] else null
 
-    val isComplete: Boolean get() = currentRoundIndex >= rounds.size - 1 &&
-        (currentRound?.isComplete ?: true)
+    val isComplete: Boolean get() = rounds.isNotEmpty() && rounds.all { it.isComplete }
 
     /**
      * Generate round-robin schedule using the circle method.
@@ -205,8 +204,12 @@ class TournamentManager(
      * @param winnerLifeRemaining The winner's remaining life total (for tiebreaker calculations)
      */
     fun reportMatchResult(gameSessionId: String, winnerId: EntityId?, winnerLifeRemaining: Int = 0) {
-        val round = currentRound ?: return
-        val match = round.matches.find { it.gameSessionId == gameSessionId } ?: return
+        // Search all rounds for the match (supports dynamic matchmaking where matches
+        // from different rounds may be active simultaneously)
+        val match = rounds.asSequence()
+            .flatMap { r -> r.matches.asSequence() }
+            .find { m -> m.gameSessionId == gameSessionId }
+            ?: return
 
         if (match.isComplete) return
 
@@ -473,6 +476,47 @@ class TournamentManager(
         val round = currentRound ?: return null
         return round.matches.find {
             it.player1Id == playerId || it.player2Id == playerId
+        }
+    }
+
+    /**
+     * Get the next unplayed match for a player across all rounds.
+     * Returns the round and match, or null if no remaining matches.
+     */
+    fun getNextMatchForPlayer(playerId: EntityId): Pair<TournamentRound, TournamentMatch>? {
+        for (round in rounds) {
+            val match = round.matches.find {
+                (it.player1Id == playerId || it.player2Id == playerId) &&
+                    !it.isComplete && it.gameSessionId == null
+            }
+            if (match != null) return round to match
+        }
+        return null
+    }
+
+    /**
+     * Get the round containing a specific match (by gameSessionId).
+     */
+    fun getRoundForMatch(gameSessionId: String): TournamentRound? {
+        return rounds.find { round ->
+            round.matches.any { it.gameSessionId == gameSessionId }
+        }
+    }
+
+    /**
+     * Get match results for a specific round.
+     */
+    fun getRoundResults(round: TournamentRound): List<ServerMessage.MatchResultInfo> {
+        return round.matches.map { match ->
+            ServerMessage.MatchResultInfo(
+                player1Name = standings[match.player1Id]?.playerName ?: "Unknown",
+                player2Name = match.player2Id?.let { standings[it]?.playerName } ?: "BYE",
+                player1Id = match.player1Id.value,
+                player2Id = match.player2Id?.value,
+                winnerId = match.winnerId?.value,
+                isDraw = match.isDraw,
+                isBye = match.isBye
+            )
         }
     }
 

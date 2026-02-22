@@ -53,6 +53,9 @@ class GamePlayHandler(
     // Callback to broadcast active matches when a tournament match ends
     var broadcastActiveMatchesCallback: ((String) -> Unit)? = null
 
+    // Callback for individual match completion (dynamic matchmaking)
+    var handleMatchCompleteCallback: ((String, String) -> Unit)? = null
+
     fun handle(session: WebSocketSession, message: ClientMessage) {
         when (message) {
             is ClientMessage.CreateGame -> handleCreateGame(session, message)
@@ -441,6 +444,9 @@ class GamePlayHandler(
                     sessionRegistry.getIdentityByWsId(player.webSocketSession.id)
                         ?.currentGameSessionId = null
                 }
+
+                // Notify the two players who just finished with their next matchup info
+                handleMatchCompleteCallback?.invoke(lobbyId, gameSessionId)
 
                 // Broadcast updated active matches to waiting players
                 broadcastActiveMatchesCallback?.invoke(lobbyId)

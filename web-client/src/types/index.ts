@@ -226,6 +226,7 @@ export type {
   TournamentMatchStartingMessage,
   TournamentByeMessage,
   RoundCompleteMessage,
+  MatchCompleteMessage,
   PlayerReadyForRoundMessage,
   TournamentCompleteMessage,
   ReadyForNextRoundMessage,
@@ -313,6 +314,7 @@ export {
   isTournamentMatchStartingMessage,
   isTournamentByeMessage,
   isRoundCompleteMessage,
+  isMatchCompleteMessage,
   isTournamentCompleteMessage,
   // Spectating factories & guards
   createSpectateGameMessage,

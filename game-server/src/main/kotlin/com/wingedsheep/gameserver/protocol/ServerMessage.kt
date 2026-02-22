@@ -514,6 +514,26 @@ sealed interface ServerMessage {
     ) : ServerMessage
 
     /**
+     * A match has completed. Sent immediately to both players in the match
+     * with their next opponent info, allowing them to ready up without
+     * waiting for the entire round to finish.
+     */
+    @Serializable
+    @SerialName("matchComplete")
+    data class MatchComplete(
+        val lobbyId: String,
+        val round: Int,
+        val results: List<MatchResultInfo>,
+        val standings: List<PlayerStandingInfo>,
+        /** Name of next opponent (null if BYE or tournament complete) */
+        val nextOpponentName: String? = null,
+        /** True if player has a BYE in the next round */
+        val nextRoundHasBye: Boolean = false,
+        /** True if the tournament is complete (no more rounds) */
+        val isTournamentComplete: Boolean = false,
+    ) : ServerMessage
+
+    /**
      * A player is ready for the next round.
      * Broadcast to all players in the lobby so they can see who is ready.
      */

@@ -696,6 +696,32 @@ export function createMessageHandlers(set: SetState, get: GetState): MessageHand
       }))
     },
 
+    onMatchComplete: (msg) => {
+      set((state) => ({
+        tournamentState: state.tournamentState
+          ? {
+              ...state.tournamentState,
+              currentRound: msg.round,
+              standings: msg.standings,
+              lastRoundResults: msg.results.length > 0 ? msg.results : state.tournamentState.lastRoundResults,
+              currentMatchGameSessionId: null,
+              currentMatchOpponentName: null,
+              isBye: false,
+              isComplete: msg.isTournamentComplete ?? false,
+              readyPlayerIds: [],
+              nextOpponentName: msg.nextOpponentName ?? null,
+              nextRoundHasBye: msg.nextRoundHasBye ?? false,
+              activeMatches: [],
+            }
+          : null,
+        // Preserve game state while game-over banner is showing so the board remains visible
+        gameState: state.gameOverState ? state.gameState : null,
+        mulliganState: null,
+        waitingForOpponentMulligan: false,
+        legalActions: [],
+      }))
+    },
+
     onPlayerReadyForRound: (msg) => {
       set((state) => ({
         tournamentState: state.tournamentState
