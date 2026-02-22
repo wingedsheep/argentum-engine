@@ -4,6 +4,7 @@ import com.wingedsheep.engine.core.ActivateAbility
 import com.wingedsheep.engine.mechanics.layers.StateProjector
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
+import com.wingedsheep.mtg.sets.definitions.onslaught.cards.CrownOfAscension
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.ManaCost
@@ -35,27 +36,6 @@ import java.util.UUID
 class CrownOfAscensionTest : FunSpec({
 
     val crownAbilityId = AbilityId(UUID.randomUUID().toString())
-
-    val CrownOfAscension = CardDefinition.aura(
-        name = "Crown of Ascension",
-        manaCost = ManaCost.parse("{1}{U}"),
-        oracleText = "Enchant creature\nEnchanted creature has flying.\nSacrifice Crown of Ascension: Enchanted creature and other creatures that share a creature type with it gain flying until end of turn.",
-        script = CardScript(
-            auraTarget = TargetCreature(),
-            staticAbilities = listOf(
-                GrantKeyword(Keyword.FLYING)
-            ),
-            activatedAbilities = listOf(
-                ActivatedAbility(
-                    id = crownAbilityId,
-                    cost = AbilityCost.SacrificeSelf,
-                    effect = GrantToEnchantedCreatureTypeGroupEffect(
-                        keyword = Keyword.FLYING
-                    )
-                )
-            )
-        )
-    )
 
     // Wizard Bird - 1/1
     val WizardBird = CardDefinition.creature(
