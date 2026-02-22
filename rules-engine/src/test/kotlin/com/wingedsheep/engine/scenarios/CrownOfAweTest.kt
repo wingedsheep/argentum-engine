@@ -4,6 +4,7 @@ import com.wingedsheep.engine.core.ActivateAbility
 import com.wingedsheep.engine.mechanics.layers.StateProjector
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
+import com.wingedsheep.mtg.sets.definitions.onslaught.cards.CrownOfAwe
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.Step
@@ -34,28 +35,6 @@ import java.util.UUID
 class CrownOfAweTest : FunSpec({
 
     val crownAbilityId = AbilityId(UUID.randomUUID().toString())
-
-    val CrownOfAwe = CardDefinition.aura(
-        name = "Crown of Awe",
-        manaCost = ManaCost.parse("{1}{W}"),
-        oracleText = "Enchant creature\nEnchanted creature has protection from black and from red.\nSacrifice Crown of Awe: Enchanted creature and other creatures that share a creature type with it gain protection from black and from red until end of turn.",
-        script = CardScript(
-            auraTarget = TargetCreature(),
-            staticAbilities = listOf(
-                GrantProtection(Color.BLACK),
-                GrantProtection(Color.RED)
-            ),
-            activatedAbilities = listOf(
-                ActivatedAbility(
-                    id = crownAbilityId,
-                    cost = AbilityCost.SacrificeSelf,
-                    effect = GrantToEnchantedCreatureTypeGroupEffect(
-                        protectionColors = setOf(Color.BLACK, Color.RED)
-                    )
-                )
-            )
-        )
-    )
 
     // Human Cleric - 2/2
     val HumanCleric = CardDefinition.creature(
