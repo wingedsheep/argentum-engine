@@ -3,6 +3,7 @@ package com.wingedsheep.engine.scenarios
 import com.wingedsheep.engine.mechanics.layers.StateProjector
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
+import com.wingedsheep.mtg.sets.definitions.onslaught.cards.ShaleskinBruiser
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.Step
@@ -29,30 +30,6 @@ import io.kotest.matchers.shouldBe
  * Whenever Shaleskin Bruiser attacks, it gets +3/+0 until end of turn for each other attacking Beast.
  */
 class ShaleskinBruiserTest : FunSpec({
-
-    val ShaleskinBruiser = card("Shaleskin Bruiser") {
-        manaCost = "{6}{R}"
-        typeLine = "Creature — Beast"
-        power = 4
-        toughness = 4
-
-        keywords(Keyword.TRAMPLE)
-
-        triggeredAbility {
-            trigger = Triggers.Attacks
-            effect = Effects.ModifyStats(
-                power = DynamicAmount.Multiply(
-                    DynamicAmount.Subtract(
-                        DynamicAmount.AggregateBattlefield(Player.You, GameObjectFilter.Creature.withSubtype("Beast").attacking()),
-                        DynamicAmount.Fixed(1)
-                    ),
-                    3
-                ),
-                toughness = DynamicAmount.Fixed(0),
-                target = EffectTarget.Self
-            )
-        }
-    }
 
     val TestBeast = CardDefinition.creature(
         name = "Test Beast",
