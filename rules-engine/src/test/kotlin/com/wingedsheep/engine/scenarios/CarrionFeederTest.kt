@@ -4,6 +4,7 @@ import com.wingedsheep.engine.core.ActivateAbility
 import com.wingedsheep.engine.mechanics.layers.StateProjector
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
+import com.wingedsheep.mtg.sets.definitions.scourge.cards.CarrionFeeder
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Deck
@@ -27,27 +28,6 @@ import io.kotest.matchers.shouldBe
  * Sacrifice a creature: Put a +1/+1 counter on Carrion Feeder.
  */
 class CarrionFeederTest : FunSpec({
-
-    val CarrionFeeder = card("Carrion Feeder") {
-        manaCost = "{B}"
-        typeLine = "Creature — Zombie"
-        power = 1
-        toughness = 1
-        oracleText = "Carrion Feeder can't block.\nSacrifice a creature: Put a +1/+1 counter on Carrion Feeder."
-
-        staticAbility {
-            ability = CantBlock()
-        }
-
-        activatedAbility {
-            cost = AbilityCost.Sacrifice(GameObjectFilter.Creature)
-            effect = AddCountersEffect(
-                counterType = "+1/+1",
-                count = 1,
-                target = EffectTarget.Self
-            )
-        }
-    }
 
     val abilityId = CarrionFeeder.activatedAbilities[0].id
     val projector = StateProjector()
