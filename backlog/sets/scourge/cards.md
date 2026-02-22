@@ -3,7 +3,7 @@
 
 **Set Size:** 143 cards
 **Release Date:** May 26, 2003
-**Implemented:** 58 / 143
+**Implemented:** 59 / 143
 
 | Color | Count |
 |-------|-------|
@@ -11,7 +11,7 @@
 | Blue | 11 |
 | Black | 11 |
 | Red | 12 |
-| Green | 11 |
+| Green | 12 |
 | Multicolor | 1 |
 | Colorless | 1 |
 
@@ -92,7 +92,7 @@
 - [ ] Hunting Pack
 - [ ] Karona, False God
 - [ ] Karona's Zealot
-- [ ] Krosan Drover
+- [x] Krosan Drover
 - [x] Krosan Warchief
 - [x] Kurgadon
 - [ ] Lethal Vapors

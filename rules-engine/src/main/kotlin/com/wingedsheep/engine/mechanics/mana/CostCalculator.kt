@@ -15,9 +15,12 @@ import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.scripting.CostReductionSource
 import com.wingedsheep.sdk.scripting.FaceDownSpellCostReduction
+import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.KeywordAbility
+import com.wingedsheep.sdk.scripting.ReduceSpellCostByFilter
 import com.wingedsheep.sdk.scripting.ReduceSpellCostBySubtype
 import com.wingedsheep.sdk.scripting.SpellCostReduction
+import com.wingedsheep.sdk.scripting.predicates.CardPredicate
 
 /**
  * Calculates effective spell costs after applying cost reductions.
@@ -65,6 +68,9 @@ class CostCalculator(
 
         // Evaluate ReduceSpellCostBySubtype from battlefield permanents controlled by the caster
         totalReduction += calculateSubtypeCostReduction(state, cardDef, casterId)
+
+        // Evaluate ReduceSpellCostByFilter from battlefield permanents controlled by the caster
+        totalReduction += calculateFilterCostReduction(state, cardDef, casterId)
 
         return reduceGenericCost(cardDef.manaCost, totalReduction)
     }
@@ -192,6 +198,97 @@ class CostCalculator(
             }
         }
         return reduction
+    }
+
+    /**
+     * Calculate cost reduction from battlefield permanents with ReduceSpellCostByFilter abilities.
+     * Evaluates each filter's card predicates against the spell's CardDefinition.
+     *
+     * Used for general filter-based cost reductions like Krosan Drover
+     * ("Creature spells you cast with mana value 6 or greater cost {2} less to cast.").
+     */
+    private fun calculateFilterCostReduction(
+        state: GameState,
+        cardDef: CardDefinition,
+        casterId: EntityId
+    ): Int {
+        var reduction = 0
+        for (entityId in state.getBattlefield(casterId)) {
+            val card = state.getEntity(entityId)?.get<CardComponent>() ?: continue
+            val permanentDef = cardRegistry?.getCard(card.cardDefinitionId) ?: continue
+
+            for (ability in permanentDef.script.staticAbilities) {
+                if (ability is ReduceSpellCostByFilter &&
+                    matchesCardDefinition(cardDef, ability.filter)
+                ) {
+                    reduction += ability.amount
+                }
+            }
+        }
+        return reduction
+    }
+
+    /**
+     * Match a CardDefinition against a GameObjectFilter's card predicates.
+     * Only evaluates card predicates (type, subtype, color, mana value, etc.)
+     * since state and controller predicates don't apply to spells being cast.
+     */
+    private fun matchesCardDefinition(cardDef: CardDefinition, filter: GameObjectFilter): Boolean {
+        if (filter.cardPredicates.isEmpty()) return true
+        return if (filter.matchAll) {
+            filter.cardPredicates.all { matchesCardPredicate(cardDef, it) }
+        } else {
+            filter.cardPredicates.any { matchesCardPredicate(cardDef, it) }
+        }
+    }
+
+    private fun matchesCardPredicate(cardDef: CardDefinition, predicate: CardPredicate): Boolean {
+        val typeLine = cardDef.typeLine
+        return when (predicate) {
+            CardPredicate.IsCreature -> typeLine.isCreature
+            CardPredicate.IsLand -> typeLine.isLand
+            CardPredicate.IsArtifact -> typeLine.isArtifact
+            CardPredicate.IsEnchantment -> typeLine.isEnchantment
+            CardPredicate.IsPlaneswalker -> CardType.PLANESWALKER in typeLine.cardTypes
+            CardPredicate.IsInstant -> typeLine.isInstant
+            CardPredicate.IsSorcery -> typeLine.isSorcery
+            CardPredicate.IsBasicLand -> typeLine.isBasicLand
+            CardPredicate.IsPermanent -> typeLine.isPermanent
+            CardPredicate.IsNonland -> !typeLine.isLand
+            CardPredicate.IsNoncreature -> !typeLine.isCreature
+            CardPredicate.IsToken -> false
+            CardPredicate.IsNontoken -> true
+
+            is CardPredicate.HasColor -> predicate.color in cardDef.colors
+            is CardPredicate.NotColor -> predicate.color !in cardDef.colors
+            CardPredicate.IsColorless -> cardDef.colors.isEmpty()
+            CardPredicate.IsMulticolored -> cardDef.colors.size > 1
+            CardPredicate.IsMonocolored -> cardDef.colors.size == 1
+
+            is CardPredicate.HasSubtype -> typeLine.hasSubtype(predicate.subtype)
+            is CardPredicate.NotSubtype -> !typeLine.hasSubtype(predicate.subtype)
+            is CardPredicate.HasBasicLandType -> typeLine.hasSubtype(Subtype(predicate.landType))
+            is CardPredicate.NameEquals -> cardDef.name == predicate.name
+
+            is CardPredicate.HasKeyword -> predicate.keyword in cardDef.keywords
+            is CardPredicate.NotKeyword -> predicate.keyword !in cardDef.keywords
+
+            is CardPredicate.ManaValueEquals -> cardDef.manaCost.cmc == predicate.value
+            is CardPredicate.ManaValueAtMost -> cardDef.manaCost.cmc <= predicate.max
+            is CardPredicate.ManaValueAtLeast -> cardDef.manaCost.cmc >= predicate.min
+
+            is CardPredicate.PowerEquals -> cardDef.creatureStats?.basePower == predicate.value
+            is CardPredicate.PowerAtMost -> (cardDef.creatureStats?.basePower ?: 0) <= predicate.max
+            is CardPredicate.PowerAtLeast -> (cardDef.creatureStats?.basePower ?: 0) >= predicate.min
+            is CardPredicate.ToughnessEquals -> cardDef.creatureStats?.baseToughness == predicate.value
+            is CardPredicate.ToughnessAtMost -> (cardDef.creatureStats?.baseToughness ?: 0) <= predicate.max
+            is CardPredicate.ToughnessAtLeast -> (cardDef.creatureStats?.baseToughness ?: 0) >= predicate.min
+
+            CardPredicate.NotOfSourceChosenType -> true
+            is CardPredicate.And -> predicate.predicates.all { matchesCardPredicate(cardDef, it) }
+            is CardPredicate.Or -> predicate.predicates.any { matchesCardPredicate(cardDef, it) }
+            is CardPredicate.Not -> !matchesCardPredicate(cardDef, predicate.predicate)
+        }
     }
 
     /**

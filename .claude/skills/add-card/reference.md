@@ -799,6 +799,7 @@ Set via `staticAbility { ability = ... }`:
 - `SpellCostReduction(reductionSource)` — cost reduction
 - `FaceDownSpellCostReduction(reductionSource)` — face-down spell cost reduction
 - `ReduceSpellCostBySubtype(subtype, amount)` — reduce cost per subtype
+- `ReduceSpellCostByFilter(filter, amount)` — reduce spell cost for spells matching a GameObjectFilter
 - `ReduceFaceDownCastingCost(amount)` — reduce face-down casting cost
 - `ConditionalStaticAbility(ability, condition)` — conditional static
 

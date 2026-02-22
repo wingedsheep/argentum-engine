@@ -304,6 +304,30 @@ data class ReduceSpellCostBySubtype(
 }
 
 /**
+ * Reduces the cost of spells matching a filter cast by the controller of this permanent.
+ * A general-purpose cost reduction that uses GameObjectFilter's card predicates to match spells.
+ *
+ * Examples:
+ * - "Creature spells with MV 6+ cost {2} less" → ReduceSpellCostByFilter(Creature.manaValueAtLeast(6), 2)
+ * - "Red spells cost {1} less" → ReduceSpellCostByFilter(Any.withColor(Color.RED), 1)
+ * - "Dragon spells cost {2} less" → ReduceSpellCostByFilter(Any.withSubtype("Dragon"), 2)
+ *
+ * This is a battlefield-based static ability — the permanent with this ability
+ * must be on the battlefield to provide the reduction.
+ *
+ * @property filter The filter that spells must match to benefit from the reduction (card predicates only)
+ * @property amount The amount of generic mana to reduce
+ */
+@SerialName("ReduceSpellCostByFilter")
+@Serializable
+data class ReduceSpellCostByFilter(
+    val filter: GameObjectFilter,
+    val amount: Int
+) : StaticAbility {
+    override val description: String = "${filter.description} spells you cast cost {$amount} less to cast"
+}
+
+/**
  * Reduces the cost to cast this spell.
  * Used for Vivid and similar cost-reduction mechanics.
  *
