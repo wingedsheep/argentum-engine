@@ -57,6 +57,8 @@ If the card needs effects, keywords, triggers, conditions, or static abilities t
 
 **If a new effect type is truly needed:**
 
+**Design for reusability** — New effects, static abilities, triggers, and conditions must be **general-purpose and parameterized**, not card-specific. Use filters, dynamic amounts, and configurable parameters so the same effect works across many cards. For example: don't create `ReduceCostOfGoblinsEffect` — instead create `ReduceSpellCostEffect(filter, amount)` that accepts any `GameObjectFilter`. Don't create `GainLifeWhenGoblinEntersEffect` — instead create a general trigger `OnCreatureEntersBattlefield(filter)` paired with `Effects.GainLife(amount)`. The effect name should describe the *mechanic*, not the specific card it was built for.
+
 - **4.1 Add Effect Type** in `mtg-sdk/.../scripting/effect/` (`DamageEffects.kt`, `LifeEffects.kt`, `DrawingEffects.kt`, `RemovalEffects.kt`, `PermanentEffects.kt`, `LibraryEffects.kt`, `ManaEffects.kt`, `TokenEffects.kt`, `CompositeEffects.kt`, `CombatEffects.kt`, `PlayerEffects.kt`, `StackEffects.kt`)
 - **4.2 Create Executor** in `rules-engine/.../handlers/effects/{category}/`
 - **4.3 Register Executor** in `{Category}Executors.kt`
