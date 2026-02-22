@@ -178,25 +178,23 @@ export function StackDisplay() {
                       <ActiveEffectBadges effects={card.activeEffects} />
                     </div>
                   )}
-                  {/* Show oracle text for abilities (activated/triggered) so players can distinguish them */}
-                  {card.oracleText && (card.typeLine === 'Ability' || card.typeLine === 'Triggered Ability') && (
+                  {/* Show oracle text for abilities (activated/triggered) — only on top card since others are overlapped */}
+                  {index === stackCards.length - 1 && card.oracleText && (card.typeLine === 'Ability' || card.typeLine === 'Triggered Ability') && (
                     <div style={{
-                      position: 'absolute',
-                      bottom: 0,
-                      left: 0,
-                      right: 0,
-                      backgroundColor: 'rgba(0, 0, 0, 0.8)',
-                      color: '#e0e0e0',
-                      fontSize: 8,
-                      padding: '2px 3px',
-                      lineHeight: 1.2,
+                      color: '#d0c8e0',
+                      fontSize: responsive.isMobile ? 8 : 9,
+                      lineHeight: 1.3,
+                      marginTop: 3,
+                      padding: '3px 4px',
+                      backgroundColor: 'rgba(60, 40, 90, 0.6)',
+                      borderRadius: 4,
+                      maxWidth: responsive.isMobile ? 90 : 120,
                       overflow: 'hidden',
                       display: '-webkit-box',
                       WebkitLineClamp: 3,
                       WebkitBoxOrient: 'vertical',
-                      borderRadius: '0 0 4px 4px',
+                      textAlign: 'center',
                       pointerEvents: 'none',
-                      zIndex: 5,
                     }}>
                       {card.oracleText}
                     </div>
@@ -210,6 +208,7 @@ export function StackDisplay() {
                 ...styles.stackItemName,
                 fontSize: responsive.fontSize.small,
                 marginTop: 4,
+                maxWidth: responsive.isMobile ? 90 : 120,
               }}>
                 {topCard.name}
               </div>
