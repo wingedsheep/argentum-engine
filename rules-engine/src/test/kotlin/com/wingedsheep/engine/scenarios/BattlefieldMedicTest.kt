@@ -6,27 +6,12 @@ import com.wingedsheep.engine.state.components.battlefield.DamageComponent
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
+import com.wingedsheep.mtg.sets.definitions.onslaught.cards.BattlefieldMedic
 import com.wingedsheep.sdk.core.Color
-import com.wingedsheep.sdk.core.Keyword
-import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.Step
-import com.wingedsheep.sdk.core.Subtype
-import com.wingedsheep.sdk.dsl.DynamicAmounts
-import com.wingedsheep.sdk.model.CardDefinition
-import com.wingedsheep.sdk.model.CardScript
 import com.wingedsheep.sdk.model.Deck
-import com.wingedsheep.sdk.scripting.AbilityCost
-import com.wingedsheep.sdk.scripting.AbilityId
-import com.wingedsheep.sdk.scripting.ActivatedAbility
-import com.wingedsheep.sdk.scripting.targets.EffectTarget
-import com.wingedsheep.sdk.scripting.effects.GrantKeywordUntilEndOfTurnEffect
-import com.wingedsheep.sdk.scripting.effects.PreventNextDamageEffect
-import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
-import com.wingedsheep.sdk.scripting.targets.TargetCreature
-import com.wingedsheep.sdk.scripting.targets.TargetPermanent
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
-import java.util.UUID
 
 /**
  * Tests for Battlefield Medic and the PreventNextDamage mechanic.
@@ -39,51 +24,11 @@ import java.util.UUID
  */
 class BattlefieldMedicTest : FunSpec({
 
-    val medicAbilityId = AbilityId(UUID.randomUUID().toString())
-
-    val BattlefieldMedic = CardDefinition.creature(
-        name = "Battlefield Medic",
-        manaCost = ManaCost.parse("{1}{W}"),
-        subtypes = setOf(Subtype("Human"), Subtype("Cleric")),
-        power = 1,
-        toughness = 1,
-        oracleText = "{T}: Prevent the next X damage that would be dealt to target creature this turn, where X is the number of Clerics on the battlefield.",
-        script = CardScript.permanent(
-            ActivatedAbility(
-                id = medicAbilityId,
-                cost = AbilityCost.Tap,
-                effect = PreventNextDamageEffect(
-                    amount = DynamicAmounts.creaturesWithSubtype(Subtype("Cleric")),
-                    target = EffectTarget.BoundVariable("target")
-                ),
-                targetRequirement = TargetPermanent(id = "target", filter = TargetFilter.Creature)
-            )
-        )
-    )
-
-    // A second Cleric to increase the count
-    val TestCleric = CardDefinition.creature(
-        name = "Test Cleric",
-        manaCost = ManaCost.parse("{W}"),
-        subtypes = setOf(Subtype("Human"), Subtype("Cleric")),
-        power = 1,
-        toughness = 1,
-        oracleText = ""
-    )
-
-    // A big creature to receive the shield
-    val HillGiant = CardDefinition.creature(
-        name = "Hill Giant",
-        manaCost = ManaCost.parse("{3}{R}"),
-        subtypes = setOf(Subtype("Giant")),
-        power = 3,
-        toughness = 3,
-        oracleText = ""
-    )
+    val medicAbilityId = BattlefieldMedic.activatedAbilities.first().id
 
     fun createDriver(): GameTestDriver {
         val driver = GameTestDriver()
-        driver.registerCards(TestCards.all + listOf(BattlefieldMedic, TestCleric, HillGiant))
+        driver.registerCards(TestCards.all)
         return driver
     }
 
@@ -317,18 +262,8 @@ class BattlefieldMedicTest : FunSpec({
     }
 
     test("ability fizzles when target gains shroud while ability is on the stack (Rule 608.2b)") {
-        val MagesGuile = CardDefinition.instant(
-            name = "Mage's Guile",
-            manaCost = ManaCost.parse("{1}{U}"),
-            oracleText = "Target creature gains shroud until end of turn.",
-            script = CardScript.spell(
-                effect = GrantKeywordUntilEndOfTurnEffect(Keyword.SHROUD, EffectTarget.BoundVariable("target")),
-                TargetCreature(id = "target")
-            )
-        )
-
         val driver = GameTestDriver()
-        driver.registerCards(TestCards.all + listOf(BattlefieldMedic, HillGiant, MagesGuile))
+        driver.registerCards(TestCards.all)
         driver.initMirrorMatch(
             deck = Deck.of("Plains" to 20, "Island" to 20),
             startingLife = 20
