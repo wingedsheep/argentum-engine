@@ -5,23 +5,12 @@ import com.wingedsheep.engine.state.components.identity.ChosenCreatureTypeCompon
 import com.wingedsheep.engine.state.components.identity.LifeTotalComponent
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
+import com.wingedsheep.mtg.sets.definitions.onslaught.cards.CircleOfSolace
 import com.wingedsheep.sdk.core.Color
-import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.Step
-import com.wingedsheep.sdk.core.Subtype
-import com.wingedsheep.sdk.core.TypeLine
-import com.wingedsheep.sdk.model.CardDefinition
-import com.wingedsheep.sdk.model.CardScript
-import com.wingedsheep.sdk.model.CreatureStats
 import com.wingedsheep.sdk.model.Deck
-import com.wingedsheep.sdk.scripting.AbilityCost
-import com.wingedsheep.sdk.scripting.AbilityId
-import com.wingedsheep.sdk.scripting.ActivatedAbility
-import com.wingedsheep.sdk.scripting.EntersWithCreatureTypeChoice
-import com.wingedsheep.sdk.scripting.effects.PreventNextDamageFromChosenCreatureTypeEffect
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
-import java.util.UUID
 
 /**
  * Tests for Circle of Solace (ONS #13).
@@ -33,42 +22,11 @@ import java.util.UUID
  */
 class CircleOfSolaceTest : FunSpec({
 
-    val circleAbilityId = AbilityId(UUID.randomUUID().toString())
-
-    val CircleOfSolace = CardDefinition(
-        name = "Circle of Solace",
-        manaCost = ManaCost.parse("{3}{W}"),
-        typeLine = TypeLine.parse("Enchantment"),
-        oracleText = "As Circle of Solace enters the battlefield, choose a creature type.\n{1}{W}: The next time a creature of the chosen type would deal damage to you this turn, prevent that damage.",
-        script = CardScript.permanent(
-            ActivatedAbility(
-                id = circleAbilityId,
-                cost = AbilityCost.Mana(ManaCost.parse("{1}{W}")),
-                effect = PreventNextDamageFromChosenCreatureTypeEffect
-            ),
-            replacementEffects = listOf(EntersWithCreatureTypeChoice())
-        )
-    )
-
-    val TestGoblin = CardDefinition(
-        name = "Test Goblin",
-        manaCost = ManaCost.parse("{R}"),
-        typeLine = TypeLine.creature(setOf(Subtype("Goblin"))),
-        oracleText = "",
-        creatureStats = CreatureStats(2, 1)
-    )
-
-    val TestElf = CardDefinition(
-        name = "Test Elf",
-        manaCost = ManaCost.parse("{G}"),
-        typeLine = TypeLine.creature(setOf(Subtype("Elf"))),
-        oracleText = "",
-        creatureStats = CreatureStats(2, 2)
-    )
+    val circleAbilityId = CircleOfSolace.activatedAbilities.first().id
 
     fun createDriver(): GameTestDriver {
         val driver = GameTestDriver()
-        driver.registerCards(TestCards.all + listOf(CircleOfSolace, TestGoblin, TestElf))
+        driver.registerCards(TestCards.all)
         return driver
     }
 
@@ -91,7 +49,7 @@ class CircleOfSolaceTest : FunSpec({
         })
 
         // Active player has a Goblin
-        val goblin = driver.putCreatureOnBattlefield(activePlayer, "Test Goblin")
+        val goblin = driver.putCreatureOnBattlefield(activePlayer, "Goblin Bully")
         driver.removeSummoningSickness(goblin)
 
         // Active player passes priority → opponent gets priority and activates Circle
@@ -138,7 +96,7 @@ class CircleOfSolaceTest : FunSpec({
         })
 
         // Active player has an Elf (not a Goblin)
-        val elf = driver.putCreatureOnBattlefield(activePlayer, "Test Elf")
+        val elf = driver.putCreatureOnBattlefield(activePlayer, "Elvish Warrior")
         driver.removeSummoningSickness(elf)
 
         // Active player passes → opponent activates Circle
@@ -184,8 +142,8 @@ class CircleOfSolaceTest : FunSpec({
         })
 
         // Active player has two Goblins
-        val goblin1 = driver.putCreatureOnBattlefield(activePlayer, "Test Goblin")
-        val goblin2 = driver.putCreatureOnBattlefield(activePlayer, "Test Goblin")
+        val goblin1 = driver.putCreatureOnBattlefield(activePlayer, "Goblin Bully")
+        val goblin2 = driver.putCreatureOnBattlefield(activePlayer, "Goblin Bully")
         driver.removeSummoningSickness(goblin1)
         driver.removeSummoningSickness(goblin2)
 
@@ -232,8 +190,8 @@ class CircleOfSolaceTest : FunSpec({
         })
 
         // Active player has two Goblins
-        val goblin1 = driver.putCreatureOnBattlefield(activePlayer, "Test Goblin")
-        val goblin2 = driver.putCreatureOnBattlefield(activePlayer, "Test Goblin")
+        val goblin1 = driver.putCreatureOnBattlefield(activePlayer, "Goblin Bully")
+        val goblin2 = driver.putCreatureOnBattlefield(activePlayer, "Goblin Bully")
         driver.removeSummoningSickness(goblin1)
         driver.removeSummoningSickness(goblin2)
 
