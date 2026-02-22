@@ -4,6 +4,7 @@ import com.wingedsheep.engine.core.ActivateAbility
 import com.wingedsheep.engine.mechanics.layers.StateProjector
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
+import com.wingedsheep.mtg.sets.definitions.onslaught.cards.CentaurGlade
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.dsl.Costs
@@ -22,21 +23,6 @@ import io.kotest.matchers.shouldNotBe
  * {2}{G}{G}: Create a 3/3 green Centaur creature token.
  */
 class CentaurGladeTest : FunSpec({
-
-    val CentaurGlade = card("Centaur Glade") {
-        manaCost = "{3}{G}{G}"
-        typeLine = "Enchantment"
-
-        activatedAbility {
-            cost = Costs.Mana("{2}{G}{G}")
-            effect = CreateTokenEffect(
-                power = 3,
-                toughness = 3,
-                colors = setOf(Color.GREEN),
-                creatureTypes = setOf("Centaur"),
-            )
-        }
-    }
 
     val gladeAbilityId = CentaurGlade.activatedAbilities.first().id
 
