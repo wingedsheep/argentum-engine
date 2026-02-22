@@ -4,6 +4,7 @@ import com.wingedsheep.engine.core.SelectCardsDecision
 import com.wingedsheep.engine.mechanics.layers.StateProjector
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
+import com.wingedsheep.mtg.sets.definitions.onslaught.cards.CustodyBattle
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.Step
@@ -39,29 +40,6 @@ import io.kotest.matchers.types.shouldBeInstanceOf
  * so the trigger goes directly on the stack without a targeting prompt.
  */
 class CustodyBattleTest : FunSpec({
-
-    val CustodyBattle = CardDefinition.aura(
-        name = "Custody Battle",
-        manaCost = ManaCost.parse("{1}{R}"),
-        oracleText = "Enchant creature\nEnchanted creature has \"At the beginning of your upkeep, target opponent gains control of this creature unless you sacrifice a land.\"",
-        script = CardScript(
-            auraTarget = TargetCreature(),
-            triggeredAbilities = listOf(
-                TriggeredAbility.create(
-                    trigger = GameEvent.EnchantedCreatureControllerStepEvent(Step.UPKEEP),
-                    binding = TriggerBinding.ANY,
-                    effect = PayOrSufferEffect(
-                        cost = PayCost.Sacrifice(GameObjectFilter.Land),
-                        suffer = GiveControlToTargetPlayerEffect(
-                            permanent = EffectTarget.EnchantedCreature,
-                            newController = EffectTarget.BoundVariable("target")
-                        )
-                    ),
-                    targetRequirement = TargetOpponent(id = "target")
-                )
-            )
-        )
-    )
 
     // Simple creature to enchant
     val TestCreature = CardDefinition.creature(
