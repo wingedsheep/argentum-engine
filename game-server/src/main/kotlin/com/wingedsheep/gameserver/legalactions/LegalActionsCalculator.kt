@@ -148,14 +148,15 @@ class LegalActionsCalculator(
 
                     // Check if we can afford to cast normally - if not, add unaffordable cast action
                     // This ensures the player sees both options in the cast modal
-                    val canAffordNormal = manaSolver.canPay(state, playerId, cardComponent.manaCost)
+                    val normalEffectiveCost = costCalculator.calculateEffectiveCost(state, cardDef, playerId)
+                    val canAffordNormal = manaSolver.canPay(state, playerId, normalEffectiveCost)
                     if (!canAffordNormal) {
                         result.add(LegalActionInfo(
                             actionType = "CastSpell",
                             description = "Cast ${cardComponent.name}",
                             action = CastSpell(playerId, cardId),
                             isAffordable = false,
-                            manaCostString = cardComponent.manaCost.toString()
+                            manaCostString = normalEffectiveCost.toString()
                         ))
                     }
                 }
@@ -198,6 +199,13 @@ class LegalActionsCalculator(
                     }
                     if (!canPayAdditionalCosts) continue
 
+                    // Calculate effective cost after reductions (e.g., Goblin Warchief)
+                    val effectiveCost = if (cardDef != null) {
+                        costCalculator.calculateEffectiveCost(state, cardDef, playerId)
+                    } else {
+                        cardComponent.manaCost
+                    }
+
                     // Check mana affordability (including Convoke if available)
                     val hasConvoke = cardDef?.keywords?.contains(Keyword.CONVOKE) == true
                     val convokeCreatures = if (hasConvoke) {
@@ -207,10 +215,10 @@ class LegalActionsCalculator(
                     // For Convoke spells, check if affordable with creature help
                     val canAfford = if (hasConvoke && convokeCreatures != null && convokeCreatures.isNotEmpty()) {
                         // Can afford if: mana alone is enough, OR mana + convoke creatures cover the cost
-                        manaSolver.canPay(state, playerId, cardComponent.manaCost) ||
-                            canAffordWithConvoke(state, playerId, cardComponent.manaCost, convokeCreatures)
+                        manaSolver.canPay(state, playerId, effectiveCost) ||
+                            canAffordWithConvoke(state, playerId, effectiveCost, convokeCreatures)
                     } else {
-                        manaSolver.canPay(state, playerId, cardComponent.manaCost)
+                        manaSolver.canPay(state, playerId, effectiveCost)
                     }
 
                     if (canAfford) {
@@ -233,18 +241,18 @@ class LegalActionsCalculator(
                         } else null
 
                         // Calculate X cost info if the spell has X in its cost
-                        val hasXCost = cardComponent.manaCost.hasX
+                        val hasXCost = effectiveCost.hasX
                         val maxAffordableX: Int? = if (hasXCost) {
                             val availableSources = manaSolver.getAvailableManaCount(state, playerId)
-                            val fixedCost = cardComponent.manaCost.cmc  // X contributes 0 to CMC
+                            val fixedCost = effectiveCost.cmc  // X contributes 0 to CMC
                             (availableSources - fixedCost).coerceAtLeast(0)
                         } else null
 
                         // Always include mana cost string for cast actions
-                        val manaCostString = cardComponent.manaCost.toString()
+                        val manaCostString = effectiveCost.toString()
 
                         // Compute auto-tap preview for UI highlighting
-                        val autoTapSolution = manaSolver.solve(state, playerId, cardComponent.manaCost)
+                        val autoTapSolution = manaSolver.solve(state, playerId, effectiveCost)
                         val autoTapPreview = autoTapSolution?.sources?.map { it.entityId }
 
                         // Check for DividedDamageEffect to flag damage distribution requirement
@@ -398,8 +406,9 @@ class LegalActionsCalculator(
                 val hasCastAction = result.any { it.action is CastSpell && (it.action as CastSpell).cardId == cardId }
                 if (!hasCastAction) {
                     if (canCastTiming) {
-                        // Check if we can afford to cast normally
-                        val canAffordNormal = manaSolver.canPay(state, playerId, cardComponent.manaCost)
+                        // Check if we can afford to cast normally (with cost reductions)
+                        val cycleEffectiveCost = costCalculator.calculateEffectiveCost(state, cardDef, playerId)
+                        val canAffordNormal = manaSolver.canPay(state, playerId, cycleEffectiveCost)
 
                         // If the spell requires targets, check if valid targets exist.
                         // Without this, a spell with cycling+targeting would be castable
@@ -441,7 +450,7 @@ class LegalActionsCalculator(
                                 targetDescription = firstReq.description,
                                 targetRequirements = if (targetReqInfos.size > 1) targetReqInfos else null,
                                 isAffordable = true,
-                                manaCostString = cardComponent.manaCost.toString()
+                                manaCostString = cycleEffectiveCost.toString()
                             ))
                         } else {
                             // Spell is unaffordable or has no valid targets — show greyed out
@@ -450,17 +459,18 @@ class LegalActionsCalculator(
                                 description = "Cast ${cardComponent.name}",
                                 action = CastSpell(playerId, cardId),
                                 isAffordable = false,
-                                manaCostString = cardComponent.manaCost.toString()
+                                manaCostString = cycleEffectiveCost.toString()
                             ))
                         }
                     } else {
                         // Wrong timing (not main phase / not active player) — show greyed out
+                        val wrongTimingCost = costCalculator.calculateEffectiveCost(state, cardDef, playerId)
                         result.add(LegalActionInfo(
                             actionType = "CastSpell",
                             description = "Cast ${cardComponent.name}",
                             action = CastSpell(playerId, cardId),
                             isAffordable = false,
-                            manaCostString = cardComponent.manaCost.toString()
+                            manaCostString = wrongTimingCost.toString()
                         ))
                     }
                 }
@@ -494,21 +504,26 @@ class LegalActionsCalculator(
                             // Check cast restrictions
                             val castRestrictions = topCardDef?.script?.castRestrictions ?: emptyList()
                             if (checkCastRestrictions(state, playerId, castRestrictions)) {
-                                val canAfford = manaSolver.canPay(state, playerId, topCardComponent.manaCost)
+                                val topEffectiveCost = if (topCardDef != null) {
+                                    costCalculator.calculateEffectiveCost(state, topCardDef, playerId)
+                                } else {
+                                    topCardComponent.manaCost
+                                }
+                                val canAfford = manaSolver.canPay(state, playerId, topEffectiveCost)
                                 if (canAfford) {
                                     val targetReqs = buildList {
                                         addAll(topCardDef?.script?.targetRequirements ?: emptyList())
                                         topCardDef?.script?.auraTarget?.let { add(it) }
                                     }
 
-                                    val manaCostString = topCardComponent.manaCost.toString()
-                                    val hasXCost = topCardComponent.manaCost.hasX
+                                    val manaCostString = topEffectiveCost.toString()
+                                    val hasXCost = topEffectiveCost.hasX
                                     val maxAffordableX: Int? = if (hasXCost) {
                                         val availableSources = manaSolver.getAvailableManaCount(state, playerId)
-                                        val fixedCost = topCardComponent.manaCost.cmc
+                                        val fixedCost = topEffectiveCost.cmc
                                         (availableSources - fixedCost).coerceAtLeast(0)
                                     } else null
-                                    val autoTapSolution = manaSolver.solve(state, playerId, topCardComponent.manaCost)
+                                    val autoTapSolution = manaSolver.solve(state, playerId, topEffectiveCost)
                                     val autoTapPreview = autoTapSolution?.sources?.map { it.entityId }
 
                                     if (targetReqs.isNotEmpty()) {
