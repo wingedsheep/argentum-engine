@@ -5,6 +5,7 @@ import com.wingedsheep.engine.state.components.battlefield.DamageComponent
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
+import com.wingedsheep.mtg.sets.definitions.onslaught.cards.ContestedCliffs
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.Step
@@ -32,31 +33,6 @@ import io.kotest.matchers.shouldBe
  * {R}{G}, {T}: Target Beast creature you control fights target creature an opponent controls.
  */
 class ContestedCliffsTest : FunSpec({
-
-    val ContestedCliffs = card("Contested Cliffs") {
-        typeLine = "Land"
-
-        activatedAbility {
-            cost = AbilityCost.Tap
-            effect = AddColorlessManaEffect(1)
-            manaAbility = true
-            timing = TimingRule.ManaAbility
-        }
-
-        activatedAbility {
-            cost = Costs.Composite(
-                Costs.Mana("{R}{G}"),
-                Costs.Tap
-            )
-            val beast = target("Beast creature you control", TargetCreature(
-                filter = TargetFilter(GameObjectFilter.Creature.withSubtype("Beast").youControl())
-            ))
-            val opponentCreature = target("creature an opponent controls", TargetCreature(
-                filter = TargetFilter(GameObjectFilter.Creature.opponentControls())
-            ))
-            effect = Effects.Fight(beast, opponentCreature)
-        }
-    }
 
     val fightAbilityId = ContestedCliffs.activatedAbilities[1].id
 
