@@ -6,6 +6,7 @@ import com.wingedsheep.engine.core.SelectCardsDecision
 import com.wingedsheep.engine.core.CardsSelectedResponse
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
+import com.wingedsheep.mtg.sets.definitions.onslaught.cards.ChainOfSilence
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.Step
@@ -31,20 +32,6 @@ import io.kotest.matchers.types.shouldBeInstanceOf
  * and may choose a new target for that copy.
  */
 class ChainOfSilenceTest : FunSpec({
-
-    val ChainOfSilence = CardDefinition.instant(
-        name = "Chain of Silence",
-        manaCost = ManaCost.parse("{1}{W}"),
-        oracleText = "Prevent all damage target creature would deal this turn. That creature's controller may sacrifice a land of their choice. If the player does, they may copy this spell and may choose a new target for that copy.",
-        script = CardScript.spell(
-            effect = Effects.PreventDamageAndChainCopy(
-                target = EffectTarget.BoundVariable("target"),
-                targetFilter = TargetFilter.Creature,
-                spellName = "Chain of Silence"
-            ),
-            TargetPermanent(id = "target", filter = TargetFilter.Creature)
-        )
-    )
 
     fun createDriver(): GameTestDriver {
         val driver = GameTestDriver()
