@@ -4,24 +4,13 @@ import com.wingedsheep.engine.core.ActivateAbility
 import com.wingedsheep.engine.mechanics.layers.StateProjector
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
+import com.wingedsheep.mtg.sets.definitions.onslaught.cards.CrownOfFury
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.Keyword
-import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.Step
-import com.wingedsheep.sdk.core.Subtype
-import com.wingedsheep.sdk.model.CardDefinition
-import com.wingedsheep.sdk.model.CardScript
 import com.wingedsheep.sdk.model.Deck
-import com.wingedsheep.sdk.scripting.AbilityId
-import com.wingedsheep.sdk.scripting.AbilityCost
-import com.wingedsheep.sdk.scripting.ActivatedAbility
-import com.wingedsheep.sdk.scripting.GrantKeyword
-import com.wingedsheep.sdk.scripting.effects.GrantToEnchantedCreatureTypeGroupEffect
-import com.wingedsheep.sdk.scripting.ModifyStats
-import com.wingedsheep.sdk.scripting.targets.TargetCreature
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
-import java.util.UUID
 
 /**
  * Tests for Crown of Fury.
@@ -35,77 +24,13 @@ import java.util.UUID
  */
 class CrownOfFuryTest : FunSpec({
 
-    val crownAbilityId = AbilityId(UUID.randomUUID().toString())
-
-    val CrownOfFury = CardDefinition.aura(
-        name = "Crown of Fury",
-        manaCost = ManaCost.parse("{1}{R}"),
-        oracleText = "Enchant creature\nEnchanted creature gets +1/+0 and has first strike.\nSacrifice Crown of Fury: Enchanted creature and other creatures that share a creature type with it get +1/+0 and gain first strike until end of turn.",
-        script = CardScript(
-            auraTarget = TargetCreature(),
-            staticAbilities = listOf(
-                ModifyStats(1, 0),
-                GrantKeyword(Keyword.FIRST_STRIKE)
-            ),
-            activatedAbilities = listOf(
-                ActivatedAbility(
-                    id = crownAbilityId,
-                    cost = AbilityCost.SacrificeSelf,
-                    effect = GrantToEnchantedCreatureTypeGroupEffect(
-                        powerModifier = 1,
-                        toughnessModifier = 0,
-                        keyword = Keyword.FIRST_STRIKE
-                    )
-                )
-            )
-        )
-    )
-
-    // Goblin Warrior - 2/2
-    val GoblinWarrior = CardDefinition.creature(
-        name = "Goblin Warrior",
-        manaCost = ManaCost.parse("{1}{R}"),
-        subtypes = setOf(Subtype("Goblin"), Subtype("Warrior")),
-        power = 2,
-        toughness = 2
-    )
-
-    // Another Goblin - 1/1
-    val GoblinPiker = CardDefinition.creature(
-        name = "Goblin Piker",
-        manaCost = ManaCost.parse("{1}{R}"),
-        subtypes = setOf(Subtype("Goblin")),
-        power = 2,
-        toughness = 1
-    )
-
-    // Elf Warrior - shares Warrior type but not Goblin
-    val ElfWarrior = CardDefinition.creature(
-        name = "Elf Warrior",
-        manaCost = ManaCost.parse("{1}{G}"),
-        subtypes = setOf(Subtype("Elf"), Subtype("Warrior")),
-        power = 2,
-        toughness = 3
-    )
-
-    // Elf Druid - shares no type with Goblin Warrior
-    val ElfDruid = CardDefinition.creature(
-        name = "Elf Druid",
-        manaCost = ManaCost.parse("{1}{G}"),
-        subtypes = setOf(Subtype("Elf"), Subtype("Druid")),
-        power = 1,
-        toughness = 1
-    )
+    val crownAbilityId = CrownOfFury.activatedAbilities.first().id
 
     val projector = StateProjector()
 
     fun createDriver(): GameTestDriver {
         val driver = GameTestDriver()
-        driver.registerCards(
-            TestCards.all + listOf(
-                CrownOfFury, GoblinWarrior, GoblinPiker, ElfWarrior, ElfDruid
-            )
-        )
+        driver.registerCards(TestCards.all)
         return driver
     }
 
@@ -119,8 +44,8 @@ class CrownOfFuryTest : FunSpec({
         val activePlayer = driver.activePlayer!!
         driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
 
-        // Put a creature on battlefield
-        val goblin = driver.putCreatureOnBattlefield(activePlayer, "Goblin Warrior")
+        // Put a creature on battlefield (Goblin Brigand is a 2/2 Goblin Warrior)
+        val goblin = driver.putCreatureOnBattlefield(activePlayer, "Goblin Brigand")
 
         // Cast Crown of Fury on the goblin
         val crown = driver.putCardInHand(activePlayer, "Crown of Fury")
@@ -147,18 +72,22 @@ class CrownOfFuryTest : FunSpec({
         driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
 
         // Put creatures on battlefield
-        val goblinWarrior = driver.putCreatureOnBattlefield(activePlayer, "Goblin Warrior")
-        val goblinPiker = driver.putCreatureOnBattlefield(activePlayer, "Goblin Piker")
-        val elfWarrior = driver.putCreatureOnBattlefield(activePlayer, "Elf Warrior")
-        val elfDruid = driver.putCreatureOnBattlefield(activePlayer, "Elf Druid")
+        // Goblin Brigand: 2/2 Goblin Warrior
+        val goblinWarrior = driver.putCreatureOnBattlefield(activePlayer, "Goblin Brigand")
+        // Goblin Bully: 2/1 Goblin (shares Goblin type)
+        val goblinPiker = driver.putCreatureOnBattlefield(activePlayer, "Goblin Bully")
+        // Elvish Warrior: 2/3 Elf Warrior (shares Warrior type)
+        val elfWarrior = driver.putCreatureOnBattlefield(activePlayer, "Elvish Warrior")
+        // Llanowar Elves: 1/1 Elf Druid (shares no type with Goblin Warrior)
+        val elfDruid = driver.putCreatureOnBattlefield(activePlayer, "Llanowar Elves")
 
-        // Cast Crown of Fury on the Goblin Warrior
+        // Cast Crown of Fury on the Goblin Brigand
         val crown = driver.putCardInHand(activePlayer, "Crown of Fury")
         driver.giveMana(activePlayer, Color.RED, 2)
         driver.castSpell(activePlayer, crown, listOf(goblinWarrior))
         driver.bothPass()
 
-        // Before sacrifice: Goblin Warrior has +1/+0 from static ability
+        // Before sacrifice: Goblin Brigand has +1/+0 from static ability
         projector.getProjectedPower(driver.state, goblinWarrior) shouldBe 3
         projector.getProjectedPower(driver.state, goblinPiker) shouldBe 2
         projector.getProjectedPower(driver.state, elfWarrior) shouldBe 2
@@ -177,20 +106,20 @@ class CrownOfFuryTest : FunSpec({
         // Let the ability resolve
         driver.bothPass()
 
-        // Goblin Warrior: lost static +1/+0 (aura gone), gained +1/+0 from sacrifice = 3/2
+        // Goblin Brigand: lost static +1/+0 (aura gone), gained +1/+0 from sacrifice = 3/2
         // (shares Goblin and Warrior types with itself)
         projector.getProjectedPower(driver.state, goblinWarrior) shouldBe 3
         projector.getProjectedToughness(driver.state, goblinWarrior) shouldBe 2
 
-        // Goblin Piker: gained +1/+0 (shares Goblin type) = 3/1
+        // Goblin Bully: gained +1/+0 (shares Goblin type) = 3/1
         projector.getProjectedPower(driver.state, goblinPiker) shouldBe 3
         projector.getProjectedToughness(driver.state, goblinPiker) shouldBe 1
 
-        // Elf Warrior: gained +1/+0 (shares Warrior type) = 3/3
+        // Elvish Warrior: gained +1/+0 (shares Warrior type) = 3/3
         projector.getProjectedPower(driver.state, elfWarrior) shouldBe 3
         projector.getProjectedToughness(driver.state, elfWarrior) shouldBe 3
 
-        // Elf Druid: no type shared, should NOT be affected = 1/1
+        // Llanowar Elves: no type shared, should NOT be affected = 1/1
         projector.getProjectedPower(driver.state, elfDruid) shouldBe 1
         projector.getProjectedToughness(driver.state, elfDruid) shouldBe 1
 
@@ -213,10 +142,10 @@ class CrownOfFuryTest : FunSpec({
         driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
 
         // Put creatures on battlefield
-        val goblinWarrior = driver.putCreatureOnBattlefield(activePlayer, "Goblin Warrior")
-        val goblinPiker = driver.putCreatureOnBattlefield(activePlayer, "Goblin Piker")
+        val goblinWarrior = driver.putCreatureOnBattlefield(activePlayer, "Goblin Brigand")
+        val goblinPiker = driver.putCreatureOnBattlefield(activePlayer, "Goblin Bully")
 
-        // Cast Crown on Goblin Warrior
+        // Cast Crown on Goblin Brigand
         val crown = driver.putCardInHand(activePlayer, "Crown of Fury")
         driver.giveMana(activePlayer, Color.RED, 2)
         driver.castSpell(activePlayer, crown, listOf(goblinWarrior))
