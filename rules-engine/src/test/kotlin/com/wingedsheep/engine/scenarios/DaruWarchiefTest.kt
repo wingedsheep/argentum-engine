@@ -86,6 +86,24 @@ class DaruWarchiefTest : FunSpec({
         projected.getToughness(warchief) shouldBe 3  // 1 + 2
     }
 
+    test("opponent's Soldier creatures do not get the bonus") {
+        val driver = createDriver()
+        driver.initMirrorMatch(
+            deck = Deck.of("Plains" to 20),
+            startingLife = 20
+        )
+
+        val activePlayer = driver.activePlayer!!
+        driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
+
+        driver.putCreatureOnBattlefield(activePlayer, "Daru Warchief")
+        val opponentSoldier = driver.putCreatureOnBattlefield(driver.player2, "Glory Seeker")
+
+        val projected = projector.project(driver.state)
+        projected.getPower(opponentSoldier) shouldBe 2  // No bonus from opponent's Warchief
+        projected.getToughness(opponentSoldier) shouldBe 2
+    }
+
     test("Soldier spells cost 1 less to cast") {
         val registry = CardRegistry()
         registry.register(TestCards.all)

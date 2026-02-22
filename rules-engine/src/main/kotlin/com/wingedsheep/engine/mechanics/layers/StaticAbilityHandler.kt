@@ -392,16 +392,21 @@ class StaticAbilityHandler(
             return AffectsFilter.AllOtherCreatures
         }
 
-        // Handle "[subtype] creatures" pattern (e.g., "Soldier creatures have vigilance")
-        if (subtypePredicate != null) {
+        // Handle "[subtype] creatures" pattern without controller restriction
+        if (subtypePredicate != null && controllerPredicate == null) {
             return AffectsFilter.WithSubtype(subtypePredicate.subtype.value)
         }
 
-        // Handle controller-based filters
-        return when (controllerPredicate) {
-            ControllerPredicate.ControlledByYou -> AffectsFilter.AllCreaturesYouControl
-            ControllerPredicate.ControlledByOpponent -> AffectsFilter.AllCreaturesOpponentsControl
-            else -> AffectsFilter.AllCreatures
+        // Handle controller-only filters (no subtype or other complex predicates)
+        if (subtypePredicate == null && baseFilter.statePredicates.isEmpty()) {
+            return when (controllerPredicate) {
+                ControllerPredicate.ControlledByYou -> AffectsFilter.AllCreaturesYouControl
+                ControllerPredicate.ControlledByOpponent -> AffectsFilter.AllCreaturesOpponentsControl
+                else -> AffectsFilter.AllCreatures
+            }
         }
+
+        // Fallback: use Generic filter to preserve full predicate evaluation
+        return AffectsFilter.Generic(filter)
     }
 }
