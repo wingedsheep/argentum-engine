@@ -325,6 +325,7 @@ each player reveals and creates tokens
 | `TakeExtraTurnEffect`                              | `loseAtEndStep`                          | Extra turn                         |
 | `PreventLandPlaysThisTurnEffect`                   | (object)                                 | Prevent land plays                 |
 | `CreateGlobalTriggeredAbilityUntilEndOfTurnEffect` | `ability: TriggeredAbility`              | Global triggered ability until EOT |
+| `GrantShroudUntilEndOfTurnEffect`                  | `target: EffectTarget = Controller`      | Grant shroud until EOT (player or permanent) |
 
 ### Stack
 

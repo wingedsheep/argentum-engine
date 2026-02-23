@@ -57,7 +57,15 @@ If the card needs effects, keywords, triggers, conditions, or static abilities t
 
 **If a new effect type is truly needed:**
 
-**Design for reusability** — New effects, static abilities, triggers, and conditions must be **general-purpose and parameterized**, not card-specific. Use filters, dynamic amounts, and configurable parameters so the same effect works across many cards. For example: don't create `ReduceCostOfGoblinsEffect` — instead create `ReduceSpellCostEffect(filter, amount)` that accepts any `GameObjectFilter`. Don't create `GainLifeWhenGoblinEntersEffect` — instead create a general trigger `OnCreatureEntersBattlefield(filter)` paired with `Effects.GainLife(amount)`. The effect name should describe the *mechanic*, not the specific card it was built for.
+**Design for reusability** — New effects, static abilities, triggers, conditions, and components must be **general-purpose and parameterized**, not card-specific. Apply these principles:
+
+1. **Target generality** — Effects should work on any valid entity type, not just one. For example, `GrantShroudUntilEndOfTurnEffect(target: EffectTarget)` works for players, creatures, and planeswalkers — don't create `GrantPlayerShroudEffect` that only works on players. The executor handles each entity type (player → adds component, permanent → creates floating effect).
+
+2. **Duration/removal generality** — Components should have a configurable duration or removal condition, not bake timing into the name. For example, `PlayerShroudComponent(removeOn: PlayerEffectRemoval)` with an enum `{ EndOfTurn, Permanent }` — don't create `PlayerShroudUntilEndOfTurnComponent` as a separate type. The cleanup system reads `removeOn` to decide when to remove it.
+
+3. **Parameterized filters and amounts** — Use `GameObjectFilter`, `DynamicAmount`, and configurable parameters so the same effect works across many cards. For example: don't create `ReduceCostOfGoblinsEffect` — instead create `ReduceSpellCostEffect(filter, amount)` that accepts any `GameObjectFilter`. Don't create `GainLifeWhenGoblinEntersEffect` — instead create a general trigger `OnCreatureEntersBattlefield(filter)` paired with `Effects.GainLife(amount)`.
+
+4. **Name the mechanic, not the card** — The effect name should describe the *mechanic*, not the specific card it was built for.
 
 - **4.1 Add Effect Type** in `mtg-sdk/.../scripting/effect/` (`DamageEffects.kt`, `LifeEffects.kt`, `DrawingEffects.kt`, `RemovalEffects.kt`, `PermanentEffects.kt`, `LibraryEffects.kt`, `ManaEffects.kt`, `TokenEffects.kt`, `CompositeEffects.kt`, `CombatEffects.kt`, `PlayerEffects.kt`, `StackEffects.kt`)
 - **4.2 Create Executor** in `rules-engine/.../handlers/effects/{category}/`

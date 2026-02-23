@@ -758,6 +758,18 @@ class ClientStateTransformer(
             )
         }
 
+        // Check for PlayerShroudComponent (e.g., Gilded Light)
+        if (container.has<PlayerShroudComponent>()) {
+            effects.add(
+                ClientPlayerEffect(
+                    effectId = "player_shroud",
+                    name = "Shroud",
+                    description = "You have shroud (you can't be the target of spells or abilities)",
+                    icon = "shield"
+                )
+            )
+        }
+
         // Check for MustAttackPlayerComponent (Taunt effect)
         val mustAttack = container.get<MustAttackPlayerComponent>()
         if (mustAttack != null) {

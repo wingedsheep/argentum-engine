@@ -13,6 +13,7 @@ import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.battlefield.GrantsControllerShroudComponent
+import com.wingedsheep.engine.state.components.player.PlayerShroudComponent
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.state.components.battlefield.SummoningSicknessComponent
 import com.wingedsheep.engine.state.components.combat.AttackersDeclaredThisCombatComponent
@@ -1327,6 +1328,9 @@ class LegalActionsCalculator(
     }
 
     private fun playerHasShroud(state: GameState, playerId: EntityId): Boolean {
+        val playerEntity = state.getEntity(playerId)
+        if (playerEntity?.has<PlayerShroudComponent>() == true) return true
+
         return state.getBattlefield().any { entityId ->
             val container = state.getEntity(entityId) ?: return@any false
             container.get<GrantsControllerShroudComponent>() != null &&

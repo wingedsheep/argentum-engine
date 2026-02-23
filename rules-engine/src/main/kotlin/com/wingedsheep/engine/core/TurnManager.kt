@@ -20,6 +20,8 @@ import com.wingedsheep.engine.state.components.player.LossReason
 import com.wingedsheep.engine.state.components.player.ManaPoolComponent
 import com.wingedsheep.engine.state.components.player.PlayerLostComponent
 import com.wingedsheep.engine.state.components.player.AdditionalCombatPhasesComponent
+import com.wingedsheep.engine.state.components.player.PlayerEffectRemoval
+import com.wingedsheep.engine.state.components.player.PlayerShroudComponent
 import com.wingedsheep.engine.state.components.player.SkipCombatPhasesComponent
 import com.wingedsheep.engine.state.components.player.SkipNextTurnComponent
 import com.wingedsheep.engine.state.components.player.SkipUntapComponent
@@ -952,14 +954,18 @@ class TurnManager(
             }
         }
 
-        // 4. Remove any unconsumed additional combat phase components
+        // 4. Remove any unconsumed additional combat phase components and temporary player shroud
         for (playerId in newState.turnOrder) {
             newState = newState.updateEntity(playerId) { container ->
-                if (container.has<AdditionalCombatPhasesComponent>()) {
-                    container.without<AdditionalCombatPhasesComponent>()
-                } else {
-                    container
+                var result = container
+                if (result.has<AdditionalCombatPhasesComponent>()) {
+                    result = result.without<AdditionalCombatPhasesComponent>()
                 }
+                val shroud = result.get<PlayerShroudComponent>()
+                if (shroud?.removeOn == PlayerEffectRemoval.EndOfTurn) {
+                    result = result.without<PlayerShroudComponent>()
+                }
+                result
             }
         }
 

@@ -6,6 +6,7 @@ import com.wingedsheep.engine.mechanics.layers.StateProjector
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.battlefield.GrantsControllerShroudComponent
+import com.wingedsheep.engine.state.components.player.PlayerShroudComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.identity.FaceDownComponent
@@ -388,11 +389,13 @@ class TargetValidator {
     }
 
     /**
-     * Check if a player has shroud (e.g., from True Believer's "You have shroud").
-     * A player has shroud if any permanent on the battlefield controlled by that player
-     * has the GrantsControllerShroudComponent.
+     * Check if a player has shroud (e.g., from True Believer's "You have shroud"
+     * or Gilded Light's "You gain shroud until end of turn").
      */
     private fun playerHasShroud(state: GameState, playerId: EntityId): Boolean {
+        val playerEntity = state.getEntity(playerId)
+        if (playerEntity?.has<PlayerShroudComponent>() == true) return true
+
         return state.getBattlefield().any { entityId ->
             val container = state.getEntity(entityId) ?: return@any false
             container.get<GrantsControllerShroudComponent>() != null &&

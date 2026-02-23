@@ -217,6 +217,33 @@ enum class LossReason {
 }
 
 /**
+ * Component indicating that a player has shroud.
+ * Applied by spells like Gilded Light ("You gain shroud until end of turn").
+ *
+ * When present on a player entity, that player cannot be the target of
+ * spells or abilities.
+ *
+ * @param removeOn When this component should be removed:
+ *   - [PlayerEffectRemoval.EndOfTurn] — removed during end-of-turn cleanup (e.g., Gilded Light)
+ *   - [PlayerEffectRemoval.Permanent] — stays until explicitly removed
+ */
+@Serializable
+data class PlayerShroudComponent(
+    val removeOn: PlayerEffectRemoval = PlayerEffectRemoval.EndOfTurn
+) : Component
+
+/**
+ * Describes when a player-level effect component should be removed.
+ */
+@Serializable
+enum class PlayerEffectRemoval {
+    /** Removed at end of turn during cleanup (e.g., Gilded Light) */
+    EndOfTurn,
+    /** Never removed automatically — must be explicitly cleared */
+    Permanent
+}
+
+/**
  * Marker component indicating that a player should skip their entire next turn.
  * Applied by effects like Last Chance (which gives the opponent an "extra turn"
  * by skipping the other player's turn in a 2-player game).

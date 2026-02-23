@@ -115,3 +115,22 @@ data class CreateGlobalTriggeredAbilityUntilEndOfTurnEffect(
     override val description: String =
         "Until end of turn, ${ability.description.replaceFirstChar { it.lowercase() }}"
 }
+
+/**
+ * Grant shroud to a target entity until end of turn.
+ * Works for players, creatures, and planeswalkers.
+ *
+ * Used for cards like Gilded Light: "You gain shroud until end of turn."
+ *
+ * - For player targets: adds PlayerShroudUntilEndOfTurnComponent
+ * - For permanent targets: creates a floating effect granting the Shroud keyword
+ *
+ * @param target The entity to grant shroud to (player, creature, or planeswalker)
+ */
+@SerialName("GrantShroudUntilEndOfTurn")
+@Serializable
+data class GrantShroudUntilEndOfTurnEffect(
+    val target: EffectTarget = EffectTarget.Controller
+) : Effect {
+    override val description: String = "${target.description.replaceFirstChar { it.uppercase() }} gains shroud until end of turn"
+}

@@ -100,6 +100,7 @@ object ScourgeSet {
         SilverKnight,
 
         // White instants
+        GildedLight,
         RainOfBlades,
         Recuperate,
         RewardTheFaithful,

@@ -3,11 +3,11 @@
 
 **Set Size:** 143 cards
 **Release Date:** May 26, 2003
-**Implemented:** 62 / 143
+**Implemented:** 63 / 143
 
 | Color | Count |
 |-------|-------|
-| White | 12 |
+| White | 13 |
 | Blue | 12 |
 | Black | 12 |
 | Red | 12 |
@@ -81,7 +81,7 @@
 - [ ] Form of the Dragon
 - [x] Frontline Strategist
 - [x] Frozen Solid
-- [ ] Gilded Light
+- [x] Gilded Light
 - [x] Goblin Brigand
 - [ ] Goblin Psychopath
 - [x] Goblin Warchief
