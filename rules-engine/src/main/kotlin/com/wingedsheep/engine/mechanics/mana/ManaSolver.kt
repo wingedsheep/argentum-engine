@@ -23,6 +23,7 @@ import com.wingedsheep.sdk.scripting.effects.AddAnyColorManaEffect
 import com.wingedsheep.sdk.scripting.effects.AddColorlessManaEffect
 import com.wingedsheep.sdk.scripting.effects.AddManaEffect
 import com.wingedsheep.sdk.scripting.AdditionalManaOnTap
+import com.wingedsheep.sdk.scripting.values.DynamicAmount
 
 /**
  * Represents the mana production capability of a source.
@@ -46,6 +47,8 @@ data class ManaSource(
     val painAmount: Int = 0,
     /** Whether this creature can attack (no summoning sickness or has haste) */
     val canAttack: Boolean = false,
+    /** Amount of mana this source produces per tap (e.g., 3 for Elvish Aberration) */
+    val manaAmount: Int = 1,
     /** Extra mana produced per tap from auras like Elvish Guidance */
     val bonusManaPerTap: Int = 0,
     /** Color of the bonus mana */
@@ -68,6 +71,7 @@ data class ManaSolution(
  */
 data class ManaProduction(
     val color: Color? = null,
+    val amount: Int = 1,
     val colorless: Int = 0
 )
 
@@ -126,15 +130,19 @@ class ManaSolver(
         val manaProduced = mutableMapOf<EntityId, ManaProduction>()
         var remainingSources = availableSources.toMutableList()
 
-        // Track bonus mana from auras (e.g., Elvish Guidance)
+        // Track bonus mana from auras and excess mana from multi-mana sources
         var bonusManaPool = mutableMapOf<Color, Int>()
 
         // Helper to update available counts when a source is used
-        fun useSource(source: ManaSource) {
+        fun useSource(source: ManaSource, colorUsed: Color?) {
             usedSources.add(source)
             remainingSources.remove(source)
             for (color in source.producesColors) {
                 availableSourcesByColor[color] = (availableSourcesByColor[color] ?: 1) - 1
+            }
+            // Track excess mana from multi-mana sources (e.g., Elvish Aberration produces 3 green)
+            if (source.manaAmount > 1 && colorUsed != null) {
+                bonusManaPool[colorUsed] = (bonusManaPool[colorUsed] ?: 0) + (source.manaAmount - 1)
             }
             // Collect bonus mana from auras attached to this source
             if (source.bonusManaPerTap > 0 && source.bonusManaColor != null) {
@@ -170,8 +178,8 @@ class ManaSolver(
                     val source = findBestSourceForColor(remainingSources, symbol.color, handRequirements, availableSourcesByColor)
                         ?: return null // Can't pay this colored cost
 
-                    manaProduced[source.entityId] = ManaProduction(color = symbol.color)
-                    useSource(source)
+                    manaProduced[source.entityId] = ManaProduction(color = symbol.color, amount = source.manaAmount)
+                    useSource(source, symbol.color)
 
                     // Check if the bonus mana from this source can pay remaining colored costs
                     // (handled naturally on next iteration via spendBonusMana)
@@ -199,8 +207,8 @@ class ManaSolver(
 
                     val colorUsed = if (source.producesColors.contains(symbol.color1))
                         symbol.color1 else symbol.color2
-                    manaProduced[source.entityId] = ManaProduction(color = colorUsed)
-                    useSource(source)
+                    manaProduced[source.entityId] = ManaProduction(color = colorUsed, amount = source.manaAmount)
+                    useSource(source, colorUsed)
                 }
                 is ManaSymbol.Phyrexian -> {
                     // Try bonus mana first
@@ -210,8 +218,8 @@ class ManaSolver(
                     val source = findBestSourceForColor(remainingSources, symbol.color, handRequirements, availableSourcesByColor)
                         ?: return null
 
-                    manaProduced[source.entityId] = ManaProduction(color = symbol.color)
-                    useSource(source)
+                    manaProduced[source.entityId] = ManaProduction(color = symbol.color, amount = source.manaAmount)
+                    useSource(source, symbol.color)
                 }
                 is ManaSymbol.Colorless -> {
                     // Must pay with actual colorless mana (from Wastes, etc.)
@@ -221,8 +229,8 @@ class ManaSolver(
                         .minByOrNull { calculateTapPriority(it, handRequirements, availableSourcesByColor) }
                         ?: return null
 
-                    manaProduced[source.entityId] = ManaProduction(colorless = 1)
-                    useSource(source)
+                    manaProduced[source.entityId] = ManaProduction(colorless = source.manaAmount)
+                    useSource(source, null)
                 }
                 is ManaSymbol.Generic, is ManaSymbol.X -> {
                     // Handle in the generic pass below
@@ -244,18 +252,31 @@ class ManaSolver(
                 return null // Not enough mana
             }
 
-            // Use priority-based selection for generic costs
-            val source = remainingSources.minByOrNull { calculateTapPriority(it, handRequirements, availableSourcesByColor) }
-                ?: return null
+            // Check if single-mana sources alone can cover the remaining generic cost.
+            // If not, prefer multi-mana sources for efficiency (fewer taps overall).
+            val singleManaCount = remainingSources.count { it.manaAmount == 1 }
+            val needMultiMana = singleManaCount < genericRemaining
+
+            val source = if (needMultiMana) {
+                // Not enough single-mana sources — prefer multi-mana for efficiency
+                remainingSources.minByOrNull { source ->
+                    val basePriority = calculateTapPriority(source, handRequirements, availableSourcesByColor)
+                    val savedTaps = minOf(source.manaAmount, genericRemaining) - 1
+                    basePriority - savedTaps * 25
+                }
+            } else {
+                // Enough single-mana sources — use normal priority (preserve multi-mana creatures for attacks)
+                remainingSources.minByOrNull { calculateTapPriority(it, handRequirements, availableSourcesByColor) }
+            } ?: return null
 
             // For generic costs, use the first available color or colorless
             val colorToUse = source.producesColors.firstOrNull()
             manaProduced[source.entityId] = if (colorToUse != null) {
-                ManaProduction(color = colorToUse)
+                ManaProduction(color = colorToUse, amount = source.manaAmount)
             } else {
-                ManaProduction(colorless = 1)
+                ManaProduction(colorless = source.manaAmount)
             }
-            useSource(source)
+            useSource(source, colorToUse)
             genericRemaining--
         }
 
@@ -481,30 +502,38 @@ class ManaSolver(
 
                 // Extract production from effect
                 return@mapNotNull when (val effect = ability.effect) {
-                    is AddManaEffect -> ManaSource(
-                        entityId = entityId,
-                        name = card.name,
-                        producesColors = setOf(effect.color),
-                        producesColorless = false,
-                        isBasicLand = isBasicLand,
-                        isCreature = isCreature,
-                        hasNonManaAbilities = hasNonManaAbilities,
-                        hasPainCost = hasPainCost,
-                        painAmount = painAmount,
-                        canAttack = canAttack
-                    )
-                    is AddColorlessManaEffect -> ManaSource(
-                        entityId = entityId,
-                        name = card.name,
-                        producesColors = emptySet(),
-                        producesColorless = true,
-                        isBasicLand = isBasicLand,
-                        isCreature = isCreature,
-                        hasNonManaAbilities = hasNonManaAbilities,
-                        hasPainCost = hasPainCost,
-                        painAmount = painAmount,
-                        canAttack = canAttack
-                    )
+                    is AddManaEffect -> {
+                        val manaAmount = (effect.amount as? DynamicAmount.Fixed)?.amount ?: 1
+                        ManaSource(
+                            entityId = entityId,
+                            name = card.name,
+                            producesColors = setOf(effect.color),
+                            producesColorless = false,
+                            isBasicLand = isBasicLand,
+                            isCreature = isCreature,
+                            hasNonManaAbilities = hasNonManaAbilities,
+                            hasPainCost = hasPainCost,
+                            painAmount = painAmount,
+                            canAttack = canAttack,
+                            manaAmount = manaAmount
+                        )
+                    }
+                    is AddColorlessManaEffect -> {
+                        val manaAmount = (effect.amount as? DynamicAmount.Fixed)?.amount ?: 1
+                        ManaSource(
+                            entityId = entityId,
+                            name = card.name,
+                            producesColors = emptySet(),
+                            producesColorless = true,
+                            isBasicLand = isBasicLand,
+                            isCreature = isCreature,
+                            hasNonManaAbilities = hasNonManaAbilities,
+                            hasPainCost = hasPainCost,
+                            painAmount = painAmount,
+                            canAttack = canAttack,
+                            manaAmount = manaAmount
+                        )
+                    }
                     is AddAnyColorManaEffect -> ManaSource(
                         entityId = entityId,
                         name = card.name,
@@ -664,7 +693,7 @@ class ManaSolver(
             0
         }
 
-        // Add untapped mana sources (including bonus mana from auras)
-        return floatingMana + findAvailableManaSources(state, playerId).sumOf { 1 + it.bonusManaPerTap }
+        // Add untapped mana sources (including bonus mana from auras and multi-mana sources)
+        return floatingMana + findAvailableManaSources(state, playerId).sumOf { it.manaAmount + it.bonusManaPerTap }
     }
 }

@@ -65,7 +65,7 @@ class ManaPaymentContinuationResumer(
 
                 for ((_, production) in solution.manaProduced) {
                     currentPool = if (production.color != null) {
-                        currentPool.add(production.color)
+                        currentPool.add(production.color, production.amount)
                     } else {
                         currentPool.addColorless(production.colorless)
                     }
@@ -362,7 +362,7 @@ class ManaPaymentContinuationResumer(
 
                 for ((_, production) in solution.manaProduced) {
                     currentPool = if (production.color != null) {
-                        currentPool.add(production.color)
+                        currentPool.add(production.color, production.amount)
                     } else {
                         currentPool.addColorless(production.colorless)
                     }

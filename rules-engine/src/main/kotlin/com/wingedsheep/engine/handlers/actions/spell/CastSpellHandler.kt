@@ -691,11 +691,11 @@ class CastSpellHandler(
 
             for ((_, production) in solution.manaProduced) {
                 when (production.color) {
-                    Color.WHITE -> whiteSpent++
-                    Color.BLUE -> blueSpent++
-                    Color.BLACK -> blackSpent++
-                    Color.RED -> redSpent++
-                    Color.GREEN -> greenSpent++
+                    Color.WHITE -> whiteSpent += production.amount
+                    Color.BLUE -> blueSpent += production.amount
+                    Color.BLACK -> blackSpent += production.amount
+                    Color.RED -> redSpent += production.amount
+                    Color.GREEN -> greenSpent += production.amount
                     null -> colorlessSpent += production.colorless
                 }
             }
