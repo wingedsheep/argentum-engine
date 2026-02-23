@@ -415,6 +415,16 @@ sealed interface GameEvent {
         override val description: String = "when enchanted creature is dealt damage"
     }
 
+    /**
+     * When the enchanted creature deals combat damage to a player.
+     * Special case for auras like One with Nature.
+     */
+    @SerialName("EnchantedCreatureDealsCombatDamageToPlayerEvent")
+    @Serializable
+    data object EnchantedCreatureDealsCombatDamageToPlayerEvent : GameEvent {
+        override val description: String = "when enchanted creature deals combat damage to a player"
+    }
+
     // ---- Spell/Card Triggers ----
 
     /**

@@ -3,7 +3,7 @@
 
 **Set Size:** 143 cards
 **Release Date:** May 26, 2003
-**Implemented:** 63 / 143
+**Implemented:** 64 / 143
 
 | Color | Count |
 |-------|-------|
@@ -11,7 +11,7 @@
 | Blue | 12 |
 | Black | 12 |
 | Red | 12 |
-| Green | 12 |
+| Green | 13 |
 | Multicolor | 1 |
 | Colorless | 1 |
 
@@ -106,7 +106,7 @@
 - [x] Mistform Warchief
 - [ ] Nefashu
 - [x] Noble Templar
-- [ ] One with Nature
+- [x] One with Nature
 - [ ] Parallel Thoughts
 - [ ] Pemmin's Aura
 - [ ] Primitive Etchings

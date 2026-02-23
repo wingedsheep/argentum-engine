@@ -41,6 +41,9 @@ object ScourgeSet {
         WirewoodGuardian,
         Woodcloaker,
 
+        // Green enchantments
+        OneWithNature,
+
         // Green instants
         AcceleratedMutation,
 

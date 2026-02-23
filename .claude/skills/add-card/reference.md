@@ -424,6 +424,7 @@ each player reveals and creates tokens
 - `Triggers.BecomesTarget` / `Triggers.BecomesTarget(filter: GameObjectFilter)` — when a permanent becomes target of spell/ability
 - `Triggers.DealsDamage` / `Triggers.DealsCombatDamage`
 - `Triggers.DealsCombatDamageToPlayer` / `Triggers.DealsCombatDamageToCreature`
+- `Triggers.EnchantedCreatureDealsCombatDamageToPlayer` — enchanted creature deals combat damage to a player (aura trigger)
 
 ### Phase/Step
 

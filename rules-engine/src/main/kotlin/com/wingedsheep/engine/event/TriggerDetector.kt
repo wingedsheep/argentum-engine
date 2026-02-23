@@ -365,6 +365,11 @@ class TriggerDetector(
             detectEnchantedCreatureDamageTriggers(state, event, triggers, projected)
         }
 
+        // Handle "when enchanted creature deals combat damage to a player" triggers on auras (e.g., One with Nature)
+        if (event is DamageDealtEvent && event.isCombatDamage && event.targetIsPlayer && event.sourceId != null) {
+            detectEnchantedCreatureDealsDamageTriggers(state, event, triggers, projected)
+        }
+
         // Handle "when you gain control of this from another player" triggers (e.g., Risky Move)
         if (event is ControlChangedEvent) {
             detectControlChangeTriggers(state, event, triggers)
@@ -620,6 +625,48 @@ class TriggerDetector(
 
             for (ability in abilities) {
                 if (ability.trigger is GameEvent.EnchantedCreatureDamageReceivedEvent) {
+                    triggers.add(
+                        PendingTrigger(
+                            ability = ability,
+                            sourceId = entityId,
+                            sourceName = cardComponent.name,
+                            controllerId = controllerId,
+                            triggerContext = TriggerContext.fromEvent(event)
+                        )
+                    )
+                }
+            }
+        }
+    }
+
+    /**
+     * Detect "when enchanted creature deals combat damage to a player" triggers on auras.
+     * Checks all auras attached to the damage source creature for
+     * EnchantedCreatureDealsCombatDamageToPlayerEvent triggers.
+     */
+    private fun detectEnchantedCreatureDealsDamageTriggers(
+        state: GameState,
+        event: DamageDealtEvent,
+        triggers: MutableList<PendingTrigger>,
+        projected: ProjectedState
+    ) {
+        val sourceEntityId = event.sourceId ?: return
+
+        // Find all auras attached to the damage source creature
+        for (entityId in state.getBattlefield()) {
+            val container = state.getEntity(entityId) ?: continue
+            val attachedTo = container.get<AttachedToComponent>() ?: continue
+            if (attachedTo.targetId != sourceEntityId) continue
+
+            val cardComponent = container.get<CardComponent>() ?: continue
+            val controllerId = projected.getController(entityId) ?: continue
+
+            if (container.has<FaceDownComponent>()) continue
+
+            val abilities = getTriggeredAbilities(entityId, cardComponent.cardDefinitionId, state)
+
+            for (ability in abilities) {
+                if (ability.trigger is GameEvent.EnchantedCreatureDealsCombatDamageToPlayerEvent) {
                     triggers.add(
                         PendingTrigger(
                             ability = ability,
@@ -971,6 +1018,7 @@ class TriggerDetector(
             is GameEvent.EnchantedCreatureControllerStepEvent -> false
             // Enchanted creature damage triggers are handled separately
             is GameEvent.EnchantedCreatureDamageReceivedEvent -> false
+            is GameEvent.EnchantedCreatureDealsCombatDamageToPlayerEvent -> false
             // Replacement-effect-only events never match as triggers
             is GameEvent.DamageEvent -> false
             is GameEvent.CounterPlacementEvent -> false

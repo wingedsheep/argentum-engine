@@ -372,6 +372,15 @@ object Triggers {
     )
 
     /**
+     * Whenever the enchanted creature deals combat damage to a player.
+     * Used for auras like One with Nature.
+     */
+    val EnchantedCreatureDealsCombatDamageToPlayer: TriggerSpec = TriggerSpec(
+        event = EnchantedCreatureDealsCombatDamageToPlayerEvent,
+        binding = TriggerBinding.ANY
+    )
+
+    /**
      * Whenever a creature deals damage to this creature.
      */
     val DamagedByCreature: TriggerSpec = TriggerSpec(
