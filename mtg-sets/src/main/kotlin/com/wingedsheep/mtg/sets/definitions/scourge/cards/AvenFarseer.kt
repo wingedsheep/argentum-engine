@@ -15,26 +15,26 @@ import com.wingedsheep.sdk.scripting.TriggerSpec
  * Creature — Bird Soldier
  * 1/1
  * Flying
- * Whenever a permanent is turned face up, Aven Farseer gets +2/+2 until end of turn.
+ * Whenever a permanent is turned face up, put a +1/+1 counter on this creature.
  */
 val AvenFarseer = card("Aven Farseer") {
     manaCost = "{1}{W}"
     typeLine = "Creature — Bird Soldier"
     power = 1
     toughness = 1
-    oracleText = "Flying\nWhenever a permanent is turned face up, Aven Farseer gets +2/+2 until end of turn."
+    oracleText = "Flying\nWhenever a permanent is turned face up, put a +1/+1 counter on this creature."
 
     keywords(Keyword.FLYING)
 
     triggeredAbility {
         trigger = TriggerSpec(TurnFaceUpEvent, TriggerBinding.ANY)
-        effect = Effects.ModifyStats(2, 2, EffectTarget.Self)
+        effect = Effects.AddCounters("+1/+1", 1, EffectTarget.Self)
     }
 
     metadata {
         rarity = Rarity.COMMON
-        collectorNumber = "2"
-        artist = "Matthew D. Wilson"
+        collectorNumber = "3"
+        artist = "Luca Zontini"
         flavorText = "Those trained in the ways of the morph serve as the Order's spies and scouts."
         imageUri = "https://cards.scryfall.io/large/front/4/7/47854e89-4d22-4eb6-a77d-6f04407bd2e5.jpg?1562528498"
     }
