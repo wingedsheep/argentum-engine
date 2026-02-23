@@ -290,13 +290,9 @@ class ConnectionHandler(
                         }
                     }
                     LobbyState.TOURNAMENT_ACTIVE -> {
-                        val tournament = lobbyRepository.findTournamentById(lobbyId)
-                        tournament?.recordAbandon(identity.playerId)
-                        // Broadcast updated standings/matches to waiting players
-                        broadcastActiveMatchesCallback?.invoke(lobbyId)
-                        if (tournament?.isRoundComplete() == true) {
-                            handleRoundCompleteCallback?.invoke(lobbyId)
-                        }
+                        // Handle abandon under the per-lobby lock to avoid racing
+                        // with handleReadyForNextRound and handleRoundComplete
+                        handleAbandonCallback?.invoke(lobbyId, identity.playerId)
                     }
                     LobbyState.TOURNAMENT_COMPLETE -> {}
                 }
@@ -487,10 +483,9 @@ class ConnectionHandler(
 
     // Callbacks set by GameWebSocketHandler to avoid circular dependencies
     var handleGameOverCallback: ((com.wingedsheep.gameserver.session.GameSession, GameOverReason) -> Unit)? = null
-    var handleRoundCompleteCallback: ((String) -> Unit)? = null
     var broadcastStateUpdateCallback: ((com.wingedsheep.gameserver.session.GameSession, List<com.wingedsheep.engine.core.GameEvent>) -> Unit)? = null
     var sendActiveMatchesToPlayerCallback: ((PlayerIdentity, WebSocketSession) -> Unit)? = null
-    var broadcastActiveMatchesCallback: ((String) -> Unit)? = null
+    var handleAbandonCallback: ((String, EntityId) -> Unit)? = null
     var restoreSpectatingCallback: ((PlayerIdentity, PlayerSession, WebSocketSession, String) -> Unit)? = null
     var lobbyReconnectCallback: ((WebSocketSession, PlayerIdentity, PlayerSession, String) -> Unit)? = null
 

@@ -21,6 +21,7 @@ import com.wingedsheep.gameserver.tournament.TournamentMatch
 import com.wingedsheep.gameserver.tournament.TournamentRound
 import com.wingedsheep.gameserver.config.GameProperties
 import com.wingedsheep.engine.registry.CardRegistry
+import com.wingedsheep.sdk.model.EntityId
 import kotlinx.coroutines.*
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
@@ -1472,6 +1473,27 @@ class LobbyHandler(
         }
     }
 
+    /**
+     * Handle a player abandoning the tournament. Records auto-losses for
+     * incomplete matches and checks for round/tournament completion.
+     *
+     * All mutations happen under the per-lobby lock.
+     */
+    fun handleAbandon(lobbyId: String, playerId: EntityId) {
+        val lock = roundLocks.computeIfAbsent(lobbyId) { Any() }
+        synchronized(lock) {
+            val tournament = lobbyRepository.findTournamentById(lobbyId) ?: return
+            tournament.recordAbandon(playerId)
+            lobbyRepository.saveTournament(lobbyId, tournament)
+
+            broadcastActiveMatchesToWaitingPlayers(lobbyId)
+
+            if (tournament.isRoundComplete()) {
+                handleRoundComplete(lobbyId)
+            }
+        }
+    }
+
     fun handleRoundComplete(lobbyId: String) {
         val lock = roundLocks.computeIfAbsent(lobbyId) { Any() }
         synchronized(lock) {
@@ -1550,11 +1572,41 @@ class LobbyHandler(
     }
 
     /**
+     * Handle the full match result flow: report result, notify players, broadcast
+     * active matches, and check for round completion — all under the per-lobby lock.
+     *
+     * This ensures that tournament state mutations from game completion don't race
+     * with handleReadyForNextRound or handleRoundComplete.
+     */
+    fun handleMatchResult(
+        lobbyId: String,
+        gameSessionId: String,
+        winnerId: EntityId?,
+        winnerLifeRemaining: Int
+    ) {
+        val lock = roundLocks.computeIfAbsent(lobbyId) { Any() }
+        synchronized(lock) {
+            val tournament = lobbyRepository.findTournamentById(lobbyId) ?: return
+            tournament.reportMatchResult(gameSessionId, winnerId, winnerLifeRemaining)
+            lobbyRepository.saveTournament(lobbyId, tournament)
+
+            handleMatchComplete(lobbyId, gameSessionId)
+            broadcastActiveMatchesToWaitingPlayers(lobbyId)
+
+            if (tournament.isRoundComplete()) {
+                handleRoundComplete(lobbyId)
+            }
+        }
+    }
+
+    /**
      * Handle an individual match completion. Sends MatchComplete to both players
      * in the match immediately, allowing them to ready up for their next match
      * without waiting for the entire round to finish.
+     *
+     * Must be called under the per-lobby lock.
      */
-    fun handleMatchComplete(lobbyId: String, gameSessionId: String) {
+    private fun handleMatchComplete(lobbyId: String, gameSessionId: String) {
         val lobby = lobbyRepository.findLobbyById(lobbyId) ?: return
         val tournament = lobbyRepository.findTournamentById(lobbyId) ?: return
 
@@ -1754,6 +1806,17 @@ class LobbyHandler(
 
         // Opponent ready?
         if (opponentId !in lobby.getReadyPlayerIds()) return
+
+        // Prevent cross-round matchmaking from stranding players. If this match is in a
+        // later round, only start it if the opponent has also completed their current-round
+        // match. Otherwise we'd "steal" the opponent from a player waiting in the current round.
+        val currentRound = tournament.currentRound
+        if (currentRound != null && round.roundNumber > currentRound.roundNumber) {
+            val opponentCurrentMatch = currentRound.matches.find {
+                (it.player1Id == opponentId || it.player2Id == opponentId)
+            }
+            if (opponentCurrentMatch != null && !opponentCurrentMatch.isComplete) return
+        }
 
         // Both ready - start the match!
         logger.info("Both players ready, starting match: ${identity.playerName} vs ${lobby.players[opponentId]?.identity?.playerName}")

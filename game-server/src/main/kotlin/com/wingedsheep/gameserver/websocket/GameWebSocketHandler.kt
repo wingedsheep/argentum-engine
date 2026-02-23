@@ -27,14 +27,14 @@ class GameWebSocketHandler(
     @PostConstruct
     fun wireCallbacks() {
         // Wire cross-handler callbacks to avoid circular dependencies
-        gamePlayHandler.handleRoundCompleteCallback = { lobbyId -> lobbyHandler.handleRoundComplete(lobbyId) }
         gamePlayHandler.broadcastActiveMatchesCallback = { lobbyId -> lobbyHandler.broadcastActiveMatchesToWaitingPlayers(lobbyId) }
-        gamePlayHandler.handleMatchCompleteCallback = { lobbyId, gameSessionId -> lobbyHandler.handleMatchComplete(lobbyId, gameSessionId) }
+        gamePlayHandler.handleMatchResultCallback = { lobbyId, gameSessionId, winnerId, winnerLife ->
+            lobbyHandler.handleMatchResult(lobbyId, gameSessionId, winnerId, winnerLife)
+        }
         gamePlayHandler.joinSealedGameCallback = { session, msg -> lobbyHandler.handleJoinSealedGame(session, msg) }
         gamePlayHandler.joinLobbyCallback = { session, msg -> lobbyHandler.handleJoinLobby(session, msg) }
         connectionHandler.handleGameOverCallback = { gameSession, reason -> gamePlayHandler.handleGameOver(gameSession, reason) }
-        connectionHandler.handleRoundCompleteCallback = { lobbyId -> lobbyHandler.handleRoundComplete(lobbyId) }
-        connectionHandler.broadcastActiveMatchesCallback = { lobbyId -> lobbyHandler.broadcastActiveMatchesToWaitingPlayers(lobbyId) }
+        connectionHandler.handleAbandonCallback = { lobbyId, playerId -> lobbyHandler.handleAbandon(lobbyId, playerId) }
         connectionHandler.broadcastStateUpdateCallback = { gameSession, events -> gamePlayHandler.broadcastStateUpdate(gameSession, events) }
         connectionHandler.sendActiveMatchesToPlayerCallback = { identity, wsSession -> lobbyHandler.sendActiveMatchesToPlayer(identity, wsSession) }
         connectionHandler.restoreSpectatingCallback = { identity, playerSession, wsSession, gameSessionId ->

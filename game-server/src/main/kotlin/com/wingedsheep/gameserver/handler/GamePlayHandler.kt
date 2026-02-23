@@ -47,14 +47,11 @@ class GamePlayHandler(
     private val lastActiveMatchBroadcast = ConcurrentHashMap<String, Long>()
     private val activeMatchBroadcastIntervalMs = 1000L
 
-    // Callback for tournament round complete
-    var handleRoundCompleteCallback: ((String) -> Unit)? = null
-
-    // Callback to broadcast active matches when a tournament match ends
+    // Callback to broadcast active matches during ongoing games (throttled)
     var broadcastActiveMatchesCallback: ((String) -> Unit)? = null
 
-    // Callback for individual match completion (dynamic matchmaking)
-    var handleMatchCompleteCallback: ((String, String) -> Unit)? = null
+    // Callback for full match result handling (report result + notify + check round complete, all under lock)
+    var handleMatchResultCallback: ((String, String, EntityId?, Int) -> Unit)? = null
 
     fun handle(session: WebSocketSession, message: ClientMessage) {
         when (message) {
@@ -433,8 +430,6 @@ class GamePlayHandler(
                 } else {
                     0
                 }
-                tournament.reportMatchResult(gameSessionId, winnerId, winnerLifeRemaining)
-                lobbyRepository.saveTournament(lobbyId, tournament)
                 gameRepository.removeLobbyLink(gameSessionId)
 
                 // Clear currentGameSessionId for both players so they are
@@ -445,15 +440,8 @@ class GamePlayHandler(
                         ?.currentGameSessionId = null
                 }
 
-                // Notify the two players who just finished with their next matchup info
-                handleMatchCompleteCallback?.invoke(lobbyId, gameSessionId)
-
-                // Broadcast updated active matches to waiting players
-                broadcastActiveMatchesCallback?.invoke(lobbyId)
-
-                if (tournament.isRoundComplete()) {
-                    handleRoundCompleteCallback?.invoke(lobbyId)
-                }
+                // Report result, notify players, check round complete — all under the per-lobby lock
+                handleMatchResultCallback?.invoke(lobbyId, gameSessionId, winnerId, winnerLifeRemaining)
             }
         }
 
