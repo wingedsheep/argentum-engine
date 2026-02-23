@@ -13,7 +13,7 @@ class PlayerExecutors(
     override fun executors(): List<EffectExecutor<*>> = listOf(
         AddCombatPhaseExecutor(),
         CreateGlobalTriggeredAbilityUntilEndOfTurnExecutor(),
-        GrantShroudUntilEndOfTurnExecutor(),
+        GrantShroudExecutor(),
         PlayAdditionalLandsExecutor(),
         PreventLandPlaysThisTurnExecutor(),
         SecretBidExecutor(decisionHandler),

@@ -1,5 +1,6 @@
 package com.wingedsheep.sdk.scripting.effects
 
+import com.wingedsheep.sdk.scripting.Duration
 import com.wingedsheep.sdk.scripting.TriggeredAbility
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
@@ -117,20 +118,22 @@ data class CreateGlobalTriggeredAbilityUntilEndOfTurnEffect(
 }
 
 /**
- * Grant shroud to a target entity until end of turn.
+ * Grant shroud to a target entity for the specified duration.
  * Works for players, creatures, and planeswalkers.
  *
  * Used for cards like Gilded Light: "You gain shroud until end of turn."
  *
- * - For player targets: adds PlayerShroudUntilEndOfTurnComponent
+ * - For player targets: adds PlayerShroudComponent with appropriate removal timing
  * - For permanent targets: creates a floating effect granting the Shroud keyword
  *
  * @param target The entity to grant shroud to (player, creature, or planeswalker)
+ * @param duration How long the shroud lasts
  */
-@SerialName("GrantShroudUntilEndOfTurn")
+@SerialName("GrantShroud")
 @Serializable
-data class GrantShroudUntilEndOfTurnEffect(
-    val target: EffectTarget = EffectTarget.Controller
+data class GrantShroudEffect(
+    val target: EffectTarget = EffectTarget.Controller,
+    val duration: Duration = Duration.EndOfTurn
 ) : Effect {
-    override val description: String = "${target.description.replaceFirstChar { it.uppercase() }} gains shroud until end of turn"
+    override val description: String = "${target.description.replaceFirstChar { it.uppercase() }} gains shroud ${duration.description}"
 }

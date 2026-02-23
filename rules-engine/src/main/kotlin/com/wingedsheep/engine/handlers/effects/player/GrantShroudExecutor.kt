@@ -16,23 +16,23 @@ import com.wingedsheep.engine.state.components.player.PlayerShroudComponent
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.Duration
-import com.wingedsheep.sdk.scripting.effects.GrantShroudUntilEndOfTurnEffect
+import com.wingedsheep.sdk.scripting.effects.GrantShroudEffect
 import kotlin.reflect.KClass
 
 /**
- * Executor for GrantShroudUntilEndOfTurnEffect.
- * Grants shroud until end of turn to a target entity.
+ * Executor for GrantShroudEffect.
+ * Grants shroud to a target entity for the specified duration.
  *
- * - For player targets: adds PlayerShroudComponent with EndOfTurn removal
+ * - For player targets: adds PlayerShroudComponent with appropriate removal timing
  * - For permanent targets: creates a floating effect for the Shroud keyword
  */
-class GrantShroudUntilEndOfTurnExecutor : EffectExecutor<GrantShroudUntilEndOfTurnEffect> {
+class GrantShroudExecutor : EffectExecutor<GrantShroudEffect> {
 
-    override val effectType: KClass<GrantShroudUntilEndOfTurnEffect> = GrantShroudUntilEndOfTurnEffect::class
+    override val effectType: KClass<GrantShroudEffect> = GrantShroudEffect::class
 
     override fun execute(
         state: GameState,
-        effect: GrantShroudUntilEndOfTurnEffect,
+        effect: GrantShroudEffect,
         context: EffectContext
     ): ExecutionResult {
         val targetId = resolveTarget(effect.target, context)
@@ -40,8 +40,12 @@ class GrantShroudUntilEndOfTurnExecutor : EffectExecutor<GrantShroudUntilEndOfTu
 
         // Check if target is a player
         if (state.turnOrder.contains(targetId)) {
+            val removeOn = when (effect.duration) {
+                is Duration.Permanent -> PlayerEffectRemoval.Permanent
+                else -> PlayerEffectRemoval.EndOfTurn
+            }
             val newState = state.updateEntity(targetId) { container ->
-                container.with(PlayerShroudComponent(removeOn = PlayerEffectRemoval.EndOfTurn))
+                container.with(PlayerShroudComponent(removeOn = removeOn))
             }
             return ExecutionResult.success(newState)
         }
@@ -60,7 +64,7 @@ class GrantShroudUntilEndOfTurnExecutor : EffectExecutor<GrantShroudUntilEndOfTu
                 modification = SerializableModification.GrantKeyword(Keyword.SHROUD.name),
                 affectedEntities = setOf(targetId)
             ),
-            duration = Duration.EndOfTurn,
+            duration = effect.duration,
             sourceId = context.sourceId,
             sourceName = context.sourceId?.let { state.getEntity(it)?.get<CardComponent>()?.name },
             controllerId = context.controllerId,

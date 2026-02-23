@@ -3,7 +3,7 @@ package com.wingedsheep.mtg.sets.definitions.scourge.cards
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.KeywordAbility
-import com.wingedsheep.sdk.scripting.effects.GrantShroudUntilEndOfTurnEffect
+import com.wingedsheep.sdk.scripting.effects.GrantShroudEffect
 
 /**
  * Gilded Light
@@ -18,7 +18,7 @@ val GildedLight = card("Gilded Light") {
     oracleText = "You gain shroud until end of turn. (You can't be the target of spells or abilities.)\nCycling {2}"
 
     spell {
-        effect = GrantShroudUntilEndOfTurnEffect()
+        effect = GrantShroudEffect()
     }
 
     keywordAbility(KeywordAbility.cycling("{2}"))

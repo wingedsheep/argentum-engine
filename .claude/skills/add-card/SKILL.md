@@ -59,11 +59,21 @@ If the card needs effects, keywords, triggers, conditions, or static abilities t
 
 **Design for reusability** — New effects, static abilities, triggers, conditions, and components must be **general-purpose and parameterized**, not card-specific. Apply these principles:
 
-1. **Target generality** — Effects should work on any valid entity type, not just one. For example, `GrantShroudUntilEndOfTurnEffect(target: EffectTarget)` works for players, creatures, and planeswalkers — don't create `GrantPlayerShroudEffect` that only works on players. The executor handles each entity type (player → adds component, permanent → creates floating effect).
+1. **Target generality** — Effects should work on any valid entity type, not just one. The executor handles each entity type differently.
+   - BAD: `GrantPlayerShroudEffect` — only works on players
+   - GOOD: `GrantShroudEffect(target: EffectTarget, duration: Duration)` — works for players, creatures, and planeswalkers. Executor checks if target is a player (adds `PlayerShroudComponent`) or permanent (creates floating effect with `GrantKeyword(SHROUD)`).
 
-2. **Duration/removal generality** — Components should have a configurable duration or removal condition, not bake timing into the name. For example, `PlayerShroudComponent(removeOn: PlayerEffectRemoval)` with an enum `{ EndOfTurn, Permanent }` — don't create `PlayerShroudUntilEndOfTurnComponent` as a separate type. The cleanup system reads `removeOn` to decide when to remove it.
+2. **Duration/removal generality** — Don't bake timing into type names. Both effects and components should have a configurable duration or removal condition. The cleanup system reads the field to decide when to remove.
+   - BAD: `GrantShroudUntilEndOfTurnEffect` — hardcodes "until end of turn" in the type name
+   - GOOD: `GrantShroudEffect(duration: Duration)` — one type, any duration (EndOfTurn, EndOfCombat, Permanent, etc.)
+   - BAD: `PlayerShroudUntilEndOfTurnComponent` (data object) — a new type for each duration
+   - GOOD: `PlayerShroudComponent(removeOn: PlayerEffectRemoval)` with enum `{ EndOfTurn, Permanent }` — one type, multiple durations. `TurnManager.cleanupEndOfTurn()` checks `removeOn == EndOfTurn` to remove; `Permanent` instances survive.
 
-3. **Parameterized filters and amounts** — Use `GameObjectFilter`, `DynamicAmount`, and configurable parameters so the same effect works across many cards. For example: don't create `ReduceCostOfGoblinsEffect` — instead create `ReduceSpellCostEffect(filter, amount)` that accepts any `GameObjectFilter`. Don't create `GainLifeWhenGoblinEntersEffect` — instead create a general trigger `OnCreatureEntersBattlefield(filter)` paired with `Effects.GainLife(amount)`.
+3. **Parameterized filters and amounts** — Use `GameObjectFilter`, `DynamicAmount`, and configurable parameters so the same effect works across many cards.
+   - BAD: `ReduceCostOfGoblinsEffect` — only reduces Goblin costs
+   - GOOD: `ReduceSpellCostEffect(filter: GameObjectFilter, amount: DynamicAmount)` — works for any creature type or card property
+   - BAD: `GainLifeWhenGoblinEntersEffect` — card-specific trigger
+   - GOOD: general trigger `OnCreatureEntersBattlefield(filter)` paired with `Effects.GainLife(amount)`
 
 4. **Name the mechanic, not the card** — The effect name should describe the *mechanic*, not the specific card it was built for.
 
