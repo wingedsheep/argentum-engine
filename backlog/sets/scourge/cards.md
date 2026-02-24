@@ -3,14 +3,14 @@
 
 **Set Size:** 143 cards
 **Release Date:** May 26, 2003
-**Implemented:** 64 / 143
+**Implemented:** 65 / 143
 
 | Color | Count |
 |-------|-------|
 | White | 13 |
 | Blue | 12 |
 | Black | 12 |
-| Red | 12 |
+| Red | 13 |
 | Green | 13 |
 | Multicolor | 1 |
 | Colorless | 1 |
@@ -112,7 +112,7 @@
 - [ ] Primitive Etchings
 - [ ] Proteus Machine
 - [x] Putrid Raptor
-- [ ] Pyrostatic Pillar
+- [x] Pyrostatic Pillar
 - [x] Rain of Blades
 - [x] Raven Guild Initiate
 - [ ] Raven Guild Master
