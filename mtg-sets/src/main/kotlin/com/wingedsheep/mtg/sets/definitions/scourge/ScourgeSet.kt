@@ -80,6 +80,7 @@ object ScourgeSet {
         SiegeGangCommander,
 
         // Red enchantments
+        PyrostaticPillar,
         SulfuricVortex,
 
         // Red sorceries
