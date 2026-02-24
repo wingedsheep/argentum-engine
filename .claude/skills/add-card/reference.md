@@ -56,6 +56,7 @@ constructors.
 - `Effects.PutOnTopOfLibrary(target)`
 - `Effects.ShuffleIntoLibrary(target)`
 - `Effects.PutOntoBattlefield(target, tapped = false)`
+- `Effects.ReturnSelfToBattlefieldAttached(target)` — return self from graveyard to battlefield attached to target (for Auras like Dragon Shadow)
 - `Effects.ShuffleGraveyardIntoLibrary(target)` — shuffle graveyard into library
 
 ### Stats & Keywords

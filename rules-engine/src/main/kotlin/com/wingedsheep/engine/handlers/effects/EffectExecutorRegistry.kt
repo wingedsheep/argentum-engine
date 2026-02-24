@@ -41,7 +41,7 @@ class EffectExecutorRegistry(
     private val executors = mutableMapOf<KClass<out Effect>, EffectExecutor<*>>()
     private val compositeExecutors = CompositeExecutors()
     private val drawingExecutors = DrawingExecutors(amountEvaluator, decisionHandler, cardRegistry = cardRegistry)
-    private val removalExecutors = RemovalExecutors()
+    private val removalExecutors = RemovalExecutors(cardRegistry)
 
     init {
         // Register all effect executors by module

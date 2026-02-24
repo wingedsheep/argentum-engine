@@ -287,3 +287,19 @@ data class MoveToZoneEffect(
         }
     }
 }
+
+/**
+ * Returns the source permanent (typically an Aura) from its current zone to the battlefield
+ * attached to the specified target. Used by the Dragon aura cycle (Dragon Shadow, Dragon Breath, etc.)
+ * which return from the graveyard when a creature with high mana value enters the battlefield.
+ *
+ * The [target] specifies what the aura attaches to (typically [EffectTarget.TriggeringEntity]).
+ */
+@SerialName("ReturnSelfToBattlefieldAttached")
+@Serializable
+data class ReturnSelfToBattlefieldAttachedEffect(
+    val target: EffectTarget = EffectTarget.TriggeringEntity
+) : Effect {
+    override val description: String =
+        "Return this card from your graveyard to the battlefield attached to ${target.description}"
+}

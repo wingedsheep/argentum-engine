@@ -13,7 +13,9 @@ import com.wingedsheep.sdk.scripting.effects.Effect
  * Uses deferred initialization to inject the parent registry's execute function
  * into PayOrSufferExecutor, which needs it for executing arbitrary suffer effects.
  */
-class RemovalExecutors : ExecutorModule {
+class RemovalExecutors(
+    private val cardRegistry: com.wingedsheep.engine.registry.CardRegistry? = null
+) : ExecutorModule {
     private lateinit var effectExecutor: (GameState, Effect, EffectContext) -> ExecutionResult
 
     private val payOrSufferExecutor by lazy { PayOrSufferExecutor(executeEffect = effectExecutor) }
@@ -39,6 +41,7 @@ class RemovalExecutors : ExecutorModule {
         RegenerateExecutor(),
         SacrificeExecutor(),
         SacrificeSelfExecutor(),
-        MoveToZoneEffectExecutor()
+        MoveToZoneEffectExecutor(),
+        ReturnSelfToBattlefieldAttachedExecutor(cardRegistry)
     )
 }

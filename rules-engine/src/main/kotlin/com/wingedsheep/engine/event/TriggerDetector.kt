@@ -315,6 +315,35 @@ class TriggerDetector(
             }
         }
 
+        // Check graveyard cards for non-step triggers with activeZone == GRAVEYARD
+        // (e.g., Dragon Shadow: "When a creature with MV 6+ enters, return this from graveyard")
+        for (playerId in state.turnOrder) {
+            for (entityId in state.getGraveyard(playerId)) {
+                val container = state.getEntity(entityId) ?: continue
+                val cardComponent = container.get<CardComponent>() ?: continue
+
+                val abilities = getTriggeredAbilities(entityId, cardComponent.cardDefinitionId, state)
+
+                for (ability in abilities) {
+                    if (ability.activeZone != Zone.GRAVEYARD) continue
+                    val ownerId = cardComponent.ownerId
+                        ?: container.get<OwnerComponent>()?.playerId
+                        ?: continue
+                    if (matchesTrigger(ability.trigger, ability.binding, event, entityId, ownerId, state)) {
+                        triggers.add(
+                            PendingTrigger(
+                                ability = ability,
+                                sourceId = entityId,
+                                sourceName = cardComponent.name,
+                                controllerId = ownerId,
+                                triggerContext = TriggerContext.fromEvent(event)
+                            )
+                        )
+                    }
+                }
+            }
+        }
+
         // Check global granted triggered abilities (e.g., False Cure)
         detectGlobalGrantedTriggers(state, event, triggers)
 
@@ -1159,6 +1188,12 @@ class TriggerDetector(
             is com.wingedsheep.sdk.scripting.predicates.CardPredicate.IsCreature -> cardComponent.typeLine.isCreature
             is com.wingedsheep.sdk.scripting.predicates.CardPredicate.HasSubtype ->
                 cardComponent.typeLine.hasSubtype(predicate.subtype)
+            is com.wingedsheep.sdk.scripting.predicates.CardPredicate.ManaValueAtLeast ->
+                cardComponent.manaValue >= predicate.min
+            is com.wingedsheep.sdk.scripting.predicates.CardPredicate.ManaValueAtMost ->
+                cardComponent.manaValue <= predicate.max
+            is com.wingedsheep.sdk.scripting.predicates.CardPredicate.ManaValueEquals ->
+                cardComponent.manaValue == predicate.value
             else -> true // Unknown predicates pass through
         }
     }
