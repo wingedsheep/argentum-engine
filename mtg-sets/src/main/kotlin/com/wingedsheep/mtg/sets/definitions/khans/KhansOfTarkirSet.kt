@@ -36,5 +36,8 @@ object KhansOfTarkirSet {
         // Red creatures
         MonasterySwiftspear,
         SummitProwler,
+
+        // Multicolor creatures
+        HighspireMantis,
     )
 }

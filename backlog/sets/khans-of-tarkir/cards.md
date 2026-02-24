@@ -2,7 +2,7 @@
 
 **Set Size:** 269 cards (249 unique card names + basic land variants)
 **Release Date:** September 26, 2014
-**Implemented:** 6 / 249
+**Implemented:** 7 / 249
 
 | Color      | Count |
 |------------|-------|
@@ -11,7 +11,7 @@
 | Black      | 1     |
 | Red        | 2     |
 | Green      | 1     |
-| Multicolor | 0     |
+| Multicolor | 1     |
 | Colorless  | 0     |
 | Land       | 0     |
 
@@ -106,7 +106,7 @@
 - [ ] Herald of Anafenza
 - [ ] Highland Game
 - [ ] High Sentinels of Arashin
-- [ ] Highspire Mantis
+- [x] Highspire Mantis
 - [ ] Hooded Hydra
 - [ ] Hooting Mandrills
 - [ ] Horde Ambusher
