@@ -27,6 +27,6 @@ val FatalMutation = card("Fatal Mutation") {
         collectorNumber = "66"
         artist = "Erica Gassalasca-Jape"
         flavorText = "\"You wear that shell as a mask. Now it's your coffin.\" —Cabal cleric"
-        imageUri = "https://cards.scryfall.io/large/front/5/7/57cf9f50-8858-44a6-8bd5-0ce1e281a584.jpg?1562529447"
+        imageUri = "https://cards.scryfall.io/normal/front/5/7/57cf9f50-8858-44a6-8bd5-0ce1e281a584.jpg?1562529447"
     }
 }

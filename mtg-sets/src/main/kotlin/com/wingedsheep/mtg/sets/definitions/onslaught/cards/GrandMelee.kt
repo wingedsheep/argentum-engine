@@ -30,6 +30,6 @@ val GrandMelee = card("Grand Melee") {
         collectorNumber = "211"
         artist = "Pete Venters"
         flavorText = "In the end, it's not about the prey. It's about the hunt."
-        imageUri = "https://cards.scryfall.io/large/front/9/a/9a0d3142-4224-4b51-885d-33c8938418c1.jpg?1562927541"
+        imageUri = "https://cards.scryfall.io/normal/front/9/a/9a0d3142-4224-4b51-885d-33c8938418c1.jpg?1562927541"
     }
 }

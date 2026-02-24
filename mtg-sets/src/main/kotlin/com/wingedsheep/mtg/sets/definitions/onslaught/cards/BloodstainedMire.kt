@@ -42,6 +42,6 @@ val BloodstainedMire = card("Bloodstained Mire") {
         rarity = Rarity.RARE
         collectorNumber = "313"
         artist = "Rob Alexander"
-        imageUri = "https://cards.scryfall.io/large/front/6/8/68c72226-6f52-4322-8b14-18737293dfa0.jpg?1562919681"
+        imageUri = "https://cards.scryfall.io/normal/front/6/8/68c72226-6f52-4322-8b14-18737293dfa0.jpg?1562919681"
     }
 }

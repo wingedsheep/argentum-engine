@@ -25,6 +25,6 @@ val Clone = card("Clone") {
         collectorNumber = "75"
         artist = "Carl Critchlow"
         flavorText = ""
-        imageUri = "https://cards.scryfall.io/large/front/1/d/1d513dde-7c5f-46f1-b871-5290595bdbbe.jpg"
+        imageUri = "https://cards.scryfall.io/normal/front/1/d/1d513dde-7c5f-46f1-b871-5290595bdbbe.jpg"
     }
 }

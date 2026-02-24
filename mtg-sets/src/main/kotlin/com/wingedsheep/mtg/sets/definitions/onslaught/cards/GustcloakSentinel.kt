@@ -33,6 +33,6 @@ val GustcloakSentinel = card("Gustcloak Sentinel") {
         collectorNumber = "37"
         artist = "Mark Zug"
         flavorText = "\"Entire platoons have mysteriously vanished from battle, leaving enemy weapons to slice through empty air.\""
-        imageUri = "https://cards.scryfall.io/large/front/b/9/b90da5c3-fd8f-445d-809f-e129870d7449.jpg?1562937912"
+        imageUri = "https://cards.scryfall.io/normal/front/b/9/b90da5c3-fd8f-445d-809f-e129870d7449.jpg?1562937912"
     }
 }

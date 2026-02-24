@@ -40,6 +40,6 @@ val AvenLiberator = card("Aven Liberator") {
         collectorNumber = "4"
         artist = "Matt Cavotta"
         flavorText = "Its wings offer phpysical and spiritual shelter for those dungeons under its care."
-        imageUri = "https://cards.scryfall.io/large/front/b/2/b2804006-2a60-400c-be0b-8aa042469372.jpg?1562533361"
+        imageUri = "https://cards.scryfall.io/normal/front/b/2/b2804006-2a60-400c-be0b-8aa042469372.jpg?1562533361"
     }
 }

@@ -37,6 +37,6 @@ val SilklashSpider = card("Silklash Spider") {
         collectorNumber = "281"
         artist = "Iain McCaig"
         flavorText = "\"The only thing that flies over the Krosan Forest is the wind.\""
-        imageUri = "https://cards.scryfall.io/large/front/e/4/e41680e2-6689-4263-a5a3-9fb2e4280d52.jpg?1562932614"
+        imageUri = "https://cards.scryfall.io/normal/front/e/4/e41680e2-6689-4263-a5a3-9fb2e4280d52.jpg?1562932614"
     }
 }

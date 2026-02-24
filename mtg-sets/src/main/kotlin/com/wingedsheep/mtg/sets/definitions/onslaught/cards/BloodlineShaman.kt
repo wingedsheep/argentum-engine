@@ -31,6 +31,6 @@ val BloodlineShaman = card("Bloodline Shaman") {
         collectorNumber = "249"
         artist = "Rebecca Guay"
         flavorText = "\"Every creature of the forest has a name, and she knows them all.\""
-        imageUri = "https://cards.scryfall.io/large/front/5/f/5fdfc473-8477-4c04-a4e7-ecac1b0a5716.jpg?1562917608"
+        imageUri = "https://cards.scryfall.io/normal/front/5/f/5fdfc473-8477-4c04-a4e7-ecac1b0a5716.jpg?1562917608"
     }
 }

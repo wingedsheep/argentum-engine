@@ -30,6 +30,6 @@ val WordsOfWilding = card("Words of Wilding") {
         rarity = Rarity.RARE
         collectorNumber = "305"
         artist = "Ron Spears"
-        imageUri = "https://cards.scryfall.io/large/front/f/d/fdb9565f-5b09-4127-b169-3146079dab84.jpg?1562955080"
+        imageUri = "https://cards.scryfall.io/normal/front/f/d/fdb9565f-5b09-4127-b169-3146079dab84.jpg?1562955080"
     }
 }

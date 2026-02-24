@@ -32,6 +32,6 @@ val ImprovisedArmor = card("Improvised Armor") {
         collectorNumber = "40"
         artist = "Alan Pollack"
         flavorText = "\"In the pits, you learn to fight with whatever you can find.\"\n—Kamahl, pit fighter"
-        imageUri = "https://cards.scryfall.io/large/front/8/d/8d7d5d79-73d8-4f1a-9dda-4de5f41539d9.jpg?1562928336"
+        imageUri = "https://cards.scryfall.io/normal/front/8/d/8d7d5d79-73d8-4f1a-9dda-4de5f41539d9.jpg?1562928336"
     }
 }

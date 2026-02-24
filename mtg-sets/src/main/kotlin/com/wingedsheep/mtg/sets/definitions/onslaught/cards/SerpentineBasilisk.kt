@@ -33,6 +33,6 @@ val SerpentineBasilisk = card("Serpentine Basilisk") {
         rarity = Rarity.UNCOMMON
         collectorNumber = "280"
         artist = "Franz Vohwinkel"
-        imageUri = "https://cards.scryfall.io/large/front/4/0/4052a5af-20b2-4817-8c94-78d488ee220f.jpg?1562936568"
+        imageUri = "https://cards.scryfall.io/normal/front/4/0/4052a5af-20b2-4817-8c94-78d488ee220f.jpg?1562936568"
     }
 }

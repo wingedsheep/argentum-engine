@@ -35,6 +35,6 @@ val CabalExecutioner = card("Cabal Executioner") {
         collectorNumber = "130"
         artist = "Rebecca Guay"
         flavorText = ""
-        imageUri = "https://cards.scryfall.io/large/front/c/d/cd7727a7-0cdf-4fd5-82b4-e6587c10ca80.jpg?1562943489"
+        imageUri = "https://cards.scryfall.io/normal/front/c/d/cd7727a7-0cdf-4fd5-82b4-e6587c10ca80.jpg?1562943489"
     }
 }

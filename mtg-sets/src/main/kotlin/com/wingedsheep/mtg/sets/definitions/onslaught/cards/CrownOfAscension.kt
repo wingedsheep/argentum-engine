@@ -40,6 +40,6 @@ val CrownOfAscension = card("Crown of Ascension") {
         collectorNumber = "78"
         artist = "Bradley Williams"
         flavorText = "\"Wisdom, clear my eyes.\""
-        imageUri = "https://cards.scryfall.io/large/front/2/f/2fe86733-7851-4c2a-8d94-dba6f071b94d.jpg?1562906205"
+        imageUri = "https://cards.scryfall.io/normal/front/2/f/2fe86733-7851-4c2a-8d94-dba6f071b94d.jpg?1562906205"
     }
 }

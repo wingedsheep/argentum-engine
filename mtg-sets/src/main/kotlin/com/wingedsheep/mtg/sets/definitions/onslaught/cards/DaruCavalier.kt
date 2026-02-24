@@ -44,6 +44,6 @@ val DaruCavalier = card("Daru Cavalier") {
         rarity = Rarity.COMMON
         collectorNumber = "18"
         artist = "Dany Orizio"
-        imageUri = "https://cards.scryfall.io/large/front/e/b/eb2e9b7e-434e-477f-b3e8-e85ceb913650.jpg?1562951000"
+        imageUri = "https://cards.scryfall.io/normal/front/e/b/eb2e9b7e-434e-477f-b3e8-e85ceb913650.jpg?1562951000"
     }
 }

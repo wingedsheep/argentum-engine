@@ -36,6 +36,6 @@ val ManaEchoes = card("Mana Echoes") {
         collectorNumber = "218"
         artist = "Scott M. Fischer"
         flavorText = "When the ground is saturated with mana, even the lightest footstep can bring it to the surface."
-        imageUri = "https://cards.scryfall.io/large/front/1/b/1b15d04c-62cb-4704-8cc7-9842cef27a1b.jpg?1562899467"
+        imageUri = "https://cards.scryfall.io/normal/front/1/b/1b15d04c-62cb-4704-8cc7-9842cef27a1b.jpg?1562899467"
     }
 }

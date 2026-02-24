@@ -23,7 +23,7 @@ val KamahlsSummons = card("Kamahl's Summons") {
             tokenToughness = 2,
             tokenColors = setOf(Color.GREEN),
             tokenCreatureTypes = setOf("Bear"),
-            tokenImageUri = "https://cards.scryfall.io/large/front/7/7/772dac39-269b-4a35-aad3-320279af833f.jpg?1675455454"
+            tokenImageUri = "https://cards.scryfall.io/normal/front/7/7/772dac39-269b-4a35-aad3-320279af833f.jpg?1675455454"
         )
     }
 
@@ -32,6 +32,6 @@ val KamahlsSummons = card("Kamahl's Summons") {
         collectorNumber = "269"
         artist = "Anthony S. Waters"
         flavorText = "As Krosa unleashed the peace in Kamahl, he unleashed the fury in Krosa."
-        imageUri = "https://cards.scryfall.io/large/front/0/e/0edc37c6-b6a8-424f-95dd-928d03c28542.jpg?1562897867"
+        imageUri = "https://cards.scryfall.io/normal/front/0/e/0edc37c6-b6a8-424f-95dd-928d03c28542.jpg?1562897867"
     }
 }

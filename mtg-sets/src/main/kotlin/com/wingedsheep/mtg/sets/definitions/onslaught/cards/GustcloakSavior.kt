@@ -36,6 +36,6 @@ val GustcloakSavior = card("Gustcloak Savior") {
         collectorNumber = "36"
         artist = "Jim Nelson"
         flavorText = "\"Our death-arrows flew in high arcs towards the aven. And then . . . nothing.\"\n—Coliseum guard"
-        imageUri = "https://cards.scryfall.io/large/front/0/e/0e9d6e81-1869-4ab7-8a4e-477d5c4aed6b.jpg?1562898351"
+        imageUri = "https://cards.scryfall.io/normal/front/0/e/0e9d6e81-1869-4ab7-8a4e-477d5c4aed6b.jpg?1562898351"
     }
 }

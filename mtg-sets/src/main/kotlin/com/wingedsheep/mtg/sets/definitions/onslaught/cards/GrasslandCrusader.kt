@@ -41,6 +41,6 @@ val GrasslandCrusader = card("Grassland Crusader") {
         collectorNumber = "32"
         artist = "Mark Tedin"
         flavorText = "When the ground shakes, the Order is not far behind."
-        imageUri = "https://cards.scryfall.io/large/front/c/1/c129f361-8769-4f9a-9745-eb5d0c085b88.jpg?1562940580"
+        imageUri = "https://cards.scryfall.io/normal/front/c/1/c129f361-8769-4f9a-9745-eb5d0c085b88.jpg?1562940580"
     }
 }

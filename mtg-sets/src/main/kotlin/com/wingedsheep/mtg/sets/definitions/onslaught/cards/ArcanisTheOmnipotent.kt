@@ -39,6 +39,6 @@ val ArcanisTheOmnipotent = card("Arcanis the Omnipotent") {
         collectorNumber = "66"
         artist = "Justin Sweet"
         flavorText = "He has journeyed where none have been before. Now he returns to ensure that none follow."
-        imageUri = "https://cards.scryfall.io/large/front/9/0/90865f52-c062-4505-a204-b4d7d4b3fc4c.jpg?1562929057"
+        imageUri = "https://cards.scryfall.io/normal/front/9/0/90865f52-c062-4505-a204-b4d7d4b3fc4c.jpg?1562929057"
     }
 }

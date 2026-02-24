@@ -34,6 +34,6 @@ val SilvosRogueElemental = card("Silvos, Rogue Elemental") {
         collectorNumber = "282"
         artist = "Carl Critchlow"
         flavorText = "He was born of the Mirari, thrust out of his homeland before he was even aware. Left without purpose or meaning, he found both in the pits."
-        imageUri = "https://cards.scryfall.io/large/front/3/e/3e48715c-6ff7-4b0c-aa7e-a2c901215426.jpg?1562909620"
+        imageUri = "https://cards.scryfall.io/normal/front/3/e/3e48715c-6ff7-4b0c-aa7e-a2c901215426.jpg?1562909620"
     }
 }

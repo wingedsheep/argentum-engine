@@ -45,6 +45,6 @@ val UndeadGladiator = card("Undead Gladiator") {
         collectorNumber = "178"
         artist = "Jeff Easley"
         flavorText = "The Cabal loves encores."
-        imageUri = "https://cards.scryfall.io/large/front/b/b/bbc779d9-3200-4369-9289-1a8e90e243b9.jpg?1562939313"
+        imageUri = "https://cards.scryfall.io/normal/front/b/b/bbc779d9-3200-4369-9289-1a8e90e243b9.jpg?1562939313"
     }
 }

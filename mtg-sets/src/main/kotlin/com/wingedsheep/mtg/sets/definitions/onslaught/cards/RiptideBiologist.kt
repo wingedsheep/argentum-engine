@@ -27,6 +27,6 @@ val RiptideBiologist = card("Riptide Biologist") {
         collectorNumber = "106"
         artist = "Justin Sweet"
         flavorText = "\"I gave it two choices: life in the lab or death in the hunt.\""
-        imageUri = "https://cards.scryfall.io/large/front/4/d/4d399b71-c365-492c-976e-2c79d97d08bc.jpg?1562913054"
+        imageUri = "https://cards.scryfall.io/normal/front/4/d/4d399b71-c365-492c-976e-2c79d97d08bc.jpg?1562913054"
     }
 }

@@ -30,6 +30,6 @@ val TauntingElf = card("Taunting Elf") {
         collectorNumber = "290"
         artist = "Rebecca Guay"
         flavorText = "The safety of the village depends on the beast thinking with its stomach."
-        imageUri = "https://cards.scryfall.io/large/front/6/b/6b24af94-9632-47da-9bf3-e81bb743cd43.jpg?1562920244"
+        imageUri = "https://cards.scryfall.io/normal/front/6/b/6b24af94-9632-47da-9bf3-e81bb743cd43.jpg?1562920244"
     }
 }

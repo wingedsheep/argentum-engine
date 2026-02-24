@@ -37,6 +37,6 @@ val ThrashingMudspawn = card("Thrashing Mudspawn") {
         collectorNumber = "177"
         artist = "Thomas M. Baxa"
         flavorText = "\"It just obeys you. It doesn't like you.\""
-        imageUri = "https://cards.scryfall.io/large/front/d/a/da84de0e-a4cd-4dff-8ee3-87c9debf0969.jpg?1562947056"
+        imageUri = "https://cards.scryfall.io/normal/front/d/a/da84de0e-a4cd-4dff-8ee3-87c9debf0969.jpg?1562947056"
     }
 }

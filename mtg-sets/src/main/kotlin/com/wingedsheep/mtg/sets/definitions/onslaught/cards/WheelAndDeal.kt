@@ -35,6 +35,6 @@ val WheelAndDeal = card("Wheel and Deal") {
         collectorNumber = "121"
         artist = "Alan Pollack"
         flavorText = "\"Give a man a fish, you feed him for a day. Give a man someone else's fish, you make a friend for life.\""
-        imageUri = "https://cards.scryfall.io/large/front/6/1/61f50a1a-f3d0-4fcf-bd32-0e173b0d3247.jpg?1562918070"
+        imageUri = "https://cards.scryfall.io/normal/front/6/1/61f50a1a-f3d0-4fcf-bd32-0e173b0d3247.jpg?1562918070"
     }
 }

@@ -45,6 +45,6 @@ val DirgeOfDread = card("Dirge of Dread") {
         collectorNumber = "138"
         artist = "Heather Hudson"
         flavorText = "It puts the \"fun\" in \"funeral.\""
-        imageUri = "https://cards.scryfall.io/large/front/8/4/8496e9c2-4c13-4307-bda7-b88512a21a6a.jpg?1562926208"
+        imageUri = "https://cards.scryfall.io/normal/front/8/4/8496e9c2-4c13-4307-bda7-b88512a21a6a.jpg?1562926208"
     }
 }

@@ -32,6 +32,6 @@ val ConvalescentCare = card("Convalescent Care") {
         collectorNumber = "14"
         artist = "Greg Hildebrandt"
         flavorText = "Enlightenment comes most swiftly at life's end."
-        imageUri = "https://cards.scryfall.io/large/front/4/8/48f3ad80-d000-496a-b704-d09e07981b6e.jpg?1562910180"
+        imageUri = "https://cards.scryfall.io/normal/front/4/8/48f3ad80-d000-496a-b704-d09e07981b6e.jpg?1562910180"
     }
 }

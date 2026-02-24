@@ -28,6 +28,6 @@ val ElvenRiders = card("Elven Riders") {
         collectorNumber = "254"
         artist = "Darrell Riche"
         flavorText = "They are seldom combated, and never caught."
-        imageUri = "https://cards.scryfall.io/large/front/f/7/f7c1aa30-0271-48d9-b9d0-3b1da26d98bf.jpg?1562953705"
+        imageUri = "https://cards.scryfall.io/normal/front/f/7/f7c1aa30-0271-48d9-b9d0-3b1da26d98bf.jpg?1562953705"
     }
 }

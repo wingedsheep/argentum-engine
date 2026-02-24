@@ -43,6 +43,6 @@ val PollutedDelta = card("Polluted Delta") {
         rarity = Rarity.RARE
         collectorNumber = "321"
         artist = "Rob Alexander"
-        imageUri = "https://cards.scryfall.io/large/front/0/f/0f7585c8-9e21-4eef-afc1-2852de23db2f.jpg?1562898596"
+        imageUri = "https://cards.scryfall.io/normal/front/0/f/0f7585c8-9e21-4eef-afc1-2852de23db2f.jpg?1562898596"
     }
 }

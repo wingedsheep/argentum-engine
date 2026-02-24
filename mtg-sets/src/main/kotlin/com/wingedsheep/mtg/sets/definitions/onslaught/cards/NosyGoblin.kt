@@ -36,6 +36,6 @@ val NosyGoblin = card("Nosy Goblin") {
         collectorNumber = "220"
         artist = "Thomas M. Baxa"
         flavorText = "To his surprise, Furt discovered that the strange creatures were not at all like bugs."
-        imageUri = "https://cards.scryfall.io/large/front/7/0/70ea023e-e66d-4049-b7bc-5e660804f088.jpg?1562921618"
+        imageUri = "https://cards.scryfall.io/normal/front/7/0/70ea023e-e66d-4049-b7bc-5e660804f088.jpg?1562921618"
     }
 }

@@ -26,6 +26,6 @@ val PyrostaticPillar = card("Pyrostatic Pillar") {
         rarity = Rarity.UNCOMMON
         collectorNumber = "100"
         artist = "Pete Venters"
-        imageUri = "https://cards.scryfall.io/large/front/5/9/5973cd53-f6cd-4edc-b952-f6d3eef97988.jpg?1562529485"
+        imageUri = "https://cards.scryfall.io/normal/front/5/9/5973cd53-f6cd-4edc-b952-f6d3eef97988.jpg?1562529485"
     }
 }

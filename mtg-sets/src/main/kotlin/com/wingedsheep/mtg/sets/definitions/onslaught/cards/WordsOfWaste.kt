@@ -27,6 +27,6 @@ val WordsOfWaste = card("Words of Waste") {
         collectorNumber = "182"
         artist = "Jerry Tiritilli"
         flavorText = "Terror corrupts order and paralyzes instinct."
-        imageUri = "https://cards.scryfall.io/large/front/d/2/d2dcb8ed-23e7-4cee-9f43-042232c6035a.jpg?1562937190"
+        imageUri = "https://cards.scryfall.io/normal/front/d/2/d2dcb8ed-23e7-4cee-9f43-042232c6035a.jpg?1562937190"
     }
 }

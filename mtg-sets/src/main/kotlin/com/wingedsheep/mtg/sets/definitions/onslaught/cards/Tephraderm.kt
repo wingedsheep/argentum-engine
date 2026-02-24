@@ -42,6 +42,6 @@ val Tephraderm = card("Tephraderm") {
         rarity = Rarity.RARE
         collectorNumber = "239"
         artist = "Paolo Parente"
-        imageUri = "https://cards.scryfall.io/large/front/4/1/41b65eba-140b-4c1d-b796-8134b7c1ede8.jpg?1562910455"
+        imageUri = "https://cards.scryfall.io/normal/front/4/1/41b65eba-140b-4c1d-b796-8134b7c1ede8.jpg?1562910455"
     }
 }

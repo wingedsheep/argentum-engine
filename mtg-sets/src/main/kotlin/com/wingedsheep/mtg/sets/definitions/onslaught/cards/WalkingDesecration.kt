@@ -29,6 +29,6 @@ val WalkingDesecration = card("Walking Desecration") {
         collectorNumber = "180"
         artist = "Daren Bader"
         flavorText = "\"Such sacrilege turns blinding grief into blinding rage.\""
-        imageUri = "https://cards.scryfall.io/large/front/c/3/c39f3e91-571a-4990-b1e8-db2a5bac34af.jpg?1562941229"
+        imageUri = "https://cards.scryfall.io/normal/front/c/3/c39f3e91-571a-4990-b1e8-db2a5bac34af.jpg?1562941229"
     }
 }

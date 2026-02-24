@@ -36,6 +36,6 @@ val Hystrodon = card("Hystrodon") {
         rarity = Rarity.RARE
         collectorNumber = "266"
         artist = "Anthony S. Waters"
-        imageUri = "https://cards.scryfall.io/large/front/1/c/1c964473-7c54-4c2d-a3eb-dba01c842103.jpg?1562901719"
+        imageUri = "https://cards.scryfall.io/normal/front/1/c/1c964473-7c54-4c2d-a3eb-dba01c842103.jpg?1562901719"
     }
 }

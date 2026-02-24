@@ -34,6 +34,6 @@ val Imagecrafter = card("Imagecrafter") {
         collectorNumber = "87"
         artist = "Terese Nielsen"
         flavorText = "\"When Otarians learned not to trust wizards, the wizards learned to adapt.\""
-        imageUri = "https://cards.scryfall.io/large/front/9/1/91be6441-8a45-43e4-8d12-a886dcaadbd3.jpg?1562929336"
+        imageUri = "https://cards.scryfall.io/normal/front/9/1/91be6441-8a45-43e4-8d12-a886dcaadbd3.jpg?1562929336"
     }
 }

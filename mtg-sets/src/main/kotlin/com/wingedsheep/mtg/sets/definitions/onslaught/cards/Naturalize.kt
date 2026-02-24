@@ -29,6 +29,6 @@ val Naturalize = card("Naturalize") {
         collectorNumber = "275"
         artist = "Ron Spears"
         flavorText = "\"Destroy what was never meant to be and you will learn the meaning of nature.\"\n—Kamahl, druid acolyte"
-        imageUri = "https://cards.scryfall.io/large/front/c/0/c0acc41f-b55b-47cb-8803-d39d72788799.jpg?1562940493"
+        imageUri = "https://cards.scryfall.io/normal/front/c/0/c0acc41f-b55b-47cb-8803-d39d72788799.jpg?1562940493"
     }
 }

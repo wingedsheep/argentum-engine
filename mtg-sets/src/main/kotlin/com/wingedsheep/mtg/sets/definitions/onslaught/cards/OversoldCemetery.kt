@@ -42,6 +42,6 @@ val OversoldCemetery = card("Oversold Cemetery") {
         rarity = Rarity.RARE
         collectorNumber = "160"
         artist = "Thomas M. Baxa"
-        imageUri = "https://cards.scryfall.io/large/front/3/b/3bbfd715-0772-4516-8cd8-89495dbccf4a.jpg?1562909019"
+        imageUri = "https://cards.scryfall.io/normal/front/3/b/3bbfd715-0772-4516-8cd8-89495dbccf4a.jpg?1562909019"
     }
 }

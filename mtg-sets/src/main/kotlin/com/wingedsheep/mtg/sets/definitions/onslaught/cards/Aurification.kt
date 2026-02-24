@@ -49,7 +49,7 @@ val Aurification = card("Aurification") {
         collectorNumber = "6"
         artist = "Gary Ruddell"
         flavorText = "Trespassers will be decorated."
-        imageUri = "https://cards.scryfall.io/large/front/9/3/93d9e9ea-9f88-4206-8960-b5ebe839ee16.jpg?1562929867"
+        imageUri = "https://cards.scryfall.io/normal/front/9/3/93d9e9ea-9f88-4206-8960-b5ebe839ee16.jpg?1562929867"
         ruling(
             "2007-02-01",
             "The Oracle text of this card has been updated to give affected creatures defender instead of the old \"Walls can't attack\" rule. The Wall creature type is now added in addition to other types, and defender prevents those creatures from attacking."

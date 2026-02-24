@@ -41,6 +41,6 @@ val Sparksmith = card("Sparksmith") {
         collectorNumber = "235"
         artist = "Jim Nelson"
         flavorText = "The more goblins a sparksmith is around, the more they feel like showing off."
-        imageUri = "https://cards.scryfall.io/large/front/1/5/15a4460d-3fe8-4b1f-9990-0a19c3345367.jpg?1562900172"
+        imageUri = "https://cards.scryfall.io/normal/front/1/5/15a4460d-3fe8-4b1f-9990-0a19c3345367.jpg?1562900172"
     }
 }

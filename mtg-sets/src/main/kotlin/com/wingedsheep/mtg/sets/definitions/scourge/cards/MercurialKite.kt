@@ -38,6 +38,6 @@ val MercurialKite = card("Mercurial Kite") {
         collectorNumber = "40"
         artist = "Wayne England"
         flavorText = "Aven scouts admired the kites' ability to identify and|track their prey. Commanders admired their ability to|knock that prey out of the sky."
-        imageUri = "https://cards.scryfall.io/large/front/a/6/a6bc8655-ae27-40be-8d61-e80a5924e955.jpg?1562533105"
+        imageUri = "https://cards.scryfall.io/normal/front/a/6/a6bc8655-ae27-40be-8d61-e80a5924e955.jpg?1562533105"
     }
 }

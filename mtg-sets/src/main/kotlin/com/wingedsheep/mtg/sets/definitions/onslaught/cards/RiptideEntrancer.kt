@@ -39,6 +39,6 @@ val RiptideEntrancer = card("Riptide Entrancer") {
         rarity = Rarity.RARE
         collectorNumber = "108"
         artist = "Scott Hampton"
-        imageUri = "https://cards.scryfall.io/large/front/2/c/2cd9abc9-f289-4294-bc0f-4addc8b92a4e.jpg?1562905497"
+        imageUri = "https://cards.scryfall.io/normal/front/2/c/2cd9abc9-f289-4294-bc0f-4addc8b92a4e.jpg?1562905497"
     }
 }

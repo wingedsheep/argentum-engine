@@ -34,6 +34,6 @@ val ElvishPioneer = card("Elvish Pioneer") {
         collectorNumber = "257"
         artist = "Christopher Rush"
         flavorText = "\"Ravaged or reborn, the land always provides.\""
-        imageUri = "https://cards.scryfall.io/large/front/7/e/7e71fc2d-643b-4fad-89a8-624d330895d6.jpg?1562924784"
+        imageUri = "https://cards.scryfall.io/normal/front/7/e/7e71fc2d-643b-4fad-89a8-624d330895d6.jpg?1562924784"
     }
 }

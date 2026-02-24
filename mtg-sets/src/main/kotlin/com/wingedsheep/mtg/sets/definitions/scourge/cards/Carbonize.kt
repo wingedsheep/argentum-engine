@@ -31,6 +31,6 @@ val Carbonize = card("Carbonize") {
         collectorNumber = "83"
         artist = "Glen Angus"
         flavorText = "\"Some of this world's most potent substances are also the most volatile.\"\n—Riptide Project research notes"
-        imageUri = "https://cards.scryfall.io/large/front/6/f/6f565fa1-a1a0-4dd0-b7f4-df65a807d156.jpg?1562530228"
+        imageUri = "https://cards.scryfall.io/normal/front/6/f/6f565fa1-a1a0-4dd0-b7f4-df65a807d156.jpg?1562530228"
     }
 }

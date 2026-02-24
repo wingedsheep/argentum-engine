@@ -47,6 +47,6 @@ val RiptideReplicator = card("Riptide Replicator") {
         collectorNumber = "309"
         artist = "Michael Sutfin"
         flavorText = "It doesn't create just any kind of monster—it creates the best kind of monster."
-        imageUri = "https://cards.scryfall.io/large/front/4/1/41bb314f-237a-43fc-95c8-b26188dc4476.jpg?1562910457"
+        imageUri = "https://cards.scryfall.io/normal/front/4/1/41bb314f-237a-43fc-95c8-b26188dc4476.jpg?1562910457"
     }
 }

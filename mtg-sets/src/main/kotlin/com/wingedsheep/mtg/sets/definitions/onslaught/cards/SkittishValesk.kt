@@ -37,6 +37,6 @@ val SkittishValesk = card("Skittish Valesk") {
         collectorNumber = "231"
         artist = "Alan Pollack"
         flavorText = "Skirk Ridge goblins have learned to take cover when they hear its roar."
-        imageUri = "https://cards.scryfall.io/large/front/4/c/4cc8a6e6-ed62-4784-ba9a-b1f703fc6119.jpg?1562912967"
+        imageUri = "https://cards.scryfall.io/normal/front/4/c/4cc8a6e6-ed62-4784-ba9a-b1f703fc6119.jpg?1562912967"
     }
 }

@@ -37,6 +37,6 @@ val VoidmageProdigy = card("Voidmage Prodigy") {
         rarity = Rarity.RARE
         collectorNumber = "120"
         artist = "Scott M. Fischer"
-        imageUri = "https://cards.scryfall.io/large/front/7/4/7441e7f9-a326-4f61-b7b1-e0dbed06046f.jpg?1562916487"
+        imageUri = "https://cards.scryfall.io/normal/front/7/4/7441e7f9-a326-4f61-b7b1-e0dbed06046f.jpg?1562916487"
     }
 }

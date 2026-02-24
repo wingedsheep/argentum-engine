@@ -44,6 +44,6 @@ val CrownOfAwe = card("Crown of Awe") {
         collectorNumber = "16"
         artist = "Randy Elliott"
         flavorText = "The crown never rests easy on a thoughtless brow."
-        imageUri = "https://cards.scryfall.io/large/front/a/e/aeaea4bc-dcea-4340-a039-ebc97b944673.jpg?1562936272"
+        imageUri = "https://cards.scryfall.io/normal/front/a/e/aeaea4bc-dcea-4340-a039-ebc97b944673.jpg?1562936272"
     }
 }

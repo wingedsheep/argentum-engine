@@ -37,6 +37,6 @@ val Insurrection = card("Insurrection") {
         collectorNumber = "213"
         artist = "Mark Zug"
         flavorText = "\"Maybe they wanted to be on the winning side for once.\" —Matoc, lavamancer"
-        imageUri = "https://cards.scryfall.io/large/front/9/9/998bad32-1927-4e12-9527-efa55b86cae0.jpg?1562931187"
+        imageUri = "https://cards.scryfall.io/normal/front/9/9/998bad32-1927-4e12-9527-efa55b86cae0.jpg?1562931187"
     }
 }

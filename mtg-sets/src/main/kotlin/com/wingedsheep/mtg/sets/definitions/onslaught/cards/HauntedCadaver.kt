@@ -37,6 +37,6 @@ val HauntedCadaver = card("Haunted Cadaver") {
         collectorNumber = "154"
         artist = "Randy Gallegos"
         flavorText = ""
-        imageUri = "https://cards.scryfall.io/large/front/a/1/a164420c-3619-4f5e-81cf-2aa5a4553bc3.jpg?1562933106"
+        imageUri = "https://cards.scryfall.io/normal/front/a/1/a164420c-3619-4f5e-81cf-2aa5a4553bc3.jpg?1562933106"
     }
 }

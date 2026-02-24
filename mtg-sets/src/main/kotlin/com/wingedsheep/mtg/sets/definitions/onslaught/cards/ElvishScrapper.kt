@@ -32,6 +32,6 @@ val ElvishScrapper = card("Elvish Scrapper") {
         collectorNumber = "258"
         artist = "Edward P. Beard, Jr."
         flavorText = "\"Metal angers the elves. Everything they build is alive.\"\n—Kamahl, druid acolyte"
-        imageUri = "https://cards.scryfall.io/large/front/a/e/ae85fafb-114b-4fd8-ac4c-5ada57054705.jpg?1562936242"
+        imageUri = "https://cards.scryfall.io/normal/front/a/e/ae85fafb-114b-4fd8-ac4c-5ada57054705.jpg?1562936242"
     }
 }

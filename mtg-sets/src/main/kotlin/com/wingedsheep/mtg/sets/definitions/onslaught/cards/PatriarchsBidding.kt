@@ -25,6 +25,6 @@ val PatriarchsBidding = card("Patriarch's Bidding") {
         collectorNumber = "161"
         artist = "Carl Critchlow"
         flavorText = ""
-        imageUri = "https://cards.scryfall.io/large/front/2/d/2deba175-8c02-492d-b404-5d842910c095.jpg?1562905776"
+        imageUri = "https://cards.scryfall.io/normal/front/2/d/2deba175-8c02-492d-b404-5d842910c095.jpg?1562905776"
     }
 }

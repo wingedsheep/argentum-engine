@@ -43,6 +43,6 @@ val Gigapede = card("Gigapede") {
         collectorNumber = "264"
         artist = "Anthony S. Waters"
         flavorText = ""
-        imageUri = "https://cards.scryfall.io/large/front/0/a/0a96a608-9237-41c1-824c-89d5fad939ad.jpg?1562897409"
+        imageUri = "https://cards.scryfall.io/normal/front/0/a/0a96a608-9237-41c1-824c-89d5fad939ad.jpg?1562897409"
     }
 }

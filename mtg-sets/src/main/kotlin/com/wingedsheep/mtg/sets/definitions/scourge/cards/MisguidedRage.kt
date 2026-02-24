@@ -27,6 +27,6 @@ val MisguidedRage = card("Misguided Rage") {
         collectorNumber = "99"
         artist = "Pete Venters"
         flavorText = "\"If you don't have a target, you can always hit yourself.\"\n—Goblin military manual"
-        imageUri = "https://cards.scryfall.io/large/front/7/4/74b5e00a-fef0-4711-9112-2fd067321890.jpg?1562530657"
+        imageUri = "https://cards.scryfall.io/normal/front/7/4/74b5e00a-fef0-4711-9112-2fd067321890.jpg?1562530657"
     }
 }

@@ -32,6 +32,6 @@ val HarshMercy = card("Harsh Mercy") {
         collectorNumber = "39"
         artist = "John Matson"
         flavorText = "\"There is no greater burden than choosing who to save.\" —Kamahl, druid acolyte"
-        imageUri = "https://cards.scryfall.io/large/front/b/6/b6473b4d-1f59-4216-ace9-f3e5306266fb.jpg?1562937932"
+        imageUri = "https://cards.scryfall.io/normal/front/b/6/b6473b4d-1f59-4216-ace9-f3e5306266fb.jpg?1562937932"
     }
 }

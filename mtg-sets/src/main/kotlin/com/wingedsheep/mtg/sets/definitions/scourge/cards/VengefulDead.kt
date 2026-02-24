@@ -51,6 +51,6 @@ val VengefulDead = card("Vengeful Dead") {
         collectorNumber = "80"
         artist = "Alex Horley-Orlandelli"
         flavorText = "Those who don't learn from their deaths are destined to repeat them."
-        imageUri = "https://cards.scryfall.io/large/front/7/c/7c11c11d-9809-4031-8cbc-21aef07d7f1f.jpg?1562531178"
+        imageUri = "https://cards.scryfall.io/normal/front/7/c/7c11c11d-9809-4031-8cbc-21aef07d7f1f.jpg?1562531178"
     }
 }

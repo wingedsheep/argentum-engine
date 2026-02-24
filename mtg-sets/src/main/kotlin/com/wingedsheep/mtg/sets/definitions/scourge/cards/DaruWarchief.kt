@@ -42,6 +42,6 @@ val DaruWarchief = card("Daru Warchief") {
         collectorNumber = "6"
         artist = "Tim Hildebrandt"
         flavorText = "Within the complex Daru hierarchy, the weights of duty and of rank are equal."
-        imageUri = "https://cards.scryfall.io/large/front/2/6/2630d3b5-8f3a-4aad-a45e-22a7979429f3.jpg?1562526606"
+        imageUri = "https://cards.scryfall.io/normal/front/2/6/2630d3b5-8f3a-4aad-a45e-22a7979429f3.jpg?1562526606"
     }
 }

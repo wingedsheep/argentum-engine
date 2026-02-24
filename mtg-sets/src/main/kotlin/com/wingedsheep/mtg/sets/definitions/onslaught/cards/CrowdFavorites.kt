@@ -46,6 +46,6 @@ val CrowdFavorites = card("Crowd Favorites") {
         collectorNumber = "15"
         artist = "Roger Raupp"
         flavorText = "\"The rabble likes them. Make sure they win, then book them for tomorrow.\" —Cabal Patriarch"
-        imageUri = "https://cards.scryfall.io/large/front/1/0/1038436d-aea5-4508-8b37-c2cfa32c2771.jpg?1593017609"
+        imageUri = "https://cards.scryfall.io/normal/front/1/0/1038436d-aea5-4508-8b37-c2cfa32c2771.jpg?1593017609"
     }
 }

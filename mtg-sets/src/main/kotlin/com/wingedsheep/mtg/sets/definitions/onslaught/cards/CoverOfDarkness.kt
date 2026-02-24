@@ -28,6 +28,6 @@ val CoverOfDarkness = card("Cover of Darkness") {
         rarity = Rarity.RARE
         collectorNumber = "133"
         artist = "Kev Walker"
-        imageUri = "https://cards.scryfall.io/large/front/0/d/0d6d7d88-d82b-40f4-bf57-ec5d7c480689.jpg?1562898088"
+        imageUri = "https://cards.scryfall.io/normal/front/0/d/0d6d7d88-d82b-40f4-bf57-ec5d7c480689.jpg?1562898088"
     }
 }

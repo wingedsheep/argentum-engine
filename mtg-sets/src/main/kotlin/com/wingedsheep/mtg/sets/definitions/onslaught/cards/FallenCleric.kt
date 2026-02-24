@@ -26,6 +26,6 @@ val FallenCleric = card("Fallen Cleric") {
         rarity = Rarity.COMMON
         collectorNumber = "145"
         artist = "Dave Dorman"
-        imageUri = "https://cards.scryfall.io/large/front/7/6/7652dc61-9170-4895-a0bf-c32a1ee0350e.jpg?1562922981"
+        imageUri = "https://cards.scryfall.io/normal/front/7/6/7652dc61-9170-4895-a0bf-c32a1ee0350e.jpg?1562922981"
     }
 }

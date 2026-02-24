@@ -25,6 +25,6 @@ val SulfuricVortex = card("Sulfuric Vortex") {
         rarity = Rarity.RARE
         collectorNumber = "106"
         artist = "Greg Staples"
-        imageUri = "https://cards.scryfall.io/large/front/7/9/79955e27-eef7-43bd-9895-e9209ed1537f.jpg?1562531138"
+        imageUri = "https://cards.scryfall.io/normal/front/7/9/79955e27-eef7-43bd-9895-e9209ed1537f.jpg?1562531138"
     }
 }

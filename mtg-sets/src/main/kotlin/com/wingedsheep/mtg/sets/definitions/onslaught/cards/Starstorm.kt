@@ -32,6 +32,6 @@ val Starstorm = card("Starstorm") {
         collectorNumber = "238"
         artist = "David Martin"
         flavorText = ""
-        imageUri = "https://cards.scryfall.io/large/front/b/5/b54d72ba-05ce-4299-a7c3-a9e9f126fffb.jpg?1562937719"
+        imageUri = "https://cards.scryfall.io/normal/front/b/5/b54d72ba-05ce-4299-a7c3-a9e9f126fffb.jpg?1562937719"
     }
 }

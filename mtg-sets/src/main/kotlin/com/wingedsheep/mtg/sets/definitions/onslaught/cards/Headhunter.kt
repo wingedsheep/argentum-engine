@@ -32,6 +32,6 @@ val Headhunter = card("Headhunter") {
         collectorNumber = "156"
         artist = "Matt Cavotta"
         flavorText = ""
-        imageUri = "https://cards.scryfall.io/large/front/3/c/3cbd82d5-d64f-4833-b1a9-9652fcfa1578.jpg?1562909285"
+        imageUri = "https://cards.scryfall.io/normal/front/3/c/3cbd82d5-d64f-4833-b1a9-9652fcfa1578.jpg?1562909285"
     }
 }

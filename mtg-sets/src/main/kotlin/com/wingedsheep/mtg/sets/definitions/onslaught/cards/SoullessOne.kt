@@ -33,6 +33,6 @@ val SoullessOne = card("Soulless One") {
         collectorNumber = "171"
         artist = "Thomas M. Baxa"
         flavorText = "\"Its residents dig their own graves and crawl in.\"\n—Phage the Untouchable"
-        imageUri = "https://cards.scryfall.io/large/front/c/8/c826d786-0d96-4f77-94ae-6907fbce51e0.jpg?1562942286"
+        imageUri = "https://cards.scryfall.io/normal/front/c/8/c826d786-0d96-4f77-94ae-6907fbce51e0.jpg?1562942286"
     }
 }

@@ -33,6 +33,6 @@ val MistformMask = card("Mistform Mask") {
         collectorNumber = "94"
         artist = "Monte Michael Moore"
         flavorText = "\"Trust, the fifth myth of reality: Every truth holds the seed of betrayal.\""
-        imageUri = "https://cards.scryfall.io/large/front/7/f/7fbbb075-5795-425f-9e33-70cb922eea16.jpg?1562920869"
+        imageUri = "https://cards.scryfall.io/normal/front/7/f/7fbbb075-5795-425f-9e33-70cb922eea16.jpg?1562920869"
     }
 }

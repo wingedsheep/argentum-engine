@@ -40,6 +40,6 @@ val GoblinBurrows = card("Goblin Burrows") {
         rarity = Rarity.UNCOMMON
         collectorNumber = "318"
         artist = "David Martin"
-        imageUri = "https://cards.scryfall.io/large/front/a/5/a5064cd2-8762-4e08-8c3c-be6f31e9ab61.jpg?1562933960"
+        imageUri = "https://cards.scryfall.io/normal/front/a/5/a5064cd2-8762-4e08-8c3c-be6f31e9ab61.jpg?1562933960"
     }
 }

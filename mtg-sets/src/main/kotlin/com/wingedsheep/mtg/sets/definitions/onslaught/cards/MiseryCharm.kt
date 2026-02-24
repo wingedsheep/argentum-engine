@@ -58,6 +58,6 @@ val MiseryCharm = card("Misery Charm") {
         rarity = Rarity.COMMON
         collectorNumber = "158"
         artist = "David Martin"
-        imageUri = "https://cards.scryfall.io/large/front/2/b/2be66eaf-222b-4c40-a9fa-aad56b9218e0.jpg?1562905282"
+        imageUri = "https://cards.scryfall.io/normal/front/2/b/2be66eaf-222b-4c40-a9fa-aad56b9218e0.jpg?1562905282"
     }
 }

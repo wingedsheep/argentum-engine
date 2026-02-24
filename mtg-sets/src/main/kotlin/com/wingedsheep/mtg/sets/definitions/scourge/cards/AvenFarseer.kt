@@ -36,6 +36,6 @@ val AvenFarseer = card("Aven Farseer") {
         collectorNumber = "3"
         artist = "Luca Zontini"
         flavorText = "Those trained in the ways of the morph serve as the Order's spies and scouts."
-        imageUri = "https://cards.scryfall.io/large/front/4/7/47854e89-4d22-4eb6-a77d-6f04407bd2e5.jpg?1562528498"
+        imageUri = "https://cards.scryfall.io/normal/front/4/7/47854e89-4d22-4eb6-a77d-6f04407bd2e5.jpg?1562528498"
     }
 }

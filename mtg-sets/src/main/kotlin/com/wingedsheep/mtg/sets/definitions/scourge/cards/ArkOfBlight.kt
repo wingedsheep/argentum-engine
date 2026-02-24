@@ -29,6 +29,6 @@ val ArkOfBlight = card("Ark of Blight") {
         collectorNumber = "140"
         artist = "Doug Chaffee"
         flavorText = "When opened, it erases entire landscapes from minds and maps."
-        imageUri = "https://cards.scryfall.io/large/front/f/3/f3b09956-cc34-4472-8b9f-ae355522bd5a.jpg?1562536903"
+        imageUri = "https://cards.scryfall.io/normal/front/f/3/f3b09956-cc34-4472-8b9f-ae355522bd5a.jpg?1562536903"
     }
 }

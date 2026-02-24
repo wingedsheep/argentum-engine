@@ -39,6 +39,6 @@ val SeasideHaven = card("Seaside Haven") {
         rarity = Rarity.UNCOMMON
         collectorNumber = "323"
         artist = "Mark Brill"
-        imageUri = "https://cards.scryfall.io/large/front/9/c/9c940a6b-3c5e-4ce2-92b6-63e2cb575c15.jpg?1562931946"
+        imageUri = "https://cards.scryfall.io/normal/front/9/c/9c940a6b-3c5e-4ce2-92b6-63e2cb575c15.jpg?1562931946"
     }
 }

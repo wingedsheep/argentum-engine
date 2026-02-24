@@ -44,6 +44,6 @@ val GoblinSharpshooter = card("Goblin Sharpshooter") {
         collectorNumber = "207"
         artist = "Greg Staples"
         flavorText = ""
-        imageUri = "https://cards.scryfall.io/large/front/7/e/7e689df7-b85d-4346-bee8-5e978b5cbbbc.jpg?1562924782"
+        imageUri = "https://cards.scryfall.io/normal/front/7/e/7e689df7-b85d-4346-bee8-5e978b5cbbbc.jpg?1562924782"
     }
 }

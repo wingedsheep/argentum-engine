@@ -50,6 +50,6 @@ val Sandskin = card("Sandskin") {
         collectorNumber = "52"
         artist = "Glen Angus"
         flavorText = "\"Those who live by the sword will die by the sword. I choose to do neither.\""
-        imageUri = "https://cards.scryfall.io/large/front/8/0/80b59844-c9d4-4bc1-86e6-4cc596d9165d.jpg?1562925378"
+        imageUri = "https://cards.scryfall.io/normal/front/8/0/80b59844-c9d4-4bc1-86e6-4cc596d9165d.jpg?1562925378"
     }
 }

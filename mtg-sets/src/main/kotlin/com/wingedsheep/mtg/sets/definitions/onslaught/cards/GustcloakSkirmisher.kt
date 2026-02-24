@@ -36,6 +36,6 @@ val GustcloakSkirmisher = card("Gustcloak Skirmisher") {
         collectorNumber = "38"
         artist = "Dan Frazier"
         flavorText = "\"They're trained in the art of pressing their luck.\""
-        imageUri = "https://cards.scryfall.io/large/front/c/b/cbbff06c-5f92-4320-8b70-df3c8344f600.jpg?1562943121"
+        imageUri = "https://cards.scryfall.io/normal/front/c/b/cbbff06c-5f92-4320-8b70-df3c8344f600.jpg?1562943121"
     }
 }

@@ -32,6 +32,6 @@ val AphettoRunecaster = card("Aphetto Runecaster") {
         collectorNumber = "28"
         artist = "Eric Peterson"
         flavorText = "Unraveling the mysteries of a morph is its own reward."
-        imageUri = "https://cards.scryfall.io/large/front/7/c/7c5de028-91ce-48d8-8557-ae12542adea2.jpg?1562531185"
+        imageUri = "https://cards.scryfall.io/normal/front/7/c/7c5de028-91ce-48d8-8557-ae12542adea2.jpg?1562531185"
     }
 }

@@ -30,6 +30,6 @@ val RiptideShapeshifter = card("Riptide Shapeshifter") {
         rarity = Rarity.UNCOMMON
         collectorNumber = "109"
         artist = "Arnie Swekel"
-        imageUri = "https://cards.scryfall.io/large/front/8/5/85be34ac-7bc2-4da2-8d9c-2412b9946073.jpg?1562926477"
+        imageUri = "https://cards.scryfall.io/normal/front/8/5/85be34ac-7bc2-4da2-8d9c-2412b9946073.jpg?1562926477"
     }
 }

@@ -35,6 +35,6 @@ val SnappingThragg = card("Snapping Thragg") {
         rarity = Rarity.UNCOMMON
         collectorNumber = "233"
         artist = "Iain McCaig"
-        imageUri = "https://cards.scryfall.io/large/front/c/8/c8a47d41-b893-46b9-90c9-ccd8f9f78855.jpg?1562942401"
+        imageUri = "https://cards.scryfall.io/normal/front/c/8/c8a47d41-b893-46b9-90c9-ccd8f9f78855.jpg?1562942401"
     }
 }

@@ -477,7 +477,7 @@ class ClientStateTransformer(
                 },
                 isFaceDown = true,
                 morphCost = null, // Opponent can't see morph cost
-                imageUri = "https://cards.scryfall.io/large/front/e/9/e9375cbe-93c0-41a5-a6e3-fb4416f54a69.jpg", // Morph token from Commander 2019
+                imageUri = "https://cards.scryfall.io/normal/front/e/9/e9375cbe-93c0-41a5-a6e3-fb4416f54a69.jpg", // Morph token from Commander 2019
                 activeEffects = buildCardActiveEffects(state, entityId)
             )
         }

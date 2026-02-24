@@ -43,6 +43,6 @@ val TradeSecrets = card("Trade Secrets") {
         collectorNumber = "118"
         artist = "Ron Spears"
         flavorText = "\"The Cabal loves only secrets.\" —Empress Llawan"
-        imageUri = "https://cards.scryfall.io/large/front/e/9/e92e197e-ef7e-46bb-9533-5f9819d545b2.jpg?1562945484"
+        imageUri = "https://cards.scryfall.io/normal/front/e/9/e92e197e-ef7e-46bb-9533-5f9819d545b2.jpg?1562945484"
     }
 }

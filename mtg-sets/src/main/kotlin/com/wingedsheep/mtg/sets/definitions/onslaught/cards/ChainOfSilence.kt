@@ -32,6 +32,6 @@ val ChainOfSilence = card("Chain of Silence") {
         rarity = Rarity.UNCOMMON
         collectorNumber = "12"
         artist = "Brian Snõddy"
-        imageUri = "https://cards.scryfall.io/large/front/9/a/9a60ac8e-11eb-433f-86f9-8e593b38c617.jpg?1562931386"
+        imageUri = "https://cards.scryfall.io/normal/front/9/a/9a60ac8e-11eb-433f-86f9-8e593b38c617.jpg?1562931386"
     }
 }

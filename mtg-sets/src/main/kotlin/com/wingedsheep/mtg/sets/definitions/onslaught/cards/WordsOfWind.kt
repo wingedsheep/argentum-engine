@@ -28,6 +28,6 @@ val WordsOfWind = card("Words of Wind") {
         collectorNumber = "122"
         artist = "Eric Peterson"
         flavorText = "Be logical in all things. Do not allow instinct or passion to cloud your mind."
-        imageUri = "https://cards.scryfall.io/large/front/5/5/5595a57a-a76c-467b-afaf-5affffc24f35.jpg?1562915041"
+        imageUri = "https://cards.scryfall.io/normal/front/5/5/5595a57a-a76c-467b-afaf-5affffc24f35.jpg?1562915041"
     }
 }

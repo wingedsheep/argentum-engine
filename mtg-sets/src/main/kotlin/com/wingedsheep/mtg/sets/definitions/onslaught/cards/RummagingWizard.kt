@@ -31,6 +31,6 @@ val RummagingWizard = card("Rummaging Wizard") {
         collectorNumber = "110"
         artist = "Glen Angus"
         flavorText = "\"I've got everything you'd ever need right here. Just give me some time to find it.\""
-        imageUri = "https://cards.scryfall.io/large/front/a/d/ad96e158-bf2b-4f3e-9692-0f79efdd94f5.jpg?1562932018"
+        imageUri = "https://cards.scryfall.io/normal/front/a/d/ad96e158-bf2b-4f3e-9692-0f79efdd94f5.jpg?1562932018"
     }
 }

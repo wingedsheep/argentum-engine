@@ -40,6 +40,6 @@ val DaruEncampment = card("Daru Encampment") {
         rarity = Rarity.UNCOMMON
         collectorNumber = "315"
         artist = "Tony Szczudlo"
-        imageUri = "https://cards.scryfall.io/large/front/c/5/c5869f08-fac8-44b6-8142-7d7ecccab414.jpg?1562941659"
+        imageUri = "https://cards.scryfall.io/normal/front/c/5/c5869f08-fac8-44b6-8142-7d7ecccab414.jpg?1562941659"
     }
 }

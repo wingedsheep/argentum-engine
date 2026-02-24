@@ -33,6 +33,6 @@ val StagBeetle = card("Stag Beetle") {
         collectorNumber = "285"
         artist = "Anthony S. Waters"
         flavorText = "Its voice crackles with the hum of a thousand wings beating at once."
-        imageUri = "https://cards.scryfall.io/large/front/7/2/72cc64b9-f5b9-42d3-9921-564c4c9f2c77.jpg?1562922134"
+        imageUri = "https://cards.scryfall.io/normal/front/7/2/72cc64b9-f5b9-42d3-9921-564c4c9f2c77.jpg?1562922134"
     }
 }

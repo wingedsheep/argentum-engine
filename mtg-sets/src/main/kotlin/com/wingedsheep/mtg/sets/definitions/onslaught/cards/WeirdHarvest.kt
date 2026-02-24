@@ -30,6 +30,6 @@ val WeirdHarvest = card("Weird Harvest") {
         collectorNumber = "299"
         artist = "Bob Petillo"
         flavorText = "Krosa's distorted groves bear strange fruit."
-        imageUri = "https://cards.scryfall.io/large/front/3/c/3cdfa8b3-393b-4bb6-9265-faa4ab7126d2.jpg?1562909318"
+        imageUri = "https://cards.scryfall.io/normal/front/3/c/3cdfa8b3-393b-4bb6-9265-faa4ab7126d2.jpg?1562909318"
     }
 }

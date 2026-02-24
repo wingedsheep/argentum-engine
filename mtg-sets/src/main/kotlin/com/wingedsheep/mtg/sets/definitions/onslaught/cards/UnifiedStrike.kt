@@ -37,6 +37,6 @@ val UnifiedStrike = card("Unified Strike") {
         collectorNumber = "58"
         artist = "Dave Dorman"
         flavorText = "\"Together we are more than the sum of our swords.\"\n—Aven Brigadier"
-        imageUri = "https://cards.scryfall.io/large/front/2/9/29906eca-0823-4cd6-890f-e5b93cc50a11.jpg?1562904834"
+        imageUri = "https://cards.scryfall.io/normal/front/2/9/29906eca-0823-4cd6-890f-e5b93cc50a11.jpg?1562904834"
     }
 }

@@ -35,6 +35,6 @@ val DaruSpiritualist = card("Daru Spiritualist") {
         collectorNumber = "5"
         artist = "Dave Dorman"
         flavorText = "He lifts the spirits of his people so they may descend in wrath upon their foes."
-        imageUri = "https://cards.scryfall.io/large/front/1/8/18f26b88-cffc-47ed-a70a-7d704a32c8bb.jpg?1562526069"
+        imageUri = "https://cards.scryfall.io/normal/front/1/8/18f26b88-cffc-47ed-a70a-7d704a32c8bb.jpg?1562526069"
     }
 }

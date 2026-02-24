@@ -33,6 +33,6 @@ val GustcloakRunner = card("Gustcloak Runner") {
         collectorNumber = "35"
         artist = "Matt Cavotta"
         flavorText = "\"Troops are fruit to be plucked from the field of battle.\"\n—Gustcloak Savior"
-        imageUri = "https://cards.scryfall.io/large/front/e/b/eb227f65-9189-41ed-94a0-2aa21cad26f5.jpg?1562950998"
+        imageUri = "https://cards.scryfall.io/normal/front/e/b/eb227f65-9189-41ed-94a0-2aa21cad26f5.jpg?1562950998"
     }
 }

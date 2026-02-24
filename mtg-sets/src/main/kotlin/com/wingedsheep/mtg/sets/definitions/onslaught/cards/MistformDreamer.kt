@@ -36,6 +36,6 @@ val MistformDreamer = card("Mistform Dreamer") {
         collectorNumber = "93"
         artist = "Matthew Mitchell"
         flavorText = "\"Devotion, the second myth of reality: The faithful are most hurt by the objects of their faith.\""
-        imageUri = "https://cards.scryfall.io/large/front/f/f/ff34e303-c94a-4f5f-b9f6-8d48e6aac383.jpg?1562955425"
+        imageUri = "https://cards.scryfall.io/normal/front/f/f/ff34e303-c94a-4f5f-b9f6-8d48e6aac383.jpg?1562955425"
     }
 }

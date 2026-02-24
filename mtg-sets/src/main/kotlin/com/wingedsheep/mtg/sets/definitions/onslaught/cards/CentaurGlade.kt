@@ -24,7 +24,7 @@ val CentaurGlade = card("Centaur Glade") {
             toughness = 3,
             colors = setOf(Color.GREEN),
             creatureTypes = setOf("Centaur"),
-            imageUri = "https://cards.scryfall.io/large/front/9/8/985be507-6125-4db2-b99f-8b61149ffeeb.jpg?1562636802"
+            imageUri = "https://cards.scryfall.io/normal/front/9/8/985be507-6125-4db2-b99f-8b61149ffeeb.jpg?1562636802"
         )
     }
 
@@ -33,6 +33,6 @@ val CentaurGlade = card("Centaur Glade") {
         collectorNumber = "251"
         artist = "Alex Horley-Orlandelli"
         flavorText = "The Mirari called to the centaurs, and all who heard it were forever changed."
-        imageUri = "https://cards.scryfall.io/large/front/1/c/1c75f9c8-9640-4f64-b32a-916436e461fc.jpg?1562901689"
+        imageUri = "https://cards.scryfall.io/normal/front/1/c/1c75f9c8-9640-4f64-b32a-916436e461fc.jpg?1562901689"
     }
 }

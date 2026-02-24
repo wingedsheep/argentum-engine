@@ -28,6 +28,6 @@ val ButcherOrgg = card("Butcher Orgg") {
         collectorNumber = "192"
         artist = "Kev Walker"
         flavorText = "It can kill you with three arms tied behind its back."
-        imageUri = "https://cards.scryfall.io/large/front/7/f/7f2a29cf-4b2e-44c0-af73-512d6fed0dae.jpg?1562925005"
+        imageUri = "https://cards.scryfall.io/normal/front/7/f/7f2a29cf-4b2e-44c0-af73-512d6fed0dae.jpg?1562925005"
     }
 }

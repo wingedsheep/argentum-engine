@@ -27,6 +27,6 @@ val TrueBeliever = card("True Believer") {
         collectorNumber = "57"
         artist = "Kev Walker"
         flavorText = "So great is his devotion that he is immune to any spell save his own."
-        imageUri = "https://cards.scryfall.io/large/front/4/2/4289bdcb-6eea-458f-a4eb-89e26264673a.jpg?1562910674"
+        imageUri = "https://cards.scryfall.io/normal/front/4/2/4289bdcb-6eea-458f-a4eb-89e26264673a.jpg?1562910674"
     }
 }

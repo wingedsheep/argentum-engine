@@ -36,6 +36,6 @@ val RockJockey = card("Rock Jockey") {
         collectorNumber = "101"
         artist = "Brian Snõddy"
         flavorText = "\"Everybody out of my way!\""
-        imageUri = "https://cards.scryfall.io/large/front/8/f/8f836e90-3255-48bd-a174-6a127528551e.jpg?1562532100"
+        imageUri = "https://cards.scryfall.io/normal/front/8/f/8f836e90-3255-48bd-a174-6a127528551e.jpg?1562532100"
     }
 }

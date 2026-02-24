@@ -44,6 +44,6 @@ val ScreamingSeahawk = card("Screaming Seahawk") {
         rarity = Rarity.COMMON
         collectorNumber = "112"
         artist = "Heather Hudson"
-        imageUri = "https://cards.scryfall.io/large/front/c/c/cc5856ac-e710-44ee-8516-6070f4f31ce5.jpg?1562943230"
+        imageUri = "https://cards.scryfall.io/normal/front/c/c/cc5856ac-e710-44ee-8516-6070f4f31ce5.jpg?1562943230"
     }
 }

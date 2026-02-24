@@ -27,6 +27,6 @@ val Inspirit = card("Inspirit") {
         collectorNumber = "41"
         artist = "Keith Garletts"
         flavorText = "\"You're not done yet.\"\n—Akroma, to Kamahl"
-        imageUri = "https://cards.scryfall.io/large/front/5/5/55e0e300-db79-4328-ba1d-9c3910e47f52.jpg?1595099724"
+        imageUri = "https://cards.scryfall.io/normal/front/5/5/55e0e300-db79-4328-ba1d-9c3910e47f52.jpg?1595099724"
     }
 }

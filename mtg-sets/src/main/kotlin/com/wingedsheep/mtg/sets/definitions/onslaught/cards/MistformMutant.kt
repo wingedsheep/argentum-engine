@@ -34,6 +34,6 @@ val MistformMutant = card("Mistform Mutant") {
         collectorNumber = "95"
         artist = "John Avon"
         flavorText = "\"Familiarity, the first myth of reality: What you know the best, you observe the least.\""
-        imageUri = "https://cards.scryfall.io/large/front/a/2/a25b2697-5d7f-490a-8474-c775096e681e.jpg?1562933313"
+        imageUri = "https://cards.scryfall.io/normal/front/a/2/a25b2697-5d7f-490a-8474-c775096e681e.jpg?1562933313"
     }
 }

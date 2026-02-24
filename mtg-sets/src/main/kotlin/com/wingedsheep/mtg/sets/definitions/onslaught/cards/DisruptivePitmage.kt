@@ -34,6 +34,6 @@ val DisruptivePitmage = card("Disruptive Pitmage") {
         collectorNumber = "81"
         artist = "Arnie Swekel"
         flavorText = "\"If ignorance is bliss, wizards should be the most miserable people in the world.\""
-        imageUri = "https://cards.scryfall.io/large/front/5/b/5b0d9c2f-356c-4f27-8560-8ffceadac31c.jpg?1562916467"
+        imageUri = "https://cards.scryfall.io/normal/front/5/b/5b0d9c2f-356c-4f27-8560-8ffceadac31c.jpg?1562916467"
     }
 }

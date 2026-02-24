@@ -41,6 +41,6 @@ val BroodhatchNantuko = card("Broodhatch Nantuko") {
         collectorNumber = "250"
         artist = "Keith Garletts"
         flavorText = "\"We are the swarming horde.\""
-        imageUri = "https://cards.scryfall.io/large/front/3/8/38315ba3-57a0-4aa0-b1bc-4b1fcdd763d4.jpg?1562908205"
+        imageUri = "https://cards.scryfall.io/normal/front/3/8/38315ba3-57a0-4aa0-b1bc-4b1fcdd763d4.jpg?1562908205"
     }
 }

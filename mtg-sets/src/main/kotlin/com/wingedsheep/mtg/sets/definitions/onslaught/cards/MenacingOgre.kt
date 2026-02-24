@@ -38,6 +38,6 @@ val MenacingOgre = card("Menacing Ogre") {
         collectorNumber = "219"
         artist = "Pete Venters"
         flavorText = "The Skirk Ridge goblins had never seen an ogre before. They would never see one again."
-        imageUri = "https://cards.scryfall.io/large/front/5/3/5360a871-6932-45b2-bc94-1bd414e38906.jpg?1562914555"
+        imageUri = "https://cards.scryfall.io/normal/front/5/3/5360a871-6932-45b2-bc94-1bd414e38906.jpg?1562914555"
     }
 }

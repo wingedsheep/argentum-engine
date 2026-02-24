@@ -44,6 +44,6 @@ val DeathMatch = card("Death Match") {
         collectorNumber = "136"
         artist = "Mark Brill"
         flavorText = "When one enters the arena, another feels the pain."
-        imageUri = "https://cards.scryfall.io/large/front/1/4/143e9057-267a-4c78-b72a-4f8018b627a8.jpg?1562899865"
+        imageUri = "https://cards.scryfall.io/normal/front/1/4/143e9057-267a-4c78-b72a-4f8018b627a8.jpg?1562899865"
     }
 }

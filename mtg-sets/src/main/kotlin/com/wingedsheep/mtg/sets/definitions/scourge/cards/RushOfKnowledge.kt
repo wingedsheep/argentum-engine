@@ -26,6 +26,6 @@ val RushOfKnowledge = card("Rush of Knowledge") {
         collectorNumber = "47"
         artist = "Eric Peterson"
         flavorText = "\"Limitless power is glorious until you gain limitless understanding.\"\n—Ixidor"
-        imageUri = "https://cards.scryfall.io/large/front/6/5/65b03b40-671f-4973-8d75-c3fa878ef603.jpg?1562529750"
+        imageUri = "https://cards.scryfall.io/normal/front/6/5/65b03b40-671f-4973-8d75-c3fa878ef603.jpg?1562529750"
     }
 }

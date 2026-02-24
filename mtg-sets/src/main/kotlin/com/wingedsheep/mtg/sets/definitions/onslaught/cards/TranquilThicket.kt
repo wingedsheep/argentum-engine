@@ -36,6 +36,6 @@ val TranquilThicket = card("Tranquil Thicket") {
         collectorNumber = "326"
         artist = "Heather Hudson"
         flavorText = ""
-        imageUri = "https://cards.scryfall.io/large/front/a/f/afcb7cef-8aeb-4c84-88e9-6df17768e292.jpg?1562936584"
+        imageUri = "https://cards.scryfall.io/normal/front/a/f/afcb7cef-8aeb-4c84-88e9-6df17768e292.jpg?1562936584"
     }
 }

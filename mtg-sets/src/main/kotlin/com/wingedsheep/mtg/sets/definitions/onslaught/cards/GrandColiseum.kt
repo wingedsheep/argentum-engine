@@ -47,6 +47,6 @@ val GrandColiseum = card("Grand Coliseum") {
         rarity = Rarity.RARE
         collectorNumber = "319"
         artist = "Carl Critchlow"
-        imageUri = "https://cards.scryfall.io/large/front/c/2/c2dc8061-a855-4a81-9eb7-350b355a9b3f.jpg?1562934946"
+        imageUri = "https://cards.scryfall.io/normal/front/c/2/c2dc8061-a855-4a81-9eb7-350b355a9b3f.jpg?1562934946"
     }
 }

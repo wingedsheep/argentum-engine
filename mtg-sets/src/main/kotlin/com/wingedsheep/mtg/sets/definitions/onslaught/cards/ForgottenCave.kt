@@ -36,6 +36,6 @@ val ForgottenCave = card("Forgotten Cave") {
         collectorNumber = "317"
         artist = "Tony Szczudlo"
         flavorText = ""
-        imageUri = "https://cards.scryfall.io/large/front/c/5/c5202668-a32c-4473-b272-e86264992576.jpg?1562941555"
+        imageUri = "https://cards.scryfall.io/normal/front/c/5/c5202668-a32c-4473-b272-e86264992576.jpg?1562941555"
     }
 }

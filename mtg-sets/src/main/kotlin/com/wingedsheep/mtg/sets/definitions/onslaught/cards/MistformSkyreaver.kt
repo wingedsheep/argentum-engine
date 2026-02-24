@@ -36,6 +36,6 @@ val MistformSkyreaver = card("Mistform Skyreaver") {
         collectorNumber = "97"
         artist = "Anthony S. Waters"
         flavorText = "\"Conviction, the third myth of reality: Only those who seek the truth can be deceived.\""
-        imageUri = "https://cards.scryfall.io/large/front/e/3/e394e096-ea70-4813-9039-e4bd065d0a17.jpg"
+        imageUri = "https://cards.scryfall.io/normal/front/e/3/e394e096-ea70-4813-9039-e4bd065d0a17.jpg"
     }
 }

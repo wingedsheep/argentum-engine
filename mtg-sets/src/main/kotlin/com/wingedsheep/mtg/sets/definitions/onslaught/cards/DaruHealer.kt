@@ -37,6 +37,6 @@ val DaruHealer = card("Daru Healer") {
         rarity = Rarity.COMMON
         collectorNumber = "19"
         artist = "Dany Orizio"
-        imageUri = "https://cards.scryfall.io/large/front/0/e/0e4f3eff-ac99-41e2-9003-9630cdb3ae23.jpg?1562898282"
+        imageUri = "https://cards.scryfall.io/normal/front/0/e/0e4f3eff-ac99-41e2-9003-9630cdb3ae23.jpg?1562898282"
     }
 }

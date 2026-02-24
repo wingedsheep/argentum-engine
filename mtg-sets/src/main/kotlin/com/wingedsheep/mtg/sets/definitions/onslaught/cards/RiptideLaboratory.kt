@@ -41,6 +41,6 @@ val RiptideLaboratory = card("Riptide Laboratory") {
         rarity = Rarity.RARE
         collectorNumber = "322"
         artist = "John Avon"
-        imageUri = "https://cards.scryfall.io/large/front/d/9/d993c973-2eb6-423c-8ee9-10749a751524.jpg?1562946819"
+        imageUri = "https://cards.scryfall.io/normal/front/d/9/d993c973-2eb6-423c-8ee9-10749a751524.jpg?1562946819"
     }
 }

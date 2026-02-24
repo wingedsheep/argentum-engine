@@ -55,6 +55,6 @@ val PietyCharm = card("Piety Charm") {
         rarity = Rarity.COMMON
         collectorNumber = "49"
         artist = "David Martin"
-        imageUri = "https://cards.scryfall.io/large/front/1/b/1bc2da43-c0e1-4fbf-b309-a75e105c29c1.jpg?1562901548"
+        imageUri = "https://cards.scryfall.io/normal/front/1/b/1bc2da43-c0e1-4fbf-b309-a75e105c29c1.jpg?1562901548"
     }
 }

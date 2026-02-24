@@ -28,6 +28,6 @@ val CrypticGateway = card("Cryptic Gateway") {
         collectorNumber = "306"
         artist = "Mark Tedin"
         flavorText = "\"Its lock changes to fit each key.\""
-        imageUri = "https://cards.scryfall.io/large/front/7/f/7f379966-6a0a-434c-8682-1cf528a9a4a1.jpg?1562925013"
+        imageUri = "https://cards.scryfall.io/normal/front/7/f/7f379966-6a0a-434c-8682-1cf528a9a4a1.jpg?1562925013"
     }
 }

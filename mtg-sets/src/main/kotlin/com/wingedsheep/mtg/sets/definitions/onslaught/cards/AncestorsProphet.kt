@@ -30,6 +30,6 @@ val AncestorsProphet = card("Ancestor's Prophet") {
         collectorNumber = "3"
         artist = "Kev Walker"
         flavorText = "\"We have faced horrors of war and terrors beyond imagining. We will overcome the doom of this day as well.\""
-        imageUri = "https://cards.scryfall.io/large/front/c/d/cdee956e-76b1-4ba7-a387-2fbfb853507d.jpg?1562943650"
+        imageUri = "https://cards.scryfall.io/normal/front/c/d/cdee956e-76b1-4ba7-a387-2fbfb853507d.jpg?1562943650"
     }
 }

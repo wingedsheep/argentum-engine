@@ -47,6 +47,6 @@ val ShaleskinBruiser = card("Shaleskin Bruiser") {
         collectorNumber = "226"
         artist = "Mark Zug"
         flavorText = "Its only predators are the elements."
-        imageUri = "https://cards.scryfall.io/large/front/f/c/fc2de8a4-0d84-4f7c-bbe4-3a31172186ab.jpg?1562954767"
+        imageUri = "https://cards.scryfall.io/normal/front/f/c/fc2de8a4-0d84-4f7c-bbe4-3a31172186ab.jpg?1562954767"
     }
 }

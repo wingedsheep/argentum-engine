@@ -41,6 +41,6 @@ val RavenGuildMaster = card("Raven Guild Master") {
         rarity = Rarity.RARE
         collectorNumber = "47"
         artist = "Kev Walker"
-        imageUri = "https://cards.scryfall.io/large/front/9/8/9843f847-6a8f-4042-86b6-f7fe5a47cc57.jpg?1562532562"
+        imageUri = "https://cards.scryfall.io/normal/front/9/8/9843f847-6a8f-4042-86b6-f7fe5a47cc57.jpg?1562532562"
     }
 }

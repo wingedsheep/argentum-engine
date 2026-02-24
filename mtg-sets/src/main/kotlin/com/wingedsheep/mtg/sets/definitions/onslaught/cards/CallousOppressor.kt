@@ -43,6 +43,6 @@ val CallousOppressor = card("Callous Oppressor") {
         rarity = Rarity.RARE
         collectorNumber = "72"
         artist = "Todd Lockwood"
-        imageUri = "https://cards.scryfall.io/large/front/b/3/b3dd3ce7-e0e3-4412-9983-ff933584f59b.jpg?1562937464"
+        imageUri = "https://cards.scryfall.io/normal/front/b/3/b3dd3ce7-e0e3-4412-9983-ff933584f59b.jpg?1562937464"
     }
 }

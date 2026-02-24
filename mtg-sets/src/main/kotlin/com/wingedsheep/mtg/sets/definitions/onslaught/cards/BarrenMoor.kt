@@ -36,6 +36,6 @@ val BarrenMoor = card("Barren Moor") {
         collectorNumber = "312"
         artist = "Heather Hudson"
         flavorText = ""
-        imageUri = "https://cards.scryfall.io/large/front/4/5/45be3811-a223-4c45-9b24-0317f2d53c60.jpg?1562911376"
+        imageUri = "https://cards.scryfall.io/normal/front/4/5/45be3811-a223-4c45-9b24-0317f2d53c60.jpg?1562911376"
     }
 }

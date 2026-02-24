@@ -41,6 +41,6 @@ val EvergloveCourier = card("Everglove Courier") {
         rarity = Rarity.UNCOMMON
         collectorNumber = "262"
         artist = "Darrell Riche"
-        imageUri = "https://cards.scryfall.io/large/front/1/3/13bf5786-e41a-4839-b8a0-5c7a413b23d0.jpg?1562899727"
+        imageUri = "https://cards.scryfall.io/normal/front/1/3/13bf5786-e41a-4839-b8a0-5c7a413b23d0.jpg?1562899727"
     }
 }

@@ -32,6 +32,6 @@ val ChainOfVapor = card("Chain of Vapor") {
         rarity = Rarity.UNCOMMON
         collectorNumber = "73"
         artist = "Carl Critchlow"
-        imageUri = "https://cards.scryfall.io/large/front/3/0/30f6b4a2-5780-46e9-b239-459d2cf37743.jpg?1562395835"
+        imageUri = "https://cards.scryfall.io/normal/front/3/0/30f6b4a2-5780-46e9-b239-459d2cf37743.jpg?1562395835"
     }
 }

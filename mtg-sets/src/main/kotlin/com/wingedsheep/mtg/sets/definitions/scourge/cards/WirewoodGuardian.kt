@@ -27,6 +27,6 @@ val WirewoodGuardian = card("Wirewood Guardian") {
         collectorNumber = "139"
         artist = "Carl Critchlow"
         flavorText = "The elite among the Wirewood elves are not the most agile—they're the most massive."
-        imageUri = "https://cards.scryfall.io/large/front/e/8/e8676b1f-e37c-4ae1-9dbe-d000369fa422.jpg?1562536268"
+        imageUri = "https://cards.scryfall.io/normal/front/e/8/e8676b1f-e37c-4ae1-9dbe-d000369fa422.jpg?1562536268"
     }
 }

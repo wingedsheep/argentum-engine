@@ -26,7 +26,7 @@ val DragonRoost = card("Dragon Roost") {
             colors = setOf(Color.RED),
             creatureTypes = setOf("Dragon"),
             keywords = setOf(Keyword.FLYING),
-            imageUri = "https://cards.scryfall.io/large/front/5/7/57b8e825-eef6-4d37-892a-6e28597679ee.jpg?1717193756"
+            imageUri = "https://cards.scryfall.io/normal/front/5/7/57b8e825-eef6-4d37-892a-6e28597679ee.jpg?1717193756"
         )
     }
 
@@ -35,6 +35,6 @@ val DragonRoost = card("Dragon Roost") {
         collectorNumber = "198"
         artist = "Luca Zontini"
         flavorText = "\"The hellkites are content to eat goblins and leave us alone. It's the goblins I'm worried about.\"\n—Aven soldier"
-        imageUri = "https://cards.scryfall.io/large/front/9/5/95e4f28b-c7a7-4450-b477-73e4559f0276.jpg?1562930321"
+        imageUri = "https://cards.scryfall.io/normal/front/9/5/95e4f28b-c7a7-4450-b477-73e4559f0276.jpg?1562930321"
     }
 }

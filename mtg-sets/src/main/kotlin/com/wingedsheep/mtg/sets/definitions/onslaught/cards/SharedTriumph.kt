@@ -31,6 +31,6 @@ val SharedTriumph = card("Shared Triumph") {
         collectorNumber = "53"
         artist = "Mark Brill"
         flavorText = "\"Win together, die alone.\""
-        imageUri = "https://cards.scryfall.io/large/front/0/d/0d07ebe6-76cf-4345-b59b-9954496c44d0.jpg?1562898003"
+        imageUri = "https://cards.scryfall.io/normal/front/0/d/0d07ebe6-76cf-4345-b59b-9954496c44d0.jpg?1562898003"
     }
 }

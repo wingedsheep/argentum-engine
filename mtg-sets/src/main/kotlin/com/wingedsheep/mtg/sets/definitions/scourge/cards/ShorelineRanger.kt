@@ -31,6 +31,6 @@ val ShorelineRanger = card("Shoreline Ranger") {
         collectorNumber = "51"
         artist = "Glen Angus"
         flavorText = "It waits for the weather to change before changing its tactics."
-        imageUri = "https://cards.scryfall.io/large/front/e/e/eed813c4-fff0-43f1-bc62-cbc3a126d600.jpg?1562536698"
+        imageUri = "https://cards.scryfall.io/normal/front/e/e/eed813c4-fff0-43f1-bc62-cbc3a126d600.jpg?1562536698"
     }
 }

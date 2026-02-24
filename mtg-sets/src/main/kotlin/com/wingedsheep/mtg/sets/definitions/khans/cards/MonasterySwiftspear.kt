@@ -27,6 +27,6 @@ val MonasterySwiftspear = card("Monastery Swiftspear") {
         collectorNumber = "118"
         artist = "Steve Argyle"
         flavorText = "The dragon has no fire that matches her own."
-        imageUri = "https://cards.scryfall.io/large/front/b/8/b81c6c8b-a9cf-4866-89ba-7f8ad077b836.jpg?1562792493"
+        imageUri = "https://cards.scryfall.io/normal/front/b/8/b81c6c8b-a9cf-4866-89ba-7f8ad077b836.jpg?1562792493"
     }
 }

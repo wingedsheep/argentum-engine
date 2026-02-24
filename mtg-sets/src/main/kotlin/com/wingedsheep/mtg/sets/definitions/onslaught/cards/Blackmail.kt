@@ -66,6 +66,6 @@ val Blackmail = card("Blackmail") {
         collectorNumber = "127"
         artist = "Christopher Moeller"
         flavorText = "\"Even the most virtuous person is only one secret away from being owned by the Cabal.\""
-        imageUri = "https://cards.scryfall.io/large/front/9/b/9b40f6eb-e2a4-46d2-8822-b0f3dc508b73.jpg?1562931568"
+        imageUri = "https://cards.scryfall.io/normal/front/9/b/9b40f6eb-e2a4-46d2-8822-b0f3dc508b73.jpg?1562931568"
     }
 }

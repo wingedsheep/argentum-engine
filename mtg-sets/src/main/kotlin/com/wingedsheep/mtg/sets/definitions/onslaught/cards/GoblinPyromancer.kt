@@ -46,6 +46,6 @@ val GoblinPyromancer = card("Goblin Pyromancer") {
         collectorNumber = "206"
         artist = "Edward P. Beard, Jr."
         flavorText = "\"The good news is, we figured out how the wand works. The bad news is, we figured out how the wand works.\""
-        imageUri = "https://cards.scryfall.io/large/front/b/b/bb4815b7-fc20-44a4-ad1c-66d92993557f.jpg?1562939185"
+        imageUri = "https://cards.scryfall.io/normal/front/b/b/bb4815b7-fc20-44a4-ad1c-66d92993557f.jpg?1562939185"
     }
 }

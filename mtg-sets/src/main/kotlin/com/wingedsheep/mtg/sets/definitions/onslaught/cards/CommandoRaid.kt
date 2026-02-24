@@ -42,6 +42,6 @@ val CommandoRaid = card("Commando Raid") {
         collectorNumber = "195"
         artist = "Ron Spencer"
         flavorText = ""
-        imageUri = "https://cards.scryfall.io/large/front/b/b/bb237330-ac2e-411d-836c-6628f96f3262.jpg?1562936979"
+        imageUri = "https://cards.scryfall.io/normal/front/b/b/bb237330-ac2e-411d-836c-6628f96f3262.jpg?1562936979"
     }
 }

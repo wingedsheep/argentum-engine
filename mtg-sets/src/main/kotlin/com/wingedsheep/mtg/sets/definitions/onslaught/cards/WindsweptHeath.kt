@@ -42,6 +42,6 @@ val WindsweptHeath = card("Windswept Heath") {
         rarity = Rarity.RARE
         collectorNumber = "328"
         artist = "Anthony S. Waters"
-        imageUri = "https://cards.scryfall.io/large/front/7/a/7a7c5941-9c8a-4a40-9efb-a84f05c58e53.jpg?1562923899"
+        imageUri = "https://cards.scryfall.io/normal/front/7/a/7a7c5941-9c8a-4a40-9efb-a84f05c58e53.jpg?1562923899"
     }
 }

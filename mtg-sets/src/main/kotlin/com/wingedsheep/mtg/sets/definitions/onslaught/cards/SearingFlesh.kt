@@ -26,6 +26,6 @@ val SearingFlesh = card("Searing Flesh") {
         collectorNumber = "225"
         artist = "Pete Venters"
         flavorText = "When it comes to their enemies, goblins can be very warm and generous."
-        imageUri = "https://cards.scryfall.io/large/front/d/8/d83db110-42e7-4823-a686-b83205faf503.jpg?1562946564"
+        imageUri = "https://cards.scryfall.io/normal/front/d/8/d83db110-42e7-4823-a686-b83205faf503.jpg?1562946564"
     }
 }

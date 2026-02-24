@@ -36,6 +36,6 @@ val SecludedSteppe = card("Secluded Steppe") {
         collectorNumber = "324"
         artist = "Heather Hudson"
         flavorText = ""
-        imageUri = "https://cards.scryfall.io/large/front/e/a/ea454280-f7f4-4315-bb46-b56050c02c97.jpg?1562950810"
+        imageUri = "https://cards.scryfall.io/normal/front/e/a/ea454280-f7f4-4315-bb46-b56050c02c97.jpg?1562950810"
     }
 }

@@ -48,6 +48,6 @@ val GoblinPiledriver = card("Goblin Piledriver") {
         collectorNumber = "205"
         artist = "Matt Cavotta"
         flavorText = "Throwing out a Piledriver is never wrong."
-        imageUri = "https://cards.scryfall.io/large/front/f/6/f6c4df1f-f148-42ec-8e22-e7114216927d.jpg?1562953490"
+        imageUri = "https://cards.scryfall.io/normal/front/f/6/f6c4df1f-f148-42ec-8e22-e7114216927d.jpg?1562953490"
     }
 }

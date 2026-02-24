@@ -41,6 +41,6 @@ val FlamestickCourier = card("Flamestick Courier") {
         rarity = Rarity.UNCOMMON
         collectorNumber = "203"
         artist = "Luca Zontini"
-        imageUri = "https://cards.scryfall.io/large/front/e/8/e822161d-0434-4578-aecd-c9ef0b84bd4e.jpg?1562950280"
+        imageUri = "https://cards.scryfall.io/normal/front/e/8/e822161d-0434-4578-aecd-c9ef0b84bd4e.jpg?1562950280"
     }
 }

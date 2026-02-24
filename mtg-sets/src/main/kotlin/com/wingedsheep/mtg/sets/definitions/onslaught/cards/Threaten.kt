@@ -33,6 +33,6 @@ val Threaten = card("Threaten") {
         collectorNumber = "241"
         artist = "Mark Brill"
         flavorText = "Goblins' motivational techniques are crude, but effective."
-        imageUri = "https://cards.scryfall.io/large/front/d/e/de9676b6-6812-44e5-ad70-f498fbad0e18.jpg?1562947965"
+        imageUri = "https://cards.scryfall.io/normal/front/d/e/de9676b6-6812-44e5-ad70-f498fbad0e18.jpg?1562947965"
     }
 }

@@ -32,6 +32,6 @@ val CraftyPathmage = card("Crafty Pathmage") {
         collectorNumber = "77"
         artist = "Wayne England"
         flavorText = "\"If you want to get from here to there without being seen, I'm the one to call.\""
-        imageUri = "https://cards.scryfall.io/large/front/c/5/c5d91378-f831-40ef-a79b-b044af1470e0.jpg?1562941736"
+        imageUri = "https://cards.scryfall.io/normal/front/c/5/c5d91378-f831-40ef-a79b-b044af1470e0.jpg?1562941736"
     }
 }

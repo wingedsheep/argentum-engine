@@ -28,6 +28,6 @@ val TitanicBulvox = card("Titanic Bulvox") {
         collectorNumber = "129"
         artist = "Mark Tedin"
         flavorText = "It puts the \"bull\" in \"bulvox.\""
-        imageUri = "https://cards.scryfall.io/large/front/3/f/3f42c4d7-b555-449c-a539-119c1ae62232.jpg?1562528017"
+        imageUri = "https://cards.scryfall.io/normal/front/3/f/3f42c4d7-b555-449c-a539-119c1ae62232.jpg?1562528017"
     }
 }

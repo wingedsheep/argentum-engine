@@ -47,6 +47,6 @@ val EntrailsFeaster = card("Entrails Feaster") {
         rarity = Rarity.RARE
         collectorNumber = "143"
         artist = "John Matson"
-        imageUri = "https://cards.scryfall.io/large/front/c/d/cdddab92-3e1f-49dc-afd0-8c84d0d952c2.jpg?1562943619"
+        imageUri = "https://cards.scryfall.io/normal/front/c/d/cdddab92-3e1f-49dc-afd0-8c84d0d952c2.jpg?1562943619"
     }
 }

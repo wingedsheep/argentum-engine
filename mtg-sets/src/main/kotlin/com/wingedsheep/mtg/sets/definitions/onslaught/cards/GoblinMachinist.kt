@@ -30,6 +30,6 @@ val GoblinMachinist = card("Goblin Machinist") {
         rarity = Rarity.UNCOMMON
         collectorNumber = "204"
         artist = "Doug Chaffee"
-        imageUri = "https://cards.scryfall.io/large/front/5/8/5874e312-1010-43f2-b330-82bc9fcc9f53.jpg?1562915797"
+        imageUri = "https://cards.scryfall.io/normal/front/5/8/5874e312-1010-43f2-b330-82bc9fcc9f53.jpg?1562915797"
     }
 }

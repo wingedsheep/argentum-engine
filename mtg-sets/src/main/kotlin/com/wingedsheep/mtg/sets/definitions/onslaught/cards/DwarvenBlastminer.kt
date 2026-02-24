@@ -47,6 +47,6 @@ val DwarvenBlastminer = card("Dwarven Blastminer") {
         collectorNumber = "199"
         artist = "Gary Ruddell"
         flavorText = "\"Life is too short for something like a hunk of rock to get in my way.\""
-        imageUri = "https://cards.scryfall.io/large/front/2/9/2970831a-738b-476f-9d46-39f10a1f91e7.jpg?1562904808"
+        imageUri = "https://cards.scryfall.io/normal/front/2/9/2970831a-738b-476f-9d46-39f10a1f91e7.jpg?1562904808"
     }
 }

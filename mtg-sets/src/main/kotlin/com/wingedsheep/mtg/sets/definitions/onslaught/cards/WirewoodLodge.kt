@@ -43,6 +43,6 @@ val WirewoodLodge = card("Wirewood Lodge") {
         rarity = Rarity.UNCOMMON
         collectorNumber = "329"
         artist = "Anthony S. Waters"
-        imageUri = "https://cards.scryfall.io/large/front/3/d/3d251490-41bb-4ad3-bfd0-a5e66ee42598.jpg?1562909365"
+        imageUri = "https://cards.scryfall.io/normal/front/3/d/3d251490-41bb-4ad3-bfd0-a5e66ee42598.jpg?1562909365"
     }
 }

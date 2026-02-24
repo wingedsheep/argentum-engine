@@ -43,6 +43,6 @@ val FloodedStrand = card("Flooded Strand") {
         rarity = Rarity.RARE
         collectorNumber = "316"
         artist = "Rob Alexander"
-        imageUri = "https://cards.scryfall.io/large/front/b/4/b4e3d844-d3b4-41d8-921d-c1cb3af343f8.jpg?1562929608"
+        imageUri = "https://cards.scryfall.io/normal/front/b/4/b4e3d844-d3b4-41d8-921d-c1cb3af343f8.jpg?1562929608"
     }
 }

@@ -34,6 +34,6 @@ val Pacifism = card("Pacifism") {
         collectorNumber = "47"
         artist = "Matthew D. Wilson"
         flavorText = "Even those born to battle could only lay their blades at Akroma’s feet."
-        imageUri = "https://cards.scryfall.io/large/front/e/e/ee262fde-8df1-431f-9e5c-0cafe9212b49.jpg?1562951573"
+        imageUri = "https://cards.scryfall.io/normal/front/e/e/ee262fde-8df1-431f-9e5c-0cafe9212b49.jpg?1562951573"
     }
 }

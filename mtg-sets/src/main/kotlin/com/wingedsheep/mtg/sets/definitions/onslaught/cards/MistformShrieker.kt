@@ -38,6 +38,6 @@ val MistformShrieker = card("Mistform Shrieker") {
         rarity = Rarity.UNCOMMON
         collectorNumber = "96"
         artist = "Glen Angus"
-        imageUri = "https://cards.scryfall.io/large/front/1/0/1082eea2-5e83-48d4-b02b-a22e7cbe2054.jpg?1562898958"
+        imageUri = "https://cards.scryfall.io/normal/front/1/0/1082eea2-5e83-48d4-b02b-a22e7cbe2054.jpg?1562898958"
     }
 }

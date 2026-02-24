@@ -41,6 +41,6 @@ val WeatheredWayfarer = card("Weathered Wayfarer") {
         rarity = Rarity.RARE
         collectorNumber = "59"
         artist = "Greg Hildebrandt & Tim Hildebrandt"
-        imageUri = "https://cards.scryfall.io/large/front/f/6/f6601ab1-3862-4aff-82be-be15493fe4b0.jpg?1562953394"
+        imageUri = "https://cards.scryfall.io/normal/front/f/6/f6601ab1-3862-4aff-82be-be15493fe4b0.jpg?1562953394"
     }
 }

@@ -36,6 +36,6 @@ val DauntingDefender = card("Daunting Defender") {
     metadata {
         rarity = Rarity.COMMON
         collectorNumber = "21"
-        imageUri = "https://cards.scryfall.io/large/front/3/8/38737f38-26bd-417c-b6b4-53f26e4e8044.jpg?1562908285"
+        imageUri = "https://cards.scryfall.io/normal/front/3/8/38737f38-26bd-417c-b6b4-53f26e4e8044.jpg?1562908285"
     }
 }

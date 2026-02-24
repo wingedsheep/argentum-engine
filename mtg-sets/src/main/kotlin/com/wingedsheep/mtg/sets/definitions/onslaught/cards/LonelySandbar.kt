@@ -36,6 +36,6 @@ val LonelySandbar = card("Lonely Sandbar") {
         collectorNumber = "320"
         artist = "Heather Hudson"
         flavorText = ""
-        imageUri = "https://cards.scryfall.io/large/front/d/8/d8ddab06-aff7-4c40-bcaa-10cbfe899dd9.jpg?1562946694"
+        imageUri = "https://cards.scryfall.io/normal/front/d/8/d8ddab06-aff7-4c40-bcaa-10cbfe899dd9.jpg?1562946694"
     }
 }

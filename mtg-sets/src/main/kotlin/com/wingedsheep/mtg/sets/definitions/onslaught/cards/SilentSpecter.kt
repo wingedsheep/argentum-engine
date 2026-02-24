@@ -36,6 +36,6 @@ val SilentSpecter = card("Silent Specter") {
         collectorNumber = "169"
         artist = "Daren Bader"
         flavorText = ""
-        imageUri = "https://cards.scryfall.io/large/front/b/f/bfd891ba-cf6a-4b83-a421-3a7c346ada31.jpg?1562940249"
+        imageUri = "https://cards.scryfall.io/normal/front/b/f/bfd891ba-cf6a-4b83-a421-3a7c346ada31.jpg?1562940249"
     }
 }

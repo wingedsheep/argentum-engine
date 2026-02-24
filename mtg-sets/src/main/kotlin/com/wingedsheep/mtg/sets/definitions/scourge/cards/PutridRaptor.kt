@@ -26,6 +26,6 @@ val PutridRaptor = card("Putrid Raptor") {
         collectorNumber = "71"
         artist = "Pete Venters"
         flavorText = "In a world of magic and monsters, no creature truly dies."
-        imageUri = "https://cards.scryfall.io/large/front/9/1/9127942b-d73d-42a9-9f97-6a39fa798a8b.jpg?1562532123"
+        imageUri = "https://cards.scryfall.io/normal/front/9/1/9127942b-d73d-42a9-9f97-6a39fa798a8b.jpg?1562532123"
     }
 }

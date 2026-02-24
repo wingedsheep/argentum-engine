@@ -57,6 +57,6 @@ val Avarax = card("Avarax") {
         rarity = Rarity.UNCOMMON
         collectorNumber = "187"
         artist = "Greg Staples"
-        imageUri = "https://cards.scryfall.io/large/front/a/e/ae76705f-ec95-48b0-9e26-84ce40c9514b.jpg?1562936224"
+        imageUri = "https://cards.scryfall.io/normal/front/a/e/ae76705f-ec95-48b0-9e26-84ce40c9514b.jpg?1562936224"
     }
 }

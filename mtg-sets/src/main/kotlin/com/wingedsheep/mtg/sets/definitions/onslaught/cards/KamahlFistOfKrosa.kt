@@ -54,6 +54,6 @@ val KamahlFistOfKrosa = card("Kamahl, Fist of Krosa") {
         collectorNumber = "268"
         artist = "Matthew D. Wilson"
         flavorText = "\"My mind has changed. My strength has not.\""
-        imageUri = "https://cards.scryfall.io/large/front/1/5/150d5229-b1a5-42cf-bf6a-04d246f1124f.jpg?1562900066"
+        imageUri = "https://cards.scryfall.io/normal/front/1/5/150d5229-b1a5-42cf-bf6a-04d246f1124f.jpg?1562900066"
     }
 }

@@ -36,6 +36,6 @@ val GustcloakHarrier = card("Gustcloak Harrier") {
         collectorNumber = "34"
         artist = "Dan Frazier"
         flavorText = ""
-        imageUri = "https://cards.scryfall.io/large/front/b/5/b5ff5c7d-7823-4d1e-8abb-77e2d8126996.jpg?1562937868"
+        imageUri = "https://cards.scryfall.io/normal/front/b/5/b5ff5c7d-7823-4d1e-8abb-77e2d8126996.jpg?1562937868"
     }
 }

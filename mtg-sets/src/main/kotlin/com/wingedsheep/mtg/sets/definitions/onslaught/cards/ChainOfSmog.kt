@@ -30,6 +30,6 @@ val ChainOfSmog = card("Chain of Smog") {
         rarity = Rarity.UNCOMMON
         collectorNumber = "132"
         artist = "Greg Staples"
-        imageUri = "https://cards.scryfall.io/large/front/6/b/6bfe64f9-8b03-41f6-a47b-fade397ad9d1.jpg?1562920423"
+        imageUri = "https://cards.scryfall.io/normal/front/6/b/6bfe64f9-8b03-41f6-a47b-fade397ad9d1.jpg?1562920423"
     }
 }

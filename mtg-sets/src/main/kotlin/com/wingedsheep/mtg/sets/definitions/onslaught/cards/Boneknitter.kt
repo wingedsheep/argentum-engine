@@ -39,6 +39,6 @@ val Boneknitter = card("Boneknitter") {
         collectorNumber = "128"
         artist = "Thomas M. Baxa"
         flavorText = "It mends the not-so-dearly departed."
-        imageUri = "https://cards.scryfall.io/large/front/c/9/c9d58030-a95a-4221-93bc-30a59344e30b.jpg?1562942672"
+        imageUri = "https://cards.scryfall.io/normal/front/c/9/c9d58030-a95a-4221-93bc-30a59344e30b.jpg?1562942672"
     }
 }

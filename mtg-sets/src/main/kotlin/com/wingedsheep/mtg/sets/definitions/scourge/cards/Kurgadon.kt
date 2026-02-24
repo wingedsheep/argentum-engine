@@ -46,6 +46,6 @@ val Kurgadon = card("Kurgadon") {
         collectorNumber = "121"
         artist = "Arnie Swekel"
         flavorText = "The Mirari's influence turned even the gentlest creatures into savage behemoths."
-        imageUri = "https://cards.scryfall.io/large/front/5/2/52a1758c-849a-4de3-b674-857c3c9bf399.jpg?1562529070"
+        imageUri = "https://cards.scryfall.io/normal/front/5/2/52a1758c-849a-4de3-b674-857c3c9bf399.jpg?1562529070"
     }
 }

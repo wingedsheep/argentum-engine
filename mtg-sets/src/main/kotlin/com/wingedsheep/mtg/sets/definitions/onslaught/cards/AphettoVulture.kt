@@ -50,6 +50,6 @@ val AphettoVulture = card("Aphetto Vulture") {
         collectorNumber = "126"
         artist = "Tony Szczudlo"
         flavorText = "It feeds on the crawling dead and nests in the standing dead."
-        imageUri = "https://cards.scryfall.io/large/front/1/0/107492b9-03a8-4d53-a0cf-4814ffbec409.jpg?1562898947"
+        imageUri = "https://cards.scryfall.io/normal/front/1/0/107492b9-03a8-4d53-a0cf-4814ffbec409.jpg?1562898947"
     }
 }

@@ -51,6 +51,6 @@ val SiegeGangCommander = card("Siege-Gang Commander") {
         collectorNumber = "103"
         artist = "Christopher Moeller"
         flavorText = "They poured from the Skirk Ridge like lava, burning and devouring everything in their path."
-        imageUri = "https://cards.scryfall.io/large/front/9/2/92e78cec-aaf9-4fe8-887b-b7e356d63315.jpg"
+        imageUri = "https://cards.scryfall.io/normal/front/9/2/92e78cec-aaf9-4fe8-887b-b7e356d63315.jpg"
     }
 }

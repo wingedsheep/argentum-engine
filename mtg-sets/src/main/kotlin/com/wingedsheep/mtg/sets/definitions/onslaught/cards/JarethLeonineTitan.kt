@@ -37,6 +37,6 @@ val JarethLeonineTitan = card("Jareth, Leonine Titan") {
         collectorNumber = "43"
         artist = "Daren Bader"
         flavorText = "Light's champion in the stronghold of darkness."
-        imageUri = "https://cards.scryfall.io/large/front/b/f/bf57d9ec-d161-4cb4-989b-72278bfdba4c.jpg?1562936344"
+        imageUri = "https://cards.scryfall.io/normal/front/b/f/bf57d9ec-d161-4cb4-989b-72278bfdba4c.jpg?1562936344"
     }
 }

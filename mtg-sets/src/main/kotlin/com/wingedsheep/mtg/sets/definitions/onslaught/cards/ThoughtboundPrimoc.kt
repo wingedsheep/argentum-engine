@@ -40,6 +40,6 @@ val ThoughtboundPrimoc = card("Thoughtbound Primoc") {
         collectorNumber = "116"
         artist = "Mark Tedin"
         flavorText = "It has learned to anticipate its master's wishes."
-        imageUri = "https://cards.scryfall.io/large/front/e/8/e89156b5-8bdb-41d1-a7aa-63f770a9b070.jpg?1562950377"
+        imageUri = "https://cards.scryfall.io/normal/front/e/8/e89156b5-8bdb-41d1-a7aa-63f770a9b070.jpg?1562950377"
     }
 }

@@ -29,6 +29,6 @@ val CircleOfSolace = card("Circle of Solace") {
         rarity = Rarity.RARE
         collectorNumber = "13"
         artist = "Greg Hildebrandt & Tim Hildebrandt"
-        imageUri = "https://cards.scryfall.io/large/front/0/7/07f567dc-8a60-40e1-b947-199872d8df08.jpg?1562896941"
+        imageUri = "https://cards.scryfall.io/normal/front/0/7/07f567dc-8a60-40e1-b947-199872d8df08.jpg?1562896941"
     }
 }

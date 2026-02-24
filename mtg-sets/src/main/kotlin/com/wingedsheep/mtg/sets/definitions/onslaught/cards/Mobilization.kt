@@ -36,7 +36,7 @@ val Mobilization = card("Mobilization") {
             toughness = 1,
             colors = setOf(Color.WHITE),
             creatureTypes = setOf("Soldier"),
-            imageUri = "https://cards.scryfall.io/large/front/b/1/b159b57d-bc52-4cef-ac7a-e364e40c3d03.jpg?1761614919"
+            imageUri = "https://cards.scryfall.io/normal/front/b/1/b159b57d-bc52-4cef-ac7a-e364e40c3d03.jpg?1761614919"
         )
     }
 
@@ -45,6 +45,6 @@ val Mobilization = card("Mobilization") {
         collectorNumber = "44"
         artist = "Carl Critchlow"
         flavorText = "\"Newcomers to Otaria find themselves at the bottom of the heap. In the pits, they at least have the chance to climb atop a heap of bodies.\""
-        imageUri = "https://cards.scryfall.io/large/front/6/5/653cc07b-0f53-4b5b-9c5f-885b8b4a6e5f.jpg?1562918873"
+        imageUri = "https://cards.scryfall.io/normal/front/6/5/653cc07b-0f53-4b5b-9c5f-885b8b4a6e5f.jpg?1562918873"
     }
 }

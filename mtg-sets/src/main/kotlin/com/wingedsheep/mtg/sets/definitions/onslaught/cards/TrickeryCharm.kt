@@ -42,6 +42,6 @@ val TrickeryCharm = card("Trickery Charm") {
         rarity = Rarity.COMMON
         collectorNumber = "119"
         artist = "David Martin"
-        imageUri = "https://cards.scryfall.io/large/front/3/2/32a2ee45-7f1d-40a8-82b4-ab3b705417ea.jpg?1562906840"
+        imageUri = "https://cards.scryfall.io/normal/front/3/2/32a2ee45-7f1d-40a8-82b4-ab3b705417ea.jpg?1562906840"
     }
 }

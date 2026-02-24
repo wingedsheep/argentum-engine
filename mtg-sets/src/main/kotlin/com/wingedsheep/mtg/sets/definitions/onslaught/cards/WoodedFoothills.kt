@@ -43,6 +43,6 @@ val WoodedFoothills = card("Wooded Foothills") {
         rarity = Rarity.RARE
         collectorNumber = "330"
         artist = "Rob Alexander"
-        imageUri = "https://cards.scryfall.io/large/front/c/d/cdad38f7-9dfa-4f1b-9fac-41ab2b253f53.jpg?1562948672"
+        imageUri = "https://cards.scryfall.io/normal/front/c/d/cdad38f7-9dfa-4f1b-9fac-41ab2b253f53.jpg?1562948672"
     }
 }

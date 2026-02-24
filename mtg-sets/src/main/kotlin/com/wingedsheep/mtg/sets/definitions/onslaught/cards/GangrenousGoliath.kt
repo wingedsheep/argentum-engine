@@ -33,6 +33,6 @@ val GangrenousGoliath = card("Gangrenous Goliath") {
         collectorNumber = "150"
         artist = "Justin Sweet"
         flavorText = ""
-        imageUri = "https://cards.scryfall.io/large/front/6/9/69b58b6b-24cd-4440-b99c-d88d44b3c41c.jpg?1562919881"
+        imageUri = "https://cards.scryfall.io/normal/front/6/9/69b58b6b-24cd-4440-b99c-d88d44b3c41c.jpg?1562919881"
     }
 }

@@ -34,6 +34,6 @@ val WirewoodPride = card("Wirewood Pride") {
         collectorNumber = "303"
         artist = "Dave Dorman"
         flavorText = ""
-        imageUri = "https://cards.scryfall.io/large/front/a/5/a559e844-06c9-4953-bc2c-a58e4170fe47.jpg?1562934080"
+        imageUri = "https://cards.scryfall.io/normal/front/a/5/a559e844-06c9-4953-bc2c-a58e4170fe47.jpg?1562934080"
     }
 }

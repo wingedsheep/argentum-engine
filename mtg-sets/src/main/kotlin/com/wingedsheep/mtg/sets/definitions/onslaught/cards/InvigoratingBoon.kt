@@ -35,6 +35,6 @@ val InvigoratingBoon = card("Invigorating Boon") {
         collectorNumber = "267"
         artist = "Edward P. Beard, Jr."
         flavorText = "\"The Mirari's echoes rang in the scouts' minds long after they had returned from the Krosan Forest.\""
-        imageUri = "https://cards.scryfall.io/large/front/c/4/c46f324b-63c6-4fb5-a80a-e9da51c3eb77.jpg?1562941431"
+        imageUri = "https://cards.scryfall.io/normal/front/c/4/c46f324b-63c6-4fb5-a80a-e9da51c3eb77.jpg?1562941431"
     }
 }

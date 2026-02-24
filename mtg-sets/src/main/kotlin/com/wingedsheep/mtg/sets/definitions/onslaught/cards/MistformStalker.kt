@@ -40,6 +40,6 @@ val MistformStalker = card("Mistform Stalker") {
         rarity = Rarity.UNCOMMON
         collectorNumber = "98"
         artist = "Randy Gallegos"
-        imageUri = "https://cards.scryfall.io/large/front/9/e/9e80d109-b73f-4b5d-b9e4-534e8d69633f.jpg?1562932494"
+        imageUri = "https://cards.scryfall.io/normal/front/9/e/9e80d109-b73f-4b5d-b9e4-534e8d69633f.jpg?1562932494"
     }
 }

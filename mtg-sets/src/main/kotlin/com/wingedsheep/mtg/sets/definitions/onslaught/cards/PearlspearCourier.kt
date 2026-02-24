@@ -41,6 +41,6 @@ val PearlspearCourier = card("Pearlspear Courier") {
         rarity = Rarity.UNCOMMON
         collectorNumber = "48"
         artist = "Dany Orizio"
-        imageUri = "https://cards.scryfall.io/large/front/a/1/a1ea7219-6ab6-471a-afe7-d7da1df434c7.jpg?1562933222"
+        imageUri = "https://cards.scryfall.io/normal/front/a/1/a1ea7219-6ab6-471a-afe7-d7da1df434c7.jpg?1562933222"
     }
 }
