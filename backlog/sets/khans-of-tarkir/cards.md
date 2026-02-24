@@ -2,12 +2,12 @@
 
 **Set Size:** 269 cards (249 unique card names + basic land variants)
 **Release Date:** September 26, 2014
-**Implemented:** 5 / 249
+**Implemented:** 6 / 249
 
 | Color      | Count |
 |------------|-------|
 | White      | 1     |
-| Blue       | 0     |
+| Blue       | 1     |
 | Black      | 1     |
 | Red        | 2     |
 | Green      | 1     |
@@ -255,7 +255,7 @@
 - [ ] Watcher of the Roost
 - [ ] Waterwhirl
 - [ ] Weave Fate
-- [ ] Wetland Sambar
+- [x] Wetland Sambar
 - [ ] Whirlwind Adept
 - [ ] Wind-Scarred Crag
 - [ ] Windstorm

@@ -24,6 +24,9 @@ object KhansOfTarkirSet {
         // White creatures
         AlabasterKirin,
 
+        // Blue creatures
+        WetlandSambar,
+
         // Black instants
         Throttle,
 
