@@ -31,6 +31,7 @@ import com.wingedsheep.sdk.scripting.effects.RemoveKeywordUntilEndOfTurnEffect
 import com.wingedsheep.sdk.scripting.effects.LoseLifeEffect
 import com.wingedsheep.sdk.scripting.effects.ModifyStatsEffect
 import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
+import com.wingedsheep.sdk.scripting.effects.ReturnSelfToBattlefieldAttachedEffect
 import com.wingedsheep.sdk.scripting.effects.DrawUpToEffect
 import com.wingedsheep.sdk.scripting.effects.ReadTheRunesEffect
 import com.wingedsheep.sdk.scripting.effects.RemoveFromCombatEffect
@@ -281,6 +282,13 @@ object Effects {
      */
     fun PutOntoBattlefield(target: EffectTarget, tapped: Boolean = false): Effect =
         MoveToZoneEffect(target, Zone.BATTLEFIELD, if (tapped) ZonePlacement.Tapped else ZonePlacement.Default)
+
+    /**
+     * Return this card from its current zone to the battlefield attached to the target.
+     * Used by the Dragon aura cycle (Dragon Shadow, Dragon Breath, etc.).
+     */
+    fun ReturnSelfToBattlefieldAttached(target: EffectTarget = EffectTarget.TriggeringEntity): Effect =
+        ReturnSelfToBattlefieldAttachedEffect(target)
 
     // =========================================================================
     // Stat Modification Effects
