@@ -381,6 +381,15 @@ object Triggers {
     )
 
     /**
+     * Whenever the enchanted creature deals damage (any type).
+     * Used for auras like Guilty Conscience.
+     */
+    val EnchantedCreatureDealsDamage: TriggerSpec = TriggerSpec(
+        event = EnchantedCreatureDealsDamageEvent,
+        binding = TriggerBinding.ANY
+    )
+
+    /**
      * When the enchanted creature is turned face up.
      * Used for auras like Fatal Mutation.
      */

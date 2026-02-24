@@ -426,6 +426,16 @@ sealed interface GameEvent {
     }
 
     /**
+     * When the enchanted creature deals damage (any type).
+     * Special case for auras like Guilty Conscience.
+     */
+    @SerialName("EnchantedCreatureDealsDamageEvent")
+    @Serializable
+    data object EnchantedCreatureDealsDamageEvent : GameEvent {
+        override val description: String = "when enchanted creature deals damage"
+    }
+
+    /**
      * When the enchanted creature is turned face up.
      * Special case for auras like Fatal Mutation.
      */

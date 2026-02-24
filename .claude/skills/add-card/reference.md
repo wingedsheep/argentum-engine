@@ -426,6 +426,7 @@ each player reveals and creates tokens
 - `Triggers.DealsDamage` / `Triggers.DealsCombatDamage`
 - `Triggers.DealsCombatDamageToPlayer` / `Triggers.DealsCombatDamageToCreature`
 - `Triggers.EnchantedCreatureDealsCombatDamageToPlayer` — enchanted creature deals combat damage to a player (aura trigger)
+- `Triggers.EnchantedCreatureDealsDamage` — enchanted creature deals any damage (aura trigger, e.g., Guilty Conscience)
 
 ### Phase/Step
 

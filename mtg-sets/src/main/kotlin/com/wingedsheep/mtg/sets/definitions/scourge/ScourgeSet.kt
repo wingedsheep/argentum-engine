@@ -105,6 +105,9 @@ object ScourgeSet {
         NobleTemplar,
         SilverKnight,
 
+        // White enchantments
+        GuiltyConscience,
+
         // White instants
         GildedLight,
         RainOfBlades,

@@ -3,11 +3,11 @@
 
 **Set Size:** 143 cards
 **Release Date:** May 26, 2003
-**Implemented:** 69 / 143
+**Implemented:** 70 / 143
 
 | Color | Count |
 |-------|-------|
-| White | 13 |
+| White | 14 |
 | Blue | 13 |
 | Black | 14 |
 | Red | 14 |
@@ -87,7 +87,7 @@
 - [x] Goblin Warchief
 - [x] Goblin War Strike
 - [ ] Grip of Chaos
-- [ ] Guilty Conscience
+- [x] Guilty Conscience
 - [ ] Hindering Touch
 - [ ] Hunting Pack
 - [ ] Karona, False God

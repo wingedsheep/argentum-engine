@@ -58,7 +58,9 @@ object CompactJsonTransformer {
         "numerator", "denominator",
         // Event and Effect Parameters
         "recipient", "controller", "timing", "duration",
-        "reductionSource", "copyCost", "repeatCondition"
+        "reductionSource", "copyCost", "repeatCondition",
+        // Damage source override (EffectTarget sealed interface)
+        "damageSource"
     )
 
     /**
