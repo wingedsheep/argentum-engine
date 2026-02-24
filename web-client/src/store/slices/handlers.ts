@@ -671,55 +671,71 @@ export function createMessageHandlers(set: SetState, get: GetState): MessageHand
     },
 
     onRoundComplete: (msg) => {
-      set((state) => ({
-        tournamentState: state.tournamentState
-          ? {
-              ...state.tournamentState,
-              currentRound: msg.round,
-              standings: msg.standings,
-              lastRoundResults: msg.results,
-              currentMatchGameSessionId: null,
-              currentMatchOpponentName: null,
-              isBye: false,
-              isComplete: msg.isTournamentComplete ?? false,
-              readyPlayerIds: [],
-              nextOpponentName: msg.nextOpponentName ?? null,
-              nextRoundHasBye: msg.nextRoundHasBye ?? false,
-              activeMatches: [], // Clear - round is over, no active matches
-            }
-          : null,
-        // Preserve game state while game-over banner is showing so the board remains visible
-        gameState: state.gameOverState ? state.gameState : null,
-        mulliganState: null,
-        waitingForOpponentMulligan: false,
-        legalActions: [],
-      }))
+      set((state) => {
+        // Don't clear game state if we're in an active game (no gameOverState yet)
+        const inActiveGame = state.gameState != null && state.gameOverState == null
+        return {
+          tournamentState: state.tournamentState
+            ? {
+                ...state.tournamentState,
+                currentRound: msg.round,
+                standings: msg.standings,
+                lastRoundResults: msg.results,
+                ...(inActiveGame ? {} : {
+                  currentMatchGameSessionId: null,
+                  currentMatchOpponentName: null,
+                }),
+                isBye: false,
+                isComplete: msg.isTournamentComplete ?? false,
+                readyPlayerIds: [],
+                nextOpponentName: msg.nextOpponentName ?? null,
+                nextRoundHasBye: msg.nextRoundHasBye ?? false,
+                activeMatches: [], // Clear - round is over, no active matches
+              }
+            : null,
+          // Preserve game state while in an active game or game-over banner is showing
+          ...(inActiveGame ? {} : {
+            gameState: state.gameOverState ? state.gameState : null,
+            mulliganState: null,
+            waitingForOpponentMulligan: false,
+            legalActions: [],
+          }),
+        }
+      })
     },
 
     onMatchComplete: (msg) => {
-      set((state) => ({
-        tournamentState: state.tournamentState
-          ? {
-              ...state.tournamentState,
-              currentRound: msg.round,
-              standings: msg.standings,
-              lastRoundResults: msg.results.length > 0 ? msg.results : state.tournamentState.lastRoundResults,
-              currentMatchGameSessionId: null,
-              currentMatchOpponentName: null,
-              isBye: false,
-              isComplete: msg.isTournamentComplete ?? false,
-              readyPlayerIds: [],
-              nextOpponentName: msg.nextOpponentName ?? null,
-              nextRoundHasBye: msg.nextRoundHasBye ?? false,
-              activeMatches: [],
-            }
-          : null,
-        // Preserve game state while game-over banner is showing so the board remains visible
-        gameState: state.gameOverState ? state.gameState : null,
-        mulliganState: null,
-        waitingForOpponentMulligan: false,
-        legalActions: [],
-      }))
+      set((state) => {
+        // Don't clear game state if we're in an active game (no gameOverState yet)
+        const inActiveGame = state.gameState != null && state.gameOverState == null
+        return {
+          tournamentState: state.tournamentState
+            ? {
+                ...state.tournamentState,
+                currentRound: msg.round,
+                standings: msg.standings,
+                lastRoundResults: msg.results.length > 0 ? msg.results : state.tournamentState.lastRoundResults,
+                ...(inActiveGame ? {} : {
+                  currentMatchGameSessionId: null,
+                  currentMatchOpponentName: null,
+                }),
+                isBye: false,
+                isComplete: msg.isTournamentComplete ?? false,
+                readyPlayerIds: [],
+                nextOpponentName: msg.nextOpponentName ?? null,
+                nextRoundHasBye: msg.nextRoundHasBye ?? false,
+                activeMatches: [],
+              }
+            : null,
+          // Preserve game state while in an active game or game-over banner is showing
+          ...(inActiveGame ? {} : {
+            gameState: state.gameOverState ? state.gameState : null,
+            mulliganState: null,
+            waitingForOpponentMulligan: false,
+            legalActions: [],
+          }),
+        }
+      })
     },
 
     onPlayerReadyForRound: (msg) => {
@@ -731,40 +747,56 @@ export function createMessageHandlers(set: SetState, get: GetState): MessageHand
     },
 
     onTournamentComplete: (msg) => {
-      set((state) => ({
-        tournamentState: state.tournamentState
-          ? {
-              ...state.tournamentState,
-              isComplete: true,
-              finalStandings: msg.finalStandings,
-              standings: msg.finalStandings,
-              currentMatchGameSessionId: null,
-              currentMatchOpponentName: null,
-            }
-          : null,
-        gameState: state.gameOverState ? state.gameState : null,
-      }))
+      set((state) => {
+        const inActiveGame = state.gameState != null && state.gameOverState == null
+        return {
+          tournamentState: state.tournamentState
+            ? {
+                ...state.tournamentState,
+                isComplete: true,
+                finalStandings: msg.finalStandings,
+                standings: msg.finalStandings,
+                ...(inActiveGame ? {} : {
+                  currentMatchGameSessionId: null,
+                  currentMatchOpponentName: null,
+                }),
+              }
+            : null,
+          ...(inActiveGame ? {} : {
+            gameState: state.gameOverState ? state.gameState : null,
+          }),
+        }
+      })
     },
 
     // ========================================================================
     // Spectating handlers
     // ========================================================================
     onActiveMatches: (msg) => {
-      set((state) => ({
-        tournamentState: state.tournamentState
-          ? {
-              ...state.tournamentState,
-              activeMatches: msg.matches,
-              standings: msg.standings,
-              currentMatchGameSessionId: null,
-              currentMatchOpponentName: null,
-            }
-          : null,
-        gameState: state.gameOverState ? state.gameState : null,
-        mulliganState: null,
-        waitingForOpponentMulligan: false,
-        legalActions: [],
-      }))
+      set((state) => {
+        // Don't clear game state if we're in an active game (no gameOverState yet)
+        const inActiveGame = state.gameState != null && state.gameOverState == null
+        return {
+          tournamentState: state.tournamentState
+            ? {
+                ...state.tournamentState,
+                activeMatches: msg.matches,
+                standings: msg.standings,
+                ...(inActiveGame ? {} : {
+                  currentMatchGameSessionId: null,
+                  currentMatchOpponentName: null,
+                }),
+              }
+            : null,
+          // Preserve game state while in an active game or game-over banner is showing
+          ...(inActiveGame ? {} : {
+            gameState: state.gameOverState ? state.gameState : null,
+            mulliganState: null,
+            waitingForOpponentMulligan: false,
+            legalActions: [],
+          }),
+        }
+      })
     },
 
     onSpectatorStateUpdate: (msg) => {

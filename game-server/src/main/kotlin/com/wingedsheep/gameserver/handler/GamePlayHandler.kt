@@ -438,6 +438,9 @@ class GamePlayHandler(
                     player.currentGameSessionId = null
                     sessionRegistry.getIdentityByWsId(player.webSocketSession.id)
                         ?.currentGameSessionId = null
+                    // Also clear the registry's PlayerSession to prevent stale references
+                    sessionRegistry.getPlayerSession(player.webSocketSession.id)
+                        ?.currentGameSessionId = null
                 }
 
                 // Report result, notify players, check round complete — all under the per-lobby lock
