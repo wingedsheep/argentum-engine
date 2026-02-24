@@ -57,6 +57,7 @@ object ScourgeSet {
         MercurialKite,
         MistformWarchief,
         RavenGuildInitiate,
+        RavenGuildMaster,
         RiptideSurvivor,
         ScornfulEgotist,
         ShorelineRanger,
