@@ -15,7 +15,7 @@
             "type": "Morph",
             "morphCost": {
                 "type": "PayMana",
-                "cost": "{3}{W}{W}"
+                "cost": "{3}{W}"
             }
         }
     ],
