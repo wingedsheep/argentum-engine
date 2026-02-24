@@ -21,6 +21,9 @@ object KhansOfTarkirSet {
      * All cards implemented from this set.
      */
     val allCards = listOf(
+        // White creatures
+        AlabasterKirin,
+
         // Black instants
         Throttle,
 

@@ -2,14 +2,14 @@
 
 **Set Size:** 269 cards (249 unique card names + basic land variants)
 **Release Date:** September 26, 2014
-**Implemented:** 2 / 249
+**Implemented:** 4 / 249
 
 | Color      | Count |
 |------------|-------|
-| White      | 0     |
+| White      | 1     |
 | Blue       | 0     |
 | Black      | 1     |
-| Red        | 1     |
+| Red        | 2     |
 | Green      | 0     |
 | Multicolor | 0     |
 | Colorless  | 0     |
@@ -27,7 +27,7 @@
 - [ ] Act of Treason
 - [ ] Ainok Bond-Kin
 - [ ] Ainok Tracker
-- [ ] Alabaster Kirin
+- [x] Alabaster Kirin
 - [ ] Alpine Grizzly
 - [ ] Altar of the Brood
 - [ ] Anafenza, the Foremost
@@ -154,7 +154,7 @@
 - [ ] Mistfire Weaver
 - [ ] Molting Snakeskin
 - [ ] Monastery Flock
-- [ ] Monastery Swiftspear
+- [x] Monastery Swiftspear
 - [ ] Murderous Cut
 - [ ] Mystic Monastery
 - [ ] Mystic of the Hidden Way
