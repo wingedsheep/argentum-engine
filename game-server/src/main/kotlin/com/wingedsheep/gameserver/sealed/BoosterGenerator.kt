@@ -28,7 +28,8 @@ class BoosterGenerator(
         val setName: String,
         val cards: List<CardDefinition>,
         val basicLands: List<CardDefinition>,
-        val incomplete: Boolean = false
+        val incomplete: Boolean = false,
+        val block: String? = null
     )
 
     companion object {
@@ -49,7 +50,8 @@ class BoosterGenerator(
             setCode = OnslaughtSet.SET_CODE,
             setName = OnslaughtSet.SET_NAME,
             cards = OnslaughtSet.allCards,
-            basicLands = PortalSet.basicLands  // Use Portal lands for now
+            basicLands = PortalSet.basicLands,  // Use Portal lands for now
+            block = "Onslaught"
         )
 
         /**
@@ -60,7 +62,8 @@ class BoosterGenerator(
             setName = ScourgeSet.SET_NAME,
             cards = ScourgeSet.allCards,
             basicLands = PortalSet.basicLands,  // Use Portal lands for now
-            incomplete = true
+            incomplete = true,
+            block = "Onslaught"
         )
 
         /**

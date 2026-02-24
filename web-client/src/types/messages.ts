@@ -630,6 +630,7 @@ export interface AvailableSet {
   readonly code: string
   readonly name: string
   readonly incomplete?: boolean
+  readonly block?: string
 }
 
 export interface LobbySettings {

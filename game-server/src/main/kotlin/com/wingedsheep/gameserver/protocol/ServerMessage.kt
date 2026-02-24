@@ -315,7 +315,8 @@ sealed interface ServerMessage {
     data class AvailableSet(
         val code: String,
         val name: String,
-        val incomplete: Boolean = false
+        val incomplete: Boolean = false,
+        val block: String? = null
     )
 
     /**

@@ -398,27 +398,58 @@ function LobbyOverlay({
                 </button>
               </div>
             </div>
-            {/* Set selection */}
-            <div className={styles.settingsRow}>
-              <span className={styles.settingsLabel}>Sets</span>
-              <div className={styles.settingsButtons} style={{ flexWrap: 'wrap', justifyContent: 'flex-end' }}>
-                {lobbyState.settings.availableSets.map((set) => {
-                  const isSelected = lobbyState.settings.setCodes.includes(set.code)
+            {/* Set selection — grouped by block */}
+            <div className={styles.settingsRow} style={{ alignItems: 'flex-start' }}>
+              <span className={styles.settingsLabel} style={{ paddingTop: 6 }}>Sets</span>
+              <div className={styles.setSelectionGrid}>
+                {(() => {
+                  const sets = lobbyState.settings.availableSets
+                  // Group sets: blocks first (preserving order), then ungrouped sets
+                  const blockOrder: string[] = []
+                  const blockSets = new Map<string, typeof sets[number][]>()
+                  const ungrouped: typeof sets[number][] = []
+                  for (const set of sets) {
+                    if (set.block) {
+                      if (!blockSets.has(set.block)) {
+                        blockOrder.push(set.block)
+                        blockSets.set(set.block, [])
+                      }
+                      blockSets.get(set.block)!.push(set)
+                    } else {
+                      ungrouped.push(set)
+                    }
+                  }
+                  const renderSetButton = (set: typeof sets[number]) => {
+                    const isSelected = lobbyState.settings.setCodes.includes(set.code)
+                    return (
+                      <button
+                        key={set.code}
+                        onClick={() => {
+                          const newCodes = isSelected
+                            ? lobbyState.settings.setCodes.filter(c => c !== set.code)
+                            : [...lobbyState.settings.setCodes, set.code]
+                          updateLobbySettings({ setCodes: newCodes })
+                        }}
+                        className={`${styles.settingsButton} ${isSelected ? (isDraft ? `${styles.settingsButtonActive} ${styles.settingsButtonDraft}` : styles.settingsButtonActive) : ''}`}
+                      >
+                        {set.name}{set.incomplete ? ' (unfinished)' : ''}
+                      </button>
+                    )
+                  }
                   return (
-                    <button
-                      key={set.code}
-                      onClick={() => {
-                        const newCodes = isSelected
-                          ? lobbyState.settings.setCodes.filter(c => c !== set.code)
-                          : [...lobbyState.settings.setCodes, set.code]
-                        updateLobbySettings({ setCodes: newCodes })
-                      }}
-                      className={`${styles.settingsButton} ${isSelected ? (isDraft ? `${styles.settingsButtonActive} ${styles.settingsButtonDraft}` : styles.settingsButtonActive) : ''}`}
-                    >
-                      {set.name}{set.incomplete ? ' (unfinished)' : ''}
-                    </button>
+                    <>
+                      {ungrouped.map(renderSetButton)}
+                      {blockOrder.map((blockName) => (
+                        <div key={blockName} className={styles.blockGroup}>
+                          <span className={styles.blockLabel}>{blockName} Block</span>
+                          <div className={styles.blockSets}>
+                            {blockSets.get(blockName)!.map(renderSetButton)}
+                          </div>
+                        </div>
+                      ))}
+                    </>
                   )
-                })}
+                })()}
               </div>
             </div>
             {/* Boosters setting - only for Sealed */}

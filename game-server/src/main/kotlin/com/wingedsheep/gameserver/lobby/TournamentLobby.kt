@@ -569,7 +569,7 @@ class TournamentLobby(
         }
 
         val availableSets = boosterGenerator.availableSets.values.map { config ->
-            ServerMessage.AvailableSet(code = config.setCode, name = config.setName, incomplete = config.incomplete)
+            ServerMessage.AvailableSet(code = config.setCode, name = config.setName, incomplete = config.incomplete, block = config.block)
         }
 
         return ServerMessage.LobbyUpdate(
