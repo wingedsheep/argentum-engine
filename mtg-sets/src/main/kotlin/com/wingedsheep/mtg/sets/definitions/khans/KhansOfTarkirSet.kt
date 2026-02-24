@@ -33,6 +33,7 @@ object KhansOfTarkirSet {
 
         // Green creatures
         AlpineGrizzly,
+        HighlandGame,
 
         // Red creatures
         MonasterySwiftspear,
