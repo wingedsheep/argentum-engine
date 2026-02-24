@@ -3,7 +3,12 @@
  * This is the official morph token from Commander 2019 (TC19 #27) showing the distinctive helmet artwork.
  * Source: https://scryfall.com/card/tc19/27/morph
  */
-export const MORPH_FACE_DOWN_IMAGE_URL = 'https://backs.scryfall.io/large/2/2/222b7a3b-2321-4d4c-af19-19338b134971.jpg?1677416389'
+export const MORPH_FACE_DOWN_IMAGE_URL = 'https://cards.scryfall.io/large/front/e/9/e9375cbe-93c0-41a5-a6e3-fb4416f54a69.jpg'
+
+/**
+ * Standard MTG card back image.
+ */
+export const CARD_BACK_IMAGE_URL = 'https://backs.scryfall.io/normal/2/2/222b7a3b-2321-4d4c-af19-19338b134971.jpg?1677416389'
 
 /**
  * Get the image URL for a card.

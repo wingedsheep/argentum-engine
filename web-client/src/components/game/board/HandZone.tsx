@@ -5,6 +5,7 @@ import { calculateFittingCardWidth } from '../../../hooks/useResponsive'
 import { useResponsiveContext } from './shared'
 import { styles } from './styles'
 import { GameCard } from '../card'
+import { CARD_BACK_IMAGE_URL } from '../../../utils/cardImages'
 
 /**
  * Row of cards (hand or other horizontal zone).
@@ -107,7 +108,7 @@ export function CardRow({
             }}
           >
             <img
-              src="https://backs.scryfall.io/large/2/2/222b7a3b-2321-4d4c-af19-19338b134971.jpg?1677416389"
+              src={CARD_BACK_IMAGE_URL}
               alt="Card back"
               style={styles.cardImage}
             />
@@ -283,7 +284,7 @@ export function HandFan({
                 }}
               >
                 <img
-                  src="https://backs.scryfall.io/large/2/2/222b7a3b-2321-4d4c-af19-19338b134971.jpg?1677416389"
+                  src={CARD_BACK_IMAGE_URL}
                   alt="Card back"
                   style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                 />

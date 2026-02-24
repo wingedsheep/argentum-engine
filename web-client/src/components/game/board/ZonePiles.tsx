@@ -3,6 +3,7 @@ import { useGameStore } from '../../../store/gameStore'
 import { useZoneCards, useStackCards } from '../../../store/selectors'
 import { graveyard, exile } from '../../../types'
 import type { ClientCard, ClientPlayer } from '../../../types'
+import { CARD_BACK_IMAGE_URL } from '../../../utils/cardImages'
 import { getCardImageUrl } from '../../../utils/cardImages'
 import { useResponsiveContext, handleImageError } from './shared'
 import { styles } from './styles'
@@ -56,7 +57,7 @@ export function ZonePile({ player, isOpponent = false }: { player: ClientPlayer;
         <div data-zone={isOpponent ? 'opponent-library' : 'player-library'} style={{ ...styles.deckPile, ...pileStyle }}>
           {player.librarySize > 0 ? (
             <img
-              src="https://backs.scryfall.io/large/2/2/222b7a3b-2321-4d4c-af19-19338b134971.jpg?1677416389"
+              src={CARD_BACK_IMAGE_URL}
               alt="Library"
               style={styles.pileImage}
             />
