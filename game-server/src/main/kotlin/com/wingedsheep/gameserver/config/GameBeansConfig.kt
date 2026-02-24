@@ -3,6 +3,7 @@ package com.wingedsheep.gameserver.config
 import com.wingedsheep.gameserver.deck.RandomDeckGenerator
 import com.wingedsheep.gameserver.sealed.BoosterGenerator
 import com.wingedsheep.engine.registry.CardRegistry
+import com.wingedsheep.mtg.sets.definitions.khans.KhansOfTarkirSet
 import com.wingedsheep.mtg.sets.definitions.onslaught.OnslaughtSet
 import com.wingedsheep.mtg.sets.definitions.portal.PortalSet
 import com.wingedsheep.mtg.sets.definitions.scourge.ScourgeSet
@@ -24,6 +25,9 @@ class GameBeansConfig(
         if (gameProperties.sets.scourgeEnabled) {
             register(ScourgeSet.allCards)
         }
+        if (gameProperties.sets.khansEnabled) {
+            register(KhansOfTarkirSet.allCards)
+        }
     }
 
     @Bean
@@ -35,6 +39,9 @@ class GameBeansConfig(
             }
             if (gameProperties.sets.scourgeEnabled) {
                 put(ScourgeSet.SET_CODE, BoosterGenerator.scourgeSetConfig)
+            }
+            if (gameProperties.sets.khansEnabled) {
+                put(KhansOfTarkirSet.SET_CODE, BoosterGenerator.khansSetConfig)
             }
         }
         return BoosterGenerator(sets)
