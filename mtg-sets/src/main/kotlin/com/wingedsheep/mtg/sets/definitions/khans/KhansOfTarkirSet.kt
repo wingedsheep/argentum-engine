@@ -29,7 +29,8 @@ object KhansOfTarkirSet {
         JeskaiWindscout,
         WetlandSambar,
 
-        // Black instants
+        // Black spells
+        DebilitatingInjury,
         Throttle,
 
         // Green creatures

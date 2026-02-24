@@ -2,13 +2,13 @@
 
 **Set Size:** 269 cards (249 unique card names + basic land variants)
 **Release Date:** September 26, 2014
-**Implemented:** 11 / 249
+**Implemented:** 12 / 249
 
 | Color      | Count |
 |------------|-------|
 | White      | 2     |
 | Blue       | 2     |
-| Black      | 1     |
+| Black      | 2     |
 | Red        | 2     |
 | Green      | 2     |
 | Multicolor | 1     |
@@ -68,7 +68,7 @@
 - [ ] Dazzling Ramparts
 - [ ] Dead Drop
 - [ ] Death Frenzy
-- [ ] Debilitating Injury
+- [x] Debilitating Injury
 - [ ] Defiant Strike
 - [ ] Deflecting Palm
 - [ ] Despise
