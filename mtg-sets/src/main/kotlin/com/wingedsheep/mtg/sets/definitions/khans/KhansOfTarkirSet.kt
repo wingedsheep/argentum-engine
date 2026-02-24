@@ -23,5 +23,6 @@ object KhansOfTarkirSet {
     val allCards = listOf(
         // Red creatures
         MonasterySwiftspear,
+        SummitProwler,
     )
 }
