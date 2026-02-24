@@ -370,6 +370,11 @@ class TriggerDetector(
             detectEnchantedCreatureDealsDamageTriggers(state, event, triggers, projected)
         }
 
+        // Handle "when enchanted creature is turned face up" triggers on auras (e.g., Fatal Mutation)
+        if (event is TurnFaceUpEvent) {
+            detectEnchantedCreatureTurnedFaceUpTriggers(state, event, triggers, projected)
+        }
+
         // Handle "when you gain control of this from another player" triggers (e.g., Risky Move)
         if (event is ControlChangedEvent) {
             detectControlChangeTriggers(state, event, triggers)
@@ -667,6 +672,48 @@ class TriggerDetector(
 
             for (ability in abilities) {
                 if (ability.trigger is GameEvent.EnchantedCreatureDealsCombatDamageToPlayerEvent) {
+                    triggers.add(
+                        PendingTrigger(
+                            ability = ability,
+                            sourceId = entityId,
+                            sourceName = cardComponent.name,
+                            controllerId = controllerId,
+                            triggerContext = TriggerContext.fromEvent(event)
+                        )
+                    )
+                }
+            }
+        }
+    }
+
+    /**
+     * Detect "when enchanted creature is turned face up" triggers on auras.
+     * Checks all auras attached to the creature that was turned face up for
+     * EnchantedCreatureTurnedFaceUpEvent triggers.
+     */
+    private fun detectEnchantedCreatureTurnedFaceUpTriggers(
+        state: GameState,
+        event: TurnFaceUpEvent,
+        triggers: MutableList<PendingTrigger>,
+        projected: ProjectedState
+    ) {
+        val turnedFaceUpEntityId = event.entityId
+
+        // Find all auras attached to the creature that was turned face up
+        for (entityId in state.getBattlefield()) {
+            val container = state.getEntity(entityId) ?: continue
+            val attachedTo = container.get<AttachedToComponent>() ?: continue
+            if (attachedTo.targetId != turnedFaceUpEntityId) continue
+
+            val cardComponent = container.get<CardComponent>() ?: continue
+            val controllerId = projected.getController(entityId) ?: continue
+
+            if (container.has<FaceDownComponent>()) continue
+
+            val abilities = getTriggeredAbilities(entityId, cardComponent.cardDefinitionId, state)
+
+            for (ability in abilities) {
+                if (ability.trigger is GameEvent.EnchantedCreatureTurnedFaceUpEvent) {
                     triggers.add(
                         PendingTrigger(
                             ability = ability,
@@ -1016,9 +1063,10 @@ class TriggerDetector(
             // Phase/step triggers are handled separately
             is GameEvent.StepEvent -> false
             is GameEvent.EnchantedCreatureControllerStepEvent -> false
-            // Enchanted creature damage triggers are handled separately
+            // Enchanted creature triggers are handled separately
             is GameEvent.EnchantedCreatureDamageReceivedEvent -> false
             is GameEvent.EnchantedCreatureDealsCombatDamageToPlayerEvent -> false
+            is GameEvent.EnchantedCreatureTurnedFaceUpEvent -> false
             // Replacement-effect-only events never match as triggers
             is GameEvent.DamageEvent -> false
             is GameEvent.CounterPlacementEvent -> false

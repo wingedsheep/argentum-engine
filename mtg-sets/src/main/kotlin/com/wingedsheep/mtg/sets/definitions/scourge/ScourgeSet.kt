@@ -112,6 +112,7 @@ object ScourgeSet {
 
         // Black enchantments
         ClutchOfUndeath,
+        FatalMutation,
         LingeringDeath,
         UnspeakableSymbol,
 

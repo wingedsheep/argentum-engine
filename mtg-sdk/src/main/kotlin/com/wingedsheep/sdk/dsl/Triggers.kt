@@ -381,6 +381,15 @@ object Triggers {
     )
 
     /**
+     * When the enchanted creature is turned face up.
+     * Used for auras like Fatal Mutation.
+     */
+    val EnchantedCreatureTurnedFaceUp: TriggerSpec = TriggerSpec(
+        event = EnchantedCreatureTurnedFaceUpEvent,
+        binding = TriggerBinding.ANY
+    )
+
+    /**
      * Whenever a creature deals damage to this creature.
      */
     val DamagedByCreature: TriggerSpec = TriggerSpec(

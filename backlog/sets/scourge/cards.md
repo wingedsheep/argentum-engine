@@ -3,13 +3,13 @@
 
 **Set Size:** 143 cards
 **Release Date:** May 26, 2003
-**Implemented:** 65 / 143
+**Implemented:** 66 / 143
 
 | Color | Count |
 |-------|-------|
 | White | 13 |
 | Blue | 12 |
-| Black | 12 |
+| Black | 13 |
 | Red | 13 |
 | Green | 13 |
 | Multicolor | 1 |
@@ -73,7 +73,7 @@
 - [ ] Exiled Doomsayer
 - [ ] Extra Arms
 - [ ] Faces of the Past
-- [ ] Fatal Mutation
+- [x] Fatal Mutation
 - [x] Fierce Empath
 - [ ] Final Punishment
 - [ ] Force Bubble
