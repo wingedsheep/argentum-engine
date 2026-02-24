@@ -46,5 +46,8 @@ object KhansOfTarkirSet {
 
         // Colorless creatures
         WitnessOfTheAges,
+
+        // Lands
+        WindScarredCrag,
     )
 }
