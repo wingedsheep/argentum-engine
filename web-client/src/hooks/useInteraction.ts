@@ -166,14 +166,7 @@ export function useInteraction() {
         const returnCount = costInfo.sacrificeCount ?? 1
         const validTargets = costInfo.validSacrificeTargets ?? []
 
-        // If exactly enough targets, auto-select
-        if (validTargets.length === returnCount) {
-          submitAction({ ...action, costTargetIds: [...validTargets] })
-          selectCard(null)
-          return
-        }
-
-        // Otherwise show selection modal
+        // Always show selection modal (don't auto-select even with exactly one target)
         startTargeting({
           action,
           validTargets: [...validTargets],
