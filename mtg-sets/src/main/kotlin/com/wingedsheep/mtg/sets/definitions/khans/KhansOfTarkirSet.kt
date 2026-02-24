@@ -25,6 +25,9 @@ object KhansOfTarkirSet {
         AlabasterKirin,
         JeskaiStudent,
 
+        // White spells
+        KillShot,
+
         // Blue creatures
         JeskaiWindscout,
         WetlandSambar,
