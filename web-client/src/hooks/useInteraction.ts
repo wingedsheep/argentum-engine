@@ -160,6 +160,33 @@ export function useInteraction() {
         return
       }
 
+      // Check if TurnFaceUp requires returning a permanent (non-mana morph cost)
+      if (action.type === 'TurnFaceUp' && actionInfo.additionalCostInfo?.costType === 'Sacrifice') {
+        const costInfo = actionInfo.additionalCostInfo
+        const returnCount = costInfo.sacrificeCount ?? 1
+        const validTargets = costInfo.validSacrificeTargets ?? []
+
+        // If exactly enough targets, auto-select
+        if (validTargets.length === returnCount) {
+          submitAction({ ...action, costTargetIds: [...validTargets] })
+          selectCard(null)
+          return
+        }
+
+        // Otherwise show selection modal
+        startTargeting({
+          action,
+          validTargets: [...validTargets],
+          selectedTargets: [],
+          minTargets: returnCount,
+          maxTargets: returnCount,
+          isSacrificeSelection: true,
+          pendingActionInfo: actionInfo,
+        })
+        selectCard(null)
+        return
+      }
+
       // Check if spell or ability requires sacrifice as a cost
       if ((action.type === 'CastSpell' || action.type === 'ActivateAbility') &&
           (actionInfo.additionalCostInfo?.costType === 'SacrificePermanent' || actionInfo.additionalCostInfo?.costType === 'SacrificeSelf')) {
@@ -331,6 +358,11 @@ export function useInteraction() {
 
       // Convoke spells with creatures need selection
       if (action.type === 'CastSpell' && actionInfo.hasConvoke && actionInfo.validConvokeCreatures && actionInfo.validConvokeCreatures.length > 0) {
+        return false
+      }
+
+      // TurnFaceUp with non-mana morph cost needs selection (e.g., return a Bird)
+      if (action.type === 'TurnFaceUp' && actionInfo.additionalCostInfo) {
         return false
       }
 

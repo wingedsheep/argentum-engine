@@ -269,6 +269,15 @@ export const createUISlice: SliceCreator<UISlice> = (set, get) => ({
           set({ targetingState: null })
           return
         }
+      } else if (action.type === 'TurnFaceUp') {
+        // Non-mana morph cost (e.g., return a Bird to hand)
+        const actionWithCost = {
+          ...action,
+          costTargetIds: [...targetingState.selectedTargets],
+        }
+        submitAction(actionWithCost)
+        set({ targetingState: null })
+        return
       }
     }
 
