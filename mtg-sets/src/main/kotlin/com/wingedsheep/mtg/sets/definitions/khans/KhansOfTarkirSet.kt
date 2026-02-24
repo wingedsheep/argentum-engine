@@ -41,8 +41,9 @@ object KhansOfTarkirSet {
         MonasterySwiftspear,
         SummitProwler,
 
-        // Multicolor creatures
+        // Multicolor
         HighspireMantis,
+        UtterEnd,
 
         // Colorless creatures
         WitnessOfTheAges,
