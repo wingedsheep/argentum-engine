@@ -3,14 +3,14 @@
 
 **Set Size:** 143 cards
 **Release Date:** May 26, 2003
-**Implemented:** 68 / 143
+**Implemented:** 69 / 143
 
 | Color | Count |
 |-------|-------|
 | White | 13 |
 | Blue | 13 |
 | Black | 14 |
-| Red | 13 |
+| Red | 14 |
 | Green | 13 |
 | Multicolor | 1 |
 | Colorless | 1 |
@@ -61,7 +61,7 @@
 - [ ] Dragon Mage
 - [ ] Dragon Scales
 - [x] Dragon Shadow
-- [ ] Dragonspeaker Shaman
+- [x] Dragonspeaker Shaman
 - [x] Dragonstalker
 - [ ] Dragonstorm
 - [ ] Dragon Tyrant
