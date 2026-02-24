@@ -33,7 +33,7 @@ val AvenLiberator = card("Aven Liberator") {
         effect = Effects.ChooseColorAndGrantProtectionToTarget(t)
     }
 
-    morph = "{3}{W}{W}"
+    morph = "{3}{W}"
 
     metadata {
         rarity = Rarity.COMMON
