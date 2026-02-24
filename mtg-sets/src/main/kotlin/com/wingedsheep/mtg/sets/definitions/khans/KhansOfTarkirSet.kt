@@ -27,6 +27,9 @@ object KhansOfTarkirSet {
         // Black instants
         Throttle,
 
+        // Green creatures
+        AlpineGrizzly,
+
         // Red creatures
         MonasterySwiftspear,
         SummitProwler,

@@ -2,7 +2,7 @@
 
 **Set Size:** 269 cards (249 unique card names + basic land variants)
 **Release Date:** September 26, 2014
-**Implemented:** 4 / 249
+**Implemented:** 5 / 249
 
 | Color      | Count |
 |------------|-------|
@@ -10,7 +10,7 @@
 | Blue       | 0     |
 | Black      | 1     |
 | Red        | 2     |
-| Green      | 0     |
+| Green      | 1     |
 | Multicolor | 0     |
 | Colorless  | 0     |
 | Land       | 0     |
@@ -28,7 +28,7 @@
 - [ ] Ainok Bond-Kin
 - [ ] Ainok Tracker
 - [x] Alabaster Kirin
-- [ ] Alpine Grizzly
+- [x] Alpine Grizzly
 - [ ] Altar of the Brood
 - [ ] Anafenza, the Foremost
 - [ ] Ankle Shanker
