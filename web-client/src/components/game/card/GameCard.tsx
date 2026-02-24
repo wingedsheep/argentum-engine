@@ -184,7 +184,7 @@ export function GameCard({
 
   // For blocker mode: check if this is a valid blocker or an attacking creature to block
   const isValidBlocker = isInBlockerMode && isOwnCreature && !card.isTapped && combatState.validCreatures.includes(card.id)
-  const isSelectedAsBlocker = isInBlockerMode && !!combatState?.blockerAssignments[card.id]
+  const isSelectedAsBlocker = isInBlockerMode && !!(combatState?.blockerAssignments[card.id]?.length)
   const isAttackingInBlockerMode = isInBlockerMode && isOpponentCard && combatState.attackingCreatures.includes(card.id)
   const isMustBeBlocked = isInBlockerMode && isOpponentCard && combatState.mustBeBlockedAttackers.includes(card.id)
 
@@ -232,7 +232,7 @@ export function GameCard({
     const clientX = 'touches' in e ? e.touches[0]!.clientX : e.clientX
     const clientY = 'touches' in e ? e.touches[0]!.clientY : e.clientY
 
-    if (isInBlockerMode && isValidBlocker && !isSelectedAsBlocker) {
+    if (isInBlockerMode && isValidBlocker) {
       e.preventDefault()
       startDraggingBlocker(card.id)
       return
@@ -243,7 +243,7 @@ export function GameCard({
       dragStartPos.current = { x: clientX, y: clientY }
       startDraggingCard(card.id)
     }
-  }, [isInBlockerMode, isValidBlocker, isSelectedAsBlocker, startDraggingBlocker, canDragToPlay, startDraggingCard, card.id])
+  }, [isInBlockerMode, isValidBlocker, startDraggingBlocker, canDragToPlay, startDraggingCard, card.id])
 
   // Handle mouse/touch up - drop blocker on attacker or cancel drag
   const handlePointerUp = useCallback(() => {
@@ -599,7 +599,7 @@ export function GameCard({
   // Determine cursor
   const canInteract = interactive || isValidTarget || isValidDecisionTarget || isValidDecisionSelection || isValidAttacker || isValidBlocker || isAttackingInBlockerMode || canDragToPlay || isDistributeTarget
   const baseCursor = canInteract ? 'pointer' : 'default'
-  const cursor = (isValidBlocker && !isSelectedAsBlocker) || canDragToPlay ? 'grab' : baseCursor
+  const cursor = isValidBlocker || canDragToPlay ? 'grab' : baseCursor
 
   // Check if currently being dragged (blocker or hand card)
   const isBeingDragged = draggingBlockerId === card.id || draggingCardId === card.id

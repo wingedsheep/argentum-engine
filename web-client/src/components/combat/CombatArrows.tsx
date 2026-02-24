@@ -288,43 +288,47 @@ export function CombatArrows() {
         // Still compute attacker arrows below
       } else if (isDeclaringBlockers && combatState) {
         // Use local blocker assignments (real-time feedback during declaration)
-        for (const [blockerIdStr, attackerId] of Object.entries(combatState.blockerAssignments)) {
+        for (const [blockerIdStr, attackerIds] of Object.entries(combatState.blockerAssignments)) {
           const blockerId = blockerIdStr as EntityId
           const blockerPos = getCardCenter(blockerId)
-          const attackerPos = getCardCenter(attackerId)
 
-          if (blockerPos && attackerPos) {
-            newArrows.push({
-              start: blockerPos,
-              end: attackerPos,
-              blockerId,
-            })
+          for (const attackerId of attackerIds) {
+            const attackerPos = getCardCenter(attackerId)
+
+            if (blockerPos && attackerPos) {
+              newArrows.push({
+                start: blockerPos,
+                end: attackerPos,
+                blockerId,
+              })
+            }
           }
         }
       } else if (opponentBlockerAssignments && Object.keys(opponentBlockerAssignments).length > 0 && isInCombatPhase) {
         // Use opponent's real-time blocker assignments (for attacking player, only during combat)
-        for (const [blockerIdStr, attackerId] of Object.entries(opponentBlockerAssignments)) {
+        for (const [blockerIdStr, attackerIds] of Object.entries(opponentBlockerAssignments)) {
           const blockerId = blockerIdStr as EntityId
-
-          // Check that both blocker and attacker are still on the battlefield
           const blockerCard = cards?.[blockerId]
-          const attackerCard = cards?.[attackerId]
           const blockerOnBattlefield = blockerCard?.zone?.zoneType === ZoneType.BATTLEFIELD
-          const attackerOnBattlefield = attackerCard?.zone?.zoneType === ZoneType.BATTLEFIELD
 
-          if (!blockerOnBattlefield || !attackerOnBattlefield) {
-            continue
-          }
+          if (!blockerOnBattlefield) continue
 
-          const blockerPos = getCardCenter(blockerId)
-          const attackerPos = getCardCenter(attackerId)
+          for (const attackerId of attackerIds) {
+            const attackerCard = cards?.[attackerId]
+            const attackerOnBattlefield = attackerCard?.zone?.zoneType === ZoneType.BATTLEFIELD
 
-          if (blockerPos && attackerPos) {
-            newArrows.push({
-              start: blockerPos,
-              end: attackerPos,
-              blockerId,
-            })
+            if (!attackerOnBattlefield) continue
+
+            const blockerPos = getCardCenter(blockerId)
+            const attackerPos = getCardCenter(attackerId)
+
+            if (blockerPos && attackerPos) {
+              newArrows.push({
+                start: blockerPos,
+                end: attackerPos,
+                blockerId,
+              })
+            }
           }
         }
       } else if (gameStateCombat && gameStateCombat.blockers.length > 0 && isInCombatPhase) {

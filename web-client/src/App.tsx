@@ -98,10 +98,10 @@ export default function App() {
         if (JSON.stringify(updatedValidCreatures) !== JSON.stringify([...combatState.validCreatures])) {
           // Clean stale blocker assignments for creatures no longer in valid list
           const validSet = new Set(updatedValidCreatures)
-          const cleanedAssignments: Record<EntityId, EntityId> = {}
-          for (const [blockerId, attackerId] of Object.entries(combatState.blockerAssignments)) {
+          const cleanedAssignments: Record<EntityId, EntityId[]> = {}
+          for (const [blockerId, attackerIds] of Object.entries(combatState.blockerAssignments)) {
             if (validSet.has(blockerId as EntityId)) {
-              cleanedAssignments[blockerId as EntityId] = attackerId
+              cleanedAssignments[blockerId as EntityId] = attackerIds
             }
           }
           startCombat({
@@ -160,11 +160,11 @@ export default function App() {
         .map((a) => a.creatureId) ?? []
 
       // Pre-populate blocker assignments for must-be-blocked attackers
-      const blockerAssignments: Record<EntityId, EntityId> = {}
+      const blockerAssignments: Record<EntityId, EntityId[]> = {}
       if (mustBeBlockedAttackers.length > 0 && validCreatures.length > 0) {
         const firstMustBlock = mustBeBlockedAttackers[0]!
         for (const blockerId of validCreatures) {
-          blockerAssignments[blockerId] = firstMustBlock
+          blockerAssignments[blockerId] = [firstMustBlock]
         }
       }
 

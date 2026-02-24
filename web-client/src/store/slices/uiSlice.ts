@@ -47,7 +47,7 @@ export interface UISliceState {
     source: string | null
     isYourReveal: boolean
   } | null
-  opponentBlockerAssignments: Record<EntityId, EntityId> | null
+  opponentBlockerAssignments: Record<EntityId, EntityId[]> | null
   drawAnimations: readonly DrawAnimation[]
   damageAnimations: readonly DamageAnimation[]
   revealAnimations: readonly RevealAnimation[]
@@ -441,9 +441,12 @@ export const createUISlice: SliceCreator<UISlice> = (set, get) => ({
         return state
       }
 
+      const existing = state.combatState.blockerAssignments[blockerId] ?? []
+      // If already blocking this attacker, don't add duplicate
+      if (existing.includes(attackerId)) return state
       const newAssignments = {
         ...state.combatState.blockerAssignments,
-        [blockerId]: attackerId,
+        [blockerId]: [...existing, attackerId],
       }
 
       getWebSocket()?.send(createUpdateBlockerAssignmentsMessage(newAssignments))
@@ -532,8 +535,8 @@ export const createUISlice: SliceCreator<UISlice> = (set, get) => ({
       getWebSocket()?.send(createSubmitActionMessage(action))
     } else if (combatState.mode === 'declareBlockers') {
       const blockers: Record<EntityId, readonly EntityId[]> = {}
-      for (const [blockerIdStr, attackerId] of Object.entries(combatState.blockerAssignments)) {
-        blockers[entityId(blockerIdStr)] = [attackerId]
+      for (const [blockerIdStr, attackerIds] of Object.entries(combatState.blockerAssignments)) {
+        blockers[entityId(blockerIdStr)] = attackerIds
       }
 
       const action = {

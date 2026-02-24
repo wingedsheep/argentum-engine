@@ -89,8 +89,8 @@ export interface CombatState {
   mode: 'declareAttackers' | 'declareBlockers'
   /** Selected attackers (creature IDs) */
   selectedAttackers: readonly EntityId[]
-  /** Blocker assignments: blocker ID -> attacker ID */
-  blockerAssignments: Record<EntityId, EntityId>
+  /** Blocker assignments: blocker ID -> attacker IDs (supports blocking multiple attackers) */
+  blockerAssignments: Record<EntityId, EntityId[]>
   /** Valid creatures that can participate (attackers or blockers depending on mode) */
   validCreatures: readonly EntityId[]
   /** For blockers mode: creatures that are attacking */
@@ -480,7 +480,7 @@ export type GameStore = {
     source: string | null
     isYourReveal: boolean
   } | null
-  opponentBlockerAssignments: Record<EntityId, EntityId> | null
+  opponentBlockerAssignments: Record<EntityId, EntityId[]> | null
   drawAnimations: readonly DrawAnimation[]
   damageAnimations: readonly DamageAnimation[]
   revealAnimations: readonly RevealAnimation[]

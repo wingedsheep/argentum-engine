@@ -726,8 +726,8 @@ sealed interface ServerMessage {
     @Serializable
     @SerialName("opponentBlockerAssignments")
     data class OpponentBlockerAssignments(
-        /** Map of blocker creature ID to attacker creature ID */
-        val assignments: Map<EntityId, EntityId>
+        /** Map of blocker creature ID to attacker creature IDs */
+        val assignments: Map<EntityId, List<EntityId>>
     ) : ServerMessage
 }
 

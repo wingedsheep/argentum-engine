@@ -935,8 +935,8 @@ export interface SpectatingStoppedMessage {
  */
 export interface OpponentBlockerAssignmentsMessage {
   readonly type: 'opponentBlockerAssignments'
-  /** Map of blocker creature ID to attacker creature ID */
-  readonly assignments: Record<EntityId, EntityId>
+  /** Map of blocker creature ID to attacker creature IDs */
+  readonly assignments: Record<EntityId, EntityId[]>
 }
 
 /**
@@ -1322,8 +1322,8 @@ export interface KickPlayerMessage {
  */
 export interface UpdateBlockerAssignmentsMessage {
   readonly type: 'updateBlockerAssignments'
-  /** Map of blocker creature ID to attacker creature ID */
-  readonly assignments: Record<EntityId, EntityId>
+  /** Map of blocker creature ID to attacker creature IDs */
+  readonly assignments: Record<EntityId, EntityId[]>
 }
 
 // Game Settings Client Messages
@@ -1438,7 +1438,7 @@ export function createKickPlayerMessage(playerId: string): KickPlayerMessage {
 }
 
 export function createUpdateBlockerAssignmentsMessage(
-  assignments: Record<EntityId, EntityId>
+  assignments: Record<EntityId, EntityId[]>
 ): UpdateBlockerAssignmentsMessage {
   return { type: 'updateBlockerAssignments', assignments }
 }

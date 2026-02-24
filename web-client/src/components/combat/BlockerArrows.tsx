@@ -37,13 +37,15 @@ export function BlockerArrows() {
       </defs>
 
       {/* Draw arrows for existing blocker assignments */}
-      {Object.entries(combatState.blockerAssignments).map(([blockerIdStr, attackerId]) => (
-        <BlockerArrow
-          key={blockerIdStr}
-          blockerId={entityId(blockerIdStr)}
-          attackerId={attackerId}
-        />
-      ))}
+      {Object.entries(combatState.blockerAssignments).flatMap(([blockerIdStr, attackerIds]) =>
+        attackerIds.map((attackerId) => (
+          <BlockerArrow
+            key={`${blockerIdStr}-${attackerId}`}
+            blockerId={entityId(blockerIdStr)}
+            attackerId={attackerId}
+          />
+        ))
+      )}
     </svg>
   )
 }
@@ -103,7 +105,7 @@ export function useBlockerDrag() {
     // Check if this is a valid blocker
     if (combatState.validCreatures.includes(creatureId)) {
       // If already assigned, remove assignment
-      if (combatState.blockerAssignments[creatureId]) {
+      if (combatState.blockerAssignments[creatureId]?.length) {
         removeBlockerAssignment(creatureId)
       }
       // Otherwise, this will be handled by the attacker click
