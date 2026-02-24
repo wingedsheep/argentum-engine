@@ -57,6 +57,7 @@ object ScourgeSet {
         MercurialKite,
         MistformWarchief,
         RavenGuildInitiate,
+        RavenGuildMaster,
         RiptideSurvivor,
         ScornfulEgotist,
         ShorelineRanger,
@@ -112,6 +113,7 @@ object ScourgeSet {
 
         // Black enchantments
         ClutchOfUndeath,
+        FatalMutation,
         LingeringDeath,
         UnspeakableSymbol,
 

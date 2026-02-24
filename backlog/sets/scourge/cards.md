@@ -3,13 +3,13 @@
 
 **Set Size:** 143 cards
 **Release Date:** May 26, 2003
-**Implemented:** 65 / 143
+**Implemented:** 67 / 143
 
 | Color | Count |
 |-------|-------|
 | White | 13 |
-| Blue | 12 |
-| Black | 12 |
+| Blue | 13 |
+| Black | 13 |
 | Red | 13 |
 | Green | 13 |
 | Multicolor | 1 |
@@ -73,7 +73,7 @@
 - [ ] Exiled Doomsayer
 - [ ] Extra Arms
 - [ ] Faces of the Past
-- [ ] Fatal Mutation
+- [x] Fatal Mutation
 - [x] Fierce Empath
 - [ ] Final Punishment
 - [ ] Force Bubble
@@ -115,7 +115,7 @@
 - [x] Pyrostatic Pillar
 - [x] Rain of Blades
 - [x] Raven Guild Initiate
-- [ ] Raven Guild Master
+- [x] Raven Guild Master
 - [ ] Reaping the Graves
 - [x] Recuperate
 - [x] Reward the Faithful

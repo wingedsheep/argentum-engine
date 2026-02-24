@@ -425,6 +425,16 @@ sealed interface GameEvent {
         override val description: String = "when enchanted creature deals combat damage to a player"
     }
 
+    /**
+     * When the enchanted creature is turned face up.
+     * Special case for auras like Fatal Mutation.
+     */
+    @SerialName("EnchantedCreatureTurnedFaceUpEvent")
+    @Serializable
+    data object EnchantedCreatureTurnedFaceUpEvent : GameEvent {
+        override val description: String = "when enchanted creature is turned face up"
+    }
+
     // ---- Spell/Card Triggers ----
 
     /**
