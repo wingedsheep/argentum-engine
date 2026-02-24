@@ -45,7 +45,8 @@ object KhansOfTarkirSet {
         HighspireMantis,
         UtterEnd,
 
-        // Colorless creatures
+        // Colorless
+        AbzanBanner,
         WitnessOfTheAges,
 
         // Lands
