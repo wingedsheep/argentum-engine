@@ -235,6 +235,24 @@ class CardBuilder(private val name: String) {
     }
 
     /**
+     * Add Prowess — keyword + triggered ability (+1/+1 on noncreature spell cast).
+     */
+    fun prowess() {
+        keywordSet.add(Keyword.PROWESS)
+        triggeredAbilities.add(
+            TriggeredAbility.create(
+                trigger = Triggers.YouCastNoncreature.event,
+                binding = Triggers.YouCastNoncreature.binding,
+                effect = ModifyStatsEffect(
+                    powerModifier = 1,
+                    toughnessModifier = 1,
+                    target = EffectTarget.Self
+                )
+            )
+        )
+    }
+
+    /**
      * Add a parameterized keyword ability.
      * Examples: ward {2}, protection from blue, annihilator 2
      */

@@ -1,11 +1,7 @@
 package com.wingedsheep.mtg.sets.definitions.khans.cards
 
-import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
-import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.targets.EffectTarget
-import com.wingedsheep.sdk.scripting.effects.ModifyStatsEffect
 
 /**
  * Jeskai Student
@@ -21,16 +17,7 @@ val JeskaiStudent = card("Jeskai Student") {
     toughness = 3
     oracleText = "Prowess (Whenever you cast a noncreature spell, this creature gets +1/+1 until end of turn.)"
 
-    keywords(Keyword.PROWESS)
-
-    triggeredAbility {
-        trigger = Triggers.YouCastNoncreature
-        effect = ModifyStatsEffect(
-            powerModifier = 1,
-            toughnessModifier = 1,
-            target = EffectTarget.Self
-        )
-    }
+    prowess()
 
     metadata {
         rarity = Rarity.COMMON

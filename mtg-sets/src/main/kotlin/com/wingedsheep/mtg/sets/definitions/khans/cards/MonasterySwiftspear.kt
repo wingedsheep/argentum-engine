@@ -1,11 +1,8 @@
 package com.wingedsheep.mtg.sets.definitions.khans.cards
 
-import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.targets.EffectTarget
-import com.wingedsheep.sdk.scripting.effects.ModifyStatsEffect
 
 /**
  * Monastery Swiftspear
@@ -22,16 +19,8 @@ val MonasterySwiftspear = card("Monastery Swiftspear") {
     toughness = 2
     oracleText = "Haste\nProwess (Whenever you cast a noncreature spell, this creature gets +1/+1 until end of turn.)"
 
-    keywords(Keyword.HASTE, Keyword.PROWESS)
-
-    triggeredAbility {
-        trigger = Triggers.YouCastNoncreature
-        effect = ModifyStatsEffect(
-            powerModifier = 1,
-            toughnessModifier = 1,
-            target = EffectTarget.Self
-        )
-    }
+    keywords(Keyword.HASTE)
+    prowess()
 
     metadata {
         rarity = Rarity.UNCOMMON
