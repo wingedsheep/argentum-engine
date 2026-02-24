@@ -26,6 +26,7 @@ object KhansOfTarkirSet {
         JeskaiStudent,
 
         // Blue creatures
+        JeskaiWindscout,
         WetlandSambar,
 
         // Black instants

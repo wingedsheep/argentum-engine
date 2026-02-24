@@ -2,12 +2,12 @@
 
 **Set Size:** 269 cards (249 unique card names + basic land variants)
 **Release Date:** September 26, 2014
-**Implemented:** 10 / 249
+**Implemented:** 11 / 249
 
 | Color      | Count |
 |------------|-------|
 | White      | 2     |
-| Blue       | 1     |
+| Blue       | 2     |
 | Black      | 1     |
 | Red        | 2     |
 | Green      | 2     |
@@ -122,7 +122,7 @@
 - [ ] Jeskai Charm
 - [ ] Jeskai Elder
 - [x] Jeskai Student
-- [ ] Jeskai Windscout
+- [x] Jeskai Windscout
 - [ ] Jungle Hollow
 - [ ] Kheru Bloodsucker
 - [ ] Kheru Dreadmaw
