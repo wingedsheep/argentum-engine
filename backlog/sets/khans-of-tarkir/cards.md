@@ -2,7 +2,7 @@
 
 **Set Size:** 269 cards (249 unique card names + basic land variants)
 **Release Date:** September 26, 2014
-**Implemented:** 7 / 249
+**Implemented:** 8 / 249
 
 | Color      | Count |
 |------------|-------|
@@ -12,7 +12,7 @@
 | Red        | 2     |
 | Green      | 1     |
 | Multicolor | 1     |
-| Colorless  | 0     |
+| Colorless  | 1     |
 | Land       | 0     |
 
 ---
@@ -262,7 +262,7 @@
 - [ ] Windswept Heath
 - [ ] Wingmate Roc
 - [ ] Winterflame
-- [ ] Witness of the Ages
+- [x] Witness of the Ages
 - [ ] Wooded Foothills
 - [ ] Woolly Loxodon
 - [ ] Zurgo Helmsmasher

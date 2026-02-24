@@ -39,5 +39,8 @@ object KhansOfTarkirSet {
 
         // Multicolor creatures
         HighspireMantis,
+
+        // Colorless creatures
+        WitnessOfTheAges,
     )
 }
