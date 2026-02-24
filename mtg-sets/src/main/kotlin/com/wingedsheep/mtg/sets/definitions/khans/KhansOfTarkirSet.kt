@@ -41,6 +41,7 @@ object KhansOfTarkirSet {
         HighlandGame,
 
         // Red creatures
+        LeapingMaster,
         MonasterySwiftspear,
         SummitProwler,
 

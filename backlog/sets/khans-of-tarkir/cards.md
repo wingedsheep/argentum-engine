@@ -2,14 +2,14 @@
 
 **Set Size:** 269 cards (249 unique card names + basic land variants)
 **Release Date:** September 26, 2014
-**Implemented:** 16 / 249
+**Implemented:** 17 / 249
 
 | Color      | Count |
 |------------|-------|
 | White      | 3     |
 | Blue       | 2     |
 | Black      | 2     |
-| Red        | 2     |
+| Red        | 3     |
 | Green      | 2     |
 | Multicolor | 2     |
 | Colorless  | 2     |
@@ -132,7 +132,7 @@
 - [ ] Kin-Tree Invocation
 - [ ] Kin-Tree Warden
 - [ ] Krumar Bond-Kin
-- [ ] Leaping Master
+- [x] Leaping Master
 - [ ] Lens of Clarity
 - [ ] Longshot Squad
 - [ ] Mantis Rider
