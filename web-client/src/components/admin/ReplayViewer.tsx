@@ -444,6 +444,8 @@ const styles: Record<string, React.CSSProperties> = {
     justifyContent: 'center',
     alignItems: 'flex-start',
     paddingTop: 80,
+    paddingBottom: 80,
+    overflowY: 'auto',
     fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
   },
   listContainer: {
