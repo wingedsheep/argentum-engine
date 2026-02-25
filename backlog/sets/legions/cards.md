@@ -2,12 +2,12 @@
 
 **Set Size:** 145 cards
 **Release Date:** February 3, 2003
-**Implemented:** 1 / 145
+**Implemented:** 2 / 145
 
 | Color      | Count |
 |------------|-------|
 | White      | 29    |
-| Blue       | 29    |
+| Blue       | 1/29  |
 | Black      | 29    |
 | Red        | 1/29  |
 | Green      | 29    |
@@ -98,7 +98,7 @@
 - [ ] Macetail Hystrodon
 - [ ] Magma Sliver
 - [ ] Master of the Veil
-- [ ] Merchant of Secrets
+- [x] Merchant of Secrets
 - [ ] Mistform Seaswift
 - [ ] Mistform Sliver
 - [ ] Mistform Ultimus
