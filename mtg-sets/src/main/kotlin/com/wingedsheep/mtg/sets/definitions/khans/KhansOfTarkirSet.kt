@@ -40,6 +40,9 @@ object KhansOfTarkirSet {
         AlpineGrizzly,
         HighlandGame,
 
+        // Green spells
+        AwakenTheBear,
+
         // Red creatures
         LeapingMaster,
         MonasterySwiftspear,

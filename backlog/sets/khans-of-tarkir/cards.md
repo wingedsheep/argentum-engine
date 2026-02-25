@@ -2,7 +2,7 @@
 
 **Set Size:** 269 cards (249 unique card names + basic land variants)
 **Release Date:** September 26, 2014
-**Implemented:** 17 / 249
+**Implemented:** 18 / 249
 
 | Color      | Count |
 |------------|-------|
@@ -10,7 +10,7 @@
 | Blue       | 2     |
 | Black      | 2     |
 | Red        | 3     |
-| Green      | 2     |
+| Green      | 3     |
 | Multicolor | 2     |
 | Colorless  | 2     |
 | Land       | 1     |
@@ -38,7 +38,7 @@
 - [ ] Arrow Storm
 - [ ] Ashcloud Phoenix
 - [ ] Avalanche Tusker
-- [ ] Awaken the Bear
+- [x] Awaken the Bear
 - [ ] Barrage of Boulders
 - [ ] Bear's Companion
 - [ ] Become Immense
