@@ -2,13 +2,13 @@
 
 **Set Size:** 269 cards (249 unique card names + basic land variants)
 **Release Date:** September 26, 2014
-**Implemented:** 30 / 249
+**Implemented:** 31 / 249
 
 | Color      | Count |
 |------------|-------|
 | White      | 4     |
 | Blue       | 4     |
-| Black      | 4     |
+| Black      | 5     |
 | Red        | 4     |
 | Green      | 4     |
 | Multicolor | 4     |
@@ -99,7 +99,7 @@
 - [ ] Glacial Stalker
 - [ ] Goblinslide
 - [ ] Grim Haruspex
-- [ ] Gurmag Swiftwing
+- [x] Gurmag Swiftwing
 - [ ] Hardened Scales
 - [ ] Heart-Piercer Bow
 - [ ] Heir of the Wilds

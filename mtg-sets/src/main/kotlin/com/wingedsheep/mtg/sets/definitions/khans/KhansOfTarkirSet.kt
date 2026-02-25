@@ -37,6 +37,9 @@ object KhansOfTarkirSet {
         // Blue spells
         WeaveFate,
 
+        // Black creatures
+        GurmagSwiftwing,
+
         // Black spells
         BitterRevelation,
         DebilitatingInjury,
