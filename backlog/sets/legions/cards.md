@@ -4,6 +4,14 @@
 **Release Date:** February 3, 2003
 **Implemented:** 0 / 145
 
+| Color      | Count |
+|------------|-------|
+| White      | 29    |
+| Blue       | 29    |
+| Black      | 29    |
+| Red        | 29    |
+| Green      | 29    |
+
 ---
 
 - [ ] Akroma, Angel of Wrath
