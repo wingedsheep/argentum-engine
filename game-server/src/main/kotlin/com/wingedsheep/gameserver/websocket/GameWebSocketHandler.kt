@@ -70,6 +70,7 @@ class GameWebSocketHandler(
                 is ClientMessage.ChooseBottomCards,
                 is ClientMessage.UpdateBlockerAssignments,
                 is ClientMessage.SetFullControl,
+                is ClientMessage.SetPriorityMode,
                 is ClientMessage.SetStopOverrides,
                 is ClientMessage.RequestUndo -> gamePlayHandler.handle(session, clientMessage)
 

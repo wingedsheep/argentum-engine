@@ -13,10 +13,11 @@ import {
   createConcedeMessage,
   createCancelGameMessage,
   createSetFullControlMessage,
+  createSetPriorityModeMessage,
   createSetStopOverridesMessage,
   createRequestUndoMessage,
 } from '../../types'
-import type { Step } from '../../types'
+import type { Step, PriorityModeValue } from '../../types'
 import { trackEvent } from '../../utils/analytics'
 import { getWebSocket } from './shared'
 
@@ -32,6 +33,7 @@ export interface GameplaySliceState {
   gameOverState: GameOverState | null
   lastError: ErrorState | null
   fullControl: boolean
+  priorityMode: PriorityModeValue
   stopOverrides: { myTurnStops: Step[]; opponentTurnStops: Step[] }
   nextStopPoint: string | null
   opponentName: string | null
@@ -61,6 +63,7 @@ export interface GameplaySliceActions {
   concede: () => void
   cancelGame: () => void
   setFullControl: (enabled: boolean) => void
+  cyclePriorityMode: () => void
   toggleStopOverride: (step: Step, isMyTurn: boolean) => void
   requestUndo: () => void
   returnToMenu: () => void
@@ -83,6 +86,7 @@ export const createGameplaySlice: SliceCreator<GameplaySlice> = (set, get) => ({
   gameOverState: null,
   lastError: null,
   fullControl: false,
+  priorityMode: 'auto' as PriorityModeValue,
   stopOverrides: { myTurnStops: [], opponentTurnStops: [] },
   nextStopPoint: null,
   opponentName: null,
@@ -331,6 +335,16 @@ export const createGameplaySlice: SliceCreator<GameplaySlice> = (set, get) => ({
     set({ fullControl: enabled })
   },
 
+  cyclePriorityMode: () => {
+    const { priorityMode } = get()
+    const nextMode: PriorityModeValue =
+      priorityMode === 'auto' ? 'stops' :
+      priorityMode === 'stops' ? 'fullControl' :
+      'auto'
+    getWebSocket()?.send(createSetPriorityModeMessage(nextMode))
+    set({ priorityMode: nextMode, fullControl: nextMode === 'fullControl' })
+  },
+
   toggleStopOverride: (step, isMyTurn) => {
     const { stopOverrides } = get()
     const key = isMyTurn ? 'myTurnStops' : 'opponentTurnStops'
@@ -370,6 +384,7 @@ export const createGameplaySlice: SliceCreator<GameplaySlice> = (set, get) => ({
       revealedHandCardIds: null,
       revealedCardsInfo: null,
       fullControl: false,
+      priorityMode: 'auto' as PriorityModeValue,
       undoAvailable: false,
       stopOverrides: { myTurnStops: [], opponentTurnStops: [] },
       nextStopPoint: null,

@@ -69,7 +69,8 @@ class AutoPassManager {
         playerId: EntityId,
         legalActions: List<LegalActionInfo>,
         myTurnStops: Set<Step> = emptySet(),
-        opponentTurnStops: Set<Step> = emptySet()
+        opponentTurnStops: Set<Step> = emptySet(),
+        stopsMode: Boolean = false
     ): Boolean {
         // If player doesn't have priority, can't pass
         if (state.priorityPlayerId != playerId) {
@@ -96,7 +97,14 @@ class AutoPassManager {
                 logger.debug("AUTO-PASS: Own spell/ability on top of stack")
                 return true
             } else {
-                // Opponent's item on top — check what type it is
+                // Opponent's item on top
+                // In Stops mode: always stop on opponent's stack items (regardless of type)
+                if (stopsMode) {
+                    logger.debug("STOP (Stops mode): Opponent's spell/ability on stack")
+                    return false
+                }
+
+                // Auto mode: check what type it is
                 val container = state.getEntity(topOfStack)
                 val isPermanentSpell = container?.get<SpellOnStackComponent>()?.let {
                     container.get<CardComponent>()?.isPermanent ?: false
@@ -128,6 +136,17 @@ class AutoPassManager {
         if (state.step in relevantStops) {
             logger.debug("STOP: Per-step stop override set for ${state.step}")
             return false
+        }
+
+        // Stops mode: stop at combat damage step when creatures are attacking you
+        if (stopsMode && !isMyTurn && (state.step == Step.COMBAT_DAMAGE || state.step == Step.FIRST_STRIKE_COMBAT_DAMAGE)) {
+            val hasAttackers = state.getBattlefield().any { entityId ->
+                state.getEntity(entityId)?.get<AttackingComponent>() != null
+            }
+            if (hasAttackers) {
+                logger.debug("STOP (Stops mode): Combat damage step with attackers")
+                return false
+            }
         }
 
         // Never auto-pass the active player's own main phases
@@ -489,7 +508,8 @@ class AutoPassManager {
         hasMeaningfulActions: Boolean,
         stateProjector: StateProjector? = null,
         myTurnStops: Set<Step> = emptySet(),
-        opponentTurnStops: Set<Step> = emptySet()
+        opponentTurnStops: Set<Step> = emptySet(),
+        stopsMode: Boolean = false
     ): String? {
         // If there's something on the stack, passing will resolve it
         if (state.stack.isNotEmpty()) {
@@ -549,7 +569,7 @@ class AutoPassManager {
             }
 
             // Check if we'd stop at this step
-            if (wouldStopAtStep(step, onMyTurn, hasMeaningfulActions, myTurnStops, opponentTurnStops)) {
+            if (wouldStopAtStep(step, onMyTurn, hasMeaningfulActions, myTurnStops, opponentTurnStops, stopsMode)) {
                 return formatStopPoint(step, onMyTurn, isMyTurn)
             }
         }
@@ -560,10 +580,15 @@ class AutoPassManager {
     /**
      * Determines if the player would stop at a given step (assuming no stack and no pending decision).
      */
-    private fun wouldStopAtStep(step: Step, isMyTurn: Boolean, hasMeaningfulActions: Boolean, myTurnStops: Set<Step> = emptySet(), opponentTurnStops: Set<Step> = emptySet()): Boolean {
+    private fun wouldStopAtStep(step: Step, isMyTurn: Boolean, hasMeaningfulActions: Boolean, myTurnStops: Set<Step> = emptySet(), opponentTurnStops: Set<Step> = emptySet(), stopsMode: Boolean = false): Boolean {
         // Check per-step stop overrides first
         val relevantStops = if (isMyTurn) myTurnStops else opponentTurnStops
         if (step in relevantStops) return true
+
+        // Stops mode: stop at combat damage when being attacked (opponent's turn)
+        if (stopsMode && !isMyTurn && (step == Step.COMBAT_DAMAGE || step == Step.FIRST_STRIKE_COMBAT_DAMAGE)) {
+            return true
+        }
 
         return if (isMyTurn) {
             !shouldAutoPassOnMyTurnForStep(step, hasMeaningfulActions)

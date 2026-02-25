@@ -244,12 +244,20 @@ sealed interface ClientMessage {
     // =========================================================================
 
     /**
-     * Toggle full control mode for the current game.
+     * Toggle full control mode for the current game (backward compatibility).
      * When enabled, auto-pass is disabled and player receives priority at every possible point.
      */
     @Serializable
     @SerialName("setFullControl")
     data class SetFullControl(val enabled: Boolean) : ClientMessage
+
+    /**
+     * Set priority mode for the current game.
+     * Values: "auto", "stops", "fullControl"
+     */
+    @Serializable
+    @SerialName("setPriorityMode")
+    data class SetPriorityMode(val mode: String) : ClientMessage
 
     /**
      * Set per-step stop overrides for the current game.

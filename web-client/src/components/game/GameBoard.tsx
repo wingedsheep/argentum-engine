@@ -47,8 +47,8 @@ export function GameBoard({ spectatorMode = false, topOffset = 0 }: GameBoardPro
   const attackWithAll = useGameStore((state) => state.attackWithAll)
   const priorityMode = useGameStore(selectPriorityMode)
   const nextStopPoint = useGameStore((state) => state.nextStopPoint)
-  const fullControl = useGameStore((state) => state.fullControl)
-  const setFullControl = useGameStore((state) => state.setFullControl)
+  const serverPriorityMode = useGameStore((state) => state.priorityMode)
+  const cyclePriorityMode = useGameStore((state) => state.cyclePriorityMode)
   const opponentDecisionStatus = useGameStore((state) => state.opponentDecisionStatus)
   const stopOverrides = useGameStore((state) => state.stopOverrides)
   const toggleStopOverride = useGameStore((state) => state.toggleStopOverride)
@@ -362,13 +362,17 @@ export function GameBoard({ spectatorMode = false, topOffset = 0 }: GameBoardPro
         </div>
       )}
 
-      {/* Full Control toggle button (bottom-right, above pass button) - hidden in spectator mode */}
+      {/* Priority mode toggle button (bottom-right, above pass button) - hidden in spectator mode */}
       {!spectatorMode && viewingPlayer && (
         <button
-          onClick={() => setFullControl(!fullControl)}
-          title={fullControl
-            ? 'Full Control ON: You will receive priority at every step. Click to disable.'
-            : 'Full Control OFF: Auto-passing enabled. Click to enable full control.'}
+          onClick={cyclePriorityMode}
+          title={
+            serverPriorityMode === 'fullControl'
+              ? 'Full Control: You receive priority at every step. Click to switch to Auto.'
+              : serverPriorityMode === 'stops'
+              ? 'Stops: Pauses on opponent spells/abilities and combat damage. Click to switch to Full Control.'
+              : 'Auto: Smart auto-passing. Click to switch to Stops.'
+          }
           style={{
             position: 'fixed',
             bottom: responsive.isMobile ? 60 : 70,
@@ -376,16 +380,27 @@ export function GameBoard({ spectatorMode = false, topOffset = 0 }: GameBoardPro
             padding: responsive.isMobile ? '4px 10px' : '6px 12px',
             fontSize: responsive.fontSize.small,
             fontWeight: 500,
-            backgroundColor: fullControl ? 'rgba(79, 195, 247, 0.9)' : 'rgba(40, 40, 40, 0.8)',
-            color: fullControl ? '#000' : '#999',
-            border: fullControl ? '1px solid #4fc3f7' : '1px solid #555',
+            backgroundColor:
+              serverPriorityMode === 'fullControl' ? 'rgba(79, 195, 247, 0.9)' :
+              serverPriorityMode === 'stops' ? 'rgba(245, 158, 11, 0.9)' :
+              'rgba(40, 40, 40, 0.8)',
+            color:
+              serverPriorityMode === 'fullControl' ? '#000' :
+              serverPriorityMode === 'stops' ? '#000' :
+              '#999',
+            border:
+              serverPriorityMode === 'fullControl' ? '1px solid #4fc3f7' :
+              serverPriorityMode === 'stops' ? '1px solid #f59e0b' :
+              '1px solid #555',
             borderRadius: 4,
             cursor: 'pointer',
             transition: 'all 0.2s',
             zIndex: 100,
           }}
         >
-          {fullControl ? 'Full Control' : 'Auto'}
+          {serverPriorityMode === 'fullControl' ? 'Full Control' :
+           serverPriorityMode === 'stops' ? 'Stops' :
+           'Auto'}
         </button>
       )}
 

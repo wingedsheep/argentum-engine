@@ -285,6 +285,9 @@ export function createMessageHandlers(set: SetState, get: GetState): MessageHand
           }
         : undefined
 
+      // Sync priority mode from server echo
+      const serverPriorityMode = msg.priorityMode ?? undefined
+
       set((state) => ({
         gameState: msg.state,
         legalActions: msg.legalActions,
@@ -292,6 +295,7 @@ export function createMessageHandlers(set: SetState, get: GetState): MessageHand
         opponentDecisionStatus: msg.opponentDecisionStatus ?? null,
         nextStopPoint: msg.nextStopPoint ?? null,
         undoAvailable: msg.undoAvailable ?? false,
+        ...(serverPriorityMode ? { priorityMode: serverPriorityMode, fullControl: serverPriorityMode === 'fullControl' } : {}),
         ...(serverOverrides ? { stopOverrides: serverOverrides } : {}),
         pendingEvents: [...state.pendingEvents, ...msg.events],
         eventLog: (msg.state.gameLog ?? []).map((e) => ({

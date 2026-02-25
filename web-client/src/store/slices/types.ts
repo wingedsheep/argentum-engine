@@ -393,6 +393,7 @@ export type GameStore = {
   gameOverState: GameOverState | null
   lastError: ErrorState | null
   fullControl: boolean
+  priorityMode: import('../../types').PriorityModeValue
   stopOverrides: { myTurnStops: Step[]; opponentTurnStops: Step[] }
   nextStopPoint: string | null
   opponentName: string | null
@@ -421,6 +422,7 @@ export type GameStore = {
   requestUndo: () => void
   cancelGame: () => void
   setFullControl: (enabled: boolean) => void
+  cyclePriorityMode: () => void
   toggleStopOverride: (step: Step, isMyTurn: boolean) => void
   returnToMenu: () => void
   clearError: () => void

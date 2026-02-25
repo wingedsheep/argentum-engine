@@ -86,7 +86,9 @@ sealed interface ServerMessage {
         /** Per-step stop overrides for this player (echoed back for client sync) */
         val stopOverrides: StopOverrideInfo? = null,
         /** Whether the player can undo their last action */
-        val undoAvailable: Boolean = false
+        val undoAvailable: Boolean = false,
+        /** Current priority mode for this player (auto, stops, fullControl) */
+        val priorityMode: String? = null
     ) : ServerMessage
 
     /**

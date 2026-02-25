@@ -65,6 +65,7 @@ class GamePlayHandler(
             is ClientMessage.ChooseBottomCards -> handleChooseBottomCards(session, message)
             is ClientMessage.UpdateBlockerAssignments -> handleUpdateBlockerAssignments(session, message)
             is ClientMessage.SetFullControl -> handleSetFullControl(session, message)
+            is ClientMessage.SetPriorityMode -> handleSetPriorityMode(session, message)
             is ClientMessage.SetStopOverrides -> handleSetStopOverrides(session, message)
             is ClientMessage.RequestUndo -> handleRequestUndo(session)
             else -> {}
@@ -616,6 +617,32 @@ class GamePlayHandler(
 
         gameSession.setFullControl(playerSession.playerId, message.enabled)
         logger.info("Player ${playerSession.playerName} set full control to ${message.enabled}")
+
+        // Broadcast state update so the UI reflects the change
+        broadcastStateUpdate(gameSession, emptyList())
+    }
+
+    private fun handleSetPriorityMode(session: WebSocketSession, message: ClientMessage.SetPriorityMode) {
+        val playerSession = sessionRegistry.getPlayerSession(session.id)
+        if (playerSession == null) {
+            sender.sendError(session, ErrorCode.NOT_CONNECTED, "Not connected")
+            return
+        }
+
+        val gameSession = getGameSession(session, playerSession) ?: return
+
+        val mode = when (message.mode) {
+            "auto" -> GameSession.PriorityMode.AUTO
+            "stops" -> GameSession.PriorityMode.STOPS
+            "fullControl" -> GameSession.PriorityMode.FULL_CONTROL
+            else -> {
+                sender.sendError(session, ErrorCode.INVALID_ACTION, "Invalid priority mode: ${message.mode}")
+                return
+            }
+        }
+
+        gameSession.setPriorityMode(playerSession.playerId, mode)
+        logger.info("Player ${playerSession.playerName} set priority mode to ${message.mode}")
 
         // Broadcast state update so the UI reflects the change
         broadcastStateUpdate(gameSession, emptyList())

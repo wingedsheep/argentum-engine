@@ -253,8 +253,10 @@ export type {
   KickPlayerMessage,
   // Game Settings types
   SetFullControlMessage,
+  SetPriorityModeMessage,
   SetStopOverridesMessage,
   StopOverrideInfo,
+  PriorityModeValue,
 } from './messages'
 export {
   isConnectedMessage,
@@ -329,6 +331,7 @@ export {
   createUpdateBlockerAssignmentsMessage,
   // Game Settings factories
   createSetFullControlMessage,
+  createSetPriorityModeMessage,
   createSetStopOverridesMessage,
   createRequestUndoMessage,
 } from './messages'

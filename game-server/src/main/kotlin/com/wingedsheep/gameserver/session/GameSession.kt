@@ -88,8 +88,8 @@ class GameSession(
     /** Accumulated game log per player (player-specific due to masking) */
     private val gameLogs = java.util.concurrent.ConcurrentHashMap<EntityId, MutableList<ClientEvent>>()
 
-    /** Per-player full control setting (disables auto-pass when enabled) */
-    private val fullControlEnabled = java.util.concurrent.ConcurrentHashMap<EntityId, Boolean>()
+    /** Per-player priority mode setting (AUTO = smart auto-pass, STOPS = stop on opponent stack + combat damage, FULL_CONTROL = never auto-pass) */
+    private val priorityModes = java.util.concurrent.ConcurrentHashMap<EntityId, PriorityMode>()
     private val stopOverrides = java.util.concurrent.ConcurrentHashMap<EntityId, StopOverrideSettings>()
 
     // Replay recording
@@ -101,6 +101,12 @@ class GameSession(
         val myTurnStops: Set<Step> = emptySet(),
         val opponentTurnStops: Set<Step> = emptySet()
     )
+
+    enum class PriorityMode {
+        AUTO,
+        STOPS,
+        FULL_CONTROL
+    }
 
     val player1: PlayerSession? get() = players.values.firstOrNull()
     val player2: PlayerSession? get() = players.values.drop(1).firstOrNull()
@@ -518,11 +524,12 @@ class GameSession(
 
         // Calculate next stop point for the Pass button (only if player has priority)
         val playerOverrides = getStopOverrides(playerId)
-        val nextStopPoint = if (state.priorityPlayerId == playerId && !isFullControlEnabled(playerId)) {
+        val playerMode = getPriorityMode(playerId)
+        val nextStopPoint = if (state.priorityPlayerId == playerId && playerMode != PriorityMode.FULL_CONTROL) {
             val hasMeaningfulActions = legalActions.any { action ->
                 action.actionType != "PassPriority" && !action.isManaAbility
             }
-            autoPassManager.getNextStopPoint(state, playerId, hasMeaningfulActions, stateProjector, playerOverrides.myTurnStops, playerOverrides.opponentTurnStops)
+            autoPassManager.getNextStopPoint(state, playerId, hasMeaningfulActions, stateProjector, playerOverrides.myTurnStops, playerOverrides.opponentTurnStops, stopsMode = playerMode == PriorityMode.STOPS)
         } else {
             null
         }
@@ -538,27 +545,49 @@ class GameSession(
         } else {
             null
         }
-        return ServerMessage.StateUpdate(stateWithLog, clientEvents, legalActions, pendingDecision, nextStopPoint, opponentDecisionStatus, stopOverrideInfo, isUndoAvailable(playerId))
+        val priorityModeStr = when (playerMode) {
+            PriorityMode.AUTO -> "auto"
+            PriorityMode.STOPS -> "stops"
+            PriorityMode.FULL_CONTROL -> "fullControl"
+        }
+        return ServerMessage.StateUpdate(stateWithLog, clientEvents, legalActions, pendingDecision, nextStopPoint, opponentDecisionStatus, stopOverrideInfo, isUndoAvailable(playerId), priorityModeStr)
     }
 
     // =========================================================================
-    // Full Control Settings
+    // Priority Mode Settings
     // =========================================================================
 
     /**
-     * Set full control mode for a player.
+     * Set priority mode for a player.
+     * AUTO = Arena-style smart auto-passing
+     * STOPS = Stop on opponent stack items + combat damage
+     * FULL_CONTROL = Never auto-pass
+     */
+    fun setPriorityMode(playerId: EntityId, mode: PriorityMode) {
+        priorityModes[playerId] = mode
+        logger.info("Player $playerId set priority mode to $mode")
+    }
+
+    /**
+     * Get priority mode for a player.
+     */
+    fun getPriorityMode(playerId: EntityId): PriorityMode {
+        return priorityModes[playerId] ?: PriorityMode.AUTO
+    }
+
+    /**
+     * Set full control mode for a player (backward compatibility).
      * When enabled, auto-pass is disabled and the player receives priority at every possible point.
      */
     fun setFullControl(playerId: EntityId, enabled: Boolean) {
-        fullControlEnabled[playerId] = enabled
-        logger.info("Player $playerId set full control to $enabled")
+        setPriorityMode(playerId, if (enabled) PriorityMode.FULL_CONTROL else PriorityMode.AUTO)
     }
 
     /**
      * Check if a player has full control mode enabled.
      */
     fun isFullControlEnabled(playerId: EntityId): Boolean {
-        return fullControlEnabled[playerId] ?: false
+        return getPriorityMode(playerId) == PriorityMode.FULL_CONTROL
     }
 
     // =========================================================================
@@ -601,7 +630,8 @@ class GameSession(
         val priorityPlayer = state.priorityPlayerId ?: return null
 
         // Check if player has full control enabled - never auto-pass
-        if (isFullControlEnabled(priorityPlayer)) {
+        val playerMode = getPriorityMode(priorityPlayer)
+        if (playerMode == PriorityMode.FULL_CONTROL) {
             return null
         }
 
@@ -633,7 +663,7 @@ class GameSession(
             overrides
         }
 
-        return if (autoPassManager.shouldAutoPass(state, priorityPlayer, legalActions, effectiveOverrides.myTurnStops, effectiveOverrides.opponentTurnStops)) {
+        return if (autoPassManager.shouldAutoPass(state, priorityPlayer, legalActions, effectiveOverrides.myTurnStops, effectiveOverrides.opponentTurnStops, stopsMode = playerMode == PriorityMode.STOPS)) {
             priorityPlayer
         } else {
             null

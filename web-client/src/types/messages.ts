@@ -144,6 +144,8 @@ export interface StateUpdateMessage {
   readonly stopOverrides?: StopOverrideInfo | null
   /** Whether the player can undo their last action */
   readonly undoAvailable?: boolean
+  /** Current priority mode for this player (auto, stops, fullControl) */
+  readonly priorityMode?: PriorityModeValue | null
 }
 
 // ============================================================================
@@ -1017,6 +1019,7 @@ export type ClientMessage =
   | UpdateBlockerAssignmentsMessage
   // Game Settings Messages
   | SetFullControlMessage
+  | SetPriorityModeMessage
   | SetStopOverridesMessage
   // Undo
   | RequestUndoMessage
@@ -1340,6 +1343,17 @@ export interface SetFullControlMessage {
 }
 
 /**
+ * Set priority mode for the current game.
+ * Values: "auto", "stops", "fullControl"
+ */
+export interface SetPriorityModeMessage {
+  readonly type: 'setPriorityMode'
+  readonly mode: PriorityModeValue
+}
+
+export type PriorityModeValue = 'auto' | 'stops' | 'fullControl'
+
+/**
  * Set per-step stop overrides for the current game.
  * When a stop is set for a step, auto-pass will not skip that step.
  */
@@ -1449,6 +1463,10 @@ export function createUpdateBlockerAssignmentsMessage(
 
 export function createSetFullControlMessage(enabled: boolean): SetFullControlMessage {
   return { type: 'setFullControl', enabled }
+}
+
+export function createSetPriorityModeMessage(mode: PriorityModeValue): SetPriorityModeMessage {
+  return { type: 'setPriorityMode', mode }
 }
 
 export function createSetStopOverridesMessage(myTurnStops: readonly string[], opponentTurnStops: readonly string[]): SetStopOverridesMessage {
