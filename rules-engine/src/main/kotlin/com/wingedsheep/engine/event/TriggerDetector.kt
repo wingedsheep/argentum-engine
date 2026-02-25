@@ -251,6 +251,7 @@ class TriggerDetector(
             val abilities = getTriggeredAbilities(entityId, cardComponent.cardDefinitionId, state)
 
             for (ability in abilities) {
+                if (ability.activeZone != Zone.BATTLEFIELD) continue
                 if (matchesTrigger(ability.trigger, ability.binding, event, entityId, controllerId, state)) {
                     // For "whenever a creature attacks" (AttackEvent with ANY binding),
                     // create one trigger per attacking creature (Rule 603.2c)
