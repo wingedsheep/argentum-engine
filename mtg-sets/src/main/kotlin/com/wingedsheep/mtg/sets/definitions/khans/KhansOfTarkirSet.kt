@@ -26,6 +26,7 @@ object KhansOfTarkirSet {
         JeskaiStudent,
 
         // White spells
+        DefiantStrike,
         KillShot,
 
         // Blue creatures
@@ -34,6 +35,7 @@ object KhansOfTarkirSet {
         WetlandSambar,
 
         // Black spells
+        BitterRevelation,
         DebilitatingInjury,
         Throttle,
 
@@ -50,6 +52,7 @@ object KhansOfTarkirSet {
         SummitProwler,
 
         // Multicolor
+        ChiefOfTheEdge,
         HighspireMantis,
         UtterEnd,
 
@@ -58,6 +61,7 @@ object KhansOfTarkirSet {
         WitnessOfTheAges,
 
         // Lands
+        JungleHollow,
         WindScarredCrag,
     )
 }

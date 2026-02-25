@@ -2,18 +2,18 @@
 
 **Set Size:** 269 cards (249 unique card names + basic land variants)
 **Release Date:** September 26, 2014
-**Implemented:** 19 / 249
+**Implemented:** 23 / 249
 
 | Color      | Count |
 |------------|-------|
-| White      | 3     |
+| White      | 4     |
 | Blue       | 3     |
-| Black      | 2     |
+| Black      | 3     |
 | Red        | 3     |
 | Green      | 3     |
-| Multicolor | 2     |
+| Multicolor | 3     |
 | Colorless  | 2     |
-| Land       | 1     |
+| Land       | 2     |
 
 ---
 
@@ -43,7 +43,7 @@
 - [ ] Bear's Companion
 - [ ] Become Immense
 - [ ] Bellowing Saddlebrute
-- [ ] Bitter Revelation
+- [x] Bitter Revelation
 - [ ] Blinding Spray
 - [ ] Bloodfell Caves
 - [ ] Bloodfire Expert
@@ -58,7 +58,7 @@
 - [ ] Butcher of the Horde
 - [ ] Cancel
 - [ ] Canyon Lurkers
-- [ ] Chief of the Edge
+- [x] Chief of the Edge
 - [ ] Chief of the Scale
 - [ ] Clever Impersonator
 - [ ] Crackling Doom
@@ -69,7 +69,7 @@
 - [ ] Dead Drop
 - [ ] Death Frenzy
 - [x] Debilitating Injury
-- [ ] Defiant Strike
+- [x] Defiant Strike
 - [ ] Deflecting Palm
 - [ ] Despise
 - [ ] Dig Through Time
@@ -123,7 +123,7 @@
 - [ ] Jeskai Elder
 - [x] Jeskai Student
 - [x] Jeskai Windscout
-- [ ] Jungle Hollow
+- [x] Jungle Hollow
 - [ ] Kheru Bloodsucker
 - [ ] Kheru Dreadmaw
 - [ ] Kheru Lich Lord
