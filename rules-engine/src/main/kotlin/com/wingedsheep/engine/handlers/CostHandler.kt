@@ -16,6 +16,7 @@ import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.ChosenCreatureTypeComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.identity.LifeTotalComponent
+import com.wingedsheep.engine.state.components.identity.OwnerComponent
 import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.Zone
@@ -117,6 +118,9 @@ class CostHandler {
                     if (hasSummoningSickness && !hasHaste) return false
                 }
                 true
+            }
+            is AbilityCost.ReturnToHand -> {
+                findMatchingPermanentsUnified(state, controllerId, cost.filter).isNotEmpty()
             }
             is AbilityCost.Composite -> {
                 cost.costs.all { canPayAbilityCost(state, it, sourceId, controllerId, manaPool) }
@@ -321,6 +325,43 @@ class CostHandler {
 
                 CostPaymentResult.success(newState, manaPool, events)
             }
+            is AbilityCost.ReturnToHand -> {
+                val toBounce = choices.bounceChoices.firstOrNull()
+                    ?: return CostPaymentResult.failure("No bounce target chosen")
+
+                val bounceContainer = state.getEntity(toBounce)
+                    ?: return CostPaymentResult.failure("Bounce target not found")
+                val bounceController = bounceContainer.get<ControllerComponent>()?.playerId
+                    ?: return CostPaymentResult.failure("Bounce target has no controller")
+                val bounceOwner = bounceContainer.get<OwnerComponent>()?.playerId
+                    ?: bounceController
+                val bounceName = bounceContainer.get<CardComponent>()?.name ?: "Unknown"
+
+                // Validate the chosen bounce target matches the required filter
+                val context = PredicateContext(controllerId = controllerId)
+                if (!predicateEvaluator.matches(state, toBounce, cost.filter, context)) {
+                    return CostPaymentResult.failure("Bounce target does not match the required filter")
+                }
+
+                // Move from battlefield to owner's hand
+                val battlefieldZone = ZoneKey(bounceController, Zone.BATTLEFIELD)
+                val handZone = ZoneKey(bounceOwner, Zone.HAND)
+
+                var newState = state.removeFromZone(battlefieldZone, toBounce)
+                newState = newState.addToZone(handZone, toBounce)
+
+                val events = listOf(
+                    ZoneChangeEvent(
+                        entityId = toBounce,
+                        entityName = bounceName,
+                        fromZone = Zone.BATTLEFIELD,
+                        toZone = Zone.HAND,
+                        ownerId = bounceOwner
+                    )
+                )
+
+                CostPaymentResult.success(newState, manaPool, events)
+            }
             is AbilityCost.TapAttachedCreature -> {
                 val attachedId = state.getEntity(sourceId)?.get<AttachedToComponent>()?.targetId
                     ?: return CostPaymentResult.failure("Source is not attached to a creature")
@@ -472,5 +513,6 @@ data class CostPaymentChoices(
     val sacrificeChoices: List<EntityId> = emptyList(),
     val discardChoices: List<EntityId> = emptyList(),
     val exileChoices: List<EntityId> = emptyList(),
-    val tapChoices: List<EntityId> = emptyList()
+    val tapChoices: List<EntityId> = emptyList(),
+    val bounceChoices: List<EntityId> = emptyList()
 )

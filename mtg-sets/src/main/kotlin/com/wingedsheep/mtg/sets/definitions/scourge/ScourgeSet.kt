@@ -40,6 +40,7 @@ object ScourgeSet {
         TitanicBulvox,
         TreetopScout,
         WirewoodGuardian,
+        WirewoodSymbiote,
         Woodcloaker,
 
         // Green enchantments

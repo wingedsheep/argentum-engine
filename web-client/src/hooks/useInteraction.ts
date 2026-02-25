@@ -263,6 +263,23 @@ export function useInteraction() {
         return
       }
 
+      // Check if ability requires bouncing a permanent as a cost
+      if (action.type === 'ActivateAbility' && actionInfo.additionalCostInfo?.costType === 'BouncePermanent') {
+        const costInfo = actionInfo.additionalCostInfo
+        startTargeting({
+          action,
+          validTargets: [...(costInfo.validBounceTargets ?? [])],
+          selectedTargets: [],
+          minTargets: costInfo.bounceCount ?? 1,
+          maxTargets: costInfo.bounceCount ?? 1,
+          isSacrificeSelection: true,
+          isBounceSelection: true,
+          pendingActionInfo: actionInfo,
+        })
+        selectCard(null)
+        return
+      }
+
       // Check if spell or ability requires discarding a card as a cost
       if ((action.type === 'CastSpell' || action.type === 'ActivateAbility') &&
           actionInfo.additionalCostInfo?.costType === 'DiscardCard') {
@@ -367,6 +384,11 @@ export function useInteraction() {
 
       // TapPermanents costs need selection (e.g., Birchlore Rangers)
       if (action.type === 'ActivateAbility' && actionInfo.additionalCostInfo?.costType === 'TapPermanents') {
+        return false
+      }
+
+      // BouncePermanent costs need selection (e.g., Wirewood Symbiote)
+      if (action.type === 'ActivateAbility' && actionInfo.additionalCostInfo?.costType === 'BouncePermanent') {
         return false
       }
 

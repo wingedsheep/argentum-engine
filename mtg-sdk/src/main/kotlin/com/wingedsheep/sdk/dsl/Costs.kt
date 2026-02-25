@@ -140,6 +140,16 @@ object Costs {
         AbilityCost.TapPermanents(count, filter)
 
     // =========================================================================
+    // Return to Hand Costs
+    // =========================================================================
+
+    /**
+     * Return a permanent you control matching the filter to its owner's hand.
+     */
+    fun ReturnToHand(filter: GameObjectFilter = GameObjectFilter.Any): AbilityCost =
+        AbilityCost.ReturnToHand(filter)
+
+    // =========================================================================
     // Composite Costs
     // =========================================================================
 

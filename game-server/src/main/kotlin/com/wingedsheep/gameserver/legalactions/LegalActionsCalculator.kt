@@ -811,11 +811,13 @@ class LegalActionsCalculator(
                     ability.cost
                 }
 
-                // Check cost requirements and gather sacrifice/tap targets if needed
+                // Check cost requirements and gather sacrifice/tap/bounce targets if needed
                 var sacrificeTargets: List<EntityId>? = null
                 var sacrificeCost: AbilityCost.Sacrifice? = null
                 var tapTargets: List<EntityId>? = null
                 var tapCost: AbilityCost.TapPermanents? = null
+                var bounceTargets: List<EntityId>? = null
+                var bounceCost: AbilityCost.ReturnToHand? = null
 
                 when (effectiveCost) {
                     is AbilityCost.Tap -> {
@@ -845,6 +847,11 @@ class LegalActionsCalculator(
                         sacrificeCost = effectiveCost
                         sacrificeTargets = findAbilitySacrificeTargets(state, playerId, sacrificeCost.filter)
                         if (sacrificeTargets.isEmpty()) continue
+                    }
+                    is AbilityCost.ReturnToHand -> {
+                        bounceCost = effectiveCost
+                        bounceTargets = findAbilityBounceTargets(state, playerId, bounceCost.filter)
+                        if (bounceTargets.isEmpty()) continue
                     }
                     is AbilityCost.SacrificeChosenCreatureType -> {
                         val chosenType = container.get<ChosenCreatureTypeComponent>()?.creatureType
@@ -943,6 +950,14 @@ class LegalActionsCalculator(
                                         break
                                     }
                                 }
+                                is AbilityCost.ReturnToHand -> {
+                                    bounceCost = subCost
+                                    bounceTargets = findAbilityBounceTargets(state, playerId, subCost.filter)
+                                    if (bounceTargets.isEmpty()) {
+                                        costCanBePaid = false
+                                        break
+                                    }
+                                }
                                 else -> {}
                             }
                         }
@@ -954,7 +969,7 @@ class LegalActionsCalculator(
                 // Check activation restrictions
                 var restrictionsMet = true
                 for (restriction in ability.restrictions) {
-                    if (!checkActivationRestriction(state, playerId, restriction)) {
+                    if (!checkActivationRestriction(state, playerId, restriction, entityId, ability.id)) {
                         restrictionsMet = false
                         break
                     }
@@ -975,6 +990,13 @@ class LegalActionsCalculator(
                         costType = "SacrificePermanent",
                         validSacrificeTargets = sacrificeTargets,
                         sacrificeCount = 1
+                    )
+                } else if (bounceTargets != null && bounceCost != null) {
+                    AdditionalCostInfo(
+                        description = bounceCost.description,
+                        costType = "BouncePermanent",
+                        validBounceTargets = bounceTargets,
+                        bounceCount = 1
                     )
                 } else if (sacrificeTargets != null) {
                     // SacrificeSelf cost — sacrifice target is the source itself
@@ -1092,7 +1114,7 @@ class LegalActionsCalculator(
                 // Check activation restrictions
                 var restrictionsMet = true
                 for (restriction in ability.restrictions) {
-                    if (!checkActivationRestriction(state, playerId, restriction)) {
+                    if (!checkActivationRestriction(state, playerId, restriction, entityId, ability.id)) {
                         restrictionsMet = false
                         break
                     }
@@ -1375,7 +1397,9 @@ class LegalActionsCalculator(
     private fun checkActivationRestriction(
         state: GameState,
         playerId: EntityId,
-        restriction: ActivationRestriction
+        restriction: ActivationRestriction,
+        sourceId: EntityId? = null,
+        abilityId: com.wingedsheep.sdk.scripting.AbilityId? = null
     ): Boolean {
         return when (restriction) {
             is ActivationRestriction.OnlyDuringYourTurn -> state.activePlayerId == playerId
@@ -1393,8 +1417,15 @@ class LegalActionsCalculator(
                 )
                 conditionEvaluator.evaluate(state, restriction.condition, context)
             }
+            is ActivationRestriction.OncePerTurn -> {
+                if (sourceId == null || abilityId == null) true
+                else {
+                    val tracker = state.getEntity(sourceId)?.get<com.wingedsheep.engine.state.components.battlefield.AbilityActivatedThisTurnComponent>()
+                    tracker == null || !tracker.hasActivated(abilityId)
+                }
+            }
             is ActivationRestriction.All -> restriction.restrictions.all {
-                checkActivationRestriction(state, playerId, it)
+                checkActivationRestriction(state, playerId, it, sourceId, abilityId)
             }
         }
     }
@@ -1551,6 +1582,24 @@ class LegalActionsCalculator(
             // Note: summoning sickness does NOT prevent creatures from being tapped by
             // another permanent's TapPermanents cost (it only restricts attacking and
             // activating the creature's own {T} abilities)
+
+            predicateEvaluator.matches(state, entityId, filter, predicateContext)
+        }
+    }
+
+    private fun findAbilityBounceTargets(
+        state: GameState,
+        playerId: EntityId,
+        filter: GameObjectFilter
+    ): List<EntityId> {
+        val playerBattlefield = ZoneKey(playerId, Zone.BATTLEFIELD)
+        val predicateContext = PredicateContext(controllerId = playerId)
+
+        return state.getZone(playerBattlefield).filter { entityId ->
+            val container = state.getEntity(entityId) ?: return@filter false
+            container.get<CardComponent>() ?: return@filter false
+            val controllerId = container.get<ControllerComponent>()?.playerId
+            if (controllerId != playerId) return@filter false
 
             predicateEvaluator.matches(state, entityId, filter, predicateContext)
         }

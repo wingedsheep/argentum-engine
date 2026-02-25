@@ -56,6 +56,7 @@ export interface AdditionalCostPayment {
   readonly lifePaid?: number
   readonly exiledCards?: readonly EntityId[]
   readonly tappedPermanents?: readonly EntityId[]
+  readonly bouncedPermanents?: readonly EntityId[]
 }
 
 export interface CastSpellAction {

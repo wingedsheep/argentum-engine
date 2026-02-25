@@ -3,6 +3,7 @@ package com.wingedsheep.engine.state.components.battlefield
 import com.wingedsheep.engine.state.Component
 import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.model.EntityId
+import com.wingedsheep.sdk.scripting.AbilityId
 import com.wingedsheep.sdk.scripting.ReplacementEffect
 import kotlinx.serialization.Serializable
 
@@ -103,6 +104,21 @@ data class ReplacementEffectSourceComponent(
 data class TimestampComponent(
     val timestamp: Long
 ) : Component
+
+/**
+ * Tracks which activated abilities have been activated this turn.
+ * Used for "Activate only once each turn" restrictions.
+ * Cleared at end of turn by TurnManager.
+ */
+@Serializable
+data class AbilityActivatedThisTurnComponent(
+    val abilityIds: Set<AbilityId> = emptySet()
+) : Component {
+    fun withActivated(abilityId: AbilityId): AbilityActivatedThisTurnComponent =
+        copy(abilityIds = abilityIds + abilityId)
+
+    fun hasActivated(abilityId: AbilityId): Boolean = abilityId in abilityIds
+}
 
 /**
  * Marks a permanent as granting shroud to its controller.

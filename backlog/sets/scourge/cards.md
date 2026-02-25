@@ -3,7 +3,7 @@
 
 **Set Size:** 143 cards
 **Release Date:** May 26, 2003
-**Implemented:** 78 / 143
+**Implemented:** 79 / 143
 
 | Color | Count |
 |-------|-------|
@@ -11,7 +11,7 @@
 | Blue | 15 |
 | Black | 15 |
 | Red | 16 |
-| Green | 15 |
+| Green | 16 |
 | Multicolor | 1 |
 | Colorless | 1 |
 
@@ -155,7 +155,7 @@
 - [ ] Wing Shards
 - [x] Wipe Clean
 - [x] Wirewood Guardian
-- [ ] Wirewood Symbiote
+- [x] Wirewood Symbiote
 - [x] Woodcloaker
 - [ ] Xantid Swarm
 - [ ] Zealous Inquisitor

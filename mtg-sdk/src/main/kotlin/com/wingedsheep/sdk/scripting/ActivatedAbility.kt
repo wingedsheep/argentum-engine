@@ -210,6 +210,20 @@ sealed interface AbilityCost {
         override val description: String = "{T} enchanted creature"
     }
 
+    /**
+     * Return a permanent you control to its owner's hand.
+     * Example: "Return an Elf you control to its owner's hand"
+     *
+     * @property filter Which permanents can be returned
+     */
+    @SerialName("CostReturnToHand")
+    @Serializable
+    data class ReturnToHand(
+        val filter: GameObjectFilter = GameObjectFilter.Any
+    ) : AbilityCost {
+        override val description: String = "Return a ${filter.description} you control to its owner's hand"
+    }
+
     /** Loyalty cost for planeswalker abilities */
     @SerialName("CostLoyalty")
     @Serializable

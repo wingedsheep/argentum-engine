@@ -969,7 +969,16 @@ class TurnManager(
             }
         }
 
-        // 5. Expire granted triggered abilities with EndOfTurn duration
+        // 5. Clear per-turn ability activation tracking
+        for ((entityId, container) in newState.entities) {
+            if (container.has<com.wingedsheep.engine.state.components.battlefield.AbilityActivatedThisTurnComponent>()) {
+                newState = newState.updateEntity(entityId) { c ->
+                    c.without<com.wingedsheep.engine.state.components.battlefield.AbilityActivatedThisTurnComponent>()
+                }
+            }
+        }
+
+        // 6. Expire granted triggered abilities with EndOfTurn duration
         if (newState.grantedTriggeredAbilities.isNotEmpty()) {
             val remainingGrants = newState.grantedTriggeredAbilities.filter { grant ->
                 grant.duration !is Duration.EndOfTurn
@@ -977,7 +986,7 @@ class TurnManager(
             newState = newState.copy(grantedTriggeredAbilities = remainingGrants)
         }
 
-        // 6. Expire granted activated abilities with EndOfTurn duration
+        // 7. Expire granted activated abilities with EndOfTurn duration
         if (newState.grantedActivatedAbilities.isNotEmpty()) {
             val remainingGrants = newState.grantedActivatedAbilities.filter { grant ->
                 grant.duration !is Duration.EndOfTurn
@@ -985,7 +994,7 @@ class TurnManager(
             newState = newState.copy(grantedActivatedAbilities = remainingGrants)
         }
 
-        // 7. Expire global granted triggered abilities with EndOfTurn duration
+        // 8. Expire global granted triggered abilities with EndOfTurn duration
         if (newState.globalGrantedTriggeredAbilities.isNotEmpty()) {
             val remainingGrants = newState.globalGrantedTriggeredAbilities.filter { grant ->
                 grant.duration !is Duration.EndOfTurn

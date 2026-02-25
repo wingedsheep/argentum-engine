@@ -165,7 +165,10 @@ data class AdditionalCostPayment(
     val exiledCards: List<EntityId> = emptyList(),
 
     /** Permanents that were tapped */
-    val tappedPermanents: List<EntityId> = emptyList()
+    val tappedPermanents: List<EntityId> = emptyList(),
+
+    /** Permanents that were returned to hand */
+    val bouncedPermanents: List<EntityId> = emptyList()
 ) {
     /** Check if any costs were paid */
     val isEmpty: Boolean
@@ -173,7 +176,8 @@ data class AdditionalCostPayment(
                 discardedCards.isEmpty() &&
                 lifePaid == 0 &&
                 exiledCards.isEmpty() &&
-                tappedPermanents.isEmpty()
+                tappedPermanents.isEmpty() &&
+                bouncedPermanents.isEmpty()
 
     companion object {
         val NONE = AdditionalCostPayment()

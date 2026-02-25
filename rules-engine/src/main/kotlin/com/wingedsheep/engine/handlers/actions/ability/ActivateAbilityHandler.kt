@@ -23,6 +23,7 @@ import com.wingedsheep.engine.mechanics.stack.StackResolver
 import com.wingedsheep.engine.mechanics.targeting.TargetValidator
 import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.GameState
+import com.wingedsheep.engine.state.components.battlefield.AbilityActivatedThisTurnComponent
 import com.wingedsheep.engine.state.components.battlefield.SummoningSicknessComponent
 import com.wingedsheep.engine.mechanics.text.SubtypeReplacer
 import com.wingedsheep.engine.state.components.identity.CardComponent
@@ -189,7 +190,7 @@ class ActivateAbilityHandler(
 
         // Check activation restrictions
         for (restriction in ability.restrictions) {
-            val error = checkActivationRestriction(state, action.playerId, restriction)
+            val error = checkActivationRestriction(state, action.playerId, action.sourceId, action.abilityId, restriction)
             if (error != null) return error
         }
 
@@ -271,7 +272,8 @@ class ActivateAbilityHandler(
             sacrificeChoices = action.costPayment?.sacrificedPermanents ?: emptyList(),
             discardChoices = action.costPayment?.discardedCards ?: emptyList(),
             exileChoices = action.costPayment?.exiledCards ?: emptyList(),
-            tapChoices = action.costPayment?.tappedPermanents ?: emptyList()
+            tapChoices = action.costPayment?.tappedPermanents ?: emptyList(),
+            bounceChoices = action.costPayment?.bouncedPermanents ?: emptyList()
         )
 
         // Pay the cost (using effective cost with text replacements applied)
@@ -325,6 +327,17 @@ class ActivateAbilityHandler(
                 events.add(LoyaltyChangedEvent(action.sourceId, cardComponent.name, loyaltyCost.change))
             }
             else -> {}
+        }
+
+        // Track once-per-turn activation if the ability has an OncePerTurn restriction
+        if (ability.restrictions.any { it is ActivationRestriction.OncePerTurn || (it is ActivationRestriction.All && it.restrictions.any { r -> r is ActivationRestriction.OncePerTurn }) }) {
+            // Only track if source is still on the battlefield (it might have been bounced as cost)
+            if (currentState.getEntity(action.sourceId) != null) {
+                currentState = currentState.updateEntity(action.sourceId) { c ->
+                    val tracker = c.get<AbilityActivatedThisTurnComponent>() ?: AbilityActivatedThisTurnComponent()
+                    c.with(tracker.withActivated(ability.id))
+                }
+            }
         }
 
         // Apply text replacement if the source has a TextReplacementComponent
@@ -569,6 +582,8 @@ class ActivateAbilityHandler(
     private fun checkActivationRestriction(
         state: GameState,
         playerId: com.wingedsheep.sdk.model.EntityId,
+        sourceId: com.wingedsheep.sdk.model.EntityId,
+        abilityId: com.wingedsheep.sdk.scripting.AbilityId,
         restriction: ActivationRestriction
     ): String? {
         return when (restriction) {
@@ -604,9 +619,15 @@ class ActivateAbilityHandler(
                     "Activation condition not met"
                 else null
             }
+            is ActivationRestriction.OncePerTurn -> {
+                val tracker = state.getEntity(sourceId)?.get<AbilityActivatedThisTurnComponent>()
+                if (tracker != null && tracker.hasActivated(abilityId)) {
+                    "This ability can only be activated once each turn"
+                } else null
+            }
             is ActivationRestriction.All -> {
                 restriction.restrictions.firstNotNullOfOrNull {
-                    checkActivationRestriction(state, playerId, it)
+                    checkActivationRestriction(state, playerId, sourceId, abilityId, it)
                 }
             }
         }

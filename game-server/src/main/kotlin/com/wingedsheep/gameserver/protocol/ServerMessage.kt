@@ -837,7 +837,11 @@ data class AdditionalCostInfo(
     /** Valid cards to discard from hand */
     val validDiscardTargets: List<EntityId> = emptyList(),
     /** Number of cards to discard */
-    val discardCount: Int = 0
+    val discardCount: Int = 0,
+    /** Valid permanents to return to hand */
+    val validBounceTargets: List<EntityId> = emptyList(),
+    /** Number of permanents to return */
+    val bounceCount: Int = 0
 )
 
 /**

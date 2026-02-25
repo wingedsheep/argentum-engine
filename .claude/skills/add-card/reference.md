@@ -525,6 +525,7 @@ each player reveals and creates tokens
 - `Costs.TapAttachedCreature` — tap the creature this is attached to
 - `Costs.TapPermanents(count, filter)` — tap N permanents
 - `Costs.Loyalty(change)` — planeswalker loyalty
+- `Costs.ReturnToHand(filter)` — return a permanent matching filter to owner's hand
 - `Costs.Composite(cost1, cost2)` — multiple costs
 
 ---
@@ -894,6 +895,7 @@ CostZone enum: `HAND`, `GRAVEYARD`, `LIBRARY`, `BATTLEFIELD`
 Used via `restrictions = listOf(...)` in activated abilities:
 
 - `ActivationRestriction.OnlyDuringYourTurn`
+- `ActivationRestriction.OncePerTurn` — limit activation to once per turn
 - `ActivationRestriction.BeforeStep(step)` / `DuringPhase(phase)` / `DuringStep(step)`
 - `ActivationRestriction.OnlyIfCondition(condition)`
 - `ActivationRestriction.All(restrictions...)` — combine multiple

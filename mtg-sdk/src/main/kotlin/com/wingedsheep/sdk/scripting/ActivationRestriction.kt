@@ -56,6 +56,14 @@ sealed interface ActivationRestriction {
     data class OnlyIfCondition(val condition: Condition) : ActivationRestriction
 
     /**
+     * Restrict activation to once per turn.
+     * Example: "Activate only once each turn."
+     */
+    @SerialName("OncePerTurn")
+    @Serializable
+    data object OncePerTurn : ActivationRestriction
+
+    /**
      * Composite restriction requiring multiple conditions.
      * Example: "Activate only during your turn, before attackers are declared."
      */

@@ -243,7 +243,9 @@ export const createUISlice: SliceCreator<UISlice> = (set, get) => ({
           ? { tappedPermanents: [...targetingState.selectedTargets] }
           : costType === 'DiscardCard'
             ? { discardedCards: [...targetingState.selectedTargets] }
-            : { sacrificedPermanents: [...targetingState.selectedTargets] }
+            : costType === 'BouncePermanent'
+              ? { bouncedPermanents: [...targetingState.selectedTargets] }
+              : { sacrificedPermanents: [...targetingState.selectedTargets] }
         const actionWithCost = {
           ...action,
           costPayment,
