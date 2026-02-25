@@ -47,8 +47,8 @@ object CompactJsonTransformer {
         "ability",
         // Pipeline effect internals
         "source", "selection",
-        // Player references (sealed interface, e.g., in AggregateBattlefield)
-        "player",
+        // Player references (sealed interface, e.g., in AggregateBattlefield, ForEachPlayerEffect)
+        "player", "players",
         // DynamicAmount fields (sealed interface used for numeric expressions)
         "amount", "count", "amountSource", "powerModifier", "toughnessModifier",
         "perPlayerAmount", "dynamicPower", "dynamicToughness",

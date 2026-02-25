@@ -3,14 +3,14 @@
 
 **Set Size:** 143 cards
 **Release Date:** May 26, 2003
-**Implemented:** 82 / 143
+**Implemented:** 83 / 143
 
 | Color | Count |
 |-------|-------|
 | White | 16 |
 | Blue | 16 |
 | Black | 16 |
-| Red | 16 |
+| Red | 17 |
 | Green | 16 |
 | Multicolor | 1 |
 | Colorless | 1 |
@@ -58,7 +58,7 @@
 - [ ] Divergent Growth
 - [x] Dragon Breath
 - [x] Dragon Fangs
-- [ ] Dragon Mage
+- [x] Dragon Mage
 - [x] Dragon Scales
 - [x] Dragon Shadow
 - [x] Dragonspeaker Shaman
