@@ -78,7 +78,7 @@ object CompactJsonTransformer {
         "cardPredicates", "effects", "costs",
         "targetRequirements", "staticAbilities",
         "predicates", "conditions", "statePredicates",
-        "restrictions",
+        "restrictions", "protectedTargets",
     )
 
     /**

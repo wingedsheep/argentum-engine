@@ -312,7 +312,7 @@ each player reveals and creates tokens
 | `PreventNextDamageEffect`                           | `amount: DynamicAmount, target`             | Prevent next N damage           |
 | `RemoveFromCombatEffect`                            | `target`                                    | Remove from combat              |
 | `ChooseCreatureTypeMustAttackEffect`                | (object)                                    | Choose type, must attack        |
-| `RedirectNextDamageEffect`                          | `protectedTargets, redirectTo`              | Redirect next damage            |
+| `RedirectNextDamageEffect`                          | `protectedTargets, redirectTo, amount?`     | Redirect next damage (amount=null for all) |
 | `PreventNextDamageFromChosenCreatureTypeEffect`     | (object)                                    | Prevent damage from chosen type |
 | `PreventAllDamageDealtByTargetEffect`               | `target`                                    | Prevent all damage by target    |
 

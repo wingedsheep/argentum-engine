@@ -3,11 +3,11 @@
 
 **Set Size:** 143 cards
 **Release Date:** May 26, 2003
-**Implemented:** 80 / 143
+**Implemented:** 81 / 143
 
 | Color | Count |
 |-------|-------|
-| White | 15 |
+| White | 16 |
 | Blue | 15 |
 | Black | 16 |
 | Red | 16 |
@@ -158,5 +158,5 @@
 - [x] Wirewood Symbiote
 - [x] Woodcloaker
 - [ ] Xantid Swarm
-- [ ] Zealous Inquisitor
+- [x] Zealous Inquisitor
 - [x] Zombie Cutthroat

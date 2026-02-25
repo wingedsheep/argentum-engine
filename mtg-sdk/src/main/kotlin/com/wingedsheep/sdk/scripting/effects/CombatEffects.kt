@@ -189,11 +189,16 @@ data object ChooseCreatureTypeMustAttackEffect : Effect {
 @Serializable
 data class RedirectNextDamageEffect(
     val protectedTargets: List<EffectTarget>,
-    val redirectTo: EffectTarget
+    val redirectTo: EffectTarget,
+    /** If set, only redirect up to this many damage (e.g., "the next 1 damage"). Null = redirect all. */
+    val amount: Int? = null
 ) : Effect {
-    override val description: String =
-        "The next time damage would be dealt to ${protectedTargets.joinToString(" and/or ") { it.description }} this turn, " +
-                "that damage is dealt to ${redirectTo.description} instead"
+    override val description: String = buildString {
+        append("The next ")
+        if (amount != null) append("$amount ")
+        append("damage that would be dealt to ${protectedTargets.joinToString(" and/or ") { it.description }} this turn")
+        append(" is dealt to ${redirectTo.description} instead")
+    }
 }
 
 /**

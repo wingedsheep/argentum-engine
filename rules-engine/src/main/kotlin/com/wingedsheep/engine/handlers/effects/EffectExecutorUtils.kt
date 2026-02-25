@@ -258,10 +258,19 @@ object EffectExecutorUtils {
     ): ExecutionResult {
         if (amount <= 0) return ExecutionResult.success(state)
 
-        // Check for damage redirection (Glarecaster)
-        val (redirectState, redirectTargetId) = checkDamageRedirection(state, targetId)
+        // Check for damage redirection (Glarecaster, Zealous Inquisitor)
+        val (redirectState, redirectTargetId, redirectAmount) = checkDamageRedirection(state, targetId, amount)
         if (redirectTargetId != null) {
-            return dealDamageToTarget(redirectState, redirectTargetId, amount, sourceId, cantBePrevented)
+            val redirectResult = dealDamageToTarget(redirectState, redirectTargetId, redirectAmount, sourceId, cantBePrevented)
+            val remainingDamage = amount - redirectAmount
+            return if (remainingDamage > 0) {
+                // Partial redirection — deal remaining damage to original target
+                val afterRedirect = redirectResult.state
+                val remainingResult = dealDamageToTarget(afterRedirect, targetId, remainingDamage, sourceId, cantBePrevented)
+                ExecutionResult.success(remainingResult.state, redirectResult.events + remainingResult.events)
+            } else {
+                redirectResult
+            }
         }
 
         // Protection from color/subtype: damage from sources of the stated quality is prevented (Rule 702.16)
@@ -536,30 +545,49 @@ object EffectExecutorUtils {
     }
 
     /**
-     * Check for damage redirection shields (Glarecaster).
+     * Check for damage redirection shields (Glarecaster, Zealous Inquisitor).
      *
      * Scans floating effects for RedirectNextDamage targeting the entity.
-     * If found, consumes the shield and returns the redirect target ID.
+     * If found, consumes (or decrements) the shield and returns the redirect target ID
+     * and the amount to redirect.
      *
      * @param state The current game state
      * @param targetId The entity about to receive damage
-     * @return Pair of (updated state with consumed shield, redirect target ID or null)
+     * @param damageAmount The amount of damage about to be dealt
+     * @return Triple of (updated state with consumed/decremented shield, redirect target ID or null, amount to redirect)
      */
-    fun checkDamageRedirection(state: GameState, targetId: EntityId): Pair<GameState, EntityId?> {
+    fun checkDamageRedirection(state: GameState, targetId: EntityId, damageAmount: Int): Triple<GameState, EntityId?, Int> {
         val shieldIndex = state.floatingEffects.indexOfFirst { effect ->
             effect.effect.modification is SerializableModification.RedirectNextDamage &&
                 targetId in effect.effect.affectedEntities
         }
-        if (shieldIndex == -1) return state to null
+        if (shieldIndex == -1) return Triple(state, null, 0)
 
         val shield = state.floatingEffects[shieldIndex]
         val mod = shield.effect.modification as SerializableModification.RedirectNextDamage
 
-        // Consume the shield (remove it)
-        val updatedEffects = state.floatingEffects.toMutableList()
-        updatedEffects.removeAt(shieldIndex)
+        val redirectAmount = if (mod.amount != null) minOf(mod.amount, damageAmount) else damageAmount
 
-        return state.copy(floatingEffects = updatedEffects) to mod.redirectToId
+        val updatedEffects = state.floatingEffects.toMutableList()
+        if (mod.amount != null) {
+            val remaining = mod.amount - redirectAmount
+            if (remaining <= 0) {
+                // Shield fully consumed
+                updatedEffects.removeAt(shieldIndex)
+            } else {
+                // Decrement the shield
+                updatedEffects[shieldIndex] = shield.copy(
+                    effect = shield.effect.copy(
+                        modification = mod.copy(amount = remaining)
+                    )
+                )
+            }
+        } else {
+            // No amount limit — consume the whole shield
+            updatedEffects.removeAt(shieldIndex)
+        }
+
+        return Triple(state.copy(floatingEffects = updatedEffects), mod.redirectToId, redirectAmount)
     }
 
     /**

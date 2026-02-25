@@ -48,7 +48,7 @@ class RedirectNextDamageExecutor : EffectExecutor<RedirectNextDamageEffect> {
             effect = FloatingEffectData(
                 layer = Layer.ABILITY,
                 sublayer = null,
-                modification = SerializableModification.RedirectNextDamage(redirectToId),
+                modification = SerializableModification.RedirectNextDamage(redirectToId, effect.amount),
                 affectedEntities = protectedIds
             ),
             duration = Duration.EndOfTurn,

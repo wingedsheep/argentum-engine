@@ -113,6 +113,7 @@ object ScourgeSet {
         FrontlineStrategist,
         NobleTemplar,
         SilverKnight,
+        ZealousInquisitor,
 
         // White enchantments
         DragonScales,

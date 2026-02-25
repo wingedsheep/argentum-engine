@@ -210,7 +210,9 @@ sealed interface SerializableModification {
      */
     @Serializable
     data class RedirectNextDamage(
-        val redirectToId: EntityId
+        val redirectToId: EntityId,
+        /** If set, only redirect up to this many damage. Null = redirect all (Glarecaster). */
+        val amount: Int? = null
     ) : SerializableModification
 
     /**
