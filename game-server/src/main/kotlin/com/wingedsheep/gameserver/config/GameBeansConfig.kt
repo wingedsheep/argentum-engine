@@ -44,6 +44,9 @@ class GameBeansConfig(
             if (gameProperties.sets.scourgeEnabled) {
                 put(ScourgeSet.SET_CODE, BoosterGenerator.scourgeSetConfig)
             }
+            if (gameProperties.sets.legionsEnabled) {
+                put(LegionsSet.SET_CODE, BoosterGenerator.legionsSetConfig)
+            }
             if (gameProperties.sets.khansEnabled) {
                 put(KhansOfTarkirSet.SET_CODE, BoosterGenerator.khansSetConfig)
             }

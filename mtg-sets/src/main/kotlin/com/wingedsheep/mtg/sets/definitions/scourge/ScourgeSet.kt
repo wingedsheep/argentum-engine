@@ -83,6 +83,7 @@ object ScourgeSet {
 
         // Red creatures
         ChartoothCougar,
+        DragonMage,
         DragonspeakerShaman,
         GoblinBrigand,
         GoblinWarchief,

@@ -4,6 +4,7 @@ import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.mtg.sets.definitions.portal.PortalSet
 import com.wingedsheep.mtg.sets.definitions.onslaught.OnslaughtSet
+import com.wingedsheep.mtg.sets.definitions.legions.LegionsSet
 import com.wingedsheep.mtg.sets.definitions.scourge.ScourgeSet
 import com.wingedsheep.mtg.sets.definitions.khans.KhansOfTarkirSet
 import kotlin.random.Random
@@ -66,6 +67,19 @@ class BoosterGenerator(
             incomplete = true,
             block = "Onslaught",
             totalSetSize = 143
+        )
+
+        /**
+         * Legions set configuration.
+         */
+        val legionsSetConfig = SetConfig(
+            setCode = LegionsSet.SET_CODE,
+            setName = LegionsSet.SET_NAME,
+            cards = LegionsSet.allCards,
+            basicLands = PortalSet.basicLands,
+            incomplete = true,
+            block = "Onslaught",
+            totalSetSize = 145
         )
 
         /**
