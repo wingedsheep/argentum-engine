@@ -42,6 +42,7 @@ object ScourgeSet {
         Woodcloaker,
 
         // Green enchantments
+        DragonFangs,
         OneWithNature,
 
         // Green instants

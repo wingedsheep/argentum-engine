@@ -3,7 +3,7 @@
 
 **Set Size:** 143 cards
 **Release Date:** May 26, 2003
-**Implemented:** 70 / 143
+**Implemented:** 71 / 143
 
 | Color | Count |
 |-------|-------|
@@ -11,7 +11,7 @@
 | Blue | 13 |
 | Black | 14 |
 | Red | 14 |
-| Green | 13 |
+| Green | 14 |
 | Multicolor | 1 |
 | Colorless | 1 |
 
@@ -57,7 +57,7 @@
 - [x] Dispersal Shield
 - [ ] Divergent Growth
 - [ ] Dragon Breath
-- [ ] Dragon Fangs
+- [x] Dragon Fangs
 - [ ] Dragon Mage
 - [ ] Dragon Scales
 - [x] Dragon Shadow
