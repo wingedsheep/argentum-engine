@@ -101,6 +101,7 @@ constructors.
 ### Library
 
 - `Effects.SearchLibrary(filter, count = 1, destination = HAND, entersTapped, shuffle, reveal)`
+- `Effects.SearchLibraryNthFromTop(filter = Any, positionFromTop = 2)` — search, shuffle, put Nth from top (Long-Term Plans: positionFromTop=2)
 - `Effects.Scry(count)` — returns CompositeEffect (Gather → Select → Move pipeline)
 - `Effects.Surveil(count)` — returns CompositeEffect (Gather → Select → Move pipeline)
 - `Effects.Mill(count, target = Controller)`

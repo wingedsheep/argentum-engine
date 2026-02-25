@@ -3,12 +3,12 @@
 
 **Set Size:** 143 cards
 **Release Date:** May 26, 2003
-**Implemented:** 76 / 143
+**Implemented:** 77 / 143
 
 | Color | Count |
 |-------|-------|
 | White | 15 |
-| Blue | 14 |
+| Blue | 15 |
 | Black | 15 |
 | Red | 15 |
 | Green | 15 |
@@ -97,7 +97,7 @@
 - [x] Kurgadon
 - [ ] Lethal Vapors
 - [x] Lingering Death
-- [ ] Long-Term Plans
+- [x] Long-Term Plans
 - [x] Mercurial Kite
 - [ ] Metamorphose
 - [ ] Mind's Desire

@@ -399,6 +399,15 @@ object Effects {
     ): Effect = EffectPatterns.searchLibrary(filter, count, destination, entersTapped, shuffle, reveal)
 
     /**
+     * Search library for a card, shuffle, and put it Nth from the top.
+     * E.g., positionFromTop = 2 for "third from the top" (Long-Term Plans).
+     */
+    fun SearchLibraryNthFromTop(
+        filter: GameObjectFilter = GameObjectFilter.Any,
+        positionFromTop: Int = 2
+    ): Effect = EffectPatterns.searchLibraryNthFromTop(filter, positionFromTop)
+
+    /**
      * Scry N.
      */
     fun Scry(count: Int): Effect =

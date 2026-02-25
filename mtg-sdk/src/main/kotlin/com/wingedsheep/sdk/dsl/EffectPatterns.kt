@@ -632,6 +632,76 @@ object EffectPatterns {
     }
 
     /**
+     * Search your library for a card, then shuffle and put that card Nth from the top.
+     *
+     * Uses a purely atomic pipeline: Gather → Select → Shuffle → Move(bottom) →
+     * Gather(top N-1) → Move(top) → Move(top). The found card is first parked at the
+     * bottom to avoid overlapping with the top-N gather, then moved to top, then the
+     * original top cards are placed back on top — pushing the found card to position N-1.
+     *
+     * @param filter Which cards can be found (default: any card)
+     * @param positionFromTop 0-indexed position from top (2 = third from top)
+     */
+    fun searchLibraryNthFromTop(
+        filter: GameObjectFilter = GameObjectFilter.Any,
+        positionFromTop: Int = 2
+    ): CompositeEffect {
+        val effects = mutableListOf<Effect>(
+            GatherCardsEffect(
+                source = CardSource.FromZone(Zone.LIBRARY, Player.You, filter),
+                storeAs = "searchable"
+            ),
+            SelectFromCollectionEffect(
+                from = "searchable",
+                selection = SelectionMode.ChooseExactly(DynamicAmount.Fixed(1)),
+                storeSelected = "found"
+            ),
+            ShuffleLibraryEffect(),
+        )
+
+        if (positionFromTop == 0) {
+            // Top of library — just move on top after shuffle
+            effects.add(
+                MoveCollectionEffect(
+                    from = "found",
+                    destination = CardDestination.ToZone(Zone.LIBRARY, placement = ZonePlacement.Top)
+                )
+            )
+        } else {
+            // Park found card at bottom to avoid overlap with top-N gather
+            effects.add(
+                MoveCollectionEffect(
+                    from = "found",
+                    destination = CardDestination.ToZone(Zone.LIBRARY, placement = ZonePlacement.Bottom)
+                )
+            )
+            // Gather the top N cards (which won't include the found card)
+            effects.add(
+                GatherCardsEffect(
+                    source = CardSource.TopOfLibrary(DynamicAmount.Fixed(positionFromTop)),
+                    storeAs = "aboveCards"
+                )
+            )
+            // Move found card to top
+            effects.add(
+                MoveCollectionEffect(
+                    from = "found",
+                    destination = CardDestination.ToZone(Zone.LIBRARY, placement = ZonePlacement.Top)
+                )
+            )
+            // Move the original top cards back on top, pushing found card down to positionFromTop
+            effects.add(
+                MoveCollectionEffect(
+                    from = "aboveCards",
+                    destination = CardDestination.ToZone(Zone.LIBRARY, placement = ZonePlacement.Top)
+                )
+            )
+        }
+
+        return CompositeEffect(effects)
+    }
+
+    /**
      * Look at the top N cards of target player's library, put some in their graveyard,
      * rest on top of their library in any order.
      *

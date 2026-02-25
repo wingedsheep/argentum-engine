@@ -73,6 +73,7 @@ object ScourgeSet {
 
         // Blue instants
         DispersalShield,
+        LongTermPlans,
 
         // Blue sorceries
         RushOfKnowledge,
