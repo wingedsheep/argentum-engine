@@ -2,7 +2,7 @@
 
 **Set Size:** 269 cards (249 unique card names + basic land variants)
 **Release Date:** September 26, 2014
-**Implemented:** 20 / 249
+**Implemented:** 21 / 249
 
 | Color      | Count |
 |------------|-------|
@@ -11,7 +11,7 @@
 | Black      | 3     |
 | Red        | 3     |
 | Green      | 3     |
-| Multicolor | 2     |
+| Multicolor | 3     |
 | Colorless  | 2     |
 | Land       | 1     |
 
@@ -58,7 +58,7 @@
 - [ ] Butcher of the Horde
 - [ ] Cancel
 - [ ] Canyon Lurkers
-- [ ] Chief of the Edge
+- [x] Chief of the Edge
 - [ ] Chief of the Scale
 - [ ] Clever Impersonator
 - [ ] Crackling Doom

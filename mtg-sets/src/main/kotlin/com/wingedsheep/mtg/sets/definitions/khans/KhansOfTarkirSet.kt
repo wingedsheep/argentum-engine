@@ -51,6 +51,7 @@ object KhansOfTarkirSet {
         SummitProwler,
 
         // Multicolor
+        ChiefOfTheEdge,
         HighspireMantis,
         UtterEnd,
 
