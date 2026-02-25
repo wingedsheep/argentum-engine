@@ -767,6 +767,7 @@ Set via `staticAbility { ability = ... }`:
 - `ModifyStatsForCreatureGroup(powerBonus, toughnessBonus, filter: AffectsFilter)` — P/T to group
 - `ModifyStatsForChosenCreatureType(powerBonus, toughnessBonus)` — P/T to chosen type
 - `ModifyStatsByCounterOnSource(counterType, powerModPerCounter, toughnessModPerCounter, target)` — P/T per counter
+- `ModifyStatsPerSharedCreatureType(powerModPerCreature, toughnessModPerCreature, target)` — P/T per creature sharing a type
 - `GrantDynamicStatsEffect(target, powerBonus: DynamicAmount, toughnessBonus: DynamicAmount)`
 - `GlobalEffect(effectType: GlobalEffectType, filter)` — global anthem/debuff
 - `GrantProtection(color, target)` — grant protection from color

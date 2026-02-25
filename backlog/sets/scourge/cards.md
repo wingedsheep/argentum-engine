@@ -3,7 +3,7 @@
 
 **Set Size:** 143 cards
 **Release Date:** May 26, 2003
-**Implemented:** 75 / 143
+**Implemented:** 76 / 143
 
 | Color | Count |
 |-------|-------|
@@ -11,7 +11,7 @@
 | Blue | 14 |
 | Black | 15 |
 | Red | 15 |
-| Green | 14 |
+| Green | 15 |
 | Multicolor | 1 |
 | Colorless | 1 |
 
@@ -19,7 +19,7 @@
 
 - [x] Accelerated Mutation
 - [ ] Ageless Sentinels
-- [ ] Alpha Status
+- [x] Alpha Status
 - [ ] Ambush Commander
 - [ ] Ancient Ooze
 - [x] Aphetto Runecaster

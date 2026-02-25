@@ -755,6 +755,29 @@ data object PlayFromTopOfLibrary : StaticAbility {
 }
 
 /**
+ * Modifies power/toughness based on the number of other creatures that share a creature type
+ * with the target creature. Used for Alpha Status: "Enchanted creature gets +2/+2 for each
+ * other creature on the battlefield that shares a creature type with it."
+ *
+ * @property powerModPerCreature Power bonus per matching creature (e.g., +2)
+ * @property toughnessModPerCreature Toughness bonus per matching creature (e.g., +2)
+ * @property target What this ability applies to (typically AttachedCreature for auras)
+ */
+@SerialName("ModifyStatsPerSharedCreatureType")
+@Serializable
+data class ModifyStatsPerSharedCreatureType(
+    val powerModPerCreature: Int,
+    val toughnessModPerCreature: Int,
+    val target: StaticTarget = StaticTarget.AttachedCreature
+) : StaticAbility {
+    override val description: String = buildString {
+        val powerStr = if (powerModPerCreature >= 0) "+$powerModPerCreature" else "$powerModPerCreature"
+        val toughStr = if (toughnessModPerCreature >= 0) "+$toughnessModPerCreature" else "$toughnessModPerCreature"
+        append("$powerStr/$toughStr for each other creature that shares a creature type with it")
+    }
+}
+
+/**
  * This creature can't attack unless defending player controls a land of a specific type.
  * Used for Deep-Sea Serpent: "can't attack unless defending player controls an Island."
  *

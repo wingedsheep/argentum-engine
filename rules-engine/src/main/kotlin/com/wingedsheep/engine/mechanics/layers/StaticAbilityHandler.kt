@@ -20,6 +20,7 @@ import com.wingedsheep.sdk.scripting.SetEnchantedLandType
 import com.wingedsheep.sdk.scripting.GrantKeywordByCounter
 import com.wingedsheep.sdk.scripting.GrantProtection
 import com.wingedsheep.sdk.scripting.ModifyStatsByCounterOnSource
+import com.wingedsheep.sdk.scripting.ModifyStatsPerSharedCreatureType
 import com.wingedsheep.sdk.scripting.GrantShroudToController
 import com.wingedsheep.sdk.scripting.conditions.EnchantedCreatureHasSubtype
 import com.wingedsheep.sdk.scripting.conditions.Exists
@@ -215,6 +216,17 @@ class StaticAbilityHandler(
                     sublayer = null,
                     modification = Modification.AddSubtype(ability.creatureType),
                     affectsFilter = AffectsFilter.CreaturesWithCounter(ability.counterType)
+                )
+            }
+            is ModifyStatsPerSharedCreatureType -> {
+                ContinuousEffectData(
+                    layer = Layer.POWER_TOUGHNESS,
+                    sublayer = Sublayer.MODIFICATIONS,
+                    modification = Modification.ModifyPowerToughnessPerSharedCreatureType(
+                        ability.powerModPerCreature,
+                        ability.toughnessModPerCreature
+                    ),
+                    affectsFilter = convertStaticTarget(ability.target)
                 )
             }
             is ModifyStatsByCounterOnSource -> {

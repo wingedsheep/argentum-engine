@@ -43,6 +43,7 @@ object ScourgeSet {
         Woodcloaker,
 
         // Green enchantments
+        AlphaStatus,
         DragonFangs,
         OneWithNature,
 

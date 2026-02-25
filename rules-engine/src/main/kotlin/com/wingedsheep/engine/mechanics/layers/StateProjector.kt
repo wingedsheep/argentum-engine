@@ -934,6 +934,24 @@ class StateProjector(
                         values.toughness = (values.toughness ?: 0) + mod.toughnessModPerCounter * counterCount
                     }
                 }
+                is Modification.ModifyPowerToughnessPerSharedCreatureType -> {
+                    // Count other creatures on the battlefield sharing a creature type with this entity
+                    val entitySubtypes = values.subtypes
+                    if (entitySubtypes.isNotEmpty()) {
+                        val creatureSubtypes = entitySubtypes.toSet()
+                        val count = state.getBattlefield().count { otherId ->
+                            if (otherId == entityId) return@count false
+                            val otherValues = projectedValues[otherId] ?: return@count false
+                            val isCreature = "CREATURE" in otherValues.types
+                            if (!isCreature) return@count false
+                            otherValues.subtypes.any { it in creatureSubtypes }
+                        }
+                        if (count > 0) {
+                            values.power = (values.power ?: 0) + mod.powerModPerCreature * count
+                            values.toughness = (values.toughness ?: 0) + mod.toughnessModPerCreature * count
+                        }
+                    }
+                }
                 is Modification.NoOp -> {
                     // No-op: effect doesn't modify projected state (e.g., combat restrictions)
                 }
@@ -1265,6 +1283,16 @@ sealed interface Modification {
         val counterType: String,
         val powerModPerCounter: Int,
         val toughnessModPerCounter: Int
+    ) : Modification
+
+    /**
+     * Dynamic power/toughness modification based on other creatures sharing a creature type
+     * with the affected entity. The actual modification is computed at projection time.
+     */
+    @Serializable
+    data class ModifyPowerToughnessPerSharedCreatureType(
+        val powerModPerCreature: Int,
+        val toughnessModPerCreature: Int
     ) : Modification
 
     /** No-op modification for effects that don't modify projected state (e.g., combat restrictions) */
