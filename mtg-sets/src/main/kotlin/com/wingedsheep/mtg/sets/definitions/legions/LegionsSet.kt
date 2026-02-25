@@ -26,6 +26,7 @@ object LegionsSet {
         WhiteKnight,
 
         // Blue creatures
+        KeeneyeAven,
         MerchantOfSecrets,
 
         // Black creatures

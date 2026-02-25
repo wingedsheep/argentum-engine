@@ -2,12 +2,12 @@
 
 **Set Size:** 145 cards
 **Release Date:** February 3, 2003
-**Implemented:** 5 / 145
+**Implemented:** 6 / 145
 
 | Color      | Count |
 |------------|-------|
 | White      | 1/29  |
-| Blue       | 1/29  |
+| Blue       | 2/29  |
 | Black      | 1/29  |
 | Red        | 1/29  |
 | Green      | 1/29  |
@@ -87,7 +87,7 @@
 - [ ] Hunter Sliver
 - [ ] Imperial Hellkite
 - [ ] Infernal Caretaker
-- [ ] Keeneye Aven
+- [x] Keeneye Aven
 - [ ] Keeper of the Nine Gales
 - [ ] Kilnmouth Dragon
 - [ ] Krosan Cloudscraper
