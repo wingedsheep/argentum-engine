@@ -3,13 +3,13 @@
 
 **Set Size:** 143 cards
 **Release Date:** May 26, 2003
-**Implemented:** 79 / 143
+**Implemented:** 80 / 143
 
 | Color | Count |
 |-------|-------|
 | White | 15 |
 | Blue | 15 |
-| Black | 15 |
+| Black | 16 |
 | Red | 16 |
 | Green | 16 |
 | Multicolor | 1 |
@@ -42,7 +42,7 @@
 - [x] Claws of Wirewood
 - [x] Clutch of Undeath
 - [x] Coast Watcher
-- [ ] Consumptive Goo
+- [x] Consumptive Goo
 - [x] Daru Spiritualist
 - [x] Daru Warchief
 - [ ] Dawn Elemental
