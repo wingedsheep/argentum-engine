@@ -2,7 +2,7 @@
 
 **Set Size:** 269 cards (249 unique card names + basic land variants)
 **Release Date:** September 26, 2014
-**Implemented:** 28 / 249
+**Implemented:** 29 / 249
 
 | Color      | Count |
 |------------|-------|
@@ -13,7 +13,7 @@
 | Green      | 4     |
 | Multicolor | 3     |
 | Colorless  | 3     |
-| Land       | 2     |
+| Land       | 3     |
 
 ---
 
@@ -179,7 +179,7 @@
 - [ ] Riverwheel Aerialists
 - [ ] Roar of Challenge
 - [ ] Rotting Mastodon
-- [ ] Rugged Highlands
+- [x] Rugged Highlands
 - [ ] Rush of Battle
 - [ ] Ruthless Ripper
 - [ ] Sage-Eye Harrier

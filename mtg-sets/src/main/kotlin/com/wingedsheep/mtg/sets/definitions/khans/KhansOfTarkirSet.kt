@@ -69,6 +69,7 @@ object KhansOfTarkirSet {
 
         // Lands
         JungleHollow,
+        RuggedHighlands,
         WindScarredCrag,
     )
 }
