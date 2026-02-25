@@ -2,7 +2,7 @@
 
 **Set Size:** 269 cards (249 unique card names + basic land variants)
 **Release Date:** September 26, 2014
-**Implemented:** 25 / 249
+**Implemented:** 26 / 249
 
 | Color      | Count |
 |------------|-------|
@@ -10,7 +10,7 @@
 | Blue       | 3     |
 | Black      | 3     |
 | Red        | 4     |
-| Green      | 3     |
+| Green      | 4     |
 | Multicolor | 3     |
 | Colorless  | 3     |
 | Land       | 2     |
@@ -264,5 +264,5 @@
 - [ ] Winterflame
 - [x] Witness of the Ages
 - [ ] Wooded Foothills
-- [ ] Woolly Loxodon
+- [x] Woolly Loxodon
 - [ ] Zurgo Helmsmasher
