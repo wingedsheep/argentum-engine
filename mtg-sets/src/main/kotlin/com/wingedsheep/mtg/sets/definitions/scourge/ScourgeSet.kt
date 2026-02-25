@@ -42,6 +42,7 @@ object ScourgeSet {
         Woodcloaker,
 
         // Green enchantments
+        DragonFangs,
         OneWithNature,
 
         // Green instants
@@ -82,6 +83,7 @@ object ScourgeSet {
         SiegeGangCommander,
 
         // Red enchantments
+        DragonBreath,
         PyrostaticPillar,
         SulfuricVortex,
 
