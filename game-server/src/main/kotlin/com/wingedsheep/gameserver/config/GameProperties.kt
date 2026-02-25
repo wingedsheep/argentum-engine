@@ -17,6 +17,7 @@ data class HandSmootherProperties(
 data class SetsProperties(
     val onslaughtEnabled: Boolean = true,
     val scourgeEnabled: Boolean = true,
+    val legionsEnabled: Boolean = true,
     val khansEnabled: Boolean = true
 )
 

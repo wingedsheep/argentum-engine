@@ -4,6 +4,7 @@ import com.wingedsheep.engine.core.*
 import com.wingedsheep.engine.core.DistributionResponse
 import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.mtg.sets.definitions.khans.KhansOfTarkirSet
+import com.wingedsheep.mtg.sets.definitions.legions.LegionsSet
 import com.wingedsheep.mtg.sets.definitions.onslaught.OnslaughtSet
 import com.wingedsheep.mtg.sets.definitions.portal.PortalSet
 import com.wingedsheep.mtg.sets.definitions.scourge.ScourgeSet
@@ -46,6 +47,7 @@ abstract class ScenarioTestBase : FunSpec() {
         register(PortalSet.allCards)
         register(OnslaughtSet.allCards)
         register(ScourgeSet.allCards)
+        register(LegionsSet.allCards)
         register(KhansOfTarkirSet.allCards)
     }
     protected val actionProcessor = ActionProcessor(cardRegistry)

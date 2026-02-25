@@ -4,6 +4,7 @@ import com.wingedsheep.gameserver.deck.RandomDeckGenerator
 import com.wingedsheep.gameserver.sealed.BoosterGenerator
 import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.mtg.sets.definitions.khans.KhansOfTarkirSet
+import com.wingedsheep.mtg.sets.definitions.legions.LegionsSet
 import com.wingedsheep.mtg.sets.definitions.onslaught.OnslaughtSet
 import com.wingedsheep.mtg.sets.definitions.portal.PortalSet
 import com.wingedsheep.mtg.sets.definitions.scourge.ScourgeSet
@@ -24,6 +25,9 @@ class GameBeansConfig(
         }
         if (gameProperties.sets.scourgeEnabled) {
             register(ScourgeSet.allCards)
+        }
+        if (gameProperties.sets.legionsEnabled) {
+            register(LegionsSet.allCards)
         }
         if (gameProperties.sets.khansEnabled) {
             register(KhansOfTarkirSet.allCards)
