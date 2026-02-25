@@ -22,7 +22,16 @@ object LegionsSet {
      * All cards implemented from this set.
      */
     val allCards = listOf(
+        // White creatures
+        WhiteKnight,
+
+        // Blue creatures
+        MerchantOfSecrets,
+
         // Red creatures
         RidgetopRaptor,
+
+        // Green creatures
+        DefiantElf,
     )
 }

@@ -2,15 +2,15 @@
 
 **Set Size:** 145 cards
 **Release Date:** February 3, 2003
-**Implemented:** 1 / 145
+**Implemented:** 4 / 145
 
 | Color      | Count |
 |------------|-------|
-| White      | 29    |
-| Blue       | 29    |
+| White      | 1/29  |
+| Blue       | 1/29  |
 | Black      | 29    |
 | Red        | 1/29  |
-| Green      | 29    |
+| Green      | 1/29  |
 
 ---
 
@@ -47,7 +47,7 @@
 - [ ] Daru Stinger
 - [ ] Deathmark Prelate
 - [ ] Defender of the Order
-- [ ] Defiant Elf
+- [x] Defiant Elf
 - [ ] Deftblade Elite
 - [ ] Dermoplasm
 - [ ] Dreamborn Muse
@@ -98,7 +98,7 @@
 - [ ] Macetail Hystrodon
 - [ ] Magma Sliver
 - [ ] Master of the Veil
-- [ ] Merchant of Secrets
+- [x] Merchant of Secrets
 - [ ] Mistform Seaswift
 - [ ] Mistform Sliver
 - [ ] Mistform Ultimus
@@ -151,7 +151,7 @@
 - [ ] Warped Researcher
 - [ ] Weaver of Lies
 - [ ] Whipgrass Entangler
-- [ ] White Knight
+- [x] White Knight
 - [ ] Willbender
 - [ ] Windborn Muse
 - [ ] Wingbeat Warrior
