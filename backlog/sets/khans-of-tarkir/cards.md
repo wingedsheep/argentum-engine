@@ -2,12 +2,12 @@
 
 **Set Size:** 269 cards (249 unique card names + basic land variants)
 **Release Date:** September 26, 2014
-**Implemented:** 32 / 249
+**Implemented:** 33 / 249
 
 | Color      | Count |
 |------------|-------|
 | White      | 4     |
-| Blue       | 4     |
+| Blue       | 5     |
 | Black      | 5     |
 | Red        | 5     |
 | Green      | 4     |
@@ -256,7 +256,7 @@
 - [ ] Waterwhirl
 - [x] Weave Fate
 - [x] Wetland Sambar
-- [ ] Whirlwind Adept
+- [x] Whirlwind Adept
 - [x] Wind-Scarred Crag
 - [ ] Windstorm
 - [ ] Windswept Heath

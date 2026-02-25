@@ -33,6 +33,7 @@ object KhansOfTarkirSet {
         JeskaiWindscout,
         MonasteryFlock,
         WetlandSambar,
+        WhirlwindAdept,
 
         // Blue spells
         WeaveFate,
