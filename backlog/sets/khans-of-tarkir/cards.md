@@ -2,7 +2,7 @@
 
 **Set Size:** 269 cards (249 unique card names + basic land variants)
 **Release Date:** September 26, 2014
-**Implemented:** 29 / 249
+**Implemented:** 30 / 249
 
 | Color      | Count |
 |------------|-------|
@@ -11,7 +11,7 @@
 | Black      | 4     |
 | Red        | 4     |
 | Green      | 4     |
-| Multicolor | 3     |
+| Multicolor | 4     |
 | Colorless  | 3     |
 | Land       | 3     |
 
@@ -59,7 +59,7 @@
 - [ ] Cancel
 - [ ] Canyon Lurkers
 - [x] Chief of the Edge
-- [ ] Chief of the Scale
+- [x] Chief of the Scale
 - [ ] Clever Impersonator
 - [ ] Crackling Doom
 - [ ] Cranial Archive

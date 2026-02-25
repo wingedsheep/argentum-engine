@@ -59,6 +59,7 @@ object KhansOfTarkirSet {
 
         // Multicolor
         ChiefOfTheEdge,
+        ChiefOfTheScale,
         HighspireMantis,
         UtterEnd,
 
