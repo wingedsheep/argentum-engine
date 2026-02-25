@@ -72,7 +72,7 @@ function ConnectionOverlay({
   const handleCreate = () => {
     if (gameMode === 'tournament') {
       // Create lobby with default settings - host can change in lobby
-      createTournamentLobby(['ONS', 'SCG'], 'SEALED')
+      createTournamentLobby(['ONS', 'LGN', 'SCG'], 'SEALED')
     } else {
       createGame(randomDeck)
     }
