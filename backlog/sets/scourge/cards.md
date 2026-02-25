@@ -3,14 +3,14 @@
 
 **Set Size:** 143 cards
 **Release Date:** May 26, 2003
-**Implemented:** 77 / 143
+**Implemented:** 78 / 143
 
 | Color | Count |
 |-------|-------|
 | White | 15 |
 | Blue | 15 |
 | Black | 15 |
-| Red | 15 |
+| Red | 16 |
 | Green | 15 |
 | Multicolor | 1 |
 | Colorless | 1 |
@@ -128,7 +128,7 @@
 - [x] Shoreline Ranger
 - [x] Siege-Gang Commander
 - [x] Silver Knight
-- [ ] Skirk Volcanist
+- [x] Skirk Volcanist
 - [x] Skulltap
 - [ ] Sliver Overlord
 - [ ] Soul Collector

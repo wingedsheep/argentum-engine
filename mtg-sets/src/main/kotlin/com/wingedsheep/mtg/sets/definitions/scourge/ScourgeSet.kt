@@ -85,6 +85,7 @@ object ScourgeSet {
         GoblinWarchief,
         RockJockey,
         SiegeGangCommander,
+        SkirkVolcanist,
 
         // Red enchantments
         DragonBreath,

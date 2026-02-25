@@ -139,6 +139,20 @@ class TurnFaceUpHandler(
                     }
                 }
             }
+            is PayCost.Sacrifice -> {
+                val validTargets = findSacrificeTargets(state, action.playerId, morphData.morphCost, action.sourceId)
+                if (validTargets.size < morphData.morphCost.count) {
+                    return "Not enough permanents to sacrifice to pay morph cost"
+                }
+                if (action.costTargetIds.size != morphData.morphCost.count) {
+                    return "Must sacrifice exactly ${morphData.morphCost.count} permanent(s) to pay morph cost"
+                }
+                for (targetId in action.costTargetIds) {
+                    if (targetId !in validTargets) {
+                        return "Invalid target for sacrifice morph cost: $targetId"
+                    }
+                }
+            }
             else -> return "Unsupported morph cost type: ${morphData.morphCost::class.simpleName}"
         }
 
@@ -315,6 +329,16 @@ class TurnFaceUpHandler(
                     events.addAll(result.events)
                 }
             }
+            is PayCost.Sacrifice -> {
+                for (targetId in action.costTargetIds) {
+                    val result = EffectExecutorUtils.movePermanentToZone(currentState, targetId, Zone.GRAVEYARD)
+                    if (result.error != null) {
+                        return ExecutionResult.error(currentState, result.error!!)
+                    }
+                    currentState = result.newState
+                    events.addAll(result.events)
+                }
+            }
             else -> return ExecutionResult.error(state, "Unsupported morph cost type: ${morphData.morphCost::class.simpleName}")
         }
 
@@ -366,6 +390,33 @@ class TurnFaceUpHandler(
         state: GameState,
         playerId: EntityId,
         cost: PayCost.ReturnToHand,
+        excludeEntityId: EntityId
+    ): List<EntityId> {
+        val projected = stateProjector.project(state)
+        val playerBattlefield = ZoneKey(playerId, Zone.BATTLEFIELD)
+        val predicateContext = PredicateContext(controllerId = playerId)
+
+        return state.getZone(playerBattlefield).filter { entityId ->
+            if (entityId == excludeEntityId) return@filter false
+            val container = state.getEntity(entityId) ?: return@filter false
+            container.get<CardComponent>() ?: return@filter false
+            val controllerId = container.get<ControllerComponent>()?.playerId
+            if (controllerId != playerId) return@filter false
+
+            predicateEvaluator.matchesWithProjection(state, projected, entityId, cost.filter, predicateContext)
+        }
+    }
+
+    /**
+     * Find valid permanents on the battlefield that can be sacrificed to pay a morph cost.
+     * Uses projected state to account for type-changing effects.
+     *
+     * @param excludeEntityId The face-down creature being turned up (cannot sacrifice itself)
+     */
+    fun findSacrificeTargets(
+        state: GameState,
+        playerId: EntityId,
+        cost: PayCost.Sacrifice,
         excludeEntityId: EntityId
     ): List<EntityId> {
         val projected = stateProjector.project(state)
