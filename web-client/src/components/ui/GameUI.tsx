@@ -421,6 +421,9 @@ function LobbyOverlay({
                   }
                   const renderSetButton = (set: typeof sets[number]) => {
                     const isSelected = lobbyState.settings.setCodes.includes(set.code)
+                    const pct = set.incomplete && set.implementedCount != null && set.totalCount != null
+                      ? Math.round((set.implementedCount / set.totalCount) * 100)
+                      : null
                     return (
                       <button
                         key={set.code}
@@ -430,9 +433,21 @@ function LobbyOverlay({
                             : [...lobbyState.settings.setCodes, set.code]
                           updateLobbySettings({ setCodes: newCodes })
                         }}
-                        className={`${styles.settingsButton} ${isSelected ? (isDraft ? `${styles.settingsButtonActive} ${styles.settingsButtonDraft}` : styles.settingsButtonActive) : ''}`}
+                        className={`${styles.settingsButton} ${pct != null ? styles.settingsButtonWithProgress : ''} ${isSelected ? (isDraft ? `${styles.settingsButtonActive} ${styles.settingsButtonDraft}` : styles.settingsButtonActive) : ''}`}
                       >
-                        {set.name}{set.incomplete ? ' (unfinished)' : ''}
+                        {pct != null ? (
+                          <>
+                            <span className={styles.setButtonName}>{set.name}</span>
+                            <span className={styles.setButtonFooter}>
+                              <span className={styles.setButtonProgressBar}>
+                                <span className={styles.setButtonProgressFill} style={{ width: `${pct}%` }} />
+                              </span>
+                              <span className={styles.setButtonProgress}>{set.implementedCount}/{set.totalCount}</span>
+                            </span>
+                          </>
+                        ) : (
+                          <span>{set.name}</span>
+                        )}
                       </button>
                     )
                   }

@@ -316,7 +316,9 @@ sealed interface ServerMessage {
         val code: String,
         val name: String,
         val incomplete: Boolean = false,
-        val block: String? = null
+        val block: String? = null,
+        val implementedCount: Int? = null,
+        val totalCount: Int? = null
     )
 
     /**

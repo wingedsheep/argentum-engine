@@ -631,6 +631,8 @@ export interface AvailableSet {
   readonly name: string
   readonly incomplete?: boolean
   readonly block?: string
+  readonly implementedCount?: number
+  readonly totalCount?: number
 }
 
 export interface LobbySettings {

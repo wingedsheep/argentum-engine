@@ -29,7 +29,8 @@ class BoosterGenerator(
         val cards: List<CardDefinition>,
         val basicLands: List<CardDefinition>,
         val incomplete: Boolean = false,
-        val block: String? = null
+        val block: String? = null,
+        val totalSetSize: Int? = null
     )
 
     companion object {
@@ -63,7 +64,8 @@ class BoosterGenerator(
             cards = ScourgeSet.allCards,
             basicLands = PortalSet.basicLands,  // Use Portal lands for now
             incomplete = true,
-            block = "Onslaught"
+            block = "Onslaught",
+            totalSetSize = 143
         )
 
         /**
@@ -74,7 +76,8 @@ class BoosterGenerator(
             setName = KhansOfTarkirSet.SET_NAME,
             cards = KhansOfTarkirSet.allCards,
             basicLands = PortalSet.basicLands,  // Use Portal lands for now
-            incomplete = true
+            incomplete = true,
+            totalSetSize = 249
         )
     }
 

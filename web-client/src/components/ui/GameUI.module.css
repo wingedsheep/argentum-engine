@@ -52,6 +52,56 @@
 }
 
 /* =========================================================================
+ * Set Button Progress (in lobby set selection)
+ * ========================================================================= */
+.settingsButtonWithProgress {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  text-align: left;
+  gap: 6px;
+  padding: 7px var(--space-3) 6px;
+}
+
+.setButtonName {
+  white-space: nowrap;
+}
+
+.setButtonFooter {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.setButtonProgressBar {
+  display: block;
+  flex: 1;
+  height: 3px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.setButtonProgressFill {
+  display: block;
+  height: 100%;
+  background: rgba(130, 160, 255, 0.7);
+  border-radius: 2px;
+}
+
+.settingsButtonActive .setButtonProgressFill {
+  background: rgba(255, 255, 255, 0.55);
+}
+
+.setButtonProgress {
+  font-size: 10px;
+  color: var(--text-disabled);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* =========================================================================
  * Lobby Overlay
  * ========================================================================= */
 .lobbyOverlay {
@@ -749,6 +799,7 @@
   display: flex;
   gap: var(--space-1);
 }
+
 
 /* =========================================================================
  * Player List
