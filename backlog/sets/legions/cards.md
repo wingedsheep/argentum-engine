@@ -2,11 +2,11 @@
 
 **Set Size:** 145 cards
 **Release Date:** February 3, 2003
-**Implemented:** 3 / 145
+**Implemented:** 4 / 145
 
 | Color      | Count |
 |------------|-------|
-| White      | 29    |
+| White      | 1/29  |
 | Blue       | 1/29  |
 | Black      | 29    |
 | Red        | 1/29  |
@@ -151,7 +151,7 @@
 - [ ] Warped Researcher
 - [ ] Weaver of Lies
 - [ ] Whipgrass Entangler
-- [ ] White Knight
+- [x] White Knight
 - [ ] Willbender
 - [ ] Windborn Muse
 - [ ] Wingbeat Warrior
