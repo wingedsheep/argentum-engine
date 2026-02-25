@@ -3,12 +3,12 @@
 
 **Set Size:** 143 cards
 **Release Date:** May 26, 2003
-**Implemented:** 81 / 143
+**Implemented:** 82 / 143
 
 | Color | Count |
 |-------|-------|
 | White | 16 |
-| Blue | 15 |
+| Blue | 16 |
 | Black | 16 |
 | Red | 16 |
 | Green | 16 |
@@ -99,7 +99,7 @@
 - [x] Lingering Death
 - [x] Long-Term Plans
 - [x] Mercurial Kite
-- [ ] Metamorphose
+- [x] Metamorphose
 - [ ] Mind's Desire
 - [ ] Mischievous Quanar
 - [x] Misguided Rage
