@@ -1861,6 +1861,10 @@ class LobbyHandler(
         match.gameSessionId = gameSession.sessionId
         lobbyRepository.saveTournament(lobby.lobbyId, tournament)
 
+        // Clean up spectating state before starting the match
+        cleanUpSpectatingState(player1State.identity)
+        cleanUpSpectatingState(player2State.identity)
+
         player1State.identity.currentGameSessionId = gameSession.sessionId
         player2State.identity.currentGameSessionId = gameSession.sessionId
 
@@ -2015,6 +2019,21 @@ class LobbyHandler(
 
         // Send active matches again so they can see the overview
         sendActiveMatchesToPlayer(identity, session)
+    }
+
+    /**
+     * Clean up spectating state for a player (e.g., when they start an active game).
+     * Removes them from the spectated game's spectator list and clears the tracking field.
+     */
+    private fun cleanUpSpectatingState(identity: PlayerIdentity) {
+        val spectatingGameId = identity.currentSpectatingGameId ?: return
+        val gameSession = gameRepository.findById(spectatingGameId)
+        val playerSession = identity.webSocketSession?.let { sessionRegistry.getPlayerSession(it.id) }
+        if (playerSession != null) {
+            gameSession?.removeSpectator(playerSession)
+        }
+        identity.currentSpectatingGameId = null
+        logger.info("Cleared spectating state for ${identity.playerName} (was spectating $spectatingGameId)")
     }
 
     /**

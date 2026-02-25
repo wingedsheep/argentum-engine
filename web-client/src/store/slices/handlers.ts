@@ -116,6 +116,9 @@ export function createMessageHandlers(set: SetState, get: GetState): MessageHand
       trackEvent('game_started', { opponent_name: msg.opponentName })
       setInGame(true)
 
+      // Clear spectating state — active game takes priority
+      set({ spectatingState: null })
+
       // Load persisted stop overrides and send to server
       try {
         const saved = localStorage.getItem('argentum-stop-overrides')
@@ -804,7 +807,10 @@ export function createMessageHandlers(set: SetState, get: GetState): MessageHand
     },
 
     onSpectatorStateUpdate: (msg) => {
-      const { spectatingState: prevState, addDamageAnimation } = get()
+      const { spectatingState: prevState, addDamageAnimation, sessionId } = get()
+
+      // Ignore spectator updates if we're in an active game
+      if (sessionId) return
 
       if (msg.gameState && prevState?.gameState) {
         const prevPlayers = prevState.gameState.players
