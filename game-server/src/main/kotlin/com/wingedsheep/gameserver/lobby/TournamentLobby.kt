@@ -128,6 +128,11 @@ class TournamentLobby(
     /** Players who are ready for the next round */
     private val playersReadyForNextRound = mutableSetOf<EntityId>()
 
+    /** Epoch counter incremented when ready state is cleared (prevents stale ready requests) */
+    @Volatile
+    var readyEpoch: Long = 0
+        private set
+
     // =========================================================================
     // Draft-specific State
     // =========================================================================
@@ -653,6 +658,7 @@ class TournamentLobby(
      * Clear the ready state for all players (called when starting a new round).
      */
     fun clearReadyState() {
+        readyEpoch++
         playersReadyForNextRound.clear()
     }
 

@@ -1692,12 +1692,19 @@ class LobbyHandler(
             return
         }
 
+        // Capture epoch before acquiring lock to detect stale ready requests.
+        // If a round completes (clearing ready state) while we wait for the lock,
+        // the epoch will have changed and this ready request should be discarded.
+        val epochBeforeLock = lobby.readyEpoch
+
         // Synchronize per-lobby to prevent concurrent round advancement races.
         // Without this, two players sending ReadyForNextRound simultaneously could both
         // see needsPrepare==true, double-increment the round index, and clear each other's
         // ready state.
         val lock = roundLocks.computeIfAbsent(lobbyId) { Any() }
         synchronized(lock) {
+            // If the epoch changed, a round completed while we were waiting — discard stale ready
+            if (lobby.readyEpoch != epochBeforeLock) return
             // Prepare rounds as needed — advance through any rounds that haven't been
             // initialized yet, auto-completing BYEs along the way. With dynamic matchmaking,
             // we may need to advance past multiple rounds if BYE-only rounds exist.
