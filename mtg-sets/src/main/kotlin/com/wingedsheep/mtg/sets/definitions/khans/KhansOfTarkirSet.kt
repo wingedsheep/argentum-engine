@@ -34,6 +34,9 @@ object KhansOfTarkirSet {
         MonasteryFlock,
         WetlandSambar,
 
+        // Blue spells
+        WeaveFate,
+
         // Black spells
         BitterRevelation,
         DebilitatingInjury,

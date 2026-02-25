@@ -2,12 +2,12 @@
 
 **Set Size:** 269 cards (249 unique card names + basic land variants)
 **Release Date:** September 26, 2014
-**Implemented:** 27 / 249
+**Implemented:** 28 / 249
 
 | Color      | Count |
 |------------|-------|
 | White      | 4     |
-| Blue       | 3     |
+| Blue       | 4     |
 | Black      | 4     |
 | Red        | 4     |
 | Green      | 4     |
@@ -254,7 +254,7 @@
 - [ ] War-Name Aspirant
 - [ ] Watcher of the Roost
 - [ ] Waterwhirl
-- [ ] Weave Fate
+- [x] Weave Fate
 - [x] Wetland Sambar
 - [ ] Whirlwind Adept
 - [x] Wind-Scarred Crag
