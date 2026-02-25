@@ -60,6 +60,7 @@ object KhansOfTarkirSet {
         WitnessOfTheAges,
 
         // Lands
+        JungleHollow,
         WindScarredCrag,
     )
 }
