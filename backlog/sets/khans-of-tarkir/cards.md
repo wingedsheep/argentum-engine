@@ -2,12 +2,12 @@
 
 **Set Size:** 269 cards (249 unique card names + basic land variants)
 **Release Date:** September 26, 2014
-**Implemented:** 18 / 249
+**Implemented:** 19 / 249
 
 | Color      | Count |
 |------------|-------|
 | White      | 3     |
-| Blue       | 2     |
+| Blue       | 3     |
 | Black      | 2     |
 | Red        | 3     |
 | Green      | 3     |
@@ -153,7 +153,7 @@
 - [ ] Mindswipe
 - [ ] Mistfire Weaver
 - [ ] Molting Snakeskin
-- [ ] Monastery Flock
+- [x] Monastery Flock
 - [x] Monastery Swiftspear
 - [ ] Murderous Cut
 - [ ] Mystic Monastery

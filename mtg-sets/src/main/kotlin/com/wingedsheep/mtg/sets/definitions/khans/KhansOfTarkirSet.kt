@@ -30,6 +30,7 @@ object KhansOfTarkirSet {
 
         // Blue creatures
         JeskaiWindscout,
+        MonasteryFlock,
         WetlandSambar,
 
         // Black spells
