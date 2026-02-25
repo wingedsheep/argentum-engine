@@ -68,11 +68,12 @@ class TephradermScenarioTest : ScenarioTestBase() {
                 }
             }
 
-            test("Tephraderm deals damage back equal to the amount received") {
-                // Use a smaller creature (2/2 Glory Seeker) to verify amount tracking.
-                // Glory Seeker attacks, Tephraderm blocks.
-                // Glory Seeker deals 2 to Tephraderm → trigger deals 2 back.
-                // Glory Seeker takes 4 combat + 2 trigger = 6 damage (dies from combat alone though).
+            test("Tephraderm trigger fires and deals damage back even when attacker dies from combat") {
+                // Glory Seeker (2/2) attacks, Tephraderm blocks.
+                // Tephraderm's 4 power kills the 2/2 in combat (2 toughness).
+                // The DamagedByCreature trigger should still fire (Rule 603.10 look-back)
+                // and deal 2 damage back to the now-dead Glory Seeker (harmless no-op).
+                // No infinite loop and no damage to Tephraderm's controller.
                 val game = scenario()
                     .withPlayers("Blocker", "Attacker")
                     .withCardOnBattlefield(1, "Tephraderm")
@@ -94,9 +95,53 @@ class TephradermScenarioTest : ScenarioTestBase() {
                     game.state.getEntity(tephraderm)?.get<DamageComponent>()?.amount shouldBe 2
                 }
 
-                // Glory Seeker should be dead (4 combat >= 2 toughness)
+                // Glory Seeker should be dead (4 combat damage > 2 toughness)
                 withClue("Glory Seeker should be in graveyard") {
                     game.findCardsInGraveyard(2, "Glory Seeker").size shouldBe 1
+                }
+
+                // No player damage — no infinite loop
+                withClue("Life totals should be unchanged") {
+                    game.getLifeTotal(1) shouldBe 20
+                    game.getLifeTotal(2) shouldBe 20
+                }
+            }
+
+            test("no infinite loop when both Tephraderm and attacker die from mutual combat damage") {
+                // Hulking Cyclops (5/4) attacks, Tephraderm (4/5) blocks.
+                // Cyclops deals 5 to Tephraderm (lethal: 5 == toughness 5).
+                // Tephraderm deals 4 to Cyclops (lethal: 4 == toughness 4).
+                // Both die from SBAs. The trigger fires but targets the dead Cyclops (harmless).
+                // Previously caused an infinite loop: trigger used wrong triggeringEntityId
+                // (event.targetId = Tephraderm itself), making Tephraderm re-trigger forever.
+                val game = scenario()
+                    .withPlayers("Blocker", "Attacker")
+                    .withCardOnBattlefield(1, "Tephraderm")
+                    .withCardOnBattlefield(2, "Hulking Cyclops") // 5/4
+                    .withActivePlayer(2)
+                    .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                    .build()
+
+                game.passUntilPhase(Phase.COMBAT, Step.DECLARE_ATTACKERS)
+                game.declareAttackers(mapOf("Hulking Cyclops" to 1))
+                game.passUntilPhase(Phase.COMBAT, Step.DECLARE_BLOCKERS)
+                game.declareBlockers(mapOf("Tephraderm" to listOf("Hulking Cyclops")))
+                game.passUntilPhase(Phase.POSTCOMBAT_MAIN, Step.POSTCOMBAT_MAIN)
+
+                // Both creatures should be dead
+                withClue("Tephraderm should be in graveyard") {
+                    game.findPermanent("Tephraderm") shouldBe null
+                    game.findCardsInGraveyard(1, "Tephraderm").size shouldBe 1
+                }
+                withClue("Hulking Cyclops should be in graveyard") {
+                    game.findPermanent("Hulking Cyclops") shouldBe null
+                    game.findCardsInGraveyard(2, "Hulking Cyclops").size shouldBe 1
+                }
+
+                // No player should have taken damage — no infinite loop
+                withClue("Life totals should be unchanged (no self-damage loop)") {
+                    game.getLifeTotal(1) shouldBe 20
+                    game.getLifeTotal(2) shouldBe 20
                 }
             }
         }

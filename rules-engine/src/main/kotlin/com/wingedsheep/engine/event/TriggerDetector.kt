@@ -623,7 +623,15 @@ class TriggerDetector(
         val abilities = getTriggeredAbilities(entityId, cardComponent.cardDefinitionId, state)
 
         for (ability in abilities) {
-            if (ability.trigger is GameEvent.DamageReceivedEvent && ability.binding == TriggerBinding.SELF) {
+            val trigger = ability.trigger
+            // Only match generic (source=Any) DamageReceivedEvent triggers here.
+            // Source-filtered triggers (DamagedByCreature, DamagedBySpell) are handled
+            // exclusively by detectDamagedBySourceTriggers to avoid firing with a wrong
+            // triggeringEntityId (fromEvent uses targetId, not sourceId).
+            if (trigger is GameEvent.DamageReceivedEvent &&
+                ability.binding == TriggerBinding.SELF &&
+                trigger.source == SourceFilter.Any
+            ) {
                 triggers.add(
                     PendingTrigger(
                         ability = ability,
@@ -1032,7 +1040,11 @@ class TriggerDetector(
         // Determine source type
         val sourceContainer = state.getEntity(sourceId) ?: return
         val sourceCard = sourceContainer.get<CardComponent>()
-        val isCreatureSource = sourceId in state.getBattlefield() && sourceCard?.typeLine?.isCreature == true
+        // Do NOT require the source to still be on the battlefield: combat damage is dealt
+        // simultaneously, so the attacker may have died from Tephraderm's damage in the same
+        // combat step (Rule 603.10 look-back). We check the card's type line instead of
+        // current zone to determine what it was when it dealt the damage.
+        val isCreatureSource = sourceCard?.typeLine?.isCreature == true
         val isSpellSource = sourceCard != null && (sourceCard.typeLine.isInstant || sourceCard.typeLine.isSorcery)
 
         for (ability in abilities) {
