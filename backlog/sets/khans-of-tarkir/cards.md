@@ -2,13 +2,13 @@
 
 **Set Size:** 269 cards (249 unique card names + basic land variants)
 **Release Date:** September 26, 2014
-**Implemented:** 26 / 249
+**Implemented:** 27 / 249
 
 | Color      | Count |
 |------------|-------|
 | White      | 4     |
 | Blue       | 3     |
-| Black      | 3     |
+| Black      | 4     |
 | Red        | 4     |
 | Green      | 4     |
 | Multicolor | 3     |
@@ -71,7 +71,7 @@
 - [x] Debilitating Injury
 - [x] Defiant Strike
 - [ ] Deflecting Palm
-- [ ] Despise
+- [x] Despise
 - [ ] Dig Through Time
 - [ ] Disdainful Stroke
 - [ ] Dismal Backwater

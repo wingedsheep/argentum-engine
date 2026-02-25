@@ -37,6 +37,7 @@ object KhansOfTarkirSet {
         // Black spells
         BitterRevelation,
         DebilitatingInjury,
+        Despise,
         Throttle,
 
         // Green creatures
