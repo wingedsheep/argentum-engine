@@ -42,6 +42,7 @@ object KhansOfTarkirSet {
         // Green creatures
         AlpineGrizzly,
         HighlandGame,
+        WoollyLoxodon,
 
         // Green spells
         AwakenTheBear,
