@@ -540,6 +540,7 @@ each player reveals and creates tokens
 - `Conditions.APlayerControlsMostOfSubtype(subtype)` — check if a player controls most of a subtype
 - `Conditions.TargetPowerAtMost(amount, targetIndex = 0)` — target's power at most N
 - `Conditions.TargetSpellManaValueAtMost(amount, targetIndex = 0)` — target spell's MV at most N
+- `Conditions.TargetHasCounter(counterType, targetIndex = 0)` — target has at least one counter of type
 
 ### Life Total
 
@@ -589,7 +590,7 @@ each player reveals and creates tokens
 - `DynamicAmount.SacrificedPermanentPower` / `.SacrificedPermanentToughness`
 - `DynamicAmount.SourcePower` / `.TriggerDamageAmount` / `.TriggerLifeGainAmount`
 - `DynamicAmount.ColorsAmongPermanentsYouControl` / `.CardTypesInAllGraveyards`
-- `DynamicAmount.CountersOnSelf(counterType)` / `.CreaturesSharingTypeWithTriggeringEntity`
+- `DynamicAmount.CountersOnSelf(counterType)` / `.CountersOnTarget(counterType, targetIndex)` / `.CreaturesSharingTypeWithTriggeringEntity`
 - `DynamicAmount.VariableReference(variableName)` / `.StoredCardManaValue(collectionName)`
 - `DynamicAmount.Count(player, zone, filter)` /
   `DynamicAmount.AggregateBattlefield(player, filter, aggregation?, property?)`

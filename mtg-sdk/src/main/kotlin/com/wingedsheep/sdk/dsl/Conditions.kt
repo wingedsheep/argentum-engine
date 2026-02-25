@@ -4,6 +4,7 @@ import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.scripting.GameObjectFilter
+import com.wingedsheep.sdk.scripting.events.CounterTypeFilter
 import com.wingedsheep.sdk.scripting.conditions.AllConditions
 import com.wingedsheep.sdk.scripting.conditions.AnyCondition
 import com.wingedsheep.sdk.scripting.conditions.Compare
@@ -121,6 +122,13 @@ object Conditions {
      */
     fun TargetSpellManaValueAtMost(amount: DynamicAmount, targetIndex: Int = 0): ConditionInterface =
         Compare(DynamicAmount.TargetManaValue(targetIndex), ComparisonOperator.LTE, amount)
+
+    /**
+     * If the target permanent has at least one counter of the given type.
+     * Used for cards like Bring Low: "If that creature has a +1/+1 counter on it"
+     */
+    fun TargetHasCounter(counterType: CounterTypeFilter, targetIndex: Int = 0): ConditionInterface =
+        Compare(DynamicAmount.CountersOnTarget(counterType, targetIndex), ComparisonOperator.GTE, DynamicAmount.Fixed(1))
 
     // =========================================================================
     // Life Total Conditions (via Compare)

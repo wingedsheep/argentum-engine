@@ -415,6 +415,16 @@ sealed interface DynamicAmount {
         override val description: String = "target spell's mana value"
     }
 
+    /**
+     * Count of a specific counter type on a target permanent.
+     * Used for conditional effects like Bring Low: "If that creature has a +1/+1 counter on it"
+     */
+    @SerialName("CountersOnTarget")
+    @Serializable
+    data class CountersOnTarget(val counterType: CounterTypeFilter, val targetIndex: Int = 0) : DynamicAmount {
+        override val description: String = "the number of ${counterType.description} counters on target"
+    }
+
     // =========================================================================
     // Division
     // =========================================================================

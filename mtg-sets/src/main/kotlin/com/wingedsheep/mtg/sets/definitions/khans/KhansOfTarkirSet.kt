@@ -60,6 +60,9 @@ object KhansOfTarkirSet {
         SummitProwler,
         ValleyDasher,
 
+        // Red spells
+        BringLow,
+
         // Multicolor
         ChiefOfTheEdge,
         ChiefOfTheScale,

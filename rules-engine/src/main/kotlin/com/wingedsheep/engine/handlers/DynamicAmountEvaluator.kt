@@ -201,6 +201,17 @@ class DynamicAmountEvaluator(
                 }
             }
 
+            is DynamicAmount.CountersOnTarget -> {
+                val target = context.targets.getOrNull(amount.targetIndex) ?: return 0
+                val targetEntityId = when (target) {
+                    is com.wingedsheep.engine.state.components.stack.ChosenTarget.Permanent -> target.entityId
+                    else -> return 0
+                }
+                val countersComponent = state.getEntity(targetEntityId)?.get<CountersComponent>() ?: return 0
+                val counterType = resolveCounterType(amount.counterType)
+                countersComponent.getCount(counterType)
+            }
+
             is DynamicAmount.TargetManaValue -> {
                 val target = context.targets.getOrNull(amount.targetIndex) ?: return 0
                 val spellEntityId = when (target) {
