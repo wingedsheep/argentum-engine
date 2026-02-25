@@ -2,7 +2,7 @@
 
 **Set Size:** 269 cards (249 unique card names + basic land variants)
 **Release Date:** September 26, 2014
-**Implemented:** 23 / 249
+**Implemented:** 24 / 249
 
 | Color      | Count |
 |------------|-------|
@@ -12,7 +12,7 @@
 | Red        | 3     |
 | Green      | 3     |
 | Multicolor | 3     |
-| Colorless  | 2     |
+| Colorless  | 3     |
 | Land       | 2     |
 
 ---
@@ -137,7 +137,7 @@
 - [ ] Longshot Squad
 - [ ] Mantis Rider
 - [ ] Mardu Ascendancy
-- [ ] Mardu Banner
+- [x] Mardu Banner
 - [ ] Mardu Blazebringer
 - [ ] Mardu Charm
 - [ ] Mardu Hateblade
