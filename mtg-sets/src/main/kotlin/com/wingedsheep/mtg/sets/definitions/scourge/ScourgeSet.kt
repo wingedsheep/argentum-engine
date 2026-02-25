@@ -66,6 +66,7 @@ object ScourgeSet {
         ThundercloudElemental,
 
         // Blue enchantments
+        DragonWings,
         FrozenSolid,
 
         // Blue instants
