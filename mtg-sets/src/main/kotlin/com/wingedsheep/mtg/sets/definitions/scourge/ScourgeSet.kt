@@ -109,6 +109,7 @@ object ScourgeSet {
         SilverKnight,
 
         // White enchantments
+        DragonScales,
         GuiltyConscience,
 
         // White instants

@@ -3,11 +3,11 @@
 
 **Set Size:** 143 cards
 **Release Date:** May 26, 2003
-**Implemented:** 73 / 143
+**Implemented:** 74 / 143
 
 | Color | Count |
 |-------|-------|
-| White | 14 |
+| White | 15 |
 | Blue | 14 |
 | Black | 14 |
 | Red | 15 |
@@ -59,7 +59,7 @@
 - [x] Dragon Breath
 - [x] Dragon Fangs
 - [ ] Dragon Mage
-- [ ] Dragon Scales
+- [x] Dragon Scales
 - [x] Dragon Shadow
 - [x] Dragonspeaker Shaman
 - [x] Dragonstalker
