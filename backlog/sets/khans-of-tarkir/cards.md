@@ -2,11 +2,11 @@
 
 **Set Size:** 269 cards (249 unique card names + basic land variants)
 **Release Date:** September 26, 2014
-**Implemented:** 22 / 249
+**Implemented:** 23 / 249
 
 | Color      | Count |
 |------------|-------|
-| White      | 3     |
+| White      | 4     |
 | Blue       | 3     |
 | Black      | 3     |
 | Red        | 3     |
@@ -69,7 +69,7 @@
 - [ ] Dead Drop
 - [ ] Death Frenzy
 - [x] Debilitating Injury
-- [ ] Defiant Strike
+- [x] Defiant Strike
 - [ ] Deflecting Palm
 - [ ] Despise
 - [ ] Dig Through Time

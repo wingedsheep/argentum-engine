@@ -26,6 +26,7 @@ object KhansOfTarkirSet {
         JeskaiStudent,
 
         // White spells
+        DefiantStrike,
         KillShot,
 
         // Blue creatures
