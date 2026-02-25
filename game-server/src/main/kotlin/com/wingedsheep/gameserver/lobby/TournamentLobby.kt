@@ -574,7 +574,7 @@ class TournamentLobby(
                 name = config.setName,
                 incomplete = config.incomplete,
                 block = config.block,
-                implementedCount = if (config.incomplete) config.cards.size else null,
+                implementedCount = config.cards.size,
                 totalCount = config.totalSetSize
             )
         }

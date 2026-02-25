@@ -446,7 +446,12 @@ function LobbyOverlay({
                             </span>
                           </>
                         ) : (
-                          <span>{set.name}</span>
+                          <>
+                            <span>{set.name}</span>
+                            {set.implementedCount != null && (
+                              <span className={styles.setButtonCardCount}>{set.implementedCount} cards</span>
+                            )}
+                          </>
                         )}
                       </button>
                     )
