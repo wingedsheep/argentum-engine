@@ -27,5 +27,8 @@ object LegionsSet {
 
         // Red creatures
         RidgetopRaptor,
+
+        // Green creatures
+        DefiantElf,
     )
 }

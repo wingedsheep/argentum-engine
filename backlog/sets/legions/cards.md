@@ -2,7 +2,7 @@
 
 **Set Size:** 145 cards
 **Release Date:** February 3, 2003
-**Implemented:** 2 / 145
+**Implemented:** 3 / 145
 
 | Color      | Count |
 |------------|-------|
@@ -10,7 +10,7 @@
 | Blue       | 1/29  |
 | Black      | 29    |
 | Red        | 1/29  |
-| Green      | 29    |
+| Green      | 1/29  |
 
 ---
 
@@ -47,7 +47,7 @@
 - [ ] Daru Stinger
 - [ ] Deathmark Prelate
 - [ ] Defender of the Order
-- [ ] Defiant Elf
+- [x] Defiant Elf
 - [ ] Deftblade Elite
 - [ ] Dermoplasm
 - [ ] Dreamborn Muse
