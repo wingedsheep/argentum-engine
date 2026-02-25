@@ -669,7 +669,7 @@ class ClientStateTransformer(
         }
 
         // Build active effects list
-        val activeEffects = buildActiveEffects(container)
+        val activeEffects = buildActiveEffects(state, playerId, container)
 
         return ClientPlayer(
             playerId = playerId,
@@ -691,11 +691,33 @@ class ClientStateTransformer(
      * Build a list of active effects on a player for display as badges.
      */
     private fun buildActiveEffects(
+        state: GameState,
+        playerId: EntityId,
         container: com.wingedsheep.engine.state.ComponentContainer?
     ): List<ClientPlayerEffect> {
         if (container == null) return emptyList()
 
         val effects = mutableListOf<ClientPlayerEffect>()
+
+        // Check floating effects for damage prevention shields on this player
+        var preventDamageTotal = 0
+        for (floatingEffect in state.floatingEffects) {
+            if (playerId !in floatingEffect.effect.affectedEntities) continue
+            val modification = floatingEffect.effect.modification
+            if (modification is SerializableModification.PreventNextDamage) {
+                preventDamageTotal += modification.remainingAmount
+            }
+        }
+        if (preventDamageTotal > 0) {
+            effects.add(
+                ClientPlayerEffect(
+                    effectId = "prevent_damage",
+                    name = "Prevent $preventDamageTotal",
+                    description = "The next $preventDamageTotal damage that would be dealt to you is prevented",
+                    icon = "prevent-damage"
+                )
+            )
+        }
 
         // Check for SkipCombatPhasesComponent (False Peace effect)
         if (container.has<SkipCombatPhasesComponent>()) {
