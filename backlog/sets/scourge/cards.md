@@ -3,13 +3,13 @@
 
 **Set Size:** 143 cards
 **Release Date:** May 26, 2003
-**Implemented:** 74 / 143
+**Implemented:** 75 / 143
 
 | Color | Count |
 |-------|-------|
 | White | 15 |
 | Blue | 14 |
-| Black | 14 |
+| Black | 15 |
 | Red | 15 |
 | Green | 14 |
 | Multicolor | 1 |
@@ -27,7 +27,7 @@
 - [ ] Astral Steel
 - [x] Aven Farseer
 - [x] Aven Liberator
-- [ ] Bladewing's Thrall
+- [x] Bladewing's Thrall
 - [x] Bladewing the Risen
 - [ ] Bonethorn Valesk
 - [ ] Brain Freeze

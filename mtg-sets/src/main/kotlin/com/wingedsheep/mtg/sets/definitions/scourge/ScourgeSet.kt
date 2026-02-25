@@ -28,6 +28,7 @@ object ScourgeSet {
         BladewingTheRisen,
 
         // Black creatures
+        BladewingsThrall,
         CarrionFeeder,
 
         // Green creatures
