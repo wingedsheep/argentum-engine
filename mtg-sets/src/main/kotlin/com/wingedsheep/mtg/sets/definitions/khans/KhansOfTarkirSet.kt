@@ -34,6 +34,7 @@ object KhansOfTarkirSet {
         WetlandSambar,
 
         // Black spells
+        BitterRevelation,
         DebilitatingInjury,
         Throttle,
 
