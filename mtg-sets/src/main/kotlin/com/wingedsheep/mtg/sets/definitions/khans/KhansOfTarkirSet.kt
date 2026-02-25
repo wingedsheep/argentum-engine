@@ -50,6 +50,7 @@ object KhansOfTarkirSet {
         LeapingMaster,
         MonasterySwiftspear,
         SummitProwler,
+        ValleyDasher,
 
         // Multicolor
         ChiefOfTheEdge,
