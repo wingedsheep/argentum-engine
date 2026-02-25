@@ -28,6 +28,7 @@ object ScourgeSet {
         BladewingTheRisen,
 
         // Black creatures
+        BladewingsThrall,
         CarrionFeeder,
 
         // Green creatures
@@ -66,6 +67,7 @@ object ScourgeSet {
         ThundercloudElemental,
 
         // Blue enchantments
+        DragonWings,
         FrozenSolid,
 
         // Blue instants
@@ -108,6 +110,7 @@ object ScourgeSet {
         SilverKnight,
 
         // White enchantments
+        DragonScales,
         GuiltyConscience,
 
         // White instants

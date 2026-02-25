@@ -3,13 +3,13 @@
 
 **Set Size:** 143 cards
 **Release Date:** May 26, 2003
-**Implemented:** 72 / 143
+**Implemented:** 75 / 143
 
 | Color | Count |
 |-------|-------|
-| White | 14 |
-| Blue | 13 |
-| Black | 14 |
+| White | 15 |
+| Blue | 14 |
+| Black | 15 |
 | Red | 15 |
 | Green | 14 |
 | Multicolor | 1 |
@@ -27,7 +27,7 @@
 - [ ] Astral Steel
 - [x] Aven Farseer
 - [x] Aven Liberator
-- [ ] Bladewing's Thrall
+- [x] Bladewing's Thrall
 - [x] Bladewing the Risen
 - [ ] Bonethorn Valesk
 - [ ] Brain Freeze
@@ -59,13 +59,13 @@
 - [x] Dragon Breath
 - [x] Dragon Fangs
 - [ ] Dragon Mage
-- [ ] Dragon Scales
+- [x] Dragon Scales
 - [x] Dragon Shadow
 - [x] Dragonspeaker Shaman
 - [x] Dragonstalker
 - [ ] Dragonstorm
 - [ ] Dragon Tyrant
-- [ ] Dragon Wings
+- [x] Dragon Wings
 - [ ] Edgewalker
 - [x] Elvish Aberration
 - [x] Enrage
