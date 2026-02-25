@@ -2,13 +2,13 @@
 
 **Set Size:** 145 cards
 **Release Date:** February 3, 2003
-**Implemented:** 4 / 145
+**Implemented:** 5 / 145
 
 | Color      | Count |
 |------------|-------|
 | White      | 1/29  |
 | Blue       | 1/29  |
-| Black      | 29    |
+| Black      | 1/29  |
 | Red        | 1/29  |
 | Green      | 1/29  |
 
@@ -157,5 +157,5 @@
 - [ ] Wingbeat Warrior
 - [ ] Wirewood Channeler
 - [ ] Wirewood Hivemaster
-- [ ] Withered Wretch
+- [x] Withered Wretch
 - [ ] Zombie Brute

@@ -28,6 +28,9 @@ object LegionsSet {
         // Blue creatures
         MerchantOfSecrets,
 
+        // Black creatures
+        WitheredWretch,
+
         // Red creatures
         RidgetopRaptor,
 
