@@ -2,18 +2,18 @@
 
 **Set Size:** 269 cards (249 unique card names + basic land variants)
 **Release Date:** September 26, 2014
-**Implemented:** 26 / 249
+**Implemented:** 33 / 249
 
 | Color      | Count |
 |------------|-------|
 | White      | 4     |
-| Blue       | 3     |
-| Black      | 3     |
-| Red        | 4     |
+| Blue       | 5     |
+| Black      | 5     |
+| Red        | 5     |
 | Green      | 4     |
-| Multicolor | 3     |
+| Multicolor | 4     |
 | Colorless  | 3     |
-| Land       | 2     |
+| Land       | 3     |
 
 ---
 
@@ -53,13 +53,13 @@
 - [ ] Blossoming Sands
 - [ ] Brave the Sands
 - [ ] Briber's Purse
-- [ ] Bring Low
+- [x] Bring Low
 - [ ] Burn Away
 - [ ] Butcher of the Horde
 - [ ] Cancel
 - [ ] Canyon Lurkers
 - [x] Chief of the Edge
-- [ ] Chief of the Scale
+- [x] Chief of the Scale
 - [ ] Clever Impersonator
 - [ ] Crackling Doom
 - [ ] Cranial Archive
@@ -71,7 +71,7 @@
 - [x] Debilitating Injury
 - [x] Defiant Strike
 - [ ] Deflecting Palm
-- [ ] Despise
+- [x] Despise
 - [ ] Dig Through Time
 - [ ] Disdainful Stroke
 - [ ] Dismal Backwater
@@ -99,7 +99,7 @@
 - [ ] Glacial Stalker
 - [ ] Goblinslide
 - [ ] Grim Haruspex
-- [ ] Gurmag Swiftwing
+- [x] Gurmag Swiftwing
 - [ ] Hardened Scales
 - [ ] Heart-Piercer Bow
 - [ ] Heir of the Wilds
@@ -179,7 +179,7 @@
 - [ ] Riverwheel Aerialists
 - [ ] Roar of Challenge
 - [ ] Rotting Mastodon
-- [ ] Rugged Highlands
+- [x] Rugged Highlands
 - [ ] Rush of Battle
 - [ ] Ruthless Ripper
 - [ ] Sage-Eye Harrier
@@ -254,9 +254,9 @@
 - [ ] War-Name Aspirant
 - [ ] Watcher of the Roost
 - [ ] Waterwhirl
-- [ ] Weave Fate
+- [x] Weave Fate
 - [x] Wetland Sambar
-- [ ] Whirlwind Adept
+- [x] Whirlwind Adept
 - [x] Wind-Scarred Crag
 - [ ] Windstorm
 - [ ] Windswept Heath

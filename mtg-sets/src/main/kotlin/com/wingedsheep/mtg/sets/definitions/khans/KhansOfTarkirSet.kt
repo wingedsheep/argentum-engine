@@ -33,10 +33,18 @@ object KhansOfTarkirSet {
         JeskaiWindscout,
         MonasteryFlock,
         WetlandSambar,
+        WhirlwindAdept,
+
+        // Blue spells
+        WeaveFate,
+
+        // Black creatures
+        GurmagSwiftwing,
 
         // Black spells
         BitterRevelation,
         DebilitatingInjury,
+        Despise,
         Throttle,
 
         // Green creatures
@@ -53,8 +61,12 @@ object KhansOfTarkirSet {
         SummitProwler,
         ValleyDasher,
 
+        // Red spells
+        BringLow,
+
         // Multicolor
         ChiefOfTheEdge,
+        ChiefOfTheScale,
         HighspireMantis,
         UtterEnd,
 
@@ -65,6 +77,7 @@ object KhansOfTarkirSet {
 
         // Lands
         JungleHollow,
+        RuggedHighlands,
         WindScarredCrag,
     )
 }
