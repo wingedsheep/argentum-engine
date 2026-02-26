@@ -308,6 +308,17 @@ export interface SpectatingState {
 }
 
 /**
+ * Match intro animation state.
+ */
+export interface MatchIntro {
+  playerName: string
+  opponentName: string
+  round?: number
+  playerRecord?: string
+  opponentRecord?: string
+}
+
+/**
  * A log entry for the game log panel.
  */
 export interface LogEntry {
@@ -547,4 +558,7 @@ export type GameStore = {
   addCoinFlipAnimation: (animation: CoinFlipAnimation) => void
   removeCoinFlipAnimation: (id: string) => void
   setAutoTapPreview: (preview: readonly EntityId[] | null) => void
+  matchIntro: MatchIntro | null
+  setMatchIntro: (intro: MatchIntro) => void
+  clearMatchIntro: () => void
 }

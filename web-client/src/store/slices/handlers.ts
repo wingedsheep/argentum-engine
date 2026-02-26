@@ -137,6 +137,33 @@ export function createMessageHandlers(set: SetState, get: GetState): MessageHand
         }
       } catch { /* ignore invalid localStorage data */ }
 
+      // Show match intro animation
+      const playerName = localStorage.getItem('argentum-player-name') ?? 'You'
+      const { tournamentState, playerId } = get()
+      let round: number | undefined
+      let playerRecord: string | undefined
+      let opponentRecord: string | undefined
+      if (tournamentState && playerId) {
+        round = tournamentState.currentRound
+        const playerStanding = tournamentState.standings.find((s) => s.playerId === playerId)
+        const opponentStanding = tournamentState.standings.find((s) => s.playerName === msg.opponentName)
+        if (playerStanding) {
+          playerRecord = `${playerStanding.wins}-${playerStanding.losses}${playerStanding.draws > 0 ? `-${playerStanding.draws}` : ''}`
+        }
+        if (opponentStanding) {
+          opponentRecord = `${opponentStanding.wins}-${opponentStanding.losses}${opponentStanding.draws > 0 ? `-${opponentStanding.draws}` : ''}`
+        }
+      }
+      set({
+        matchIntro: {
+          playerName,
+          opponentName: msg.opponentName,
+          ...(round != null ? { round } : {}),
+          ...(playerRecord != null ? { playerRecord } : {}),
+          ...(opponentRecord != null ? { opponentRecord } : {}),
+        },
+      })
+
       set({
         opponentName: msg.opponentName,
         mulliganState: null,

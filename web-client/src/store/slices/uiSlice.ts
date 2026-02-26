@@ -17,6 +17,7 @@ import type {
   RevealAnimation,
   CoinFlipAnimation,
   ConvokeCreatureSelection,
+  MatchIntro,
 } from './types'
 import {
   entityId,
@@ -52,6 +53,7 @@ export interface UISliceState {
   damageAnimations: readonly DamageAnimation[]
   revealAnimations: readonly RevealAnimation[]
   coinFlipAnimations: readonly CoinFlipAnimation[]
+  matchIntro: MatchIntro | null
 }
 
 export interface UISliceActions {
@@ -113,6 +115,8 @@ export interface UISliceActions {
   addCoinFlipAnimation: (animation: CoinFlipAnimation) => void
   removeCoinFlipAnimation: (id: string) => void
   setAutoTapPreview: (preview: readonly EntityId[] | null) => void
+  setMatchIntro: (intro: MatchIntro) => void
+  clearMatchIntro: () => void
 }
 
 export type UISlice = UISliceState & UISliceActions
@@ -139,6 +143,7 @@ export const createUISlice: SliceCreator<UISlice> = (set, get) => ({
   damageAnimations: [],
   revealAnimations: [],
   coinFlipAnimations: [],
+  matchIntro: null,
 
   // Card selection actions
   selectCard: (cardId) => {
@@ -985,5 +990,13 @@ export const createUISlice: SliceCreator<UISlice> = (set, get) => ({
 
   setAutoTapPreview: (preview) => {
     set({ autoTapPreview: preview })
+  },
+
+  setMatchIntro: (intro) => {
+    set({ matchIntro: intro })
+  },
+
+  clearMatchIntro: () => {
+    set({ matchIntro: null })
   },
 })

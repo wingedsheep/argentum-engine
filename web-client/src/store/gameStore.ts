@@ -41,6 +41,7 @@ export type {
   DamageAnimation,
   RevealAnimation,
   CoinFlipAnimation,
+  MatchIntro,
   GameStore,
 } from './slices/types'
 

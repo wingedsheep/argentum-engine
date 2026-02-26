@@ -55,6 +55,8 @@ export function MulliganUI() {
 function MulliganDecision({ state, responsive, onHoverCard }: { state: MulliganState; responsive: ResponsiveSizes; onHoverCard: (cardId: EntityId | null) => void }) {
   const keepHand = useGameStore((s) => s.keepHand)
   const mulligan = useGameStore((s) => s.mulligan)
+  const tournamentState = useGameStore((s) => s.tournamentState)
+  const playerId = useGameStore((s) => s.playerId)
 
   // Calculate card size that fits all 7 cards
   const availableWidth = responsive.viewportWidth - (responsive.containerPadding * 2) - 32 // extra padding
@@ -62,8 +64,34 @@ function MulliganDecision({ state, responsive, onHoverCard }: { state: MulliganS
   const maxCardWidth = responsive.isMobile ? 90 : 130
   const cardWidth = calculateFittingCardWidth(state.hand.length, availableWidth, gap, maxCardWidth, 45)
 
+  // Tournament info
+  const tournamentInfo = (() => {
+    if (!tournamentState || !playerId) return null
+    const playerStanding = tournamentState.standings.find((s) => s.playerId === playerId)
+    const opponentName = tournamentState.currentMatchOpponentName
+    const opponentStanding = opponentName
+      ? tournamentState.standings.find((s) => s.playerName === opponentName)
+      : null
+    if (!playerStanding || !opponentName) return null
+    const playerRecord = `${playerStanding.wins}-${playerStanding.losses}${playerStanding.draws > 0 ? `-${playerStanding.draws}` : ''}`
+    const opponentRecord = opponentStanding
+      ? `${opponentStanding.wins}-${opponentStanding.losses}${opponentStanding.draws > 0 ? `-${opponentStanding.draws}` : ''}`
+      : null
+    return { round: tournamentState.currentRound, playerRecord, opponentName, opponentRecord }
+  })()
+
   return (
     <>
+      {tournamentInfo && (
+        <div className={styles.tournamentBanner}>
+          <p className={styles.tournamentRound}>Round {tournamentInfo.round}</p>
+          <p className={styles.tournamentMatchup}>
+            You ({tournamentInfo.playerRecord}) vs {tournamentInfo.opponentName}
+            {tournamentInfo.opponentRecord ? ` (${tournamentInfo.opponentRecord})` : ''}
+          </p>
+        </div>
+      )}
+
       <h2 className={styles.title}>
         {state.mulliganCount === 0
           ? 'Opening Hand'

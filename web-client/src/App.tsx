@@ -9,6 +9,7 @@ import { ConvokeSelector } from './components/ui/ConvokeSelector'
 import { DamageDistributionModal } from './components/decisions/DamageDistributionModal'
 import { OpponentDecisionIndicator } from './components/ui/OpponentDecisionIndicator'
 import { DisconnectCountdown } from './components/ui/DisconnectCountdown'
+import { MatchIntroAnimation } from './components/animations/MatchIntroAnimation'
 import { StandaloneConcedeButton } from './components/game/overlay'
 import { DeckBuilderOverlay } from './components/sealed/DeckBuilderOverlay'
 import { DraftPickOverlay } from './components/draft/DraftPickOverlay'
@@ -32,6 +33,7 @@ export default function App() {
   const lobbyState = useGameStore((state) => state.lobbyState)
   const tournamentState = useGameStore((state) => state.tournamentState)
   const spectatingState = useGameStore((state) => state.spectatingState)
+  const matchIntro = useGameStore((state) => state.matchIntro)
   const startCombat = useGameStore((state) => state.startCombat)
   const connect = useGameStore((state) => state.connect)
   const hasConnectedRef = useRef(false)
@@ -221,8 +223,8 @@ export default function App() {
       {/* Connection/lobby UI overlay (suppressed during mulligan and game-over) */}
       {showLobby && !gameOverState && !mulliganState && !waitingForOpponentMulligan && <GameUI />}
 
-      {/* Background image behind mulligan overlay */}
-      {(mulliganState || waitingForOpponentMulligan) && (
+      {/* Background image behind mulligan/intro overlay */}
+      {(mulliganState || waitingForOpponentMulligan || matchIntro) && (
         <div style={{
           position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
           backgroundImage: `url(${randomBackground})`,
@@ -236,11 +238,14 @@ export default function App() {
       {/* Draft picking overlay */}
       {showDraftPick && <DraftPickOverlay />}
 
+      {/* Match intro animation (plays before mulligan) */}
+      {matchIntro && <MatchIntroAnimation />}
+
       {/* Mulligan overlay */}
-      {mulliganState && <MulliganUI />}
+      {mulliganState && !matchIntro && <MulliganUI />}
 
       {/* Waiting for opponent mulligan overlay */}
-      {!mulliganState && waitingForOpponentMulligan && <WaitingForMulliganOverlay />}
+      {!mulliganState && !matchIntro && waitingForOpponentMulligan && <WaitingForMulliganOverlay />}
 
 
       {/* X cost selection overlay (when casting spells with X in cost) */}

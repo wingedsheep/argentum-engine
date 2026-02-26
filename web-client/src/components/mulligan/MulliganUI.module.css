@@ -70,6 +70,32 @@
 }
 
 /* =========================================================================
+ * Tournament Info Banner
+ * ========================================================================= */
+.tournamentBanner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.tournamentRound {
+  color: var(--text-muted);
+  margin: 0;
+  font-size: var(--font-sm);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  font-weight: var(--font-weight-semibold);
+}
+
+.tournamentMatchup {
+  color: var(--text-tertiary);
+  margin: 0;
+  font-size: var(--font-md);
+  font-weight: var(--font-weight-medium);
+}
+
+/* =========================================================================
  * Title
  * ========================================================================= */
 .title {
