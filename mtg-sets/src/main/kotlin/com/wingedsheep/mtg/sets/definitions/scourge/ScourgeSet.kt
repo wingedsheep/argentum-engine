@@ -98,6 +98,7 @@ object ScourgeSet {
         DragonBreath,
         PyrostaticPillar,
         SulfuricVortex,
+        UncontrolledInfestation,
 
         // Red sorceries
         GoblinWarStrike,

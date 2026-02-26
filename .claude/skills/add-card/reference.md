@@ -441,6 +441,7 @@ each player reveals and creates tokens
 - `Triggers.EnchantedCreatureControllerEndStep` — enchanted creature's controller's end step
 - `Triggers.TurnedFaceUp` — self turns face up
 - `Triggers.EnchantedCreatureTurnedFaceUp` — enchanted creature turns face up (aura trigger)
+- `Triggers.EnchantedPermanentBecomesTapped` — enchanted permanent becomes tapped (aura trigger)
 - `Triggers.GainControlOfSelf` — you gain control of self
 
 ### Spell
@@ -971,7 +972,7 @@ Used in `OptionalCostEffect`, `MayPayManaEffect`, `AnyPlayerMayPayEffect`, `PayO
 - `DiscardEvent(player, cardFilter?)` / `SearchLibraryEvent(player)`
 - `AttackEvent` / `YouAttackEvent(minAttackers)` / `BlockEvent` / `BecomesBlockedEvent`
 - `BecomesTargetEvent(targetFilter)` — when a permanent becomes the target of a spell or ability
-- `StepEvent(step, player)` / `EnchantedCreatureControllerStepEvent(step)` / `EnchantedCreatureTurnedFaceUpEvent`
+- `StepEvent(step, player)` / `EnchantedCreatureControllerStepEvent(step)` / `EnchantedCreatureTurnedFaceUpEvent` / `EnchantedPermanentBecomesTappedEvent`
 - `SpellCastEvent(spellType, manaValueAtLeast?, manaValueAtMost?, manaValueEquals?, player)`
 - `CycleEvent(player)` / `TapEvent` / `UntapEvent`
 - `TurnFaceUpEvent` / `TransformEvent(intoBackFace?)` / `ControlChangeEvent`

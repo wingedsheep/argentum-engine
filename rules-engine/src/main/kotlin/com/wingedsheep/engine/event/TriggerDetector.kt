@@ -410,6 +410,11 @@ class TriggerDetector(
             detectEnchantedCreatureTurnedFaceUpTriggers(state, event, triggers, projected)
         }
 
+        // Handle "when enchanted permanent becomes tapped" triggers on auras (e.g., Uncontrolled Infestation)
+        if (event is TappedEvent) {
+            detectEnchantedPermanentBecomesTappedTriggers(state, event, triggers, projected)
+        }
+
         // Handle "when you gain control of this from another player" triggers (e.g., Risky Move)
         if (event is ControlChangedEvent) {
             detectControlChangeTriggers(state, event, triggers)
@@ -814,6 +819,47 @@ class TriggerDetector(
     }
 
     /**
+     * Detect "when enchanted permanent becomes tapped" triggers on auras.
+     * Checks all auras attached to the tapped permanent for EnchantedPermanentBecomesTappedEvent triggers.
+     */
+    private fun detectEnchantedPermanentBecomesTappedTriggers(
+        state: GameState,
+        event: TappedEvent,
+        triggers: MutableList<PendingTrigger>,
+        projected: ProjectedState
+    ) {
+        val tappedEntityId = event.entityId
+
+        // Find all auras attached to the tapped permanent
+        for (entityId in state.getBattlefield()) {
+            val container = state.getEntity(entityId) ?: continue
+            val attachedTo = container.get<AttachedToComponent>() ?: continue
+            if (attachedTo.targetId != tappedEntityId) continue
+
+            val cardComponent = container.get<CardComponent>() ?: continue
+            val controllerId = projected.getController(entityId) ?: continue
+
+            if (container.has<FaceDownComponent>()) continue
+
+            val abilities = getTriggeredAbilities(entityId, cardComponent.cardDefinitionId, state)
+
+            for (ability in abilities) {
+                if (ability.trigger is GameEvent.EnchantedPermanentBecomesTappedEvent) {
+                    triggers.add(
+                        PendingTrigger(
+                            ability = ability,
+                            sourceId = entityId,
+                            sourceName = cardComponent.name,
+                            controllerId = controllerId,
+                            triggerContext = TriggerContext.fromEvent(event)
+                        )
+                    )
+                }
+            }
+        }
+    }
+
+    /**
      * Detect "whenever a creature deals damage to you" triggers on permanents
      * controlled by the damaged player. The triggeringEntityId is set to the
      * damage SOURCE creature (the creature that dealt the damage).
@@ -1157,6 +1203,7 @@ class TriggerDetector(
             is GameEvent.EnchantedCreatureDealsCombatDamageToPlayerEvent -> false
             is GameEvent.EnchantedCreatureDealsDamageEvent -> false
             is GameEvent.EnchantedCreatureTurnedFaceUpEvent -> false
+            is GameEvent.EnchantedPermanentBecomesTappedEvent -> false
             // Replacement-effect-only events never match as triggers
             is GameEvent.DamageEvent -> false
             is GameEvent.CounterPlacementEvent -> false

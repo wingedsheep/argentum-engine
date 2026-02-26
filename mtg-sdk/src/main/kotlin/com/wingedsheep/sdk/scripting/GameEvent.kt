@@ -445,6 +445,16 @@ sealed interface GameEvent {
         override val description: String = "when enchanted creature is turned face up"
     }
 
+    /**
+     * When the enchanted permanent becomes tapped.
+     * Special case for auras like Uncontrolled Infestation.
+     */
+    @SerialName("EnchantedPermanentBecomesTappedEvent")
+    @Serializable
+    data object EnchantedPermanentBecomesTappedEvent : GameEvent {
+        override val description: String = "when enchanted permanent becomes tapped"
+    }
+
     // ---- Spell/Card Triggers ----
 
     /**

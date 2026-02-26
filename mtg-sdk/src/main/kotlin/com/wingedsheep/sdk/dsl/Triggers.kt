@@ -434,6 +434,15 @@ object Triggers {
         binding = TriggerBinding.SELF
     )
 
+    /**
+     * When the enchanted permanent becomes tapped.
+     * Used for auras like Uncontrolled Infestation.
+     */
+    val EnchantedPermanentBecomesTapped: TriggerSpec = TriggerSpec(
+        event = EnchantedPermanentBecomesTappedEvent,
+        binding = TriggerBinding.ANY
+    )
+
     // =========================================================================
     // Cycling Triggers
     // =========================================================================

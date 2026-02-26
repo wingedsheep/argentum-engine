@@ -3,14 +3,14 @@
 
 **Set Size:** 143 cards
 **Release Date:** May 26, 2003
-**Implemented:** 88 / 143
+**Implemented:** 89 / 143
 
 | Color | Count |
 |-------|-------|
 | White | 17 |
 | Blue | 16 |
 | Black | 17 |
-| Red | 17 |
+| Red | 18 |
 | Green | 17 |
 | Multicolor | 1 |
 | Colorless | 3 |
@@ -147,7 +147,7 @@
 - [x] Treetop Scout
 - [x] Twisted Abomination
 - [x] Unburden
-- [ ] Uncontrolled Infestation
+- [x] Uncontrolled Infestation
 - [x] Undead Warchief
 - [x] Unspeakable Symbol
 - [ ] Upwelling
