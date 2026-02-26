@@ -31,6 +31,7 @@ object LegionsSet {
         MerchantOfSecrets,
 
         // Black creatures
+        SmokespewInvoker,
         WitheredWretch,
 
         // Red creatures
