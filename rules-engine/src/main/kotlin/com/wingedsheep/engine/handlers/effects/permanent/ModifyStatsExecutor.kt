@@ -37,7 +37,7 @@ class ModifyStatsExecutor(
         context: EffectContext
     ): ExecutionResult {
         // Resolve the target creature
-        val targetId = resolveTarget(effect.target, context)
+        val targetId = resolveTarget(effect.target, context, state)
             ?: return ExecutionResult.error(state, "No valid target for stat modification")
 
         // Verify target exists and is a creature (use projected types for animated lands etc.)
