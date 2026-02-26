@@ -146,5 +146,8 @@ object ScourgeSet {
         // Black sorceries
         Skulltap,
         Unburden,
+
+        // Lands
+        TempleOfTheFalseGod,
     )
 }

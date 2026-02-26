@@ -82,6 +82,16 @@ object Conditions {
         Exists(Player.You, Zone.BATTLEFIELD, GameObjectFilter.Artifact)
 
     /**
+     * If you control N or more lands.
+     */
+    fun ControlLandsAtLeast(count: Int): ConditionInterface =
+        Compare(
+            DynamicAmount.AggregateBattlefield(Player.You, GameObjectFilter.Land),
+            ComparisonOperator.GTE,
+            DynamicAmount.Fixed(count)
+        )
+
+    /**
      * If you control N or more creatures.
      */
     fun ControlCreaturesAtLeast(count: Int): ConditionInterface =

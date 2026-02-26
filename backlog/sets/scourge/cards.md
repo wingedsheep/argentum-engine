@@ -3,7 +3,7 @@
 
 **Set Size:** 143 cards
 **Release Date:** May 26, 2003
-**Implemented:** 83 / 143
+**Implemented:** 84 / 143
 
 | Color | Count |
 |-------|-------|
@@ -13,7 +13,7 @@
 | Red | 17 |
 | Green | 16 |
 | Multicolor | 1 |
-| Colorless | 1 |
+| Colorless | 2 |
 
 ---
 
@@ -137,7 +137,7 @@
 - [ ] Stabilizer
 - [ ] Stifle
 - [x] Sulfuric Vortex
-- [ ] Temple of the False God
+- [x] Temple of the False God
 - [ ] Temporal Fissure
 - [ ] Tendrils of Agony
 - [x] Thundercloud Elemental
