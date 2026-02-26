@@ -2,11 +2,11 @@
 
 **Set Size:** 145 cards
 **Release Date:** February 3, 2003
-**Implemented:** 14 / 145
+**Implemented:** 15 / 145
 
 | Color      | Count |
 |------------|-------|
-| White      | 2/29  |
+| White      | 3/29  |
 | Blue       | 3/29  |
 | Black      | 3/29  |
 | Red        | 3/29  |
@@ -43,7 +43,7 @@
 - [ ] Crypt Sliver
 - [ ] Dark Supplicant
 - [ ] Daru Mender
-- [ ] Daru Sanctifier
+- [x] Daru Sanctifier
 - [ ] Daru Stinger
 - [ ] Deathmark Prelate
 - [ ] Defender of the Order
