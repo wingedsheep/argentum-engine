@@ -23,6 +23,7 @@ object LegionsSet {
      */
     val allCards = listOf(
         // White creatures
+        StarlightInvoker,
         WhiteKnight,
 
         // Blue creatures
@@ -30,12 +31,15 @@ object LegionsSet {
         MerchantOfSecrets,
 
         // Black creatures
+        SmokespewInvoker,
         WitheredWretch,
 
         // Red creatures
+        FlamewaveInvoker,
         RidgetopRaptor,
 
         // Green creatures
         DefiantElf,
+        EnormousBaloth,
     )
 }
