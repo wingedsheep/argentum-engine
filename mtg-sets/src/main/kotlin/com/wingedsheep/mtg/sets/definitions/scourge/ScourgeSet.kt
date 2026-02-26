@@ -23,6 +23,7 @@ object ScourgeSet {
     val allCards = listOf(
         // Artifacts
         ArkOfBlight,
+        Stabilizer,
 
         // Black/Red creatures
         BladewingTheRisen,

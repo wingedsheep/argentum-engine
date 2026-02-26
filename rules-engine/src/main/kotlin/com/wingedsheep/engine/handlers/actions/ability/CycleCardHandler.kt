@@ -24,6 +24,7 @@ import com.wingedsheep.engine.state.components.player.ManaPoolComponent
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.scripting.KeywordAbility
+import com.wingedsheep.sdk.scripting.PreventCycling
 import kotlin.reflect.KClass
 
 /**
@@ -43,6 +44,11 @@ class CycleCardHandler(
     override fun validate(state: GameState, action: CycleCard): String? {
         if (state.priorityPlayerId != action.playerId) {
             return "You don't have priority"
+        }
+
+        // Check if cycling is prevented by any permanent on the battlefield (e.g., Stabilizer)
+        if (isCyclingPrevented(state)) {
+            return "Cycling is prevented"
         }
 
         val container = state.getEntity(action.cardId)
@@ -224,6 +230,18 @@ class CycleCardHandler(
 
         // Cycling doesn't change priority
         return ExecutionResult.success(currentState, events)
+    }
+
+    private fun isCyclingPrevented(state: GameState): Boolean {
+        val registry = cardRegistry ?: return false
+        for (entityId in state.getBattlefield()) {
+            val card = state.getEntity(entityId)?.get<CardComponent>() ?: continue
+            val cardDef = registry.getCard(card.cardDefinitionId) ?: continue
+            if (cardDef.script.staticAbilities.any { it is PreventCycling }) {
+                return true
+            }
+        }
+        return false
     }
 
     companion object {

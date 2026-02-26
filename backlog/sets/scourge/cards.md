@@ -3,7 +3,7 @@
 
 **Set Size:** 143 cards
 **Release Date:** May 26, 2003
-**Implemented:** 84 / 143
+**Implemented:** 85 / 143
 
 | Color | Count |
 |-------|-------|
@@ -13,7 +13,7 @@
 | Red | 17 |
 | Green | 16 |
 | Multicolor | 1 |
-| Colorless | 2 |
+| Colorless | 3 |
 
 ---
 
@@ -134,7 +134,7 @@
 - [ ] Soul Collector
 - [x] Spark Spray
 - [ ] Sprouting Vines
-- [ ] Stabilizer
+- [x] Stabilizer
 - [ ] Stifle
 - [x] Sulfuric Vortex
 - [x] Temple of the False God

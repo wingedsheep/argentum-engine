@@ -794,3 +794,16 @@ data class CantAttackUnlessDefenderControlsLandType(
         if (landType.first().lowercaseChar() in "aeiou") "an" else "a"
     } $landType"
 }
+
+/**
+ * Prevents all players from cycling cards.
+ * Used for Stabilizer: "Players can't cycle cards."
+ *
+ * The engine checks for this static ability on any permanent on the battlefield
+ * when determining if cycling/typecycling is a legal action.
+ */
+@SerialName("PreventCycling")
+@Serializable
+data object PreventCycling : StaticAbility {
+    override val description: String = "Players can't cycle cards"
+}
