@@ -2,11 +2,11 @@
 
 **Set Size:** 145 cards
 **Release Date:** February 3, 2003
-**Implemented:** 8 / 145
+**Implemented:** 9 / 145
 
 | Color      | Count |
 |------------|-------|
-| White      | 1/29  |
+| White      | 2/29  |
 | Blue       | 2/29  |
 | Black      | 1/29  |
 | Red        | 2/29  |
@@ -130,7 +130,7 @@
 - [ ] Smokespew Invoker
 - [ ] Sootfeather Flock
 - [ ] Spectral Sliver
-- [ ] Starlight Invoker
+- [x] Starlight Invoker
 - [ ] Stoic Champion
 - [ ] Stonewood Invoker
 - [ ] Sunstrike Legionnaire
