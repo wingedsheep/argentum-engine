@@ -7,6 +7,7 @@ import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.battlefield.CountersComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
+import com.wingedsheep.engine.state.components.identity.FaceDownComponent
 import com.wingedsheep.engine.state.components.identity.LifeTotalComponent
 import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.core.Zone
@@ -429,7 +430,10 @@ class DynamicAmountEvaluator(
     ): Int {
         return when (property) {
             CardNumericProperty.MANA_VALUE -> {
-                state.getEntity(entityId)?.get<CardComponent>()?.manaValue ?: 0
+                val entity = state.getEntity(entityId)
+                // Rule 202.3b: face-down permanents have mana value 0
+                if (entity?.has<FaceDownComponent>() == true) 0
+                else entity?.get<CardComponent>()?.manaValue ?: 0
             }
             CardNumericProperty.POWER -> {
                 projected?.getPower(entityId)
