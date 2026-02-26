@@ -50,6 +50,7 @@ object LegionsSet {
         DefiantElf,
         EnormousBaloth,
         Hundroog,
+        NeedleshotGourna,
         StonewoodInvoker,
     )
 }
