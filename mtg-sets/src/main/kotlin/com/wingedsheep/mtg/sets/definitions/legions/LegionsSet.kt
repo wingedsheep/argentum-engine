@@ -35,6 +35,7 @@ object LegionsSet {
         // Black creatures
         DrippingDead,
         SmokespewInvoker,
+        SootfeatherFlock,
         WitheredWretch,
 
         // Red creatures
