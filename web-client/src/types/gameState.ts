@@ -165,6 +165,12 @@ export interface ClientCard {
 
   /** Specific ability text when on the stack (e.g., spell effect description, not full oracle text) */
   readonly stackText?: string | null
+
+  /** Revealed name for face-down creatures that this player has peeked at (e.g., via Spy Network) */
+  readonly revealedName?: string | null
+
+  /** Revealed image URI for face-down creatures that this player has peeked at */
+  readonly revealedImageUri?: string | null
 }
 
 /**
