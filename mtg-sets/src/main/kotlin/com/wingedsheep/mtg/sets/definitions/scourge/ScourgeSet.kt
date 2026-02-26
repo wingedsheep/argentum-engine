@@ -23,12 +23,14 @@ object ScourgeSet {
     val allCards = listOf(
         // Artifacts
         ArkOfBlight,
+        Stabilizer,
 
         // Black/Red creatures
         BladewingTheRisen,
 
         // Black creatures
         BladewingsThrall,
+        CabalInterrogator,
         CarrionFeeder,
         ConsumptiveGoo,
 
@@ -146,5 +148,8 @@ object ScourgeSet {
         // Black sorceries
         Skulltap,
         Unburden,
+
+        // Lands
+        TempleOfTheFalseGod,
     )
 }

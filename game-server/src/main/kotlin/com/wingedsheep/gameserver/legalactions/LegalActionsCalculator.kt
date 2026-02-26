@@ -42,6 +42,7 @@ import com.wingedsheep.sdk.scripting.predicates.ControllerPredicate
 import com.wingedsheep.sdk.scripting.effects.DividedDamageEffect
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.PlayFromTopOfLibrary
+import com.wingedsheep.sdk.scripting.PreventCycling
 import com.wingedsheep.sdk.scripting.effects.AddAnyColorManaEffect
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import com.wingedsheep.sdk.scripting.targets.*
@@ -357,6 +358,9 @@ class LegalActionsCalculator(
             }
         }
 
+        // Check if cycling is prevented by any permanent on the battlefield (e.g., Stabilizer)
+        val cyclingPrevented = isCyclingPrevented(state)
+
         // Check for cycling and typecycling abilities on cards in hand
         for (cardId in hand) {
             val cardComponent = state.getEntity(cardId)?.get<CardComponent>() ?: continue
@@ -374,8 +378,13 @@ class LegalActionsCalculator(
                 continue
             }
 
+            // Skip cycling/typecycling if prevented by a permanent (e.g., Stabilizer)
+            if (cyclingPrevented) {
+                // Still check for normal cast option below
+            }
+
             // Add cycling action if present
-            if (cyclingAbility != null) {
+            if (cyclingAbility != null && !cyclingPrevented) {
                 val canAffordCycling = manaSolver.canPay(state, playerId, cyclingAbility.cost)
                 result.add(LegalActionInfo(
                     actionType = "CycleCard",
@@ -387,7 +396,7 @@ class LegalActionsCalculator(
             }
 
             // Add typecycling action if present
-            if (typecyclingAbility != null) {
+            if (typecyclingAbility != null && !cyclingPrevented) {
                 val canAffordTypecycling = manaSolver.canPay(state, playerId, typecyclingAbility.cost)
                 result.add(LegalActionInfo(
                     actionType = "TypecycleCard",
@@ -1684,5 +1693,20 @@ class LegalActionsCalculator(
 
         // We can afford if we have enough for generic (colored is covered by creatures or mana)
         return resourcesForGeneric >= genericRequired
+    }
+
+    /**
+     * Check if cycling is prevented by any permanent on the battlefield.
+     * Used for Stabilizer: "Players can't cycle cards."
+     */
+    private fun isCyclingPrevented(state: GameState): Boolean {
+        for (entityId in state.getBattlefield()) {
+            val card = state.getEntity(entityId)?.get<CardComponent>() ?: continue
+            val cardDef = cardRegistry.getCard(card.cardDefinitionId) ?: continue
+            if (cardDef.script.staticAbilities.any { it is PreventCycling }) {
+                return true
+            }
+        }
+        return false
     }
 }

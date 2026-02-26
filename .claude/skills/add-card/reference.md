@@ -806,6 +806,7 @@ Set via `staticAbility { ability = ... }`:
 - `GrantShroudToController` — controller has shroud
 - `AdditionalManaOnTap(color, amount: DynamicAmount)` — produce additional mana
 - `PlayFromTopOfLibrary` — play cards from top of library
+- `PreventCycling` — players can't cycle cards
 - `SpellCostReduction(reductionSource)` — cost reduction
 - `FaceDownSpellCostReduction(reductionSource)` — face-down spell cost reduction
 - `ReduceSpellCostBySubtype(subtype, amount)` — reduce cost per subtype

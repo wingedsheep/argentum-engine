@@ -443,6 +443,8 @@ class ClientStateTransformer(
         // Opponents and spectators see modified stats but no card information
         // Controller sees real card info + morph cost (but not spectators)
         if (isFaceDown && (isSpectator || controllerId != viewingPlayerId)) {
+            // Check if the face-down creature has been revealed to the viewing player (e.g., via Spy Network)
+            val isRevealedToViewer = !isSpectator && isCardRevealedTo(state, entityId, viewingPlayerId)
             return ClientCard(
                 id = entityId,
                 name = "Face-down creature",
@@ -478,7 +480,9 @@ class ClientStateTransformer(
                 isFaceDown = true,
                 morphCost = null, // Opponent can't see morph cost
                 imageUri = "https://cards.scryfall.io/normal/front/e/9/e9375cbe-93c0-41a5-a6e3-fb4416f54a69.jpg", // Morph token from Commander 2019
-                activeEffects = buildCardActiveEffects(state, entityId)
+                activeEffects = buildCardActiveEffects(state, entityId),
+                revealedName = if (isRevealedToViewer) cardComponent.name else null,
+                revealedImageUri = if (isRevealedToViewer) cardDef?.metadata?.imageUri else null
             )
         }
 

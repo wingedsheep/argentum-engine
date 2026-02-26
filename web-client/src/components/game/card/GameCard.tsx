@@ -825,6 +825,26 @@ export function GameCard({
         <KeywordIcons keywords={card.keywords} protections={card.protections ?? []} size={responsive.isMobile ? 14 : 18} />
       )}
 
+      {/* Revealed face-down eye icon (e.g., peeked via Spy Network) */}
+      {faceDown && card.revealedName && (
+        <div style={{
+          position: 'absolute',
+          top: responsive.isMobile ? 2 : 4,
+          right: responsive.isMobile ? 2 : 4,
+          backgroundColor: 'rgba(0, 0, 0, 0.75)',
+          color: '#66ccff',
+          fontSize: responsive.isMobile ? 10 : 13,
+          padding: responsive.isMobile ? '1px 3px' : '2px 5px',
+          borderRadius: 4,
+          border: '1px solid rgba(102, 204, 255, 0.5)',
+          pointerEvents: 'none',
+          zIndex: 5,
+          lineHeight: 1,
+        }}>
+          👁
+        </div>
+      )}
+
       {/* Chosen creature type / color badge (e.g., Doom Cannon, Riptide Replicator) */}
       {!faceDown && (card.chosenCreatureType ?? card.chosenColor) && (
         <div style={{

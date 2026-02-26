@@ -2,6 +2,7 @@ package com.wingedsheep.engine.handlers.actions.combat
 
 import com.wingedsheep.engine.core.DeclareBlockers
 import com.wingedsheep.engine.core.ExecutionResult
+import com.wingedsheep.engine.core.PendingTriggersContinuation
 import com.wingedsheep.engine.event.TriggerDetector
 import com.wingedsheep.engine.event.TriggerProcessor
 import com.wingedsheep.engine.handlers.actions.ActionContext
@@ -37,6 +38,30 @@ class DeclareBlockersHandler(
 
     override fun execute(state: GameState, action: DeclareBlockers): ExecutionResult {
         val result = combatManager.declareBlockers(state, action.playerId, action.blockers)
+
+        if (result.isPaused) {
+            // Paused for blocker damage assignment ordering (multiple blockers on one attacker).
+            // Detect block triggers now and queue them as a PendingTriggersContinuation so they
+            // fire after blocker ordering completes (via checkForMoreContinuations).
+            val triggers = triggerDetector.detectTriggers(result.newState, result.events)
+            if (triggers.isNotEmpty()) {
+                val pendingTriggers = PendingTriggersContinuation(
+                    decisionId = "block-triggers-${java.util.UUID.randomUUID()}",
+                    remainingTriggers = triggers
+                )
+                // Insert BELOW the BlockerOrderContinuation so blocker ordering completes first,
+                // then checkForMoreContinuations picks up the triggers afterwards.
+                val stack = result.newState.continuationStack
+                val newStack = stack.dropLast(1) + pendingTriggers + stack.last()
+                val stateWithTriggers = result.newState.copy(continuationStack = newStack)
+                return ExecutionResult.paused(
+                    stateWithTriggers,
+                    result.pendingDecision!!,
+                    result.events
+                )
+            }
+            return result
+        }
 
         if (!result.isSuccess) {
             return result

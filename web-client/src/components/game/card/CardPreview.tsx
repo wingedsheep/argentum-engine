@@ -41,7 +41,10 @@ export function CardPreview() {
   const card = gameState.cards[hoveredCardId]
   if (!card) return null
 
-  const cardImageUrl = getCardImageUrl(card.name, card.imageUri, 'large')
+  const isRevealedFaceDown = card.isFaceDown && !!card.revealedName
+  const cardImageUrl = isRevealedFaceDown
+    ? getCardImageUrl(card.revealedName!, card.revealedImageUri ?? undefined, 'large')
+    : getCardImageUrl(card.name, card.imageUri, 'large')
 
   // Calculate preview size - larger than normal cards
   const previewWidth = responsive.isMobile ? 200 : 280
@@ -89,6 +92,7 @@ export function CardPreview() {
         {/* Card image — token frame for tokens with art_crop, normal image otherwise */}
         <div style={{
           ...styles.cardPreviewCard,
+          position: 'relative',
           width: previewWidth,
           height: previewHeight,
         }}>
@@ -135,10 +139,30 @@ export function CardPreview() {
           ) : (
             <img
               src={cardImageUrl}
-              alt={card.name}
+              alt={isRevealedFaceDown ? card.revealedName! : card.name}
               style={styles.cardPreviewImage}
-              onError={(e) => handleImageError(e, card.name, 'large')}
+              onError={(e) => handleImageError(e, isRevealedFaceDown ? card.revealedName! : card.name, 'large')}
             />
+          )}
+          {/* "Revealed" label for peeked face-down creatures */}
+          {isRevealedFaceDown && (
+            <div style={{
+              position: 'absolute',
+              top: 8,
+              left: '50%',
+              transform: 'translateX(-50%)',
+              backgroundColor: 'rgba(0, 0, 0, 0.75)',
+              color: '#66ccff',
+              fontSize: 12,
+              fontWeight: 600,
+              padding: '2px 10px',
+              borderRadius: 4,
+              border: '1px solid rgba(102, 204, 255, 0.5)',
+              pointerEvents: 'none',
+              whiteSpace: 'nowrap',
+            }}>
+              Revealed
+            </div>
           )}
         </div>
 

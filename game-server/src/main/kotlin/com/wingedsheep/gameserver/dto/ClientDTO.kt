@@ -184,7 +184,13 @@ data class ClientCard(
     val sacrificedCreatureTypes: Set<String>? = null,
 
     /** Specific ability text when on the stack (e.g., spell effect description, not full oracle text) */
-    val stackText: String? = null
+    val stackText: String? = null,
+
+    /** Revealed name for face-down creatures that this player has peeked at (e.g., via Spy Network) */
+    val revealedName: String? = null,
+
+    /** Revealed image URI for face-down creatures that this player has peeked at */
+    val revealedImageUri: String? = null
 )
 
 /**

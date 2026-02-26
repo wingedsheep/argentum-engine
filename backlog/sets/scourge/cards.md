@@ -3,17 +3,17 @@
 
 **Set Size:** 143 cards
 **Release Date:** May 26, 2003
-**Implemented:** 83 / 143
+**Implemented:** 86 / 143
 
 | Color | Count |
 |-------|-------|
 | White | 16 |
 | Blue | 16 |
-| Black | 16 |
+| Black | 17 |
 | Red | 17 |
 | Green | 16 |
 | Multicolor | 1 |
-| Colorless | 1 |
+| Colorless | 3 |
 
 ---
 
@@ -33,7 +33,7 @@
 - [ ] Brain Freeze
 - [x] Break Asunder
 - [ ] Cabal Conditioning
-- [ ] Cabal Interrogator
+- [x] Cabal Interrogator
 - [ ] Call to the Grave
 - [x] Carbonize
 - [x] Carrion Feeder
@@ -134,10 +134,10 @@
 - [ ] Soul Collector
 - [x] Spark Spray
 - [ ] Sprouting Vines
-- [ ] Stabilizer
+- [x] Stabilizer
 - [ ] Stifle
 - [x] Sulfuric Vortex
-- [ ] Temple of the False God
+- [x] Temple of the False God
 - [ ] Temporal Fissure
 - [ ] Tendrils of Agony
 - [x] Thundercloud Elemental
