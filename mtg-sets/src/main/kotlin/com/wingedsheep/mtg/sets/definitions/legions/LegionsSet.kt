@@ -25,9 +25,11 @@ object LegionsSet {
         // White creatures
         DaruSanctifier,
         StarlightInvoker,
+        WallOfHope,
         WhiteKnight,
 
         // Blue creatures
+        EchoTracer,
         FugitiveWizard,
         KeeneyeAven,
         MerchantOfSecrets,
@@ -42,10 +44,13 @@ object LegionsSet {
         FlamewaveInvoker,
         GoblinFirebug,
         RidgetopRaptor,
+        SkirkOutrider,
 
         // Green creatures
         DefiantElf,
         EnormousBaloth,
+        Hundroog,
+        NeedleshotGourna,
         StonewoodInvoker,
     )
 }

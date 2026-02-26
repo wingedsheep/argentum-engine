@@ -2,15 +2,15 @@
 
 **Set Size:** 145 cards
 **Release Date:** February 3, 2003
-**Implemented:** 16 / 145
+**Implemented:** 21 / 145
 
 | Color      | Count |
 |------------|-------|
-| White      | 3/29  |
-| Blue       | 3/29  |
+| White      | 4/29  |
+| Blue       | 4/29  |
 | Black      | 4/29  |
-| Red        | 3/29  |
-| Green      | 3/29  |
+| Red        | 4/29  |
+| Green      | 5/29  |
 
 ---
 
@@ -54,7 +54,7 @@
 - [ ] Drinker of Sorrow
 - [x] Dripping Dead
 - [ ] Earthblighter
-- [ ] Echo Tracer
+- [x] Echo Tracer
 - [ ] Elvish Soultiller
 - [ ] Embalmed Brawler
 - [x] Enormous Baloth
@@ -83,7 +83,7 @@
 - [ ] Graveborn Muse
 - [ ] Havoc Demon
 - [ ] Hollow Specter
-- [ ] Hundroog
+- [x] Hundroog
 - [ ] Hunter Sliver
 - [ ] Imperial Hellkite
 - [ ] Infernal Caretaker
@@ -104,7 +104,7 @@
 - [ ] Mistform Ultimus
 - [ ] Mistform Wakecaster
 - [ ] Nantuko Vigilante
-- [ ] Needleshot Gourna
+- [x] Needleshot Gourna
 - [ ] Noxious Ghoul
 - [ ] Patron of the Wild
 - [ ] Phage the Untouchable
@@ -126,7 +126,7 @@
 - [ ] Skirk Alarmist
 - [ ] Skirk Drill Sergeant
 - [ ] Skirk Marauder
-- [ ] Skirk Outrider
+- [x] Skirk Outrider
 - [x] Smokespew Invoker
 - [x] Sootfeather Flock
 - [ ] Spectral Sliver
@@ -145,7 +145,7 @@
 - [ ] Vile Deacon
 - [ ] Voidmage Apprentice
 - [ ] Wall of Deceit
-- [ ] Wall of Hope
+- [x] Wall of Hope
 - [ ] Warbreak Trumpeter
 - [ ] Ward Sliver
 - [ ] Warped Researcher
