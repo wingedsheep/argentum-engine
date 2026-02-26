@@ -22,7 +22,7 @@ val MercurialKite = card("Mercurial Kite") {
     manaCost = "{3}{U}"
     typeLine = "Creature — Bird"
     power = 2
-    toughness = 1
+    toughness = 2
     oracleText = "Flying\nWhenever Mercurial Kite deals combat damage to a creature, tap that creature. It doesn't untap during its controller's next untap step."
 
     keywords(Keyword.FLYING)
