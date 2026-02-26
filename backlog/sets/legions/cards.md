@@ -2,14 +2,14 @@
 
 **Set Size:** 145 cards
 **Release Date:** February 3, 2003
-**Implemented:** 6 / 145
+**Implemented:** 7 / 145
 
 | Color      | Count |
 |------------|-------|
 | White      | 1/29  |
 | Blue       | 2/29  |
 | Black      | 1/29  |
-| Red        | 1/29  |
+| Red        | 2/29  |
 | Green      | 1/29  |
 
 ---
@@ -60,7 +60,7 @@
 - [ ] Enormous Baloth
 - [ ] Essence Sliver
 - [ ] Feral Throwback
-- [ ] Flamewave Invoker
+- [x] Flamewave Invoker
 - [ ] Frenetic Raptor
 - [ ] Fugitive Wizard
 - [ ] Gempalm Avenger

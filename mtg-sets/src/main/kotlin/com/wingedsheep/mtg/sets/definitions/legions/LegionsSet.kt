@@ -33,6 +33,7 @@ object LegionsSet {
         WitheredWretch,
 
         // Red creatures
+        FlamewaveInvoker,
         RidgetopRaptor,
 
         // Green creatures
