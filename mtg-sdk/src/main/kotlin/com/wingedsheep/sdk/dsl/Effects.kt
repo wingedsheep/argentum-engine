@@ -51,6 +51,7 @@ import com.wingedsheep.sdk.scripting.effects.CounterSpellEffect
 import com.wingedsheep.sdk.scripting.effects.CounterUnlessPaysEffect
 import com.wingedsheep.sdk.scripting.effects.CounterUnlessDynamicPaysEffect
 import com.wingedsheep.sdk.scripting.effects.ChangeSpellTargetEffect
+import com.wingedsheep.sdk.scripting.effects.SetCreatureSubtypesEffect
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
@@ -312,6 +313,20 @@ object Effects {
      */
     fun GrantKeyword(keyword: Keyword, target: EffectTarget = EffectTarget.ContextTarget(0)): Effect =
         GrantKeywordUntilEndOfTurnEffect(keyword, target)
+
+    /**
+     * Remove a keyword from a single target.
+     * "It loses defender."
+     */
+    fun RemoveKeyword(keyword: Keyword, target: EffectTarget = EffectTarget.ContextTarget(0), duration: Duration = Duration.EndOfTurn): Effect =
+        RemoveKeywordUntilEndOfTurnEffect(keyword, target, duration)
+
+    /**
+     * Set creature subtypes for a single target.
+     * "It becomes a Bird Giant."
+     */
+    fun SetCreatureSubtypes(subtypes: Set<String>, target: EffectTarget = EffectTarget.Self, duration: Duration = Duration.Permanent): Effect =
+        SetCreatureSubtypesEffect(subtypes, target, duration)
 
     /**
      * Add counters.

@@ -71,7 +71,9 @@ constructors.
 
 - `Effects.DestroyAll(filter: GroupFilter, noRegenerate = false)` — board wipe
 - `Effects.GrantKeywordToAll(keyword, filter: GroupFilter, duration)` — keyword to group
+- `Effects.RemoveKeyword(keyword, target, duration)` — remove keyword from single target
 - `Effects.RemoveKeywordFromAll(keyword, filter: GroupFilter, duration)` — remove keyword from group
+- `Effects.SetCreatureSubtypes(subtypes: Set<String>, target, duration)` — set creature subtypes on single target
 - `Effects.ModifyStatsForAll(power, toughness, filter: GroupFilter, duration)` — P/T for group
 - `Effects.DealDamageToAll(amount, filter: GroupFilter)` — also accepts `DynamicAmount`
 
@@ -228,6 +230,7 @@ each player reveals and creates tokens
 | `ChangeCreatureTypeTextEffect`              | `target, excludedTypes`                                                     | Change creature type text                |
 | `BecomeCreatureTypeEffect`                  | `target, duration, excludedTypes`                                           | Become a creature type                   |
 | `BecomeChosenTypeAllCreaturesEffect`        | `excludedTypes, duration`                                                   | All creatures become chosen type         |
+| `SetCreatureSubtypesEffect`                 | `subtypes, target, duration`                                                | Set single target subtypes               |
 | `SetGroupCreatureSubtypesEffect`            | `subtypes, filter, duration`                                                | Set group subtypes                       |
 | `ChangeGroupColorEffect`                    | `colors, filter, duration`                                                  | Change group color                       |
 | `ChooseCreatureTypeModifyStatsEffect`       | `power: DynamicAmount, toughness: DynamicAmount, duration`                  | Choose type, modify stats                |

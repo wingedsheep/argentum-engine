@@ -535,6 +535,29 @@ data class SetGroupCreatureSubtypesEffect(
 }
 
 /**
+ * Set creature subtypes for a single target creature.
+ * "It becomes a Bird Giant." (replaces existing creature subtypes)
+ *
+ * Creates a floating effect on Layer.TYPE that replaces creature subtypes.
+ *
+ * @property subtypes The set of subtypes to replace existing creature subtypes with
+ * @property target The creature to change
+ * @property duration How long the effect lasts
+ */
+@SerialName("SetCreatureSubtypes")
+@Serializable
+data class SetCreatureSubtypesEffect(
+    val subtypes: Set<String>,
+    val target: EffectTarget = EffectTarget.Self,
+    val duration: Duration = Duration.Permanent
+) : Effect {
+    override val description: String = buildString {
+        append("${target.description} becomes a ${subtypes.joinToString(" ")}")
+        if (duration.description.isNotEmpty()) append(" ${duration.description}")
+    }
+}
+
+/**
  * Change color for a group of creatures.
  * "Each creature you control becomes black until end of turn."
  *

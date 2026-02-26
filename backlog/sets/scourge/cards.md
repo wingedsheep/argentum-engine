@@ -3,11 +3,11 @@
 
 **Set Size:** 143 cards
 **Release Date:** May 26, 2003
-**Implemented:** 87 / 143
+**Implemented:** 88 / 143
 
 | Color | Count |
 |-------|-------|
-| White | 16 |
+| White | 17 |
 | Blue | 16 |
 | Black | 17 |
 | Red | 17 |
@@ -18,7 +18,7 @@
 ---
 
 - [x] Accelerated Mutation
-- [ ] Ageless Sentinels
+- [x] Ageless Sentinels
 - [x] Alpha Status
 - [ ] Ambush Commander
 - [ ] Ancient Ooze

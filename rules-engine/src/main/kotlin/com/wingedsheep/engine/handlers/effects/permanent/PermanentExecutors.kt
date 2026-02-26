@@ -36,6 +36,7 @@ class PermanentExecutors(
         ChooseCreatureTypeModifyStatsExecutor(amountEvaluator),
         BecomeChosenTypeAllCreaturesExecutor(),
         SetGroupCreatureSubtypesExecutor(),
+        SetCreatureSubtypesExecutor(),
         ChangeGroupColorExecutor(),
         GrantActivatedAbilityToGroupExecutor(),
         ChooseCreatureTypeUntapExecutor(),
