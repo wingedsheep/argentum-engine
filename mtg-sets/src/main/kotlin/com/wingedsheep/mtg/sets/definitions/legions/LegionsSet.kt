@@ -38,6 +38,7 @@ object LegionsSet {
 
         // Red creatures
         FlamewaveInvoker,
+        GoblinFirebug,
         RidgetopRaptor,
 
         // Green creatures

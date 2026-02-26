@@ -2,14 +2,14 @@
 
 **Set Size:** 145 cards
 **Release Date:** February 3, 2003
-**Implemented:** 13 / 145
+**Implemented:** 14 / 145
 
 | Color      | Count |
 |------------|-------|
 | White      | 2/29  |
 | Blue       | 3/29  |
 | Black      | 3/29  |
-| Red        | 2/29  |
+| Red        | 3/29  |
 | Green      | 3/29  |
 
 ---
@@ -75,7 +75,7 @@
 - [ ] Goblin Assassin
 - [ ] Goblin Clearcutter
 - [ ] Goblin Dynamo
-- [ ] Goblin Firebug
+- [x] Goblin Firebug
 - [ ] Goblin Goon
 - [ ] Goblin Grappler
 - [ ] Goblin Lookout
