@@ -1290,8 +1290,9 @@ class LobbyHandler(
 
         if (nextMatch != null) {
             val (nextRound, match) = nextMatch
-            val currentRoundNumber = tournament.currentRound?.roundNumber ?: -1
-            val isCurrentRound = nextRound.roundNumber == currentRoundNumber
+            // When currentRound is null, the tournament just started and no round has begun yet.
+            // The next match must be round 1 (the upcoming "current" round), so treat it as current.
+            val isCurrentRound = tournament.currentRound?.let { nextRound.roundNumber == it.roundNumber } ?: true
             val opponentId = if (match.player1Id == identity.playerId) match.player2Id else match.player1Id
             nextOpponentName = if (isCurrentRound && !match.isBye) opponentId?.let { lobby.players[it]?.identity?.playerName } else null
             hasBye = match.isBye

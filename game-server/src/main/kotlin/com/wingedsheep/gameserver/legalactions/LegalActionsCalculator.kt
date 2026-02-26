@@ -82,10 +82,10 @@ class LegalActionsCalculator(
             if (!blockersAlreadyDeclared) {
                 val validBlockers = turnManager.getValidBlockers(state, playerId)
                 val canBlockMultiple = validBlockers.filter { blockerId ->
-                    val card = projectedState.getEntity(blockerId)?.get<CardComponent>() ?: return@filter false
-                    val isFaceDown = state.getEntity(blockerId)?.has<FaceDownComponent>() == true
-                    if (isFaceDown) return@filter false
-                    val cardDef = cardRegistry.getCard(card.cardDefinitionId) ?: return@filter false
+                    val container = state.getEntity(blockerId) ?: return@filter false
+                    val card = container.get<CardComponent>() ?: return@filter false
+                    if (container.has<FaceDownComponent>()) return@filter false
+                    val cardDef = cardRegistry.getCard(card.name) ?: return@filter false
                     cardDef.staticAbilities.any { it is CanBlockAnyNumber }
                 }
                 return listOf(LegalActionInfo(
