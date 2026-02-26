@@ -29,6 +29,7 @@ object LegionsSet {
         WhiteKnight,
 
         // Blue creatures
+        EchoTracer,
         FugitiveWizard,
         KeeneyeAven,
         MerchantOfSecrets,

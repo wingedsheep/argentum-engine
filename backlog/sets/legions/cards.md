@@ -2,12 +2,12 @@
 
 **Set Size:** 145 cards
 **Release Date:** February 3, 2003
-**Implemented:** 19 / 145
+**Implemented:** 20 / 145
 
 | Color      | Count |
 |------------|-------|
 | White      | 4/29  |
-| Blue       | 3/29  |
+| Blue       | 4/29  |
 | Black      | 4/29  |
 | Red        | 4/29  |
 | Green      | 4/29  |
@@ -54,7 +54,7 @@
 - [ ] Drinker of Sorrow
 - [x] Dripping Dead
 - [ ] Earthblighter
-- [ ] Echo Tracer
+- [x] Echo Tracer
 - [ ] Elvish Soultiller
 - [ ] Embalmed Brawler
 - [x] Enormous Baloth
