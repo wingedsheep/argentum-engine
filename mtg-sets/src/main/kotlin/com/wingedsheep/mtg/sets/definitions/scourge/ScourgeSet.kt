@@ -30,6 +30,7 @@ object ScourgeSet {
 
         // Black creatures
         BladewingsThrall,
+        CabalInterrogator,
         CarrionFeeder,
         ConsumptiveGoo,
 
