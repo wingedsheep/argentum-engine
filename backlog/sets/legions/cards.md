@@ -2,13 +2,13 @@
 
 **Set Size:** 145 cards
 **Release Date:** February 3, 2003
-**Implemented:** 21 / 145
+**Implemented:** 24 / 145
 
 | Color      | Count |
 |------------|-------|
-| White      | 4/29  |
-| Blue       | 4/29  |
-| Black      | 4/29  |
+| White      | 5/29  |
+| Blue       | 5/29  |
+| Black      | 5/29  |
 | Red        | 4/29  |
 | Green      | 5/29  |
 
@@ -37,7 +37,7 @@
 - [ ] Clickslither
 - [ ] Cloudreach Cavalry
 - [ ] Corpse Harvester
-- [ ] Covert Operative
+- [x] Covert Operative
 - [ ] Crested Craghorn
 - [ ] Crookclaw Elder
 - [ ] Crypt Sliver
@@ -51,7 +51,7 @@
 - [ ] Deftblade Elite
 - [ ] Dermoplasm
 - [ ] Dreamborn Muse
-- [ ] Drinker of Sorrow
+- [x] Drinker of Sorrow
 - [x] Dripping Dead
 - [ ] Earthblighter
 - [x] Echo Tracer
@@ -109,7 +109,7 @@
 - [ ] Patron of the Wild
 - [ ] Phage the Untouchable
 - [ ] Planar Guide
-- [ ] Plated Sliver
+- [x] Plated Sliver
 - [ ] Primal Whisperer
 - [ ] Primoc Escapee
 - [ ] Quick Sliver

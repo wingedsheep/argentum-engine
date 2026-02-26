@@ -24,17 +24,20 @@ object LegionsSet {
     val allCards = listOf(
         // White creatures
         DaruSanctifier,
+        PlatedSliver,
         StarlightInvoker,
         WallOfHope,
         WhiteKnight,
 
         // Blue creatures
+        CovertOperative,
         EchoTracer,
         FugitiveWizard,
         KeeneyeAven,
         MerchantOfSecrets,
 
         // Black creatures
+        DrinkerOfSorrow,
         DrippingDead,
         SmokespewInvoker,
         SootfeatherFlock,
