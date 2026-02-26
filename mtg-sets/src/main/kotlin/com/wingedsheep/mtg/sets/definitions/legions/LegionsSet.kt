@@ -24,6 +24,7 @@ object LegionsSet {
     val allCards = listOf(
         // White creatures
         DaruSanctifier,
+        PlatedSliver,
         StarlightInvoker,
         WallOfHope,
         WhiteKnight,

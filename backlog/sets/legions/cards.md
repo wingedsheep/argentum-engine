@@ -2,11 +2,11 @@
 
 **Set Size:** 145 cards
 **Release Date:** February 3, 2003
-**Implemented:** 22 / 145
+**Implemented:** 23 / 145
 
 | Color      | Count |
 |------------|-------|
-| White      | 4/29  |
+| White      | 5/29  |
 | Blue       | 5/29  |
 | Black      | 4/29  |
 | Red        | 4/29  |
@@ -109,7 +109,7 @@
 - [ ] Patron of the Wild
 - [ ] Phage the Untouchable
 - [ ] Planar Guide
-- [ ] Plated Sliver
+- [x] Plated Sliver
 - [ ] Primal Whisperer
 - [ ] Primoc Escapee
 - [ ] Quick Sliver
