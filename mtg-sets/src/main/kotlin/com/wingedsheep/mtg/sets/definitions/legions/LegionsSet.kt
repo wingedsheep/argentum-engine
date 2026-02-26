@@ -25,6 +25,7 @@ object LegionsSet {
         // White creatures
         DaruSanctifier,
         StarlightInvoker,
+        WallOfHope,
         WhiteKnight,
 
         // Blue creatures

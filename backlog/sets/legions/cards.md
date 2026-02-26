@@ -2,11 +2,11 @@
 
 **Set Size:** 145 cards
 **Release Date:** February 3, 2003
-**Implemented:** 16 / 145
+**Implemented:** 17 / 145
 
 | Color      | Count |
 |------------|-------|
-| White      | 3/29  |
+| White      | 4/29  |
 | Blue       | 3/29  |
 | Black      | 4/29  |
 | Red        | 3/29  |
@@ -145,7 +145,7 @@
 - [ ] Vile Deacon
 - [ ] Voidmage Apprentice
 - [ ] Wall of Deceit
-- [ ] Wall of Hope
+- [x] Wall of Hope
 - [ ] Warbreak Trumpeter
 - [ ] Ward Sliver
 - [ ] Warped Researcher
