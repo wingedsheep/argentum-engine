@@ -10,6 +10,7 @@ import com.wingedsheep.sdk.core.Step
 import io.kotest.assertions.withClue
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
+import io.kotest.matchers.string.shouldContainIgnoringCase
 
 /**
  * Scenario tests for Ironfist Crusher (ONS #42).
@@ -170,6 +171,46 @@ class IronfistCrusherScenarioTest : ScenarioTestBase() {
                 // No damage to defending player
                 withClue("Defender should still be at 20 life") {
                     game.getLifeTotal(2) shouldBe 20
+                }
+            }
+        }
+
+        context("Normal creatures cannot block multiple attackers") {
+            test("Grizzly Bears cannot block two attackers") {
+                val game = scenario()
+                    .withPlayers("Attacker", "Defender")
+                    .withCardOnBattlefield(1, "Devoted Hero")    // attacker 1
+                    .withCardOnBattlefield(1, "Glory Seeker")    // attacker 2
+                    .withCardOnBattlefield(2, "Grizzly Bears")   // blocker (no CanBlockAnyNumber)
+                    .withActivePlayer(1)
+                    .inPhase(Phase.COMBAT, Step.DECLARE_ATTACKERS)
+                    .build()
+
+                val heroId = game.findPermanent("Devoted Hero")!!
+                val seekerId = game.findPermanent("Glory Seeker")!!
+                val bearsId = game.findPermanent("Grizzly Bears")!!
+
+                // Declare both creatures as attackers
+                game.execute(
+                    DeclareAttackers(game.player1Id, mapOf(
+                        heroId to game.player2Id,
+                        seekerId to game.player2Id
+                    ))
+                )
+
+                game.passUntilPhase(Phase.COMBAT, Step.DECLARE_BLOCKERS)
+
+                // Grizzly Bears tries to block both attackers - should fail
+                val blockResult = game.execute(
+                    DeclareBlockers(
+                        game.player2Id,
+                        mapOf(bearsId to listOf(heroId, seekerId))
+                    )
+                )
+
+                withClue("Normal creature should not be able to block multiple attackers") {
+                    blockResult.error shouldNotBe null
+                    blockResult.error!! shouldContainIgnoringCase "can only block one creature"
                 }
             }
         }

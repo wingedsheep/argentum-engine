@@ -41,6 +41,7 @@ import com.wingedsheep.sdk.scripting.CastRestriction
 import com.wingedsheep.sdk.scripting.predicates.ControllerPredicate
 import com.wingedsheep.sdk.scripting.effects.DividedDamageEffect
 import com.wingedsheep.sdk.scripting.GameObjectFilter
+import com.wingedsheep.sdk.scripting.CanBlockAnyNumber
 import com.wingedsheep.sdk.scripting.PlayFromTopOfLibrary
 import com.wingedsheep.sdk.scripting.PreventCycling
 import com.wingedsheep.sdk.scripting.effects.AddAnyColorManaEffect
@@ -80,11 +81,19 @@ class LegalActionsCalculator(
                 ?.get<BlockersDeclaredThisCombatComponent>() != null
             if (!blockersAlreadyDeclared) {
                 val validBlockers = turnManager.getValidBlockers(state, playerId)
+                val canBlockMultiple = validBlockers.filter { blockerId ->
+                    val card = projectedState.getEntity(blockerId)?.get<CardComponent>() ?: return@filter false
+                    val isFaceDown = state.getEntity(blockerId)?.has<FaceDownComponent>() == true
+                    if (isFaceDown) return@filter false
+                    val cardDef = cardRegistry.getCard(card.cardDefinitionId) ?: return@filter false
+                    cardDef.staticAbilities.any { it is CanBlockAnyNumber }
+                }
                 return listOf(LegalActionInfo(
                     actionType = "DeclareBlockers",
                     description = "Declare blockers",
                     action = DeclareBlockers(playerId, emptyMap()),
-                    validBlockers = validBlockers
+                    validBlockers = validBlockers,
+                    canBlockMultipleAttackers = canBlockMultiple.ifEmpty { null }
                 ))
             }
         }

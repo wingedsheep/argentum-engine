@@ -457,6 +457,8 @@ export interface LegalActionInfo {
   readonly requiresManaColorChoice?: boolean
   /** Source zone if this action is from a non-hand zone (e.g., "LIBRARY" for Future Sight) */
   readonly sourceZone?: string
+  /** Blocker IDs that can block multiple attackers (e.g., CanBlockAnyNumber) */
+  readonly canBlockMultipleAttackers?: readonly EntityId[]
 }
 
 /**

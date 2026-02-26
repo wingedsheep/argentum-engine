@@ -803,7 +803,9 @@ data class LegalActionInfo(
     /** Whether this ability produces mana of any color and needs a color choice from the player */
     val requiresManaColorChoice: Boolean = false,
     /** Source zone if this action is from a non-hand zone (e.g., "LIBRARY" for Future Sight) */
-    val sourceZone: String? = null
+    val sourceZone: String? = null,
+    /** Blocker IDs that can block multiple attackers (e.g., CanBlockAnyNumber) */
+    val canBlockMultipleAttackers: List<EntityId>? = null
 )
 
 /**

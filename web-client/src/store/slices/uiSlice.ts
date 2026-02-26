@@ -451,6 +451,10 @@ export const createUISlice: SliceCreator<UISlice> = (set, get) => ({
       const existing = state.combatState.blockerAssignments[blockerId] ?? []
       // If already blocking this attacker, don't add duplicate
       if (existing.includes(attackerId)) return state
+      // Only allow multiple attacker assignments for creatures that can block any number
+      if (existing.length > 0 && !state.combatState.canBlockMultipleAttackers.includes(blockerId)) {
+        return state
+      }
       const newAssignments = {
         ...state.combatState.blockerAssignments,
         [blockerId]: [...existing, attackerId],

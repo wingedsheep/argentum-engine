@@ -24,6 +24,7 @@ import com.wingedsheep.sdk.scripting.CanOnlyBlockCreaturesWithKeyword
 import com.wingedsheep.sdk.scripting.CantBeBlockedByPower
 import com.wingedsheep.sdk.scripting.CantBeBlockedExceptByKeyword
 import com.wingedsheep.sdk.scripting.CantBeBlockedUnlessDefenderSharesCreatureType
+import com.wingedsheep.sdk.scripting.CanBlockAnyNumber
 import com.wingedsheep.sdk.scripting.CantBlock
 import com.wingedsheep.sdk.scripting.CantBlockCreaturesWithGreaterPower
 import com.wingedsheep.sdk.scripting.DivideCombatDamageFreely
@@ -590,6 +591,17 @@ class CombatManager(
             }
         }
 
+        // Check if creature is trying to block multiple attackers without CanBlockAnyNumber
+        if (attackerIds.size > 1) {
+            val canBlockMultiple = if (!isFaceDown) {
+                val cardDef = cardRegistry?.getCard(cardComponent.cardDefinitionId)
+                cardDef?.staticAbilities?.any { it is CanBlockAnyNumber } == true
+            } else false
+            if (!canBlockMultiple) {
+                return "${cardComponent.name} can only block one creature"
+            }
+        }
+
         // Check evasion abilities of each attacker
         for (attackerId in attackerIds) {
             val evasionValidation = validateCanBlock(state, blockerId, attackerId, blockingPlayer)
@@ -622,7 +634,7 @@ class CombatManager(
         val projected = stateProjector.project(state)
 
         // Unblockable: Cannot be blocked at all
-        if (projected.hasKeyword(attackerId, Keyword.CANT_BE_BLOCKED)) {
+        if (projected.hasKeyword(attackerId, com.wingedsheep.sdk.core.AbilityFlag.CANT_BE_BLOCKED)) {
             return "${attackerCard.name} can't be blocked"
         }
 
@@ -2360,7 +2372,7 @@ class CombatManager(
         }
 
         // Unblockable: Cannot be blocked at all
-        if (projected.hasKeyword(attackerId, Keyword.CANT_BE_BLOCKED)) {
+        if (projected.hasKeyword(attackerId, com.wingedsheep.sdk.core.AbilityFlag.CANT_BE_BLOCKED)) {
             return false
         }
 

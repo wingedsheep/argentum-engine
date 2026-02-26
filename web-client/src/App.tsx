@@ -136,6 +136,7 @@ export default function App() {
         validCreatures,
         attackingCreatures: [],
         mustBeBlockedAttackers: [],
+        canBlockMultipleAttackers: [],
       })
       return
     }
@@ -170,6 +171,11 @@ export default function App() {
         }
       }
 
+      // Extract canBlockMultipleAttackers from the legal action
+      const canBlockMultipleAttackers: EntityId[] = blockersAction?.canBlockMultipleAttackers
+        ? [...blockersAction.canBlockMultipleAttackers]
+        : []
+
       // Enter combat mode
       startCombat({
         mode: 'declareBlockers',
@@ -178,6 +184,7 @@ export default function App() {
         validCreatures,
         attackingCreatures,
         mustBeBlockedAttackers,
+        canBlockMultipleAttackers,
       })
     }
   }, [hasDeclareAttackersAction, hasDeclareBlockersAction, gameState, viewingPlayer, combatState, startCombat, clearCombat, battlefieldCards, legalActions])
