@@ -3,7 +3,7 @@
 
 **Set Size:** 143 cards
 **Release Date:** May 26, 2003
-**Implemented:** 86 / 143
+**Implemented:** 87 / 143
 
 | Color | Count |
 |-------|-------|
@@ -11,7 +11,7 @@
 | Blue | 16 |
 | Black | 17 |
 | Red | 17 |
-| Green | 16 |
+| Green | 17 |
 | Multicolor | 1 |
 | Colorless | 3 |
 
@@ -121,7 +121,7 @@
 - [x] Reward the Faithful
 - [x] Riptide Survivor
 - [x] Rock Jockey
-- [ ] Root Elemental
+- [x] Root Elemental
 - [x] Rush of Knowledge
 - [ ] Scattershot
 - [x] Scornful Egotist

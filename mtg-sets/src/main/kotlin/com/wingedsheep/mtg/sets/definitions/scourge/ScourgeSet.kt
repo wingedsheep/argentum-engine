@@ -40,6 +40,7 @@ object ScourgeSet {
         KrosanDrover,
         KrosanWarchief,
         Kurgadon,
+        RootElemental,
         TitanicBulvox,
         TreetopScout,
         WirewoodGuardian,

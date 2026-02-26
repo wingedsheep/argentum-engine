@@ -125,13 +125,51 @@ just test    # Cards with new effects
 
 Fix only failures caused by your changes. If a pre-existing test fails, report it and stop.
 
-## Step 9: Update Set Backlog
+## Step 9: Verify Implementation Against Scryfall
+
+Re-fetch the Scryfall card data and systematically compare it against your implementation to catch mistakes.
+
+1. **Re-fetch card data**: WebFetch `https://api.scryfall.com/cards/named?exact=<card-name>&set=<set-code>` — extract `name`, `mana_cost`, `type_line`, `oracle_text`, `power`, `toughness`, `colors`, `keywords`, `rarity`, `collector_number`
+
+2. **Read the card definition file** you wrote, then verify each field:
+
+   | Scryfall Field | Check Against |
+   |---|---|
+   | `name` | `cardDef("...")` name matches exactly |
+   | `mana_cost` | `manaCost` string matches (e.g., `{2}{R}{R}`) |
+   | `type_line` | `typeLine` matches (use modern Oracle errata, e.g., "Creature — Human Soldier") |
+   | `power` / `toughness` | `power` and `toughness` values match |
+   | `oracle_text` | Every ability/keyword/effect in the oracle text is represented in the card script |
+   | `keywords` | All keywords from the `keywords` array are present (flying, trample, etc.) |
+   | `colors` | Consistent with mana cost (no need to set explicitly unless colorless/special) |
+   | `rarity` | `rarity` in metadata matches |
+   | `collector_number` | `collectorNumber` in metadata matches |
+
+3. **Oracle text deep check** — Go through the oracle text line by line:
+   - Each keyword ability → corresponding `keyword(Keyword.X)` or static ability
+   - Each activated ability → corresponding `activatedAbility { }` block with correct costs and effects
+   - Each triggered ability → corresponding `triggeredAbility { }` block with correct trigger and effects
+   - Each spell effect → corresponding `spell { }` block with correct targeting and effects
+   - Each static ability → corresponding `staticAbility { }` block
+   - Conditional clauses ("if ~", "as long as") → appropriate `Conditions.*`
+   - "Target" in oracle text → matching `target = ...` or `TargetRequirement`
+
+4. **Report findings**: If any discrepancies are found, fix them before proceeding. Common mistakes to catch:
+   - Wrong P/T values
+   - Missing keyword abilities
+   - Incorrect mana cost
+   - Missing "target" requirement when oracle text says "target"
+   - Wrong trigger condition (e.g., "when" vs "whenever", "enters the battlefield" vs "dies")
+   - Missing ability entirely (multi-ability cards)
+   - Wrong duration (e.g., "until end of turn" mapped to permanent effect)
+
+## Step 10: Update Set Backlog
 
 If `backlog/sets/{set-name}/cards.md` exists:
 - Mark card as implemented: `- [ ] Card Name` → `- [x] Card Name`
 - Update implementation count in header if present
 
-## Step 10: Commit Changes
+## Step 11: Commit Changes
 
 1. Stage all relevant files (card definition, set registration, new effects, tests, backlog)
 2. Commit message: `Add {Card Name} to {Set Name}` (or `Add {Card Name} with {new mechanic} support`)
@@ -149,4 +187,5 @@ If `backlog/sets/{set-name}/cards.md` exists:
 8. **Test new mechanics** — All new effects/keywords/triggers/conditions need scenario tests
 9. **Follow naming conventions** — CardName matches file name
 10. **Keep effects data-only** — Logic goes in executors, not effect data classes
-11. **Verify before committing** — `just build` (simple) or `just test` (new effects)
+11. **Verify against Scryfall before committing** — Re-check every field against the API data (Step 9)
+12. **Build/test before committing** — `just build` (simple) or `just test` (new effects)

@@ -560,12 +560,14 @@ class LobbyHandler(
 
             // Player's match hasn't started yet (waiting for opponent to ready up)
             playerMatch?.gameSessionId == null && playerMatch?.isBye == false -> {
-                // Send MatchComplete-style info so they can ready up for their next match
+                // Send MatchComplete-style info so they can ready up for their next match.
+                // Only show the opponent if the match is in the current round.
                 val nextMatch = tournament.getNextMatchForPlayer(identity.playerId)
                 if (nextMatch != null) {
                     val (nextRound, nm) = nextMatch
+                    val isCurrentRound = nextRound.roundNumber == currentRound.roundNumber
                     val opponentId = if (nm.player1Id == identity.playerId) nm.player2Id else nm.player1Id
-                    val nextOpponentName = opponentId?.let { lobby.players[it]?.identity?.playerName }
+                    val nextOpponentName = if (isCurrentRound && !nm.isBye) opponentId?.let { lobby.players[it]?.identity?.playerName } else null
                     sender.send(session, ServerMessage.MatchComplete(
                         lobbyId = lobby.lobbyId,
                         round = nextRound.roundNumber,
@@ -590,13 +592,15 @@ class LobbyHandler(
             }
 
             // Player's match is complete — with dynamic matchmaking, show next opponent
+            // only if it's in the current round (future-round opponents are not guaranteed)
             playerMatch?.isComplete == true -> {
                 // Send MatchComplete with next opponent info so they can ready up
                 val nextMatch = tournament.getNextMatchForPlayer(identity.playerId)
                 if (nextMatch != null) {
                     val (nextRound, nm) = nextMatch
+                    val isCurrentRound = nextRound.roundNumber == currentRound.roundNumber
                     val opponentId = if (nm.player1Id == identity.playerId) nm.player2Id else nm.player1Id
-                    val nextOpponentName = opponentId?.let { lobby.players[it]?.identity?.playerName }
+                    val nextOpponentName = if (isCurrentRound && !nm.isBye) opponentId?.let { lobby.players[it]?.identity?.playerName } else null
                     sender.send(session, ServerMessage.MatchComplete(
                         lobbyId = lobby.lobbyId,
                         round = currentRound.roundNumber,
@@ -1277,15 +1281,19 @@ class LobbyHandler(
             .map { it.identity.playerId }
             .toSet()
 
-        // Find this player's next match across all rounds (not just peeking at the next round)
+        // Find this player's next match across all rounds (not just peeking at the next round).
+        // Only show the opponent if the match is in the current round; future-round opponents
+        // are not guaranteed with dynamic matchmaking.
         val nextMatch = tournament.getNextMatchForPlayer(identity.playerId)
         val nextOpponentName: String?
         val hasBye: Boolean
 
         if (nextMatch != null) {
-            val (_, match) = nextMatch
+            val (nextRound, match) = nextMatch
+            val currentRoundNumber = tournament.currentRound?.roundNumber ?: -1
+            val isCurrentRound = nextRound.roundNumber == currentRoundNumber
             val opponentId = if (match.player1Id == identity.playerId) match.player2Id else match.player1Id
-            nextOpponentName = opponentId?.let { lobby.players[it]?.identity?.playerName }
+            nextOpponentName = if (isCurrentRound && !match.isBye) opponentId?.let { lobby.players[it]?.identity?.playerName } else null
             hasBye = match.isBye
         } else {
             // No upcoming match — either haven't started or all done.
@@ -1516,15 +1524,18 @@ class LobbyHandler(
 
                 val ws = playerState.identity.webSocketSession
                 if (ws != null && ws.isOpen) {
-                    // Find this player's next opponent using dynamic matchmaking
+                    // Find this player's next opponent using dynamic matchmaking.
+                    // Only show the opponent if the match is in the current round;
+                    // future-round opponents are not guaranteed with dynamic matchmaking.
                     val nextMatch = tournament.getNextMatchForPlayer(playerId)
                     val nextOpponentName: String?
                     val hasBye: Boolean
 
                     if (nextMatch != null) {
-                        val (_, nm) = nextMatch
+                        val (nextRound, nm) = nextMatch
+                        val isCurrentRound = nextRound.roundNumber == round.roundNumber
                         val opponentId = if (nm.player1Id == playerId) nm.player2Id else nm.player1Id
-                        nextOpponentName = opponentId?.let { lobby.players[it]?.identity?.playerName }
+                        nextOpponentName = if (isCurrentRound && !nm.isBye) opponentId?.let { lobby.players[it]?.identity?.playerName } else null
                         hasBye = nm.isBye
                     } else {
                         nextOpponentName = null
@@ -1632,9 +1643,13 @@ class LobbyHandler(
             val hasBye: Boolean
 
             if (nextMatch != null) {
-                val (_, nm) = nextMatch
+                val (nextRound, nm) = nextMatch
+                // Only show the next opponent if the match is in the current round.
+                // Future-round opponents are not guaranteed with dynamic matchmaking.
+                // BYE status is always shown since it's deterministic.
+                val isCurrentRound = nextRound.roundNumber == (tournament.currentRound?.roundNumber ?: -1)
                 val opponentId = if (nm.player1Id == playerId) nm.player2Id else nm.player1Id
-                nextOpponentName = opponentId?.let { lobby.players[it]?.identity?.playerName }
+                nextOpponentName = if (isCurrentRound && !nm.isBye) opponentId?.let { lobby.players[it]?.identity?.playerName } else null
                 hasBye = nm.isBye
             } else {
                 nextOpponentName = null
