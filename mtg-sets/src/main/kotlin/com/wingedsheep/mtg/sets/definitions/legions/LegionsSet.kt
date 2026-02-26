@@ -38,5 +38,6 @@ object LegionsSet {
 
         // Green creatures
         DefiantElf,
+        EnormousBaloth,
     )
 }

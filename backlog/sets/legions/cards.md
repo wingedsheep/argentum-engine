@@ -2,7 +2,7 @@
 
 **Set Size:** 145 cards
 **Release Date:** February 3, 2003
-**Implemented:** 7 / 145
+**Implemented:** 8 / 145
 
 | Color      | Count |
 |------------|-------|
@@ -10,7 +10,7 @@
 | Blue       | 2/29  |
 | Black      | 1/29  |
 | Red        | 2/29  |
-| Green      | 1/29  |
+| Green      | 2/29  |
 
 ---
 
@@ -57,7 +57,7 @@
 - [ ] Echo Tracer
 - [ ] Elvish Soultiller
 - [ ] Embalmed Brawler
-- [ ] Enormous Baloth
+- [x] Enormous Baloth
 - [ ] Essence Sliver
 - [ ] Feral Throwback
 - [x] Flamewave Invoker
