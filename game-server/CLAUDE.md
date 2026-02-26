@@ -96,6 +96,101 @@ Every action sends a `ServerMessage.StateUpdate` to both players containing:
 - Per-step stops via `SetStopOverrides` — granular control per player per step
 - Non-battlefield activated abilities always stop even if auto-pass would normally apply
 
+## Tournament System
+
+### Lobby Lifecycle
+
+`TournamentLobby` manages a state machine:
+
+```
+WAITING_FOR_PLAYERS → [Sealed] DECK_BUILDING → TOURNAMENT_ACTIVE → TOURNAMENT_COMPLETE
+WAITING_FOR_PLAYERS → [Draft]  DRAFTING → DECK_BUILDING → TOURNAMENT_ACTIVE → TOURNAMENT_COMPLETE
+```
+
+Formats: `SEALED` (open boosters, build deck) and `DRAFT` (pick cards from rotating packs, then build deck).
+
+### Key Classes
+
+| Class | Purpose |
+|-------|---------|
+| `TournamentLobby` | Lobby state machine, player tracking, ready state, card pools |
+| `TournamentManager` | Round-robin schedule generation, match tracking, standings |
+| `LobbyHandler` | All tournament handler methods (ready, match start/complete, round complete) |
+| `LobbyPlayerState` | Per-player state: card pool, submitted deck, current draft pack |
+
+### Scheduling
+
+`TournamentManager` generates a full **round-robin** schedule upfront using the circle method:
+- N-1 rounds for N players (padded to even), repeated `gamesPerMatch` times
+- Odd player counts get a BYE (null `player2Id`) per round
+- BYE matches auto-complete immediately when a round starts
+
+### Dynamic Matchmaking (Eager Match Starting)
+
+Matches start as soon as both players are ready — no waiting for the entire round:
+
+1. Player sends `ReadyForNextRound` → `handleReadyForNextRound()`
+2. Per-lobby lock prevents concurrent round advancement races
+3. Epoch-based stale request detection discards ready requests that arrived during round transitions
+4. `tryStartMatchForPlayer()` checks if this player's next opponent is also ready
+5. If both ready → `startSingleMatch()` immediately
+6. Cross-round safety: prevents "stealing" an opponent from a current-round match by checking if the opponent has completed their current-round match first
+
+**Important:** Because of dynamic matchmaking, future-round opponents are **not guaranteed** — the actual opponent depends on which games finish first. The server only sends `nextOpponentName` when the match is in the **current round**. For future-round matches, the client shows "Waiting for matchup..." instead.
+
+### Match & Round Flow
+
+```
+Player Ready → tryStartMatchForPlayer() → Both ready? → startSingleMatch()
+                                                           ↓
+                                                   TournamentMatchStarting (to both)
+                                                           ↓
+                                                   Game plays out via GameSession
+                                                           ↓
+                                                   handleMatchComplete()
+                                                   → MatchComplete (to match players)
+                                                   → tryStartMatchForPlayer() for waiting players
+                                                           ↓
+                                                   All round matches done?
+                                                   → handleRoundComplete()
+                                                   → RoundComplete (to all)
+                                                           ↓
+                                                   All rounds done?
+                                                   → completeTournament()
+```
+
+### BYE Handling
+
+- BYE matches (`player2Id == null`) auto-complete in `startNextRound()`
+- `TournamentBye` message sent to BYE player; they can spectate other matches
+- Auto-ready on the client: when a player has a BYE between rounds (`nextRoundHasBye`), the frontend auto-sends `ReadyForNextRound` (except before round 1 to allow deck editing)
+- `tryStartMatchForPlayer()` handles BYEs recursively — if a BYE is found, it completes it and looks for the next real match
+
+### Server Messages (Tournament)
+
+| Message | When | Key Fields |
+|---------|------|------------|
+| `TournamentStarted` | Tournament begins or reconnect | `nextOpponentName`, `nextRoundHasBye`, `totalRounds` |
+| `TournamentBye` | Player has BYE this round | `round` |
+| `TournamentMatchStarting` | Match confirmed and starting | `gameSessionId`, `opponentName` |
+| `MatchComplete` | A match finishes | `nextOpponentName`, `nextRoundHasBye`, `standings` |
+| `RoundComplete` | All matches in round finish | `nextOpponentName`, `nextRoundHasBye`, `standings` |
+| `PlayerReadyForRound` | A player readies up | `readyPlayerIds`, `totalConnectedPlayers` |
+
+### Reconnection
+
+`sendTournamentStatusToPlayer()` handles 4 cases when a player reconnects mid-tournament:
+1. **No current round** — send `TournamentStarted` (waiting for ready)
+2. **Active game in progress** — send `TournamentMatchStarting` + rejoin the `GameSession`
+3. **BYE this round** — send `TournamentBye` + restore spectating if applicable
+4. **Match complete / waiting** — send `MatchComplete` with standings + ready status
+
+### Concurrency
+
+- **Per-lobby lock** (`roundLocks`): prevents two players from simultaneously advancing rounds
+- **Ready epoch** (`lobby.readyEpoch`): incremented on round complete; stale ready requests (captured before lock, changed after) are discarded
+- **`clearPlayerReady()`**: clears ready state per-player when their match starts
+
 ## Adding a new server message type
 
 1. Add entry to `ServerMessage.kt` (sealed interface)
