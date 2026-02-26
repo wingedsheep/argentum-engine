@@ -1,5 +1,6 @@
 package com.wingedsheep.sdk.dsl
 
+import com.wingedsheep.sdk.core.AbilityFlag
 import com.wingedsheep.sdk.core.*
 import com.wingedsheep.sdk.model.*
 import com.wingedsheep.sdk.scripting.*
@@ -213,6 +214,7 @@ class CardBuilder(private val name: String) {
     // =========================================================================
 
     private var keywordSet: MutableSet<Keyword> = mutableSetOf()
+    private var flagSet: MutableSet<AbilityFlag> = mutableSetOf()
     private var keywordAbilityList: MutableList<KeywordAbility> = mutableListOf()
     private var spellBuilder: SpellBuilder? = null
     private val triggeredAbilities: MutableList<TriggeredAbility> = mutableListOf()
@@ -232,6 +234,15 @@ class CardBuilder(private val name: String) {
      */
     fun keywords(vararg keywords: Keyword) {
         keywordSet.addAll(keywords)
+    }
+
+    /**
+     * Add ability flags to this card.
+     * Ability flags are non-keyword static abilities like "can't be blocked"
+     * or "doesn't untap during your untap step".
+     */
+    fun flags(vararg flags: AbilityFlag) {
+        flagSet.addAll(flags)
     }
 
     /**
@@ -439,6 +450,7 @@ class CardBuilder(private val name: String) {
             oracleText = oracleText,
             creatureStats = creatureStats,
             keywords = keywordSet.toSet(),
+            flags = flagSet.toSet(),
             keywordAbilities = finalKeywordAbilities,
             script = script,
             equipCost = equipCost,

@@ -22,15 +22,21 @@ sealed interface StaticAbility {
 }
 
 /**
- * Grants keywords to creatures (e.g., Equipment granting flying).
+ * Grants keywords or ability flags to creatures (e.g., Equipment granting flying).
+ *
+ * The [keyword] field stores the enum name (e.g., "FLYING", "DOESNT_UNTAP")
+ * which the engine uses for string-based keyword checks in projected state.
  */
 @SerialName("GrantKeyword")
 @Serializable
 data class GrantKeyword(
-    val keyword: Keyword,
+    val keyword: String,
     val target: StaticTarget = StaticTarget.AttachedCreature
 ) : StaticAbility {
-    override val description: String = "Grants ${keyword.name.lowercase().replace('_', ' ')}"
+    constructor(keyword: Keyword, target: StaticTarget = StaticTarget.AttachedCreature) :
+        this(keyword.name, target)
+
+    override val description: String = "Grants ${keyword.lowercase().replace('_', ' ')}"
 }
 
 /**

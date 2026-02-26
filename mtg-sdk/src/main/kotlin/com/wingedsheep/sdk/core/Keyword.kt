@@ -11,8 +11,6 @@ enum class Keyword(val displayName: String) {
     FEAR("Fear"),
     SHADOW("Shadow"),
     HORSEMANSHIP("Horsemanship"),
-    CANT_BE_BLOCKED("Can't be blocked"),
-    CANT_BE_BLOCKED_BY_MORE_THAN_ONE("Can't be blocked by more than one creature"),
 
     // ── Landwalk ─────────────────────────────────────────────
     SWAMPWALK("Swampwalk"),
@@ -49,11 +47,7 @@ enum class Keyword(val displayName: String) {
     // ── Cost reduction ───────────────────────────────────────
     CONVOKE("Convoke"),
     DELVE("Delve"),
-    AFFINITY("Affinity"),
-
-    // ── Restrictions ─────────────────────────────────────────
-    DOESNT_UNTAP("Doesn't untap during your untap step"),
-    MAY_NOT_UNTAP("You may choose not to untap");
+    AFFINITY("Affinity");
 
     companion object {
         fun fromString(value: String): Keyword? =

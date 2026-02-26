@@ -1,6 +1,7 @@
 package com.wingedsheep.engine.state.components.identity
 
 import com.wingedsheep.engine.state.Component
+import com.wingedsheep.sdk.core.AbilityFlag
 import com.wingedsheep.sdk.core.CardType
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.Keyword
@@ -25,6 +26,7 @@ data class CardComponent(
     val oracleText: String = "",
     val baseStats: CreatureStats? = null,
     val baseKeywords: Set<Keyword> = emptySet(),
+    val baseFlags: Set<AbilityFlag> = emptySet(),
     val colors: Set<Color> = emptySet(),
     val ownerId: EntityId? = null,  // Original owner of the card
     val spellEffect: Effect? = null,  // Effect for instants/sorceries

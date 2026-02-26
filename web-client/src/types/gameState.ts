@@ -1,4 +1,4 @@
-import { Color, CounterType, Keyword, Phase, Step, ZoneType } from './enums'
+import { AbilityFlag, Color, CounterType, Keyword, Phase, Step, ZoneType } from './enums'
 import { EntityId, ZoneId } from './entities'
 import { ClientEvent } from './events'
 
@@ -94,6 +94,9 @@ export interface ClientCard {
 
   /** Keywords the card has (flying, haste, etc.) */
   readonly keywords: readonly Keyword[]
+
+  /** Ability flags (non-keyword static abilities like "can't be blocked") */
+  readonly abilityFlags?: readonly AbilityFlag[]
 
   /** Protection colors (for colored protection shield icons) */
   readonly protections?: readonly Color[]

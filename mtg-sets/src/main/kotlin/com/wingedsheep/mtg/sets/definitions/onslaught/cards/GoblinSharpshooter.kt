@@ -1,6 +1,6 @@
 package com.wingedsheep.mtg.sets.definitions.onslaught.cards
 
-import com.wingedsheep.sdk.core.Keyword
+import com.wingedsheep.sdk.core.AbilityFlag
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
@@ -26,7 +26,7 @@ val GoblinSharpshooter = card("Goblin Sharpshooter") {
     toughness = 1
     oracleText = "Goblin Sharpshooter doesn't untap during your untap step.\nWhenever a creature dies, untap Goblin Sharpshooter.\n{T}: Goblin Sharpshooter deals 1 damage to any target."
 
-    keywords(Keyword.DOESNT_UNTAP)
+    flags(AbilityFlag.DOESNT_UNTAP)
 
     triggeredAbility {
         trigger = Triggers.AnyCreatureDies

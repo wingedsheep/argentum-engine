@@ -263,6 +263,7 @@ abstract class ScenarioTestBase : FunSpec() {
                 oracleText = cardDef.oracleText,
                 colors = cardDef.colors,
                 baseKeywords = cardDef.keywords,
+                baseFlags = cardDef.flags,
                 baseStats = cardDef.creatureStats,
                 ownerId = ownerId,
                 spellEffect = cardDef.spellEffect,

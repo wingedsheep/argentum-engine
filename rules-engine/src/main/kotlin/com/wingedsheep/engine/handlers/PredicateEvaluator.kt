@@ -133,7 +133,7 @@ class PredicateEvaluator {
         // Use projected types/colors/keywords if available, otherwise fall back to base
         val types = projectedValues?.types ?: card.typeLine.cardTypes.map { it.name }.toSet()
         val colors = projectedValues?.colors ?: card.colors.map { it.name }.toSet()
-        val keywords = projectedValues?.keywords ?: card.baseKeywords.map { it.name }.toSet()
+        val keywords = projectedValues?.keywords ?: (card.baseKeywords.map { it.name } + card.baseFlags.map { it.name }).toSet()
 
         return when (predicate) {
             // Type predicates - use projected types

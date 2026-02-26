@@ -148,9 +148,8 @@ object TestCards {
         subtypes = setOf(Subtype("Illusion"), Subtype("Warrior")),
         power = 2,
         toughness = 2,
-        oracleText = "Phantom Warrior can't be blocked.",
-        keywords = setOf(Keyword.CANT_BE_BLOCKED)
-    )
+        oracleText = "Phantom Warrior can't be blocked."
+    ).copy(flags = setOf(AbilityFlag.CANT_BE_BLOCKED))
 
     /**
      * 2/1 First Strike for {1}{R}

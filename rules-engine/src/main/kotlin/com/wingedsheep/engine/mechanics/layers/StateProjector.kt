@@ -83,6 +83,7 @@ class StateProjector(
                     power = baseStats?.basePower,  // null for dynamic stats
                     toughness = baseStats?.baseToughness,  // null for dynamic stats
                     keywords = (cardComponent.baseKeywords.map { it.name } +
+                        cardComponent.baseFlags.map { it.name } +
                         (container.get<ProtectionComponent>()?.colors?.map { "PROTECTION_FROM_${it.name}" } ?: emptyList()) +
                         (container.get<ProtectionComponent>()?.subtypes?.map { "PROTECTION_FROM_SUBTYPE_${it.uppercase()}" } ?: emptyList())).toMutableSet(),
                     colors = cardComponent.colors.map { it.name }.toMutableSet(),
@@ -577,7 +578,7 @@ class StateProjector(
             val types = projected?.types ?: card.typeLine.cardTypes.map { it.name }.toSet()
             val subtypes = projected?.subtypes ?: card.typeLine.subtypes.map { it.value }.toSet()
             val colors = projected?.colors ?: card.colors.map { it.name }.toSet()
-            val keywords = projected?.keywords ?: card.baseKeywords.map { it.name }.toSet()
+            val keywords = projected?.keywords ?: (card.baseKeywords.map { it.name } + card.baseFlags.map { it.name }).toSet()
             val isFaceDown = projected?.isFaceDown ?: container.has<FaceDownComponent>()
 
             for (predicate in baseFilter.cardPredicates) {
@@ -1374,6 +1375,12 @@ class ProjectedState(
      */
     fun hasKeyword(entityId: EntityId, keyword: Keyword): Boolean =
         hasKeyword(entityId, keyword.name)
+
+    /**
+     * Check if an entity has a specific ability flag.
+     */
+    fun hasKeyword(entityId: EntityId, flag: com.wingedsheep.sdk.core.AbilityFlag): Boolean =
+        hasKeyword(entityId, flag.name)
 
     /**
      * Get projected colors for an entity.

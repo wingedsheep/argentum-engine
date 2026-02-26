@@ -146,8 +146,6 @@ export enum Keyword {
   FEAR = 'FEAR',
   SHADOW = 'SHADOW',
   HORSEMANSHIP = 'HORSEMANSHIP',
-  CANT_BE_BLOCKED = 'CANT_BE_BLOCKED',
-  CANT_BE_BLOCKED_BY_MORE_THAN_ONE = 'CANT_BE_BLOCKED_BY_MORE_THAN_ONE',
   // Landwalk
   SWAMPWALK = 'SWAMPWALK',
   FORESTWALK = 'FORESTWALK',
@@ -179,9 +177,6 @@ export enum Keyword {
   CONVOKE = 'CONVOKE',
   DELVE = 'DELVE',
   AFFINITY = 'AFFINITY',
-  // Restrictions
-  DOESNT_UNTAP = 'DOESNT_UNTAP',
-  MAY_NOT_UNTAP = 'MAY_NOT_UNTAP',
 }
 
 export const KeywordDisplayNames: Record<Keyword, string> = {
@@ -191,8 +186,6 @@ export const KeywordDisplayNames: Record<Keyword, string> = {
   [Keyword.FEAR]: 'Fear',
   [Keyword.SHADOW]: 'Shadow',
   [Keyword.HORSEMANSHIP]: 'Horsemanship',
-  [Keyword.CANT_BE_BLOCKED]: "Can't be blocked",
-  [Keyword.CANT_BE_BLOCKED_BY_MORE_THAN_ONE]: "Can't be blocked by more than one creature",
   [Keyword.SWAMPWALK]: 'Swampwalk',
   [Keyword.FORESTWALK]: 'Forestwalk',
   [Keyword.ISLANDWALK]: 'Islandwalk',
@@ -218,8 +211,24 @@ export const KeywordDisplayNames: Record<Keyword, string> = {
   [Keyword.CONVOKE]: 'Convoke',
   [Keyword.DELVE]: 'Delve',
   [Keyword.AFFINITY]: 'Affinity',
-  [Keyword.DOESNT_UNTAP]: "Doesn't untap during your untap step",
-  [Keyword.MAY_NOT_UNTAP]: 'You may choose not to untap',
+}
+
+/**
+ * Ability flags — non-keyword static abilities used as engine flags.
+ * These are stored in the projected state's keyword set alongside true keywords.
+ */
+export enum AbilityFlag {
+  CANT_BE_BLOCKED = 'CANT_BE_BLOCKED',
+  CANT_BE_BLOCKED_BY_MORE_THAN_ONE = 'CANT_BE_BLOCKED_BY_MORE_THAN_ONE',
+  DOESNT_UNTAP = 'DOESNT_UNTAP',
+  MAY_NOT_UNTAP = 'MAY_NOT_UNTAP',
+}
+
+export const AbilityFlagDisplayNames: Record<AbilityFlag, string> = {
+  [AbilityFlag.CANT_BE_BLOCKED]: "Can't be blocked",
+  [AbilityFlag.CANT_BE_BLOCKED_BY_MORE_THAN_ONE]: "Can't be blocked by more than one creature",
+  [AbilityFlag.DOESNT_UNTAP]: "Doesn't untap during your untap step",
+  [AbilityFlag.MAY_NOT_UNTAP]: 'You may choose not to untap',
 }
 
 /**

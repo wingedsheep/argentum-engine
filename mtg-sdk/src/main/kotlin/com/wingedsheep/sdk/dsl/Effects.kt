@@ -1,5 +1,6 @@
 package com.wingedsheep.sdk.dsl
 
+import com.wingedsheep.sdk.core.AbilityFlag
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.ManaCost
@@ -312,14 +313,26 @@ object Effects {
      * Grant a keyword until end of turn.
      */
     fun GrantKeyword(keyword: Keyword, target: EffectTarget = EffectTarget.ContextTarget(0)): Effect =
-        GrantKeywordUntilEndOfTurnEffect(keyword, target)
+        GrantKeywordUntilEndOfTurnEffect(keyword.name, target)
+
+    /**
+     * Grant an ability flag until end of turn.
+     */
+    fun GrantKeyword(flag: AbilityFlag, target: EffectTarget = EffectTarget.ContextTarget(0)): Effect =
+        GrantKeywordUntilEndOfTurnEffect(flag.name, target)
 
     /**
      * Remove a keyword from a single target.
      * "It loses defender."
      */
     fun RemoveKeyword(keyword: Keyword, target: EffectTarget = EffectTarget.ContextTarget(0), duration: Duration = Duration.EndOfTurn): Effect =
-        RemoveKeywordUntilEndOfTurnEffect(keyword, target, duration)
+        RemoveKeywordUntilEndOfTurnEffect(keyword.name, target, duration)
+
+    /**
+     * Remove an ability flag from a single target.
+     */
+    fun RemoveKeyword(flag: AbilityFlag, target: EffectTarget = EffectTarget.ContextTarget(0), duration: Duration = Duration.EndOfTurn): Effect =
+        RemoveKeywordUntilEndOfTurnEffect(flag.name, target, duration)
 
     /**
      * Set creature subtypes for a single target.
@@ -652,7 +665,7 @@ object Effects {
     ): Effect =
         ForEachInGroupEffect(
             filter = filter,
-            effect = GrantKeywordUntilEndOfTurnEffect(keyword, EffectTarget.Self, duration)
+            effect = GrantKeywordUntilEndOfTurnEffect(keyword.name, EffectTarget.Self, duration)
         )
 
     /**
@@ -666,7 +679,7 @@ object Effects {
     ): Effect =
         ForEachInGroupEffect(
             filter = filter,
-            effect = RemoveKeywordUntilEndOfTurnEffect(keyword, EffectTarget.Self, duration)
+            effect = RemoveKeywordUntilEndOfTurnEffect(keyword.name, EffectTarget.Self, duration)
         )
 
     /**

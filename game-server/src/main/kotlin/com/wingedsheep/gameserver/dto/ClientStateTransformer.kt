@@ -1,5 +1,6 @@
 package com.wingedsheep.gameserver.dto
 
+import com.wingedsheep.sdk.core.AbilityFlag
 import com.wingedsheep.sdk.core.CardType
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.Keyword
@@ -408,6 +409,9 @@ class ClientStateTransformer(
         val rawKeywords = projectedValues?.keywords?.mapNotNull {
             try { Keyword.valueOf(it) } catch (_: Exception) { null }
         }?.toSet() ?: cardComponent.baseKeywords
+        val abilityFlags = projectedValues?.keywords?.mapNotNull {
+            try { AbilityFlag.valueOf(it) } catch (_: Exception) { null }
+        }?.toSet() ?: cardComponent.baseFlags.toSet()
 
         // Extract protection colors from projected keywords (PROTECTION_FROM_*) and card definition
         val protectionPrefix = "PROTECTION_FROM_"
@@ -585,6 +589,7 @@ class ClientStateTransformer(
             baseToughness = cardComponent.baseStats?.baseToughness,
             damage = damage,
             keywords = keywords,
+            abilityFlags = abilityFlags,
             protections = protections,
             counters = counters,
             isTapped = isTapped,

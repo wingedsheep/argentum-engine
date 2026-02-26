@@ -223,11 +223,16 @@ export function CardPreview() {
         )}
 
         {/* Keywords/abilities info panel */}
-        {card.keywords.length > 0 && (
+        {(card.keywords.length > 0 || (card.abilityFlags && card.abilityFlags.length > 0)) && (
           <div style={styles.cardPreviewKeywords}>
             {card.keywords.map((keyword) => (
               <div key={keyword} style={styles.cardPreviewKeyword}>
                 <span style={styles.cardPreviewKeywordName}>{keyword}</span>
+              </div>
+            ))}
+            {card.abilityFlags?.map((flag) => (
+              <div key={flag} style={styles.cardPreviewKeyword}>
+                <span style={styles.cardPreviewKeywordName}>{flag}</span>
               </div>
             ))}
           </div>

@@ -1,5 +1,6 @@
 package com.wingedsheep.mtg.sets.definitions.scourge.cards
 
+import com.wingedsheep.sdk.core.AbilityFlag
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Triggers
@@ -30,7 +31,7 @@ val MercurialKite = card("Mercurial Kite") {
     triggeredAbility {
         trigger = Triggers.DealsCombatDamageToCreature
         effect = Effects.Tap(EffectTarget.TriggeringEntity) then
-            GrantKeywordUntilEndOfTurnEffect(Keyword.DOESNT_UNTAP, EffectTarget.TriggeringEntity, Duration.UntilYourNextTurn)
+            GrantKeywordUntilEndOfTurnEffect(AbilityFlag.DOESNT_UNTAP.name, EffectTarget.TriggeringEntity, Duration.UntilYourNextTurn)
     }
 
     metadata {

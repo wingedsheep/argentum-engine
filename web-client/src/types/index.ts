@@ -12,6 +12,8 @@ export {
   ColorDisplayNames,
   Keyword,
   KeywordDisplayNames,
+  AbilityFlag,
+  AbilityFlagDisplayNames,
   ZoneType,
   isPublicZone,
   isHiddenZone,

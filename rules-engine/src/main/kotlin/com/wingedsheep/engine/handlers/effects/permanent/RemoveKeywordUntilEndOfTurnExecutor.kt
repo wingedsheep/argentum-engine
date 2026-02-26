@@ -45,7 +45,7 @@ class RemoveKeywordUntilEndOfTurnExecutor : EffectExecutor<RemoveKeywordUntilEnd
             effect = FloatingEffectData(
                 layer = Layer.ABILITY,
                 sublayer = null,
-                modification = SerializableModification.RemoveKeyword(effect.keyword.name),
+                modification = SerializableModification.RemoveKeyword(effect.keyword),
                 affectedEntities = setOf(targetId)
             ),
             duration = effect.duration,

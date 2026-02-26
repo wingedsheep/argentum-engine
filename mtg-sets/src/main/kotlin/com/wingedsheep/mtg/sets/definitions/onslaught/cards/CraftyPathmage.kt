@@ -1,6 +1,6 @@
 package com.wingedsheep.mtg.sets.definitions.onslaught.cards
 
-import com.wingedsheep.sdk.core.Keyword
+import com.wingedsheep.sdk.core.AbilityFlag
 import com.wingedsheep.sdk.dsl.Costs
 import com.wingedsheep.sdk.dsl.Targets
 import com.wingedsheep.sdk.dsl.card
@@ -24,7 +24,7 @@ val CraftyPathmage = card("Crafty Pathmage") {
     activatedAbility {
         cost = Costs.Tap
         val t = target("target", Targets.CreatureWithPowerAtMost(2))
-        effect = GrantKeywordUntilEndOfTurnEffect(Keyword.CANT_BE_BLOCKED, t)
+        effect = GrantKeywordUntilEndOfTurnEffect(AbilityFlag.CANT_BE_BLOCKED.name, t)
     }
 
     metadata {

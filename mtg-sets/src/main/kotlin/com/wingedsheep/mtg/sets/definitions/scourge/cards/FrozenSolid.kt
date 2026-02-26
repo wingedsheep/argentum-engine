@@ -1,6 +1,6 @@
 package com.wingedsheep.mtg.sets.definitions.scourge.cards
 
-import com.wingedsheep.sdk.core.Keyword
+import com.wingedsheep.sdk.core.AbilityFlag
 import com.wingedsheep.sdk.dsl.Targets
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
@@ -26,7 +26,7 @@ val FrozenSolid = card("Frozen Solid") {
     auraTarget = Targets.Creature
 
     staticAbility {
-        ability = GrantKeyword(Keyword.DOESNT_UNTAP)
+        ability = GrantKeyword(AbilityFlag.DOESNT_UNTAP.name)
     }
 
     triggeredAbility {

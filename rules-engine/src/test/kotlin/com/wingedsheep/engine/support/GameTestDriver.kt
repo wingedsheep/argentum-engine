@@ -542,6 +542,7 @@ class GameTestDriver {
             oracleText = cardDef.oracleText,
             baseStats = cardDef.creatureStats,
             baseKeywords = cardDef.keywords,
+            baseFlags = cardDef.flags,
             colors = cardDef.colors,
             ownerId = playerId,
             spellEffect = cardDef.spellEffect
@@ -579,6 +580,7 @@ class GameTestDriver {
             oracleText = cardDef.oracleText,
             baseStats = cardDef.creatureStats,
             baseKeywords = cardDef.keywords,
+            baseFlags = cardDef.flags,
             colors = cardDef.colors,
             ownerId = playerId,
             spellEffect = cardDef.spellEffect
@@ -615,6 +617,7 @@ class GameTestDriver {
             oracleText = cardDef.oracleText,
             baseStats = cardDef.creatureStats,
             baseKeywords = cardDef.keywords,
+            baseFlags = cardDef.flags,
             colors = cardDef.colors,
             ownerId = playerId,
             spellEffect = cardDef.spellEffect
@@ -654,6 +657,7 @@ class GameTestDriver {
             oracleText = cardDef.oracleText,
             baseStats = cardDef.creatureStats,
             baseKeywords = cardDef.keywords,
+            baseFlags = cardDef.flags,
             colors = cardDef.colors,
             ownerId = playerId,
             spellEffect = cardDef.spellEffect
@@ -696,6 +700,7 @@ class GameTestDriver {
             oracleText = cardDef.oracleText,
             baseStats = cardDef.creatureStats,
             baseKeywords = cardDef.keywords,
+            baseFlags = cardDef.flags,
             colors = cardDef.colors,
             ownerId = playerId,
             spellEffect = cardDef.spellEffect
@@ -765,6 +770,7 @@ class GameTestDriver {
             oracleText = cardDef.oracleText,
             baseStats = cardDef.creatureStats,
             baseKeywords = cardDef.keywords,
+            baseFlags = cardDef.flags,
             colors = cardDef.colors,
             ownerId = playerId,
             spellEffect = cardDef.spellEffect

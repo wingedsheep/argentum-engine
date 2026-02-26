@@ -49,7 +49,7 @@ class GrantKeywordUntilEndOfTurnExecutor : EffectExecutor<GrantKeywordUntilEndOf
             effect = FloatingEffectData(
                 layer = Layer.ABILITY,
                 sublayer = null,
-                modification = SerializableModification.GrantKeyword(effect.keyword.name),
+                modification = SerializableModification.GrantKeyword(effect.keyword),
                 affectedEntities = setOf(targetId)
             ),
             duration = effect.duration,
@@ -70,7 +70,7 @@ class GrantKeywordUntilEndOfTurnExecutor : EffectExecutor<GrantKeywordUntilEndOf
             KeywordGrantedEvent(
                 targetId = targetId,
                 targetName = cardComponent.name,
-                keyword = effect.keyword.displayName,
+                keyword = effect.keyword.lowercase().replace('_', ' '),
                 sourceName = sourceName
             )
         )

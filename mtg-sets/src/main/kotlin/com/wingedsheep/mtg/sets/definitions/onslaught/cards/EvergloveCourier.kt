@@ -1,5 +1,6 @@
 package com.wingedsheep.mtg.sets.definitions.onslaught.cards
 
+import com.wingedsheep.sdk.core.AbilityFlag
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.dsl.Costs
 import com.wingedsheep.sdk.dsl.card
@@ -26,7 +27,7 @@ val EvergloveCourier = card("Everglove Courier") {
     toughness = 1
     oracleText = "You may choose not to untap Everglove Courier during your untap step.\n{2}{G}, {T}: Target Elf creature gets +2/+2 and gains trample for as long as Everglove Courier remains tapped."
 
-    keywords(Keyword.MAY_NOT_UNTAP)
+    flags(AbilityFlag.MAY_NOT_UNTAP)
 
     activatedAbility {
         cost = Costs.Composite(Costs.Mana("{2}{G}"), Costs.Tap)

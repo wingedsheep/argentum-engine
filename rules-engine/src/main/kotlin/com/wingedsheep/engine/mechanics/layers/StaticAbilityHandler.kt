@@ -153,7 +153,7 @@ class StaticAbilityHandler(
                 ContinuousEffectData(
                     layer = Layer.ABILITY,
                     sublayer = null,
-                    modification = Modification.GrantKeyword(ability.keyword.name),
+                    modification = Modification.GrantKeyword(ability.keyword),
                     affectsFilter = convertStaticTarget(ability.target)
                 )
             }

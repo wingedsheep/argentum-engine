@@ -138,12 +138,12 @@ class TurnManager(
 
         // Filter out permanents with CANT_UNTAP keyword (e.g., Goblin Sharpshooter)
         val permanentsAfterCantUntap = permanentsToUntap.filter { entityId ->
-            !projected.hasKeyword(entityId, Keyword.DOESNT_UNTAP)
+            !projected.hasKeyword(entityId, com.wingedsheep.sdk.core.AbilityFlag.DOESNT_UNTAP)
         }
 
         // Check if any permanents have MAY_NOT_UNTAP keyword (e.g., Everglove Courier)
         val mayNotUntapPermanents = permanentsAfterCantUntap.filter { entityId ->
-            projected.hasKeyword(entityId, Keyword.MAY_NOT_UNTAP)
+            projected.hasKeyword(entityId, com.wingedsheep.sdk.core.AbilityFlag.MAY_NOT_UNTAP)
         }
 
         if (mayNotUntapPermanents.isNotEmpty()) {

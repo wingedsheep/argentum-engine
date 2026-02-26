@@ -1,5 +1,6 @@
 package com.wingedsheep.gameserver.dto
 
+import com.wingedsheep.sdk.core.AbilityFlag
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.core.Keyword
@@ -114,6 +115,9 @@ data class ClientCard(
 
     /** Keywords the card has (flying, haste, etc.) */
     val keywords: Set<Keyword>,
+
+    /** Ability flags (non-keyword static abilities like "can't be blocked") */
+    val abilityFlags: Set<AbilityFlag> = emptySet(),
 
     /** Protection colors (for colored protection shield icons) */
     val protections: List<Color> = emptyList(),

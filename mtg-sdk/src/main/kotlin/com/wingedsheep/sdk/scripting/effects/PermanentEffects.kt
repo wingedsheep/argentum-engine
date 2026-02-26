@@ -114,35 +114,47 @@ data class RemoveCountersEffect(
 }
 
 /**
- * Grant a keyword to a target until end of turn.
+ * Grant a keyword or ability flag to a target until end of turn.
  * "Target creature gains flying until end of turn."
+ *
+ * The [keyword] field stores the enum name (e.g., "FLYING", "DOESNT_UNTAP")
+ * which the engine uses for string-based keyword checks in projected state.
  */
 @SerialName("GrantKeywordUntilEndOfTurn")
 @Serializable
 data class GrantKeywordUntilEndOfTurnEffect(
-    val keyword: Keyword,
+    val keyword: String,
     val target: EffectTarget,
     val duration: Duration = Duration.EndOfTurn
 ) : Effect {
+    constructor(keyword: Keyword, target: EffectTarget, duration: Duration = Duration.EndOfTurn) :
+        this(keyword.name, target, duration)
+
     override val description: String = buildString {
-        append("${target.description} gains ${keyword.displayName.lowercase()}")
+        append("${target.description} gains ${keyword.lowercase().replace('_', ' ')}")
         if (duration.description.isNotEmpty()) append(" ${duration.description}")
     }
 }
 
 /**
- * Remove a keyword from a target until end of turn.
+ * Remove a keyword or ability flag from a target until end of turn.
  * "All other creatures lose flying until end of turn."
+ *
+ * The [keyword] field stores the enum name (e.g., "FLYING")
+ * which the engine uses for string-based keyword checks in projected state.
  */
 @SerialName("RemoveKeywordUntilEndOfTurn")
 @Serializable
 data class RemoveKeywordUntilEndOfTurnEffect(
-    val keyword: Keyword,
+    val keyword: String,
     val target: EffectTarget,
     val duration: Duration = Duration.EndOfTurn
 ) : Effect {
+    constructor(keyword: Keyword, target: EffectTarget, duration: Duration = Duration.EndOfTurn) :
+        this(keyword.name, target, duration)
+
     override val description: String = buildString {
-        append("${target.description} loses ${keyword.displayName.lowercase()}")
+        append("${target.description} loses ${keyword.lowercase().replace('_', ' ')}")
         if (duration.description.isNotEmpty()) append(" ${duration.description}")
     }
 }

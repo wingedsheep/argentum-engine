@@ -1,6 +1,6 @@
 package com.wingedsheep.mtg.sets.definitions.onslaught.cards
 
-import com.wingedsheep.sdk.core.Keyword
+import com.wingedsheep.sdk.core.AbilityFlag
 import com.wingedsheep.sdk.dsl.Costs
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
@@ -28,7 +28,7 @@ val CallousOppressor = card("Callous Oppressor") {
     toughness = 2
     oracleText = "You may choose not to untap Callous Oppressor during your untap step.\nAs Callous Oppressor enters the battlefield, an opponent chooses a creature type.\n{T}: Gain control of target creature that isn't of the chosen type for as long as Callous Oppressor remains tapped."
 
-    keywords(Keyword.MAY_NOT_UNTAP)
+    flags(AbilityFlag.MAY_NOT_UNTAP)
     replacementEffect(EntersWithCreatureTypeChoice(opponentChooses = true))
 
     activatedAbility {

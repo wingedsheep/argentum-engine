@@ -3,6 +3,7 @@ package com.wingedsheep.sdk.model
 import com.wingedsheep.sdk.core.*
 import com.wingedsheep.sdk.scripting.KeywordAbility
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.Transient
 
 /**
  * An official ruling for a Magic: The Gathering card.
@@ -70,6 +71,7 @@ data class CardDefinition(
     val oracleText: String = "",
     val creatureStats: CreatureStats? = null,
     val keywords: Set<Keyword> = emptySet(),
+    val flags: Set<AbilityFlag> = emptySet(),
     val keywordAbilities: List<KeywordAbility> = emptyList(),  // Parameterized keywords (Ward {2}, Protection from blue)
     val script: CardScript = CardScript.EMPTY,  // Behavioral logic (abilities, effects)
     val equipCost: ManaCost? = null,  // For Equipment cards

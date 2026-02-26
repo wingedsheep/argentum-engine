@@ -1,5 +1,6 @@
 package com.wingedsheep.mtg.sets.definitions.onslaught.cards
 
+import com.wingedsheep.sdk.core.AbilityFlag
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.dsl.Costs
 import com.wingedsheep.sdk.dsl.card
@@ -26,7 +27,7 @@ val FrightshroudCourier = card("Frightshroud Courier") {
     toughness = 1
     oracleText = "You may choose not to untap Frightshroud Courier during your untap step.\n{2}{B}, {T}: Target Zombie creature gets +2/+2 and gains fear for as long as Frightshroud Courier remains tapped."
 
-    keywords(Keyword.MAY_NOT_UNTAP)
+    flags(AbilityFlag.MAY_NOT_UNTAP)
 
     activatedAbility {
         cost = Costs.Composite(Costs.Mana("{2}{B}"), Costs.Tap)
