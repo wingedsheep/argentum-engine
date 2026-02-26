@@ -2,13 +2,13 @@
 
 **Set Size:** 145 cards
 **Release Date:** February 3, 2003
-**Implemented:** 15 / 145
+**Implemented:** 16 / 145
 
 | Color      | Count |
 |------------|-------|
 | White      | 3/29  |
 | Blue       | 3/29  |
-| Black      | 3/29  |
+| Black      | 4/29  |
 | Red        | 3/29  |
 | Green      | 3/29  |
 
@@ -128,7 +128,7 @@
 - [ ] Skirk Marauder
 - [ ] Skirk Outrider
 - [x] Smokespew Invoker
-- [ ] Sootfeather Flock
+- [x] Sootfeather Flock
 - [ ] Spectral Sliver
 - [x] Starlight Invoker
 - [ ] Stoic Champion
