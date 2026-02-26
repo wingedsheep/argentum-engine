@@ -39,6 +39,6 @@ val SliceAndDice = card("Slice and Dice") {
         collectorNumber = "232"
         artist = "Mark Brill"
         flavorText = ""
-        imageUri = "https://gatherer-static.wizards.com/Cards/medium/D51089E294D45760206DB9B12C753751003CDF5B5E74140CB66F52E9AD3FEA17.webp"
+        imageUri = "https://cards.scryfall.io/normal/front/5/9/59262684-86e3-4485-9e35-202771c3eaa6.jpg?1562916006"
     }
 }
