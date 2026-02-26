@@ -2,7 +2,7 @@
 
 **Set Size:** 145 cards
 **Release Date:** February 3, 2003
-**Implemented:** 10 / 145
+**Implemented:** 11 / 145
 
 | Color      | Count |
 |------------|-------|
@@ -10,7 +10,7 @@
 | Blue       | 2/29  |
 | Black      | 2/29  |
 | Red        | 2/29  |
-| Green      | 2/29  |
+| Green      | 3/29  |
 
 ---
 
@@ -132,7 +132,7 @@
 - [ ] Spectral Sliver
 - [x] Starlight Invoker
 - [ ] Stoic Champion
-- [ ] Stonewood Invoker
+- [x] Stonewood Invoker
 - [ ] Sunstrike Legionnaire
 - [ ] Swooping Talon
 - [ ] Synapse Sliver
