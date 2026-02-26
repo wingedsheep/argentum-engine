@@ -2,7 +2,7 @@
 
 **Set Size:** 145 cards
 **Release Date:** February 3, 2003
-**Implemented:** 17 / 145
+**Implemented:** 18 / 145
 
 | Color      | Count |
 |------------|-------|
@@ -10,7 +10,7 @@
 | Blue       | 3/29  |
 | Black      | 4/29  |
 | Red        | 3/29  |
-| Green      | 3/29  |
+| Green      | 4/29  |
 
 ---
 
@@ -83,7 +83,7 @@
 - [ ] Graveborn Muse
 - [ ] Havoc Demon
 - [ ] Hollow Specter
-- [ ] Hundroog
+- [x] Hundroog
 - [ ] Hunter Sliver
 - [ ] Imperial Hellkite
 - [ ] Infernal Caretaker
