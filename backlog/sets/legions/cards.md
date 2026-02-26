@@ -2,12 +2,12 @@
 
 **Set Size:** 145 cards
 **Release Date:** February 3, 2003
-**Implemented:** 11 / 145
+**Implemented:** 12 / 145
 
 | Color      | Count |
 |------------|-------|
 | White      | 2/29  |
-| Blue       | 2/29  |
+| Blue       | 3/29  |
 | Black      | 2/29  |
 | Red        | 2/29  |
 | Green      | 3/29  |
@@ -62,7 +62,7 @@
 - [ ] Feral Throwback
 - [x] Flamewave Invoker
 - [ ] Frenetic Raptor
-- [ ] Fugitive Wizard
+- [x] Fugitive Wizard
 - [ ] Gempalm Avenger
 - [ ] Gempalm Incinerator
 - [ ] Gempalm Polluter
