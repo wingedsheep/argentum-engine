@@ -60,6 +60,7 @@ object LegionsSet {
         DefiantElf,
         EnormousBaloth,
         Hundroog,
+        NantukoVigilante,
         NeedleshotGourna,
         PatronOfTheWild,
         StonewoodInvoker,
