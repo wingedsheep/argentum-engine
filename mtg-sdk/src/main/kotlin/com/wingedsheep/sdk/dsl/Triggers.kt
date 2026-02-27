@@ -199,6 +199,15 @@ object Triggers {
         binding = TriggerBinding.SELF
     )
 
+    /**
+     * Whenever a creature dealt damage by this creature this turn dies.
+     * Used for Soul Collector and similar cards.
+     */
+    val CreatureDealtDamageByThisDies: TriggerSpec = TriggerSpec(
+        event = CreatureDealtDamageBySourceDiesEvent,
+        binding = TriggerBinding.SELF
+    )
+
     // =========================================================================
     // Phase/Step Triggers
     // =========================================================================

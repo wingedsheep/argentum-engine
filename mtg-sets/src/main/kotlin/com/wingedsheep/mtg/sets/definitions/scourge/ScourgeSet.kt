@@ -150,6 +150,7 @@ object ScourgeSet {
         DeathsHeadBuzzard,
         Nefashu,
         PutridRaptor,
+        SoulCollector,
         TwistedAbomination,
         UndeadWarchief,
         VengefulDead,

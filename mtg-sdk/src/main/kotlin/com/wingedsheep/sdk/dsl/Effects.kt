@@ -286,6 +286,12 @@ object Effects {
         MoveToZoneEffect(target, Zone.BATTLEFIELD, if (tapped) ZonePlacement.Tapped else ZonePlacement.Default)
 
     /**
+     * Put onto the battlefield under your control (the effect controller's control).
+     */
+    fun PutOntoBattlefieldUnderYourControl(target: EffectTarget): Effect =
+        MoveToZoneEffect(target, Zone.BATTLEFIELD, controllerOverride = EffectTarget.Controller)
+
+    /**
      * Return this card from its current zone to the battlefield attached to the target.
      * Used by the Dragon aura cycle (Dragon Shadow, Dragon Breath, etc.).
      */

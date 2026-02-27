@@ -17,6 +17,7 @@ import com.wingedsheep.engine.state.components.battlefield.AttachedToComponent
 import com.wingedsheep.engine.state.components.battlefield.AttachmentsComponent
 import com.wingedsheep.engine.state.components.battlefield.CountersComponent
 import com.wingedsheep.engine.state.components.battlefield.DamageComponent
+import com.wingedsheep.engine.state.components.battlefield.DamageDealtToCreaturesThisTurnComponent
 import com.wingedsheep.engine.state.components.battlefield.EnteredThisTurnComponent
 import com.wingedsheep.engine.state.components.battlefield.ReplacementEffectSourceComponent
 import com.wingedsheep.engine.state.components.battlefield.SummoningSicknessComponent
@@ -98,6 +99,7 @@ object EffectExecutorUtils {
             .without<TappedComponent>()
             .without<SummoningSicknessComponent>()
             .without<DamageComponent>()
+            .without<DamageDealtToCreaturesThisTurnComponent>()
             .without<CountersComponent>()
             .without<AttachedToComponent>()
             .without<AttachmentsComponent>()
@@ -323,6 +325,10 @@ object EffectExecutorUtils {
             newState = newState.updateEntity(targetId) { container ->
                 container.with(DamageComponent(currentDamage + effectiveAmount))
             }
+            // Track damage source for "creature dealt damage by this dies" triggers
+            if (sourceId != null) {
+                newState = trackDamageDealtToCreature(newState, sourceId, targetId)
+            }
         }
 
         val sourceName = sourceId?.let { state.getEntity(it)?.get<CardComponent>()?.name }
@@ -331,6 +337,21 @@ object EffectExecutorUtils {
         events.add(DamageDealtEvent(sourceId, targetId, effectiveAmount, false, sourceName = sourceName, targetName = targetName, targetIsPlayer = targetIsPlayer))
 
         return ExecutionResult.success(newState, events)
+    }
+
+    /**
+     * Track that [sourceId] dealt damage to [targetCreatureId] this turn.
+     * Updates the DamageDealtToCreaturesThisTurnComponent on the source entity.
+     * Used for triggers like Soul Collector's "whenever a creature dealt damage by this creature this turn dies".
+     */
+    fun trackDamageDealtToCreature(state: GameState, sourceId: EntityId, targetCreatureId: EntityId): GameState {
+        // Only track if source is still on the battlefield
+        if (sourceId !in state.getBattlefield()) return state
+        return state.updateEntity(sourceId) { container ->
+            val existing = container.get<DamageDealtToCreaturesThisTurnComponent>()
+                ?: DamageDealtToCreaturesThisTurnComponent()
+            container.with(existing.withCreature(targetCreatureId))
+        }
     }
 
     /**

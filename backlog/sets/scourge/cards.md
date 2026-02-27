@@ -3,13 +3,13 @@
 
 **Set Size:** 143 cards
 **Release Date:** May 26, 2003
-**Implemented:** 96 / 143
+**Implemented:** 97 / 143
 
 | Color | Count |
 |-------|-------|
 | White | 19 |
 | Blue | 17 |
-| Black | 18 |
+| Black | 19 |
 | Red | 19 |
 | Green | 19 |
 | Multicolor | 1 |
@@ -131,7 +131,7 @@
 - [x] Skirk Volcanist
 - [x] Skulltap
 - [ ] Sliver Overlord
-- [ ] Soul Collector
+- [x] Soul Collector
 - [x] Spark Spray
 - [ ] Sprouting Vines
 - [x] Stabilizer

@@ -60,7 +60,9 @@ object CompactJsonTransformer {
         "recipient", "controller", "timing", "duration",
         "reductionSource", "copyCost", "repeatCondition",
         // Damage source override (EffectTarget sealed interface)
-        "damageSource"
+        "damageSource",
+        // Controller override for "under your control" effects (EffectTarget sealed interface)
+        "controllerOverride"
     )
 
     /**

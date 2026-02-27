@@ -367,6 +367,19 @@ sealed interface GameEvent {
         }
     }
 
+    /**
+     * Whenever a creature dealt damage by this permanent this turn dies.
+     * Binding SELF = "whenever a creature dealt damage by Soul Collector this turn dies".
+     *
+     * Detection uses DamageDealtToCreaturesThisTurnComponent on the source entity
+     * to check if it dealt damage to the dying creature this turn.
+     */
+    @SerialName("CreatureDealtDamageBySourceDiesEvent")
+    @Serializable
+    data object CreatureDealtDamageBySourceDiesEvent : GameEvent {
+        override val description: String = "whenever a creature dealt damage by this creature this turn dies"
+    }
+
     // ---- Phase/Step Triggers ----
 
     /**

@@ -121,6 +121,19 @@ data class AbilityActivatedThisTurnComponent(
 }
 
 /**
+ * Tracks which creatures this entity dealt damage to this turn.
+ * Used for triggers like Soul Collector: "Whenever a creature dealt damage by Soul Collector this turn dies..."
+ * Cleared at end of turn by TurnManager.
+ */
+@Serializable
+data class DamageDealtToCreaturesThisTurnComponent(
+    val creatureIds: Set<EntityId> = emptySet()
+) : Component {
+    fun withCreature(creatureId: EntityId): DamageDealtToCreaturesThisTurnComponent =
+        copy(creatureIds = creatureIds + creatureId)
+}
+
+/**
  * Marks a permanent as granting shroud to its controller.
  * Used for True Believer: "You have shroud."
  * When the permanent leaves the battlefield, the component goes with it — no cleanup needed.

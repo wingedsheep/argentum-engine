@@ -1763,6 +1763,7 @@ class CombatManager(
                             newState = newState.updateEntity(targetId) { container ->
                                 container.with(DamageComponent(currentDamage + effectiveDamage))
                             }
+                            newState = EffectExecutorUtils.trackDamageDealtToCreature(newState, attackerId, targetId)
                             val atkSourceName = newState.getEntity(attackerId)?.get<CardComponent>()?.name ?: "Creature"
                             val blockerTargetName = newState.getEntity(targetId)?.get<CardComponent>()?.name ?: "Creature"
                             events.add(DamageDealtEvent(attackerId, targetId, effectiveDamage, true, sourceName = atkSourceName, targetName = blockerTargetName, targetIsPlayer = false))
@@ -1823,6 +1824,7 @@ class CombatManager(
                         newState = newState.updateEntity(attackerId) { container ->
                             container.with(DamageComponent(currentDamage + effectiveBlockerDamage))
                         }
+                        newState = EffectExecutorUtils.trackDamageDealtToCreature(newState, blockerId, attackerId)
                         val blockerSourceName = newState.getEntity(blockerId)?.get<CardComponent>()?.name ?: "Creature"
                         val attackerTargetName = newState.getEntity(attackerId)?.get<CardComponent>()?.name ?: "Creature"
                         events.add(DamageDealtEvent(blockerId, attackerId, effectiveBlockerDamage, true, sourceName = blockerSourceName, targetName = attackerTargetName, targetIsPlayer = false))
@@ -1935,6 +1937,7 @@ class CombatManager(
                                     newState = newState.updateEntity(targetId) { container ->
                                         container.with(DamageComponent(currentDamage + effectiveDamage))
                                     }
+                                    newState = EffectExecutorUtils.trackDamageDealtToCreature(newState, attackerId, targetId)
                                     val freeAtkName = newState.getEntity(attackerId)?.get<CardComponent>()?.name ?: "Creature"
                                     val freeCreatureName = newState.getEntity(targetId)?.get<CardComponent>()?.name ?: "Creature"
                                     events.add(DamageDealtEvent(attackerId, targetId, effectiveDamage, true, sourceName = freeAtkName, targetName = freeCreatureName, targetIsPlayer = false))
@@ -1970,6 +1973,7 @@ class CombatManager(
                                 newState = newState.updateEntity(blockerId) { container ->
                                     container.with(DamageComponent(currentDamage + effectiveDamage))
                                 }
+                                newState = EffectExecutorUtils.trackDamageDealtToCreature(newState, attackerId, blockerId)
                                 val autoAtkName = newState.getEntity(attackerId)?.get<CardComponent>()?.name ?: "Creature"
                                 val autoBlockerName = newState.getEntity(blockerId)?.get<CardComponent>()?.name ?: "Creature"
                                 events.add(DamageDealtEvent(attackerId, blockerId, effectiveDamage, true, sourceName = autoAtkName, targetName = autoBlockerName, targetIsPlayer = false))
@@ -2064,6 +2068,7 @@ class CombatManager(
                         newState = newState.updateEntity(attackerId) { container ->
                             container.with(DamageComponent(currentDamage + effectiveBlockerDamage))
                         }
+                        newState = EffectExecutorUtils.trackDamageDealtToCreature(newState, blockerId, attackerId)
                         val counterBlockerName = newState.getEntity(blockerId)?.get<CardComponent>()?.name ?: "Creature"
                         val counterAttackerName = newState.getEntity(attackerId)?.get<CardComponent>()?.name ?: "Creature"
                         events.add(DamageDealtEvent(blockerId, attackerId, effectiveBlockerDamage, true, sourceName = counterBlockerName, targetName = counterAttackerName, targetIsPlayer = false))
@@ -2326,6 +2331,52 @@ class CombatManager(
                 false
             }
         }
+    }
+
+    /**
+     * Compute mandatory blocker assignments from floating effects.
+     * Returns a map of blocker → list of attackers it must block.
+     *
+     * Considers both:
+     * - MustBlockSpecificAttacker (Provoke): blocker must block the specified attacker
+     * - MustBeBlockedByAll (Taunting Elf): all able blockers must block the attacker
+     */
+    fun getMandatoryBlockerAssignments(state: GameState, blockingPlayer: EntityId): Map<EntityId, List<EntityId>> {
+        val projected = stateProjector.project(state)
+        val potentialBlockers = findPotentialBlockers(state, blockingPlayer)
+        val result = mutableMapOf<EntityId, MutableList<EntityId>>()
+
+        // 1. MustBlockSpecificAttacker (Provoke)
+        val provokeConstraints = state.floatingEffects
+            .filter { it.effect.modification is SerializableModification.MustBlockSpecificAttacker }
+            .flatMap { floatingEffect ->
+                val modification = floatingEffect.effect.modification as SerializableModification.MustBlockSpecificAttacker
+                floatingEffect.effect.affectedEntities.map { blockerId ->
+                    blockerId to modification.attackerId
+                }
+            }
+
+        for ((blockerId, attackerId) in provokeConstraints) {
+            if (blockerId !in potentialBlockers) continue
+            val controller = projected.getController(blockerId)
+            if (controller != blockingPlayer) continue
+            val attackerContainer = state.getEntity(attackerId) ?: continue
+            if (!attackerContainer.has<AttackingComponent>()) continue
+            if (!canCreatureBlockAttacker(state, blockerId, attackerId, blockingPlayer, projected)) continue
+            result.getOrPut(blockerId) { mutableListOf() }.add(attackerId)
+        }
+
+        // 2. MustBeBlockedByAll (Taunting Elf, Alluring Scent)
+        val mustBeBlockedAttackers = findMustBeBlockedAttackers(state)
+        for (attackerId in mustBeBlockedAttackers) {
+            for (blockerId in potentialBlockers) {
+                if (canCreatureBlockAttacker(state, blockerId, attackerId, blockingPlayer, projected)) {
+                    result.getOrPut(blockerId) { mutableListOf() }.add(attackerId)
+                }
+            }
+        }
+
+        return result.filterValues { it.isNotEmpty() }
     }
 
     /**

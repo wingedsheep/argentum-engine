@@ -23,6 +23,7 @@ import com.wingedsheep.engine.mechanics.text.SubtypeReplacer
 import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.battlefield.AttachedToComponent
+import com.wingedsheep.engine.state.components.battlefield.DamageDealtToCreaturesThisTurnComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.identity.FaceDownComponent
@@ -353,6 +354,8 @@ class TriggerDetector(
         if (event is ZoneChangeEvent && event.toZone == Zone.GRAVEYARD &&
             event.fromZone == Zone.BATTLEFIELD) {
             detectDeathTriggers(state, event, triggers)
+            // Handle "whenever a creature dealt damage by this creature this turn dies" triggers
+            detectCreatureDealtDamageBySourceDiesTriggers(state, event, triggers, projected)
         }
 
         // Handle leaves-the-battlefield triggers (source is no longer on battlefield)
@@ -515,6 +518,50 @@ class TriggerDetector(
                         sourceName = cardComponent.name,
                         controllerId = controllerId,
                         triggerContext = TriggerContext.fromEvent(event)
+                    )
+                )
+            }
+        }
+    }
+
+    /**
+     * Detect "whenever a creature dealt damage by this creature this turn dies" triggers.
+     * When a creature dies, check all battlefield permanents for this trigger type.
+     * If a permanent has DamageDealtToCreaturesThisTurnComponent containing the dying creature's ID,
+     * and has an ability with CreatureDealtDamageBySourceDiesEvent trigger, fire the trigger.
+     */
+    private fun detectCreatureDealtDamageBySourceDiesTriggers(
+        state: GameState,
+        event: ZoneChangeEvent,
+        triggers: MutableList<PendingTrigger>,
+        projected: ProjectedState
+    ) {
+        val dyingEntityId = event.entityId
+
+        for (entityId in state.getBattlefield()) {
+            val container = state.getEntity(entityId) ?: continue
+            val cardComponent = container.get<CardComponent>() ?: continue
+            val controllerId = projected.getController(entityId) ?: continue
+
+            // Face-down creatures have no abilities (Rule 707.2)
+            if (container.has<FaceDownComponent>()) continue
+
+            // Check if this permanent dealt damage to the dying creature this turn
+            val damageTracking = container.get<DamageDealtToCreaturesThisTurnComponent>() ?: continue
+            if (dyingEntityId !in damageTracking.creatureIds) continue
+
+            val abilities = getTriggeredAbilities(entityId, cardComponent.cardDefinitionId, state)
+            for (ability in abilities) {
+                if (ability.trigger !is GameEvent.CreatureDealtDamageBySourceDiesEvent) continue
+                if (ability.activeZone != Zone.BATTLEFIELD) continue
+
+                triggers.add(
+                    PendingTrigger(
+                        ability = ability,
+                        sourceId = entityId,
+                        sourceName = cardComponent.name,
+                        controllerId = controllerId,
+                        triggerContext = TriggerContext(triggeringEntityId = dyingEntityId)
                     )
                 )
             }
@@ -1265,6 +1312,8 @@ class TriggerDetector(
             is GameEvent.EnchantedCreatureDealsDamageEvent -> false
             is GameEvent.EnchantedCreatureTurnedFaceUpEvent -> false
             is GameEvent.EnchantedPermanentBecomesTappedEvent -> false
+            // Creature-dealt-damage-by-source-dies triggers are handled separately
+            is GameEvent.CreatureDealtDamageBySourceDiesEvent -> false
             // Replacement-effect-only events never match as triggers
             is GameEvent.DamageEvent -> false
             is GameEvent.CounterPlacementEvent -> false

@@ -13,6 +13,7 @@ import com.wingedsheep.engine.handlers.effects.EffectExecutorUtils.resolveTarget
 import com.wingedsheep.engine.handlers.effects.EffectExecutorUtils.stripBattlefieldComponents
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
+import com.wingedsheep.engine.state.components.battlefield.SummoningSicknessComponent
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
@@ -58,12 +59,26 @@ class MoveToZoneEffectExecutor : EffectExecutor<MoveToZoneEffect> {
         val currentZone = findEntityZone(state, targetId)
             ?: return ExecutionResult.error(state, "Card not found in any zone: $targetId")
 
+        // Resolve controller override for "under your control" effects
+        val controllerOverride = effect.controllerOverride
+        val controllerId = if (controllerOverride != null && effect.destination == Zone.BATTLEFIELD) {
+            resolveTarget(controllerOverride, context, state) ?: ownerId
+        } else {
+            ownerId
+        }
+
         return when (effect.placement) {
             ZonePlacement.Top -> moveToLibraryTop(state, targetId, cardComponent, ownerId, currentZone)
             ZonePlacement.Bottom -> moveToLibraryBottom(state, targetId, cardComponent, ownerId, currentZone)
             ZonePlacement.Shuffled -> moveToLibraryShuffled(state, targetId, cardComponent, ownerId, currentZone)
-            ZonePlacement.Tapped -> moveToBattlefieldTapped(state, targetId, cardComponent, ownerId, currentZone)
-            ZonePlacement.Default -> moveCardToZone(state, targetId, effect.destination)
+            ZonePlacement.Tapped -> moveToBattlefieldTapped(state, targetId, cardComponent, controllerId, currentZone)
+            ZonePlacement.Default -> {
+                if (controllerId != ownerId && effect.destination == Zone.BATTLEFIELD) {
+                    moveToBattlefieldUnderControl(state, targetId, cardComponent, ownerId, controllerId, currentZone)
+                } else {
+                    moveCardToZone(state, targetId, effect.destination)
+                }
+            }
         }
     }
 
@@ -174,6 +189,41 @@ class MoveToZoneEffectExecutor : EffectExecutor<MoveToZoneEffect> {
         newState = newState.updateEntity(entityId) { c ->
             c.with(ControllerComponent(ownerId))
                 .with(TappedComponent)
+        }
+
+        return ExecutionResult.success(
+            newState,
+            listOf(
+                ZoneChangeEvent(
+                    entityId = entityId,
+                    entityName = cardComponent.name,
+                    fromZone = currentZone.zoneType,
+                    toZone = Zone.BATTLEFIELD,
+                    ownerId = ownerId
+                )
+            )
+        )
+    }
+
+    private fun moveToBattlefieldUnderControl(
+        state: GameState,
+        entityId: EntityId,
+        cardComponent: CardComponent,
+        ownerId: EntityId,
+        controllerId: EntityId,
+        currentZone: ZoneKey
+    ): ExecutionResult {
+        var newState = state.removeFromZone(currentZone, entityId)
+
+        // Card enters the controller's battlefield zone
+        val battlefieldZone = ZoneKey(controllerId, Zone.BATTLEFIELD)
+        newState = newState.addToZone(battlefieldZone, entityId)
+
+        newState = cleanupBattlefieldComponents(newState, entityId, currentZone)
+
+        newState = newState.updateEntity(entityId) { c ->
+            c.with(ControllerComponent(controllerId))
+                .with(SummoningSicknessComponent)
         }
 
         return ExecutionResult.success(

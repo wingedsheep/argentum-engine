@@ -268,7 +268,9 @@ data class MoveToZoneEffect(
     val target: EffectTarget,
     val destination: Zone,
     val placement: ZonePlacement = ZonePlacement.Default,
-    val byDestruction: Boolean = false
+    val byDestruction: Boolean = false,
+    /** When set, the card enters the battlefield under this player's control instead of the owner's. */
+    val controllerOverride: EffectTarget? = null
 ) : Effect {
     override val description: String = buildString {
         when {
@@ -279,6 +281,8 @@ data class MoveToZoneEffect(
                 append("Shuffle ${target.description} into its owner's library")
             destination == Zone.LIBRARY && placement == ZonePlacement.Top ->
                 append("Put ${target.description} on top of its owner's library")
+            destination == Zone.BATTLEFIELD && controllerOverride != null ->
+                append("Put ${target.description} onto the battlefield under your control")
             destination == Zone.BATTLEFIELD && placement == ZonePlacement.Tapped ->
                 append("Put ${target.description} onto the battlefield tapped")
             destination == Zone.BATTLEFIELD ->

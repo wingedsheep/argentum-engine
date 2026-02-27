@@ -1021,11 +1021,19 @@ class TurnManager(
             }
         }
 
-        // 5. Clear per-turn ability activation tracking
+        // 5. Clear per-turn ability activation tracking and damage source tracking
         for ((entityId, container) in newState.entities) {
+            var needsUpdate = false
             if (container.has<com.wingedsheep.engine.state.components.battlefield.AbilityActivatedThisTurnComponent>()) {
+                needsUpdate = true
+            }
+            if (container.has<com.wingedsheep.engine.state.components.battlefield.DamageDealtToCreaturesThisTurnComponent>()) {
+                needsUpdate = true
+            }
+            if (needsUpdate) {
                 newState = newState.updateEntity(entityId) { c ->
                     c.without<com.wingedsheep.engine.state.components.battlefield.AbilityActivatedThisTurnComponent>()
+                        .without<com.wingedsheep.engine.state.components.battlefield.DamageDealtToCreaturesThisTurnComponent>()
                 }
             }
         }
@@ -1216,6 +1224,14 @@ class TurnManager(
 
             true
         }
+    }
+
+    /**
+     * Get mandatory blocker assignments for a player from floating effects.
+     * Returns a map of blocker → list of attackers it must block.
+     */
+    fun getMandatoryBlockerAssignments(state: GameState, playerId: EntityId): Map<EntityId, List<EntityId>> {
+        return combatManager.getMandatoryBlockerAssignments(state, playerId)
     }
 
     /**

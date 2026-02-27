@@ -56,6 +56,7 @@ constructors.
 - `Effects.PutOnTopOfLibrary(target)`
 - `Effects.ShuffleIntoLibrary(target)`
 - `Effects.PutOntoBattlefield(target, tapped = false)`
+- `Effects.PutOntoBattlefieldUnderYourControl(target)` — put target onto battlefield under controller's control
 - `Effects.ReturnSelfToBattlefieldAttached(target)` — return self from graveyard to battlefield attached to target (for Auras like Dragon Shadow)
 - `Effects.ShuffleGraveyardIntoLibrary(target)` — shuffle graveyard into library
 
@@ -196,7 +197,7 @@ each player reveals and creates tokens
 
 | Effect                                      | Parameters                                            | Purpose                  |
 |---------------------------------------------|-------------------------------------------------------|--------------------------|
-| `MoveToZoneEffect`                          | `target, destination: Zone, placement, byDestruction` | Unified zone movement    |
+| `MoveToZoneEffect`                          | `target, destination: Zone, placement, byDestruction, controllerOverride` | Unified zone movement    |
 | `SacrificeEffect`                           | `filter, count, any`                                  | Sacrifice permanents     |
 | `SacrificeSelfEffect`                       | (object)                                              | Sacrifice this permanent |
 | `ForceSacrificeEffect`                      | `filter, count, target`                               | Force opponent sacrifice |
@@ -431,6 +432,7 @@ each player reveals and creates tokens
 - `Triggers.BecomesTarget` / `Triggers.BecomesTarget(filter: GameObjectFilter)` — when a permanent becomes target of spell/ability
 - `Triggers.DealsDamage` / `Triggers.DealsCombatDamage`
 - `Triggers.DealsCombatDamageToPlayer` / `Triggers.DealsCombatDamageToCreature`
+- `Triggers.CreatureDealtDamageByThisDies` — whenever a creature dealt damage by this creature this turn dies
 - `Triggers.EnchantedCreatureDealsCombatDamageToPlayer` — enchanted creature deals combat damage to a player (aura trigger)
 - `Triggers.EnchantedCreatureAttacks` — enchanted creature attacks (aura trigger, e.g., Extra Arms)
 - `Triggers.EnchantedCreatureDealsDamage` — enchanted creature deals any damage (aura trigger, e.g., Guilty Conscience)
