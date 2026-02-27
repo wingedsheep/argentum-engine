@@ -118,6 +118,7 @@ object ScourgeSet {
         DaruWarchief,
         Dragonstalker,
         FrontlineStrategist,
+        KaronasZealot,
         NobleTemplar,
         SilverKnight,
         ZealousInquisitor,

@@ -3,11 +3,11 @@
 
 **Set Size:** 143 cards
 **Release Date:** May 26, 2003
-**Implemented:** 90 / 143
+**Implemented:** 91 / 143
 
 | Color | Count |
 |-------|-------|
-| White | 17 |
+| White | 18 |
 | Blue | 16 |
 | Black | 18 |
 | Red | 18 |
@@ -91,7 +91,7 @@
 - [ ] Hindering Touch
 - [ ] Hunting Pack
 - [ ] Karona, False God
-- [ ] Karona's Zealot
+- [x] Karona's Zealot
 - [x] Krosan Drover
 - [x] Krosan Warchief
 - [x] Kurgadon
