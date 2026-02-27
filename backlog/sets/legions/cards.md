@@ -2,14 +2,14 @@
 
 **Set Size:** 145 cards
 **Release Date:** February 3, 2003
-**Implemented:** 30 / 145
+**Implemented:** 31 / 145
 
 | Color      | Count |
 |------------|-------|
 | White      | 6/29  |
 | Blue       | 6/29  |
 | Black      | 6/29  |
-| Red        | 6/29  |
+| Red        | 7/29  |
 | Green      | 6/29  |
 
 ---
@@ -38,7 +38,7 @@
 - [ ] Cloudreach Cavalry
 - [ ] Corpse Harvester
 - [x] Covert Operative
-- [ ] Crested Craghorn
+- [x] Crested Craghorn
 - [ ] Crookclaw Elder
 - [ ] Crypt Sliver
 - [ ] Dark Supplicant
