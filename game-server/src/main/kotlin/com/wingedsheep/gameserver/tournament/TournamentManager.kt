@@ -480,6 +480,22 @@ class TournamentManager(
     }
 
     /**
+     * Check if a player has any incomplete (not yet finished) match in rounds
+     * before the given round number. Used to prevent cross-round matchmaking
+     * from stranding opponents who still have earlier-round games to play.
+     */
+    fun hasIncompleteMatchBefore(playerId: EntityId, beforeRoundNumber: Int): Boolean {
+        for (round in rounds) {
+            if (round.roundNumber >= beforeRoundNumber) break
+            val match = round.matches.find {
+                (it.player1Id == playerId || it.player2Id == playerId) && !it.isComplete
+            }
+            if (match != null) return true
+        }
+        return false
+    }
+
+    /**
      * Get the next unplayed match for a player across all rounds.
      * Returns the round and match, or null if no remaining matches.
      */

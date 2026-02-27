@@ -1525,18 +1525,19 @@ class LobbyHandler(
 
                 val ws = playerState.identity.webSocketSession
                 if (ws != null && ws.isOpen) {
-                    // Find this player's next opponent using dynamic matchmaking.
-                    // Only show the opponent if the match is in the current round;
-                    // future-round opponents are not guaranteed with dynamic matchmaking.
+                    // Find this player's next opponent. Since round-robin schedules are
+                    // deterministic, the immediate next-round opponent is always known.
+                    // Only show the name for the very next round (round + 1); deeper
+                    // future-round opponents may shift with dynamic matchmaking.
                     val nextMatch = tournament.getNextMatchForPlayer(playerId)
                     val nextOpponentName: String?
                     val hasBye: Boolean
 
                     if (nextMatch != null) {
                         val (nextRound, nm) = nextMatch
-                        val isCurrentRound = nextRound.roundNumber == round.roundNumber
+                        val isNextRound = nextRound.roundNumber == round.roundNumber + 1
                         val opponentId = if (nm.player1Id == playerId) nm.player2Id else nm.player1Id
-                        nextOpponentName = if (isCurrentRound && !nm.isBye) opponentId?.let { lobby.players[it]?.identity?.playerName } else null
+                        nextOpponentName = if (isNextRound && !nm.isBye) opponentId?.let { lobby.players[it]?.identity?.playerName } else null
                         hasBye = nm.isBye
                     } else {
                         nextOpponentName = null
@@ -1831,15 +1832,10 @@ class LobbyHandler(
         if (opponentId !in lobby.getReadyPlayerIds()) return
 
         // Prevent cross-round matchmaking from stranding players. If this match is in a
-        // later round, only start it if the opponent has also completed their current-round
-        // match. Otherwise we'd "steal" the opponent from a player waiting in the current round.
-        val currentRound = tournament.currentRound
-        if (currentRound != null && round.roundNumber > currentRound.roundNumber) {
-            val opponentCurrentMatch = currentRound.matches.find {
-                (it.player1Id == opponentId || it.player2Id == opponentId)
-            }
-            if (opponentCurrentMatch != null && !opponentCurrentMatch.isComplete) return
-        }
+        // later round, only start it if the opponent has completed all their matches in
+        // earlier rounds. Otherwise we'd "steal" the opponent from a player waiting in
+        // a prior round. Check all rounds up to (but not including) this match's round.
+        if (tournament.hasIncompleteMatchBefore(opponentId, round.roundNumber)) return
 
         // Both ready - start the match!
         logger.info("Both players ready, starting match: ${identity.playerName} vs ${lobby.players[opponentId]?.identity?.playerName}")
