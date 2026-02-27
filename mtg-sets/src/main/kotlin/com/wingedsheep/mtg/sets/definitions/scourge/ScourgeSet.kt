@@ -51,6 +51,7 @@ object ScourgeSet {
         AlphaStatus,
         DragonFangs,
         OneWithNature,
+        PrimitiveEtchings,
 
         // Green instants
         AcceleratedMutation,

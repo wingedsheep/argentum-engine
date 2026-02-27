@@ -244,6 +244,18 @@ enum class PlayerEffectRemoval {
 }
 
 /**
+ * Tracks the number of cards a player has drawn during the current turn.
+ * Reset to 0 at the start of each turn (for ALL players, since "each turn"
+ * means every turn, not just your own).
+ *
+ * Used by RevealFirstDrawEachTurn to determine when to emit reveal events.
+ */
+@Serializable
+data class CardsDrawnThisTurnComponent(
+    val count: Int = 0
+) : Component
+
+/**
  * Marker component indicating that a player should skip their entire next turn.
  * Applied by effects like Last Chance (which gives the opponent an "extra turn"
  * by skipping the other player's turn in a 2-player game).

@@ -813,3 +813,18 @@ data class CantAttackUnlessDefenderControlsLandType(
 data object PreventCycling : StaticAbility {
     override val description: String = "Players can't cycle cards"
 }
+
+/**
+ * Reveal the first card the controller draws each turn.
+ * Used for Primitive Etchings and similar "reveal as you draw" effects.
+ *
+ * The engine checks for this static ability during draws. When the controller
+ * draws their first card of a turn and this ability is active, the drawn card
+ * is revealed (a CardRevealedFromDrawEvent is emitted). Other triggered abilities
+ * can then trigger off that reveal event.
+ */
+@SerialName("RevealFirstDrawEachTurn")
+@Serializable
+data object RevealFirstDrawEachTurn : StaticAbility {
+    override val description: String = "Reveal the first card you draw each turn"
+}

@@ -453,6 +453,8 @@ each player reveals and creates tokens
 ### Card Drawing
 
 - `Triggers.YouDraw` / `Triggers.AnyPlayerDraws`
+- `Triggers.RevealCreatureFromDraw` — when you reveal a creature card from first draw (Primitive Etchings)
+- `Triggers.RevealCardFromDraw` — when you reveal any card from first draw
 
 ### Damage
 
@@ -811,6 +813,7 @@ Set via `staticAbility { ability = ... }`:
 - `AdditionalManaOnTap(color, amount: DynamicAmount)` — produce additional mana
 - `PlayFromTopOfLibrary` — play cards from top of library
 - `PreventCycling` — players can't cycle cards
+- `RevealFirstDrawEachTurn` — reveal the first card drawn each turn (Primitive Etchings)
 - `SpellCostReduction(reductionSource)` — cost reduction
 - `FaceDownSpellCostReduction(reductionSource)` — face-down spell cost reduction
 - `ReduceSpellCostBySubtype(subtype, amount)` — reduce cost per subtype

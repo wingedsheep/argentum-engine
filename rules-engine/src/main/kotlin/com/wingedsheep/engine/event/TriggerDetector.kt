@@ -5,6 +5,7 @@ import com.wingedsheep.engine.core.BecomesTargetEvent
 import com.wingedsheep.engine.core.BlockersDeclaredEvent
 import com.wingedsheep.engine.core.CardCycledEvent
 import com.wingedsheep.engine.core.ControlChangedEvent
+import com.wingedsheep.engine.core.CardRevealedFromDrawEvent
 import com.wingedsheep.engine.core.CardsDrawnEvent
 import com.wingedsheep.engine.core.DamageDealtEvent
 import com.wingedsheep.engine.core.LifeChangedEvent
@@ -1134,6 +1135,18 @@ class TriggerDetector(
             is GameEvent.DrawEvent -> {
                 event is CardsDrawnEvent && matchesPlayer(trigger.player, event.playerId, controllerId)
             }
+            is GameEvent.CardRevealedFromDrawEvent -> {
+                if (event !is CardRevealedFromDrawEvent) return false
+                if (event.playerId != controllerId) return false
+                val filter = trigger.cardFilter
+                if (filter != null) {
+                    val requiresCreature = filter.cardPredicates.any {
+                        it is com.wingedsheep.sdk.scripting.predicates.CardPredicate.IsCreature
+                    }
+                    if (requiresCreature && !event.isCreature) return false
+                }
+                true
+            }
             is GameEvent.AttackEvent -> {
                 event is AttackersDeclaredEvent && checkBinding(binding, sourceId, event.attackers)
             }
@@ -1551,6 +1564,10 @@ data class TriggerContext(
                     triggeringPlayerId = event.casterId
                 )
                 is CardsDrawnEvent -> TriggerContext(triggeringPlayerId = event.playerId)
+                is CardRevealedFromDrawEvent -> TriggerContext(
+                    triggeringEntityId = event.cardEntityId,
+                    triggeringPlayerId = event.playerId
+                )
                 is CardCycledEvent -> TriggerContext(triggeringPlayerId = event.playerId)
                 is AttackersDeclaredEvent -> TriggerContext()
                 is BlockersDeclaredEvent -> TriggerContext()

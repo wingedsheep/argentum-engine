@@ -70,6 +70,7 @@ val engineSerializersModule = SerializersModule {
         subclass(CountersAddedEvent::class)
         subclass(CountersRemovedEvent::class)
         subclass(CardsDrawnEvent::class)
+        subclass(CardRevealedFromDrawEvent::class)
         subclass(DrawFailedEvent::class)
         subclass(CardsDiscardedEvent::class)
         subclass(DiscardRequiredEvent::class)

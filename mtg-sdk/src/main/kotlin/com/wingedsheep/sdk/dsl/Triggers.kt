@@ -306,6 +306,24 @@ object Triggers {
         binding = TriggerBinding.ANY
     )
 
+    /**
+     * Whenever you reveal a creature card from the first draw of a turn.
+     * Used with RevealFirstDrawEachTurn static ability (Primitive Etchings).
+     */
+    val RevealCreatureFromDraw: TriggerSpec = TriggerSpec(
+        event = CardRevealedFromDrawEvent(cardFilter = GameObjectFilter.Creature),
+        binding = TriggerBinding.ANY
+    )
+
+    /**
+     * Whenever you reveal any card from the first draw of a turn.
+     * Used with RevealFirstDrawEachTurn static ability.
+     */
+    val RevealCardFromDraw: TriggerSpec = TriggerSpec(
+        event = CardRevealedFromDrawEvent(cardFilter = null),
+        binding = TriggerBinding.ANY
+    )
+
     // =========================================================================
     // Spell Triggers
     // =========================================================================

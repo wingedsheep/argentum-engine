@@ -218,6 +218,14 @@ abstract class ScenarioTestBase : FunSpec() {
         }
 
         /**
+         * Set the turn number (default is 1).
+         */
+        fun withTurnNumber(turnNumber: Int): ScenarioBuilder {
+            state = state.copy(turnNumber = turnNumber)
+            return this
+        }
+
+        /**
          * Set the active player (whose turn it is).
          */
         fun withActivePlayer(playerNumber: Int): ScenarioBuilder {

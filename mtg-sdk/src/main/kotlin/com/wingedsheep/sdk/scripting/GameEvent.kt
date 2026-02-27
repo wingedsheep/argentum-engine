@@ -577,6 +577,34 @@ sealed interface GameEvent {
     data object ControlChangeEvent : GameEvent {
         override val description: String = "control of this permanent changes"
     }
+
+    // ---- Draw/Reveal Triggers ----
+
+    /**
+     * When a card is revealed from the first draw of a turn.
+     * Triggered by the RevealFirstDrawEachTurn static ability.
+     *
+     * [cardFilter] restricts what type of card triggers this:
+     * - null = any card revealed triggers this
+     * - GameObjectFilter.Creature = only creature cards trigger this
+     *
+     * Used for Primitive Etchings: "Whenever you reveal a creature card this way, draw a card."
+     */
+    @SerialName("CardRevealedFromDrawEvent")
+    @Serializable
+    data class CardRevealedFromDrawEvent(
+        val cardFilter: GameObjectFilter? = null
+    ) : GameEvent {
+        override val description: String = buildString {
+            append("you reveal ")
+            if (cardFilter != null) {
+                append(describeObjectForEvent(cardFilter))
+            } else {
+                append("a card")
+            }
+            append(" this way")
+        }
+    }
 }
 
 /**

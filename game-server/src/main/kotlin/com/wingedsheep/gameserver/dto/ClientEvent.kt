@@ -857,6 +857,7 @@ is PermanentsSacrificedEvent -> {
             )
 
             // Events that don't need client representation or are handled differently
+            is CardRevealedFromDrawEvent,
             is DrawFailedEvent,
             is BlockerOrderDeclaredEvent,
             is DamageAssignedEvent,

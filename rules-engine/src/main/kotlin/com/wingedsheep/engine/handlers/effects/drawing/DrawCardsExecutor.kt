@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.handlers.effects.drawing
 
+import com.wingedsheep.engine.core.CardRevealedFromDrawEvent
 import com.wingedsheep.engine.core.CardsDrawnEvent
 import com.wingedsheep.engine.core.DecisionContext
 import com.wingedsheep.engine.core.DecisionPhase
@@ -20,6 +21,7 @@ import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.identity.CardComponent
+import com.wingedsheep.engine.state.components.player.CardsDrawnThisTurnComponent
 import com.wingedsheep.engine.state.components.player.LossReason
 import com.wingedsheep.engine.state.components.player.PlayerLostComponent
 import com.wingedsheep.sdk.core.Zone
@@ -153,6 +155,18 @@ class DrawCardsExecutor(
 
             newState = newState.removeFromZone(libraryZone, cardId)
             newState = newState.addToZone(handZone, cardId)
+
+            // Track draw count and check for reveal-first-draw effects
+            val drawCountBefore = newState.getEntity(playerId)?.get<CardsDrawnThisTurnComponent>()?.count ?: 0
+            newState = newState.updateEntity(playerId) { container ->
+                container.with(CardsDrawnThisTurnComponent(count = drawCountBefore + 1))
+            }
+            if (drawCountBefore == 0) {
+                val revealEvent = checkRevealFirstDraw(newState, playerId, cardId)
+                if (revealEvent != null) {
+                    events.add(revealEvent)
+                }
+            }
         }
 
         if (drawnCards.isNotEmpty()) {
@@ -161,6 +175,35 @@ class DrawCardsExecutor(
         }
 
         return ExecutionResult.success(newState, events)
+    }
+
+    /**
+     * Check if a drawn card should be revealed due to RevealFirstDrawEachTurn static abilities.
+     * Only called when this is the first draw of the turn.
+     */
+    private fun checkRevealFirstDraw(
+        state: GameState,
+        playerId: EntityId,
+        drawnCardId: EntityId
+    ): CardRevealedFromDrawEvent? {
+        if (cardRegistry == null) return null
+
+        val projected = stateProjector.project(state)
+        val hasRevealAbility = projected.getBattlefieldControlledBy(playerId).any { permanentId ->
+            val card = state.getEntity(permanentId)?.get<CardComponent>() ?: return@any false
+            val cardDef = cardRegistry.getCard(card.cardDefinitionId) ?: return@any false
+            cardDef.script.staticAbilities.any { it is com.wingedsheep.sdk.scripting.RevealFirstDrawEachTurn }
+        }
+
+        if (!hasRevealAbility) return null
+
+        val drawnCard = state.getEntity(drawnCardId)?.get<CardComponent>() ?: return null
+        return CardRevealedFromDrawEvent(
+            playerId = playerId,
+            cardEntityId = drawnCardId,
+            cardName = drawnCard.name,
+            isCreature = drawnCard.typeLine.isCreature
+        )
     }
 
     /**

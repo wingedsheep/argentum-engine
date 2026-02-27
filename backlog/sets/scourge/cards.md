@@ -3,7 +3,7 @@
 
 **Set Size:** 143 cards
 **Release Date:** May 26, 2003
-**Implemented:** 91 / 143
+**Implemented:** 92 / 143
 
 | Color | Count |
 |-------|-------|
@@ -11,7 +11,7 @@
 | Blue | 16 |
 | Black | 18 |
 | Red | 18 |
-| Green | 17 |
+| Green | 18 |
 | Multicolor | 1 |
 | Colorless | 3 |
 
@@ -109,7 +109,7 @@
 - [x] One with Nature
 - [ ] Parallel Thoughts
 - [ ] Pemmin's Aura
-- [ ] Primitive Etchings
+- [x] Primitive Etchings
 - [ ] Proteus Machine
 - [x] Putrid Raptor
 - [x] Pyrostatic Pillar
