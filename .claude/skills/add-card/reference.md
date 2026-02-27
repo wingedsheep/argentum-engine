@@ -133,6 +133,7 @@ each player reveals and creates tokens
 ### Permanent Manipulation
 
 - `Effects.SeparatePermanentsIntoPiles(target)` — separate into piles
+- `Effects.Provoke(target)` — untap target and force it to block source (provoke keyword)
 - `Effects.RemoveFromCombat(target)` — remove creature from combat
 
 ### Chain Copy (Chain of X)
@@ -311,6 +312,7 @@ each player reveals and creates tokens
 | `PreventDamageFromAttackingCreaturesThisTurnEffect` | (object)                                    | Prevent from attackers          |
 | `PreventAllCombatDamageThisTurnEffect`              | (object)                                    | Prevent all combat damage       |
 | `GrantCantBeBlockedExceptByColorEffect`             | `filter, canOnlyBeBlockedByColor, duration` | Color evasion                   |
+| `ProvokeEffect`                                     | `target`                                    | Untap + force block source      |
 | `CantBlockTargetCreaturesEffect`                    | `duration`                                  | Can't block target creatures    |
 | `PreventNextDamageEffect`                           | `amount: DynamicAmount, target`             | Prevent next N damage           |
 | `RemoveFromCombatEffect`                            | `target`                                    | Remove from combat              |
@@ -715,7 +717,7 @@ reveal creatures, create tokens
 
 ### Combat
 
-`FIRST_STRIKE`, `DOUBLE_STRIKE`, `TRAMPLE`, `DEATHTOUCH`, `LIFELINK`, `VIGILANCE`, `REACH`
+`FIRST_STRIKE`, `DOUBLE_STRIKE`, `TRAMPLE`, `DEATHTOUCH`, `LIFELINK`, `VIGILANCE`, `REACH`, `PROVOKE`
 
 ### Defense
 

@@ -15,6 +15,20 @@ import kotlinx.serialization.Serializable
 // =============================================================================
 
 /**
+ * Provoke effect: untap target creature and force it to block the source creature if able.
+ * "You may have target creature defending player controls untap and block it if able."
+ *
+ * @property target The creature to provoke (untap and force to block)
+ */
+@SerialName("Provoke")
+@Serializable
+data class ProvokeEffect(
+    val target: EffectTarget = EffectTarget.ContextTarget(0)
+) : Effect {
+    override val description: String = "Target creature defending player controls untaps and blocks ${target.description} if able"
+}
+
+/**
  * All creatures that can block target creature must do so.
  * "All creatures able to block target creature this turn do so."
  */
