@@ -36,6 +36,7 @@ object LegionsSet {
         CovertOperative,
         EchoTracer,
         FugitiveWizard,
+        GlintwingInvoker,
         KeeneyeAven,
         MerchantOfSecrets,
 
