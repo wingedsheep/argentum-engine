@@ -2,7 +2,7 @@
 
 **Set Size:** 145 cards
 **Release Date:** February 3, 2003
-**Implemented:** 37 / 145
+**Implemented:** 38 / 145
 
 | Color      | Count |
 |------------|-------|
@@ -10,7 +10,7 @@
 | Blue       | 7/29  |
 | Black      | 8/29  |
 | Red        | 7/29  |
-| Green      | 7/29  |
+| Green      | 8/29  |
 
 ---
 
@@ -27,7 +27,7 @@
 - [ ] Blood Celebrant
 - [ ] Bloodstoke Howler
 - [ ] Branchsnap Lorian
-- [ ] Brontotherium
+- [x] Brontotherium
 - [ ] Brood Sliver
 - [ ] Caller of the Claw
 - [ ] Canopy Crawler
