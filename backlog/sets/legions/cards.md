@@ -2,12 +2,12 @@
 
 **Set Size:** 145 cards
 **Release Date:** February 3, 2003
-**Implemented:** 28 / 145
+**Implemented:** 29 / 145
 
 | Color      | Count |
 |------------|-------|
 | White      | 6/29  |
-| Blue       | 5/29  |
+| Blue       | 6/29  |
 | Black      | 6/29  |
 | Red        | 5/29  |
 | Green      | 6/29  |
@@ -32,7 +32,7 @@
 - [ ] Caller of the Claw
 - [ ] Canopy Crawler
 - [ ] Celestial Gatekeeper
-- [ ] Cephalid Pathmage
+- [x] Cephalid Pathmage
 - [ ] Chromeshell Crab
 - [ ] Clickslither
 - [ ] Cloudreach Cavalry

@@ -31,6 +31,7 @@ object LegionsSet {
         WingbeatWarrior,
 
         // Blue creatures
+        CephalidPathmage,
         CovertOperative,
         EchoTracer,
         FugitiveWizard,
