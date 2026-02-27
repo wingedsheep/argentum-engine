@@ -270,6 +270,14 @@ sealed interface SerializableModification {
     data class PreventCombatDamageFromGroup(
         val filter: GameObjectFilter
     ) : SerializableModification
+
+    /**
+     * Damage prevention: prevent all combat damage that would be dealt to and dealt by
+     * the affected creature this turn.
+     * Used by Deftblade Elite and similar effects.
+     */
+    @Serializable
+    data object PreventCombatDamageToAndBy : SerializableModification
 }
 
 /**
@@ -319,4 +327,6 @@ fun SerializableModification.toModification(): Modification = when (this) {
     is SerializableModification.ExileOnDeath -> Modification.NoOp
     // PreventCombatDamageFromGroup doesn't map to a layer modification - it's checked by CombatManager directly
     is SerializableModification.PreventCombatDamageFromGroup -> Modification.NoOp
+    // PreventCombatDamageToAndBy doesn't map to a layer modification - it's checked by CombatManager directly
+    is SerializableModification.PreventCombatDamageToAndBy -> Modification.NoOp
 }

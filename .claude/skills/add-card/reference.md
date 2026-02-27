@@ -135,6 +135,7 @@ each player reveals and creates tokens
 
 - `Effects.SeparatePermanentsIntoPiles(target)` — separate into piles
 - `Effects.Provoke(target)` — untap target and force it to block source (provoke keyword)
+- `Effects.PreventCombatDamageToAndBy(target)` — prevent all combat damage to and by creature this turn
 - `Effects.RemoveFromCombat(target)` — remove creature from combat
 
 ### Chain Copy (Chain of X)
@@ -321,6 +322,7 @@ each player reveals and creates tokens
 | `RedirectNextDamageEffect`                          | `protectedTargets, redirectTo, amount?`     | Redirect next damage (amount=null for all) |
 | `PreventNextDamageFromChosenCreatureTypeEffect`     | (object)                                    | Prevent damage from chosen type |
 | `PreventAllDamageDealtByTargetEffect`               | `target`                                    | Prevent all damage by target    |
+| `PreventCombatDamageToAndByEffect`                  | `target`                                    | Prevent combat damage to and by creature |
 
 ### Player
 

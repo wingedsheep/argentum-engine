@@ -741,6 +741,12 @@ object Effects {
         com.wingedsheep.sdk.scripting.effects.ProvokeEffect(target)
 
     /**
+     * Prevent all combat damage that would be dealt to and dealt by a creature this turn.
+     */
+    fun PreventCombatDamageToAndBy(target: EffectTarget = EffectTarget.Self): Effect =
+        com.wingedsheep.sdk.scripting.effects.PreventCombatDamageToAndByEffect(target)
+
+    /**
      * Remove a creature from combat.
      */
     fun RemoveFromCombat(target: EffectTarget): Effect =

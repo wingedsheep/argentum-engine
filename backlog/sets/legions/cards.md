@@ -2,22 +2,22 @@
 
 **Set Size:** 145 cards
 **Release Date:** February 3, 2003
-**Implemented:** 41 / 145
+**Implemented:** 45 / 145
 
 | Color      | Count |
 |------------|-------|
-| White      | 8/29  |
-| Blue       | 8/29  |
-| Black      | 8/29  |
+| White      | 9/29  |
+| Blue       | 9/29  |
+| Black      | 9/29  |
 | Red        | 9/29  |
-| Green      | 8/29  |
+| Green      | 9/29  |
 
 ---
 
 - [ ] Akroma, Angel of Wrath
 - [ ] Akroma's Devoted
 - [ ] Aphetto Exterminator
-- [ ] Aven Envoy
+- [x] Aven Envoy
 - [ ] Aven Redeemer
 - [ ] Aven Warhawk
 - [ ] Bane of the Living
@@ -48,7 +48,7 @@
 - [ ] Deathmark Prelate
 - [ ] Defender of the Order
 - [x] Defiant Elf
-- [ ] Deftblade Elite
+- [x] Deftblade Elite
 - [ ] Dermoplasm
 - [ ] Dreamborn Muse
 - [x] Drinker of Sorrow
@@ -81,7 +81,7 @@
 - [ ] Goblin Lookout
 - [x] Goblin Turncoat
 - [ ] Graveborn Muse
-- [ ] Havoc Demon
+- [x] Havoc Demon
 - [ ] Hollow Specter
 - [x] Hundroog
 - [ ] Hunter Sliver
@@ -137,7 +137,7 @@
 - [ ] Swooping Talon
 - [ ] Synapse Sliver
 - [ ] Timberwatch Elf
-- [ ] Totem Speaker
+- [x] Totem Speaker
 - [ ] Toxin Sliver
 - [ ] Tribal Forcemage
 - [ ] Unstable Hulk

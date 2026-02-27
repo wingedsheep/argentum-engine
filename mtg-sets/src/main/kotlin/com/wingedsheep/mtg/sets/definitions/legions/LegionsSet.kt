@@ -25,6 +25,7 @@ object LegionsSet {
         // White creatures
         CloudreachCavalry,
         DaruSanctifier,
+        DeftbladeElite,
         LowlandTracker,
         PlatedSliver,
         StarlightInvoker,
@@ -33,6 +34,7 @@ object LegionsSet {
         WingbeatWarrior,
 
         // Blue creatures
+        AvenEnvoy,
         CephalidPathmage,
         CovertOperative,
         EchoTracer,
@@ -46,6 +48,7 @@ object LegionsSet {
         DrinkerOfSorrow,
         DrippingDead,
         GoblinTurncoat,
+        HavocDemon,
         Skinthinner,
         SmokespewInvoker,
         SootfeatherFlock,
@@ -72,5 +75,6 @@ object LegionsSet {
         NeedleshotGourna,
         PatronOfTheWild,
         StonewoodInvoker,
+        TotemSpeaker,
     )
 }
