@@ -1,12 +1,10 @@
 package com.wingedsheep.gameserver.scenarios
 
 import com.wingedsheep.engine.core.CoinFlipEvent
-import com.wingedsheep.engine.core.DamageDealtEvent
-import com.wingedsheep.engine.support.GameTestDriver
-import com.wingedsheep.engine.support.TestCards
+import com.wingedsheep.gameserver.ScenarioTestBase
+import com.wingedsheep.sdk.core.Phase
 import com.wingedsheep.sdk.core.Step
-import com.wingedsheep.sdk.model.Deck
-import io.kotest.core.spec.style.FunSpec
+import io.kotest.assertions.withClue
 import io.kotest.matchers.shouldBe
 
 /**
@@ -18,136 +16,143 @@ import io.kotest.matchers.shouldBe
  * the flip, the next time it would deal combat damage this turn, it deals
  * that damage to you instead.
  */
-class GoblinPsychopathScenarioTest : FunSpec({
+class GoblinPsychopathScenarioTest : ScenarioTestBase() {
 
-    fun createDriver(): GameTestDriver {
-        val driver = GameTestDriver()
-        driver.registerCards(TestCards.all)
-        driver.initMirrorMatch(
-            deck = Deck.of("Mountain" to 40),
-            startingLife = 20
-        )
-        return driver
-    }
+    init {
+        context("Goblin Psychopath attacking unblocked") {
 
-    test("attacking unblocked - losing flip redirects combat damage to controller") {
-        var foundLostFlip = false
-        repeat(50) {
-            if (foundLostFlip) return@repeat
+            test("losing the flip redirects combat damage to controller") {
+                var foundLostFlip = false
+                repeat(50) {
+                    if (foundLostFlip) return@repeat
 
-            val driver = createDriver()
-            driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
+                    val game = scenario()
+                        .withPlayers("Attacker", "Defender")
+                        .withCardOnBattlefield(1, "Goblin Psychopath", summoningSickness = false)
+                        .withCardInLibrary(1, "Mountain")
+                        .withCardInLibrary(2, "Mountain")
+                        .withActivePlayer(1)
+                        .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                        .build()
 
-            val attacker = driver.activePlayer!!
-            val defender = driver.otherPlayer(attacker)
+                    // Move to declare attackers
+                    game.passUntilPhase(Phase.COMBAT, Step.DECLARE_ATTACKERS)
+                    game.declareAttackers(mapOf("Goblin Psychopath" to 2))
 
-            val psychopath = driver.putCreatureOnBattlefield(attacker, "Goblin Psychopath")
-            driver.removeSummoningSickness(psychopath)
+                    // Resolve the attack trigger (coin flip)
+                    val results = game.resolveStack()
+                    val coinEvent = results.flatMap { it.events }
+                        .filterIsInstance<CoinFlipEvent>().firstOrNull()
+                        ?: return@repeat
 
-            // Move to declare attackers
-            driver.passPriorityUntil(Step.DECLARE_ATTACKERS)
-            driver.declareAttackers(attacker, listOf(psychopath), defender)
+                    if (!coinEvent.won) {
+                        // Lost the flip - pass through combat damage
+                        game.declareNoBlockers()
+                        game.passUntilPhase(Phase.POSTCOMBAT_MAIN, Step.POSTCOMBAT_MAIN)
 
-            // Resolve the attack trigger (coin flip)
-            val triggerResult = driver.bothPass()
-            val coinEvent = triggerResult.events.filterIsInstance<CoinFlipEvent>().firstOrNull()
-                ?: return@repeat
+                        withClue("Attacker should have taken 5 damage (redirected)") {
+                            game.getLifeTotal(1) shouldBe 15
+                        }
+                        withClue("Defender should be unharmed") {
+                            game.getLifeTotal(2) shouldBe 20
+                        }
+                        foundLostFlip = true
+                    }
+                }
+                withClue("Should have found a lost flip within 50 attempts") {
+                    foundLostFlip shouldBe true
+                }
+            }
 
-            if (!coinEvent.won) {
-                // Lost the flip - pass to combat damage
-                driver.declareNoBlockers(defender)
+            test("winning the flip deals normal combat damage") {
+                var foundWonFlip = false
+                repeat(50) {
+                    if (foundWonFlip) return@repeat
 
-                // Pass through first strike damage step and regular combat damage
-                driver.passPriorityUntil(Step.POSTCOMBAT_MAIN, maxPasses = 20)
+                    val game = scenario()
+                        .withPlayers("Attacker", "Defender")
+                        .withCardOnBattlefield(1, "Goblin Psychopath", summoningSickness = false)
+                        .withCardInLibrary(1, "Mountain")
+                        .withCardInLibrary(2, "Mountain")
+                        .withActivePlayer(1)
+                        .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                        .build()
 
-                // Attacker should have taken 5 damage (redirected to self)
-                driver.getLifeTotal(attacker) shouldBe 15
-                // Defender should be unharmed
-                driver.getLifeTotal(defender) shouldBe 20
-                foundLostFlip = true
+                    game.passUntilPhase(Phase.COMBAT, Step.DECLARE_ATTACKERS)
+                    game.declareAttackers(mapOf("Goblin Psychopath" to 2))
+
+                    val results = game.resolveStack()
+                    val coinEvent = results.flatMap { it.events }
+                        .filterIsInstance<CoinFlipEvent>().firstOrNull()
+                        ?: return@repeat
+
+                    if (coinEvent.won) {
+                        game.declareNoBlockers()
+                        game.passUntilPhase(Phase.POSTCOMBAT_MAIN, Step.POSTCOMBAT_MAIN)
+
+                        withClue("Defender should have taken 5 combat damage") {
+                            game.getLifeTotal(2) shouldBe 15
+                        }
+                        withClue("Attacker should be unharmed") {
+                            game.getLifeTotal(1) shouldBe 20
+                        }
+                        foundWonFlip = true
+                    }
+                }
+                withClue("Should have found a won flip within 50 attempts") {
+                    foundWonFlip shouldBe true
+                }
             }
         }
-        foundLostFlip shouldBe true
-    }
 
-    test("attacking unblocked - winning flip deals normal combat damage") {
-        var foundWonFlip = false
-        repeat(50) {
-            if (foundWonFlip) return@repeat
+        context("Goblin Psychopath blocking") {
 
-            val driver = createDriver()
-            driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
+            test("losing the flip redirects blocker's combat damage to its controller") {
+                var foundLostFlip = false
+                repeat(50) {
+                    if (foundLostFlip) return@repeat
 
-            val attacker = driver.activePlayer!!
-            val defender = driver.otherPlayer(attacker)
+                    val game = scenario()
+                        .withPlayers("Attacker", "Blocker")
+                        .withCardOnBattlefield(1, "Goblin Brigand", summoningSickness = false)
+                        .withCardOnBattlefield(2, "Goblin Psychopath", summoningSickness = false)
+                        .withCardInLibrary(1, "Mountain")
+                        .withCardInLibrary(2, "Mountain")
+                        .withActivePlayer(1)
+                        .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                        .build()
 
-            val psychopath = driver.putCreatureOnBattlefield(attacker, "Goblin Psychopath")
-            driver.removeSummoningSickness(psychopath)
+                    // Attack with Goblin Brigand (2/2)
+                    game.passUntilPhase(Phase.COMBAT, Step.DECLARE_ATTACKERS)
+                    game.declareAttackers(mapOf("Goblin Brigand" to 2))
 
-            driver.passPriorityUntil(Step.DECLARE_ATTACKERS)
-            driver.declareAttackers(attacker, listOf(psychopath), defender)
+                    // Move to declare blockers
+                    game.passUntilPhase(Phase.COMBAT, Step.DECLARE_BLOCKERS)
 
-            val triggerResult = driver.bothPass()
-            val coinEvent = triggerResult.events.filterIsInstance<CoinFlipEvent>().firstOrNull()
-                ?: return@repeat
+                    // Block with Goblin Psychopath (5/5)
+                    game.declareBlockers(mapOf("Goblin Psychopath" to listOf("Goblin Brigand")))
 
-            if (coinEvent.won) {
-                driver.declareNoBlockers(defender)
-                driver.passPriorityUntil(Step.POSTCOMBAT_MAIN, maxPasses = 20)
+                    // Resolve the block trigger (coin flip)
+                    val results = game.resolveStack()
+                    val coinEvent = results.flatMap { it.events }
+                        .filterIsInstance<CoinFlipEvent>().firstOrNull()
+                        ?: return@repeat
 
-                // Defender took 5 combat damage
-                driver.getLifeTotal(defender) shouldBe 15
-                // Attacker is unharmed
-                driver.getLifeTotal(attacker) shouldBe 20
-                foundWonFlip = true
+                    if (!coinEvent.won) {
+                        // Lost the flip - pass through combat damage
+                        game.passUntilPhase(Phase.POSTCOMBAT_MAIN, Step.POSTCOMBAT_MAIN)
+
+                        // Goblin Psychopath's controller (P2) should take 5 damage (redirected)
+                        withClue("Blocker's controller should have taken 5 damage (redirected)") {
+                            game.getLifeTotal(2) shouldBe 15
+                        }
+                        foundLostFlip = true
+                    }
+                }
+                withClue("Should have found a lost flip within 50 attempts") {
+                    foundLostFlip shouldBe true
+                }
             }
         }
-        foundWonFlip shouldBe true
     }
-
-    test("blocking - losing flip redirects combat damage to controller") {
-        var foundLostFlip = false
-        repeat(50) {
-            if (foundLostFlip) return@repeat
-
-            val driver = createDriver()
-            driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
-
-            val activePlayer = driver.activePlayer!!
-            val otherPlayer = driver.otherPlayer(activePlayer)
-
-            // Put a 2/2 creature on the active player's side
-            val smallCreature = driver.putCreatureOnBattlefield(activePlayer, "Goblin Brigand")
-            driver.removeSummoningSickness(smallCreature)
-
-            // Put Goblin Psychopath on the other player's side (it will block)
-            val psychopath = driver.putCreatureOnBattlefield(otherPlayer, "Goblin Psychopath")
-            driver.removeSummoningSickness(psychopath)
-
-            // Declare attack with the small creature
-            driver.passPriorityUntil(Step.DECLARE_ATTACKERS)
-            driver.declareAttackers(activePlayer, listOf(smallCreature), otherPlayer)
-
-            // Both pass to move to declare blockers
-            driver.bothPass()
-
-            // Block with Goblin Psychopath
-            driver.declareBlockers(otherPlayer, mapOf(psychopath to listOf(smallCreature)))
-
-            // Resolve the block trigger (coin flip)
-            val triggerResult = driver.bothPass()
-            val coinEvent = triggerResult.events.filterIsInstance<CoinFlipEvent>().firstOrNull()
-                ?: return@repeat
-
-            if (!coinEvent.won) {
-                // Lost the flip - pass through combat damage
-                driver.passPriorityUntil(Step.POSTCOMBAT_MAIN, maxPasses = 20)
-
-                // Goblin Psychopath's controller took 5 damage (redirected)
-                driver.getLifeTotal(otherPlayer) shouldBe 15
-                foundLostFlip = true
-            }
-        }
-        foundLostFlip shouldBe true
-    }
-})
+}
