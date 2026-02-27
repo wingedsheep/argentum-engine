@@ -117,6 +117,13 @@ sealed interface SerializableModification {
     data object MustBeBlockedByAll : SerializableModification
 
     /**
+     * Combat restriction: a specific creature must block a specific attacker if able.
+     * Used by Provoke. The affectedEntities contains the blocker; attackerId is the attacker.
+     */
+    @Serializable
+    data class MustBlockSpecificAttacker(val attackerId: EntityId) : SerializableModification
+
+    /**
      * Damage prevention: prevent all combat damage that would be dealt to a player
      * by attacking creatures this turn.
      * Used by Deep Wood and similar effects.
@@ -281,6 +288,7 @@ fun SerializableModification.toModification(): Modification = when (this) {
     is SerializableModification.ChangeController -> Modification.ChangeController(newControllerId)
     // MustBeBlockedByAll doesn't map to a layer modification - it's checked by CombatManager directly
     is SerializableModification.MustBeBlockedByAll -> Modification.NoOp
+    is SerializableModification.MustBlockSpecificAttacker -> Modification.NoOp
     // PreventDamageFromAttackingCreatures doesn't map to a layer modification - it's checked by CombatManager directly
     is SerializableModification.PreventDamageFromAttackingCreatures -> Modification.NoOp
     // CantBeBlockedExceptByColor doesn't map to a layer modification - it's checked by CombatManager directly

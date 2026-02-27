@@ -160,6 +160,7 @@ export enum Keyword {
   LIFELINK = 'LIFELINK',
   VIGILANCE = 'VIGILANCE',
   REACH = 'REACH',
+  PROVOKE = 'PROVOKE',
   // Defense
   DEFENDER = 'DEFENDER',
   INDESTRUCTIBLE = 'INDESTRUCTIBLE',
@@ -198,6 +199,7 @@ export const KeywordDisplayNames: Record<Keyword, string> = {
   [Keyword.LIFELINK]: 'Lifelink',
   [Keyword.VIGILANCE]: 'Vigilance',
   [Keyword.REACH]: 'Reach',
+  [Keyword.PROVOKE]: 'Provoke',
   [Keyword.DEFENDER]: 'Defender',
   [Keyword.INDESTRUCTIBLE]: 'Indestructible',
   [Keyword.HEXPROOF]: 'Hexproof',

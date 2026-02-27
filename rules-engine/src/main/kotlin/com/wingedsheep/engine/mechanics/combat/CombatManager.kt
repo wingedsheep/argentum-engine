@@ -380,6 +380,12 @@ class CombatManager(
             return ExecutionResult.error(state, mustBeBlockedValidation)
         }
 
+        // Check provoke "must block specific attacker" requirements
+        val provokeValidation = validateProvokeRequirements(state, blockingPlayer, blockers)
+        if (provokeValidation != null) {
+            return ExecutionResult.error(state, provokeValidation)
+        }
+
         // Check projected must-block requirements (Grand Melee)
         val projectedMustBlockValidation = validateProjectedMustBlockRequirements(state, blockingPlayer, blockers)
         if (projectedMustBlockValidation != null) {
@@ -2218,6 +2224,57 @@ class CombatManager(
                 } else {
                     "$blockerName must block one of: ${attackerNames.joinToString(", ")}"
                 }
+            }
+        }
+
+        return null
+    }
+
+    /**
+     * Validate provoke "must block specific attacker" requirements.
+     * For each creature with a MustBlockSpecificAttacker floating effect,
+     * if it can legally block the specified attacker, it must be blocking that attacker.
+     */
+    private fun validateProvokeRequirements(
+        state: GameState,
+        blockingPlayer: EntityId,
+        blockers: Map<EntityId, List<EntityId>>
+    ): String? {
+        val projected = stateProjector.project(state)
+
+        // Find all provoke constraints: blocker -> attacker
+        val provokeConstraints = state.floatingEffects
+            .filter { it.effect.modification is SerializableModification.MustBlockSpecificAttacker }
+            .flatMap { floatingEffect ->
+                val modification = floatingEffect.effect.modification as SerializableModification.MustBlockSpecificAttacker
+                floatingEffect.effect.affectedEntities.map { blockerId ->
+                    blockerId to modification.attackerId
+                }
+            }
+
+        for ((blockerId, attackerId) in provokeConstraints) {
+            // Only check creatures controlled by the blocking player
+            val controller = projected.getController(blockerId)
+            if (controller != blockingPlayer) continue
+
+            // Check if the blocker is still on the battlefield and untapped
+            val blockerContainer = state.getEntity(blockerId) ?: continue
+            if (blockerId !in state.getBattlefield()) continue
+            if (blockerContainer.has<TappedComponent>()) continue
+
+            // Check if the attacker is still attacking
+            val attackerContainer = state.getEntity(attackerId) ?: continue
+            if (!attackerContainer.has<AttackingComponent>()) continue
+
+            // Check if this creature can legally block the attacker
+            if (!canCreatureBlockAttacker(state, blockerId, attackerId, blockingPlayer, projected)) continue
+
+            // This creature can block the provoke attacker, so it must do so
+            val actuallyBlocking = blockers[blockerId] ?: emptyList()
+            if (attackerId !in actuallyBlocking) {
+                val blockerName = blockerContainer.get<CardComponent>()?.name ?: "Creature"
+                val attackerName = attackerContainer.get<CardComponent>()?.name ?: "creature"
+                return "$blockerName must block $attackerName (provoke)"
             }
         }
 

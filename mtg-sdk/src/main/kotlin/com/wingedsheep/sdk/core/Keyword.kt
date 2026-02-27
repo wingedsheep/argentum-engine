@@ -27,6 +27,7 @@ enum class Keyword(val displayName: String) {
     LIFELINK("Lifelink"),
     VIGILANCE("Vigilance"),
     REACH("Reach"),
+    PROVOKE("Provoke"),
 
     // ── Defense ──────────────────────────────────────────────
     DEFENDER("Defender"),

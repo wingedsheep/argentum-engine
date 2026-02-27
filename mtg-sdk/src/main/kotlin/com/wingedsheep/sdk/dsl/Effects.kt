@@ -729,6 +729,12 @@ object Effects {
     // =========================================================================
 
     /**
+     * Provoke: untap target creature and force it to block the source creature if able.
+     */
+    fun Provoke(target: EffectTarget = EffectTarget.ContextTarget(0)): Effect =
+        com.wingedsheep.sdk.scripting.effects.ProvokeEffect(target)
+
+    /**
      * Remove a creature from combat.
      */
     fun RemoveFromCombat(target: EffectTarget): Effect =

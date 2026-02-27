@@ -31,6 +31,7 @@ object LegionsSet {
         WingbeatWarrior,
 
         // Blue creatures
+        CephalidPathmage,
         CovertOperative,
         EchoTracer,
         FugitiveWizard,
@@ -43,11 +44,14 @@ object LegionsSet {
         Skinthinner,
         SmokespewInvoker,
         SootfeatherFlock,
+        VileDeacon,
         WitheredWretch,
 
         // Red creatures
+        CrestedCraghorn,
         FlamewaveInvoker,
         GoblinFirebug,
+        GoblinGrappler,
         RidgetopRaptor,
         SkirkMarauder,
         SkirkOutrider,
@@ -56,6 +60,7 @@ object LegionsSet {
         DefiantElf,
         EnormousBaloth,
         Hundroog,
+        NantukoVigilante,
         NeedleshotGourna,
         PatronOfTheWild,
         StonewoodInvoker,
