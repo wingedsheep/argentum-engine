@@ -496,6 +496,18 @@ class TournamentManager(
     }
 
     /**
+     * Check if a player has any in-progress match (started but not complete) across all rounds.
+     */
+    fun hasActiveMatch(playerId: EntityId): Boolean {
+        return rounds.any { round ->
+            round.matches.any {
+                (it.player1Id == playerId || it.player2Id == playerId) &&
+                    it.gameSessionId != null && !it.isComplete
+            }
+        }
+    }
+
+    /**
      * Get the next unplayed match for a player across all rounds.
      * Returns the round and match, or null if no remaining matches.
      */
