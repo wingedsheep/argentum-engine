@@ -2,7 +2,7 @@
 
 **Set Size:** 145 cards
 **Release Date:** February 3, 2003
-**Implemented:** 42 / 145
+**Implemented:** 43 / 145
 
 | Color      | Count |
 |------------|-------|
@@ -10,7 +10,7 @@
 | Blue       | 8/29  |
 | Black      | 8/29  |
 | Red        | 9/29  |
-| Green      | 8/29  |
+| Green      | 9/29  |
 
 ---
 
@@ -137,7 +137,7 @@
 - [ ] Swooping Talon
 - [ ] Synapse Sliver
 - [ ] Timberwatch Elf
-- [ ] Totem Speaker
+- [x] Totem Speaker
 - [ ] Toxin Sliver
 - [ ] Tribal Forcemage
 - [ ] Unstable Hulk

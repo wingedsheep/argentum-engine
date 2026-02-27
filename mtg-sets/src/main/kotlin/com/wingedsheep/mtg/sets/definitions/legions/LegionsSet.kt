@@ -73,5 +73,6 @@ object LegionsSet {
         NeedleshotGourna,
         PatronOfTheWild,
         StonewoodInvoker,
+        TotemSpeaker,
     )
 }
