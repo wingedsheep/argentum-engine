@@ -2,13 +2,13 @@
 
 **Set Size:** 145 cards
 **Release Date:** February 3, 2003
-**Implemented:** 26 / 145
+**Implemented:** 27 / 145
 
 | Color      | Count |
 |------------|-------|
 | White      | 6/29  |
 | Blue       | 5/29  |
-| Black      | 5/29  |
+| Black      | 6/29  |
 | Red        | 5/29  |
 | Green      | 5/29  |
 
@@ -122,7 +122,7 @@
 - [ ] Seedborn Muse
 - [ ] Shaleskin Plower
 - [ ] Shifting Sliver
-- [ ] Skinthinner
+- [x] Skinthinner
 - [ ] Skirk Alarmist
 - [ ] Skirk Drill Sergeant
 - [x] Skirk Marauder
