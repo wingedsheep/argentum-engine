@@ -28,6 +28,7 @@ object LegionsSet {
         StarlightInvoker,
         WallOfHope,
         WhiteKnight,
+        WingbeatWarrior,
 
         // Blue creatures
         CovertOperative,
@@ -39,6 +40,7 @@ object LegionsSet {
         // Black creatures
         DrinkerOfSorrow,
         DrippingDead,
+        Skinthinner,
         SmokespewInvoker,
         SootfeatherFlock,
         WitheredWretch,
@@ -55,6 +57,7 @@ object LegionsSet {
         EnormousBaloth,
         Hundroog,
         NeedleshotGourna,
+        PatronOfTheWild,
         StonewoodInvoker,
     )
 }
