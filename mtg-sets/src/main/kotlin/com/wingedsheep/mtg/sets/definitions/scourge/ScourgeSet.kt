@@ -119,6 +119,7 @@ object ScourgeSet {
         AvenLiberator,
         DaruSpiritualist,
         DaruWarchief,
+        DawnElemental,
         Dragonstalker,
         FrontlineStrategist,
         KaronasZealot,

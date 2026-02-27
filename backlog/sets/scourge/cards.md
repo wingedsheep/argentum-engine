@@ -3,11 +3,11 @@
 
 **Set Size:** 143 cards
 **Release Date:** May 26, 2003
-**Implemented:** 94 / 143
+**Implemented:** 95 / 143
 
 | Color | Count |
 |-------|-------|
-| White | 18 |
+| White | 19 |
 | Blue | 17 |
 | Black | 18 |
 | Red | 19 |
@@ -45,7 +45,7 @@
 - [x] Consumptive Goo
 - [x] Daru Spiritualist
 - [x] Daru Warchief
-- [ ] Dawn Elemental
+- [x] Dawn Elemental
 - [ ] Day of the Dragons
 - [x] Death's-Head Buzzard
 - [ ] Decree of Annihilation

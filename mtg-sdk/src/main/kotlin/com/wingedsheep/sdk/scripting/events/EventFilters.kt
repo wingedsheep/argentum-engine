@@ -70,6 +70,12 @@ sealed interface RecipientFilter {
         override val description = "a permanent"
     }
 
+    @SerialName("RecipientSelf")
+    @Serializable
+    data object Self : RecipientFilter {
+        override val description = "this permanent"
+    }
+
     @SerialName("RecipientEnchantedCreature")
     @Serializable
     data object EnchantedCreature : RecipientFilter {
