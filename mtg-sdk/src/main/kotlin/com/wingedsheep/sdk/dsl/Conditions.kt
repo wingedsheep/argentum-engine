@@ -190,6 +190,12 @@ object Conditions {
     fun CardsInHandAtMost(count: Int): ConditionInterface =
         Compare(DynamicAmount.Count(Player.You, Zone.HAND), ComparisonOperator.LTE, DynamicAmount.Fixed(count))
 
+    /**
+     * If an opponent has N or fewer cards in hand.
+     */
+    fun OpponentCardsInHandAtMost(count: Int): ConditionInterface =
+        Compare(DynamicAmount.Count(Player.Opponent, Zone.HAND), ComparisonOperator.LTE, DynamicAmount.Fixed(count))
+
     // =========================================================================
     // Graveyard Conditions (via Compare / Exists)
     // =========================================================================
