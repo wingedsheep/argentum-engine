@@ -446,6 +446,30 @@ data class EntersWithCreatureTypeChoice(
 }
 
 // =============================================================================
+// Amplify Replacement Effect
+// =============================================================================
+
+/**
+ * Amplify N - As this creature enters, you may reveal any number of cards from
+ * your hand that share a creature type with it. For each card revealed this way,
+ * put N +1/+1 counters on this creature.
+ *
+ * Example: Embalmed Brawler (Amplify 1), Kilnmouth Dragon (Amplify 3)
+ */
+@SerialName("Amplify")
+@Serializable
+data class AmplifyEffect(
+    val countersPerReveal: Int,
+    override val appliesTo: GameEvent = GameEvent.ZoneChangeEvent(
+        filter = GameObjectFilter.Creature.youControl(),
+        to = Zone.BATTLEFIELD
+    )
+) : ReplacementEffect {
+    override val description: String =
+        "Amplify $countersPerReveal — As this creature enters, you may reveal any number of cards from your hand that share a creature type with it. For each card revealed this way, put $countersPerReveal +1/+1 counter${if (countersPerReveal > 1) "s" else ""} on it."
+}
+
+// =============================================================================
 // Generic Replacement Effect
 // =============================================================================
 

@@ -465,6 +465,52 @@ class StackResolver(
                     .withPendingDecision(decision)
                 return ExecutionResult.paused(pausedState, decision)
             }
+
+            // Check for Amplify replacement effect
+            val amplifyEffect = cardDef.script.replacementEffects.filterIsInstance<com.wingedsheep.sdk.scripting.AmplifyEffect>().firstOrNull()
+            if (amplifyEffect != null) {
+                // Get the entering creature's subtypes from its card definition
+                val creatureSubtypes = cardComponent?.typeLine?.subtypes?.map { it.value }?.toSet() ?: emptySet()
+
+                // Find hand cards that share a creature type with this creature
+                val handZone = ZoneKey(controllerId, Zone.HAND)
+                val validHandCards = state.getZone(handZone).filter { cardId ->
+                    val handCard = state.getEntity(cardId)?.get<CardComponent>() ?: return@filter false
+                    if (!handCard.typeLine.isCreature) return@filter false
+                    handCard.typeLine.subtypes.map { it.value }.any { it in creatureSubtypes }
+                }
+
+                if (validHandCards.isNotEmpty()) {
+                    val decisionId = "amplify-enters-${spellId.value}"
+                    val decision = SelectCardsDecision(
+                        id = decisionId,
+                        playerId = controllerId,
+                        prompt = "Reveal cards from your hand that share a creature type with ${cardComponent?.name} (Amplify ${amplifyEffect.countersPerReveal})",
+                        context = DecisionContext(
+                            sourceId = spellId,
+                            sourceName = cardComponent?.name,
+                            phase = DecisionPhase.RESOLUTION
+                        ),
+                        options = validHandCards,
+                        minSelections = 0,
+                        maxSelections = validHandCards.size
+                    )
+
+                    val continuation = AmplifyEntersContinuation(
+                        decisionId = decisionId,
+                        spellId = spellId,
+                        controllerId = controllerId,
+                        ownerId = ownerId,
+                        countersPerReveal = amplifyEffect.countersPerReveal
+                    )
+
+                    val pausedState = state
+                        .pushContinuation(continuation)
+                        .withPendingDecision(decision)
+                    return ExecutionResult.paused(pausedState, decision)
+                }
+                // No valid hand cards — enter normally without counters
+            }
         }
 
         // Normal permanent entry

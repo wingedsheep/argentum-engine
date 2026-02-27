@@ -951,6 +951,27 @@ data class ChooseCreatureTypeEntersContinuation(
 ) : ContinuationFrame
 
 /**
+ * Resume after player reveals cards from hand for Amplify.
+ *
+ * When a creature with Amplify enters, the controller may reveal cards from hand
+ * that share a creature type. For each revealed card, N +1/+1 counters are placed
+ * on the creature as it enters.
+ *
+ * @property spellId The spell entity being resolved
+ * @property controllerId The player who cast the spell
+ * @property ownerId The card's owner
+ * @property countersPerReveal Number of +1/+1 counters per revealed card (the N in "Amplify N")
+ */
+@Serializable
+data class AmplifyEntersContinuation(
+    override val decisionId: String,
+    val spellId: EntityId,
+    val controllerId: EntityId,
+    val ownerId: EntityId,
+    val countersPerReveal: Int
+) : ContinuationFrame
+
+/**
  * Resume casting a spell after the player chooses a creature type during casting.
  *
  * Used for spells like Aphetto Dredging where the creature type choice is part of

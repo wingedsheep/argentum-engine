@@ -738,6 +738,10 @@ reveal creatures, create tokens
 
 `PROWESS`, `CHANGELING`
 
+### ETB Modification
+
+`AMPLIFY`
+
 ### Cost Reduction
 
 `CONVOKE`, `DELVE`, `AFFINITY`
@@ -869,6 +873,7 @@ Used in card definitions for effects that intercept events before they happen:
 - `EntersAsCopy(optional, appliesTo)` — clone effects
 - `EntersWithColorChoice(appliesTo)` — choose color on entry
 - `EntersWithCreatureTypeChoice(opponentChooses, appliesTo)` — choose creature type on entry
+- `AmplifyEffect(countersPerReveal, appliesTo)` — Amplify N: reveal cards sharing creature type from hand, put N +1/+1 counters per card
 
 ### Damage
 

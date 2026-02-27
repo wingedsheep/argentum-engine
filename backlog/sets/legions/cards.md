@@ -2,13 +2,13 @@
 
 **Set Size:** 145 cards
 **Release Date:** February 3, 2003
-**Implemented:** 45 / 145
+**Implemented:** 46 / 145
 
 | Color      | Count |
 |------------|-------|
 | White      | 9/29  |
 | Blue       | 9/29  |
-| Black      | 9/29  |
+| Black      | 10/29 |
 | Red        | 9/29  |
 | Green      | 9/29  |
 
@@ -56,7 +56,7 @@
 - [ ] Earthblighter
 - [x] Echo Tracer
 - [ ] Elvish Soultiller
-- [ ] Embalmed Brawler
+- [x] Embalmed Brawler
 - [x] Enormous Baloth
 - [ ] Essence Sliver
 - [ ] Feral Throwback
