@@ -44,6 +44,7 @@ object LegionsSet {
         // Black creatures
         DrinkerOfSorrow,
         DrippingDead,
+        GoblinTurncoat,
         Skinthinner,
         SmokespewInvoker,
         SootfeatherFlock,
@@ -60,6 +61,7 @@ object LegionsSet {
         SkirkOutrider,
 
         // Green creatures
+        Brontotherium,
         DefiantElf,
         EnormousBaloth,
         Hundroog,
