@@ -44,6 +44,7 @@ object LegionsSet {
         // Black creatures
         DrinkerOfSorrow,
         DrippingDead,
+        GoblinTurncoat,
         Skinthinner,
         SmokespewInvoker,
         SootfeatherFlock,

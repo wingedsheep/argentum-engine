@@ -2,13 +2,13 @@
 
 **Set Size:** 145 cards
 **Release Date:** February 3, 2003
-**Implemented:** 36 / 145
+**Implemented:** 37 / 145
 
 | Color      | Count |
 |------------|-------|
 | White      | 8/29  |
 | Blue       | 7/29  |
-| Black      | 7/29  |
+| Black      | 8/29  |
 | Red        | 7/29  |
 | Green      | 7/29  |
 
@@ -79,7 +79,7 @@
 - [ ] Goblin Goon
 - [x] Goblin Grappler
 - [ ] Goblin Lookout
-- [ ] Goblin Turncoat
+- [x] Goblin Turncoat
 - [ ] Graveborn Muse
 - [ ] Havoc Demon
 - [ ] Hollow Specter
