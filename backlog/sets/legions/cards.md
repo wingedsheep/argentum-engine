@@ -2,11 +2,11 @@
 
 **Set Size:** 145 cards
 **Release Date:** February 3, 2003
-**Implemented:** 35 / 145
+**Implemented:** 36 / 145
 
 | Color      | Count |
 |------------|-------|
-| White      | 7/29  |
+| White      | 8/29  |
 | Blue       | 7/29  |
 | Black      | 7/29  |
 | Red        | 7/29  |
@@ -35,7 +35,7 @@
 - [x] Cephalid Pathmage
 - [ ] Chromeshell Crab
 - [ ] Clickslither
-- [ ] Cloudreach Cavalry
+- [x] Cloudreach Cavalry
 - [ ] Corpse Harvester
 - [x] Covert Operative
 - [x] Crested Craghorn
