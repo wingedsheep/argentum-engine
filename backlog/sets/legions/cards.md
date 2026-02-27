@@ -2,11 +2,11 @@
 
 **Set Size:** 145 cards
 **Release Date:** February 3, 2003
-**Implemented:** 25 / 145
+**Implemented:** 26 / 145
 
 | Color      | Count |
 |------------|-------|
-| White      | 5/29  |
+| White      | 6/29  |
 | Blue       | 5/29  |
 | Black      | 5/29  |
 | Red        | 5/29  |
@@ -154,7 +154,7 @@
 - [x] White Knight
 - [ ] Willbender
 - [ ] Windborn Muse
-- [ ] Wingbeat Warrior
+- [x] Wingbeat Warrior
 - [ ] Wirewood Channeler
 - [ ] Wirewood Hivemaster
 - [x] Withered Wretch

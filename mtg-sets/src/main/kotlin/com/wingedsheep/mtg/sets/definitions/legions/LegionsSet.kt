@@ -28,6 +28,7 @@ object LegionsSet {
         StarlightInvoker,
         WallOfHope,
         WhiteKnight,
+        WingbeatWarrior,
 
         // Blue creatures
         CovertOperative,
