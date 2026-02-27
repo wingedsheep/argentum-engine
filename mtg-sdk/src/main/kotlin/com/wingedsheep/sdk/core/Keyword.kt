@@ -45,6 +45,9 @@ enum class Keyword(val displayName: String) {
     PROWESS("Prowess"),
     CHANGELING("Changeling"),
 
+    // ── ETB modification ──────────────────────────────────────
+    AMPLIFY("Amplify"),
+
     // ── Cost reduction ───────────────────────────────────────
     CONVOKE("Convoke"),
     DELVE("Delve"),

@@ -178,6 +178,7 @@ class ContinuationHandler(
             is CloneEntersContinuation -> modalAndCloneResumer.resumeCloneEnters(stateAfterPop, continuation, response, cfm)
             is ChooseColorEntersContinuation -> modalAndCloneResumer.resumeChooseColorEnters(stateAfterPop, continuation, response, cfm)
             is ChooseCreatureTypeEntersContinuation -> modalAndCloneResumer.resumeChooseCreatureTypeEnters(stateAfterPop, continuation, response, cfm)
+            is AmplifyEntersContinuation -> modalAndCloneResumer.resumeAmplifyEnters(stateAfterPop, continuation, response, cfm)
             is CastWithCreatureTypeContinuation -> modalAndCloneResumer.resumeCastWithCreatureType(stateAfterPop, continuation, response, cfm)
 
             // Cycling/typecycling (non-decision continuations, should not appear during decision resume)

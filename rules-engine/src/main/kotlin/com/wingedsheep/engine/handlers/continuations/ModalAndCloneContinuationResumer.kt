@@ -480,6 +480,73 @@ class ModalAndCloneContinuationResumer(
         )
     }
 
+    /**
+     * Resume after player reveals cards from hand for Amplify.
+     *
+     * Adds +1/+1 counters based on how many cards were revealed, then completes
+     * the permanent entry to the battlefield.
+     */
+    fun resumeAmplifyEnters(
+        state: GameState,
+        continuation: AmplifyEntersContinuation,
+        response: DecisionResponse,
+        checkForMore: CheckForMore
+    ): ExecutionResult {
+        if (response !is CardsSelectedResponse) {
+            return ExecutionResult.error(state, "Expected card selection response for Amplify")
+        }
+
+        val spellId = continuation.spellId
+        val controllerId = continuation.controllerId
+        val ownerId = continuation.ownerId
+        val revealedCards = response.selectedCards
+
+        var newState = state
+
+        // Add +1/+1 counters based on revealed cards
+        if (revealedCards.isNotEmpty()) {
+            val counterCount = revealedCards.size * continuation.countersPerReveal
+            val current = newState.getEntity(spellId)
+                ?.get<com.wingedsheep.engine.state.components.battlefield.CountersComponent>()
+                ?: com.wingedsheep.engine.state.components.battlefield.CountersComponent()
+            newState = newState.updateEntity(spellId) { c ->
+                c.with(current.withAdded(
+                    com.wingedsheep.sdk.core.CounterType.PLUS_ONE_PLUS_ONE,
+                    counterCount
+                ))
+            }
+        }
+
+        // Complete the permanent entry
+        val spellContainer = newState.getEntity(spellId)
+            ?: return ExecutionResult.error(state, "Spell entity not found: $spellId")
+
+        val cardComponent = spellContainer.get<CardComponent>()
+            ?: return ExecutionResult.error(state, "Spell has no CardComponent")
+
+        val spellComponent = spellContainer.get<SpellOnStackComponent>()
+            ?: return ExecutionResult.error(state, "Spell has no SpellOnStackComponent")
+
+        val cardDef = ctx.stackResolver.cardRegistry?.getCard(cardComponent.cardDefinitionId)
+        newState = ctx.stackResolver.enterPermanentOnBattlefield(
+            newState, spellId, spellComponent, cardComponent, cardDef
+        )
+
+        val events = mutableListOf<GameEvent>()
+        events.add(ResolvedEvent(spellId, cardComponent.name))
+        events.add(
+            ZoneChangeEvent(
+                spellId,
+                cardComponent.name,
+                null,
+                Zone.BATTLEFIELD,
+                ownerId
+            )
+        )
+
+        return checkForMore(newState, events)
+    }
+
     private fun entityIdToChosenTarget(state: GameState, entityId: EntityId): ChosenTarget {
         return when {
             entityId in state.turnOrder -> ChosenTarget.Player(entityId)

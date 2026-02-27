@@ -161,6 +161,8 @@ export enum Keyword {
   VIGILANCE = 'VIGILANCE',
   REACH = 'REACH',
   PROVOKE = 'PROVOKE',
+  // ETB modification
+  AMPLIFY = 'AMPLIFY',
   // Defense
   DEFENDER = 'DEFENDER',
   INDESTRUCTIBLE = 'INDESTRUCTIBLE',
@@ -200,6 +202,7 @@ export const KeywordDisplayNames: Record<Keyword, string> = {
   [Keyword.VIGILANCE]: 'Vigilance',
   [Keyword.REACH]: 'Reach',
   [Keyword.PROVOKE]: 'Provoke',
+  [Keyword.AMPLIFY]: 'Amplify',
   [Keyword.DEFENDER]: 'Defender',
   [Keyword.INDESTRUCTIBLE]: 'Indestructible',
   [Keyword.HEXPROOF]: 'Hexproof',
