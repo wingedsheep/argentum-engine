@@ -176,7 +176,16 @@ class BasicTurnCycleTest : FunSpec({
     }
 
     test("playing a land during main phase") {
-        val driver = createDriver()
+        // Use a Forest-heavy deck to guarantee a Forest in the opening hand
+        val driver = GameTestDriver()
+        driver.registerCards(TestCards.all)
+        driver.initMirrorMatch(
+            deck = Deck.of(
+                "Forest" to 36,
+                "Grizzly Bears" to 4
+            ),
+            skipMulligans = true
+        )
         val activePlayer = driver.activePlayer!!
 
         // Advance to main phase
