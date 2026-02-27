@@ -56,6 +56,7 @@ object LegionsSet {
         FlamewaveInvoker,
         GoblinFirebug,
         GoblinGrappler,
+        LavabornMuse,
         RidgetopRaptor,
         SkirkMarauder,
         SkirkOutrider,

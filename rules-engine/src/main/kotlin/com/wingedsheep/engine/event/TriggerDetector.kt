@@ -1450,6 +1450,7 @@ class TriggerDetector(
         return when (player) {
             Player.You -> controllerId == activePlayerId
             Player.Each -> true
+            Player.Opponent, Player.EachOpponent -> controllerId != activePlayerId
             else -> true
         }
     }

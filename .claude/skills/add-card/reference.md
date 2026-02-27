@@ -436,7 +436,7 @@ each player reveals and creates tokens
 
 ### Phase/Step
 
-- `Triggers.YourUpkeep` / `Triggers.EachUpkeep`
+- `Triggers.YourUpkeep` / `Triggers.EachUpkeep` / `Triggers.EachOpponentUpkeep`
 - `Triggers.YourEndStep` / `Triggers.EachEndStep`
 - `Triggers.BeginCombat` / `Triggers.FirstMainPhase`
 - `Triggers.EnchantedCreatureControllerUpkeep` — enchanted creature's controller's upkeep
@@ -558,7 +558,7 @@ each player reveals and creates tokens
 
 ### Hand & Graveyard
 
-- `Conditions.EmptyHand` / `.CardsInHandAtLeast(count)` / `.CardsInHandAtMost(count)`
+- `Conditions.EmptyHand` / `.CardsInHandAtLeast(count)` / `.CardsInHandAtMost(count)` / `.OpponentCardsInHandAtMost(count)`
 - `Conditions.CreatureCardsInGraveyardAtLeast(count)` / `.CardsInGraveyardAtLeast(count)`
 - `Conditions.GraveyardContainsSubtype(subtype)`
 

@@ -220,6 +220,14 @@ object Triggers {
     )
 
     /**
+     * At the beginning of each opponent's upkeep.
+     */
+    val EachOpponentUpkeep: TriggerSpec = TriggerSpec(
+        event = StepEvent(Step.UPKEEP, Player.EachOpponent),
+        binding = TriggerBinding.ANY
+    )
+
+    /**
      * At the beginning of your end step.
      */
     val YourEndStep: TriggerSpec = TriggerSpec(

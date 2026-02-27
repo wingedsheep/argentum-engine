@@ -2,14 +2,14 @@
 
 **Set Size:** 145 cards
 **Release Date:** February 3, 2003
-**Implemented:** 38 / 145
+**Implemented:** 39 / 145
 
 | Color      | Count |
 |------------|-------|
 | White      | 8/29  |
 | Blue       | 7/29  |
 | Black      | 8/29  |
-| Red        | 7/29  |
+| Red        | 8/29  |
 | Green      | 8/29  |
 
 ---
@@ -92,7 +92,7 @@
 - [ ] Kilnmouth Dragon
 - [ ] Krosan Cloudscraper
 - [ ] Krosan Vorine
-- [ ] Lavaborn Muse
+- [x] Lavaborn Muse
 - [ ] Liege of the Axe
 - [x] Lowland Tracker
 - [ ] Macetail Hystrodon
