@@ -951,7 +951,7 @@ class CardDslTest : DescribeSpec({
             conditional.condition.shouldBeInstanceOf<NotCondition>()
 
             val grantKeyword = conditional.ability as GrantKeyword
-            grantKeyword.keyword shouldBe Keyword.HEXPROOF
+            grantKeyword.keyword shouldBe Keyword.HEXPROOF.name
             grantKeyword.target shouldBe StaticTarget.SourceCreature
 
             val notCondition = conditional.condition as NotCondition
