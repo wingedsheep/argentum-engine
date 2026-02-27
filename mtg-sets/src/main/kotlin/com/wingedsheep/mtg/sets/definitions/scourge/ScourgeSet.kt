@@ -142,6 +142,7 @@ object ScourgeSet {
 
         // Black creatures (additional)
         DeathsHeadBuzzard,
+        Nefashu,
         PutridRaptor,
         TwistedAbomination,
         UndeadWarchief,
