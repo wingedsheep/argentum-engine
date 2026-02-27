@@ -2,13 +2,13 @@
 
 **Set Size:** 145 cards
 **Release Date:** February 3, 2003
-**Implemented:** 31 / 145
+**Implemented:** 32 / 145
 
 | Color      | Count |
 |------------|-------|
 | White      | 6/29  |
 | Blue       | 6/29  |
-| Black      | 6/29  |
+| Black      | 7/29  |
 | Red        | 7/29  |
 | Green      | 6/29  |
 
@@ -142,7 +142,7 @@
 - [ ] Tribal Forcemage
 - [ ] Unstable Hulk
 - [ ] Vexing Beetle
-- [ ] Vile Deacon
+- [x] Vile Deacon
 - [ ] Voidmage Apprentice
 - [ ] Wall of Deceit
 - [x] Wall of Hope

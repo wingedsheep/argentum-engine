@@ -44,6 +44,7 @@ object LegionsSet {
         Skinthinner,
         SmokespewInvoker,
         SootfeatherFlock,
+        VileDeacon,
         WitheredWretch,
 
         // Red creatures
