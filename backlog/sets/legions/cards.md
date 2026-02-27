@@ -2,12 +2,12 @@
 
 **Set Size:** 145 cards
 **Release Date:** February 3, 2003
-**Implemented:** 39 / 145
+**Implemented:** 40 / 145
 
 | Color      | Count |
 |------------|-------|
 | White      | 8/29  |
-| Blue       | 7/29  |
+| Blue       | 8/29  |
 | Black      | 8/29  |
 | Red        | 8/29  |
 | Green      | 8/29  |
@@ -111,7 +111,7 @@
 - [ ] Planar Guide
 - [x] Plated Sliver
 - [ ] Primal Whisperer
-- [ ] Primoc Escapee
+- [x] Primoc Escapee
 - [ ] Quick Sliver
 - [x] Ridgetop Raptor
 - [ ] Riptide Director

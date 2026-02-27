@@ -40,6 +40,7 @@ object LegionsSet {
         GlintwingInvoker,
         KeeneyeAven,
         MerchantOfSecrets,
+        PrimocEscapee,
 
         // Black creatures
         DrinkerOfSorrow,
