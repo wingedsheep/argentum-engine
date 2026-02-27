@@ -446,6 +446,16 @@ sealed interface GameEvent {
     }
 
     /**
+     * When the enchanted creature attacks.
+     * Special case for auras like Extra Arms.
+     */
+    @SerialName("EnchantedCreatureAttacksEvent")
+    @Serializable
+    data object EnchantedCreatureAttacksEvent : GameEvent {
+        override val description: String = "when enchanted creature attacks"
+    }
+
+    /**
      * When the enchanted permanent becomes tapped.
      * Special case for auras like Uncontrolled Infestation.
      */
