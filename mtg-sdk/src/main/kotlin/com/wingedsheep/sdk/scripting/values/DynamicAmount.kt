@@ -360,24 +360,29 @@ sealed interface DynamicAmount {
         val player: Player,
         val filter: GameObjectFilter = GameObjectFilter.Companion.Any,
         val aggregation: Aggregation = Aggregation.COUNT,
-        val property: CardNumericProperty? = null
+        val property: CardNumericProperty? = null,
+        val excludeSelf: Boolean = false
     ) : DynamicAmount {
         override val description: String = buildString {
             when (aggregation) {
                 Aggregation.COUNT -> {
                     append("the number of ")
+                    if (excludeSelf) append("other ")
                     append(pluralize(filter.description))
                 }
                 Aggregation.MAX -> {
                     append("the greatest ${property?.description ?: "value"} among ")
+                    if (excludeSelf) append("other ")
                     append(pluralize(filter.description))
                 }
                 Aggregation.MIN -> {
                     append("the least ${property?.description ?: "value"} among ")
+                    if (excludeSelf) append("other ")
                     append(pluralize(filter.description))
                 }
                 Aggregation.SUM -> {
                     append("the total ${property?.description ?: "value"} of ")
+                    if (excludeSelf) append("other ")
                     append(pluralize(filter.description))
                 }
             }

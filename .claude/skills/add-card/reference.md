@@ -603,7 +603,7 @@ each player reveals and creates tokens
 - `DynamicAmount.CountersOnSelf(counterType)` / `.CountersOnTarget(counterType, targetIndex)` / `.CreaturesSharingTypeWithTriggeringEntity`
 - `DynamicAmount.VariableReference(variableName)` / `.StoredCardManaValue(collectionName)`
 - `DynamicAmount.Count(player, zone, filter)` /
-  `DynamicAmount.AggregateBattlefield(player, filter, aggregation?, property?)`
+  `DynamicAmount.AggregateBattlefield(player, filter, aggregation?, property?, excludeSelf?)`
 - `DynamicAmount.Conditional(condition, ifTrue, ifFalse)` — conditional amount
 - Fluent: `DynamicAmounts.battlefield(player, filter).count()` / `.maxManaValue()` / `.maxPower()` / `.maxToughness()` /
   `.minToughness()` / `.sumPower()`

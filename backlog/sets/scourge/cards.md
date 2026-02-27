@@ -3,7 +3,7 @@
 
 **Set Size:** 143 cards
 **Release Date:** May 26, 2003
-**Implemented:** 95 / 143
+**Implemented:** 96 / 143
 
 | Color | Count |
 |-------|-------|
@@ -11,7 +11,7 @@
 | Blue | 17 |
 | Black | 18 |
 | Red | 19 |
-| Green | 18 |
+| Green | 19 |
 | Multicolor | 1 |
 | Colorless | 3 |
 
@@ -21,7 +21,7 @@
 - [x] Ageless Sentinels
 - [x] Alpha Status
 - [ ] Ambush Commander
-- [ ] Ancient Ooze
+- [x] Ancient Ooze
 - [x] Aphetto Runecaster
 - [x] Ark of Blight
 - [ ] Astral Steel

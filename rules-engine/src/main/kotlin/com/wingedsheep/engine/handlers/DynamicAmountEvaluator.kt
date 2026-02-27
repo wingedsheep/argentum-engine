@@ -343,6 +343,8 @@ class DynamicAmountEvaluator(
         val matchingEntities = playerIds.flatMap { playerId ->
             state.getBattlefield()
                 .filter { entityId ->
+                    // Exclude self if requested (e.g., "other creatures you control")
+                    if (amount.excludeSelf && entityId == context.sourceId) return@filter false
                     val controllerId = projected?.getController(entityId)
                         ?: state.getEntity(entityId)?.get<ControllerComponent>()?.playerId
                     controllerId == playerId
