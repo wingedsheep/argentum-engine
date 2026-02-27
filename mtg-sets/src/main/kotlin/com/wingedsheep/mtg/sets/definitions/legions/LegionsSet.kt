@@ -57,6 +57,7 @@ object LegionsSet {
         EnormousBaloth,
         Hundroog,
         NeedleshotGourna,
+        PatronOfTheWild,
         StonewoodInvoker,
     )
 }

@@ -2,7 +2,7 @@
 
 **Set Size:** 145 cards
 **Release Date:** February 3, 2003
-**Implemented:** 27 / 145
+**Implemented:** 28 / 145
 
 | Color      | Count |
 |------------|-------|
@@ -10,7 +10,7 @@
 | Blue       | 5/29  |
 | Black      | 6/29  |
 | Red        | 5/29  |
-| Green      | 5/29  |
+| Green      | 6/29  |
 
 ---
 
@@ -106,7 +106,7 @@
 - [ ] Nantuko Vigilante
 - [x] Needleshot Gourna
 - [ ] Noxious Ghoul
-- [ ] Patron of the Wild
+- [x] Patron of the Wild
 - [ ] Phage the Untouchable
 - [ ] Planar Guide
 - [x] Plated Sliver
