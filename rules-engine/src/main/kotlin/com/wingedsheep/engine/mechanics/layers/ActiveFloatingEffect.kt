@@ -278,6 +278,15 @@ sealed interface SerializableModification {
      */
     @Serializable
     data object PreventCombatDamageToAndBy : SerializableModification
+
+    /**
+     * Combat damage redirection: the next time the affected creature would deal combat damage
+     * this turn, that damage is dealt to its controller instead.
+     * Used by Goblin Psychopath and similar effects.
+     * The shield is consumed after the first combat damage event.
+     */
+    @Serializable
+    data object RedirectCombatDamageToController : SerializableModification
 }
 
 /**
@@ -329,4 +338,6 @@ fun SerializableModification.toModification(): Modification = when (this) {
     is SerializableModification.PreventCombatDamageFromGroup -> Modification.NoOp
     // PreventCombatDamageToAndBy doesn't map to a layer modification - it's checked by CombatManager directly
     is SerializableModification.PreventCombatDamageToAndBy -> Modification.NoOp
+    // RedirectCombatDamageToController doesn't map to a layer modification - it's checked by CombatManager directly
+    is SerializableModification.RedirectCombatDamageToController -> Modification.NoOp
 }

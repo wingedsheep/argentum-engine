@@ -27,6 +27,7 @@ class CombatExecutors(
         RedirectNextDamageExecutor(),
         PreventNextDamageFromChosenCreatureTypeExecutor(),
         PreventCombatDamageFromExecutor(),
-        PreventCombatDamageToAndByExecutor()
+        PreventCombatDamageToAndByExecutor(),
+        RedirectCombatDamageToControllerExecutor()
     )
 }

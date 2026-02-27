@@ -3,14 +3,14 @@
 
 **Set Size:** 143 cards
 **Release Date:** May 26, 2003
-**Implemented:** 97 / 143
+**Implemented:** 98 / 143
 
 | Color | Count |
 |-------|-------|
 | White | 19 |
 | Blue | 17 |
 | Black | 19 |
-| Red | 19 |
+| Red | 20 |
 | Green | 19 |
 | Multicolor | 1 |
 | Colorless | 3 |
@@ -83,7 +83,7 @@
 - [x] Frozen Solid
 - [x] Gilded Light
 - [x] Goblin Brigand
-- [ ] Goblin Psychopath
+- [x] Goblin Psychopath
 - [x] Goblin Warchief
 - [x] Goblin War Strike
 - [ ] Grip of Chaos

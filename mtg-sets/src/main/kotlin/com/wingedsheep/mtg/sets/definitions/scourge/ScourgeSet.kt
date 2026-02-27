@@ -92,6 +92,7 @@ object ScourgeSet {
         DragonMage,
         DragonspeakerShaman,
         GoblinBrigand,
+        GoblinPsychopath,
         GoblinWarchief,
         RockJockey,
         SiegeGangCommander,

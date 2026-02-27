@@ -835,7 +835,7 @@ object Effects {
         targetFilter = targetFilter,
         copyRecipient = com.wingedsheep.sdk.scripting.effects.CopyRecipient.TARGET_CONTROLLER,
         copyCost = com.wingedsheep.sdk.scripting.effects.ChainCopyCost.NoCost,
-        copyTargetRequirement = com.wingedsheep.sdk.scripting.targets.TargetPermanent(filter = targetFilter),
+        copyTargetRequirement = com.wingedsheep.sdk.scripting.targets.TargetObject(filter = targetFilter),
         spellName = spellName
     )
 
@@ -853,7 +853,7 @@ object Effects {
         targetFilter = targetFilter,
         copyRecipient = com.wingedsheep.sdk.scripting.effects.CopyRecipient.TARGET_CONTROLLER,
         copyCost = com.wingedsheep.sdk.scripting.effects.ChainCopyCost.SacrificeALand,
-        copyTargetRequirement = com.wingedsheep.sdk.scripting.targets.TargetPermanent(filter = targetFilter),
+        copyTargetRequirement = com.wingedsheep.sdk.scripting.targets.TargetObject(filter = targetFilter),
         spellName = spellName
     )
 
@@ -905,7 +905,7 @@ object Effects {
         targetFilter = targetFilter,
         copyRecipient = com.wingedsheep.sdk.scripting.effects.CopyRecipient.TARGET_CONTROLLER,
         copyCost = com.wingedsheep.sdk.scripting.effects.ChainCopyCost.SacrificeALand,
-        copyTargetRequirement = com.wingedsheep.sdk.scripting.targets.TargetPermanent(filter = targetFilter),
+        copyTargetRequirement = com.wingedsheep.sdk.scripting.targets.TargetObject(filter = targetFilter),
         spellName = spellName
     )
 

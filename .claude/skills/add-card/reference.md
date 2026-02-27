@@ -137,6 +137,7 @@ each player reveals and creates tokens
 - `Effects.Provoke(target)` — untap target and force it to block source (provoke keyword)
 - `Effects.PreventCombatDamageToAndBy(target)` — prevent all combat damage to and by creature this turn
 - `Effects.RemoveFromCombat(target)` — remove creature from combat
+- `RedirectCombatDamageToControllerEffect(target)` — next time creature deals combat damage this turn, deals it to controller instead (Goblin Psychopath)
 
 ### Chain Copy (Chain of X)
 

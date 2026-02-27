@@ -263,3 +263,22 @@ data class PreventAllDamageDealtByTargetEffect(
         "Prevent all damage ${target.description} would deal this turn"
 }
 
+/**
+ * Redirect a creature's combat damage to its controller.
+ * "The next time [creature] would deal combat damage this turn,
+ *  it deals that damage to you instead."
+ * Used for Goblin Psychopath and similar coin-flip combat redirection.
+ *
+ * Creates a floating effect that is consumed after the first combat damage event.
+ *
+ * @property target The creature whose combat damage is redirected (typically Self)
+ */
+@SerialName("RedirectCombatDamageToController")
+@Serializable
+data class RedirectCombatDamageToControllerEffect(
+    val target: EffectTarget = EffectTarget.Self
+) : Effect {
+    override val description: String =
+        "The next time ${target.description} would deal combat damage this turn, it deals that damage to you instead"
+}
+

@@ -1448,9 +1448,20 @@ class CombatManager(
                 // Check if combat damage to and by this creature is prevented (Deftblade Elite)
                 val toAndByPrevented = isCombatDamageToAndByPrevented(newState, attackerId)
                 if (!isProtected && !allDamagePrevented && !groupPrevented && !toAndByPrevented) {
-                    val damageResult = dealDamageToPlayer(newState, defenderId, power, attackerId)
+                    // Check if combat damage is redirected to controller (Goblin Psychopath)
+                    val redirectToController = hasCombatDamageRedirectToController(newState, attackerId)
+                    val damageTargetId = if (redirectToController) {
+                        val controllerId = projected.getController(attackerId) ?: defenderId
+                        controllerId
+                    } else {
+                        defenderId
+                    }
+                    val damageResult = dealDamageToPlayer(newState, damageTargetId, power, attackerId)
                     newState = damageResult.newState
                     events.addAll(damageResult.events)
+                    if (redirectToController) {
+                        newState = consumeRedirectCombatDamageToController(newState, attackerId)
+                    }
                 }
                 // If protected, damage is prevented - no events emitted
             } else {
@@ -1677,6 +1688,30 @@ class CombatManager(
     }
 
     /**
+     * Check if a creature has a RedirectCombatDamageToController floating effect.
+     * Used by Goblin Psychopath: if the coin flip is lost, combat damage is redirected to controller.
+     */
+    private fun hasCombatDamageRedirectToController(state: GameState, creatureId: EntityId): Boolean {
+        return state.floatingEffects.any { floatingEffect ->
+            floatingEffect.effect.modification is SerializableModification.RedirectCombatDamageToController &&
+                creatureId in floatingEffect.effect.affectedEntities
+        }
+    }
+
+    /**
+     * Consume (remove) the RedirectCombatDamageToController floating effect for a creature.
+     * Called after combat damage has been redirected, since it's a one-shot effect.
+     */
+    private fun consumeRedirectCombatDamageToController(state: GameState, creatureId: EntityId): GameState {
+        return state.copy(
+            floatingEffects = state.floatingEffects.filterNot { floatingEffect ->
+                floatingEffect.effect.modification is SerializableModification.RedirectCombatDamageToController &&
+                    creatureId in floatingEffect.effect.affectedEntities
+            }
+        )
+    }
+
+    /**
      * Deal combat damage between an attacker and blockers.
      *
      * This uses the damage assignment order (if set) and applies damage according to CR 510:
@@ -1726,6 +1761,31 @@ class CombatManager(
         // Check if combat damage to and by attacker is prevented (Deftblade Elite)
         val attackerToAndByPrevented = isCombatDamageToAndByPrevented(newState, attackerId)
         if (attackerDealsDamageThisStep && !attackerDamagePrevented && !attackerGroupPrevented && !attackerToAndByPrevented) {
+            // Check if attacker's combat damage is redirected to its controller (Goblin Psychopath)
+            val attackerRedirectToController = hasCombatDamageRedirectToController(newState, attackerId)
+            if (attackerRedirectToController) {
+                // Sum all damage and redirect to controller
+                val totalDamage = damageDistribution.values.sum()
+                if (totalDamage > 0) {
+                    val controllerId = projected.getController(attackerId)
+                    if (controllerId != null) {
+                        val amplifiedDamage = EffectExecutorUtils.applyStaticDamageAmplification(newState, controllerId, totalDamage, attackerId)
+                        val (shieldState, effectiveDamage) = EffectExecutorUtils.applyDamagePreventionShields(newState, controllerId, amplifiedDamage, isCombatDamage = true, sourceId = attackerId)
+                        newState = shieldState
+                        if (effectiveDamage > 0) {
+                            val currentLife = newState.getEntity(controllerId)?.get<LifeTotalComponent>()?.life ?: 0
+                            val newLife = currentLife - effectiveDamage
+                            newState = newState.updateEntity(controllerId) { container ->
+                                container.with(LifeTotalComponent(newLife))
+                            }
+                            val sourceName = newState.getEntity(attackerId)?.get<CardComponent>()?.name ?: "Creature"
+                            events.add(DamageDealtEvent(attackerId, controllerId, effectiveDamage, true, sourceName = sourceName, targetName = "Player", targetIsPlayer = true))
+                            events.add(LifeChangedEvent(controllerId, currentLife, newLife, LifeChangeReason.DAMAGE))
+                        }
+                    }
+                }
+                newState = consumeRedirectCombatDamageToController(newState, attackerId)
+            } else {
             for ((targetId, damage) in damageDistribution) {
                 if (damage <= 0) continue
 
@@ -1778,6 +1838,7 @@ class CombatManager(
                     }
                 }
             }
+            } // end else (no redirect to controller)
         }
 
         // Each blocker deals damage to attacker (only if attacker is still on the battlefield)
@@ -1826,6 +1887,27 @@ class CombatManager(
                     projected.hasKeyword(attackerId, "PROTECTION_FROM_SUBTYPE_${subtype.uppercase()}")
                 }
                 if (!attackerProtected && !blockerDamagePrevented && !blockerGroupPrevented && !blockerToAndByPrevented && !attackerToAndByPrevented) {
+                    // Check if blocker's combat damage is redirected to its controller (Goblin Psychopath)
+                    val blockerRedirectToController = hasCombatDamageRedirectToController(newState, blockerId)
+                    if (blockerRedirectToController) {
+                        val blockerControllerId = projected.getController(blockerId)
+                        if (blockerControllerId != null) {
+                            val amplifiedDamage = EffectExecutorUtils.applyStaticDamageAmplification(newState, blockerControllerId, blockerPower, blockerId)
+                            val (shieldState, effectiveDamage) = EffectExecutorUtils.applyDamagePreventionShields(newState, blockerControllerId, amplifiedDamage, isCombatDamage = true, sourceId = blockerId)
+                            newState = shieldState
+                            if (effectiveDamage > 0) {
+                                val currentLife = newState.getEntity(blockerControllerId)?.get<LifeTotalComponent>()?.life ?: 0
+                                val newLife = currentLife - effectiveDamage
+                                newState = newState.updateEntity(blockerControllerId) { container ->
+                                    container.with(LifeTotalComponent(newLife))
+                                }
+                                val blockerSourceName = newState.getEntity(blockerId)?.get<CardComponent>()?.name ?: "Creature"
+                                events.add(DamageDealtEvent(blockerId, blockerControllerId, effectiveDamage, true, sourceName = blockerSourceName, targetName = "Player", targetIsPlayer = true))
+                                events.add(LifeChangedEvent(blockerControllerId, currentLife, newLife, LifeChangeReason.DAMAGE))
+                            }
+                        }
+                        newState = consumeRedirectCombatDamageToController(newState, blockerId)
+                    } else {
                     // Apply damage amplification then prevention shields
                     val amplifiedBlockerDamage = EffectExecutorUtils.applyStaticDamageAmplification(newState, attackerId, blockerPower, blockerId)
                     val (shieldState, effectiveBlockerDamage) = EffectExecutorUtils.applyDamagePreventionShields(newState, attackerId, amplifiedBlockerDamage, isCombatDamage = true, sourceId = blockerId)
@@ -1839,6 +1921,7 @@ class CombatManager(
                         val blockerSourceName = newState.getEntity(blockerId)?.get<CardComponent>()?.name ?: "Creature"
                         val attackerTargetName = newState.getEntity(attackerId)?.get<CardComponent>()?.name ?: "Creature"
                         events.add(DamageDealtEvent(blockerId, attackerId, effectiveBlockerDamage, true, sourceName = blockerSourceName, targetName = attackerTargetName, targetIsPlayer = false))
+                    }
                     }
                 }
             }
