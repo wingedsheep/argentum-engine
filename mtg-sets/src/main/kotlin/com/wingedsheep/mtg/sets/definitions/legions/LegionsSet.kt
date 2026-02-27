@@ -48,6 +48,7 @@ object LegionsSet {
         DrinkerOfSorrow,
         DrippingDead,
         GoblinTurncoat,
+        HavocDemon,
         Skinthinner,
         SmokespewInvoker,
         SootfeatherFlock,

@@ -2,13 +2,13 @@
 
 **Set Size:** 145 cards
 **Release Date:** February 3, 2003
-**Implemented:** 44 / 145
+**Implemented:** 45 / 145
 
 | Color      | Count |
 |------------|-------|
 | White      | 9/29  |
 | Blue       | 9/29  |
-| Black      | 8/29  |
+| Black      | 9/29  |
 | Red        | 9/29  |
 | Green      | 9/29  |
 
@@ -81,7 +81,7 @@
 - [ ] Goblin Lookout
 - [x] Goblin Turncoat
 - [ ] Graveborn Muse
-- [ ] Havoc Demon
+- [x] Havoc Demon
 - [ ] Hollow Specter
 - [x] Hundroog
 - [ ] Hunter Sliver
