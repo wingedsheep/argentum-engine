@@ -323,6 +323,8 @@ class CostCalculator(
                 }
             }
 
+            CardPredicate.SharesCreatureTypeWithTriggeringEntity -> true // Not applicable in cost calculation
+
             is CardPredicate.And -> predicate.predicates.all { matchesCardPredicate(cardDef, it, sourceEntityId, state, projectedState) }
             is CardPredicate.Or -> predicate.predicates.any { matchesCardPredicate(cardDef, it, sourceEntityId, state, projectedState) }
             is CardPredicate.Not -> !matchesCardPredicate(cardDef, predicate.predicate, sourceEntityId, state, projectedState)

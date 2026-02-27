@@ -75,6 +75,7 @@ object ScourgeSet {
 
         // Blue enchantments
         DragonWings,
+        FacesOfThePast,
         FrozenSolid,
 
         // Blue instants

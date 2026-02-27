@@ -3,12 +3,12 @@
 
 **Set Size:** 143 cards
 **Release Date:** May 26, 2003
-**Implemented:** 92 / 143
+**Implemented:** 93 / 143
 
 | Color | Count |
 |-------|-------|
 | White | 18 |
-| Blue | 16 |
+| Blue | 17 |
 | Black | 18 |
 | Red | 18 |
 | Green | 18 |
@@ -72,7 +72,7 @@
 - [ ] Eternal Dragon
 - [ ] Exiled Doomsayer
 - [ ] Extra Arms
-- [ ] Faces of the Past
+- [x] Faces of the Past
 - [x] Fatal Mutation
 - [x] Fierce Empath
 - [ ] Final Punishment

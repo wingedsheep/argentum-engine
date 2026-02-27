@@ -254,6 +254,20 @@ class PredicateEvaluator {
                 }
             }
 
+            CardPredicate.SharesCreatureTypeWithTriggeringEntity -> {
+                val triggeringId = context?.triggeringEntityId ?: return false
+                // Try projected state first, fall back to base CardComponent (for dead creatures)
+                val triggeringSubtypes = projected.getSubtypes(triggeringId).ifEmpty {
+                    state.getEntity(triggeringId)?.get<CardComponent>()?.typeLine?.subtypes?.map { it.value }?.toSet()
+                        ?: emptySet()
+                }
+                if (triggeringSubtypes.isEmpty()) return false
+                val entitySubtypes = projectedValues?.subtypes ?: card.typeLine.subtypes.map { it.value }.toSet()
+                entitySubtypes.any { entitySubtype ->
+                    triggeringSubtypes.any { it.equals(entitySubtype, ignoreCase = true) }
+                }
+            }
+
             // Composite predicates
             is CardPredicate.And -> {
                 predicate.predicates.all { matchesCardPredicateWithProjection(state, projected, entityId, it, context) }
@@ -416,6 +430,17 @@ class PredicateEvaluator {
                 }
             }
 
+            CardPredicate.SharesCreatureTypeWithTriggeringEntity -> {
+                val triggeringId = context?.triggeringEntityId ?: return false
+                val triggeringCard = state.getEntity(triggeringId)?.get<CardComponent>() ?: return false
+                val triggeringSubtypes = triggeringCard.typeLine.subtypes
+                if (triggeringSubtypes.isEmpty()) return false
+                val entitySubtypes = card.typeLine.subtypes
+                entitySubtypes.any { entitySubtype ->
+                    triggeringSubtypes.any { it.value.equals(entitySubtype.value, ignoreCase = true) }
+                }
+            }
+
             // Composite predicates
             is CardPredicate.And -> {
                 predicate.predicates.all { matchesCardPredicate(state, entityId, it, context) }
@@ -546,7 +571,9 @@ data class PredicateContext(
     val targetPlayerId: EntityId? = null,
     val sourceId: EntityId? = null,
     /** Owner of the entity being evaluated (for graveyard targeting) */
-    val ownerId: EntityId? = null
+    val ownerId: EntityId? = null,
+    /** The entity that caused the trigger to fire (for SharesCreatureTypeWithTriggeringEntity) */
+    val triggeringEntityId: EntityId? = null
 ) {
     companion object {
         /**
@@ -557,7 +584,8 @@ data class PredicateContext(
                 controllerId = context.controllerId,
                 targetOpponentId = context.opponentId,
                 targetPlayerId = context.opponentId,
-                sourceId = context.sourceId
+                sourceId = context.sourceId,
+                triggeringEntityId = context.triggeringEntityId
             )
         }
     }

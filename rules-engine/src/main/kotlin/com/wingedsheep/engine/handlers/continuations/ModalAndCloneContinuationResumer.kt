@@ -137,7 +137,8 @@ class ModalAndCloneContinuationResumer(
             sourceId = continuation.sourceId,
             controllerId = continuation.controllerId,
             opponentId = continuation.opponentId,
-            xValue = continuation.xValue
+            xValue = continuation.xValue,
+            triggeringEntityId = continuation.triggeringEntityId
         )
 
         val result = ctx.effectExecutorRegistry.execute(state, chosenMode.effect, context)

@@ -65,7 +65,8 @@ class ModalEffectExecutor(
             sourceName = sourceName,
             modes = effect.modes,
             xValue = context.xValue,
-            opponentId = context.opponentId
+            opponentId = context.opponentId,
+            triggeringEntityId = context.triggeringEntityId
         )
 
         // Push continuation and return paused state

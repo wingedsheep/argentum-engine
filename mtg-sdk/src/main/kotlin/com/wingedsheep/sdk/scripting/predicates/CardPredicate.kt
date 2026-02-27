@@ -262,6 +262,13 @@ sealed interface CardPredicate {
         override val description: String = "that shares a creature type with this creature"
     }
 
+    /** Matches creatures that share a creature subtype with the triggering entity */
+    @SerialName("SharesCreatureTypeWithTriggeringEntity")
+    @Serializable
+    data object SharesCreatureTypeWithTriggeringEntity : CardPredicate {
+        override val description: String = "that shares a creature type with it"
+    }
+
     // =============================================================================
     // Composite Predicates
     // =============================================================================

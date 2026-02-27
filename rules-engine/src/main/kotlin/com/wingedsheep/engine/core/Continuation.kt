@@ -698,7 +698,8 @@ data class ModalContinuation(
     val sourceName: String?,
     val modes: List<@Serializable Mode>,
     val xValue: Int? = null,
-    val opponentId: EntityId? = null
+    val opponentId: EntityId? = null,
+    val triggeringEntityId: EntityId? = null
 ) : ContinuationFrame
 
 /**
