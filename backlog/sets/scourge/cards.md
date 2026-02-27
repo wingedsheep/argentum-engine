@@ -3,14 +3,14 @@
 
 **Set Size:** 143 cards
 **Release Date:** May 26, 2003
-**Implemented:** 93 / 143
+**Implemented:** 95 / 143
 
 | Color | Count |
 |-------|-------|
-| White | 18 |
+| White | 19 |
 | Blue | 17 |
 | Black | 18 |
-| Red | 18 |
+| Red | 19 |
 | Green | 18 |
 | Multicolor | 1 |
 | Colorless | 3 |
@@ -45,7 +45,7 @@
 - [x] Consumptive Goo
 - [x] Daru Spiritualist
 - [x] Daru Warchief
-- [ ] Dawn Elemental
+- [x] Dawn Elemental
 - [ ] Day of the Dragons
 - [x] Death's-Head Buzzard
 - [ ] Decree of Annihilation
@@ -71,7 +71,7 @@
 - [x] Enrage
 - [ ] Eternal Dragon
 - [ ] Exiled Doomsayer
-- [ ] Extra Arms
+- [x] Extra Arms
 - [x] Faces of the Past
 - [x] Fatal Mutation
 - [x] Fierce Empath

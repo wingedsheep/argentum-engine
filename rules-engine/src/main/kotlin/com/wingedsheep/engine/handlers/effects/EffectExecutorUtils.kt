@@ -656,6 +656,7 @@ object EffectExecutorUtils {
 
                 // Check if the target matches the recipient filter
                 val recipientMatches = when (val recipient = damageEvent.recipient) {
+                    is RecipientFilter.Self -> targetId == entityId
                     is RecipientFilter.EnchantedCreature -> {
                         val attachedTo = container.get<AttachedToComponent>()?.targetId
                         targetId == attachedTo

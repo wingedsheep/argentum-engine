@@ -407,6 +407,15 @@ object Triggers {
     )
 
     /**
+     * Whenever the enchanted creature attacks.
+     * Used for auras like Extra Arms.
+     */
+    val EnchantedCreatureAttacks: TriggerSpec = TriggerSpec(
+        event = EnchantedCreatureAttacksEvent,
+        binding = TriggerBinding.ANY
+    )
+
+    /**
      * Whenever the enchanted creature deals damage (any type).
      * Used for auras like Guilty Conscience.
      */

@@ -98,6 +98,7 @@ object ScourgeSet {
 
         // Red enchantments
         DragonBreath,
+        ExtraArms,
         PyrostaticPillar,
         SulfuricVortex,
         UncontrolledInfestation,
@@ -118,6 +119,7 @@ object ScourgeSet {
         AvenLiberator,
         DaruSpiritualist,
         DaruWarchief,
+        DawnElemental,
         Dragonstalker,
         FrontlineStrategist,
         KaronasZealot,

@@ -406,6 +406,11 @@ class TriggerDetector(
             detectEnchantedCreatureDealsDamageAnyTriggers(state, event, triggers, projected)
         }
 
+        // Handle "when enchanted creature attacks" triggers on auras (e.g., Extra Arms)
+        if (event is AttackersDeclaredEvent) {
+            detectEnchantedCreatureAttacksTriggers(state, event, triggers, projected)
+        }
+
         // Handle "when enchanted creature is turned face up" triggers on auras (e.g., Fatal Mutation)
         if (event is TurnFaceUpEvent) {
             detectEnchantedCreatureTurnedFaceUpTriggers(state, event, triggers, projected)
@@ -772,6 +777,48 @@ class TriggerDetector(
                             triggerContext = TriggerContext.fromEvent(event)
                         )
                     )
+                }
+            }
+        }
+    }
+
+    /**
+     * Detect "when enchanted creature attacks" triggers on auras.
+     * Checks all auras attached to each attacking creature for
+     * EnchantedCreatureAttacksEvent triggers.
+     */
+    private fun detectEnchantedCreatureAttacksTriggers(
+        state: GameState,
+        event: AttackersDeclaredEvent,
+        triggers: MutableList<PendingTrigger>,
+        projected: ProjectedState
+    ) {
+        for (attackerId in event.attackers) {
+            // Find all auras attached to this attacking creature
+            for (entityId in state.getBattlefield()) {
+                val container = state.getEntity(entityId) ?: continue
+                val attachedTo = container.get<AttachedToComponent>() ?: continue
+                if (attachedTo.targetId != attackerId) continue
+
+                val cardComponent = container.get<CardComponent>() ?: continue
+                val controllerId = projected.getController(entityId) ?: continue
+
+                if (container.has<FaceDownComponent>()) continue
+
+                val abilities = getTriggeredAbilities(entityId, cardComponent.cardDefinitionId, state)
+
+                for (ability in abilities) {
+                    if (ability.trigger is GameEvent.EnchantedCreatureAttacksEvent) {
+                        triggers.add(
+                            PendingTrigger(
+                                ability = ability,
+                                sourceId = entityId,
+                                sourceName = cardComponent.name,
+                                controllerId = controllerId,
+                                triggerContext = TriggerContext(triggeringEntityId = attackerId)
+                            )
+                        )
+                    }
                 }
             }
         }
@@ -1212,6 +1259,7 @@ class TriggerDetector(
             is GameEvent.StepEvent -> false
             is GameEvent.EnchantedCreatureControllerStepEvent -> false
             // Enchanted creature triggers are handled separately
+            is GameEvent.EnchantedCreatureAttacksEvent -> false
             is GameEvent.EnchantedCreatureDamageReceivedEvent -> false
             is GameEvent.EnchantedCreatureDealsCombatDamageToPlayerEvent -> false
             is GameEvent.EnchantedCreatureDealsDamageEvent -> false
