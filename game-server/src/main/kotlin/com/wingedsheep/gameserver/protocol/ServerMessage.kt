@@ -805,7 +805,9 @@ data class LegalActionInfo(
     /** Source zone if this action is from a non-hand zone (e.g., "LIBRARY" for Future Sight) */
     val sourceZone: String? = null,
     /** Blocker IDs that can block multiple attackers (e.g., CanBlockAnyNumber) */
-    val canBlockMultipleAttackers: List<EntityId>? = null
+    val canBlockMultipleAttackers: List<EntityId>? = null,
+    /** Pre-computed mandatory blocker→attacker assignments from Provoke / MustBeBlockedByAll */
+    val mandatoryBlockerAssignments: Map<EntityId, List<EntityId>>? = null
 )
 
 /**

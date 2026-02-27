@@ -459,6 +459,8 @@ export interface LegalActionInfo {
   readonly sourceZone?: string
   /** Blocker IDs that can block multiple attackers (e.g., CanBlockAnyNumber) */
   readonly canBlockMultipleAttackers?: readonly EntityId[]
+  /** Pre-computed mandatory blocker→attacker assignments from Provoke / MustBeBlockedByAll */
+  readonly mandatoryBlockerAssignments?: Readonly<Record<EntityId, readonly EntityId[]>>
 }
 
 /**

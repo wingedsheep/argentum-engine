@@ -88,12 +88,14 @@ class LegalActionsCalculator(
                     val cardDef = cardRegistry.getCard(card.name) ?: return@filter false
                     cardDef.staticAbilities.any { it is CanBlockAnyNumber }
                 }
+                val mandatoryAssignments = turnManager.getMandatoryBlockerAssignments(state, playerId)
                 return listOf(LegalActionInfo(
                     actionType = "DeclareBlockers",
                     description = "Declare blockers",
                     action = DeclareBlockers(playerId, emptyMap()),
                     validBlockers = validBlockers,
-                    canBlockMultipleAttackers = canBlockMultiple.ifEmpty { null }
+                    canBlockMultipleAttackers = canBlockMultiple.ifEmpty { null },
+                    mandatoryBlockerAssignments = mandatoryAssignments.ifEmpty { null }
                 ))
             }
         }

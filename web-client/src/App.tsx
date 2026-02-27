@@ -162,12 +162,11 @@ export default function App() {
         .filter((a) => a.mustBeBlockedByAll)
         .map((a) => a.creatureId) ?? []
 
-      // Pre-populate blocker assignments for must-be-blocked attackers
+      // Use server-provided mandatory blocker assignments (Provoke + MustBeBlockedByAll)
       const blockerAssignments: Record<EntityId, EntityId[]> = {}
-      if (mustBeBlockedAttackers.length > 0 && validCreatures.length > 0) {
-        const firstMustBlock = mustBeBlockedAttackers[0]!
-        for (const blockerId of validCreatures) {
-          blockerAssignments[blockerId] = [firstMustBlock]
+      if (blockersAction?.mandatoryBlockerAssignments) {
+        for (const [blockerId, attackerIds] of Object.entries(blockersAction.mandatoryBlockerAssignments)) {
+          blockerAssignments[blockerId as EntityId] = [...attackerIds]
         }
       }
 
