@@ -55,6 +55,7 @@ object LegionsSet {
         // Red creatures
         CrestedCraghorn,
         FlamewaveInvoker,
+        FreneticRaptor,
         GoblinFirebug,
         GoblinGrappler,
         LavabornMuse,
