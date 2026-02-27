@@ -787,6 +787,7 @@ Set via `staticAbility { ability = ... }`:
 ### Combat Restrictions
 
 - `CantAttack(target)` / `CantBlock(target)` / `MustAttack(target)`
+- `CantBlockForCreatureGroup(filter: GroupFilter)` — prevents creatures matching filter from blocking (e.g., "Beasts can't block")
 - `CantAttackUnlessDefenderControlsLandType(landType, target)`
 - `CantBlockCreaturesWithGreaterPower(target)`
 - `CanOnlyBlockCreaturesWithKeyword(keyword, target)`

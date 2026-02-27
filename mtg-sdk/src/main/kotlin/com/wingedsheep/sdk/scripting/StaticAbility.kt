@@ -181,6 +181,20 @@ data class CantBlock(
 }
 
 /**
+ * Prevents a group of creatures matching a filter from blocking.
+ * Used for cards like Frenetic Raptor: "Beasts can't block."
+ *
+ * @property filter The group of creatures that can't block
+ */
+@SerialName("CantBlockForCreatureGroup")
+@Serializable
+data class CantBlockForCreatureGroup(
+    val filter: GroupFilter
+) : StaticAbility {
+    override val description: String = "${filter.description} can't block"
+}
+
+/**
  * Creature assigns combat damage equal to its toughness rather than its power.
  * Conditional variant: only when toughness is greater than power.
  * Used for cards like Bark of Doran, Doran the Siege Tower, etc.

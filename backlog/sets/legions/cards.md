@@ -2,14 +2,14 @@
 
 **Set Size:** 145 cards
 **Release Date:** February 3, 2003
-**Implemented:** 40 / 145
+**Implemented:** 41 / 145
 
 | Color      | Count |
 |------------|-------|
 | White      | 8/29  |
 | Blue       | 8/29  |
 | Black      | 8/29  |
-| Red        | 8/29  |
+| Red        | 9/29  |
 | Green      | 8/29  |
 
 ---
@@ -61,7 +61,7 @@
 - [ ] Essence Sliver
 - [ ] Feral Throwback
 - [x] Flamewave Invoker
-- [ ] Frenetic Raptor
+- [x] Frenetic Raptor
 - [x] Fugitive Wizard
 - [ ] Gempalm Avenger
 - [ ] Gempalm Incinerator
