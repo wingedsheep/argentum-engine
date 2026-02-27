@@ -26,6 +26,7 @@ class CombatExecutors(
         PreventAllDamageDealtByTargetExecutor(),
         RedirectNextDamageExecutor(),
         PreventNextDamageFromChosenCreatureTypeExecutor(),
-        PreventCombatDamageFromExecutor()
+        PreventCombatDamageFromExecutor(),
+        PreventCombatDamageToAndByExecutor()
     )
 }

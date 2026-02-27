@@ -2,11 +2,11 @@
 
 **Set Size:** 145 cards
 **Release Date:** February 3, 2003
-**Implemented:** 41 / 145
+**Implemented:** 42 / 145
 
 | Color      | Count |
 |------------|-------|
-| White      | 8/29  |
+| White      | 9/29  |
 | Blue       | 8/29  |
 | Black      | 8/29  |
 | Red        | 9/29  |
@@ -48,7 +48,7 @@
 - [ ] Deathmark Prelate
 - [ ] Defender of the Order
 - [x] Defiant Elf
-- [ ] Deftblade Elite
+- [x] Deftblade Elite
 - [ ] Dermoplasm
 - [ ] Dreamborn Muse
 - [x] Drinker of Sorrow

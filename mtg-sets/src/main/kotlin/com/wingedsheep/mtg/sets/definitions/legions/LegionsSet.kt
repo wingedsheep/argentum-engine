@@ -25,6 +25,7 @@ object LegionsSet {
         // White creatures
         CloudreachCavalry,
         DaruSanctifier,
+        DeftbladeElite,
         LowlandTracker,
         PlatedSliver,
         StarlightInvoker,

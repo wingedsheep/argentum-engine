@@ -231,6 +231,21 @@ data object PreventNextDamageFromChosenCreatureTypeEffect : Effect {
 }
 
 /**
+ * Prevent all combat damage that would be dealt to and dealt by a creature this turn.
+ * Used for Deftblade Elite and similar effects.
+ *
+ * @property target The creature whose combat damage (both dealing and receiving) is prevented
+ */
+@SerialName("PreventCombatDamageToAndBy")
+@Serializable
+data class PreventCombatDamageToAndByEffect(
+    val target: EffectTarget = EffectTarget.Self
+) : Effect {
+    override val description: String =
+        "Prevent all combat damage that would be dealt to and dealt by ${target.description} this turn"
+}
+
+/**
  * Prevent all damage target creature or spell would deal this turn.
  * Used for Shieldmage Elder and similar "prevent all damage target would deal" effects.
  *
