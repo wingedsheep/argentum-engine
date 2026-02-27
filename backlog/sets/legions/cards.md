@@ -2,14 +2,14 @@
 
 **Set Size:** 145 cards
 **Release Date:** February 3, 2003
-**Implemented:** 24 / 145
+**Implemented:** 25 / 145
 
 | Color      | Count |
 |------------|-------|
 | White      | 5/29  |
 | Blue       | 5/29  |
 | Black      | 5/29  |
-| Red        | 4/29  |
+| Red        | 5/29  |
 | Green      | 5/29  |
 
 ---
@@ -125,7 +125,7 @@
 - [ ] Skinthinner
 - [ ] Skirk Alarmist
 - [ ] Skirk Drill Sergeant
-- [ ] Skirk Marauder
+- [x] Skirk Marauder
 - [x] Skirk Outrider
 - [x] Smokespew Invoker
 - [x] Sootfeather Flock
