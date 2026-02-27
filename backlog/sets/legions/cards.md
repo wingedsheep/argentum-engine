@@ -2,11 +2,11 @@
 
 **Set Size:** 145 cards
 **Release Date:** February 3, 2003
-**Implemented:** 33 / 145
+**Implemented:** 34 / 145
 
 | Color      | Count |
 |------------|-------|
-| White      | 6/29  |
+| White      | 7/29  |
 | Blue       | 6/29  |
 | Black      | 7/29  |
 | Red        | 7/29  |
@@ -94,7 +94,7 @@
 - [ ] Krosan Vorine
 - [ ] Lavaborn Muse
 - [ ] Liege of the Axe
-- [ ] Lowland Tracker
+- [x] Lowland Tracker
 - [ ] Macetail Hystrodon
 - [ ] Magma Sliver
 - [ ] Master of the Veil
