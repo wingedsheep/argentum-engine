@@ -41,6 +41,7 @@ class PermanentExecutors(
         GrantActivatedAbilityToGroupExecutor(),
         ChooseCreatureTypeUntapExecutor(),
         ChooseCreatureTypeGainControlExecutor(),
-        AnimateLandExecutor()
+        AnimateLandExecutor(),
+        DistributeCountersFromSelfExecutor()
     )
 }

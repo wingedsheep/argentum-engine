@@ -181,6 +181,9 @@ class ContinuationHandler(
             is AmplifyEntersContinuation -> modalAndCloneResumer.resumeAmplifyEnters(stateAfterPop, continuation, response, cfm)
             is CastWithCreatureTypeContinuation -> modalAndCloneResumer.resumeCastWithCreatureType(stateAfterPop, continuation, response, cfm)
 
+            // Counter distribution
+            is DistributeCountersContinuation -> resumeDistributeCounters(stateAfterPop, continuation, response, cfm)
+
             // Cycling/typecycling (non-decision continuations, should not appear during decision resume)
             is CycleDrawContinuation -> {
                 ExecutionResult.error(state, "CycleDrawContinuation should not be at top of stack during decision resume")
@@ -751,5 +754,70 @@ class ContinuationHandler(
                 }
             }
         }
+    }
+
+    private fun resumeDistributeCounters(
+        state: GameState,
+        continuation: DistributeCountersContinuation,
+        response: DecisionResponse,
+        checkForMore: (GameState, List<GameEvent>) -> ExecutionResult
+    ): ExecutionResult {
+        if (response !is DistributionResponse) {
+            return ExecutionResult.error(state, "Expected distribution response for counter distribution")
+        }
+
+        val counterType = try {
+            com.wingedsheep.sdk.core.CounterType.valueOf(
+                continuation.counterType.uppercase()
+                    .replace(' ', '_')
+                    .replace('+', 'P')
+                    .replace('-', 'M')
+                    .replace("/", "_")
+            )
+        } catch (e: IllegalArgumentException) {
+            com.wingedsheep.sdk.core.CounterType.PLUS_ONE_PLUS_ONE
+        }
+
+        val distribution = response.distribution
+        val totalMoved = distribution.values.sum()
+
+        if (totalMoved <= 0) {
+            return checkForMore(state, emptyList())
+        }
+
+        var newState = state
+        val events = mutableListOf<GameEvent>()
+
+        // Remove counters from source
+        val sourceCounters = newState.getEntity(continuation.sourceId)
+            ?.get<com.wingedsheep.engine.state.components.battlefield.CountersComponent>()
+            ?: com.wingedsheep.engine.state.components.battlefield.CountersComponent()
+
+        newState = newState.updateEntity(continuation.sourceId) { container ->
+            container.with(sourceCounters.withRemoved(counterType, totalMoved))
+        }
+
+        val sourceName = newState.getEntity(continuation.sourceId)
+            ?.get<com.wingedsheep.engine.state.components.identity.CardComponent>()?.name ?: ""
+        events.add(CountersRemovedEvent(continuation.sourceId, continuation.counterType, totalMoved, sourceName))
+
+        // Add counters to each target
+        for ((targetId, amount) in distribution) {
+            if (amount > 0) {
+                val targetCounters = newState.getEntity(targetId)
+                    ?.get<com.wingedsheep.engine.state.components.battlefield.CountersComponent>()
+                    ?: com.wingedsheep.engine.state.components.battlefield.CountersComponent()
+
+                newState = newState.updateEntity(targetId) { container ->
+                    container.with(targetCounters.withAdded(counterType, amount))
+                }
+
+                val targetName = newState.getEntity(targetId)
+                    ?.get<com.wingedsheep.engine.state.components.identity.CardComponent>()?.name ?: ""
+                events.add(CountersAddedEvent(targetId, continuation.counterType, amount, targetName))
+            }
+        }
+
+        return checkForMore(newState, events)
     }
 }

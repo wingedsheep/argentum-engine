@@ -3,7 +3,7 @@
 
 **Set Size:** 143 cards
 **Release Date:** May 26, 2003
-**Implemented:** 109 / 143
+**Implemented:** 110 / 143
 
 | Color | Count |
 |-------|-------|
@@ -11,7 +11,7 @@
 | Blue | 18 |
 | Black | 22 |
 | Red | 22 |
-| Green | 20 |
+| Green | 21 |
 | Multicolor | 2 |
 | Colorless | 4 |
 
@@ -77,7 +77,7 @@
 - [x] Fierce Empath
 - [x] Final Punishment
 - [ ] Force Bubble
-- [ ] Forgotten Ancient
+- [x] Forgotten Ancient
 - [ ] Form of the Dragon
 - [x] Frontline Strategist
 - [x] Frozen Solid
