@@ -61,6 +61,7 @@ object LegionsSet {
         GempalmPolluter,
         GoblinTurncoat,
         HavocDemon,
+        NoxiousGhoul,
         Skinthinner,
         SmokespewInvoker,
         SootfeatherFlock,
@@ -85,6 +86,7 @@ object LegionsSet {
         SkirkOutrider,
 
         // Green creatures
+        CanopyCrawler,
         BranchsnapLorian,
         GempalmStrider,
         Brontotherium,
