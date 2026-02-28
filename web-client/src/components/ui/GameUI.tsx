@@ -336,6 +336,9 @@ function LobbyOverlay({
   const isAnyDraft = isDraft || isWinston || isGridDraft
   const hasSelectedSets = lobbyState.settings.setCodes.length > 0
   const playerCount = lobbyState.players.length
+  const canSwitchToNormalDraft = playerCount <= 8
+  const canSwitchToWinston = playerCount <= 2
+  const canSwitchToGrid = playerCount <= 3
   const playerCheck = isWinston ? playerCount === 2
     : isGridDraft ? playerCount >= 2 && playerCount <= 3
     : playerCount >= 2
@@ -419,21 +422,24 @@ function LobbyOverlay({
                 <span className={styles.settingsLabel} style={{ paddingTop: 6 }}>Draft Type</span>
                 <div className={styles.draftTypeOptions}>
                   <button
-                    onClick={() => updateLobbySettings({ format: 'DRAFT' })}
+                    onClick={() => canSwitchToNormalDraft && updateLobbySettings({ format: 'DRAFT' })}
+                    disabled={!canSwitchToNormalDraft}
                     className={`${styles.draftTypeButton} ${isDraft ? `${styles.settingsButtonActive} ${styles.settingsButtonDraft}` : ''}`}
                   >
                     <span className={styles.draftTypeName}>Normal</span>
                     <span className={styles.draftTypeDesc}>Pass packs around the table. 3-8 players.</span>
                   </button>
                   <button
-                    onClick={() => updateLobbySettings({ format: 'WINSTON_DRAFT' })}
+                    onClick={() => canSwitchToWinston && updateLobbySettings({ format: 'WINSTON_DRAFT' })}
+                    disabled={!canSwitchToWinston}
                     className={`${styles.draftTypeButton} ${isWinston ? `${styles.settingsButtonActive} ${styles.settingsButtonDraft}` : ''}`}
                   >
                     <span className={styles.draftTypeName}>Winston</span>
                     <span className={styles.draftTypeDesc}>Pick from 3 face-down piles. 2 players.</span>
                   </button>
                   <button
-                    onClick={() => updateLobbySettings({ format: 'GRID_DRAFT' })}
+                    onClick={() => canSwitchToGrid && updateLobbySettings({ format: 'GRID_DRAFT' })}
+                    disabled={!canSwitchToGrid}
                     className={`${styles.draftTypeButton} ${isGridDraft ? `${styles.settingsButtonActive} ${styles.settingsButtonDraft}` : ''}`}
                   >
                     <span className={styles.draftTypeName}>Grid</span>
@@ -604,7 +610,7 @@ function LobbyOverlay({
           <div className={styles.playerListHeader}>
             <span className={styles.playerListTitle}>Players</span>
             <span className={styles.playerCount}>
-              {lobbyState.players.length} / {isWinston ? 2 : (lobbyState.settings.maxPlayers || 8)}
+              {lobbyState.players.length} / {isWinston ? 2 : isGridDraft ? 3 : (lobbyState.settings.maxPlayers || 8)}
             </span>
           </div>
           {lobbyState.players.map((player, i) => (

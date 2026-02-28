@@ -871,8 +871,8 @@ class TournamentLobby(
 
         if (gridPicksThisGrid >= picksPerGrid) {
             // Grid is exhausted — discard remaining cards and deal new grid
-            // Rotate who picks first: advance starting index
-            gridActivePlayerIndex = (gridActivePlayerIndex + 1) % gridPlayerOrder.size
+            // The last within-grid pick already advanced the index to the next player,
+            // which is the correct starting picker for the new grid (rotates each grid).
 
             if (gridMainDeck.isEmpty() && gridCards.all { it == null }) {
                 // Draft complete

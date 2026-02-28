@@ -787,6 +787,11 @@
   transition: border-color 0.15s, background-color 0.15s;
 }
 
+.draftTypeButton:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
 .draftTypeButton.settingsButtonActive {
   color: var(--text-primary);
   border-color: var(--color-accent-dark);
