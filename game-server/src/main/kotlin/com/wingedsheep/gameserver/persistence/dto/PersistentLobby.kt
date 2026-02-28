@@ -21,7 +21,12 @@ data class PersistentTournamentLobby(
     // Draft-specific state
     val currentPackNumber: Int = 0,
     val currentPickNumber: Int = 0,
-    val playerOrder: List<String> = emptyList()  // Player IDs in pack-passing order
+    val playerOrder: List<String> = emptyList(),  // Player IDs in pack-passing order
+    // Winston Draft-specific state
+    val winstonMainDeckNames: List<String> = emptyList(),
+    val winstonPileNames: List<List<String>> = emptyList(),  // 3 piles
+    val winstonActivePlayerIndex: Int = 0,
+    val winstonCurrentPileIndex: Int = 0
 )
 
 /**

@@ -8,6 +8,8 @@ import {
   createSubmitSealedDeckMessage,
   createUnsubmitDeckMessage,
   createMakePickMessage,
+  createWinstonTakePileMessage,
+  createWinstonSkipPileMessage,
 } from '../../types'
 import { trackEvent } from '../../utils/analytics'
 import { getWebSocket, saveDeckState } from './shared'
@@ -26,6 +28,8 @@ export interface DraftSliceActions {
   submitSealedDeck: () => void
   unsubmitDeck: () => void
   makePick: (cardNames: string[]) => void
+  winstonTakePile: () => void
+  winstonSkipPile: () => void
 }
 
 export type DraftSlice = DraftSliceState & DraftSliceActions
@@ -156,5 +160,15 @@ export const createDraftSlice: SliceCreator<DraftSlice> = (set, get) => ({
   makePick: (cardNames) => {
     trackEvent('draft_pick_made', { card_names: cardNames })
     getWebSocket()?.send(createMakePickMessage(cardNames))
+  },
+
+  winstonTakePile: () => {
+    trackEvent('winston_take_pile')
+    getWebSocket()?.send(createWinstonTakePileMessage())
+  },
+
+  winstonSkipPile: () => {
+    trackEvent('winston_skip_pile')
+    getWebSocket()?.send(createWinstonSkipPileMessage())
   },
 })

@@ -5,6 +5,7 @@ import com.wingedsheep.gameserver.lobby.LobbyState
 import com.wingedsheep.gameserver.lobby.PickResult
 import com.wingedsheep.gameserver.lobby.TournamentFormat
 import com.wingedsheep.gameserver.lobby.TournamentLobby
+import com.wingedsheep.gameserver.lobby.WinstonActionResult
 import com.wingedsheep.gameserver.protocol.ClientMessage
 import com.wingedsheep.gameserver.protocol.ErrorCode
 import com.wingedsheep.gameserver.protocol.ServerMessage
@@ -59,6 +60,8 @@ class LobbyHandler(
             is ClientMessage.JoinLobby -> handleJoinLobby(session, message)
             is ClientMessage.StartTournamentLobby -> handleStartTournamentLobby(session)
             is ClientMessage.MakePick -> handleMakePick(session, message)
+            is ClientMessage.WinstonTakePile -> handleWinstonTakePile(session)
+            is ClientMessage.WinstonSkipPile -> handleWinstonSkipPile(session)
             is ClientMessage.LeaveLobby -> handleLeaveLobby(session)
             is ClientMessage.StopLobby -> handleStopLobby(session)
             is ClientMessage.UpdateLobbySettings -> handleUpdateLobbySettings(session, message)
@@ -279,11 +282,17 @@ class LobbyHandler(
         // Set appropriate default booster count based on format
         // Draft: default 3 packs, max 6
         // Sealed: default 6 boosters, max 16
-        val boosterCount = if (format == TournamentFormat.DRAFT) {
-            if (message.boosterCount == 6) 3 else message.boosterCount.coerceIn(1, 6)  // 6 is the client default, use 3 for draft
-        } else {
-            message.boosterCount.coerceIn(1, 16)
+        // Winston: default 6 boosters, max 16
+        val boosterCount = when (format) {
+            TournamentFormat.DRAFT -> {
+                if (message.boosterCount == 6) 3 else message.boosterCount.coerceIn(1, 6)  // 6 is the client default, use 3 for draft
+            }
+            TournamentFormat.SEALED, TournamentFormat.WINSTON_DRAFT -> {
+                message.boosterCount.coerceIn(1, 16)
+            }
         }
+
+        val maxPlayers = if (format == TournamentFormat.WINSTON_DRAFT) 2 else message.maxPlayers.coerceIn(2, 8)
 
         val lobby = TournamentLobby(
             setCodes = setConfigs.map { it.setCode },
@@ -291,7 +300,7 @@ class LobbyHandler(
             boosterGenerator = boosterGenerator,
             format = format,
             boosterCount = boosterCount,
-            maxPlayers = message.maxPlayers.coerceIn(2, 8),
+            maxPlayers = maxPlayers,
             pickTimeSeconds = message.pickTimeSeconds.coerceIn(15, 120)
         )
         lobby.addPlayer(identity)
@@ -398,6 +407,13 @@ class LobbyHandler(
             }
             LobbyState.DRAFTING -> {
                 sender.send(session, lobby.buildLobbyUpdate(identity.playerId))
+
+                // Winston Draft reconnection
+                if (lobby.format == TournamentFormat.WINSTON_DRAFT) {
+                    broadcastWinstonDraftState(lobby, null)
+                    return
+                }
+
                 val playerState = lobby.players[identity.playerId]
                 if (playerState?.currentPack != null) {
                     sender.send(session, ServerMessage.DraftPackReceived(
@@ -769,6 +785,27 @@ class LobbyHandler(
                 // Start the pick timer
                 startDraftTimer(lobby)
             }
+
+            TournamentFormat.WINSTON_DRAFT -> {
+                if (lobby.playerCount != 2) {
+                    sender.sendError(session, ErrorCode.INVALID_ACTION, "Winston Draft requires exactly 2 players")
+                    return
+                }
+
+                val started = lobby.startWinstonDraft(identity.playerId)
+                if (!started) {
+                    sender.sendError(session, ErrorCode.INVALID_ACTION, "Failed to start Winston Draft")
+                    return
+                }
+
+                logger.info("Lobby ${lobby.lobbyId} started Winston Draft (2 players)")
+
+                // Send initial state to both players
+                broadcastWinstonDraftState(lobby, null)
+
+                // Start the turn timer
+                startWinstonTimer(lobby)
+            }
         }
 
         broadcastLobbyUpdate(lobby)
@@ -974,6 +1011,180 @@ class LobbyHandler(
         }
     }
 
+    // =========================================================================
+    // Winston Draft Handlers
+    // =========================================================================
+
+    private fun handleWinstonTakePile(session: WebSocketSession) {
+        val (identity, lobby) = getIdentityAndLobby(session) ?: return
+
+        if (lobby.format != TournamentFormat.WINSTON_DRAFT) {
+            sender.sendError(session, ErrorCode.INVALID_ACTION, "Not a Winston Draft")
+            return
+        }
+
+        val result = lobby.winstonTakePile(identity.playerId)
+        handleWinstonResult(lobby, result, identity)
+    }
+
+    private fun handleWinstonSkipPile(session: WebSocketSession) {
+        val (identity, lobby) = getIdentityAndLobby(session) ?: return
+
+        if (lobby.format != TournamentFormat.WINSTON_DRAFT) {
+            sender.sendError(session, ErrorCode.INVALID_ACTION, "Not a Winston Draft")
+            return
+        }
+
+        val result = lobby.winstonSkipPile(identity.playerId)
+        handleWinstonResult(lobby, result, identity)
+    }
+
+    private fun handleWinstonResult(lobby: TournamentLobby, result: WinstonActionResult, identity: PlayerIdentity) {
+        when (result) {
+            is WinstonActionResult.PileTaken,
+            is WinstonActionResult.BlindPick,
+            is WinstonActionResult.PileSkipped -> {
+                val lastAction = when (result) {
+                    is WinstonActionResult.PileTaken -> result.lastAction
+                    is WinstonActionResult.BlindPick -> result.lastAction
+                    is WinstonActionResult.PileSkipped -> result.lastAction
+                    else -> null
+                }
+                logger.info("Winston Draft [${lobby.lobbyId}]: $lastAction")
+
+                // Reset timer for new turn (take/blind = new player, skip = same player different pile)
+                when (result) {
+                    is WinstonActionResult.PileTaken, is WinstonActionResult.BlindPick -> {
+                        lobby.pickTimerJob?.cancel()
+                        startWinstonTimer(lobby)
+                    }
+                    else -> {} // Skip doesn't restart timer
+                }
+
+                broadcastWinstonDraftState(lobby, lastAction)
+            }
+
+            is WinstonActionResult.DraftComplete -> {
+                logger.info("Winston Draft complete for lobby ${lobby.lobbyId}: ${result.lastAction}")
+                lobby.pickTimerJob?.cancel()
+                lobby.pickTimerJob = null
+
+                val basicLandInfos = lobby.basicLands.values.map { cardToSealedCardInfo(it) }
+                lobby.players.forEach { (_, playerState) ->
+                    val poolInfos = playerState.cardPool.map { cardToSealedCardInfo(it) }
+                    val ws = playerState.identity.webSocketSession
+                    if (ws != null && ws.isOpen) {
+                        sender.send(ws, ServerMessage.DraftComplete(
+                            pickedCards = poolInfos,
+                            basicLands = basicLandInfos
+                        ))
+                    }
+                }
+
+                broadcastLobbyUpdate(lobby)
+            }
+
+            is WinstonActionResult.Error -> {
+                val ws = identity.webSocketSession
+                if (ws != null) {
+                    sender.sendError(ws, ErrorCode.INVALID_ACTION, result.message)
+                }
+            }
+        }
+    }
+
+    /**
+     * Helper to get identity and lobby for Winston handlers.
+     */
+    private fun getIdentityAndLobby(session: WebSocketSession): Pair<PlayerIdentity, TournamentLobby>? {
+        val token = sessionRegistry.getTokenByWsId(session.id)
+        val identity = token?.let { sessionRegistry.getIdentityByToken(it) }
+        if (identity == null) {
+            sender.sendError(session, ErrorCode.NOT_CONNECTED, "Not connected")
+            return null
+        }
+
+        val lobbyId = identity.currentLobbyId
+        if (lobbyId == null) {
+            sender.sendError(session, ErrorCode.GAME_NOT_FOUND, "Not in a lobby")
+            return null
+        }
+
+        val lobby = lobbyRepository.findLobbyById(lobbyId)
+        if (lobby == null) {
+            sender.sendError(session, ErrorCode.GAME_NOT_FOUND, "Lobby not found")
+            return null
+        }
+
+        return identity to lobby
+    }
+
+    /**
+     * Broadcast Winston Draft state to both players.
+     * Active player sees current pile contents, opponent sees sizes only.
+     */
+    private fun broadcastWinstonDraftState(lobby: TournamentLobby, lastAction: String?) {
+        val activePlayerId = lobby.getWinstonActivePlayerId() ?: return
+        val activePlayerName = lobby.players[activePlayerId]?.identity?.playerName ?: "Unknown"
+        val pileSizes = lobby.winstonPiles.map { it.size }
+        val currentPileCards = lobby.winstonPiles[lobby.winstonCurrentPileIndex].map { cardToSealedCardInfo(it) }
+
+        lobby.players.forEach { (playerId, playerState) ->
+            val ws = playerState.identity.webSocketSession ?: return@forEach
+            if (!ws.isOpen) return@forEach
+
+            val isActivePlayer = playerId == activePlayerId
+            val opponentId = lobby.getWinstonPlayerOrder().first { it != playerId }
+            val opponentPool = lobby.players[opponentId]?.cardPool?.size ?: 0
+
+            sender.send(ws, ServerMessage.WinstonDraftState(
+                activePlayerName = activePlayerName,
+                isYourTurn = isActivePlayer,
+                currentPileIndex = lobby.winstonCurrentPileIndex,
+                pileSizes = pileSizes,
+                mainDeckRemaining = lobby.winstonMainDeck.size,
+                currentPileCards = if (isActivePlayer) currentPileCards else null,
+                pickedCards = playerState.cardPool.map { cardToSealedCardInfo(it) },
+                totalPickedByOpponent = opponentPool,
+                lastAction = lastAction,
+                timeRemainingSeconds = lobby.pickTimeRemaining
+            ))
+        }
+    }
+
+    /**
+     * Start the Winston Draft turn timer.
+     */
+    private fun startWinstonTimer(lobby: TournamentLobby) {
+        lobby.pickTimeRemaining = lobby.pickTimeSeconds
+        lobby.pickTimerJob?.cancel()
+
+        lobby.pickTimerJob = draftScope.launch {
+            var remaining = lobby.pickTimeSeconds
+
+            while (remaining > 0 && isActive) {
+                delay(1000)
+                remaining--
+                lobby.pickTimeRemaining = remaining
+
+                // Broadcast timer update
+                broadcastTimerUpdate(lobby, remaining)
+            }
+
+            // Timer expired - auto-pick for the active player
+            if (isActive && lobby.state == LobbyState.DRAFTING && lobby.format == TournamentFormat.WINSTON_DRAFT) {
+                val activePlayerId = lobby.getWinstonActivePlayerId()
+                if (activePlayerId != null) {
+                    val result = lobby.winstonAutoPickForTimeout(activePlayerId)
+                    val activeIdentity = lobby.players[activePlayerId]?.identity
+                    if (activeIdentity != null) {
+                        handleWinstonResult(lobby, result, activeIdentity)
+                    }
+                }
+            }
+        }
+    }
+
     private fun handleLeaveLobby(session: WebSocketSession) {
         val token = sessionRegistry.getTokenByWsId(session.id)
         val identity = token?.let { sessionRegistry.getIdentityByToken(it) }
@@ -1173,19 +1384,37 @@ class LobbyHandler(
                 sender.sendError(session, ErrorCode.INVALID_ACTION, "Invalid format: $formatStr")
                 return
             }
-            // When switching formats, adjust boosterCount to appropriate default
+            // When switching formats, adjust boosterCount and maxPlayers to appropriate defaults
             if (newFormat != lobby.format) {
                 lobby.format = newFormat
-                lobby.boosterCount = if (newFormat == TournamentFormat.DRAFT) 3 else 6
+                lobby.boosterCount = when (newFormat) {
+                    TournamentFormat.DRAFT -> 3
+                    TournamentFormat.SEALED -> 6
+                    TournamentFormat.WINSTON_DRAFT -> 6
+                }
+                if (newFormat == TournamentFormat.WINSTON_DRAFT) {
+                    lobby.maxPlayers = 2
+                }
             }
         }
 
         // Manual boosterCount override (apply after format change)
         message.boosterCount?.let {
-            val maxCount = if (lobby.format == TournamentFormat.DRAFT) 6 else 16
+            val maxCount = when (lobby.format) {
+                TournamentFormat.DRAFT -> 6
+                TournamentFormat.SEALED -> 16
+                TournamentFormat.WINSTON_DRAFT -> 16
+            }
             lobby.boosterCount = it.coerceIn(1, maxCount)
         }
-        message.maxPlayers?.let { lobby.maxPlayers = it.coerceIn(2, 8) }
+        message.maxPlayers?.let {
+            // Winston Draft is locked to 2 players
+            if (lobby.format == TournamentFormat.WINSTON_DRAFT) {
+                lobby.maxPlayers = 2
+            } else {
+                lobby.maxPlayers = it.coerceIn(2, 8)
+            }
+        }
         message.gamesPerMatch?.let { lobby.gamesPerMatch = it.coerceIn(1, 5) }
         message.pickTimeSeconds?.let { lobby.pickTimeSeconds = it.coerceIn(15, 180) }
         message.picksPerRound?.let { lobby.picksPerRound = it.coerceIn(1, 2) }

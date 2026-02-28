@@ -33,6 +33,7 @@ export type {
   ConvokeSelectionState,
   DeckBuildingState,
   DraftState,
+  WinstonDraftState,
   LobbyState,
   TournamentState,
   SpectatingState,

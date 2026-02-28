@@ -147,6 +147,20 @@ sealed interface ClientMessage {
     data class MakePick(val cardNames: List<String>) : ClientMessage
 
     /**
+     * Take the current pile during Winston Draft.
+     */
+    @Serializable
+    @SerialName("winstonTakePile")
+    data object WinstonTakePile : ClientMessage
+
+    /**
+     * Skip the current pile during Winston Draft.
+     */
+    @Serializable
+    @SerialName("winstonSkipPile")
+    data object WinstonSkipPile : ClientMessage
+
+    /**
      * Leave the current lobby.
      */
     @Serializable

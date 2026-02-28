@@ -426,6 +426,34 @@ sealed interface ServerMessage {
     ) : ServerMessage
 
     // =========================================================================
+    // Winston Draft Messages
+    // =========================================================================
+
+    /**
+     * Winston Draft state update - sent to both players after each action.
+     * Active player sees pile contents, opponent sees pile sizes only.
+     */
+    @Serializable
+    @SerialName("winstonDraftState")
+    data class WinstonDraftState(
+        val activePlayerName: String,
+        val isYourTurn: Boolean,
+        val currentPileIndex: Int,
+        val pileSizes: List<Int>,
+        val mainDeckRemaining: Int,
+        /** Only sent to active player when looking at the current pile */
+        val currentPileCards: List<SealedCardInfo>? = null,
+        /** Cards this player has picked so far */
+        val pickedCards: List<SealedCardInfo>,
+        /** Number of cards opponent has picked */
+        val totalPickedByOpponent: Int,
+        /** Description of the last action */
+        val lastAction: String? = null,
+        /** Seconds remaining on the turn timer */
+        val timeRemainingSeconds: Int = 0
+    ) : ServerMessage
+
+    // =========================================================================
     // Tournament Messages
     // =========================================================================
 

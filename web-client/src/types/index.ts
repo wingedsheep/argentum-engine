@@ -221,6 +221,8 @@ export type {
   DraftPickConfirmedMessage,
   DraftCompleteMessage,
   DraftTimerUpdateMessage,
+  // Winston Draft types
+  WinstonDraftStateMessage,
   // Tournament types
   PlayerStandingInfo,
   MatchResultInfo,
@@ -299,6 +301,8 @@ export {
   createStartTournamentLobbyMessage,
   createStartSealedLobbyMessage,
   createMakePickMessage,
+  createWinstonTakePileMessage,
+  createWinstonSkipPileMessage,
   createLeaveLobbyMessage,
   createStopLobbyMessage,
   createUnsubmitDeckMessage,
@@ -312,6 +316,8 @@ export {
   isDraftPickConfirmedMessage,
   isDraftCompleteMessage,
   isDraftTimerUpdateMessage,
+  // Winston Draft type guards
+  isWinstonDraftStateMessage,
   // Tournament message factories & guards
   createReadyForNextRoundMessage,
   isTournamentStartedMessage,

@@ -328,9 +328,13 @@ function LobbyOverlay({
   }
 
   const isWaiting = lobbyState.state === 'WAITING_FOR_PLAYERS'
-  const isDraft = lobbyState.settings.format === 'DRAFT'
+  const format = lobbyState.settings.format
+  const isDraft = format === 'DRAFT'
+  const isWinston = format === 'WINSTON_DRAFT'
+  const isSealed = format === 'SEALED'
   const hasSelectedSets = lobbyState.settings.setCodes.length > 0
-  const canStart = lobbyState.players.length >= 2 && hasSelectedSets
+  const winstonPlayerCheck = isWinston ? lobbyState.players.length === 2 : lobbyState.players.length >= 2
+  const canStart = winstonPlayerCheck && hasSelectedSets
 
   const copyLobbyId = () => {
     navigator.clipboard.writeText(lobbyState.lobbyId)
@@ -344,16 +348,18 @@ function LobbyOverlay({
       <div className={styles.lobbyContent}>
         {/* Header */}
         <div className={styles.lobbyHeader}>
-          <div className={`${styles.lobbyFormat} ${isDraft ? styles.lobbyFormatDraft : styles.lobbyFormatSealed}`}>
-            {isDraft ? 'Draft' : 'Sealed'}
+          <div className={`${styles.lobbyFormat} ${isDraft || isWinston ? styles.lobbyFormatDraft : styles.lobbyFormatSealed}`}>
+            {isWinston ? 'Winston' : isDraft ? 'Draft' : 'Sealed'}
           </div>
           <h1 className={styles.lobbyTitle}>
             {lobbyState.settings.setNames.join(' + ') || 'Lobby'}
           </h1>
           <p className={styles.lobbySubtitle}>
-            {isDraft
-              ? `${lobbyState.settings.boosterCount} packs · ${lobbyState.settings.pickTimeSeconds}s per pick${lobbyState.settings.picksPerRound === 2 ? ' · Pick 2' : ''}`
-              : `${lobbyState.settings.boosterCount} boosters per player`}
+            {isWinston
+              ? `Winston Draft · ${lobbyState.settings.boosterCount} boosters · ${lobbyState.settings.pickTimeSeconds}s per turn`
+              : isDraft
+                ? `${lobbyState.settings.boosterCount} packs · ${lobbyState.settings.pickTimeSeconds}s per pick${lobbyState.settings.picksPerRound === 2 ? ' · Pick 2' : ''}`
+                : `${lobbyState.settings.boosterCount} boosters per player`}
             {(lobbyState.settings.gamesPerMatch ?? 1) > 1 && ` · ${lobbyState.settings.gamesPerMatch} games per matchup`}
           </p>
         </div>
@@ -386,18 +392,42 @@ function LobbyOverlay({
               <div className={styles.settingsButtons}>
                 <button
                   onClick={() => updateLobbySettings({ format: 'SEALED' })}
-                  className={`${styles.settingsButton} ${!isDraft ? styles.settingsButtonActive : ''}`}
+                  className={`${styles.settingsButton} ${isSealed ? styles.settingsButtonActive : ''}`}
                 >
                   Sealed
                 </button>
                 <button
-                  onClick={() => updateLobbySettings({ format: 'DRAFT' })}
-                  className={`${styles.settingsButton} ${isDraft ? `${styles.settingsButtonActive} ${styles.settingsButtonDraft}` : ''}`}
+                  onClick={() => {
+                    if (!isDraft && !isWinston) updateLobbySettings({ format: 'DRAFT' })
+                  }}
+                  className={`${styles.settingsButton} ${isDraft || isWinston ? `${styles.settingsButtonActive} ${styles.settingsButtonDraft}` : ''}`}
                 >
                   Draft
                 </button>
               </div>
             </div>
+            {/* Draft type sub-selection - only when Draft is selected */}
+            {(isDraft || isWinston) && (
+              <div className={styles.settingsRow} style={{ alignItems: 'flex-start' }}>
+                <span className={styles.settingsLabel} style={{ paddingTop: 6 }}>Draft Type</span>
+                <div className={styles.draftTypeOptions}>
+                  <button
+                    onClick={() => updateLobbySettings({ format: 'DRAFT' })}
+                    className={`${styles.draftTypeButton} ${isDraft ? `${styles.settingsButtonActive} ${styles.settingsButtonDraft}` : ''}`}
+                  >
+                    <span className={styles.draftTypeName}>Normal</span>
+                    <span className={styles.draftTypeDesc}>Pass packs around the table. 3-8 players.</span>
+                  </button>
+                  <button
+                    onClick={() => updateLobbySettings({ format: 'WINSTON_DRAFT' })}
+                    className={`${styles.draftTypeButton} ${isWinston ? `${styles.settingsButtonActive} ${styles.settingsButtonDraft}` : ''}`}
+                  >
+                    <span className={styles.draftTypeName}>Winston</span>
+                    <span className={styles.draftTypeDesc}>Pick from 3 face-down piles. 2 players.</span>
+                  </button>
+                </div>
+              </div>
+            )}
             {/* Set selection — grouped by block */}
             <div className={styles.settingsRow} style={{ alignItems: 'flex-start' }}>
               <span className={styles.settingsLabel} style={{ paddingTop: 6 }}>Sets</span>
@@ -433,7 +463,7 @@ function LobbyOverlay({
                             : [...lobbyState.settings.setCodes, set.code]
                           updateLobbySettings({ setCodes: newCodes })
                         }}
-                        className={`${styles.settingsButton} ${pct != null ? styles.settingsButtonWithProgress : ''} ${isSelected ? (isDraft ? `${styles.settingsButtonActive} ${styles.settingsButtonDraft}` : styles.settingsButtonActive) : ''}`}
+                        className={`${styles.settingsButton} ${pct != null ? styles.settingsButtonWithProgress : ''} ${isSelected ? (isDraft || isWinston ? `${styles.settingsButtonActive} ${styles.settingsButtonDraft}` : styles.settingsButtonActive) : ''}`}
                       >
                         {pct != null ? (
                           <>
@@ -472,10 +502,10 @@ function LobbyOverlay({
                 })()}
               </div>
             </div>
-            {/* Boosters setting - only for Sealed */}
-            {!isDraft && (
+            {/* Boosters setting - for Sealed and Winston */}
+            {(isSealed || isWinston) && (
               <div className={styles.settingsRow}>
-                <span className={styles.settingsLabel}>Boosters per player</span>
+                <span className={styles.settingsLabel}>{isWinston ? 'Total boosters' : 'Boosters per player'}</span>
                 <select
                   value={lobbyState.settings.boosterCount}
                   onChange={(e) => updateLobbySettings({ boosterCount: Number(e.target.value) })}
@@ -502,10 +532,10 @@ function LobbyOverlay({
                 </select>
               </div>
             )}
-            {/* Pick timer setting - only for Draft */}
-            {isDraft && (
+            {/* Timer setting - for Draft and Winston */}
+            {(isDraft || isWinston) && (
               <div className={styles.settingsRow}>
-                <span className={styles.settingsLabel}>Pick timer (seconds)</span>
+                <span className={styles.settingsLabel}>{isWinston ? 'Turn timer (seconds)' : 'Pick timer (seconds)'}</span>
                 <select
                   value={lobbyState.settings.pickTimeSeconds}
                   onChange={(e) => updateLobbySettings({ pickTimeSeconds: Number(e.target.value) })}
@@ -557,7 +587,7 @@ function LobbyOverlay({
           <div className={styles.playerListHeader}>
             <span className={styles.playerListTitle}>Players</span>
             <span className={styles.playerCount}>
-              {lobbyState.players.length} / {lobbyState.settings.maxPlayers || 8}
+              {lobbyState.players.length} / {isWinston ? 2 : (lobbyState.settings.maxPlayers || 8)}
             </span>
           </div>
           {lobbyState.players.map((player, i) => (
@@ -606,13 +636,15 @@ function LobbyOverlay({
               title={
                 !hasSelectedSets
                   ? 'Select at least one set'
-                  : lobbyState.players.length < 2
-                    ? 'Need at least 2 players'
-                    : undefined
+                  : isWinston && lobbyState.players.length !== 2
+                    ? 'Winston Draft requires exactly 2 players'
+                    : lobbyState.players.length < 2
+                      ? 'Need at least 2 players'
+                      : undefined
               }
               className={styles.startButton}
             >
-              {isDraft ? 'Start Draft' : 'Start Game'}
+              {isDraft || isWinston ? 'Start Draft' : 'Start Game'}
             </button>
           )}
           <button onClick={leaveLobby} className={styles.leaveButton}>
