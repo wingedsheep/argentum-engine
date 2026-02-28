@@ -2,13 +2,13 @@
 
 **Set Size:** 145 cards
 **Release Date:** February 3, 2003
-**Implemented:** 50 / 145
+**Implemented:** 51 / 145
 
 | Color      | Count |
 |------------|-------|
 | White      | 10/29 |
 | Blue       | 10/29 |
-| Black      | 10/29 |
+| Black      | 11/29 |
 | Red        | 10/29 |
 | Green      | 10/29 |
 
@@ -158,4 +158,4 @@
 - [ ] Wirewood Channeler
 - [ ] Wirewood Hivemaster
 - [x] Withered Wretch
-- [ ] Zombie Brute
+- [x] Zombie Brute

@@ -57,6 +57,7 @@ object LegionsSet {
         SootfeatherFlock,
         VileDeacon,
         WitheredWretch,
+        ZombieBrute,
 
         // Red creatures
         BladeSliver,
