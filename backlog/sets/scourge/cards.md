@@ -3,13 +3,13 @@
 
 **Set Size:** 143 cards
 **Release Date:** May 26, 2003
-**Implemented:** 105 / 143
+**Implemented:** 106 / 143
 
 | Color | Count |
 |-------|-------|
 | White | 20 |
 | Blue | 17 |
-| Black | 20 |
+| Black | 21 |
 | Red | 22 |
 | Green | 20 |
 | Multicolor | 2 |
@@ -34,7 +34,7 @@
 - [x] Break Asunder
 - [ ] Cabal Conditioning
 - [x] Cabal Interrogator
-- [ ] Call to the Grave
+- [x] Call to the Grave
 - [x] Carbonize
 - [x] Carrion Feeder
 - [x] Chartooth Cougar

@@ -149,6 +149,7 @@ object ScourgeSet {
         WipeClean,
 
         // Black enchantments
+        CallToTheGrave,
         ClutchOfUndeath,
         DragonShadow,
         FatalMutation,
