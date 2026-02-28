@@ -33,6 +33,7 @@ object LegionsSet {
         LowlandTracker,
         PlatedSliver,
         StarlightInvoker,
+        StoicChampion,
         WallOfHope,
         WhiteKnight,
         WingbeatWarrior,
