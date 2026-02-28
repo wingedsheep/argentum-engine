@@ -86,6 +86,7 @@ object LegionsSet {
         DefiantElf,
         EnormousBaloth,
         Hundroog,
+        KrosanVorine,
         NantukoVigilante,
         NeedleshotGourna,
         PatronOfTheWild,
