@@ -129,10 +129,10 @@ function GridDrafter({ gridState, settings }: { gridState: GridDraftState; setti
 
       const fadeTimer = setTimeout(() => {
         setAnimatingCards((prev) => prev ? { ...prev, phase: 'fadeout' } : null)
-      }, 600)
+      }, 800)
       const clearTimer = setTimeout(() => {
         setAnimatingCards(null)
-      }, 1400)
+      }, 1800)
 
       return () => { clearTimeout(fadeTimer); clearTimeout(clearTimer) }
     }
@@ -171,7 +171,7 @@ function GridDrafter({ gridState, settings }: { gridState: GridDraftState; setti
 
       const fadeTimer = setTimeout(() => {
         setAnimatingCards((prev) => prev ? { ...prev, phase: 'fadeout' } : null)
-      }, 600)
+      }, 800)
 
       // After animation completes, transition to the new grid
       const transitionTimer = setTimeout(() => {
@@ -179,7 +179,7 @@ function GridDrafter({ gridState, settings }: { gridState: GridDraftState; setti
         setDisplayGrid(gridState.grid)
         setDisplayGridNumber(gridState.gridNumber)
         prevDisplayGridRef.current = gridState.grid
-      }, 1400)
+      }, 1800)
 
       return () => { clearTimeout(fadeTimer); clearTimeout(transitionTimer) }
     }
