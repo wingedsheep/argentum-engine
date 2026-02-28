@@ -5,6 +5,7 @@ import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.conditions.Condition
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
+import com.wingedsheep.sdk.scripting.TriggeredAbility
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -51,6 +52,27 @@ data class GrantKeywordToCreatureGroup(
     val filter: GroupFilter
 ) : StaticAbility {
     override val description: String = "${filter.description} have ${keyword.name.lowercase().replace('_', ' ')}"
+}
+
+/**
+ * Grants a triggered ability to a group of creatures (continuous static ability).
+ * Used for Slivers and other creatures that share abilities with a group.
+ * Example: Hunter Sliver — "All Sliver creatures have provoke."
+ *
+ * Unlike GrantKeywordToCreatureGroup (which handles keyword display in the layer system),
+ * this grants the actual functional triggered ability. The TriggerDetector checks for
+ * this static ability on battlefield permanents when detecting triggers.
+ *
+ * @property ability The triggered ability to grant to matching creatures
+ * @property filter The group of creatures that gain the ability
+ */
+@SerialName("GrantTriggeredAbilityToCreatureGroup")
+@Serializable
+data class GrantTriggeredAbilityToCreatureGroup(
+    val ability: TriggeredAbility,
+    val filter: GroupFilter
+) : StaticAbility {
+    override val description: String = "${filter.description} have ${ability.trigger}"
 }
 
 /**

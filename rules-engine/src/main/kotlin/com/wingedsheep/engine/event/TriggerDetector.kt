@@ -31,6 +31,7 @@ import com.wingedsheep.engine.state.components.identity.OwnerComponent
 import com.wingedsheep.engine.state.components.identity.TextReplacementComponent
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.core.Zone
+import com.wingedsheep.sdk.scripting.GrantTriggeredAbilityToCreatureGroup
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.*
 import com.wingedsheep.sdk.scripting.events.DamageType
@@ -73,7 +74,13 @@ class TriggerDetector(
         val grantedAbilities = state.grantedTriggeredAbilities
             .filter { it.entityId == entityId }
             .map { it.ability }
-        val combined = if (grantedAbilities.isNotEmpty()) base + grantedAbilities else base
+
+        // Merge in triggered abilities granted by static abilities on other permanents
+        // (e.g., Hunter Sliver granting provoke to all Slivers)
+        val staticGrantedAbilities = getStaticGrantedTriggeredAbilities(entityId, state)
+
+        val allGranted = grantedAbilities + staticGrantedAbilities
+        val combined = if (allGranted.isNotEmpty()) base + allGranted else base
 
         // Apply text replacement if the entity has one
         val textReplacement = state.getEntity(entityId)?.get<TextReplacementComponent>()
@@ -82,6 +89,51 @@ class TriggerDetector(
         } else {
             combined
         }
+    }
+
+    /**
+     * Get triggered abilities granted by static abilities on battlefield permanents.
+     * E.g., Hunter Sliver grants provoke to all Sliver creatures via
+     * GrantTriggeredAbilityToCreatureGroup.
+     *
+     * Scans all battlefield permanents for this static ability type, checks if the
+     * target entity matches the filter using its projected card data.
+     */
+    private fun getStaticGrantedTriggeredAbilities(entityId: EntityId, state: GameState): List<TriggeredAbility> {
+        val registry = cardRegistry ?: return emptyList()
+        val targetContainer = state.getEntity(entityId) ?: return emptyList()
+        val targetCard = targetContainer.get<CardComponent>() ?: return emptyList()
+
+        val result = mutableListOf<TriggeredAbility>()
+
+        for (permanentId in state.getBattlefield()) {
+            val container = state.getEntity(permanentId) ?: continue
+            val card = container.get<CardComponent>() ?: continue
+            // Skip face-down permanents — they have no abilities
+            if (container.has<FaceDownComponent>()) continue
+
+            val cardDef = registry.getCard(card.cardDefinitionId) ?: continue
+            for (ability in cardDef.staticAbilities) {
+                if (ability !is GrantTriggeredAbilityToCreatureGroup) continue
+
+                // Check if the target entity matches the filter's card predicates
+                val filter = ability.filter.baseFilter
+                val matchesAll = filter.cardPredicates.all { predicate ->
+                    when (predicate) {
+                        is com.wingedsheep.sdk.scripting.predicates.CardPredicate.IsCreature ->
+                            targetCard.typeLine.isCreature
+                        is com.wingedsheep.sdk.scripting.predicates.CardPredicate.HasSubtype ->
+                            targetCard.typeLine.hasSubtype(predicate.subtype)
+                        else -> true
+                    }
+                }
+                if (matchesAll) {
+                    result.add(ability.ability)
+                }
+            }
+        }
+
+        return result
     }
 
     /**

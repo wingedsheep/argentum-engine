@@ -67,6 +67,7 @@ object LegionsSet {
         // Red creatures
         BladeSliver,
         CrestedCraghorn,
+        HunterSliver,
         FlamewaveInvoker,
         GoblinGoon,
         FreneticRaptor,

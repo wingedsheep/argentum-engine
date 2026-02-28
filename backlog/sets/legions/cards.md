@@ -2,14 +2,14 @@
 
 **Set Size:** 145 cards
 **Release Date:** February 3, 2003
-**Implemented:** 60 / 145
+**Implemented:** 61 / 145
 
 | Color      | Count |
 |------------|-------|
 | White      | 12/29 |
 | Blue       | 12/29 |
 | Black      | 12/29 |
-| Red        | 12/29 |
+| Red        | 13/29 |
 | Green      | 12/29 |
 
 ---
@@ -84,7 +84,7 @@
 - [x] Havoc Demon
 - [ ] Hollow Specter
 - [x] Hundroog
-- [ ] Hunter Sliver
+- [x] Hunter Sliver
 - [ ] Imperial Hellkite
 - [ ] Infernal Caretaker
 - [x] Keeneye Aven
