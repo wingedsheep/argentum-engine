@@ -233,6 +233,9 @@ class TournamentLobby(
     @Volatile
     var winstonCurrentPileIndex: Int = 0
 
+    /** Card names each player has seen (examined in piles but possibly skipped). playerId -> set of card names */
+    val winstonSeenCards: MutableMap<EntityId, MutableSet<String>> = mutableMapOf()
+
     // =========================================================================
     // Grid Draft-specific State
     // =========================================================================
@@ -1190,7 +1193,8 @@ class TournamentLobby(
         mainDeck: List<CardDefinition>,
         piles: List<List<CardDefinition>>,
         activePlayerIndex: Int,
-        currentPileIndex: Int
+        currentPileIndex: Int,
+        seenCards: Map<EntityId, MutableSet<String>> = emptyMap()
     ) {
         winstonMainDeck.clear()
         winstonMainDeck.addAll(mainDeck)
@@ -1202,6 +1206,8 @@ class TournamentLobby(
         }
         winstonActivePlayerIndex = activePlayerIndex
         winstonCurrentPileIndex = currentPileIndex
+        winstonSeenCards.clear()
+        winstonSeenCards.putAll(seenCards)
     }
 
     /**

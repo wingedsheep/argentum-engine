@@ -447,10 +447,16 @@ sealed interface ServerMessage {
         val pickedCards: List<SealedCardInfo>,
         /** Number of cards opponent has picked */
         val totalPickedByOpponent: Int,
+        /** Opponent cards this player has seen (examined in piles) */
+        val knownOpponentCards: List<SealedCardInfo> = emptyList(),
+        /** Number of opponent cards this player has NOT seen */
+        val unknownOpponentCardCount: Int = 0,
         /** Description of the last action */
         val lastAction: String? = null,
         /** Seconds remaining on the turn timer */
-        val timeRemainingSeconds: Int = 0
+        val timeRemainingSeconds: Int = 0,
+        /** Cards from the last opponent pick (empty if no pick yet or it was your pick) */
+        val lastPickedCards: List<SealedCardInfo> = emptyList()
     ) : ServerMessage
 
     // =========================================================================
@@ -471,6 +477,8 @@ sealed interface ServerMessage {
         val pickedCards: List<SealedCardInfo>,
         /** Other players' pick counts: playerName -> count */
         val totalPickedByOthers: Map<String, Int>,
+        /** Other players' picked cards: playerName -> cards */
+        val pickedCardsByOthers: Map<String, List<SealedCardInfo>> = emptyMap(),
         val lastAction: String?,
         val timeRemainingSeconds: Int,
         /** Available row/column selections (e.g., ["ROW_0", "COL_1"]) */
@@ -480,7 +488,9 @@ sealed interface ServerMessage {
         /** Index of current picker in playerOrder */
         val currentPickerIndex: Int,
         /** Current grid number (1-based) */
-        val gridNumber: Int
+        val gridNumber: Int,
+        /** Cards from the last opponent pick (empty if no pick yet or it was your pick) */
+        val lastPickedCards: List<SealedCardInfo> = emptyList()
     ) : ServerMessage
 
     // =========================================================================

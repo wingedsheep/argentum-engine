@@ -754,8 +754,11 @@ export interface WinstonDraftStateMessage {
   readonly currentPileCards: readonly SealedCardInfo[] | null
   readonly pickedCards: readonly SealedCardInfo[]
   readonly totalPickedByOpponent: number
+  readonly knownOpponentCards: readonly SealedCardInfo[]
+  readonly unknownOpponentCardCount: number
   readonly lastAction: string | null
   readonly timeRemainingSeconds: number
+  readonly lastPickedCards: readonly SealedCardInfo[]
 }
 
 // ============================================================================
@@ -774,6 +777,7 @@ export interface GridDraftStateMessage {
   readonly mainDeckRemaining: number
   readonly pickedCards: readonly SealedCardInfo[]
   readonly totalPickedByOthers: Record<string, number>
+  readonly pickedCardsByOthers: Record<string, readonly SealedCardInfo[]>
   readonly lastAction: string | null
   readonly timeRemainingSeconds: number
   /** Available row/column selections (e.g., ["ROW_0", "COL_1"]) */
@@ -784,6 +788,7 @@ export interface GridDraftStateMessage {
   readonly currentPickerIndex: number
   /** Current grid number (1-based) */
   readonly gridNumber: number
+  readonly lastPickedCards: readonly SealedCardInfo[]
 }
 
 // ============================================================================

@@ -57,6 +57,7 @@ function GridDrafter({ gridState, settings }: { gridState: GridDraftState; setti
   const [hoverPos, setHoverPos] = useState<{ x: number; y: number } | null>(null)
   const [hoveredSelection, setHoveredSelection] = useState<SelectionType | null>(null)
   const [showPickedCards, setShowPickedCards] = useState(!responsive.isMobile)
+  const [viewingOpponent, setViewingOpponent] = useState<string | null>(null)
 
   const handleHover = useCallback((card: SealedCardInfo | null, e?: React.MouseEvent) => {
     setHoveredCard(card)
@@ -187,6 +188,36 @@ function GridDrafter({ gridState, settings }: { gridState: GridDraftState; setti
               {showPickedCards ? 'Grid' : `Pool (${gridState.pickedCards.length})`}
             </button>
           )}
+
+          {isHost ? (
+            <button
+              onClick={stopLobby}
+              onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#e74c3c' }}
+              onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = '#c0392b' }}
+              style={{
+                backgroundColor: '#c0392b', color: 'white',
+                padding: '4px 14px', fontSize: 13,
+                border: 'none', borderRadius: 6, cursor: 'pointer',
+                transition: 'background-color 0.15s',
+              }}
+            >
+              Stop Draft
+            </button>
+          ) : (
+            <button
+              onClick={leaveLobby}
+              onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#e74c3c' }}
+              onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = '#c0392b' }}
+              style={{
+                backgroundColor: '#c0392b', color: 'white',
+                padding: '4px 14px', fontSize: 13,
+                border: 'none', borderRadius: 6, cursor: 'pointer',
+                transition: 'background-color 0.15s',
+              }}
+            >
+              Leave
+            </button>
+          )}
         </div>
       </div>
 
@@ -212,7 +243,7 @@ function GridDrafter({ gridState, settings }: { gridState: GridDraftState; setti
                 : `Waiting for ${gridState.activePlayerName}...`}
             </div>
 
-            {/* Last action */}
+            {/* Last action + last picked cards */}
             {gridState.lastAction && (
               <div style={{
                 textAlign: 'center', marginBottom: 12,
@@ -220,6 +251,11 @@ function GridDrafter({ gridState, settings }: { gridState: GridDraftState; setti
                 fontStyle: 'italic',
               }}>
                 {gridState.lastAction}
+                {gridState.lastPickedCards.length > 0 && (
+                  <span style={{ fontStyle: 'normal', marginLeft: 6 }}>
+                    ({gridState.lastPickedCards.map((c) => c.name).join(', ')})
+                  </span>
+                )}
               </div>
             )}
 
@@ -228,23 +264,51 @@ function GridDrafter({ gridState, settings }: { gridState: GridDraftState; setti
               display: 'flex', gap: 12, marginBottom: 16,
               justifyContent: 'center',
             }}>
-              {gridState.playerOrder.map((name: string, idx: number) => (
-                <div key={name} style={{
-                  padding: '3px 10px', borderRadius: 4,
-                  fontSize: 12, fontWeight: 600,
-                  background: idx === gridState.currentPickerIndex
-                    ? 'rgba(74,222,128,0.2)'
-                    : 'rgba(255,255,255,0.05)',
-                  color: idx === gridState.currentPickerIndex
-                    ? '#4ade80'
-                    : 'rgba(255,255,255,0.4)',
-                  border: idx === gridState.currentPickerIndex
-                    ? '1px solid rgba(74,222,128,0.4)'
-                    : '1px solid rgba(255,255,255,0.1)',
-                }}>
-                  {name}
-                </div>
-              ))}
+              {gridState.playerOrder.map((name: string, idx: number) => {
+                const isYou = !(name in gridState.totalPickedByOthers)
+                const isOpponent = !isYou
+                const opponentCount = gridState.totalPickedByOthers[name]
+                const isCurrent = idx === gridState.currentPickerIndex
+
+                return (
+                  <div
+                    key={name}
+                    onClick={isOpponent ? () => setViewingOpponent(name) : undefined}
+                    onMouseEnter={isOpponent ? (e) => {
+                      e.currentTarget.style.background = isCurrent
+                        ? 'rgba(74,222,128,0.3)'
+                        : 'rgba(255,255,255,0.12)'
+                    } : undefined}
+                    onMouseLeave={isOpponent ? (e) => {
+                      e.currentTarget.style.background = isCurrent
+                        ? 'rgba(74,222,128,0.2)'
+                        : 'rgba(255,255,255,0.05)'
+                    } : undefined}
+                    style={{
+                      padding: '3px 10px', borderRadius: 4,
+                      fontSize: 12, fontWeight: 600,
+                      background: isCurrent
+                        ? 'rgba(74,222,128,0.2)'
+                        : 'rgba(255,255,255,0.05)',
+                      color: isCurrent
+                        ? '#4ade80'
+                        : 'rgba(255,255,255,0.4)',
+                      border: isCurrent
+                        ? '1px solid rgba(74,222,128,0.4)'
+                        : '1px solid rgba(255,255,255,0.1)',
+                      cursor: isOpponent ? 'pointer' : 'default',
+                      transition: 'background 0.15s',
+                    }}
+                  >
+                    {name}{isYou ? ' (You)' : ''}
+                    {isOpponent && opponentCount != null && (
+                      <span style={{ marginLeft: 6, opacity: 0.7 }}>
+                        — {opponentCount} cards
+                      </span>
+                    )}
+                  </div>
+                )
+              })}
             </div>
 
             {/* 3x3 Grid with row/column headers */}
@@ -362,48 +426,6 @@ function GridDrafter({ gridState, settings }: { gridState: GridDraftState; setti
               })}
             </div>
 
-            {/* Others' pick counts */}
-            {Object.keys(gridState.totalPickedByOthers).length > 0 && (
-              <div style={{
-                textAlign: 'center', marginTop: 16,
-                color: 'rgba(255,255,255,0.4)', fontSize: 13,
-              }}>
-                {Object.entries(gridState.totalPickedByOthers).map(([name, count]: [string, number]) => (
-                  <span key={name} style={{ marginRight: 16 }}>
-                    {name}: {count} cards
-                  </span>
-                ))}
-              </div>
-            )}
-
-            {/* Leave/Stop buttons */}
-            <div style={{
-              display: 'flex', gap: 8, justifyContent: 'center',
-              marginTop: 16,
-            }}>
-              <button
-                onClick={leaveLobby}
-                style={{
-                  background: 'transparent', border: '1px solid rgba(255,255,255,0.15)',
-                  borderRadius: 4, padding: '4px 12px',
-                  color: 'rgba(255,255,255,0.5)', cursor: 'pointer', fontSize: 12,
-                }}
-              >
-                Leave
-              </button>
-              {isHost && (
-                <button
-                  onClick={stopLobby}
-                  style={{
-                    background: 'transparent', border: '1px solid rgba(233,69,96,0.3)',
-                    borderRadius: 4, padding: '4px 12px',
-                    color: 'rgba(233,69,96,0.7)', cursor: 'pointer', fontSize: 12,
-                  }}
-                >
-                  Stop Draft
-                </button>
-              )}
-            </div>
             {/* Spacer to vertically center content when it doesn't overflow */}
             <div style={{ flex: '1 0 0' }} />
           </div>
@@ -494,6 +516,16 @@ function GridDrafter({ gridState, settings }: { gridState: GridDraftState; setti
         )}
       </div>
 
+      {/* Opponent cards overlay */}
+      {viewingOpponent && (
+        <OpponentCardsOverlay
+          playerName={viewingOpponent}
+          cards={gridState.pickedCardsByOthers[viewingOpponent] ?? []}
+          onClose={() => setViewingOpponent(null)}
+          onHover={handleHover}
+        />
+      )}
+
       {/* Card preview on hover */}
       {hoveredCard && hoverPos && (
         <CardPreview card={hoveredCard} position={hoverPos} />
@@ -505,6 +537,171 @@ function GridDrafter({ gridState, settings }: { gridState: GridDraftState; setti
           50% { opacity: 0.5; }
         }
       `}</style>
+    </div>
+  )
+}
+
+/**
+ * Overlay showing an opponent's picked cards.
+ */
+function OpponentCardsOverlay({ playerName, cards, onClose, onHover }: {
+  playerName: string
+  cards: readonly SealedCardInfo[]
+  onClose: () => void
+  onHover: (card: SealedCardInfo | null, e?: React.MouseEvent) => void
+}) {
+  const colorGroups = useMemo(() => {
+    const groups: Record<string, Array<{ card: SealedCardInfo; count: number }>> = {
+      W: [], U: [], B: [], R: [], G: [], M: [], C: [],
+    }
+    const colorCounts: Record<string, Map<string, { card: SealedCardInfo; count: number }>> = {
+      W: new Map(), U: new Map(), B: new Map(), R: new Map(), G: new Map(), M: new Map(), C: new Map(),
+    }
+
+    for (const card of cards) {
+      const color = getCardColor(card)
+      const colorMap = colorCounts[color]
+      if (!colorMap) continue
+      const existing = colorMap.get(card.name)
+      if (existing) {
+        existing.count++
+      } else {
+        colorMap.set(card.name, { card, count: 1 })
+      }
+    }
+
+    for (const [color, map] of Object.entries(colorCounts)) {
+      groups[color] = Array.from(map.values())
+    }
+
+    return groups
+  }, [cards])
+
+  const creatureCount = cards.filter((c) => c.typeLine.includes('Creature')).length
+  const spellCount = cards.length - creatureCount
+
+  return (
+    <div
+      onClick={onClose}
+      style={{
+        position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+        background: 'rgba(0,0,0,0.7)',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        zIndex: 150,
+      }}
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        style={{
+          background: 'linear-gradient(135deg, #1a1a2e 0%, #162e1e 50%, #0f4630 100%)',
+          borderRadius: 10,
+          border: '1px solid rgba(255,255,255,0.15)',
+          boxShadow: '0 16px 48px rgba(0,0,0,0.5)',
+          width: 360,
+          maxHeight: '80vh',
+          display: 'flex', flexDirection: 'column',
+          overflow: 'hidden',
+        }}
+      >
+        {/* Header */}
+        <div style={{
+          padding: '14px 18px',
+          borderBottom: '1px solid rgba(255,255,255,0.1)',
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          background: 'rgba(0,0,0,0.2)',
+        }}>
+          <div>
+            <div style={{ color: '#fff', fontWeight: 700, fontSize: 15 }}>
+              {playerName}'s Cards
+            </div>
+            <div style={{ color: 'rgba(255,255,255,0.4)', fontSize: 12, marginTop: 2 }}>
+              {cards.length} cards — {creatureCount}C / {spellCount}S
+            </div>
+          </div>
+          <button
+            onClick={onClose}
+            style={{
+              background: 'rgba(255,255,255,0.1)', border: 'none', borderRadius: 4,
+              width: 28, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center',
+              color: 'rgba(255,255,255,0.6)', cursor: 'pointer', fontSize: 16,
+            }}
+          >
+            ×
+          </button>
+        </div>
+
+        {/* Banner */}
+        <div style={{
+          padding: '8px 18px',
+          background: 'rgba(74,222,128,0.1)',
+          borderBottom: '1px solid rgba(74,222,128,0.15)',
+          color: 'rgba(74,222,128,0.8)',
+          fontSize: 12,
+          fontWeight: 600,
+          textAlign: 'center',
+        }}>
+          Viewing opponent's picked cards
+        </div>
+
+        {/* Card list */}
+        <div style={{ flex: 1, overflow: 'auto', padding: '10px 14px' }}>
+          {Object.entries(colorGroups).map(([color, colorCards]) => {
+            if (colorCards.length === 0) return null
+            return (
+              <div key={color} style={{ marginBottom: 10 }}>
+                <div style={{
+                  fontSize: 11, fontWeight: 600, textTransform: 'uppercase',
+                  color: getColorName(color).color,
+                  letterSpacing: '0.05em', marginBottom: 4,
+                  display: 'flex', alignItems: 'center', gap: 4,
+                }}>
+                  <span style={{
+                    width: 8, height: 8, borderRadius: '50%',
+                    background: getColorName(color).color,
+                    display: 'inline-block',
+                  }} />
+                  {getColorName(color).name} ({colorCards.reduce((sum, c) => sum + c.count, 0)})
+                </div>
+                {colorCards.map(({ card, count }) => (
+                  <div
+                    key={card.name}
+                    onMouseEnter={(e) => onHover(card, e)}
+                    onMouseMove={(e) => onHover(card, e)}
+                    onMouseLeave={() => onHover(null)}
+                    style={{
+                      padding: '3px 8px',
+                      fontSize: 12,
+                      color: 'rgba(255,255,255,0.7)',
+                      display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                      borderRadius: 3,
+                      cursor: 'pointer',
+                    }}
+                  >
+                    <span style={{ display: 'flex', alignItems: 'center', gap: 6, minWidth: 0 }}>
+                      <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        {count > 1 ? `${count}x ` : ''}{card.name}
+                      </span>
+                    </span>
+                    {card.manaCost && (
+                      <span style={{ flexShrink: 0, marginLeft: 4 }}>
+                        <ManaCost cost={card.manaCost} size={12} />
+                      </span>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )
+          })}
+          {cards.length === 0 && (
+            <div style={{
+              textAlign: 'center', color: 'rgba(255,255,255,0.3)',
+              padding: 20, fontSize: 13,
+            }}>
+              No cards picked yet
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   )
 }

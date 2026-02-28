@@ -55,7 +55,8 @@ fun TournamentLobby.toPersistent(): PersistentTournamentLobby {
         winstonMainDeckNames = winstonMainDeck.map { it.name },
         winstonPileNames = winstonPiles.map { pile -> pile.map { it.name } },
         winstonActivePlayerIndex = winstonActivePlayerIndex,
-        winstonCurrentPileIndex = winstonCurrentPileIndex
+        winstonCurrentPileIndex = winstonCurrentPileIndex,
+        winstonSeenCardNames = winstonSeenCards.mapKeys { it.key.value }.mapValues { it.value.toList() }
     )
 }
 
@@ -149,7 +150,8 @@ fun restoreTournamentLobby(
             mainDeck = mainDeck,
             piles = piles,
             activePlayerIndex = persistent.winstonActivePlayerIndex,
-            currentPileIndex = persistent.winstonCurrentPileIndex
+            currentPileIndex = persistent.winstonCurrentPileIndex,
+            seenCards = persistent.winstonSeenCardNames.mapKeys { EntityId(it.key) }.mapValues { it.value.toMutableSet() }
         )
     }
 

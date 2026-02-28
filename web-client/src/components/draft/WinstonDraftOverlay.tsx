@@ -31,6 +31,7 @@ function WinstonDrafter({ winstonState, settings }: { winstonState: WinstonDraft
   const [hoveredCard, setHoveredCard] = useState<SealedCardInfo | null>(null)
   const [hoverPos, setHoverPos] = useState<{ x: number; y: number } | null>(null)
   const [showPickedCards, setShowPickedCards] = useState(!responsive.isMobile)
+  const [viewingOpponent, setViewingOpponent] = useState(false)
 
   const handleHover = useCallback((card: SealedCardInfo | null, e?: React.MouseEvent) => {
     setHoveredCard(card)
@@ -144,6 +145,36 @@ function WinstonDrafter({ winstonState, settings }: { winstonState: WinstonDraft
               {showPickedCards ? 'Piles' : `Pool (${winstonState.pickedCards.length})`}
             </button>
           )}
+
+          {isHost ? (
+            <button
+              onClick={stopLobby}
+              onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#e74c3c' }}
+              onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = '#c0392b' }}
+              style={{
+                backgroundColor: '#c0392b', color: 'white',
+                padding: '4px 14px', fontSize: 13,
+                border: 'none', borderRadius: 6, cursor: 'pointer',
+                transition: 'background-color 0.15s',
+              }}
+            >
+              Stop Draft
+            </button>
+          ) : (
+            <button
+              onClick={leaveLobby}
+              onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#e74c3c' }}
+              onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = '#c0392b' }}
+              style={{
+                backgroundColor: '#c0392b', color: 'white',
+                padding: '4px 14px', fontSize: 13,
+                border: 'none', borderRadius: 6, cursor: 'pointer',
+                transition: 'background-color 0.15s',
+              }}
+            >
+              Leave
+            </button>
+          )}
         </div>
       </div>
 
@@ -166,7 +197,7 @@ function WinstonDrafter({ winstonState, settings }: { winstonState: WinstonDraft
                 : `Waiting for ${winstonState.activePlayerName}...`}
             </div>
 
-            {/* Last action log */}
+            {/* Last action log + last picked cards */}
             {winstonState.lastAction && (
               <div style={{
                 textAlign: 'center', marginBottom: 16,
@@ -174,8 +205,50 @@ function WinstonDrafter({ winstonState, settings }: { winstonState: WinstonDraft
                 fontStyle: 'italic',
               }}>
                 {winstonState.lastAction}
+                {winstonState.lastPickedCards.length > 0 && (
+                  <span style={{ fontStyle: 'normal', marginLeft: 6 }}>
+                    ({winstonState.lastPickedCards.map((c) => c.name).join(', ')})
+                  </span>
+                )}
               </div>
             )}
+
+            {/* Opponent picked count — click to view known cards */}
+            <div style={{
+              display: 'flex', gap: 12, marginBottom: 16,
+              justifyContent: 'center',
+            }}>
+              <div
+                onClick={() => setViewingOpponent(true)}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = 'rgba(255,255,255,0.12)'
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = 'rgba(255,255,255,0.05)'
+                }}
+                style={{
+                  padding: '3px 10px', borderRadius: 4,
+                  fontSize: 12, fontWeight: 600,
+                  background: 'rgba(255,255,255,0.05)',
+                  color: 'rgba(255,255,255,0.4)',
+                  border: '1px solid rgba(255,255,255,0.1)',
+                  cursor: 'pointer',
+                  transition: 'background 0.15s',
+                }}
+              >
+                {winstonState.isYourTurn
+                  ? 'Opponent'
+                  : winstonState.activePlayerName}
+                <span style={{ marginLeft: 6, opacity: 0.7 }}>
+                  — {winstonState.totalPickedByOpponent} cards
+                </span>
+                {winstonState.knownOpponentCards.length > 0 && (
+                  <span style={{ marginLeft: 4, opacity: 0.6 }}>
+                    ({winstonState.knownOpponentCards.length} known)
+                  </span>
+                )}
+              </div>
+            </div>
 
             {/* Three piles */}
             <div style={{
@@ -342,42 +415,6 @@ function WinstonDrafter({ winstonState, settings }: { winstonState: WinstonDraft
               </div>
             )}
 
-            {/* Opponent picked count */}
-            <div style={{
-              textAlign: 'center',
-              color: 'rgba(255,255,255,0.4)', fontSize: 13,
-            }}>
-              Opponent has picked {winstonState.totalPickedByOpponent} card{winstonState.totalPickedByOpponent !== 1 ? 's' : ''}
-            </div>
-
-            {/* Leave/Stop buttons */}
-            <div style={{
-              display: 'flex', gap: 8, justifyContent: 'center',
-              marginTop: 16,
-            }}>
-              <button
-                onClick={leaveLobby}
-                style={{
-                  background: 'transparent', border: '1px solid rgba(255,255,255,0.15)',
-                  borderRadius: 4, padding: '4px 12px',
-                  color: 'rgba(255,255,255,0.5)', cursor: 'pointer', fontSize: 12,
-                }}
-              >
-                Leave
-              </button>
-              {isHost && (
-                <button
-                  onClick={stopLobby}
-                  style={{
-                    background: 'transparent', border: '1px solid rgba(233,69,96,0.3)',
-                    borderRadius: 4, padding: '4px 12px',
-                    color: 'rgba(233,69,96,0.7)', cursor: 'pointer', fontSize: 12,
-                  }}
-                >
-                  Stop Draft
-                </button>
-              )}
-            </div>
           </div>
         )}
 
@@ -466,6 +503,17 @@ function WinstonDrafter({ winstonState, settings }: { winstonState: WinstonDraft
         )}
       </div>
 
+      {/* Opponent known cards overlay */}
+      {viewingOpponent && (
+        <OpponentKnownCardsOverlay
+          opponentName={winstonState.isYourTurn ? 'Opponent' : winstonState.activePlayerName}
+          knownCards={winstonState.knownOpponentCards}
+          unknownCount={winstonState.unknownOpponentCardCount}
+          onClose={() => setViewingOpponent(false)}
+          onHover={handleHover}
+        />
+      )}
+
       {/* Card preview on hover */}
       {hoveredCard && hoverPos && (
         <CardPreview card={hoveredCard} position={hoverPos} />
@@ -477,6 +525,192 @@ function WinstonDrafter({ winstonState, settings }: { winstonState: WinstonDraft
           50% { opacity: 0.5; }
         }
       `}</style>
+    </div>
+  )
+}
+
+/**
+ * Overlay showing opponent's cards that you have seen (examined in piles).
+ */
+function OpponentKnownCardsOverlay({ opponentName, knownCards, unknownCount, onClose, onHover }: {
+  opponentName: string
+  knownCards: readonly SealedCardInfo[]
+  unknownCount: number
+  onClose: () => void
+  onHover: (card: SealedCardInfo | null, e?: React.MouseEvent) => void
+}) {
+  const colorGroups = useMemo(() => {
+    const groups: Record<string, Array<{ card: SealedCardInfo; count: number }>> = {
+      W: [], U: [], B: [], R: [], G: [], M: [], C: [],
+    }
+    const colorCounts: Record<string, Map<string, { card: SealedCardInfo; count: number }>> = {
+      W: new Map(), U: new Map(), B: new Map(), R: new Map(), G: new Map(), M: new Map(), C: new Map(),
+    }
+
+    for (const card of knownCards) {
+      const color = getCardColor(card)
+      const colorMap = colorCounts[color]
+      if (!colorMap) continue
+      const existing = colorMap.get(card.name)
+      if (existing) {
+        existing.count++
+      } else {
+        colorMap.set(card.name, { card, count: 1 })
+      }
+    }
+
+    for (const [color, map] of Object.entries(colorCounts)) {
+      groups[color] = Array.from(map.values())
+    }
+
+    return groups
+  }, [knownCards])
+
+  const totalKnown = knownCards.length
+
+  return (
+    <div
+      onClick={onClose}
+      style={{
+        position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+        background: 'rgba(0,0,0,0.7)',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        zIndex: 150,
+      }}
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        style={{
+          background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)',
+          borderRadius: 10,
+          border: '1px solid rgba(255,255,255,0.15)',
+          boxShadow: '0 16px 48px rgba(0,0,0,0.5)',
+          width: 360,
+          maxHeight: '80vh',
+          display: 'flex', flexDirection: 'column',
+          overflow: 'hidden',
+        }}
+      >
+        {/* Header */}
+        <div style={{
+          padding: '14px 18px',
+          borderBottom: '1px solid rgba(255,255,255,0.1)',
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          background: 'rgba(0,0,0,0.2)',
+        }}>
+          <div>
+            <div style={{ color: '#fff', fontWeight: 700, fontSize: 15 }}>
+              {opponentName}'s Cards
+            </div>
+            <div style={{ color: 'rgba(255,255,255,0.4)', fontSize: 12, marginTop: 2 }}>
+              {totalKnown} known / {unknownCount} unknown
+            </div>
+          </div>
+          <button
+            onClick={onClose}
+            style={{
+              background: 'rgba(255,255,255,0.1)', border: 'none', borderRadius: 4,
+              width: 28, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center',
+              color: 'rgba(255,255,255,0.6)', cursor: 'pointer', fontSize: 16,
+            }}
+          >
+            ×
+          </button>
+        </div>
+
+        {/* Banner */}
+        <div style={{
+          padding: '8px 18px',
+          background: 'rgba(255,255,255,0.04)',
+          borderBottom: '1px solid rgba(255,255,255,0.08)',
+          color: 'rgba(255,255,255,0.4)',
+          fontSize: 12,
+          textAlign: 'center',
+        }}>
+          Showing opponent cards you've seen in piles
+        </div>
+
+        {/* Card list */}
+        <div style={{ flex: 1, overflow: 'auto', padding: '10px 14px' }}>
+          {Object.entries(colorGroups).map(([color, colorCards]) => {
+            if (colorCards.length === 0) return null
+            return (
+              <div key={color} style={{ marginBottom: 10 }}>
+                <div style={{
+                  fontSize: 11, fontWeight: 600, textTransform: 'uppercase',
+                  color: getColorName(color).color,
+                  letterSpacing: '0.05em', marginBottom: 4,
+                  display: 'flex', alignItems: 'center', gap: 4,
+                }}>
+                  <span style={{
+                    width: 8, height: 8, borderRadius: '50%',
+                    background: getColorName(color).color,
+                    display: 'inline-block',
+                  }} />
+                  {getColorName(color).name} ({colorCards.reduce((sum, c) => sum + c.count, 0)})
+                </div>
+                {colorCards.map(({ card, count }) => (
+                  <div
+                    key={card.name}
+                    onMouseEnter={(e) => onHover(card, e)}
+                    onMouseMove={(e) => onHover(card, e)}
+                    onMouseLeave={() => onHover(null)}
+                    style={{
+                      padding: '3px 8px',
+                      fontSize: 12,
+                      color: 'rgba(255,255,255,0.7)',
+                      display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                      borderRadius: 3,
+                      cursor: 'pointer',
+                    }}
+                  >
+                    <span style={{ display: 'flex', alignItems: 'center', gap: 6, minWidth: 0 }}>
+                      <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        {count > 1 ? `${count}x ` : ''}{card.name}
+                      </span>
+                    </span>
+                    {card.manaCost && (
+                      <span style={{ flexShrink: 0, marginLeft: 4 }}>
+                        <ManaCost cost={card.manaCost} size={12} />
+                      </span>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )
+          })}
+          {totalKnown === 0 && unknownCount === 0 && (
+            <div style={{
+              textAlign: 'center', color: 'rgba(255,255,255,0.3)',
+              padding: 20, fontSize: 13,
+            }}>
+              No cards picked yet
+            </div>
+          )}
+          {totalKnown === 0 && unknownCount > 0 && (
+            <div style={{
+              textAlign: 'center', color: 'rgba(255,255,255,0.3)',
+              padding: 20, fontSize: 13,
+            }}>
+              No known cards — opponent picked {unknownCount} card{unknownCount !== 1 ? 's' : ''} from piles you haven't seen
+            </div>
+          )}
+          {/* Unknown cards count */}
+          {unknownCount > 0 && totalKnown > 0 && (
+            <div style={{
+              marginTop: 12,
+              padding: '8px 12px',
+              background: 'rgba(255,255,255,0.05)',
+              borderRadius: 4,
+              color: 'rgba(255,255,255,0.4)',
+              fontSize: 12,
+              textAlign: 'center',
+            }}>
+              + {unknownCount} unknown card{unknownCount !== 1 ? 's' : ''} from piles you haven't seen
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   )
 }

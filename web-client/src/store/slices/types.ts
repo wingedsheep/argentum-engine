@@ -259,8 +259,11 @@ export interface WinstonDraftState {
   currentPileCards: readonly SealedCardInfo[] | null
   pickedCards: readonly SealedCardInfo[]
   totalPickedByOpponent: number
+  knownOpponentCards: readonly SealedCardInfo[]
+  unknownOpponentCardCount: number
   lastAction: string | null
   timeRemaining: number
+  lastPickedCards: readonly SealedCardInfo[]
 }
 
 /**
@@ -273,6 +276,8 @@ export interface GridDraftState {
   mainDeckRemaining: number
   pickedCards: readonly SealedCardInfo[]
   totalPickedByOthers: Record<string, number>
+  pickedCardsByOthers: Record<string, readonly SealedCardInfo[]>
+  lastPickedCards: readonly SealedCardInfo[]
   lastAction: string | null
   timeRemaining: number
   availableSelections: readonly string[]

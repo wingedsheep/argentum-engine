@@ -1092,7 +1092,12 @@ class LobbyHandler(
                     else -> {} // Skip doesn't restart timer
                 }
 
-                broadcastWinstonDraftState(lobby, lastAction)
+                val pickedCards = when (result) {
+                    is WinstonActionResult.PileTaken -> result.cards
+                    is WinstonActionResult.BlindPick -> listOf(result.card)
+                    else -> emptyList()
+                }
+                broadcastWinstonDraftState(lobby, lastAction, pickedCards, identity.playerId)
             }
 
             is WinstonActionResult.DraftComplete -> {
@@ -1154,11 +1159,17 @@ class LobbyHandler(
      * Broadcast Winston Draft state to both players.
      * Active player sees current pile contents, opponent sees sizes only.
      */
-    private fun broadcastWinstonDraftState(lobby: TournamentLobby, lastAction: String?) {
+    private fun broadcastWinstonDraftState(lobby: TournamentLobby, lastAction: String?, lastPickedCards: List<com.wingedsheep.sdk.model.CardDefinition> = emptyList(), lastPickerPlayerId: EntityId? = null) {
         val activePlayerId = lobby.getWinstonActivePlayerId() ?: return
         val activePlayerName = lobby.players[activePlayerId]?.identity?.playerName ?: "Unknown"
         val pileSizes = lobby.winstonPiles.map { it.size }
         val currentPileCards = lobby.winstonPiles[lobby.winstonCurrentPileIndex].map { cardToSealedCardInfo(it) }
+
+        // Mark current pile cards as "seen" by the active player
+        val seenByActive = lobby.winstonSeenCards.getOrPut(activePlayerId) { mutableSetOf() }
+        for (card in lobby.winstonPiles[lobby.winstonCurrentPileIndex]) {
+            seenByActive.add(card.name)
+        }
 
         lobby.players.forEach { (playerId, playerState) ->
             val ws = playerState.identity.webSocketSession ?: return@forEach
@@ -1166,7 +1177,17 @@ class LobbyHandler(
 
             val isActivePlayer = playerId == activePlayerId
             val opponentId = lobby.getWinstonPlayerOrder().first { it != playerId }
-            val opponentPool = lobby.players[opponentId]?.cardPool?.size ?: 0
+            val opponentCards = lobby.players[opponentId]?.cardPool ?: emptyList()
+            val seenByPlayer = lobby.winstonSeenCards[playerId] ?: emptySet()
+
+            // Split opponent's cards into known (seen by this player) and unknown
+            val knownOpponentCards = opponentCards.filter { it.name in seenByPlayer }.map { cardToSealedCardInfo(it) }
+            val unknownOpponentCardCount = opponentCards.size - knownOpponentCards.size
+
+            // Only show last picked cards to players who didn't make the pick
+            val lastPicked = if (lastPickerPlayerId != null && lastPickerPlayerId != playerId) {
+                lastPickedCards.map { cardToSealedCardInfo(it) }
+            } else emptyList()
 
             sender.send(ws, ServerMessage.WinstonDraftState(
                 activePlayerName = activePlayerName,
@@ -1176,9 +1197,12 @@ class LobbyHandler(
                 mainDeckRemaining = lobby.winstonMainDeck.size,
                 currentPileCards = if (isActivePlayer) currentPileCards else null,
                 pickedCards = playerState.cardPool.map { cardToSealedCardInfo(it) },
-                totalPickedByOpponent = opponentPool,
+                totalPickedByOpponent = opponentCards.size,
+                knownOpponentCards = knownOpponentCards,
+                unknownOpponentCardCount = unknownOpponentCardCount,
                 lastAction = lastAction,
-                timeRemainingSeconds = lobby.pickTimeRemaining
+                timeRemainingSeconds = lobby.pickTimeRemaining,
+                lastPickedCards = lastPicked
             ))
         }
     }
@@ -1259,7 +1283,7 @@ class LobbyHandler(
             is GridDraftResult.PickMade -> {
                 logger.info("Grid draft: ${result.lastAction}")
                 lobby.pickTimerJob?.cancel()
-                broadcastGridDraftState(lobby, result.lastAction)
+                broadcastGridDraftState(lobby, result.lastAction, result.cards, identity.playerId)
                 startGridDraftTimer(lobby)
                 lobbyRepository.saveLobby(lobby)
             }
@@ -1299,7 +1323,7 @@ class LobbyHandler(
     /**
      * Broadcast grid draft state to all players.
      */
-    private fun broadcastGridDraftState(lobby: TournamentLobby, lastAction: String?) {
+    private fun broadcastGridDraftState(lobby: TournamentLobby, lastAction: String?, lastPickedCards: List<com.wingedsheep.sdk.model.CardDefinition> = emptyList(), lastPickerPlayerId: EntityId? = null) {
         val gridInfos = lobby.gridCards.map { card ->
             card?.let { cardToSealedCardInfo(it) }
         }
@@ -1318,6 +1342,15 @@ class LobbyHandler(
                     .filter { it.key != playerId }
                     .map { (_, ps) -> ps.identity.playerName to ps.cardPool.size }
                     .toMap()
+                val otherPickedCards = lobby.players
+                    .filter { it.key != playerId }
+                    .map { (_, ps) -> ps.identity.playerName to ps.cardPool.map { cardToSealedCardInfo(it) } }
+                    .toMap()
+
+                // Only show last picked cards to players who didn't make the pick
+                val lastPicked = if (lastPickerPlayerId != null && lastPickerPlayerId != playerId) {
+                    lastPickedCards.map { cardToSealedCardInfo(it) }
+                } else emptyList()
 
                 sender.send(ws, ServerMessage.GridDraftState(
                     grid = gridInfos,
@@ -1326,12 +1359,14 @@ class LobbyHandler(
                     mainDeckRemaining = lobby.gridMainDeck.size,
                     pickedCards = pickedCards,
                     totalPickedByOthers = otherPickCounts,
+                    pickedCardsByOthers = otherPickedCards,
                     lastAction = lastAction,
                     timeRemainingSeconds = lobby.pickTimeSeconds,
                     availableSelections = if (playerId == activePlayer) availableSelections else emptyList(),
                     playerOrder = playerOrderNames,
                     currentPickerIndex = lobby.gridActivePlayerIndex,
-                    gridNumber = lobby.gridNumber
+                    gridNumber = lobby.gridNumber,
+                    lastPickedCards = lastPicked
                 ))
             }
         }
@@ -1366,9 +1401,13 @@ class LobbyHandler(
                         is GridDraftResult.DraftComplete -> result.lastAction
                         is GridDraftResult.Error -> null
                     }
+                    val pickedCards: List<com.wingedsheep.sdk.model.CardDefinition> = when (result) {
+                        is GridDraftResult.PickMade -> result.cards
+                        else -> emptyList()
+                    }
                     when (result) {
                         is GridDraftResult.PickMade -> {
-                            broadcastGridDraftState(lobby, "$lastAction (auto-pick)")
+                            broadcastGridDraftState(lobby, "$lastAction (auto-pick)", pickedCards, activePlayer)
                             startGridDraftTimer(lobby)
                             lobbyRepository.saveLobby(lobby)
                         }

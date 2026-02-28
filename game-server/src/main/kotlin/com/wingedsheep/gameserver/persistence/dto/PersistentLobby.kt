@@ -26,7 +26,9 @@ data class PersistentTournamentLobby(
     val winstonMainDeckNames: List<String> = emptyList(),
     val winstonPileNames: List<List<String>> = emptyList(),  // 3 piles
     val winstonActivePlayerIndex: Int = 0,
-    val winstonCurrentPileIndex: Int = 0
+    val winstonCurrentPileIndex: Int = 0,
+    /** Card names each player has seen during Winston Draft: playerId -> list of card names */
+    val winstonSeenCardNames: Map<String, List<String>> = emptyMap()
 )
 
 /**
