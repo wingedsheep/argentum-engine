@@ -14,7 +14,8 @@ import kotlinx.coroutines.Job
  */
 enum class TournamentFormat {
     SEALED,
-    DRAFT
+    DRAFT,
+    WINSTON_DRAFT
 }
 
 /**
@@ -66,8 +67,34 @@ sealed interface PickResult {
 }
 
 /**
+ * Result of taking a pile or skipping during Winston Draft.
+ */
+sealed interface WinstonActionResult {
+    data class PileTaken(
+        val cards: List<CardDefinition>,
+        val lastAction: String
+    ) : WinstonActionResult
+
+    data class PileSkipped(
+        val nextPileIndex: Int?,   // null if forced blind pick
+        val lastAction: String
+    ) : WinstonActionResult
+
+    data class BlindPick(
+        val card: CardDefinition,
+        val lastAction: String
+    ) : WinstonActionResult
+
+    data class DraftComplete(
+        val lastAction: String
+    ) : WinstonActionResult
+
+    data class Error(val message: String) : WinstonActionResult
+}
+
+/**
  * Multi-player tournament lobby supporting up to 8 players with host controls.
- * Supports both Sealed and Draft formats.
+ * Supports Sealed, Draft, and Winston Draft formats.
  *
  * State machine:
  * WAITING_FOR_PLAYERS → [Sealed] DECK_BUILDING → TOURNAMENT_ACTIVE → TOURNAMENT_COMPLETE
@@ -157,6 +184,24 @@ class TournamentLobby(
     /** Seconds remaining on current pick timer */
     @Volatile
     var pickTimeRemaining: Int = 0
+
+    // =========================================================================
+    // Winston Draft-specific State
+    // =========================================================================
+
+    /** The shared face-down main deck for Winston Draft */
+    val winstonMainDeck: MutableList<CardDefinition> = mutableListOf()
+
+    /** Three face-down piles for Winston Draft */
+    val winstonPiles: Array<MutableList<CardDefinition>> = arrayOf(mutableListOf(), mutableListOf(), mutableListOf())
+
+    /** Index of the active player in playerOrder (0 or 1) */
+    @Volatile
+    var winstonActivePlayerIndex: Int = 0
+
+    /** Which pile (0-2) the active player is currently examining */
+    @Volatile
+    var winstonCurrentPileIndex: Int = 0
 
     val isFull: Boolean get() = players.size >= maxPlayers
     val playerCount: Int get() = players.size
@@ -470,6 +515,206 @@ class TournamentLobby(
         return players.filterValues { !it.hasPicked }.keys.toList()
     }
 
+    // =========================================================================
+    // Winston Draft Methods
+    // =========================================================================
+
+    /**
+     * Start Winston Draft. Shuffles 6 boosters into a single pile,
+     * creates 3 face-down piles of 1 card each.
+     */
+    fun startWinstonDraft(requestingPlayerId: EntityId): Boolean {
+        if (!isHost(requestingPlayerId)) return false
+        if (state != LobbyState.WAITING_FOR_PLAYERS) return false
+        if (players.size != 2) return false
+        if (format != TournamentFormat.WINSTON_DRAFT) return false
+
+        // Set up player order (randomize who goes first)
+        playerOrder = players.keys.toList().shuffled()
+
+        // Generate boosters and shuffle into main deck
+        val allCards = mutableListOf<CardDefinition>()
+        repeat(boosterCount) {
+            allCards.addAll(boosterGenerator.generateBooster(setCodes))
+        }
+        allCards.shuffle()
+
+        winstonMainDeck.clear()
+        winstonMainDeck.addAll(allCards)
+
+        // Deal 1 card to each of 3 piles
+        for (i in 0 until 3) {
+            winstonPiles[i].clear()
+            if (winstonMainDeck.isNotEmpty()) {
+                winstonPiles[i].add(winstonMainDeck.removeFirst())
+            }
+        }
+
+        winstonActivePlayerIndex = 0
+        winstonCurrentPileIndex = 0
+
+        state = LobbyState.DRAFTING
+        return true
+    }
+
+    /**
+     * Get the active player's ID for Winston Draft.
+     */
+    fun getWinstonActivePlayerId(): EntityId? {
+        if (playerOrder.isEmpty()) return null
+        return playerOrder[winstonActivePlayerIndex]
+    }
+
+    /**
+     * Look at the current pile. Returns pile contents for the active player.
+     */
+    fun winstonLookAtPile(playerId: EntityId): List<CardDefinition>? {
+        if (state != LobbyState.DRAFTING) return null
+        if (format != TournamentFormat.WINSTON_DRAFT) return null
+        if (getWinstonActivePlayerId() != playerId) return null
+
+        val pile = winstonPiles[winstonCurrentPileIndex]
+        return pile.toList()
+    }
+
+    /**
+     * Take the current pile. Adds pile cards to player's pool,
+     * replaces pile with 1 card from main deck if available.
+     */
+    fun winstonTakePile(playerId: EntityId): WinstonActionResult {
+        if (state != LobbyState.DRAFTING) return WinstonActionResult.Error("Not in drafting phase")
+        if (format != TournamentFormat.WINSTON_DRAFT) return WinstonActionResult.Error("Not Winston Draft")
+        if (getWinstonActivePlayerId() != playerId) return WinstonActionResult.Error("Not your turn")
+
+        val pile = winstonPiles[winstonCurrentPileIndex]
+        if (pile.isEmpty()) return WinstonActionResult.Error("Pile is empty")
+
+        val takenCards = pile.toList()
+        val playerState = players[playerId] ?: return WinstonActionResult.Error("Player not found")
+        val playerName = playerState.identity.playerName
+
+        // Add cards to player's pool
+        players[playerId] = playerState.copy(cardPool = playerState.cardPool + takenCards)
+
+        // Clear pile and replenish with 1 card from main deck
+        pile.clear()
+        if (winstonMainDeck.isNotEmpty()) {
+            pile.add(winstonMainDeck.removeFirst())
+        }
+
+        val lastAction = "$playerName took pile ${winstonCurrentPileIndex + 1} (${takenCards.size} card${if (takenCards.size != 1) "s" else ""})"
+
+        // Advance to next player's turn
+        advanceWinstonTurn()
+
+        // Check if draft is complete
+        if (isWinstonDraftComplete()) {
+            finishDraft()
+            return WinstonActionResult.DraftComplete(lastAction)
+        }
+
+        return WinstonActionResult.PileTaken(takenCards, lastAction)
+    }
+
+    /**
+     * Skip the current pile. Adds 1 card from main deck to the pile,
+     * then moves to next pile (or forced blind pick if pile 3 was skipped).
+     */
+    fun winstonSkipPile(playerId: EntityId): WinstonActionResult {
+        if (state != LobbyState.DRAFTING) return WinstonActionResult.Error("Not in drafting phase")
+        if (format != TournamentFormat.WINSTON_DRAFT) return WinstonActionResult.Error("Not Winston Draft")
+        if (getWinstonActivePlayerId() != playerId) return WinstonActionResult.Error("Not your turn")
+
+        val playerState = players[playerId] ?: return WinstonActionResult.Error("Player not found")
+        val playerName = playerState.identity.playerName
+
+        // Add a card from main deck to current pile
+        if (winstonMainDeck.isNotEmpty()) {
+            winstonPiles[winstonCurrentPileIndex].add(winstonMainDeck.removeFirst())
+        }
+
+        val skippedPileIndex = winstonCurrentPileIndex
+
+        if (winstonCurrentPileIndex < 2) {
+            // Move to next pile
+            winstonCurrentPileIndex++
+            val lastAction = "$playerName skipped pile ${skippedPileIndex + 1}"
+            return WinstonActionResult.PileSkipped(winstonCurrentPileIndex, lastAction)
+        } else {
+            // Skipped pile 3 - forced blind pick from main deck
+            if (winstonMainDeck.isNotEmpty()) {
+                val blindCard = winstonMainDeck.removeFirst()
+                players[playerId] = playerState.copy(cardPool = playerState.cardPool + blindCard)
+
+                val lastAction = "$playerName skipped pile 3, took a card from the deck"
+
+                // Advance to next player's turn
+                advanceWinstonTurn()
+
+                // Check if draft is complete
+                if (isWinstonDraftComplete()) {
+                    finishDraft()
+                    return WinstonActionResult.DraftComplete(lastAction)
+                }
+
+                return WinstonActionResult.BlindPick(blindCard, lastAction)
+            } else {
+                // No cards left anywhere - draft is complete
+                advanceWinstonTurn()
+                finishDraft()
+                return WinstonActionResult.DraftComplete("$playerName skipped pile 3, deck is empty")
+            }
+        }
+    }
+
+    /**
+     * Advance to the next player's turn and reset pile index.
+     */
+    private fun advanceWinstonTurn() {
+        winstonActivePlayerIndex = (winstonActivePlayerIndex + 1) % 2
+        winstonCurrentPileIndex = 0
+    }
+
+    /**
+     * Check if Winston Draft is complete (main deck empty and all piles empty).
+     */
+    private fun isWinstonDraftComplete(): Boolean {
+        return winstonMainDeck.isEmpty() && winstonPiles.all { it.isEmpty() }
+    }
+
+    /**
+     * Get the player order for Winston Draft.
+     */
+    fun getWinstonPlayerOrder(): List<EntityId> = playerOrder
+
+    /**
+     * Auto-pick for Winston Draft timeout: take the current pile.
+     * If current pile is empty, take the blind card.
+     */
+    fun winstonAutoPickForTimeout(playerId: EntityId): WinstonActionResult {
+        if (getWinstonActivePlayerId() != playerId) return WinstonActionResult.Error("Not your turn")
+
+        val pile = winstonPiles[winstonCurrentPileIndex]
+        return if (pile.isNotEmpty()) {
+            winstonTakePile(playerId)
+        } else if (winstonMainDeck.isNotEmpty()) {
+            // Take blind card
+            val playerState = players[playerId] ?: return WinstonActionResult.Error("Player not found")
+            val blindCard = winstonMainDeck.removeFirst()
+            players[playerId] = playerState.copy(cardPool = playerState.cardPool + blindCard)
+            advanceWinstonTurn()
+            if (isWinstonDraftComplete()) {
+                finishDraft()
+                WinstonActionResult.DraftComplete("${playerState.identity.playerName} auto-picked (timeout)")
+            } else {
+                WinstonActionResult.BlindPick(blindCard, "${playerState.identity.playerName} auto-picked (timeout)")
+            }
+        } else {
+            finishDraft()
+            WinstonActionResult.DraftComplete("Draft complete")
+        }
+    }
+
     /**
      * Submit a deck for a player.
      */
@@ -719,6 +964,27 @@ class TournamentLobby(
      * Get player order for persistence.
      */
     fun getPlayerOrder(): List<EntityId> = playerOrder
+
+    /**
+     * Restore Winston Draft state from persistence.
+     */
+    internal fun restoreWinstonDraftState(
+        mainDeck: List<CardDefinition>,
+        piles: List<List<CardDefinition>>,
+        activePlayerIndex: Int,
+        currentPileIndex: Int
+    ) {
+        winstonMainDeck.clear()
+        winstonMainDeck.addAll(mainDeck)
+        for (i in 0 until 3) {
+            winstonPiles[i].clear()
+            if (i < piles.size) {
+                winstonPiles[i].addAll(piles[i])
+            }
+        }
+        winstonActivePlayerIndex = activePlayerIndex
+        winstonCurrentPileIndex = currentPileIndex
+    }
 
     /**
      * Associate a player identity with this lobby (for reconnection after restore).

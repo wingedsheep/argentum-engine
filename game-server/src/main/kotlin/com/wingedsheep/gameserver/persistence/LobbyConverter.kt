@@ -51,7 +51,11 @@ fun TournamentLobby.toPersistent(): PersistentTournamentLobby {
         },
         currentPackNumber = currentPackNumber,
         currentPickNumber = currentPickNumber,
-        playerOrder = getPlayerOrderForPersistence()
+        playerOrder = getPlayerOrderForPersistence(),
+        winstonMainDeckNames = winstonMainDeck.map { it.name },
+        winstonPileNames = winstonPiles.map { pile -> pile.map { it.name } },
+        winstonActivePlayerIndex = winstonActivePlayerIndex,
+        winstonCurrentPileIndex = winstonCurrentPileIndex
     )
 }
 
@@ -134,6 +138,20 @@ fun restoreTournamentLobby(
         currentPickNumber = persistent.currentPickNumber,
         playerOrder = persistent.playerOrder.map { EntityId(it) }
     )
+
+    // Restore Winston Draft state if applicable
+    if (persistent.format == "WINSTON_DRAFT" && persistent.winstonMainDeckNames.isNotEmpty()) {
+        val mainDeck = persistent.winstonMainDeckNames.mapNotNull { cardRegistry.getCard(it) }
+        val piles = persistent.winstonPileNames.map { pileNames ->
+            pileNames.mapNotNull { cardRegistry.getCard(it) }
+        }
+        lobby.restoreWinstonDraftState(
+            mainDeck = mainDeck,
+            piles = piles,
+            activePlayerIndex = persistent.winstonActivePlayerIndex,
+            currentPileIndex = persistent.winstonCurrentPileIndex
+        )
+    }
 
     return lobby to playerIdentities
 }

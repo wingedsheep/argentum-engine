@@ -248,7 +248,23 @@ export interface DraftState {
 }
 
 /**
- * Lobby state for tournament lobbies (sealed or draft).
+ * Winston Draft state during the Winston drafting phase.
+ */
+export interface WinstonDraftState {
+  isYourTurn: boolean
+  activePlayerName: string
+  currentPileIndex: number
+  pileSizes: readonly number[]
+  mainDeckRemaining: number
+  currentPileCards: readonly SealedCardInfo[] | null
+  pickedCards: readonly SealedCardInfo[]
+  totalPickedByOpponent: number
+  lastAction: string | null
+  timeRemaining: number
+}
+
+/**
+ * Lobby state for tournament lobbies (sealed, draft, or Winston draft).
  */
 export interface LobbyState {
   lobbyId: string
@@ -258,6 +274,8 @@ export interface LobbyState {
   isHost: boolean
   /** Draft-specific state (only populated when format is DRAFT and state is DRAFTING) */
   draftState: DraftState | null
+  /** Winston Draft-specific state (only populated when format is WINSTON_DRAFT and state is DRAFTING) */
+  winstonDraftState: WinstonDraftState | null
 }
 
 /**
@@ -447,12 +465,12 @@ export type GameStore = {
   lobbyState: LobbyState | null
   tournamentState: TournamentState | null
   spectatingState: SpectatingState | null
-  createTournamentLobby: (setCodes: string[], format?: 'SEALED' | 'DRAFT', boosterCount?: number, maxPlayers?: number, pickTimeSeconds?: number) => void
+  createTournamentLobby: (setCodes: string[], format?: 'SEALED' | 'DRAFT' | 'WINSTON_DRAFT', boosterCount?: number, maxPlayers?: number, pickTimeSeconds?: number) => void
   joinLobby: (lobbyId: string) => void
   startLobby: () => void
   leaveLobby: () => void
   stopLobby: () => void
-  updateLobbySettings: (settings: { setCodes?: string[]; format?: 'SEALED' | 'DRAFT'; boosterCount?: number; maxPlayers?: number; gamesPerMatch?: number; pickTimeSeconds?: number; picksPerRound?: number }) => void
+  updateLobbySettings: (settings: { setCodes?: string[]; format?: 'SEALED' | 'DRAFT' | 'WINSTON_DRAFT'; boosterCount?: number; maxPlayers?: number; gamesPerMatch?: number; pickTimeSeconds?: number; picksPerRound?: number }) => void
   /** Disconnected tournament players: playerId -> info */
   disconnectedPlayers: Record<string, { playerName: string; secondsRemaining: number; disconnectedAt: number }>
   readyForNextRound: () => void
@@ -474,6 +492,8 @@ export type GameStore = {
   submitSealedDeck: () => void
   unsubmitDeck: () => void
   makePick: (cardNames: string[]) => void
+  winstonTakePile: () => void
+  winstonSkipPile: () => void
 
   // UI slice
   selectedCardId: EntityId | null

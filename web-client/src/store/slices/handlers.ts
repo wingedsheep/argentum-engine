@@ -567,7 +567,7 @@ export function createMessageHandlers(set: SetState, get: GetState): MessageHand
 
       set((state) => ({
         lobbyState: state.lobbyState
-          ? { ...state.lobbyState, state: 'DECK_BUILDING', draftState: null }
+          ? { ...state.lobbyState, state: 'DECK_BUILDING', draftState: null, winstonDraftState: null }
           : null,
         deckBuildingState: {
           phase: 'building',
@@ -594,6 +594,31 @@ export function createMessageHandlers(set: SetState, get: GetState): MessageHand
     },
 
     // ========================================================================
+    // Winston Draft handlers
+    // ========================================================================
+    onWinstonDraftState: (msg) => {
+      set((state) => ({
+        lobbyState: state.lobbyState
+          ? {
+              ...state.lobbyState,
+              winstonDraftState: {
+                isYourTurn: msg.isYourTurn,
+                activePlayerName: msg.activePlayerName,
+                currentPileIndex: msg.currentPileIndex,
+                pileSizes: msg.pileSizes,
+                mainDeckRemaining: msg.mainDeckRemaining,
+                currentPileCards: msg.currentPileCards,
+                pickedCards: msg.pickedCards,
+                totalPickedByOpponent: msg.totalPickedByOpponent,
+                lastAction: msg.lastAction,
+                timeRemaining: msg.timeRemainingSeconds,
+              },
+            }
+          : null,
+      }))
+    },
+
+    // ========================================================================
     // Lobby handlers
     // ========================================================================
     onLobbyCreated: (msg) => {
@@ -606,6 +631,7 @@ export function createMessageHandlers(set: SetState, get: GetState): MessageHand
           settings: { setCodes: [], setNames: [], availableSets: [], format: 'SEALED', boosterCount: 6, maxPlayers: 8, pickTimeSeconds: 45, picksPerRound: 1, gamesPerMatch: 1 },
           isHost: true,
           draftState: null,
+          winstonDraftState: null,
         },
       })
     },
@@ -624,7 +650,8 @@ export function createMessageHandlers(set: SetState, get: GetState): MessageHand
           players: msg.players,
           settings: msg.settings,
           isHost: msg.isHost,
-          draftState: msg.state === 'DRAFTING' ? (lobbyState?.draftState ?? null) : null,
+          draftState: msg.state === 'DRAFTING' && msg.settings.format === 'DRAFT' ? (lobbyState?.draftState ?? null) : null,
+          winstonDraftState: msg.state === 'DRAFTING' && msg.settings.format === 'WINSTON_DRAFT' ? (lobbyState?.winstonDraftState ?? null) : null,
         },
         // Update deck building phase during DECK_BUILDING or TOURNAMENT_ACTIVE
         // This allows returning to deck building after unsubmitting during tournament

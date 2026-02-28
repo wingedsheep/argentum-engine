@@ -13,6 +13,7 @@ import { MatchIntroAnimation } from './components/animations/MatchIntroAnimation
 import { StandaloneConcedeButton } from './components/game/overlay'
 import { DeckBuilderOverlay } from './components/sealed/DeckBuilderOverlay'
 import { DraftPickOverlay } from './components/draft/DraftPickOverlay'
+import { WinstonDraftOverlay } from './components/draft/WinstonDraftOverlay'
 import { SpectatorGameBoard } from './components/spectating/SpectatorGameBoard'
 import { trackPageView } from './utils/analytics'
 import { randomBackground } from './utils/background'
@@ -195,17 +196,18 @@ export default function App() {
   // When tournament exists and deck is submitted, TournamentOverlay (in GameUI) handles UI
   const showDeckBuilder = deckBuildingState?.phase === 'building' ||
     (deckBuildingState?.phase === 'submitted' && !tournamentState)
-  const showDraftPick = lobbyState?.state === 'DRAFTING'
+  const showDraftPick = lobbyState?.state === 'DRAFTING' && lobbyState?.settings.format === 'DRAFT'
+  const showWinstonDraft = lobbyState?.state === 'DRAFTING' && lobbyState?.settings.format === 'WINSTON_DRAFT'
 
   // Track virtual page views for GA4 when the active screen changes
   const currentScreen = useMemo(() => {
     if (spectatingState) return 'spectate'
-    if (showDraftPick) return 'draft'
+    if (showDraftPick || showWinstonDraft) return 'draft'
     if (showDeckBuilder) return 'deck-builder'
     if (mulliganState) return 'mulligan'
     if (showGame) return 'game'
     return 'lobby'
-  }, [spectatingState, showDraftPick, showDeckBuilder, mulliganState, showGame])
+  }, [spectatingState, showDraftPick, showWinstonDraft, showDeckBuilder, mulliganState, showGame])
 
   const prevScreenRef = useRef(currentScreen)
   useEffect(() => {
@@ -243,6 +245,9 @@ export default function App() {
 
       {/* Draft picking overlay */}
       {showDraftPick && <DraftPickOverlay />}
+
+      {/* Winston Draft overlay */}
+      {showWinstonDraft && <WinstonDraftOverlay />}
 
       {/* Match intro animation (plays before mulligan) */}
       {matchIntro && <MatchIntroAnimation />}
