@@ -2,13 +2,13 @@
 
 **Set Size:** 145 cards
 **Release Date:** February 3, 2003
-**Implemented:** 56 / 145
+**Implemented:** 57 / 145
 
 | Color      | Count |
 |------------|-------|
 | White      | 11/29 |
 | Blue       | 11/29 |
-| Black      | 11/29 |
+| Black      | 12/29 |
 | Red        | 12/29 |
 | Green      | 11/29 |
 
@@ -53,7 +53,7 @@
 - [ ] Dreamborn Muse
 - [x] Drinker of Sorrow
 - [x] Dripping Dead
-- [ ] Earthblighter
+- [x] Earthblighter
 - [x] Echo Tracer
 - [ ] Elvish Soultiller
 - [x] Embalmed Brawler

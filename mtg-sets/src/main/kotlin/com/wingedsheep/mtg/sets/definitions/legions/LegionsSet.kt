@@ -49,6 +49,7 @@ object LegionsSet {
         PrimocEscapee,
 
         // Black creatures
+        Earthblighter,
         EmbalmedBrawler,
         DrinkerOfSorrow,
         DrippingDead,
