@@ -2,13 +2,13 @@
 
 **Set Size:** 145 cards
 **Release Date:** February 3, 2003
-**Implemented:** 62 / 145
+**Implemented:** 63 / 145
 
 | Color      | Count |
 |------------|-------|
 | White      | 12/29 |
 | Blue       | 12/29 |
-| Black      | 12/29 |
+| Black      | 13/29 |
 | Red        | 13/29 |
 | Green      | 13/29 |
 
@@ -65,7 +65,7 @@
 - [x] Fugitive Wizard
 - [x] Gempalm Avenger
 - [x] Gempalm Incinerator
-- [ ] Gempalm Polluter
+- [x] Gempalm Polluter
 - [x] Gempalm Sorcerer
 - [x] Gempalm Strider
 - [ ] Ghastly Remains
