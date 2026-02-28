@@ -61,7 +61,7 @@ data class ActionContext(
                 manaSolver = ManaSolver(cardRegistry),
                 costCalculator = CostCalculator(cardRegistry),
                 alternativePaymentHandler = AlternativePaymentHandler(),
-                costHandler = CostHandler(),
+                costHandler = CostHandler(StateProjector()),
                 mulliganHandler = MulliganHandler(),
                 effectExecutorRegistry = effectExecutorRegistry,
                 continuationHandler = ContinuationHandler(effectExecutorRegistry, triggerProcessor = triggerProcessor, triggerDetector = triggerDetector, combatManager = combatManager),

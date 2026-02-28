@@ -24,11 +24,14 @@ import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.AbilityCost
 import com.wingedsheep.sdk.scripting.AdditionalCost
 import com.wingedsheep.sdk.scripting.GameObjectFilter
+import com.wingedsheep.engine.mechanics.layers.StateProjector
 
 /**
  * Validates and pays costs for spells and abilities.
  */
-class CostHandler {
+class CostHandler(
+    private val stateProjector: StateProjector = StateProjector()
+) {
 
     private val predicateEvaluator = PredicateEvaluator()
 
@@ -196,7 +199,8 @@ class CostHandler {
                 }
                 if (sacrificeFilter != null) {
                     val context = PredicateContext(controllerId = controllerId)
-                    if (!predicateEvaluator.matches(state, toSacrifice, sacrificeFilter, context)) {
+                    val projected = stateProjector.project(state)
+                    if (!predicateEvaluator.matchesWithProjection(state, projected, toSacrifice, sacrificeFilter, context)) {
                         return CostPaymentResult.failure("Sacrifice target does not match the required filter")
                     }
                 }
@@ -452,9 +456,10 @@ class CostHandler {
         filter: GameObjectFilter
     ): List<EntityId> {
         val context = PredicateContext(controllerId = controllerId)
+        val projected = stateProjector.project(state)
         return state.entities.filter { (entityId, container) ->
             container.get<ControllerComponent>()?.playerId == controllerId &&
-            predicateEvaluator.matches(state, entityId, filter, context)
+            predicateEvaluator.matchesWithProjection(state, projected, entityId, filter, context)
         }.keys.toList()
     }
 
@@ -464,10 +469,11 @@ class CostHandler {
         filter: GameObjectFilter
     ): List<EntityId> {
         val context = PredicateContext(controllerId = controllerId)
+        val projected = stateProjector.project(state)
         return state.entities.filter { (entityId, container) ->
             container.get<ControllerComponent>()?.playerId == controllerId &&
             !container.has<TappedComponent>() &&
-            predicateEvaluator.matches(state, entityId, filter, context)
+            predicateEvaluator.matchesWithProjection(state, projected, entityId, filter, context)
         }.keys.toList()
     }
 
@@ -478,8 +484,9 @@ class CostHandler {
         controllerId: EntityId
     ): List<EntityId> {
         val context = PredicateContext(controllerId = controllerId)
+        val projected = stateProjector.project(state)
         return cardIds.filter { cardId ->
-            predicateEvaluator.matches(state, cardId, filter, context)
+            predicateEvaluator.matchesWithProjection(state, projected, cardId, filter, context)
         }
     }
 

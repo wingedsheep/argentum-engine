@@ -5,6 +5,7 @@ import com.wingedsheep.engine.event.TriggerProcessor
 import com.wingedsheep.engine.handlers.ConditionEvaluator
 import com.wingedsheep.engine.handlers.ContinuationHandler
 import com.wingedsheep.engine.handlers.CostHandler
+import com.wingedsheep.engine.mechanics.layers.StateProjector
 import com.wingedsheep.engine.handlers.MulliganHandler
 import com.wingedsheep.engine.handlers.actions.ActionContext
 import com.wingedsheep.engine.handlers.actions.ActionHandlerRegistry
@@ -51,7 +52,7 @@ class ActionProcessor(
     manaSolver: ManaSolver = ManaSolver(cardRegistry),
     costCalculator: CostCalculator = CostCalculator(cardRegistry),
     alternativePaymentHandler: AlternativePaymentHandler = AlternativePaymentHandler(),
-    costHandler: CostHandler = CostHandler(),
+    costHandler: CostHandler = CostHandler(StateProjector()),
     mulliganHandler: MulliganHandler = MulliganHandler(),
     sbaChecker: StateBasedActionChecker = StateBasedActionChecker(),
     triggerDetector: TriggerDetector = TriggerDetector(cardRegistry),

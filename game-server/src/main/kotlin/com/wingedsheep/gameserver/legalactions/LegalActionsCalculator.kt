@@ -1619,6 +1619,9 @@ class LegalActionsCalculator(
         }
     }
 
+    /**
+     * Uses projected state to account for type-changing effects.
+     */
     private fun findAbilitySacrificeTargets(
         state: GameState,
         playerId: EntityId,
@@ -1626,6 +1629,7 @@ class LegalActionsCalculator(
     ): List<EntityId> {
         val playerBattlefield = ZoneKey(playerId, Zone.BATTLEFIELD)
         val predicateContext = PredicateContext(controllerId = playerId)
+        val projected = stateProjector.project(state)
 
         return state.getZone(playerBattlefield).filter { entityId ->
             val container = state.getEntity(entityId) ?: return@filter false
@@ -1633,10 +1637,13 @@ class LegalActionsCalculator(
             val controllerId = container.get<ControllerComponent>()?.playerId
             if (controllerId != playerId) return@filter false
 
-            predicateEvaluator.matches(state, entityId, filter, predicateContext)
+            predicateEvaluator.matchesWithProjection(state, projected, entityId, filter, predicateContext)
         }
     }
 
+    /**
+     * Uses projected state to account for type-changing effects.
+     */
     private fun findAbilityTapTargets(
         state: GameState,
         playerId: EntityId,
@@ -1644,6 +1651,7 @@ class LegalActionsCalculator(
     ): List<EntityId> {
         val playerBattlefield = ZoneKey(playerId, Zone.BATTLEFIELD)
         val predicateContext = PredicateContext(controllerId = playerId)
+        val projected = stateProjector.project(state)
 
         return state.getZone(playerBattlefield).filter { entityId ->
             val container = state.getEntity(entityId) ?: return@filter false
@@ -1658,7 +1666,7 @@ class LegalActionsCalculator(
             // another permanent's TapPermanents cost (it only restricts attacking and
             // activating the creature's own {T} abilities)
 
-            predicateEvaluator.matches(state, entityId, filter, predicateContext)
+            predicateEvaluator.matchesWithProjection(state, projected, entityId, filter, predicateContext)
         }
     }
 
