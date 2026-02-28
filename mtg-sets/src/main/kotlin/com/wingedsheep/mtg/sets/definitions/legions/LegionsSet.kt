@@ -67,6 +67,7 @@ object LegionsSet {
         // Red creatures
         BladeSliver,
         CrestedCraghorn,
+        HunterSliver,
         FlamewaveInvoker,
         GoblinGoon,
         FreneticRaptor,
@@ -85,6 +86,7 @@ object LegionsSet {
         DefiantElf,
         EnormousBaloth,
         Hundroog,
+        KrosanVorine,
         NantukoVigilante,
         NeedleshotGourna,
         PatronOfTheWild,

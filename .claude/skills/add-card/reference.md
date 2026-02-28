@@ -783,6 +783,7 @@ Set via `staticAbility { ability = ... }`:
 
 - `GrantKeyword(keyword, target: StaticTarget)` — permanent keyword grant
 - `GrantKeywordToCreatureGroup(keyword, filter: AffectsFilter)` — keyword to group
+- `GrantTriggeredAbilityToCreatureGroup(ability: TriggeredAbility, filter: GroupFilter)` — triggered ability to group (e.g., Hunter Sliver granting provoke to all Slivers)
 - `GrantKeywordForChosenCreatureType(keyword)` — keyword to chosen creature type
 - `GrantKeywordByCounter(keyword, counterType)` — grant keyword when counter present
 - `ModifyStats(powerBonus, toughnessBonus, target: StaticTarget)` — P/T bonus
