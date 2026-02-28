@@ -57,6 +57,7 @@ object LegionsSet {
         WitheredWretch,
 
         // Red creatures
+        BladeSliver,
         CrestedCraghorn,
         FlamewaveInvoker,
         FreneticRaptor,
