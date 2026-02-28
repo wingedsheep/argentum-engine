@@ -83,6 +83,7 @@ object ScourgeSet {
         DragonWings,
         FacesOfThePast,
         FrozenSolid,
+        PemminsAura,
 
         // Blue instants
         DispersalShield,

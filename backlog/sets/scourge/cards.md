@@ -3,12 +3,12 @@
 
 **Set Size:** 143 cards
 **Release Date:** May 26, 2003
-**Implemented:** 106 / 143
+**Implemented:** 107 / 143
 
 | Color | Count |
 |-------|-------|
 | White | 20 |
-| Blue | 17 |
+| Blue | 18 |
 | Black | 21 |
 | Red | 22 |
 | Green | 20 |
@@ -108,7 +108,7 @@
 - [x] Noble Templar
 - [x] One with Nature
 - [ ] Parallel Thoughts
-- [ ] Pemmin's Aura
+- [x] Pemmin's Aura
 - [x] Primitive Etchings
 - [x] Proteus Machine
 - [x] Putrid Raptor
