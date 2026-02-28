@@ -78,6 +78,7 @@ object LegionsSet {
 
         // Green creatures
         BranchsnapLorian,
+        GempalmStrider,
         Brontotherium,
         DefiantElf,
         EnormousBaloth,

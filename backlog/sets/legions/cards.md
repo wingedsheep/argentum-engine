@@ -2,7 +2,7 @@
 
 **Set Size:** 145 cards
 **Release Date:** February 3, 2003
-**Implemented:** 57 / 145
+**Implemented:** 58 / 145
 
 | Color      | Count |
 |------------|-------|
@@ -10,7 +10,7 @@
 | Blue       | 11/29 |
 | Black      | 12/29 |
 | Red        | 12/29 |
-| Green      | 11/29 |
+| Green      | 12/29 |
 
 ---
 
@@ -67,7 +67,7 @@
 - [x] Gempalm Incinerator
 - [ ] Gempalm Polluter
 - [x] Gempalm Sorcerer
-- [ ] Gempalm Strider
+- [x] Gempalm Strider
 - [ ] Ghastly Remains
 - [x] Glintwing Invoker
 - [ ] Glowering Rogon
