@@ -33,8 +33,8 @@ object CompactJsonTransformer {
     private val POLYMORPHIC_OBJECT_KEYS = setOf(
         // Effect / Trigger / Target
         "trigger", "effect", "target", "spellEffect",
-        // Nested effects (composites, conditionals, reflexive triggers, coin flip)
-        "reflexiveEffect", "action", "ifTrue", "ifFalse", "wonEffect", "lostEffect",
+        // Nested effects (composites, conditionals, reflexive triggers, coin flip, pay-or-suffer)
+        "reflexiveEffect", "action", "ifTrue", "ifFalse", "wonEffect", "lostEffect", "suffer",
         // Conditions
         "condition", "triggerCondition",
         // Costs and requirements

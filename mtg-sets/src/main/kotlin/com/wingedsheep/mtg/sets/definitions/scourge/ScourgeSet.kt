@@ -93,6 +93,7 @@ object ScourgeSet {
         ChartoothCougar,
         DragonMage,
         DragonspeakerShaman,
+        DragonTyrant,
         GoblinBrigand,
         GoblinPsychopath,
         GoblinWarchief,

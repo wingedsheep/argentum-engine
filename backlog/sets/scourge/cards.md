@@ -3,14 +3,14 @@
 
 **Set Size:** 143 cards
 **Release Date:** May 26, 2003
-**Implemented:** 100 / 143
+**Implemented:** 101 / 143
 
 | Color | Count |
 |-------|-------|
 | White | 19 |
 | Blue | 17 |
 | Black | 19 |
-| Red | 21 |
+| Red | 22 |
 | Green | 19 |
 | Multicolor | 1 |
 | Colorless | 4 |
@@ -64,7 +64,7 @@
 - [x] Dragonspeaker Shaman
 - [x] Dragonstalker
 - [ ] Dragonstorm
-- [ ] Dragon Tyrant
+- [x] Dragon Tyrant
 - [x] Dragon Wings
 - [ ] Edgewalker
 - [x] Elvish Aberration
