@@ -2,7 +2,7 @@
 
 **Set Size:** 145 cards
 **Release Date:** February 3, 2003
-**Implemented:** 46 / 145
+**Implemented:** 47 / 145
 
 | Color      | Count |
 |------------|-------|
@@ -10,7 +10,7 @@
 | Blue       | 9/29  |
 | Black      | 10/29 |
 | Red        | 9/29  |
-| Green      | 9/29  |
+| Green      | 10/29 |
 
 ---
 
@@ -26,7 +26,7 @@
 - [ ] Blade Sliver
 - [ ] Blood Celebrant
 - [ ] Bloodstoke Howler
-- [ ] Branchsnap Lorian
+- [x] Branchsnap Lorian
 - [x] Brontotherium
 - [ ] Brood Sliver
 - [ ] Caller of the Claw
