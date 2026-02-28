@@ -655,6 +655,31 @@ data class ChooseCreatureTypeGainControlEffect(
 }
 
 /**
+ * Distribute any number of counters from this creature onto other creatures.
+ * "At the beginning of your upkeep, you may move any number of +1/+1 counters
+ * from Forgotten Ancient onto other creatures."
+ *
+ * At resolution time, the executor:
+ * 1. Checks how many counters of the given type are on the source creature
+ * 2. Finds all other creatures on the battlefield
+ * 3. If 0 counters or no other creatures, does nothing
+ * 4. Presents a DistributeDecision with total = counter count, targets = other creatures
+ * 5. On response, removes distributed counters from self and adds them per the distribution
+ *
+ * Does not target — the recipient creatures are chosen at resolution time.
+ *
+ * @property counterType The type of counter to move (e.g., "+1/+1")
+ */
+@SerialName("DistributeCountersFromSelf")
+@Serializable
+data class DistributeCountersFromSelfEffect(
+    val counterType: String = "+1/+1"
+) : Effect {
+    override val description: String =
+        "Move any number of $counterType counters from this creature onto other creatures"
+}
+
+/**
  * Target land becomes an X/Y creature until end of turn. It's still a land.
  * Used for Kamahl, Fist of Krosa: "{G}: Target land becomes a 1/1 creature until end of turn. It's still a land."
  *

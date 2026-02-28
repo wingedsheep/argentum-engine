@@ -67,6 +67,7 @@ constructors.
 - `Effects.GrantKeyword(keyword, target = ContextTarget(0))` — until end of turn
 - `Effects.AddCounters(counterType, count, target)`
 - `Effects.AnimateLand(target, power, toughness, duration)` — turn land into creature
+- `Effects.DistributeCountersFromSelf(counterType)` — move counters from self to other creatures (player chooses)
 
 ### Mass Effects (group)
 
@@ -246,6 +247,7 @@ each player reveals and creates tokens
 | `ChooseCreatureTypeGainControlEffect`       | `duration`                                                                  | Choose type, gain control                |
 | `GrantToEnchantedCreatureTypeGroupEffect`   | `powerModifier, toughnessModifier, keyword?, protectionColors, duration`    | Grant to enchanted creature's type group |
 | `AnimateLandEffect`                         | `target, power, toughness, duration`                                        | Animate land                             |
+| `DistributeCountersFromSelfEffect`          | `counterType`                                                               | Move counters from self to other creatures |
 | `TurnFaceDownEffect`                        | `target`                                                                    | Turn face down                           |
 | `TurnFaceUpEffect`                          | `target`                                                                    | Turn face up                             |
 | `TransformEffect`                           | `target`                                                                    | Transform DFC                            |

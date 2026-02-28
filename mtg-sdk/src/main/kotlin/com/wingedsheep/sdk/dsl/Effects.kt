@@ -353,6 +353,13 @@ object Effects {
     fun AddCounters(counterType: String, count: Int, target: EffectTarget): Effect =
         AddCountersEffect(counterType, count, target)
 
+    /**
+     * Distribute any number of counters from this creature onto other creatures.
+     * Used for Forgotten Ancient's upkeep ability.
+     */
+    fun DistributeCountersFromSelf(counterType: String = "+1/+1"): Effect =
+        com.wingedsheep.sdk.scripting.effects.DistributeCountersFromSelfEffect(counterType)
+
     // =========================================================================
     // Mana Effects
     // =========================================================================

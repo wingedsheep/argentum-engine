@@ -369,6 +369,24 @@ data class DistributeDamageContinuation(
 ) : ContinuationFrame
 
 /**
+ * Resume after player has distributed counters from a source creature to other creatures.
+ *
+ * Used for effects like Forgotten Ancient where the player moves counters from
+ * the source creature onto other creatures. The response contains the counter distribution.
+ *
+ * @property sourceId The creature the counters are being moved from
+ * @property controllerId The player who controls the effect
+ * @property counterType The type of counter being moved (e.g., "+1/+1")
+ */
+@Serializable
+data class DistributeCountersContinuation(
+    override val decisionId: String,
+    val sourceId: EntityId,
+    val controllerId: EntityId,
+    val counterType: String
+) : ContinuationFrame
+
+/**
  * Resume after player reorders cards for a MoveCollection with ControllerChooses order.
  *
  * When MoveCollectionEffect has order = CardOrder.ControllerChooses and there are

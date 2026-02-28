@@ -42,6 +42,7 @@ object ScourgeSet {
         AncientOoze,
         ElvishAberration,
         FierceEmpath,
+        ForgottenAncient,
         KrosanDrover,
         KrosanWarchief,
         Kurgadon,
