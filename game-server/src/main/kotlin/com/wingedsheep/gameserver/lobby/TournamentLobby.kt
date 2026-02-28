@@ -874,13 +874,13 @@ class TournamentLobby(
             // The last within-grid pick already advanced the index to the next player,
             // which is the correct starting picker for the new grid (rotates each grid).
 
-            if (gridMainDeck.isEmpty() && gridCards.all { it == null }) {
-                // Draft complete
+            if (gridMainDeck.isEmpty()) {
+                // Draft complete — remaining unpicked cards are discarded
                 finishGridDraft()
                 return GridDraftResult.DraftComplete(lastAction)
             }
 
-            // Deal new grid
+            // Discard remaining cards and deal new grid
             dealGrid()
             return GridDraftResult.GridComplete(lastAction)
         } else {
