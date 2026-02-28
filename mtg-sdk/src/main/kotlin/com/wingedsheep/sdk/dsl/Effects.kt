@@ -460,6 +460,12 @@ object Effects {
         EffectPatterns.mill(count, target)
 
     /**
+     * Mill a dynamic number of cards.
+     */
+    fun Mill(count: DynamicAmount, target: EffectTarget = EffectTarget.Controller): Effect =
+        EffectPatterns.mill(count, target)
+
+    /**
      * Head Games — Target opponent puts cards from their hand on top of their library.
      * Search that player's library for that many cards. The player puts those cards
      * into their hand, then shuffles.

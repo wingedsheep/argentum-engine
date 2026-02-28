@@ -992,7 +992,21 @@ object EffectPatterns {
      * @param count How many cards to mill
      * @param target Who gets milled (default: controller)
      */
-    fun mill(count: Int, target: EffectTarget = EffectTarget.Controller): CompositeEffect {
+    fun mill(count: Int, target: EffectTarget = EffectTarget.Controller): CompositeEffect =
+        mill(DynamicAmount.Fixed(count), target)
+
+    /**
+     * Mill a dynamic number of cards.
+     *
+     * Example: "That player mills X cards, where X is the number of cards in their hand."
+     * ```kotlin
+     * Effects.Mill(DynamicAmount.Count(Player.TriggeringPlayer, Zone.HAND), EffectTarget.PlayerRef(Player.TriggeringPlayer))
+     * ```
+     *
+     * @param count Dynamic amount of cards to mill
+     * @param target Who gets milled (default: controller)
+     */
+    fun mill(count: DynamicAmount, target: EffectTarget = EffectTarget.Controller): CompositeEffect {
         val player = when (target) {
             EffectTarget.Controller -> Player.You
             is EffectTarget.ContextTarget -> Player.ContextPlayer(target.index)
@@ -1003,7 +1017,7 @@ object EffectPatterns {
         return CompositeEffect(
             listOf(
                 GatherCardsEffect(
-                    source = CardSource.TopOfLibrary(DynamicAmount.Fixed(count), player),
+                    source = CardSource.TopOfLibrary(count, player),
                     storeAs = "milled"
                 ),
                 MoveCollectionEffect(

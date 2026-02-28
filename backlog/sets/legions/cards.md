@@ -2,12 +2,12 @@
 
 **Set Size:** 145 cards
 **Release Date:** February 3, 2003
-**Implemented:** 64 / 145
+**Implemented:** 65 / 145
 
 | Color      | Count |
 |------------|-------|
 | White      | 13/29 |
-| Blue       | 12/29 |
+| Blue       | 13/29 |
 | Black      | 13/29 |
 | Red        | 13/29 |
 | Green      | 13/29 |
@@ -50,7 +50,7 @@
 - [x] Defiant Elf
 - [x] Deftblade Elite
 - [ ] Dermoplasm
-- [ ] Dreamborn Muse
+- [x] Dreamborn Muse
 - [x] Drinker of Sorrow
 - [x] Dripping Dead
 - [x] Earthblighter
