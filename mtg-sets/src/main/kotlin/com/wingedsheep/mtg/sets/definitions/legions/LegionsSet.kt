@@ -27,6 +27,7 @@ object LegionsSet {
         CloudreachCavalry,
         DaruSanctifier,
         DeftbladeElite,
+        GempalmAvenger,
         LowlandTracker,
         PlatedSliver,
         StarlightInvoker,

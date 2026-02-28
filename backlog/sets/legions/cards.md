@@ -2,11 +2,11 @@
 
 **Set Size:** 145 cards
 **Release Date:** February 3, 2003
-**Implemented:** 53 / 145
+**Implemented:** 54 / 145
 
 | Color      | Count |
 |------------|-------|
-| White      | 10/29 |
+| White      | 11/29 |
 | Blue       | 10/29 |
 | Black      | 11/29 |
 | Red        | 11/29 |
@@ -63,7 +63,7 @@
 - [x] Flamewave Invoker
 - [x] Frenetic Raptor
 - [x] Fugitive Wizard
-- [ ] Gempalm Avenger
+- [x] Gempalm Avenger
 - [ ] Gempalm Incinerator
 - [ ] Gempalm Polluter
 - [ ] Gempalm Sorcerer
