@@ -1294,7 +1294,7 @@ class LobbyHandler(
             is GridDraftResult.GridComplete -> {
                 logger.info("Grid draft: ${result.lastAction} - new grid dealt")
                 lobby.pickTimerJob?.cancel()
-                broadcastGridDraftState(lobby, result.lastAction)
+                broadcastGridDraftState(lobby, result.lastAction, result.cards, identity.playerId)
                 startGridDraftTimer(lobby)
                 lobbyRepository.saveLobby(lobby)
             }
@@ -1351,10 +1351,9 @@ class LobbyHandler(
                     .map { (_, ps) -> ps.identity.playerName to ps.cardPool.map { cardToSealedCardInfo(it) } }
                     .toMap()
 
-                // Only show last picked cards to players who didn't make the pick
-                val lastPicked = if (lastPickerPlayerId != null && lastPickerPlayerId != playerId) {
-                    lastPickedCards.map { cardToSealedCardInfo(it) }
-                } else emptyList()
+                // Show last picked cards to all players for the pick animation.
+                // The picker already knows what they picked, so no information leak.
+                val lastPicked = lastPickedCards.map { cardToSealedCardInfo(it) }
 
                 sender.send(ws, ServerMessage.GridDraftState(
                     grid = gridInfos,
@@ -1407,6 +1406,8 @@ class LobbyHandler(
                     }
                     val pickedCards: List<com.wingedsheep.sdk.model.CardDefinition> = when (result) {
                         is GridDraftResult.PickMade -> result.cards
+                        is GridDraftResult.GridComplete -> result.cards
+                        is GridDraftResult.DraftComplete -> result.cards
                         else -> emptyList()
                     }
                     when (result) {
@@ -1416,7 +1417,7 @@ class LobbyHandler(
                             lobbyRepository.saveLobby(lobby)
                         }
                         is GridDraftResult.GridComplete -> {
-                            broadcastGridDraftState(lobby, "$lastAction (auto-pick)")
+                            broadcastGridDraftState(lobby, "$lastAction (auto-pick)", pickedCards, activePlayer)
                             startGridDraftTimer(lobby)
                             lobbyRepository.saveLobby(lobby)
                         }

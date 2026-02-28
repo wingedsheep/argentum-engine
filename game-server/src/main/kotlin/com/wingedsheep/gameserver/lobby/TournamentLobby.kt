@@ -43,8 +43,8 @@ enum class GridSelection {
  */
 sealed interface GridDraftResult {
     data class PickMade(val cards: List<CardDefinition>, val lastAction: String) : GridDraftResult
-    data class GridComplete(val lastAction: String) : GridDraftResult
-    data class DraftComplete(val lastAction: String) : GridDraftResult
+    data class GridComplete(val cards: List<CardDefinition>, val lastAction: String) : GridDraftResult
+    data class DraftComplete(val cards: List<CardDefinition>, val lastAction: String) : GridDraftResult
     data class Error(val message: String) : GridDraftResult
 }
 
@@ -880,12 +880,12 @@ class TournamentLobby(
             if (gridMainDeck.isEmpty()) {
                 // Draft complete — remaining unpicked cards are discarded
                 finishGridDraft()
-                return GridDraftResult.DraftComplete(lastAction)
+                return GridDraftResult.DraftComplete(cards, lastAction)
             }
 
             // Discard remaining cards and deal new grid
             dealGrid()
-            return GridDraftResult.GridComplete(lastAction)
+            return GridDraftResult.GridComplete(cards, lastAction)
         } else {
             // Next player picks from the same grid
             gridActivePlayerIndex = (gridActivePlayerIndex + 1) % gridPlayerOrder.size
