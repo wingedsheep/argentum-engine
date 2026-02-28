@@ -281,6 +281,7 @@ data class GrantTriggeredAbilityUntilEndOfTurnEffect(
  * @property target The creature to grant the ability to
  * @property duration How long the grant lasts
  */
+@SerialName("GrantActivatedAbilityUntilEndOfTurn")
 @Serializable
 data class GrantActivatedAbilityUntilEndOfTurnEffect(
     val ability: ActivatedAbility,
@@ -423,6 +424,7 @@ data class ChooseCreatureTypeModifyStatsEffect(
  * @property excludedTypes Creature types that cannot be chosen (e.g., "Wall")
  * @property duration How long the effect lasts
  */
+@SerialName("BecomeChosenTypeAllCreatures")
 @Serializable
 data class BecomeChosenTypeAllCreaturesEffect(
     val excludedTypes: List<String> = emptyList(),
@@ -467,6 +469,7 @@ data class BecomeCreatureTypeEffect(
  * @property permanent Which permanent changes control (default: enchanted creature)
  * @property newController Which player gains control (default: first target, expected to be a player)
  */
+@SerialName("GiveControlToTargetPlayer")
 @Serializable
 data class GiveControlToTargetPlayerEffect(
     val permanent: EffectTarget = EffectTarget.EnchantedCreature,
