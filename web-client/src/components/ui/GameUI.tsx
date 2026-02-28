@@ -408,21 +408,22 @@ function LobbyOverlay({
             </div>
             {/* Draft type sub-selection - only when Draft is selected */}
             {(isDraft || isWinston) && (
-              <div className={styles.settingsRow}>
-                <span className={styles.settingsLabel}>Draft Type</span>
-                <div className={styles.settingsButtons}>
+              <div className={styles.settingsRow} style={{ alignItems: 'flex-start' }}>
+                <span className={styles.settingsLabel} style={{ paddingTop: 6 }}>Draft Type</span>
+                <div className={styles.draftTypeOptions}>
                   <button
                     onClick={() => updateLobbySettings({ format: 'DRAFT' })}
-                    className={`${styles.settingsButton} ${isDraft ? `${styles.settingsButtonActive} ${styles.settingsButtonDraft}` : ''}`}
+                    className={`${styles.draftTypeButton} ${isDraft ? `${styles.settingsButtonActive} ${styles.settingsButtonDraft}` : ''}`}
                   >
-                    Normal
+                    <span className={styles.draftTypeName}>Normal</span>
+                    <span className={styles.draftTypeDesc}>Pass packs around the table. 3-8 players.</span>
                   </button>
                   <button
                     onClick={() => updateLobbySettings({ format: 'WINSTON_DRAFT' })}
-                    className={`${styles.settingsButton} ${isWinston ? `${styles.settingsButtonActive} ${styles.settingsButtonDraft}` : ''}`}
-                    title="2-player draft format with 3 piles"
+                    className={`${styles.draftTypeButton} ${isWinston ? `${styles.settingsButtonActive} ${styles.settingsButtonDraft}` : ''}`}
                   >
-                    Winston
+                    <span className={styles.draftTypeName}>Winston</span>
+                    <span className={styles.draftTypeDesc}>Pick from 3 face-down piles. 2 players.</span>
                   </button>
                 </div>
               </div>
