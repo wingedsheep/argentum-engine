@@ -70,6 +70,8 @@ function GridDrafter({ gridState, settings }: { gridState: GridDraftState; setti
 
   // Animation: detect when cards are picked and animate them out
   const prevGridRef = useRef<readonly (SealedCardInfo | null)[]>(gridState.grid)
+  const prevGridNumberRef = useRef(gridState.gridNumber)
+  const gridAppearedAtRef = useRef(0)
   const [animatingCards, setAnimatingCards] = useState<{
     indices: number[]
     cards: Map<number, SealedCardInfo>
@@ -80,7 +82,14 @@ function GridDrafter({ gridState, settings }: { gridState: GridDraftState; setti
   useEffect(() => {
     const prevGrid = prevGridRef.current
     const newGrid = gridState.grid
+    const isNewGrid = gridState.gridNumber !== prevGridNumberRef.current
     prevGridRef.current = newGrid
+    prevGridNumberRef.current = gridState.gridNumber
+
+    // Record when a new grid appears so we can delay the first pick animation
+    if (isNewGrid) {
+      gridAppearedAtRef.current = Date.now()
+    }
 
     // Find indices where cards disappeared (were non-null, now null)
     const removedIndices: number[] = []
@@ -109,31 +118,44 @@ function GridDrafter({ gridState, settings }: { gridState: GridDraftState; setti
       }
     }
 
-    // Start highlight phase
-    setAnimatingCards({
-      indices: removedIndices,
-      cards: removedCards,
-      selection: detectedSelection,
-      phase: 'highlight',
-    })
+    // Delay animation after a new grid so players can see the full grid first
+    const timeSinceNewGrid = Date.now() - gridAppearedAtRef.current
+    const NEW_GRID_PAUSE = 1200
+    const animDelay = timeSinceNewGrid < NEW_GRID_PAUSE
+      ? NEW_GRID_PAUSE - timeSinceNewGrid
+      : 0
+
+    const startAnimation = () => {
+      // Start highlight phase
+      setAnimatingCards({
+        indices: removedIndices,
+        cards: removedCards,
+        selection: detectedSelection,
+        phase: 'highlight',
+      })
+    }
+
+    const delayTimer = animDelay > 0 ? setTimeout(startAnimation, animDelay) : null
+    if (animDelay === 0) startAnimation()
 
     // Transition to fadeout
     const fadeTimer = setTimeout(() => {
       setAnimatingCards((prev) =>
         prev ? { ...prev, phase: 'fadeout' } : null,
       )
-    }, 400)
+    }, animDelay + 600)
 
     // Clear animation
     const clearTimer = setTimeout(() => {
       setAnimatingCards(null)
-    }, 1000)
+    }, animDelay + 1400)
 
     return () => {
+      if (delayTimer) clearTimeout(delayTimer)
       clearTimeout(fadeTimer)
       clearTimeout(clearTimer)
     }
-  }, [gridState.grid])
+  }, [gridState.grid, gridState.gridNumber])
 
   const timerWarning = gridState.timeRemaining <= 10
   const isMobile = responsive.isMobile
@@ -515,8 +537,8 @@ function GridDrafter({ gridState, settings }: { gridState: GridDraftState; setti
                                   ? 'scale(1.05)'
                                   : 'scale(0.8) translateY(-20px)',
                                 transition: animPhase === 'highlight'
-                                  ? 'transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.15s'
-                                  : 'transform 0.5s ease-in, opacity 0.4s ease-in',
+                                  ? 'transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.2s'
+                                  : 'transform 0.7s ease-in, opacity 0.6s ease-in',
                               }}>
                                 <GridCard
                                   card={animCard}
