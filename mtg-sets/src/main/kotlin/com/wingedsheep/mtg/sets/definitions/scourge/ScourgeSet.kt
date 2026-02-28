@@ -57,6 +57,7 @@ object ScourgeSet {
 
         // Green instants
         AcceleratedMutation,
+        DivergentGrowth,
 
         // Green sorceries
         BreakAsunder,

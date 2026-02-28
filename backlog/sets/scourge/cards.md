@@ -3,7 +3,7 @@
 
 **Set Size:** 143 cards
 **Release Date:** May 26, 2003
-**Implemented:** 101 / 143
+**Implemented:** 102 / 143
 
 | Color | Count |
 |-------|-------|
@@ -11,7 +11,7 @@
 | Blue | 17 |
 | Black | 19 |
 | Red | 22 |
-| Green | 19 |
+| Green | 20 |
 | Multicolor | 1 |
 | Colorless | 4 |
 
@@ -55,7 +55,7 @@
 - [ ] Decree of Silence
 - [ ] Dimensional Breach
 - [x] Dispersal Shield
-- [ ] Divergent Growth
+- [x] Divergent Growth
 - [x] Dragon Breath
 - [x] Dragon Fangs
 - [x] Dragon Mage
