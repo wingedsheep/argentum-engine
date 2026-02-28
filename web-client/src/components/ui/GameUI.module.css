@@ -765,6 +765,7 @@
 /* Draft type picker with descriptions */
 .draftTypeOptions {
   display: flex;
+  flex-wrap: wrap;
   gap: var(--space-1);
 }
 
@@ -781,7 +782,8 @@
   border-radius: var(--radius-md);
   cursor: pointer;
   text-align: left;
-  min-width: 180px;
+  min-width: 140px;
+  flex: 1 1 140px;
   transition: border-color 0.15s, background-color 0.15s;
 }
 

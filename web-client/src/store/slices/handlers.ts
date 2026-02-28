@@ -583,14 +583,24 @@ export function createMessageHandlers(set: SetState, get: GetState): MessageHand
     },
 
     onDraftTimerUpdate: (msg) => {
-      set((state) => ({
-        lobbyState: state.lobbyState?.draftState
-          ? {
-              ...state.lobbyState,
-              draftState: { ...state.lobbyState.draftState, timeRemaining: msg.secondsRemaining },
-            }
-          : state.lobbyState,
-      }))
+      set((state) => {
+        if (!state.lobbyState) return {}
+        const lobby = state.lobbyState
+        return {
+          lobbyState: {
+            ...lobby,
+            draftState: lobby.draftState
+              ? { ...lobby.draftState, timeRemaining: msg.secondsRemaining }
+              : lobby.draftState,
+            winstonDraftState: lobby.winstonDraftState
+              ? { ...lobby.winstonDraftState, timeRemaining: msg.secondsRemaining }
+              : lobby.winstonDraftState,
+            gridDraftState: lobby.gridDraftState
+              ? { ...lobby.gridDraftState, timeRemaining: msg.secondsRemaining }
+              : lobby.gridDraftState,
+          },
+        }
+      })
     },
 
     // ========================================================================
