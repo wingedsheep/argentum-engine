@@ -43,6 +43,7 @@ object LegionsSet {
         GlintwingInvoker,
         KeeneyeAven,
         MerchantOfSecrets,
+        MistformSeaswift,
         PrimocEscapee,
 
         // Black creatures
@@ -56,6 +57,7 @@ object LegionsSet {
         SootfeatherFlock,
         VileDeacon,
         WitheredWretch,
+        ZombieBrute,
 
         // Red creatures
         BladeSliver,
