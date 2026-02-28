@@ -55,6 +55,7 @@ object LegionsSet {
         EmbalmedBrawler,
         DrinkerOfSorrow,
         DrippingDead,
+        GempalmPolluter,
         GoblinTurncoat,
         HavocDemon,
         Skinthinner,
