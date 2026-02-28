@@ -310,7 +310,7 @@ export function useInteraction() {
           maxTargets: costInfo.exileMaxCount ?? costInfo.validExileTargets?.length ?? 1,
           isSacrificeSelection: true,
           pendingActionInfo: actionInfo,
-          targetZone: 'graveyard',
+          targetZone: 'Graveyard',
           targetDescription: costInfo.description,
         })
         selectCard(null)
