@@ -48,6 +48,7 @@ object LegionsSet {
         MerchantOfSecrets,
         MistformSeaswift,
         PrimocEscapee,
+        WallOfDeceit,
 
         // Black creatures
         Earthblighter,

@@ -2,12 +2,12 @@
 
 **Set Size:** 145 cards
 **Release Date:** February 3, 2003
-**Implemented:** 59 / 145
+**Implemented:** 60 / 145
 
 | Color      | Count |
 |------------|-------|
 | White      | 12/29 |
-| Blue       | 11/29 |
+| Blue       | 12/29 |
 | Black      | 12/29 |
 | Red        | 12/29 |
 | Green      | 12/29 |
@@ -144,7 +144,7 @@
 - [ ] Vexing Beetle
 - [x] Vile Deacon
 - [ ] Voidmage Apprentice
-- [ ] Wall of Deceit
+- [x] Wall of Deceit
 - [x] Wall of Hope
 - [ ] Warbreak Trumpeter
 - [ ] Ward Sliver
