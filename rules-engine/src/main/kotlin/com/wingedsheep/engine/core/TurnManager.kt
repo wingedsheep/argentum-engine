@@ -1006,7 +1006,7 @@ class TurnManager(
             }
         }
 
-        // 4. Remove any unconsumed additional combat phase components and temporary player shroud
+        // 4. Remove any unconsumed additional combat phase components, temporary player shroud, and damage tracking
         for (playerId in newState.turnOrder) {
             newState = newState.updateEntity(playerId) { container ->
                 var result = container
@@ -1016,6 +1016,9 @@ class TurnManager(
                 val shroud = result.get<PlayerShroudComponent>()
                 if (shroud?.removeOn == PlayerEffectRemoval.EndOfTurn) {
                     result = result.without<PlayerShroudComponent>()
+                }
+                if (result.has<com.wingedsheep.engine.state.components.player.DamageReceivedThisTurnComponent>()) {
+                    result = result.without<com.wingedsheep.engine.state.components.player.DamageReceivedThisTurnComponent>()
                 }
                 result
             }

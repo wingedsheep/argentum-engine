@@ -256,6 +256,19 @@ data class CardsDrawnThisTurnComponent(
 ) : Component
 
 /**
+ * Tracks the total damage dealt to a player during the current turn.
+ * Includes both combat and non-combat damage. Prevented damage is not counted.
+ * Cleared at end of turn by TurnManager.
+ *
+ * Used by Final Punishment: "Target player loses life equal to the damage
+ * already dealt to that player this turn."
+ */
+@Serializable
+data class DamageReceivedThisTurnComponent(
+    val amount: Int = 0
+) : Component
+
+/**
  * Marker component indicating that a player should skip their entire next turn.
  * Applied by effects like Last Chance (which gives the opponent an "extra turn"
  * by skipping the other player's turn in a 2-player game).

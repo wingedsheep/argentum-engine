@@ -318,6 +318,7 @@ object EffectExecutorUtils {
             newState = newState.updateEntity(targetId) { container ->
                 container.with(LifeTotalComponent(newLife))
             }
+            newState = trackDamageReceivedByPlayer(newState, targetId, effectiveAmount)
             events.add(LifeChangedEvent(targetId, lifeComponent.life, newLife, LifeChangeReason.DAMAGE))
         } else {
             // It's a creature - mark damage
@@ -337,6 +338,21 @@ object EffectExecutorUtils {
         events.add(DamageDealtEvent(sourceId, targetId, effectiveAmount, false, sourceName = sourceName, targetName = targetName, targetIsPlayer = targetIsPlayer))
 
         return ExecutionResult.success(newState, events)
+    }
+
+    /**
+     * Track that [playerId] received [amount] damage this turn.
+     * Updates the DamageReceivedThisTurnComponent on the player entity.
+     * Used for Final Punishment: "Target player loses life equal to the damage
+     * already dealt to that player this turn."
+     */
+    fun trackDamageReceivedByPlayer(state: GameState, playerId: EntityId, amount: Int): GameState {
+        if (amount <= 0) return state
+        return state.updateEntity(playerId) { container ->
+            val existing = container.get<com.wingedsheep.engine.state.components.player.DamageReceivedThisTurnComponent>()
+                ?: com.wingedsheep.engine.state.components.player.DamageReceivedThisTurnComponent()
+            container.with(com.wingedsheep.engine.state.components.player.DamageReceivedThisTurnComponent(existing.amount + amount))
+        }
     }
 
     /**

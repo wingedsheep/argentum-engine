@@ -235,6 +235,17 @@ class DynamicAmountEvaluator(
                 }
             }
 
+            is DynamicAmount.DamageDealtToTargetPlayerThisTurn -> {
+                val target = context.targets.getOrNull(amount.targetIndex) ?: return 0
+                val playerId = when (target) {
+                    is com.wingedsheep.engine.state.components.stack.ChosenTarget.Player -> target.playerId
+                    else -> return 0
+                }
+                state.getEntity(playerId)
+                    ?.get<com.wingedsheep.engine.state.components.player.DamageReceivedThisTurnComponent>()
+                    ?.amount ?: 0
+            }
+
             is DynamicAmount.CreaturesSharingTypeWithTriggeringEntity -> {
                 val triggeringId = context.triggeringEntityId ?: return 0
                 // Get the triggering creature's subtypes from projected state

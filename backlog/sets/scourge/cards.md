@@ -3,13 +3,13 @@
 
 **Set Size:** 143 cards
 **Release Date:** May 26, 2003
-**Implemented:** 107 / 143
+**Implemented:** 108 / 143
 
 | Color | Count |
 |-------|-------|
 | White | 20 |
 | Blue | 18 |
-| Black | 21 |
+| Black | 22 |
 | Red | 22 |
 | Green | 20 |
 | Multicolor | 2 |
@@ -75,7 +75,7 @@
 - [x] Faces of the Past
 - [x] Fatal Mutation
 - [x] Fierce Empath
-- [ ] Final Punishment
+- [x] Final Punishment
 - [ ] Force Bubble
 - [ ] Forgotten Ancient
 - [ ] Form of the Dragon

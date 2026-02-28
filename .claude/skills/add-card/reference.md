@@ -607,6 +607,7 @@ each player reveals and creates tokens
 - `DynamicAmount.ColorsAmongPermanentsYouControl` / `.CardTypesInAllGraveyards`
 - `DynamicAmount.CountersOnSelf(counterType)` / `.CountersOnTarget(counterType, targetIndex)` / `.CreaturesSharingTypeWithTriggeringEntity`
 - `DynamicAmount.VariableReference(variableName)` / `.StoredCardManaValue(collectionName)` / `.AdditionalCostExiledCount`
+- `DynamicAmount.DamageDealtToTargetPlayerThisTurn(targetIndex)` — total damage dealt to a target player this turn
 - `DynamicAmount.Count(player, zone, filter)` /
   `DynamicAmount.AggregateBattlefield(player, filter, aggregation?, property?, excludeSelf?)`
 - `DynamicAmount.Conditional(condition, ifTrue, ifFalse)` — conditional amount

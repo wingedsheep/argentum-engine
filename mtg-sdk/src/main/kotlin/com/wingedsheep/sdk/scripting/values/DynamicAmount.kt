@@ -460,6 +460,19 @@ sealed interface DynamicAmount {
     }
 
     /**
+     * Total damage dealt to a target player this turn.
+     * Used for Final Punishment: "Target player loses life equal to the damage
+     * already dealt to that player this turn."
+     *
+     * @param targetIndex Index into the context targets array to find the player
+     */
+    @SerialName("DamageDealtToTargetPlayerThisTurn")
+    @Serializable
+    data class DamageDealtToTargetPlayerThisTurn(val targetIndex: Int = 0) : DynamicAmount {
+        override val description: String = "the damage already dealt to that player this turn"
+    }
+
+    /**
      * Count creatures the controller controls that share a creature type with the triggering entity.
      * Used for Mana Echoes: "add {C} equal to the number of creatures you control that share a creature type with it."
      */
