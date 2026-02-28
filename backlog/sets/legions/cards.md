@@ -2,15 +2,15 @@
 
 **Set Size:** 145 cards
 **Release Date:** February 3, 2003
-**Implemented:** 51 / 145
+**Implemented:** 55 / 145
 
 | Color      | Count |
 |------------|-------|
-| White      | 10/29 |
-| Blue       | 10/29 |
+| White      | 11/29 |
+| Blue       | 11/29 |
 | Black      | 11/29 |
-| Red        | 10/29 |
-| Green      | 10/29 |
+| Red        | 11/29 |
+| Green      | 11/29 |
 
 ---
 
@@ -63,10 +63,10 @@
 - [x] Flamewave Invoker
 - [x] Frenetic Raptor
 - [x] Fugitive Wizard
-- [ ] Gempalm Avenger
+- [x] Gempalm Avenger
 - [ ] Gempalm Incinerator
 - [ ] Gempalm Polluter
-- [ ] Gempalm Sorcerer
+- [x] Gempalm Sorcerer
 - [ ] Gempalm Strider
 - [ ] Ghastly Remains
 - [x] Glintwing Invoker
@@ -76,7 +76,7 @@
 - [ ] Goblin Clearcutter
 - [ ] Goblin Dynamo
 - [x] Goblin Firebug
-- [ ] Goblin Goon
+- [x] Goblin Goon
 - [x] Goblin Grappler
 - [ ] Goblin Lookout
 - [x] Goblin Turncoat
@@ -156,6 +156,6 @@
 - [ ] Windborn Muse
 - [x] Wingbeat Warrior
 - [ ] Wirewood Channeler
-- [ ] Wirewood Hivemaster
+- [x] Wirewood Hivemaster
 - [x] Withered Wretch
 - [x] Zombie Brute

@@ -25,8 +25,11 @@ import com.wingedsheep.sdk.scripting.CantBeBlockedByPower
 import com.wingedsheep.sdk.scripting.CantBeBlockedExceptByKeyword
 import com.wingedsheep.sdk.scripting.CantBeBlockedUnlessDefenderSharesCreatureType
 import com.wingedsheep.sdk.scripting.CanBlockAnyNumber
+import com.wingedsheep.sdk.scripting.CantAttackUnless
 import com.wingedsheep.sdk.scripting.CantBlock
 import com.wingedsheep.sdk.scripting.CantBlockCreaturesWithGreaterPower
+import com.wingedsheep.sdk.scripting.CantBlockUnless
+import com.wingedsheep.sdk.scripting.CombatCondition
 import com.wingedsheep.sdk.scripting.DivideCombatDamageFreely
 import com.wingedsheep.sdk.scripting.StaticTarget
 import java.util.UUID
@@ -62,10 +65,18 @@ class CombatManager(
         attackers: Map<EntityId, EntityId>
     ): ExecutionResult {
         // Validate each attacker
+        val projected = stateProjector.project(state)
         for ((attackerId, defenderId) in attackers) {
             val validation = validateAttacker(state, attackingPlayer, attackerId)
             if (validation != null) {
                 return ExecutionResult.error(state, validation)
+            }
+            // Check creature count attack restrictions (e.g., Goblin Goon)
+            val creatureCountValidation = validateCantAttackUnless(
+                state, attackerId, attackingPlayer, defenderId, projected
+            )
+            if (creatureCountValidation != null) {
+                return ExecutionResult.error(state, creatureCountValidation)
             }
         }
 
@@ -89,7 +100,6 @@ class CombatManager(
 
         // Apply attacker components and tap attacking creatures
         var newState = state
-        val projected = stateProjector.project(state)
         for ((attackerId, defenderId) in attackers) {
             newState = newState.updateEntity(attackerId) { container ->
                 var updated = container.with(AttackingComponent(defenderId))
@@ -342,6 +352,11 @@ class CombatManager(
                 return@filter false
             }
 
+            // Check creature count attack restriction (e.g., Goblin Goon)
+            if (hasCantAttackUnlessRestriction(state, entityId, playerId, projected)) {
+                return@filter false
+            }
+
             true
         }
     }
@@ -578,6 +593,12 @@ class CombatManager(
         // Check projected "can't block" (e.g., from Pacifism aura)
         if (projected.cantBlock(blockerId)) {
             return "${cardComponent.name} can't block"
+        }
+
+        // Check CantBlockUnless restriction (e.g., Goblin Goon)
+        if (!isFaceDown) {
+            val cantBlockUnlessError = validateCantBlockUnless(state, blockerId, blockingPlayer, projected)
+            if (cantBlockUnlessError != null) return cantBlockUnlessError
         }
 
         // Face-down creatures lose all abilities, so keyword/power block restrictions don't apply
@@ -2536,6 +2557,9 @@ class CombatManager(
         // Check projected "can't block" (e.g., from Pacifism aura)
         if (projected.cantBlock(blockerId)) return false
 
+        // Check creature count block restriction (e.g., Goblin Goon)
+        if (!isFaceDown && hasCantBlockUnlessRestriction(state, blockerId, blockingPlayer, projected)) return false
+
         val attackers = state.entities.filter { (_, container) -> container.has<AttackingComponent>() }.keys
 
         return attackers.any { attackerId ->
@@ -2651,5 +2675,177 @@ class CombatManager(
         }
 
         return true
+    }
+
+    // =========================================================================
+    // Conditional Attack/Block Restrictions (CantAttackUnless / CantBlockUnless)
+    // =========================================================================
+
+    /**
+     * Count creatures on the battlefield controlled by a player.
+     */
+    private fun countCreatures(state: GameState, playerId: EntityId, projected: ProjectedState): Int {
+        return state.getBattlefield().count { entityId ->
+            projected.isCreature(entityId) && projected.getController(entityId) == playerId
+        }
+    }
+
+    /**
+     * Evaluate a [CombatCondition] for an attack restriction.
+     *
+     * @param controllerId The creature's controller
+     * @param opponentId The defending player
+     * @return true if the condition is satisfied (attack is allowed)
+     */
+    private fun evaluateCombatCondition(
+        condition: CombatCondition,
+        state: GameState,
+        controllerId: EntityId,
+        opponentId: EntityId,
+        projected: ProjectedState
+    ): Boolean = when (condition) {
+        is CombatCondition.ControlMoreCreatures -> {
+            countCreatures(state, controllerId, projected) > countCreatures(state, opponentId, projected)
+        }
+        is CombatCondition.OpponentControlsLandType -> {
+            state.getBattlefield().any { entityId ->
+                projected.getController(entityId) == opponentId &&
+                    projected.getProjectedValues(entityId)?.subtypes
+                        ?.any { it.equals(condition.landType, ignoreCase = true) } == true
+            }
+        }
+    }
+
+    /**
+     * Validate CantAttackUnless restrictions for an attacker.
+     *
+     * @return Error message if restricted, null if allowed
+     */
+    private fun validateCantAttackUnless(
+        state: GameState,
+        attackerId: EntityId,
+        attackingPlayer: EntityId,
+        defenderId: EntityId,
+        projected: ProjectedState
+    ): String? {
+        val container = state.getEntity(attackerId) ?: return null
+        if (container.has<FaceDownComponent>()) return null
+        val cardComponent = container.get<CardComponent>() ?: return null
+        val cardDef = cardRegistry?.getCard(cardComponent.cardDefinitionId) ?: return null
+
+        val restriction = cardDef.staticAbilities
+            .filterIsInstance<CantAttackUnless>()
+            .firstOrNull { it.target == StaticTarget.SourceCreature } ?: return null
+
+        val defendingPlayer = findDefendingPlayer(state, defenderId)
+
+        if (!evaluateCombatCondition(restriction.condition, state, attackingPlayer, defendingPlayer, projected)) {
+            return "${cardComponent.name} ${restriction.description}"
+        }
+
+        return null
+    }
+
+    /**
+     * Check if a creature has a CantAttackUnless restriction that prevents it
+     * from attacking any opponent. Used for legal action generation.
+     *
+     * @return true if the creature is restricted from attacking all opponents
+     */
+    fun hasCantAttackUnlessRestriction(
+        state: GameState,
+        attackerId: EntityId,
+        attackingPlayer: EntityId,
+        projected: ProjectedState
+    ): Boolean {
+        val container = state.getEntity(attackerId) ?: return false
+        if (container.has<FaceDownComponent>()) return false
+        val cardComponent = container.get<CardComponent>() ?: return false
+        val cardDef = cardRegistry?.getCard(cardComponent.cardDefinitionId) ?: return false
+
+        val restriction = cardDef.staticAbilities
+            .filterIsInstance<CantAttackUnless>()
+            .firstOrNull { it.target == StaticTarget.SourceCreature } ?: return false
+
+        // Check against all opponents - if restricted against all, can't attack anyone
+        val opponents = state.turnOrder.filter { it != attackingPlayer }
+        return opponents.all { opponentId ->
+            !evaluateCombatCondition(restriction.condition, state, attackingPlayer, opponentId, projected)
+        }
+    }
+
+    /**
+     * Validate CantBlockUnless restrictions for a blocker.
+     *
+     * @return Error message if restricted, null if allowed
+     */
+    private fun validateCantBlockUnless(
+        state: GameState,
+        blockerId: EntityId,
+        blockingPlayer: EntityId,
+        projected: ProjectedState
+    ): String? {
+        val container = state.getEntity(blockerId) ?: return null
+        if (container.has<FaceDownComponent>()) return null
+        val cardComponent = container.get<CardComponent>() ?: return null
+        val cardDef = cardRegistry?.getCard(cardComponent.cardDefinitionId) ?: return null
+
+        val restriction = cardDef.staticAbilities
+            .filterIsInstance<CantBlockUnless>()
+            .firstOrNull { it.target == StaticTarget.SourceCreature } ?: return null
+
+        val attackers = state.entities.filter { (_, c) -> c.has<AttackingComponent>() }
+        if (attackers.isEmpty()) return null
+
+        val anyAttacker = attackers.keys.first()
+        val attackingPlayer = projected.getController(anyAttacker) ?: return null
+
+        if (!evaluateCombatCondition(restriction.condition, state, blockingPlayer, attackingPlayer, projected)) {
+            return "${cardComponent.name} ${restriction.description}"
+        }
+
+        return null
+    }
+
+    /**
+     * Check if a creature has a CantBlockUnless restriction.
+     *
+     * @return true if the creature is restricted from blocking
+     */
+    fun hasCantBlockUnlessRestriction(
+        state: GameState,
+        blockerId: EntityId,
+        blockingPlayer: EntityId,
+        projected: ProjectedState
+    ): Boolean {
+        val container = state.getEntity(blockerId) ?: return false
+        if (container.has<FaceDownComponent>()) return false
+        val cardComponent = container.get<CardComponent>() ?: return false
+        val cardDef = cardRegistry?.getCard(cardComponent.cardDefinitionId) ?: return false
+
+        val restriction = cardDef.staticAbilities
+            .filterIsInstance<CantBlockUnless>()
+            .firstOrNull { it.target == StaticTarget.SourceCreature } ?: return false
+
+        // Find the attacking player
+        val attackers = state.entities.filter { (_, c) -> c.has<AttackingComponent>() }
+        if (attackers.isEmpty()) return false
+
+        val anyAttacker = attackers.keys.first()
+        val attackingPlayer = projected.getController(anyAttacker) ?: return false
+
+        return !evaluateCombatCondition(restriction.condition, state, blockingPlayer, attackingPlayer, projected)
+    }
+
+    /**
+     * Find the defending player given a defender entity (could be a player or planeswalker).
+     */
+    private fun findDefendingPlayer(state: GameState, defenderId: EntityId): EntityId {
+        // If the defender is a player directly, return it
+        if (state.getEntity(defenderId)?.has<LifeTotalComponent>() == true) {
+            return defenderId
+        }
+        // Otherwise it's a planeswalker — find its controller
+        return state.getEntity(defenderId)?.get<ControllerComponent>()?.playerId ?: defenderId
     }
 }

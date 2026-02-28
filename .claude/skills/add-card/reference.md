@@ -797,7 +797,10 @@ Set via `staticAbility { ability = ... }`:
 
 - `CantAttack(target)` / `CantBlock(target)` / `MustAttack(target)`
 - `CantBlockForCreatureGroup(filter: GroupFilter)` — prevents creatures matching filter from blocking (e.g., "Beasts can't block")
-- `CantAttackUnlessDefenderControlsLandType(landType, target)`
+- `CantAttackUnless(condition: CombatCondition, target)` — conditional attack restriction
+- `CantBlockUnless(condition: CombatCondition, target)` — conditional block restriction
+- `CombatCondition.ControlMoreCreatures` — you control more creatures than opponent
+- `CombatCondition.OpponentControlsLandType(landType)` — opponent controls a land of specified type
 - `CantBlockCreaturesWithGreaterPower(target)`
 - `CanOnlyBlockCreaturesWithKeyword(keyword, target)`
 - `CanBlockAnyNumber(target)` — can block any number of creatures

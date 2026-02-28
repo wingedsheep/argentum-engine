@@ -27,6 +27,7 @@ object LegionsSet {
         CloudreachCavalry,
         DaruSanctifier,
         DeftbladeElite,
+        GempalmAvenger,
         LowlandTracker,
         PlatedSliver,
         StarlightInvoker,
@@ -40,6 +41,7 @@ object LegionsSet {
         CovertOperative,
         EchoTracer,
         FugitiveWizard,
+        GempalmSorcerer,
         GlintwingInvoker,
         KeeneyeAven,
         MerchantOfSecrets,
@@ -63,6 +65,7 @@ object LegionsSet {
         BladeSliver,
         CrestedCraghorn,
         FlamewaveInvoker,
+        GoblinGoon,
         FreneticRaptor,
         GoblinFirebug,
         GoblinGrappler,
@@ -82,5 +85,6 @@ object LegionsSet {
         PatronOfTheWild,
         StonewoodInvoker,
         TotemSpeaker,
+        WirewoodHivemaster,
     )
 }
