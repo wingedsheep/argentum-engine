@@ -196,9 +196,11 @@ function GridDrafter({ gridState, settings }: { gridState: GridDraftState; setti
         {(!isMobile || !showPickedCards) && (
           <div style={{
             flex: 1, display: 'flex', flexDirection: 'column',
-            alignItems: 'center', justifyContent: 'center',
+            alignItems: 'center',
             padding: isMobile ? 12 : 20, overflow: 'auto',
           }}>
+            {/* Spacer to vertically center content when it doesn't overflow */}
+            <div style={{ flex: '1 0 0' }} />
             {/* Turn indicator */}
             <div style={{
               textAlign: 'center', marginBottom: 12,
@@ -402,6 +404,8 @@ function GridDrafter({ gridState, settings }: { gridState: GridDraftState; setti
                 </button>
               )}
             </div>
+            {/* Spacer to vertically center content when it doesn't overflow */}
+            <div style={{ flex: '1 0 0' }} />
           </div>
         )}
 
@@ -513,7 +517,7 @@ function GridCard({ card, isHighlighted, onHover, width }: {
   onHover: (card: SealedCardInfo | null, e?: React.MouseEvent) => void
   width: number
 }) {
-  const imageUrl = getCardImageUrl(card.name)
+  const imageUrl = getCardImageUrl(card.name, card.imageUri, 'normal')
 
   return (
     <div
@@ -584,7 +588,7 @@ function GridCard({ card, isHighlighted, onHover, width }: {
  * Card preview popup on hover.
  */
 function CardPreview({ card, position }: { card: SealedCardInfo; position: { x: number; y: number } }) {
-  const imageUrl = getCardImageUrl(card.name)
+  const imageUrl = getCardImageUrl(card.name, card.imageUri, 'large')
   const previewWidth = 250
   const previewHeight = 350
 

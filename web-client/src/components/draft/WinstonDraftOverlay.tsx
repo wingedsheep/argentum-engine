@@ -488,7 +488,7 @@ function PileCard({ card, onHover, isMobile }: {
   onHover: (card: SealedCardInfo | null, e?: React.MouseEvent) => void
   isMobile: boolean
 }) {
-  const imageUrl = getCardImageUrl(card.name)
+  const imageUrl = getCardImageUrl(card.name, card.imageUri, 'normal')
 
   return (
     <div
@@ -554,7 +554,7 @@ function PileCard({ card, onHover, isMobile }: {
  * Card preview popup on hover.
  */
 function CardPreview({ card, position }: { card: SealedCardInfo; position: { x: number; y: number } }) {
-  const imageUrl = getCardImageUrl(card.name)
+  const imageUrl = getCardImageUrl(card.name, card.imageUri, 'large')
   const previewWidth = 250
   const previewHeight = 350
 
