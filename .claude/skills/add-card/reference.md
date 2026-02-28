@@ -831,6 +831,7 @@ Set via `staticAbility { ability = ... }`:
 - `AdditionalManaOnTap(color, amount: DynamicAmount)` — produce additional mana
 - `PlayFromTopOfLibrary` — play cards from top of library
 - `PreventCycling` — players can't cycle cards
+- `IncreaseMorphCost(amount: Int)` — all morph (turn face-up) costs cost more
 - `RevealFirstDrawEachTurn` — reveal the first card drawn each turn (Primitive Etchings)
 - `SpellCostReduction(reductionSource)` — cost reduction
 - `FaceDownSpellCostReduction(reductionSource)` — face-down spell cost reduction

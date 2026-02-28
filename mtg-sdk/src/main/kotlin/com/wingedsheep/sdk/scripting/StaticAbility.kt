@@ -934,3 +934,22 @@ data object PreventCycling : StaticAbility {
 data object RevealFirstDrawEachTurn : StaticAbility {
     override val description: String = "Reveal the first card you draw each turn"
 }
+
+/**
+ * All morph costs cost more to pay (turning face-down creatures face up).
+ * Used for Exiled Doomsayer: "All morph costs cost {2} more."
+ *
+ * This affects all players' morph (turn face-up) costs globally.
+ * The engine scans all battlefield permanents for this ability when calculating
+ * the effective cost to turn a face-down creature face up.
+ * Does not affect the cost to cast creature spells face down.
+ *
+ * @property amount The amount of additional generic mana required
+ */
+@SerialName("IncreaseMorphCost")
+@Serializable
+data class IncreaseMorphCost(
+    val amount: Int
+) : StaticAbility {
+    override val description: String = "All morph costs cost {$amount} more"
+}
