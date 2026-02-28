@@ -49,6 +49,7 @@ object LegionsSet {
         PrimocEscapee,
 
         // Black creatures
+        Earthblighter,
         EmbalmedBrawler,
         DrinkerOfSorrow,
         DrippingDead,
@@ -67,6 +68,7 @@ object LegionsSet {
         FlamewaveInvoker,
         GoblinGoon,
         FreneticRaptor,
+        GempalmIncinerator,
         GoblinFirebug,
         GoblinGrappler,
         LavabornMuse,
