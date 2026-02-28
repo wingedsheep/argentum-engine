@@ -3,13 +3,13 @@
 
 **Set Size:** 143 cards
 **Release Date:** May 26, 2003
-**Implemented:** 111 / 143
+**Implemented:** 112 / 143
 
 | Color | Count |
 |-------|-------|
 | White | 21 |
 | Blue | 18 |
-| Black | 22 |
+| Black | 23 |
 | Red | 22 |
 | Green | 22 |
 | Multicolor | 2 |
@@ -32,7 +32,7 @@
 - [x] Bonethorn Valesk
 - [ ] Brain Freeze
 - [x] Break Asunder
-- [ ] Cabal Conditioning
+- [x] Cabal Conditioning
 - [x] Cabal Interrogator
 - [x] Call to the Grave
 - [x] Carbonize

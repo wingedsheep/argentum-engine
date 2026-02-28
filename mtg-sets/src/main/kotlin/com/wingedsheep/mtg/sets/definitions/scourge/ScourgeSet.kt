@@ -171,6 +171,7 @@ object ScourgeSet {
         ZombieCutthroat,
 
         // Black sorceries
+        CabalConditioning,
         Skulltap,
         Unburden,
 
