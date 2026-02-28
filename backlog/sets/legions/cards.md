@@ -2,14 +2,14 @@
 
 **Set Size:** 145 cards
 **Release Date:** February 3, 2003
-**Implemented:** 55 / 145
+**Implemented:** 56 / 145
 
 | Color      | Count |
 |------------|-------|
 | White      | 11/29 |
 | Blue       | 11/29 |
 | Black      | 11/29 |
-| Red        | 11/29 |
+| Red        | 12/29 |
 | Green      | 11/29 |
 
 ---
@@ -64,7 +64,7 @@
 - [x] Frenetic Raptor
 - [x] Fugitive Wizard
 - [x] Gempalm Avenger
-- [ ] Gempalm Incinerator
+- [x] Gempalm Incinerator
 - [ ] Gempalm Polluter
 - [x] Gempalm Sorcerer
 - [ ] Gempalm Strider
