@@ -527,7 +527,8 @@ class GameSession(
         val playerMode = getPriorityMode(playerId)
         val nextStopPoint = if (state.priorityPlayerId == playerId && playerMode != PriorityMode.FULL_CONTROL) {
             val hasMeaningfulActions = legalActions.any { action ->
-                action.actionType != "PassPriority" && !action.isManaAbility
+                action.actionType != "PassPriority" &&
+                (!action.isManaAbility || action.additionalCostInfo?.costType == "SacrificePermanent")
             }
             autoPassManager.getNextStopPoint(state, playerId, hasMeaningfulActions, stateProjector, playerOverrides.myTurnStops, playerOverrides.opponentTurnStops, stopsMode = playerMode == PriorityMode.STOPS)
         } else {

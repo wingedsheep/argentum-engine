@@ -209,8 +209,13 @@ class AutoPassManager {
             }
 
             // Mana abilities are invisible - they don't stop the game
+            // Exception: mana abilities with sacrifice costs (e.g., Skirk Prospector)
+            // are meaningful because sacrificing a creature is a significant game action
             if (action.isManaAbility) {
-                return@filter false
+                val hasSacrificeCost = action.additionalCostInfo?.costType == "SacrificePermanent"
+                if (!hasSacrificeCost) {
+                    return@filter false
+                }
             }
 
             // DeclareAttackers is meaningful if there are valid attackers
@@ -453,8 +458,8 @@ class AutoPassManager {
         return legalActions.any { action ->
             // Exclude PassPriority
             action.actionType != "PassPriority" &&
-            // Exclude mana abilities
-            !action.isManaAbility &&
+            // Exclude mana abilities (unless they have a sacrifice cost)
+            (!action.isManaAbility || action.additionalCostInfo?.costType == "SacrificePermanent") &&
             // Must be a spell or ability (not land play or combat action)
             (action.actionType == "CastSpell" || action.actionType == "ActivateAbility") &&
             // Must have valid targets if required

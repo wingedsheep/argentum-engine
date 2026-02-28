@@ -13,6 +13,7 @@ import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.combat.AttackingComponent
 import com.wingedsheep.engine.state.components.combat.BlockersDeclaredThisCombatComponent
 import com.wingedsheep.engine.state.components.combat.BlockingComponent
+import com.wingedsheep.gameserver.protocol.AdditionalCostInfo
 import com.wingedsheep.gameserver.protocol.LegalActionInfo
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Phase
@@ -149,6 +150,18 @@ class AutoPassManagerTest : FunSpec({
         isManaAbility = true
     )
 
+    fun sacrificeManaAbilityAction(playerId: EntityId) = LegalActionInfo(
+        actionType = "ActivateAbility",
+        description = "Sacrifice a creature Goblin: Add {R}",
+        action = ActivateAbility(playerId, EntityId.generate(), AbilityId("sac-mana")),
+        isManaAbility = true,
+        additionalCostInfo = AdditionalCostInfo(
+            description = "Sacrifice a creature Goblin",
+            costType = "SacrificePermanent",
+            validSacrificeTargets = listOf(EntityId.generate())
+        )
+    )
+
     fun instantSpellAction(playerId: EntityId, hasTargets: Boolean = true) = LegalActionInfo(
         actionType = "CastSpell",
         description = "Cast Lightning Bolt",
@@ -215,6 +228,16 @@ class AutoPassManagerTest : FunSpec({
             )
 
             autoPassManager.shouldAutoPass(state, player1, actions) shouldBe true
+        }
+
+        test("Mana abilities with sacrifice cost are meaningful actions") {
+            val state = createMockState(player1, player1, Step.DECLARE_BLOCKERS)
+            val actions = listOf(
+                passPriorityAction(player1),
+                sacrificeManaAbilityAction(player1)
+            )
+
+            autoPassManager.shouldAutoPass(state, player1, actions) shouldBe false
         }
 
         test("Spells with no valid targets are not meaningful") {
