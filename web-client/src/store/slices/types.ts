@@ -264,7 +264,25 @@ export interface WinstonDraftState {
 }
 
 /**
- * Lobby state for tournament lobbies (sealed, draft, or Winston draft).
+ * Grid Draft state during the grid drafting phase.
+ */
+export interface GridDraftState {
+  isYourTurn: boolean
+  activePlayerName: string
+  grid: readonly (SealedCardInfo | null)[]
+  mainDeckRemaining: number
+  pickedCards: readonly SealedCardInfo[]
+  totalPickedByOthers: Record<string, number>
+  lastAction: string | null
+  timeRemaining: number
+  availableSelections: readonly string[]
+  playerOrder: readonly string[]
+  currentPickerIndex: number
+  gridNumber: number
+}
+
+/**
+ * Lobby state for tournament lobbies (sealed, draft, Winston draft, or grid draft).
  */
 export interface LobbyState {
   lobbyId: string
@@ -276,6 +294,8 @@ export interface LobbyState {
   draftState: DraftState | null
   /** Winston Draft-specific state (only populated when format is WINSTON_DRAFT and state is DRAFTING) */
   winstonDraftState: WinstonDraftState | null
+  /** Grid Draft-specific state (only populated when format is GRID_DRAFT and state is DRAFTING) */
+  gridDraftState: GridDraftState | null
 }
 
 /**
@@ -465,12 +485,12 @@ export type GameStore = {
   lobbyState: LobbyState | null
   tournamentState: TournamentState | null
   spectatingState: SpectatingState | null
-  createTournamentLobby: (setCodes: string[], format?: 'SEALED' | 'DRAFT' | 'WINSTON_DRAFT', boosterCount?: number, maxPlayers?: number, pickTimeSeconds?: number) => void
+  createTournamentLobby: (setCodes: string[], format?: 'SEALED' | 'DRAFT' | 'WINSTON_DRAFT' | 'GRID_DRAFT', boosterCount?: number, maxPlayers?: number, pickTimeSeconds?: number) => void
   joinLobby: (lobbyId: string) => void
   startLobby: () => void
   leaveLobby: () => void
   stopLobby: () => void
-  updateLobbySettings: (settings: { setCodes?: string[]; format?: 'SEALED' | 'DRAFT' | 'WINSTON_DRAFT'; boosterCount?: number; maxPlayers?: number; gamesPerMatch?: number; pickTimeSeconds?: number; picksPerRound?: number }) => void
+  updateLobbySettings: (settings: { setCodes?: string[]; format?: 'SEALED' | 'DRAFT' | 'WINSTON_DRAFT' | 'GRID_DRAFT'; boosterCount?: number; maxPlayers?: number; gamesPerMatch?: number; pickTimeSeconds?: number; picksPerRound?: number }) => void
   /** Disconnected tournament players: playerId -> info */
   disconnectedPlayers: Record<string, { playerName: string; secondsRemaining: number; disconnectedAt: number }>
   readyForNextRound: () => void
@@ -494,6 +514,7 @@ export type GameStore = {
   makePick: (cardNames: string[]) => void
   winstonTakePile: () => void
   winstonSkipPile: () => void
+  gridDraftPick: (selection: string) => void
 
   // UI slice
   selectedCardId: EntityId | null

@@ -15,7 +15,37 @@ import kotlinx.coroutines.Job
 enum class TournamentFormat {
     SEALED,
     DRAFT,
-    WINSTON_DRAFT
+    WINSTON_DRAFT,
+    GRID_DRAFT
+}
+
+/**
+ * Grid draft row/column selection.
+ */
+enum class GridSelection {
+    ROW_0, ROW_1, ROW_2, COL_0, COL_1, COL_2;
+
+    /**
+     * Get the indices into the 3x3 grid (row-major order) for this selection.
+     */
+    fun getIndices(): List<Int> = when (this) {
+        ROW_0 -> listOf(0, 1, 2)
+        ROW_1 -> listOf(3, 4, 5)
+        ROW_2 -> listOf(6, 7, 8)
+        COL_0 -> listOf(0, 3, 6)
+        COL_1 -> listOf(1, 4, 7)
+        COL_2 -> listOf(2, 5, 8)
+    }
+}
+
+/**
+ * Result of making a grid draft pick.
+ */
+sealed interface GridDraftResult {
+    data class PickMade(val cards: List<CardDefinition>, val lastAction: String) : GridDraftResult
+    data class GridComplete(val lastAction: String) : GridDraftResult
+    data class DraftComplete(val lastAction: String) : GridDraftResult
+    data class Error(val message: String) : GridDraftResult
 }
 
 /**
@@ -202,6 +232,36 @@ class TournamentLobby(
     /** Which pile (0-2) the active player is currently examining */
     @Volatile
     var winstonCurrentPileIndex: Int = 0
+
+    // =========================================================================
+    // Grid Draft-specific State
+    // =========================================================================
+
+    /** Shared card pool for grid draft */
+    val gridMainDeck: MutableList<CardDefinition> = mutableListOf()
+
+    /** 3x3 grid, null = empty slot (9 elements, row-major order) */
+    var gridCards: Array<CardDefinition?> = arrayOfNulls(9)
+        private set
+
+    /** Index into gridPlayerOrder for current active picker */
+    @Volatile
+    var gridActivePlayerIndex: Int = 0
+        private set
+
+    /** Player order for grid draft (rotates each grid) */
+    var gridPlayerOrder: List<EntityId> = emptyList()
+        private set
+
+    /** How many picks have been made on the current grid */
+    @Volatile
+    var gridPicksThisGrid: Int = 0
+        private set
+
+    /** Which grid number we're on (1-based, for display) */
+    @Volatile
+    var gridNumber: Int = 0
+        private set
 
     val isFull: Boolean get() = players.size >= maxPlayers
     val playerCount: Int get() = players.size
@@ -557,6 +617,42 @@ class TournamentLobby(
         return true
     }
 
+    // =========================================================================
+    // Grid Draft Methods
+    // =========================================================================
+
+    /**
+     * Start the grid draft phase. Only the host can trigger this.
+     * Generates a shared pool (6 boosters shuffled together) and deals the first grid.
+     */
+    fun startGridDraft(requestingPlayerId: EntityId): Boolean {
+        if (!isHost(requestingPlayerId)) return false
+        if (state != LobbyState.WAITING_FOR_PLAYERS) return false
+        if (players.size < 2 || players.size > 3) return false
+        if (format != TournamentFormat.GRID_DRAFT) return false
+
+        // Generate pool: 6 boosters shuffled together
+        val pool = mutableListOf<CardDefinition>()
+        repeat(boosterCount) {
+            pool.addAll(boosterGenerator.generateBooster(setCodes))
+        }
+        pool.shuffle()
+        gridMainDeck.clear()
+        gridMainDeck.addAll(pool)
+
+        // Shuffle player order
+        gridPlayerOrder = players.keys.toList().shuffled()
+        gridActivePlayerIndex = 0
+        gridPicksThisGrid = 0
+        gridNumber = 0
+
+        // Deal first grid
+        dealGrid()
+
+        state = LobbyState.DRAFTING
+        return true
+    }
+
     /**
      * Get the active player's ID for Winston Draft.
      */
@@ -713,6 +809,128 @@ class TournamentLobby(
             finishDraft()
             WinstonActionResult.DraftComplete("Draft complete")
         }
+    }
+
+    /**
+     * Deal a new 3x3 grid from the main deck.
+     * If fewer than 9 cards remain, deals what's available.
+     */
+    fun dealGrid() {
+        gridCards = arrayOfNulls(9)
+        val cardsToDeal = minOf(9, gridMainDeck.size)
+        for (i in 0 until cardsToDeal) {
+            gridCards[i] = gridMainDeck.removeFirst()
+        }
+        gridPicksThisGrid = 0
+        gridNumber++
+    }
+
+    /**
+     * Pick a row or column from the grid.
+     * Returns the cards picked and advances the turn.
+     */
+    fun gridPickRowOrColumn(playerId: EntityId, selection: GridSelection): GridDraftResult {
+        if (state != LobbyState.DRAFTING) {
+            return GridDraftResult.Error("Not in drafting phase")
+        }
+        if (format != TournamentFormat.GRID_DRAFT) {
+            return GridDraftResult.Error("Not in grid draft format")
+        }
+
+        val expectedPlayer = gridPlayerOrder[gridActivePlayerIndex]
+        if (playerId != expectedPlayer) {
+            return GridDraftResult.Error("Not your turn")
+        }
+
+        // Get the cards at the selected indices
+        val indices = selection.getIndices()
+        val cards = indices.mapNotNull { gridCards[it] }
+        if (cards.isEmpty()) {
+            return GridDraftResult.Error("Selected row/column is empty")
+        }
+
+        // Remove picked cards from grid
+        for (idx in indices) {
+            gridCards[idx] = null
+        }
+
+        // Add cards to player's pool
+        val playerState = players[playerId] ?: return GridDraftResult.Error("Player not found")
+        players[playerId] = playerState.copy(cardPool = playerState.cardPool + cards)
+
+        val playerName = playerState.identity.playerName
+        val selectionLabel = selection.name.replace("_", " ").lowercase()
+        val lastAction = "$playerName picked $selectionLabel (${cards.joinToString(", ") { it.name }})"
+
+        gridPicksThisGrid++
+
+        // Determine how many picks per grid based on player count
+        // 2 players: 2 picks per grid (each player picks once)
+        // 3 players: 2 picks per grid (2 of 3 players pick, rotate who sits out)
+        val picksPerGrid = minOf(players.size, 2)
+
+        if (gridPicksThisGrid >= picksPerGrid) {
+            // Grid is exhausted — discard remaining cards and deal new grid
+            // Rotate who picks first: advance starting index
+            gridActivePlayerIndex = (gridActivePlayerIndex + 1) % gridPlayerOrder.size
+
+            if (gridMainDeck.isEmpty() && gridCards.all { it == null }) {
+                // Draft complete
+                finishGridDraft()
+                return GridDraftResult.DraftComplete(lastAction)
+            }
+
+            // Deal new grid
+            dealGrid()
+            return GridDraftResult.GridComplete(lastAction)
+        } else {
+            // Next player picks from the same grid
+            gridActivePlayerIndex = (gridActivePlayerIndex + 1) % gridPlayerOrder.size
+            return GridDraftResult.PickMade(cards, lastAction)
+        }
+    }
+
+    /**
+     * Get the active player for the current grid draft turn.
+     */
+    fun getGridActivePlayer(): EntityId? {
+        return gridPlayerOrder.getOrNull(gridActivePlayerIndex)
+    }
+
+    /**
+     * Get the available selections (non-empty rows/columns).
+     */
+    fun getAvailableGridSelections(): List<GridSelection> {
+        return GridSelection.entries.filter { selection ->
+            selection.getIndices().any { gridCards[it] != null }
+        }
+    }
+
+    /**
+     * Auto-pick the first available row/column for the active player (timeout).
+     */
+    fun autoGridPick(playerId: EntityId): GridDraftResult {
+        val available = getAvailableGridSelections()
+        if (available.isEmpty()) {
+            return GridDraftResult.Error("No available selections")
+        }
+        return gridPickRowOrColumn(playerId, available.first())
+    }
+
+    /**
+     * Check if the grid draft is complete.
+     */
+    fun isGridDraftComplete(): Boolean {
+        return gridMainDeck.isEmpty() && gridCards.all { it == null }
+    }
+
+    /**
+     * Finish the grid draft and transition to deck building.
+     */
+    private fun finishGridDraft() {
+        gridCards = arrayOfNulls(9)
+        gridMainDeck.clear()
+        state = LobbyState.DECK_BUILDING
     }
 
     /**
