@@ -171,6 +171,9 @@ object ScourgeSet {
         Skulltap,
         Unburden,
 
+        // Black sorceries (additional)
+        FinalPunishment,
+
         // Black instants
         ChillHaunting,
 

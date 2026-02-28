@@ -147,4 +147,11 @@ object DynamicAmounts {
 
     fun additionalCostExiledCount(): DynamicAmount =
         DynamicAmount.AdditionalCostExiledCount
+
+    // =========================================================================
+    // Target-based player values
+    // =========================================================================
+
+    fun damageDealtToTargetPlayerThisTurn(targetIndex: Int = 0): DynamicAmount =
+        DynamicAmount.DamageDealtToTargetPlayerThisTurn(targetIndex)
 }

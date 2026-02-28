@@ -1662,6 +1662,7 @@ class CombatManager(
         var newState = shieldState.updateEntity(playerId) { container ->
             container.with(LifeTotalComponent(newLife))
         }
+        newState = EffectExecutorUtils.trackDamageReceivedByPlayer(newState, playerId, effectiveAmount)
 
         val sourceName = state.getEntity(sourceId)?.get<CardComponent>()?.name ?: "Creature"
         val events = mutableListOf<GameEvent>(
@@ -1686,6 +1687,7 @@ class CombatManager(
                     newState = newState.updateEntity(attackerController) { container ->
                         container.with(LifeTotalComponent(reflectedNewLife))
                     }
+                    newState = EffectExecutorUtils.trackDamageReceivedByPlayer(newState, attackerController, amount)
                     val reflectSourceName = state.getEntity(sourceId)?.get<CardComponent>()?.name ?: "Creature"
                     events.add(DamageDealtEvent(sourceId, attackerController, amount, true, sourceName = reflectSourceName, targetName = "Player", targetIsPlayer = true))
                     events.add(LifeChangedEvent(attackerController, attackerControllerLife, reflectedNewLife, LifeChangeReason.DAMAGE))
@@ -1799,6 +1801,7 @@ class CombatManager(
                             newState = newState.updateEntity(controllerId) { container ->
                                 container.with(LifeTotalComponent(newLife))
                             }
+                            newState = EffectExecutorUtils.trackDamageReceivedByPlayer(newState, controllerId, effectiveDamage)
                             val sourceName = newState.getEntity(attackerId)?.get<CardComponent>()?.name ?: "Creature"
                             events.add(DamageDealtEvent(attackerId, controllerId, effectiveDamage, true, sourceName = sourceName, targetName = "Player", targetIsPlayer = true))
                             events.add(LifeChangedEvent(controllerId, currentLife, newLife, LifeChangeReason.DAMAGE))
@@ -1826,6 +1829,7 @@ class CombatManager(
                         newState = newState.updateEntity(targetId) { container ->
                             container.with(LifeTotalComponent(newLife))
                         }
+                        newState = EffectExecutorUtils.trackDamageReceivedByPlayer(newState, targetId, effectiveTrampleDamage)
                         val trampleSourceName = newState.getEntity(attackerId)?.get<CardComponent>()?.name ?: "Creature"
                         events.add(DamageDealtEvent(attackerId, targetId, effectiveTrampleDamage, true, sourceName = trampleSourceName, targetName = "Player", targetIsPlayer = true))
                         events.add(LifeChangedEvent(targetId, currentLife, newLife, LifeChangeReason.DAMAGE))
@@ -1922,6 +1926,7 @@ class CombatManager(
                                 newState = newState.updateEntity(blockerControllerId) { container ->
                                     container.with(LifeTotalComponent(newLife))
                                 }
+                                newState = EffectExecutorUtils.trackDamageReceivedByPlayer(newState, blockerControllerId, effectiveDamage)
                                 val blockerSourceName = newState.getEntity(blockerId)?.get<CardComponent>()?.name ?: "Creature"
                                 events.add(DamageDealtEvent(blockerId, blockerControllerId, effectiveDamage, true, sourceName = blockerSourceName, targetName = "Player", targetIsPlayer = true))
                                 events.add(LifeChangedEvent(blockerControllerId, currentLife, newLife, LifeChangeReason.DAMAGE))
@@ -2028,6 +2033,7 @@ class CombatManager(
                                     newState = newState.updateEntity(targetId) { container ->
                                         container.with(LifeTotalComponent(newLife))
                                     }
+                                    newState = EffectExecutorUtils.trackDamageReceivedByPlayer(newState, targetId, effectivePlayerDamage)
                                     val freeSourceName = newState.getEntity(attackerId)?.get<CardComponent>()?.name ?: "Creature"
                                     events.add(DamageDealtEvent(attackerId, targetId, effectivePlayerDamage, true, sourceName = freeSourceName, targetName = "Player", targetIsPlayer = true))
                                     events.add(LifeChangedEvent(targetId, currentLife, newLife, LifeChangeReason.DAMAGE))
@@ -2111,6 +2117,7 @@ class CombatManager(
                                 newState = newState.updateEntity(defenderId) { container ->
                                     container.with(LifeTotalComponent(newLife))
                                 }
+                                newState = EffectExecutorUtils.trackDamageReceivedByPlayer(newState, defenderId, effectivePlayerDamage)
                                 val remainAtkName = newState.getEntity(attackerId)?.get<CardComponent>()?.name ?: "Creature"
                                 events.add(DamageDealtEvent(attackerId, defenderId, effectivePlayerDamage, true, sourceName = remainAtkName, targetName = "Player", targetIsPlayer = true))
                                 events.add(LifeChangedEvent(defenderId, currentLife, newLife, LifeChangeReason.DAMAGE))
