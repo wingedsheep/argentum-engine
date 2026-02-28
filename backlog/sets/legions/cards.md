@@ -2,13 +2,13 @@
 
 **Set Size:** 145 cards
 **Release Date:** February 3, 2003
-**Implemented:** 67 / 145
+**Implemented:** 68 / 145
 
 | Color      | Count |
 |------------|-------|
 | White      | 14/29 |
 | Blue       | 13/29 |
-| Black      | 13/29 |
+| Black      | 14/29 |
 | Red        | 14/29 |
 | Green      | 13/29 |
 
@@ -105,7 +105,7 @@
 - [ ] Mistform Wakecaster
 - [x] Nantuko Vigilante
 - [x] Needleshot Gourna
-- [ ] Noxious Ghoul
+- [x] Noxious Ghoul
 - [x] Patron of the Wild
 - [ ] Phage the Untouchable
 - [ ] Planar Guide

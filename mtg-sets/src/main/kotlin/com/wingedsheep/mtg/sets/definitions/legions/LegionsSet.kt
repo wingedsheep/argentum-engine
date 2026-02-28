@@ -61,6 +61,7 @@ object LegionsSet {
         GempalmPolluter,
         GoblinTurncoat,
         HavocDemon,
+        NoxiousGhoul,
         Skinthinner,
         SmokespewInvoker,
         SootfeatherFlock,
