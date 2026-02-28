@@ -3,7 +3,7 @@
 
 **Set Size:** 143 cards
 **Release Date:** May 26, 2003
-**Implemented:** 99 / 143
+**Implemented:** 100 / 143
 
 | Color | Count |
 |-------|-------|
@@ -13,7 +13,7 @@
 | Red | 21 |
 | Green | 19 |
 | Multicolor | 1 |
-| Colorless | 3 |
+| Colorless | 4 |
 
 ---
 
@@ -110,7 +110,7 @@
 - [ ] Parallel Thoughts
 - [ ] Pemmin's Aura
 - [x] Primitive Etchings
-- [ ] Proteus Machine
+- [x] Proteus Machine
 - [x] Putrid Raptor
 - [x] Pyrostatic Pillar
 - [x] Rain of Blades
