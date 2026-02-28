@@ -198,6 +198,13 @@ sealed interface ClientMessage {
         val picksPerRound: Int? = null        // Draft only: 1 or 2
     ) : ClientMessage
 
+    /**
+     * Pick a row or column during grid draft.
+     */
+    @Serializable
+    @SerialName("gridDraftPick")
+    data class GridDraftPick(val selection: String) : ClientMessage
+
     // =========================================================================
     // Tournament Messages
     // =========================================================================

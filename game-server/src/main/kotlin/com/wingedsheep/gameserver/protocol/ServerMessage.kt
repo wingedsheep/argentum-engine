@@ -454,6 +454,36 @@ sealed interface ServerMessage {
     ) : ServerMessage
 
     // =========================================================================
+    // Grid Draft Messages
+    // =========================================================================
+
+    /**
+     * Grid draft state update - sent to each player with personalized isYourTurn.
+     */
+    @Serializable
+    @SerialName("gridDraftState")
+    data class GridDraftState(
+        /** 9 elements (row-major), null = empty slot */
+        val grid: List<SealedCardInfo?>,
+        val activePlayerName: String,
+        val isYourTurn: Boolean,
+        val mainDeckRemaining: Int,
+        val pickedCards: List<SealedCardInfo>,
+        /** Other players' pick counts: playerName -> count */
+        val totalPickedByOthers: Map<String, Int>,
+        val lastAction: String?,
+        val timeRemainingSeconds: Int,
+        /** Available row/column selections (e.g., ["ROW_0", "COL_1"]) */
+        val availableSelections: List<String>,
+        /** Player names in pick order */
+        val playerOrder: List<String>,
+        /** Index of current picker in playerOrder */
+        val currentPickerIndex: Int,
+        /** Current grid number (1-based) */
+        val gridNumber: Int
+    ) : ServerMessage
+
+    // =========================================================================
     // Tournament Messages
     // =========================================================================
 

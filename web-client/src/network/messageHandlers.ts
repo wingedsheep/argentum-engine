@@ -25,6 +25,7 @@ import type {
   DraftCompleteMessage,
   DraftTimerUpdateMessage,
   WinstonDraftStateMessage,
+  GridDraftStateMessage,
   TournamentStartedMessage,
   TournamentMatchStartingMessage,
   TournamentByeMessage,
@@ -77,6 +78,8 @@ export interface MessageHandlers {
   onDraftTimerUpdate: (message: DraftTimerUpdateMessage) => void
   // Winston Draft handlers
   onWinstonDraftState: (message: WinstonDraftStateMessage) => void
+  // Grid Draft handlers
+  onGridDraftState: (message: GridDraftStateMessage) => void
   // Tournament handlers
   onTournamentStarted: (message: TournamentStartedMessage) => void
   onTournamentMatchStarting: (message: TournamentMatchStartingMessage) => void
@@ -185,6 +188,10 @@ export function handleServerMessage(message: ServerMessage, handlers: MessageHan
     // Winston Draft messages
     case 'winstonDraftState':
       handlers.onWinstonDraftState(message)
+      break
+    // Grid Draft messages
+    case 'gridDraftState':
+      handlers.onGridDraftState(message)
       break
     // Tournament messages
     case 'tournamentStarted':
@@ -357,6 +364,11 @@ export function createLoggingHandlers(handlers: MessageHandlers): MessageHandler
     onWinstonDraftState: (msg) => {
       console.log('[Server] Winston draft state:', msg)
       handlers.onWinstonDraftState(msg)
+    },
+    // Grid Draft handlers
+    onGridDraftState: (msg) => {
+      console.log('[Server] Grid draft state:', msg)
+      handlers.onGridDraftState(msg)
     },
     // Tournament handlers
     onTournamentStarted: (msg) => {

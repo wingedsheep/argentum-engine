@@ -10,6 +10,7 @@ import {
   createMakePickMessage,
   createWinstonTakePileMessage,
   createWinstonSkipPileMessage,
+  createGridDraftPickMessage,
 } from '../../types'
 import { trackEvent } from '../../utils/analytics'
 import { getWebSocket, saveDeckState } from './shared'
@@ -30,6 +31,7 @@ export interface DraftSliceActions {
   makePick: (cardNames: string[]) => void
   winstonTakePile: () => void
   winstonSkipPile: () => void
+  gridDraftPick: (selection: string) => void
 }
 
 export type DraftSlice = DraftSliceState & DraftSliceActions
@@ -170,5 +172,10 @@ export const createDraftSlice: SliceCreator<DraftSlice> = (set, get) => ({
   winstonSkipPile: () => {
     trackEvent('winston_skip_pile')
     getWebSocket()?.send(createWinstonSkipPileMessage())
+  },
+
+  gridDraftPick: (selection) => {
+    trackEvent('grid_draft_pick', { selection })
+    getWebSocket()?.send(createGridDraftPickMessage(selection))
   },
 })

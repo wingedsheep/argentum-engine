@@ -223,6 +223,9 @@ export type {
   DraftTimerUpdateMessage,
   // Winston Draft types
   WinstonDraftStateMessage,
+  // Grid Draft types
+  GridDraftStateMessage,
+  GridDraftPickMessage,
   // Tournament types
   PlayerStandingInfo,
   MatchResultInfo,
@@ -318,6 +321,9 @@ export {
   isDraftTimerUpdateMessage,
   // Winston Draft type guards
   isWinstonDraftStateMessage,
+  // Grid Draft message factories & guards
+  createGridDraftPickMessage,
+  isGridDraftStateMessage,
   // Tournament message factories & guards
   createReadyForNextRoundMessage,
   isTournamentStartedMessage,

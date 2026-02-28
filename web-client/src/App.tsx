@@ -14,6 +14,7 @@ import { StandaloneConcedeButton } from './components/game/overlay'
 import { DeckBuilderOverlay } from './components/sealed/DeckBuilderOverlay'
 import { DraftPickOverlay } from './components/draft/DraftPickOverlay'
 import { WinstonDraftOverlay } from './components/draft/WinstonDraftOverlay'
+import { GridDraftOverlay } from './components/draft/GridDraftOverlay'
 import { SpectatorGameBoard } from './components/spectating/SpectatorGameBoard'
 import { trackPageView } from './utils/analytics'
 import { randomBackground } from './utils/background'
@@ -198,16 +199,17 @@ export default function App() {
     (deckBuildingState?.phase === 'submitted' && !tournamentState)
   const showDraftPick = lobbyState?.state === 'DRAFTING' && lobbyState?.settings.format === 'DRAFT'
   const showWinstonDraft = lobbyState?.state === 'DRAFTING' && lobbyState?.settings.format === 'WINSTON_DRAFT'
+  const showGridDraft = lobbyState?.state === 'DRAFTING' && lobbyState?.settings.format === 'GRID_DRAFT'
 
   // Track virtual page views for GA4 when the active screen changes
   const currentScreen = useMemo(() => {
     if (spectatingState) return 'spectate'
-    if (showDraftPick || showWinstonDraft) return 'draft'
+    if (showDraftPick || showWinstonDraft || showGridDraft) return 'draft'
     if (showDeckBuilder) return 'deck-builder'
     if (mulliganState) return 'mulligan'
     if (showGame) return 'game'
     return 'lobby'
-  }, [spectatingState, showDraftPick, showWinstonDraft, showDeckBuilder, mulliganState, showGame])
+  }, [spectatingState, showDraftPick, showWinstonDraft, showGridDraft, showDeckBuilder, mulliganState, showGame])
 
   const prevScreenRef = useRef(currentScreen)
   useEffect(() => {
@@ -248,6 +250,9 @@ export default function App() {
 
       {/* Winston Draft overlay */}
       {showWinstonDraft && <WinstonDraftOverlay />}
+
+      {/* Grid Draft overlay */}
+      {showGridDraft && <GridDraftOverlay />}
 
       {/* Match intro animation (plays before mulligan) */}
       {matchIntro && <MatchIntroAnimation />}

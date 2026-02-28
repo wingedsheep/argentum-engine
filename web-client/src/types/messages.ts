@@ -43,6 +43,8 @@ export type ServerMessage =
   | DraftTimerUpdateMessage
   // Winston Draft Messages
   | WinstonDraftStateMessage
+  // Grid Draft Messages
+  | GridDraftStateMessage
   // Tournament Messages
   | TournamentStartedMessage
   | TournamentMatchStartingMessage
@@ -652,7 +654,7 @@ export interface LobbySettings {
   readonly setCodes: readonly string[]
   readonly setNames: readonly string[]
   readonly availableSets: readonly AvailableSet[]
-  readonly format: 'SEALED' | 'DRAFT' | 'WINSTON_DRAFT'
+  readonly format: 'SEALED' | 'DRAFT' | 'WINSTON_DRAFT' | 'GRID_DRAFT'
   readonly boosterCount: number
   readonly maxPlayers: number
   readonly pickTimeSeconds: number
@@ -754,6 +756,34 @@ export interface WinstonDraftStateMessage {
   readonly totalPickedByOpponent: number
   readonly lastAction: string | null
   readonly timeRemainingSeconds: number
+}
+
+// ============================================================================
+// Grid Draft Server Messages
+// ============================================================================
+
+/**
+ * Grid draft state update.
+ */
+export interface GridDraftStateMessage {
+  readonly type: 'gridDraftState'
+  /** 9 elements (row-major), null = empty slot */
+  readonly grid: readonly (SealedCardInfo | null)[]
+  readonly activePlayerName: string
+  readonly isYourTurn: boolean
+  readonly mainDeckRemaining: number
+  readonly pickedCards: readonly SealedCardInfo[]
+  readonly totalPickedByOthers: Record<string, number>
+  readonly lastAction: string | null
+  readonly timeRemainingSeconds: number
+  /** Available row/column selections (e.g., ["ROW_0", "COL_1"]) */
+  readonly availableSelections: readonly string[]
+  /** Player names in pick order */
+  readonly playerOrder: readonly string[]
+  /** Index of current picker in playerOrder */
+  readonly currentPickerIndex: number
+  /** Current grid number (1-based) */
+  readonly gridNumber: number
 }
 
 // ============================================================================
@@ -1039,6 +1069,7 @@ export type ClientMessage =
   | MakePickMessage
   | WinstonTakePileMessage
   | WinstonSkipPileMessage
+  | GridDraftPickMessage
   | LeaveLobbyMessage
   | StopLobbyMessage
   | UnsubmitDeckMessage
@@ -1285,7 +1316,7 @@ export function createSubmitSealedDeckMessage(deckList: Record<string, number>):
 export interface CreateTournamentLobbyMessage {
   readonly type: 'createTournamentLobby'
   readonly setCodes: readonly string[]
-  readonly format: 'SEALED' | 'DRAFT' | 'WINSTON_DRAFT'
+  readonly format: 'SEALED' | 'DRAFT' | 'WINSTON_DRAFT' | 'GRID_DRAFT'
   readonly boosterCount: number
   readonly maxPlayers: number
   readonly pickTimeSeconds: number
@@ -1313,6 +1344,11 @@ export interface WinstonSkipPileMessage {
   readonly type: 'winstonSkipPile'
 }
 
+export interface GridDraftPickMessage {
+  readonly type: 'gridDraftPick'
+  readonly selection: string
+}
+
 export interface LeaveLobbyMessage {
   readonly type: 'leaveLobby'
 }
@@ -1328,7 +1364,7 @@ export interface UnsubmitDeckMessage {
 export interface UpdateLobbySettingsMessage {
   readonly type: 'updateLobbySettings'
   readonly setCodes?: readonly string[]
-  readonly format?: 'SEALED' | 'DRAFT' | 'WINSTON_DRAFT'
+  readonly format?: 'SEALED' | 'DRAFT' | 'WINSTON_DRAFT' | 'GRID_DRAFT'
   readonly boosterCount?: number
   readonly maxPlayers?: number
   readonly gamesPerMatch?: number
@@ -1415,7 +1451,7 @@ export interface RequestUndoMessage {
 // Lobby Message Factories
 export function createCreateTournamentLobbyMessage(
   setCodes: readonly string[],
-  format: 'SEALED' | 'DRAFT' | 'WINSTON_DRAFT' = 'SEALED',
+  format: 'SEALED' | 'DRAFT' | 'WINSTON_DRAFT' | 'GRID_DRAFT' = 'SEALED',
   boosterCount: number = 6,
   maxPlayers: number = 8,
   pickTimeSeconds: number = 45
@@ -1457,6 +1493,10 @@ export function createWinstonSkipPileMessage(): WinstonSkipPileMessage {
   return { type: 'winstonSkipPile' }
 }
 
+export function createGridDraftPickMessage(selection: string): GridDraftPickMessage {
+  return { type: 'gridDraftPick', selection }
+}
+
 export function createLeaveLobbyMessage(): LeaveLobbyMessage {
   return { type: 'leaveLobby' }
 }
@@ -1472,7 +1512,7 @@ export function createUnsubmitDeckMessage(): UnsubmitDeckMessage {
 export function createUpdateLobbySettingsMessage(
   settings: {
     setCodes?: readonly string[]
-    format?: 'SEALED' | 'DRAFT' | 'WINSTON_DRAFT'
+    format?: 'SEALED' | 'DRAFT' | 'WINSTON_DRAFT' | 'GRID_DRAFT'
     boosterCount?: number
     maxPlayers?: number
     gamesPerMatch?: number
@@ -1551,6 +1591,11 @@ export function isDraftTimerUpdateMessage(msg: ServerMessage): msg is DraftTimer
 // Winston Draft Type Guards
 export function isWinstonDraftStateMessage(msg: ServerMessage): msg is WinstonDraftStateMessage {
   return msg.type === 'winstonDraftState'
+}
+
+// Grid Draft Type Guards
+export function isGridDraftStateMessage(msg: ServerMessage): msg is GridDraftStateMessage {
+  return msg.type === 'gridDraftState'
 }
 
 // Lobby/Tournament Type Guards

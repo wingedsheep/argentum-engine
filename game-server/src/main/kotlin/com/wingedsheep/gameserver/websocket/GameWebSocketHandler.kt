@@ -84,6 +84,7 @@ class GameWebSocketHandler(
                 is ClientMessage.MakePick,
                 is ClientMessage.WinstonTakePile,
                 is ClientMessage.WinstonSkipPile,
+                is ClientMessage.GridDraftPick,
                 is ClientMessage.LeaveLobby,
                 is ClientMessage.StopLobby,
                 is ClientMessage.UpdateLobbySettings -> lobbyHandler.handle(session, clientMessage)
