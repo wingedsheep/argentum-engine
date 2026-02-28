@@ -309,6 +309,34 @@ function WaitingForOpponent({
 }
 
 /**
+ * Get balanced booster count options for grid draft based on player count.
+ * For 3 players, grids must be divisible by 3 for fair pick rotation.
+ * With 15-card boosters: grids = floor(boosters * 15 / 9).
+ */
+function getGridDraftBoosterOptions(playerCount: number): { value: number; label: string }[] {
+  const allCounts = Array.from({ length: 16 }, (_, i) => i + 3) // 3-18
+  const isBalanced = (boosters: number) =>
+    playerCount < 3 || Math.floor(boosters * 15 / 9) % 3 === 0
+
+  const cardsPerPlayer = (boosters: number) => {
+    const grids = Math.floor(boosters * 15 / 9)
+    if (playerCount <= 2) {
+      return grids * 3 // each player picks once per grid = 3 cards
+    }
+    // 3 players: 2 picks per grid, each player picks 2 out of every 3 grids
+    const cycles = Math.floor(grids / 3)
+    return cycles * 6 // 2 picks * 3 cards per cycle
+  }
+
+  return allCounts
+    .filter(isBalanced)
+    .map((n) => ({
+      value: n,
+      label: `${n} boosters (~${cardsPerPlayer(n)}/player)`,
+    }))
+}
+
+/**
  * Lobby overlay for sealed lobbies.
  */
 function LobbyOverlay({
@@ -532,11 +560,14 @@ function LobbyOverlay({
                   className={styles.settingsSelect}
                 >
                   {(isGridDraft
-                    ? [3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18]
+                    ? getGridDraftBoosterOptions(lobbyState.players.length)
                     : [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]
-                  ).map((n) => (
-                    <option key={n} value={n}>{n}</option>
-                  ))}
+                  ).map((opt) => {
+                    if (typeof opt === 'number') {
+                      return <option key={opt} value={opt}>{opt}</option>
+                    }
+                    return <option key={opt.value} value={opt.value}>{opt.label}</option>
+                  })}
                 </select>
               </div>
             )}

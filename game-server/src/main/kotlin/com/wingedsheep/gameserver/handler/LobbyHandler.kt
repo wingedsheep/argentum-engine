@@ -282,11 +282,17 @@ class LobbyHandler(
             TournamentFormat.SEALED
         }
 
+        val maxPlayers = when (format) {
+            TournamentFormat.WINSTON_DRAFT -> 2
+            TournamentFormat.GRID_DRAFT -> message.maxPlayers.coerceIn(2, 3)
+            else -> message.maxPlayers.coerceIn(2, 8)
+        }
+
         // Set appropriate default booster count based on format
         // Draft: default 3 packs, max 6
         // Sealed: default 6 boosters, max 16
         // Winston: default 6 boosters, max 16
-        // Grid Draft: default 9 boosters (shared pool), max 18
+        // Grid Draft: player-count-aware default (2p=9, 3p=13), max 18
         val boosterCount = when (format) {
             TournamentFormat.DRAFT -> {
                 if (message.boosterCount == 6) 3 else message.boosterCount.coerceIn(1, 6)  // 6 is the client default, use 3 for draft
@@ -295,14 +301,8 @@ class LobbyHandler(
                 message.boosterCount.coerceIn(1, 16)
             }
             TournamentFormat.GRID_DRAFT -> {
-                if (message.boosterCount == 6) 9 else message.boosterCount.coerceIn(3, 18)
+                if (message.boosterCount == 6) gridDraftDefaultBoosters(maxPlayers) else message.boosterCount.coerceIn(3, 18)
             }
-        }
-
-        val maxPlayers = when (format) {
-            TournamentFormat.WINSTON_DRAFT -> 2
-            TournamentFormat.GRID_DRAFT -> message.maxPlayers.coerceIn(2, 3)
-            else -> message.maxPlayers.coerceIn(2, 8)
         }
 
         val lobby = TournamentLobby(
@@ -365,6 +365,10 @@ class LobbyHandler(
         leaveCurrentLobbyIfPresent(identity)
 
         lobby.addPlayer(identity)
+        // Auto-adjust grid draft booster count when player count changes
+        if (lobby.format == TournamentFormat.GRID_DRAFT && lobby.state == LobbyState.WAITING_FOR_PLAYERS) {
+            lobby.boosterCount = gridDraftDefaultBoosters(lobby.players.size)
+        }
         logger.info("Player ${identity.playerName} joined lobby ${lobby.lobbyId}")
         broadcastLobbyUpdate(lobby)
         lobbyRepository.saveLobby(lobby)
@@ -1465,6 +1469,10 @@ class LobbyHandler(
             lobbyRepository.removeLobby(lobbyId)
             logger.info("Lobby $lobbyId removed (empty)")
         } else {
+            // Auto-adjust grid draft booster count when player count changes
+            if (lobby.format == TournamentFormat.GRID_DRAFT && lobby.state == LobbyState.WAITING_FOR_PLAYERS) {
+                lobby.boosterCount = gridDraftDefaultBoosters(lobby.players.size)
+            }
             broadcastLobbyUpdate(lobby)
         }
     }
@@ -1642,16 +1650,16 @@ class LobbyHandler(
             // When switching formats, adjust boosterCount and maxPlayers to appropriate defaults
             if (newFormat != lobby.format) {
                 lobby.format = newFormat
-                lobby.boosterCount = when (newFormat) {
-                    TournamentFormat.DRAFT -> 3
-                    TournamentFormat.SEALED -> 6
-                    TournamentFormat.WINSTON_DRAFT -> 6
-                    TournamentFormat.GRID_DRAFT -> 9
-                }
                 if (newFormat == TournamentFormat.WINSTON_DRAFT) {
                     lobby.maxPlayers = 2
                 } else if (newFormat == TournamentFormat.GRID_DRAFT) {
                     lobby.maxPlayers = minOf(lobby.maxPlayers, 3)
+                }
+                lobby.boosterCount = when (newFormat) {
+                    TournamentFormat.DRAFT -> 3
+                    TournamentFormat.SEALED -> 6
+                    TournamentFormat.WINSTON_DRAFT -> 6
+                    TournamentFormat.GRID_DRAFT -> gridDraftDefaultBoosters(lobby.players.size)
                 }
             }
         }
@@ -1667,10 +1675,16 @@ class LobbyHandler(
             lobby.boosterCount = it.coerceIn(1, maxCount)
         }
         message.maxPlayers?.let {
+            val oldMaxPlayers = lobby.maxPlayers
             when (lobby.format) {
                 TournamentFormat.WINSTON_DRAFT -> lobby.maxPlayers = 2
                 TournamentFormat.GRID_DRAFT -> lobby.maxPlayers = it.coerceIn(2, 3)
                 else -> lobby.maxPlayers = it.coerceIn(2, 8)
+            }
+            // Auto-adjust grid draft booster count when player count changes
+            // (only if boosterCount wasn't explicitly set in this same message)
+            if (lobby.format == TournamentFormat.GRID_DRAFT && lobby.maxPlayers != oldMaxPlayers && message.boosterCount == null) {
+                lobby.boosterCount = gridDraftDefaultBoosters(lobby.players.size)
             }
         }
         message.gamesPerMatch?.let { lobby.gamesPerMatch = it.coerceIn(1, 5) }
@@ -2683,4 +2697,13 @@ class LobbyHandler(
             }
         }
     }
+
+    /**
+     * Default booster count for grid draft based on player count.
+     * For 3 players, total grids must be divisible by 3 for balanced pick rotation
+     * (each 3-grid cycle gives every player exactly 1 first-pick, 1 second-pick, 1 sit-out).
+     * - 2 players: 9 boosters (~135 cards, 15 grids, 45 cards/player)
+     * - 3 players: 13 boosters (~195 cards, 21 grids = 7 balanced cycles, 42 cards/player)
+     */
+    private fun gridDraftDefaultBoosters(playerCount: Int): Int = if (playerCount >= 3) 13 else 9
 }
