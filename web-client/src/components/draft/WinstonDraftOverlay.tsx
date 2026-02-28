@@ -427,6 +427,7 @@ function WinstonDrafter({ winstonState, settings }: { winstonState: WinstonDraft
                       <div
                         key={card.name}
                         onMouseEnter={(e) => handleHover(card, e)}
+                        onMouseMove={(e) => handleHover(card, e)}
                         onMouseLeave={() => handleHover(null)}
                         style={{
                           padding: '3px 8px',
@@ -434,7 +435,7 @@ function WinstonDrafter({ winstonState, settings }: { winstonState: WinstonDraft
                           color: 'rgba(255,255,255,0.7)',
                           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                           borderRadius: 3,
-                          cursor: 'default',
+                          cursor: 'pointer',
                         }}
                       >
                         <span style={{ display: 'flex', alignItems: 'center', gap: 6, minWidth: 0 }}>
@@ -493,6 +494,7 @@ function PileCard({ card, onHover, isMobile }: {
   return (
     <div
       onMouseEnter={(e) => onHover(card, e)}
+      onMouseMove={(e) => onHover(card, e)}
       onMouseLeave={() => onHover(null)}
       style={{
         width: isMobile ? 110 : 140,
@@ -500,7 +502,7 @@ function PileCard({ card, onHover, isMobile }: {
         overflow: 'hidden',
         border: '1px solid rgba(255,255,255,0.15)',
         background: 'rgba(0,0,0,0.3)',
-        cursor: 'default',
+        cursor: 'pointer',
         transition: 'transform 0.15s',
       }}
     >
@@ -557,10 +559,13 @@ function CardPreview({ card, position }: { card: SealedCardInfo; position: { x: 
   const imageUrl = getCardImageUrl(card.name, card.imageUri, 'large')
   const previewWidth = 250
   const previewHeight = 350
+  const margin = 20
 
-  // Position to avoid going off-screen
-  const left = Math.min(position.x + 16, window.innerWidth - previewWidth - 16)
-  const top = Math.min(position.y - 40, window.innerHeight - previewHeight - 16)
+  // Position to the side of cursor, avoiding going off-screen
+  const left = position.x + previewWidth + margin + 20 < window.innerWidth
+    ? position.x + margin
+    : position.x - previewWidth - margin
+  const top = Math.max(10, Math.min(position.y - previewHeight / 2, window.innerHeight - previewHeight - 10))
 
   return (
     <div style={{
@@ -572,6 +577,7 @@ function CardPreview({ card, position }: { card: SealedCardInfo; position: { x: 
       overflow: 'hidden',
       boxShadow: '0 8px 32px rgba(0,0,0,0.6)',
       border: '1px solid rgba(255,255,255,0.2)',
+      transition: 'top 0.05s, left 0.05s',
     }}>
       {imageUrl ? (
         <img src={imageUrl} alt={card.name} style={{ width: '100%', display: 'block' }} />
