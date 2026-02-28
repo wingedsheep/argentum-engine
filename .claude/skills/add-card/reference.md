@@ -606,7 +606,7 @@ each player reveals and creates tokens
 - `DynamicAmount.SourcePower` / `.TriggerDamageAmount` / `.TriggerLifeGainAmount`
 - `DynamicAmount.ColorsAmongPermanentsYouControl` / `.CardTypesInAllGraveyards`
 - `DynamicAmount.CountersOnSelf(counterType)` / `.CountersOnTarget(counterType, targetIndex)` / `.CreaturesSharingTypeWithTriggeringEntity`
-- `DynamicAmount.VariableReference(variableName)` / `.StoredCardManaValue(collectionName)`
+- `DynamicAmount.VariableReference(variableName)` / `.StoredCardManaValue(collectionName)` / `.AdditionalCostExiledCount`
 - `DynamicAmount.Count(player, zone, filter)` /
   `DynamicAmount.AggregateBattlefield(player, filter, aggregation?, property?, excludeSelf?)`
 - `DynamicAmount.Conditional(condition, ifTrue, ifFalse)` — conditional amount
@@ -908,6 +908,7 @@ Used via `additionalCost(...)` in card DSL for spell additional costs:
 - `AdditionalCost.DiscardCards(count, filter)` — Force of Will
 - `AdditionalCost.PayLife(amount)` — Phyrexian mana
 - `AdditionalCost.ExileCards(count, filter, fromZone)` — Delve-style
+- `AdditionalCost.ExileVariableCards(minCount, filter, fromZone)` — Variable exile cost (Chill Haunting)
 - `AdditionalCost.TapPermanents(count, filter)` — Convoke-style
 
 CostZone enum: `HAND`, `GRAVEYARD`, `LIBRARY`, `BATTLEFIELD`

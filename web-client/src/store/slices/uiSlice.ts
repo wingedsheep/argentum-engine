@@ -220,7 +220,9 @@ export const createUISlice: SliceCreator<UISlice> = (set, get) => ({
         const costType = actionInfo.additionalCostInfo?.costType
         const additionalCostPayment = costType === 'DiscardCard'
           ? { discardedCards: [...targetingState.selectedTargets] }
-          : { sacrificedPermanents: [...targetingState.selectedTargets] }
+          : costType === 'ExileFromGraveyard'
+            ? { exiledCards: [...targetingState.selectedTargets] }
+            : { sacrificedPermanents: [...targetingState.selectedTargets] }
         const actionWithCost = {
           ...action,
           additionalCostPayment,
@@ -250,7 +252,9 @@ export const createUISlice: SliceCreator<UISlice> = (set, get) => ({
             ? { discardedCards: [...targetingState.selectedTargets] }
             : costType === 'BouncePermanent'
               ? { bouncedPermanents: [...targetingState.selectedTargets] }
-              : { sacrificedPermanents: [...targetingState.selectedTargets] }
+              : costType === 'ExileFromGraveyard'
+                ? { exiledCards: [...targetingState.selectedTargets] }
+                : { sacrificedPermanents: [...targetingState.selectedTargets] }
         const actionWithCost = {
           ...action,
           costPayment,

@@ -38,6 +38,8 @@ data class EffectContext(
     val namedTargets: Map<String, ChosenTarget> = emptyMap(),
     /** Named values chosen by the player during pipeline execution (e.g., creature type, color). */
     val chosenValues: Map<String, String> = emptyMap(),
+    /** Number of cards exiled as an additional cost (for ExileVariableCards) */
+    val exiledCardCount: Int = 0,
     /** Named numeric values stored by pipeline effects (e.g., cards not drawn). */
     val storedNumbers: Map<String, Int> = emptyMap(),
     /** Named string lists stored by pipeline effects (e.g., chosen creature types). */

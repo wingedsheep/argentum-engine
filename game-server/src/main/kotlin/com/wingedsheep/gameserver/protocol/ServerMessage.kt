@@ -845,7 +845,13 @@ data class AdditionalCostInfo(
     /** Valid permanents to return to hand */
     val validBounceTargets: List<EntityId> = emptyList(),
     /** Number of permanents to return */
-    val bounceCount: Int = 0
+    val bounceCount: Int = 0,
+    /** Valid cards to exile from graveyard (or other zone) */
+    val validExileTargets: List<EntityId> = emptyList(),
+    /** Minimum number of cards to exile (for variable exile costs) */
+    val exileMinCount: Int = 0,
+    /** Maximum number of cards that can be exiled */
+    val exileMaxCount: Int = 0
 )
 
 /**

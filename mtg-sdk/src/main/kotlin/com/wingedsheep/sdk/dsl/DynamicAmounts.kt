@@ -140,4 +140,11 @@ object DynamicAmounts {
                 DynamicAmount.Count(Player.You, Zone.HAND)
             )
         )
+
+    // =========================================================================
+    // Additional cost values
+    // =========================================================================
+
+    fun additionalCostExiledCount(): DynamicAmount =
+        DynamicAmount.AdditionalCostExiledCount
 }

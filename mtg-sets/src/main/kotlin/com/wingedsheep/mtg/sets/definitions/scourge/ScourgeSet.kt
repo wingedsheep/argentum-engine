@@ -168,6 +168,9 @@ object ScourgeSet {
         Skulltap,
         Unburden,
 
+        // Black instants
+        ChillHaunting,
+
         // Lands
         TempleOfTheFalseGod,
     )

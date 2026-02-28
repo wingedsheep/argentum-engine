@@ -197,6 +197,8 @@ class LegalActionsCalculator(
                     // Check additional cost payability
                     val additionalCosts = cardDef?.script?.additionalCosts ?: emptyList()
                     val sacrificeTargets = mutableListOf<EntityId>()
+                    var exileTargets = emptyList<EntityId>()
+                    var exileMinCount = 0
                     var canPayAdditionalCosts = true
                     for (cost in additionalCosts) {
                         when (cost) {
@@ -206,6 +208,22 @@ class LegalActionsCalculator(
                                     canPayAdditionalCosts = false
                                 }
                                 sacrificeTargets.addAll(validSacTargets)
+                            }
+                            is com.wingedsheep.sdk.scripting.AdditionalCost.ExileVariableCards -> {
+                                val validExileTargets = findExileTargets(state, playerId, cost.filter, cost.fromZone)
+                                if (validExileTargets.size < cost.minCount) {
+                                    canPayAdditionalCosts = false
+                                }
+                                exileTargets = validExileTargets
+                                exileMinCount = cost.minCount
+                            }
+                            is com.wingedsheep.sdk.scripting.AdditionalCost.ExileCards -> {
+                                val validExileTargets = findExileTargets(state, playerId, cost.filter, cost.fromZone)
+                                if (validExileTargets.size < cost.count) {
+                                    canPayAdditionalCosts = false
+                                }
+                                exileTargets = validExileTargets
+                                exileMinCount = cost.count
                             }
                             else -> {}
                         }
@@ -250,6 +268,21 @@ class LegalActionsCalculator(
                                 costType = "SacrificePermanent",
                                 validSacrificeTargets = sacrificeTargets,
                                 sacrificeCount = sacCost?.count ?: 1
+                            )
+                        } else if (exileTargets.isNotEmpty()) {
+                            val exileCostDesc = additionalCosts
+                                .filterIsInstance<com.wingedsheep.sdk.scripting.AdditionalCost.ExileVariableCards>()
+                                .firstOrNull()?.description
+                                ?: additionalCosts
+                                    .filterIsInstance<com.wingedsheep.sdk.scripting.AdditionalCost.ExileCards>()
+                                    .firstOrNull()?.description
+                                ?: "Exile cards from your graveyard"
+                            AdditionalCostInfo(
+                                description = exileCostDesc,
+                                costType = "ExileFromGraveyard",
+                                validExileTargets = exileTargets,
+                                exileMinCount = exileMinCount,
+                                exileMaxCount = exileTargets.size
                             )
                         } else null
 
@@ -1511,6 +1544,26 @@ class LegalActionsCalculator(
             if (controllerId != playerId) return@filter false
 
             predicateEvaluator.matches(state, entityId, cost.filter, predicateContext)
+        }
+    }
+
+    private fun findExileTargets(
+        state: GameState,
+        playerId: EntityId,
+        filter: GameObjectFilter,
+        fromZone: com.wingedsheep.sdk.scripting.CostZone
+    ): List<EntityId> {
+        val zone = when (fromZone) {
+            com.wingedsheep.sdk.scripting.CostZone.GRAVEYARD -> Zone.GRAVEYARD
+            com.wingedsheep.sdk.scripting.CostZone.HAND -> Zone.HAND
+            com.wingedsheep.sdk.scripting.CostZone.LIBRARY -> Zone.LIBRARY
+            com.wingedsheep.sdk.scripting.CostZone.BATTLEFIELD -> Zone.BATTLEFIELD
+        }
+        val zoneKey = ZoneKey(playerId, zone)
+        val predicateContext = PredicateContext(controllerId = playerId)
+
+        return state.getZone(zoneKey).filter { entityId ->
+            predicateEvaluator.matches(state, entityId, filter, predicateContext)
         }
     }
 

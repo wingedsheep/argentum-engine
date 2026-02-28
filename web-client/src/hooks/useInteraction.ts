@@ -298,6 +298,25 @@ export function useInteraction() {
         return
       }
 
+      // Check if spell or ability requires exiling cards from graveyard as a cost
+      if ((action.type === 'CastSpell' || action.type === 'ActivateAbility') &&
+          actionInfo.additionalCostInfo?.costType === 'ExileFromGraveyard') {
+        const costInfo = actionInfo.additionalCostInfo
+        startTargeting({
+          action,
+          validTargets: [...(costInfo.validExileTargets ?? [])],
+          selectedTargets: [],
+          minTargets: costInfo.exileMinCount ?? 1,
+          maxTargets: costInfo.exileMaxCount ?? costInfo.validExileTargets?.length ?? 1,
+          isSacrificeSelection: true,
+          pendingActionInfo: actionInfo,
+          targetZone: 'graveyard',
+          targetDescription: costInfo.description,
+        })
+        selectCard(null)
+        return
+      }
+
       // Check if ability requires mana color selection (e.g., "add one mana of any color")
       if (action.type === 'ActivateAbility' && actionInfo.requiresManaColorChoice) {
         startManaColorSelection({ action })
@@ -394,6 +413,11 @@ export function useInteraction() {
 
       // DiscardCard costs need selection (e.g., Undead Gladiator)
       if ((action.type === 'CastSpell' || action.type === 'ActivateAbility') && actionInfo.additionalCostInfo?.costType === 'DiscardCard') {
+        return false
+      }
+
+      // ExileFromGraveyard costs need selection (e.g., Chill Haunting)
+      if ((action.type === 'CastSpell' || action.type === 'ActivateAbility') && actionInfo.additionalCostInfo?.costType === 'ExileFromGraveyard') {
         return false
       }
 

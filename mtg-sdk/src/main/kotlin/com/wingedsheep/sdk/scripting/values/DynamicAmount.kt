@@ -256,6 +256,17 @@ sealed interface DynamicAmount {
     }
 
     /**
+     * Number of cards exiled as an additional cost to cast a spell.
+     * Used for effects like Chill Haunting: "Target creature gets -X/-X where X is
+     * the number of creature cards exiled as an additional cost."
+     */
+    @SerialName("AdditionalCostExiledCount")
+    @Serializable
+    data object AdditionalCostExiledCount : DynamicAmount {
+        override val description: String = "the number of cards exiled"
+    }
+
+    /**
      * Power of the source entity (the permanent that has the ability).
      * Used for effects like "deal damage equal to its power" on triggered abilities.
      */

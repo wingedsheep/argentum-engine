@@ -336,6 +336,54 @@ class CastSpellHandler(
                         }
                     }
                 }
+                is AdditionalCost.ExileVariableCards -> {
+                    val exiled = action.additionalCostPayment?.exiledCards ?: emptyList()
+                    if (exiled.size < additionalCost.minCount) {
+                        return "You must exile at least ${additionalCost.minCount} ${additionalCost.filter.description}(s) from your ${additionalCost.fromZone.description}"
+                    }
+                    val zone = when (additionalCost.fromZone) {
+                        com.wingedsheep.sdk.scripting.CostZone.GRAVEYARD -> Zone.GRAVEYARD
+                        com.wingedsheep.sdk.scripting.CostZone.HAND -> Zone.HAND
+                        com.wingedsheep.sdk.scripting.CostZone.LIBRARY -> Zone.LIBRARY
+                        com.wingedsheep.sdk.scripting.CostZone.BATTLEFIELD -> Zone.BATTLEFIELD
+                    }
+                    val zoneKey = ZoneKey(action.playerId, zone)
+                    val zoneCards = state.getZone(zoneKey)
+                    val context = PredicateContext(controllerId = action.playerId)
+                    for (cardId in exiled) {
+                        if (cardId !in zoneCards) {
+                            return "Card to exile is not in your ${additionalCost.fromZone.description}"
+                        }
+                        if (!predicateEvaluator.matches(state, cardId, additionalCost.filter, context)) {
+                            val cardName = state.getEntity(cardId)?.get<CardComponent>()?.name ?: "Card"
+                            return "$cardName doesn't match the required filter: ${additionalCost.filter.description}"
+                        }
+                    }
+                }
+                is AdditionalCost.ExileCards -> {
+                    val exiled = action.additionalCostPayment?.exiledCards ?: emptyList()
+                    if (exiled.size < additionalCost.count) {
+                        return "You must exile ${additionalCost.count} ${additionalCost.filter.description}(s) from your ${additionalCost.fromZone.description}"
+                    }
+                    val zone = when (additionalCost.fromZone) {
+                        com.wingedsheep.sdk.scripting.CostZone.GRAVEYARD -> Zone.GRAVEYARD
+                        com.wingedsheep.sdk.scripting.CostZone.HAND -> Zone.HAND
+                        com.wingedsheep.sdk.scripting.CostZone.LIBRARY -> Zone.LIBRARY
+                        com.wingedsheep.sdk.scripting.CostZone.BATTLEFIELD -> Zone.BATTLEFIELD
+                    }
+                    val zoneKey = ZoneKey(action.playerId, zone)
+                    val zoneCards = state.getZone(zoneKey)
+                    val context = PredicateContext(controllerId = action.playerId)
+                    for (cardId in exiled) {
+                        if (cardId !in zoneCards) {
+                            return "Card to exile is not in your ${additionalCost.fromZone.description}"
+                        }
+                        if (!predicateEvaluator.matches(state, cardId, additionalCost.filter, context)) {
+                            val cardName = state.getEntity(cardId)?.get<CardComponent>()?.name ?: "Card"
+                            return "$cardName doesn't match the required filter: ${additionalCost.filter.description}"
+                        }
+                    }
+                }
                 else -> {}
             }
         }
@@ -361,9 +409,10 @@ class CastSpellHandler(
             cardComponent.manaCost
         }
 
-        // Process additional costs (sacrifice, etc.)
+        // Process additional costs (sacrifice, exile, etc.)
         val sacrificedPermanentIds = mutableListOf<EntityId>()
         val sacrificedPermanentSubtypes = mutableMapOf<EntityId, Set<String>>()
+        var exiledCardCount = 0
         if (cardDef != null && action.additionalCostPayment != null) {
             for (additionalCost in cardDef.script.additionalCosts) {
                 when (additionalCost) {
@@ -398,6 +447,38 @@ class CastSpellHandler(
                                 ownerId = ownerId
                             ))
                         }
+                    }
+                    is AdditionalCost.ExileVariableCards, is AdditionalCost.ExileCards -> {
+                        val exiledCards = action.additionalCostPayment.exiledCards
+                        val fromZone = when (additionalCost) {
+                            is AdditionalCost.ExileVariableCards -> additionalCost.fromZone
+                            is AdditionalCost.ExileCards -> additionalCost.fromZone
+                            else -> com.wingedsheep.sdk.scripting.CostZone.GRAVEYARD
+                        }
+                        val zone = when (fromZone) {
+                            com.wingedsheep.sdk.scripting.CostZone.GRAVEYARD -> Zone.GRAVEYARD
+                            com.wingedsheep.sdk.scripting.CostZone.HAND -> Zone.HAND
+                            com.wingedsheep.sdk.scripting.CostZone.LIBRARY -> Zone.LIBRARY
+                            com.wingedsheep.sdk.scripting.CostZone.BATTLEFIELD -> Zone.BATTLEFIELD
+                        }
+                        for (cardId in exiledCards) {
+                            val cardContainer = currentState.getEntity(cardId) ?: continue
+                            val card = cardContainer.get<CardComponent>() ?: continue
+                            val sourceZone = ZoneKey(action.playerId, zone)
+                            val exileZone = ZoneKey(action.playerId, Zone.EXILE)
+
+                            currentState = currentState.removeFromZone(sourceZone, cardId)
+                            currentState = currentState.addToZone(exileZone, cardId)
+
+                            events.add(ZoneChangeEvent(
+                                entityId = cardId,
+                                entityName = card.name,
+                                fromZone = zone,
+                                toZone = Zone.EXILE,
+                                ownerId = action.playerId
+                            ))
+                        }
+                        exiledCardCount = exiledCards.size
                     }
                     else -> {}
                 }
@@ -463,7 +544,8 @@ class CastSpellHandler(
             sacrificedPermanentSubtypes,
             action.castFaceDown,
             action.damageDistribution,
-            spellTargetRequirements
+            spellTargetRequirements,
+            exiledCardCount = exiledCardCount
         )
 
         if (!castResult.isSuccess) {

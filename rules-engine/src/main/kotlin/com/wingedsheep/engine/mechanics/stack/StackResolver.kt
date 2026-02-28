@@ -76,7 +76,8 @@ class StackResolver(
         castFaceDown: Boolean = false,
         damageDistribution: Map<EntityId, Int>? = null,
         targetRequirements: List<TargetRequirement> = emptyList(),
-        chosenCreatureType: String? = null
+        chosenCreatureType: String? = null,
+        exiledCardCount: Int = 0
     ): ExecutionResult {
         val container = state.getEntity(cardId)
             ?: return ExecutionResult.error(state, "Card not found: $cardId")
@@ -96,7 +97,8 @@ class StackResolver(
                 sacrificedPermanentSubtypes = sacrificedPermanentSubtypes,
                 castFaceDown = castFaceDown,
                 damageDistribution = damageDistribution,
-                chosenCreatureType = chosenCreatureType
+                chosenCreatureType = chosenCreatureType,
+                exiledCardCount = exiledCardCount
             ))
             if (targets.isNotEmpty()) {
                 updated = updated.with(TargetsComponent(targets, targetRequirements))
@@ -619,6 +621,7 @@ class StackResolver(
                 sacrificedPermanentSubtypes = spellComponent.sacrificedPermanentSubtypes,
                 damageDistribution = spellComponent.damageDistribution,
                 chosenCreatureType = spellComponent.chosenCreatureType,
+                exiledCardCount = spellComponent.exiledCardCount,
                 namedTargets = EffectContext.buildNamedTargets(targetRequirements, targets)
             )
 

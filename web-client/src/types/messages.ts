@@ -487,6 +487,9 @@ export interface AdditionalCostInfo {
   readonly discardCount?: number
   readonly validBounceTargets?: readonly EntityId[]
   readonly bounceCount?: number
+  readonly validExileTargets?: readonly EntityId[]
+  readonly exileMinCount?: number
+  readonly exileMaxCount?: number
 }
 
 /**

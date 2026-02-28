@@ -434,6 +434,10 @@ class CostHandler {
                 val zone = ZoneKey(controllerId, cost.fromZone.toZone())
                 findMatchingCardsUnified(state, state.getZone(zone), cost.filter, controllerId).size >= cost.count
             }
+            is AdditionalCost.ExileVariableCards -> {
+                val zone = ZoneKey(controllerId, cost.fromZone.toZone())
+                findMatchingCardsUnified(state, state.getZone(zone), cost.filter, controllerId).size >= cost.minCount
+            }
             is AdditionalCost.TapPermanents -> {
                 findUntappedMatchingPermanentsUnified(state, controllerId, cost.filter).size >= cost.count
             }

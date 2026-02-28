@@ -3,13 +3,13 @@
 
 **Set Size:** 143 cards
 **Release Date:** May 26, 2003
-**Implemented:** 103 / 143
+**Implemented:** 104 / 143
 
 | Color | Count |
 |-------|-------|
 | White | 19 |
 | Blue | 17 |
-| Black | 19 |
+| Black | 20 |
 | Red | 22 |
 | Green | 20 |
 | Multicolor | 2 |
@@ -38,7 +38,7 @@
 - [x] Carbonize
 - [x] Carrion Feeder
 - [x] Chartooth Cougar
-- [ ] Chill Haunting
+- [x] Chill Haunting
 - [x] Claws of Wirewood
 - [x] Clutch of Undeath
 - [x] Coast Watcher

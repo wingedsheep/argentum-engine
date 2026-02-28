@@ -154,6 +154,8 @@ class DynamicAmountEvaluator(
                 evaluateBattlefieldAggregate(state, amount, context, projectedState)
             }
 
+            is DynamicAmount.AdditionalCostExiledCount -> context.exiledCardCount
+
             is DynamicAmount.SourcePower -> {
                 val sourceId = context.sourceId ?: return 0
                 val card = state.getEntity(sourceId)?.get<CardComponent>() ?: return 0

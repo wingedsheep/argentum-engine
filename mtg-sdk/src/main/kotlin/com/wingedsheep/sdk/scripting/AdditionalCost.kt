@@ -109,6 +109,29 @@ sealed interface AdditionalCost {
     }
 
     /**
+     * Exile a variable number of cards from a zone as an additional cost.
+     * The player chooses how many matching cards to exile (at least [minCount]).
+     * Example: "Exile X creature cards from your graveyard" for Chill Haunting
+     *
+     * @property minCount Minimum number of cards to exile (default 1)
+     * @property filter Which cards can be exiled
+     * @property fromZone Zone to exile from
+     */
+    @SerialName("ExileVariableCards")
+    @Serializable
+    data class ExileVariableCards(
+        val minCount: Int = 1,
+        val filter: GameObjectFilter = GameObjectFilter.Any,
+        val fromZone: CostZone = CostZone.GRAVEYARD
+    ) : AdditionalCost {
+        override val description: String = buildString {
+            append("Exile X ")
+            append(filter.description)
+            append("s from your ${fromZone.description}")
+        }
+    }
+
+    /**
      * Tap permanents you control.
      * Example: "Tap an untapped creature you control"
      *

@@ -944,5 +944,42 @@ abstract class ScenarioTestBase : FunSpec() {
             )
             return execute(CastSpell(playerId, cardId, emptyList(), additionalCostPayment = payment))
         }
+
+        /**
+         * Cast a spell with an additional exile-from-graveyard cost, targeting a creature.
+         * @param playerNumber The player casting the spell (1 or 2)
+         * @param spellName The name of the spell to cast
+         * @param exileCardNames The names of the creature cards to exile from graveyard
+         * @param targetCreatureName The name of the creature to target on the battlefield
+         */
+        fun castSpellWithExileCost(
+            playerNumber: Int,
+            spellName: String,
+            exileCardNames: List<String>,
+            targetCreatureName: String
+        ): ExecutionResult {
+            val playerId = if (playerNumber == 1) player1Id else player2Id
+            val hand = state.getHand(playerId)
+            val cardId = hand.find { entityId ->
+                state.getEntity(entityId)?.get<CardComponent>()?.name == spellName
+            } ?: error("Card '$spellName' not found in player $playerNumber's hand")
+
+            val graveyard = state.getGraveyard(playerId)
+            val exileCardIds = exileCardNames.map { name ->
+                graveyard.find { entityId ->
+                    state.getEntity(entityId)?.get<CardComponent>()?.name == name
+                } ?: error("Card '$name' not found in player $playerNumber's graveyard")
+            }
+
+            val targetId = state.getBattlefield().find { entityId ->
+                state.getEntity(entityId)?.get<CardComponent>()?.name == targetCreatureName
+            } ?: error("Creature '$targetCreatureName' not found on battlefield")
+
+            val payment = com.wingedsheep.sdk.scripting.AdditionalCostPayment(
+                exiledCards = exileCardIds
+            )
+            val targets = listOf(ChosenTarget.Permanent(targetId))
+            return execute(CastSpell(playerId, cardId, targets, additionalCostPayment = payment))
+        }
     }
 }
