@@ -2,12 +2,12 @@
 
 **Set Size:** 145 cards
 **Release Date:** February 3, 2003
-**Implemented:** 49 / 145
+**Implemented:** 50 / 145
 
 | Color      | Count |
 |------------|-------|
 | White      | 10/29 |
-| Blue       | 9/29  |
+| Blue       | 10/29 |
 | Black      | 10/29 |
 | Red        | 10/29 |
 | Green      | 10/29 |
@@ -99,7 +99,7 @@
 - [ ] Magma Sliver
 - [ ] Master of the Veil
 - [x] Merchant of Secrets
-- [ ] Mistform Seaswift
+- [x] Mistform Seaswift
 - [ ] Mistform Sliver
 - [ ] Mistform Ultimus
 - [ ] Mistform Wakecaster

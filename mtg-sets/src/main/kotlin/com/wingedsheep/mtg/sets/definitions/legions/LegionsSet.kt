@@ -43,6 +43,7 @@ object LegionsSet {
         GlintwingInvoker,
         KeeneyeAven,
         MerchantOfSecrets,
+        MistformSeaswift,
         PrimocEscapee,
 
         // Black creatures
