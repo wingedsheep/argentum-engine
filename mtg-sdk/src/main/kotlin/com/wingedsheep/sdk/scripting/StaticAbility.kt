@@ -324,6 +324,26 @@ data class ReduceSpellCostBySubtype(
 }
 
 /**
+ * Reduces the colored mana cost of spells with a matching subtype cast by the controller of this permanent.
+ * Unlike ReduceSpellCostBySubtype (which reduces generic mana), this removes specific colored mana symbols.
+ * Used for "Cleric spells you cast cost {W}{B} less to cast" (Edgewalker).
+ *
+ * The manaReduction string specifies which colored symbols to remove (e.g., "{W}{B}").
+ * This effect reduces only colored mana, never generic mana.
+ *
+ * @property subtype The creature subtype that spells must have to benefit from the reduction
+ * @property manaReduction The colored mana symbols to remove, as a mana cost string (e.g., "{W}{B}")
+ */
+@SerialName("ReduceSpellColoredCostBySubtype")
+@Serializable
+data class ReduceSpellColoredCostBySubtype(
+    val subtype: String,
+    val manaReduction: String
+) : StaticAbility {
+    override val description: String = "$subtype spells you cast cost $manaReduction less to cast"
+}
+
+/**
  * Reduces the cost of spells matching a filter cast by the controller of this permanent.
  * A general-purpose cost reduction that uses GameObjectFilter's card predicates to match spells.
  *

@@ -26,6 +26,9 @@ object ScourgeSet {
         ProteusMachine,
         Stabilizer,
 
+        // White/Black creatures
+        Edgewalker,
+
         // Black/Red creatures
         BladewingTheRisen,
 

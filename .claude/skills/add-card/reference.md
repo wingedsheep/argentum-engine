@@ -829,7 +829,8 @@ Set via `staticAbility { ability = ... }`:
 - `RevealFirstDrawEachTurn` — reveal the first card drawn each turn (Primitive Etchings)
 - `SpellCostReduction(reductionSource)` — cost reduction
 - `FaceDownSpellCostReduction(reductionSource)` — face-down spell cost reduction
-- `ReduceSpellCostBySubtype(subtype, amount)` — reduce cost per subtype
+- `ReduceSpellCostBySubtype(subtype, amount)` — reduce generic cost per subtype
+- `ReduceSpellColoredCostBySubtype(subtype, manaReduction)` — reduce colored mana cost per subtype (e.g., Edgewalker: `"{W}{B}"`)
 - `ReduceSpellCostByFilter(filter, amount)` — reduce spell cost for spells matching a GameObjectFilter
 - `ReduceFaceDownCastingCost(amount)` — reduce face-down casting cost
 - `ConditionalStaticAbility(ability, condition)` — conditional static

@@ -18,6 +18,7 @@ import com.wingedsheep.sdk.scripting.FaceDownSpellCostReduction
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.KeywordAbility
 import com.wingedsheep.sdk.scripting.ReduceSpellCostByFilter
+import com.wingedsheep.sdk.scripting.ReduceSpellColoredCostBySubtype
 import com.wingedsheep.sdk.scripting.ReduceSpellCostBySubtype
 import com.wingedsheep.sdk.scripting.SpellCostReduction
 import com.wingedsheep.sdk.scripting.predicates.CardPredicate
@@ -72,7 +73,13 @@ class CostCalculator(
         // Evaluate ReduceSpellCostByFilter from battlefield permanents controlled by the caster
         totalReduction += calculateFilterCostReduction(state, cardDef, casterId)
 
-        return reduceGenericCost(cardDef.manaCost, totalReduction)
+        // First apply generic cost reduction
+        var effectiveCost = reduceGenericCost(cardDef.manaCost, totalReduction)
+
+        // Then apply colored cost reductions
+        effectiveCost = applyColoredCostReductions(state, cardDef, casterId, effectiveCost)
+
+        return effectiveCost
     }
 
     /**
@@ -231,6 +238,60 @@ class CostCalculator(
             }
         }
         return reduction
+    }
+
+    /**
+     * Apply colored cost reductions from battlefield permanents with ReduceSpellColoredCostBySubtype.
+     * Removes specific colored mana symbols from the spell's cost.
+     * Only reduces colored mana, never generic mana.
+     */
+    private fun applyColoredCostReductions(
+        state: GameState,
+        cardDef: CardDefinition,
+        casterId: EntityId,
+        currentCost: ManaCost
+    ): ManaCost {
+        val spellSubtypes = cardDef.typeLine.subtypes
+        if (spellSubtypes.isEmpty()) return currentCost
+
+        // Collect all colored mana symbols to remove
+        val symbolsToRemove = mutableListOf<ManaSymbol>()
+
+        for (entityId in state.getBattlefield(casterId)) {
+            val card = state.getEntity(entityId)?.get<CardComponent>() ?: continue
+            val permanentDef = cardRegistry?.getCard(card.cardDefinitionId) ?: continue
+
+            for (ability in permanentDef.script.staticAbilities) {
+                if (ability is ReduceSpellColoredCostBySubtype &&
+                    Subtype.of(ability.subtype) in spellSubtypes
+                ) {
+                    val reductionCost = ManaCost.parse(ability.manaReduction)
+                    symbolsToRemove.addAll(reductionCost.symbols.filterIsInstance<ManaSymbol.Colored>())
+                }
+            }
+        }
+
+        if (symbolsToRemove.isEmpty()) return currentCost
+
+        return reduceColoredCost(currentCost, symbolsToRemove)
+    }
+
+    /**
+     * Remove specific colored mana symbols from a mana cost.
+     * Each symbol in symbolsToRemove removes at most one matching colored symbol from the cost.
+     * Does not affect generic mana.
+     */
+    private fun reduceColoredCost(cost: ManaCost, symbolsToRemove: List<ManaSymbol>): ManaCost {
+        val remainingSymbols = cost.symbols.toMutableList()
+
+        for (symbolToRemove in symbolsToRemove) {
+            val index = remainingSymbols.indexOfFirst { it == symbolToRemove }
+            if (index >= 0) {
+                remainingSymbols.removeAt(index)
+            }
+        }
+
+        return ManaCost(remainingSymbols)
     }
 
     /**
