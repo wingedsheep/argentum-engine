@@ -68,6 +68,7 @@ object LegionsSet {
         SkirkOutrider,
 
         // Green creatures
+        BranchsnapLorian,
         Brontotherium,
         DefiantElf,
         EnormousBaloth,
