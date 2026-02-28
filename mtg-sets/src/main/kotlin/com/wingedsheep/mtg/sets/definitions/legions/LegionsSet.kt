@@ -51,6 +51,7 @@ object LegionsSet {
         MerchantOfSecrets,
         MistformSeaswift,
         PrimocEscapee,
+        VoidmageApprentice,
         WallOfDeceit,
 
         // Black creatures
