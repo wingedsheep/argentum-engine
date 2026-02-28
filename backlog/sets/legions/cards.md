@@ -2,11 +2,11 @@
 
 **Set Size:** 145 cards
 **Release Date:** February 3, 2003
-**Implemented:** 58 / 145
+**Implemented:** 59 / 145
 
 | Color      | Count |
 |------------|-------|
-| White      | 11/29 |
+| White      | 12/29 |
 | Blue       | 11/29 |
 | Black      | 12/29 |
 | Red        | 12/29 |
@@ -42,7 +42,7 @@
 - [ ] Crookclaw Elder
 - [ ] Crypt Sliver
 - [ ] Dark Supplicant
-- [ ] Daru Mender
+- [x] Daru Mender
 - [x] Daru Sanctifier
 - [ ] Daru Stinger
 - [ ] Deathmark Prelate

@@ -25,6 +25,7 @@ object LegionsSet {
         // White creatures
         AvenWarhawk,
         CloudreachCavalry,
+        DaruMender,
         DaruSanctifier,
         DeftbladeElite,
         GempalmAvenger,
