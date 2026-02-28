@@ -2,11 +2,11 @@
 
 **Set Size:** 145 cards
 **Release Date:** February 3, 2003
-**Implemented:** 63 / 145
+**Implemented:** 64 / 145
 
 | Color      | Count |
 |------------|-------|
-| White      | 12/29 |
+| White      | 13/29 |
 | Blue       | 12/29 |
 | Black      | 13/29 |
 | Red        | 13/29 |
@@ -93,7 +93,7 @@
 - [ ] Krosan Cloudscraper
 - [x] Krosan Vorine
 - [x] Lavaborn Muse
-- [ ] Liege of the Axe
+- [x] Liege of the Axe
 - [x] Lowland Tracker
 - [ ] Macetail Hystrodon
 - [ ] Magma Sliver
