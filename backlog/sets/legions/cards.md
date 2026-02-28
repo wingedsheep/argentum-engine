@@ -2,14 +2,14 @@
 
 **Set Size:** 145 cards
 **Release Date:** February 3, 2003
-**Implemented:** 66 / 145
+**Implemented:** 67 / 145
 
 | Color      | Count |
 |------------|-------|
 | White      | 14/29 |
 | Blue       | 13/29 |
 | Black      | 13/29 |
-| Red        | 13/29 |
+| Red        | 14/29 |
 | Green      | 13/29 |
 
 ---
@@ -120,7 +120,7 @@
 - [ ] Root Sliver
 - [ ] Scion of Darkness
 - [ ] Seedborn Muse
-- [ ] Shaleskin Plower
+- [x] Shaleskin Plower
 - [ ] Shifting Sliver
 - [x] Skinthinner
 - [ ] Skirk Alarmist
