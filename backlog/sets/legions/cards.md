@@ -2,11 +2,11 @@
 
 **Set Size:** 145 cards
 **Release Date:** February 3, 2003
-**Implemented:** 48 / 145
+**Implemented:** 49 / 145
 
 | Color      | Count |
 |------------|-------|
-| White      | 9/29  |
+| White      | 10/29 |
 | Blue       | 9/29  |
 | Black      | 10/29 |
 | Red        | 10/29 |
@@ -19,7 +19,7 @@
 - [ ] Aphetto Exterminator
 - [x] Aven Envoy
 - [ ] Aven Redeemer
-- [ ] Aven Warhawk
+- [x] Aven Warhawk
 - [ ] Bane of the Living
 - [ ] Beacon of Destiny
 - [ ] Berserk Murlodont
