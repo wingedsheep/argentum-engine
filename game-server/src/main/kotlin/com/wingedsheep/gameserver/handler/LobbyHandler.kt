@@ -286,7 +286,7 @@ class LobbyHandler(
         // Draft: default 3 packs, max 6
         // Sealed: default 6 boosters, max 16
         // Winston: default 6 boosters, max 16
-        // Grid Draft: default 6 boosters (shared pool), max 12
+        // Grid Draft: default 9 boosters (shared pool), max 18
         val boosterCount = when (format) {
             TournamentFormat.DRAFT -> {
                 if (message.boosterCount == 6) 3 else message.boosterCount.coerceIn(1, 6)  // 6 is the client default, use 3 for draft
@@ -295,7 +295,7 @@ class LobbyHandler(
                 message.boosterCount.coerceIn(1, 16)
             }
             TournamentFormat.GRID_DRAFT -> {
-                if (message.boosterCount == 6) 6 else message.boosterCount.coerceIn(3, 12)
+                if (message.boosterCount == 6) 9 else message.boosterCount.coerceIn(3, 18)
             }
         }
 
@@ -1646,7 +1646,7 @@ class LobbyHandler(
                     TournamentFormat.DRAFT -> 3
                     TournamentFormat.SEALED -> 6
                     TournamentFormat.WINSTON_DRAFT -> 6
-                    TournamentFormat.GRID_DRAFT -> 6
+                    TournamentFormat.GRID_DRAFT -> 9
                 }
                 if (newFormat == TournamentFormat.WINSTON_DRAFT) {
                     lobby.maxPlayers = 2
@@ -1662,7 +1662,7 @@ class LobbyHandler(
                 TournamentFormat.DRAFT -> 6
                 TournamentFormat.SEALED -> 16
                 TournamentFormat.WINSTON_DRAFT -> 16
-                TournamentFormat.GRID_DRAFT -> 12
+                TournamentFormat.GRID_DRAFT -> 18
             }
             lobby.boosterCount = it.coerceIn(1, maxCount)
         }

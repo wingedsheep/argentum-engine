@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback } from 'react'
+import { useState, useMemo, useCallback, useRef, useEffect } from 'react'
 import { useGameStore } from '../../store/gameStore'
 import type { GridDraftState } from '../../store/slices/types'
 import type { SealedCardInfo, LobbySettings } from '../../types'
@@ -67,6 +67,73 @@ function GridDrafter({ gridState, settings }: { gridState: GridDraftState; setti
       setHoverPos(null)
     }
   }, [])
+
+  // Animation: detect when cards are picked and animate them out
+  const prevGridRef = useRef<readonly (SealedCardInfo | null)[]>(gridState.grid)
+  const [animatingCards, setAnimatingCards] = useState<{
+    indices: number[]
+    cards: Map<number, SealedCardInfo>
+    selection: SelectionType | null
+    phase: 'highlight' | 'fadeout'
+  } | null>(null)
+
+  useEffect(() => {
+    const prevGrid = prevGridRef.current
+    const newGrid = gridState.grid
+    prevGridRef.current = newGrid
+
+    // Find indices where cards disappeared (were non-null, now null)
+    const removedIndices: number[] = []
+    const removedCards = new Map<number, SealedCardInfo>()
+    for (let i = 0; i < 9; i++) {
+      const prev = prevGrid[i]
+      if (prev && !newGrid[i]) {
+        removedIndices.push(i)
+        removedCards.set(i, prev)
+      }
+    }
+
+    if (removedIndices.length === 0) return
+
+    // Determine which selection was made based on the removed indices
+    const indexSet = new Set(removedIndices)
+    let detectedSelection: SelectionType | null = null
+    const selections: SelectionType[] = ['ROW_0', 'ROW_1', 'ROW_2', 'COL_0', 'COL_1', 'COL_2']
+    for (const sel of selections) {
+      const selIndices = getSelectionIndices(sel)
+      // Check if the removed indices contain all non-null cards from this selection
+      const selCards = selIndices.filter((i) => prevGrid[i] != null)
+      if (selCards.length > 0 && selCards.every((i) => indexSet.has(i))) {
+        detectedSelection = sel
+        break
+      }
+    }
+
+    // Start highlight phase
+    setAnimatingCards({
+      indices: removedIndices,
+      cards: removedCards,
+      selection: detectedSelection,
+      phase: 'highlight',
+    })
+
+    // Transition to fadeout
+    const fadeTimer = setTimeout(() => {
+      setAnimatingCards((prev) =>
+        prev ? { ...prev, phase: 'fadeout' } : null,
+      )
+    }, 400)
+
+    // Clear animation
+    const clearTimer = setTimeout(() => {
+      setAnimatingCards(null)
+    }, 1000)
+
+    return () => {
+      clearTimeout(fadeTimer)
+      clearTimeout(clearTimer)
+    }
+  }, [gridState.grid])
 
   const timerWarning = gridState.timeRemaining <= 10
   const isMobile = responsive.isMobile
@@ -320,6 +387,7 @@ function GridDrafter({ gridState, settings }: { gridState: GridDraftState; setti
                 {(['COL_0', 'COL_1', 'COL_2'] as const).map((col) => {
                   const isAvailable = gridState.isYourTurn && availableSet.has(col)
                   const isHovered = hoveredSelection === col
+                  const isAnimPick = animatingCards?.selection === col && animatingCards.phase === 'highlight'
                   return (
                     <button
                       key={col}
@@ -331,18 +399,21 @@ function GridDrafter({ gridState, settings }: { gridState: GridDraftState; setti
                         width: cardSize + 8,
                         height: 28,
                         border: 'none',
-                        background: isHovered
-                          ? 'rgba(74,222,128,0.3)'
-                          : isAvailable
-                            ? 'rgba(255,255,255,0.08)'
-                            : 'transparent',
-                        color: isAvailable ? '#4ade80' : 'rgba(255,255,255,0.2)',
+                        background: isAnimPick
+                          ? 'rgba(74,222,128,0.4)'
+                          : isHovered
+                            ? 'rgba(74,222,128,0.3)'
+                            : isAvailable
+                              ? 'rgba(255,255,255,0.08)'
+                              : 'transparent',
+                        color: isAnimPick ? '#fff' : isAvailable ? '#4ade80' : 'rgba(255,255,255,0.2)',
                         fontSize: 11, fontWeight: 600,
                         cursor: isAvailable ? 'pointer' : 'default',
                         borderRadius: '4px 4px 0 0',
                         textTransform: 'uppercase',
                         letterSpacing: '0.05em',
-                        transition: 'background 0.15s',
+                        transition: 'all 0.3s',
+                        boxShadow: isAnimPick ? '0 0 12px rgba(74,222,128,0.4)' : 'none',
                       }}
                     >
                       {getSelectionLabel(col)}
@@ -356,6 +427,7 @@ function GridDrafter({ gridState, settings }: { gridState: GridDraftState; setti
                 const rowKey = `ROW_${rowIdx}` as SelectionType
                 const isAvailable = gridState.isYourTurn && availableSet.has(rowKey)
                 const isRowHovered = hoveredSelection === rowKey
+                const isAnimRowPick = animatingCards?.selection === rowKey && animatingCards.phase === 'highlight'
 
                 return (
                   <div key={rowIdx} style={{ display: 'flex', gap: 0 }}>
@@ -369,12 +441,14 @@ function GridDrafter({ gridState, settings }: { gridState: GridDraftState; setti
                         width: 40,
                         height: cardSize * 1.4 + 8,
                         border: 'none',
-                        background: isRowHovered
-                          ? 'rgba(74,222,128,0.3)'
-                          : isAvailable
-                            ? 'rgba(255,255,255,0.08)'
-                            : 'transparent',
-                        color: isAvailable ? '#4ade80' : 'rgba(255,255,255,0.2)',
+                        background: isAnimRowPick
+                          ? 'rgba(74,222,128,0.4)'
+                          : isRowHovered
+                            ? 'rgba(74,222,128,0.3)'
+                            : isAvailable
+                              ? 'rgba(255,255,255,0.08)'
+                              : 'transparent',
+                        color: isAnimRowPick ? '#fff' : isAvailable ? '#4ade80' : 'rgba(255,255,255,0.2)',
                         fontSize: 11, fontWeight: 600,
                         cursor: isAvailable ? 'pointer' : 'default',
                         borderRadius: '4px 0 0 4px',
@@ -382,7 +456,8 @@ function GridDrafter({ gridState, settings }: { gridState: GridDraftState; setti
                         textTransform: 'uppercase',
                         letterSpacing: '0.05em',
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        transition: 'background 0.15s',
+                        transition: 'all 0.3s',
+                        boxShadow: isAnimRowPick ? '0 0 12px rgba(74,222,128,0.4)' : 'none',
                       }}
                     >
                       {getSelectionLabel(rowKey)}
@@ -393,6 +468,9 @@ function GridDrafter({ gridState, settings }: { gridState: GridDraftState; setti
                       const gridIdx = rowIdx * 3 + colIdx
                       const card = gridState.grid[gridIdx] ?? undefined
                       const isHighlighted = highlightedIndices.has(gridIdx)
+                      const animCard = animatingCards?.cards.get(gridIdx)
+                      const animPhase = animatingCards?.phase ?? null
+                      const isAnimating = animatingCards != null && animatingCards.indices.includes(gridIdx)
 
                       return (
                         <div
@@ -401,6 +479,7 @@ function GridDrafter({ gridState, settings }: { gridState: GridDraftState; setti
                             width: cardSize + 8,
                             height: cardSize * 1.4 + 8,
                             padding: 4,
+                            position: 'relative',
                           }}
                         >
                           {card ? (
@@ -410,12 +489,50 @@ function GridDrafter({ gridState, settings }: { gridState: GridDraftState; setti
                               onHover={handleHover}
                               width={cardSize}
                             />
+                          ) : animCard ? (
+                            /* Show the picked card with animation */
+                            <div style={{
+                              position: 'relative',
+                              width: cardSize,
+                              height: cardSize * 1.4,
+                            }}>
+                              {/* Highlight glow behind card */}
+                              <div style={{
+                                position: 'absolute', inset: -4,
+                                borderRadius: 10,
+                                background: animPhase === 'highlight'
+                                  ? 'rgba(74,222,128,0.25)'
+                                  : 'transparent',
+                                boxShadow: animPhase === 'highlight'
+                                  ? '0 0 20px rgba(74,222,128,0.4), inset 0 0 20px rgba(74,222,128,0.15)'
+                                  : 'none',
+                                transition: 'all 0.3s ease-out',
+                              }} />
+                              {/* The card itself fading/shrinking out */}
+                              <div style={{
+                                opacity: animPhase === 'highlight' ? 1 : 0,
+                                transform: animPhase === 'highlight'
+                                  ? 'scale(1.05)'
+                                  : 'scale(0.8) translateY(-20px)',
+                                transition: animPhase === 'highlight'
+                                  ? 'transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.15s'
+                                  : 'transform 0.5s ease-in, opacity 0.4s ease-in',
+                              }}>
+                                <GridCard
+                                  card={animCard}
+                                  isHighlighted={true}
+                                  onHover={() => {}}
+                                  width={cardSize}
+                                />
+                              </div>
+                            </div>
                           ) : (
                             <div style={{
                               width: cardSize, height: cardSize * 1.4,
                               borderRadius: 6,
                               border: '1px dashed rgba(255,255,255,0.1)',
-                              background: 'rgba(0,0,0,0.15)',
+                              background: isAnimating ? 'rgba(74,222,128,0.05)' : 'rgba(0,0,0,0.15)',
+                              transition: 'background 0.5s',
                             }} />
                           )}
                         </div>
@@ -535,6 +652,11 @@ function GridDrafter({ gridState, settings }: { gridState: GridDraftState; setti
         @keyframes pulse {
           0%, 100% { opacity: 1; }
           50% { opacity: 0.5; }
+        }
+        @keyframes gridPickGlow {
+          0% { box-shadow: 0 0 8px rgba(74,222,128,0.2); }
+          50% { box-shadow: 0 0 24px rgba(74,222,128,0.5); }
+          100% { box-shadow: 0 0 8px rgba(74,222,128,0.2); }
         }
       `}</style>
     </div>
