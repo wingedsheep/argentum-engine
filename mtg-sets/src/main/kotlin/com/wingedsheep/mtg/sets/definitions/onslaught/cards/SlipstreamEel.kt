@@ -2,7 +2,8 @@ package com.wingedsheep.mtg.sets.definitions.onslaught.cards
 
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.CantAttackUnlessDefenderControlsLandType
+import com.wingedsheep.sdk.scripting.CantAttackUnless
+import com.wingedsheep.sdk.scripting.CombatCondition
 import com.wingedsheep.sdk.scripting.KeywordAbility
 
 /**
@@ -21,7 +22,7 @@ val SlipstreamEel = card("Slipstream Eel") {
     oracleText = "Slipstream Eel can't attack unless defending player controls an Island.\nCycling {1}{U}"
 
     staticAbility {
-        ability = CantAttackUnlessDefenderControlsLandType("Island")
+        ability = CantAttackUnless(CombatCondition.OpponentControlsLandType("Island"))
     }
 
     keywordAbility(KeywordAbility.cycling("{1}{U}"))

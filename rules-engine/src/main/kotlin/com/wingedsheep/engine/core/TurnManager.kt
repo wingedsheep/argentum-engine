@@ -1140,7 +1140,7 @@ class TurnManager(
             }
 
             // Check creature count attack restriction (e.g., Goblin Goon)
-            if (combatManager.hasCreatureCountAttackRestriction(state, entityId, playerId, projected)) {
+            if (combatManager.hasCantAttackUnlessRestriction(state, entityId, playerId, projected)) {
                 return@any false
             }
 
@@ -1193,7 +1193,7 @@ class TurnManager(
             }
 
             // Check creature count attack restriction (e.g., Goblin Goon)
-            if (combatManager.hasCreatureCountAttackRestriction(state, entityId, playerId, projected)) {
+            if (combatManager.hasCantAttackUnlessRestriction(state, entityId, playerId, projected)) {
                 return@filter false
             }
 

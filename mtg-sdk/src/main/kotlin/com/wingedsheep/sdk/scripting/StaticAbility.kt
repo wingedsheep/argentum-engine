@@ -695,40 +695,71 @@ data class CantBeBlockedUnlessDefenderSharesCreatureType(
 }
 
 // =============================================================================
-// Creature Count Attack/Block Restrictions
+// Conditional Attack/Block Restrictions
 // =============================================================================
 
 /**
- * This creature can't attack unless its controller controls more creatures than
- * the defending player. Used for Goblin Goon.
- *
- * Checked at attack declaration time when the defending player is known.
- * In a 2-player game, there's only one possible defender.
- *
- * @property target What this ability applies to
+ * Conditions for conditional attack/block restrictions.
+ * "Opponent" means the defending player for attack restrictions
+ * and the attacking player for block restrictions.
  */
-@SerialName("CantAttackUnlessControlMoreCreatures")
 @Serializable
-data class CantAttackUnlessControlMoreCreatures(
-    val target: StaticTarget = StaticTarget.SourceCreature
-) : StaticAbility {
-    override val description: String = "can't attack unless you control more creatures than defending player"
+sealed interface CombatCondition {
+    val description: String
+
+    /**
+     * You control more creatures than the opponent.
+     * Used for Goblin Goon, Mogg Toady.
+     */
+    @SerialName("ControlMoreCreatures")
+    @Serializable
+    data object ControlMoreCreatures : CombatCondition {
+        override val description: String = "you control more creatures than"
+    }
+
+    /**
+     * The opponent controls a land of a specific basic type.
+     * Used for Deep-Sea Serpent, Slipstream Eel, etc.
+     */
+    @SerialName("OpponentControlsLandType")
+    @Serializable
+    data class OpponentControlsLandType(val landType: String) : CombatCondition {
+        override val description: String = "defending player controls ${
+            if (landType.first().lowercaseChar() in "aeiou") "an" else "a"
+        } $landType"
+    }
 }
 
 /**
- * This creature can't block unless its controller controls more creatures than
- * the attacking player. Used for Goblin Goon.
+ * This creature can't attack unless a combat condition is met.
+ * Checked at attack declaration time when the defending player is known.
  *
- * Checked at block declaration time when the attacking player is known.
- *
+ * @property condition The condition that must be met for the creature to attack
  * @property target What this ability applies to
  */
-@SerialName("CantBlockUnlessControlMoreCreatures")
+@SerialName("CantAttackUnless")
 @Serializable
-data class CantBlockUnlessControlMoreCreatures(
+data class CantAttackUnless(
+    val condition: CombatCondition,
     val target: StaticTarget = StaticTarget.SourceCreature
 ) : StaticAbility {
-    override val description: String = "can't block unless you control more creatures than attacking player"
+    override val description: String = "can't attack unless ${condition.description}"
+}
+
+/**
+ * This creature can't block unless a combat condition is met.
+ * Checked at block declaration time when the attacking player is known.
+ *
+ * @property condition The condition that must be met for the creature to block
+ * @property target What this ability applies to
+ */
+@SerialName("CantBlockUnless")
+@Serializable
+data class CantBlockUnless(
+    val condition: CombatCondition,
+    val target: StaticTarget = StaticTarget.SourceCreature
+) : StaticAbility {
+    override val description: String = "can't block unless ${condition.description}"
 }
 
 // =============================================================================
@@ -832,24 +863,6 @@ data class ModifyStatsPerSharedCreatureType(
         val toughStr = if (toughnessModPerCreature >= 0) "+$toughnessModPerCreature" else "$toughnessModPerCreature"
         append("$powerStr/$toughStr for each other creature that shares a creature type with it")
     }
-}
-
-/**
- * This creature can't attack unless defending player controls a land of a specific type.
- * Used for Deep-Sea Serpent: "can't attack unless defending player controls an Island."
- *
- * @property landType The basic land type the defending player must control
- * @property target What this ability applies to
- */
-@SerialName("CantAttackUnlessDefenderControlsLandType")
-@Serializable
-data class CantAttackUnlessDefenderControlsLandType(
-    val landType: String,
-    val target: StaticTarget = StaticTarget.SourceCreature
-) : StaticAbility {
-    override val description: String = "can't attack unless defending player controls ${
-        if (landType.first().lowercaseChar() in "aeiou") "an" else "a"
-    } $landType"
 }
 
 /**
