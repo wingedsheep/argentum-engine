@@ -798,6 +798,8 @@ Set via `staticAbility { ability = ... }`:
 - `CantAttack(target)` / `CantBlock(target)` / `MustAttack(target)`
 - `CantBlockForCreatureGroup(filter: GroupFilter)` — prevents creatures matching filter from blocking (e.g., "Beasts can't block")
 - `CantAttackUnlessDefenderControlsLandType(landType, target)`
+- `CantAttackUnlessControlMoreCreatures(target)` — can't attack unless you control more creatures than defending player
+- `CantBlockUnlessControlMoreCreatures(target)` — can't block unless you control more creatures than attacking player
 - `CantBlockCreaturesWithGreaterPower(target)`
 - `CanOnlyBlockCreaturesWithKeyword(keyword, target)`
 - `CanBlockAnyNumber(target)` — can block any number of creatures

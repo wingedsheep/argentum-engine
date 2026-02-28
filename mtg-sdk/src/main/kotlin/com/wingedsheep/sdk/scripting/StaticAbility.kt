@@ -695,6 +695,43 @@ data class CantBeBlockedUnlessDefenderSharesCreatureType(
 }
 
 // =============================================================================
+// Creature Count Attack/Block Restrictions
+// =============================================================================
+
+/**
+ * This creature can't attack unless its controller controls more creatures than
+ * the defending player. Used for Goblin Goon.
+ *
+ * Checked at attack declaration time when the defending player is known.
+ * In a 2-player game, there's only one possible defender.
+ *
+ * @property target What this ability applies to
+ */
+@SerialName("CantAttackUnlessControlMoreCreatures")
+@Serializable
+data class CantAttackUnlessControlMoreCreatures(
+    val target: StaticTarget = StaticTarget.SourceCreature
+) : StaticAbility {
+    override val description: String = "can't attack unless you control more creatures than defending player"
+}
+
+/**
+ * This creature can't block unless its controller controls more creatures than
+ * the attacking player. Used for Goblin Goon.
+ *
+ * Checked at block declaration time when the attacking player is known.
+ *
+ * @property target What this ability applies to
+ */
+@SerialName("CantBlockUnlessControlMoreCreatures")
+@Serializable
+data class CantBlockUnlessControlMoreCreatures(
+    val target: StaticTarget = StaticTarget.SourceCreature
+) : StaticAbility {
+    override val description: String = "can't block unless you control more creatures than attacking player"
+}
+
+// =============================================================================
 // Attack Restrictions
 // =============================================================================
 

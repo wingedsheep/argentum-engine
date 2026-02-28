@@ -1139,6 +1139,11 @@ class TurnManager(
                 return@any false
             }
 
+            // Check creature count attack restriction (e.g., Goblin Goon)
+            if (combatManager.hasCreatureCountAttackRestriction(state, entityId, playerId, projected)) {
+                return@any false
+            }
+
             true
         }
     }
@@ -1184,6 +1189,11 @@ class TurnManager(
 
             // Must not have defender or "can't attack"
             if (hasDefender || projected.cantAttack(entityId)) {
+                return@filter false
+            }
+
+            // Check creature count attack restriction (e.g., Goblin Goon)
+            if (combatManager.hasCreatureCountAttackRestriction(state, entityId, playerId, projected)) {
                 return@filter false
             }
 

@@ -63,6 +63,7 @@ object LegionsSet {
         BladeSliver,
         CrestedCraghorn,
         FlamewaveInvoker,
+        GoblinGoon,
         FreneticRaptor,
         GoblinFirebug,
         GoblinGrappler,
