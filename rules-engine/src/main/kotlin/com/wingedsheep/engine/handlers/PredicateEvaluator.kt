@@ -11,6 +11,8 @@ import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.identity.FaceDownComponent
 import com.wingedsheep.engine.state.components.identity.MorphDataComponent
 import com.wingedsheep.engine.state.components.identity.TokenComponent
+import com.wingedsheep.engine.state.components.stack.ActivatedAbilityOnStackComponent
+import com.wingedsheep.engine.state.components.stack.TriggeredAbilityOnStackComponent
 import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.predicates.CardPredicate
@@ -127,6 +129,14 @@ class PredicateEvaluator {
         context: PredicateContext? = null
     ): Boolean {
         val container = state.getEntity(entityId) ?: return false
+
+        // Handle stack item type predicates before CardComponent check
+        // since abilities on the stack don't have CardComponent
+        if (predicate is CardPredicate.IsActivatedOrTriggeredAbility) {
+            return container.has<ActivatedAbilityOnStackComponent>() ||
+                container.has<TriggeredAbilityOnStackComponent>()
+        }
+
         val card = container.get<CardComponent>() ?: return false
         val projectedValues = projected.getProjectedValues(entityId)
 
@@ -278,6 +288,9 @@ class PredicateEvaluator {
             is CardPredicate.Not -> {
                 !matchesCardPredicateWithProjection(state, projected, entityId, predicate.predicate, context)
             }
+
+            // Handled before CardComponent check above — unreachable here
+            CardPredicate.IsActivatedOrTriggeredAbility -> false
         }
     }
 
@@ -327,6 +340,14 @@ class PredicateEvaluator {
         context: PredicateContext? = null
     ): Boolean {
         val container = state.getEntity(entityId) ?: return false
+
+        // Handle stack item type predicates before CardComponent check
+        // since abilities on the stack don't have CardComponent
+        if (predicate is CardPredicate.IsActivatedOrTriggeredAbility) {
+            return container.has<ActivatedAbilityOnStackComponent>() ||
+                container.has<TriggeredAbilityOnStackComponent>()
+        }
+
         val card = container.get<CardComponent>() ?: return false
         val typeLine = card.typeLine
 
@@ -451,6 +472,9 @@ class PredicateEvaluator {
             is CardPredicate.Not -> {
                 !matchesCardPredicate(state, entityId, predicate.predicate, context)
             }
+
+            // Handled before CardComponent check above — unreachable here
+            CardPredicate.IsActivatedOrTriggeredAbility -> false
         }
     }
 

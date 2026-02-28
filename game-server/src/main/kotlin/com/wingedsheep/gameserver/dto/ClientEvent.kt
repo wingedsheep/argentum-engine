@@ -495,6 +495,13 @@ sealed interface ClientEvent {
     // =========================================================================
 
     @Serializable
+    @SerialName("abilityCountered")
+    data class AbilityCountered(
+        val abilityDescription: String,
+        override val description: String = "Ability was countered: $abilityDescription"
+    ) : ClientEvent
+
+    @Serializable
     @SerialName("abilityFizzled")
     data class AbilityFizzled(
         val abilityDescription: String,
@@ -849,6 +856,10 @@ is PermanentsSacrificedEvent -> {
             is LibraryShuffledEvent -> ClientEvent.LibraryShuffled(
                 playerId = event.playerId,
                 isYours = event.playerId == viewingPlayerId
+            )
+
+            is AbilityCounteredEvent -> ClientEvent.AbilityCountered(
+                abilityDescription = event.description
             )
 
             is AbilityFizzledEvent -> ClientEvent.AbilityFizzled(

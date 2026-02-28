@@ -3,12 +3,12 @@
 
 **Set Size:** 143 cards
 **Release Date:** May 26, 2003
-**Implemented:** 112 / 143
+**Implemented:** 113 / 143
 
 | Color | Count |
 |-------|-------|
 | White | 21 |
-| Blue | 18 |
+| Blue | 19 |
 | Black | 23 |
 | Red | 22 |
 | Green | 22 |
@@ -135,7 +135,7 @@
 - [x] Spark Spray
 - [ ] Sprouting Vines
 - [x] Stabilizer
-- [ ] Stifle
+- [x] Stifle
 - [x] Sulfuric Vortex
 - [x] Temple of the False God
 - [ ] Temporal Fissure

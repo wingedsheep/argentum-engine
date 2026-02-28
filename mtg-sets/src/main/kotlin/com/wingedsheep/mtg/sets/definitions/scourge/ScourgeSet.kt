@@ -91,6 +91,7 @@ object ScourgeSet {
         DispersalShield,
         LongTermPlans,
         Metamorphose,
+        Stifle,
 
         // Blue sorceries
         RushOfKnowledge,

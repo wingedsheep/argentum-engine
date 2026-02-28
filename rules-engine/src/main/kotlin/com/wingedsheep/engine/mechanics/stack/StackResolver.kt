@@ -985,6 +985,32 @@ class StackResolver(
         )
     }
 
+    /**
+     * Counter an activated or triggered ability on the stack.
+     * Unlike countering a spell, the ability is simply removed from the stack
+     * without going to any zone (abilities are not cards).
+     */
+    fun counterAbility(state: GameState, abilityId: EntityId): ExecutionResult {
+        if (abilityId !in state.stack) {
+            return ExecutionResult.error(state, "Ability not on stack: $abilityId")
+        }
+
+        val container = state.getEntity(abilityId)
+            ?: return ExecutionResult.error(state, "Ability not found: $abilityId")
+
+        val description = container.get<TriggeredAbilityOnStackComponent>()?.description
+            ?: container.get<ActivatedAbilityOnStackComponent>()?.let { "${it.sourceName}'s ability" }
+            ?: "Unknown ability"
+
+        // Remove from stack — abilities don't go to any zone
+        val newState = state.removeFromStack(abilityId)
+
+        return ExecutionResult.success(
+            newState,
+            listOf(AbilityCounteredEvent(abilityId, description))
+        )
+    }
+
     // =========================================================================
     // Target Validation
     // =========================================================================

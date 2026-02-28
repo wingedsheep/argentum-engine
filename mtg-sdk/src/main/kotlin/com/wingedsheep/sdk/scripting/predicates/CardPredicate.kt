@@ -270,6 +270,20 @@ sealed interface CardPredicate {
     }
 
     // =============================================================================
+    // Stack Item Type Predicates
+    // =============================================================================
+
+    /**
+     * Matches activated or triggered abilities on the stack (not spells).
+     * Used by cards like Stifle: "Counter target activated or triggered ability."
+     */
+    @SerialName("IsActivatedOrTriggeredAbility")
+    @Serializable
+    data object IsActivatedOrTriggeredAbility : CardPredicate {
+        override val description: String = "activated or triggered ability"
+    }
+
+    // =============================================================================
     // Composite Predicates
     // =============================================================================
 

@@ -390,6 +390,9 @@ class CostCalculator(
             is CardPredicate.And -> predicate.predicates.all { matchesCardPredicate(cardDef, it, sourceEntityId, state, projectedState) }
             is CardPredicate.Or -> predicate.predicates.any { matchesCardPredicate(cardDef, it, sourceEntityId, state, projectedState) }
             is CardPredicate.Not -> !matchesCardPredicate(cardDef, predicate.predicate, sourceEntityId, state, projectedState)
+
+            // Not applicable in cost calculation — abilities aren't cards
+            CardPredicate.IsActivatedOrTriggeredAbility -> false
         }
     }
 

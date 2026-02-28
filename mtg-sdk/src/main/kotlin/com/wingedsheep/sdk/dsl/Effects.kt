@@ -48,6 +48,7 @@ import com.wingedsheep.sdk.scripting.effects.TapUntapEffect
 import com.wingedsheep.sdk.scripting.effects.ZonePlacement
 import com.wingedsheep.sdk.scripting.effects.CreateTokenEffect
 import com.wingedsheep.sdk.scripting.effects.CreateTreasureTokensEffect
+import com.wingedsheep.sdk.scripting.effects.CounterAbilityEffect
 import com.wingedsheep.sdk.scripting.effects.CounterSpellEffect
 import com.wingedsheep.sdk.scripting.effects.CounterUnlessPaysEffect
 import com.wingedsheep.sdk.scripting.effects.CounterUnlessDynamicPaysEffect
@@ -612,6 +613,13 @@ object Effects {
      */
     fun CounterUnlessDynamicPays(amount: DynamicAmount): Effect =
         CounterUnlessDynamicPaysEffect(amount)
+
+    /**
+     * Counter target activated or triggered ability.
+     * "Counter target activated or triggered ability."
+     */
+    fun CounterAbility(): Effect =
+        CounterAbilityEffect
 
     /**
      * Change the target of a spell to another creature.

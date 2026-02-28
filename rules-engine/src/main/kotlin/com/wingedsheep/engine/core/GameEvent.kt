@@ -182,6 +182,16 @@ data class SpellCounteredEvent(
 ) : GameEvent
 
 /**
+ * An activated or triggered ability was countered.
+ */
+@Serializable
+@SerialName("AbilityCounteredEvent")
+data class AbilityCounteredEvent(
+    val abilityEntityId: EntityId,
+    val description: String
+) : GameEvent
+
+/**
  * A spell fizzled (all targets became invalid).
  */
 @Serializable

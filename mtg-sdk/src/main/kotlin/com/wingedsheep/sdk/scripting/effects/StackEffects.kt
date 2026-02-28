@@ -67,6 +67,20 @@ data class CounterUnlessDynamicPaysEffect(
 }
 
 /**
+ * Counter target activated or triggered ability.
+ * "Counter target activated or triggered ability."
+ *
+ * The countered ability is removed from the stack without resolving.
+ * Unlike countering a spell, the ability doesn't go to any zone since
+ * abilities are not cards.
+ */
+@SerialName("CounterAbility")
+@Serializable
+data object CounterAbilityEffect : Effect {
+    override val description: String = "Counter target activated or triggered ability"
+}
+
+/**
  * Change the target of a spell that has exactly one target, and that target is a creature,
  * to another creature.
  * "If target spell has only one target and that target is a creature, change that spell's target to another creature."

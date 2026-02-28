@@ -118,6 +118,7 @@ each player reveals and creates tokens
 ### Stack
 
 - `Effects.CounterSpell()`
+- `Effects.CounterAbility()` — counter target activated or triggered ability
 - `Effects.CounterUnlessPays(cost: String)` — counter unless mana paid
 - `Effects.CounterUnlessDynamicPays(amount: DynamicAmount)` — counter unless dynamic amount paid
 - `Effects.ChangeSpellTarget(targetMustBeSource = false)` — redirect a spell's target
@@ -346,6 +347,7 @@ each player reveals and creates tokens
 |----------------------------------|-------------------------------|----------------------------|
 | `CounterSpellEffect`             | (object)                      | Counter target spell       |
 | `CounterSpellWithFilterEffect`   | `filter: GameObjectFilter`    | Counter matching spell     |
+| `CounterAbilityEffect`           | (object)                      | Counter activated/triggered ability |
 | `CounterUnlessPaysEffect`        | `cost: ManaCost`              | Counter unless pays        |
 | `CounterUnlessDynamicPaysEffect` | `amount: DynamicAmount`       | Counter unless dynamic pay |
 | `ChangeSpellTargetEffect`        | `targetMustBeSource: Boolean` | Redirect spell target      |
@@ -405,6 +407,7 @@ each player reveals and creates tokens
 - `Targets.Spell` / `Targets.CreatureSpell` / `Targets.NoncreatureSpell`
 - `Targets.CreatureOrSorcerySpell`
 - `Targets.SpellWithManaValueAtMost(manaValue)`
+- `Targets.ActivatedOrTriggeredAbility`
 
 ### Composable (Targets.Unified)
 

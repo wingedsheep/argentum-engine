@@ -5,6 +5,7 @@ import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.scripting.GameObjectFilter
+import com.wingedsheep.sdk.scripting.predicates.CardPredicate
 import kotlinx.serialization.Serializable
 
 /**
@@ -170,6 +171,12 @@ data class TargetFilter(
 
         /** Target instant spell on the stack */
         val InstantSpellOnStack = TargetFilter(GameObjectFilter.Companion.Instant, zone = Zone.STACK)
+
+        /** Target activated or triggered ability on the stack */
+        val ActivatedOrTriggeredAbilityOnStack = TargetFilter(
+            GameObjectFilter(cardPredicates = listOf(CardPredicate.IsActivatedOrTriggeredAbility)),
+            zone = Zone.STACK
+        )
     }
 
     // =============================================================================

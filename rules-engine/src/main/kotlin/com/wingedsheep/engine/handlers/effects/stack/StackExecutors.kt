@@ -11,6 +11,7 @@ class StackExecutors(
     private val amountEvaluator: DynamicAmountEvaluator = DynamicAmountEvaluator()
 ) : ExecutorModule {
     override fun executors(): List<EffectExecutor<*>> = listOf(
+        CounterAbilityExecutor(),
         CounterSpellExecutor(),
         CounterSpellWithFilterExecutor(),
         CounterUnlessPaysExecutor(),

@@ -216,6 +216,13 @@ object Targets {
     fun SpellWithManaValueAtMost(manaValue: Int): TargetRequirement =
         TargetSpell(filter = TargetFilter.SpellOnStack.manaValueAtMost(manaValue))
 
+    /**
+     * Target activated or triggered ability on the stack.
+     */
+    val ActivatedOrTriggeredAbility: TargetRequirement = TargetObject(
+        filter = TargetFilter.ActivatedOrTriggeredAbilityOnStack
+    )
+
     // =========================================================================
     // Unified Target Filters (NEW - composable predicate-based targeting)
     // =========================================================================
