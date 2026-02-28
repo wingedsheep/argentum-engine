@@ -25,6 +25,7 @@ object LegionsSet {
         // White creatures
         AvenWarhawk,
         CloudreachCavalry,
+        DaruMender,
         DaruSanctifier,
         DeftbladeElite,
         GempalmAvenger,
@@ -78,6 +79,7 @@ object LegionsSet {
 
         // Green creatures
         BranchsnapLorian,
+        GempalmStrider,
         Brontotherium,
         DefiantElf,
         EnormousBaloth,
