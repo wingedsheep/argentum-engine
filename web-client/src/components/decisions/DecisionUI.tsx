@@ -773,6 +773,7 @@ function CardSelectionDecision({
   const [selectedCards, setSelectedCards] = useState<EntityId[]>([])
   const [hoveredCardId, setHoveredCardId] = useState<EntityId | null>(null)
   const [minimized, setMinimized] = useState(false)
+  const [isHoveringSource, setIsHoveringSource] = useState(false)
   const submitDecision = useGameStore((s) => s.submitDecision)
   const gameState = useGameStore((s) => s.gameState)
 
@@ -833,7 +834,6 @@ function CardSelectionDecision({
   const sourceCard = decision.context.sourceId ? gameState?.cards[decision.context.sourceId] : undefined
   const sourceCardName = decision.context.sourceName ?? sourceCard?.name
   const sourceCardImageUrl = sourceCard ? getCardImageUrl(sourceCard.name, sourceCard.imageUri) : undefined
-  const [isHoveringSource, setIsHoveringSource] = useState(false)
 
   return (
     <div className={styles.overlay}>
