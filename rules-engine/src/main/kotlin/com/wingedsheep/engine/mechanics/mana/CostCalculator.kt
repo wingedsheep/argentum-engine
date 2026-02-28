@@ -16,6 +16,7 @@ import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.scripting.CostReductionSource
 import com.wingedsheep.sdk.scripting.FaceDownSpellCostReduction
 import com.wingedsheep.sdk.scripting.GameObjectFilter
+import com.wingedsheep.sdk.scripting.IncreaseMorphCost
 import com.wingedsheep.sdk.scripting.KeywordAbility
 import com.wingedsheep.sdk.scripting.ReduceSpellCostByFilter
 import com.wingedsheep.sdk.scripting.ReduceSpellColoredCostBySubtype
@@ -442,6 +443,53 @@ class CostCalculator(
         }
 
         return reduceGenericCost(baseMorphCost, totalReduction)
+    }
+
+    /**
+     * Calculate the total morph cost increase from all IncreaseMorphCost abilities on the battlefield.
+     * Scans ALL permanents on the battlefield (not just those controlled by a specific player)
+     * since IncreaseMorphCost affects all players globally.
+     *
+     * @param state The current game state
+     * @return The total generic mana increase to apply to morph (turn face-up) costs
+     */
+    fun calculateMorphCostIncrease(state: GameState): Int {
+        var totalIncrease = 0
+
+        for (playerId in state.turnOrder) {
+            for (entityId in state.getBattlefield(playerId)) {
+                val card = state.getEntity(entityId)?.get<CardComponent>() ?: continue
+                val cardDef = cardRegistry?.getCard(card.cardDefinitionId) ?: continue
+
+                for (ability in cardDef.script.staticAbilities) {
+                    if (ability is IncreaseMorphCost) {
+                        totalIncrease += ability.amount
+                    }
+                }
+            }
+        }
+
+        return totalIncrease
+    }
+
+    /**
+     * Apply a generic mana increase to an existing ManaCost.
+     * Used to increase morph costs by adding generic mana.
+     */
+    fun increaseGenericCost(cost: ManaCost, increase: Int): ManaCost {
+        if (increase <= 0) return cost
+
+        val coloredSymbols = cost.symbols.filter { it !is ManaSymbol.Generic }
+        val currentGeneric = cost.genericAmount
+        val newGeneric = currentGeneric + increase
+
+        val newSymbols = if (newGeneric > 0) {
+            listOf(ManaSymbol.Generic(newGeneric)) + coloredSymbols
+        } else {
+            coloredSymbols
+        }
+
+        return ManaCost(newSymbols)
     }
 
     companion object {

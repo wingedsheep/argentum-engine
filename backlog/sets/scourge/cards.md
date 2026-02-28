@@ -3,11 +3,11 @@
 
 **Set Size:** 143 cards
 **Release Date:** May 26, 2003
-**Implemented:** 108 / 143
+**Implemented:** 109 / 143
 
 | Color | Count |
 |-------|-------|
-| White | 20 |
+| White | 21 |
 | Blue | 18 |
 | Black | 22 |
 | Red | 22 |
@@ -70,7 +70,7 @@
 - [x] Elvish Aberration
 - [x] Enrage
 - [x] Eternal Dragon
-- [ ] Exiled Doomsayer
+- [x] Exiled Doomsayer
 - [x] Extra Arms
 - [x] Faces of the Past
 - [x] Fatal Mutation

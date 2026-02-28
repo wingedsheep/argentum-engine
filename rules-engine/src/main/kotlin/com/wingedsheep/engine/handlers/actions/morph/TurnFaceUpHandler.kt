@@ -18,6 +18,7 @@ import com.wingedsheep.engine.handlers.actions.ActionContext
 import com.wingedsheep.engine.handlers.actions.ActionHandler
 import com.wingedsheep.engine.handlers.effects.EffectExecutorUtils
 import com.wingedsheep.engine.mechanics.layers.StateProjector
+import com.wingedsheep.engine.mechanics.mana.CostCalculator
 import com.wingedsheep.engine.mechanics.mana.ManaPool
 import com.wingedsheep.engine.mechanics.mana.ManaSolver
 import com.wingedsheep.engine.registry.CardRegistry
@@ -48,6 +49,7 @@ class TurnFaceUpHandler(
     private val cardRegistry: CardRegistry?,
     private val manaSolver: ManaSolver,
     private val costHandler: CostHandler,
+    private val costCalculator: CostCalculator,
     private val triggerDetector: TriggerDetector,
     private val triggerProcessor: TriggerProcessor,
     private val stateProjector: StateProjector
@@ -81,9 +83,11 @@ class TurnFaceUpHandler(
             ?: return "This creature cannot be turned face up (no morph cost)"
 
         // Validate cost payment based on morph cost type
+        // Apply morph cost increases from permanents like Exiled Doomsayer
+        val morphCostIncrease = costCalculator.calculateMorphCostIncrease(state)
         when (morphData.morphCost) {
             is PayCost.Mana -> {
-                val manaCost = morphData.morphCost.cost
+                val manaCost = costCalculator.increaseGenericCost(morphData.morphCost.cost, morphCostIncrease)
                 when (action.paymentStrategy) {
                     is PaymentStrategy.AutoPay -> {
                         if (!manaSolver.canPay(state, action.playerId, manaCost)) {
@@ -173,7 +177,8 @@ class TurnFaceUpHandler(
         val cardDef = cardRegistry?.getCard(morphData.originalCardDefinitionId)
         val cardName = cardDef?.name ?: cardComponent?.name ?: "Unknown"
 
-        // Pay the morph cost
+        // Pay the morph cost (including any morph cost increases)
+        val morphCostIncrease = costCalculator.calculateMorphCostIncrease(currentState)
         when (morphData.morphCost) {
             is PayCost.PayLife -> {
                 val lifeCost = morphData.morphCost.amount
@@ -186,7 +191,7 @@ class TurnFaceUpHandler(
                 events.add(LifeChangedEvent(action.playerId, currentLife, newLife, LifeChangeReason.LIFE_LOSS))
             }
             is PayCost.Mana -> {
-                val manaCost = morphData.morphCost.cost
+                val manaCost = costCalculator.increaseGenericCost(morphData.morphCost.cost, morphCostIncrease)
                 when (action.paymentStrategy) {
                     is PaymentStrategy.FromPool -> {
                         val poolComponent = currentState.getEntity(action.playerId)?.get<ManaPoolComponent>()
@@ -440,6 +445,7 @@ class TurnFaceUpHandler(
                 context.cardRegistry,
                 context.manaSolver,
                 context.costHandler,
+                context.costCalculator,
                 context.triggerDetector,
                 context.triggerProcessor,
                 context.stateProjector

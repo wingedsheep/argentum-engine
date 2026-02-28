@@ -777,17 +777,19 @@ class LegalActionsCalculator(
             val morphData = container.get<MorphDataComponent>() ?: continue
             val cardComponent = container.get<CardComponent>() ?: continue
 
-            // Check if player can afford the morph cost
+            // Check if player can afford the morph cost (including any morph cost increases)
+            val morphCostIncrease = costCalculator.calculateMorphCostIncrease(state)
             when (val cost = morphData.morphCost) {
                 is PayCost.Mana -> {
-                    if (manaSolver.canPay(state, playerId, cost.cost)) {
-                        val autoTapSolution = manaSolver.solve(state, playerId, cost.cost)
+                    val effectiveCost = costCalculator.increaseGenericCost(cost.cost, morphCostIncrease)
+                    if (manaSolver.canPay(state, playerId, effectiveCost)) {
+                        val autoTapSolution = manaSolver.solve(state, playerId, effectiveCost)
                         val autoTapPreview = autoTapSolution?.sources?.map { it.entityId }
                         result.add(LegalActionInfo(
                             actionType = "ActivateAbility",
                             description = "Turn face-up (${cost.description})",
                             action = TurnFaceUp(playerId, entityId),
-                            manaCostString = cost.cost.toString(),
+                            manaCostString = effectiveCost.toString(),
                             autoTapPreview = autoTapPreview
                         ))
                     }
