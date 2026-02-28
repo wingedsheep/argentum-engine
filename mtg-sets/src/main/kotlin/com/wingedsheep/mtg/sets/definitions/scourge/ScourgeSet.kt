@@ -125,6 +125,7 @@ object ScourgeSet {
         // White creatures
         AgelessSentinels,
         AvenFarseer,
+        EternalDragon,
         AvenLiberator,
         DaruSpiritualist,
         DaruWarchief,

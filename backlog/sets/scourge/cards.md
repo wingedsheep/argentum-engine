@@ -3,11 +3,11 @@
 
 **Set Size:** 143 cards
 **Release Date:** May 26, 2003
-**Implemented:** 104 / 143
+**Implemented:** 105 / 143
 
 | Color | Count |
 |-------|-------|
-| White | 19 |
+| White | 20 |
 | Blue | 17 |
 | Black | 20 |
 | Red | 22 |
@@ -69,7 +69,7 @@
 - [x] Edgewalker
 - [x] Elvish Aberration
 - [x] Enrage
-- [ ] Eternal Dragon
+- [x] Eternal Dragon
 - [ ] Exiled Doomsayer
 - [x] Extra Arms
 - [x] Faces of the Past
