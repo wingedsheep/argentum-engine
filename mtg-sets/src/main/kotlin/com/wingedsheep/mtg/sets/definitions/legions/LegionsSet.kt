@@ -83,5 +83,6 @@ object LegionsSet {
         PatronOfTheWild,
         StonewoodInvoker,
         TotemSpeaker,
+        WirewoodHivemaster,
     )
 }
