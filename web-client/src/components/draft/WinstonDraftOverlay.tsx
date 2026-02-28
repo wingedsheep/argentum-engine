@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback } from 'react'
+import { useState, useMemo, useCallback, useRef, useEffect } from 'react'
 import { useGameStore, type WinstonDraftState } from '../../store/gameStore'
 import type { SealedCardInfo, LobbySettings } from '../../types'
 import { useResponsive } from '../../hooks/useResponsive'
@@ -32,6 +32,33 @@ function WinstonDrafter({ winstonState, settings }: { winstonState: WinstonDraft
   const [hoverPos, setHoverPos] = useState<{ x: number; y: number } | null>(null)
   const [showPickedCards, setShowPickedCards] = useState(!responsive.isMobile)
   const [viewingOpponent, setViewingOpponent] = useState(false)
+
+  // Pick animation state
+  const [pickAnimation, setPickAnimation] = useState<{ cards: SealedCardInfo[]; phase: 'enter' | 'exit' } | null>(null)
+  const prevPickedCountRef = useRef(winstonState.pickedCards.length)
+  const wasYourTurnRef = useRef(winstonState.isYourTurn)
+
+  // Detect newly picked cards (blind pick or pile take)
+  useEffect(() => {
+    const prevCount = prevPickedCountRef.current
+    const currentCount = winstonState.pickedCards.length
+    const wasYourTurn = wasYourTurnRef.current
+
+    prevPickedCountRef.current = currentCount
+    wasYourTurnRef.current = winstonState.isYourTurn
+
+    // If we just picked cards (was our turn, count increased)
+    if (wasYourTurn && currentCount > prevCount) {
+      const newCards = winstonState.pickedCards.slice(prevCount)
+      if (newCards.length > 0) {
+        setPickAnimation({ cards: [...newCards], phase: 'enter' })
+        // Transition to exit after a short display period
+        const exitTimer = setTimeout(() => setPickAnimation((a) => a ? { ...a, phase: 'exit' } : null), 1500)
+        const clearTimer = setTimeout(() => setPickAnimation(null), 2200)
+        return () => { clearTimeout(exitTimer); clearTimeout(clearTimer) }
+      }
+    }
+  }, [winstonState.pickedCards.length, winstonState.isYourTurn])
 
   const handleHover = useCallback((card: SealedCardInfo | null, e?: React.MouseEvent) => {
     setHoveredCard(card)
@@ -503,6 +530,78 @@ function WinstonDrafter({ winstonState, settings }: { winstonState: WinstonDraft
         )}
       </div>
 
+      {/* Pick animation overlay */}
+      {pickAnimation && (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          zIndex: 160, pointerEvents: 'none',
+          background: pickAnimation.phase === 'enter'
+            ? 'rgba(0,0,0,0.4)' : 'rgba(0,0,0,0)',
+          transition: 'background 0.3s',
+        }}>
+          <div style={{
+            display: 'flex', flexDirection: 'column', alignItems: 'center',
+            gap: 16,
+            opacity: pickAnimation.phase === 'enter' ? 1 : 0,
+            transform: pickAnimation.phase === 'enter' ? 'scale(1) translateY(0)' : 'scale(0.8) translateY(30px)',
+            transition: 'opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1), transform 0.5s cubic-bezier(0.16, 1, 0.3, 1)',
+          }}>
+            <div style={{
+              fontSize: 14, fontWeight: 700, textTransform: 'uppercase',
+              letterSpacing: '0.1em',
+              color: '#4ade80',
+              textShadow: '0 0 20px rgba(74,222,128,0.5)',
+            }}>
+              {pickAnimation.cards.length === 1 ? 'Card Picked' : `${pickAnimation.cards.length} Cards Picked`}
+            </div>
+            <div style={{
+              display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap',
+            }}>
+              {pickAnimation.cards.map((card, i) => {
+                const imageUrl = getCardImageUrl(card.name, card.imageUri, 'normal')
+                return (
+                  <div key={`${card.name}-${i}`} style={{
+                    width: isMobile ? 130 : 180,
+                    borderRadius: 8,
+                    overflow: 'hidden',
+                    boxShadow: '0 0 30px rgba(74,222,128,0.4), 0 8px 32px rgba(0,0,0,0.6)',
+                    border: '2px solid rgba(74,222,128,0.6)',
+                    animation: 'pickCardAppear 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards',
+                    animationDelay: `${i * 80}ms`,
+                    opacity: 0,
+                  }}>
+                    {imageUrl ? (
+                      <img src={imageUrl} alt={card.name} style={{ width: '100%', display: 'block' }} />
+                    ) : (
+                      <div style={{
+                        background: 'linear-gradient(135deg, #2a2a4a 0%, #1a1a3a 100%)',
+                        padding: 12, minHeight: isMobile ? 180 : 250,
+                        display: 'flex', flexDirection: 'column',
+                      }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
+                          <span style={{ fontSize: 13, fontWeight: 700, color: '#fff' }}>{card.name}</span>
+                          {card.manaCost && <ManaCost cost={card.manaCost} size={12} />}
+                        </div>
+                        <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.5)', marginBottom: 6 }}>{card.typeLine}</div>
+                        {card.oracleText && (
+                          <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.7)', flex: 1 }}>{card.oracleText}</div>
+                        )}
+                        {card.power != null && card.toughness != null && (
+                          <div style={{ fontSize: 13, fontWeight: 700, color: '#fff', textAlign: 'right', marginTop: 6 }}>
+                            {card.power}/{card.toughness}
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Opponent known cards overlay */}
       {viewingOpponent && (
         <OpponentKnownCardsOverlay
@@ -523,6 +622,10 @@ function WinstonDrafter({ winstonState, settings }: { winstonState: WinstonDraft
         @keyframes pulse {
           0%, 100% { opacity: 1; }
           50% { opacity: 0.5; }
+        }
+        @keyframes pickCardAppear {
+          0% { opacity: 0; transform: scale(0.6) translateY(20px); }
+          100% { opacity: 1; transform: scale(1) translateY(0); }
         }
       `}</style>
     </div>
