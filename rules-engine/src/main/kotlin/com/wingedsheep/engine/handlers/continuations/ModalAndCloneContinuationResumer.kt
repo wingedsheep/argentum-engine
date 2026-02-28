@@ -504,6 +504,7 @@ class ModalAndCloneContinuationResumer(
         var newState = state
 
         // Add +1/+1 counters based on revealed cards
+        val revealEvents = mutableListOf<GameEvent>()
         if (revealedCards.isNotEmpty()) {
             val counterCount = revealedCards.size * continuation.countersPerReveal
             val current = newState.getEntity(spellId)
@@ -515,6 +516,24 @@ class ModalAndCloneContinuationResumer(
                     counterCount
                 ))
             }
+
+            // Emit reveal event so opponent can see the revealed cards
+            val cardNames = revealedCards.mapNotNull { cardId ->
+                newState.getEntity(cardId)?.get<CardComponent>()?.name
+            }
+            val imageUris = revealedCards.mapNotNull { cardId ->
+                newState.getEntity(cardId)?.get<CardComponent>()?.imageUri
+            }
+            val spellName = newState.getEntity(spellId)?.get<CardComponent>()?.name
+            revealEvents.add(
+                CardsRevealedEvent(
+                    revealingPlayerId = controllerId,
+                    cardIds = revealedCards,
+                    cardNames = cardNames,
+                    imageUris = imageUris,
+                    source = spellName
+                )
+            )
         }
 
         // Complete the permanent entry
@@ -533,6 +552,7 @@ class ModalAndCloneContinuationResumer(
         )
 
         val events = mutableListOf<GameEvent>()
+        events.addAll(revealEvents)
         events.add(ResolvedEvent(spellId, cardComponent.name))
         events.add(
             ZoneChangeEvent(
