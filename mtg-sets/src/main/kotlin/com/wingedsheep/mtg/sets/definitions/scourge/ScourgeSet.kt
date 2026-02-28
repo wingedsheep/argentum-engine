@@ -61,6 +61,7 @@ object ScourgeSet {
 
         // Green instants
         AcceleratedMutation,
+        DecreeOfSavagery,
         DivergentGrowth,
 
         // Green sorceries
