@@ -92,7 +92,7 @@ class SacrificeExecutor(
         val context = PredicateContext(controllerId = controllerId)
 
         return controlledPermanents.filter { permanentId ->
-            predicateEvaluator.matches(state, permanentId, effect.filter, context)
+            predicateEvaluator.matchesWithProjection(state, projected, permanentId, effect.filter, context)
         }
     }
 

@@ -83,7 +83,7 @@ class ForceSacrificeExecutor(
         val context = PredicateContext(controllerId = playerId)
 
         return controlledPermanents.filter { permanentId ->
-            predicateEvaluator.matches(state, permanentId, effect.filter, context)
+            predicateEvaluator.matchesWithProjection(state, projected, permanentId, effect.filter, context)
         }
     }
 

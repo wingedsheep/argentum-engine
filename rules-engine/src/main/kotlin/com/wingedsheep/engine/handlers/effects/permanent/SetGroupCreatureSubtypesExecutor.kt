@@ -5,6 +5,7 @@ import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.PredicateContext
 import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
+import com.wingedsheep.engine.mechanics.layers.StateProjector
 import com.wingedsheep.engine.mechanics.layers.ActiveFloatingEffect
 import com.wingedsheep.engine.mechanics.layers.FloatingEffectData
 import com.wingedsheep.engine.mechanics.layers.Layer
@@ -25,6 +26,7 @@ class SetGroupCreatureSubtypesExecutor : EffectExecutor<SetGroupCreatureSubtypes
     override val effectType: KClass<SetGroupCreatureSubtypesEffect> = SetGroupCreatureSubtypesEffect::class
 
     private val predicateEvaluator = PredicateEvaluator()
+    private val stateProjector = StateProjector()
 
     override fun execute(
         state: GameState,
@@ -35,19 +37,21 @@ class SetGroupCreatureSubtypesExecutor : EffectExecutor<SetGroupCreatureSubtypes
 
         val filter = effect.filter
         val predicateContext = PredicateContext.fromEffectContext(context)
+        val projected = stateProjector.project(state)
 
         for (entityId in state.getBattlefield()) {
             val container = state.getEntity(entityId) ?: continue
-            val cardComponent = container.get<CardComponent>() ?: continue
+            container.get<CardComponent>() ?: continue
 
             // Face-down permanents are always creatures (Rule 707.2)
-            if (!cardComponent.typeLine.isCreature && !container.has<FaceDownComponent>()) continue
+            val isCreature = projected.isCreature(entityId) || container.has<FaceDownComponent>()
+            if (!isCreature) continue
 
             // Check excludeSelf
             if (filter.excludeSelf && entityId == context.sourceId) continue
 
             // Apply unified filter
-            if (!predicateEvaluator.matches(state, entityId, filter.baseFilter, predicateContext)) {
+            if (!predicateEvaluator.matchesWithProjection(state, projected, entityId, filter.baseFilter, predicateContext)) {
                 continue
             }
 

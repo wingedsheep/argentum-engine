@@ -45,6 +45,23 @@ function getSelectionLabel(selection: SelectionType): string {
   }
 }
 
+/** Detect which row/column selection matches the removed indices */
+function detectSelection(
+  removedIndices: number[],
+  prevGrid: readonly (SealedCardInfo | null)[],
+): SelectionType | null {
+  const indexSet = new Set(removedIndices)
+  const selections: SelectionType[] = ['ROW_0', 'ROW_1', 'ROW_2', 'COL_0', 'COL_1', 'COL_2']
+  for (const sel of selections) {
+    const selIndices = getSelectionIndices(sel)
+    const selCards = selIndices.filter((i) => prevGrid[i] != null)
+    if (selCards.length > 0 && selCards.every((i) => indexSet.has(i))) {
+      return sel
+    }
+  }
+  return null
+}
+
 function GridDrafter({ gridState, settings }: { gridState: GridDraftState; settings: LobbySettings }) {
   const responsive = useResponsive()
   const gridDraftPick = useGameStore((s) => s.gridDraftPick)
@@ -68,10 +85,11 @@ function GridDrafter({ gridState, settings }: { gridState: GridDraftState; setti
     }
   }, [])
 
-  // Animation: detect when cards are picked and animate them out
-  const prevGridRef = useRef<readonly (SealedCardInfo | null)[]>(gridState.grid)
-  const prevGridNumberRef = useRef(gridState.gridNumber)
-  const gridAppearedAtRef = useRef(0)
+  // Buffered grid: decoupled from server state so we can hold the old grid
+  // while playing the pick animation before transitioning to a new grid.
+  const [displayGrid, setDisplayGrid] = useState(gridState.grid)
+  const [displayGridNumber, setDisplayGridNumber] = useState(gridState.gridNumber)
+  const prevDisplayGridRef = useRef(gridState.grid)
   const [animatingCards, setAnimatingCards] = useState<{
     indices: number[]
     cards: Map<number, SealedCardInfo>
@@ -80,82 +98,97 @@ function GridDrafter({ gridState, settings }: { gridState: GridDraftState; setti
   } | null>(null)
 
   useEffect(() => {
-    const prevGrid = prevGridRef.current
-    const newGrid = gridState.grid
-    const isNewGrid = gridState.gridNumber !== prevGridNumberRef.current
-    prevGridRef.current = newGrid
-    prevGridNumberRef.current = gridState.gridNumber
+    const isNewGrid = gridState.gridNumber !== displayGridNumber
 
-    // Record when a new grid appears so we can delay the first pick animation
-    if (isNewGrid) {
-      gridAppearedAtRef.current = Date.now()
-    }
+    if (!isNewGrid) {
+      // Same grid — update display immediately and detect picked cards
+      const prevGrid = prevDisplayGridRef.current
+      prevDisplayGridRef.current = gridState.grid
+      setDisplayGrid(gridState.grid)
 
-    // Find indices where cards disappeared (were non-null, now null)
-    const removedIndices: number[] = []
-    const removedCards = new Map<number, SealedCardInfo>()
-    for (let i = 0; i < 9; i++) {
-      const prev = prevGrid[i]
-      if (prev && !newGrid[i]) {
-        removedIndices.push(i)
-        removedCards.set(i, prev)
+      const removedIndices: number[] = []
+      const removedCards = new Map<number, SealedCardInfo>()
+      for (let i = 0; i < 9; i++) {
+        const prev = prevGrid[i]
+        if (prev && !gridState.grid[i]) {
+          removedIndices.push(i)
+          removedCards.set(i, prev)
+        }
       }
-    }
 
-    if (removedIndices.length === 0) return
+      if (removedIndices.length === 0) return
 
-    // Determine which selection was made based on the removed indices
-    const indexSet = new Set(removedIndices)
-    let detectedSelection: SelectionType | null = null
-    const selections: SelectionType[] = ['ROW_0', 'ROW_1', 'ROW_2', 'COL_0', 'COL_1', 'COL_2']
-    for (const sel of selections) {
-      const selIndices = getSelectionIndices(sel)
-      // Check if the removed indices contain all non-null cards from this selection
-      const selCards = selIndices.filter((i) => prevGrid[i] != null)
-      if (selCards.length > 0 && selCards.every((i) => indexSet.has(i))) {
-        detectedSelection = sel
-        break
-      }
-    }
+      const detectedSelection = detectSelection(removedIndices, prevGrid)
 
-    // Delay animation after a new grid so players can see the full grid first
-    const timeSinceNewGrid = Date.now() - gridAppearedAtRef.current
-    const NEW_GRID_PAUSE = 1200
-    const animDelay = timeSinceNewGrid < NEW_GRID_PAUSE
-      ? NEW_GRID_PAUSE - timeSinceNewGrid
-      : 0
-
-    const startAnimation = () => {
-      // Start highlight phase
       setAnimatingCards({
         indices: removedIndices,
         cards: removedCards,
         selection: detectedSelection,
         phase: 'highlight',
       })
+
+      const fadeTimer = setTimeout(() => {
+        setAnimatingCards((prev) => prev ? { ...prev, phase: 'fadeout' } : null)
+      }, 600)
+      const clearTimer = setTimeout(() => {
+        setAnimatingCards(null)
+      }, 1400)
+
+      return () => { clearTimeout(fadeTimer); clearTimeout(clearTimer) }
     }
 
-    const delayTimer = animDelay > 0 ? setTimeout(startAnimation, animDelay) : null
-    if (animDelay === 0) startAnimation()
-
-    // Transition to fadeout
-    const fadeTimer = setTimeout(() => {
-      setAnimatingCards((prev) =>
-        prev ? { ...prev, phase: 'fadeout' } : null,
-      )
-    }, animDelay + 600)
-
-    // Clear animation
-    const clearTimer = setTimeout(() => {
-      setAnimatingCards(null)
-    }, animDelay + 1400)
-
-    return () => {
-      if (delayTimer) clearTimeout(delayTimer)
-      clearTimeout(fadeTimer)
-      clearTimeout(clearTimer)
+    // New grid arrived — animate the last pick on the OLD grid before transitioning.
+    // Match lastPickedCards against the old display grid to find picked indices.
+    const oldGrid = prevDisplayGridRef.current
+    const lastPickedNames = new Set(gridState.lastPickedCards.map((c) => c.name))
+    const removedIndices: number[] = []
+    const removedCards = new Map<number, SealedCardInfo>()
+    for (let i = 0; i < 9; i++) {
+      const oldCard = oldGrid[i]
+      if (oldCard && lastPickedNames.has(oldCard.name)) {
+        removedIndices.push(i)
+        removedCards.set(i, oldCard)
+      }
     }
-  }, [gridState.grid, gridState.gridNumber])
+
+    // If we can identify the pick, animate it on the old grid, then transition
+    if (removedIndices.length > 0) {
+      const detectedSelection = detectSelection(removedIndices, oldGrid)
+
+      // Show old grid with picked cards removed for the animation
+      const intermediateGrid = [...oldGrid] as (SealedCardInfo | null)[]
+      for (const idx of removedIndices) {
+        intermediateGrid[idx] = null
+      }
+      setDisplayGrid(intermediateGrid)
+
+      setAnimatingCards({
+        indices: removedIndices,
+        cards: removedCards,
+        selection: detectedSelection,
+        phase: 'highlight',
+      })
+
+      const fadeTimer = setTimeout(() => {
+        setAnimatingCards((prev) => prev ? { ...prev, phase: 'fadeout' } : null)
+      }, 600)
+
+      // After animation completes, transition to the new grid
+      const transitionTimer = setTimeout(() => {
+        setAnimatingCards(null)
+        setDisplayGrid(gridState.grid)
+        setDisplayGridNumber(gridState.gridNumber)
+        prevDisplayGridRef.current = gridState.grid
+      }, 1400)
+
+      return () => { clearTimeout(fadeTimer); clearTimeout(transitionTimer) }
+    }
+
+    // No pick to animate (e.g. first grid) — show new grid immediately
+    prevDisplayGridRef.current = gridState.grid
+    setDisplayGrid(gridState.grid)
+    setDisplayGridNumber(gridState.gridNumber)
+  }, [gridState.grid, gridState.gridNumber, gridState.lastPickedCards, displayGridNumber])
 
   const timerWarning = gridState.timeRemaining <= 10
   const isMobile = responsive.isMobile
@@ -488,7 +521,7 @@ function GridDrafter({ gridState, settings }: { gridState: GridDraftState; setti
                     {/* Row cards */}
                     {[0, 1, 2].map((colIdx) => {
                       const gridIdx = rowIdx * 3 + colIdx
-                      const card = gridState.grid[gridIdx] ?? undefined
+                      const card = displayGrid[gridIdx] ?? undefined
                       const isHighlighted = highlightedIndices.has(gridIdx)
                       const animCard = animatingCards?.cards.get(gridIdx)
                       const animPhase = animatingCards?.phase ?? null

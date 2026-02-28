@@ -6,6 +6,7 @@ import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.PredicateContext
 import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
+import com.wingedsheep.engine.mechanics.layers.StateProjector
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.identity.CardComponent
@@ -42,6 +43,7 @@ class PayOrSufferExecutor(
     override val effectType: KClass<PayOrSufferEffect> = PayOrSufferEffect::class
 
     private val predicateEvaluator = PredicateEvaluator()
+    private val stateProjector = StateProjector()
 
     override fun execute(
         state: GameState,
@@ -361,10 +363,11 @@ class PayOrSufferExecutor(
         val battlefieldZone = ZoneKey(playerId, Zone.BATTLEFIELD)
         val battlefield = state.getZone(battlefieldZone)
         val context = PredicateContext(controllerId = playerId)
+        val projected = stateProjector.project(state)
 
         return battlefield.filter { permanentId ->
             if (permanentId == sourceId) return@filter false
-            predicateEvaluator.matches(state, permanentId, filter, context)
+            predicateEvaluator.matchesWithProjection(state, projected, permanentId, filter, context)
         }
     }
 

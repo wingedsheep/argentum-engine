@@ -6,6 +6,7 @@ import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.PredicateContext
 import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
+import com.wingedsheep.engine.mechanics.layers.StateProjector
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.sdk.scripting.effects.GrantActivatedAbilityToGroupEffect
@@ -22,6 +23,7 @@ class GrantActivatedAbilityToGroupExecutor : EffectExecutor<GrantActivatedAbilit
     override val effectType: KClass<GrantActivatedAbilityToGroupEffect> = GrantActivatedAbilityToGroupEffect::class
 
     private val predicateEvaluator = PredicateEvaluator()
+    private val stateProjector = StateProjector()
 
     override fun execute(
         state: GameState,
@@ -32,6 +34,7 @@ class GrantActivatedAbilityToGroupExecutor : EffectExecutor<GrantActivatedAbilit
 
         val filter = effect.filter
         val predicateContext = PredicateContext.fromEffectContext(context)
+        val projected = stateProjector.project(state)
 
         for (entityId in state.getBattlefield()) {
             val container = state.getEntity(entityId) ?: continue
@@ -41,7 +44,7 @@ class GrantActivatedAbilityToGroupExecutor : EffectExecutor<GrantActivatedAbilit
             if (filter.excludeSelf && entityId == context.sourceId) continue
 
             // Apply unified filter
-            if (!predicateEvaluator.matches(state, entityId, filter.baseFilter, predicateContext)) {
+            if (!predicateEvaluator.matchesWithProjection(state, projected, entityId, filter.baseFilter, predicateContext)) {
                 continue
             }
 

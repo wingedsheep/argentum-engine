@@ -443,7 +443,7 @@ class ChainSpellContinuationResumer(
         val predicateEvaluator = PredicateEvaluator()
         val context = PredicateContext(controllerId = controllerId)
         return controlledPermanents.filter { permanentId ->
-            predicateEvaluator.matches(state, permanentId, GameObjectFilter.Land, context)
+            predicateEvaluator.matchesWithProjection(state, projected, permanentId, GameObjectFilter.Land, context)
         }
     }
 }

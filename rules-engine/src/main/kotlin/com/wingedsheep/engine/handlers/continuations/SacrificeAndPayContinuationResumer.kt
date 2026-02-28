@@ -361,6 +361,7 @@ class SacrificeAndPayContinuationResumer(
     ): ExecutionResult {
         val predicateEvaluator = PredicateEvaluator()
         val cost = continuation.cost
+        val projected = com.wingedsheep.engine.mechanics.layers.StateProjector().project(state)
 
         // Find next player who can pay among remaining players
         for ((index, nextPlayerId) in continuation.remainingPlayers.withIndex()) {
@@ -370,7 +371,7 @@ class SacrificeAndPayContinuationResumer(
                 val context = PredicateContext(controllerId = nextPlayerId)
 
                 val validPermanents = battlefield.filter { permanentId ->
-                    predicateEvaluator.matches(state, permanentId, cost.filter, context)
+                    predicateEvaluator.matchesWithProjection(state, projected, permanentId, cost.filter, context)
                 }
 
                 if (validPermanents.size >= cost.count) {

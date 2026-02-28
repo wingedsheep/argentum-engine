@@ -328,9 +328,9 @@ class CastSpellHandler(
                         if (permId !in state.getBattlefield()) {
                             return "Sacrificed permanent is not on the battlefield: $permId"
                         }
-                        // Use unified filter
+                        // Use unified filter with projected state
                         val context = PredicateContext(controllerId = action.playerId)
-                        val matches = predicateEvaluator.matches(state, permId, additionalCost.filter, context)
+                        val matches = predicateEvaluator.matchesWithProjection(state, projected, permId, additionalCost.filter, context)
                         if (!matches) {
                             return "${permCard.name} doesn't match the required filter: $filterDesc"
                         }
@@ -354,7 +354,7 @@ class CastSpellHandler(
                         if (cardId !in zoneCards) {
                             return "Card to exile is not in your ${additionalCost.fromZone.description}"
                         }
-                        if (!predicateEvaluator.matches(state, cardId, additionalCost.filter, context)) {
+                        if (!predicateEvaluator.matchesWithProjection(state, projected, cardId, additionalCost.filter, context)) {
                             val cardName = state.getEntity(cardId)?.get<CardComponent>()?.name ?: "Card"
                             return "$cardName doesn't match the required filter: ${additionalCost.filter.description}"
                         }
@@ -378,7 +378,7 @@ class CastSpellHandler(
                         if (cardId !in zoneCards) {
                             return "Card to exile is not in your ${additionalCost.fromZone.description}"
                         }
-                        if (!predicateEvaluator.matches(state, cardId, additionalCost.filter, context)) {
+                        if (!predicateEvaluator.matchesWithProjection(state, projected, cardId, additionalCost.filter, context)) {
                             val cardName = state.getEntity(cardId)?.get<CardComponent>()?.name ?: "Card"
                             return "$cardName doesn't match the required filter: ${additionalCost.filter.description}"
                         }
