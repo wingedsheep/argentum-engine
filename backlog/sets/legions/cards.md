@@ -2,14 +2,14 @@
 
 **Set Size:** 145 cards
 **Release Date:** February 3, 2003
-**Implemented:** 47 / 145
+**Implemented:** 48 / 145
 
 | Color      | Count |
 |------------|-------|
 | White      | 9/29  |
 | Blue       | 9/29  |
 | Black      | 10/29 |
-| Red        | 9/29  |
+| Red        | 10/29 |
 | Green      | 10/29 |
 
 ---
@@ -23,7 +23,7 @@
 - [ ] Bane of the Living
 - [ ] Beacon of Destiny
 - [ ] Berserk Murlodont
-- [ ] Blade Sliver
+- [x] Blade Sliver
 - [ ] Blood Celebrant
 - [ ] Bloodstoke Howler
 - [x] Branchsnap Lorian
