@@ -3,14 +3,14 @@
 
 **Set Size:** 143 cards
 **Release Date:** May 26, 2003
-**Implemented:** 98 / 143
+**Implemented:** 99 / 143
 
 | Color | Count |
 |-------|-------|
 | White | 19 |
 | Blue | 17 |
 | Black | 19 |
-| Red | 20 |
+| Red | 21 |
 | Green | 19 |
 | Multicolor | 1 |
 | Colorless | 3 |
@@ -29,7 +29,7 @@
 - [x] Aven Liberator
 - [x] Bladewing's Thrall
 - [x] Bladewing the Risen
-- [ ] Bonethorn Valesk
+- [x] Bonethorn Valesk
 - [ ] Brain Freeze
 - [x] Break Asunder
 - [ ] Cabal Conditioning

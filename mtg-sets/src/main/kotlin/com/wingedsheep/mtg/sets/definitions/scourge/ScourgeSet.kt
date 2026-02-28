@@ -88,6 +88,7 @@ object ScourgeSet {
         RushOfKnowledge,
 
         // Red creatures
+        BonethornValesk,
         ChartoothCougar,
         DragonMage,
         DragonspeakerShaman,
