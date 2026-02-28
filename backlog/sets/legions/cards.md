@@ -2,12 +2,12 @@
 
 **Set Size:** 145 cards
 **Release Date:** February 3, 2003
-**Implemented:** 69 / 145
+**Implemented:** 70 / 145
 
 | Color      | Count |
 |------------|-------|
 | White      | 14/29 |
-| Blue       | 13/29 |
+| Blue       | 14/29 |
 | Black      | 14/29 |
 | Red        | 14/29 |
 | Green      | 14/29 |
@@ -143,7 +143,7 @@
 - [ ] Unstable Hulk
 - [ ] Vexing Beetle
 - [x] Vile Deacon
-- [ ] Voidmage Apprentice
+- [x] Voidmage Apprentice
 - [x] Wall of Deceit
 - [x] Wall of Hope
 - [ ] Warbreak Trumpeter
