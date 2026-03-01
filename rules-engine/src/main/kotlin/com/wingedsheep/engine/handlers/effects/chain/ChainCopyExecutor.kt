@@ -77,7 +77,8 @@ class ChainCopyExecutor(
         val container = state.getEntity(targetId)
             ?: return ExecutionResult.success(state)
 
-        val targetControllerId = container.get<ControllerComponent>()?.playerId
+        val projected = stateProjector.project(state)
+        val targetControllerId = projected.getController(targetId)
             ?: container.get<CardComponent>()?.ownerId
             ?: return ExecutionResult.success(state)
 
@@ -101,7 +102,8 @@ class ChainCopyExecutor(
         val container = state.getEntity(targetId)
             ?: return ExecutionResult.success(state)
 
-        val targetControllerId = container.get<ControllerComponent>()?.playerId
+        val projected = stateProjector.project(state)
+        val targetControllerId = projected.getController(targetId)
             ?: container.get<CardComponent>()?.ownerId
             ?: return ExecutionResult.success(state)
 
@@ -203,7 +205,8 @@ class ChainCopyExecutor(
         val container = state.getEntity(targetId)
             ?: return ExecutionResult.success(state)
 
-        val targetControllerId = container.get<ControllerComponent>()?.playerId
+        val projected = stateProjector.project(state)
+        val targetControllerId = projected.getController(targetId)
             ?: container.get<CardComponent>()?.ownerId
             ?: return ExecutionResult.success(state)
 

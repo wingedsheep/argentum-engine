@@ -84,6 +84,38 @@ object EffectExecutorUtils {
     }
 
     /**
+     * Remove floating effects targeting an entity that is leaving the battlefield.
+     * Per MTG Rule 400.7, a card that changes zones becomes a new object with no
+     * memory of its previous existence — all floating effects targeting it should be removed.
+     *
+     * For effects that target multiple entities, the leaving entity is removed from
+     * affectedEntities but the effect is kept alive for the remaining targets.
+     * Effects that exclusively target the leaving entity are removed entirely.
+     */
+    fun removeFloatingEffectsTargeting(state: GameState, entityId: EntityId): GameState {
+        val updatedEffects = state.floatingEffects.mapNotNull { floatingEffect ->
+            if (entityId !in floatingEffect.effect.affectedEntities) {
+                floatingEffect
+            } else {
+                val remaining = floatingEffect.effect.affectedEntities - entityId
+                if (remaining.isEmpty()) {
+                    null // Remove entirely — this effect only targeted the leaving entity
+                } else {
+                    floatingEffect.copy(
+                        effect = floatingEffect.effect.copy(affectedEntities = remaining)
+                    )
+                }
+            }
+        }
+        return if (updatedEffects.size == state.floatingEffects.size &&
+            updatedEffects.zip(state.floatingEffects).all { (a, b) -> a === b }) {
+            state // No changes
+        } else {
+            state.copy(floatingEffects = updatedEffects)
+        }
+    }
+
+    /**
      * Strip all battlefield-specific components from an entity leaving the battlefield.
      * Per MTG Rule 400.7, when an object changes zones it becomes a new object with no
      * memory of its previous existence. This removes all transient battlefield state:
@@ -419,6 +451,9 @@ object EffectExecutorUtils {
         // Remove permanent-only components
         newState = newState.updateEntity(entityId) { c -> stripBattlefieldComponents(c) }
 
+        // Remove floating effects targeting this entity (Rule 400.7)
+        newState = removeFloatingEffectsTargeting(newState, entityId)
+
         return ExecutionResult.success(
             newState,
             listOf(
@@ -466,6 +501,7 @@ object EffectExecutorUtils {
         if (currentZone.zoneType == Zone.BATTLEFIELD) {
             newState = cleanupCombatReferences(newState, entityId)
             newState = newState.updateEntity(entityId) { c -> stripBattlefieldComponents(c) }
+            newState = removeFloatingEffectsTargeting(newState, entityId)
         }
 
         // Add controller component when moving to battlefield
@@ -877,6 +913,9 @@ object EffectExecutorUtils {
 
         // Remove permanent-only components
         newState = newState.updateEntity(entityId) { c -> stripBattlefieldComponents(c) }
+
+        // Remove floating effects targeting this entity (Rule 400.7)
+        newState = removeFloatingEffectsTargeting(newState, entityId)
 
         return ExecutionResult.success(
             newState,

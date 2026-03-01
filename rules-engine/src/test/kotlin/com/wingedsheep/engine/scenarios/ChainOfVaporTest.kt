@@ -4,16 +4,24 @@ import com.wingedsheep.engine.core.YesNoDecision
 import com.wingedsheep.engine.core.YesNoResponse
 import com.wingedsheep.engine.core.SelectCardsDecision
 import com.wingedsheep.engine.core.CardsSelectedResponse
+import com.wingedsheep.engine.mechanics.layers.ActiveFloatingEffect
+import com.wingedsheep.engine.mechanics.layers.FloatingEffectData
+import com.wingedsheep.engine.mechanics.layers.Layer
+import com.wingedsheep.engine.mechanics.layers.SerializableModification
+import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
 import com.wingedsheep.mtg.sets.definitions.onslaught.cards.ChainOfVapor
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.Step
+import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.CardScript
 import com.wingedsheep.sdk.model.Deck
+import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.dsl.Effects
+import com.wingedsheep.sdk.scripting.Duration
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import com.wingedsheep.sdk.scripting.targets.TargetPermanent
@@ -241,5 +249,85 @@ class ChainOfVaporTest : FunSpec({
         // But since they have no lands on the battlefield, no chain offered
         driver.findPermanent(activePlayer, "Grizzly Bears") shouldBe null
         driver.findCardInHand(activePlayer, "Grizzly Bears") shouldNotBe null
+    }
+
+    test("Chain of Vapor on stolen creature — copy offered to controller, not owner; replayed creature controlled by owner") {
+        val driver = createDriver()
+        driver.initMirrorMatch(
+            deck = Deck.of("Island" to 20, "Forest" to 20),
+            startingLife = 20
+        )
+
+        val p1 = driver.activePlayer!!   // P1 = active player (the thief)
+        val p2 = driver.getOpponent(p1)  // P2 = owner of the creature
+
+        driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
+
+        // P2 owns a creature, but P1 has stolen it via a ChangeController floating effect
+        val bears = driver.putCreatureOnBattlefield(p2, "Grizzly Bears")
+
+        // Move the creature from P2's battlefield to P1's battlefield (simulating steal)
+        val oldState = driver.state
+        var newState = oldState.removeFromZone(ZoneKey(p2, Zone.BATTLEFIELD), bears)
+        newState = newState.addToZone(ZoneKey(p1, Zone.BATTLEFIELD), bears)
+
+        // Add a floating ChangeController effect (like Blatant Thievery)
+        val floatingEffect = ActiveFloatingEffect(
+            id = EntityId.generate(),
+            effect = FloatingEffectData(
+                layer = Layer.CONTROL,
+                modification = SerializableModification.ChangeController(p1),
+                affectedEntities = setOf(bears)
+            ),
+            duration = Duration.Permanent,
+            sourceId = null,
+            sourceName = "Blatant Thievery",
+            controllerId = p1,
+            timestamp = newState.timestamp
+        )
+        newState = newState.copy(floatingEffects = newState.floatingEffects + floatingEffect)
+        driver.replaceState(newState)
+
+        // Give P1 a land so the chain copy offer is possible
+        driver.putLandOnBattlefield(p1, "Forest")
+
+        // Put another nonland permanent on P1's battlefield so there's a valid copy target
+        driver.putCreatureOnBattlefield(p1, "Centaur Courser")
+
+        // P1 passes priority so P2 can cast an instant
+        driver.passPriority(p1)
+
+        // P2 casts Chain of Vapor targeting the stolen creature (currently on P1's battlefield)
+        val chain = driver.putCardInHand(p2, "Chain of Vapor")
+        driver.giveMana(p2, Color.BLUE, 1)
+
+        val castResult = driver.castSpell(p2, chain, listOf(bears))
+        castResult.isSuccess shouldBe true
+
+        driver.bothPass()
+
+        // The creature is bounced to P2's hand (the owner)
+        driver.findCardInHand(p2, "Grizzly Bears") shouldNotBe null
+
+        // The chain copy offer should go to P1 (the controller/thief), not P2 (the owner)
+        driver.isPaused shouldBe true
+        val decision = driver.pendingDecision
+        decision.shouldBeInstanceOf<YesNoDecision>()
+        decision.playerId shouldBe p1  // Bug 1 fix: copy offered to controller
+
+        // P1 declines the copy
+        driver.submitDecision(p1, YesNoResponse(decision.id, false))
+
+        // Verify the floating ChangeController effect was cleaned up (Rule 400.7)
+        val remainingControlEffects = driver.state.floatingEffects.filter { fe ->
+            fe.effect.modification is SerializableModification.ChangeController &&
+                bears in fe.effect.affectedEntities
+        }
+        remainingControlEffects.size shouldBe 0
+
+        // P2 replays the creature — it should be under P2's control (no lingering steal effect)
+        val replayedBears = driver.putCreatureOnBattlefield(p2, "Grizzly Bears")
+        driver.findPermanent(p2, "Grizzly Bears") shouldNotBe null
+        driver.getController(replayedBears) shouldBe p2  // Bug 2 fix: no lingering control effect
     }
 })
