@@ -2,11 +2,11 @@
 
 **Set Size:** 145 cards
 **Release Date:** February 3, 2003
-**Implemented:** 97 / 145
+**Implemented:** 98 / 145
 
 | Color      | Count |
 |------------|-------|
-| White      | 19/29 |
+| White      | 20/29 |
 | Blue       | 19/29 |
 | Black      | 20/29 |
 | Red        | 20/29 |
@@ -18,7 +18,7 @@
 - [x] Akroma's Devoted
 - [x] Aphetto Exterminator
 - [x] Aven Envoy
-- [ ] Aven Redeemer
+- [x] Aven Redeemer
 - [x] Aven Warhawk
 - [ ] Bane of the Living
 - [ ] Beacon of Destiny
