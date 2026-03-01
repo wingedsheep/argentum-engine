@@ -35,6 +35,7 @@ object LegionsSet {
         PlatedSliver,
         StarlightInvoker,
         StoicChampion,
+        SwoopingTalon,
         WallOfHope,
         WhiteKnight,
         WingbeatWarrior,

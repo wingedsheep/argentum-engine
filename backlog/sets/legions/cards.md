@@ -2,11 +2,11 @@
 
 **Set Size:** 145 cards
 **Release Date:** February 3, 2003
-**Implemented:** 78 / 145
+**Implemented:** 79 / 145
 
 | Color      | Count |
 |------------|-------|
-| White      | 15/29 |
+| White      | 16/29 |
 | Blue       | 15/29 |
 | Black      | 16/29 |
 | Red        | 16/29 |
@@ -134,7 +134,7 @@
 - [x] Stoic Champion
 - [x] Stonewood Invoker
 - [ ] Sunstrike Legionnaire
-- [ ] Swooping Talon
+- [x] Swooping Talon
 - [ ] Synapse Sliver
 - [ ] Timberwatch Elf
 - [x] Totem Speaker
