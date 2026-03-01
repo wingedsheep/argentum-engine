@@ -47,6 +47,7 @@ object KhansOfTarkirSet {
         BitterRevelation,
         DebilitatingInjury,
         Despise,
+        DutifulReturn,
         Throttle,
 
         // Green creatures
@@ -59,6 +60,7 @@ object KhansOfTarkirSet {
         FeedTheClan,
 
         // Red creatures
+        CanyonLurkers,
         LeapingMaster,
         MonasterySwiftspear,
         SummitProwler,
