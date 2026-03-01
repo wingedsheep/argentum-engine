@@ -59,7 +59,8 @@ data class GridGroup(
     var activePlayerIndex: Int = 0,
     val playerOrder: List<EntityId>,
     var picksThisGrid: Int = 0,
-    var gridNumber: Int = 0
+    var gridNumber: Int = 0,
+    var gridStarterIndex: Int = 0
 )
 
 /**
@@ -934,8 +935,9 @@ class TournamentLobby(
         }
 
         if (group.picksThisGrid >= picksPerGrid) {
-            // Grid exhausted — advance active player index for next grid's starting picker
-            group.activePlayerIndex = (group.activePlayerIndex + 1) % group.playerOrder.size
+            // Grid exhausted — advance starting picker for the next grid
+            group.gridStarterIndex = (group.gridStarterIndex + 1) % group.playerOrder.size
+            group.activePlayerIndex = group.gridStarterIndex
 
             if (group.mainDeck.isEmpty()) {
                 // Check if ALL groups are complete
