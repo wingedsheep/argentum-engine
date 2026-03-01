@@ -2,13 +2,13 @@
 
 **Set Size:** 269 cards (249 unique card names + basic land variants)
 **Release Date:** September 26, 2014
-**Implemented:** 52 / 249
+**Implemented:** 53 / 249
 
 | Color      | Count |
 |------------|-------|
 | White      | 8     |
 | Blue       | 8     |
-| Black      | 7     |
+| Black      | 8     |
 | Red        | 8     |
 | Green      | 8     |
 | Multicolor | 7     |
@@ -244,7 +244,7 @@
 - [ ] Tusked Colossodon
 - [ ] Tuskguard Captain
 - [ ] Ugin's Nexus
-- [ ] Unyielding Krumar
+- [x] Unyielding Krumar
 - [x] Utter End
 - [x] Valley Dasher
 - [ ] Venerable Lammasu

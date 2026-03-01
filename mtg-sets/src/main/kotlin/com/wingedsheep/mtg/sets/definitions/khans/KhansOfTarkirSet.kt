@@ -48,6 +48,7 @@ object KhansOfTarkirSet {
         // Black creatures
         BellowingSaddlebrute,
         GurmagSwiftwing,
+        UnyieldingKrumar,
 
         // Black spells
         BitterRevelation,
