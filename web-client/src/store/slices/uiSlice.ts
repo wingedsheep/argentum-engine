@@ -688,6 +688,13 @@ export const createUISlice: SliceCreator<UISlice> = (set, get) => ({
       } else {
         getWebSocket()?.send(createSubmitActionMessage(actionWithX))
       }
+    } else if (actionInfo.action.type === 'TurnFaceUp') {
+      const baseAction = actionInfo.action
+      const actionWithX = {
+        ...baseAction,
+        xValue: selectedX,
+      }
+      getWebSocket()?.send(createSubmitActionMessage(actionWithX))
     }
 
     set({ xSelectionState: null })

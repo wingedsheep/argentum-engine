@@ -795,7 +795,21 @@ class LegalActionsCalculator(
             when (val cost = morphData.morphCost) {
                 is PayCost.Mana -> {
                     val effectiveCost = costCalculator.increaseGenericCost(cost.cost, morphCostIncrease)
-                    if (manaSolver.canPay(state, playerId, effectiveCost)) {
+                    if (effectiveCost.hasX) {
+                        // X morph cost (e.g., {X}{X}{R}) — always show as available with X selection
+                        val availableSources = manaSolver.getAvailableManaCount(state, playerId)
+                        val fixedCost = effectiveCost.cmc  // X contributes 0 to CMC
+                        val xSymbolCount = effectiveCost.xCount.coerceAtLeast(1)
+                        val maxX = ((availableSources - fixedCost) / xSymbolCount).coerceAtLeast(0)
+                        result.add(LegalActionInfo(
+                            actionType = "TurnFaceUp",
+                            description = "Turn face-up (${cost.description})",
+                            action = TurnFaceUp(playerId, entityId),
+                            manaCostString = effectiveCost.toString(),
+                            hasXCost = true,
+                            maxAffordableX = maxX
+                        ))
+                    } else if (manaSolver.canPay(state, playerId, effectiveCost)) {
                         val autoTapSolution = manaSolver.solve(state, playerId, effectiveCost)
                         val autoTapPreview = autoTapSolution?.sources?.map { it.entityId }
                         result.add(LegalActionInfo(

@@ -340,5 +340,6 @@ data class TurnFaceUp(
     override val playerId: EntityId,
     val sourceId: EntityId,
     val paymentStrategy: PaymentStrategy = PaymentStrategy.AutoPay,
-    val costTargetIds: List<EntityId> = emptyList()
+    val costTargetIds: List<EntityId> = emptyList(),
+    val xValue: Int? = null
 ) : GameAction

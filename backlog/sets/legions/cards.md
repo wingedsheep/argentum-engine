@@ -2,14 +2,14 @@
 
 **Set Size:** 145 cards
 **Release Date:** February 3, 2003
-**Implemented:** 96 / 145
+**Implemented:** 97 / 145
 
 | Color      | Count |
 |------------|-------|
 | White      | 19/29 |
 | Blue       | 19/29 |
 | Black      | 20/29 |
-| Red        | 19/29 |
+| Red        | 20/29 |
 | Green      | 19/29 |
 
 ---
@@ -146,7 +146,7 @@
 - [x] Voidmage Apprentice
 - [x] Wall of Deceit
 - [x] Wall of Hope
-- [ ] Warbreak Trumpeter
+- [x] Warbreak Trumpeter
 - [ ] Ward Sliver
 - [x] Warped Researcher
 - [ ] Weaver of Lies
