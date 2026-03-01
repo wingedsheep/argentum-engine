@@ -221,6 +221,7 @@ each player reveals and creates tokens
 | `ExileAndReplaceWithTokenEffect`            | `target, tokenPower/Toughness/Colors/Types/Keywords`  | Exile + token            |
 | `SeparatePermanentsIntoPilesEffect`         | `target`                                              | Separate into piles      |
 | `DestroyAtEndOfCombatEffect`                | `target`                                              | Destroy at end of combat |
+| `SacrificeAtEndOfCombatEffect`              | `target`                                              | Sacrifice at end of combat |
 | `DestroyAllSharingTypeWithSacrificedEffect` | `noRegenerate`                                        | Destroy all sharing type |
 | `HarshMercyEffect`                          | (object)                                              | Harsh Mercy              |
 | `PatriarchsBiddingEffect`                   | (object)                                              | Patriarch's Bidding      |

@@ -250,6 +250,49 @@ class ElvishGuidanceTest : FunSpec({
         solution.sources.size shouldBe 1
     }
 
+    test("Auto-tap with Elvish Guidance leaves bonus mana in pool") {
+        val driver = createDriver()
+        driver.initMirrorMatch(
+            deck = Deck.of("Forest" to 40),
+            startingLife = 20
+        )
+
+        val activePlayer = driver.activePlayer!!
+        driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
+
+        // 3 Forests, one with Elvish Guidance, 3 Elves already on battlefield
+        val forest1 = driver.putPermanentOnBattlefield(activePlayer, "Forest")
+        driver.putPermanentOnBattlefield(activePlayer, "Forest")
+        driver.putPermanentOnBattlefield(activePlayer, "Forest")
+        driver.putCreatureOnBattlefield(activePlayer, "Test Elf")
+        driver.putCreatureOnBattlefield(activePlayer, "Test Elf")
+        driver.putCreatureOnBattlefield(activePlayer, "Test Elf")
+
+        val guidance = driver.putCardInHand(activePlayer, "Elvish Guidance")
+        driver.giveMana(activePlayer, Color.GREEN, 3)
+        driver.castSpell(activePlayer, guidance, listOf(forest1))
+        driver.bothPass()
+
+        // Mana pool should be empty after casting Elvish Guidance ({2}{G})
+        val poolBefore = driver.state.getEntity(activePlayer)?.get<ManaPoolComponent>()!!
+        poolBefore.green shouldBe 0
+
+        // Now cast Test Elf ({G}) using auto-tap.
+        // Available: 3 Forests (one enchanted with 3 Elves = 1G + 3G bonus = 4G)
+        // Total available = 4G + 1G + 1G = 6G
+        // Cost = {G}
+        // Solver should tap just 1 source (enchanted forest gives 4G for cost of 1G)
+        // Remaining in pool: 3G bonus mana
+        val elf = driver.putCardInHand(activePlayer, "Test Elf")
+        val result = driver.castSpell(activePlayer, elf)
+        result.isSuccess shouldBe true
+        driver.bothPass()
+
+        // After casting Test Elf ({G}), the bonus mana should remain in the pool
+        val poolAfter = driver.state.getEntity(activePlayer)?.get<ManaPoolComponent>()!!
+        poolAfter.green shouldBe 3
+    }
+
     test("ManaSolver getAvailableManaCount includes bonus mana") {
         val driver = createDriver()
         driver.initMirrorMatch(

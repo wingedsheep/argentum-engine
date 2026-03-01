@@ -12,6 +12,7 @@ class CombatExecutors(
 ) : ExecutorModule {
     override fun executors(): List<EffectExecutor<*>> = listOf(
         DestroyAtEndOfCombatExecutor(),
+        SacrificeAtEndOfCombatExecutor(),
         MustBeBlockedExecutor(),
         ProvokeExecutor(),
         PreventDamageFromAttackingCreaturesExecutor(),
