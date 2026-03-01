@@ -38,6 +38,7 @@ object KhansOfTarkirSet {
         JeskaiWindscout,
         MonasteryFlock,
         MysticOfTheHiddenWay,
+        Scaldkin,
         WetlandSambar,
         WhirlwindAdept,
 
@@ -51,6 +52,7 @@ object KhansOfTarkirSet {
         BellowingSaddlebrute,
         GurmagSwiftwing,
         RottingMastodon,
+        SultaiScavenger,
         UnyieldingKrumar,
 
         // Black spells
@@ -64,6 +66,7 @@ object KhansOfTarkirSet {
         AlpineGrizzly,
         HeirOfTheWilds,
         HighlandGame,
+        HootingMandrills,
         TuskedColossodon,
         WoollyLoxodon,
 
