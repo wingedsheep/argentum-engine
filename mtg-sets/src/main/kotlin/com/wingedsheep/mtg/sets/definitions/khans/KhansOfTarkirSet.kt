@@ -52,6 +52,7 @@ object KhansOfTarkirSet {
         BellowingSaddlebrute,
         GurmagSwiftwing,
         RottingMastodon,
+        SultaiScavenger,
         UnyieldingKrumar,
 
         // Black spells
