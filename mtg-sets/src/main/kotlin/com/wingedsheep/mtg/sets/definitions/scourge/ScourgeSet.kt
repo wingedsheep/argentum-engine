@@ -160,6 +160,7 @@ object ScourgeSet {
         DecreeOfJustice,
 
         // White instants
+        AstralSteel,
         GildedLight,
         RainOfBlades,
         Recuperate,

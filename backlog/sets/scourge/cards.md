@@ -3,11 +3,11 @@
 
 **Set Size:** 143 cards
 **Release Date:** May 26, 2003
-**Implemented:** 128 / 143
+**Implemented:** 129 / 143
 
 | Color | Count |
 |-------|-------|
-| White | 24 |
+| White | 25 |
 | Blue | 23 |
 | Black | 26 |
 | Red | 24 |
@@ -24,7 +24,7 @@
 - [x] Ancient Ooze
 - [x] Aphetto Runecaster
 - [x] Ark of Blight
-- [ ] Astral Steel
+- [x] Astral Steel
 - [x] Aven Farseer
 - [x] Aven Liberator
 - [x] Bladewing's Thrall
