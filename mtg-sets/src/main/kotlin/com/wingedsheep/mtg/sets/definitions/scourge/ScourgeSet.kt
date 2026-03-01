@@ -99,6 +99,7 @@ object ScourgeSet {
 
         // Blue sorceries
         RushOfKnowledge,
+        TemporalFissure,
 
         // Red creatures
         BonethornValesk,

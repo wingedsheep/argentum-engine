@@ -3,12 +3,12 @@
 
 **Set Size:** 143 cards
 **Release Date:** May 26, 2003
-**Implemented:** 122 / 143
+**Implemented:** 123 / 143
 
 | Color | Count |
 |-------|-------|
 | White | 23 |
-| Blue | 22 |
+| Blue | 23 |
 | Black | 25 |
 | Red | 23 |
 | Green | 23 |
@@ -138,7 +138,7 @@
 - [x] Stifle
 - [x] Sulfuric Vortex
 - [x] Temple of the False God
-- [ ] Temporal Fissure
+- [x] Temporal Fissure
 - [ ] Tendrils of Agony
 - [x] Thundercloud Elemental
 - [x] Titanic Bulvox
