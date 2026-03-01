@@ -38,10 +38,12 @@ object KhansOfTarkirSet {
         WhirlwindAdept,
 
         // Blue spells
+        CripplingChill,
         DisdainfulStroke,
         WeaveFate,
 
         // Black creatures
+        BellowingSaddlebrute,
         GurmagSwiftwing,
 
         // Black spells
@@ -53,6 +55,7 @@ object KhansOfTarkirSet {
 
         // Green creatures
         AlpineGrizzly,
+        HeirOfTheWilds,
         HighlandGame,
         WoollyLoxodon,
 

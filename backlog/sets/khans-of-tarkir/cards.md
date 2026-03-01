@@ -2,15 +2,15 @@
 
 **Set Size:** 269 cards (249 unique card names + basic land variants)
 **Release Date:** September 26, 2014
-**Implemented:** 39 / 249
+**Implemented:** 42 / 249
 
 | Color      | Count |
 |------------|-------|
 | White      | 6     |
-| Blue       | 6     |
-| Black      | 6     |
+| Blue       | 7     |
+| Black      | 7     |
 | Red        | 6     |
-| Green      | 5     |
+| Green      | 6     |
 | Multicolor | 4     |
 | Colorless  | 3     |
 | Land       | 3     |
@@ -42,7 +42,7 @@
 - [ ] Barrage of Boulders
 - [ ] Bear's Companion
 - [ ] Become Immense
-- [ ] Bellowing Saddlebrute
+- [x] Bellowing Saddlebrute
 - [x] Bitter Revelation
 - [ ] Blinding Spray
 - [ ] Bloodfell Caves
@@ -64,7 +64,7 @@
 - [ ] Crackling Doom
 - [ ] Cranial Archive
 - [ ] Crater's Claws
-- [ ] Crippling Chill
+- [x] Crippling Chill
 - [ ] Dazzling Ramparts
 - [ ] Dead Drop
 - [ ] Death Frenzy
@@ -102,7 +102,7 @@
 - [x] Gurmag Swiftwing
 - [ ] Hardened Scales
 - [ ] Heart-Piercer Bow
-- [ ] Heir of the Wilds
+- [x] Heir of the Wilds
 - [ ] Herald of Anafenza
 - [x] Highland Game
 - [ ] High Sentinels of Arashin
