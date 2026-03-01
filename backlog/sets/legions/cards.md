@@ -2,7 +2,7 @@
 
 **Set Size:** 145 cards
 **Release Date:** February 3, 2003
-**Implemented:** 98 / 145
+**Implemented:** 99 / 145
 
 | Color      | Count |
 |------------|-------|
@@ -10,7 +10,7 @@
 | Blue       | 19/29 |
 | Black      | 20/29 |
 | Red        | 20/29 |
-| Green      | 19/29 |
+| Green      | 20/29 |
 
 ---
 
@@ -155,7 +155,7 @@
 - [x] Willbender
 - [x] Windborn Muse
 - [x] Wingbeat Warrior
-- [ ] Wirewood Channeler
+- [x] Wirewood Channeler
 - [x] Wirewood Hivemaster
 - [x] Withered Wretch
 - [x] Zombie Brute

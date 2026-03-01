@@ -128,6 +128,7 @@ object LegionsSet {
         TimberwatchElf,
         TotemSpeaker,
         VexingBeetle,
+        WirewoodChanneler,
         WirewoodHivemaster,
     )
 }
