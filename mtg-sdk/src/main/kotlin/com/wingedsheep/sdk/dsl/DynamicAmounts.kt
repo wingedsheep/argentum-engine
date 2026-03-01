@@ -154,4 +154,11 @@ object DynamicAmounts {
 
     fun damageDealtToTargetPlayerThisTurn(targetIndex: Int = 0): DynamicAmount =
         DynamicAmount.DamageDealtToTargetPlayerThisTurn(targetIndex)
+
+    // =========================================================================
+    // Combat-based values
+    // =========================================================================
+
+    fun numberOfBlockers(): DynamicAmount =
+        DynamicAmount.NumberOfBlockers
 }

@@ -17,6 +17,8 @@ import com.wingedsheep.engine.core.ZoneChangeEvent
 import com.wingedsheep.engine.core.GameEvent as EngineGameEvent
 import com.wingedsheep.engine.handlers.ConditionEvaluator
 import com.wingedsheep.engine.handlers.EffectContext
+import com.wingedsheep.engine.handlers.PredicateContext
+import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.mechanics.layers.ProjectedState
 import com.wingedsheep.engine.mechanics.layers.StateProjector
 import com.wingedsheep.engine.mechanics.text.SubtypeReplacer
@@ -50,7 +52,8 @@ class TriggerDetector(
     private val cardRegistry: CardRegistry? = null,
     private val abilityRegistry: AbilityRegistry = AbilityRegistry(),
     private val stateProjector: StateProjector = StateProjector(),
-    private val conditionEvaluator: ConditionEvaluator = ConditionEvaluator()
+    private val conditionEvaluator: ConditionEvaluator = ConditionEvaluator(),
+    private val predicateEvaluator: PredicateEvaluator = PredicateEvaluator()
 ) {
 
     /**
@@ -324,22 +327,42 @@ class TriggerDetector(
                         }
                     }
                     // For "whenever a creature you control becomes blocked" (BecomesBlockedEvent with ANY binding),
-                    // create one trigger per blocked creature controlled by the ability's controller
+                    // create one trigger per blocked creature controlled by the ability's controller.
+                    // If a filter is set (e.g., "whenever a Beast becomes blocked"), match any blocked
+                    // creature matching the filter regardless of controller.
                     else if (ability.trigger is GameEvent.BecomesBlockedEvent && ability.binding == TriggerBinding.ANY &&
                         event is BlockersDeclaredEvent) {
+                        val trigger = ability.trigger as GameEvent.BecomesBlockedEvent
+                        val creatureFilter = trigger.filter
                         val blockedAttackers = event.blockers.values.flatten().distinct()
                         for (attackerId in blockedAttackers) {
-                            val attackerController = projected.getController(attackerId)
-                            if (attackerController == controllerId) {
-                                triggers.add(
-                                    PendingTrigger(
-                                        ability = ability,
-                                        sourceId = entityId,
-                                        sourceName = cardComponent.name,
-                                        controllerId = controllerId,
-                                        triggerContext = TriggerContext(triggeringEntityId = attackerId)
+                            if (creatureFilter != null) {
+                                // Filtered trigger: match any creature matching the filter (any controller)
+                                if (predicateEvaluator.matchesWithProjection(state, projected, attackerId, creatureFilter, PredicateContext(controllerId = controllerId, sourceId = entityId))) {
+                                    triggers.add(
+                                        PendingTrigger(
+                                            ability = ability,
+                                            sourceId = entityId,
+                                            sourceName = cardComponent.name,
+                                            controllerId = controllerId,
+                                            triggerContext = TriggerContext(triggeringEntityId = attackerId)
+                                        )
                                     )
-                                )
+                                }
+                            } else {
+                                // Unfiltered trigger: only creatures controlled by the ability's controller
+                                val attackerController = projected.getController(attackerId)
+                                if (attackerController == controllerId) {
+                                    triggers.add(
+                                        PendingTrigger(
+                                            ability = ability,
+                                            sourceId = entityId,
+                                            sourceName = cardComponent.name,
+                                            controllerId = controllerId,
+                                            triggerContext = TriggerContext(triggeringEntityId = attackerId)
+                                        )
+                                    )
+                                }
                             }
                         }
                     } else {

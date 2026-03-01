@@ -444,7 +444,7 @@ each player reveals and creates tokens
 ### Combat
 
 - `Triggers.Attacks` / `Triggers.AnyAttacks` / `Triggers.YouAttack`
-- `Triggers.Blocks` / `Triggers.BecomesBlocked` / `Triggers.CreatureYouControlBecomesBlocked`
+- `Triggers.Blocks` / `Triggers.BecomesBlocked` / `Triggers.CreatureYouControlBecomesBlocked` / `Triggers.FilteredBecomesBlocked(filter: GameObjectFilter)` — any creature matching filter becomes blocked (any controller)
 - `Triggers.BecomesTarget` / `Triggers.BecomesTarget(filter: GameObjectFilter)` — when a permanent becomes target of spell/ability
 - `Triggers.DealsDamage` / `Triggers.DealsCombatDamage`
 - `Triggers.DealsCombatDamageToPlayer` / `Triggers.DealsCombatDamageToCreature`
@@ -620,6 +620,7 @@ each player reveals and creates tokens
 - `DynamicAmount.ColorsAmongPermanentsYouControl` / `.CardTypesInAllGraveyards`
 - `DynamicAmount.CountersOnSelf(counterType)` / `.CountersOnTarget(counterType, targetIndex)` / `.CreaturesSharingTypeWithTriggeringEntity`
 - `DynamicAmount.VariableReference(variableName)` / `.StoredCardManaValue(collectionName)` / `.AdditionalCostExiledCount`
+- `DynamicAmount.NumberOfBlockers` / `DynamicAmounts.numberOfBlockers()` — number of creatures blocking the triggering entity
 - `DynamicAmount.DamageDealtToTargetPlayerThisTurn(targetIndex)` — total damage dealt to a target player this turn
 - `DynamicAmount.Count(player, zone, filter)` /
   `DynamicAmount.AggregateBattlefield(player, filter, aggregation?, property?, excludeSelf?)`
@@ -1010,7 +1011,7 @@ Used in `OptionalCostEffect`, `MayPayManaEffect`, `AnyPlayerMayPayEffect`, `PayO
 - `CounterPlacementEvent(counterType, recipient)` / `TokenCreationEvent(controller, tokenFilter?)`
 - `DrawEvent(player)` / `LifeGainEvent(player)` / `LifeLossEvent(player)`
 - `DiscardEvent(player, cardFilter?)` / `SearchLibraryEvent(player)`
-- `AttackEvent` / `YouAttackEvent(minAttackers)` / `BlockEvent` / `BecomesBlockedEvent`
+- `AttackEvent` / `YouAttackEvent(minAttackers)` / `BlockEvent` / `BecomesBlockedEvent(filter: GameObjectFilter? = null)`
 - `BecomesTargetEvent(targetFilter)` — when a permanent becomes the target of a spell or ability
 - `StepEvent(step, player)` / `EnchantedCreatureControllerStepEvent(step)` / `EnchantedCreatureTurnedFaceUpEvent` / `EnchantedPermanentBecomesTappedEvent`
 - `SpellCastEvent(spellType, manaValueAtLeast?, manaValueAtMost?, manaValueEquals?, player)`

@@ -246,6 +246,15 @@ class DynamicAmountEvaluator(
                     ?.amount ?: 0
             }
 
+            is DynamicAmount.NumberOfBlockers -> {
+                // Count how many creatures are blocking the triggering entity
+                val triggeringId = context.triggeringEntityId ?: return 0
+                val blockedComponent = state.getEntity(triggeringId)
+                    ?.get<com.wingedsheep.engine.state.components.combat.BlockedComponent>()
+                    ?: return 0
+                blockedComponent.blockerIds.size
+            }
+
             is DynamicAmount.CreaturesSharingTypeWithTriggeringEntity -> {
                 val triggeringId = context.triggeringEntityId ?: return 0
                 // Get the triggering creature's subtypes from projected state

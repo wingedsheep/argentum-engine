@@ -305,12 +305,21 @@ sealed interface GameEvent {
     /**
      * When a creature becomes blocked.
      * Binding SELF = "when this creature becomes blocked",
-     * ANY = "whenever a creature you control becomes blocked".
+     * ANY = "whenever a creature you control becomes blocked" (filter=null),
+     * ANY + filter = "whenever a [filter] becomes blocked" (any controller).
      */
     @SerialName("BecomesBlockedEvent")
     @Serializable
-    data object BecomesBlockedEvent : GameEvent {
-        override val description: String = "a creature becomes blocked"
+    data class BecomesBlockedEvent(
+        val filter: GameObjectFilter? = null
+    ) : GameEvent {
+        override val description: String = buildString {
+            if (filter != null) {
+                append("a ${filter.description} becomes blocked")
+            } else {
+                append("a creature becomes blocked")
+            }
+        }
     }
 
     // ---- Damage Triggers ----
