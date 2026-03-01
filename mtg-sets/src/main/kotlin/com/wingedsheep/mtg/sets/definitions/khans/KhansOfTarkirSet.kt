@@ -59,6 +59,7 @@ object KhansOfTarkirSet {
         FeedTheClan,
 
         // Red creatures
+        CanyonLurkers,
         LeapingMaster,
         MonasterySwiftspear,
         SummitProwler,
