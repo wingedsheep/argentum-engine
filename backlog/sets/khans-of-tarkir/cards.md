@@ -2,7 +2,7 @@
 
 **Set Size:** 269 cards (249 unique card names + basic land variants)
 **Release Date:** September 26, 2014
-**Implemented:** 45 / 249
+**Implemented:** 46 / 249
 
 | Color      | Count |
 |------------|-------|
@@ -11,7 +11,7 @@
 | Black      | 7     |
 | Red        | 7     |
 | Green      | 7     |
-| Multicolor | 4     |
+| Multicolor | 5     |
 | Colorless  | 3     |
 | Land       | 3     |
 
@@ -166,7 +166,7 @@
 - [ ] Pearl Lake Ancient
 - [ ] Pine Walker
 - [ ] Polluted Delta
-- [ ] Ponyback Brigade
+- [x] Ponyback Brigade
 - [ ] Quiet Contemplation
 - [ ] Raiders' Spoils
 - [ ] Rakshasa Deathdealer
