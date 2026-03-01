@@ -210,6 +210,23 @@ function DeckBuilder({ state }: { state: DeckBuildingState }) {
     return getCreatureSubtypes(state.cardPool)
   }, [state.cardPool])
 
+  // Pool-level color distribution (mana symbol counts across entire card pool)
+  const poolColorDistribution = useMemo(() => {
+    const symbols: Record<string, number> = { W: 0, U: 0, B: 0, R: 0, G: 0 }
+    for (const card of state.cardPool) {
+      const cost = card.manaCost || ''
+      const matches = cost.match(/\{([^}]+)\}/g) || []
+      for (const match of matches) {
+        const inner = match.slice(1, -1)
+        if (inner in symbols) {
+          symbols[inner] = (symbols[inner] ?? 0) + 1
+        }
+      }
+    }
+    const total = Object.values(symbols).reduce((a, b) => a + b, 0)
+    return { symbols, total }
+  }, [state.cardPool])
+
   // Group and sort pool cards
   const poolCardGroups = useMemo(() => {
     const deckCardCounts = state.deck.reduce<Record<string, number>>((acc, name) => {
@@ -627,8 +644,8 @@ function DeckBuilder({ state }: { state: DeckBuildingState }) {
             </span>
           </div>
 
-          {/* Pool creature types overview */}
-          {poolCreatureTypes.length > 0 && (
+          {/* Pool creature types and color distribution overview */}
+          {(poolCreatureTypes.length > 0 || poolColorDistribution.total > 0) && (
             <div
               style={{
                 padding: '5px 12px',
@@ -659,6 +676,29 @@ function DeckBuilder({ state }: { state: DeckBuildingState }) {
                   {type} <span style={{ color: '#8bc34a', fontWeight: 600 }}>{count}</span>
                 </span>
               ))}
+              {poolColorDistribution.total > 0 && (
+                <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
+                  <span style={{ color: '#666', fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                    Colors
+                  </span>
+                  <div style={{ display: 'flex', gap: 1, height: 6, width: 120, borderRadius: 3, overflow: 'hidden' }}>
+                    {(['W', 'U', 'B', 'R', 'G'] as const).map((c) => {
+                      const pct = ((poolColorDistribution.symbols[c] ?? 0) / poolColorDistribution.total) * 100
+                      if (pct === 0) return null
+                      return (
+                        <div
+                          key={c}
+                          style={{
+                            flex: pct,
+                            backgroundColor: MANA_COLORS[c],
+                          }}
+                          title={`${c}: ${poolColorDistribution.symbols[c]} symbols (${Math.round(pct)}%)`}
+                        />
+                      )
+                    })}
+                  </div>
+                </div>
+              )}
             </div>
           )}
 
