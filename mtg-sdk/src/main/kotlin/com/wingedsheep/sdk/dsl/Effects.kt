@@ -12,6 +12,7 @@ import com.wingedsheep.sdk.scripting.effects.AddColorlessManaEffect
 import com.wingedsheep.sdk.scripting.effects.AddCountersEffect
 import com.wingedsheep.sdk.scripting.effects.AddManaEffect
 import com.wingedsheep.sdk.scripting.effects.AnimateLandEffect
+import com.wingedsheep.sdk.scripting.effects.SetBasePowerEffect
 import com.wingedsheep.sdk.scripting.effects.ChooseColorAndGrantProtectionToGroupEffect
 import com.wingedsheep.sdk.scripting.effects.ChooseColorAndGrantProtectionToTargetEffect
 import com.wingedsheep.sdk.scripting.effects.ChooseCreatureTypeGainControlEffect
@@ -816,6 +817,16 @@ object Effects {
     /**
      * Target land becomes an X/Y creature until end of turn. It's still a land.
      */
+    /**
+     * Set a creature's base power to a dynamic value.
+     * "Change this creature's base power to target creature's power."
+     */
+    fun SetBasePower(
+        target: EffectTarget = EffectTarget.Self,
+        power: DynamicAmount,
+        duration: Duration = Duration.Permanent
+    ): Effect = SetBasePowerEffect(target, power, duration)
+
     fun AnimateLand(
         target: EffectTarget = EffectTarget.ContextTarget(0),
         power: Int = 1,

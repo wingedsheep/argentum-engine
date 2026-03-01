@@ -83,6 +83,9 @@ sealed interface SerializableModification {
     data class SetPowerToughness(val power: Int, val toughness: Int) : SerializableModification
 
     @Serializable
+    data class SetPower(val power: Int) : SerializableModification
+
+    @Serializable
     data class ModifyPowerToughness(val powerMod: Int, val toughnessMod: Int) : SerializableModification
 
     @Serializable
@@ -294,6 +297,7 @@ sealed interface SerializableModification {
  */
 fun SerializableModification.toModification(): Modification = when (this) {
     is SerializableModification.SetPowerToughness -> Modification.SetPowerToughness(power, toughness)
+    is SerializableModification.SetPower -> Modification.SetPower(power)
     is SerializableModification.ModifyPowerToughness -> Modification.ModifyPowerToughness(powerMod, toughnessMod)
     is SerializableModification.SwitchPowerToughness -> Modification.SwitchPowerToughness(EntityId(""))
     is SerializableModification.GrantKeyword -> Modification.GrantKeyword(keyword)

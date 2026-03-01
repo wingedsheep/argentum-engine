@@ -66,6 +66,7 @@ constructors.
 - `Effects.ModifyStats(power: DynamicAmount, toughness: DynamicAmount, target)` — dynamic P/T
 - `Effects.GrantKeyword(keyword, target = ContextTarget(0))` — until end of turn
 - `Effects.AddCounters(counterType, count, target)`
+- `Effects.SetBasePower(target = Self, power: DynamicAmount, duration = Permanent)` — set creature's base power
 - `Effects.AnimateLand(target, power, toughness, duration)` — turn land into creature
 - `Effects.DistributeCountersFromSelf(counterType)` — move counters from self to other creatures (player chooses)
 
@@ -250,6 +251,7 @@ each player reveals and creates tokens
 | `GiveControlToTargetPlayerEffect`           | `permanent, newController, duration`                                        | Give control to target                   |
 | `ChooseCreatureTypeGainControlEffect`       | `duration`                                                                  | Choose type, gain control                |
 | `GrantToEnchantedCreatureTypeGroupEffect`   | `powerModifier, toughnessModifier, keyword?, protectionColors, duration`    | Grant to enchanted creature's type group |
+| `SetBasePowerEffect`                        | `target, power: DynamicAmount, duration`                                    | Set base power only (leave toughness)    |
 | `AnimateLandEffect`                         | `target, power, toughness, duration`                                        | Animate land                             |
 | `DistributeCountersFromSelfEffect`          | `counterType`                                                               | Move counters from self to other creatures |
 | `TurnFaceDownEffect`                        | `target`                                                                    | Turn face down                           |

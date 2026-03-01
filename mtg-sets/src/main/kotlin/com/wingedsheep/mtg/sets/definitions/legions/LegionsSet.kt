@@ -54,6 +54,7 @@ object LegionsSet {
         MerchantOfSecrets,
         MistformSeaswift,
         PrimocEscapee,
+        RiptideMangler,
         ShiftingSliver,
         VoidmageApprentice,
         WallOfDeceit,
@@ -79,6 +80,7 @@ object LegionsSet {
         ZombieBrute,
 
         // Red creatures
+        BloodstokeHowler,
         BladeSliver,
         Clickslither,
         CrestedCraghorn,

@@ -840,6 +840,9 @@ class StateProjector(
                     values.power = mod.power
                     values.toughness = mod.toughness
                 }
+                is Modification.SetPower -> {
+                    values.power = mod.power
+                }
                 is Modification.ModifyPowerToughness -> {
                     values.power = (values.power ?: 0) + mod.powerMod
                     values.toughness = (values.toughness ?: 0) + mod.toughnessMod
@@ -1217,6 +1220,8 @@ enum class Sublayer {
 sealed interface Modification {
     @Serializable
     data class SetPowerToughness(val power: Int, val toughness: Int) : Modification
+    @Serializable
+    data class SetPower(val power: Int) : Modification
     @Serializable
     data class ModifyPowerToughness(val powerMod: Int, val toughnessMod: Int) : Modification
     @Serializable
