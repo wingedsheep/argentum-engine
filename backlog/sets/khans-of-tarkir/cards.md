@@ -2,7 +2,7 @@
 
 **Set Size:** 269 cards (249 unique card names + basic land variants)
 **Release Date:** September 26, 2014
-**Implemented:** 59 / 249
+**Implemented:** 60 / 249
 
 | Color      | Count |
 |------------|-------|
@@ -10,7 +10,7 @@
 | Blue       | 10    |
 | Black      | 9     |
 | Red        | 9     |
-| Green      | 9     |
+| Green      | 10    |
 | Multicolor | 7     |
 | Colorless  | 3     |
 | Land       | 3     |
@@ -108,7 +108,7 @@
 - [ ] High Sentinels of Arashin
 - [x] Highspire Mantis
 - [ ] Hooded Hydra
-- [ ] Hooting Mandrills
+- [x] Hooting Mandrills
 - [ ] Horde Ambusher
 - [x] Hordeling Outburst
 - [ ] Howl of the Horde

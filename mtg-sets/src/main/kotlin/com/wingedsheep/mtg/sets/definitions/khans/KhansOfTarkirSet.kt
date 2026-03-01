@@ -65,6 +65,7 @@ object KhansOfTarkirSet {
         AlpineGrizzly,
         HeirOfTheWilds,
         HighlandGame,
+        HootingMandrills,
         TuskedColossodon,
         WoollyLoxodon,
 
