@@ -511,6 +511,8 @@ class CombatManager(
     ): ExecutionResult {
         val attackerContainer = state.getEntity(firstAttacker)!!
         val attackerCard = attackerContainer.get<CardComponent>()!!
+        val attackerIsFaceDown = attackerContainer.has<FaceDownComponent>()
+        val attackerDisplayName = if (attackerIsFaceDown) "Face-down creature" else attackerCard.name
         val blockedComponent = attackerContainer.get<BlockedComponent>()!!
         val blockerIds = blockedComponent.blockerIds
 
@@ -539,10 +541,10 @@ class CombatManager(
         val decision = OrderObjectsDecision(
             id = decisionId,
             playerId = attackingPlayer,
-            prompt = "Order damage assignment for ${attackerCard.name}",
+            prompt = "Order damage assignment for $attackerDisplayName",
             context = DecisionContext(
                 sourceId = firstAttacker,
-                sourceName = attackerCard.name,
+                sourceName = attackerDisplayName,
                 phase = DecisionPhase.COMBAT
             ),
             objects = blockerIds,

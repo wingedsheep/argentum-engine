@@ -106,6 +106,8 @@ class CombatContinuationResumer(
 
             val attackerContainer = newState.getEntity(nextAttacker)!!
             val attackerCard = attackerContainer.get<CardComponent>()!!
+            val attackerIsFaceDown = attackerContainer.has<FaceDownComponent>()
+            val attackerDisplayName = if (attackerIsFaceDown) "Face-down creature" else attackerCard.name
             val blockedComponent = attackerContainer.get<com.wingedsheep.engine.state.components.combat.BlockedComponent>()!!
             val blockerIds = blockedComponent.blockerIds
 
@@ -132,10 +134,10 @@ class CombatContinuationResumer(
             val decision = OrderObjectsDecision(
                 id = decisionId,
                 playerId = continuation.attackingPlayerId,
-                prompt = "Order damage assignment for ${attackerCard.name}",
+                prompt = "Order damage assignment for $attackerDisplayName",
                 context = DecisionContext(
                     sourceId = nextAttacker,
-                    sourceName = attackerCard.name,
+                    sourceName = attackerDisplayName,
                     phase = DecisionPhase.COMBAT
                 ),
                 objects = blockerIds,
@@ -146,7 +148,7 @@ class CombatContinuationResumer(
                 decisionId = decisionId,
                 attackingPlayerId = continuation.attackingPlayerId,
                 attackerId = nextAttacker,
-                attackerName = attackerCard.name,
+                attackerName = attackerDisplayName,
                 remainingAttackers = nextRemaining
             )
 
