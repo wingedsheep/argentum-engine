@@ -28,6 +28,7 @@ object KhansOfTarkirSet {
         // White spells
         DefiantStrike,
         KillShot,
+        SmiteTheMonstrous,
 
         // Blue creatures
         JeskaiWindscout,
