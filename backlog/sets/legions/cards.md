@@ -2,12 +2,12 @@
 
 **Set Size:** 145 cards
 **Release Date:** February 3, 2003
-**Implemented:** 84 / 145
+**Implemented:** 85 / 145
 
 | Color      | Count |
 |------------|-------|
 | White      | 17/29 |
-| Blue       | 16/29 |
+| Blue       | 17/29 |
 | Black      | 17/29 |
 | Red        | 17/29 |
 | Green      | 17/29 |
@@ -115,7 +115,7 @@
 - [ ] Quick Sliver
 - [x] Ridgetop Raptor
 - [ ] Riptide Director
-- [ ] Riptide Mangler
+- [x] Riptide Mangler
 - [ ] Rockshard Elemental
 - [ ] Root Sliver
 - [ ] Scion of Darkness

@@ -42,6 +42,7 @@ class PermanentExecutors(
         ChooseCreatureTypeUntapExecutor(),
         ChooseCreatureTypeGainControlExecutor(),
         AnimateLandExecutor(),
+        SetBasePowerExecutor(amountEvaluator),
         DistributeCountersFromSelfExecutor()
     )
 }

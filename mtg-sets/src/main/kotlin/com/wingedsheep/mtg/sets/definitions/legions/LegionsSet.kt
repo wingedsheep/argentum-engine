@@ -54,6 +54,7 @@ object LegionsSet {
         MerchantOfSecrets,
         MistformSeaswift,
         PrimocEscapee,
+        RiptideMangler,
         ShiftingSliver,
         VoidmageApprentice,
         WallOfDeceit,

@@ -683,6 +683,30 @@ data class DistributeCountersFromSelfEffect(
 }
 
 /**
+ * Set a creature's base power to a specific value.
+ * "{1}{U}: Change this creature's base power to target creature's power."
+ *
+ * Creates a floating effect at Layer.POWER_TOUGHNESS, Sublayer.SET_VALUES that only
+ * overrides the power, leaving toughness unchanged. The effect lasts for the specified duration.
+ *
+ * @property target The creature whose base power is being set
+ * @property power The value to set the base power to (evaluated at resolution time)
+ * @property duration How long the effect lasts (typically Permanent for indefinite effects)
+ */
+@SerialName("SetBasePower")
+@Serializable
+data class SetBasePowerEffect(
+    val target: EffectTarget,
+    val power: DynamicAmount,
+    val duration: Duration = Duration.Permanent
+) : Effect {
+    override val description: String = buildString {
+        append("Change ${target.description}'s base power to ${power.description}")
+        if (duration.description.isNotEmpty()) append(" ${duration.description}")
+    }
+}
+
+/**
  * Target land becomes an X/Y creature until end of turn. It's still a land.
  * Used for Kamahl, Fist of Krosa: "{G}: Target land becomes a 1/1 creature until end of turn. It's still a land."
  *
