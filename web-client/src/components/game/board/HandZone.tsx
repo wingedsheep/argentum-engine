@@ -36,8 +36,8 @@ export function CardRow({
   const unrevealedCount = faceDown ? Math.max(0, zoneSize - cards.length) : 0
   const showPlaceholders = faceDown && cards.length === 0 && zoneSize > 0
 
-  // Show empty message only if no cards at all (no revealed, no placeholders needed)
-  if (cards.length === 0 && !showPlaceholders && unrevealedCount === 0) {
+  // Show empty message only if no cards at all (no revealed, no placeholders, no ghost cards)
+  if (cards.length === 0 && !showPlaceholders && unrevealedCount === 0 && ghostCards.length === 0) {
     return <div style={{ ...styles.emptyZone, fontSize: responsive.fontSize.small }}>No cards</div>
   }
 
