@@ -220,7 +220,8 @@ data class DistributeDecision(
     val totalAmount: Int,
     val targets: List<EntityId>,
     val minPerTarget: Int = 0,
-    val maxPerTarget: Map<EntityId, Int> = emptyMap()
+    val maxPerTarget: Map<EntityId, Int> = emptyMap(),
+    val allowPartial: Boolean = false
 ) : PendingDecision
 
 /**

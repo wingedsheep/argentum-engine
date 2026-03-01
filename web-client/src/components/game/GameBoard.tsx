@@ -501,48 +501,57 @@ export function GameBoard({ spectatorMode = false, topOffset = 0 }: GameBoardPro
           gap: 8,
           alignItems: 'flex-end',
         }}>
-          <div style={{
-            backgroundColor: distributeRemaining === 0 ? 'rgba(22, 163, 74, 0.9)' : 'rgba(220, 38, 38, 0.9)',
-            padding: responsive.isMobile ? '6px 12px' : '8px 16px',
-            borderRadius: 6,
-            border: distributeRemaining === 0 ? '1px solid #4ade80' : '1px solid #f87171',
-            textAlign: 'center',
-          }}>
-            <div style={{
-              color: 'white',
-              fontSize: responsive.fontSize.small,
-              fontWeight: 600,
-            }}>
-              {(() => {
-                const isPrevention = distributeState.prompt.toLowerCase().includes('prevention')
-                const noun = isPrevention ? 'prevention' : 'damage'
-                return distributeRemaining === 0
-                  ? `All ${noun} allocated`
-                  : `${distributeRemaining} ${noun} remaining`
-              })()}
-            </div>
-            <div style={{
-              color: 'rgba(255, 255, 255, 0.7)',
-              fontSize: responsive.isMobile ? 10 : 11,
-              marginTop: 2,
-            }}>
-              {distributeState.prompt}
-            </div>
-          </div>
-          <button
-            onClick={confirmDistribute}
-            disabled={distributeRemaining !== 0}
-            style={{
-              ...styles.combatButton,
-              ...(distributeRemaining === 0 ? styles.combatButtonPrimary : {}),
-              backgroundColor: distributeRemaining === 0 ? '#16a34a' : '#333',
-              color: distributeRemaining === 0 ? 'white' : '#666',
-              cursor: distributeRemaining === 0 ? 'pointer' : 'not-allowed',
-              borderColor: distributeRemaining === 0 ? '#4ade80' : '#555',
-            }}
-          >
-            {distributeState.prompt.toLowerCase().includes('prevention') ? 'Confirm Prevention' : 'Confirm Damage'}
-          </button>
+          {(() => {
+            const isPartial = distributeState.allowPartial === true
+            const isPrevention = distributeState.prompt.toLowerCase().includes('prevention')
+            const isCounters = distributeState.prompt.toLowerCase().includes('counter')
+            const noun = isCounters ? 'counters' : isPrevention ? 'prevention' : 'damage'
+            const confirmLabel = isCounters ? 'Confirm' : isPrevention ? 'Confirm Prevention' : 'Confirm Damage'
+            const canConfirm = isPartial ? true : distributeRemaining === 0
+            const isComplete = distributeRemaining === 0
+            return (
+              <>
+                <div style={{
+                  backgroundColor: isComplete ? 'rgba(22, 163, 74, 0.9)' : isPartial ? 'rgba(59, 130, 246, 0.9)' : 'rgba(220, 38, 38, 0.9)',
+                  padding: responsive.isMobile ? '6px 12px' : '8px 16px',
+                  borderRadius: 6,
+                  border: isComplete ? '1px solid #4ade80' : isPartial ? '1px solid #60a5fa' : '1px solid #f87171',
+                  textAlign: 'center',
+                }}>
+                  <div style={{
+                    color: 'white',
+                    fontSize: responsive.fontSize.small,
+                    fontWeight: 600,
+                  }}>
+                    {isComplete
+                      ? `All ${noun} allocated`
+                      : `${distributeRemaining} ${noun} remaining`}
+                  </div>
+                  <div style={{
+                    color: 'rgba(255, 255, 255, 0.7)',
+                    fontSize: responsive.isMobile ? 10 : 11,
+                    marginTop: 2,
+                  }}>
+                    {distributeState.prompt}
+                  </div>
+                </div>
+                <button
+                  onClick={confirmDistribute}
+                  disabled={!canConfirm}
+                  style={{
+                    ...styles.combatButton,
+                    ...(canConfirm ? styles.combatButtonPrimary : {}),
+                    backgroundColor: canConfirm ? '#16a34a' : '#333',
+                    color: canConfirm ? 'white' : '#666',
+                    cursor: canConfirm ? 'pointer' : 'not-allowed',
+                    borderColor: canConfirm ? '#4ade80' : '#555',
+                  }}
+                >
+                  {confirmLabel}
+                </button>
+              </>
+            )
+          })()}
         </div>
       )}
 

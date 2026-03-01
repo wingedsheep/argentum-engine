@@ -86,7 +86,8 @@ class DistributeCountersFromSelfExecutor : EffectExecutor<DistributeCountersFrom
             ),
             totalAmount = totalCounters,
             targets = otherCreatures,
-            minPerTarget = 0
+            minPerTarget = 0,
+            allowPartial = true
         )
 
         val continuation = DistributeCountersContinuation(

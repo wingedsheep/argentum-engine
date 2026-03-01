@@ -928,7 +928,11 @@ export const createUISlice: SliceCreator<UISlice> = (set, get) => ({
     const { distributeState, submitDistributeDecision } = get()
     if (!distributeState) return
     const totalAllocated = Object.values(distributeState.distribution).reduce((sum, v) => sum + v, 0)
-    if (totalAllocated !== distributeState.totalAmount) return
+    if (distributeState.allowPartial) {
+      if (totalAllocated > distributeState.totalAmount) return
+    } else {
+      if (totalAllocated !== distributeState.totalAmount) return
+    }
     submitDistributeDecision(distributeState.distribution)
     set({ distributeState: null })
   },

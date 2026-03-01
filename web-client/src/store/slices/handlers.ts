@@ -356,6 +356,7 @@ export function createMessageHandlers(set: SetState, get: GetState): MessageHand
           targets: decision.targets,
           minPerTarget: decision.minPerTarget,
           ...(decision.maxPerTarget ? { maxPerTarget: decision.maxPerTarget } : {}),
+          ...(decision.allowPartial ? { allowPartial: decision.allowPartial } : {}),
           distribution: initial,
         })
       } else if (!decision && get().distributeState) {

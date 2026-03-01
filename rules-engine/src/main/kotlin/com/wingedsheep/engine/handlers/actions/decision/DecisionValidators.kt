@@ -164,8 +164,14 @@ object DecisionValidators {
         }
 
         val total = response.distribution.values.sum()
-        if (total != decision.totalAmount) {
-            return "Distribution must total ${decision.totalAmount}, got $total"
+        if (decision.allowPartial) {
+            if (total > decision.totalAmount) {
+                return "Distribution must not exceed ${decision.totalAmount}, got $total"
+            }
+        } else {
+            if (total != decision.totalAmount) {
+                return "Distribution must total ${decision.totalAmount}, got $total"
+            }
         }
 
         for ((targetId, amount) in response.distribution) {

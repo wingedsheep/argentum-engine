@@ -317,6 +317,7 @@ export interface DistributeDecision extends PendingDecisionBase {
   readonly targets: readonly EntityId[]
   readonly minPerTarget: number
   readonly maxPerTarget?: Record<EntityId, number>
+  readonly allowPartial?: boolean
 }
 
 /**

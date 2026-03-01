@@ -182,6 +182,7 @@ export interface DistributeState {
   targets: readonly EntityId[]
   minPerTarget: number
   maxPerTarget?: Record<EntityId, number>
+  allowPartial?: boolean
   distribution: Record<EntityId, number>
 }
 
