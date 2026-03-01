@@ -56,6 +56,7 @@ object LegionsSet {
 
         // Black creatures
         Earthblighter,
+        InfernalCaretaker,
         EmbalmedBrawler,
         DrinkerOfSorrow,
         DrippingDead,
@@ -91,6 +92,7 @@ object LegionsSet {
         CanopyCrawler,
         BranchsnapLorian,
         GempalmStrider,
+        GloweringRogon,
         Brontotherium,
         DefiantElf,
         EnormousBaloth,
