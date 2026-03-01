@@ -27,6 +27,16 @@ class MayEffectExecutor(
         effect: MayEffect,
         context: EffectContext
     ): ExecutionResult {
+        // If sourceRequiredZone is specified, check if source is still in that zone
+        if (effect.sourceRequiredZone != null && context.sourceId != null) {
+            val inRequiredZone = state.zones.any { (zoneKey, entities) ->
+                zoneKey.zoneType == effect.sourceRequiredZone && context.sourceId in entities
+            }
+            if (!inRequiredZone) {
+                return ExecutionResult.success(state) // Action impossible, skip silently
+            }
+        }
+
         val playerId = context.controllerId
 
         // Get source name for the prompt

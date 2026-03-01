@@ -2,6 +2,7 @@ package com.wingedsheep.sdk.scripting.effects
 
 import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.Step
+import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.conditions.Condition
 import com.wingedsheep.sdk.scripting.effects.Effect
@@ -39,7 +40,8 @@ data class CompositeEffect(
 @Serializable
 data class MayEffect(
     val effect: Effect,
-    val description_override: String? = null
+    val description_override: String? = null,
+    val sourceRequiredZone: Zone? = null
 ) : Effect {
     override val description: String = description_override ?: "You may ${effect.description.lowercase()}"
 }

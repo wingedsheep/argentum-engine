@@ -84,7 +84,6 @@ export function GameCard({
   const incrementDistribute = useGameStore((state) => state.incrementDistribute)
   const decrementDistribute = useGameStore((state) => state.decrementDistribute)
   const submitYesNoDecision = useGameStore((state) => state.submitYesNoDecision)
-  const gameState = useGameStore((state) => state.gameState)
   const responsive = useResponsiveContext()
   const { handleCardClick, handleDoubleClick } = useInteraction()
   const dragStartPos = useRef<{ x: number; y: number } | null>(null)
@@ -167,10 +166,9 @@ export function GameCard({
   const distributeMaxForCard = distributeState?.maxPerTarget?.[card.id]
   const distributeAtMax = distributeMaxForCard !== undefined && distributeAllocated >= distributeMaxForCard
 
-  // Combat trigger YesNo check (inline buttons on triggering entity card)
-  const isCombatTriggerYesNo = pendingDecision?.type === 'YesNoDecision'
+  // Trigger YesNo check (inline buttons on triggering entity card)
+  const isTriggerYesNo = pendingDecision?.type === 'YesNoDecision'
     && pendingDecision.context.triggeringEntityId === card.id
-    && !!gameState?.combat
 
   // Combat mode checks
   const isInAttackerMode = combatState?.mode === 'declareAttackers'
@@ -539,8 +537,8 @@ export function GameCard({
     // Green highlight for selected decision options
     borderStyle = `3px solid ${SELECTED_COLOR}`
     boxShadow = `0 0 20px ${SELECTED_GLOW}, 0 0 40px ${SELECTED_SHADOW}`
-  } else if (isCombatTriggerYesNo) {
-    // Orange/gold glow for the combat trigger creature (matches distribute target style)
+  } else if (isTriggerYesNo) {
+    // Orange/gold glow for the trigger creature (matches distribute target style)
     borderStyle = '3px solid #ff6b35'
     boxShadow = '0 0 16px rgba(255, 107, 53, 0.7), 0 0 32px rgba(255, 107, 53, 0.4)'
   } else if (isDistributeTarget && distributeAllocated > 0) {
@@ -922,8 +920,8 @@ export function GameCard({
         </div>
       )}
 
-      {/* Inline Yes/No buttons for combat trigger (bottom) */}
-      {isCombatTriggerYesNo && pendingDecision?.type === 'YesNoDecision' && (
+      {/* Inline Yes/No buttons for trigger (bottom) */}
+      {isTriggerYesNo && pendingDecision?.type === 'YesNoDecision' && (
         <div
           onClick={(e) => e.stopPropagation()}
           style={{

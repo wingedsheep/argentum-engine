@@ -47,7 +47,11 @@ val DragonWings = card("Dragon Wings") {
             binding = TriggerBinding.ANY
         )
         triggerZone = Zone.GRAVEYARD
-        effect = MayEffect(Effects.ReturnSelfToBattlefieldAttached())
+        effect = MayEffect(
+            effect = Effects.ReturnSelfToBattlefieldAttached(),
+            description_override = "Attach Dragon Wings to this creature?",
+            sourceRequiredZone = Zone.GRAVEYARD
+        )
     }
 
     metadata {
