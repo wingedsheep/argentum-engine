@@ -2,12 +2,12 @@
 
 **Set Size:** 145 cards
 **Release Date:** February 3, 2003
-**Implemented:** 94 / 145
+**Implemented:** 95 / 145
 
 | Color      | Count |
 |------------|-------|
 | White      | 19/29 |
-| Blue       | 18/29 |
+| Blue       | 19/29 |
 | Black      | 19/29 |
 | Red        | 19/29 |
 | Green      | 19/29 |
@@ -135,7 +135,7 @@
 - [x] Stonewood Invoker
 - [ ] Sunstrike Legionnaire
 - [x] Swooping Talon
-- [ ] Synapse Sliver
+- [x] Synapse Sliver
 - [x] Timberwatch Elf
 - [x] Totem Speaker
 - [x] Toxin Sliver
