@@ -19,7 +19,7 @@ val PutridRaptor = card("Putrid Raptor") {
     toughness = 4
     oracleText = "Morph—Discard a Zombie card."
 
-    morphCost = PayCost.Discard(GameObjectFilter.Creature.withSubtype("Zombie"))
+    morphCost = PayCost.Discard(GameObjectFilter.Any.withSubtype("Zombie"))
 
     metadata {
         rarity = Rarity.UNCOMMON

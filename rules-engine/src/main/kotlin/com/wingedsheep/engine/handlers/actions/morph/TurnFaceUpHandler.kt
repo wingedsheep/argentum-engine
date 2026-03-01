@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.handlers.actions.morph
 
+import com.wingedsheep.engine.core.CardsDiscardedEvent
 import com.wingedsheep.engine.core.ExecutionResult
 import com.wingedsheep.engine.core.GameEvent
 import com.wingedsheep.engine.core.LifeChangeReason
@@ -155,6 +156,20 @@ class TurnFaceUpHandler(
                 for (targetId in action.costTargetIds) {
                     if (targetId !in validTargets) {
                         return "Invalid target for sacrifice morph cost: $targetId"
+                    }
+                }
+            }
+            is PayCost.Discard -> {
+                val validTargets = findDiscardTargets(state, action.playerId, morphData.morphCost)
+                if (validTargets.size < morphData.morphCost.count) {
+                    return "Not enough cards in hand matching the discard requirement"
+                }
+                if (action.costTargetIds.size != morphData.morphCost.count) {
+                    return "Must discard exactly ${morphData.morphCost.count} card(s) to pay morph cost"
+                }
+                for (targetId in action.costTargetIds) {
+                    if (targetId !in validTargets) {
+                        return "Invalid target for discard morph cost: $targetId"
                     }
                 }
             }
@@ -375,6 +390,22 @@ class TurnFaceUpHandler(
                     events.addAll(result.events)
                 }
             }
+            is PayCost.Discard -> {
+                val discardedIds = mutableListOf<EntityId>()
+                val discardedNames = mutableListOf<String>()
+                for (targetId in action.costTargetIds) {
+                    val targetCard = currentState.getEntity(targetId)?.get<CardComponent>()
+                    discardedNames.add(targetCard?.name ?: "Unknown")
+                    discardedIds.add(targetId)
+                    val result = EffectExecutorUtils.moveCardToZone(currentState, targetId, Zone.GRAVEYARD)
+                    if (result.error != null) {
+                        return ExecutionResult.error(currentState, result.error!!)
+                    }
+                    currentState = result.newState
+                    events.addAll(result.events)
+                }
+                events.add(0, CardsDiscardedEvent(action.playerId, discardedIds, discardedNames))
+            }
             else -> return ExecutionResult.error(state, "Unsupported morph cost type: ${morphData.morphCost::class.simpleName}")
         }
 
@@ -468,6 +499,24 @@ class TurnFaceUpHandler(
             if (controllerId != playerId) return@filter false
 
             predicateEvaluator.matchesWithProjection(state, projected, entityId, cost.filter, predicateContext)
+        }
+    }
+
+    /**
+     * Find valid cards in hand that can be discarded to pay a morph cost.
+     * Hand cards use base state (not projected) per convention for non-battlefield zones.
+     */
+    fun findDiscardTargets(
+        state: GameState,
+        playerId: EntityId,
+        cost: PayCost.Discard
+    ): List<EntityId> {
+        val handZone = ZoneKey(playerId, Zone.HAND)
+        val hand = state.getZone(handZone)
+        val predicateContext = PredicateContext(controllerId = playerId)
+
+        return hand.filter { cardId ->
+            predicateEvaluator.matches(state, cardId, cost.filter, predicateContext)
         }
     }
 

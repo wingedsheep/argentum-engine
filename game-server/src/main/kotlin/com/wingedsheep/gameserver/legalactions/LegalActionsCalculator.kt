@@ -861,6 +861,22 @@ class LegalActionsCalculator(
                         ))
                     }
                 }
+                is PayCost.Discard -> {
+                    val validTargets = findMorphDiscardTargets(state, playerId, cost.filter)
+                    if (validTargets.size >= cost.count) {
+                        result.add(LegalActionInfo(
+                            actionType = "ActivateAbility",
+                            description = "Turn face-up (${cost.description})",
+                            action = TurnFaceUp(playerId, entityId),
+                            additionalCostInfo = AdditionalCostInfo(
+                                description = cost.description,
+                                costType = "DiscardCard",
+                                validDiscardTargets = validTargets,
+                                discardCount = cost.count
+                            )
+                        ))
+                    }
+                }
                 else -> {
                     // Future morph cost types — skip for now
                 }
@@ -1686,6 +1702,24 @@ class LegalActionsCalculator(
 
         return state.getZone(zoneKey).filter { entityId ->
             predicateEvaluator.matches(state, entityId, filter, predicateContext)
+        }
+    }
+
+    /**
+     * Find valid cards in hand that can be discarded to pay a morph cost.
+     * Hand cards use base state (not projected) per convention for non-battlefield zones.
+     */
+    private fun findMorphDiscardTargets(
+        state: GameState,
+        playerId: EntityId,
+        filter: GameObjectFilter
+    ): List<EntityId> {
+        val handZone = ZoneKey(playerId, Zone.HAND)
+        val hand = state.getZone(handZone)
+        val predicateContext = PredicateContext(controllerId = playerId)
+
+        return hand.filter { cardId ->
+            predicateEvaluator.matches(state, cardId, filter, predicateContext)
         }
     }
 
