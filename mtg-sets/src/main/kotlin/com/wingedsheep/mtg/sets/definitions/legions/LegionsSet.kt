@@ -112,6 +112,7 @@ object LegionsSet {
         Brontotherium,
         DefiantElf,
         EnormousBaloth,
+        FeralThrowback,
         Hundroog,
         KrosanVorine,
         NantukoVigilante,

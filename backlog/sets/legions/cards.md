@@ -2,7 +2,7 @@
 
 **Set Size:** 145 cards
 **Release Date:** February 3, 2003
-**Implemented:** 91 / 145
+**Implemented:** 92 / 145
 
 | Color      | Count |
 |------------|-------|
@@ -10,7 +10,7 @@
 | Blue       | 18/29 |
 | Black      | 18/29 |
 | Red        | 19/29 |
-| Green      | 18/29 |
+| Green      | 19/29 |
 
 ---
 
@@ -59,7 +59,7 @@
 - [x] Embalmed Brawler
 - [x] Enormous Baloth
 - [ ] Essence Sliver
-- [ ] Feral Throwback
+- [x] Feral Throwback
 - [x] Flamewave Invoker
 - [x] Frenetic Raptor
 - [x] Fugitive Wizard
