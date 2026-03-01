@@ -3,11 +3,11 @@
 
 **Set Size:** 143 cards
 **Release Date:** May 26, 2003
-**Implemented:** 124 / 143
+**Implemented:** 125 / 143
 
 | Color | Count |
 |-------|-------|
-| White | 23 |
+| White | 24 |
 | Blue | 23 |
 | Black | 25 |
 | Red | 23 |
@@ -152,7 +152,7 @@
 - [x] Unspeakable Symbol
 - [ ] Upwelling
 - [x] Vengeful Dead
-- [ ] Wing Shards
+- [x] Wing Shards
 - [x] Wipe Clean
 - [x] Wirewood Guardian
 - [x] Wirewood Symbiote

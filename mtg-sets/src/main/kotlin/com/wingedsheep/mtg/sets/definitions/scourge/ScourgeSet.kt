@@ -163,6 +163,7 @@ object ScourgeSet {
         Recuperate,
         RewardTheFaithful,
         WipeClean,
+        WingShards,
 
         // Black enchantments
         CallToTheGrave,
