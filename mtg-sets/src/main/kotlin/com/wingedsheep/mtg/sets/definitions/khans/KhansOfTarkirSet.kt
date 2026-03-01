@@ -40,6 +40,7 @@ object KhansOfTarkirSet {
         MonasteryFlock,
         MysticOfTheHiddenWay,
         Scaldkin,
+        ScionOfGlaciers,
         WetlandSambar,
         WhirlwindAdept,
 

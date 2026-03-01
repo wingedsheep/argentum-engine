@@ -2,12 +2,12 @@
 
 **Set Size:** 269 cards (249 unique card names + basic land variants)
 **Release Date:** September 26, 2014
-**Implemented:** 64 / 249
+**Implemented:** 65 / 249
 
 | Color      | Count |
 |------------|-------|
 | White      | 10    |
-| Blue       | 10    |
+| Blue       | 11    |
 | Black      | 10    |
 | Red        | 11    |
 | Green      | 10    |
@@ -192,7 +192,7 @@
 - [ ] Savage Knuckleblade
 - [x] Savage Punch
 - [x] Scaldkin
-- [ ] Scion of Glaciers
+- [x] Scion of Glaciers
 - [ ] Scoured Barrens
 - [ ] Scout the Borders
 - [ ] Secret Plans
