@@ -32,11 +32,14 @@ import com.wingedsheep.engine.state.components.identity.FaceDownComponent
 import com.wingedsheep.engine.state.components.identity.TextReplacementComponent
 import com.wingedsheep.engine.state.components.player.ManaPoolComponent
 import com.wingedsheep.engine.state.components.stack.ActivatedAbilityOnStackComponent
+import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.scripting.AbilityCost
+import com.wingedsheep.sdk.scripting.ActivatedAbility
 import com.wingedsheep.sdk.scripting.ActivationRestriction
+import com.wingedsheep.sdk.scripting.GrantActivatedAbilityToCreatureGroup
 import com.wingedsheep.sdk.scripting.TimingRule
 import com.wingedsheep.sdk.scripting.effects.AddAnyColorManaEffect
 import com.wingedsheep.sdk.scripting.effects.AddColorlessManaEffect
@@ -84,11 +87,13 @@ class ActivateAbilityHandler(
         val cardDef = cardRegistry?.getCard(cardComponent.cardDefinitionId)
             ?: return "Card definition not found"
 
-        // Look up ability from card definition or granted activated abilities
+        // Look up ability from card definition, granted activated abilities, or static grants
         val ability = cardDef.script.activatedAbilities.find { it.id == action.abilityId }
             ?: state.grantedActivatedAbilities
                 .filter { it.entityId == action.sourceId }
                 .map { it.ability }
+                .find { it.id == action.abilityId }
+            ?: getStaticGrantedActivatedAbilities(action.sourceId, state)
                 .find { it.id == action.abilityId }
             ?: return "Ability not found on this card"
 
@@ -230,11 +235,13 @@ class ActivateAbilityHandler(
         val cardDef = cardRegistry?.getCard(cardComponent.cardDefinitionId)
             ?: return ExecutionResult.error(state, "Card definition not found")
 
-        // Look up ability from card definition or granted activated abilities
+        // Look up ability from card definition, granted activated abilities, or static grants
         val ability = cardDef.script.activatedAbilities.find { it.id == action.abilityId }
             ?: state.grantedActivatedAbilities
                 .filter { it.entityId == action.sourceId }
                 .map { it.ability }
+                .find { it.id == action.abilityId }
+            ?: getStaticGrantedActivatedAbilities(action.sourceId, state)
                 .find { it.id == action.abilityId }
             ?: return ExecutionResult.error(state, "Ability not found")
 
@@ -710,6 +717,49 @@ class ActivateAbilityHandler(
         }
 
         return AdditionalManaResult(currentState, events)
+    }
+
+    /**
+     * Get activated abilities granted to an entity by static abilities on battlefield permanents.
+     * E.g., Spectral Sliver grants a pump ability to all Sliver creatures via
+     * GrantActivatedAbilityToCreatureGroup.
+     */
+    private fun getStaticGrantedActivatedAbilities(
+        entityId: EntityId,
+        state: GameState
+    ): List<ActivatedAbility> {
+        val registry = cardRegistry ?: return emptyList()
+        val targetContainer = state.getEntity(entityId) ?: return emptyList()
+        val targetCard = targetContainer.get<CardComponent>() ?: return emptyList()
+
+        val result = mutableListOf<ActivatedAbility>()
+
+        for (permanentId in state.getBattlefield()) {
+            val container = state.getEntity(permanentId) ?: continue
+            val card = container.get<CardComponent>() ?: continue
+            if (container.has<FaceDownComponent>()) continue
+
+            val cardDef = registry.getCard(card.cardDefinitionId) ?: continue
+            for (ability in cardDef.staticAbilities) {
+                if (ability !is GrantActivatedAbilityToCreatureGroup) continue
+
+                val filter = ability.filter.baseFilter
+                val matchesAll = filter.cardPredicates.all { predicate ->
+                    when (predicate) {
+                        is com.wingedsheep.sdk.scripting.predicates.CardPredicate.IsCreature ->
+                            targetCard.typeLine.isCreature
+                        is com.wingedsheep.sdk.scripting.predicates.CardPredicate.HasSubtype ->
+                            targetCard.typeLine.hasSubtype(predicate.subtype)
+                        else -> true
+                    }
+                }
+                if (matchesAll) {
+                    result.add(ability.ability)
+                }
+            }
+        }
+
+        return result
     }
 
     companion object {

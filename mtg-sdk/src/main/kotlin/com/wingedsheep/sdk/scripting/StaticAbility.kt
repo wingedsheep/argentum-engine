@@ -76,6 +76,26 @@ data class GrantTriggeredAbilityToCreatureGroup(
 }
 
 /**
+ * Grants an activated ability to a group of creatures (continuous static ability).
+ * Used for Slivers and other creatures that share activated abilities with a group.
+ * Example: Spectral Sliver — "All Sliver creatures have '{2}: This creature gets +1/+1 until end of turn.'"
+ *
+ * The LegalActionsCalculator scans battlefield permanents for this static ability
+ * when computing legal activated abilities for each creature.
+ *
+ * @property ability The activated ability to grant to matching creatures
+ * @property filter The group of creatures that gain the ability
+ */
+@SerialName("GrantActivatedAbilityToCreatureGroup")
+@Serializable
+data class GrantActivatedAbilityToCreatureGroup(
+    val ability: ActivatedAbility,
+    val filter: GroupFilter
+) : StaticAbility {
+    override val description: String = "${filter.description} have ${ability.description}"
+}
+
+/**
  * Modifies power/toughness for a group of creatures (continuous static ability).
  * Used for lord effects like "Other Bird creatures get +1/+1."
  */

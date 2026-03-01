@@ -73,6 +73,7 @@ object LegionsSet {
         Skinthinner,
         SmokespewInvoker,
         SootfeatherFlock,
+        SpectralSliver,
         VileDeacon,
         WitheredWretch,
         ZombieBrute,
