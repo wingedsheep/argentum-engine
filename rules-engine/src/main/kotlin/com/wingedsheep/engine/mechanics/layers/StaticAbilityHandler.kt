@@ -31,6 +31,7 @@ import com.wingedsheep.sdk.scripting.GlobalEffect
 import com.wingedsheep.sdk.scripting.GlobalEffectType
 import com.wingedsheep.sdk.scripting.GrantKeyword
 import com.wingedsheep.sdk.scripting.GrantKeywordForChosenCreatureType
+import com.wingedsheep.sdk.scripting.GrantCantBeBlockedExceptBySubtype
 import com.wingedsheep.sdk.scripting.GrantKeywordToCreatureGroup
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.scripting.predicates.CardPredicate
@@ -256,6 +257,14 @@ class StaticAbilityHandler(
                     sublayer = null,
                     modification = Modification.GrantProtectionFromColor(ability.color.name),
                     affectsFilter = convertStaticTarget(ability.target)
+                )
+            }
+            is GrantCantBeBlockedExceptBySubtype -> {
+                ContinuousEffectData(
+                    layer = Layer.ABILITY,
+                    sublayer = null,
+                    modification = Modification.CantBeBlockedExceptBySubtype(ability.requiredSubtype),
+                    affectsFilter = convertGroupFilter(ability.filter)
                 )
             }
             is GlobalEffect -> convertGlobalEffect(ability)

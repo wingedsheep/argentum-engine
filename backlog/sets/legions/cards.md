@@ -2,12 +2,12 @@
 
 **Set Size:** 145 cards
 **Release Date:** February 3, 2003
-**Implemented:** 79 / 145
+**Implemented:** 80 / 145
 
 | Color      | Count |
 |------------|-------|
 | White      | 16/29 |
-| Blue       | 15/29 |
+| Blue       | 16/29 |
 | Black      | 16/29 |
 | Red        | 16/29 |
 | Green      | 16/29 |
@@ -121,7 +121,7 @@
 - [ ] Scion of Darkness
 - [ ] Seedborn Muse
 - [x] Shaleskin Plower
-- [ ] Shifting Sliver
+- [x] Shifting Sliver
 - [x] Skinthinner
 - [ ] Skirk Alarmist
 - [ ] Skirk Drill Sergeant

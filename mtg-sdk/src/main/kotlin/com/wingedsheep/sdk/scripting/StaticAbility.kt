@@ -582,6 +582,22 @@ data class ConditionalStaticAbility(
 // =============================================================================
 
 /**
+ * Grants "can't be blocked except by creatures with subtype X" to a group of creatures.
+ * Used for Shifting Sliver: "Slivers can't be blocked except by Slivers."
+ *
+ * @property filter The group of creatures that gain the evasion
+ * @property requiredSubtype The subtype that blockers must have
+ */
+@SerialName("GrantCantBeBlockedExceptBySubtype")
+@Serializable
+data class GrantCantBeBlockedExceptBySubtype(
+    val filter: GroupFilter,
+    val requiredSubtype: String
+) : StaticAbility {
+    override val description: String = "${filter.description} can't be blocked except by ${requiredSubtype}s"
+}
+
+/**
  * This creature can't be blocked by creatures with power X or greater.
  * Used for cards like Fleet-Footed Monk: "can't be blocked by creatures with power 2 or greater."
  *

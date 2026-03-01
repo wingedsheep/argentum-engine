@@ -225,7 +225,8 @@ class StateProjector(
                 cantAttack = v.cantAttack,
                 cantBlock = v.cantBlock,
                 mustAttack = v.mustAttack,
-                mustBlock = v.mustBlock
+                mustBlock = v.mustBlock,
+                cantBeBlockedExceptBySubtypes = v.cantBeBlockedExceptBySubtypes.toSet()
             )
         }
 
@@ -292,7 +293,8 @@ class StateProjector(
                 cantAttack = v.cantAttack,
                 cantBlock = v.cantBlock,
                 mustAttack = v.mustAttack,
-                mustBlock = v.mustBlock
+                mustBlock = v.mustBlock,
+                cantBeBlockedExceptBySubtypes = v.cantBeBlockedExceptBySubtypes.toSet()
             )
         }
         return ProjectedState(state, frozen)
@@ -953,6 +955,9 @@ class StateProjector(
                         }
                     }
                 }
+                is Modification.CantBeBlockedExceptBySubtype -> {
+                    values.cantBeBlockedExceptBySubtypes.add(mod.subtype)
+                }
                 is Modification.NoOp -> {
                     // No-op: effect doesn't modify projected state (e.g., combat restrictions)
                 }
@@ -1296,6 +1301,13 @@ sealed interface Modification {
         val toughnessModPerCreature: Int
     ) : Modification
 
+    /**
+     * Blocking restriction: creature can only be blocked by creatures with a specific subtype.
+     * Used for Shifting Sliver: "Slivers can't be blocked except by Slivers."
+     */
+    @Serializable
+    data class CantBeBlockedExceptBySubtype(val subtype: String) : Modification
+
     /** No-op modification for effects that don't modify projected state (e.g., combat restrictions) */
     @Serializable
     data object NoOp : Modification
@@ -1316,7 +1328,8 @@ private data class MutableProjectedValues(
     var cantAttack: Boolean = false,
     var cantBlock: Boolean = false,
     var mustAttack: Boolean = false,
-    var mustBlock: Boolean = false
+    var mustBlock: Boolean = false,
+    val cantBeBlockedExceptBySubtypes: MutableSet<String> = mutableSetOf()
 )
 
 /**
@@ -1334,7 +1347,8 @@ data class ProjectedValues(
     val cantAttack: Boolean = false,
     val cantBlock: Boolean = false,
     val mustAttack: Boolean = false,
-    val mustBlock: Boolean = false
+    val mustBlock: Boolean = false,
+    val cantBeBlockedExceptBySubtypes: Set<String> = emptySet()
 )
 
 /**
@@ -1445,6 +1459,13 @@ class ProjectedState(
      * Check if an entity must block each combat if able (e.g., Grand Melee).
      */
     fun mustBlock(entityId: EntityId): Boolean = projectedValues[entityId]?.mustBlock == true
+
+    /**
+     * Get the subtypes that can block this entity (empty set = no restriction).
+     * Used for "can't be blocked except by Slivers" and similar effects.
+     */
+    fun getCantBeBlockedExceptBySubtypes(entityId: EntityId): Set<String> =
+        projectedValues[entityId]?.cantBeBlockedExceptBySubtypes ?: emptySet()
 
     /**
      * Get the projected controller of an entity.

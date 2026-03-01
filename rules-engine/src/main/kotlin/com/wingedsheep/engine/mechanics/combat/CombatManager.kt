@@ -718,6 +718,14 @@ class CombatManager(
             return keywordEvasionValidation
         }
 
+        // CantBeBlockedExceptBySubtype: Can only be blocked by creatures with a specific subtype
+        val subtypeEvasionValidation = validateCantBeBlockedExceptBySubtype(
+            attackerId, attackerCard, blockerId, blockerCard, projected
+        )
+        if (subtypeEvasionValidation != null) {
+            return subtypeEvasionValidation
+        }
+
         // CantBeBlockedUnlessDefenderSharesCreatureType: e.g. Graxiplon
         val sharedTypeRestrictionValidation = validateCantBeBlockedUnlessDefenderSharesCreatureType(
             state, attackerId, attackerCard, blockingPlayer, projected
@@ -965,6 +973,45 @@ class CombatManager(
         if (requiredKeyword == Keyword.FLYING && projected.hasKeyword(blockerId, Keyword.REACH)) return true
 
         return false
+    }
+
+    /**
+     * Check if attacker has CantBeBlockedExceptBySubtype restriction from projected state.
+     * Returns an error message if the blocker doesn't have the required subtype, null otherwise.
+     */
+    private fun validateCantBeBlockedExceptBySubtype(
+        attackerId: EntityId,
+        attackerCard: CardComponent,
+        blockerId: EntityId,
+        blockerCard: CardComponent,
+        projected: ProjectedState
+    ): String? {
+        val requiredSubtypes = projected.getCantBeBlockedExceptBySubtypes(attackerId)
+        if (requiredSubtypes.isEmpty()) return null
+
+        for (requiredSubtype in requiredSubtypes) {
+            if (!projected.hasSubtype(blockerId, requiredSubtype)) {
+                return "${blockerCard.name} cannot block ${attackerCard.name} (can only be blocked by ${requiredSubtype}s)"
+            }
+        }
+        return null
+    }
+
+    /**
+     * Check if blocker can block despite CantBeBlockedExceptBySubtype restriction.
+     * Returns true if the blocker has all required subtypes.
+     */
+    private fun canBlockDespiteSubtypeRestriction(
+        attackerId: EntityId,
+        blockerId: EntityId,
+        projected: ProjectedState
+    ): Boolean {
+        val requiredSubtypes = projected.getCantBeBlockedExceptBySubtypes(attackerId)
+        if (requiredSubtypes.isEmpty()) return true
+
+        return requiredSubtypes.all { requiredSubtype ->
+            projected.hasSubtype(blockerId, requiredSubtype)
+        }
     }
 
     /**
@@ -2673,6 +2720,11 @@ class CombatManager(
 
         // CantBeBlockedExceptByKeyword: Can only be blocked by creatures with a specific keyword
         if (!canBlockDespiteKeywordEvasion(attackerId, attackerCard, blockerId, projected)) {
+            return false
+        }
+
+        // CantBeBlockedExceptBySubtype: Can only be blocked by creatures with a specific subtype
+        if (!canBlockDespiteSubtypeRestriction(attackerId, blockerId, projected)) {
             return false
         }
 
