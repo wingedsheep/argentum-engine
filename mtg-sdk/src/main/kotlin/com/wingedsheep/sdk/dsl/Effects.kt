@@ -50,6 +50,7 @@ import com.wingedsheep.sdk.scripting.effects.CreateTokenEffect
 import com.wingedsheep.sdk.scripting.effects.CreateTreasureTokensEffect
 import com.wingedsheep.sdk.scripting.effects.CounterAbilityEffect
 import com.wingedsheep.sdk.scripting.effects.CounterSpellEffect
+import com.wingedsheep.sdk.scripting.effects.CounterTriggeringSpellEffect
 import com.wingedsheep.sdk.scripting.effects.CounterUnlessPaysEffect
 import com.wingedsheep.sdk.scripting.effects.CounterUnlessDynamicPaysEffect
 import com.wingedsheep.sdk.scripting.effects.ChangeSpellTargetEffect
@@ -599,6 +600,13 @@ object Effects {
      */
     fun CounterSpell(): Effect =
         CounterSpellEffect
+
+    /**
+     * Counter the spell that triggered this ability (non-targeted).
+     * "Counter that spell."
+     */
+    fun CounterTriggeringSpell(): Effect =
+        CounterTriggeringSpellEffect
 
     /**
      * Counter target spell unless its controller pays a mana cost.

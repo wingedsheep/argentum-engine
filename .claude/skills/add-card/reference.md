@@ -118,6 +118,7 @@ each player reveals and creates tokens
 ### Stack
 
 - `Effects.CounterSpell()`
+- `Effects.CounterTriggeringSpell()` — counter the spell that triggered this ability (non-targeted, uses triggering entity)
 - `Effects.CounterAbility()` — counter target activated or triggered ability
 - `Effects.CounterUnlessPays(cost: String)` — counter unless mana paid
 - `Effects.CounterUnlessDynamicPays(amount: DynamicAmount)` — counter unless dynamic amount paid
@@ -346,6 +347,7 @@ each player reveals and creates tokens
 | Effect                           | Parameters                    | Purpose                    |
 |----------------------------------|-------------------------------|----------------------------|
 | `CounterSpellEffect`             | (object)                      | Counter target spell       |
+| `CounterTriggeringSpellEffect`   | (object)                      | Counter triggering spell (non-targeted) |
 | `CounterSpellWithFilterEffect`   | `filter: GameObjectFilter`    | Counter matching spell     |
 | `CounterAbilityEffect`           | (object)                      | Counter activated/triggered ability |
 | `CounterUnlessPaysEffect`        | `cost: ManaCost`              | Counter unless pays        |

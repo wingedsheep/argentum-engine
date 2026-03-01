@@ -14,5 +14,6 @@ enum class CounterType {
     POISON,
     GOLD,
     PLAGUE,
-    TRAP
+    TRAP,
+    DEPLETION
 }

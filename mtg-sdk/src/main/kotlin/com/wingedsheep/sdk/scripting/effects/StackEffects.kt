@@ -67,6 +67,20 @@ data class CounterUnlessDynamicPaysEffect(
 }
 
 /**
+ * Counter the spell that triggered this ability (non-targeted).
+ * "Counter that spell."
+ *
+ * Uses context.triggeringEntityId to identify the spell to counter,
+ * rather than requiring a target selection. Used for triggered abilities
+ * like Decree of Silence: "Whenever an opponent casts a spell, counter that spell."
+ */
+@SerialName("CounterTriggeringSpell")
+@Serializable
+data object CounterTriggeringSpellEffect : Effect {
+    override val description: String = "Counter that spell"
+}
+
+/**
  * Counter target activated or triggered ability.
  * "Counter target activated or triggered ability."
  *

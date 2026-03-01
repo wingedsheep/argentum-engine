@@ -13,6 +13,7 @@ class StackExecutors(
     override fun executors(): List<EffectExecutor<*>> = listOf(
         CounterAbilityExecutor(),
         CounterSpellExecutor(),
+        CounterTriggeringSpellExecutor(),
         CounterSpellWithFilterExecutor(),
         CounterUnlessPaysExecutor(),
         CounterUnlessDynamicPaysExecutor(amountEvaluator),
