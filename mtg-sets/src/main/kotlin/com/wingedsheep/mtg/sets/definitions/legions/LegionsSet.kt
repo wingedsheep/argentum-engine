@@ -105,6 +105,7 @@ object LegionsSet {
         LavabornMuse,
         MacetailHystrodon,
         RidgetopRaptor,
+        RockshardElemental,
         ShaleskinPlower,
         SkirkMarauder,
         SkirkOutrider,
