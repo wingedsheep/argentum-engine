@@ -23,6 +23,7 @@ object KhansOfTarkirSet {
     val allCards = listOf(
         // White creatures
         AlabasterKirin,
+        FirehoofCavalry,
         JeskaiStudent,
 
         // White spells
