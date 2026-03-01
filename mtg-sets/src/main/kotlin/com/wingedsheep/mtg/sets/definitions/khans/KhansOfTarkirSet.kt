@@ -27,6 +27,7 @@ object KhansOfTarkirSet {
 
         // White spells
         DefiantStrike,
+        Erase,
         KillShot,
         SmiteTheMonstrous,
 

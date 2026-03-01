@@ -2,11 +2,11 @@
 
 **Set Size:** 269 cards (249 unique card names + basic land variants)
 **Release Date:** September 26, 2014
-**Implemented:** 38 / 249
+**Implemented:** 39 / 249
 
 | Color      | Count |
 |------------|-------|
-| White      | 5     |
+| White      | 6     |
 | Blue       | 6     |
 | Black      | 6     |
 | Red        | 6     |
@@ -87,7 +87,7 @@
 - [ ] Embodiment of Spring
 - [ ] Empty the Pits
 - [ ] End Hostilities
-- [ ] Erase
+- [x] Erase
 - [ ] Feat of Resistance
 - [x] Feed the Clan
 - [ ] Firehoof Cavalry
