@@ -576,6 +576,13 @@ class ActivateAbilityHandler(
             }
         }
 
+        // Add bonus mana from auras (e.g., Elvish Guidance) attached to tapped sources
+        for (source in solution.sources) {
+            if (source.bonusManaPerTap > 0 && source.bonusManaColor != null) {
+                currentPool = currentPool.add(source.bonusManaColor, source.bonusManaPerTap)
+            }
+        }
+
         // Update state with enriched pool
         currentState = currentState.updateEntity(playerId) { c ->
             c.with(ManaPoolComponent(
