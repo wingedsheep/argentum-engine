@@ -23,6 +23,7 @@ object LegionsSet {
      */
     val allCards = listOf(
         // White creatures
+        AkromasDevoted,
         AvenWarhawk,
         CloudreachCavalry,
         DaruMender,

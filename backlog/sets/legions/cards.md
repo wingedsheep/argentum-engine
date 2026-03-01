@@ -2,11 +2,11 @@
 
 **Set Size:** 145 cards
 **Release Date:** February 3, 2003
-**Implemented:** 81 / 145
+**Implemented:** 82 / 145
 
 | Color      | Count |
 |------------|-------|
-| White      | 16/29 |
+| White      | 17/29 |
 | Blue       | 16/29 |
 | Black      | 16/29 |
 | Red        | 17/29 |
@@ -15,7 +15,7 @@
 ---
 
 - [ ] Akroma, Angel of Wrath
-- [ ] Akroma's Devoted
+- [x] Akroma's Devoted
 - [x] Aphetto Exterminator
 - [x] Aven Envoy
 - [ ] Aven Redeemer
