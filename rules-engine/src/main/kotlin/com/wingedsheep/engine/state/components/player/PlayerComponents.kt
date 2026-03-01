@@ -244,6 +244,22 @@ enum class PlayerEffectRemoval {
 }
 
 /**
+ * Component indicating that a player cannot cast spells for the rest of this turn.
+ * Applied by effects like Xantid Swarm ("defending player can't cast spells this turn").
+ *
+ * When present on a player entity, that player's spell casting legal actions
+ * are suppressed in LegalActionsCalculator.
+ *
+ * @param removeOn When this component should be removed:
+ *   - [PlayerEffectRemoval.EndOfTurn] — removed during end-of-turn cleanup (default)
+ *   - [PlayerEffectRemoval.Permanent] — stays until explicitly removed
+ */
+@Serializable
+data class CantCastSpellsComponent(
+    val removeOn: PlayerEffectRemoval = PlayerEffectRemoval.EndOfTurn
+) : Component
+
+/**
  * Tracks the number of cards a player has drawn during the current turn.
  * Reset to 0 at the start of each turn (for ALL players, since "each turn"
  * means every turn, not just your own).

@@ -13,6 +13,7 @@ import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.battlefield.GrantsControllerShroudComponent
+import com.wingedsheep.engine.state.components.player.CantCastSpellsComponent
 import com.wingedsheep.engine.state.components.player.PlayerShroudComponent
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.state.components.battlefield.SummoningSicknessComponent
@@ -176,9 +177,15 @@ class LegalActionsCalculator(
             }
         }
 
+        // Check if player is restricted from casting spells (e.g., Xantid Swarm)
+        val cantCastSpells = state.getEntity(playerId)?.has<CantCastSpellsComponent>() == true
+
         for (cardId in hand) {
             val cardComponent = state.getEntity(cardId)?.get<CardComponent>() ?: continue
             if (!cardComponent.typeLine.isLand) {
+                // Skip all spells if player can't cast spells this turn
+                if (cantCastSpells) continue
+
                 // Look up card definition for target requirements and cast restrictions
                 val cardDef = cardRegistry.getCard(cardComponent.name)
                 if (cardDef == null) {

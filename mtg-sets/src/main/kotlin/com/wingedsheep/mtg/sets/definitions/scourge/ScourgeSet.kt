@@ -52,6 +52,7 @@ object ScourgeSet {
         WirewoodGuardian,
         WirewoodSymbiote,
         Woodcloaker,
+        XantidSwarm,
 
         // Green enchantments
         AlphaStatus,

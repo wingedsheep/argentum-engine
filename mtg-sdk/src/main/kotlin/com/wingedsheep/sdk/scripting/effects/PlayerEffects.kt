@@ -118,6 +118,22 @@ data class CreateGlobalTriggeredAbilityUntilEndOfTurnEffect(
 }
 
 /**
+ * Target player can't cast spells for the specified duration.
+ * Used for cards like Xantid Swarm: "Whenever this creature attacks, defending player can't cast spells this turn."
+ *
+ * @param target The player who can't cast spells
+ * @param duration How long the restriction lasts (default: EndOfTurn)
+ */
+@SerialName("CantCastSpells")
+@Serializable
+data class CantCastSpellsEffect(
+    val target: EffectTarget = EffectTarget.PlayerRef(Player.Opponent),
+    val duration: Duration = Duration.EndOfTurn
+) : Effect {
+    override val description: String = "${target.description.replaceFirstChar { it.uppercase() }} can't cast spells ${duration.description}"
+}
+
+/**
  * Grant shroud to a target entity for the specified duration.
  * Works for players, creatures, and planeswalkers.
  *

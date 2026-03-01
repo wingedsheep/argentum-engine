@@ -12,6 +12,7 @@ class PlayerExecutors(
 ) : ExecutorModule {
     override fun executors(): List<EffectExecutor<*>> = listOf(
         AddCombatPhaseExecutor(),
+        CantCastSpellsExecutor(),
         CreateGlobalTriggeredAbilityUntilEndOfTurnExecutor(),
         GrantShroudExecutor(),
         PlayAdditionalLandsExecutor(),

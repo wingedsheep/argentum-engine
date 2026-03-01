@@ -15,6 +15,7 @@ import com.wingedsheep.sdk.scripting.effects.AnimateLandEffect
 import com.wingedsheep.sdk.scripting.effects.ChooseColorAndGrantProtectionToGroupEffect
 import com.wingedsheep.sdk.scripting.effects.ChooseColorAndGrantProtectionToTargetEffect
 import com.wingedsheep.sdk.scripting.effects.ChooseCreatureTypeGainControlEffect
+import com.wingedsheep.sdk.scripting.effects.CantCastSpellsEffect
 import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.DealDamageEffect
 import com.wingedsheep.sdk.scripting.effects.DrawCardsEffect
@@ -758,6 +759,17 @@ object Effects {
      */
     fun SeparatePermanentsIntoPiles(target: EffectTarget = EffectTarget.PlayerRef(Player.TargetPlayer)): Effect =
         SeparatePermanentsIntoPilesEffect(target)
+
+    // =========================================================================
+    // Player Restriction Effects
+    // =========================================================================
+
+    /**
+     * Target player can't cast spells this turn.
+     * Used for cards like Xantid Swarm.
+     */
+    fun CantCastSpells(target: EffectTarget = EffectTarget.PlayerRef(Player.Opponent), duration: Duration = Duration.EndOfTurn): Effect =
+        CantCastSpellsEffect(target, duration)
 
     // =========================================================================
     // Combat Effects

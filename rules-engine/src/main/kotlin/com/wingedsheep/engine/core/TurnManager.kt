@@ -22,6 +22,7 @@ import com.wingedsheep.engine.state.components.player.ManaPoolComponent
 import com.wingedsheep.engine.state.components.player.PlayerLostComponent
 import com.wingedsheep.engine.state.components.player.AdditionalCombatPhasesComponent
 import com.wingedsheep.engine.state.components.player.PlayerEffectRemoval
+import com.wingedsheep.engine.state.components.player.CantCastSpellsComponent
 import com.wingedsheep.engine.state.components.player.PlayerShroudComponent
 import com.wingedsheep.engine.state.components.player.SkipCombatPhasesComponent
 import com.wingedsheep.engine.state.components.player.SkipNextTurnComponent
@@ -1016,6 +1017,10 @@ class TurnManager(
                 val shroud = result.get<PlayerShroudComponent>()
                 if (shroud?.removeOn == PlayerEffectRemoval.EndOfTurn) {
                     result = result.without<PlayerShroudComponent>()
+                }
+                val cantCast = result.get<CantCastSpellsComponent>()
+                if (cantCast?.removeOn == PlayerEffectRemoval.EndOfTurn) {
+                    result = result.without<CantCastSpellsComponent>()
                 }
                 if (result.has<com.wingedsheep.engine.state.components.player.DamageReceivedThisTurnComponent>()) {
                     result = result.without<com.wingedsheep.engine.state.components.player.DamageReceivedThisTurnComponent>()

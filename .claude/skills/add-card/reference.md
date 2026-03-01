@@ -341,6 +341,7 @@ each player reveals and creates tokens
 | `PreventLandPlaysThisTurnEffect`                   | (object)                                 | Prevent land plays                 |
 | `CreateGlobalTriggeredAbilityUntilEndOfTurnEffect` | `ability: TriggeredAbility`              | Global triggered ability until EOT |
 | `GrantShroudEffect`                                | `target: EffectTarget = Controller, duration: Duration = EndOfTurn` | Grant shroud (player or permanent) |
+| `CantCastSpellsEffect`                             | `target: EffectTarget = PlayerRef(Opponent), duration: Duration = EndOfTurn` | Prevent target player from casting spells |
 
 ### Stack
 
@@ -835,6 +836,7 @@ Set via `staticAbility { ability = ... }`:
 - `CantReceiveCounters(target)`
 - `ControlEnchantedPermanent` — control the enchanted permanent
 - `GrantShroudToController` — controller has shroud
+- `CantCastSpells(target, duration)` — prevent target player from casting spells
 - `AdditionalManaOnTap(color, amount: DynamicAmount)` — produce additional mana
 - `PlayFromTopOfLibrary` — play cards from top of library
 - `PreventCycling` — players can't cycle cards
