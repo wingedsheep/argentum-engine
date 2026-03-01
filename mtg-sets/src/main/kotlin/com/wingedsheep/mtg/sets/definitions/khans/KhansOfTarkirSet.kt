@@ -31,6 +31,7 @@ object KhansOfTarkirSet {
         Erase,
         KillShot,
         SmiteTheMonstrous,
+        TakeUpArms,
 
         // Blue creatures
         JeskaiWindscout,
