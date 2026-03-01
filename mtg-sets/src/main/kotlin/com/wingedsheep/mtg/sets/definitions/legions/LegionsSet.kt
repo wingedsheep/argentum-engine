@@ -83,6 +83,7 @@ object LegionsSet {
         HunterSliver,
         FlamewaveInvoker,
         GoblinGoon,
+        GoblinLookout,
         FreneticRaptor,
         GempalmIncinerator,
         GoblinFirebug,

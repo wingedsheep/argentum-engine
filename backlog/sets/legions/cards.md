@@ -2,14 +2,14 @@
 
 **Set Size:** 145 cards
 **Release Date:** February 3, 2003
-**Implemented:** 80 / 145
+**Implemented:** 81 / 145
 
 | Color      | Count |
 |------------|-------|
 | White      | 16/29 |
 | Blue       | 16/29 |
 | Black      | 16/29 |
-| Red        | 16/29 |
+| Red        | 17/29 |
 | Green      | 16/29 |
 
 ---
@@ -78,7 +78,7 @@
 - [x] Goblin Firebug
 - [x] Goblin Goon
 - [x] Goblin Grappler
-- [ ] Goblin Lookout
+- [x] Goblin Lookout
 - [x] Goblin Turncoat
 - [ ] Graveborn Muse
 - [x] Havoc Demon
