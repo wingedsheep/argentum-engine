@@ -818,6 +818,29 @@ data class MayPayManaContinuation(
 }
 
 /**
+ * Resume after the controller chooses an X value for "you may pay {X}" effects.
+ * The player selects a number (0 to max affordable), and if > 0, we pay that mana
+ * and execute the inner effect with the chosen X value.
+ *
+ * Example: Decree of Justice cycling trigger - "you may pay {X}. If you do,
+ * create X 1/1 white Soldier creature tokens."
+ */
+@Serializable
+data class MayPayXContinuation(
+    override val decisionId: String,
+    val playerId: EntityId,
+    val sourceId: EntityId?,
+    val sourceName: String?,
+    val effect: Effect,
+    val controllerId: EntityId,
+    val opponentId: EntityId?,
+    val targets: List<ChosenTarget> = emptyList(),
+    val triggeringEntityId: EntityId? = null,
+    val namedTargets: Map<String, ChosenTarget> = emptyMap(),
+    val maxX: Int
+) : ContinuationFrame
+
+/**
  * Resume after the controller decides whether to pay a mana cost for a triggered
  * ability that also requires targets (e.g., Lightning Rift).
  *

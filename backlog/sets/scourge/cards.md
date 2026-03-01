@@ -3,11 +3,11 @@
 
 **Set Size:** 143 cards
 **Release Date:** May 26, 2003
-**Implemented:** 116 / 143
+**Implemented:** 117 / 143
 
 | Color | Count |
 |-------|-------|
-| White | 22 |
+| White | 23 |
 | Blue | 20 |
 | Black | 23 |
 | Red | 22 |
@@ -49,7 +49,7 @@
 - [ ] Day of the Dragons
 - [x] Death's-Head Buzzard
 - [ ] Decree of Annihilation
-- [ ] Decree of Justice
+- [x] Decree of Justice
 - [ ] Decree of Pain
 - [x] Decree of Savagery
 - [x] Decree of Silence

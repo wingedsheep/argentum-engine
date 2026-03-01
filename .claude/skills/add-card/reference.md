@@ -302,6 +302,7 @@ each player reveals and creates tokens
 | `BlightEffect`               | `blightAmount: DynamicAmount, innerEffect, targetId?` | Blight effect                  |
 | `TapCreatureForEffectEffect` | `innerEffect, targetId?`                              | Tap creature for effect        |
 | `MayPayManaEffect`           | `cost: ManaCost, effect`                              | May pay mana for effect        |
+| `MayPayXForEffect`           | `effect: Effect`                                      | May pay {X} for effect (auto-taps) |
 | `AnyPlayerMayPayEffect`      | `cost: PayCost, consequence`                          | Any player may pay             |
 | `ForEachTargetEffect`        | `effects: List<Effect>`                               | Iterate per target             |
 | `ForEachPlayerEffect`        | `players: Player, effects: List<Effect>`              | Iterate per player             |

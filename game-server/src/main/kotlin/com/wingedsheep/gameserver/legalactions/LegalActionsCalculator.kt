@@ -298,7 +298,8 @@ class LegalActionsCalculator(
                         val maxAffordableX: Int? = if (hasXCost) {
                             val availableSources = manaSolver.getAvailableManaCount(state, playerId)
                             val fixedCost = effectiveCost.cmc  // X contributes 0 to CMC
-                            (availableSources - fixedCost).coerceAtLeast(0)
+                            val xSymbolCount = effectiveCost.xCount.coerceAtLeast(1)
+                            ((availableSources - fixedCost) / xSymbolCount).coerceAtLeast(0)
                         } else null
 
                         // Always include mana cost string for cast actions
@@ -582,7 +583,8 @@ class LegalActionsCalculator(
                                     val maxAffordableX: Int? = if (hasXCost) {
                                         val availableSources = manaSolver.getAvailableManaCount(state, playerId)
                                         val fixedCost = topEffectiveCost.cmc
-                                        (availableSources - fixedCost).coerceAtLeast(0)
+                                        val xSymbolCount = topEffectiveCost.xCount.coerceAtLeast(1)
+                                        ((availableSources - fixedCost) / xSymbolCount).coerceAtLeast(0)
                                     } else null
                                     val autoTapSolution = manaSolver.solve(state, playerId, topEffectiveCost)
                                     val autoTapPreview = autoTapSolution?.sources?.map { it.entityId }

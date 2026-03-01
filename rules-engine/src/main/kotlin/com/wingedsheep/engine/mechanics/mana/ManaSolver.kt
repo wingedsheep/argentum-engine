@@ -239,6 +239,7 @@ class ManaSolver(
         }
 
         // 2. Pay generic costs (and X), using bonus mana first
+        // xValue here is the total extra generic mana needed for X (callers handle XX multiplication)
         var genericRemaining = cost.genericAmount + xValue
 
         while (genericRemaining > 0) {
@@ -667,9 +668,11 @@ class ManaSolver(
         val remainingCost = partialResult.remainingCost
         val poolAfterPartial = partialResult.newPool
 
-        // Calculate how much X can be paid from remaining pool
-        val xPaidFromPool = poolAfterPartial.total.coerceAtMost(xValue)
-        val xRemainingToPay = xValue - xPaidFromPool
+        // Calculate how much X mana is needed (multiply by X symbol count for XX costs)
+        val xSymbolCount = cost.xCount.coerceAtLeast(1)
+        val totalXMana = xValue * xSymbolCount
+        val xPaidFromPool = poolAfterPartial.total.coerceAtMost(totalXMana)
+        val xRemainingToPay = totalXMana - xPaidFromPool
 
         // If nothing remains after using pool (including X), we can pay
         if (remainingCost.isEmpty() && xRemainingToPay == 0) {

@@ -155,6 +155,7 @@ class ContinuationHandler(
             is ChangeSpellTargetContinuation -> manaPaymentResumer.resumeChangeSpellTarget(stateAfterPop, continuation, response, cfm)
             is MayPayManaContinuation -> manaPaymentResumer.resumeMayPayMana(stateAfterPop, continuation, response, cfm)
             is MayPayManaTriggerContinuation -> manaPaymentResumer.resumeMayPayManaTrigger(stateAfterPop, continuation, response, cfm)
+            is MayPayXContinuation -> manaPaymentResumer.resumeMayPayX(stateAfterPop, continuation, response, cfm)
             is ManaSourceSelectionContinuation -> manaPaymentResumer.resumeManaSourceSelection(stateAfterPop, continuation, response, cfm)
 
             // Library and zone

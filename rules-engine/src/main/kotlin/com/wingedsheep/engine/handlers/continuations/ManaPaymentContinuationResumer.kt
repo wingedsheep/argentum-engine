@@ -314,6 +314,113 @@ class ManaPaymentContinuationResumer(
     }
 
     /**
+     * Resume after the controller chooses an X value for "you may pay {X}" effects.
+     * If X > 0, auto-tap X mana and execute the inner effect with the chosen X.
+     */
+    fun resumeMayPayX(
+        state: GameState,
+        continuation: MayPayXContinuation,
+        response: DecisionResponse,
+        checkForMore: CheckForMore
+    ): ExecutionResult {
+        if (response !is NumberChosenResponse) {
+            return ExecutionResult.error(state, "Expected number chosen response for may pay X")
+        }
+
+        val chosenX = response.number
+        if (chosenX <= 0) {
+            // Player declined to pay — nothing happens
+            return checkForMore(state, emptyList())
+        }
+
+        // Player chose to pay X mana — auto-tap sources
+        val playerId = continuation.playerId
+        val playerEntity = state.getEntity(playerId)
+            ?: return ExecutionResult.error(state, "Paying player not found")
+
+        val manaPoolComponent = playerEntity.get<ManaPoolComponent>()
+            ?: return ExecutionResult.error(state, "Player has no mana pool")
+
+        val manaPool = ManaPool(
+            manaPoolComponent.white,
+            manaPoolComponent.blue,
+            manaPoolComponent.black,
+            manaPoolComponent.red,
+            manaPoolComponent.green,
+            manaPoolComponent.colorless
+        )
+
+        // Create a ManaCost of {X} generic mana
+        val xCost = com.wingedsheep.sdk.core.ManaCost(
+            List(chosenX) { com.wingedsheep.sdk.core.ManaSymbol.generic(1) }
+        )
+
+        // Try to pay from floating mana first, then tap sources for the rest
+        val partialResult = manaPool.payPartial(xCost)
+        val remainingCost = partialResult.remainingCost
+        var currentPool = manaPool
+        var currentState = state
+        val events = mutableListOf<GameEvent>()
+
+        if (!remainingCost.isEmpty()) {
+            val manaSolver = ManaSolver()
+            val solution = manaSolver.solve(currentState, playerId, remainingCost)
+                ?: return ExecutionResult.error(state, "Cannot pay mana cost")
+
+            for (source in solution.sources) {
+                currentState = currentState.updateEntity(source.entityId) { c ->
+                    c.with(TappedComponent)
+                }
+                events.add(TappedEvent(source.entityId, source.name))
+            }
+
+            for ((_, production) in solution.manaProduced) {
+                currentPool = if (production.color != null) {
+                    currentPool.add(production.color)
+                } else {
+                    currentPool.addColorless(production.colorless)
+                }
+            }
+        }
+
+        // Deduct the cost from the pool
+        val newPool = currentPool.pay(xCost)
+            ?: return ExecutionResult.error(state, "Cannot pay mana cost after auto-tap")
+
+        currentState = currentState.updateEntity(playerId) { container ->
+            container.with(
+                ManaPoolComponent(
+                    white = newPool.white,
+                    blue = newPool.blue,
+                    black = newPool.black,
+                    red = newPool.red,
+                    green = newPool.green,
+                    colorless = newPool.colorless
+                )
+            )
+        }
+
+        // Execute the inner effect with the chosen X value
+        val context = com.wingedsheep.engine.handlers.EffectContext(
+            sourceId = continuation.sourceId,
+            controllerId = continuation.controllerId,
+            opponentId = continuation.opponentId,
+            xValue = chosenX,
+            targets = continuation.targets,
+            triggeringEntityId = continuation.triggeringEntityId,
+            namedTargets = continuation.namedTargets
+        )
+        val effectResult = ctx.effectExecutorRegistry.execute(currentState, continuation.effect, context)
+
+        if (effectResult.error != null) {
+            return effectResult
+        }
+
+        val allEvents = events + effectResult.events
+        return checkForMore(effectResult.state, allEvents)
+    }
+
+    /**
      * Resume after the controller selects mana sources to pay a cost for a triggered
      * ability that also requires targets.
      *

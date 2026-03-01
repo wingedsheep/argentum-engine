@@ -630,8 +630,9 @@ class CastSpellHandler(
         var greenSpent = poolComponent.green - poolAfterPayment.green
         var colorlessSpent = poolComponent.colorless - poolAfterPayment.colorless
 
-        // Pay for X from remaining pool
-        var xRemainingToPay = xValue
+        // Pay for X from remaining pool (multiply by X symbol count for XX costs)
+        val xSymbolCount = cost.xCount.coerceAtLeast(1)
+        var xRemainingToPay = xValue * xSymbolCount
 
         // Spend colorless first for X
         while (xRemainingToPay > 0 && poolAfterPayment.colorless > 0) {
@@ -721,8 +722,9 @@ class CastSpellHandler(
         var greenSpent = manaSpentFromPool.green
         var colorlessSpent = manaSpentFromPool.colorless
 
-        // Use remaining floating mana for X cost
-        var xRemainingToPay = xValue
+        // Use remaining floating mana for X cost (multiply by X symbol count for XX costs)
+        val xSymbolCount = cost.xCount.coerceAtLeast(1)
+        var xRemainingToPay = xValue * xSymbolCount
 
         // Spend colorless first for X
         while (xRemainingToPay > 0 && poolAfterPayment.colorless > 0) {

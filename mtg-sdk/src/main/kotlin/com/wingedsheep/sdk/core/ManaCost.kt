@@ -36,6 +36,9 @@ data class ManaCost(val symbols: List<ManaSymbol>) {
     val hasX: Boolean
         get() = symbols.any { it is ManaSymbol.X }
 
+    val xCount: Int
+        get() = symbols.count { it is ManaSymbol.X }
+
     fun isEmpty(): Boolean = symbols.isEmpty()
 
     override fun toString(): String = symbols.joinToString("")

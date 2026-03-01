@@ -149,6 +149,9 @@ object ScourgeSet {
         DragonScales,
         GuiltyConscience,
 
+        // White sorceries
+        DecreeOfJustice,
+
         // White instants
         GildedLight,
         RainOfBlades,

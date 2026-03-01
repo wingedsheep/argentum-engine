@@ -353,6 +353,26 @@ data class MayPayManaEffect(
 }
 
 /**
+ * "You may pay {X}. If you do, [effect]."
+ *
+ * Presents the player with a number chooser (0 to max affordable mana).
+ * If X > 0, pays X mana (auto-tapping lands) and executes the inner effect
+ * with the chosen X value set in the effect context.
+ *
+ * Example: Decree of Justice cycling trigger - "you may pay {X}. If you do,
+ * create X 1/1 white Soldier creature tokens."
+ *
+ * @property effect The effect that happens if the player pays (uses DynamicAmount.XValue)
+ */
+@SerialName("MayPayX")
+@Serializable
+data class MayPayXForEffect(
+    val effect: Effect
+) : Effect {
+    override val description: String = "You may pay {X}. If you do, ${effect.description.replaceFirstChar { it.lowercase() }}"
+}
+
+/**
  * "Any player may [cost]. If a player does, [consequence]."
  *
  * Each player in APNAP order gets the chance to pay the cost. As soon as
