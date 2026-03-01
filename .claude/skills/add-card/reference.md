@@ -412,6 +412,7 @@ each player reveals and creates tokens
 - `Targets.Spell` / `Targets.CreatureSpell` / `Targets.NoncreatureSpell`
 - `Targets.CreatureOrSorcerySpell`
 - `Targets.SpellWithManaValueAtMost(manaValue)`
+- `Targets.SpellWithManaValueAtLeast(manaValue)`
 - `Targets.ActivatedOrTriggeredAbility`
 - `Targets.SpellOrAbilityWithSingleTarget` — target spell or ability (single-target check at resolution)
 
