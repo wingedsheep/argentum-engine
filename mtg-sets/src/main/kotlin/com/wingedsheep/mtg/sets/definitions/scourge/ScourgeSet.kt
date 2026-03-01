@@ -158,6 +158,7 @@ object ScourgeSet {
 
         // White enchantments
         DragonScales,
+        ForceBubble,
         GuiltyConscience,
 
         // White sorceries

@@ -37,6 +37,7 @@ import com.wingedsheep.engine.state.components.identity.MorphDataComponent
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.engine.mechanics.layers.SerializableModification
 import com.wingedsheep.engine.mechanics.layers.StateProjector
+import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
@@ -45,8 +46,11 @@ import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.events.DamageType
 import com.wingedsheep.sdk.scripting.DoubleDamage
 import com.wingedsheep.sdk.scripting.PreventDamage
+import com.wingedsheep.sdk.scripting.ReplaceDamageWithCounters
 import com.wingedsheep.sdk.scripting.events.RecipientFilter
 import com.wingedsheep.sdk.scripting.events.SourceFilter
+import com.wingedsheep.engine.core.CountersAddedEvent
+import com.wingedsheep.engine.core.PermanentsSacrificedEvent
 
 /**
  * Utility functions shared across effect executors.
@@ -333,6 +337,15 @@ object EffectExecutorUtils {
         // Apply damage amplification (e.g., Gratuitous Violence - DoubleDamage)
         var effectiveAmount = applyStaticDamageAmplification(state, targetId, amount, sourceId)
         var newState = state
+
+        // Check for damage-to-counters replacement (Force Bubble)
+        // This replaces the damage entirely — it is neither dealt nor prevented.
+        val isPlayer = newState.getEntity(targetId)?.get<LifeTotalComponent>() != null
+        if (isPlayer) {
+            val counterResult = applyReplaceDamageWithCounters(newState, targetId, effectiveAmount, sourceId)
+            if (counterResult != null) return counterResult
+        }
+
         if (!cantBePrevented) {
             val (shieldState, reducedAmount) = applyDamagePreventionShields(newState, targetId, effectiveAmount)
             newState = shieldState
@@ -828,6 +841,111 @@ object EffectExecutorUtils {
         }
 
         return amplifiedAmount
+    }
+
+    /**
+     * Check for ReplaceDamageWithCounters replacement effects (Force Bubble).
+     *
+     * Scans the battlefield for permanents with ReplaceDamageWithCounters replacement
+     * effects. If found and the recipient matches, replaces all damage with counters
+     * on the source permanent. If the counter threshold is met, sacrifices the permanent.
+     *
+     * @param state The current game state
+     * @param targetId The player entity receiving damage
+     * @param amount The damage amount to replace
+     * @param sourceId The entity dealing damage (for source filtering)
+     * @return ExecutionResult if replacement was applied, null if no replacement found
+     */
+    fun applyReplaceDamageWithCounters(
+        state: GameState,
+        targetId: EntityId,
+        amount: Int,
+        sourceId: EntityId?
+    ): ExecutionResult? {
+        if (amount <= 0) return null
+
+        for (entityId in state.getBattlefield()) {
+            val container = state.getEntity(entityId) ?: continue
+            val replacementComponent = container.get<ReplacementEffectSourceComponent>() ?: continue
+            val sourceControllerId = container.get<ControllerComponent>()?.playerId ?: continue
+
+            for (effect in replacementComponent.replacementEffects) {
+                if (effect !is ReplaceDamageWithCounters) continue
+
+                val damageEvent = effect.appliesTo
+                if (damageEvent !is com.wingedsheep.sdk.scripting.GameEvent.DamageEvent) continue
+
+                // Check recipient filter
+                val recipientMatches = when (val recipient = damageEvent.recipient) {
+                    is RecipientFilter.You -> targetId == sourceControllerId
+                    is RecipientFilter.Any -> true
+                    else -> false
+                }
+                if (!recipientMatches) continue
+
+                // Match found — replace damage with counters on this permanent
+                val events = mutableListOf<EngineGameEvent>()
+                var newState = state
+
+                // Convert string counter type to CounterType enum
+                val counterType = try {
+                    CounterType.valueOf(
+                        effect.counterType.uppercase()
+                            .replace(' ', '_')
+                            .replace('+', 'P')
+                            .replace('-', 'M')
+                            .replace("/", "_")
+                    )
+                } catch (e: IllegalArgumentException) {
+                    CounterType.PLUS_ONE_PLUS_ONE
+                }
+
+                // Add counters to the enchantment
+                val currentCounters = container.get<CountersComponent>() ?: CountersComponent()
+                val updatedCounters = currentCounters.withAdded(counterType, amount)
+                newState = newState.updateEntity(entityId) { c ->
+                    c.with(updatedCounters)
+                }
+
+                val entityName = container.get<CardComponent>()?.name ?: ""
+                events.add(CountersAddedEvent(entityId, effect.counterType, amount, entityName))
+
+                // Check sacrifice threshold (state-triggered ability approximation)
+                val totalCounters = updatedCounters.getCount(counterType)
+                val threshold = effect.sacrificeThreshold
+                if (threshold != null && totalCounters >= threshold) {
+                    val ownerId = container.get<CardComponent>()?.ownerId ?: sourceControllerId
+                    val zoneKey = state.zones.entries.find { (_, cards) -> entityId in cards }?.key
+                    if (zoneKey != null) {
+                        newState = newState.removeFromZone(zoneKey, entityId)
+                        val graveyardKey = ZoneKey(ownerId, Zone.GRAVEYARD)
+                        newState = newState.addToZone(graveyardKey, entityId)
+                        newState = newState.updateEntity(entityId) { c -> stripBattlefieldComponents(c) }
+                        newState = removeFloatingEffectsTargeting(newState, entityId)
+                        events.add(
+                            PermanentsSacrificedEvent(
+                                sourceControllerId,
+                                listOf(entityId),
+                                listOf(entityName)
+                            )
+                        )
+                        events.add(
+                            ZoneChangeEvent(
+                                entityId,
+                                entityName,
+                                Zone.BATTLEFIELD,
+                                Zone.GRAVEYARD,
+                                ownerId
+                            )
+                        )
+                    }
+                }
+
+                return ExecutionResult.success(newState, events)
+            }
+        }
+
+        return null
     }
 
     /**

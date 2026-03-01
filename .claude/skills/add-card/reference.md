@@ -930,6 +930,7 @@ Used in card definitions for effects that intercept events before they happen:
 - `PreventDamage(amount?, appliesTo)` — Fog, protection (null = prevent all)
 - `RedirectDamage(redirectTo, appliesTo)` — Pariah
 - `DoubleDamage(appliesTo)` — Furnace of Rath
+- `ReplaceDamageWithCounters(counterType, sacrificeThreshold?, appliesTo)` — Force Bubble (damage → counters on this permanent, sacrifice at threshold)
 
 ### Draw
 

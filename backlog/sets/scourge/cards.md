@@ -3,11 +3,11 @@
 
 **Set Size:** 143 cards
 **Release Date:** May 26, 2003
-**Implemented:** 134 / 143
+**Implemented:** 135 / 143
 
 | Color | Count |
 |-------|-------|
-| White | 25 |
+| White | 26 |
 | Blue | 25 |
 | Black | 27 |
 | Red | 25 |
@@ -76,7 +76,7 @@
 - [x] Fatal Mutation
 - [x] Fierce Empath
 - [x] Final Punishment
-- [ ] Force Bubble
+- [x] Force Bubble
 - [x] Forgotten Ancient
 - [x] Form of the Dragon
 - [x] Frontline Strategist

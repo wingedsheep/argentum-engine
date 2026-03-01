@@ -1729,6 +1729,9 @@ class CombatManager(
     ): ExecutionResult {
         // Apply damage amplification (e.g., Gratuitous Violence)
         val amplifiedAmount = EffectExecutorUtils.applyStaticDamageAmplification(state, playerId, amount, sourceId)
+        // Check for damage-to-counters replacement (Force Bubble)
+        val counterResult = EffectExecutorUtils.applyReplaceDamageWithCounters(state, playerId, amplifiedAmount, sourceId)
+        if (counterResult != null) return counterResult
         // Apply damage prevention shields
         val (shieldState, effectiveAmount) = EffectExecutorUtils.applyDamagePreventionShields(state, playerId, amplifiedAmount, isCombatDamage = true, sourceId = sourceId)
         if (effectiveAmount <= 0) return ExecutionResult.success(shieldState)

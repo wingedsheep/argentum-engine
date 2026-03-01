@@ -470,6 +470,36 @@ data class AmplifyEffect(
 }
 
 // =============================================================================
+// Damage-to-Counters Replacement Effect
+// =============================================================================
+
+/**
+ * Replace damage dealt to a player with counters on this permanent.
+ * Example: Force Bubble — "If damage would be dealt to you, put that many
+ * depletion counters on this enchantment instead."
+ *
+ * @param counterType The type of counter to add (e.g., "depletion")
+ * @param sacrificeThreshold If non-null, sacrifice this permanent when it has
+ *        this many or more counters of the specified type (state-triggered ability)
+ */
+@SerialName("ReplaceDamageWithCounters")
+@Serializable
+data class ReplaceDamageWithCounters(
+    val counterType: String,
+    val sacrificeThreshold: Int? = null,
+    override val appliesTo: GameEvent = GameEvent.DamageEvent(
+        recipient = RecipientFilter.You
+    )
+) : ReplacementEffect {
+    override val description: String = buildString {
+        append("If ${appliesTo.description}, put that many $counterType counters on this permanent instead")
+        if (sacrificeThreshold != null) {
+            append(". When there are $sacrificeThreshold or more $counterType counters on this permanent, sacrifice it")
+        }
+    }
+}
+
+// =============================================================================
 // Generic Replacement Effect
 // =============================================================================
 
