@@ -3,7 +3,7 @@
 
 **Set Size:** 143 cards
 **Release Date:** May 26, 2003
-**Implemented:** 127 / 143
+**Implemented:** 128 / 143
 
 | Color | Count |
 |-------|-------|
@@ -11,7 +11,7 @@
 | Blue | 23 |
 | Black | 26 |
 | Red | 24 |
-| Green | 24 |
+| Green | 25 |
 | Multicolor | 2 |
 | Colorless | 4 |
 
@@ -133,7 +133,7 @@
 - [ ] Sliver Overlord
 - [x] Soul Collector
 - [x] Spark Spray
-- [ ] Sprouting Vines
+- [x] Sprouting Vines
 - [x] Stabilizer
 - [x] Stifle
 - [x] Sulfuric Vortex

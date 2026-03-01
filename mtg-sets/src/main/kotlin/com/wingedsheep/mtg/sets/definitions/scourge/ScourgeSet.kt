@@ -65,6 +65,7 @@ object ScourgeSet {
         DecreeOfSavagery,
         DivergentGrowth,
         HuntingPack,
+        SproutingVines,
 
         // Green sorceries
         BreakAsunder,
