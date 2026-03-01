@@ -23,6 +23,7 @@ object KhansOfTarkirSet {
     val allCards = listOf(
         // White creatures
         AlabasterKirin,
+        DazzlingRamparts,
         FirehoofCavalry,
         JeskaiStudent,
 
@@ -88,6 +89,7 @@ object KhansOfTarkirSet {
         // Red spells
         BringLow,
         HordelingOutburst,
+        TormentingVoice,
         TrumpetBlast,
 
         // Multicolor
