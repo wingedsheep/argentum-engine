@@ -648,26 +648,27 @@ class TournamentLobby(
         if (players.size < 2 || players.size > 4) return false
         if (format != TournamentFormat.GRID_DRAFT) return false
 
-        // Generate full card pool
-        val pool = mutableListOf<CardDefinition>()
-        repeat(boosterCount) {
-            pool.addAll(boosterGenerator.generateBooster(setCodes))
-        }
-        pool.shuffle()
-
         val allPlayers = players.keys.toList().shuffled()
 
         if (players.size == 4) {
-            // 4 players: split into 2 parallel groups of 2
-            val halfSize = pool.size / 2
-            val pool1 = pool.subList(0, halfSize).toMutableList()
-            val pool2 = pool.subList(halfSize, pool.size).toMutableList()
+            // 4 players: 2 parallel groups, each with its own boosters
+            // (ensures balanced rarity distribution per group)
+            val boostersPerGroup = boosterCount / 2
+            fun generateGroupPool(count: Int): MutableList<CardDefinition> {
+                val pool = mutableListOf<CardDefinition>()
+                repeat(count) { pool.addAll(boosterGenerator.generateBooster(setCodes)) }
+                pool.shuffle()
+                return pool
+            }
             gridGroups = listOf(
-                GridGroup(mainDeck = pool1, playerOrder = listOf(allPlayers[0], allPlayers[1])),
-                GridGroup(mainDeck = pool2, playerOrder = listOf(allPlayers[2], allPlayers[3]))
+                GridGroup(mainDeck = generateGroupPool(boostersPerGroup), playerOrder = listOf(allPlayers[0], allPlayers[1])),
+                GridGroup(mainDeck = generateGroupPool(boosterCount - boostersPerGroup), playerOrder = listOf(allPlayers[2], allPlayers[3]))
             )
         } else {
             // 2-3 players: 1 group with all players
+            val pool = mutableListOf<CardDefinition>()
+            repeat(boosterCount) { pool.addAll(boosterGenerator.generateBooster(setCodes)) }
+            pool.shuffle()
             gridGroups = listOf(
                 GridGroup(mainDeck = pool, playerOrder = allPlayers)
             )
