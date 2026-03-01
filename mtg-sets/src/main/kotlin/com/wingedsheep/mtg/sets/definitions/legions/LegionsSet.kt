@@ -58,6 +58,7 @@ object LegionsSet {
         PrimocEscapee,
         RiptideMangler,
         ShiftingSliver,
+        SynapseSliver,
         VoidmageApprentice,
         WallOfDeceit,
         WarpedResearcher,
