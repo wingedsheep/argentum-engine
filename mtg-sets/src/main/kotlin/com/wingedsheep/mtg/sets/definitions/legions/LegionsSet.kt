@@ -39,6 +39,7 @@ object LegionsSet {
         SwoopingTalon,
         WallOfHope,
         WhiteKnight,
+        WindbornMuse,
         WingbeatWarrior,
 
         // Blue creatures
@@ -117,6 +118,7 @@ object LegionsSet {
         StonewoodInvoker,
         TimberwatchElf,
         TotemSpeaker,
+        VexingBeetle,
         WirewoodHivemaster,
     )
 }

@@ -210,7 +210,8 @@ class GameInitializer(
                 colors = cardDef.colors,
                 ownerId = ownerId,
                 spellEffect = cardDef.spellEffect,
-                imageUri = cardDef.metadata.imageUri
+                imageUri = cardDef.metadata.imageUri,
+                cantBeCountered = cardDef.script.cantBeCountered
             ),
             OwnerComponent(ownerId),
             ControllerComponent(ownerId)

@@ -953,6 +953,12 @@ class StackResolver(
             ?: return ExecutionResult.error(state, "Spell not found: $spellId")
 
         val cardComponent = container.get<CardComponent>()
+
+        // Check if the spell can't be countered
+        if (cardComponent?.cantBeCountered == true) {
+            return ExecutionResult.success(state)
+        }
+
         val spellComponent = container.get<SpellOnStackComponent>()
         val ownerId = cardComponent?.ownerId
             ?: spellComponent?.casterId

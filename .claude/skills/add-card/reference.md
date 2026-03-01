@@ -861,6 +861,7 @@ Set via `staticAbility { ability = ... }`:
 - `PreventCycling` — players can't cycle cards
 - `IncreaseMorphCost(amount: Int)` — all morph (turn face-up) costs cost more
 - `IncreaseSpellCostByFilter(filter: GameObjectFilter, amount: Int)` — spells matching filter cost more (global tax effect)
+- `AttackTax(manaCostPerAttacker: String)` — creatures can't attack you unless their controller pays the cost per attacker (e.g., Ghostly Prison, Windborn Muse)
 - `RevealFirstDrawEachTurn` — reveal the first card drawn each turn (Primitive Etchings)
 - `SpellCostReduction(reductionSource)` — cost reduction
 - `FaceDownSpellCostReduction(reductionSource)` — face-down spell cost reduction

@@ -545,7 +545,8 @@ class GameTestDriver {
             baseFlags = cardDef.flags,
             colors = cardDef.colors,
             ownerId = playerId,
-            spellEffect = cardDef.spellEffect
+            spellEffect = cardDef.spellEffect,
+            cantBeCountered = cardDef.script.cantBeCountered
         )
 
         val container = com.wingedsheep.engine.state.ComponentContainer.of(
@@ -583,7 +584,8 @@ class GameTestDriver {
             baseFlags = cardDef.flags,
             colors = cardDef.colors,
             ownerId = playerId,
-            spellEffect = cardDef.spellEffect
+            spellEffect = cardDef.spellEffect,
+            cantBeCountered = cardDef.script.cantBeCountered
         )
 
         val container = com.wingedsheep.engine.state.ComponentContainer.of(
@@ -620,7 +622,8 @@ class GameTestDriver {
             baseFlags = cardDef.flags,
             colors = cardDef.colors,
             ownerId = playerId,
-            spellEffect = cardDef.spellEffect
+            spellEffect = cardDef.spellEffect,
+            cantBeCountered = cardDef.script.cantBeCountered
         )
 
         val container = com.wingedsheep.engine.state.ComponentContainer.of(
@@ -660,7 +663,8 @@ class GameTestDriver {
             baseFlags = cardDef.flags,
             colors = cardDef.colors,
             ownerId = playerId,
-            spellEffect = cardDef.spellEffect
+            spellEffect = cardDef.spellEffect,
+            cantBeCountered = cardDef.script.cantBeCountered
         )
 
         var container = com.wingedsheep.engine.state.ComponentContainer.of(
@@ -703,7 +707,8 @@ class GameTestDriver {
             baseFlags = cardDef.flags,
             colors = cardDef.colors,
             ownerId = playerId,
-            spellEffect = cardDef.spellEffect
+            spellEffect = cardDef.spellEffect,
+            cantBeCountered = cardDef.script.cantBeCountered
         )
 
         var container = com.wingedsheep.engine.state.ComponentContainer.of(
@@ -773,7 +778,8 @@ class GameTestDriver {
             baseFlags = cardDef.flags,
             colors = cardDef.colors,
             ownerId = playerId,
-            spellEffect = cardDef.spellEffect
+            spellEffect = cardDef.spellEffect,
+            cantBeCountered = cardDef.script.cantBeCountered
         )
 
         val container = com.wingedsheep.engine.state.ComponentContainer.of(

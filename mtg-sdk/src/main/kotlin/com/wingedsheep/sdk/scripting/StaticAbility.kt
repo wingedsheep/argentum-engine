@@ -846,6 +846,24 @@ data class CantBlockUnless(
 // =============================================================================
 
 /**
+ * Creatures can't attack you unless their controller pays a mana cost for each
+ * attacking creature. Used for Ghostly Prison, Propaganda, Windborn Muse.
+ *
+ * Only applies when attacking the controller of this permanent (not their planeswalkers).
+ * Multiple AttackTax effects from different permanents stack additively.
+ *
+ * @property manaCostPerAttacker The mana cost that must be paid per attacking creature (e.g., "{2}")
+ */
+@SerialName("AttackTax")
+@Serializable
+data class AttackTax(
+    val manaCostPerAttacker: String
+) : StaticAbility {
+    override val description: String =
+        "Creatures can't attack you unless their controller pays $manaCostPerAttacker for each creature they control that's attacking you"
+}
+
+/**
  * Reduces the cost of face-down creature spells you cast.
  * Used for Dream Chisel: "Face-down creature spells you cast cost {1} less to cast."
  *
