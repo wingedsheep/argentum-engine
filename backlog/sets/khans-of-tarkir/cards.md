@@ -2,12 +2,12 @@
 
 **Set Size:** 269 cards (249 unique card names + basic land variants)
 **Release Date:** September 26, 2014
-**Implemented:** 40 / 249
+**Implemented:** 41 / 249
 
 | Color      | Count |
 |------------|-------|
 | White      | 6     |
-| Blue       | 6     |
+| Blue       | 7     |
 | Black      | 6     |
 | Red        | 6     |
 | Green      | 6     |
@@ -64,7 +64,7 @@
 - [ ] Crackling Doom
 - [ ] Cranial Archive
 - [ ] Crater's Claws
-- [ ] Crippling Chill
+- [x] Crippling Chill
 - [ ] Dazzling Ramparts
 - [ ] Dead Drop
 - [ ] Death Frenzy
