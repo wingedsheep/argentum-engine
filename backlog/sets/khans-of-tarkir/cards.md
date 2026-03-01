@@ -2,14 +2,14 @@
 
 **Set Size:** 269 cards (249 unique card names + basic land variants)
 **Release Date:** September 26, 2014
-**Implemented:** 42 / 249
+**Implemented:** 43 / 249
 
 | Color      | Count |
 |------------|-------|
 | White      | 6     |
 | Blue       | 7     |
 | Black      | 7     |
-| Red        | 6     |
+| Red        | 7     |
 | Green      | 6     |
 | Multicolor | 4     |
 | Colorless  | 3     |
@@ -110,7 +110,7 @@
 - [ ] Hooded Hydra
 - [ ] Hooting Mandrills
 - [ ] Horde Ambusher
-- [ ] Hordeling Outburst
+- [x] Hordeling Outburst
 - [ ] Howl of the Horde
 - [ ] Icefeather Aven
 - [ ] Icy Blast

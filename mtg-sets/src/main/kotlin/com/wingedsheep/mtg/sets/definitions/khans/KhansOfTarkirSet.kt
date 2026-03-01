@@ -72,6 +72,7 @@ object KhansOfTarkirSet {
 
         // Red spells
         BringLow,
+        HordelingOutburst,
 
         // Multicolor
         ChiefOfTheEdge,
