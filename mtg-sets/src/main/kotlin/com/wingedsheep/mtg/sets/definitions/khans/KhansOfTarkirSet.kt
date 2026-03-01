@@ -30,6 +30,7 @@ object KhansOfTarkirSet {
         DefiantStrike,
         Erase,
         KillShot,
+        Siegecraft,
         SmiteTheMonstrous,
         TakeUpArms,
 

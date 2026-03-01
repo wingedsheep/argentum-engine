@@ -2,11 +2,11 @@
 
 **Set Size:** 269 cards (249 unique card names + basic land variants)
 **Release Date:** September 26, 2014
-**Implemented:** 53 / 249
+**Implemented:** 54 / 249
 
 | Color      | Count |
 |------------|-------|
-| White      | 8     |
+| White      | 9     |
 | Blue       | 8     |
 | Black      | 8     |
 | Red        | 8     |
@@ -204,7 +204,7 @@
 - [ ] Shatter
 - [ ] Sidisi, Brood Tyrant
 - [ ] Sidisi's Pet
-- [ ] Siegecraft
+- [x] Siegecraft
 - [ ] Siege Rhino
 - [ ] Singing Bell Strike
 - [x] Smite the Monstrous
