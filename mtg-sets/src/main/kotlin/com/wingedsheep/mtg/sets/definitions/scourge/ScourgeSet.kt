@@ -128,6 +128,7 @@ object ScourgeSet {
         // Red instants
         Carbonize,
         Enrage,
+        Scattershot,
         SparkSpray,
 
         // White creatures

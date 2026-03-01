@@ -3,14 +3,14 @@
 
 **Set Size:** 143 cards
 **Release Date:** May 26, 2003
-**Implemented:** 121 / 143
+**Implemented:** 122 / 143
 
 | Color | Count |
 |-------|-------|
 | White | 23 |
 | Blue | 22 |
 | Black | 25 |
-| Red | 22 |
+| Red | 23 |
 | Green | 23 |
 | Multicolor | 2 |
 | Colorless | 4 |
@@ -123,7 +123,7 @@
 - [x] Rock Jockey
 - [x] Root Elemental
 - [x] Rush of Knowledge
-- [ ] Scattershot
+- [x] Scattershot
 - [x] Scornful Egotist
 - [x] Shoreline Ranger
 - [x] Siege-Gang Commander
