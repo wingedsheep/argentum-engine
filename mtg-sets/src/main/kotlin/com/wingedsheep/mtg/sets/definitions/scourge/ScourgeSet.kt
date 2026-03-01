@@ -123,6 +123,7 @@ object ScourgeSet {
         UncontrolledInfestation,
 
         // Red sorceries
+        Dragonstorm,
         GoblinWarStrike,
         MisguidedRage,
         TorrentOfFire,
