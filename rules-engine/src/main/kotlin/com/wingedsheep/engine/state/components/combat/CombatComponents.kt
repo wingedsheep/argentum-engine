@@ -108,6 +108,16 @@ data object BlockersDeclaredThisCombatComponent : Component
 data object MarkedForDestructionAtEndOfCombatComponent : Component
 
 /**
+ * Marks a creature for sacrifice at end of combat.
+ * Used by Mardu Blazebringer and similar creatures that say
+ * "sacrifice it at end of combat."
+ *
+ * Cleared at END_COMBAT after the sacrifice is processed.
+ */
+@Serializable
+data object MarkedForSacrificeAtEndOfCombatComponent : Component
+
+/**
  * Marks a player whose creatures must attack a specific defender if able.
  * Used by Taunt and similar effects.
  *

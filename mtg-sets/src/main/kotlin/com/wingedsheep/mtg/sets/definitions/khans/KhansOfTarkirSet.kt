@@ -80,6 +80,7 @@ object KhansOfTarkirSet {
         BloodfireExpert,
         CanyonLurkers,
         LeapingMaster,
+        MarduBlazebringer,
         MonasterySwiftspear,
         SummitProwler,
         ValleyDasher,

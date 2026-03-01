@@ -224,6 +224,20 @@ data class DestroyAtEndOfCombatEffect(
 }
 
 /**
+ * Sacrifice target permanent at end of combat.
+ * Marks the permanent for sacrifice when the end of combat step begins.
+ * Used by Mardu Blazebringer and similar creatures that sacrifice themselves
+ * after attacking or blocking.
+ */
+@SerialName("SacrificeAtEndOfCombat")
+@Serializable
+data class SacrificeAtEndOfCombatEffect(
+    val target: EffectTarget
+) : Effect {
+    override val description: String = "Sacrifice ${target.description} at end of combat"
+}
+
+/**
  * Destroy all permanents matching a filter.
  *
  * Optionally excludes permanents that have any subtype matching a stored list of strings

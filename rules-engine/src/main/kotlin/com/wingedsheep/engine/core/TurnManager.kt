@@ -12,6 +12,7 @@ import com.wingedsheep.engine.state.components.battlefield.SummoningSicknessComp
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.state.components.combat.AttackingComponent
 import com.wingedsheep.engine.state.components.combat.MarkedForDestructionAtEndOfCombatComponent
+import com.wingedsheep.engine.state.components.combat.MarkedForSacrificeAtEndOfCombatComponent
 import com.wingedsheep.engine.state.components.combat.MustAttackPlayerComponent
 import com.wingedsheep.engine.state.components.combat.MustAttackThisTurnComponent
 import com.wingedsheep.engine.state.components.combat.PlayerAttackedThisTurnComponent
@@ -707,6 +708,45 @@ class TurnManager(
                     // Remove the marker component regardless
                     newState = newState.updateEntity(entityId) { container ->
                         container.without<MarkedForDestructionAtEndOfCombatComponent>()
+                    }
+                }
+
+                // Process delayed "sacrifice at end of combat" effects (e.g. Mardu Blazebringer)
+                val markedForSacrifice = newState.findEntitiesWith<MarkedForSacrificeAtEndOfCombatComponent>()
+                for ((entityId, _) in markedForSacrifice) {
+                    // Only sacrifice if still on the battlefield
+                    if (newState.getBattlefield().contains(entityId)) {
+                        val container = newState.getEntity(entityId)
+                        val cardComponent = container?.get<CardComponent>()
+                        if (container != null && cardComponent != null) {
+                            val controllerId = container.get<com.wingedsheep.engine.state.components.identity.ControllerComponent>()?.playerId
+                                ?: cardComponent.ownerId
+                            if (controllerId != null) {
+                                val ownerId = cardComponent.ownerId ?: controllerId
+                                val battlefieldZone = ZoneKey(controllerId, Zone.BATTLEFIELD)
+                                val graveyardZone = ZoneKey(ownerId, Zone.GRAVEYARD)
+
+                                newState = newState.removeFromZone(battlefieldZone, entityId)
+                                newState = newState.addToZone(graveyardZone, entityId)
+
+                                // Clean up combat references
+                                newState = com.wingedsheep.engine.handlers.effects.EffectExecutorUtils
+                                    .cleanupCombatReferences(newState, entityId)
+                                newState = newState.updateEntity(entityId) { c ->
+                                    com.wingedsheep.engine.handlers.effects.EffectExecutorUtils
+                                        .stripBattlefieldComponents(c)
+                                }
+                                newState = com.wingedsheep.engine.handlers.effects.EffectExecutorUtils
+                                    .removeFloatingEffectsTargeting(newState, entityId)
+
+                                events.add(PermanentsSacrificedEvent(controllerId, listOf(entityId), listOf(cardComponent.name)))
+                                events.add(ZoneChangeEvent(entityId, cardComponent.name, Zone.BATTLEFIELD, Zone.GRAVEYARD, ownerId))
+                            }
+                        }
+                    }
+                    // Remove the marker component regardless
+                    newState = newState.updateEntity(entityId) { container ->
+                        container.without<MarkedForSacrificeAtEndOfCombatComponent>()
                     }
                 }
 
