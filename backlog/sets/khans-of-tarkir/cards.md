@@ -2,12 +2,12 @@
 
 **Set Size:** 269 cards (249 unique card names + basic land variants)
 **Release Date:** September 26, 2014
-**Implemented:** 50 / 249
+**Implemented:** 51 / 249
 
 | Color      | Count |
 |------------|-------|
 | White      | 7     |
-| Blue       | 7     |
+| Blue       | 8     |
 | Black      | 7     |
 | Red        | 8     |
 | Green      | 8     |
@@ -56,7 +56,7 @@
 - [x] Bring Low
 - [ ] Burn Away
 - [ ] Butcher of the Horde
-- [ ] Cancel
+- [x] Cancel
 - [x] Canyon Lurkers
 - [x] Chief of the Edge
 - [x] Chief of the Scale
