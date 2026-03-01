@@ -39,6 +39,7 @@ object KhansOfTarkirSet {
         WhirlwindAdept,
 
         // Blue spells
+        Cancel,
         CripplingChill,
         DisdainfulStroke,
         WeaveFate,
