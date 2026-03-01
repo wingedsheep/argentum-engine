@@ -154,7 +154,9 @@ function DraftPicker({ draftState, settings }: { draftState: DraftState; setting
       curve[cmc] = (curve[cmc] || 0) + 1
     }
 
-    return { creatures, spells, curve }
+    const creatureTypes = getCreatureSubtypes(draftState.pickedCards)
+
+    return { creatures, spells, curve, creatureTypes }
   }, [draftState.pickedCards])
 
   // Group current pack by rarity for display
@@ -728,7 +730,7 @@ function PickedCardsSidebar({
   responsive,
 }: {
   pickedByColor: Record<string, Array<{ card: SealedCardInfo; count: number }>>
-  analytics: { creatures: number; spells: number; curve: Record<number, number> }
+  analytics: { creatures: number; spells: number; curve: Record<number, number>; creatureTypes: Array<{ type: string; count: number }> }
   totalPicked: number
   onHover: (card: SealedCardInfo | null, e?: React.MouseEvent) => void
   responsive: ReturnType<typeof useResponsive>
@@ -809,6 +811,33 @@ function PickedCardsSidebar({
                 </div>
               )
             })}
+          </div>
+        )}
+
+        {/* Creature types */}
+        {analytics.creatureTypes.length > 0 && (
+          <div style={{ marginTop: 8 }}>
+            <div style={{ color: '#666', fontSize: 9, marginBottom: 4, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+              Top Creature Types
+            </div>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 3 }}>
+              {analytics.creatureTypes.slice(0, 6).map(({ type, count }) => (
+                <span
+                  key={type}
+                  style={{
+                    padding: '1px 6px',
+                    backgroundColor: '#333',
+                    borderRadius: 3,
+                    fontSize: 9,
+                    color: '#bbb',
+                    border: '1px solid #444',
+                    whiteSpace: 'nowrap',
+                  }}
+                >
+                  {type} <span style={{ color: '#8bc34a', fontWeight: 600 }}>{count}</span>
+                </span>
+              ))}
+            </div>
           </div>
         )}
       </div>
@@ -1090,4 +1119,25 @@ function getCmc(card: SealedCardInfo): number {
     }
   }
   return cmc
+}
+
+function getCreatureSubtypes(cards: readonly SealedCardInfo[]): Array<{ type: string; count: number }> {
+  const counts = new Map<string, number>()
+  for (const card of cards) {
+    if (!card.typeLine.toLowerCase().includes('creature')) continue
+    const dashIndex = card.typeLine.indexOf('\u2014')
+    const hyphenIndex = card.typeLine.indexOf(' - ')
+    const splitIndex = dashIndex !== -1 ? dashIndex : hyphenIndex
+    if (splitIndex === -1) continue
+    const subtypePart = card.typeLine.slice(splitIndex + (dashIndex !== -1 ? 1 : 3)).trim()
+    for (const subtype of subtypePart.split(/\s+/)) {
+      const trimmed = subtype.trim()
+      if (trimmed) {
+        counts.set(trimmed, (counts.get(trimmed) || 0) + 1)
+      }
+    }
+  }
+  return Array.from(counts.entries())
+    .map(([type, count]) => ({ type, count }))
+    .sort((a, b) => b.count - a.count)
 }

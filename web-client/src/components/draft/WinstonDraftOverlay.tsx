@@ -102,6 +102,17 @@ function WinstonDrafter({ winstonState, settings }: { winstonState: WinstonDraft
   const creatureCount = winstonState.pickedCards.filter((c) => c.typeLine.includes('Creature')).length
   const spellCount = winstonState.pickedCards.length - creatureCount
 
+  // CMC curve and creature types
+  const pickedAnalytics = useMemo(() => {
+    const curve: Record<number, number> = {}
+    for (const card of winstonState.pickedCards) {
+      const cmc = Math.min(getCmc(card), 7)
+      curve[cmc] = (curve[cmc] || 0) + 1
+    }
+    const creatureTypes = getCreatureSubtypes(winstonState.pickedCards)
+    return { curve, creatureTypes }
+  }, [winstonState.pickedCards])
+
   const isMobile = responsive.isMobile
 
   return (
@@ -454,18 +465,90 @@ function WinstonDrafter({ winstonState, settings }: { winstonState: WinstonDraft
             display: 'flex', flexDirection: 'column',
             overflow: 'hidden',
           }}>
-            {/* Sidebar header */}
+            {/* Sidebar header with stats */}
             <div style={{
               padding: '10px 14px',
               borderBottom: '1px solid rgba(255,255,255,0.1)',
-              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
             }}>
-              <span style={{ color: 'rgba(255,255,255,0.7)', fontWeight: 600, fontSize: 13 }}>
-                Picked Cards ({winstonState.pickedCards.length})
-              </span>
-              <span style={{ color: 'rgba(255,255,255,0.4)', fontSize: 12 }}>
-                {creatureCount}C / {spellCount}S
-              </span>
+              <div style={{
+                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                marginBottom: 8,
+              }}>
+                <span style={{ color: 'rgba(255,255,255,0.7)', fontWeight: 600, fontSize: 13 }}>
+                  Picked Cards ({winstonState.pickedCards.length})
+                </span>
+              </div>
+
+              {/* Creature/Spell counts */}
+              <div style={{ display: 'flex', gap: 14, marginBottom: 8 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                  <span style={{ color: '#6bcb77', fontSize: 14, fontWeight: 700 }}>{creatureCount}</span>
+                  <span style={{ color: 'rgba(255,255,255,0.35)', fontSize: 10 }}>Creatures</span>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                  <span style={{ color: '#6eb5ff', fontSize: 14, fontWeight: 700 }}>{spellCount}</span>
+                  <span style={{ color: 'rgba(255,255,255,0.35)', fontSize: 10 }}>Spells</span>
+                </div>
+              </div>
+
+              {/* Mana curve */}
+              {winstonState.pickedCards.length > 0 && (() => {
+                const maxCurveCount = Math.max(1, ...Object.values(pickedAnalytics.curve))
+                return (
+                  <div style={{ display: 'flex', alignItems: 'flex-end', gap: 2, height: 32 }}>
+                    {[0, 1, 2, 3, 4, 5, 6, 7].map((cmc) => {
+                      const count = pickedAnalytics.curve[cmc] || 0
+                      const height = maxCurveCount > 0 ? (count / maxCurveCount) * 24 : 0
+                      return (
+                        <div key={cmc} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flex: 1, minWidth: 0 }}>
+                          {count > 0 && (
+                            <span style={{ color: 'rgba(255,255,255,0.4)', fontSize: 8, marginBottom: 1 }}>{count}</span>
+                          )}
+                          <div
+                            style={{
+                              width: '100%',
+                              maxWidth: 16,
+                              height: Math.max(height, count > 0 ? 2 : 0),
+                              backgroundColor: count > 0 ? '#6eb5ff' : 'transparent',
+                              borderRadius: '1px 1px 0 0',
+                            }}
+                          />
+                          <span style={{ color: 'rgba(255,255,255,0.25)', fontSize: 8, marginTop: 1 }}>
+                            {cmc >= 7 ? '7+' : cmc}
+                          </span>
+                        </div>
+                      )
+                    })}
+                  </div>
+                )
+              })()}
+
+              {/* Creature types */}
+              {pickedAnalytics.creatureTypes.length > 0 && (
+                <div style={{ marginTop: 8 }}>
+                  <div style={{ color: 'rgba(255,255,255,0.3)', fontSize: 9, marginBottom: 4, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                    Top Creature Types
+                  </div>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 3 }}>
+                    {pickedAnalytics.creatureTypes.slice(0, 6).map(({ type, count }) => (
+                      <span
+                        key={type}
+                        style={{
+                          padding: '1px 6px',
+                          backgroundColor: 'rgba(255,255,255,0.06)',
+                          borderRadius: 3,
+                          fontSize: 9,
+                          color: 'rgba(255,255,255,0.55)',
+                          border: '1px solid rgba(255,255,255,0.1)',
+                          whiteSpace: 'nowrap',
+                        }}
+                      >
+                        {type} <span style={{ color: '#6bcb77', fontWeight: 600 }}>{count}</span>
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Sidebar content */}
@@ -976,4 +1059,41 @@ function getColorName(color: string): { name: string; color: string } {
     case 'C': return { name: 'Colorless', color: '#aaa' }
     default: return { name: 'Other', color: '#888' }
   }
+}
+
+function getCmc(card: SealedCardInfo): number {
+  const cost = card.manaCost || ''
+  let cmc = 0
+  const matches = cost.match(/\{([^}]+)\}/g) || []
+  for (const match of matches) {
+    const inner = match.slice(1, -1)
+    const num = parseInt(inner, 10)
+    if (!isNaN(num)) {
+      cmc += num
+    } else if (inner !== 'X') {
+      cmc += 1
+    }
+  }
+  return cmc
+}
+
+function getCreatureSubtypes(cards: readonly SealedCardInfo[]): Array<{ type: string; count: number }> {
+  const counts = new Map<string, number>()
+  for (const card of cards) {
+    if (!card.typeLine.toLowerCase().includes('creature')) continue
+    const dashIndex = card.typeLine.indexOf('\u2014')
+    const hyphenIndex = card.typeLine.indexOf(' - ')
+    const splitIndex = dashIndex !== -1 ? dashIndex : hyphenIndex
+    if (splitIndex === -1) continue
+    const subtypePart = card.typeLine.slice(splitIndex + (dashIndex !== -1 ? 1 : 3)).trim()
+    for (const subtype of subtypePart.split(/\s+/)) {
+      const trimmed = subtype.trim()
+      if (trimmed) {
+        counts.set(trimmed, (counts.get(trimmed) || 0) + 1)
+      }
+    }
+  }
+  return Array.from(counts.entries())
+    .map(([type, count]) => ({ type, count }))
+    .sort((a, b) => b.count - a.count)
 }

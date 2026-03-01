@@ -200,8 +200,15 @@ function DeckBuilder({ state }: { state: DeckBuildingState }) {
       }
     }
 
-    return { creatureCount, nonCreatureCount, curve, colorSymbols, landColors }
+    const creatureTypes = getCreatureSubtypes(cardInfos)
+
+    return { creatureCount, nonCreatureCount, curve, colorSymbols, landColors, creatureTypes }
   }, [state.deck, state.cardPool, state.landCounts])
+
+  // Pool-level creature type stats (across entire card pool, not just deck)
+  const poolCreatureTypes = useMemo(() => {
+    return getCreatureSubtypes(state.cardPool)
+  }, [state.cardPool])
 
   // Group and sort pool cards
   const poolCardGroups = useMemo(() => {
@@ -620,6 +627,41 @@ function DeckBuilder({ state }: { state: DeckBuildingState }) {
             </span>
           </div>
 
+          {/* Pool creature types overview */}
+          {poolCreatureTypes.length > 0 && (
+            <div
+              style={{
+                padding: '5px 12px',
+                backgroundColor: '#242424',
+                borderBottom: '1px solid #333',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 6,
+                flexWrap: 'wrap',
+              }}
+            >
+              <span style={{ color: '#666', fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.05em', flexShrink: 0 }}>
+                Pool Types
+              </span>
+              {poolCreatureTypes.slice(0, 8).map(({ type, count }) => (
+                <span
+                  key={type}
+                  style={{
+                    padding: '1px 6px',
+                    backgroundColor: '#2e2e2e',
+                    borderRadius: 3,
+                    fontSize: 10,
+                    color: '#999',
+                    border: '1px solid #3a3a3a',
+                    whiteSpace: 'nowrap',
+                  }}
+                >
+                  {type} <span style={{ color: '#8bc34a', fontWeight: 600 }}>{count}</span>
+                </span>
+              ))}
+            </div>
+          )}
+
           {/* Pool cards */}
           <div
             style={{
@@ -782,6 +824,33 @@ function DeckBuilder({ state }: { state: DeckBuildingState }) {
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 2 }}>
                   <span style={{ color: '#555', fontSize: 9 }}>Spells</span>
                   <span style={{ color: '#555', fontSize: 9 }}>Lands</span>
+                </div>
+              </div>
+            )}
+
+            {/* Creature types */}
+            {deckAnalytics.creatureTypes.length > 0 && (
+              <div style={{ marginTop: 8 }}>
+                <div style={{ color: '#666', fontSize: 9, marginBottom: 4, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                  Top Creature Types
+                </div>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 3 }}>
+                  {deckAnalytics.creatureTypes.slice(0, 6).map(({ type, count }) => (
+                    <span
+                      key={type}
+                      style={{
+                        padding: '1px 6px',
+                        backgroundColor: '#333',
+                        borderRadius: 3,
+                        fontSize: 9,
+                        color: '#bbb',
+                        border: '1px solid #444',
+                        whiteSpace: 'nowrap',
+                      }}
+                    >
+                      {type} <span style={{ color: '#8bc34a', fontWeight: 600 }}>{count}</span>
+                    </span>
+                  ))}
                 </div>
               </div>
             )}
@@ -1569,6 +1638,27 @@ function getCmc(card: SealedCardInfo): number {
     }
   }
   return cmc
+}
+
+function getCreatureSubtypes(cards: readonly SealedCardInfo[]): Array<{ type: string; count: number }> {
+  const counts = new Map<string, number>()
+  for (const card of cards) {
+    if (!card.typeLine.toLowerCase().includes('creature')) continue
+    const dashIndex = card.typeLine.indexOf('\u2014')
+    const hyphenIndex = card.typeLine.indexOf(' - ')
+    const splitIndex = dashIndex !== -1 ? dashIndex : hyphenIndex
+    if (splitIndex === -1) continue
+    const subtypePart = card.typeLine.slice(splitIndex + (dashIndex !== -1 ? 1 : 3)).trim()
+    for (const subtype of subtypePart.split(/\s+/)) {
+      const trimmed = subtype.trim()
+      if (trimmed) {
+        counts.set(trimmed, (counts.get(trimmed) || 0) + 1)
+      }
+    }
+  }
+  return Array.from(counts.entries())
+    .map(([type, count]) => ({ type, count }))
+    .sort((a, b) => b.count - a.count)
 }
 
 function getRarityOrder(card: SealedCardInfo): number {
