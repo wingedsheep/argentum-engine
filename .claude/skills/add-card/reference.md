@@ -801,6 +801,7 @@ Set via `staticAbility { ability = ... }`:
 - `GrantKeyword(keyword, target: StaticTarget)` — permanent keyword grant
 - `GrantKeywordToCreatureGroup(keyword, filter: AffectsFilter)` — keyword to group
 - `GrantTriggeredAbilityToCreatureGroup(ability: TriggeredAbility, filter: GroupFilter)` — triggered ability to group (e.g., Hunter Sliver granting provoke to all Slivers)
+- `GrantActivatedAbilityToCreatureGroup(ability: ActivatedAbility, filter: GroupFilter)` — activated ability to group (e.g., Spectral Sliver granting pump to all Slivers)
 - `GrantCantBeBlockedExceptBySubtype(filter: GroupFilter, requiredSubtype: String)` — "can't be blocked except by [subtype]" to group (e.g., Shifting Sliver)
 - `GrantKeywordForChosenCreatureType(keyword)` — keyword to chosen creature type
 - `GrantKeywordByCounter(keyword, counterType)` — grant keyword when counter present

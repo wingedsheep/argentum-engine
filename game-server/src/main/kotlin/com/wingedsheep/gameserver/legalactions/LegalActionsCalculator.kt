@@ -42,7 +42,9 @@ import com.wingedsheep.sdk.scripting.CastRestriction
 import com.wingedsheep.sdk.scripting.predicates.ControllerPredicate
 import com.wingedsheep.sdk.scripting.effects.DividedDamageEffect
 import com.wingedsheep.sdk.scripting.GameObjectFilter
+import com.wingedsheep.sdk.scripting.ActivatedAbility
 import com.wingedsheep.sdk.scripting.CanBlockAnyNumber
+import com.wingedsheep.sdk.scripting.GrantActivatedAbilityToCreatureGroup
 import com.wingedsheep.sdk.scripting.PlayFromTopOfLibrary
 import com.wingedsheep.sdk.scripting.PreventCycling
 import com.wingedsheep.sdk.scripting.effects.AddAnyColorManaEffect
@@ -676,12 +678,14 @@ class LegalActionsCalculator(
 
             // Projected controller already verified - look up card definition for mana abilities
             val cardDef = cardRegistry.getCard(cardComponent.name) ?: continue
-            // Include granted activated abilities that are mana abilities
+            // Include granted activated abilities that are mana abilities (both temporary and static)
             val grantedManaAbilities = state.grantedActivatedAbilities
                 .filter { it.entityId == entityId }
                 .map { it.ability }
                 .filter { it.isManaAbility }
-            val manaAbilities = cardDef.script.activatedAbilities.filter { it.isManaAbility } + grantedManaAbilities
+            val staticManaAbilities = getStaticGrantedActivatedAbilities(entityId, state)
+                .filter { it.isManaAbility }
+            val manaAbilities = cardDef.script.activatedAbilities.filter { it.isManaAbility } + grantedManaAbilities + staticManaAbilities
 
             // Apply text-changing effects to mana ability costs
             val manaTextReplacement = container.get<TextReplacementComponent>()
@@ -858,11 +862,13 @@ class LegalActionsCalculator(
             if (container.has<FaceDownComponent>()) continue
 
             val cardDef = cardRegistry.getCard(cardComponent.name) ?: continue
-            // Include granted activated abilities alongside the card's own abilities
+            // Include granted activated abilities alongside the card's own abilities (both temporary and static)
             val grantedAbilities = state.grantedActivatedAbilities
                 .filter { it.entityId == entityId }
                 .map { it.ability }
-            val nonManaAbilities = cardDef.script.activatedAbilities.filter { !it.isManaAbility } + grantedAbilities.filter { !it.isManaAbility }
+            val staticAbilities = getStaticGrantedActivatedAbilities(entityId, state)
+            val allAbilities = grantedAbilities + staticAbilities
+            val nonManaAbilities = cardDef.script.activatedAbilities.filter { !it.isManaAbility } + allAbilities.filter { !it.isManaAbility }
 
             // Apply text-changing effects to ability costs and targets
             val textReplacement = container.get<TextReplacementComponent>()
@@ -1873,6 +1879,48 @@ class LegalActionsCalculator(
      * Check if cycling is prevented by any permanent on the battlefield.
      * Used for Stabilizer: "Players can't cycle cards."
      */
+    /**
+     * Get activated abilities granted to an entity by static abilities on battlefield permanents.
+     * E.g., Spectral Sliver grants "{2}: This creature gets +1/+1 until end of turn" to all Slivers
+     * via GrantActivatedAbilityToCreatureGroup.
+     */
+    private fun getStaticGrantedActivatedAbilities(
+        entityId: EntityId,
+        state: GameState
+    ): List<ActivatedAbility> {
+        val targetContainer = state.getEntity(entityId) ?: return emptyList()
+        val targetCard = targetContainer.get<CardComponent>() ?: return emptyList()
+
+        val result = mutableListOf<ActivatedAbility>()
+
+        for (permanentId in state.getBattlefield()) {
+            val container = state.getEntity(permanentId) ?: continue
+            val card = container.get<CardComponent>() ?: continue
+            if (container.has<FaceDownComponent>()) continue
+
+            val cardDef = cardRegistry.getCard(card.cardDefinitionId) ?: continue
+            for (ability in cardDef.staticAbilities) {
+                if (ability !is GrantActivatedAbilityToCreatureGroup) continue
+
+                val filter = ability.filter.baseFilter
+                val matchesAll = filter.cardPredicates.all { predicate ->
+                    when (predicate) {
+                        is com.wingedsheep.sdk.scripting.predicates.CardPredicate.IsCreature ->
+                            targetCard.typeLine.isCreature
+                        is com.wingedsheep.sdk.scripting.predicates.CardPredicate.HasSubtype ->
+                            targetCard.typeLine.hasSubtype(predicate.subtype)
+                        else -> true
+                    }
+                }
+                if (matchesAll) {
+                    result.add(ability.ability)
+                }
+            }
+        }
+
+        return result
+    }
+
     private fun isCyclingPrevented(state: GameState): Boolean {
         for (entityId in state.getBattlefield()) {
             val card = state.getEntity(entityId)?.get<CardComponent>() ?: continue
