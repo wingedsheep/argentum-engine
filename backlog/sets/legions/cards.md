@@ -2,13 +2,13 @@
 
 **Set Size:** 145 cards
 **Release Date:** February 3, 2003
-**Implemented:** 95 / 145
+**Implemented:** 96 / 145
 
 | Color      | Count |
 |------------|-------|
 | White      | 19/29 |
 | Blue       | 19/29 |
-| Black      | 19/29 |
+| Black      | 20/29 |
 | Red        | 19/29 |
 | Green      | 19/29 |
 
@@ -24,7 +24,7 @@
 - [ ] Beacon of Destiny
 - [x] Berserk Murlodont
 - [x] Blade Sliver
-- [ ] Blood Celebrant
+- [x] Blood Celebrant
 - [x] Bloodstoke Howler
 - [x] Branchsnap Lorian
 - [x] Brontotherium

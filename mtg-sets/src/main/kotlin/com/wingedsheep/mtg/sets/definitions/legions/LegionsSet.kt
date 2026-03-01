@@ -66,6 +66,7 @@ object LegionsSet {
 
         // Black creatures
         AphettoExterminator,
+        BloodCelebrant,
         Earthblighter,
         GravebornMuse,
         InfernalCaretaker,
