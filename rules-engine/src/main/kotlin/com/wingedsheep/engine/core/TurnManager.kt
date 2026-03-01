@@ -25,6 +25,8 @@ import com.wingedsheep.engine.state.components.player.PlayerLostComponent
 import com.wingedsheep.engine.state.components.player.AdditionalCombatPhasesComponent
 import com.wingedsheep.engine.state.components.player.PlayerEffectRemoval
 import com.wingedsheep.engine.state.components.player.CantCastSpellsComponent
+import com.wingedsheep.engine.state.components.identity.MayPlayFromExileComponent
+import com.wingedsheep.engine.state.components.identity.PlayWithoutPayingCostComponent
 import com.wingedsheep.engine.state.components.player.PlayerShroudComponent
 import com.wingedsheep.engine.state.components.player.SkipCombatPhasesComponent
 import com.wingedsheep.engine.state.components.player.SkipNextTurnComponent
@@ -1132,6 +1134,15 @@ class TurnManager(
                 grant.duration !is Duration.EndOfTurn
             }
             newState = newState.copy(globalGrantedTriggeredAbilities = remainingGrants)
+        }
+
+        // 9. Remove MayPlayFromExileComponent and PlayWithoutPayingCostComponent (expire at end of turn)
+        for ((entityId, container) in newState.entities) {
+            if (container.has<MayPlayFromExileComponent>() || container.has<PlayWithoutPayingCostComponent>()) {
+                newState = newState.updateEntity(entityId) { c ->
+                    c.without<MayPlayFromExileComponent>().without<PlayWithoutPayingCostComponent>()
+                }
+            }
         }
 
         return newState

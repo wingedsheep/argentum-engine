@@ -321,6 +321,17 @@ class ClientStateTransformer(
             val targetsComponent = container.get<TargetsComponent>()
             val targets = transformTargets(targetsComponent)
 
+            // Add triggering entity as a visual pseudo-target so TargetingArrows draws an arrow
+            val triggeringId = triggeredAbility.triggeringEntityId
+            val triggeredTargets = if (triggeringId != null
+                && state.getBattlefield().contains(triggeringId)
+                && targets.none { it is ClientChosenTarget.Permanent && it.entityId == triggeringId }
+            ) {
+                targets + ClientChosenTarget.Permanent(triggeringId)
+            } else {
+                targets
+            }
+
             // Find the source entity's current zone (for graveyard trigger styling)
             val sourceZone = findEntityZone(state, triggeredAbility.sourceId)
 
@@ -355,7 +366,7 @@ class ClientStateTransformer(
                 attachedTo = null,
                 attachments = emptyList(),
                 isFaceDown = false,
-                targets = targets,
+                targets = triggeredTargets,
                 imageUri = cardDef?.metadata?.imageUri,
                 sourceZone = sourceZone
             )

@@ -23,6 +23,8 @@ import com.wingedsheep.sdk.scripting.effects.DrawCardsEffect
 import com.wingedsheep.sdk.scripting.effects.EachOpponentDiscardsEffect
 import com.wingedsheep.sdk.scripting.effects.EachPlayerReturnsPermanentToHandEffect
 import com.wingedsheep.sdk.scripting.effects.Effect
+import com.wingedsheep.sdk.scripting.effects.GrantMayPlayFromExileEffect
+import com.wingedsheep.sdk.scripting.effects.GrantPlayWithoutPayingCostEffect
 import com.wingedsheep.sdk.scripting.effects.FightEffect
 import com.wingedsheep.sdk.scripting.effects.ForEachInGroupEffect
 import com.wingedsheep.sdk.scripting.effects.ForceSacrificeEffect
@@ -315,6 +317,25 @@ object Effects {
      */
     fun ShuffleIntoLibrary(target: EffectTarget): Effect =
         MoveToZoneEffect(target, Zone.LIBRARY, ZonePlacement.Shuffled)
+
+    /**
+     * Grant "may play from exile" permission to all cards in a named collection.
+     * Does NOT waive mana cost — pair with [GrantPlayWithoutPayingCost] for free play.
+     */
+    fun GrantMayPlayFromExile(from: String): Effect = GrantMayPlayFromExileEffect(from)
+
+    /**
+     * Grant "play without paying mana cost" permission to all cards in a named collection.
+     * Card must still be in a playable zone (hand, or exile with GrantMayPlayFromExile).
+     */
+    fun GrantPlayWithoutPayingCost(from: String): Effect = GrantPlayWithoutPayingCostEffect(from)
+
+    /**
+     * Shuffle your library, then exile the top card. Until end of turn,
+     * you may play that card without paying its mana cost.
+     * Used by Mind's Desire.
+     */
+    fun ShuffleAndExileTopPlayFree(): Effect = EffectPatterns.shuffleAndExileTopPlayFree()
 
     /**
      * Put onto the battlefield.

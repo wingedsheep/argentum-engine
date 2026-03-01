@@ -272,6 +272,10 @@ each player reveals and creates tokens
 | Effect                                                                              | Parameters                                          | Purpose                                           |
 |-------------------------------------------------------------------------------------|-----------------------------------------------------|---------------------------------------------------|
 | `ShuffleLibraryEffect`                                                              | `target`                                            | Shuffle library                                   |
+| `GrantMayPlayFromExileEffect`                                                       | `from`                                              | Grant play-from-exile permission to cards in collection |
+| `GrantPlayWithoutPayingCostEffect`                                                  | `from`                                              | Grant play-without-paying-cost to cards in collection  |
+| `Effects.ShuffleAndExileTopPlayFree()`                                              | (none)                                              | Shuffle + exile top + grant exile+free play (Mind's Desire) |
+| `EffectPatterns.shuffleAndExileTopPlayFree()`                                       | (none)                                              | Pipeline: shuffle, exile top, grant exile+free play |
 | `PutCreatureFromHandSharingTypeWithTappedEffect`                                    | (object)                                            | Put creature from hand sharing type               |
 | `EffectPatterns.lookAtTopAndKeep(count, keepCount)`                                 | `count, keepCount, keepDest?, restDest?, revealed?` | Look at top N keep some (pipeline)                |
 | `EffectPatterns.lookAtTopAndReorder(count)`                                         | `count: Int` or `count: DynamicAmount`              | Look at top and reorder (pipeline)                |

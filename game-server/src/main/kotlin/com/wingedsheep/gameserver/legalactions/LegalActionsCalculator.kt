@@ -23,6 +23,8 @@ import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.ChosenCreatureTypeComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.identity.FaceDownComponent
+import com.wingedsheep.engine.state.components.identity.MayPlayFromExileComponent
+import com.wingedsheep.engine.state.components.identity.PlayWithoutPayingCostComponent
 import com.wingedsheep.engine.state.components.identity.MorphDataComponent
 import com.wingedsheep.sdk.scripting.costs.PayCost
 import com.wingedsheep.engine.state.components.identity.TextReplacementComponent
@@ -656,6 +658,86 @@ class LegalActionsCalculator(
                                     isAffordable = canAffordMorph,
                                     manaCostString = morphCost.toString(),
                                     sourceZone = "LIBRARY"
+                                ))
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // Check for cards in exile that may be played for free (e.g., Mind's Desire)
+        if (!cantCastSpells) {
+            val exileZone = state.getExile(playerId)
+            for (cardId in exileZone) {
+                val container = state.getEntity(cardId) ?: continue
+                val exileComponent = container.get<MayPlayFromExileComponent>() ?: continue
+                if (exileComponent.controllerId != playerId) continue
+                val playForFree = container.get<PlayWithoutPayingCostComponent>()?.controllerId == playerId
+                val cardComponent = container.get<CardComponent>() ?: continue
+
+                // Land in exile — can play if land drop available
+                if (cardComponent.typeLine.isLand && canPlayLand) {
+                    result.add(LegalActionInfo(
+                        actionType = "PlayLand",
+                        description = "Play ${cardComponent.name}",
+                        action = PlayLand(playerId, cardId),
+                        sourceZone = "EXILE"
+                    ))
+                }
+
+                // Non-land spell from exile
+                if (!cardComponent.typeLine.isLand) {
+                    val isInstant = cardComponent.typeLine.isInstant
+                    if (isInstant || canPlaySorcerySpeed) {
+                        val cardDef = cardRegistry.getCard(cardComponent.name)
+                        val castRestrictions = cardDef?.script?.castRestrictions ?: emptyList()
+                        if (checkCastRestrictions(state, playerId, castRestrictions)) {
+                            val costString = if (playForFree) "{0}" else cardComponent.manaCost.toString()
+                            val targetReqs = buildList {
+                                addAll(cardDef?.script?.targetRequirements ?: emptyList())
+                                cardDef?.script?.auraTarget?.let { add(it) }
+                            }
+
+                            if (targetReqs.isNotEmpty()) {
+                                val targetReqInfos = targetReqs.mapIndexed { index, req ->
+                                    val validTargets = findValidTargets(state, playerId, req)
+                                    LegalActionTargetInfo(
+                                        index = index,
+                                        description = req.description,
+                                        minTargets = req.effectiveMinCount,
+                                        maxTargets = req.count,
+                                        validTargets = validTargets,
+                                        targetZone = getTargetZone(req)
+                                    )
+                                }
+                                val allRequirementsSatisfied = targetReqInfos.all { reqInfo ->
+                                    reqInfo.validTargets.isNotEmpty() || reqInfo.minTargets == 0
+                                }
+                                if (allRequirementsSatisfied) {
+                                    val firstReq = targetReqs.first()
+                                    val firstReqInfo = targetReqInfos.first()
+                                    result.add(LegalActionInfo(
+                                        actionType = "CastSpell",
+                                        description = "Cast ${cardComponent.name}",
+                                        action = CastSpell(playerId, cardId),
+                                        validTargets = firstReqInfo.validTargets,
+                                        requiresTargets = true,
+                                        targetCount = firstReq.count,
+                                        minTargets = firstReq.effectiveMinCount,
+                                        targetDescription = firstReq.description,
+                                        targetRequirements = if (targetReqInfos.size > 1) targetReqInfos else null,
+                                        manaCostString = costString,
+                                        sourceZone = "EXILE"
+                                    ))
+                                }
+                            } else {
+                                result.add(LegalActionInfo(
+                                    actionType = "CastSpell",
+                                    description = "Cast ${cardComponent.name}",
+                                    action = CastSpell(playerId, cardId),
+                                    manaCostString = costString,
+                                    sourceZone = "EXILE"
                                 ))
                             }
                         }
