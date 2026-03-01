@@ -136,3 +136,11 @@ data class MustAttackPlayerComponent(
  */
 @Serializable
 data object MustAttackThisTurnComponent : Component
+
+/**
+ * Marker component added to a player when they have declared at least one attacker this turn.
+ * Used for Raid abilities and similar "if you attacked this turn" checks.
+ * Persists past END_COMBAT; removed at end of turn during cleanup.
+ */
+@Serializable
+data object PlayerAttackedThisTurnComponent : Component

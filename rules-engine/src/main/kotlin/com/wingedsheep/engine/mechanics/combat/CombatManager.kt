@@ -114,7 +114,12 @@ class CombatManager(
 
         // Mark that attackers have been declared this combat (even if empty)
         newState = newState.updateEntity(attackingPlayer) { container ->
-            container.with(AttackersDeclaredThisCombatComponent)
+            var updated = container.with(AttackersDeclaredThisCombatComponent)
+            // Track that this player attacked this turn (for Raid and similar mechanics)
+            if (attackers.isNotEmpty()) {
+                updated = updated.with(PlayerAttackedThisTurnComponent)
+            }
+            updated
         }
 
         val attackerNames = attackers.keys.map { state.getEntity(it)?.get<CardComponent>()?.name ?: "Creature" }

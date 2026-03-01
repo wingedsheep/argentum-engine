@@ -14,6 +14,7 @@ import com.wingedsheep.engine.state.components.combat.AttackingComponent
 import com.wingedsheep.engine.state.components.combat.MarkedForDestructionAtEndOfCombatComponent
 import com.wingedsheep.engine.state.components.combat.MustAttackPlayerComponent
 import com.wingedsheep.engine.state.components.combat.MustAttackThisTurnComponent
+import com.wingedsheep.engine.state.components.combat.PlayerAttackedThisTurnComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.player.CardsDrawnThisTurnComponent
 import com.wingedsheep.engine.state.components.player.LandDropsComponent
@@ -1029,7 +1030,7 @@ class TurnManager(
             }
         }
 
-        // 5. Clear per-turn ability activation tracking and damage source tracking
+        // 5. Clear per-turn ability activation tracking, damage source tracking, and attack tracking
         for ((entityId, container) in newState.entities) {
             var needsUpdate = false
             if (container.has<com.wingedsheep.engine.state.components.battlefield.AbilityActivatedThisTurnComponent>()) {
@@ -1038,10 +1039,14 @@ class TurnManager(
             if (container.has<com.wingedsheep.engine.state.components.battlefield.DamageDealtToCreaturesThisTurnComponent>()) {
                 needsUpdate = true
             }
+            if (container.has<PlayerAttackedThisTurnComponent>()) {
+                needsUpdate = true
+            }
             if (needsUpdate) {
                 newState = newState.updateEntity(entityId) { c ->
                     c.without<com.wingedsheep.engine.state.components.battlefield.AbilityActivatedThisTurnComponent>()
                         .without<com.wingedsheep.engine.state.components.battlefield.DamageDealtToCreaturesThisTurnComponent>()
+                        .without<PlayerAttackedThisTurnComponent>()
                 }
             }
         }

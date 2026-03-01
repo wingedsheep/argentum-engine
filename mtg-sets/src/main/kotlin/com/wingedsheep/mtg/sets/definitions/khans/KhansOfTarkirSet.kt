@@ -43,6 +43,7 @@ object KhansOfTarkirSet {
         WeaveFate,
 
         // Black creatures
+        BellowingSaddlebrute,
         GurmagSwiftwing,
 
         // Black spells

@@ -2,13 +2,13 @@
 
 **Set Size:** 269 cards (249 unique card names + basic land variants)
 **Release Date:** September 26, 2014
-**Implemented:** 41 / 249
+**Implemented:** 42 / 249
 
 | Color      | Count |
 |------------|-------|
 | White      | 6     |
 | Blue       | 7     |
-| Black      | 6     |
+| Black      | 7     |
 | Red        | 6     |
 | Green      | 6     |
 | Multicolor | 4     |
@@ -42,7 +42,7 @@
 - [ ] Barrage of Boulders
 - [ ] Bear's Companion
 - [ ] Become Immense
-- [ ] Bellowing Saddlebrute
+- [x] Bellowing Saddlebrute
 - [x] Bitter Revelation
 - [ ] Blinding Spray
 - [ ] Bloodfell Caves

@@ -6,6 +6,7 @@ import com.wingedsheep.engine.state.components.battlefield.AttachedToComponent
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.state.components.combat.AttackingComponent
 import com.wingedsheep.engine.state.components.combat.BlockingComponent
+import com.wingedsheep.engine.state.components.combat.PlayerAttackedThisTurnComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.identity.LifeTotalComponent
@@ -188,8 +189,7 @@ class ConditionEvaluator {
     }
 
     private fun evaluateYouAttackedThisTurn(state: GameState, context: EffectContext): Boolean {
-        // TODO: Track if player attacked this turn
-        return false
+        return state.getEntity(context.controllerId)?.has<PlayerAttackedThisTurnComponent>() == true
     }
 
     private fun evaluateYouWereAttackedThisStep(state: GameState, context: EffectContext): Boolean {
