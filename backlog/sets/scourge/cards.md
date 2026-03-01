@@ -3,13 +3,13 @@
 
 **Set Size:** 143 cards
 **Release Date:** May 26, 2003
-**Implemented:** 126 / 143
+**Implemented:** 127 / 143
 
 | Color | Count |
 |-------|-------|
 | White | 24 |
 | Blue | 23 |
-| Black | 25 |
+| Black | 26 |
 | Red | 24 |
 | Green | 24 |
 | Multicolor | 2 |
@@ -139,7 +139,7 @@
 - [x] Sulfuric Vortex
 - [x] Temple of the False God
 - [x] Temporal Fissure
-- [ ] Tendrils of Agony
+- [x] Tendrils of Agony
 - [x] Thundercloud Elemental
 - [x] Titanic Bulvox
 - [x] Torrent of Fire

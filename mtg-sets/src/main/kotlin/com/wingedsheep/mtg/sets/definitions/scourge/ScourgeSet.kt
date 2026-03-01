@@ -188,11 +188,10 @@ object ScourgeSet {
         // Black sorceries
         CabalConditioning,
         DecreeOfPain,
-        Skulltap,
-        Unburden,
-
-        // Black sorceries (additional)
         FinalPunishment,
+        Skulltap,
+        TendrilsOfAgony,
+        Unburden,
 
         // Black instants
         ChillHaunting,
