@@ -23,6 +23,7 @@ object LegionsSet {
      */
     val allCards = listOf(
         // White creatures
+        AkromasDevoted,
         AvenWarhawk,
         CloudreachCavalry,
         DaruMender,
@@ -83,6 +84,7 @@ object LegionsSet {
         HunterSliver,
         FlamewaveInvoker,
         GoblinGoon,
+        GoblinLookout,
         FreneticRaptor,
         GempalmIncinerator,
         GoblinFirebug,
@@ -109,6 +111,7 @@ object LegionsSet {
         NeedleshotGourna,
         PatronOfTheWild,
         StonewoodInvoker,
+        TimberwatchElf,
         TotemSpeaker,
         WirewoodHivemaster,
     )
