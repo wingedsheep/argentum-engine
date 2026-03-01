@@ -22,6 +22,11 @@ object Costs {
     // =========================================================================
 
     /**
+     * No cost ({0}) — the ability is free to activate.
+     */
+    val Free: AbilityCost = AbilityCost.Free
+
+    /**
      * Tap this permanent ({T}).
      */
     val Tap: AbilityCost = AbilityCost.Tap

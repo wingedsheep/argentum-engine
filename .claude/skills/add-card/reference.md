@@ -337,6 +337,7 @@ each player reveals and creates tokens
 | Effect                                             | Parameters                               | Purpose                            |
 |----------------------------------------------------|------------------------------------------|------------------------------------|
 | `SkipCombatPhasesEffect`                           | `target`                                 | Skip combat                        |
+| `SkipNextTurnEffect`                               | `target: EffectTarget = Controller`      | Skip next turn                     |
 | `SkipUntapEffect`                                  | `target, affectsCreatures, affectsLands` | Skip untap                         |
 | `PlayAdditionalLandsEffect`                        | `count`                                  | Play extra lands                   |
 | `AddCombatPhaseEffect`                             | (object)                                 | Additional combat phase            |
@@ -544,6 +545,7 @@ each player reveals and creates tokens
 
 ## Costs Facade
 
+- `Costs.Free` — no cost ({0})
 - `Costs.Tap` / `Costs.Untap`
 - `Costs.Mana("2R")` / `Costs.Mana(manaCost)`
 - `Costs.PayLife(amount)`
@@ -844,6 +846,7 @@ Set via `staticAbility { ability = ... }`:
 - `ControlEnchantedPermanent` — control the enchanted permanent
 - `GrantShroudToController` — controller has shroud
 - `CantCastSpells(target, duration)` — prevent target player from casting spells
+- `SkipNextTurn(target)` — target player skips their next turn
 - `AdditionalManaOnTap(color, amount: DynamicAmount)` — produce additional mana
 - `PlayFromTopOfLibrary` — play cards from top of library
 - `PreventCycling` — players can't cycle cards
@@ -942,6 +945,7 @@ CostZone enum: `HAND`, `GRAVEYARD`, `LIBRARY`, `BATTLEFIELD`
 
 Used via `restrictions = listOf(...)` in activated abilities:
 
+- `ActivationRestriction.AnyPlayerMay` — any player may activate (not just the controller)
 - `ActivationRestriction.OnlyDuringYourTurn`
 - `ActivationRestriction.OncePerTurn` — limit activation to once per turn
 - `ActivationRestriction.BeforeStep(step)` / `DuringPhase(phase)` / `DuringStep(step)`

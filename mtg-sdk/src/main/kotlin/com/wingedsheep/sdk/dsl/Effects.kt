@@ -57,6 +57,7 @@ import com.wingedsheep.sdk.scripting.effects.CounterUnlessDynamicPaysEffect
 import com.wingedsheep.sdk.scripting.effects.ChangeSpellTargetEffect
 import com.wingedsheep.sdk.scripting.effects.ChangeTargetEffect
 import com.wingedsheep.sdk.scripting.effects.SetCreatureSubtypesEffect
+import com.wingedsheep.sdk.scripting.effects.SkipNextTurnEffect
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
@@ -778,6 +779,13 @@ object Effects {
      */
     fun CantCastSpells(target: EffectTarget = EffectTarget.PlayerRef(Player.Opponent), duration: Duration = Duration.EndOfTurn): Effect =
         CantCastSpellsEffect(target, duration)
+
+    /**
+     * Target player skips their next turn.
+     * Used for cards like Lethal Vapors.
+     */
+    fun SkipNextTurn(target: EffectTarget = EffectTarget.Controller): Effect =
+        SkipNextTurnEffect(target)
 
     // =========================================================================
     // Combat Effects

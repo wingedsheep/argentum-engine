@@ -1163,6 +1163,96 @@ class LegalActionsCalculator(
             }
         }
 
+        // Check for "any player may activate" abilities on opponent's permanents (e.g., Lethal Vapors)
+        val opponentId = state.turnOrder.firstOrNull { it != playerId }
+        if (opponentId != null) {
+            val opponentPermanents = projectedState.getBattlefieldControlledBy(opponentId)
+            for (entityId in opponentPermanents) {
+                val container = state.getEntity(entityId) ?: continue
+                val cardComponent = container.get<CardComponent>() ?: continue
+                if (container.has<FaceDownComponent>()) continue
+
+                val cardDef = cardRegistry.getCard(cardComponent.name) ?: continue
+                val anyPlayerAbilities = cardDef.script.activatedAbilities.filter { ability ->
+                    !ability.isManaAbility && ability.restrictions.any { it is ActivationRestriction.AnyPlayerMay }
+                }
+                if (anyPlayerAbilities.isEmpty()) continue
+
+                val textReplacement = container.get<TextReplacementComponent>()
+
+                for (ability in anyPlayerAbilities) {
+                    val effectiveCost = if (textReplacement != null) {
+                        SubtypeReplacer.replaceAbilityCost(ability.cost, textReplacement)
+                    } else {
+                        ability.cost
+                    }
+
+                    // Check cost payability (Free cost always passes)
+                    when (effectiveCost) {
+                        is AbilityCost.Free -> {} // Always payable
+                        is AbilityCost.Mana -> {
+                            if (!manaSolver.canPay(state, playerId, effectiveCost.cost)) continue
+                        }
+                        else -> continue // Other costs on opponent's permanents not yet supported
+                    }
+
+                    // Check activation restrictions
+                    var restrictionsMet = true
+                    for (restriction in ability.restrictions) {
+                        if (!checkActivationRestriction(state, playerId, restriction, entityId, ability.id)) {
+                            restrictionsMet = false
+                            break
+                        }
+                    }
+                    if (!restrictionsMet) continue
+
+                    // Check target requirements
+                    val targetReqs = if (textReplacement != null) {
+                        ability.targetRequirements.map { SubtypeReplacer.replaceTargetRequirement(it, textReplacement) }
+                    } else {
+                        ability.targetRequirements
+                    }
+                    if (targetReqs.isNotEmpty()) {
+                        val targetReqInfos = targetReqs.mapIndexed { index, req ->
+                            val validTargets = findValidTargets(state, playerId, req, sourceId = entityId)
+                            LegalActionTargetInfo(
+                                index = index,
+                                description = req.description,
+                                minTargets = req.effectiveMinCount,
+                                maxTargets = req.count,
+                                validTargets = validTargets,
+                                targetZone = getTargetZone(req)
+                            )
+                        }
+                        val allRequirementsSatisfied = targetReqInfos.all { reqInfo ->
+                            reqInfo.validTargets.isNotEmpty() || reqInfo.minTargets == 0
+                        }
+                        if (!allRequirementsSatisfied) continue
+
+                        val firstReq = targetReqs.first()
+                        val firstReqInfo = targetReqInfos.first()
+                        result.add(LegalActionInfo(
+                            actionType = "ActivateAbility",
+                            description = ability.description,
+                            action = ActivateAbility(playerId, entityId, ability.id),
+                            validTargets = firstReqInfo.validTargets,
+                            requiresTargets = true,
+                            targetCount = firstReq.count,
+                            minTargets = firstReq.effectiveMinCount,
+                            targetDescription = firstReq.description,
+                            targetRequirements = if (targetReqInfos.size > 1) targetReqInfos else null
+                        ))
+                    } else {
+                        result.add(LegalActionInfo(
+                            actionType = "ActivateAbility",
+                            description = ability.description,
+                            action = ActivateAbility(playerId, entityId, ability.id)
+                        ))
+                    }
+                }
+            }
+        }
+
         // Check for activated abilities on cards in the graveyard (e.g., Undead Gladiator)
         val graveyardCards = state.getGraveyard(playerId)
         for (entityId in graveyardCards) {
@@ -1466,6 +1556,7 @@ class LegalActionsCalculator(
         abilityId: com.wingedsheep.sdk.scripting.AbilityId? = null
     ): Boolean {
         return when (restriction) {
+            is ActivationRestriction.AnyPlayerMay -> true // Not a restriction; handled in ability loop
             is ActivationRestriction.OnlyDuringYourTurn -> state.activePlayerId == playerId
             is ActivationRestriction.BeforeStep -> state.step.ordinal < restriction.step.ordinal
             is ActivationRestriction.DuringPhase -> state.phase == restriction.phase

@@ -67,6 +67,13 @@ data class ActivatedAbility(
 sealed interface AbilityCost {
     val description: String
 
+    /** No cost ({0}) — the ability is free to activate */
+    @SerialName("CostFree")
+    @Serializable
+    data object Free : AbilityCost {
+        override val description: String = "{0}"
+    }
+
     /** Tap the permanent ({T}) */
     @SerialName("CostTap")
     @Serializable

@@ -64,6 +64,14 @@ sealed interface ActivationRestriction {
     data object OncePerTurn : ActivationRestriction
 
     /**
+     * Any player may activate this ability, not just the controller.
+     * Example: Lethal Vapors: "{0}: Destroy Lethal Vapors. You skip your next turn. Any player may activate this ability."
+     */
+    @SerialName("AnyPlayerMay")
+    @Serializable
+    data object AnyPlayerMay : ActivationRestriction
+
+    /**
      * Composite restriction requiring multiple conditions.
      * Example: "Activate only during your turn, before attackers are declared."
      */

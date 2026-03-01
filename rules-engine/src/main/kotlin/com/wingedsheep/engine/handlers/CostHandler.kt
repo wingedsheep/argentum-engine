@@ -61,6 +61,7 @@ class CostHandler(
         manaPool: ManaPool
     ): Boolean {
         return when (cost) {
+            is AbilityCost.Free -> true
             is AbilityCost.Tap -> {
                 !state.getEntity(sourceId)!!.has<TappedComponent>()
             }
@@ -155,6 +156,9 @@ class CostHandler(
         choices: CostPaymentChoices = CostPaymentChoices()
     ): CostPaymentResult {
         return when (cost) {
+            is AbilityCost.Free -> {
+                CostPaymentResult.success(state, manaPool)
+            }
             is AbilityCost.Tap -> {
                 val newState = state.updateEntity(sourceId) { it.with(TappedComponent) }
                 CostPaymentResult.success(newState, manaPool)

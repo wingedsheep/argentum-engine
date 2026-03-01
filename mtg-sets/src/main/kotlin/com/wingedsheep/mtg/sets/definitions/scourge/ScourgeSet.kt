@@ -164,6 +164,7 @@ object ScourgeSet {
         ClutchOfUndeath,
         DragonShadow,
         FatalMutation,
+        LethalVapors,
         LingeringDeath,
         UnspeakableSymbol,
 

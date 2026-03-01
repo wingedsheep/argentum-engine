@@ -118,6 +118,20 @@ data class CreateGlobalTriggeredAbilityUntilEndOfTurnEffect(
 }
 
 /**
+ * Target player skips their next turn.
+ * Used for cards like Lethal Vapors: "You skip your next turn."
+ *
+ * @param target The player who skips their next turn (default: the controller/activating player)
+ */
+@SerialName("SkipNextTurn")
+@Serializable
+data class SkipNextTurnEffect(
+    val target: EffectTarget = EffectTarget.Controller
+) : Effect {
+    override val description: String = "${target.description.replaceFirstChar { it.uppercase() }} skips their next turn"
+}
+
+/**
  * Target player can't cast spells for the specified duration.
  * Used for cards like Xantid Swarm: "Whenever this creature attacks, defending player can't cast spells this turn."
  *

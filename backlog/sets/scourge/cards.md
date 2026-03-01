@@ -3,13 +3,13 @@
 
 **Set Size:** 143 cards
 **Release Date:** May 26, 2003
-**Implemented:** 118 / 143
+**Implemented:** 119 / 143
 
 | Color | Count |
 |-------|-------|
 | White | 23 |
 | Blue | 20 |
-| Black | 24 |
+| Black | 25 |
 | Red | 22 |
 | Green | 23 |
 | Multicolor | 2 |
@@ -95,7 +95,7 @@
 - [x] Krosan Drover
 - [x] Krosan Warchief
 - [x] Kurgadon
-- [ ] Lethal Vapors
+- [x] Lethal Vapors
 - [x] Lingering Death
 - [x] Long-Term Plans
 - [x] Mercurial Kite

@@ -99,12 +99,17 @@ class ActivateAbilityHandler(
             if (!inZone) return "This ability can only be activated from the ${ability.activateFromZone.name.lowercase()}"
             if (ownerId != action.playerId) return "You don't own this card"
         } else {
-            // Use projected controller to account for control-changing effects (e.g., Annex)
-            val projected = stateProjector.project(state)
-            val controller = projected.getController(action.sourceId)
-                ?: container.get<ControllerComponent>()?.playerId
-            if (controller != action.playerId) {
-                return "You don't control this permanent"
+            // Check if any player may activate this ability (e.g., Lethal Vapors)
+            val anyPlayerMay = ability.restrictions.any { it is ActivationRestriction.AnyPlayerMay }
+
+            if (!anyPlayerMay) {
+                // Use projected controller to account for control-changing effects (e.g., Annex)
+                val projected = stateProjector.project(state)
+                val controller = projected.getController(action.sourceId)
+                    ?: container.get<ControllerComponent>()?.playerId
+                if (controller != action.playerId) {
+                    return "You don't control this permanent"
+                }
             }
 
             // Face-down creatures have no abilities (Rule 707.2)
@@ -587,6 +592,7 @@ class ActivateAbilityHandler(
         restriction: ActivationRestriction
     ): String? {
         return when (restriction) {
+            is ActivationRestriction.AnyPlayerMay -> null // Not a restriction; handled in validate()
             is ActivationRestriction.OnlyDuringYourTurn -> {
                 if (state.activePlayerId != playerId) "This ability can only be activated during your turn"
                 else null
