@@ -2,14 +2,14 @@
 
 **Set Size:** 269 cards (249 unique card names + basic land variants)
 **Release Date:** September 26, 2014
-**Implemented:** 48 / 249
+**Implemented:** 49 / 249
 
 | Color      | Count |
 |------------|-------|
 | White      | 7     |
 | Blue       | 7     |
 | Black      | 7     |
-| Red        | 7     |
+| Red        | 8     |
 | Green      | 7     |
 | Multicolor | 7     |
 | Colorless  | 3     |
@@ -240,7 +240,7 @@
 - [ ] Tranquil Cove
 - [ ] Trap Essence
 - [ ] Treasure Cruise
-- [ ] Trumpet Blast
+- [x] Trumpet Blast
 - [ ] Tusked Colossodon
 - [ ] Tuskguard Captain
 - [ ] Ugin's Nexus
