@@ -86,6 +86,7 @@ object ScourgeSet {
         ThundercloudElemental,
 
         // Blue enchantments
+        DayOfTheDragons,
         DecreeOfSilence,
         DragonWings,
         FacesOfThePast,

@@ -59,6 +59,8 @@ constructors.
 - `Effects.PutOntoBattlefield(target, tapped = false)`
 - `Effects.PutOntoBattlefieldUnderYourControl(target)` — put target onto battlefield under controller's control
 - `Effects.ReturnSelfToBattlefieldAttached(target)` — return self from graveyard to battlefield attached to target (for Auras like Dragon Shadow)
+- `Effects.ExileGroupAndLink(filter: GroupFilter, storeAs)` — exile all matching permanents and link to source (Day of the Dragons ETB)
+- `Effects.ReturnLinkedExile()` — return all cards linked via LinkedExileComponent to battlefield (Day of the Dragons LTB)
 - `Effects.ShuffleGraveyardIntoLibrary(target)` — shuffle graveyard into library
 
 ### Stats & Keywords
@@ -222,6 +224,8 @@ each player reveals and creates tokens
 | `DestroyAllSharingTypeWithSacrificedEffect` | `noRegenerate`                                        | Destroy all sharing type |
 | `HarshMercyEffect`                          | (object)                                              | Harsh Mercy              |
 | `PatriarchsBiddingEffect`                   | (object)                                              | Patriarch's Bidding      |
+| `ExileGroupAndLinkEffect`                   | `filter: GroupFilter, storeAs`                        | Exile group + link to source |
+| `ReturnLinkedExileEffect`                   | (object)                                              | Return linked exiled cards |
 
 ### Permanent Modification
 

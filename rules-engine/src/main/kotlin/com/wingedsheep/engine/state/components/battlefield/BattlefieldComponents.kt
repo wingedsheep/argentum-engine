@@ -140,3 +140,18 @@ data class DamageDealtToCreaturesThisTurnComponent(
  */
 @Serializable
 data object GrantsControllerShroudComponent : Component
+
+/**
+ * Tracks entity IDs of cards exiled by this permanent, so they can be
+ * returned when the permanent leaves the battlefield.
+ *
+ * Used for Day of the Dragons-style effects where exiled cards are linked
+ * to a specific source permanent.
+ *
+ * Not stripped by [stripBattlefieldComponents] — intentionally persists when
+ * the permanent moves zones so LTB triggers can still read it.
+ */
+@Serializable
+data class LinkedExileComponent(
+    val exiledIds: List<EntityId> = emptyList()
+) : Component

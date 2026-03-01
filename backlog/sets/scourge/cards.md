@@ -3,12 +3,12 @@
 
 **Set Size:** 143 cards
 **Release Date:** May 26, 2003
-**Implemented:** 132 / 143
+**Implemented:** 133 / 143
 
 | Color | Count |
 |-------|-------|
 | White | 25 |
-| Blue | 24 |
+| Blue | 25 |
 | Black | 27 |
 | Red | 25 |
 | Green | 25 |
@@ -46,7 +46,7 @@
 - [x] Daru Spiritualist
 - [x] Daru Warchief
 - [x] Dawn Elemental
-- [ ] Day of the Dragons
+- [x] Day of the Dragons
 - [x] Death's-Head Buzzard
 - [ ] Decree of Annihilation
 - [x] Decree of Justice
