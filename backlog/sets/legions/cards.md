@@ -2,11 +2,11 @@
 
 **Set Size:** 145 cards
 **Release Date:** February 3, 2003
-**Implemented:** 87 / 145
+**Implemented:** 88 / 145
 
 | Color      | Count |
 |------------|-------|
-| White      | 17/29 |
+| White      | 18/29 |
 | Blue       | 17/29 |
 | Black      | 18/29 |
 | Red        | 18/29 |
@@ -153,7 +153,7 @@
 - [ ] Whipgrass Entangler
 - [x] White Knight
 - [x] Willbender
-- [ ] Windborn Muse
+- [x] Windborn Muse
 - [x] Wingbeat Warrior
 - [ ] Wirewood Channeler
 - [x] Wirewood Hivemaster

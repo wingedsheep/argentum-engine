@@ -20,6 +20,12 @@ import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.model.EntityId
+import com.wingedsheep.engine.mechanics.mana.ManaSolver
+import com.wingedsheep.engine.state.components.player.ManaPoolComponent
+import com.wingedsheep.engine.mechanics.mana.ManaPool
+import com.wingedsheep.sdk.core.ManaCost
+import com.wingedsheep.sdk.core.ManaSymbol
+import com.wingedsheep.sdk.scripting.AttackTax
 import com.wingedsheep.sdk.scripting.CanOnlyBlockCreaturesWithKeyword
 import com.wingedsheep.sdk.scripting.CantBeBlockedByPower
 import com.wingedsheep.sdk.scripting.CantBeBlockedExceptByKeyword
@@ -98,8 +104,15 @@ class CombatManager(
             return ExecutionResult.error(state, projectedMustAttackValidation)
         }
 
+        // Check and pay attack taxes (e.g., Ghostly Prison, Windborn Muse)
+        val taxResult = validateAndPayAttackTaxes(state, attackingPlayer, attackers, projected)
+        if (!taxResult.isSuccess) {
+            return taxResult
+        }
+
         // Apply attacker components and tap attacking creatures
-        var newState = state
+        var newState = taxResult.newState
+        val taxEvents = taxResult.events.toMutableList()
         for ((attackerId, defenderId) in attackers) {
             newState = newState.updateEntity(attackerId) { container ->
                 var updated = container.with(AttackingComponent(defenderId))
@@ -125,7 +138,7 @@ class CombatManager(
         val attackerNames = attackers.keys.map { state.getEntity(it)?.get<CardComponent>()?.name ?: "Creature" }
         return ExecutionResult.success(
             newState,
-            listOf(AttackersDeclaredEvent(attackers.keys.toList(), attackerNames, attackingPlayer))
+            taxEvents + listOf(AttackersDeclaredEvent(attackers.keys.toList(), attackerNames, attackingPlayer))
         )
     }
 
@@ -2778,6 +2791,120 @@ class CombatManager(
                         ?.any { it.equals(condition.landType, ignoreCase = true) } == true
             }
         }
+    }
+
+    /**
+     * Validate and pay attack taxes from effects like Ghostly Prison and Windborn Muse.
+     * Scans the defending player(s)' battlefield for permanents with AttackTax static abilities
+     * and auto-pays the total tax cost.
+     *
+     * Only applies when attacking a player directly, not their planeswalkers.
+     *
+     * @return Success with mana paid and sources tapped, or error if cost can't be paid
+     */
+    private fun validateAndPayAttackTaxes(
+        state: GameState,
+        attackingPlayer: EntityId,
+        attackers: Map<EntityId, EntityId>,
+        projected: ProjectedState
+    ): ExecutionResult {
+        if (attackers.isEmpty()) return ExecutionResult.success(state)
+
+        // Group attackers by defending player (skip planeswalker defenders)
+        val attackersPerDefender = mutableMapOf<EntityId, Int>()
+        for ((_, defenderId) in attackers) {
+            // Only apply tax when attacking a player directly
+            if (state.turnOrder.contains(defenderId)) {
+                attackersPerDefender[defenderId] = (attackersPerDefender[defenderId] ?: 0) + 1
+            }
+        }
+
+        if (attackersPerDefender.isEmpty()) return ExecutionResult.success(state)
+
+        // Calculate total tax from all AttackTax permanents
+        var totalGenericTax = 0
+        for ((defenderId, attackerCount) in attackersPerDefender) {
+            val defenderPermanents = projected.getBattlefieldControlledBy(defenderId)
+            for (entityId in defenderPermanents) {
+                val container = state.getEntity(entityId) ?: continue
+                val cardComponent = container.get<CardComponent>() ?: continue
+                val cardDef = cardRegistry?.getCard(cardComponent.cardDefinitionId) ?: continue
+                for (ability in cardDef.staticAbilities) {
+                    if (ability is AttackTax) {
+                        val taxPerAttacker = ManaCost.parse(ability.manaCostPerAttacker)
+                        totalGenericTax += taxPerAttacker.cmc * attackerCount
+                    }
+                }
+            }
+        }
+
+        if (totalGenericTax <= 0) return ExecutionResult.success(state)
+
+        // Build total mana cost
+        val totalCost = ManaCost(List(totalGenericTax) { ManaSymbol.generic(1) })
+
+        // Try to pay from floating mana first, then tap sources
+        val playerEntity = state.getEntity(attackingPlayer)
+            ?: return ExecutionResult.error(state, "Attacking player not found")
+        val manaPoolComponent = playerEntity.get<ManaPoolComponent>()
+            ?: return ExecutionResult.error(state, "Player has no mana pool")
+
+        val manaPool = ManaPool(
+            manaPoolComponent.white,
+            manaPoolComponent.blue,
+            manaPoolComponent.black,
+            manaPoolComponent.red,
+            manaPoolComponent.green,
+            manaPoolComponent.colorless
+        )
+
+        val partialResult = manaPool.payPartial(totalCost)
+        val remainingCost = partialResult.remainingCost
+        var currentPool = manaPool
+        var currentState = state
+        val events = mutableListOf<GameEvent>()
+
+        if (!remainingCost.isEmpty()) {
+            val manaSolver = ManaSolver()
+            val solution = manaSolver.solve(currentState, attackingPlayer, remainingCost)
+                ?: return ExecutionResult.error(
+                    currentState,
+                    "Cannot pay attack tax of {$totalGenericTax} (not enough mana available)"
+                )
+
+            for (source in solution.sources) {
+                currentState = currentState.updateEntity(source.entityId) { c ->
+                    c.with(TappedComponent)
+                }
+                events.add(TappedEvent(source.entityId, source.name))
+            }
+
+            for ((_, production) in solution.manaProduced) {
+                currentPool = if (production.color != null) {
+                    currentPool.add(production.color, production.amount)
+                } else {
+                    currentPool.addColorless(production.colorless)
+                }
+            }
+        }
+
+        val newPool = currentPool.pay(totalCost)
+            ?: return ExecutionResult.error(currentState, "Cannot pay attack tax after auto-tap")
+
+        currentState = currentState.updateEntity(attackingPlayer) { container ->
+            container.with(
+                ManaPoolComponent(
+                    white = newPool.white,
+                    blue = newPool.blue,
+                    black = newPool.black,
+                    red = newPool.red,
+                    green = newPool.green,
+                    colorless = newPool.colorless
+                )
+            )
+        }
+
+        return ExecutionResult.success(currentState, events)
     }
 
     /**

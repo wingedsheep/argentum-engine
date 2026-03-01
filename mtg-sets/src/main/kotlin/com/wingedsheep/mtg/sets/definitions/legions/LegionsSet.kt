@@ -39,6 +39,7 @@ object LegionsSet {
         SwoopingTalon,
         WallOfHope,
         WhiteKnight,
+        WindbornMuse,
         WingbeatWarrior,
 
         // Blue creatures
