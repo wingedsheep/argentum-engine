@@ -547,13 +547,6 @@ function LobbyOverlay({
                 </select>
               </div>
             )}
-            {/* Grid draft: fixed booster count based on player count */}
-            {isGridDraft && (
-              <div className={styles.settingsRow}>
-                <span className={styles.settingsLabel}>Total boosters</span>
-                <span className={styles.settingsSelect} style={{ background: 'transparent', border: 'none', cursor: 'default' }}>{gridDraftFixedBoosters(lobbyState.players.length)}</span>
-              </div>
-            )}
             {/* Packs per player - only for Draft */}
             {isDraft && (
               <div className={styles.settingsRow}>
