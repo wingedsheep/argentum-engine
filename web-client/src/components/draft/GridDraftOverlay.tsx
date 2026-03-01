@@ -7,8 +7,9 @@ import { getCardImageUrl } from '../../utils/cardImages'
 import { ManaCost } from '../ui/ManaSymbols'
 
 /**
- * Grid Draft overlay for 2-3 player Grid Draft mode.
+ * Grid Draft overlay for 2-4 player Grid Draft mode.
  * Shows a 3x3 card grid, row/column selection, and picked cards sidebar.
+ * 4 players use parallel 2-player sub-groups; each player sees only their group's grid.
  */
 export function GridDraftOverlay() {
   const lobbyState = useGameStore((state) => state.lobbyState)

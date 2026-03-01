@@ -309,31 +309,13 @@ function WaitingForOpponent({
 }
 
 /**
- * Get balanced booster count options for grid draft based on player count.
- * For 3 players, grids must be divisible by 3 for fair pick rotation.
- * With 15-card boosters: grids = floor(boosters * 15 / 9).
+ * Get the fixed booster count for grid draft based on player count.
+ * Targets 18 grids per draft (the canonical number).
  */
-function getGridDraftBoosterOptions(playerCount: number): { value: number; label: string }[] {
-  const allCounts = Array.from({ length: 16 }, (_, i) => i + 3) // 3-18
-  const isBalanced = (boosters: number) =>
-    playerCount < 3 || Math.floor(boosters * 15 / 9) % 3 === 0
-
-  const cardsPerPlayer = (boosters: number) => {
-    const grids = Math.floor(boosters * 15 / 9)
-    if (playerCount <= 2) {
-      return grids * 3 // each player picks once per grid = 3 cards
-    }
-    // 3 players: 2 picks per grid, each player picks 2 out of every 3 grids
-    const cycles = Math.floor(grids / 3)
-    return cycles * 6 // 2 picks * 3 cards per cycle
-  }
-
-  return allCounts
-    .filter(isBalanced)
-    .map((n) => ({
-      value: n,
-      label: `${n} boosters (~${cardsPerPlayer(n)}/player)`,
-    }))
+function gridDraftFixedBoosters(playerCount: number): number {
+  if (playerCount >= 4) return 22
+  if (playerCount >= 3) return 15
+  return 11
 }
 
 /**
@@ -366,9 +348,9 @@ function LobbyOverlay({
   const playerCount = lobbyState.players.length
   const canSwitchToNormalDraft = playerCount <= 8
   const canSwitchToWinston = playerCount <= 2
-  const canSwitchToGrid = playerCount <= 3
+  const canSwitchToGrid = playerCount <= 4
   const playerCheck = isWinston ? playerCount === 2
-    : isGridDraft ? playerCount >= 2 && playerCount <= 3
+    : isGridDraft ? playerCount >= 2 && playerCount <= 4
     : playerCount >= 2
   const canStart = playerCheck && hasSelectedSets
 
@@ -471,7 +453,7 @@ function LobbyOverlay({
                     className={`${styles.draftTypeButton} ${isGridDraft ? `${styles.settingsButtonActive} ${styles.settingsButtonDraft}` : ''}`}
                   >
                     <span className={styles.draftTypeName}>Grid</span>
-                    <span className={styles.draftTypeDesc}>Pick a row or column from a 3x3 grid. 2-3 players.</span>
+                    <span className={styles.draftTypeDesc}>Pick a row or column from a 3x3 grid. 2-4 players.</span>
                   </button>
                 </div>
               </div>
@@ -550,25 +532,26 @@ function LobbyOverlay({
                 })()}
               </div>
             </div>
-            {/* Boosters setting - for Sealed, Winston, and Grid */}
-            {(isSealed || isWinston || isGridDraft) && (
+            {/* Boosters setting - for Sealed and Winston (Grid uses fixed counts) */}
+            {(isSealed || isWinston) && (
               <div className={styles.settingsRow}>
-                <span className={styles.settingsLabel}>{isWinston || isGridDraft ? 'Total boosters' : 'Boosters per player'}</span>
+                <span className={styles.settingsLabel}>{isWinston ? 'Total boosters' : 'Boosters per player'}</span>
                 <select
                   value={lobbyState.settings.boosterCount}
                   onChange={(e) => updateLobbySettings({ boosterCount: Number(e.target.value) })}
                   className={styles.settingsSelect}
                 >
-                  {(isGridDraft
-                    ? getGridDraftBoosterOptions(lobbyState.players.length)
-                    : [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]
-                  ).map((opt) => {
-                    if (typeof opt === 'number') {
-                      return <option key={opt} value={opt}>{opt}</option>
-                    }
-                    return <option key={opt.value} value={opt.value}>{opt.label}</option>
-                  })}
+                  {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16].map((n) => (
+                    <option key={n} value={n}>{n}</option>
+                  ))}
                 </select>
+              </div>
+            )}
+            {/* Grid draft: fixed booster count based on player count */}
+            {isGridDraft && (
+              <div className={styles.settingsRow}>
+                <span className={styles.settingsLabel}>Total boosters</span>
+                <span className={styles.settingsSelect} style={{ background: 'transparent', border: 'none', cursor: 'default' }}>{gridDraftFixedBoosters(lobbyState.players.length)}</span>
               </div>
             )}
             {/* Packs per player - only for Draft */}
@@ -641,7 +624,7 @@ function LobbyOverlay({
           <div className={styles.playerListHeader}>
             <span className={styles.playerListTitle}>Players</span>
             <span className={styles.playerCount}>
-              {lobbyState.players.length} / {isWinston ? 2 : isGridDraft ? 3 : (lobbyState.settings.maxPlayers || 8)}
+              {lobbyState.players.length} / {isWinston ? 2 : isGridDraft ? 4 : (lobbyState.settings.maxPlayers || 8)}
             </span>
           </div>
           {lobbyState.players.map((player, i) => (

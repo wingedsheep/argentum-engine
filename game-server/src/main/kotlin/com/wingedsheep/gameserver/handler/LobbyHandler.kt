@@ -284,7 +284,7 @@ class LobbyHandler(
 
         val maxPlayers = when (format) {
             TournamentFormat.WINSTON_DRAFT -> 2
-            TournamentFormat.GRID_DRAFT -> message.maxPlayers.coerceIn(2, 3)
+            TournamentFormat.GRID_DRAFT -> message.maxPlayers.coerceIn(2, 4)
             else -> message.maxPlayers.coerceIn(2, 8)
         }
 
@@ -301,7 +301,7 @@ class LobbyHandler(
                 message.boosterCount.coerceIn(1, 16)
             }
             TournamentFormat.GRID_DRAFT -> {
-                if (message.boosterCount == 6) gridDraftDefaultBoosters(maxPlayers) else message.boosterCount.coerceIn(3, 18)
+                gridDraftDefaultBoosters(maxPlayers)
             }
         }
 
@@ -1299,23 +1299,31 @@ class LobbyHandler(
                 lobbyRepository.saveLobby(lobby)
             }
             is GridDraftResult.DraftComplete -> {
-                logger.info("Grid draft complete for lobby ${lobby.lobbyId}")
-                lobby.pickTimerJob?.cancel()
-                lobby.pickTimerJob = null
+                if (lobby.isGridDraftComplete()) {
+                    // All groups done — transition to deck building
+                    logger.info("Grid draft complete for lobby ${lobby.lobbyId}")
+                    lobby.pickTimerJob?.cancel()
+                    lobby.pickTimerJob = null
 
-                // Send DraftComplete to transition to deck building
-                val basicLandInfos = lobby.basicLands.values.map { cardToSealedCardInfo(it) }
-                lobby.players.forEach { (_, playerState) ->
-                    val poolInfos = playerState.cardPool.map { cardToSealedCardInfo(it) }
-                    val ws = playerState.identity.webSocketSession
-                    if (ws != null && ws.isOpen) {
-                        sender.send(ws, ServerMessage.DraftComplete(
-                            pickedCards = poolInfos,
-                            basicLands = basicLandInfos
-                        ))
+                    val basicLandInfos = lobby.basicLands.values.map { cardToSealedCardInfo(it) }
+                    lobby.players.forEach { (_, playerState) ->
+                        val poolInfos = playerState.cardPool.map { cardToSealedCardInfo(it) }
+                        val ws = playerState.identity.webSocketSession
+                        if (ws != null && ws.isOpen) {
+                            sender.send(ws, ServerMessage.DraftComplete(
+                                pickedCards = poolInfos,
+                                basicLands = basicLandInfos
+                            ))
+                        }
                     }
+                    broadcastLobbyUpdate(lobby)
+                } else {
+                    // This group is done but other group(s) still active
+                    logger.info("Grid draft: group complete, other group(s) still active in lobby ${lobby.lobbyId}")
+                    lobby.pickTimerJob?.cancel()
+                    broadcastGridDraftState(lobby, result.lastAction, result.cards, identity.playerId)
+                    startGridDraftTimer(lobby)
                 }
-                broadcastLobbyUpdate(lobby)
                 lobbyRepository.saveLobby(lobby)
             }
             is GridDraftResult.Error -> {
@@ -1326,49 +1334,61 @@ class LobbyHandler(
 
     /**
      * Broadcast grid draft state to all players.
+     * For 4-player mode, each player sees only their group's grid.
      */
     private fun broadcastGridDraftState(lobby: TournamentLobby, lastAction: String?, lastPickedCards: List<com.wingedsheep.sdk.model.CardDefinition> = emptyList(), lastPickerPlayerId: EntityId? = null) {
-        val gridInfos = lobby.gridCards.map { card ->
-            card?.let { cardToSealedCardInfo(it) }
-        }
-        val availableSelections = lobby.getAvailableGridSelections().map { it.name }
-        val activePlayer = lobby.getGridActivePlayer()
-        val activePlayerName = lobby.players[activePlayer]?.identity?.playerName ?: "Unknown"
-        val playerOrderNames = lobby.gridPlayerOrder.map { id ->
-            lobby.players[id]?.identity?.playerName ?: "Unknown"
-        }
-
         lobby.players.forEach { (playerId, playerState) ->
             val ws = playerState.identity.webSocketSession
             if (ws != null && ws.isOpen) {
+                // Find this player's group
+                val group = lobby.getGroupForPlayer(playerId)
+                    ?: lobby.gridGroups.firstOrNull()
+                    ?: return@forEach
+
+                val gridInfos = group.gridCards.map { card ->
+                    card?.let { cardToSealedCardInfo(it) }
+                }
+                val availableSelections = lobby.getAvailableGridSelections(group).map { it.name }
+                val activePlayer = lobby.getGridActivePlayer(group)
+                val activePlayerName = lobby.players[activePlayer]?.identity?.playerName ?: "Unknown"
+                val playerOrderNames = group.playerOrder.map { id ->
+                    lobby.players[id]?.identity?.playerName ?: "Unknown"
+                }
+
                 val pickedCards = playerState.cardPool.map { cardToSealedCardInfo(it) }
+
+                // Only show same-group opponents
+                val sameGroupPlayerIds = group.playerOrder.toSet()
                 val otherPickCounts = lobby.players
-                    .filter { it.key != playerId }
+                    .filter { it.key != playerId && it.key in sameGroupPlayerIds }
                     .map { (_, ps) -> ps.identity.playerName to ps.cardPool.size }
                     .toMap()
                 val otherPickedCards = lobby.players
-                    .filter { it.key != playerId }
+                    .filter { it.key != playerId && it.key in sameGroupPlayerIds }
                     .map { (_, ps) -> ps.identity.playerName to ps.cardPool.map { cardToSealedCardInfo(it) } }
                     .toMap()
 
-                // Show last picked cards to all players for the pick animation.
-                // The picker already knows what they picked, so no information leak.
-                val lastPicked = lastPickedCards.map { cardToSealedCardInfo(it) }
+                // Show last picked cards to players in the same group
+                val lastPicked = if (lastPickerPlayerId == null || lastPickerPlayerId in sameGroupPlayerIds) {
+                    lastPickedCards.map { cardToSealedCardInfo(it) }
+                } else {
+                    emptyList()
+                }
 
                 sender.send(ws, ServerMessage.GridDraftState(
                     grid = gridInfos,
                     activePlayerName = activePlayerName,
                     isYourTurn = playerId == activePlayer,
-                    mainDeckRemaining = lobby.gridMainDeck.size,
+                    mainDeckRemaining = group.mainDeck.size,
                     pickedCards = pickedCards,
                     totalPickedByOthers = otherPickCounts,
                     pickedCardsByOthers = otherPickedCards,
-                    lastAction = lastAction,
+                    lastAction = if (lastPickerPlayerId == null || lastPickerPlayerId in sameGroupPlayerIds) lastAction else null,
                     timeRemainingSeconds = lobby.pickTimeSeconds,
                     availableSelections = if (playerId == activePlayer) availableSelections else emptyList(),
                     playerOrder = playerOrderNames,
-                    currentPickerIndex = lobby.gridActivePlayerIndex,
-                    gridNumber = lobby.gridNumber,
+                    currentPickerIndex = group.activePlayerIndex,
+                    gridNumber = group.gridNumber,
                     lastPickedCards = lastPicked
                 ))
             }
@@ -1377,6 +1397,7 @@ class LobbyHandler(
 
     /**
      * Start the grid draft pick timer.
+     * For multi-group mode, auto-picks for all active players across groups on timeout.
      */
     private fun startGridDraftTimer(lobby: TournamentLobby) {
         lobby.pickTimeRemaining = lobby.pickTimeSeconds
@@ -1393,10 +1414,13 @@ class LobbyHandler(
                 broadcastTimerUpdate(lobby, remaining)
             }
 
-            // Timer expired - auto-pick for the active player
+            // Timer expired - auto-pick for all active players across all groups
             if (isActive && lobby.state == LobbyState.DRAFTING && lobby.format == TournamentFormat.GRID_DRAFT) {
-                val activePlayer = lobby.getGridActivePlayer()
-                if (activePlayer != null) {
+                val activePlayers = lobby.getAllGridActivePlayers()
+                var needsRestart = false
+                var draftComplete = false
+
+                for ((_, activePlayer) in activePlayers) {
                     val result = lobby.autoGridPick(activePlayer)
                     val lastAction = when (result) {
                         is GridDraftResult.PickMade -> result.lastAction
@@ -1413,34 +1437,44 @@ class LobbyHandler(
                     when (result) {
                         is GridDraftResult.PickMade -> {
                             broadcastGridDraftState(lobby, "$lastAction (auto-pick)", pickedCards, activePlayer)
-                            startGridDraftTimer(lobby)
-                            lobbyRepository.saveLobby(lobby)
+                            needsRestart = true
                         }
                         is GridDraftResult.GridComplete -> {
                             broadcastGridDraftState(lobby, "$lastAction (auto-pick)", pickedCards, activePlayer)
-                            startGridDraftTimer(lobby)
-                            lobbyRepository.saveLobby(lobby)
+                            needsRestart = true
                         }
                         is GridDraftResult.DraftComplete -> {
-                            val basicLandInfos = lobby.basicLands.values.map { cardToSealedCardInfo(it) }
-                            lobby.players.forEach { (_, playerState) ->
-                                val poolInfos = playerState.cardPool.map { cardToSealedCardInfo(it) }
-                                val ws = playerState.identity.webSocketSession
-                                if (ws != null && ws.isOpen) {
-                                    sender.send(ws, ServerMessage.DraftComplete(
-                                        pickedCards = poolInfos,
-                                        basicLands = basicLandInfos
-                                    ))
-                                }
+                            if (lobby.isGridDraftComplete()) {
+                                draftComplete = true
+                            } else {
+                                broadcastGridDraftState(lobby, "$lastAction (auto-pick)", pickedCards, activePlayer)
+                                needsRestart = true
                             }
-                            broadcastLobbyUpdate(lobby)
-                            lobbyRepository.saveLobby(lobby)
                         }
                         is GridDraftResult.Error -> {
                             logger.warn("Grid draft auto-pick failed: ${result.message}")
                         }
                     }
                 }
+
+                if (draftComplete && lobby.isGridDraftComplete()) {
+                    val basicLandInfos = lobby.basicLands.values.map { cardToSealedCardInfo(it) }
+                    lobby.players.forEach { (_, playerState) ->
+                        val poolInfos = playerState.cardPool.map { cardToSealedCardInfo(it) }
+                        val ws = playerState.identity.webSocketSession
+                        if (ws != null && ws.isOpen) {
+                            sender.send(ws, ServerMessage.DraftComplete(
+                                pickedCards = poolInfos,
+                                basicLands = basicLandInfos
+                            ))
+                        }
+                    }
+                    broadcastLobbyUpdate(lobby)
+                } else if (needsRestart) {
+                    startGridDraftTimer(lobby)
+                }
+
+                lobbyRepository.saveLobby(lobby)
             }
         }
     }
@@ -1654,7 +1688,7 @@ class LobbyHandler(
                 if (newFormat == TournamentFormat.WINSTON_DRAFT) {
                     lobby.maxPlayers = 2
                 } else if (newFormat == TournamentFormat.GRID_DRAFT) {
-                    lobby.maxPlayers = minOf(lobby.maxPlayers, 3)
+                    lobby.maxPlayers = minOf(lobby.maxPlayers, 4)
                 }
                 lobby.boosterCount = when (newFormat) {
                     TournamentFormat.DRAFT -> 3
@@ -1666,25 +1700,27 @@ class LobbyHandler(
         }
 
         // Manual boosterCount override (apply after format change)
-        message.boosterCount?.let {
-            val maxCount = when (lobby.format) {
-                TournamentFormat.DRAFT -> 6
-                TournamentFormat.SEALED -> 16
-                TournamentFormat.WINSTON_DRAFT -> 16
-                TournamentFormat.GRID_DRAFT -> 18
+        // Grid draft uses fixed booster counts based on player count — no manual override
+        if (lobby.format != TournamentFormat.GRID_DRAFT) {
+            message.boosterCount?.let {
+                val maxCount = when (lobby.format) {
+                    TournamentFormat.DRAFT -> 6
+                    TournamentFormat.SEALED -> 16
+                    TournamentFormat.WINSTON_DRAFT -> 16
+                    TournamentFormat.GRID_DRAFT -> 24 // unreachable
+                }
+                lobby.boosterCount = it.coerceIn(1, maxCount)
             }
-            lobby.boosterCount = it.coerceIn(1, maxCount)
         }
         message.maxPlayers?.let {
             val oldMaxPlayers = lobby.maxPlayers
             when (lobby.format) {
                 TournamentFormat.WINSTON_DRAFT -> lobby.maxPlayers = 2
-                TournamentFormat.GRID_DRAFT -> lobby.maxPlayers = it.coerceIn(2, 3)
+                TournamentFormat.GRID_DRAFT -> lobby.maxPlayers = it.coerceIn(2, 4)
                 else -> lobby.maxPlayers = it.coerceIn(2, 8)
             }
-            // Auto-adjust grid draft booster count when player count changes
-            // (only if boosterCount wasn't explicitly set in this same message)
-            if (lobby.format == TournamentFormat.GRID_DRAFT && lobby.maxPlayers != oldMaxPlayers && message.boosterCount == null) {
+            // Auto-adjust grid draft booster count when player count changes (always, since it's fixed)
+            if (lobby.format == TournamentFormat.GRID_DRAFT && lobby.maxPlayers != oldMaxPlayers) {
                 lobby.boosterCount = gridDraftDefaultBoosters(lobby.players.size)
             }
         }
@@ -2701,10 +2737,14 @@ class LobbyHandler(
 
     /**
      * Default booster count for grid draft based on player count.
-     * For 3 players, total grids must be divisible by 3 for balanced pick rotation
-     * (each 3-grid cycle gives every player exactly 1 first-pick, 1 second-pick, 1 sit-out).
-     * - 2 players: 9 boosters (~135 cards, 15 grids, 45 cards/player)
-     * - 3 players: 13 boosters (~195 cards, 21 grids = 7 balanced cycles, 42 cards/player)
+     * Targets 18 grids per draft (the canonical number).
+     * - 2 players: 11 boosters (11×15=165 cards, 18 grids, ~54 cards/player)
+     * - 3 players: 15 boosters (15×15=225 cards, 18 grids at 12 cards/grid, ~48 cards/player)
+     * - 4 players: 22 boosters (22×15=330 cards, 2×18 grids in parallel, ~54 cards/player)
      */
-    private fun gridDraftDefaultBoosters(playerCount: Int): Int = if (playerCount >= 3) 13 else 9
+    private fun gridDraftDefaultBoosters(playerCount: Int): Int = when {
+        playerCount >= 4 -> 22
+        playerCount >= 3 -> 15
+        else -> 11
+    }
 }

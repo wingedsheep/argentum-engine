@@ -49,6 +49,20 @@ sealed interface GridDraftResult {
 }
 
 /**
+ * Encapsulates per-group state for grid draft.
+ * 2-3 players: 1 group with all players.
+ * 4 players: 2 groups with 2 randomly-paired players each.
+ */
+data class GridGroup(
+    val mainDeck: MutableList<CardDefinition>,
+    var gridCards: Array<CardDefinition?> = arrayOfNulls(9),
+    var activePlayerIndex: Int = 0,
+    val playerOrder: List<EntityId>,
+    var picksThisGrid: Int = 0,
+    var gridNumber: Int = 0
+)
+
+/**
  * State machine for a tournament lobby.
  */
 enum class LobbyState {
@@ -240,31 +254,29 @@ class TournamentLobby(
     // Grid Draft-specific State
     // =========================================================================
 
-    /** Shared card pool for grid draft */
-    val gridMainDeck: MutableList<CardDefinition> = mutableListOf()
-
-    /** 3x3 grid, null = empty slot (9 elements, row-major order) */
-    var gridCards: Array<CardDefinition?> = arrayOfNulls(9)
+    /** Grid draft groups. 2-3 players: 1 group. 4 players: 2 parallel groups. */
+    var gridGroups: List<GridGroup> = emptyList()
         private set
 
-    /** Index into gridPlayerOrder for current active picker */
-    @Volatile
-    var gridActivePlayerIndex: Int = 0
-        private set
+    // Convenience accessors for backward compatibility (single-group case and multi-group)
 
-    /** Player order for grid draft (rotates each grid) */
-    var gridPlayerOrder: List<EntityId> = emptyList()
-        private set
+    /** Shared card pool for the first grid group (backward compat) */
+    val gridMainDeck: MutableList<CardDefinition> get() = gridGroups.firstOrNull()?.mainDeck ?: mutableListOf()
 
-    /** How many picks have been made on the current grid */
-    @Volatile
-    var gridPicksThisGrid: Int = 0
-        private set
+    /** 3x3 grid for the first group (backward compat) */
+    val gridCards: Array<CardDefinition?> get() = gridGroups.firstOrNull()?.gridCards ?: arrayOfNulls(9)
 
-    /** Which grid number we're on (1-based, for display) */
-    @Volatile
-    var gridNumber: Int = 0
-        private set
+    /** Active player index in the first group */
+    val gridActivePlayerIndex: Int get() = gridGroups.firstOrNull()?.activePlayerIndex ?: 0
+
+    /** Player order for the first group */
+    val gridPlayerOrder: List<EntityId> get() = gridGroups.firstOrNull()?.playerOrder ?: emptyList()
+
+    /** Picks this grid in the first group */
+    val gridPicksThisGrid: Int get() = gridGroups.firstOrNull()?.picksThisGrid ?: 0
+
+    /** Grid number in the first group */
+    val gridNumber: Int get() = gridGroups.firstOrNull()?.gridNumber ?: 0
 
     val isFull: Boolean get() = players.size >= maxPlayers
     val playerCount: Int get() = players.size
@@ -626,31 +638,43 @@ class TournamentLobby(
 
     /**
      * Start the grid draft phase. Only the host can trigger this.
-     * Generates a shared pool (6 boosters shuffled together) and deals the first grid.
+     * Generates a shared pool and deals the first grid.
+     * - 2-3 players: 1 group with all players
+     * - 4 players: 2 parallel groups, each with 2 randomly-paired players
      */
     fun startGridDraft(requestingPlayerId: EntityId): Boolean {
         if (!isHost(requestingPlayerId)) return false
         if (state != LobbyState.WAITING_FOR_PLAYERS) return false
-        if (players.size < 2 || players.size > 3) return false
+        if (players.size < 2 || players.size > 4) return false
         if (format != TournamentFormat.GRID_DRAFT) return false
 
-        // Generate pool: 6 boosters shuffled together
+        // Generate full card pool
         val pool = mutableListOf<CardDefinition>()
         repeat(boosterCount) {
             pool.addAll(boosterGenerator.generateBooster(setCodes))
         }
         pool.shuffle()
-        gridMainDeck.clear()
-        gridMainDeck.addAll(pool)
 
-        // Shuffle player order
-        gridPlayerOrder = players.keys.toList().shuffled()
-        gridActivePlayerIndex = 0
-        gridPicksThisGrid = 0
-        gridNumber = 0
+        val allPlayers = players.keys.toList().shuffled()
 
-        // Deal first grid
-        dealGrid()
+        if (players.size == 4) {
+            // 4 players: split into 2 parallel groups of 2
+            val halfSize = pool.size / 2
+            val pool1 = pool.subList(0, halfSize).toMutableList()
+            val pool2 = pool.subList(halfSize, pool.size).toMutableList()
+            gridGroups = listOf(
+                GridGroup(mainDeck = pool1, playerOrder = listOf(allPlayers[0], allPlayers[1])),
+                GridGroup(mainDeck = pool2, playerOrder = listOf(allPlayers[2], allPlayers[3]))
+            )
+        } else {
+            // 2-3 players: 1 group with all players
+            gridGroups = listOf(
+                GridGroup(mainDeck = pool, playerOrder = allPlayers)
+            )
+        }
+
+        // Deal first grid for each group
+        gridGroups.forEach { dealGrid(it) }
 
         state = LobbyState.DRAFTING
         return true
@@ -815,22 +839,46 @@ class TournamentLobby(
     }
 
     /**
-     * Deal a new 3x3 grid from the main deck.
+     * Find the grid group a player belongs to.
+     */
+    fun getGroupForPlayer(playerId: EntityId): GridGroup? {
+        return gridGroups.find { playerId in it.playerOrder }
+    }
+
+    /**
+     * Deal a new 3x3 grid from the group's main deck.
      * If fewer than 9 cards remain, deals what's available.
      */
-    fun dealGrid() {
-        gridCards = arrayOfNulls(9)
-        val cardsToDeal = minOf(9, gridMainDeck.size)
+    fun dealGrid(group: GridGroup) {
+        group.gridCards = arrayOfNulls(9)
+        val cardsToDeal = minOf(9, group.mainDeck.size)
         for (i in 0 until cardsToDeal) {
-            gridCards[i] = gridMainDeck.removeFirst()
+            group.gridCards[i] = group.mainDeck.removeFirst()
         }
-        gridPicksThisGrid = 0
-        gridNumber++
+        group.picksThisGrid = 0
+        group.gridNumber++
+    }
+
+    /**
+     * Refill empty grid slots from the group's main deck.
+     * Used in 3-player mode after the first pick to restore the grid to 9 cards.
+     */
+    private fun refillGrid(group: GridGroup, indices: List<Int>) {
+        for (idx in indices) {
+            if (group.gridCards[idx] == null && group.mainDeck.isNotEmpty()) {
+                group.gridCards[idx] = group.mainDeck.removeFirst()
+            }
+        }
     }
 
     /**
      * Pick a row or column from the grid.
      * Returns the cards picked and advances the turn.
+     *
+     * 2-player mode: 2 picks per grid, no refill.
+     * 3-player mode: 3 picks per grid (all players pick every grid).
+     *   After the 1st pick, refill the 3 empty slots from the main deck.
+     * 4-player mode: parallel 2-player groups (2 picks per grid, no refill).
      */
     fun gridPickRowOrColumn(playerId: EntityId, selection: GridSelection): GridDraftResult {
         if (state != LobbyState.DRAFTING) {
@@ -840,21 +888,28 @@ class TournamentLobby(
             return GridDraftResult.Error("Not in grid draft format")
         }
 
-        val expectedPlayer = gridPlayerOrder[gridActivePlayerIndex]
+        val group = getGroupForPlayer(playerId)
+            ?: return GridDraftResult.Error("Player not in any grid group")
+
+        val expectedPlayer = group.playerOrder[group.activePlayerIndex]
         if (playerId != expectedPlayer) {
             return GridDraftResult.Error("Not your turn")
         }
 
         // Get the cards at the selected indices
         val indices = selection.getIndices()
-        val cards = indices.mapNotNull { gridCards[it] }
+        val cards = indices.mapNotNull { group.gridCards[it] }
         if (cards.isEmpty()) {
             return GridDraftResult.Error("Selected row/column is empty")
         }
 
         // Remove picked cards from grid
+        val emptyIndices = mutableListOf<Int>()
         for (idx in indices) {
-            gridCards[idx] = null
+            if (group.gridCards[idx] != null) {
+                emptyIndices.add(idx)
+            }
+            group.gridCards[idx] = null
         }
 
         // Add cards to player's pool
@@ -865,55 +920,88 @@ class TournamentLobby(
         val selectionLabel = selection.name.replace("_", " ").lowercase()
         val lastAction = "$playerName picked $selectionLabel (${cards.joinToString(", ") { it.name }})"
 
-        gridPicksThisGrid++
+        group.picksThisGrid++
 
-        // Determine how many picks per grid based on player count
-        // 2 players: 2 picks per grid (each player picks once)
-        // 3 players: 2 picks per grid (2 of 3 players pick, rotate who sits out)
-        val picksPerGrid = minOf(players.size, 2)
+        // Determine picks per grid:
+        // 2-player group: 2 picks per grid
+        // 3-player group: 3 picks per grid (all players pick every grid)
+        val picksPerGrid = group.playerOrder.size
 
-        if (gridPicksThisGrid >= picksPerGrid) {
-            // Grid is exhausted — discard remaining cards and deal new grid
-            // The last within-grid pick already advanced the index to the next player,
-            // which is the correct starting picker for the new grid (rotates each grid).
+        // 3-player refill: after the 1st pick, refill the empty slots
+        if (group.playerOrder.size == 3 && group.picksThisGrid == 1) {
+            refillGrid(group, emptyIndices)
+        }
 
-            if (gridMainDeck.isEmpty()) {
-                // Draft complete — remaining unpicked cards are discarded
-                finishGridDraft()
+        if (group.picksThisGrid >= picksPerGrid) {
+            // Grid exhausted — advance active player index for next grid's starting picker
+            group.activePlayerIndex = (group.activePlayerIndex + 1) % group.playerOrder.size
+
+            if (group.mainDeck.isEmpty()) {
+                // Check if ALL groups are complete
+                if (gridGroups.all { it === group || isGroupComplete(it) }) {
+                    finishGridDraft()
+                    return GridDraftResult.DraftComplete(cards, lastAction)
+                }
+                // This group is done but others may not be
                 return GridDraftResult.DraftComplete(cards, lastAction)
             }
 
             // Discard remaining cards and deal new grid
-            dealGrid()
+            dealGrid(group)
             return GridDraftResult.GridComplete(cards, lastAction)
         } else {
             // Next player picks from the same grid
-            gridActivePlayerIndex = (gridActivePlayerIndex + 1) % gridPlayerOrder.size
+            group.activePlayerIndex = (group.activePlayerIndex + 1) % group.playerOrder.size
             return GridDraftResult.PickMade(cards, lastAction)
         }
     }
 
     /**
-     * Get the active player for the current grid draft turn.
+     * Get the active player for a specific grid group.
      */
-    fun getGridActivePlayer(): EntityId? {
-        return gridPlayerOrder.getOrNull(gridActivePlayerIndex)
+    fun getGridActivePlayer(group: GridGroup): EntityId? {
+        return group.playerOrder.getOrNull(group.activePlayerIndex)
     }
 
     /**
-     * Get the available selections (non-empty rows/columns).
+     * Get the active player for the current grid draft turn (first group, backward compat).
+     */
+    fun getGridActivePlayer(): EntityId? {
+        return gridGroups.firstOrNull()?.let { getGridActivePlayer(it) }
+    }
+
+    /**
+     * Get all active players across all groups (for multi-group timer management).
+     */
+    fun getAllGridActivePlayers(): List<Pair<GridGroup, EntityId>> {
+        return gridGroups.filter { !isGroupComplete(it) }.mapNotNull { group ->
+            getGridActivePlayer(group)?.let { group to it }
+        }
+    }
+
+    /**
+     * Get the available selections (non-empty rows/columns) for a group.
+     */
+    fun getAvailableGridSelections(group: GridGroup): List<GridSelection> {
+        return GridSelection.entries.filter { selection ->
+            selection.getIndices().any { group.gridCards[it] != null }
+        }
+    }
+
+    /**
+     * Get the available selections for the first group (backward compat).
      */
     fun getAvailableGridSelections(): List<GridSelection> {
-        return GridSelection.entries.filter { selection ->
-            selection.getIndices().any { gridCards[it] != null }
-        }
+        return gridGroups.firstOrNull()?.let { getAvailableGridSelections(it) } ?: emptyList()
     }
 
     /**
      * Auto-pick the first available row/column for the active player (timeout).
      */
     fun autoGridPick(playerId: EntityId): GridDraftResult {
-        val available = getAvailableGridSelections()
+        val group = getGroupForPlayer(playerId)
+            ?: return GridDraftResult.Error("Player not in any grid group")
+        val available = getAvailableGridSelections(group)
         if (available.isEmpty()) {
             return GridDraftResult.Error("No available selections")
         }
@@ -921,18 +1009,27 @@ class TournamentLobby(
     }
 
     /**
-     * Check if the grid draft is complete.
+     * Check if a specific group's draft is complete.
+     */
+    private fun isGroupComplete(group: GridGroup): Boolean {
+        return group.mainDeck.isEmpty() && group.gridCards.all { it == null }
+    }
+
+    /**
+     * Check if the grid draft is complete (all groups).
      */
     fun isGridDraftComplete(): Boolean {
-        return gridMainDeck.isEmpty() && gridCards.all { it == null }
+        return gridGroups.all { isGroupComplete(it) }
     }
 
     /**
      * Finish the grid draft and transition to deck building.
      */
     private fun finishGridDraft() {
-        gridCards = arrayOfNulls(9)
-        gridMainDeck.clear()
+        gridGroups.forEach { group ->
+            group.gridCards = arrayOfNulls(9)
+            group.mainDeck.clear()
+        }
         state = LobbyState.DECK_BUILDING
     }
 
