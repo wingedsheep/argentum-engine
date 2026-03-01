@@ -47,6 +47,7 @@ object KhansOfTarkirSet {
         BitterRevelation,
         DebilitatingInjury,
         Despise,
+        DutifulReturn,
         Throttle,
 
         // Green creatures

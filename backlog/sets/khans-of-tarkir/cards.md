@@ -2,13 +2,13 @@
 
 **Set Size:** 269 cards (249 unique card names + basic land variants)
 **Release Date:** September 26, 2014
-**Implemented:** 37 / 249
+**Implemented:** 38 / 249
 
 | Color      | Count |
 |------------|-------|
 | White      | 5     |
 | Blue       | 6     |
-| Black      | 5     |
+| Black      | 6     |
 | Red        | 6     |
 | Green      | 5     |
 | Multicolor | 4     |
@@ -82,7 +82,7 @@
 - [ ] Dragon-Style Twins
 - [ ] Dragon Throne of Tarkir
 - [ ] Duneblast
-- [ ] Dutiful Return
+- [x] Dutiful Return
 - [ ] Efreet Weaponmaster
 - [ ] Embodiment of Spring
 - [ ] Empty the Pits
