@@ -2,13 +2,13 @@
 
 **Set Size:** 145 cards
 **Release Date:** February 3, 2003
-**Implemented:** 103 / 145
+**Implemented:** 104 / 145
 
 | Color      | Count |
 |------------|-------|
 | White      | 20/29 |
 | Blue       | 21/29 |
-| Black      | 20/29 |
+| Black      | 21/29 |
 | Red        | 21/29 |
 | Green      | 21/29 |
 
@@ -40,7 +40,7 @@
 - [x] Covert Operative
 - [x] Crested Craghorn
 - [ ] Crookclaw Elder
-- [ ] Crypt Sliver
+- [x] Crypt Sliver
 - [ ] Dark Supplicant
 - [x] Daru Mender
 - [x] Daru Sanctifier
