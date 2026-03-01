@@ -312,12 +312,6 @@ function WaitingForOpponent({
  * Get the fixed booster count for grid draft based on player count.
  * Targets 18 grids per draft (the canonical number).
  */
-function gridDraftFixedBoosters(playerCount: number): number {
-  if (playerCount >= 4) return 22
-  if (playerCount >= 3) return 15
-  return 11
-}
-
 /**
  * Lobby overlay for sealed lobbies.
  */
