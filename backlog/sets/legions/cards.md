@@ -2,7 +2,7 @@
 
 **Set Size:** 145 cards
 **Release Date:** February 3, 2003
-**Implemented:** 100 / 145
+**Implemented:** 101 / 145
 
 | Color      | Count |
 |------------|-------|
@@ -10,7 +10,7 @@
 | Blue       | 20/29 |
 | Black      | 20/29 |
 | Red        | 20/29 |
-| Green      | 20/29 |
+| Green      | 21/29 |
 
 ---
 
@@ -55,7 +55,7 @@
 - [x] Dripping Dead
 - [x] Earthblighter
 - [x] Echo Tracer
-- [ ] Elvish Soultiller
+- [x] Elvish Soultiller
 - [x] Embalmed Brawler
 - [x] Enormous Baloth
 - [ ] Essence Sliver

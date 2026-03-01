@@ -720,6 +720,7 @@ MoveType: `MoveType.Default`, `.Discard`, `.Sacrifice`
 - `EffectPatterns.revealAndOpponentChooses(count, filter)` — reveal top, opponent chooses
 - `EffectPatterns.chooseCreatureTypeRevealTop()` — choose type, reveal top
 - `EffectPatterns.chooseCreatureTypeReturnFromGraveyard(count)` — choose type, return from graveyard
+- `EffectPatterns.chooseCreatureTypeShuffleGraveyardIntoLibrary()` — choose type, shuffle matching creatures from graveyard into library
 - `EffectPatterns.headGames(target)` — Head Games effect
 - `EffectPatterns.wheelEffect(players)` — wheel effect
 - `EffectPatterns.discardCards(count, target)` / `.discardRandom(count, target)` / `.discardHand(target)` — discard

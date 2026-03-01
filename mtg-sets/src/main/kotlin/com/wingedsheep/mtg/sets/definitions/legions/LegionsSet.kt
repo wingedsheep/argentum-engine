@@ -118,6 +118,7 @@ object LegionsSet {
         GloweringRogon,
         Brontotherium,
         DefiantElf,
+        ElvishSoultiller,
         EnormousBaloth,
         FeralThrowback,
         Hundroog,
