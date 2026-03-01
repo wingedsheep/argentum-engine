@@ -57,7 +57,6 @@ class GameBeansConfig(
     @Bean
     fun randomDeckGenerator(): RandomDeckGenerator = RandomDeckGenerator(
         cardPool = buildList {
-            addAll(PortalSet.allCards)
             if (gameProperties.sets.onslaughtEnabled) addAll(OnslaughtSet.allCards)
             if (gameProperties.sets.scourgeEnabled) addAll(ScourgeSet.allCards)
             if (gameProperties.sets.legionsEnabled) addAll(LegionsSet.allCards)
