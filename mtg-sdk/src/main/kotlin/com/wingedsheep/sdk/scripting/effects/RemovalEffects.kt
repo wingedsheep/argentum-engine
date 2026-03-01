@@ -4,6 +4,7 @@ import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.scripting.GameObjectFilter
+import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import kotlinx.serialization.SerialName
@@ -324,4 +325,41 @@ data class ReturnSelfToBattlefieldAttachedEffect(
 ) : Effect {
     override val description: String =
         "Return this card from your graveyard to the battlefield attached to ${target.description}"
+}
+
+/**
+ * Exile all permanents matching a filter that the controller controls, and link them
+ * to the source permanent. The exiled entity IDs are stored on the source as a
+ * LinkedExileComponent, and the count is stored in the effect context as a collection
+ * named [storeAs] (use VariableReference("{storeAs}_count") for the count).
+ *
+ * Used for Day of the Dragons-style effects where permanents are exiled and later
+ * returned when the source leaves the battlefield.
+ *
+ * @property filter Which permanents to exile (matched against projected state)
+ * @property storeAs Collection name for storing exiled IDs (default "linked_exile")
+ */
+@SerialName("ExileGroupAndLink")
+@Serializable
+data class ExileGroupAndLinkEffect(
+    val filter: GroupFilter,
+    val storeAs: String = "linked_exile"
+) : Effect {
+    override val description: String =
+        "Exile all ${filter.description} and link them to this permanent"
+}
+
+/**
+ * Return all cards linked to the source permanent (via LinkedExileComponent) to the
+ * battlefield under the controller's control.
+ *
+ * Used for the leaves-the-battlefield half of Day of the Dragons-style effects.
+ * Reads the LinkedExileComponent from the source entity (which may be in the graveyard
+ * or exile at this point) and moves each linked card from exile to the battlefield.
+ */
+@SerialName("ReturnLinkedExile")
+@Serializable
+data object ReturnLinkedExileEffect : Effect {
+    override val description: String =
+        "Return the exiled cards to the battlefield under your control"
 }

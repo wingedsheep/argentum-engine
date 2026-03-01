@@ -217,6 +217,13 @@ sealed interface ClientMessage {
     data object ReadyForNextRound : ClientMessage
 
     /**
+     * Host adds extra rounds to a completed tournament.
+     */
+    @Serializable
+    @SerialName("addExtraRound")
+    data object AddExtraRound : ClientMessage
+
+    /**
      * Add 1 minute to a disconnected tournament player's timer.
      */
     @Serializable

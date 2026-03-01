@@ -35,6 +35,8 @@ import com.wingedsheep.sdk.scripting.effects.LoseLifeEffect
 import com.wingedsheep.sdk.scripting.effects.SetLifeTotalEffect
 import com.wingedsheep.sdk.scripting.effects.ModifyStatsEffect
 import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
+import com.wingedsheep.sdk.scripting.effects.ExileGroupAndLinkEffect
+import com.wingedsheep.sdk.scripting.effects.ReturnLinkedExileEffect
 import com.wingedsheep.sdk.scripting.effects.ReturnSelfToBattlefieldAttachedEffect
 import com.wingedsheep.sdk.scripting.effects.DrawUpToEffect
 import com.wingedsheep.sdk.scripting.effects.ReadTheRunesEffect
@@ -281,6 +283,20 @@ object Effects {
      */
     fun ExileUntilEndStep(target: EffectTarget): Effect =
         EffectPatterns.exileUntilEndStep(target)
+
+    /**
+     * Exile all permanents matching a filter that the controller controls and link
+     * them to the source permanent. Used for Day of the Dragons-style effects.
+     * The count is available as DynamicAmount.VariableReference("{storeAs}_count").
+     */
+    fun ExileGroupAndLink(filter: GroupFilter, storeAs: String = "linked_exile"): Effect =
+        ExileGroupAndLinkEffect(filter, storeAs)
+
+    /**
+     * Return all cards linked to the source permanent (via LinkedExileComponent)
+     * to the battlefield under the controller's control.
+     */
+    fun ReturnLinkedExile(): Effect = ReturnLinkedExileEffect
 
     /**
      * Return to hand.

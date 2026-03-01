@@ -1141,6 +1141,16 @@ class TournamentLobby(
     }
 
     /**
+     * Resume a completed tournament (for extra rounds).
+     * Transitions back to TOURNAMENT_ACTIVE and clears ready state.
+     */
+    fun resumeTournament() {
+        require(state == LobbyState.TOURNAMENT_COMPLETE) { "Tournament is not complete" }
+        state = LobbyState.TOURNAMENT_ACTIVE
+        clearReadyState()
+    }
+
+    /**
      * Get the submitted deck for a player.
      */
     fun getSubmittedDeck(playerId: EntityId): Map<String, Int>? {

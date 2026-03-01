@@ -874,6 +874,23 @@ export function createMessageHandlers(set: SetState, get: GetState): MessageHand
       })
     },
 
+    onTournamentResumed: (msg) => {
+      set((state) => ({
+        tournamentState: state.tournamentState
+          ? {
+              ...state.tournamentState,
+              isComplete: false,
+              finalStandings: null,
+              totalRounds: msg.totalRounds,
+              standings: msg.standings,
+              readyPlayerIds: [],
+              nextOpponentName: msg.nextOpponentName ?? null,
+              nextRoundHasBye: msg.nextRoundHasBye ?? false,
+            }
+          : null,
+      }))
+    },
+
     // ========================================================================
     // Spectating handlers
     // ========================================================================
@@ -930,7 +947,7 @@ export function createMessageHandlers(set: SetState, get: GetState): MessageHand
         }
       }
 
-      set({
+      set((state) => ({
         spectatingState: {
           gameSessionId: msg.gameSessionId,
           gameState: msg.gameState ?? null,
@@ -946,7 +963,8 @@ export function createMessageHandlers(set: SetState, get: GetState): MessageHand
           combat: msg.combat,
           decisionStatus: msg.decisionStatus ?? null,
         },
-      })
+        opponentBlockerAssignments: (msg.combat?.attackers?.some(a => a.blockedBy.length > 0) || !msg.combat) ? null : state.opponentBlockerAssignments,
+      }))
     },
 
     onSpectatingStarted: (msg) => {

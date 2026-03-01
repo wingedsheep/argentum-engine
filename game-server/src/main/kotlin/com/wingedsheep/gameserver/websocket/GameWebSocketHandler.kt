@@ -93,6 +93,10 @@ class GameWebSocketHandler(
                     lobbyHandler.handleReadyForNextRound(session)
                 }
 
+                is ClientMessage.AddExtraRound -> {
+                    lobbyHandler.handleAddExtraRound(session)
+                }
+
                 is ClientMessage.AddDisconnectTime -> {
                     connectionHandler.handleAddDisconnectTime(session, clientMessage)
                 }

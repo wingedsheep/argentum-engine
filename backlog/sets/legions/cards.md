@@ -2,15 +2,15 @@
 
 **Set Size:** 145 cards
 **Release Date:** February 3, 2003
-**Implemented:** 96 / 145
+**Implemented:** 100 / 145
 
 | Color      | Count |
 |------------|-------|
-| White      | 19/29 |
-| Blue       | 19/29 |
+| White      | 20/29 |
+| Blue       | 20/29 |
 | Black      | 20/29 |
-| Red        | 19/29 |
-| Green      | 19/29 |
+| Red        | 20/29 |
+| Green      | 20/29 |
 
 ---
 
@@ -18,7 +18,7 @@
 - [x] Akroma's Devoted
 - [x] Aphetto Exterminator
 - [x] Aven Envoy
-- [ ] Aven Redeemer
+- [x] Aven Redeemer
 - [x] Aven Warhawk
 - [ ] Bane of the Living
 - [ ] Beacon of Destiny
@@ -114,7 +114,7 @@
 - [x] Primoc Escapee
 - [ ] Quick Sliver
 - [x] Ridgetop Raptor
-- [ ] Riptide Director
+- [x] Riptide Director
 - [x] Riptide Mangler
 - [ ] Rockshard Elemental
 - [ ] Root Sliver
@@ -146,7 +146,7 @@
 - [x] Voidmage Apprentice
 - [x] Wall of Deceit
 - [x] Wall of Hope
-- [ ] Warbreak Trumpeter
+- [x] Warbreak Trumpeter
 - [ ] Ward Sliver
 - [x] Warped Researcher
 - [ ] Weaver of Lies
@@ -155,7 +155,7 @@
 - [x] Willbender
 - [x] Windborn Muse
 - [x] Wingbeat Warrior
-- [ ] Wirewood Channeler
+- [x] Wirewood Channeler
 - [x] Wirewood Hivemaster
 - [x] Withered Wretch
 - [x] Zombie Brute

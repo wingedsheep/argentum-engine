@@ -499,6 +499,7 @@ export type GameStore = {
   /** Disconnected tournament players: playerId -> info */
   disconnectedPlayers: Record<string, { playerName: string; secondsRemaining: number; disconnectedAt: number }>
   readyForNextRound: () => void
+  addExtraRound: () => void
   spectateGame: (gameSessionId: string) => void
   stopSpectating: () => void
   setSpectatingState: (state: SpectatingState | null) => void

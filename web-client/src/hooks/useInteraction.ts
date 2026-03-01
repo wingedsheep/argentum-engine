@@ -74,8 +74,8 @@ export function useInteraction() {
         const actionInfo = actions[0]!
         const action = actionInfo.action
 
-        // Check if spell or ability has X cost - needs X selection first
-        if ((action.type === 'CastSpell' || action.type === 'ActivateAbility') && actionInfo.hasXCost) {
+        // Check if spell or ability or morph has X cost - needs X selection first
+        if ((action.type === 'CastSpell' || action.type === 'ActivateAbility' || action.type === 'TurnFaceUp') && actionInfo.hasXCost) {
           return { type: 'requiresXSelection', actionInfo }
         }
 
@@ -132,8 +132,8 @@ export function useInteraction() {
     (actionInfo: LegalActionInfo) => {
       const action = actionInfo.action
 
-      // Check if spell or ability has X cost - needs X selection first
-      if ((action.type === 'CastSpell' || action.type === 'ActivateAbility') && actionInfo.hasXCost) {
+      // Check if spell or ability or morph has X cost - needs X selection first
+      if ((action.type === 'CastSpell' || action.type === 'ActivateAbility' || action.type === 'TurnFaceUp') && actionInfo.hasXCost) {
         startXSelection({
           actionInfo,
           cardName: action.type === 'CastSpell'
@@ -380,8 +380,8 @@ export function useInteraction() {
     (actionInfo: LegalActionInfo): boolean => {
       const action = actionInfo.action
 
-      // X cost spells/abilities need selection
-      if ((action.type === 'CastSpell' || action.type === 'ActivateAbility') && actionInfo.hasXCost) {
+      // X cost spells/abilities/morph need selection
+      if ((action.type === 'CastSpell' || action.type === 'ActivateAbility' || action.type === 'TurnFaceUp') && actionInfo.hasXCost) {
         return false
       }
 

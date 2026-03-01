@@ -408,7 +408,8 @@ class TriggerProcessor(
             effect = effectOverride ?: ability.effect,
             description = ability.description,
             triggerDamageAmount = trigger.triggerContext.damageAmount,
-            triggeringEntityId = trigger.triggerContext.triggeringEntityId
+            triggeringEntityId = trigger.triggerContext.triggeringEntityId,
+            xValue = trigger.triggerContext.xValue
         )
 
         return stackResolver.putTriggeredAbility(

@@ -88,9 +88,10 @@ class TurnFaceUpHandler(
         when (morphData.morphCost) {
             is PayCost.Mana -> {
                 val manaCost = costCalculator.increaseGenericCost(morphData.morphCost.cost, morphCostIncrease)
+                val xValue = action.xValue ?: 0
                 when (action.paymentStrategy) {
                     is PaymentStrategy.AutoPay -> {
-                        if (!manaSolver.canPay(state, action.playerId, manaCost)) {
+                        if (!manaSolver.canPay(state, action.playerId, manaCost, xValue)) {
                             return "Not enough mana to turn this creature face up"
                         }
                     }
@@ -179,6 +180,7 @@ class TurnFaceUpHandler(
 
         // Pay the morph cost (including any morph cost increases)
         val morphCostIncrease = costCalculator.calculateMorphCostIncrease(currentState)
+        val xValue = action.xValue ?: 0
         when (morphData.morphCost) {
             is PayCost.PayLife -> {
                 val lifeCost = morphData.morphCost.amount
@@ -249,7 +251,7 @@ class TurnFaceUpHandler(
                         )
 
                         val partialResult = pool.payPartial(manaCost)
-                        val poolAfterPayment = partialResult.newPool
+                        var poolAfterPayment = partialResult.newPool
                         val remainingCost = partialResult.remainingCost
                         val manaSpentFromPool = partialResult.manaSpent
 
@@ -259,6 +261,35 @@ class TurnFaceUpHandler(
                         var redSpent = manaSpentFromPool.red
                         var greenSpent = manaSpentFromPool.green
                         var colorlessSpent = manaSpentFromPool.colorless
+
+                        // Pay for X from remaining pool (multiply by X symbol count for XX costs)
+                        val xSymbolCount = manaCost.xCount.coerceAtLeast(1)
+                        var xRemainingToPay = xValue * xSymbolCount
+                        while (xRemainingToPay > 0 && poolAfterPayment.colorless > 0) {
+                            poolAfterPayment = poolAfterPayment.copy(colorless = poolAfterPayment.colorless - 1)
+                            colorlessSpent++
+                            xRemainingToPay--
+                        }
+                        for (color in listOf(Color.GREEN, Color.RED, Color.BLACK, Color.BLUE, Color.WHITE)) {
+                            while (xRemainingToPay > 0) {
+                                val current = when (color) {
+                                    Color.WHITE -> poolAfterPayment.white
+                                    Color.BLUE -> poolAfterPayment.blue
+                                    Color.BLACK -> poolAfterPayment.black
+                                    Color.RED -> poolAfterPayment.red
+                                    Color.GREEN -> poolAfterPayment.green
+                                }
+                                if (current <= 0) break
+                                poolAfterPayment = when (color) {
+                                    Color.WHITE -> poolAfterPayment.copy(white = poolAfterPayment.white - 1).also { whiteSpent++ }
+                                    Color.BLUE -> poolAfterPayment.copy(blue = poolAfterPayment.blue - 1).also { blueSpent++ }
+                                    Color.BLACK -> poolAfterPayment.copy(black = poolAfterPayment.black - 1).also { blackSpent++ }
+                                    Color.RED -> poolAfterPayment.copy(red = poolAfterPayment.red - 1).also { redSpent++ }
+                                    Color.GREEN -> poolAfterPayment.copy(green = poolAfterPayment.green - 1).also { greenSpent++ }
+                                }
+                                xRemainingToPay--
+                            }
+                        }
 
                         currentState = currentState.updateEntity(action.playerId) { c ->
                             c.with(
@@ -273,9 +304,9 @@ class TurnFaceUpHandler(
                             )
                         }
 
-                        // Tap lands for remaining cost
-                        if (!remainingCost.isEmpty()) {
-                            val solution = manaSolver.solve(currentState, action.playerId, remainingCost, 0)
+                        // Tap lands for remaining cost (using xRemainingToPay instead of full xValue)
+                        if (!remainingCost.isEmpty() || xRemainingToPay > 0) {
+                            val solution = manaSolver.solve(currentState, action.playerId, remainingCost, xRemainingToPay)
                                 ?: return ExecutionResult.error(currentState, "Not enough mana to turn face up")
 
                             for (source in solution.sources) {
@@ -355,7 +386,8 @@ class TurnFaceUpHandler(
         val turnFaceUpEvent = TurnFaceUpEvent(
             entityId = action.sourceId,
             cardName = cardName,
-            controllerId = action.playerId
+            controllerId = action.playerId,
+            xValue = if (action.xValue != null && action.xValue > 0) action.xValue else null
         )
         events.add(turnFaceUpEvent)
 

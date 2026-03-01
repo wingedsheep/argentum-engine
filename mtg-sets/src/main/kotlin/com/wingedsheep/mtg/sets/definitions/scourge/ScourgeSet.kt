@@ -59,6 +59,7 @@ object ScourgeSet {
         DragonFangs,
         OneWithNature,
         PrimitiveEtchings,
+        Upwelling,
 
         // Green instants
         AcceleratedMutation,
@@ -86,6 +87,7 @@ object ScourgeSet {
         ThundercloudElemental,
 
         // Blue enchantments
+        DayOfTheDragons,
         DecreeOfSilence,
         DragonWings,
         FacesOfThePast,

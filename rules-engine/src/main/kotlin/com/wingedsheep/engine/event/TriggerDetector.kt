@@ -1722,7 +1722,8 @@ data class TriggerContext(
     val triggeringEntityId: EntityId? = null,
     val triggeringPlayerId: EntityId? = null,
     val damageAmount: Int? = null,
-    val step: Step? = null
+    val step: Step? = null,
+    val xValue: Int? = null
 ) {
     companion object {
         fun fromEvent(event: com.wingedsheep.engine.core.GameEvent): TriggerContext {
@@ -1754,7 +1755,8 @@ data class TriggerContext(
                 )
                 is TurnFaceUpEvent -> TriggerContext(
                     triggeringEntityId = event.entityId,
-                    triggeringPlayerId = event.controllerId
+                    triggeringPlayerId = event.controllerId,
+                    xValue = event.xValue
                 )
                 is ControlChangedEvent -> TriggerContext(
                     triggeringEntityId = event.permanentId,

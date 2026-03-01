@@ -53,6 +53,7 @@ export type ServerMessage =
   | MatchCompleteMessage
   | PlayerReadyForRoundMessage
   | TournamentCompleteMessage
+  | TournamentResumedMessage
   // Spectating Messages
   | ActiveMatchesMessage
   | SpectatorStateUpdateMessage
@@ -889,6 +890,15 @@ export interface TournamentCompleteMessage {
   readonly finalStandings: readonly PlayerStandingInfo[]
 }
 
+export interface TournamentResumedMessage {
+  readonly type: 'tournamentResumed'
+  readonly lobbyId: string
+  readonly totalRounds: number
+  readonly standings: readonly PlayerStandingInfo[]
+  readonly nextOpponentName?: string | null
+  readonly nextRoundHasBye?: boolean
+}
+
 // ============================================================================
 // Spectating Messages
 // ============================================================================
@@ -1081,6 +1091,7 @@ export type ClientMessage =
   | UpdateLobbySettingsMessage
   // Tournament Messages
   | ReadyForNextRoundMessage
+  | AddExtraRoundMessage
   | SpectateGameMessage
   | StopSpectatingMessage
   | AddDisconnectTimeMessage
@@ -1383,6 +1394,10 @@ export interface ReadyForNextRoundMessage {
   readonly type: 'readyForNextRound'
 }
 
+export interface AddExtraRoundMessage {
+  readonly type: 'addExtraRound'
+}
+
 export interface SpectateGameMessage {
   readonly type: 'spectateGame'
   readonly gameSessionId: string
@@ -1532,6 +1547,10 @@ export function createReadyForNextRoundMessage(): ReadyForNextRoundMessage {
   return { type: 'readyForNextRound' }
 }
 
+export function createAddExtraRoundMessage(): AddExtraRoundMessage {
+  return { type: 'addExtraRound' }
+}
+
 export function createSpectateGameMessage(gameSessionId: string): SpectateGameMessage {
   return { type: 'spectateGame', gameSessionId }
 }
@@ -1642,6 +1661,10 @@ export function isMatchCompleteMessage(msg: ServerMessage): msg is MatchComplete
 
 export function isTournamentCompleteMessage(msg: ServerMessage): msg is TournamentCompleteMessage {
   return msg.type === 'tournamentComplete'
+}
+
+export function isTournamentResumedMessage(msg: ServerMessage): msg is TournamentResumedMessage {
+  return msg.type === 'tournamentResumed'
 }
 
 // Spectating Type Guards

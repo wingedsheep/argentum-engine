@@ -647,7 +647,8 @@ data class LibraryReorderedEvent(
 data class TurnFaceUpEvent(
     val entityId: EntityId,
     val cardName: String,
-    val controllerId: EntityId
+    val controllerId: EntityId,
+    val xValue: Int? = null
 ) : GameEvent
 
 /**

@@ -24,6 +24,7 @@ object LegionsSet {
     val allCards = listOf(
         // White creatures
         AkromasDevoted,
+        AvenRedeemer,
         AvenWarhawk,
         CloudreachCavalry,
         DaruMender,
@@ -56,6 +57,7 @@ object LegionsSet {
         MerchantOfSecrets,
         MistformSeaswift,
         PrimocEscapee,
+        RiptideDirector,
         RiptideMangler,
         ShiftingSliver,
         SynapseSliver,
@@ -106,6 +108,7 @@ object LegionsSet {
         ShaleskinPlower,
         SkirkMarauder,
         SkirkOutrider,
+        WarbreakTrumpeter,
 
         // Green creatures
         BerserkMurlodont,
@@ -126,6 +129,7 @@ object LegionsSet {
         TimberwatchElf,
         TotemSpeaker,
         VexingBeetle,
+        WirewoodChanneler,
         WirewoodHivemaster,
     )
 }

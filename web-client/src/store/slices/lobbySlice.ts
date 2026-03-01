@@ -10,6 +10,7 @@ import {
   createStopLobbyMessage,
   createUpdateLobbySettingsMessage,
   createReadyForNextRoundMessage,
+  createAddExtraRoundMessage,
   createSpectateGameMessage,
   createStopSpectatingMessage,
   createAddDisconnectTimeMessage,
@@ -33,6 +34,7 @@ export interface LobbySliceActions {
   stopLobby: () => void
   updateLobbySettings: (settings: { setCodes?: string[]; format?: 'SEALED' | 'DRAFT' | 'WINSTON_DRAFT' | 'GRID_DRAFT'; boosterCount?: number; maxPlayers?: number; gamesPerMatch?: number; pickTimeSeconds?: number; picksPerRound?: number }) => void
   readyForNextRound: () => void
+  addExtraRound: () => void
   spectateGame: (gameSessionId: string) => void
   stopSpectating: () => void
   addDisconnectTime: (playerId: string) => void
@@ -94,6 +96,10 @@ export const createLobbySlice: SliceCreator<LobbySlice> = (set, get) => ({
 
   readyForNextRound: () => {
     getWebSocket()?.send(createReadyForNextRoundMessage())
+  },
+
+  addExtraRound: () => {
+    getWebSocket()?.send(createAddExtraRoundMessage())
   },
 
   spectateGame: (gameSessionId) => {
