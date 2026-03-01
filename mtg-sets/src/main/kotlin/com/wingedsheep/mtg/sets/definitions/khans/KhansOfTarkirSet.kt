@@ -72,6 +72,7 @@ object KhansOfTarkirSet {
         SavagePunch,
 
         // Red creatures
+        BloodfireExpert,
         CanyonLurkers,
         LeapingMaster,
         MonasterySwiftspear,
