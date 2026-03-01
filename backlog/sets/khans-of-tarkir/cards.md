@@ -2,12 +2,12 @@
 
 **Set Size:** 269 cards (249 unique card names + basic land variants)
 **Release Date:** September 26, 2014
-**Implemented:** 58 / 249
+**Implemented:** 59 / 249
 
 | Color      | Count |
 |------------|-------|
 | White      | 9     |
-| Blue       | 9     |
+| Blue       | 10    |
 | Black      | 9     |
 | Red        | 9     |
 | Green      | 9     |
@@ -191,7 +191,7 @@
 - [ ] Sarkhan, the Dragonspeaker
 - [ ] Savage Knuckleblade
 - [x] Savage Punch
-- [ ] Scaldkin
+- [x] Scaldkin
 - [ ] Scion of Glaciers
 - [ ] Scoured Barrens
 - [ ] Scout the Borders
