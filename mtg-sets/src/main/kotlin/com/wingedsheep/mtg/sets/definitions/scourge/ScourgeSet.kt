@@ -140,6 +140,7 @@ object ScourgeSet {
         KaronasZealot,
         NobleTemplar,
         SilverKnight,
+        TrapDigger,
         ZealousInquisitor,
 
         // White enchantments

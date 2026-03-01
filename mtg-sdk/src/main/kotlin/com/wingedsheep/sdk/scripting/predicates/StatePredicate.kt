@@ -118,4 +118,15 @@ sealed interface StatePredicate {
     data object HasMorphAbility : StatePredicate {
         override val description: String = "with a morph ability"
     }
+
+    // =============================================================================
+    // Counter Predicates
+    // =============================================================================
+
+    /** Has a counter of the specified type */
+    @SerialName("HasCounter")
+    @Serializable
+    data class HasCounter(val counterType: String) : StatePredicate {
+        override val description: String = "with a $counterType counter"
+    }
 }

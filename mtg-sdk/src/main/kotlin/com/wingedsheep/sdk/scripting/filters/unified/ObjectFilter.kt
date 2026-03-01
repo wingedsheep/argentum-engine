@@ -245,6 +245,11 @@ data class GameObjectFilter(
         statePredicates = statePredicates + StatePredicate.HasMorphAbility
     )
 
+    /** Must have a counter of the specified type */
+    fun withCounter(counterType: String) = copy(
+        statePredicates = statePredicates + StatePredicate.HasCounter(counterType)
+    )
+
     // =============================================================================
     // Fluent Builder Methods - Controller Predicates
     // =============================================================================

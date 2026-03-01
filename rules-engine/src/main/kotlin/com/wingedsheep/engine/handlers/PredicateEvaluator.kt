@@ -9,8 +9,10 @@ import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.ChosenCreatureTypeComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.identity.FaceDownComponent
+import com.wingedsheep.engine.state.components.battlefield.CountersComponent
 import com.wingedsheep.engine.state.components.identity.MorphDataComponent
 import com.wingedsheep.engine.state.components.identity.TokenComponent
+import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.engine.state.components.stack.ActivatedAbilityOnStackComponent
 import com.wingedsheep.engine.state.components.stack.TriggeredAbilityOnStackComponent
 import com.wingedsheep.sdk.core.Subtype
@@ -540,6 +542,23 @@ class PredicateEvaluator {
 
             // Morph ability
             StatePredicate.HasMorphAbility -> container.has<MorphDataComponent>()
+
+            // Counter state
+            is StatePredicate.HasCounter -> {
+                val countersComponent = container.get<CountersComponent>()
+                if (countersComponent == null) return false
+                val counterType = try {
+                    CounterType.valueOf(
+                        predicate.counterType.uppercase()
+                            .replace(' ', '_')
+                            .replace('+', 'P')
+                            .replace('-', 'M')
+                    )
+                } catch (_: IllegalArgumentException) {
+                    return false
+                }
+                countersComponent.getCount(counterType) > 0
+            }
         }
     }
 

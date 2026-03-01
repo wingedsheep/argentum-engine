@@ -3,11 +3,11 @@
 
 **Set Size:** 143 cards
 **Release Date:** May 26, 2003
-**Implemented:** 113 / 143
+**Implemented:** 114 / 143
 
 | Color | Count |
 |-------|-------|
-| White | 21 |
+| White | 22 |
 | Blue | 19 |
 | Black | 23 |
 | Red | 22 |
@@ -143,7 +143,7 @@
 - [x] Thundercloud Elemental
 - [x] Titanic Bulvox
 - [x] Torrent of Fire
-- [ ] Trap Digger
+- [x] Trap Digger
 - [x] Treetop Scout
 - [x] Twisted Abomination
 - [x] Unburden
