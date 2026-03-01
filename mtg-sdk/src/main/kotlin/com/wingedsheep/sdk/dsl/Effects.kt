@@ -55,6 +55,7 @@ import com.wingedsheep.sdk.scripting.effects.CounterTriggeringSpellEffect
 import com.wingedsheep.sdk.scripting.effects.CounterUnlessPaysEffect
 import com.wingedsheep.sdk.scripting.effects.CounterUnlessDynamicPaysEffect
 import com.wingedsheep.sdk.scripting.effects.ChangeSpellTargetEffect
+import com.wingedsheep.sdk.scripting.effects.ChangeTargetEffect
 import com.wingedsheep.sdk.scripting.effects.SetCreatureSubtypesEffect
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.scripting.references.Player
@@ -636,6 +637,13 @@ object Effects {
      */
     fun ChangeSpellTarget(targetMustBeSource: Boolean = false): Effect =
         ChangeSpellTargetEffect(targetMustBeSource)
+
+    /**
+     * Change the target of target spell or ability with a single target.
+     * "Change the target of target spell or ability with a single target."
+     */
+    fun ChangeTarget(): Effect =
+        ChangeTargetEffect
 
     // =========================================================================
     // Sacrifice Effects

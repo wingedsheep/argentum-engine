@@ -54,6 +54,7 @@ object LegionsSet {
         PrimocEscapee,
         VoidmageApprentice,
         WallOfDeceit,
+        Willbender,
 
         // Black creatures
         Earthblighter,
@@ -84,6 +85,7 @@ object LegionsSet {
         GoblinFirebug,
         GoblinGrappler,
         LavabornMuse,
+        MacetailHystrodon,
         RidgetopRaptor,
         ShaleskinPlower,
         SkirkMarauder,

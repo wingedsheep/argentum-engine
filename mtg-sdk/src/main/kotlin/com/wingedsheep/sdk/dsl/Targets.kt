@@ -223,6 +223,14 @@ object Targets {
         filter = TargetFilter.ActivatedOrTriggeredAbilityOnStack
     )
 
+    /**
+     * Target spell or ability with a single target.
+     * The single-target restriction is enforced at resolution time by the executor.
+     */
+    val SpellOrAbilityWithSingleTarget: TargetRequirement = TargetObject(
+        filter = TargetFilter.SpellOrAbilityOnStack
+    )
+
     // =========================================================================
     // Unified Target Filters (NEW - composable predicate-based targeting)
     // =========================================================================

@@ -17,6 +17,7 @@ class StackExecutors(
         CounterSpellWithFilterExecutor(),
         CounterUnlessPaysExecutor(),
         CounterUnlessDynamicPaysExecutor(amountEvaluator),
-        ChangeSpellTargetExecutor()
+        ChangeSpellTargetExecutor(),
+        ChangeTargetExecutor()
     )
 }

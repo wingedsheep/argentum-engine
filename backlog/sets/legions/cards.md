@@ -2,14 +2,14 @@
 
 **Set Size:** 145 cards
 **Release Date:** February 3, 2003
-**Implemented:** 74 / 145
+**Implemented:** 76 / 145
 
 | Color      | Count |
 |------------|-------|
 | White      | 15/29 |
-| Blue       | 14/29 |
+| Blue       | 15/29 |
 | Black      | 15/29 |
-| Red        | 15/29 |
+| Red        | 16/29 |
 | Green      | 15/29 |
 
 ---
@@ -95,7 +95,7 @@
 - [x] Lavaborn Muse
 - [x] Liege of the Axe
 - [x] Lowland Tracker
-- [ ] Macetail Hystrodon
+- [x] Macetail Hystrodon
 - [ ] Magma Sliver
 - [ ] Master of the Veil
 - [x] Merchant of Secrets
@@ -152,7 +152,7 @@
 - [ ] Weaver of Lies
 - [ ] Whipgrass Entangler
 - [x] White Knight
-- [ ] Willbender
+- [x] Willbender
 - [ ] Windborn Muse
 - [x] Wingbeat Warrior
 - [ ] Wirewood Channeler
