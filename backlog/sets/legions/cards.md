@@ -2,13 +2,13 @@
 
 **Set Size:** 145 cards
 **Release Date:** February 3, 2003
-**Implemented:** 93 / 145
+**Implemented:** 94 / 145
 
 | Color      | Count |
 |------------|-------|
 | White      | 19/29 |
 | Blue       | 18/29 |
-| Black      | 18/29 |
+| Black      | 19/29 |
 | Red        | 19/29 |
 | Green      | 19/29 |
 
@@ -138,7 +138,7 @@
 - [ ] Synapse Sliver
 - [x] Timberwatch Elf
 - [x] Totem Speaker
-- [ ] Toxin Sliver
+- [x] Toxin Sliver
 - [ ] Tribal Forcemage
 - [ ] Unstable Hulk
 - [x] Vexing Beetle
