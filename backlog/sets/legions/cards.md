@@ -2,7 +2,7 @@
 
 **Set Size:** 145 cards
 **Release Date:** February 3, 2003
-**Implemented:** 82 / 145
+**Implemented:** 83 / 145
 
 | Color      | Count |
 |------------|-------|
@@ -10,7 +10,7 @@
 | Blue       | 16/29 |
 | Black      | 16/29 |
 | Red        | 17/29 |
-| Green      | 16/29 |
+| Green      | 17/29 |
 
 ---
 
@@ -136,7 +136,7 @@
 - [ ] Sunstrike Legionnaire
 - [x] Swooping Talon
 - [ ] Synapse Sliver
-- [ ] Timberwatch Elf
+- [x] Timberwatch Elf
 - [x] Totem Speaker
 - [ ] Toxin Sliver
 - [ ] Tribal Forcemage

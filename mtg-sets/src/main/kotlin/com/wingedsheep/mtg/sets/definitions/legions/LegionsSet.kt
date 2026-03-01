@@ -111,6 +111,7 @@ object LegionsSet {
         NeedleshotGourna,
         PatronOfTheWild,
         StonewoodInvoker,
+        TimberwatchElf,
         TotemSpeaker,
         WirewoodHivemaster,
     )
