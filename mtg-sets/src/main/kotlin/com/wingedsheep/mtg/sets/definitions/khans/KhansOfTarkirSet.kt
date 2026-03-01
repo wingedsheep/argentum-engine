@@ -26,6 +26,7 @@ object KhansOfTarkirSet {
         DazzlingRamparts,
         FirehoofCavalry,
         JeskaiStudent,
+        MarduHateblade,
 
         // White spells
         DefiantStrike,
