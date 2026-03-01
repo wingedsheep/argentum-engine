@@ -471,7 +471,8 @@ export function useGroupedZoneCards(zoneId: ZoneId): readonly GroupedCard[] {
 
 /**
  * Hook to get "ghost" cards — graveyard cards that have legal activated abilities,
- * and top-of-library cards playable via Future Sight-like effects.
+ * top-of-library cards playable via Future Sight-like effects, and exile cards
+ * playable via Mind's Desire-like effects.
  * These are shown as translucent cards appended to the player's hand for discoverability.
  * Excludes simple mana abilities and unaffordable actions (same filtering as useHasLegalActions).
  */
@@ -507,6 +508,17 @@ export function useGhostCards(playerId: EntityId | null): readonly ClientCard[] 
       const topCardId = libZone.cardIds[0]!
       if (gameState.cards[topCardId]) {
         ghostCardIds.add(topCardId)
+      }
+    }
+
+    // 3. Exile cards playable via Mind's Desire-like effects
+    for (const actionInfo of legalActions) {
+      if (actionInfo.sourceZone !== 'EXILE') continue
+      const action = actionInfo.action
+      if (action.type === 'CastSpell') {
+        ghostCardIds.add(action.cardId)
+      } else if (action.type === 'PlayLand') {
+        ghostCardIds.add(action.cardId)
       }
     }
 
