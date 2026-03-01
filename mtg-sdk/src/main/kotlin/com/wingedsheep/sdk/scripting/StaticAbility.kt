@@ -955,3 +955,23 @@ data class IncreaseMorphCost(
 ) : StaticAbility {
     override val description: String = "All morph costs cost {$amount} more"
 }
+
+/**
+ * Increases the cost of spells matching a filter for ALL players.
+ * Used for tax effects like Glowrider: "Noncreature spells cost {1} more to cast."
+ *
+ * This is a global effect — it applies to all players, not just the controller.
+ * The engine scans all battlefield permanents for this ability when calculating
+ * effective spell costs.
+ *
+ * @property filter The filter that spells must match to be taxed (card predicates only)
+ * @property amount The amount of generic mana to increase
+ */
+@SerialName("IncreaseSpellCostByFilter")
+@Serializable
+data class IncreaseSpellCostByFilter(
+    val filter: GameObjectFilter,
+    val amount: Int
+) : StaticAbility {
+    override val description: String = "${filter.description} spells cost {$amount} more to cast"
+}

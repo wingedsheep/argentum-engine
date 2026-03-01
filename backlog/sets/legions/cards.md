@@ -2,11 +2,11 @@
 
 **Set Size:** 145 cards
 **Release Date:** February 3, 2003
-**Implemented:** 73 / 145
+**Implemented:** 74 / 145
 
 | Color      | Count |
 |------------|-------|
-| White      | 14/29 |
+| White      | 15/29 |
 | Blue       | 14/29 |
 | Black      | 15/29 |
 | Red        | 15/29 |
@@ -71,7 +71,7 @@
 - [ ] Ghastly Remains
 - [x] Glintwing Invoker
 - [x] Glowering Rogon
-- [ ] Glowrider
+- [x] Glowrider
 - [ ] Goblin Assassin
 - [ ] Goblin Clearcutter
 - [ ] Goblin Dynamo
