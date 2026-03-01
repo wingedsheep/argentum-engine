@@ -37,6 +37,7 @@ object KhansOfTarkirSet {
         WhirlwindAdept,
 
         // Blue spells
+        DisdainfulStroke,
         WeaveFate,
 
         // Black creatures

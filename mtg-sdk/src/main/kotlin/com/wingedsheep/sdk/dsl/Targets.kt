@@ -217,6 +217,12 @@ object Targets {
         TargetSpell(filter = TargetFilter.SpellOnStack.manaValueAtMost(manaValue))
 
     /**
+     * Target spell with mana value N or greater.
+     */
+    fun SpellWithManaValueAtLeast(manaValue: Int): TargetRequirement =
+        TargetSpell(filter = TargetFilter.SpellOnStack.manaValueAtLeast(manaValue))
+
+    /**
      * Target activated or triggered ability on the stack.
      */
     val ActivatedOrTriggeredAbility: TargetRequirement = TargetObject(

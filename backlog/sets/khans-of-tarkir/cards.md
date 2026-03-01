@@ -2,12 +2,12 @@
 
 **Set Size:** 269 cards (249 unique card names + basic land variants)
 **Release Date:** September 26, 2014
-**Implemented:** 35 / 249
+**Implemented:** 36 / 249
 
 | Color      | Count |
 |------------|-------|
 | White      | 5     |
-| Blue       | 5     |
+| Blue       | 6     |
 | Black      | 5     |
 | Red        | 5     |
 | Green      | 5     |
@@ -73,7 +73,7 @@
 - [ ] Deflecting Palm
 - [x] Despise
 - [ ] Dig Through Time
-- [ ] Disdainful Stroke
+- [x] Disdainful Stroke
 - [ ] Dismal Backwater
 - [ ] Disowned Ancestor
 - [ ] Dragon Grip
