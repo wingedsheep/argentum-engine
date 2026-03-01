@@ -37,6 +37,7 @@ object KhansOfTarkirSet {
         // Blue creatures
         JeskaiWindscout,
         MonasteryFlock,
+        MysticOfTheHiddenWay,
         WetlandSambar,
         WhirlwindAdept,
 
