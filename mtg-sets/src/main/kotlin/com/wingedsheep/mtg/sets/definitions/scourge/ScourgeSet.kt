@@ -197,6 +197,7 @@ object ScourgeSet {
 
         // Black instants
         ChillHaunting,
+        ReapingTheGraves,
 
         // Lands
         TempleOfTheFalseGod,

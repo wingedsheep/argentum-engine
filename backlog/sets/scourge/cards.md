@@ -3,13 +3,13 @@
 
 **Set Size:** 143 cards
 **Release Date:** May 26, 2003
-**Implemented:** 129 / 143
+**Implemented:** 130 / 143
 
 | Color | Count |
 |-------|-------|
 | White | 25 |
 | Blue | 23 |
-| Black | 26 |
+| Black | 27 |
 | Red | 24 |
 | Green | 25 |
 | Multicolor | 2 |
@@ -116,7 +116,7 @@
 - [x] Rain of Blades
 - [x] Raven Guild Initiate
 - [x] Raven Guild Master
-- [ ] Reaping the Graves
+- [x] Reaping the Graves
 - [x] Recuperate
 - [x] Reward the Faithful
 - [x] Riptide Survivor
