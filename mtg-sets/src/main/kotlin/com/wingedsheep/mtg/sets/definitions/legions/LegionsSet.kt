@@ -85,6 +85,7 @@ object LegionsSet {
         GoblinFirebug,
         GoblinGrappler,
         LavabornMuse,
+        MacetailHystrodon,
         RidgetopRaptor,
         ShaleskinPlower,
         SkirkMarauder,
