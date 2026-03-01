@@ -112,6 +112,13 @@ sealed interface StatePredicate {
         override val description: String = "face-down"
     }
 
+    /** Is face-up (not face-down) */
+    @SerialName("IsFaceUp")
+    @Serializable
+    data object IsFaceUp : StatePredicate {
+        override val description: String = "face-up"
+    }
+
     /** Has a morph ability (has MorphDataComponent) */
     @SerialName("HasMorphAbility")
     @Serializable

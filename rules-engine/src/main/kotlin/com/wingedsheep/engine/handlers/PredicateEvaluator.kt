@@ -539,6 +539,7 @@ class PredicateEvaluator {
 
             // Face-down state
             StatePredicate.IsFaceDown -> container.has<FaceDownComponent>()
+            StatePredicate.IsFaceUp -> !container.has<FaceDownComponent>()
 
             // Morph ability
             StatePredicate.HasMorphAbility -> container.has<MorphDataComponent>()

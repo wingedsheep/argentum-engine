@@ -81,6 +81,38 @@ class BackslideScenarioTest : ScenarioTestBase() {
                 }
             }
 
+            test("cannot target a face-down morph creature") {
+                val game = scenario()
+                    .withPlayers("Player1", "Player2")
+                    .withCardInHand(1, "Battering Craghorn")
+                    .withCardInHand(1, "Backslide")
+                    .withLandsOnBattlefield(1, "Island", 5)
+                    .withActivePlayer(1)
+                    .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                    .build()
+
+                // Cast Battering Craghorn face-down for {3}
+                val craghornCardId = game.state.getHand(game.player1Id).first { entityId ->
+                    game.state.getEntity(entityId)?.get<CardComponent>()?.name == "Battering Craghorn"
+                }
+                val castResult = game.execute(CastSpell(game.player1Id, craghornCardId, castFaceDown = true))
+                withClue("Cast morph should succeed") {
+                    castResult.error shouldBe null
+                }
+                game.resolveStack()
+
+                // Find the face-down creature
+                val faceDownId = game.state.getBattlefield().find { entityId ->
+                    game.state.getEntity(entityId)?.has<FaceDownComponent>() == true
+                }!!
+
+                // Try to cast Backslide targeting the face-down creature — should fail
+                val castBackslide = game.castSpell(1, "Backslide", faceDownId)
+                withClue("Should not be able to target a creature that is already face-down") {
+                    castBackslide.error shouldNotBe null
+                }
+            }
+
             test("cannot target a creature without morph") {
                 val game = scenario()
                     .withPlayers("Player1", "Player2")

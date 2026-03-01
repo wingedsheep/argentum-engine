@@ -240,6 +240,11 @@ data class GameObjectFilter(
         statePredicates = statePredicates + StatePredicate.IsFaceDown
     )
 
+    /** Must be face-up (not face-down) */
+    fun faceUp() = copy(
+        statePredicates = statePredicates + StatePredicate.IsFaceUp
+    )
+
     /** Must have a morph ability */
     fun withMorph() = copy(
         statePredicates = statePredicates + StatePredicate.HasMorphAbility

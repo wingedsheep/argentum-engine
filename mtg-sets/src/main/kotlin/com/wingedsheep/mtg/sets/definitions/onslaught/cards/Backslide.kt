@@ -22,7 +22,7 @@ val Backslide = card("Backslide") {
 
     spell {
         val t = target("target", TargetPermanent(
-            filter = TargetFilter(GameObjectFilter.Creature.withMorph())
+            filter = TargetFilter(GameObjectFilter.Creature.withMorph().faceUp())
         ))
         effect = TurnFaceDownEffect(t)
     }
