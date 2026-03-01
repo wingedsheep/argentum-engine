@@ -64,6 +64,7 @@ object KhansOfTarkirSet {
         AlpineGrizzly,
         HeirOfTheWilds,
         HighlandGame,
+        TuskedColossodon,
         WoollyLoxodon,
 
         // Green spells
