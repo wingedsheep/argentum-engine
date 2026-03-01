@@ -30,6 +30,7 @@ object LegionsSet {
         DaruMender,
         DaruSanctifier,
         DaruStinger,
+        DefenderOfTheOrder,
         DeftbladeElite,
         GempalmAvenger,
         Glowrider,
