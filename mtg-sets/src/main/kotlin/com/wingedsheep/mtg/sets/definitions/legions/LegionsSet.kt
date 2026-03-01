@@ -92,6 +92,7 @@ object LegionsSet {
         CanopyCrawler,
         BranchsnapLorian,
         GempalmStrider,
+        GloweringRogon,
         Brontotherium,
         DefiantElf,
         EnormousBaloth,
