@@ -53,6 +53,7 @@ object KhansOfTarkirSet {
 
         // Green creatures
         AlpineGrizzly,
+        HeirOfTheWilds,
         HighlandGame,
         WoollyLoxodon,
 

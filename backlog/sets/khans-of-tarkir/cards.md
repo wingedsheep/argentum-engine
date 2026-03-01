@@ -2,7 +2,7 @@
 
 **Set Size:** 269 cards (249 unique card names + basic land variants)
 **Release Date:** September 26, 2014
-**Implemented:** 39 / 249
+**Implemented:** 40 / 249
 
 | Color      | Count |
 |------------|-------|
@@ -10,7 +10,7 @@
 | Blue       | 6     |
 | Black      | 6     |
 | Red        | 6     |
-| Green      | 5     |
+| Green      | 6     |
 | Multicolor | 4     |
 | Colorless  | 3     |
 | Land       | 3     |
@@ -102,7 +102,7 @@
 - [x] Gurmag Swiftwing
 - [ ] Hardened Scales
 - [ ] Heart-Piercer Bow
-- [ ] Heir of the Wilds
+- [x] Heir of the Wilds
 - [ ] Herald of Anafenza
 - [x] Highland Game
 - [ ] High Sentinels of Arashin
