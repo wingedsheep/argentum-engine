@@ -35,6 +35,7 @@ object LegionsSet {
         PlatedSliver,
         StarlightInvoker,
         StoicChampion,
+        SwoopingTalon,
         WallOfHope,
         WhiteKnight,
         WingbeatWarrior,
@@ -52,11 +53,13 @@ object LegionsSet {
         MerchantOfSecrets,
         MistformSeaswift,
         PrimocEscapee,
+        ShiftingSliver,
         VoidmageApprentice,
         WallOfDeceit,
         Willbender,
 
         // Black creatures
+        AphettoExterminator,
         Earthblighter,
         InfernalCaretaker,
         EmbalmedBrawler,
