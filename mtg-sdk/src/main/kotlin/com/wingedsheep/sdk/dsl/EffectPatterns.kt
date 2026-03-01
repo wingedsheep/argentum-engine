@@ -1369,6 +1369,35 @@ object EffectPatterns {
     )
 
     /**
+     * Choose a creature type (at resolution), then shuffle all creature cards
+     * of that type from your graveyard into your library.
+     *
+     * Creates a ChooseCreatureType → Gather(graveyard, creature) →
+     * Select(All, matchChosenType) → Move(library, shuffled) pipeline.
+     *
+     * Used for Elvish Soultiller.
+     */
+    fun chooseCreatureTypeShuffleGraveyardIntoLibrary(): CompositeEffect = CompositeEffect(
+        listOf(
+            ChooseCreatureTypeEffect,
+            GatherCardsEffect(
+                source = CardSource.FromZone(Zone.GRAVEYARD, Player.You, GameObjectFilter.Creature),
+                storeAs = "graveyardCreatures"
+            ),
+            SelectFromCollectionEffect(
+                from = "graveyardCreatures",
+                selection = SelectionMode.All,
+                matchChosenCreatureType = true,
+                storeSelected = "chosen"
+            ),
+            MoveCollectionEffect(
+                from = "chosen",
+                destination = CardDestination.ToZone(Zone.LIBRARY, placement = ZonePlacement.Shuffled)
+            )
+        )
+    )
+
+    /**
      * Exile a target until the beginning of the next end step.
      * "Exile [target]. Return it to the battlefield under its owner's control
      * at the beginning of the next end step."
