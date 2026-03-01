@@ -29,6 +29,7 @@ object LegionsSet {
         DaruSanctifier,
         DeftbladeElite,
         GempalmAvenger,
+        Glowrider,
         LiegeOfTheAxe,
         LowlandTracker,
         PlatedSliver,

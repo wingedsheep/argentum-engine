@@ -17,6 +17,7 @@ import com.wingedsheep.sdk.scripting.CostReductionSource
 import com.wingedsheep.sdk.scripting.FaceDownSpellCostReduction
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.IncreaseMorphCost
+import com.wingedsheep.sdk.scripting.IncreaseSpellCostByFilter
 import com.wingedsheep.sdk.scripting.KeywordAbility
 import com.wingedsheep.sdk.scripting.ReduceSpellCostByFilter
 import com.wingedsheep.sdk.scripting.ReduceSpellColoredCostBySubtype
@@ -74,11 +75,17 @@ class CostCalculator(
         // Evaluate ReduceSpellCostByFilter from battlefield permanents controlled by the caster
         totalReduction += calculateFilterCostReduction(state, cardDef, casterId)
 
+        // Calculate cost increases from global tax effects (e.g., Glowrider)
+        val totalIncrease = calculateFilterCostIncrease(state, cardDef)
+
         // First apply generic cost reduction
         var effectiveCost = reduceGenericCost(cardDef.manaCost, totalReduction)
 
         // Then apply colored cost reductions
         effectiveCost = applyColoredCostReductions(state, cardDef, casterId, effectiveCost)
+
+        // Apply cost increases after reductions
+        effectiveCost = increaseGenericCost(effectiveCost, totalIncrease)
 
         return effectiveCost
     }
@@ -415,6 +422,33 @@ class CostCalculator(
         }
 
         return ManaCost(newSymbols)
+    }
+
+    /**
+     * Calculate cost increase from global tax effects (IncreaseSpellCostByFilter).
+     * Scans ALL permanents on the battlefield since these are global effects
+     * (e.g., Glowrider's "Noncreature spells cost {1} more to cast" affects all players).
+     */
+    private fun calculateFilterCostIncrease(
+        state: GameState,
+        cardDef: CardDefinition
+    ): Int {
+        var increase = 0
+        for (playerId in state.turnOrder) {
+            for (entityId in state.getBattlefield(playerId)) {
+                val card = state.getEntity(entityId)?.get<CardComponent>() ?: continue
+                val permanentDef = cardRegistry?.getCard(card.cardDefinitionId) ?: continue
+
+                for (ability in permanentDef.script.staticAbilities) {
+                    if (ability is IncreaseSpellCostByFilter &&
+                        matchesCardDefinition(cardDef, ability.filter)
+                    ) {
+                        increase += ability.amount
+                    }
+                }
+            }
+        }
+        return increase
     }
 
     /**

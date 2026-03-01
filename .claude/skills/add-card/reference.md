@@ -834,6 +834,7 @@ Set via `staticAbility { ability = ... }`:
 - `PlayFromTopOfLibrary` — play cards from top of library
 - `PreventCycling` — players can't cycle cards
 - `IncreaseMorphCost(amount: Int)` — all morph (turn face-up) costs cost more
+- `IncreaseSpellCostByFilter(filter: GameObjectFilter, amount: Int)` — spells matching filter cost more (global tax effect)
 - `RevealFirstDrawEachTurn` — reveal the first card drawn each turn (Primitive Etchings)
 - `SpellCostReduction(reductionSource)` — cost reduction
 - `FaceDownSpellCostReduction(reductionSource)` — face-down spell cost reduction
