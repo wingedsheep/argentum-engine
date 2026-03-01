@@ -54,6 +54,7 @@ object LegionsSet {
         PrimocEscapee,
         VoidmageApprentice,
         WallOfDeceit,
+        Willbender,
 
         // Black creatures
         Earthblighter,

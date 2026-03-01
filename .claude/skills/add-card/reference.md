@@ -122,7 +122,8 @@ each player reveals and creates tokens
 - `Effects.CounterAbility()` — counter target activated or triggered ability
 - `Effects.CounterUnlessPays(cost: String)` — counter unless mana paid
 - `Effects.CounterUnlessDynamicPays(amount: DynamicAmount)` — counter unless dynamic amount paid
-- `Effects.ChangeSpellTarget(targetMustBeSource = false)` — redirect a spell's target
+- `Effects.ChangeSpellTarget(targetMustBeSource = false)` — redirect a spell's creature target to another creature
+- `Effects.ChangeTarget()` — change the target of a spell or ability with a single target
 
 ### Sacrifice
 
@@ -353,6 +354,7 @@ each player reveals and creates tokens
 | `CounterUnlessPaysEffect`        | `cost: ManaCost`              | Counter unless pays        |
 | `CounterUnlessDynamicPaysEffect` | `amount: DynamicAmount`       | Counter unless dynamic pay |
 | `ChangeSpellTargetEffect`        | `targetMustBeSource: Boolean` | Redirect spell target      |
+| `ChangeTargetEffect`             | (object)                      | Change target of spell/ability with single target |
 
 ### Group
 
@@ -410,6 +412,7 @@ each player reveals and creates tokens
 - `Targets.CreatureOrSorcerySpell`
 - `Targets.SpellWithManaValueAtMost(manaValue)`
 - `Targets.ActivatedOrTriggeredAbility`
+- `Targets.SpellOrAbilityWithSingleTarget` — target spell or ability (single-target check at resolution)
 
 ### Composable (Targets.Unified)
 

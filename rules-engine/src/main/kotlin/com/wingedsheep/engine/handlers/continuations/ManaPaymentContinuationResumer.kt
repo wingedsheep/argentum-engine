@@ -99,7 +99,8 @@ class ManaPaymentContinuationResumer(
     }
 
     /**
-     * Resume after Meddle's controller chooses a new creature target for a spell.
+     * Resume after the controller chooses a new target for a spell/ability.
+     * Handles both creature (permanent) and player targets.
      */
     fun resumeChangeSpellTarget(
         state: GameState,
@@ -111,8 +112,8 @@ class ManaPaymentContinuationResumer(
             return ExecutionResult.error(state, "Expected card selection response for change spell target")
         }
 
-        val selectedCreatureId = response.selectedCards.firstOrNull()
-            ?: return ExecutionResult.error(state, "No creature selected for change spell target")
+        val selectedEntityId = response.selectedCards.firstOrNull()
+            ?: return ExecutionResult.error(state, "No target selected for change spell target")
 
         // Get the spell entity and update its target
         val spellEntity = state.getEntity(continuation.spellEntityId)
@@ -121,8 +122,14 @@ class ManaPaymentContinuationResumer(
         val targetsComponent = spellEntity.get<TargetsComponent>()
             ?: return checkForMore(state, emptyList())
 
-        // Replace the single target with the new creature
-        val newTargets = listOf(ChosenTarget.Permanent(selectedCreatureId))
+        // Determine the appropriate ChosenTarget type based on the selected entity
+        val newTarget = if (state.turnOrder.contains(selectedEntityId)) {
+            ChosenTarget.Player(selectedEntityId)
+        } else {
+            ChosenTarget.Permanent(selectedEntityId)
+        }
+
+        val newTargets = listOf(newTarget)
         val updatedState = state.updateEntity(continuation.spellEntityId) { container ->
             container.with(TargetsComponent(newTargets, targetsComponent.targetRequirements))
         }

@@ -177,6 +177,9 @@ data class TargetFilter(
             GameObjectFilter(cardPredicates = listOf(CardPredicate.IsActivatedOrTriggeredAbility)),
             zone = Zone.STACK
         )
+
+        /** Target any spell or ability on the stack (spells and activated/triggered abilities) */
+        val SpellOrAbilityOnStack = TargetFilter(GameObjectFilter.Companion.Any, zone = Zone.STACK)
     }
 
     // =============================================================================

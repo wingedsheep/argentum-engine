@@ -113,3 +113,20 @@ data class ChangeSpellTargetEffect(
         "Change target spell's target to another creature"
     }
 }
+
+/**
+ * Change the target of target spell or ability with a single target.
+ * "Change the target of target spell or ability with a single target."
+ *
+ * Unlike ChangeSpellTargetEffect which only redirects creature targets to other creatures,
+ * this effect works on any target type (creature, player, etc.) and can target
+ * both spells and abilities on the stack.
+ *
+ * The spell or ability must have exactly one target. If it has zero or multiple targets,
+ * the effect does nothing.
+ */
+@SerialName("ChangeTarget")
+@Serializable
+data object ChangeTargetEffect : Effect {
+    override val description: String = "Change the target of target spell or ability with a single target"
+}
