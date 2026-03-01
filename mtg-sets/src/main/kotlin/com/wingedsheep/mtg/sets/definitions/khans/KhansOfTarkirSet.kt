@@ -80,6 +80,7 @@ object KhansOfTarkirSet {
         ChiefOfTheEdge,
         ChiefOfTheScale,
         HighspireMantis,
+        PonybackBrigade,
         UtterEnd,
 
         // Colorless
