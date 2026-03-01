@@ -59,6 +59,7 @@ object LegionsSet {
         ShiftingSliver,
         VoidmageApprentice,
         WallOfDeceit,
+        WarpedResearcher,
         Willbender,
 
         // Black creatures
