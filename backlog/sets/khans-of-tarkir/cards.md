@@ -2,7 +2,7 @@
 
 **Set Size:** 269 cards (249 unique card names + basic land variants)
 **Release Date:** September 26, 2014
-**Implemented:** 65 / 249
+**Implemented:** 66 / 249
 
 | Color      | Count |
 |------------|-------|
@@ -10,7 +10,7 @@
 | Blue       | 11    |
 | Black      | 10    |
 | Red        | 11    |
-| Green      | 10    |
+| Green      | 11    |
 | Multicolor | 7     |
 | Colorless  | 3     |
 | Land       | 3     |
@@ -77,7 +77,7 @@
 - [ ] Dismal Backwater
 - [ ] Disowned Ancestor
 - [ ] Dragon Grip
-- [ ] Dragonscale Boon
+- [x] Dragonscale Boon
 - [ ] Dragon's Eye Savants
 - [ ] Dragon-Style Twins
 - [ ] Dragon Throne of Tarkir
