@@ -56,6 +56,7 @@ object LegionsSet {
 
         // Black creatures
         Earthblighter,
+        InfernalCaretaker,
         EmbalmedBrawler,
         DrinkerOfSorrow,
         DrippingDead,
