@@ -57,6 +57,7 @@ object LegionsSet {
         Willbender,
 
         // Black creatures
+        AphettoExterminator,
         Earthblighter,
         InfernalCaretaker,
         EmbalmedBrawler,
