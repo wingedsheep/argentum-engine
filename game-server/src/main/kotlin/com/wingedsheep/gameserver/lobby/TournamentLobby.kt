@@ -234,6 +234,9 @@ class TournamentLobby(
     // Winston Draft-specific State
     // =========================================================================
 
+    /** Lock for synchronizing Winston Draft operations (timer vs. player actions) */
+    val winstonLock = Any()
+
     /** The shared face-down main deck for Winston Draft */
     val winstonMainDeck: MutableList<CardDefinition> = mutableListOf()
 
@@ -814,16 +817,27 @@ class TournamentLobby(
 
     /**
      * Auto-pick for Winston Draft timeout: take the current pile.
-     * If current pile is empty, take the blind card.
+     * If current pile is empty, skip to a non-empty pile and take it.
+     * If all piles are empty, take a blind card from the main deck.
      */
     fun winstonAutoPickForTimeout(playerId: EntityId): WinstonActionResult {
         if (getWinstonActivePlayerId() != playerId) return WinstonActionResult.Error("Not your turn")
 
+        // If current pile has cards, take it
         val pile = winstonPiles[winstonCurrentPileIndex]
-        return if (pile.isNotEmpty()) {
-            winstonTakePile(playerId)
-        } else if (winstonMainDeck.isNotEmpty()) {
-            // Take blind card
+        if (pile.isNotEmpty()) {
+            return winstonTakePile(playerId)
+        }
+
+        // Current pile is empty — try to find a non-empty pile
+        val nonEmptyIndex = winstonPiles.indexOfFirst { it.isNotEmpty() }
+        if (nonEmptyIndex >= 0) {
+            winstonCurrentPileIndex = nonEmptyIndex
+            return winstonTakePile(playerId)
+        }
+
+        // All piles empty — try blind pick from main deck
+        return if (winstonMainDeck.isNotEmpty()) {
             val playerState = players[playerId] ?: return WinstonActionResult.Error("Player not found")
             val blindCard = winstonMainDeck.removeFirst()
             players[playerId] = playerState.copy(cardPool = playerState.cardPool + blindCard)
@@ -835,6 +849,7 @@ class TournamentLobby(
                 WinstonActionResult.BlindPick(blindCard, "${playerState.identity.playerName} auto-picked (timeout)")
             }
         } else {
+            // Truly nothing left
             finishDraft()
             WinstonActionResult.DraftComplete("Draft complete")
         }

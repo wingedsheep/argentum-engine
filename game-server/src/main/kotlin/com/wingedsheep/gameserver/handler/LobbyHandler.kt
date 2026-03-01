@@ -1058,8 +1058,10 @@ class LobbyHandler(
             return
         }
 
-        val result = lobby.winstonTakePile(identity.playerId)
-        handleWinstonResult(lobby, result, identity)
+        synchronized(lobby.winstonLock) {
+            val result = lobby.winstonTakePile(identity.playerId)
+            handleWinstonResult(lobby, result, identity)
+        }
     }
 
     private fun handleWinstonSkipPile(session: WebSocketSession) {
@@ -1070,8 +1072,10 @@ class LobbyHandler(
             return
         }
 
-        val result = lobby.winstonSkipPile(identity.playerId)
-        handleWinstonResult(lobby, result, identity)
+        synchronized(lobby.winstonLock) {
+            val result = lobby.winstonSkipPile(identity.playerId)
+            handleWinstonResult(lobby, result, identity)
+        }
     }
 
     private fun handleWinstonResult(lobby: TournamentLobby, result: WinstonActionResult, identity: PlayerIdentity) {
@@ -1230,13 +1234,17 @@ class LobbyHandler(
             }
 
             // Timer expired - auto-pick for the active player
-            if (isActive && lobby.state == LobbyState.DRAFTING && lobby.format == TournamentFormat.WINSTON_DRAFT) {
-                val activePlayerId = lobby.getWinstonActivePlayerId()
-                if (activePlayerId != null) {
-                    val result = lobby.winstonAutoPickForTimeout(activePlayerId)
-                    val activeIdentity = lobby.players[activePlayerId]?.identity
-                    if (activeIdentity != null) {
-                        handleWinstonResult(lobby, result, activeIdentity)
+            if (isActive && lobby.format == TournamentFormat.WINSTON_DRAFT) {
+                synchronized(lobby.winstonLock) {
+                    if (lobby.state == LobbyState.DRAFTING) {
+                        val activePlayerId = lobby.getWinstonActivePlayerId()
+                        if (activePlayerId != null) {
+                            val result = lobby.winstonAutoPickForTimeout(activePlayerId)
+                            val activeIdentity = lobby.players[activePlayerId]?.identity
+                            if (activeIdentity != null) {
+                                handleWinstonResult(lobby, result, activeIdentity)
+                            }
+                        }
                     }
                 }
             }
