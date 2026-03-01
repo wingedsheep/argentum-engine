@@ -57,6 +57,7 @@ object LegionsSet {
         MerchantOfSecrets,
         MistformSeaswift,
         PrimocEscapee,
+        RiptideDirector,
         RiptideMangler,
         ShiftingSliver,
         SynapseSliver,
@@ -128,6 +129,7 @@ object LegionsSet {
         TimberwatchElf,
         TotemSpeaker,
         VexingBeetle,
+        WirewoodChanneler,
         WirewoodHivemaster,
     )
 }

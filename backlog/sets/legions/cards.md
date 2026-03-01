@@ -2,15 +2,15 @@
 
 **Set Size:** 145 cards
 **Release Date:** February 3, 2003
-**Implemented:** 98 / 145
+**Implemented:** 100 / 145
 
 | Color      | Count |
 |------------|-------|
 | White      | 20/29 |
-| Blue       | 19/29 |
+| Blue       | 20/29 |
 | Black      | 20/29 |
 | Red        | 20/29 |
-| Green      | 19/29 |
+| Green      | 20/29 |
 
 ---
 
@@ -114,7 +114,7 @@
 - [x] Primoc Escapee
 - [ ] Quick Sliver
 - [x] Ridgetop Raptor
-- [ ] Riptide Director
+- [x] Riptide Director
 - [x] Riptide Mangler
 - [ ] Rockshard Elemental
 - [ ] Root Sliver
@@ -155,7 +155,7 @@
 - [x] Willbender
 - [x] Windborn Muse
 - [x] Wingbeat Warrior
-- [ ] Wirewood Channeler
+- [x] Wirewood Channeler
 - [x] Wirewood Hivemaster
 - [x] Withered Wretch
 - [x] Zombie Brute
