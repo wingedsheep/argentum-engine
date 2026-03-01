@@ -2,14 +2,14 @@
 
 **Set Size:** 269 cards (249 unique card names + basic land variants)
 **Release Date:** September 26, 2014
-**Implemented:** 63 / 249
+**Implemented:** 64 / 249
 
 | Color      | Count |
 |------------|-------|
 | White      | 10    |
 | Blue       | 10    |
 | Black      | 10    |
-| Red        | 10    |
+| Red        | 11    |
 | Green      | 10    |
 | Multicolor | 7     |
 | Colorless  | 3     |
@@ -235,7 +235,7 @@
 - [x] Throttle
 - [ ] Timely Hordemate
 - [ ] Tomb of the Spirit Dragon
-- [ ] Tormenting Voice
+- [x] Tormenting Voice
 - [ ] Trail of Mystery
 - [ ] Tranquil Cove
 - [ ] Trap Essence
