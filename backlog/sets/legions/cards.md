@@ -2,11 +2,11 @@
 
 **Set Size:** 145 cards
 **Release Date:** February 3, 2003
-**Implemented:** 92 / 145
+**Implemented:** 93 / 145
 
 | Color      | Count |
 |------------|-------|
-| White      | 18/29 |
+| White      | 19/29 |
 | Blue       | 18/29 |
 | Black      | 18/29 |
 | Red        | 19/29 |
@@ -44,7 +44,7 @@
 - [ ] Dark Supplicant
 - [x] Daru Mender
 - [x] Daru Sanctifier
-- [ ] Daru Stinger
+- [x] Daru Stinger
 - [ ] Deathmark Prelate
 - [ ] Defender of the Order
 - [x] Defiant Elf

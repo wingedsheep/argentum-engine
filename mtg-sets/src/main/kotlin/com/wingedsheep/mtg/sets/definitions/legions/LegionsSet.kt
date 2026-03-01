@@ -28,6 +28,7 @@ object LegionsSet {
         CloudreachCavalry,
         DaruMender,
         DaruSanctifier,
+        DaruStinger,
         DeftbladeElite,
         GempalmAvenger,
         Glowrider,
