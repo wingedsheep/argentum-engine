@@ -63,6 +63,7 @@ object KhansOfTarkirSet {
         // Green spells
         AwakenTheBear,
         FeedTheClan,
+        Naturalize,
         SavagePunch,
 
         // Red creatures
