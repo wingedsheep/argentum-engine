@@ -51,7 +51,10 @@ enum class Keyword(val displayName: String) {
     // ── Cost reduction ───────────────────────────────────────
     CONVOKE("Convoke"),
     DELVE("Delve"),
-    AFFINITY("Affinity");
+    AFFINITY("Affinity"),
+
+    // ── Spell mechanics ─────────────────────────────────────
+    STORM("Storm");
 
     companion object {
         fun fromString(value: String): Keyword? =

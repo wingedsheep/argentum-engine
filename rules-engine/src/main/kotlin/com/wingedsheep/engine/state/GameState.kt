@@ -79,7 +79,10 @@ data class GameState(
     val globalGrantedTriggeredAbilities: List<GlobalGrantedTriggeredAbility> = emptyList(),
 
     /** Continuation stack for resuming after player decisions */
-    val continuationStack: List<ContinuationFrame> = emptyList()
+    val continuationStack: List<ContinuationFrame> = emptyList(),
+
+    /** Number of spells cast this turn (by all players), used for Storm count */
+    val spellsCastThisTurn: Int = 0
 ) {
     // =========================================================================
     // Entity Operations

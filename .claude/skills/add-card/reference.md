@@ -359,6 +359,7 @@ each player reveals and creates tokens
 | `CounterUnlessDynamicPaysEffect` | `amount: DynamicAmount`       | Counter unless dynamic pay |
 | `ChangeSpellTargetEffect`        | `targetMustBeSource: Boolean` | Redirect spell target      |
 | `ChangeTargetEffect`             | (object)                      | Change target of spell/ability with single target |
+| `StormCopyEffect`                | `copyCount, spellEffect, spellTargetRequirements, spellName` | Create Storm copies of a spell |
 
 ### Group
 
@@ -764,6 +765,10 @@ reveal creatures, create tokens
 ### Cost Reduction
 
 `CONVOKE`, `DELVE`, `AFFINITY`
+
+### Spell Mechanics
+
+`STORM`
 
 ### Restrictions
 

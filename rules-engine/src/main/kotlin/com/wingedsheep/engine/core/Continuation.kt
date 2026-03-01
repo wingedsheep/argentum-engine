@@ -140,6 +140,31 @@ data class PendingTriggersContinuation(
 ) : ContinuationFrame
 
 /**
+ * Resume creating Storm copies after the player selects targets for a copy.
+ *
+ * When a Storm spell has targets, we pause to ask for target selection for each copy.
+ * After the player chooses targets, we create the copy and (if more copies remain)
+ * prompt for the next copy's targets.
+ *
+ * @property remainingCopies Number of copies still to create (including the one being targeted)
+ * @property spellEffect The effect of the original spell to copy
+ * @property spellTargetRequirements Target requirements for each copy
+ * @property spellName Name of the original spell
+ * @property controllerId The player who controls the copies
+ * @property sourceId The source spell entity ID
+ */
+@Serializable
+data class StormCopyTargetContinuation(
+    override val decisionId: String,
+    val remainingCopies: Int,
+    val spellEffect: Effect,
+    val spellTargetRequirements: List<TargetRequirement>,
+    val spellName: String,
+    val controllerId: EntityId,
+    val sourceId: EntityId
+) : ContinuationFrame
+
+/**
  * Resume placing a triggered ability on the stack after the player answers a "may" question.
  *
  * When a triggered ability has both a MayEffect wrapper and targets (like Invigorating Boon's

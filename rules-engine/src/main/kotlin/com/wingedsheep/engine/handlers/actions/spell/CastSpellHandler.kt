@@ -45,9 +45,12 @@ import com.wingedsheep.sdk.scripting.AdditionalCost
 import com.wingedsheep.sdk.scripting.CastRestriction
 import com.wingedsheep.sdk.scripting.effects.ChooseCreatureTypeModifyStatsEffect
 import com.wingedsheep.sdk.scripting.effects.DividedDamageEffect
+import com.wingedsheep.sdk.scripting.effects.StormCopyEffect
 import com.wingedsheep.sdk.scripting.KeywordAbility
 import com.wingedsheep.sdk.scripting.PlayFromTopOfLibrary
+import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.engine.handlers.effects.EffectExecutorUtils.toEntityId
+import com.wingedsheep.engine.state.components.stack.TriggeredAbilityOnStackComponent
 import kotlin.reflect.KClass
 
 /**
@@ -533,6 +536,12 @@ class CastSpellHandler(
             )
         }
 
+        // Capture storm count before incrementing (spells cast before this one)
+        val stormCount = currentState.spellsCastThisTurn
+
+        // Increment spell count for this turn
+        currentState = currentState.copy(spellsCastThisTurn = stormCount + 1)
+
         // Cast the spell
         val castResult = stackResolver.castSpell(
             currentState,
@@ -552,12 +561,37 @@ class CastSpellHandler(
             return castResult
         }
 
+        var currentCastState = castResult.newState
         var allEvents = events + castResult.events
 
+        // Handle Storm keyword: create a Storm triggered ability on the stack
+        if (!action.castFaceDown && stormCount > 0 && cardDef != null && cardDef.hasKeyword(Keyword.STORM)) {
+            val spellEffect = cardDef.script.spellEffect
+            if (spellEffect != null) {
+                val stormEffect = StormCopyEffect(
+                    copyCount = stormCount,
+                    spellEffect = spellEffect,
+                    spellTargetRequirements = spellTargetRequirements,
+                    spellName = cardComponent.name
+                )
+                val stormAbility = TriggeredAbilityOnStackComponent(
+                    sourceId = action.cardId,
+                    sourceName = cardComponent.name,
+                    controllerId = action.playerId,
+                    effect = stormEffect,
+                    description = "Storm — copy ${cardComponent.name} $stormCount time(s)"
+                )
+                val stormResult = stackResolver.putTriggeredAbility(currentCastState, stormAbility)
+                if (!stormResult.isSuccess) return stormResult
+                currentCastState = stormResult.newState
+                allEvents = allEvents + stormResult.events
+            }
+        }
+
         // Detect and process triggers from casting (including additional cost events like sacrifice)
-        val triggers = triggerDetector.detectTriggers(castResult.newState, allEvents)
+        val triggers = triggerDetector.detectTriggers(currentCastState, allEvents)
         if (triggers.isNotEmpty()) {
-            val triggerResult = triggerProcessor.processTriggers(castResult.newState, triggers)
+            val triggerResult = triggerProcessor.processTriggers(currentCastState, triggers)
 
             if (triggerResult.isPaused) {
                 return ExecutionResult.paused(
@@ -575,7 +609,7 @@ class CastSpellHandler(
         }
 
         return ExecutionResult.success(
-            castResult.newState.withPriority(action.playerId),
+            currentCastState.withPriority(action.playerId),
             allEvents
         )
     }

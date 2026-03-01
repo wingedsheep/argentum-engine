@@ -180,6 +180,8 @@ export enum Keyword {
   CONVOKE = 'CONVOKE',
   DELVE = 'DELVE',
   AFFINITY = 'AFFINITY',
+  // Spell mechanics
+  STORM = 'STORM',
 }
 
 export const KeywordDisplayNames: Record<Keyword, string> = {
@@ -216,6 +218,7 @@ export const KeywordDisplayNames: Record<Keyword, string> = {
   [Keyword.CONVOKE]: 'Convoke',
   [Keyword.DELVE]: 'Delve',
   [Keyword.AFFINITY]: 'Affinity',
+  [Keyword.STORM]: 'Storm',
 }
 
 /**

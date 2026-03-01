@@ -173,6 +173,7 @@ val engineSerializersModule = SerializersModule {
         subclass(CycleDrawContinuation::class)
         subclass(TypecycleSearchContinuation::class)
         subclass(DistributeCountersContinuation::class)
+        subclass(StormCopyTargetContinuation::class)
     }
 
     // Component hierarchy (for GameState persistence)

@@ -91,6 +91,7 @@ object ScourgeSet {
 
         // Blue instants
         DispersalShield,
+        HinderingTouch,
         LongTermPlans,
         Metamorphose,
         Stifle,

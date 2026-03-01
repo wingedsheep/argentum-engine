@@ -182,6 +182,9 @@ class ContinuationHandler(
             is AmplifyEntersContinuation -> modalAndCloneResumer.resumeAmplifyEnters(stateAfterPop, continuation, response, cfm)
             is CastWithCreatureTypeContinuation -> modalAndCloneResumer.resumeCastWithCreatureType(stateAfterPop, continuation, response, cfm)
 
+            // Storm copies
+            is StormCopyTargetContinuation -> resumeStormCopyTarget(stateAfterPop, continuation, response, cfm)
+
             // Counter distribution
             is DistributeCountersContinuation -> resumeDistributeCounters(stateAfterPop, continuation, response, cfm)
 
@@ -755,6 +758,95 @@ class ContinuationHandler(
                 }
             }
         }
+    }
+
+    private fun resumeStormCopyTarget(
+        state: GameState,
+        continuation: StormCopyTargetContinuation,
+        response: DecisionResponse,
+        checkForMore: (GameState, List<GameEvent>) -> ExecutionResult
+    ): ExecutionResult {
+        if (response !is TargetsResponse) {
+            return ExecutionResult.error(state, "Expected target selection response for Storm copy")
+        }
+
+        val selectedTargets = response.selectedTargets.flatMap { (_, targetIds) ->
+            targetIds.map { entityId -> entityIdToChosenTarget(state, entityId) }
+        }
+
+        val allEvents = mutableListOf<GameEvent>()
+        var currentState = state
+
+        // Create the copy with the selected targets
+        val copyAbility = TriggeredAbilityOnStackComponent(
+            sourceId = continuation.sourceId,
+            sourceName = continuation.spellName,
+            controllerId = continuation.controllerId,
+            effect = continuation.spellEffect,
+            description = "Storm copy of ${continuation.spellName}"
+        )
+        val stackResult = stackResolver.putTriggeredAbility(
+            currentState, copyAbility, selectedTargets, continuation.spellTargetRequirements
+        )
+        if (!stackResult.isSuccess) return stackResult
+        currentState = stackResult.newState
+        allEvents.addAll(stackResult.events)
+
+        val remainingAfterThis = continuation.remainingCopies - 1
+        if (remainingAfterThis <= 0) {
+            return checkForMore(currentState, allEvents)
+        }
+
+        // Prompt for next copy's targets
+        val decisionId = "storm-copy-target-${System.nanoTime()}"
+        val legalTargetsMap = mutableMapOf<Int, List<EntityId>>()
+        for ((index, requirement) in continuation.spellTargetRequirements.withIndex()) {
+            val legalTargets = targetFinder.findLegalTargets(
+                currentState, requirement, continuation.controllerId, continuation.sourceId
+            )
+            legalTargetsMap[index] = legalTargets
+        }
+
+        // If no legal targets available, skip remaining copies
+        val hasNoLegalTargets = legalTargetsMap.any { (_, targets) -> targets.isEmpty() }
+        if (hasNoLegalTargets) {
+            return checkForMore(currentState, allEvents)
+        }
+
+        val nextContinuation = StormCopyTargetContinuation(
+            decisionId = decisionId,
+            remainingCopies = remainingAfterThis,
+            spellEffect = continuation.spellEffect,
+            spellTargetRequirements = continuation.spellTargetRequirements,
+            spellName = continuation.spellName,
+            controllerId = continuation.controllerId,
+            sourceId = continuation.sourceId
+        )
+        val targetReqInfos = continuation.spellTargetRequirements.mapIndexed { index, req ->
+            TargetRequirementInfo(
+                index = index,
+                description = req.description
+            )
+        }
+
+        val totalCopies = continuation.remainingCopies
+        val copyNumber = totalCopies - remainingAfterThis + 1
+        val decision = ChooseTargetsDecision(
+            id = decisionId,
+            playerId = continuation.controllerId,
+            prompt = "Choose targets for Storm copy $copyNumber of ${continuation.spellName}",
+            context = DecisionContext(
+                phase = DecisionPhase.CASTING,
+                sourceName = continuation.spellName
+            ),
+            targetRequirements = targetReqInfos,
+            legalTargets = legalTargetsMap
+        )
+
+        currentState = currentState.withPendingDecision(decision)
+        currentState = currentState.pushContinuation(nextContinuation)
+
+        return ExecutionResult.paused(currentState, decision, allEvents)
     }
 
     private fun resumeDistributeCounters(

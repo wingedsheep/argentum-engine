@@ -18,6 +18,7 @@ class StackExecutors(
         CounterUnlessPaysExecutor(),
         CounterUnlessDynamicPaysExecutor(amountEvaluator),
         ChangeSpellTargetExecutor(),
-        ChangeTargetExecutor()
+        ChangeTargetExecutor(),
+        StormCopyEffectExecutor()
     )
 }

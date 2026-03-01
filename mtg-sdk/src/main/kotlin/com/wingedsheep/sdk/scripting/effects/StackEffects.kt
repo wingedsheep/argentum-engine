@@ -2,6 +2,7 @@ package com.wingedsheep.sdk.scripting.effects
 
 import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
+import com.wingedsheep.sdk.scripting.targets.TargetRequirement
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -129,4 +130,28 @@ data class ChangeSpellTargetEffect(
 @Serializable
 data object ChangeTargetEffect : Effect {
     override val description: String = "Change the target of target spell or ability with a single target"
+}
+
+/**
+ * Create copies of a spell on the stack (Storm mechanic).
+ * "Copy it for each spell cast before it this turn. You may choose new targets for the copies."
+ *
+ * When resolved, creates [copyCount] copies of the spell on the stack. Each copy has the same
+ * effect as the original. If the spell has targets, the controller may choose new targets for
+ * each copy.
+ *
+ * @property copyCount Number of copies to create
+ * @property spellEffect The effect of the original spell to copy
+ * @property spellTargetRequirements Target requirements from the original spell (empty if untargeted)
+ * @property spellName Name of the original spell for display
+ */
+@SerialName("StormCopy")
+@Serializable
+data class StormCopyEffect(
+    val copyCount: Int,
+    val spellEffect: Effect,
+    val spellTargetRequirements: List<TargetRequirement> = emptyList(),
+    val spellName: String
+) : Effect {
+    override val description: String = "Copy $spellName $copyCount time(s)"
 }
