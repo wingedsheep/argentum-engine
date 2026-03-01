@@ -449,6 +449,19 @@ class ClientStateTransformer(
         if (isFaceDown && (isSpectator || controllerId != viewingPlayerId)) {
             // Check if the face-down creature has been revealed to the viewing player (e.g., via Spy Network)
             val isRevealedToViewer = !isSpectator && isCardRevealedTo(state, entityId, viewingPlayerId)
+            // Use projected keywords — granted keywords (e.g., flying from an aura) are public information
+            val faceDownKeywords = projectedValues?.keywords?.mapNotNull {
+                try { Keyword.valueOf(it) } catch (_: Exception) { null }
+            }?.toSet() ?: emptySet()
+            val faceDownAbilityFlags = projectedValues?.keywords?.mapNotNull {
+                try { AbilityFlag.valueOf(it) } catch (_: Exception) { null }
+            }?.toSet() ?: emptySet()
+            // Extract protection colors from projected keywords for face-down creatures
+            val faceDownProtections = projectedValues?.keywords
+                ?.filter { it.startsWith(protectionPrefix) }
+                ?.mapNotNull { try { Color.valueOf(it.removePrefix(protectionPrefix)) } catch (_: Exception) { null } }
+                ?: emptyList()
+            val faceDownKeywordsWithProtection = if (faceDownProtections.isNotEmpty()) faceDownKeywords + Keyword.PROTECTION else faceDownKeywords
             return ClientCard(
                 id = entityId,
                 name = "Face-down creature",
@@ -464,7 +477,9 @@ class ClientStateTransformer(
                 basePower = 2,
                 baseToughness = 2,
                 damage = container.get<DamageComponent>()?.amount,
-                keywords = emptySet(),
+                keywords = faceDownKeywordsWithProtection,
+                abilityFlags = faceDownAbilityFlags,
+                protections = faceDownProtections,
                 counters = container.get<CountersComponent>()?.counters ?: emptyMap(),
                 isTapped = isTapped,
                 hasSummoningSickness = hasSummoningSickness,

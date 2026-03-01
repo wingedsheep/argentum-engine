@@ -820,8 +820,8 @@ export function GameCard({
         </div>
       )}
 
-      {/* Keyword ability icons */}
-      {battlefield && !faceDown && (card.keywords.length > 0 || (card.protections && card.protections.length > 0)) && (
+      {/* Keyword ability icons (shown for face-up cards, and for face-down cards with granted keywords) */}
+      {battlefield && (card.keywords.length > 0 || (card.protections && card.protections.length > 0)) && (
         <KeywordIcons keywords={card.keywords} protections={card.protections ?? []} size={responsive.isMobile ? 14 : 18} />
       )}
 
