@@ -1158,6 +1158,11 @@ class TurnManager(
                 return@any false
             }
 
+            // Check "creatures without X can't attack you" (e.g., Form of the Dragon)
+            if (combatManager.hasCantBeAttackedWithoutRestriction(state, entityId, playerId, projected)) {
+                return@any false
+            }
+
             true
         }
     }
@@ -1208,6 +1213,11 @@ class TurnManager(
 
             // Check creature count attack restriction (e.g., Goblin Goon)
             if (combatManager.hasCantAttackUnlessRestriction(state, entityId, playerId, projected)) {
+                return@filter false
+            }
+
+            // Check "creatures without X can't attack you" (e.g., Form of the Dragon)
+            if (combatManager.hasCantBeAttackedWithoutRestriction(state, entityId, playerId, projected)) {
                 return@filter false
             }
 

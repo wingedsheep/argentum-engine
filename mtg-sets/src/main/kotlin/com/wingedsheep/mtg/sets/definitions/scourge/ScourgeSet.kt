@@ -120,6 +120,7 @@ object ScourgeSet {
         // Red enchantments
         DragonBreath,
         ExtraArms,
+        FormOfTheDragon,
         PyrostaticPillar,
         SulfuricVortex,
         UncontrolledInfestation,

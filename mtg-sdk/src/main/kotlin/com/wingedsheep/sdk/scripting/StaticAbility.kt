@@ -864,6 +864,24 @@ data class AttackTax(
 }
 
 /**
+ * Creatures without a specified keyword can't attack the controller of this permanent.
+ * Used for Form of the Dragon: "Creatures without flying can't attack you."
+ *
+ * This is a defender-side restriction — the engine checks the defending player's battlefield
+ * for permanents with this ability, and blocks any attacker that lacks the required keyword.
+ *
+ * @property requiredKeyword The keyword attackers must have (e.g., FLYING)
+ */
+@SerialName("CantBeAttackedWithout")
+@Serializable
+data class CantBeAttackedWithout(
+    val requiredKeyword: Keyword
+) : StaticAbility {
+    override val description: String =
+        "Creatures without ${requiredKeyword.displayName.lowercase()} can't attack you"
+}
+
+/**
  * Reduces the cost of face-down creature spells you cast.
  * Used for Dream Chisel: "Face-down creature spells you cast cost {1} less to cast."
  *

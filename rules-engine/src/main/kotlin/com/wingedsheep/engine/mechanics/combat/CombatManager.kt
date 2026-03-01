@@ -26,6 +26,7 @@ import com.wingedsheep.engine.mechanics.mana.ManaPool
 import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.ManaSymbol
 import com.wingedsheep.sdk.scripting.AttackTax
+import com.wingedsheep.sdk.scripting.CantBeAttackedWithout
 import com.wingedsheep.sdk.scripting.CanOnlyBlockCreaturesWithKeyword
 import com.wingedsheep.sdk.scripting.CantBeBlockedByPower
 import com.wingedsheep.sdk.scripting.CantBeBlockedExceptByKeyword
@@ -83,6 +84,14 @@ class CombatManager(
             )
             if (creatureCountValidation != null) {
                 return ExecutionResult.error(state, creatureCountValidation)
+            }
+
+            // Check "creatures without X can't attack you" restrictions (e.g., Form of the Dragon)
+            val keywordRestriction = validateCantBeAttackedWithout(
+                state, attackerId, defenderId, projected
+            )
+            if (keywordRestriction != null) {
+                return ExecutionResult.error(state, keywordRestriction)
             }
         }
 
@@ -372,6 +381,11 @@ class CombatManager(
 
             // Check creature count attack restriction (e.g., Goblin Goon)
             if (hasCantAttackUnlessRestriction(state, entityId, playerId, projected)) {
+                return@filter false
+            }
+
+            // Check "creatures without X can't attack you" (e.g., Form of the Dragon)
+            if (hasCantBeAttackedWithoutRestriction(state, entityId, playerId, projected)) {
                 return@filter false
             }
 
@@ -2962,6 +2976,71 @@ class CombatManager(
         val opponents = state.turnOrder.filter { it != attackingPlayer }
         return opponents.all { opponentId ->
             !evaluateCombatCondition(restriction.condition, state, attackingPlayer, opponentId, projected)
+        }
+    }
+
+    // =========================================================================
+    // CantBeAttackedWithout Restrictions (e.g., Form of the Dragon)
+    // =========================================================================
+
+    /**
+     * Validate CantBeAttackedWithout restrictions for an attacker.
+     * Scans the defending player's battlefield for permanents with CantBeAttackedWithout
+     * and checks if the attacker has the required keyword.
+     *
+     * @return Error message if restricted, null if allowed
+     */
+    private fun validateCantBeAttackedWithout(
+        state: GameState,
+        attackerId: EntityId,
+        defenderId: EntityId,
+        projected: ProjectedState
+    ): String? {
+        // Only applies when attacking a player directly
+        val defendingPlayer = findDefendingPlayer(state, defenderId)
+
+        val defenderPermanents = projected.getBattlefieldControlledBy(defendingPlayer)
+        for (permId in defenderPermanents) {
+            val container = state.getEntity(permId) ?: continue
+            val cardComponent = container.get<CardComponent>() ?: continue
+            val cardDef = cardRegistry?.getCard(cardComponent.cardDefinitionId) ?: continue
+            for (ability in cardDef.staticAbilities) {
+                if (ability is CantBeAttackedWithout) {
+                    if (!projected.hasKeyword(attackerId, ability.requiredKeyword)) {
+                        val attackerName = state.getEntity(attackerId)?.get<CardComponent>()?.name ?: "Creature"
+                        return "$attackerName can't attack: ${ability.description}"
+                    }
+                }
+            }
+        }
+        return null
+    }
+
+    /**
+     * Check if a creature is restricted from attacking all opponents due to
+     * CantBeAttackedWithout restrictions on their battlefields.
+     * Used for legal action generation.
+     *
+     * @return true if the creature can't attack any opponent
+     */
+    fun hasCantBeAttackedWithoutRestriction(
+        state: GameState,
+        attackerId: EntityId,
+        attackingPlayer: EntityId,
+        projected: ProjectedState
+    ): Boolean {
+        val opponents = state.turnOrder.filter { it != attackingPlayer }
+        return opponents.all { opponentId ->
+            val defenderPermanents = projected.getBattlefieldControlledBy(opponentId)
+            defenderPermanents.any { permId ->
+                val container = state.getEntity(permId) ?: return@any false
+                val cardComponent = container.get<CardComponent>() ?: return@any false
+                val cardDef = cardRegistry?.getCard(cardComponent.cardDefinitionId) ?: return@any false
+                cardDef.staticAbilities.any { ability ->
+                    ability is CantBeAttackedWithout &&
+                        !projected.hasKeyword(attackerId, ability.requiredKeyword)
+                }
+            }
         }
     }
 

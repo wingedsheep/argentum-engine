@@ -32,6 +32,7 @@ import com.wingedsheep.sdk.scripting.effects.GainLifeEffect
 import com.wingedsheep.sdk.scripting.effects.GrantKeywordUntilEndOfTurnEffect
 import com.wingedsheep.sdk.scripting.effects.RemoveKeywordUntilEndOfTurnEffect
 import com.wingedsheep.sdk.scripting.effects.LoseLifeEffect
+import com.wingedsheep.sdk.scripting.effects.SetLifeTotalEffect
 import com.wingedsheep.sdk.scripting.effects.ModifyStatsEffect
 import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
 import com.wingedsheep.sdk.scripting.effects.ReturnSelfToBattlefieldAttachedEffect
@@ -131,6 +132,19 @@ object Effects {
      */
     fun LoseLife(amount: DynamicAmount, target: EffectTarget = EffectTarget.PlayerRef(Player.TargetOpponent)): Effect =
         LoseLifeEffect(amount, target)
+
+    /**
+     * Set a player's life total to a fixed amount.
+     * Per Rule 118.5, the player gains or loses the necessary amount of life.
+     */
+    fun SetLifeTotal(amount: Int, target: EffectTarget = EffectTarget.Controller): Effect =
+        SetLifeTotalEffect(amount, target)
+
+    /**
+     * Set a player's life total to a dynamic amount.
+     */
+    fun SetLifeTotal(amount: DynamicAmount, target: EffectTarget = EffectTarget.Controller): Effect =
+        SetLifeTotalEffect(amount, target)
 
     /**
      * Lose half your life, rounded up.

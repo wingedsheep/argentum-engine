@@ -3,14 +3,14 @@
 
 **Set Size:** 143 cards
 **Release Date:** May 26, 2003
-**Implemented:** 131 / 143
+**Implemented:** 132 / 143
 
 | Color | Count |
 |-------|-------|
 | White | 25 |
 | Blue | 24 |
 | Black | 27 |
-| Red | 24 |
+| Red | 25 |
 | Green | 25 |
 | Multicolor | 2 |
 | Colorless | 4 |
@@ -78,7 +78,7 @@
 - [x] Final Punishment
 - [ ] Force Bubble
 - [x] Forgotten Ancient
-- [ ] Form of the Dragon
+- [x] Form of the Dragon
 - [x] Frontline Strategist
 - [x] Frozen Solid
 - [x] Gilded Light

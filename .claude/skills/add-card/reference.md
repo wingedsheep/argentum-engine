@@ -31,6 +31,7 @@ constructors.
 
 - `Effects.GainLife(amount, target = Controller)`
 - `Effects.LoseLife(amount, target = TargetOpponent)` — also accepts `DynamicAmount`
+- `Effects.SetLifeTotal(amount, target = Controller)` — set a player's life total to a specific value
 
 ### Drawing
 
@@ -184,6 +185,7 @@ each player reveals and creates tokens
 | `LoseHalfLifeEffect`                     | `roundUp, target`                | Lose half life total      |
 | `OwnerGainsLifeEffect`                   | `amount: DynamicAmount`          | Card owner gains life     |
 | `GainLifeForEachLandOnBattlefieldEffect` | `landType, lifePerLand`          | Life per lands            |
+| `SetLifeTotalEffect`                     | `amount: DynamicAmount, target: EffectTarget` | Set a player's life total |
 | `SetLifeTotalForEachPlayerEffect`        | `perPlayerAmount: DynamicAmount` | Set life total per player |
 
 ### Drawing & Hand
@@ -864,6 +866,7 @@ Set via `staticAbility { ability = ... }`:
 - `IncreaseMorphCost(amount: Int)` — all morph (turn face-up) costs cost more
 - `IncreaseSpellCostByFilter(filter: GameObjectFilter, amount: Int)` — spells matching filter cost more (global tax effect)
 - `AttackTax(manaCostPerAttacker: String)` — creatures can't attack you unless their controller pays the cost per attacker (e.g., Ghostly Prison, Windborn Muse)
+- `CantBeAttackedWithout(requiredKeyword: Keyword)` — creatures without the specified keyword can't attack the controller (e.g., Form of the Dragon — creatures without flying can't attack you)
 - `RevealFirstDrawEachTurn` — reveal the first card drawn each turn (Primitive Etchings)
 - `SpellCostReduction(reductionSource)` — cost reduction
 - `FaceDownSpellCostReduction(reductionSource)` — face-down spell cost reduction

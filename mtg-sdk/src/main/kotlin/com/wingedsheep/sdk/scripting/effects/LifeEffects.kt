@@ -91,6 +91,31 @@ data class GainLifeForEachLandOnBattlefieldEffect(
 }
 
 /**
+ * Set a player's life total to a specific amount.
+ * Used for Form of the Dragon: "At the beginning of each end step, your life total becomes 5."
+ *
+ * Per MTG Rule 118.5, if an effect sets a player's life total to a specific number,
+ * the player gains or loses the necessary amount of life.
+ *
+ * @property amount The amount to set the life total to
+ * @property target The player whose life total is set (defaults to Controller)
+ */
+@SerialName("SetLifeTotal")
+@Serializable
+data class SetLifeTotalEffect(
+    val amount: DynamicAmount,
+    val target: EffectTarget = EffectTarget.Controller
+) : Effect {
+    /** Convenience constructor for fixed amounts */
+    constructor(amount: Int, target: EffectTarget = EffectTarget.Controller) : this(DynamicAmount.Fixed(amount), target)
+
+    override val description: String = when (target) {
+        EffectTarget.Controller -> "Your life total becomes ${amount.description}"
+        else -> "${target.description.replaceFirstChar { it.uppercase() }}'s life total becomes ${amount.description}"
+    }
+}
+
+/**
  * Set each player's life total to a dynamic amount evaluated per-player.
  * Used for Biorhythm: "Each player's life total becomes the number of creatures they control."
  *
