@@ -148,7 +148,13 @@ data class CardScript(
      * The source determines where to look for available creature types:
      * - GRAVEYARD: Scan the caster's graveyard for creature subtypes
      */
-    val castTimeCreatureTypeChoice: CastTimeCreatureTypeSource? = null
+    val castTimeCreatureTypeChoice: CastTimeCreatureTypeSource? = null,
+
+    /**
+     * Whether this spell can't be countered by spells or abilities.
+     * When true, attempts to counter this spell simply fail.
+     */
+    val cantBeCountered: Boolean = false
 ) {
     /**
      * Whether this card has any scripted behavior.

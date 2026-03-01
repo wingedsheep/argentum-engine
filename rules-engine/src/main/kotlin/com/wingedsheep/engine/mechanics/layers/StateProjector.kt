@@ -1000,6 +1000,17 @@ class StateProjector(
                 } == true
             } else false
         }
+        is SourceProjectionCondition.OpponentControlsCreature -> {
+            val controllerId = sourceValues?.controllerId
+            if (controllerId != null) {
+                state.getBattlefield().any { entityId ->
+                    val values = projectedValues[entityId]
+                    values?.types?.contains("CREATURE") == true &&
+                    values.controllerId != null &&
+                    values.controllerId != controllerId
+                }
+            } else false
+        }
         is SourceProjectionCondition.Not -> !evaluateSourceCondition(condition.condition, effect, state, projectedValues, sourceValues)
     }
 
@@ -1178,6 +1189,13 @@ sealed interface SourceProjectionCondition {
      */
     @Serializable
     data class EnchantedCreatureHasSubtype(val subtype: String) : SourceProjectionCondition
+
+    /**
+     * An opponent of the source permanent's controller controls a creature.
+     * Used for "as long as no opponent controls a creature" (via Not wrapper).
+     */
+    @Serializable
+    data object OpponentControlsCreature : SourceProjectionCondition
 
     /**
      * Negation wrapper for source projection conditions.

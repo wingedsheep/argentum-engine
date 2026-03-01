@@ -209,6 +209,11 @@ class CardBuilder(private val name: String) {
      */
     var castTimeCreatureTypeChoice: CastTimeCreatureTypeSource? = null
 
+    /**
+     * Whether this spell can't be countered by spells or abilities.
+     */
+    var cantBeCountered: Boolean = false
+
     // =========================================================================
     // Internal State
     // =========================================================================
@@ -430,7 +435,8 @@ class CardBuilder(private val name: String) {
             additionalCosts = additionalCosts.toList(),
             auraTarget = auraTarget,
             castRestrictions = spellBuilder?.restrictions ?: emptyList(),
-            castTimeCreatureTypeChoice = castTimeCreatureTypeChoice
+            castTimeCreatureTypeChoice = castTimeCreatureTypeChoice,
+            cantBeCountered = cantBeCountered
         )
 
         // Build metadata

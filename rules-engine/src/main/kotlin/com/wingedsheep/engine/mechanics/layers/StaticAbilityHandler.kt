@@ -307,6 +307,18 @@ class StaticAbilityHandler(
      */
     private fun mapExistsToSourceProjectionCondition(condition: Exists): SourceProjectionCondition? {
         if (condition.negate || condition.zone != com.wingedsheep.sdk.core.Zone.BATTLEFIELD) return null
+
+        // Handle "opponent controls a creature" (any creature, no subtype filter)
+        if (condition.player is com.wingedsheep.sdk.scripting.references.Player.Opponent) {
+            val isCreatureFilter = condition.filter.cardPredicates
+                .filterIsInstance<CardPredicate.IsCreature>()
+                .singleOrNull()
+            if (isCreatureFilter != null && condition.filter.cardPredicates.size == 1) {
+                return SourceProjectionCondition.OpponentControlsCreature
+            }
+            return null
+        }
+
         if (condition.player !is com.wingedsheep.sdk.scripting.references.Player.You) return null
         // Extract subtype from filter: Creature.withSubtype(X) has IsCreature + HasSubtype predicates
         val subtypePredicate = condition.filter.cardPredicates

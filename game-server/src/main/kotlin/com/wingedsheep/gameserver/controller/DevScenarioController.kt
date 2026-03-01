@@ -686,7 +686,8 @@ class DevScenarioController(
                 baseStats = cardDef.creatureStats,
                 ownerId = ownerId,
                 spellEffect = cardDef.spellEffect,
-                imageUri = cardDef.metadata.imageUri
+                imageUri = cardDef.metadata.imageUri,
+                cantBeCountered = cardDef.script.cantBeCountered
             )
 
             var container = ComponentContainer.of(

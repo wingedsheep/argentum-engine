@@ -118,6 +118,7 @@ object LegionsSet {
         StonewoodInvoker,
         TimberwatchElf,
         TotemSpeaker,
+        VexingBeetle,
         WirewoodHivemaster,
     )
 }

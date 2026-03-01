@@ -2,7 +2,7 @@
 
 **Set Size:** 145 cards
 **Release Date:** February 3, 2003
-**Implemented:** 88 / 145
+**Implemented:** 89 / 145
 
 | Color      | Count |
 |------------|-------|
@@ -10,7 +10,7 @@
 | Blue       | 17/29 |
 | Black      | 18/29 |
 | Red        | 18/29 |
-| Green      | 17/29 |
+| Green      | 18/29 |
 
 ---
 
@@ -141,7 +141,7 @@
 - [ ] Toxin Sliver
 - [ ] Tribal Forcemage
 - [ ] Unstable Hulk
-- [ ] Vexing Beetle
+- [x] Vexing Beetle
 - [x] Vile Deacon
 - [x] Voidmage Apprentice
 - [x] Wall of Deceit

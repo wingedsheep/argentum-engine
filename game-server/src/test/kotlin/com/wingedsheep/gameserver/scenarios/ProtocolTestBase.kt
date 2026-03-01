@@ -303,7 +303,8 @@ abstract class ProtocolTestBase : FunSpec() {
                 baseFlags = cardDef.flags,
                 baseStats = cardDef.creatureStats,
                 ownerId = ownerId,
-                spellEffect = cardDef.spellEffect
+                spellEffect = cardDef.spellEffect,
+                cantBeCountered = cardDef.script.cantBeCountered
             )
 
             val container = ComponentContainer.of(
