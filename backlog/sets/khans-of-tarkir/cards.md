@@ -2,7 +2,7 @@
 
 **Set Size:** 269 cards (249 unique card names + basic land variants)
 **Release Date:** September 26, 2014
-**Implemented:** 46 / 249
+**Implemented:** 47 / 249
 
 | Color      | Count |
 |------------|-------|
@@ -11,7 +11,7 @@
 | Black      | 7     |
 | Red        | 7     |
 | Green      | 7     |
-| Multicolor | 5     |
+| Multicolor | 6     |
 | Colorless  | 3     |
 | Land       | 3     |
 
@@ -209,7 +209,7 @@
 - [ ] Singing Bell Strike
 - [x] Smite the Monstrous
 - [ ] Smoke Teller
-- [ ] Snowhorn Rider
+- [x] Snowhorn Rider
 - [ ] Sorin, Solemn Visitor
 - [ ] Stubborn Denial
 - [ ] Sultai Ascendancy
