@@ -2,7 +2,7 @@
 
 **Set Size:** 269 cards (249 unique card names + basic land variants)
 **Release Date:** September 26, 2014
-**Implemented:** 44 / 249
+**Implemented:** 45 / 249
 
 | Color      | Count |
 |------------|-------|
@@ -10,7 +10,7 @@
 | Blue       | 7     |
 | Black      | 7     |
 | Red        | 7     |
-| Green      | 6     |
+| Green      | 7     |
 | Multicolor | 4     |
 | Colorless  | 3     |
 | Land       | 3     |
@@ -190,7 +190,7 @@
 - [ ] Sandsteppe Citadel
 - [ ] Sarkhan, the Dragonspeaker
 - [ ] Savage Knuckleblade
-- [ ] Savage Punch
+- [x] Savage Punch
 - [ ] Scaldkin
 - [ ] Scion of Glaciers
 - [ ] Scoured Barrens
