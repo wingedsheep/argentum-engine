@@ -2,14 +2,14 @@
 
 **Set Size:** 269 cards (249 unique card names + basic land variants)
 **Release Date:** September 26, 2014
-**Implemented:** 55 / 249
+**Implemented:** 57 / 249
 
 | Color      | Count |
 |------------|-------|
 | White      | 9     |
-| Blue       | 8     |
+| Blue       | 9     |
 | Black      | 9     |
-| Red        | 8     |
+| Red        | 9     |
 | Green      | 8     |
 | Multicolor | 7     |
 | Colorless  | 3     |
@@ -46,7 +46,7 @@
 - [x] Bitter Revelation
 - [ ] Blinding Spray
 - [ ] Bloodfell Caves
-- [ ] Bloodfire Expert
+- [x] Bloodfire Expert
 - [ ] Bloodfire Mentor
 - [ ] Bloodsoaked Champion
 - [ ] Bloodstained Mire
@@ -157,7 +157,7 @@
 - [x] Monastery Swiftspear
 - [ ] Murderous Cut
 - [ ] Mystic Monastery
-- [ ] Mystic of the Hidden Way
+- [x] Mystic of the Hidden Way
 - [ ] Narset, Enlightened Master
 - [x] Naturalize
 - [ ] Necropolis Fiend

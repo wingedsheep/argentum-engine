@@ -37,6 +37,7 @@ object KhansOfTarkirSet {
         // Blue creatures
         JeskaiWindscout,
         MonasteryFlock,
+        MysticOfTheHiddenWay,
         WetlandSambar,
         WhirlwindAdept,
 
@@ -72,6 +73,7 @@ object KhansOfTarkirSet {
         SavagePunch,
 
         // Red creatures
+        BloodfireExpert,
         CanyonLurkers,
         LeapingMaster,
         MonasterySwiftspear,
