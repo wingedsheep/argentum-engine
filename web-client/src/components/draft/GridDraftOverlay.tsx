@@ -102,24 +102,48 @@ function GridDrafter({ gridState, settings }: { gridState: GridDraftState; setti
     const isNewGrid = gridState.gridNumber !== displayGridNumber
 
     if (!isNewGrid) {
-      // Same grid — update display immediately and detect picked cards
+      // Same grid — detect picked cards (removed or replaced by refill)
       const prevGrid = prevDisplayGridRef.current
-      prevDisplayGridRef.current = gridState.grid
-      setDisplayGrid(gridState.grid)
 
       const removedIndices: number[] = []
       const removedCards = new Map<number, SealedCardInfo>()
+      let hasReplacements = false
       for (let i = 0; i < 9; i++) {
         const prev = prevGrid[i]
-        if (prev && !gridState.grid[i]) {
+        const curr = gridState.grid[i]
+        if (prev && !curr) {
+          // Card removed (no refill)
           removedIndices.push(i)
           removedCards.set(i, prev)
+        } else if (prev && curr && prev.name !== curr.name) {
+          // Card replaced (grid was refilled after pick)
+          removedIndices.push(i)
+          removedCards.set(i, prev)
+          hasReplacements = true
         }
       }
 
-      if (removedIndices.length === 0) return
+      if (removedIndices.length === 0) {
+        prevDisplayGridRef.current = gridState.grid
+        setDisplayGrid(gridState.grid)
+        return
+      }
 
       const detectedSelection = detectSelection(removedIndices, prevGrid)
+
+      if (hasReplacements) {
+        // Refill case: keep showing old grid with picked slots emptied,
+        // then transition to the refilled grid after animation
+        const intermediateGrid = [...prevGrid] as (SealedCardInfo | null)[]
+        for (const idx of removedIndices) {
+          intermediateGrid[idx] = null
+        }
+        setDisplayGrid(intermediateGrid)
+      } else {
+        // No refill: update display immediately
+        prevDisplayGridRef.current = gridState.grid
+        setDisplayGrid(gridState.grid)
+      }
 
       setAnimatingCards({
         indices: removedIndices,
@@ -131,6 +155,17 @@ function GridDrafter({ gridState, settings }: { gridState: GridDraftState; setti
       const fadeTimer = setTimeout(() => {
         setAnimatingCards((prev) => prev ? { ...prev, phase: 'fadeout' } : null)
       }, 800)
+
+      if (hasReplacements) {
+        // After animation, transition to the refilled grid
+        const transitionTimer = setTimeout(() => {
+          setAnimatingCards(null)
+          setDisplayGrid(gridState.grid)
+          prevDisplayGridRef.current = gridState.grid
+        }, 1800)
+        return () => { clearTimeout(fadeTimer); clearTimeout(transitionTimer) }
+      }
+
       const clearTimer = setTimeout(() => {
         setAnimatingCards(null)
       }, 1800)
