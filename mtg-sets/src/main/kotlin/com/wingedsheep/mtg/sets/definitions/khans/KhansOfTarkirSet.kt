@@ -23,6 +23,7 @@ object KhansOfTarkirSet {
     val allCards = listOf(
         // White creatures
         AlabasterKirin,
+        FirehoofCavalry,
         JeskaiStudent,
 
         // White spells
@@ -62,6 +63,7 @@ object KhansOfTarkirSet {
         // Green spells
         AwakenTheBear,
         FeedTheClan,
+        SavagePunch,
 
         // Red creatures
         CanyonLurkers,
@@ -72,6 +74,7 @@ object KhansOfTarkirSet {
 
         // Red spells
         BringLow,
+        HordelingOutburst,
 
         // Multicolor
         ChiefOfTheEdge,

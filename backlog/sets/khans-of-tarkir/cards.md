@@ -2,15 +2,15 @@
 
 **Set Size:** 269 cards (249 unique card names + basic land variants)
 **Release Date:** September 26, 2014
-**Implemented:** 42 / 249
+**Implemented:** 45 / 249
 
 | Color      | Count |
 |------------|-------|
-| White      | 6     |
+| White      | 7     |
 | Blue       | 7     |
 | Black      | 7     |
-| Red        | 6     |
-| Green      | 6     |
+| Red        | 7     |
+| Green      | 7     |
 | Multicolor | 4     |
 | Colorless  | 3     |
 | Land       | 3     |
@@ -90,7 +90,7 @@
 - [x] Erase
 - [ ] Feat of Resistance
 - [x] Feed the Clan
-- [ ] Firehoof Cavalry
+- [x] Firehoof Cavalry
 - [ ] Flooded Strand
 - [ ] Flying Crane Technique
 - [ ] Force Away
@@ -110,7 +110,7 @@
 - [ ] Hooded Hydra
 - [ ] Hooting Mandrills
 - [ ] Horde Ambusher
-- [ ] Hordeling Outburst
+- [x] Hordeling Outburst
 - [ ] Howl of the Horde
 - [ ] Icefeather Aven
 - [ ] Icy Blast
@@ -190,7 +190,7 @@
 - [ ] Sandsteppe Citadel
 - [ ] Sarkhan, the Dragonspeaker
 - [ ] Savage Knuckleblade
-- [ ] Savage Punch
+- [x] Savage Punch
 - [ ] Scaldkin
 - [ ] Scion of Glaciers
 - [ ] Scoured Barrens
