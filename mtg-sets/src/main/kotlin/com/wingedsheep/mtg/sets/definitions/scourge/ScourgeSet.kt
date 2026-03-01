@@ -90,6 +90,7 @@ object ScourgeSet {
         PemminsAura,
 
         // Blue instants
+        BrainFreeze,
         DispersalShield,
         HinderingTouch,
         LongTermPlans,

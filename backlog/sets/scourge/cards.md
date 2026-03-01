@@ -3,12 +3,12 @@
 
 **Set Size:** 143 cards
 **Release Date:** May 26, 2003
-**Implemented:** 120 / 143
+**Implemented:** 121 / 143
 
 | Color | Count |
 |-------|-------|
 | White | 23 |
-| Blue | 21 |
+| Blue | 22 |
 | Black | 25 |
 | Red | 22 |
 | Green | 23 |
@@ -30,7 +30,7 @@
 - [x] Bladewing's Thrall
 - [x] Bladewing the Risen
 - [x] Bonethorn Valesk
-- [ ] Brain Freeze
+- [x] Brain Freeze
 - [x] Break Asunder
 - [x] Cabal Conditioning
 - [x] Cabal Interrogator
