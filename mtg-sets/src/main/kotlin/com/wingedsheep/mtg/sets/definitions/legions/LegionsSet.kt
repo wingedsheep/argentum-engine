@@ -80,6 +80,7 @@ object LegionsSet {
         ZombieBrute,
 
         // Red creatures
+        BloodstokeHowler,
         BladeSliver,
         Clickslither,
         CrestedCraghorn,
