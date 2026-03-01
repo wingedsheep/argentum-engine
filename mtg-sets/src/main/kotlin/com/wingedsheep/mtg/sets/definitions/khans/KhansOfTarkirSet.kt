@@ -83,6 +83,7 @@ object KhansOfTarkirSet {
         PonybackBrigade,
         SnowhornRider,
         UtterEnd,
+        Winterflame,
 
         // Colorless
         AbzanBanner,
