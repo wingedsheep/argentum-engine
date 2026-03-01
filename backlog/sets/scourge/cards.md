@@ -3,7 +3,7 @@
 
 **Set Size:** 143 cards
 **Release Date:** May 26, 2003
-**Implemented:** 123 / 143
+**Implemented:** 124 / 143
 
 | Color | Count |
 |-------|-------|
@@ -11,7 +11,7 @@
 | Blue | 23 |
 | Black | 25 |
 | Red | 23 |
-| Green | 23 |
+| Green | 24 |
 | Multicolor | 2 |
 | Colorless | 4 |
 
@@ -89,7 +89,7 @@
 - [ ] Grip of Chaos
 - [x] Guilty Conscience
 - [x] Hindering Touch
-- [ ] Hunting Pack
+- [x] Hunting Pack
 - [ ] Karona, False God
 - [x] Karona's Zealot
 - [x] Krosan Drover

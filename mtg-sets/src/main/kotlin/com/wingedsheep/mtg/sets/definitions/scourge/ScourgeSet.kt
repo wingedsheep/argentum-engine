@@ -64,6 +64,7 @@ object ScourgeSet {
         AcceleratedMutation,
         DecreeOfSavagery,
         DivergentGrowth,
+        HuntingPack,
 
         // Green sorceries
         BreakAsunder,
