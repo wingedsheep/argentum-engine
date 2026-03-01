@@ -155,7 +155,7 @@ object Triggers {
      * When this creature becomes blocked.
      */
     val BecomesBlocked: TriggerSpec = TriggerSpec(
-        event = BecomesBlockedEvent,
+        event = BecomesBlockedEvent(),
         binding = TriggerBinding.SELF
     )
 
@@ -163,7 +163,16 @@ object Triggers {
      * When a creature you control becomes blocked.
      */
     val CreatureYouControlBecomesBlocked: TriggerSpec = TriggerSpec(
-        event = BecomesBlockedEvent,
+        event = BecomesBlockedEvent(),
+        binding = TriggerBinding.ANY
+    )
+
+    /**
+     * Whenever a creature matching the filter becomes blocked (any controller).
+     * Used for cards like Berserk Murlodont: "Whenever a Beast becomes blocked..."
+     */
+    fun FilteredBecomesBlocked(filter: GameObjectFilter): TriggerSpec = TriggerSpec(
+        event = BecomesBlockedEvent(filter = filter),
         binding = TriggerBinding.ANY
     )
 

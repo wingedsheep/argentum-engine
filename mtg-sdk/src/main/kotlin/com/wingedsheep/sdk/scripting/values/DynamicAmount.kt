@@ -473,6 +473,17 @@ sealed interface DynamicAmount {
     }
 
     /**
+     * Number of creatures blocking the triggering entity (or a specified target).
+     * Used for effects like Berserk Murlodont: "+1/+1 for each creature blocking it."
+     * Reads from BlockedComponent.blockerIds on the target creature.
+     */
+    @SerialName("NumberOfBlockers")
+    @Serializable
+    data object NumberOfBlockers : DynamicAmount {
+        override val description: String = "the number of creatures blocking it"
+    }
+
+    /**
      * Count creatures the controller controls that share a creature type with the triggering entity.
      * Used for Mana Echoes: "add {C} equal to the number of creatures you control that share a creature type with it."
      */

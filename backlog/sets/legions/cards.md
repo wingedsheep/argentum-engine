@@ -2,7 +2,7 @@
 
 **Set Size:** 145 cards
 **Release Date:** February 3, 2003
-**Implemented:** 76 / 145
+**Implemented:** 77 / 145
 
 | Color      | Count |
 |------------|-------|
@@ -10,7 +10,7 @@
 | Blue       | 15/29 |
 | Black      | 15/29 |
 | Red        | 16/29 |
-| Green      | 15/29 |
+| Green      | 16/29 |
 
 ---
 
@@ -22,7 +22,7 @@
 - [x] Aven Warhawk
 - [ ] Bane of the Living
 - [ ] Beacon of Destiny
-- [ ] Berserk Murlodont
+- [x] Berserk Murlodont
 - [x] Blade Sliver
 - [ ] Blood Celebrant
 - [ ] Bloodstoke Howler
