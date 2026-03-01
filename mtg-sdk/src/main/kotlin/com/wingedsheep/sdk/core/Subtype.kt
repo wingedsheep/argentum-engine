@@ -56,34 +56,64 @@ value class Subtype(val value: String) {
         val WURM = Subtype("Wurm")
         val ZOMBIE = Subtype("Zombie")
 
-        // Phase 7 subtypes
+        // Additional creature types
+        val AVATAR = Subtype("Avatar")
         val BARBARIAN = Subtype("Barbarian")
+        val BASILISK = Subtype("Basilisk")
+        val BAT = Subtype("Bat")
+        val BOAR = Subtype("Boar")
+        val CENTAUR = Subtype("Centaur")
+        val CEPHALID = Subtype("Cephalid")
         val CROCODILE = Subtype("Crocodile")
         val CYCLOPS = Subtype("Cyclops")
+        val DINOSAUR = Subtype("Dinosaur")
         val DJINN = Subtype("Djinn")
         val DRAKE = Subtype("Drake")
+        val DRUID = Subtype("Druid")
+        val DWARF = Subtype("Dwarf")
         val EEL = Subtype("Eel")
+        val ELEPHANT = Subtype("Elephant")
+        val ELK = Subtype("Elk")
         val GIANT = Subtype("Giant")
         val GOAT = Subtype("Goat")
+        val GOLEM = Subtype("Golem")
+        val GORGON = Subtype("Gorgon")
         val GRIFFIN = Subtype("Griffin")
         val HIPPO = Subtype("Hippo")
         val HORSE = Subtype("Horse")
+        val HYDRA = Subtype("Hydra")
+        val KIRIN = Subtype("Kirin")
         val LEVIATHAN = Subtype("Leviathan")
         val LIZARD = Subtype("Lizard")
         val MERCENARY = Subtype("Mercenary")
         val MERFOLK = Subtype("Merfolk")
         val MINOTAUR = Subtype("Minotaur")
+        val MUTANT = Subtype("Mutant")
         val NIGHTSTALKER = Subtype("Nightstalker")
+        val NOMAD = Subtype("Nomad")
         val OCTOPUS = Subtype("Octopus")
+        val OGRE = Subtype("Ogre")
+        val OOZE = Subtype("Ooze")
+        val ORC = Subtype("Orc")
+        val ORGG = Subtype("Orgg")
+        val PANGOLIN = Subtype("Pangolin")
         val PEGASUS = Subtype("Pegasus")
+        val PLANT = Subtype("Plant")
         val RAT = Subtype("Rat")
+        val REBEL = Subtype("Rebel")
+        val SHAMAN = Subtype("Shaman")
+        val SKELETON = Subtype("Skeleton")
+        val SLIVER = Subtype("Sliver")
+        val SNAKE = Subtype("Snake")
+        val SPECTER = Subtype("Specter")
+        val SPHINX = Subtype("Sphinx")
         val TREEFOLK = Subtype("Treefolk")
         val TURTLE = Subtype("Turtle")
         val UNICORN = Subtype("Unicorn")
         val VAMPIRE = Subtype("Vampire")
+        val WOLVERINE = Subtype("Wolverine")
         val WRAITH = Subtype("Wraith")
-        val SKELETON = Subtype("Skeleton")
-        val SNAKE = Subtype("Snake")
+        val YETI = Subtype("Yeti")
 
         // Basic land types
         val PLAINS = Subtype("Plains")
@@ -122,17 +152,22 @@ value class Subtype(val value: String) {
          * Sorted alphabetically for presentation in choose-option decisions.
          */
         val ALL_CREATURE_TYPES: List<String> = listOf(
-            "Angel", "Ape", "Archer", "Assassin", "Barbarian", "Bear", "Beast",
-            "Berserker", "Bird", "Cat", "Citizen", "Cleric", "Crocodile", "Cyclops",
-            "Demon", "Djinn", "Dragon", "Drake", "Dryad", "Eel", "Elemental",
-            "Elf", "Faerie", "Fish", "Frog", "Giant", "Goat", "Goblin", "Griffin",
-            "Hippo", "Horror", "Horse", "Human", "Illusion", "Imp", "Insect",
-            "Jellyfish", "Kithkin", "Knight", "Leviathan", "Lizard", "Mercenary",
-            "Merfolk", "Minotaur", "Monk", "Nightstalker", "Octopus", "Pegasus",
-            "Pirate", "Ranger", "Rat", "Rhino", "Rogue", "Scout", "Serpent",
-            "Shapeshifter", "Skeleton", "Snake", "Soldier", "Sorcerer", "Spider",
-            "Spirit", "Treefolk", "Turtle", "Unicorn", "Vampire", "Wall",
-            "Warlock", "Warrior", "Wizard", "Wraith", "Wurm", "Zombie"
+            "Angel", "Ape", "Archer", "Assassin", "Avatar", "Barbarian", "Basilisk",
+            "Bat", "Bear", "Beast", "Berserker", "Bird", "Boar", "Cat", "Centaur",
+            "Cephalid", "Citizen", "Cleric", "Crocodile", "Cyclops", "Demon",
+            "Dinosaur", "Djinn", "Dragon", "Drake", "Druid", "Dryad", "Dwarf",
+            "Eel", "Elemental", "Elephant", "Elf", "Elk", "Faerie", "Fish", "Frog",
+            "Giant", "Goat", "Goblin", "Golem", "Gorgon", "Griffin", "Hippo",
+            "Horror", "Horse", "Human", "Hydra", "Illusion", "Imp", "Insect",
+            "Jellyfish", "Kirin", "Kithkin", "Knight", "Leviathan", "Lizard",
+            "Mercenary", "Merfolk", "Minotaur", "Monk", "Mutant", "Nightstalker",
+            "Nomad", "Octopus", "Ogre", "Ooze", "Orc", "Orgg", "Pangolin",
+            "Pegasus", "Pirate", "Plant", "Ranger", "Rat", "Rebel", "Rhino",
+            "Rogue", "Scout", "Serpent", "Shaman", "Shapeshifter", "Skeleton",
+            "Sliver", "Snake", "Soldier", "Sorcerer", "Specter", "Spider",
+            "Sphinx", "Spirit", "Treefolk", "Turtle", "Unicorn", "Vampire", "Wall",
+            "Warlock", "Warrior", "Wizard", "Wolverine", "Wraith", "Wurm", "Yeti",
+            "Zombie"
         ).sorted()
     }
 }
