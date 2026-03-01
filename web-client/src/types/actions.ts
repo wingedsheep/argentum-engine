@@ -120,6 +120,7 @@ export interface TurnFaceUpAction {
   readonly sourceId: EntityId
   readonly paymentStrategy?: PaymentStrategy
   readonly costTargetIds?: readonly EntityId[]
+  readonly xValue?: number | null
 }
 
 // =============================================================================

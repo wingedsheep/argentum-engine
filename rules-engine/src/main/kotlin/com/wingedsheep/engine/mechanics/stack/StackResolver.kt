@@ -765,6 +765,7 @@ class StackResolver(
             targets = resolvedTargets2,
             triggerDamageAmount = abilityComponent.triggerDamageAmount,
             triggeringEntityId = abilityComponent.triggeringEntityId,
+            xValue = abilityComponent.xValue,
             namedTargets = EffectContext.buildNamedTargets(targetReqs, resolvedTargets2)
         )
 

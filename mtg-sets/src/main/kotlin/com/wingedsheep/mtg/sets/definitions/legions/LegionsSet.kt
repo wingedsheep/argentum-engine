@@ -106,6 +106,7 @@ object LegionsSet {
         ShaleskinPlower,
         SkirkMarauder,
         SkirkOutrider,
+        WarbreakTrumpeter,
 
         // Green creatures
         BerserkMurlodont,
