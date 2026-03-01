@@ -3,7 +3,7 @@
 
 **Set Size:** 143 cards
 **Release Date:** May 26, 2003
-**Implemented:** 133 / 143
+**Implemented:** 134 / 143
 
 | Color | Count |
 |-------|-------|
@@ -11,7 +11,7 @@
 | Blue | 25 |
 | Black | 27 |
 | Red | 25 |
-| Green | 25 |
+| Green | 26 |
 | Multicolor | 2 |
 | Colorless | 4 |
 
@@ -150,7 +150,7 @@
 - [x] Uncontrolled Infestation
 - [x] Undead Warchief
 - [x] Unspeakable Symbol
-- [ ] Upwelling
+- [x] Upwelling
 - [x] Vengeful Dead
 - [x] Wing Shards
 - [x] Wipe Clean

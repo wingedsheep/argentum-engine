@@ -950,6 +950,22 @@ class TurnManager(
     }
 
     /**
+     * Check if any permanent on the battlefield has the PreventManaPoolEmptying static ability.
+     * Used for cards like Upwelling: "Players don't lose unspent mana as steps and phases end."
+     */
+    private fun isManaPoolEmptyingPrevented(state: GameState): Boolean {
+        val registry = cardRegistry ?: return false
+        for (entityId in state.getBattlefield()) {
+            val card = state.getEntity(entityId)?.get<CardComponent>() ?: continue
+            val cardDef = registry.getCard(card.cardDefinitionId) ?: continue
+            if (cardDef.script.staticAbilities.any { it is com.wingedsheep.sdk.scripting.PreventManaPoolEmptying }) {
+                return true
+            }
+        }
+        return false
+    }
+
+    /**
      * Clean up end-of-turn effects.
      *
      * This is called at the end of each turn and handles:
@@ -985,14 +1001,16 @@ class TurnManager(
         }
         newState = newState.copy(floatingEffects = remainingEffects)
 
-        // 2. Empty mana pools for all players
-        for (playerId in newState.turnOrder) {
-            newState = newState.updateEntity(playerId) { container ->
-                val manaPool = container.get<ManaPoolComponent>()
-                if (manaPool != null && !manaPool.isEmpty) {
-                    container.with(manaPool.empty())
-                } else {
-                    container
+        // 2. Empty mana pools for all players (unless prevented by a static ability like Upwelling)
+        if (!isManaPoolEmptyingPrevented(newState)) {
+            for (playerId in newState.turnOrder) {
+                newState = newState.updateEntity(playerId) { container ->
+                    val manaPool = container.get<ManaPoolComponent>()
+                    if (manaPool != null && !manaPool.isEmpty) {
+                        container.with(manaPool.empty())
+                    } else {
+                        container
+                    }
                 }
             }
         }

@@ -59,6 +59,7 @@ object ScourgeSet {
         DragonFangs,
         OneWithNature,
         PrimitiveEtchings,
+        Upwelling,
 
         // Green instants
         AcceleratedMutation,

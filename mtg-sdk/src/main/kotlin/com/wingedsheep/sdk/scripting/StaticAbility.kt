@@ -995,6 +995,20 @@ data object PreventCycling : StaticAbility {
 }
 
 /**
+ * Prevents mana pools from emptying as steps and phases end.
+ * Used for Upwelling: "Players don't lose unspent mana as steps and phases end."
+ *
+ * The engine checks for this static ability on any permanent on the battlefield
+ * during mana pool cleanup. While any permanent with this ability is on the battlefield,
+ * mana pools are not emptied.
+ */
+@SerialName("PreventManaPoolEmptying")
+@Serializable
+data object PreventManaPoolEmptying : StaticAbility {
+    override val description: String = "Players don't lose unspent mana as steps and phases end"
+}
+
+/**
  * Reveal the first card the controller draws each turn.
  * Used for Primitive Etchings and similar "reveal as you draw" effects.
  *

@@ -867,6 +867,7 @@ Set via `staticAbility { ability = ... }`:
 - `AdditionalManaOnTap(color, amount: DynamicAmount)` — produce additional mana
 - `PlayFromTopOfLibrary` — play cards from top of library
 - `PreventCycling` — players can't cycle cards
+- `PreventManaPoolEmptying` — players don't lose unspent mana as steps and phases end
 - `IncreaseMorphCost(amount: Int)` — all morph (turn face-up) costs cost more
 - `IncreaseSpellCostByFilter(filter: GameObjectFilter, amount: Int)` — spells matching filter cost more (global tax effect)
 - `AttackTax(manaCostPerAttacker: String)` — creatures can't attack you unless their controller pays the cost per attacker (e.g., Ghostly Prison, Windborn Muse)
