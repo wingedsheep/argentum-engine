@@ -3,12 +3,12 @@
 
 **Set Size:** 143 cards
 **Release Date:** May 26, 2003
-**Implemented:** 130 / 143
+**Implemented:** 131 / 143
 
 | Color | Count |
 |-------|-------|
 | White | 25 |
-| Blue | 23 |
+| Blue | 24 |
 | Black | 27 |
 | Red | 24 |
 | Green | 25 |
@@ -101,7 +101,7 @@
 - [x] Mercurial Kite
 - [x] Metamorphose
 - [ ] Mind's Desire
-- [ ] Mischievous Quanar
+- [x] Mischievous Quanar
 - [x] Misguided Rage
 - [x] Mistform Warchief
 - [x] Nefashu

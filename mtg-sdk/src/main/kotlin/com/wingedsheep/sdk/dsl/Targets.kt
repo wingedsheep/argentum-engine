@@ -211,6 +211,11 @@ object Targets {
     val CreatureOrSorcerySpell: TargetRequirement = TargetSpell(filter = TargetFilter.CreatureOrSorcerySpellOnStack)
 
     /**
+     * Target instant or sorcery spell.
+     */
+    val InstantOrSorcerySpell: TargetRequirement = TargetSpell(filter = TargetFilter.InstantOrSorcerySpellOnStack)
+
+    /**
      * Target spell with mana value N or less.
      */
     fun SpellWithManaValueAtMost(manaValue: Int): TargetRequirement =

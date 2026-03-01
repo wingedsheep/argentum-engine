@@ -2,6 +2,7 @@ package com.wingedsheep.sdk.scripting.effects
 
 import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
+import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.targets.TargetRequirement
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
 import kotlinx.serialization.SerialName
@@ -154,4 +155,22 @@ data class StormCopyEffect(
     val spellName: String
 ) : Effect {
     override val description: String = "Copy $spellName $copyCount time(s)"
+}
+
+/**
+ * Copy target instant or sorcery spell on the stack.
+ * "Copy target instant or sorcery spell. You may choose new targets for the copy."
+ *
+ * When resolved, reads the targeted spell's effect and target requirements from the stack,
+ * then creates a copy. If the original spell has targets, the controller may choose new
+ * targets for the copy.
+ *
+ * @property target The effect target referencing the spell to copy (typically ContextTarget(0))
+ */
+@SerialName("CopyTargetSpell")
+@Serializable
+data class CopyTargetSpellEffect(
+    val target: EffectTarget = EffectTarget.ContextTarget(0)
+) : Effect {
+    override val description: String = "Copy target instant or sorcery spell"
 }

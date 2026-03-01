@@ -57,6 +57,7 @@ import com.wingedsheep.sdk.scripting.effects.CounterUnlessPaysEffect
 import com.wingedsheep.sdk.scripting.effects.CounterUnlessDynamicPaysEffect
 import com.wingedsheep.sdk.scripting.effects.ChangeSpellTargetEffect
 import com.wingedsheep.sdk.scripting.effects.ChangeTargetEffect
+import com.wingedsheep.sdk.scripting.effects.CopyTargetSpellEffect
 import com.wingedsheep.sdk.scripting.effects.SetCreatureSubtypesEffect
 import com.wingedsheep.sdk.scripting.effects.SkipNextTurnEffect
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
@@ -646,6 +647,12 @@ object Effects {
      */
     fun ChangeTarget(): Effect =
         ChangeTargetEffect
+
+    /**
+     * Copy target instant or sorcery spell. You may choose new targets for the copy.
+     */
+    fun CopyTargetSpell(target: EffectTarget = EffectTarget.ContextTarget(0)): Effect =
+        CopyTargetSpellEffect(target)
 
     // =========================================================================
     // Sacrifice Effects

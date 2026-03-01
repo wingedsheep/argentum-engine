@@ -75,6 +75,7 @@ object ScourgeSet {
         AphettoRunecaster,
         CoastWatcher,
         MercurialKite,
+        MischievousQuanar,
         MistformWarchief,
         RavenGuildInitiate,
         RavenGuildMaster,

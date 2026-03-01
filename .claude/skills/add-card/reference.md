@@ -126,6 +126,7 @@ each player reveals and creates tokens
 - `Effects.CounterUnlessDynamicPays(amount: DynamicAmount)` — counter unless dynamic amount paid
 - `Effects.ChangeSpellTarget(targetMustBeSource = false)` — redirect a spell's creature target to another creature
 - `Effects.ChangeTarget()` — change the target of a spell or ability with a single target
+- `Effects.CopyTargetSpell(target)` — copy target instant or sorcery spell on stack, may choose new targets
 
 ### Sacrifice
 
@@ -362,6 +363,7 @@ each player reveals and creates tokens
 | `ChangeSpellTargetEffect`        | `targetMustBeSource: Boolean` | Redirect spell target      |
 | `ChangeTargetEffect`             | (object)                      | Change target of spell/ability with single target |
 | `StormCopyEffect`                | `copyCount, spellEffect, spellTargetRequirements, spellName` | Create Storm copies of a spell |
+| `CopyTargetSpellEffect`          | `target: EffectTarget` | Copy target instant or sorcery spell on stack |
 
 ### Group
 
@@ -416,7 +418,7 @@ each player reveals and creates tokens
 ### Spell (on stack)
 
 - `Targets.Spell` / `Targets.CreatureSpell` / `Targets.NoncreatureSpell`
-- `Targets.CreatureOrSorcerySpell`
+- `Targets.InstantOrSorcerySpell` / `Targets.CreatureOrSorcerySpell`
 - `Targets.SpellWithManaValueAtMost(manaValue)`
 - `Targets.SpellWithManaValueAtLeast(manaValue)`
 - `Targets.ActivatedOrTriggeredAbility`
