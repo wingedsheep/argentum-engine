@@ -3,13 +3,13 @@
 
 **Set Size:** 143 cards
 **Release Date:** May 26, 2003
-**Implemented:** 117 / 143
+**Implemented:** 118 / 143
 
 | Color | Count |
 |-------|-------|
 | White | 23 |
 | Blue | 20 |
-| Black | 23 |
+| Black | 24 |
 | Red | 22 |
 | Green | 23 |
 | Multicolor | 2 |
@@ -50,7 +50,7 @@
 - [x] Death's-Head Buzzard
 - [ ] Decree of Annihilation
 - [x] Decree of Justice
-- [ ] Decree of Pain
+- [x] Decree of Pain
 - [x] Decree of Savagery
 - [x] Decree of Silence
 - [ ] Dimensional Breach

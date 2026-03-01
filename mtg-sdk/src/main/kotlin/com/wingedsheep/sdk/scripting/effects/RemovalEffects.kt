@@ -233,13 +233,17 @@ data class DestroyAtEndOfCombatEffect(
  * @property canRegenerate Whether destroyed permanents can be regenerated
  * @property exceptSubtypesFromStored Optional key into storedStringLists; if set, skip
  *   permanents that have any subtype matching any string in that stored list
+ * @property storeDestroyedAs If set, stores the IDs of actually destroyed permanents in
+ *   updatedCollections under this key. Useful for "draw a card for each creature destroyed
+ *   this way" patterns — compose with DrawCardsEffect(VariableReference("<key>_count")).
  */
 @SerialName("DestroyAll")
 @Serializable
 data class DestroyAllEffect(
     val filter: GameObjectFilter,
     val canRegenerate: Boolean = true,
-    val exceptSubtypesFromStored: String? = null
+    val exceptSubtypesFromStored: String? = null,
+    val storeDestroyedAs: String? = null
 ) : Effect {
     override val description: String = buildString {
         append("Destroy all ${filter.description}")

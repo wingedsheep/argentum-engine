@@ -72,6 +72,7 @@ constructors.
 ### Mass Effects (group)
 
 - `Effects.DestroyAll(filter: GroupFilter, noRegenerate = false)` — board wipe
+- `DestroyAllEffect(filter, canRegenerate, storeDestroyedAs?)` — raw destroy-all with optional count tracking; compose with `DrawCardsEffect(VariableReference("<key>_count"))` for "draw per destroyed" patterns
 - `Effects.GrantKeywordToAll(keyword, filter: GroupFilter, duration)` — keyword to group
 - `Effects.RemoveKeyword(keyword, target, duration)` — remove keyword from single target
 - `Effects.RemoveKeywordFromAll(keyword, filter: GroupFilter, duration)` — remove keyword from group

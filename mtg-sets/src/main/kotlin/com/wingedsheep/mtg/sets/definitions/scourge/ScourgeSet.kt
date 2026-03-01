@@ -179,6 +179,7 @@ object ScourgeSet {
 
         // Black sorceries
         CabalConditioning,
+        DecreeOfPain,
         Skulltap,
         Unburden,
 

@@ -8,6 +8,7 @@ import com.wingedsheep.engine.handlers.effects.EffectExecutorUtils
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.sdk.core.Subtype
+import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.DestroyAllEffect
 import kotlin.reflect.KClass
@@ -34,6 +35,7 @@ class DestroyAllExecutor : EffectExecutor<DestroyAllEffect> {
 
         var newState = state
         val events = mutableListOf<GameEvent>()
+        val destroyedIds = mutableListOf<EntityId>()
 
         for (entityId in state.getBattlefield()) {
             val container = newState.getEntity(entityId) ?: continue
@@ -52,10 +54,24 @@ class DestroyAllExecutor : EffectExecutor<DestroyAllEffect> {
             val result = EffectExecutorUtils.destroyPermanent(
                 newState, entityId, canRegenerate = effect.canRegenerate
             )
+            // Track if actually destroyed (events emitted means the permanent was moved)
+            if (result.events.isNotEmpty()) {
+                destroyedIds.add(entityId)
+            }
             newState = result.newState
             events.addAll(result.events)
         }
 
-        return ExecutionResult.success(newState, events)
+        val updatedCollections = if (effect.storeDestroyedAs != null) {
+            mapOf(effect.storeDestroyedAs!! to destroyedIds.toList())
+        } else {
+            emptyMap()
+        }
+
+        return ExecutionResult(
+            state = newState,
+            events = events,
+            updatedCollections = updatedCollections
+        )
     }
 }
