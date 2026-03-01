@@ -63,6 +63,7 @@ object KhansOfTarkirSet {
         // Green spells
         AwakenTheBear,
         FeedTheClan,
+        Naturalize,
         SavagePunch,
 
         // Red creatures
@@ -75,6 +76,7 @@ object KhansOfTarkirSet {
         // Red spells
         BringLow,
         HordelingOutburst,
+        TrumpetBlast,
 
         // Multicolor
         ChiefOfTheEdge,

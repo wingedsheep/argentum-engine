@@ -2,15 +2,15 @@
 
 **Set Size:** 269 cards (249 unique card names + basic land variants)
 **Release Date:** September 26, 2014
-**Implemented:** 48 / 249
+**Implemented:** 50 / 249
 
 | Color      | Count |
 |------------|-------|
 | White      | 7     |
 | Blue       | 7     |
 | Black      | 7     |
-| Red        | 7     |
-| Green      | 7     |
+| Red        | 8     |
+| Green      | 8     |
 | Multicolor | 7     |
 | Colorless  | 3     |
 | Land       | 3     |
@@ -159,7 +159,7 @@
 - [ ] Mystic Monastery
 - [ ] Mystic of the Hidden Way
 - [ ] Narset, Enlightened Master
-- [ ] Naturalize
+- [x] Naturalize
 - [ ] Necropolis Fiend
 - [ ] Nomad Outpost
 - [ ] Opulent Palace
@@ -240,7 +240,7 @@
 - [ ] Tranquil Cove
 - [ ] Trap Essence
 - [ ] Treasure Cruise
-- [ ] Trumpet Blast
+- [x] Trumpet Blast
 - [ ] Tusked Colossodon
 - [ ] Tuskguard Captain
 - [ ] Ugin's Nexus
