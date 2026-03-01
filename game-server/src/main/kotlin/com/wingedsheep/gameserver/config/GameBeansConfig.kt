@@ -56,13 +56,13 @@ class GameBeansConfig(
 
     @Bean
     fun randomDeckGenerator(): RandomDeckGenerator = RandomDeckGenerator(
-//        TODO: Enable once onslaught is implemented
-        cardPool = if (gameProperties.sets.onslaughtEnabled) {
-            /*PortalSet.allCards + */ OnslaughtSet.allCards
-        } else {
-            PortalSet.allCards
+        cardPool = buildList {
+            addAll(PortalSet.allCards)
+            if (gameProperties.sets.onslaughtEnabled) addAll(OnslaughtSet.allCards)
+            if (gameProperties.sets.scourgeEnabled) addAll(ScourgeSet.allCards)
+            if (gameProperties.sets.legionsEnabled) addAll(LegionsSet.allCards)
+            if (gameProperties.sets.khansEnabled) addAll(KhansOfTarkirSet.allCards)
         },
-//        cardPool = PortalSet.allCards,
         basicLandVariants = PortalSet.basicLands
     )
 }
