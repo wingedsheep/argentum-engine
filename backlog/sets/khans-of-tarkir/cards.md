@@ -2,13 +2,13 @@
 
 **Set Size:** 269 cards (249 unique card names + basic land variants)
 **Release Date:** September 26, 2014
-**Implemented:** 54 / 249
+**Implemented:** 55 / 249
 
 | Color      | Count |
 |------------|-------|
 | White      | 9     |
 | Blue       | 8     |
-| Black      | 8     |
+| Black      | 9     |
 | Red        | 8     |
 | Green      | 8     |
 | Multicolor | 7     |
@@ -178,7 +178,7 @@
 - [ ] Rite of the Serpent
 - [ ] Riverwheel Aerialists
 - [ ] Roar of Challenge
-- [ ] Rotting Mastodon
+- [x] Rotting Mastodon
 - [x] Rugged Highlands
 - [ ] Rush of Battle
 - [ ] Ruthless Ripper
