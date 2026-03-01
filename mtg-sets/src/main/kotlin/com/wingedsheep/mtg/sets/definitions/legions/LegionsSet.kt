@@ -59,6 +59,7 @@ object LegionsSet {
         ShiftingSliver,
         VoidmageApprentice,
         WallOfDeceit,
+        WarpedResearcher,
         Willbender,
 
         // Black creatures
@@ -88,6 +89,7 @@ object LegionsSet {
         CrestedCraghorn,
         HunterSliver,
         FlamewaveInvoker,
+        GoblinDynamo,
         GoblinGoon,
         GoblinLookout,
         FreneticRaptor,
