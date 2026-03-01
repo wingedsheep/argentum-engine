@@ -11,6 +11,8 @@ import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.identity.LifeTotalComponent
 import com.wingedsheep.engine.state.components.player.LandDropsComponent
+import com.wingedsheep.sdk.core.Keyword
+import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.engine.mechanics.layers.StateProjector
 import com.wingedsheep.sdk.scripting.*
@@ -180,7 +182,10 @@ class ConditionEvaluator {
 
     private fun evaluateSourceHasSubtype(state: GameState, condition: SourceHasSubtype, context: EffectContext): Boolean {
         val sourceId = context.sourceId ?: return false
-        return state.getEntity(sourceId)?.get<CardComponent>()?.typeLine?.hasSubtype(condition.subtype) == true
+        val card = state.getEntity(sourceId)?.get<CardComponent>() ?: return false
+        return card.typeLine.hasSubtype(condition.subtype) ||
+            // Changeling: has all creature types in all zones
+            (Keyword.CHANGELING in card.baseKeywords && condition.subtype.value in Subtype.ALL_CREATURE_TYPES)
     }
 
     private fun evaluateSourceHasDealtCombatDamageToPlayer(state: GameState, context: EffectContext): Boolean {

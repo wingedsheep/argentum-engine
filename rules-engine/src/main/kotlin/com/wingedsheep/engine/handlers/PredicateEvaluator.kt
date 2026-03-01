@@ -15,6 +15,7 @@ import com.wingedsheep.engine.state.components.identity.TokenComponent
 import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.engine.state.components.stack.ActivatedAbilityOnStackComponent
 import com.wingedsheep.engine.state.components.stack.TriggeredAbilityOnStackComponent
+import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.predicates.CardPredicate
@@ -177,7 +178,10 @@ class PredicateEvaluator {
                     false
                 } else {
                     projectedValues?.subtypes?.any { it.equals(predicate.subtype.value, ignoreCase = true) }
-                        ?: card.typeLine.hasSubtype(predicate.subtype)
+                        ?: (card.typeLine.hasSubtype(predicate.subtype) ||
+                            // Changeling: has all creature types in all zones
+                            (Keyword.CHANGELING in card.baseKeywords &&
+                                predicate.subtype.value in Subtype.ALL_CREATURE_TYPES))
                 }
             }
             is CardPredicate.NotSubtype -> {
@@ -185,7 +189,10 @@ class PredicateEvaluator {
                     true  // Face-down has no subtypes
                 } else {
                     val hasSubtype = projectedValues?.subtypes?.any { it.equals(predicate.subtype.value, ignoreCase = true) }
-                        ?: card.typeLine.hasSubtype(predicate.subtype)
+                        ?: (card.typeLine.hasSubtype(predicate.subtype) ||
+                            // Changeling: has all creature types in all zones
+                            (Keyword.CHANGELING in card.baseKeywords &&
+                                predicate.subtype.value in Subtype.ALL_CREATURE_TYPES))
                     !hasSubtype
                 }
             }

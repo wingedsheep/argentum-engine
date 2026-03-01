@@ -2,12 +2,12 @@
 
 **Set Size:** 145 cards
 **Release Date:** February 3, 2003
-**Implemented:** 102 / 145
+**Implemented:** 103 / 145
 
 | Color      | Count |
 |------------|-------|
 | White      | 20/29 |
-| Blue       | 20/29 |
+| Blue       | 21/29 |
 | Black      | 20/29 |
 | Red        | 21/29 |
 | Green      | 21/29 |
@@ -101,7 +101,7 @@
 - [x] Merchant of Secrets
 - [x] Mistform Seaswift
 - [ ] Mistform Sliver
-- [ ] Mistform Ultimus
+- [x] Mistform Ultimus
 - [ ] Mistform Wakecaster
 - [x] Nantuko Vigilante
 - [x] Needleshot Gourna

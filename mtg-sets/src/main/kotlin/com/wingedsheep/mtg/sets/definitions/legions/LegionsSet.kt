@@ -56,6 +56,7 @@ object LegionsSet {
         KeeneyeAven,
         MerchantOfSecrets,
         MistformSeaswift,
+        MistformUltimus,
         PrimocEscapee,
         RiptideDirector,
         RiptideMangler,

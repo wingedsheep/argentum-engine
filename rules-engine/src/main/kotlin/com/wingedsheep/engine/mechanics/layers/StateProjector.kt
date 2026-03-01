@@ -93,6 +93,11 @@ class StateProjector(
                     isFaceDown = false
                 )
 
+                // Changeling: creature has all creature types (characteristic-defining ability, Layer 4)
+                if (Keyword.CHANGELING in cardComponent.baseKeywords) {
+                    projectedValues[entityId]?.subtypes?.addAll(Subtype.ALL_CREATURE_TYPES)
+                }
+
                 // Track entities with dynamic stats for CDA resolution
                 if (baseStats?.isDynamic == true) {
                     dynamicStatEntities.add(entityId to cardComponent)
@@ -578,7 +583,12 @@ class StateProjector(
 
             // Check card predicates using projected values when available
             val types = projected?.types ?: card.typeLine.cardTypes.map { it.name }.toSet()
-            val subtypes = projected?.subtypes ?: card.typeLine.subtypes.map { it.value }.toSet()
+            val subtypes = projected?.subtypes ?: run {
+                val baseSubtypes = card.typeLine.subtypes.map { it.value }.toSet()
+                // Changeling: has all creature types in all zones
+                if (Keyword.CHANGELING in card.baseKeywords) baseSubtypes + Subtype.ALL_CREATURE_TYPES
+                else baseSubtypes
+            }
             val colors = projected?.colors ?: card.colors.map { it.name }.toSet()
             val keywords = projected?.keywords ?: (card.baseKeywords.map { it.name } + card.baseFlags.map { it.name }).toSet()
             val isFaceDown = projected?.isFaceDown ?: container.has<FaceDownComponent>()
