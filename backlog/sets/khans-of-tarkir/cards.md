@@ -2,7 +2,7 @@
 
 **Set Size:** 269 cards (249 unique card names + basic land variants)
 **Release Date:** September 26, 2014
-**Implemented:** 34 / 249
+**Implemented:** 35 / 249
 
 | Color      | Count |
 |------------|-------|
@@ -10,7 +10,7 @@
 | Blue       | 5     |
 | Black      | 5     |
 | Red        | 5     |
-| Green      | 4     |
+| Green      | 5     |
 | Multicolor | 4     |
 | Colorless  | 3     |
 | Land       | 3     |
@@ -89,7 +89,7 @@
 - [ ] End Hostilities
 - [ ] Erase
 - [ ] Feat of Resistance
-- [ ] Feed the Clan
+- [x] Feed the Clan
 - [ ] Firehoof Cavalry
 - [ ] Flooded Strand
 - [ ] Flying Crane Technique

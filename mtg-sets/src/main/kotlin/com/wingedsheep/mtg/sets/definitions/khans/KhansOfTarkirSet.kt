@@ -55,6 +55,7 @@ object KhansOfTarkirSet {
 
         // Green spells
         AwakenTheBear,
+        FeedTheClan,
 
         // Red creatures
         LeapingMaster,
