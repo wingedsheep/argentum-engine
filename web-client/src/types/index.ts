@@ -236,7 +236,9 @@ export type {
   MatchCompleteMessage,
   PlayerReadyForRoundMessage,
   TournamentCompleteMessage,
+  TournamentResumedMessage,
   ReadyForNextRoundMessage,
+  AddExtraRoundMessage,
   // Spectating types
   ActiveMatchInfo,
   ActiveMatchesMessage,
@@ -326,12 +328,14 @@ export {
   isGridDraftStateMessage,
   // Tournament message factories & guards
   createReadyForNextRoundMessage,
+  createAddExtraRoundMessage,
   isTournamentStartedMessage,
   isTournamentMatchStartingMessage,
   isTournamentByeMessage,
   isRoundCompleteMessage,
   isMatchCompleteMessage,
   isTournamentCompleteMessage,
+  isTournamentResumedMessage,
   // Spectating factories & guards
   createSpectateGameMessage,
   createStopSpectatingMessage,

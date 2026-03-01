@@ -711,8 +711,10 @@ function TournamentOverlay({
   const playerId = useGameStore((state) => state.playerId)
   const spectateGame = useGameStore((state) => state.spectateGame)
   const readyForNextRound = useGameStore((state) => state.readyForNextRound)
+  const addExtraRound = useGameStore((state) => state.addExtraRound)
   const leaveTournament = useGameStore((state) => state.leaveTournament)
   const unsubmitDeck = useGameStore((state) => state.unsubmitDeck)
+  const lobbyState = useGameStore((state) => state.lobbyState)
   const deckBuildingState = useGameStore((state) => state.deckBuildingState)
   const disconnectedPlayers = useGameStore((state) => state.disconnectedPlayers)
   const addDisconnectTime = useGameStore((state) => state.addDisconnectTime)
@@ -1113,9 +1115,16 @@ function TournamentOverlay({
       {/* ── Footer actions ── */}
       <div className={styles.trnFooter}>
         {tournamentState.isComplete ? (
-          <button onClick={leaveTournament} className={styles.returnButton}>
-            Return to Menu
-          </button>
+          <>
+            {lobbyState?.isHost && (
+              <button onClick={addExtraRound} className={styles.readyButton}>
+                Add Round
+              </button>
+            )}
+            <button onClick={leaveTournament} className={styles.returnButton}>
+              Return to Menu
+            </button>
+          </>
         ) : (
           <button
             onClick={() => {

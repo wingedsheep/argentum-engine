@@ -2430,6 +2430,93 @@ class LobbyHandler(
         broadcastActiveMatchesToWaitingPlayers(lobby.lobbyId)
     }
 
+    /**
+     * Handle a host adding extra rounds to a completed tournament.
+     */
+    fun handleAddExtraRound(session: WebSocketSession) {
+        val token = sessionRegistry.getTokenByWsId(session.id)
+        val identity = token?.let { sessionRegistry.getIdentityByToken(it) }
+        if (identity == null) {
+            sender.sendError(session, ErrorCode.NOT_CONNECTED, "Not connected")
+            return
+        }
+
+        val lobbyId = identity.currentLobbyId
+        if (lobbyId == null) {
+            sender.sendError(session, ErrorCode.INVALID_ACTION, "Not in a lobby")
+            return
+        }
+
+        val lobby = lobbyRepository.findLobbyById(lobbyId)
+        if (lobby == null) {
+            sender.sendError(session, ErrorCode.INVALID_ACTION, "Lobby not found")
+            return
+        }
+
+        if (!lobby.isHost(identity.playerId)) {
+            sender.sendError(session, ErrorCode.INVALID_ACTION, "Only the host can add extra rounds")
+            return
+        }
+
+        if (lobby.state != LobbyState.TOURNAMENT_COMPLETE) {
+            sender.sendError(session, ErrorCode.INVALID_ACTION, "Tournament is not complete")
+            return
+        }
+
+        val tournament = lobbyRepository.findTournamentById(lobbyId)
+        if (tournament == null) {
+            sender.sendError(session, ErrorCode.INVALID_ACTION, "Tournament not found")
+            return
+        }
+
+        // Generate extra rounds and resume
+        tournament.addExtraRound()
+        lobby.resumeTournament()
+
+        logger.info("Host ${identity.playerName} added extra rounds to tournament $lobbyId (now ${tournament.totalRounds} total)")
+
+        val connectedIds = lobby.players.values
+            .filter { it.identity.isConnected }
+            .map { it.identity.playerId }
+            .toSet()
+
+        val standings = tournament.getStandingsInfo(connectedIds)
+        val nextMatchups = tournament.peekNextRoundMatchups()
+
+        // Send per-player TournamentResumed with their next opponent
+        lobby.players.forEach { (playerId, playerState) ->
+            val ws = playerState.identity.webSocketSession
+            if (ws != null && ws.isOpen) {
+                val opponentId = nextMatchups[playerId]
+                val opponentName = opponentId?.let { lobby.players[it]?.identity?.playerName }
+                val hasBye = nextMatchups.containsKey(playerId) && opponentId == null
+
+                sender.send(ws, ServerMessage.TournamentResumed(
+                    lobbyId = lobbyId,
+                    totalRounds = tournament.totalRounds,
+                    standings = standings,
+                    nextOpponentName = opponentName,
+                    nextRoundHasBye = hasBye
+                ))
+            }
+        }
+
+        // Also notify spectators
+        lobby.spectators.forEach { (_, spectatorIdentity) ->
+            val ws = spectatorIdentity.webSocketSession
+            if (ws != null && ws.isOpen) {
+                sender.send(ws, ServerMessage.TournamentResumed(
+                    lobbyId = lobbyId,
+                    totalRounds = tournament.totalRounds,
+                    standings = standings
+                ))
+            }
+        }
+
+        lobbyRepository.saveLobby(lobby)
+        lobbyRepository.saveTournament(lobbyId, tournament)
+    }
+
     private fun completeTournament(lobbyId: String) {
         val lobby = lobbyRepository.findLobbyById(lobbyId) ?: return
         val tournament = lobbyRepository.findTournamentById(lobbyId) ?: return

@@ -630,6 +630,21 @@ sealed interface ServerMessage {
         val finalStandings: List<PlayerStandingInfo>
     ) : ServerMessage
 
+    /**
+     * Tournament has been resumed with extra rounds added.
+     */
+    @Serializable
+    @SerialName("tournamentResumed")
+    data class TournamentResumed(
+        val lobbyId: String,
+        val totalRounds: Int,
+        val standings: List<PlayerStandingInfo>,
+        /** Name of next opponent (null if BYE) */
+        val nextOpponentName: String? = null,
+        /** True if player has a BYE in the next round */
+        val nextRoundHasBye: Boolean = false
+    ) : ServerMessage
+
     // =========================================================================
     // Spectating Messages
     // =========================================================================

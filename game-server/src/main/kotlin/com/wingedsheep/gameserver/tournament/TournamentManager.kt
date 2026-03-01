@@ -93,7 +93,8 @@ class TournamentManager(
     private val rounds: MutableList<TournamentRound> = mutableListOf()
     private var currentRoundIndex: Int = -1
 
-    val totalRounds: Int
+    var totalRounds: Int
+        private set
     val playerIds: List<EntityId> = players.map { it.first }
 
     init {
@@ -273,6 +274,61 @@ class TournamentManager(
      * Check if the current round is complete.
      */
     fun isRoundComplete(): Boolean = currentRound?.isComplete ?: true
+
+    /**
+     * Add an extra rotation of round-robin rounds to extend the tournament.
+     * Generates the same schedule pattern as the initial rounds.
+     */
+    fun addExtraRound() {
+        val ids = playerIds.toMutableList()
+        val hasBye = ids.size % 2 != 0
+
+        val paddedIds: MutableList<EntityId?> = ids.map<EntityId, EntityId?> { it }.toMutableList()
+        if (hasBye) {
+            paddedIds.add(null)
+        }
+
+        val n = paddedIds.size
+        val numBaseRounds = n - 1
+
+        var roundNumber = rounds.size
+        for (repetition in 0 until gamesPerMatch) {
+            val rotatedIds: MutableList<EntityId?> = ids.map<EntityId, EntityId?> { it }.toMutableList()
+            if (hasBye) rotatedIds.add(null)
+
+            for (round in 0 until numBaseRounds) {
+                roundNumber++
+                val matches = mutableListOf<TournamentMatch>()
+
+                for (i in 0 until n / 2) {
+                    val p1 = rotatedIds[i]
+                    val p2 = rotatedIds[n - 1 - i]
+
+                    if (p1 != null) {
+                        matches.add(TournamentMatch(
+                            player1Id = p1,
+                            player2Id = p2
+                        ))
+                    } else if (p2 != null) {
+                        matches.add(TournamentMatch(
+                            player1Id = p2,
+                            player2Id = null
+                        ))
+                    }
+                }
+
+                rounds.add(TournamentRound(roundNumber = roundNumber, matches = matches))
+
+                if (n > 2) {
+                    val last = rotatedIds.removeAt(n - 1)
+                    rotatedIds.add(1, last)
+                }
+            }
+        }
+
+        totalRounds = rounds.size
+        logger.info("Added extra rounds, now $totalRounds total rounds for ${playerIds.size} players in lobby $lobbyId")
+    }
 
     // =========================================================================
     // Tiebreaker Functions
