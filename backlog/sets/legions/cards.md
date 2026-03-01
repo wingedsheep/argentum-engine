@@ -2,14 +2,14 @@
 
 **Set Size:** 145 cards
 **Release Date:** February 3, 2003
-**Implemented:** 70 / 145
+**Implemented:** 71 / 145
 
 | Color      | Count |
 |------------|-------|
 | White      | 14/29 |
 | Blue       | 14/29 |
 | Black      | 14/29 |
-| Red        | 14/29 |
+| Red        | 15/29 |
 | Green      | 14/29 |
 
 ---
@@ -34,7 +34,7 @@
 - [ ] Celestial Gatekeeper
 - [x] Cephalid Pathmage
 - [ ] Chromeshell Crab
-- [ ] Clickslither
+- [x] Clickslither
 - [x] Cloudreach Cavalry
 - [ ] Corpse Harvester
 - [x] Covert Operative

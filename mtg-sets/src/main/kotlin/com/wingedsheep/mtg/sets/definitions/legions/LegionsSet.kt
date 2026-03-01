@@ -72,6 +72,7 @@ object LegionsSet {
 
         // Red creatures
         BladeSliver,
+        Clickslither,
         CrestedCraghorn,
         HunterSliver,
         FlamewaveInvoker,
