@@ -81,7 +81,9 @@ object KhansOfTarkirSet {
         ChiefOfTheScale,
         HighspireMantis,
         PonybackBrigade,
+        SnowhornRider,
         UtterEnd,
+        Winterflame,
 
         // Colorless
         AbzanBanner,
