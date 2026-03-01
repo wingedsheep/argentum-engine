@@ -919,7 +919,7 @@ class TournamentLobby(
         players[playerId] = playerState.copy(cardPool = playerState.cardPool + cards)
 
         val playerName = playerState.identity.playerName
-        val selectionLabel = selection.name.replace("_", " ").lowercase()
+        val selectionLabel = selection.name.replace("_", " ").lowercase().replace(Regex("\\d+")) { (it.value.toInt() + 1).toString() }
         val lastAction = "$playerName picked $selectionLabel (${cards.joinToString(", ") { it.name }})"
 
         group.picksThisGrid++
@@ -939,8 +939,8 @@ class TournamentLobby(
             group.gridStarterIndex = (group.gridStarterIndex + 1) % group.playerOrder.size
             group.activePlayerIndex = group.gridStarterIndex
 
-            if (group.mainDeck.isEmpty()) {
-                // Check if ALL groups are complete
+            if (group.mainDeck.size < 9) {
+                // Not enough cards for a full grid — this group is done
                 if (gridGroups.all { it === group || isGroupComplete(it) }) {
                     finishGridDraft()
                     return GridDraftResult.DraftComplete(cards, lastAction)
@@ -952,6 +952,13 @@ class TournamentLobby(
             // Discard remaining cards and deal new grid
             dealGrid(group)
             return GridDraftResult.GridComplete(cards, lastAction)
+        } else if (group.mainDeck.isEmpty() && group.gridCards.all { it == null }) {
+            // Grid emptied before all players could pick (last grid had too few cards)
+            if (gridGroups.all { it === group || isGroupComplete(it) }) {
+                finishGridDraft()
+                return GridDraftResult.DraftComplete(cards, lastAction)
+            }
+            return GridDraftResult.DraftComplete(cards, lastAction)
         } else {
             // Next player picks from the same grid
             group.activePlayerIndex = (group.activePlayerIndex + 1) % group.playerOrder.size

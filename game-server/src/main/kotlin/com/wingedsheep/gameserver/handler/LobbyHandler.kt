@@ -1270,11 +1270,6 @@ class LobbyHandler(
             return
         }
 
-        if (lobby.state != LobbyState.DRAFTING || lobby.format != TournamentFormat.GRID_DRAFT) {
-            sender.sendError(session, ErrorCode.INVALID_ACTION, "Not in grid draft phase")
-            return
-        }
-
         val selection = try {
             GridSelection.valueOf(message.selection)
         } catch (e: IllegalArgumentException) {
@@ -1282,25 +1277,40 @@ class LobbyHandler(
             return
         }
 
-        val result = lobby.gridPickRowOrColumn(identity.playerId, selection)
+        val lock = roundLocks.computeIfAbsent(lobbyId) { Any() }
+        synchronized(lock) {
+            if (lobby.state != LobbyState.DRAFTING || lobby.format != TournamentFormat.GRID_DRAFT) {
+                sender.sendError(session, ErrorCode.INVALID_ACTION, "Not in grid draft phase")
+                return
+            }
+
+            val result = lobby.gridPickRowOrColumn(identity.playerId, selection)
+            processGridDraftResult(lobby, result, identity.playerId)
+        }
+    }
+
+    /**
+     * Process a grid draft result: broadcast state, manage timer, handle draft completion.
+     * Must be called under the lobby's roundLock.
+     */
+    private fun processGridDraftResult(lobby: TournamentLobby, result: GridDraftResult, pickerId: EntityId) {
         when (result) {
             is GridDraftResult.PickMade -> {
                 logger.info("Grid draft: ${result.lastAction}")
                 lobby.pickTimerJob?.cancel()
-                broadcastGridDraftState(lobby, result.lastAction, result.cards, identity.playerId)
+                broadcastGridDraftState(lobby, result.lastAction, result.cards, pickerId)
                 startGridDraftTimer(lobby)
                 lobbyRepository.saveLobby(lobby)
             }
             is GridDraftResult.GridComplete -> {
                 logger.info("Grid draft: ${result.lastAction} - new grid dealt")
                 lobby.pickTimerJob?.cancel()
-                broadcastGridDraftState(lobby, result.lastAction, result.cards, identity.playerId)
+                broadcastGridDraftState(lobby, result.lastAction, result.cards, pickerId)
                 startGridDraftTimer(lobby)
                 lobbyRepository.saveLobby(lobby)
             }
             is GridDraftResult.DraftComplete -> {
                 if (lobby.isGridDraftComplete()) {
-                    // All groups done — transition to deck building
                     logger.info("Grid draft complete for lobby ${lobby.lobbyId}")
                     lobby.pickTimerJob?.cancel()
                     lobby.pickTimerJob = null
@@ -1318,16 +1328,15 @@ class LobbyHandler(
                     }
                     broadcastLobbyUpdate(lobby)
                 } else {
-                    // This group is done but other group(s) still active
                     logger.info("Grid draft: group complete, other group(s) still active in lobby ${lobby.lobbyId}")
                     lobby.pickTimerJob?.cancel()
-                    broadcastGridDraftState(lobby, result.lastAction, result.cards, identity.playerId)
+                    broadcastGridDraftState(lobby, result.lastAction, result.cards, pickerId)
                     startGridDraftTimer(lobby)
                 }
                 lobbyRepository.saveLobby(lobby)
             }
             is GridDraftResult.Error -> {
-                sender.sendError(session, ErrorCode.INVALID_ACTION, result.message)
+                logger.warn("Grid draft pick failed: ${result.message}")
             }
         }
     }
@@ -1416,65 +1425,17 @@ class LobbyHandler(
 
             // Timer expired - auto-pick for all active players across all groups
             if (isActive && lobby.state == LobbyState.DRAFTING && lobby.format == TournamentFormat.GRID_DRAFT) {
-                val activePlayers = lobby.getAllGridActivePlayers()
-                var needsRestart = false
-                var draftComplete = false
+                val lock = roundLocks.computeIfAbsent(lobby.lobbyId) { Any() }
+                synchronized(lock) {
+                    if (lobby.state != LobbyState.DRAFTING) return@synchronized
 
-                for ((_, activePlayer) in activePlayers) {
-                    val result = lobby.autoGridPick(activePlayer)
-                    val lastAction = when (result) {
-                        is GridDraftResult.PickMade -> result.lastAction
-                        is GridDraftResult.GridComplete -> result.lastAction
-                        is GridDraftResult.DraftComplete -> result.lastAction
-                        is GridDraftResult.Error -> null
-                    }
-                    val pickedCards: List<com.wingedsheep.sdk.model.CardDefinition> = when (result) {
-                        is GridDraftResult.PickMade -> result.cards
-                        is GridDraftResult.GridComplete -> result.cards
-                        is GridDraftResult.DraftComplete -> result.cards
-                        else -> emptyList()
-                    }
-                    when (result) {
-                        is GridDraftResult.PickMade -> {
-                            broadcastGridDraftState(lobby, "$lastAction (auto-pick)", pickedCards, activePlayer)
-                            needsRestart = true
-                        }
-                        is GridDraftResult.GridComplete -> {
-                            broadcastGridDraftState(lobby, "$lastAction (auto-pick)", pickedCards, activePlayer)
-                            needsRestart = true
-                        }
-                        is GridDraftResult.DraftComplete -> {
-                            if (lobby.isGridDraftComplete()) {
-                                draftComplete = true
-                            } else {
-                                broadcastGridDraftState(lobby, "$lastAction (auto-pick)", pickedCards, activePlayer)
-                                needsRestart = true
-                            }
-                        }
-                        is GridDraftResult.Error -> {
-                            logger.warn("Grid draft auto-pick failed: ${result.message}")
-                        }
+                    val activePlayers = lobby.getAllGridActivePlayers()
+                    for ((_, activePlayer) in activePlayers) {
+                        val result = lobby.autoGridPick(activePlayer)
+                        processGridDraftResult(lobby, result, activePlayer)
+                        if (lobby.isGridDraftComplete()) break
                     }
                 }
-
-                if (draftComplete && lobby.isGridDraftComplete()) {
-                    val basicLandInfos = lobby.basicLands.values.map { cardToSealedCardInfo(it) }
-                    lobby.players.forEach { (_, playerState) ->
-                        val poolInfos = playerState.cardPool.map { cardToSealedCardInfo(it) }
-                        val ws = playerState.identity.webSocketSession
-                        if (ws != null && ws.isOpen) {
-                            sender.send(ws, ServerMessage.DraftComplete(
-                                pickedCards = poolInfos,
-                                basicLands = basicLandInfos
-                            ))
-                        }
-                    }
-                    broadcastLobbyUpdate(lobby)
-                } else if (needsRestart) {
-                    startGridDraftTimer(lobby)
-                }
-
-                lobbyRepository.saveLobby(lobby)
             }
         }
     }
