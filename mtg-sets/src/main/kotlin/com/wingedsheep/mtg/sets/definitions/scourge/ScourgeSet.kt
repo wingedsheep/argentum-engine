@@ -103,6 +103,7 @@ object ScourgeSet {
         Stifle,
 
         // Blue sorceries
+        MindsDesire,
         RushOfKnowledge,
         TemporalFissure,
 

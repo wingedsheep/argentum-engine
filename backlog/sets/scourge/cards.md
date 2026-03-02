@@ -3,12 +3,12 @@
 
 **Set Size:** 143 cards
 **Release Date:** May 26, 2003
-**Implemented:** 135 / 143
+**Implemented:** 136 / 143
 
 | Color | Count |
 |-------|-------|
 | White | 26 |
-| Blue | 25 |
+| Blue | 26 |
 | Black | 27 |
 | Red | 25 |
 | Green | 26 |
@@ -100,7 +100,7 @@
 - [x] Long-Term Plans
 - [x] Mercurial Kite
 - [x] Metamorphose
-- [ ] Mind's Desire
+- [x] Mind's Desire
 - [x] Mischievous Quanar
 - [x] Misguided Rage
 - [x] Mistform Warchief

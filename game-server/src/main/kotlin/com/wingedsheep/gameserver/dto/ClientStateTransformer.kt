@@ -321,6 +321,17 @@ class ClientStateTransformer(
             val targetsComponent = container.get<TargetsComponent>()
             val targets = transformTargets(targetsComponent)
 
+            // Add triggering entity as a visual pseudo-target so TargetingArrows draws an arrow
+            val triggeringId = triggeredAbility.triggeringEntityId
+            val triggeredTargets = if (triggeringId != null
+                && state.getBattlefield().contains(triggeringId)
+                && targets.none { it is ClientChosenTarget.Permanent && it.entityId == triggeringId }
+            ) {
+                targets + ClientChosenTarget.Permanent(triggeringId)
+            } else {
+                targets
+            }
+
             // Find the source entity's current zone (for graveyard trigger styling)
             val sourceZone = findEntityZone(state, triggeredAbility.sourceId)
 
@@ -355,7 +366,7 @@ class ClientStateTransformer(
                 attachedTo = null,
                 attachments = emptyList(),
                 isFaceDown = false,
-                targets = targets,
+                targets = triggeredTargets,
                 imageUri = cardDef?.metadata?.imageUri,
                 sourceZone = sourceZone
             )
@@ -588,6 +599,10 @@ class ClientStateTransformer(
         // Build active effects from floating effects
         val activeEffects = buildCardActiveEffects(state, entityId)
 
+        // Check if this card is playable from exile (impulse draw like Mind's Desire)
+        val playableFromExile = zoneKey.zoneType == Zone.EXILE &&
+            container.get<MayPlayFromExileComponent>()?.controllerId == viewingPlayerId
+
         return ClientCard(
             id = entityId,
             name = cardComponent.name,
@@ -632,6 +647,7 @@ class ClientStateTransformer(
             chosenCreatureType = chosenCreatureType,
             chosenColor = chosenColor,
             sacrificedCreatureTypes = sacrificedCreatureTypes,
+            playableFromExile = playableFromExile,
             stackText = if (zoneKey.zoneType == Zone.STACK && spellOnStack != null && cardDef != null) {
                 when {
                     spellOnStack.castFaceDown -> "Cast as a face-down 2/2 creature"

@@ -35,6 +35,8 @@ import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
+import com.wingedsheep.engine.state.components.identity.MayPlayFromExileComponent
+import com.wingedsheep.engine.state.components.identity.PlayWithoutPayingCostComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.player.ManaPoolComponent
 import com.wingedsheep.sdk.core.Color
@@ -98,7 +100,8 @@ class CastSpellHandler(
         val handZone = ZoneKey(action.playerId, Zone.HAND)
         val inHand = action.cardId in state.getZone(handZone)
         val onTopOfLibrary = !inHand && isOnTopOfLibraryWithPermission(state, action.playerId, action.cardId)
-        if (!inHand && !onTopOfLibrary) {
+        val mayPlayFromExile = !inHand && !onTopOfLibrary && isInExileWithPlayPermission(state, action.playerId, action.cardId)
+        if (!inHand && !onTopOfLibrary && !mayPlayFromExile) {
             return "Card is not in your hand"
         }
 
@@ -140,8 +143,11 @@ class CastSpellHandler(
             }
         }
 
-        // Calculate effective cost
-        val effectiveCost = if (cardDef != null) {
+        // Calculate effective cost (free if PlayWithoutPayingCostComponent is present)
+        val playForFree = hasPlayWithoutPayingCost(state, action.playerId, action.cardId)
+        val effectiveCost = if (playForFree) {
+            ManaCost.ZERO
+        } else if (cardDef != null) {
             costCalculator.calculateEffectiveCost(state, cardDef, action.playerId)
         } else {
             cardComponent.manaCost
@@ -403,8 +409,11 @@ class CastSpellHandler(
         val xValue = action.xValue ?: 0
         val cardDef = cardRegistry?.getCard(cardComponent.cardDefinitionId)
 
-        // Calculate effective cost
-        var effectiveCost = if (action.castFaceDown) {
+        // Calculate effective cost (free if PlayWithoutPayingCostComponent is present)
+        val playForFreeInExecute = hasPlayWithoutPayingCost(currentState, action.playerId, action.cardId)
+        var effectiveCost = if (playForFreeInExecute) {
+            ManaCost.ZERO
+        } else if (action.castFaceDown) {
             costCalculator.calculateFaceDownCost(currentState, action.playerId)
         } else if (cardDef != null) {
             costCalculator.calculateEffectiveCost(currentState, cardDef, action.playerId)
@@ -1028,6 +1037,34 @@ class CastSpellHandler(
         val library = state.getLibrary(playerId)
         if (library.isEmpty() || library.first() != cardId) return false
         return hasPlayFromTopOfLibrary(state, playerId)
+    }
+
+    /**
+     * Check if a card is in exile and has MayPlayFromExileComponent granting
+     * the player permission to play it from exile.
+     */
+    private fun isInExileWithPlayPermission(
+        state: GameState,
+        playerId: EntityId,
+        cardId: EntityId
+    ): Boolean {
+        val exileZone = ZoneKey(playerId, Zone.EXILE)
+        if (cardId !in state.getZone(exileZone)) return false
+        val component = state.getEntity(cardId)?.get<MayPlayFromExileComponent>()
+        return component?.controllerId == playerId
+    }
+
+    /**
+     * Check if a card has PlayWithoutPayingCostComponent granting
+     * the player permission to play it without paying its mana cost.
+     */
+    private fun hasPlayWithoutPayingCost(
+        state: GameState,
+        playerId: EntityId,
+        cardId: EntityId
+    ): Boolean {
+        val component = state.getEntity(cardId)?.get<PlayWithoutPayingCostComponent>()
+        return component?.controllerId == playerId
     }
 
     private fun hasPlayFromTopOfLibrary(state: GameState, playerId: EntityId): Boolean {

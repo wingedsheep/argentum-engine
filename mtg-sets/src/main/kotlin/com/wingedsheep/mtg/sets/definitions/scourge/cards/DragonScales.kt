@@ -48,7 +48,11 @@ val DragonScales = card("Dragon Scales") {
             binding = TriggerBinding.ANY
         )
         triggerZone = Zone.GRAVEYARD
-        effect = MayEffect(Effects.ReturnSelfToBattlefieldAttached())
+        effect = MayEffect(
+            effect = Effects.ReturnSelfToBattlefieldAttached(),
+            description_override = "Attach Dragon Scales to this creature?",
+            sourceRequiredZone = Zone.GRAVEYARD
+        )
     }
 
     metadata {

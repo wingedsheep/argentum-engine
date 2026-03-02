@@ -154,9 +154,11 @@ export function TargetingArrows() {
   const [arrows, setArrows] = useState<TargetArrow[]>([])
 
   // Hide arrows during full-screen overlay decisions (e.g., ChooseColorDecision)
+  // Keep arrows visible for inline trigger YesNo decisions (rendered on the card, not as overlay)
   const hasOverlayDecision = pendingDecision != null &&
     pendingDecision.type !== 'ChooseTargetsDecision' &&
-    !(pendingDecision.type === 'SelectCardsDecision' && pendingDecision.useTargetingUI)
+    !(pendingDecision.type === 'SelectCardsDecision' && pendingDecision.useTargetingUI) &&
+    !(pendingDecision.type === 'YesNoDecision' && !!pendingDecision.context.triggeringEntityId)
 
   // Update arrow positions periodically
   useEffect(() => {
