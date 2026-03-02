@@ -28,6 +28,8 @@ object KhansOfTarkirSet {
         JeskaiStudent,
         MarduHateblade,
 
+        VenerableLammasu,
+
         // White spells
         DefiantStrike,
         Erase,

@@ -2,11 +2,11 @@
 
 **Set Size:** 269 cards (249 unique card names + basic land variants)
 **Release Date:** September 26, 2014
-**Implemented:** 71 / 249
+**Implemented:** 72 / 249
 
 | Color      | Count |
 |------------|-------|
-| White      | 11    |
+| White      | 12    |
 | Blue       | 12    |
 | Black      | 12    |
 | Red        | 12    |
@@ -247,7 +247,7 @@
 - [x] Unyielding Krumar
 - [x] Utter End
 - [x] Valley Dasher
-- [ ] Venerable Lammasu
+- [x] Venerable Lammasu
 - [ ] Villainous Wealth
 - [ ] War Behemoth
 - [ ] Warden of the Eye
