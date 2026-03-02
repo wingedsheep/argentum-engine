@@ -724,18 +724,21 @@ data class GrantProtection(
 /**
  * Grants a keyword to all creatures that have a specific counter type.
  * Used for Aurification: "Each creature with a gold counter on it has defender."
+ * With [controllerOnly] = true, only affects creatures you control (e.g., outlast lords).
  *
  * @property keyword The keyword to grant
  * @property counterType The counter type that creatures must have
+ * @property controllerOnly If true, only affects creatures you control
  */
 @SerialName("GrantKeywordByCounter")
 @Serializable
 data class GrantKeywordByCounter(
     val keyword: Keyword,
-    val counterType: String
+    val counterType: String,
+    val controllerOnly: Boolean = false
 ) : StaticAbility {
     override val description: String =
-        "Each creature with a $counterType counter on it has ${keyword.name.lowercase().replace('_', ' ')}"
+        "Each creature ${if (controllerOnly) "you control " else ""}with a $counterType counter on it has ${keyword.name.lowercase().replace('_', ' ')}"
 }
 
 /**

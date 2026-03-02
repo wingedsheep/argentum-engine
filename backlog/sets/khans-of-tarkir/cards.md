@@ -2,15 +2,15 @@
 
 **Set Size:** 269 cards (249 unique card names + basic land variants)
 **Release Date:** September 26, 2014
-**Implemented:** 74 / 249
+**Implemented:** 79 / 249
 
 | Color      | Count |
 |------------|-------|
-| White      | 12    |
-| Blue       | 12    |
+| White      | 13    |
+| Blue       | 13    |
 | Black      | 13    |
-| Red        | 12    |
-| Green      | 12    |
+| Red        | 14    |
+| Green      | 13    |
 | Multicolor | 7     |
 | Colorless  | 3     |
 | Land       | 3     |
@@ -25,8 +25,8 @@
 - [ ] Abzan Falconer
 - [ ] Abzan Guide
 - [ ] Act of Treason
-- [ ] Ainok Bond-Kin
-- [ ] Ainok Tracker
+- [x] Ainok Bond-Kin
+- [x] Ainok Tracker
 - [x] Alabaster Kirin
 - [x] Alpine Grizzly
 - [ ] Altar of the Brood
@@ -134,7 +134,7 @@
 - [ ] Krumar Bond-Kin
 - [x] Leaping Master
 - [ ] Lens of Clarity
-- [ ] Longshot Squad
+- [x] Longshot Squad
 - [ ] Mantis Rider
 - [ ] Mardu Ascendancy
 - [x] Mardu Banner
@@ -201,7 +201,7 @@
 - [ ] See the Unwritten
 - [ ] Set Adrift
 - [ ] Shambling Attendants
-- [ ] Shatter
+- [x] Shatter
 - [ ] Sidisi, Brood Tyrant
 - [x] Sidisi's Pet
 - [x] Siegecraft
@@ -224,7 +224,7 @@
 - [ ] Swarm of Bloodflies
 - [ ] Swift Kick
 - [ ] Swiftwater Cliffs
-- [ ] Taigam's Scheming
+- [x] Taigam's Scheming
 - [x] Take Up Arms
 - [ ] Temur Ascendancy
 - [ ] Temur Banner

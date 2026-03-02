@@ -277,7 +277,10 @@ class StaticAbilityHandler(
                     layer = Layer.ABILITY,
                     sublayer = null,
                     modification = Modification.GrantKeyword(ability.keyword.name),
-                    affectsFilter = AffectsFilter.CreaturesWithCounter(ability.counterType)
+                    affectsFilter = if (ability.controllerOnly)
+                        AffectsFilter.OwnCreaturesWithCounter(ability.counterType)
+                    else
+                        AffectsFilter.CreaturesWithCounter(ability.counterType)
                 )
             }
             is AddCreatureTypeByCounter -> {

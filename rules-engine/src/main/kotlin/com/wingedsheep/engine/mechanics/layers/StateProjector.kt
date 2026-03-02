@@ -508,23 +508,27 @@ class StateProjector(
                 }.toSet()
             }
             is AffectsFilter.CreaturesWithCounter -> {
-                val counterType = try {
-                    CounterType.valueOf(
-                        filter.counterType.uppercase()
-                            .replace(' ', '_')
-                            .replace('+', 'P')
-                            .replace('-', 'M')
-                            .replace("/", "_")
-                    )
-                } catch (e: IllegalArgumentException) {
-                    return emptySet()
-                }
+                val counterType = parseCounterType(filter.counterType) ?: return emptySet()
                 state.getBattlefield().filter { entityId ->
                     val container = state.getEntity(entityId) ?: return@filter false
                     val card = container.get<CardComponent>() ?: return@filter false
                     val counters = container.get<CountersComponent>()
                     // Face-down permanents are always creatures (Rule 707.2)
                     (card.typeLine.isCreature || container.has<FaceDownComponent>()) && (counters?.getCount(counterType) ?: 0) > 0
+                }.toSet()
+            }
+            is AffectsFilter.OwnCreaturesWithCounter -> {
+                val counterType = parseCounterType(filter.counterType) ?: return emptySet()
+                val sourceController = state.getEntity(sourceId)
+                    ?.get<ControllerComponent>()?.playerId ?: return emptySet()
+                state.getBattlefield().filter { entityId ->
+                    val container = state.getEntity(entityId) ?: return@filter false
+                    val card = container.get<CardComponent>() ?: return@filter false
+                    val counters = container.get<CountersComponent>()
+                    val controller = container.get<ControllerComponent>()?.playerId
+                    controller == sourceController &&
+                        (card.typeLine.isCreature || container.has<FaceDownComponent>()) &&
+                        (counters?.getCount(counterType) ?: 0) > 0
                 }.toSet()
             }
             is AffectsFilter.ChosenCreatureTypeCreatures -> {
@@ -799,6 +803,19 @@ class StateProjector(
      * Check if an AffectsFilter depends on creature subtypes.
      * These filters need re-resolution after Layer 4 type-changing effects.
      */
+    private fun parseCounterType(counterTypeString: String): CounterType? {
+        // Handle well-known counter type strings directly
+        return when (counterTypeString) {
+            "+1/+1" -> CounterType.PLUS_ONE_PLUS_ONE
+            "-1/-1" -> CounterType.MINUS_ONE_MINUS_ONE
+            else -> try {
+                CounterType.valueOf(counterTypeString.uppercase().replace(' ', '_'))
+            } catch (e: IllegalArgumentException) {
+                null
+            }
+        }
+    }
+
     private fun isSubtypeDependentFilter(filter: AffectsFilter): Boolean {
         return filter is AffectsFilter.OtherCreaturesWithSubtype ||
             filter is AffectsFilter.WithSubtype ||
@@ -1129,6 +1146,13 @@ sealed interface AffectsFilter {
      */
     @Serializable
     data class CreaturesWithCounter(val counterType: String) : AffectsFilter
+
+    /**
+     * All creatures you control that have a specific counter type.
+     * Used for outlast lords: "Each creature you control with a +1/+1 counter on it has reach."
+     */
+    @Serializable
+    data class OwnCreaturesWithCounter(val counterType: String) : AffectsFilter
 
     /**
      * All face-down creatures.

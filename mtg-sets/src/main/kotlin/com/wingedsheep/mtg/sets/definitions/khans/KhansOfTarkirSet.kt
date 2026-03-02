@@ -22,6 +22,7 @@ object KhansOfTarkirSet {
      */
     val allCards = listOf(
         // White creatures
+        AinokBondKin,
         AlabasterKirin,
         DazzlingRamparts,
         FirehoofCavalry,
@@ -52,6 +53,7 @@ object KhansOfTarkirSet {
         Cancel,
         CripplingChill,
         DisdainfulStroke,
+        TaigamsScheming,
         WeaveFate,
 
         // Black creatures
@@ -76,6 +78,7 @@ object KhansOfTarkirSet {
         HeirOfTheWilds,
         HighlandGame,
         HootingMandrills,
+        LongshotSquad,
         TuskedColossodon,
         WoollyLoxodon,
 
@@ -88,6 +91,7 @@ object KhansOfTarkirSet {
         Windstorm,
 
         // Red creatures
+        AinokTracker,
         BloodfireExpert,
         BloodfireMentor,
         CanyonLurkers,
@@ -100,6 +104,7 @@ object KhansOfTarkirSet {
         // Red spells
         BringLow,
         HordelingOutburst,
+        Shatter,
         TormentingVoice,
         TrumpetBlast,
 
