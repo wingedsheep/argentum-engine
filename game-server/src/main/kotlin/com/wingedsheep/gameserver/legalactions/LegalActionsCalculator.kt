@@ -51,6 +51,7 @@ import com.wingedsheep.sdk.scripting.GrantFlashToSpellType
 import com.wingedsheep.sdk.scripting.PlayFromTopOfLibrary
 import com.wingedsheep.sdk.scripting.PreventCycling
 import com.wingedsheep.sdk.scripting.effects.AddAnyColorManaEffect
+import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import com.wingedsheep.sdk.scripting.targets.*
 import org.slf4j.LoggerFactory
@@ -985,7 +986,8 @@ class LegalActionsCalculator(
                     action = ActivateAbility(playerId, entityId, ability.id),
                     isManaAbility = true,
                     additionalCostInfo = costInfo,
-                    requiresManaColorChoice = ability.effect is AddAnyColorManaEffect
+                    requiresManaColorChoice = ability.effect is AddAnyColorManaEffect ||
+                        (ability.effect is CompositeEffect && (ability.effect as CompositeEffect).effects.any { it is AddAnyColorManaEffect })
                 ))
             }
         }

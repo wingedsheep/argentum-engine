@@ -44,6 +44,7 @@ import com.wingedsheep.sdk.scripting.TimingRule
 import com.wingedsheep.sdk.scripting.effects.AddAnyColorManaEffect
 import com.wingedsheep.sdk.scripting.effects.AddColorlessManaEffect
 import com.wingedsheep.sdk.scripting.effects.AddManaEffect
+import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.AdditionalManaOnTap
 import com.wingedsheep.engine.handlers.CostPaymentChoices
 import com.wingedsheep.engine.state.components.identity.OwnerComponent
@@ -438,6 +439,26 @@ class ActivateAbilityHandler(
                         green = if (chosenColor == Color.GREEN) amount else 0,
                         colorless = 0
                     )
+                }
+                is CompositeEffect -> {
+                    val anyColorEffect = effect.effects.filterIsInstance<AddAnyColorManaEffect>().firstOrNull()
+                    if (anyColorEffect != null) {
+                        val chosenColor = action.manaColorChoice ?: Color.GREEN
+                        val amount = dynamicAmountEvaluator.evaluate(state, anyColorEffect.amount, context)
+                        ManaAddedEvent(
+                            playerId = action.playerId,
+                            sourceId = action.sourceId,
+                            sourceName = cardComponent.name,
+                            white = if (chosenColor == Color.WHITE) amount else 0,
+                            blue = if (chosenColor == Color.BLUE) amount else 0,
+                            black = if (chosenColor == Color.BLACK) amount else 0,
+                            red = if (chosenColor == Color.RED) amount else 0,
+                            green = if (chosenColor == Color.GREEN) amount else 0,
+                            colorless = 0
+                        )
+                    } else {
+                        null
+                    }
                 }
                 else -> null
             }
