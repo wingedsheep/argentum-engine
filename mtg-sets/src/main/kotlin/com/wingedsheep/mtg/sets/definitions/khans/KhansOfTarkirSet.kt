@@ -57,6 +57,7 @@ object KhansOfTarkirSet {
         WeaveFate,
 
         // Black creatures
+        DisownedAncestor,
         BellowingSaddlebrute,
         GurmagSwiftwing,
         RottingMastodon,
