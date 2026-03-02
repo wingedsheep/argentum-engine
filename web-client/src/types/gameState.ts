@@ -174,6 +174,9 @@ export interface ClientCard {
 
   /** Revealed image URI for face-down creatures that this player has peeked at */
   readonly revealedImageUri?: string | null
+
+  /** Whether this card can be played from exile (e.g., Mind's Desire impulse draw) */
+  readonly playableFromExile?: boolean
 }
 
 /**

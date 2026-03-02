@@ -194,7 +194,10 @@ data class ClientCard(
     val revealedName: String? = null,
 
     /** Revealed image URI for face-down creatures that this player has peeked at */
-    val revealedImageUri: String? = null
+    val revealedImageUri: String? = null,
+
+    /** Whether this card can be played from exile (e.g., Mind's Desire impulse draw) */
+    val playableFromExile: Boolean = false
 )
 
 /**

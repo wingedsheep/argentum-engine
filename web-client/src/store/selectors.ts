@@ -8,7 +8,7 @@ import type {
   LegalActionInfo,
   ZoneId,
 } from '../types'
-import { ZoneType, zoneIdEquals, graveyard, library } from '../types'
+import { ZoneType, zoneIdEquals, graveyard, library, exile } from '../types'
 
 /**
  * Select the game state (works for both normal play and spectating).
@@ -512,13 +512,15 @@ export function useGhostCards(playerId: EntityId | null): readonly ClientCard[] 
     }
 
     // 3. Exile cards playable via Mind's Desire-like effects
-    for (const actionInfo of legalActions) {
-      if (actionInfo.sourceZone !== 'EXILE') continue
-      const action = actionInfo.action
-      if (action.type === 'CastSpell') {
-        ghostCardIds.add(action.cardId)
-      } else if (action.type === 'PlayLand') {
-        ghostCardIds.add(action.cardId)
+    // Show all exile cards with playableFromExile flag, even if no legal action exists yet
+    const exileZoneId = exile(playerId)
+    const exileZone = gameState.zones.find((z) => zoneIdEquals(z.zoneId, exileZoneId))
+    if (exileZone && exileZone.cardIds && exileZone.cardIds.length > 0) {
+      for (const cardId of exileZone.cardIds) {
+        const card = gameState.cards[cardId]
+        if (card?.playableFromExile) {
+          ghostCardIds.add(cardId)
+        }
       }
     }
 

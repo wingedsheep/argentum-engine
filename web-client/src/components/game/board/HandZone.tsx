@@ -71,7 +71,7 @@ export function CardRow({
   const hasRevealedCards = faceDown && cards.length > 0
   const shouldShowFan = isPlayerHand || isOpponentHand || isSpectatorBottomHand
 
-  if (shouldShowFan && (cards.length > 0 || showPlaceholders || unrevealedCount > 0)) {
+  if (shouldShowFan && (cards.length > 0 || showPlaceholders || unrevealedCount > 0 || ghostCards.length > 0)) {
     return (
       <HandFan
         cards={cards}

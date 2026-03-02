@@ -599,6 +599,10 @@ class ClientStateTransformer(
         // Build active effects from floating effects
         val activeEffects = buildCardActiveEffects(state, entityId)
 
+        // Check if this card is playable from exile (impulse draw like Mind's Desire)
+        val playableFromExile = zoneKey.zoneType == Zone.EXILE &&
+            container.get<MayPlayFromExileComponent>()?.controllerId == viewingPlayerId
+
         return ClientCard(
             id = entityId,
             name = cardComponent.name,
@@ -643,6 +647,7 @@ class ClientStateTransformer(
             chosenCreatureType = chosenCreatureType,
             chosenColor = chosenColor,
             sacrificedCreatureTypes = sacrificedCreatureTypes,
+            playableFromExile = playableFromExile,
             stackText = if (zoneKey.zoneType == Zone.STACK && spellOnStack != null && cardDef != null) {
                 when {
                     spellOnStack.castFaceDown -> "Cast as a face-down 2/2 creature"
