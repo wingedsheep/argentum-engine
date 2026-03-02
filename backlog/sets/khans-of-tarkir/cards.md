@@ -2,11 +2,11 @@
 
 **Set Size:** 269 cards (249 unique card names + basic land variants)
 **Release Date:** September 26, 2014
-**Implemented:** 77 / 249
+**Implemented:** 78 / 249
 
 | Color      | Count |
 |------------|-------|
-| White      | 12    |
+| White      | 13    |
 | Blue       | 13    |
 | Black      | 13    |
 | Red        | 13    |
@@ -25,7 +25,7 @@
 - [ ] Abzan Falconer
 - [ ] Abzan Guide
 - [ ] Act of Treason
-- [ ] Ainok Bond-Kin
+- [x] Ainok Bond-Kin
 - [ ] Ainok Tracker
 - [x] Alabaster Kirin
 - [x] Alpine Grizzly
