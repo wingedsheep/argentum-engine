@@ -2,13 +2,13 @@
 
 **Set Size:** 145 cards
 **Release Date:** February 3, 2003
-**Implemented:** 107 / 145
+**Implemented:** 108 / 145
 
 | Color      | Count |
 |------------|-------|
 | White      | 21/29 |
 | Blue       | 21/29 |
-| Black      | 21/29 |
+| Black      | 22/29 |
 | Red        | 22/29 |
 | Green      | 22/29 |
 
@@ -45,7 +45,7 @@
 - [x] Daru Mender
 - [x] Daru Sanctifier
 - [x] Daru Stinger
-- [ ] Deathmark Prelate
+- [x] Deathmark Prelate
 - [x] Defender of the Order
 - [x] Defiant Elf
 - [x] Deftblade Elite
