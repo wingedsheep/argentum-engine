@@ -2,7 +2,7 @@
 
 **Set Size:** 269 cards (249 unique card names + basic land variants)
 **Release Date:** September 26, 2014
-**Implemented:** 72 / 249
+**Implemented:** 73 / 249
 
 | Color      | Count |
 |------------|-------|
@@ -10,7 +10,7 @@
 | Blue       | 12    |
 | Black      | 12    |
 | Red        | 12    |
-| Green      | 11    |
+| Green      | 12    |
 | Multicolor | 7     |
 | Colorless  | 3     |
 | Land       | 3     |
@@ -258,7 +258,7 @@
 - [x] Wetland Sambar
 - [x] Whirlwind Adept
 - [x] Wind-Scarred Crag
-- [ ] Windstorm
+- [x] Windstorm
 - [ ] Windswept Heath
 - [ ] Wingmate Roc
 - [x] Winterflame

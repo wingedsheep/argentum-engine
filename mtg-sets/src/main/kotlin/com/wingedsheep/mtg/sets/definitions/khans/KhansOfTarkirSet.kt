@@ -84,6 +84,7 @@ object KhansOfTarkirSet {
         FeedTheClan,
         Naturalize,
         SavagePunch,
+        Windstorm,
 
         // Red creatures
         BloodfireExpert,
