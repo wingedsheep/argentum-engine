@@ -32,6 +32,7 @@ object LegionsSet {
         DaruStinger,
         DefenderOfTheOrder,
         DeftbladeElite,
+        EssenceSliver,
         GempalmAvenger,
         Glowrider,
         LiegeOfTheAxe,

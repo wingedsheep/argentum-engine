@@ -2,11 +2,11 @@
 
 **Set Size:** 145 cards
 **Release Date:** February 3, 2003
-**Implemented:** 110 / 145
+**Implemented:** 111 / 145
 
 | Color      | Count |
 |------------|-------|
-| White      | 22/29 |
+| White      | 23/29 |
 | Blue       | 22/29 |
 | Black      | 22/29 |
 | Red        | 22/29 |
@@ -58,7 +58,7 @@
 - [x] Elvish Soultiller
 - [x] Embalmed Brawler
 - [x] Enormous Baloth
-- [ ] Essence Sliver
+- [x] Essence Sliver
 - [x] Feral Throwback
 - [x] Flamewave Invoker
 - [x] Frenetic Raptor
