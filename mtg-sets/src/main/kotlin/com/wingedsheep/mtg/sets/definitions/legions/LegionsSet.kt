@@ -102,6 +102,7 @@ object LegionsSet {
         CrestedCraghorn,
         HunterSliver,
         FlamewaveInvoker,
+        GoblinClearcutter,
         GoblinDynamo,
         GoblinGoon,
         GoblinLookout,

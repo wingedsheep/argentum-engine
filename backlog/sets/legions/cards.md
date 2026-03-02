@@ -2,14 +2,14 @@
 
 **Set Size:** 145 cards
 **Release Date:** February 3, 2003
-**Implemented:** 111 / 145
+**Implemented:** 112 / 145
 
 | Color      | Count |
 |------------|-------|
 | White      | 23/29 |
 | Blue       | 22/29 |
 | Black      | 22/29 |
-| Red        | 22/29 |
+| Red        | 23/29 |
 | Green      | 22/29 |
 
 ---
@@ -73,7 +73,7 @@
 - [x] Glowering Rogon
 - [x] Glowrider
 - [ ] Goblin Assassin
-- [ ] Goblin Clearcutter
+- [x] Goblin Clearcutter
 - [x] Goblin Dynamo
 - [x] Goblin Firebug
 - [x] Goblin Goon
