@@ -24,12 +24,11 @@ export function StackDisplay() {
   const pendingDecision = useGameStore((state) => state.pendingDecision)
   const gameState = useGameStore((state) => state.gameState)
 
-  // Combat trigger YesNo: show source card in stack area
-  const isCombatTriggerYesNo = pendingDecision?.type === 'YesNoDecision'
+  // Trigger YesNo: show source card in stack area when a triggered ability has a triggering entity
+  const isTriggerYesNo = pendingDecision?.type === 'YesNoDecision'
     && !!pendingDecision.context.triggeringEntityId
-    && !!gameState?.combat
 
-  const showStack = stackCards.length > 0 || isCombatTriggerYesNo
+  const showStack = stackCards.length > 0 || isTriggerYesNo
   if (!showStack) return null
 
   const handleStackItemClick = (cardId: EntityId) => {
@@ -61,7 +60,7 @@ export function StackDisplay() {
   const topCard = stackCards[stackCards.length - 1]
 
   // Get source card info for combat trigger
-  const sourceCard = isCombatTriggerYesNo && pendingDecision?.type === 'YesNoDecision'
+  const sourceCard = isTriggerYesNo && pendingDecision?.type === 'YesNoDecision'
     ? (() => {
         const sourceId = pendingDecision.context.sourceId
         return sourceId ? gameState?.cards[sourceId] : null
@@ -219,8 +218,8 @@ export function StackDisplay() {
         </>
       )}
 
-      {/* Combat trigger indicator - shows source card and prompt when YesNo is pending */}
-      {isCombatTriggerYesNo && pendingDecision?.type === 'YesNoDecision' && (
+      {/* Trigger indicator - shows source card and prompt when YesNo is pending */}
+      {isTriggerYesNo && pendingDecision?.type === 'YesNoDecision' && (
         <div style={{
           display: 'flex',
           flexDirection: 'column',

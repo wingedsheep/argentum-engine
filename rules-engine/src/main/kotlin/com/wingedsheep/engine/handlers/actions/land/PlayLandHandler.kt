@@ -12,6 +12,7 @@ import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
+import com.wingedsheep.engine.state.components.identity.MayPlayFromExileComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.player.LandDropsComponent
 import com.wingedsheep.sdk.core.Zone
@@ -62,11 +63,12 @@ class PlayLandHandler(
             return "You can only play land cards as lands"
         }
 
-        // Check card is in hand or on top of library with PlayFromTopOfLibrary
+        // Check card is in hand, on top of library with PlayFromTopOfLibrary, or in exile with MayPlayFromExileComponent
         val handZone = ZoneKey(action.playerId, Zone.HAND)
         val inHand = action.cardId in state.getZone(handZone)
         val onTopOfLibrary = !inHand && isOnTopOfLibraryWithPermission(state, action.playerId, action.cardId)
-        if (!inHand && !onTopOfLibrary) {
+        val mayPlayFromExile = !inHand && !onTopOfLibrary && isInExileWithPlayPermission(state, action.playerId, action.cardId)
+        if (!inHand && !onTopOfLibrary && !mayPlayFromExile) {
             return "Land is not in your hand"
         }
 
@@ -82,11 +84,17 @@ class PlayLandHandler(
 
         var newState = state
 
-        // Remove from hand or library (whichever zone the card is in)
+        // Remove from hand, library, or exile (whichever zone the card is in)
         val handZone = ZoneKey(action.playerId, Zone.HAND)
         val libraryZone = ZoneKey(action.playerId, Zone.LIBRARY)
-        val fromZone = if (action.cardId in state.getZone(handZone)) Zone.HAND else Zone.LIBRARY
-        val sourceZoneKey = if (fromZone == Zone.HAND) handZone else libraryZone
+        val exileZone = ZoneKey(action.playerId, Zone.EXILE)
+        val fromZone = when {
+            action.cardId in state.getZone(handZone) -> Zone.HAND
+            action.cardId in state.getZone(libraryZone) -> Zone.LIBRARY
+            action.cardId in state.getZone(exileZone) -> Zone.EXILE
+            else -> Zone.HAND
+        }
+        val sourceZoneKey = ZoneKey(action.playerId, fromZone)
         newState = newState.removeFromZone(sourceZoneKey, action.cardId)
 
         // Add to battlefield
@@ -153,6 +161,17 @@ class PlayLandHandler(
         val library = state.getLibrary(playerId)
         if (library.isEmpty() || library.first() != cardId) return false
         return hasPlayFromTopOfLibrary(state, playerId)
+    }
+
+    private fun isInExileWithPlayPermission(
+        state: GameState,
+        playerId: EntityId,
+        cardId: EntityId
+    ): Boolean {
+        val exileZone = ZoneKey(playerId, Zone.EXILE)
+        if (cardId !in state.getZone(exileZone)) return false
+        val component = state.getEntity(cardId)?.get<MayPlayFromExileComponent>()
+        return component?.controllerId == playerId
     }
 
     private fun hasPlayFromTopOfLibrary(state: GameState, playerId: EntityId): Boolean {

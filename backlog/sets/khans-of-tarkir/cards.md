@@ -2,13 +2,13 @@
 
 **Set Size:** 269 cards (249 unique card names + basic land variants)
 **Release Date:** September 26, 2014
-**Implemented:** 67 / 249
+**Implemented:** 68 / 249
 
 | Color      | Count |
 |------------|-------|
 | White      | 11    |
 | Blue       | 11    |
-| Black      | 10    |
+| Black      | 11    |
 | Red        | 11    |
 | Green      | 11    |
 | Multicolor | 7     |
@@ -170,7 +170,7 @@
 - [ ] Quiet Contemplation
 - [ ] Raiders' Spoils
 - [ ] Rakshasa Deathdealer
-- [ ] Rakshasa's Secret
+- [x] Rakshasa's Secret
 - [ ] Rakshasa Vizier
 - [ ] Rattleclaw Mystic
 - [ ] Retribution of the Ancients

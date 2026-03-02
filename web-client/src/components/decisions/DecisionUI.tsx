@@ -80,10 +80,10 @@ export function DecisionUI() {
 
   // Handle YesNoDecision (e.g., "You may shuffle your library")
   if (pendingDecision.type === 'YesNoDecision') {
-    // Combat trigger with a triggering entity that is a battlefield card:
-    // rendered inline on the card (GameCard + GameBoard prompt bar)
-    if (pendingDecision.context.triggeringEntityId && gameState?.combat) {
-      const triggeringCard = gameState.cards[pendingDecision.context.triggeringEntityId]
+    // Trigger with a triggering entity that is a battlefield card:
+    // rendered inline on the card (GameCard + StackZone resolving section)
+    if (pendingDecision.context.triggeringEntityId) {
+      const triggeringCard = gameState?.cards[pendingDecision.context.triggeringEntityId]
       if (triggeringCard?.zone?.zoneType === ZoneType.BATTLEFIELD) {
         return null
       }

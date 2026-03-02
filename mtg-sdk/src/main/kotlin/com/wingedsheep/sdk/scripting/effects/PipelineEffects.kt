@@ -419,3 +419,40 @@ data class SelectTargetEffect(
 ) : Effect {
     override val description: String = "Choose ${requirement.description}"
 }
+
+/**
+ * Grant "may play from exile" permission to all cards in a named collection.
+ * The cards must already be in exile. This adds a MayPlayFromExileComponent,
+ * allowing the controller to play them as if they were in hand until end of turn.
+ *
+ * Does NOT waive the mana cost — pair with [GrantPlayWithoutPayingCostEffect]
+ * to also make them free. Used by impulse-draw effects (Chandra, Act on Impulse, etc.).
+ *
+ * @property from Name of the collection containing the exiled card(s)
+ */
+@SerialName("GrantMayPlayFromExile")
+@Serializable
+data class GrantMayPlayFromExileEffect(
+    val from: String
+) : Effect {
+    override val description: String =
+        "Until end of turn, you may play the $from cards from exile"
+}
+
+/**
+ * Grant "play without paying mana cost" permission to all cards in a named
+ * collection until end of turn. Adds a PlayWithoutPayingCostComponent.
+ *
+ * The card must still be in a playable zone (hand, or exile with
+ * [GrantMayPlayFromExileEffect]). Used by Mind's Desire, Cascade, etc.
+ *
+ * @property from Name of the collection containing the card(s)
+ */
+@SerialName("GrantPlayWithoutPayingCost")
+@Serializable
+data class GrantPlayWithoutPayingCostEffect(
+    val from: String
+) : Effect {
+    override val description: String =
+        "Until end of turn, you may play the $from cards without paying their mana costs"
+}

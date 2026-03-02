@@ -8,7 +8,7 @@ import type {
   LegalActionInfo,
   ZoneId,
 } from '../types'
-import { ZoneType, zoneIdEquals, graveyard, library } from '../types'
+import { ZoneType, zoneIdEquals, graveyard, library, exile } from '../types'
 
 /**
  * Select the game state (works for both normal play and spectating).
@@ -471,7 +471,8 @@ export function useGroupedZoneCards(zoneId: ZoneId): readonly GroupedCard[] {
 
 /**
  * Hook to get "ghost" cards — graveyard cards that have legal activated abilities,
- * and top-of-library cards playable via Future Sight-like effects.
+ * top-of-library cards playable via Future Sight-like effects, and exile cards
+ * playable via Mind's Desire-like effects.
  * These are shown as translucent cards appended to the player's hand for discoverability.
  * Excludes simple mana abilities and unaffordable actions (same filtering as useHasLegalActions).
  */
@@ -507,6 +508,19 @@ export function useGhostCards(playerId: EntityId | null): readonly ClientCard[] 
       const topCardId = libZone.cardIds[0]!
       if (gameState.cards[topCardId]) {
         ghostCardIds.add(topCardId)
+      }
+    }
+
+    // 3. Exile cards playable via Mind's Desire-like effects
+    // Show all exile cards with playableFromExile flag, even if no legal action exists yet
+    const exileZoneId = exile(playerId)
+    const exileZone = gameState.zones.find((z) => zoneIdEquals(z.zoneId, exileZoneId))
+    if (exileZone && exileZone.cardIds && exileZone.cardIds.length > 0) {
+      for (const cardId of exileZone.cardIds) {
+        const card = gameState.cards[cardId]
+        if (card?.playableFromExile) {
+          ghostCardIds.add(cardId)
+        }
       }
     }
 

@@ -19,6 +19,8 @@ import com.wingedsheep.sdk.scripting.effects.ForEachPlayerEffect
 import com.wingedsheep.sdk.scripting.effects.ForEachTargetEffect
 import com.wingedsheep.sdk.scripting.effects.GainLifeEffect
 import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
+import com.wingedsheep.sdk.scripting.effects.GrantMayPlayFromExileEffect
+import com.wingedsheep.sdk.scripting.effects.GrantPlayWithoutPayingCostEffect
 import com.wingedsheep.sdk.scripting.effects.ModifyStatsEffect
 import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
@@ -1559,4 +1561,27 @@ object EffectPatterns {
         }
         else -> Chooser.Controller
     }
+
+    /**
+     * Shuffle your library, then exile the top card. Until end of turn,
+     * you may play that card without paying its mana cost.
+     *
+     * Pipeline: ShuffleLibrary → GatherCards(top 1) → MoveCollection(exile)
+     *           → GrantMayPlayFromExile → GrantPlayWithoutPayingCost
+     *
+     * Used by Mind's Desire.
+     */
+    fun shuffleAndExileTopPlayFree(): Effect = CompositeEffect(listOf(
+        ShuffleLibraryEffect(),
+        GatherCardsEffect(
+            source = CardSource.TopOfLibrary(DynamicAmount.Fixed(1)),
+            storeAs = "exiledCard"
+        ),
+        MoveCollectionEffect(
+            from = "exiledCard",
+            destination = CardDestination.ToZone(Zone.EXILE)
+        ),
+        GrantMayPlayFromExileEffect("exiledCard"),
+        GrantPlayWithoutPayingCostEffect("exiledCard")
+    ))
 }

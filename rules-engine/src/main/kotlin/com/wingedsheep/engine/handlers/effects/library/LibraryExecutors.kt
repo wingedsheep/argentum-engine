@@ -14,6 +14,8 @@ class LibraryExecutors(
 ) : ExecutorModule {
     override fun executors(): List<EffectExecutor<*>> = listOf(
         ShuffleLibraryExecutor(),
+        GrantMayPlayFromExileExecutor(),
+        GrantPlayWithoutPayingCostExecutor(),
         RevealUntilExecutor(),
         PutCreatureFromHandSharingTypeExecutor(),
         ChooseCreatureTypePipelineExecutor(),

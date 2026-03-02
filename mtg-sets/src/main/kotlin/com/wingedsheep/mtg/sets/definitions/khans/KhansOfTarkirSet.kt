@@ -63,6 +63,7 @@ object KhansOfTarkirSet {
         DebilitatingInjury,
         Despise,
         DutifulReturn,
+        RakshasasSecret,
         Throttle,
 
         // Green creatures
