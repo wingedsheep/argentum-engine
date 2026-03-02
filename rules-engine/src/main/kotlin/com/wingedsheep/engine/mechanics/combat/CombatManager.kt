@@ -1935,14 +1935,7 @@ class CombatManager(
                         val (shieldState, effectiveDamage) = EffectExecutorUtils.applyDamagePreventionShields(newState, targetId, amplifiedDamage, isCombatDamage = true, sourceId = attackerId)
                         newState = shieldState
                         if (effectiveDamage > 0) {
-                            val currentDamage = newState.getEntity(targetId)?.get<DamageComponent>()?.amount ?: 0
-                            newState = newState.updateEntity(targetId) { container ->
-                                container.with(DamageComponent(currentDamage + effectiveDamage))
-                            }
-                            newState = EffectExecutorUtils.trackDamageDealtToCreature(newState, attackerId, targetId)
-                            val atkSourceName = newState.getEntity(attackerId)?.get<CardComponent>()?.name ?: "Creature"
-                            val blockerTargetName = newState.getEntity(targetId)?.get<CardComponent>()?.name ?: "Creature"
-                            events.add(DamageDealtEvent(attackerId, targetId, effectiveDamage, true, sourceName = atkSourceName, targetName = blockerTargetName, targetIsPlayer = false))
+                            newState = dealCombatDamageToCreature(newState, targetId, effectiveDamage, attackerId, events)
                         }
                     }
                 }
@@ -2023,14 +2016,7 @@ class CombatManager(
                     val (shieldState, effectiveBlockerDamage) = EffectExecutorUtils.applyDamagePreventionShields(newState, attackerId, amplifiedBlockerDamage, isCombatDamage = true, sourceId = blockerId)
                     newState = shieldState
                     if (effectiveBlockerDamage > 0) {
-                        val currentDamage = newState.getEntity(attackerId)?.get<DamageComponent>()?.amount ?: 0
-                        newState = newState.updateEntity(attackerId) { container ->
-                            container.with(DamageComponent(currentDamage + effectiveBlockerDamage))
-                        }
-                        newState = EffectExecutorUtils.trackDamageDealtToCreature(newState, blockerId, attackerId)
-                        val blockerSourceName = newState.getEntity(blockerId)?.get<CardComponent>()?.name ?: "Creature"
-                        val attackerTargetName = newState.getEntity(attackerId)?.get<CardComponent>()?.name ?: "Creature"
-                        events.add(DamageDealtEvent(blockerId, attackerId, effectiveBlockerDamage, true, sourceName = blockerSourceName, targetName = attackerTargetName, targetIsPlayer = false))
+                        newState = dealCombatDamageToCreature(newState, attackerId, effectiveBlockerDamage, blockerId, events)
                     }
                     }
                 }
@@ -2138,14 +2124,7 @@ class CombatManager(
                                 val (shieldState, effectiveDamage) = EffectExecutorUtils.applyDamagePreventionShields(newState, targetId, amplifiedCreatureDmg, isCombatDamage = true, sourceId = attackerId)
                                 newState = shieldState
                                 if (effectiveDamage > 0) {
-                                    val currentDamage = newState.getEntity(targetId)?.get<DamageComponent>()?.amount ?: 0
-                                    newState = newState.updateEntity(targetId) { container ->
-                                        container.with(DamageComponent(currentDamage + effectiveDamage))
-                                    }
-                                    newState = EffectExecutorUtils.trackDamageDealtToCreature(newState, attackerId, targetId)
-                                    val freeAtkName = newState.getEntity(attackerId)?.get<CardComponent>()?.name ?: "Creature"
-                                    val freeCreatureName = newState.getEntity(targetId)?.get<CardComponent>()?.name ?: "Creature"
-                                    events.add(DamageDealtEvent(attackerId, targetId, effectiveDamage, true, sourceName = freeAtkName, targetName = freeCreatureName, targetIsPlayer = false))
+                                    newState = dealCombatDamageToCreature(newState, targetId, effectiveDamage, attackerId, events)
                                 }
                             }
                         }
@@ -2174,14 +2153,7 @@ class CombatManager(
                             val (shieldState, effectiveDamage) = EffectExecutorUtils.applyDamagePreventionShields(newState, blockerId, amplifiedBlockerDmg, isCombatDamage = true, sourceId = attackerId)
                             newState = shieldState
                             if (effectiveDamage > 0) {
-                                val currentDamage = newState.getEntity(blockerId)?.get<DamageComponent>()?.amount ?: 0
-                                newState = newState.updateEntity(blockerId) { container ->
-                                    container.with(DamageComponent(currentDamage + effectiveDamage))
-                                }
-                                newState = EffectExecutorUtils.trackDamageDealtToCreature(newState, attackerId, blockerId)
-                                val autoAtkName = newState.getEntity(attackerId)?.get<CardComponent>()?.name ?: "Creature"
-                                val autoBlockerName = newState.getEntity(blockerId)?.get<CardComponent>()?.name ?: "Creature"
-                                events.add(DamageDealtEvent(attackerId, blockerId, effectiveDamage, true, sourceName = autoAtkName, targetName = autoBlockerName, targetIsPlayer = false))
+                                newState = dealCombatDamageToCreature(newState, blockerId, effectiveDamage, attackerId, events)
                             }
                         }
 
@@ -2270,20 +2242,55 @@ class CombatManager(
                     val (shieldState, effectiveBlockerDamage) = EffectExecutorUtils.applyDamagePreventionShields(newState, attackerId, amplifiedCounterDmg, isCombatDamage = true, sourceId = blockerId)
                     newState = shieldState
                     if (effectiveBlockerDamage > 0) {
-                        val currentDamage = newState.getEntity(attackerId)?.get<DamageComponent>()?.amount ?: 0
-                        newState = newState.updateEntity(attackerId) { container ->
-                            container.with(DamageComponent(currentDamage + effectiveBlockerDamage))
-                        }
-                        newState = EffectExecutorUtils.trackDamageDealtToCreature(newState, blockerId, attackerId)
-                        val counterBlockerName = newState.getEntity(blockerId)?.get<CardComponent>()?.name ?: "Creature"
-                        val counterAttackerName = newState.getEntity(attackerId)?.get<CardComponent>()?.name ?: "Creature"
-                        events.add(DamageDealtEvent(blockerId, attackerId, effectiveBlockerDamage, true, sourceName = counterBlockerName, targetName = counterAttackerName, targetIsPlayer = false))
+                        newState = dealCombatDamageToCreature(newState, attackerId, effectiveBlockerDamage, blockerId, events)
                     }
                 }
             }
         }
 
         return newState to events
+    }
+
+    /**
+     * Deal combat damage to a creature, checking for damage redirection shields first.
+     * If a RedirectNextDamage shield is active on the target, redirects the appropriate amount
+     * to the redirect target and deals only the remainder to the original target.
+     *
+     * @return Updated state and list of events emitted
+     */
+    private fun dealCombatDamageToCreature(
+        state: GameState,
+        targetId: EntityId,
+        damage: Int,
+        sourceId: EntityId,
+        events: MutableList<GameEvent>
+    ): GameState {
+        var newState = state
+
+        // Check for damage redirection shields (Zealous Inquisitor, Glarecaster)
+        val (redirectState, redirectTargetId, redirectAmount) = EffectExecutorUtils.checkDamageRedirection(newState, targetId, damage)
+        newState = redirectState
+
+        if (redirectTargetId != null && redirectAmount > 0) {
+            // Deal redirected damage to the redirect target
+            newState = dealCombatDamageToCreature(newState, redirectTargetId, redirectAmount, sourceId, events)
+            val remainingDamage = damage - redirectAmount
+            if (remainingDamage <= 0) return newState
+            // Deal remaining damage to original target
+            return dealCombatDamageToCreature(newState, targetId, remainingDamage, sourceId, events)
+        }
+
+        // No redirection — apply damage normally
+        val currentDamage = newState.getEntity(targetId)?.get<DamageComponent>()?.amount ?: 0
+        newState = newState.updateEntity(targetId) { container ->
+            container.with(DamageComponent(currentDamage + damage))
+        }
+        newState = EffectExecutorUtils.trackDamageDealtToCreature(newState, sourceId, targetId)
+        val sourceName = newState.getEntity(sourceId)?.get<CardComponent>()?.name ?: "Creature"
+        val targetName = newState.getEntity(targetId)?.get<CardComponent>()?.name ?: "Creature"
+        events.add(DamageDealtEvent(sourceId, targetId, damage, true, sourceName = sourceName, targetName = targetName, targetIsPlayer = false))
+
+        return newState
     }
 
     /**
