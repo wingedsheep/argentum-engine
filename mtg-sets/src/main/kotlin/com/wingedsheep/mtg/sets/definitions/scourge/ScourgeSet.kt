@@ -167,6 +167,7 @@ object ScourgeSet {
 
         // White sorceries
         DecreeOfJustice,
+        DimensionalBreach,
 
         // White instants
         AstralSteel,

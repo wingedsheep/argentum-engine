@@ -363,3 +363,21 @@ data object ReturnLinkedExileEffect : Effect {
     override val description: String =
         "Return the exiled cards to the battlefield under your control"
 }
+
+/**
+ * Return one card from the source's linked exile (LinkedExileComponent) to the
+ * battlefield. The active player (whose upkeep it is) chooses one of their owned
+ * cards from the linked exile and returns it to the battlefield.
+ *
+ * If no eligible cards remain for this player, does nothing.
+ * If no cards remain in the linked exile at all, removes the global triggered ability.
+ *
+ * Reusable for any effect that exiles cards, links them to a source, and gradually
+ * returns them.
+ */
+@SerialName("ReturnOneFromLinkedExile")
+@Serializable
+data object ReturnOneFromLinkedExileEffect : Effect {
+    override val description: String =
+        "Return one of the exiled cards you own to the battlefield"
+}

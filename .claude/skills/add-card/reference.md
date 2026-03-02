@@ -61,6 +61,8 @@ constructors.
 - `Effects.ReturnSelfToBattlefieldAttached(target)` — return self from graveyard to battlefield attached to target (for Auras like Dragon Shadow)
 - `Effects.ExileGroupAndLink(filter: GroupFilter, storeAs)` — exile all matching permanents and link to source (Day of the Dragons ETB)
 - `Effects.ReturnLinkedExile()` — return all cards linked via LinkedExileComponent to battlefield (Day of the Dragons LTB)
+- `Effects.ReturnOneFromLinkedExile()` — return one owned card from linked exile to battlefield (Dimensional Breach upkeep trigger)
+- `Effects.CreatePermanentGlobalTriggeredAbility(ability)` — create a permanent global triggered ability (for sorcery-created recurring triggers)
 - `Effects.ShuffleGraveyardIntoLibrary(target)` — shuffle graveyard into library
 
 ### Stats & Keywords

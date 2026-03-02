@@ -39,7 +39,9 @@ import com.wingedsheep.sdk.scripting.effects.SetLifeTotalEffect
 import com.wingedsheep.sdk.scripting.effects.ModifyStatsEffect
 import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
 import com.wingedsheep.sdk.scripting.effects.ExileGroupAndLinkEffect
+import com.wingedsheep.sdk.scripting.effects.CreatePermanentGlobalTriggeredAbilityEffect
 import com.wingedsheep.sdk.scripting.effects.ReturnLinkedExileEffect
+import com.wingedsheep.sdk.scripting.effects.ReturnOneFromLinkedExileEffect
 import com.wingedsheep.sdk.scripting.effects.ReturnSelfToBattlefieldAttachedEffect
 import com.wingedsheep.sdk.scripting.effects.DrawUpToEffect
 import com.wingedsheep.sdk.scripting.effects.ReadTheRunesEffect
@@ -300,6 +302,19 @@ object Effects {
      * to the battlefield under the controller's control.
      */
     fun ReturnLinkedExile(): Effect = ReturnLinkedExileEffect
+
+    /**
+     * Return one card from the source's linked exile to the battlefield.
+     * The active player chooses one of their owned exiled cards.
+     */
+    fun ReturnOneFromLinkedExile(): Effect = ReturnOneFromLinkedExileEffect
+
+    /**
+     * Create a global triggered ability that lasts permanently.
+     * Used for recurring triggers from non-permanent sources.
+     */
+    fun CreatePermanentGlobalTriggeredAbility(ability: TriggeredAbility): Effect =
+        CreatePermanentGlobalTriggeredAbilityEffect(ability)
 
     /**
      * Return to hand.

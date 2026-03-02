@@ -118,6 +118,23 @@ data class CreateGlobalTriggeredAbilityUntilEndOfTurnEffect(
 }
 
 /**
+ * Create a global triggered ability that lasts permanently.
+ * Used for effects that create recurring triggers from non-permanent sources
+ * (e.g., Dimensional Breach creating an upkeep trigger from a sorcery).
+ *
+ * "Whenever [trigger], [effect]." (permanent duration)
+ *
+ * @property ability The triggered ability to create
+ */
+@SerialName("CreatePermanentGlobalTriggeredAbility")
+@Serializable
+data class CreatePermanentGlobalTriggeredAbilityEffect(
+    val ability: TriggeredAbility
+) : Effect {
+    override val description: String = ability.description
+}
+
+/**
  * Target player skips their next turn.
  * Used for cards like Lethal Vapors: "You skip your next turn."
  *

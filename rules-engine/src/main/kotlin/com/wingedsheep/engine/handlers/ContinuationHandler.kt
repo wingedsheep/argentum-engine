@@ -173,6 +173,7 @@ class ContinuationHandler(
             is SelectFromCollectionContinuation -> libraryAndZoneResumer.resumeSelectFromCollection(stateAfterPop, continuation, response, cfm)
             is SelectTargetPipelineContinuation -> libraryAndZoneResumer.resumeSelectTargetPipeline(stateAfterPop, continuation, response, cfm)
             is MoveCollectionAuraTargetContinuation -> libraryAndZoneResumer.resumeMoveCollectionAuraTarget(stateAfterPop, continuation, response, cfm)
+            is ReturnFromLinkedExileContinuation -> resumeReturnFromLinkedExile(stateAfterPop, continuation, response)
 
             // Modal and clone
             is ModalContinuation -> modalAndCloneResumer.resumeModal(stateAfterPop, continuation, response, cfm)
@@ -913,5 +914,28 @@ class ContinuationHandler(
         }
 
         return checkForMore(newState, events)
+    }
+
+    private fun resumeReturnFromLinkedExile(
+        state: GameState,
+        continuation: ReturnFromLinkedExileContinuation,
+        response: DecisionResponse
+    ): ExecutionResult {
+        if (response !is CardsSelectedResponse) {
+            return ExecutionResult.error(state, "Expected cards selected response for linked exile return")
+        }
+
+        val selectedCard = response.selectedCards.firstOrNull()
+            ?: return checkForMoreContinuations(state, emptyList())
+
+        // Validate that the selected card is in the eligible list
+        if (selectedCard !in continuation.eligibleCards) {
+            return ExecutionResult.error(state, "Selected card is not in the eligible linked exile cards")
+        }
+
+        val result = com.wingedsheep.engine.handlers.effects.removal.ReturnOneFromLinkedExileExecutor
+            .returnCardToBattlefield(state, selectedCard, continuation.sourceId)
+
+        return checkForMoreContinuations(result.state, result.events)
     }
 }

@@ -41,6 +41,7 @@ class RemovalExecutors(
         payOrSufferExecutor,
         RegenerateExecutor(),
         ReturnLinkedExileExecutor(),
+        ReturnOneFromLinkedExileExecutor(),
         SacrificeExecutor(),
         SacrificeSelfExecutor(),
         MoveToZoneEffectExecutor(),

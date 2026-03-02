@@ -492,6 +492,25 @@ data class SelectFromCollectionContinuation(
 
 
 /**
+ * Resume after player chooses a card to return from a linked exile.
+ *
+ * Used for effects like Dimensional Breach's upkeep trigger: the active player
+ * chooses one of their owned exiled cards to return to the battlefield.
+ * The exiled cards are tracked via LinkedExileComponent on the source entity.
+ *
+ * @property playerId The player making the choice
+ * @property sourceId The entity whose LinkedExileComponent tracks the exiled cards
+ * @property eligibleCards All cards this player could choose from
+ */
+@Serializable
+data class ReturnFromLinkedExileContinuation(
+    override val decisionId: String,
+    val playerId: EntityId,
+    val sourceId: EntityId,
+    val eligibleCards: List<EntityId>
+) : ContinuationFrame
+
+/**
  * Resume after player chooses a color for protection granting effects.
  *
  * Used for effects like Akroma's Blessing: "Choose a color. Creatures you control

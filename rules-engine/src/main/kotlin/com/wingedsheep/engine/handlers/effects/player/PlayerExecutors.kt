@@ -14,6 +14,7 @@ class PlayerExecutors(
         AddCombatPhaseExecutor(),
         CantCastSpellsExecutor(),
         CreateGlobalTriggeredAbilityUntilEndOfTurnExecutor(),
+        CreatePermanentGlobalTriggeredAbilityExecutor(),
         GrantShroudExecutor(),
         PlayAdditionalLandsExecutor(),
         PreventLandPlaysThisTurnExecutor(),

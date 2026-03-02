@@ -285,6 +285,23 @@ class TriggerDetector(
             }
         }
 
+        // Check global granted triggered abilities for step-based triggers
+        // (e.g., Dimensional Breach creates a permanent global upkeep trigger)
+        for (global in state.globalGrantedTriggeredAbilities) {
+            val ability = global.ability
+            if (matchesStepTrigger(ability.trigger, step, global.controllerId, activePlayerId)) {
+                triggers.add(
+                    PendingTrigger(
+                        ability = ability,
+                        sourceId = global.sourceId,
+                        sourceName = global.sourceName,
+                        controllerId = global.controllerId,
+                        triggerContext = TriggerContext(step = step, triggeringEntityId = activePlayerId)
+                    )
+                )
+            }
+        }
+
         // Rule 603.4: Filter out triggers with unmet intervening-if conditions
         return sortByApnapOrder(state, filterByTriggerCondition(state, triggers))
     }

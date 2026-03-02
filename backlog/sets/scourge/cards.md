@@ -3,11 +3,11 @@
 
 **Set Size:** 143 cards
 **Release Date:** May 26, 2003
-**Implemented:** 141 / 143
+**Implemented:** 142 / 143
 
 | Color | Count |
 |-------|-------|
-| White | 26 |
+| White | 27 |
 | Blue | 27 |
 | Black | 27 |
 | Red | 26 |
@@ -53,7 +53,7 @@
 - [x] Decree of Pain
 - [x] Decree of Savagery
 - [x] Decree of Silence
-- [ ] Dimensional Breach
+- [x] Dimensional Breach
 - [x] Dispersal Shield
 - [x] Divergent Growth
 - [x] Dragon Breath
