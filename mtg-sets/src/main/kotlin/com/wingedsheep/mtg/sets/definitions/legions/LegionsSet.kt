@@ -72,6 +72,7 @@ object LegionsSet {
         AphettoExterminator,
         BloodCelebrant,
         CryptSliver,
+        DeathmarkPrelate,
         Earthblighter,
         GravebornMuse,
         InfernalCaretaker,
