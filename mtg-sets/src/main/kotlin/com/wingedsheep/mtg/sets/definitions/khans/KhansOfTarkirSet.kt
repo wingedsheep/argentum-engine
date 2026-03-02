@@ -40,6 +40,7 @@ object KhansOfTarkirSet {
         JeskaiWindscout,
         MonasteryFlock,
         MysticOfTheHiddenWay,
+        RiverwheelAerialists,
         Scaldkin,
         ScionOfGlaciers,
         WetlandSambar,
@@ -55,6 +56,7 @@ object KhansOfTarkirSet {
         BellowingSaddlebrute,
         GurmagSwiftwing,
         RottingMastodon,
+        SidisisPet,
         SultaiScavenger,
         UnyieldingKrumar,
 
@@ -83,6 +85,7 @@ object KhansOfTarkirSet {
 
         // Red creatures
         BloodfireExpert,
+        BloodfireMentor,
         CanyonLurkers,
         LeapingMaster,
         MarduBlazebringer,

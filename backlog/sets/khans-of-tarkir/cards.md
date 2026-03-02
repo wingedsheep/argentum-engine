@@ -2,14 +2,14 @@
 
 **Set Size:** 269 cards (249 unique card names + basic land variants)
 **Release Date:** September 26, 2014
-**Implemented:** 68 / 249
+**Implemented:** 71 / 249
 
 | Color      | Count |
 |------------|-------|
 | White      | 11    |
-| Blue       | 11    |
-| Black      | 11    |
-| Red        | 11    |
+| Blue       | 12    |
+| Black      | 12    |
+| Red        | 12    |
 | Green      | 11    |
 | Multicolor | 7     |
 | Colorless  | 3     |
@@ -47,7 +47,7 @@
 - [ ] Blinding Spray
 - [ ] Bloodfell Caves
 - [x] Bloodfire Expert
-- [ ] Bloodfire Mentor
+- [x] Bloodfire Mentor
 - [ ] Bloodsoaked Champion
 - [ ] Bloodstained Mire
 - [ ] Blossoming Sands
@@ -176,7 +176,7 @@
 - [ ] Retribution of the Ancients
 - [ ] Ride Down
 - [ ] Rite of the Serpent
-- [ ] Riverwheel Aerialists
+- [x] Riverwheel Aerialists
 - [ ] Roar of Challenge
 - [x] Rotting Mastodon
 - [x] Rugged Highlands
@@ -203,7 +203,7 @@
 - [ ] Shambling Attendants
 - [ ] Shatter
 - [ ] Sidisi, Brood Tyrant
-- [ ] Sidisi's Pet
+- [x] Sidisi's Pet
 - [x] Siegecraft
 - [ ] Siege Rhino
 - [ ] Singing Bell Strike
