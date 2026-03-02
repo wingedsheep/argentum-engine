@@ -109,16 +109,15 @@ constructors.
 
 ### Library
 
+- `Effects.EachPlayerRevealCreaturesCreateTokens(tokenPower, tokenToughness, tokenColors, tokenCreatureTypes, tokenImageUri?)` — each player reveals and creates tokens
+- `Effects.EachPlayerSearchesLibrary(filter, count: DynamicAmount)` — each player searches
+- `Effects.HeadGames(target)` — look at target's hand, rearrange library
+- `Effects.Mill(count, target = Controller)` — also accepts `DynamicAmount` for variable mill
 - `Effects.SearchLibrary(filter, count = 1, destination = HAND, entersTapped, shuffle, reveal)`
 - `Effects.SearchLibraryNthFromTop(filter = Any, positionFromTop = 2)` — search, shuffle, put Nth from top (Long-Term Plans: positionFromTop=2)
 - `Effects.Scry(count)` — returns CompositeEffect (Gather → Select → Move pipeline)
 - `Effects.Surveil(count)` — returns CompositeEffect (Gather → Select → Move pipeline)
-- `Effects.Mill(count, target = Controller)` — also accepts `DynamicAmount` for variable mill
-- `Effects.HeadGames(target)` — look at target's hand, rearrange library
--
-`Effects.EachPlayerRevealCreaturesCreateTokens(tokenPower, tokenToughness, tokenColors, tokenCreatureTypes, tokenImageUri?)` —
-each player reveals and creates tokens
-- `Effects.EachPlayerSearchesLibrary(filter, count: DynamicAmount)` — each player searches
+- `Effects.TakeFromLinkedExile()` — put top card of linked exile pile into hand
 
 ### Stack
 
@@ -271,17 +270,19 @@ each player reveals and creates tokens
 
 | Effect                                                                              | Parameters                                          | Purpose                                           |
 |-------------------------------------------------------------------------------------|-----------------------------------------------------|---------------------------------------------------|
-| `ShuffleLibraryEffect`                                                              | `target`                                            | Shuffle library                                   |
-| `GrantMayPlayFromExileEffect`                                                       | `from`                                              | Grant play-from-exile permission to cards in collection |
-| `GrantPlayWithoutPayingCostEffect`                                                  | `from`                                              | Grant play-without-paying-cost to cards in collection  |
-| `Effects.ShuffleAndExileTopPlayFree()`                                              | (none)                                              | Shuffle + exile top + grant exile+free play (Mind's Desire) |
-| `EffectPatterns.shuffleAndExileTopPlayFree()`                                       | (none)                                              | Pipeline: shuffle, exile top, grant exile+free play |
-| `PutCreatureFromHandSharingTypeWithTappedEffect`                                    | (object)                                            | Put creature from hand sharing type               |
+| `EffectPatterns.lookAtTargetLibraryAndDiscard(count, toGraveyard)`                  | `count, toGraveyard`                                | Look at target's library, discard some (pipeline) |
 | `EffectPatterns.lookAtTopAndKeep(count, keepCount)`                                 | `count, keepCount, keepDest?, restDest?, revealed?` | Look at top N keep some (pipeline)                |
 | `EffectPatterns.lookAtTopAndReorder(count)`                                         | `count: Int` or `count: DynamicAmount`              | Look at top and reorder (pipeline)                |
 | `EffectPatterns.lookAtTopXAndPutOntoBattlefield(countSource, filter, shuffleAfter)` | CoCo-style (pipeline)                               |
-| `EffectPatterns.lookAtTargetLibraryAndDiscard(count, toGraveyard)`                  | `count, toGraveyard`                                | Look at target's library, discard some (pipeline) |
+| `EffectPatterns.searchAndExileLinked(count, filter)`                                | Search library, exile linked to source             |
 | `EffectPatterns.searchTargetLibraryExile(count, filter)`                            | Search target's library and exile (pipeline)        |
+| `Effects.ShuffleAndExileTopPlayFree()`                                              | (none)                                              | Shuffle + exile top + grant exile+free play (Mind's Desire) |
+| `EffectPatterns.shuffleAndExileTopPlayFree()`                                       | (none)                                              | Pipeline: shuffle, exile top, grant exile+free play |
+| `PutCreatureFromHandSharingTypeWithTappedEffect`                                    | (object)                                            | Put creature from hand sharing type               |
+| `ShuffleLibraryEffect`                                                              | `target`                                            | Shuffle library                                   |
+| `TakeFromLinkedExileEffect`                                                         | (object)                                            | Put top card of linked exile pile into hand       |
+| `GrantMayPlayFromExileEffect`                                                       | `from`                                              | Grant play-from-exile permission to cards in collection |
+| `GrantPlayWithoutPayingCostEffect`                                                  | `from`                                              | Grant play-without-paying-cost to cards in collection  |
 
 ### Mana
 
@@ -693,7 +694,7 @@ CompositeEffect(
 |--------------------------------------------------------------------------------------------------------------------------------|--------------------------------------------------|
 | `GatherCardsEffect(source, storeAs, revealed)`                                                                                 | Gather cards from a zone into a named collection |
 | `SelectFromCollectionEffect(from, selection, chooser, filter, storeSelected, storeRemainder, matchChosenCreatureType, prompt)` | Player selects from a collection                 |
-| `MoveCollectionEffect(from, destination, order, revealed, moveType)`                                                           | Move a collection to a zone                      |
+| `MoveCollectionEffect(from, destination, order, revealed, moveType, linkToSource)`                                            | Move a collection to a zone                      |
 | `RevealUntilEffect(source, matchFilter, storeMatch, storeRevealed, matchChosenCreatureType)`                                   | Reveal until filter matches                      |
 | `ChooseCreatureTypeEffect`                                                                                                     | Choose a creature type (data object)             |
 | `SelectTargetEffect(requirement, storeAs)`                                                                                     | Select and store a target                        |
@@ -943,8 +944,8 @@ Used in card definitions for effects that intercept events before they happen:
 
 ### Draw
 
-- `ReplaceDrawWithEffect(replacementEffect, appliesTo)` — Underrealm Lich
 - `PreventDraw(appliesTo)` — Narset
+- `ReplaceDrawWithEffect(replacementEffect, appliesTo, optional)` — Underrealm Lich
 
 ### Life
 
