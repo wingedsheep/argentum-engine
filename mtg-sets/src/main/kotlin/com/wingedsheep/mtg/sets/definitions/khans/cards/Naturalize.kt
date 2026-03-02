@@ -29,6 +29,6 @@ val Naturalize = card("Naturalize") {
         collectorNumber = "142"
         artist = "James Paick"
         flavorText = "The remains of ancient sky tyrants now feed the war-torn land."
-        imageUri = "https://cards.scryfall.io/normal/front/b/1/b129b44e-a1ce-41f2-a0cf-b6c879c7cbbd.jpg?1562792044"
+        imageUri = "https://cards.scryfall.io/large/front/c/0/c0acc41f-b55b-47cb-8803-d39d72788799.jpg?1562940493"
     }
 }
