@@ -34,6 +34,7 @@ import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.FaceDownComponent
 import com.wingedsheep.engine.state.components.identity.LifeTotalComponent
 import com.wingedsheep.engine.state.components.identity.MorphDataComponent
+import com.wingedsheep.engine.state.components.identity.RevealedToComponent
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.engine.mechanics.layers.SerializableModification
 import com.wingedsheep.engine.mechanics.layers.StateProjector
@@ -131,6 +132,7 @@ object EffectExecutorUtils {
             .without<ControllerComponent>()
             .without<FaceDownComponent>()
             .without<MorphDataComponent>()
+            .without<RevealedToComponent>()
             // Battlefield
             .without<TappedComponent>()
             .without<SummoningSicknessComponent>()

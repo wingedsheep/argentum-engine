@@ -15,6 +15,7 @@ import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.identity.FaceDownComponent
 import com.wingedsheep.engine.state.components.identity.MorphDataComponent
+import com.wingedsheep.engine.state.components.identity.RevealedToComponent
 import com.wingedsheep.engine.state.components.identity.TextReplacementComponent
 import com.wingedsheep.engine.mechanics.text.SubtypeReplacer
 import com.wingedsheep.sdk.scripting.KeywordAbility
@@ -548,10 +549,12 @@ class StackResolver(
                 .without<TargetsComponent>()
                 .with(ControllerComponent(controllerId))
 
-            // If cast face-down (morph), add FaceDownComponent
+            // If cast face-down (morph), add FaceDownComponent and strip any
+            // RevealedToComponent from hand-peek effects (zone change = new object)
             // MorphDataComponent was already added when the spell was cast
             if (spellComponent.castFaceDown) {
                 updated = updated.with(FaceDownComponent)
+                    .without<RevealedToComponent>()
             }
 
             // Creatures enter with summoning sickness (including face-down creatures)
