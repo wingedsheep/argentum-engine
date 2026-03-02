@@ -2,14 +2,14 @@
 
 **Set Size:** 145 cards
 **Release Date:** February 3, 2003
-**Implemented:** 121 / 145
+**Implemented:** 122 / 145
 
 | Color      | Count |
 |------------|-------|
 | White      | 24/29 |
 | Blue       | 24/29 |
 | Black      | 25/29 |
-| Red        | 24/29 |
+| Red        | 25/29 |
 | Green      | 24/29 |
 
 ---
@@ -89,7 +89,7 @@
 - [x] Infernal Caretaker
 - [x] Keeneye Aven
 - [ ] Keeper of the Nine Gales
-- [ ] Kilnmouth Dragon
+- [x] Kilnmouth Dragon
 - [x] Krosan Cloudscraper
 - [x] Krosan Vorine
 - [x] Lavaborn Muse

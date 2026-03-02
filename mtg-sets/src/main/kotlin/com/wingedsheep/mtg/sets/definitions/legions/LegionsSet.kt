@@ -108,6 +108,7 @@ object LegionsSet {
         CrestedCraghorn,
         HunterSliver,
         ImperialHellkite,
+        KilnmouthDragon,
         FlamewaveInvoker,
         GoblinClearcutter,
         GoblinDynamo,
