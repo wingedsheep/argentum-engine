@@ -1061,3 +1061,24 @@ data class IncreaseSpellCostByFilter(
 ) : StaticAbility {
     override val description: String = "${filter.description} spells cost {$amount} more to cast"
 }
+
+// =============================================================================
+// Casting Permission Static Abilities
+// =============================================================================
+
+/**
+ * Grants flash to spells matching a filter for all players.
+ * Used for Quick Sliver: "Any player may cast Sliver spells as though they had flash."
+ *
+ * The engine checks for this static ability on any permanent on the battlefield
+ * when determining if a non-instant spell can be cast at instant speed.
+ *
+ * @property filter The filter that spells must match to gain flash
+ */
+@SerialName("GrantFlashToSpellType")
+@Serializable
+data class GrantFlashToSpellType(
+    val filter: GameObjectFilter
+) : StaticAbility {
+    override val description: String = "Any player may cast ${filter.description} spells as though they had flash"
+}

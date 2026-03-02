@@ -876,6 +876,7 @@ Set via `staticAbility { ability = ... }`:
 - `PreventManaPoolEmptying` — players don't lose unspent mana as steps and phases end
 - `IncreaseMorphCost(amount: Int)` — all morph (turn face-up) costs cost more
 - `IncreaseSpellCostByFilter(filter: GameObjectFilter, amount: Int)` — spells matching filter cost more (global tax effect)
+- `GrantFlashToSpellType(filter: GameObjectFilter)` — any player may cast spells matching filter as though they had flash (e.g., Quick Sliver)
 - `AttackTax(manaCostPerAttacker: String)` — creatures can't attack you unless their controller pays the cost per attacker (e.g., Ghostly Prison, Windborn Muse)
 - `CantBeAttackedWithout(requiredKeyword: Keyword)` — creatures without the specified keyword can't attack the controller (e.g., Form of the Dragon — creatures without flying can't attack you)
 - `RevealFirstDrawEachTurn` — reveal the first card drawn each turn (Primitive Etchings)

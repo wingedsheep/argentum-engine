@@ -2,15 +2,15 @@
 
 **Set Size:** 145 cards
 **Release Date:** February 3, 2003
-**Implemented:** 105 / 145
+**Implemented:** 107 / 145
 
 | Color      | Count |
 |------------|-------|
 | White      | 21/29 |
 | Blue       | 21/29 |
 | Black      | 21/29 |
-| Red        | 21/29 |
-| Green      | 21/29 |
+| Red        | 22/29 |
+| Green      | 22/29 |
 
 ---
 
@@ -112,7 +112,7 @@
 - [x] Plated Sliver
 - [ ] Primal Whisperer
 - [x] Primoc Escapee
-- [ ] Quick Sliver
+- [x] Quick Sliver
 - [x] Ridgetop Raptor
 - [x] Riptide Director
 - [x] Riptide Mangler
@@ -124,7 +124,7 @@
 - [x] Shifting Sliver
 - [x] Skinthinner
 - [ ] Skirk Alarmist
-- [ ] Skirk Drill Sergeant
+- [x] Skirk Drill Sergeant
 - [x] Skirk Marauder
 - [x] Skirk Outrider
 - [x] Smokespew Invoker

@@ -49,6 +49,7 @@ import com.wingedsheep.sdk.scripting.effects.ChooseCreatureTypeModifyStatsEffect
 import com.wingedsheep.sdk.scripting.effects.DividedDamageEffect
 import com.wingedsheep.sdk.scripting.effects.StormCopyEffect
 import com.wingedsheep.sdk.scripting.KeywordAbility
+import com.wingedsheep.sdk.scripting.GrantFlashToSpellType
 import com.wingedsheep.sdk.scripting.PlayFromTopOfLibrary
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.engine.handlers.effects.EffectExecutorUtils.toEntityId
@@ -122,7 +123,9 @@ class CastSpellHandler(
 
         // Check timing
         if (!cardComponent.typeLine.isInstant) {
-            if (!turnManager.canPlaySorcerySpeed(state, action.playerId)) {
+            val hasFlash = cardDef?.keywords?.contains(Keyword.FLASH) == true
+            val grantedFlash = hasFlash || hasGrantedFlash(state, action.cardId)
+            if (!grantedFlash && !turnManager.canPlaySorcerySpeed(state, action.playerId)) {
                 return "You can only cast sorcery-speed spells during your main phase with an empty stack"
             }
         }
@@ -1065,6 +1068,30 @@ class CastSpellHandler(
             val cardDef = cardRegistry?.getCard(card.cardDefinitionId) ?: continue
             if (cardDef.script.staticAbilities.any { it is PlayFromTopOfLibrary }) {
                 return true
+            }
+        }
+        return false
+    }
+
+    /**
+     * Check if a card has been granted flash by a GrantFlashToSpellType static ability
+     * on any permanent on the battlefield (any player's battlefield).
+     */
+    private fun hasGrantedFlash(state: GameState, spellCardId: EntityId): Boolean {
+        val spellOwner = state.getEntity(spellCardId)?.get<ControllerComponent>()?.playerId
+            ?: return false
+        val context = PredicateContext(controllerId = spellOwner)
+        for (playerId in state.turnOrder) {
+            for (entityId in state.getBattlefield(playerId)) {
+                val card = state.getEntity(entityId)?.get<CardComponent>() ?: continue
+                val def = cardRegistry?.getCard(card.cardDefinitionId) ?: continue
+                for (ability in def.script.staticAbilities) {
+                    if (ability is GrantFlashToSpellType) {
+                        if (predicateEvaluator.matches(state, spellCardId, ability.filter, context)) {
+                            return true
+                        }
+                    }
+                }
             }
         }
         return false

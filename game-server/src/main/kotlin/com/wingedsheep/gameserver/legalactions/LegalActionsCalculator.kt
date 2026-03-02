@@ -47,6 +47,7 @@ import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.ActivatedAbility
 import com.wingedsheep.sdk.scripting.CanBlockAnyNumber
 import com.wingedsheep.sdk.scripting.GrantActivatedAbilityToCreatureGroup
+import com.wingedsheep.sdk.scripting.GrantFlashToSpellType
 import com.wingedsheep.sdk.scripting.PlayFromTopOfLibrary
 import com.wingedsheep.sdk.scripting.PreventCycling
 import com.wingedsheep.sdk.scripting.effects.AddAnyColorManaEffect
@@ -204,7 +205,9 @@ class LegalActionsCalculator(
 
                 // Check timing - sorcery-speed spells need main phase, empty stack, your turn
                 val isInstant = cardComponent.typeLine.isInstant
-                if (isInstant || canPlaySorcerySpeed) {
+                val hasFlash = cardDef?.keywords?.contains(Keyword.FLASH) == true
+                val grantedFlash = hasFlash || hasGrantedFlash(state, cardId)
+                if (isInstant || grantedFlash || canPlaySorcerySpeed) {
                     // Check additional cost payability
                     val additionalCosts = cardDef?.script?.additionalCosts ?: emptyList()
                     val sacrificeTargets = mutableListOf<EntityId>()
@@ -1749,6 +1752,30 @@ class LegalActionsCalculator(
             val cardDef = cardRegistry.getCard(card.cardDefinitionId) ?: continue
             if (cardDef.script.staticAbilities.any { it is PlayFromTopOfLibrary }) {
                 return true
+            }
+        }
+        return false
+    }
+
+    /**
+     * Check if a spell card has been granted flash by a GrantFlashToSpellType static ability
+     * on any permanent on the battlefield (any player's battlefield).
+     */
+    private fun hasGrantedFlash(state: GameState, spellCardId: EntityId): Boolean {
+        val spellOwner = state.getEntity(spellCardId)?.get<ControllerComponent>()?.playerId
+            ?: return false
+        val context = PredicateContext(controllerId = spellOwner)
+        for (playerId in state.turnOrder) {
+            for (entityId in state.getBattlefield(playerId)) {
+                val card = state.getEntity(entityId)?.get<CardComponent>() ?: continue
+                val cardDef = cardRegistry.getCard(card.cardDefinitionId) ?: continue
+                for (ability in cardDef.script.staticAbilities) {
+                    if (ability is GrantFlashToSpellType) {
+                        if (predicateEvaluator.matches(state, spellCardId, ability.filter, context)) {
+                            return true
+                        }
+                    }
+                }
             }
         }
         return false
