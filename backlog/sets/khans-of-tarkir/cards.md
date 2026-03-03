@@ -2,13 +2,13 @@
 
 **Set Size:** 269 cards (249 unique card names + basic land variants)
 **Release Date:** September 26, 2014
-**Implemented:** 90 / 249
+**Implemented:** 91 / 249
 
 | Color      | Count |
 |------------|-------|
 | White      | 15    |
 | Blue       | 16    |
-| Black      | 15    |
+| Black      | 16    |
 | Red        | 15    |
 | Green      | 16    |
 | Multicolor | 7     |
@@ -221,7 +221,7 @@
 - [x] Summit Prowler
 - [ ] Surrak Dragonclaw
 - [ ] Suspension Field
-- [ ] Swarm of Bloodflies
+- [x] Swarm of Bloodflies
 - [ ] Swift Kick
 - [ ] Swiftwater Cliffs
 - [x] Taigam's Scheming

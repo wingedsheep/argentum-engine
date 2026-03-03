@@ -68,6 +68,7 @@ object KhansOfTarkirSet {
         RottingMastodon,
         SidisisPet,
         SultaiScavenger,
+        SwarmOfBloodflies,
         UnyieldingKrumar,
 
         // Black spells

@@ -95,6 +95,14 @@ object Triggers {
     )
 
     /**
+     * When another creature dies (any controller).
+     */
+    val AnyOtherCreatureDies: TriggerSpec = TriggerSpec(
+        event = ZoneChangeEvent(from = Zone.BATTLEFIELD, to = Zone.GRAVEYARD),
+        binding = TriggerBinding.OTHER
+    )
+
+    /**
      * When a creature you control dies.
      */
     val YourCreatureDies: TriggerSpec = TriggerSpec(

@@ -467,7 +467,7 @@ constructors.
 
 - `Triggers.EntersBattlefield` / `Triggers.AnyEntersBattlefield`
 - `Triggers.OtherCreatureEnters` / `Triggers.AnyOtherCreatureEnters` / `Triggers.OtherCreatureWithSubtypeDies(subtype)`
-- `Triggers.LeavesBattlefield` / `Triggers.Dies` / `Triggers.AnyCreatureDies` / `Triggers.YourCreatureDies`
+- `Triggers.LeavesBattlefield` / `Triggers.Dies` / `Triggers.AnyCreatureDies` / `Triggers.AnyOtherCreatureDies` / `Triggers.YourCreatureDies`
 - `Triggers.PutIntoGraveyardFromBattlefield`
 
 ### Combat
