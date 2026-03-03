@@ -19,6 +19,7 @@ import com.wingedsheep.sdk.scripting.effects.FlipCoinEffect
 import com.wingedsheep.sdk.scripting.effects.ForEachInGroupEffect
 import com.wingedsheep.sdk.scripting.effects.ForEachTargetEffect
 import com.wingedsheep.sdk.scripting.effects.ForceSacrificeEffect
+import com.wingedsheep.sdk.scripting.effects.SacrificeTargetEffect
 import com.wingedsheep.sdk.scripting.effects.GainControlByMostOfSubtypeEffect
 import com.wingedsheep.sdk.scripting.effects.GainControlEffect
 import com.wingedsheep.sdk.scripting.effects.GrantKeywordUntilEndOfTurnEffect
@@ -244,6 +245,7 @@ object CardValidator {
             is LookAtFaceDownCreatureEffect -> effect.target
             is TransformEffect -> effect.target
             is GainControlByMostOfSubtypeEffect -> effect.target
+            is SacrificeTargetEffect -> effect.target
             else -> null
         }
 

@@ -21,6 +21,7 @@ import com.wingedsheep.sdk.scripting.ControlEnchantedPermanent
 import com.wingedsheep.sdk.scripting.SetEnchantedLandType
 import com.wingedsheep.sdk.scripting.GrantKeywordByCounter
 import com.wingedsheep.sdk.scripting.GrantProtection
+import com.wingedsheep.sdk.scripting.GrantProtectionFromChosenColorToGroup
 import com.wingedsheep.sdk.scripting.ModifyStatsByCounterOnSource
 import com.wingedsheep.sdk.scripting.ModifyStatsPerSharedCreatureType
 import com.wingedsheep.sdk.scripting.AnimateLandGroup
@@ -202,6 +203,14 @@ class StaticAbilityHandler(
                     sublayer = null,
                     modification = Modification.GrantKeyword(ability.keyword.name),
                     affectsFilter = AffectsFilter.ChosenCreatureTypeCreatures
+                )
+            }
+            is GrantProtectionFromChosenColorToGroup -> {
+                ContinuousEffectData(
+                    layer = Layer.ABILITY,
+                    sublayer = null,
+                    modification = Modification.GrantProtectionFromChosenColor,
+                    affectsFilter = convertGroupFilter(ability.filter)
                 )
             }
             is ModifyStats -> {

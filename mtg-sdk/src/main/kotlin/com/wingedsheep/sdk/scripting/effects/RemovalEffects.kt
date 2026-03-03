@@ -117,6 +117,21 @@ data object SacrificeSelfEffect : Effect {
 }
 
 /**
+ * Sacrifice a specific permanent identified by target.
+ * "Sacrifice it" — used in delayed triggers where the exact permanent to sacrifice
+ * was determined at ability resolution time (e.g., Skirk Alarmist's delayed sacrifice).
+ *
+ * @property target The specific permanent to sacrifice
+ */
+@SerialName("SacrificeTarget")
+@Serializable
+data class SacrificeTargetEffect(
+    val target: EffectTarget = EffectTarget.ContextTarget(0)
+) : Effect {
+    override val description: String = "sacrifice ${target.description}"
+}
+
+/**
  * Force sacrifice effect: Target player sacrifices permanents matching a filter.
  * "Target player sacrifices a creature" (Edict effects)
  */

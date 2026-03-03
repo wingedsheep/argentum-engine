@@ -44,6 +44,7 @@ class RemovalExecutors(
         ReturnOneFromLinkedExileExecutor(),
         SacrificeExecutor(),
         SacrificeSelfExecutor(),
+        SacrificeTargetExecutor(),
         MoveToZoneEffectExecutor(),
         ReturnSelfToBattlefieldAttachedExecutor(cardRegistry)
     )

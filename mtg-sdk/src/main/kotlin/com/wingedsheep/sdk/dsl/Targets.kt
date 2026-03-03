@@ -82,6 +82,12 @@ object Targets {
     val TappedCreature: TargetRequirement = TargetCreature(filter = TargetFilter.TappedCreature)
 
     /**
+     * Target face-down creature you control.
+     */
+    val FaceDownCreatureYouControl: TargetRequirement =
+        TargetCreature(filter = TargetFilter(GameObjectFilter.Creature.faceDown().youControl()))
+
+    /**
      * Target creature with a specific keyword.
      */
     fun CreatureWithKeyword(keyword: Keyword): TargetRequirement =

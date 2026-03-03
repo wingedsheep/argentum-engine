@@ -7,6 +7,7 @@ import com.wingedsheep.engine.state.components.battlefield.CountersComponent
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
+import com.wingedsheep.engine.state.components.identity.ChosenColorComponent
 import com.wingedsheep.engine.state.components.identity.ChosenCreatureTypeComponent
 import com.wingedsheep.engine.state.components.identity.FaceDownComponent
 import com.wingedsheep.engine.state.components.identity.ProtectionComponent
@@ -934,6 +935,13 @@ class StateProjector(
                 is Modification.GrantProtectionFromColor -> {
                     values.keywords.add("PROTECTION_FROM_${mod.color}")
                 }
+                is Modification.GrantProtectionFromChosenColor -> {
+                    val chosenColor = state.getEntity(effect.sourceId)
+                        ?.get<ChosenColorComponent>()?.color
+                    if (chosenColor != null) {
+                        values.keywords.add("PROTECTION_FROM_${chosenColor.name}")
+                    }
+                }
                 is Modification.SetCantAttack -> {
                     values.cantAttack = true
                 }
@@ -1342,6 +1350,13 @@ sealed interface Modification {
 
     @Serializable
     data class GrantProtectionFromColor(val color: String) : Modification
+
+    /**
+     * Grants protection from the chosen color (resolved dynamically from source's ChosenColorComponent).
+     * Used for Ward Sliver: "All Slivers have protection from the chosen color."
+     */
+    @Serializable
+    data object GrantProtectionFromChosenColor : Modification
 
     @Serializable
     data object SetCantAttack : Modification

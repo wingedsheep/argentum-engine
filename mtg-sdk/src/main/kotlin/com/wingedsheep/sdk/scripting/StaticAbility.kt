@@ -717,6 +717,22 @@ data class GrantProtection(
     override val description: String = "Grants protection from ${color.displayName.lowercase()}"
 }
 
+/**
+ * Grants protection from the chosen color to a group of creatures.
+ * Used for "As this enters, choose a color. [Group] have protection from the chosen color."
+ * The chosen color is stored on the permanent via ChosenColorComponent and resolved dynamically.
+ * Example: Ward Sliver (all Slivers have protection from the chosen color)
+ *
+ * @property filter The group of creatures that gain protection
+ */
+@SerialName("GrantProtectionFromChosenColorToGroup")
+@Serializable
+data class GrantProtectionFromChosenColorToGroup(
+    val filter: GroupFilter = GroupFilter(GameObjectFilter.Companion.Creature.youControl())
+) : StaticAbility {
+    override val description: String = "Creatures of the chosen group have protection from the chosen color"
+}
+
 // =============================================================================
 // Counter-Based Static Abilities
 // =============================================================================

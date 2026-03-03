@@ -30,6 +30,7 @@ import com.wingedsheep.sdk.scripting.effects.GrantPlayWithoutPayingCostEffect
 import com.wingedsheep.sdk.scripting.effects.FightEffect
 import com.wingedsheep.sdk.scripting.effects.ForEachInGroupEffect
 import com.wingedsheep.sdk.scripting.effects.ForceSacrificeEffect
+import com.wingedsheep.sdk.scripting.effects.SacrificeTargetEffect
 import com.wingedsheep.sdk.scripting.effects.GainControlByMostOfSubtypeEffect
 import com.wingedsheep.sdk.scripting.effects.GainControlEffect
 import com.wingedsheep.sdk.scripting.effects.GainLifeEffect
@@ -751,6 +752,13 @@ object Effects {
      */
     fun Sacrifice(filter: GameObjectFilter, count: Int = 1, target: EffectTarget = EffectTarget.PlayerRef(Player.TargetOpponent)): Effect =
         ForceSacrificeEffect(filter, count, target)
+
+    /**
+     * Sacrifice a specific permanent identified by target.
+     * Used in delayed triggers where the exact permanent was determined at resolution time.
+     */
+    fun SacrificeTarget(target: EffectTarget): Effect =
+        SacrificeTargetEffect(target)
 
     // =========================================================================
     // Tap/Untap Effects
