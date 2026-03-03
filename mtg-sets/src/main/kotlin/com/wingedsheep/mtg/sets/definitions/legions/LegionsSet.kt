@@ -93,6 +93,7 @@ object LegionsSet {
         GhastlyRemains,
         GoblinTurncoat,
         HavocDemon,
+        HollowSpecter,
         NoxiousGhoul,
         ScionOfDarkness,
         Skinthinner,
