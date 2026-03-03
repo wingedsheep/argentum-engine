@@ -2,12 +2,12 @@
 
 **Set Size:** 269 cards (249 unique card names + basic land variants)
 **Release Date:** September 26, 2014
-**Implemented:** 85 / 249
+**Implemented:** 86 / 249
 
 | Color      | Count |
 |------------|-------|
 | White      | 15    |
-| Blue       | 14    |
+| Blue       | 15    |
 | Black      | 14    |
 | Red        | 15    |
 | Green      | 14    |
@@ -93,7 +93,7 @@
 - [x] Firehoof Cavalry
 - [ ] Flooded Strand
 - [ ] Flying Crane Technique
-- [ ] Force Away
+- [x] Force Away
 - [ ] Frontier Bivouac
 - [ ] Ghostfire Blade
 - [ ] Glacial Stalker

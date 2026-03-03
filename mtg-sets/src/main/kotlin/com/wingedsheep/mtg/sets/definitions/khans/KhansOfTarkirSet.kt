@@ -52,6 +52,7 @@ object KhansOfTarkirSet {
 
         // Blue spells
         BlindingSpray,
+        ForceAway,
         Cancel,
         CripplingChill,
         DisdainfulStroke,
