@@ -28,7 +28,7 @@ object KhansOfTarkirSet {
         FirehoofCavalry,
         JeskaiStudent,
         MarduHateblade,
-
+        SaltRoadPatrol,
         VenerableLammasu,
 
         // White spells
