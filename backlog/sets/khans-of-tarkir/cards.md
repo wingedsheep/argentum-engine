@@ -2,7 +2,7 @@
 
 **Set Size:** 269 cards (249 unique card names + basic land variants)
 **Release Date:** September 26, 2014
-**Implemented:** 86 / 249
+**Implemented:** 87 / 249
 
 | Color      | Count |
 |------------|-------|
@@ -10,7 +10,7 @@
 | Blue       | 15    |
 | Black      | 14    |
 | Red        | 15    |
-| Green      | 14    |
+| Green      | 15    |
 | Multicolor | 7     |
 | Colorless  | 3     |
 | Land       | 3     |
@@ -184,7 +184,7 @@
 - [ ] Ruthless Ripper
 - [ ] Sage-Eye Harrier
 - [ ] Sage of the Inward Eye
-- [ ] Sagu Archer
+- [x] Sagu Archer
 - [ ] Sagu Mauler
 - [x] Salt Road Patrol
 - [ ] Sandsteppe Citadel
