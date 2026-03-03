@@ -28,6 +28,7 @@ object KhansOfTarkirSet {
         FirehoofCavalry,
         JeskaiStudent,
         MarduHateblade,
+        MarduHordechief,
         SaltRoadPatrol,
         VenerableLammasu,
 
