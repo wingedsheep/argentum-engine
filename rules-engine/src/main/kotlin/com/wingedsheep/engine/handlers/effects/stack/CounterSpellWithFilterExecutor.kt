@@ -6,6 +6,7 @@ import com.wingedsheep.engine.handlers.PredicateContext
 import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.mechanics.stack.StackResolver
+import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.sdk.scripting.effects.CounterSpellWithFilterEffect
@@ -15,7 +16,9 @@ import kotlin.reflect.KClass
  * Executor for CounterSpellWithFilterEffect.
  * "Counter target [filter] spell"
  */
-class CounterSpellWithFilterExecutor : EffectExecutor<CounterSpellWithFilterEffect> {
+class CounterSpellWithFilterExecutor(
+    private val cardRegistry: CardRegistry? = null
+) : EffectExecutor<CounterSpellWithFilterEffect> {
 
     override val effectType: KClass<CounterSpellWithFilterEffect> = CounterSpellWithFilterEffect::class
 
@@ -39,6 +42,6 @@ class CounterSpellWithFilterExecutor : EffectExecutor<CounterSpellWithFilterEffe
             return ExecutionResult.error(state, "Spell does not match filter: ${effect.filter.baseFilter.description}")
         }
 
-        return StackResolver().counterSpell(state, targetSpell.spellEntityId)
+        return StackResolver(cardRegistry = cardRegistry).counterSpell(state, targetSpell.spellEntityId)
     }
 }

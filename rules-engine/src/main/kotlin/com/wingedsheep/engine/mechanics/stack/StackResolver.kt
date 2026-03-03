@@ -18,6 +18,7 @@ import com.wingedsheep.engine.state.components.identity.MorphDataComponent
 import com.wingedsheep.engine.state.components.identity.RevealedToComponent
 import com.wingedsheep.engine.state.components.identity.TextReplacementComponent
 import com.wingedsheep.engine.mechanics.text.SubtypeReplacer
+import com.wingedsheep.sdk.scripting.GrantCantBeCountered
 import com.wingedsheep.sdk.scripting.KeywordAbility
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.CounterType
@@ -960,8 +961,13 @@ class StackResolver(
 
         val cardComponent = container.get<CardComponent>()
 
-        // Check if the spell can't be countered
+        // Check if the spell can't be countered (inherent property)
         if (cardComponent?.cantBeCountered == true) {
+            return ExecutionResult.success(state)
+        }
+
+        // Check if any permanent on the battlefield grants "can't be countered" to this spell
+        if (isGrantedCantBeCountered(state, spellId)) {
             return ExecutionResult.success(state)
         }
 
@@ -1170,5 +1176,29 @@ class StackResolver(
         }
 
         return state
+    }
+
+    /**
+     * Check if a spell on the stack is granted "can't be countered" by any permanent
+     * on the battlefield with a GrantCantBeCountered static ability.
+     */
+    private fun isGrantedCantBeCountered(state: GameState, spellId: EntityId): Boolean {
+        val spellOwner = state.getEntity(spellId)?.get<ControllerComponent>()?.playerId
+            ?: return false
+        val context = PredicateContext(controllerId = spellOwner)
+        for (playerId in state.turnOrder) {
+            for (entityId in state.getBattlefield(playerId)) {
+                val card = state.getEntity(entityId)?.get<CardComponent>() ?: continue
+                val def = cardRegistry?.getCard(card.cardDefinitionId) ?: continue
+                for (ability in def.staticAbilities) {
+                    if (ability is GrantCantBeCountered) {
+                        if (predicateEvaluator.matches(state, spellId, ability.filter, context)) {
+                            return true
+                        }
+                    }
+                }
+            }
+        }
+        return false
     }
 }

@@ -154,6 +154,7 @@ object LegionsSet {
         PatronOfTheWild,
         PrimalWhisperer,
         QuickSliver,
+        RootSliver,
         StonewoodInvoker,
         TimberwatchElf,
         TotemSpeaker,

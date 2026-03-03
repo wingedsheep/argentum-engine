@@ -4,6 +4,7 @@ import com.wingedsheep.engine.core.ExecutionResult
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.mechanics.stack.StackResolver
+import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.sdk.scripting.effects.CounterTriggeringSpellEffect
 import kotlin.reflect.KClass
@@ -13,7 +14,9 @@ import kotlin.reflect.KClass
  * "Counter that spell" — counters the spell that triggered this ability,
  * using context.triggeringEntityId rather than a chosen target.
  */
-class CounterTriggeringSpellExecutor : EffectExecutor<CounterTriggeringSpellEffect> {
+class CounterTriggeringSpellExecutor(
+    private val cardRegistry: CardRegistry? = null
+) : EffectExecutor<CounterTriggeringSpellEffect> {
 
     override val effectType: KClass<CounterTriggeringSpellEffect> = CounterTriggeringSpellEffect::class
 
@@ -30,6 +33,6 @@ class CounterTriggeringSpellExecutor : EffectExecutor<CounterTriggeringSpellEffe
             return ExecutionResult.success(state)
         }
 
-        return StackResolver().counterSpell(state, spellEntityId)
+        return StackResolver(cardRegistry = cardRegistry).counterSpell(state, spellEntityId)
     }
 }

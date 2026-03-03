@@ -1137,3 +1137,21 @@ data class GrantFlashToSpellType(
 ) : StaticAbility {
     override val description: String = "Any player may cast ${filter.description} spells as though they had flash"
 }
+
+/**
+ * Spells matching a filter can't be countered.
+ * Used for Root Sliver: "Sliver spells can't be countered."
+ *
+ * The engine checks for this static ability on any permanent on the battlefield
+ * when a spell would be countered. If the spell matches the filter, the counter
+ * attempt fails.
+ *
+ * @property filter The filter that spells must match to be uncounterable
+ */
+@SerialName("GrantCantBeCountered")
+@Serializable
+data class GrantCantBeCountered(
+    val filter: GameObjectFilter
+) : StaticAbility {
+    override val description: String = "${filter.description} spells can't be countered"
+}

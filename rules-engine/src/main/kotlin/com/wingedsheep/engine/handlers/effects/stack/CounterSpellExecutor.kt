@@ -4,6 +4,7 @@ import com.wingedsheep.engine.core.ExecutionResult
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.mechanics.stack.StackResolver
+import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.sdk.scripting.effects.CounterSpellEffect
@@ -13,7 +14,9 @@ import kotlin.reflect.KClass
  * Executor for CounterSpellEffect.
  * "Counter target spell"
  */
-class CounterSpellExecutor : EffectExecutor<CounterSpellEffect> {
+class CounterSpellExecutor(
+    private val cardRegistry: CardRegistry? = null
+) : EffectExecutor<CounterSpellEffect> {
 
     override val effectType: KClass<CounterSpellEffect> = CounterSpellEffect::class
 
@@ -27,6 +30,6 @@ class CounterSpellExecutor : EffectExecutor<CounterSpellEffect> {
             return ExecutionResult.error(state, "No valid spell target")
         }
 
-        return StackResolver().counterSpell(state, targetSpell.spellEntityId)
+        return StackResolver(cardRegistry = cardRegistry).counterSpell(state, targetSpell.spellEntityId)
     }
 }

@@ -8,6 +8,7 @@ import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.mechanics.mana.ManaSolver
 import com.wingedsheep.engine.mechanics.stack.StackResolver
+import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.engine.state.components.stack.SpellOnStackComponent
@@ -24,7 +25,8 @@ import kotlin.reflect.KClass
  * mana cost, then follows the same logic as CounterUnlessPaysExecutor.
  */
 class CounterUnlessDynamicPaysExecutor(
-    private val amountEvaluator: DynamicAmountEvaluator
+    private val amountEvaluator: DynamicAmountEvaluator,
+    private val cardRegistry: CardRegistry? = null
 ) : EffectExecutor<CounterUnlessDynamicPaysEffect> {
 
     override val effectType: KClass<CounterUnlessDynamicPaysEffect> = CounterUnlessDynamicPaysEffect::class
@@ -63,7 +65,7 @@ class CounterUnlessDynamicPaysExecutor(
         val manaSolver = ManaSolver()
         if (!manaSolver.canPay(state, payingPlayerId, manaCost)) {
             // Can't pay → auto-counter
-            return StackResolver().counterSpell(state, targetSpell.spellEntityId)
+            return StackResolver(cardRegistry = cardRegistry).counterSpell(state, targetSpell.spellEntityId)
         }
 
         // Can pay → ask the spell's controller if they want to pay

@@ -51,7 +51,7 @@ class EffectExecutorRegistry(
         registerModule(ManaExecutors(amountEvaluator))
         registerModule(TokenExecutors(amountEvaluator))
         registerModule(LibraryExecutors(cardRegistry = cardRegistry, targetFinder = TargetFinder()))
-        registerModule(StackExecutors(amountEvaluator))
+        registerModule(StackExecutors(amountEvaluator, cardRegistry))
         registerModule(PlayerExecutors(decisionHandler))
         registerModule(InformationExecutors())
         registerModule(CombatExecutors(amountEvaluator))
