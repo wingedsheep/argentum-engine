@@ -2,13 +2,13 @@
 
 **Set Size:** 145 cards
 **Release Date:** February 3, 2003
-**Implemented:** 132 / 145
+**Implemented:** 133 / 145
 
 | Color      | Count |
 |------------|-------|
 | White      | 26/29 |
 | Blue       | 26/29 |
-| Black      | 26/29 |
+| Black      | 27/29 |
 | Red        | 27/29 |
 | Green      | 27/29 |
 
@@ -20,7 +20,7 @@
 - [x] Aven Envoy
 - [x] Aven Redeemer
 - [x] Aven Warhawk
-- [ ] Bane of the Living
+- [x] Bane of the Living
 - [ ] Beacon of Destiny
 - [x] Berserk Murlodont
 - [x] Blade Sliver

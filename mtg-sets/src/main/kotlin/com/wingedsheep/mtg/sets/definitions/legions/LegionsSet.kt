@@ -79,6 +79,7 @@ object LegionsSet {
         Willbender,
 
         // Black creatures
+        BaneOfTheLiving,
         AphettoExterminator,
         BloodCelebrant,
         CorpseHarvester,

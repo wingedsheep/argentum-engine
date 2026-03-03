@@ -846,6 +846,21 @@ object Effects {
         )
 
     /**
+     * Modify stats for all creatures matching a filter using dynamic amounts.
+     * "All creatures get -X/-X until end of turn."
+     */
+    fun ModifyStatsForAll(
+        power: DynamicAmount,
+        toughness: DynamicAmount,
+        filter: GroupFilter,
+        duration: Duration = Duration.EndOfTurn
+    ): Effect =
+        ForEachInGroupEffect(
+            filter = filter,
+            effect = ModifyStatsEffect(power, toughness, EffectTarget.Self, duration)
+        )
+
+    /**
      * Deal damage to all creatures matching a filter.
      */
     fun DealDamageToAll(amount: Int, filter: GroupFilter): Effect =
