@@ -2,12 +2,12 @@
 
 **Set Size:** 269 cards (249 unique card names + basic land variants)
 **Release Date:** September 26, 2014
-**Implemented:** 82 / 249
+**Implemented:** 83 / 249
 
 | Color      | Count |
 |------------|-------|
 | White      | 14    |
-| Blue       | 13    |
+| Blue       | 14    |
 | Black      | 14    |
 | Red        | 14    |
 | Green      | 14    |
@@ -44,7 +44,7 @@
 - [ ] Become Immense
 - [x] Bellowing Saddlebrute
 - [x] Bitter Revelation
-- [ ] Blinding Spray
+- [x] Blinding Spray
 - [ ] Bloodfell Caves
 - [x] Bloodfire Expert
 - [x] Bloodfire Mentor
