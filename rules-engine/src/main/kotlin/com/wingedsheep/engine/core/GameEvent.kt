@@ -71,7 +71,8 @@ data class DamageDealtEvent(
     val isCombatDamage: Boolean,
     val sourceName: String? = null,
     val targetName: String? = null,
-    val targetIsPlayer: Boolean = false
+    val targetIsPlayer: Boolean = false,
+    val targetWasFaceDown: Boolean = false
 ) : GameEvent
 
 /**

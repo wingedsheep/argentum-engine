@@ -772,7 +772,10 @@ class TriggerDetector(
             ?: return
 
         // Face-down creatures have no abilities (Rule 707.2)
-        if (container.has<FaceDownComponent>()) return
+        // Check both current state AND the event's recorded face-down status, because
+        // FaceDownComponent may have been stripped by stripBattlefieldComponents when
+        // the creature died via SBAs before trigger detection runs.
+        if (container.has<FaceDownComponent>() || event.targetWasFaceDown) return
 
         val abilities = getTriggeredAbilities(entityId, cardComponent.cardDefinitionId, state)
 
@@ -1270,7 +1273,7 @@ class TriggerDetector(
             ?: cardComponent.ownerId ?: return
 
         // Face-down creatures have no abilities (Rule 707.2)
-        if (container.has<FaceDownComponent>()) return
+        if (container.has<FaceDownComponent>() || event.targetWasFaceDown) return
 
         val abilities = getTriggeredAbilities(damagedEntityId, cardComponent.cardDefinitionId, state)
 

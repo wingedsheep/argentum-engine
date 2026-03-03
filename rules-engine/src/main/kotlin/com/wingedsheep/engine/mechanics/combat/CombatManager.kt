@@ -2294,8 +2294,10 @@ class CombatManager(
         }
         newState = EffectExecutorUtils.trackDamageDealtToCreature(newState, sourceId, targetId)
         val sourceName = newState.getEntity(sourceId)?.get<CardComponent>()?.name ?: "Creature"
-        val targetName = newState.getEntity(targetId)?.get<CardComponent>()?.name ?: "Creature"
-        events.add(DamageDealtEvent(sourceId, targetId, damage, true, sourceName = sourceName, targetName = targetName, targetIsPlayer = false))
+        val targetContainer = newState.getEntity(targetId)
+        val targetName = targetContainer?.get<CardComponent>()?.name ?: "Creature"
+        val targetIsFaceDown = targetContainer?.has<FaceDownComponent>() == true
+        events.add(DamageDealtEvent(sourceId, targetId, damage, true, sourceName = sourceName, targetName = targetName, targetIsPlayer = false, targetWasFaceDown = targetIsFaceDown))
 
         return newState
     }
