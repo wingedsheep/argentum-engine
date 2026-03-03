@@ -69,6 +69,7 @@ object KhansOfTarkirSet {
         KheruDreadmaw,
         RottingMastodon,
         SidisisPet,
+        ShamblingAttendants,
         SultaiScavenger,
         SwarmOfBloodflies,
         UnyieldingKrumar,

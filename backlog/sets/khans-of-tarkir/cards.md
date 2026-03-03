@@ -2,13 +2,13 @@
 
 **Set Size:** 269 cards (249 unique card names + basic land variants)
 **Release Date:** September 26, 2014
-**Implemented:** 94 / 249
+**Implemented:** 95 / 249
 
 | Color      | Count |
 |------------|-------|
 | White      | 16    |
 | Blue       | 17    |
-| Black      | 16    |
+| Black      | 17    |
 | Red        | 16    |
 | Green      | 16    |
 | Multicolor | 7     |
@@ -200,7 +200,7 @@
 - [ ] Seek the Horizon
 - [ ] See the Unwritten
 - [ ] Set Adrift
-- [ ] Shambling Attendants
+- [x] Shambling Attendants
 - [x] Shatter
 - [ ] Sidisi, Brood Tyrant
 - [x] Sidisi's Pet
