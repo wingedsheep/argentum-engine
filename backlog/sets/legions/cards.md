@@ -2,13 +2,13 @@
 
 **Set Size:** 145 cards
 **Release Date:** February 3, 2003
-**Implemented:** 139 / 145
+**Implemented:** 140 / 145
 
 | Color      | Count |
 |------------|-------|
 | White      | 28/29 |
 | Blue       | 28/29 |
-| Black      | 27/29 |
+| Black      | 28/29 |
 | Red        | 28/29 |
 | Green      | 28/29 |
 
@@ -41,7 +41,7 @@
 - [x] Crested Craghorn
 - [x] Crookclaw Elder
 - [x] Crypt Sliver
-- [ ] Dark Supplicant
+- [x] Dark Supplicant
 - [x] Daru Mender
 - [x] Daru Sanctifier
 - [x] Daru Stinger

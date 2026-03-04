@@ -63,6 +63,22 @@ class GatherCardsExecutor : EffectExecutor<GatherCardsEffect> {
                 }
             }
 
+            is CardSource.FromMultipleZones -> {
+                val playerId = resolvePlayer(source.player, context, state)
+                    ?: return ExecutionResult.error(state, "Could not resolve player for GatherCards")
+                val allCards = source.zones.flatMap { zone ->
+                    state.getZone(ZoneKey(playerId, zone))
+                }
+                if (source.filter != GameObjectFilter.Any) {
+                    val predicateContext = PredicateContext.fromEffectContext(context)
+                    allCards.filter { cardId ->
+                        predicateEvaluator.matches(state, cardId, source.filter, predicateContext)
+                    }
+                } else {
+                    allCards
+                }
+            }
+
             is CardSource.FromVariable -> {
                 context.storedCollections[source.variableName] ?: emptyList()
             }

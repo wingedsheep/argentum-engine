@@ -111,9 +111,19 @@ sealed interface AbilityCost {
     @Serializable
     data class Sacrifice(
         val filter: GameObjectFilter = GameObjectFilter.Any,
-        val excludeSelf: Boolean = false
+        val excludeSelf: Boolean = false,
+        val count: Int = 1
     ) : AbilityCost {
-        override val description: String = "Sacrifice ${if (excludeSelf) "another " else "a "}${filter.description}"
+        override val description: String = buildString {
+            append("Sacrifice ")
+            if (count == 1) {
+                append(if (excludeSelf) "another " else "a ")
+            } else {
+                append("$count ")
+            }
+            append(filter.description)
+            if (count > 1) append("s")
+        }
     }
 
     /**

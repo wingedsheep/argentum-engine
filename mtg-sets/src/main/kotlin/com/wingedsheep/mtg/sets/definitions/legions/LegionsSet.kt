@@ -88,6 +88,7 @@ object LegionsSet {
         BloodCelebrant,
         CorpseHarvester,
         CryptSliver,
+        DarkSupplicant,
         DeathmarkPrelate,
         Earthblighter,
         GravebornMuse,

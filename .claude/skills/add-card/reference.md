@@ -118,6 +118,7 @@ constructors.
 - `Effects.HeadGames(target)` — look at target's hand, rearrange library
 - `Effects.Mill(count, target = Controller)` — also accepts `DynamicAmount` for variable mill
 - `Effects.SearchLibrary(filter, count = 1, destination = HAND, entersTapped, shuffle, reveal)`
+- `Effects.SearchMultipleZones(zones, filter, count = 1, destination = BATTLEFIELD, entersTapped)` — search graveyard/hand/library for a card and put it onto destination
 - `Effects.SearchLibraryNthFromTop(filter = Any, positionFromTop = 2)` — search, shuffle, put Nth from top (Long-Term Plans: positionFromTop=2)
 - `Effects.Scry(count)` — returns CompositeEffect (Gather → Select → Move pipeline)
 - `Effects.Surveil(count)` — returns CompositeEffect (Gather → Select → Move pipeline)
@@ -578,7 +579,7 @@ constructors.
 - `Costs.Tap` / `Costs.Untap`
 - `Costs.Mana("2R")` / `Costs.Mana(manaCost)`
 - `Costs.PayLife(amount)`
-- `Costs.Sacrifice(filter)` / `Costs.SacrificeAnother(filter)` / `Costs.SacrificeSelf` / `Costs.SacrificeChosenCreatureType`
+- `Costs.Sacrifice(filter)` / `Costs.SacrificeAnother(filter)` / `Costs.SacrificeSelf` / `Costs.SacrificeMultiple(count, filter)` / `Costs.SacrificeChosenCreatureType`
 - `Costs.DiscardCard` / `Costs.Discard(filter)` / `Costs.DiscardSelf` / `Costs.DiscardHand`
 - `Costs.ExileFromGraveyard(count, filter)`
 - `Costs.TapAttachedCreature` — tap the creature this is attached to
@@ -713,7 +714,8 @@ CompositeEffect(
 | `SelectTargetEffect(requirement, storeAs)`                                                                                     | Select and store a target                        |
 
 Sources: `CardSource.TopOfLibrary(count, player)`, `CardSource.FromZone(zone, player, filter)`,
-`CardSource.FromVariable(name)`, `CardSource.ControlledPermanents(player, filter)`
+`CardSource.FromVariable(name)`, `CardSource.ControlledPermanents(player, filter)`,
+`CardSource.FromMultipleZones(zones, player, filter)` — gather cards from multiple zones (e.g., graveyard + hand + library)
 Destinations: `CardDestination.ToZone(zone, player, placement)`
 Placements: `ZonePlacement.Top`, `.Bottom`, `.Shuffled`, `.Default`, `.Tapped`
 Selection: `SelectionMode.ChooseExactly(count)`, `.ChooseUpTo(count)`, `.All`, `.Random(count)`, `.ChooseAnyNumber`

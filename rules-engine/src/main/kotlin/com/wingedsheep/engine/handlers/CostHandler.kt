@@ -77,7 +77,8 @@ class CostHandler(
             }
             is AbilityCost.Sacrifice -> {
                 val candidates = findMatchingPermanentsUnified(state, controllerId, cost.filter)
-                if (cost.excludeSelf) candidates.any { it != sourceId } else candidates.isNotEmpty()
+                val eligible = if (cost.excludeSelf) candidates.filter { it != sourceId } else candidates
+                eligible.size >= cost.count
             }
             is AbilityCost.SacrificeChosenCreatureType -> {
                 val chosenType = state.getEntity(sourceId)?.get<ChosenCreatureTypeComponent>()?.creatureType
@@ -182,15 +183,14 @@ class CostHandler(
                 CostPaymentResult.success(newState, manaPool)
             }
             is AbilityCost.Sacrifice, is AbilityCost.SacrificeChosenCreatureType -> {
-                val toSacrifice = choices.sacrificeChoices.firstOrNull()
-                    ?: return CostPaymentResult.failure("No sacrifice target chosen")
-
-                // Get the controller of the permanent being sacrificed
-                val sacrificeContainer = state.getEntity(toSacrifice)
-                    ?: return CostPaymentResult.failure("Sacrifice target not found")
-                val sacrificeController = sacrificeContainer.get<ControllerComponent>()?.playerId
-                    ?: return CostPaymentResult.failure("Sacrifice target has no controller")
-                val sacrificeName = sacrificeContainer.get<CardComponent>()?.name ?: "Unknown"
+                val requiredCount = when (cost) {
+                    is AbilityCost.Sacrifice -> cost.count
+                    else -> 1
+                }
+                val toSacrificeList = choices.sacrificeChoices.take(requiredCount)
+                if (toSacrificeList.size < requiredCount) {
+                    return CostPaymentResult.failure("Not enough sacrifice targets chosen (need $requiredCount, got ${toSacrificeList.size})")
+                }
 
                 // Validate the chosen sacrifice matches the required filter
                 val sacrificeFilter = when (cost) {
@@ -202,35 +202,46 @@ class CostHandler(
                     }
                     else -> null
                 }
-                if (sacrificeFilter != null) {
-                    val context = PredicateContext(controllerId = controllerId)
-                    val projected = stateProjector.project(state)
-                    if (!predicateEvaluator.matchesWithProjection(state, projected, toSacrifice, sacrificeFilter, context)) {
+
+                val context = PredicateContext(controllerId = controllerId)
+                val projected = stateProjector.project(state)
+
+                var newState = state
+                val events = mutableListOf<GameEvent>()
+
+                for (toSacrifice in toSacrificeList) {
+                    val sacrificeContainer = newState.getEntity(toSacrifice)
+                        ?: return CostPaymentResult.failure("Sacrifice target not found")
+                    val sacrificeController = sacrificeContainer.get<ControllerComponent>()?.playerId
+                        ?: return CostPaymentResult.failure("Sacrifice target has no controller")
+                    val sacrificeName = sacrificeContainer.get<CardComponent>()?.name ?: "Unknown"
+
+                    if (sacrificeFilter != null) {
+                        if (!predicateEvaluator.matchesWithProjection(state, projected, toSacrifice, sacrificeFilter, context)) {
+                            return CostPaymentResult.failure("Sacrifice target does not match the required filter")
+                        }
+                    }
+                    // Validate excludeSelf: "sacrifice another creature" cannot sacrifice the source
+                    if (cost is AbilityCost.Sacrifice && cost.excludeSelf && toSacrifice == sourceId) {
                         return CostPaymentResult.failure("Sacrifice target does not match the required filter")
                     }
-                }
-                // Validate excludeSelf: "sacrifice another creature" cannot sacrifice the source
-                if (cost is AbilityCost.Sacrifice && cost.excludeSelf && toSacrifice == sourceId) {
-                    return CostPaymentResult.failure("Sacrifice target does not match the required filter")
-                }
 
-                // Move from battlefield to graveyard
-                val battlefieldZone = ZoneKey(sacrificeController, Zone.BATTLEFIELD)
-                val graveyardZone = ZoneKey(sacrificeController, Zone.GRAVEYARD)
+                    // Move from battlefield to graveyard
+                    val battlefieldZone = ZoneKey(sacrificeController, Zone.BATTLEFIELD)
+                    val graveyardZone = ZoneKey(sacrificeController, Zone.GRAVEYARD)
 
-                var newState = state.removeFromZone(battlefieldZone, toSacrifice)
-                newState = newState.addToZone(graveyardZone, toSacrifice)
+                    newState = newState.removeFromZone(battlefieldZone, toSacrifice)
+                    newState = newState.addToZone(graveyardZone, toSacrifice)
 
-                val events = listOf(
-                    PermanentsSacrificedEvent(sacrificeController, listOf(toSacrifice), listOf(sacrificeName)),
-                    ZoneChangeEvent(
+                    events.add(PermanentsSacrificedEvent(sacrificeController, listOf(toSacrifice), listOf(sacrificeName)))
+                    events.add(ZoneChangeEvent(
                         entityId = toSacrifice,
                         entityName = sacrificeName,
                         fromZone = Zone.BATTLEFIELD,
                         toZone = Zone.GRAVEYARD,
                         ownerId = sacrificeController
-                    )
-                )
+                    ))
+                }
 
                 CostPaymentResult.success(newState, manaPool, events)
             }

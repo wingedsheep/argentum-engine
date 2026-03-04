@@ -634,6 +634,65 @@ object EffectPatterns {
     }
 
     /**
+     * Search multiple zones (e.g., graveyard, hand, library) for a card matching a filter
+     * and put it onto the specified destination zone. Shuffles library afterward.
+     *
+     * Creates a Gather(multiple zones) → Select → Move → Shuffle pipeline.
+     *
+     * @param zones Which zones to search
+     * @param filter Which cards can be found
+     * @param count How many cards can be selected
+     * @param destination Where to put the found cards
+     * @param entersTapped Whether cards enter the battlefield tapped
+     */
+    fun searchMultipleZones(
+        zones: List<Zone>,
+        filter: GameObjectFilter = GameObjectFilter.Any,
+        count: Int = 1,
+        destination: SearchDestination = SearchDestination.BATTLEFIELD,
+        entersTapped: Boolean = false
+    ): CompositeEffect {
+        val effects = mutableListOf<Effect>()
+
+        effects.add(
+            GatherCardsEffect(
+                source = CardSource.FromMultipleZones(zones, Player.You, filter),
+                storeAs = "searchable"
+            )
+        )
+
+        effects.add(
+            SelectFromCollectionEffect(
+                from = "searchable",
+                selection = SelectionMode.ChooseUpTo(DynamicAmount.Fixed(count)),
+                storeSelected = "found"
+            )
+        )
+
+        val (zone, placement) = when (destination) {
+            SearchDestination.HAND -> Zone.HAND to ZonePlacement.Default
+            SearchDestination.BATTLEFIELD -> Zone.BATTLEFIELD to
+                if (entersTapped) ZonePlacement.Tapped else ZonePlacement.Default
+            SearchDestination.GRAVEYARD -> Zone.GRAVEYARD to ZonePlacement.Default
+            SearchDestination.TOP_OF_LIBRARY -> Zone.LIBRARY to ZonePlacement.Top
+        }
+
+        effects.add(
+            MoveCollectionEffect(
+                from = "found",
+                destination = CardDestination.ToZone(zone, placement = placement)
+            )
+        )
+
+        // Always shuffle library (the player could have searched it)
+        if (zones.contains(Zone.LIBRARY)) {
+            effects.add(ShuffleLibraryEffect())
+        }
+
+        return CompositeEffect(effects)
+    }
+
+    /**
      * Search your library for a card, then shuffle and put that card Nth from the top.
      *
      * Uses a purely atomic pipeline: Gather → Select → Shuffle → Move(bottom) →

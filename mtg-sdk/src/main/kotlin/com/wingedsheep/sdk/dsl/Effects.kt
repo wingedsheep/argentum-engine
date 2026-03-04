@@ -524,6 +524,18 @@ object Effects {
     ): Effect = EffectPatterns.searchLibrary(filter, count, destination, entersTapped, shuffle, reveal)
 
     /**
+     * Search multiple zones for a card matching a filter and put it into a destination zone.
+     * Shuffles library afterward if library is among the searched zones.
+     */
+    fun SearchMultipleZones(
+        zones: List<Zone>,
+        filter: GameObjectFilter,
+        count: Int = 1,
+        destination: SearchDestination = SearchDestination.BATTLEFIELD,
+        entersTapped: Boolean = false
+    ): Effect = EffectPatterns.searchMultipleZones(zones, filter, count, destination, entersTapped)
+
+    /**
      * Search library for a card, shuffle, and put it Nth from the top.
      * E.g., positionFromTop = 2 for "third from the top" (Long-Term Plans).
      */

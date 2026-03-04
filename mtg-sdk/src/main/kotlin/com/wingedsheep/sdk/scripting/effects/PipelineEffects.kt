@@ -46,6 +46,20 @@ sealed interface CardSource {
     }
 
     /**
+     * Cards from multiple zones matching an optional filter.
+     * Used for "search your graveyard, hand, and/or library" effects.
+     */
+    @SerialName("FromMultipleZones")
+    @Serializable
+    data class FromMultipleZones(
+        val zones: List<Zone>,
+        val player: Player = Player.You,
+        val filter: GameObjectFilter = GameObjectFilter.Companion.Any
+    ) : CardSource {
+        override val description: String = "${filter.description} cards in ${player.possessive} ${zones.joinToString(", ") { it.displayName }}"
+    }
+
+    /**
      * Read cards from a previously stored collection variable.
      */
     @SerialName("FromVariable")

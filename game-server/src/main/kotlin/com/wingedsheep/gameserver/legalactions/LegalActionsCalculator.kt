@@ -862,7 +862,7 @@ class LegalActionsCalculator(
                     is AbilityCost.Sacrifice -> {
                         sacrificeCost = effectiveCost
                         sacrificeTargets = findAbilitySacrificeTargets(state, playerId, sacrificeCost.filter, if (sacrificeCost.excludeSelf) entityId else null)
-                        if (sacrificeTargets.isEmpty()) continue
+                        if (sacrificeTargets.size < sacrificeCost.count) continue
                     }
                     is AbilityCost.SacrificeChosenCreatureType -> {
                         val chosenType = container.get<ChosenCreatureTypeComponent>()?.creatureType
@@ -900,7 +900,7 @@ class LegalActionsCalculator(
                                 is AbilityCost.Sacrifice -> {
                                     sacrificeCost = subCost
                                     sacrificeTargets = findAbilitySacrificeTargets(state, playerId, subCost.filter, if (subCost.excludeSelf) entityId else null)
-                                    if (sacrificeTargets.isEmpty()) {
+                                    if (sacrificeTargets.size < subCost.count) {
                                         costCanBePaid = false
                                         break
                                     }
@@ -976,7 +976,7 @@ class LegalActionsCalculator(
                         description = sacrificeCost.description,
                         costType = "SacrificePermanent",
                         validSacrificeTargets = sacrificeTargets,
-                        sacrificeCount = 1
+                        sacrificeCount = sacrificeCost.count
                     )
                 } else null
 
@@ -1160,7 +1160,7 @@ class LegalActionsCalculator(
                     is AbilityCost.Sacrifice -> {
                         sacrificeCost = effectiveCost
                         sacrificeTargets = findAbilitySacrificeTargets(state, playerId, sacrificeCost.filter, if (sacrificeCost.excludeSelf) entityId else null)
-                        if (sacrificeTargets.isEmpty()) continue
+                        if (sacrificeTargets.size < sacrificeCost.count) continue
                     }
                     is AbilityCost.ReturnToHand -> {
                         bounceCost = effectiveCost
@@ -1212,7 +1212,7 @@ class LegalActionsCalculator(
                                 is AbilityCost.Sacrifice -> {
                                     sacrificeCost = subCost
                                     sacrificeTargets = findAbilitySacrificeTargets(state, playerId, subCost.filter, if (subCost.excludeSelf) entityId else null)
-                                    if (sacrificeTargets.isEmpty()) {
+                                    if (sacrificeTargets.size < subCost.count) {
                                         costCanBePaid = false
                                         break
                                     }
@@ -1303,7 +1303,7 @@ class LegalActionsCalculator(
                         description = sacrificeCost.description,
                         costType = "SacrificePermanent",
                         validSacrificeTargets = sacrificeTargets,
-                        sacrificeCount = 1
+                        sacrificeCount = sacrificeCost.count
                     )
                 } else if (bounceTargets != null && bounceCost != null) {
                     AdditionalCostInfo(
