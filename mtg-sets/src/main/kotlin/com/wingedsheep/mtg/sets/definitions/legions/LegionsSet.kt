@@ -121,6 +121,7 @@ object LegionsSet {
         ImperialHellkite,
         KilnmouthDragon,
         FlamewaveInvoker,
+        GoblinAssassin,
         GoblinClearcutter,
         GoblinDynamo,
         GoblinGoon,
