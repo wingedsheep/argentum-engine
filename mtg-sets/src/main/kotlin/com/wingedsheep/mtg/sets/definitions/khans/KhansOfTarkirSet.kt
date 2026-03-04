@@ -87,6 +87,7 @@ object KhansOfTarkirSet {
         DebilitatingInjury,
         Despise,
         DutifulReturn,
+        MurderousCut,
         RakshasasSecret,
         RiteOfTheSerpent,
         Throttle,

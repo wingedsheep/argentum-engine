@@ -2,13 +2,13 @@
 
 **Set Size:** 269 cards (249 unique card names + basic land variants)
 **Release Date:** September 26, 2014
-**Implemented:** 111 / 249
+**Implemented:** 112 / 249
 
 | Color      | Count |
 |------------|-------|
 | White      | 20    |
 | Blue       | 19    |
-| Black      | 19    |
+| Black      | 20    |
 | Red        | 20    |
 | Green      | 20    |
 | Multicolor | 7     |
@@ -155,7 +155,7 @@
 - [ ] Molting Snakeskin
 - [x] Monastery Flock
 - [x] Monastery Swiftspear
-- [ ] Murderous Cut
+- [x] Murderous Cut
 - [ ] Mystic Monastery
 - [x] Mystic of the Hidden Way
 - [ ] Narset, Enlightened Master
