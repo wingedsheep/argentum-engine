@@ -2,13 +2,13 @@
 
 **Set Size:** 269 cards (249 unique card names + basic land variants)
 **Release Date:** September 26, 2014
-**Implemented:** 99 / 249
+**Implemented:** 100 / 249
 
 | Color      | Count |
 |------------|-------|
 | White      | 17    |
 | Blue       | 18    |
-| Black      | 17    |
+| Black      | 18    |
 | Red        | 17    |
 | Green      | 17    |
 | Multicolor | 7     |
@@ -131,7 +131,7 @@
 - [x] Kill Shot
 - [ ] Kin-Tree Invocation
 - [ ] Kin-Tree Warden
-- [ ] Krumar Bond-Kin
+- [x] Krumar Bond-Kin
 - [x] Leaping Master
 - [ ] Lens of Clarity
 - [x] Longshot Squad
