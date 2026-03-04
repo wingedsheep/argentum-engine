@@ -32,6 +32,7 @@ object KhansOfTarkirSet {
         SageEyeHarrier,
         SaltRoadPatrol,
         SeekerOfTheWay,
+        TimelyHordemate,
         VenerableLammasu,
 
         // White spells
