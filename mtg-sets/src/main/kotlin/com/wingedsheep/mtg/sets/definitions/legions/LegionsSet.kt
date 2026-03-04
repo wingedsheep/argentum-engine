@@ -58,6 +58,7 @@ object LegionsSet {
         CephalidPathmage,
         CovertOperative,
         CrookclawElder,
+        Dermoplasm,
         DreambornMuse,
         EchoTracer,
         FugitiveWizard,

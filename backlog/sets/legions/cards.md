@@ -2,12 +2,12 @@
 
 **Set Size:** 145 cards
 **Release Date:** February 3, 2003
-**Implemented:** 138 / 145
+**Implemented:** 139 / 145
 
 | Color      | Count |
 |------------|-------|
 | White      | 28/29 |
-| Blue       | 27/29 |
+| Blue       | 28/29 |
 | Black      | 27/29 |
 | Red        | 28/29 |
 | Green      | 28/29 |
@@ -49,7 +49,7 @@
 - [x] Defender of the Order
 - [x] Defiant Elf
 - [x] Deftblade Elite
-- [ ] Dermoplasm
+- [x] Dermoplasm
 - [x] Dreamborn Muse
 - [x] Drinker of Sorrow
 - [x] Dripping Dead
