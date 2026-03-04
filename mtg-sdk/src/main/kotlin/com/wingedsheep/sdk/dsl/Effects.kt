@@ -311,7 +311,13 @@ object Effects {
      * Return all cards linked to the source permanent (via LinkedExileComponent)
      * to the battlefield under the controller's control.
      */
-    fun ReturnLinkedExile(): Effect = ReturnLinkedExileEffect
+    fun ReturnLinkedExile(): Effect = ReturnLinkedExileEffect()
+
+    /**
+     * Return all cards linked to the source permanent (via LinkedExileComponent)
+     * to the battlefield under their owners' control.
+     */
+    fun ReturnLinkedExileUnderOwnersControl(): Effect = ReturnLinkedExileEffect(underOwnersControl = true)
 
     /**
      * Return one card from the source's linked exile to the battlefield.

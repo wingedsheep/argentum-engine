@@ -179,6 +179,13 @@ sealed interface AbilityCost {
         override val description: String = "Sacrifice this permanent"
     }
 
+    /** Exile self (the permanent with this ability) */
+    @SerialName("CostExileSelf")
+    @Serializable
+    data object ExileSelf : AbilityCost {
+        override val description: String = "Exile this creature"
+    }
+
     /**
      * Sacrifice a creature of the type chosen when this permanent entered the battlefield.
      * Used by cards like Doom Cannon that choose a creature type on entry and reference it in costs.

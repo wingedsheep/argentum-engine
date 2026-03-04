@@ -65,11 +65,12 @@ class ReturnLinkedExileExecutor : EffectExecutor<ReturnLinkedExileEffect> {
             val exileZone = ZoneKey(ownerId, Zone.EXILE)
             if (entityId !in newState.getZone(exileZone)) continue
 
-            // Move from exile to battlefield under controller's control
-            val battlefieldZone = ZoneKey(controllerId, Zone.BATTLEFIELD)
+            // Move from exile to battlefield under the appropriate player's control
+            val returnControllerId = if (effect.underOwnersControl) ownerId else controllerId
+            val battlefieldZone = ZoneKey(returnControllerId, Zone.BATTLEFIELD)
 
             newState = newState.updateEntity(entityId) { c ->
-                c.with(ControllerComponent(controllerId))
+                c.with(ControllerComponent(returnControllerId))
                     .with(SummoningSicknessComponent)
             }
             newState = newState.removeFromZone(exileZone, entityId)

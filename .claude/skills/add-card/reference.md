@@ -60,7 +60,8 @@ constructors.
 - `Effects.PutOntoBattlefieldUnderYourControl(target)` — put target onto battlefield under controller's control
 - `Effects.ReturnSelfToBattlefieldAttached(target)` — return self from graveyard to battlefield attached to target (for Auras like Dragon Shadow)
 - `Effects.ExileGroupAndLink(filter: GroupFilter, storeAs)` — exile all matching permanents and link to source (Day of the Dragons ETB)
-- `Effects.ReturnLinkedExile()` — return all cards linked via LinkedExileComponent to battlefield (Day of the Dragons LTB)
+- `Effects.ReturnLinkedExile()` — return all cards linked via LinkedExileComponent to battlefield under controller's control (Day of the Dragons LTB)
+- `Effects.ReturnLinkedExileUnderOwnersControl()` — return all linked exiled cards to battlefield under their owners' control (Planar Guide)
 - `Effects.ReturnOneFromLinkedExile()` — return one owned card from linked exile to battlefield (Dimensional Breach upkeep trigger)
 - `Effects.CreatePermanentGlobalTriggeredAbility(ability)` — create a permanent global triggered ability (for sorcery-created recurring triggers)
 - `Effects.ShuffleGraveyardIntoLibrary(target)` — shuffle graveyard into library
@@ -235,7 +236,7 @@ constructors.
 | `HarshMercyEffect`                          | (object)                                              | Harsh Mercy              |
 | `PatriarchsBiddingEffect`                   | (object)                                              | Patriarch's Bidding      |
 | `ExileGroupAndLinkEffect`                   | `filter: GroupFilter, storeAs`                        | Exile group + link to source |
-| `ReturnLinkedExileEffect`                   | (object)                                              | Return linked exiled cards |
+| `ReturnLinkedExileEffect`                   | `underOwnersControl: Boolean = false`                 | Return linked exiled cards |
 
 ### Permanent Modification
 
@@ -582,7 +583,7 @@ constructors.
 - `Costs.PayLife(amount)`
 - `Costs.Sacrifice(filter)` / `Costs.SacrificeAnother(filter)` / `Costs.SacrificeSelf` / `Costs.SacrificeMultiple(count, filter)` / `Costs.SacrificeChosenCreatureType`
 - `Costs.DiscardCard` / `Costs.Discard(filter)` / `Costs.DiscardSelf` / `Costs.DiscardHand`
-- `Costs.ExileFromGraveyard(count, filter)`
+- `Costs.ExileFromGraveyard(count, filter)` / `Costs.ExileSelf`
 - `Costs.TapAttachedCreature` — tap the creature this is attached to
 - `Costs.TapPermanents(count, filter)` — tap N permanents
 - `Costs.Loyalty(change)` — planeswalker loyalty

@@ -2,11 +2,11 @@
 
 **Set Size:** 145 cards
 **Release Date:** February 3, 2003
-**Implemented:** 141 / 145
+**Implemented:** 142 / 145
 
 | Color      | Count |
 |------------|-------|
-| White      | 28/29 |
+| White      | 29/29 |
 | Blue       | 28/29 |
 | Black      | 28/29 |
 | Red        | 29/29 |
@@ -108,7 +108,7 @@
 - [x] Noxious Ghoul
 - [x] Patron of the Wild
 - [ ] Phage the Untouchable
-- [ ] Planar Guide
+- [x] Planar Guide
 - [x] Plated Sliver
 - [x] Primal Whisperer
 - [x] Primoc Escapee

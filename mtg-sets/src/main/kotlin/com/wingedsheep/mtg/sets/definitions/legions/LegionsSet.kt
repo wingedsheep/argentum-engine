@@ -40,6 +40,7 @@ object LegionsSet {
         Glowrider,
         LiegeOfTheAxe,
         LowlandTracker,
+        PlanarGuide,
         PlatedSliver,
         StarlightInvoker,
         StoicChampion,

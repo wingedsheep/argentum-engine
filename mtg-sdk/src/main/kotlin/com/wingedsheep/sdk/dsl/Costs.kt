@@ -115,6 +115,11 @@ object Costs {
     val SacrificeSelf: AbilityCost = AbilityCost.SacrificeSelf
 
     /**
+     * Exile this creature (for abilities that exile themselves as cost).
+     */
+    val ExileSelf: AbilityCost = AbilityCost.ExileSelf
+
+    /**
      * Sacrifice a creature of the type chosen when this permanent entered the battlefield.
      * Used by cards like Doom Cannon.
      */

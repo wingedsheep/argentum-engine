@@ -108,6 +108,11 @@ class CostHandler(
                 val battlefieldZone = ZoneKey(controllerId, Zone.BATTLEFIELD)
                 state.getZone(battlefieldZone).contains(sourceId)
             }
+            is AbilityCost.ExileSelf -> {
+                // Source must be on the battlefield
+                val battlefieldZone = ZoneKey(controllerId, Zone.BATTLEFIELD)
+                state.getZone(battlefieldZone).contains(sourceId)
+            }
             is AbilityCost.TapPermanents -> {
                 findUntappedMatchingPermanentsUnified(state, controllerId, cost.filter).size >= cost.count
             }
@@ -344,6 +349,36 @@ class CostHandler(
                         fromZone = Zone.BATTLEFIELD,
                         toZone = Zone.GRAVEYARD,
                         ownerId = sourceController
+                    )
+                )
+
+                CostPaymentResult.success(newState, manaPool, events)
+            }
+            is AbilityCost.ExileSelf -> {
+                // Exile the source permanent
+                val sourceContainer = state.getEntity(sourceId)
+                    ?: return CostPaymentResult.failure("Source permanent not found")
+                val sourceController = sourceContainer.get<ControllerComponent>()?.playerId
+                    ?: return CostPaymentResult.failure("Source permanent has no controller")
+                val sourceOwner = sourceContainer.get<OwnerComponent>()?.playerId ?: sourceController
+                val sourceName = sourceContainer.get<CardComponent>()?.name ?: "Unknown"
+
+                val battlefieldZone = ZoneKey(sourceController, Zone.BATTLEFIELD)
+                val exileZone = ZoneKey(sourceOwner, Zone.EXILE)
+
+                var newState = state.updateEntity(sourceId) { c ->
+                    com.wingedsheep.engine.handlers.effects.EffectExecutorUtils.stripBattlefieldComponents(c)
+                }
+                newState = newState.removeFromZone(battlefieldZone, sourceId)
+                newState = newState.addToZone(exileZone, sourceId)
+
+                val events = listOf(
+                    ZoneChangeEvent(
+                        entityId = sourceId,
+                        entityName = sourceName,
+                        fromZone = Zone.BATTLEFIELD,
+                        toZone = Zone.EXILE,
+                        ownerId = sourceOwner
                     )
                 )
 

@@ -392,9 +392,12 @@ data class ExileGroupAndLinkEffect(
  */
 @SerialName("ReturnLinkedExile")
 @Serializable
-data object ReturnLinkedExileEffect : Effect {
+data class ReturnLinkedExileEffect(
+    val underOwnersControl: Boolean = false
+) : Effect {
     override val description: String =
-        "Return the exiled cards to the battlefield under your control"
+        if (underOwnersControl) "Return the exiled cards to the battlefield under their owners' control"
+        else "Return the exiled cards to the battlefield under your control"
 }
 
 /**
