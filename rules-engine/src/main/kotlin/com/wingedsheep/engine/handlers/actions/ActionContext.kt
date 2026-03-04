@@ -59,7 +59,7 @@ data class ActionContext(
                 turnManager = TurnManager(combatManager, cardRegistry = cardRegistry, effectExecutor = effectExecutorRegistry::execute),
                 stackResolver = StackResolver(effectHandler = com.wingedsheep.engine.handlers.EffectHandler(cardRegistry = cardRegistry), cardRegistry = cardRegistry),
                 manaSolver = ManaSolver(cardRegistry),
-                costCalculator = CostCalculator(cardRegistry),
+                costCalculator = CostCalculator(cardRegistry, StateProjector()),
                 alternativePaymentHandler = AlternativePaymentHandler(),
                 costHandler = CostHandler(StateProjector()),
                 mulliganHandler = MulliganHandler(),

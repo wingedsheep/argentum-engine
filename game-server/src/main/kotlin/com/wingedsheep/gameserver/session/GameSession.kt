@@ -68,11 +68,11 @@ class GameSession(
 
     private val actionProcessor = ActionProcessor(cardRegistry)
     private val gameInitializer = GameInitializer(cardRegistry)
+    private val stateProjector = StateProjector()
     private val manaSolver = ManaSolver(cardRegistry)
-    private val costCalculator = CostCalculator(cardRegistry)
+    private val costCalculator = CostCalculator(cardRegistry, stateProjector)
     private val conditionEvaluator = ConditionEvaluator()
     private val predicateEvaluator = PredicateEvaluator()
-    private val stateProjector = StateProjector()
     private val turnManager = TurnManager(combatManager = CombatManager(cardRegistry))
     private val autoPassManager = AutoPassManager()
     private val spectatorStateBuilder = SpectatorStateBuilder(cardRegistry, stateTransformer)

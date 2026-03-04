@@ -50,7 +50,7 @@ class ActionProcessor(
     turnManager: TurnManager = TurnManager(combatManager, cardRegistry = cardRegistry, effectExecutor = effectExecutorRegistry::execute),
     stackResolver: StackResolver = StackResolver(effectHandler = com.wingedsheep.engine.handlers.EffectHandler(cardRegistry = cardRegistry), cardRegistry = cardRegistry),
     manaSolver: ManaSolver = ManaSolver(cardRegistry),
-    costCalculator: CostCalculator = CostCalculator(cardRegistry),
+    costCalculator: CostCalculator = CostCalculator(cardRegistry, StateProjector()),
     alternativePaymentHandler: AlternativePaymentHandler = AlternativePaymentHandler(),
     costHandler: CostHandler = CostHandler(StateProjector()),
     mulliganHandler: MulliganHandler = MulliganHandler(),

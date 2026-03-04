@@ -1,5 +1,8 @@
 package com.wingedsheep.engine.scenarios
 
+import com.wingedsheep.engine.core.ActivateAbility
+import com.wingedsheep.engine.core.ChooseOptionDecision
+import com.wingedsheep.engine.core.OptionChosenResponse
 import com.wingedsheep.engine.mechanics.layers.StateProjector
 import com.wingedsheep.engine.mechanics.mana.CostCalculator
 import com.wingedsheep.engine.registry.CardRegistry
@@ -112,6 +115,63 @@ class MistformWarchiefTest : FunSpec({
         val effectiveCost = calculator.calculateEffectiveCost(driver.state, bears, activePlayer)
         effectiveCost.genericAmount shouldBe 1
         effectiveCost.cmc shouldBe 2 // Still {1}{G}
+    }
+
+    test("cost reduction applies after becoming Soldier via activated ability") {
+        val DaruWarchief = card("Daru Warchief") {
+            manaCost = "{2}{W}{W}"
+            typeLine = "Creature — Human Soldier"
+            power = 1
+            toughness = 1
+        }
+
+        val registry = CardRegistry()
+        registry.register(TestCards.all)
+        registry.register(MistformWarchief)
+        registry.register(DaruWarchief)
+
+        val calculator = CostCalculator(registry, projector)
+
+        val driver = GameTestDriver()
+        driver.registerCards(TestCards.all)
+        driver.registerCard(MistformWarchief)
+        driver.registerCard(DaruWarchief)
+        driver.initMirrorMatch(
+            deck = Deck.of("Island" to 20, "Plains" to 20),
+            startingLife = 20
+        )
+
+        val activePlayer = driver.activePlayer!!
+        driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
+
+        val warchief = driver.putCreatureOnBattlefield(activePlayer, "Mistform Warchief")
+        driver.removeSummoningSickness(warchief)
+
+        // Daru Warchief is Human Soldier — does NOT share type with Illusion
+        val daruDef = registry.requireCard("Daru Warchief")
+        calculator.calculateEffectiveCost(driver.state, daruDef, activePlayer).genericAmount shouldBe 2
+
+        // Activate Mistform Warchief's tap ability to become Soldier
+        val abilityId = MistformWarchief.activatedAbilities[0].id
+        driver.submit(
+            ActivateAbility(
+                playerId = activePlayer,
+                sourceId = warchief,
+                abilityId = abilityId
+            )
+        )
+        driver.bothPass()
+
+        // Choose "Soldier" from the creature type options
+        val decision = driver.pendingDecision as ChooseOptionDecision
+        val soldierIndex = decision.options.indexOf("Soldier")
+        driver.submitDecision(activePlayer, OptionChosenResponse(decision.id, soldierIndex))
+
+        // Now Mistform Warchief is a Soldier — Daru Warchief shares the Soldier type
+        // Cost should be reduced by 1: {2}{W}{W} → {1}{W}{W}
+        val effectiveCost = calculator.calculateEffectiveCost(driver.state, daruDef, activePlayer)
+        effectiveCost.genericAmount shouldBe 1
+        effectiveCost.cmc shouldBe 3 // {1}{W}{W}
     }
 
     test("non-creature spells are not reduced") {
