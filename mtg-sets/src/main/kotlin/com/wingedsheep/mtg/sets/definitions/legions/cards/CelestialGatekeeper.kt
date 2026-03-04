@@ -10,6 +10,7 @@ import com.wingedsheep.sdk.scripting.effects.ForEachTargetEffect
 import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
+import com.wingedsheep.sdk.scripting.predicates.CardPredicate
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.targets.TargetObject
 
@@ -35,8 +36,15 @@ val CelestialGatekeeper = card("Celestial Gatekeeper") {
             count = 2,
             optional = true,
             filter = TargetFilter(
-                (GameObjectFilter.Permanent.withSubtype(Subtype.BIRD) or
-                    GameObjectFilter.Permanent.withSubtype(Subtype.CLERIC)).ownedByYou(),
+                GameObjectFilter(
+                    cardPredicates = listOf(
+                        CardPredicate.IsPermanent,
+                        CardPredicate.Or(listOf(
+                            CardPredicate.HasSubtype(Subtype.BIRD),
+                            CardPredicate.HasSubtype(Subtype.CLERIC)
+                        ))
+                    )
+                ).ownedByYou(),
                 zone = Zone.GRAVEYARD
             )
         )
