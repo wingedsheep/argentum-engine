@@ -158,5 +158,9 @@ object KhansOfTarkirSet {
         JungleHollow,
         RuggedHighlands,
         WindScarredCrag,
-    )
+
+        // Basic lands
+    ) + KhansBasicLands
+
+    val basicLands = KhansBasicLands
 }

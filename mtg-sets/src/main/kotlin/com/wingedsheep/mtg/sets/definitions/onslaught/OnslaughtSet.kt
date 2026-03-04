@@ -368,4 +368,6 @@ object OnslaughtSet {
 
         // Basic lands
     ) + OnslaughtBasicLands
+
+    val basicLands = OnslaughtBasicLands
 }
