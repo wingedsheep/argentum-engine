@@ -6,6 +6,7 @@ import './styles/responsive.css'
 import App from './App'
 import { TournamentEntryPage } from './components/tournament/TournamentEntryPage'
 import { AdminPage } from './components/admin/AdminPage'
+import { ReplayPage } from './components/replay/ReplayPage'
 import { initAnalytics } from './utils/analytics'
 
 initAnalytics()
@@ -20,6 +21,7 @@ createRoot(rootElement).render(
     <BrowserRouter>
       <Routes>
         <Route path="/tournament/:lobbyId" element={<TournamentEntryPage />} />
+        <Route path="/replay/:gameId" element={<ReplayPage />} />
         <Route path="/admin" element={<AdminPage />} />
         <Route path="*" element={<App />} />
       </Routes>

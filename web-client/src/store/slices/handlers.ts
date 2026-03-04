@@ -433,6 +433,7 @@ export function createMessageHandlers(set: SetState, get: GetState): MessageHand
           reason: msg.reason,
           result,
           message: msg.message,
+          gameId: msg.gameId,
         },
       })
     },

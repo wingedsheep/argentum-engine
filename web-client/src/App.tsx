@@ -18,6 +18,7 @@ import { GridDraftOverlay } from './components/draft/GridDraftOverlay'
 import { SpectatorGameBoard } from './components/spectating/SpectatorGameBoard'
 import { trackPageView } from './utils/analytics'
 import { randomBackground } from './utils/background'
+import { useNavigate } from 'react-router-dom'
 import { useGameStore } from './store/gameStore'
 import { useViewingPlayer, useBattlefieldCards } from './store/selectors'
 import type { EntityId } from './types'
@@ -318,6 +319,7 @@ function GameOverlay() {
   const lastError = useGameStore((state) => state.lastError)
   const clearError = useGameStore((state) => state.clearError)
   const returnToMenu = useGameStore((state) => state.returnToMenu)
+  const navigate = useNavigate()
 
   if (gameOverState) {
     // Use custom message if provided, otherwise fall back to standard reason
@@ -338,12 +340,25 @@ function GameOverlay() {
             {title}
           </h1>
           <p style={overlayStyles.subtitle}>{reasonText}</p>
-          <button
-            onClick={returnToMenu}
-            style={overlayStyles.button}
-          >
-            Return to Menu
-          </button>
+          <div style={overlayStyles.buttonRow}>
+            <button
+              onClick={returnToMenu}
+              style={overlayStyles.button}
+            >
+              Return to Menu
+            </button>
+            {gameOverState.gameId && (
+              <button
+                onClick={() => {
+                  returnToMenu()
+                  navigate(`/replay/${gameOverState.gameId}`)
+                }}
+                style={overlayStyles.replayButton}
+              >
+                Watch Replay
+              </button>
+            )}
+          </div>
         </div>
       </>
     )
@@ -394,10 +409,23 @@ const overlayStyles: Record<string, React.CSSProperties> = {
     fontSize: 18,
     color: '#888',
   },
+  buttonRow: {
+    display: 'flex',
+    gap: 12,
+  },
   button: {
     padding: '12px 24px',
     fontSize: 18,
     backgroundColor: '#333',
+    color: 'white',
+    border: 'none',
+    borderRadius: 8,
+    cursor: 'pointer',
+  },
+  replayButton: {
+    padding: '12px 24px',
+    fontSize: 18,
+    backgroundColor: '#1e40af',
     color: 'white',
     border: 'none',
     borderRadius: 8,

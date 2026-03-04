@@ -402,7 +402,7 @@ class GamePlayHandler(
         val gameOverReason = reason ?: gameSession.getGameOverReason() ?: GameOverReason.LIFE_ZERO
         // Extract custom message from PlayerLostEvent if present
         val customMessage = events.filterIsInstance<PlayerLostEvent>().firstOrNull()?.message
-        val message = ServerMessage.GameOver(winnerId, gameOverReason, customMessage)
+        val message = ServerMessage.GameOver(winnerId, gameOverReason, customMessage, gameSession.sessionId)
 
         gameSession.player1?.let { sender.send(it.webSocketSession, message) }
         gameSession.player2?.let { sender.send(it.webSocketSession, message) }

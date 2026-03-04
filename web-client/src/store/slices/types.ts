@@ -111,6 +111,7 @@ export interface GameOverState {
   reason: GameOverReason
   result: 'win' | 'lose' | 'draw'
   message?: string | undefined
+  gameId?: string | undefined
 }
 
 /**

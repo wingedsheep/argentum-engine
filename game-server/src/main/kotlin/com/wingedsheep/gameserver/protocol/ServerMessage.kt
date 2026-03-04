@@ -118,7 +118,8 @@ sealed interface ServerMessage {
     data class GameOver(
         val winnerId: EntityId?,
         val reason: GameOverReason,
-        val message: String? = null
+        val message: String? = null,
+        val gameId: String? = null
     ) : ServerMessage
 
     /**

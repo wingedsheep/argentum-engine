@@ -552,6 +552,7 @@ export interface GameOverMessage {
   readonly winnerId: EntityId | null
   readonly reason: GameOverReason
   readonly message?: string
+  readonly gameId?: string
 }
 
 /**
