@@ -136,6 +136,7 @@ object LegionsSet {
         SkirkDrillSergeant,
         SkirkMarauder,
         SkirkOutrider,
+        UnstableHulk,
         WarbreakTrumpeter,
 
         // Green creatures

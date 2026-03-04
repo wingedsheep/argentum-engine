@@ -2,14 +2,14 @@
 
 **Set Size:** 145 cards
 **Release Date:** February 3, 2003
-**Implemented:** 135 / 145
+**Implemented:** 136 / 145
 
 | Color      | Count |
 |------------|-------|
 | White      | 27/29 |
 | Blue       | 27/29 |
 | Black      | 27/29 |
-| Red        | 27/29 |
+| Red        | 28/29 |
 | Green      | 27/29 |
 
 ---
@@ -140,7 +140,7 @@
 - [x] Totem Speaker
 - [x] Toxin Sliver
 - [x] Tribal Forcemage
-- [ ] Unstable Hulk
+- [x] Unstable Hulk
 - [x] Vexing Beetle
 - [x] Vile Deacon
 - [x] Voidmage Apprentice
