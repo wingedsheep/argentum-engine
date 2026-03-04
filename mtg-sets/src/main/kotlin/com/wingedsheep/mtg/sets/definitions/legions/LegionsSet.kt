@@ -81,6 +81,7 @@ object LegionsSet {
         VoidmageApprentice,
         WallOfDeceit,
         WarpedResearcher,
+        WeaverOfLies,
         Willbender,
 
         // Black creatures

@@ -2,12 +2,12 @@
 
 **Set Size:** 145 cards
 **Release Date:** February 3, 2003
-**Implemented:** 143 / 145
+**Implemented:** 144 / 145
 
 | Color      | Count |
 |------------|-------|
 | White      | 29/29 |
-| Blue       | 28/29 |
+| Blue       | 29/29 |
 | Black      | 28/29 |
 | Red        | 29/29 |
 | Green      | 29/29 |
@@ -149,7 +149,7 @@
 - [x] Warbreak Trumpeter
 - [x] Ward Sliver
 - [x] Warped Researcher
-- [ ] Weaver of Lies
+- [x] Weaver of Lies
 - [x] Whipgrass Entangler
 - [x] White Knight
 - [x] Willbender
