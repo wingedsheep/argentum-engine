@@ -904,6 +904,7 @@ Set via `staticAbility { ability = ... }`:
 - `AttackTax(manaCostPerAttacker: String)` — creatures can't attack you unless their controller pays the cost per attacker (e.g., Ghostly Prison, Windborn Muse)
 - `CantBeAttackedWithout(requiredKeyword: Keyword)` — creatures without the specified keyword can't attack the controller (e.g., Form of the Dragon — creatures without flying can't attack you)
 - `RevealFirstDrawEachTurn` — reveal the first card drawn each turn (Primitive Etchings)
+- `UntapDuringOtherUntapSteps` — untap all permanents you control during each other player's untap step (Seedborn Muse)
 - `SpellCostReduction(reductionSource)` — cost reduction
 - `FaceDownSpellCostReduction(reductionSource)` — face-down spell cost reduction
 - `ReduceSpellCostBySubtype(subtype, amount)` — reduce generic cost per subtype

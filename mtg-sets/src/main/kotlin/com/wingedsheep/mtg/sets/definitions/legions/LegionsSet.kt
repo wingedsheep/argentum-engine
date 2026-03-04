@@ -166,6 +166,7 @@ object LegionsSet {
         PrimalWhisperer,
         QuickSliver,
         RootSliver,
+        SeedbornMuse,
         StonewoodInvoker,
         TimberwatchElf,
         TotemSpeaker,

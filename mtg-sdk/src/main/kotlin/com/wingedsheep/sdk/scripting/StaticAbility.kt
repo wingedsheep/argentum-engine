@@ -1171,3 +1171,17 @@ data class GrantCantBeCountered(
 ) : StaticAbility {
     override val description: String = "${filter.description} spells can't be countered"
 }
+
+/**
+ * Untap all permanents you control during each other player's untap step.
+ * Used for Seedborn Muse and similar effects.
+ *
+ * The engine checks for this static ability during the untap step. When the active
+ * player is not the controller of a permanent with this ability, all permanents
+ * controlled by the ability's controller are untapped as well.
+ */
+@SerialName("UntapDuringOtherUntapSteps")
+@Serializable
+data object UntapDuringOtherUntapSteps : StaticAbility {
+    override val description: String = "Untap all permanents you control during each other player's untap step"
+}

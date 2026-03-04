@@ -199,6 +199,31 @@ class TurnManager(
             events.add(UntappedEvent(entityId, cardName))
         }
 
+        // Untap permanents for non-active players with UntapDuringOtherUntapSteps (e.g., Seedborn Muse)
+        if (cardRegistry != null) {
+            val projectedForSeedborn = stateProjector.project(newState)
+            for (playerId in newState.turnOrder) {
+                if (playerId == activePlayer) continue
+                val hasUntapAbility = projectedForSeedborn.getBattlefieldControlledBy(playerId).any { permanentId ->
+                    val card = newState.getEntity(permanentId)?.get<CardComponent>() ?: return@any false
+                    val cardDef = cardRegistry.getCard(card.cardDefinitionId) ?: return@any false
+                    cardDef.script.staticAbilities.any { it is com.wingedsheep.sdk.scripting.UntapDuringOtherUntapSteps }
+                }
+                if (hasUntapAbility) {
+                    val tappedPermanents = newState.entities.filter { (entityId, container) ->
+                        projectedForSeedborn.getController(entityId) == playerId &&
+                            container.has<TappedComponent>() &&
+                            !projectedForSeedborn.hasKeyword(entityId, com.wingedsheep.sdk.core.AbilityFlag.DOESNT_UNTAP)
+                    }.keys
+                    for (entityId in tappedPermanents) {
+                        val cardName = newState.getEntity(entityId)?.get<CardComponent>()?.name ?: "Permanent"
+                        newState = newState.updateEntity(entityId) { it.without<TappedComponent>() }
+                        events.add(UntappedEvent(entityId, cardName))
+                    }
+                }
+            }
+        }
+
         // Remove WhileSourceTapped floating effects whose source is no longer tapped
         newState = cleanupWhileSourceTappedEffects(newState)
 

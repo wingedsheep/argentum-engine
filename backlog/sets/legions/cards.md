@@ -2,7 +2,7 @@
 
 **Set Size:** 145 cards
 **Release Date:** February 3, 2003
-**Implemented:** 142 / 145
+**Implemented:** 143 / 145
 
 | Color      | Count |
 |------------|-------|
@@ -10,7 +10,7 @@
 | Blue       | 28/29 |
 | Black      | 28/29 |
 | Red        | 29/29 |
-| Green      | 28/29 |
+| Green      | 29/29 |
 
 ---
 
@@ -119,7 +119,7 @@
 - [x] Rockshard Elemental
 - [x] Root Sliver
 - [x] Scion of Darkness
-- [ ] Seedborn Muse
+- [x] Seedborn Muse
 - [x] Shaleskin Plower
 - [x] Shifting Sliver
 - [x] Skinthinner
