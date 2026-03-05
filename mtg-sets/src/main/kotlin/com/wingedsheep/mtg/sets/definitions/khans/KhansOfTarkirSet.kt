@@ -153,6 +153,7 @@ object KhansOfTarkirSet {
         ChiefOfTheScale,
         HighspireMantis,
         PonybackBrigade,
+        SiegeRhino,
         SnowhornRider,
         UtterEnd,
         Winterflame,

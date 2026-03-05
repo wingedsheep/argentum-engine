@@ -2,7 +2,7 @@
 
 **Set Size:** 269 cards (249 unique card names + basic land variants)
 **Release Date:** September 26, 2014
-**Implemented:** 118 / 249
+**Implemented:** 119 / 249
 
 | Color      | Count |
 |------------|-------|
@@ -11,7 +11,7 @@
 | Black      | 21    |
 | Red        | 21    |
 | Green      | 21    |
-| Multicolor | 7     |
+| Multicolor | 8     |
 | Colorless  | 3     |
 | Land       | 3     |
 
@@ -205,7 +205,7 @@
 - [ ] Sidisi, Brood Tyrant
 - [x] Sidisi's Pet
 - [x] Siegecraft
-- [ ] Siege Rhino
+- [x] Siege Rhino
 - [ ] Singing Bell Strike
 - [x] Smite the Monstrous
 - [x] Smoke Teller
