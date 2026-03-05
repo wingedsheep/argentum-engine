@@ -2,12 +2,12 @@
 
 **Set Size:** 269 cards (249 unique card names + basic land variants)
 **Release Date:** September 26, 2014
-**Implemented:** 114 / 249
+**Implemented:** 115 / 249
 
 | Color      | Count |
 |------------|-------|
 | White      | 20    |
-| Blue       | 20    |
+| Blue       | 21    |
 | Black      | 20    |
 | Red        | 21    |
 | Green      | 20    |
@@ -84,7 +84,7 @@
 - [ ] Duneblast
 - [x] Dutiful Return
 - [ ] Efreet Weaponmaster
-- [ ] Embodiment of Spring
+- [x] Embodiment of Spring
 - [ ] Empty the Pits
 - [ ] End Hostilities
 - [x] Erase
