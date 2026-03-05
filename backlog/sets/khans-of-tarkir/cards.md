@@ -2,7 +2,7 @@
 
 **Set Size:** 269 cards (249 unique card names + basic land variants)
 **Release Date:** September 26, 2014
-**Implemented:** 119 / 249
+**Implemented:** 120 / 249
 
 | Color      | Count |
 |------------|-------|
@@ -11,7 +11,7 @@
 | Black      | 21    |
 | Red        | 21    |
 | Green      | 21    |
-| Multicolor | 8     |
+| Multicolor | 9     |
 | Colorless  | 3     |
 | Land       | 3     |
 
@@ -135,7 +135,7 @@
 - [x] Leaping Master
 - [ ] Lens of Clarity
 - [x] Longshot Squad
-- [ ] Mantis Rider
+- [x] Mantis Rider
 - [ ] Mardu Ascendancy
 - [x] Mardu Banner
 - [x] Mardu Blazebringer
