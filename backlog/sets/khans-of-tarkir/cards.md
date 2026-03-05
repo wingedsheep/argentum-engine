@@ -2,12 +2,12 @@
 
 **Set Size:** 269 cards (249 unique card names + basic land variants)
 **Release Date:** September 26, 2014
-**Implemented:** 112 / 249
+**Implemented:** 113 / 249
 
 | Color      | Count |
 |------------|-------|
 | White      | 20    |
-| Blue       | 19    |
+| Blue       | 20    |
 | Black      | 20    |
 | Red        | 20    |
 | Green      | 20    |
@@ -120,7 +120,7 @@
 - [ ] Jeskai Ascendancy
 - [ ] Jeskai Banner
 - [ ] Jeskai Charm
-- [ ] Jeskai Elder
+- [x] Jeskai Elder
 - [x] Jeskai Student
 - [x] Jeskai Windscout
 - [x] Jungle Hollow

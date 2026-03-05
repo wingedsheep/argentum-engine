@@ -47,6 +47,7 @@ object KhansOfTarkirSet {
 
         // Blue creatures
         GlacialStalker,
+        JeskaiElder,
         JeskaiWindscout,
         MonasteryFlock,
         MysticOfTheHiddenWay,
