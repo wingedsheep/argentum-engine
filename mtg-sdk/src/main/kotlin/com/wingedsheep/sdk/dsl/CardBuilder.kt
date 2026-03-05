@@ -214,6 +214,12 @@ class CardBuilder(private val name: String) {
      */
     var cantBeCountered: Boolean = false
 
+    /**
+     * A condition under which this spell can be cast as though it had flash.
+     * Used for Ferocious-style conditional flash abilities.
+     */
+    var conditionalFlash: Condition? = null
+
     // =========================================================================
     // Internal State
     // =========================================================================
@@ -436,7 +442,8 @@ class CardBuilder(private val name: String) {
             auraTarget = auraTarget,
             castRestrictions = spellBuilder?.restrictions ?: emptyList(),
             castTimeCreatureTypeChoice = castTimeCreatureTypeChoice,
-            cantBeCountered = cantBeCountered
+            cantBeCountered = cantBeCountered,
+            conditionalFlash = conditionalFlash
         )
 
         // Build metadata

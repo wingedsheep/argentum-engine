@@ -1878,11 +1878,30 @@ class LegalActionsCalculator(
 
     /**
      * Check if a spell card has been granted flash by a GrantFlashToSpellType static ability
-     * on any permanent on the battlefield (any player's battlefield).
+     * on any permanent on the battlefield (any player's battlefield), or by its own
+     * conditionalFlash condition.
      */
     private fun hasGrantedFlash(state: GameState, spellCardId: EntityId): Boolean {
         val spellOwner = state.getEntity(spellCardId)?.get<ControllerComponent>()?.playerId
             ?: return false
+
+        // Check the card's own conditionalFlash (e.g., Ferocious)
+        val spellCard = state.getEntity(spellCardId)?.get<CardComponent>()
+        val spellDef = spellCard?.let { cardRegistry.getCard(it.cardDefinitionId) }
+        val conditionalFlash = spellDef?.script?.conditionalFlash
+        if (conditionalFlash != null) {
+            val opponentId = state.turnOrder.firstOrNull { it != spellOwner }
+            val effectContext = EffectContext(
+                sourceId = spellCardId,
+                controllerId = spellOwner,
+                opponentId = opponentId
+            )
+            if (conditionEvaluator.evaluate(state, conditionalFlash, effectContext)) {
+                return true
+            }
+        }
+
+        // Check GrantFlashToSpellType static abilities on battlefield permanents
         val context = PredicateContext(controllerId = spellOwner)
         for (playerId in state.turnOrder) {
             for (entityId in state.getBattlefield(playerId)) {

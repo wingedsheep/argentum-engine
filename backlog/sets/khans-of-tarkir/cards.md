@@ -2,14 +2,14 @@
 
 **Set Size:** 269 cards (249 unique card names + basic land variants)
 **Release Date:** September 26, 2014
-**Implemented:** 113 / 249
+**Implemented:** 114 / 249
 
 | Color      | Count |
 |------------|-------|
 | White      | 20    |
 | Blue       | 20    |
 | Black      | 20    |
-| Red        | 20    |
+| Red        | 21    |
 | Green      | 20    |
 | Multicolor | 7     |
 | Colorless  | 3     |
@@ -76,7 +76,7 @@
 - [x] Disdainful Stroke
 - [ ] Dismal Backwater
 - [x] Disowned Ancestor
-- [ ] Dragon Grip
+- [x] Dragon Grip
 - [x] Dragonscale Boon
 - [ ] Dragon's Eye Savants
 - [ ] Dragon-Style Twins

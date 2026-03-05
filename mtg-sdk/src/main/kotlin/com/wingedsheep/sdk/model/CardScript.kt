@@ -1,6 +1,7 @@
 package com.wingedsheep.sdk.model
 
 import com.wingedsheep.sdk.scripting.*
+import com.wingedsheep.sdk.scripting.conditions.Condition
 import com.wingedsheep.sdk.scripting.effects.Effect
 import com.wingedsheep.sdk.scripting.targets.TargetRequirement
 import kotlinx.serialization.Serializable
@@ -154,7 +155,14 @@ data class CardScript(
      * Whether this spell can't be countered by spells or abilities.
      * When true, attempts to counter this spell simply fail.
      */
-    val cantBeCountered: Boolean = false
+    val cantBeCountered: Boolean = false,
+
+    /**
+     * A condition under which this spell can be cast as though it had flash.
+     * Used for Ferocious-style "if you control a creature with power 4 or greater,
+     * you may cast this spell as though it had flash" abilities.
+     */
+    val conditionalFlash: @Serializable Condition? = null
 ) {
     /**
      * Whether this card has any scripted behavior.
