@@ -23,7 +23,7 @@ val ChiefOfTheScale = card("Chief of the Scale") {
         ability = ModifyStatsForCreatureGroup(
             powerBonus = 0,
             toughnessBonus = 1,
-            filter = GroupFilter(GameObjectFilter.Creature.withSubtype("Warrior"), excludeSelf = true)
+            filter = GroupFilter(GameObjectFilter.Creature.withSubtype("Warrior").youControl(), excludeSelf = true)
         )
     }
 

@@ -23,7 +23,7 @@ val ChiefOfTheEdge = card("Chief of the Edge") {
         ability = ModifyStatsForCreatureGroup(
             powerBonus = 1,
             toughnessBonus = 0,
-            filter = GroupFilter(GameObjectFilter.Creature.withSubtype("Warrior"), excludeSelf = true)
+            filter = GroupFilter(GameObjectFilter.Creature.withSubtype("Warrior").youControl(), excludeSelf = true)
         )
     }
 
