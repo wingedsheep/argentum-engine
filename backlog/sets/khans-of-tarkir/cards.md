@@ -2,7 +2,7 @@
 
 **Set Size:** 269 cards (249 unique card names + basic land variants)
 **Release Date:** September 26, 2014
-**Implemented:** 117 / 249
+**Implemented:** 118 / 249
 
 | Color      | Count |
 |------------|-------|
@@ -10,7 +10,7 @@
 | Blue       | 21    |
 | Black      | 21    |
 | Red        | 21    |
-| Green      | 20    |
+| Green      | 21    |
 | Multicolor | 7     |
 | Colorless  | 3     |
 | Land       | 3     |
@@ -100,7 +100,7 @@
 - [ ] Goblinslide
 - [x] Grim Haruspex
 - [x] Gurmag Swiftwing
-- [ ] Hardened Scales
+- [x] Hardened Scales
 - [ ] Heart-Piercer Bow
 - [x] Heir of the Wilds
 - [ ] Herald of Anafenza

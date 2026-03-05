@@ -28,6 +28,7 @@ import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.events.CounterTypeFilter
 import com.wingedsheep.sdk.scripting.EntersAsCopy
+import com.wingedsheep.engine.handlers.effects.EffectExecutorUtils
 import com.wingedsheep.sdk.scripting.EntersWithCounters
 import com.wingedsheep.sdk.scripting.EntersWithCreatureTypeChoice
 import com.wingedsheep.sdk.scripting.EntersWithDynamicCounters
@@ -911,9 +912,12 @@ class StackResolver(
             when (effect) {
                 is EntersWithCounters -> {
                     val counterType = resolveCounterType(effect.counterType)
+                    val modifiedCount = EffectExecutorUtils.applyCounterPlacementModifiers(
+                        newState, entityId, counterType, effect.count
+                    )
                     val current = newState.getEntity(entityId)?.get<CountersComponent>() ?: CountersComponent()
                     newState = newState.updateEntity(entityId) { c ->
-                        c.with(current.withAdded(counterType, effect.count))
+                        c.with(current.withAdded(counterType, modifiedCount))
                     }
                 }
                 is EntersWithDynamicCounters -> {
@@ -926,9 +930,12 @@ class StackResolver(
                     )
                     val count = dynamicAmountEvaluator.evaluate(newState, effect.count, context)
                     if (count > 0) {
+                        val modifiedCount = EffectExecutorUtils.applyCounterPlacementModifiers(
+                            newState, entityId, counterType, count
+                        )
                         val current = newState.getEntity(entityId)?.get<CountersComponent>() ?: CountersComponent()
                         newState = newState.updateEntity(entityId) { c ->
-                            c.with(current.withAdded(counterType, count))
+                            c.with(current.withAdded(counterType, modifiedCount))
                         }
                     }
                 }

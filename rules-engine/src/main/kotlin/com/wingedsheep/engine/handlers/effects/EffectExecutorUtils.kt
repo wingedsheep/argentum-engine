@@ -48,7 +48,9 @@ import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.events.DamageType
 import com.wingedsheep.sdk.scripting.DoubleDamage
 import com.wingedsheep.sdk.scripting.PreventDamage
+import com.wingedsheep.sdk.scripting.ModifyCounterPlacement
 import com.wingedsheep.sdk.scripting.ReplaceDamageWithCounters
+import com.wingedsheep.sdk.scripting.events.CounterTypeFilter
 import com.wingedsheep.sdk.scripting.events.RecipientFilter
 import com.wingedsheep.sdk.scripting.events.SourceFilter
 import com.wingedsheep.engine.core.CountersAddedEvent
@@ -1053,5 +1055,81 @@ object EffectExecutorUtils {
                 )
             )
         )
+    }
+
+    /**
+     * Apply ModifyCounterPlacement replacement effects (Hardened Scales, Winding Constrictor).
+     *
+     * Scans all battlefield entities for ReplacementEffectSourceComponent containing
+     * ModifyCounterPlacement effects. If the counter type and recipient match, modifies
+     * the counter count by the effect's modifier.
+     *
+     * @param state The current game state
+     * @param targetId The entity receiving counters
+     * @param counterType The type of counter being placed (as CounterType enum)
+     * @param count The original number of counters
+     * @return The modified counter count
+     */
+    fun applyCounterPlacementModifiers(
+        state: GameState,
+        targetId: EntityId,
+        counterType: CounterType,
+        count: Int
+    ): Int {
+        if (count <= 0) return count
+
+        var modifiedCount = count
+
+        for (entityId in state.getBattlefield()) {
+            val container = state.getEntity(entityId) ?: continue
+            val replacementComponent = container.get<ReplacementEffectSourceComponent>() ?: continue
+            val sourceControllerId = container.get<ControllerComponent>()?.playerId ?: continue
+
+            for (effect in replacementComponent.replacementEffects) {
+                if (effect !is ModifyCounterPlacement) continue
+
+                val counterEvent = effect.appliesTo
+                if (counterEvent !is com.wingedsheep.sdk.scripting.GameEvent.CounterPlacementEvent) continue
+
+                // Check counter type filter
+                val counterTypeMatches = when (counterEvent.counterType) {
+                    is CounterTypeFilter.Any -> true
+                    is CounterTypeFilter.PlusOnePlusOne -> counterType == CounterType.PLUS_ONE_PLUS_ONE
+                    is CounterTypeFilter.MinusOneMinusOne -> counterType == CounterType.MINUS_ONE_MINUS_ONE
+                    is CounterTypeFilter.Loyalty -> counterType == CounterType.LOYALTY
+                    is CounterTypeFilter.Named -> {
+                        try {
+                            val namedType = CounterType.valueOf(
+                                (counterEvent.counterType as CounterTypeFilter.Named).name.uppercase().replace(' ', '_')
+                            )
+                            counterType == namedType
+                        } catch (_: IllegalArgumentException) {
+                            false
+                        }
+                    }
+                }
+                if (!counterTypeMatches) continue
+
+                // Check recipient filter
+                val recipientMatches = when (counterEvent.recipient) {
+                    is RecipientFilter.CreatureYouControl -> {
+                        val isCreature = state.getEntity(targetId)?.get<CardComponent>()?.typeLine?.isCreature == true
+                        val isControlled = state.getEntity(targetId)?.get<ControllerComponent>()?.playerId == sourceControllerId
+                        isCreature && isControlled
+                    }
+                    is RecipientFilter.Any -> true
+                    is RecipientFilter.Self -> targetId == entityId
+                    is RecipientFilter.PermanentYouControl -> {
+                        state.getEntity(targetId)?.get<ControllerComponent>()?.playerId == sourceControllerId
+                    }
+                    else -> false
+                }
+                if (!recipientMatches) continue
+
+                modifiedCount += effect.modifier
+            }
+        }
+
+        return modifiedCount.coerceAtLeast(0)
     }
 }

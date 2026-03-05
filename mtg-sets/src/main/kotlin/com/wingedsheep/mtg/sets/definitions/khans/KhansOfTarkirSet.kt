@@ -109,6 +109,9 @@ object KhansOfTarkirSet {
         TuskguardCaptain,
         WoollyLoxodon,
 
+        // Green enchantments
+        HardenedScales,
+
         // Green spells
         AwakenTheBear,
         BecomeImmense,

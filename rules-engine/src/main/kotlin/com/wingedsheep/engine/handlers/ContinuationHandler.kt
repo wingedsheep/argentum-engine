@@ -3,6 +3,7 @@ package com.wingedsheep.engine.handlers
 import com.wingedsheep.engine.core.*
 import com.wingedsheep.engine.handlers.continuations.*
 import com.wingedsheep.engine.handlers.effects.EffectExecutorRegistry
+import com.wingedsheep.engine.handlers.effects.EffectExecutorUtils
 import com.wingedsheep.engine.mechanics.combat.CombatManager
 import com.wingedsheep.engine.mechanics.stack.StackResolver
 import com.wingedsheep.engine.state.GameState
@@ -896,20 +897,23 @@ class ContinuationHandler(
             ?.get<com.wingedsheep.engine.state.components.identity.CardComponent>()?.name ?: ""
         events.add(CountersRemovedEvent(continuation.sourceId, continuation.counterType, totalMoved, sourceName))
 
-        // Add counters to each target
+        // Add counters to each target (applying replacement effects like Hardened Scales)
         for ((targetId, amount) in distribution) {
             if (amount > 0) {
+                val modifiedAmount = EffectExecutorUtils.applyCounterPlacementModifiers(
+                    newState, targetId, counterType, amount
+                )
                 val targetCounters = newState.getEntity(targetId)
                     ?.get<com.wingedsheep.engine.state.components.battlefield.CountersComponent>()
                     ?: com.wingedsheep.engine.state.components.battlefield.CountersComponent()
 
                 newState = newState.updateEntity(targetId) { container ->
-                    container.with(targetCounters.withAdded(counterType, amount))
+                    container.with(targetCounters.withAdded(counterType, modifiedAmount))
                 }
 
                 val targetName = newState.getEntity(targetId)
                     ?.get<com.wingedsheep.engine.state.components.identity.CardComponent>()?.name ?: ""
-                events.add(CountersAddedEvent(targetId, continuation.counterType, amount, targetName))
+                events.add(CountersAddedEvent(targetId, continuation.counterType, modifiedAmount, targetName))
             }
         }
 

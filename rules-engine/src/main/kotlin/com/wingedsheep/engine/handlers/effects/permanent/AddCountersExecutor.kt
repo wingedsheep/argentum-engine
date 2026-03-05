@@ -4,6 +4,7 @@ import com.wingedsheep.engine.core.CountersAddedEvent
 import com.wingedsheep.engine.core.ExecutionResult
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
+import com.wingedsheep.engine.handlers.effects.EffectExecutorUtils
 import com.wingedsheep.engine.handlers.effects.EffectExecutorUtils.resolveTarget
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.battlefield.CountersComponent
@@ -43,15 +44,20 @@ class AddCountersExecutor : EffectExecutor<AddCountersEffect> {
 
         val current = state.getEntity(targetId)?.get<CountersComponent>() ?: CountersComponent()
 
+        // Apply counter placement replacement effects (e.g., Hardened Scales)
+        val modifiedCount = EffectExecutorUtils.applyCounterPlacementModifiers(
+            state, targetId, counterType, effect.count
+        )
+
         val newState = state.updateEntity(targetId) { container ->
-            container.with(current.withAdded(counterType, effect.count))
+            container.with(current.withAdded(counterType, modifiedCount))
         }
 
         val entityName = state.getEntity(targetId)?.get<CardComponent>()?.name ?: ""
 
         return ExecutionResult.success(
             newState,
-            listOf(CountersAddedEvent(targetId, effect.counterType, effect.count, entityName))
+            listOf(CountersAddedEvent(targetId, effect.counterType, modifiedCount, entityName))
         )
     }
 }
