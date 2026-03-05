@@ -2,14 +2,14 @@
 
 **Set Size:** 269 cards (249 unique card names + basic land variants)
 **Release Date:** September 26, 2014
-**Implemented:** 121 / 249
+**Implemented:** 122 / 249
 
 | Color      | Count |
 |------------|-------|
 | White      | 21    |
 | Blue       | 21    |
 | Black      | 21    |
-| Red        | 21    |
+| Red        | 22    |
 | Green      | 21    |
 | Multicolor | 10    |
 | Colorless  | 3     |
@@ -63,7 +63,7 @@
 - [ ] Clever Impersonator
 - [ ] Crackling Doom
 - [ ] Cranial Archive
-- [ ] Crater's Claws
+- [x] Crater's Claws
 - [x] Crippling Chill
 - [x] Dazzling Ramparts
 - [ ] Dead Drop
