@@ -32,6 +32,7 @@ import com.wingedsheep.engine.state.components.player.LandDropsComponent
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.gameserver.protocol.AdditionalCostInfo
 import com.wingedsheep.gameserver.protocol.ConvokeCreatureInfo
+import com.wingedsheep.gameserver.protocol.DelveCardInfo
 import com.wingedsheep.gameserver.protocol.LegalActionInfo
 import com.wingedsheep.gameserver.protocol.LegalActionTargetInfo
 import com.wingedsheep.sdk.core.Keyword
@@ -252,17 +253,25 @@ class LegalActionsCalculator(
                         cardComponent.manaCost
                     }
 
-                    // Check mana affordability (including Convoke if available)
+                    // Check mana affordability (including Convoke/Delve if available)
                     val hasConvoke = cardDef?.keywords?.contains(Keyword.CONVOKE) == true
                     val convokeCreatures = if (hasConvoke) {
                         findConvokeCreatures(state, playerId)
                     } else null
 
-                    // For Convoke spells, check if affordable with creature help
+                    val hasDelve = cardDef?.keywords?.contains(Keyword.DELVE) == true
+                    val delveCards = if (hasDelve) {
+                        findDelveCards(state, playerId)
+                    } else null
+
+                    // For Convoke/Delve spells, check if affordable with alternative payment help
                     val canAfford = if (hasConvoke && convokeCreatures != null && convokeCreatures.isNotEmpty()) {
                         // Can afford if: mana alone is enough, OR mana + convoke creatures cover the cost
                         manaSolver.canPay(state, playerId, effectiveCost) ||
                             canAffordWithConvoke(state, playerId, effectiveCost, convokeCreatures)
+                    } else if (hasDelve && delveCards != null && delveCards.isNotEmpty()) {
+                        manaSolver.canPay(state, playerId, effectiveCost) ||
+                            canAffordWithDelve(state, playerId, effectiveCost, delveCards)
                     } else {
                         manaSolver.canPay(state, playerId, effectiveCost)
                     }
@@ -368,6 +377,8 @@ class LegalActionsCalculator(
                                         additionalCostInfo = costInfo,
                                         hasConvoke = hasConvoke,
                                         validConvokeCreatures = convokeCreatures,
+                                        hasDelve = hasDelve,
+                                        validDelveCards = delveCards,
                                         manaCostString = manaCostString,
                                         requiresDamageDistribution = requiresDamageDistribution,
                                         totalDamageToDistribute = totalDamageToDistribute,
@@ -390,6 +401,8 @@ class LegalActionsCalculator(
                                         additionalCostInfo = costInfo,
                                         hasConvoke = hasConvoke,
                                         validConvokeCreatures = convokeCreatures,
+                                        hasDelve = hasDelve,
+                                        validDelveCards = delveCards,
                                         manaCostString = manaCostString,
                                         requiresDamageDistribution = requiresDamageDistribution,
                                         totalDamageToDistribute = totalDamageToDistribute,
@@ -409,6 +422,8 @@ class LegalActionsCalculator(
                                 additionalCostInfo = costInfo,
                                 hasConvoke = hasConvoke,
                                 validConvokeCreatures = convokeCreatures,
+                                hasDelve = hasDelve,
+                                validDelveCards = delveCards,
                                 manaCostString = manaCostString,
                                 autoTapPreview = autoTapPreview
                             ))
@@ -2244,6 +2259,31 @@ class LegalActionsCalculator(
 
         // We can afford if we have enough for generic (colored is covered by creatures or mana)
         return resourcesForGeneric >= genericRequired
+    }
+
+    private fun findDelveCards(state: GameState, playerId: EntityId): List<DelveCardInfo> {
+        val graveyardZone = ZoneKey(playerId, Zone.GRAVEYARD)
+        return state.getZone(graveyardZone).mapNotNull { entityId ->
+            val container = state.getEntity(entityId) ?: return@mapNotNull null
+            val cardComponent = container.get<CardComponent>() ?: return@mapNotNull null
+            DelveCardInfo(
+                entityId = entityId,
+                name = cardComponent.name
+            )
+        }
+    }
+
+    private fun canAffordWithDelve(
+        state: GameState,
+        playerId: EntityId,
+        manaCost: com.wingedsheep.sdk.core.ManaCost,
+        delveCards: List<DelveCardInfo>
+    ): Boolean {
+        val availableMana = manaSolver.getAvailableManaCount(state, playerId)
+        // Delve only pays generic mana, so total resources = mana + delve cards (capped at generic amount)
+        val delveReduction = minOf(delveCards.size, manaCost.genericAmount)
+        val totalResources = availableMana + delveReduction
+        return totalResources >= manaCost.cmc
     }
 
     /**

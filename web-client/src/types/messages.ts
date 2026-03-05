@@ -449,7 +449,11 @@ export interface LegalActionInfo {
   readonly hasConvoke?: boolean
   /** Creatures that can be tapped to help pay for Convoke */
   readonly validConvokeCreatures?: readonly ConvokeCreatureInfo[]
-  /** The spell's mana cost string for Convoke UI display */
+  /** Whether this spell has Delve */
+  readonly hasDelve?: boolean
+  /** Cards in graveyard that can be exiled for Delve */
+  readonly validDelveCards?: readonly DelveCardInfo[]
+  /** The spell's mana cost string for Convoke/Delve UI display */
   readonly manaCostString?: string
   /** Whether this spell requires damage distribution at cast time (for DividedDamageEffect) */
   readonly requiresDamageDistribution?: boolean
@@ -479,6 +483,14 @@ export interface ConvokeCreatureInfo {
   readonly name: string
   /** Colors this creature can pay (based on its colors) */
   readonly colors: readonly string[]
+}
+
+/**
+ * Information about a card in graveyard that can be exiled for Delve.
+ */
+export interface DelveCardInfo {
+  readonly entityId: EntityId
+  readonly name: string
 }
 
 /**

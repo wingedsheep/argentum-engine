@@ -874,7 +874,11 @@ data class LegalActionInfo(
     val hasConvoke: Boolean = false,
     /** Creatures that can be tapped to help pay for Convoke */
     val validConvokeCreatures: List<ConvokeCreatureInfo>? = null,
-    /** The spell's mana cost for Convoke UI display */
+    /** Whether this spell has Delve */
+    val hasDelve: Boolean = false,
+    /** Cards in graveyard that can be exiled for Delve */
+    val validDelveCards: List<DelveCardInfo>? = null,
+    /** The spell's mana cost for Convoke/Delve UI display */
     val manaCostString: String? = null,
     /** Whether this spell requires damage distribution at cast time (for DividedDamageEffect) */
     val requiresDamageDistribution: Boolean = false,
@@ -905,6 +909,15 @@ data class ConvokeCreatureInfo(
     val name: String,
     /** Colors this creature can pay (based on its colors) */
     val colors: Set<Color>
+)
+
+/**
+ * Information about a card in graveyard that can be exiled for Delve.
+ */
+@Serializable
+data class DelveCardInfo(
+    val entityId: EntityId,
+    val name: String
 )
 
 /**

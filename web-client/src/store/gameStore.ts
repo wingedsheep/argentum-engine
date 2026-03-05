@@ -31,6 +31,7 @@ export type {
   DamageDistributionState,
   ConvokeCreatureSelection,
   ConvokeSelectionState,
+  DelveSelectionState,
   DeckBuildingState,
   DraftState,
   WinstonDraftState,

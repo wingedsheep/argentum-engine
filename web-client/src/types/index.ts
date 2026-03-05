@@ -151,6 +151,7 @@ export type {
   StateUpdateMessage,
   LegalActionInfo,
   ConvokeCreatureInfo,
+  DelveCardInfo,
   MulliganDecisionMessage,
   ChooseBottomCardsMessage,
   MulliganCompleteMessage,

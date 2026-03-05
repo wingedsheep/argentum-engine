@@ -12,6 +12,7 @@ export type CardClickResult =
   | { type: 'requiresTargeting'; action: GameAction; requiredTargets: number }
   | { type: 'requiresXSelection'; actionInfo: LegalActionInfo }
   | { type: 'requiresConvokeSelection'; actionInfo: LegalActionInfo }
+  | { type: 'requiresDelveSelection'; actionInfo: LegalActionInfo }
 
 /**
  * Hook for handling card interactions.
@@ -29,6 +30,7 @@ export function useInteraction() {
   const startXSelection = useGameStore((state) => state.startXSelection)
   const startTargeting = useGameStore((state) => state.startTargeting)
   const startConvokeSelection = useGameStore((state) => state.startConvokeSelection)
+  const startDelveSelection = useGameStore((state) => state.startDelveSelection)
   const startManaColorSelection = useGameStore((state) => state.startManaColorSelection)
 
   /**
@@ -172,6 +174,28 @@ export function useInteraction() {
         })
         selectCard(null)
         return
+      }
+
+      // Check if spell has Delve and there are cards in graveyard to exile
+      if (action.type === 'CastSpell' && actionInfo.hasDelve && actionInfo.validDelveCards && actionInfo.validDelveCards.length > 0) {
+        // Calculate max generic mana that can be paid via Delve from the mana cost string
+        const manaCostStr = actionInfo.manaCostString ?? ''
+        const genericMatch = manaCostStr.match(/\{(\d+)\}/)
+        const genericAmount = genericMatch ? parseInt(genericMatch[1]!, 10) : 0
+        const maxDelve = Math.min(genericAmount, actionInfo.validDelveCards.length)
+
+        if (maxDelve > 0) {
+          startDelveSelection({
+            actionInfo,
+            cardName: actionInfo.description.replace('Cast ', ''),
+            manaCost: manaCostStr,
+            selectedCards: [],
+            validCards: actionInfo.validDelveCards,
+            maxDelve,
+          })
+          selectCard(null)
+          return
+        }
       }
 
       // Check if TurnFaceUp requires returning a permanent (non-mana morph cost)
@@ -384,7 +408,7 @@ export function useInteraction() {
       submitAction(action)
       selectCard(null)
     },
-    [submitAction, selectCard, startXSelection, startTargeting, startConvokeSelection, startManaColorSelection]
+    [submitAction, selectCard, startXSelection, startTargeting, startConvokeSelection, startDelveSelection, startManaColorSelection]
   )
 
   /**
@@ -406,6 +430,11 @@ export function useInteraction() {
 
       // Convoke spells with creatures need selection
       if (action.type === 'CastSpell' && actionInfo.hasConvoke && actionInfo.validConvokeCreatures && actionInfo.validConvokeCreatures.length > 0) {
+        return false
+      }
+
+      // Delve spells with graveyard cards need selection
+      if (action.type === 'CastSpell' && actionInfo.hasDelve && actionInfo.validDelveCards && actionInfo.validDelveCards.length > 0) {
         return false
       }
 

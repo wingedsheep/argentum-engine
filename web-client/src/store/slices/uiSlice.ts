@@ -8,6 +8,7 @@ import type {
   CombatState,
   XSelectionState,
   ConvokeSelectionState,
+  DelveSelectionState,
   ManaColorSelectionState,
   DecisionSelectionState,
   DamageDistributionState,
@@ -33,6 +34,7 @@ export interface UISliceState {
   combatState: CombatState | null
   xSelectionState: XSelectionState | null
   convokeSelectionState: ConvokeSelectionState | null
+  delveSelectionState: DelveSelectionState | null
   manaColorSelectionState: ManaColorSelectionState | null
   decisionSelectionState: DecisionSelectionState | null
   damageDistributionState: DamageDistributionState | null
@@ -88,6 +90,10 @@ export interface UISliceActions {
   toggleConvokeCreature: (entityId: EntityId, name: string, payingColor: string | null) => void
   cancelConvokeSelection: () => void
   confirmConvokeSelection: () => void
+  startDelveSelection: (state: DelveSelectionState) => void
+  toggleDelveCard: (entityId: EntityId) => void
+  cancelDelveSelection: () => void
+  confirmDelveSelection: () => void
   startManaColorSelection: (state: ManaColorSelectionState) => void
   confirmManaColorSelection: (color: string) => void
   cancelManaColorSelection: () => void
@@ -132,6 +138,7 @@ export const createUISlice: SliceCreator<UISlice> = (set, get) => ({
   combatState: null,
   xSelectionState: null,
   convokeSelectionState: null,
+  delveSelectionState: null,
   manaColorSelectionState: null,
   decisionSelectionState: null,
   damageDistributionState: null,
@@ -783,6 +790,73 @@ export const createUISlice: SliceCreator<UISlice> = (set, get) => ({
     }
 
     set({ convokeSelectionState: null })
+  },
+
+  // Delve selection actions
+  startDelveSelection: (delveSelectionState) => {
+    set({ delveSelectionState })
+  },
+
+  toggleDelveCard: (entityId) => {
+    set((state) => {
+      if (!state.delveSelectionState) return state
+      const { selectedCards, maxDelve } = state.delveSelectionState
+      const isSelected = selectedCards.includes(entityId)
+
+      let newSelectedCards: EntityId[]
+      if (isSelected) {
+        newSelectedCards = selectedCards.filter((id) => id !== entityId)
+      } else {
+        // Don't exceed the max generic mana we can pay via Delve
+        if (selectedCards.length >= maxDelve) return state
+        newSelectedCards = [...selectedCards, entityId]
+      }
+
+      return {
+        delveSelectionState: {
+          ...state.delveSelectionState,
+          selectedCards: newSelectedCards,
+        },
+      }
+    })
+  },
+
+  cancelDelveSelection: () => {
+    set({ delveSelectionState: null })
+  },
+
+  confirmDelveSelection: () => {
+    const { delveSelectionState, startTargeting } = get()
+    if (!delveSelectionState) return
+
+    const { actionInfo, selectedCards } = delveSelectionState
+
+    if (actionInfo.action.type === 'CastSpell') {
+      const baseAction = actionInfo.action
+
+      const actionWithDelve = {
+        ...baseAction,
+        alternativePayment: {
+          delvedCards: [...selectedCards],
+          convokedCreatures: {},
+        },
+      }
+
+      if (actionInfo.requiresTargets && actionInfo.validTargets && actionInfo.validTargets.length > 0) {
+        startTargeting({
+          action: actionWithDelve,
+          validTargets: [...actionInfo.validTargets],
+          selectedTargets: [],
+          minTargets: actionInfo.minTargets ?? actionInfo.targetCount ?? 1,
+          maxTargets: actionInfo.targetCount ?? 1,
+          ...(actionInfo.requiresDamageDistribution ? { pendingActionInfo: actionInfo } : {}),
+        })
+      } else {
+        getWebSocket()?.send(createSubmitActionMessage(actionWithDelve))
+      }
+    }
+
+    set({ delveSelectionState: null })
   },
 
   // Mana color selection actions

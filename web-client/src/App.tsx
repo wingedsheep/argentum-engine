@@ -6,6 +6,7 @@ import { DecisionUI } from './components/decisions/DecisionUI'
 import { RevealedCardsUI } from './components/decisions/RevealedCardsUI'
 import { XCostSelector } from './components/ui/XCostSelector'
 import { ConvokeSelector } from './components/ui/ConvokeSelector'
+import { DelveSelector } from './components/ui/DelveSelector'
 import { DamageDistributionModal } from './components/decisions/DamageDistributionModal'
 import { OpponentDecisionIndicator } from './components/ui/OpponentDecisionIndicator'
 import { DisconnectCountdown } from './components/ui/DisconnectCountdown'
@@ -270,6 +271,9 @@ export default function App() {
 
       {/* Convoke selection overlay (when casting spells with Convoke) */}
       {showGame && <ConvokeSelector />}
+
+      {/* Delve selection overlay (when casting spells with Delve) */}
+      {showGame && <DelveSelector />}
 
       {/* Damage distribution overlay (for DividedDamageEffect spells like Forked Lightning) */}
       {showGame && <DamageDistributionModal />}

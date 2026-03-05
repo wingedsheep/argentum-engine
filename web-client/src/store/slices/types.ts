@@ -9,6 +9,7 @@ import type {
   GameAction,
   LegalActionInfo,
   ConvokeCreatureInfo,
+  DelveCardInfo,
   GameOverReason,
   ErrorCode,
   PendingDecision,
@@ -219,6 +220,22 @@ export interface ConvokeSelectionState {
   selectedCreatures: ConvokeCreatureSelection[]
   /** All valid creatures that can be tapped for Convoke */
   validCreatures: readonly ConvokeCreatureInfo[]
+}
+
+/**
+ * Delve selection state when casting spells with Delve.
+ */
+export interface DelveSelectionState {
+  actionInfo: LegalActionInfo
+  cardName: string
+  /** Original mana cost of the spell */
+  manaCost: string
+  /** Cards that have been selected for Delve (to exile from graveyard) */
+  selectedCards: readonly EntityId[]
+  /** All valid cards in graveyard that can be exiled for Delve */
+  validCards: readonly DelveCardInfo[]
+  /** Maximum number of generic mana that can be paid via Delve */
+  maxDelve: number
 }
 
 /**
@@ -544,6 +561,7 @@ export type GameStore = {
   combatState: CombatState | null
   xSelectionState: XSelectionState | null
   convokeSelectionState: ConvokeSelectionState | null
+  delveSelectionState: DelveSelectionState | null
   manaColorSelectionState: ManaColorSelectionState | null
   decisionSelectionState: DecisionSelectionState | null
   damageDistributionState: DamageDistributionState | null
@@ -595,6 +613,10 @@ export type GameStore = {
   toggleConvokeCreature: (entityId: EntityId, name: string, payingColor: string | null) => void
   cancelConvokeSelection: () => void
   confirmConvokeSelection: () => void
+  startDelveSelection: (state: DelveSelectionState) => void
+  toggleDelveCard: (entityId: EntityId) => void
+  cancelDelveSelection: () => void
+  confirmDelveSelection: () => void
   startManaColorSelection: (state: ManaColorSelectionState) => void
   confirmManaColorSelection: (color: string) => void
   cancelManaColorSelection: () => void
