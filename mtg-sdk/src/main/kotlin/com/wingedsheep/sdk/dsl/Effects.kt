@@ -24,6 +24,7 @@ import com.wingedsheep.sdk.scripting.effects.DealDamageEffect
 import com.wingedsheep.sdk.scripting.effects.DrawCardsEffect
 import com.wingedsheep.sdk.scripting.effects.EachOpponentDiscardsEffect
 import com.wingedsheep.sdk.scripting.effects.EachPlayerReturnsPermanentToHandEffect
+import com.wingedsheep.sdk.scripting.effects.ReturnAllToHandEffect
 import com.wingedsheep.sdk.scripting.effects.Effect
 import com.wingedsheep.sdk.scripting.effects.GrantMayPlayFromExileEffect
 import com.wingedsheep.sdk.scripting.effects.GrantPlayWithoutPayingCostEffect
@@ -837,6 +838,12 @@ object Effects {
             effect = MoveToZoneEffect(EffectTarget.Self, Zone.GRAVEYARD, byDestruction = true),
             noRegenerate = noRegenerate
         )
+
+    /**
+     * Return all permanents matching a filter to their owners' hands.
+     */
+    fun ReturnAllToHand(filter: GroupFilter): Effect =
+        ReturnAllToHandEffect(filter)
 
     /**
      * Grant a keyword to all creatures matching a filter.

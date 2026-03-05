@@ -88,6 +88,7 @@ constructors.
 - `Effects.ModifyStatsForAll(power, toughness, filter: GroupFilter, duration)` — P/T for group (Int or DynamicAmount overloads)
 - `Effects.DealDamageToAll(amount, filter: GroupFilter)` — also accepts `DynamicAmount`
 - `Effects.CantBlockGroup(filter: GroupFilter, duration)` — group can't block this turn
+- `Effects.ReturnAllToHand(filter: GroupFilter)` — return all matching permanents to owners' hands
 
 ### Control
 

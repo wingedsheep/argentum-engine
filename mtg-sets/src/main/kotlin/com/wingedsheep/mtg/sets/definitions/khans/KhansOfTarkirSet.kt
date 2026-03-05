@@ -67,6 +67,7 @@ object KhansOfTarkirSet {
         DisdainfulStroke,
         StubbornDenial,
         TaigamsScheming,
+        ThousandWinds,
         TreasureCruise,
         Waterwhirl,
         WeaveFate,

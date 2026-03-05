@@ -2,12 +2,12 @@
 
 **Set Size:** 269 cards (249 unique card names + basic land variants)
 **Release Date:** September 26, 2014
-**Implemented:** 122 / 249
+**Implemented:** 123 / 249
 
 | Color      | Count |
 |------------|-------|
 | White      | 21    |
-| Blue       | 21    |
+| Blue       | 22    |
 | Black      | 21    |
 | Red        | 22    |
 | Green      | 21    |
@@ -231,7 +231,7 @@
 - [ ] Temur Charger
 - [ ] Temur Charm
 - [ ] Thornwood Falls
-- [ ] Thousand Winds
+- [x] Thousand Winds
 - [x] Throttle
 - [x] Timely Hordemate
 - [ ] Tomb of the Spirit Dragon

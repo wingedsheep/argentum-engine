@@ -41,6 +41,7 @@ class RemovalExecutors(
         PatriarchsBiddingExecutor(),
         payOrSufferExecutor,
         RegenerateExecutor(),
+        ReturnAllToHandExecutor(),
         ReturnLinkedExileExecutor(),
         ReturnOneFromLinkedExileExecutor(),
         SacrificeExecutor(),

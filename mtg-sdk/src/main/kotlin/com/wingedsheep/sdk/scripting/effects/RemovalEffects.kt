@@ -314,6 +314,18 @@ data object PatriarchsBiddingEffect : Effect {
         "Each player chooses a creature type. Each player returns all creature cards of a type chosen this way from their graveyard to the battlefield"
 }
 
+/**
+ * Return all permanents matching the filter to their owners' hands.
+ * Uses GroupFilter to support excludeSelf and any GameObjectFilter predicates.
+ */
+@SerialName("ReturnAllToHand")
+@Serializable
+data class ReturnAllToHandEffect(
+    val filter: GroupFilter
+) : Effect {
+    override val description: String = "Return ${filter.description} to their owners' hands"
+}
+
 @SerialName("MoveToZone")
 @Serializable
 data class MoveToZoneEffect(
