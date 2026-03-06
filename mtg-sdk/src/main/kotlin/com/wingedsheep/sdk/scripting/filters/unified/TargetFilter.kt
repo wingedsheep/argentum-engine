@@ -221,6 +221,9 @@ data class TargetFilter(
     /** Toughness at most */
     fun toughnessAtMost(max: Int) = copy(baseFilter = baseFilter.toughnessAtMost(max))
 
+    /** Toughness at least */
+    fun toughnessAtLeast(min: Int) = copy(baseFilter = baseFilter.toughnessAtLeast(min))
+
     /** Must be tapped */
     fun tapped() = copy(baseFilter = baseFilter.tapped())
 

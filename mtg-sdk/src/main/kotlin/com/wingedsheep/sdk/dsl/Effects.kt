@@ -40,6 +40,7 @@ import com.wingedsheep.sdk.scripting.effects.SetLifeTotalEffect
 import com.wingedsheep.sdk.scripting.effects.ModifyStatsEffect
 import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
 import com.wingedsheep.sdk.scripting.effects.ExileGroupAndLinkEffect
+import com.wingedsheep.sdk.scripting.effects.ExileUntilLeavesEffect
 import com.wingedsheep.sdk.scripting.effects.CreatePermanentGlobalTriggeredAbilityEffect
 import com.wingedsheep.sdk.scripting.effects.ReturnOneFromLinkedExileEffect
 import com.wingedsheep.sdk.scripting.effects.ReturnSelfToBattlefieldAttachedEffect
@@ -277,6 +278,14 @@ object Effects {
      */
     fun Exile(target: EffectTarget): Effect =
         MoveToZoneEffect(target, Zone.EXILE)
+
+    /**
+     * Exile a target until this permanent leaves the battlefield.
+     * Exiles the target and links it to the source permanent via LinkedExileComponent.
+     * Used with a LeavesBattlefield trigger + ReturnLinkedExile() for the return.
+     */
+    fun ExileUntilLeaves(target: EffectTarget): Effect =
+        ExileUntilLeavesEffect(target)
 
     /**
      * Exile all permanents matching a filter that the controller controls and link

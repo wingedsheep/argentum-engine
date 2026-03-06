@@ -60,6 +60,7 @@ constructors.
 - `Effects.PutOntoBattlefield(target, tapped = false)`
 - `Effects.PutOntoBattlefieldUnderYourControl(target)` — put target onto battlefield under controller's control
 - `Effects.ReturnSelfToBattlefieldAttached(target)` — return self from graveyard to battlefield attached to target (for Auras like Dragon Shadow)
+- `Effects.ExileUntilLeaves(target: EffectTarget)` — exile target and link to source via LinkedExileComponent (Banishing Light / Suspension Field ETB)
 - `Effects.ExileGroupAndLink(filter: GroupFilter, storeAs)` — exile all matching permanents and link to source (Day of the Dragons ETB)
 - `Effects.ReturnLinkedExile()` — return all cards linked via LinkedExileComponent to battlefield under controller's control (Day of the Dragons LTB)
 - `Effects.ReturnLinkedExileUnderOwnersControl()` — return all linked exiled cards to battlefield under their owners' control (Planar Guide)
@@ -238,6 +239,7 @@ constructors.
 | ~~`DestroyAllSharingTypeWithSacrificedEffect`~~ | `noRegenerate` — **Deprecated**: use `Effects.DestroyAllSharingTypeWithSacrificed()` | Destroy all sharing type |
 | `HarshMercyEffect`                          | (object)                                              | Harsh Mercy              |
 | `Effects.PatriarchsBidding()`               | (pipeline pattern)                                    | Patriarch's Bidding      |
+| `ExileUntilLeavesEffect`                    | `target: EffectTarget`                                | Exile target + link to source |
 | `ExileGroupAndLinkEffect`                   | `filter: GroupFilter, storeAs`                        | Exile group + link to source |
 | `ReturnLinkedExileEffect`                   | `underOwnersControl: Boolean = false`                 | Return linked exiled cards |
 

@@ -43,6 +43,7 @@ object KhansOfTarkirSet {
 
         // White enchantments
         BraveTheSands,
+        SuspensionField,
 
         // White spells
         DefiantStrike,

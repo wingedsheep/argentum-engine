@@ -33,6 +33,7 @@ class RemovalExecutors(
         DestroyAllSharingTypeWithSacrificedExecutor(),
         CantBeRegeneratedExecutor(),
         ExileGroupAndLinkExecutor(),
+        ExileUntilLeavesExecutor(),
         MarkExileOnDeathExecutor(),
         MarkExileControllerGraveyardOnDeathExecutor(),
         ForceSacrificeExecutor(),
