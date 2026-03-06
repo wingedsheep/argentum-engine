@@ -3,29 +3,18 @@ package com.wingedsheep.engine.mechanics.layers
 import com.wingedsheep.engine.handlers.DynamicAmountEvaluator
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.state.GameState
-import com.wingedsheep.engine.state.components.battlefield.CountersComponent
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
-import com.wingedsheep.engine.state.components.identity.ChosenColorComponent
-import com.wingedsheep.engine.state.components.identity.ChosenCreatureTypeComponent
 import com.wingedsheep.engine.state.components.identity.FaceDownComponent
 import com.wingedsheep.engine.state.components.identity.ProtectionComponent
 import com.wingedsheep.engine.state.components.identity.TextReplacementComponent
-import com.wingedsheep.sdk.scripting.text.TextReplacer
 import com.wingedsheep.sdk.scripting.Duration
-import com.wingedsheep.sdk.core.Color
-import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.model.CharacteristicValue
 import com.wingedsheep.sdk.model.EntityId
-import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
-import com.wingedsheep.sdk.scripting.predicates.CardPredicate
-import com.wingedsheep.sdk.scripting.predicates.ControllerPredicate
-import com.wingedsheep.sdk.scripting.predicates.StatePredicate
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
-import kotlinx.serialization.Serializable
 
 /**
  * Projects the game state by applying continuous effects in layer order (Rule 613).
@@ -50,15 +39,15 @@ import kotlinx.serialization.Serializable
 class StateProjector(
     private val dynamicAmountEvaluator: DynamicAmountEvaluator = DynamicAmountEvaluator(projectForBattlefieldCounting = false)
 ) {
+    private val filterResolver = AffectsFilterResolver()
+    private val effectApplicator = EffectApplicator(dynamicAmountEvaluator)
+    private val effectSorter = EffectSorter()
 
     /**
      * Project the full game state with all continuous effects applied.
      */
     fun project(state: GameState): ProjectedState {
-        // Initialize projected values from base state
         val projectedValues = mutableMapOf<EntityId, MutableProjectedValues>()
-
-        // Track entities with dynamic stats (CDAs) for resolution after initialization
         val dynamicStatEntities = mutableListOf<Pair<EntityId, CardComponent>>()
 
         // Initialize all permanents with their base values
@@ -66,23 +55,22 @@ class StateProjector(
             val container = state.getEntity(entityId) ?: continue
             val cardComponent = container.get<CardComponent>() ?: continue
 
-            // Face-down creatures are 2/2 colorless creatures with no name, types, or abilities
             if (container.has<FaceDownComponent>()) {
                 projectedValues[entityId] = MutableProjectedValues(
                     power = 2,
                     toughness = 2,
-                    keywords = mutableSetOf(),  // No keywords
-                    colors = mutableSetOf(),     // Colorless
-                    types = mutableSetOf("CREATURE"),  // Just creature type
-                    subtypes = mutableSetOf(),   // No subtypes (Rule 707.2)
+                    keywords = mutableSetOf(),
+                    colors = mutableSetOf(),
+                    types = mutableSetOf("CREATURE"),
+                    subtypes = mutableSetOf(),
                     controllerId = container.get<ControllerComponent>()?.playerId,
                     isFaceDown = true
                 )
             } else {
                 val baseStats = cardComponent.baseStats
                 projectedValues[entityId] = MutableProjectedValues(
-                    power = baseStats?.basePower,  // null for dynamic stats
-                    toughness = baseStats?.baseToughness,  // null for dynamic stats
+                    power = baseStats?.basePower,
+                    toughness = baseStats?.baseToughness,
                     keywords = (cardComponent.baseKeywords.map { it.name } +
                         cardComponent.baseFlags.map { it.name } +
                         (container.get<ProtectionComponent>()?.colors?.map { "PROTECTION_FROM_${it.name}" } ?: emptyList()) +
@@ -94,12 +82,10 @@ class StateProjector(
                     isFaceDown = false
                 )
 
-                // Changeling: creature has all creature types (characteristic-defining ability, Layer 4)
                 if (Keyword.CHANGELING in cardComponent.baseKeywords) {
                     projectedValues[entityId]?.subtypes?.addAll(Subtype.ALL_CREATURE_TYPES)
                 }
 
-                // Track entities with dynamic stats for CDA resolution
                 if (baseStats?.isDynamic == true) {
                     dynamicStatEntities.add(entityId to cardComponent)
                 }
@@ -107,115 +93,42 @@ class StateProjector(
         }
 
         // Apply Layer 3 text-changing effects (TextReplacementComponent)
-        // This modifies subtypes and protection keywords before other layers are applied
-        for (entityId in state.getBattlefield()) {
-            val container = state.getEntity(entityId) ?: continue
-            val textReplacement = container.get<TextReplacementComponent>() ?: continue
-            val values = projectedValues[entityId] ?: continue
+        applyTextReplacements(state, projectedValues)
 
-            val transformedSubtypes = values.subtypes.map { textReplacement.applyToCreatureType(it) }.toMutableSet()
-            values.subtypes.clear()
-            values.subtypes.addAll(transformedSubtypes)
-
-            // Also update the 'types' set which includes subtypes
-            val oldSubtypesInTypes = values.types.filter { type ->
-                // Check if this type value was a subtype (not a card type or supertype)
-                container.get<CardComponent>()?.typeLine?.subtypes?.any { it.value == type } == true
-            }.toSet()
-            values.types.removeAll(oldSubtypesInTypes)
-            values.types.addAll(transformedSubtypes)
-
-            // Also update protection-from-subtype keywords (Rule 702.16 + Layer 3)
-            // e.g., "Protection from Goblins" → "Protection from Elves" when text changes Goblin → Elf
-            val protectionSubtypePrefix = "PROTECTION_FROM_SUBTYPE_"
-            val protectionKeywords = values.keywords.filter { it.startsWith(protectionSubtypePrefix) }
-            for (keyword in protectionKeywords) {
-                val originalSubtype = keyword.removePrefix(protectionSubtypePrefix)
-                val transformed = textReplacement.applyToCreatureType(originalSubtype).uppercase()
-                if (transformed != originalSubtype) {
-                    values.keywords.remove(keyword)
-                    values.keywords.add("$protectionSubtypePrefix$transformed")
-                }
-            }
-        }
-
-        // Collect all active continuous effects (pass projected values so subtype filters use Layer 3 results)
+        // Collect all active continuous effects
         val effects = collectContinuousEffects(state, projectedValues)
 
         // Sort effects by layer and dependency
-        val sortedEffects = sortByLayerAndDependency(effects, state)
+        val sortedEffects = effectSorter.sortByLayerAndDependency(effects, state)
 
         // Apply continuous effects for layers 1-6 first (before CDA resolution)
-        // This ensures type-changing effects (Layer 4) are applied before CDAs count subtypes
         for (effect in sortedEffects) {
             if (effect.layer != Layer.POWER_TOUGHNESS) {
-                applyEffect(effect, state, projectedValues)
+                effectApplicator.applyEffect(effect, state, projectedValues)
             }
         }
 
         // Resolve CDAs (Layer 7a) - evaluate dynamic power/toughness
-        // Done after layers 1-6 so type changes are visible to AggregateBattlefield
-        if (dynamicStatEntities.isNotEmpty()) {
-            // Build intermediate projected state so counting uses updated types/subtypes
-            val intermediateProjected = buildIntermediateProjectedState(state, projectedValues)
-            for ((entityId, cardComponent) in dynamicStatEntities) {
-                val values = projectedValues[entityId] ?: continue
-                val controllerId = values.controllerId ?: continue
-                val context = EffectContext(
-                    sourceId = entityId,
-                    controllerId = controllerId,
-                    opponentId = state.getOpponent(controllerId)
-                )
-                val baseStats = cardComponent.baseStats ?: continue
-                val textReplacement = state.getEntity(entityId)?.get<TextReplacementComponent>()
+        resolveCDAs(state, projectedValues, dynamicStatEntities)
 
-                fun resolveDynamicAmount(source: DynamicAmount): Int {
-                    val effective = if (textReplacement != null) {
-                        source.applyTextReplacement(textReplacement)
-                    } else {
-                        source
-                    }
-                    return dynamicAmountEvaluator.evaluate(state, effective, context, intermediateProjected)
-                }
-
-                when (val power = baseStats.power) {
-                    is CharacteristicValue.Dynamic ->
-                        values.power = resolveDynamicAmount(power.source)
-                    is CharacteristicValue.DynamicWithOffset ->
-                        values.power = resolveDynamicAmount(power.source) + power.offset
-                    is CharacteristicValue.Fixed -> {} // Already set
-                }
-                when (val toughness = baseStats.toughness) {
-                    is CharacteristicValue.Dynamic ->
-                        values.toughness = resolveDynamicAmount(toughness.source)
-                    is CharacteristicValue.DynamicWithOffset ->
-                        values.toughness = resolveDynamicAmount(toughness.source) + toughness.offset
-                    is CharacteristicValue.Fixed -> {} // Already set
-                }
-            }
-        }
-
-        // Re-resolve affected entities for Layer 7 effects that depend on subtypes,
-        // since Layer 4 type-changing effects may have changed creature subtypes.
-        // For example, Imagecrafter changing a Soldier to a Beast should cause
-        // Aven Brigadier's "Other Soldier creatures get +1/+1" to stop applying.
+        // Re-resolve affected entities for Layer 7 effects that depend on subtypes
         val resolvedLayer7Effects = sortedEffects.map { effect ->
-            if (effect.layer == Layer.POWER_TOUGHNESS && effect.affectsFilter != null && isSubtypeDependentFilter(effect.affectsFilter)) {
-                effect.copy(affectedEntities = resolveAffectedEntities(state, effect.sourceId, effect.affectsFilter, projectedValues))
+            if (effect.layer == Layer.POWER_TOUGHNESS && effect.affectsFilter != null && filterResolver.isSubtypeDependentFilter(effect.affectsFilter)) {
+                effect.copy(affectedEntities = filterResolver.resolveAffectedEntities(state, effect.sourceId, effect.affectsFilter, projectedValues))
             } else {
                 effect
             }
         }
 
-        // Apply layer 7 continuous effects (P/T modifications from spells/abilities)
+        // Apply layer 7 continuous effects
         for (effect in resolvedLayer7Effects) {
             if (effect.layer == Layer.POWER_TOUGHNESS) {
-                applyEffect(effect, state, projectedValues)
+                effectApplicator.applyEffect(effect, state, projectedValues)
             }
         }
 
-        // Apply counters (layer 7d) - this is always done from base state
-        applyCounters(state, projectedValues)
+        // Apply counters (layer 7d)
+        effectApplicator.applyCounters(state, projectedValues)
 
         // Convert to immutable
         val finalValues = projectedValues.mapValues { (_, v) ->
@@ -239,25 +152,16 @@ class StateProjector(
         return ProjectedState(state, finalValues)
     }
 
-    /**
-     * Get the projected power of a creature.
-     */
     fun getProjectedPower(state: GameState, entityId: EntityId): Int {
         val projected = project(state)
         return projected.getPower(entityId) ?: 0
     }
 
-    /**
-     * Get the projected toughness of a creature.
-     */
     fun getProjectedToughness(state: GameState, entityId: EntityId): Int {
         val projected = project(state)
         return projected.getToughness(entityId) ?: 0
     }
 
-    /**
-     * Get the projected keywords of an entity.
-     */
     fun getProjectedKeywords(state: GameState, entityId: EntityId): Set<Keyword> {
         val projected = project(state)
         return projected.getKeywords(entityId).mapNotNull { keywordName ->
@@ -269,64 +173,51 @@ class StateProjector(
         }.toSet()
     }
 
-    /**
-     * Check if an entity has a specific keyword after applying continuous effects.
-     */
     fun hasProjectedKeyword(state: GameState, entityId: EntityId, keyword: Keyword): Boolean {
         val projected = project(state)
         return projected.hasKeyword(entityId, keyword)
     }
 
-    /**
-     * Build an intermediate ProjectedState from the in-progress projected values.
-     * Used during CDA resolution so that AggregateBattlefield can see type changes
-     * from layers 1-6 (especially Layer 4 type-changing effects).
-     */
-    private fun buildIntermediateProjectedState(
+    private fun applyTextReplacements(
         state: GameState,
-        projectedValues: Map<EntityId, MutableProjectedValues>
-    ): ProjectedState {
-        val frozen = projectedValues.mapValues { (_, v) ->
-            ProjectedValues(
-                power = v.power,
-                toughness = v.toughness,
-                keywords = v.keywords.toSet(),
-                colors = v.colors.toSet(),
-                types = v.types.toSet(),
-                subtypes = v.subtypes.toSet(),
-                controllerId = v.controllerId,
-                isFaceDown = v.isFaceDown,
-                cantAttack = v.cantAttack,
-                cantBlock = v.cantBlock,
-                mustAttack = v.mustAttack,
-                mustBlock = v.mustBlock,
-                cantBeBlockedExceptBySubtypes = v.cantBeBlockedExceptBySubtypes.toSet()
-            )
+        projectedValues: MutableMap<EntityId, MutableProjectedValues>
+    ) {
+        for (entityId in state.getBattlefield()) {
+            val container = state.getEntity(entityId) ?: continue
+            val textReplacement = container.get<TextReplacementComponent>() ?: continue
+            val values = projectedValues[entityId] ?: continue
+
+            val transformedSubtypes = values.subtypes.map { textReplacement.applyToCreatureType(it) }.toMutableSet()
+            values.subtypes.clear()
+            values.subtypes.addAll(transformedSubtypes)
+
+            val oldSubtypesInTypes = values.types.filter { type ->
+                container.get<CardComponent>()?.typeLine?.subtypes?.any { it.value == type } == true
+            }.toSet()
+            values.types.removeAll(oldSubtypesInTypes)
+            values.types.addAll(transformedSubtypes)
+
+            val protectionSubtypePrefix = "PROTECTION_FROM_SUBTYPE_"
+            val protectionKeywords = values.keywords.filter { it.startsWith(protectionSubtypePrefix) }
+            for (keyword in protectionKeywords) {
+                val originalSubtype = keyword.removePrefix(protectionSubtypePrefix)
+                val transformed = textReplacement.applyToCreatureType(originalSubtype).uppercase()
+                if (transformed != originalSubtype) {
+                    values.keywords.remove(keyword)
+                    values.keywords.add("$protectionSubtypePrefix$transformed")
+                }
+            }
         }
-        return ProjectedState(state, frozen)
     }
 
-    /**
-     * Extract type strings from a card component.
-     */
     private fun extractTypes(card: CardComponent): MutableSet<String> {
         val types = mutableSetOf<String>()
-
-        // Add supertypes
         types.addAll(card.typeLine.supertypes.map { it.name })
-
-        // Add card types
         types.addAll(card.typeLine.cardTypes.map { it.name })
-
-        // Add subtypes
         types.addAll(card.typeLine.subtypes.map { it.value })
-
         return types
     }
 
-    /**
-     * Collect continuous effects from all sources.
-     */
     private fun collectContinuousEffects(
         state: GameState,
         projectedValues: Map<EntityId, MutableProjectedValues>
@@ -336,11 +227,8 @@ class StateProjector(
         // 1. Collect effects from static abilities on permanents
         for (entityId in state.getBattlefield()) {
             val container = state.getEntity(entityId) ?: continue
-
-            // Check for continuous effect components
             val continuousEffectComponent = container.get<ContinuousEffectSourceComponent>()
             if (continuousEffectComponent != null) {
-                // Apply text replacement to AffectsFilter if source has been text-changed (Gap 1)
                 val textReplacement = container.get<TextReplacementComponent>()
                 effects.addAll(continuousEffectComponent.effects.map { effect ->
                     val effectiveFilter = if (textReplacement != null && effect.affectsFilter != null) {
@@ -355,7 +243,7 @@ class StateProjector(
                         timestamp = container.get<com.wingedsheep.engine.state.components.battlefield.TimestampComponent>()?.timestamp
                             ?: state.timestamp,
                         modification = effect.modification,
-                        affectedEntities = resolveAffectedEntities(state, entityId, effectiveFilter, projectedValues),
+                        affectedEntities = filterResolver.resolveAffectedEntities(state, entityId, effectiveFilter, projectedValues),
                         sourceCondition = effect.sourceCondition,
                         affectsFilter = effectiveFilter
                     )
@@ -365,7 +253,6 @@ class StateProjector(
 
         // 2. Collect floating effects (from resolved spells like Giant Growth)
         for (floating in state.floatingEffects) {
-            // Skip WhileSourceTapped effects if source is no longer tapped or on battlefield
             if (floating.duration is Duration.WhileSourceTapped) {
                 val sourceId = floating.sourceId
                 if (sourceId == null || !state.getBattlefield().contains(sourceId) ||
@@ -374,7 +261,6 @@ class StateProjector(
                 }
             }
 
-            // Only include effects whose affected entities still exist on battlefield
             val validAffectedEntities = floating.effect.affectedEntities.filter { entityId ->
                 state.getBattlefield().contains(entityId)
             }.toSet()
@@ -396,1242 +282,48 @@ class StateProjector(
         return effects
     }
 
-    /**
-     * Resolve which entities are affected by a continuous effect.
-     */
-    private fun resolveAffectedEntities(
-        state: GameState,
-        sourceId: EntityId,
-        filter: AffectsFilter?,
-        projectedValues: Map<EntityId, MutableProjectedValues> = emptyMap()
-    ): Set<EntityId> {
-        if (filter == null) return setOf(sourceId) // Affects self by default
-
-        return when (filter) {
-            is AffectsFilter.Self -> setOf(sourceId)
-            is AffectsFilter.AllCreaturesYouControl -> {
-                val controller = state.getEntity(sourceId)?.get<ControllerComponent>()?.playerId
-                    ?: return emptySet()
-                state.getBattlefield().filter { entityId ->
-                    val container = state.getEntity(entityId) ?: return@filter false
-                    val card = container.get<CardComponent>() ?: return@filter false
-                    val entityController = container.get<ControllerComponent>()?.playerId
-                    // Face-down permanents are always creatures (Rule 707.2)
-                    (card.typeLine.isCreature || container.has<FaceDownComponent>()) && entityController == controller
-                }.toSet()
-            }
-            is AffectsFilter.AllCreatures -> {
-                state.getBattlefield().filter { entityId ->
-                    val container = state.getEntity(entityId) ?: return@filter false
-                    // Face-down permanents are always creatures (Rule 707.2)
-                    container.get<CardComponent>()?.typeLine?.isCreature == true || container.has<FaceDownComponent>()
-                }.toSet()
-            }
-            is AffectsFilter.AllCreaturesOpponentsControl -> {
-                val controller = state.getEntity(sourceId)?.get<ControllerComponent>()?.playerId
-                    ?: return emptySet()
-                state.getBattlefield().filter { entityId ->
-                    val container = state.getEntity(entityId) ?: return@filter false
-                    val card = container.get<CardComponent>() ?: return@filter false
-                    val entityController = container.get<ControllerComponent>()?.playerId
-                    // Face-down permanents are always creatures (Rule 707.2)
-                    (card.typeLine.isCreature || container.has<FaceDownComponent>()) && entityController != controller
-                }.toSet()
-            }
-            is AffectsFilter.SpecificEntities -> filter.entityIds
-            is AffectsFilter.WithSubtype -> {
-                state.getBattlefield().filter { entityId ->
-                    val card = state.getEntity(entityId)?.get<CardComponent>() ?: return@filter false
-                    val projected = projectedValues[entityId]
-                    if (projected != null) {
-                        projected.subtypes.any { it.equals(filter.subtype, ignoreCase = true) }
-                    } else {
-                        card.typeLine.hasSubtype(com.wingedsheep.sdk.core.Subtype(filter.subtype))
-                    }
-                }.toSet()
-            }
-            is AffectsFilter.OtherCreaturesWithSubtype -> {
-                state.getBattlefield().filter { entityId ->
-                    if (entityId == sourceId) return@filter false // Exclude self
-                    val container = state.getEntity(entityId) ?: return@filter false
-                    val card = container.get<CardComponent>() ?: return@filter false
-                    val projected = projectedValues[entityId]
-                    val hasSubtype = if (projected != null) {
-                        projected.subtypes.any { it.equals(filter.subtype, ignoreCase = true) }
-                    } else {
-                        card.typeLine.hasSubtype(com.wingedsheep.sdk.core.Subtype(filter.subtype))
-                    }
-                    // Face-down permanents are always creatures (Rule 707.2)
-                    (card.typeLine.isCreature || container.has<FaceDownComponent>()) && hasSubtype
-                }.toSet()
-            }
-            is AffectsFilter.OtherTappedCreaturesYouControl -> {
-                val controller = state.getEntity(sourceId)?.get<ControllerComponent>()?.playerId
-                    ?: return emptySet()
-                state.getBattlefield().filter { entityId ->
-                    if (entityId == sourceId) return@filter false // Exclude self
-                    val container = state.getEntity(entityId) ?: return@filter false
-                    val card = container.get<CardComponent>() ?: return@filter false
-                    val entityController = container.get<ControllerComponent>()?.playerId
-                    val isTapped = container.has<TappedComponent>()
-                    // Face-down permanents are always creatures (Rule 707.2)
-                    (card.typeLine.isCreature || container.has<FaceDownComponent>()) && entityController == controller && isTapped
-                }.toSet()
-            }
-            is AffectsFilter.OtherCreaturesYouControl -> {
-                val controller = state.getEntity(sourceId)?.get<ControllerComponent>()?.playerId
-                    ?: return emptySet()
-                state.getBattlefield().filter { entityId ->
-                    if (entityId == sourceId) return@filter false // Exclude self
-                    val container = state.getEntity(entityId) ?: return@filter false
-                    val card = container.get<CardComponent>() ?: return@filter false
-                    val entityController = container.get<ControllerComponent>()?.playerId
-                    // Face-down permanents are always creatures (Rule 707.2)
-                    (card.typeLine.isCreature || container.has<FaceDownComponent>()) && entityController == controller
-                }.toSet()
-            }
-            is AffectsFilter.AllOtherCreatures -> {
-                state.getBattlefield().filter { entityId ->
-                    if (entityId == sourceId) return@filter false // Exclude self
-                    val container = state.getEntity(entityId) ?: return@filter false
-                    // Face-down permanents are always creatures (Rule 707.2)
-                    container.get<CardComponent>()?.typeLine?.isCreature == true || container.has<FaceDownComponent>()
-                }.toSet()
-            }
-            is AffectsFilter.AttachedPermanent -> {
-                val attachedTo = state.getEntity(sourceId)
-                    ?.get<com.wingedsheep.engine.state.components.battlefield.AttachedToComponent>()
-                if (attachedTo != null) setOf(attachedTo.targetId) else emptySet()
-            }
-            is AffectsFilter.FaceDownCreatures -> {
-                state.getBattlefield().filter { entityId ->
-                    state.getEntity(entityId)?.has<FaceDownComponent>() == true
-                }.toSet()
-            }
-            is AffectsFilter.CreaturesWithCounter -> {
-                val counterType = parseCounterType(filter.counterType) ?: return emptySet()
-                state.getBattlefield().filter { entityId ->
-                    val container = state.getEntity(entityId) ?: return@filter false
-                    val card = container.get<CardComponent>() ?: return@filter false
-                    val counters = container.get<CountersComponent>()
-                    // Face-down permanents are always creatures (Rule 707.2)
-                    (card.typeLine.isCreature || container.has<FaceDownComponent>()) && (counters?.getCount(counterType) ?: 0) > 0
-                }.toSet()
-            }
-            is AffectsFilter.OwnCreaturesWithCounter -> {
-                val counterType = parseCounterType(filter.counterType) ?: return emptySet()
-                val sourceController = state.getEntity(sourceId)
-                    ?.get<ControllerComponent>()?.playerId ?: return emptySet()
-                state.getBattlefield().filter { entityId ->
-                    val container = state.getEntity(entityId) ?: return@filter false
-                    val card = container.get<CardComponent>() ?: return@filter false
-                    val counters = container.get<CountersComponent>()
-                    val controller = container.get<ControllerComponent>()?.playerId
-                    controller == sourceController &&
-                        (card.typeLine.isCreature || container.has<FaceDownComponent>()) &&
-                        (counters?.getCount(counterType) ?: 0) > 0
-                }.toSet()
-            }
-            is AffectsFilter.ChosenCreatureTypeCreatures -> {
-                val chosenType = state.getEntity(sourceId)
-                    ?.get<ChosenCreatureTypeComponent>()?.creatureType
-                    ?: return emptySet()
-                state.getBattlefield().filter { entityId ->
-                    val container = state.getEntity(entityId) ?: return@filter false
-                    val card = container.get<CardComponent>() ?: return@filter false
-                    val projected = projectedValues[entityId]
-                    val hasSubtype = if (projected != null) {
-                        projected.subtypes.any { it.equals(chosenType, ignoreCase = true) }
-                    } else {
-                        card.typeLine.hasSubtype(Subtype(chosenType))
-                    }
-                    // Face-down permanents are always creatures (Rule 707.2)
-                    (card.typeLine.isCreature || container.has<FaceDownComponent>()) && hasSubtype
-                }.toSet()
-            }
-            is AffectsFilter.Generic -> {
-                resolveGenericFilter(state, sourceId, filter.groupFilter, projectedValues)
-            }
-        }
-    }
-
-    /**
-     * Resolve a GroupFilter generically against the battlefield,
-     * evaluating all predicates with in-progress projected values.
-     */
-    private fun resolveGenericFilter(
-        state: GameState,
-        sourceId: EntityId,
-        groupFilter: GroupFilter,
-        projectedValues: Map<EntityId, MutableProjectedValues>
-    ): Set<EntityId> {
-        val baseFilter = groupFilter.baseFilter
-        val controller = state.getEntity(sourceId)?.get<ControllerComponent>()?.playerId
-
-        return state.getBattlefield().filter { entityId ->
-            if (groupFilter.excludeSelf && entityId == sourceId) return@filter false
-
-            val container = state.getEntity(entityId) ?: return@filter false
-            val card = container.get<CardComponent>() ?: return@filter false
-            val projected = projectedValues[entityId]
-
-            // Check controller predicate
-            if (baseFilter.controllerPredicate != null) {
-                val entityController = container.get<ControllerComponent>()?.playerId
-                when (baseFilter.controllerPredicate) {
-                    ControllerPredicate.ControlledByYou -> if (entityController != controller) return@filter false
-                    ControllerPredicate.ControlledByOpponent -> if (entityController == controller) return@filter false
-                    ControllerPredicate.ControlledByAny -> { /* matches all */ }
-                    else -> { /* other predicates not applicable in static ability context */ }
-                }
-            }
-
-            // Check card predicates using projected values when available
-            val types = projected?.types ?: card.typeLine.cardTypes.map { it.name }.toSet()
-            val subtypes = projected?.subtypes ?: run {
-                val baseSubtypes = card.typeLine.subtypes.map { it.value }.toSet()
-                // Changeling: has all creature types in all zones
-                if (Keyword.CHANGELING in card.baseKeywords) baseSubtypes + Subtype.ALL_CREATURE_TYPES
-                else baseSubtypes
-            }
-            val colors = projected?.colors ?: card.colors.map { it.name }.toSet()
-            val keywords = projected?.keywords ?: (card.baseKeywords.map { it.name } + card.baseFlags.map { it.name }).toSet()
-            val isFaceDown = projected?.isFaceDown ?: container.has<FaceDownComponent>()
-
-            for (predicate in baseFilter.cardPredicates) {
-                val matches = when (predicate) {
-                    CardPredicate.IsCreature -> "CREATURE" in types || isFaceDown
-                    CardPredicate.IsLand -> "LAND" in types
-                    CardPredicate.IsArtifact -> "ARTIFACT" in types
-                    CardPredicate.IsEnchantment -> "ENCHANTMENT" in types
-                    CardPredicate.IsPlaneswalker -> "PLANESWALKER" in types
-                    CardPredicate.IsInstant -> "INSTANT" in types
-                    CardPredicate.IsSorcery -> "SORCERY" in types
-                    CardPredicate.IsPermanent -> types.any { it in setOf("CREATURE", "LAND", "ARTIFACT", "ENCHANTMENT", "PLANESWALKER") }
-                    CardPredicate.IsNonland -> "LAND" !in types
-                    CardPredicate.IsNoncreature -> "CREATURE" !in types
-                    CardPredicate.IsBasicLand -> "LAND" in types && card.typeLine.supertypes.any { it.name == "BASIC" }
-                    CardPredicate.IsToken -> container.has<com.wingedsheep.engine.state.components.identity.TokenComponent>()
-                    CardPredicate.IsNontoken -> !container.has<com.wingedsheep.engine.state.components.identity.TokenComponent>()
-                    is CardPredicate.HasSubtype -> {
-                        if (isFaceDown) false
-                        else subtypes.any { it.equals(predicate.subtype.value, ignoreCase = true) }
-                    }
-                    is CardPredicate.NotSubtype -> {
-                        if (isFaceDown) true
-                        else subtypes.none { it.equals(predicate.subtype.value, ignoreCase = true) }
-                    }
-                    is CardPredicate.HasColor -> predicate.color.name in colors
-                    is CardPredicate.NotColor -> predicate.color.name !in colors
-                    CardPredicate.IsColorless -> colors.isEmpty()
-                    CardPredicate.IsMulticolored -> colors.size > 1
-                    CardPredicate.IsMonocolored -> colors.size == 1
-                    is CardPredicate.HasKeyword -> predicate.keyword.name in keywords
-                    is CardPredicate.NotKeyword -> predicate.keyword.name !in keywords
-                    is CardPredicate.PowerAtMost -> (projected?.power ?: card.baseStats?.basePower ?: 0) <= predicate.max
-                    is CardPredicate.PowerAtLeast -> (projected?.power ?: card.baseStats?.basePower ?: 0) >= predicate.min
-                    is CardPredicate.PowerEquals -> (projected?.power ?: card.baseStats?.basePower) == predicate.value
-                    is CardPredicate.ToughnessAtMost -> (projected?.toughness ?: card.baseStats?.baseToughness ?: 0) <= predicate.max
-                    is CardPredicate.ToughnessAtLeast -> (projected?.toughness ?: card.baseStats?.baseToughness ?: 0) >= predicate.min
-                    is CardPredicate.ToughnessEquals -> (projected?.toughness ?: card.baseStats?.baseToughness) == predicate.value
-                    is CardPredicate.ManaValueEquals -> card.manaValue == predicate.value
-                    is CardPredicate.ManaValueAtMost -> card.manaValue <= predicate.max
-                    is CardPredicate.ManaValueAtLeast -> card.manaValue >= predicate.min
-                    is CardPredicate.NameEquals -> card.name == predicate.name
-                    is CardPredicate.HasBasicLandType -> {
-                        if (isFaceDown) false
-                        else subtypes.any { it.equals(predicate.landType, ignoreCase = true) }
-                    }
-                    is CardPredicate.And -> predicate.predicates.all { matchesCardPredicateForProjection(it, card, container, projected, types, subtypes, colors, keywords, isFaceDown) }
-                    is CardPredicate.Or -> predicate.predicates.any { matchesCardPredicateForProjection(it, card, container, projected, types, subtypes, colors, keywords, isFaceDown) }
-                    is CardPredicate.Not -> !matchesCardPredicateForProjection(predicate.predicate, card, container, projected, types, subtypes, colors, keywords, isFaceDown)
-                    else -> true // Unknown predicates pass (safe fallback)
-                }
-                if (!matches) return@filter false
-            }
-
-            // Check state predicates
-            for (predicate in baseFilter.statePredicates) {
-                val matches = when (predicate) {
-                    StatePredicate.IsTapped -> container.has<TappedComponent>()
-                    StatePredicate.IsUntapped -> !container.has<TappedComponent>()
-                    StatePredicate.IsFaceDown -> isFaceDown
-                    else -> true // Other state predicates (combat, etc.) pass as safe fallback
-                }
-                if (!matches) return@filter false
-            }
-
-            true
-        }.toSet()
-    }
-
-    /**
-     * Helper for evaluating a single CardPredicate in the generic filter resolution context.
-     * Needed for recursive And/Or/Not predicates.
-     */
-    private fun matchesCardPredicateForProjection(
-        predicate: CardPredicate,
-        card: CardComponent,
-        container: com.wingedsheep.engine.state.ComponentContainer,
-        projected: MutableProjectedValues?,
-        types: Set<String>,
-        subtypes: Set<String>,
-        colors: Set<String>,
-        keywords: Set<String>,
-        isFaceDown: Boolean
-    ): Boolean = when (predicate) {
-        CardPredicate.IsCreature -> "CREATURE" in types || isFaceDown
-        CardPredicate.IsLand -> "LAND" in types
-        CardPredicate.IsArtifact -> "ARTIFACT" in types
-        CardPredicate.IsEnchantment -> "ENCHANTMENT" in types
-        CardPredicate.IsPlaneswalker -> "PLANESWALKER" in types
-        CardPredicate.IsInstant -> "INSTANT" in types
-        CardPredicate.IsSorcery -> "SORCERY" in types
-        CardPredicate.IsPermanent -> types.any { it in setOf("CREATURE", "LAND", "ARTIFACT", "ENCHANTMENT", "PLANESWALKER") }
-        CardPredicate.IsNonland -> "LAND" !in types
-        CardPredicate.IsNoncreature -> "CREATURE" !in types
-        CardPredicate.IsBasicLand -> "LAND" in types && card.typeLine.supertypes.any { it.name == "BASIC" }
-        CardPredicate.IsToken -> container.has<com.wingedsheep.engine.state.components.identity.TokenComponent>()
-        CardPredicate.IsNontoken -> !container.has<com.wingedsheep.engine.state.components.identity.TokenComponent>()
-        is CardPredicate.HasSubtype -> if (isFaceDown) false else subtypes.any { it.equals(predicate.subtype.value, ignoreCase = true) }
-        is CardPredicate.NotSubtype -> if (isFaceDown) true else subtypes.none { it.equals(predicate.subtype.value, ignoreCase = true) }
-        is CardPredicate.HasColor -> predicate.color.name in colors
-        is CardPredicate.NotColor -> predicate.color.name !in colors
-        CardPredicate.IsColorless -> colors.isEmpty()
-        CardPredicate.IsMulticolored -> colors.size > 1
-        CardPredicate.IsMonocolored -> colors.size == 1
-        is CardPredicate.HasKeyword -> predicate.keyword.name in keywords
-        is CardPredicate.NotKeyword -> predicate.keyword.name !in keywords
-        is CardPredicate.PowerAtMost -> (projected?.power ?: card.baseStats?.basePower ?: 0) <= predicate.max
-        is CardPredicate.PowerAtLeast -> (projected?.power ?: card.baseStats?.basePower ?: 0) >= predicate.min
-        is CardPredicate.PowerEquals -> (projected?.power ?: card.baseStats?.basePower) == predicate.value
-        is CardPredicate.ToughnessAtMost -> (projected?.toughness ?: card.baseStats?.baseToughness ?: 0) <= predicate.max
-        is CardPredicate.ToughnessAtLeast -> (projected?.toughness ?: card.baseStats?.baseToughness ?: 0) >= predicate.min
-        is CardPredicate.ToughnessEquals -> (projected?.toughness ?: card.baseStats?.baseToughness) == predicate.value
-        is CardPredicate.ManaValueEquals -> card.manaValue == predicate.value
-        is CardPredicate.ManaValueAtMost -> card.manaValue <= predicate.max
-        is CardPredicate.ManaValueAtLeast -> card.manaValue >= predicate.min
-        is CardPredicate.NameEquals -> card.name == predicate.name
-        is CardPredicate.HasBasicLandType -> if (isFaceDown) false else subtypes.any { it.equals(predicate.landType, ignoreCase = true) }
-        is CardPredicate.And -> predicate.predicates.all { matchesCardPredicateForProjection(it, card, container, projected, types, subtypes, colors, keywords, isFaceDown) }
-        is CardPredicate.Or -> predicate.predicates.any { matchesCardPredicateForProjection(it, card, container, projected, types, subtypes, colors, keywords, isFaceDown) }
-        is CardPredicate.Not -> !matchesCardPredicateForProjection(predicate.predicate, card, container, projected, types, subtypes, colors, keywords, isFaceDown)
-        else -> true
-    }
-
-    /**
-     * Sort effects by layer, then by timestamp within the same layer.
-     * Also handles dependencies (Rule 613.8).
-     */
-    private fun sortByLayerAndDependency(
-        effects: List<ContinuousEffect>,
-        state: GameState
-    ): List<ContinuousEffect> {
-        // Group by layer
-        val byLayer = effects.groupBy { it.layer }
-
-        val result = mutableListOf<ContinuousEffect>()
-
-        // Process each layer in order
-        for (layer in Layer.entries) {
-            val layerEffects = byLayer[layer] ?: continue
-
-            if (layer == Layer.POWER_TOUGHNESS) {
-                // Within layer 7, sort by sublayer first
-                val bySublayer = layerEffects.groupBy { it.sublayer }
-                for (sublayer in Sublayer.entries) {
-                    val sublayerEffects = bySublayer[sublayer] ?: continue
-                    result.addAll(sortByDependencyAndTimestamp(sublayerEffects, state))
-                }
-            } else {
-                result.addAll(sortByDependencyAndTimestamp(layerEffects, state))
-            }
-        }
-
-        return result
-    }
-
-    /**
-     * Sort effects within the same layer by dependency and timestamp.
-     */
-    private fun sortByDependencyAndTimestamp(
-        effects: List<ContinuousEffect>,
-        state: GameState
-    ): List<ContinuousEffect> {
-        if (effects.size <= 1) return effects
-
-        // Check for dependencies using trial application
-        val dependencies = mutableMapOf<ContinuousEffect, Set<ContinuousEffect>>()
-
-        for (effectA in effects) {
-            val dependsOn = mutableSetOf<ContinuousEffect>()
-            for (effectB in effects) {
-                if (effectA === effectB) continue
-                if (dependsOn(effectA, effectB, state)) {
-                    dependsOn.add(effectB)
-                }
-            }
-            dependencies[effectA] = dependsOn
-        }
-
-        // Topological sort with timestamp as tiebreaker
-        // Use identity-based tracking to avoid deduplicating equal-but-distinct effects
-        // (e.g., two +1/+1 lord effects from the same source affecting the same entities)
-        val result = mutableListOf<ContinuousEffect>()
-        val remaining = effects.toMutableList()
-
-        while (remaining.isNotEmpty()) {
-            // Find effects with no remaining dependencies
-            val ready = remaining.filter { effect ->
-                dependencies[effect]?.none { dep -> remaining.any { it === dep } } ?: true
-            }.sortedBy { it.timestamp } // Timestamp tiebreaker
-
-            if (ready.isEmpty()) {
-                // Circular dependency - fall back to timestamp
-                result.addAll(remaining.sortedBy { it.timestamp })
-                break
-            }
-
-            val next = ready.first()
-            result.add(next)
-            remaining.removeAt(remaining.indexOfFirst { it === next })
-        }
-
-        return result
-    }
-
-    /**
-     * Check if an AffectsFilter depends on creature subtypes.
-     * These filters need re-resolution after Layer 4 type-changing effects.
-     */
-    private fun parseCounterType(counterTypeString: String): CounterType? {
-        // Handle well-known counter type strings directly
-        return when (counterTypeString) {
-            "+1/+1" -> CounterType.PLUS_ONE_PLUS_ONE
-            "-1/-1" -> CounterType.MINUS_ONE_MINUS_ONE
-            else -> try {
-                CounterType.valueOf(counterTypeString.uppercase().replace(' ', '_'))
-            } catch (e: IllegalArgumentException) {
-                null
-            }
-        }
-    }
-
-    private fun isSubtypeDependentFilter(filter: AffectsFilter): Boolean {
-        return filter is AffectsFilter.OtherCreaturesWithSubtype ||
-            filter is AffectsFilter.WithSubtype ||
-            filter is AffectsFilter.ChosenCreatureTypeCreatures ||
-            (filter is AffectsFilter.Generic && filter.groupFilter.baseFilter.cardPredicates.any { it is CardPredicate.HasSubtype })
-    }
-
-    /**
-     * Check if effectA depends on effectB (Rule 613.8).
-     * An effect depends on another if what it applies to would change based on whether
-     * the other effect has been applied.
-     */
-    private fun dependsOn(
-        effectA: ContinuousEffect,
-        effectB: ContinuousEffect,
-        state: GameState
-    ): Boolean {
-        // Type-changing effects can create dependencies
-        if (effectB.modification is Modification.AddType || effectB.modification is Modification.RemoveType) {
-            // If effectA's affected entities filter depends on types, it depends on effectB
-            // This is a simplified check - full implementation would do trial application
-            return effectA.affectedEntities.any { it in effectB.affectedEntities }
-        }
-
-        return false
-    }
-
-    /**
-     * Apply a single continuous effect.
-     */
-    private fun applyEffect(
-        effect: ContinuousEffect,
-        state: GameState,
-        projectedValues: MutableMap<EntityId, MutableProjectedValues>
-    ) {
-        // Check source projection condition against current projected values
-        val sourceCondition = effect.sourceCondition
-        if (sourceCondition != null) {
-            val sourceValues = projectedValues[effect.sourceId]
-            val conditionMet = evaluateSourceCondition(sourceCondition, effect, state, projectedValues, sourceValues)
-            if (!conditionMet) return
-        }
-
-        for (entityId in effect.affectedEntities) {
-            val values = projectedValues.getOrPut(entityId) { MutableProjectedValues() }
-
-            when (val mod = effect.modification) {
-                is Modification.SetPowerToughness -> {
-                    values.power = mod.power
-                    values.toughness = mod.toughness
-                }
-                is Modification.SetPower -> {
-                    values.power = mod.power
-                }
-                is Modification.ModifyPowerToughness -> {
-                    values.power = (values.power ?: 0) + mod.powerMod
-                    values.toughness = (values.toughness ?: 0) + mod.toughnessMod
-                }
-                is Modification.SwitchPowerToughness -> {
-                    val p = values.power
-                    val t = values.toughness
-                    values.power = t
-                    values.toughness = p
-                }
-                is Modification.GrantKeyword -> {
-                    values.keywords.add(mod.keyword)
-                }
-                is Modification.RemoveKeyword -> {
-                    values.keywords.remove(mod.keyword)
-                }
-                is Modification.ChangeColor -> {
-                    values.colors.clear()
-                    values.colors.addAll(mod.colors)
-                }
-                is Modification.AddColor -> {
-                    values.colors.addAll(mod.colors)
-                }
-                is Modification.AddType -> {
-                    values.types.add(mod.type)
-                }
-                is Modification.AddSubtype -> {
-                    values.types.add(mod.subtype)
-                    values.subtypes.add(mod.subtype)
-                }
-                is Modification.RemoveType -> {
-                    values.types.remove(mod.type)
-                }
-                is Modification.SetCreatureSubtypes -> {
-                    // Remove all creature subtypes from types and subtypes sets
-                    val creatureTypes = com.wingedsheep.sdk.core.Subtype.ALL_CREATURE_TYPES.toSet()
-                    values.subtypes.removeAll { it in creatureTypes }
-                    values.types.removeAll { it in creatureTypes }
-                    // Add the new creature subtypes
-                    values.subtypes.addAll(mod.subtypes)
-                    values.types.addAll(mod.subtypes)
-                }
-                is Modification.SetBasicLandTypes -> {
-                    // Remove all basic land subtypes (Rule 305.7)
-                    val basicLandTypes = com.wingedsheep.sdk.core.Subtype.ALL_BASIC_LAND_TYPES
-                    values.subtypes.removeAll { it in basicLandTypes }
-                    values.types.removeAll { it in basicLandTypes }
-                    // Add the new land subtypes
-                    values.subtypes.addAll(mod.subtypes)
-                    values.types.addAll(mod.subtypes)
-                }
-                is Modification.ChangeController -> {
-                    values.controllerId = mod.newControllerId
-                }
-                is Modification.ChangeControllerToSourceController -> {
-                    val sourceController = state.getEntity(effect.sourceId)
-                        ?.get<ControllerComponent>()?.playerId
-                    if (sourceController != null) {
-                        values.controllerId = sourceController
-                    }
-                }
-                is Modification.GrantProtectionFromColor -> {
-                    values.keywords.add("PROTECTION_FROM_${mod.color}")
-                }
-                is Modification.GrantProtectionFromChosenColor -> {
-                    val chosenColor = state.getEntity(effect.sourceId)
-                        ?.get<ChosenColorComponent>()?.color
-                    if (chosenColor != null) {
-                        values.keywords.add("PROTECTION_FROM_${chosenColor.name}")
-                    }
-                }
-                is Modification.SetCantAttack -> {
-                    values.cantAttack = true
-                }
-                is Modification.SetCantBlock -> {
-                    values.cantBlock = true
-                }
-                is Modification.SetMustAttack -> {
-                    values.mustAttack = true
-                }
-                is Modification.SetMustBlock -> {
-                    values.mustBlock = true
-                }
-                is Modification.ModifyPowerToughnessPerSourceCounter -> {
-                    // Read counter count from the source permanent (e.g., the aura)
-                    val counterType = try {
-                        CounterType.valueOf(
-                            mod.counterType.uppercase()
-                                .replace(' ', '_')
-                                .replace('+', 'P')
-                                .replace('-', 'M')
-                                .replace("/", "_")
-                        )
-                    } catch (e: IllegalArgumentException) { null }
-                    val counterCount = if (counterType != null) {
-                        state.getEntity(effect.sourceId)
-                            ?.get<CountersComponent>()
-                            ?.getCount(counterType) ?: 0
-                    } else 0
-                    if (counterCount > 0) {
-                        values.power = (values.power ?: 0) + mod.powerModPerCounter * counterCount
-                        values.toughness = (values.toughness ?: 0) + mod.toughnessModPerCounter * counterCount
-                    }
-                }
-                is Modification.ModifyPowerToughnessPerSharedCreatureType -> {
-                    // Count other creatures on the battlefield sharing a creature type with this entity
-                    val entitySubtypes = values.subtypes
-                    if (entitySubtypes.isNotEmpty()) {
-                        val creatureSubtypes = entitySubtypes.toSet()
-                        val count = state.getBattlefield().count { otherId ->
-                            if (otherId == entityId) return@count false
-                            val otherValues = projectedValues[otherId] ?: return@count false
-                            val isCreature = "CREATURE" in otherValues.types
-                            if (!isCreature) return@count false
-                            otherValues.subtypes.any { it in creatureSubtypes }
-                        }
-                        if (count > 0) {
-                            values.power = (values.power ?: 0) + mod.powerModPerCreature * count
-                            values.toughness = (values.toughness ?: 0) + mod.toughnessModPerCreature * count
-                        }
-                    }
-                }
-                is Modification.CantBeBlockedExceptBySubtype -> {
-                    values.cantBeBlockedExceptBySubtypes.add(mod.subtype)
-                }
-                is Modification.ModifyPowerToughnessDynamic -> {
-                    val controllerId = projectedValues[effect.sourceId]?.controllerId
-                        ?: state.getEntity(effect.sourceId)?.get<ControllerComponent>()?.playerId
-                    if (controllerId != null) {
-                        val context = EffectContext(
-                            sourceId = effect.sourceId,
-                            controllerId = controllerId,
-                            opponentId = state.getOpponent(controllerId)
-                        )
-                        val intermediateProjected = buildIntermediateProjectedState(state, projectedValues)
-                        val powerMod = dynamicAmountEvaluator.evaluate(state, mod.powerBonus, context, intermediateProjected)
-                        val toughnessMod = dynamicAmountEvaluator.evaluate(state, mod.toughnessBonus, context, intermediateProjected)
-                        values.power = (values.power ?: 0) + powerMod
-                        values.toughness = (values.toughness ?: 0) + toughnessMod
-                    }
-                }
-                is Modification.NoOp -> {
-                    // No-op: effect doesn't modify projected state (e.g., combat restrictions)
-                }
-            }
-        }
-    }
-
-    /**
-     * Evaluate a source projection condition against the current projected state.
-     */
-    private fun evaluateSourceCondition(
-        condition: SourceProjectionCondition,
-        effect: ContinuousEffect,
+    private fun resolveCDAs(
         state: GameState,
         projectedValues: MutableMap<EntityId, MutableProjectedValues>,
-        sourceValues: MutableProjectedValues?
-    ): Boolean = when (condition) {
-        is SourceProjectionCondition.HasSubtype ->
-            sourceValues?.subtypes?.any { it.equals(condition.subtype, ignoreCase = true) } == true
-        is SourceProjectionCondition.ControllerControlsCreatureOfType -> {
-            val controllerId = sourceValues?.controllerId
-            if (controllerId != null) {
-                state.getBattlefield(controllerId).any { entityId ->
-                    entityId != effect.sourceId &&
-                    projectedValues[entityId]?.subtypes?.any {
-                        it.equals(condition.subtype, ignoreCase = true)
-                    } == true
-                }
-            } else false
-        }
-        is SourceProjectionCondition.EnchantedCreatureHasSubtype -> {
-            val attachedTo = state.getEntity(effect.sourceId)
-                ?.get<com.wingedsheep.engine.state.components.battlefield.AttachedToComponent>()
-            if (attachedTo != null) {
-                projectedValues[attachedTo.targetId]?.subtypes?.any {
-                    it.equals(condition.subtype, ignoreCase = true)
-                } == true
-            } else false
-        }
-        is SourceProjectionCondition.OpponentControlsCreature -> {
-            val controllerId = sourceValues?.controllerId
-            if (controllerId != null) {
-                state.getBattlefield().any { entityId ->
-                    val values = projectedValues[entityId]
-                    values?.types?.contains("CREATURE") == true &&
-                    values.controllerId != null &&
-                    values.controllerId != controllerId
-                }
-            } else false
-        }
-        is SourceProjectionCondition.Not -> !evaluateSourceCondition(condition.condition, effect, state, projectedValues, sourceValues)
-    }
-
-    /**
-     * Apply +1/+1 and -1/-1 counters (layer 7d).
-     */
-    private fun applyCounters(
-        state: GameState,
-        projectedValues: MutableMap<EntityId, MutableProjectedValues>
+        dynamicStatEntities: List<Pair<EntityId, CardComponent>>
     ) {
-        for (entityId in state.getBattlefield()) {
-            val container = state.getEntity(entityId) ?: continue
-            val counters = container.get<CountersComponent>() ?: continue
+        if (dynamicStatEntities.isEmpty()) return
 
-            val values = projectedValues.getOrPut(entityId) { MutableProjectedValues() }
+        val intermediateProjected = buildIntermediateProjectedState(state, projectedValues)
+        for ((entityId, cardComponent) in dynamicStatEntities) {
+            val values = projectedValues[entityId] ?: continue
+            val controllerId = values.controllerId ?: continue
+            val context = EffectContext(
+                sourceId = entityId,
+                controllerId = controllerId,
+                opponentId = state.getOpponent(controllerId)
+            )
+            val baseStats = cardComponent.baseStats ?: continue
+            val textReplacement = state.getEntity(entityId)?.get<TextReplacementComponent>()
 
-            val plusOneCounters = counters.getCount(CounterType.PLUS_ONE_PLUS_ONE)
-            val minusOneCounters = counters.getCount(CounterType.MINUS_ONE_MINUS_ONE)
-
-            // +1/+1 and -1/-1 counters annihilate each other
-            val netCounters = plusOneCounters - minusOneCounters
-
-            if (netCounters != 0) {
-                values.power = (values.power ?: 0) + netCounters
-                values.toughness = (values.toughness ?: 0) + netCounters
+            fun resolveDynamicAmount(source: DynamicAmount): Int {
+                val effective = if (textReplacement != null) {
+                    source.applyTextReplacement(textReplacement)
+                } else {
+                    source
+                }
+                return dynamicAmountEvaluator.evaluate(state, effective, context, intermediateProjected)
             }
-        }
-    }
-}
 
-/**
- * Component that stores continuous effects generated by a permanent.
- */
-@Serializable
-data class ContinuousEffectSourceComponent(
-    val effects: List<ContinuousEffectData>
-) : com.wingedsheep.engine.state.Component
-
-/**
- * Data for a single continuous effect.
- */
-@Serializable
-data class ContinuousEffectData(
-    val layer: Layer,
-    val sublayer: Sublayer? = null,
-    val modification: Modification,
-    val affectsFilter: AffectsFilter? = null,
-    val sourceCondition: SourceProjectionCondition? = null
-)
-
-/**
- * Filter for determining which entities are affected.
- */
-@Serializable
-sealed interface AffectsFilter {
-
-    fun applyTextReplacement(replacer: TextReplacer): AffectsFilter
-
-    @Serializable
-    data object Self : AffectsFilter {
-        override fun applyTextReplacement(replacer: TextReplacer): AffectsFilter = this
-    }
-    @Serializable
-    data object AllCreatures : AffectsFilter {
-        override fun applyTextReplacement(replacer: TextReplacer): AffectsFilter = this
-    }
-    @Serializable
-    data object AllCreaturesYouControl : AffectsFilter {
-        override fun applyTextReplacement(replacer: TextReplacer): AffectsFilter = this
-    }
-    @Serializable
-    data object AllCreaturesOpponentsControl : AffectsFilter {
-        override fun applyTextReplacement(replacer: TextReplacer): AffectsFilter = this
-    }
-    @Serializable
-    data class SpecificEntities(val entityIds: Set<EntityId>) : AffectsFilter {
-        override fun applyTextReplacement(replacer: TextReplacer): AffectsFilter = this
-    }
-    @Serializable
-    data class WithSubtype(val subtype: String) : AffectsFilter {
-        override fun applyTextReplacement(replacer: TextReplacer): AffectsFilter {
-            val new = replacer.replaceCreatureType(subtype)
-            return if (new == subtype) this else WithSubtype(new)
-        }
-    }
-
-    /**
-     * Other creatures with a specific subtype (excludes the source permanent).
-     * Used for lord effects like "Other Bird creatures get +1/+1."
-     */
-    @Serializable
-    data class OtherCreaturesWithSubtype(val subtype: String) : AffectsFilter {
-        override fun applyTextReplacement(replacer: TextReplacer): AffectsFilter {
-            val new = replacer.replaceCreatureType(subtype)
-            return if (new == subtype) this else OtherCreaturesWithSubtype(new)
-        }
-    }
-
-    /**
-     * Other tapped creatures you control (excludes the source permanent).
-     * Used for effects like "Other tapped creatures you control have indestructible."
-     */
-    @Serializable
-    data object OtherTappedCreaturesYouControl : AffectsFilter {
-        override fun applyTextReplacement(replacer: TextReplacer): AffectsFilter = this
-    }
-
-    /**
-     * Other creatures you control (excludes the source permanent).
-     * Used for lord effects like "Other creatures you control get +1/+1."
-     */
-    @Serializable
-    data object OtherCreaturesYouControl : AffectsFilter {
-        override fun applyTextReplacement(replacer: TextReplacer): AffectsFilter = this
-    }
-
-    /**
-     * All other creatures (excludes the source permanent).
-     */
-    @Serializable
-    data object AllOtherCreatures : AffectsFilter {
-        override fun applyTextReplacement(replacer: TextReplacer): AffectsFilter = this
-    }
-
-    /**
-     * The permanent this Aura is attached to.
-     * Used for Aura effects like "You control enchanted permanent."
-     */
-    @Serializable
-    data object AttachedPermanent : AffectsFilter {
-        override fun applyTextReplacement(replacer: TextReplacer): AffectsFilter = this
-    }
-
-    /**
-     * All creatures that have a specific counter type.
-     * Used for Aurification: "Each creature with a gold counter on it..."
-     */
-    @Serializable
-    data class CreaturesWithCounter(val counterType: String) : AffectsFilter {
-        override fun applyTextReplacement(replacer: TextReplacer): AffectsFilter = this
-    }
-
-    /**
-     * All creatures you control that have a specific counter type.
-     * Used for outlast lords: "Each creature you control with a +1/+1 counter on it has reach."
-     */
-    @Serializable
-    data class OwnCreaturesWithCounter(val counterType: String) : AffectsFilter {
-        override fun applyTextReplacement(replacer: TextReplacer): AffectsFilter = this
-    }
-
-    /**
-     * All face-down creatures.
-     * Used for Ixidor, Reality Sculptor: "Face-down creatures get +1/+1."
-     */
-    @Serializable
-    data object FaceDownCreatures : AffectsFilter {
-        override fun applyTextReplacement(replacer: TextReplacer): AffectsFilter = this
-    }
-
-    /**
-     * All creatures of the chosen creature type (resolved dynamically from source's ChosenCreatureTypeComponent).
-     * Used for Shared Triumph: "Creatures of the chosen type get +1/+1."
-     */
-    @Serializable
-    data object ChosenCreatureTypeCreatures : AffectsFilter {
-        override fun applyTextReplacement(replacer: TextReplacer): AffectsFilter = this
-    }
-
-    /**
-     * Generic filter that preserves the full GroupFilter and evaluates it
-     * against in-progress projected values during state projection.
-     * Used as a fallback when specific AffectsFilter variants don't cover
-     * the predicate combination (e.g., subtype + controller together).
-     */
-    @Serializable
-    data class Generic(val groupFilter: GroupFilter) : AffectsFilter {
-        override fun applyTextReplacement(replacer: TextReplacer): AffectsFilter {
-            val new = groupFilter.applyTextReplacement(replacer)
-            return if (new === groupFilter) this else Generic(new)
-        }
-    }
-}
-
-/**
- * Represents a continuous effect that modifies the game state.
- */
-@Serializable
-data class ContinuousEffect(
-    val sourceId: EntityId,
-    val layer: Layer,
-    val sublayer: Sublayer? = null,
-    val timestamp: Long,
-    val modification: Modification,
-    val affectedEntities: Set<EntityId> = emptySet(),
-    val sourceCondition: SourceProjectionCondition? = null,
-    val affectsFilter: AffectsFilter? = null
-)
-
-/**
- * Conditions evaluated during state projection against projected values.
- *
- * Unlike SDK Conditions (evaluated by ConditionEvaluator against base GameState),
- * these conditions are checked during layer application so they see the effects
- * of earlier layers. For example, a Layer 6 ability condition can see Layer 4
- * type changes.
- */
-@Serializable
-sealed interface SourceProjectionCondition {
-    /**
-     * The source permanent must have a specific creature subtype.
-     * Used for "has [keyword] as long as it's a [subtype]."
-     */
-    @Serializable
-    data class HasSubtype(val subtype: String) : SourceProjectionCondition
-
-    /**
-     * The source permanent's controller must control a creature with a specific subtype.
-     * Used for "has [keyword] as long as you control a [subtype]."
-     */
-    @Serializable
-    data class ControllerControlsCreatureOfType(val subtype: String) : SourceProjectionCondition
-
-    /**
-     * The creature enchanted by the source aura must have a specific subtype.
-     * Used for "Enchanted creature gets X as long as it's a [subtype]."
-     */
-    @Serializable
-    data class EnchantedCreatureHasSubtype(val subtype: String) : SourceProjectionCondition
-
-    /**
-     * An opponent of the source permanent's controller controls a creature.
-     * Used for "as long as no opponent controls a creature" (via Not wrapper).
-     */
-    @Serializable
-    data object OpponentControlsCreature : SourceProjectionCondition
-
-    /**
-     * Negation wrapper for source projection conditions.
-     * Used for "otherwise" clauses (e.g., "Otherwise, it gets -3/-3").
-     */
-    @Serializable
-    data class Not(val condition: SourceProjectionCondition) : SourceProjectionCondition
-}
-
-/**
- * The layers in which continuous effects are applied (Rule 613).
- */
-@Serializable
-enum class Layer {
-    COPY,           // Layer 1
-    CONTROL,        // Layer 2
-    TEXT,           // Layer 3
-    TYPE,           // Layer 4
-    COLOR,          // Layer 5
-    ABILITY,        // Layer 6
-    POWER_TOUGHNESS // Layer 7
-}
-
-/**
- * Sublayers for layer 7 (power/toughness).
- */
-@Serializable
-enum class Sublayer {
-    CHARACTERISTIC_DEFINING,  // 7a
-    SET_VALUES,               // 7b
-    MODIFICATIONS,            // 7c
-    COUNTERS,                 // 7d
-    SWITCH                    // 7e
-}
-
-/**
- * Types of modifications that can be applied.
- */
-@Serializable
-sealed interface Modification {
-    @Serializable
-    data class SetPowerToughness(val power: Int, val toughness: Int) : Modification
-    @Serializable
-    data class SetPower(val power: Int) : Modification
-    @Serializable
-    data class ModifyPowerToughness(val powerMod: Int, val toughnessMod: Int) : Modification
-    @Serializable
-    data class SwitchPowerToughness(val targetId: EntityId) : Modification
-    @Serializable
-    data class GrantKeyword(val keyword: String) : Modification
-    @Serializable
-    data class RemoveKeyword(val keyword: String) : Modification
-    @Serializable
-    data class ChangeColor(val colors: Set<String>) : Modification
-    @Serializable
-    data class AddColor(val colors: Set<String>) : Modification
-    @Serializable
-    data class AddType(val type: String) : Modification
-    @Serializable
-    data class RemoveType(val type: String) : Modification
-
-    /**
-     * Add a subtype (also adds to types set).
-     * Used for effects like "is a Wall in addition to its other creature types."
-     */
-    @Serializable
-    data class AddSubtype(val subtype: String) : Modification
-
-    /**
-     * Replace all creature subtypes with the given set.
-     * Used by "becomes the creature type of your choice" effects.
-     */
-    @Serializable
-    data class SetCreatureSubtypes(val subtypes: Set<String>) : Modification
-
-    /**
-     * Replace all basic land subtypes with the given set (Rule 305.7).
-     * Used by "is an Island" effects that change a land's basic land types.
-     * Removes existing basic land subtypes (Plains, Island, Swamp, Mountain, Forest)
-     * and replaces them with the specified types.
-     */
-    @Serializable
-    data class SetBasicLandTypes(val subtypes: Set<String>) : Modification
-    @Serializable
-    data class ChangeController(val newControllerId: EntityId) : Modification
-
-    /**
-     * Change controller to whoever controls the source of this effect.
-     * Used for Aura effects like "You control enchanted permanent" where
-     * the controller is resolved dynamically at projection time.
-     */
-    @Serializable
-    data object ChangeControllerToSourceController : Modification
-
-    @Serializable
-    data class GrantProtectionFromColor(val color: String) : Modification
-
-    /**
-     * Grants protection from the chosen color (resolved dynamically from source's ChosenColorComponent).
-     * Used for Ward Sliver: "All Slivers have protection from the chosen color."
-     */
-    @Serializable
-    data object GrantProtectionFromChosenColor : Modification
-
-    @Serializable
-    data object SetCantAttack : Modification
-    @Serializable
-    data object SetCantBlock : Modification
-
-    @Serializable
-    data object SetMustAttack : Modification
-    @Serializable
-    data object SetMustBlock : Modification
-
-    /**
-     * Dynamic power/toughness modification based on counters on the source permanent.
-     * The actual modification is computed at projection time by reading counter count from source.
-     */
-    @Serializable
-    data class ModifyPowerToughnessPerSourceCounter(
-        val counterType: String,
-        val powerModPerCounter: Int,
-        val toughnessModPerCounter: Int
-    ) : Modification
-
-    /**
-     * Dynamic power/toughness modification based on other creatures sharing a creature type
-     * with the affected entity. The actual modification is computed at projection time.
-     */
-    @Serializable
-    data class ModifyPowerToughnessPerSharedCreatureType(
-        val powerModPerCreature: Int,
-        val toughnessModPerCreature: Int
-    ) : Modification
-
-    /**
-     * Blocking restriction: creature can only be blocked by creatures with a specific subtype.
-     * Used for Shifting Sliver: "Slivers can't be blocked except by Slivers."
-     */
-    @Serializable
-    data class CantBeBlockedExceptBySubtype(val subtype: String) : Modification
-
-    /**
-     * Dynamic power/toughness modification based on a DynamicAmount.
-     * The actual modification is computed at projection time by evaluating the DynamicAmount.
-     * Used for effects like "gets +2/+2 for each face-down creature on the battlefield."
-     */
-    @Serializable
-    data class ModifyPowerToughnessDynamic(
-        val powerBonus: DynamicAmount,
-        val toughnessBonus: DynamicAmount
-    ) : Modification
-
-    /** No-op modification for effects that don't modify projected state (e.g., combat restrictions) */
-    @Serializable
-    data object NoOp : Modification
-}
-
-/**
- * Mutable projected values during calculation.
- */
-private data class MutableProjectedValues(
-    var power: Int? = null,
-    var toughness: Int? = null,
-    val keywords: MutableSet<String> = mutableSetOf(),
-    val colors: MutableSet<String> = mutableSetOf(),
-    val types: MutableSet<String> = mutableSetOf(),
-    val subtypes: MutableSet<String> = mutableSetOf(),
-    var controllerId: EntityId? = null,
-    var isFaceDown: Boolean = false,
-    var cantAttack: Boolean = false,
-    var cantBlock: Boolean = false,
-    var mustAttack: Boolean = false,
-    var mustBlock: Boolean = false,
-    val cantBeBlockedExceptBySubtypes: MutableSet<String> = mutableSetOf()
-)
-
-/**
- * Projected values for an entity after all effects are applied.
- */
-data class ProjectedValues(
-    val power: Int? = null,
-    val toughness: Int? = null,
-    val keywords: Set<String> = emptySet(),
-    val colors: Set<String> = emptySet(),
-    val types: Set<String> = emptySet(),
-    val subtypes: Set<String> = emptySet(),
-    val controllerId: EntityId? = null,
-    val isFaceDown: Boolean = false,
-    val cantAttack: Boolean = false,
-    val cantBlock: Boolean = false,
-    val mustAttack: Boolean = false,
-    val mustBlock: Boolean = false,
-    val cantBeBlockedExceptBySubtypes: Set<String> = emptySet()
-)
-
-/**
- * The full projected game state.
- */
-class ProjectedState(
-    private val baseState: GameState,
-    private val projectedValues: Map<EntityId, ProjectedValues>
-) {
-    /**
-     * Get the base (unmodified) game state.
-     */
-    fun getBaseState(): GameState = baseState
-
-    /**
-     * Get projected power for an entity.
-     */
-    fun getPower(entityId: EntityId): Int? = projectedValues[entityId]?.power
-
-    /**
-     * Get projected toughness for an entity.
-     */
-    fun getToughness(entityId: EntityId): Int? = projectedValues[entityId]?.toughness
-
-    /**
-     * Get projected keywords for an entity.
-     */
-    fun getKeywords(entityId: EntityId): Set<String> = projectedValues[entityId]?.keywords ?: emptySet()
-
-    /**
-     * Check if an entity has a specific keyword.
-     */
-    fun hasKeyword(entityId: EntityId, keyword: String): Boolean =
-        getKeywords(entityId).contains(keyword)
-
-    /**
-     * Check if an entity has a specific keyword.
-     */
-    fun hasKeyword(entityId: EntityId, keyword: Keyword): Boolean =
-        hasKeyword(entityId, keyword.name)
-
-    /**
-     * Check if an entity has a specific ability flag.
-     */
-    fun hasKeyword(entityId: EntityId, flag: com.wingedsheep.sdk.core.AbilityFlag): Boolean =
-        hasKeyword(entityId, flag.name)
-
-    /**
-     * Get projected colors for an entity.
-     */
-    fun getColors(entityId: EntityId): Set<String> = projectedValues[entityId]?.colors ?: emptySet()
-
-    /**
-     * Check if an entity has a specific color.
-     */
-    fun hasColor(entityId: EntityId, color: Color): Boolean =
-        getColors(entityId).contains(color.name)
-
-    /**
-     * Get projected types for an entity.
-     */
-    fun getTypes(entityId: EntityId): Set<String> = projectedValues[entityId]?.types ?: emptySet()
-
-    /**
-     * Check if an entity has a specific type.
-     */
-    fun hasType(entityId: EntityId, type: String): Boolean =
-        getTypes(entityId).contains(type)
-
-    /**
-     * Check if an entity is a creature (using projected types, accounts for animated lands etc.).
-     */
-    fun isCreature(entityId: EntityId): Boolean = hasType(entityId, "CREATURE")
-
-    /**
-     * Get projected subtypes for an entity.
-     * Face-down creatures have no subtypes (Rule 707.2).
-     */
-    fun getSubtypes(entityId: EntityId): Set<String> = projectedValues[entityId]?.subtypes ?: emptySet()
-
-    /**
-     * Check if an entity has a specific subtype.
-     */
-    fun hasSubtype(entityId: EntityId, subtype: String): Boolean =
-        getSubtypes(entityId).any { it.equals(subtype, ignoreCase = true) }
-
-    /**
-     * Check if an entity is face-down.
-     */
-    fun isFaceDown(entityId: EntityId): Boolean = projectedValues[entityId]?.isFaceDown == true
-
-    /**
-     * Check if an entity can't attack (e.g., enchanted by Pacifism).
-     */
-    fun cantAttack(entityId: EntityId): Boolean = projectedValues[entityId]?.cantAttack == true
-
-    /**
-     * Check if an entity can't block (e.g., enchanted by Pacifism).
-     */
-    fun cantBlock(entityId: EntityId): Boolean = projectedValues[entityId]?.cantBlock == true
-
-    /**
-     * Check if an entity must attack each combat if able (e.g., Grand Melee).
-     */
-    fun mustAttack(entityId: EntityId): Boolean = projectedValues[entityId]?.mustAttack == true
-
-    /**
-     * Check if an entity must block each combat if able (e.g., Grand Melee).
-     */
-    fun mustBlock(entityId: EntityId): Boolean = projectedValues[entityId]?.mustBlock == true
-
-    /**
-     * Get the subtypes that can block this entity (empty set = no restriction).
-     * Used for "can't be blocked except by Slivers" and similar effects.
-     */
-    fun getCantBeBlockedExceptBySubtypes(entityId: EntityId): Set<String> =
-        projectedValues[entityId]?.cantBeBlockedExceptBySubtypes ?: emptySet()
-
-    /**
-     * Get the projected controller of an entity.
-     */
-    fun getController(entityId: EntityId): EntityId? = projectedValues[entityId]?.controllerId
-
-    /**
-     * Get all projected values for an entity.
-     */
-    fun getProjectedValues(entityId: EntityId): ProjectedValues? = projectedValues[entityId]
-
-    /**
-     * Get all entities on the battlefield with their projected values.
-     */
-    fun getAllProjectedValues(): Map<EntityId, ProjectedValues> = projectedValues
-
-    /**
-     * Get all battlefield entities whose projected controller is the given player.
-     * This accounts for control-changing effects (Rule 613 Layer 2).
-     */
-    fun getBattlefieldControlledBy(playerId: EntityId): List<EntityId> {
-        return baseState.getBattlefield().filter { entityId ->
-            getController(entityId) == playerId
+            when (val power = baseStats.power) {
+                is CharacteristicValue.Dynamic ->
+                    values.power = resolveDynamicAmount(power.source)
+                is CharacteristicValue.DynamicWithOffset ->
+                    values.power = resolveDynamicAmount(power.source) + power.offset
+                is CharacteristicValue.Fixed -> {}
+            }
+            when (val toughness = baseStats.toughness) {
+                is CharacteristicValue.Dynamic ->
+                    values.toughness = resolveDynamicAmount(toughness.source)
+                is CharacteristicValue.DynamicWithOffset ->
+                    values.toughness = resolveDynamicAmount(toughness.source) + toughness.offset
+                is CharacteristicValue.Fixed -> {}
+            }
         }
     }
 }

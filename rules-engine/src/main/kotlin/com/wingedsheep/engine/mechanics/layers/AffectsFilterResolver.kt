@@ -1,0 +1,299 @@
+package com.wingedsheep.engine.mechanics.layers
+
+import com.wingedsheep.engine.state.ComponentContainer
+import com.wingedsheep.engine.state.GameState
+import com.wingedsheep.engine.state.components.battlefield.CountersComponent
+import com.wingedsheep.engine.state.components.battlefield.TappedComponent
+import com.wingedsheep.engine.state.components.identity.CardComponent
+import com.wingedsheep.engine.state.components.identity.ChosenCreatureTypeComponent
+import com.wingedsheep.engine.state.components.identity.ControllerComponent
+import com.wingedsheep.engine.state.components.identity.FaceDownComponent
+import com.wingedsheep.sdk.core.CounterType
+import com.wingedsheep.sdk.core.Keyword
+import com.wingedsheep.sdk.core.Subtype
+import com.wingedsheep.sdk.model.EntityId
+import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
+import com.wingedsheep.sdk.scripting.predicates.CardPredicate
+import com.wingedsheep.sdk.scripting.predicates.ControllerPredicate
+import com.wingedsheep.sdk.scripting.predicates.StatePredicate
+
+/**
+ * Resolves which entities are affected by continuous effects based on AffectsFilter.
+ */
+internal class AffectsFilterResolver {
+
+    fun resolveAffectedEntities(
+        state: GameState,
+        sourceId: EntityId,
+        filter: AffectsFilter?,
+        projectedValues: Map<EntityId, MutableProjectedValues> = emptyMap()
+    ): Set<EntityId> {
+        if (filter == null) return setOf(sourceId)
+
+        return when (filter) {
+            is AffectsFilter.Self -> setOf(sourceId)
+            is AffectsFilter.AllCreaturesYouControl -> {
+                val controller = state.getEntity(sourceId)?.get<ControllerComponent>()?.playerId
+                    ?: return emptySet()
+                state.getBattlefield().filter { entityId ->
+                    val container = state.getEntity(entityId) ?: return@filter false
+                    val card = container.get<CardComponent>() ?: return@filter false
+                    val entityController = container.get<ControllerComponent>()?.playerId
+                    (card.typeLine.isCreature || container.has<FaceDownComponent>()) && entityController == controller
+                }.toSet()
+            }
+            is AffectsFilter.AllCreatures -> {
+                state.getBattlefield().filter { entityId ->
+                    val container = state.getEntity(entityId) ?: return@filter false
+                    container.get<CardComponent>()?.typeLine?.isCreature == true || container.has<FaceDownComponent>()
+                }.toSet()
+            }
+            is AffectsFilter.AllCreaturesOpponentsControl -> {
+                val controller = state.getEntity(sourceId)?.get<ControllerComponent>()?.playerId
+                    ?: return emptySet()
+                state.getBattlefield().filter { entityId ->
+                    val container = state.getEntity(entityId) ?: return@filter false
+                    val card = container.get<CardComponent>() ?: return@filter false
+                    val entityController = container.get<ControllerComponent>()?.playerId
+                    (card.typeLine.isCreature || container.has<FaceDownComponent>()) && entityController != controller
+                }.toSet()
+            }
+            is AffectsFilter.SpecificEntities -> filter.entityIds
+            is AffectsFilter.WithSubtype -> {
+                state.getBattlefield().filter { entityId ->
+                    val card = state.getEntity(entityId)?.get<CardComponent>() ?: return@filter false
+                    val projected = projectedValues[entityId]
+                    if (projected != null) {
+                        projected.subtypes.any { it.equals(filter.subtype, ignoreCase = true) }
+                    } else {
+                        card.typeLine.hasSubtype(Subtype(filter.subtype))
+                    }
+                }.toSet()
+            }
+            is AffectsFilter.OtherCreaturesWithSubtype -> {
+                state.getBattlefield().filter { entityId ->
+                    if (entityId == sourceId) return@filter false
+                    val container = state.getEntity(entityId) ?: return@filter false
+                    val card = container.get<CardComponent>() ?: return@filter false
+                    val projected = projectedValues[entityId]
+                    val hasSubtype = if (projected != null) {
+                        projected.subtypes.any { it.equals(filter.subtype, ignoreCase = true) }
+                    } else {
+                        card.typeLine.hasSubtype(Subtype(filter.subtype))
+                    }
+                    (card.typeLine.isCreature || container.has<FaceDownComponent>()) && hasSubtype
+                }.toSet()
+            }
+            is AffectsFilter.OtherTappedCreaturesYouControl -> {
+                val controller = state.getEntity(sourceId)?.get<ControllerComponent>()?.playerId
+                    ?: return emptySet()
+                state.getBattlefield().filter { entityId ->
+                    if (entityId == sourceId) return@filter false
+                    val container = state.getEntity(entityId) ?: return@filter false
+                    val card = container.get<CardComponent>() ?: return@filter false
+                    val entityController = container.get<ControllerComponent>()?.playerId
+                    val isTapped = container.has<TappedComponent>()
+                    (card.typeLine.isCreature || container.has<FaceDownComponent>()) && entityController == controller && isTapped
+                }.toSet()
+            }
+            is AffectsFilter.OtherCreaturesYouControl -> {
+                val controller = state.getEntity(sourceId)?.get<ControllerComponent>()?.playerId
+                    ?: return emptySet()
+                state.getBattlefield().filter { entityId ->
+                    if (entityId == sourceId) return@filter false
+                    val container = state.getEntity(entityId) ?: return@filter false
+                    val card = container.get<CardComponent>() ?: return@filter false
+                    val entityController = container.get<ControllerComponent>()?.playerId
+                    (card.typeLine.isCreature || container.has<FaceDownComponent>()) && entityController == controller
+                }.toSet()
+            }
+            is AffectsFilter.AllOtherCreatures -> {
+                state.getBattlefield().filter { entityId ->
+                    if (entityId == sourceId) return@filter false
+                    val container = state.getEntity(entityId) ?: return@filter false
+                    container.get<CardComponent>()?.typeLine?.isCreature == true || container.has<FaceDownComponent>()
+                }.toSet()
+            }
+            is AffectsFilter.AttachedPermanent -> {
+                val attachedTo = state.getEntity(sourceId)
+                    ?.get<com.wingedsheep.engine.state.components.battlefield.AttachedToComponent>()
+                if (attachedTo != null) setOf(attachedTo.targetId) else emptySet()
+            }
+            is AffectsFilter.FaceDownCreatures -> {
+                state.getBattlefield().filter { entityId ->
+                    state.getEntity(entityId)?.has<FaceDownComponent>() == true
+                }.toSet()
+            }
+            is AffectsFilter.CreaturesWithCounter -> {
+                val counterType = parseCounterType(filter.counterType) ?: return emptySet()
+                state.getBattlefield().filter { entityId ->
+                    val container = state.getEntity(entityId) ?: return@filter false
+                    val card = container.get<CardComponent>() ?: return@filter false
+                    val counters = container.get<CountersComponent>()
+                    (card.typeLine.isCreature || container.has<FaceDownComponent>()) && (counters?.getCount(counterType) ?: 0) > 0
+                }.toSet()
+            }
+            is AffectsFilter.OwnCreaturesWithCounter -> {
+                val counterType = parseCounterType(filter.counterType) ?: return emptySet()
+                val sourceController = state.getEntity(sourceId)
+                    ?.get<ControllerComponent>()?.playerId ?: return emptySet()
+                state.getBattlefield().filter { entityId ->
+                    val container = state.getEntity(entityId) ?: return@filter false
+                    val card = container.get<CardComponent>() ?: return@filter false
+                    val counters = container.get<CountersComponent>()
+                    val controller = container.get<ControllerComponent>()?.playerId
+                    controller == sourceController &&
+                        (card.typeLine.isCreature || container.has<FaceDownComponent>()) &&
+                        (counters?.getCount(counterType) ?: 0) > 0
+                }.toSet()
+            }
+            is AffectsFilter.ChosenCreatureTypeCreatures -> {
+                val chosenType = state.getEntity(sourceId)
+                    ?.get<ChosenCreatureTypeComponent>()?.creatureType
+                    ?: return emptySet()
+                state.getBattlefield().filter { entityId ->
+                    val container = state.getEntity(entityId) ?: return@filter false
+                    val card = container.get<CardComponent>() ?: return@filter false
+                    val projected = projectedValues[entityId]
+                    val hasSubtype = if (projected != null) {
+                        projected.subtypes.any { it.equals(chosenType, ignoreCase = true) }
+                    } else {
+                        card.typeLine.hasSubtype(Subtype(chosenType))
+                    }
+                    (card.typeLine.isCreature || container.has<FaceDownComponent>()) && hasSubtype
+                }.toSet()
+            }
+            is AffectsFilter.Generic -> {
+                resolveGenericFilter(state, sourceId, filter.groupFilter, projectedValues)
+            }
+        }
+    }
+
+    fun isSubtypeDependentFilter(filter: AffectsFilter): Boolean {
+        return filter is AffectsFilter.OtherCreaturesWithSubtype ||
+            filter is AffectsFilter.WithSubtype ||
+            filter is AffectsFilter.ChosenCreatureTypeCreatures ||
+            (filter is AffectsFilter.Generic && filter.groupFilter.baseFilter.cardPredicates.any { it is CardPredicate.HasSubtype })
+    }
+
+    private fun resolveGenericFilter(
+        state: GameState,
+        sourceId: EntityId,
+        groupFilter: GroupFilter,
+        projectedValues: Map<EntityId, MutableProjectedValues>
+    ): Set<EntityId> {
+        val baseFilter = groupFilter.baseFilter
+        val controller = state.getEntity(sourceId)?.get<ControllerComponent>()?.playerId
+
+        return state.getBattlefield().filter { entityId ->
+            if (groupFilter.excludeSelf && entityId == sourceId) return@filter false
+
+            val container = state.getEntity(entityId) ?: return@filter false
+            val card = container.get<CardComponent>() ?: return@filter false
+            val projected = projectedValues[entityId]
+
+            // Check controller predicate
+            if (baseFilter.controllerPredicate != null) {
+                val entityController = container.get<ControllerComponent>()?.playerId
+                when (baseFilter.controllerPredicate) {
+                    ControllerPredicate.ControlledByYou -> if (entityController != controller) return@filter false
+                    ControllerPredicate.ControlledByOpponent -> if (entityController == controller) return@filter false
+                    ControllerPredicate.ControlledByAny -> { /* matches all */ }
+                    else -> { /* other predicates not applicable in static ability context */ }
+                }
+            }
+
+            // Check card predicates using projected values when available
+            val types = projected?.types ?: card.typeLine.cardTypes.map { it.name }.toSet()
+            val subtypes = projected?.subtypes ?: run {
+                val baseSubtypes = card.typeLine.subtypes.map { it.value }.toSet()
+                if (Keyword.CHANGELING in card.baseKeywords) baseSubtypes + Subtype.ALL_CREATURE_TYPES
+                else baseSubtypes
+            }
+            val colors = projected?.colors ?: card.colors.map { it.name }.toSet()
+            val keywords = projected?.keywords ?: (card.baseKeywords.map { it.name } + card.baseFlags.map { it.name }).toSet()
+            val isFaceDown = projected?.isFaceDown ?: container.has<FaceDownComponent>()
+
+            for (predicate in baseFilter.cardPredicates) {
+                if (!matchesCardPredicateForProjection(predicate, card, container, projected, types, subtypes, colors, keywords, isFaceDown)) {
+                    return@filter false
+                }
+            }
+
+            // Check state predicates
+            for (predicate in baseFilter.statePredicates) {
+                val matches = when (predicate) {
+                    StatePredicate.IsTapped -> container.has<TappedComponent>()
+                    StatePredicate.IsUntapped -> !container.has<TappedComponent>()
+                    StatePredicate.IsFaceDown -> isFaceDown
+                    else -> true
+                }
+                if (!matches) return@filter false
+            }
+
+            true
+        }.toSet()
+    }
+
+    private fun matchesCardPredicateForProjection(
+        predicate: CardPredicate,
+        card: CardComponent,
+        container: ComponentContainer,
+        projected: MutableProjectedValues?,
+        types: Set<String>,
+        subtypes: Set<String>,
+        colors: Set<String>,
+        keywords: Set<String>,
+        isFaceDown: Boolean
+    ): Boolean = when (predicate) {
+        CardPredicate.IsCreature -> "CREATURE" in types || isFaceDown
+        CardPredicate.IsLand -> "LAND" in types
+        CardPredicate.IsArtifact -> "ARTIFACT" in types
+        CardPredicate.IsEnchantment -> "ENCHANTMENT" in types
+        CardPredicate.IsPlaneswalker -> "PLANESWALKER" in types
+        CardPredicate.IsInstant -> "INSTANT" in types
+        CardPredicate.IsSorcery -> "SORCERY" in types
+        CardPredicate.IsPermanent -> types.any { it in setOf("CREATURE", "LAND", "ARTIFACT", "ENCHANTMENT", "PLANESWALKER") }
+        CardPredicate.IsNonland -> "LAND" !in types
+        CardPredicate.IsNoncreature -> "CREATURE" !in types
+        CardPredicate.IsBasicLand -> "LAND" in types && card.typeLine.supertypes.any { it.name == "BASIC" }
+        CardPredicate.IsToken -> container.has<com.wingedsheep.engine.state.components.identity.TokenComponent>()
+        CardPredicate.IsNontoken -> !container.has<com.wingedsheep.engine.state.components.identity.TokenComponent>()
+        is CardPredicate.HasSubtype -> if (isFaceDown) false else subtypes.any { it.equals(predicate.subtype.value, ignoreCase = true) }
+        is CardPredicate.NotSubtype -> if (isFaceDown) true else subtypes.none { it.equals(predicate.subtype.value, ignoreCase = true) }
+        is CardPredicate.HasColor -> predicate.color.name in colors
+        is CardPredicate.NotColor -> predicate.color.name !in colors
+        CardPredicate.IsColorless -> colors.isEmpty()
+        CardPredicate.IsMulticolored -> colors.size > 1
+        CardPredicate.IsMonocolored -> colors.size == 1
+        is CardPredicate.HasKeyword -> predicate.keyword.name in keywords
+        is CardPredicate.NotKeyword -> predicate.keyword.name !in keywords
+        is CardPredicate.PowerAtMost -> (projected?.power ?: card.baseStats?.basePower ?: 0) <= predicate.max
+        is CardPredicate.PowerAtLeast -> (projected?.power ?: card.baseStats?.basePower ?: 0) >= predicate.min
+        is CardPredicate.PowerEquals -> (projected?.power ?: card.baseStats?.basePower) == predicate.value
+        is CardPredicate.ToughnessAtMost -> (projected?.toughness ?: card.baseStats?.baseToughness ?: 0) <= predicate.max
+        is CardPredicate.ToughnessAtLeast -> (projected?.toughness ?: card.baseStats?.baseToughness ?: 0) >= predicate.min
+        is CardPredicate.ToughnessEquals -> (projected?.toughness ?: card.baseStats?.baseToughness) == predicate.value
+        is CardPredicate.ManaValueEquals -> card.manaValue == predicate.value
+        is CardPredicate.ManaValueAtMost -> card.manaValue <= predicate.max
+        is CardPredicate.ManaValueAtLeast -> card.manaValue >= predicate.min
+        is CardPredicate.NameEquals -> card.name == predicate.name
+        is CardPredicate.HasBasicLandType -> if (isFaceDown) false else subtypes.any { it.equals(predicate.landType, ignoreCase = true) }
+        is CardPredicate.And -> predicate.predicates.all { matchesCardPredicateForProjection(it, card, container, projected, types, subtypes, colors, keywords, isFaceDown) }
+        is CardPredicate.Or -> predicate.predicates.any { matchesCardPredicateForProjection(it, card, container, projected, types, subtypes, colors, keywords, isFaceDown) }
+        is CardPredicate.Not -> !matchesCardPredicateForProjection(predicate.predicate, card, container, projected, types, subtypes, colors, keywords, isFaceDown)
+        else -> true
+    }
+
+    private fun parseCounterType(counterTypeString: String): CounterType? {
+        return when (counterTypeString) {
+            "+1/+1" -> CounterType.PLUS_ONE_PLUS_ONE
+            "-1/-1" -> CounterType.MINUS_ONE_MINUS_ONE
+            else -> try {
+                CounterType.valueOf(counterTypeString.uppercase().replace(' ', '_'))
+            } catch (e: IllegalArgumentException) {
+                null
+            }
+        }
+    }
+}
