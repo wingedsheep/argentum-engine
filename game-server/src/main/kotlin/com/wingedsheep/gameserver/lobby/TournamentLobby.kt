@@ -152,6 +152,7 @@ class TournamentLobby(
     private val boosterGenerator: BoosterGenerator,
     var format: TournamentFormat = TournamentFormat.SEALED,
     var boosterCount: Int = 6,        // Sealed: boosters in pool, Draft: packs per player (usually 3)
+    var boosterDistribution: Map<String, Int> = emptyMap(),  // Per-set booster counts (e.g., {"ONS": 2, "LGN": 2, "SCG": 2})
     var maxPlayers: Int = 8,
     var pickTimeSeconds: Int = 45,    // Draft only
     var picksPerRound: Int = 1,       // Draft only: cards to pick each round (1 or 2)
@@ -161,6 +162,7 @@ class TournamentLobby(
     /**
      * Update the sets for this lobby. Can only be changed while waiting for players.
      * Returns true if all sets were valid and changed, false otherwise.
+     * Recalculates the default booster distribution for the new set selection.
      * Note: Empty list is NOT allowed via this method - handled by LobbyHandler.
      */
     fun updateSets(newSetCodes: List<String>): Boolean {
@@ -174,7 +176,15 @@ class TournamentLobby(
 
         setCodes = configs.map { it.setCode }
         setNames = configs.map { it.setName }
+        boosterDistribution = calculateDefaultDistribution(setCodes, boosterCount)
         return true
+    }
+
+    /**
+     * Recalculate the booster distribution after boosterCount changes.
+     */
+    fun recalculateDistribution() {
+        boosterDistribution = calculateDefaultDistribution(setCodes, boosterCount)
     }
 
     /** Players indexed by player ID */
@@ -386,14 +396,23 @@ class TournamentLobby(
         if (players.size < 2) return false
         if (format != TournamentFormat.SEALED) return false
 
-        // Generate a shared distribution seed so all players get the same
-        // set distribution (e.g., all get 3 Portal + 2 Onslaught boosters)
-        val distributionSeed = System.currentTimeMillis()
+        // Generate unique pools for each player
+        // Use explicit distribution if set, otherwise fall back to even distribution
+        val effectiveDistribution = if (boosterDistribution.isNotEmpty()) boosterDistribution else null
 
-        // Generate unique pools for each player (card contents differ, but set distribution is the same)
-        players.forEach { (playerId, playerState) ->
-            val pool = boosterGenerator.generateSealedPool(setCodes, boosterCount, distributionSeed)
-            players[playerId] = playerState.copy(cardPool = pool)
+        if (effectiveDistribution != null) {
+            players.forEach { (playerId, playerState) ->
+                val pool = boosterGenerator.generateSealedPool(effectiveDistribution)
+                players[playerId] = playerState.copy(cardPool = pool)
+            }
+        } else {
+            // Generate a shared distribution seed so all players get the same
+            // set distribution (e.g., all get 3 Portal + 2 Onslaught boosters)
+            val distributionSeed = System.currentTimeMillis()
+            players.forEach { (playerId, playerState) ->
+                val pool = boosterGenerator.generateSealedPool(setCodes, boosterCount, distributionSeed)
+                players[playerId] = playerState.copy(cardPool = pool)
+            }
         }
 
         state = LobbyState.DECK_BUILDING
@@ -1192,6 +1211,7 @@ class TournamentLobby(
                 availableSets = availableSets,
                 format = format.name,
                 boosterCount = boosterCount,
+                boosterDistribution = boosterDistribution,
                 maxPlayers = maxPlayers,
                 pickTimeSeconds = pickTimeSeconds,
                 picksPerRound = picksPerRound,
@@ -1377,5 +1397,27 @@ class TournamentLobby(
      */
     fun isSpectator(playerId: EntityId): Boolean {
         return spectators.containsKey(playerId)
+    }
+
+    companion object {
+        /**
+         * Calculate a default booster distribution for the given sets and total booster count.
+         * Distributes evenly with remainder going to the first sets.
+         *
+         * Example: ["ONS", "LGN", "SCG"] with 6 boosters → {ONS: 2, LGN: 2, SCG: 2}
+         * Example: ["ONS", "SCG"] with 6 boosters → {ONS: 3, SCG: 3}
+         * Example: ["ONS", "LGN", "SCG"] with 7 boosters → {ONS: 3, LGN: 2, SCG: 2}
+         */
+        fun calculateDefaultDistribution(setCodes: List<String>, boosterCount: Int): Map<String, Int> {
+            if (setCodes.isEmpty()) return emptyMap()
+            if (setCodes.size == 1) return mapOf(setCodes.first() to boosterCount)
+
+            val perSet = boosterCount / setCodes.size
+            val remainder = boosterCount % setCodes.size
+
+            return setCodes.mapIndexed { index, code ->
+                code to (perSet + if (index < remainder) 1 else 0)
+            }.toMap()
+        }
     }
 }

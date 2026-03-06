@@ -192,6 +192,7 @@ sealed interface ClientMessage {
         val setCodes: List<String>? = null,
         val format: String? = null,           // "SEALED" or "DRAFT"
         val boosterCount: Int? = null,
+        val boosterDistribution: Map<String, Int>? = null,  // Per-set booster counts
         val maxPlayers: Int? = null,
         val gamesPerMatch: Int? = null,
         val pickTimeSeconds: Int? = null,     // Draft only

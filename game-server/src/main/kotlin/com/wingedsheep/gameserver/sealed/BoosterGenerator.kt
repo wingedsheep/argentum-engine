@@ -228,6 +228,40 @@ class BoosterGenerator(
     }
 
     /**
+     * Generate a sealed pool using an explicit per-set booster distribution.
+     *
+     * @param boosterDistribution Map of set code to number of boosters from that set
+     * @return List of all cards in the sealed pool
+     * @throws IllegalArgumentException if any set code is not found
+     */
+    fun generateSealedPool(
+        boosterDistribution: Map<String, Int>
+    ): List<CardDefinition> {
+        if (boosterDistribution.isEmpty()) {
+            throw IllegalArgumentException("At least one set code is required")
+        }
+
+        // Validate all set codes exist
+        val setConfigs = boosterDistribution.keys.map { setCode ->
+            availableSets[setCode]
+                ?: throw IllegalArgumentException("Unknown set code: $setCode")
+        }
+
+        // If any set is incomplete, merge all cards and generate total boosters
+        val hasIncomplete = setConfigs.any { it.incomplete }
+        if (hasIncomplete) {
+            val combinedCards = setConfigs.flatMap { it.cards }
+            val totalBoosters = boosterDistribution.values.sum()
+            return (1..totalBoosters).flatMap { generateBoosterFromCards(combinedCards) }
+        }
+
+        // Generate boosters per set according to distribution
+        return boosterDistribution.flatMap { (setCode, count) ->
+            (1..count).flatMap { generateBooster(setCode) }
+        }
+    }
+
+    /**
      * Get basic lands available for deck building from a set.
      *
      * @param setCode The set code

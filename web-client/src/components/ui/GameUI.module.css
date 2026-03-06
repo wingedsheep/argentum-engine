@@ -822,6 +822,80 @@
   outline: none;
 }
 
+.boosterDistribution {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  flex: 1;
+}
+
+.boosterDistributionRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.boosterDistributionSetName {
+  color: var(--text-muted);
+  font-size: var(--font-sm);
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.boosterDistributionControls {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.boosterDistributionBtn {
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--font-sm);
+  font-weight: var(--font-weight-semibold);
+  background-color: var(--bg-surface-4);
+  color: var(--text-muted);
+  border: 1px solid var(--border-medium);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+
+.boosterDistributionBtn:hover:not(:disabled) {
+  background-color: var(--bg-surface-3);
+  color: var(--text-primary);
+}
+
+.boosterDistributionBtn:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+
+.boosterDistributionCount {
+  width: 24px;
+  text-align: center;
+  font-size: var(--font-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-primary);
+}
+
+.boosterDistributionTotal {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: var(--space-1);
+  border-top: 1px solid var(--border-subtle);
+  font-size: var(--font-xs);
+  color: var(--text-muted);
+}
+
 /* Set selection grid — block grouping */
 .setSelectionGrid {
   display: flex;

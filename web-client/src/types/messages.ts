@@ -674,6 +674,7 @@ export interface LobbySettings {
   readonly availableSets: readonly AvailableSet[]
   readonly format: 'SEALED' | 'DRAFT' | 'WINSTON_DRAFT' | 'GRID_DRAFT'
   readonly boosterCount: number
+  readonly boosterDistribution: Readonly<Record<string, number>>  // Per-set booster counts
   readonly maxPlayers: number
   readonly pickTimeSeconds: number
   readonly picksPerRound: number  // Draft only: 1 or 2 (Pick 2 mode)
@@ -1399,6 +1400,7 @@ export interface UpdateLobbySettingsMessage {
   readonly setCodes?: readonly string[]
   readonly format?: 'SEALED' | 'DRAFT' | 'WINSTON_DRAFT' | 'GRID_DRAFT'
   readonly boosterCount?: number
+  readonly boosterDistribution?: Readonly<Record<string, number>>
   readonly maxPlayers?: number
   readonly gamesPerMatch?: number
   readonly pickTimeSeconds?: number
@@ -1551,6 +1553,7 @@ export function createUpdateLobbySettingsMessage(
     setCodes?: readonly string[]
     format?: 'SEALED' | 'DRAFT' | 'WINSTON_DRAFT' | 'GRID_DRAFT'
     boosterCount?: number
+    boosterDistribution?: Readonly<Record<string, number>>
     maxPlayers?: number
     gamesPerMatch?: number
     pickTimeSeconds?: number

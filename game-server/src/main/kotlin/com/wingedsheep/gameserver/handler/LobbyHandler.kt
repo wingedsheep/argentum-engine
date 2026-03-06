@@ -305,12 +305,14 @@ class LobbyHandler(
             }
         }
 
+        val codes = setConfigs.map { it.setCode }
         val lobby = TournamentLobby(
-            setCodes = setConfigs.map { it.setCode },
+            setCodes = codes,
             setNames = setConfigs.map { it.setName },
             boosterGenerator = boosterGenerator,
             format = format,
             boosterCount = boosterCount,
+            boosterDistribution = TournamentLobby.calculateDefaultDistribution(codes, boosterCount),
             maxPlayers = maxPlayers,
             pickTimeSeconds = message.pickTimeSeconds.coerceIn(15, 120)
         )
@@ -1640,6 +1642,7 @@ class LobbyHandler(
             if (newSetCodes.isEmpty()) {
                 lobby.setCodes = emptyList()
                 lobby.setNames = emptyList()
+                lobby.boosterDistribution = emptyMap()
             }
         }
 
@@ -1665,6 +1668,7 @@ class LobbyHandler(
                     TournamentFormat.WINSTON_DRAFT -> 6
                     TournamentFormat.GRID_DRAFT -> gridDraftDefaultBoosters(lobby.players.size)
                 }
+                lobby.recalculateDistribution()
             }
         }
 
@@ -1679,6 +1683,18 @@ class LobbyHandler(
                     TournamentFormat.GRID_DRAFT -> 24 // unreachable
                 }
                 lobby.boosterCount = it.coerceIn(1, maxCount)
+                lobby.recalculateDistribution()
+            }
+        }
+
+        // Manual booster distribution override (apply after boosterCount)
+        message.boosterDistribution?.let { dist ->
+            // Validate: all keys must be in setCodes, values must be positive, total must equal boosterCount
+            val validKeys = dist.keys.all { it in lobby.setCodes }
+            val allPositive = dist.values.all { it >= 0 }
+            val totalMatches = dist.values.sum() == lobby.boosterCount
+            if (validKeys && allPositive && totalMatches) {
+                lobby.boosterDistribution = dist
             }
         }
         message.maxPlayers?.let {
@@ -1691,6 +1707,7 @@ class LobbyHandler(
             // Auto-adjust grid draft booster count when player count changes (always, since it's fixed)
             if (lobby.format == TournamentFormat.GRID_DRAFT && lobby.maxPlayers != oldMaxPlayers) {
                 lobby.boosterCount = gridDraftDefaultBoosters(lobby.players.size)
+                lobby.recalculateDistribution()
             }
         }
         message.gamesPerMatch?.let { lobby.gamesPerMatch = it.coerceIn(1, 5) }

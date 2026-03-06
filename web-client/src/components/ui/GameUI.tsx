@@ -373,7 +373,13 @@ function LobbyOverlay({
                 ? `Winston Draft · ${lobbyState.settings.boosterCount} boosters · ${lobbyState.settings.pickTimeSeconds}s per turn`
                 : isDraft
                   ? `${lobbyState.settings.boosterCount} packs · ${lobbyState.settings.pickTimeSeconds}s per pick${lobbyState.settings.picksPerRound === 2 ? ' · Pick 2' : ''}`
-                  : `${lobbyState.settings.boosterCount} boosters per player`}
+                  : lobbyState.settings.setCodes.length > 1 && Object.keys(lobbyState.settings.boosterDistribution).length > 0
+                    ? Object.entries(lobbyState.settings.boosterDistribution).map(([code, count]) => {
+                        const idx = lobbyState.settings.setCodes.indexOf(code)
+                        const name = idx >= 0 ? (lobbyState.settings.setNames[idx] ?? code) : code
+                        return `${count} ${name}`
+                      }).join(' + ')
+                    : `${lobbyState.settings.boosterCount} boosters per player`}
             {(lobbyState.settings.gamesPerMatch ?? 1) > 1 && ` · ${lobbyState.settings.gamesPerMatch} games per matchup`}
           </p>
         </div>
@@ -528,17 +534,56 @@ function LobbyOverlay({
             </div>
             {/* Boosters setting - for Sealed and Winston (Grid uses fixed counts) */}
             {(isSealed || isWinston) && (
-              <div className={styles.settingsRow}>
-                <span className={styles.settingsLabel}>{isWinston ? 'Total boosters' : 'Boosters per player'}</span>
-                <select
-                  value={lobbyState.settings.boosterCount}
-                  onChange={(e) => updateLobbySettings({ boosterCount: Number(e.target.value) })}
-                  className={styles.settingsSelect}
-                >
-                  {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16].map((n) => (
-                    <option key={n} value={n}>{n}</option>
-                  ))}
-                </select>
+              <div className={styles.settingsRow} style={{ alignItems: 'flex-start' }}>
+                <span className={styles.settingsLabel} style={{ paddingTop: 4 }}>{isWinston ? 'Total boosters' : 'Boosters'}</span>
+                {lobbyState.settings.setCodes.length > 1 ? (
+                  <div className={styles.boosterDistribution}>
+                    {lobbyState.settings.setCodes.map((code) => {
+                      const setName = lobbyState.settings.setNames[lobbyState.settings.setCodes.indexOf(code)] ?? code
+                      const dist = lobbyState.settings.boosterDistribution
+                      const count = dist[code] ?? 0
+                      const total = Object.values(dist).reduce((a, b) => a + b, 0)
+                      return (
+                        <div key={code} className={styles.boosterDistributionRow}>
+                          <span className={styles.boosterDistributionSetName}>{setName}</span>
+                          <div className={styles.boosterDistributionControls}>
+                            <button
+                              className={styles.boosterDistributionBtn}
+                              disabled={count <= 0}
+                              onClick={() => {
+                                const newDist = { ...dist, [code]: count - 1 }
+                                updateLobbySettings({ boosterDistribution: newDist, boosterCount: total - 1 })
+                              }}
+                            >-</button>
+                            <span className={styles.boosterDistributionCount}>{count}</span>
+                            <button
+                              className={styles.boosterDistributionBtn}
+                              disabled={total >= 16}
+                              onClick={() => {
+                                const newDist = { ...dist, [code]: count + 1 }
+                                updateLobbySettings({ boosterDistribution: newDist, boosterCount: total + 1 })
+                              }}
+                            >+</button>
+                          </div>
+                        </div>
+                      )
+                    })}
+                    <div className={styles.boosterDistributionTotal}>
+                      <span>Total</span>
+                      <span>{Object.values(lobbyState.settings.boosterDistribution).reduce((a, b) => a + b, 0)}</span>
+                    </div>
+                  </div>
+                ) : (
+                  <select
+                    value={lobbyState.settings.boosterCount}
+                    onChange={(e) => updateLobbySettings({ boosterCount: Number(e.target.value) })}
+                    className={styles.settingsSelect}
+                  >
+                    {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16].map((n) => (
+                      <option key={n} value={n}>{n}</option>
+                    ))}
+                  </select>
+                )}
               </div>
             )}
             {/* Packs per player - only for Draft */}

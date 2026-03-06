@@ -334,6 +334,7 @@ sealed interface ServerMessage {
         val availableSets: List<AvailableSet> = emptyList(),  // For UI dropdown
         val format: String = "SEALED",      // "SEALED" or "DRAFT"
         val boosterCount: Int,
+        val boosterDistribution: Map<String, Int> = emptyMap(),  // Per-set booster counts (e.g., {"ONS": 2, "LGN": 2, "SCG": 2})
         val maxPlayers: Int,
         val pickTimeSeconds: Int = 45,      // Draft only
         val picksPerRound: Int = 1,         // Draft only: 1 or 2 (Pick 2 mode)
