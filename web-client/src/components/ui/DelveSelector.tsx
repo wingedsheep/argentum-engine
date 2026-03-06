@@ -1,5 +1,6 @@
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { useGameStore } from '../../store/gameStore'
+import { getCardImageUrl } from '../../utils/cardImages'
 import type { EntityId } from '../../types'
 
 /**
@@ -115,19 +116,13 @@ export function DelveSelector() {
             {validCards.map((card) => {
               const selected = isCardSelected(card.entityId)
               return (
-                <button
+                <DelveCard
                   key={card.entityId}
+                  name={card.name}
+                  imageUri={card.imageUri}
+                  selected={selected}
                   onClick={() => toggleDelveCard(card.entityId)}
-                  style={{
-                    ...styles.cardButton,
-                    ...(selected ? styles.cardButtonSelected : {}),
-                  }}
-                >
-                  <span style={styles.cardNameText}>{card.name}</span>
-                  {selected && (
-                    <span style={styles.exileLabel}>Exile</span>
-                  )}
-                </button>
+                />
               )
             })}
           </div>
@@ -154,10 +149,56 @@ export function DelveSelector() {
 }
 
 /**
+ * A single card in the Delve selection grid, showing the card image with a selection overlay.
+ */
+function DelveCard({
+  name,
+  imageUri,
+  selected,
+  onClick,
+}: {
+  name: string
+  imageUri?: string | null | undefined
+  selected: boolean
+  onClick: () => void
+}) {
+  const [imgError, setImgError] = useState(false)
+  const imageUrl = getCardImageUrl(name, imageUri, 'normal')
+
+  return (
+    <button
+      onClick={onClick}
+      style={{
+        ...styles.cardButton,
+        ...(selected ? styles.cardButtonSelected : {}),
+      }}
+      aria-label={name}
+    >
+      {!imgError ? (
+        <img
+          src={imageUrl}
+          alt={name}
+          style={styles.cardImage}
+          onError={() => setImgError(true)}
+        />
+      ) : (
+        <div style={styles.cardFallback}>
+          <span style={styles.cardFallbackName}>{name}</span>
+        </div>
+      )}
+      {selected && (
+        <div style={styles.selectedOverlay}>
+          <span style={styles.exileLabel}>EXILE</span>
+        </div>
+      )}
+    </button>
+  )
+}
+
+/**
  * Renders a single mana symbol.
  */
 function ManaSymbol({ symbol }: { symbol: string }) {
-  const isGeneric = /^\d+$/.test(symbol)
   const isColor = Object.keys(COLOR_CSS).includes(symbol)
 
   return (
@@ -168,7 +209,7 @@ function ManaSymbol({ symbol }: { symbol: string }) {
         color: isColor && (symbol === 'W' || symbol === 'G') ? '#000' : '#fff',
       }}
     >
-      {isGeneric ? symbol : symbol}
+      {symbol}
     </span>
   )
 }
@@ -191,8 +232,8 @@ const styles: Record<string, React.CSSProperties> = {
     borderRadius: 12,
     padding: 24,
     minWidth: 400,
-    maxWidth: 500,
-    maxHeight: '80vh',
+    maxWidth: '90vw',
+    maxHeight: '90vh',
     overflowY: 'auto',
     border: '2px solid #4a4a6a',
     boxShadow: '0 8px 32px rgba(0, 0, 0, 0.5)',
@@ -255,38 +296,70 @@ const styles: Record<string, React.CSSProperties> = {
   },
   cardGrid: {
     display: 'flex',
-    flexDirection: 'column',
-    gap: 6,
-    maxHeight: 300,
+    flexWrap: 'wrap',
+    gap: 10,
+    justifyContent: 'center',
+    maxHeight: '50vh',
     overflowY: 'auto',
+    padding: '4px 0',
   },
   cardButton: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    padding: '8px 14px',
-    backgroundColor: '#333',
-    border: '2px solid #444',
+    position: 'relative',
+    width: 130,
+    height: 182,
+    padding: 0,
+    backgroundColor: 'transparent',
+    border: '3px solid transparent',
     borderRadius: 8,
     cursor: 'pointer',
-    transition: 'all 0.2s',
+    overflow: 'hidden',
+    transition: 'border-color 0.2s, transform 0.15s',
+    flexShrink: 0,
   },
   cardButtonSelected: {
-    backgroundColor: '#1a1a4a',
     borderColor: '#6a8aff',
+    transform: 'translateY(-4px)',
   },
-  cardNameText: {
+  cardImage: {
+    width: '100%',
+    height: '100%',
+    objectFit: 'cover',
+    borderRadius: 5,
+  },
+  cardFallback: {
+    width: '100%',
+    height: '100%',
+    backgroundColor: '#333',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 8,
+    borderRadius: 5,
+  },
+  cardFallbackName: {
     color: '#fff',
-    fontSize: 14,
-    fontWeight: 500,
-    flex: 1,
-    textAlign: 'left',
+    fontSize: 12,
+    textAlign: 'center',
+    wordBreak: 'break-word',
+  },
+  selectedOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(106, 138, 255, 0.35)',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 5,
   },
   exileLabel: {
-    color: '#6a8aff',
-    fontSize: 11,
-    marginLeft: 8,
-    fontStyle: 'italic',
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: 'bold',
+    textShadow: '0 1px 4px rgba(0,0,0,0.8)',
+    letterSpacing: 2,
   },
   hint: {
     color: '#666',

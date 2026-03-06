@@ -491,6 +491,7 @@ export interface ConvokeCreatureInfo {
 export interface DelveCardInfo {
   readonly entityId: EntityId
   readonly name: string
+  readonly imageUri?: string | null
 }
 
 /**

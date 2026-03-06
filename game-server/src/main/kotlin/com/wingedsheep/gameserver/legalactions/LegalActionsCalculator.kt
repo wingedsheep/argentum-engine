@@ -2263,9 +2263,11 @@ class LegalActionsCalculator(
         return state.getZone(graveyardZone).mapNotNull { entityId ->
             val container = state.getEntity(entityId) ?: return@mapNotNull null
             val cardComponent = container.get<CardComponent>() ?: return@mapNotNull null
+            val cardDef = cardRegistry.getCard(cardComponent.cardDefinitionId)
             DelveCardInfo(
                 entityId = entityId,
-                name = cardComponent.name
+                name = cardComponent.name,
+                imageUri = cardDef?.metadata?.imageUri
             )
         }
     }

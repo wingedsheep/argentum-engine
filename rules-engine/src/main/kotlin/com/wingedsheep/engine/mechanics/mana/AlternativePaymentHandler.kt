@@ -231,6 +231,35 @@ class AlternativePaymentHandler {
         return ManaCost(mutableSymbols)
     }
 
+    /**
+     * Calculate the reduced cost after alternative payment without mutating state.
+     * Used during validation to check if the player can afford the spell.
+     */
+    fun calculateReducedCost(
+        cost: ManaCost,
+        payment: AlternativePaymentChoice,
+        cardDef: CardDefinition
+    ): ManaCost {
+        var reducedCost = cost
+
+        if (payment.delvedCards.isNotEmpty() && cardDef.keywords.contains(Keyword.DELVE)) {
+            reducedCost = reduceGenericCost(reducedCost, payment.delvedCards.size)
+        }
+
+        if (payment.convokedCreatures.isNotEmpty() && cardDef.keywords.contains(Keyword.CONVOKE)) {
+            for ((_, convokePayment) in payment.convokedCreatures) {
+                val paymentColor = convokePayment.color
+                reducedCost = if (paymentColor != null) {
+                    reduceColoredCost(reducedCost, paymentColor)
+                } else {
+                    reduceGenericCost(reducedCost, 1)
+                }
+            }
+        }
+
+        return reducedCost
+    }
+
     companion object {
         /**
          * Check if a card definition supports alternative payment.

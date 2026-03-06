@@ -59,6 +59,15 @@ export interface AdditionalCostPayment {
   readonly bouncedPermanents?: readonly EntityId[]
 }
 
+export interface AlternativePaymentChoice {
+  readonly delvedCards: readonly EntityId[]
+  readonly convokedCreatures: Record<EntityId, ConvokePayment>
+}
+
+export interface ConvokePayment {
+  readonly color?: string | null
+}
+
 export interface CastSpellAction {
   readonly type: 'CastSpell'
   readonly playerId: EntityId
@@ -67,6 +76,8 @@ export interface CastSpellAction {
   readonly xValue?: number | null
   readonly paymentStrategy?: PaymentStrategy
   readonly additionalCostPayment?: AdditionalCostPayment
+  /** Alternative payment choices (Delve, Convoke) */
+  readonly alternativePayment?: AlternativePaymentChoice
   /** Whether to cast this card face-down (for Morph creatures) */
   readonly castFaceDown?: boolean
   /** Pre-chosen damage distribution for DividedDamageEffect spells (target ID -> damage amount) */

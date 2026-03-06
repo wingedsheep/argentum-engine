@@ -154,8 +154,15 @@ class CastSpellHandler(
             cardComponent.manaCost
         }
 
+        // Account for Delve/Convoke reduction before validating payment
+        val costAfterAltPayment = if (action.alternativePayment != null && !action.alternativePayment.isEmpty && cardDef != null) {
+            alternativePaymentHandler.calculateReducedCost(effectiveCost, action.alternativePayment, cardDef)
+        } else {
+            effectiveCost
+        }
+
         // Validate payment
-        val paymentError = validatePayment(state, action, effectiveCost)
+        val paymentError = validatePayment(state, action, costAfterAltPayment)
         if (paymentError != null) {
             return paymentError
         }

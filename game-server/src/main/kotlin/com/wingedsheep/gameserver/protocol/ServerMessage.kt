@@ -917,7 +917,8 @@ data class ConvokeCreatureInfo(
 @Serializable
 data class DelveCardInfo(
     val entityId: EntityId,
-    val name: String
+    val name: String,
+    val imageUri: String? = null
 )
 
 /**
