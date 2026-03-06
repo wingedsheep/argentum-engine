@@ -184,13 +184,17 @@ Eliminates 4-5 bespoke "choose a creature type, then affect that type" executors
 
 ### 3e. Decompose `ChooseCreatureTypeMustAttackEffect`
 
-- [ ] **Express as pipeline:**
+- [x] **Express as pipeline:**
   ```
   ChooseOption(CREATURE_TYPE)
-  → ForEachInGroup(ChosenSubtype, MarkMustAttack)
+  → ForEachInGroup(ChosenSubtype, MarkMustAttackThisTurn)
   ```
-- [ ] **Migrate card usages** (Walking Desecration)
-- [ ] **Deprecate `ChooseCreatureTypeMustAttackExecutor`**
+- [x] **Added `MarkMustAttackThisTurnEffect`** — atomic effect that adds `MustAttackThisTurnComponent`
+      to target entity. `MarkMustAttackThisTurnExecutor` registered in `CombatExecutors`.
+- [x] **Added `EffectPatterns.chooseCreatureTypeMustAttack()`** factory method
+- [x] **Migrate card usages** (Walking Desecration) — now uses `EffectPatterns.chooseCreatureTypeMustAttack()`
+- [x] **Removed `ChooseCreatureTypeMustAttackEffect`**, `ChooseCreatureTypeMustAttackExecutor`,
+      and `ChooseCreatureTypeMustAttackContinuation` (no remaining usages)
 
 ---
 
@@ -270,6 +274,6 @@ These effects are irreducibly complex or interact with engine internals that pip
 |-------|-----------|---------------------|---------------|
 | 1 | 0 | 0 (migration only) | Convention alignment |
 | 2 | 2 (`MoveType.Destroy`, `CardSource.BattlefieldMatching`) | 3 (`DestroyAll`, `ReturnAllToHand`, `DestroyAllSharingType`) | ~75% pipeline |
-| 3 | 1 (`GroupFilter.ChosenSubtype`) + 1 (`SetCreatureSubtypesEffect.fromChosenValueKey`) | 4 (`ChooseCreatureTypeModifyStats`, `BecomeChosenTypeAllCreatures`, `ChooseCreatureTypeGainControl`, `ChooseCreatureTypeMustAttack`) | ~82% pipeline |
+| 3 | 1 (`GroupFilter.ChosenSubtype`) + 1 (`SetCreatureSubtypesEffect.fromChosenValueKey`) + 1 (`MarkMustAttackThisTurnEffect`) | 5 (`ChooseCreatureTypeModifyStats`, `BecomeChosenTypeAllCreatures`, `ChooseCreatureTypeGainControl`, `ChooseCreatureTypeMustAttack`, all deprecated) | ~82% pipeline |
 | 4 | 1-2 (`CardSource.FromLinkedExile`, optional `FilterCollectionEffect`) | 2 (`ExileGroupAndLink`, `ReturnLinkedExile`) | ~85% pipeline |
 | **Total** | **4-5** | **~9** | **~85%** |

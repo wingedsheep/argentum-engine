@@ -233,17 +233,19 @@ data class RemoveFromCombatEffect(
 }
 
 /**
- * Choose a creature type, then creatures of that type attack this turn if able.
- * Used for Walking Desecration: "{B}, {T}: Creatures of the creature type of your choice attack this turn if able."
+ * Mark a creature as "must attack this turn if able."
+ * Adds MustAttackThisTurnComponent to the target entity.
  *
- * The controller chooses a creature type at resolution, then all creatures of that type
- * on the battlefield are marked as "must attack this turn if able."
+ * Used within ForEachInGroupEffect pipelines to mark groups of creatures.
+ *
+ * @property target The creature to mark (typically EffectTarget.Self within ForEachInGroup)
  */
-@SerialName("ChooseCreatureTypeMustAttack")
+@SerialName("MarkMustAttackThisTurn")
 @Serializable
-data object ChooseCreatureTypeMustAttackEffect : Effect {
-    override val description: String =
-        "Creatures of the creature type of your choice attack this turn if able"
+data class MarkMustAttackThisTurnEffect(
+    val target: EffectTarget = EffectTarget.Self
+) : Effect {
+    override val description: String = "${target.description} attacks this turn if able"
 
     override fun applyTextReplacement(replacer: TextReplacer): Effect = this
 }

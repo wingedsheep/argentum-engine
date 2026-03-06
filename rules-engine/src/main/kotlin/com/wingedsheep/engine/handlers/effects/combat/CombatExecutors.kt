@@ -24,7 +24,7 @@ class CombatExecutors(
         CantBlockGroupExecutor(),
         CantBlockTargetCreaturesExecutor(),
         RemoveFromCombatExecutor(),
-        ChooseCreatureTypeMustAttackExecutor(),
+        MarkMustAttackThisTurnExecutor(),
         PreventAllDamageDealtByTargetExecutor(),
         RedirectNextDamageExecutor(),
         PreventNextDamageFromChosenCreatureTypeExecutor(),

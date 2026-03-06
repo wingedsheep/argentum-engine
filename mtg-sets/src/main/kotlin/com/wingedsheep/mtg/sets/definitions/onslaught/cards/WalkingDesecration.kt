@@ -1,9 +1,9 @@
 package com.wingedsheep.mtg.sets.definitions.onslaught.cards
 
 import com.wingedsheep.sdk.dsl.Costs
+import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.effects.ChooseCreatureTypeMustAttackEffect
 
 /**
  * Walking Desecration
@@ -21,7 +21,7 @@ val WalkingDesecration = card("Walking Desecration") {
 
     activatedAbility {
         cost = Costs.Composite(Costs.Mana("{B}"), Costs.Tap)
-        effect = ChooseCreatureTypeMustAttackEffect
+        effect = EffectPatterns.chooseCreatureTypeMustAttack()
     }
 
     metadata {

@@ -47,6 +47,7 @@ import com.wingedsheep.sdk.scripting.effects.ShuffleLibraryEffect
 import com.wingedsheep.sdk.scripting.effects.OptionType
 import com.wingedsheep.sdk.scripting.effects.CollectionFilter
 import com.wingedsheep.sdk.scripting.effects.FilterCollectionEffect
+import com.wingedsheep.sdk.scripting.effects.MarkMustAttackThisTurnEffect
 import com.wingedsheep.sdk.scripting.effects.StoreCountEffect
 import com.wingedsheep.sdk.scripting.effects.StoreResultEffect
 import com.wingedsheep.sdk.scripting.effects.TapUntapEffect
@@ -1837,6 +1838,29 @@ object EffectPatterns {
                         target = EffectTarget.Self,
                         duration = duration
                     )
+                )
+            )
+        ))
+    }
+
+    /**
+     * Choose a creature type. Creatures of the chosen type attack this turn if able.
+     *
+     * Pipeline: ChooseOption(creature type) → ForEachInGroup(ChosenSubtype, MarkMustAttackThisTurn)
+     *
+     * Replaces the monolithic ChooseCreatureTypeMustAttackEffect.
+     */
+    fun chooseCreatureTypeMustAttack(): CompositeEffect {
+        val key = "chosenCreatureType"
+        return CompositeEffect(listOf(
+            ChooseOptionEffect(
+                optionType = OptionType.CREATURE_TYPE,
+                storeAs = key
+            ),
+            ForEachInGroupEffect(
+                filter = GroupFilter.ChosenSubtypeCreatures(key),
+                effect = MarkMustAttackThisTurnEffect(
+                    target = EffectTarget.Self
                 )
             )
         ))

@@ -27,7 +27,6 @@ class CreatureTypeChoiceContinuationResumer(
         resumer(BecomeCreatureTypeContinuation::class, ::resumeBecomeCreatureType),
         resumer(ChooseCreatureTypeGainControlContinuation::class, ::resumeChooseCreatureTypeGainControl),
         resumer(BecomeChosenTypeAllCreaturesContinuation::class, ::resumeBecomeChosenTypeAllCreatures),
-        resumer(ChooseCreatureTypeMustAttackContinuation::class, ::resumeChooseCreatureTypeMustAttack),
         resumer(EachPlayerChoosesCreatureTypeContinuation::class, ::resumeEachPlayerChoosesCreatureType)
     )
 
@@ -357,52 +356,6 @@ class CreatureTypeChoiceContinuationResumer(
         val newState = state.copy(
             floatingEffects = state.floatingEffects + floatingEffect
         )
-
-        return checkForMore(newState, events)
-    }
-
-    /**
-     * Resume after player chose a creature type for "must attack this turn" effect.
-     *
-     * Marks all creatures of the chosen type on the battlefield with MustAttackThisTurnComponent.
-     */
-    fun resumeChooseCreatureTypeMustAttack(
-        state: GameState,
-        continuation: ChooseCreatureTypeMustAttackContinuation,
-        response: DecisionResponse,
-        checkForMore: CheckForMore
-    ): ExecutionResult {
-        if (response !is OptionChosenResponse) {
-            return ExecutionResult.error(state, "Expected option choice response for creature type selection")
-        }
-
-        val chosenType = continuation.creatureTypes.getOrNull(response.optionIndex)
-            ?: return ExecutionResult.error(state, "Invalid creature type index: ${response.optionIndex}")
-
-        var newState = state
-        val events = mutableListOf<GameEvent>(
-            CreatureTypeChosenEvent(
-                playerId = continuation.controllerId,
-                chosenType = chosenType,
-                sourceName = continuation.sourceName
-            )
-        )
-
-        for (entityId in newState.getBattlefield()) {
-            val container = newState.getEntity(entityId) ?: continue
-            val cardComponent = container.get<CardComponent>() ?: continue
-
-            // Must be a creature
-            if (!cardComponent.typeLine.isCreature) continue
-
-            // Must have the chosen subtype
-            if (!cardComponent.typeLine.hasSubtype(Subtype(chosenType))) continue
-
-            // Add MustAttackThisTurnComponent
-            newState = newState.updateEntity(entityId) { it.with(
-                com.wingedsheep.engine.state.components.combat.MustAttackThisTurnComponent
-            ) }
-        }
 
         return checkForMore(newState, events)
     }
