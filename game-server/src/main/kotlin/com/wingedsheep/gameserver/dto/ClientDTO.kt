@@ -181,6 +181,9 @@ data class ClientCard(
     /** Chosen color for "as enters, choose a color" permanents (e.g., Riptide Replicator) */
     val chosenColor: String? = null,
 
+    /** Triggering entity ID for triggered abilities on the stack (for source arrows) */
+    val triggeringEntityId: EntityId? = null,
+
     /** Source zone for triggered abilities on the stack (e.g., "GRAVEYARD" for Gigapede) */
     val sourceZone: String? = null,
 

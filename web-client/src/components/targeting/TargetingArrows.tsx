@@ -143,6 +143,7 @@ interface TargetArrow {
   targetKey: string
   start: Point
   end: Point
+  color: string
 }
 
 /**
@@ -162,8 +163,10 @@ export function TargetingArrows() {
 
   // Update arrow positions periodically
   useEffect(() => {
-    // Only process cards on the stack that have targets
-    const cardsWithTargets = stackCards.filter(card => card.targets && card.targets.length > 0)
+    // Only process cards on the stack that have targets or a triggering entity
+    const cardsWithTargets = stackCards.filter(card =>
+      (card.targets && card.targets.length > 0) || card.triggeringEntityId
+    )
 
     if (cardsWithTargets.length === 0) {
       setArrows([])
@@ -174,9 +177,10 @@ export function TargetingArrows() {
       const newArrows: TargetArrow[] = []
 
       for (const card of cardsWithTargets) {
-        const sourcePos = getCardCenter(card.id)
-        if (!sourcePos) continue
+        const stackPos = getCardCenter(card.id)
+        if (!stackPos) continue
 
+        // Target arrows: stack item → target (orange)
         for (let i = 0; i < card.targets.length; i++) {
           const target = card.targets[i]
           if (!target) continue
@@ -185,10 +189,25 @@ export function TargetingArrows() {
 
           newArrows.push({
             sourceId: card.id,
-            targetKey: `${card.id}-${i}`,
-            start: sourcePos,
+            targetKey: `${card.id}-target-${i}`,
+            start: stackPos,
             end: targetPos,
+            color: '#ff8800',
           })
+        }
+
+        // Source arrow: triggering entity → stack item (cyan, reversed)
+        if (card.triggeringEntityId) {
+          const triggerPos = getCardCenter(card.triggeringEntityId)
+          if (triggerPos) {
+            newArrows.push({
+              sourceId: card.id,
+              targetKey: `${card.id}-source`,
+              start: triggerPos,
+              end: stackPos,
+              color: '#44ccdd',
+            })
+          }
         }
       }
 
@@ -217,12 +236,12 @@ export function TargetingArrows() {
         zIndex: 999,
       }}
     >
-      {arrows.map(({ targetKey, start, end }) => (
+      {arrows.map(({ targetKey, start, end, color }) => (
         <Arrow
           key={targetKey}
           start={start}
           end={end}
-          color="#ff8800" // Orange to differentiate from combat arrows (blue)
+          color={color}
         />
       ))}
     </svg>

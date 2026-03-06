@@ -160,6 +160,9 @@ export interface ClientCard {
   /** Chosen color for "as enters, choose a color" permanents (e.g., Riptide Replicator) */
   readonly chosenColor?: string | null
 
+  /** Triggering entity ID for triggered abilities on the stack (for source arrows) */
+  readonly triggeringEntityId?: EntityId | null
+
   /** Source zone for triggered abilities on the stack (e.g., "GRAVEYARD" for graveyard triggers) */
   readonly sourceZone?: string | null
 
