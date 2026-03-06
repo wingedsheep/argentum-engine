@@ -135,9 +135,9 @@ data class RemoveCountersEffect(
  * The [keyword] field stores the enum name (e.g., "FLYING", "DOESNT_UNTAP")
  * which the engine uses for string-based keyword checks in projected state.
  */
-@SerialName("GrantKeywordUntilEndOfTurn")
+@SerialName("GrantKeyword")
 @Serializable
-data class GrantKeywordUntilEndOfTurnEffect(
+data class GrantKeywordEffect(
     val keyword: String,
     val target: EffectTarget,
     val duration: Duration = Duration.EndOfTurn
@@ -160,9 +160,9 @@ data class GrantKeywordUntilEndOfTurnEffect(
  * The [keyword] field stores the enum name (e.g., "FLYING")
  * which the engine uses for string-based keyword checks in projected state.
  */
-@SerialName("RemoveKeywordUntilEndOfTurn")
+@SerialName("RemoveKeyword")
 @Serializable
-data class RemoveKeywordUntilEndOfTurnEffect(
+data class RemoveKeywordEffect(
     val keyword: String,
     val target: EffectTarget,
     val duration: Duration = Duration.EndOfTurn
@@ -288,9 +288,9 @@ data class ChangeCreatureTypeTextEffect(
  * @property target The creature to grant the ability to
  * @property duration How long the grant lasts
  */
-@SerialName("GrantTriggeredAbilityUntilEndOfTurn")
+@SerialName("GrantTriggeredAbility")
 @Serializable
-data class GrantTriggeredAbilityUntilEndOfTurnEffect(
+data class GrantTriggeredAbilityEffect(
     val ability: TriggeredAbility,
     val target: EffectTarget,
     val duration: Duration = Duration.EndOfTurn
@@ -316,9 +316,9 @@ data class GrantTriggeredAbilityUntilEndOfTurnEffect(
  * @property target The creature to grant the ability to
  * @property duration How long the grant lasts
  */
-@SerialName("GrantActivatedAbilityUntilEndOfTurn")
+@SerialName("GrantActivatedAbility")
 @Serializable
-data class GrantActivatedAbilityUntilEndOfTurnEffect(
+data class GrantActivatedAbilityEffect(
     val ability: ActivatedAbility,
     val target: EffectTarget,
     val duration: Duration = Duration.EndOfTurn

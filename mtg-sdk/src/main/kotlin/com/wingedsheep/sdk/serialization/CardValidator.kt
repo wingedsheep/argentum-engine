@@ -22,8 +22,8 @@ import com.wingedsheep.sdk.scripting.effects.ForceSacrificeEffect
 import com.wingedsheep.sdk.scripting.effects.SacrificeTargetEffect
 import com.wingedsheep.sdk.scripting.effects.GainControlByMostOfSubtypeEffect
 import com.wingedsheep.sdk.scripting.effects.GainControlEffect
-import com.wingedsheep.sdk.scripting.effects.GrantKeywordUntilEndOfTurnEffect
-import com.wingedsheep.sdk.scripting.effects.GrantTriggeredAbilityUntilEndOfTurnEffect
+import com.wingedsheep.sdk.scripting.effects.GrantKeywordEffect
+import com.wingedsheep.sdk.scripting.effects.GrantTriggeredAbilityEffect
 import com.wingedsheep.sdk.scripting.effects.LookAtFaceDownCreatureEffect
 import com.wingedsheep.sdk.scripting.effects.LoseAllCreatureTypesEffect
 import com.wingedsheep.sdk.scripting.effects.MarkExileOnDeathEffect
@@ -222,7 +222,7 @@ object CardValidator {
             is TapUntapEffect -> effect.target
             is AddCountersEffect -> effect.target
             is RemoveCountersEffect -> effect.target
-            is GrantKeywordUntilEndOfTurnEffect -> effect.target
+            is GrantKeywordEffect -> effect.target
             is RegenerateEffect -> effect.target
             is CantBeRegeneratedEffect -> effect.target
             is ExileUntilLeavesEffect -> effect.target
@@ -237,7 +237,7 @@ object CardValidator {
             is TurnFaceUpEffect -> effect.target
             is BecomeCreatureTypeEffect -> effect.target
             is ChangeCreatureTypeTextEffect -> effect.target
-            is GrantTriggeredAbilityUntilEndOfTurnEffect -> effect.target
+            is GrantTriggeredAbilityEffect -> effect.target
             is TransformAllCreaturesEffect -> effect.target
             is AddMinusCountersEffect -> effect.target
             is LoseAllCreatureTypesEffect -> effect.target

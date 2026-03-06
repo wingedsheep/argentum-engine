@@ -10,7 +10,7 @@ import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.ForEachInGroupEffect
-import com.wingedsheep.sdk.scripting.effects.GrantKeywordUntilEndOfTurnEffect
+import com.wingedsheep.sdk.scripting.effects.GrantKeywordEffect
 import com.wingedsheep.sdk.scripting.effects.ModifyStatsEffect
 
 /**
@@ -44,7 +44,7 @@ val KamahlFistOfKrosa = card("Kamahl, Fist of Krosa") {
             ),
             ForEachInGroupEffect(
                 filter = GroupFilter(GameObjectFilter.Creature.youControl()),
-                effect = GrantKeywordUntilEndOfTurnEffect(Keyword.TRAMPLE, EffectTarget.Self)
+                effect = GrantKeywordEffect(Keyword.TRAMPLE, EffectTarget.Self)
             )
         )
     }

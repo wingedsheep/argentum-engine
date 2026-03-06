@@ -7,7 +7,7 @@ import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.Duration
 import com.wingedsheep.sdk.scripting.GameObjectFilter
-import com.wingedsheep.sdk.scripting.effects.GrantKeywordUntilEndOfTurnEffect
+import com.wingedsheep.sdk.scripting.effects.GrantKeywordEffect
 import com.wingedsheep.sdk.scripting.effects.ModifyStatsEffect
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import com.wingedsheep.sdk.scripting.targets.TargetPermanent
@@ -35,7 +35,7 @@ val FrightshroudCourier = card("Frightshroud Courier") {
             filter = TargetFilter(GameObjectFilter.Creature.withSubtype("Zombie"))
         ))
         effect = ModifyStatsEffect(2, 2, t, Duration.WhileSourceTapped()) then
-                GrantKeywordUntilEndOfTurnEffect(Keyword.FEAR, t, Duration.WhileSourceTapped())
+                GrantKeywordEffect(Keyword.FEAR, t, Duration.WhileSourceTapped())
     }
 
     metadata {

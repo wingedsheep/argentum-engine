@@ -6,7 +6,7 @@ import com.wingedsheep.sdk.dsl.Targets
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.Duration
-import com.wingedsheep.sdk.scripting.effects.GrantKeywordUntilEndOfTurnEffect
+import com.wingedsheep.sdk.scripting.effects.GrantKeywordEffect
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 
 /**
@@ -24,7 +24,7 @@ val CripplingChill = card("Crippling Chill") {
     spell {
         target = Targets.Creature
         effect = Effects.Tap(EffectTarget.ContextTarget(0)) then
-            GrantKeywordUntilEndOfTurnEffect(AbilityFlag.DOESNT_UNTAP.name, EffectTarget.ContextTarget(0), Duration.UntilYourNextTurn) then
+            GrantKeywordEffect(AbilityFlag.DOESNT_UNTAP.name, EffectTarget.ContextTarget(0), Duration.UntilYourNextTurn) then
             Effects.DrawCards(1)
     }
 

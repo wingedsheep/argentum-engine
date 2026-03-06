@@ -22,7 +22,7 @@
                 "id": "ability_8",
                 "trigger": "TurnFaceUpEvent",
                 "effect": {
-                    "type": "GrantKeywordUntilEndOfTurn",
+                    "type": "GrantKeyword",
                     "keyword": "TRAMPLE",
                     "target": {
                         "type": "BoundVariable",

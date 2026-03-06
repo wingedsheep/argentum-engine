@@ -10,7 +10,7 @@ import com.wingedsheep.sdk.scripting.effects.AddManaEffect
 import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.ConditionalEffect
 import com.wingedsheep.sdk.scripting.effects.Effect
-import com.wingedsheep.sdk.scripting.effects.GrantKeywordUntilEndOfTurnEffect
+import com.wingedsheep.sdk.scripting.effects.GrantKeywordEffect
 import com.wingedsheep.sdk.scripting.effects.ModalEffect
 import com.wingedsheep.sdk.scripting.effects.Mode
 import com.wingedsheep.sdk.scripting.effects.ModifyStatsEffect
@@ -817,7 +817,7 @@ class StaticAbilityBuilder {
                 (e.toughnessModifier as? DynamicAmount.Fixed)?.amount ?: 0,
                 filter as? StaticTarget ?: StaticTarget.AttachedCreature
             )
-            is GrantKeywordUntilEndOfTurnEffect -> GrantKeyword(
+            is GrantKeywordEffect -> GrantKeyword(
                 e.keyword,
                 filter as? StaticTarget ?: StaticTarget.AttachedCreature
             )
@@ -833,7 +833,7 @@ class StaticAbilityBuilder {
                     )
                 } else {
                     // Fallback for keyword grants in composites
-                    val keyword = e.effects.filterIsInstance<GrantKeywordUntilEndOfTurnEffect>().firstOrNull()
+                    val keyword = e.effects.filterIsInstance<GrantKeywordEffect>().firstOrNull()
                     if (keyword != null) {
                         GrantKeyword(keyword.keyword, filter as? StaticTarget ?: StaticTarget.AttachedCreature)
                     } else {

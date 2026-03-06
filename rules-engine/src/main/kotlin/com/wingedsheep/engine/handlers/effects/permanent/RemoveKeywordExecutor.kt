@@ -11,20 +11,20 @@ import com.wingedsheep.engine.mechanics.layers.SerializableModification
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.sdk.model.EntityId
-import com.wingedsheep.sdk.scripting.effects.RemoveKeywordUntilEndOfTurnEffect
+import com.wingedsheep.sdk.scripting.effects.RemoveKeywordEffect
 import kotlin.reflect.KClass
 
 /**
- * Executor for RemoveKeywordUntilEndOfTurnEffect.
+ * Executor for RemoveKeywordEffect.
  * "All other creatures lose flying until end of turn."
  */
-class RemoveKeywordUntilEndOfTurnExecutor : EffectExecutor<RemoveKeywordUntilEndOfTurnEffect> {
+class RemoveKeywordExecutor : EffectExecutor<RemoveKeywordEffect> {
 
-    override val effectType: KClass<RemoveKeywordUntilEndOfTurnEffect> = RemoveKeywordUntilEndOfTurnEffect::class
+    override val effectType: KClass<RemoveKeywordEffect> = RemoveKeywordEffect::class
 
     override fun execute(
         state: GameState,
-        effect: RemoveKeywordUntilEndOfTurnEffect,
+        effect: RemoveKeywordEffect,
         context: EffectContext
     ): ExecutionResult {
         val targetId = resolveTarget(effect.target, context)

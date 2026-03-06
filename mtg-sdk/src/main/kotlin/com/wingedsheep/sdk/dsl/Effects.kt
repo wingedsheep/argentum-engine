@@ -33,8 +33,8 @@ import com.wingedsheep.sdk.scripting.effects.ExchangeControlEffect
 import com.wingedsheep.sdk.scripting.effects.GainControlByMostOfSubtypeEffect
 import com.wingedsheep.sdk.scripting.effects.GainControlEffect
 import com.wingedsheep.sdk.scripting.effects.GainLifeEffect
-import com.wingedsheep.sdk.scripting.effects.GrantKeywordUntilEndOfTurnEffect
-import com.wingedsheep.sdk.scripting.effects.RemoveKeywordUntilEndOfTurnEffect
+import com.wingedsheep.sdk.scripting.effects.GrantKeywordEffect
+import com.wingedsheep.sdk.scripting.effects.RemoveKeywordEffect
 import com.wingedsheep.sdk.scripting.effects.LoseLifeEffect
 import com.wingedsheep.sdk.scripting.effects.SetLifeTotalEffect
 import com.wingedsheep.sdk.scripting.effects.ModifyStatsEffect
@@ -285,7 +285,7 @@ object Effects {
      * The count is available as DynamicAmount.VariableReference("{storeAs}_count").
      */
     fun ExileGroupAndLink(filter: GroupFilter, storeAs: String = "linked_exile"): Effect =
-        ExileGroupAndLinkEffect(filter, storeAs)
+        EffectPatterns.exileGroupAndLink(filter, storeAs)
 
     /**
      * Return all cards linked to the source permanent (via LinkedExileComponent)
@@ -388,26 +388,26 @@ object Effects {
      * Grant a keyword until end of turn.
      */
     fun GrantKeyword(keyword: Keyword, target: EffectTarget = EffectTarget.ContextTarget(0)): Effect =
-        GrantKeywordUntilEndOfTurnEffect(keyword.name, target)
+        GrantKeywordEffect(keyword.name, target)
 
     /**
      * Grant an ability flag until end of turn.
      */
     fun GrantKeyword(flag: AbilityFlag, target: EffectTarget = EffectTarget.ContextTarget(0)): Effect =
-        GrantKeywordUntilEndOfTurnEffect(flag.name, target)
+        GrantKeywordEffect(flag.name, target)
 
     /**
      * Remove a keyword from a single target.
      * "It loses defender."
      */
     fun RemoveKeyword(keyword: Keyword, target: EffectTarget = EffectTarget.ContextTarget(0), duration: Duration = Duration.EndOfTurn): Effect =
-        RemoveKeywordUntilEndOfTurnEffect(keyword.name, target, duration)
+        RemoveKeywordEffect(keyword.name, target, duration)
 
     /**
      * Remove an ability flag from a single target.
      */
     fun RemoveKeyword(flag: AbilityFlag, target: EffectTarget = EffectTarget.ContextTarget(0), duration: Duration = Duration.EndOfTurn): Effect =
-        RemoveKeywordUntilEndOfTurnEffect(flag.name, target, duration)
+        RemoveKeywordEffect(flag.name, target, duration)
 
     /**
      * Set creature subtypes for a single target.

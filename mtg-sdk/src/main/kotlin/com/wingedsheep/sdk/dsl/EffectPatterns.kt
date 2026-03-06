@@ -16,8 +16,8 @@ import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.conditions.YouControlMostOfChosenType
 import com.wingedsheep.sdk.scripting.effects.ConditionalEffect
 import com.wingedsheep.sdk.scripting.effects.GainControlEffect
-import com.wingedsheep.sdk.scripting.effects.GrantKeywordUntilEndOfTurnEffect
-import com.wingedsheep.sdk.scripting.effects.RemoveKeywordUntilEndOfTurnEffect
+import com.wingedsheep.sdk.scripting.effects.GrantKeywordEffect
+import com.wingedsheep.sdk.scripting.effects.RemoveKeywordEffect
 import com.wingedsheep.sdk.scripting.effects.CreateDelayedTriggerEffect
 import com.wingedsheep.sdk.scripting.effects.CreateTokenEffect
 import com.wingedsheep.sdk.scripting.effects.DealDamageEffect
@@ -1691,6 +1691,35 @@ object EffectPatterns {
     ))
 
     /**
+     * Exile all permanents matching a filter and link them to the source permanent.
+     * The exiled entity IDs are stored on the source as a LinkedExileComponent,
+     * and the count is stored in the effect context as a collection named [storeAs]
+     * (use VariableReference("{storeAs}_count") for the count).
+     *
+     * Pipeline: GatherCards(BattlefieldMatching) → MoveCollection(Exile, linkToSource)
+     *
+     * @param filter Which permanents to exile (matched against projected state)
+     * @param storeAs Collection name for storing exiled IDs (default "linked_exile")
+     */
+    fun exileGroupAndLink(
+        filter: GroupFilter,
+        storeAs: String = "linked_exile"
+    ): CompositeEffect = CompositeEffect(listOf(
+        GatherCardsEffect(
+            source = CardSource.BattlefieldMatching(
+                filter = filter.baseFilter,
+                excludeSelf = true
+            ),
+            storeAs = storeAs
+        ),
+        MoveCollectionEffect(
+            from = storeAs,
+            destination = CardDestination.ToZone(Zone.EXILE),
+            linkToSource = true
+        )
+    ))
+
+    /**
      * Each player chooses a creature type. Each player returns all creature cards
      * of a type chosen this way from their graveyard to the battlefield.
      *
@@ -1741,7 +1770,7 @@ object EffectPatterns {
         val innerEffect: Effect = if (grantKeyword != null) {
             CompositeEffect(listOf(
                 modifyStats,
-                GrantKeywordUntilEndOfTurnEffect(grantKeyword.name, EffectTarget.Self, duration)
+                GrantKeywordEffect(grantKeyword.name, EffectTarget.Self, duration)
             ))
         } else {
             modifyStats
@@ -2089,7 +2118,7 @@ object EffectPatterns {
     ): ForEachInGroupEffect =
         ForEachInGroupEffect(
             filter = filter,
-            effect = GrantKeywordUntilEndOfTurnEffect(keyword.name, EffectTarget.Self, duration)
+            effect = GrantKeywordEffect(keyword.name, EffectTarget.Self, duration)
         )
 
     /**
@@ -2103,7 +2132,7 @@ object EffectPatterns {
     ): ForEachInGroupEffect =
         ForEachInGroupEffect(
             filter = filter,
-            effect = RemoveKeywordUntilEndOfTurnEffect(keyword.name, EffectTarget.Self, duration)
+            effect = RemoveKeywordEffect(keyword.name, EffectTarget.Self, duration)
         )
 
     /**

@@ -12,20 +12,20 @@ import com.wingedsheep.engine.mechanics.layers.SerializableModification
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.sdk.model.EntityId
-import com.wingedsheep.sdk.scripting.effects.GrantKeywordUntilEndOfTurnEffect
+import com.wingedsheep.sdk.scripting.effects.GrantKeywordEffect
 import kotlin.reflect.KClass
 
 /**
- * Executor for GrantKeywordUntilEndOfTurnEffect.
+ * Executor for GrantKeywordEffect.
  * "Target creature gains [keyword] until end of turn"
  */
-class GrantKeywordUntilEndOfTurnExecutor : EffectExecutor<GrantKeywordUntilEndOfTurnEffect> {
+class GrantKeywordExecutor : EffectExecutor<GrantKeywordEffect> {
 
-    override val effectType: KClass<GrantKeywordUntilEndOfTurnEffect> = GrantKeywordUntilEndOfTurnEffect::class
+    override val effectType: KClass<GrantKeywordEffect> = GrantKeywordEffect::class
 
     override fun execute(
         state: GameState,
-        effect: GrantKeywordUntilEndOfTurnEffect,
+        effect: GrantKeywordEffect,
         context: EffectContext
     ): ExecutionResult {
         // Resolve the target creature

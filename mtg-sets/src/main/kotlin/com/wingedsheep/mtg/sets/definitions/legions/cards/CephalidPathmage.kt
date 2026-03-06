@@ -5,7 +5,7 @@ import com.wingedsheep.sdk.dsl.Costs
 import com.wingedsheep.sdk.dsl.Targets
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.effects.GrantKeywordUntilEndOfTurnEffect
+import com.wingedsheep.sdk.scripting.effects.GrantKeywordEffect
 
 /**
  * Cephalid Pathmage
@@ -27,7 +27,7 @@ val CephalidPathmage = card("Cephalid Pathmage") {
     activatedAbility {
         cost = Costs.Composite(Costs.Tap, Costs.SacrificeSelf)
         val t = target("target", Targets.Creature)
-        effect = GrantKeywordUntilEndOfTurnEffect(AbilityFlag.CANT_BE_BLOCKED.name, t)
+        effect = GrantKeywordEffect(AbilityFlag.CANT_BE_BLOCKED.name, t)
     }
 
     metadata {

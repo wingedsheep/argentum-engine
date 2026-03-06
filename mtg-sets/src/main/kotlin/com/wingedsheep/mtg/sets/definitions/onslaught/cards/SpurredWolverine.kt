@@ -5,7 +5,7 @@ import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.AbilityCost
 import com.wingedsheep.sdk.scripting.GameObjectFilter
-import com.wingedsheep.sdk.scripting.effects.GrantKeywordUntilEndOfTurnEffect
+import com.wingedsheep.sdk.scripting.effects.GrantKeywordEffect
 import com.wingedsheep.sdk.scripting.targets.TargetCreature
 
 /**
@@ -28,7 +28,7 @@ val SpurredWolverine = card("Spurred Wolverine") {
             filter = GameObjectFilter.Creature.withSubtype("Beast")
         )
         val t = target("target", TargetCreature())
-        effect = GrantKeywordUntilEndOfTurnEffect(Keyword.FIRST_STRIKE, t)
+        effect = GrantKeywordEffect(Keyword.FIRST_STRIKE, t)
     }
 
     metadata {

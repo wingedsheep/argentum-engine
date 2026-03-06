@@ -1,35 +1,35 @@
 package com.wingedsheep.engine.handlers.effects.permanent
 
 import com.wingedsheep.engine.core.ExecutionResult
-import com.wingedsheep.engine.event.GrantedTriggeredAbility
+import com.wingedsheep.engine.event.GrantedActivatedAbility
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.handlers.effects.EffectExecutorUtils.resolveTarget
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.identity.CardComponent
-import com.wingedsheep.sdk.scripting.effects.GrantTriggeredAbilityUntilEndOfTurnEffect
+import com.wingedsheep.sdk.scripting.effects.GrantActivatedAbilityEffect
 import kotlin.reflect.KClass
 
 /**
- * Executor for GrantTriggeredAbilityUntilEndOfTurnEffect.
- * "Target creature gains '[triggered ability]' until end of turn"
+ * Executor for GrantActivatedAbilityEffect.
+ * "Target creature gains '[activated ability]' until end of turn"
  *
- * Adds the triggered ability to GameState.grantedTriggeredAbilities,
- * where TriggerDetector will find it when checking for triggers on
- * that entity.
+ * Adds the activated ability to GameState.grantedActivatedAbilities,
+ * where GameSession will find it when computing legal actions and
+ * ActivateAbilityHandler will find it when validating activations.
  */
-class GrantTriggeredAbilityUntilEndOfTurnExecutor : EffectExecutor<GrantTriggeredAbilityUntilEndOfTurnEffect> {
+class GrantActivatedAbilityExecutor : EffectExecutor<GrantActivatedAbilityEffect> {
 
-    override val effectType: KClass<GrantTriggeredAbilityUntilEndOfTurnEffect> =
-        GrantTriggeredAbilityUntilEndOfTurnEffect::class
+    override val effectType: KClass<GrantActivatedAbilityEffect> =
+        GrantActivatedAbilityEffect::class
 
     override fun execute(
         state: GameState,
-        effect: GrantTriggeredAbilityUntilEndOfTurnEffect,
+        effect: GrantActivatedAbilityEffect,
         context: EffectContext
     ): ExecutionResult {
         val targetId = resolveTarget(effect.target, context)
-            ?: return ExecutionResult.error(state, "No valid target for triggered ability grant")
+            ?: return ExecutionResult.error(state, "No valid target for activated ability grant")
 
         // Verify target exists and is a creature on the battlefield
         val targetContainer = state.getEntity(targetId)
@@ -43,14 +43,14 @@ class GrantTriggeredAbilityUntilEndOfTurnExecutor : EffectExecutor<GrantTriggere
             return ExecutionResult.error(state, "Target is not on the battlefield")
         }
 
-        val grant = GrantedTriggeredAbility(
+        val grant = GrantedActivatedAbility(
             entityId = targetId,
             ability = effect.ability,
             duration = effect.duration
         )
 
         val newState = state.copy(
-            grantedTriggeredAbilities = state.grantedTriggeredAbilities + grant
+            grantedActivatedAbilities = state.grantedActivatedAbilities + grant
         )
 
         return ExecutionResult.success(newState)

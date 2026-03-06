@@ -9,8 +9,8 @@ import com.wingedsheep.sdk.scripting.AbilityCost
 import com.wingedsheep.sdk.scripting.AbilityId
 import com.wingedsheep.sdk.scripting.ActivatedAbility
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
-import com.wingedsheep.sdk.scripting.effects.GrantActivatedAbilityUntilEndOfTurnEffect
-import com.wingedsheep.sdk.scripting.effects.GrantKeywordUntilEndOfTurnEffect
+import com.wingedsheep.sdk.scripting.effects.GrantActivatedAbilityEffect
+import com.wingedsheep.sdk.scripting.effects.GrantKeywordEffect
 import com.wingedsheep.sdk.scripting.effects.RegenerateEffect
 
 /**
@@ -25,10 +25,10 @@ val RunWild = card("Run Wild") {
 
     spell {
         val t = target("target", Targets.Creature)
-        effect = GrantKeywordUntilEndOfTurnEffect(
+        effect = GrantKeywordEffect(
             keyword = Keyword.TRAMPLE,
             target = t
-        ) then GrantActivatedAbilityUntilEndOfTurnEffect(
+        ) then GrantActivatedAbilityEffect(
             ability = ActivatedAbility(
                 id = AbilityId.generate(),
                 cost = AbilityCost.Mana(ManaCost.parse("{G}")),

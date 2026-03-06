@@ -6,7 +6,7 @@ import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.effects.ForEachInGroupEffect
-import com.wingedsheep.sdk.scripting.effects.GrantKeywordUntilEndOfTurnEffect
+import com.wingedsheep.sdk.scripting.effects.GrantKeywordEffect
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.scripting.KeywordAbility
 import com.wingedsheep.sdk.scripting.effects.MayEffect
@@ -28,7 +28,7 @@ val DirgeOfDread = card("Dirge of Dread") {
     spell {
         effect = ForEachInGroupEffect(
             filter = GroupFilter.AllCreatures,
-            effect = GrantKeywordUntilEndOfTurnEffect(Keyword.FEAR, EffectTarget.Self)
+            effect = GrantKeywordEffect(Keyword.FEAR, EffectTarget.Self)
         )
     }
 
@@ -37,7 +37,7 @@ val DirgeOfDread = card("Dirge of Dread") {
     triggeredAbility {
         trigger = Triggers.YouCycleThis
         val t = target("target", Targets.Creature)
-        effect = MayEffect(GrantKeywordUntilEndOfTurnEffect(Keyword.FEAR, t))
+        effect = MayEffect(GrantKeywordEffect(Keyword.FEAR, t))
     }
 
     metadata {

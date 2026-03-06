@@ -7,7 +7,7 @@ import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.effects.ForEachInGroupEffect
 import com.wingedsheep.sdk.scripting.GameObjectFilter
-import com.wingedsheep.sdk.scripting.effects.GrantKeywordUntilEndOfTurnEffect
+import com.wingedsheep.sdk.scripting.effects.GrantKeywordEffect
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 
 /**
@@ -23,7 +23,7 @@ val NaturesCloak = card("Nature's Cloak") {
     spell {
         effect = ForEachInGroupEffect(
             GroupFilter(GameObjectFilter.Creature.withColor(Color.GREEN).youControl()),
-            GrantKeywordUntilEndOfTurnEffect(Keyword.FORESTWALK, EffectTarget.Self)
+            GrantKeywordEffect(Keyword.FORESTWALK, EffectTarget.Self)
         )
     }
 

@@ -6,7 +6,7 @@ import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.effects.ForEachInGroupEffect
-import com.wingedsheep.sdk.scripting.effects.GrantKeywordUntilEndOfTurnEffect
+import com.wingedsheep.sdk.scripting.effects.GrantKeywordEffect
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.scripting.conditions.YouWereAttackedThisStep
 
@@ -26,7 +26,7 @@ val TreetopDefense = card("Treetop Defense") {
         castOnlyIf(YouWereAttackedThisStep)
         effect = ForEachInGroupEffect(
             GroupFilter.AllCreaturesYouControl,
-            GrantKeywordUntilEndOfTurnEffect(Keyword.REACH, EffectTarget.Self)
+            GrantKeywordEffect(Keyword.REACH, EffectTarget.Self)
         )
     }
 

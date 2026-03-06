@@ -5,7 +5,7 @@ import com.wingedsheep.sdk.dsl.Costs
 import com.wingedsheep.sdk.dsl.Targets
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.effects.GrantKeywordUntilEndOfTurnEffect
+import com.wingedsheep.sdk.scripting.effects.GrantKeywordEffect
 
 /**
  * Crafty Pathmage
@@ -24,7 +24,7 @@ val CraftyPathmage = card("Crafty Pathmage") {
     activatedAbility {
         cost = Costs.Tap
         val t = target("target", Targets.CreatureWithPowerAtMost(2))
-        effect = GrantKeywordUntilEndOfTurnEffect(AbilityFlag.CANT_BE_BLOCKED.name, t)
+        effect = GrantKeywordEffect(AbilityFlag.CANT_BE_BLOCKED.name, t)
     }
 
     metadata {

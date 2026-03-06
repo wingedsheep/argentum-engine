@@ -248,10 +248,10 @@ constructors.
 | `TapUntapEffect`                            | `target, tap: Boolean`                                                      | Tap or untap                             |
 | `TapTargetCreaturesEffect`                  | `maxTargets`                                                                | Tap up to X targets                      |
 | `ModifyStatsEffect`                         | `power: DynamicAmount, toughness: DynamicAmount, target, duration`          | P/T for single target                    |
-| `GrantKeywordUntilEndOfTurnEffect`          | `keyword, target, duration`                                                 | Keyword for single target                |
-| `RemoveKeywordUntilEndOfTurnEffect`         | `keyword, target, duration`                                                 | Remove keyword from single target        |
-| `GrantTriggeredAbilityUntilEndOfTurnEffect` | `ability, target, duration`                                                 | Grant triggered ability                  |
-| `GrantActivatedAbilityUntilEndOfTurnEffect` | `ability, target, duration`                                                 | Grant activated ability                  |
+| `GrantKeywordEffect`          | `keyword, target, duration`                                                 | Keyword for single target                |
+| `RemoveKeywordEffect`         | `keyword, target, duration`                                                 | Remove keyword from single target        |
+| `GrantTriggeredAbilityEffect` | `ability, target, duration`                                                 | Grant triggered ability                  |
+| `GrantActivatedAbilityEffect` | `ability, target, duration`                                                 | Grant activated ability                  |
 | `GrantActivatedAbilityToGroupEffect`        | `ability, filter, duration`                                                 | Grant activated ability to group         |
 | `AddCountersEffect`                         | `counterType, count, target`                                                | Add counters                             |
 | `RemoveCountersEffect`                      | `counterType, count, target`                                                | Remove counters                          |

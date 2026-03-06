@@ -7,7 +7,7 @@ import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.Duration
 import com.wingedsheep.sdk.scripting.GameObjectFilter
-import com.wingedsheep.sdk.scripting.effects.GrantKeywordUntilEndOfTurnEffect
+import com.wingedsheep.sdk.scripting.effects.GrantKeywordEffect
 import com.wingedsheep.sdk.scripting.effects.ModifyStatsEffect
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import com.wingedsheep.sdk.scripting.targets.TargetPermanent
@@ -35,7 +35,7 @@ val GhosthelmCourier = card("Ghosthelm Courier") {
             filter = TargetFilter(GameObjectFilter.Creature.withSubtype("Wizard"))
         ))
         effect = ModifyStatsEffect(2, 2, t, Duration.WhileSourceTapped()) then
-                GrantKeywordUntilEndOfTurnEffect(Keyword.SHROUD, t, Duration.WhileSourceTapped())
+                GrantKeywordEffect(Keyword.SHROUD, t, Duration.WhileSourceTapped())
     }
 
     metadata {

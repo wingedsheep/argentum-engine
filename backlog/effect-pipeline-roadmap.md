@@ -147,7 +147,7 @@ Eliminates 4-5 bespoke "choose a creature type, then affect that type" executors
   ChooseOption(CREATURE_TYPE)
   → ForEachInGroup(ChosenSubtype, ModifyStats(+X/+Y))
   ```
-- [x] **Handle optional `grantKeyword`** — compose with `GrantKeywordUntilEndOfTurn` in the
+- [x] **Handle optional `grantKeyword`** — compose with `GrantKeyword` in the
       ForEachInGroup body
 - [x] **Migrate card usages** (Defensive Maneuvers, Tribal Unity, Tribal Forcemage)
 - [x] **Deprecate `ChooseCreatureTypeModifyStatsExecutor`**
@@ -202,24 +202,26 @@ Eliminates 4-5 bespoke "choose a creature type, then affect that type" executors
 
 Decompose linked exile patterns (Day of the Dragons, Dimensional Breach, etc.).
 
-### 4a. Add `CardSource.FromLinkedExile`
+### 4a. Add `CardSource.FromLinkedExile` ✅
 
-- [ ] **Add `FromLinkedExile` variant to `CardSource`**
+- [x] **Add `FromLinkedExile` variant to `CardSource`**
   - Reads `LinkedExileComponent` from the source entity
-  - Returns the list of exiled entity IDs
-- [ ] **Update `GatherCardsExecutor`** to handle `FromLinkedExile`
-- [ ] **Add tests**
+  - Returns the list of exiled entity IDs, filtered to those still in exile
+- [x] **Update `GatherCardsExecutor`** to handle `FromLinkedExile`
+- [x] **Add tests** (`GatherCardsFromLinkedExileTest` — 6 tests)
 
-### 4b. Decompose `ExileGroupAndLinkEffect`
+### 4b. Decompose `ExileGroupAndLinkEffect` ✅
 
-- [ ] **Express as pipeline:**
+- [x] **Express as pipeline:**
   ```
-  GatherCards(BattlefieldMatching(filter)) → MoveCollection(Exile, linkToSource=true)
+  GatherCards(BattlefieldMatching(filter, excludeSelf=true)) → MoveCollection(Exile, linkToSource=true)
   ```
   - `linkToSource` flag already exists on `MoveCollectionEffect`
-- [ ] **Verify `linkToSource` behavior** in `MoveCollectionExecutor`
-- [ ] **Migrate card usages** (Day of the Dragons)
-- [ ] **Deprecate `ExileGroupAndLinkExecutor`**
+- [x] **Verify `linkToSource` behavior** in `MoveCollectionExecutor`
+  - Fixed: battlefield→exile now routes cards to owner's exile zone (same as graveyard/hand)
+- [x] **Migrate card usages** via `Effects.ExileGroupAndLink()` → `EffectPatterns.exileGroupAndLink()`
+  - Day of the Dragons, Planar Guide, Dimensional Breach all use pipeline transparently
+- [x] **Deprecate `ExileGroupAndLinkEffect`** (added `@Deprecated` annotation)
 
 ### 4c. Decompose `ReturnLinkedExileEffect`
 
@@ -252,7 +254,7 @@ These effects are irreducibly complex or interact with engine internals that pip
 | `AddManaEffect`, `AddAnyColorManaEffect` | Atomic mana operations |
 | `AddCountersEffect`, `RemoveCountersEffect` | Atomic counter operations |
 | `ModifyStatsEffect`, `SetBasePowerEffect` | Atomic stat modifications |
-| `GrantKeywordUntilEndOfTurnEffect` | Atomic keyword grants |
+| `GrantKeywordEffect` | Atomic keyword grants |
 | `TapUntapEffect` | Atomic tap/untap |
 | `GainControlEffect`, `ExchangeControlEffect` | Atomic control changes |
 | `CreateTokenEffect`, `CreateTreasureTokensEffect` | Atomic token creation |
@@ -263,7 +265,7 @@ These effects are irreducibly complex or interact with engine internals that pip
 | `AnimateLandEffect` | Multi-layer effect (TYPE + P/T simultaneously) |
 | `StormCopyEffect`, `CopyTargetSpellEffect` | Deep stack manipulation |
 | All prevention/redirection effects | Interact with damage pipeline internals |
-| `GrantTriggeredAbilityUntilEndOfTurnEffect` | Grants ability objects, not zone/stat changes |
+| `GrantTriggeredAbilityEffect` | Grants ability objects, not zone/stat changes |
 | `MoveToZoneEffect` | Already the atomic single-target zone primitive |
 
 ---

@@ -5,7 +5,7 @@ import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.effects.CompositeEffect
-import com.wingedsheep.sdk.scripting.effects.GrantKeywordUntilEndOfTurnEffect
+import com.wingedsheep.sdk.scripting.effects.GrantKeywordEffect
 import com.wingedsheep.sdk.scripting.targets.TargetCreature
 
 /**
@@ -22,7 +22,7 @@ val CloakOfFeathers = card("Cloak of Feathers") {
         val t = target("target", TargetCreature())
         effect = CompositeEffect(
             listOf(
-                GrantKeywordUntilEndOfTurnEffect(Keyword.FLYING, t),
+                GrantKeywordEffect(Keyword.FLYING, t),
                 Effects.DrawCards(1)
             )
         )
