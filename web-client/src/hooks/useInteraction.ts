@@ -218,6 +218,26 @@ export function useInteraction() {
         return
       }
 
+      // Check if TurnFaceUp requires revealing a card from hand (e.g., Watcher of the Roost)
+      if (action.type === 'TurnFaceUp' && actionInfo.additionalCostInfo?.costType === 'RevealCard') {
+        const costInfo = actionInfo.additionalCostInfo
+        const revealCount = costInfo.discardCount ?? 1
+        const validTargets = costInfo.validDiscardTargets ?? []
+
+        startTargeting({
+          action,
+          validTargets: [...validTargets],
+          selectedTargets: [],
+          minTargets: revealCount,
+          maxTargets: revealCount,
+          isSacrificeSelection: true,
+          isDiscardSelection: true,
+          pendingActionInfo: actionInfo,
+        })
+        selectCard(null)
+        return
+      }
+
       // Check if spell or ability requires sacrifice as a cost
       if ((action.type === 'CastSpell' || action.type === 'ActivateAbility') &&
           (actionInfo.additionalCostInfo?.costType === 'SacrificePermanent' || actionInfo.additionalCostInfo?.costType === 'SacrificeSelf')) {
