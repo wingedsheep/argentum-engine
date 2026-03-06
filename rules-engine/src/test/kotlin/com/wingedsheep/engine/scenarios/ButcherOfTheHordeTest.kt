@@ -1,6 +1,8 @@
 package com.wingedsheep.engine.scenarios
 
 import com.wingedsheep.engine.core.ActivateAbility
+import com.wingedsheep.engine.core.ChooseOptionDecision
+import com.wingedsheep.engine.core.OptionChosenResponse
 import com.wingedsheep.engine.mechanics.layers.StateProjector
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
@@ -61,20 +63,24 @@ class ButcherOfTheHordeTest : FunSpec({
         val butcher = driver.putCreatureOnBattlefield(activePlayer, "Butcher of the Horde")
         val soldier = driver.putCreatureOnBattlefield(activePlayer, "Test Soldier")
 
-        // First activated ability grants vigilance
-        val vigilanceAbilityId = ButcherOfTheHorde.activatedAbilities[0].id
+        val abilityId = ButcherOfTheHorde.activatedAbilities[0].id
 
         val result = driver.submit(
             ActivateAbility(
                 playerId = activePlayer,
                 sourceId = butcher,
-                abilityId = vigilanceAbilityId,
+                abilityId = abilityId,
                 costPayment = AdditionalCostPayment(sacrificedPermanents = listOf(soldier))
             )
         )
         result.isSuccess shouldBe true
 
+        // Resolve ability → modal choice
         driver.bothPass()
+
+        // Choose vigilance (mode 0)
+        val modeDecision = driver.pendingDecision as ChooseOptionDecision
+        driver.submitDecision(activePlayer, OptionChosenResponse(modeDecision.id, 0))
 
         driver.findPermanent(activePlayer, "Test Soldier") shouldBe null
         projector.hasProjectedKeyword(driver.state, butcher, Keyword.VIGILANCE) shouldBe true
@@ -90,20 +96,24 @@ class ButcherOfTheHordeTest : FunSpec({
         val butcher = driver.putCreatureOnBattlefield(activePlayer, "Butcher of the Horde")
         val soldier = driver.putCreatureOnBattlefield(activePlayer, "Test Soldier")
 
-        // Second activated ability grants lifelink
-        val lifelinkAbilityId = ButcherOfTheHorde.activatedAbilities[1].id
+        val abilityId = ButcherOfTheHorde.activatedAbilities[0].id
 
         val result = driver.submit(
             ActivateAbility(
                 playerId = activePlayer,
                 sourceId = butcher,
-                abilityId = lifelinkAbilityId,
+                abilityId = abilityId,
                 costPayment = AdditionalCostPayment(sacrificedPermanents = listOf(soldier))
             )
         )
         result.isSuccess shouldBe true
 
+        // Resolve ability → modal choice
         driver.bothPass()
+
+        // Choose lifelink (mode 1)
+        val modeDecision = driver.pendingDecision as ChooseOptionDecision
+        driver.submitDecision(activePlayer, OptionChosenResponse(modeDecision.id, 1))
 
         driver.findPermanent(activePlayer, "Test Soldier") shouldBe null
         projector.hasProjectedKeyword(driver.state, butcher, Keyword.LIFELINK) shouldBe true
@@ -119,20 +129,24 @@ class ButcherOfTheHordeTest : FunSpec({
         val butcher = driver.putCreatureOnBattlefield(activePlayer, "Butcher of the Horde")
         val soldier = driver.putCreatureOnBattlefield(activePlayer, "Test Soldier")
 
-        // Third activated ability grants haste
-        val hasteAbilityId = ButcherOfTheHorde.activatedAbilities[2].id
+        val abilityId = ButcherOfTheHorde.activatedAbilities[0].id
 
         val result = driver.submit(
             ActivateAbility(
                 playerId = activePlayer,
                 sourceId = butcher,
-                abilityId = hasteAbilityId,
+                abilityId = abilityId,
                 costPayment = AdditionalCostPayment(sacrificedPermanents = listOf(soldier))
             )
         )
         result.isSuccess shouldBe true
 
+        // Resolve ability → modal choice
         driver.bothPass()
+
+        // Choose haste (mode 2)
+        val modeDecision = driver.pendingDecision as ChooseOptionDecision
+        driver.submitDecision(activePlayer, OptionChosenResponse(modeDecision.id, 2))
 
         driver.findPermanent(activePlayer, "Test Soldier") shouldBe null
         projector.hasProjectedKeyword(driver.state, butcher, Keyword.HASTE) shouldBe true
@@ -148,13 +162,13 @@ class ButcherOfTheHordeTest : FunSpec({
         val butcher = driver.putCreatureOnBattlefield(activePlayer, "Butcher of the Horde")
         // No other creatures on battlefield
 
-        val vigilanceAbilityId = ButcherOfTheHorde.activatedAbilities[0].id
+        val abilityId = ButcherOfTheHorde.activatedAbilities[0].id
 
         val result = driver.submit(
             ActivateAbility(
                 playerId = activePlayer,
                 sourceId = butcher,
-                abilityId = vigilanceAbilityId,
+                abilityId = abilityId,
                 costPayment = AdditionalCostPayment(sacrificedPermanents = listOf(butcher))
             )
         )
@@ -172,30 +186,37 @@ class ButcherOfTheHordeTest : FunSpec({
         val soldier1 = driver.putCreatureOnBattlefield(activePlayer, "Test Soldier")
         val soldier2 = driver.putCreatureOnBattlefield(activePlayer, "Test Soldier")
 
-        val vigilanceAbilityId = ButcherOfTheHorde.activatedAbilities[0].id
-        val lifelinkAbilityId = ButcherOfTheHorde.activatedAbilities[1].id
+        val abilityId = ButcherOfTheHorde.activatedAbilities[0].id
 
         // Sacrifice first for vigilance
         driver.submit(
             ActivateAbility(
                 playerId = activePlayer,
                 sourceId = butcher,
-                abilityId = vigilanceAbilityId,
+                abilityId = abilityId,
                 costPayment = AdditionalCostPayment(sacrificedPermanents = listOf(soldier1))
             )
         )
         driver.bothPass()
+
+        // Choose vigilance (mode 0)
+        val modeDecision1 = driver.pendingDecision as ChooseOptionDecision
+        driver.submitDecision(activePlayer, OptionChosenResponse(modeDecision1.id, 0))
 
         // Sacrifice second for lifelink
         driver.submit(
             ActivateAbility(
                 playerId = activePlayer,
                 sourceId = butcher,
-                abilityId = lifelinkAbilityId,
+                abilityId = abilityId,
                 costPayment = AdditionalCostPayment(sacrificedPermanents = listOf(soldier2))
             )
         )
         driver.bothPass()
+
+        // Choose lifelink (mode 1)
+        val modeDecision2 = driver.pendingDecision as ChooseOptionDecision
+        driver.submitDecision(activePlayer, OptionChosenResponse(modeDecision2.id, 1))
 
         projector.hasProjectedKeyword(driver.state, butcher, Keyword.VIGILANCE) shouldBe true
         projector.hasProjectedKeyword(driver.state, butcher, Keyword.LIFELINK) shouldBe true
