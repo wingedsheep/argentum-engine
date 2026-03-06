@@ -41,7 +41,6 @@ import com.wingedsheep.sdk.scripting.effects.ModifyStatsEffect
 import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
 import com.wingedsheep.sdk.scripting.effects.ExileGroupAndLinkEffect
 import com.wingedsheep.sdk.scripting.effects.CreatePermanentGlobalTriggeredAbilityEffect
-import com.wingedsheep.sdk.scripting.effects.ReturnLinkedExileEffect
 import com.wingedsheep.sdk.scripting.effects.ReturnOneFromLinkedExileEffect
 import com.wingedsheep.sdk.scripting.effects.ReturnSelfToBattlefieldAttachedEffect
 import com.wingedsheep.sdk.scripting.effects.DrawUpToEffect
@@ -291,13 +290,13 @@ object Effects {
      * Return all cards linked to the source permanent (via LinkedExileComponent)
      * to the battlefield under the controller's control.
      */
-    fun ReturnLinkedExile(): Effect = ReturnLinkedExileEffect()
+    fun ReturnLinkedExile(): Effect = EffectPatterns.returnLinkedExile()
 
     /**
      * Return all cards linked to the source permanent (via LinkedExileComponent)
      * to the battlefield under their owners' control.
      */
-    fun ReturnLinkedExileUnderOwnersControl(): Effect = ReturnLinkedExileEffect(underOwnersControl = true)
+    fun ReturnLinkedExileUnderOwnersControl(): Effect = EffectPatterns.returnLinkedExile(underOwnersControl = true)
 
     /**
      * Return one card from the source's linked exile to the battlefield.

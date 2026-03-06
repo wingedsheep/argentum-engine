@@ -379,25 +379,6 @@ data class ExileGroupAndLinkEffect(
 }
 
 /**
- * Return all cards linked to the source permanent (via LinkedExileComponent) to the
- * battlefield under the controller's control.
- *
- * Used for the leaves-the-battlefield half of Day of the Dragons-style effects.
- * Reads the LinkedExileComponent from the source entity (which may be in the graveyard
- * or exile at this point) and moves each linked card from exile to the battlefield.
- */
-@SerialName("ReturnLinkedExile")
-@Serializable
-data class ReturnLinkedExileEffect(
-    val underOwnersControl: Boolean = false
-) : Effect {
-    override val description: String =
-        if (underOwnersControl) "Return the exiled cards to the battlefield under their owners' control"
-        else "Return the exiled cards to the battlefield under your control"
-    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
-}
-
-/**
  * Return one card from the source's linked exile (LinkedExileComponent) to the
  * battlefield. The active player (whose upkeep it is) chooses one of their owned
  * cards from the linked exile and returns it to the battlefield.

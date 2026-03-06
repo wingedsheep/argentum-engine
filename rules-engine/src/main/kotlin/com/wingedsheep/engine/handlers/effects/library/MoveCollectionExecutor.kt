@@ -71,7 +71,7 @@ class MoveCollectionExecutor(
 
         return when (destination) {
             is CardDestination.ToZone -> {
-                val result = moveToZone(state, context, cards, destination, effect.order, effect.revealed, effect.moveType, effect.faceDown, effect.noRegenerate, effect.storeMovedAs)
+                val result = moveToZone(state, context, cards, destination, effect.order, effect.revealed, effect.moveType, effect.faceDown, effect.noRegenerate, effect.storeMovedAs, effect.underOwnersControl)
                 if (effect.linkToSource && result.isSuccess) {
                     linkCardsToSource(result, context, cards)
                 } else {
@@ -111,7 +111,8 @@ class MoveCollectionExecutor(
         moveType: MoveType = MoveType.Default,
         faceDown: Boolean = false,
         noRegenerate: Boolean = false,
-        storeMovedAs: String? = null
+        storeMovedAs: String? = null,
+        underOwnersControl: Boolean = false
     ): ExecutionResult {
         val destPlayerId = resolvePlayer(destination.player, context, state)
             ?: return ExecutionResult.error(state, "Could not resolve destination player for MoveCollection")
@@ -128,7 +129,7 @@ class MoveCollectionExecutor(
             }
         }
 
-        return moveCardsToZone(state, context, cards, destination, destPlayerId, revealed, moveType, faceDown, noRegenerate, storeMovedAs)
+        return moveCardsToZone(state, context, cards, destination, destPlayerId, revealed, moveType, faceDown, noRegenerate, storeMovedAs, underOwnersControl)
     }
 
     /**
@@ -225,7 +226,8 @@ class MoveCollectionExecutor(
         moveType: MoveType = MoveType.Default,
         faceDown: Boolean = false,
         noRegenerate: Boolean = false,
-        storeMovedAs: String? = null
+        storeMovedAs: String? = null,
+        underOwnersControl: Boolean = false
     ): ExecutionResult {
         val destZone = destination.zone
 
@@ -251,7 +253,7 @@ class MoveCollectionExecutor(
 
                 if (nonAuraCards.isNotEmpty()) {
                     val nonAuraResult = moveCardsToZoneInternal(
-                        newState, context, nonAuraCards, destination, destPlayerId, revealed, moveType, faceDown, noRegenerate, storeMovedAs
+                        newState, context, nonAuraCards, destination, destPlayerId, revealed, moveType, faceDown, noRegenerate, storeMovedAs, underOwnersControl
                     )
                     newState = nonAuraResult.state
                     events.addAll(nonAuraResult.events)
@@ -270,7 +272,7 @@ class MoveCollectionExecutor(
             }
         }
 
-        return moveCardsToZoneInternal(state, context, cards, destination, destPlayerId, revealed, moveType, faceDown, noRegenerate, storeMovedAs)
+        return moveCardsToZoneInternal(state, context, cards, destination, destPlayerId, revealed, moveType, faceDown, noRegenerate, storeMovedAs, underOwnersControl)
     }
 
     /**
@@ -442,7 +444,8 @@ class MoveCollectionExecutor(
         moveType: MoveType = MoveType.Default,
         faceDown: Boolean = false,
         noRegenerate: Boolean = false,
-        storeMovedAs: String? = null
+        storeMovedAs: String? = null,
+        underOwnersControl: Boolean = false
     ): ExecutionResult {
         val destZone = destination.zone
         val events = mutableListOf<GameEvent>()
@@ -505,11 +508,13 @@ class MoveCollectionExecutor(
 
             // For sacrifice/destroy, cards always go to their owner's graveyard,
             // regardless of who controlled them. For return-to-hand, cards go to their
-            // owner's hand (Rule 400.3). For all other moves, use the specified player.
+            // owner's hand (Rule 400.3). For underOwnersControl, cards enter the
+            // battlefield under their owner's control. For all other moves, use the specified player.
             val actualDestPlayerId = when {
                 (moveType == MoveType.Sacrifice || moveType == MoveType.Destroy) && destZone == Zone.GRAVEYARD -> ownerId
                 destZone == Zone.HAND && fromZone == Zone.BATTLEFIELD -> ownerId
                 destZone == Zone.EXILE && fromZone == Zone.BATTLEFIELD -> ownerId
+                underOwnersControl && destZone == Zone.BATTLEFIELD -> ownerId
                 else -> destPlayerId
             }
 
@@ -547,7 +552,8 @@ class MoveCollectionExecutor(
             if (destZone == Zone.BATTLEFIELD) {
                 val container = newState.getEntity(cardId)
                 if (container != null) {
-                    var newContainer = container.with(ControllerComponent(destPlayerId))
+                    val controllerId = if (underOwnersControl) ownerId else destPlayerId
+                    var newContainer = container.with(ControllerComponent(controllerId))
 
                     // Creatures enter with summoning sickness
                     val cardComp = container.get<CardComponent>()

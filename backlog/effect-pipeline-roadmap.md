@@ -223,15 +223,19 @@ Decompose linked exile patterns (Day of the Dragons, Dimensional Breach, etc.).
   - Day of the Dragons, Planar Guide, Dimensional Breach all use pipeline transparently
 - [x] **Deprecate `ExileGroupAndLinkEffect`** (added `@Deprecated` annotation)
 
-### 4c. Decompose `ReturnLinkedExileEffect`
+### 4c. Decompose `ReturnLinkedExileEffect` ✅
 
-- [ ] **Express as pipeline:**
+- [x] **Express as pipeline:**
   ```
-  GatherCards(FromLinkedExile) → MoveCollection(Battlefield)
+  GatherCards(FromLinkedExile) → MoveCollection(Battlefield, underOwnersControl)
   ```
-- [ ] **Handle `underOwnersControl` flag** — add controller routing to MoveCollectionEffect
-- [ ] **Migrate card usages**
-- [ ] **Deprecate `ReturnLinkedExileExecutor`**
+- [x] **Handle `underOwnersControl` flag** — added `underOwnersControl` field to `MoveCollectionEffect`;
+      `MoveCollectionExecutor` routes cards to owner's battlefield and sets `ControllerComponent` to owner
+      when the flag is true
+- [x] **Migrate card usages** — Day of the Dragons uses `Effects.ReturnLinkedExile()` (delegates to pipeline),
+      Planar Guide uses `Effects.ReturnLinkedExileUnderOwnersControl()` (delegates to pipeline),
+      Dimensional Breach uses `ReturnOneFromLinkedExile` (separate effect, not decomposed here)
+- [x] **Removed `ReturnLinkedExileEffect`** and `ReturnLinkedExileExecutor` (no remaining usages)
 
 ### 4d. Add `FilterCollectionEffect` (Optional)
 
@@ -277,5 +281,5 @@ These effects are irreducibly complex or interact with engine internals that pip
 | 1 | 0 | 0 (migration only) | Convention alignment |
 | 2 | 2 (`MoveType.Destroy`, `CardSource.BattlefieldMatching`) | 3 (`DestroyAll`, `ReturnAllToHand`, `DestroyAllSharingType`) | ~75% pipeline |
 | 3 | 1 (`GroupFilter.ChosenSubtype`) + 1 (`SetCreatureSubtypesEffect.fromChosenValueKey`) + 1 (`MarkMustAttackThisTurnEffect`) | 5 (`ChooseCreatureTypeModifyStats`, `BecomeChosenTypeAllCreatures`, `ChooseCreatureTypeGainControl`, `ChooseCreatureTypeMustAttack`, all deprecated) | ~82% pipeline |
-| 4 | 1-2 (`CardSource.FromLinkedExile`, optional `FilterCollectionEffect`) | 2 (`ExileGroupAndLink`, `ReturnLinkedExile`) | ~85% pipeline |
+| 4 | 1-2 (`CardSource.FromLinkedExile`, `MoveCollectionEffect.underOwnersControl`) | 2 (`ExileGroupAndLink` deprecated, `ReturnLinkedExile` removed) | ~85% pipeline |
 | **Total** | **4-5** | **~9** | **~85%** |

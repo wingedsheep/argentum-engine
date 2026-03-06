@@ -1720,6 +1720,31 @@ object EffectPatterns {
     ))
 
     /**
+     * Return all cards linked to the source permanent (via LinkedExileComponent)
+     * from exile to the battlefield.
+     *
+     * Pipeline: GatherCards(FromLinkedExile) → MoveCollection(Battlefield)
+     *
+     * @param underOwnersControl If true, cards enter under their owners' control.
+     *   If false (default), cards enter under the effect controller's control.
+     * @param storeAs Collection name for the gathered cards (default "linked_return")
+     */
+    fun returnLinkedExile(
+        underOwnersControl: Boolean = false,
+        storeAs: String = "linked_return"
+    ): CompositeEffect = CompositeEffect(listOf(
+        GatherCardsEffect(
+            source = CardSource.FromLinkedExile,
+            storeAs = storeAs
+        ),
+        MoveCollectionEffect(
+            from = storeAs,
+            destination = CardDestination.ToZone(Zone.BATTLEFIELD),
+            underOwnersControl = underOwnersControl
+        )
+    ))
+
+    /**
      * Each player chooses a creature type. Each player returns all creature cards
      * of a type chosen this way from their graveyard to the battlefield.
      *

@@ -6,7 +6,6 @@ import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.effects.CreateDelayedTriggerEffect
-import com.wingedsheep.sdk.scripting.effects.ReturnLinkedExileEffect
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 
 /**
@@ -30,7 +29,7 @@ val PlanarGuide = card("Planar Guide") {
             .then(
                 CreateDelayedTriggerEffect(
                     step = Step.END,
-                    effect = ReturnLinkedExileEffect(underOwnersControl = true)
+                    effect = Effects.ReturnLinkedExileUnderOwnersControl()
                 )
             )
     }
