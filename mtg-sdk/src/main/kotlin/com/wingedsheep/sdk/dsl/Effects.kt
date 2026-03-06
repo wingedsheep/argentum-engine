@@ -24,7 +24,6 @@ import com.wingedsheep.sdk.scripting.effects.DealDamageEffect
 import com.wingedsheep.sdk.scripting.effects.DrawCardsEffect
 import com.wingedsheep.sdk.scripting.effects.EachOpponentDiscardsEffect
 import com.wingedsheep.sdk.scripting.effects.EachPlayerReturnsPermanentToHandEffect
-import com.wingedsheep.sdk.scripting.effects.ReturnAllToHandEffect
 import com.wingedsheep.sdk.scripting.effects.Effect
 import com.wingedsheep.sdk.scripting.effects.GrantMayPlayFromExileEffect
 import com.wingedsheep.sdk.scripting.effects.GrantPlayWithoutPayingCostEffect
@@ -359,7 +358,7 @@ object Effects {
      * Return all permanents matching a filter to their owners' hands.
      */
     fun ReturnAllToHand(filter: GroupFilter): Effect =
-        ReturnAllToHandEffect(filter)
+        EffectPatterns.returnAllToHand(filter)
 
     /**
      * Take the top card from the source's linked exile pile and put it into your hand.

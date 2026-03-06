@@ -1836,6 +1836,15 @@ object EffectPatterns {
         )
 
     /**
+     * Return all permanents matching a filter to their owners' hands (ForEachInGroup approach).
+     */
+    fun returnAllToHand(filter: GroupFilter): ForEachInGroupEffect =
+        ForEachInGroupEffect(
+            filter = filter,
+            effect = MoveToZoneEffect(EffectTarget.Self, Zone.HAND)
+        )
+
+    /**
      * Destroy all permanents matching a filter (ForEachInGroup approach).
      */
     fun destroyAll(filter: GroupFilter, noRegenerate: Boolean = false): ForEachInGroupEffect =
