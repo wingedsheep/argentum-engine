@@ -67,6 +67,7 @@ object KhansOfTarkirSet {
         ForceAway,
         Cancel,
         CripplingChill,
+        DigThroughTime,
         DisdainfulStroke,
         StubbornDenial,
         TaigamsScheming,
