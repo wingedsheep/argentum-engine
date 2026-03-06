@@ -165,6 +165,9 @@ object KhansOfTarkirSet {
         ValleyDasher,
         WarNameAspirant,
 
+        // Red enchantments
+        Goblinslide,
+
         // Red spells
         ActOfTreason,
         ArcLightning,

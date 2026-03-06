@@ -2,14 +2,14 @@
 
 **Set Size:** 269 cards (249 unique card names + basic land variants)
 **Release Date:** September 26, 2014
-**Implemented:** 153 / 249
+**Implemented:** 154 / 249
 
 | Color      | Count |
 |------------|-------|
 | White      | 26    |
 | Blue       | 26    |
 | Black      | 26    |
-| Red        | 26    |
+| Red        | 27    |
 | Green      | 26    |
 | Multicolor | 15    |
 | Colorless  | 5     |
@@ -97,7 +97,7 @@
 - [ ] Frontier Bivouac
 - [ ] Ghostfire Blade
 - [x] Glacial Stalker
-- [ ] Goblinslide
+- [x] Goblinslide
 - [x] Grim Haruspex
 - [x] Gurmag Swiftwing
 - [x] Hardened Scales
