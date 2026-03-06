@@ -6,7 +6,6 @@ import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.conditions.YouAttackedThisTurn
-import com.wingedsheep.sdk.scripting.effects.ConditionalEffect
 import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
@@ -29,6 +28,7 @@ val TimelyHordemate = card("Timely Hordemate") {
 
     triggeredAbility {
         trigger = Triggers.EntersBattlefield
+        triggerCondition = YouAttackedThisTurn
         val t = target(
             "target", TargetObject(
                 filter = TargetFilter(
@@ -37,10 +37,7 @@ val TimelyHordemate = card("Timely Hordemate") {
                 )
             )
         )
-        effect = ConditionalEffect(
-            condition = YouAttackedThisTurn,
-            effect = MoveToZoneEffect(t, Zone.BATTLEFIELD)
-        )
+        effect = MoveToZoneEffect(t, Zone.BATTLEFIELD)
     }
 
     metadata {

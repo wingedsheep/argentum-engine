@@ -6,7 +6,6 @@ import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.EntersTapped
 import com.wingedsheep.sdk.scripting.conditions.YouAttackedThisTurn
-import com.wingedsheep.sdk.scripting.effects.ConditionalEffect
 import com.wingedsheep.sdk.scripting.targets.TargetOpponent
 
 /**
@@ -29,11 +28,9 @@ val MarduSkullhunter = card("Mardu Skullhunter") {
 
     triggeredAbility {
         trigger = Triggers.EntersBattlefield
+        triggerCondition = YouAttackedThisTurn
         val t = target("target opponent", TargetOpponent())
-        effect = ConditionalEffect(
-            condition = YouAttackedThisTurn,
-            effect = EffectPatterns.discardCards(1, t)
-        )
+        effect = EffectPatterns.discardCards(1, t)
     }
 
     metadata {

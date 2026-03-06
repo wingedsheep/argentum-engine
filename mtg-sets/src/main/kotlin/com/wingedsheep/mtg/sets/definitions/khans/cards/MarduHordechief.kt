@@ -5,7 +5,6 @@ import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.conditions.YouAttackedThisTurn
-import com.wingedsheep.sdk.scripting.effects.ConditionalEffect
 import com.wingedsheep.sdk.scripting.effects.CreateTokenEffect
 
 /**
@@ -25,15 +24,13 @@ val MarduHordechief = card("Mardu Hordechief") {
 
     triggeredAbility {
         trigger = Triggers.EntersBattlefield
-        effect = ConditionalEffect(
-            condition = YouAttackedThisTurn,
-            effect = CreateTokenEffect(
-                count = 1,
-                power = 1,
-                toughness = 1,
-                colors = setOf(Color.WHITE),
-                creatureTypes = setOf("Warrior")
-            )
+        triggerCondition = YouAttackedThisTurn
+        effect = CreateTokenEffect(
+            count = 1,
+            power = 1,
+            toughness = 1,
+            colors = setOf(Color.WHITE),
+            creatureTypes = setOf("Warrior")
         )
     }
 

@@ -6,7 +6,6 @@ import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.CantBeBlockedByPowerOrLess
 import com.wingedsheep.sdk.scripting.conditions.YouAttackedThisTurn
-import com.wingedsheep.sdk.scripting.effects.ConditionalEffect
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 
 /**
@@ -27,10 +26,8 @@ val WarNameAspirant = card("War-Name Aspirant") {
 
     triggeredAbility {
         trigger = Triggers.EntersBattlefield
-        effect = ConditionalEffect(
-            condition = YouAttackedThisTurn,
-            effect = Effects.AddCounters("+1/+1", 1, EffectTarget.Self)
-        )
+        triggerCondition = YouAttackedThisTurn
+        effect = Effects.AddCounters("+1/+1", 1, EffectTarget.Self)
     }
 
     staticAbility {

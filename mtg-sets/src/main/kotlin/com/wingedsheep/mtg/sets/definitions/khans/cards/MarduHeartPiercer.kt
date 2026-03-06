@@ -5,7 +5,6 @@ import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.conditions.YouAttackedThisTurn
-import com.wingedsheep.sdk.scripting.effects.ConditionalEffect
 import com.wingedsheep.sdk.scripting.effects.DealDamageEffect
 
 /**
@@ -25,11 +24,9 @@ val MarduHeartPiercer = card("Mardu Heart-Piercer") {
 
     triggeredAbility {
         trigger = Triggers.EntersBattlefield
+        triggerCondition = YouAttackedThisTurn
         val t = target("any target", Targets.Any)
-        effect = ConditionalEffect(
-            condition = YouAttackedThisTurn,
-            effect = DealDamageEffect(2, t)
-        )
+        effect = DealDamageEffect(2, t)
     }
 
     metadata {
