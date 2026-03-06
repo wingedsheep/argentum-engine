@@ -102,10 +102,21 @@ export function RevealedCardsUI() {
     )
   }
 
+  // Source card image (the card that triggered the reveal)
+  const sourceCardName = !isHandReveal ? revealedCardsInfo!.source : null
+  const sourceCardImageUrl = sourceCardName ? getCardImageUrl(sourceCardName) : null
+
   return (
     <div className={styles.overlay}>
       {/* Header */}
       <div className={styles.header}>
+        {sourceCardImageUrl && (
+          <img
+            src={sourceCardImageUrl}
+            alt={sourceCardName!}
+            className={styles.sourceCard}
+          />
+        )}
         <h2 className={styles.title}>{title}</h2>
         <p className={styles.subtitle}>{subtitle}</p>
       </div>

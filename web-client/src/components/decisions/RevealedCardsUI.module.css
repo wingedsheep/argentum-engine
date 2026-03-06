@@ -35,6 +35,24 @@
  * ========================================================================= */
 .header {
   text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.sourceCard {
+  width: 120px;
+  height: auto;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  margin-bottom: var(--space-3);
+}
+
+@media (max-width: 639px) {
+  .sourceCard {
+    width: 90px;
+    margin-bottom: var(--space-2);
+  }
 }
 
 .title {
