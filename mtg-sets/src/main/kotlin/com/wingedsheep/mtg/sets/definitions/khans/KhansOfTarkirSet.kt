@@ -125,6 +125,7 @@ object KhansOfTarkirSet {
         LongshotSquad,
         SaguArcher,
         SmokeTeller,
+        SultaiFlayer,
         TuskedColossodon,
         TuskguardCaptain,
         PineWalker,

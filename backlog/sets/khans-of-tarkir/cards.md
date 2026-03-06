@@ -2,7 +2,7 @@
 
 **Set Size:** 269 cards (249 unique card names + basic land variants)
 **Release Date:** September 26, 2014
-**Implemented:** 151 / 249
+**Implemented:** 152 / 249
 
 | Color      | Count |
 |------------|-------|
@@ -10,7 +10,7 @@
 | Blue       | 26    |
 | Black      | 25    |
 | Red        | 26    |
-| Green      | 25    |
+| Green      | 26    |
 | Multicolor | 15    |
 | Colorless  | 5     |
 | Land       | 3     |
@@ -215,7 +215,7 @@
 - [x] Sultai Ascendancy
 - [x] Sultai Banner
 - [ ] Sultai Charm
-- [ ] Sultai Flayer
+- [x] Sultai Flayer
 - [x] Sultai Scavenger
 - [ ] Sultai Soothsayer
 - [x] Summit Prowler
