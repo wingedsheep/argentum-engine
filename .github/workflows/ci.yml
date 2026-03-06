@@ -91,6 +91,9 @@ jobs:
         run: npx playwright install --with-deps chromium
         working-directory: e2e-scenarios
 
+      - name: Pre-build server
+        run: ./gradlew :game-server:classes
+
       - name: Run E2E scenario tests
         run: npm test
         working-directory: e2e-scenarios
