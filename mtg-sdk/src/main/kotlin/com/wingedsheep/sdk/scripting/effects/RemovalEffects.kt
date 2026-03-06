@@ -264,6 +264,7 @@ data class SacrificeAtEndOfCombatEffect(
  *   updatedCollections under this key. Useful for "draw a card for each creature destroyed
  *   this way" patterns — compose with DrawCardsEffect(VariableReference("<key>_count")).
  */
+@Deprecated("Use Effects.DestroyAll() or EffectPatterns.destroyAllPipeline() instead")
 @SerialName("DestroyAll")
 @Serializable
 data class DestroyAllEffect(

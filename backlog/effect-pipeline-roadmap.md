@@ -92,17 +92,18 @@ These two additions unlock pipeline decomposition of all "destroy group" and "bo
 
 ### 2c. Decompose `DestroyAllEffect` into Pipeline
 
-- [ ] **Add `EffectPatterns.destroyAll(filter)`** factory method
+- [x] **Add `EffectPatterns.destroyAllPipeline(filter)`** factory method
   ```
   GatherCards(BattlefieldMatching(filter)) → MoveCollection(Graveyard, moveType=Destroy)
   ```
-- [ ] **Support `storeDestroyedAs`** — Store destroyed entity IDs in collection for follow-up
-      effects (e.g., Decree of Pain "draw a card for each creature destroyed this way")
-- [ ] **Support `exceptSubtypesFromStored`** — Add `FilterCollectionEffect` or use
-      `SelectFromCollectionEffect` with stored-type matching to exclude chosen subtypes
-- [ ] **Migrate `DestroyAllEffect` usages** in card definitions to use the new pattern
-- [ ] **Deprecate `DestroyAllEffect`** and `DestroyAllExecutor` (keep for backward compat until
-      all cards migrated)
+- [x] **Support `storeDestroyedAs`** — Added `storeMovedAs` to `MoveCollectionEffect` +
+      `noRegenerate` flag. `MoveCollectionExecutor` returns destroyed IDs in `updatedCollections`.
+- [x] **Support `exceptSubtypesFromStored`** — Added `FilterCollectionEffect` atom with
+      `CollectionFilter.ExcludeSubtypesFromStored`. Factory: `EffectPatterns.destroyAllExceptStoredSubtypes()`.
+- [x] **Migrate `DestroyAllEffect` usages** — Decree of Pain → `Effects.DestroyAll()`,
+      Harsh Mercy → `EffectPatterns.destroyAllExceptStoredSubtypes()`
+- [x] **Deprecate `DestroyAllEffect`** and `DestroyAllExecutor` (kept for backward compat,
+      marked `@Deprecated`)
 
 ### 2d. Decompose `ReturnAllToHandEffect` into Pipeline
 

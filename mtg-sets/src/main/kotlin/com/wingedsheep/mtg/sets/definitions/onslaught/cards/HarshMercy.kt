@@ -1,9 +1,8 @@
 package com.wingedsheep.mtg.sets.definitions.onslaught.cards
 
+import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.GameObjectFilter
-import com.wingedsheep.sdk.scripting.effects.DestroyAllEffect
 import com.wingedsheep.sdk.scripting.effects.EachPlayerChoosesCreatureTypeEffect
 
 /**
@@ -20,9 +19,8 @@ val HarshMercy = card("Harsh Mercy") {
 
     spell {
         effect = EachPlayerChoosesCreatureTypeEffect(storeAs = "chosenTypes")
-            .then(DestroyAllEffect(
-                filter = GameObjectFilter.Creature,
-                canRegenerate = false,
+            .then(EffectPatterns.destroyAllExceptStoredSubtypes(
+                noRegenerate = true,
                 exceptSubtypesFromStored = "chosenTypes"
             ))
     }

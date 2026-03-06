@@ -71,7 +71,7 @@ class MoveCollectionExecutor(
 
         return when (destination) {
             is CardDestination.ToZone -> {
-                val result = moveToZone(state, context, cards, destination, effect.order, effect.revealed, effect.moveType, effect.faceDown)
+                val result = moveToZone(state, context, cards, destination, effect.order, effect.revealed, effect.moveType, effect.faceDown, effect.noRegenerate, effect.storeMovedAs)
                 if (effect.linkToSource && result.isSuccess) {
                     linkCardsToSource(result, context, cards)
                 } else {
@@ -109,7 +109,9 @@ class MoveCollectionExecutor(
         order: CardOrder,
         revealed: Boolean = false,
         moveType: MoveType = MoveType.Default,
-        faceDown: Boolean = false
+        faceDown: Boolean = false,
+        noRegenerate: Boolean = false,
+        storeMovedAs: String? = null
     ): ExecutionResult {
         val destPlayerId = resolvePlayer(destination.player, context, state)
             ?: return ExecutionResult.error(state, "Could not resolve destination player for MoveCollection")
@@ -126,7 +128,7 @@ class MoveCollectionExecutor(
             }
         }
 
-        return moveCardsToZone(state, context, cards, destination, destPlayerId, revealed, moveType, faceDown)
+        return moveCardsToZone(state, context, cards, destination, destPlayerId, revealed, moveType, faceDown, noRegenerate, storeMovedAs)
     }
 
     /**
@@ -221,7 +223,9 @@ class MoveCollectionExecutor(
         destPlayerId: EntityId,
         revealed: Boolean = false,
         moveType: MoveType = MoveType.Default,
-        faceDown: Boolean = false
+        faceDown: Boolean = false,
+        noRegenerate: Boolean = false,
+        storeMovedAs: String? = null
     ): ExecutionResult {
         val destZone = destination.zone
 
@@ -247,7 +251,7 @@ class MoveCollectionExecutor(
 
                 if (nonAuraCards.isNotEmpty()) {
                     val nonAuraResult = moveCardsToZoneInternal(
-                        newState, context, nonAuraCards, destination, destPlayerId, revealed, moveType, faceDown
+                        newState, context, nonAuraCards, destination, destPlayerId, revealed, moveType, faceDown, noRegenerate, storeMovedAs
                     )
                     newState = nonAuraResult.state
                     events.addAll(nonAuraResult.events)
@@ -266,7 +270,7 @@ class MoveCollectionExecutor(
             }
         }
 
-        return moveCardsToZoneInternal(state, context, cards, destination, destPlayerId, revealed, moveType, faceDown)
+        return moveCardsToZoneInternal(state, context, cards, destination, destPlayerId, revealed, moveType, faceDown, noRegenerate, storeMovedAs)
     }
 
     /**
@@ -436,7 +440,9 @@ class MoveCollectionExecutor(
         destPlayerId: EntityId,
         revealed: Boolean = false,
         moveType: MoveType = MoveType.Default,
-        faceDown: Boolean = false
+        faceDown: Boolean = false,
+        noRegenerate: Boolean = false,
+        storeMovedAs: String? = null
     ): ExecutionResult {
         val destZone = destination.zone
         val events = mutableListOf<GameEvent>()
@@ -456,11 +462,13 @@ class MoveCollectionExecutor(
                     continue
                 }
 
-                // Check for regeneration shields
-                val (shieldState, wasRegenerated) = EffectExecutorUtils.applyRegenerationShields(newState, cardId)
-                if (wasRegenerated) {
-                    newState = EffectExecutorUtils.applyRegenerationReplacement(shieldState, cardId).state
-                    continue
+                // Check for regeneration shields (unless noRegenerate is set)
+                if (!noRegenerate) {
+                    val (shieldState, wasRegenerated) = EffectExecutorUtils.applyRegenerationShields(newState, cardId)
+                    if (wasRegenerated) {
+                        newState = EffectExecutorUtils.applyRegenerationReplacement(shieldState, cardId).state
+                        continue
+                    }
                 }
             }
 
@@ -616,7 +624,15 @@ class MoveCollectionExecutor(
             )
         }
 
-        return ExecutionResult.success(newState, events)
+        val updatedCollections = if (storeMovedAs != null && destroyedIds.isNotEmpty()) {
+            mapOf(storeMovedAs to destroyedIds.toList())
+        } else if (storeMovedAs != null) {
+            mapOf(storeMovedAs to emptyList())
+        } else {
+            emptyMap()
+        }
+
+        return ExecutionResult.success(newState, events).copy(updatedCollections = updatedCollections)
     }
 
     /**

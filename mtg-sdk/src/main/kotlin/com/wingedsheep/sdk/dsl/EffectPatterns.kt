@@ -42,6 +42,8 @@ import com.wingedsheep.sdk.scripting.effects.SelectFromCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.SelectionMode
 import com.wingedsheep.sdk.scripting.effects.ShuffleLibraryEffect
 import com.wingedsheep.sdk.scripting.effects.OptionType
+import com.wingedsheep.sdk.scripting.effects.CollectionFilter
+import com.wingedsheep.sdk.scripting.effects.FilterCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.StoreCountEffect
 import com.wingedsheep.sdk.scripting.effects.StoreResultEffect
 import com.wingedsheep.sdk.scripting.effects.TapUntapEffect
@@ -1834,7 +1836,7 @@ object EffectPatterns {
         )
 
     /**
-     * Destroy all permanents matching a filter.
+     * Destroy all permanents matching a filter (ForEachInGroup approach).
      */
     fun destroyAll(filter: GroupFilter, noRegenerate: Boolean = false): ForEachInGroupEffect =
         ForEachInGroupEffect(
@@ -1842,6 +1844,63 @@ object EffectPatterns {
             effect = MoveToZoneEffect(EffectTarget.Self, Zone.GRAVEYARD, byDestruction = true),
             noRegenerate = noRegenerate
         )
+
+    /**
+     * Destroy all permanents matching a filter using the Gather → MoveCollection pipeline.
+     * This approach correctly handles indestructible and regeneration via MoveType.Destroy.
+     *
+     * @param filter Which permanents to destroy
+     * @param noRegenerate If true, destroyed permanents can't be regenerated
+     * @param storeDestroyedAs If set, stores actually-destroyed entity IDs in a collection
+     *   (count available as DynamicAmount.VariableReference("{key}_count"))
+     */
+    fun destroyAllPipeline(
+        filter: GameObjectFilter,
+        noRegenerate: Boolean = false,
+        storeDestroyedAs: String? = null
+    ): CompositeEffect = CompositeEffect(listOf(
+        GatherCardsEffect(
+            source = CardSource.BattlefieldMatching(filter = filter),
+            storeAs = "destroyAll_gathered"
+        ),
+        MoveCollectionEffect(
+            from = "destroyAll_gathered",
+            destination = CardDestination.ToZone(Zone.GRAVEYARD),
+            moveType = MoveType.Destroy,
+            noRegenerate = noRegenerate,
+            storeMovedAs = storeDestroyedAs
+        )
+    ))
+
+    /**
+     * Destroy all creatures that don't have any subtype from a stored string list.
+     * Used by Harsh Mercy-style effects where players choose creature types, then
+     * all creatures not of those types are destroyed.
+     *
+     * @param noRegenerate If true, destroyed permanents can't be regenerated
+     * @param exceptSubtypesFromStored Key into storedStringLists; creatures with any
+     *   subtype in that list are spared from destruction
+     */
+    fun destroyAllExceptStoredSubtypes(
+        noRegenerate: Boolean = false,
+        exceptSubtypesFromStored: String
+    ): CompositeEffect = CompositeEffect(listOf(
+        GatherCardsEffect(
+            source = CardSource.BattlefieldMatching(filter = GameObjectFilter.Creature),
+            storeAs = "destroyAll_gathered"
+        ),
+        FilterCollectionEffect(
+            from = "destroyAll_gathered",
+            filter = CollectionFilter.ExcludeSubtypesFromStored(exceptSubtypesFromStored),
+            storeMatching = "destroyAll_filtered"
+        ),
+        MoveCollectionEffect(
+            from = "destroyAll_filtered",
+            destination = CardDestination.ToZone(Zone.GRAVEYARD),
+            moveType = MoveType.Destroy,
+            noRegenerate = noRegenerate
+        )
+    ))
 
     /**
      * Grant a keyword to all creatures matching a filter.

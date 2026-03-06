@@ -330,7 +330,9 @@ data class MoveCollectionEffect(
     val revealed: Boolean = false,
     val moveType: MoveType = MoveType.Default,
     val linkToSource: Boolean = false,
-    val faceDown: Boolean = false
+    val faceDown: Boolean = false,
+    val noRegenerate: Boolean = false,
+    val storeMovedAs: String? = null
 ) : Effect {
     override val description: String = buildString {
         if (revealed) append("Reveal and put") else append("Put")
@@ -561,5 +563,47 @@ data class GrantPlayWithoutPayingCostEffect(
     override val description: String =
         "Until end of turn, you may play the $from cards without paying their mana costs"
 
+    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
+}
+
+// =============================================================================
+// Collection Filtering
+// =============================================================================
+
+/**
+ * How to filter a named collection.
+ */
+@Serializable
+sealed interface CollectionFilter {
+    /**
+     * Exclude entities that have any subtype matching a stored string list.
+     * Reads the list from [storedKey] in the effect context's storedStringLists.
+     */
+    @SerialName("ExcludeSubtypesFromStored")
+    @Serializable
+    data class ExcludeSubtypesFromStored(val storedKey: String) : CollectionFilter
+}
+
+/**
+ * Filter a named collection, splitting it into matching and non-matching subsets.
+ *
+ * This is a purely automatic filter (no player choice). The matching entities
+ * are stored in [storeMatching]; non-matching entities are stored in [storeNonMatching]
+ * if provided.
+ *
+ * @property from Name of the collection to filter
+ * @property filter How to filter the collection
+ * @property storeMatching Name of the collection to store entities that pass the filter
+ * @property storeNonMatching Optional name to store entities that fail the filter
+ */
+@SerialName("FilterCollection")
+@Serializable
+data class FilterCollectionEffect(
+    val from: String,
+    val filter: CollectionFilter,
+    val storeMatching: String,
+    val storeNonMatching: String? = null
+) : Effect {
+    override val description: String = "Filter $from collection"
     override fun applyTextReplacement(replacer: TextReplacer): Effect = this
 }

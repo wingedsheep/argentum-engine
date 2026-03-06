@@ -253,6 +253,21 @@ object Effects {
         MoveToZoneEffect(target, Zone.GRAVEYARD, byDestruction = true)
 
     /**
+     * Destroy all permanents matching a filter using the pipeline.
+     * Correctly handles indestructible and regeneration via MoveType.Destroy.
+     *
+     * @param filter Which permanents to destroy
+     * @param noRegenerate If true, destroyed permanents can't be regenerated
+     * @param storeDestroyedAs If set, stores actually-destroyed IDs for follow-up effects
+     *   (count available as DynamicAmount.VariableReference("{key}_count"))
+     */
+    fun DestroyAll(
+        filter: GameObjectFilter,
+        noRegenerate: Boolean = false,
+        storeDestroyedAs: String? = null
+    ): Effect = EffectPatterns.destroyAllPipeline(filter, noRegenerate, storeDestroyedAs)
+
+    /**
      * Exile a target.
      */
     fun Exile(target: EffectTarget): Effect =

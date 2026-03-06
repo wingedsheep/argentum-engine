@@ -7,7 +7,6 @@ import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.KeywordAbility
-import com.wingedsheep.sdk.scripting.effects.DestroyAllEffect
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
 
@@ -25,9 +24,9 @@ val DecreeOfPain = card("Decree of Pain") {
     oracleText = "Destroy all creatures. They can't be regenerated. Draw a card for each creature destroyed this way.\nCycling {3}{B}{B}\nWhen you cycle Decree of Pain, all creatures get -2/-2 until end of turn."
 
     spell {
-        effect = DestroyAllEffect(
+        effect = Effects.DestroyAll(
             filter = GameObjectFilter.Creature,
-            canRegenerate = false,
+            noRegenerate = true,
             storeDestroyedAs = "destroyed"
         ).then(
             Effects.DrawCards(DynamicAmount.VariableReference("destroyed_count"))
