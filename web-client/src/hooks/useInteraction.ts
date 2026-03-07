@@ -218,6 +218,25 @@ export function useInteraction() {
         return
       }
 
+      // Check if TurnFaceUp requires exiling cards from a zone
+      if (action.type === 'TurnFaceUp' && actionInfo.additionalCostInfo?.costType === 'ExileFromZone') {
+        const costInfo = actionInfo.additionalCostInfo
+        const exileCount = costInfo.exileMaxCount ?? 1
+        const validTargets = costInfo.validExileTargets ?? []
+
+        startTargeting({
+          action,
+          validTargets: [...validTargets],
+          selectedTargets: [],
+          minTargets: exileCount,
+          maxTargets: exileCount,
+          isSacrificeSelection: true,
+          pendingActionInfo: actionInfo,
+        })
+        selectCard(null)
+        return
+      }
+
       // Check if TurnFaceUp requires revealing a card from hand (e.g., Watcher of the Roost)
       if (action.type === 'TurnFaceUp' && actionInfo.additionalCostInfo?.costType === 'RevealCard') {
         const costInfo = actionInfo.additionalCostInfo

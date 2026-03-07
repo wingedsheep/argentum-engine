@@ -4,6 +4,7 @@ import com.wingedsheep.engine.event.PendingTrigger
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.sdk.core.Color
+import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.scripting.Duration
@@ -344,7 +345,8 @@ data class PayOrSufferContinuation(
     val random: Boolean = false,
     val targets: List<ChosenTarget> = emptyList(),
     val namedTargets: Map<String, ChosenTarget> = emptyMap(),
-    val manaCost: ManaCost? = null
+    val manaCost: ManaCost? = null,
+    val zone: Zone? = null
 ) : ContinuationFrame
 
 /**
@@ -355,7 +357,8 @@ enum class PayOrSufferCostType {
     DISCARD,
     SACRIFICE,
     PAY_LIFE,
-    MANA
+    MANA,
+    EXILE
 }
 
 /**

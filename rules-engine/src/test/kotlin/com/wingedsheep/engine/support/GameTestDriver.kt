@@ -1210,6 +1210,22 @@ class GameTestDriver {
     }
 
     /**
+     * Get the entity IDs of cards in a player's exile zone.
+     */
+    fun getExile(playerId: EntityId): List<EntityId> {
+        return state.getZone(ZoneKey(playerId, Zone.EXILE))
+    }
+
+    /**
+     * Get the card names in a player's exile zone.
+     */
+    fun getExileCardNames(playerId: EntityId): List<String> {
+        return getExile(playerId).mapNotNull { entityId ->
+            state.getEntity(entityId)?.get<CardComponent>()?.name
+        }
+    }
+
+    /**
      * Get hand size for a player.
      */
     fun getHandSize(playerId: EntityId): Int {

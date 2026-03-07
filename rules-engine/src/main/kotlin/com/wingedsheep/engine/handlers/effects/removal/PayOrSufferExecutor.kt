@@ -65,6 +65,7 @@ class PayOrSufferExecutor(
             is PayCost.Sacrifice -> handleSacrificeCost(state, effect, context, cost, sourceId, sourceCard.name, controllerId)
             is PayCost.PayLife -> handlePayLifeCost(state, effect, context, cost, sourceId, sourceCard.name, controllerId)
             is PayCost.Mana -> handleManaCost(state, effect, context, cost, sourceId, sourceCard.name, controllerId)
+            is PayCost.Exile -> handleExileCost(state, effect, context, cost, sourceId, sourceCard.name, controllerId)
             is PayCost.ReturnToHand -> ExecutionResult.error(state, "ReturnToHand payment for PayOrSuffer not yet implemented")
             is PayCost.RevealCard -> ExecutionResult.error(state, "RevealCard payment for PayOrSuffer not yet implemented")
         }
@@ -334,6 +335,63 @@ class PayOrSufferExecutor(
     }
 
     /**
+     * Handle an exile cost - player must exile cards from a zone to avoid suffer effect.
+     */
+    private fun handleExileCost(
+        state: GameState,
+        effect: PayOrSufferEffect,
+        context: EffectContext,
+        cost: PayCost.Exile,
+        sourceId: EntityId,
+        sourceName: String,
+        controllerId: EntityId
+    ): ExecutionResult {
+        val validCards = findValidCardsInZone(state, controllerId, cost.filter, cost.zone)
+
+        if (validCards.size < cost.count) {
+            return executeSufferEffect(state, effect.suffer, context)
+        }
+
+        val prompt = buildExilePrompt(cost, sourceName, effect.suffer)
+
+        val decisionResult = decisionHandler.createCardSelectionDecision(
+            state = state,
+            playerId = controllerId,
+            sourceId = sourceId,
+            sourceName = sourceName,
+            prompt = prompt,
+            options = validCards,
+            minSelections = 0,
+            maxSelections = cost.count,
+            ordered = false,
+            phase = DecisionPhase.RESOLUTION
+        )
+
+        val continuation = PayOrSufferContinuation(
+            decisionId = decisionResult.pendingDecision!!.id,
+            playerId = controllerId,
+            sourceId = sourceId,
+            sourceName = sourceName,
+            costType = PayOrSufferCostType.EXILE,
+            sufferEffect = effect.suffer,
+            requiredCount = cost.count,
+            filter = cost.filter,
+            random = false,
+            targets = context.targets,
+            namedTargets = context.namedTargets,
+            zone = cost.zone
+        )
+
+        val stateWithContinuation = decisionResult.state.pushContinuation(continuation)
+
+        return ExecutionResult.paused(
+            stateWithContinuation,
+            decisionResult.pendingDecision,
+            decisionResult.events
+        )
+    }
+
+    /**
      * Handle a mana cost - player must pay mana to avoid suffer effect.
      */
     private fun handleManaCost(
@@ -415,6 +473,31 @@ class PayOrSufferExecutor(
 
         return hand.filter { cardId ->
             predicateEvaluator.matches(state, cardId, filter, context)
+        }
+    }
+
+    /**
+     * Find all cards in a given zone that match the specified filter.
+     */
+    private fun findValidCardsInZone(
+        state: GameState,
+        playerId: EntityId,
+        filter: GameObjectFilter,
+        zone: Zone
+    ): List<EntityId> {
+        val zoneKey = ZoneKey(playerId, zone)
+        val cards = state.getZone(zoneKey)
+        val context = PredicateContext(controllerId = playerId)
+
+        return if (zone == Zone.BATTLEFIELD) {
+            val projected = state.projectedState
+            cards.filter { cardId ->
+                predicateEvaluator.matchesWithProjection(state, projected, cardId, filter, context)
+            }
+        } else {
+            cards.filter { cardId ->
+                predicateEvaluator.matches(state, cardId, filter, context)
+            }
         }
     }
 
@@ -537,6 +620,21 @@ class PayOrSufferExecutor(
         }
         val consequence = describeConsequence(sufferEffect, sourceName)
         return "Sacrifice $typeText or $consequence"
+    }
+
+    /**
+     * Build prompt for exile cost.
+     */
+    private fun buildExilePrompt(cost: PayCost.Exile, sourceName: String, sufferEffect: Effect): String {
+        val desc = cost.filter.description
+        val typeText = if (cost.count == 1) {
+            "${if (desc.first().lowercaseChar() in "aeiou") "an" else "a"} $desc"
+        } else {
+            "${cost.count} ${desc}s"
+        }
+        val zoneName = cost.zone.name.lowercase()
+        val consequence = describeConsequence(sufferEffect, sourceName)
+        return "Exile $typeText from your $zoneName or $consequence"
     }
 
     /**

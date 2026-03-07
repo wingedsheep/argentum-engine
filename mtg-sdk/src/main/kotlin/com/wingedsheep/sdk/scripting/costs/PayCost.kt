@@ -1,6 +1,7 @@
 package com.wingedsheep.sdk.scripting.costs
 
 import com.wingedsheep.sdk.core.ManaCost
+import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.text.TextReplaceable
 import com.wingedsheep.sdk.scripting.text.TextReplacer
@@ -114,6 +115,40 @@ sealed interface PayCost : TextReplaceable<PayCost> {
     ) : PayCost {
         override val description: String = "pay $amount life"
         override fun applyTextReplacement(replacer: TextReplacer): PayCost = this
+    }
+
+    /**
+     * Exile one or more cards matching a filter from a specific zone.
+     * "...unless you exile a blue card from your hand"
+     * "Morph—Exile two cards from your graveyard."
+     *
+     * @property filter Which cards can be exiled
+     * @property zone The zone to exile from (HAND, GRAVEYARD, etc.)
+     * @property count How many cards must be exiled (default 1)
+     */
+    @SerialName("ExileFromZone")
+    @Serializable
+    data class Exile(
+        val filter: GameObjectFilter = GameObjectFilter.Companion.Any,
+        val zone: Zone = Zone.HAND,
+        val count: Int = 1
+    ) : PayCost {
+        override val description: String = buildString {
+            append("exile ")
+            val filterDesc = filter.description
+            if (count == 1) {
+                append(if (filterDesc.first().lowercaseChar() in "aeiou") "an" else "a")
+                append(" $filterDesc")
+            } else {
+                append("$count ${filterDesc}s")
+            }
+            append(" from your ${zone.name.lowercase()}")
+        }
+
+        override fun applyTextReplacement(replacer: TextReplacer): PayCost {
+            val newFilter = filter.applyTextReplacement(replacer)
+            return if (newFilter !== filter) copy(filter = newFilter) else this
+        }
     }
 
     /**

@@ -188,6 +188,20 @@ class TurnFaceUpHandler(
                     }
                 }
             }
+            is PayCost.Exile -> {
+                val validTargets = findExileTargets(state, action.playerId, morphData.morphCost)
+                if (validTargets.size < morphData.morphCost.count) {
+                    return "Not enough cards in ${morphData.morphCost.zone.name.lowercase()} matching the exile requirement"
+                }
+                if (action.costTargetIds.size != morphData.morphCost.count) {
+                    return "Must exile exactly ${morphData.morphCost.count} card(s) to pay morph cost"
+                }
+                for (targetId in action.costTargetIds) {
+                    if (targetId !in validTargets) {
+                        return "Invalid target for exile morph cost: $targetId"
+                    }
+                }
+            }
             else -> return "Unsupported morph cost type: ${morphData.morphCost::class.simpleName}"
         }
 
@@ -432,6 +446,17 @@ class TurnFaceUpHandler(
                 }
                 events.add(CardsRevealedEvent(action.playerId, revealedIds, revealedNames, source = "Morph cost"))
             }
+            is PayCost.Exile -> {
+                val sourceZone = morphData.morphCost.zone
+                for (targetId in action.costTargetIds) {
+                    val result = EffectExecutorUtils.moveCardToZone(currentState, targetId, Zone.EXILE)
+                    if (result.error != null) {
+                        return ExecutionResult.error(currentState, result.error!!)
+                    }
+                    currentState = result.newState
+                    events.addAll(result.events)
+                }
+            }
             else -> return ExecutionResult.error(state, "Unsupported morph cost type: ${morphData.morphCost::class.simpleName}")
         }
 
@@ -563,6 +588,24 @@ class TurnFaceUpHandler(
         val predicateContext = PredicateContext(controllerId = playerId)
 
         return hand.filter { cardId ->
+            predicateEvaluator.matches(state, cardId, cost.filter, predicateContext)
+        }
+    }
+
+    /**
+     * Find valid cards in a zone that can be exiled to pay a morph cost.
+     * Non-battlefield zones use base state per convention.
+     */
+    fun findExileTargets(
+        state: GameState,
+        playerId: EntityId,
+        cost: PayCost.Exile
+    ): List<EntityId> {
+        val zoneKey = ZoneKey(playerId, cost.zone)
+        val cards = state.getZone(zoneKey)
+        val predicateContext = PredicateContext(controllerId = playerId)
+
+        return cards.filter { cardId ->
             predicateEvaluator.matches(state, cardId, cost.filter, predicateContext)
         }
     }

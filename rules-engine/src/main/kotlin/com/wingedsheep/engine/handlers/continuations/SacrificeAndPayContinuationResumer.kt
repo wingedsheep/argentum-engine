@@ -104,6 +104,7 @@ class SacrificeAndPayContinuationResumer(
             PayOrSufferCostType.SACRIFICE -> resumePayOrSufferSacrifice(state, continuation, response, checkForMore)
             PayOrSufferCostType.PAY_LIFE -> resumePayOrSufferPayLife(state, continuation, response, checkForMore)
             PayOrSufferCostType.MANA -> resumePayOrSufferMana(state, continuation, response, checkForMore)
+            PayOrSufferCostType.EXILE -> resumePayOrSufferExile(state, continuation, response, checkForMore)
         }
     }
 
@@ -269,6 +270,52 @@ class SacrificeAndPayContinuationResumer(
                 reason = LifeChangeReason.PAYMENT
             )
         )
+
+        return checkForMore(newState, events)
+    }
+
+    /**
+     * Handle exile cost selection for pay or suffer.
+     */
+    private fun resumePayOrSufferExile(
+        state: GameState,
+        continuation: PayOrSufferContinuation,
+        response: DecisionResponse,
+        checkForMore: CheckForMore
+    ): ExecutionResult {
+        if (response !is CardsSelectedResponse) {
+            return ExecutionResult.error(state, "Expected card selection response for pay or suffer exile")
+        }
+
+        val playerId = continuation.playerId
+        val selectedCards = response.selectedCards
+
+        // If player didn't select enough cards, execute the suffer effect
+        if (selectedCards.size < continuation.requiredCount) {
+            return executePayOrSufferConsequence(state, continuation, checkForMore)
+        }
+
+        // Player paid the cost - exile the selected cards
+        val sourceZone = continuation.zone ?: Zone.HAND
+        val fromZone = ZoneKey(playerId, sourceZone)
+        val exileZone = ZoneKey(playerId, Zone.EXILE)
+        var newState = state
+        val events = mutableListOf<GameEvent>()
+
+        for (cardId in selectedCards) {
+            val cardName = newState.getEntity(cardId)?.get<CardComponent>()?.name ?: "Unknown"
+            newState = newState.removeFromZone(fromZone, cardId)
+            newState = newState.addToZone(exileZone, cardId)
+            events.add(
+                ZoneChangeEvent(
+                    entityId = cardId,
+                    entityName = cardName,
+                    fromZone = sourceZone,
+                    toZone = Zone.EXILE,
+                    ownerId = playerId
+                )
+            )
+        }
 
         return checkForMore(newState, events)
     }
