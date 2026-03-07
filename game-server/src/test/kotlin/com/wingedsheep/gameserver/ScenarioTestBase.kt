@@ -13,6 +13,7 @@ import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.battlefield.SummoningSicknessComponent
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
+import com.wingedsheep.engine.state.components.identity.CantBeCounteredComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.identity.LifeTotalComponent
@@ -276,7 +277,6 @@ abstract class ScenarioTestBase : FunSpec() {
                 ownerId = ownerId,
                 spellEffect = cardDef.spellEffect,
                 imageUri = cardDef.metadata.imageUri,
-                cantBeCountered = cardDef.script.cantBeCountered
             )
 
             var container = ComponentContainer.of(
@@ -284,6 +284,10 @@ abstract class ScenarioTestBase : FunSpec() {
                 OwnerComponent(ownerId),
                 ControllerComponent(ownerId)
             )
+
+            if (cardDef.script.cantBeCountered) {
+                container = container.with(CantBeCounteredComponent)
+            }
 
             // Attach ProtectionComponent for cards with static protection from color/subtype
             val protectionColors = cardDef.keywordAbilities

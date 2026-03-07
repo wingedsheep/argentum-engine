@@ -726,7 +726,6 @@ class DevScenarioController(
                 ownerId = ownerId,
                 spellEffect = cardDef.spellEffect,
                 imageUri = cardDef.metadata.imageUri,
-                cantBeCountered = cardDef.script.cantBeCountered
             )
 
             var container = ComponentContainer.of(
@@ -734,6 +733,10 @@ class DevScenarioController(
                 OwnerComponent(ownerId),
                 ControllerComponent(ownerId)
             )
+
+            if (cardDef.script.cantBeCountered) {
+                container = container.with(CantBeCounteredComponent)
+            }
 
             // Add ProtectionComponent for cards with protection from color/subtype
             val protectionColors = cardDef.keywordAbilities

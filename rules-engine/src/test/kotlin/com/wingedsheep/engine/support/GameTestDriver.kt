@@ -546,17 +546,19 @@ class GameTestDriver {
             colors = cardDef.colors,
             ownerId = playerId,
             spellEffect = cardDef.spellEffect,
-            cantBeCountered = cardDef.script.cantBeCountered,
-            hasMorphAbility = cardDef.keywordAbilities.any {
-                it is com.wingedsheep.sdk.scripting.KeywordAbility.Morph
-            }
         )
 
-        val container = com.wingedsheep.engine.state.ComponentContainer.of(
+        var container = com.wingedsheep.engine.state.ComponentContainer.of(
             cardComponent,
             com.wingedsheep.engine.state.components.identity.OwnerComponent(playerId),
             ControllerComponent(playerId)
         )
+        if (cardDef.script.cantBeCountered) {
+            container = container.with(com.wingedsheep.engine.state.components.identity.CantBeCounteredComponent)
+        }
+        if (cardDef.keywordAbilities.any { it is com.wingedsheep.sdk.scripting.KeywordAbility.Morph }) {
+            container = container.with(com.wingedsheep.engine.state.components.identity.HasMorphAbilityComponent)
+        }
 
         _state = _state.withEntity(cardId, container)
 
@@ -588,14 +590,16 @@ class GameTestDriver {
             colors = cardDef.colors,
             ownerId = playerId,
             spellEffect = cardDef.spellEffect,
-            cantBeCountered = cardDef.script.cantBeCountered
         )
 
-        val container = com.wingedsheep.engine.state.ComponentContainer.of(
+        var container = com.wingedsheep.engine.state.ComponentContainer.of(
             cardComponent,
             com.wingedsheep.engine.state.components.identity.OwnerComponent(playerId),
             ControllerComponent(playerId)
         )
+        if (cardDef.script.cantBeCountered) {
+            container = container.with(com.wingedsheep.engine.state.components.identity.CantBeCounteredComponent)
+        }
 
         _state = _state.withEntity(cardId, container)
 
@@ -626,14 +630,16 @@ class GameTestDriver {
             colors = cardDef.colors,
             ownerId = playerId,
             spellEffect = cardDef.spellEffect,
-            cantBeCountered = cardDef.script.cantBeCountered
         )
 
-        val container = com.wingedsheep.engine.state.ComponentContainer.of(
+        var container = com.wingedsheep.engine.state.ComponentContainer.of(
             cardComponent,
             com.wingedsheep.engine.state.components.identity.OwnerComponent(playerId),
             ControllerComponent(playerId)
         )
+        if (cardDef.script.cantBeCountered) {
+            container = container.with(com.wingedsheep.engine.state.components.identity.CantBeCounteredComponent)
+        }
 
         _state = _state.withEntity(cardId, container)
 
@@ -667,10 +673,6 @@ class GameTestDriver {
             colors = cardDef.colors,
             ownerId = playerId,
             spellEffect = cardDef.spellEffect,
-            cantBeCountered = cardDef.script.cantBeCountered,
-            hasMorphAbility = cardDef.keywordAbilities.any {
-                it is com.wingedsheep.sdk.scripting.KeywordAbility.Morph
-            }
         )
 
         var container = com.wingedsheep.engine.state.ComponentContainer.of(
@@ -679,6 +681,12 @@ class GameTestDriver {
             ControllerComponent(playerId),
             com.wingedsheep.engine.state.components.battlefield.SummoningSicknessComponent
         )
+        if (cardDef.script.cantBeCountered) {
+            container = container.with(com.wingedsheep.engine.state.components.identity.CantBeCounteredComponent)
+        }
+        if (cardDef.keywordAbilities.any { it is com.wingedsheep.sdk.scripting.KeywordAbility.Morph }) {
+            container = container.with(com.wingedsheep.engine.state.components.identity.HasMorphAbilityComponent)
+        }
 
         // Add continuous effects from static abilities
         val staticAbilityHandler = com.wingedsheep.engine.mechanics.layers.StaticAbilityHandler(cardRegistry)
@@ -714,7 +722,6 @@ class GameTestDriver {
             colors = cardDef.colors,
             ownerId = playerId,
             spellEffect = cardDef.spellEffect,
-            cantBeCountered = cardDef.script.cantBeCountered
         )
 
         var container = com.wingedsheep.engine.state.ComponentContainer.of(
@@ -722,6 +729,9 @@ class GameTestDriver {
             com.wingedsheep.engine.state.components.identity.OwnerComponent(playerId),
             ControllerComponent(playerId)
         )
+        if (cardDef.script.cantBeCountered) {
+            container = container.with(com.wingedsheep.engine.state.components.identity.CantBeCounteredComponent)
+        }
 
         // Add continuous effects and replacement effects from static abilities
         val staticAbilityHandler = com.wingedsheep.engine.mechanics.layers.StaticAbilityHandler(cardRegistry)
@@ -785,14 +795,16 @@ class GameTestDriver {
             colors = cardDef.colors,
             ownerId = playerId,
             spellEffect = cardDef.spellEffect,
-            cantBeCountered = cardDef.script.cantBeCountered
         )
 
-        val container = com.wingedsheep.engine.state.ComponentContainer.of(
+        var container = com.wingedsheep.engine.state.ComponentContainer.of(
             cardComponent,
             com.wingedsheep.engine.state.components.identity.OwnerComponent(playerId),
             ControllerComponent(playerId)
         )
+        if (cardDef.script.cantBeCountered) {
+            container = container.with(com.wingedsheep.engine.state.components.identity.CantBeCounteredComponent)
+        }
 
         _state = _state.withEntity(cardId, container)
 

@@ -211,12 +211,18 @@ class GameInitializer(
                 ownerId = ownerId,
                 spellEffect = cardDef.spellEffect,
                 imageUri = cardDef.metadata.imageUri,
-                cantBeCountered = cardDef.script.cantBeCountered,
-                hasMorphAbility = cardDef.keywordAbilities.any { it is KeywordAbility.Morph }
             ),
             OwnerComponent(ownerId),
             ControllerComponent(ownerId)
         )
+
+        if (cardDef.script.cantBeCountered) {
+            container = container.with(CantBeCounteredComponent)
+        }
+
+        if (cardDef.keywordAbilities.any { it is KeywordAbility.Morph }) {
+            container = container.with(HasMorphAbilityComponent)
+        }
 
         if (protectionColors.isNotEmpty() || protectionSubtypes.isNotEmpty()) {
             container = container.with(ProtectionComponent(protectionColors, protectionSubtypes))

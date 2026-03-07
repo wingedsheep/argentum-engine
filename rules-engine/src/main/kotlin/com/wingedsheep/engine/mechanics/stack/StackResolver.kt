@@ -11,6 +11,8 @@ import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.battlefield.CountersComponent
 import com.wingedsheep.engine.state.components.battlefield.CastFromHandComponent
 import com.wingedsheep.engine.state.components.battlefield.SummoningSicknessComponent
+import com.wingedsheep.engine.state.components.battlefield.TappedComponent
+import com.wingedsheep.engine.state.components.identity.CantBeCounteredComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.identity.FaceDownComponent
@@ -27,6 +29,7 @@ import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.events.CounterTypeFilter
 import com.wingedsheep.sdk.scripting.EntersAsCopy
 import com.wingedsheep.engine.handlers.effects.EffectExecutorUtils
+import com.wingedsheep.sdk.scripting.EntersTapped
 import com.wingedsheep.sdk.scripting.EntersWithCounters
 import com.wingedsheep.sdk.scripting.EntersWithCreatureTypeChoice
 import com.wingedsheep.sdk.scripting.EntersWithDynamicCounters
@@ -589,6 +592,12 @@ class StackResolver(
             updated
         }
 
+        // Handle "enters the battlefield tapped" replacement effect
+        if (cardDef != null && !spellComponent.castFaceDown &&
+            cardDef.script.replacementEffects.any { it is EntersTapped }) {
+            newState = newState.updateEntity(spellId) { c -> c.with(TappedComponent) }
+        }
+
         // Handle "enters with counters" replacement effects (before adding to battlefield)
         if (cardDef != null && !spellComponent.castFaceDown) {
             newState = applyEntersWithCounters(newState, spellId, cardDef, controllerId, spellComponent.xValue)
@@ -975,8 +984,8 @@ class StackResolver(
 
         val cardComponent = container.get<CardComponent>()
 
-        // Check if the spell can't be countered (inherent property)
-        if (cardComponent?.cantBeCountered == true) {
+        // Check if the spell can't be countered (tag component)
+        if (container.has<CantBeCounteredComponent>()) {
             return ExecutionResult.success(state)
         }
 

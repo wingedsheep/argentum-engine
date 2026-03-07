@@ -9,6 +9,7 @@ import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.ChosenCreatureTypeComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.identity.FaceDownComponent
+import com.wingedsheep.engine.state.components.identity.HasMorphAbilityComponent
 import com.wingedsheep.engine.state.components.battlefield.CountersComponent
 import com.wingedsheep.engine.state.components.identity.MorphDataComponent
 import com.wingedsheep.engine.state.components.identity.TokenComponent
@@ -577,10 +578,10 @@ class PredicateEvaluator {
             StatePredicate.IsFaceUp -> !container.has<FaceDownComponent>()
 
             // Morph ability — check both the runtime component (face-down permanents)
-            // and the card definition flag (cards in hand/library/graveyard)
+            // and the card definition tag (cards in hand/library/graveyard)
             StatePredicate.HasMorphAbility ->
                 container.has<MorphDataComponent>() ||
-                container.get<CardComponent>()?.hasMorphAbility == true
+                container.has<HasMorphAbilityComponent>()
 
             // Counter state
             is StatePredicate.HasCounter -> {

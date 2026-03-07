@@ -7,6 +7,7 @@ import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.battlefield.SummoningSicknessComponent
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
+import com.wingedsheep.engine.state.components.identity.CantBeCounteredComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.identity.LifeTotalComponent
@@ -304,14 +305,17 @@ abstract class ProtocolTestBase : FunSpec() {
                 baseStats = cardDef.creatureStats,
                 ownerId = ownerId,
                 spellEffect = cardDef.spellEffect,
-                cantBeCountered = cardDef.script.cantBeCountered
             )
 
-            val container = ComponentContainer.of(
+            var container = ComponentContainer.of(
                 cardComponent,
                 OwnerComponent(ownerId),
                 ControllerComponent(ownerId)
             )
+
+            if (cardDef.script.cantBeCountered) {
+                container = container.with(CantBeCounteredComponent)
+            }
 
             state = state.withEntity(cardId, container)
             return cardId

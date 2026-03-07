@@ -46,7 +46,6 @@ class ParallelThoughtsScenarioTest : ScenarioTestBase() {
                 ownerId = game.player1Id,
                 spellEffect = cardDef.spellEffect,
                 imageUri = cardDef.metadata.imageUri,
-                cantBeCountered = cardDef.script.cantBeCountered
             ),
             OwnerComponent(game.player1Id)
         ))
