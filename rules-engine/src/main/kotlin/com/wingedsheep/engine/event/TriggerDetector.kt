@@ -1603,6 +1603,30 @@ class TriggerDetector(
                 val cmc = if (isFaceDown) 0 else cardComponent.manaValue
                 cmc == predicate.value
             }
+            is com.wingedsheep.sdk.scripting.predicates.CardPredicate.PowerAtLeast -> {
+                val power = if (isFaceDown) 2 else cardComponent.baseStats?.basePower ?: 0
+                power >= predicate.min
+            }
+            is com.wingedsheep.sdk.scripting.predicates.CardPredicate.PowerAtMost -> {
+                val power = if (isFaceDown) 2 else cardComponent.baseStats?.basePower ?: 0
+                power <= predicate.max
+            }
+            is com.wingedsheep.sdk.scripting.predicates.CardPredicate.PowerEquals -> {
+                val power = if (isFaceDown) 2 else cardComponent.baseStats?.basePower ?: 0
+                power == predicate.value
+            }
+            is com.wingedsheep.sdk.scripting.predicates.CardPredicate.ToughnessAtLeast -> {
+                val toughness = if (isFaceDown) 2 else cardComponent.baseStats?.baseToughness ?: 0
+                toughness >= predicate.min
+            }
+            is com.wingedsheep.sdk.scripting.predicates.CardPredicate.ToughnessAtMost -> {
+                val toughness = if (isFaceDown) 2 else cardComponent.baseStats?.baseToughness ?: 0
+                toughness <= predicate.max
+            }
+            is com.wingedsheep.sdk.scripting.predicates.CardPredicate.ToughnessEquals -> {
+                val toughness = if (isFaceDown) 2 else cardComponent.baseStats?.baseToughness ?: 0
+                toughness == predicate.value
+            }
             else -> true // Unknown predicates pass through
         }
     }
