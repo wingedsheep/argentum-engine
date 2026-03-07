@@ -195,6 +195,13 @@ sealed interface SourceProjectionCondition {
     data class HasSubtype(val subtype: String) : SourceProjectionCondition
 
     /**
+     * The source permanent must have a specific keyword.
+     * Used for "gets +X/+X as long as it has [keyword]."
+     */
+    @Serializable
+    data class HasKeyword(val keyword: String) : SourceProjectionCondition
+
+    /**
      * The source permanent's controller must control a creature with a specific subtype.
      * Used for "has [keyword] as long as you control a [subtype]."
      */

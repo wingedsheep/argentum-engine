@@ -33,6 +33,7 @@ import com.wingedsheep.sdk.scripting.conditions.PlayedLandThisTurn
 import com.wingedsheep.sdk.scripting.conditions.SourceEnteredThisTurn
 import com.wingedsheep.sdk.scripting.conditions.SourceHasDealtCombatDamageToPlayer
 import com.wingedsheep.sdk.scripting.conditions.SourceHasDealtDamage
+import com.wingedsheep.sdk.scripting.conditions.SourceHasKeyword
 import com.wingedsheep.sdk.scripting.conditions.SourceHasSubtype
 import com.wingedsheep.sdk.scripting.conditions.SourceIsAttacking
 import com.wingedsheep.sdk.scripting.conditions.SourceIsBlocking
@@ -78,6 +79,7 @@ class ConditionEvaluator {
             is SourceHasDealtDamage -> evaluateSourceHasDealtDamage(state, context)
             is SourceHasDealtCombatDamageToPlayer -> evaluateSourceHasDealtCombatDamageToPlayer(state, context)
             is SourceHasSubtype -> evaluateSourceHasSubtype(state, condition, context)
+            is SourceHasKeyword -> evaluateSourceHasKeyword(state, condition, context)
 
             // Turn conditions
             is IsYourTurn -> evaluateIsYourTurn(state, context)
@@ -195,6 +197,12 @@ class ConditionEvaluator {
         return card.typeLine.hasSubtype(condition.subtype) ||
             // Changeling: has all creature types in all zones
             (Keyword.CHANGELING in card.baseKeywords && condition.subtype.value in Subtype.ALL_CREATURE_TYPES)
+    }
+
+    private fun evaluateSourceHasKeyword(state: GameState, condition: SourceHasKeyword, context: EffectContext): Boolean {
+        val sourceId = context.sourceId ?: return false
+        val projected = state.projectedState
+        return projected.hasKeyword(sourceId, condition.keyword)
     }
 
     private fun evaluateSourceHasDealtCombatDamageToPlayer(state: GameState, context: EffectContext): Boolean {

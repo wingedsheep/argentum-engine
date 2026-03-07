@@ -265,6 +265,13 @@ object Conditions {
     fun SourceHasSubtype(subtype: Subtype): ConditionInterface =
         com.wingedsheep.sdk.scripting.conditions.SourceHasSubtype(subtype)
 
+    /**
+     * As long as this creature has a specific keyword.
+     * Used for conditional effects like "If this creature has flying, it gets +1/+1."
+     */
+    fun SourceHasKeyword(keyword: Keyword): ConditionInterface =
+        com.wingedsheep.sdk.scripting.conditions.SourceHasKeyword(keyword)
+
     // =========================================================================
     // Turn Conditions
     // =========================================================================

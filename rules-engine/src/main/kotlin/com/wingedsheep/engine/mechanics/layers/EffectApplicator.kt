@@ -193,6 +193,8 @@ internal class EffectApplicator(
     ): Boolean = when (condition) {
         is SourceProjectionCondition.HasSubtype ->
             sourceValues?.subtypes?.any { it.equals(condition.subtype, ignoreCase = true) } == true
+        is SourceProjectionCondition.HasKeyword ->
+            sourceValues?.keywords?.any { it.equals(condition.keyword, ignoreCase = true) } == true
         is SourceProjectionCondition.ControllerControlsCreatureOfType -> {
             val controllerId = sourceValues?.controllerId
             if (controllerId != null) {

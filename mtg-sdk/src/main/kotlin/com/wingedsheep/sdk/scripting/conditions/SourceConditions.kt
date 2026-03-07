@@ -1,5 +1,6 @@
 package com.wingedsheep.sdk.scripting.conditions
 
+import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.scripting.conditions.Condition
 import com.wingedsheep.sdk.scripting.text.TextReplacer
@@ -113,4 +114,19 @@ data class SourceHasSubtype(val subtype: Subtype) : Condition {
         val new = replacer.replaceSubtype(subtype)
         return if (new == subtype) this else SourceHasSubtype(new)
     }
+}
+
+/**
+ * Condition: "As long as this creature has [keyword]"
+ * Used for cards with conditional effects based on keywords, e.g.,
+ * "If this creature has flying, it gets +1/+1."
+ *
+ * Evaluated during state projection against projected keywords, so ability-granting
+ * effects in Layer 6 are properly accounted for.
+ */
+@SerialName("SourceHasKeyword")
+@Serializable
+data class SourceHasKeyword(val keyword: Keyword) : Condition {
+    override val description: String = "as long as this creature has ${keyword.name.lowercase()}"
+    override fun applyTextReplacement(replacer: TextReplacer): Condition = this
 }
