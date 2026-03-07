@@ -24,7 +24,7 @@ val PineWalker = card("Pine Walker") {
     morph = "{4}{G}"
 
     triggeredAbility {
-        trigger = Triggers.CreatureYouControlTurnedFaceUp
+        trigger = Triggers.CreatureTurnedFaceUp()
         effect = Effects.Untap(EffectTarget.TriggeringEntity)
     }
 

@@ -24,7 +24,7 @@ val TrailOfMystery = card("Trail of Mystery") {
     oracleText = "Whenever a face-down creature you control enters, you may search your library for a basic land card, reveal it, put it into your hand, then shuffle.\nWhenever a permanent you control is turned face up, if it's a creature, it gets +2/+2 until end of turn."
 
     triggeredAbility {
-        trigger = Triggers.FaceDownCreatureYouControlEnters
+        trigger = Triggers.FaceDownCreatureEnters.youControl()
         effect = MayEffect(
             EffectPatterns.searchLibrary(
                 filter = Filters.BasicLand,
@@ -35,7 +35,7 @@ val TrailOfMystery = card("Trail of Mystery") {
     }
 
     triggeredAbility {
-        trigger = Triggers.CreatureYouControlTurnedFaceUp
+        trigger = Triggers.CreatureTurnedFaceUp()
         effect = Effects.ModifyStats(2, 2, EffectTarget.TriggeringEntity)
     }
 

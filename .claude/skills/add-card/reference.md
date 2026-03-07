@@ -498,8 +498,8 @@ constructors.
 - `Triggers.EnchantedCreatureControllerUpkeep` — enchanted creature's controller's upkeep
 - `Triggers.EnchantedCreatureControllerEndStep` — enchanted creature's controller's end step
 - `Triggers.TurnedFaceUp` — self turns face up
-- `Triggers.CreatureYouControlTurnedFaceUp` — whenever a creature you control is turned face up
-- `Triggers.FaceDownCreatureYouControlEnters` — whenever a face-down creature you control enters the battlefield
+- `Triggers.CreatureTurnedFaceUp(player)` — whenever a creature is turned face up; `player` defaults to `Player.You`
+- `Triggers.FaceDownCreatureEnters` — whenever a face-down creature enters (any controller); compose with `.youControl()`
 - `Triggers.EnchantedCreatureTurnedFaceUp` — enchanted creature turns face up (aura trigger)
 - `Triggers.EnchantedPermanentBecomesTapped` — enchanted permanent becomes tapped (aura trigger)
 - `Triggers.GainControlOfSelf` — you gain control of self

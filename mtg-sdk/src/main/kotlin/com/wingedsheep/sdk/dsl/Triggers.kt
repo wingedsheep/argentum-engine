@@ -49,12 +49,12 @@ object Triggers {
     )
 
     /**
-     * When a face-down creature you control enters the battlefield.
-     * Used by Trail of Mystery.
+     * When a face-down creature enters the battlefield (any controller).
+     * Compose with `.youControl()` filter for "you control" variant.
      */
-    val FaceDownCreatureYouControlEnters: TriggerSpec = TriggerSpec(
+    val FaceDownCreatureEnters: TriggerSpec = TriggerSpec(
         event = ZoneChangeEvent(
-            filter = GameObjectFilter.Creature.faceDown().youControl(),
+            filter = GameObjectFilter.Creature.faceDown(),
             to = Zone.BATTLEFIELD
         ),
         binding = TriggerBinding.ANY
@@ -335,11 +335,11 @@ object Triggers {
     )
 
     /**
-     * Whenever a creature you control is turned face up (including self).
-     * Used by Pine Walker.
+     * Whenever a creature is turned face up (any controller).
+     * Use [player] to filter: Player.You (default), Player.Any, etc.
      */
-    val CreatureYouControlTurnedFaceUp: TriggerSpec = TriggerSpec(
-        event = CreatureYouControlTurnedFaceUpEvent,
+    fun CreatureTurnedFaceUp(player: Player = Player.You): TriggerSpec = TriggerSpec(
+        event = CreatureTurnedFaceUpEvent(player),
         binding = TriggerBinding.ANY
     )
 

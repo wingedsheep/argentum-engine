@@ -1464,8 +1464,9 @@ class TriggerDetector(
             is GameEvent.TurnFaceUpEvent -> {
                 event is TurnFaceUpEvent && (binding != TriggerBinding.SELF || event.entityId == sourceId)
             }
-            is GameEvent.CreatureYouControlTurnedFaceUpEvent -> {
-                event is TurnFaceUpEvent && event.controllerId == controllerId
+            is GameEvent.CreatureTurnedFaceUpEvent -> {
+                if (event !is TurnFaceUpEvent) return false
+                matchesPlayer(trigger.player, event.controllerId, controllerId)
             }
             is GameEvent.TransformEvent -> {
                 // Transform not yet implemented in new engine

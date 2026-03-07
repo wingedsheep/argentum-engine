@@ -135,7 +135,7 @@ class TriggerIndex(
             is SdkGameEvent.LifeGainEvent -> listOf(TriggerCategory.LIFE_GAIN)
             is SdkGameEvent.BecomesTargetEvent -> listOf(TriggerCategory.BECOMES_TARGET)
             is SdkGameEvent.TurnFaceUpEvent -> listOf(TriggerCategory.TURN_FACE_UP)
-            is SdkGameEvent.CreatureYouControlTurnedFaceUpEvent -> listOf(TriggerCategory.TURN_FACE_UP)
+            is SdkGameEvent.CreatureTurnedFaceUpEvent -> listOf(TriggerCategory.TURN_FACE_UP)
             is SdkGameEvent.StepEvent -> listOf(TriggerCategory.STEP)
             is SdkGameEvent.EnchantedCreatureControllerStepEvent -> listOf(TriggerCategory.ENCHANTED_STEP)
             // These are handled by specialized detect methods, not the main loop
