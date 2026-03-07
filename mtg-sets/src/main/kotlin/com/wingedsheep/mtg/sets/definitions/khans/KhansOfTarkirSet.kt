@@ -169,6 +169,7 @@ object KhansOfTarkirSet {
         LeapingMaster,
         MarduBlazebringer,
         MarduHeartPiercer,
+        MarduWarshrieker,
         MonasterySwiftspear,
         SummitProwler,
         ValleyDasher,

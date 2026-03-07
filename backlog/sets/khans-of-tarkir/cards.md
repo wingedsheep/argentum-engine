@@ -2,14 +2,14 @@
 
 **Set Size:** 269 cards (249 unique card names + basic land variants)
 **Release Date:** September 26, 2014
-**Implemented:** 166 / 249
+**Implemented:** 167 / 249
 
 | Color      | Count |
 |------------|-------|
 | White      | 28    |
 | Blue       | 28    |
 | Black      | 28    |
-| Red        | 28    |
+| Red        | 29    |
 | Green      | 28    |
 | Multicolor | 17    |
 | Colorless  | 6     |
@@ -145,7 +145,7 @@
 - [x] Mardu Hordechief
 - [x] Mardu Roughrider
 - [x] Mardu Skullhunter
-- [ ] Mardu Warshrieker
+- [x] Mardu Warshrieker
 - [x] Master of Pearls
 - [ ] Master the Way
 - [ ] Meandering Towershell
