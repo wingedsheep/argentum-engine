@@ -56,6 +56,7 @@ object KhansOfTarkirSet {
         TakeUpArms,
 
         // Blue creatures
+        DragonsEyeSavants,
         EmbodimentOfSpring,
         GlacialStalker,
         JeskaiElder,
