@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
-import { ReplayViewer, type GameSummary, type SpectatorStateUpdate } from './ReplayViewer'
+import { ReplayViewer, type GameSummary } from './ReplayViewer'
+import type { ReplayData } from '../../replay/reconstructSnapshots'
 
 // ============================================================================
 // AdminPage
@@ -53,12 +54,12 @@ export function AdminPage() {
     return await res.json() as GameSummary[]
   }, [password])
 
-  const fetchReplay = useCallback(async (gameId: string): Promise<SpectatorStateUpdate[]> => {
+  const fetchReplay = useCallback(async (gameId: string): Promise<ReplayData> => {
     const res = await fetch(`/api/admin/games/${gameId}/replay`, {
       headers: { 'X-Admin-Password': password },
     })
     if (!res.ok) throw new Error(`Failed to load replay: ${res.status}`)
-    return await res.json() as SpectatorStateUpdate[]
+    return await res.json() as ReplayData
   }, [password])
 
   // Try auto-login on mount

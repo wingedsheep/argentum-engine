@@ -4,7 +4,10 @@ import com.wingedsheep.gameserver.protocol.ServerMessage
 import java.time.Instant
 
 /**
- * A recorded game replay containing metadata and snapshots of spectator state updates.
+ * A recorded game replay stored as an initial full snapshot plus a list of deltas.
+ *
+ * This is significantly more memory-efficient than storing full snapshots for every step,
+ * since most of the game state (cards, zones) doesn't change between consecutive updates.
  */
 data class GameReplayRecord(
     val gameId: String,
@@ -17,5 +20,11 @@ data class GameReplayRecord(
     val winnerName: String?,
     val tournamentName: String? = null,
     val tournamentRound: Int? = null,
-    val snapshots: List<ServerMessage.SpectatorStateUpdate>
-)
+    /** The first full spectator state snapshot */
+    val initialSnapshot: ServerMessage.SpectatorStateUpdate,
+    /** Deltas from each snapshot to the next */
+    val deltas: List<SpectatorReplayDelta>,
+) {
+    /** Total number of frames (initial + deltas) */
+    val frameCount: Int get() = 1 + deltas.size
+}

@@ -3,6 +3,8 @@ package com.wingedsheep.gameserver.controller
 import com.wingedsheep.gameserver.handler.MessageSender
 import com.wingedsheep.gameserver.protocol.ServerMessage
 import com.wingedsheep.gameserver.replay.GameHistoryRepository
+import com.wingedsheep.gameserver.replay.GameReplayRecord
+import com.wingedsheep.gameserver.replay.SpectatorReplayDelta
 import com.wingedsheep.gameserver.repository.LobbyRepository
 import com.wingedsheep.gameserver.session.SessionRegistry
 import kotlinx.serialization.builtins.ListSerializer
@@ -43,7 +45,7 @@ class PlayerReplayController(
                 startedAt = record.startedAt.toString(),
                 endedAt = record.endedAt.toString(),
                 winnerName = record.winnerName,
-                snapshotCount = record.snapshots.size,
+                snapshotCount = record.frameCount,
                 tournamentName = record.tournamentName,
                 tournamentRound = record.tournamentRound
             )
@@ -79,7 +81,7 @@ class PlayerReplayController(
                     startedAt = record.startedAt.toString(),
                     endedAt = record.endedAt.toString(),
                     winnerName = record.winnerName,
-                    snapshotCount = record.snapshots.size
+                    snapshotCount = record.frameCount
                 )
             }
         }
@@ -113,15 +115,23 @@ class PlayerReplayController(
             return ResponseEntity.notFound().build()
         }
 
-        val jsonString = messageSender.json.encodeToString(
-            ListSerializer(ServerMessage.SpectatorStateUpdate.serializer()),
-            record.snapshots
-        )
         return ResponseEntity.ok()
             .contentType(MediaType.APPLICATION_JSON)
-            .body(jsonString)
+            .body(serializeReplayRecord(record))
     }
 
     private fun resolveIdentity(token: String?) =
         token?.takeIf { it.isNotBlank() }?.let { sessionRegistry.getIdentityByToken(it) }
+
+    private fun serializeReplayRecord(record: GameReplayRecord): String {
+        val initialJson = messageSender.json.encodeToString(
+            ServerMessage.SpectatorStateUpdate.serializer(),
+            record.initialSnapshot
+        )
+        val deltasJson = messageSender.json.encodeToString(
+            ListSerializer(SpectatorReplayDelta.serializer()),
+            record.deltas
+        )
+        return """{"initialSnapshot":$initialJson,"deltas":$deltasJson}"""
+    }
 }

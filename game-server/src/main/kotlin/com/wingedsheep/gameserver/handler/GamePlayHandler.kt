@@ -450,9 +450,10 @@ class GamePlayHandler(
             }
         }
 
-        // Save replay history if the game had meaningful activity (>= 5 snapshots)
-        val snapshots = gameSession.getReplaySnapshots()
-        if (snapshots.size >= 5) {
+        // Save replay history if the game had meaningful activity (>= 5 frames)
+        val initialSnapshot = gameSession.getReplayInitialSnapshot()
+        val frameCount = gameSession.getReplayFrameCount()
+        if (initialSnapshot != null && frameCount >= 5) {
             val winnerName = winnerId?.let { wId ->
                 listOfNotNull(gameSession.player1, gameSession.player2)
                     .find { it.playerId == wId }?.playerName
@@ -479,10 +480,11 @@ class GamePlayHandler(
                 winnerName = winnerName,
                 tournamentName = tournamentName,
                 tournamentRound = tournamentRound,
-                snapshots = snapshots
+                initialSnapshot = initialSnapshot,
+                deltas = gameSession.getReplayDeltas()
             )
             gameHistoryRepository.save(record)
-            logger.info("Saved replay for game $gameSessionId (${snapshots.size} snapshots)")
+            logger.info("Saved replay for game $gameSessionId ($frameCount frames)")
         }
 
         gameRepository.remove(gameSessionId)

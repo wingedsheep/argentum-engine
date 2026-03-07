@@ -5,6 +5,7 @@ import com.wingedsheep.gameserver.handler.MessageSender
 import com.wingedsheep.gameserver.protocol.ServerMessage
 import com.wingedsheep.gameserver.replay.GameHistoryRepository
 import com.wingedsheep.gameserver.replay.GameReplayRecord
+import com.wingedsheep.gameserver.replay.SpectatorReplayDelta
 import kotlinx.serialization.builtins.ListSerializer
 import kotlinx.serialization.encodeToString
 import org.springframework.http.MediaType
@@ -50,15 +51,17 @@ class AdminController(
         val record = gameHistoryRepository.findById(gameId)
             ?: return ResponseEntity.notFound().build()
 
-        // Use the same kotlinx.serialization Json instance as the WebSocket path
-        // so field names, discriminators, and encoding match exactly.
-        val jsonString = messageSender.json.encodeToString(
-            ListSerializer(ServerMessage.SpectatorStateUpdate.serializer()),
-            record.snapshots
+        val initialJson = messageSender.json.encodeToString(
+            ServerMessage.SpectatorStateUpdate.serializer(),
+            record.initialSnapshot
+        )
+        val deltasJson = messageSender.json.encodeToString(
+            ListSerializer(SpectatorReplayDelta.serializer()),
+            record.deltas
         )
         return ResponseEntity.ok()
             .contentType(MediaType.APPLICATION_JSON)
-            .body(jsonString)
+            .body("""{"initialSnapshot":$initialJson,"deltas":$deltasJson}""")
     }
 
     private fun checkAuth(password: String?): ResponseEntity<Any>? {
@@ -81,7 +84,7 @@ class AdminController(
         startedAt = startedAt.toString(),
         endedAt = endedAt.toString(),
         winnerName = winnerName,
-        snapshotCount = snapshots.size,
+        snapshotCount = frameCount,
         tournamentName = tournamentName,
         tournamentRound = tournamentRound
     )

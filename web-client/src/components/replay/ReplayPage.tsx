@@ -6,16 +6,7 @@ import { GameBoard } from '../game/GameBoard'
 import { CombatArrows } from '../combat/CombatArrows'
 import type { SpectatingState } from '../../store/slices/types'
 import type { SpectatorStateUpdate } from '../admin/ReplayViewer'
-
-interface ReplayMetadata {
-  gameId: string
-  player1Name: string
-  player2Name: string
-  winnerName: string | null
-  startedAt: string
-  endedAt: string
-  snapshotCount: number
-}
+import { reconstructSnapshots, type PublicReplayData } from '../../replay/reconstructSnapshots'
 
 const HEADER_HEIGHT = 55
 
@@ -24,7 +15,7 @@ export function ReplayPage() {
   const navigate = useNavigate()
 
   const [snapshots, setSnapshots] = useState<SpectatorStateUpdate[]>([])
-  const [metadata, setMetadata] = useState<ReplayMetadata | null>(null)
+  const [metadata, setMetadata] = useState<PublicReplayData['metadata'] | null>(null)
   const [currentStep, setCurrentStep] = useState(0)
   const [autoPlay, setAutoPlay] = useState(false)
   const [loading, setLoading] = useState(true)
@@ -74,13 +65,14 @@ export function ReplayPage() {
           setLoading(false)
           return
         }
-        const data = await response.json() as { metadata: ReplayMetadata; snapshots: SpectatorStateUpdate[] }
+        const data = await response.json() as PublicReplayData
         if (cancelled) return
         setMetadata(data.metadata)
-        setSnapshots(data.snapshots)
+        const reconstructed = reconstructSnapshots(data.initialSnapshot, data.deltas)
+        setSnapshots(reconstructed)
         setCurrentStep(0)
-        if (data.snapshots.length > 0) {
-          writeSnapshotToStore(data.snapshots[0]!)
+        if (reconstructed.length > 0) {
+          writeSnapshotToStore(reconstructed[0]!)
         }
       } catch {
         if (!cancelled) setError('Failed to load replay.')

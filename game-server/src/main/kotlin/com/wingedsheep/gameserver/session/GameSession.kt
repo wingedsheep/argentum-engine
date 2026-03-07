@@ -10,6 +10,8 @@ import com.wingedsheep.gameserver.protocol.GameOverReason
 import com.wingedsheep.gameserver.protocol.LegalActionInfo
 import com.wingedsheep.gameserver.protocol.ServerMessage
 import com.wingedsheep.gameserver.priority.AutoPassManager
+import com.wingedsheep.gameserver.replay.SpectatorReplayDelta
+import com.wingedsheep.gameserver.replay.SpectatorReplayDiffCalculator
 import com.wingedsheep.engine.core.*
 import com.wingedsheep.engine.handlers.ConditionEvaluator
 import com.wingedsheep.engine.handlers.PredicateEvaluator
@@ -95,8 +97,10 @@ class GameSession(
     private val priorityModes = java.util.concurrent.ConcurrentHashMap<EntityId, PriorityMode>()
     private val stopOverrides = java.util.concurrent.ConcurrentHashMap<EntityId, StopOverrideSettings>()
 
-    // Replay recording
-    private val replaySnapshots = CopyOnWriteArrayList<ServerMessage.SpectatorStateUpdate>()
+    // Replay recording — stores initial snapshot + diffs for memory efficiency
+    private var replayInitialSnapshot: ServerMessage.SpectatorStateUpdate? = null
+    private var replayLastSnapshot: ServerMessage.SpectatorStateUpdate? = null
+    private val replayDeltas = CopyOnWriteArrayList<SpectatorReplayDelta>()
     var replayStartedAt: Instant? = null
         private set
 
@@ -869,18 +873,35 @@ class GameSession(
 
     /**
      * Record a spectator state snapshot for replay.
+     * Internally stores it as a delta from the previous snapshot to save memory.
      */
     fun recordSnapshot(snapshot: ServerMessage.SpectatorStateUpdate) {
         if (replayStartedAt == null) {
             replayStartedAt = Instant.now()
         }
-        replaySnapshots.add(snapshot)
+        val last = replayLastSnapshot
+        if (last == null) {
+            replayInitialSnapshot = snapshot
+        } else {
+            replayDeltas.add(SpectatorReplayDiffCalculator.computeDelta(last, snapshot))
+        }
+        replayLastSnapshot = snapshot
     }
 
     /**
-     * Get all recorded replay snapshots.
+     * Get the initial replay snapshot (null if no snapshots recorded).
      */
-    fun getReplaySnapshots(): List<ServerMessage.SpectatorStateUpdate> = replaySnapshots.toList()
+    fun getReplayInitialSnapshot(): ServerMessage.SpectatorStateUpdate? = replayInitialSnapshot
+
+    /**
+     * Get all recorded replay deltas.
+     */
+    fun getReplayDeltas(): List<SpectatorReplayDelta> = replayDeltas.toList()
+
+    /**
+     * Total number of replay frames recorded.
+     */
+    fun getReplayFrameCount(): Int = if (replayInitialSnapshot != null) 1 + replayDeltas.size else 0
 
     // =========================================================================
     // Test Support (for scenario-based testing)

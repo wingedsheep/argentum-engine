@@ -4,7 +4,8 @@ import type { SealedCardInfo } from '../../types'
 import { getCardImageUrl } from '../../utils/cardImages'
 import { ManaCost } from './ManaSymbols'
 import { randomBackground } from '../../utils/background'
-import { ReplayViewer, type GameSummary, type SpectatorStateUpdate } from '../admin/ReplayViewer'
+import { ReplayViewer, type GameSummary } from '../admin/ReplayViewer'
+import type { ReplayData } from '../../replay/reconstructSnapshots'
 import styles from './GameUI.module.css'
 
 type GameMode = 'normal' | 'tournament'
@@ -98,14 +99,14 @@ function ConnectionOverlay({
     return await res.json() as GameSummary[]
   }, [])
 
-  const fetchPlayerReplay = useCallback(async (gameId: string): Promise<SpectatorStateUpdate[]> => {
+  const fetchPlayerReplay = useCallback(async (gameId: string): Promise<ReplayData> => {
     const token = localStorage.getItem('argentum-token')
     if (!token) throw new Error('No player token')
     const res = await fetch(`/api/replays/${gameId}`, {
       headers: { 'X-Player-Token': token },
     })
     if (!res.ok) throw new Error(`Failed to load replay: ${res.status}`)
-    return await res.json() as SpectatorStateUpdate[]
+    return await res.json() as ReplayData
   }, [])
 
   // Show tournament UI if we're in a tournament (even without lobbyState)
@@ -866,14 +867,14 @@ function TournamentOverlay({
     return await res.json() as GameSummary[]
   }, [tournamentState.lobbyId])
 
-  const fetchTournamentReplay = useCallback(async (gameId: string): Promise<SpectatorStateUpdate[]> => {
+  const fetchTournamentReplay = useCallback(async (gameId: string): Promise<ReplayData> => {
     const token = localStorage.getItem('argentum-token')
     if (!token) throw new Error('No player token')
     const res = await fetch(`/api/replays/${gameId}?lobbyId=${tournamentState.lobbyId}`, {
       headers: { 'X-Player-Token': token },
     })
     if (!res.ok) throw new Error(`Failed to load replay: ${res.status}`)
-    return await res.json() as SpectatorStateUpdate[]
+    return await res.json() as ReplayData
   }, [tournamentState.lobbyId])
 
   if (showReplays) {

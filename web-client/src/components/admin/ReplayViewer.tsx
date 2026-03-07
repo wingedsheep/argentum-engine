@@ -4,6 +4,7 @@ import { SpectatorContext } from '../../contexts/SpectatorContext'
 import { GameBoard } from '../game/GameBoard'
 import { CombatArrows } from '../combat/CombatArrows'
 import type { SpectatingState } from '../../store/slices/types'
+import { reconstructSnapshots, type ReplayData } from '../../replay/reconstructSnapshots'
 
 // ============================================================================
 // Types
@@ -43,7 +44,7 @@ export interface SpectatorStateUpdate {
 
 interface ReplayViewerProps {
   fetchGames: () => Promise<GameSummary[]>
-  fetchReplay: (gameId: string) => Promise<SpectatorStateUpdate[]>
+  fetchReplay: (gameId: string) => Promise<ReplayData>
   onBack: () => void
 }
 
@@ -83,12 +84,13 @@ export function ReplayViewer({ fetchGames, fetchReplay, onBack }: ReplayViewerPr
     setError(null)
     try {
       const data = await fetchReplay(gameId)
-      setSnapshots(data)
+      const reconstructed = reconstructSnapshots(data.initialSnapshot, data.deltas)
+      setSnapshots(reconstructed)
       setCurrentStep(0)
       setAutoPlay(false)
       setView('replay')
-      if (data.length > 0) {
-        writeSnapshotToStore(data[0]!)
+      if (reconstructed.length > 0) {
+        writeSnapshotToStore(reconstructed[0]!)
       }
     } catch {
       setError('Failed to load replay')

@@ -3,6 +3,7 @@ package com.wingedsheep.gameserver.controller
 import com.wingedsheep.gameserver.handler.MessageSender
 import com.wingedsheep.gameserver.protocol.ServerMessage
 import com.wingedsheep.gameserver.replay.GameHistoryRepository
+import com.wingedsheep.gameserver.replay.SpectatorReplayDelta
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.builtins.ListSerializer
 import kotlinx.serialization.encodeToString
@@ -27,9 +28,13 @@ class PublicReplayController(
         val record = gameHistoryRepository.findById(gameId)
             ?: return ResponseEntity.notFound().build()
 
-        val snapshotsJson = messageSender.json.encodeToString(
-            ListSerializer(ServerMessage.SpectatorStateUpdate.serializer()),
-            record.snapshots
+        val initialSnapshotJson = messageSender.json.encodeToString(
+            ServerMessage.SpectatorStateUpdate.serializer(),
+            record.initialSnapshot
+        )
+        val deltasJson = messageSender.json.encodeToString(
+            ListSerializer(SpectatorReplayDelta.serializer()),
+            record.deltas
         )
 
         val response = PublicReplayResponse(
@@ -39,13 +44,13 @@ class PublicReplayController(
             winnerName = record.winnerName,
             startedAt = record.startedAt.toString(),
             endedAt = record.endedAt.toString(),
-            snapshotCount = record.snapshots.size
+            snapshotCount = record.frameCount
         )
 
-        // Build combined JSON with metadata + snapshots
+        // Build combined JSON with metadata + initial snapshot + deltas
         // We manually compose because snapshots use kotlinx.serialization
         val metadataJson = messageSender.json.encodeToString(response)
-        val combinedJson = """{"metadata":$metadataJson,"snapshots":$snapshotsJson}"""
+        val combinedJson = """{"metadata":$metadataJson,"initialSnapshot":$initialSnapshotJson,"deltas":$deltasJson}"""
 
         return ResponseEntity.ok()
             .contentType(MediaType.APPLICATION_JSON)
