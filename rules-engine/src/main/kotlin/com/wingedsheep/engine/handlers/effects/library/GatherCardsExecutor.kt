@@ -17,6 +17,7 @@ import com.wingedsheep.sdk.scripting.effects.CardSource
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
 import com.wingedsheep.sdk.scripting.references.Player
+import com.wingedsheep.engine.state.components.battlefield.AttachmentsComponent
 import com.wingedsheep.engine.state.components.battlefield.LinkedExileComponent
 import kotlin.reflect.KClass
 
@@ -116,10 +117,26 @@ class GatherCardsExecutor : EffectExecutor<GatherCardsEffect> {
                 } else {
                     allPermanents
                 }
-                if (source.excludeSelf) {
+                val afterExclusion = if (source.excludeSelf) {
                     filtered.filter { it != context.sourceId }
                 } else {
                     filtered
+                }
+                if (source.includeAttachments) {
+                    val withAttachments = afterExclusion.toMutableList()
+                    for (entityId in afterExclusion) {
+                        val attachments = state.getEntity(entityId)?.get<AttachmentsComponent>()
+                        if (attachments != null) {
+                            for (attachedId in attachments.attachedIds) {
+                                if (attachedId !in withAttachments) {
+                                    withAttachments.add(attachedId)
+                                }
+                            }
+                        }
+                    }
+                    withAttachments
+                } else {
+                    afterExclusion
                 }
             }
 

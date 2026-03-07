@@ -2,11 +2,11 @@
 
 **Set Size:** 269 cards (249 unique card names + basic land variants)
 **Release Date:** September 26, 2014
-**Implemented:** 171 / 249
+**Implemented:** 172 / 249
 
 | Color      | Count |
 |------------|-------|
-| White      | 28    |
+| White      | 29    |
 | Blue       | 28    |
 | Black      | 28    |
 | Red        | 29    |
@@ -86,7 +86,7 @@
 - [x] Efreet Weaponmaster
 - [x] Embodiment of Spring
 - [ ] Empty the Pits
-- [ ] End Hostilities
+- [x] End Hostilities
 - [x] Erase
 - [x] Feat of Resistance
 - [x] Feed the Clan

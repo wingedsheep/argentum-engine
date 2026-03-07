@@ -81,6 +81,7 @@ constructors.
 ### Mass Effects (group)
 
 - `Effects.DestroyAll(filter: GameObjectFilter, noRegenerate = false, storeDestroyedAs?)` — board wipe via pipeline; compose with `DrawCardsEffect(VariableReference("<key>_count"))` for "draw per destroyed" patterns
+- `Effects.DestroyAllAndAttached(filter: GameObjectFilter, noRegenerate = false)` — destroy all matching permanents AND all permanents attached to them (End Hostilities pattern)
 - `EffectPatterns.destroyAllExceptStoredSubtypes(noRegenerate, exceptSubtypesFromStored)` — destroy creatures except those with stored subtypes (Harsh Mercy pattern)
 - `Effects.GrantKeywordToAll(keyword, filter: GroupFilter, duration)` — keyword to group
 - `Effects.RemoveKeyword(keyword, target, duration)` — remove keyword from single target

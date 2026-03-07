@@ -264,6 +264,15 @@ object Effects {
     ): Effect = EffectPatterns.destroyAllPipeline(filter, noRegenerate, storeDestroyedAs)
 
     /**
+     * Destroy all permanents matching [filter] and all permanents attached to them.
+     * Used by End Hostilities-style board wipes.
+     */
+    fun DestroyAllAndAttached(
+        filter: GameObjectFilter,
+        noRegenerate: Boolean = false
+    ): Effect = EffectPatterns.destroyAllAndAttachedPipeline(filter, noRegenerate)
+
+    /**
      * Destroy all creatures sharing a creature type with the sacrificed creature.
      * Requires a creature sacrificed as additional cost.
      */

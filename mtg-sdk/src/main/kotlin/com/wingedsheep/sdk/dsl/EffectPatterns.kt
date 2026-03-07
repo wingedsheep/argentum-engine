@@ -2133,6 +2133,29 @@ object EffectPatterns {
     ))
 
     /**
+     * Destroy all permanents matching [filter] AND all permanents attached to them.
+     * Used by End Hostilities-style effects.
+     *
+     * @param filter Which permanents to target (e.g., Creature)
+     * @param noRegenerate If true, destroyed permanents can't be regenerated
+     */
+    fun destroyAllAndAttachedPipeline(
+        filter: GameObjectFilter,
+        noRegenerate: Boolean = false
+    ): CompositeEffect = CompositeEffect(listOf(
+        GatherCardsEffect(
+            source = CardSource.BattlefieldMatching(filter = filter, includeAttachments = true),
+            storeAs = "destroyAllAttached_gathered"
+        ),
+        MoveCollectionEffect(
+            from = "destroyAllAttached_gathered",
+            destination = CardDestination.ToZone(Zone.GRAVEYARD),
+            moveType = MoveType.Destroy,
+            noRegenerate = noRegenerate
+        )
+    ))
+
+    /**
      * Destroy all creatures that don't have any subtype from a stored string list.
      * Used by Harsh Mercy-style effects where players choose creature types, then
      * all creatures not of those types are destroyed.
