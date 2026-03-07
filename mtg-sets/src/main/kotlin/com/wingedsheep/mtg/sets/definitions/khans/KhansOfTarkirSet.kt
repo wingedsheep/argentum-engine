@@ -31,6 +31,7 @@ object KhansOfTarkirSet {
         JeskaiStudent,
         MarduHateblade,
         MarduHordechief,
+        MasterOfPearls,
         SageEyeHarrier,
         SaltRoadPatrol,
         SeekerOfTheWay,

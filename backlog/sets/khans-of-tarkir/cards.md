@@ -2,11 +2,11 @@
 
 **Set Size:** 269 cards (249 unique card names + basic land variants)
 **Release Date:** September 26, 2014
-**Implemented:** 161 / 249
+**Implemented:** 162 / 249
 
 | Color      | Count |
 |------------|-------|
-| White      | 27    |
+| White      | 28    |
 | Blue       | 27    |
 | Black      | 27    |
 | Red        | 28    |
@@ -146,7 +146,7 @@
 - [x] Mardu Roughrider
 - [x] Mardu Skullhunter
 - [ ] Mardu Warshrieker
-- [ ] Master of Pearls
+- [x] Master of Pearls
 - [ ] Master the Way
 - [ ] Meandering Towershell
 - [x] Mer-Ek Nightblade
