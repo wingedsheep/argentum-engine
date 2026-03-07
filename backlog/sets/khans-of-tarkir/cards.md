@@ -2,7 +2,7 @@
 
 **Set Size:** 269 cards (249 unique card names + basic land variants)
 **Release Date:** September 26, 2014
-**Implemented:** 170 / 249
+**Implemented:** 171 / 249
 
 | Color      | Count |
 |------------|-------|
@@ -11,7 +11,7 @@
 | Black      | 28    |
 | Red        | 29    |
 | Green      | 28    |
-| Multicolor | 19    |
+| Multicolor | 20    |
 | Colorless  | 7     |
 | Land       | 3     |
 
@@ -112,7 +112,7 @@
 - [x] Horde Ambusher
 - [x] Hordeling Outburst
 - [ ] Howl of the Horde
-- [ ] Icefeather Aven
+- [x] Icefeather Aven
 - [ ] Icy Blast
 - [x] Incremental Growth
 - [ ] Ivorytusk Fortress
