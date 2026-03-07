@@ -2,7 +2,7 @@
 
 **Set Size:** 269 cards (249 unique card names + basic land variants)
 **Release Date:** September 26, 2014
-**Implemented:** 184 / 249
+**Implemented:** 185 / 249
 
 | Color      | Count |
 |------------|-------|
@@ -11,7 +11,7 @@
 | Black      | 29    |
 | Red        | 29    |
 | Green      | 29    |
-| Multicolor | 27    |
+| Multicolor | 28    |
 | Colorless  | 8     |
 | Land       | 4     |
 
@@ -31,7 +31,7 @@
 - [x] Alpine Grizzly
 - [ ] Altar of the Brood
 - [ ] Anafenza, the Foremost
-- [ ] Ankle Shanker
+- [x] Ankle Shanker
 - [x] Archers' Parapet
 - [x] Arc Lightning
 - [x] Armament Corps

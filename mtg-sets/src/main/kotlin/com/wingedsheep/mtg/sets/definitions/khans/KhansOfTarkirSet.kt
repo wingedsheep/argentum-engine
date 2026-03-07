@@ -200,6 +200,7 @@ object KhansOfTarkirSet {
 
         // Multicolor
         AbominationOfGudul,
+        AnkleShanker,
         ArmamentCorps,
         KinTreeInvocation,
         AbzanGuide,
