@@ -2,7 +2,7 @@
 
 **Set Size:** 269 cards (249 unique card names + basic land variants)
 **Release Date:** September 26, 2014
-**Implemented:** 178 / 249
+**Implemented:** 179 / 249
 
 | Color      | Count |
 |------------|-------|
@@ -12,7 +12,7 @@
 | Red        | 29    |
 | Green      | 29    |
 | Multicolor | 23    |
-| Colorless  | 7     |
+| Colorless  | 8     |
 | Land       | 3     |
 
 ---
@@ -62,7 +62,7 @@
 - [x] Chief of the Scale
 - [ ] Clever Impersonator
 - [x] Crackling Doom
-- [ ] Cranial Archive
+- [x] Cranial Archive
 - [x] Crater's Claws
 - [x] Crippling Chill
 - [x] Dazzling Ramparts
