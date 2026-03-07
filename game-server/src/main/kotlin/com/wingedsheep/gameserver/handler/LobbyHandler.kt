@@ -576,6 +576,8 @@ class LobbyHandler(
                             sender.send(session, ServerMessage.WaitingForOpponentMulligan)
                         }
                         else -> {
+                            // Clear delta cache so reconnecting player gets full state
+                            gs.clearLastSentState(identity.playerId)
                             gamePlayHandler.broadcastStateUpdate(gs, emptyList())
                         }
                     }
