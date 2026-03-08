@@ -11,6 +11,7 @@ import com.wingedsheep.sdk.scripting.targets.TargetCreatureOrPlaneswalker
 import com.wingedsheep.sdk.scripting.targets.TargetObject
 import com.wingedsheep.sdk.scripting.targets.TargetCreatureOrPlayer
 import com.wingedsheep.sdk.scripting.targets.TargetOpponent
+import com.wingedsheep.sdk.scripting.targets.TargetOpponentOrPlaneswalker
 import com.wingedsheep.sdk.scripting.targets.TargetPermanent
 import com.wingedsheep.sdk.scripting.targets.TargetPlayer
 import com.wingedsheep.sdk.scripting.targets.TargetRequirement
@@ -163,6 +164,11 @@ object Targets {
      * Target creature or planeswalker.
      */
     val CreatureOrPlaneswalker: TargetRequirement = TargetCreatureOrPlaneswalker()
+
+    /**
+     * Target opponent or planeswalker.
+     */
+    val OpponentOrPlaneswalker: TargetRequirement = TargetOpponentOrPlaneswalker()
 
     // =========================================================================
     // Graveyard Targeting

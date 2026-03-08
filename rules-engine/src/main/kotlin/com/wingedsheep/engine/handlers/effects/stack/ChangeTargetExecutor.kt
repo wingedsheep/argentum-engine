@@ -135,6 +135,15 @@ class ChangeTargetExecutor : EffectExecutor<ChangeTargetEffect> {
                 (creatures + players).filter { it != currentTargetId }
             }
 
+            // TargetOpponentOrPlaneswalker: opponents + planeswalkers on battlefield
+            requirement is TargetOpponentOrPlaneswalker -> {
+                val opponents = state.turnOrder.filter { it != controllerId && state.hasEntity(it) }
+                val planeswalkers = state.getBattlefield().filter { entityId ->
+                    projected.hasType(entityId, "PLANESWALKER")
+                }
+                (opponents + planeswalkers).filter { it != currentTargetId }
+            }
+
             // TargetCreatureOrPlaneswalker: creatures and planeswalkers on battlefield
             requirement is TargetCreatureOrPlaneswalker -> {
                 state.getBattlefield().filter { entityId ->

@@ -132,6 +132,14 @@ class ReselectTargetRandomlyExecutor : EffectExecutor<ReselectTargetRandomlyEffe
                 creatures + players
             }
 
+            requirement is TargetOpponentOrPlaneswalker -> {
+                val opponents = state.turnOrder.filter { it != controllerId && state.hasEntity(it) }
+                val planeswalkers = state.getBattlefield().filter { entityId ->
+                    projected.hasType(entityId, "PLANESWALKER")
+                }
+                opponents + planeswalkers
+            }
+
             requirement is TargetCreatureOrPlaneswalker -> {
                 state.getBattlefield().filter { entityId ->
                     projected.hasType(entityId, "CREATURE") || projected.hasType(entityId, "PLANESWALKER")

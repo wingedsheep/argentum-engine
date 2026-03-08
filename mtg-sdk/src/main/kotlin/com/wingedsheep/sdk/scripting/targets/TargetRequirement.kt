@@ -134,6 +134,20 @@ data class TargetCreatureOrPlayer(
 }
 
 /**
+ * "Target opponent or planeswalker" - can target an opponent or any planeswalker.
+ */
+@SerialName("TargetOpponentOrPlaneswalker")
+@Serializable
+data class TargetOpponentOrPlaneswalker(
+    override val count: Int = 1,
+    override val optional: Boolean = false,
+    override val id: String? = null
+) : TargetRequirement {
+    override val description: String = if (count == 1) "target opponent or planeswalker" else "$count targets (opponents or planeswalkers)"
+    override fun applyTextReplacement(replacer: TextReplacer): TargetRequirement = this
+}
+
+/**
  * "Target creature or planeswalker" - modern burn spell targeting.
  */
 @SerialName("TargetCreatureOrPlaneswalker")
@@ -259,6 +273,7 @@ fun TargetRequirement.withId(name: String): TargetRequirement = when (this) {
     is TargetOpponent -> copy(id = name)
     is AnyTarget -> copy(id = name)
     is TargetCreatureOrPlayer -> copy(id = name)
+    is TargetOpponentOrPlaneswalker -> copy(id = name)
     is TargetCreatureOrPlaneswalker -> copy(id = name)
     is TargetSpellOrPermanent -> copy(id = name)
     is TargetObject -> copy(id = name)
