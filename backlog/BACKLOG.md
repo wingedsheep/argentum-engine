@@ -58,7 +58,7 @@ Prioritized checklist across all improvement areas. Each item references its sou
 - [ ] `SpellCastFromZoneEvent` (cast source tracking) ([sdk-gaps #2b](sdk-composability-gaps.md#2b-spellcastfromzoneevent-cast-source-tracking))
 - [ ] `PayCost.TapPermanents` (Convoke, tap abilities) ([sdk-gaps #1b](sdk-composability-gaps.md#1b-paycosttappermanentscount-int-filter-gameobjectfilter))
 - [ ] `PayCost.Composite` ([sdk-gaps #1d](sdk-composability-gaps.md#1d-paycostcompositecosts-listpaycost))
-- [ ] `CantAttackEffect` ([sdk-gaps #9a](sdk-composability-gaps.md#9a-cantattackeffectfilter-gameobjectfilter-duration-duration))
+- [x] `CantAttackEffect` ([sdk-gaps #9a](sdk-composability-gaps.md#9a-cantattackeffectfilter-gameobjectfilter-duration-duration))
 - [ ] `ConditionalStaticAbility` ([sdk-gaps #7a](sdk-composability-gaps.md#7a-conditionalstaticabilitycondition-condition-ability-staticabilitytype))
 
 ### Web Client
