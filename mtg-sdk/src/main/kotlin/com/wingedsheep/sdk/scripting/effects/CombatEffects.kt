@@ -171,6 +171,30 @@ data class ForceBlockEffect(
 }
 
 /**
+ * All creatures matching a filter can't attack this turn.
+ * Used for Meekstone, Silent Arbiter, Propaganda-style effects.
+ *
+ * Creates a floating effect that dynamically applies to all creatures matching the filter,
+ * including those entering the battlefield after the effect resolves (Rule 611.2c).
+ *
+ * @property filter Which creatures can't attack (e.g., GroupFilter.AllCreaturesOpponentsControl)
+ * @property duration How long the restriction lasts
+ */
+@SerialName("CantAttackGroup")
+@Serializable
+data class CantAttackGroupEffect(
+    val filter: GroupFilter,
+    val duration: Duration = Duration.EndOfTurn
+) : Effect {
+    override val description: String = "${filter.description} can't attack this turn"
+
+    override fun applyTextReplacement(replacer: TextReplacer): Effect {
+        val newFilter = filter.applyTextReplacement(replacer)
+        return if (newFilter !== filter) copy(filter = newFilter) else this
+    }
+}
+
+/**
  * All creatures matching a filter can't block this turn.
  * Used for Barrage of Boulders: "creatures can't block this turn."
  *
@@ -415,6 +439,24 @@ data class RedirectCombatDamageToControllerEffect(
 ) : Effect {
     override val description: String =
         "The next time ${target.description} would deal combat damage this turn, it deals that damage to you instead"
+
+    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
+}
+
+/**
+ * Choose a source of damage, then prevent the next time that source would deal damage
+ * to you this turn. If damage is prevented this way, deal that much damage to that
+ * source's controller.
+ *
+ * Used for Deflecting Palm and similar damage prevention + reflection effects.
+ * The player is presented with a choice of all game objects that could be damage sources
+ * (permanents on the battlefield + spells on the stack).
+ */
+@SerialName("DeflectNextDamageFromChosenSource")
+@Serializable
+data object DeflectNextDamageFromChosenSourceEffect : Effect {
+    override val description: String =
+        "The next time a source of your choice would deal damage to you this turn, prevent that damage. If damage is prevented this way, deal that much damage to that source's controller."
 
     override fun applyTextReplacement(replacer: TextReplacer): Effect = this
 }

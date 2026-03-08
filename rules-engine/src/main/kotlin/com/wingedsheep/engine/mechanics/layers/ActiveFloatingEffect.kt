@@ -227,6 +227,13 @@ sealed interface SerializableModification {
     data class AddSubtype(val subtype: String) : SerializableModification
 
     /**
+     * Attack restriction: creature can't attack this turn.
+     * Used by CantAttackGroupEffect and similar effects.
+     */
+    @Serializable
+    data object SetCantAttack : SerializableModification
+
+    /**
      * Blocking restriction: creature can't block this turn.
      * Used by Wave of Indifference and similar effects.
      */
@@ -326,6 +333,22 @@ sealed interface SerializableModification {
      */
     @Serializable
     data object RedirectCombatDamageToController : SerializableModification
+
+    /**
+     * Damage prevention + reflection shield: the next time the specified source would deal
+     * damage to the affected player this turn, prevent that damage and deal that much damage
+     * to the source's controller.
+     * Used by Deflecting Palm and similar effects.
+     * The shield is consumed after preventing one damage instance and removed.
+     *
+     * @property damageSourceId The chosen source whose damage will be prevented
+     * @property deflectSourceId The entity that created this shield (e.g., Deflecting Palm) — used as the source of the reflected damage
+     */
+    @Serializable
+    data class DeflectNextDamageFromSource(
+        val damageSourceId: EntityId,
+        val deflectSourceId: EntityId
+    ) : SerializableModification
 }
 
 /**
@@ -365,6 +388,8 @@ fun SerializableModification.toModification(): Modification = when (this) {
     is SerializableModification.PreventAllCombatDamage -> Modification.NoOp
     is SerializableModification.SetCreatureSubtypes -> Modification.SetCreatureSubtypes(subtypes)
     is SerializableModification.AddSubtype -> Modification.AddSubtype(subtype)
+    // SetCantAttack maps to the layer modification for "can't attack" projection
+    is SerializableModification.SetCantAttack -> Modification.SetCantAttack
     // SetCantBlock maps to the layer modification for "can't block" projection
     is SerializableModification.SetCantBlock -> Modification.SetCantBlock
     // PreventAllDamageDealtBy doesn't map to a layer modification - it's checked during damage resolution directly
@@ -385,4 +410,6 @@ fun SerializableModification.toModification(): Modification = when (this) {
     is SerializableModification.PreventCombatDamageToAndBy -> Modification.NoOp
     // RedirectCombatDamageToController doesn't map to a layer modification - it's checked by CombatManager directly
     is SerializableModification.RedirectCombatDamageToController -> Modification.NoOp
+    // DeflectNextDamageFromSource doesn't map to a layer modification - it's checked during damage resolution directly
+    is SerializableModification.DeflectNextDamageFromSource -> Modification.NoOp
 }

@@ -359,6 +359,12 @@ object EffectExecutorUtils {
         }
 
         if (!cantBePrevented) {
+            // Check for deflection shields (Deflecting Palm) — prevent + deal back to source's controller
+            if (sourceId != null) {
+                val deflectResult = checkDeflectDamageShield(newState, targetId, effectiveAmount, sourceId)
+                if (deflectResult != null) return deflectResult
+            }
+
             val (shieldState, reducedAmount) = applyDamagePreventionShields(newState, targetId, effectiveAmount)
             newState = shieldState
             effectiveAmount = reducedAmount
@@ -745,6 +751,52 @@ object EffectExecutorUtils {
         }
 
         return Triple(state.copy(floatingEffects = updatedEffects), mod.redirectToId, redirectAmount)
+    }
+
+    /**
+     * Check for deflect damage shields (Deflecting Palm).
+     *
+     * Scans floating effects for DeflectNextDamageFromSource matching the damage source.
+     * If found, consumes the shield, prevents all the damage, and deals that much damage
+     * to the source's controller (with the deflecting card as the damage source).
+     *
+     * @param state The current game state
+     * @param targetId The entity about to receive damage (must be the shield's affected entity)
+     * @param damageAmount The amount of damage about to be dealt
+     * @param sourceId The entity dealing the damage
+     * @return ExecutionResult if deflection occurred, null otherwise
+     */
+    fun checkDeflectDamageShield(
+        state: GameState,
+        targetId: EntityId,
+        damageAmount: Int,
+        sourceId: EntityId
+    ): ExecutionResult? {
+        val shieldIndex = state.floatingEffects.indexOfFirst { effect ->
+            val mod = effect.effect.modification
+            mod is SerializableModification.DeflectNextDamageFromSource &&
+                mod.damageSourceId == sourceId &&
+                targetId in effect.effect.affectedEntities
+        }
+        if (shieldIndex == -1) return null
+
+        val shield = state.floatingEffects[shieldIndex]
+        val mod = shield.effect.modification as SerializableModification.DeflectNextDamageFromSource
+
+        // Consume the shield
+        val updatedEffects = state.floatingEffects.toMutableList()
+        updatedEffects.removeAt(shieldIndex)
+        val newState = state.copy(floatingEffects = updatedEffects)
+
+        // Find the source's controller to deal reflected damage to
+        val sourceController = newState.getEntity(sourceId)?.get<ControllerComponent>()?.playerId
+        if (sourceController == null) {
+            // Source has no controller (e.g., it left the game) — damage is still prevented
+            return ExecutionResult.success(newState)
+        }
+
+        // Deal the reflected damage to the source's controller, sourced from the deflecting card
+        return dealDamageToTarget(newState, sourceController, damageAmount, mod.deflectSourceId)
     }
 
     /**

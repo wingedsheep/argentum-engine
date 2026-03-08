@@ -2,7 +2,7 @@
 
 **Set Size:** 269 cards (249 unique card names + basic land variants)
 **Release Date:** September 26, 2014
-**Implemented:** 198 / 249
+**Implemented:** 199 / 249
 
 | Color      | Count |
 |------------|-------|
@@ -11,7 +11,7 @@
 | Black      | 30    |
 | Red        | 30    |
 | Green      | 30    |
-| Multicolor | 35    |
+| Multicolor | 36    |
 | Colorless  | 8     |
 | Land       | 5     |
 
@@ -70,7 +70,7 @@
 - [x] Death Frenzy
 - [x] Debilitating Injury
 - [x] Defiant Strike
-- [ ] Deflecting Palm
+- [x] Deflecting Palm
 - [x] Despise
 - [x] Dig Through Time
 - [x] Disdainful Stroke

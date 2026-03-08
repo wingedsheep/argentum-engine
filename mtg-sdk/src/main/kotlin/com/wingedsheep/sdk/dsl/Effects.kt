@@ -16,6 +16,7 @@ import com.wingedsheep.sdk.scripting.effects.SetBasePowerEffect
 
 import com.wingedsheep.sdk.scripting.effects.ChooseColorAndGrantProtectionToGroupEffect
 import com.wingedsheep.sdk.scripting.effects.ChooseColorAndGrantProtectionToTargetEffect
+import com.wingedsheep.sdk.scripting.effects.CantAttackGroupEffect
 import com.wingedsheep.sdk.scripting.effects.CantBlockGroupEffect
 import com.wingedsheep.sdk.scripting.effects.CantCastSpellsEffect
 import com.wingedsheep.sdk.scripting.effects.CompositeEffect
@@ -751,6 +752,12 @@ object Effects {
     // =========================================================================
 
     /**
+     * All creatures matching a filter can't attack this turn.
+     */
+    fun CantAttackGroup(filter: GroupFilter, duration: Duration = Duration.EndOfTurn): Effect =
+        CantAttackGroupEffect(filter, duration)
+
+    /**
      * All creatures matching a filter can't block this turn.
      */
     fun CantBlockGroup(filter: GroupFilter, duration: Duration = Duration.EndOfTurn): Effect =
@@ -806,6 +813,13 @@ object Effects {
      */
     fun PreventCombatDamageToAndBy(target: EffectTarget = EffectTarget.Self): Effect =
         com.wingedsheep.sdk.scripting.effects.PreventCombatDamageToAndByEffect(target)
+
+    /**
+     * Choose a source, prevent the next damage it would deal to you this turn,
+     * and deal that much damage to its controller.
+     */
+    fun DeflectNextDamageFromChosenSource(): Effect =
+        com.wingedsheep.sdk.scripting.effects.DeflectNextDamageFromChosenSourceEffect
 
     /**
      * Remove a creature from combat.

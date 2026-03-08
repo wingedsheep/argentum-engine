@@ -21,7 +21,8 @@ class CombatContinuationResumer(
         },
         resumer(DamagePreventionContinuation::class, ::resumeDamagePrevention),
         resumer(BlockerOrderContinuation::class, ::resumeBlockerOrder),
-        resumer(DistributeDamageContinuation::class, ::resumeDistributeDamage)
+        resumer(DistributeDamageContinuation::class, ::resumeDistributeDamage),
+        resumer(DeflectDamageSourceChoiceContinuation::class, ::resumeDeflectDamageSourceChoice)
     )
 
     fun resumeDamageAssignment(
@@ -219,5 +220,45 @@ class CombatContinuationResumer(
         }
 
         return checkForMore(newState, events)
+    }
+
+    fun resumeDeflectDamageSourceChoice(
+        state: GameState,
+        continuation: DeflectDamageSourceChoiceContinuation,
+        response: DecisionResponse,
+        checkForMore: CheckForMore
+    ): ExecutionResult {
+        if (response !is OptionChosenResponse) {
+            return ExecutionResult.error(state, "Expected option choice response for source selection")
+        }
+
+        val chosenSourceId = continuation.sourceOptions.getOrNull(response.optionIndex)
+            ?: return ExecutionResult.error(state, "Invalid source option index: ${response.optionIndex}")
+
+        val deflectSourceId = continuation.sourceId ?: EntityId.generate()
+
+        val floatingEffect = ActiveFloatingEffect(
+            id = EntityId.generate(),
+            effect = FloatingEffectData(
+                layer = Layer.ABILITY,
+                sublayer = null,
+                modification = SerializableModification.DeflectNextDamageFromSource(
+                    damageSourceId = chosenSourceId,
+                    deflectSourceId = deflectSourceId
+                ),
+                affectedEntities = setOf(continuation.controllerId)
+            ),
+            duration = com.wingedsheep.sdk.scripting.Duration.EndOfTurn,
+            sourceId = continuation.sourceId,
+            sourceName = continuation.sourceName,
+            controllerId = continuation.controllerId,
+            timestamp = System.currentTimeMillis()
+        )
+
+        val newState = state.copy(
+            floatingEffects = state.floatingEffects + floatingEffect
+        )
+
+        return checkForMore(newState, emptyList())
     }
 }

@@ -22,6 +22,7 @@ class CombatExecutors(
         ReflectCombatDamageExecutor(),
         TauntExecutor(),
         PreventNextDamageExecutor(amountEvaluator),
+        CantAttackGroupExecutor(),
         CantBlockGroupExecutor(),
         CantBlockTargetCreaturesExecutor(),
         RemoveFromCombatExecutor(),
@@ -33,6 +34,7 @@ class CombatExecutors(
         PreventCombatDamageToAndByExecutor(),
         RedirectCombatDamageToControllerExecutor(),
         GrantAttackBlockTaxPerCreatureTypeExecutor(),
-        GrantKeywordToAttackersBlockedByExecutor()
+        GrantKeywordToAttackersBlockedByExecutor(),
+        DeflectNextDamageFromChosenSourceExecutor()
     )
 }

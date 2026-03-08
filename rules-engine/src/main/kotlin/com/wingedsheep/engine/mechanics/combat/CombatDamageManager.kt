@@ -387,6 +387,14 @@ internal class CombatDamageManager(
             return newState
         }
 
+        // Deflection shields (Deflecting Palm) — prevent + deal back to source's controller
+        val deflectResult = EffectExecutorUtils.checkDeflectDamageShield(newState, targetId, amplifiedAmount, sourceId)
+        if (deflectResult != null) {
+            newState = deflectResult.state
+            events.addAll(deflectResult.events)
+            return newState
+        }
+
         // Prevention shields
         val (shieldState, effectiveAmount) = EffectExecutorUtils.applyDamagePreventionShields(
             newState, targetId, amplifiedAmount, isCombatDamage = true, sourceId = sourceId

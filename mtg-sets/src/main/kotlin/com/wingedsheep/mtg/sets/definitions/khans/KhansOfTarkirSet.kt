@@ -211,6 +211,7 @@ object KhansOfTarkirSet {
         KinTreeInvocation,
         AbzanGuide,
         CracklingDoom,
+        DeflectingPalm,
         EfreetWeaponmaster,
         BearsCompanion,
         ButcherOfTheHorde,

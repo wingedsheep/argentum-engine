@@ -1551,3 +1551,23 @@ data class ManaSourceOption(
     val producesColors: Set<Color>,
     val producesColorless: Boolean
 )
+
+/**
+ * Resume after a player chooses a source of damage for Deflecting Palm-style effects.
+ *
+ * Creates a floating effect that prevents the next time the chosen source would deal
+ * damage to the controller this turn, and deals that much damage to the source's controller.
+ *
+ * @property controllerId The player who controls the spell
+ * @property sourceId The Deflecting Palm card entity (source of reflected damage)
+ * @property sourceName Name of the source for display
+ * @property sourceOptions List of entity IDs corresponding to the option indices
+ */
+@Serializable
+data class DeflectDamageSourceChoiceContinuation(
+    override val decisionId: String,
+    val controllerId: EntityId,
+    val sourceId: EntityId?,
+    val sourceName: String?,
+    val sourceOptions: List<EntityId>
+) : ContinuationFrame
