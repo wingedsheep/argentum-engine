@@ -59,6 +59,7 @@ constructors.
 - `Effects.ShuffleIntoLibrary(target)`
 - `Effects.PutOntoBattlefield(target, tapped = false)`
 - `Effects.PutOntoBattlefieldUnderYourControl(target)` — put target onto battlefield under controller's control
+- `Effects.PutOntoBattlefieldFaceDown(target = Self, controllerOverride = Controller, fromZone = GRAVEYARD)` — put target onto battlefield face down as a 2/2 morph creature (Ashcloud Phoenix)
 - `Effects.ReturnSelfToBattlefieldAttached(target)` — return self from graveyard to battlefield attached to target (for Auras like Dragon Shadow)
 - `Effects.ExileUntilLeaves(target: EffectTarget)` — exile target and link to source via LinkedExileComponent (Banishing Light / Suspension Field ETB)
 - `Effects.ExileGroupAndLink(filter: GroupFilter, storeAs)` — exile all matching permanents and link to source (Day of the Dragons ETB)

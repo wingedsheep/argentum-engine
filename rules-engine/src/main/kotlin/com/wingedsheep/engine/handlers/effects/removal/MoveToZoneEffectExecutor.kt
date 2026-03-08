@@ -11,15 +11,19 @@ import com.wingedsheep.engine.handlers.effects.EffectExecutorUtils.destroyPerman
 import com.wingedsheep.engine.handlers.effects.EffectExecutorUtils.moveCardToZone
 import com.wingedsheep.engine.handlers.effects.EffectExecutorUtils.resolveTarget
 import com.wingedsheep.engine.handlers.effects.EffectExecutorUtils.stripBattlefieldComponents
+import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.battlefield.SummoningSicknessComponent
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
+import com.wingedsheep.engine.state.components.identity.FaceDownComponent
+import com.wingedsheep.engine.state.components.identity.MorphDataComponent
 import com.wingedsheep.engine.state.components.identity.OwnerComponent
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
+import com.wingedsheep.sdk.scripting.KeywordAbility
 import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
 import com.wingedsheep.sdk.scripting.effects.ZonePlacement
 import kotlin.reflect.KClass
@@ -29,7 +33,9 @@ import kotlin.reflect.KClass
  * Unified zone-moving effect that consolidates destroy, exile, bounce,
  * shuffle-into-library, put-on-top, etc.
  */
-class MoveToZoneEffectExecutor : EffectExecutor<MoveToZoneEffect> {
+class MoveToZoneEffectExecutor(
+    private val cardRegistry: CardRegistry? = null
+) : EffectExecutor<MoveToZoneEffect> {
 
     override val effectType: KClass<MoveToZoneEffect> = MoveToZoneEffect::class
 
@@ -70,6 +76,11 @@ class MoveToZoneEffectExecutor : EffectExecutor<MoveToZoneEffect> {
             resolveTarget(controllerOverride, context, state) ?: ownerId
         } else {
             ownerId
+        }
+
+        // Face-down battlefield entry
+        if (effect.faceDown && effect.destination == Zone.BATTLEFIELD) {
+            return moveToBattlefieldFaceDown(state, targetId, cardComponent, ownerId, controllerId, currentZone)
         }
 
         return when (effect.placement) {
@@ -229,6 +240,54 @@ class MoveToZoneEffectExecutor : EffectExecutor<MoveToZoneEffect> {
         newState = newState.updateEntity(entityId) { c ->
             c.with(ControllerComponent(controllerId))
                 .with(SummoningSicknessComponent)
+        }
+
+        return ExecutionResult.success(
+            newState,
+            listOf(
+                ZoneChangeEvent(
+                    entityId = entityId,
+                    entityName = cardComponent.name,
+                    fromZone = currentZone.zoneType,
+                    toZone = Zone.BATTLEFIELD,
+                    ownerId = ownerId
+                )
+            )
+        )
+    }
+
+    /**
+     * Move a card to the battlefield face down as a 2/2 morph creature.
+     * Adds FaceDownComponent and MorphDataComponent (looked up from card registry).
+     */
+    private fun moveToBattlefieldFaceDown(
+        state: GameState,
+        entityId: EntityId,
+        cardComponent: CardComponent,
+        ownerId: EntityId,
+        controllerId: EntityId,
+        currentZone: ZoneKey
+    ): ExecutionResult {
+        var newState = state.removeFromZone(currentZone, entityId)
+
+        val battlefieldZone = ZoneKey(controllerId, Zone.BATTLEFIELD)
+        newState = newState.addToZone(battlefieldZone, entityId)
+
+        newState = cleanupBattlefieldComponents(newState, entityId, currentZone)
+
+        newState = newState.updateEntity(entityId) { c ->
+            var updated = c.with(ControllerComponent(controllerId))
+                .with(SummoningSicknessComponent)
+                .with(FaceDownComponent)
+
+            // Look up morph cost from card definition so the creature can be turned face up
+            val cardDef = cardRegistry?.getCard(cardComponent.cardDefinitionId)
+            val morphAbility = cardDef?.keywordAbilities?.filterIsInstance<KeywordAbility.Morph>()?.firstOrNull()
+            if (morphAbility != null) {
+                updated = updated.with(MorphDataComponent(morphAbility.morphCost, cardComponent.cardDefinitionId))
+            }
+
+            updated
         }
 
         return ExecutionResult.success(

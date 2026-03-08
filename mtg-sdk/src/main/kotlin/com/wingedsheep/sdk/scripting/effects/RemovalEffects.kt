@@ -295,7 +295,9 @@ data class MoveToZoneEffect(
     /** When set, the card enters the battlefield under this player's control instead of the owner's. */
     val controllerOverride: EffectTarget? = null,
     /** When set, the move is skipped if the target is not currently in this zone. */
-    val fromZone: Zone? = null
+    val fromZone: Zone? = null,
+    /** When true and destination is BATTLEFIELD, the card enters face down (as a 2/2 morph creature). */
+    val faceDown: Boolean = false
 ) : Effect {
     override val description: String = buildString {
         when {
@@ -306,6 +308,8 @@ data class MoveToZoneEffect(
                 append("Shuffle ${target.description} into its owner's library")
             destination == Zone.LIBRARY && placement == ZonePlacement.Top ->
                 append("Put ${target.description} on top of its owner's library")
+            destination == Zone.BATTLEFIELD && faceDown ->
+                append("Put ${target.description} onto the battlefield face down")
             destination == Zone.BATTLEFIELD && controllerOverride != null ->
                 append("Put ${target.description} onto the battlefield under your control")
             destination == Zone.BATTLEFIELD && placement == ZonePlacement.Tapped ->

@@ -2,14 +2,14 @@
 
 **Set Size:** 269 cards (249 unique card names + basic land variants)
 **Release Date:** September 26, 2014
-**Implemented:** 188 / 249
+**Implemented:** 189 / 249
 
 | Color      | Count |
 |------------|-------|
 | White      | 30    |
 | Blue       | 29    |
 | Black      | 29    |
-| Red        | 29    |
+| Red        | 30    |
 | Green      | 29    |
 | Multicolor | 30    |
 | Colorless  | 8     |
@@ -36,7 +36,7 @@
 - [x] Arc Lightning
 - [x] Armament Corps
 - [x] Arrow Storm
-- [ ] Ashcloud Phoenix
+- [x] Ashcloud Phoenix
 - [x] Avalanche Tusker
 - [x] Awaken the Bear
 - [x] Barrage of Boulders

@@ -371,6 +371,23 @@ object Effects {
         MoveToZoneEffect(target, Zone.BATTLEFIELD, controllerOverride = EffectTarget.Controller)
 
     /**
+     * Return this card from its current zone to the battlefield face down under your control.
+     * Used by Ashcloud Phoenix and similar cards that return as morph creatures.
+     * Only moves if the card is currently in [fromZone] (defaults to GRAVEYARD).
+     */
+    fun PutOntoBattlefieldFaceDown(
+        target: EffectTarget = EffectTarget.Self,
+        controllerOverride: EffectTarget = EffectTarget.Controller,
+        fromZone: Zone? = Zone.GRAVEYARD
+    ): Effect = MoveToZoneEffect(
+        target = target,
+        destination = Zone.BATTLEFIELD,
+        controllerOverride = controllerOverride,
+        fromZone = fromZone,
+        faceDown = true
+    )
+
+    /**
      * Return this card from its current zone to the battlefield attached to the target.
      * Used by the Dragon aura cycle (Dragon Shadow, Dragon Breath, etc.).
      */

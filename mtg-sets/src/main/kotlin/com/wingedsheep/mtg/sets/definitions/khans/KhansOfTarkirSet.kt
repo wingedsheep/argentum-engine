@@ -165,6 +165,7 @@ object KhansOfTarkirSet {
         Windstorm,
 
         // Red creatures
+        AshcloudPhoenix,
         AinokTracker,
         BloodfireExpert,
         BloodfireMentor,

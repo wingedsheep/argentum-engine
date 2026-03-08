@@ -46,7 +46,7 @@ class RemovalExecutors(
         SacrificeExecutor(),
         SacrificeSelfExecutor(),
         SacrificeTargetExecutor(),
-        MoveToZoneEffectExecutor(),
+        MoveToZoneEffectExecutor(cardRegistry),
         ReturnSelfToBattlefieldAttachedExecutor(cardRegistry)
     )
 }
