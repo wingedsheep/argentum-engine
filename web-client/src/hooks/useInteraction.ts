@@ -389,6 +389,7 @@ export function useInteraction() {
           pendingActionInfo: actionInfo,
           targetZone: 'Graveyard',
           targetDescription: costInfo.description,
+          sourceCardName: actionInfo.description.replace(/^Cast /, '').replace(/^Activate /, ''),
         })
         selectCard(null)
         return

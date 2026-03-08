@@ -22,7 +22,7 @@ function GraveyardTargetingOverlay({
   onCancel,
 }: {
   graveyardCards: ClientCard[]
-  targetingState: { selectedTargets: readonly EntityId[]; minTargets: number; maxTargets: number; targetDescription?: string; currentRequirementIndex?: number; totalRequirements?: number }
+  targetingState: { selectedTargets: readonly EntityId[]; minTargets: number; maxTargets: number; targetDescription?: string; currentRequirementIndex?: number; totalRequirements?: number; sourceCardName?: string }
   responsive: ResponsiveSizes
   onSelect: (cardId: EntityId) => void
   onDeselect: (cardId: EntityId) => void
@@ -155,6 +155,18 @@ function GraveyardTargetingOverlay({
             ? `Select ${targetingState.targetDescription}`
             : 'Choose Target from Graveyard'}
         </h2>
+        {targetingState.sourceCardName && (
+          <p
+            style={{
+              color: '#ccc',
+              margin: '4px 0 0',
+              fontSize: responsive.fontSize.normal,
+              fontStyle: 'italic',
+            }}
+          >
+            for {targetingState.sourceCardName}
+          </p>
+        )}
         <p
           style={{
             color: '#aaa',

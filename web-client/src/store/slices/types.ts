@@ -85,6 +85,8 @@ export interface TargetingState {
   targetDescription?: string
   /** Total number of target requirements for multi-target spells (for step indicator) */
   totalRequirements?: number
+  /** Name of the card that initiated this targeting (shown in overlay header) */
+  sourceCardName?: string
 }
 
 /**
