@@ -380,6 +380,8 @@ class StateBasedActionChecker {
 
     /**
      * 704.5n - An Aura attached to an illegal object/player or not attached goes to graveyard.
+     * 704.5p - An Equipment or Fortification attached to an illegal permanent becomes unattached
+     *          but remains on the battlefield.
      */
     private fun checkUnattachedAuras(state: GameState): ExecutionResult {
         var newState = state
@@ -389,36 +391,15 @@ class StateBasedActionChecker {
             val container = state.getEntity(entityId) ?: continue
             val cardComponent = container.get<CardComponent>() ?: continue
 
-            if (!cardComponent.typeLine.isAura) continue
+            val isAura = cardComponent.typeLine.isAura
+            val isEquipment = cardComponent.typeLine.isEquipment
+
+            if (!isAura && !isEquipment) continue
 
             val attachedTo = container.get<com.wingedsheep.engine.state.components.battlefield.AttachedToComponent>()
             if (attachedTo == null) {
-                // Aura not attached to anything - goes to graveyard
-                val controllerId = container.get<ControllerComponent>()?.playerId
-                    ?: cardComponent.ownerId
-                    ?: continue
-                val ownerId = cardComponent.ownerId ?: controllerId
-
-                val battlefieldZone = ZoneKey(controllerId, Zone.BATTLEFIELD)
-                val graveyardZone = ZoneKey(ownerId, Zone.GRAVEYARD)
-
-                newState = newState.removeFromZone(battlefieldZone, entityId)
-                newState = newState.addToZone(graveyardZone, entityId)
-
-                newState = newState.updateEntity(entityId) { c -> stripBattlefieldComponents(c) }
-
-                events.add(
-                    ZoneChangeEvent(
-                        entityId,
-                        cardComponent.name,
-                        Zone.BATTLEFIELD,
-                        Zone.GRAVEYARD,
-                        ownerId
-                    )
-                )
-            } else {
-                // Check if attached target still exists on battlefield
-                if (attachedTo.targetId !in state.getBattlefield()) {
+                if (isAura) {
+                    // Aura not attached to anything - goes to graveyard
                     val controllerId = container.get<ControllerComponent>()?.playerId
                         ?: cardComponent.ownerId
                         ?: continue
@@ -441,6 +422,41 @@ class StateBasedActionChecker {
                             ownerId
                         )
                     )
+                }
+                // Equipment not attached to anything is fine - stays on battlefield
+            } else {
+                // Check if attached target still exists on battlefield
+                if (attachedTo.targetId !in state.getBattlefield()) {
+                    if (isAura) {
+                        // Aura's target gone - goes to graveyard
+                        val controllerId = container.get<ControllerComponent>()?.playerId
+                            ?: cardComponent.ownerId
+                            ?: continue
+                        val ownerId = cardComponent.ownerId ?: controllerId
+
+                        val battlefieldZone = ZoneKey(controllerId, Zone.BATTLEFIELD)
+                        val graveyardZone = ZoneKey(ownerId, Zone.GRAVEYARD)
+
+                        newState = newState.removeFromZone(battlefieldZone, entityId)
+                        newState = newState.addToZone(graveyardZone, entityId)
+
+                        newState = newState.updateEntity(entityId) { c -> stripBattlefieldComponents(c) }
+
+                        events.add(
+                            ZoneChangeEvent(
+                                entityId,
+                                cardComponent.name,
+                                Zone.BATTLEFIELD,
+                                Zone.GRAVEYARD,
+                                ownerId
+                            )
+                        )
+                    } else {
+                        // Equipment's target gone - just detach, stays on battlefield
+                        newState = newState.updateEntity(entityId) { c ->
+                            c.without<com.wingedsheep.engine.state.components.battlefield.AttachedToComponent>()
+                        }
+                    }
                 }
             }
         }
