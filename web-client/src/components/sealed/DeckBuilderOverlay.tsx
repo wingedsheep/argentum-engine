@@ -4,6 +4,7 @@ import type { SealedCardInfo } from '../../types'
 import { useResponsive } from '../../hooks/useResponsive'
 import { getCardImageUrl } from '../../utils/cardImages'
 import { ManaSymbol, ManaCost } from '../ui/ManaSymbols'
+import { SetSynergiesButton } from '../draft/SetSynergiesOverlay'
 
 /**
  * Deck Builder overlay for sealed draft mode.
@@ -14,7 +15,7 @@ export function DeckBuilderOverlay() {
   if (!deckBuildingState) return null
 
   if (deckBuildingState.phase === 'waiting') {
-    return <WaitingForOpponent setName={deckBuildingState.setName} />
+    return <WaitingForOpponent setName={deckBuildingState.setNames.join(' + ')} />
   }
 
   return <DeckBuilder state={deckBuildingState} />
@@ -360,10 +361,11 @@ function DeckBuilder({ state }: { state: DeckBuildingState }) {
           gap: 8,
         }}
       >
-        <div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           <h2 style={{ color: 'white', margin: 0, fontSize: responsive.isMobile ? 16 : 20 }}>
-            Deck Builder - {state.setName}
+            Deck Builder - {state.setNames.join(' + ')}
           </h2>
+          <SetSynergiesButton setCodes={state.setCodes} />
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>

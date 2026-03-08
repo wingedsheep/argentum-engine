@@ -5,6 +5,7 @@ import type { SealedCardInfo, LobbySettings } from '../../types'
 import { useResponsive } from '../../hooks/useResponsive'
 import { getCardImageUrl } from '../../utils/cardImages'
 import { ManaCost } from '../ui/ManaSymbols'
+import { SetSynergiesButton } from './SetSynergiesOverlay'
 
 /**
  * Grid Draft overlay for 2-4 player Grid Draft mode.
@@ -321,6 +322,7 @@ function GridDrafter({ gridState, settings }: { gridState: GridDraftState; setti
           <span style={{ color: 'rgba(255,255,255,0.4)', fontSize: 12 }}>
             Grid #{gridState.gridNumber}
           </span>
+          <SetSynergiesButton setCodes={settings.setCodes} />
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>

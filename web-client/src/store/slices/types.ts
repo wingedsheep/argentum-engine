@@ -243,8 +243,8 @@ export interface DelveSelectionState {
  */
 export interface DeckBuildingState {
   phase: 'waiting' | 'building' | 'submitted'
-  setCode: string
-  setName: string
+  setCodes: readonly string[]
+  setNames: readonly string[]
   cardPool: readonly SealedCardInfo[]
   basicLands: readonly SealedCardInfo[]
   /** Card names currently in the deck */

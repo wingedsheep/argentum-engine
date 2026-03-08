@@ -503,8 +503,8 @@ export function createMessageHandlers(set: SetState, get: GetState): MessageHand
         sessionId: msg.sessionId,
         deckBuildingState: {
           phase: 'waiting',
-          setCode: msg.setCode,
-          setName: msg.setName,
+          setCodes: msg.setCodes,
+          setNames: msg.setNames,
           cardPool: [],
           basicLands: [],
           deck: [],
@@ -522,8 +522,8 @@ export function createMessageHandlers(set: SetState, get: GetState): MessageHand
 
     onSealedPoolGenerated: (msg) => {
       trackEvent('sealed_pool_opened', {
-        set_code: msg.setCode,
-        set_name: msg.setName,
+        set_codes: msg.setCodes.join(','),
+        set_names: msg.setNames.join(','),
         pool_size: msg.cardPool.length,
       })
       const savedState = loadDeckState()
@@ -536,8 +536,8 @@ export function createMessageHandlers(set: SetState, get: GetState): MessageHand
         return {
           deckBuildingState: {
             phase,
-            setCode: msg.setCode,
-            setName: msg.setName,
+            setCodes: msg.setCodes,
+            setNames: msg.setNames,
             cardPool: msg.cardPool,
             basicLands: msg.basicLands,
             deck: state.deckBuildingState?.deck ?? savedState?.deck ?? [],
@@ -637,8 +637,8 @@ export function createMessageHandlers(set: SetState, get: GetState): MessageHand
           : null,
         deckBuildingState: {
           phase: 'building',
-          setCode: state.lobbyState?.settings.setCodes[0] ?? '',
-          setName: state.lobbyState?.settings.setNames[0] ?? '',
+          setCodes: state.lobbyState?.settings.setCodes ?? [],
+          setNames: state.lobbyState?.settings.setNames ?? [],
           cardPool: msg.pickedCards,
           basicLands: msg.basicLands,
           deck: [],

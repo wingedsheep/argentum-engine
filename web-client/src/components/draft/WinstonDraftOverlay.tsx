@@ -4,6 +4,7 @@ import type { SealedCardInfo, LobbySettings } from '../../types'
 import { useResponsive } from '../../hooks/useResponsive'
 import { getCardImageUrl } from '../../utils/cardImages'
 import { ManaCost } from '../ui/ManaSymbols'
+import { SetSynergiesButton } from './SetSynergiesOverlay'
 
 /**
  * Winston Draft overlay for 2-player Winston Draft mode.
@@ -143,6 +144,7 @@ function WinstonDrafter({ winstonState, settings }: { winstonState: WinstonDraft
           <span style={{ color: 'rgba(255,255,255,0.5)', fontSize: 13 }}>
             {settings.setNames.join(' + ')}
           </span>
+          <SetSynergiesButton setCodes={settings.setCodes} />
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>

@@ -661,8 +661,8 @@ export interface SealedCardInfo {
 export interface SealedGameCreatedMessage {
   readonly type: 'sealedGameCreated'
   readonly sessionId: string
-  readonly setCode: string
-  readonly setName: string
+  readonly setCodes: readonly string[]
+  readonly setNames: readonly string[]
 }
 
 /**
@@ -670,8 +670,8 @@ export interface SealedGameCreatedMessage {
  */
 export interface SealedPoolGeneratedMessage {
   readonly type: 'sealedPoolGenerated'
-  readonly setCode: string
-  readonly setName: string
+  readonly setCodes: readonly string[]
+  readonly setNames: readonly string[]
   readonly cardPool: readonly SealedCardInfo[]
   readonly basicLands: readonly SealedCardInfo[]
 }
