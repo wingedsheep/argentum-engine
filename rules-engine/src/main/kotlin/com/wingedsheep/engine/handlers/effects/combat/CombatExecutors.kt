@@ -15,6 +15,7 @@ class CombatExecutors(
         SacrificeAtEndOfCombatExecutor(),
         MustBeBlockedExecutor(),
         ProvokeExecutor(),
+        ForceBlockExecutor(),
         PreventDamageFromAttackingCreaturesExecutor(),
         PreventAllCombatDamageThisTurnExecutor(),
         GrantCantBeBlockedExceptByColorExecutor(),

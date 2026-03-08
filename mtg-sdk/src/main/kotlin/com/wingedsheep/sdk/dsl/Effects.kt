@@ -778,6 +778,13 @@ object Effects {
         com.wingedsheep.sdk.scripting.effects.ProvokeEffect(target)
 
     /**
+     * Force a target creature to block the source creature this combat if able.
+     * Unlike Provoke, does NOT untap the target.
+     */
+    fun ForceBlock(target: EffectTarget = EffectTarget.ContextTarget(0)): Effect =
+        com.wingedsheep.sdk.scripting.effects.ForceBlockEffect(target)
+
+    /**
      * Prevent all combat damage that would be dealt to and dealt by a creature this turn.
      */
     fun PreventCombatDamageToAndBy(target: EffectTarget = EffectTarget.Self): Effect =

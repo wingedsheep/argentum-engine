@@ -159,6 +159,7 @@ constructors.
 
 - `Effects.SeparatePermanentsIntoPiles(target)` — separate into piles
 - `Effects.Provoke(target)` — untap target and force it to block source (provoke keyword)
+- `Effects.ForceBlock(target)` — force target creature to block source this combat if able (no untap, unlike Provoke)
 - `Effects.PreventCombatDamageToAndBy(target)` — prevent all combat damage to and by creature this turn
 - `Effects.RemoveFromCombat(target)` — remove creature from combat
 - `Effects.GrantAttackBlockTaxPerCreatureType(target, creatureType, manaCostPer, duration)` — grant "can't attack or block unless pays {X} per creature type" (Whipgrass Entangler)

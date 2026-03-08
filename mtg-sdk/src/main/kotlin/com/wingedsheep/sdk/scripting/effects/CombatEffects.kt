@@ -154,6 +154,23 @@ data class GrantCantBeBlockedExceptByColorEffect(
 }
 
 /**
+ * Force a target creature to block a specific attacker this combat if able.
+ * Unlike Provoke, this does NOT untap the target creature.
+ * "Target creature defending player controls blocks this creature this combat if able."
+ *
+ * @property target The creature forced to block
+ */
+@SerialName("ForceBlock")
+@Serializable
+data class ForceBlockEffect(
+    val target: EffectTarget = EffectTarget.ContextTarget(0)
+) : Effect {
+    override val description: String = "Target creature blocks ${target.description} this combat if able"
+
+    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
+}
+
+/**
  * All creatures matching a filter can't block this turn.
  * Used for Barrage of Boulders: "creatures can't block this turn."
  *
