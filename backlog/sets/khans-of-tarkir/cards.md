@@ -2,7 +2,7 @@
 
 **Set Size:** 269 cards (249 unique card names + basic land variants)
 **Release Date:** September 26, 2014
-**Implemented:** 210 / 249
+**Implemented:** 211 / 249
 
 | Color      | Count |
 |------------|-------|
@@ -11,7 +11,7 @@
 | Black      | 31    |
 | Red        | 31    |
 | Green      | 31    |
-| Multicolor | 42    |
+| Multicolor | 43    |
 | Colorless  | 9     |
 | Land       | 5     |
 
@@ -171,7 +171,7 @@
 - [x] Raiders' Spoils
 - [ ] Rakshasa Deathdealer
 - [x] Rakshasa's Secret
-- [ ] Rakshasa Vizier
+- [x] Rakshasa Vizier
 - [x] Rattleclaw Mystic
 - [x] Retribution of the Ancients
 - [x] Ride Down

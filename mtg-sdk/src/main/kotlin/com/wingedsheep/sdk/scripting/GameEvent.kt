@@ -769,25 +769,22 @@ sealed interface GameEvent : TextReplaceable<GameEvent> {
  *   GameObjectFilter.Token                       -> "a token"
  */
 internal fun describeObjectForEvent(filter: GameObjectFilter): String {
-    if (filter.cardPredicates.isEmpty()
-        && filter.statePredicates.isEmpty()
-        && filter.controllerPredicate == null
-    ) {
-        return "a card or permanent"
-    }
-
     val baseParts = buildString {
         filter.statePredicates.forEach { append(it.description); append(" ") }
         filter.cardPredicates.forEach { append(it.description); append(" ") }
     }.trim()
-
-    val article = if (baseParts.first().lowercaseChar() in "aeiou") "an" else "a"
 
     val controllerSuffix = filter.controllerPredicate
         ?.description
         ?.takeIf { it.isNotEmpty() }
         ?.let { " $it" }
         ?: ""
+
+    if (baseParts.isEmpty()) {
+        return "a card or permanent$controllerSuffix"
+    }
+
+    val article = if (baseParts.first().lowercaseChar() in "aeiou") "an" else "a"
 
     return "$article $baseParts$controllerSuffix"
 }

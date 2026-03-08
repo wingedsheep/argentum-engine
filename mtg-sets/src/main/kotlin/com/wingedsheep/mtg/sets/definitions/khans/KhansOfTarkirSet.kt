@@ -235,6 +235,7 @@ object KhansOfTarkirSet {
         SavageKnuckleblade,
         SiegeRhino,
         SageOfTheInwardEye,
+        RakshasaVizier,
         SaguMauler,
         SnowhornRider,
         SurrakDragonclaw,
