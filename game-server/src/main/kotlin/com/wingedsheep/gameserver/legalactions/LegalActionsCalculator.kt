@@ -215,6 +215,8 @@ class LegalActionsCalculator(
                     val sacrificeTargets = mutableListOf<EntityId>()
                     var exileTargets = emptyList<EntityId>()
                     var exileMinCount = 0
+                    var discardTargets = emptyList<EntityId>()
+                    var discardCount = 0
                     var canPayAdditionalCosts = true
                     for (cost in additionalCosts) {
                         when (cost) {
@@ -240,6 +242,22 @@ class LegalActionsCalculator(
                                 }
                                 exileTargets = validExileTargets
                                 exileMinCount = cost.count
+                            }
+                            is com.wingedsheep.sdk.scripting.AdditionalCost.DiscardCards -> {
+                                val handZone = ZoneKey(playerId, Zone.HAND)
+                                val handCards = state.getZone(handZone)
+                                    .filter { it != cardId } // Exclude the card being cast
+                                val context = PredicateContext(controllerId = playerId)
+                                val validDiscards = if (cost.filter == com.wingedsheep.sdk.scripting.GameObjectFilter.Any) {
+                                    handCards
+                                } else {
+                                    handCards.filter { predicateEvaluator.matches(state, it, cost.filter, context) }
+                                }
+                                if (validDiscards.size < cost.count) {
+                                    canPayAdditionalCosts = false
+                                }
+                                discardTargets = validDiscards
+                                discardCount = cost.count
                             }
                             else -> {}
                         }
@@ -307,6 +325,14 @@ class LegalActionsCalculator(
                                 validExileTargets = exileTargets,
                                 exileMinCount = exileMinCount,
                                 exileMaxCount = exileTargets.size
+                            )
+                        } else if (discardTargets.isNotEmpty()) {
+                            val discardCost = additionalCosts.filterIsInstance<com.wingedsheep.sdk.scripting.AdditionalCost.DiscardCards>().firstOrNull()
+                            AdditionalCostInfo(
+                                description = discardCost?.description ?: "Discard a card",
+                                costType = "DiscardCard",
+                                validDiscardTargets = discardTargets,
+                                discardCount = discardCount
                             )
                         } else null
 

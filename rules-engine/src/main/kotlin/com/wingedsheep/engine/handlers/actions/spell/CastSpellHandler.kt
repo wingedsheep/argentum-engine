@@ -7,6 +7,7 @@ import com.wingedsheep.engine.core.DecisionContext
 import com.wingedsheep.engine.core.DecisionPhase
 import com.wingedsheep.engine.core.DecisionRequestedEvent
 import com.wingedsheep.engine.core.ExecutionResult
+import com.wingedsheep.engine.core.CardsDiscardedEvent
 import com.wingedsheep.engine.core.GameEvent
 import com.wingedsheep.engine.core.ManaSpentEvent
 import com.wingedsheep.engine.core.PaymentStrategy
@@ -400,6 +401,29 @@ class CastSpellHandler(
                         }
                     }
                 }
+                is AdditionalCost.DiscardCards -> {
+                    val discarded = action.additionalCostPayment?.discardedCards ?: emptyList()
+                    if (discarded.size < additionalCost.count) {
+                        return "You must discard ${additionalCost.count} card(s) to cast this spell"
+                    }
+                    val handZone = ZoneKey(action.playerId, Zone.HAND)
+                    val handCards = state.getZone(handZone)
+                    val context = PredicateContext(controllerId = action.playerId)
+                    for (cardId in discarded) {
+                        if (cardId !in handCards) {
+                            return "Card to discard is not in your hand"
+                        }
+                        if (cardId == action.cardId) {
+                            return "Cannot discard the spell being cast"
+                        }
+                        if (additionalCost.filter != com.wingedsheep.sdk.scripting.GameObjectFilter.Any) {
+                            if (!predicateEvaluator.matches(state, cardId, additionalCost.filter, context)) {
+                                val cardName = state.getEntity(cardId)?.get<CardComponent>()?.name ?: "Card"
+                                return "$cardName doesn't match the required filter: ${additionalCost.filter.description}"
+                            }
+                        }
+                    }
+                }
                 else -> {}
             }
         }
@@ -466,6 +490,28 @@ class CastSpellHandler(
                                 ownerId = ownerId
                             ))
                         }
+                    }
+                    is AdditionalCost.DiscardCards -> {
+                        val discardedCards = action.additionalCostPayment.discardedCards
+                        for (cardId in discardedCards) {
+                            val cardContainer = currentState.getEntity(cardId) ?: continue
+                            val card = cardContainer.get<CardComponent>() ?: continue
+                            val handZone = ZoneKey(action.playerId, Zone.HAND)
+                            val graveyardZone = ZoneKey(action.playerId, Zone.GRAVEYARD)
+
+                            currentState = currentState.removeFromZone(handZone, cardId)
+                            currentState = currentState.addToZone(graveyardZone, cardId)
+
+                            events.add(ZoneChangeEvent(
+                                entityId = cardId,
+                                entityName = card.name,
+                                fromZone = Zone.HAND,
+                                toZone = Zone.GRAVEYARD,
+                                ownerId = action.playerId
+                            ))
+                        }
+                        val discardNames = discardedCards.map { currentState.getEntity(it)?.get<CardComponent>()?.name ?: "Card" }
+                        events.add(CardsDiscardedEvent(action.playerId, discardedCards, discardNames))
                     }
                     is AdditionalCost.ExileVariableCards, is AdditionalCost.ExileCards -> {
                         val exiledCards = action.additionalCostPayment.exiledCards
