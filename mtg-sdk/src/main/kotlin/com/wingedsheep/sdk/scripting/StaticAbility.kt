@@ -1348,3 +1348,20 @@ data object UntapDuringOtherUntapSteps : StaticAbility {
     override val description: String = "Untap all permanents you control during each other player's untap step"
     override fun applyTextReplacement(replacer: TextReplacer): StaticAbility = this
 }
+
+/**
+ * Untap permanents matching a filter you control during each other player's untap step.
+ * Used for Ivorytusk Fortress (creatures with +1/+1 counters) and similar effects.
+ *
+ * The engine checks for this static ability during the untap step. When the active
+ * player is not the controller of a permanent with this ability, permanents matching
+ * the filter controlled by the ability's controller are untapped.
+ */
+@SerialName("UntapFilteredDuringOtherUntapSteps")
+@Serializable
+data class UntapFilteredDuringOtherUntapSteps(
+    val filter: GameObjectFilter
+) : StaticAbility {
+    override val description: String = "Untap each ${filter.description} you control during each other player's untap step"
+    override fun applyTextReplacement(replacer: TextReplacer): StaticAbility = this
+}

@@ -2,7 +2,7 @@
 
 **Set Size:** 269 cards (249 unique card names + basic land variants)
 **Release Date:** September 26, 2014
-**Implemented:** 194 / 249
+**Implemented:** 195 / 249
 
 | Color      | Count |
 |------------|-------|
@@ -11,7 +11,7 @@
 | Black      | 30    |
 | Red        | 30    |
 | Green      | 30    |
-| Multicolor | 31    |
+| Multicolor | 32    |
 | Colorless  | 8     |
 | Land       | 5     |
 
@@ -115,7 +115,7 @@
 - [x] Icefeather Aven
 - [x] Icy Blast
 - [x] Incremental Growth
-- [ ] Ivorytusk Fortress
+- [x] Ivorytusk Fortress
 - [x] Jeering Instigator
 - [ ] Jeskai Ascendancy
 - [x] Jeskai Banner

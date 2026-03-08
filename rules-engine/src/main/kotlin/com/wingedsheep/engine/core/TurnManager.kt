@@ -6,6 +6,7 @@ import com.wingedsheep.engine.mechanics.combat.CombatManager
 import com.wingedsheep.engine.mechanics.StateBasedActionChecker
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
+import com.wingedsheep.engine.state.components.battlefield.CountersComponent
 import com.wingedsheep.engine.state.components.battlefield.DamageComponent
 import com.wingedsheep.engine.state.components.battlefield.SummoningSicknessComponent
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
@@ -197,16 +198,28 @@ class TurnManager(
         }
 
         // Untap permanents for non-active players with UntapDuringOtherUntapSteps (e.g., Seedborn Muse)
+        // or UntapFilteredDuringOtherUntapSteps (e.g., Ivorytusk Fortress)
         if (cardRegistry != null) {
             val projectedForSeedborn = newState.projectedState
             for (playerId in newState.turnOrder) {
                 if (playerId == activePlayer) continue
-                val hasUntapAbility = projectedForSeedborn.getBattlefieldControlledBy(playerId).any { permanentId ->
-                    val card = newState.getEntity(permanentId)?.get<CardComponent>() ?: return@any false
-                    val cardDef = cardRegistry.getCard(card.cardDefinitionId) ?: return@any false
-                    cardDef.script.staticAbilities.any { it is com.wingedsheep.sdk.scripting.UntapDuringOtherUntapSteps }
+
+                var untapAll = false
+                val filteredUntapFilters = mutableListOf<com.wingedsheep.sdk.scripting.GameObjectFilter>()
+
+                for (permanentId in projectedForSeedborn.getBattlefieldControlledBy(playerId)) {
+                    val card = newState.getEntity(permanentId)?.get<CardComponent>() ?: continue
+                    val cardDef = cardRegistry.getCard(card.cardDefinitionId) ?: continue
+                    for (ability in cardDef.script.staticAbilities) {
+                        when (ability) {
+                            is com.wingedsheep.sdk.scripting.UntapDuringOtherUntapSteps -> untapAll = true
+                            is com.wingedsheep.sdk.scripting.UntapFilteredDuringOtherUntapSteps -> filteredUntapFilters.add(ability.filter)
+                            else -> {}
+                        }
+                    }
                 }
-                if (hasUntapAbility) {
+
+                if (untapAll) {
                     val tappedPermanents = newState.entities.filter { (entityId, container) ->
                         projectedForSeedborn.getController(entityId) == playerId &&
                             container.has<TappedComponent>() &&
@@ -216,6 +229,23 @@ class TurnManager(
                         val cardName = newState.getEntity(entityId)?.get<CardComponent>()?.name ?: "Permanent"
                         newState = newState.updateEntity(entityId) { it.without<TappedComponent>() }
                         events.add(UntappedEvent(entityId, cardName))
+                    }
+                } else if (filteredUntapFilters.isNotEmpty()) {
+                    val alreadyUntapped = mutableSetOf<EntityId>()
+                    for (filter in filteredUntapFilters) {
+                        val tappedPermanents = newState.entities.filter { (entityId, container) ->
+                            entityId !in alreadyUntapped &&
+                                projectedForSeedborn.getController(entityId) == playerId &&
+                                container.has<TappedComponent>() &&
+                                !projectedForSeedborn.hasKeyword(entityId, com.wingedsheep.sdk.core.AbilityFlag.DOESNT_UNTAP) &&
+                                matchesFilterForUntap(newState, projectedForSeedborn, entityId, container, filter)
+                        }.keys
+                        for (entityId in tappedPermanents) {
+                            val cardName = newState.getEntity(entityId)?.get<CardComponent>()?.name ?: "Permanent"
+                            newState = newState.updateEntity(entityId) { it.without<TappedComponent>() }
+                            events.add(UntappedEvent(entityId, cardName))
+                            alreadyUntapped.add(entityId)
+                        }
                     }
                 }
             }
@@ -1381,5 +1411,50 @@ class TurnManager(
         return battlefield.any { entityId ->
             state.getEntity(entityId)?.has<AttackingComponent>() == true
         }
+    }
+
+    /**
+     * Check if an entity matches a GameObjectFilter for untap-during-other-untap-step abilities.
+     * Uses projected state for type checks and base state for counters.
+     */
+    private fun matchesFilterForUntap(
+        state: GameState,
+        projected: com.wingedsheep.engine.mechanics.layers.ProjectedState,
+        entityId: EntityId,
+        container: com.wingedsheep.engine.state.ComponentContainer,
+        filter: com.wingedsheep.sdk.scripting.GameObjectFilter
+    ): Boolean {
+        // Check card type predicates
+        for (predicate in filter.cardPredicates) {
+            val matches = when (predicate) {
+                com.wingedsheep.sdk.scripting.predicates.CardPredicate.IsCreature -> projected.isCreature(entityId)
+                com.wingedsheep.sdk.scripting.predicates.CardPredicate.IsLand -> projected.hasType(entityId, "LAND")
+                com.wingedsheep.sdk.scripting.predicates.CardPredicate.IsArtifact -> projected.hasType(entityId, "ARTIFACT")
+                com.wingedsheep.sdk.scripting.predicates.CardPredicate.IsEnchantment -> projected.hasType(entityId, "ENCHANTMENT")
+                else -> true // Other card predicates not relevant for untap filtering
+            }
+            if (!matches) return false
+        }
+        // Check state predicates (e.g., HasCounter)
+        for (predicate in filter.statePredicates) {
+            val matches = when (predicate) {
+                is com.wingedsheep.sdk.scripting.predicates.StatePredicate.HasCounter -> {
+                    val countersComponent = container.get<CountersComponent>()
+                    if (countersComponent == null) {
+                        false
+                    } else {
+                        val counterType = when (predicate.counterType) {
+                            "+1/+1" -> com.wingedsheep.sdk.core.CounterType.PLUS_ONE_PLUS_ONE
+                            "-1/-1" -> com.wingedsheep.sdk.core.CounterType.MINUS_ONE_MINUS_ONE
+                            else -> null
+                        }
+                        counterType != null && countersComponent.getCount(counterType) > 0
+                    }
+                }
+                else -> true // Other state predicates not relevant for untap filtering
+            }
+            if (!matches) return false
+        }
+        return true
     }
 }
