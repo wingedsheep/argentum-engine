@@ -230,6 +230,7 @@ object KhansOfTarkirSet {
         SnowhornRider,
         SecretPlans,
         SultaiAscendancy,
+        SultaiCharm,
         SultaiSoothsayer,
         TemurAscendancy,
         UtterEnd,

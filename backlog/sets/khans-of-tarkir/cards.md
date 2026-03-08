@@ -2,7 +2,7 @@
 
 **Set Size:** 269 cards (249 unique card names + basic land variants)
 **Release Date:** September 26, 2014
-**Implemented:** 196 / 249
+**Implemented:** 197 / 249
 
 | Color      | Count |
 |------------|-------|
@@ -11,7 +11,7 @@
 | Black      | 30    |
 | Red        | 30    |
 | Green      | 30    |
-| Multicolor | 33    |
+| Multicolor | 34    |
 | Colorless  | 8     |
 | Land       | 5     |
 
@@ -214,7 +214,7 @@
 - [x] Stubborn Denial
 - [x] Sultai Ascendancy
 - [x] Sultai Banner
-- [ ] Sultai Charm
+- [x] Sultai Charm
 - [x] Sultai Flayer
 - [x] Sultai Scavenger
 - [x] Sultai Soothsayer
