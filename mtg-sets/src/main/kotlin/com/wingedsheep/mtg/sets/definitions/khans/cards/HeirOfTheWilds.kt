@@ -10,6 +10,7 @@ import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.conditions.Exists
 import com.wingedsheep.sdk.scripting.effects.ConditionalEffect
 import com.wingedsheep.sdk.scripting.references.Player
+import com.wingedsheep.sdk.scripting.targets.EffectTarget
 
 /**
  * Heir of the Wilds
@@ -34,7 +35,7 @@ val HeirOfTheWilds = card("Heir of the Wilds") {
         triggerCondition = Exists(Player.You, Zone.BATTLEFIELD, GameObjectFilter.Creature.powerAtLeast(4))
         effect = ConditionalEffect(
             condition = Exists(Player.You, Zone.BATTLEFIELD, GameObjectFilter.Creature.powerAtLeast(4)),
-            effect = Effects.ModifyStats(1, 1)
+            effect = Effects.ModifyStats(1, 1, EffectTarget.Self)
         )
     }
 
