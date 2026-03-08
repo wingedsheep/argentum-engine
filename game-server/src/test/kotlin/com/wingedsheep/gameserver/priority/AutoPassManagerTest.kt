@@ -471,11 +471,20 @@ class AutoPassManagerTest : FunSpec({
             autoPassManager.shouldAutoPass(state, player1, actions) shouldBe false
         }
 
-        test("Auto-pass during my first strike damage even with instants (Arena-style)") {
+        test("Stop during my first strike damage when I have instant-speed responses") {
             val state = createMockState(player1, player1, Step.FIRST_STRIKE_COMBAT_DAMAGE)
             val actions = listOf(
                 passPriorityAction(player1),
                 instantSpellAction(player1)
+            )
+
+            autoPassManager.shouldAutoPass(state, player1, actions) shouldBe false
+        }
+
+        test("Auto-pass during my first strike damage when no instant-speed responses") {
+            val state = createMockState(player1, player1, Step.FIRST_STRIKE_COMBAT_DAMAGE)
+            val actions = listOf(
+                passPriorityAction(player1)
             )
 
             autoPassManager.shouldAutoPass(state, player1, actions) shouldBe true

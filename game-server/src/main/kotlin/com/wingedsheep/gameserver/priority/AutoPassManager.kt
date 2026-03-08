@@ -334,7 +334,21 @@ class AutoPassManager {
                 }
             }
 
-            Step.FIRST_STRIKE_COMBAT_DAMAGE, Step.COMBAT_DAMAGE, Step.END_COMBAT -> {
+            Step.FIRST_STRIKE_COMBAT_DAMAGE -> {
+                val hasResponses = meaningfulActions.any { action ->
+                    (action.actionType == "CastSpell" || action.actionType == "ActivateAbility" || action.actionType == "CycleCard" || action.actionType == "TypecycleCard") &&
+                    (!action.requiresTargets || !action.validTargets.isNullOrEmpty())
+                }
+                if (hasResponses) {
+                    logger.debug("STOP: My first strike damage step (have instant-speed responses)")
+                    false
+                } else {
+                    logger.debug("AUTO-PASS: My first strike damage step (no responses)")
+                    true
+                }
+            }
+
+            Step.COMBAT_DAMAGE, Step.END_COMBAT -> {
                 logger.debug("AUTO-PASS: My combat damage/end combat")
                 true
             }
@@ -424,8 +438,19 @@ class AutoPassManager {
                 }
             }
 
-            // Combat Damage steps - AUTO-PASS
-            Step.FIRST_STRIKE_COMBAT_DAMAGE, Step.COMBAT_DAMAGE, Step.END_COMBAT -> {
+            // First Strike Damage - STOP if we have instant-speed responses
+            Step.FIRST_STRIKE_COMBAT_DAMAGE -> {
+                if (hasInstantSpeedResponses) {
+                    logger.debug("STOP: Opponent's first strike damage step (have instant-speed responses)")
+                    false
+                } else {
+                    logger.debug("AUTO-PASS: Opponent's first strike damage step (no responses)")
+                    true
+                }
+            }
+
+            // Combat Damage / End Combat - AUTO-PASS
+            Step.COMBAT_DAMAGE, Step.END_COMBAT -> {
                 logger.debug("AUTO-PASS: Opponent's combat damage/end combat")
                 true
             }
@@ -602,13 +627,16 @@ class AutoPassManager {
 
     /**
      * Simplified version of shouldAutoPassOnMyTurn for calculating next stop point.
-     * Arena-style: Only stop at main phases and declare attackers on your own turn.
+     * Arena-style: Only stop at main phases, declare attackers, and first strike damage
+     * (when player has meaningful actions) on your own turn.
      */
     private fun shouldAutoPassOnMyTurnForStep(step: Step, hasMeaningfulActions: Boolean): Boolean {
         return when (step) {
             // Only stop at main phases and declare attackers
             Step.PRECOMBAT_MAIN, Step.POSTCOMBAT_MAIN -> false
             Step.DECLARE_ATTACKERS -> false
+            // Stop at first strike damage if we have responses
+            Step.FIRST_STRIKE_COMBAT_DAMAGE -> !hasMeaningfulActions
             // Everything else auto-passes
             else -> true
         }
@@ -627,7 +655,8 @@ class AutoPassManager {
             Step.BEGIN_COMBAT -> true
             Step.DECLARE_ATTACKERS -> !hasMeaningfulActions // Stop if we have responses
             Step.DECLARE_BLOCKERS -> !hasMeaningfulActions // Stop only if we have blockers/responses
-            Step.FIRST_STRIKE_COMBAT_DAMAGE, Step.COMBAT_DAMAGE, Step.END_COMBAT -> true
+            Step.FIRST_STRIKE_COMBAT_DAMAGE -> !hasMeaningfulActions // Stop if we have responses after first strike
+            Step.COMBAT_DAMAGE, Step.END_COMBAT -> true
             Step.END -> !hasMeaningfulActions // Stop if we have responses
             Step.CLEANUP, Step.UNTAP -> true
         }
