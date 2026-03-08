@@ -27,6 +27,7 @@ import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.battlefield.AttachedToComponent
 import com.wingedsheep.engine.state.components.battlefield.DamageDealtToCreaturesThisTurnComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
+import com.wingedsheep.engine.state.components.stack.SpellOnStackComponent
 import com.wingedsheep.engine.state.components.stack.TargetsComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.identity.FaceDownComponent
@@ -1794,7 +1795,9 @@ class TriggerDetector(
         }
         if (!typeMatches) return false
 
-        val mv = cardComponent.manaValue
+        // Face-down spells have mana value 0 (CR 707.2)
+        val isFaceDown = state.getEntity(event.spellEntityId)?.get<SpellOnStackComponent>()?.castFaceDown == true
+        val mv = if (isFaceDown) 0 else cardComponent.manaValue
         if (trigger.manaValueAtLeast != null && mv < trigger.manaValueAtLeast!!) return false
         if (trigger.manaValueAtMost != null && mv > trigger.manaValueAtMost!!) return false
         if (trigger.manaValueEquals != null && mv != trigger.manaValueEquals!!) return false
