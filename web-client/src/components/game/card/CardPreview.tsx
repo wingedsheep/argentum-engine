@@ -5,6 +5,7 @@ import type { EntityId } from '../../../types'
 import { getCardImageUrl } from '../../../utils/cardImages'
 import { useResponsiveContext, handleImageError, getCounterStatModifier, hasStatCounters, getTokenFrameGradient, getTokenFrameTextColor, getPTColor } from '../board/shared'
 import { styles } from '../board/styles'
+import { counterManaClass } from '../../../assets/icons/keywords'
 
 /**
  * Card preview overlay - shows enlarged card when hovering.
@@ -202,7 +203,7 @@ export function CardPreview() {
               {hasCounters && (
                 <div style={styles.cardPreviewStatsRow}>
                   <span style={{...styles.cardPreviewStatsLabel, color: '#66ccff'}}>
-                    <span style={{marginRight: 4}}>⬡</span>Counters
+                    <i className={`ms ms-${counterModifier >= 0 ? counterManaClass.PLUS_ONE_PLUS_ONE : counterManaClass.MINUS_ONE_MINUS_ONE}`} style={{marginRight: 4, fontSize: 10}} />Counters
                   </span>
                   <span style={{...styles.cardPreviewStatsValue, color: counterModifier >= 0 ? '#66ccff' : '#ff6666'}}>
                     {counterModifier >= 0 ? '+' : ''}{counterModifier}/{counterModifier >= 0 ? '+' : ''}{counterModifier}

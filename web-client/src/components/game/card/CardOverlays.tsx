@@ -1,9 +1,18 @@
 import React from 'react'
 import type { Keyword, ClientCardEffect, Color } from '../../../types'
-import { keywordIcons, genericKeywordIcon, displayableKeywords } from '../../../assets/icons/keywords'
+import { keywordManaClass, displayableKeywords } from '../../../assets/icons/keywords'
 import { styles } from '../board/styles'
 
-/** MTG color to CSS color mapping for protection shield icons */
+/** MTG color to mana-font protection class mapping */
+const PROTECTION_CLASSES: Record<string, string> = {
+  WHITE: 'ability-protection-white',
+  BLUE: 'ability-protection-blue',
+  BLACK: 'ability-protection-black',
+  RED: 'ability-protection-red',
+  GREEN: 'ability-protection-green',
+}
+
+/** MTG color to CSS color for protection icon tinting */
 const PROTECTION_COLORS: Record<string, string> = {
   WHITE: '#f5f0e0',
   BLUE: '#4a90d9',
@@ -14,8 +23,7 @@ const PROTECTION_COLORS: Record<string, string> = {
 
 /**
  * Container component for keyword ability icons on a card.
- * Uses SVG icons from assets/icons/keywords.
- * Protection icons are rendered separately with color tinting.
+ * Uses mana-font icon classes for keyword and protection symbols.
  */
 export function KeywordIcons({
   keywords,
@@ -37,14 +45,13 @@ export function KeywordIcons({
     <div style={styles.keywordIconsContainer}>
       {filteredKeywords.map((keyword) => (
         <div key={keyword} style={styles.keywordIconWrapper} title={keyword.replace(/_/g, ' ')}>
-          <img
-            src={keywordIcons[keyword] ?? genericKeywordIcon}
-            alt={keyword}
+          <i
+            className={`ms ms-${keywordManaClass[keyword] ?? 'ability-static'}`}
             style={{
-              width: size,
-              height: size,
+              fontSize: size,
+              color: '#ffffff',
               display: 'block',
-              filter: 'brightness(0) invert(1)', // Make SVG white
+              lineHeight: 1,
             }}
           />
         </div>
@@ -55,14 +62,15 @@ export function KeywordIcons({
           style={styles.keywordIconWrapper}
           title={`Protection from ${color.toLowerCase()}`}
         >
-          <svg width={size} height={size} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path
-              fillRule="evenodd"
-              clipRule="evenodd"
-              d="M12 2L3 6v5c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V6l-9-4zm0 2.18l7 3.12V11c0 4.52-3.13 8.69-7 9.93C8.13 19.69 5 15.52 5 11V7.3l7-3.12zM7 8.73V11c0 3.33 2.18 6.46 5 7.74 2.82-1.28 5-4.41 5-7.74V8.73l-5-2.22-5 2.22z"
-              fill={PROTECTION_COLORS[color] ?? '#aaa'}
-            />
-          </svg>
+          <i
+            className={`ms ms-${PROTECTION_CLASSES[color] ?? 'ability-protection'}`}
+            style={{
+              fontSize: size,
+              color: PROTECTION_COLORS[color] ?? '#aaa',
+              display: 'block',
+              lineHeight: 1,
+            }}
+          />
         </div>
       ))}
     </div>

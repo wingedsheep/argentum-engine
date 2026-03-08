@@ -1,41 +1,51 @@
-import flyingIcon from './flying.svg'
-import reachIcon from './reach.svg'
-import trampleIcon from './trample.svg'
-import firstStrikeIcon from './first-strike.svg'
-import deathtouchIcon from './deathtouch.svg'
-import lifelinkIcon from './lifelink.svg'
-import vigilanceIcon from './vigilance.svg'
-import hasteIcon from './haste.svg'
-import hexproofIcon from './hexproof.svg'
-import indestructibleIcon from './indestructible.svg'
-import defenderIcon from './defender.svg'
-import menaceIcon from './menace.svg'
-import fearIcon from './fear.svg'
-import genericIcon from './generic.svg'
+/**
+ * Keyword ability icon mappings using mana-font CSS classes.
+ * Uses the Arena ability icon set from the mana-font package.
+ * Class format: "ms ms-ability-{name}" rendered via <i> elements.
+ */
 
-export const keywordIcons: Record<string, string> = {
-  FLYING: flyingIcon,
-  REACH: reachIcon,
-  TRAMPLE: trampleIcon,
-  FIRST_STRIKE: firstStrikeIcon,
-  DOUBLE_STRIKE: firstStrikeIcon,
-  DEATHTOUCH: deathtouchIcon,
-  LIFELINK: lifelinkIcon,
-  VIGILANCE: vigilanceIcon,
-  HASTE: hasteIcon,
-  HEXPROOF: hexproofIcon,
-  SHROUD: hexproofIcon,
-  INDESTRUCTIBLE: indestructibleIcon,
-  DEFENDER: defenderIcon,
-  MENACE: menaceIcon,
-  FEAR: fearIcon,
+/** Maps engine keyword names to mana-font ability class suffixes */
+export const keywordManaClass: Record<string, string> = {
+  FLYING: 'ability-flying',
+  REACH: 'ability-reach',
+  TRAMPLE: 'ability-trample',
+  FIRST_STRIKE: 'ability-first-strike',
+  DOUBLE_STRIKE: 'ability-double-strike',
+  DEATHTOUCH: 'ability-deathtouch',
+  LIFELINK: 'ability-lifelink',
+  VIGILANCE: 'ability-vigilance',
+  HASTE: 'ability-haste',
+  HEXPROOF: 'ability-hexproof',
+  SHROUD: 'ability-shroud',
+  INDESTRUCTIBLE: 'ability-indestructible',
+  DEFENDER: 'ability-defender',
+  MENACE: 'ability-menace',
+  FEAR: 'ability-fear',
+  FLASH: 'ability-flash',
+  PROWESS: 'ability-prowess',
+  WARD: 'ability-ward',
+  INTIMIDATE: 'ability-intimidate',
+  INFECT: 'ability-infect',
+  MORPH: 'ability-morph',
+  PROTECTION: 'ability-protection',
 }
-
-export const genericKeywordIcon = genericIcon
 
 export const displayableKeywords = new Set([
   'FLYING', 'REACH', 'TRAMPLE',
   'FIRST_STRIKE', 'DOUBLE_STRIKE', 'DEATHTOUCH',
   'LIFELINK', 'VIGILANCE', 'HASTE', 'HEXPROOF',
   'SHROUD', 'INDESTRUCTIBLE', 'DEFENDER', 'MENACE', 'FEAR',
+  'FLASH', 'PROWESS', 'WARD', 'INTIMIDATE', 'INFECT',
 ])
+
+/** Maps engine CounterType to mana-font counter class suffixes */
+export const counterManaClass: Record<string, string> = {
+  PLUS_ONE_PLUS_ONE: 'counter-plus',
+  MINUS_ONE_MINUS_ONE: 'counter-minus',
+  LOYALTY: 'counter-loyalty',
+  CHARGE: 'counter-charge',
+  GOLD: 'counter-gold',
+  PLAGUE: 'counter-skull',
+  TRAP: 'counter-arrow',
+  DEPLETION: 'counter-void',
+}

@@ -239,6 +239,9 @@ function ConnectionOverlay({
           <WaitingForOpponent sessionId={sessionId} />
         )}
       </div>
+      <span className={styles.attribution}>
+        Mana symbols by <a href="https://mana.andrewgioia.com" target="_blank" rel="noopener noreferrer" className={styles.attributionLink}>Mana Font</a> (SIL OFL 1.1 / MIT)
+      </span>
     </div>
   )
 }

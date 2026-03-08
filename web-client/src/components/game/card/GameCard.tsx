@@ -25,6 +25,7 @@ import {
   SELECTED_COLOR, SELECTED_GLOW, SELECTED_SHADOW,
 } from '../../../styles/targetingColors'
 import { KeywordIcons, ActiveEffectBadges } from './CardOverlays'
+import { counterManaClass } from '../../../assets/icons/keywords'
 
 interface GameCardProps {
   card: ClientCard
@@ -795,13 +796,13 @@ export function GameCard({
       )}
 
       {/* Counter badge for creatures with +1/+1 or -1/-1 counters */}
-      {battlefield && !faceDown && hasStatCounters(card) && (
+      {battlefield && hasStatCounters(card) && (
         <div style={{
           ...styles.counterBadge,
           fontSize: responsive.isMobile ? 9 : 11,
           padding: responsive.isMobile ? '1px 4px' : '2px 6px',
         }}>
-          <span style={styles.counterBadgeIcon}>⬡</span>
+          <i className={`ms ms-${getCounterStatModifier(card) >= 0 ? counterManaClass.PLUS_ONE_PLUS_ONE : counterManaClass.MINUS_ONE_MINUS_ONE}`} style={{ fontSize: responsive.isMobile ? 8 : 10 }} />
           <span style={styles.counterBadgeText}>
             {getCounterStatModifier(card) >= 0 ? '+' : ''}{getCounterStatModifier(card)}
           </span>
@@ -809,13 +810,13 @@ export function GameCard({
       )}
 
       {/* Gold counter badge */}
-      {battlefield && !faceDown && getGoldCounters(card) > 0 && (
+      {battlefield && getGoldCounters(card) > 0 && (
         <div style={{
           ...styles.goldCounterBadge,
           fontSize: responsive.isMobile ? 9 : 11,
           padding: responsive.isMobile ? '1px 4px' : '2px 6px',
         }}>
-          <span style={{ fontSize: responsive.isMobile ? 8 : 10 }}>&#x2B22;</span>
+          <i className={`ms ms-${counterManaClass.GOLD}`} style={{ fontSize: responsive.isMobile ? 8 : 10 }} />
           <span style={{ fontWeight: 700 }}>
             {getGoldCounters(card)}
           </span>
@@ -823,13 +824,13 @@ export function GameCard({
       )}
 
       {/* Plague counter badge */}
-      {battlefield && !faceDown && getPlagueCounters(card) > 0 && (
+      {battlefield && getPlagueCounters(card) > 0 && (
         <div style={{
           ...styles.plagueCounterBadge,
           fontSize: responsive.isMobile ? 9 : 11,
           padding: responsive.isMobile ? '1px 4px' : '2px 6px',
         }}>
-          <span style={{ fontSize: responsive.isMobile ? 8 : 10 }}>&#x2623;</span>
+          <i className={`ms ms-${counterManaClass.PLAGUE}`} style={{ fontSize: responsive.isMobile ? 8 : 10 }} />
           <span style={{ fontWeight: 700 }}>
             {getPlagueCounters(card)}
           </span>
@@ -837,13 +838,13 @@ export function GameCard({
       )}
 
       {/* Charge counter badge */}
-      {battlefield && !faceDown && getChargeCounters(card) > 0 && (
+      {battlefield && getChargeCounters(card) > 0 && (
         <div style={{
           ...styles.chargeCounterBadge,
           fontSize: responsive.isMobile ? 9 : 11,
           padding: responsive.isMobile ? '1px 4px' : '2px 6px',
         }}>
-          <span style={{ fontSize: responsive.isMobile ? 8 : 10 }}>&#x26A1;</span>
+          <i className={`ms ms-${counterManaClass.CHARGE}`} style={{ fontSize: responsive.isMobile ? 8 : 10 }} />
           <span style={{ fontWeight: 700 }}>
             {getChargeCounters(card)}
           </span>
@@ -851,13 +852,13 @@ export function GameCard({
       )}
 
       {/* Depletion counter badge */}
-      {battlefield && !faceDown && getDepletionCounters(card) > 0 && (
+      {battlefield && getDepletionCounters(card) > 0 && (
         <div style={{
           ...styles.depletionCounterBadge,
           fontSize: responsive.isMobile ? 9 : 11,
           padding: responsive.isMobile ? '1px 4px' : '2px 6px',
         }}>
-          <span style={{ fontSize: responsive.isMobile ? 8 : 10 }}>&#x25C9;</span>
+          <i className={`ms ms-${counterManaClass.DEPLETION}`} style={{ fontSize: responsive.isMobile ? 8 : 10 }} />
           <span style={{ fontWeight: 700 }}>
             {getDepletionCounters(card)}
           </span>
@@ -865,13 +866,13 @@ export function GameCard({
       )}
 
       {/* Trap counter badge */}
-      {battlefield && !faceDown && getTrapCounters(card) > 0 && (
+      {battlefield && getTrapCounters(card) > 0 && (
         <div style={{
           ...styles.trapCounterBadge,
           fontSize: responsive.isMobile ? 9 : 11,
           padding: responsive.isMobile ? '1px 4px' : '2px 6px',
         }}>
-          <span style={{ fontSize: responsive.isMobile ? 8 : 10 }}>&#x26A0;</span>
+          <i className={`ms ms-${counterManaClass.TRAP}`} style={{ fontSize: responsive.isMobile ? 8 : 10 }} />
           <span style={{ fontWeight: 700 }}>
             {getTrapCounters(card)}
           </span>
