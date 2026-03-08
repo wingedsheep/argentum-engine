@@ -2,13 +2,13 @@
 
 **Set Size:** 269 cards (249 unique card names + basic land variants)
 **Release Date:** September 26, 2014
-**Implemented:** 204 / 249
+**Implemented:** 205 / 249
 
 | Color      | Count |
 |------------|-------|
 | White      | 31    |
 | Blue       | 30    |
-| Black      | 30    |
+| Black      | 31    |
 | Red        | 30    |
 | Green      | 30    |
 | Multicolor | 40    |
@@ -85,7 +85,7 @@
 - [x] Dutiful Return
 - [x] Efreet Weaponmaster
 - [x] Embodiment of Spring
-- [ ] Empty the Pits
+- [x] Empty the Pits
 - [x] End Hostilities
 - [x] Erase
 - [x] Feat of Resistance

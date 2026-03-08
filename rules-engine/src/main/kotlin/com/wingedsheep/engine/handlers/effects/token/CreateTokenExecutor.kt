@@ -4,11 +4,13 @@ import com.wingedsheep.engine.core.ExecutionResult
 import com.wingedsheep.engine.handlers.DynamicAmountEvaluator
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
+import com.wingedsheep.engine.state.Component
 import com.wingedsheep.engine.state.ComponentContainer
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.battlefield.SummoningSicknessComponent
+import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.state.components.identity.TokenComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.sdk.core.ManaCost
@@ -75,12 +77,16 @@ class CreateTokenExecutor(
                 imageUri = effect.imageUri
             )
 
-            val container = ComponentContainer.of(
+            val components = mutableListOf<Component>(
                 tokenComponent,
                 TokenComponent,
                 ControllerComponent(tokenControllerId),
                 SummoningSicknessComponent
             )
+            if (effect.tapped) {
+                components.add(TappedComponent)
+            }
+            val container = ComponentContainer.of(*components.toTypedArray())
 
             newState = newState.withEntity(tokenId, container)
 

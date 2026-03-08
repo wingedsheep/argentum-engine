@@ -321,7 +321,7 @@ constructors.
 
 | Effect                           | Parameters                                                                                  | Purpose                        |
 |----------------------------------|---------------------------------------------------------------------------------------------|--------------------------------|
-| `CreateTokenEffect`              | `count: DynamicAmount, power, toughness, colors, creatureTypes, keywords, name?, imageUri?` | Create token                   |
+| `CreateTokenEffect`              | `count: DynamicAmount, power, toughness, colors, creatureTypes, keywords, name?, imageUri?, tapped?` | Create token (tapped = enter tapped) |
 | `CreateChosenTokenEffect`        | `dynamicPower: DynamicAmount, dynamicToughness: DynamicAmount`                              | Create token with chosen stats |
 | `CreateTreasureTokensEffect`     | `count: DynamicAmount`                                                                      | Create Treasure                |
 | `CreateTokenFromGraveyardEffect` | `power, toughness, colors, creatureTypes`                                                   | Token from graveyard           |

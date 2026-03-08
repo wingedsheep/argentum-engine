@@ -119,6 +119,7 @@ object KhansOfTarkirSet {
 
         // Black spells
         BitterRevelation,
+        EmptyThePits,
         MoltingSnakeskin,
         DeadDrop,
         DeathFrenzy,
