@@ -235,6 +235,7 @@ object KhansOfTarkirSet {
         SageOfTheInwardEye,
         SaguMauler,
         SnowhornRider,
+        SurrakDragonclaw,
         SecretPlans,
         SultaiAscendancy,
         SultaiCharm,
