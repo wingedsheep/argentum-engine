@@ -88,6 +88,7 @@ If the card needs effects, keywords, triggers, conditions, or static abilities t
 - **4.10 Update [reference.md](reference.md)** with all new types added
 
 For code templates, see [examples.md](examples.md).
+Read [architecture-principles.md](../../../docs/architecture-principles.md) to understand the application architecture? 
 
 ## Step 5: Write Scenario Tests for New Effects
 
