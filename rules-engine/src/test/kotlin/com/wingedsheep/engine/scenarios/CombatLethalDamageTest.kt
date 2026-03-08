@@ -297,11 +297,8 @@ class CombatLethalDamageTest : FunSpec({
         // Defender declares no blockers
         driver.declareNoBlockers(defender)
 
-        // Pass priority through declare blockers to advance to first strike damage
-        driver.bothPass()
-        driver.currentStep shouldBe Step.FIRST_STRIKE_COMBAT_DAMAGE
-
-        // Pass through first strike (no first strike creatures)
+        // Pass priority through declare blockers to advance to combat damage
+        // (no first strike creatures, so first strike step is skipped per CR 510.4)
         driver.bothPass()
         driver.currentStep shouldBe Step.COMBAT_DAMAGE
 

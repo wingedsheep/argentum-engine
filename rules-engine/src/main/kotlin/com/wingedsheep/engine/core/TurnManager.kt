@@ -11,6 +11,7 @@ import com.wingedsheep.engine.state.components.battlefield.DamageComponent
 import com.wingedsheep.engine.state.components.battlefield.SummoningSicknessComponent
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.state.components.combat.AttackingComponent
+import com.wingedsheep.engine.state.components.combat.BlockingComponent
 import com.wingedsheep.engine.state.components.combat.MarkedForDestructionAtEndOfCombatComponent
 import com.wingedsheep.engine.state.components.combat.MarkedForSacrificeAtEndOfCombatComponent
 import com.wingedsheep.engine.state.components.combat.MustAttackPlayerComponent
@@ -33,6 +34,7 @@ import com.wingedsheep.engine.state.components.player.SkipNextTurnComponent
 import com.wingedsheep.engine.state.components.player.SkipUntapComponent
 import com.wingedsheep.engine.state.components.player.LoseAtEndStepComponent
 import com.wingedsheep.engine.handlers.EffectContext
+import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Phase
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.core.Zone
@@ -797,8 +799,8 @@ class TurnManager(
             }
 
             Step.FIRST_STRIKE_COMBAT_DAMAGE -> {
-                // Skip if no attackers
-                if (!hasAttackingCreatures(newState)) {
+                // Skip if no attackers or no creatures with first strike/double strike (CR 510.4)
+                if (!hasAttackingCreatures(newState) || !hasCombatFirstStrikeOrDoubleStrike(newState)) {
                     return advanceStep(newState.copy(step = Step.FIRST_STRIKE_COMBAT_DAMAGE))
                 }
                 // Apply first strike combat damage
@@ -1411,6 +1413,19 @@ class TurnManager(
         val battlefield = state.getBattlefield()
         return battlefield.any { entityId ->
             state.getEntity(entityId)?.has<AttackingComponent>() == true
+        }
+    }
+
+    /**
+     * Check if any attacker or blocker in combat has first strike or double strike (CR 510.4).
+     * Uses projected state to account for continuous effects.
+     */
+    private fun hasCombatFirstStrikeOrDoubleStrike(state: GameState): Boolean {
+        val projected = state.projectedState
+        return state.getBattlefield().any { entityId ->
+            val container = state.getEntity(entityId) ?: return@any false
+            val isInCombat = container.has<AttackingComponent>() || container.has<BlockingComponent>()
+            isInCombat && (projected.hasKeyword(entityId, Keyword.FIRST_STRIKE) || projected.hasKeyword(entityId, Keyword.DOUBLE_STRIKE))
         }
     }
 

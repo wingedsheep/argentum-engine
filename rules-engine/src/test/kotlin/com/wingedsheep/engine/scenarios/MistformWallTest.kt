@@ -319,11 +319,7 @@ class MistformWallTest : FunSpec({
         driver.declareNoBlockers(opponent)
         driver.bothPass()
 
-        // Skip first strike damage step
-        driver.currentStep shouldBe Step.FIRST_STRIKE_COMBAT_DAMAGE
-        driver.bothPass()
-
-        // Combat damage step
+        // Combat damage step (no first strike creatures, so first strike step is skipped per CR 510.4)
         driver.currentStep shouldBe Step.COMBAT_DAMAGE
         driver.bothPass()
 

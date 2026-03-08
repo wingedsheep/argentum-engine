@@ -116,11 +116,8 @@ class EbonbladeReaperTest : FunSpec({
         driver.declareNoBlockers(opponent)
         driver.bothPass()
 
-        // Skip first strike damage
-        driver.currentStep shouldBe Step.FIRST_STRIKE_COMBAT_DAMAGE
-        driver.bothPass()
-
         // Combat damage step - reaper deals 1 damage, then combat damage trigger fires
+        // (no first strike creatures, so first strike step is skipped per CR 510.4)
         // Opponent life: 20 - 1 (combat damage) = 19, then loses half (10 rounded up) = 9
         driver.currentStep shouldBe Step.COMBAT_DAMAGE
 
@@ -182,10 +179,8 @@ class EbonbladeReaperTest : FunSpec({
         driver.declareBlockers(opponent, mapOf(blocker to listOf(reaper)))
         driver.bothPass()
 
-        // Skip first strike damage
-        driver.bothPass()
-
         // Combat damage - reaper is blocked and dies, no damage to player
+        // (no first strike creatures, so first strike step is skipped per CR 510.4)
         // No combat damage trigger should fire
         driver.assertLifeTotal(opponent, 20)
     }
@@ -217,10 +212,8 @@ class EbonbladeReaperTest : FunSpec({
         driver.declareNoBlockers(opponent)
         driver.bothPass()
 
-        // Skip first strike damage
-        driver.bothPass()
-
         // Combat damage: 1 damage to opponent (20 -> 19)
+        // (no first strike creatures, so first strike step is skipped per CR 510.4)
         // Then combat damage trigger: opponent loses half of 19 rounded up = 10, so 19 -> 9
         driver.bothPass()
 

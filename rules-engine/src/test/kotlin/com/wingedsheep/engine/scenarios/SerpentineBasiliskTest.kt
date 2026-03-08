@@ -56,11 +56,8 @@ class SerpentineBasiliskTest : FunSpec({
         driver.declareBlockers(defender, mapOf(blocker to listOf(basilisk)))
         driver.bothPass()
 
-        // Skip first strike damage
-        driver.currentStep shouldBe Step.FIRST_STRIKE_COMBAT_DAMAGE
-        driver.bothPass()
-
         // Combat damage step - basilisk deals 2 to Centaur Courser, trigger fires
+        // (no first strike creatures, so first strike step is skipped per CR 510.4)
         driver.currentStep shouldBe Step.COMBAT_DAMAGE
 
         // Trigger goes on stack - both pass to resolve it
@@ -103,10 +100,8 @@ class SerpentineBasiliskTest : FunSpec({
         driver.declareNoBlockers(defender)
         driver.bothPass()
 
-        // Skip first strike damage
-        driver.bothPass()
-
         // Combat damage to player - trigger should NOT fire (toCreatureOnly)
+        // (no first strike creatures, so first strike step is skipped per CR 510.4)
         // Player just takes 2 damage, no trigger on stack
         driver.assertLifeTotal(defender, 18)
     }
@@ -138,11 +133,8 @@ class SerpentineBasiliskTest : FunSpec({
         driver.declareBlockers(defender, mapOf(blocker to listOf(basilisk)))
         driver.bothPass()
 
-        // Skip first strike damage
-        driver.currentStep shouldBe Step.FIRST_STRIKE_COMBAT_DAMAGE
-        driver.bothPass()
-
         // Combat damage - Bears (2/2) take 2 lethal damage and die to SBA
+        // (no first strike creatures, so first strike step is skipped per CR 510.4)
         // Trigger also fires but Bears are already dead
         // Basilisk (2/3) takes 2 damage, survives with 1 toughness
         driver.currentStep shouldBe Step.COMBAT_DAMAGE

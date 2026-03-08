@@ -70,11 +70,8 @@ class MercurialKiteTest : FunSpec({
         driver.declareBlockers(player2, mapOf(target to listOf(kite)))
         driver.bothPass()
 
-        // Skip first strike damage
-        driver.currentStep shouldBe Step.FIRST_STRIKE_COMBAT_DAMAGE
-        driver.bothPass()
-
         // Combat damage - Kite deals 2 to Reach Creature, trigger fires
+        // (no first strike creatures, so first strike step is skipped per CR 510.4)
         driver.currentStep shouldBe Step.COMBAT_DAMAGE
 
         // Resolve the trigger (tap + doesn't untap)
@@ -115,8 +112,7 @@ class MercurialKiteTest : FunSpec({
         driver.declareBlockers(player2, mapOf(target to listOf(kite)))
         driver.bothPass()
 
-        // Skip first strike, deal combat damage
-        driver.bothPass()
+        // Combat damage (no first strike creatures, so first strike step is skipped per CR 510.4)
         driver.bothPass()
 
         driver.isTapped(target) shouldBe true
@@ -167,10 +163,8 @@ class MercurialKiteTest : FunSpec({
         driver.declareNoBlockers(defender)
         driver.bothPass()
 
-        // Skip first strike damage
-        driver.bothPass()
-
         // Combat damage to player - trigger should NOT fire
+        // (no first strike creatures, so first strike step is skipped per CR 510.4)
         driver.assertLifeTotal(defender, 18)
     }
 })

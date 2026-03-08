@@ -69,7 +69,15 @@ class ShieldmageElderTest : FunSpec({
         // Opponent has an attacking creature
         val bears = driver.putCreatureOnBattlefield(opponent, "Grizzly Bears")
 
-        // Activate: tap Elder + Cleric (both are Clerics) to prevent Bears' damage
+        // Move to opponent's turn for them to attack
+        driver.passPriorityUntil(Step.DECLARE_ATTACKERS)
+
+        // Opponent attacks with bears
+        driver.declareAttackers(opponent, mapOf(bears to activePlayer))
+
+        // Activate prevention ability during opponent's combat (activePlayer has priority)
+        // "Prevent all damage target creature would deal this turn" applies to opponent's turn
+        driver.passPriority(opponent)
         val result = driver.submit(
             ActivateAbility(
                 playerId = activePlayer,
@@ -83,14 +91,10 @@ class ShieldmageElderTest : FunSpec({
         )
         result.isSuccess shouldBe true
 
-        // Resolve the ability
+        // Resolve the prevention ability
         driver.bothPass()
 
-        // Move to opponent's turn for them to attack
-        driver.passPriorityUntil(Step.DECLARE_ATTACKERS)
-
-        // Opponent attacks with bears
-        driver.declareAttackers(opponent, mapOf(bears to activePlayer))
+        // Both pass to advance from declare attackers
         driver.bothPass()
 
         // No blocks

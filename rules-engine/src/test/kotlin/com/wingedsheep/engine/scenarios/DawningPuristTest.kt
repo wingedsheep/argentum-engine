@@ -59,11 +59,8 @@ class DawningPuristTest : FunSpec({
         driver.declareNoBlockers(defender)
         driver.bothPass()
 
-        // Skip first strike damage
-        driver.currentStep shouldBe Step.FIRST_STRIKE_COMBAT_DAMAGE
-        driver.bothPass()
-
         // Combat damage is dealt - trigger fires with MayEffect
+        // (no first strike creatures, so first strike step is skipped per CR 510.4)
         driver.currentStep shouldBe Step.COMBAT_DAMAGE
 
         // Step 1: "May destroy?" — answer yes
@@ -113,10 +110,8 @@ class DawningPuristTest : FunSpec({
         driver.declareNoBlockers(defender)
         driver.bothPass()
 
-        // Skip first strike damage
-        driver.bothPass()
-
         // Combat damage - trigger fires with MayEffect, decline
+        // (no first strike creatures, so first strike step is skipped per CR 510.4)
         val yesNoDecision = driver.pendingDecision as YesNoDecision
         driver.submitYesNo(yesNoDecision.playerId, false)
 
@@ -154,10 +149,8 @@ class DawningPuristTest : FunSpec({
         driver.declareNoBlockers(defender)
         driver.bothPass()
 
-        // Skip first strike damage
-        driver.bothPass()
-
         // Combat damage step - no enchantments so trigger doesn't go on stack
+        // (no first strike creatures, so first strike step is skipped per CR 510.4)
         // Game should proceed normally
         driver.assertLifeTotal(defender, 18)
     }
@@ -192,10 +185,8 @@ class DawningPuristTest : FunSpec({
         driver.declareBlockers(defender, mapOf(blocker to listOf(purist)))
         driver.bothPass()
 
-        // Skip first strike damage
-        driver.bothPass()
-
         // Combat damage - both creatures die, no damage to player
+        // (no first strike creatures, so first strike step is skipped per CR 510.4)
         // Trigger should NOT fire since no combat damage was dealt to a player
 
         // Life total should be unchanged

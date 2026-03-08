@@ -74,7 +74,7 @@ class BerserkMurlodontScenarioTest : ScenarioTestBase() {
                 }
 
                 // Trigger fires — pass to resolve it
-                game.passUntilPhase(Phase.COMBAT, Step.FIRST_STRIKE_COMBAT_DAMAGE)
+                game.passUntilPhase(Phase.COMBAT, Step.COMBAT_DAMAGE)
 
                 // After trigger resolves, Murlodont should be 4/4 (3/3 + 1/1 for 1 blocker)
                 val projected = projector.project(game.state)
@@ -113,10 +113,11 @@ class BerserkMurlodontScenarioTest : ScenarioTestBase() {
                 val orderDecision = game.state.pendingDecision as OrderObjectsDecision
                 game.submitDecision(OrderedResponse(orderDecision.id, listOf(bearId, warriorId)))
 
-                // Trigger fires — pass to resolve
-                game.passUntilPhase(Phase.COMBAT, Step.FIRST_STRIKE_COMBAT_DAMAGE)
+                // Trigger fires — resolve it (still at DECLARE_BLOCKERS)
+                game.resolveStack()
 
                 // After trigger resolves, Murlodont should be 5/5 (3/3 + 2/2 for 2 blockers)
+                // Check stats before combat damage (Murlodont takes lethal 2+3=5 damage at COMBAT_DAMAGE)
                 val projected = projector.project(game.state)
                 withClue("Murlodont should be 5/5 after getting +2/+2 for 2 blockers") {
                     projected.getPower(murlodontId) shouldBe 5
@@ -146,7 +147,7 @@ class BerserkMurlodontScenarioTest : ScenarioTestBase() {
                 game.execute(DeclareBlockers(game.player2Id, mapOf(blockerId to listOf(balothId))))
 
                 // Trigger fires — pass to resolve
-                game.passUntilPhase(Phase.COMBAT, Step.FIRST_STRIKE_COMBAT_DAMAGE)
+                game.passUntilPhase(Phase.COMBAT, Step.COMBAT_DAMAGE)
 
                 // Baloth should get +1/+1 = 8/8
                 val projected = projector.project(game.state)
@@ -178,7 +179,7 @@ class BerserkMurlodontScenarioTest : ScenarioTestBase() {
                 game.execute(DeclareBlockers(game.player2Id, mapOf(bearId to listOf(warriorId))))
 
                 // No trigger should fire — advance past combat damage
-                game.passUntilPhase(Phase.COMBAT, Step.FIRST_STRIKE_COMBAT_DAMAGE)
+                game.passUntilPhase(Phase.COMBAT, Step.COMBAT_DAMAGE)
 
                 // Vanilla Warrior should still be 3/3 (no buff)
                 val projected = projector.project(game.state)

@@ -53,11 +53,8 @@ class SilentSpecterTest : FunSpec({
         driver.declareNoBlockers(defender)
         driver.bothPass()
 
-        // Skip first strike damage
-        driver.currentStep shouldBe Step.FIRST_STRIKE_COMBAT_DAMAGE
-        driver.bothPass()
-
         // Combat damage is dealt - trigger goes on stack
+        // (no first strike creatures, so first strike step is skipped per CR 510.4)
         driver.currentStep shouldBe Step.COMBAT_DAMAGE
 
         // Resolve the trigger on the stack
@@ -97,10 +94,8 @@ class SilentSpecterTest : FunSpec({
         driver.declareNoBlockers(defender)
         driver.bothPass()
 
-        // Skip first strike damage
-        driver.bothPass()
-
         // Combat damage - trigger goes on stack, resolve it
+        // (no first strike creatures, so first strike step is skipped per CR 510.4)
         driver.bothPass()
 
         // Opponent chooses 2 cards from hand to discard
@@ -134,10 +129,8 @@ class SilentSpecterTest : FunSpec({
         driver.declareNoBlockers(defender)
         driver.bothPass()
 
-        // Skip first strike damage
-        driver.bothPass()
-
         // Combat damage - trigger fires but opponent may have cards from initial draw
+        // (no first strike creatures, so first strike step is skipped per CR 510.4)
         // Just verify life total is correct
         driver.assertLifeTotal(defender, 16)
     }
@@ -169,10 +162,8 @@ class SilentSpecterTest : FunSpec({
         driver.declareBlockers(defender, mapOf(blocker to listOf(specter)))
         driver.bothPass()
 
-        // Skip first strike damage
-        driver.bothPass()
-
         // Combat damage - specter is blocked, no damage to player
+        // (no first strike creatures, so first strike step is skipped per CR 510.4)
         // No discard trigger should fire
         driver.assertLifeTotal(defender, 20)
         driver.getHandSize(defender) shouldBe handSizeBefore
