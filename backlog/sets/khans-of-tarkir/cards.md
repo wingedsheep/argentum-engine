@@ -2,11 +2,11 @@
 
 **Set Size:** 269 cards (249 unique card names + basic land variants)
 **Release Date:** September 26, 2014
-**Implemented:** 187 / 249
+**Implemented:** 188 / 249
 
 | Color      | Count |
 |------------|-------|
-| White      | 29    |
+| White      | 30    |
 | Blue       | 29    |
 | Black      | 29    |
 | Red        | 29    |
@@ -260,7 +260,7 @@
 - [x] Wind-Scarred Crag
 - [x] Windstorm
 - [ ] Windswept Heath
-- [ ] Wingmate Roc
+- [x] Wingmate Roc
 - [x] Winterflame
 - [x] Witness of the Ages
 - [ ] Wooded Foothills

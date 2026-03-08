@@ -39,6 +39,7 @@ object KhansOfTarkirSet {
         VenerableLammasu,
         WarBehemoth,
         WatcherOfTheRoost,
+        WingmateRoc,
 
         HighSentinelsOfArashin,
 
