@@ -31,6 +31,7 @@ class CombatExecutors(
         PreventCombatDamageFromExecutor(),
         PreventCombatDamageToAndByExecutor(),
         RedirectCombatDamageToControllerExecutor(),
-        GrantAttackBlockTaxPerCreatureTypeExecutor()
+        GrantAttackBlockTaxPerCreatureTypeExecutor(),
+        GrantKeywordToAttackersBlockedByExecutor()
     )
 }

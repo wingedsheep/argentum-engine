@@ -33,6 +33,7 @@ import com.wingedsheep.sdk.scripting.effects.GainControlByMostOfSubtypeEffect
 import com.wingedsheep.sdk.scripting.effects.GainControlEffect
 import com.wingedsheep.sdk.scripting.effects.GainLifeEffect
 import com.wingedsheep.sdk.scripting.effects.GrantKeywordEffect
+import com.wingedsheep.sdk.scripting.effects.GrantKeywordToAttackersBlockedByEffect
 import com.wingedsheep.sdk.scripting.effects.RemoveKeywordEffect
 import com.wingedsheep.sdk.scripting.effects.LoseLifeEffect
 import com.wingedsheep.sdk.scripting.effects.SetLifeTotalEffect
@@ -410,6 +411,16 @@ object Effects {
      */
     fun GrantKeyword(flag: AbilityFlag, target: EffectTarget = EffectTarget.ContextTarget(0)): Effect =
         GrantKeywordEffect(flag.name, target)
+
+    /**
+     * Grant a keyword to all attacking creatures that were blocked by the target creature.
+     * "Creatures that were blocked by that creature this combat gain [keyword] until end of turn."
+     */
+    fun GrantKeywordToAttackersBlockedBy(
+        keyword: Keyword,
+        target: EffectTarget = EffectTarget.ContextTarget(0),
+        duration: Duration = Duration.EndOfTurn
+    ): Effect = GrantKeywordToAttackersBlockedByEffect(target, keyword.name, duration)
 
     /**
      * Remove a keyword from a single target.

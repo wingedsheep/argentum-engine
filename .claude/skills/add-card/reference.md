@@ -73,6 +73,7 @@ constructors.
 - `Effects.ModifyStats(power, toughness, target = ContextTarget(0))` — until end of turn
 - `Effects.ModifyStats(power: DynamicAmount, toughness: DynamicAmount, target)` — dynamic P/T
 - `Effects.GrantKeyword(keyword, target = ContextTarget(0))` — until end of turn
+- `Effects.GrantKeywordToAttackersBlockedBy(keyword, target, duration)` — grant keyword to attackers blocked by target
 - `Effects.AddCounters(counterType, count, target)`
 - `Effects.SetBasePower(target = Self, power: DynamicAmount, duration = Permanent)` — set creature's base power
 - `Effects.AnimateLand(target, power, toughness, duration)` — turn land into creature
@@ -357,6 +358,7 @@ constructors.
 | `PreventDamageFromAttackingCreaturesThisTurnEffect` | (object)                                    | Prevent from attackers          |
 | `PreventAllCombatDamageThisTurnEffect`              | (object)                                    | Prevent all combat damage       |
 | `GrantCantBeBlockedExceptByColorEffect`             | `filter, canOnlyBeBlockedByColor, duration` | Color evasion                   |
+| `GrantKeywordToAttackersBlockedByEffect`            | `target, keyword, duration`                 | Grant keyword to blocked attackers |
 | `ProvokeEffect`                                     | `target`                                    | Untap + force block source      |
 | `CantBlockGroupEffect`                              | `filter: GroupFilter, duration`             | Group can't block this turn     |
 | `CantBlockTargetCreaturesEffect`                    | `duration`                                  | Can't block target creatures    |

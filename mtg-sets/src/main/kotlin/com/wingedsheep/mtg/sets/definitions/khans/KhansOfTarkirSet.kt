@@ -215,6 +215,7 @@ object KhansOfTarkirSet {
         MantisRider,
         MarduRoughrider,
         PonybackBrigade,
+        RideDown,
         SavageKnuckleblade,
         SiegeRhino,
         SaguMauler,

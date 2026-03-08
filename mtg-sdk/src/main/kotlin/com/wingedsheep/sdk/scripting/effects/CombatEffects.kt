@@ -368,6 +368,29 @@ data class GrantAttackBlockTaxPerCreatureTypeEffect(
  *
  * @property target The creature whose combat damage is redirected (typically Self)
  */
+/**
+ * Grant a keyword to all attacking creatures that were blocked by the target creature.
+ * "Creatures that were blocked by that creature this combat gain [keyword] until end of turn."
+ * Used for Ride Down and similar combat tricks that destroy a blocker and grant abilities
+ * to the attackers it was blocking.
+ *
+ * @property target The blocking creature whose blocked attackers receive the keyword
+ * @property keyword The keyword to grant (e.g., "TRAMPLE")
+ * @property duration How long the keyword lasts
+ */
+@SerialName("GrantKeywordToAttackersBlockedBy")
+@Serializable
+data class GrantKeywordToAttackersBlockedByEffect(
+    val target: EffectTarget,
+    val keyword: String,
+    val duration: Duration = Duration.EndOfTurn
+) : Effect {
+    override val description: String =
+        "Creatures that were blocked by ${target.description} gain ${keyword.lowercase().replace('_', ' ')} ${duration.description}"
+
+    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
+}
+
 @SerialName("RedirectCombatDamageToController")
 @Serializable
 data class RedirectCombatDamageToControllerEffect(
