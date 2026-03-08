@@ -136,6 +136,11 @@ class CostHandler(
             is AbilityCost.ReturnToHand -> {
                 findMatchingPermanentsUnified(state, controllerId, cost.filter).size >= cost.count
             }
+            is AbilityCost.RemoveXPlusOnePlusOneCounters -> {
+                // X can be 0, so this is always payable as long as there are creatures
+                // maxAffordableX is capped by total +1/+1 counters in LegalActionsCalculator
+                true
+            }
             is AbilityCost.Composite -> {
                 cost.costs.all { canPayAbilityCost(state, it, sourceId, controllerId, manaPool) }
             }
@@ -457,6 +462,14 @@ class CostHandler(
 
                 CostPaymentResult.success(newState, manaPool)
             }
+            is AbilityCost.RemoveXPlusOnePlusOneCounters -> {
+                val xCount = choices.xValue
+                if (xCount == 0) {
+                    CostPaymentResult.success(state, manaPool)
+                } else {
+                    removeCountersFromCreatures(state, controllerId, xCount, manaPool)
+                }
+            }
             is AbilityCost.Composite -> {
                 var currentState = state
                 var currentPool = manaPool
@@ -566,6 +579,46 @@ class CostHandler(
         }
 
         return CostPaymentResult.success(newState, manaPool, events)
+    }
+
+    /**
+     * Remove X +1/+1 counters from among creatures the player controls.
+     * Auto-distributes removal across creatures, preferring those with the most counters.
+     */
+    private fun removeCountersFromCreatures(
+        state: GameState,
+        controllerId: EntityId,
+        count: Int,
+        manaPool: ManaPool
+    ): CostPaymentResult {
+        // Find all creatures with +1/+1 counters controlled by this player
+        val creaturesWithCounters = state.entities.filter { (_, container) ->
+            container.get<ControllerComponent>()?.playerId == controllerId &&
+            container.get<CardComponent>()?.typeLine?.isCreature == true &&
+            (container.get<CountersComponent>()?.getCount(CounterType.PLUS_ONE_PLUS_ONE) ?: 0) > 0
+        }.map { (entityId, container) ->
+            entityId to (container.get<CountersComponent>()?.getCount(CounterType.PLUS_ONE_PLUS_ONE) ?: 0)
+        }.sortedByDescending { it.second } // Prefer creatures with the most counters
+
+        val totalAvailable = creaturesWithCounters.sumOf { it.second }
+        if (totalAvailable < count) {
+            return CostPaymentResult.failure("Not enough +1/+1 counters to remove (need $count, have $totalAvailable)")
+        }
+
+        var newState = state
+        var remaining = count
+
+        for ((creatureId, available) in creaturesWithCounters) {
+            if (remaining <= 0) break
+            val toRemove = minOf(remaining, available)
+            newState = newState.updateEntity(creatureId) { container ->
+                val counters = container.get<CountersComponent>() ?: CountersComponent()
+                container.with(counters.withRemoved(CounterType.PLUS_ONE_PLUS_ONE, toRemove))
+            }
+            remaining -= toRemove
+        }
+
+        return CostPaymentResult.success(newState, manaPool)
     }
 
     // Helper functions

@@ -342,4 +342,16 @@ sealed interface AbilityCost : TextReplaceable<AbilityCost> {
         override val description: String = if (change >= 0) "+$change" else "$change"
         override fun applyTextReplacement(replacer: TextReplacer): AbilityCost = this
     }
+
+    /**
+     * Remove X +1/+1 counters from among creatures you control.
+     * X is chosen by the player when activating the ability.
+     * The engine auto-distributes counter removal across creatures.
+     */
+    @SerialName("CostRemoveXPlusOnePlusOneCounters")
+    @Serializable
+    data object RemoveXPlusOnePlusOneCounters : AbilityCost {
+        override val description: String = "Remove X +1/+1 counters from among creatures you control"
+        override fun applyTextReplacement(replacer: TextReplacer): AbilityCost = this
+    }
 }

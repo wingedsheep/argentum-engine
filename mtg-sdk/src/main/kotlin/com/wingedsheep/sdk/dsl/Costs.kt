@@ -178,6 +178,16 @@ object Costs {
         AbilityCost.ReturnToHand(filter, count)
 
     // =========================================================================
+    // Counter Removal Costs
+    // =========================================================================
+
+    /**
+     * Remove X +1/+1 counters from among creatures you control.
+     * X is chosen by the player; the engine auto-distributes counter removal.
+     */
+    val RemoveXPlusOnePlusOneCounters: AbilityCost = AbilityCost.RemoveXPlusOnePlusOneCounters
+
+    // =========================================================================
     // Composite Costs
     // =========================================================================
 

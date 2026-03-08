@@ -17,6 +17,7 @@ import com.wingedsheep.engine.state.components.player.PlayerShroudComponent
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.state.components.battlefield.SummoningSicknessComponent
 import com.wingedsheep.engine.state.components.combat.AttackersDeclaredThisCombatComponent
+import com.wingedsheep.engine.state.components.battlefield.CountersComponent
 import com.wingedsheep.engine.state.components.combat.BlockersDeclaredThisCombatComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.ChosenCreatureTypeComponent
@@ -1330,6 +1331,9 @@ class LegalActionsCalculator(
                                 is AbilityCost.ExileXFromGraveyard -> {
                                     // ExileXFromGraveyard: validated via maxAffordableX cap below
                                 }
+                                is AbilityCost.RemoveXPlusOnePlusOneCounters -> {
+                                    // RemoveXPlusOnePlusOneCounters: validated via maxAffordableX cap below
+                                }
                                 else -> {}
                             }
                         }
@@ -1381,17 +1385,32 @@ class LegalActionsCalculator(
                 } else null
 
                 // Calculate X cost info for activated abilities with X in their mana cost
+                // or X determined by a variable cost (e.g., RemoveXPlusOnePlusOneCounters)
                 val abilityManaCost = when (ability.cost) {
                     is AbilityCost.Mana -> (ability.cost as AbilityCost.Mana).cost
                     is AbilityCost.Composite -> (ability.cost as AbilityCost.Composite).costs
                         .filterIsInstance<AbilityCost.Mana>().firstOrNull()?.cost
                     else -> null
                 }
-                val abilityHasXCost = abilityManaCost?.hasX == true
-                val abilityMaxAffordableX: Int? = if (abilityHasXCost && abilityManaCost != null) {
-                    val availableSources = manaSolver.getAvailableManaCount(state, playerId)
-                    val fixedCost = abilityManaCost.cmc  // X contributes 0 to CMC
-                    var maxX = (availableSources - fixedCost).coerceAtLeast(0)
+                val abilityHasXInManaCost = abilityManaCost?.hasX == true
+
+                // Check for X-variable costs (costs that determine X without mana)
+                val hasRemoveXCountersCost = when (ability.cost) {
+                    is AbilityCost.RemoveXPlusOnePlusOneCounters -> true
+                    is AbilityCost.Composite -> (ability.cost as AbilityCost.Composite).costs
+                        .any { it is AbilityCost.RemoveXPlusOnePlusOneCounters }
+                    else -> false
+                }
+                val abilityHasXCost = abilityHasXInManaCost || hasRemoveXCountersCost
+
+                val abilityMaxAffordableX: Int? = if (abilityHasXCost) {
+                    var maxX = if (abilityHasXInManaCost && abilityManaCost != null) {
+                        val availableSources = manaSolver.getAvailableManaCount(state, playerId)
+                        val fixedCost = abilityManaCost.cmc  // X contributes 0 to CMC
+                        (availableSources - fixedCost).coerceAtLeast(0)
+                    } else {
+                        Int.MAX_VALUE // No mana-based X constraint
+                    }
 
                     // Cap by graveyard size if ability has ExileXFromGraveyard cost
                     val hasExileXCost = when (ability.cost) {
@@ -1403,6 +1422,19 @@ class LegalActionsCalculator(
                         val graveyardZone = com.wingedsheep.engine.state.ZoneKey(playerId, Zone.GRAVEYARD)
                         val graveyardSize = state.getZone(graveyardZone).size
                         maxX = minOf(maxX, graveyardSize)
+                    }
+
+                    // Cap by total +1/+1 counters if ability has RemoveXPlusOnePlusOneCounters cost
+                    if (hasRemoveXCountersCost) {
+                        var totalCounters = 0
+                        for ((_, container) in state.entities) {
+                            if (container.get<ControllerComponent>()?.playerId == playerId &&
+                                container.get<CardComponent>()?.typeLine?.isCreature == true) {
+                                totalCounters += container.get<CountersComponent>()
+                                    ?.getCount(com.wingedsheep.sdk.core.CounterType.PLUS_ONE_PLUS_ONE) ?: 0
+                            }
+                        }
+                        maxX = minOf(maxX, totalCounters)
                     }
 
                     maxX

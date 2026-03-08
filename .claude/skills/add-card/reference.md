@@ -600,6 +600,7 @@ constructors.
 - `Costs.Sacrifice(filter)` / `Costs.SacrificeAnother(filter)` / `Costs.SacrificeSelf` / `Costs.SacrificeMultiple(count, filter)` / `Costs.SacrificeChosenCreatureType`
 - `Costs.DiscardCard` / `Costs.Discard(filter)` / `Costs.DiscardSelf` / `Costs.DiscardHand`
 - `Costs.ExileFromGraveyard(count, filter)` / `Costs.ExileXFromGraveyard(filter)` / `Costs.ExileSelf`
+- `Costs.RemoveXPlusOnePlusOneCounters` — remove X +1/+1 counters from among creatures you control (X chosen by player)
 - `Costs.TapAttachedCreature` — tap the creature this is attached to
 - `Costs.TapPermanents(count, filter)` — tap N permanents
 - `Costs.Loyalty(change)` — planeswalker loyalty

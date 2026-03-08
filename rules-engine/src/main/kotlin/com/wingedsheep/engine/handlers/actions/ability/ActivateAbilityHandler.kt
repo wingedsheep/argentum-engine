@@ -271,8 +271,10 @@ class ActivateAbilityHandler(
         // Auto-tap lands for mana costs before paying
         val manaCost = extractManaCost(effectiveCost)
         val xValue = action.xValue ?: 0
+        // Only pass xValue to auto-tap when X is in the mana cost itself (not in a non-mana cost like counter removal)
+        val manaXValue = if (manaCost?.hasX == true) xValue else 0
         if (manaCost != null) {
-            val autoTapResult = autoTapForManaCost(currentState, action.playerId, manaPool, manaCost, cardComponent.name, xValue)
+            val autoTapResult = autoTapForManaCost(currentState, action.playerId, manaPool, manaCost, cardComponent.name, manaXValue)
                 ?: return ExecutionResult.error(state, "Not enough mana to activate this ability")
             currentState = autoTapResult.newState
             manaPool = autoTapResult.newPool

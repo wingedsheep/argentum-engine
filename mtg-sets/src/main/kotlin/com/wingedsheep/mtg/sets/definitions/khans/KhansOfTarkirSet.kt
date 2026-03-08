@@ -127,6 +127,7 @@ object KhansOfTarkirSet {
         MurderousCut,
         NecropolisFiend,
         RakshasasSecret,
+        RetributionOfTheAncients,
         RiteOfTheSerpent,
         Throttle,
 

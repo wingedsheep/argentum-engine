@@ -2,13 +2,13 @@
 
 **Set Size:** 269 cards (249 unique card names + basic land variants)
 **Release Date:** September 26, 2014
-**Implemented:** 191 / 249
+**Implemented:** 192 / 249
 
 | Color      | Count |
 |------------|-------|
 | White      | 30    |
 | Blue       | 30    |
-| Black      | 29    |
+| Black      | 30    |
 | Red        | 30    |
 | Green      | 30    |
 | Multicolor | 30    |
@@ -173,7 +173,7 @@
 - [x] Rakshasa's Secret
 - [ ] Rakshasa Vizier
 - [x] Rattleclaw Mystic
-- [ ] Retribution of the Ancients
+- [x] Retribution of the Ancients
 - [x] Ride Down
 - [x] Rite of the Serpent
 - [x] Riverwheel Aerialists
