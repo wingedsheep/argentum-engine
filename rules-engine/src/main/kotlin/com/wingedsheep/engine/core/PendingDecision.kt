@@ -44,7 +44,10 @@ data class DecisionContext(
     val phase: DecisionPhase = DecisionPhase.RESOLUTION,
 
     /** The entity that triggered this decision (e.g., the blocked creature for combat triggers) */
-    val triggeringEntityId: EntityId? = null
+    val triggeringEntityId: EntityId? = null,
+
+    /** If true, render the yes/no decision inline on the triggering entity card (e.g., Dragon auras) */
+    val inlineOnTrigger: Boolean = false
 )
 
 /**

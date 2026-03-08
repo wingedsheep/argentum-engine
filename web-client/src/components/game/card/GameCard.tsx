@@ -167,8 +167,9 @@ export function GameCard({
   const distributeMaxForCard = distributeState?.maxPerTarget?.[card.id]
   const distributeAtMax = distributeMaxForCard !== undefined && distributeAllocated >= distributeMaxForCard
 
-  // Trigger YesNo check (inline buttons on triggering entity card)
+  // Trigger YesNo check (inline buttons on triggering entity card, only when inlineOnTrigger is set)
   const isTriggerYesNo = pendingDecision?.type === 'YesNoDecision'
+    && pendingDecision.context.inlineOnTrigger
     && pendingDecision.context.triggeringEntityId === card.id
 
   // Combat mode checks

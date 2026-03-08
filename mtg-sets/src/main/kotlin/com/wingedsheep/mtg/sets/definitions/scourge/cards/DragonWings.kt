@@ -50,7 +50,8 @@ val DragonWings = card("Dragon Wings") {
         effect = MayEffect(
             effect = Effects.ReturnSelfToBattlefieldAttached(),
             description_override = "Attach Dragon Wings to this creature?",
-            sourceRequiredZone = Zone.GRAVEYARD
+            sourceRequiredZone = Zone.GRAVEYARD,
+            inlineOnTrigger = true
         )
     }
 

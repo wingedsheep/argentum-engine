@@ -52,7 +52,8 @@ data class CompositeEffect(
 data class MayEffect(
     val effect: Effect,
     val description_override: String? = null,
-    val sourceRequiredZone: Zone? = null
+    val sourceRequiredZone: Zone? = null,
+    val inlineOnTrigger: Boolean = false
 ) : Effect {
     override val description: String = description_override ?: "You may ${effect.description.lowercase()}"
 

@@ -51,7 +51,8 @@ val DragonFangs = card("Dragon Fangs") {
         effect = MayEffect(
             effect = Effects.ReturnSelfToBattlefieldAttached(),
             description_override = "Attach Dragon Fangs to this creature?",
-            sourceRequiredZone = Zone.GRAVEYARD
+            sourceRequiredZone = Zone.GRAVEYARD,
+            inlineOnTrigger = true
         )
     }
 

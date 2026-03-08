@@ -227,6 +227,8 @@ export interface DecisionContext {
   readonly sourceName?: string
   /** The entity that triggered this decision (e.g., the blocked creature for combat triggers) */
   readonly triggeringEntityId?: EntityId
+  /** If true, render yes/no inline on the triggering entity card (e.g., Dragon auras) */
+  readonly inlineOnTrigger?: boolean
 }
 
 /**

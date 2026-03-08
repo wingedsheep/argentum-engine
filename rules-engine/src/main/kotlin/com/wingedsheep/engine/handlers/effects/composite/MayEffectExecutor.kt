@@ -54,7 +54,8 @@ class MayEffectExecutor(
                 sourceId = context.sourceId,
                 sourceName = sourceName,
                 phase = DecisionPhase.RESOLUTION,
-                triggeringEntityId = context.triggeringEntityId
+                triggeringEntityId = context.triggeringEntityId,
+                inlineOnTrigger = effect.inlineOnTrigger
             ),
             yesText = "Yes",
             noText = "No"

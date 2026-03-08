@@ -51,7 +51,8 @@ val DragonShadow = card("Dragon Shadow") {
         effect = MayEffect(
             effect = Effects.ReturnSelfToBattlefieldAttached(),
             description_override = "Attach Dragon Shadow to this creature?",
-            sourceRequiredZone = Zone.GRAVEYARD
+            sourceRequiredZone = Zone.GRAVEYARD,
+            inlineOnTrigger = true
         )
     }
 
