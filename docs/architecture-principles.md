@@ -24,6 +24,9 @@ design decisions made, and the reasoning behind them.
    - [2.6 Strategy-Based Registries](#26-strategy-based-registries)
    - [2.7 Replacement Effects](#27-replacement-effects)
    - [2.8 State-Based Actions](#28-state-based-actions)
+   - [2.9 Turn Structure and Priority](#29-turn-structure-and-priority)
+   - [2.10 Mana and Cost Payment](#210-mana-and-cost-payment)
+   - [2.11 Copy Effects](#211-copy-effects)
 3. [Game Server: The Orchestration Layer](#3-game-server-the-orchestration-layer)
    - [3.1 Thin Server, Zero Game Logic](#31-thin-server-zero-game-logic)
    - [3.2 State Masking (Fog of War)](#32-state-masking-fog-of-war)
@@ -37,9 +40,9 @@ design decisions made, and the reasoning behind them.
    - [4.3 Zustand Slice Architecture](#43-zustand-slice-architecture)
    - [4.4 Intent Capture, Not Computation](#44-intent-capture-not-computation)
 5. [Testing: Multi-Layered Verification](#5-testing-multi-layered-verification)
-   - [5.1 Unit and Integration Tests](#51-unit-and-integration-tests)
-   - [5.2 Scenario Tests](#52-scenario-tests)
-   - [5.3 End-to-End Tests with Dev Scenario API](#53-end-to-end-tests-with-dev-scenario-api)
+   - [5.1 Unit and Integration Tests (Engine Layer)](#51-unit-and-integration-tests-engine-layer)
+   - [5.2 Scenario Tests (Card Interaction Layer)](#52-scenario-tests-card-interaction-layer)
+   - [5.3 End-to-End Tests with Dev Scenario API (Full Stack Layer)](#53-end-to-end-tests-with-dev-scenario-api-full-stack-layer)
 
 ---
 
@@ -177,11 +180,41 @@ sealed interface EffectTarget {
 }
 ```
 
+**The target lifecycle.** To see why symbolic references matter, consider what happens when a player
+casts "Doom Blade — destroy target nonblack creature":
+
+```
+1. CAST TIME: Player selects a creature (e.g., entity "bear-123")
+   → CastSpellHandler validates target against TargetRequirement
+   → ChosenTarget.Permanent("bear-123") stored in TargetsComponent on the spell entity
+   → Spell goes on the stack
+
+2. ON THE STACK: Opponent gets priority and can respond
+   → The spell's effect still says ContextTarget(0), not "bear-123"
+   → The chosen target is stored separately on the spell entity, not in the effect
+
+3. RESOLUTION: Both players pass, spell resolves
+   → StackResolver retrieves TargetsComponent from the spell entity
+   → Re-validates each target against the original requirements (Rule 608.2b)
+   → If the creature gained hexproof or left the battlefield: spell fizzles
+   → If still legal: builds EffectContext(targets = [ChosenTarget.Permanent("bear-123")])
+
+4. EFFECT EXECUTION: Engine runs the DestroyEffect
+   → Effect references EffectTarget.ContextTarget(0)
+   → resolveTarget() looks up context.targets[0] → "bear-123"
+   → Creature is destroyed
+```
+
+The key insight is that `ContextTarget(0)` is never resolved until step 4. The effect definition
+doesn't know or care which entity was chosen — it just says "the first target." This separation
+enables the engine to recheck legality at step 3 without any special-case code.
+
 **Why this matters:**
 
-- **Target legality rechecking.** Magic rules require that targets are rechecked on resolution. If a
-  creature gains hexproof between cast and resolution, the spell fizzles. Symbolic references make this
-  recheck natural — the engine resolves `ContextTarget(0)` at resolution time and validates it.
+- **Target legality rechecking.** Re-validation at resolution is mandatory per Rule 608.2b. Because
+  the chosen target (`ChosenTarget`) is stored separately from the effect reference
+  (`ContextTarget`), the engine can validate one against the other naturally — the reference is the
+  "slot," the chosen target is the "binding."
 - **Oblivion Ring pattern.** `StoredEntityTarget("exiledCard")` elegantly handles cards that exile
   something on ETB and return it on LTB. The leaves-the-battlefield trigger references the exact entity
   exiled by the enters-the-battlefield trigger via a named variable stored in the effect scope, without
@@ -284,14 +317,31 @@ It models Magic: The Gathering's rules as a deterministic state machine operatin
 
 **Principle:** The engine is a pure function: `(GameState, GameAction) -> ExecutionResult`.
 
-Every operation in the engine takes an immutable `GameState` and a `GameAction`, and returns a new
-`GameState` plus a list of `GameEvent`s. Nothing is mutated. The `ActionProcessor` is the entry point:
+Every operation in the engine takes an immutable `GameState` and a `GameAction`, and returns an
+`ExecutionResult` containing a new `GameState` plus a list of `GameEvent`s. Nothing is mutated.
+The `ActionProcessor` is the entry point:
 
 ```kotlin
 class ActionProcessor {
     fun process(state: GameState, action: GameAction): ExecutionResult
 }
 ```
+
+`ExecutionResult` captures the three possible outcomes of any action:
+
+```kotlin
+sealed interface EngineResult {
+    data class Success(val state: GameState, val events: List<GameEvent>) : EngineResult
+    data class PausedForDecision(val state: GameState, val decision: PendingDecision, ...) : EngineResult
+    data class Failure(val state: GameState, val error: String) : EngineResult
+    data class GameOver(val state: GameState, val events: List<GameEvent>) : EngineResult
+}
+```
+
+The `PausedForDecision` case is central to how the engine handles player input mid-resolution — when a
+spell requires a choice (e.g., "search your library for a card"), the engine doesn't block. It returns a
+paused result with a `PendingDecision` describing what input is needed and a `ContinuationFrame` on the
+state's continuation stack describing how to resume (see [Section 2.4](#24-reentrant-continuations)).
 
 `GameState` is a Kotlin `data class` containing the complete game state: all entities and their
 components, zone contents, stack, turn information, pending decisions, floating effects, and the
@@ -365,16 +415,36 @@ data class CardComponent(
 ) : Component
 ```
 
+**What does a creature look like?** A vanilla 2/2 creature (Grizzly Bears) on the battlefield is
+just an `EntityId` with these components attached:
+
+```
+EntityId("bears-abc123") → ComponentContainer {
+    CardComponent        → name="Grizzly Bears", manaCost={1}{G}, typeLine=Creature—Bear,
+                           baseStats=2/2, baseKeywords=[], colors=[GREEN]
+    OwnerComponent       → playerId="player-1"       (immutable — who owns the card)
+    ControllerComponent  → playerId="player-1"       (mutable — who controls it now)
+    SummoningSicknessComponent                        (tag — removed on controller's next turn)
+}
+```
+
+That's it — four components. When the creature takes damage, a `DamageComponent(3)` is added. When
+it taps to attack, `TappedComponent` and `AttackingComponent` are added. When it's enchanted,
+the aura entity gets an `AttachedToComponent(targetId="bears-abc123")`. Each state change adds or
+removes a component, building up the entity's identity dynamically.
+
+When the creature dies (moves to graveyard), `stripBattlefieldComponents()` removes all transient
+state — `ControllerComponent`, `TappedComponent`, `SummoningSicknessComponent`, `DamageComponent`,
+combat state, attachments — leaving only the immutable identity (`CardComponent`, `OwnerComponent`).
+
 **Why ECS instead of class inheritance?**
 
 - **Shape-shifting.** Magic cards constantly alter their fundamental nature. A Land can become a Creature
   (via animation effects), lose all abilities, gain Flying, then turn face-down. An OOP hierarchy
   like `class Land : Permanent` would collapse when a Land needs creature stats. ECS handles this by
   simply adding `PowerToughnessComponent` — no reclassification needed.
-- **Clean zone transitions.** When a creature dies (moves from battlefield to graveyard), it should
-  lose all battlefield-specific state (tapped, summoning sickness, damage, attachments). ECS makes
-  this trivial: `stripBattlefieldComponents()` removes the relevant components. An OOP object would
-  need explicit reset logic for each field.
+- **Clean zone transitions.** When a creature dies, `stripBattlefieldComponents()` removes the
+  relevant components in one call. An OOP object would need explicit reset logic for each field.
 - **Uniform entity handling.** Players, cards, tokens, emblems, and abilities are all entities. The
   engine doesn't need separate systems for "player operations" vs. "card operations" — it just queries
   and modifies components.
@@ -555,18 +625,23 @@ means creating a new `EffectExecutor` and registering it — no changes to `Acti
 
 ### 2.7 Replacement Effects
 
-**Principle:** Replacement effects intercept game events *before* they happen, modifying them without
-using the stack.
+**Principle:** Replacement effects modify game actions *before* they produce events, without using
+the stack.
 
-Unlike triggered abilities (which fire after an event and go on the stack), replacement effects are
-interceptors that modify an action as it occurs. Doubling Season doubles the number of tokens created;
-Rest in Peace redirects cards going to the graveyard to exile instead. These are modeled in the SDK
-as a `ReplacementEffect` sealed interface with a compositional `appliesTo` filter:
+Unlike triggered abilities (which fire *after* an event and go on the stack), replacement effects
+intercept an action as it occurs and change its outcome. Doubling Season doubles the number of tokens
+created; Rest in Peace redirects cards going to the graveyard to exile instead.
+
+These are modeled in the SDK as a `ReplacementEffect` sealed interface. Each replacement declares an
+`appliesTo` pattern — a `GameEvent` filter that describes *which* game actions it intercepts. Note
+that `GameEvent` here is an SDK-level pattern-matching type (compositional filters over event types,
+recipients, and sources), not the engine's runtime `GameEvent` instances. The SDK defines *what* to
+match; the engine checks these patterns against actual game actions at execution time:
 
 ```kotlin
 sealed interface ReplacementEffect {
     val description: String
-    val appliesTo: GameEvent  // What event this intercepts
+    val appliesTo: GameEvent  // Pattern describing which actions to intercept
 }
 
 // Doubling Season: double token creation
@@ -590,19 +665,43 @@ data class RedirectZoneChange(
 ) : ReplacementEffect
 ```
 
-The engine checks for applicable replacement effects during zone changes, damage, token creation,
-and counter placement. Because replacement effects are data (not callbacks), the engine can inspect
-which replacements apply, handle ordering when multiple replacement effects compete (the affected
-player chooses), and serialize the state even when a replacement is pending.
+The engine checks for applicable replacement effects at specific interception points — zone changes,
+damage assignment, token creation, counter placement, draw, life gain, and discard. Because
+replacement effects are data (not callbacks), the engine can inspect which replacements apply, handle
+ordering when multiple replacement effects compete (the affected player chooses per Rule 616.1), and
+serialize the state even when a replacement choice is pending.
 
-**Why model replacement effects as data interceptors?**
+**Why model replacement effects as declarative patterns?**
 
-- **No stack interaction.** Replacement effects modify events in-place — they don't use the stack and
-  can't be responded to. Modeling them as interceptors that the engine checks at specific points
-  (zone changes, damage, counters) mirrors the rules naturally.
-- **Composability.** The `appliesTo` field uses the same `GameEvent` filter system as trigger
+- **No stack interaction.** Replacement effects modify actions in-place — they don't use the stack and
+  can't be responded to. Modeling them as patterns that the engine checks at specific interception
+  points mirrors the rules naturally.
+- **Composability.** The `appliesTo` field uses the same `GameEvent` pattern system as trigger
   conditions. A replacement effect that applies to "damage dealt to creatures you control" reuses
-  the same predicate composition as a trigger that fires on the same event.
+  the same predicate composition as a trigger that fires on the same event — `RecipientFilter`,
+  `SourceFilter`, and `DamageType` are shared between both systems.
+
+**Ordering multiple replacement effects.** When multiple replacement effects would apply to the same
+event, Rule 616.1 requires the affected player (or the controller of the affected object) to choose
+which applies first. The engine handles this pragmatically rather than with a fully general Rule 616
+framework:
+
+- **Combat damage prevention** is the primary case where ordering matters. When a single damage
+  prevention shield (e.g., "prevent the next 3 damage") can't cover all incoming damage from
+  multiple attackers, the engine pauses with a `DistributeDecision` and a
+  `DamagePreventionContinuation`. The player distributes the shield across sources, and the engine
+  creates source-specific prevention effects for each allocation.
+- **Non-combat replacements** (draw replacement, token doubling, counter doubling, damage
+  amplification) are applied sequentially — each category has a well-defined application point in
+  the engine, and multiple effects of the same type stack naturally (two doublers quadruple).
+  Player choice between competing replacements of *different* types is not yet needed because the
+  engine's card pool hasn't required it.
+
+This design reflects a pragmatic choice: handle the critical case (combat damage distribution) with
+full player agency via the continuation system, while leaving other replacements to deterministic
+application order. The `ReplacementEffect` data model is expressive enough to support a general
+Rule 616 framework if future cards require it — the `appliesTo` patterns already provide the
+information needed to detect competing replacements.
 
 ### 2.8 State-Based Actions
 
@@ -617,7 +716,7 @@ until no more SBAs apply:
 class StateBasedActionChecker {
     fun checkAndApply(state: GameState): ExecutionResult {
         var currentState = state
-        val allEvents = mutableListOf<GameEvent>()
+        val allEvents = mutableListOf<GameEvent>()  // local accumulator — purely internal
 
         var actionsApplied: Boolean
         do {
@@ -631,6 +730,11 @@ class StateBasedActionChecker {
     }
 }
 ```
+
+Note the `mutableListOf` — this is local mutation within a pure function. The function takes an
+immutable `GameState`, uses mutable locals to accumulate results across loop iterations, and returns
+a new immutable `ExecutionResult`. No external state is modified. This is a common Kotlin idiom where
+a `fold` would be less readable due to the loop-until-stable-state pattern.
 
 Each pass checks the following rules (among others):
 
@@ -651,6 +755,233 @@ from lethal damage) might leave a different creature with 0 toughness if the aur
 toughness. The loop continues until the game reaches a stable state. Events emitted during SBA
 processing feed into trigger detection afterward, ensuring death triggers and similar abilities
 fire correctly.
+
+### 2.9 Turn Structure and Priority
+
+**Principle:** The turn is a state machine of phases and steps, with priority as the mechanism that
+gates all player interaction.
+
+Magic's turn structure is modeled as two enums — `Phase` (5 values) and `Step` (13 values) — with
+the `TurnManager` driving progression:
+
+```
+Beginning Phase:    UNTAP → UPKEEP → DRAW
+Precombat Main:     PRECOMBAT_MAIN
+Combat Phase:       BEGIN_COMBAT → DECLARE_ATTACKERS → DECLARE_BLOCKERS
+                    → FIRST_STRIKE_COMBAT_DAMAGE → COMBAT_DAMAGE → END_COMBAT
+Postcombat Main:    POSTCOMBAT_MAIN
+Ending Phase:       END → CLEANUP
+```
+
+Each step has a `hasPriority` property. Most steps grant priority; UNTAP and CLEANUP do not (the
+engine auto-advances past them). Steps that don't grant priority execute their actions (untap all
+permanents, discard to hand size) and immediately advance to the next step.
+
+**Priority and the "both players pass" rule.** `GameState` tracks priority with two fields:
+
+```kotlin
+val priorityPlayerId: EntityId? = null           // who currently holds priority
+val priorityPassedBy: Set<EntityId> = emptySet() // players who passed this round
+```
+
+When a player passes priority, the engine adds them to `priorityPassedBy` and checks
+`allPlayersPassed()`. Two outcomes are possible:
+
+1. **Stack is non-empty:** The top item resolves. After resolution, the engine runs state-based
+   actions, detects triggers, and gives priority back to the active player with `priorityPassedBy`
+   reset.
+2. **Stack is empty:** The `TurnManager` advances to the next step. `priorityPassedBy` is cleared,
+   step-specific actions execute (draw a card, deal combat damage, etc.), and priority goes to the
+   active player.
+
+If not all players have passed, priority moves to the next player in turn order. This naturally
+implements Rule 117.3b — the game only advances when all players pass in succession without anyone
+taking an action.
+
+**Step-specific auto-actions.** The `TurnManager.advanceStep()` method handles each step's built-in
+behavior:
+
+- **UNTAP:** Untap all permanents, remove summoning sickness. No priority — recursively advances.
+- **DRAW:** Draw a card, check draw replacement effects, then run state-based actions.
+- **DECLARE_ATTACKERS / DECLARE_BLOCKERS:** Skip entirely if no valid attackers/blockers exist.
+- **COMBAT_DAMAGE:** Apply all combat damage simultaneously, then run state-based actions.
+- **CLEANUP:** Discard to hand size, remove damage, expire end-of-turn effects. Normally no
+  priority — but if SBAs or triggers occur during cleanup, a new cleanup step begins with priority.
+
+**Trigger detection at step boundaries.** When the stack empties and the game advances, the engine
+runs three rounds of trigger detection: standard event-based triggers (from events emitted during
+advancement), delayed triggers (scheduled for specific future steps, e.g., Astral Slide's "return at
+end of turn"), and phase/step triggers (permanents with "at the beginning of your upkeep" abilities).
+All detected triggers are processed via `TriggerProcessor`, which may pause for targeting decisions
+using the continuation system.
+
+**Why model priority as a passed-by set?**
+
+- **Multiplayer-ready.** The `priorityPassedBy` set scales naturally to 3+ player games. The game
+  advances only when all players in `turnOrder` have passed, not just two.
+- **Reset semantics.** Any player action (casting a spell, activating an ability) clears the set via
+  `withPriority()`, forcing all players to pass again — exactly matching Rule 117.3b.
+- **No hidden state.** Priority is fully captured in the immutable `GameState`. The server can
+  serialize a paused game mid-priority-round and resume it later without losing track of who has
+  passed.
+
+### 2.10 Mana and Cost Payment
+
+**Principle:** Costs are a three-tier system — declaration (SDK), validation (solver), and execution
+(handler) — with smart automatic payment.
+
+Mana is one of Magic's most complex subsystems. The engine handles it through three cooperating
+layers:
+
+**Tier 1: Cost Declaration (SDK).** The SDK defines three separate cost hierarchies for different
+contexts:
+
+| Cost Type | Context | Examples |
+|-----------|---------|----------|
+| `ManaCost` | Spell casting | `{2}{B}{R}`, `{X}{G}`, `{G/U}` (hybrid), `{W/P}` (Phyrexian) |
+| `AbilityCost` | Activated abilities | `Tap`, `Sacrifice(filter)`, `PayLife(3)`, `Mana(cost)`, `Composite(...)` |
+| `AdditionalCost` | Extra spell costs | `SacrificePermanent(filter)`, `DiscardCards(count)`, `ExileCards(...)` |
+
+`ManaCost` parses string notation into a list of `ManaSymbol` variants — `Colored(color)`,
+`Generic(amount)`, `Hybrid(color1, color2)`, `Phyrexian(color)`, `X`, and `Colorless`. This
+structured representation enables the solver to reason about payment options without string parsing.
+
+**Tier 2: Mana Solving (Engine).** The `ManaSolver` determines whether a player *can* pay a cost
+and *which sources to tap*. This is a constraint satisfaction problem, not a simple subtraction:
+
+```kotlin
+class ManaSolver {
+    fun canPay(state: GameState, playerId: EntityId, cost: ManaCost, xValue: Int?): Boolean
+    fun solve(state: GameState, playerId: EntityId, cost: ManaCost, xValue: Int?): ManaSolution?
+}
+```
+
+The solver's algorithm:
+
+1. **Inventory available sources.** Find all untapped mana-producing permanents the player controls
+   (using projected state — a land animated into a creature with summoning sickness can't tap).
+2. **Pay colored costs first.** Colored symbols have no flexibility — `{B}` requires black mana.
+   The solver taps the least-flexible source that produces the needed color.
+3. **Pay generic costs last.** Generic mana (`{2}`) can use any source. The solver preserves
+   flexibility by tapping in priority order:
+
+```
+Basic lands (priority 0-1) → Single-color nonbasics (2) → Dual lands (3)
+→ Tri lands (4) → Utility lands (+10) → Pain lands (+15) → Creatures (+20)
+```
+
+This priority system preserves strategic value — creatures that could attack, utility lands with
+activated abilities, and pain lands that cost life are tapped last.
+
+4. **Consider hand requirements.** The solver analyzes the player's hand to avoid tapping sources
+   needed for future casts. If you have a red spell and a blue spell in hand with one Mountain and
+   one Island, the solver won't tap the Island to pay for the red spell's generic cost.
+
+**Tier 3: Cost Execution (Engine).** The `CostHandler` physically pays costs — tapping permanents,
+deducting from the mana pool, sacrificing creatures, discarding cards, paying life. The `ManaPool`
+data class is immutable:
+
+```kotlin
+data class ManaPool(
+    val white: Int = 0, val blue: Int = 0, val black: Int = 0,
+    val red: Int = 0, val green: Int = 0, val colorless: Int = 0
+) {
+    fun canPay(cost: ManaCost): Boolean
+    fun pay(cost: ManaCost): ManaPool?  // returns new pool, or null if can't pay
+}
+```
+
+**Cost reductions and increases.** Before payment, the `CostCalculator` applies all active
+modifiers — static abilities that reduce costs (Goblin Electromancer's "instant and sorcery spells
+cost {1} less"), affinity ("costs {1} less for each artifact you control"), and cost increases
+(Thalia's "noncreature spells cost {1} more"). Colored requirements are never reduced below their
+base amount — a `{1}{R}{R}` spell reduced by {2} still costs `{R}{R}`.
+
+**Alternative payments.** Some costs bypass mana entirely — Delve exiles cards from the graveyard
+instead of paying generic mana, Convoke taps creatures, and Force of Will can be cast by exiling a
+blue card and paying 1 life. The `AlternativePaymentHandler` processes these before the mana solver
+runs, reducing the remaining cost that must be paid with mana.
+
+**Why three tiers instead of a single "pay cost" function?**
+
+- **Legal action computation.** The server must determine whether each spell in a player's hand is
+  castable *without actually paying*. The solver's `canPay()` method answers this question cheaply.
+- **Separation of validation from execution.** The solver determines *if* and *how* to pay; the
+  handler *executes* the payment. This prevents partial payment corruption — if a cost can't be
+  fully paid, no state changes occur.
+- **Auto-pay UX.** Players rarely want to manually choose which lands to tap. The solver's priority
+  system produces Arena-quality automatic payment. Manual tapping is available as an opt-in
+  `PaymentStrategy.Explicit` for edge cases.
+
+### 2.11 Copy Effects
+
+**Principle:** Copy effects resolve at entry time by replacing the base `CardComponent`, making
+the copied identity the starting point for all subsequent layers.
+
+Clone effects are notoriously tricky in MTG engines because they interact with every layer of the
+continuous effect system. The engine handles them with an elegant design: copy is a *replacement
+effect* that fires before the permanent enters the battlefield, replacing its `CardComponent`
+wholesale. By the time the entity exists on the battlefield, it already *is* the copied creature
+as far as base state is concerned.
+
+**SDK modeling.** Clone is declared as a replacement effect on the card definition:
+
+```kotlin
+val Clone = card("Clone") {
+    manaCost = "{3}{U}"
+    typeLine = "Creature — Shapeshifter"
+    stats(0, 0)
+
+    replacementEffect(
+        ReplacementEffect.EntersAsCopy(optional = true)
+    )
+}
+```
+
+`EntersAsCopy` intercepts the zone change to the battlefield. When the engine detects this
+replacement effect during spell resolution, it pauses and presents a `SelectCardsDecision` listing
+all creatures on the battlefield.
+
+**Engine resolution.** The flow uses the continuation system:
+
+1. **Detection.** During spell resolution, `StackResolver` checks the card's replacement effects
+   for `EntersAsCopy`. If found and valid targets exist, it creates a `SelectCardsDecision`.
+2. **Pause.** A `CloneEntersContinuation` is pushed onto the continuation stack, capturing the
+   spell's entity ID and all resolution context.
+3. **Player choice.** The player selects a creature (or declines if the effect is optional).
+4. **Component replacement.** On resumption, the `ModalAndCloneContinuationResumer` replaces the
+   spell's `CardComponent` with a copy of the target creature's `CardComponent`. A
+   `CopyOfComponent` is attached to track the original identity:
+
+```kotlin
+data class CopyOfComponent(
+    val originalCardDefinitionId: String,   // "Clone"
+    val copiedCardDefinitionId: String      // "Elvish Warrior"
+) : Component
+```
+
+5. **Battlefield entry.** The permanent enters the battlefield with the copied stats, types,
+   keywords, and abilities as its base state.
+
+**Why copy is resolved before entry, not as a continuous effect layer.**
+
+Rule 613 defines Layer 1 as the copy layer, applied before all other continuous effects. The engine
+satisfies this ordering by resolving copies *at entry time* — the copied `CardComponent` becomes
+the base state that Layers 2-7 then modify during state projection. This means:
+
+- **No Layer 1 logic in `StateProjector`.** The projector starts at Layer 2 (control-changing)
+  because copy effects are already baked into the base state. This simplifies the projection
+  pipeline significantly.
+- **Correct layer interactions.** If a Clone copies a creature that has been modified by Giant
+  Growth (+3/+3), the Clone gets the creature's *printed* stats (from `CardComponent`), not the
+  buffed stats. This is correct per Rule 707.2 — copies copy the "copiable values" (printed
+  characteristics), not the current modified values.
+- **Clean lifetime management.** When the clone leaves the battlefield and returns (e.g., via
+  flickering), it enters as a fresh Clone and can choose a new target. No stale copy state to
+  clean up.
+
+The `Layer` enum still includes `COPY` for completeness, but the `StateProjector` doesn't process
+it — it exists to maintain a 1:1 mapping with Rule 613's layer numbering.
 
 ---
 
@@ -732,6 +1063,47 @@ GameState (engine internal)
 The engine uses `EntityId`, `ComponentContainer`, `ZoneKey`, and other internal types. The client
 receives `ClientCard`, `ClientZone`, `ClientPlayer` — flat, self-contained objects with all the
 information needed for rendering.
+
+**Before and after.** Consider a 2/2 creature with a +1/+1 counter that has been enchanted with
+an aura granting Flying, controlled by a player who stole it with a control-changing effect:
+
+```
+ENGINE (ComponentContainer — queried by type):
+
+  get<CardComponent>()         → name="Grizzly Bears", baseStats=2/2, baseKeywords=[]
+  get<ControllerComponent>()   → playerId="player-1"   (base: original controller)
+  get<CountersComponent>()     → {PLUS_ONE_PLUS_ONE: 1}
+  get<TappedComponent>()       → present (tapped)
+  get<DamageComponent>()       → amount=1
+
+  ProjectedState (Rule 613):
+    power=3, toughness=3       (2/2 + counter)
+    keywords=[FLYING]          (from aura)
+    controllerId="player-2"    (control-changing effect)
+
+
+CLIENT (ClientCard — flat fields, ready to render):
+
+  ClientCard(
+    name = "Grizzly Bears",
+    power = 3,                 // ← PROJECTED (includes +1/+1 counter)
+    toughness = 3,
+    basePower = 2,             // ← BASE (for buff/debuff indicators)
+    baseToughness = 2,
+    keywords = [FLYING],       // ← PROJECTED (includes aura)
+    controllerId = "player-2", // ← PROJECTED (includes control change)
+    counters = {PLUS_ONE_PLUS_ONE: 1},
+    isTapped = true,
+    damage = 1,
+    manaCost = "{1}{G}",       // ← Rendered string, not ManaCost object
+    typeLine = "Creature — Bear",
+    // ... all in one flat object
+  )
+```
+
+The transformer resolves the projected state (applying Rule 613 layers), converts internal types to
+rendered strings, and flattens the component bag into direct fields. The client never needs to call
+`get<ComponentType>()` or understand the projection system — it receives pre-computed values.
 
 **Why a separate DTO layer?**
 
@@ -958,12 +1330,19 @@ a legal target, resolves the spell, and sends the result.
 
 ## 5. Testing: Multi-Layered Verification
 
-The testing strategy mirrors the architecture: each layer has its own testing approach, and higher
-layers build on the guarantees of lower ones.
+**Principle:** Each architectural layer has a dedicated testing approach, and higher layers build on
+the guarantees of lower ones.
 
-### 5.1 Unit and Integration Tests
+Testing a Magic rules engine presents a unique challenge: the system must handle tens of thousands
+of card interactions, complex rules edge cases, and a full client-server pipeline — but individual
+tests must be fast, deterministic, and focused. The engine addresses this with three test layers,
+each answering a different question.
 
-**Engine-level tests** use Kotest's FunSpec with a `GameTestDriver` that wraps the `ActionProcessor`:
+### 5.1 Unit and Integration Tests (Engine Layer)
+
+**Question: Does the engine implement individual rules correctly?**
+
+Engine-level tests use Kotest's FunSpec with a `GameTestDriver` that wraps the `ActionProcessor`:
 
 ```kotlin
 class CreatureStatsTest : FunSpec({
@@ -976,33 +1355,71 @@ class CreatureStatsTest : FunSpec({
 
 These tests run in milliseconds against the pure functional engine — no server, no network, no UI.
 They verify individual mechanics (damage, combat, triggered abilities, state-based actions) in
-isolation.
+isolation. Because the engine is a pure function `(GameState, GameAction) -> ExecutionResult`, tests
+can construct any `GameState` directly and assert against the output state — no mocking required.
 
-### 5.2 Scenario Tests
+### 5.2 Scenario Tests (Card Interaction Layer)
 
-**Scenario tests** verify complete card interactions using `ScenarioTestBase`, which provides a
-builder pattern for setting up specific board states and playing through sequences:
+**Question: Does each card work correctly in realistic game situations?**
+
+Scenario tests are the primary verification for card correctness. They use `ScenarioTestBase`, which
+provides a declarative builder for constructing specific board states:
 
 ```kotlin
-class AncestralMemoriesScenarioTest : ScenarioTestBase() {
+class GravediggerScenarioTest : ScenarioTestBase() {
     init {
-        test("look at top 7, keep 2") {
-            // Set up specific library contents
-            // Cast Ancestral Memories
-            // Verify selection prompt
-            // Choose 2 cards
-            // Verify hand and graveyard contents
+        test("returns creature from graveyard to hand on ETB") {
+            val game = scenario()
+                .withPlayers("Player", "Opponent")
+                .withCardInHand(1, "Gravedigger")
+                .withCardInGraveyard(1, "Grizzly Bears")
+                .withLandsOnBattlefield(1, "Swamp", 4)
+                .withActivePlayer(1)
+                .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                .build()
+
+            game.castSpell(1, "Gravedigger")
+            game.resolveStack()
+
+            // ETB trigger pauses for target selection
+            val bears = game.findCardsInGraveyard(1, "Grizzly Bears")
+            game.selectTargets(bears)
+            game.resolveStack()
+
+            game.isOnBattlefield("Gravedigger") shouldBe true
+            game.isInHand(1, "Grizzly Bears") shouldBe true
         }
     }
 }
 ```
 
-Scenario tests are the primary verification for card correctness. Each card typically has one or more
-scenario tests covering its main functionality and edge cases.
+**Why `ScenarioTestBase` instead of raw `ActionProcessor` calls?**
 
-### 5.3 End-to-End Tests with Dev Scenario API
+- **Declarative board setup.** Testing Gravedigger's ETB trigger requires a creature in the
+  graveyard, lands for mana, and the right phase. With raw `ActionProcessor`, this means manually
+  constructing `GameState` with correct `EntityId`s, `ComponentContainer`s, `ZoneKey` mappings,
+  and turn state — easily 50+ lines of boilerplate. The builder does this in 6 readable lines.
+- **Name-based interaction.** `castSpell(1, "Gravedigger")` finds the card by name, resolves its
+  entity ID, constructs `ChosenTarget` objects, and submits the `CastSpell` action. Without this,
+  every test would need manual entity ID lookups.
+- **Decision handling.** Cards that pause for player input (targeting, yes/no choices, card
+  selection) need specific response actions. `ScenarioTestBase` provides `selectTargets()`,
+  `answerYesNo()`, `selectCards()`, and `resolveStack()` (which auto-passes priority for both
+  players until the stack empties).
+- **Card registry integration.** The builder auto-looks up card definitions from registered sets,
+  instantiates entities with full `CardComponent` data, and wires static abilities via
+  `StaticAbilityHandler` — exactly as the real engine would.
 
-**E2E tests** run against the full stack (server + client) in a real browser using Playwright. The
+Each card typically has one or more scenario tests covering its main functionality and edge cases.
+The `TestGame` wrapper returned by the builder is a thin layer over the real `ActionProcessor` — no
+mocked engine, no faked rules.
+
+### 5.3 End-to-End Tests with Dev Scenario API (Full Stack Layer)
+
+**Question: Does the entire pipeline work — server, WebSocket, state transformation, masking, client
+rendering, and user interaction?**
+
+E2E tests run against the full stack in a real browser using Playwright. The
 `DevScenarioController` provides a REST API that injects a specific board state directly into a
 `GameSession`, bypassing the normal game initialization:
 
@@ -1030,6 +1447,14 @@ test('Lightning Bolt deals 3 damage', async ({ createGame }) => {
 })
 ```
 
+**Why inject board state via API instead of using seed-based deterministic games?**
+
+A seed-based approach (fixed random seed → deterministic shuffle → play through multiple turns to
+reach the desired state) would couple tests to the exact initialization sequence. Any change to
+deck construction, mulligan logic, or turn ordering would break every test. Board state injection
+decouples the test from all game initialization logic — the test starts at exactly the state it
+needs, regardless of how the engine builds that state in a real game.
+
 **Why a Dev Scenario API?**
 
 - **Deterministic setup.** E2E tests need precise board states. Drawing random cards from shuffled
@@ -1040,6 +1465,15 @@ test('Lightning Bolt deals 3 damage', async ({ createGame }) => {
   transformation, masking, client rendering, user interaction, and action processing.
 - **Separated concerns.** The `GamePage` page object encapsulates all UI interaction, so tests read
   like natural-language descriptions of game actions.
+
+**Why three layers instead of just E2E tests?**
+
+E2E tests take seconds per test (browser startup, WebSocket handshake, DOM rendering). Scenario
+tests take milliseconds. Unit tests take microseconds. The test pyramid ensures that the vast
+majority of rules correctness (hundreds of card interactions, thousands of edge cases) is verified
+at the fast scenario layer, while E2E tests focus on the smaller set of integration concerns (does
+the UI render the right thing? does state masking hide the right information? do WebSocket messages
+arrive correctly?). This keeps the full test suite runnable in minutes, not hours.
 
 ---
 
@@ -1056,6 +1490,9 @@ complexity:
 | Spells require mid-resolution decisions | Serializable continuations |
 | Events modify other events before they happen | Replacement effects as data interceptors |
 | Game invariants must be continuously enforced | State-based action checker (Rule 704 loop) |
+| Turn structure with priority gating all actions | Passed-by set + step state machine |
+| Mana payment is a constraint satisfaction problem | Three-tier cost system + smart solver |
+| Copies interact with every continuous effect layer | Entry-time replacement + base state swap |
 | 20,000+ unique cards | Data-driven definitions + DSL |
 | Library manipulation has infinite variants | Atomic effect pipelines (Gather/Select/Move) |
 | Dynamic values that change constantly | AST-based DynamicAmount |
