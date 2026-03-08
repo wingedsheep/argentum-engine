@@ -161,6 +161,7 @@ object KhansOfTarkirSet {
         RoarOfChallenge,
         SavagePunch,
         ScoutTheBorders,
+        SeeTheUnwritten,
         SeekTheHorizon,
         Windstorm,
 

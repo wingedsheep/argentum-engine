@@ -2,7 +2,7 @@
 
 **Set Size:** 269 cards (249 unique card names + basic land variants)
 **Release Date:** September 26, 2014
-**Implemented:** 189 / 249
+**Implemented:** 190 / 249
 
 | Color      | Count |
 |------------|-------|
@@ -10,7 +10,7 @@
 | Blue       | 29    |
 | Black      | 29    |
 | Red        | 30    |
-| Green      | 29    |
+| Green      | 30    |
 | Multicolor | 30    |
 | Colorless  | 8     |
 | Land       | 4     |
@@ -198,7 +198,7 @@
 - [x] Secret Plans
 - [x] Seeker of the Way
 - [x] Seek the Horizon
-- [ ] See the Unwritten
+- [x] See the Unwritten
 - [x] Set Adrift
 - [x] Shambling Attendants
 - [x] Shatter
