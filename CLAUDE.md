@@ -472,14 +472,17 @@ fun MyMechanic(count: Int) = EffectPatterns.myMechanic(count)
 
 ## Documentation
 
-Detailed architecture docs in `docs/`:
+For a comprehensive overview of the system's design decisions and reasoning, see
+[`docs/architecture-principles.md`](docs/architecture-principles.md). It covers the SDK data model, engine internals
+(ECS, continuations, state projection, mana, priority, copy effects), server orchestration, client architecture, and
+testing strategy.
+
+Additional detailed reference docs in `docs/`:
 
 | Document                                 | Topic                                         |
 |------------------------------------------|-----------------------------------------------|
+| `architecture-principles.md`             | Core design decisions and architectural reasoning |
 | `api-guide.md`                           | Step-by-step guide for adding cards/mechanics |
-| `architecture-overview.md`               | High-level system architecture                |
-| `engine-architecture.md`                 | Module structure and design patterns          |
-| `the-perfect-mtg-ecs-architecture.md`    | Core ECS philosophy and immutable state       |
 | `card-definition-guide.md`               | Comprehensive card DSL reference              |
 | `continuous-effect-dependency-system.md` | Rule 613.8 dependency resolution              |
 | `managing-complex-and-rare-abilities.md` | Patterns for complex card abilities           |
