@@ -785,16 +785,39 @@ class TriggerDetector(
         val controllerId = event.ownerId
 
         for (ability in abilities) {
-            if (isDeathTrigger(ability.trigger) && ability.binding == TriggerBinding.SELF) {
-                triggers.add(
-                    PendingTrigger(
-                        ability = ability,
-                        sourceId = entityId,
-                        sourceName = cardComponent.name,
-                        controllerId = controllerId,
-                        triggerContext = TriggerContext.fromEvent(event)
+            if (!isDeathTrigger(ability.trigger)) continue
+
+            when (ability.binding) {
+                TriggerBinding.SELF -> {
+                    // "When this creature dies" - always matches its own death
+                    triggers.add(
+                        PendingTrigger(
+                            ability = ability,
+                            sourceId = entityId,
+                            sourceName = cardComponent.name,
+                            controllerId = controllerId,
+                            triggerContext = TriggerContext.fromEvent(event)
+                        )
                     )
-                )
+                }
+                TriggerBinding.ANY -> {
+                    // "Whenever a creature [matching filter] dies" - check if its own death matches
+                    // (e.g., Sultai Flayer: "Whenever a creature you control with toughness 4 or greater dies")
+                    if (matchesTrigger(ability.trigger, ability.binding, event, entityId, controllerId, state)) {
+                        triggers.add(
+                            PendingTrigger(
+                                ability = ability,
+                                sourceId = entityId,
+                                sourceName = cardComponent.name,
+                                controllerId = controllerId,
+                                triggerContext = TriggerContext.fromEvent(event)
+                            )
+                        )
+                    }
+                }
+                TriggerBinding.OTHER -> {
+                    // "Whenever another creature dies" - never matches its own death
+                }
             }
         }
     }
