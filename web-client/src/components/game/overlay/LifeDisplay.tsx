@@ -36,9 +36,10 @@ export function LifeDisplay({
   const isValidTargetingTarget = targetingState?.validTargets.includes(playerId) ?? false
   const isTargetingSelected = targetingState?.selectedTargets.includes(playerId) ?? false
 
-  // Check if this player is a valid target in a pending ChooseTargetsDecision
+  // Check if this player is a valid target in a pending ChooseTargetsDecision (single-requirement only)
   const isChooseTargetsDecision = pendingDecision?.type === 'ChooseTargetsDecision'
-  const decisionLegalTargets = isChooseTargetsDecision
+  const isSingleRequirementDecision = isChooseTargetsDecision && pendingDecision.targetRequirements.length === 1
+  const decisionLegalTargets = isSingleRequirementDecision
     ? (pendingDecision.legalTargets[0] ?? [])
     : []
   const isValidDecisionTarget = decisionLegalTargets.includes(playerId)

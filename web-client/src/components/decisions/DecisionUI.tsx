@@ -300,32 +300,41 @@ function BattlefieldTargetingUI({
   const [isHoveringSource, setIsHoveringSource] = useState(false)
   const responsive = useResponsive()
 
-  const targetReq = decision.targetRequirements[0]
+  // Multi-requirement state: track which requirement we're on and accumulated targets
+  const [currentReqIndex, setCurrentReqIndex] = useState(0)
+  const [collectedTargets, setCollectedTargets] = useState<Record<number, readonly EntityId[]>>({})
+
+  const totalRequirements = decision.targetRequirements.length
+  const targetReq = decision.targetRequirements[currentReqIndex]
   const minTargets = targetReq?.minTargets ?? 1
   const maxTargets = targetReq?.maxTargets ?? 1
-  const legalTargets = decision.legalTargets[0] ?? []
+  const legalTargets = decision.legalTargets[currentReqIndex] ?? []
+
+  // For multi-requirement, exclude already-selected targets from valid options
+  const alreadySelected = Object.values(collectedTargets).flat()
+  const filteredLegalTargets = legalTargets.filter((id) => !alreadySelected.includes(id))
 
   // Look up source card image from game state
   const sourceId = decision.context.sourceId
   const sourceCard = sourceId ? gameState?.cards[sourceId] : undefined
   const sourceImageUrl = sourceCard ? getCardImageUrl(sourceCard.name, sourceCard.imageUri) : undefined
 
-  // Start decision selection state when this component mounts
+  // Start decision selection state when this component mounts or requirement changes
   useEffect(() => {
     const selectionState: DecisionSelectionState = {
       decisionId: decision.id,
-      validOptions: [...legalTargets],
+      validOptions: [...filteredLegalTargets],
       selectedOptions: [],
       minSelections: minTargets,
       maxSelections: maxTargets,
-      prompt: decision.prompt,
+      prompt: targetReq?.description ?? decision.prompt,
     }
     startDecisionSelection(selectionState)
 
     return () => {
       cancelDecisionSelection()
     }
-  }, [decision.id])
+  }, [decision.id, currentReqIndex])
 
   const selectedCount = decisionSelectionState?.selectedOptions.length ?? 0
   const canConfirm = selectedCount >= minTargets && selectedCount <= maxTargets
@@ -333,15 +342,38 @@ function BattlefieldTargetingUI({
 
   const handleConfirm = () => {
     if (canConfirm && decisionSelectionState) {
-      submitTargetsDecision({ 0: decisionSelectionState.selectedOptions })
-      cancelDecisionSelection()
+      const updatedTargets = { ...collectedTargets, [currentReqIndex]: decisionSelectionState.selectedOptions }
+
+      if (currentReqIndex + 1 < totalRequirements) {
+        // More requirements — advance to the next one
+        setCollectedTargets(updatedTargets)
+        cancelDecisionSelection()
+        setCurrentReqIndex(currentReqIndex + 1)
+      } else {
+        // All requirements satisfied — submit
+        submitTargetsDecision(updatedTargets)
+        cancelDecisionSelection()
+      }
     }
   }
 
   const handleDecline = () => {
-    submitTargetsDecision({ 0: [] })
-    cancelDecisionSelection()
+    const updatedTargets = { ...collectedTargets, [currentReqIndex]: [] as EntityId[] }
+    if (currentReqIndex + 1 < totalRequirements) {
+      setCollectedTargets(updatedTargets)
+      cancelDecisionSelection()
+      setCurrentReqIndex(currentReqIndex + 1)
+    } else {
+      submitTargetsDecision(updatedTargets)
+      cancelDecisionSelection()
+    }
   }
+
+  const requirementLabel = totalRequirements > 1
+    ? `Choose Target (${currentReqIndex + 1}/${totalRequirements})`
+    : 'Choose Target'
+
+  const promptText = targetReq?.description ?? decision.prompt
 
   return (
     <div className={styles.sideBannerSelection}>
@@ -358,10 +390,10 @@ function BattlefieldTargetingUI({
         <DecisionCardPreview cardName={sourceCard.name} imageUri={sourceCard.imageUri} />
       )}
       <div className={styles.bannerTitleSelection}>
-        Choose Target
+        {requirementLabel}
       </div>
       <div className={styles.hint}>
-        {decision.prompt}
+        {promptText}
       </div>
       <div className={styles.hint}>
         {selectedCount > 0

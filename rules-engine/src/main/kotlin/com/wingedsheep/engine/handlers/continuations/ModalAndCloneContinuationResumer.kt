@@ -170,12 +170,15 @@ class ModalAndCloneContinuationResumer(
             return ExecutionResult.error(state, "Expected targets response for modal spell")
         }
 
-        // Convert selected targets to ChosenTargets
-        val chosenTargets = response.selectedTargets.flatMap { (_, targetIds) ->
-            targetIds.map { targetId ->
-                entityIdToChosenTarget(state, targetId)
+        // Convert selected targets to ChosenTargets, sorted by requirement index
+        // so buildNamedTargets maps them correctly to each requirement
+        val chosenTargets = response.selectedTargets.entries
+            .sortedBy { it.key }
+            .flatMap { (_, targetIds) ->
+                targetIds.map { targetId ->
+                    entityIdToChosenTarget(state, targetId)
+                }
             }
-        }
 
         val context = EffectContext(
             sourceId = continuation.sourceId,

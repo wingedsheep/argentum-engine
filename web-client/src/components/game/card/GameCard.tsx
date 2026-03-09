@@ -148,9 +148,10 @@ export function GameCard({
   const isValidTarget = targetingState?.validTargets.includes(card.id) ?? false
   const isSelectedTarget = targetingState?.selectedTargets.includes(card.id) ?? false
 
-  // Check if this card is a valid target in a pending ChooseTargetsDecision
+  // Check if this card is a valid target in a pending ChooseTargetsDecision (single-requirement only)
   const isChooseTargetsDecision = pendingDecision?.type === 'ChooseTargetsDecision'
-  const decisionLegalTargets = isChooseTargetsDecision ? (pendingDecision.legalTargets[0] ?? []) : []
+  const isSingleRequirementDecision = isChooseTargetsDecision && pendingDecision.targetRequirements.length === 1
+  const decisionLegalTargets = isSingleRequirementDecision ? (pendingDecision.legalTargets[0] ?? []) : []
   const isValidDecisionTarget = decisionLegalTargets.includes(card.id)
 
   // Check if this card is a valid option in decision selection mode (SelectCardsDecision with useTargetingUI)
