@@ -2,7 +2,7 @@
 
 **Set Size:** 269 cards (249 unique card names + basic land variants)
 **Release Date:** September 26, 2014
-**Implemented:** 219 / 249
+**Implemented:** 220 / 249
 
 | Color      | Count |
 |------------|-------|
@@ -13,7 +13,7 @@
 | Green      | 31    |
 | Multicolor | 45    |
 | Colorless  | 10    |
-| Land       | 10    |
+| Land       | 11    |
 
 ---
 
@@ -45,7 +45,7 @@
 - [x] Bellowing Saddlebrute
 - [x] Bitter Revelation
 - [x] Blinding Spray
-- [ ] Bloodfell Caves
+- [x] Bloodfell Caves
 - [x] Bloodfire Expert
 - [x] Bloodfire Mentor
 - [x] Bloodsoaked Champion

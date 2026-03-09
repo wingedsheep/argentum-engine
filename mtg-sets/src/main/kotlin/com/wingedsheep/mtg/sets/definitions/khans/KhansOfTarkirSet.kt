@@ -271,6 +271,7 @@ object KhansOfTarkirSet {
         NomadOutpost,
         OpulentPalace,
         SandsteppeCitadel,
+        BloodfellCaves,
         JungleHollow,
         RuggedHighlands,
         SwiftwaterCliffs,
