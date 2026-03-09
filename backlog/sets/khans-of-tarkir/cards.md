@@ -2,12 +2,12 @@
 
 **Set Size:** 269 cards (249 unique card names + basic land variants)
 **Release Date:** September 26, 2014
-**Implemented:** 230 / 249
+**Implemented:** 231 / 249
 
 | Color      | Count |
 |------------|-------|
 | White      | 31    |
-| Blue       | 30    |
+| Blue       | 31    |
 | Black      | 31    |
 | Red        | 31    |
 | Green      | 31    |
@@ -127,7 +127,7 @@
 - [x] Kheru Bloodsucker
 - [x] Kheru Dreadmaw
 - [ ] Kheru Lich Lord
-- [ ] Kheru Spellsnatcher
+- [x] Kheru Spellsnatcher
 - [x] Kill Shot
 - [x] Kin-Tree Invocation
 - [x] Kin-Tree Warden

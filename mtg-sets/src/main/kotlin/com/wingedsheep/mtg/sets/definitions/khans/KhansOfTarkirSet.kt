@@ -103,6 +103,7 @@ object KhansOfTarkirSet {
         GurmagSwiftwing,
         KheruBloodsucker,
         KheruDreadmaw,
+        KheruSpellsnatcher,
         KrumarBondKin,
         MarduSkullhunter,
         MerEkNightblade,

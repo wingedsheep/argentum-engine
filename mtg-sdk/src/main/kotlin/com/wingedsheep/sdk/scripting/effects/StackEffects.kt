@@ -100,6 +100,31 @@ data object CounterTriggeringSpellEffect : Effect {
 }
 
 /**
+ * Counter target spell. If countered this way, exile it instead of putting
+ * it into its owner's graveyard. Optionally grants permission to cast the
+ * exiled card without paying its mana cost for as long as it remains exiled.
+ *
+ * Used by Kheru Spellsnatcher, Spelljack, and similar effects.
+ *
+ * @property grantFreeCast If true, the controller may cast the exiled card
+ *   without paying its mana cost for as long as it remains exiled.
+ */
+@SerialName("CounterSpellToExile")
+@Serializable
+data class CounterSpellToExileEffect(
+    val grantFreeCast: Boolean = false
+) : Effect {
+    override val description: String = buildString {
+        append("Counter target spell. Exile it instead of putting it into its owner's graveyard")
+        if (grantFreeCast) {
+            append(". You may cast that card without paying its mana cost for as long as it remains exiled")
+        }
+    }
+
+    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
+}
+
+/**
  * Counter target activated or triggered ability.
  * "Counter target activated or triggered ability."
  *

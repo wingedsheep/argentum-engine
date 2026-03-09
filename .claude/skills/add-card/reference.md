@@ -137,6 +137,7 @@ constructors.
 ### Stack
 
 - `Effects.CounterSpell()`
+- `Effects.CounterSpellToExile(grantFreeCast: Boolean = false)` — counter target spell; exile instead of graveyard; optionally grant free cast from exile permanently
 - `Effects.CounterTriggeringSpell()` — counter the spell that triggered this ability (non-targeted, uses triggering entity)
 - `Effects.CounterAbility()` — counter target activated or triggered ability
 - `Effects.CounterUnlessPays(cost: String)` — counter unless mana paid

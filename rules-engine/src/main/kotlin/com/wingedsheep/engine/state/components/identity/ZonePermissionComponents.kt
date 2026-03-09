@@ -25,27 +25,33 @@ data class RevealedToComponent(
 }
 
 /**
- * Marks a card in exile as playable by the specified player until end of turn.
+ * Marks a card in exile as playable by the specified player.
  * Applied by impulse-draw effects like Mind's Desire, Chandra's +1, Act on Impulse.
  * This only grants *permission* to play from exile — it does NOT make the card free.
  * Pair with [PlayWithoutPayingCostComponent] to also waive the mana cost.
  *
  * @param controllerId The player who may play this card from exile.
+ * @param permanent If true, this permission persists indefinitely (not cleaned up at end of turn).
+ *   Used for "for as long as it remains exiled" effects like Kheru Spellsnatcher / Spelljack.
  */
 @Serializable
 data class MayPlayFromExileComponent(
-    val controllerId: EntityId
+    val controllerId: EntityId,
+    val permanent: Boolean = false
 ) : Component
 
 /**
- * Marks a card as playable without paying its mana cost until end of turn.
+ * Marks a card as playable without paying its mana cost.
  * Applied by effects like Mind's Desire, Cascade, Omniscience.
  * This only waives the mana cost — the card must still be in a zone where
  * it can be played (hand, or exile with [MayPlayFromExileComponent]).
  *
  * @param controllerId The player who may play this card for free.
+ * @param permanent If true, this permission persists indefinitely (not cleaned up at end of turn).
+ *   Used for "for as long as it remains exiled" effects like Kheru Spellsnatcher / Spelljack.
  */
 @Serializable
 data class PlayWithoutPayingCostComponent(
-    val controllerId: EntityId
+    val controllerId: EntityId,
+    val permanent: Boolean = false
 ) : Component

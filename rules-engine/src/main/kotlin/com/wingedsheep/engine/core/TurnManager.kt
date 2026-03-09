@@ -1288,10 +1288,18 @@ class TurnManager(
         }
 
         // 9. Remove MayPlayFromExileComponent and PlayWithoutPayingCostComponent (expire at end of turn)
+        // Skip permanent ones (used by "for as long as it remains exiled" effects)
         for ((entityId, container) in newState.entities) {
-            if (container.has<MayPlayFromExileComponent>() || container.has<PlayWithoutPayingCostComponent>()) {
+            val mayPlay = container.get<MayPlayFromExileComponent>()
+            val playFree = container.get<PlayWithoutPayingCostComponent>()
+            val removeMayPlay = mayPlay != null && !mayPlay.permanent
+            val removePlayFree = playFree != null && !playFree.permanent
+            if (removeMayPlay || removePlayFree) {
                 newState = newState.updateEntity(entityId) { c ->
-                    c.without<MayPlayFromExileComponent>().without<PlayWithoutPayingCostComponent>()
+                    var updated = c
+                    if (removeMayPlay) updated = updated.without<MayPlayFromExileComponent>()
+                    if (removePlayFree) updated = updated.without<PlayWithoutPayingCostComponent>()
+                    updated
                 }
             }
         }

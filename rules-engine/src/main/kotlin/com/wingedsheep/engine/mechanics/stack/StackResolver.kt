@@ -17,6 +17,8 @@ import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.identity.FaceDownComponent
 import com.wingedsheep.engine.state.components.identity.MorphDataComponent
+import com.wingedsheep.engine.state.components.identity.MayPlayFromExileComponent
+import com.wingedsheep.engine.state.components.identity.PlayWithoutPayingCostComponent
 import com.wingedsheep.engine.state.components.identity.RevealedToComponent
 import com.wingedsheep.engine.state.components.identity.TextReplacementComponent
 import com.wingedsheep.sdk.scripting.GrantCantBeCountered
@@ -1020,6 +1022,73 @@ class StackResolver(
                     cardComponent?.name ?: "Unknown",
                     null,
                     Zone.GRAVEYARD,
+                    ownerId
+                )
+            )
+        )
+    }
+
+    /**
+     * Counter a spell on the stack and exile it instead of putting it into
+     * its owner's graveyard. If the spell can't be countered, nothing happens.
+     *
+     * @param grantFreeCast If true, the controller of this effect may cast the
+     *   exiled card without paying its mana cost for as long as it remains exiled.
+     * @param controllerId The player who gains permission to cast the exiled card.
+     * @return ExecutionResult with a boolean flag indicating if the spell was actually countered.
+     */
+    fun counterSpellToExile(
+        state: GameState,
+        spellId: EntityId,
+        grantFreeCast: Boolean,
+        controllerId: EntityId
+    ): ExecutionResult {
+        if (spellId !in state.stack) {
+            return ExecutionResult.error(state, "Spell not on stack: $spellId")
+        }
+
+        val container = state.getEntity(spellId)
+            ?: return ExecutionResult.error(state, "Spell not found: $spellId")
+
+        val cardComponent = container.get<CardComponent>()
+
+        // Check if the spell can't be countered
+        if (container.has<CantBeCounteredComponent>() || isGrantedCantBeCountered(state, spellId)) {
+            return ExecutionResult.success(state)
+        }
+
+        val spellComponent = container.get<SpellOnStackComponent>()
+        val ownerId = cardComponent?.ownerId
+            ?: spellComponent?.casterId
+            ?: return ExecutionResult.error(state, "Cannot determine spell owner")
+
+        // Remove from stack
+        var newState = state.removeFromStack(spellId)
+
+        // Put in exile (instead of graveyard)
+        val exileZone = ZoneKey(ownerId, Zone.EXILE)
+        newState = newState.addToZone(exileZone, spellId)
+
+        // Remove stack components and optionally grant free cast
+        newState = newState.updateEntity(spellId) { c ->
+            var updated = c.without<SpellOnStackComponent>().without<TargetsComponent>()
+            if (grantFreeCast) {
+                updated = updated
+                    .with(MayPlayFromExileComponent(controllerId = controllerId, permanent = true))
+                    .with(PlayWithoutPayingCostComponent(controllerId = controllerId, permanent = true))
+            }
+            updated
+        }
+
+        return ExecutionResult.success(
+            newState,
+            listOf(
+                SpellCounteredEvent(spellId, cardComponent?.name ?: "Unknown"),
+                ZoneChangeEvent(
+                    spellId,
+                    cardComponent?.name ?: "Unknown",
+                    null,
+                    Zone.EXILE,
                     ownerId
                 )
             )

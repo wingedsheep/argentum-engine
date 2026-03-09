@@ -62,6 +62,7 @@ import com.wingedsheep.sdk.scripting.effects.CreateTokenEffect
 import com.wingedsheep.sdk.scripting.effects.CreateTreasureTokensEffect
 import com.wingedsheep.sdk.scripting.effects.CounterAbilityEffect
 import com.wingedsheep.sdk.scripting.effects.CounterSpellEffect
+import com.wingedsheep.sdk.scripting.effects.CounterSpellToExileEffect
 import com.wingedsheep.sdk.scripting.effects.CounterTriggeringSpellEffect
 import com.wingedsheep.sdk.scripting.effects.CounterUnlessPaysEffect
 import com.wingedsheep.sdk.scripting.effects.CounterUnlessDynamicPaysEffect
@@ -663,6 +664,14 @@ object Effects {
      */
     fun CounterSpell(): Effect =
         CounterSpellEffect
+
+    /**
+     * Counter target spell. If countered, exile it instead of putting it into
+     * its owner's graveyard. Optionally grants free cast from exile.
+     * Used by Kheru Spellsnatcher, Spelljack.
+     */
+    fun CounterSpellToExile(grantFreeCast: Boolean = false): Effect =
+        CounterSpellToExileEffect(grantFreeCast)
 
     /**
      * Counter the spell that triggered this ability (non-targeted).
