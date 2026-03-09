@@ -203,7 +203,6 @@ class TurnFaceUpHandler(
                     }
                 }
             }
-            else -> return "Unsupported morph cost type: ${morphData.morphCost::class.simpleName}"
         }
 
         return null
@@ -458,7 +457,6 @@ class TurnFaceUpHandler(
                     events.addAll(result.events)
                 }
             }
-            else -> return ExecutionResult.error(state, "Unsupported morph cost type: ${morphData.morphCost::class.simpleName}")
         }
 
         // Turn the creature face up and add static ability components

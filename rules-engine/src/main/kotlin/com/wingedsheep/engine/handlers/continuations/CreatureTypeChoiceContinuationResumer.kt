@@ -13,8 +13,10 @@ import com.wingedsheep.engine.state.components.identity.TextReplacement
 import com.wingedsheep.engine.state.components.identity.TextReplacementCategory
 import com.wingedsheep.engine.state.components.identity.TextReplacementComponent
 import com.wingedsheep.engine.handlers.effects.library.ChooseCreatureTypePipelineExecutor
+import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.model.EntityId
+import com.wingedsheep.sdk.scripting.Duration
 
 class CreatureTypeChoiceContinuationResumer(
     private val ctx: ContinuationContext
@@ -269,7 +271,7 @@ class CreatureTypeChoiceContinuationResumer(
         val chosenType = continuation.creatureTypes.getOrNull(response.optionIndex)
             ?: return ExecutionResult.error(state, "Invalid creature type index: ${response.optionIndex}")
 
-        val result = com.wingedsheep.engine.handlers.effects.permanent.ChooseCreatureTypeGainControlExecutor.applyChooseCreatureTypeGainControl(
+        val result = applyChooseCreatureTypeGainControl(
             state = state,
             chosenType = chosenType,
             controllerId = continuation.controllerId,
@@ -440,4 +442,94 @@ class CreatureTypeChoiceContinuationResumer(
         return checkForMore(newState, emptyList())
     }
 
+    companion object {
+
+        fun applyChooseCreatureTypeGainControl(
+            state: GameState,
+            chosenType: String,
+            controllerId: EntityId,
+            sourceId: EntityId?,
+            sourceName: String?,
+            duration: Duration
+        ): ExecutionResult {
+            val projected = state.projectedState
+
+            // Count creatures of the chosen type per player
+            val counts = state.turnOrder.associateWith { playerId ->
+                state.getBattlefield().count { entityId ->
+                    val container = state.getEntity(entityId) ?: return@count false
+                    val cardComponent = container.get<CardComponent>() ?: return@count false
+                    val isCreature = cardComponent.typeLine.isCreature || container.has<FaceDownComponent>()
+                    if (!isCreature) return@count false
+                    val controlledBy = container.get<ControllerComponent>()?.playerId
+                    controlledBy == playerId && projected.hasSubtype(entityId, chosenType)
+                }
+            }
+
+            val controllerCount = counts[controllerId] ?: 0
+            if (controllerCount == 0) {
+                return ExecutionResult.success(state, emptyList())
+            }
+
+            // Check if controller has strictly more than EACH other player
+            val otherPlayerCounts = counts.filter { it.key != controllerId }
+            val controllerHasMore = otherPlayerCounts.all { controllerCount > it.value }
+
+            if (!controllerHasMore) {
+                return ExecutionResult.success(state, emptyList())
+            }
+
+            // Gain control of all creatures of that type not already controlled by the controller
+            var newState = state
+            val events = mutableListOf<GameEvent>()
+
+            for (entityId in state.getBattlefield()) {
+                val container = newState.getEntity(entityId) ?: continue
+                val cardComponent = container.get<CardComponent>() ?: continue
+                val isCreature = cardComponent.typeLine.isCreature || container.has<FaceDownComponent>()
+                if (!isCreature) continue
+                if (!projected.hasSubtype(entityId, chosenType)) continue
+
+                val currentControllerId = container.get<ControllerComponent>()?.playerId
+                if (currentControllerId == controllerId) continue
+
+                // Remove any previous Layer.CONTROL floating effects from the same source on the same target
+                val filteredEffects = newState.floatingEffects.filter { floating ->
+                    !(floating.sourceId == sourceId &&
+                      floating.effect.layer == Layer.CONTROL &&
+                      entityId in floating.effect.affectedEntities)
+                }
+
+                val floatingEffect = ActiveFloatingEffect(
+                    id = EntityId.generate(),
+                    effect = FloatingEffectData(
+                        layer = Layer.CONTROL,
+                        sublayer = null,
+                        modification = SerializableModification.ChangeController(controllerId),
+                        affectedEntities = setOf(entityId)
+                    ),
+                    duration = duration,
+                    sourceId = sourceId,
+                    sourceName = sourceName,
+                    controllerId = controllerId,
+                    timestamp = System.currentTimeMillis()
+                )
+
+                newState = newState.copy(
+                    floatingEffects = filteredEffects + floatingEffect
+                )
+
+                events.add(
+                    ControlChangedEvent(
+                        permanentId = entityId,
+                        permanentName = cardComponent.name,
+                        oldControllerId = currentControllerId ?: controllerId,
+                        newControllerId = controllerId
+                    )
+                )
+            }
+
+            return ExecutionResult.success(newState, events)
+        }
+    }
 }

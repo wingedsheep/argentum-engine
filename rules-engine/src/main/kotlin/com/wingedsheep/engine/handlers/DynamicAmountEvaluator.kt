@@ -17,7 +17,6 @@ import com.wingedsheep.sdk.scripting.values.DynamicAmount
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.events.CounterTypeFilter
 import com.wingedsheep.sdk.scripting.references.Player
-import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import kotlin.math.max
 import kotlin.math.min
 
@@ -419,19 +418,9 @@ class DynamicAmountEvaluator(
             is Player.Each -> state.turnOrder
             is Player.Any -> state.turnOrder
             is Player.ContextPlayer -> {
-                // Resolve from context targets
-                val targetIndex = player.index
-                context.targets.getOrNull(targetIndex)
-                    ?.let { target ->
-                        when (target) {
-                            is EffectTarget.ContextTarget -> {
-                                // Recursive resolution not supported, return empty
-                                emptyList()
-                            }
-                            else -> emptyList()
-                        }
-                    }
-                    ?: emptyList()
+                // ContextPlayer resolves from context targets, but targets are ChosenTargets
+                // (not EffectTargets), so player resolution is not supported here
+                emptyList()
             }
             is Player.ControllerOf -> {
                 // Would need to resolve the target and find its controller

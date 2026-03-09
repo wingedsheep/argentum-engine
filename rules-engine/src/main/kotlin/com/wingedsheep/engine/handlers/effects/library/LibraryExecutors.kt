@@ -24,7 +24,6 @@ class LibraryExecutors(
         SelectFromCollectionExecutor(),
         SelectTargetPipelineExecutor(targetFinder = targetFinder ?: TargetFinder()),
         MoveCollectionExecutor(cardRegistry = cardRegistry, targetFinder = targetFinder),
-        TakeFromLinkedExileExecutor(),
         FilterCollectionExecutor()
     )
 }
