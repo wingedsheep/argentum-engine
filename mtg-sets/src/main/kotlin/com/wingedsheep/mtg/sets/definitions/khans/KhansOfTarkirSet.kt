@@ -267,6 +267,7 @@ object KhansOfTarkirSet {
 
         // Lands
         FrontierBivouac,
+        MysticMonastery,
         NomadOutpost,
         OpulentPalace,
         SandsteppeCitadel,
