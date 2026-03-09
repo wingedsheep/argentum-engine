@@ -325,6 +325,12 @@ function GameOverlay() {
   const returnToMenu = useGameStore((state) => state.returnToMenu)
   const navigate = useNavigate()
 
+  useEffect(() => {
+    if (!lastError) return
+    const timer = setTimeout(clearError, 5000)
+    return () => clearTimeout(timer)
+  }, [lastError, clearError])
+
   if (gameOverState) {
     // Use custom message if provided, otherwise fall back to standard reason
     const reasonText = gameOverState.message || formatGameOverReason(gameOverState.reason, gameOverState.result)
