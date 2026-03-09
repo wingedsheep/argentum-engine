@@ -274,6 +274,7 @@ object KhansOfTarkirSet {
         SandsteppeCitadel,
         BloodfellCaves,
         JungleHollow,
+        ScouredBarrens,
         RuggedHighlands,
         SwiftwaterCliffs,
         ThornwoodFalls,

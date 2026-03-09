@@ -2,7 +2,7 @@
 
 **Set Size:** 269 cards (249 unique card names + basic land variants)
 **Release Date:** September 26, 2014
-**Implemented:** 221 / 249
+**Implemented:** 222 / 249
 
 | Color      | Count |
 |------------|-------|
@@ -13,7 +13,7 @@
 | Green      | 31    |
 | Multicolor | 45    |
 | Colorless  | 11    |
-| Land       | 11    |
+| Land       | 12    |
 
 ---
 
@@ -193,7 +193,7 @@
 - [x] Savage Punch
 - [x] Scaldkin
 - [x] Scion of Glaciers
-- [ ] Scoured Barrens
+- [x] Scoured Barrens
 - [x] Scout the Borders
 - [x] Secret Plans
 - [x] Seeker of the Way
