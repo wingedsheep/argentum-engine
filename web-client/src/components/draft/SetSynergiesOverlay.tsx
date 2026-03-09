@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react'
+import type { SealedCardInfo } from '../../types'
 import { ManaSymbol } from '../ui/ManaSymbols'
 
 /**
@@ -268,10 +269,12 @@ export function SetSynergiesButton({
   setCodes,
   style,
   onSelectArchetype,
+  cardPool,
 }: {
   setCodes: readonly string[]
   style?: React.CSSProperties
   onSelectArchetype?: (archetype: Archetype) => void
+  cardPool?: readonly SealedCardInfo[]
 }) {
   const [isOpen, setIsOpen] = useState(false)
 
@@ -308,6 +311,7 @@ export function SetSynergiesButton({
         <SetSynergiesOverlay
           synergies={synergies}
           onClose={() => setIsOpen(false)}
+          {...(cardPool != null ? { cardPool } : {})}
           {...(onSelectArchetype != null ? { onSelectArchetype } : {})}
         />
       )}
@@ -322,10 +326,12 @@ function SetSynergiesOverlay({
   synergies,
   onClose,
   onSelectArchetype,
+  cardPool,
 }: {
   synergies: SetSynergies[]
   onClose: () => void
   onSelectArchetype?: (archetype: Archetype) => void
+  cardPool?: readonly SealedCardInfo[]
 }) {
   const [activeTab, setActiveTab] = useState(0)
 
@@ -473,6 +479,7 @@ function SetSynergiesOverlay({
                 key={archetype.name}
                 archetype={archetype}
                 clickable={onSelectArchetype != null}
+                {...(cardPool != null ? { cardPool } : {})}
                 onClick={() => {
                   if (onSelectArchetype) {
                     onSelectArchetype(archetype)
@@ -486,6 +493,75 @@ function SetSynergiesOverlay({
       </div>
     </div>
   )
+}
+
+interface RarityCounts {
+  readonly mythic: number
+  readonly rare: number
+  readonly uncommon: number
+  readonly common: number
+  readonly total: number
+}
+
+function getCardColors(card: SealedCardInfo): Set<string> {
+  const cost = card.manaCost || ''
+  const colors = new Set<string>()
+  if (cost.includes('W')) colors.add('W')
+  if (cost.includes('U')) colors.add('U')
+  if (cost.includes('B')) colors.add('B')
+  if (cost.includes('R')) colors.add('R')
+  if (cost.includes('G')) colors.add('G')
+  return colors
+}
+
+function isLand(card: SealedCardInfo): boolean {
+  return card.typeLine.toLowerCase().includes('land')
+}
+
+function cardMatchesArchetype(card: SealedCardInfo, archetypeColors: Set<string>): boolean {
+  if (isLand(card)) return true
+  const cardColors = getCardColors(card)
+  if (cardColors.size === 0) return true // colorless
+  for (const c of cardColors) {
+    if (!archetypeColors.has(c)) return false
+  }
+  return true
+}
+
+function countRarities(cards: readonly SealedCardInfo[]): RarityCounts {
+  let mythic = 0, rare = 0, uncommon = 0, common = 0
+  for (const card of cards) {
+    switch (card.rarity.toUpperCase()) {
+      case 'MYTHIC': mythic++; break
+      case 'RARE': rare++; break
+      case 'UNCOMMON': uncommon++; break
+      case 'COMMON': common++; break
+    }
+  }
+  return { mythic, rare, uncommon, common, total: mythic + rare + uncommon + common }
+}
+
+function computeArchetypeRarities(
+  cardPool: readonly SealedCardInfo[],
+  archetype: Archetype,
+): { onColor: RarityCounts; colorless: number; lands: number } {
+  const archetypeColors = new Set(archetype.colors)
+  const onColorCards: SealedCardInfo[] = []
+  let colorless = 0
+  let lands = 0
+
+  for (const card of cardPool) {
+    if (!cardMatchesArchetype(card, archetypeColors)) continue
+    if (isLand(card)) {
+      lands++
+    } else if (getCardColors(card).size === 0) {
+      colorless++
+    } else {
+      onColorCards.push(card)
+    }
+  }
+
+  return { onColor: countRarities(onColorCards), colorless, lands }
 }
 
 const MANA_COLOR_STYLES: Record<string, { bg: string; border: string }> = {
@@ -516,7 +592,36 @@ function getArchetypeBgColor(colors: readonly string[]): string {
   return 'rgba(255, 255, 255, 0.02)'
 }
 
-function ArchetypeCard({ archetype, clickable, onClick }: { archetype: Archetype; clickable?: boolean; onClick?: () => void }) {
+const RARITY_COLORS: Record<string, string> = {
+  mythic: '#ff8b00',
+  rare: '#ffd700',
+  uncommon: '#c0c0c0',
+  common: '#888888',
+}
+
+function RarityBadge({ label, count, color }: { label: string; count: number; color: string }) {
+  if (count === 0) return null
+  return (
+    <span
+      style={{
+        fontSize: 11,
+        fontWeight: 600,
+        color,
+        letterSpacing: '0.02em',
+      }}
+      title={label}
+    >
+      {count}{label[0]}
+    </span>
+  )
+}
+
+function ArchetypeCard({ archetype, clickable, onClick, cardPool }: { archetype: Archetype; clickable?: boolean; onClick?: () => void; cardPool?: readonly SealedCardInfo[] }) {
+  const rarities = useMemo(() => {
+    if (!cardPool || cardPool.length === 0) return null
+    return computeArchetypeRarities(cardPool, archetype)
+  }, [cardPool, archetype])
+
   return (
     <div
       onClick={clickable ? onClick : undefined}
@@ -553,6 +658,34 @@ function ArchetypeCard({ archetype, clickable, onClick }: { archetype: Archetype
         >
           {archetype.name}
         </span>
+        {rarities && (
+          <div
+            style={{
+              marginLeft: 'auto',
+              display: 'flex',
+              gap: 8,
+              alignItems: 'center',
+            }}
+          >
+            <RarityBadge label="Mythic" count={rarities.onColor.mythic} color={RARITY_COLORS.mythic!} />
+            <RarityBadge label="Rare" count={rarities.onColor.rare} color={RARITY_COLORS.rare!} />
+            <RarityBadge label="Uncommon" count={rarities.onColor.uncommon} color={RARITY_COLORS.uncommon!} />
+            <RarityBadge label="Common" count={rarities.onColor.common} color={RARITY_COLORS.common!} />
+            {rarities.colorless > 0 && (
+              <span style={{ fontSize: 11, fontWeight: 600, color: 'rgba(255,255,255,0.5)' }} title="Colorless">
+                {rarities.colorless}A
+              </span>
+            )}
+            {rarities.lands > 0 && (
+              <span style={{ fontSize: 11, fontWeight: 600, color: '#8d6e4a' }} title="Lands">
+                {rarities.lands}L
+              </span>
+            )}
+            <span style={{ fontSize: 11, fontWeight: 500, color: 'rgba(255,255,255,0.35)', marginLeft: 2 }}>
+              ({rarities.onColor.total + rarities.colorless + rarities.lands})
+            </span>
+          </div>
+        )}
       </div>
       <p
         style={{

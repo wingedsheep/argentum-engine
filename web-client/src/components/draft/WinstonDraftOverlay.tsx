@@ -144,7 +144,7 @@ function WinstonDrafter({ winstonState, settings }: { winstonState: WinstonDraft
           <span style={{ color: 'rgba(255,255,255,0.5)', fontSize: 13 }}>
             {settings.setNames.join(' + ')}
           </span>
-          <SetSynergiesButton setCodes={settings.setCodes} />
+          <SetSynergiesButton setCodes={settings.setCodes} cardPool={winstonState.pickedCards} />
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>

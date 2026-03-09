@@ -385,6 +385,7 @@ function DeckBuilder({ state }: { state: DeckBuildingState }) {
           </h2>
           <SetSynergiesButton
             setCodes={state.setCodes}
+            cardPool={state.cardPool}
             onSelectArchetype={(archetype) => {
               setArchetypeFilter((prev) => prev?.name === archetype.name ? null : archetype)
             }}

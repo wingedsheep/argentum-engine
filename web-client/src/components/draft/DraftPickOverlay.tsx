@@ -233,7 +233,7 @@ function DraftPicker({ draftState, settings }: { draftState: DraftState; setting
             pickNumber={draftState.pickNumber}
             totalPacks={totalPacks}
           />
-          <SetSynergiesButton setCodes={settings.setCodes} />
+          <SetSynergiesButton setCodes={settings.setCodes} cardPool={draftState.pickedCards} />
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>

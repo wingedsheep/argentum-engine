@@ -322,7 +322,7 @@ function GridDrafter({ gridState, settings }: { gridState: GridDraftState; setti
           <span style={{ color: 'rgba(255,255,255,0.4)', fontSize: 12 }}>
             Grid #{gridState.gridNumber}
           </span>
-          <SetSynergiesButton setCodes={settings.setCodes} />
+          <SetSynergiesButton setCodes={settings.setCodes} cardPool={gridState.pickedCards} />
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
