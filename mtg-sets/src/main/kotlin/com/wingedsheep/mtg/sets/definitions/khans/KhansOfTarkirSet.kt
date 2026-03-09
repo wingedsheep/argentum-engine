@@ -269,6 +269,7 @@ object KhansOfTarkirSet {
         FrontierBivouac,
         NomadOutpost,
         OpulentPalace,
+        SandsteppeCitadel,
         JungleHollow,
         RuggedHighlands,
         SwiftwaterCliffs,

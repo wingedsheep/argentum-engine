@@ -2,7 +2,7 @@
 
 **Set Size:** 269 cards (249 unique card names + basic land variants)
 **Release Date:** September 26, 2014
-**Implemented:** 217 / 249
+**Implemented:** 218 / 249
 
 | Color      | Count |
 |------------|-------|
@@ -13,7 +13,7 @@
 | Green      | 31    |
 | Multicolor | 45    |
 | Colorless  | 10    |
-| Land       | 8     |
+| Land       | 9     |
 
 ---
 
@@ -187,7 +187,7 @@
 - [x] Sagu Archer
 - [x] Sagu Mauler
 - [x] Salt Road Patrol
-- [ ] Sandsteppe Citadel
+- [x] Sandsteppe Citadel
 - [ ] Sarkhan, the Dragonspeaker
 - [x] Savage Knuckleblade
 - [x] Savage Punch
