@@ -2,7 +2,7 @@
 
 **Set Size:** 269 cards (249 unique card names + basic land variants)
 **Release Date:** September 26, 2014
-**Implemented:** 232 / 249
+**Implemented:** 233 / 249
 
 | Color      | Count |
 |------------|-------|
@@ -11,7 +11,7 @@
 | Black      | 31    |
 | Red        | 31    |
 | Green      | 31    |
-| Multicolor | 49    |
+| Multicolor | 50    |
 | Colorless  | 12    |
 | Land       | 16    |
 
@@ -30,7 +30,7 @@
 - [x] Alabaster Kirin
 - [x] Alpine Grizzly
 - [x] Altar of the Brood
-- [ ] Anafenza, the Foremost
+- [x] Anafenza, the Foremost
 - [x] Ankle Shanker
 - [x] Archers' Parapet
 - [x] Arc Lightning

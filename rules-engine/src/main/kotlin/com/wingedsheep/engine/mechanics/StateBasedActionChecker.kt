@@ -571,7 +571,11 @@ class StateBasedActionChecker {
         }
         val exileInstead = exileOnDeathIndex != -1
 
-        val destinationZone = if (exileInstead) Zone.EXILE else Zone.GRAVEYARD
+        // Check for RedirectZoneChange replacement effects (e.g., Anafenza)
+        val redirectedZone = EffectExecutorUtils.checkZoneChangeRedirect(
+            state, entityId, Zone.BATTLEFIELD, Zone.GRAVEYARD
+        )
+        val destinationZone = if (exileInstead) Zone.EXILE else redirectedZone
 
         val battlefieldZone = ZoneKey(controllerId, Zone.BATTLEFIELD)
         val destinationZoneKey = ZoneKey(ownerId, destinationZone)

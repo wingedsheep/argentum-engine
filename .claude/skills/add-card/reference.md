@@ -981,7 +981,7 @@ Used in card definitions for effects that intercept events before they happen:
 
 ### Zone Change
 
-- `RedirectZoneChange(newDestination, appliesTo)` — Rest in Peace
+- `RedirectZoneChange(newDestination, appliesTo)` — Anafenza, Rest in Peace. Redirects zone changes matching `appliesTo` filter (e.g., creatures going to graveyard → exile). Engine hooks: SBA death, destroy, moveCardToZone, MoveCollectionExecutor.
 - `EntersTapped(appliesTo)` — tap lands
 - `EntersWithCounters(counterType, count, appliesTo)` — Master Biomancer
 - `EntersWithDynamicCounters(counterType, count: DynamicAmount, appliesTo)` — dynamic counter entry

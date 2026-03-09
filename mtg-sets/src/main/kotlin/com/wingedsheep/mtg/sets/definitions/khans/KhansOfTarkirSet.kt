@@ -209,6 +209,7 @@ object KhansOfTarkirSet {
         TrumpetBlast,
 
         // Multicolor
+        AnafenzaTheForemost,
         AbominationOfGudul,
         AnkleShanker,
         AvalancheTusker,

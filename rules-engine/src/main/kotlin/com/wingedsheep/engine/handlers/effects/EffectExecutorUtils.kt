@@ -50,6 +50,12 @@ import com.wingedsheep.sdk.scripting.PreventDamage
 import com.wingedsheep.sdk.scripting.PreventLifeGain
 import com.wingedsheep.sdk.scripting.ModifyCounterPlacement
 import com.wingedsheep.sdk.scripting.ReplaceDamageWithCounters
+import com.wingedsheep.sdk.scripting.RedirectZoneChange
+import com.wingedsheep.sdk.scripting.GameObjectFilter
+import com.wingedsheep.sdk.scripting.predicates.CardPredicate
+import com.wingedsheep.sdk.scripting.predicates.ControllerPredicate
+import com.wingedsheep.engine.state.components.identity.TokenComponent
+import com.wingedsheep.engine.state.components.identity.OwnerComponent
 import com.wingedsheep.sdk.scripting.events.CounterTypeFilter
 import com.wingedsheep.sdk.scripting.events.RecipientFilter
 import com.wingedsheep.sdk.scripting.events.SourceFilter
@@ -528,12 +534,15 @@ object EffectExecutorUtils {
 
         val ownerId = cardComponent.ownerId ?: controllerId
 
-        // Move to graveyard
+        // Check for zone change redirect (e.g., Anafenza exiling instead of graveyard)
+        val destinationZone = checkZoneChangeRedirect(state, entityId, Zone.BATTLEFIELD, Zone.GRAVEYARD)
+
+        // Move to destination zone
         val battlefieldZone = ZoneKey(controllerId, Zone.BATTLEFIELD)
-        val graveyardZone = ZoneKey(ownerId, Zone.GRAVEYARD)
+        val destinationZoneKey = ZoneKey(ownerId, destinationZone)
 
         var newState = state.removeFromZone(battlefieldZone, entityId)
-        newState = newState.addToZone(graveyardZone, entityId)
+        newState = newState.addToZone(destinationZoneKey, entityId)
 
         // Clean up combat references before stripping components
         newState = cleanupCombatReferences(newState, entityId)
@@ -551,7 +560,7 @@ object EffectExecutorUtils {
                     entityId,
                     cardComponent.name,
                     Zone.BATTLEFIELD,
-                    Zone.GRAVEYARD,
+                    destinationZone,
                     ownerId
                 )
             )
@@ -581,8 +590,11 @@ object EffectExecutorUtils {
         val currentZone = state.zones.entries.find { (_, cards) -> entityId in cards }?.key
             ?: return ExecutionResult.error(state, "Card not in any zone")
 
+        // Check for zone change redirect (e.g., Anafenza exiling instead of graveyard)
+        val actualTargetZone = checkZoneChangeRedirect(state, entityId, currentZone.zoneType, targetZone)
+
         // Move to target zone
-        val targetZoneKey = ZoneKey(ownerId, targetZone)
+        val targetZoneKey = ZoneKey(ownerId, actualTargetZone)
 
         var newState = state.removeFromZone(currentZone, entityId)
         newState = newState.addToZone(targetZoneKey, entityId)
@@ -595,7 +607,7 @@ object EffectExecutorUtils {
         }
 
         // Add controller component when moving to battlefield
-        if (targetZone == Zone.BATTLEFIELD) {
+        if (actualTargetZone == Zone.BATTLEFIELD) {
             newState = newState.updateEntity(entityId) { c ->
                 c.with(ControllerComponent(ownerId))
                     .with(SummoningSicknessComponent)
@@ -609,11 +621,114 @@ object EffectExecutorUtils {
                     entityId,
                     cardComponent.name,
                     currentZone.zoneType,
-                    targetZone,
+                    actualTargetZone,
                     ownerId
                 )
             )
         )
+    }
+
+    /**
+     * Check if a zone change to graveyard should be redirected to another zone
+     * by a RedirectZoneChange replacement effect on the battlefield.
+     *
+     * For example, Anafenza, the Foremost exiles opponent's nontoken creature cards
+     * instead of letting them go to the graveyard.
+     *
+     * @param state The current game state
+     * @param entityId The entity about to change zones
+     * @param fromZone The zone the entity is coming from (null if unknown)
+     * @param toZone The intended destination zone
+     * @return The (possibly redirected) destination zone
+     */
+    fun checkZoneChangeRedirect(
+        state: GameState,
+        entityId: EntityId,
+        fromZone: Zone?,
+        toZone: Zone
+    ): Zone {
+        val container = state.getEntity(entityId) ?: return toZone
+
+        for (permanentId in state.getBattlefield()) {
+            val permContainer = state.getEntity(permanentId) ?: continue
+            val replacementComponent = permContainer.get<ReplacementEffectSourceComponent>() ?: continue
+            val sourceControllerId = permContainer.get<ControllerComponent>()?.playerId ?: continue
+
+            for (effect in replacementComponent.replacementEffects) {
+                if (effect !is RedirectZoneChange) continue
+
+                val event = effect.appliesTo
+                if (event !is com.wingedsheep.sdk.scripting.GameEvent.ZoneChangeEvent) continue
+
+                // Check destination zone matches
+                if (event.to != null && event.to != toZone) continue
+
+                // Check source zone matches (if specified)
+                if (event.from != null && event.from != fromZone) continue
+
+                // Check filter against the entity being moved
+                if (!matchesZoneChangeFilter(state, entityId, container, event.filter, sourceControllerId)) continue
+
+                // Match found — redirect to new destination
+                return effect.newDestination
+            }
+        }
+
+        return toZone
+    }
+
+    /**
+     * Check if an entity matches a GameObjectFilter for zone change replacement effects.
+     * Uses base state (not projected) since the entity may be leaving the battlefield.
+     */
+    private fun matchesZoneChangeFilter(
+        state: GameState,
+        entityId: EntityId,
+        container: ComponentContainer,
+        filter: GameObjectFilter,
+        sourceControllerId: EntityId
+    ): Boolean {
+        if (filter == GameObjectFilter.Any) return true
+
+        val cardComponent = container.get<CardComponent>() ?: return false
+
+        // Check card predicates
+        for (predicate in filter.cardPredicates) {
+            val matches = when (predicate) {
+                CardPredicate.IsCreature -> cardComponent.typeLine.isCreature
+                CardPredicate.IsNontoken -> !container.has<TokenComponent>()
+                CardPredicate.IsToken -> container.has<TokenComponent>()
+                CardPredicate.IsLand -> cardComponent.typeLine.isLand
+                CardPredicate.IsArtifact -> cardComponent.typeLine.isArtifact
+                CardPredicate.IsEnchantment -> cardComponent.typeLine.isEnchantment
+                CardPredicate.IsNonland -> !cardComponent.typeLine.isLand
+                CardPredicate.IsNoncreature -> !cardComponent.typeLine.isCreature
+                CardPredicate.IsPermanent -> cardComponent.typeLine.isPermanent
+                else -> true // For unhandled predicates, don't filter out
+            }
+            if (!matches) return false
+        }
+
+        // Check controller/owner predicate
+        val controllerPredicate = filter.controllerPredicate ?: return true
+        return when (controllerPredicate) {
+            ControllerPredicate.OwnedByOpponent -> {
+                val ownerId = cardComponent.ownerId
+                ownerId != null && ownerId != sourceControllerId
+            }
+            ControllerPredicate.OwnedByYou -> {
+                cardComponent.ownerId == sourceControllerId
+            }
+            ControllerPredicate.ControlledByYou -> {
+                val controllerId = container.get<ControllerComponent>()?.playerId
+                controllerId == sourceControllerId
+            }
+            ControllerPredicate.ControlledByOpponent -> {
+                val controllerId = container.get<ControllerComponent>()?.playerId
+                controllerId != null && controllerId != sourceControllerId
+            }
+            else -> true
+        }
     }
 
     /**

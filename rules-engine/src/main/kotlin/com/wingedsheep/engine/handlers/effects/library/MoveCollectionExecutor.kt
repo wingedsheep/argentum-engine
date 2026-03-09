@@ -542,11 +542,16 @@ class MoveCollectionExecutor(
                 else -> destPlayerId
             }
 
+            // Check for zone change redirect (e.g., Anafenza exiling instead of graveyard)
+            val actualDestZone = EffectExecutorUtils.checkZoneChangeRedirect(
+                newState, cardId, fromZone, destZone
+            )
+
             // Add to destination zone based on placement
-            val destZoneKey = ZoneKey(actualDestPlayerId, destZone)
+            val destZoneKey = ZoneKey(actualDestPlayerId, actualDestZone)
             newState = when (destination.placement) {
                 ZonePlacement.Top, ZonePlacement.Default -> {
-                    if (destZone == Zone.LIBRARY) {
+                    if (actualDestZone == Zone.LIBRARY) {
                         // Prepend to library (top)
                         val currentLibrary = newState.getZone(destZoneKey)
                         newState.copy(zones = newState.zones + (destZoneKey to listOf(cardId) + currentLibrary))
@@ -555,7 +560,7 @@ class MoveCollectionExecutor(
                     }
                 }
                 ZonePlacement.Bottom -> {
-                    if (destZone == Zone.LIBRARY) {
+                    if (actualDestZone == Zone.LIBRARY) {
                         // Append to library (bottom)
                         val currentLibrary = newState.getZone(destZoneKey)
                         newState.copy(zones = newState.zones + (destZoneKey to currentLibrary + cardId))
@@ -573,7 +578,7 @@ class MoveCollectionExecutor(
             }
 
             // Apply battlefield-specific components
-            if (destZone == Zone.BATTLEFIELD) {
+            if (actualDestZone == Zone.BATTLEFIELD) {
                 val container = newState.getEntity(cardId)
                 if (container != null) {
                     val controllerId = if (underOwnersControl) ownerId else destPlayerId
@@ -604,7 +609,7 @@ class MoveCollectionExecutor(
             }
 
             // Apply face-down status when exiling face-down
-            if (faceDown && destZone == Zone.EXILE) {
+            if (faceDown && actualDestZone == Zone.EXILE) {
                 newState = newState.updateEntity(cardId) { c -> c.with(FaceDownComponent) }
             }
 
@@ -614,7 +619,7 @@ class MoveCollectionExecutor(
                         entityId = cardId,
                         entityName = cardName,
                         fromZone = fromZone,
-                        toZone = destZone,
+                        toZone = actualDestZone,
                         ownerId = ownerId
                     )
                 )
