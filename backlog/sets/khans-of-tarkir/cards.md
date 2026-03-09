@@ -2,7 +2,7 @@
 
 **Set Size:** 269 cards (249 unique card names + basic land variants)
 **Release Date:** September 26, 2014
-**Implemented:** 224 / 249
+**Implemented:** 225 / 249
 
 | Color      | Count |
 |------------|-------|
@@ -13,7 +13,7 @@
 | Green      | 31    |
 | Multicolor | 45    |
 | Colorless  | 11    |
-| Land       | 14    |
+| Land       | 15    |
 
 ---
 
@@ -50,7 +50,7 @@
 - [x] Bloodfire Mentor
 - [x] Bloodsoaked Champion
 - [ ] Bloodstained Mire
-- [ ] Blossoming Sands
+- [x] Blossoming Sands
 - [x] Brave the Sands
 - [x] Briber's Purse
 - [x] Bring Low

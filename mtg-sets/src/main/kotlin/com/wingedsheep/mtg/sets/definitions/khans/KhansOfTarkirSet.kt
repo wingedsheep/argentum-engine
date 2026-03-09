@@ -273,6 +273,7 @@ object KhansOfTarkirSet {
         OpulentPalace,
         SandsteppeCitadel,
         BloodfellCaves,
+        BlossomingSands,
         JungleHollow,
         ScouredBarrens,
         RuggedHighlands,
