@@ -2,7 +2,7 @@
 
 **Set Size:** 269 cards (249 unique card names + basic land variants)
 **Release Date:** September 26, 2014
-**Implemented:** 229 / 249
+**Implemented:** 230 / 249
 
 | Color      | Count |
 |------------|-------|
@@ -11,7 +11,7 @@
 | Black      | 31    |
 | Red        | 31    |
 | Green      | 31    |
-| Multicolor | 47    |
+| Multicolor | 48    |
 | Colorless  | 12    |
 | Land       | 16    |
 
@@ -81,7 +81,7 @@
 - [x] Dragon's Eye Savants
 - [x] Dragon-Style Twins
 - [ ] Dragon Throne of Tarkir
-- [ ] Duneblast
+- [x] Duneblast
 - [x] Dutiful Return
 - [x] Efreet Weaponmaster
 - [x] Embodiment of Spring

@@ -215,6 +215,7 @@ object KhansOfTarkirSet {
         KinTreeInvocation,
         AbzanGuide,
         CracklingDoom,
+        Duneblast,
         DeflectingPalm,
         EfreetWeaponmaster,
         FlyingCraneTechnique,
