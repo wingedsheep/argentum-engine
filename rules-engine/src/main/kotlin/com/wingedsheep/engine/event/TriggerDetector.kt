@@ -1615,6 +1615,8 @@ class TriggerDetector(
             }
             is GameEvent.DiscardEvent -> false
             is GameEvent.SearchLibraryEvent -> false
+            // ExtraTurnEvent is only used as a replacement effect filter, not a trigger
+            is GameEvent.ExtraTurnEvent -> false
             // Batching trigger — handled in detectLibraryToGraveyardBatchTriggers
             is GameEvent.CardsPutIntoGraveyardFromLibraryEvent -> false
         }

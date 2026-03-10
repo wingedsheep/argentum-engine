@@ -277,6 +277,7 @@ object KhansOfTarkirSet {
         MarduBanner,
         SultaiBanner,
         TemurBanner,
+        UginsNexus,
         WitnessOfTheAges,
 
         // Lands

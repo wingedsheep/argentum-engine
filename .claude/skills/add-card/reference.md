@@ -989,6 +989,7 @@ Used in card definitions for effects that intercept events before they happen:
 ### Zone Change
 
 - `RedirectZoneChange(newDestination, appliesTo)` — Anafenza, Rest in Peace. Redirects zone changes matching `appliesTo` filter (e.g., creatures going to graveyard → exile). Engine hooks: SBA death, destroy, moveCardToZone, MoveCollectionExecutor.
+- `RedirectZoneChangeWithEffect(newDestination, additionalEffect, selfOnly, appliesTo)` — Ugin's Nexus. Like RedirectZoneChange but also executes an additional effect (e.g., TakeExtraTurnEffect) when the redirect applies. `selfOnly=true` means only applies when the entity being moved IS the permanent with this effect.
 - `EntersTapped(appliesTo)` — tap lands
 - `EntersWithCounters(counterType, count, appliesTo)` — Master Biomancer
 - `EntersWithDynamicCounters(counterType, count: DynamicAmount, appliesTo)` — dynamic counter entry
@@ -1013,6 +1014,7 @@ Used in card definitions for effects that intercept events before they happen:
 ### Life
 
 - `PreventLifeGain(appliesTo)` — Erebos
+- `PreventExtraTurns(appliesTo)` — Ugin's Nexus. Prevents any player from taking extra turns. Checked by TakeExtraTurnExecutor and applyReplacementAdditionalEffect.
 - `ReplaceLifeGain(replacementEffect, appliesTo)` — Tainted Remedy
 - `ModifyLifeGain(multiplier, appliesTo)` — Alhammarret's Archive
 
@@ -1114,6 +1116,7 @@ Used in `OptionalCostEffect`, `MayPayManaEffect`, `AnyPlayerMayPayEffect`, `PayO
 - `CounterPlacementEvent(counterType, recipient)` / `TokenCreationEvent(controller, tokenFilter?)`
 - `DrawEvent(player)` / `LifeGainEvent(player)` / `LifeLossEvent(player)`
 - `DiscardEvent(player, cardFilter?)` / `SearchLibraryEvent(player)`
+- `ExtraTurnEvent(player)` — used by PreventExtraTurns replacement effect filter
 - `AttackEvent` / `YouAttackEvent(minAttackers)` / `BlockEvent` / `BecomesBlockedEvent(filter: GameObjectFilter? = null)`
 - `BecomesTargetEvent(targetFilter)` — when a permanent becomes the target of a spell or ability
 - `StepEvent(step, player)` / `EnchantedCreatureControllerStepEvent(step)` / `EnchantedCreatureTurnedFaceUpEvent` / `EnchantedPermanentBecomesTappedEvent`

@@ -51,7 +51,10 @@ import com.wingedsheep.sdk.scripting.PreventDamage
 import com.wingedsheep.sdk.scripting.PreventLifeGain
 import com.wingedsheep.sdk.scripting.ModifyCounterPlacement
 import com.wingedsheep.sdk.scripting.ReplaceDamageWithCounters
+import com.wingedsheep.sdk.scripting.PreventExtraTurns
 import com.wingedsheep.sdk.scripting.RedirectZoneChange
+import com.wingedsheep.sdk.scripting.RedirectZoneChangeWithEffect
+import com.wingedsheep.engine.state.components.player.SkipNextTurnComponent
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.predicates.CardPredicate
 import com.wingedsheep.sdk.scripting.predicates.ControllerPredicate
@@ -537,7 +540,8 @@ object EffectExecutorUtils {
         val ownerId = cardComponent.ownerId ?: controllerId
 
         // Check for zone change redirect (e.g., Anafenza exiling instead of graveyard)
-        val destinationZone = checkZoneChangeRedirect(state, entityId, Zone.BATTLEFIELD, Zone.GRAVEYARD)
+        val redirectResult = checkZoneChangeRedirect(state, entityId, Zone.BATTLEFIELD, Zone.GRAVEYARD)
+        val destinationZone = redirectResult.destinationZone
 
         // Move to destination zone
         val battlefieldZone = ZoneKey(controllerId, Zone.BATTLEFIELD)
@@ -558,6 +562,13 @@ object EffectExecutorUtils {
 
         // Remove floating effects targeting this entity (Rule 400.7)
         newState = removeFloatingEffectsTargeting(newState, entityId)
+
+        // Apply additional replacement effect (e.g., Ugin's Nexus extra turn)
+        if (redirectResult.additionalEffect != null) {
+            newState = applyReplacementAdditionalEffect(
+                newState, redirectResult.additionalEffect, redirectResult.effectControllerId
+            )
+        }
 
         return ExecutionResult.success(
             newState,
@@ -598,7 +609,8 @@ object EffectExecutorUtils {
             ?: return ExecutionResult.error(state, "Card not in any zone")
 
         // Check for zone change redirect (e.g., Anafenza exiling instead of graveyard)
-        val actualTargetZone = checkZoneChangeRedirect(state, entityId, currentZone.zoneType, targetZone)
+        val redirectResult = checkZoneChangeRedirect(state, entityId, currentZone.zoneType, targetZone)
+        val actualTargetZone = redirectResult.destinationZone
 
         // Move to target zone
         val targetZoneKey = ZoneKey(ownerId, actualTargetZone)
@@ -621,6 +633,13 @@ object EffectExecutorUtils {
             }
         }
 
+        // Apply additional replacement effect (e.g., Ugin's Nexus extra turn)
+        if (redirectResult.additionalEffect != null) {
+            newState = applyReplacementAdditionalEffect(
+                newState, redirectResult.additionalEffect, redirectResult.effectControllerId
+            )
+        }
+
         return ExecutionResult.success(
             newState,
             listOf(
@@ -636,6 +655,20 @@ object EffectExecutorUtils {
     }
 
     /**
+     * Result of a zone change redirect check.
+     *
+     * @param destinationZone The (possibly redirected) destination zone
+     * @param additionalEffect An optional effect to execute when the redirect applies
+     *        (e.g., TakeExtraTurnEffect from Ugin's Nexus)
+     * @param effectControllerId The controller of the replacement effect source
+     */
+    data class ZoneChangeRedirectResult(
+        val destinationZone: Zone,
+        val additionalEffect: com.wingedsheep.sdk.scripting.effects.Effect? = null,
+        val effectControllerId: EntityId? = null
+    )
+
+    /**
      * Check if a zone change to graveyard should be redirected to another zone
      * by a RedirectZoneChange replacement effect on the battlefield.
      *
@@ -646,22 +679,22 @@ object EffectExecutorUtils {
      * @param entityId The entity about to change zones
      * @param fromZone The zone the entity is coming from (null if unknown)
      * @param toZone The intended destination zone
-     * @return The (possibly redirected) destination zone
+     * @return The redirect result with destination zone and any additional effects
      */
     fun checkZoneChangeRedirect(
         state: GameState,
         entityId: EntityId,
         fromZone: Zone?,
         toZone: Zone
-    ): Zone {
-        val container = state.getEntity(entityId) ?: return toZone
+    ): ZoneChangeRedirectResult {
+        val container = state.getEntity(entityId) ?: return ZoneChangeRedirectResult(toZone)
 
         // Check if the entity itself has ExileOnLeaveBattlefieldComponent
         // (e.g., creature returned by Kheru Lich Lord, Whip of Erebos)
         if (fromZone == Zone.BATTLEFIELD && toZone != Zone.EXILE &&
             container.has<ExileOnLeaveBattlefieldComponent>()
         ) {
-            return Zone.EXILE
+            return ZoneChangeRedirectResult(Zone.EXILE)
         }
 
         for (permanentId in state.getBattlefield()) {
@@ -670,26 +703,47 @@ object EffectExecutorUtils {
             val sourceControllerId = permContainer.get<ControllerComponent>()?.playerId ?: continue
 
             for (effect in replacementComponent.replacementEffects) {
-                if (effect !is RedirectZoneChange) continue
+                when (effect) {
+                    is RedirectZoneChange -> {
+                        val event = effect.appliesTo
+                        if (event !is com.wingedsheep.sdk.scripting.GameEvent.ZoneChangeEvent) continue
 
-                val event = effect.appliesTo
-                if (event !is com.wingedsheep.sdk.scripting.GameEvent.ZoneChangeEvent) continue
+                        // Check destination zone matches
+                        if (event.to != null && event.to != toZone) continue
 
-                // Check destination zone matches
-                if (event.to != null && event.to != toZone) continue
+                        // Check source zone matches (if specified)
+                        if (event.from != null && event.from != fromZone) continue
 
-                // Check source zone matches (if specified)
-                if (event.from != null && event.from != fromZone) continue
+                        // Check filter against the entity being moved
+                        if (!matchesZoneChangeFilter(state, entityId, container, event.filter, sourceControllerId)) continue
 
-                // Check filter against the entity being moved
-                if (!matchesZoneChangeFilter(state, entityId, container, event.filter, sourceControllerId)) continue
+                        // Match found — redirect to new destination
+                        return ZoneChangeRedirectResult(effect.newDestination)
+                    }
+                    is RedirectZoneChangeWithEffect -> {
+                        // selfOnly: only applies when the entity being moved IS this permanent
+                        if (effect.selfOnly && permanentId != entityId) continue
 
-                // Match found — redirect to new destination
-                return effect.newDestination
+                        val event = effect.appliesTo
+                        if (event !is com.wingedsheep.sdk.scripting.GameEvent.ZoneChangeEvent) continue
+
+                        if (event.to != null && event.to != toZone) continue
+                        if (event.from != null && event.from != fromZone) continue
+                        if (!effect.selfOnly && !matchesZoneChangeFilter(state, entityId, container, event.filter, sourceControllerId)) continue
+
+                        // Match found — redirect AND return additional effect
+                        return ZoneChangeRedirectResult(
+                            effect.newDestination,
+                            effect.additionalEffect,
+                            sourceControllerId
+                        )
+                    }
+                    else -> continue
+                }
             }
         }
 
-        return toZone
+        return ZoneChangeRedirectResult(toZone)
     }
 
     /**
@@ -744,6 +798,45 @@ object EffectExecutorUtils {
             }
             else -> true
         }
+    }
+
+    /**
+     * Apply the additional effect from a RedirectZoneChangeWithEffect replacement.
+     * Currently supports TakeExtraTurnEffect (used by Ugin's Nexus).
+     *
+     * Checks for PreventExtraTurns replacement effects before applying extra turns.
+     */
+    fun applyReplacementAdditionalEffect(
+        state: GameState,
+        effect: com.wingedsheep.sdk.scripting.effects.Effect,
+        controllerId: EntityId?
+    ): GameState {
+        if (effect is com.wingedsheep.sdk.scripting.effects.TakeExtraTurnEffect) {
+            // Check if extra turns are prevented by any permanent on the battlefield
+            if (isExtraTurnPrevented(state)) return state
+
+            val cid = controllerId ?: return state
+            val opponentId = state.getOpponent(cid) ?: return state
+            return state.updateEntity(opponentId) { container ->
+                container.with(SkipNextTurnComponent)
+            }
+        }
+        return state
+    }
+
+    /**
+     * Check if extra turns are prevented by any PreventExtraTurns replacement effect
+     * on the battlefield (e.g., Ugin's Nexus).
+     */
+    fun isExtraTurnPrevented(state: GameState): Boolean {
+        for (entityId in state.getBattlefield()) {
+            val container = state.getEntity(entityId) ?: continue
+            val replacementComponent = container.get<ReplacementEffectSourceComponent>() ?: continue
+            for (effect in replacementComponent.replacementEffects) {
+                if (effect is PreventExtraTurns) return true
+            }
+        }
+        return false
     }
 
     /**

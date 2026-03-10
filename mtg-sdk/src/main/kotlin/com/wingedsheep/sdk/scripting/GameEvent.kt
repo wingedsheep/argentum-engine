@@ -246,6 +246,24 @@ sealed interface GameEvent : TextReplaceable<GameEvent> {
     }
 
     // =========================================================================
+    // Extra Turn Events
+    // =========================================================================
+
+    /**
+     * When a player would take an extra turn.
+     * Used by PreventExtraTurns replacement effect (Ugin's Nexus).
+     */
+    @SerialName("ExtraTurnEvent")
+    @Serializable
+    data class ExtraTurnEvent(
+        val player: Player = Player.Each
+    ) : GameEvent {
+        override val description: String = "${player.description} would take an extra turn"
+
+        override fun applyTextReplacement(replacer: TextReplacer): GameEvent = this
+    }
+
+    // =========================================================================
     // Discard Events
     // =========================================================================
 

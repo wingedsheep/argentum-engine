@@ -3,6 +3,7 @@ package com.wingedsheep.engine.handlers.effects.player
 import com.wingedsheep.engine.core.ExecutionResult
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
+import com.wingedsheep.engine.handlers.effects.EffectExecutorUtils
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.player.LoseAtEndStepComponent
 import com.wingedsheep.engine.state.components.player.SkipNextTurnComponent
@@ -18,6 +19,8 @@ import kotlin.reflect.KClass
  *
  * If loseAtEndStep is true (e.g., Last Chance), the caster will also lose the game
  * at the beginning of their next end step.
+ *
+ * Checks for PreventExtraTurns replacement effects (e.g., Ugin's Nexus) before applying.
  */
 class TakeExtraTurnExecutor : EffectExecutor<TakeExtraTurnEffect> {
 
@@ -30,6 +33,11 @@ class TakeExtraTurnExecutor : EffectExecutor<TakeExtraTurnEffect> {
     ): ExecutionResult {
         val controllerId = context.controllerId
             ?: return ExecutionResult.error(state, "No controller for TakeExtraTurnEffect")
+
+        // Check if extra turns are prevented (e.g., Ugin's Nexus on the battlefield)
+        if (EffectExecutorUtils.isExtraTurnPrevented(state)) {
+            return ExecutionResult.success(state)
+        }
 
         // In a 2-player game, "take an extra turn" means the opponent skips their next turn
         val opponentId = state.getOpponent(controllerId)

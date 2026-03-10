@@ -544,9 +544,10 @@ class MoveCollectionExecutor(
             }
 
             // Check for zone change redirect (e.g., Anafenza exiling instead of graveyard)
-            val actualDestZone = EffectExecutorUtils.checkZoneChangeRedirect(
+            val redirectResult = EffectExecutorUtils.checkZoneChangeRedirect(
                 newState, cardId, fromZone, destZone
             )
+            val actualDestZone = redirectResult.destinationZone
 
             // Add to destination zone based on placement
             val destZoneKey = ZoneKey(actualDestPlayerId, actualDestZone)
@@ -625,6 +626,13 @@ class MoveCollectionExecutor(
                         toZone = actualDestZone,
                         ownerId = ownerId
                     )
+                )
+            }
+
+            // Apply additional replacement effect (e.g., Ugin's Nexus extra turn)
+            if (redirectResult.additionalEffect != null) {
+                newState = EffectExecutorUtils.applyReplacementAdditionalEffect(
+                    newState, redirectResult.additionalEffect, redirectResult.effectControllerId
                 )
             }
         }

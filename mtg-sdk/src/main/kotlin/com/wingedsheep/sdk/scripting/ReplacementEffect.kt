@@ -628,6 +628,63 @@ data class ReplaceDamageWithCounters(
 }
 
 // =============================================================================
+// Extra Turn Replacement Effects
+// =============================================================================
+
+/**
+ * Prevent extra turns from being taken.
+ * Example: Ugin's Nexus — "If a player would begin an extra turn, that player
+ * skips that turn instead."
+ *
+ * Checked by TakeExtraTurnExecutor before granting extra turns.
+ */
+@SerialName("PreventExtraTurns")
+@Serializable
+data class PreventExtraTurns(
+    override val appliesTo: GameEvent = GameEvent.ExtraTurnEvent()
+) : ReplacementEffect {
+    override val description: String =
+        "If a player would begin an extra turn, that player skips that turn instead"
+
+    override fun applyTextReplacement(replacer: TextReplacer): ReplacementEffect {
+        val newAppliesTo = appliesTo.applyTextReplacement(replacer)
+        return if (newAppliesTo !== appliesTo) copy(appliesTo = newAppliesTo) else this
+    }
+}
+
+/**
+ * Redirect a zone change to a different destination AND execute an additional effect.
+ * Example: Ugin's Nexus — "If Ugin's Nexus would be put into a graveyard from
+ * the battlefield, instead exile it and take an extra turn after this one."
+ *
+ * Extends RedirectZoneChange with an additional effect that fires when the replacement applies.
+ *
+ * @param newDestination The zone to redirect to (e.g., Exile)
+ * @param additionalEffect The effect to execute when replacement fires (e.g., TakeExtraTurnEffect)
+ * @param selfOnly When true, only applies when the entity being moved IS this permanent
+ * @param appliesTo The zone change event this replacement intercepts
+ */
+@SerialName("RedirectZoneChangeWithEffect")
+@Serializable
+data class RedirectZoneChangeWithEffect(
+    val newDestination: Zone,
+    val additionalEffect: Effect,
+    val selfOnly: Boolean = false,
+    override val appliesTo: GameEvent
+) : ReplacementEffect {
+    override val description: String =
+        "If ${appliesTo.description}, instead put it into ${newDestination.displayName} and ${additionalEffect.description}"
+
+    override fun applyTextReplacement(replacer: TextReplacer): ReplacementEffect {
+        val newAppliesTo = appliesTo.applyTextReplacement(replacer)
+        val newAdditionalEffect = additionalEffect.applyTextReplacement(replacer)
+        return if (newAppliesTo !== appliesTo || newAdditionalEffect !== additionalEffect)
+            copy(appliesTo = newAppliesTo, additionalEffect = newAdditionalEffect)
+        else this
+    }
+}
+
+// =============================================================================
 // Generic Replacement Effect
 // =============================================================================
 

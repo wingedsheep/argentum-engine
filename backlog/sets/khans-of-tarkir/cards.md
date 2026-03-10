@@ -2,7 +2,7 @@
 
 **Set Size:** 269 cards (249 unique card names + basic land variants)
 **Release Date:** September 26, 2014
-**Implemented:** 244 / 249
+**Implemented:** 245 / 249
 
 | Color      | Count |
 |------------|-------|
@@ -12,7 +12,7 @@
 | Red        | 31    |
 | Green      | 32    |
 | Multicolor | 54    |
-| Colorless  | 13    |
+| Colorless  | 14    |
 | Land       | 21    |
 
 ---
@@ -243,7 +243,7 @@
 - [x] Trumpet Blast
 - [x] Tusked Colossodon
 - [x] Tuskguard Captain
-- [ ] Ugin's Nexus
+- [x] Ugin's Nexus
 - [x] Unyielding Krumar
 - [x] Utter End
 - [x] Valley Dasher

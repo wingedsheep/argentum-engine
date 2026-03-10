@@ -574,11 +574,11 @@ class StateBasedActionChecker {
         }
         val exileInstead = exileOnDeathIndex != -1
 
-        // Check for RedirectZoneChange replacement effects (e.g., Anafenza)
-        val redirectedZone = EffectExecutorUtils.checkZoneChangeRedirect(
+        // Check for RedirectZoneChange replacement effects (e.g., Anafenza, Ugin's Nexus)
+        val redirectResult = EffectExecutorUtils.checkZoneChangeRedirect(
             state, entityId, Zone.BATTLEFIELD, Zone.GRAVEYARD
         )
-        val destinationZone = if (exileInstead) Zone.EXILE else redirectedZone
+        val destinationZone = if (exileInstead) Zone.EXILE else redirectResult.destinationZone
 
         val battlefieldZone = ZoneKey(controllerId, Zone.BATTLEFIELD)
         val destinationZoneKey = ZoneKey(ownerId, destinationZone)
@@ -654,6 +654,13 @@ class StateBasedActionChecker {
                     )
                 )
             }
+        }
+
+        // Apply additional replacement effect (e.g., Ugin's Nexus extra turn)
+        if (redirectResult.additionalEffect != null) {
+            newState = EffectExecutorUtils.applyReplacementAdditionalEffect(
+                newState, redirectResult.additionalEffect, redirectResult.effectControllerId
+            )
         }
 
         return ExecutionResult.success(newState, events)
