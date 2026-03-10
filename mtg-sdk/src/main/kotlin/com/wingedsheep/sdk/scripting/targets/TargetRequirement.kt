@@ -223,14 +223,19 @@ data class TargetObject(
     val filter: TargetFilter,
     override val id: String? = null
 ) : TargetRequirement {
-    override val description: String = buildString {
-        if (optional) {
-            append("up to ")
-        } else if (minCount < count) {
-            append("$minCount to ")
+    override val description: String = if (id != null) {
+        buildString {
+            if (optional) append("up to ")
+            else if (minCount < count) append("$minCount to ")
+            append(id)
         }
-        append("target ")
-        append(if (count == 1) filter.description else "$count ${filter.description}s")
+    } else {
+        buildString {
+            if (optional) append("up to ")
+            else if (minCount < count) append("$minCount to ")
+            append("target ")
+            append(if (count == 1) filter.description else "$count ${filter.description}s")
+        }
     }
 
     override fun applyTextReplacement(replacer: TextReplacer): TargetRequirement {
