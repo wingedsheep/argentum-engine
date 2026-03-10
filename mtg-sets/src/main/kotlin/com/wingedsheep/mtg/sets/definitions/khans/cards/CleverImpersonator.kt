@@ -26,6 +26,6 @@ val CleverImpersonator = card("Clever Impersonator") {
         collectorNumber = "34"
         artist = "Slawomir Maniak"
         flavorText = "\"Our own selves are the greatest obstacles to enlightenment.\" —Narset, khan of the Jeskai"
-        imageUri = "https://cards.scryfall.io/normal/front/c/d/cd8fffd3-81ad-47e3-a27b-d8059f2b506f.jpg?1562793709"
+        imageUri = "https://cards.scryfall.io//normal/front/c/d/cd8fffd3-81ad-47e3-a27b-d8059f2b506f.jpg?1562793709"
     }
 }

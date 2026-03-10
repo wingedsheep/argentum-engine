@@ -474,9 +474,9 @@ class DevScenarioController(
             gameRepository.save(gameSession)
 
             // Create player identities with matching player IDs from the scenario
-            // Use provided tokens from query params if available, otherwise generate random UUIDs
+            // Default to stable tokens "p1"/"p2" for easy dev workflow (bookmark browser tabs)
             val identity1 = PlayerIdentity(
-                token = player1Token ?: java.util.UUID.randomUUID().toString(),
+                token = player1Token ?: "p1",
                 playerId = player1Id,
                 playerName = request.player1Name
             ).apply {
@@ -484,7 +484,7 @@ class DevScenarioController(
             }
 
             val identity2 = PlayerIdentity(
-                token = player2Token ?: java.util.UUID.randomUUID().toString(),
+                token = player2Token ?: "p2",
                 playerId = player2Id,
                 playerName = request.player2Name
             ).apply {
@@ -509,7 +509,7 @@ class DevScenarioController(
                     token = identity2.token,
                     playerId = player2Id.value
                 ),
-                message = "Scenario created. Connect via WebSocket at /game and send Connect message with your token."
+                message = "Scenario created. Open http://localhost:5173/?token=${identity1.token} (Player 1) or http://localhost:5173/?token=${identity2.token} (Player 2)"
             ))
         } catch (e: Exception) {
             logger.error("Failed to create scenario", e)

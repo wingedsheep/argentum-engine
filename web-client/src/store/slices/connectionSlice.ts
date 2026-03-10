@@ -63,7 +63,12 @@ export const createConnectionSlice: SliceCreator<ConnectionSlice> = (set, get) =
       onStatusChange: (status) => {
         set({ connectionStatus: status })
         if (status === 'connected' && getWebSocket()) {
-          const token = localStorage.getItem('argentum-token') ?? undefined
+          // Check URL ?token= param first (for dev scenario links), then localStorage
+          const urlToken = new URLSearchParams(window.location.search).get('token')
+          if (urlToken) {
+            localStorage.setItem('argentum-token', urlToken)
+          }
+          const token = urlToken ?? localStorage.getItem('argentum-token') ?? undefined
           const storedName = localStorage.getItem('argentum-player-name') ?? playerName
           getWebSocket()?.send(createConnectMessage(storedName, token))
         }
