@@ -480,26 +480,34 @@ data class ModifyLifeGain(
 // =============================================================================
 
 /**
- * Enter the battlefield as a copy of a creature.
+ * Enter the battlefield as a copy of a permanent.
  * Example: Clone ("You may have this creature enter as a copy of any creature on the battlefield")
+ * Example: Clever Impersonator ("You may have this creature enter as a copy of any nonland permanent on the battlefield")
  *
- * When this permanent would enter the battlefield, the controller may choose a creature
- * on the battlefield. If they do, the permanent enters as a copy of that creature.
+ * When this permanent would enter the battlefield, the controller may choose a permanent
+ * on the battlefield matching [copyFilter]. If they do, the permanent enters as a copy of that permanent.
  * If they don't (or can't), the permanent enters as itself (typically 0/0 and dies).
+ *
+ * @param copyFilter Filter for what can be copied. Defaults to creatures only (Clone).
+ *                   Use [GameObjectFilter.Companion.NonlandPermanent] for Clever Impersonator.
  */
 @SerialName("EntersAsCopy")
 @Serializable
 data class EntersAsCopy(
     val optional: Boolean = true,
+    val copyFilter: GameObjectFilter = GameObjectFilter.Creature,
     override val appliesTo: GameEvent = GameEvent.ZoneChangeEvent(
         filter = GameObjectFilter.Any,
         to = Zone.BATTLEFIELD
     )
 ) : ReplacementEffect {
-    override val description: String = if (optional) {
-        "You may have this creature enter as a copy of any creature on the battlefield"
-    } else {
-        "This creature enters as a copy of any creature on the battlefield"
+    override val description: String = run {
+        val filterDesc = copyFilter.description
+        if (optional) {
+            "You may have this creature enter as a copy of any $filterDesc on the battlefield"
+        } else {
+            "This creature enters as a copy of any $filterDesc on the battlefield"
+        }
     }
 
     override fun applyTextReplacement(replacer: TextReplacer): ReplacementEffect {

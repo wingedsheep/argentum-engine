@@ -372,28 +372,33 @@ class StackResolver(
         if (cardDef != null && !spellComponent.castFaceDown) {
             val entersAsCopy = cardDef.script.replacementEffects.filterIsInstance<EntersAsCopy>().firstOrNull()
             if (entersAsCopy != null) {
-                // Find all creatures on the battlefield
-                val creatures = state.getBattlefield().filter { entityId ->
-                    state.getEntity(entityId)?.get<CardComponent>()?.isCreature == true
+                // Find all permanents on the battlefield matching the copy filter
+                val copyFilter = entersAsCopy.copyFilter
+                val candidates = state.getBattlefield().filter { entityId ->
+                    predicateEvaluator.matches(
+                        state, entityId, copyFilter,
+                        PredicateContext(controllerId = controllerId)
+                    )
                 }
 
-                if (creatures.isNotEmpty()) {
+                if (candidates.isNotEmpty()) {
                     // Present the selection decision
+                    val filterDesc = copyFilter.description
                     val decisionId = "clone-enters-${spellId.value}"
                     val decision = SelectCardsDecision(
                         id = decisionId,
                         playerId = controllerId,
                         prompt = if (entersAsCopy.optional) {
-                            "You may choose a creature to copy"
+                            "You may choose a $filterDesc to copy"
                         } else {
-                            "Choose a creature to copy"
+                            "Choose a $filterDesc to copy"
                         },
                         context = DecisionContext(
                             sourceId = spellId,
                             sourceName = cardComponent?.name,
                             phase = DecisionPhase.RESOLUTION
                         ),
-                        options = creatures,
+                        options = candidates,
                         minSelections = if (entersAsCopy.optional) 0 else 1,
                         maxSelections = 1,
                         useTargetingUI = true
@@ -413,7 +418,7 @@ class StackResolver(
                         .withPendingDecision(decision)
                     return ExecutionResult.paused(pausedState, decision)
                 }
-                // No creatures on battlefield - fall through to enter as itself (0/0)
+                // No matching permanents on battlefield - fall through to enter as itself (0/0)
             }
 
             // Check for EntersWithColorChoice replacement effect (must be before creature type choice)

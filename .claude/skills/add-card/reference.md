@@ -994,7 +994,7 @@ Used in card definitions for effects that intercept events before they happen:
 - `EntersWithCounters(counterType, count, appliesTo)` — Master Biomancer
 - `EntersWithDynamicCounters(counterType, count: DynamicAmount, appliesTo)` — dynamic counter entry
 - `UndyingEffect(appliesTo)` / `PersistEffect(appliesTo)`
-- `EntersAsCopy(optional, appliesTo)` — clone effects
+- `EntersAsCopy(optional, copyFilter, appliesTo)` — clone effects (copyFilter defaults to Creature; use `GameObjectFilter.NonlandPermanent` for Clever Impersonator)
 - `EntersWithColorChoice(appliesTo)` — choose color on entry
 - `EntersWithCreatureTypeChoice(opponentChooses, appliesTo)` — choose creature type on entry
 - `AmplifyEffect(countersPerReveal, appliesTo)` — Amplify N: reveal cards sharing creature type from hand, put N +1/+1 counters per card

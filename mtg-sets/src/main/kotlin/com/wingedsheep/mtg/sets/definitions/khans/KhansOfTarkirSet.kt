@@ -80,6 +80,7 @@ object KhansOfTarkirSet {
         ForceAway,
         IcyBlast,
         Cancel,
+        CleverImpersonator,
         CripplingChill,
         DigThroughTime,
         DisdainfulStroke,
