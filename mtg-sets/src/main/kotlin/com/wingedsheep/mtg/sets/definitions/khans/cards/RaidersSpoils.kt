@@ -8,9 +8,10 @@ import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.GrantTriggeredAbilityToCreatureGroup
 import com.wingedsheep.sdk.scripting.ModifyStatsForCreatureGroup
 import com.wingedsheep.sdk.scripting.TriggeredAbility
-import com.wingedsheep.sdk.scripting.effects.OptionalCostEffect
-import com.wingedsheep.sdk.scripting.effects.PayLifeEffect
+import com.wingedsheep.sdk.scripting.effects.CompositeEffect
+import com.wingedsheep.sdk.scripting.effects.MayEffect
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
+import com.wingedsheep.sdk.scripting.targets.EffectTarget
 
 /**
  * Raiders' Spoils
@@ -38,9 +39,11 @@ val RaidersSpoils = card("Raiders' Spoils") {
             ability = TriggeredAbility.create(
                 trigger = Triggers.DealsCombatDamageToPlayer.event,
                 binding = Triggers.DealsCombatDamageToPlayer.binding,
-                effect = OptionalCostEffect(
-                    cost = PayLifeEffect(1),
-                    ifPaid = Effects.DrawCards(1)
+                effect = MayEffect(
+                    effect = CompositeEffect(listOf(
+                        Effects.LoseLife(1, EffectTarget.Controller),
+                        Effects.DrawCards(1)
+                    ))
                 )
             ),
             filter = GroupFilter(GameObjectFilter.Creature.withSubtype("Warrior").youControl())
