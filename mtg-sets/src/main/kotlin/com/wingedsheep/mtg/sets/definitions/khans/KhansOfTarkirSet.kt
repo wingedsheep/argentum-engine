@@ -280,6 +280,7 @@ object KhansOfTarkirSet {
         NomadOutpost,
         OpulentPalace,
         SandsteppeCitadel,
+        BloodstainedMire,
         BloodfellCaves,
         BlossomingSands,
         DismalBackwater,
