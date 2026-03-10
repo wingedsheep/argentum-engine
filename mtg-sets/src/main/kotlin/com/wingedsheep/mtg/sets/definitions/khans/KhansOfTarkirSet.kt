@@ -230,6 +230,7 @@ object KhansOfTarkirSet {
         HighspireMantis,
         IcefeatherAven,
         IvorytuskFortress,
+        JeskaiAscendancy,
         JeskaiCharm,
         MantisRider,
         MasterTheWay,
