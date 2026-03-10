@@ -234,6 +234,7 @@ object KhansOfTarkirSet {
         JeskaiCharm,
         MantisRider,
         MasterTheWay,
+        NarsetEnlightenedMaster,
         Mindswipe,
         MarduAscendancy,
         MarduCharm,

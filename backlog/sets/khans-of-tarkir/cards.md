@@ -2,7 +2,7 @@
 
 **Set Size:** 269 cards (249 unique card names + basic land variants)
 **Release Date:** September 26, 2014
-**Implemented:** 245 / 249
+**Implemented:** 246 / 249
 
 | Color      | Count |
 |------------|-------|
@@ -11,7 +11,7 @@
 | Black      | 31    |
 | Red        | 31    |
 | Green      | 32    |
-| Multicolor | 54    |
+| Multicolor | 55    |
 | Colorless  | 14    |
 | Land       | 21    |
 
@@ -158,7 +158,7 @@
 - [x] Murderous Cut
 - [x] Mystic Monastery
 - [x] Mystic of the Hidden Way
-- [ ] Narset, Enlightened Master
+- [x] Narset, Enlightened Master
 - [x] Naturalize
 - [x] Necropolis Fiend
 - [x] Nomad Outpost
