@@ -7,6 +7,7 @@ import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Phase
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
+import com.wingedsheep.sdk.scripting.Duration
 import com.wingedsheep.sdk.scripting.KeywordAbility
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
@@ -1037,6 +1038,26 @@ class ClientStateTransformer(
                     name = "Taunted",
                     description = description,
                     icon = "taunt"
+                )
+            )
+        }
+
+        // Check for permanent global triggered abilities (emblems) controlled by this player
+        // Group by source name so a single emblem with multiple abilities shows as one badge
+        val emblemsBySource = state.globalGrantedTriggeredAbilities
+            .filter { it.controllerId == playerId && it.duration == Duration.Permanent }
+            .groupBy { it.sourceName }
+
+        for ((sourceName, abilities) in emblemsBySource) {
+            val description = abilities.joinToString(" ") {
+                it.descriptionOverride ?: it.ability.description
+            }
+            effects.add(
+                ClientPlayerEffect(
+                    effectId = "emblem_${sourceName.lowercase().replace(" ", "_").replace(",", "")}",
+                    name = "$sourceName Emblem",
+                    description = description,
+                    icon = "emblem"
                 )
             )
         }

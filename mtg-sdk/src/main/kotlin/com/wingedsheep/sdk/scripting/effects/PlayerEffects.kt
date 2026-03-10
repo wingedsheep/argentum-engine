@@ -143,13 +143,15 @@ data class CreateGlobalTriggeredAbilityUntilEndOfTurnEffect(
  * "Whenever [trigger], [effect]." (permanent duration)
  *
  * @property ability The triggered ability to create
+ * @property descriptionOverride Optional override for the auto-generated description
  */
 @SerialName("CreatePermanentGlobalTriggeredAbility")
 @Serializable
 data class CreatePermanentGlobalTriggeredAbilityEffect(
-    val ability: TriggeredAbility
+    val ability: TriggeredAbility,
+    val descriptionOverride: String? = null
 ) : Effect {
-    override val description: String = ability.description
+    override val description: String = descriptionOverride ?: ability.description
 
     override fun applyTextReplacement(replacer: TextReplacer): Effect {
         val newAbility = ability.applyTextReplacement(replacer)

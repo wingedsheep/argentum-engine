@@ -64,7 +64,7 @@ val SorinSolemnVisitor = card("Sorin, Solemn Visitor") {
     // -6: Emblem with "At the beginning of each opponent's upkeep, that player sacrifices a creature."
     loyaltyAbility(-6) {
         effect = CreatePermanentGlobalTriggeredAbilityEffect(
-            TriggeredAbility.create(
+            ability = TriggeredAbility.create(
                 trigger = Triggers.EachOpponentUpkeep.event,
                 binding = Triggers.EachOpponentUpkeep.binding,
                 effect = ForceSacrificeEffect(
@@ -72,7 +72,8 @@ val SorinSolemnVisitor = card("Sorin, Solemn Visitor") {
                     count = 1,
                     target = EffectTarget.PlayerRef(Player.Opponent)
                 )
-            )
+            ),
+            descriptionOverride = "At the beginning of each opponent's upkeep, that player sacrifices a creature."
         )
     }
 

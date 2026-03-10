@@ -178,6 +178,8 @@ export function getEffectIcon(icon: string): string {
       return '🛡️'
     case 'regeneration':
       return '♻️'
+    case 'emblem':
+      return '👑'
     default:
       return '⚡'
   }

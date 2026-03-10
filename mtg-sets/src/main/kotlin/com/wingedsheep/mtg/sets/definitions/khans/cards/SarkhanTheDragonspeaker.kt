@@ -55,18 +55,20 @@ val SarkhanTheDragonspeaker = card("Sarkhan, the Dragonspeaker") {
     loyaltyAbility(-6) {
         effect = Effects.Composite(
             CreatePermanentGlobalTriggeredAbilityEffect(
-                TriggeredAbility.create(
+                ability = TriggeredAbility.create(
                     trigger = Triggers.YourDrawStep.event,
                     binding = Triggers.YourDrawStep.binding,
                     effect = Effects.DrawCards(2)
-                )
+                ),
+                descriptionOverride = "At the beginning of your draw step, draw two additional cards."
             ),
             CreatePermanentGlobalTriggeredAbilityEffect(
-                TriggeredAbility.create(
+                ability = TriggeredAbility.create(
                     trigger = Triggers.YourEndStep.event,
                     binding = Triggers.YourEndStep.binding,
                     effect = EffectPatterns.discardHand()
-                )
+                ),
+                descriptionOverride = "At the beginning of your end step, discard your hand."
             )
         )
     }

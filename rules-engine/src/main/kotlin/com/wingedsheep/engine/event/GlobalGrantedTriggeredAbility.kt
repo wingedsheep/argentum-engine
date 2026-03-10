@@ -18,6 +18,7 @@ import kotlinx.serialization.Serializable
  * @property sourceId The entity that created this ability (for stack display)
  * @property sourceName The name of the card that created this ability
  * @property duration How long the ability lasts
+ * @property descriptionOverride Optional override for the auto-generated description (for emblem display)
  */
 @Serializable
 data class GlobalGrantedTriggeredAbility(
@@ -25,5 +26,6 @@ data class GlobalGrantedTriggeredAbility(
     val controllerId: EntityId,
     val sourceId: EntityId,
     val sourceName: String,
-    val duration: Duration
+    val duration: Duration,
+    val descriptionOverride: String? = null
 )

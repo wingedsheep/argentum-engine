@@ -37,7 +37,8 @@ class CreatePermanentGlobalTriggeredAbilityExecutor :
             sourceName = state.getEntity(sourceId)
                 ?.get<CardComponent>()?.name
                 ?: "Unknown",
-            duration = Duration.Permanent
+            duration = Duration.Permanent,
+            descriptionOverride = effect.descriptionOverride
         )
 
         val newState = state.copy(
