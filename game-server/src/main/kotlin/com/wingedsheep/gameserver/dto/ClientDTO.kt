@@ -206,7 +206,10 @@ data class ClientCard(
     val playableFromExile: Boolean = false,
 
     /** Original card name when this permanent is a copy (e.g., "Clever Impersonator" copying a Wind Drake) */
-    val copyOf: String? = null
+    val copyOf: String? = null,
+
+    /** Damage distribution for DividedDamageEffect spells on the stack (target entity ID -> damage amount) */
+    val damageDistribution: Map<EntityId, Int>? = null
 )
 
 /**

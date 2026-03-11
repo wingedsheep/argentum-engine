@@ -186,6 +186,9 @@ export interface ClientCard {
 
   /** Original card name when this permanent is a copy (e.g., "Clever Impersonator") */
   readonly copyOf?: string | null
+
+  /** Damage distribution for DividedDamageEffect spells on the stack (target entity ID -> damage amount) */
+  readonly damageDistribution?: Record<EntityId, number> | null
 }
 
 /**

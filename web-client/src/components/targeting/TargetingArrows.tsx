@@ -248,10 +248,13 @@ export function TargetingArrows() {
           const targetPos = getTargetPosition(target)
           if (!targetPos) continue
 
-          // Look up damage distribution for this target
+          // Look up damage distribution for this target:
+          // 1. Server-sent distribution on the stack card (visible to all players)
+          // 2. Local distribution from the caster's UI (before server confirms)
           const targetEntityId = getTargetEntityId(target)
-          const damageLabel = targetEntityId != null && lastDamageDistribution != null
-            ? lastDamageDistribution[targetEntityId] ?? null
+          const serverDistribution = card.damageDistribution
+          const damageLabel = targetEntityId != null
+            ? (serverDistribution?.[targetEntityId] ?? lastDamageDistribution?.[targetEntityId] ?? null)
             : null
 
           newArrows.push({

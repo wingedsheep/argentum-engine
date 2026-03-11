@@ -3,6 +3,7 @@ import { useGameStore } from '../../store/gameStore'
 import type { EntityId } from '../../types'
 import { useResponsive } from '../../hooks/useResponsive'
 import { getCardImageUrl } from '../../utils/cardImages'
+import { getPTColor } from '../game/board/shared'
 
 interface TargetCardInfo {
   id: EntityId
@@ -10,6 +11,9 @@ interface TargetCardInfo {
   imageUri: string | null | undefined
   power: number | null | undefined
   toughness: number | null | undefined
+  basePower: number | null | undefined
+  baseToughness: number | null | undefined
+  damage: number | null | undefined
 }
 
 /**
@@ -73,6 +77,9 @@ export function DamageDistributionModal() {
       imageUri: card?.imageUri,
       power: card?.power,
       toughness: card?.toughness,
+      basePower: card?.basePower,
+      baseToughness: card?.baseToughness,
+      damage: card?.damage,
     }
   })
 
@@ -181,7 +188,9 @@ export function DamageDistributionModal() {
           const allocated = distribution[card.id] ?? 0
           const cardImageUrl = getCardImageUrl(card.name, card.imageUri)
           const toughness = card.toughness ?? 0
-          const isLethal = allocated >= toughness && toughness > 0
+          const existingDamage = card.damage ?? 0
+          const remainingToughness = Math.max(0, toughness - existingDamage)
+          const isLethal = allocated >= remainingToughness && remainingToughness > 0
 
           return (
             <div
@@ -262,6 +271,38 @@ export function DamageDistributionModal() {
                     Lethal
                   </div>
                 )}
+
+                {/* P/T overlay */}
+                {card.power != null && card.toughness != null && (
+                  <div
+                    style={{
+                      position: 'absolute',
+                      bottom: 4,
+                      right: 4,
+                      padding: '2px 6px',
+                      borderRadius: 4,
+                      backgroundColor: 'rgba(0, 0, 0, 0.85)',
+                      border: '1px solid rgba(255, 255, 255, 0.3)',
+                    }}
+                  >
+                    <span style={{
+                      color: getPTColor(card.power, card.toughness, card.basePower ?? null, card.baseToughness ?? null),
+                      fontWeight: 700,
+                      fontSize: responsive.isMobile ? 11 : 13,
+                    }}>
+                      {card.power}/
+                    </span>
+                    <span style={{
+                      color: existingDamage > 0
+                        ? '#ff4444'
+                        : getPTColor(card.power, card.toughness, card.basePower ?? null, card.baseToughness ?? null),
+                      fontWeight: 700,
+                      fontSize: responsive.isMobile ? 11 : 13,
+                    }}>
+                      {existingDamage > 0 ? card.toughness - existingDamage : card.toughness}
+                    </span>
+                  </div>
+                )}
               </div>
 
               {/* Card name and stats */}
@@ -290,7 +331,7 @@ export function DamageDistributionModal() {
                       marginTop: 2,
                     }}
                   >
-                    {allocated} damage / {toughness} toughness
+                    {allocated} damage / {remainingToughness} toughness
                   </span>
                 )}
               </div>
