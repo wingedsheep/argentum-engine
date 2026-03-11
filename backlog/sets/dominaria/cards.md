@@ -2,11 +2,11 @@
 
 **Set Size:** 280 cards (249 unique card names + basic land variants)
 **Release Date:** April 27, 2018
-**Implemented:** 4 / 249
+**Implemented:** 5 / 249
 
 | Color      | Total | Done |
 |------------|-------|------|
-| White      | 38    | 0    |
+| White      | 38    | 1    |
 | Blue       | 37    | 1    |
 | Black      | 38    | 1    |
 | Red        | 38    | 1    |
@@ -153,7 +153,7 @@
 - [ ] Memorial to Unity
 - [ ] Memorial to War
 - [ ] Merfolk Trickster
-- [ ] Mesa Unicorn
+- [x] Mesa Unicorn
 - [ ] Mishra's Self-Replicator
 - [ ] Mox Amber
 - [ ] Muldrotha, the Gravetide
