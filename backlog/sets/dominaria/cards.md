@@ -2,12 +2,12 @@
 
 **Set Size:** 280 cards (249 unique card names + basic land variants)
 **Release Date:** April 27, 2018
-**Implemented:** 10 / 249
+**Implemented:** 11 / 249
 
 | Color      | Total | Done |
 |------------|-------|------|
 | White      | 38    | 2    |
-| Blue       | 37    | 1    |
+| Blue       | 37    | 2    |
 | Black      | 38    | 2    |
 | Red        | 38    | 2    |
 | Green      | 37    | 1    |
@@ -33,7 +33,7 @@
 - [ ] Aven Sentry
 - [ ] Baird, Steward of Argive
 - [ ] Baloth Gorger
-- [ ] Befuddle
+- [x] Befuddle
 - [ ] Benalish Honor Guard
 - [ ] Benalish Marshal
 - [ ] Blackblade Reforged
