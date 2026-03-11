@@ -2,11 +2,11 @@
 
 **Set Size:** 280 cards (249 unique card names + basic land variants)
 **Release Date:** April 27, 2018
-**Implemented:** 16 / 249
+**Implemented:** 17 / 249
 
 | Color      | Total | Done |
 |------------|-------|------|
-| White      | 38    | 2    |
+| White      | 38    | 3    |
 | Blue       | 37    | 3    |
 | Black      | 38    | 3    |
 | Red        | 38    | 3    |
@@ -136,7 +136,7 @@
 - [ ] Keldon Warcaller
 - [ ] Knight of Grace
 - [ ] Knight of Malice
-- [ ] Knight of New Benalia
+- [x] Knight of New Benalia
 - [ ] Krosan Druid
 - [ ] Kwende, Pride of Femeref
 - [ ] Lich's Mastery

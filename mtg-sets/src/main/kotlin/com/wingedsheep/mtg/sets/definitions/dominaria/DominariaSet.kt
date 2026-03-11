@@ -27,6 +27,7 @@ object DominariaSet {
         Divination,
         Eviscerate,
         FerventStrike,
+        KnightOfNewBenalia,
         KeldonRaider,
         LlanowarElves,
         MammothSpider,
