@@ -2,13 +2,13 @@
 
 **Set Size:** 280 cards (249 unique card names + basic land variants)
 **Release Date:** April 27, 2018
-**Implemented:** 7 / 249
+**Implemented:** 8 / 249
 
 | Color      | Total | Done |
 |------------|-------|------|
 | White      | 38    | 1    |
 | Blue       | 37    | 1    |
-| Black      | 38    | 1    |
+| Black      | 38    | 2    |
 | Red        | 38    | 1    |
 | Green      | 37    | 1    |
 | Multicolor | 19    | 1    |
@@ -261,7 +261,7 @@
 - [ ] Wizard's Lightning
 - [ ] Wizard's Retort
 - [ ] Woodland Cemetery
-- [ ] Yargle, Glutton of Urborg
+- [x] Yargle, Glutton of Urborg
 - [ ] Yavimaya Sapherd
 - [ ] Yawgmoth's Vile Offering
 - [ ] Zahid, Djinn of the Lamp

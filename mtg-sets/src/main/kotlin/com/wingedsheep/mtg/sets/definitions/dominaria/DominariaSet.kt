@@ -28,5 +28,6 @@ object DominariaSet {
         Opt,
         RunAmok,
         SparringConstruct,
+        YargleGluttonOfUrborg,
     )
 }
