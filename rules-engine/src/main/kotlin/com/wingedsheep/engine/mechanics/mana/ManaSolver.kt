@@ -111,10 +111,12 @@ class ManaSolver(
         state: GameState,
         playerId: EntityId,
         cost: ManaCost,
-        xValue: Int = 0
+        xValue: Int = 0,
+        excludeSources: Set<EntityId> = emptySet()
     ): ManaSolution? {
         // Get all untapped mana sources controlled by the player
         val availableSources = findAvailableManaSources(state, playerId)
+            .filter { it.entityId !in excludeSources }
 
         if (availableSources.isEmpty() && cost.cmc > 0) {
             return null
@@ -652,7 +654,8 @@ class ManaSolver(
         state: GameState,
         playerId: EntityId,
         cost: ManaCost,
-        xValue: Int = 0
+        xValue: Int = 0,
+        excludeSources: Set<EntityId> = emptySet()
     ): Boolean {
         // Get the player's floating mana pool
         val poolComponent = state.getEntity(playerId)?.get<ManaPoolComponent>()
@@ -686,7 +689,7 @@ class ManaSolver(
         }
 
         // Check if we can tap sources for the remaining cost (including remaining X)
-        if (solve(state, playerId, remainingCost, xRemainingToPay) != null) return true
+        if (solve(state, playerId, remainingCost, xRemainingToPay, excludeSources) != null) return true
 
         // Fallback: check if TapPermanents mana abilities (e.g., Birchlore Rangers) provide enough extra mana.
         // These abilities tap other permanents (not the source itself) to produce mana.
@@ -712,7 +715,7 @@ class ManaSolver(
         val augmentedXRemaining = totalXMana - augmentedXPaid
 
         if (augmentedRemaining.isEmpty() && augmentedXRemaining == 0) return true
-        return solve(state, playerId, augmentedRemaining, augmentedXRemaining) != null
+        return solve(state, playerId, augmentedRemaining, augmentedXRemaining, excludeSources) != null
     }
 
     /**

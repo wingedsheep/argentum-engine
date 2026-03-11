@@ -941,6 +941,9 @@ class LegalActionsCalculator(
                     is AbilityCost.Composite -> {
                         val compositeCost = effectiveCost
                         var costCanBePaid = true
+                        // If composite cost includes Tap, exclude the source from mana solving
+                        val hasTapCost = compositeCost.costs.any { it is AbilityCost.Tap }
+                        val excludeFromMana = if (hasTapCost) setOf(entityId) else emptySet()
                         for (subCost in compositeCost.costs) {
                             when (subCost) {
                                 is AbilityCost.Tap -> {
@@ -958,7 +961,7 @@ class LegalActionsCalculator(
                                     }
                                 }
                                 is AbilityCost.Mana -> {
-                                    if (!manaSolver.canPay(state, playerId, subCost.cost)) {
+                                    if (!manaSolver.canPay(state, playerId, subCost.cost, excludeSources = excludeFromMana)) {
                                         costCanBePaid = false
                                         break
                                     }
@@ -1300,6 +1303,9 @@ class LegalActionsCalculator(
                     is AbilityCost.Composite -> {
                         val compositeCost = effectiveCost
                         var costCanBePaid = true
+                        // If composite cost includes Tap, exclude the source from mana solving
+                        val hasTapCost = compositeCost.costs.any { it is AbilityCost.Tap }
+                        val excludeFromMana = if (hasTapCost) setOf(entityId) else emptySet()
                         for (subCost in compositeCost.costs) {
                             when (subCost) {
                                 is AbilityCost.Tap -> {
@@ -1317,7 +1323,7 @@ class LegalActionsCalculator(
                                     }
                                 }
                                 is AbilityCost.Mana -> {
-                                    if (!manaSolver.canPay(state, playerId, subCost.cost)) {
+                                    if (!manaSolver.canPay(state, playerId, subCost.cost, excludeSources = excludeFromMana)) {
                                         costCanBePaid = false
                                         break
                                     }

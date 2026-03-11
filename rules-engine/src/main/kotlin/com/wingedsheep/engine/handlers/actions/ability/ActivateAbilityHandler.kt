@@ -632,9 +632,12 @@ class ActivateAbilityHandler(
         return when (cost) {
             is AbilityCost.Mana -> manaSolver.canPay(state, playerId, cost.cost)
             is AbilityCost.Composite -> {
+                // If composite cost includes Tap, the source itself can't also be used as a mana source
+                val hasTapCost = cost.costs.any { it is AbilityCost.Tap }
+                val excludeSources = if (hasTapCost) setOf(sourceId) else emptySet()
                 cost.costs.all { subCost ->
                     when (subCost) {
-                        is AbilityCost.Mana -> manaSolver.canPay(state, playerId, subCost.cost)
+                        is AbilityCost.Mana -> manaSolver.canPay(state, playerId, subCost.cost, excludeSources = excludeSources)
                         else -> costHandler.canPayAbilityCost(state, subCost, sourceId, playerId, manaPool)
                     }
                 }

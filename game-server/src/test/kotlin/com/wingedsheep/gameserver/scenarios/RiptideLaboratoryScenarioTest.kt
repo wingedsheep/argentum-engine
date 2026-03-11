@@ -27,7 +27,7 @@ class RiptideLaboratoryScenarioTest : ScenarioTestBase() {
                     .withPlayers("Wizard Player", "Opponent")
                     .withCardOnBattlefield(1, "Riptide Laboratory")
                     .withCardOnBattlefield(1, "Information Dealer") // Human Wizard
-                    .withLandsOnBattlefield(1, "Island", 1)
+                    .withLandsOnBattlefield(1, "Island", 2) // Need 2: {U} + {1} (Lab can't tap for mana AND ability)
                     .withActivePlayer(1)
                     .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
                     .build()
@@ -67,7 +67,7 @@ class RiptideLaboratoryScenarioTest : ScenarioTestBase() {
                     .withPlayers("Player", "Opponent")
                     .withCardOnBattlefield(1, "Riptide Laboratory")
                     .withCardOnBattlefield(1, "Glory Seeker") // Human Soldier, not a Wizard
-                    .withLandsOnBattlefield(1, "Island", 1)
+                    .withLandsOnBattlefield(1, "Island", 2)
                     .withActivePlayer(1)
                     .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
                     .build()
@@ -97,7 +97,7 @@ class RiptideLaboratoryScenarioTest : ScenarioTestBase() {
                     .withPlayers("Player", "Opponent")
                     .withCardOnBattlefield(1, "Riptide Laboratory")
                     .withCardOnBattlefield(2, "Information Dealer") // Opponent's Wizard
-                    .withLandsOnBattlefield(1, "Island", 1)
+                    .withLandsOnBattlefield(1, "Island", 2)
                     .withActivePlayer(1)
                     .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
                     .build()
