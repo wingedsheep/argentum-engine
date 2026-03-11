@@ -26,6 +26,7 @@ import com.wingedsheep.engine.state.components.battlefield.CastFromHandComponent
 import com.wingedsheep.engine.state.components.battlefield.SummoningSicknessComponent
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.state.components.battlefield.TimestampComponent
+import com.wingedsheep.engine.state.components.combat.AttackerOrderComponent
 import com.wingedsheep.engine.state.components.combat.AttackingComponent
 import com.wingedsheep.engine.state.components.combat.BlockedComponent
 import com.wingedsheep.engine.state.components.combat.BlockingComponent
@@ -78,26 +79,59 @@ object EffectExecutorUtils {
      * Clean up combat references to a leaving entity on other creatures.
      * When a blocker leaves the battlefield, remove it from each attacker's
      * BlockedComponent.blockerIds and DamageAssignmentOrderComponent.orderedBlockers.
+     * When an attacker leaves the battlefield, remove it from each blocker's
+     * BlockingComponent.blockedAttackerIds and AttackerOrderComponent.orderedAttackers.
      */
     fun cleanupCombatReferences(state: GameState, leavingEntityId: EntityId): GameState {
         val container = state.getEntity(leavingEntityId) ?: return state
-        val blockingComponent = container.get<BlockingComponent>() ?: return state
-
         var newState = state
-        for (attackerId in blockingComponent.blockedAttackerIds) {
-            newState = newState.updateEntity(attackerId) { attackerContainer ->
-                var updated = attackerContainer
-                val blocked = updated.get<BlockedComponent>()
-                if (blocked != null) {
-                    updated = updated.with(BlockedComponent(blocked.blockerIds.filter { it != leavingEntityId }))
+
+        // If leaving entity is a blocker, clean up attackers' references to it
+        val blockingComponent = container.get<BlockingComponent>()
+        if (blockingComponent != null) {
+            for (attackerId in blockingComponent.blockedAttackerIds) {
+                newState = newState.updateEntity(attackerId) { attackerContainer ->
+                    var updated = attackerContainer
+                    val blocked = updated.get<BlockedComponent>()
+                    if (blocked != null) {
+                        updated = updated.with(BlockedComponent(blocked.blockerIds.filter { it != leavingEntityId }))
+                    }
+                    val order = updated.get<DamageAssignmentOrderComponent>()
+                    if (order != null) {
+                        updated = updated.with(DamageAssignmentOrderComponent(order.orderedBlockers.filter { it != leavingEntityId }))
+                    }
+                    updated
                 }
-                val order = updated.get<DamageAssignmentOrderComponent>()
-                if (order != null) {
-                    updated = updated.with(DamageAssignmentOrderComponent(order.orderedBlockers.filter { it != leavingEntityId }))
-                }
-                updated
             }
         }
+
+        // If leaving entity is an attacker, clean up blockers' references to it
+        val attackingComponent = container.get<AttackingComponent>()
+        if (attackingComponent != null) {
+            for ((entityId, components) in newState.entities) {
+                val blocking = components.get<BlockingComponent>() ?: continue
+                if (leavingEntityId in blocking.blockedAttackerIds) {
+                    newState = newState.updateEntity(entityId) { blockerContainer ->
+                        var updated = blockerContainer
+                        val updatedBlocking = updated.get<BlockingComponent>()
+                        if (updatedBlocking != null) {
+                            val updatedIds = updatedBlocking.blockedAttackerIds - leavingEntityId
+                            updated = if (updatedIds.isEmpty()) {
+                                updated.without<BlockingComponent>()
+                            } else {
+                                updated.with(BlockingComponent(updatedIds))
+                            }
+                        }
+                        val attackerOrder = updated.get<AttackerOrderComponent>()
+                        if (attackerOrder != null) {
+                            updated = updated.with(AttackerOrderComponent(attackerOrder.orderedAttackers.filter { it != leavingEntityId }))
+                        }
+                        updated
+                    }
+                }
+            }
+        }
+
         return newState
     }
 
@@ -165,6 +199,7 @@ object EffectExecutorUtils {
             .without<BlockedComponent>()
             .without<DamageAssignmentComponent>()
             .without<DamageAssignmentOrderComponent>()
+            .without<AttackerOrderComponent>()
             .without<DealtFirstStrikeDamageComponent>()
             .without<RequiresManualDamageAssignmentComponent>()
     }
@@ -1360,6 +1395,7 @@ object EffectExecutorUtils {
                 .without<BlockedComponent>()
                 .without<DamageAssignmentComponent>()
                 .without<DamageAssignmentOrderComponent>()
+                .without<AttackerOrderComponent>()
         }
 
         // Clean up cross-references in other creatures' combat components

@@ -279,6 +279,16 @@ data class BlockerOrderDeclaredEvent(
 ) : GameEvent
 
 /**
+ * Attacking player ordered their attackers for a blocker's damage assignment.
+ */
+@Serializable
+@SerialName("AttackerOrderDeclaredEvent")
+data class AttackerOrderDeclaredEvent(
+    val blockerId: EntityId,
+    val orderedAttackers: List<EntityId>  // First in list receives damage first
+) : GameEvent
+
+/**
  * Combat damage was assigned.
  */
 @Serializable

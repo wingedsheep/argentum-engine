@@ -60,6 +60,7 @@ val engineSerializersModule = SerializersModule {
         subclass(AttackersDeclaredEvent::class)
         subclass(BlockersDeclaredEvent::class)
         subclass(BlockerOrderDeclaredEvent::class)
+        subclass(AttackerOrderDeclaredEvent::class)
         subclass(DamageAssignedEvent::class)
         subclass(PhaseChangedEvent::class)
         subclass(StepChangedEvent::class)
@@ -113,6 +114,7 @@ val engineSerializersModule = SerializersModule {
         subclass(PilesSplitResponse::class)
         subclass(OptionChosenResponse::class)
         subclass(DamageAssignmentResponse::class)
+        subclass(CancelDecisionResponse::class)
     }
 
     // ContinuationFrame hierarchy
@@ -125,6 +127,7 @@ val engineSerializersModule = SerializersModule {
         subclass(MayAbilityContinuation::class)
         subclass(HandSizeDiscardContinuation::class)
         subclass(BlockerOrderContinuation::class)
+        subclass(AttackerOrderContinuation::class)
         subclass(PayOrSufferContinuation::class)
         subclass(ChooseColorProtectionContinuation::class)
         subclass(ChooseColorProtectionTargetContinuation::class)
@@ -207,6 +210,7 @@ val engineSerializersModule = SerializersModule {
         subclass(BlockedComponent::class)
         subclass(DamageAssignmentComponent::class)
         subclass(DamageAssignmentOrderComponent::class)
+        subclass(AttackerOrderComponent::class)
         subclass(DealtFirstStrikeDamageComponent::class)
         subclass(RequiresManualDamageAssignmentComponent::class)
         subclass(AttackersDeclaredThisCombatComponent::class)

@@ -98,6 +98,20 @@ data object AttackersDeclaredThisCombatComponent : Component
 data object BlockersDeclaredThisCombatComponent : Component
 
 /**
+ * Stores the order in which attackers receive damage from a blocker that blocks multiple attackers.
+ * Set during the Declare Blockers step when a blocker blocks multiple attacking creatures.
+ *
+ * Per Rule 509.3: The attacking player announces the damage assignment order
+ * among the attacking creatures the blocker is blocking.
+ *
+ * @property orderedAttackers Index 0 is the first creature to receive damage
+ */
+@Serializable
+data class AttackerOrderComponent(
+    val orderedAttackers: List<EntityId>
+) : Component
+
+/**
  * Marks a creature for destruction at end of combat.
  * Used by Serpentine Basilisk and similar "basilisk" abilities that say
  * "destroy that creature at end of combat."

@@ -907,6 +907,7 @@ is PermanentsSacrificedEvent -> {
             // Events that don't need client representation or are handled differently
             is DrawFailedEvent,
             is BlockerOrderDeclaredEvent,
+            is AttackerOrderDeclaredEvent,
             is DamageAssignedEvent,
             is PhaseChangedEvent,
             is StepChangedEvent,

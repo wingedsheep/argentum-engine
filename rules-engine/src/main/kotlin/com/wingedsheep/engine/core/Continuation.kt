@@ -322,6 +322,26 @@ data class BlockerOrderContinuation(
 ) : ContinuationFrame
 
 /**
+ * Resume after the attacking player orders their attackers for a blocker's damage assignment.
+ *
+ * When a single blocker blocks multiple attackers, the attacking player must order those
+ * attackers to determine how the blocker divides its combat damage (CR 509.3).
+ *
+ * @property attackingPlayerId The attacking player who must order their attackers
+ * @property blockerId The blocking creature whose attackers are being ordered
+ * @property blockerName Name of the blocker for display
+ * @property remainingBlockers List of blockers that still need attacker ordering after this one
+ */
+@Serializable
+data class AttackerOrderContinuation(
+    override val decisionId: String,
+    val attackingPlayerId: EntityId,
+    val blockerId: EntityId,
+    val blockerName: String,
+    val remainingBlockers: List<EntityId>
+) : ContinuationFrame
+
+/**
  * Resume after player selects cards/permanents for a generic "pay or suffer" effect.
  *
  * Used for unified "unless" mechanics like PayOrSufferEffect.
@@ -755,7 +775,10 @@ data class ModalTargetContinuation(
     val effect: Effect,
     val xValue: Int? = null,
     val opponentId: EntityId? = null,
-    val targetRequirements: List<TargetRequirement> = emptyList()
+    val targetRequirements: List<TargetRequirement> = emptyList(),
+    /** Original modes list for cancelling back to mode selection */
+    val modes: List<@Serializable Mode>? = null,
+    val triggeringEntityId: EntityId? = null
 ) : ContinuationFrame
 
 /**

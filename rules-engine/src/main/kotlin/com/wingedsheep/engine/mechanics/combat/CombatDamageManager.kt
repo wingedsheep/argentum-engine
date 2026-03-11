@@ -12,6 +12,7 @@ import com.wingedsheep.engine.state.components.battlefield.CountersComponent
 import com.wingedsheep.engine.state.components.battlefield.DamageComponent
 import com.wingedsheep.engine.state.components.combat.AttackingComponent
 import com.wingedsheep.engine.state.components.combat.BlockedComponent
+import com.wingedsheep.engine.state.components.combat.BlockingComponent
 import com.wingedsheep.engine.state.components.combat.DamageAssignmentComponent
 import com.wingedsheep.engine.state.components.combat.DamageAssignmentOrderComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
@@ -316,16 +317,47 @@ internal class CombatDamageManager(
                     }
                 }
             }
+        }
 
-            // Blocker counterattacks
-            if (attackerId in state.getBattlefield()) {
-                for (blockerId in orderedBlockers) {
-                    if (blockerId !in state.getBattlefield()) continue
-                    state.getEntity(blockerId)?.get<CardComponent>() ?: continue
-                    if (!dealsDamageThisStep(projected, blockerId, firstStrike)) continue
-                    val blockerPower = projected.getPower(blockerId) ?: 0
-                    if (blockerPower > 0) {
-                        assignments.add(CombatDamageAssignment(blockerId, attackerId, blockerPower))
+        // Blocker counterattack damage — each blocker divides its damage among attackers it blocks
+        val processedBlockers = mutableSetOf<EntityId>()
+        for ((attackerId, _) in attackers) {
+            if (attackerId !in state.getBattlefield()) continue
+            val attackerContainer = state.getEntity(attackerId) ?: continue
+            val blockedBy = attackerContainer.get<BlockedComponent>()
+            val orderedBlockers = attackerContainer.get<DamageAssignmentOrderComponent>()?.orderedBlockers
+                ?: blockedBy?.blockerIds
+                ?: emptyList()
+
+            for (blockerId in orderedBlockers) {
+                if (blockerId in processedBlockers) continue
+                if (blockerId !in state.getBattlefield()) continue
+                val blockerContainer = state.getEntity(blockerId) ?: continue
+                blockerContainer.get<CardComponent>() ?: continue
+                if (!dealsDamageThisStep(projected, blockerId, firstStrike)) continue
+                val blockerPower = projected.getPower(blockerId) ?: 0
+                if (blockerPower <= 0) continue
+
+                processedBlockers.add(blockerId)
+
+                val blockingComponent = blockerContainer.get<BlockingComponent>()
+                val blockedAttackerIds = blockingComponent?.blockedAttackerIds ?: listOf(attackerId)
+
+                if (blockedAttackerIds.size <= 1) {
+                    // Blocking a single attacker — deal full damage
+                    val targetId = blockedAttackerIds.firstOrNull() ?: attackerId
+                    if (targetId in state.getBattlefield()) {
+                        assignments.add(CombatDamageAssignment(blockerId, targetId, blockerPower))
+                    }
+                } else {
+                    // Blocking multiple attackers — divide damage among them in order
+                    val autoDist = damageCalculator.calculateBlockerDamageDistribution(
+                        state, blockerId
+                    )
+                    for ((targetId, damage) in autoDist.assignments) {
+                        if (damage > 0) {
+                            assignments.add(CombatDamageAssignment(blockerId, targetId, damage))
+                        }
                     }
                 }
             }

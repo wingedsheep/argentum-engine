@@ -70,6 +70,16 @@ class CombatManager(
     fun getMandatoryBlockerAssignments(state: GameState, blockingPlayer: EntityId): Map<EntityId, List<EntityId>> =
         blockPhase.getMandatoryBlockerAssignments(state, blockingPlayer)
 
+    fun createAttackerOrderDecision(
+        state: GameState,
+        attackingPlayer: EntityId,
+        firstBlocker: EntityId,
+        remainingBlockers: List<EntityId>,
+        precedingEvents: List<GameEvent>
+    ): ExecutionResult = blockPhase.createAttackerOrderDecision(
+        state, attackingPlayer, firstBlocker, remainingBlockers, precedingEvents
+    )
+
     // =========================================================================
     // Combat Damage
     // =========================================================================
@@ -92,6 +102,7 @@ class CombatManager(
                     .without<BlockedComponent>()
                     .without<DamageAssignmentComponent>()
                     .without<DamageAssignmentOrderComponent>()
+                    .without<AttackerOrderComponent>()
                     .without<DealtFirstStrikeDamageComponent>()
                     .without<RequiresManualDamageAssignmentComponent>()
                     .without<AttackersDeclaredThisCombatComponent>()

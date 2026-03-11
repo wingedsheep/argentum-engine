@@ -21,6 +21,7 @@ class CombatContinuationResumer(
         },
         resumer(DamagePreventionContinuation::class, ::resumeDamagePrevention),
         resumer(BlockerOrderContinuation::class, ::resumeBlockerOrder),
+        resumer(AttackerOrderContinuation::class, ::resumeAttackerOrder),
         resumer(DistributeDamageContinuation::class, ::resumeDistributeDamage),
         resumer(DeflectDamageSourceChoiceContinuation::class, ::resumeDeflectDamageSourceChoice)
     )
@@ -171,6 +172,122 @@ class CombatContinuationResumer(
                     decisionId = decision.id,
                     playerId = continuation.attackingPlayerId,
                     decisionType = "ORDER_BLOCKERS",
+                    prompt = decision.prompt
+                )
+            )
+
+            return ExecutionResult.paused(newState, decision, events)
+        }
+
+        // After all blocker orders are done, check if any blockers need attacker ordering
+        val blockersNeedingOrder = newState.findEntitiesWith<com.wingedsheep.engine.state.components.combat.BlockingComponent>()
+            .filter { (_, blocking) -> blocking.blockedAttackerIds.size >= 2 }
+            .map { it.first }
+            .filter { blockerId ->
+                newState.getEntity(blockerId)?.get<com.wingedsheep.engine.state.components.combat.AttackerOrderComponent>() == null
+            }
+        if (blockersNeedingOrder.isNotEmpty()) {
+            return ctx.combatManager!!.createAttackerOrderDecision(
+                newState,
+                attackingPlayer = continuation.attackingPlayerId,
+                firstBlocker = blockersNeedingOrder.first(),
+                remainingBlockers = blockersNeedingOrder.drop(1),
+                precedingEvents = events
+            )
+        }
+
+        val activePlayer = newState.activePlayerId
+        val stateWithPriority = if (activePlayer != null) {
+            newState.withPriority(activePlayer)
+        } else {
+            newState
+        }
+        return checkForMore(stateWithPriority, events)
+    }
+
+    fun resumeAttackerOrder(
+        state: GameState,
+        continuation: AttackerOrderContinuation,
+        response: DecisionResponse,
+        checkForMore: CheckForMore
+    ): ExecutionResult {
+        if (response !is OrderedResponse) {
+            return ExecutionResult.error(state, "Expected ordered response for attacker ordering")
+        }
+
+        var newState = state.updateEntity(continuation.blockerId) { container ->
+            container.with(
+                com.wingedsheep.engine.state.components.combat.AttackerOrderComponent(
+                    response.orderedObjects
+                )
+            )
+        }
+
+        val events = mutableListOf<GameEvent>(
+            AttackerOrderDeclaredEvent(continuation.blockerId, response.orderedObjects)
+        )
+
+        if (continuation.remainingBlockers.isNotEmpty()) {
+            val nextBlocker = continuation.remainingBlockers.first()
+            val nextRemaining = continuation.remainingBlockers.drop(1)
+
+            val blockerContainer = newState.getEntity(nextBlocker)!!
+            val blockerCard = blockerContainer.get<CardComponent>()!!
+            val blockerIsFaceDown = blockerContainer.has<FaceDownComponent>()
+            val blockerDisplayName = if (blockerIsFaceDown) "Face-down creature" else blockerCard.name
+            val blockingComponent = blockerContainer.get<com.wingedsheep.engine.state.components.combat.BlockingComponent>()!!
+            val attackerIds = blockingComponent.blockedAttackerIds
+
+            val cardInfo = attackerIds.associateWith { attackerId ->
+                val attackerContainer = newState.getEntity(attackerId)
+                val isFaceDown = attackerContainer?.has<FaceDownComponent>() == true
+                if (isFaceDown) {
+                    SearchCardInfo(
+                        name = "Morph",
+                        manaCost = "{3}",
+                        typeLine = "Creature"
+                    )
+                } else {
+                    val attackerCard = attackerContainer?.get<CardComponent>()
+                    SearchCardInfo(
+                        name = attackerCard?.name ?: "Unknown",
+                        manaCost = attackerCard?.manaCost?.toString() ?: "",
+                        typeLine = attackerCard?.typeLine?.toString() ?: ""
+                    )
+                }
+            }
+
+            val decisionId = java.util.UUID.randomUUID().toString()
+            val decision = OrderObjectsDecision(
+                id = decisionId,
+                playerId = continuation.attackingPlayerId,
+                prompt = "Order damage assignment for $blockerDisplayName's blocked attackers",
+                context = DecisionContext(
+                    sourceId = nextBlocker,
+                    sourceName = blockerDisplayName,
+                    phase = DecisionPhase.COMBAT
+                ),
+                objects = attackerIds,
+                cardInfo = cardInfo
+            )
+
+            val nextContinuation = AttackerOrderContinuation(
+                decisionId = decisionId,
+                attackingPlayerId = continuation.attackingPlayerId,
+                blockerId = nextBlocker,
+                blockerName = blockerDisplayName,
+                remainingBlockers = nextRemaining
+            )
+
+            newState = newState
+                .withPendingDecision(decision)
+                .pushContinuation(nextContinuation)
+
+            events.add(
+                DecisionRequestedEvent(
+                    decisionId = decision.id,
+                    playerId = continuation.attackingPlayerId,
+                    decisionType = "ORDER_ATTACKERS",
                     prompt = decision.prompt
                 )
             )

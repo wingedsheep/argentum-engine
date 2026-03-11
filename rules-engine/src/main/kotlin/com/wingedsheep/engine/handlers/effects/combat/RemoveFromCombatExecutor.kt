@@ -47,6 +47,7 @@ class RemoveFromCombatExecutor : EffectExecutor<RemoveFromCombatEffect> {
                 .without<BlockedComponent>()
                 .without<DamageAssignmentComponent>()
                 .without<DamageAssignmentOrderComponent>()
+                .without<AttackerOrderComponent>()
                 .without<RequiresManualDamageAssignmentComponent>()
         }
 
@@ -58,11 +59,18 @@ class RemoveFromCombatExecutor : EffectExecutor<RemoveFromCombatEffect> {
                     val updatedIds = blockingComponent.blockedAttackerIds - targetId
                     newState = if (updatedIds.isEmpty()) {
                         newState.updateEntity(entityId) { container ->
-                            container.without<BlockingComponent>()
+                            container.without<BlockingComponent>().without<AttackerOrderComponent>()
                         }
                     } else {
                         newState.updateEntity(entityId) { container ->
-                            container.with(BlockingComponent(updatedIds))
+                            var updated = container.with(BlockingComponent(updatedIds))
+                            val attackerOrder = updated.get<AttackerOrderComponent>()
+                            if (attackerOrder != null) {
+                                updated = updated.with(AttackerOrderComponent(
+                                    attackerOrder.orderedAttackers.filter { it != targetId }
+                                ))
+                            }
+                            updated
                         }
                     }
                 }

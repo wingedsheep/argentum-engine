@@ -7,7 +7,9 @@ import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.battlefield.AttachedToComponent
 import com.wingedsheep.engine.state.components.battlefield.DamageComponent
 import com.wingedsheep.engine.state.components.battlefield.ReplacementEffectSourceComponent
+import com.wingedsheep.engine.state.components.combat.AttackerOrderComponent
 import com.wingedsheep.engine.state.components.combat.BlockedComponent
+import com.wingedsheep.engine.state.components.combat.BlockingComponent
 import com.wingedsheep.engine.state.components.combat.DamageAssignmentOrderComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
@@ -312,6 +314,74 @@ class DamageCalculator {
 
         // If power exceeds total lethal needed, there are choices to make
         return attackerPower > totalLethalNeeded
+    }
+
+    /**
+     * Auto-calculate damage distribution for a blocker blocking multiple attackers.
+     *
+     * Similar to [calculateAutoDamageDistribution] but for the reverse case: a single
+     * blocker dividing its damage among multiple attackers it's blocking.
+     *
+     * Uses [AttackerOrderComponent] for the damage assignment order. Assigns lethal
+     * damage to each attacker in order, with the last attacker receiving all remaining damage.
+     *
+     * @param state Current game state
+     * @param blockerId The blocking creature
+     * @return DamageDistribution with assignments to attackers
+     */
+    fun calculateBlockerDamageDistribution(
+        state: GameState,
+        blockerId: EntityId
+    ): DamageDistribution {
+        val blockerContainer = state.getEntity(blockerId)
+            ?: return DamageDistribution(emptyMap(), 0, 0)
+
+        blockerContainer.get<CardComponent>()
+            ?: return DamageDistribution(emptyMap(), 0, 0)
+
+        val projected = state.projectedState
+        val blockerPower = projected.getPower(blockerId) ?: 0
+        if (blockerPower <= 0) {
+            return DamageDistribution(emptyMap(), 0, 0)
+        }
+
+        val blockingComponent = blockerContainer.get<BlockingComponent>()
+            ?: return DamageDistribution(emptyMap(), 0, 0)
+
+        // Get attackers in damage assignment order, filtering out dead attackers
+        val orderedAttackers = (blockerContainer.get<AttackerOrderComponent>()?.orderedAttackers
+            ?: blockingComponent.blockedAttackerIds).filter { it in state.getBattlefield() }
+
+        if (orderedAttackers.isEmpty()) {
+            return DamageDistribution(emptyMap(), 0, blockerPower)
+        }
+
+        val assignments = mutableMapOf<EntityId, Int>()
+        var remainingPower = blockerPower
+
+        for ((index, attackerId) in orderedAttackers.withIndex()) {
+            if (remainingPower <= 0) break
+
+            val isLastAttacker = index == orderedAttackers.size - 1
+            val lethalInfo = calculateLethalDamage(state, attackerId, blockerId)
+            val preventionAmount = estimateDamagePrevention(state, projected, attackerId)
+            val effectiveLethal = lethalInfo.lethalAmount + preventionAmount
+            val damageToAssign = if (isLastAttacker) {
+                // Last attacker gets all remaining damage
+                remainingPower
+            } else {
+                minOf(remainingPower, effectiveLethal)
+            }
+
+            assignments[attackerId] = damageToAssign
+            remainingPower -= damageToAssign
+        }
+
+        return DamageDistribution(
+            assignments = assignments,
+            totalAssigned = blockerPower - remainingPower,
+            unassignedDamage = remainingPower
+        )
     }
 
     /**

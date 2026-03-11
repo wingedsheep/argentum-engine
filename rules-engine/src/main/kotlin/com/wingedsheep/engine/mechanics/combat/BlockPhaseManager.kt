@@ -134,6 +134,20 @@ internal class BlockPhaseManager(
             )
         }
 
+        // Per MTG CR 509.3: The attacking player must also declare damage assignment
+        // order for each blocker that blocks 2+ attacking creatures
+        val blockersNeedingOrder = findBlockersWithMultipleAttackers(newState)
+        if (blockersNeedingOrder.isNotEmpty()) {
+            val attackingPlayer = state.activePlayerId!!
+            return createAttackerOrderDecision(
+                newState,
+                attackingPlayer = attackingPlayer,
+                firstBlocker = blockersNeedingOrder.first(),
+                remainingBlockers = blockersNeedingOrder.drop(1),
+                precedingEvents = blockTaxEvents + blockersEvent
+            )
+        }
+
         return ExecutionResult.success(
             newState,
             blockTaxEvents + blockersEvent
@@ -550,6 +564,15 @@ internal class BlockPhaseManager(
     }
 
     /**
+     * Find all blockers that are blocking 2 or more attacking creatures.
+     */
+    fun findBlockersWithMultipleAttackers(state: GameState): List<EntityId> {
+        return state.findEntitiesWith<BlockingComponent>()
+            .filter { (_, blocking) -> blocking.blockedAttackerIds.size >= 2 }
+            .map { it.first }
+    }
+
+    /**
      * Create a pending decision for the attacking player to order blockers.
      */
     private fun createBlockerOrderDecision(
@@ -619,6 +642,87 @@ internal class BlockPhaseManager(
                     decisionId = decision.id,
                     playerId = attackingPlayer,
                     decisionType = "ORDER_BLOCKERS",
+                    prompt = decision.prompt
+                )
+            )
+        )
+    }
+
+    // =========================================================================
+    // Attacker Order Decision (for blockers blocking multiple attackers)
+    // =========================================================================
+
+    /**
+     * Create a pending decision for the attacking player to order their attackers
+     * for a blocker's damage assignment (CR 509.3).
+     */
+    fun createAttackerOrderDecision(
+        state: GameState,
+        attackingPlayer: EntityId,
+        firstBlocker: EntityId,
+        remainingBlockers: List<EntityId>,
+        precedingEvents: List<GameEvent>
+    ): ExecutionResult {
+        val blockerContainer = state.getEntity(firstBlocker)!!
+        val blockerCard = blockerContainer.get<CardComponent>()!!
+        val blockerIsFaceDown = blockerContainer.has<FaceDownComponent>()
+        val blockerDisplayName = if (blockerIsFaceDown) "Face-down creature" else blockerCard.name
+        val blockingComponent = blockerContainer.get<BlockingComponent>()!!
+        val attackerIds = blockingComponent.blockedAttackerIds
+
+        val cardInfo = attackerIds.associateWith { attackerId ->
+            val attackerContainer = state.getEntity(attackerId)
+            val isFaceDown = attackerContainer?.has<FaceDownComponent>() == true
+            if (isFaceDown) {
+                SearchCardInfo(
+                    name = "Morph",
+                    manaCost = "{3}",
+                    typeLine = "Creature"
+                )
+            } else {
+                val attackerCard = attackerContainer?.get<CardComponent>()
+                SearchCardInfo(
+                    name = attackerCard?.name ?: "Unknown",
+                    manaCost = attackerCard?.manaCost?.toString() ?: "",
+                    typeLine = attackerCard?.typeLine?.toString() ?: ""
+                )
+            }
+        }
+
+        val decisionId = UUID.randomUUID().toString()
+        val decision = OrderObjectsDecision(
+            id = decisionId,
+            playerId = attackingPlayer,
+            prompt = "Order damage assignment for $blockerDisplayName's blocked attackers",
+            context = DecisionContext(
+                sourceId = firstBlocker,
+                sourceName = blockerDisplayName,
+                phase = DecisionPhase.COMBAT
+            ),
+            objects = attackerIds,
+            cardInfo = cardInfo
+        )
+
+        val continuation = AttackerOrderContinuation(
+            decisionId = decisionId,
+            attackingPlayerId = attackingPlayer,
+            blockerId = firstBlocker,
+            blockerName = blockerDisplayName,
+            remainingBlockers = remainingBlockers
+        )
+
+        val newState = state
+            .withPendingDecision(decision)
+            .pushContinuation(continuation)
+
+        return ExecutionResult.paused(
+            newState,
+            decision,
+            precedingEvents + listOf(
+                DecisionRequestedEvent(
+                    decisionId = decision.id,
+                    playerId = attackingPlayer,
+                    decisionType = "ORDER_ATTACKERS",
                     prompt = decision.prompt
                 )
             )
