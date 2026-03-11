@@ -2,7 +2,7 @@
 
 **Set Size:** 280 cards (249 unique card names + basic land variants)
 **Release Date:** April 27, 2018
-**Implemented:** 3 / 249
+**Implemented:** 4 / 249
 
 | Color      | Total | Done |
 |------------|-------|------|
@@ -10,7 +10,7 @@
 | Blue       | 37    | 1    |
 | Black      | 38    | 1    |
 | Red        | 38    | 1    |
-| Green      | 37    | 0    |
+| Green      | 37    | 1    |
 | Multicolor | 19    | 0    |
 | Colorless  | 30    | 0    |
 | Land       | 12    | 0    |
@@ -141,7 +141,7 @@
 - [ ] Kwende, Pride of Femeref
 - [ ] Lich's Mastery
 - [ ] Lingering Phantom
-- [ ] Llanowar Elves
+- [x] Llanowar Elves
 - [ ] Llanowar Envoy
 - [ ] Llanowar Scout
 - [ ] Lyra Dawnbringer

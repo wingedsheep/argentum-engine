@@ -22,6 +22,7 @@ object DominariaSet {
      */
     val allCards = listOf(
         CastDown,
+        LlanowarElves,
         Opt,
         RunAmok,
     )
