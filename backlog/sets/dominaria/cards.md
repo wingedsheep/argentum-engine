@@ -2,12 +2,12 @@
 
 **Set Size:** 280 cards (249 unique card names + basic land variants)
 **Release Date:** April 27, 2018
-**Implemented:** 12 / 249
+**Implemented:** 13 / 249
 
 | Color      | Total | Done |
 |------------|-------|------|
 | White      | 38    | 2    |
-| Blue       | 37    | 2    |
+| Blue       | 37    | 3    |
 | Black      | 38    | 2    |
 | Red        | 38    | 2    |
 | Green      | 37    | 2    |
@@ -71,7 +71,7 @@
 - [ ] Demonlord Belzenlok
 - [ ] Diligent Excavator
 - [ ] Divest
-- [ ] Divination
+- [x] Divination
 - [ ] Dread Shade
 - [ ] Drudge Sentinel
 - [ ] Dub

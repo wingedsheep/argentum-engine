@@ -24,6 +24,7 @@ object DominariaSet {
         ArvadTheCursed,
         Befuddle,
         CastDown,
+        Divination,
         KeldonRaider,
         LlanowarElves,
         MammothSpider,
