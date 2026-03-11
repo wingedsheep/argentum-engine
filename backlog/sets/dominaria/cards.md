@@ -2,14 +2,14 @@
 
 **Set Size:** 280 cards (249 unique card names + basic land variants)
 **Release Date:** April 27, 2018
-**Implemented:** 20 / 249
+**Implemented:** 21 / 249
 
 | Color      | Total | Done |
 |------------|-------|------|
 | White      | 38    | 3    |
 | Blue       | 37    | 4    |
 | Black      | 38    | 4    |
-| Red        | 38    | 3    |
+| Red        | 38    | 4    |
 | Green      | 37    | 3    |
 | Multicolor | 19    | 1    |
 | Colorless  | 30    | 2    |
@@ -85,7 +85,7 @@
 - [ ] Fiery Intervention
 - [ ] Fight with Fire
 - [ ] Final Parting
-- [ ] Fire Elemental
+- [x] Fire Elemental
 - [ ] Firefist Adept
 - [ ] Forebear's Blade
 - [ ] Frenzied Rage

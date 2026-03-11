@@ -28,6 +28,7 @@ object DominariaSet {
         Eviscerate,
         FeralAbomination,
         FerventStrike,
+        FireElemental,
         KnightOfNewBenalia,
         KeldonRaider,
         LlanowarElves,
