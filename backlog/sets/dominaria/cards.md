@@ -2,7 +2,7 @@
 
 **Set Size:** 280 cards (249 unique card names + basic land variants)
 **Release Date:** April 27, 2018
-**Implemented:** 6 / 249
+**Implemented:** 7 / 249
 
 | Color      | Total | Done |
 |------------|-------|------|
@@ -11,7 +11,7 @@
 | Black      | 38    | 1    |
 | Red        | 38    | 1    |
 | Green      | 37    | 1    |
-| Multicolor | 19    | 0    |
+| Multicolor | 19    | 1    |
 | Colorless  | 30    | 1    |
 | Land       | 12    | 0    |
 
@@ -28,7 +28,7 @@
 - [ ] Arbor Armament
 - [ ] Arcane Flight
 - [ ] Artificer's Assistant
-- [ ] Arvad the Cursed
+- [x] Arvad the Cursed
 - [ ] Aryel, Knight of Windgrace
 - [ ] Aven Sentry
 - [ ] Baird, Steward of Argive
