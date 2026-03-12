@@ -4,6 +4,9 @@ import { useCardActions } from '../../hooks/useLegalActions'
 import { useInteraction } from '../../hooks/useInteraction'
 import type { LegalActionInfo, ClientCard } from '../../types'
 import { ManaCost, AbilityText } from './ManaSymbols'
+import { ManaCostProgress } from './ManaCostProgress'
+import { useViewingPlayer } from '../../store/selectors'
+import { isManaPoolEmpty } from '../../types'
 import { getCardImageUrl } from '../../utils/cardImages'
 import styles from './ActionMenu.module.css'
 
@@ -347,6 +350,9 @@ function ActionOptionButton({
   onClick: () => void
 }) {
   const setAutoTapPreview = useGameStore((state) => state.setAutoTapPreview)
+  const viewingPlayer = useViewingPlayer()
+  const manaPool = viewingPlayer?.manaPool
+  const hasFloatingMana = manaPool != null && !isManaPoolEmpty(manaPool)
   const styleClass = getActionStyleClass(option.actionType, option.isAvailable)
   // Only show separate mana cost if label doesn't already contain mana symbols
   const showSeparateCost = option.manaCost && !option.label.includes('{')
@@ -369,7 +375,9 @@ function ActionOptionButton({
         <AbilityText text={option.label} size={14} />
       </span>
       {showSeparateCost && (
-        <ManaCost cost={option.manaCost} size={16} gap={2} />
+        hasFloatingMana && manaPool
+          ? <ManaCostProgress cost={option.manaCost} manaPool={manaPool} size={16} gap={2} />
+          : <ManaCost cost={option.manaCost} size={16} gap={2} />
       )}
     </button>
   )

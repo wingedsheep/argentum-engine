@@ -433,7 +433,7 @@ class GameSession(
      * the opponent can't respond before the active player passes priority).
      */
     private fun isUndoEligibleAction(action: GameAction): Boolean = when (action) {
-        is PlayLand, is DeclareAttackers, is DeclareBlockers, is OrderBlockers, is TurnFaceUp -> true
+        is PlayLand, is DeclareAttackers, is DeclareBlockers, is OrderBlockers, is TurnFaceUp, is CastSpell -> true
         else -> false
     }
 
@@ -528,6 +528,11 @@ class GameSession(
                 ActionResult.Failure(error)
             }
             pendingDecision != null -> {
+                // Clear CastSpell checkpoint if triggers/decisions followed immediately
+                // (can't safely undo mid-trigger/decision)
+                if (action is CastSpell) {
+                    undoCheckpoint = null
+                }
                 gameState = result.state
                 if (messageId != null) lastProcessedMessageId[playerId] = messageId
                 ActionResult.PausedForDecision(result.state, pendingDecision, result.events)

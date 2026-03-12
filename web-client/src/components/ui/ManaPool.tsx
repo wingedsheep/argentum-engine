@@ -17,13 +17,15 @@ export function ManaPool({ manaPool }: ManaPoolProps) {
   return (
     <div
       style={{
-        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+        backgroundColor: 'rgba(0, 0, 0, 0.85)',
+        border: '1px solid rgba(255, 215, 0, 0.5)',
         borderRadius: 8,
         padding: '8px 16px',
         display: 'flex',
         alignItems: 'center',
         gap: 12,
         pointerEvents: 'auto',
+        boxShadow: '0 0 8px rgba(255, 215, 0, 0.2)',
       }}
     >
       <span style={{ color: '#888', fontSize: 12 }}>Mana:</span>
