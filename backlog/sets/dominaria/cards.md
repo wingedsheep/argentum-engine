@@ -2,12 +2,12 @@
 
 **Set Size:** 280 cards (249 unique card names + basic land variants)
 **Release Date:** April 27, 2018
-**Implemented:** 37 / 249
+**Implemented:** 38 / 249
 
 | Color      | Total | Done |
 |------------|-------|------|
 | White      | 38    | 6    |
-| Blue       | 37    | 6    |
+| Blue       | 37    | 7    |
 | Black      | 38    | 9    |
 | Red        | 38    | 6    |
 | Green      | 37    | 6    |
@@ -113,7 +113,7 @@
 - [ ] Helm of the Host
 - [ ] Hinterland Harbor
 - [ ] History of Benalia
-- [ ] Homarid Explorer
+- [x] Homarid Explorer
 - [ ] Howling Golem
 - [ ] Icy Manipulator
 - [ ] In Bolas's Clutches
