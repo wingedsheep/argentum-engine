@@ -21,6 +21,7 @@ object DominariaSet {
      * All cards implemented from this set.
      */
     val allCards = listOf(
+        AcademyDrake,
         AesthirGlider,
         AdamantWill,
         ArborArmament,
@@ -33,6 +34,7 @@ object DominariaSet {
         CastDown,
         CloudreaderSphinx,
         ColdWaterSnapper,
+        DarkBargain,
         DeathbloomThallid,
         Divination,
         DrudgeSentinel,

@@ -2,13 +2,13 @@
 
 **Set Size:** 280 cards (249 unique card names + basic land variants)
 **Release Date:** April 27, 2018
-**Implemented:** 45 / 249
+**Implemented:** 47 / 249
 
 | Color      | Total | Done |
 |------------|-------|------|
 | White      | 38    | 7    |
-| Blue       | 37    | 7    |
-| Black      | 38    | 10   |
+| Blue       | 37    | 8    |
+| Black      | 38    | 11   |
 | Red        | 38    | 7    |
 | Green      | 37    | 8    |
 | Multicolor | 19    | 1    |
@@ -17,7 +17,7 @@
 
 ---
 
-- [ ] Academy Drake
+- [x] Academy Drake
 - [ ] Academy Journeymage
 - [x] Adamant Will
 - [ ] Adeliz, the Cinder Wind
@@ -63,7 +63,7 @@
 - [ ] Danitha Capashen, Paragon
 - [ ] Darigaaz Reincarnated
 - [ ] Daring Archaeologist
-- [ ] Dark Bargain
+- [x] Dark Bargain
 - [ ] Dauntless Bodyguard
 - [x] Deathbloom Thallid
 - [ ] Deep Freeze
