@@ -189,7 +189,7 @@ function DeckBuilder({ state }: { state: DeckBuildingState }) {
       }
     }
 
-    // Land color counts
+    // Land color counts (basic + non-basic)
     const landColors: Record<string, number> = { W: 0, U: 0, B: 0, R: 0, G: 0 }
     const landColorMap: Record<string, string[]> = {
       Plains: ['W'], Island: ['U'], Swamp: ['B'], Mountain: ['R'], Forest: ['G'],
@@ -200,6 +200,14 @@ function DeckBuilder({ state }: { state: DeckBuildingState }) {
         for (const c of colors) {
           landColors[c] = (landColors[c] ?? 0) + count
         }
+      }
+    }
+    // Non-basic lands in deck
+    for (const card of cardInfos) {
+      if (!card.typeLine.toLowerCase().includes('land')) continue
+      const produced = detectManaProduction(card)
+      for (const c of produced) {
+        landColors[c] = (landColors[c] ?? 0) + 1
       }
     }
 
@@ -958,6 +966,17 @@ function DeckBuilder({ state }: { state: DeckBuildingState }) {
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 2 }}>
                   <span style={{ color: '#555', fontSize: 9 }}>Spells</span>
+                  <div style={{ display: 'flex', gap: 4 }}>
+                    {(['W', 'U', 'B', 'R', 'G'] as const).map((c) => {
+                      const count = deckAnalytics.landColors[c] ?? 0
+                      if (count === 0) return null
+                      return (
+                        <span key={c} style={{ color: MANA_COLORS[c], fontSize: 9, opacity: 0.8 }}>
+                          {count}
+                        </span>
+                      )
+                    })}
+                  </div>
                   <span style={{ color: '#555', fontSize: 9 }}>Lands</span>
                 </div>
               </div>
