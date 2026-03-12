@@ -2,13 +2,13 @@
 
 **Set Size:** 280 cards (249 unique card names + basic land variants)
 **Release Date:** April 27, 2018
-**Implemented:** 72 / 249
+**Implemented:** 73 / 249
 
 | Color      | Total | Done |
 |------------|-------|------|
 | White      | 38    | 13   |
 | Blue       | 37    | 13   |
-| Black      | 38    | 12   |
+| Black      | 38    | 13   |
 | Red        | 38    | 12   |
 | Green      | 37    | 13   |
 | Multicolor | 19    | 2    |
@@ -255,7 +255,7 @@
 - [ ] Warlord's Fury
 - [ ] Weatherlight
 - [x] Weight of Memory
-- [ ] Whisper, Blood Liturgist
+- [x] Whisper, Blood Liturgist
 - [ ] Wild Onslaught
 - [x] Windgrace Acolyte
 - [ ] Wizard's Lightning

@@ -90,6 +90,7 @@ object DominariaSet {
         UntamedKavu,
         VoltaicServant,
         WeightOfMemory,
+        WhisperBloodLiturgist,
         WindgraceAcolyte,
         YargleGluttonOfUrborg,
         YavimayaSapherd,
