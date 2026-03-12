@@ -85,6 +85,7 @@ object DominariaSet {
         SporeSwarm,
         SparringConstruct,
         StrongholdConfessor,
+        TatyovaBenthicDruid,
         TempestDjinn,
         TolarianScholar,
         TragicPoet,

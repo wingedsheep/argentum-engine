@@ -2,7 +2,7 @@
 
 **Set Size:** 280 cards (249 unique card names + basic land variants)
 **Release Date:** April 27, 2018
-**Implemented:** 74 / 249
+**Implemented:** 75 / 249
 
 | Color      | Total | Done |
 |------------|-------|------|
@@ -11,7 +11,7 @@
 | Black      | 38    | 13   |
 | Red        | 38    | 13   |
 | Green      | 37    | 13   |
-| Multicolor | 19    | 2    |
+| Multicolor | 19    | 3    |
 | Colorless  | 30    | 7    |
 | Land       | 12    | 0    |
 
@@ -216,7 +216,7 @@
 - [ ] Sulfur Falls
 - [ ] Sylvan Awakening
 - [ ] Syncopate
-- [ ] Tatyova, Benthic Druid
+- [x] Tatyova, Benthic Druid
 - [ ] Teferi, Hero of Dominaria
 - [x] Tempest Djinn
 - [ ] Territorial Allosaurus
