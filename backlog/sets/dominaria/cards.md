@@ -2,7 +2,7 @@
 
 **Set Size:** 280 cards (249 unique card names + basic land variants)
 **Release Date:** April 27, 2018
-**Implemented:** 36 / 249
+**Implemented:** 37 / 249
 
 | Color      | Total | Done |
 |------------|-------|------|
@@ -12,7 +12,7 @@
 | Red        | 38    | 6    |
 | Green      | 37    | 6    |
 | Multicolor | 19    | 1    |
-| Colorless  | 30    | 2    |
+| Colorless  | 30    | 3    |
 | Land       | 12    | 0    |
 
 ---
@@ -22,7 +22,7 @@
 - [x] Adamant Will
 - [ ] Adeliz, the Cinder Wind
 - [ ] Adventurous Impulse
-- [ ] Aesthir Glider
+- [x] Aesthir Glider
 - [ ] Amaranthine Wall
 - [ ] Ancient Animus
 - [x] Arbor Armament

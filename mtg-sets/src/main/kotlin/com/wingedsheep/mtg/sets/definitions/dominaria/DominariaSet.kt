@@ -21,6 +21,7 @@ object DominariaSet {
      * All cards implemented from this set.
      */
     val allCards = listOf(
+        AesthirGlider,
         AdamantWill,
         ArborArmament,
         AvenSentry,
