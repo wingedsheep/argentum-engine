@@ -2,15 +2,15 @@
 
 **Set Size:** 280 cards (249 unique card names + basic land variants)
 **Release Date:** April 27, 2018
-**Implemented:** 90 / 249
+**Implemented:** 94 / 249
 
 | Color      | Total | Done |
 |------------|-------|------|
-| White      | 38    | 15   |
+| White      | 38    | 16   |
 | Blue       | 37    | 14   |
-| Black      | 38    | 15   |
-| Red        | 38    | 16   |
-| Green      | 37    | 16   |
+| Black      | 38    | 16   |
+| Red        | 38    | 17   |
+| Green      | 37    | 17   |
 | Multicolor | 19    | 4    |
 | Colorless  | 30    | 9    |
 | Land       | 12    | 0    |
@@ -35,7 +35,7 @@
 - [x] Baloth Gorger
 - [x] Befuddle
 - [x] Benalish Honor Guard
-- [ ] Benalish Marshal
+- [x] Benalish Marshal
 - [ ] Blackblade Reforged
 - [x] Blessed Light
 - [ ] Blessing of Belzenlok
@@ -72,7 +72,7 @@
 - [ ] Diligent Excavator
 - [x] Divest
 - [x] Divination
-- [ ] Dread Shade
+- [x] Dread Shade
 - [x] Drudge Sentinel
 - [ ] Dub
 - [ ] Elfhame Druid
@@ -102,7 +102,7 @@
 - [x] Gilded Lotus
 - [ ] Goblin Barrage
 - [x] Goblin Chainwhirler
-- [ ] Goblin Warchief
+- [x] Goblin Warchief
 - [ ] Grand Warlord Radha
 - [ ] Grow from the Ashes
 - [ ] Grunn, the Lonely King
@@ -246,7 +246,7 @@
 - [ ] Urza's Ruinous Blast
 - [ ] Urza's Tome
 - [ ] Valduk, Keeper of the Flame
-- [ ] Verdant Force
+- [x] Verdant Force
 - [ ] Verix Bladewing
 - [ ] Vicious Offering
 - [ ] Vodalian Arcanist
