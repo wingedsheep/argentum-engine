@@ -2,13 +2,13 @@
 
 **Set Size:** 280 cards (249 unique card names + basic land variants)
 **Release Date:** April 27, 2018
-**Implemented:** 49 / 249
+**Implemented:** 51 / 249
 
 | Color      | Total | Done |
 |------------|-------|------|
 | White      | 38    | 8    |
-| Blue       | 37    | 8    |
-| Black      | 38    | 11   |
+| Blue       | 37    | 9    |
+| Black      | 38    | 12   |
 | Red        | 38    | 8    |
 | Green      | 37    | 8    |
 | Multicolor | 19    | 1    |
@@ -47,7 +47,7 @@
 - [x] Cabal Evangel
 - [ ] Cabal Paladin
 - [ ] Cabal Stronghold
-- [ ] Caligo Skin-Witch
+- [x] Caligo Skin-Witch
 - [x] Call the Cavalry
 - [x] Cast Down
 - [ ] Chainer's Torment
@@ -179,7 +179,7 @@
 - [ ] Rampaging Cyclops
 - [ ] Rat Colony
 - [ ] Relic Runner
-- [ ] Rescue
+- [x] Rescue
 - [ ] Rite of Belzenlok
 - [ ] Rona, Disciple of Gix
 - [x] Run Amok
