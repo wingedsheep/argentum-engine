@@ -2,11 +2,11 @@
 
 **Set Size:** 280 cards (249 unique card names + basic land variants)
 **Release Date:** April 27, 2018
-**Implemented:** 47 / 249
+**Implemented:** 48 / 249
 
 | Color      | Total | Done |
 |------------|-------|------|
-| White      | 38    | 7    |
+| White      | 38    | 8    |
 | Blue       | 37    | 8    |
 | Black      | 38    | 11   |
 | Red        | 38    | 7    |
@@ -48,7 +48,7 @@
 - [ ] Cabal Paladin
 - [ ] Cabal Stronghold
 - [ ] Caligo Skin-Witch
-- [ ] Call the Cavalry
+- [x] Call the Cavalry
 - [x] Cast Down
 - [ ] Chainer's Torment
 - [ ] Champion of the Flame

@@ -30,6 +30,7 @@ object DominariaSet {
         BalothGorger,
         Befuddle,
         BlessedLight,
+        CallTheCavalry,
         CabalEvangel,
         CastDown,
         CloudreaderSphinx,
