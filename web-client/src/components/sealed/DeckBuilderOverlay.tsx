@@ -923,12 +923,13 @@ function DeckBuilder({ state }: { state: DeckBuildingState }) {
               })}
             </div>
 
-            {/* Color distribution vs lands */}
-            {totalColorSymbols > 0 && (
+            {/* Color distribution bars + mana source counts */}
+            {(totalColorSymbols > 0 || Object.values(deckAnalytics.landColors).some((v) => v > 0)) && (
               <div style={{ marginTop: 8 }}>
+                {/* Spell pips bar */}
                 <div style={{ display: 'flex', gap: 1, height: 6, borderRadius: 3, overflow: 'hidden' }}>
                   {(['W', 'U', 'B', 'R', 'G'] as const).map((c) => {
-                    const pct = ((deckAnalytics.colorSymbols[c] ?? 0) / totalColorSymbols) * 100
+                    const pct = totalColorSymbols > 0 ? ((deckAnalytics.colorSymbols[c] ?? 0) / totalColorSymbols) * 100 : 0
                     if (pct === 0) return null
                     return (
                       <div
@@ -943,6 +944,7 @@ function DeckBuilder({ state }: { state: DeckBuildingState }) {
                     )
                   })}
                 </div>
+                {/* Land sources bar */}
                 <div style={{ display: 'flex', gap: 1, height: 6, borderRadius: 3, overflow: 'hidden', marginTop: 2 }}>
                   {(['W', 'U', 'B', 'R', 'G'] as const).map((c) => {
                     const count = deckAnalytics.landColors[c] ?? 0
@@ -956,7 +958,7 @@ function DeckBuilder({ state }: { state: DeckBuildingState }) {
                           opacity: 0.5,
                           transition: 'flex 0.2s',
                         }}
-                        title={`${c} lands: ${count}`}
+                        title={`${c} sources: ${count}`}
                       />
                     )
                   })}
@@ -964,20 +966,29 @@ function DeckBuilder({ state }: { state: DeckBuildingState }) {
                     <div style={{ flex: 1, backgroundColor: '#333' }} />
                   )}
                 </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 2 }}>
-                  <span style={{ color: '#555', fontSize: 9 }}>Spells</span>
-                  <div style={{ display: 'flex', gap: 4 }}>
-                    {(['W', 'U', 'B', 'R', 'G'] as const).map((c) => {
-                      const count = deckAnalytics.landColors[c] ?? 0
-                      if (count === 0) return null
-                      return (
-                        <span key={c} style={{ color: MANA_COLORS[c], fontSize: 9, opacity: 0.8 }}>
-                          {count}
-                        </span>
-                      )
-                    })}
-                  </div>
-                  <span style={{ color: '#555', fontSize: 9 }}>Lands</span>
+                {/* Per-color counts with mana symbols */}
+                <div style={{ display: 'flex', justifyContent: 'center', gap: 6, marginTop: 4 }}>
+                  {(['W', 'U', 'B', 'R', 'G'] as const).map((c) => {
+                    const pips = deckAnalytics.colorSymbols[c] ?? 0
+                    const lands = deckAnalytics.landColors[c] ?? 0
+                    if (pips === 0 && lands === 0) return null
+                    return (
+                      <div
+                        key={c}
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 2,
+                        }}
+                        title={`${c}: ${pips} pip${pips !== 1 ? 's' : ''} / ${lands} source${lands !== 1 ? 's' : ''}`}
+                      >
+                        <ManaSymbol symbol={c} size={12} />
+                        <span style={{ fontSize: 10, color: '#999' }}>{pips}</span>
+                        <span style={{ fontSize: 10, color: '#555' }}>/</span>
+                        <span style={{ fontSize: 10, color: lands < pips ? '#d32f2f' : '#6a6' }}>{lands}</span>
+                      </div>
+                    )
+                  })}
                 </div>
               </div>
             )}
