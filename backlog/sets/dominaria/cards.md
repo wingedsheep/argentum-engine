@@ -2,14 +2,14 @@
 
 **Set Size:** 280 cards (249 unique card names + basic land variants)
 **Release Date:** April 27, 2018
-**Implemented:** 81 / 249
+**Implemented:** 83 / 249
 
 | Color      | Total | Done |
 |------------|-------|------|
 | White      | 38    | 14   |
-| Blue       | 37    | 13   |
+| Blue       | 37    | 14   |
 | Black      | 38    | 14   |
-| Red        | 38    | 13   |
+| Red        | 38    | 14   |
 | Green      | 37    | 14   |
 | Multicolor | 19    | 4    |
 | Colorless  | 30    | 9    |
@@ -183,7 +183,7 @@
 - [ ] Rite of Belzenlok
 - [ ] Rona, Disciple of Gix
 - [x] Run Amok
-- [ ] Sage of Lat-Nam
+- [x] Sage of Lat-Nam
 - [ ] Sanctum Spirit
 - [x] Saproling Migration
 - [ ] Seal Away
@@ -252,7 +252,7 @@
 - [ ] Vodalian Arcanist
 - [x] Voltaic Servant
 - [ ] Warcry Phoenix
-- [ ] Warlord's Fury
+- [x] Warlord's Fury
 - [ ] Weatherlight
 - [x] Weight of Memory
 - [x] Whisper, Blood Liturgist
