@@ -2,7 +2,7 @@
 
 **Set Size:** 280 cards (249 unique card names + basic land variants)
 **Release Date:** April 27, 2018
-**Implemented:** 66 / 249
+**Implemented:** 68 / 249
 
 | Color      | Total | Done |
 |------------|-------|------|
@@ -10,9 +10,9 @@
 | Blue       | 37    | 12   |
 | Black      | 38    | 12   |
 | Red        | 38    | 11   |
-| Green      | 37    | 12   |
+| Green      | 37    | 13   |
 | Multicolor | 19    | 1    |
-| Colorless  | 30    | 6    |
+| Colorless  | 30    | 7    |
 | Land       | 12    | 0    |
 
 ---
@@ -160,7 +160,7 @@
 - [ ] Multani, Yavimaya's Avatar
 - [ ] Naban, Dean of Iteration
 - [ ] Naru Meha, Master Wizard
-- [ ] Nature's Spiral
+- [x] Nature's Spiral
 - [ ] Navigator's Compass
 - [ ] Oath of Teferi
 - [ ] On Serra's Wings
@@ -250,7 +250,7 @@
 - [ ] Verix Bladewing
 - [ ] Vicious Offering
 - [ ] Vodalian Arcanist
-- [ ] Voltaic Servant
+- [x] Voltaic Servant
 - [ ] Warcry Phoenix
 - [ ] Warlord's Fury
 - [ ] Weatherlight
