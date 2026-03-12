@@ -8,6 +8,7 @@ import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.scripting.CantBeBlockedByPower
 import com.wingedsheep.sdk.scripting.CantBeBlockedByPowerOrLess
+import com.wingedsheep.sdk.scripting.CantBeBlockedBySubtype
 import com.wingedsheep.sdk.scripting.CantBeBlockedExceptByKeyword
 import com.wingedsheep.sdk.scripting.CantBeBlockedUnlessDefenderSharesCreatureType
 
@@ -126,6 +127,24 @@ class LandwalkRule : BlockEvasionRule {
                 cardComponent.typeLine.isLand &&
                 cardComponent.typeLine.hasSubtype(landSubtype)
         }
+    }
+}
+
+/**
+ * CantBeBlockedBySubtype: Cannot be blocked by creatures with a specific subtype (e.g., Walls).
+ */
+class CantBeBlockedBySubtypeRule : BlockEvasionRule {
+    override fun check(ctx: BlockCheckContext): String? {
+        val attackerCard = ctx.state.getEntity(ctx.attackerId)?.get<CardComponent>() ?: return null
+        val cardDef = ctx.cardRegistry?.getCard(attackerCard.cardDefinitionId) ?: return null
+        val restriction = cardDef.staticAbilities.filterIsInstance<CantBeBlockedBySubtype>().firstOrNull()
+            ?: return null
+
+        if (ctx.projected.hasSubtype(ctx.blockerId, restriction.subtype)) {
+            val blockerName = ctx.state.getEntity(ctx.blockerId)?.get<CardComponent>()?.name ?: "Creature"
+            return "$blockerName cannot block ${attackerCard.name} (${restriction.subtype}s can't block it)"
+        }
+        return null
     }
 }
 
@@ -361,6 +380,7 @@ fun defaultBlockEvasionRules(): List<BlockEvasionRule> = listOf(
     ShadowRule(),
     FearRule(),
     LandwalkRule(),
+    CantBeBlockedBySubtypeRule(),
     CantBeBlockedByPowerRule(),
     CantBeBlockedByPowerOrLessRule(),
     CantBeBlockedExceptByColorRule(),

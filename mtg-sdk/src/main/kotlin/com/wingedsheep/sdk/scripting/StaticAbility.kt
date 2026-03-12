@@ -762,6 +762,23 @@ data class CantBlockCreaturesWithGreaterPower(
 }
 
 /**
+ * This creature can't be blocked by creatures with a specific subtype.
+ * Used for Juggernaut: "can't be blocked by Walls."
+ *
+ * @property subtype The subtype that prevents blocking (e.g., "Wall")
+ * @property target What this ability applies to (typically SourceCreature)
+ */
+@SerialName("CantBeBlockedBySubtype")
+@Serializable
+data class CantBeBlockedBySubtype(
+    val subtype: String,
+    val target: StaticTarget = StaticTarget.SourceCreature
+) : StaticAbility {
+    override val description: String = "can't be blocked by ${subtype}s"
+    override fun applyTextReplacement(replacer: TextReplacer): StaticAbility = this
+}
+
+/**
  * This creature can't be blocked except by creatures with a specific keyword.
  * Used for Flying, Shadow, Horsemanship, etc.
  *

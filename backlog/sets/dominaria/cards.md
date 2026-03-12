@@ -2,17 +2,17 @@
 
 **Set Size:** 280 cards (249 unique card names + basic land variants)
 **Release Date:** April 27, 2018
-**Implemented:** 103 / 249
+**Implemented:** 105 / 249
 
 | Color      | Total | Done |
 |------------|-------|------|
 | White      | 38    | 19   |
 | Blue       | 37    | 14   |
-| Black      | 38    | 17   |
+| Black      | 38    | 18   |
 | Red        | 38    | 19   |
 | Green      | 37    | 18   |
 | Multicolor | 19    | 4    |
-| Colorless  | 30    | 11   |
+| Colorless  | 30    | 12   |
 | Land       | 12    | 0    |
 
 ---
@@ -126,7 +126,7 @@
 - [ ] Jodah, Archmage Eternal
 - [ ] Josu Vess, Lich Knight
 - [ ] Jousting Lance
-- [ ] Juggernaut
+- [x] Juggernaut
 - [ ] Kamahl's Druidic Vow
 - [ ] Karn's Temporal Sundering
 - [ ] Karn, Scion of Urza
@@ -223,7 +223,7 @@
 - [ ] Teshar, Ancestor's Apostle
 - [ ] Tetsuko Umezawa, Fugitive
 - [ ] Thallid Omnivore
-- [ ] Thallid Soothsayer
+- [x] Thallid Soothsayer
 - [ ] The Antiquities War
 - [ ] The Eldest Reborn
 - [ ] The First Eruption
