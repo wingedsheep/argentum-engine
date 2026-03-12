@@ -245,7 +245,7 @@ class BasicTurnCycleTest : FunSpec({
 
         // Play a land
         driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
-        val forest = driver.findCardInHand(activePlayer, "Forest")!!
+        val forest = driver.putCardInHand(activePlayer, "Forest")
         driver.playLand(activePlayer, forest)
 
         val permanentForest = driver.findPermanent(activePlayer, "Forest")!!
