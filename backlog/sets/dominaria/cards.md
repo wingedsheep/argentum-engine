@@ -2,14 +2,14 @@
 
 **Set Size:** 280 cards (249 unique card names + basic land variants)
 **Release Date:** April 27, 2018
-**Implemented:** 55 / 249
+**Implemented:** 56 / 249
 
 | Color      | Total | Done |
 |------------|-------|------|
 | White      | 38    | 9    |
 | Blue       | 37    | 10   |
 | Black      | 38    | 12   |
-| Red        | 38    | 8    |
+| Red        | 38    | 9    |
 | Green      | 37    | 10   |
 | Multicolor | 19    | 1    |
 | Colorless  | 30    | 5    |
@@ -199,7 +199,7 @@
 - [x] Shivan Fire
 - [x] Short Sword
 - [ ] Siege-Gang Commander
-- [ ] Skirk Prospector
+- [x] Skirk Prospector
 - [x] Skittering Surveyor
 - [ ] Skizzik
 - [ ] Slimefoot, the Stowaway
