@@ -2,7 +2,7 @@
 
 **Set Size:** 280 cards (249 unique card names + basic land variants)
 **Release Date:** April 27, 2018
-**Implemented:** 43 / 249
+**Implemented:** 44 / 249
 
 | Color      | Total | Done |
 |------------|-------|------|
@@ -12,7 +12,7 @@
 | Red        | 38    | 7    |
 | Green      | 37    | 8    |
 | Multicolor | 19    | 1    |
-| Colorless  | 30    | 3    |
+| Colorless  | 30    | 4    |
 | Land       | 12    | 0    |
 
 ---
@@ -197,7 +197,7 @@
 - [ ] Shanna, Sisay's Legacy
 - [ ] Shield of the Realm
 - [x] Shivan Fire
-- [ ] Short Sword
+- [x] Short Sword
 - [ ] Siege-Gang Commander
 - [ ] Skirk Prospector
 - [ ] Skittering Surveyor
