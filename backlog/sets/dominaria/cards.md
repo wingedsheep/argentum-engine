@@ -2,17 +2,17 @@
 
 **Set Size:** 280 cards (249 unique card names + basic land variants)
 **Release Date:** April 27, 2018
-**Implemented:** 101 / 249
+**Implemented:** 103 / 249
 
 | Color      | Total | Done |
 |------------|-------|------|
-| White      | 38    | 18   |
+| White      | 38    | 19   |
 | Blue       | 37    | 14   |
 | Black      | 38    | 17   |
 | Red        | 38    | 19   |
 | Green      | 37    | 18   |
 | Multicolor | 19    | 4    |
-| Colorless  | 30    | 10   |
+| Colorless  | 30    | 11   |
 | Land       | 12    | 0    |
 
 ---
@@ -115,7 +115,7 @@
 - [ ] History of Benalia
 - [x] Homarid Explorer
 - [x] Howling Golem
-- [ ] Icy Manipulator
+- [x] Icy Manipulator
 - [ ] In Bolas's Clutches
 - [x] Invoke the Divine
 - [ ] Isolated Chapel
@@ -186,7 +186,7 @@
 - [x] Sage of Lat-Nam
 - [ ] Sanctum Spirit
 - [x] Saproling Migration
-- [ ] Seal Away
+- [x] Seal Away
 - [ ] Seismic Shift
 - [ ] Sentinel of the Pearl Trident
 - [x] Sergeant-at-Arms
