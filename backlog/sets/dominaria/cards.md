@@ -2,7 +2,7 @@
 
 **Set Size:** 280 cards (249 unique card names + basic land variants)
 **Release Date:** April 27, 2018
-**Implemented:** 118 / 249
+**Implemented:** 119 / 249
 
 | Color      | Total | Done |
 |------------|-------|------|
@@ -12,7 +12,7 @@
 | Red        | 38    | 21   |
 | Green      | 37    | 18   |
 | Multicolor | 19    | 5    |
-| Colorless  | 30    | 12   |
+| Colorless  | 30    | 13   |
 | Land       | 12    | 5    |
 
 ---
@@ -125,7 +125,7 @@
 - [ ] Jhoira, Weatherlight Captain
 - [ ] Jodah, Archmage Eternal
 - [ ] Josu Vess, Lich Knight
-- [ ] Jousting Lance
+- [x] Jousting Lance
 - [x] Juggernaut
 - [ ] Kamahl's Druidic Vow
 - [ ] Karn's Temporal Sundering
