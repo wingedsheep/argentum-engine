@@ -2,17 +2,17 @@
 
 **Set Size:** 280 cards (249 unique card names + basic land variants)
 **Release Date:** April 27, 2018
-**Implemented:** 98 / 249
+**Implemented:** 101 / 249
 
 | Color      | Total | Done |
 |------------|-------|------|
-| White      | 38    | 17   |
+| White      | 38    | 18   |
 | Blue       | 37    | 14   |
 | Black      | 38    | 17   |
-| Red        | 38    | 18   |
+| Red        | 38    | 19   |
 | Green      | 37    | 18   |
 | Multicolor | 19    | 4    |
-| Colorless  | 30    | 9    |
+| Colorless  | 30    | 10   |
 | Land       | 12    | 0    |
 
 ---
@@ -114,7 +114,7 @@
 - [ ] Hinterland Harbor
 - [ ] History of Benalia
 - [x] Homarid Explorer
-- [ ] Howling Golem
+- [x] Howling Golem
 - [ ] Icy Manipulator
 - [ ] In Bolas's Clutches
 - [x] Invoke the Divine
@@ -138,7 +138,7 @@
 - [ ] Knight of Malice
 - [x] Knight of New Benalia
 - [x] Krosan Druid
-- [ ] Kwende, Pride of Femeref
+- [x] Kwende, Pride of Femeref
 - [ ] Lich's Mastery
 - [ ] Lingering Phantom
 - [x] Llanowar Elves
@@ -176,7 +176,7 @@
 - [x] Primordial Wurm
 - [ ] Radiating Lightning
 - [ ] Raff Capashen, Ship's Mage
-- [ ] Rampaging Cyclops
+- [x] Rampaging Cyclops
 - [x] Rat Colony
 - [ ] Relic Runner
 - [x] Rescue
