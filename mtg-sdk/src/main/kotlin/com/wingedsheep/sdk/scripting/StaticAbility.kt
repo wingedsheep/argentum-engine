@@ -935,6 +935,28 @@ data class AddCreatureTypeByCounter(
 }
 
 /**
+ * Grants a creature subtype to the target (typically the enchanted creature for Auras).
+ * Used for Dub: "Enchanted creature is a Knight in addition to its other types."
+ *
+ * This is a Layer 4 (type-changing) continuous effect that adds a subtype.
+ *
+ * @property subtype The creature subtype to add (e.g., "Knight")
+ * @property target What this ability applies to (typically SourceCreature for Auras → enchanted creature)
+ */
+@SerialName("GrantSubtype")
+@Serializable
+data class GrantSubtype(
+    val subtype: String,
+    val target: StaticTarget = StaticTarget.SourceCreature
+) : StaticAbility {
+    override val description: String = "is a $subtype in addition to its other types"
+    override fun applyTextReplacement(replacer: TextReplacer): StaticAbility {
+        val newSubtype = replacer.replaceCreatureType(subtype)
+        return if (newSubtype != subtype) copy(subtype = newSubtype) else this
+    }
+}
+
+/**
  * This creature can't be blocked unless defending player controls N or more
  * creatures that share a creature type.
  * Used for Graxiplon: "can't be blocked unless defending player controls

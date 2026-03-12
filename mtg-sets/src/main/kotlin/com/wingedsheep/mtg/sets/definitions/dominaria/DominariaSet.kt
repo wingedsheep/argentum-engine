@@ -50,6 +50,7 @@ object DominariaSet {
         DreadShade,
         Divest,
         Divination,
+        Dub,
         DrudgeSentinel,
         Eviscerate,
         ExcavationElephant,
