@@ -2,14 +2,14 @@
 
 **Set Size:** 280 cards (249 unique card names + basic land variants)
 **Release Date:** April 27, 2018
-**Implemented:** 83 / 249
+**Implemented:** 87 / 249
 
 | Color      | Total | Done |
 |------------|-------|------|
-| White      | 38    | 14   |
+| White      | 38    | 15   |
 | Blue       | 37    | 14   |
-| Black      | 38    | 14   |
-| Red        | 38    | 14   |
+| Black      | 38    | 15   |
+| Red        | 38    | 15   |
 | Green      | 37    | 14   |
 | Multicolor | 19    | 4    |
 | Colorless  | 30    | 9    |
@@ -34,7 +34,7 @@
 - [ ] Baird, Steward of Argive
 - [x] Baloth Gorger
 - [x] Befuddle
-- [ ] Benalish Honor Guard
+- [x] Benalish Honor Guard
 - [ ] Benalish Marshal
 - [ ] Blackblade Reforged
 - [x] Blessed Light
@@ -95,7 +95,7 @@
 - [ ] Gaea's Protector
 - [ ] Garna, the Bloodflame
 - [x] Ghitu Chronicler
-- [ ] Ghitu Journeymage
+- [x] Ghitu Journeymage
 - [ ] Ghitu Lavarunner
 - [x] Gideon's Reproach
 - [x] Gift of Growth
@@ -206,7 +206,7 @@
 - [ ] Slinn Voda, the Rising Deep
 - [ ] Song of Freyalise
 - [ ] Sorcerer's Wand
-- [ ] Soul Salvage
+- [x] Soul Salvage
 - [x] Sparring Construct
 - [x] Spore Swarm
 - [ ] Sporecrown Thallid
