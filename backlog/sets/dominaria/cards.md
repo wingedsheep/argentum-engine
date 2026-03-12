@@ -2,11 +2,11 @@
 
 **Set Size:** 280 cards (249 unique card names + basic land variants)
 **Release Date:** April 27, 2018
-**Implemented:** 62 / 249
+**Implemented:** 64 / 249
 
 | Color      | Total | Done |
 |------------|-------|------|
-| White      | 38    | 10   |
+| White      | 38    | 12   |
 | Blue       | 37    | 12   |
 | Black      | 38    | 12   |
 | Red        | 38    | 10   |
@@ -97,7 +97,7 @@
 - [x] Ghitu Chronicler
 - [ ] Ghitu Journeymage
 - [ ] Ghitu Lavarunner
-- [ ] Gideon's Reproach
+- [x] Gideon's Reproach
 - [x] Gift of Growth
 - [ ] Gilded Lotus
 - [ ] Goblin Barrage
@@ -236,7 +236,7 @@
 - [ ] Time of Ice
 - [x] Tolarian Scholar
 - [ ] Torgaar, Famine Incarnate
-- [ ] Tragic Poet
+- [x] Tragic Poet
 - [ ] Traxos, Scourge of Kroog
 - [ ] Triumph of Gerrard
 - [ ] Two-Headed Giant
