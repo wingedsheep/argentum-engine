@@ -2,14 +2,14 @@
 
 **Set Size:** 280 cards (249 unique card names + basic land variants)
 **Release Date:** April 27, 2018
-**Implemented:** 42 / 249
+**Implemented:** 43 / 249
 
 | Color      | Total | Done |
 |------------|-------|------|
 | White      | 38    | 7    |
 | Blue       | 37    | 7    |
 | Black      | 38    | 10   |
-| Red        | 38    | 6    |
+| Red        | 38    | 7    |
 | Green      | 37    | 8    |
 | Multicolor | 19    | 1    |
 | Colorless  | 30    | 3    |
@@ -82,7 +82,7 @@
 - [ ] Fall of the Thran
 - [x] Feral Abomination
 - [x] Fervent Strike
-- [ ] Fiery Intervention
+- [x] Fiery Intervention
 - [ ] Fight with Fire
 - [ ] Final Parting
 - [x] Fire Elemental

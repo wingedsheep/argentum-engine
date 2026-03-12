@@ -38,6 +38,7 @@ object DominariaSet {
         DrudgeSentinel,
         Eviscerate,
         FeralAbomination,
+        FieryIntervention,
         FerventStrike,
         FireElemental,
         FrenziedRage,
