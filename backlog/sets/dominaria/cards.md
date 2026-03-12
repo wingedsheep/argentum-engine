@@ -2,12 +2,12 @@
 
 **Set Size:** 280 cards (249 unique card names + basic land variants)
 **Release Date:** April 27, 2018
-**Implemented:** 117 / 249
+**Implemented:** 118 / 249
 
 | Color      | Total | Done |
 |------------|-------|------|
 | White      | 38    | 20   |
-| Blue       | 37    | 16   |
+| Blue       | 37    | 17   |
 | Black      | 38    | 19   |
 | Red        | 38    | 21   |
 | Green      | 37    | 18   |
@@ -215,7 +215,7 @@
 - [x] Stronghold Confessor
 - [ ] Sulfur Falls
 - [ ] Sylvan Awakening
-- [ ] Syncopate
+- [x] Syncopate
 - [x] Tatyova, Benthic Druid
 - [ ] Teferi, Hero of Dominaria
 - [x] Tempest Djinn

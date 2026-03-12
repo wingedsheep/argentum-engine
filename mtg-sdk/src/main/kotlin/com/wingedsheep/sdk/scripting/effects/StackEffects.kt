@@ -69,13 +69,20 @@ data class CounterUnlessPaysEffect(
  *
  * The total generic mana cost is determined at resolution by evaluating the DynamicAmount.
  * Uses the same continuation as CounterUnlessPaysEffect.
+ *
+ * @property exileOnCounter If true, the spell is exiled instead of going to the graveyard
+ *   when countered this way (e.g., Syncopate).
  */
 @SerialName("CounterUnlessDynamicPays")
 @Serializable
 data class CounterUnlessDynamicPaysEffect(
-    val amount: DynamicAmount
+    val amount: DynamicAmount,
+    val exileOnCounter: Boolean = false
 ) : Effect {
-    override val description: String = "Counter target spell unless its controller pays ${amount.description}"
+    override val description: String = buildString {
+        append("Counter target spell unless its controller pays ${amount.description}")
+        if (exileOnCounter) append(". If countered, exile it")
+    }
 
     override fun applyTextReplacement(replacer: TextReplacer): Effect {
         val newAmount = amount.applyTextReplacement(replacer)

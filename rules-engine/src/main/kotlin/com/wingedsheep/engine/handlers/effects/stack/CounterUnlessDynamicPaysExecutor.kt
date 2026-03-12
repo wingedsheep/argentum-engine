@@ -65,7 +65,12 @@ class CounterUnlessDynamicPaysExecutor(
         val manaSolver = ManaSolver()
         if (!manaSolver.canPay(state, payingPlayerId, manaCost)) {
             // Can't pay → auto-counter
-            return StackResolver(cardRegistry = cardRegistry).counterSpell(state, targetSpell.spellEntityId)
+            val resolver = StackResolver(cardRegistry = cardRegistry)
+            return if (effect.exileOnCounter) {
+                resolver.counterSpellToExile(state, targetSpell.spellEntityId, grantFreeCast = false, controllerId = context.controllerId)
+            } else {
+                resolver.counterSpell(state, targetSpell.spellEntityId)
+            }
         }
 
         // Can pay → ask the spell's controller if they want to pay
@@ -86,7 +91,9 @@ class CounterUnlessDynamicPaysExecutor(
             spellEntityId = targetSpell.spellEntityId,
             manaCost = manaCost,
             sourceId = context.sourceId,
-            sourceName = "Counter unless pays"
+            sourceName = "Counter unless pays",
+            exileOnCounter = effect.exileOnCounter,
+            controllerId = context.controllerId
         )
 
         val stateWithContinuation = decisionResult.state.pushContinuation(continuation)

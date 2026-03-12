@@ -708,7 +708,9 @@ data class CounterUnlessPaysContinuation(
     val spellEntityId: EntityId,
     val manaCost: ManaCost,
     val sourceId: EntityId?,
-    val sourceName: String?
+    val sourceName: String?,
+    val exileOnCounter: Boolean = false,
+    val controllerId: EntityId? = null
 ) : ContinuationFrame
 
 /**

@@ -142,7 +142,7 @@ constructors.
 - `Effects.CounterTriggeringSpell()` — counter the spell that triggered this ability (non-targeted, uses triggering entity)
 - `Effects.CounterAbility()` — counter target activated or triggered ability
 - `Effects.CounterUnlessPays(cost: String)` — counter unless mana paid
-- `Effects.CounterUnlessDynamicPays(amount: DynamicAmount)` — counter unless dynamic amount paid
+- `Effects.CounterUnlessDynamicPays(amount: DynamicAmount, exileOnCounter: Boolean = false)` — counter unless dynamic amount paid; `exileOnCounter = true` exiles spell if countered (Syncopate)
 - `Effects.ChangeSpellTarget(targetMustBeSource = false)` — redirect a spell's creature target to another creature
 - `Effects.ChangeTarget()` — change the target of a spell or ability with a single target
 - `Effects.ReselectTargetRandomly()` — reselect the target of the triggering spell/ability at random (Grip of Chaos)
@@ -405,7 +405,7 @@ constructors.
 | `CounterSpellWithFilterEffect`   | `filter: GameObjectFilter`    | Counter matching spell     |
 | `CounterAbilityEffect`           | (object)                      | Counter activated/triggered ability |
 | `CounterUnlessPaysEffect`        | `cost: ManaCost`              | Counter unless pays        |
-| `CounterUnlessDynamicPaysEffect` | `amount: DynamicAmount`       | Counter unless dynamic pay |
+| `CounterUnlessDynamicPaysEffect` | `amount: DynamicAmount, exileOnCounter: Boolean = false` | Counter unless dynamic pay (exile if countered) |
 | `ChangeSpellTargetEffect`        | `targetMustBeSource: Boolean` | Redirect spell target      |
 | `ChangeTargetEffect`             | (object)                      | Change target of spell/ability with single target |
 | `ReselectTargetRandomlyEffect`   | (object)                      | Randomly reselect triggering spell/ability's target |

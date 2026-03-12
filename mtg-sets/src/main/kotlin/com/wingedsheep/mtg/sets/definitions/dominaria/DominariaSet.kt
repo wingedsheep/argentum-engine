@@ -121,6 +121,7 @@ object DominariaSet {
         SparringConstruct,
         SteelLeafChampion,
         StrongholdConfessor,
+        Syncopate,
         TatyovaBenthicDruid,
         TempestDjinn,
         ThallidSoothsayer,

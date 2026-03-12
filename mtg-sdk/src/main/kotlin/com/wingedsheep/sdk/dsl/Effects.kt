@@ -700,8 +700,8 @@ object Effects {
      * Counter target spell unless its controller pays a dynamic generic mana cost.
      * "Counter target spell unless its controller pays {2} for each Wizard on the battlefield."
      */
-    fun CounterUnlessDynamicPays(amount: DynamicAmount): Effect =
-        CounterUnlessDynamicPaysEffect(amount)
+    fun CounterUnlessDynamicPays(amount: DynamicAmount, exileOnCounter: Boolean = false): Effect =
+        CounterUnlessDynamicPaysEffect(amount, exileOnCounter)
 
     /**
      * Counter target activated or triggered ability.

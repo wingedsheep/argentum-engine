@@ -102,7 +102,15 @@ class ManaPaymentContinuationResumer(
             return checkForMore(currentState, events)
         } else {
             // Player chose not to pay — counter the spell
-            val counterResult = ctx.stackResolver.counterSpell(state, continuation.spellEntityId)
+            val counterResult = if (continuation.exileOnCounter) {
+                ctx.stackResolver.counterSpellToExile(
+                    state, continuation.spellEntityId,
+                    grantFreeCast = false,
+                    controllerId = continuation.controllerId ?: continuation.payingPlayerId
+                )
+            } else {
+                ctx.stackResolver.counterSpell(state, continuation.spellEntityId)
+            }
             return checkForMore(counterResult.newState, counterResult.events)
         }
     }
