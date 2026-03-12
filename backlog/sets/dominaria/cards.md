@@ -2,7 +2,7 @@
 
 **Set Size:** 280 cards (249 unique card names + basic land variants)
 **Release Date:** April 27, 2018
-**Implemented:** 34 / 249
+**Implemented:** 35 / 249
 
 | Color      | Total | Done |
 |------------|-------|------|
@@ -10,7 +10,7 @@
 | Blue       | 37    | 6    |
 | Black      | 38    | 9    |
 | Red        | 38    | 6    |
-| Green      | 37    | 5    |
+| Green      | 37    | 6    |
 | Multicolor | 19    | 1    |
 | Colorless  | 30    | 2    |
 | Land       | 12    | 0    |
@@ -185,7 +185,7 @@
 - [x] Run Amok
 - [ ] Sage of Lat-Nam
 - [ ] Sanctum Spirit
-- [ ] Saproling Migration
+- [x] Saproling Migration
 - [ ] Seal Away
 - [ ] Seismic Shift
 - [ ] Sentinel of the Pearl Trident

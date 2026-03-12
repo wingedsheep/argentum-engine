@@ -47,6 +47,7 @@ object DominariaSet {
         PardicWanderer,
         PrimordialWurm,
         RunAmok,
+        SaprolingMigration,
         SerraAngel,
         ShivanFire,
         SparringConstruct,
