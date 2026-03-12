@@ -2,14 +2,14 @@
 
 **Set Size:** 280 cards (249 unique card names + basic land variants)
 **Release Date:** April 27, 2018
-**Implemented:** 69 / 249
+**Implemented:** 70 / 249
 
 | Color      | Total | Done |
 |------------|-------|------|
 | White      | 38    | 12   |
 | Blue       | 37    | 12   |
 | Black      | 38    | 12   |
-| Red        | 38    | 11   |
+| Red        | 38    | 12   |
 | Green      | 37    | 13   |
 | Multicolor | 19    | 2    |
 | Colorless  | 30    | 7    |
@@ -198,7 +198,7 @@
 - [ ] Shield of the Realm
 - [x] Shivan Fire
 - [x] Short Sword
-- [ ] Siege-Gang Commander
+- [x] Siege-Gang Commander
 - [x] Skirk Prospector
 - [x] Skittering Surveyor
 - [x] Skizzik

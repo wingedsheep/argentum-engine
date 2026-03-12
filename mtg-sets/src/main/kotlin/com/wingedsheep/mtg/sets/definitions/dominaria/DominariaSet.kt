@@ -74,6 +74,7 @@ object DominariaSet {
         SaprolingMigration,
         SergeantAtArms,
         SerraAngel,
+        SiegeGangCommander,
         ShivanFire,
         Skizzik,
         ShortSword,
