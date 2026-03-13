@@ -72,6 +72,7 @@ object DominariaSet {
         GoblinWarchief,
         GarnaTheBloodflame,
         GildedLotus,
+        GrandWarlordRadha,
         GiftOfGrowth,
         IcyManipulator,
         InvokeTheDivine,

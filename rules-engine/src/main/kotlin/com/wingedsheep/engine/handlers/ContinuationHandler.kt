@@ -101,6 +101,7 @@ class ContinuationHandler(
             resumer(RepeatWhileContinuation::class, ::resumeRepeatWhile),
             resumer(StormCopyTargetContinuation::class, ::resumeStormCopyTarget),
             resumer(DistributeCountersContinuation::class, ::resumeDistributeCounters),
+            resumer(AddDynamicManaContinuation::class, ::resumeAddDynamicMana),
             resumer(ReturnFromLinkedExileContinuation::class) { state, continuation, response, checkForMore ->
                 resumeReturnFromLinkedExile(state, continuation, response)
             },
@@ -854,6 +855,27 @@ class ContinuationHandler(
             .returnCardToBattlefield(state, selectedCard, continuation.sourceId)
 
         return checkForMoreContinuations(result.state, result.events)
+    }
+
+    private fun resumeAddDynamicMana(
+        state: GameState,
+        continuation: AddDynamicManaContinuation,
+        response: DecisionResponse,
+        checkForMore: CheckForMore
+    ): ExecutionResult {
+        if (response !is NumberChosenResponse) {
+            return ExecutionResult.error(state, "Expected number chosen response for AddDynamicMana")
+        }
+
+        val firstAmount = response.number.coerceIn(0, continuation.totalAmount)
+        val secondAmount = continuation.totalAmount - firstAmount
+
+        val newState = com.wingedsheep.engine.handlers.effects.mana.AddDynamicManaExecutor.addMana(
+            state, continuation.playerId,
+            mapOf(continuation.firstColor to firstAmount, continuation.secondColor to secondAmount)
+        )
+
+        return checkForMore(newState, emptyList())
     }
 }
 

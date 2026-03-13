@@ -9,6 +9,7 @@ import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.scripting.*
 import com.wingedsheep.sdk.scripting.effects.AddAnyColorManaEffect
 import com.wingedsheep.sdk.scripting.effects.AddColorlessManaEffect
+import com.wingedsheep.sdk.scripting.effects.AddDynamicManaEffect
 import com.wingedsheep.sdk.scripting.effects.AddCountersEffect
 import com.wingedsheep.sdk.scripting.effects.AddManaEffect
 import com.wingedsheep.sdk.scripting.effects.AnimateLandEffect
@@ -43,7 +44,6 @@ import com.wingedsheep.sdk.scripting.effects.LoseLifeEffect
 import com.wingedsheep.sdk.scripting.effects.SetLifeTotalEffect
 import com.wingedsheep.sdk.scripting.effects.ModifyStatsEffect
 import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
-import com.wingedsheep.sdk.scripting.effects.ExileGroupAndLinkEffect
 import com.wingedsheep.sdk.scripting.effects.ExileUntilLeavesEffect
 import com.wingedsheep.sdk.scripting.effects.CreatePermanentGlobalTriggeredAbilityEffect
 import com.wingedsheep.sdk.scripting.effects.ReturnCreaturesPutInGraveyardThisTurnEffect
@@ -551,6 +551,13 @@ object Effects {
      */
     fun AddAnyColorMana(amount: Int = 1): Effect =
         AddAnyColorManaEffect(amount)
+
+    /**
+     * Add X mana in any combination of the allowed colors.
+     * "Add that much mana in any combination of {R} and/or {G}."
+     */
+    fun AddDynamicMana(amount: DynamicAmount, allowedColors: Set<Color>): Effect =
+        AddDynamicManaEffect(amount, allowedColors)
 
     // =========================================================================
     // Token Effects

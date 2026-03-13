@@ -1614,3 +1614,27 @@ data class DeflectDamageSourceChoiceContinuation(
     val sourceName: String?,
     val sourceOptions: List<EntityId>
 ) : ContinuationFrame
+
+/**
+ * Continuation for AddDynamicManaEffect.
+ *
+ * Resume after a player chooses how to distribute mana among allowed colors.
+ * The player picks how much of [firstColor] to add; the remainder goes to [secondColor].
+ *
+ * @property playerId The player receiving the mana
+ * @property sourceId The spell/ability that caused the effect
+ * @property sourceName Name of the source for display
+ * @property totalAmount Total mana to add
+ * @property firstColor First color option
+ * @property secondColor Second color option (gets remainder)
+ */
+@Serializable
+data class AddDynamicManaContinuation(
+    override val decisionId: String,
+    val playerId: EntityId,
+    val sourceId: EntityId?,
+    val sourceName: String?,
+    val totalAmount: Int,
+    val firstColor: Color,
+    val secondColor: Color
+) : ContinuationFrame
