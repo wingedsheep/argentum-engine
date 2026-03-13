@@ -306,6 +306,19 @@ class ActivateAbilityHandler(
             counterRemovalChoices = action.costPayment?.counterRemovals ?: emptyMap()
         )
 
+        // Snapshot projected subtypes of sacrifice targets before zone change
+        val sacrificedPermanentSubtypes = mutableMapOf<EntityId, Set<String>>()
+        val sacrificeTargetIds = action.costPayment?.sacrificedPermanents ?: emptyList()
+        if (sacrificeTargetIds.isNotEmpty()) {
+            val projectedBeforeSacrifice = currentState.projectedState
+            for (permId in sacrificeTargetIds) {
+                val projectedSubtypes = projectedBeforeSacrifice.getSubtypes(permId)
+                if (projectedSubtypes.isNotEmpty()) {
+                    sacrificedPermanentSubtypes[permId] = projectedSubtypes
+                }
+            }
+        }
+
         // Pay the cost (using effective cost with text replacements applied)
         val costResult = costHandler.payAbilityCost(
             currentState,
@@ -512,6 +525,7 @@ class ActivateAbilityHandler(
             controllerId = action.playerId,
             effect = finalEffect,
             sacrificedPermanents = action.costPayment?.sacrificedPermanents ?: emptyList(),
+            sacrificedPermanentSubtypes = sacrificedPermanentSubtypes,
             xValue = action.xValue,
             tappedPermanents = action.costPayment?.tappedPermanents ?: emptyList()
         )

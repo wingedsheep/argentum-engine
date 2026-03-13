@@ -906,6 +906,7 @@ class StackResolver(
             opponentId = state.getOpponent(abilityComponent.controllerId),
             targets = activatedTargets,
             sacrificedPermanents = abilityComponent.sacrificedPermanents,
+            sacrificedPermanentSubtypes = abilityComponent.sacrificedPermanentSubtypes,
             xValue = abilityComponent.xValue,
             tappedPermanents = abilityComponent.tappedPermanents,
             namedTargets = EffectContext.buildNamedTargets(activatedReqs, activatedTargets)

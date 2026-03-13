@@ -2,13 +2,13 @@
 
 **Set Size:** 280 cards (249 unique card names + basic land variants)
 **Release Date:** April 27, 2018
-**Implemented:** 150 / 249
+**Implemented:** 151 / 249
 
 | Color      | Total | Done |
 |------------|-------|------|
 | White      | 38    | 24   |
 | Blue       | 37    | 23   |
-| Black      | 38    | 23   |
+| Black      | 38    | 24   |
 | Red        | 38    | 24   |
 | Green      | 37    | 25   |
 | Multicolor | 19    | 10   |
@@ -222,7 +222,7 @@
 - [x] Territorial Allosaurus
 - [x] Teshar, Ancestor's Apostle
 - [x] Tetsuko Umezawa, Fugitive
-- [ ] Thallid Omnivore
+- [x] Thallid Omnivore
 - [x] Thallid Soothsayer
 - [ ] The Antiquities War
 - [ ] The Eldest Reborn

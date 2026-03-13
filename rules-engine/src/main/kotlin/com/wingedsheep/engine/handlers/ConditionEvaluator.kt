@@ -41,6 +41,7 @@ import com.wingedsheep.sdk.scripting.conditions.SourceIsBlocking
 import com.wingedsheep.sdk.scripting.conditions.SourceIsTapped
 import com.wingedsheep.sdk.scripting.conditions.SourceIsUntapped
 import com.wingedsheep.sdk.scripting.conditions.WasCastFromHand
+import com.wingedsheep.sdk.scripting.conditions.SacrificedPermanentHadSubtype
 import com.wingedsheep.sdk.scripting.conditions.WasKicked
 import com.wingedsheep.sdk.scripting.conditions.YouAttackedThisTurn
 import com.wingedsheep.sdk.scripting.conditions.YouWereAttackedThisStep
@@ -83,6 +84,7 @@ class ConditionEvaluator {
             is SourceHasDealtCombatDamageToPlayer -> evaluateSourceHasDealtCombatDamageToPlayer(state, context)
             is SourceHasSubtype -> evaluateSourceHasSubtype(state, condition, context)
             is SourceHasKeyword -> evaluateSourceHasKeyword(state, condition, context)
+            is SacrificedPermanentHadSubtype -> evaluateSacrificedPermanentHadSubtype(condition, context)
 
             // Turn conditions
             is IsYourTurn -> evaluateIsYourTurn(state, context)
@@ -214,6 +216,15 @@ class ConditionEvaluator {
         val sourceId = context.sourceId ?: return false
         val projected = state.projectedState
         return projected.hasKeyword(sourceId, condition.keyword)
+    }
+
+    private fun evaluateSacrificedPermanentHadSubtype(
+        condition: SacrificedPermanentHadSubtype,
+        context: EffectContext
+    ): Boolean {
+        return context.sacrificedPermanentSubtypes.values.any { subtypes ->
+            subtypes.contains(condition.subtype)
+        }
     }
 
     private fun evaluateSourceHasDealtCombatDamageToPlayer(state: GameState, context: EffectContext): Boolean {

@@ -280,6 +280,13 @@ object Conditions {
     fun SourceHasKeyword(keyword: Keyword): ConditionInterface =
         com.wingedsheep.sdk.scripting.conditions.SourceHasKeyword(keyword)
 
+    /**
+     * If a permanent with the given subtype was sacrificed as part of the cost.
+     * Used for cards like Thallid Omnivore: "If a Saproling was sacrificed this way, you gain 2 life."
+     */
+    fun SacrificedHadSubtype(subtype: String): ConditionInterface =
+        com.wingedsheep.sdk.scripting.conditions.SacrificedPermanentHadSubtype(subtype)
+
     // =========================================================================
     // Turn Conditions
     // =========================================================================

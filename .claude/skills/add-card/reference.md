@@ -662,6 +662,7 @@ constructors.
 - `Conditions.SourceIsAttacking` / `.SourceIsBlocking`
 - `Conditions.SourceIsTapped` / `.SourceIsUntapped`
 - `Conditions.SourceHasSubtype(subtype)` — source has specific subtype
+- `Conditions.SacrificedHadSubtype(subtype)` — a permanent sacrificed as cost had specific subtype
 
 ### Turn
 

@@ -56,6 +56,7 @@ data class ActivatedAbilityOnStackComponent(
     val controllerId: EntityId,
     val effect: Effect,
     val sacrificedPermanents: List<EntityId> = emptyList(),
+    val sacrificedPermanentSubtypes: Map<EntityId, Set<String>> = emptyMap(),
     val xValue: Int? = null,
     val tappedPermanents: List<EntityId> = emptyList()
 ) : Component {

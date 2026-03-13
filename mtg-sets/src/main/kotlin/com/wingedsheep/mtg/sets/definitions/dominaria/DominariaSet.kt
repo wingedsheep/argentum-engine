@@ -151,6 +151,7 @@ object DominariaSet {
         TesharAncestorsApostle,
         TerritorialAllosaurus,
         TetsukoUmezawaFugitive,
+        ThallidOmnivore,
         ThallidSoothsayer,
         TolarianScholar,
         TraxosScourgeOfKroog,

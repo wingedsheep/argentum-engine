@@ -2,7 +2,6 @@ package com.wingedsheep.sdk.scripting.conditions
 
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Subtype
-import com.wingedsheep.sdk.scripting.conditions.Condition
 import com.wingedsheep.sdk.scripting.text.TextReplacer
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -141,4 +140,21 @@ data class SourceHasSubtype(val subtype: Subtype) : Condition {
 data class SourceHasKeyword(val keyword: Keyword) : Condition {
     override val description: String = "as long as this creature has ${keyword.name.lowercase()}"
     override fun applyTextReplacement(replacer: TextReplacer): Condition = this
+}
+
+/**
+ * Condition: "If a [subtype] was sacrificed this way"
+ * Checks whether any permanent sacrificed as part of the cost had the given subtype
+ * (using projected subtypes snapshotted at time of sacrifice).
+ *
+ * Used for cards like Thallid Omnivore: "If a Saproling was sacrificed this way, you gain 2 life."
+ */
+@SerialName("SacrificedPermanentHadSubtype")
+@Serializable
+data class SacrificedPermanentHadSubtype(val subtype: String) : Condition {
+    override val description: String = "if a $subtype was sacrificed this way"
+    override fun applyTextReplacement(replacer: TextReplacer): Condition {
+        val newSubtype = replacer.replaceSubtype(Subtype(subtype))
+        return if (newSubtype.value == subtype) this else SacrificedPermanentHadSubtype(newSubtype.value)
+    }
 }
