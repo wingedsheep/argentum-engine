@@ -124,6 +124,7 @@ object DominariaSet {
         ShortSword,
         SkirkProspector,
         SlimefootTheStowaway,
+        SlinnVodaTheRisingDeep,
         SkitteringSurveyor,
         SoulSalvage,
         SporecrownThallid,
