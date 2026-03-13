@@ -27,6 +27,7 @@ object DominariaSet {
         AdelizTheCinderWind,
         AmaranthineWall,
         ArcaneFlight,
+        ArtificersAssistant,
         AesthirGlider,
         AdamantWill,
         ArborArmament,

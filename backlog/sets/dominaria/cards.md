@@ -2,12 +2,12 @@
 
 **Set Size:** 280 cards (249 unique card names + basic land variants)
 **Release Date:** April 27, 2018
-**Implemented:** 151 / 249
+**Implemented:** 152 / 249
 
 | Color      | Total | Done |
 |------------|-------|------|
 | White      | 38    | 24   |
-| Blue       | 37    | 23   |
+| Blue       | 37    | 24   |
 | Black      | 38    | 24   |
 | Red        | 38    | 24   |
 | Green      | 37    | 25   |
@@ -27,7 +27,7 @@
 - [ ] Ancient Animus
 - [x] Arbor Armament
 - [x] Arcane Flight
-- [ ] Artificer's Assistant
+- [x] Artificer's Assistant
 - [x] Arvad the Cursed
 - [ ] Aryel, Knight of Windgrace
 - [x] Aven Sentry
