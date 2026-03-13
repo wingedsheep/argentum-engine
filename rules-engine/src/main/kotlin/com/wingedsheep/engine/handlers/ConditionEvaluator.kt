@@ -4,6 +4,7 @@ import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.battlefield.AttachedToComponent
 import com.wingedsheep.engine.state.components.battlefield.CastFromHandComponent
+import com.wingedsheep.engine.state.components.battlefield.WasKickedComponent
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.state.components.combat.AttackingComponent
 import com.wingedsheep.engine.state.components.combat.BlockingComponent
@@ -72,7 +73,7 @@ class ConditionEvaluator {
 
             // Source conditions
             is WasCastFromHand -> evaluateWasCastFromHand(state, context)
-            is WasKicked -> context.wasKicked
+            is WasKicked -> evaluateWasKicked(state, context)
             is SourceIsAttacking -> evaluateSourceAttacking(state, context)
             is SourceIsBlocking -> evaluateSourceBlocking(state, context)
             is SourceIsTapped -> evaluateSourceTapped(state, context)
@@ -151,6 +152,14 @@ class ConditionEvaluator {
     private fun evaluateWasCastFromHand(state: GameState, context: EffectContext): Boolean {
         val sourceId = context.sourceId ?: return false
         return state.getEntity(sourceId)?.has<CastFromHandComponent>() == true
+    }
+
+    private fun evaluateWasKicked(state: GameState, context: EffectContext): Boolean {
+        // Check the component on the permanent first (for triggered abilities)
+        val sourceId = context.sourceId ?: return context.wasKicked
+        if (state.getEntity(sourceId)?.has<WasKickedComponent>() == true) return true
+        // Fall back to context (for spell resolution, e.g. kicker additional effects)
+        return context.wasKicked
     }
 
     private fun evaluateSourceAttacking(state: GameState, context: EffectContext): Boolean {

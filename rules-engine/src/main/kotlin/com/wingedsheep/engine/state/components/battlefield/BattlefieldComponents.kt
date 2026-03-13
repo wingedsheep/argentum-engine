@@ -29,6 +29,14 @@ data object SummoningSicknessComponent : Component
 data object CastFromHandComponent : Component
 
 /**
+ * Marks a permanent as having been kicked when cast.
+ * Added when a kicked spell resolves from the stack.
+ * Used by cards like Skizzik to check if the kicker cost was paid.
+ */
+@Serializable
+data object WasKickedComponent : Component
+
+/**
  * Marks a permanent so that if it would leave the battlefield, it is exiled instead.
  * Used by Kheru Lich Lord, Whip of Erebos, Sneak Attack, and similar reanimation effects.
  */
