@@ -213,6 +213,7 @@ export function useInteraction() {
             selectedCards: [],
             validCards: actionInfo.validDelveCards,
             maxDelve,
+            minDelveNeeded: actionInfo.minDelveNeeded ?? 0,
           })
           selectCard(null)
           return

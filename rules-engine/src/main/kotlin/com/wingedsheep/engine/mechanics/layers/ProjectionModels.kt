@@ -378,6 +378,15 @@ sealed interface Modification {
         val toughnessBonus: DynamicAmount
     ) : Modification
 
+    /**
+     * Removes all abilities from the affected entity.
+     * Used for effects like Deep Freeze ("loses all other abilities") and Turn to Frog.
+     * Clears all keywords and sets the lostAllAbilities flag which suppresses
+     * activated abilities, triggered abilities, and static abilities.
+     */
+    @Serializable
+    data object RemoveAllAbilities : Modification
+
     /** No-op modification for effects that don't modify projected state (e.g., combat restrictions) */
     @Serializable
     data object NoOp : Modification
@@ -400,5 +409,6 @@ internal data class MutableProjectedValues(
     var mustAttack: Boolean = false,
     var mustBlock: Boolean = false,
     val cantBeBlockedExceptBySubtypes: MutableSet<String> = mutableSetOf(),
-    var additionalBlockCount: Int = 0
+    var additionalBlockCount: Int = 0,
+    var lostAllAbilities: Boolean = false
 )

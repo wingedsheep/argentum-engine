@@ -92,6 +92,8 @@ export function GameCard({
   const counterDistributionState = useGameStore((state) => state.counterDistributionState)
   const incrementCounterRemoval = useGameStore((state) => state.incrementCounterRemoval)
   const decrementCounterRemoval = useGameStore((state) => state.decrementCounterRemoval)
+  const retapSelectionState = useGameStore((state) => state.retapSelectionState)
+  const toggleRetapSource = useGameStore((state) => state.toggleRetapSource)
   const submitYesNoDecision = useGameStore((state) => state.submitYesNoDecision)
   const responsive = useResponsiveContext()
   const { handleCardClick, handleDoubleClick, executeAction } = useInteraction()
@@ -150,7 +152,9 @@ export function GameCard({
   const hoveredCardId = useGameStore((state) => state.hoveredCardId)
   const autoTapPreview = useGameStore((state) => state.autoTapPreview)
 
-  const isTapped = card.isTapped || forceTapped
+  // During retap mode, show originally-tapped-for-spell sources as untapped
+  const isRetapUntapped = retapSelectionState?.originallyTappedSources.includes(card.id) ?? false
+  const isTapped = (card.isTapped && !isRetapUntapped) || forceTapped
   const isSelected = selectedCardId === card.id
   const isInAutoTapPreview = autoTapPreview?.includes(card.id) ?? false
   const isHovered = hoveredCardId === card.id
@@ -183,6 +187,11 @@ export function GameCard({
   const distributeRemaining = distributeState ? distributeState.totalAmount - distributeTotalAllocated : 0
   const distributeMaxForCard = distributeState?.maxPerTarget?.[card.id]
   const distributeAtMax = distributeMaxForCard !== undefined && distributeAllocated >= distributeMaxForCard
+
+  // Retap selection checks
+  const isRetapValidSource = retapSelectionState?.validSources.includes(card.id) ?? false
+  const isRetapSelected = retapSelectionState?.selectedSources.includes(card.id) ?? false
+  const isInRetapMode = retapSelectionState !== null
 
   // Trigger YesNo check (inline buttons on triggering entity card, only when inlineOnTrigger is set)
   const isTriggerYesNo = pendingDecision?.type === 'YesNoDecision'
@@ -490,6 +499,15 @@ export function GameCard({
       return
     }
 
+    // Handle retap selection mode - click to toggle source
+    if (isInRetapMode && isRetapValidSource) {
+      toggleRetapSource(card.id)
+      return
+    }
+
+    // Block all other interactions during retap mode
+    if (isInRetapMode) return
+
     // Handle inline distribute mode - click to add damage
     if (isDistributeTarget && distributeRemaining > 0 && !distributeAtMax) {
       incrementDistribute(card.id)
@@ -564,7 +582,7 @@ export function GameCard({
   // Double-click handler - auto-cast if possible
   const handleDoubleClickEvent = () => {
     // Skip if in special modes
-    if (isInTargetingMode || isChooseTargetsDecision || isValidDecisionSelection) {
+    if (isInTargetingMode || isChooseTargetsDecision || isValidDecisionSelection || isInRetapMode) {
       return
     }
     // Skip for combat-role cards during combat (attackers, blockers, attacking creatures)
@@ -623,6 +641,18 @@ export function GameCard({
     // Dim orange for unallocated distribute targets
     borderStyle = '2px solid #ff8c42'
     boxShadow = '0 0 12px rgba(255, 140, 66, 0.5), 0 0 24px rgba(255, 140, 66, 0.3)'
+  } else if (isRetapSelected) {
+    // Green highlight for selected retap sources
+    borderStyle = `3px solid ${SELECTED_COLOR}`
+    boxShadow = `0 0 20px ${SELECTED_GLOW}, 0 0 40px ${SELECTED_SHADOW}`
+  } else if (isRetapValidSource && isHovered) {
+    // Bright blue highlight when hovering over a valid retap source
+    borderStyle = `3px solid ${TARGET_COLOR_BRIGHT}`
+    boxShadow = `0 0 20px ${TARGET_GLOW_BRIGHT}, 0 0 40px ${TARGET_GLOW_OUTER}`
+  } else if (isRetapValidSource) {
+    // Blue highlight for valid retap sources
+    borderStyle = `2px solid ${TARGET_COLOR}`
+    boxShadow = `0 0 12px ${TARGET_GLOW}, 0 0 24px ${TARGET_SHADOW}`
   } else if (isSelected && (!isInCombatMode || !isCombatRoleCard)) {
     borderStyle = '3px solid #ffff00'
     boxShadow = '0 8px 20px rgba(255, 255, 0, 0.4)'
@@ -677,7 +707,7 @@ export function GameCard({
   }
 
   // Determine cursor
-  const canInteract = interactive || isValidTarget || isValidDecisionTarget || isValidDecisionSelection || isValidAttacker || isValidBlocker || isAttackingInBlockerMode || isValidPlaneswalkerTarget || canDragToPlay || isDistributeTarget
+  const canInteract = interactive || isValidTarget || isValidDecisionTarget || isValidDecisionSelection || isValidAttacker || isValidBlocker || isAttackingInBlockerMode || isValidPlaneswalkerTarget || canDragToPlay || isDistributeTarget || isRetapValidSource
   const baseCursor = canInteract ? 'pointer' : 'default'
   const cursor = isValidBlocker || isValidAttacker || isSelectedAsAttacker || canDragToPlay ? 'grab' : baseCursor
 

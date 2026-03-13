@@ -69,6 +69,7 @@ class GamePlayHandler(
             is ClientMessage.SetPriorityMode -> handleSetPriorityMode(session, message)
             is ClientMessage.SetStopOverrides -> handleSetStopOverrides(session, message)
             is ClientMessage.RequestUndo -> handleRequestUndo(session)
+            is ClientMessage.RequestRetap -> handleRequestRetap(session, message)
             is ClientMessage.RequestResync -> handleRequestResync(session)
             else -> {}
         }
@@ -716,6 +717,31 @@ class GamePlayHandler(
             }
             is GameSession.ActionResult.PausedForDecision -> {
                 // Should not happen for undo
+                broadcastStateUpdate(gameSession, result.events)
+            }
+        }
+    }
+
+    private fun handleRequestRetap(session: WebSocketSession, message: ClientMessage.RequestRetap) {
+        val playerSession = sessionRegistry.getPlayerSession(session.id)
+        if (playerSession == null) {
+            sender.sendError(session, ErrorCode.NOT_CONNECTED, "Not connected")
+            return
+        }
+
+        val gameSession = getGameSession(session, playerSession) ?: return
+
+        val result = gameSession.executeRetap(playerSession.playerId, message.selectedSourceIds)
+        when (result) {
+            is GameSession.ActionResult.Success -> {
+                logger.info("Player ${playerSession.playerName} re-tapped lands")
+                broadcastStateUpdate(gameSession, result.events)
+            }
+            is GameSession.ActionResult.Failure -> {
+                sender.sendError(session, ErrorCode.INVALID_ACTION, result.reason)
+            }
+            is GameSession.ActionResult.PausedForDecision -> {
+                // Should not happen for retap
                 broadcastStateUpdate(gameSession, result.events)
             }
         }

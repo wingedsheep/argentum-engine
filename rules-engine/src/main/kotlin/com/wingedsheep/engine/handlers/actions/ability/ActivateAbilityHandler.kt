@@ -121,6 +121,15 @@ class ActivateAbilityHandler(
             if (container.has<FaceDownComponent>()) {
                 return "Face-down creatures have no abilities"
             }
+
+            // Creatures that have lost all abilities cannot activate them (e.g., Deep Freeze)
+            if (state.projectedState.hasLostAllAbilities(action.sourceId)) {
+                // Only block the creature's own abilities, not granted ones
+                val isOwnAbility = cardDef.script.activatedAbilities.any { it.id == action.abilityId }
+                if (isOwnAbility) {
+                    return "This permanent has lost all abilities"
+                }
+            }
         }
 
         // Apply text-changing effects to cost and target filters

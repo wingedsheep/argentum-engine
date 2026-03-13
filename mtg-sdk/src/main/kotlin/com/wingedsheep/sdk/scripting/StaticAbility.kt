@@ -968,6 +968,66 @@ data class GrantSubtype(
 }
 
 /**
+ * Adds a color to the target permanent.
+ * Used for Deep Freeze: "Enchanted creature is a blue Wall in addition to its other colors and types."
+ *
+ * This is a Layer 5 (color-changing) continuous effect that adds a color.
+ *
+ * @property color The color to add
+ * @property target What this ability applies to (typically AttachedCreature for auras)
+ */
+@SerialName("GrantColor")
+@Serializable
+data class GrantColor(
+    val color: Color,
+    val target: StaticTarget = StaticTarget.AttachedCreature
+) : StaticAbility {
+    override val description: String = "is ${color.name.lowercase()} in addition to its other colors"
+    override fun applyTextReplacement(replacer: TextReplacer): StaticAbility = this
+}
+
+/**
+ * Sets the base power and toughness of the target permanent.
+ * Used for Deep Freeze: "Enchanted creature has base power and toughness 0/4."
+ * Also used for Turn to Frog, Darksteel Mutation, and similar effects.
+ *
+ * This is a Layer 7b (POWER_TOUGHNESS, SET_VALUES) continuous effect.
+ *
+ * @property power The base power to set
+ * @property toughness The base toughness to set
+ * @property target What this ability applies to (typically AttachedCreature for auras)
+ */
+@SerialName("SetBasePowerToughnessStatic")
+@Serializable
+data class SetBasePowerToughnessStatic(
+    val power: Int,
+    val toughness: Int,
+    val target: StaticTarget = StaticTarget.AttachedCreature
+) : StaticAbility {
+    override val description: String = "has base power and toughness $power/$toughness"
+    override fun applyTextReplacement(replacer: TextReplacer): StaticAbility = this
+}
+
+/**
+ * Causes the target permanent to lose all abilities.
+ * Used for Deep Freeze: "Enchanted creature loses all other abilities."
+ * Also used for Humility, Overwhelming Splendor, and similar effects.
+ *
+ * This is a Layer 6 (ABILITY) continuous effect that clears all keywords and
+ * suppresses activated, triggered, and static abilities.
+ *
+ * @property target What this ability applies to (typically AttachedCreature for auras)
+ */
+@SerialName("LoseAllAbilities")
+@Serializable
+data class LoseAllAbilities(
+    val target: StaticTarget = StaticTarget.AttachedCreature
+) : StaticAbility {
+    override val description: String = "loses all abilities"
+    override fun applyTextReplacement(replacer: TextReplacer): StaticAbility = this
+}
+
+/**
  * This creature can't be blocked unless defending player controls N or more
  * creatures that share a creature type.
  * Used for Graxiplon: "can't be blocked unless defending player controls

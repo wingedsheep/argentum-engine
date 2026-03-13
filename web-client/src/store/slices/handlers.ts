@@ -74,6 +74,7 @@ interface StateUpdateEnvelope {
   readonly stopOverrides?: { readonly myTurnStops: readonly string[]; readonly opponentTurnStops: readonly string[] } | null
   readonly undoAvailable?: boolean
   readonly priorityMode?: import('../../types').PriorityModeValue | null
+  readonly retapInfo?: import('../../types').RetapInfo | null
 }
 
 /**
@@ -246,6 +247,7 @@ function processStateUpdate(
     opponentDecisionStatus: msg.opponentDecisionStatus ?? null,
     nextStopPoint: msg.nextStopPoint ?? null,
     undoAvailable: msg.undoAvailable ?? false,
+    retapInfo: msg.retapInfo ?? null,
     ...(serverPriorityMode ? { priorityMode: serverPriorityMode, fullControl: serverPriorityMode === 'fullControl' } : {}),
     ...(serverOverrides ? { stopOverrides: serverOverrides } : {}),
     pendingEvents: [...state.pendingEvents, ...msg.events],

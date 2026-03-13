@@ -27,6 +27,9 @@ import com.wingedsheep.sdk.scripting.GrantProtectionFromChosenColorToGroup
 import com.wingedsheep.sdk.scripting.ModifyStatsByCounterOnSource
 import com.wingedsheep.sdk.scripting.ModifyStatsPerSharedCreatureType
 import com.wingedsheep.sdk.scripting.AnimateLandGroup
+import com.wingedsheep.sdk.scripting.GrantColor
+import com.wingedsheep.sdk.scripting.LoseAllAbilities
+import com.wingedsheep.sdk.scripting.SetBasePowerToughnessStatic
 import com.wingedsheep.sdk.scripting.GrantShroudToController
 import com.wingedsheep.sdk.scripting.conditions.EnchantedCreatureHasSubtype
 import com.wingedsheep.sdk.scripting.conditions.Exists
@@ -365,6 +368,30 @@ class StaticAbilityHandler(
                     sublayer = null,
                     modification = Modification.CantBeBlockedExceptBySubtype(ability.requiredSubtype),
                     affectsFilter = convertGroupFilter(ability.filter)
+                )
+            }
+            is GrantColor -> {
+                ContinuousEffectData(
+                    layer = Layer.COLOR,
+                    sublayer = null,
+                    modification = Modification.AddColor(setOf(ability.color.name)),
+                    affectsFilter = convertStaticTarget(ability.target)
+                )
+            }
+            is SetBasePowerToughnessStatic -> {
+                ContinuousEffectData(
+                    layer = Layer.POWER_TOUGHNESS,
+                    sublayer = Sublayer.SET_VALUES,
+                    modification = Modification.SetPowerToughness(ability.power, ability.toughness),
+                    affectsFilter = convertStaticTarget(ability.target)
+                )
+            }
+            is LoseAllAbilities -> {
+                ContinuousEffectData(
+                    layer = Layer.ABILITY,
+                    sublayer = null,
+                    modification = Modification.RemoveAllAbilities,
+                    affectsFilter = convertStaticTarget(ability.target)
                 )
             }
             is GlobalEffect -> convertGlobalEffect(ability)

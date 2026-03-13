@@ -10,6 +10,7 @@ import type {
   LegalActionInfo,
   ConvokeCreatureInfo,
   DelveCardInfo,
+  RetapInfo,
   GameOverReason,
   ErrorCode,
   PendingDecision,
@@ -151,6 +152,25 @@ export interface ErrorState {
 }
 
 /**
+ * Retap selection state for changing which lands are tapped after casting a spell.
+ * The player clicks sources on the battlefield to toggle them.
+ */
+export interface RetapSelectionState {
+  /** All source entity IDs available for selection */
+  validSources: readonly EntityId[]
+  /** Currently selected source IDs */
+  selectedSources: readonly EntityId[]
+  /** Sources originally tapped for the spell (shown untapped during retap mode) */
+  originallyTappedSources: readonly EntityId[]
+  /** The mana cost string (e.g., "{2}{R}") */
+  manaCost: string
+  /** X value if spell has X cost */
+  xValue: number
+  /** Color production per source: entityId -> list of color symbols (W/U/B/R/G) */
+  sourceColors: Readonly<Record<EntityId, readonly string[]>>
+}
+
+/**
  * X cost selection state when casting spells with X in their mana cost.
  */
 export interface XSelectionState {
@@ -256,6 +276,8 @@ export interface DelveSelectionState {
   validCards: readonly DelveCardInfo[]
   /** Maximum number of generic mana that can be paid via Delve */
   maxDelve: number
+  /** Minimum number of cards to exile to afford the spell (from server) */
+  minDelveNeeded: number
 }
 
 /**
@@ -509,6 +531,7 @@ export type GameStore = {
   nextStopPoint: string | null
   opponentName: string | null
   undoAvailable: boolean
+  retapInfo: RetapInfo | null
   /** Seconds remaining on opponent's disconnect countdown (null = connected) */
   opponentDisconnectCountdown: number | null
   createGame: (deckList: Record<string, number>) => void
@@ -532,6 +555,7 @@ export type GameStore = {
   toggleMulliganCard: (cardId: EntityId) => void
   concede: () => void
   requestUndo: () => void
+  requestRetap: (selectedSourceIds: readonly EntityId[]) => void
   cancelGame: () => void
   setFullControl: (enabled: boolean) => void
   cyclePriorityMode: () => void
@@ -589,6 +613,7 @@ export type GameStore = {
   lastDamageDistribution: Record<EntityId, number> | null
   distributeState: DistributeState | null
   counterDistributionState: CounterDistributionState | null
+  retapSelectionState: RetapSelectionState | null
   hoveredCardId: EntityId | null
   autoTapPreview: readonly EntityId[] | null
   draggingBlockerId: EntityId | null
@@ -666,6 +691,10 @@ export type GameStore = {
   decrementCounterRemoval: (entityId: EntityId) => void
   cancelCounterDistribution: () => void
   confirmCounterDistribution: () => void
+  startRetapSelection: () => void
+  toggleRetapSource: (entityId: EntityId) => void
+  cancelRetapSelection: () => void
+  confirmRetapSelection: () => void
   showRevealedHand: (cardIds: readonly EntityId[]) => void
   dismissRevealedHand: () => void
   showRevealedCards: (cardIds: readonly EntityId[], cardNames: readonly string[], imageUris: readonly (string | null)[], source: string | null, isYourReveal: boolean) => void

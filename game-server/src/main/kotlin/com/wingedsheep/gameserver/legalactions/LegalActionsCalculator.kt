@@ -304,6 +304,9 @@ class LegalActionsCalculator(
                     val delveCards = if (hasDelve) {
                         findDelveCards(state, playerId)
                     } else null
+                    val minDelveNeeded = if (hasDelve && delveCards != null && delveCards.isNotEmpty()) {
+                        calculateMinDelveNeeded(state, playerId, effectiveCost, delveCards)
+                    } else null
 
                     // For Convoke/Delve spells, check if affordable with alternative payment help
                     val canAfford = if (hasConvoke && convokeCreatures != null && convokeCreatures.isNotEmpty()) {
@@ -428,6 +431,7 @@ class LegalActionsCalculator(
                                         validConvokeCreatures = convokeCreatures,
                                         hasDelve = hasDelve,
                                         validDelveCards = delveCards,
+                                        minDelveNeeded = minDelveNeeded,
                                         manaCostString = manaCostString,
                                         requiresDamageDistribution = requiresDamageDistribution,
                                         totalDamageToDistribute = totalDamageToDistribute,
@@ -452,6 +456,7 @@ class LegalActionsCalculator(
                                         validConvokeCreatures = convokeCreatures,
                                         hasDelve = hasDelve,
                                         validDelveCards = delveCards,
+                                        minDelveNeeded = minDelveNeeded,
                                         manaCostString = manaCostString,
                                         requiresDamageDistribution = requiresDamageDistribution,
                                         totalDamageToDistribute = totalDamageToDistribute,
@@ -473,6 +478,7 @@ class LegalActionsCalculator(
                                 validConvokeCreatures = convokeCreatures,
                                 hasDelve = hasDelve,
                                 validDelveCards = delveCards,
+                                minDelveNeeded = minDelveNeeded,
                                 manaCostString = manaCostString,
                                 autoTapPreview = autoTapPreview
                             ))
@@ -975,6 +981,8 @@ class LegalActionsCalculator(
             // Face-down creatures have no abilities (Rule 707.2)
             if (container.has<FaceDownComponent>()) continue
 
+            val entityLostAllAbilities = projectedState.hasLostAllAbilities(entityId)
+
             // Projected controller already verified - look up card definition for mana abilities
             val cardDef = cardRegistry.getCard(cardComponent.name) ?: continue
             // Include granted activated abilities that are mana abilities (both temporary and static)
@@ -984,7 +992,9 @@ class LegalActionsCalculator(
                 .filter { it.isManaAbility }
             val staticManaAbilities = getStaticGrantedActivatedAbilities(entityId, state)
                 .filter { it.isManaAbility }
-            val manaAbilities = cardDef.script.activatedAbilities.filter { it.isManaAbility } + grantedManaAbilities + staticManaAbilities
+            // If entity lost all abilities, only granted/static abilities remain (own abilities suppressed)
+            val ownManaAbilities = if (entityLostAllAbilities) emptyList() else cardDef.script.activatedAbilities.filter { it.isManaAbility }
+            val manaAbilities = ownManaAbilities + grantedManaAbilities + staticManaAbilities
 
             // Apply text-changing effects to mana ability costs
             val manaTextReplacement = container.get<TextReplacementComponent>()
@@ -1318,7 +1328,10 @@ class LegalActionsCalculator(
                 .map { it.ability }
             val staticAbilities = getStaticGrantedActivatedAbilities(entityId, state)
             val allAbilities = grantedAbilities + staticAbilities
-            val nonManaAbilities = cardDef.script.activatedAbilities.filter { !it.isManaAbility } + allAbilities.filter { !it.isManaAbility }
+            // If entity lost all abilities, suppress its own non-mana abilities
+            val ownNonManaAbilities = if (projectedState.hasLostAllAbilities(entityId)) emptyList()
+                else cardDef.script.activatedAbilities.filter { !it.isManaAbility }
+            val nonManaAbilities = ownNonManaAbilities + allAbilities.filter { !it.isManaAbility }
 
             // Apply text-changing effects to ability costs and targets
             val textReplacement = container.get<TextReplacementComponent>()
@@ -1763,6 +1776,7 @@ class LegalActionsCalculator(
                 val container = state.getEntity(entityId) ?: continue
                 val cardComponent = container.get<CardComponent>() ?: continue
                 if (container.has<FaceDownComponent>()) continue
+                if (projectedState.hasLostAllAbilities(entityId)) continue
 
                 val cardDef = cardRegistry.getCard(cardComponent.name) ?: continue
                 val anyPlayerAbilities = cardDef.script.activatedAbilities.filter { ability ->
@@ -2601,9 +2615,22 @@ class LegalActionsCalculator(
     }
 
     /**
-     * Check if cycling is prevented by any permanent on the battlefield.
-     * Used for Stabilizer: "Players can't cycle cards."
+     * Calculate the minimum number of cards that must be exiled via Delve to afford the spell.
+     * Returns the number of cards needed (0 if castable without delve, up to maxDelve).
      */
+    private fun calculateMinDelveNeeded(
+        state: GameState,
+        playerId: EntityId,
+        manaCost: com.wingedsheep.sdk.core.ManaCost,
+        delveCards: List<DelveCardInfo>
+    ): Int {
+        val availableMana = manaSolver.getAvailableManaCount(state, playerId)
+        val deficit = manaCost.cmc - availableMana
+        if (deficit <= 0) return 0
+        // Can only delve up to the generic portion of the cost
+        return minOf(deficit, manaCost.genericAmount, delveCards.size)
+    }
+
     /**
      * Get activated abilities granted to an entity by static abilities on battlefield permanents.
      * E.g., Spectral Sliver grants "{2}: This creature gets +1/+1 until end of turn" to all Slivers

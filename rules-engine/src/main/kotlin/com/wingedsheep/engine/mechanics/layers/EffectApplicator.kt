@@ -177,6 +177,10 @@ internal class EffectApplicator(
                         values.toughness = (values.toughness ?: 0) + toughnessMod
                     }
                 }
+                is Modification.RemoveAllAbilities -> {
+                    values.keywords.clear()
+                    values.lostAllAbilities = true
+                }
                 is Modification.NoOp -> {
                     // No-op: effect doesn't modify projected state
                 }

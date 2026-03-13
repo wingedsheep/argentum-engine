@@ -91,7 +91,9 @@ sealed interface ServerMessage {
         /** Current priority mode for this player (auto, stops, fullControl) */
         val priorityMode: String? = null,
         /** Monotonically increasing version — clients use this to detect missed messages */
-        val stateVersion: Long = 0
+        val stateVersion: Long = 0,
+        /** Info for re-tapping lands after a spell cast (null if not available) */
+        val retapInfo: RetapInfo? = null
     ) : ServerMessage
 
     /**
@@ -117,7 +119,9 @@ sealed interface ServerMessage {
         /** Current priority mode for this player */
         val priorityMode: String? = null,
         /** Monotonically increasing version — clients use this to detect missed messages */
-        val stateVersion: Long = 0
+        val stateVersion: Long = 0,
+        /** Info for re-tapping lands after a spell cast (null if not available) */
+        val retapInfo: RetapInfo? = null
     ) : ServerMessage
 
     /**
@@ -127,6 +131,34 @@ sealed interface ServerMessage {
     data class StopOverrideInfo(
         val myTurnStops: Set<Step>,
         val opponentTurnStops: Set<Step>
+    )
+
+    /**
+     * Info about a mana source available for re-tapping.
+     */
+    @Serializable
+    data class RetapSourceInfo(
+        val entityId: EntityId,
+        val name: String,
+        val imageUri: String? = null,
+        val producesColors: List<String> = emptyList(),
+        val producesColorless: Boolean = false
+    )
+
+    /**
+     * Info for re-tapping lands after a spell was cast with AutoPay.
+     * Allows the player to change which lands are tapped without undoing the spell.
+     */
+    @Serializable
+    data class RetapInfo(
+        /** The mana cost string (e.g., "{2}{R}") */
+        val manaCost: String,
+        /** Sources currently tapped for this spell */
+        val currentlyTappedSourceIds: List<EntityId>,
+        /** All sources available for selection (currently tapped + untapped) */
+        val availableSources: List<RetapSourceInfo>,
+        /** X value if spell has X cost */
+        val xValue: Int = 0
     )
 
     /**
@@ -923,6 +955,8 @@ data class LegalActionInfo(
     val hasDelve: Boolean = false,
     /** Cards in graveyard that can be exiled for Delve */
     val validDelveCards: List<DelveCardInfo>? = null,
+    /** Minimum number of cards to exile via Delve to afford this spell */
+    val minDelveNeeded: Int? = null,
     /** The spell's mana cost for Convoke/Delve UI display */
     val manaCostString: String? = null,
     /** Whether this spell requires damage distribution at cast time (for DividedDamageEffect) */

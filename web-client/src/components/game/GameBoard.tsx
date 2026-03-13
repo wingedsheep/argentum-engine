@@ -15,6 +15,7 @@ import { RevealAnimations } from '../animations/RevealAnimations'
 import { CoinFlipAnimations } from '../animations/CoinFlipAnimations'
 import { TargetReselectedAnimations } from '../animations/TargetReselectedAnimations'
 import { useResponsive } from '../../hooks/useResponsive'
+import { ManaSymbol } from '../ui/ManaSymbols'
 
 // Import extracted components
 import { Battlefield, CardRow, StackDisplay, ZonePile, ResponsiveContext } from './board'
@@ -61,6 +62,12 @@ export function GameBoard({ spectatorMode = false, topOffset = 0 }: GameBoardPro
   const cancelCounterDistribution = useGameStore((state) => state.cancelCounterDistribution)
   const undoAvailable = useGameStore((state) => state.undoAvailable)
   const requestUndo = useGameStore((state) => state.requestUndo)
+  const delveSelectionState = useGameStore((state) => state.delveSelectionState)
+  const retapInfo = useGameStore((state) => state.retapInfo)
+  const retapSelectionState = useGameStore((state) => state.retapSelectionState)
+  const startRetapSelection = useGameStore((state) => state.startRetapSelection)
+  const cancelRetapSelection = useGameStore((state) => state.cancelRetapSelection)
+  const confirmRetapSelection = useGameStore((state) => state.confirmRetapSelection)
   const responsive = useResponsive(topOffset)
 
   // In spectator mode, use spectatingState.gameState
@@ -103,6 +110,92 @@ export function GameBoard({ spectatorMode = false, topOffset = 0 }: GameBoardPro
     : 0
   const distributeRemaining = distributeState ? distributeState.totalAmount - distributeTotalAllocated : 0
   const isInCounterDistMode = !spectatorMode && counterDistributionState !== null
+  const isInRetapMode = !spectatorMode && retapSelectionState !== null
+
+  // Compute retap mana progress using most-constrained-first matching
+  const retapProgress = useMemo(() => {
+    if (!retapSelectionState) return null
+
+    // Parse mana cost into requirements
+    const symbols = retapSelectionState.manaCost.match(/\{([^}]+)\}/g)
+    if (!symbols) return { satisfied: 0, total: 0, entries: [] }
+
+    // Build list of unfulfilled requirements: colored pips + generic pips
+    const coloredReqs: string[] = []
+    let genericCount = 0
+    for (const match of symbols) {
+      const inner = match.slice(1, -1)
+      const num = parseInt(inner, 10)
+      if (!isNaN(num)) {
+        genericCount += num
+      } else if (inner !== 'X') {
+        coloredReqs.push(inner)
+      }
+    }
+    if (retapSelectionState.xValue > 0) {
+      genericCount += retapSelectionState.xValue
+    }
+    const total = coloredReqs.length + genericCount
+
+    // Build source list: each source has the set of colors it can pay
+    // A source that produces {W, B, G} can satisfy W, B, or G colored reqs, or 1 generic
+    const sources: { colors: readonly string[] }[] = []
+    for (const id of retapSelectionState.selectedSources) {
+      const colors = retapSelectionState.sourceColors[id] ?? []
+      sources.push({ colors: colors.length > 0 ? colors : ['C'] })
+    }
+
+    // Most-constrained-first: assign sources with fewest color options first
+    // This prevents flexible sources from "wasting" on requirements that
+    // less flexible sources could have covered
+    const sortedSources = [...sources].sort((a, b) => a.colors.length - b.colors.length)
+
+    // Track remaining colored requirements as a mutable count map
+    const remainingColorReqs: Record<string, number> = {}
+    for (const c of coloredReqs) {
+      remainingColorReqs[c] = (remainingColorReqs[c] ?? 0) + 1
+    }
+    let remainingGeneric = genericCount
+    const colorSatisfied: Record<string, number> = {}
+    let satisfied = 0
+
+    for (const source of sortedSources) {
+      // Try to assign to a colored requirement this source can pay
+      let assigned = false
+      for (const color of source.colors) {
+        if ((remainingColorReqs[color] ?? 0) > 0) {
+          remainingColorReqs[color]!--
+          colorSatisfied[color] = (colorSatisfied[color] ?? 0) + 1
+          satisfied++
+          assigned = true
+          break
+        }
+      }
+      // If no colored requirement matched, assign to generic
+      if (!assigned && remainingGeneric > 0) {
+        remainingGeneric--
+        colorSatisfied['1'] = (colorSatisfied['1'] ?? 0) + 1
+        satisfied++
+      }
+    }
+
+    // Build per-color requirement counts for display
+    const colorRequired: Record<string, number> = {}
+    for (const c of coloredReqs) {
+      colorRequired[c] = (colorRequired[c] ?? 0) + 1
+    }
+    if (genericCount > 0) colorRequired['1'] = genericCount
+
+    // Sort: colored first, generic last
+    const entries = Object.entries(colorRequired).sort(([a], [b]) => {
+      if (a === '1' && b !== '1') return 1
+      if (a !== '1' && b === '1') return -1
+      return a.localeCompare(b)
+    })
+
+    return { satisfied, total, entries, colorSatisfied }
+  }, [retapSelectionState])
+
   const counterTotalAllocated = counterDistributionState
     ? Object.values(counterDistributionState.distribution).reduce<number>((sum, v) => sum + v, 0)
     : 0
@@ -327,8 +420,8 @@ export function GameBoard({ spectatorMode = false, topOffset = 0 }: GameBoardPro
         ) : null}
       </div>
 
-      {/* Floating pass/undo buttons (bottom-right) - hidden during targeting, distribute, counter distribution, and combat modes */}
-      {!spectatorMode && canAct && !isInCombatMode && !isInDistributeMode && !isInCounterDistMode && !targetingState && viewingPlayer && (
+      {/* Floating pass/change-lands buttons (bottom-right) - hidden during targeting, distribute, counter distribution, combat, retap, and delve modes */}
+      {!spectatorMode && canAct && !isInCombatMode && !isInDistributeMode && !isInCounterDistMode && !isInRetapMode && !delveSelectionState && !targetingState && viewingPlayer && (
         <div style={{
           position: 'fixed',
           bottom: 16,
@@ -348,6 +441,22 @@ export function GameBoard({ spectatorMode = false, topOffset = 0 }: GameBoardPro
               }}
             >
               Undo
+            </button>
+          )}
+          {retapInfo && (
+            <button
+              onClick={startRetapSelection}
+              style={{
+                ...styles.floatingUndoButton,
+                position: 'static',
+                padding: responsive.isMobile ? '10px 20px' : '12px 24px',
+                fontSize: responsive.fontSize.normal,
+                backgroundColor: 'rgba(40, 40, 40, 0.9)',
+                color: '#60a5fa',
+                border: '2px solid #3b82f6',
+              }}
+            >
+              Retap
             </button>
           )}
           <button
@@ -419,6 +528,17 @@ export function GameBoard({ spectatorMode = false, topOffset = 0 }: GameBoardPro
         <div style={styles.combatButtonContainer}>
           {combatState.selectedAttackers.length === 0 ? (
             <>
+              {undoAvailable && (
+                <button
+                  onClick={requestUndo}
+                  style={{
+                    ...styles.combatButton,
+                    ...styles.combatButtonUndo,
+                  }}
+                >
+                  Undo
+                </button>
+              )}
               <button
                 onClick={attackWithAll}
                 disabled={combatState.validCreatures.length === 0}
@@ -442,6 +562,17 @@ export function GameBoard({ spectatorMode = false, topOffset = 0 }: GameBoardPro
             </>
           ) : (
             <>
+              {undoAvailable && (
+                <button
+                  onClick={requestUndo}
+                  style={{
+                    ...styles.combatButton,
+                    ...styles.combatButtonUndo,
+                  }}
+                >
+                  Undo
+                </button>
+              )}
               <button
                 onClick={confirmCombat}
                 style={{
@@ -691,6 +822,89 @@ export function GameBoard({ spectatorMode = false, topOffset = 0 }: GameBoardPro
 
       {/* Target reselection animations (Grip of Chaos, etc.) */}
       <TargetReselectedAnimations />
+
+      {/* Retap selection controls (bottom-right, replaces pass button during retap mode) */}
+      {isInRetapMode && retapSelectionState && (
+        <div style={{
+          position: 'fixed',
+          bottom: 16,
+          right: 16,
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 8,
+          alignItems: 'flex-end',
+          zIndex: 100,
+        }}>
+          {/* Mana progress indicator */}
+          {retapProgress && (
+            <div style={{
+              backgroundColor: 'rgba(0, 0, 0, 0.9)',
+              border: `1px solid ${retapProgress.satisfied >= retapProgress.total ? 'rgba(74, 222, 128, 0.5)' : 'rgba(255, 255, 255, 0.2)'}`,
+              borderRadius: 8,
+              padding: responsive.isMobile ? '8px 12px' : '10px 16px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 10,
+            }}>
+              {retapProgress.entries.map(([symbol, required]) => {
+                const fulfilled = retapProgress.colorSatisfied?.[symbol] ?? 0
+                return (
+                  <div key={symbol} style={{ display: 'flex', alignItems: 'center', gap: 3 }}>
+                    <ManaSymbol symbol={symbol} size={18} />
+                    <span style={{
+                      color: fulfilled >= required ? '#4ade80' : fulfilled > 0 ? '#fbbf24' : '#888',
+                      fontWeight: 600,
+                      fontSize: responsive.fontSize.normal,
+                    }}>
+                      {fulfilled}/{required}
+                    </span>
+                  </div>
+                )
+              })}
+              <span style={{
+                color: retapProgress.satisfied >= retapProgress.total ? '#4ade80' : '#888',
+                fontSize: responsive.fontSize.small,
+                marginLeft: 4,
+              }}>
+                ({retapProgress.satisfied}/{retapProgress.total})
+              </span>
+            </div>
+          )}
+          {/* Confirm / Cancel buttons */}
+          <div style={{ display: 'flex', gap: 8 }}>
+            <button
+              onClick={cancelRetapSelection}
+              style={{
+                padding: responsive.isMobile ? '10px 20px' : '12px 24px',
+                fontSize: responsive.fontSize.normal,
+                fontWeight: 600,
+                backgroundColor: 'rgba(40, 40, 40, 0.9)',
+                color: '#ccc',
+                border: '2px solid #555',
+                borderRadius: 8,
+                cursor: 'pointer',
+              }}
+            >
+              Cancel
+            </button>
+            <button
+              onClick={confirmRetapSelection}
+              style={{
+                padding: responsive.isMobile ? '10px 20px' : '12px 24px',
+                fontSize: responsive.fontSize.normal,
+                fontWeight: 600,
+                backgroundColor: 'rgba(22, 101, 52, 0.9)',
+                color: '#4ade80',
+                border: '2px solid #4ade80',
+                borderRadius: 8,
+                cursor: 'pointer',
+              }}
+            >
+              Confirm
+            </button>
+          </div>
+        </div>
+      )}
     </div>
     </ResponsiveContext.Provider>
   )

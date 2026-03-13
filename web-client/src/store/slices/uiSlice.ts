@@ -14,6 +14,7 @@ import type {
   DamageDistributionState,
   DistributeState,
   CounterDistributionState,
+  RetapSelectionState,
   DrawAnimation,
   DamageAnimation,
   RevealAnimation,
@@ -44,6 +45,7 @@ export interface UISliceState {
   lastDamageDistribution: Record<EntityId, number> | null
   distributeState: DistributeState | null
   counterDistributionState: CounterDistributionState | null
+  retapSelectionState: RetapSelectionState | null
   hoveredCardId: EntityId | null
   autoTapPreview: readonly EntityId[] | null
   draggingBlockerId: EntityId | null
@@ -125,6 +127,10 @@ export interface UISliceActions {
   decrementCounterRemoval: (entityId: EntityId) => void
   cancelCounterDistribution: () => void
   confirmCounterDistribution: () => void
+  startRetapSelection: () => void
+  toggleRetapSource: (entityId: EntityId) => void
+  cancelRetapSelection: () => void
+  confirmRetapSelection: () => void
   showRevealedHand: (cardIds: readonly EntityId[]) => void
   dismissRevealedHand: () => void
   showRevealedCards: (cardIds: readonly EntityId[], cardNames: readonly string[], imageUris: readonly (string | null)[], source: string | null, isYourReveal: boolean) => void
@@ -160,6 +166,7 @@ export const createUISlice: SliceCreator<UISlice> = (set, get) => ({
   lastDamageDistribution: null,
   distributeState: null,
   counterDistributionState: null,
+  retapSelectionState: null,
   hoveredCardId: null,
   autoTapPreview: null,
   draggingBlockerId: null,
@@ -1185,6 +1192,56 @@ export const createUISlice: SliceCreator<UISlice> = (set, get) => ({
     }
 
     set({ counterDistributionState: null })
+  },
+
+  // Retap selection actions
+  startRetapSelection: () => {
+    const { retapInfo } = get()
+    if (!retapInfo) return
+    const sourceColors: Record<string, readonly string[]> = {}
+    for (const source of retapInfo.availableSources) {
+      const colors: string[] = [...(source.producesColors ?? [])]
+      if (source.producesColorless && colors.length === 0) colors.push('C')
+      sourceColors[source.entityId] = colors
+    }
+    set({
+      selectedCardId: null,
+      retapSelectionState: {
+        validSources: retapInfo.availableSources.map(s => s.entityId),
+        selectedSources: [...retapInfo.currentlyTappedSourceIds],
+        originallyTappedSources: [...retapInfo.currentlyTappedSourceIds],
+        manaCost: retapInfo.manaCost,
+        xValue: retapInfo.xValue ?? 0,
+        sourceColors,
+      },
+    })
+  },
+
+  toggleRetapSource: (entityId) => {
+    set((state) => {
+      if (!state.retapSelectionState) return state
+      const { selectedSources } = state.retapSelectionState
+      const isSelected = selectedSources.includes(entityId)
+      return {
+        retapSelectionState: {
+          ...state.retapSelectionState,
+          selectedSources: isSelected
+            ? selectedSources.filter(id => id !== entityId)
+            : [...selectedSources, entityId],
+        },
+      }
+    })
+  },
+
+  cancelRetapSelection: () => {
+    set({ retapSelectionState: null })
+  },
+
+  confirmRetapSelection: () => {
+    const { retapSelectionState, requestRetap } = get()
+    if (!retapSelectionState) return
+    requestRetap(retapSelectionState.selectedSources)
+    set({ retapSelectionState: null })
   },
 
   // Revealed cards actions

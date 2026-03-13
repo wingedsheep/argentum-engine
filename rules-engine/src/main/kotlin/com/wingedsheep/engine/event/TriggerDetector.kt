@@ -250,11 +250,18 @@ class TriggerDetector(
         state: GameState,
         grantProviders: List<GrantTriggeredAbilityToCreatureGroup>
     ): List<TriggeredAbility> {
-        val registryAbilities = abilityRegistry.getTriggeredAbilities(entityId, cardDefinitionId)
-        val base = if (registryAbilities.isNotEmpty()) {
-            registryAbilities
+        // If the entity has lost all abilities (e.g., Deep Freeze), suppress its own triggered abilities
+        val hasLostAbilities = state.projectedState.hasLostAllAbilities(entityId)
+
+        val base = if (hasLostAbilities) {
+            emptyList()
         } else {
-            cardRegistry?.getCard(cardDefinitionId)?.triggeredAbilities ?: emptyList()
+            val registryAbilities = abilityRegistry.getTriggeredAbilities(entityId, cardDefinitionId)
+            if (registryAbilities.isNotEmpty()) {
+                registryAbilities
+            } else {
+                cardRegistry?.getCard(cardDefinitionId)?.triggeredAbilities ?: emptyList()
+            }
         }
 
         val grantedAbilities = state.grantedTriggeredAbilities

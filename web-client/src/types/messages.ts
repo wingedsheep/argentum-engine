@@ -155,6 +155,33 @@ export interface StateUpdateMessage {
   readonly priorityMode?: PriorityModeValue | null
   /** Monotonically increasing version — used to detect missed messages */
   readonly stateVersion?: number
+  /** Info for re-tapping lands after a spell cast (null if not available) */
+  readonly retapInfo?: RetapInfo | null
+}
+
+/**
+ * Info about a mana source available for re-tapping.
+ */
+export interface RetapSourceInfo {
+  readonly entityId: EntityId
+  readonly name: string
+  readonly imageUri?: string | null
+  readonly producesColors?: readonly string[]
+  readonly producesColorless?: boolean
+}
+
+/**
+ * Info for re-tapping lands after a spell was cast with AutoPay.
+ */
+export interface RetapInfo {
+  /** The mana cost string (e.g., "{2}{R}") */
+  readonly manaCost: string
+  /** Sources currently tapped for this spell */
+  readonly currentlyTappedSourceIds: readonly EntityId[]
+  /** All sources available for selection (currently tapped + untapped) */
+  readonly availableSources: readonly RetapSourceInfo[]
+  /** X value if spell has X cost */
+  readonly xValue?: number
 }
 
 /**
@@ -203,6 +230,8 @@ export interface StateDeltaUpdateMessage {
   readonly priorityMode?: PriorityModeValue | null
   /** Monotonically increasing version — used to detect missed messages */
   readonly stateVersion?: number
+  /** Info for re-tapping lands after a spell cast (null if not available) */
+  readonly retapInfo?: RetapInfo | null
 }
 
 // ============================================================================
@@ -510,6 +539,8 @@ export interface LegalActionInfo {
   readonly hasDelve?: boolean
   /** Cards in graveyard that can be exiled for Delve */
   readonly validDelveCards?: readonly DelveCardInfo[]
+  /** Minimum number of cards to exile via Delve to afford this spell */
+  readonly minDelveNeeded?: number
   /** The spell's mana cost string for Convoke/Delve UI display */
   readonly manaCostString?: string
   /** Whether this spell requires damage distribution at cast time (for DividedDamageEffect) */
@@ -1200,6 +1231,7 @@ export type ClientMessage =
   | SetStopOverridesMessage
   // Undo
   | RequestUndoMessage
+  | RequestRetapMessage
   // Resync
   | RequestResyncMessage
 
@@ -1582,6 +1614,14 @@ export interface RequestUndoMessage {
 }
 
 /**
+ * Request to re-tap lands after a spell was cast.
+ */
+export interface RequestRetapMessage {
+  readonly type: 'requestRetap'
+  readonly selectedSourceIds: readonly EntityId[]
+}
+
+/**
  * Request a full state resync from the server.
  * Sent when the client detects it may have missed messages (tab backgrounded, version gap).
  */
@@ -1718,6 +1758,10 @@ export function createSetStopOverridesMessage(myTurnStops: readonly string[], op
 
 export function createRequestUndoMessage(): RequestUndoMessage {
   return { type: 'requestUndo' }
+}
+
+export function createRequestRetapMessage(selectedSourceIds: readonly EntityId[]): RequestRetapMessage {
+  return { type: 'requestRetap', selectedSourceIds }
 }
 
 export function createRequestResyncMessage(): RequestResyncMessage {

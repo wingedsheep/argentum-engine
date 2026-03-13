@@ -319,6 +319,14 @@ sealed interface ClientMessage {
     data object RequestUndo : ClientMessage
 
     /**
+     * Request to re-tap lands after a spell was cast with AutoPay.
+     * The selected sources will be validated and tapped instead of the original ones.
+     */
+    @Serializable
+    @SerialName("requestRetap")
+    data class RequestRetap(val selectedSourceIds: List<EntityId>) : ClientMessage
+
+    /**
      * Request a full state resync. Sent by the client when it detects it may have missed
      * messages (e.g., tab was backgrounded, or a gap in stateVersion sequence).
      */

@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import { useGameStore } from '../../store/gameStore'
 import { getCardImageUrl } from '../../utils/cardImages'
+import { ManaSymbol } from './ManaSymbols'
 import type { EntityId } from '../../types'
 
 /**
@@ -18,14 +19,10 @@ function parseManaCost(manaCost: string): string[] {
 }
 
 /**
- * Calculate remaining mana cost after applying Delve exile count.
+ * Build the remaining mana cost symbols after applying N delve exiles.
  */
-function calculateRemainingCost(
-  originalSymbols: string[],
-  delveCount: number
-): string[] {
+function getRemainingCostSymbols(originalSymbols: string[], delveCount: number): string[] {
   const remaining = [...originalSymbols]
-
   let reductionsLeft = delveCount
   for (let i = 0; i < remaining.length && reductionsLeft > 0; i++) {
     const symbol = remaining[i]!
@@ -41,43 +38,55 @@ function calculateRemainingCost(
       }
     }
   }
-
   return remaining
 }
 
-const COLOR_CSS: Record<string, string> = {
-  W: '#f8f6d8',
-  U: '#0e68ab',
-  B: '#150b00',
-  R: '#d3202a',
-  G: '#00733e',
-}
-
 /**
- * MTG Arena-style Delve selector overlay.
- * Shown when casting spells with Delve to select graveyard cards to exile.
+ * Delve selector overlay.
+ * Shows graveyard cards to exile for delve with a castability indicator
+ * showing remaining mana cost and how many more cards to exile to cast.
+ * The minimum delve needed is computed server-side by the mana solver.
  */
 export function DelveSelector() {
   const delveSelectionState = useGameStore((state) => state.delveSelectionState)
   const toggleDelveCard = useGameStore((state) => state.toggleDelveCard)
   const cancelDelveSelection = useGameStore((state) => state.cancelDelveSelection)
   const confirmDelveSelection = useGameStore((state) => state.confirmDelveSelection)
+  const [viewingBattlefield, setViewingBattlefield] = useState(false)
 
   const originalSymbols = useMemo(() => {
     if (!delveSelectionState) return []
     return parseManaCost(delveSelectionState.manaCost)
   }, [delveSelectionState?.manaCost])
 
-  const remainingSymbols = useMemo(() => {
-    if (!delveSelectionState) return []
-    return calculateRemainingCost(originalSymbols, delveSelectionState.selectedCards.length)
-  }, [originalSymbols, delveSelectionState?.selectedCards])
+  const castInfo = useMemo(() => {
+    if (!delveSelectionState) return null
+    const { selectedCards: selected, minDelveNeeded } = delveSelectionState
+    const delveCount = selected.length
+    const remainingSymbols = getRemainingCostSymbols(originalSymbols, delveCount)
+    const isCastable = delveCount >= minDelveNeeded
+    const moreNeeded = Math.max(0, minDelveNeeded - delveCount)
+    return { remainingSymbols, isCastable, moreNeeded, minDelveNeeded }
+  }, [originalSymbols, delveSelectionState?.selectedCards, delveSelectionState?.minDelveNeeded])
 
   if (!delveSelectionState) return null
 
   const { cardName, validCards, selectedCards, maxDelve } = delveSelectionState
-
   const isCardSelected = (eid: EntityId) => selectedCards.includes(eid)
+
+  // When viewing battlefield, show just a floating return button
+  if (viewingBattlefield) {
+    return (
+      <div style={styles.floatingReturn}>
+        <button
+          onClick={() => setViewingBattlefield(false)}
+          style={styles.returnButton}
+        >
+          Back to Delve
+        </button>
+      </div>
+    )
+  }
 
   return (
     <div style={styles.overlay}>
@@ -85,28 +94,38 @@ export function DelveSelector() {
         <h2 style={styles.title}>Delve</h2>
         <p style={styles.cardName}>{cardName}</p>
 
-        <div style={styles.costSection}>
-          <div style={styles.costRow}>
-            <span style={styles.costLabel}>Original Cost:</span>
-            <div style={styles.manaSymbols}>
-              {originalSymbols.map((symbol, i) => (
-                <ManaSymbol key={i} symbol={symbol} />
-              ))}
+        {/* Castability status */}
+        {castInfo && (
+          <div style={{
+            ...styles.castStatus,
+            borderColor: castInfo.isCastable ? 'rgba(74, 222, 128, 0.5)' : 'rgba(255, 255, 255, 0.15)',
+          }}>
+            <div style={styles.castStatusRow}>
+              <span style={styles.castStatusLabel}>Remaining cost:</span>
+              <div style={styles.manaSymbols}>
+                {castInfo.remainingSymbols.length > 0 ? (
+                  castInfo.remainingSymbols.map((symbol, i) => (
+                    <ManaSymbol key={i} symbol={symbol} size={20} />
+                  ))
+                ) : (
+                  <span style={{ color: '#4ade80', fontWeight: 600, fontSize: 14 }}>Free!</span>
+                )}
+              </div>
+            </div>
+            <div style={{
+              color: castInfo.isCastable ? '#4ade80' : '#fbbf24',
+              fontSize: 13,
+              fontWeight: 600,
+              textAlign: 'center',
+              marginTop: 6,
+            }}>
+              {castInfo.isCastable
+                ? `Castable (minimum ${castInfo.minDelveNeeded} card${castInfo.minDelveNeeded !== 1 ? 's' : ''})`
+                : `Exile ${castInfo.moreNeeded} more card${castInfo.moreNeeded !== 1 ? 's' : ''} to cast (minimum ${castInfo.minDelveNeeded})`
+              }
             </div>
           </div>
-          <div style={styles.costRow}>
-            <span style={styles.costLabel}>Remaining:</span>
-            <div style={styles.manaSymbols}>
-              {remainingSymbols.length > 0 ? (
-                remainingSymbols.map((symbol, i) => (
-                  <ManaSymbol key={i} symbol={symbol} />
-                ))
-              ) : (
-                <span style={styles.freeCast}>Free!</span>
-              )}
-            </div>
-          </div>
-        </div>
+        )}
 
         <div style={styles.cardsSection}>
           <p style={styles.cardsLabel}>
@@ -143,6 +162,12 @@ export function DelveSelector() {
         </p>
 
         <div style={styles.buttonRow}>
+          <button
+            onClick={() => setViewingBattlefield(true)}
+            style={styles.viewBattlefieldButton}
+          >
+            View Battlefield
+          </button>
           <button onClick={cancelDelveSelection} style={styles.cancelButton}>
             Cancel
           </button>
@@ -205,25 +230,6 @@ function DelveCard({
   )
 }
 
-/**
- * Renders a single mana symbol.
- */
-function ManaSymbol({ symbol }: { symbol: string }) {
-  const isColor = Object.keys(COLOR_CSS).includes(symbol)
-
-  return (
-    <span
-      style={{
-        ...styles.manaSymbol,
-        backgroundColor: isColor ? COLOR_CSS[symbol] : '#888',
-        color: isColor && (symbol === 'W' || symbol === 'G') ? '#000' : '#fff',
-      }}
-    >
-      {symbol}
-    </span>
-  )
-}
-
 const styles: Record<string, React.CSSProperties> = {
   overlay: {
     position: 'absolute',
@@ -255,46 +261,32 @@ const styles: Record<string, React.CSSProperties> = {
     textAlign: 'center',
   },
   cardName: {
-    margin: '0 0 20px 0',
+    margin: '0 0 16px 0',
     color: '#aaa',
     fontSize: 16,
     textAlign: 'center',
     fontStyle: 'italic',
   },
-  costSection: {
-    marginBottom: 20,
-    padding: 16,
+  castStatus: {
+    marginBottom: 16,
+    padding: '12px 16px',
     backgroundColor: '#252540',
     borderRadius: 8,
+    border: '1px solid rgba(255, 255, 255, 0.15)',
   },
-  costRow: {
+  castStatusRow: {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 8,
   },
-  costLabel: {
+  castStatusLabel: {
     color: '#888',
     fontSize: 14,
   },
   manaSymbols: {
     display: 'flex',
-    gap: 4,
-  },
-  manaSymbol: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    display: 'flex',
+    gap: 3,
     alignItems: 'center',
-    justifyContent: 'center',
-    fontSize: 12,
-    fontWeight: 'bold',
-  },
-  freeCast: {
-    color: '#4caf50',
-    fontWeight: 'bold',
-    fontSize: 14,
   },
   cardsSection: {
     marginBottom: 16,
@@ -388,6 +380,17 @@ const styles: Record<string, React.CSSProperties> = {
     gap: 12,
     justifyContent: 'center',
   },
+  viewBattlefieldButton: {
+    padding: '10px 24px',
+    fontSize: 16,
+    fontWeight: 600,
+    backgroundColor: '#3b82f6',
+    color: '#fff',
+    border: 'none',
+    borderRadius: 8,
+    cursor: 'pointer',
+    minWidth: 120,
+  },
   cancelButton: {
     padding: '10px 24px',
     fontSize: 16,
@@ -405,5 +408,25 @@ const styles: Record<string, React.CSSProperties> = {
     border: 'none',
     borderRadius: 8,
     cursor: 'pointer',
+  },
+  // Floating return button (visible when viewing battlefield)
+  floatingReturn: {
+    position: 'fixed',
+    bottom: 70,
+    left: '50%',
+    transform: 'translateX(-50%)',
+    zIndex: 1500,
+  },
+  returnButton: {
+    padding: '10px 24px',
+    fontSize: 16,
+    fontWeight: 600,
+    backgroundColor: '#3b82f6',
+    color: '#fff',
+    border: 'none',
+    borderRadius: 8,
+    cursor: 'pointer',
+    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.5)',
+    whiteSpace: 'nowrap',
   },
 }
