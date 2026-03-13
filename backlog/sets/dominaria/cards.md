@@ -2,7 +2,7 @@
 
 **Set Size:** 280 cards (249 unique card names + basic land variants)
 **Release Date:** April 27, 2018
-**Implemented:** 126 / 249
+**Implemented:** 127 / 249
 
 | Color      | Total | Done |
 |------------|-------|------|
@@ -10,7 +10,7 @@
 | Blue       | 37    | 19   |
 | Black      | 38    | 20   |
 | Red        | 38    | 21   |
-| Green      | 37    | 19   |
+| Green      | 37    | 20   |
 | Multicolor | 19    | 8    |
 | Colorless  | 30    | 13   |
 | Land       | 12    | 5    |
@@ -219,7 +219,7 @@
 - [x] Tatyova, Benthic Druid
 - [ ] Teferi, Hero of Dominaria
 - [x] Tempest Djinn
-- [ ] Territorial Allosaurus
+- [x] Territorial Allosaurus
 - [ ] Teshar, Ancestor's Apostle
 - [x] Tetsuko Umezawa, Fugitive
 - [ ] Thallid Omnivore
