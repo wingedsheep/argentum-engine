@@ -39,6 +39,7 @@ data class TriggeredAbilityOnStackComponent(
     val description: String,
     val triggerDamageAmount: Int? = null,
     val triggeringEntityId: EntityId? = null,
+    val triggeringPlayerId: EntityId? = null,
     val xValue: Int? = null,
     val triggerCounterCount: Int? = null
 ) : Component {

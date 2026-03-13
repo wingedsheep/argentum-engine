@@ -214,6 +214,7 @@ class ContinuationHandler(
                     description = continuation.description,
                     triggerDamageAmount = continuation.triggerDamageAmount,
                     triggeringEntityId = continuation.triggeringEntityId,
+                    triggeringPlayerId = continuation.triggeringPlayerId,
                     triggerCounterCount = continuation.triggerCounterCount
                 )
                 val stackResult = stackResolver.putTriggeredAbility(state, elseComponent, emptyList())
@@ -231,6 +232,7 @@ class ContinuationHandler(
             description = continuation.description,
             triggerDamageAmount = continuation.triggerDamageAmount,
             triggeringEntityId = continuation.triggeringEntityId,
+            triggeringPlayerId = continuation.triggeringPlayerId,
             triggerCounterCount = continuation.triggerCounterCount
         )
 

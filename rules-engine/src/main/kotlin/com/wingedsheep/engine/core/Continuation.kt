@@ -104,6 +104,7 @@ data class TriggeredAbilityContinuation(
     val description: String,
     val triggerDamageAmount: Int? = null,
     val triggeringEntityId: EntityId? = null,
+    val triggeringPlayerId: EntityId? = null,
     val elseEffect: Effect? = null,
     val targetRequirements: List<TargetRequirement> = emptyList(),
     val triggerCounterCount: Int? = null

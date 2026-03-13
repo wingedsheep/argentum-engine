@@ -379,6 +379,7 @@ class TriggerProcessor(
             description = ability.description,
             triggerDamageAmount = trigger.triggerContext.damageAmount,
             triggeringEntityId = trigger.triggerContext.triggeringEntityId,
+            triggeringPlayerId = trigger.triggerContext.triggeringPlayerId,
             elseEffect = ability.elseEffect,
             targetRequirements = allRequirements,
             triggerCounterCount = trigger.triggerContext.counterCount
@@ -417,6 +418,7 @@ class TriggerProcessor(
             description = ability.description,
             triggerDamageAmount = trigger.triggerContext.damageAmount,
             triggeringEntityId = trigger.triggerContext.triggeringEntityId,
+            triggeringPlayerId = trigger.triggerContext.triggeringPlayerId,
             xValue = trigger.triggerContext.xValue,
             triggerCounterCount = trigger.triggerContext.counterCount
         )
