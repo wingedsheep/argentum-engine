@@ -168,6 +168,8 @@ export interface RetapSelectionState {
   xValue: number
   /** Color production per source: entityId -> list of color symbols (W/U/B/R/G) */
   sourceColors: Readonly<Record<EntityId, readonly string[]>>
+  /** Mana amount per source: entityId -> amount (e.g., 3 for Gilded Lotus) */
+  sourceManaAmounts: Readonly<Record<EntityId, number>>
 }
 
 /**

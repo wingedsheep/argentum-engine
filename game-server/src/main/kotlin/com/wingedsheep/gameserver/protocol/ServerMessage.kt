@@ -142,7 +142,8 @@ sealed interface ServerMessage {
         val name: String,
         val imageUri: String? = null,
         val producesColors: List<String> = emptyList(),
-        val producesColorless: Boolean = false
+        val producesColorless: Boolean = false,
+        val manaAmount: Int = 1
     )
 
     /**

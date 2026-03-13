@@ -168,6 +168,7 @@ export interface RetapSourceInfo {
   readonly imageUri?: string | null
   readonly producesColors?: readonly string[]
   readonly producesColorless?: boolean
+  readonly manaAmount?: number
 }
 
 /**

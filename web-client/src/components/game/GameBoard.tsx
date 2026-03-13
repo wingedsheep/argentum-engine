@@ -139,10 +139,14 @@ export function GameBoard({ spectatorMode = false, topOffset = 0 }: GameBoardPro
 
     // Build source list: each source has the set of colors it can pay
     // A source that produces {W, B, G} can satisfy W, B, or G colored reqs, or 1 generic
+    // Multi-mana sources (e.g., Gilded Lotus producing 3) contribute multiple entries
     const sources: { colors: readonly string[] }[] = []
     for (const id of retapSelectionState.selectedSources) {
       const colors = retapSelectionState.sourceColors[id] ?? []
-      sources.push({ colors: colors.length > 0 ? colors : ['C'] })
+      const manaAmount = retapSelectionState.sourceManaAmounts?.[id] ?? 1
+      for (let i = 0; i < manaAmount; i++) {
+        sources.push({ colors: colors.length > 0 ? colors : ['C'] })
+      }
     }
 
     // Most-constrained-first: assign sources with fewest color options first

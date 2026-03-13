@@ -530,6 +530,8 @@ class ManaSolver(
                     }
                     is AddAnyColorManaEffect -> {
                         combinedColors.addAll(Color.entries)
+                        val manaAmount = (effect.amount as? DynamicAmount.Fixed)?.amount ?: 1
+                        maxManaAmount = maxOf(maxManaAmount, manaAmount)
                     }
                     else -> {}
                 }
@@ -804,7 +806,10 @@ class ManaSolver(
 
                 // Accumulate mana production
                 when (val effect = ability.effect) {
-                    is AddAnyColorManaEffect -> anyColorTotal += activationCount
+                    is AddAnyColorManaEffect -> {
+                        val amount = (effect.amount as? DynamicAmount.Fixed)?.amount ?: 1
+                        anyColorTotal += activationCount * amount
+                    }
                     is AddManaEffect -> {
                         val amount = (effect.amount as? DynamicAmount.Fixed)?.amount ?: 1
                         specificColorTotal[effect.color] =

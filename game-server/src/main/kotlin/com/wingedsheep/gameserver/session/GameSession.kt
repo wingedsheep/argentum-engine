@@ -676,7 +676,8 @@ class GameSession(
                         name = source.name,
                         imageUri = source.imageUri,
                         producesColors = source.producesColors,
-                        producesColorless = source.producesColorless
+                        producesColorless = source.producesColorless,
+                        manaAmount = source.manaAmount
                     )
                 },
                 xValue = it.xValue
@@ -901,7 +902,8 @@ class GameSession(
                 name = card.name,
                 imageUri = cardRegistry.getCard(card.cardDefinitionId)?.metadata?.imageUri,
                 producesColors = manaSource?.producesColors?.map { it.symbol.toString() } ?: emptyList(),
-                producesColorless = manaSource?.producesColorless ?: false
+                producesColorless = manaSource?.producesColorless ?: false,
+                manaAmount = manaSource?.manaAmount ?: 1
             )
         }
 
@@ -956,9 +958,9 @@ class GameSession(
             events.add(TappedEvent(source.entityId, source.name))
         }
 
-        // Deduct mana from pool (same logic as autoPay)
+        // Add mana from tapped sources to the pool, then deduct the cost
         val poolComponent = state.getEntity(playerId)?.get<ManaPoolComponent>() ?: ManaPoolComponent()
-        val pool = com.wingedsheep.engine.mechanics.mana.ManaPool(
+        var pool = com.wingedsheep.engine.mechanics.mana.ManaPool(
             white = poolComponent.white,
             blue = poolComponent.blue,
             black = poolComponent.black,
@@ -966,6 +968,18 @@ class GameSession(
             green = poolComponent.green,
             colorless = poolComponent.colorless
         )
+        for ((_, production) in solution.manaProduced) {
+            val color = production.color
+            if (color != null) {
+                pool = pool.add(color, production.amount)
+            }
+            if (production.colorless > 0) {
+                pool = pool.addColorless(production.colorless)
+            }
+        }
+        for ((color, amount) in solution.remainingBonusMana) {
+            pool = pool.add(color, amount)
+        }
         val partialResult = pool.payPartial(checkpoint.manaCost)
         var poolAfterPayment = partialResult.newPool
 
@@ -1096,7 +1110,8 @@ class GameSession(
         val name: String,
         val imageUri: String?,
         val producesColors: List<String> = emptyList(),
-        val producesColorless: Boolean = false
+        val producesColorless: Boolean = false,
+        val manaAmount: Int = 1
     )
 
     /**

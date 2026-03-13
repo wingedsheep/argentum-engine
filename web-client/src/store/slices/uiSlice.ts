@@ -1199,10 +1199,12 @@ export const createUISlice: SliceCreator<UISlice> = (set, get) => ({
     const { retapInfo } = get()
     if (!retapInfo) return
     const sourceColors: Record<string, readonly string[]> = {}
+    const sourceManaAmounts: Record<string, number> = {}
     for (const source of retapInfo.availableSources) {
       const colors: string[] = [...(source.producesColors ?? [])]
       if (source.producesColorless && colors.length === 0) colors.push('C')
       sourceColors[source.entityId] = colors
+      sourceManaAmounts[source.entityId] = source.manaAmount ?? 1
     }
     set({
       selectedCardId: null,
@@ -1213,6 +1215,7 @@ export const createUISlice: SliceCreator<UISlice> = (set, get) => ({
         manaCost: retapInfo.manaCost,
         xValue: retapInfo.xValue ?? 0,
         sourceColors,
+        sourceManaAmounts,
       },
     })
   },
