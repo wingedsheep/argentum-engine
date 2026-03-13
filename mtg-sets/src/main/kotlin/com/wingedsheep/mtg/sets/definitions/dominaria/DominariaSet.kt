@@ -165,6 +165,7 @@ object DominariaSet {
         WildOnslaught,
         WhisperBloodLiturgist,
         WindgraceAcolyte,
+        WizardsLightning,
         WizardsRetort,
         YargleGluttonOfUrborg,
         YavimayaSapherd,

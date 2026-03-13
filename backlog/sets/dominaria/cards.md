@@ -2,14 +2,14 @@
 
 **Set Size:** 280 cards (249 unique card names + basic land variants)
 **Release Date:** April 27, 2018
-**Implemented:** 149 / 249
+**Implemented:** 150 / 249
 
 | Color      | Total | Done |
 |------------|-------|------|
 | White      | 38    | 24   |
 | Blue       | 37    | 23   |
 | Black      | 38    | 23   |
-| Red        | 38    | 23   |
+| Red        | 38    | 24   |
 | Green      | 37    | 25   |
 | Multicolor | 19    | 10   |
 | Colorless  | 30    | 15   |
@@ -258,7 +258,7 @@
 - [x] Whisper, Blood Liturgist
 - [x] Wild Onslaught
 - [x] Windgrace Acolyte
-- [ ] Wizard's Lightning
+- [x] Wizard's Lightning
 - [x] Wizard's Retort
 - [ ] Woodland Cemetery
 - [x] Yargle, Glutton of Urborg
