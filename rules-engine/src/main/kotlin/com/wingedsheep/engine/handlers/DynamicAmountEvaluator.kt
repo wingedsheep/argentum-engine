@@ -3,6 +3,7 @@ package com.wingedsheep.engine.handlers
 import com.wingedsheep.engine.mechanics.layers.ProjectedState
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
+import com.wingedsheep.engine.state.components.battlefield.AttachmentsComponent
 import com.wingedsheep.engine.state.components.battlefield.CountersComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
@@ -285,6 +286,11 @@ class DynamicAmountEvaluator(
                         ?.get<com.wingedsheep.engine.state.components.player.NonTokenCreaturesDiedThisTurnComponent>()
                         ?.count ?: 0
                 }
+            }
+
+            is DynamicAmount.AttachmentsOnSelf -> {
+                val sourceId = context.sourceId ?: return 0
+                state.getEntity(sourceId)?.get<AttachmentsComponent>()?.attachedIds?.size ?: 0
             }
 
             is DynamicAmount.CreaturesSharingTypeWithTriggeringEntity -> {

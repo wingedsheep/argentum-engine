@@ -2,14 +2,14 @@
 
 **Set Size:** 280 cards (249 unique card names + basic land variants)
 **Release Date:** April 27, 2018
-**Implemented:** 153 / 249
+**Implemented:** 154 / 249
 
 | Color      | Total | Done |
 |------------|-------|------|
 | White      | 38    | 24   |
 | Blue       | 37    | 24   |
 | Black      | 38    | 24   |
-| Red        | 38    | 24   |
+| Red        | 38    | 25   |
 | Green      | 37    | 26   |
 | Multicolor | 19    | 10   |
 | Colorless  | 30    | 15   |
@@ -51,7 +51,7 @@
 - [x] Call the Cavalry
 - [x] Cast Down
 - [ ] Chainer's Torment
-- [ ] Champion of the Flame
+- [x] Champion of the Flame
 - [x] Charge
 - [ ] Clifftop Retreat
 - [x] Cloudreader Sphinx

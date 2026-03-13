@@ -46,6 +46,7 @@ object DominariaSet {
         CabalPaladin,
         CabalEvangel,
         CastDown,
+        ChampionOfTheFlame,
         Charge,
         CloudreaderSphinx,
         ColdWaterSnapper,

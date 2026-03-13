@@ -592,6 +592,17 @@ sealed interface DynamicAmount : TextReplaceable<DynamicAmount> {
     }
 
     /**
+     * Count of Auras and Equipment attached to the source entity.
+     * Used for effects like Champion of the Flame: "gets +2/+2 for each Aura and Equipment attached to it."
+     */
+    @SerialName("AttachmentsOnSelf")
+    @Serializable
+    data object AttachmentsOnSelf : DynamicAmount {
+        override val description: String = "the number of Auras and Equipment attached to it"
+        override fun applyTextReplacement(replacer: TextReplacer): DynamicAmount = this
+    }
+
+    /**
      * Count of nontoken creatures put into a player's graveyard from the battlefield this turn.
      * Used for Caller of the Claw: "create a 2/2 green Bear creature token for each nontoken creature
      * put into your graveyard from the battlefield this turn."
