@@ -351,6 +351,16 @@ sealed interface KeywordAbility {
     }
 
     /**
+     * Kicker with a non-mana additional cost (e.g., sacrifice a creature).
+     * "Kicker—Sacrifice a creature."
+     */
+    @SerialName("KickerWithAdditionalCost")
+    @Serializable
+    data class KickerWithAdditionalCost(val cost: AdditionalCost) : KeywordAbility {
+        override val description: String = "Kicker—${cost.description}"
+    }
+
+    /**
      * Multikicker with a mana cost.
      * "Multikicker {1}{W}"
      */

@@ -495,9 +495,13 @@ class LegalActionsCalculator(
             if (cantCastSpells) continue
 
             val cardDef = cardRegistry.getCard(cardComponent.name) ?: continue
-            val kickerAbility = cardDef.keywordAbilities
+            val manaKicker = cardDef.keywordAbilities
                 .filterIsInstance<com.wingedsheep.sdk.scripting.KeywordAbility.Kicker>()
-                .firstOrNull() ?: continue
+                .firstOrNull()
+            val additionalCostKicker = cardDef.keywordAbilities
+                .filterIsInstance<com.wingedsheep.sdk.scripting.KeywordAbility.KickerWithAdditionalCost>()
+                .firstOrNull()
+            if (manaKicker == null && additionalCostKicker == null) continue
 
             // Check timing (same rules as normal cast)
             val isInstant = cardComponent.typeLine.isInstant
@@ -509,13 +513,41 @@ class LegalActionsCalculator(
             val castRestrictions = cardDef.script.castRestrictions
             if (castRestrictions.isNotEmpty() && !checkCastRestrictions(state, playerId, castRestrictions)) continue
 
-            // Calculate kicked cost = base effective cost + kicker cost
+            // Calculate kicked cost
             val baseCost = costCalculator.calculateEffectiveCost(state, cardDef, playerId)
-            val kickedCost = com.wingedsheep.sdk.core.ManaCost(baseCost.symbols + kickerAbility.cost.symbols)
-            val canAffordKicked = manaSolver.canPay(state, playerId, kickedCost)
+            val kickedCost = if (manaKicker != null) {
+                com.wingedsheep.sdk.core.ManaCost(baseCost.symbols + manaKicker.cost.symbols)
+            } else {
+                baseCost // No extra mana for additional-cost kicker
+            }
+            val canAffordKickedMana = manaSolver.canPay(state, playerId, kickedCost)
             val kickedCostString = kickedCost.toString()
             val kickedAutoTapSolution = manaSolver.solve(state, playerId, kickedCost)
             val kickedAutoTapPreview = kickedAutoTapSolution?.sources?.map { it.entityId }
+
+            // Check additional cost payability (e.g., sacrifice a creature)
+            var kickerCostInfo: AdditionalCostInfo? = null
+            var canPayKickerAdditionalCost = true
+            if (additionalCostKicker != null) {
+                when (val cost = additionalCostKicker.cost) {
+                    is com.wingedsheep.sdk.scripting.AdditionalCost.SacrificePermanent -> {
+                        val validSacTargets = findSacrificeTargets(state, playerId, cost)
+                        if (validSacTargets.size < cost.count) {
+                            canPayKickerAdditionalCost = false
+                        } else {
+                            kickerCostInfo = AdditionalCostInfo(
+                                description = cost.description,
+                                costType = "SacrificePermanent",
+                                validSacrificeTargets = validSacTargets,
+                                sacrificeCount = cost.count
+                            )
+                        }
+                    }
+                    else -> {}
+                }
+            }
+
+            val canAffordKicked = canAffordKickedMana && canPayKickerAdditionalCost
 
             // Build target info (same targets as normal cast)
             val targetReqs = buildList {
@@ -553,7 +585,8 @@ class LegalActionsCalculator(
                             action = CastSpell(playerId, cardId, targets = listOf(autoSelectedTarget), wasKicked = true),
                             isAffordable = canAffordKicked,
                             manaCostString = kickedCostString,
-                            autoTapPreview = kickedAutoTapPreview
+                            autoTapPreview = kickedAutoTapPreview,
+                            additionalCostInfo = kickerCostInfo
                         ))
                     } else {
                         result.add(LegalActionInfo(
@@ -568,7 +601,8 @@ class LegalActionsCalculator(
                             targetRequirements = if (targetReqInfos.size > 1) targetReqInfos else null,
                             isAffordable = canAffordKicked,
                             manaCostString = kickedCostString,
-                            autoTapPreview = kickedAutoTapPreview
+                            autoTapPreview = kickedAutoTapPreview,
+                            additionalCostInfo = kickerCostInfo
                         ))
                     }
                 }
@@ -579,7 +613,8 @@ class LegalActionsCalculator(
                     action = CastSpell(playerId, cardId, wasKicked = true),
                     isAffordable = canAffordKicked,
                     manaCostString = kickedCostString,
-                    autoTapPreview = kickedAutoTapPreview
+                    autoTapPreview = kickedAutoTapPreview,
+                    additionalCostInfo = kickerCostInfo
                 ))
             }
 

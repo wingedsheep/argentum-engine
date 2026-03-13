@@ -135,6 +135,7 @@ object DominariaSet {
         TragicPoet,
         UntamedKavu,
         VerdantForce,
+        ViciousOffering,
         VoltaicServant,
         WarlordsFury,
         WeightOfMemory,

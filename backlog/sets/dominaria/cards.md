@@ -2,13 +2,13 @@
 
 **Set Size:** 280 cards (249 unique card names + basic land variants)
 **Release Date:** April 27, 2018
-**Implemented:** 124 / 249
+**Implemented:** 125 / 249
 
 | Color      | Total | Done |
 |------------|-------|------|
 | White      | 38    | 20   |
 | Blue       | 37    | 19   |
-| Black      | 38    | 19   |
+| Black      | 38    | 20   |
 | Red        | 38    | 21   |
 | Green      | 37    | 19   |
 | Multicolor | 19    | 7    |
@@ -248,7 +248,7 @@
 - [ ] Valduk, Keeper of the Flame
 - [x] Verdant Force
 - [ ] Verix Bladewing
-- [ ] Vicious Offering
+- [x] Vicious Offering
 - [ ] Vodalian Arcanist
 - [x] Voltaic Servant
 - [ ] Warcry Phoenix

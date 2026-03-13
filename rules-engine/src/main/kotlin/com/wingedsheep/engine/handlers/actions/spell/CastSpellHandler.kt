@@ -144,10 +144,19 @@ class CastSpellHandler(
             }
         }
 
-        // Validate kicker: card must have Kicker keyword ability
+        // Validate kicker: card must have Kicker or KickerWithAdditionalCost keyword ability
         if (action.wasKicked && cardDef != null) {
-            val kickerAbility = cardDef.keywordAbilities.filterIsInstance<KeywordAbility.Kicker>().firstOrNull()
-                ?: return "This card does not have kicker"
+            val hasKicker = cardDef.keywordAbilities.any { it is KeywordAbility.Kicker || it is KeywordAbility.KickerWithAdditionalCost }
+            if (!hasKicker) return "This card does not have kicker"
+
+            // Validate kicker additional cost (sacrifice, etc.)
+            val kickerAdditionalCost = cardDef.keywordAbilities
+                .filterIsInstance<KeywordAbility.KickerWithAdditionalCost>()
+                .firstOrNull()
+            if (kickerAdditionalCost != null) {
+                val kickerCostError = validateAdditionalCosts(state, listOf(kickerAdditionalCost.cost), action)
+                if (kickerCostError != null) return kickerCostError
+            }
         }
 
         // Calculate effective cost (free if PlayWithoutPayingCostComponent is present)
@@ -160,10 +169,12 @@ class CastSpellHandler(
             cardComponent.manaCost
         }
 
-        // Add kicker cost if kicked
+        // Add kicker mana cost if kicked (only for mana-based kicker)
         if (action.wasKicked && !playForFree && cardDef != null) {
-            val kickerAbility = cardDef.keywordAbilities.filterIsInstance<KeywordAbility.Kicker>().first()
-            effectiveCost = ManaCost(effectiveCost.symbols + kickerAbility.cost.symbols)
+            val kickerAbility = cardDef.keywordAbilities.filterIsInstance<KeywordAbility.Kicker>().firstOrNull()
+            if (kickerAbility != null) {
+                effectiveCost = ManaCost(effectiveCost.symbols + kickerAbility.cost.symbols)
+            }
         }
 
         // Account for Delve/Convoke reduction before validating payment
@@ -466,16 +477,30 @@ class CastSpellHandler(
 
         // Add kicker cost if kicked
         if (action.wasKicked && !playForFreeInExecute && cardDef != null) {
-            val kickerAbility = cardDef.keywordAbilities.filterIsInstance<KeywordAbility.Kicker>().first()
-            effectiveCost = ManaCost(effectiveCost.symbols + kickerAbility.cost.symbols)
+            val kickerAbility = cardDef.keywordAbilities.filterIsInstance<KeywordAbility.Kicker>().firstOrNull()
+            if (kickerAbility != null) {
+                effectiveCost = ManaCost(effectiveCost.symbols + kickerAbility.cost.symbols)
+            }
         }
 
         // Process additional costs (sacrifice, exile, etc.)
         val sacrificedPermanentIds = mutableListOf<EntityId>()
         val sacrificedPermanentSubtypes = mutableMapOf<EntityId, Set<String>>()
         var exiledCardCount = 0
-        if (cardDef != null && action.additionalCostPayment != null) {
-            for (additionalCost in cardDef.script.additionalCosts) {
+
+        // Collect all additional costs: script costs + kicker additional cost (if kicked)
+        val allAdditionalCosts = buildList {
+            if (cardDef != null) addAll(cardDef.script.additionalCosts)
+            if (action.wasKicked && cardDef != null) {
+                val kickerAdditionalCost = cardDef.keywordAbilities
+                    .filterIsInstance<KeywordAbility.KickerWithAdditionalCost>()
+                    .firstOrNull()
+                if (kickerAdditionalCost != null) add(kickerAdditionalCost.cost)
+            }
+        }
+
+        if (allAdditionalCosts.isNotEmpty() && action.additionalCostPayment != null) {
+            for (additionalCost in allAdditionalCosts) {
                 when (additionalCost) {
                     is AdditionalCost.SacrificePermanent -> {
                         // Project state to capture text-changed subtypes before sacrifice
