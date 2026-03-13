@@ -516,7 +516,7 @@ class LegalActionsCalculator(
             // Calculate kicked cost
             val baseCost = costCalculator.calculateEffectiveCost(state, cardDef, playerId)
             val kickedCost = if (manaKicker != null) {
-                com.wingedsheep.sdk.core.ManaCost(baseCost.symbols + manaKicker.cost.symbols)
+                baseCost + manaKicker.cost
             } else {
                 baseCost // No extra mana for additional-cost kicker
             }

@@ -41,6 +41,14 @@ data class ManaCost(val symbols: List<ManaSymbol>) {
 
     fun isEmpty(): Boolean = symbols.isEmpty()
 
+    operator fun plus(other: ManaCost): ManaCost {
+        val mergedGeneric = this.genericAmount + other.genericAmount
+        val nonGeneric = this.symbols.filterNot { it is ManaSymbol.Generic } +
+            other.symbols.filterNot { it is ManaSymbol.Generic }
+        val genericSymbol = if (mergedGeneric > 0) listOf(ManaSymbol.generic(mergedGeneric)) else emptyList()
+        return ManaCost(genericSymbol + nonGeneric)
+    }
+
     override fun toString(): String = symbols.joinToString("")
 
     companion object {
