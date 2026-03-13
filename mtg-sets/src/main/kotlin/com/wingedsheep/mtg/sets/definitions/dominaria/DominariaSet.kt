@@ -48,6 +48,7 @@ object DominariaSet {
         CloudreaderSphinx,
         ColdWaterSnapper,
         DAvenantTrapper,
+        DarigaazReincarnated,
         DaringArchaeologist,
         DarkBargain,
         DeathbloomThallid,

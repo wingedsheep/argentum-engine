@@ -632,7 +632,7 @@ class MoveCollectionExecutor(
             // Apply additional replacement effect (e.g., Ugin's Nexus extra turn)
             if (redirectResult.additionalEffect != null) {
                 newState = EffectExecutorUtils.applyReplacementAdditionalEffect(
-                    newState, redirectResult.additionalEffect, redirectResult.effectControllerId
+                    newState, redirectResult.additionalEffect, redirectResult.effectControllerId, cardId
                 )
             }
         }

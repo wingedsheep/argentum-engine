@@ -109,7 +109,7 @@ class StateBasedContinuationResumer(
         // Apply additional replacement effect if any
         if (redirectResult.additionalEffect != null) {
             newState = EffectExecutorUtils.applyReplacementAdditionalEffect(
-                newState, redirectResult.additionalEffect, redirectResult.effectControllerId
+                newState, redirectResult.additionalEffect, redirectResult.effectControllerId, entityId
             )
         }
 

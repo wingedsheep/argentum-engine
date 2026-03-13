@@ -464,6 +464,34 @@ class TriggerDetector(
             }
         }
 
+        // Check exiled cards for step-based triggers with activeZone == EXILE
+        for (playerId in state.turnOrder) {
+            for (entityId in state.getExile(playerId)) {
+                val container = state.getEntity(entityId) ?: continue
+                val cardComponent = container.get<CardComponent>() ?: continue
+
+                val abilities = getTriggeredAbilities(entityId, cardComponent.cardDefinitionId, state)
+
+                for (ability in abilities) {
+                    if (ability.activeZone != Zone.EXILE) continue
+                    val ownerId = cardComponent.ownerId
+                        ?: container.get<OwnerComponent>()?.playerId
+                        ?: continue
+                    if (matchesStepTrigger(ability.trigger, step, ownerId, activePlayerId)) {
+                        triggers.add(
+                            PendingTrigger(
+                                ability = ability,
+                                sourceId = entityId,
+                                sourceName = cardComponent.name,
+                                controllerId = ownerId,
+                                triggerContext = TriggerContext(step = step, triggeringEntityId = activePlayerId)
+                            )
+                        )
+                    }
+                }
+            }
+        }
+
         // Check global granted triggered abilities for step-based triggers
         // (e.g., Dimensional Breach creates a permanent global upkeep trigger)
         for (global in state.globalGrantedTriggeredAbilities) {

@@ -708,10 +708,10 @@ class StateBasedActionChecker(
             }
         }
 
-        // Apply additional replacement effect (e.g., Ugin's Nexus extra turn)
+        // Apply additional replacement effect (e.g., Ugin's Nexus extra turn, Darigaaz egg counters)
         if (redirectResult.additionalEffect != null) {
             newState = EffectExecutorUtils.applyReplacementAdditionalEffect(
-                newState, redirectResult.additionalEffect, redirectResult.effectControllerId
+                newState, redirectResult.additionalEffect, redirectResult.effectControllerId, entityId
             )
         }
 

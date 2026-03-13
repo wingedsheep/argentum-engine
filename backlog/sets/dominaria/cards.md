@@ -2,7 +2,7 @@
 
 **Set Size:** 280 cards (249 unique card names + basic land variants)
 **Release Date:** April 27, 2018
-**Implemented:** 142 / 249
+**Implemented:** 143 / 249
 
 | Color      | Total | Done |
 |------------|-------|------|
@@ -11,7 +11,7 @@
 | Black      | 38    | 23   |
 | Red        | 38    | 22   |
 | Green      | 37    | 22   |
-| Multicolor | 19    | 9    |
+| Multicolor | 19    | 10   |
 | Colorless  | 30    | 14   |
 | Land       | 12    | 5    |
 
@@ -61,7 +61,7 @@
 - [x] D'Avenant Trapper
 - [ ] Damping Sphere
 - [ ] Danitha Capashen, Paragon
-- [ ] Darigaaz Reincarnated
+- [x] Darigaaz Reincarnated
 - [x] Daring Archaeologist
 - [x] Dark Bargain
 - [ ] Dauntless Bodyguard

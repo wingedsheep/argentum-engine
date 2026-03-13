@@ -610,10 +610,10 @@ object EffectExecutorUtils {
         // Remove floating effects targeting this entity (Rule 400.7)
         newState = removeFloatingEffectsTargeting(newState, entityId)
 
-        // Apply additional replacement effect (e.g., Ugin's Nexus extra turn)
+        // Apply additional replacement effect (e.g., Ugin's Nexus extra turn, Darigaaz egg counters)
         if (redirectResult.additionalEffect != null) {
             newState = applyReplacementAdditionalEffect(
-                newState, redirectResult.additionalEffect, redirectResult.effectControllerId
+                newState, redirectResult.additionalEffect, redirectResult.effectControllerId, entityId
             )
         }
 
@@ -852,14 +852,15 @@ object EffectExecutorUtils {
 
     /**
      * Apply the additional effect from a RedirectZoneChangeWithEffect replacement.
-     * Currently supports TakeExtraTurnEffect (used by Ugin's Nexus).
+     * Supports TakeExtraTurnEffect (Ugin's Nexus) and AddCountersEffect (Darigaaz Reincarnated).
      *
-     * Checks for PreventExtraTurns replacement effects before applying extra turns.
+     * @param entityId The entity that was redirected (for effects that target it, like adding counters)
      */
     fun applyReplacementAdditionalEffect(
         state: GameState,
         effect: com.wingedsheep.sdk.scripting.effects.Effect,
-        controllerId: EntityId?
+        controllerId: EntityId?,
+        entityId: EntityId? = null
     ): GameState {
         if (effect is com.wingedsheep.sdk.scripting.effects.TakeExtraTurnEffect) {
             // Check if extra turns are prevented by any permanent on the battlefield
@@ -869,6 +870,23 @@ object EffectExecutorUtils {
             val opponentId = state.getOpponent(cid) ?: return state
             return state.updateEntity(opponentId) { container ->
                 container.with(SkipNextTurnComponent)
+            }
+        }
+        if (effect is com.wingedsheep.sdk.scripting.effects.AddCountersEffect && entityId != null) {
+            val counterType = try {
+                com.wingedsheep.sdk.core.CounterType.valueOf(
+                    effect.counterType.uppercase()
+                        .replace(' ', '_')
+                        .replace('+', 'P')
+                        .replace('-', 'M')
+                        .replace("/", "_")
+                )
+            } catch (_: IllegalArgumentException) {
+                com.wingedsheep.sdk.core.CounterType.PLUS_ONE_PLUS_ONE
+            }
+            val current = state.getEntity(entityId)?.get<CountersComponent>() ?: CountersComponent()
+            return state.updateEntity(entityId) { container ->
+                container.with(current.withAdded(counterType, effect.count))
             }
         }
         return state
