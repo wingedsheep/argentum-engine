@@ -2,6 +2,7 @@ package com.wingedsheep.engine.core
 
 import com.wingedsheep.sdk.core.Phase
 import com.wingedsheep.sdk.core.Step
+import com.wingedsheep.sdk.core.TypeLine
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
 import kotlinx.serialization.SerialName
@@ -34,7 +35,9 @@ data class ZoneChangeEvent(
     /** The original card name when this permanent entered as a copy (e.g., "Clever Impersonator") */
     val copyOfOriginalName: String? = null,
     /** For auras: the entity this aura was attached to when it left the battlefield (for "enchanted creature dies" triggers) */
-    val lastKnownAttachedTo: EntityId? = null
+    val lastKnownAttachedTo: EntityId? = null,
+    /** Last known type line when leaving battlefield (for trigger detection when entity has been cleaned up, e.g., tokens) */
+    val lastKnownTypeLine: TypeLine? = null
 ) : GameEvent
 
 // =============================================================================

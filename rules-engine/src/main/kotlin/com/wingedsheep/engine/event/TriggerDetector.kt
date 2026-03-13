@@ -1702,14 +1702,19 @@ class TriggerDetector(
         if (trigger.filter != GameObjectFilter.Any) {
             val projected = state.projectedState
             // Check card predicates (creature type, subtype, etc.)
+            // Note: entity may not exist in state if it was a token cleaned up by SBAs.
+            // In that case, fall back to lastKnownTypeLine from the event.
+            val entity = state.getEntity(event.entityId)
+            val cardComponent = entity?.get<CardComponent>()
+            val typeLine = cardComponent?.typeLine ?: event.lastKnownTypeLine
+            val isFaceDown = entity?.has<FaceDownComponent>() == true
+
             for (predicate in trigger.filter.cardPredicates) {
                 when (predicate) {
                     is com.wingedsheep.sdk.scripting.predicates.CardPredicate.IsCreature -> {
                         // For dying creatures: use base state (they're already in graveyard)
                         // Face-down permanents are 2/2 creatures (Rule 707.2) and count.
-                        val entity = state.getEntity(event.entityId) ?: return false
-                        val isFaceDown = entity.has<FaceDownComponent>()
-                        val isCreature = isFaceDown || entity.get<CardComponent>()?.typeLine?.isCreature == true
+                        val isCreature = isFaceDown || typeLine?.isCreature == true
                         if (!isCreature) return false
                     }
                     is com.wingedsheep.sdk.scripting.predicates.CardPredicate.HasSubtype -> {
@@ -1718,17 +1723,14 @@ class TriggerDetector(
                         if (event.toZone == Zone.BATTLEFIELD) {
                             if (!projected.hasSubtype(event.entityId, predicate.subtype.value)) return false
                         } else {
-                            val entity = state.getEntity(event.entityId) ?: return false
-                            if (entity.has<FaceDownComponent>()) return false
-                            val cardComponent = entity.get<CardComponent>() ?: return false
-                            if (!cardComponent.typeLine.hasSubtype(predicate.subtype)) return false
+                            if (isFaceDown) return false
+                            if (typeLine == null) return false
+                            if (!typeLine.hasSubtype(predicate.subtype)) return false
                         }
                     }
                     else -> {
                         // For other predicates, check the entity's type
-                        val entity = state.getEntity(event.entityId) ?: return false
-                        val cardComponent = entity.get<CardComponent>() ?: return false
-                        val isFaceDown = entity.has<FaceDownComponent>()
+                        if (cardComponent == null) return false
                         if (!matchesCardPredicate(predicate, cardComponent, projected, event.entityId, isFaceDown)) return false
                     }
                 }

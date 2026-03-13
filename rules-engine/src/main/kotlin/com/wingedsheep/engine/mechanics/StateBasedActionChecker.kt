@@ -680,7 +680,8 @@ class StateBasedActionChecker(
                 Zone.BATTLEFIELD,
                 destinationZone,
                 ownerId,
-                lastKnownCounterCount = lastKnownCounterCount
+                lastKnownCounterCount = lastKnownCounterCount,
+                lastKnownTypeLine = cardComponent.typeLine
             )
         )
 

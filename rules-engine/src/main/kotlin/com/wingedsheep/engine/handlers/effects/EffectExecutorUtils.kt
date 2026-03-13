@@ -624,7 +624,8 @@ object EffectExecutorUtils {
                     Zone.BATTLEFIELD,
                     destinationZone,
                     ownerId,
-                    lastKnownCounterCount = lastKnownCounterCount
+                    lastKnownCounterCount = lastKnownCounterCount,
+                    lastKnownTypeLine = cardComponent.typeLine
                 )
             )
         )
@@ -1328,7 +1329,8 @@ object EffectExecutorUtils {
                                 entityName,
                                 Zone.BATTLEFIELD,
                                 Zone.GRAVEYARD,
-                                ownerId
+                                ownerId,
+                                lastKnownTypeLine = container.get<CardComponent>()?.typeLine
                             )
                         )
                     }
@@ -1483,7 +1485,8 @@ object EffectExecutorUtils {
                     Zone.BATTLEFIELD,
                     targetZone,
                     ownerId,
-                    lastKnownCounterCount = lastKnownCounterCount
+                    lastKnownCounterCount = lastKnownCounterCount,
+                    lastKnownTypeLine = cardComponent.typeLine
                 )
             )
         )
