@@ -658,7 +658,7 @@ class CastSpellHandler(
         currentState = currentState.copy(spellsCastThisTurn = stormCount + 1)
 
         // Track spell types cast this turn (for conditional evasion like Relic Runner)
-        if (!action.castFaceDown && cardComponent != null) {
+        if (!action.castFaceDown) {
             val spellTypes = buildSet {
                 add("ANY")
                 if (cardComponent.typeLine.isCreature) add("CREATURE")
