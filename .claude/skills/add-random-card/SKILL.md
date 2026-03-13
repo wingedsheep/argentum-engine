@@ -1,6 +1,6 @@
 ---
 name: add-random-card
-description: Pick a random unimplemented card from a set backlog and implement it. Balances colours automatically.
+description: Pick a random unimplemented card from a set backlog and implement it.
 argument-hint: <path-to-backlog-cards.md>
 ---
 
@@ -12,13 +12,11 @@ Implement a random unimplemented card from the backlog file at `$ARGUMENTS`.
 
 1. Read the backlog markdown file provided as the argument (e.g., `backlog/sets/scourge/cards.md`).
 2. Parse the checklist: lines starting with `- [ ]` are unimplemented, `- [x]` are implemented.
-3. Count implemented cards per colour by looking up each implemented card's colour (use the colour counts table in the file header if present).
 
-## Step 2: Pick a Random Card (Colour-Balanced)
+## Step 2: Pick a Truly Random Card
 
-1. Identify which colour(s) have the **fewest** implemented cards from the header table.
-2. From the unimplemented cards (`- [ ]`), look up a handful of candidates on Scryfall to find their colours. Prefer cards from the under-represented colour(s).
-3. Among valid candidates, pick one **randomly** — don't always pick the first one. Prefer simpler cards (creatures, simple spells) over complex ones (Storm, multi-modal, planeswalkers) to keep implementation quick, but don't avoid complexity entirely.
+1. Collect all unimplemented cards (`- [ ]`) into a numbered list (0-indexed).
+2. Use `jot -r 1 0 <max_index>` to generate a true random index. Use that index to select the card — LLM "random" picks are not truly random.
 
 ## Step 3: Determine the Set Code
 
