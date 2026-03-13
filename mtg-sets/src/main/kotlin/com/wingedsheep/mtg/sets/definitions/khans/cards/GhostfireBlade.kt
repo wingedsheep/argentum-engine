@@ -39,6 +39,7 @@ val GhostfireBlade = card("Ghostfire Blade") {
     activatedAbility {
         cost = Costs.Mana("{3}")
         timing = TimingRule.SorcerySpeed
+        description = "Equip {3}"
         val creature = target("creature you control", Targets.CreatureYouControl)
         effect = Effects.AttachEquipment(creature)
     }
@@ -48,6 +49,7 @@ val GhostfireBlade = card("Ghostfire Blade") {
     activatedAbility {
         cost = Costs.Mana("{1}")
         timing = TimingRule.SorcerySpeed
+        description = "Equip colorless creature {1}"
         val colorlessCreatureYouControl = target(
             "colorless creature you control",
             TargetCreature(
