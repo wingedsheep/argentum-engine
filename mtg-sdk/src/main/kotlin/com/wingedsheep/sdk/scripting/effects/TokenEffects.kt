@@ -76,7 +76,8 @@ data class CreateTokenEffect(
     val dynamicPower: DynamicAmount? = null,
     val dynamicToughness: DynamicAmount? = null,
     val tapped: Boolean = false,
-    val attacking: Boolean = false
+    val attacking: Boolean = false,
+    val legendary: Boolean = false
 ) : Effect {
     constructor(
         count: Int,
@@ -87,8 +88,9 @@ data class CreateTokenEffect(
         keywords: Set<Keyword> = emptySet(),
         name: String? = null,
         imageUri: String? = null,
-        controller: EffectTarget? = null
-    ) : this(DynamicAmount.Fixed(count), power, toughness, colors, creatureTypes, keywords, name, imageUri, controller)
+        controller: EffectTarget? = null,
+        legendary: Boolean = false
+    ) : this(DynamicAmount.Fixed(count), power, toughness, colors, creatureTypes, keywords, name, imageUri, controller, legendary = legendary)
 
     override val description: String = buildString {
         append("Create ")

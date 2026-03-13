@@ -141,6 +141,7 @@ object DominariaSet {
         TragicPoet,
         UntamedKavu,
         VerdantForce,
+        VerixBladewing,
         ViciousOffering,
         VoltaicServant,
         WarlordsFury,

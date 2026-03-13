@@ -119,7 +119,7 @@ constructors.
 
 ### Tokens
 
-- `Effects.CreateToken(power, toughness, colors, creatureTypes, keywords, count = 1)`
+- `Effects.CreateToken(power, toughness, colors, creatureTypes, keywords, count = 1, legendary = false)`
 - `Effects.CreateDynamicToken(dynamicPower, dynamicToughness, colors, creatureTypes, keywords, count = 1)` — token with P/T evaluated at resolution time
 - `Effects.CreateTreasure(count = 1)`
 
@@ -329,7 +329,7 @@ constructors.
 
 | Effect                           | Parameters                                                                                  | Purpose                        |
 |----------------------------------|---------------------------------------------------------------------------------------------|--------------------------------|
-| `CreateTokenEffect`              | `count: DynamicAmount, power, toughness, colors, creatureTypes, keywords, name?, imageUri?, tapped?, attacking?` | Create token (tapped = enter tapped, attacking = enter attacking) |
+| `CreateTokenEffect`              | `count: DynamicAmount, power, toughness, colors, creatureTypes, keywords, name?, imageUri?, tapped?, attacking?, legendary?` | Create token (tapped = enter tapped, attacking = enter attacking, legendary = legendary supertype) |
 | `CreateChosenTokenEffect`        | `dynamicPower: DynamicAmount, dynamicToughness: DynamicAmount`                              | Create token with chosen stats |
 | `CreateTreasureTokensEffect`     | `count: DynamicAmount`                                                                      | Create Treasure                |
 | `CreateTokenFromGraveyardEffect` | `power, toughness, colors, creatureTypes`                                                   | Token from graveyard           |
