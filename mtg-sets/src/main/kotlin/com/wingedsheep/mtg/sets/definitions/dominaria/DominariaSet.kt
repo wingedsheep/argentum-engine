@@ -66,6 +66,7 @@ object DominariaSet {
         ExcavationElephant,
         FeralAbomination,
         FieryIntervention,
+        FightWithFire,
         FerventStrike,
         FirefistAdept,
         FireElemental,

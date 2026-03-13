@@ -449,7 +449,9 @@ class CardBuilder(private val name: String) {
             castRestrictions = spellBuilder?.restrictions ?: emptyList(),
             castTimeCreatureTypeChoice = castTimeCreatureTypeChoice,
             cantBeCountered = cantBeCountered,
-            conditionalFlash = conditionalFlash
+            conditionalFlash = conditionalFlash,
+            kickerTargetRequirements = listOfNotNull(spellBuilder?.kickerTarget),
+            kickerSpellEffect = spellBuilder?.kickerEffect
         )
 
         // Build metadata
@@ -513,6 +515,18 @@ class SpellBuilder {
     var effect: Effect? = null
     var target: TargetRequirement? = null
     var condition: Condition? = null
+
+    /**
+     * Alternate effect used when kicker is paid. When set along with [kickerTarget],
+     * the kicked version uses completely different targeting and effect resolution.
+     */
+    var kickerEffect: Effect? = null
+
+    /**
+     * Alternate target used when kicker is paid. When set, the kicked version
+     * uses this target requirement instead of the normal [target].
+     */
+    var kickerTarget: TargetRequirement? = null
 
     // Named target bindings
     private val namedTargets: MutableList<Pair<String, TargetRequirement>> = mutableListOf()

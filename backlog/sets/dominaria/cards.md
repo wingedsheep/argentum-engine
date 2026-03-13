@@ -2,14 +2,14 @@
 
 **Set Size:** 280 cards (249 unique card names + basic land variants)
 **Release Date:** April 27, 2018
-**Implemented:** 144 / 249
+**Implemented:** 145 / 249
 
 | Color      | Total | Done |
 |------------|-------|------|
 | White      | 38    | 24   |
 | Blue       | 37    | 22   |
 | Black      | 38    | 23   |
-| Red        | 38    | 22   |
+| Red        | 38    | 23   |
 | Green      | 37    | 23   |
 | Multicolor | 19    | 10   |
 | Colorless  | 30    | 14   |
@@ -83,7 +83,7 @@
 - [x] Feral Abomination
 - [x] Fervent Strike
 - [x] Fiery Intervention
-- [ ] Fight with Fire
+- [x] Fight with Fire
 - [ ] Final Parting
 - [x] Fire Elemental
 - [x] Firefist Adept

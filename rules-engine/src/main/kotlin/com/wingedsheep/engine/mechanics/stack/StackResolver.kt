@@ -656,7 +656,14 @@ class StackResolver(
 
         // Execute the spell effect if present, applying text replacement if the spell
         // was modified by a text-changing effect (e.g., Artificial Evolution)
-        val rawSpellEffect = cardComponent?.spellEffect
+        // Use kickerSpellEffect when the spell was kicked and an alternate effect is defined
+        val baseSpellEffect = if (spellComponent.wasKicked && cardComponent != null) {
+            val cardDef = cardRegistry?.getCard(cardComponent.name)
+            cardDef?.script?.kickerSpellEffect ?: cardComponent.spellEffect
+        } else {
+            cardComponent?.spellEffect
+        }
+        val rawSpellEffect = baseSpellEffect
         val textReplacement = state.getEntity(spellId)?.get<TextReplacementComponent>()
         val spellEffect = if (rawSpellEffect != null && textReplacement != null) {
             rawSpellEffect.applyTextReplacement(textReplacement)

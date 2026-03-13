@@ -162,7 +162,23 @@ data class CardScript(
      * Used for Ferocious-style "if you control a creature with power 4 or greater,
      * you may cast this spell as though it had flash" abilities.
      */
-    val conditionalFlash: @Serializable Condition? = null
+    val conditionalFlash: @Serializable Condition? = null,
+
+    /**
+     * Alternate target requirements used when this spell is kicked.
+     * When non-empty and the spell is kicked, these replace [targetRequirements].
+     * Used for kicker spells where kicked mode has completely different targeting
+     * (e.g., Fight with Fire: unkicked targets one creature, kicked divides among any targets).
+     */
+    val kickerTargetRequirements: List<TargetRequirement> = emptyList(),
+
+    /**
+     * Alternate spell effect used when this spell is kicked.
+     * When non-null and the spell is kicked, this replaces [spellEffect].
+     * Used for kicker spells where kicked mode has a completely different effect type
+     * (e.g., Fight with Fire: unkicked deals 5 to one creature, kicked divides 10 among any targets).
+     */
+    val kickerSpellEffect: Effect? = null
 ) {
     /**
      * Whether this card has any scripted behavior.

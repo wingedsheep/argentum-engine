@@ -549,11 +549,23 @@ class LegalActionsCalculator(
 
             val canAffordKicked = canAffordKickedMana && canPayKickerAdditionalCost
 
-            // Build target info (same targets as normal cast)
+            // Build target info — use kickerTargetRequirements if available
+            val kickerBaseReqs = if (cardDef.script.kickerTargetRequirements.isNotEmpty()) {
+                cardDef.script.kickerTargetRequirements
+            } else {
+                cardDef.script.targetRequirements
+            }
             val targetReqs = buildList {
-                addAll(cardDef.script.targetRequirements)
+                addAll(kickerBaseReqs)
                 cardDef.script.auraTarget?.let { add(it) }
             }
+
+            // Check for DividedDamageEffect in the kicked spell effect
+            val kickerSpellEffect = cardDef.script.kickerSpellEffect ?: cardDef.script.spellEffect
+            val kickerDividedDamage = kickerSpellEffect as? DividedDamageEffect
+            val kickerRequiresDamageDistribution = kickerDividedDamage != null
+            val kickerTotalDamage = kickerDividedDamage?.totalDamage
+            val kickerMinDamagePerTarget = if (kickerDividedDamage != null) 1 else null
 
             if (targetReqs.isNotEmpty()) {
                 val targetReqInfos = targetReqs.mapIndexed { index, req ->
@@ -586,7 +598,10 @@ class LegalActionsCalculator(
                             isAffordable = canAffordKicked,
                             manaCostString = kickedCostString,
                             autoTapPreview = kickedAutoTapPreview,
-                            additionalCostInfo = kickerCostInfo
+                            additionalCostInfo = kickerCostInfo,
+                            requiresDamageDistribution = kickerRequiresDamageDistribution,
+                            totalDamageToDistribute = kickerTotalDamage,
+                            minDamagePerTarget = kickerMinDamagePerTarget
                         ))
                     } else {
                         result.add(LegalActionInfo(
@@ -602,7 +617,10 @@ class LegalActionsCalculator(
                             isAffordable = canAffordKicked,
                             manaCostString = kickedCostString,
                             autoTapPreview = kickedAutoTapPreview,
-                            additionalCostInfo = kickerCostInfo
+                            additionalCostInfo = kickerCostInfo,
+                            requiresDamageDistribution = kickerRequiresDamageDistribution,
+                            totalDamageToDistribute = kickerTotalDamage,
+                            minDamagePerTarget = kickerMinDamagePerTarget
                         ))
                     }
                 }

@@ -191,9 +191,15 @@ class CastSpellHandler(
         }
 
         // Validate targets (include auraTarget as a target requirement for aura spells)
+        // Use kickerTargetRequirements when spell is kicked and alternate targets are defined
         if (cardDef != null) {
+            val baseTargetReqs = if (action.wasKicked && cardDef.script.kickerTargetRequirements.isNotEmpty()) {
+                cardDef.script.kickerTargetRequirements
+            } else {
+                cardDef.script.targetRequirements
+            }
             val targetRequirements = buildList {
-                addAll(cardDef.script.targetRequirements)
+                addAll(baseTargetReqs)
                 cardDef.script.auraTarget?.let { add(it) }
             }
             if (targetRequirements.isNotEmpty()) {
@@ -220,7 +226,12 @@ class CastSpellHandler(
         }
 
         // Validate damage distribution for DividedDamageEffect spells
-        val spellEffect = cardDef?.script?.spellEffect
+        // Use kickerSpellEffect when kicked and available
+        val spellEffect = if (action.wasKicked && cardDef?.script?.kickerSpellEffect != null) {
+            cardDef.script.kickerSpellEffect
+        } else {
+            cardDef?.script?.spellEffect
+        }
         if (spellEffect is DividedDamageEffect && action.targets.size > 1) {
             val distribution = action.damageDistribution
             if (distribution == null) {
@@ -616,9 +627,15 @@ class CastSpellHandler(
         events.addAll(paymentResult.events)
 
         // Compute target requirements for resolution-time re-validation (Rule 608.2b)
+        // Use kickerTargetRequirements when spell is kicked and alternate targets are defined
         val spellTargetRequirements = if (cardDef != null) {
+            val baseTargetReqs = if (action.wasKicked && cardDef.script.kickerTargetRequirements.isNotEmpty()) {
+                cardDef.script.kickerTargetRequirements
+            } else {
+                cardDef.script.targetRequirements
+            }
             buildList {
-                addAll(cardDef.script.targetRequirements)
+                addAll(baseTargetReqs)
                 cardDef.script.auraTarget?.let { add(it) }
             }
         } else {
