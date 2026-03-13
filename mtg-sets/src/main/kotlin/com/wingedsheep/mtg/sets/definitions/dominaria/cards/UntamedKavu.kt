@@ -8,7 +8,6 @@ import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.KeywordAbility
 import com.wingedsheep.sdk.scripting.conditions.WasKicked
-import com.wingedsheep.sdk.scripting.effects.ConditionalEffect
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 
 /**
@@ -32,10 +31,8 @@ val UntamedKavu = card("Untamed Kavu") {
 
     triggeredAbility {
         trigger = Triggers.EntersBattlefield
-        effect = ConditionalEffect(
-            condition = WasKicked,
-            effect = Effects.AddCounters("+1/+1", 3, EffectTarget.Self)
-        )
+        triggerCondition = WasKicked
+        effect = Effects.AddCounters("+1/+1", 3, EffectTarget.Self)
     }
 
     metadata {

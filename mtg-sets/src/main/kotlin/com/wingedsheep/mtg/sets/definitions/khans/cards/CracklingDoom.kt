@@ -1,6 +1,7 @@
 package com.wingedsheep.mtg.sets.definitions.khans.cards
 
 import com.wingedsheep.sdk.core.Zone
+import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
@@ -22,7 +23,7 @@ val CracklingDoom = card("Crackling Doom") {
     oracleText = "Crackling Doom deals 2 damage to each opponent. Each opponent sacrifices a creature with the greatest power among creatures that player controls."
 
     spell {
-        effect = DealDamageToPlayersEffect(2, EffectTarget.PlayerRef(Player.EachOpponent)) then
+        effect = Effects.DealDamage(2, EffectTarget.PlayerRef(Player.EachOpponent)) then
                 ForEachPlayerEffect(
                     players = Player.EachOpponent,
                     effects = listOf(

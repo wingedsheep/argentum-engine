@@ -1,6 +1,5 @@
 package com.wingedsheep.sdk.scripting.effects
 
-import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.text.TextReplacer
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
@@ -49,38 +48,6 @@ data class DealDamageEffect(
             append("Deal $resolved damage to ${target.description}")
         }
         if (cantBePrevented) append(". This damage can't be prevented")
-    }
-
-    override fun applyTextReplacement(replacer: TextReplacer): Effect {
-        val newAmount = amount.applyTextReplacement(replacer)
-        return if (newAmount !== amount) copy(amount = newAmount) else this
-    }
-}
-
-/**
- * Deal damage to players.
- * Can target each player, controller only, opponent only, or each opponent.
- * Often composed with DealDamageToGroupEffect for effects like Earthquake.
- *
- * Examples:
- * - Earthquake: DealDamageToGroupEffect(...).then(DealDamageToPlayersEffect(DynamicAmount.XValue))
- * - Fire Tempest: DealDamageToGroupEffect(6).then(DealDamageToPlayersEffect(6))
- * - Flame Rift: DealDamageToPlayersEffect(4) (just players, no creatures)
- *
- * @param amount The amount of damage to deal (can be fixed or dynamic like X)
- * @param target Which players to damage (EachPlayer, Controller, Opponent, EachOpponent)
- */
-@SerialName("DealDamageToPlayers")
-@Serializable
-data class DealDamageToPlayersEffect(
-    val amount: DynamicAmount,
-    val target: EffectTarget = EffectTarget.PlayerRef(Player.Each)
-) : Effect {
-    constructor(amount: Int, target: EffectTarget = EffectTarget.PlayerRef(Player.Each)) : this(DynamicAmount.Fixed(amount), target)
-
-    override val description: String = when (target) {
-        EffectTarget.Controller -> "Deal ${amount.description} damage to you"
-        else -> "Deal ${amount.description} damage to ${target.description}"
     }
 
     override fun applyTextReplacement(replacer: TextReplacer): Effect {

@@ -5,8 +5,10 @@ import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.dsl.Filters
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
+import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.scripting.KeywordAbility
-import com.wingedsheep.sdk.scripting.effects.DealDamageToPlayersEffect
+import com.wingedsheep.sdk.scripting.references.Player
+import com.wingedsheep.sdk.scripting.targets.EffectTarget
 
 /**
  * Claws of Wirewood
@@ -22,7 +24,7 @@ val ClawsOfWirewood = card("Claws of Wirewood") {
 
     spell {
         effect = EffectPatterns.dealDamageToAll(3, Filters.Group.creatures { withKeyword(Keyword.FLYING) }) then
-            DealDamageToPlayersEffect(3)
+            Effects.DealDamage(3, EffectTarget.PlayerRef(Player.Each))
     }
 
     keywordAbility(KeywordAbility.cycling("{2}"))

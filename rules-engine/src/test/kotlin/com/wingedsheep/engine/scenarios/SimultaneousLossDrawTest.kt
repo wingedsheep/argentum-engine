@@ -10,7 +10,9 @@ import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.CardScript
 import com.wingedsheep.sdk.model.Deck
-import com.wingedsheep.sdk.scripting.effects.DealDamageToPlayersEffect
+import com.wingedsheep.sdk.scripting.effects.DealDamageEffect
+import com.wingedsheep.sdk.scripting.references.Player
+import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.booleans.shouldBeTrue
@@ -31,7 +33,7 @@ class SimultaneousLossDrawTest : FunSpec({
             manaCost = ManaCost.parse("{X}{R}"),
             oracleText = "Massive Fire deals X damage to each player.",
             script = CardScript.spell(
-                effect = DealDamageToPlayersEffect(DynamicAmount.XValue)
+                effect = DealDamageEffect(DynamicAmount.XValue, EffectTarget.PlayerRef(Player.Each))
             )
         )
 

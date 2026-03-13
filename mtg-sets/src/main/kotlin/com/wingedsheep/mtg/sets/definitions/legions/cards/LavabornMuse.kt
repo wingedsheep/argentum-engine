@@ -1,11 +1,11 @@
 package com.wingedsheep.mtg.sets.definitions.legions.cards
 
 import com.wingedsheep.sdk.dsl.Conditions
+import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.effects.ConditionalEffect
-import com.wingedsheep.sdk.scripting.effects.DealDamageToPlayersEffect
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 
@@ -31,7 +31,7 @@ val LavabornMuse = card("Lavaborn Muse") {
         triggerCondition = Conditions.OpponentCardsInHandAtMost(2)
         effect = ConditionalEffect(
             condition = Conditions.OpponentCardsInHandAtMost(2),
-            effect = DealDamageToPlayersEffect(3, EffectTarget.PlayerRef(Player.Opponent))
+            effect = Effects.DealDamage(3, EffectTarget.PlayerRef(Player.Opponent))
         )
     }
 

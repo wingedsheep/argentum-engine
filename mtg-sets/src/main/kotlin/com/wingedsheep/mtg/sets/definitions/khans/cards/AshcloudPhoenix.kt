@@ -5,7 +5,8 @@ import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.effects.DealDamageToPlayersEffect
+import com.wingedsheep.sdk.scripting.references.Player
+import com.wingedsheep.sdk.scripting.targets.EffectTarget
 
 /**
  * Ashcloud Phoenix
@@ -35,7 +36,7 @@ val AshcloudPhoenix = card("Ashcloud Phoenix") {
 
     triggeredAbility {
         trigger = Triggers.TurnedFaceUp
-        effect = DealDamageToPlayersEffect(2)
+        effect = Effects.DealDamage(2, EffectTarget.PlayerRef(Player.Each))
     }
 
     metadata {

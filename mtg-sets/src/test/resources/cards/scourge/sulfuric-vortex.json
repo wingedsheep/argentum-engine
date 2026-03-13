@@ -14,7 +14,7 @@
                 },
                 "binding": "ANY",
                 "effect": {
-                    "type": "DealDamageToPlayers",
+                    "type": "DealDamage",
                     "amount": {
                         "type": "Fixed",
                         "amount": 2

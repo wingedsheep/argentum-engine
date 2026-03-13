@@ -1,8 +1,8 @@
 package com.wingedsheep.mtg.sets.definitions.onslaught.cards
 
+import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.effects.DealDamageToPlayersEffect
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.effects.GainLifeEffect
 import com.wingedsheep.sdk.scripting.references.Player
@@ -21,7 +21,7 @@ val SyphonSoul = card("Syphon Soul") {
     oracleText = "Syphon Soul deals 2 damage to each other player. You gain life equal to the damage dealt this way."
 
     spell {
-        effect = DealDamageToPlayersEffect(2, EffectTarget.PlayerRef(Player.EachOpponent)) then
+        effect = Effects.DealDamage(2, EffectTarget.PlayerRef(Player.EachOpponent)) then
                 GainLifeEffect(2)
     }
 

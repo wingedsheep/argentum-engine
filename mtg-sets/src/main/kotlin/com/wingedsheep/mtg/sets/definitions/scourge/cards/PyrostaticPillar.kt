@@ -1,11 +1,11 @@
 package com.wingedsheep.mtg.sets.definitions.scourge.cards
 
+import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameEvent
 import com.wingedsheep.sdk.scripting.TriggerBinding
 import com.wingedsheep.sdk.scripting.TriggerSpec
-import com.wingedsheep.sdk.scripting.effects.DealDamageToPlayersEffect
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 
@@ -19,7 +19,7 @@ val PyrostaticPillar = card("Pyrostatic Pillar") {
             event = GameEvent.SpellCastEvent(player = Player.Each, manaValueAtMost = 3),
             binding = TriggerBinding.ANY
         )
-        effect = DealDamageToPlayersEffect(2, EffectTarget.PlayerRef(Player.TriggeringPlayer))
+        effect = Effects.DealDamage(2, EffectTarget.PlayerRef(Player.TriggeringPlayer))
     }
 
     metadata {
