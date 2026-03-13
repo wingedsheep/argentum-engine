@@ -2,7 +2,7 @@
 
 **Set Size:** 280 cards (249 unique card names + basic land variants)
 **Release Date:** April 27, 2018
-**Implemented:** 147 / 249
+**Implemented:** 148 / 249
 
 | Color      | Total | Done |
 |------------|-------|------|
@@ -12,7 +12,7 @@
 | Red        | 38    | 23   |
 | Green      | 37    | 24   |
 | Multicolor | 19    | 10   |
-| Colorless  | 30    | 14   |
+| Colorless  | 30    | 15   |
 | Land       | 12    | 5    |
 
 ---
@@ -106,7 +106,7 @@
 - [x] Grand Warlord Radha
 - [ ] Grow from the Ashes
 - [ ] Grunn, the Lonely King
-- [ ] Guardians of Koilos
+- [x] Guardians of Koilos
 - [ ] Hallar, the Firefletcher
 - [ ] Haphazard Bombardment
 - [ ] Healing Grace

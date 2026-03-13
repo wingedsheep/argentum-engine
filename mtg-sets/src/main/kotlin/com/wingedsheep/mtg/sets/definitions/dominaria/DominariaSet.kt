@@ -82,6 +82,7 @@ object DominariaSet {
         GarnaTheBloodflame,
         GildedLotus,
         GrandWarlordRadha,
+        GuardiansOfKoilos,
         GiftOfGrowth,
         IcyManipulator,
         InvokeTheDivine,
