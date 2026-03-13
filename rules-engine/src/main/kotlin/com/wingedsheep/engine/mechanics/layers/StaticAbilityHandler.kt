@@ -36,6 +36,7 @@ import com.wingedsheep.sdk.scripting.CantBeTargetedByOpponentAbilities
 import com.wingedsheep.sdk.scripting.GrantShroudToController
 import com.wingedsheep.sdk.scripting.conditions.EnchantedCreatureHasSubtype
 import com.wingedsheep.sdk.scripting.conditions.Exists
+import com.wingedsheep.sdk.scripting.conditions.IsYourTurn
 import com.wingedsheep.sdk.scripting.conditions.NotCondition
 import com.wingedsheep.sdk.scripting.conditions.SourceHasKeyword
 import com.wingedsheep.sdk.scripting.conditions.SourceHasSubtype
@@ -441,6 +442,7 @@ class StaticAbilityHandler(
                 SourceProjectionCondition.Not(inner)
             }
             is Exists -> mapExistsToSourceProjectionCondition(condition)
+            is IsYourTurn -> SourceProjectionCondition.IsYourTurn
             else -> null
         }
     }

@@ -230,6 +230,10 @@ internal class EffectApplicator(
                 }
             } else false
         }
+        is SourceProjectionCondition.IsYourTurn -> {
+            val controllerId = sourceValues?.controllerId
+            controllerId != null && state.activePlayerId == controllerId
+        }
         is SourceProjectionCondition.Not -> !evaluateSourceCondition(condition.condition, effect, state, projectedValues, sourceValues)
     }
 

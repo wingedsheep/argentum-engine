@@ -223,6 +223,13 @@ sealed interface SourceProjectionCondition {
     data object OpponentControlsCreature : SourceProjectionCondition
 
     /**
+     * It must be the source permanent's controller's turn.
+     * Used for "has [keyword] as long as it's your turn."
+     */
+    @Serializable
+    data object IsYourTurn : SourceProjectionCondition
+
+    /**
      * Negation wrapper for source projection conditions.
      * Used for "otherwise" clauses (e.g., "Otherwise, it gets -3/-3").
      */
