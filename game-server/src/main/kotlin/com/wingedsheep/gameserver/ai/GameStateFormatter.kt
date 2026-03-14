@@ -223,7 +223,7 @@ class GameStateFormatter(
             if (isYou) {
                 val untappedMana = computeAvailableMana(battlefield)
                 if (untappedMana.isNotEmpty()) {
-                    sb.appendLine("Available mana (untapped): ${untappedMana.joinToString("")} — ${untappedMana.size} sources")
+                    sb.appendLine("Untapped lands: ${untappedMana.joinToString("")} (${untappedMana.size} sources)")
                 }
             }
 
