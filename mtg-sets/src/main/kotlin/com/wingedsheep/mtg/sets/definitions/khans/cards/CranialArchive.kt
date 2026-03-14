@@ -12,9 +12,8 @@ import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.DrawCardsEffect
 import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
 import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
-import com.wingedsheep.sdk.scripting.effects.ShuffleLibraryEffect
+import com.wingedsheep.sdk.scripting.effects.ZonePlacement
 import com.wingedsheep.sdk.scripting.references.Player
-import com.wingedsheep.sdk.scripting.targets.EffectTarget
 
 /**
  * Cranial Archive
@@ -30,7 +29,7 @@ val CranialArchive = card("Cranial Archive") {
 
     activatedAbility {
         cost = Costs.Composite(Costs.Mana("{2}"), Costs.ExileSelf)
-        val player = target("player", Targets.Player)
+        target("player", Targets.Player)
         effect = CompositeEffect(
             listOf(
                 GatherCardsEffect(
@@ -39,9 +38,8 @@ val CranialArchive = card("Cranial Archive") {
                 ),
                 MoveCollectionEffect(
                     from = "graveyardCards",
-                    destination = CardDestination.ToZone(Zone.LIBRARY, Player.TargetPlayer)
+                    destination = CardDestination.ToZone(Zone.LIBRARY, Player.TargetPlayer, ZonePlacement.Shuffled)
                 ),
-                ShuffleLibraryEffect(player),
                 DrawCardsEffect(1)
             )
         )

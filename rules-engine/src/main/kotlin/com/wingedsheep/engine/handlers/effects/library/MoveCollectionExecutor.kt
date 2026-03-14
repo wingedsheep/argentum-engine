@@ -721,7 +721,7 @@ class MoveCollectionExecutor(
             is Player.You -> context.controllerId
             is Player.Opponent -> context.opponentId
             is Player.TargetOpponent -> context.opponentId
-            is Player.TargetPlayer -> context.opponentId
+            is Player.TargetPlayer -> context.targets.firstOrNull()?.let { EffectExecutorUtils.run { it.toEntityId() } }
             is Player.ContextPlayer -> context.targets.getOrNull(player.index)?.let { EffectExecutorUtils.run { it.toEntityId() } }
             is Player.TriggeringPlayer -> context.triggeringEntityId
             else -> context.controllerId
