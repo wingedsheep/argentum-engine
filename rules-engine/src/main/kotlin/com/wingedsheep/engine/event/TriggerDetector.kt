@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.event
 
+import com.wingedsheep.engine.core.CountersAddedEvent
 import com.wingedsheep.engine.core.AbilityActivatedEvent
 import com.wingedsheep.engine.core.AbilityTriggeredEvent
 import com.wingedsheep.engine.core.AttackersDeclaredEvent
@@ -30,9 +31,12 @@ import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.stack.SpellOnStackComponent
 import com.wingedsheep.engine.state.components.stack.TargetsComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
+import com.wingedsheep.engine.state.components.battlefield.CountersComponent
+import com.wingedsheep.engine.state.components.battlefield.SagaComponent
 import com.wingedsheep.engine.state.components.identity.FaceDownComponent
 import com.wingedsheep.engine.state.components.identity.OwnerComponent
 import com.wingedsheep.engine.state.components.identity.TextReplacementComponent
+import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.scripting.GrantTriggeredAbilityToCreatureGroup
@@ -342,6 +346,9 @@ class TriggerDetector(
         // batching triggers (e.g., Sidisi, Brood Tyrant). Groups library→graveyard zone changes
         // and fires the trigger at most once per controller.
         detectLibraryToGraveyardBatchTriggers(state, events, triggers, index)
+
+        // Detect Saga chapter triggers from lore counter additions
+        detectSagaChapterTriggers(state, events, triggers)
 
         // Rule 603.4: Filter out triggers with unmet intervening-if conditions
         return sortByApnapOrder(state, filterByTriggerCondition(state, triggers))
@@ -1057,6 +1064,71 @@ class TriggerDetector(
                             ability = ability,
                             sourceId = entry.entityId,
                             sourceName = entry.cardComponent.name,
+                            controllerId = controllerId,
+                            triggerContext = TriggerContext()
+                        )
+                    )
+                }
+            }
+        }
+    }
+
+    /**
+     * Detect Saga chapter triggers from lore counter additions.
+     *
+     * When lore counters are added to a Saga, checks which chapter abilities should trigger.
+     * The SagaComponent in the state has already been updated with the newly triggered chapters
+     * (by TurnManager.addLoreCountersToSagas or StackResolver.enterPermanentOnBattlefield),
+     * so we use the current lore count and the triggered chapters set to determine which
+     * chapters to fire.
+     */
+    private fun detectSagaChapterTriggers(
+        state: GameState,
+        events: List<EngineGameEvent>,
+        triggers: MutableList<PendingTrigger>
+    ) {
+        val registry = cardRegistry ?: return
+
+        // Find all LORE counter addition events
+        val loreEvents = events.filterIsInstance<CountersAddedEvent>().filter { it.counterType == "LORE" }
+        if (loreEvents.isEmpty()) return
+
+        for (event in loreEvents) {
+            val entityId = event.entityId
+            val container = state.getEntity(entityId) ?: continue
+            val cardComponent = container.get<CardComponent>() ?: continue
+            val sagaComponent = container.get<SagaComponent>() ?: continue
+            val counters = container.get<CountersComponent>() ?: continue
+
+            val cardDef = registry.getCard(cardComponent.cardDefinitionId) ?: continue
+            val sagaChapters = cardDef.sagaChapters
+            if (sagaChapters.isEmpty()) continue
+
+            val loreCount = counters.getCount(CounterType.LORE)
+            // The previous lore count is current minus what was just added
+            val previousLoreCount = loreCount - event.amount
+            val controllerId = container.get<ControllerComponent>()?.playerId
+                ?: cardComponent.ownerId ?: continue
+
+            // Fire chapters that are newly reached by this counter addition
+            for (chapter in sagaChapters.sortedBy { it.chapter }) {
+                // Chapter triggers if lore count now >= chapter number
+                // AND it wasn't already triggered before this counter addition
+                if (loreCount >= chapter.chapter && previousLoreCount < chapter.chapter) {
+                    // Create a triggered ability for this chapter
+                    val chapterAbility = TriggeredAbility.create(
+                        trigger = GameEvent.StepEvent(Step.PRECOMBAT_MAIN, Player.You),
+                        binding = TriggerBinding.SELF,
+                        effect = chapter.effect,
+                        targetRequirement = chapter.targetRequirement,
+                        additionalTargetRequirements = chapter.additionalTargetRequirements
+                    )
+
+                    triggers.add(
+                        PendingTrigger(
+                            ability = chapterAbility,
+                            sourceId = entityId,
+                            sourceName = cardComponent.name,
                             controllerId = controllerId,
                             triggerContext = TriggerContext()
                         )

@@ -125,6 +125,7 @@ object DominariaSet {
         OrcishVandal,
         PardicWanderer,
         PegasusCourser,
+        PhyrexianScriptures,
         PierceTheSky,
         PrecognitionField,
         PrimordialWurm,

@@ -3,6 +3,7 @@ package com.wingedsheep.sdk.dsl
 import com.wingedsheep.sdk.core.AbilityFlag
 import com.wingedsheep.sdk.core.*
 import com.wingedsheep.sdk.model.*
+import com.wingedsheep.sdk.scripting.SagaChapterAbility
 import com.wingedsheep.sdk.scripting.*
 import com.wingedsheep.sdk.scripting.conditions.Condition
 import com.wingedsheep.sdk.scripting.costs.PayCost
@@ -239,6 +240,7 @@ class CardBuilder(private val name: String) {
     private val staticAbilities: MutableList<StaticAbility> = mutableListOf()
     private val additionalCosts: MutableList<AdditionalCost> = mutableListOf()
     private val replacementEffects: MutableList<ReplacementEffect> = mutableListOf()
+    private val sagaChaptersList: MutableList<SagaChapterAbility> = mutableListOf()
     private var equipCost: ManaCost? = null
     private var metadataBuilder: MetadataBuilder? = null
 
@@ -396,6 +398,20 @@ class CardBuilder(private val name: String) {
     }
 
     // =========================================================================
+    // Saga Chapters
+    // =========================================================================
+
+    /**
+     * Add a saga chapter ability.
+     * Chapter abilities trigger when lore counters reach or exceed the chapter number.
+     */
+    fun sagaChapter(chapter: Int, init: SagaChapterBuilder.() -> Unit) {
+        val builder = SagaChapterBuilder(chapter)
+        builder.init()
+        sagaChaptersList.add(builder.build())
+    }
+
+    // =========================================================================
     // Metadata
     // =========================================================================
 
@@ -451,7 +467,8 @@ class CardBuilder(private val name: String) {
             cantBeCountered = cantBeCountered,
             conditionalFlash = conditionalFlash,
             kickerTargetRequirements = listOfNotNull(spellBuilder?.kickerTarget),
-            kickerSpellEffect = spellBuilder?.kickerEffect
+            kickerSpellEffect = spellBuilder?.kickerEffect,
+            sagaChapters = sagaChaptersList.toList()
         )
 
         // Build metadata
@@ -898,6 +915,43 @@ class LoyaltyAbilityBuilder(private val loyaltyChange: Int) {
             targetRequirements = targetReqs,
             isPlaneswalkerAbility = true,
             timing = TimingRule.SorcerySpeed
+        )
+    }
+}
+
+// =============================================================================
+// Saga Chapter Builder
+// =============================================================================
+
+@CardDsl
+class SagaChapterBuilder(private val chapter: Int) {
+    var effect: Effect? = null
+    var target: TargetRequirement? = null
+
+    private val namedTargets = mutableListOf<Pair<String, TargetRequirement>>()
+
+    /**
+     * Declare a named target for this chapter ability and get an EffectTarget reference.
+     */
+    fun target(name: String, requirement: TargetRequirement): EffectTarget.BoundVariable {
+        namedTargets.add(name to requirement.withId(name))
+        return EffectTarget.BoundVariable(name)
+    }
+
+    fun build(): SagaChapterAbility {
+        requireNotNull(effect) { "Saga chapter $chapter must have an effect" }
+        val allTargets = if (namedTargets.isNotEmpty()) {
+            namedTargets.map { it.second }
+        } else {
+            listOfNotNull(target)
+        }
+        val primaryTarget = allTargets.firstOrNull()
+        val additionalTargets = if (allTargets.size > 1) allTargets.drop(1) else emptyList()
+        return SagaChapterAbility(
+            chapter = chapter,
+            effect = effect!!,
+            targetRequirement = primaryTarget,
+            additionalTargetRequirements = additionalTargets
         )
     }
 }

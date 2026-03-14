@@ -54,7 +54,7 @@ data class ActionContext(
             return ActionContext(
                 cardRegistry = cardRegistry,
                 combatManager = combatManager,
-                turnManager = TurnManager(combatManager, cardRegistry = cardRegistry, effectExecutor = effectExecutorRegistry::execute),
+                turnManager = TurnManager(combatManager, sbaChecker = StateBasedActionChecker(cardRegistry = cardRegistry), cardRegistry = cardRegistry, effectExecutor = effectExecutorRegistry::execute),
                 stackResolver = StackResolver(effectHandler = com.wingedsheep.engine.handlers.EffectHandler(cardRegistry = cardRegistry), cardRegistry = cardRegistry),
                 manaSolver = ManaSolver(cardRegistry),
                 costCalculator = CostCalculator(cardRegistry),
@@ -63,7 +63,7 @@ data class ActionContext(
                 mulliganHandler = MulliganHandler(),
                 effectExecutorRegistry = effectExecutorRegistry,
                 continuationHandler = ContinuationHandler(effectExecutorRegistry, triggerProcessor = triggerProcessor, triggerDetector = triggerDetector, combatManager = combatManager),
-                sbaChecker = StateBasedActionChecker(),
+                sbaChecker = StateBasedActionChecker(cardRegistry = cardRegistry),
                 triggerDetector = triggerDetector,
                 triggerProcessor = triggerProcessor,
                 conditionEvaluator = ConditionEvaluator(),

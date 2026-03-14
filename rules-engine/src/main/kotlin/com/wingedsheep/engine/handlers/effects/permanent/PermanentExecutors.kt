@@ -42,6 +42,7 @@ class PermanentExecutors(
         ChangeGroupColorExecutor(),
         GrantActivatedAbilityToGroupExecutor(),
         AnimateLandExecutor(),
+        AddCardTypeExecutor(),
         BecomeCreatureExecutor(),
         SetBasePowerExecutor(amountEvaluator),
         DistributeCountersFromSelfExecutor(),

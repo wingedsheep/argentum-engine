@@ -160,6 +160,13 @@ export function getLoyaltyCounters(card: ClientCard): number {
 }
 
 /**
+ * Get the number of lore counters on a card (for Sagas).
+ */
+export function getLoreCounters(card: ClientCard): number {
+  return card.counters[CounterType.LORE] ?? 0
+}
+
+/**
  * Get an emoji or icon for an effect based on its icon identifier.
  */
 export function getEffectIcon(icon: string): string {

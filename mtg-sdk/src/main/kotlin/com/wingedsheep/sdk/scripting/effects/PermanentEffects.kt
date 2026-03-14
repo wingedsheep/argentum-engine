@@ -962,3 +962,27 @@ data class GrantExileOnLeaveEffect(
 
     override fun applyTextReplacement(replacer: TextReplacer): Effect = this
 }
+
+/**
+ * Add a card type to a target permanent.
+ * "That creature becomes an artifact in addition to its other types."
+ *
+ * Creates a floating effect on Layer.TYPE with AddType modification.
+ * Unlike AnimateLandEffect, this does NOT set P/T — it only adds the type.
+ *
+ * @property cardType The card type to add (e.g., "ARTIFACT", "CREATURE")
+ * @property target The permanent to modify
+ * @property duration How long the type change lasts (default: Permanent)
+ */
+@SerialName("AddCardType")
+@Serializable
+data class AddCardTypeEffect(
+    val cardType: String,
+    val target: EffectTarget = EffectTarget.ContextTarget(0),
+    val duration: Duration = Duration.Permanent
+) : Effect {
+    override val description: String =
+        "${target.description} becomes a${if (cardType.startsWith("A", ignoreCase = true)) "n" else ""} ${cardType.lowercase()} in addition to its other types"
+
+    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
+}

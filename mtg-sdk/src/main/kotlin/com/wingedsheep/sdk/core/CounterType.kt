@@ -17,5 +17,6 @@ enum class CounterType {
     PLAGUE,
     TRAP,
     DEPLETION,
-    EGG
+    EGG,
+    LORE
 }

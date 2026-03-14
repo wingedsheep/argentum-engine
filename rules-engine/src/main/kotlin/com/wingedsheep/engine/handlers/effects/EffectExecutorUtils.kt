@@ -21,6 +21,7 @@ import com.wingedsheep.engine.state.components.battlefield.DamageComponent
 import com.wingedsheep.engine.state.components.battlefield.DamageDealtToCreaturesThisTurnComponent
 import com.wingedsheep.engine.state.components.battlefield.EnteredThisTurnComponent
 import com.wingedsheep.engine.state.components.battlefield.ExileOnLeaveBattlefieldComponent
+import com.wingedsheep.engine.state.components.battlefield.SagaComponent
 import com.wingedsheep.engine.state.components.battlefield.ReplacementEffectSourceComponent
 import com.wingedsheep.engine.state.components.battlefield.CastFromHandComponent
 import com.wingedsheep.engine.state.components.battlefield.WasKickedComponent
@@ -214,6 +215,7 @@ object EffectExecutorUtils {
             .without<AttachmentsComponent>()
             .without<EnteredThisTurnComponent>()
             .without<ExileOnLeaveBattlefieldComponent>()
+            .without<SagaComponent>()
             .without<ReplacementEffectSourceComponent>()
             .without<TimestampComponent>()
             // Combat

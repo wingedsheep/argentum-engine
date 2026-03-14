@@ -9,6 +9,7 @@ import com.wingedsheep.engine.state.ComponentContainer
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.battlefield.CountersComponent
+import com.wingedsheep.engine.state.components.battlefield.SagaComponent
 import com.wingedsheep.engine.state.components.battlefield.CastFromHandComponent
 import com.wingedsheep.engine.state.components.battlefield.WasKickedComponent
 import com.wingedsheep.engine.state.components.battlefield.SummoningSicknessComponent
@@ -552,7 +553,12 @@ class StackResolver(
 
         // Normal permanent entry
         val newState = enterPermanentOnBattlefield(state, spellId, spellComponent, cardComponent, cardDef)
-        return ExecutionResult.success(newState)
+        val sagaEvents = if (cardDef != null && !spellComponent.castFaceDown && cardDef.isSaga) {
+            listOf(CountersAddedEvent(spellId, "LORE", 1, cardDef.name))
+        } else {
+            emptyList()
+        }
+        return ExecutionResult.success(newState, sagaEvents)
     }
 
     /**
@@ -667,6 +673,18 @@ class StackResolver(
             val current = newState.getEntity(spellId)?.get<CountersComponent>() ?: CountersComponent()
             newState = newState.updateEntity(spellId) { c ->
                 c.with(current.withAdded(CounterType.LOYALTY, modifiedCount))
+            }
+        }
+
+        // Handle Saga entering the battlefield (Rule 714.3a)
+        // Add SagaComponent and initial lore counter (triggers chapter I detection)
+        if (cardDef != null && !spellComponent.castFaceDown && cardDef.isSaga) {
+            val current = newState.getEntity(spellId)?.get<CountersComponent>() ?: CountersComponent()
+            // Mark chapter 1 as triggered since lore count will be 1
+            val sagaComponent = SagaComponent(triggeredChapters = setOf(1))
+            newState = newState.updateEntity(spellId) { c ->
+                c.with(sagaComponent)
+                    .with(current.withAdded(CounterType.LORE, 1))
             }
         }
 

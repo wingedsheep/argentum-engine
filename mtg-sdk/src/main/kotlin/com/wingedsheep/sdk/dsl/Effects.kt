@@ -10,6 +10,7 @@ import com.wingedsheep.sdk.scripting.*
 import com.wingedsheep.sdk.scripting.effects.AddAnyColorManaEffect
 import com.wingedsheep.sdk.scripting.effects.AddColorlessManaEffect
 import com.wingedsheep.sdk.scripting.effects.AddDynamicManaEffect
+import com.wingedsheep.sdk.scripting.effects.AddCardTypeEffect
 import com.wingedsheep.sdk.scripting.effects.AddCountersEffect
 import com.wingedsheep.sdk.scripting.effects.AddManaEffect
 import com.wingedsheep.sdk.scripting.effects.AnimateLandEffect
@@ -46,6 +47,7 @@ import com.wingedsheep.sdk.scripting.effects.SetLifeTotalEffect
 import com.wingedsheep.sdk.scripting.effects.ModifyStatsEffect
 import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
 import com.wingedsheep.sdk.scripting.effects.ExileFromTopRepeatingEffect
+import com.wingedsheep.sdk.scripting.effects.ExileOpponentsGraveyardsEffect
 import com.wingedsheep.sdk.scripting.effects.ExileUntilLeavesEffect
 import com.wingedsheep.sdk.scripting.effects.CreatePermanentGlobalTriggeredAbilityEffect
 import com.wingedsheep.sdk.scripting.effects.ReturnCreaturesPutInGraveyardThisTurnEffect
@@ -297,6 +299,11 @@ object Effects {
         MoveToZoneEffect(target, Zone.EXILE)
 
     /**
+     * Exile all cards in each opponent's graveyard.
+     */
+    fun ExileOpponentsGraveyards(): Effect = ExileOpponentsGraveyardsEffect
+
+    /**
      * Exile a target until this permanent leaves the battlefield.
      * Exiles the target and links it to the source permanent via LinkedExileComponent.
      * Used with a LeavesBattlefield trigger + ReturnLinkedExile() for the return.
@@ -529,6 +536,13 @@ object Effects {
      */
     fun DistributeCountersAmongTargets(totalCounters: Int, counterType: String = "+1/+1", minPerTarget: Int = 1): Effect =
         com.wingedsheep.sdk.scripting.effects.DistributeCountersAmongTargetsEffect(totalCounters, counterType, minPerTarget)
+
+    /**
+     * Add a card type to a target permanent.
+     * "That creature becomes an artifact in addition to its other types."
+     */
+    fun AddCardType(cardType: String, target: EffectTarget, duration: Duration = Duration.Permanent): Effect =
+        AddCardTypeEffect(cardType, target, duration)
 
     /**
      * Set a creature's base power to a dynamic value.

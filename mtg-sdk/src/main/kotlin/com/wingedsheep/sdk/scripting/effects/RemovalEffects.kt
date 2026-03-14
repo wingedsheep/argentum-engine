@@ -407,3 +407,14 @@ data class ReturnCreaturesPutInGraveyardThisTurnEffect(
         "Return to your hand all creature cards in your graveyard that were put there from anywhere this turn"
     override fun applyTextReplacement(replacer: TextReplacer): Effect = this
 }
+
+/**
+ * Exile all cards in each opponent's graveyard.
+ * Used for Phyrexian Scriptures Chapter III and similar graveyard hate effects.
+ */
+@SerialName("ExileOpponentsGraveyards")
+@Serializable
+data object ExileOpponentsGraveyardsEffect : Effect {
+    override val description: String = "Exile all opponents' graveyards"
+    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
+}

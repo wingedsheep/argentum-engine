@@ -44,6 +44,18 @@ data object WasKickedComponent : Component
 data object ExileOnLeaveBattlefieldComponent : Component
 
 /**
+ * Tracks Saga state: which chapters have already triggered.
+ * Added when a Saga enters the battlefield.
+ */
+@Serializable
+data class SagaComponent(
+    val triggeredChapters: Set<Int> = emptySet()
+) : Component {
+    fun withChapterTriggered(chapter: Int): SagaComponent =
+        copy(triggeredChapters = triggeredChapters + chapter)
+}
+
+/**
  * Counters on a permanent.
  */
 @Serializable

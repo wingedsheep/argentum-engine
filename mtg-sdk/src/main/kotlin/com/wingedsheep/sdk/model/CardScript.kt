@@ -1,5 +1,6 @@
 package com.wingedsheep.sdk.model
 
+import com.wingedsheep.sdk.scripting.SagaChapterAbility
 import com.wingedsheep.sdk.scripting.*
 import com.wingedsheep.sdk.scripting.conditions.Condition
 import com.wingedsheep.sdk.scripting.effects.Effect
@@ -178,7 +179,14 @@ data class CardScript(
      * Used for kicker spells where kicked mode has a completely different effect type
      * (e.g., Fight with Fire: unkicked deals 5 to one creature, kicked divides 10 among any targets).
      */
-    val kickerSpellEffect: Effect? = null
+    val kickerSpellEffect: Effect? = null,
+
+    /**
+     * Saga chapter abilities.
+     * Each chapter triggers when lore counters reach or exceed the chapter number.
+     * Sagas add a lore counter on ETB and at the beginning of each precombat main phase.
+     */
+    val sagaChapters: List<SagaChapterAbility> = emptyList()
 ) {
     /**
      * Whether this card has any scripted behavior.
@@ -193,7 +201,8 @@ data class CardScript(
                 replacementEffects.isNotEmpty() ||
                 additionalCosts.isNotEmpty() ||
                 auraTarget != null ||
-                castRestrictions.isNotEmpty()
+                castRestrictions.isNotEmpty() ||
+                sagaChapters.isNotEmpty()
 
     /**
      * Whether this spell has timing/conditional restrictions on casting.

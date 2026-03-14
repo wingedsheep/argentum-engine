@@ -7,6 +7,7 @@ import com.wingedsheep.engine.mechanics.StateBasedActionChecker
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.battlefield.CountersComponent
+import com.wingedsheep.engine.state.components.battlefield.SagaComponent
 import com.wingedsheep.engine.state.components.battlefield.DamageComponent
 import com.wingedsheep.engine.state.components.battlefield.SummoningSicknessComponent
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
@@ -34,6 +35,7 @@ import com.wingedsheep.engine.state.components.player.SkipNextTurnComponent
 import com.wingedsheep.engine.state.components.player.SkipUntapComponent
 import com.wingedsheep.engine.state.components.player.LoseAtEndStepComponent
 import com.wingedsheep.engine.handlers.EffectContext
+import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Phase
 import com.wingedsheep.sdk.core.Step
@@ -288,6 +290,45 @@ class TurnManager(
             newState,
             listOf(StepChangedEvent(Step.UPKEEP))
         )
+    }
+
+    /**
+     * Add a lore counter to each Saga the active player controls (Rule 714.3c).
+     * This is a turn-based action that happens at the beginning of precombat main phase.
+     */
+    private fun addLoreCountersToSagas(state: GameState, activePlayer: EntityId): ExecutionResult {
+        var newState = state
+        val events = mutableListOf<GameEvent>()
+
+        val battlefieldZone = ZoneKey(activePlayer, Zone.BATTLEFIELD)
+        for (entityId in newState.getZone(battlefieldZone)) {
+            val container = newState.getEntity(entityId) ?: continue
+            val cardComponent = container.get<CardComponent>() ?: continue
+            val sagaComponent = container.get<SagaComponent>() ?: continue
+
+            // This entity is a Saga — add a lore counter and mark newly triggered chapters
+            val counters = container.get<CountersComponent>() ?: CountersComponent()
+            val newLoreCount = counters.getCount(CounterType.LORE) + 1
+
+            // Determine which chapters this lore counter triggers
+            val cardDef = cardRegistry?.getCard(cardComponent.cardDefinitionId)
+            var updatedSaga = sagaComponent
+            if (cardDef != null) {
+                for (chapter in cardDef.sagaChapters) {
+                    if (newLoreCount >= chapter.chapter && chapter.chapter !in sagaComponent.triggeredChapters) {
+                        updatedSaga = updatedSaga.withChapterTriggered(chapter.chapter)
+                    }
+                }
+            }
+
+            newState = newState.updateEntity(entityId) { c ->
+                c.with(counters.withAdded(CounterType.LORE, 1))
+                    .with(updatedSaga)
+            }
+            events.add(CountersAddedEvent(entityId, "LORE", 1, cardComponent.name))
+        }
+
+        return ExecutionResult.success(newState, events)
     }
 
     /**
@@ -757,7 +798,15 @@ class TurnManager(
                 }
             }
 
-            Step.PRECOMBAT_MAIN,
+            Step.PRECOMBAT_MAIN -> {
+                // Add lore counters to Sagas (Rule 714.3c — turn-based action)
+                val sagaLoreResult = addLoreCountersToSagas(newState, activePlayer)
+                newState = sagaLoreResult.newState
+                events.addAll(sagaLoreResult.events)
+
+                newState = newState.withPriority(activePlayer)
+            }
+
             Step.POSTCOMBAT_MAIN -> {
                 newState = newState.withPriority(activePlayer)
             }

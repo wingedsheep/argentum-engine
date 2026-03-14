@@ -8,6 +8,7 @@ import com.wingedsheep.engine.handlers.effects.EffectExecutorUtils.stripBattlefi
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.battlefield.CountersComponent
+import com.wingedsheep.engine.state.components.battlefield.SagaComponent
 import com.wingedsheep.engine.state.components.battlefield.DamageComponent
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.state.components.battlefield.SummoningSicknessComponent
@@ -38,7 +39,8 @@ import com.wingedsheep.sdk.model.EntityId
  * SBAs are checked repeatedly until none apply.
  */
 class StateBasedActionChecker(
-    private val decisionHandler: DecisionHandler = DecisionHandler()
+    private val decisionHandler: DecisionHandler = DecisionHandler(),
+    private val cardRegistry: com.wingedsheep.engine.registry.CardRegistry? = null
 ) {
 
 
@@ -135,6 +137,11 @@ class StateBasedActionChecker(
 
         // 704.5p - Equipment/Fortification attached to illegal permanent becomes unattached
         // (Would need AttachedToComponent checking)
+
+        // 714.4 - Saga with lore counters >= final chapter (and no chapter on stack) is sacrificed
+        val sagaResults = checkSagaSacrifice(newState)
+        newState = sagaResults.newState
+        events.addAll(sagaResults.events)
 
         // 704.5s - Token in non-battlefield zone ceases to exist
         val tokenResults = checkTokensInWrongZones(newState)
@@ -399,6 +406,64 @@ class StateBasedActionChecker(
         cardComponent: CardComponent
     ): ExecutionResult {
         return putCreatureInGraveyard(state, entityId, cardComponent, "legend rule")
+    }
+
+    /**
+     * 714.4 - If the number of lore counters on a Saga permanent is greater than or equal
+     * to its final chapter number, and it isn't the source of a chapter ability that has
+     * triggered but not yet left the stack, the Saga's controller sacrifices it.
+     */
+    private fun checkSagaSacrifice(state: GameState): ExecutionResult {
+        var newState = state
+        val events = mutableListOf<GameEvent>()
+
+        for (entityId in state.getBattlefield().toList()) {
+            val container = state.getEntity(entityId) ?: continue
+            val cardComponent = container.get<CardComponent>() ?: continue
+            val sagaComponent = container.get<SagaComponent>() ?: continue
+            val counters = container.get<CountersComponent>() ?: continue
+
+            val cardRegistry = this.cardRegistry ?: continue
+            val cardDef = cardRegistry.getCard(cardComponent.cardDefinitionId) ?: continue
+            val finalChapter = cardDef.finalChapter ?: continue
+
+            val loreCount = counters.getCount(CounterType.LORE)
+            if (loreCount < finalChapter) continue
+
+            // Check if any chapter ability from this saga is on the stack
+            val hasChapterOnStack = newState.stack.any { stackId ->
+                val stackEntity = newState.getEntity(stackId) ?: return@any false
+                val triggeredComponent = stackEntity.get<com.wingedsheep.engine.state.components.stack.TriggeredAbilityOnStackComponent>()
+                triggeredComponent?.sourceId == entityId
+            }
+            if (hasChapterOnStack) continue
+
+            // Sacrifice the saga
+            val controllerId = container.get<ControllerComponent>()?.playerId
+                ?: cardComponent.ownerId ?: continue
+            val ownerId = cardComponent.ownerId ?: controllerId
+
+            val battlefieldZone = ZoneKey(controllerId, Zone.BATTLEFIELD)
+            val graveyardZone = ZoneKey(ownerId, Zone.GRAVEYARD)
+
+            newState = newState.removeFromZone(battlefieldZone, entityId)
+            newState = newState.addToZone(graveyardZone, entityId)
+            newState = newState.updateEntity(entityId) { c ->
+                EffectExecutorUtils.stripBattlefieldComponents(c)
+            }
+
+            events.add(
+                ZoneChangeEvent(
+                    entityId,
+                    cardComponent.name,
+                    Zone.BATTLEFIELD,
+                    Zone.GRAVEYARD,
+                    ownerId
+                )
+            )
+        }
+
+        return ExecutionResult.success(newState, events)
     }
 
     /**
