@@ -275,8 +275,8 @@ class AiPlayerController(
         legalActions: List<LegalActionInfo>,
         state: ClientGameState?
     ): ActionResponse? {
-        val cleaned = response.trim().uppercase()
-        // Match patterns: "C2", "C 2", "C,2", "C, 2"
+        val cleaned = response.trim().removeSurrounding("[", "]").trim().uppercase()
+        // Match patterns: "C2", "C 2", "C,2", "C, 2", "[C2]", "[C 2]"
         val pattern = Regex("""^([A-Z]{1,2})\s*[,:]?\s*(\d+)\s*$""")
         val match = pattern.find(cleaned) ?: return null
 
@@ -409,8 +409,8 @@ class AiPlayerController(
         }
 
         val preferred = when {
-            isHarmful && opponentTargets.isNotEmpty() -> opponentTargets
             isBeneficial && ownTargets.isNotEmpty() -> ownTargets
+            isHarmful && opponentTargets.isNotEmpty() -> opponentTargets
             // Default: for spells WE cast, assume harmful → target opponent
             !isBeneficial && opponentTargets.isNotEmpty() -> opponentTargets
             else -> validTargets
