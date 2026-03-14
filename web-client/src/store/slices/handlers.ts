@@ -46,6 +46,7 @@ function getEventPlayerId(event: { type: string; playerId?: string; casterId?: s
     case 'cardCycled': return event.playerId as EntityId
     case 'libraryShuffled': return event.playerId as EntityId
     case 'controlChanged': return event.newControllerId as EntityId
+    case 'decisionMade': return event.playerId as EntityId
     default: return null
   }
 }

@@ -42,6 +42,7 @@ export type ClientEvent =
   | AbilityFizzledEvent
   | PermanentsSacrificedEvent
   | TargetReselectedEvent
+  | DecisionMadeEvent
 
 // ============================================================================
 // Life/Damage Events
@@ -385,6 +386,17 @@ export interface TargetReselectedEvent {
   readonly oldTargetName: string
   readonly newTargetName: string
   readonly sourceName: string
+  readonly description: string
+}
+
+// ============================================================================
+// Decision Events
+// ============================================================================
+
+export interface DecisionMadeEvent {
+  readonly type: 'decisionMade'
+  readonly playerId: EntityId
+  readonly isYours: boolean | null
   readonly description: string
 }
 

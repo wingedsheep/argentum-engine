@@ -182,10 +182,16 @@ sealed interface ClientEvent {
         val spellName: String,
         val casterId: EntityId,
         val isYours: Boolean? = null,
-        override val description: String = when (isYours) {
-            true -> "You cast $spellName"
-            false -> "Opponent cast $spellName"
-            null -> "Cast $spellName"
+        val targetNames: List<String> = emptyList(),
+        val xValue: Int? = null,
+        override val description: String = run {
+            val xText = if (xValue != null) " (X=$xValue)" else ""
+            val targetText = if (targetNames.isNotEmpty()) " targeting ${targetNames.joinToString(", ")}" else ""
+            when (isYours) {
+                true -> "You cast $spellName$xText$targetText"
+                false -> "Opponent cast $spellName$xText$targetText"
+                null -> "Cast $spellName$xText$targetText"
+            }
         }
     ) : ClientEvent
 
@@ -516,6 +522,18 @@ sealed interface ClientEvent {
     ) : ClientEvent
 
     // =========================================================================
+    // Decision Events
+    // =========================================================================
+
+    @Serializable
+    @SerialName("decisionMade")
+    data class DecisionMade(
+        val playerId: EntityId,
+        val isYours: Boolean? = null,
+        override val description: String
+    ) : ClientEvent
+
+    // =========================================================================
     // Target Reselection Events
     // =========================================================================
 
@@ -615,25 +633,61 @@ object ClientEventTransformer {
             is CardsDrawnEvent -> {
                 val isYours = event.playerId == viewingPlayerId
                 if (event.cardIds.isNotEmpty()) {
-                    val firstName = event.cardNames.firstOrNull()
-                    ClientEvent.CardDrawn(
-                        playerId = event.playerId,
-                        cardId = event.cardIds.first(),
-                        cardName = if (isYours) firstName else null,
-                        isYours = isYours
-                    )
+                    if (event.count > 1) {
+                        // For multiple cards, show the count and names if visible
+                        val cardNamesList = if (isYours && event.cardNames.isNotEmpty()) {
+                            event.cardNames
+                        } else emptyList()
+                        val desc = when {
+                            isYours && cardNamesList.isNotEmpty() ->
+                                "You drew ${event.count} cards: ${cardNamesList.joinToString(", ")}"
+                            isYours -> "You drew ${event.count} cards"
+                            else -> "Opponent drew ${event.count} cards"
+                        }
+                        ClientEvent.CardDrawn(
+                            playerId = event.playerId,
+                            cardId = event.cardIds.first(),
+                            cardName = if (isYours) event.cardNames.firstOrNull() else null,
+                            isYours = isYours,
+                            description = desc
+                        )
+                    } else {
+                        val firstName = event.cardNames.firstOrNull()
+                        ClientEvent.CardDrawn(
+                            playerId = event.playerId,
+                            cardId = event.cardIds.first(),
+                            cardName = if (isYours) firstName else null,
+                            isYours = isYours
+                        )
+                    }
                 } else null
             }
 
             is CardsDiscardedEvent -> {
                 if (event.cardIds.isNotEmpty()) {
-                    val firstName = event.cardNames.firstOrNull() ?: "Card"
-                    ClientEvent.CardDiscarded(
-                        playerId = event.playerId,
-                        cardId = event.cardIds.first(),
-                        cardName = firstName,
-                        isYours = event.playerId == viewingPlayerId
-                    )
+                    val isYours = event.playerId == viewingPlayerId
+                    if (event.cardNames.size > 1) {
+                        val names = event.cardNames.joinToString(", ")
+                        val desc = when (isYours) {
+                            true -> "You discarded $names"
+                            false -> "Opponent discarded $names"
+                        }
+                        ClientEvent.CardDiscarded(
+                            playerId = event.playerId,
+                            cardId = event.cardIds.first(),
+                            cardName = event.cardNames.firstOrNull() ?: "Card",
+                            isYours = isYours,
+                            description = desc
+                        )
+                    } else {
+                        val firstName = event.cardNames.firstOrNull() ?: "Card"
+                        ClientEvent.CardDiscarded(
+                            playerId = event.playerId,
+                            cardId = event.cardIds.first(),
+                            cardName = firstName,
+                            isYours = isYours
+                        )
+                    }
                 } else null
             }
 
@@ -691,7 +745,9 @@ object ClientEventTransformer {
                 spellId = event.spellEntityId,
                 spellName = event.cardName,
                 casterId = event.casterId,
-                isYours = event.casterId == viewingPlayerId
+                isYours = event.casterId == viewingPlayerId,
+                targetNames = event.targetNames,
+                xValue = event.xValue
             )
 
             is ResolvedEvent -> ClientEvent.SpellResolved(
@@ -904,6 +960,21 @@ is PermanentsSacrificedEvent -> {
                 sourceName = event.sourceName
             )
 
+            is DecisionSubmittedEvent -> {
+                if (event.description != null) {
+                    val isYours = event.playerId == viewingPlayerId
+                    val desc = when (isYours) {
+                        true -> "You: ${event.description}"
+                        false -> "Opponent: ${event.description}"
+                    }
+                    ClientEvent.DecisionMade(
+                        playerId = event.playerId,
+                        isYours = isYours,
+                        description = desc
+                    )
+                } else null
+            }
+
             // Events that don't need client representation or are handled differently
             is DrawFailedEvent,
             is BlockerOrderDeclaredEvent,
@@ -914,7 +985,6 @@ is PermanentsSacrificedEvent -> {
             is PriorityChangedEvent,
             is ManaSpentEvent,
             is DecisionRequestedEvent,
-            is DecisionSubmittedEvent,
             is AbilityResolvedEvent,
             is DiscardRequiredEvent,
             is LookedAtCardsEvent,

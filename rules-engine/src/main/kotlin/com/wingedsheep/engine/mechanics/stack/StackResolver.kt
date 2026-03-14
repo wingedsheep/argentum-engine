@@ -139,7 +139,18 @@ class StackResolver(
         // For face-down creatures, use a generic name in the event
         val eventName = if (castFaceDown) "Face-down creature" else cardComponent.name
 
-        val events = mutableListOf<GameEvent>(SpellCastEvent(cardId, eventName, casterId))
+        // Collect target names for the cast event log
+        val targetNames = targets.mapNotNull { target ->
+            when (target) {
+                is ChosenTarget.Permanent -> newState.getEntity(target.entityId)?.get<CardComponent>()?.name
+                is ChosenTarget.Player -> if (target.playerId == casterId) "themselves" else "opponent"
+                is ChosenTarget.Spell -> newState.getEntity(target.spellEntityId)?.get<CardComponent>()?.name
+                    ?: "spell"
+                is ChosenTarget.Card -> newState.getEntity(target.cardId)?.get<CardComponent>()?.name
+            }
+        }
+
+        val events = mutableListOf<GameEvent>(SpellCastEvent(cardId, eventName, casterId, targetNames, xValue))
 
         // Emit BecomesTargetEvent for each permanent target (Rule 601.2c)
         for (target in targets) {

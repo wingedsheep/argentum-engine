@@ -1,11 +1,6 @@
 package com.wingedsheep.engine.handlers.actions.decision
 
-import com.wingedsheep.engine.core.DecisionSubmittedEvent
-import com.wingedsheep.engine.core.ExecutionResult
-import com.wingedsheep.engine.core.GameEvent
-import com.wingedsheep.engine.core.StepChangedEvent
-import com.wingedsheep.engine.core.SubmitDecision
-import com.wingedsheep.engine.core.TurnManager
+import com.wingedsheep.engine.core.*
 import com.wingedsheep.engine.event.TriggerDetector
 import com.wingedsheep.engine.event.TriggerProcessor
 import com.wingedsheep.engine.handlers.ContinuationHandler
@@ -13,6 +8,7 @@ import com.wingedsheep.engine.handlers.actions.ActionContext
 import com.wingedsheep.engine.handlers.actions.ActionHandler
 import com.wingedsheep.engine.mechanics.StateBasedActionChecker
 import com.wingedsheep.engine.state.GameState
+import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.sdk.core.Step
 import kotlin.reflect.KClass
 
@@ -53,7 +49,11 @@ class SubmitDecisionHandler(
         // Clear the pending decision
         val clearedState = state.clearPendingDecision()
 
-        val submittedEvent = DecisionSubmittedEvent(pending.id, action.playerId)
+        val submittedEvent = DecisionSubmittedEvent(
+            pending.id,
+            action.playerId,
+            description = buildDecisionDescription(state, pending, action.response)
+        )
 
         // Check if there's a continuation frame to process
         val hasContinuation = clearedState.peekContinuation() != null
@@ -205,6 +205,74 @@ class SubmitDecisionHandler(
         }
 
         return ExecutionResult.success(currentState, allEvents)
+    }
+
+    /**
+     * Build a human-readable description of the decision that was made.
+     */
+    private fun buildDecisionDescription(
+        state: GameState,
+        pending: PendingDecision,
+        response: DecisionResponse
+    ): String? {
+        val sourceName = pending.context.sourceName
+        val sourcePrefix = sourceName?.let { "($it) " } ?: ""
+
+        return when {
+            pending is YesNoDecision && response is YesNoResponse -> {
+                val choice = if (response.choice) "Yes" else "No"
+                "${sourcePrefix}Chose $choice"
+            }
+
+            pending is ChooseNumberDecision && response is NumberChosenResponse -> {
+                "${sourcePrefix}Chose X = ${response.number}"
+            }
+
+            pending is ChooseColorDecision && response is ColorChosenResponse -> {
+                "${sourcePrefix}Chose ${response.color.name.lowercase()}"
+            }
+
+            pending is ChooseModeDecision && response is ModesChosenResponse -> {
+                val modeTexts = response.selectedModes.mapNotNull { idx ->
+                    pending.modes.find { it.index == idx }?.text
+                }
+                if (modeTexts.isNotEmpty()) {
+                    "${sourcePrefix}Chose mode: ${modeTexts.joinToString(", ")}"
+                } else null
+            }
+
+            pending is ChooseOptionDecision && response is OptionChosenResponse -> {
+                val optionText = pending.options.getOrNull(response.optionIndex)
+                if (optionText != null) {
+                    "${sourcePrefix}Chose $optionText"
+                } else null
+            }
+
+            pending is ChooseTargetsDecision && response is TargetsResponse -> {
+                val targetNames = response.selectedTargets.values.flatten().mapNotNull { targetId ->
+                    state.getEntity(targetId)?.get<CardComponent>()?.name
+                        ?: if (state.turnOrder.contains(targetId)) "player" else null
+                }
+                if (targetNames.isNotEmpty()) {
+                    "${sourcePrefix}Targeting ${targetNames.joinToString(", ")}"
+                } else null
+            }
+
+            pending is DistributeDecision && response is DistributionResponse -> {
+                val parts = response.distribution.mapNotNull { (targetId, amount) ->
+                    val name = state.getEntity(targetId)?.get<CardComponent>()?.name
+                        ?: if (state.turnOrder.contains(targetId)) "player" else null
+                    name?.let { "$amount to $it" }
+                }
+                if (parts.isNotEmpty()) {
+                    "${sourcePrefix}Distributed: ${parts.joinToString(", ")}"
+                } else null
+            }
+
+            // SelectCards, OrderObjects, SearchLibrary, etc. - these produce their own
+            // events (ScryCompleted, PermanentsSacrificed, etc.) so no extra log needed
+            else -> null
+        }
     }
 
     companion object {

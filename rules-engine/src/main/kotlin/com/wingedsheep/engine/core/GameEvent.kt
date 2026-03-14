@@ -145,7 +145,9 @@ data class CreatureTypeChangedEvent(
 data class SpellCastEvent(
     val spellEntityId: EntityId,
     val cardName: String,
-    val casterId: EntityId
+    val casterId: EntityId,
+    val targetNames: List<String> = emptyList(),
+    val xValue: Int? = null
 ) : GameEvent
 
 /**
@@ -507,7 +509,9 @@ data class DecisionRequestedEvent(
 @SerialName("DecisionSubmittedEvent")
 data class DecisionSubmittedEvent(
     val decisionId: String,
-    val playerId: EntityId
+    val playerId: EntityId,
+    /** Human-readable description of what was decided, for the game log */
+    val description: String? = null
 ) : GameEvent
 
 // =============================================================================
