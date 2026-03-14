@@ -64,6 +64,10 @@ class GameSession(
     @Volatile
     private var undoCheckpoint: GameState? = null
 
+    /** The player who owns the current undo checkpoint */
+    @Volatile
+    private var undoCheckpointOwner: EntityId? = null
+
     /** Checkpoint for re-tapping lands after a CastSpell with AutoPay */
     @Volatile
     private var retapCheckpoint: RetapCheckpoint? = null
@@ -483,6 +487,19 @@ class GameSession(
     }
 
     /**
+     * Check if an event reveals hidden information (draws, reveals, looks).
+     * If such events occur after an undoable action, the checkpoint is invalidated
+     * because undoing after gaining new information would be unfair.
+     */
+    private fun isInformationRevealingEvent(event: GameEvent): Boolean = when (event) {
+        is CardsDrawnEvent, is CardRevealedFromDrawEvent,
+        is CardsRevealedEvent, is LookedAtCardsEvent,
+        is HandLookedAtEvent, is HandRevealedEvent,
+        is CoinFlipEvent -> true
+        else -> false
+    }
+
+    /**
      * Check if an action is eligible for undo (non-respondable actions where
      * the opponent can't respond before the active player passes priority).
      */
@@ -532,6 +549,15 @@ class GameSession(
             }
         }
 
+        // If the opponent takes any action, invalidate the undo checkpoint.
+        // The opponent has seen the game state after the undoable action, so allowing undo
+        // would revert information the opponent has already processed.
+        if (undoCheckpoint != null && undoCheckpointOwner != null && playerId != undoCheckpointOwner) {
+            undoCheckpoint = null
+            undoCheckpointOwner = null
+            preCombatState = null
+        }
+
         // Track pre-combat state: when the active player passes priority in precombat main,
         // save this state so that undo from combat goes back to main phase.
         // Also set undoCheckpoint so undo is available immediately upon arriving at declare attackers
@@ -539,6 +565,7 @@ class GameSession(
         if (action is PassPriority && state.step == Step.PRECOMBAT_MAIN && playerId == state.activePlayerId) {
             preCombatState = state
             undoCheckpoint = state
+            undoCheckpointOwner = playerId
         }
 
         // Track declare attackers state: when the defending player passes priority during declare attackers
@@ -546,6 +573,7 @@ class GameSession(
         // defending player can undo back to declare attackers.
         if (action is PassPriority && state.step == Step.DECLARE_ATTACKERS && playerId != state.activePlayerId && state.stack.isEmpty()) {
             undoCheckpoint = state
+            undoCheckpointOwner = playerId
         }
 
         // Manage undo checkpoint:
@@ -562,13 +590,16 @@ class GameSession(
             } else {
                 state
             }
+            undoCheckpointOwner = playerId
         } else if (action is ActivateAbility && isManaAbilityActivation(action)) {
             // First mana ability in a sequence creates a checkpoint; subsequent ones preserve it
             if (undoCheckpoint == null) {
                 undoCheckpoint = state
+                undoCheckpointOwner = playerId
             }
         } else if (!isCheckpointNeutralAction(action) && action !is CastSpell) {
             undoCheckpoint = null
+            undoCheckpointOwner = null
             preCombatState = null
         }
 
@@ -594,6 +625,12 @@ class GameSession(
             }
             pendingDecision != null -> {
                 // CastSpell with immediate triggers/decisions: no retap (can't safely re-tap mid-trigger)
+                // Invalidate undo checkpoint if events reveal information
+                if (undoCheckpoint != null && result.events.any { isInformationRevealingEvent(it) }) {
+                    undoCheckpoint = null
+                    undoCheckpointOwner = null
+                    preCombatState = null
+                }
                 gameState = result.state
                 if (messageId != null) lastProcessedMessageId[playerId] = messageId
                 ActionResult.PausedForDecision(result.state, pendingDecision, result.events)
@@ -606,6 +643,13 @@ class GameSession(
                 // Clear retap checkpoint when the game moves to a new step
                 if (result.events.any { it is StepChangedEvent }) {
                     retapCheckpoint = null
+                }
+                // Invalidate undo checkpoint if the action produced information-revealing events
+                // (draws, reveals, looks) — undoing after gaining new information would be unfair
+                if (undoCheckpoint != null && result.events.any { isInformationRevealingEvent(it) }) {
+                    undoCheckpoint = null
+                    undoCheckpointOwner = null
+                    preCombatState = null
                 }
                 gameState = result.state
                 if (messageId != null) lastProcessedMessageId[playerId] = messageId
@@ -880,6 +924,7 @@ class GameSession(
 
         gameState = checkpoint
         undoCheckpoint = null
+        undoCheckpointOwner = null
         preCombatState = null
         retapCheckpoint = null
         logger.info("Player $playerId undid their last action")
