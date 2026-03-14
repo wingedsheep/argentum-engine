@@ -136,13 +136,13 @@ The AI receives the same masked game state as a human player and responds throug
 ## Architecture
 
 ```
-argentum/
-├── rules-engine/               # Core rules, zones, actions, keywords
-├── sets/
-│   └── portal/                 # First supported set
-│       └── card-scripts/       # Per-card ability scripts
-├── server/                     # Game server & matchmaking
-└── client/                     # Web frontend
+argentum-engine/
+├── mtg-sdk/          # Shared contract — DSLs, data models, primitives
+├── mtg-sets/         # Card definitions (Portal, Onslaught, Legions, Scourge, Khans, Dominaria)
+├── rules-engine/     # Core MTG rules engine (no server dependencies)
+├── game-server/      # Spring Boot game server & matchmaking
+├── web-client/       # React/TypeScript browser UI
+└── e2e-scenarios/    # Playwright end-to-end tests
 ```
 
 ## Rules Engine
@@ -150,19 +150,17 @@ argentum/
 The rules engine is a standalone library with no server dependencies. It models the complete game state immutably and
 exposes a pure functional API:
 
-### Features
-
 - Full turn structure (phases, steps, priority)
 - Stack and spell resolution
 - Combat (attackers, blockers, damage assignment)
-- Triggered and activated abilities
-- Keywords (flying, trample, deathtouch, etc.)
+- Triggered, activated, and static abilities
+- Keywords (flying, trample, deathtouch, morph, cycling, and more)
 - State-based actions
 - Targeting and legality checks
+- Rule 613 layer system for continuous effects
+- Replacement effects
 
-### Card Scripts
-
-Cards are defined as scripts that compose core abilities:
+Cards are defined as pure data using a Kotlin DSL — no card-specific logic in the engine.
 
 ## Gameplay Platform
 
@@ -171,21 +169,14 @@ Cards are defined as scripts that compose core abilities:
 - OAuth login via Keycloak (Google account)
 - Create games with invite links
 - Deck builder from available cards
-- Booster draft with friends
+- Booster draft with up to 8 players
+- Sealed deck tournaments
 
 ### Client
 
-- WebGL-based card rendering
-- Real-time game state sync
-- Card images
-
-## Roadmap
-
-1. **Phase 1** — Core rules engine with Portal set
-2. **Phase 2** — Server infrastructure and matchmaking
-3. **Phase 3** — Web client MVP
-4. **Phase 4** — Draft mode
-5. **Phase 5** — Additional sets
+- Real-time game state sync via WebSocket
+- Card images from Scryfall
+- Targeting, combat, and decision UIs
 
 ## Why "Argentum"?
 
