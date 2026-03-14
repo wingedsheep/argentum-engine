@@ -2,7 +2,7 @@
 
 **Set Size:** 280 cards (249 unique card names + basic land variants)
 **Release Date:** April 27, 2018
-**Implemented:** 157 / 249
+**Implemented:** 158 / 249
 
 | Color      | Total | Done |
 |------------|-------|------|
@@ -13,7 +13,7 @@
 | Green      | 37    | 26   |
 | Multicolor | 19    | 10   |
 | Colorless  | 30    | 16   |
-| Land       | 12    | 6    |
+| Land       | 12    | 7    |
 
 ---
 
@@ -46,7 +46,7 @@
 - [x] Broken Bond
 - [x] Cabal Evangel
 - [x] Cabal Paladin
-- [ ] Cabal Stronghold
+- [x] Cabal Stronghold
 - [x] Caligo Skin-Witch
 - [x] Call the Cavalry
 - [x] Cast Down

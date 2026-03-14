@@ -46,6 +46,7 @@ object DominariaSet {
         CallTheCavalry,
         CabalPaladin,
         CabalEvangel,
+        CabalStronghold,
         CastDown,
         ChampionOfTheFlame,
         Charge,
