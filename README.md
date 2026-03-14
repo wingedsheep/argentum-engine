@@ -166,16 +166,13 @@ Cards are defined as pure data using a Kotlin DSL — no card-specific logic in 
 
 ### Server
 
-- OAuth login via Keycloak (Google account)
 - Create games with invite links
-- Deck builder from available cards
 - Booster draft with up to 8 players
 - Sealed deck tournaments
 
 ### Client
 
 - Real-time game state sync via WebSocket
-- Card images from Scryfall
 - Targeting, combat, and decision UIs
 
 ## Why "Argentum"?
