@@ -84,6 +84,13 @@ object Conditions {
         Exists(Player.You, Zone.BATTLEFIELD, GameObjectFilter.Artifact)
 
     /**
+     * If you control a legendary creature or planeswalker.
+     * Used as the cast restriction for legendary sorceries.
+     */
+    val ControlLegendaryCreatureOrPlaneswalker: ConditionInterface =
+        Exists(Player.You, Zone.BATTLEFIELD, GameObjectFilter.CreatureOrPlaneswalker.legendary())
+
+    /**
      * If you control N or more lands.
      */
     fun ControlLandsAtLeast(count: Int): ConditionInterface =

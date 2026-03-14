@@ -130,6 +130,7 @@ object DominariaSet {
         PhyrexianScriptures,
         PierceTheSky,
         PrecognitionField,
+        PrimevalsGloriousRebirth,
         PrimordialWurm,
         RaffCapashenShipsMage,
         RadiatingLightning,

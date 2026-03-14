@@ -2,7 +2,7 @@
 
 **Set Size:** 280 cards (249 unique card names + basic land variants)
 **Release Date:** April 27, 2018
-**Implemented:** 168 / 249
+**Implemented:** 169 / 249
 
 | Color      | Total | Done |
 |------------|-------|------|
@@ -11,7 +11,7 @@
 | Black      | 38    | 26   |
 | Red        | 38    | 26   |
 | Green      | 37    | 27   |
-| Multicolor | 19    | 11   |
+| Multicolor | 19    | 12   |
 | Colorless  | 30    | 18   |
 | Land       | 12    | 8    |
 
@@ -172,7 +172,7 @@
 - [x] Pierce the Sky
 - [ ] Powerstone Shard
 - [x] Precognition Field
-- [ ] Primevals' Glorious Rebirth
+- [x] Primevals' Glorious Rebirth
 - [x] Primordial Wurm
 - [x] Radiating Lightning
 - [x] Raff Capashen, Ship's Mage
