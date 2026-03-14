@@ -1546,50 +1546,265 @@ class LobbyHandler(
     }
 
     /**
-     * Build a simple 40-card sealed deck from a card pool.
-     * Strategy: pick all non-land spells sorted by mana value, fill with basic Plains.
+     * Build a 40-card sealed deck from a card pool using the LLM.
+     * Falls back to a color-based heuristic if the LLM fails.
      */
     private fun buildAiSealedDeck(pool: List<com.wingedsheep.sdk.model.CardDefinition>): Map<String, Int> {
-        val deck = mutableMapOf<String, Int>()
-
         logger.info("AI building sealed deck from pool of {} cards", pool.size)
 
-        // Separate lands and non-lands
+        val aiProperties = gameProperties.ai
+        if (aiProperties.enabled && aiProperties.openRouterApiKey.isNotBlank()) {
+            val llmDeck = tryLlmSealedDeck(pool, aiProperties)
+            if (llmDeck != null) return llmDeck
+            logger.info("AI LLM deckbuild failed, falling back to heuristic")
+        }
+
+        return buildHeuristicSealedDeck(pool)
+    }
+
+    /**
+     * Ask the LLM to analyze the sealed pool and build a deck.
+     */
+    private fun tryLlmSealedDeck(
+        pool: List<com.wingedsheep.sdk.model.CardDefinition>,
+        aiProperties: com.wingedsheep.gameserver.config.AiProperties
+    ): Map<String, Int>? {
         val nonLands = pool.filter { !it.typeLine.isLand }
-        val spells = nonLands.sortedBy { it.cmc }
+        val poolLands = pool.filter { it.typeLine.isLand && !it.typeLine.isBasicLand }
 
-        logger.info("AI pool breakdown: {} non-land cards, sorted by mana value", nonLands.size)
+        val prompt = buildString {
+            appendLine("You are building a 40-card sealed deck from this card pool.")
+            appendLine()
+            appendLine("RULES:")
+            appendLine("- Exactly 40 cards total")
+            appendLine("- ~23 non-land cards (creatures + spells) and ~17 lands")
+            appendLine("- Pick 2 colors (sometimes splash a 3rd). Do NOT play all 5 colors.")
+            appendLine("- Only include cards you can actually cast with your lands")
+            appendLine("- You may add any number of basic lands: Plains, Island, Swamp, Mountain, Forest")
+            appendLine("- Prioritize creatures, removal, and a good mana curve")
+            appendLine("- Include non-basic lands from your pool if they fit your colors")
+            appendLine()
+            appendLine("YOUR CARD POOL:")
 
-        // Take up to 23 non-land cards (standard limited deckbuilding)
-        val spellsToPick = spells.take(23)
-        for (card in spellsToPick) {
+            val byType = nonLands.groupBy { card ->
+                when {
+                    card.typeLine.isCreature -> "Creatures"
+                    card.typeLine.isInstant || card.typeLine.isSorcery -> "Spells"
+                    card.typeLine.isEnchantment -> "Enchantments"
+                    card.typeLine.isArtifact -> "Artifacts"
+                    else -> "Other"
+                }
+            }
+
+            for ((type, cards) in byType.entries.sortedBy { it.key }) {
+                appendLine()
+                appendLine("$type:")
+                // Group duplicates
+                val grouped = cards.groupBy { it.name }
+                for ((name, copies) in grouped.entries.sortedBy { it.value.first().cmc }) {
+                    val card = copies.first()
+                    val stats = if (card.creatureStats != null) " ${card.creatureStats}" else ""
+                    val oracle = if (card.oracleText.isNotBlank()) " — ${card.oracleText.take(120)}" else ""
+                    val count = if (copies.size > 1) "${copies.size}x " else ""
+                    appendLine("  $count${card.name} ${card.manaCost} — ${card.typeLine}$stats$oracle")
+                }
+            }
+
+            if (poolLands.isNotEmpty()) {
+                appendLine()
+                appendLine("Non-basic lands in pool:")
+                val grouped = poolLands.groupBy { it.name }
+                for ((name, copies) in grouped) {
+                    val card = copies.first()
+                    val count = if (copies.size > 1) "${copies.size}x " else ""
+                    val oracle = if (card.oracleText.isNotBlank()) " — ${card.oracleText.take(80)}" else ""
+                    appendLine("  $count${card.name}$oracle")
+                }
+            }
+
+            appendLine()
+            appendLine("Reply ONLY with the deck list, one entry per line:")
+            appendLine("1x Card Name")
+            appendLine("9x Forest")
+        }
+
+        val client = com.wingedsheep.gameserver.ai.OpenRouterClient(aiProperties)
+        val messages = listOf(
+            com.wingedsheep.gameserver.ai.ChatMessage("system",
+                "You are an expert Magic: The Gathering limited deckbuilder. " +
+                "Analyze the sealed pool, pick the best 2 colors (with optional light splash), " +
+                "and build a strong 40-card deck. Reply ONLY with the deck list."),
+            com.wingedsheep.gameserver.ai.ChatMessage("user", prompt)
+        )
+
+        logger.info("AI sealed deckbuild prompt ({} chars)", prompt.length)
+        val response = client.chatCompletion(messages) ?: return null
+        logger.info("AI sealed deckbuild response:\n{}", response)
+
+        return parseSealedDeckList(response, pool)
+    }
+
+    /**
+     * Parse an LLM deck list response, validating against the actual pool.
+     */
+    private fun parseSealedDeckList(
+        response: String,
+        pool: List<com.wingedsheep.sdk.model.CardDefinition>
+    ): Map<String, Int>? {
+        val basics = setOf("Plains", "Island", "Swamp", "Mountain", "Forest")
+        // Count how many copies of each card are in the pool
+        val poolCounts = pool.groupBy { it.name }.mapValues { it.value.size }
+        val validNames = poolCounts.keys + basics
+
+        val deckMap = mutableMapOf<String, Int>()
+        val linePattern = Regex("""(\d+)\s*x?\s+(.+)""", RegexOption.IGNORE_CASE)
+
+        for (line in response.lines()) {
+            val match = linePattern.find(line.trim()) ?: continue
+            val count = match.groupValues[1].toIntOrNull() ?: continue
+            val name = match.groupValues[2].trim()
+
+            val exactMatch = validNames.find { it.equals(name, ignoreCase = true) } ?: continue
+            if (count < 1) continue
+
+            // Enforce pool limits for non-basics
+            val maxAllowed = if (exactMatch in basics) count else poolCounts[exactMatch] ?: 0
+            val actual = count.coerceAtMost(maxAllowed)
+            if (actual > 0) {
+                deckMap[exactMatch] = (deckMap[exactMatch] ?: 0) + actual
+            }
+        }
+
+        val totalCards = deckMap.values.sum()
+        if (totalCards < 30) {
+            logger.warn("AI sealed deckbuild: deck too small ({} cards), rejecting", totalCards)
+            return null
+        }
+
+        // Pad to 40 if under
+        if (totalCards < 40) {
+            val landsNeeded = 40 - totalCards
+            // Determine primary color from non-land cards in deck
+            val primaryLand = guessPrimaryBasicLand(deckMap, pool)
+            deckMap[primaryLand] = (deckMap[primaryLand] ?: 0) + landsNeeded
+            logger.info("AI sealed deckbuild: padded {} {} to reach 40", landsNeeded, primaryLand)
+        }
+
+        // Trim to 40 if over (remove excess lands first)
+        while (deckMap.values.sum() > 40) {
+            val landToTrim = basics.filter { (deckMap[it] ?: 0) > 0 }
+                .maxByOrNull { deckMap[it] ?: 0 } ?: break
+            deckMap[landToTrim] = (deckMap[landToTrim] ?: 0) - 1
+            if (deckMap[landToTrim] == 0) deckMap.remove(landToTrim)
+        }
+
+        logger.info("AI sealed deckbuild: final deck ({} cards): {}", deckMap.values.sum(),
+            deckMap.entries.sortedByDescending { it.value }.joinToString(", ") { "${it.value}x ${it.key}" })
+
+        return deckMap
+    }
+
+    /**
+     * Heuristic fallback: pick the best 2 colors, include on-color cards, add correct basics.
+     */
+    private fun buildHeuristicSealedDeck(pool: List<com.wingedsheep.sdk.model.CardDefinition>): Map<String, Int> {
+        val deck = mutableMapOf<String, Int>()
+
+        val nonLands = pool.filter { !it.typeLine.isLand }
+        val poolLands = pool.filter { it.typeLine.isLand && !it.typeLine.isBasicLand }
+
+        // Score each color by the quality/count of cards
+        val colorScores = mutableMapOf<com.wingedsheep.sdk.core.Color, Double>()
+        for (card in nonLands) {
+            for (color in card.colors) {
+                colorScores[color] = (colorScores[color] ?: 0.0) + 1.0 + (if (card.typeLine.isCreature) 0.5 else 0.0)
+            }
+        }
+
+        // Pick top 2 colors
+        val bestColors = colorScores.entries.sortedByDescending { it.value }.take(2).map { it.key }.toSet()
+        logger.info("AI heuristic: best colors = {}", bestColors.joinToString(", ") { it.name })
+
+        // Select on-color + colorless cards
+        val candidates = nonLands.filter { card ->
+            card.colors.isEmpty() || card.colors.all { it in bestColors }
+        }.sortedWith(compareBy({ it.cmc }, { if (it.typeLine.isCreature) 0 else 1 }))
+
+        val spells = candidates.take(23)
+        for (card in spells) {
             deck[card.name] = (deck[card.name] ?: 0) + 1
         }
 
-        logger.info("AI selected {} spells: {}", spellsToPick.size,
-            deck.entries.joinToString(", ") { "${it.value}x ${it.key}" })
+        // Add on-color non-basic lands
+        for (land in poolLands) {
+            // Simple heuristic: include dual/special lands
+            deck[land.name] = (deck[land.name] ?: 0) + 1
+        }
 
-        // Fill remaining slots with basic lands to reach 40
+        // Fill to 40 with basic lands split by color
         val totalSpells = deck.values.sum()
         val landsNeeded = (40 - totalSpells).coerceAtLeast(0)
 
-        // Check which basic lands are in the pool (sealed pools may include them)
-        val basicLands = pool.filter { it.typeLine.isBasicLand }
-            .groupBy { it.name }
+        val colorToLand = mapOf(
+            com.wingedsheep.sdk.core.Color.WHITE to "Plains",
+            com.wingedsheep.sdk.core.Color.BLUE to "Island",
+            com.wingedsheep.sdk.core.Color.BLACK to "Swamp",
+            com.wingedsheep.sdk.core.Color.RED to "Mountain",
+            com.wingedsheep.sdk.core.Color.GREEN to "Forest"
+        )
 
-        if (basicLands.isNotEmpty()) {
-            val landName = basicLands.keys.first()
-            deck[landName] = (deck[landName] ?: 0) + landsNeeded
-            logger.info("AI adding {} {} to reach 40 cards", landsNeeded, landName)
+        if (bestColors.size >= 2) {
+            val land1 = colorToLand[bestColors.first()] ?: "Forest"
+            val land2 = colorToLand[bestColors.last()] ?: "Forest"
+            // Count mana symbols to split lands proportionally
+            val color1count = spells.sumOf { card -> card.colors.count { it == bestColors.first() } }
+            val color2count = spells.sumOf { card -> card.colors.count { it == bestColors.last() } }
+            val total = (color1count + color2count).coerceAtLeast(1)
+            val land1count = (landsNeeded * color1count / total).coerceAtLeast(1)
+            val land2count = landsNeeded - land1count
+            deck[land1] = (deck[land1] ?: 0) + land1count
+            deck[land2] = (deck[land2] ?: 0) + land2count
+        } else if (bestColors.size == 1) {
+            val land = colorToLand[bestColors.first()] ?: "Forest"
+            deck[land] = (deck[land] ?: 0) + landsNeeded
         } else {
-            deck["Plains"] = (deck["Plains"] ?: 0) + landsNeeded
-            logger.info("AI adding {} Plains (no basic lands in pool) to reach 40 cards", landsNeeded)
+            deck["Forest"] = (deck["Forest"] ?: 0) + landsNeeded
         }
 
-        logger.info("AI final deck ({} cards): {}", deck.values.sum(),
+        logger.info("AI heuristic deck ({} cards): {}", deck.values.sum(),
             deck.entries.sortedByDescending { it.value }.joinToString(", ") { "${it.value}x ${it.key}" })
 
         return deck
+    }
+
+    /**
+     * Guess the primary basic land name from the colors of non-land cards already in the deck.
+     */
+    private fun guessPrimaryBasicLand(
+        deckMap: Map<String, Int>,
+        pool: List<com.wingedsheep.sdk.model.CardDefinition>
+    ): String {
+        val basics = setOf("Plains", "Island", "Swamp", "Mountain", "Forest")
+        val poolByName = pool.associateBy { it.name }
+        val colorCounts = mutableMapOf<com.wingedsheep.sdk.core.Color, Int>()
+
+        for ((name, count) in deckMap) {
+            if (name in basics) continue
+            val card = poolByName[name] ?: continue
+            for (color in card.colors) {
+                colorCounts[color] = (colorCounts[color] ?: 0) + count
+            }
+        }
+
+        val topColor = colorCounts.maxByOrNull { it.value }?.key
+        return when (topColor) {
+            com.wingedsheep.sdk.core.Color.WHITE -> "Plains"
+            com.wingedsheep.sdk.core.Color.BLUE -> "Island"
+            com.wingedsheep.sdk.core.Color.BLACK -> "Swamp"
+            com.wingedsheep.sdk.core.Color.RED -> "Mountain"
+            com.wingedsheep.sdk.core.Color.GREEN -> "Forest"
+            else -> "Forest"
+        }
     }
 
     /**
