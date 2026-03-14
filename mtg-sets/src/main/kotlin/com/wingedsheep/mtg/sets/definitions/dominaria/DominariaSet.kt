@@ -135,6 +135,7 @@ object DominariaSet {
         Rescue,
         RunAmok,
         SageOfLatNam,
+        SanctumSpirit,
         SealAway,
         SaprolingMigration,
         SergeantAtArms,
