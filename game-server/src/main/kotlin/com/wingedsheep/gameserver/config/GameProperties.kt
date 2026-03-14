@@ -6,7 +6,8 @@ import org.springframework.boot.context.properties.ConfigurationProperties
 data class GameProperties(
     val handSmoother: HandSmootherProperties = HandSmootherProperties(),
     val sets: SetsProperties = SetsProperties(),
-    val admin: AdminProperties = AdminProperties()
+    val admin: AdminProperties = AdminProperties(),
+    val ai: AiProperties = AiProperties()
 )
 
 data class HandSmootherProperties(
@@ -24,4 +25,13 @@ data class SetsProperties(
 
 data class AdminProperties(
     val password: String = ""
+)
+
+data class AiProperties(
+    val enabled: Boolean = false,
+    val openRouterApiKey: String = "",
+    val model: String = "google/gemini-3.1-flash-lite-preview",
+    val maxRetries: Int = 2,
+    val timeoutMs: Long = 10000,
+    val thinkingDelayMs: Long = 500
 )

@@ -302,6 +302,7 @@ export function createMessageHandlers(set: SetState, get: GetState): MessageHand
       set({
         connectionStatus: 'connected',
         playerId: entityId(msg.playerId),
+        aiEnabled: msg.aiEnabled ?? false,
       })
 
       // Auto-join tournament if we have a pending tournament ID (from /tournament/:lobbyId route)

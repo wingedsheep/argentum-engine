@@ -1,5 +1,7 @@
 package com.wingedsheep.gameserver.handler
 
+import com.wingedsheep.gameserver.ai.AiGameManager
+import com.wingedsheep.gameserver.ai.AiWebSocketSession
 import com.wingedsheep.gameserver.handler.ConnectionHandler.Companion.cardToSealedCardInfo
 import com.wingedsheep.gameserver.lobby.GridDraftResult
 import com.wingedsheep.gameserver.lobby.GridSelection
@@ -39,7 +41,8 @@ class LobbyHandler(
     private val cardRegistry: CardRegistry,
     private val gamePlayHandler: GamePlayHandler,
     private val gameProperties: GameProperties,
-    private val boosterGenerator: BoosterGenerator
+    private val boosterGenerator: BoosterGenerator,
+    private val aiGameManager: AiGameManager
 ) {
     private val logger = LoggerFactory.getLogger(LobbyHandler::class.java)
 
@@ -68,6 +71,7 @@ class LobbyHandler(
             is ClientMessage.LeaveLobby -> handleLeaveLobby(session)
             is ClientMessage.StopLobby -> handleStopLobby(session)
             is ClientMessage.UpdateLobbySettings -> handleUpdateLobbySettings(session, message)
+            is ClientMessage.AddAiToLobby -> handleAddAiToLobby(session)
             is ClientMessage.SpectateGame -> handleSpectateGame(session, message)
             is ClientMessage.StopSpectating -> handleStopSpectating(session)
             else -> {}
@@ -801,6 +805,9 @@ class LobbyHandler(
                         ))
                     }
                 }
+
+                // Auto-submit decks for AI players
+                autoSubmitAiDecks(lobby)
             }
 
             TournamentFormat.DRAFT -> {
@@ -1461,6 +1468,145 @@ class LobbyHandler(
         }
     }
 
+    // =========================================================================
+    // AI Lobby Integration
+    // =========================================================================
+
+    private fun handleAddAiToLobby(session: WebSocketSession) {
+        val token = sessionRegistry.getTokenByWsId(session.id)
+        val identity = token?.let { sessionRegistry.getIdentityByToken(it) }
+        if (identity == null) {
+            sender.sendError(session, ErrorCode.NOT_CONNECTED, "Not connected")
+            return
+        }
+
+        val lobbyId = identity.currentLobbyId
+        if (lobbyId == null) {
+            sender.sendError(session, ErrorCode.INVALID_ACTION, "Not in a lobby")
+            return
+        }
+
+        val lobby = lobbyRepository.findLobbyById(lobbyId)
+        if (lobby == null) {
+            sender.sendError(session, ErrorCode.INVALID_ACTION, "Lobby not found")
+            return
+        }
+
+        if (!lobby.isHost(identity.playerId)) {
+            sender.sendError(session, ErrorCode.INVALID_ACTION, "Only the host can add AI players")
+            return
+        }
+
+        if (lobby.state != LobbyState.WAITING_FOR_PLAYERS) {
+            sender.sendError(session, ErrorCode.INVALID_ACTION, "Can only add AI while waiting for players")
+            return
+        }
+
+        if (lobby.isFull) {
+            sender.sendError(session, ErrorCode.INVALID_ACTION, "Lobby is full")
+            return
+        }
+
+        if (!aiGameManager.isEnabled) {
+            sender.sendError(session, ErrorCode.INVALID_ACTION, "AI opponent is not enabled on this server")
+            return
+        }
+
+        val aiIdentity = aiGameManager.createAiIdentity()
+        lobby.addPlayer(aiIdentity)
+        lobbyRepository.saveLobby(lobby)
+
+        logger.info("AI player ${aiIdentity.playerName} (${aiIdentity.playerId.value}) added to lobby $lobbyId")
+        broadcastLobbyUpdate(lobby)
+    }
+
+    /**
+     * After sealed pools are generated, auto-submit decks for all AI players.
+     * Builds a simple deck: all non-land cards + enough basic lands to reach 40 cards.
+     */
+    private fun autoSubmitAiDecks(lobby: TournamentLobby) {
+        for ((playerId, playerState) in lobby.players) {
+            if (!aiGameManager.isAiPlayer(playerId)) continue
+            if (playerState.hasSubmittedDeck) continue
+
+            val pool = playerState.cardPool
+            if (pool.isEmpty()) continue
+
+            val deck = buildAiSealedDeck(pool)
+            val result = lobby.submitDeck(playerId, deck)
+            when (result) {
+                is TournamentLobby.DeckSubmissionResult.Success -> {
+                    logger.info("AI ${playerState.identity.playerName} auto-submitted sealed deck (${deck.values.sum()} cards)")
+                }
+                is TournamentLobby.DeckSubmissionResult.Error -> {
+                    logger.warn("AI deck submission failed: ${result.message}")
+                }
+            }
+        }
+    }
+
+    /**
+     * Build a simple 40-card sealed deck from a card pool.
+     * Strategy: pick all non-land spells sorted by mana value, fill with basic Plains.
+     */
+    private fun buildAiSealedDeck(pool: List<com.wingedsheep.sdk.model.CardDefinition>): Map<String, Int> {
+        val deck = mutableMapOf<String, Int>()
+
+        logger.info("AI building sealed deck from pool of {} cards", pool.size)
+
+        // Separate lands and non-lands
+        val nonLands = pool.filter { !it.typeLine.isLand }
+        val spells = nonLands.sortedBy { it.cmc }
+
+        logger.info("AI pool breakdown: {} non-land cards, sorted by mana value", nonLands.size)
+
+        // Take up to 23 non-land cards (standard limited deckbuilding)
+        val spellsToPick = spells.take(23)
+        for (card in spellsToPick) {
+            deck[card.name] = (deck[card.name] ?: 0) + 1
+        }
+
+        logger.info("AI selected {} spells: {}", spellsToPick.size,
+            deck.entries.joinToString(", ") { "${it.value}x ${it.key}" })
+
+        // Fill remaining slots with basic lands to reach 40
+        val totalSpells = deck.values.sum()
+        val landsNeeded = (40 - totalSpells).coerceAtLeast(0)
+
+        // Check which basic lands are in the pool (sealed pools may include them)
+        val basicLands = pool.filter { it.typeLine.isBasicLand }
+            .groupBy { it.name }
+
+        if (basicLands.isNotEmpty()) {
+            val landName = basicLands.keys.first()
+            deck[landName] = (deck[landName] ?: 0) + landsNeeded
+            logger.info("AI adding {} {} to reach 40 cards", landsNeeded, landName)
+        } else {
+            deck["Plains"] = (deck["Plains"] ?: 0) + landsNeeded
+            logger.info("AI adding {} Plains (no basic lands in pool) to reach 40 cards", landsNeeded)
+        }
+
+        logger.info("AI final deck ({} cards): {}", deck.values.sum(),
+            deck.entries.sortedByDescending { it.value }.joinToString(", ") { "${it.value}x ${it.key}" })
+
+        return deck
+    }
+
+    /**
+     * Auto-ready all AI players in a tournament, and try to start their matches.
+     */
+    private fun autoReadyAiPlayers(lobby: TournamentLobby, tournament: TournamentManager) {
+        for ((playerId, playerState) in lobby.players) {
+            if (!aiGameManager.isAiPlayer(playerId)) continue
+
+            val wasNewlyReady = lobby.markPlayerReady(playerId)
+            if (wasNewlyReady) {
+                logger.info("AI ${playerState.identity.playerName} auto-ready for next round")
+                tryStartMatchForPlayer(lobby, tournament, playerState.identity)
+            }
+        }
+    }
+
     private fun handleLeaveLobby(session: WebSocketSession) {
         val token = sessionRegistry.getTokenByWsId(session.id)
         val identity = token?.let { sessionRegistry.getIdentityByToken(it) }
@@ -1763,6 +1909,9 @@ class LobbyHandler(
                 if (result.allReady && lobby.state == LobbyState.DECK_BUILDING) {
                     lobby.activateTournament()
                 }
+
+                // Auto-ready AI players so they participate in matchmaking
+                autoReadyAiPlayers(lobby, tournament)
 
                 lobbyRepository.saveLobby(lobby)
             }
@@ -2149,6 +2298,13 @@ class LobbyHandler(
             handleMatchComplete(lobbyId, gameSessionId)
             broadcastActiveMatchesToWaitingPlayers(lobbyId)
 
+            // Auto-ready AI players for the next match
+            val lobby = lobbyRepository.findLobbyById(lobbyId)
+            if (lobby != null) {
+                autoReadyAiPlayers(lobby, tournament)
+                lobbyRepository.saveLobby(lobby)
+            }
+
             if (tournament.isRoundComplete()) {
                 doHandleRoundComplete(lobbyId)
             }
@@ -2454,6 +2610,43 @@ class LobbyHandler(
                 gameSessionId = gameSession.sessionId,
                 opponentName = player1State.identity.playerName
             ))
+        }
+
+        // Wire AI controllers for any AI players in this match
+        for (ps in listOf(ps1, ps2)) {
+            if (aiGameManager.isAiPlayer(ps.playerId)) {
+                aiGameManager.wireAiForGame(
+                    gameSession = gameSession,
+                    aiPlayerId = ps.playerId,
+                    deckList = lobby.getSubmittedDeck(ps.playerId),
+                    onActionReady = { aiPlayerId, action ->
+                        gamePlayHandler.handleAiAction(gameSession, aiPlayerId, action)
+                    },
+                    onMulliganKeep = { aiPlayerId ->
+                        gamePlayHandler.handleAiMulliganKeep(gameSession, aiPlayerId)
+                    },
+                    onMulliganTake = { aiPlayerId ->
+                        gamePlayHandler.handleAiMulliganTake(gameSession, aiPlayerId)
+                    },
+                    onBottomCards = { aiPlayerId, cardIds ->
+                        gamePlayHandler.handleAiBottomCards(gameSession, aiPlayerId, cardIds)
+                    }
+                )
+                // Update the player session in GameSession to use the new AI session
+                val aiIdentity = lobby.players[ps.playerId]?.identity
+                if (aiIdentity != null) {
+                    val newWs = aiIdentity.webSocketSession
+                    if (newWs != null) {
+                        val newPs = PlayerSession(
+                            webSocketSession = newWs,
+                            playerId = ps.playerId,
+                            playerName = ps.playerName,
+                            currentGameSessionId = gameSession.sessionId
+                        )
+                        gameSession.replacePlayerSession(ps.playerId, newPs)
+                    }
+                }
+            }
         }
 
         gamePlayHandler.startGame(gameSession)

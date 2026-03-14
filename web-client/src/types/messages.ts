@@ -76,6 +76,7 @@ export interface ConnectedMessage {
   readonly type: 'connected'
   readonly playerId: string
   readonly token: string
+  readonly aiEnabled?: boolean
 }
 
 /**
@@ -1213,6 +1214,7 @@ export type ClientMessage =
   | WinstonSkipPileMessage
   | GridDraftPickMessage
   | LeaveLobbyMessage
+  | AddAiToLobbyMessage
   | StopLobbyMessage
   | UnsubmitDeckMessage
   | UpdateLobbySettingsMessage
@@ -1251,6 +1253,7 @@ export interface ConnectMessage {
 export interface CreateGameMessage {
   readonly type: 'createGame'
   readonly deckList: Record<string, number>
+  readonly vsAi?: boolean
 }
 
 /**
@@ -1415,8 +1418,8 @@ export function createConnectMessage(playerName: string, token?: string): Connec
   return token ? { type: 'connect', playerName, token } : { type: 'connect', playerName }
 }
 
-export function createCreateGameMessage(deckList: Record<string, number>): CreateGameMessage {
-  return { type: 'createGame', deckList }
+export function createCreateGameMessage(deckList: Record<string, number>, vsAi?: boolean): CreateGameMessage {
+  return vsAi ? { type: 'createGame', deckList, vsAi } : { type: 'createGame', deckList }
 }
 
 export function createJoinGameMessage(sessionId: string, deckList: Record<string, number>): JoinGameMessage {
@@ -1502,6 +1505,10 @@ export interface GridDraftPickMessage {
 
 export interface LeaveLobbyMessage {
   readonly type: 'leaveLobby'
+}
+
+export interface AddAiToLobbyMessage {
+  readonly type: 'addAiToLobby'
 }
 
 export interface StopLobbyMessage {
@@ -1681,6 +1688,10 @@ export function createGridDraftPickMessage(selection: string): GridDraftPickMess
 
 export function createLeaveLobbyMessage(): LeaveLobbyMessage {
   return { type: 'leaveLobby' }
+}
+
+export function createAddAiToLobbyMessage(): AddAiToLobbyMessage {
+  return { type: 'addAiToLobby' }
 }
 
 export function createStopLobbyMessage(): StopLobbyMessage {

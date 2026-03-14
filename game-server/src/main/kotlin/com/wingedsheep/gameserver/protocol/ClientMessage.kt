@@ -24,7 +24,7 @@ sealed interface ClientMessage {
      */
     @Serializable
     @SerialName("createGame")
-    data class CreateGame(val deckList: Map<String, Int>) : ClientMessage
+    data class CreateGame(val deckList: Map<String, Int>, val vsAi: Boolean = false) : ClientMessage
 
     /**
      * Join an existing game with a session ID and deck list.
@@ -159,6 +159,13 @@ sealed interface ClientMessage {
     @Serializable
     @SerialName("winstonSkipPile")
     data object WinstonSkipPile : ClientMessage
+
+    /**
+     * Add an AI player to the current lobby (host only, sealed format only).
+     */
+    @Serializable
+    @SerialName("addAiToLobby")
+    data object AddAiToLobby : ClientMessage
 
     /**
      * Leave the current lobby.

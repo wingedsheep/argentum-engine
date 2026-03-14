@@ -19,6 +19,7 @@ export interface ConnectionSliceState {
   playerId: EntityId | null
   sessionId: string | null
   pendingTournamentId: string | null
+  aiEnabled: boolean
 }
 
 export interface ConnectionSliceActions {
@@ -35,6 +36,7 @@ export const createConnectionSlice: SliceCreator<ConnectionSlice> = (set, get) =
   playerId: null,
   sessionId: null,
   pendingTournamentId: null,
+  aiEnabled: false,
 
   // Actions
   connect: (playerName) => {

@@ -7,6 +7,7 @@ import {
   createJoinLobbyMessage,
   createStartTournamentLobbyMessage,
   createLeaveLobbyMessage,
+  createAddAiToLobbyMessage,
   createStopLobbyMessage,
   createUpdateLobbySettingsMessage,
   createReadyForNextRoundMessage,
@@ -33,6 +34,7 @@ export interface LobbySliceActions {
   leaveLobby: () => void
   stopLobby: () => void
   updateLobbySettings: (settings: { setCodes?: string[]; format?: 'SEALED' | 'DRAFT' | 'WINSTON_DRAFT' | 'GRID_DRAFT'; boosterCount?: number; boosterDistribution?: Record<string, number>; maxPlayers?: number; gamesPerMatch?: number; pickTimeSeconds?: number; picksPerRound?: number }) => void
+  addAiToLobby: () => void
   readyForNextRound: () => void
   addExtraRound: () => void
   spectateGame: (gameSessionId: string) => void
@@ -81,6 +83,10 @@ export const createLobbySlice: SliceCreator<LobbySlice> = (set, get) => ({
     clearLobbyId()
     getWebSocket()?.send(createLeaveLobbyMessage())
     set({ lobbyState: null, deckBuildingState: null })
+  },
+
+  addAiToLobby: () => {
+    getWebSocket()?.send(createAddAiToLobbyMessage())
   },
 
   stopLobby: () => {

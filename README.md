@@ -80,6 +80,9 @@ Copy `.env.example` to `.env` to configure:
 | `CACHE_REDIS_ENABLED` | `false` | Enable Redis for session persistence |
 | `REDIS_HOST` | `localhost` | Redis host |
 | `REDIS_PORT` | `6379` | Redis port |
+| `GAME_AI_ENABLED` | `false` | Enable AI opponent |
+| `OPENROUTER_API_KEY` | | OpenRouter API key for AI opponent |
+| `GAME_AI_MODEL` | `google/gemini-3.1-flash-lite-preview` | LLM model for AI opponent |
 
 ## Tech Stack
 
@@ -102,6 +105,33 @@ Host booster drafts with up to 8 players. Create a draft lobby, invite friends, 
 <img src="assets/play.png" alt="Play" width="900px">
 
 Play Magic against friends with fully implemented MTG rules. The engine automatically handles the stack, priority, combat, triggers, and state-based actions—so you can focus on the game.
+
+### AI Opponent
+
+Play against an LLM-powered AI opponent. The AI uses the [OpenRouter](https://openrouter.ai/) API to make strategic decisions.
+
+**Setup:**
+
+1. Get an API key from [openrouter.ai](https://openrouter.ai/)
+2. Configure the environment variables:
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `GAME_AI_ENABLED` | `false` | Enable the AI opponent feature |
+| `OPENROUTER_API_KEY` | | Your OpenRouter API key |
+| `GAME_AI_MODEL` | `google/gemini-3.1-flash-lite-preview` | LLM model to use (any OpenRouter-compatible model) |
+
+Add these to your `.env` file:
+
+```bash
+GAME_AI_ENABLED=true
+OPENROUTER_API_KEY=sk-or-v1-your-key-here
+```
+
+3. Start the server and client as usual
+4. Click **"Play vs AI"** on the main menu to start a game against the AI
+
+The AI receives the same masked game state as a human player and responds through the standard game protocol. It handles mulligans, spells, combat, and all decision types. When the LLM fails to respond or returns an unparseable answer, the AI falls back to heuristic play (pass priority, keep reasonable hands, use default combat assignments).
 
 ## Architecture
 

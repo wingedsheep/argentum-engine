@@ -1,5 +1,7 @@
 package com.wingedsheep.gameserver.handler
 
+import com.wingedsheep.gameserver.ai.AiGameManager
+import com.wingedsheep.gameserver.ai.AiWebSocketSession
 import com.wingedsheep.gameserver.deck.RandomDeckGenerator
 import com.wingedsheep.gameserver.protocol.ClientMessage
 import com.wingedsheep.gameserver.protocol.ErrorCode
@@ -34,7 +36,8 @@ class GamePlayHandler(
     private val cardRegistry: CardRegistry,
     private val deckGenerator: RandomDeckGenerator,
     private val gameProperties: GameProperties,
-    private val gameHistoryRepository: GameHistoryRepository
+    private val gameHistoryRepository: GameHistoryRepository,
+    private val aiGameManager: AiGameManager
 ) {
     private val logger = LoggerFactory.getLogger(GamePlayHandler::class.java)
 
@@ -104,10 +107,40 @@ class GamePlayHandler(
         }
 
         gameRepository.save(gameSession)
-        waitingGameSession = gameSession
 
-        logger.info("Game created: ${gameSession.sessionId} by ${playerSession.playerName}")
-        sender.send(session, ServerMessage.GameCreated(gameSession.sessionId))
+        if (message.vsAi) {
+            if (!aiGameManager.isEnabled) {
+                sender.sendError(session, ErrorCode.INVALID_ACTION, "AI opponent is not enabled on this server")
+                return
+            }
+
+            logger.info("Game created vs AI: ${gameSession.sessionId} by ${playerSession.playerName}")
+            sender.send(session, ServerMessage.GameCreated(gameSession.sessionId))
+
+            // Create AI opponent with async callbacks
+            aiGameManager.createAiOpponent(
+                gameSession = gameSession,
+                onActionReady = { aiPlayerId, action ->
+                    handleAiAction(gameSession, aiPlayerId, action)
+                },
+                onMulliganKeep = { aiPlayerId ->
+                    handleAiMulliganKeep(gameSession, aiPlayerId)
+                },
+                onMulliganTake = { aiPlayerId ->
+                    handleAiMulliganTake(gameSession, aiPlayerId)
+                },
+                onBottomCards = { aiPlayerId, cardIds ->
+                    handleAiBottomCards(gameSession, aiPlayerId, cardIds)
+                }
+            )
+
+            // Start the game immediately
+            startGame(gameSession)
+        } else {
+            waitingGameSession = gameSession
+            logger.info("Game created: ${gameSession.sessionId} by ${playerSession.playerName}")
+            sender.send(session, ServerMessage.GameCreated(gameSession.sessionId))
+        }
     }
 
     private fun handleCancelGame(session: WebSocketSession) {
@@ -491,6 +524,7 @@ class GamePlayHandler(
 
         gameRepository.remove(gameSessionId)
         mulliganBroadcastSent.remove(gameSessionId)
+        aiGameManager.cleanupGame(gameSessionId)
     }
 
     fun broadcastStateUpdate(gameSession: GameSession, events: List<GameEvent>) {
@@ -498,6 +532,30 @@ class GamePlayHandler(
 
         val player1 = gameSession.player1
         val player2 = gameSession.player2
+
+        // AI players must always receive full StateUpdate (never deltas) because
+        // they don't reconstruct state from diffs — they need the complete picture.
+        if (aiGameManager.hasAiPlayer(gameSession.sessionId)) {
+            listOfNotNull(player1, player2).forEach { session ->
+                if (session.webSocketSession is AiWebSocketSession) {
+                    gameSession.clearLastSentState(session.playerId)
+                }
+            }
+        }
+
+        // Log what the AI will receive at combat steps
+        if (aiGameManager.hasAiPlayer(gameSession.sessionId)) {
+            val state = gameSession.getStateForTesting()
+            if (state != null && (state.step == com.wingedsheep.sdk.core.Step.DECLARE_ATTACKERS || state.step == com.wingedsheep.sdk.core.Step.DECLARE_BLOCKERS)) {
+                val aiPlayer = listOfNotNull(player1, player2).find { it.webSocketSession is AiWebSocketSession }
+                if (aiPlayer != null) {
+                    val aiLegalActions = gameSession.getLegalActions(aiPlayer.playerId)
+                    logger.info("AI combat state: step={}, priorityPlayer={}, aiPlayer={}, legalActions={}",
+                        state.step, state.priorityPlayerId?.value, aiPlayer.playerId.value,
+                        aiLegalActions.map { "${it.actionType}(${it.description})" })
+                }
+            }
+        }
 
         try {
             player1?.let { session ->
@@ -550,6 +608,18 @@ class GamePlayHandler(
         while (loopCount < maxLoops) {
             if (gameSession.isGameOver()) break
             val autoPassPlayer = gameSession.getAutoPassPlayer() ?: break
+
+            // Never auto-pass combat declarations for AI players — the AI controller
+            // needs to decide which creatures to attack/block with. executeAutoPass would
+            // submit empty maps (= no attacks, no blocks).
+            if (aiGameManager.isAiPlayer(autoPassPlayer)) {
+                val state = gameSession.getStateForTesting()
+                if (state != null && (state.step == com.wingedsheep.sdk.core.Step.DECLARE_ATTACKERS || state.step == com.wingedsheep.sdk.core.Step.DECLARE_BLOCKERS)) {
+                    logger.debug("Skipping auto-pass for AI player at {} — AI will handle combat", state.step)
+                    break
+                }
+            }
+
             logger.debug("Auto-passing for player: ${autoPassPlayer.value}")
 
             val result = gameSession.executeAutoPass(autoPassPlayer)
@@ -762,6 +832,123 @@ class GamePlayHandler(
         val update = gameSession.createStateUpdate(playerSession.playerId, emptyList())
         if (update != null) {
             sender.send(session, update)
+        }
+    }
+
+    // =========================================================================
+    // AI opponent callbacks (invoked async from AiWebSocketSession coroutine)
+    // =========================================================================
+
+    fun handleAiAction(gameSession: GameSession, aiPlayerId: EntityId, action: com.wingedsheep.engine.core.GameAction) {
+        try {
+            val result = gameSession.executeAction(aiPlayerId, action)
+            when (result) {
+                is GameSession.ActionResult.Success -> {
+                    logger.debug("AI action executed successfully")
+                    broadcastStateUpdate(gameSession, result.events)
+                    if (gameSession.isGameOver()) handleGameOver(gameSession, events = result.events)
+                }
+                is GameSession.ActionResult.PausedForDecision -> {
+                    logger.debug("AI action paused for decision: ${result.decision}")
+                    broadcastStateUpdate(gameSession, result.events)
+                }
+                is GameSession.ActionResult.Failure -> {
+                    logger.warn("AI action failed: {} — falling back to PassPriority", result.reason)
+                    // Action failed (e.g., can't afford, invalid target) — pass priority
+                    // so the game doesn't get stuck
+                    val passResult = gameSession.executeAction(aiPlayerId, com.wingedsheep.engine.core.PassPriority(aiPlayerId))
+                    when (passResult) {
+                        is GameSession.ActionResult.Success -> {
+                            broadcastStateUpdate(gameSession, passResult.events)
+                            if (gameSession.isGameOver()) handleGameOver(gameSession, events = passResult.events)
+                        }
+                        is GameSession.ActionResult.PausedForDecision -> {
+                            broadcastStateUpdate(gameSession, passResult.events)
+                        }
+                        is GameSession.ActionResult.Failure -> {
+                            logger.warn("AI fallback PassPriority also failed: {}", passResult.reason)
+                            // Last resort: broadcast current state so AI gets another chance
+                            broadcastStateUpdate(gameSession, emptyList())
+                        }
+                    }
+                }
+            }
+        } catch (e: Exception) {
+            logger.error("Error handling AI action", e)
+        }
+    }
+
+    fun handleAiMulliganKeep(gameSession: GameSession, aiPlayerId: EntityId) {
+        try {
+            val result = gameSession.keepHand(aiPlayerId)
+            when (result) {
+                is GameSession.MulliganActionResult.Success -> {
+                    logger.info("AI kept hand")
+                    checkMulliganPhaseComplete(gameSession)
+                }
+                is GameSession.MulliganActionResult.NeedsBottomCards -> {
+                    logger.info("AI kept hand, needs to choose bottom cards")
+                    // The AI will receive the ChooseBottomCards message via its virtual session
+                    val msg = gameSession.getChooseBottomCardsMessage(aiPlayerId)
+                    if (msg != null) {
+                        val aiPlayer = gameSession.getPlayerSession(aiPlayerId)
+                        if (aiPlayer != null) sender.send(aiPlayer.webSocketSession, msg)
+                    }
+                }
+                is GameSession.MulliganActionResult.Failure -> {
+                    logger.warn("AI mulligan keep failed: ${result.reason}")
+                }
+            }
+        } catch (e: Exception) {
+            logger.error("Error handling AI mulligan keep", e)
+        }
+    }
+
+    fun handleAiMulliganTake(gameSession: GameSession, aiPlayerId: EntityId) {
+        try {
+            val result = gameSession.takeMulligan(aiPlayerId)
+            when (result) {
+                is GameSession.MulliganActionResult.Success -> {
+                    logger.info("AI took mulligan")
+                    // Send new mulligan decision to AI
+                    val aiPlayer = gameSession.getPlayerSession(aiPlayerId)
+                    if (aiPlayer != null) {
+                        sendMulliganDecision(gameSession, aiPlayer)
+                    }
+                }
+                is GameSession.MulliganActionResult.NeedsBottomCards -> {
+                    val aiPlayer = gameSession.getPlayerSession(aiPlayerId)
+                    if (aiPlayer != null) {
+                        val msg = gameSession.getChooseBottomCardsMessage(aiPlayerId)
+                        if (msg != null) sender.send(aiPlayer.webSocketSession, msg)
+                    }
+                }
+                is GameSession.MulliganActionResult.Failure -> {
+                    logger.warn("AI mulligan take failed: ${result.reason}")
+                }
+            }
+        } catch (e: Exception) {
+            logger.error("Error handling AI mulligan take", e)
+        }
+    }
+
+    fun handleAiBottomCards(gameSession: GameSession, aiPlayerId: EntityId, cardIds: List<EntityId>) {
+        try {
+            val result = gameSession.chooseBottomCards(aiPlayerId, cardIds)
+            when (result) {
+                is GameSession.MulliganActionResult.Success -> {
+                    logger.info("AI chose bottom cards")
+                    checkMulliganPhaseComplete(gameSession)
+                }
+                is GameSession.MulliganActionResult.NeedsBottomCards -> {
+                    logger.warn("AI bottom cards: unexpected NeedsBottomCards")
+                }
+                is GameSession.MulliganActionResult.Failure -> {
+                    logger.warn("AI bottom cards failed: ${result.reason}")
+                }
+            }
+        } catch (e: Exception) {
+            logger.error("Error handling AI bottom cards", e)
         }
     }
 

@@ -512,6 +512,7 @@ export type GameStore = {
   playerId: EntityId | null
   sessionId: string | null
   pendingTournamentId: string | null
+  aiEnabled: boolean
   connect: (playerName: string) => void
   disconnect: () => void
   setPendingTournamentId: (lobbyId: string | null) => void
@@ -537,6 +538,7 @@ export type GameStore = {
   /** Seconds remaining on opponent's disconnect countdown (null = connected) */
   opponentDisconnectCountdown: number | null
   createGame: (deckList: Record<string, number>) => void
+  createAiGame: (deckList: Record<string, number>) => void
   joinGame: (sessionId: string, deckList: Record<string, number>) => void
   submitAction: (action: GameAction) => void
   submitDecision: (selectedCards: readonly EntityId[]) => void
@@ -574,6 +576,7 @@ export type GameStore = {
   joinLobby: (lobbyId: string) => void
   startLobby: () => void
   leaveLobby: () => void
+  addAiToLobby: () => void
   stopLobby: () => void
   updateLobbySettings: (settings: { setCodes?: string[]; format?: 'SEALED' | 'DRAFT' | 'WINSTON_DRAFT' | 'GRID_DRAFT'; boosterCount?: number; boosterDistribution?: Record<string, number>; maxPlayers?: number; gamesPerMatch?: number; pickTimeSeconds?: number; picksPerRound?: number }) => void
   /** Disconnected tournament players: playerId -> info */

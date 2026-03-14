@@ -214,6 +214,15 @@ class GameSession(
      */
     fun getPlayerSession(playerId: EntityId): PlayerSession? = players[playerId]
 
+    /**
+     * Replace a player's session (e.g., when wiring a new AI WebSocket session for a tournament match).
+     */
+    fun replacePlayerSession(playerId: EntityId, newSession: PlayerSession) {
+        if (players.containsKey(playerId)) {
+            players[playerId] = newSession
+        }
+    }
+
     // =========================================================================
     // Spectator Management
     // =========================================================================

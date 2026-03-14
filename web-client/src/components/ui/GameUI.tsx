@@ -48,6 +48,8 @@ function ConnectionOverlay({
 }) {
   const connect = useGameStore((state) => state.connect)
   const createGame = useGameStore((state) => state.createGame)
+  const createAiGame = useGameStore((state) => state.createAiGame)
+  const aiEnabled = useGameStore((state) => state.aiEnabled)
   const joinGame = useGameStore((state) => state.joinGame)
   const createTournamentLobby = useGameStore((state) => state.createTournamentLobby)
   const joinLobby = useGameStore((state) => state.joinLobby)
@@ -202,6 +204,15 @@ function ConnectionOverlay({
               {gameMode === 'tournament' ? 'Create Lobby' : 'Create Game'}
             </button>
 
+            {gameMode === 'normal' && aiEnabled && (
+              <button
+                onClick={() => createAiGame(randomDeck)}
+                className={styles.aiButton}
+              >
+                Play vs AI
+              </button>
+            )}
+
             <div className={styles.divider}>
               <div className={styles.dividerLine} />
               <span className={styles.dividerText}>or join existing</span>
@@ -326,6 +337,8 @@ function LobbyOverlay({
 }) {
   const startLobby = useGameStore((state) => state.startLobby)
   const leaveLobby = useGameStore((state) => state.leaveLobby)
+  const addAiToLobby = useGameStore((state) => state.addAiToLobby)
+  const aiEnabled = useGameStore((state) => state.aiEnabled)
   const updateLobbySettings = useGameStore((state) => state.updateLobbySettings)
   const tournamentState = useGameStore((state) => state.tournamentState)
   const [copied, setCopied] = useState(false)
@@ -744,6 +757,11 @@ function LobbyOverlay({
             <div className={styles.emptyPlayerList}>
               Waiting for players to join...
             </div>
+          )}
+          {isWaiting && lobbyState.isHost && aiEnabled && playerCount < (isWinston ? 2 : isGridDraft ? 4 : (lobbyState.settings.maxPlayers || 8)) && (
+            <button onClick={addAiToLobby} className={styles.addAiButton}>
+              + Add AI Player
+            </button>
           )}
         </div>
 

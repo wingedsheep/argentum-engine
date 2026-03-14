@@ -45,6 +45,7 @@ export interface GameplaySliceState {
 
 export interface GameplaySliceActions {
   createGame: (deckList: Record<string, number>) => void
+  createAiGame: (deckList: Record<string, number>) => void
   joinGame: (sessionId: string, deckList: Record<string, number>) => void
   submitAction: (action: GameAction) => void
   submitDecision: (selectedCards: readonly EntityId[]) => void
@@ -101,6 +102,10 @@ export const createGameplaySlice: SliceCreator<GameplaySlice> = (set, get) => ({
   // Actions
   createGame: (deckList) => {
     getWebSocket()?.send(createCreateGameMessage(deckList))
+  },
+
+  createAiGame: (deckList) => {
+    getWebSocket()?.send(createCreateGameMessage(deckList, true))
   },
 
   joinGame: (sessionId, deckList) => {

@@ -434,6 +434,12 @@
   background-color: var(--color-warning-light);
 }
 
+.aiButton {
+  composes: primaryButton;
+  background: linear-gradient(180deg, #8b5cf6 0%, #6d28d9 100%);
+  box-shadow: 0 2px 8px rgba(139, 92, 246, 0.3);
+}
+
 .joinButton {
   composes: primaryButton;
   background: linear-gradient(180deg, #22c55e 0%, #16a34a 100%);
@@ -1049,6 +1055,23 @@
   text-align: center;
   color: var(--border-solid-dark);
   font-size: var(--font-sm);
+}
+
+.addAiButton {
+  width: 100%;
+  padding: var(--space-2) var(--space-4);
+  background: transparent;
+  border: 1px dashed rgba(139, 92, 246, 0.5);
+  border-radius: var(--radius-md);
+  color: #a78bfa;
+  font-size: var(--font-sm);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.addAiButton:hover {
+  background: rgba(139, 92, 246, 0.1);
+  border-color: rgba(139, 92, 246, 0.8);
 }
 
 /* =========================================================================

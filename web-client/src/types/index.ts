@@ -317,6 +317,7 @@ export {
   createWinstonTakePileMessage,
   createWinstonSkipPileMessage,
   createLeaveLobbyMessage,
+  createAddAiToLobbyMessage,
   createStopLobbyMessage,
   createUnsubmitDeckMessage,
   createUpdateLobbySettingsMessage,

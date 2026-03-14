@@ -1,5 +1,6 @@
 package com.wingedsheep.gameserver.handler
 
+import com.wingedsheep.gameserver.ai.AiGameManager
 import com.wingedsheep.gameserver.lobby.LobbyState
 import com.wingedsheep.gameserver.protocol.ClientMessage
 import com.wingedsheep.gameserver.protocol.ErrorCode
@@ -21,7 +22,8 @@ class ConnectionHandler(
     private val sessionRegistry: SessionRegistry,
     private val gameRepository: GameRepository,
     private val lobbyRepository: LobbyRepository,
-    private val sender: MessageSender
+    private val sender: MessageSender,
+    private val aiGameManager: AiGameManager
 ) {
     private val logger = LoggerFactory.getLogger(ConnectionHandler::class.java)
 
@@ -57,7 +59,7 @@ class ConnectionHandler(
         sessionRegistry.register(identity, session, playerSession)
 
         logger.info("Player connected: ${message.playerName} (${playerId.value}), token: ${identity.token}")
-        sender.send(session, ServerMessage.Connected(playerId.value, identity.token))
+        sender.send(session, ServerMessage.Connected(playerId.value, identity.token, aiEnabled = aiGameManager.isEnabled))
     }
 
     private fun handleReconnect(session: WebSocketSession, identity: PlayerIdentity) {

@@ -21,7 +21,7 @@ sealed interface ServerMessage {
      */
     @Serializable
     @SerialName("connected")
-    data class Connected(val playerId: String, val token: String) : ServerMessage
+    data class Connected(val playerId: String, val token: String, val aiEnabled: Boolean = false) : ServerMessage
 
     /**
      * Reconnection confirmed — client's previous session has been restored.

@@ -724,7 +724,7 @@ class ActivateAbilityHandler(
         // Add produced mana to floating pool so costHandler.payAbilityCost can consume it
         for ((_, production) in solution.manaProduced) {
             currentPool = if (production.color != null) {
-                currentPool.add(production.color)
+                currentPool.add(production.color, production.amount)
             } else {
                 currentPool.addColorless(production.colorless)
             }
