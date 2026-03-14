@@ -30,8 +30,8 @@ game:
     password: ${GAME_ADMIN_PASSWORD:}
   ai:
     enabled: ${GAME_AI_ENABLED:false}
-    model: ${GAME_AI_MODEL:stepfun/step-3.5-flash:free}
-    deckbuilding-model: ${GAME_AI_DECKBUILDING_MODEL:}
+    model: ${GAME_AI_MODEL:qwen/qwen3.5-flash-02-23}
+    deckbuilding-model: ${GAME_AI_DECKBUILDING_MODEL:qwen/qwen3.5-flash-02-23}
     open-router-api-key: ${OPENROUTER_API_KEY:}
 
 # Swagger UI - only enabled when dev endpoints are enabled

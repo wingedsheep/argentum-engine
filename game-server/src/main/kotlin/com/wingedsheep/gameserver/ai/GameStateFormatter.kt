@@ -462,35 +462,65 @@ class GameStateFormatter(
             if (!action.isAffordable) sb.append(" (can't afford)")
 
             // Inline targets for LLM selection
-            if (action.requiresTargets && action.targetRequirements != null) {
-                val allTargets = action.targetRequirements.flatMap { req ->
-                    req.validTargets?.map { tid ->
-                        val card = state.cards[tid]
-                        val label = labels[tid] ?: tid.value
-                        if (card != null) {
-                            val owner = if (card.controllerId == state.viewingPlayerId) "your" else "opponent's"
-                            val stats = if (card.power != null) " ${card.power}/${card.toughness}" else ""
-                            Triple(tid, "[$label] $owner ${card.name}$stats", req.description)
-                        } else {
-                            // Check if it's a player
-                            val playerName = if (tid == state.viewingPlayerId) "you" else "opponent"
-                            Triple(tid, "[$label] $playerName", req.description)
-                        }
-                    } ?: emptyList()
+            if (action.requiresTargets) {
+                // Show oracle text so the LLM knows what the spell does when picking targets
+                val oracleText = (action.action as? CastSpell)?.cardId?.let { cardId ->
+                    state.cards[cardId]?.oracleText?.takeIf { it.isNotBlank() }
+                }
+                if (oracleText != null && oracleText !in action.description) {
+                    sb.append(" — \"$oracleText\"")
+                }
+
+                // Gather all valid targets from targetRequirements or validTargets
+                val allTargets = if (!action.targetRequirements.isNullOrEmpty()) {
+                    action.targetRequirements.flatMap { req ->
+                        req.validTargets?.map { tid ->
+                            formatTarget(tid, state, labels)
+                        } ?: emptyList()
+                    }
+                } else if (!action.validTargets.isNullOrEmpty()) {
+                    action.validTargets.map { tid ->
+                        formatTarget(tid, state, labels)
+                    }
+                } else {
+                    emptyList()
                 }
 
                 if (allTargets.size >= 2) {
                     sb.appendLine()
-                    sb.append("    Choose target: ")
-                    sb.appendLine(allTargets.mapIndexed { j, (_, name, _) ->
+                    sb.append("    Targets: ")
+                    sb.appendLine(allTargets.mapIndexed { j, (_, name) ->
                         "[${j + 1}] $name"
                     }.joinToString(", "))
-                    sb.append("    Reply \"$letter${1}\" for ${allTargets.first().second}")
+                    sb.append("    Reply \"$letter\" + target number (e.g., \"${letter}1\" for ${allTargets.first().second})")
                 } else if (allTargets.size == 1) {
                     sb.append(" — target: ${allTargets.first().second}")
                 }
             }
             sb.appendLine()
+        }
+    }
+
+    private fun formatTarget(
+        tid: EntityId,
+        state: ClientGameState,
+        labels: Map<EntityId, String>
+    ): Pair<EntityId, String> {
+        val card = state.cards[tid]
+        val label = labels[tid] ?: tid.value
+        return if (card != null) {
+            val owner = if (card.controllerId == state.viewingPlayerId) "your" else "opponent's"
+            val stats = if (card.power != null) " ${card.power}/${card.toughness}" else ""
+            val tapped = if (card.isTapped) " TAPPED" else ""
+            val keywords = card.keywords.takeIf { it.isNotEmpty() }
+                ?.joinToString(", ") { it.name.lowercase() }
+                ?.let { " [$it]" } ?: ""
+            Pair(tid, "[$label] $owner ${card.name}$stats$tapped$keywords")
+        } else {
+            val playerName = if (tid == state.viewingPlayerId) "you" else "opponent"
+            val life = state.players.find { it.playerId == tid }?.life
+            val lifeStr = if (life != null) " (life: $life)" else ""
+            Pair(tid, "[$label] $playerName$lifeStr")
         }
     }
 

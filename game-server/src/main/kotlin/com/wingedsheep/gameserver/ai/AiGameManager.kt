@@ -29,6 +29,28 @@ class AiGameManager(
 ) {
     private val activeSessions = ConcurrentHashMap<String, AiWebSocketSession>()
 
+    companion object {
+        private val AI_NAMES = listOf(
+            "Cruel Optimus",
+            "Thought Harvester",
+            "The Stack Tyrant",
+            "Mindripper Prime",
+            "Soulless Topdeckr",
+            "The Unblinkable",
+            "Dread Calculus",
+            "Synapse Ravager",
+            "Neural Butcher",
+            "The Iron Oracle",
+            "Phyrexian Brainframe",
+            "Darksteel Nemesis",
+            "Voltaic Mastermind",
+            "Myr Overlord",
+            "Blightsteel Brain",
+        )
+
+        fun randomAiName(): String = "[AI] ${AI_NAMES.random()}"
+    }
+
     val isEnabled: Boolean get() = gameProperties.ai.enabled && gameProperties.ai.openRouterApiKey.isNotBlank()
 
     /**
@@ -53,6 +75,7 @@ class AiGameManager(
 
         val aiPlayerId = EntityId("ai-${UUID.randomUUID().toString().take(8)}")
         val aiProperties = gameProperties.ai
+        val aiName = randomAiName()
 
         val openRouterClient = OpenRouterClient(aiProperties)
         val controller = AiPlayerController(aiProperties, openRouterClient, aiPlayerId)
@@ -70,28 +93,27 @@ class AiGameManager(
         val playerSession = PlayerSession(
             webSocketSession = aiSession,
             playerId = aiPlayerId,
-            playerName = "AI Opponent"
+            playerName = aiName
         )
 
         // Register a fake identity and session so MessageSender can find the lock
         val identity = com.wingedsheep.gameserver.session.PlayerIdentity(
             token = "ai-token-${UUID.randomUUID().toString().take(8)}",
             playerId = aiPlayerId,
-            playerName = "AI Opponent"
+            playerName = aiName
         )
         identity.webSocketSession = aiSession
         sessionRegistry.register(identity, aiSession, playerSession)
 
-        // Build a deck — try LLM-assisted deckbuilding, fall back to random
-        val deckResult = tryAiDeckBuild(openRouterClient) ?: AiDeckResult(deckGenerator.generate(), null, null)
-        val aiDeck = deckResult.deckList
+        // Quick games use a random deck — no LLM deckbuilding needed
+        val aiDeck = deckGenerator.generate()
         gameSession.addPlayer(playerSession, aiDeck)
 
-        // Give the AI knowledge of its deck composition and archetype
-        controller.setDeckList(aiDeck, deckResult.archetypeDescription)
+        // Give the AI knowledge of its deck composition
+        controller.setDeckList(aiDeck)
 
         // Store persistence info
-        gameSession.setPlayerPersistenceInfo(aiPlayerId, "AI Opponent", identity.token)
+        gameSession.setPlayerPersistenceInfo(aiPlayerId, aiName, identity.token)
         identity.currentGameSessionId = gameSession.sessionId
 
         activeSessions[gameSession.sessionId] = aiSession
@@ -127,17 +149,18 @@ class AiGameManager(
             onBottomCards = { _, _ -> }
         )
 
+        val aiName = randomAiName()
         val identity = PlayerIdentity(
             token = "ai-token-${UUID.randomUUID().toString().take(8)}",
             playerId = aiPlayerId,
-            playerName = "AI Opponent"
+            playerName = aiName
         )
         identity.webSocketSession = aiSession
 
         val playerSession = PlayerSession(
             webSocketSession = aiSession,
             playerId = aiPlayerId,
-            playerName = "AI Opponent"
+            playerName = aiName
         )
         sessionRegistry.register(identity, aiSession, playerSession)
 

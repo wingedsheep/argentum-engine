@@ -156,11 +156,7 @@ class AiDeckBuilder(
             appendLine()
             appendLine("AVAILABLE BASIC LANDS: Plains, Island, Swamp, Mountain, Forest")
             appendLine()
-            appendLine("RESPONSE FORMAT:")
-            appendLine("Reply with your deck list, one entry per line:")
-            appendLine("4x Card Name")
-            appendLine("3x Another Card")
-            appendLine("24x Forest")
+            appendLine("First reason about your card choices inside <reasoning> tags, then put your deck list inside <answer> tags.")
         }
     }
 
@@ -168,10 +164,14 @@ class AiDeckBuilder(
         val cardNames = availableCards.map { it.name }.toSet() +
             setOf("Plains", "Island", "Swamp", "Mountain", "Forest")
 
+        // Extract from <answer> tags if present, otherwise use full response
+        val answerMatch = Regex("""<answer>(.*?)</answer>""", RegexOption.DOT_MATCHES_ALL).find(response)
+        val deckText = answerMatch?.groupValues?.get(1)?.trim() ?: response
+
         val deckMap = mutableMapOf<String, Int>()
         val linePattern = Regex("""(\d+)\s*x?\s+(.+)""", RegexOption.IGNORE_CASE)
 
-        for (line in response.lines()) {
+        for (line in deckText.lines()) {
             val match = linePattern.find(line.trim()) ?: continue
             val count = match.groupValues[1].toIntOrNull() ?: continue
             val name = match.groupValues[2].trim()
@@ -232,12 +232,23 @@ class AiDeckBuilder(
         private val DECKBUILDING_SYSTEM_PROMPT = """
             You are an expert Magic: The Gathering deckbuilder. Build the best possible deck from the available card pool following the given archetype strategy.
 
-            Reply ONLY with the deck list in this exact format:
+            Reply using this EXACT format:
+
+            <reasoning>
+            Analyze the card pool and archetype. Consider:
+            - What is the win condition for this archetype?
+            - Which cards are the key payoffs and which are filler?
+            - What does the mana curve look like? Are there enough early plays?
+            - How much removal/interaction is available?
+            - What is the right land split for the colors needed?
+            </reasoning>
+            <answer>
             4x Card Name
             3x Another Card
             24x Forest
+            </answer>
 
-            Do not include any other text, explanations, or comments.
+            The <answer> section must contain ONLY the deck list, one entry per line.
         """.trimIndent()
     }
 }

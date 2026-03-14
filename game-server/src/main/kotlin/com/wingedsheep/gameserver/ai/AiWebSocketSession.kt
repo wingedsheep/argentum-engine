@@ -1,5 +1,6 @@
 package com.wingedsheep.gameserver.ai
 
+import com.wingedsheep.engine.core.DeclareBlockers
 import com.wingedsheep.engine.core.GameAction
 import com.wingedsheep.engine.core.PendingDecision
 import com.wingedsheep.engine.core.SubmitDecision
@@ -212,6 +213,12 @@ class AiWebSocketSession(
             is ActionResponse.SubmitAction -> "Action(${response.action::class.simpleName})"
             is ActionResponse.SubmitDecision -> "Decision(${response.response::class.simpleName})"
         })
+
+        // Extra delay after declaring blockers so the human player can see assignments
+        if (response is ActionResponse.SubmitAction && response.action is DeclareBlockers) {
+            delay(thinkingDelayMs * 4)
+        }
+
         submitResponse(response)
     }
 
