@@ -58,6 +58,7 @@ import com.wingedsheep.sdk.scripting.ReplaceDamageWithCounters
 import com.wingedsheep.sdk.scripting.PreventExtraTurns
 import com.wingedsheep.sdk.scripting.RedirectZoneChange
 import com.wingedsheep.sdk.scripting.RedirectZoneChangeWithEffect
+import com.wingedsheep.engine.state.components.player.DamageBonusComponent
 import com.wingedsheep.engine.state.components.player.SkipNextTurnComponent
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.predicates.CardPredicate
@@ -1283,7 +1284,53 @@ object EffectExecutorUtils {
             }
         }
 
+        // Check player-level damage bonus components (e.g., The Flame of Keld Chapter III)
+        if (sourceId != null) {
+            for (playerId in state.turnOrder) {
+                val playerContainer = state.getEntity(playerId) ?: continue
+                val damageBonusComponent = playerContainer.get<DamageBonusComponent>() ?: continue
+
+                // Check that the source is controlled by this player
+                val sourceController = state.getEntity(sourceId)?.get<ControllerComponent>()?.playerId
+                if (sourceController != playerId) continue
+
+                // Check if the source matches the source filter
+                val sourceMatches = when (val filter = damageBonusComponent.sourceFilter) {
+                    is SourceFilter.Any -> true
+                    is SourceFilter.HasColor -> {
+                        // Check projected state first (for battlefield permanents), fall back to base colors
+                        // (for spells on the stack or other non-battlefield entities)
+                        hasColorForSource(state, projected, sourceId, filter.color)
+                    }
+                    is SourceFilter.Matching -> {
+                        val context = PredicateContext(controllerId = playerId)
+                        predicateEvaluator.matchesWithProjection(state, projected, sourceId, filter.filter, context)
+                    }
+                    else -> false
+                }
+                if (!sourceMatches) continue
+
+                amplifiedAmount += damageBonusComponent.bonusAmount
+            }
+        }
+
         return amplifiedAmount
+    }
+
+    /**
+     * Check if a source entity has a specific color — checks projected state first,
+     * then falls back to base CardComponent colors (for spells on the stack).
+     */
+    private fun hasColorForSource(
+        state: GameState,
+        projected: com.wingedsheep.engine.mechanics.layers.ProjectedState,
+        sourceId: EntityId,
+        color: com.wingedsheep.sdk.core.Color
+    ): Boolean {
+        if (projected.hasColor(sourceId, color)) return true
+        val sourceEntity = state.getEntity(sourceId) ?: return false
+        val card = sourceEntity.components[CardComponent::class.qualifiedName] as? CardComponent ?: return false
+        return card.colors.contains(color)
     }
 
     /**

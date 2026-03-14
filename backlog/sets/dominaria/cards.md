@@ -2,14 +2,14 @@
 
 **Set Size:** 280 cards (249 unique card names + basic land variants)
 **Release Date:** April 27, 2018
-**Implemented:** 167 / 249
+**Implemented:** 168 / 249
 
 | Color      | Total | Done |
 |------------|-------|------|
 | White      | 38    | 26   |
 | Blue       | 37    | 25   |
 | Black      | 38    | 26   |
-| Red        | 38    | 25   |
+| Red        | 38    | 26   |
 | Green      | 37    | 27   |
 | Multicolor | 19    | 11   |
 | Colorless  | 30    | 18   |
@@ -227,7 +227,7 @@
 - [ ] The Antiquities War
 - [ ] The Eldest Reborn
 - [ ] The First Eruption
-- [ ] The Flame of Keld
+- [x] The Flame of Keld
 - [ ] The Mending of Dominaria
 - [ ] The Mirari Conjecture
 - [ ] Thorn Elemental

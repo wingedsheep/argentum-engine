@@ -1334,6 +1334,10 @@ class TurnManager(
                 if (cantCast?.removeOn == PlayerEffectRemoval.EndOfTurn) {
                     result = result.without<CantCastSpellsComponent>()
                 }
+                val damageBonus = result.get<com.wingedsheep.engine.state.components.player.DamageBonusComponent>()
+                if (damageBonus?.removeOn == PlayerEffectRemoval.EndOfTurn) {
+                    result = result.without<com.wingedsheep.engine.state.components.player.DamageBonusComponent>()
+                }
                 if (result.has<com.wingedsheep.engine.state.components.player.DamageReceivedThisTurnComponent>()) {
                     result = result.without<com.wingedsheep.engine.state.components.player.DamageReceivedThisTurnComponent>()
                 }

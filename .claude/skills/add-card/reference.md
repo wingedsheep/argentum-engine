@@ -400,6 +400,7 @@ constructors.
 | `CreateGlobalTriggeredAbilityUntilEndOfTurnEffect` | `ability: TriggeredAbility`              | Global triggered ability until EOT |
 | `GrantShroudEffect`                                | `target: EffectTarget = Controller, duration: Duration = EndOfTurn` | Grant shroud (player or permanent) |
 | `CantCastSpellsEffect`                             | `target: EffectTarget = PlayerRef(Opponent), duration: Duration = EndOfTurn` | Prevent target player from casting spells |
+| `GrantDamageBonusEffect`                           | `bonusAmount: Int, sourceFilter: SourceFilter = Any, target: EffectTarget = Controller, duration: Duration = EndOfTurn` | Grant flat damage bonus to player's sources |
 
 ### Stack
 

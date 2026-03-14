@@ -2,6 +2,7 @@ package com.wingedsheep.sdk.scripting.effects
 
 import com.wingedsheep.sdk.scripting.Duration
 import com.wingedsheep.sdk.scripting.TriggeredAbility
+import com.wingedsheep.sdk.scripting.events.SourceFilter
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.text.TextReplacer
@@ -230,6 +231,35 @@ data class GrantShroudEffect(
     val duration: Duration = Duration.EndOfTurn
 ) : Effect {
     override val description: String = "${target.description.replaceFirstChar { it.uppercase() }} gains shroud ${duration.description}"
+
+    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
+}
+
+/**
+ * Grant a flat damage bonus to a player's sources for the specified duration.
+ * When a source matching the filter that the player controls would deal damage,
+ * it deals that much damage plus the bonus amount instead.
+ *
+ * Used for cards like The Flame of Keld (Chapter III): "If a red source you control
+ * would deal damage to a permanent or player this turn, it deals that much damage plus 2 instead."
+ *
+ * @param bonusAmount The flat damage bonus to add
+ * @param sourceFilter Filter for which sources get the bonus (e.g., SourceFilter.HasColor(Color.RED))
+ * @param target The player who gets the damage bonus (default: controller)
+ * @param duration How long the bonus lasts (default: EndOfTurn)
+ */
+@SerialName("GrantDamageBonus")
+@Serializable
+data class GrantDamageBonusEffect(
+    val bonusAmount: Int,
+    val sourceFilter: SourceFilter = SourceFilter.Any,
+    val target: EffectTarget = EffectTarget.Controller,
+    val duration: Duration = Duration.EndOfTurn
+) : Effect {
+    override val description: String = buildString {
+        append("If ${sourceFilter.description} ${target.description} controls would deal damage to a permanent or player")
+        append(", it deals that much damage plus $bonusAmount instead")
+    }
 
     override fun applyTextReplacement(replacer: TextReplacer): Effect = this
 }

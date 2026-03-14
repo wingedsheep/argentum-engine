@@ -166,6 +166,7 @@ object DominariaSet {
         TempestDjinn,
         TesharAncestorsApostle,
         TerritorialAllosaurus,
+        TheFlameOfKeld,
         TetsukoUmezawaFugitive,
         ThallidOmnivore,
         ThallidSoothsayer,

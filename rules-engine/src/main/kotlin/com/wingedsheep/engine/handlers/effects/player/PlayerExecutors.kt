@@ -15,6 +15,7 @@ class PlayerExecutors(
         CantCastSpellsExecutor(),
         CreateGlobalTriggeredAbilityUntilEndOfTurnExecutor(),
         CreatePermanentGlobalTriggeredAbilityExecutor(),
+        GrantDamageBonusExecutor(),
         GrantShroudExecutor(),
         LoseGameExecutor(),
         PlayAdditionalLandsExecutor(),

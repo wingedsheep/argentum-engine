@@ -2,6 +2,7 @@ package com.wingedsheep.engine.state.components.player
 
 import com.wingedsheep.engine.state.Component
 import com.wingedsheep.sdk.core.Color
+import com.wingedsheep.sdk.scripting.events.SourceFilter
 import kotlinx.serialization.Serializable
 
 /**
@@ -323,4 +324,20 @@ data object SkipNextTurnComponent : Component
 data class LoseAtEndStepComponent(
     val turnsUntilLoss: Int = 1,
     val message: String? = null
+) : Component
+
+/**
+ * Component granting a flat damage bonus to sources a player controls.
+ * Applied by effects like The Flame of Keld Chapter III: "If a red source you control
+ * would deal damage to a permanent or player this turn, it deals that much damage plus 2 instead."
+ *
+ * @param bonusAmount The flat bonus to add to damage
+ * @param sourceFilter Which sources get the bonus (e.g., SourceFilter.HasColor(Color.RED) for red sources)
+ * @param removeOn When this component should be removed
+ */
+@Serializable
+data class DamageBonusComponent(
+    val bonusAmount: Int,
+    val sourceFilter: SourceFilter = SourceFilter.Any,
+    val removeOn: PlayerEffectRemoval = PlayerEffectRemoval.EndOfTurn
 ) : Component

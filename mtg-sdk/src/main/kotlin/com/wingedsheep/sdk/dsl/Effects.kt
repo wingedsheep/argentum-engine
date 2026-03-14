@@ -25,6 +25,7 @@ import com.wingedsheep.sdk.scripting.effects.CantAttackOrBlockTargetEffect
 import com.wingedsheep.sdk.scripting.effects.CantBlockGroupEffect
 import com.wingedsheep.sdk.scripting.effects.CantCastSpellsEffect
 import com.wingedsheep.sdk.scripting.effects.CompositeEffect
+import com.wingedsheep.sdk.scripting.effects.GrantDamageBonusEffect
 import com.wingedsheep.sdk.scripting.effects.DealDamageEffect
 import com.wingedsheep.sdk.scripting.effects.DrawCardsEffect
 import com.wingedsheep.sdk.scripting.effects.EachPlayerReturnsPermanentToHandEffect
@@ -885,6 +886,17 @@ object Effects {
      */
     fun SkipNextTurn(target: EffectTarget = EffectTarget.Controller): Effect =
         SkipNextTurnEffect(target)
+
+    /**
+     * Grant a flat damage bonus to a player's sources this turn.
+     * Used for cards like The Flame of Keld (Chapter III).
+     */
+    fun GrantDamageBonus(
+        bonusAmount: Int,
+        sourceFilter: com.wingedsheep.sdk.scripting.events.SourceFilter = com.wingedsheep.sdk.scripting.events.SourceFilter.Any,
+        target: EffectTarget = EffectTarget.Controller,
+        duration: Duration = Duration.EndOfTurn
+    ): Effect = GrantDamageBonusEffect(bonusAmount, sourceFilter, target, duration)
 
     // =========================================================================
     // Combat Effects
