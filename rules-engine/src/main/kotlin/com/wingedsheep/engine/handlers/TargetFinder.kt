@@ -64,6 +64,7 @@ class TargetFinder(
             is AnyTarget -> findAnyTargets(state, controllerId, sourceId, targetingSourceType)
             is TargetCreatureOrPlayer -> findCreatureOrPlayerTargets(state, controllerId, sourceId, targetingSourceType)
             is TargetOpponentOrPlaneswalker -> findOpponentOrPlaneswalkerTargets(state, controllerId, sourceId, targetingSourceType)
+            is TargetPlayerOrPlaneswalker -> findPlayerOrPlaneswalkerTargets(state, controllerId, sourceId, targetingSourceType)
             is TargetCreatureOrPlaneswalker -> findCreatureOrPlaneswalkerTargets(state, controllerId, sourceId, targetingSourceType)
             is TargetObject -> findObjectTargets(state, requirement, controllerId, sourceId, ignoreTargetingRestrictions, targetingSourceType)
             is TargetSpellOrPermanent -> findSpellOrPermanentTargets(state, controllerId, sourceId, targetingSourceType)
@@ -125,6 +126,39 @@ class TargetFinder(
 
         // Add opponents (excluding those with shroud)
         targets.addAll(state.turnOrder.filter { it != controllerId && state.hasEntity(it) && !playerHasShroud(state, it) })
+
+        // Add all planeswalkers on the battlefield
+        val battlefield = state.getBattlefield()
+        for (entityId in battlefield) {
+            val container = state.getEntity(entityId) ?: continue
+            val cardComponent = container.get<CardComponent>() ?: continue
+            val entityController = container.get<ControllerComponent>()?.playerId
+
+            if (!cardComponent.isPlaneswalker) continue
+
+            // Check hexproof/shroud
+            if (projected.hasKeyword(entityId, Keyword.HEXPROOF) && entityController != controllerId) continue
+            if (projected.hasKeyword(entityId, Keyword.SHROUD)) continue
+            // Check can't-be-targeted-by-abilities
+            if (hasCantBeTargetedRestriction(state, entityId, entityController, controllerId, targetingSourceType)) continue
+
+            targets.add(entityId)
+        }
+
+        return targets
+    }
+
+    private fun findPlayerOrPlaneswalkerTargets(
+        state: GameState,
+        controllerId: EntityId,
+        sourceId: EntityId?,
+        targetingSourceType: TargetingSourceType = TargetingSourceType.ANY
+    ): List<EntityId> {
+        val projected = state.projectedState
+        val targets = mutableListOf<EntityId>()
+
+        // Add all players (excluding those with shroud)
+        targets.addAll(state.turnOrder.filter { state.hasEntity(it) && !playerHasShroud(state, it) })
 
         // Add all planeswalkers on the battlefield
         val battlefield = state.getBattlefield()

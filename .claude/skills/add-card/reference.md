@@ -467,7 +467,7 @@ constructors.
 ### Combined
 
 - `Targets.Any` — creature, player, or planeswalker
-- `Targets.CreatureOrPlayer` / `Targets.CreatureOrPlaneswalker` / `Targets.OpponentOrPlaneswalker`
+- `Targets.CreatureOrPlayer` / `Targets.CreatureOrPlaneswalker` / `Targets.PlayerOrPlaneswalker` / `Targets.OpponentOrPlaneswalker`
 
 ### Graveyard
 

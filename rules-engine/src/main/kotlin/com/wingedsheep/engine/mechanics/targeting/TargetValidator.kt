@@ -97,6 +97,7 @@ class TargetValidator {
             is AnyTarget -> validateAnyTarget(state, target)
             is TargetCreatureOrPlayer -> validateCreatureOrPlayerTarget(state, target)
             is TargetOpponentOrPlaneswalker -> validateOpponentOrPlaneswalkerTarget(state, target, casterId)
+            is TargetPlayerOrPlaneswalker -> validatePlayerOrPlaneswalkerTarget(state, target)
             is TargetCreatureOrPlaneswalker -> validateCreatureOrPlaneswalkerTarget(state, target)
             is TargetSpellOrPermanent -> validateSpellOrPermanentTarget(state, target, casterId)
             is TargetObject -> validateObjectTarget(state, target, requirement.filter, casterId, sourceId)
@@ -264,6 +265,30 @@ class TargetValidator {
                 null
             }
             else -> "Target must be an opponent or planeswalker"
+        }
+    }
+
+    private fun validatePlayerOrPlaneswalkerTarget(state: GameState, target: ChosenTarget): String? {
+        return when (target) {
+            is ChosenTarget.Player -> {
+                if (!state.hasEntity(target.playerId)) "Target player not found"
+                else if (playerHasShroud(state, target.playerId)) "Target player has shroud"
+                else null
+            }
+            is ChosenTarget.Permanent -> {
+                val container = state.getEntity(target.entityId)
+                    ?: return "Target not found"
+                val cardComponent = container.get<CardComponent>()
+                    ?: return "Target is not a card"
+                if (CardType.PLANESWALKER !in cardComponent.typeLine.cardTypes) {
+                    return "Target must be a player or planeswalker"
+                }
+                if (target.entityId !in state.getBattlefield()) {
+                    return "Target must be on the battlefield"
+                }
+                null
+            }
+            else -> "Target must be a player or planeswalker"
         }
     }
 

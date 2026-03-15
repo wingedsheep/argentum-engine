@@ -466,7 +466,7 @@ class CardBuilder(private val name: String) {
             castTimeCreatureTypeChoice = castTimeCreatureTypeChoice,
             cantBeCountered = cantBeCountered,
             conditionalFlash = conditionalFlash,
-            kickerTargetRequirements = listOfNotNull(spellBuilder?.kickerTarget),
+            kickerTargetRequirements = spellBuilder?.kickerTargetRequirements ?: emptyList(),
             kickerSpellEffect = spellBuilder?.kickerEffect,
             sagaChapters = sagaChaptersList.toList()
         )
@@ -544,6 +544,29 @@ class SpellBuilder {
      * uses this target requirement instead of the normal [target].
      */
     var kickerTarget: TargetRequirement? = null
+
+    // Named kicker target bindings (for kicker spells with multiple alternate targets)
+    private val namedKickerTargets: MutableList<Pair<String, TargetRequirement>> = mutableListOf()
+
+    /**
+     * Declare a named kicker target and get an EffectTarget reference to use in kickerEffect.
+     * Use this when the kicked version needs multiple targets (e.g., Goblin Barrage).
+     *
+     * @param name A descriptive name for the target
+     * @param requirement The target requirement specification
+     * @return An EffectTarget.BoundVariable that references this kicker target by name
+     */
+    fun kickerTarget(name: String, requirement: TargetRequirement): EffectTarget.BoundVariable {
+        namedKickerTargets.add(name to requirement.withId(name))
+        return EffectTarget.BoundVariable(name)
+    }
+
+    internal val kickerTargetRequirements: List<TargetRequirement>
+        get() = if (namedKickerTargets.isNotEmpty()) {
+            namedKickerTargets.map { it.second }
+        } else {
+            listOfNotNull(kickerTarget)
+        }
 
     // Named target bindings
     private val namedTargets: MutableList<Pair<String, TargetRequirement>> = mutableListOf()

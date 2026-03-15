@@ -84,6 +84,7 @@ object DominariaSet {
         GhituChronicler,
         GhituLavarunner,
         GideonsReproach,
+        GoblinBarrage,
         GoblinChainwhirler,
         GoblinWarchief,
         GaeasBlessing,

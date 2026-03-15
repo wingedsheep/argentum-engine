@@ -2,14 +2,14 @@
 
 **Set Size:** 280 cards (249 unique card names + basic land variants)
 **Release Date:** April 27, 2018
-**Implemented:** 180 / 249
+**Implemented:** 181 / 249
 
 | Color      | Total | Done |
 |------------|-------|------|
 | White      | 38    | 26   |
 | Blue       | 37    | 25   |
 | Black      | 38    | 27   |
-| Red        | 38    | 30   |
+| Red        | 38    | 31   |
 | Green      | 37    | 29   |
 | Multicolor | 19    | 13   |
 | Colorless  | 30    | 20   |
@@ -100,7 +100,7 @@
 - [x] Gideon's Reproach
 - [x] Gift of Growth
 - [x] Gilded Lotus
-- [ ] Goblin Barrage
+- [x] Goblin Barrage
 - [x] Goblin Chainwhirler
 - [x] Goblin Warchief
 - [x] Grand Warlord Radha

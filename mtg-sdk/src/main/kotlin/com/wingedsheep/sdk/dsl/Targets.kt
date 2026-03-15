@@ -14,6 +14,7 @@ import com.wingedsheep.sdk.scripting.targets.TargetOpponent
 import com.wingedsheep.sdk.scripting.targets.TargetOpponentOrPlaneswalker
 import com.wingedsheep.sdk.scripting.targets.TargetPermanent
 import com.wingedsheep.sdk.scripting.targets.TargetPlayer
+import com.wingedsheep.sdk.scripting.targets.TargetPlayerOrPlaneswalker
 import com.wingedsheep.sdk.scripting.targets.TargetRequirement
 import com.wingedsheep.sdk.scripting.targets.TargetSpell
 
@@ -174,6 +175,11 @@ object Targets {
      * Target creature or planeswalker.
      */
     val CreatureOrPlaneswalker: TargetRequirement = TargetCreatureOrPlaneswalker()
+
+    /**
+     * Target player or planeswalker.
+     */
+    val PlayerOrPlaneswalker: TargetRequirement = TargetPlayerOrPlaneswalker()
 
     /**
      * Target opponent or planeswalker.
