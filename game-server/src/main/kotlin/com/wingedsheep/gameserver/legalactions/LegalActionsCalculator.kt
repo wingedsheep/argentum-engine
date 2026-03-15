@@ -51,6 +51,7 @@ import com.wingedsheep.sdk.scripting.effects.DividedDamageEffect
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.ActivatedAbility
 import com.wingedsheep.sdk.scripting.CanBlockAnyNumber
+import com.wingedsheep.sdk.scripting.ExtraLoyaltyActivation
 import com.wingedsheep.sdk.scripting.GrantActivatedAbilityToAttachedCreature
 import com.wingedsheep.sdk.scripting.GrantActivatedAbilityToCreatureGroup
 import com.wingedsheep.sdk.scripting.GrantFlashToSpellType
@@ -1572,7 +1573,10 @@ class LegalActionsCalculator(
                 if (ability.isPlaneswalkerAbility) {
                     if (!canPlaySorcerySpeed) continue
                     val tracker = container.get<AbilityActivatedThisTurnComponent>()
-                    if (tracker != null && tracker.loyaltyAbilityActivated) continue
+                    if (tracker != null && tracker.loyaltyActivationCount > 0) {
+                        val maxActivations = getMaxLoyaltyActivations(state, playerId)
+                        if (tracker.hasReachedLoyaltyLimit(maxActivations)) continue
+                    }
                     // Check loyalty cost payability for negative costs
                     val loyaltyCost = ability.cost as? AbilityCost.Loyalty
                     if (loyaltyCost != null && loyaltyCost.change < 0) {
@@ -3043,5 +3047,23 @@ class LegalActionsCalculator(
                 manaAmount = source.manaAmount
             )
         }
+    }
+
+    /**
+     * Returns the maximum number of loyalty ability activations per planeswalker per turn
+     * for the given player. Normally 1, but ExtraLoyaltyActivation (Oath of Teferi) raises it to 2.
+     */
+    private fun getMaxLoyaltyActivations(state: GameState, playerId: EntityId): Int {
+        for (permanentId in state.getBattlefield()) {
+            val container = state.getEntity(permanentId) ?: continue
+            val controller = container.get<ControllerComponent>()?.playerId ?: continue
+            if (controller != playerId) continue
+            val card = container.get<CardComponent>() ?: continue
+            val cardDef = cardRegistry.getCard(card.cardDefinitionId) ?: continue
+            if (cardDef.script.staticAbilities.any { it is ExtraLoyaltyActivation }) {
+                return 2
+            }
+        }
+        return 1
     }
 }

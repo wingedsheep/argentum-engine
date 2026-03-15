@@ -1661,3 +1661,19 @@ data class GrantAlternativeCastingCost(
     override val description: String = "You may pay $cost rather than pay the mana cost for spells you cast"
     override fun applyTextReplacement(replacer: TextReplacer): StaticAbility = this
 }
+
+/**
+ * You may activate loyalty abilities of planeswalkers you control an extra time each turn.
+ * Used for Oath of Teferi: "You may activate the loyalty abilities of planeswalkers you control
+ * twice each turn rather than only once."
+ *
+ * The engine checks for this static ability on the controller's battlefield when validating
+ * planeswalker loyalty ability activations. Multiple copies do NOT stack — the maximum is
+ * always two activations per planeswalker per turn regardless of how many copies are controlled.
+ */
+@SerialName("ExtraLoyaltyActivation")
+@Serializable
+data object ExtraLoyaltyActivation : StaticAbility {
+    override val description: String = "You may activate loyalty abilities of planeswalkers you control twice each turn rather than only once"
+    override fun applyTextReplacement(replacer: TextReplacer): StaticAbility = this
+}

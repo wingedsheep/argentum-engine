@@ -2,7 +2,7 @@
 
 **Set Size:** 280 cards (249 unique card names + basic land variants)
 **Release Date:** April 27, 2018
-**Implemented:** 188 / 249
+**Implemented:** 189 / 249
 
 | Color      | Total | Done |
 |------------|-------|------|
@@ -11,7 +11,7 @@
 | Black      | 38    | 29   |
 | Red        | 38    | 32   |
 | Green      | 37    | 30   |
-| Multicolor | 19    | 13   |
+| Multicolor | 19    | 14   |
 | Colorless  | 30    | 22   |
 | Land       | 12    | 9    |
 
@@ -162,7 +162,7 @@
 - [ ] Naru Meha, Master Wizard
 - [x] Nature's Spiral
 - [ ] Navigator's Compass
-- [ ] Oath of Teferi
+- [x] Oath of Teferi
 - [ ] On Serra's Wings
 - [x] Opt
 - [x] Orcish Vandal

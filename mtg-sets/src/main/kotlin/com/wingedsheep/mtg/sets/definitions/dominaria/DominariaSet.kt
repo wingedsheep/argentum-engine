@@ -133,6 +133,7 @@ object DominariaSet {
         MoxAmber,
         MultaniYavimayasAvatar,
         NaturesSpiral,
+        OathOfTeferi,
         Opt,
         OrcishVandal,
         PardicWanderer,

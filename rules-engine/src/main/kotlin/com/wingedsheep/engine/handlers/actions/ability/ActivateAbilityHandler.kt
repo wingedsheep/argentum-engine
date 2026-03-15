@@ -40,6 +40,7 @@ import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.scripting.AbilityCost
 import com.wingedsheep.sdk.scripting.ActivatedAbility
 import com.wingedsheep.sdk.scripting.ActivationRestriction
+import com.wingedsheep.sdk.scripting.ExtraLoyaltyActivation
 import com.wingedsheep.sdk.scripting.GrantActivatedAbilityToAttachedCreature
 import com.wingedsheep.sdk.scripting.GrantActivatedAbilityToCreatureGroup
 import com.wingedsheep.sdk.scripting.TimingRule
@@ -154,9 +155,17 @@ class ActivateAbilityHandler(
                 return "Loyalty abilities can only be activated at sorcery speed"
             }
             // Rule 606.3: Only one loyalty ability per planeswalker per turn
+            // (Oath of Teferi allows two activations per turn)
             val tracker = container.get<AbilityActivatedThisTurnComponent>()
-            if (tracker != null && tracker.loyaltyAbilityActivated) {
-                return "Only one loyalty ability can be activated per planeswalker each turn"
+            if (tracker != null && tracker.loyaltyActivationCount > 0) {
+                val maxActivations = getMaxLoyaltyActivations(state, action.playerId)
+                if (tracker.hasReachedLoyaltyLimit(maxActivations)) {
+                    return if (maxActivations > 1) {
+                        "Loyalty abilities can only be activated $maxActivations times per planeswalker each turn"
+                    } else {
+                        "Only one loyalty ability can be activated per planeswalker each turn"
+                    }
+                }
             }
         }
 
@@ -937,6 +946,26 @@ class ActivateAbilityHandler(
         }
 
         return AdditionalManaResult(currentState, events)
+    }
+
+    /**
+     * Returns the maximum number of loyalty ability activations per planeswalker per turn
+     * for the given player. Normally 1, but ExtraLoyaltyActivation (Oath of Teferi) raises it to 2.
+     * Multiple copies do NOT stack beyond 2.
+     */
+    private fun getMaxLoyaltyActivations(state: GameState, playerId: EntityId): Int {
+        val registry = cardRegistry ?: return 1
+        for (permanentId in state.getBattlefield()) {
+            val container = state.getEntity(permanentId) ?: continue
+            val controller = container.get<ControllerComponent>()?.playerId ?: continue
+            if (controller != playerId) continue
+            val card = container.get<CardComponent>() ?: continue
+            val cardDef = registry.getCard(card.cardDefinitionId) ?: continue
+            if (cardDef.script.staticAbilities.any { it is ExtraLoyaltyActivation }) {
+                return 2
+            }
+        }
+        return 1
     }
 
     /**

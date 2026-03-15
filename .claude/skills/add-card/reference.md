@@ -954,6 +954,7 @@ Set via `staticAbility { ability = ... }`:
 - `ControlEnchantedPermanent` — control the enchanted permanent
 - `GrantShroudToController` — controller has shroud
 - `GrantCantLoseGame` — controller can't lose the game (Lich's Mastery, Platinum Angel)
+- `ExtraLoyaltyActivation` — activate loyalty abilities of planeswalkers you control twice each turn (Oath of Teferi)
 - `CantCastSpells(target, duration)` — prevent target player from casting spells
 - `SkipNextTurn(target)` — target player skips their next turn
 - `AdditionalManaOnTap(color, amount: DynamicAmount)` — produce additional mana

@@ -149,7 +149,7 @@ data class TimestampComponent(
 @Serializable
 data class AbilityActivatedThisTurnComponent(
     val abilityIds: Set<AbilityId> = emptySet(),
-    val loyaltyAbilityActivated: Boolean = false
+    val loyaltyActivationCount: Int = 0
 ) : Component {
     fun withActivated(abilityId: AbilityId): AbilityActivatedThisTurnComponent =
         copy(abilityIds = abilityIds + abilityId)
@@ -157,7 +157,11 @@ data class AbilityActivatedThisTurnComponent(
     fun hasActivated(abilityId: AbilityId): Boolean = abilityId in abilityIds
 
     fun withLoyaltyActivated(): AbilityActivatedThisTurnComponent =
-        copy(loyaltyAbilityActivated = true)
+        copy(loyaltyActivationCount = loyaltyActivationCount + 1)
+
+    /** @return true if the loyalty activation limit has been reached for the given max. */
+    fun hasReachedLoyaltyLimit(maxActivations: Int): Boolean =
+        loyaltyActivationCount >= maxActivations
 }
 
 /**
