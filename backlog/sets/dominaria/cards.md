@@ -2,7 +2,7 @@
 
 **Set Size:** 280 cards (249 unique card names + basic land variants)
 **Release Date:** April 27, 2018
-**Implemented:** 186 / 249
+**Implemented:** 187 / 249
 
 | Color      | Total | Done |
 |------------|-------|------|
@@ -12,7 +12,7 @@
 | Red        | 38    | 31   |
 | Green      | 37    | 30   |
 | Multicolor | 19    | 13   |
-| Colorless  | 30    | 21   |
+| Colorless  | 30    | 22   |
 | Land       | 12    | 9    |
 
 ---
@@ -244,7 +244,7 @@
 - [ ] Unwind
 - [x] Urgoros, the Empty One
 - [ ] Urza's Ruinous Blast
-- [ ] Urza's Tome
+- [x] Urza's Tome
 - [x] Valduk, Keeper of the Flame
 - [x] Verdant Force
 - [x] Verix Bladewing

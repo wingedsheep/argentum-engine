@@ -195,6 +195,7 @@ object DominariaSet {
         VerdantForce,
         VerixBladewing,
         ViciousOffering,
+        UrzasTome,
         VoltaicServant,
         WarlordsFury,
         WeightOfMemory,
