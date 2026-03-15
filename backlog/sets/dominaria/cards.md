@@ -2,12 +2,12 @@
 
 **Set Size:** 280 cards (249 unique card names + basic land variants)
 **Release Date:** April 27, 2018
-**Implemented:** 182 / 249
+**Implemented:** 183 / 249
 
 | Color      | Total | Done |
 |------------|-------|------|
 | White      | 38    | 26   |
-| Blue       | 37    | 25   |
+| Blue       | 37    | 26   |
 | Black      | 38    | 28   |
 | Red        | 38    | 31   |
 | Green      | 37    | 29   |
@@ -224,7 +224,7 @@
 - [x] Tetsuko Umezawa, Fugitive
 - [x] Thallid Omnivore
 - [x] Thallid Soothsayer
-- [ ] The Antiquities War
+- [x] The Antiquities War
 - [ ] The Eldest Reborn
 - [x] The First Eruption
 - [x] The Flame of Keld

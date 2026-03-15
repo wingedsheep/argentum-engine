@@ -176,6 +176,7 @@ object DominariaSet {
         TempestDjinn,
         TesharAncestorsApostle,
         TerritorialAllosaurus,
+        TheAntiquitiesWar,
         TheFirstEruption,
         TheFlameOfKeld,
         TheMendingOfDominaria,
