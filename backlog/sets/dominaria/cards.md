@@ -2,7 +2,7 @@
 
 **Set Size:** 280 cards (249 unique card names + basic land variants)
 **Release Date:** April 27, 2018
-**Implemented:** 178 / 249
+**Implemented:** 179 / 249
 
 | Color      | Total | Done |
 |------------|-------|------|
@@ -10,7 +10,7 @@
 | Blue       | 37    | 25   |
 | Black      | 38    | 27   |
 | Red        | 38    | 29   |
-| Green      | 37    | 28   |
+| Green      | 37    | 29   |
 | Multicolor | 19    | 13   |
 | Colorless  | 30    | 20   |
 | Land       | 12    | 9    |
@@ -127,7 +127,7 @@
 - [x] Josu Vess, Lich Knight
 - [x] Jousting Lance
 - [x] Juggernaut
-- [ ] Kamahl's Druidic Vow
+- [x] Kamahl's Druidic Vow
 - [ ] Karn's Temporal Sundering
 - [x] Karn, Scion of Urza
 - [x] Kazarov, Sengir Pureblood
