@@ -112,6 +112,7 @@ object DominariaSet {
         HomaridExplorer,
         KrosanDruid,
         KwendePrideOfFemeref,
+        KnightOfGrace,
         KnightOfMalice,
         KnightOfNewBenalia,
         KeldonOverseer,
