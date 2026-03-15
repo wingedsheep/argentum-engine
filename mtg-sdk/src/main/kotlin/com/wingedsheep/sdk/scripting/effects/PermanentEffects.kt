@@ -119,6 +119,21 @@ data class AddCountersEffect(
 }
 
 /**
+ * Tap or untap all entities in a named collection.
+ * Used for effects that let a player choose permanents to tap/untap from a selection.
+ * "Untap up to two lands" (after Gather → Select → TapUntapCollection)
+ */
+@SerialName("TapUntapCollection")
+@Serializable
+data class TapUntapCollectionEffect(
+    val collectionName: String,
+    val tap: Boolean = true
+) : Effect {
+    override val description: String = "${if (tap) "Tap" else "Untap"} each permanent in $collectionName"
+    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
+}
+
+/**
  * Add counters to all entities in a named collection.
  * Used for non-targeting "choose" effects that place counters on multiple permanents.
  * "Put an aim counter on each of them"

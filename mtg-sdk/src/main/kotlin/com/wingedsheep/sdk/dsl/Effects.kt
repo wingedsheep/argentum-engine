@@ -383,6 +383,13 @@ object Effects {
         MoveToZoneEffect(target, Zone.LIBRARY, ZonePlacement.Shuffled)
 
     /**
+     * Put into owner's library at a specific position from the top.
+     * @param positionFromTop 0-indexed: 0 = top, 1 = second, 2 = third from top, etc.
+     */
+    fun PutIntoLibraryNthFromTop(target: EffectTarget, positionFromTop: Int): Effect =
+        MoveToZoneEffect(target, Zone.LIBRARY, positionFromTop = positionFromTop)
+
+    /**
      * Grant "may play from exile" permission to all cards in a named collection.
      * Does NOT waive mana cost — pair with [GrantPlayWithoutPayingCost] for free play.
      */

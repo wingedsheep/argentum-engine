@@ -300,13 +300,28 @@ data class MoveToZoneEffect(
     /** When true and destination is BATTLEFIELD, the card enters face down (as a 2/2 morph creature). */
     val faceDown: Boolean = false,
     /** When true and destination is EXILE, the exiled card is linked to the source permanent via LinkedExileComponent. */
-    val linkToSource: Boolean = false
+    val linkToSource: Boolean = false,
+    /**
+     * When set and destination is LIBRARY, places the card at this position from the top (0-indexed).
+     * 0 = top, 1 = second from top, 2 = third from top, etc.
+     * Takes precedence over [placement] when destination is LIBRARY.
+     */
+    val positionFromTop: Int? = null
 ) : Effect {
     override val description: String = buildString {
         when {
             byDestruction -> append("Destroy ${target.description}")
             destination == Zone.HAND -> append("Return ${target.description} to its owner's hand")
             destination == Zone.EXILE -> append("Exile ${target.description}")
+            destination == Zone.LIBRARY && positionFromTop != null -> {
+                val ordinal = when (positionFromTop) {
+                    0 -> "top"
+                    1 -> "second from the top"
+                    2 -> "third from the top"
+                    else -> "${positionFromTop + 1}th from the top"
+                }
+                append("Put ${target.description} into its owner's library $ordinal")
+            }
             destination == Zone.LIBRARY && placement == ZonePlacement.Shuffled ->
                 append("Shuffle ${target.description} into its owner's library")
             destination == Zone.LIBRARY && placement == ZonePlacement.Top ->

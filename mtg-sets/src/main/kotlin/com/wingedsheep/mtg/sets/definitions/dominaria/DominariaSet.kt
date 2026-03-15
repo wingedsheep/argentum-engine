@@ -185,6 +185,7 @@ object DominariaSet {
         Syncopate,
         TatyovaBenthicDruid,
         TempestDjinn,
+        TeferiHeroOfDominaria,
         TesharAncestorsApostle,
         TerritorialAllosaurus,
         TianaShipsCaretaker,

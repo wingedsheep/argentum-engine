@@ -2,7 +2,7 @@
 
 **Set Size:** 280 cards (249 unique card names + basic land variants)
 **Release Date:** April 27, 2018
-**Implemented:** 198 / 249
+**Implemented:** 199 / 249
 
 | Color      | Total | Done |
 |------------|-------|------|
@@ -11,7 +11,7 @@
 | Black      | 38    | 30   |
 | Red        | 38    | 34   |
 | Green      | 37    | 30   |
-| Multicolor | 19    | 16   |
+| Multicolor | 19    | 17   |
 | Colorless  | 30    | 23   |
 | Land       | 12    | 9    |
 
@@ -217,7 +217,7 @@
 - [ ] Sylvan Awakening
 - [x] Syncopate
 - [x] Tatyova, Benthic Druid
-- [ ] Teferi, Hero of Dominaria
+- [x] Teferi, Hero of Dominaria
 - [x] Tempest Djinn
 - [x] Territorial Allosaurus
 - [x] Teshar, Ancestor's Apostle

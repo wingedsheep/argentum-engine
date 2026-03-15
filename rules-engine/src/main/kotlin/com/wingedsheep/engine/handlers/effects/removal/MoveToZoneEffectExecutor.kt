@@ -86,6 +86,12 @@ class MoveToZoneEffectExecutor(
             return moveToBattlefieldFaceDown(state, targetId, cardComponent, ownerId, controllerId, currentZone)
         }
 
+        // positionFromTop takes precedence for library destination
+        val posFromTop = effect.positionFromTop
+        if (posFromTop != null && effect.destination == Zone.LIBRARY) {
+            return moveToLibraryNthFromTop(state, targetId, cardComponent, ownerId, currentZone, posFromTop)
+        }
+
         val result = when (effect.placement) {
             ZonePlacement.Top -> moveToLibraryTop(state, targetId, cardComponent, ownerId, currentZone)
             ZonePlacement.Bottom -> moveToLibraryBottom(state, targetId, cardComponent, ownerId, currentZone)
@@ -158,6 +164,45 @@ class MoveToZoneEffectExecutor(
         val libraryZone = ZoneKey(ownerId, Zone.LIBRARY)
         val currentLibrary = newState.getZone(libraryZone)
         val newLibrary = currentLibrary + entityId
+        newState = newState.copy(zones = newState.zones + (libraryZone to newLibrary))
+
+        newState = cleanupBattlefieldComponents(newState, entityId, currentZone)
+
+        return ExecutionResult.success(
+            newState,
+            listOf(
+                ZoneChangeEvent(
+                    entityId = entityId,
+                    entityName = cardComponent.name,
+                    fromZone = currentZone.zoneType,
+                    toZone = Zone.LIBRARY,
+                    ownerId = ownerId
+                )
+            )
+        )
+    }
+
+    /**
+     * Move a card to a specific position in the owner's library (0-indexed from top).
+     * For positionFromTop=2, the card becomes 3rd from the top.
+     * If the library has fewer cards than the requested position, the card goes to the bottom.
+     */
+    private fun moveToLibraryNthFromTop(
+        state: GameState,
+        entityId: EntityId,
+        cardComponent: CardComponent,
+        ownerId: EntityId,
+        currentZone: ZoneKey,
+        positionFromTop: Int
+    ): ExecutionResult {
+        var newState = state.removeFromZone(currentZone, entityId)
+
+        val libraryZone = ZoneKey(ownerId, Zone.LIBRARY)
+        val currentLibrary = newState.getZone(libraryZone)
+
+        // If the library is too small, put at the bottom (or wherever possible)
+        val insertIndex = positionFromTop.coerceAtMost(currentLibrary.size)
+        val newLibrary = currentLibrary.toMutableList().apply { add(insertIndex, entityId) }
         newState = newState.copy(zones = newState.zones + (libraryZone to newLibrary))
 
         newState = cleanupBattlefieldComponents(newState, entityId, currentZone)

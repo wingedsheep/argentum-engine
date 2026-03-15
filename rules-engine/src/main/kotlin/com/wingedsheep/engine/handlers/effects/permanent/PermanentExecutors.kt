@@ -22,6 +22,7 @@ class PermanentExecutors(
         RemoveKeywordExecutor(),
         AddCountersExecutor(),
         AddCountersToCollectionExecutor(),
+        TapUntapCollectionExecutor(),
         RemoveCountersExecutor(),
         ChooseColorProtectionExecutor(decisionHandler),
         ChooseColorProtectionTargetExecutor(decisionHandler),

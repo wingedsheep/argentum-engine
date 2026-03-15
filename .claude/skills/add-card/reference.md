@@ -57,6 +57,7 @@ constructors.
 - `Effects.ExileUntilEndStep(target)` — exile, return at end step
 - `Effects.ReturnToHand(target)`
 - `Effects.PutOnTopOfLibrary(target)`
+- `Effects.PutIntoLibraryNthFromTop(target, positionFromTop)` — put into library at specific position (0=top, 2=third from top)
 - `Effects.ShuffleIntoLibrary(target)`
 - `Effects.PutOntoBattlefield(target, tapped = false)`
 - `Effects.PutOntoBattlefieldUnderYourControl(target)` — put target onto battlefield under controller's control
@@ -274,6 +275,7 @@ constructors.
 | `GrantActivatedAbilityEffect` | `ability, target, duration`                                                 | Grant activated ability                  |
 | `GrantActivatedAbilityToGroupEffect`        | `ability, filter, duration`                                                 | Grant activated ability to group         |
 | `AddCountersEffect`                         | `counterType, count, target`                                                | Add counters                             |
+| `TapUntapCollectionEffect`                  | `collectionName, tap`                                                       | Tap/untap all entities in a named collection |
 | `AddCountersToCollectionEffect`             | `collectionName, counterType, count`                                        | Add counters to all entities in collection |
 | `RemoveCountersEffect`                      | `counterType, count, target`                                                | Remove counters                          |
 | `AddMinusCountersEffect`                    | `count, target`                                                             | Add -1/-1 counters                       |
