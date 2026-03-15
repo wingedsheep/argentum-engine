@@ -43,9 +43,10 @@ function DraftPicker({ draftState, settings }: { draftState: DraftState; setting
     const leftPlayer = players[leftIndex]
     const rightPlayer = players[rightIndex]
 
-    // Based on pass direction, determine who we're passing to and receiving from
-    const passingTo = draftState.passDirection === 'LEFT' ? leftPlayer : rightPlayer
-    const receivingFrom = draftState.passDirection === 'LEFT' ? rightPlayer : leftPlayer
+    // Based on pass direction, determine who we're passing to and receiving from.
+    // Backend LEFT passes from index i to i+1 (rightPlayer), RIGHT passes to i-1 (leftPlayer).
+    const passingTo = draftState.passDirection === 'LEFT' ? rightPlayer : leftPlayer
+    const receivingFrom = draftState.passDirection === 'LEFT' ? leftPlayer : rightPlayer
 
     return {
       passingTo: passingTo ? {

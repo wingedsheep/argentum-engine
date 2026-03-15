@@ -493,20 +493,20 @@ class TournamentLobby(
             return PickResult.Error("Must pick exactly $requiredPicks card(s), got ${cardNames.size}")
         }
 
-        // Validate all cards are in the pack
+        // Validate all cards are in the pack (use identity-based tracking to handle duplicate names)
         val pickedCards = mutableListOf<CardDefinition>()
+        val remainingPack = currentPack.toMutableList()
         for (cardName in cardNames) {
-            val card = currentPack.find { it.name == cardName }
-                ?: return PickResult.Error("Card not in pack: $cardName")
-            if (pickedCards.any { it.name == cardName }) {
-                return PickResult.Error("Cannot pick the same card twice: $cardName")
+            val cardIndex = remainingPack.indexOfFirst { it.name == cardName }
+            if (cardIndex == -1) {
+                return PickResult.Error("Card not in pack: $cardName")
             }
-            pickedCards.add(card)
+            pickedCards.add(remainingPack.removeAt(cardIndex))
         }
 
         // Pick the cards
         val newPool = playerState.cardPool + pickedCards
-        val newPack = currentPack.filter { card -> cardNames.none { it == card.name } }
+        val newPack = remainingPack.toList()
 
         // Update player state
         players[playerId] = playerState.copy(
@@ -1195,7 +1195,14 @@ class TournamentLobby(
      * Build a lobby update message for a specific player.
      */
     fun buildLobbyUpdate(forPlayerId: EntityId, isAiPlayer: (EntityId) -> Boolean = { false }): ServerMessage.LobbyUpdate {
-        val playerInfos = players.values.map { ps ->
+        // Use playerOrder for consistent ordering during draft so the frontend
+        // can correctly determine left/right neighbors for pack passing.
+        val orderedPlayers = if (playerOrder.isNotEmpty()) {
+            playerOrder.mapNotNull { id -> players[id] }
+        } else {
+            players.values.toList()
+        }
+        val playerInfos = orderedPlayers.map { ps ->
             ServerMessage.LobbyPlayerInfo(
                 playerId = ps.identity.playerId.value,
                 playerName = ps.identity.playerName,
