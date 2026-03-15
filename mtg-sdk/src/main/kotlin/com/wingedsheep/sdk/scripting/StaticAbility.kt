@@ -1266,6 +1266,22 @@ data object GrantShroudToController : StaticAbility {
 }
 
 /**
+ * You can't lose the game.
+ * Grants the "can't lose the game" effect to the permanent's controller.
+ * Used for Lich's Mastery, Platinum Angel, etc.
+ *
+ * When active, prevents all game loss conditions: life at 0 or less,
+ * 10+ poison counters, drawing from empty library, and card effects.
+ * Note: opponents can still WIN the game via effects that say so.
+ */
+@SerialName("GrantCantLoseGame")
+@Serializable
+data object GrantCantLoseGame : StaticAbility {
+    override val description: String = "You can't lose the game"
+    override fun applyTextReplacement(replacer: TextReplacer): StaticAbility = this
+}
+
+/**
  * This permanent can't be the target of abilities your opponents control.
  * Unlike hexproof, this does NOT prevent targeting by spells — only by activated
  * and triggered abilities.

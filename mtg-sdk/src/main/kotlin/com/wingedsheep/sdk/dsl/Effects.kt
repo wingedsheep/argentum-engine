@@ -83,6 +83,7 @@ import com.wingedsheep.sdk.scripting.effects.CopyNextSpellCastEffect
 import com.wingedsheep.sdk.scripting.effects.CopyTargetSpellEffect
 import com.wingedsheep.sdk.scripting.effects.AddCreatureTypeEffect
 import com.wingedsheep.sdk.scripting.effects.SetCreatureSubtypesEffect
+import com.wingedsheep.sdk.scripting.effects.ForceExileMultiZoneEffect
 import com.wingedsheep.sdk.scripting.effects.LoseGameEffect
 import com.wingedsheep.sdk.scripting.effects.SkipNextTurnEffect
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
@@ -171,6 +172,14 @@ object Effects {
      */
     fun LoseGame(target: EffectTarget = EffectTarget.Controller, message: String? = null): Effect =
         LoseGameEffect(target, message)
+
+    /**
+     * Force a player to exile from multiple zones (battlefield, hand, graveyard).
+     * Used for Lich's Mastery: "for each 1 life you lost, exile a permanent you control
+     * or a card from your hand or graveyard."
+     */
+    fun ForceExileMultiZone(count: DynamicAmount, target: EffectTarget = EffectTarget.Controller): Effect =
+        ForceExileMultiZoneEffect(count, target)
 
     /**
      * Set a player's life total to a fixed amount.

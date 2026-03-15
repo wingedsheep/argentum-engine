@@ -34,6 +34,7 @@ class RemovalExecutors(
         ExileUntilLeavesExecutor(),
         MarkExileOnDeathExecutor(),
         MarkExileControllerGraveyardOnDeathExecutor(),
+        ForceExileMultiZoneExecutor(),
         ForceSacrificeExecutor(),
         EachPlayerChoosesCreatureTypeExecutor(),
         payOrSufferExecutor,

@@ -1,6 +1,7 @@
 package com.wingedsheep.engine.handlers.continuations
 
 import com.wingedsheep.engine.core.*
+import com.wingedsheep.engine.handlers.effects.removal.ForceExileMultiZoneExecutor
 import com.wingedsheep.engine.handlers.DecisionHandler
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.PredicateContext
@@ -23,6 +24,7 @@ class SacrificeAndPayContinuationResumer(
 
     override fun resumers(): List<ContinuationResumer<*>> = listOf(
         resumer(SacrificeContinuation::class, ::resumeSacrifice),
+        resumer(ExileMultiZoneContinuation::class, ::resumeExileMultiZone),
         resumer(PayOrSufferContinuation::class, ::resumePayOrSuffer),
         resumer(AnyPlayerMayPayContinuation::class, ::resumeAnyPlayerMayPay),
         resumer(UntapChoiceContinuation::class, ::resumeUntapChoice)
@@ -81,6 +83,23 @@ class SacrificeAndPayContinuationResumer(
         }
 
         return checkForMore(newState, events)
+    }
+
+    fun resumeExileMultiZone(
+        state: GameState,
+        continuation: ExileMultiZoneContinuation,
+        response: DecisionResponse,
+        checkForMore: CheckForMore
+    ): ExecutionResult {
+        if (response !is CardsSelectedResponse) {
+            return ExecutionResult.error(state, "Expected card selection response for multi-zone exile")
+        }
+
+        val result = ForceExileMultiZoneExecutor.exileEntities(
+            state, continuation.playerId, response.selectedCards
+        )
+
+        return checkForMore(result.state, result.events.toList())
     }
 
     fun resumePayOrSuffer(

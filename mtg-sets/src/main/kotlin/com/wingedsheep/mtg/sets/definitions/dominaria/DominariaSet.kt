@@ -114,6 +114,7 @@ object DominariaSet {
         KamahlsDruidicVow,
         KazarovSengirPureblood,
         KeldonRaider,
+        LichsMastery,
         LlanowarEnvoy,
         LlanowarElves,
         LlanowarScout,

@@ -6,6 +6,7 @@ import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.text.TextReplacer
+import com.wingedsheep.sdk.scripting.values.DynamicAmount
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -416,5 +417,28 @@ data class ReturnCreaturesPutInGraveyardThisTurnEffect(
 @Serializable
 data object ExileOpponentsGraveyardsEffect : Effect {
     override val description: String = "Exile all opponents' graveyards"
+    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
+}
+
+/**
+ * Force a player to exile cards from multiple zones (battlefield, hand, graveyard).
+ * The player chooses which to exile from any combination of those zones.
+ *
+ * Used for Lich's Mastery: "for each 1 life you lost, exile a permanent you control
+ * or a card from your hand or graveyard."
+ *
+ * If the total available is less than [count], the player exiles everything they can.
+ *
+ * @property count Number of things to exile (can be dynamic, e.g., life lost amount)
+ * @property target The player who must exile (defaults to controller)
+ */
+@SerialName("ForceExileMultiZone")
+@Serializable
+data class ForceExileMultiZoneEffect(
+    val count: DynamicAmount,
+    val target: EffectTarget = EffectTarget.Controller
+) : Effect {
+    override val description: String =
+        "Exile ${count.description} permanents you control or cards from your hand or graveyard"
     override fun applyTextReplacement(replacer: TextReplacer): Effect = this
 }

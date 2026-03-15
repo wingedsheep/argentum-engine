@@ -182,6 +182,14 @@ data class DamageDealtToCreaturesThisTurnComponent(
 data object GrantsControllerShroudComponent : Component
 
 /**
+ * Marks a permanent as granting "can't lose the game" to its controller.
+ * Used for Lich's Mastery: "You can't lose the game."
+ * When the permanent leaves the battlefield, the component goes with it — no cleanup needed.
+ */
+@Serializable
+data object GrantsCantLoseGameComponent : Component
+
+/**
  * Marks a permanent as unable to be targeted by abilities opponents control.
  * Unlike hexproof, spells can still target this permanent.
  * Used for Shanna, Sisay's Legacy: "Shanna can't be the target of abilities your opponents control."

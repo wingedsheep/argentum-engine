@@ -4,6 +4,7 @@ import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.ComponentContainer
 import com.wingedsheep.engine.state.components.battlefield.CantBeTargetedByOpponentAbilitiesComponent
 import com.wingedsheep.engine.state.components.battlefield.GrantCantBeBlockedToSmallCreaturesComponent
+import com.wingedsheep.engine.state.components.battlefield.GrantsCantLoseGameComponent
 import com.wingedsheep.engine.state.components.battlefield.GrantsControllerShroudComponent
 import com.wingedsheep.engine.state.components.battlefield.ReplacementEffectSourceComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
@@ -113,6 +114,11 @@ class StaticAbilityHandler(
         // Add tag component for abilities that grant controller-level effects
         if (cardDefinition.staticAbilities.any { it is GrantShroudToController }) {
             result = result.with(GrantsControllerShroudComponent)
+        }
+
+        // Add tag component for "you can't lose the game"
+        if (cardDefinition.staticAbilities.any { it is com.wingedsheep.sdk.scripting.GrantCantLoseGame }) {
+            result = result.with(GrantsCantLoseGameComponent)
         }
 
         // Add tag component for "can't be the target of abilities your opponents control"

@@ -21,6 +21,8 @@ import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.player.CardsDrawnThisTurnComponent
+import com.wingedsheep.engine.state.components.battlefield.GrantsCantLoseGameComponent
+import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.player.LossReason
 import com.wingedsheep.engine.state.components.player.PlayerLostComponent
 import com.wingedsheep.sdk.core.Zone
@@ -170,8 +172,16 @@ class DrawCardsExecutor(
             val library = newState.getZone(libraryZone)
             if (library.isEmpty()) {
                 // Failed to draw - game loss condition (Rule 704.5c)
-                newState = newState.updateEntity(playerId) { container ->
-                    container.with(PlayerLostComponent(LossReason.EMPTY_LIBRARY))
+                // Check if player can't lose the game
+                val cantLose = newState.getBattlefield().any { entityId ->
+                    val c = newState.getEntity(entityId) ?: return@any false
+                    c.has<GrantsCantLoseGameComponent>() &&
+                        c.get<ControllerComponent>()?.playerId == playerId
+                }
+                if (!cantLose) {
+                    newState = newState.updateEntity(playerId) { container ->
+                        container.with(PlayerLostComponent(LossReason.EMPTY_LIBRARY))
+                    }
                 }
                 events.add(DrawFailedEvent(playerId, "Empty library"))
                 if (drawnCards.isNotEmpty()) {

@@ -32,6 +32,7 @@ constructors.
 - `Effects.GainLife(amount, target = Controller)` — also accepts `DynamicAmount`
 - `Effects.LoseLife(amount, target = TargetOpponent)` — also accepts `DynamicAmount`
 - `Effects.LoseGame(target = Controller, message = null)` — target player loses the game immediately
+- `Effects.ForceExileMultiZone(count: DynamicAmount, target = Controller)` — exile from battlefield, hand, or graveyard (Lich's Mastery)
 - `Effects.SetLifeTotal(amount, target = Controller)` — set a player's life total to a specific value
 
 ### Drawing
@@ -949,6 +950,7 @@ Set via `staticAbility { ability = ... }`:
 - `CantReceiveCounters(target)`
 - `ControlEnchantedPermanent` — control the enchanted permanent
 - `GrantShroudToController` — controller has shroud
+- `GrantCantLoseGame` — controller can't lose the game (Lich's Mastery, Platinum Angel)
 - `CantCastSpells(target, duration)` — prevent target player from casting spells
 - `SkipNextTurn(target)` — target player skips their next turn
 - `AdditionalManaOnTap(color, amount: DynamicAmount)` — produce additional mana

@@ -18,6 +18,7 @@ import com.wingedsheep.engine.state.components.identity.FaceDownComponent
 import com.wingedsheep.engine.state.components.identity.LifeTotalComponent
 import com.wingedsheep.engine.state.components.identity.MorphDataComponent
 import com.wingedsheep.engine.state.components.identity.TokenComponent
+import com.wingedsheep.engine.state.components.battlefield.GrantsCantLoseGameComponent
 import com.wingedsheep.engine.state.components.player.LossReason
 import com.wingedsheep.engine.state.components.player.PlayerLostComponent
 import com.wingedsheep.sdk.core.CounterType
@@ -157,6 +158,18 @@ class StateBasedActionChecker(
     }
 
     /**
+     * Check if a player has "can't lose the game" from any permanent they control.
+     * Returns true if any permanent controlled by the player has GrantsCantLoseGameComponent.
+     */
+    private fun playerCantLoseGame(state: GameState, playerId: EntityId): Boolean {
+        return state.getBattlefield().any { entityId ->
+            val container = state.getEntity(entityId) ?: return@any false
+            container.has<GrantsCantLoseGameComponent>() &&
+                container.get<ControllerComponent>()?.playerId == playerId
+        }
+    }
+
+    /**
      * 704.5a - A player with 0 or less life loses the game.
      */
     private fun checkPlayerLifeLoss(state: GameState): ExecutionResult {
@@ -172,6 +185,8 @@ class StateBasedActionChecker(
             val container = state.getEntity(playerId) ?: continue
             // Skip if player already marked as lost
             if (container.has<PlayerLostComponent>()) continue
+            // Skip if player can't lose the game
+            if (playerCantLoseGame(state, playerId)) continue
 
             val lifeComponent = container.get<LifeTotalComponent>() ?: continue
             if (lifeComponent.life <= 0) {
@@ -196,6 +211,8 @@ class StateBasedActionChecker(
             val container = state.getEntity(playerId) ?: continue
             // Skip if player already marked as lost
             if (container.has<PlayerLostComponent>()) continue
+            // Skip if player can't lose the game
+            if (playerCantLoseGame(state, playerId)) continue
 
             val counters = container.get<CountersComponent>() ?: continue
             val poisonCount = counters.getCount(CounterType.POISON)

@@ -244,6 +244,22 @@ data class SacrificeContinuation(
 ) : ContinuationFrame
 
 /**
+ * Resume after player selects cards for multi-zone exile.
+ * Used for Lich's Mastery: "exile a permanent you control or a card from your hand or graveyard."
+ *
+ * @property playerId The player who must exile
+ * @property sourceId The spell/ability that caused the exile
+ * @property sourceName Name of the source for event messages
+ */
+@Serializable
+data class ExileMultiZoneContinuation(
+    override val decisionId: String,
+    val playerId: EntityId,
+    val sourceId: EntityId?,
+    val sourceName: String?
+) : ContinuationFrame
+
+/**
  * Resume after player makes a yes/no choice (may abilities).
  *
  * @property playerId The player who made the choice

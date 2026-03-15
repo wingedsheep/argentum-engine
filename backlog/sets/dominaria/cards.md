@@ -2,13 +2,13 @@
 
 **Set Size:** 280 cards (249 unique card names + basic land variants)
 **Release Date:** April 27, 2018
-**Implemented:** 184 / 249
+**Implemented:** 185 / 249
 
 | Color      | Total | Done |
 |------------|-------|------|
 | White      | 38    | 26   |
 | Blue       | 37    | 26   |
-| Black      | 38    | 28   |
+| Black      | 38    | 29   |
 | Red        | 38    | 31   |
 | Green      | 37    | 30   |
 | Multicolor | 19    | 13   |
@@ -139,7 +139,7 @@
 - [x] Knight of New Benalia
 - [x] Krosan Druid
 - [x] Kwende, Pride of Femeref
-- [ ] Lich's Mastery
+- [x] Lich's Mastery
 - [ ] Lingering Phantom
 - [x] Llanowar Elves
 - [x] Llanowar Envoy
