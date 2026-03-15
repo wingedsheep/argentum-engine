@@ -30,8 +30,10 @@ game:
     password: ${GAME_ADMIN_PASSWORD:}
   ai:
     enabled: ${GAME_AI_ENABLED:false}
+    base-url: ${GAME_AI_BASE_URL:https://openrouter.ai/api/v1}
+    api-key: ${GAME_AI_API_KEY:${OPENROUTER_API_KEY:}}
     model: ${GAME_AI_MODEL:qwen/qwen3.5-flash-02-23}
-    deckbuilding-model: ${GAME_AI_DECKBUILDING_MODEL:qwen/qwen3.5-flash-02-23}
+    deckbuilding-model: ${GAME_AI_DECKBUILDING_MODEL:}
     open-router-api-key: ${OPENROUTER_API_KEY:}
 
 # Swagger UI - only enabled when dev endpoints are enabled

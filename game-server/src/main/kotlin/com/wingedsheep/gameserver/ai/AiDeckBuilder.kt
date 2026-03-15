@@ -29,7 +29,7 @@ data class AiDeckResult(
  */
 class AiDeckBuilder(
     private val properties: AiProperties,
-    private val openRouterClient: OpenRouterClient,
+    private val llmClient: LlmClient,
     private val cardPool: List<CardDefinition>,
     private val basicLandVariants: List<CardDefinition>,
     private val setCodes: List<String>
@@ -109,7 +109,7 @@ class AiDeckBuilder(
             ChatMessage("user", prompt)
         )
 
-        val response = openRouterClient.chatCompletion(messages, properties.effectiveDeckbuildingModel)
+        val response = llmClient.chatCompletion(messages, properties.effectiveDeckbuildingModel)
         if (response == null) {
             logger.warn("AI deckbuilder: step 1 (evaluate) failed")
             return null
@@ -183,7 +183,7 @@ class AiDeckBuilder(
             ChatMessage("user", prompt)
         )
 
-        val response = openRouterClient.chatCompletion(messages, properties.effectiveDeckbuildingModel)
+        val response = llmClient.chatCompletion(messages, properties.effectiveDeckbuildingModel)
         if (response == null) {
             logger.warn("AI deckbuilder: step 2 (build) failed")
             return null

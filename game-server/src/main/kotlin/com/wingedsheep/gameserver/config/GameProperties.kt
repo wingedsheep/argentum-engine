@@ -29,6 +29,8 @@ data class AdminProperties(
 
 data class AiProperties(
     val enabled: Boolean = false,
+    val baseUrl: String = "https://openrouter.ai/api/v1",
+    val apiKey: String = "",
     val openRouterApiKey: String = "",
     val model: String = "qwen/qwen3.5-flash-02-23",
     val deckbuildingModel: String = "",
@@ -38,4 +40,7 @@ data class AiProperties(
 ) {
     /** Returns the model to use for deckbuilding — falls back to the gameplay model if not set. */
     val effectiveDeckbuildingModel: String get() = deckbuildingModel.ifBlank { model }
+
+    /** Returns the effective API key — prefers [apiKey], falls back to [openRouterApiKey] for backward compatibility. */
+    val effectiveApiKey: String get() = apiKey.ifBlank { openRouterApiKey }
 }

@@ -22,7 +22,7 @@ private val logger = LoggerFactory.getLogger(AiPlayerController::class.java)
  */
 class AiPlayerController(
     private val properties: AiProperties,
-    private val openRouterClient: OpenRouterClient,
+    private val llmClient: LlmClient,
     private val playerId: EntityId
 ) {
     private val decisionRegistry = AiDecisionHandlerRegistry()
@@ -265,7 +265,7 @@ class AiPlayerController(
             }
         }
 
-        val response = openRouterClient.chatCompletion(conversationHistory)
+        val response = llmClient.chatCompletion(conversationHistory)
 
         if (response != null) {
             conversationHistory.add(ChatMessage("assistant", response))
@@ -286,7 +286,7 @@ class AiPlayerController(
         // Build a temporary message list: system messages + this prompt only
         val messages = conversationHistory.filter { it.role == "system" }.toMutableList()
         messages.add(ChatMessage("user", prompt))
-        return openRouterClient.chatCompletion(messages)
+        return llmClient.chatCompletion(messages)
     }
 
     // =========================================================================

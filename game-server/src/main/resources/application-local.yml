@@ -1,0 +1,8 @@
+# Local development overrides — activated via spring.profiles.active=local
+# Defaults to Ollama for AI. Start with: just ollama-up && just ollama-pull qwen3.5
+
+game:
+  ai:
+    base-url: ${GAME_AI_BASE_URL:http://localhost:11434/v1}
+    api-key: ${GAME_AI_API_KEY:ollama}
+    model: ${GAME_AI_MODEL:qwen3.5}

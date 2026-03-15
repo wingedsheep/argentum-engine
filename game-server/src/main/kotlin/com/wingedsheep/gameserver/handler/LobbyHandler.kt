@@ -1603,7 +1603,7 @@ class LobbyHandler(
         logger.info("AI building sealed deck from pool of {} cards", pool.size)
 
         val aiProperties = gameProperties.ai
-        if (aiProperties.enabled && aiProperties.openRouterApiKey.isNotBlank()) {
+        if (aiProperties.enabled && aiProperties.effectiveApiKey.isNotBlank()) {
             val llmDeck = tryLlmSealedDeck(pool, aiProperties)
             if (llmDeck != null) return llmDeck
             logger.info("AI LLM deckbuild failed, falling back to heuristic")
@@ -1678,7 +1678,7 @@ class LobbyHandler(
             appendLine("9x Forest")
         }
 
-        val client = com.wingedsheep.gameserver.ai.OpenRouterClient(aiProperties)
+        val client = com.wingedsheep.gameserver.ai.LlmClient(aiProperties)
         val messages = listOf(
             com.wingedsheep.gameserver.ai.ChatMessage("system",
                 "You are an expert Magic: The Gathering limited deckbuilder. " +

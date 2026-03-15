@@ -43,12 +43,12 @@ check:
 # Start the game server (loads .env if present)
 [group: 'dev']
 server:
-    @if [ -f .env ]; then set -a && source .env && set +a; fi && ./gradlew :game-server:bootRun
+    @if [ -f .env ]; then set -a && source .env && set +a; fi && ./gradlew :game-server:bootRun --args='--spring.profiles.active=local'
 
 # Start the game server with Onslaught set enabled
 [group: 'dev']
 server-ons:
-    @if [ -f .env ]; then set -a && source .env && set +a; fi && GAME_SETS_ONSLAUGHT_ENABLED=true ./gradlew :game-server:bootRun
+    @if [ -f .env ]; then set -a && source .env && set +a; fi && GAME_SETS_ONSLAUGHT_ENABLED=true ./gradlew :game-server:bootRun --args='--spring.profiles.active=local'
 
 # Start the web client in dev mode
 [group: 'dev']
@@ -94,6 +94,26 @@ docker-logs:
 [group: 'env']
 redis-clear:
     docker exec $(docker ps -q -f ancestor=redis:7-alpine) redis-cli FLUSHALL
+
+# Start Ollama locally via Docker
+[group: 'ai']
+ollama-up:
+    docker compose -f docker-compose.local.yml --profile ai up -d ollama
+
+# Stop Ollama
+[group: 'ai']
+ollama-down:
+    docker compose -f docker-compose.local.yml --profile ai stop ollama
+
+# Pull a model into Ollama (e.g., just ollama-pull llama3)
+[group: 'ai']
+ollama-pull MODEL:
+    docker exec $(docker ps -qf name=ollama) ollama pull {{MODEL}}
+
+# List models available in Ollama
+[group: 'ai']
+ollama-models:
+    docker exec $(docker ps -qf name=ollama) ollama list
 
 # Run all E2E browser tests
 [group: 'e2e']
