@@ -18,6 +18,21 @@ import com.wingedsheep.sdk.scripting.predicates.CardPredicate
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
 
 /**
+ * Filter for land and/or legendary permanent cards.
+ * Matches: any land card, or any permanent card that is legendary.
+ */
+private val LandOrLegendaryPermanent = GameObjectFilter(
+    cardPredicates = listOf(
+        CardPredicate.Or(
+            listOf(
+                CardPredicate.IsLand,
+                CardPredicate.And(listOf(CardPredicate.IsPermanent, CardPredicate.IsLegendary))
+            )
+        )
+    )
+)
+
+/**
  * Kamahl's Druidic Vow
  * {X}{G}{G}
  * Legendary Sorcery
@@ -86,18 +101,3 @@ val KamahlsDruidicVow = card("Kamahl's Druidic Vow") {
         ruling("2018-04-27", "All of the permanents put onto the battlefield this way enter at the same time. If any have triggered abilities that trigger on something else entering the battlefield, they'll see each other.")
     }
 }
-
-/**
- * Filter for land and/or legendary permanent cards.
- * Matches: any land card, or any permanent card that is legendary.
- */
-private val LandOrLegendaryPermanent = GameObjectFilter(
-    cardPredicates = listOf(
-        CardPredicate.Or(
-            listOf(
-                CardPredicate.IsLand,
-                CardPredicate.And(listOf(CardPredicate.IsPermanent, CardPredicate.IsLegendary))
-            )
-        )
-    )
-)
