@@ -76,9 +76,9 @@ test.describe('Daru Stinger — combat priority after activated ability', () => 
 
     // Resolve the stack (LIFO):
     // 1. Lavamancer's Skill ability resolves — deals 1 damage to Daru Stinger (4/4, survives)
-    await p1.resolveStack('Needleshot Gourna')
+    await p1.resolveStack('Needleshot Gourna ability')
     // 2. Daru Stinger's ability resolves — deals 3 damage to Needleshot Gourna
-    await p2.resolveStack('Daru Stinger')
+    await p2.resolveStack('Daru Stinger ability')
 
     // Combat damage: Dive Bomber (2/2) vs Needleshot Gourna (3/6 with 3 damage)
     // Gourna takes 2 more (total 5 of 6 toughness — survives)
