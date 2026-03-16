@@ -18,6 +18,7 @@ import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.GrantAlternativeCastingCost
 import com.wingedsheep.sdk.scripting.IncreaseMorphCost
 import com.wingedsheep.sdk.scripting.IncreaseSpellCostByFilter
+import com.wingedsheep.sdk.scripting.IncreaseSpellCostByPlayerSpellsCast
 import com.wingedsheep.sdk.scripting.KeywordAbility
 import com.wingedsheep.sdk.scripting.ReduceSpellCostByFilter
 import com.wingedsheep.sdk.scripting.ReduceSpellColoredCostBySubtype
@@ -74,8 +75,8 @@ class CostCalculator(
         // Evaluate ReduceSpellCostByFilter from battlefield permanents controlled by the caster
         totalReduction += calculateFilterCostReduction(state, cardDef, casterId)
 
-        // Calculate cost increases from global tax effects (e.g., Glowrider)
-        val totalIncrease = calculateFilterCostIncrease(state, cardDef)
+        // Calculate cost increases from global tax effects (e.g., Glowrider, Damping Sphere)
+        val totalIncrease = calculateFilterCostIncrease(state, cardDef, casterId)
 
         // First apply generic cost reduction
         var effectiveCost = reduceGenericCost(cardDef.manaCost, totalReduction)
@@ -457,13 +458,15 @@ class CostCalculator(
     }
 
     /**
-     * Calculate cost increase from global tax effects (IncreaseSpellCostByFilter).
+     * Calculate cost increase from global tax effects (IncreaseSpellCostByFilter,
+     * IncreaseSpellCostByPlayerSpellsCast).
      * Scans ALL permanents on the battlefield since these are global effects
      * (e.g., Glowrider's "Noncreature spells cost {1} more to cast" affects all players).
      */
     private fun calculateFilterCostIncrease(
         state: GameState,
-        cardDef: CardDefinition
+        cardDef: CardDefinition,
+        casterId: EntityId? = null
     ): Int {
         var increase = 0
         for (playerId in state.turnOrder) {
@@ -476,6 +479,10 @@ class CostCalculator(
                         matchesCardDefinition(cardDef, ability.filter)
                     ) {
                         increase += ability.amount
+                    }
+                    if (ability is IncreaseSpellCostByPlayerSpellsCast && casterId != null) {
+                        val spellsCast = state.playerSpellsCastThisTurn[casterId] ?: 0
+                        increase += spellsCast * ability.amountPerSpell
                     }
                 }
             }
@@ -591,9 +598,10 @@ class CostCalculator(
     fun calculateEffectiveCostWithAlternativeBase(
         state: GameState,
         cardDef: CardDefinition,
-        alternativeCost: ManaCost
+        alternativeCost: ManaCost,
+        casterId: EntityId? = null
     ): ManaCost {
-        val totalIncrease = calculateFilterCostIncrease(state, cardDef)
+        val totalIncrease = calculateFilterCostIncrease(state, cardDef, casterId)
         return increaseGenericCost(alternativeCost, totalIncrease)
     }
 

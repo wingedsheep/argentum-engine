@@ -1521,6 +1521,43 @@ data class IncreaseSpellCostByFilter(
     }
 }
 
+/**
+ * Increases the cost of each spell a player casts by {1} for each other spell
+ * that player has already cast this turn.
+ * Used for Damping Sphere: "Each spell a player casts costs {1} more to cast
+ * for each other spell that player has cast this turn."
+ *
+ * This is a global effect — it applies to all players.
+ * The engine uses the per-player spell count from GameState to determine the increase.
+ *
+ * @property amountPerSpell The amount of generic mana added per previously-cast spell (typically 1)
+ */
+@SerialName("IncreaseSpellCostByPlayerSpellsCast")
+@Serializable
+data class IncreaseSpellCostByPlayerSpellsCast(
+    val amountPerSpell: Int = 1
+) : StaticAbility {
+    override val description: String = "Each spell a player casts costs {$amountPerSpell} more to cast for each other spell that player has cast this turn"
+    override fun applyTextReplacement(replacer: TextReplacer): StaticAbility = this
+}
+
+/**
+ * Replaces land mana production when a land would produce two or more mana.
+ * Used for Damping Sphere: "If a land is tapped for two or more mana, it produces {C} instead
+ * of any other type and amount."
+ *
+ * This is a global replacement effect — it applies to all lands for all players.
+ * The engine checks for this when resolving mana abilities from lands. If the mana ability
+ * would add 2+ total mana, it instead adds only one colorless mana.
+ * The ManaSolver also accounts for this when calculating available mana sources.
+ */
+@SerialName("DampLandManaProduction")
+@Serializable
+data object DampLandManaProduction : StaticAbility {
+    override val description: String = "If a land is tapped for two or more mana, it produces {C} instead of any other type and amount"
+    override fun applyTextReplacement(replacer: TextReplacer): StaticAbility = this
+}
+
 // =============================================================================
 // Land Animation Static Abilities
 // =============================================================================

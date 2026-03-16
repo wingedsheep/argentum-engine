@@ -25,6 +25,7 @@ import com.wingedsheep.sdk.scripting.effects.AddColorlessManaEffect
 import com.wingedsheep.sdk.scripting.effects.AddManaEffect
 import com.wingedsheep.sdk.scripting.effects.AddManaOfColorAmongEffect
 import com.wingedsheep.sdk.scripting.AdditionalManaOnTap
+import com.wingedsheep.sdk.scripting.DampLandManaProduction
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
 
 /**
@@ -39,6 +40,8 @@ data class ManaSource(
     val producesColorless: Boolean = false,
     /** Whether this is a basic land (Plains, Island, Swamp, Mountain, Forest) */
     val isBasicLand: Boolean = false,
+    /** Whether this source is a land (any land type) */
+    val isLand: Boolean = false,
     /** Whether this source is a creature */
     val isCreature: Boolean = false,
     /** Whether this source has non-mana activated abilities (utility land/creature) */
@@ -461,6 +464,7 @@ class ManaSolver(
                         producesColors = subtypeColors,
                         producesColorless = false,
                         isBasicLand = isBasicLand,
+                        isLand = true,
                         isCreature = isCreature,
                         hasNonManaAbilities = hasNonManaAbilities,
                         hasPainCost = false,
@@ -566,6 +570,7 @@ class ManaSolver(
                     producesColors = combinedColors,
                     producesColorless = producesColorless,
                     isBasicLand = isBasicLand,
+                    isLand = card.typeLine.isLand,
                     isCreature = isCreature,
                     hasNonManaAbilities = hasNonManaAbilities,
                     hasPainCost = hasPainCost,
@@ -589,6 +594,7 @@ class ManaSolver(
                 producesColors = emptySet(),
                 producesColorless = true,
                 isBasicLand = isBasicLand,
+                isLand = true,
                 isCreature = false,
                 hasNonManaAbilities = hasNonManaAbilities,
                 hasPainCost = false,
@@ -596,6 +602,9 @@ class ManaSolver(
                 canAttack = false
             )
         }.map { source -> augmentWithAuraBonusMana(state, source, playerId) }
+            .let { sources ->
+                if (hasDampLandManaProduction(state)) applyLandManaDampening(sources) else sources
+            }
     }
 
     /**
@@ -647,6 +656,45 @@ class ManaSolver(
             source.copy(bonusManaPerTap = totalBonus, bonusManaColor = bonusColor)
         } else {
             source
+        }
+    }
+
+    /**
+     * Check if any permanent on the battlefield has DampLandManaProduction.
+     */
+    private fun hasDampLandManaProduction(state: GameState): Boolean {
+        if (cardRegistry == null) return false
+        for (playerId in state.turnOrder) {
+            for (entityId in state.getBattlefield(playerId)) {
+                val card = state.getEntity(entityId)?.get<CardComponent>() ?: continue
+                val cardDef = cardRegistry.getCard(card.cardDefinitionId) ?: continue
+                if (cardDef.script.staticAbilities.any { it is DampLandManaProduction }) {
+                    return true
+                }
+            }
+        }
+        return false
+    }
+
+    /**
+     * Apply Damping Sphere mana dampening to land sources.
+     * Lands that would produce 2+ total mana are converted to produce 1 colorless instead.
+     */
+    private fun applyLandManaDampening(sources: List<ManaSource>): List<ManaSource> {
+        return sources.map { source ->
+            // Only dampen lands; non-land mana sources (mana dorks, mana rocks) are unaffected
+            val totalMana = source.manaAmount + source.bonusManaPerTap
+            if (source.isLand && totalMana >= 2) {
+                source.copy(
+                    producesColors = emptySet(),
+                    producesColorless = true,
+                    manaAmount = 1,
+                    bonusManaPerTap = 0,
+                    bonusManaColor = null
+                )
+            } else {
+                source
+            }
         }
     }
 

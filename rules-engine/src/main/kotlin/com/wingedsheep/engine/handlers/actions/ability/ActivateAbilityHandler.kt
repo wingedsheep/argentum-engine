@@ -40,6 +40,7 @@ import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.scripting.AbilityCost
 import com.wingedsheep.sdk.scripting.ActivatedAbility
 import com.wingedsheep.sdk.scripting.ActivationRestriction
+import com.wingedsheep.sdk.scripting.DampLandManaProduction
 import com.wingedsheep.sdk.scripting.ExtraLoyaltyActivation
 import com.wingedsheep.sdk.scripting.GrantActivatedAbilityToAttachedCreature
 import com.wingedsheep.sdk.scripting.GrantActivatedAbilityToCreatureGroup
@@ -478,8 +479,44 @@ class ActivateAbilityHandler(
 
             currentState = effectResult.newState
 
-            // Emit ManaAddedEvent
-            val manaEvent = when (val effect = finalEffect) {
+            // Check for Damping Sphere-style mana dampening on lands
+            var manaDampened = false
+            if (cardComponent.typeLine.isLand && hasDampLandManaProduction(currentState)) {
+                val oldPool = state.getEntity(action.playerId)?.get<ManaPoolComponent>() ?: ManaPoolComponent()
+                val newPool = currentState.getEntity(action.playerId)?.get<ManaPoolComponent>() ?: ManaPoolComponent()
+                val totalManaProduced = (newPool.white - oldPool.white) +
+                    (newPool.blue - oldPool.blue) +
+                    (newPool.black - oldPool.black) +
+                    (newPool.red - oldPool.red) +
+                    (newPool.green - oldPool.green) +
+                    (newPool.colorless - oldPool.colorless)
+
+                if (totalManaProduced >= 2) {
+                    // Replace with 1 colorless mana: revert to old pool + 1 colorless
+                    val dampenedPool = ManaPoolComponent(
+                        white = oldPool.white,
+                        blue = oldPool.blue,
+                        black = oldPool.black,
+                        red = oldPool.red,
+                        green = oldPool.green,
+                        colorless = oldPool.colorless + 1
+                    )
+                    currentState = currentState.updateEntity(action.playerId) { container ->
+                        container.with(dampenedPool)
+                    }
+                    manaDampened = true
+                }
+            }
+
+            // Emit ManaAddedEvent — if dampened, always emit 1 colorless
+            val manaEvent: ManaAddedEvent? = if (manaDampened) {
+                ManaAddedEvent(
+                    playerId = action.playerId,
+                    sourceId = action.sourceId,
+                    sourceName = cardComponent.name,
+                    colorless = 1
+                )
+            } else when (val effect = finalEffect) {
                 is AddManaEffect -> {
                     val amount = dynamicAmountEvaluator.evaluate(state, effect.amount, context)
                     ManaAddedEvent(
@@ -886,6 +923,23 @@ class ActivateAbilityHandler(
     )
 
     private val dynamicAmountEvaluator = DynamicAmountEvaluator()
+
+    /**
+     * Check if any permanent on the battlefield has DampLandManaProduction static ability.
+     */
+    private fun hasDampLandManaProduction(state: GameState): Boolean {
+        if (cardRegistry == null) return false
+        for (playerId in state.turnOrder) {
+            for (entityId in state.getBattlefield(playerId)) {
+                val card = state.getEntity(entityId)?.get<CardComponent>() ?: continue
+                val cardDef = cardRegistry.getCard(card.cardDefinitionId) ?: continue
+                if (cardDef.script.staticAbilities.any { it is DampLandManaProduction }) {
+                    return true
+                }
+            }
+        }
+        return false
+    }
 
     private fun resolveAdditionalManaOnTap(
         state: GameState,

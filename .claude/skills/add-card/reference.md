@@ -975,6 +975,8 @@ Set via `staticAbility { ability = ... }`:
 - `PreventManaPoolEmptying` — players don't lose unspent mana as steps and phases end
 - `IncreaseMorphCost(amount: Int)` — all morph (turn face-up) costs cost more
 - `IncreaseSpellCostByFilter(filter: GameObjectFilter, amount: Int)` — spells matching filter cost more (global tax effect)
+- `IncreaseSpellCostByPlayerSpellsCast(amountPerSpell: Int = 1)` — each spell costs {N} more per other spell that player has cast this turn (Damping Sphere)
+- `DampLandManaProduction` — if a land is tapped for 2+ mana, it produces {C} instead (Damping Sphere)
 - `GrantFlashToSpellType(filter: GameObjectFilter, controllerOnly: Boolean = false)` — cast spells matching filter as though they had flash. `controllerOnly = false` (default) = any player benefits (Quick Sliver); `controllerOnly = true` = only the permanent's controller benefits (Raff Capashen)
 - `GrantCantBeCountered(filter: GameObjectFilter)` — spells matching filter can't be countered (e.g., Root Sliver)
 - `AttackTax(manaCostPerAttacker: String)` — creatures can't attack you unless their controller pays the cost per attacker (e.g., Ghostly Prison, Windborn Muse)

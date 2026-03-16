@@ -58,6 +58,7 @@ object DominariaSet {
         ColdWaterSnapper,
         CuratorsWard,
         DAvenantTrapper,
+        DampingSphere,
         DarigaazReincarnated,
         DaringArchaeologist,
         DarkBargain,

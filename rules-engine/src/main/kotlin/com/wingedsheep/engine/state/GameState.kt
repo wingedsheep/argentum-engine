@@ -87,6 +87,9 @@ data class GameState(
     /** Number of spells cast this turn (by all players), used for Storm count */
     val spellsCastThisTurn: Int = 0,
 
+    /** Per-player spell count this turn, used for Damping Sphere-style tax effects */
+    val playerSpellsCastThisTurn: Map<EntityId, Int> = emptyMap(),
+
     /** Per-player spell types cast this turn, for conditional evasion (e.g., Relic Runner) */
     val spellTypesCastThisTurn: Map<EntityId, Set<String>> = emptyMap(),
 

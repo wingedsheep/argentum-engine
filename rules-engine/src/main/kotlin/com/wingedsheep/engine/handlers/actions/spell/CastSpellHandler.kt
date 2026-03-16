@@ -745,8 +745,13 @@ class CastSpellHandler(
         // Capture storm count before incrementing (spells cast before this one)
         val stormCount = currentState.spellsCastThisTurn
 
-        // Increment spell count for this turn
-        currentState = currentState.copy(spellsCastThisTurn = stormCount + 1)
+        // Increment spell count for this turn (global and per-player)
+        val playerCount = currentState.playerSpellsCastThisTurn[action.playerId] ?: 0
+        currentState = currentState.copy(
+            spellsCastThisTurn = stormCount + 1,
+            playerSpellsCastThisTurn = currentState.playerSpellsCastThisTurn +
+                (action.playerId to playerCount + 1)
+        )
 
         // Track spell types cast this turn (for conditional evasion like Relic Runner)
         if (!action.castFaceDown) {

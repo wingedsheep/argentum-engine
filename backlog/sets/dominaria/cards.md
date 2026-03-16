@@ -2,7 +2,7 @@
 
 **Set Size:** 280 cards (249 unique card names + basic land variants)
 **Release Date:** April 27, 2018
-**Implemented:** 204 / 249
+**Implemented:** 205 / 249
 
 | Color      | Total | Done |
 |------------|-------|------|
@@ -12,7 +12,7 @@
 | Red        | 38    | 34   |
 | Green      | 37    | 30   |
 | Multicolor | 19    | 17   |
-| Colorless  | 30    | 24   |
+| Colorless  | 30    | 25   |
 | Land       | 12    | 9    |
 
 ---
@@ -59,7 +59,7 @@
 - [ ] Corrosive Ooze
 - [x] Curator's Ward
 - [x] D'Avenant Trapper
-- [ ] Damping Sphere
+- [x] Damping Sphere
 - [ ] Danitha Capashen, Paragon
 - [x] Darigaaz Reincarnated
 - [x] Daring Archaeologist
