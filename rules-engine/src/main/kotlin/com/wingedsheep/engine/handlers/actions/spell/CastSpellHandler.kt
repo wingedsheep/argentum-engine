@@ -190,6 +190,19 @@ class CastSpellHandler(
             }
         }
 
+        // Apply sacrifice-for-cost-reduction before validating payment
+        if (cardDef != null && action.additionalCostPayment != null) {
+            for (cost in cardDef.script.additionalCosts) {
+                if (cost is AdditionalCost.SacrificeCreaturesForCostReduction) {
+                    val sacrificeCount = action.additionalCostPayment.sacrificedPermanents.size
+                    val reduction = sacrificeCount * cost.costReductionPerCreature
+                    if (reduction > 0) {
+                        effectiveCost = effectiveCost.reduceGeneric(reduction)
+                    }
+                }
+            }
+        }
+
         // Account for Delve/Convoke reduction before validating payment
         val costAfterAltPayment = if (action.alternativePayment != null && !action.alternativePayment.isEmpty && cardDef != null) {
             alternativePaymentHandler.calculateReducedCost(effectiveCost, action.alternativePayment, cardDef)
@@ -471,6 +484,28 @@ class CastSpellHandler(
                         }
                     }
                 }
+                is AdditionalCost.SacrificeCreaturesForCostReduction -> {
+                    // Sacrificing 0 creatures is valid (optional sacrifice)
+                    val sacrificed = action.additionalCostPayment?.sacrificedPermanents ?: emptyList()
+                    for (permId in sacrificed) {
+                        val permContainer = state.getEntity(permId)
+                            ?: return "Sacrificed permanent not found: $permId"
+                        val permCard = permContainer.get<CardComponent>()
+                            ?: return "Sacrificed entity is not a card: $permId"
+                        val permController = projected.getController(permId)
+                        if (permController != action.playerId) {
+                            return "You can only sacrifice permanents you control"
+                        }
+                        if (permId !in state.getBattlefield()) {
+                            return "Sacrificed permanent is not on the battlefield: $permId"
+                        }
+                        val context = PredicateContext(controllerId = action.playerId)
+                        val matches = predicateEvaluator.matchesWithProjection(state, projected, permId, additionalCost.filter, context)
+                        if (!matches) {
+                            return "${permCard.name} doesn't match the required filter: ${additionalCost.filter.description}"
+                        }
+                    }
+                }
                 else -> {}
             }
         }
@@ -618,6 +653,42 @@ class CastSpellHandler(
                             ))
                         }
                         exiledCardCount = exiledCards.size
+                    }
+                    is AdditionalCost.SacrificeCreaturesForCostReduction -> {
+                        // Process sacrifices for cost reduction (e.g., Torgaar)
+                        val projectedBeforeSacrifice = currentState.projectedState
+                        for (permId in action.additionalCostPayment.sacrificedPermanents) {
+                            val permContainer = currentState.getEntity(permId) ?: continue
+                            val permCard = permContainer.get<CardComponent>() ?: continue
+                            val controllerId = permContainer.get<ControllerComponent>()?.playerId ?: action.playerId
+                            val ownerId = permCard.ownerId ?: action.playerId
+                            val battlefieldZone = ZoneKey(controllerId, Zone.BATTLEFIELD)
+                            val graveyardZone = ZoneKey(ownerId, Zone.GRAVEYARD)
+
+                            val projectedSubtypes = projectedBeforeSacrifice.getSubtypes(permId)
+                            if (projectedSubtypes.isNotEmpty()) {
+                                sacrificedPermanentSubtypes[permId] = projectedSubtypes
+                            }
+
+                            currentState = currentState.removeFromZone(battlefieldZone, permId)
+                            currentState = currentState.addToZone(graveyardZone, permId)
+
+                            sacrificedPermanentIds.add(permId)
+
+                            events.add(PermanentsSacrificedEvent(action.playerId, listOf(permId), listOf(permCard.name)))
+                            events.add(ZoneChangeEvent(
+                                entityId = permId,
+                                entityName = permCard.name,
+                                fromZone = Zone.BATTLEFIELD,
+                                toZone = Zone.GRAVEYARD,
+                                ownerId = ownerId
+                            ))
+                        }
+                        // Apply cost reduction based on number of creatures sacrificed
+                        val reduction = action.additionalCostPayment.sacrificedPermanents.size * additionalCost.costReductionPerCreature
+                        if (reduction > 0) {
+                            effectiveCost = effectiveCost.reduceGeneric(reduction)
+                        }
                     }
                     else -> {}
                 }

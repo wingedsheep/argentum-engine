@@ -574,6 +574,10 @@ class CostHandler(
             is AdditionalCost.TapPermanents -> {
                 findUntappedMatchingPermanentsUnified(state, controllerId, cost.filter).size >= cost.count
             }
+            is AdditionalCost.SacrificeCreaturesForCostReduction -> {
+                // Always payable - sacrificing 0 creatures is valid
+                true
+            }
         }
     }
 

@@ -279,6 +279,24 @@ export function useInteraction() {
         return
       }
 
+      // Check if spell requires variable sacrifice for cost reduction (e.g., Torgaar)
+      if (action.type === 'CastSpell' && actionInfo.additionalCostInfo?.costType === 'SacrificeForCostReduction') {
+        const costInfo = actionInfo.additionalCostInfo
+        const validSacTargets = costInfo.validSacrificeTargets ?? []
+
+        startTargeting({
+          action,
+          validTargets: [...validSacTargets],
+          selectedTargets: [],
+          minTargets: 0,
+          maxTargets: validSacTargets.length,
+          isSacrificeSelection: true,
+          pendingActionInfo: actionInfo,
+        })
+        selectCard(null)
+        return
+      }
+
       // Check if spell or ability requires sacrifice as a cost
       if ((action.type === 'CastSpell' || action.type === 'ActivateAbility') &&
           (actionInfo.additionalCostInfo?.costType === 'SacrificePermanent' || actionInfo.additionalCostInfo?.costType === 'SacrificeSelf')) {
@@ -502,6 +520,11 @@ export function useInteraction() {
 
       // TurnFaceUp with non-mana morph cost needs selection (e.g., return a Bird)
       if (action.type === 'TurnFaceUp' && actionInfo.additionalCostInfo) {
+        return false
+      }
+
+      // SacrificeForCostReduction always needs selection (variable number of creatures)
+      if (action.type === 'CastSpell' && actionInfo.additionalCostInfo?.costType === 'SacrificeForCostReduction') {
         return false
       }
 

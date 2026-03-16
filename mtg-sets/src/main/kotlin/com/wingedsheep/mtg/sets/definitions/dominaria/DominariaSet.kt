@@ -198,6 +198,7 @@ object DominariaSet {
         ThallidSoothsayer,
         ThornElemental,
         TolarianScholar,
+        TorgaarFamineIncarnate,
         TraxosScourgeOfKroog,
         TragicPoet,
         UntamedKavu,

@@ -161,6 +161,27 @@ sealed interface AdditionalCost : TextReplaceable<AdditionalCost> {
      * @property count Number of permanents to tap
      * @property filter Which permanents can be tapped
      */
+    /**
+     * Sacrifice any number of permanents matching the given filter as an additional cost.
+     * Each sacrifice reduces the spell's generic mana cost by [costReductionPerCreature].
+     * Example: "You may sacrifice any number of creatures. This spell costs {2} less for each creature sacrificed."
+     *
+     * @property filter Which permanents can be sacrificed
+     * @property costReductionPerCreature Generic mana reduction per sacrificed creature
+     */
+    @SerialName("SacrificeCreaturesForCostReduction")
+    @Serializable
+    data class SacrificeCreaturesForCostReduction(
+        val filter: GameObjectFilter = GameObjectFilter.Creature,
+        val costReductionPerCreature: Int = 2
+    ) : AdditionalCost {
+        override val description: String = "You may sacrifice any number of creatures. This spell costs {$costReductionPerCreature} less to cast for each creature sacrificed this way."
+        override fun applyTextReplacement(replacer: TextReplacer): AdditionalCost {
+            val newFilter = filter.applyTextReplacement(replacer)
+            return if (newFilter !== filter) copy(filter = newFilter) else this
+        }
+    }
+
     @SerialName("TapPermanents")
     @Serializable
     data class TapPermanents(

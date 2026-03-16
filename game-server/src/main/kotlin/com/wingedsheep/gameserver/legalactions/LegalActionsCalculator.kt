@@ -252,6 +252,8 @@ class LegalActionsCalculator(
                     // Check additional cost payability
                     val additionalCosts = cardDef?.script?.additionalCosts ?: emptyList()
                     val sacrificeTargets = mutableListOf<EntityId>()
+                    var variableSacrificeTargets = emptyList<EntityId>()
+                    var variableSacrificeReduction = 0
                     var exileTargets = emptyList<EntityId>()
                     var exileMinCount = 0
                     var discardTargets = emptyList<EntityId>()
@@ -265,6 +267,12 @@ class LegalActionsCalculator(
                                     canPayAdditionalCosts = false
                                 }
                                 sacrificeTargets.addAll(validSacTargets)
+                            }
+                            is com.wingedsheep.sdk.scripting.AdditionalCost.SacrificeCreaturesForCostReduction -> {
+                                // Always payable (0 sacrifices is valid)
+                                val validSacTargets = findVariableSacrificeTargets(state, playerId, cost.filter)
+                                variableSacrificeTargets = validSacTargets
+                                variableSacrificeReduction = cost.costReductionPerCreature
                             }
                             is com.wingedsheep.sdk.scripting.AdditionalCost.ExileVariableCards -> {
                                 val validExileTargets = findExileTargets(state, playerId, cost.filter, cost.fromZone)
@@ -304,10 +312,16 @@ class LegalActionsCalculator(
                     if (!canPayAdditionalCosts) continue
 
                     // Calculate effective cost after reductions (e.g., Goblin Warchief)
-                    val effectiveCost = if (cardDef != null) {
+                    var effectiveCost = if (cardDef != null) {
                         costCalculator.calculateEffectiveCost(state, cardDef, playerId)
                     } else {
                         cardComponent.manaCost
+                    }
+
+                    // Apply maximum possible sacrifice cost reduction for affordability check
+                    if (variableSacrificeTargets.isNotEmpty() && variableSacrificeReduction > 0) {
+                        val maxReduction = variableSacrificeTargets.size * variableSacrificeReduction
+                        effectiveCost = effectiveCost.reduceGeneric(maxReduction)
                     }
 
                     // Check mana affordability (including Convoke/Delve if available)
@@ -352,7 +366,15 @@ class LegalActionsCalculator(
                         logger.debug("Card '${cardComponent.name}': cardDef=${cardDef != null}, targetReqs=${targetReqs.size}")
 
                         // Build additional cost info for the client
-                        val costInfo = if (sacrificeTargets.isNotEmpty()) {
+                        val costInfo = if (variableSacrificeTargets.isNotEmpty()) {
+                            val varSacCost = additionalCosts.filterIsInstance<com.wingedsheep.sdk.scripting.AdditionalCost.SacrificeCreaturesForCostReduction>().firstOrNull()
+                            AdditionalCostInfo(
+                                description = varSacCost?.description ?: "You may sacrifice any number of creatures",
+                                costType = "SacrificeForCostReduction",
+                                validSacrificeTargets = variableSacrificeTargets,
+                                sacrificeCount = 0 // min 0 — sacrifice is optional
+                            )
+                        } else if (sacrificeTargets.isNotEmpty()) {
                             val sacCost = additionalCosts.filterIsInstance<com.wingedsheep.sdk.scripting.AdditionalCost.SacrificePermanent>().firstOrNull()
                             AdditionalCostInfo(
                                 description = sacCost?.description ?: "Sacrifice a creature",
@@ -2791,6 +2813,24 @@ class LegalActionsCalculator(
             if (controllerId != playerId) return@filter false
 
             predicateEvaluator.matches(state, entityId, cost.filter, predicateContext)
+        }
+    }
+
+    private fun findVariableSacrificeTargets(
+        state: GameState,
+        playerId: EntityId,
+        filter: com.wingedsheep.sdk.scripting.GameObjectFilter
+    ): List<EntityId> {
+        val playerBattlefield = ZoneKey(playerId, Zone.BATTLEFIELD)
+        val predicateContext = PredicateContext(controllerId = playerId)
+
+        return state.getZone(playerBattlefield).filter { entityId ->
+            val container = state.getEntity(entityId) ?: return@filter false
+            container.get<CardComponent>() ?: return@filter false
+            val controllerId = container.get<ControllerComponent>()?.playerId
+            if (controllerId != playerId) return@filter false
+
+            predicateEvaluator.matches(state, entityId, filter, predicateContext)
         }
     }
 

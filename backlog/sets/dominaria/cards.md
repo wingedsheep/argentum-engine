@@ -2,13 +2,13 @@
 
 **Set Size:** 280 cards (249 unique card names + basic land variants)
 **Release Date:** April 27, 2018
-**Implemented:** 199 / 249
+**Implemented:** 200 / 249
 
 | Color      | Total | Done |
 |------------|-------|------|
 | White      | 38    | 27   |
 | Blue       | 37    | 28   |
-| Black      | 38    | 30   |
+| Black      | 38    | 31   |
 | Red        | 38    | 34   |
 | Green      | 37    | 30   |
 | Multicolor | 19    | 17   |
@@ -235,7 +235,7 @@
 - [x] Tiana, Ship's Caretaker
 - [ ] Time of Ice
 - [x] Tolarian Scholar
-- [ ] Torgaar, Famine Incarnate
+- [x] Torgaar, Famine Incarnate
 - [x] Tragic Poet
 - [x] Traxos, Scourge of Kroog
 - [ ] Triumph of Gerrard
