@@ -166,6 +166,7 @@ object DominariaSet {
         SergeantAtArms,
         SerraAngel,
         SerraDisciple,
+        SettleTheScore,
         ShalaiVoiceOfPlenty,
         SiegeGangCommander,
         ShannaSisaysLegacy,

@@ -2,13 +2,13 @@
 
 **Set Size:** 280 cards (249 unique card names + basic land variants)
 **Release Date:** April 27, 2018
-**Implemented:** 203 / 249
+**Implemented:** 204 / 249
 
 | Color      | Total | Done |
 |------------|-------|------|
 | White      | 38    | 28   |
 | Blue       | 37    | 29   |
-| Black      | 38    | 31   |
+| Black      | 38    | 32   |
 | Red        | 38    | 34   |
 | Green      | 37    | 30   |
 | Multicolor | 19    | 17   |
@@ -192,7 +192,7 @@
 - [x] Sergeant-at-Arms
 - [x] Serra Angel
 - [x] Serra Disciple
-- [ ] Settle the Score
+- [x] Settle the Score
 - [x] Shalai, Voice of Plenty
 - [x] Shanna, Sisay's Legacy
 - [ ] Shield of the Realm
