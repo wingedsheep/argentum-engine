@@ -311,6 +311,17 @@ object Conditions {
         IsNotYourTurnCondition
 
     // =========================================================================
+    // Trigger Entity Conditions
+    // =========================================================================
+
+    /**
+     * If the triggering entity was historic (legendary, artifact, or Saga).
+     * Used for Curator's Ward's "if it was historic" intervening-if condition.
+     */
+    val TriggeringEntityWasHistoric: ConditionInterface =
+        com.wingedsheep.sdk.scripting.conditions.TriggeringEntityWasHistoric
+
+    // =========================================================================
     // Composite Conditions
     // =========================================================================
 

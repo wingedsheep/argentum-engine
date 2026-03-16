@@ -2,12 +2,12 @@
 
 **Set Size:** 280 cards (249 unique card names + basic land variants)
 **Release Date:** April 27, 2018
-**Implemented:** 201 / 249
+**Implemented:** 202 / 249
 
 | Color      | Total | Done |
 |------------|-------|------|
 | White      | 38    | 28   |
-| Blue       | 37    | 28   |
+| Blue       | 37    | 29   |
 | Black      | 38    | 31   |
 | Red        | 38    | 34   |
 | Green      | 37    | 30   |
@@ -57,7 +57,7 @@
 - [x] Cloudreader Sphinx
 - [x] Cold-Water Snapper
 - [ ] Corrosive Ooze
-- [ ] Curator's Ward
+- [x] Curator's Ward
 - [x] D'Avenant Trapper
 - [ ] Damping Sphere
 - [ ] Danitha Capashen, Paragon

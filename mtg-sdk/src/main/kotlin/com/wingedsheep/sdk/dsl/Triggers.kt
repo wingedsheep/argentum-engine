@@ -543,6 +543,15 @@ object Triggers {
     )
 
     /**
+     * When the enchanted permanent leaves the battlefield.
+     * Used for auras like Curator's Ward.
+     */
+    val EnchantedPermanentLeavesBattlefield: TriggerSpec = TriggerSpec(
+        event = EnchantedPermanentLeavesBattlefieldEvent,
+        binding = TriggerBinding.ANY
+    )
+
+    /**
      * Whenever the enchanted creature is dealt damage.
      * Used for auras like Frozen Solid.
      */

@@ -550,6 +550,18 @@ sealed interface GameEvent : TextReplaceable<GameEvent> {
     }
 
     /**
+     * When the enchanted permanent leaves the battlefield (for any reason).
+     * Fires for auras like Curator's Ward.
+     * Triggering entity is the permanent that left.
+     */
+    @SerialName("EnchantedPermanentLeavesBattlefieldEvent")
+    @Serializable
+    data object EnchantedPermanentLeavesBattlefieldEvent : GameEvent {
+        override val description: String = "when enchanted permanent leaves the battlefield"
+        override fun applyTextReplacement(replacer: TextReplacer): GameEvent = this
+    }
+
+    /**
      * When the enchanted creature deals damage (any type).
      * Special case for auras like Guilty Conscience.
      */

@@ -52,3 +52,15 @@ data class EnchantedCreatureHasSubtype(val subtype: Subtype) : Condition {
         return if (new == subtype) this else EnchantedCreatureHasSubtype(new)
     }
 }
+
+/**
+ * Condition: "if it was historic" (legendary, artifact, or Saga).
+ * Checks the triggering entity's card definition for the historic quality.
+ * Used for Curator's Ward's "if it was historic" intervening-if condition.
+ */
+@SerialName("TriggeringEntityWasHistoric")
+@Serializable
+data object TriggeringEntityWasHistoric : Condition {
+    override val description: String = "if it was historic"
+    override fun applyTextReplacement(replacer: TextReplacer): Condition = this
+}

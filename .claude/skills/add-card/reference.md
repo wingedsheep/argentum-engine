@@ -526,6 +526,7 @@ constructors.
 - `Triggers.EquippedCreatureAttacks` — attached creature attacks (equipment trigger, e.g., Heart-Piercer Bow)
 - `Triggers.EnchantedCreatureDealsDamage` — enchanted creature deals any damage (aura trigger, e.g., Guilty Conscience)
 - `Triggers.EnchantedCreatureDies` — enchanted creature dies (aura trigger, e.g., Demonic Vigor)
+- `Triggers.EnchantedPermanentLeavesBattlefield` — enchanted permanent leaves the battlefield (aura trigger, e.g., Curator's Ward)
 - `Triggers.EquippedCreatureDies` — equipped creature dies (equipment trigger, e.g., Forebear's Blade)
 
 ### Phase/Step
@@ -676,6 +677,7 @@ constructors.
 - `Conditions.SourceIsTapped` / `.SourceIsUntapped`
 - `Conditions.SourceHasSubtype(subtype)` — source has specific subtype
 - `Conditions.SacrificedHadSubtype(subtype)` — a permanent sacrificed as cost had specific subtype
+- `Conditions.TriggeringEntityWasHistoric` — the triggering entity was historic (legendary, artifact, or Saga)
 
 ### Turn
 

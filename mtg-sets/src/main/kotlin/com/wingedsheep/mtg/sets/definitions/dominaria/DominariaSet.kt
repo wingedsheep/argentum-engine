@@ -56,6 +56,7 @@ object DominariaSet {
         Charge,
         CloudreaderSphinx,
         ColdWaterSnapper,
+        CuratorsWard,
         DAvenantTrapper,
         DarigaazReincarnated,
         DaringArchaeologist,

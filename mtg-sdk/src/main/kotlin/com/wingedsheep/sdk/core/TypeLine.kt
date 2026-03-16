@@ -25,6 +25,7 @@ data class TypeLine(
 
     val isBasicLand: Boolean get() = isLand && Supertype.BASIC in supertypes
     val isLegendary: Boolean get() = Supertype.LEGENDARY in supertypes
+    val isHistoric: Boolean get() = isLegendary || isArtifact || isSaga
 
     fun hasSubtype(subtype: Subtype): Boolean = subtype in subtypes
 

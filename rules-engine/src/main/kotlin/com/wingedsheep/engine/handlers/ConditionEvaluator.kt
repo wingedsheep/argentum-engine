@@ -42,6 +42,7 @@ import com.wingedsheep.sdk.scripting.conditions.SourceIsTapped
 import com.wingedsheep.sdk.scripting.conditions.SourceIsUntapped
 import com.wingedsheep.sdk.scripting.conditions.WasCastFromHand
 import com.wingedsheep.sdk.scripting.conditions.SacrificedPermanentHadSubtype
+import com.wingedsheep.sdk.scripting.conditions.TriggeringEntityWasHistoric
 import com.wingedsheep.sdk.scripting.conditions.WasKicked
 import com.wingedsheep.sdk.scripting.conditions.YouAttackedThisTurn
 import com.wingedsheep.sdk.scripting.conditions.YouWereAttackedThisStep
@@ -85,6 +86,7 @@ class ConditionEvaluator {
             is SourceHasSubtype -> evaluateSourceHasSubtype(state, condition, context)
             is SourceHasKeyword -> evaluateSourceHasKeyword(state, condition, context)
             is SacrificedPermanentHadSubtype -> evaluateSacrificedPermanentHadSubtype(condition, context)
+            is TriggeringEntityWasHistoric -> evaluateTriggeringEntityWasHistoric(state, context)
 
             // Turn conditions
             is IsYourTurn -> evaluateIsYourTurn(state, context)
@@ -306,5 +308,11 @@ class ConditionEvaluator {
         val creatureId = state.getEntity(sourceId)?.get<AttachedToComponent>()?.targetId ?: sourceId
         val projected = state.projectedState
         return projected.hasSubtype(creatureId, condition.subtype.value)
+    }
+
+    private fun evaluateTriggeringEntityWasHistoric(state: GameState, context: EffectContext): Boolean {
+        val entityId = context.triggeringEntityId ?: return false
+        val card = state.getEntity(entityId)?.get<CardComponent>() ?: return false
+        return card.typeLine.isHistoric
     }
 }
