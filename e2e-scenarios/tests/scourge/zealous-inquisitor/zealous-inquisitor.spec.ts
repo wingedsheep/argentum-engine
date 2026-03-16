@@ -43,8 +43,9 @@ test('redirect 1 combat damage to target creature', async ({ createGame }) => {
   const p1 = player1.gamePage
   const p2 = player2.gamePage
 
-  // P2 passes main phase → combat
+  // Both players pass main phase → combat
   await p2.pass()
+  await p1.pass()
 
   // P2 attacks with Glory Seeker
   await p2.attackWith('Glory Seeker')

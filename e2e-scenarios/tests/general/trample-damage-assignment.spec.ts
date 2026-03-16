@@ -17,6 +17,7 @@ test.describe('Trample damage assignment', () => {
       player2Name: 'Defender',
       player1: {
         battlefield: [{ name: 'Blistering Firecat', tapped: false, summoningSickness: false }],
+        library: ['Mountain'],
       },
       player2: {
         battlefield: [{ name: 'Glory Seeker' }],
@@ -58,6 +59,7 @@ test.describe('Trample damage assignment', () => {
       player2Name: 'Defender',
       player1: {
         battlefield: [{ name: 'Blistering Firecat', tapped: false, summoningSickness: false }],
+        library: ['Mountain'],
       },
       player2: {
         battlefield: [{ name: 'Glory Seeker' }],
@@ -102,6 +104,7 @@ test.describe('Trample damage assignment', () => {
       player1: {
         // Hill Giant (3/3) — no trample
         battlefield: [{ name: 'Hill Giant', tapped: false, summoningSickness: false }],
+        library: ['Mountain'],
       },
       player2: {
         battlefield: [{ name: 'Glory Seeker' }],
