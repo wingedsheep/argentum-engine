@@ -15,6 +15,7 @@ import com.wingedsheep.engine.state.components.identity.MorphDataComponent
 import com.wingedsheep.engine.state.components.identity.TokenComponent
 import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.engine.state.components.stack.ActivatedAbilityOnStackComponent
+import com.wingedsheep.engine.state.components.stack.SpellOnStackComponent
 import com.wingedsheep.engine.state.components.stack.TriggeredAbilityOnStackComponent
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Subtype
@@ -647,9 +648,15 @@ class PredicateEvaluator {
                 val card = container.get<CardComponent>()
                 card?.ownerId != null && card.ownerId != context.controllerId
             }
-            // All other predicates require ControllerComponent
+            // All other predicates require a controller — check ControllerComponent first,
+            // then fall back to stack components (spells use SpellOnStackComponent.casterId,
+            // triggered/activated abilities use their own controllerId)
             else -> {
-                val controllerId = container.get<ControllerComponent>()?.playerId ?: return false
+                val controllerId = container.get<ControllerComponent>()?.playerId
+                    ?: container.get<SpellOnStackComponent>()?.casterId
+                    ?: container.get<TriggeredAbilityOnStackComponent>()?.controllerId
+                    ?: container.get<ActivatedAbilityOnStackComponent>()?.controllerId
+                    ?: return false
                 when (predicate) {
                     ControllerPredicate.ControlledByYou -> controllerId == context.controllerId
                     ControllerPredicate.ControlledByOpponent -> controllerId != context.controllerId
