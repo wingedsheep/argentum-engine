@@ -39,6 +39,7 @@ object DominariaSet {
         BenalishMarshal,
         Befuddle,
         BlinkOfAnEye,
+        BlackbladeReforged,
         BlessedLight,
         BloodstoneGoblin,
         BloodtallowCandle,

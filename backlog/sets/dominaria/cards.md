@@ -2,7 +2,7 @@
 
 **Set Size:** 280 cards (249 unique card names + basic land variants)
 **Release Date:** April 27, 2018
-**Implemented:** 208 / 249
+**Implemented:** 209 / 249
 
 | Color      | Total | Done |
 |------------|-------|------|
@@ -12,7 +12,7 @@
 | Red        | 38    | 34   |
 | Green      | 37    | 31   |
 | Multicolor | 19    | 17   |
-| Colorless  | 30    | 25   |
+| Colorless  | 30    | 26   |
 | Land       | 12    | 9    |
 
 ---
@@ -36,7 +36,7 @@
 - [x] Befuddle
 - [x] Benalish Honor Guard
 - [x] Benalish Marshal
-- [ ] Blackblade Reforged
+- [x] Blackblade Reforged
 - [x] Blessed Light
 - [ ] Blessing of Belzenlok
 - [x] Blink of an Eye
