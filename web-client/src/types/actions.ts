@@ -13,6 +13,7 @@ export type GameAction =
   | ActivateAbilityAction
   | CycleCardAction
   | TypecycleCardAction
+  | CrewVehicleAction
   | PlayLandAction
   | TurnFaceUpAction
   | DeclareAttackersAction
@@ -131,6 +132,17 @@ export interface TypecycleCardAction {
   readonly playerId: EntityId
   readonly cardId: EntityId
   readonly paymentStrategy?: PaymentStrategy
+}
+
+// =============================================================================
+// Crew Actions
+// =============================================================================
+
+export interface CrewVehicleAction {
+  readonly type: 'CrewVehicle'
+  readonly playerId: EntityId
+  readonly vehicleId: EntityId
+  readonly crewCreatures: readonly EntityId[]
 }
 
 // =============================================================================
@@ -283,6 +295,8 @@ export function getActionSubject(action: GameAction): EntityId | null {
       return action.sourceId
     case 'TurnFaceUp':
       return action.sourceId
+    case 'CrewVehicle':
+      return action.vehicleId
     default:
       return null
   }

@@ -216,6 +216,8 @@ export function useCardLegalActions(cardId: EntityId | null): readonly LegalActi
           return a.sourceId === cardId
         case 'TurnFaceUp':
           return a.sourceId === cardId
+        case 'CrewVehicle':
+          return a.vehicleId === cardId
         default:
           return false
       }

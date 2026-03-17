@@ -201,6 +201,19 @@ function buildActionOptions(
     })
   }
 
+  // 7. Crew (for Vehicles)
+  const crewActions = legalActions.filter((a) => a.action.type === 'CrewVehicle')
+  crewActions.forEach((crewAction, index) => {
+    options.push({
+      key: `crew-${index}`,
+      label: crewAction.description,
+      manaCost: null,
+      isAvailable: crewAction.isAffordable !== false,
+      action: crewAction,
+      actionType: 'activate',
+    })
+  })
+
   return options
 }
 

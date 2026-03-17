@@ -967,7 +967,13 @@ data class LegalActionInfo(
     /** Pre-computed mandatory blocker→attacker assignments from Provoke / MustBeBlockedByAll */
     val mandatoryBlockerAssignments: Map<EntityId, List<EntityId>>? = null,
     /** Maximum times this ability can be activated in a batch (for repeat-eligible self-targeting abilities) */
-    val maxRepeatableActivations: Int? = null
+    val maxRepeatableActivations: Int? = null,
+    /** Whether this action is a Crew ability requiring creature selection */
+    val hasCrew: Boolean = false,
+    /** The crew power requirement (N in "Crew N") */
+    val crewPower: Int? = null,
+    /** Creatures that can be tapped to crew this vehicle */
+    val validCrewCreatures: List<CrewCreatureInfo>? = null
 )
 
 /**
@@ -989,6 +995,17 @@ data class DelveCardInfo(
     val entityId: EntityId,
     val name: String,
     val imageUri: String? = null
+)
+
+/**
+ * Information about a creature that can be tapped to crew a Vehicle.
+ */
+@Serializable
+data class CrewCreatureInfo(
+    val entityId: EntityId,
+    val name: String,
+    /** Projected power of this creature */
+    val power: Int
 )
 
 /**

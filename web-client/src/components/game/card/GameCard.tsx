@@ -95,6 +95,7 @@ export function GameCard({
   const decrementCounterRemoval = useGameStore((state) => state.decrementCounterRemoval)
   const manaSelectionState = useGameStore((state) => state.manaSelectionState)
   const toggleManaSource = useGameStore((state) => state.toggleManaSource)
+  const toggleCrewCreature = useGameStore((state) => state.toggleCrewCreature)
   const submitYesNoDecision = useGameStore((state) => state.submitYesNoDecision)
   const responsive = useResponsiveContext()
   const { handleCardClick, handleDoubleClick, executeAction } = useInteraction()
@@ -191,6 +192,12 @@ export function GameCard({
   const isManaValidSource = manaSelectionState?.validSources.includes(card.id) ?? false
   const isManaSelected = manaSelectionState?.selectedSources.includes(card.id) ?? false
   const isInManaSelectionMode = manaSelectionState !== null
+
+  // Crew selection checks
+  const crewSelectionState = useGameStore((state) => state.crewSelectionState)
+  const isInCrewMode = crewSelectionState !== null
+  const isValidCrewCreature = crewSelectionState?.validCreatures.some((c) => c.entityId === card.id) ?? false
+  const isSelectedCrewCreature = crewSelectionState?.selectedCreatures.includes(card.id) ?? false
 
   // Trigger YesNo check (inline buttons on triggering entity card, only when inlineOnTrigger is set)
   const isTriggerYesNo = pendingDecision?.type === 'YesNoDecision'
@@ -507,6 +514,15 @@ export function GameCard({
     // Block all other interactions during mana mode
     if (isInManaSelectionMode) return
 
+    // Handle crew selection mode - click to toggle creature
+    if (isInCrewMode && isValidCrewCreature) {
+      toggleCrewCreature(card.id)
+      return
+    }
+
+    // Block all other interactions during crew mode
+    if (isInCrewMode) return
+
     // Handle inline distribute mode - click to add damage
     if (isDistributeTarget && distributeRemaining > 0 && !distributeAtMax) {
       incrementDistribute(card.id)
@@ -652,6 +668,18 @@ export function GameCard({
     // Blue highlight for valid mana sources
     borderStyle = `2px solid ${TARGET_COLOR}`
     boxShadow = `0 0 12px ${TARGET_GLOW}, 0 0 24px ${TARGET_SHADOW}`
+  } else if (isSelectedCrewCreature) {
+    // Green highlight for selected crew creatures
+    borderStyle = `3px solid ${SELECTED_COLOR}`
+    boxShadow = `0 0 20px ${SELECTED_GLOW}, 0 0 40px ${SELECTED_SHADOW}`
+  } else if (isValidCrewCreature && isHovered) {
+    // Bright blue highlight when hovering over a valid crew creature
+    borderStyle = `3px solid ${TARGET_COLOR_BRIGHT}`
+    boxShadow = `0 0 20px ${TARGET_GLOW_BRIGHT}, 0 0 40px ${TARGET_GLOW_OUTER}`
+  } else if (isValidCrewCreature) {
+    // Blue highlight for valid crew creatures
+    borderStyle = `2px solid ${TARGET_COLOR}`
+    boxShadow = `0 0 12px ${TARGET_GLOW}, 0 0 24px ${TARGET_SHADOW}`
   } else if (isSelected && (!isInCombatMode || !isCombatRoleCard)) {
     borderStyle = '3px solid #ffff00'
     boxShadow = '0 8px 20px rgba(255, 255, 0, 0.4)'
@@ -706,7 +734,7 @@ export function GameCard({
   }
 
   // Determine cursor
-  const canInteract = interactive || isValidTarget || isValidDecisionTarget || isValidDecisionSelection || isValidAttacker || isValidBlocker || isAttackingInBlockerMode || isValidPlaneswalkerTarget || canDragToPlay || isDistributeTarget || isManaValidSource
+  const canInteract = interactive || isValidTarget || isValidDecisionTarget || isValidDecisionSelection || isValidAttacker || isValidBlocker || isAttackingInBlockerMode || isValidPlaneswalkerTarget || canDragToPlay || isDistributeTarget || isManaValidSource || isValidCrewCreature
   const baseCursor = canInteract ? 'pointer' : 'default'
   const cursor = isValidBlocker || isValidAttacker || isSelectedAsAttacker || canDragToPlay ? 'grab' : baseCursor
 

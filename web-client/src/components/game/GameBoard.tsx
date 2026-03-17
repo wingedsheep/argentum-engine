@@ -64,6 +64,7 @@ export function GameBoard({ spectatorMode = false, topOffset = 0 }: GameBoardPro
   const undoAvailable = useGameStore((state) => state.undoAvailable)
   const requestUndo = useGameStore((state) => state.requestUndo)
   const delveSelectionState = useGameStore((state) => state.delveSelectionState)
+  const crewSelectionState = useGameStore((state) => state.crewSelectionState)
   const manaSelectionState = useGameStore((state) => state.manaSelectionState)
   const cancelManaSelection = useGameStore((state) => state.cancelManaSelection)
   const { executeAction } = useInteraction()
@@ -448,7 +449,7 @@ export function GameBoard({ spectatorMode = false, topOffset = 0 }: GameBoardPro
 
       {/* Floating pass/resolve button (bottom-right) - always present, disabled when unavailable */}
       {!spectatorMode && viewingPlayer && !isInManaSelectionMode && (() => {
-        const passEnabled = canAct && !isInCombatMode && !isInDistributeMode && !isInCounterDistMode && !isInManaSelectionMode && !delveSelectionState && !targetingState
+        const passEnabled = canAct && !isInCombatMode && !isInDistributeMode && !isInCounterDistMode && !isInManaSelectionMode && !delveSelectionState && !crewSelectionState && !targetingState
         return (
           <div style={{
             position: 'fixed',

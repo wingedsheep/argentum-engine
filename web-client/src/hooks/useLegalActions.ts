@@ -104,6 +104,8 @@ export function useCardActions(cardId: EntityId | null): LegalActionInfo[] {
           return a.sourceId === cardId
         case 'TurnFaceUp':
           return a.sourceId === cardId
+        case 'CrewVehicle':
+          return a.vehicleId === cardId
         default:
           return false
       }
@@ -166,6 +168,8 @@ function getActionCardId(action: GameAction): EntityId | null {
       return action.sourceId
     case 'TurnFaceUp':
       return action.sourceId
+    case 'CrewVehicle':
+      return action.vehicleId
     default:
       return null
   }

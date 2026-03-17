@@ -15,6 +15,7 @@ class AbilityModule(private val context: ActionContext) : ActionHandlerModule {
     override fun handlers(): List<ActionHandler<*>> = listOf(
         ActivateAbilityHandler.create(context),
         CycleCardHandler.create(context),
-        TypecycleCardHandler.create(context)
+        TypecycleCardHandler.create(context),
+        CrewVehicleHandler.create(context)
     )
 }

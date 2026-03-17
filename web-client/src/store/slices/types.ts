@@ -9,6 +9,7 @@ import type {
   GameAction,
   LegalActionInfo,
   ConvokeCreatureInfo,
+  CrewCreatureInfo,
   DelveCardInfo,
 
   GameOverReason,
@@ -264,6 +265,20 @@ export interface ConvokeSelectionState {
   selectedCreatures: ConvokeCreatureSelection[]
   /** All valid creatures that can be tapped for Convoke */
   validCreatures: readonly ConvokeCreatureInfo[]
+}
+
+/**
+ * Crew selection state when crewing a Vehicle.
+ */
+export interface CrewSelectionState {
+  actionInfo: LegalActionInfo
+  vehicleName: string
+  /** Power requirement for crew (N in "Crew N") */
+  crewPower: number
+  /** Creatures selected to tap for crewing */
+  selectedCreatures: EntityId[]
+  /** All valid creatures that can be tapped to crew */
+  validCreatures: readonly CrewCreatureInfo[]
 }
 
 /**
@@ -612,6 +627,7 @@ export type GameStore = {
   combatState: CombatState | null
   xSelectionState: XSelectionState | null
   convokeSelectionState: ConvokeSelectionState | null
+  crewSelectionState: CrewSelectionState | null
   delveSelectionState: DelveSelectionState | null
   manaColorSelectionState: ManaColorSelectionState | null
   decisionSelectionState: DecisionSelectionState | null
@@ -672,6 +688,10 @@ export type GameStore = {
   toggleConvokeCreature: (entityId: EntityId, name: string, payingColor: string | null) => void
   cancelConvokeSelection: () => void
   confirmConvokeSelection: () => void
+  startCrewSelection: (state: CrewSelectionState) => void
+  toggleCrewCreature: (entityId: EntityId) => void
+  cancelCrewSelection: () => void
+  confirmCrewSelection: () => void
   startDelveSelection: (state: DelveSelectionState) => void
   toggleDelveCard: (entityId: EntityId) => void
   cancelDelveSelection: () => void

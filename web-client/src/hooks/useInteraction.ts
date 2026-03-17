@@ -12,6 +12,7 @@ export type CardClickResult =
   | { type: 'requiresTargeting'; action: GameAction; requiredTargets: number }
   | { type: 'requiresXSelection'; actionInfo: LegalActionInfo }
   | { type: 'requiresConvokeSelection'; actionInfo: LegalActionInfo }
+  | { type: 'requiresCrewSelection'; actionInfo: LegalActionInfo }
   | { type: 'requiresDelveSelection'; actionInfo: LegalActionInfo }
 
 /**
@@ -30,6 +31,7 @@ export function useInteraction() {
   const startXSelection = useGameStore((state) => state.startXSelection)
   const startTargeting = useGameStore((state) => state.startTargeting)
   const startConvokeSelection = useGameStore((state) => state.startConvokeSelection)
+  const startCrewSelection = useGameStore((state) => state.startCrewSelection)
   const startDelveSelection = useGameStore((state) => state.startDelveSelection)
   const startManaColorSelection = useGameStore((state) => state.startManaColorSelection)
   const startCounterDistribution = useGameStore((state) => state.startCounterDistribution)
@@ -54,6 +56,8 @@ export function useInteraction() {
             return a.sourceId === cardId
           case 'TurnFaceUp':
             return a.sourceId === cardId
+          case 'CrewVehicle':
+            return a.vehicleId === cardId
           default:
             return false
         }
@@ -218,6 +222,19 @@ export function useInteraction() {
           selectCard(null)
           return
         }
+      }
+
+      // Check if this is a Crew action requiring creature selection
+      if (action.type === 'CrewVehicle' && actionInfo.hasCrew && actionInfo.validCrewCreatures && actionInfo.validCrewCreatures.length > 0) {
+        startCrewSelection({
+          actionInfo,
+          vehicleName: actionInfo.description.replace('Crew ', ''),
+          crewPower: actionInfo.crewPower ?? 0,
+          selectedCreatures: [],
+          validCreatures: actionInfo.validCrewCreatures,
+        })
+        selectCard(null)
+        return
       }
 
       // Check if TurnFaceUp requires returning a permanent (non-mana morph cost)
@@ -488,7 +505,7 @@ export function useInteraction() {
       submitAction(action)
       selectCard(null)
     },
-    [submitAction, selectCard, startXSelection, startTargeting, startConvokeSelection, startDelveSelection, startManaColorSelection, startCounterDistribution]
+    [submitAction, selectCard, startXSelection, startTargeting, startConvokeSelection, startCrewSelection, startDelveSelection, startManaColorSelection, startCounterDistribution]
   )
 
   /**
@@ -515,6 +532,11 @@ export function useInteraction() {
 
       // Delve spells with graveyard cards need selection
       if (action.type === 'CastSpell' && actionInfo.hasDelve && actionInfo.validDelveCards && actionInfo.validDelveCards.length > 0) {
+        return false
+      }
+
+      // Crew actions always need creature selection
+      if (action.type === 'CrewVehicle' && actionInfo.hasCrew) {
         return false
       }
 

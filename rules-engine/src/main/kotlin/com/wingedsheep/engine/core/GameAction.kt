@@ -328,6 +328,27 @@ data class Concede(
 ) : GameAction
 
 // =============================================================================
+// Crew Actions
+// =============================================================================
+
+/**
+ * Player crews a Vehicle by tapping creatures with total power >= crew requirement.
+ * Crew is an activated ability that goes on the stack. The cost (tapping creatures)
+ * is paid immediately; the effect (Vehicle becomes a creature) resolves on the stack.
+ *
+ * @property playerId The player crewing the vehicle
+ * @property vehicleId The Vehicle permanent being crewed
+ * @property crewCreatures Creatures to tap as the crew cost
+ */
+@Serializable
+@SerialName("CrewVehicle")
+data class CrewVehicle(
+    override val playerId: EntityId,
+    val vehicleId: EntityId,
+    val crewCreatures: List<EntityId>
+) : GameAction
+
+// =============================================================================
 // Morph Actions
 // =============================================================================
 

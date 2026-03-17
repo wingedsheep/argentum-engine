@@ -6,6 +6,7 @@ import { DecisionUI } from './components/decisions/DecisionUI'
 import { RevealedCardsUI } from './components/decisions/RevealedCardsUI'
 import { XCostSelector } from './components/ui/XCostSelector'
 import { ConvokeSelector } from './components/ui/ConvokeSelector'
+import { CrewSelector } from './components/ui/CrewSelector'
 import { DelveSelector } from './components/ui/DelveSelector'
 import { DamageDistributionModal } from './components/decisions/DamageDistributionModal'
 import { OpponentDecisionIndicator } from './components/ui/OpponentDecisionIndicator'
@@ -280,6 +281,9 @@ export default function App() {
 
       {/* Convoke selection overlay (when casting spells with Convoke) */}
       {showGame && <ConvokeSelector />}
+
+      {/* Crew selection overlay (when crewing Vehicles) */}
+      {showGame && <CrewSelector />}
 
       {/* Delve selection overlay (when casting spells with Delve) */}
       {showGame && <DelveSelector />}

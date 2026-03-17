@@ -8,6 +8,7 @@ import type {
   CombatState,
   XSelectionState,
   ConvokeSelectionState,
+  CrewSelectionState,
   DelveSelectionState,
   ManaColorSelectionState,
   DecisionSelectionState,
@@ -38,6 +39,7 @@ export interface UISliceState {
   combatState: CombatState | null
   xSelectionState: XSelectionState | null
   convokeSelectionState: ConvokeSelectionState | null
+  crewSelectionState: CrewSelectionState | null
   delveSelectionState: DelveSelectionState | null
   manaColorSelectionState: ManaColorSelectionState | null
   decisionSelectionState: DecisionSelectionState | null
@@ -103,6 +105,10 @@ export interface UISliceActions {
   toggleConvokeCreature: (entityId: EntityId, name: string, payingColor: string | null) => void
   cancelConvokeSelection: () => void
   confirmConvokeSelection: () => void
+  startCrewSelection: (state: CrewSelectionState) => void
+  toggleCrewCreature: (entityId: EntityId) => void
+  cancelCrewSelection: () => void
+  confirmCrewSelection: () => void
   startDelveSelection: (state: DelveSelectionState) => void
   toggleDelveCard: (entityId: EntityId) => void
   cancelDelveSelection: () => void
@@ -160,6 +166,7 @@ export const createUISlice: SliceCreator<UISlice> = (set, get) => ({
   combatState: null,
   xSelectionState: null,
   convokeSelectionState: null,
+  crewSelectionState: null,
   delveSelectionState: null,
   manaColorSelectionState: null,
   decisionSelectionState: null,
@@ -862,6 +869,51 @@ export const createUISlice: SliceCreator<UISlice> = (set, get) => ({
     }
 
     set({ convokeSelectionState: null })
+  },
+
+  // Crew selection actions
+  startCrewSelection: (crewSelectionState) => {
+    set({ crewSelectionState })
+  },
+
+  toggleCrewCreature: (entityId) => {
+    set((state) => {
+      if (!state.crewSelectionState) return state
+      const { selectedCreatures } = state.crewSelectionState
+      const exists = selectedCreatures.includes(entityId)
+
+      const newSelectedCreatures = exists
+        ? selectedCreatures.filter((id) => id !== entityId)
+        : [...selectedCreatures, entityId]
+
+      return {
+        crewSelectionState: {
+          ...state.crewSelectionState,
+          selectedCreatures: newSelectedCreatures,
+        },
+      }
+    })
+  },
+
+  cancelCrewSelection: () => {
+    set({ crewSelectionState: null })
+  },
+
+  confirmCrewSelection: () => {
+    const { crewSelectionState, playerId } = get()
+    if (!crewSelectionState || !playerId) return
+
+    const { actionInfo, selectedCreatures } = crewSelectionState
+
+    if (actionInfo.action.type === 'CrewVehicle') {
+      const actionWithCrew = {
+        ...actionInfo.action,
+        crewCreatures: selectedCreatures,
+      }
+      getWebSocket()?.send(createSubmitActionMessage(actionWithCrew))
+    }
+
+    set({ crewSelectionState: null })
   },
 
   // Delve selection actions

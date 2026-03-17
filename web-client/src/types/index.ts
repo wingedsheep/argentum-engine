@@ -153,6 +153,7 @@ export type {
   StateDelta,
   LegalActionInfo,
   ConvokeCreatureInfo,
+  CrewCreatureInfo,
   DelveCardInfo,
   ManaSourceInfo,
   MulliganDecisionMessage,
