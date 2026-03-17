@@ -104,6 +104,7 @@ object DominariaSet {
         GrowFromTheAshes,
         HealingGrace,
         HaphazardBombardment,
+        HinterlandHarbor,
         IcyManipulator,
         InvokeTheDivine,
         IsolatedChapel,
