@@ -145,6 +145,7 @@ object DominariaSet {
         MesaUnicorn,
         MishrasSelfReplicator,
         MoxAmber,
+        MuldrothaTheGravetide,
         MultaniYavimayasAvatar,
         NabanDeanOfIteration,
         NaruMehaMasterWizard,

@@ -33,6 +33,7 @@ import com.wingedsheep.engine.mechanics.targeting.TargetValidator
 import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
+import com.wingedsheep.engine.state.components.battlefield.GraveyardPlayPermissionUsedComponent
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.state.components.battlefield.LinkedExileComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
@@ -40,6 +41,7 @@ import com.wingedsheep.engine.state.components.identity.MayPlayFromExileComponen
 import com.wingedsheep.engine.state.components.identity.PlayWithoutPayingCostComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.player.ManaPoolComponent
+import com.wingedsheep.sdk.core.CardType
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.Zone
@@ -52,6 +54,7 @@ import com.wingedsheep.sdk.scripting.KeywordAbility
 import com.wingedsheep.sdk.scripting.GrantFlashToSpellType
 import com.wingedsheep.sdk.scripting.CastSpellTypesFromTopOfLibrary
 import com.wingedsheep.sdk.scripting.MayCastSelfFromZones
+import com.wingedsheep.sdk.scripting.MayPlayPermanentsFromGraveyard
 import com.wingedsheep.sdk.scripting.GrantMayCastFromLinkedExile
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.PlayFromTopOfLibrary
@@ -108,7 +111,9 @@ class CastSpellHandler(
         val mayPlayFromExile = !inHand && !onTopOfLibrary && isInExileWithPlayPermission(state, action.playerId, action.cardId)
         val mayCastFromZone = !inHand && !onTopOfLibrary && !mayPlayFromExile &&
             hasMayCastSelfFromZonePermission(state, action.playerId, action.cardId)
-        if (!inHand && !onTopOfLibrary && !mayPlayFromExile && !mayCastFromZone) {
+        val mayCastFromGraveyard = !inHand && !onTopOfLibrary && !mayPlayFromExile && !mayCastFromZone &&
+            hasMayPlayPermanentFromGraveyardPermission(state, action.playerId, action.cardId, cardComponent)
+        if (!inHand && !onTopOfLibrary && !mayPlayFromExile && !mayCastFromZone && !mayCastFromGraveyard) {
             return "Card is not in your hand"
         }
 
@@ -776,6 +781,10 @@ class CastSpellHandler(
             )
         }
 
+        // Check if casting from graveyard via MayPlayPermanentsFromGraveyard (Muldrotha)
+        val castingFromGraveyardViaMuldrotha = action.cardId in currentState.getZone(ZoneKey(action.playerId, Zone.GRAVEYARD)) &&
+            hasMayPlayPermanentFromGraveyardPermission(currentState, action.playerId, action.cardId, cardComponent)
+
         // Cast the spell
         val castResult = stackResolver.castSpell(
             currentState,
@@ -799,6 +808,14 @@ class CastSpellHandler(
 
         var currentCastState = castResult.newState
         var allEvents = events + castResult.events
+
+        // Record Muldrotha graveyard cast permission usage
+        if (castingFromGraveyardViaMuldrotha) {
+            val typeName = choosePermanentTypeForGraveyardPermission(currentCastState, action.playerId, cardComponent)
+            if (typeName != null) {
+                currentCastState = recordGraveyardPlayPermissionUsage(currentCastState, action.playerId, typeName)
+            }
+        }
 
         // Handle Storm keyword: create a Storm triggered ability on the stack
         if (!action.castFaceDown && stormCount > 0 && cardDef != null && cardDef.hasKeyword(Keyword.STORM)) {
@@ -1438,6 +1455,91 @@ class CastSpellHandler(
             }
         }
         return false
+    }
+
+    /**
+     * Check if a permanent spell can be cast from the graveyard via a MayPlayPermanentsFromGraveyard
+     * static ability (e.g., Muldrotha, the Gravetide).
+     */
+    private fun hasMayPlayPermanentFromGraveyardPermission(
+        state: GameState,
+        playerId: EntityId,
+        cardId: EntityId,
+        cardComponent: CardComponent
+    ): Boolean {
+        // Card must be in the player's graveyard
+        val graveyardZone = ZoneKey(playerId, Zone.GRAVEYARD)
+        if (cardId !in state.getZone(graveyardZone)) return false
+
+        // Card must be a permanent type (not instant/sorcery)
+        if (!cardComponent.typeLine.isPermanent) return false
+
+        // Only works on controller's turn
+        if (state.activePlayerId != playerId) return false
+
+        // Find a Muldrotha-like permanent with available permission for any of this card's types
+        val permanentTypes = cardComponent.typeLine.cardTypes.filter { it.isPermanent }
+        for (typeName in permanentTypes.map { it.name }) {
+            if (findGraveyardPlayPermissionSource(state, playerId, typeName) != null) {
+                return true
+            }
+        }
+        return false
+    }
+
+    /**
+     * Choose which permanent type to consume for graveyard casting.
+     * If a card has multiple permanent types, pick the first type with available permission.
+     */
+    private fun choosePermanentTypeForGraveyardPermission(
+        state: GameState,
+        playerId: EntityId,
+        cardComponent: CardComponent
+    ): String? {
+        val permanentTypes = cardComponent.typeLine.cardTypes.filter { it.isPermanent }
+        for (type in permanentTypes) {
+            if (findGraveyardPlayPermissionSource(state, playerId, type.name) != null) {
+                return type.name
+            }
+        }
+        return null
+    }
+
+    /**
+     * Find a battlefield permanent controlled by the player that has MayPlayPermanentsFromGraveyard
+     * and hasn't used its permission for the given type this turn.
+     */
+    private fun findGraveyardPlayPermissionSource(
+        state: GameState,
+        playerId: EntityId,
+        typeName: String
+    ): EntityId? {
+        for (entityId in state.getBattlefield(playerId)) {
+            val card = state.getEntity(entityId)?.get<CardComponent>() ?: continue
+            val cardDef = cardRegistry?.getCard(card.cardDefinitionId) ?: continue
+            if (cardDef.script.staticAbilities.any { it is MayPlayPermanentsFromGraveyard }) {
+                val tracker = state.getEntity(entityId)?.get<GraveyardPlayPermissionUsedComponent>()
+                if (tracker == null || !tracker.hasUsedType(typeName)) {
+                    return entityId
+                }
+            }
+        }
+        return null
+    }
+
+    /**
+     * Record that a Muldrotha-like permanent's graveyard play permission was used for a type.
+     */
+    private fun recordGraveyardPlayPermissionUsage(
+        state: GameState,
+        playerId: EntityId,
+        typeName: String
+    ): GameState {
+        val sourceId = findGraveyardPlayPermissionSource(state, playerId, typeName) ?: return state
+        return state.updateEntity(sourceId) { c ->
+            val tracker = c.get<GraveyardPlayPermissionUsedComponent>() ?: GraveyardPlayPermissionUsedComponent()
+            c.with(tracker.withUsedType(typeName))
+        }
     }
 
     companion object {

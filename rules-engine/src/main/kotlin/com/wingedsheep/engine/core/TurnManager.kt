@@ -1361,11 +1361,15 @@ class TurnManager(
             if (container.has<PlayerAttackedThisTurnComponent>()) {
                 needsUpdate = true
             }
+            if (container.has<com.wingedsheep.engine.state.components.battlefield.GraveyardPlayPermissionUsedComponent>()) {
+                needsUpdate = true
+            }
             if (needsUpdate) {
                 newState = newState.updateEntity(entityId) { c ->
                     c.without<com.wingedsheep.engine.state.components.battlefield.AbilityActivatedThisTurnComponent>()
                         .without<com.wingedsheep.engine.state.components.battlefield.DamageDealtToCreaturesThisTurnComponent>()
                         .without<PlayerAttackedThisTurnComponent>()
+                        .without<com.wingedsheep.engine.state.components.battlefield.GraveyardPlayPermissionUsedComponent>()
                 }
             }
         }

@@ -19,7 +19,10 @@ import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.engine.handlers.ConditionEvaluator
 import com.wingedsheep.engine.handlers.EffectContext
+import com.wingedsheep.engine.state.components.battlefield.GraveyardPlayPermissionUsedComponent
+import com.wingedsheep.sdk.core.CardType
 import com.wingedsheep.sdk.scripting.EntersTapped
+import com.wingedsheep.sdk.scripting.MayPlayPermanentsFromGraveyard
 import com.wingedsheep.sdk.scripting.PlayFromTopOfLibrary
 import kotlin.reflect.KClass
 
@@ -65,12 +68,15 @@ class PlayLandHandler(
             return "You can only play land cards as lands"
         }
 
-        // Check card is in hand, on top of library with PlayFromTopOfLibrary, or in exile with MayPlayFromExileComponent
+        // Check card is in hand, on top of library with PlayFromTopOfLibrary, in exile with MayPlayFromExileComponent,
+        // or in graveyard with MayPlayPermanentsFromGraveyard permission (Muldrotha)
         val handZone = ZoneKey(action.playerId, Zone.HAND)
         val inHand = action.cardId in state.getZone(handZone)
         val onTopOfLibrary = !inHand && isOnTopOfLibraryWithPermission(state, action.playerId, action.cardId)
         val mayPlayFromExile = !inHand && !onTopOfLibrary && isInExileWithPlayPermission(state, action.playerId, action.cardId)
-        if (!inHand && !onTopOfLibrary && !mayPlayFromExile) {
+        val mayPlayFromGraveyard = !inHand && !onTopOfLibrary && !mayPlayFromExile &&
+            isInGraveyardWithPlayPermission(state, action.playerId, action.cardId)
+        if (!inHand && !onTopOfLibrary && !mayPlayFromExile && !mayPlayFromGraveyard) {
             return "Land is not in your hand"
         }
 
@@ -86,9 +92,10 @@ class PlayLandHandler(
 
         var newState = state
 
-        // Remove from hand, library, or exile (whichever zone the card is in)
+        // Remove from hand, library, exile, or graveyard (whichever zone the card is in)
         val handZone = ZoneKey(action.playerId, Zone.HAND)
         val libraryZone = ZoneKey(action.playerId, Zone.LIBRARY)
+        val graveyardZone = ZoneKey(action.playerId, Zone.GRAVEYARD)
         // Check all exile zones since cards may be in another player's exile (Villainous Wealth)
         val exileOwner = state.turnOrder.firstOrNull { pid ->
             action.cardId in state.getZone(ZoneKey(pid, Zone.EXILE))
@@ -97,6 +104,7 @@ class PlayLandHandler(
             action.cardId in state.getZone(handZone) -> Zone.HAND
             action.cardId in state.getZone(libraryZone) -> Zone.LIBRARY
             exileOwner != null -> Zone.EXILE
+            action.cardId in state.getZone(graveyardZone) -> Zone.GRAVEYARD
             else -> Zone.HAND
         }
         val sourceZoneKey = if (fromZone == Zone.EXILE && exileOwner != null) {
@@ -105,6 +113,11 @@ class PlayLandHandler(
             ZoneKey(action.playerId, fromZone)
         }
         newState = newState.removeFromZone(sourceZoneKey, action.cardId)
+
+        // Record Muldrotha graveyard land permission usage
+        if (fromZone == Zone.GRAVEYARD) {
+            newState = recordGraveyardPlayPermissionUsage(newState, action.playerId, CardType.LAND.name)
+        }
 
         // Add to battlefield
         val battlefieldZone = ZoneKey(action.playerId, Zone.BATTLEFIELD)
@@ -210,6 +223,57 @@ class PlayLandHandler(
             }
         }
         return false
+    }
+
+    /**
+     * Check if a land card is in the player's graveyard and there's a Muldrotha-like permanent
+     * with unused land permission.
+     */
+    private fun isInGraveyardWithPlayPermission(
+        state: GameState,
+        playerId: EntityId,
+        cardId: EntityId
+    ): Boolean {
+        val graveyardZone = ZoneKey(playerId, Zone.GRAVEYARD)
+        if (cardId !in state.getZone(graveyardZone)) return false
+        return findGraveyardPlayPermissionSource(state, playerId, CardType.LAND.name) != null
+    }
+
+    /**
+     * Find a battlefield permanent controlled by the player that has MayPlayPermanentsFromGraveyard
+     * and hasn't used its permission for the given type this turn.
+     */
+    private fun findGraveyardPlayPermissionSource(
+        state: GameState,
+        playerId: EntityId,
+        typeName: String
+    ): EntityId? {
+        for (entityId in state.getBattlefield(playerId)) {
+            val card = state.getEntity(entityId)?.get<CardComponent>() ?: continue
+            val cardDef = cardRegistry?.getCard(card.cardDefinitionId) ?: continue
+            if (cardDef.script.staticAbilities.any { it is MayPlayPermanentsFromGraveyard }) {
+                val tracker = state.getEntity(entityId)?.get<GraveyardPlayPermissionUsedComponent>()
+                if (tracker == null || !tracker.hasUsedType(typeName)) {
+                    return entityId
+                }
+            }
+        }
+        return null
+    }
+
+    /**
+     * Record that a Muldrotha-like permanent's graveyard play permission was used for a type.
+     */
+    private fun recordGraveyardPlayPermissionUsage(
+        state: GameState,
+        playerId: EntityId,
+        typeName: String
+    ): GameState {
+        val sourceId = findGraveyardPlayPermissionSource(state, playerId, typeName) ?: return state
+        return state.updateEntity(sourceId) { c ->
+            val tracker = c.get<GraveyardPlayPermissionUsedComponent>() ?: GraveyardPlayPermissionUsedComponent()
+            c.with(tracker.withUsedType(typeName))
+        }
     }
 
     companion object {

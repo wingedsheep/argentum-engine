@@ -38,6 +38,7 @@ import com.wingedsheep.gameserver.protocol.ServerMessage
 import com.wingedsheep.gameserver.protocol.AdditionalCostInfo
 import com.wingedsheep.gameserver.protocol.CounterRemovalCreatureInfo
 import com.wingedsheep.gameserver.protocol.ConvokeCreatureInfo
+import com.wingedsheep.gameserver.protocol.CrewCreatureInfo
 import com.wingedsheep.gameserver.protocol.DelveCardInfo
 import com.wingedsheep.gameserver.protocol.LegalActionInfo
 import com.wingedsheep.gameserver.protocol.LegalActionTargetInfo
@@ -60,7 +61,9 @@ import com.wingedsheep.sdk.scripting.GrantFlashToSpellType
 import com.wingedsheep.sdk.scripting.CastSpellTypesFromTopOfLibrary
 import com.wingedsheep.sdk.scripting.GrantMayCastFromLinkedExile
 import com.wingedsheep.sdk.scripting.MayCastSelfFromZones
+import com.wingedsheep.sdk.scripting.MayPlayPermanentsFromGraveyard
 import com.wingedsheep.sdk.scripting.PlayFromTopOfLibrary
+import com.wingedsheep.engine.state.components.battlefield.GraveyardPlayPermissionUsedComponent
 import com.wingedsheep.sdk.scripting.PreventCycling
 import com.wingedsheep.sdk.scripting.effects.AddAnyColorManaEffect
 import com.wingedsheep.sdk.scripting.effects.AddManaOfColorAmongEffect
@@ -165,6 +168,22 @@ class LegalActionsCalculator(
                         description = "Play ${cardComponent.name}",
                         action = PlayLand(playerId, cardId)
                     ))
+                }
+            }
+
+            // Check for lands in graveyard playable via MayPlayPermanentsFromGraveyard (Muldrotha)
+            if (hasGraveyardPlayPermissionForType(state, playerId, "LAND")) {
+                val graveyardCards = state.getZone(ZoneKey(playerId, Zone.GRAVEYARD))
+                for (cardId in graveyardCards) {
+                    val cardComponent = state.getEntity(cardId)?.get<CardComponent>() ?: continue
+                    if (cardComponent.typeLine.isLand) {
+                        result.add(LegalActionInfo(
+                            actionType = "PlayLand",
+                            description = "Play ${cardComponent.name}",
+                            action = PlayLand(playerId, cardId),
+                            sourceZone = "GRAVEYARD"
+                        ))
+                    }
                 }
             }
         }
@@ -1464,6 +1483,106 @@ class LegalActionsCalculator(
             }
         }
 
+        // Check for permanent spells in graveyard castable via MayPlayPermanentsFromGraveyard (Muldrotha)
+        if (state.activePlayerId == playerId) {
+            val graveyardCards = state.getZone(ZoneKey(playerId, Zone.GRAVEYARD))
+            for (cardId in graveyardCards) {
+                val container = state.getEntity(cardId) ?: continue
+                val cardComponent = container.get<CardComponent>() ?: continue
+
+                // Only permanent spells (not lands — those are handled above; not instant/sorcery)
+                if (cardComponent.typeLine.isLand) continue
+                if (!cardComponent.typeLine.isPermanent) continue
+
+                // Check if any permanent type on this card has available graveyard permission
+                val permanentTypes = cardComponent.typeLine.cardTypes.filter { it.isPermanent }
+                val hasPermission = permanentTypes.any { type ->
+                    hasGraveyardPlayPermissionForType(state, playerId, type.name)
+                }
+                if (!hasPermission) continue
+
+                val cardDef = cardRegistry.getCard(cardComponent.name) ?: continue
+
+                if (cantCastSpells) {
+                    val costString = cardComponent.manaCost.toString()
+                    result.add(LegalActionInfo(
+                        actionType = "CastSpell",
+                        description = "Cast ${cardComponent.name}",
+                        action = CastSpell(playerId, cardId),
+                        isAffordable = false,
+                        manaCostString = costString,
+                        sourceZone = "GRAVEYARD"
+                    ))
+                } else {
+                    val isInstant = cardComponent.typeLine.isInstant
+                    val hasCorrectTiming = isInstant || canPlaySorcerySpeed
+                    val castRestrictions = cardDef.script.castRestrictions
+                    val meetsRestrictions = checkCastRestrictions(state, playerId, castRestrictions)
+                    val effectiveCost = costCalculator.calculateEffectiveCost(state, cardDef, playerId)
+                    val costString = effectiveCost.toString()
+                    val canAfford = manaSolver.canPay(state, playerId, effectiveCost)
+
+                    if (hasCorrectTiming && meetsRestrictions && canAfford) {
+                        val targetReqs = buildList {
+                            addAll(cardDef.script.targetRequirements)
+                            cardDef.script.auraTarget?.let { add(it) }
+                        }
+
+                        if (targetReqs.isNotEmpty()) {
+                            val targetReqInfos = targetReqs.mapIndexed { index, req ->
+                                val validTargets = findValidTargets(state, playerId, req)
+                                LegalActionTargetInfo(
+                                    index = index,
+                                    description = req.description,
+                                    minTargets = req.effectiveMinCount,
+                                    maxTargets = req.count,
+                                    validTargets = validTargets,
+                                    targetZone = getTargetZone(req)
+                                )
+                            }
+                            val allRequirementsSatisfied = targetReqInfos.all { reqInfo ->
+                                reqInfo.validTargets.isNotEmpty() || reqInfo.minTargets == 0
+                            }
+                            if (allRequirementsSatisfied) {
+                                val firstReq = targetReqs.first()
+                                val firstReqInfo = targetReqInfos.first()
+                                result.add(LegalActionInfo(
+                                    actionType = "CastSpell",
+                                    description = "Cast ${cardComponent.name}",
+                                    action = CastSpell(playerId, cardId),
+                                    validTargets = firstReqInfo.validTargets,
+                                    requiresTargets = true,
+                                    targetCount = firstReq.count,
+                                    minTargets = firstReq.effectiveMinCount,
+                                    targetDescription = firstReq.description,
+                                    targetRequirements = if (targetReqInfos.size > 1) targetReqInfos else null,
+                                    manaCostString = costString,
+                                    sourceZone = "GRAVEYARD"
+                                ))
+                            }
+                        } else {
+                            result.add(LegalActionInfo(
+                                actionType = "CastSpell",
+                                description = "Cast ${cardComponent.name}",
+                                action = CastSpell(playerId, cardId),
+                                manaCostString = costString,
+                                sourceZone = "GRAVEYARD"
+                            ))
+                        }
+                    } else {
+                        result.add(LegalActionInfo(
+                            actionType = "CastSpell",
+                            description = "Cast ${cardComponent.name}",
+                            action = CastSpell(playerId, cardId),
+                            isAffordable = false,
+                            manaCostString = costString,
+                            sourceZone = "GRAVEYARD"
+                        ))
+                    }
+                }
+            }
+        }
+
         // Check for mana abilities on battlefield permanents
         // Use projected state to find all permanents controlled by this player
         // (accounts for control-changing effects like Annex)
@@ -1872,6 +1991,7 @@ class LegalActionsCalculator(
                 var tapCost: AbilityCost.TapPermanents? = null
                 var bounceTargets: List<EntityId>? = null
                 var bounceCost: AbilityCost.ReturnToHand? = null
+                var costAffordable = true
 
                 when (effectiveCost) {
                     is AbilityCost.Tap -> {
@@ -1895,7 +2015,7 @@ class LegalActionsCalculator(
                         }
                     }
                     is AbilityCost.Mana -> {
-                        if (!manaSolver.canPay(state, playerId, effectiveCost.cost)) continue
+                        if (!manaSolver.canPay(state, playerId, effectiveCost.cost)) costAffordable = false
                     }
                     is AbilityCost.Sacrifice -> {
                         sacrificeCost = effectiveCost
@@ -2037,7 +2157,7 @@ class LegalActionsCalculator(
                                 else -> {}
                             }
                         }
-                        if (!costCanBePaid) continue
+                        if (!costCanBePaid) costAffordable = false
                     }
                     else -> {}
                 }
@@ -2415,6 +2535,43 @@ class LegalActionsCalculator(
                     }
                 }
             }
+        }
+
+        // Check for Crew abilities on Vehicles controlled by the player
+        for (entityId in battlefieldPermanents) {
+            val container = state.getEntity(entityId) ?: continue
+            val cardComponent = container.get<CardComponent>() ?: continue
+            val cardDef = cardRegistry.getCard(cardComponent.name) ?: continue
+
+            val crewAbility = cardDef.keywordAbilities
+                .filterIsInstance<com.wingedsheep.sdk.scripting.KeywordAbility.Crew>()
+                .firstOrNull() ?: continue
+
+            // Find all untapped creatures controlled by the player that can crew
+            val validCrewCreatures = mutableListOf<CrewCreatureInfo>()
+            var totalAvailablePower = 0
+            for (creatureId in battlefieldPermanents) {
+                if (creatureId == entityId) continue // Vehicle can't crew itself
+                if (!projectedState.isCreature(creatureId)) continue
+                val creatureContainer = state.getEntity(creatureId) ?: continue
+                if (creatureContainer.has<TappedComponent>()) continue
+                // Summoning sickness does NOT prevent crewing
+                val power = projectedState.getPower(creatureId) ?: 0
+                val creatureName = creatureContainer.get<CardComponent>()?.name ?: "Unknown"
+                validCrewCreatures.add(CrewCreatureInfo(creatureId, creatureName, power))
+                totalAvailablePower += power
+            }
+
+            val canAfford = totalAvailablePower >= crewAbility.power
+            result.add(LegalActionInfo(
+                actionType = "CrewVehicle",
+                description = "Crew ${cardComponent.name}",
+                action = CrewVehicle(playerId, entityId, emptyList()),
+                isAffordable = canAfford,
+                hasCrew = true,
+                crewPower = crewAbility.power,
+                validCrewCreatures = validCrewCreatures
+            ))
         }
 
         // Check for activated abilities on cards in the graveyard (e.g., Undead Gladiator)
@@ -3388,5 +3545,27 @@ class LegalActionsCalculator(
             }
         }
         return 1
+    }
+
+    /**
+     * Check if the player has a Muldrotha-like permanent with unused graveyard play permission
+     * for the given permanent type name (e.g., "CREATURE", "ARTIFACT", "LAND").
+     */
+    private fun hasGraveyardPlayPermissionForType(
+        state: GameState,
+        playerId: EntityId,
+        typeName: String
+    ): Boolean {
+        for (entityId in state.getBattlefield(playerId)) {
+            val card = state.getEntity(entityId)?.get<CardComponent>() ?: continue
+            val cardDef = cardRegistry.getCard(card.cardDefinitionId) ?: continue
+            if (cardDef.script.staticAbilities.any { it is MayPlayPermanentsFromGraveyard }) {
+                val tracker = state.getEntity(entityId)?.get<GraveyardPlayPermissionUsedComponent>()
+                if (tracker == null || !tracker.hasUsedType(typeName)) {
+                    return true
+                }
+            }
+        }
+        return false
     }
 }

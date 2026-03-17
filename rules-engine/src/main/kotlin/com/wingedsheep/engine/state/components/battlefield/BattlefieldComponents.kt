@@ -178,6 +178,24 @@ data class DamageDealtToCreaturesThisTurnComponent(
 }
 
 /**
+ * Tracks which permanent types have been used for graveyard casting/playing this turn
+ * from a permanent with MayPlayPermanentsFromGraveyard static ability (e.g., Muldrotha).
+ * Stored on the Muldrotha entity itself so a new Muldrotha has a fresh set of permissions.
+ * Cleared at end of turn by TurnManager.
+ *
+ * @property usedTypes Set of CardType names that have been used (e.g., "CREATURE", "ARTIFACT", "LAND")
+ */
+@Serializable
+data class GraveyardPlayPermissionUsedComponent(
+    val usedTypes: Set<String> = emptySet()
+) : Component {
+    fun withUsedType(typeName: String): GraveyardPlayPermissionUsedComponent =
+        copy(usedTypes = usedTypes + typeName)
+
+    fun hasUsedType(typeName: String): Boolean = typeName in usedTypes
+}
+
+/**
  * Marks a permanent as granting shroud to its controller.
  * Used for True Believer: "You have shroud."
  * When the permanent leaves the battlefield, the component goes with it — no cleanup needed.

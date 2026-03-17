@@ -2,7 +2,7 @@
 
 **Set Size:** 280 cards (249 unique card names + basic land variants)
 **Release Date:** April 27, 2018
-**Implemented:** 221 / 249
+**Implemented:** 222 / 249
 
 | Color      | Total | Done |
 |------------|-------|------|
@@ -11,7 +11,7 @@
 | Black      | 38    | 35   |
 | Red        | 38    | 34   |
 | Green      | 37    | 31   |
-| Multicolor | 19    | 17   |
+| Multicolor | 19    | 18   |
 | Colorless  | 30    | 28   |
 | Land       | 12    | 10   |
 
@@ -156,7 +156,7 @@
 - [x] Mesa Unicorn
 - [x] Mishra's Self-Replicator
 - [x] Mox Amber
-- [ ] Muldrotha, the Gravetide
+- [x] Muldrotha, the Gravetide
 - [x] Multani, Yavimaya's Avatar
 - [x] Naban, Dean of Iteration
 - [x] Naru Meha, Master Wizard

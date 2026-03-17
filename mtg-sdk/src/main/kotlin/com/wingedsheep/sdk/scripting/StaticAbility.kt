@@ -1428,6 +1428,21 @@ data class MayCastSelfFromZones(
 }
 
 /**
+ * During each of your turns, you may play a land and cast a permanent spell of each
+ * permanent type from your graveyard. Each permanent type (artifact, creature, enchantment,
+ * land, planeswalker) can only be used once per turn per source of this ability.
+ * If a card has multiple permanent types, you choose one as you play it.
+ * Used for Muldrotha, the Gravetide.
+ */
+@SerialName("MayPlayPermanentsFromGraveyard")
+@Serializable
+data object MayPlayPermanentsFromGraveyard : StaticAbility {
+    override val description: String =
+        "During each of your turns, you may play a land and cast a permanent spell of each permanent type from your graveyard."
+    override fun applyTextReplacement(replacer: TextReplacer): StaticAbility = this
+}
+
+/**
  * Modifies power/toughness based on the number of other creatures that share a creature type
  * with the target creature. Used for Alpha Status: "Enchanted creature gets +2/+2 for each
  * other creature on the battlefield that shares a creature type with it."
