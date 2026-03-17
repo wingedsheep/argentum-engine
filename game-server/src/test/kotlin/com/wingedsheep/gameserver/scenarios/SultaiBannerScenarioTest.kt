@@ -85,12 +85,13 @@ class SultaiBannerScenarioTest : ScenarioTestBase() {
                     manaActions.size shouldBe 3
                 }
 
-                // Draw ability should NOT be legal
+                // Draw ability should show as unaffordable when banner is the only mana source
                 val drawAction = legalActions.find {
                     it.description?.contains("Draw a card") == true
                 }
-                withClue("Draw ability should not be legal when banner is the only mana source") {
-                    drawAction shouldBe null
+                withClue("Draw ability should be present but unaffordable when banner is the only mana source") {
+                    drawAction shouldNotBe null
+                    drawAction!!.isAffordable shouldBe false
                 }
             }
 

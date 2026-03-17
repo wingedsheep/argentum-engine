@@ -66,8 +66,6 @@ val BlackbladeReforged = card("Blackblade Reforged") {
         effect = Effects.AttachEquipment(creature)
     }
 
-    equipAbility("{7}")
-
     metadata {
         rarity = Rarity.RARE
         collectorNumber = "211"

@@ -2172,6 +2172,24 @@ class LegalActionsCalculator(
                 }
                 if (!restrictionsMet) continue
 
+                // If cost is unaffordable, add as greyed-out option and skip expensive computations
+                if (!costAffordable) {
+                    val abilityManaCostString = when (ability.cost) {
+                        is AbilityCost.Mana -> (ability.cost as AbilityCost.Mana).cost.toString()
+                        is AbilityCost.Composite -> (ability.cost as AbilityCost.Composite).costs
+                            .filterIsInstance<AbilityCost.Mana>().firstOrNull()?.cost?.toString()
+                        else -> null
+                    }
+                    result.add(LegalActionInfo(
+                        actionType = "ActivateAbility",
+                        description = ability.description,
+                        action = ActivateAbility(playerId, entityId, ability.id),
+                        isAffordable = false,
+                        manaCostString = abilityManaCostString
+                    ))
+                    continue
+                }
+
                 // Check for X-variable costs early (needed for counter removal info and cost info)
                 val hasRemoveXCountersCostEarly = when (ability.cost) {
                     is AbilityCost.RemoveXPlusOnePlusOneCounters -> true
