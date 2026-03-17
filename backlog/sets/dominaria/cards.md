@@ -2,11 +2,11 @@
 
 **Set Size:** 280 cards (249 unique card names + basic land variants)
 **Release Date:** April 27, 2018
-**Implemented:** 220 / 249
+**Implemented:** 221 / 249
 
 | Color      | Total | Done |
 |------------|-------|------|
-| White      | 38    | 33   |
+| White      | 38    | 34   |
 | Blue       | 37    | 31   |
 | Black      | 38    | 35   |
 | Red        | 38    | 34   |
@@ -60,7 +60,7 @@
 - [x] Curator's Ward
 - [x] D'Avenant Trapper
 - [x] Damping Sphere
-- [ ] Danitha Capashen, Paragon
+- [x] Danitha Capashen, Paragon
 - [x] Darigaaz Reincarnated
 - [x] Daring Archaeologist
 - [x] Dark Bargain

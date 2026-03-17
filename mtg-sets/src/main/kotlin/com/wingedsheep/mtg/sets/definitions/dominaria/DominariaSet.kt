@@ -61,6 +61,7 @@ object DominariaSet {
         CuratorsWard,
         DAvenantTrapper,
         DampingSphere,
+        DanithaCapashenParagon,
         DarigaazReincarnated,
         DaringArchaeologist,
         DarkBargain,
