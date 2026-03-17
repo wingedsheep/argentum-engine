@@ -237,6 +237,7 @@ object DominariaSet {
         WizardsLightning,
         WizardsRetort,
         YargleGluttonOfUrborg,
+        YawgmothsVileOffering,
         YavimayaSapherd,
         ZhalfirinVoid,
     )

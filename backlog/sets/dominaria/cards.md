@@ -2,13 +2,13 @@
 
 **Set Size:** 280 cards (249 unique card names + basic land variants)
 **Release Date:** April 27, 2018
-**Implemented:** 219 / 249
+**Implemented:** 220 / 249
 
 | Color      | Total | Done |
 |------------|-------|------|
 | White      | 38    | 33   |
 | Blue       | 37    | 31   |
-| Black      | 38    | 34   |
+| Black      | 38    | 35   |
 | Red        | 38    | 34   |
 | Green      | 37    | 31   |
 | Multicolor | 19    | 17   |
@@ -263,6 +263,6 @@
 - [ ] Woodland Cemetery
 - [x] Yargle, Glutton of Urborg
 - [x] Yavimaya Sapherd
-- [ ] Yawgmoth's Vile Offering
+- [x] Yawgmoth's Vile Offering
 - [ ] Zahid, Djinn of the Lamp
 - [x] Zhalfirin Void
