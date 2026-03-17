@@ -447,7 +447,98 @@ class LegalActionsCalculator(
                             Triple(altEffective.toString(), altSolution?.sources?.map { it.entityId }, manaSolver.canPay(state, playerId, altEffective))
                         } else null
 
-                        if (targetReqs.isNotEmpty()) {
+                        // Modal spells (chooseCount = 1): generate one LegalActionInfo per mode
+                        // so the opponent sees which mode was chosen on the stack
+                        val modalEffect = spellEffect as? com.wingedsheep.sdk.scripting.effects.ModalEffect
+                        if (modalEffect != null && modalEffect.chooseCount == 1 && canAfford) {
+                            for ((modeIndex, mode) in modalEffect.modes.withIndex()) {
+                                val modeTargetReqs = mode.targetRequirements
+                                if (modeTargetReqs.isNotEmpty()) {
+                                    // Mode requires targets
+                                    val modeTargetInfos = modeTargetReqs.mapIndexed { idx, req ->
+                                        val validTargets = findValidTargets(state, playerId, req)
+                                        LegalActionTargetInfo(
+                                            index = idx,
+                                            description = req.description,
+                                            minTargets = req.effectiveMinCount,
+                                            maxTargets = req.count,
+                                            validTargets = validTargets,
+                                            targetZone = getTargetZone(req)
+                                        )
+                                    }
+                                    val allSatisfied = modeTargetInfos.all { info ->
+                                        info.validTargets.isNotEmpty() || info.minTargets == 0
+                                    }
+                                    if (!allSatisfied) continue // Skip modes with unsatisfiable targets
+
+                                    val firstReq = modeTargetReqs.first()
+                                    val firstInfo = modeTargetInfos.first()
+
+                                    // Check for auto-select (single player target, single valid choice)
+                                    val canAutoSelect = modeTargetReqs.size == 1 &&
+                                        shouldAutoSelectPlayerTarget(firstReq, firstInfo.validTargets)
+
+                                    if (canAutoSelect) {
+                                        val autoTarget = ChosenTarget.Player(firstInfo.validTargets.first())
+                                        result.add(LegalActionInfo(
+                                            actionType = "CastSpellMode",
+                                            description = mode.description,
+                                            action = CastSpell(playerId, cardId, targets = listOf(autoTarget), chosenMode = modeIndex),
+                                            hasXCost = hasXCost,
+                                            maxAffordableX = maxAffordableX,
+                                            additionalCostInfo = costInfo,
+                                            hasConvoke = hasConvoke,
+                                            validConvokeCreatures = convokeCreatures,
+                                            hasDelve = hasDelve,
+                                            validDelveCards = delveCards,
+                                            minDelveNeeded = minDelveNeeded,
+                                            manaCostString = manaCostString,
+                                            autoTapPreview = autoTapPreview
+                                        ))
+                                    } else {
+                                        result.add(LegalActionInfo(
+                                            actionType = "CastSpellMode",
+                                            description = mode.description,
+                                            action = CastSpell(playerId, cardId, chosenMode = modeIndex),
+                                            validTargets = firstInfo.validTargets,
+                                            requiresTargets = true,
+                                            targetCount = firstReq.count,
+                                            minTargets = firstReq.effectiveMinCount,
+                                            targetDescription = firstReq.description,
+                                            targetRequirements = if (modeTargetInfos.size > 1) modeTargetInfos else null,
+                                            hasXCost = hasXCost,
+                                            maxAffordableX = maxAffordableX,
+                                            additionalCostInfo = costInfo,
+                                            hasConvoke = hasConvoke,
+                                            validConvokeCreatures = convokeCreatures,
+                                            hasDelve = hasDelve,
+                                            validDelveCards = delveCards,
+                                            minDelveNeeded = minDelveNeeded,
+                                            manaCostString = manaCostString,
+                                            autoTapPreview = autoTapPreview
+                                        ))
+                                    }
+                                } else {
+                                    // Mode has no targets
+                                    result.add(LegalActionInfo(
+                                        actionType = "CastSpellMode",
+                                        description = mode.description,
+                                        action = CastSpell(playerId, cardId, chosenMode = modeIndex),
+                                        hasXCost = hasXCost,
+                                        maxAffordableX = maxAffordableX,
+                                        additionalCostInfo = costInfo,
+                                        hasConvoke = hasConvoke,
+                                        validConvokeCreatures = convokeCreatures,
+                                        hasDelve = hasDelve,
+                                        validDelveCards = delveCards,
+                                        minDelveNeeded = minDelveNeeded,
+                                        manaCostString = manaCostString,
+                                        autoTapPreview = autoTapPreview
+                                    ))
+                                }
+                            }
+                            // Skip the normal targeting logic for modal spells
+                        } else if (targetReqs.isNotEmpty()) {
                             // Spell requires targets - find valid targets for all requirements
                             val targetReqInfos = targetReqs.mapIndexed { index, req ->
                                 val validTargets = findValidTargets(state, playerId, req)

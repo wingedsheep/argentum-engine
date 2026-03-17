@@ -5,6 +5,7 @@ import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.identity.CardComponent
+import com.wingedsheep.engine.state.components.stack.SpellOnStackComponent
 import com.wingedsheep.sdk.scripting.effects.Effect
 import com.wingedsheep.sdk.scripting.effects.ModalEffect
 import java.util.UUID
@@ -14,11 +15,18 @@ import kotlin.reflect.KClass
  * Executor for ModalEffect.
  * Handles "Choose one —" / "Choose two —" modal spells by presenting a mode selection.
  *
- * Flow:
+ * If the mode was already chosen at cast time (stored in SpellOnStackComponent.chosenModes),
+ * the executor skips the mode selection decision and directly executes the pre-chosen mode.
+ *
+ * Flow (mode NOT pre-chosen):
  * 1. Present mode options to the player (ChooseOptionDecision)
  * 2. Push ModalContinuation with mode data
  * 3. ContinuationHandler handles the response: executes chosen mode's effect,
  *    pausing for target selection if needed.
+ *
+ * Flow (mode pre-chosen at cast time):
+ * 1. Read chosenModes from SpellOnStackComponent
+ * 2. Directly execute the chosen mode's effect with pre-selected targets
  *
  * @param effectExecutor Function to execute a sub-effect (provided by registry)
  */
@@ -33,6 +41,18 @@ class ModalEffectExecutor(
         effect: ModalEffect,
         context: EffectContext
     ): ExecutionResult {
+        // Check if mode was already chosen at cast time
+        val spellOnStack = context.sourceId?.let { state.getEntity(it)?.get<SpellOnStackComponent>() }
+        if (spellOnStack != null && spellOnStack.chosenModes.isNotEmpty()) {
+            val modeIndex = spellOnStack.chosenModes.first()
+            val chosenMode = effect.modes.getOrNull(modeIndex)
+                ?: return ExecutionResult.error(state, "Invalid pre-chosen mode index: $modeIndex")
+
+            // Execute the pre-chosen mode directly (targets were already selected at cast time)
+            return effectExecutor(state, chosenMode.effect, context)
+        }
+
+        // Mode not pre-chosen — present mode selection decision (legacy flow for triggered/activated modal abilities)
         val playerId = context.controllerId
 
         // Get source name for the prompt

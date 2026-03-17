@@ -799,6 +799,30 @@ class ClientStateTransformer(
         cardDef: CardDefinition
     ): String? {
         val effect = cardDef.script.spellEffect ?: return null
+
+        // For modal spells with a mode chosen at cast time, show the chosen mode description
+        if (spellOnStack.chosenModes.isNotEmpty() && effect is com.wingedsheep.sdk.scripting.effects.ModalEffect) {
+            val modeIndex = spellOnStack.chosenModes.first()
+            val chosenMode = effect.modes.getOrNull(modeIndex)
+            if (chosenMode != null) {
+                return try {
+                    val evaluator = DynamicAmountEvaluator()
+                    val context = EffectContext(
+                        sourceId = spellEntityId,
+                        controllerId = spellOnStack.casterId,
+                        opponentId = state.getOpponent(spellOnStack.casterId),
+                        xValue = spellOnStack.xValue,
+                        sacrificedPermanents = spellOnStack.sacrificedPermanents,
+                        sacrificedPermanentSubtypes = spellOnStack.sacrificedPermanentSubtypes,
+                        exiledCardCount = spellOnStack.exiledCardCount
+                    )
+                    chosenMode.effect.runtimeDescription { amount -> evaluator.evaluate(state, amount, context) }
+                } catch (_: Exception) {
+                    chosenMode.description
+                }
+            }
+        }
+
         return try {
             val evaluator = DynamicAmountEvaluator()
             val context = EffectContext(

@@ -718,9 +718,15 @@ class CastSpellHandler(
         events.addAll(paymentResult.events)
 
         // Compute target requirements for resolution-time re-validation (Rule 608.2b)
-        // Use kickerTargetRequirements when spell is kicked and alternate targets are defined
+        // Use mode-specific target requirements when a modal mode was chosen at cast time,
+        // or kickerTargetRequirements when spell is kicked and alternate targets are defined
         val spellTargetRequirements = if (cardDef != null) {
-            val baseTargetReqs = if (action.wasKicked && cardDef.script.kickerTargetRequirements.isNotEmpty()) {
+            val modalEffect = cardDef.script.spellEffect as? com.wingedsheep.sdk.scripting.effects.ModalEffect
+            val baseTargetReqs = if (action.chosenMode != null && modalEffect != null) {
+                // Modal spell with mode chosen at cast time — use mode-specific targets
+                val mode = modalEffect.modes.getOrNull(action.chosenMode)
+                mode?.targetRequirements ?: emptyList()
+            } else if (action.wasKicked && cardDef.script.kickerTargetRequirements.isNotEmpty()) {
                 cardDef.script.kickerTargetRequirements
             } else {
                 cardDef.script.targetRequirements
@@ -783,7 +789,8 @@ class CastSpellHandler(
             action.damageDistribution,
             spellTargetRequirements,
             exiledCardCount = exiledCardCount,
-            wasKicked = action.wasKicked
+            wasKicked = action.wasKicked,
+            chosenModes = if (action.chosenMode != null) listOf(action.chosenMode) else emptyList()
         )
 
         if (!castResult.isSuccess) {

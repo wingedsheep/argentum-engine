@@ -68,8 +68,21 @@ function buildActionOptions(
     })
   }
 
-  // 1. Normal cast (for non-land cards)
-  if (castAction) {
+  // 1. Modal spell modes — show one button per mode instead of a single "Cast" button
+  const modeActions = legalActions.filter((a) => a.actionType === 'CastSpellMode')
+  if (modeActions.length > 0) {
+    modeActions.forEach((modeAction, index) => {
+      options.push({
+        key: `mode-${index}`,
+        label: modeAction.description,
+        manaCost: modeAction.manaCostString || cardInfo.manaCost || null,
+        isAvailable: modeAction.isAffordable !== false,
+        action: modeAction,
+        actionType: 'cast',
+      })
+    })
+  } else if (castAction) {
+    // 1b. Normal cast (for non-land, non-modal cards)
     options.push({
       key: 'cast',
       label: `Cast ${cardInfo.name}`,

@@ -85,6 +85,8 @@ export interface CastSpellAction {
   readonly wasKicked?: boolean
   /** Pre-chosen damage distribution for DividedDamageEffect spells (target ID -> damage amount) */
   readonly damageDistribution?: Record<EntityId, number>
+  /** Chosen modal mode index (for modal spells where mode is selected at cast time) */
+  readonly chosenMode?: number
 }
 
 export type PaymentStrategy =

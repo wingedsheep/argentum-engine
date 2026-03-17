@@ -88,7 +88,8 @@ class StackResolver(
         targetRequirements: List<TargetRequirement> = emptyList(),
         chosenCreatureType: String? = null,
         exiledCardCount: Int = 0,
-        wasKicked: Boolean = false
+        wasKicked: Boolean = false,
+        chosenModes: List<Int> = emptyList()
     ): ExecutionResult {
         val container = state.getEntity(cardId)
             ?: return ExecutionResult.error(state, "Card not found: $cardId")
@@ -108,6 +109,7 @@ class StackResolver(
                 casterId = casterId,
                 xValue = xValue,
                 wasKicked = wasKicked,
+                chosenModes = chosenModes,
                 sacrificedPermanents = sacrificedPermanents,
                 sacrificedPermanentSubtypes = sacrificedPermanentSubtypes,
                 castFaceDown = castFaceDown,

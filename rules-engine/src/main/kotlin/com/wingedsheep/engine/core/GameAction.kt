@@ -61,7 +61,8 @@ data class CastSpell(
     val castFaceDown: Boolean = false,
     val wasKicked: Boolean = false,
     val damageDistribution: Map<EntityId, Int>? = null,
-    val useAlternativeCost: Boolean = false
+    val useAlternativeCost: Boolean = false,
+    val chosenMode: Int? = null
 ) : GameAction
 
 /**
