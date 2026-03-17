@@ -106,10 +106,25 @@ class StateProjector(
         val sortedEffects = effectSorter.sortByLayerAndDependency(effects, state)
 
         // Apply continuous effects for layers 1-6 first (before CDA resolution)
-        for (effect in sortedEffects) {
-            if (effect.layer != Layer.POWER_TOUGHNESS) {
-                effectApplicator.applyEffect(effect, state, projectedValues)
+        // Split into two passes: Layer 2 (control) first, then re-resolve controller-dependent
+        // filters for layers 3-6 so that control-changing effects are respected (e.g., stealing
+        // Ainok Bond-Kin with Act of Treason should grant first strike to the new controller's creatures).
+        val preControlEffects = sortedEffects.filter { it.layer == Layer.CONTROL }
+        for (effect in preControlEffects) {
+            effectApplicator.applyEffect(effect, state, projectedValues)
+        }
+
+        // Re-resolve affected entities for post-control layers with controller-dependent filters
+        val postControlEffects = sortedEffects.filter { it.layer != Layer.CONTROL && it.layer != Layer.POWER_TOUGHNESS }
+            .map { effect ->
+                if (effect.affectsFilter != null && filterResolver.isControllerDependentFilter(effect.affectsFilter)) {
+                    effect.copy(affectedEntities = filterResolver.resolveAffectedEntities(state, effect.sourceId, effect.affectsFilter, projectedValues))
+                } else {
+                    effect
+                }
             }
+        for (effect in postControlEffects) {
+            effectApplicator.applyEffect(effect, state, projectedValues)
         }
 
         // Resolve CDAs (Layer 7a) - evaluate dynamic power/toughness

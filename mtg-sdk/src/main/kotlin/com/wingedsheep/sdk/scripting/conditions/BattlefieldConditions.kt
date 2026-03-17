@@ -1,6 +1,7 @@
 package com.wingedsheep.sdk.scripting.conditions
 
 import com.wingedsheep.sdk.core.Subtype
+import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.text.TextReplacer
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -62,5 +63,20 @@ data class EnchantedCreatureHasSubtype(val subtype: Subtype) : Condition {
 @Serializable
 data object TriggeringEntityWasHistoric : Condition {
     override val description: String = "if it was historic"
+    override fun applyTextReplacement(replacer: TextReplacer): Condition = this
+}
+
+/**
+ * Condition: "if [target] is [filter]"
+ * Checks whether a context target matches a GameObjectFilter.
+ * Used for cards like Blessing of Belzenlok: "If it's legendary, it also gains lifelink."
+ */
+@SerialName("TargetMatchesFilter")
+@Serializable
+data class TargetMatchesFilter(
+    val filter: GameObjectFilter,
+    val targetIndex: Int = 0
+) : Condition {
+    override val description: String = "if target matches $filter"
     override fun applyTextReplacement(replacer: TextReplacer): Condition = this
 }

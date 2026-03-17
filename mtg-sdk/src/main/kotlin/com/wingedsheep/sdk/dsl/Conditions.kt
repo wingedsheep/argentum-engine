@@ -149,6 +149,13 @@ object Conditions {
     fun TargetHasCounter(counterType: CounterTypeFilter, targetIndex: Int = 0): ConditionInterface =
         Compare(DynamicAmount.CountersOnTarget(counterType, targetIndex), ComparisonOperator.GTE, DynamicAmount.Fixed(1))
 
+    /**
+     * If the target matches a GameObjectFilter.
+     * Used for cards like Blessing of Belzenlok: "If it's legendary, it also gains lifelink."
+     */
+    fun TargetMatchesFilter(filter: GameObjectFilter, targetIndex: Int = 0): ConditionInterface =
+        com.wingedsheep.sdk.scripting.conditions.TargetMatchesFilter(filter, targetIndex)
+
     // =========================================================================
     // Life Total Conditions (via Compare)
     // =========================================================================

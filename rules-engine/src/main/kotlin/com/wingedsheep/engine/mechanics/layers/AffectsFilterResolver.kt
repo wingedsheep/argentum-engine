@@ -176,6 +176,16 @@ internal class AffectsFilterResolver {
             (filter is AffectsFilter.Generic && filter.groupFilter.baseFilter.cardPredicates.any { it is CardPredicate.HasSubtype })
     }
 
+    fun isControllerDependentFilter(filter: AffectsFilter): Boolean {
+        return filter is AffectsFilter.AllCreaturesYouControl ||
+            filter is AffectsFilter.AllCreaturesOpponentsControl ||
+            filter is AffectsFilter.OtherTappedCreaturesYouControl ||
+            filter is AffectsFilter.OtherCreaturesYouControl ||
+            filter is AffectsFilter.OwnCreaturesWithCounter ||
+            filter is AffectsFilter.OtherCreaturesWithSubtype ||
+            (filter is AffectsFilter.Generic && filter.groupFilter.baseFilter.controllerPredicate != null)
+    }
+
     private fun resolveGenericFilter(
         state: GameState,
         sourceId: EntityId,

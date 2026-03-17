@@ -662,6 +662,7 @@ constructors.
 - `Conditions.TargetPowerAtMost(amount, targetIndex = 0)` — target's power at most N
 - `Conditions.TargetSpellManaValueAtMost(amount, targetIndex = 0)` — target spell's MV at most N
 - `Conditions.TargetHasCounter(counterType, targetIndex = 0)` — target has at least one counter of type
+- `Conditions.TargetMatchesFilter(filter: GameObjectFilter, targetIndex = 0)` — target matches a GameObjectFilter (e.g., legendary, creature type)
 
 ### Life Total
 

@@ -42,6 +42,7 @@ import com.wingedsheep.sdk.scripting.conditions.SourceIsTapped
 import com.wingedsheep.sdk.scripting.conditions.SourceIsUntapped
 import com.wingedsheep.sdk.scripting.conditions.WasCastFromHand
 import com.wingedsheep.sdk.scripting.conditions.SacrificedPermanentHadSubtype
+import com.wingedsheep.sdk.scripting.conditions.TargetMatchesFilter
 import com.wingedsheep.sdk.scripting.conditions.TriggeringEntityWasHistoric
 import com.wingedsheep.sdk.scripting.conditions.WasKicked
 import com.wingedsheep.sdk.scripting.conditions.YouAttackedThisTurn
@@ -87,6 +88,7 @@ class ConditionEvaluator {
             is SourceHasKeyword -> evaluateSourceHasKeyword(state, condition, context)
             is SacrificedPermanentHadSubtype -> evaluateSacrificedPermanentHadSubtype(condition, context)
             is TriggeringEntityWasHistoric -> evaluateTriggeringEntityWasHistoric(state, context)
+            is TargetMatchesFilter -> evaluateTargetMatchesFilter(state, condition, context)
 
             // Turn conditions
             is IsYourTurn -> evaluateIsYourTurn(state, context)
@@ -314,5 +316,23 @@ class ConditionEvaluator {
         val entityId = context.triggeringEntityId ?: return false
         val card = state.getEntity(entityId)?.get<CardComponent>() ?: return false
         return card.typeLine.isHistoric
+    }
+
+    private fun evaluateTargetMatchesFilter(
+        state: GameState,
+        condition: TargetMatchesFilter,
+        context: EffectContext
+    ): Boolean {
+        val target = context.targets.getOrNull(condition.targetIndex) ?: return false
+        val entityId = when (target) {
+            is com.wingedsheep.engine.state.components.stack.ChosenTarget.Permanent -> target.entityId
+            is com.wingedsheep.engine.state.components.stack.ChosenTarget.Player -> return false
+            is com.wingedsheep.engine.state.components.stack.ChosenTarget.Spell -> target.spellEntityId
+            is com.wingedsheep.engine.state.components.stack.ChosenTarget.Card -> target.cardId
+        }
+        val predicateEvaluator = PredicateEvaluator()
+        val predicateContext = PredicateContext.fromEffectContext(context)
+        val projected = state.projectedState
+        return predicateEvaluator.matchesWithProjection(state, projected, entityId, condition.filter, predicateContext)
     }
 }

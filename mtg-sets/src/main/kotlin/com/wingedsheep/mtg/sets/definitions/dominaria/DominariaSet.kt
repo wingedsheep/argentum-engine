@@ -41,6 +41,7 @@ object DominariaSet {
         BlinkOfAnEye,
         BlackbladeReforged,
         BlessedLight,
+        BlessingOfBelzenlok,
         BloodstoneGoblin,
         BloodtallowCandle,
         BoardTheWeatherlight,

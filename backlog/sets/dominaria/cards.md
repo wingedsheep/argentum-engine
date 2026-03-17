@@ -2,13 +2,13 @@
 
 **Set Size:** 280 cards (249 unique card names + basic land variants)
 **Release Date:** April 27, 2018
-**Implemented:** 217 / 249
+**Implemented:** 218 / 249
 
 | Color      | Total | Done |
 |------------|-------|------|
 | White      | 38    | 32   |
 | Blue       | 37    | 31   |
-| Black      | 38    | 33   |
+| Black      | 38    | 34   |
 | Red        | 38    | 34   |
 | Green      | 37    | 31   |
 | Multicolor | 19    | 17   |
@@ -38,7 +38,7 @@
 - [x] Benalish Marshal
 - [x] Blackblade Reforged
 - [x] Blessed Light
-- [ ] Blessing of Belzenlok
+- [x] Blessing of Belzenlok
 - [x] Blink of an Eye
 - [x] Bloodstone Goblin
 - [x] Bloodtallow Candle
