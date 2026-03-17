@@ -926,6 +926,7 @@ class StaticAbilityBuilder {
 class LoyaltyAbilityBuilder(private val loyaltyChange: Int) {
     var effect: Effect? = null
     var target: TargetRequirement? = null
+    var description: String? = null
     private val namedTargets: MutableList<Pair<String, TargetRequirement>> = mutableListOf()
 
     /**
@@ -949,7 +950,8 @@ class LoyaltyAbilityBuilder(private val loyaltyChange: Int) {
             effect = effect!!,
             targetRequirements = targetReqs,
             isPlaneswalkerAbility = true,
-            timing = TimingRule.SorcerySpeed
+            timing = TimingRule.SorcerySpeed,
+            descriptionOverride = description
         )
     }
 }

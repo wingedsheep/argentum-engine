@@ -44,11 +44,13 @@ val JayaBallard = card("Jaya Ballard") {
     // +1: Add {R}{R}{R}
     // TODO: "Spend this mana only to cast instant or sorcery spells" restriction not yet enforced
     loyaltyAbility(+1) {
+        description = "+1: Add {R}{R}{R}. Spend this mana only to cast instant or sorcery spells."
         effect = AddManaEffect(Color.RED, 3)
     }
 
     // +1: Discard up to three cards, then draw that many cards
     loyaltyAbility(+1) {
+        description = "+1: Discard up to three cards, then draw that many cards."
         effect = CompositeEffect(
             listOf(
                 GatherCardsEffect(
@@ -75,6 +77,10 @@ val JayaBallard = card("Jaya Ballard") {
     //  - Static emblem abilities (not just triggered)
     //  - Graveyard casting permission for instant/sorcery spells
     //  - Replacement effect: exile instead of graveyard for spells cast this way
+    loyaltyAbility(-8) {
+        description = "\u22128: You get an emblem with \"You may cast instant and sorcery spells from your graveyard. If a spell cast this way would be put into your graveyard, exile it instead.\""
+        effect = CompositeEffect(emptyList())
+    }
 
     metadata {
         rarity = Rarity.MYTHIC
