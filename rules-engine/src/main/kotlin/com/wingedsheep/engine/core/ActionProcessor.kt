@@ -53,7 +53,7 @@ class ActionProcessor(
     alternativePaymentHandler: AlternativePaymentHandler = AlternativePaymentHandler(),
     costHandler: CostHandler = CostHandler(),
     mulliganHandler: MulliganHandler = MulliganHandler(),
-    sbaChecker: StateBasedActionChecker = StateBasedActionChecker(),
+    sbaChecker: StateBasedActionChecker = StateBasedActionChecker(cardRegistry = cardRegistry),
     triggerDetector: TriggerDetector = TriggerDetector(cardRegistry),
     triggerProcessor: TriggerProcessor = TriggerProcessor(),
     continuationHandler: ContinuationHandler = ContinuationHandler(effectExecutorRegistry, stackResolver = stackResolver, triggerProcessor = triggerProcessor, triggerDetector = triggerDetector, combatManager = combatManager),

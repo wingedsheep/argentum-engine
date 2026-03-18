@@ -56,9 +56,9 @@ import com.wingedsheep.sdk.scripting.effects.Effect
  */
 class TurnManager(
     private val combatManager: CombatManager = CombatManager(),
-    private val sbaChecker: StateBasedActionChecker = StateBasedActionChecker(),
-    private val decisionHandler: DecisionHandler = DecisionHandler(),
     private val cardRegistry: com.wingedsheep.engine.registry.CardRegistry? = null,
+    private val sbaChecker: StateBasedActionChecker = StateBasedActionChecker(cardRegistry = cardRegistry),
+    private val decisionHandler: DecisionHandler = DecisionHandler(),
     private val effectExecutor: ((GameState, Effect, EffectContext) -> ExecutionResult)? = null
 ) {
 
