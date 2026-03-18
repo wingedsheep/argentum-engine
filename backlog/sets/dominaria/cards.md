@@ -2,12 +2,12 @@
 
 **Set Size:** 280 cards (249 unique card names + basic land variants)
 **Release Date:** April 27, 2018
-**Implemented:** 244 / 249
+**Implemented:** 245 / 249
 
 | Color      | Total | Done |
 |------------|-------|------|
 | White      | 38    | 37   |
-| Blue       | 37    | 35   |
+| Blue       | 37    | 36   |
 | Black      | 38    | 38   |
 | Red        | 38    | 37   |
 | Green      | 37    | 36   |
@@ -264,5 +264,5 @@
 - [x] Yargle, Glutton of Urborg
 - [x] Yavimaya Sapherd
 - [x] Yawgmoth's Vile Offering
-- [ ] Zahid, Djinn of the Lamp
+- [x] Zahid, Djinn of the Lamp
 - [x] Zhalfirin Void

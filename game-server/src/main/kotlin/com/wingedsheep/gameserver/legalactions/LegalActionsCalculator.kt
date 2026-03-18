@@ -43,6 +43,7 @@ import com.wingedsheep.gameserver.protocol.DelveCardInfo
 import com.wingedsheep.gameserver.protocol.LegalActionInfo
 import com.wingedsheep.gameserver.protocol.LegalActionTargetInfo
 import com.wingedsheep.sdk.core.Keyword
+import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
@@ -377,7 +378,24 @@ class LegalActionsCalculator(
                             manaSolver.canPay(state, playerId, altEffective)
                         }
 
-                    if (canAfford || canAffordAlternative) {
+                    // Check self-alternative cost (e.g., Zahid's {3}{U} + tap an artifact)
+                    val selfAltCost = cardDef?.script?.selfAlternativeCost
+                    val canAffordSelfAlternative = if (selfAltCost != null) {
+                        val selfAltMana = ManaCost.parse(selfAltCost.manaCost)
+                        val selfAltEffective = costCalculator.calculateEffectiveCostWithAlternativeBase(state, cardDef!!, selfAltMana, playerId)
+                        val canPayMana = manaSolver.canPay(state, playerId, selfAltEffective)
+                        val canPayAdditional = selfAltCost.additionalCosts.all { cost ->
+                            when (cost) {
+                                is com.wingedsheep.sdk.scripting.AdditionalCost.TapPermanents -> {
+                                    findAbilityTapTargets(state, playerId, cost.filter).size >= cost.count
+                                }
+                                else -> true
+                            }
+                        }
+                        canPayMana && canPayAdditional
+                    } else false
+
+                    if (canAfford || canAffordAlternative || canAffordSelfAlternative) {
                         val targetReqs = buildList {
                             addAll(cardDef?.script?.targetRequirements ?: emptyList())
                             cardDef?.script?.auraTarget?.let { add(it) }
@@ -464,6 +482,33 @@ class LegalActionsCalculator(
                             val altEffective = costCalculator.calculateEffectiveCostWithAlternativeBase(state, cardDef, altCost)
                             val altSolution = manaSolver.solve(state, playerId, altEffective)
                             Triple(altEffective.toString(), altSolution?.sources?.map { it.entityId }, manaSolver.canPay(state, playerId, altEffective))
+                        } else null
+
+                        // Compute self-alternative cost info (e.g., Zahid)
+                        data class SelfAltCostResult(
+                            val manaCostString: String,
+                            val autoTapPreview: List<EntityId>?,
+                            val additionalCostInfo: AdditionalCostInfo?
+                        )
+                        val selfAltCostResult = if (canAffordSelfAlternative && selfAltCost != null && cardDef != null) {
+                            val selfAltMana = ManaCost.parse(selfAltCost.manaCost)
+                            val selfAltEffective = costCalculator.calculateEffectiveCostWithAlternativeBase(state, cardDef, selfAltMana, playerId)
+                            val selfAltSolution = manaSolver.solve(state, playerId, selfAltEffective)
+                            val tapCost = selfAltCost.additionalCosts.filterIsInstance<com.wingedsheep.sdk.scripting.AdditionalCost.TapPermanents>().firstOrNull()
+                            val tapTargets = if (tapCost != null) findAbilityTapTargets(state, playerId, tapCost.filter) else null
+                            val addlCostInfo = if (tapTargets != null && tapCost != null) {
+                                AdditionalCostInfo(
+                                    description = tapCost.description,
+                                    costType = "TapPermanents",
+                                    validTapTargets = tapTargets,
+                                    tapCount = tapCost.count
+                                )
+                            } else null
+                            SelfAltCostResult(
+                                manaCostString = selfAltEffective.toString(),
+                                autoTapPreview = selfAltSolution?.sources?.map { it.entityId },
+                                additionalCostInfo = addlCostInfo
+                            )
                         } else null
 
                         // Modal spells (chooseCount = 1): generate one LegalActionInfo per mode
@@ -624,6 +669,19 @@ class LegalActionsCalculator(
                                             autoTapPreview = altCostInfo.second
                                         ))
                                     }
+                                    if (selfAltCostResult != null) {
+                                        result.add(LegalActionInfo(
+                                            actionType = "CastWithAlternativeCost",
+                                            description = "Cast ${cardComponent.name} (${selfAltCostResult.manaCostString})",
+                                            action = CastSpell(playerId, cardId, targets = listOf(autoSelectedTarget), useAlternativeCost = true),
+                                            manaCostString = selfAltCostResult.manaCostString,
+                                            additionalCostInfo = selfAltCostResult.additionalCostInfo,
+                                            requiresDamageDistribution = requiresDamageDistribution,
+                                            totalDamageToDistribute = totalDamageToDistribute,
+                                            minDamagePerTarget = minDamagePerTarget,
+                                            autoTapPreview = selfAltCostResult.autoTapPreview
+                                        ))
+                                    }
                                 } else {
                                     if (canAfford) {
                                         result.add(LegalActionInfo(
@@ -669,6 +727,25 @@ class LegalActionsCalculator(
                                             autoTapPreview = altCostInfo.second
                                         ))
                                     }
+                                    if (selfAltCostResult != null) {
+                                        result.add(LegalActionInfo(
+                                            actionType = "CastWithAlternativeCost",
+                                            description = "Cast ${cardComponent.name} (${selfAltCostResult.manaCostString})",
+                                            action = CastSpell(playerId, cardId, useAlternativeCost = true),
+                                            validTargets = firstReqInfo.validTargets,
+                                            requiresTargets = true,
+                                            targetCount = firstReq.count,
+                                            minTargets = firstReq.effectiveMinCount,
+                                            targetDescription = firstReq.description,
+                                            targetRequirements = if (targetReqInfos.size > 1) targetReqInfos else null,
+                                            manaCostString = selfAltCostResult.manaCostString,
+                                            additionalCostInfo = selfAltCostResult.additionalCostInfo,
+                                            requiresDamageDistribution = requiresDamageDistribution,
+                                            totalDamageToDistribute = totalDamageToDistribute,
+                                            minDamagePerTarget = minDamagePerTarget,
+                                            autoTapPreview = selfAltCostResult.autoTapPreview
+                                        ))
+                                    }
                                 }
                             }
                         } else {
@@ -697,6 +774,16 @@ class LegalActionsCalculator(
                                     action = CastSpell(playerId, cardId, useAlternativeCost = true),
                                     manaCostString = altCostInfo.first,
                                     autoTapPreview = altCostInfo.second
+                                ))
+                            }
+                            if (selfAltCostResult != null) {
+                                result.add(LegalActionInfo(
+                                    actionType = "CastWithAlternativeCost",
+                                    description = "Cast ${cardComponent.name} (${selfAltCostResult.manaCostString})",
+                                    action = CastSpell(playerId, cardId, useAlternativeCost = true),
+                                    manaCostString = selfAltCostResult.manaCostString,
+                                    additionalCostInfo = selfAltCostResult.additionalCostInfo,
+                                    autoTapPreview = selfAltCostResult.autoTapPreview
                                 ))
                             }
                         }

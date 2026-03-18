@@ -453,6 +453,35 @@ abstract class ScenarioTestBase : FunSpec() {
         }
 
         /**
+         * Cast a spell using a self-alternative cost that requires tapping permanents.
+         * Used for cards like Zahid, Djinn of the Lamp.
+         */
+        fun castSpellWithSelfAlternativeCost(
+            playerNumber: Int,
+            spellName: String,
+            tapPermanentName: String
+        ): ExecutionResult {
+            val playerId = if (playerNumber == 1) player1Id else player2Id
+            val hand = state.getHand(playerId)
+            val cardId = hand.find { entityId ->
+                state.getEntity(entityId)?.get<CardComponent>()?.name == spellName
+            } ?: error("Card '$spellName' not found in player $playerNumber's hand")
+
+            val battlefield = state.getBattlefield(playerId)
+            val tapId = battlefield.find { entityId ->
+                state.getEntity(entityId)?.get<CardComponent>()?.name == tapPermanentName
+            } ?: error("Permanent '$tapPermanentName' not found on player $playerNumber's battlefield")
+
+            return execute(CastSpell(
+                playerId, cardId,
+                useAlternativeCost = true,
+                additionalCostPayment = com.wingedsheep.sdk.scripting.AdditionalCostPayment(
+                    tappedPermanents = listOf(tapId)
+                )
+            ))
+        }
+
+        /**
          * Cast a spell by name, sacrificing a creature and targeting a player.
          */
         fun castSpellWithSacrifice(

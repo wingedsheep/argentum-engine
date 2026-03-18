@@ -172,15 +172,31 @@ class CastSpellHandler(
             }
         }
 
+        // Validate self-alternative cost's additional costs when using alternative cost
+        if (action.useAlternativeCost && cardDef != null) {
+            val selfAltCost = cardDef.script.selfAlternativeCost
+            if (selfAltCost != null && selfAltCost.additionalCosts.isNotEmpty()) {
+                val selfAltCostError = validateAdditionalCosts(state, selfAltCost.additionalCosts, action)
+                if (selfAltCostError != null) return selfAltCostError
+            }
+        }
+
         // Calculate effective cost (free if PlayWithoutPayingCostComponent is present)
         val playForFree = hasPlayWithoutPayingCost(state, action.playerId, action.cardId)
         var effectiveCost = if (playForFree) {
             ManaCost.ZERO
         } else if (action.useAlternativeCost && cardDef != null) {
-            // Use alternative casting cost (e.g., Jodah's {W}{U}{B}{R}{G})
-            val altCosts = costCalculator.findAlternativeCastingCosts(state, action.playerId)
-            if (altCosts.isEmpty()) return "No alternative casting cost available"
-            costCalculator.calculateEffectiveCostWithAlternativeBase(state, cardDef, altCosts.first())
+            // Check self-alternative cost first (e.g., Zahid's {3}{U} + tap artifact)
+            val selfAltCost = cardDef.script.selfAlternativeCost
+            if (selfAltCost != null) {
+                val altMana = ManaCost.parse(selfAltCost.manaCost)
+                costCalculator.calculateEffectiveCostWithAlternativeBase(state, cardDef, altMana, action.playerId)
+            } else {
+                // Fall back to battlefield-granted alternative cost (e.g., Jodah's {W}{U}{B}{R}{G})
+                val altCosts = costCalculator.findAlternativeCastingCosts(state, action.playerId)
+                if (altCosts.isEmpty()) return "No alternative casting cost available"
+                costCalculator.calculateEffectiveCostWithAlternativeBase(state, cardDef, altCosts.first())
+            }
         } else if (cardDef != null) {
             costCalculator.calculateEffectiveCost(state, cardDef, action.playerId)
         } else {
@@ -489,6 +505,33 @@ class CastSpellHandler(
                         }
                     }
                 }
+                is AdditionalCost.TapPermanents -> {
+                    val tapped = action.additionalCostPayment?.tappedPermanents ?: emptyList()
+                    if (tapped.size < additionalCost.count) {
+                        return "You must tap ${additionalCost.count} ${additionalCost.filter.description}(s) to cast this spell"
+                    }
+                    val context = PredicateContext(controllerId = action.playerId)
+                    for (permId in tapped) {
+                        val permContainer = state.getEntity(permId)
+                            ?: return "Tapped permanent not found: $permId"
+                        val permCard = permContainer.get<CardComponent>()
+                            ?: return "Tapped entity is not a card: $permId"
+                        val permController = projected.getController(permId)
+                        if (permController != action.playerId) {
+                            return "You can only tap permanents you control"
+                        }
+                        if (permContainer.has<TappedComponent>()) {
+                            return "${permCard.name} is already tapped"
+                        }
+                        if (permId !in state.getBattlefield()) {
+                            return "Tapped permanent is not on the battlefield: $permId"
+                        }
+                        val matches = predicateEvaluator.matchesWithProjection(state, projected, permId, additionalCost.filter, context)
+                        if (!matches) {
+                            return "${permCard.name} doesn't match the required filter: ${additionalCost.filter.description}"
+                        }
+                    }
+                }
                 is AdditionalCost.SacrificeCreaturesForCostReduction -> {
                     // Sacrificing 0 creatures is valid (optional sacrifice)
                     val sacrificed = action.additionalCostPayment?.sacrificedPermanents ?: emptyList()
@@ -532,11 +575,17 @@ class CastSpellHandler(
         var effectiveCost = if (playForFreeInExecute) {
             ManaCost.ZERO
         } else if (action.useAlternativeCost && cardDef != null) {
-            val altCosts = costCalculator.findAlternativeCastingCosts(currentState, action.playerId)
-            if (altCosts.isNotEmpty()) {
-                costCalculator.calculateEffectiveCostWithAlternativeBase(currentState, cardDef, altCosts.first())
+            val selfAltCost = cardDef.script.selfAlternativeCost
+            if (selfAltCost != null) {
+                val altMana = ManaCost.parse(selfAltCost.manaCost)
+                costCalculator.calculateEffectiveCostWithAlternativeBase(currentState, cardDef, altMana, action.playerId)
             } else {
-                cardComponent.manaCost
+                val altCosts = costCalculator.findAlternativeCastingCosts(currentState, action.playerId)
+                if (altCosts.isNotEmpty()) {
+                    costCalculator.calculateEffectiveCostWithAlternativeBase(currentState, cardDef, altCosts.first())
+                } else {
+                    cardComponent.manaCost
+                }
             }
         } else if (action.castFaceDown) {
             costCalculator.calculateFaceDownCost(currentState, action.playerId)
@@ -560,6 +609,7 @@ class CastSpellHandler(
         var exiledCardCount = 0
 
         // Collect all additional costs: script costs + kicker additional cost (if kicked)
+        // + self-alternative cost's additional costs (if using alternative cost)
         val allAdditionalCosts = buildList {
             if (cardDef != null) addAll(cardDef.script.additionalCosts)
             if (action.wasKicked && cardDef != null) {
@@ -567,6 +617,10 @@ class CastSpellHandler(
                     .filterIsInstance<KeywordAbility.KickerWithAdditionalCost>()
                     .firstOrNull()
                 if (kickerAdditionalCost != null) add(kickerAdditionalCost.cost)
+            }
+            if (action.useAlternativeCost && cardDef != null) {
+                val selfAltCost = cardDef.script.selfAlternativeCost
+                if (selfAltCost != null) addAll(selfAltCost.additionalCosts)
             }
         }
 
@@ -658,6 +712,20 @@ class CastSpellHandler(
                             ))
                         }
                         exiledCardCount = exiledCards.size
+                    }
+                    is AdditionalCost.TapPermanents -> {
+                        // Tap permanents as additional cost (e.g., Zahid's tap an artifact)
+                        val tappedPerms = action.additionalCostPayment.tappedPermanents
+                        for (permId in tappedPerms) {
+                            val permContainer = currentState.getEntity(permId) ?: continue
+                            if (!permContainer.has<TappedComponent>()) {
+                                currentState = currentState.updateEntity(permId) { c ->
+                                    c.with(TappedComponent)
+                                }
+                                val permCard = permContainer.get<CardComponent>()
+                                events.add(TappedEvent(permId, permCard?.name ?: "Permanent"))
+                            }
+                        }
                     }
                     is AdditionalCost.SacrificeCreaturesForCostReduction -> {
                         // Process sacrifices for cost reduction (e.g., Torgaar)

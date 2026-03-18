@@ -192,7 +192,18 @@ data class CardScript(
      * Whether this spell exiles itself on resolution instead of going to the graveyard.
      * Used for cards like Karn's Temporal Sundering that say "Exile <card name>."
      */
-    val selfExileOnResolve: Boolean = false
+    val selfExileOnResolve: Boolean = false,
+
+    /**
+     * An alternative cost that the caster may pay instead of the spell's mana cost.
+     * Used for cards like Zahid, Djinn of the Lamp: "You may pay {3}{U} and tap an
+     * untapped artifact you control rather than pay this spell's mana cost."
+     *
+     * When present, the legal actions calculator offers a "CastWithAlternativeCost"
+     * option alongside the normal cast option, provided the player can afford
+     * the alternative mana cost and pay any required additional costs.
+     */
+    val selfAlternativeCost: SelfAlternativeCost? = null
 ) {
     /**
      * Whether this card has any scripted behavior.

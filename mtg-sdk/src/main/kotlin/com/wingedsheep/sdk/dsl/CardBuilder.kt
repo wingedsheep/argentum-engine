@@ -227,6 +227,12 @@ class CardBuilder(private val name: String) {
      */
     var conditionalFlash: Condition? = null
 
+    /**
+     * An alternative cost the caster may pay instead of the spell's mana cost.
+     * Used for cards like Zahid, Djinn of the Lamp.
+     */
+    var selfAlternativeCost: SelfAlternativeCost? = null
+
     // =========================================================================
     // Internal State
     // =========================================================================
@@ -469,7 +475,8 @@ class CardBuilder(private val name: String) {
             kickerTargetRequirements = spellBuilder?.kickerTargetRequirements ?: emptyList(),
             kickerSpellEffect = spellBuilder?.kickerEffect,
             sagaChapters = sagaChaptersList.toList(),
-            selfExileOnResolve = spellBuilder?.exilesOnResolve ?: false
+            selfExileOnResolve = spellBuilder?.exilesOnResolve ?: false,
+            selfAlternativeCost = selfAlternativeCost
         )
 
         // Build metadata

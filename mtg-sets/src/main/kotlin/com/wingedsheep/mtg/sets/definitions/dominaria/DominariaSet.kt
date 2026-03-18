@@ -263,6 +263,7 @@ object DominariaSet {
         YargleGluttonOfUrborg,
         YawgmothsVileOffering,
         YavimayaSapherd,
+        ZahidDjinnOfTheLamp,
         ZhalfirinVoid,
     )
 }
