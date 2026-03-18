@@ -88,13 +88,28 @@ export const createSelectionSlice: SliceCreator<SelectionSlice> = (set, get) => 
   },
 
   cancelXSelection: () => {
+    const { pipelineState, cancelPipeline } = get()
+    if (pipelineState) { cancelPipeline(); return }
     set({ xSelectionState: null })
   },
 
   confirmXSelection: () => {
-    const { xSelectionState, startTargeting, playerId, gameState } = get()
-    if (!xSelectionState || !playerId || !gameState) return
+    const { xSelectionState, pipelineState, startTargeting, playerId, gameState } = get()
+    if (!xSelectionState) return
 
+    // Pipeline path
+    if (pipelineState) {
+      set({ xSelectionState: null })
+      get().advancePipeline({
+        type: 'xSelection',
+        xValue: xSelectionState.selectedX,
+        ...(xSelectionState.isRepeatCount ? { isRepeatCount: true } : {}),
+      })
+      return
+    }
+
+    // Legacy path
+    if (!playerId || !gameState) return
     const { actionInfo, selectedX } = xSelectionState
 
     if (actionInfo.action.type === 'CastSpell') {
@@ -188,22 +203,34 @@ export const createSelectionSlice: SliceCreator<SelectionSlice> = (set, get) => 
   },
 
   cancelConvokeSelection: () => {
+    const { pipelineState, cancelPipeline } = get()
+    if (pipelineState) { cancelPipeline(); return }
     set({ convokeSelectionState: null })
   },
 
   confirmConvokeSelection: () => {
-    const { convokeSelectionState, startTargeting, playerId } = get()
-    if (!convokeSelectionState || !playerId) return
+    const { convokeSelectionState, pipelineState, startTargeting, playerId } = get()
+    if (!convokeSelectionState) return
 
-    const { actionInfo, selectedCreatures } = convokeSelectionState
+    const { selectedCreatures } = convokeSelectionState
+    const convokedCreatures: Record<string, { color: string | null }> = {}
+    for (const creature of selectedCreatures) {
+      convokedCreatures[creature.entityId] = { color: creature.payingColor }
+    }
+
+    // Pipeline path
+    if (pipelineState) {
+      set({ convokeSelectionState: null })
+      get().advancePipeline({ type: 'convoke', convokedCreatures })
+      return
+    }
+
+    // Legacy path
+    if (!playerId) return
+    const { actionInfo } = convokeSelectionState
 
     if (actionInfo.action.type === 'CastSpell') {
       const baseAction = actionInfo.action
-
-      const convokedCreatures: Record<string, { color: string | null }> = {}
-      for (const creature of selectedCreatures) {
-        convokedCreatures[creature.entityId] = { color: creature.payingColor }
-      }
 
       const actionWithConvoke = {
         ...baseAction,
@@ -305,15 +332,32 @@ export const createSelectionSlice: SliceCreator<SelectionSlice> = (set, get) => 
   },
 
   cancelDelveSelection: () => {
+    const { pipelineState, cancelPipeline } = get()
+    if (pipelineState) { cancelPipeline(); return }
     set({ delveSelectionState: null })
   },
 
   confirmDelveSelection: () => {
-    const { delveSelectionState, startTargeting, startManaSelection } = get()
+    const { delveSelectionState, pipelineState, startTargeting, startManaSelection } = get()
     if (!delveSelectionState) return
 
     const { actionInfo, selectedCards } = delveSelectionState
 
+    // Pipeline path
+    if (pipelineState) {
+      const originalSymbols = parseManaCostUtil(delveSelectionState.manaCost)
+      const remainingSymbols = getRemainingCostSymbols(originalSymbols, selectedCards.length)
+      const modifiedManaCost = remainingSymbols.map(s => `{${s}}`).join('')
+      set({ delveSelectionState: null })
+      get().advancePipeline({
+        type: 'delve',
+        delvedCards: [...selectedCards],
+        modifiedManaCost,
+      })
+      return
+    }
+
+    // Legacy path
     if (actionInfo.action.type === 'CastSpell') {
       const baseAction = actionInfo.action
 
@@ -364,9 +408,17 @@ export const createSelectionSlice: SliceCreator<SelectionSlice> = (set, get) => 
   },
 
   confirmManaColorSelection: (color) => {
-    const { manaColorSelectionState, submitAction } = get()
+    const { manaColorSelectionState, pipelineState, submitAction } = get()
     if (!manaColorSelectionState) return
 
+    // Pipeline path
+    if (pipelineState) {
+      set({ manaColorSelectionState: null })
+      get().advancePipeline({ type: 'manaColorChoice', color })
+      return
+    }
+
+    // Legacy path
     const action = manaColorSelectionState.action
     if (action.type === 'ActivateAbility') {
       submitAction({ ...action, manaColorChoice: color })
@@ -377,6 +429,8 @@ export const createSelectionSlice: SliceCreator<SelectionSlice> = (set, get) => 
   },
 
   cancelManaColorSelection: () => {
+    const { pipelineState, cancelPipeline } = get()
+    if (pipelineState) { cancelPipeline(); return }
     set({ manaColorSelectionState: null })
   },
 
@@ -477,12 +531,14 @@ export const createSelectionSlice: SliceCreator<SelectionSlice> = (set, get) => 
   },
 
   cancelManaSelection: () => {
+    const { pipelineState, cancelPipeline } = get()
+    if (pipelineState) { cancelPipeline(); return }
     set({ manaSelectionState: null })
   },
 
   confirmManaSelection: () => {
     // Note: actual confirm logic is in GameBoard's handleConfirmManaSelection
-    // which routes through executeAction for proper targeting/X/convoke flows.
+    // which routes through executeAction (legacy) or advancePipeline (pipeline).
     set({ manaSelectionState: null })
   },
 })

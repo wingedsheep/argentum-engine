@@ -70,9 +70,23 @@ export function GameBoard({ spectatorMode = false, topOffset = 0 }: GameBoardPro
   const { executeAction } = useInteraction()
   const responsive = useResponsive(topOffset)
 
-  // Confirm mana selection: build modified LegalActionInfo with Explicit payment and route through executeAction
+  // Confirm mana selection: if pipeline is active, advance it; otherwise build
+  // modified LegalActionInfo with Explicit payment and route through executeAction
   const handleConfirmManaSelection = useCallback(() => {
     if (!manaSelectionState) return
+    const { pipelineState, advancePipeline } = useGameStore.getState()
+    if (pipelineState) {
+      // Pipeline path: clear mana UI state directly (not via cancelManaSelection
+      // which would cancel the entire pipeline) and advance
+      useGameStore.setState({ manaSelectionState: null })
+      advancePipeline({
+        type: 'manaSource',
+        selectedSources: [...manaSelectionState.selectedSources],
+      })
+      return
+    }
+
+    // Legacy path
     const paymentStrategy = {
       type: 'Explicit' as const,
       manaAbilitiesToActivate: [...manaSelectionState.selectedSources],

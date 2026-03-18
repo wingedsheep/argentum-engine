@@ -57,12 +57,88 @@ export const createTargetingSlice: SliceCreator<TargetingSlice> = (set, get) => 
   },
 
   cancelTargeting: () => {
+    const { pipelineState, cancelPipeline } = get()
+    if (pipelineState) { cancelPipeline(); return }
     set({ targetingState: null })
   },
 
   confirmTargeting: () => {
-    const { targetingState, submitAction, gameState, startTargeting, startDamageDistribution } = get()
+    const { targetingState, pipelineState, submitAction, gameState, startTargeting, startDamageDistribution } = get()
     if (!targetingState || !gameState) return
+
+    // ---- Pipeline path ----
+    if (pipelineState) {
+      const currentPhase = pipelineState.remainingPhases[0]
+
+      // Cost payment phase (sacrifice/discard/tap/bounce/exile selection)
+      if (currentPhase?.type === 'costPayment' && targetingState.isSacrificeSelection) {
+        const costType =
+          pipelineState.actionInfo.additionalCostInfo?.costType ?? 'SacrificePermanent'
+        set({ targetingState: null })
+        get().advancePipeline({
+          type: 'costPayment',
+          costType,
+          selectedTargets: [...targetingState.selectedTargets],
+        })
+        return
+      }
+
+      // Targeting phase
+      if (currentPhase?.type === 'targeting') {
+        // Multi-target advancement within the targeting phase
+        if (targetingState.targetRequirements && targetingState.targetRequirements.length > 1) {
+          const currentIndex = targetingState.currentRequirementIndex ?? 0
+          const nextIndex = currentIndex + 1
+          const allSelected = targetingState.allSelectedTargets
+            ? [...targetingState.allSelectedTargets, targetingState.selectedTargets]
+            : [targetingState.selectedTargets]
+
+          const nextReq = targetingState.targetRequirements[nextIndex]
+          if (nextReq) {
+            // More requirements — stay within targeting phase
+            const alreadySelected = allSelected.flat()
+            const filteredValidTargets = nextReq.validTargets.filter(
+              (t) => !alreadySelected.includes(t),
+            )
+            startTargeting({
+              action: pipelineState.accumulatedAction,
+              validTargets: filteredValidTargets,
+              selectedTargets: [],
+              minTargets: nextReq.minTargets,
+              maxTargets: nextReq.maxTargets,
+              currentRequirementIndex: nextIndex,
+              allSelectedTargets: allSelected,
+              targetRequirements: targetingState.targetRequirements,
+              ...(nextReq.targetZone ? { targetZone: nextReq.targetZone } : {}),
+              targetDescription: nextReq.description,
+              ...(targetingState.totalRequirements != null
+                ? { totalRequirements: targetingState.totalRequirements }
+                : {}),
+              ...(targetingState.requiresDamageDistribution
+                ? { requiresDamageDistribution: true }
+                : {}),
+            })
+            return
+          }
+
+          // All requirements filled
+          const allTargets = [...allSelected.flat()]
+          set({ targetingState: null })
+          get().advancePipeline({ type: 'targeting', selectedTargets: allTargets })
+          return
+        }
+
+        // Single-target flow
+        set({ targetingState: null })
+        get().advancePipeline({
+          type: 'targeting',
+          selectedTargets: [...targetingState.selectedTargets],
+        })
+        return
+      }
+    }
+
+    // ---- Legacy path ----
 
     // Handle sacrifice selection phase
     if (targetingState.isSacrificeSelection && targetingState.pendingActionInfo) {

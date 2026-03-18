@@ -66,14 +66,25 @@ export const createDistributionSlice: SliceCreator<DistributionSlice> = (set, ge
   },
 
   cancelDamageDistribution: () => {
+    const { pipelineState, cancelPipeline } = get()
+    if (pipelineState) { cancelPipeline(); return }
     set({ damageDistributionState: null })
   },
 
   confirmDamageDistribution: () => {
-    const { damageDistributionState, submitAction } = get()
+    const { damageDistributionState, pipelineState, submitAction } = get()
     if (!damageDistributionState) return
 
     const distribution = { ...damageDistributionState.distribution }
+
+    // Pipeline path
+    if (pipelineState) {
+      set({ damageDistributionState: null, lastDamageDistribution: distribution })
+      get().advancePipeline({ type: 'damageDistribution', distribution })
+      return
+    }
+
+    // Legacy path
     const actionWithDistribution = {
       ...damageDistributionState.action,
       damageDistribution: distribution,
@@ -190,11 +201,13 @@ export const createDistributionSlice: SliceCreator<DistributionSlice> = (set, ge
   },
 
   cancelCounterDistribution: () => {
+    const { pipelineState, cancelPipeline } = get()
+    if (pipelineState) { cancelPipeline(); return }
     set({ counterDistributionState: null })
   },
 
   confirmCounterDistribution: () => {
-    const { counterDistributionState, startTargeting } = get()
+    const { counterDistributionState, pipelineState, startTargeting } = get()
     if (!counterDistributionState) return
 
     const { actionInfo, distribution } = counterDistributionState
@@ -209,6 +222,18 @@ export const createDistributionSlice: SliceCreator<DistributionSlice> = (set, ge
       }
     }
 
+    // Pipeline path
+    if (pipelineState) {
+      set({ counterDistributionState: null })
+      get().advancePipeline({
+        type: 'counterDistribution',
+        xValue: totalAllocated,
+        counterRemovals,
+      })
+      return
+    }
+
+    // Legacy path
     if (actionInfo.action.type === 'ActivateAbility') {
       const baseAction = actionInfo.action
       const actionWithCost = {

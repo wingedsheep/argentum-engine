@@ -514,6 +514,47 @@ export interface DamageAnimation {
 }
 
 // ============================================================================
+// Action Pipeline Types
+// ============================================================================
+
+/**
+ * A phase in the action pipeline. Computed up front by computePhases().
+ */
+export type PipelinePhase =
+  | { type: 'counterDistribution' }
+  | { type: 'xSelection' }
+  | { type: 'delve' }
+  | { type: 'convoke' }
+  | { type: 'manaSource' }
+  | { type: 'costPayment' }
+  | { type: 'manaColorChoice' }
+  | { type: 'targeting' }
+  | { type: 'damageDistribution' }
+
+/**
+ * Result reported by a phase's confirm handler.
+ */
+export type PhaseResult =
+  | { type: 'counterDistribution'; xValue: number; counterRemovals: Record<string, number> }
+  | { type: 'xSelection'; xValue: number; isRepeatCount?: boolean }
+  | { type: 'delve'; delvedCards: EntityId[]; modifiedManaCost: string }
+  | { type: 'convoke'; convokedCreatures: Record<string, { color: string | null }> }
+  | { type: 'manaSource'; selectedSources: EntityId[] }
+  | { type: 'costPayment'; costType: string; selectedTargets: EntityId[] }
+  | { type: 'manaColorChoice'; color: string }
+  | { type: 'targeting'; selectedTargets: EntityId[] }
+  | { type: 'damageDistribution'; distribution: Record<EntityId, number> }
+
+/**
+ * Pipeline coordinator state: tracks the action being built and remaining phases.
+ */
+export interface ActionPipelineState {
+  actionInfo: import('../../types').LegalActionInfo
+  accumulatedAction: import('../../types').GameAction
+  remainingPhases: readonly PipelinePhase[]
+}
+
+// ============================================================================
 // Slice Creator Type
 // ============================================================================
 
@@ -620,6 +661,12 @@ export type GameStore = {
   winstonTakePile: () => void
   winstonSkipPile: () => void
   gridDraftPick: (selection: string) => void
+
+  // Pipeline slice
+  pipelineState: ActionPipelineState | null
+  startPipeline: (actionInfo: import('../../types').LegalActionInfo) => void
+  advancePipeline: (result: PhaseResult) => void
+  cancelPipeline: () => void
 
   // UI slice
   selectedCardId: EntityId | null

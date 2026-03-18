@@ -26,6 +26,7 @@ export interface ActionContext {
   startDelveSelection: (state: DelveSelectionState) => void
   startManaColorSelection: (state: ManaColorSelectionState) => void
   startCounterDistribution: (state: CounterDistributionState) => void
+  startPipeline: (actionInfo: LegalActionInfo) => void
 }
 
 export interface ActionResolver {
@@ -523,15 +524,26 @@ const resolvers: readonly ActionResolver[] = [
 /**
  * Find the first matching resolver and execute it. Returns true if a resolver
  * handled the action, false if none matched (caller should submit directly).
+ *
+ * Crew and cycling are standalone single-phase flows. Everything else goes
+ * through the pipeline coordinator which computes the full phase sequence up
+ * front and advances through it.
  */
 export function resolveAction(actionInfo: LegalActionInfo, ctx: ActionContext): boolean {
-  for (const resolver of resolvers) {
-    if (resolver.matches(actionInfo)) {
-      resolver.resolve(actionInfo, ctx)
-      return true
-    }
+  // Crew and cycling are standalone — not part of the pipeline
+  if (crewResolver.matches(actionInfo)) {
+    crewResolver.resolve(actionInfo, ctx)
+    return true
   }
-  return false
+  if (cyclingMenuResolver.matches(actionInfo)) {
+    return true
+  }
+
+  // Everything else goes through the pipeline coordinator.
+  // computePhases inside startPipeline decides what UI phases are needed;
+  // if none, startPipeline submits directly.
+  ctx.startPipeline(actionInfo)
+  return true
 }
 
 /**

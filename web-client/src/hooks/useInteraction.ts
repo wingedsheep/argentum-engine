@@ -37,6 +37,7 @@ export function useInteraction() {
   const startDelveSelection = useGameStore((state) => state.startDelveSelection)
   const startManaColorSelection = useGameStore((state) => state.startManaColorSelection)
   const startCounterDistribution = useGameStore((state) => state.startCounterDistribution)
+  const startPipeline = useGameStore((state) => state.startPipeline)
 
   const actionContext: ActionContext = useMemo(() => ({
     submitAction,
@@ -48,7 +49,8 @@ export function useInteraction() {
     startDelveSelection,
     startManaColorSelection,
     startCounterDistribution,
-  }), [submitAction, selectCard, startTargeting, startXSelection, startConvokeSelection, startCrewSelection, startDelveSelection, startManaColorSelection, startCounterDistribution])
+    startPipeline,
+  }), [submitAction, selectCard, startTargeting, startXSelection, startConvokeSelection, startCrewSelection, startDelveSelection, startManaColorSelection, startCounterDistribution, startPipeline])
 
   /**
    * Get legal actions for a card.
