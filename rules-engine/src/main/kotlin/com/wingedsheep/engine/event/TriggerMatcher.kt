@@ -1,0 +1,565 @@
+package com.wingedsheep.engine.event
+
+import com.wingedsheep.engine.core.BecomesTargetEvent
+import com.wingedsheep.engine.core.AbilityActivatedEvent
+import com.wingedsheep.engine.core.AbilityTriggeredEvent
+import com.wingedsheep.engine.core.AttackersDeclaredEvent
+import com.wingedsheep.engine.core.BlockersDeclaredEvent
+import com.wingedsheep.engine.core.CardCycledEvent
+import com.wingedsheep.engine.core.CardRevealedFromDrawEvent
+import com.wingedsheep.engine.core.CardsDrawnEvent
+import com.wingedsheep.engine.core.DamageDealtEvent
+import com.wingedsheep.engine.core.LifeChangedEvent
+import com.wingedsheep.engine.core.SpellCastEvent
+import com.wingedsheep.engine.core.TappedEvent
+import com.wingedsheep.engine.core.TurnFaceUpEvent
+import com.wingedsheep.engine.core.UntappedEvent
+import com.wingedsheep.engine.core.ZoneChangeEvent
+import com.wingedsheep.engine.handlers.ConditionEvaluator
+import com.wingedsheep.engine.handlers.EffectContext
+import com.wingedsheep.engine.handlers.PredicateEvaluator
+import com.wingedsheep.engine.mechanics.layers.ProjectedState
+import com.wingedsheep.engine.state.GameState
+import com.wingedsheep.engine.state.components.identity.CardComponent
+import com.wingedsheep.engine.state.components.identity.FaceDownComponent
+import com.wingedsheep.engine.state.components.stack.SpellOnStackComponent
+import com.wingedsheep.engine.state.components.stack.TargetsComponent
+import com.wingedsheep.sdk.core.Step
+import com.wingedsheep.sdk.core.Zone
+import com.wingedsheep.sdk.model.EntityId
+import com.wingedsheep.sdk.scripting.GameEvent
+import com.wingedsheep.sdk.scripting.GameObjectFilter
+import com.wingedsheep.sdk.scripting.TriggerBinding
+import com.wingedsheep.sdk.scripting.events.DamageType
+import com.wingedsheep.sdk.scripting.events.RecipientFilter
+import com.wingedsheep.sdk.scripting.events.SourceFilter
+import com.wingedsheep.sdk.scripting.events.SpellTypeFilter
+import com.wingedsheep.sdk.scripting.references.Player
+import com.wingedsheep.engine.core.GameEvent as EngineGameEvent
+
+/**
+ * Contains shared trigger matching and predicate logic used by all detectors.
+ */
+class TriggerMatcher(
+    private val predicateEvaluator: PredicateEvaluator,
+    private val conditionEvaluator: ConditionEvaluator
+) {
+
+    fun matchesTrigger(
+        trigger: GameEvent,
+        binding: TriggerBinding,
+        event: EngineGameEvent,
+        sourceId: EntityId,
+        controllerId: EntityId,
+        state: GameState
+    ): Boolean {
+        return when (trigger) {
+            is GameEvent.ZoneChangeEvent -> matchesZoneChangeTrigger(trigger, binding, event, sourceId, controllerId, state)
+            is GameEvent.DrawEvent -> {
+                event is CardsDrawnEvent && matchesPlayer(trigger.player, event.playerId, controllerId)
+            }
+            is GameEvent.CardRevealedFromDrawEvent -> {
+                if (event !is CardRevealedFromDrawEvent) return false
+                if (event.playerId != controllerId) return false
+                val filter = trigger.cardFilter
+                if (filter != null) {
+                    val requiresCreature = filter.cardPredicates.any {
+                        it is com.wingedsheep.sdk.scripting.predicates.CardPredicate.IsCreature
+                    }
+                    if (requiresCreature && !event.isCreature) return false
+                }
+                true
+            }
+            is GameEvent.AttackEvent -> {
+                event is AttackersDeclaredEvent &&
+                    checkBinding(binding, sourceId, event.attackers) &&
+                    (!trigger.alone || event.attackers.size == 1)
+            }
+            is GameEvent.YouAttackEvent -> {
+                event is AttackersDeclaredEvent &&
+                    event.attackers.size >= trigger.minAttackers &&
+                    state.activePlayerId == controllerId
+            }
+            is GameEvent.BlockEvent -> {
+                event is BlockersDeclaredEvent &&
+                    (binding != TriggerBinding.SELF || event.blockers.keys.contains(sourceId))
+            }
+            is GameEvent.BecomesBlockedEvent -> {
+                event is BlockersDeclaredEvent &&
+                    (binding != TriggerBinding.SELF || event.blockers.values.any { it.contains(sourceId) })
+            }
+            is GameEvent.BlocksOrBecomesBlockedByEvent -> {
+                // Basic match: it's a BlockersDeclaredEvent and the source is involved in combat
+                // Per-partner trigger creation happens in detectTriggersForEvent
+                if (event !is BlockersDeclaredEvent) return false
+                if (binding != TriggerBinding.SELF) return false
+                // Source is a blocker or an attacker that's being blocked
+                event.blockers.keys.contains(sourceId) ||
+                    event.blockers.values.any { it.contains(sourceId) }
+            }
+            is GameEvent.DealsDamageEvent -> {
+                // SELF-bound DealsDamageEvent handled separately in detectDamageSourceTriggers
+                // Non-self (observer triggers like "whenever a creature deals damage to you") handled in
+                // detectDamageToControllerTriggers and detectSubtypeDamageToPlayerTriggers
+                false
+            }
+            is GameEvent.DamageReceivedEvent -> {
+                // Generic (source=Any) DamageReceivedEvent can match in the main loop
+                // Specific source-filtered ones are handled in detectDamagedBySourceTriggers
+                if (trigger.source != SourceFilter.Any) return false
+                event is DamageDealtEvent && (binding != TriggerBinding.SELF || event.targetId == sourceId)
+            }
+            is GameEvent.SpellCastEvent -> {
+                event is SpellCastEvent &&
+                    matchesPlayer(trigger.player, event.casterId, controllerId) &&
+                    matchesSpellTypeFilter(trigger, event, state) &&
+                    (trigger.kicked == null || trigger.kicked == event.wasKicked)
+            }
+            is GameEvent.SpellOrAbilityOnStackEvent -> {
+                // Intervening-if: only trigger if the spell/ability has a single target
+                val stackEntityId = when (event) {
+                    is SpellCastEvent -> event.spellEntityId
+                    is AbilityActivatedEvent -> event.abilityEntityId
+                    is AbilityTriggeredEvent -> event.abilityEntityId
+                    else -> null
+                }
+                if (stackEntityId == null) return false
+                val targets = state.getEntity(stackEntityId)
+                    ?.get<TargetsComponent>()?.targets
+                targets != null && targets.size == 1
+            }
+            is GameEvent.CycleEvent -> {
+                event is CardCycledEvent &&
+                    matchesPlayer(trigger.player, event.playerId, controllerId) &&
+                    (binding != TriggerBinding.SELF || event.cardId == sourceId)
+            }
+            is GameEvent.TapEvent -> {
+                event is TappedEvent && (binding != TriggerBinding.SELF || event.entityId == sourceId)
+            }
+            is GameEvent.UntapEvent -> {
+                event is UntappedEvent && (binding != TriggerBinding.SELF || event.entityId == sourceId)
+            }
+            is GameEvent.LifeGainEvent -> {
+                event is LifeChangedEvent &&
+                    event.reason == com.wingedsheep.engine.core.LifeChangeReason.LIFE_GAIN &&
+                    matchesPlayer(trigger.player, event.playerId, controllerId)
+            }
+            is GameEvent.BecomesTargetEvent -> {
+                event is BecomesTargetEvent && matchesBecomesTargetTrigger(trigger, binding, event, sourceId, controllerId, state)
+            }
+            is GameEvent.TurnFaceUpEvent -> {
+                event is TurnFaceUpEvent && (binding != TriggerBinding.SELF || event.entityId == sourceId)
+            }
+            is GameEvent.CreatureTurnedFaceUpEvent -> {
+                if (event !is TurnFaceUpEvent) return false
+                matchesPlayer(trigger.player, event.controllerId, controllerId)
+            }
+            is GameEvent.TransformEvent -> {
+                // Transform not yet implemented in new engine
+                false
+            }
+            // These are handled separately in their own detect* methods
+            is GameEvent.ControlChangeEvent -> false
+            // Phase/step triggers are handled separately
+            is GameEvent.StepEvent -> false
+            is GameEvent.EnchantedCreatureControllerStepEvent -> false
+            // Attached creature triggers are handled separately
+            is GameEvent.AttachedCreatureAttacksEvent -> false
+            is GameEvent.EnchantedCreatureDamageReceivedEvent -> false
+            is GameEvent.EnchantedCreatureDealsCombatDamageToPlayerEvent -> false
+            is GameEvent.EnchantedCreatureDealsDamageEvent -> false
+            is GameEvent.EnchantedCreatureDiesEvent -> false
+            is GameEvent.EnchantedPermanentLeavesBattlefieldEvent -> false
+            is GameEvent.EquippedCreatureDiesEvent -> false
+            is GameEvent.EnchantedCreatureTurnedFaceUpEvent -> false
+            is GameEvent.EnchantedPermanentBecomesTappedEvent -> false
+            // Creature-dealt-damage-by-source-dies triggers are handled separately
+            is GameEvent.CreatureDealtDamageBySourceDiesEvent -> false
+            // Replacement-effect-only events never match as triggers
+            is GameEvent.DamageEvent -> false
+            is GameEvent.CounterPlacementEvent -> false
+            is GameEvent.TokenCreationEvent -> false
+            is GameEvent.LifeLossEvent -> {
+                event is LifeChangedEvent &&
+                    event.reason != com.wingedsheep.engine.core.LifeChangeReason.LIFE_GAIN &&
+                    event.oldLife > event.newLife &&
+                    matchesPlayer(trigger.player, event.playerId, controllerId)
+            }
+            is GameEvent.DiscardEvent -> false
+            is GameEvent.SearchLibraryEvent -> false
+            // ExtraTurnEvent is only used as a replacement effect filter, not a trigger
+            is GameEvent.ExtraTurnEvent -> false
+            // Batching trigger — handled in detectLibraryToGraveyardBatchTriggers
+            is GameEvent.CardsPutIntoGraveyardFromLibraryEvent -> false
+        }
+    }
+
+    fun matchesZoneChangeTrigger(
+        trigger: GameEvent.ZoneChangeEvent,
+        binding: TriggerBinding,
+        event: EngineGameEvent,
+        sourceId: EntityId,
+        controllerId: EntityId,
+        state: GameState
+    ): Boolean {
+        if (event !is ZoneChangeEvent) return false
+
+        // Match zones
+        if (trigger.from != null && event.fromZone != trigger.from) return false
+        if (trigger.to != null && event.toZone != trigger.to) return false
+
+        // Check binding
+        when (binding) {
+            TriggerBinding.SELF -> if (event.entityId != sourceId) return false
+            TriggerBinding.OTHER -> if (event.entityId == sourceId) return false
+            TriggerBinding.ANY -> { /* no entity restriction */ }
+        }
+
+        // Check filter
+        if (trigger.filter != GameObjectFilter.Any) {
+            val projected = state.projectedState
+            // Check card predicates (creature type, subtype, etc.)
+            // Note: entity may not exist in state if it was a token cleaned up by SBAs.
+            // In that case, fall back to lastKnownTypeLine from the event.
+            val entity = state.getEntity(event.entityId)
+            val cardComponent = entity?.get<CardComponent>()
+            val typeLine = cardComponent?.typeLine ?: event.lastKnownTypeLine
+            val isFaceDown = entity?.has<FaceDownComponent>() == true
+
+            for (predicate in trigger.filter.cardPredicates) {
+                when (predicate) {
+                    is com.wingedsheep.sdk.scripting.predicates.CardPredicate.IsCreature -> {
+                        // For dying creatures: use base state (they're already in graveyard)
+                        // Face-down permanents are 2/2 creatures (Rule 707.2) and count.
+                        val isCreature = isFaceDown || typeLine?.isCreature == true
+                        if (!isCreature) return false
+                    }
+                    is com.wingedsheep.sdk.scripting.predicates.CardPredicate.HasSubtype -> {
+                        // For entering creatures: use projected state (they're on battlefield)
+                        // For dying creatures: use base state (they're in graveyard, no projected subtypes)
+                        if (event.toZone == Zone.BATTLEFIELD) {
+                            if (!projected.hasSubtype(event.entityId, predicate.subtype.value)) return false
+                        } else {
+                            if (isFaceDown) return false
+                            if (typeLine == null) return false
+                            if (!typeLine.hasSubtype(predicate.subtype)) return false
+                        }
+                    }
+                    else -> {
+                        // For other predicates, check the entity's type
+                        if (cardComponent == null) return false
+                        if (!matchesCardPredicate(
+                                predicate, cardComponent, projected, event.entityId, isFaceDown,
+                                lastKnownPower = event.lastKnownPower,
+                                lastKnownToughness = event.lastKnownToughness
+                            )) return false
+                    }
+                }
+            }
+            // Check state predicates (face-down, tapped, etc.)
+            for (predicate in trigger.filter.statePredicates) {
+                when (predicate) {
+                    is com.wingedsheep.sdk.scripting.predicates.StatePredicate.IsFaceDown -> {
+                        val faceDownEntity = state.getEntity(event.entityId) ?: return false
+                        if (!faceDownEntity.has<FaceDownComponent>()) return false
+                    }
+                    else -> {}
+                }
+            }
+            // Check controller predicate (youControl)
+            if (trigger.filter.controllerPredicate != null) {
+                when (trigger.filter.controllerPredicate) {
+                    is com.wingedsheep.sdk.scripting.predicates.ControllerPredicate.ControlledByYou -> {
+                        if (event.ownerId != controllerId) return false
+                    }
+                    is com.wingedsheep.sdk.scripting.predicates.ControllerPredicate.ControlledByOpponent -> {
+                        if (event.ownerId == controllerId) return false
+                    }
+                    else -> {}
+                }
+            }
+        }
+
+        return true
+    }
+
+    fun matchesCardPredicate(
+        predicate: com.wingedsheep.sdk.scripting.predicates.CardPredicate,
+        cardComponent: CardComponent,
+        projected: ProjectedState,
+        entityId: EntityId,
+        isFaceDown: Boolean = false,
+        lastKnownPower: Int? = null,
+        lastKnownToughness: Int? = null
+    ): Boolean {
+        return when (predicate) {
+            is com.wingedsheep.sdk.scripting.predicates.CardPredicate.IsCreature -> cardComponent.typeLine.isCreature
+            is com.wingedsheep.sdk.scripting.predicates.CardPredicate.HasSubtype ->
+                cardComponent.typeLine.hasSubtype(predicate.subtype)
+            is com.wingedsheep.sdk.scripting.predicates.CardPredicate.ManaValueAtLeast -> {
+                val cmc = if (isFaceDown) 0 else cardComponent.manaValue
+                cmc >= predicate.min
+            }
+            is com.wingedsheep.sdk.scripting.predicates.CardPredicate.ManaValueAtMost -> {
+                val cmc = if (isFaceDown) 0 else cardComponent.manaValue
+                cmc <= predicate.max
+            }
+            is com.wingedsheep.sdk.scripting.predicates.CardPredicate.ManaValueEquals -> {
+                val cmc = if (isFaceDown) 0 else cardComponent.manaValue
+                cmc == predicate.value
+            }
+            is com.wingedsheep.sdk.scripting.predicates.CardPredicate.PowerAtLeast -> {
+                val power = if (isFaceDown) 2
+                    else lastKnownPower ?: projected.getPower(entityId) ?: cardComponent.baseStats?.basePower ?: 0
+                power >= predicate.min
+            }
+            is com.wingedsheep.sdk.scripting.predicates.CardPredicate.PowerAtMost -> {
+                val power = if (isFaceDown) 2
+                    else lastKnownPower ?: projected.getPower(entityId) ?: cardComponent.baseStats?.basePower ?: 0
+                power <= predicate.max
+            }
+            is com.wingedsheep.sdk.scripting.predicates.CardPredicate.PowerEquals -> {
+                val power = if (isFaceDown) 2
+                    else lastKnownPower ?: projected.getPower(entityId) ?: cardComponent.baseStats?.basePower ?: 0
+                power == predicate.value
+            }
+            is com.wingedsheep.sdk.scripting.predicates.CardPredicate.ToughnessAtLeast -> {
+                val toughness = if (isFaceDown) 2
+                    else lastKnownToughness ?: projected.getToughness(entityId) ?: cardComponent.baseStats?.baseToughness ?: 0
+                toughness >= predicate.min
+            }
+            is com.wingedsheep.sdk.scripting.predicates.CardPredicate.ToughnessAtMost -> {
+                val toughness = if (isFaceDown) 2
+                    else lastKnownToughness ?: projected.getToughness(entityId) ?: cardComponent.baseStats?.baseToughness ?: 0
+                toughness <= predicate.max
+            }
+            is com.wingedsheep.sdk.scripting.predicates.CardPredicate.ToughnessEquals -> {
+                val toughness = if (isFaceDown) 2
+                    else lastKnownToughness ?: projected.getToughness(entityId) ?: cardComponent.baseStats?.baseToughness ?: 0
+                toughness == predicate.value
+            }
+            is com.wingedsheep.sdk.scripting.predicates.CardPredicate.Or ->
+                predicate.predicates.any { matchesCardPredicate(it, cardComponent, projected, entityId, isFaceDown, lastKnownPower, lastKnownToughness) }
+            is com.wingedsheep.sdk.scripting.predicates.CardPredicate.And ->
+                predicate.predicates.all { matchesCardPredicate(it, cardComponent, projected, entityId, isFaceDown, lastKnownPower, lastKnownToughness) }
+            is com.wingedsheep.sdk.scripting.predicates.CardPredicate.Not ->
+                !matchesCardPredicate(predicate.predicate, cardComponent, projected, entityId, isFaceDown, lastKnownPower, lastKnownToughness)
+            else -> true // Unknown predicates pass through
+        }
+    }
+
+    /**
+     * Check if a trigger event matches a death trigger pattern (ZoneChangeEvent from battlefield to graveyard).
+     */
+    fun isDeathTrigger(trigger: GameEvent): Boolean {
+        return trigger is GameEvent.ZoneChangeEvent &&
+            trigger.from == Zone.BATTLEFIELD &&
+            trigger.to == Zone.GRAVEYARD
+    }
+
+    /**
+     * Check if a trigger event matches a leaves-battlefield pattern (ZoneChangeEvent from battlefield, to=null).
+     */
+    fun isLeavesBattlefieldTrigger(trigger: GameEvent): Boolean {
+        return trigger is GameEvent.ZoneChangeEvent &&
+            trigger.from == Zone.BATTLEFIELD &&
+            trigger.to == null
+    }
+
+    /**
+     * Check binding for AttackEvent: SELF means sourceId must be in attackers.
+     */
+    fun checkBinding(binding: TriggerBinding, sourceId: EntityId, entityIds: List<EntityId>): Boolean {
+        return when (binding) {
+            TriggerBinding.SELF -> sourceId in entityIds
+            TriggerBinding.OTHER -> true  // "whenever another creature attacks" (not currently used, but correct)
+            TriggerBinding.ANY -> true
+        }
+    }
+
+    /**
+     * Check if a Player filter matches the event's player.
+     */
+    fun matchesPlayer(player: Player, eventPlayerId: EntityId, controllerId: EntityId): Boolean {
+        return when (player) {
+            Player.You -> eventPlayerId == controllerId
+            Player.Each -> true
+            Player.Opponent -> eventPlayerId != controllerId
+            else -> true
+        }
+    }
+
+    /**
+     * Extract a subtype value from a GameObjectFilter (used for DealsDamageEvent.sourceFilter).
+     */
+    fun extractSubtypeFromFilter(filter: GameObjectFilter): String? {
+        for (predicate in filter.cardPredicates) {
+            if (predicate is com.wingedsheep.sdk.scripting.predicates.CardPredicate.HasSubtype) {
+                return predicate.subtype.value
+            }
+        }
+        return null
+    }
+
+    /**
+     * Check if a BecomesTargetEvent matches a BecomesTargetEvent trigger.
+     * Validates binding (SELF = targeted entity is this permanent) and
+     * checks the targetFilter against the targeted entity.
+     */
+    fun matchesBecomesTargetTrigger(
+        trigger: GameEvent.BecomesTargetEvent,
+        binding: TriggerBinding,
+        event: BecomesTargetEvent,
+        sourceId: EntityId,
+        controllerId: EntityId,
+        state: GameState
+    ): Boolean {
+        // Check binding: SELF means this permanent was targeted
+        when (binding) {
+            TriggerBinding.SELF -> if (event.targetEntityId != sourceId) return false
+            TriggerBinding.OTHER -> if (event.targetEntityId == sourceId) return false
+            TriggerBinding.ANY -> { /* no entity restriction */ }
+        }
+
+        // Check targetFilter against the targeted entity
+        if (trigger.targetFilter != GameObjectFilter.Any) {
+            val projected = state.projectedState
+            val targetContainer = state.getEntity(event.targetEntityId) ?: return false
+            val targetCard = targetContainer.get<CardComponent>() ?: return false
+
+            // Check card predicates
+            for (predicate in trigger.targetFilter.cardPredicates) {
+                if (!matchesCardPredicate(predicate, targetCard, projected, event.targetEntityId)) return false
+            }
+
+            // Check controller predicate
+            if (trigger.targetFilter.controllerPredicate != null) {
+                val targetController = projected.getController(event.targetEntityId) ?: return false
+                when (trigger.targetFilter.controllerPredicate) {
+                    is com.wingedsheep.sdk.scripting.predicates.ControllerPredicate.ControlledByYou -> {
+                        if (targetController != controllerId) return false
+                    }
+                    is com.wingedsheep.sdk.scripting.predicates.ControllerPredicate.ControlledByOpponent -> {
+                        if (targetController == controllerId) return false
+                    }
+                    else -> {}
+                }
+            }
+        }
+
+        return true
+    }
+
+    fun matchesDealsDamageTrigger(trigger: GameEvent.DealsDamageEvent, event: DamageDealtEvent, state: GameState): Boolean {
+        val combatMatches = trigger.damageType == DamageType.Any ||
+            (trigger.damageType == DamageType.Combat && event.isCombatDamage) ||
+            (trigger.damageType == DamageType.NonCombat && !event.isCombatDamage)
+        val recipientMatches = when (trigger.recipient) {
+            RecipientFilter.Any -> true
+            RecipientFilter.AnyPlayer -> event.targetId in state.turnOrder
+            RecipientFilter.AnyCreature -> event.targetId !in state.turnOrder
+            RecipientFilter.You -> false // handled separately in detectDamageToControllerTriggers
+            else -> true
+        }
+        return combatMatches && recipientMatches
+    }
+
+    fun matchesStepTrigger(
+        trigger: GameEvent,
+        step: Step,
+        controllerId: EntityId,
+        activePlayerId: EntityId
+    ): Boolean {
+        if (trigger !is GameEvent.StepEvent) return false
+        if (step != trigger.step) return false
+        return matchesPlayerForStep(trigger.player, controllerId, activePlayerId)
+    }
+
+    fun matchesPlayerForStep(player: Player, controllerId: EntityId, activePlayerId: EntityId): Boolean {
+        return when (player) {
+            Player.You -> controllerId == activePlayerId
+            Player.Each -> true
+            Player.Opponent, Player.EachOpponent -> controllerId != activePlayerId
+            else -> true
+        }
+    }
+
+    fun matchesSpellTypeFilter(
+        trigger: GameEvent.SpellCastEvent,
+        event: SpellCastEvent,
+        state: GameState
+    ): Boolean {
+        val cardComponent = state.getEntity(event.spellEntityId)?.get<CardComponent>()
+            ?: return trigger.spellType == SpellTypeFilter.ANY
+
+        val typeMatches = when (trigger.spellType) {
+            SpellTypeFilter.ANY -> true
+            SpellTypeFilter.CREATURE -> cardComponent.typeLine.isCreature
+            SpellTypeFilter.NONCREATURE -> !cardComponent.typeLine.isCreature
+            SpellTypeFilter.INSTANT_OR_SORCERY ->
+                cardComponent.typeLine.isInstant || cardComponent.typeLine.isSorcery
+            SpellTypeFilter.ENCHANTMENT -> cardComponent.typeLine.isEnchantment
+            SpellTypeFilter.HISTORIC ->
+                cardComponent.typeLine.isArtifact || cardComponent.typeLine.isLegendary
+        }
+        if (!typeMatches) return false
+
+        // Face-down spells have mana value 0 (CR 707.2)
+        val isFaceDown = state.getEntity(event.spellEntityId)?.get<SpellOnStackComponent>()?.castFaceDown == true
+        val mv = if (isFaceDown) 0 else cardComponent.manaValue
+        if (trigger.manaValueAtLeast != null && mv < trigger.manaValueAtLeast!!) return false
+        if (trigger.manaValueAtMost != null && mv > trigger.manaValueAtMost!!) return false
+        if (trigger.manaValueEquals != null && mv != trigger.manaValueEquals!!) return false
+
+        return true
+    }
+
+    /**
+     * Filter out triggers whose intervening-if condition (Rule 603.4) is not met.
+     * If a triggered ability has a triggerCondition, it is only allowed to fire
+     * when that condition is true at the time of trigger detection.
+     */
+    fun filterByTriggerCondition(
+        state: GameState,
+        triggers: List<PendingTrigger>
+    ): List<PendingTrigger> {
+        return triggers.filter { trigger ->
+            val condition = trigger.ability.triggerCondition ?: return@filter true
+            val context = EffectContext(
+                sourceId = trigger.sourceId,
+                controllerId = trigger.controllerId,
+                opponentId = state.turnOrder.firstOrNull { it != trigger.controllerId },
+                triggeringEntityId = trigger.triggerContext.triggeringEntityId
+            )
+            conditionEvaluator.evaluate(state, condition, context)
+        }
+    }
+
+    /**
+     * Sort triggers by APNAP order.
+     * Active player's triggers go on the stack first (resolve last),
+     * then non-active players in turn order.
+     */
+    fun sortByApnapOrder(
+        state: GameState,
+        triggers: List<PendingTrigger>
+    ): List<PendingTrigger> {
+        val activePlayerId = state.activePlayerId ?: return triggers
+
+        // Group by controller
+        val byController = triggers.groupBy { it.controllerId }
+
+        // Get player order starting from active player
+        val playerOrder = state.turnOrder.let { players ->
+            val activeIndex = players.indexOf(activePlayerId)
+            if (activeIndex == -1) players
+            else players.drop(activeIndex) + players.take(activeIndex)
+        }
+
+        // Build result in APNAP order
+        // Active player's triggers first (they go on stack first = resolve last)
+        return playerOrder.flatMap { playerId ->
+            byController[playerId] ?: emptyList()
+        }
+    }
+}

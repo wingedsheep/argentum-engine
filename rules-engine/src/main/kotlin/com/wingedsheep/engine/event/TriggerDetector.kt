@@ -1,52 +1,33 @@
 package com.wingedsheep.engine.event
 
 import com.wingedsheep.engine.core.CountersAddedEvent
-import com.wingedsheep.engine.core.AbilityActivatedEvent
-import com.wingedsheep.engine.core.AbilityTriggeredEvent
 import com.wingedsheep.engine.core.AttackersDeclaredEvent
-import com.wingedsheep.engine.core.BecomesTargetEvent
-import com.wingedsheep.engine.core.BlockersDeclaredEvent
 import com.wingedsheep.engine.core.CardCycledEvent
 import com.wingedsheep.engine.core.ControlChangedEvent
-import com.wingedsheep.engine.core.CardRevealedFromDrawEvent
-import com.wingedsheep.engine.core.CardsDrawnEvent
 import com.wingedsheep.engine.core.DamageDealtEvent
-import com.wingedsheep.engine.core.LifeChangedEvent
-import com.wingedsheep.engine.core.SpellCastEvent
 import com.wingedsheep.engine.core.TappedEvent
 import com.wingedsheep.engine.core.TurnFaceUpEvent
-import com.wingedsheep.engine.core.UntappedEvent
 import com.wingedsheep.engine.core.ZoneChangeEvent
 import com.wingedsheep.engine.core.GameEvent as EngineGameEvent
 import com.wingedsheep.engine.handlers.ConditionEvaluator
-import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.PredicateContext
 import com.wingedsheep.engine.handlers.PredicateEvaluator
-import com.wingedsheep.engine.mechanics.layers.ProjectedState
 import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.battlefield.AttachedToComponent
-import com.wingedsheep.engine.state.components.battlefield.DamageDealtToCreaturesThisTurnComponent
-import com.wingedsheep.engine.state.components.identity.CardComponent
-import com.wingedsheep.engine.state.components.stack.SpellOnStackComponent
-import com.wingedsheep.engine.state.components.stack.TargetsComponent
-import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.battlefield.CountersComponent
 import com.wingedsheep.engine.state.components.battlefield.SagaComponent
+import com.wingedsheep.engine.state.components.identity.CardComponent
+import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.identity.FaceDownComponent
 import com.wingedsheep.engine.state.components.identity.OwnerComponent
-import com.wingedsheep.engine.state.components.identity.TextReplacementComponent
 import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.core.Zone
-import com.wingedsheep.sdk.scripting.GrantTriggeredAbilityToCreatureGroup
-import com.wingedsheep.sdk.scripting.predicates.ControllerPredicate
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.*
 import com.wingedsheep.sdk.scripting.events.DamageType
 import com.wingedsheep.sdk.scripting.events.RecipientFilter
-import com.wingedsheep.sdk.scripting.events.SourceFilter
-import com.wingedsheep.sdk.scripting.events.SpellTypeFilter
 import com.wingedsheep.sdk.scripting.references.Player
 
 /**
@@ -54,6 +35,11 @@ import com.wingedsheep.sdk.scripting.references.Player
  *
  * Triggers are returned in APNAP (Active Player, Non-Active Player) order for
  * proper stack placement.
+ *
+ * Delegates to focused sub-detectors for specific trigger categories:
+ * - [DeathAndLeaveTriggerDetector] — dies/leaves-battlefield triggers
+ * - [DamageTriggerDetector] — damage source/received triggers
+ * - [AttachmentTriggerDetector] — aura/equipment triggers
  */
 class TriggerDetector(
     private val cardRegistry: CardRegistry? = null,
@@ -62,101 +48,11 @@ class TriggerDetector(
     private val predicateEvaluator: PredicateEvaluator = PredicateEvaluator()
 ) {
 
-    /**
-     * Get triggered abilities for a card, checking both the AbilityRegistry
-     * and falling back to the CardRegistry for card definitions.
-     *
-     * If the entity has a TextReplacementComponent (from Artificial Evolution etc.),
-     * creature type references in triggers and effects are transformed accordingly.
-     */
-    private fun getTriggeredAbilities(entityId: EntityId, cardDefinitionId: String, state: GameState): List<TriggeredAbility> {
-        // First check the AbilityRegistry (for manually registered abilities)
-        val registryAbilities = abilityRegistry.getTriggeredAbilities(entityId, cardDefinitionId)
-        val base = if (registryAbilities.isNotEmpty()) {
-            registryAbilities
-        } else {
-            // Fall back to looking up from CardRegistry
-            cardRegistry?.getCard(cardDefinitionId)?.triggeredAbilities ?: emptyList()
-        }
-
-        // Merge in any temporarily granted triggered abilities (e.g., from Commando Raid)
-        val grantedAbilities = state.grantedTriggeredAbilities
-            .filter { it.entityId == entityId }
-            .map { it.ability }
-
-        // Merge in triggered abilities granted by static abilities on other permanents
-        // (e.g., Hunter Sliver granting provoke to all Slivers)
-        val staticGrantedAbilities = getStaticGrantedTriggeredAbilities(entityId, state)
-
-        val allGranted = grantedAbilities + staticGrantedAbilities
-        val combined = if (allGranted.isNotEmpty()) base + allGranted else base
-
-        // Apply text replacement if the entity has one
-        val textReplacement = state.getEntity(entityId)?.get<TextReplacementComponent>()
-        return if (textReplacement != null) {
-            combined.map { it.applyTextReplacement(textReplacement) }
-        } else {
-            combined
-        }
-    }
-
-    /**
-     * Get triggered abilities granted by static abilities on battlefield permanents.
-     * E.g., Hunter Sliver grants provoke to all Sliver creatures via
-     * GrantTriggeredAbilityToCreatureGroup.
-     *
-     * Scans all battlefield permanents for this static ability type, checks if the
-     * target entity matches the filter using its projected card data.
-     */
-    private fun getStaticGrantedTriggeredAbilities(entityId: EntityId, state: GameState): List<TriggeredAbility> {
-        val registry = cardRegistry ?: return emptyList()
-        val targetContainer = state.getEntity(entityId) ?: return emptyList()
-        val targetCard = targetContainer.get<CardComponent>() ?: return emptyList()
-        val projected = state.projectedState
-        val targetControllerId = projected.getController(entityId)
-
-        val result = mutableListOf<TriggeredAbility>()
-
-        for (permanentId in state.getBattlefield()) {
-            val container = state.getEntity(permanentId) ?: continue
-            val card = container.get<CardComponent>() ?: continue
-            // Skip face-down permanents — they have no abilities
-            if (container.has<FaceDownComponent>()) continue
-
-            val sourceControllerId = projected.getController(permanentId) ?: continue
-
-            val cardDef = registry.getCard(card.cardDefinitionId) ?: continue
-            for (ability in cardDef.staticAbilities) {
-                if (ability !is GrantTriggeredAbilityToCreatureGroup) continue
-
-                // Check if the target entity matches the filter's card predicates
-                val filter = ability.filter.baseFilter
-                val matchesAll = filter.cardPredicates.all { predicate ->
-                    when (predicate) {
-                        is com.wingedsheep.sdk.scripting.predicates.CardPredicate.IsCreature ->
-                            targetCard.typeLine.isCreature
-                        is com.wingedsheep.sdk.scripting.predicates.CardPredicate.HasSubtype ->
-                            targetCard.typeLine.hasSubtype(predicate.subtype)
-                        else -> true
-                    }
-                }
-                if (!matchesAll) continue
-
-                // Check controller predicate relative to the source permanent's controller
-                val controllerMatch = when (filter.controllerPredicate) {
-                    is ControllerPredicate.ControlledByYou -> targetControllerId == sourceControllerId
-                    is ControllerPredicate.ControlledByOpponent -> targetControllerId != null && targetControllerId != sourceControllerId
-                    null -> true
-                    else -> true
-                }
-                if (controllerMatch) {
-                    result.add(ability.ability)
-                }
-            }
-        }
-
-        return result
-    }
+    private val matcher = TriggerMatcher(predicateEvaluator, conditionEvaluator)
+    private val abilityResolver = TriggerAbilityResolver(cardRegistry, abilityRegistry)
+    private val deathAndLeaveDetector = DeathAndLeaveTriggerDetector(abilityResolver, matcher)
+    private val damageDetector = DamageTriggerDetector(abilityResolver, matcher)
+    private val attachmentDetector = AttachmentTriggerDetector()
 
     /**
      * Build a trigger index for the current game state.
@@ -204,7 +100,7 @@ class TriggerDetector(
             val controllerId = projected.getController(entityId) ?: continue
             if (container.has<FaceDownComponent>()) continue
 
-            val abilities = getTriggeredAbilitiesWithProviders(
+            val abilities = abilityResolver.getTriggeredAbilitiesWithProviders(
                 entityId, cardComponent.cardDefinitionId, state, grantProviders
             )
             if (abilities.isEmpty() && container.get<AttachedToComponent>() == null) continue
@@ -259,91 +155,6 @@ class TriggerDetector(
     }
 
     /**
-     * Variant of getTriggeredAbilities that uses pre-computed grant providers
-     * instead of scanning the battlefield for GrantTriggeredAbilityToCreatureGroup.
-     * Reduces O(N^2) to O(N*P) where P = number of grant providers (typically 0-2).
-     */
-    private fun getTriggeredAbilitiesWithProviders(
-        entityId: EntityId,
-        cardDefinitionId: String,
-        state: GameState,
-        grantProviders: List<TriggerIndex.GrantProviderEntry>
-    ): List<TriggeredAbility> {
-        // If the entity has lost all abilities (e.g., Deep Freeze), suppress its own triggered abilities
-        val hasLostAbilities = state.projectedState.hasLostAllAbilities(entityId)
-
-        val base = if (hasLostAbilities) {
-            emptyList()
-        } else {
-            val registryAbilities = abilityRegistry.getTriggeredAbilities(entityId, cardDefinitionId)
-            if (registryAbilities.isNotEmpty()) {
-                registryAbilities
-            } else {
-                cardRegistry?.getCard(cardDefinitionId)?.triggeredAbilities ?: emptyList()
-            }
-        }
-
-        val grantedAbilities = state.grantedTriggeredAbilities
-            .filter { it.entityId == entityId }
-            .map { it.ability }
-
-        val staticGrantedAbilities = if (grantProviders.isNotEmpty()) {
-            getStaticGrantedFromProviders(entityId, state, grantProviders)
-        } else {
-            emptyList()
-        }
-
-        val allGranted = grantedAbilities + staticGrantedAbilities
-        val combined = if (allGranted.isNotEmpty()) base + allGranted else base
-
-        val textReplacement = state.getEntity(entityId)?.get<TextReplacementComponent>()
-        return if (textReplacement != null) {
-            combined.map { it.applyTextReplacement(textReplacement) }
-        } else {
-            combined
-        }
-    }
-
-    /**
-     * Fast lookup of static-granted triggered abilities using pre-computed providers.
-     */
-    private fun getStaticGrantedFromProviders(
-        entityId: EntityId,
-        state: GameState,
-        grantProviders: List<TriggerIndex.GrantProviderEntry>
-    ): List<TriggeredAbility> {
-        val targetContainer = state.getEntity(entityId) ?: return emptyList()
-        val targetCard = targetContainer.get<CardComponent>() ?: return emptyList()
-        val projected = state.projectedState
-        val targetControllerId = projected.getController(entityId)
-
-        return buildList {
-            for (entry in grantProviders) {
-                val filter = entry.grant.filter.baseFilter
-                val matchesAll = filter.cardPredicates.all { predicate ->
-                    when (predicate) {
-                        is com.wingedsheep.sdk.scripting.predicates.CardPredicate.IsCreature ->
-                            targetCard.typeLine.isCreature
-                        is com.wingedsheep.sdk.scripting.predicates.CardPredicate.HasSubtype ->
-                            targetCard.typeLine.hasSubtype(predicate.subtype)
-                        else -> true
-                    }
-                }
-                if (!matchesAll) continue
-
-                // Check controller predicate relative to the source permanent's controller
-                val controllerMatch = when (filter.controllerPredicate) {
-                    is ControllerPredicate.ControlledByYou -> targetControllerId == entry.sourceControllerId
-                    is ControllerPredicate.ControlledByOpponent -> targetControllerId != null && targetControllerId != entry.sourceControllerId
-                    null -> true
-                    else -> true
-                }
-                if (controllerMatch) add(entry.grant.ability)
-            }
-        }
-    }
-
-    /**
      * Detect all triggers that should fire based on the given events.
      *
      * @param state The current game state
@@ -366,7 +177,7 @@ class TriggerDetector(
         // each creature's death triggers should still see the others dying.
         // The main loop in detectTriggersForEvent only checks battlefield creatures,
         // so dead creatures miss each other's death events. Fix that here.
-        detectSimultaneousDeathTriggers(state, events, triggers)
+        deathAndLeaveDetector.detectSimultaneousDeathTriggers(state, events, triggers)
 
         // Detect "whenever one or more cards are put into your graveyard from your library"
         // batching triggers (e.g., Sidisi, Brood Tyrant). Groups library→graveyard zone changes
@@ -382,7 +193,7 @@ class TriggerDetector(
         duplicateETBTriggers(state, events, triggers)
 
         // Rule 603.4: Filter out triggers with unmet intervening-if conditions
-        return sortByApnapOrder(state, filterByTriggerCondition(state, triggers))
+        return matcher.sortByApnapOrder(state, matcher.filterByTriggerCondition(state, triggers))
     }
 
     /**
@@ -411,7 +222,7 @@ class TriggerDetector(
             )
         }
         val consumedIds = matching.map { it.id }.toSet()
-        return sortByApnapOrder(state, triggers) to consumedIds
+        return matcher.sortByApnapOrder(state, triggers) to consumedIds
     }
 
     /**
@@ -431,7 +242,7 @@ class TriggerDetector(
         for (entry in index.getEntitiesForCategory(TriggerCategory.STEP)) {
             for (ability in entry.abilities) {
                 if (ability.activeZone != Zone.BATTLEFIELD) continue
-                if (matchesStepTrigger(ability.trigger, step, entry.controllerId, activePlayerId)) {
+                if (matcher.matchesStepTrigger(ability.trigger, step, entry.controllerId, activePlayerId)) {
                     triggers.add(
                         PendingTrigger(
                             ability = ability,
@@ -479,7 +290,7 @@ class TriggerDetector(
                 val container = state.getEntity(entityId) ?: continue
                 val cardComponent = container.get<CardComponent>() ?: continue
 
-                val abilities = getTriggeredAbilities(entityId, cardComponent.cardDefinitionId, state)
+                val abilities = abilityResolver.getTriggeredAbilities(entityId, cardComponent.cardDefinitionId, state)
 
                 for (ability in abilities) {
                     if (ability.activeZone != Zone.GRAVEYARD) continue
@@ -487,7 +298,7 @@ class TriggerDetector(
                     val ownerId = cardComponent.ownerId
                         ?: container.get<OwnerComponent>()?.playerId
                         ?: continue
-                    if (matchesStepTrigger(ability.trigger, step, ownerId, activePlayerId)) {
+                    if (matcher.matchesStepTrigger(ability.trigger, step, ownerId, activePlayerId)) {
                         triggers.add(
                             PendingTrigger(
                                 ability = ability,
@@ -508,14 +319,14 @@ class TriggerDetector(
                 val container = state.getEntity(entityId) ?: continue
                 val cardComponent = container.get<CardComponent>() ?: continue
 
-                val abilities = getTriggeredAbilities(entityId, cardComponent.cardDefinitionId, state)
+                val abilities = abilityResolver.getTriggeredAbilities(entityId, cardComponent.cardDefinitionId, state)
 
                 for (ability in abilities) {
                     if (ability.activeZone != Zone.EXILE) continue
                     val ownerId = cardComponent.ownerId
                         ?: container.get<OwnerComponent>()?.playerId
                         ?: continue
-                    if (matchesStepTrigger(ability.trigger, step, ownerId, activePlayerId)) {
+                    if (matcher.matchesStepTrigger(ability.trigger, step, ownerId, activePlayerId)) {
                         triggers.add(
                             PendingTrigger(
                                 ability = ability,
@@ -534,7 +345,7 @@ class TriggerDetector(
         // (e.g., Dimensional Breach creates a permanent global upkeep trigger)
         for (global in state.globalGrantedTriggeredAbilities) {
             val ability = global.ability
-            if (matchesStepTrigger(ability.trigger, step, global.controllerId, activePlayerId)) {
+            if (matcher.matchesStepTrigger(ability.trigger, step, global.controllerId, activePlayerId)) {
                 triggers.add(
                     PendingTrigger(
                         ability = ability,
@@ -548,7 +359,7 @@ class TriggerDetector(
         }
 
         // Rule 603.4: Filter out triggers with unmet intervening-if conditions
-        return sortByApnapOrder(state, filterByTriggerCondition(state, triggers))
+        return matcher.sortByApnapOrder(state, matcher.filterByTriggerCondition(state, triggers))
     }
 
     private fun detectTriggersForEvent(
@@ -567,7 +378,7 @@ class TriggerDetector(
 
             for (ability in entry.abilities) {
                 if (ability.activeZone != Zone.BATTLEFIELD) continue
-                if (matchesTrigger(ability.trigger, ability.binding, event, entityId, controllerId, state)) {
+                if (matcher.matchesTrigger(ability.trigger, ability.binding, event, entityId, controllerId, state)) {
                     // For "whenever a creature attacks" (AttackEvent with ANY binding),
                     // create one trigger per attacking creature (Rule 603.2c)
                     if (ability.trigger is GameEvent.AttackEvent && ability.binding == TriggerBinding.ANY &&
@@ -609,7 +420,7 @@ class TriggerDetector(
                     // If a filter is set (e.g., "whenever a Beast becomes blocked"), match any blocked
                     // creature matching the filter regardless of controller.
                     else if (ability.trigger is GameEvent.BecomesBlockedEvent && ability.binding == TriggerBinding.ANY &&
-                        event is BlockersDeclaredEvent) {
+                        event is com.wingedsheep.engine.core.BlockersDeclaredEvent) {
                         val trigger = ability.trigger as GameEvent.BecomesBlockedEvent
                         val creatureFilter = trigger.filter
                         val blockedAttackers = event.blockers.values.flatten().distinct()
@@ -647,7 +458,7 @@ class TriggerDetector(
                     // For "blocks or becomes blocked by [filter]" (BlocksOrBecomesBlockedByEvent with SELF binding),
                     // check both blocking and being-blocked relationships and create one trigger per matching partner.
                     else if (ability.trigger is GameEvent.BlocksOrBecomesBlockedByEvent &&
-                        ability.binding == TriggerBinding.SELF && event is BlockersDeclaredEvent) {
+                        ability.binding == TriggerBinding.SELF && event is com.wingedsheep.engine.core.BlockersDeclaredEvent) {
                         val trigger = ability.trigger as GameEvent.BlocksOrBecomesBlockedByEvent
                         val partners = mutableListOf<EntityId>()
 
@@ -721,14 +532,14 @@ class TriggerDetector(
                 val container = state.getEntity(entityId) ?: continue
                 val cardComponent = container.get<CardComponent>() ?: continue
 
-                val abilities = getTriggeredAbilities(entityId, cardComponent.cardDefinitionId, state)
+                val abilities = abilityResolver.getTriggeredAbilities(entityId, cardComponent.cardDefinitionId, state)
 
                 for (ability in abilities) {
                     if (ability.activeZone != Zone.GRAVEYARD) continue
                     val ownerId = cardComponent.ownerId
                         ?: container.get<OwnerComponent>()?.playerId
                         ?: continue
-                    if (matchesTrigger(ability.trigger, ability.binding, event, entityId, ownerId, state)) {
+                    if (matcher.matchesTrigger(ability.trigger, ability.binding, event, entityId, ownerId, state)) {
                         triggers.add(
                             PendingTrigger(
                                 ability = ability,
@@ -749,22 +560,22 @@ class TriggerDetector(
         // Handle death triggers (source might not be on battlefield anymore)
         if (event is ZoneChangeEvent && event.toZone == Zone.GRAVEYARD &&
             event.fromZone == Zone.BATTLEFIELD) {
-            detectDeathTriggers(state, event, triggers)
+            deathAndLeaveDetector.detectDeathTriggers(state, event, triggers)
             // Handle "whenever a creature dealt damage by this creature this turn dies" triggers
-            detectCreatureDealtDamageBySourceDiesTriggers(state, event, triggers, projected, index)
+            deathAndLeaveDetector.detectCreatureDealtDamageBySourceDiesTriggers(state, event, triggers, projected, index)
             // Handle "when enchanted creature dies" triggers on auras that went to graveyard
             // (detected on the AURA's zone change event using lastKnownAttachedTo)
-            detectEnchantedCreatureDiesTriggers(state, event, triggers)
+            deathAndLeaveDetector.detectEnchantedCreatureDiesTriggers(state, event, triggers)
             // Handle "when enchanted permanent leaves the battlefield" triggers on auras that went to graveyard
-            detectEnchantedPermanentLeavesBattlefieldTriggers(state, event, triggers)
+            deathAndLeaveDetector.detectEnchantedPermanentLeavesBattlefieldTriggers(state, event, triggers)
             // Handle "when equipped creature dies" triggers on equipment still on battlefield
             // (detected on the CREATURE's zone change event using aurasByTarget index)
-            detectEquippedCreatureDiesTriggers(state, event, triggers, index)
+            deathAndLeaveDetector.detectEquippedCreatureDiesTriggers(state, event, triggers, index)
         }
 
         // Handle leaves-the-battlefield triggers (source is no longer on battlefield)
         if (event is ZoneChangeEvent && event.fromZone == Zone.BATTLEFIELD) {
-            detectLeavesBattlefieldTriggers(state, event, triggers)
+            deathAndLeaveDetector.detectLeavesBattlefieldTriggers(state, event, triggers)
         }
 
         // Handle cycling triggers on the cycled card itself (e.g., Renewed Faith)
@@ -775,57 +586,57 @@ class TriggerDetector(
         // Handle damage-received triggers for creatures no longer on the battlefield
         // (e.g., Broodhatch Nantuko dies from combat damage but trigger still fires)
         if (event is DamageDealtEvent && event.targetId !in state.getBattlefield()) {
-            detectDamageReceivedTriggers(state, event, triggers)
+            damageDetector.detectDamageReceivedTriggers(state, event, triggers)
         }
 
         // Handle damage-source triggers
         if (event is DamageDealtEvent && event.sourceId != null) {
-            detectDamageSourceTriggers(state, event, triggers, projected)
+            damageDetector.detectDamageSourceTriggers(state, event, triggers, projected)
         }
 
         // Handle "whenever a creature/spell deals damage to this" triggers (e.g., Tephraderm)
         if (event is DamageDealtEvent && event.sourceId != null) {
-            detectDamagedBySourceTriggers(state, event, triggers)
+            damageDetector.detectDamagedBySourceTriggers(state, event, triggers)
         }
 
         // Handle "whenever a creature deals damage to you" triggers (e.g., Aurification)
         if (event is DamageDealtEvent && event.sourceId != null && event.targetId in state.turnOrder) {
-            detectDamageToControllerTriggers(state, event, triggers, projected, index)
+            damageDetector.detectDamageToControllerTriggers(state, event, triggers, projected, index)
         }
 
         // Handle "whenever a [subtype] deals combat damage to a player" triggers (e.g., Cabal Slaver)
         if (event is DamageDealtEvent && event.sourceId != null && event.isCombatDamage && event.targetId in state.turnOrder) {
-            detectSubtypeDamageToPlayerTriggers(state, event, triggers, projected, index)
+            damageDetector.detectSubtypeDamageToPlayerTriggers(state, event, triggers, projected, index)
         }
 
         // Handle "when enchanted creature is dealt damage" triggers on auras (e.g., Frozen Solid)
         if (event is DamageDealtEvent && !event.targetIsPlayer) {
-            detectEnchantedCreatureDamageTriggers(state, event, triggers, projected, index)
+            attachmentDetector.detectEnchantedCreatureDamageTriggers(state, event, triggers, projected, index)
         }
 
         // Handle "when enchanted creature deals combat damage to a player" triggers on auras (e.g., One with Nature)
         if (event is DamageDealtEvent && event.isCombatDamage && event.targetIsPlayer && event.sourceId != null) {
-            detectEnchantedCreatureDealsDamageTriggers(state, event, triggers, projected, index)
+            attachmentDetector.detectEnchantedCreatureDealsDamageTriggers(state, event, triggers, projected, index)
         }
 
         // Handle "when enchanted creature deals damage" triggers on auras (e.g., Guilty Conscience)
         if (event is DamageDealtEvent && event.sourceId != null) {
-            detectEnchantedCreatureDealsDamageAnyTriggers(state, event, triggers, projected, index)
+            attachmentDetector.detectEnchantedCreatureDealsDamageAnyTriggers(state, event, triggers, projected, index)
         }
 
         // Handle "when attached creature attacks" triggers for auras/equipment (e.g., Extra Arms, Heart-Piercer Bow)
         if (event is AttackersDeclaredEvent) {
-            detectAttachedCreatureAttacksTriggers(state, event, triggers, projected, index)
+            attachmentDetector.detectAttachedCreatureAttacksTriggers(state, event, triggers, projected, index)
         }
 
         // Handle "when enchanted creature is turned face up" triggers on auras (e.g., Fatal Mutation)
         if (event is TurnFaceUpEvent) {
-            detectEnchantedCreatureTurnedFaceUpTriggers(state, event, triggers, projected, index)
+            attachmentDetector.detectEnchantedCreatureTurnedFaceUpTriggers(state, event, triggers, projected, index)
         }
 
         // Handle "when enchanted permanent becomes tapped" triggers on auras (e.g., Uncontrolled Infestation)
         if (event is TappedEvent) {
-            detectEnchantedPermanentBecomesTappedTriggers(state, event, triggers, projected, index)
+            attachmentDetector.detectEnchantedPermanentBecomesTappedTriggers(state, event, triggers, projected, index)
         }
 
         // Handle "when you gain control of this from another player" triggers (e.g., Risky Move)
@@ -851,7 +662,7 @@ class TriggerDetector(
         for (global in state.globalGrantedTriggeredAbilities) {
             val ability = global.ability
             // Use a dummy sourceId for matchesTrigger (global abilities aren't attached to entities)
-            if (matchesTrigger(ability.trigger, ability.binding, event, global.sourceId, global.controllerId, state)) {
+            if (matcher.matchesTrigger(ability.trigger, ability.binding, event, global.sourceId, global.controllerId, state)) {
                 triggers.add(
                     PendingTrigger(
                         ability = ability,
@@ -879,7 +690,7 @@ class TriggerDetector(
         val container = state.getEntity(entityId) ?: return
         val cardComponent = container.get<CardComponent>() ?: return
 
-        val abilities = getTriggeredAbilities(entityId, cardComponent.cardDefinitionId, state)
+        val abilities = abilityResolver.getTriggeredAbilities(entityId, cardComponent.cardDefinitionId, state)
 
         for (ability in abilities) {
             if (ability.trigger is GameEvent.CycleEvent) {
@@ -892,270 +703,6 @@ class TriggerDetector(
                         triggerContext = TriggerContext(triggeringPlayerId = event.playerId)
                     )
                 )
-            }
-        }
-    }
-
-    private fun detectDeathTriggers(
-        state: GameState,
-        event: ZoneChangeEvent,
-        triggers: MutableList<PendingTrigger>
-    ) {
-        val entityId = event.entityId
-        val container = state.getEntity(entityId) ?: return
-        val cardComponent = container.get<CardComponent>() ?: return
-
-        // Face-down creatures have no abilities (Rule 707.2)
-        if (container.has<FaceDownComponent>()) return
-
-        // For "When this creature dies" - the creature might be in graveyard now
-        // Look up abilities by card definition
-        val abilities = getTriggeredAbilities(entityId, cardComponent.cardDefinitionId, state)
-        val controllerId = event.ownerId
-
-        for (ability in abilities) {
-            if (!isDeathTrigger(ability.trigger)) continue
-
-            when (ability.binding) {
-                TriggerBinding.SELF -> {
-                    // "When this creature dies" - always matches its own death
-                    triggers.add(
-                        PendingTrigger(
-                            ability = ability,
-                            sourceId = entityId,
-                            sourceName = cardComponent.name,
-                            controllerId = controllerId,
-                            triggerContext = TriggerContext.fromEvent(event)
-                        )
-                    )
-                }
-                TriggerBinding.ANY -> {
-                    // "Whenever a creature [matching filter] dies" - check if its own death matches
-                    // (e.g., Sultai Flayer: "Whenever a creature you control with toughness 4 or greater dies")
-                    if (matchesTrigger(ability.trigger, ability.binding, event, entityId, controllerId, state)) {
-                        triggers.add(
-                            PendingTrigger(
-                                ability = ability,
-                                sourceId = entityId,
-                                sourceName = cardComponent.name,
-                                controllerId = controllerId,
-                                triggerContext = TriggerContext.fromEvent(event)
-                            )
-                        )
-                    }
-                }
-                TriggerBinding.OTHER -> {
-                    // "Whenever another creature dies" - never matches its own death
-                }
-            }
-        }
-    }
-
-    /**
-     * Detect "when enchanted creature dies" triggers on auras.
-     * When an aura goes to graveyard because its enchanted creature died, the ZoneChangeEvent
-     * for the aura carries [ZoneChangeEvent.lastKnownAttachedTo] = the dying creature's ID.
-     * We look up the aura's card definition for EnchantedCreatureDiesEvent triggers.
-     */
-    private fun detectEnchantedCreatureDiesTriggers(
-        state: GameState,
-        event: ZoneChangeEvent,
-        triggers: MutableList<PendingTrigger>
-    ) {
-        // Only process if this is an aura that was attached to something
-        val attachedCreatureId = event.lastKnownAttachedTo ?: return
-
-        // "Dies" means moved to graveyard — verify the creature is actually in a graveyard
-        // (not exiled or bounced). Check all graveyards for the creature.
-        val creatureInGraveyard = state.turnOrder.any { playerId ->
-            attachedCreatureId in state.getGraveyard(playerId)
-        }
-        if (!creatureInGraveyard) return
-
-        val auraEntityId = event.entityId
-        val container = state.getEntity(auraEntityId) ?: return
-        val cardComponent = container.get<CardComponent>() ?: return
-
-        // Look up abilities from card definition (aura is now in graveyard, so use card def)
-        val abilities = getTriggeredAbilities(auraEntityId, cardComponent.cardDefinitionId, state)
-
-        for (ability in abilities) {
-            if (ability.trigger !is GameEvent.EnchantedCreatureDiesEvent) continue
-
-            val controllerId = event.ownerId
-            triggers.add(
-                PendingTrigger(
-                    ability = ability,
-                    sourceId = auraEntityId,
-                    sourceName = cardComponent.name,
-                    controllerId = controllerId,
-                    triggerContext = TriggerContext(triggeringEntityId = attachedCreatureId)
-                )
-            )
-        }
-    }
-
-    /**
-     * Detect "when enchanted permanent leaves the battlefield" triggers on auras.
-     * Similar to [detectEnchantedCreatureDiesTriggers] but fires for any zone change
-     * (not just dying). The enchanted permanent may have been exiled, bounced, etc.
-     */
-    private fun detectEnchantedPermanentLeavesBattlefieldTriggers(
-        state: GameState,
-        event: ZoneChangeEvent,
-        triggers: MutableList<PendingTrigger>
-    ) {
-        // Only process if this is an aura that was attached to something
-        val attachedPermanentId = event.lastKnownAttachedTo ?: return
-
-        val auraEntityId = event.entityId
-        val container = state.getEntity(auraEntityId) ?: return
-        val cardComponent = container.get<CardComponent>() ?: return
-
-        // Look up abilities from card definition (aura is now in graveyard, so use card def)
-        val abilities = getTriggeredAbilities(auraEntityId, cardComponent.cardDefinitionId, state)
-
-        for (ability in abilities) {
-            if (ability.trigger !is GameEvent.EnchantedPermanentLeavesBattlefieldEvent) continue
-
-            val controllerId = event.ownerId
-            triggers.add(
-                PendingTrigger(
-                    ability = ability,
-                    sourceId = auraEntityId,
-                    sourceName = cardComponent.name,
-                    controllerId = controllerId,
-                    triggerContext = TriggerContext(triggeringEntityId = attachedPermanentId)
-                )
-            )
-        }
-    }
-
-    /**
-     * Detect "when equipped creature dies" triggers on equipment.
-     * Unlike auras (which go to graveyard with the creature), equipment stays on the battlefield.
-     * When a creature dies, we check the aurasByTarget index for equipment attached to it
-     * that has EquippedCreatureDiesEvent triggers.
-     */
-    private fun detectEquippedCreatureDiesTriggers(
-        state: GameState,
-        event: ZoneChangeEvent,
-        triggers: MutableList<PendingTrigger>,
-        index: TriggerIndex
-    ) {
-        val dyingCreatureId = event.entityId
-
-        for (entry in index.aurasByTarget[dyingCreatureId].orEmpty()) {
-            // Only process equipment (not auras — those are handled by detectEnchantedCreatureDiesTriggers)
-            val isEquipment = entry.cardComponent.typeLine.isEquipment
-            if (!isEquipment) continue
-
-            for (ability in entry.abilities) {
-                if (ability.trigger !is GameEvent.EquippedCreatureDiesEvent) continue
-
-                triggers.add(
-                    PendingTrigger(
-                        ability = ability,
-                        sourceId = entry.entityId,
-                        sourceName = entry.cardComponent.name,
-                        controllerId = entry.controllerId,
-                        triggerContext = TriggerContext(triggeringEntityId = dyingCreatureId)
-                    )
-                )
-            }
-        }
-    }
-
-    /**
-     * Detect "whenever a creature dealt damage by this creature this turn dies" triggers.
-     * Uses pre-indexed entities with CreatureDealtDamageBySourceDiesEvent triggers instead
-     * of scanning all battlefield permanents.
-     */
-    private fun detectCreatureDealtDamageBySourceDiesTriggers(
-        state: GameState,
-        event: ZoneChangeEvent,
-        triggers: MutableList<PendingTrigger>,
-        projected: ProjectedState,
-        index: TriggerIndex
-    ) {
-        val dyingEntityId = event.entityId
-
-        for (entry in index.creatureDamageDeathTrackers) {
-            val container = state.getEntity(entry.entityId) ?: continue
-
-            // Check if this permanent dealt damage to the dying creature this turn
-            val damageTracking = container.get<DamageDealtToCreaturesThisTurnComponent>() ?: continue
-            if (dyingEntityId !in damageTracking.creatureIds) continue
-
-            for (ability in entry.abilities) {
-                if (ability.trigger !is GameEvent.CreatureDealtDamageBySourceDiesEvent) continue
-                if (ability.activeZone != Zone.BATTLEFIELD) continue
-
-                triggers.add(
-                    PendingTrigger(
-                        ability = ability,
-                        sourceId = entry.entityId,
-                        sourceName = entry.cardComponent.name,
-                        controllerId = entry.controllerId,
-                        triggerContext = TriggerContext(triggeringEntityId = dyingEntityId)
-                    )
-                )
-            }
-        }
-    }
-
-    /**
-     * Rule 603.10: Handle "look back in time" for simultaneous deaths.
-     * When multiple creatures die at the same time, each dead creature should
-     * still see the others dying for trigger purposes. The main battlefield loop
-     * misses these because the creatures are already in the graveyard.
-     *
-     * This checks dead creatures' non-self death triggers (e.g., ZoneChangeEvent with OTHER/ANY binding)
-     * against other death events in the same batch.
-     */
-    private fun detectSimultaneousDeathTriggers(
-        state: GameState,
-        events: List<EngineGameEvent>,
-        triggers: MutableList<PendingTrigger>
-    ) {
-        // Collect all death events from this batch
-        val deathEvents = events.filterIsInstance<ZoneChangeEvent>().filter {
-            it.toZone == Zone.GRAVEYARD &&
-                it.fromZone == Zone.BATTLEFIELD
-        }
-        if (deathEvents.size < 2) return // Need at least 2 simultaneous deaths
-
-        // For each dead creature, check its triggers against OTHER death events
-        for (deadEvent in deathEvents) {
-            val deadEntityId = deadEvent.entityId
-            val container = state.getEntity(deadEntityId) ?: continue
-            val cardComponent = container.get<CardComponent>() ?: continue
-
-            // Face-down creatures have no abilities (Rule 707.2)
-            if (container.has<FaceDownComponent>()) continue
-
-            // Skip if this creature is still on the battlefield (already handled by main loop)
-            if (deadEntityId in state.getBattlefield()) continue
-
-            val abilities = getTriggeredAbilities(deadEntityId, cardComponent.cardDefinitionId, state)
-            val controllerId = deadEvent.ownerId
-
-            for (ability in abilities) {
-                for (otherDeathEvent in deathEvents) {
-                    if (otherDeathEvent.entityId == deadEntityId) continue // Skip self
-
-                    if (matchesTrigger(ability.trigger, ability.binding, otherDeathEvent, deadEntityId, controllerId, state)) {
-                        triggers.add(
-                            PendingTrigger(
-                                ability = ability,
-                                sourceId = deadEntityId,
-                                sourceName = cardComponent.name,
-                                controllerId = controllerId,
-                                triggerContext = TriggerContext.fromEvent(otherDeathEvent)
-                            )
-                        )
-                    }
-                }
             }
         }
     }
@@ -1368,366 +915,6 @@ class TriggerDetector(
     }
 
     /**
-     * Detect "leaves the battlefield" triggers on permanents that just left.
-     * Similar to detectDeathTriggers, but handles ZoneChangeEvent(from=BATTLEFIELD) with SELF binding.
-     */
-    private fun detectLeavesBattlefieldTriggers(
-        state: GameState,
-        event: ZoneChangeEvent,
-        triggers: MutableList<PendingTrigger>
-    ) {
-        val entityId = event.entityId
-        val container = state.getEntity(entityId) ?: return
-        val cardComponent = container.get<CardComponent>() ?: return
-
-        // Face-down creatures have no abilities (Rule 707.2)
-        if (container.has<FaceDownComponent>()) return
-
-        val abilities = getTriggeredAbilities(entityId, cardComponent.cardDefinitionId, state)
-        val controllerId = event.ownerId
-
-        for (ability in abilities) {
-            if (isLeavesBattlefieldTrigger(ability.trigger) && ability.binding == TriggerBinding.SELF) {
-                triggers.add(
-                    PendingTrigger(
-                        ability = ability,
-                        sourceId = entityId,
-                        sourceName = cardComponent.name,
-                        controllerId = controllerId,
-                        triggerContext = TriggerContext.fromEvent(event)
-                    )
-                )
-            }
-        }
-    }
-
-    /**
-     * Detect "whenever this creature is dealt damage" triggers on creatures that
-     * are no longer on the battlefield (e.g., died from the damage via SBAs).
-     * Similar to detectDeathTriggers pattern.
-     */
-    private fun detectDamageReceivedTriggers(
-        state: GameState,
-        event: DamageDealtEvent,
-        triggers: MutableList<PendingTrigger>
-    ) {
-        val entityId = event.targetId
-        val container = state.getEntity(entityId) ?: return
-        val cardComponent = container.get<CardComponent>() ?: return
-        // ControllerComponent is stripped when creature dies via SBAs, fall back to ownerId
-        val controllerId = container.get<ControllerComponent>()?.playerId
-            ?: cardComponent.ownerId
-            ?: return
-
-        // Face-down creatures have no abilities (Rule 707.2)
-        // Check both current state AND the event's recorded face-down status, because
-        // FaceDownComponent may have been stripped by stripBattlefieldComponents when
-        // the creature died via SBAs before trigger detection runs.
-        if (container.has<FaceDownComponent>() || event.targetWasFaceDown) return
-
-        val abilities = getTriggeredAbilities(entityId, cardComponent.cardDefinitionId, state)
-
-        for (ability in abilities) {
-            val trigger = ability.trigger
-            // Only match generic (source=Any) DamageReceivedEvent triggers here.
-            // Source-filtered triggers (DamagedByCreature, DamagedBySpell) are handled
-            // exclusively by detectDamagedBySourceTriggers to avoid firing with a wrong
-            // triggeringEntityId (fromEvent uses targetId, not sourceId).
-            if (trigger is GameEvent.DamageReceivedEvent &&
-                ability.binding == TriggerBinding.SELF &&
-                trigger.source == SourceFilter.Any
-            ) {
-                triggers.add(
-                    PendingTrigger(
-                        ability = ability,
-                        sourceId = entityId,
-                        sourceName = cardComponent.name,
-                        controllerId = controllerId,
-                        triggerContext = TriggerContext.fromEvent(event)
-                    )
-                )
-            }
-        }
-    }
-
-    /**
-     * Detect "when enchanted creature is dealt damage" triggers on auras.
-     * Uses pre-indexed auras-by-target instead of scanning all battlefield permanents.
-     */
-    private fun detectEnchantedCreatureDamageTriggers(
-        state: GameState,
-        event: DamageDealtEvent,
-        triggers: MutableList<PendingTrigger>,
-        projected: ProjectedState,
-        index: TriggerIndex
-    ) {
-        val damagedEntityId = event.targetId
-
-        for (entry in index.aurasByTarget[damagedEntityId].orEmpty()) {
-            for (ability in entry.abilities) {
-                if (ability.trigger is GameEvent.EnchantedCreatureDamageReceivedEvent) {
-                    triggers.add(
-                        PendingTrigger(
-                            ability = ability,
-                            sourceId = entry.entityId,
-                            sourceName = entry.cardComponent.name,
-                            controllerId = entry.controllerId,
-                            triggerContext = TriggerContext.fromEvent(event)
-                        )
-                    )
-                }
-            }
-        }
-    }
-
-    /**
-     * Detect "when enchanted creature deals combat damage to a player" triggers on auras.
-     * Uses pre-indexed auras-by-target instead of scanning all battlefield permanents.
-     */
-    private fun detectEnchantedCreatureDealsDamageTriggers(
-        state: GameState,
-        event: DamageDealtEvent,
-        triggers: MutableList<PendingTrigger>,
-        projected: ProjectedState,
-        index: TriggerIndex
-    ) {
-        val sourceEntityId = event.sourceId ?: return
-
-        for (entry in index.aurasByTarget[sourceEntityId].orEmpty()) {
-            for (ability in entry.abilities) {
-                if (ability.trigger is GameEvent.EnchantedCreatureDealsCombatDamageToPlayerEvent) {
-                    triggers.add(
-                        PendingTrigger(
-                            ability = ability,
-                            sourceId = entry.entityId,
-                            sourceName = entry.cardComponent.name,
-                            controllerId = entry.controllerId,
-                            triggerContext = TriggerContext.fromEvent(event)
-                        )
-                    )
-                }
-            }
-        }
-    }
-
-    /**
-     * Detect "when enchanted creature deals damage" (any type) triggers on auras.
-     * Uses pre-indexed auras-by-target instead of scanning all battlefield permanents.
-     */
-    private fun detectEnchantedCreatureDealsDamageAnyTriggers(
-        state: GameState,
-        event: DamageDealtEvent,
-        triggers: MutableList<PendingTrigger>,
-        projected: ProjectedState,
-        index: TriggerIndex
-    ) {
-        val sourceEntityId = event.sourceId ?: return
-
-        for (entry in index.aurasByTarget[sourceEntityId].orEmpty()) {
-            for (ability in entry.abilities) {
-                if (ability.trigger is GameEvent.EnchantedCreatureDealsDamageEvent) {
-                    triggers.add(
-                        PendingTrigger(
-                            ability = ability,
-                            sourceId = entry.entityId,
-                            sourceName = entry.cardComponent.name,
-                            controllerId = entry.controllerId,
-                            triggerContext = TriggerContext.fromEvent(event)
-                        )
-                    )
-                }
-            }
-        }
-    }
-
-    /**
-     * Detect "when attached creature attacks" triggers on auras and equipment.
-     * Uses pre-indexed auras-by-target (which includes equipment) instead of scanning all battlefield permanents.
-     * Matches AttachedCreatureAttacksEvent — the generalized event for both auras and equipment.
-     */
-    private fun detectAttachedCreatureAttacksTriggers(
-        state: GameState,
-        event: AttackersDeclaredEvent,
-        triggers: MutableList<PendingTrigger>,
-        projected: ProjectedState,
-        index: TriggerIndex
-    ) {
-        for (attackerId in event.attackers) {
-            for (entry in index.aurasByTarget[attackerId].orEmpty()) {
-                for (ability in entry.abilities) {
-                    if (ability.trigger is GameEvent.AttachedCreatureAttacksEvent) {
-                        triggers.add(
-                            PendingTrigger(
-                                ability = ability,
-                                sourceId = entry.entityId,
-                                sourceName = entry.cardComponent.name,
-                                controllerId = entry.controllerId,
-                                triggerContext = TriggerContext(triggeringEntityId = attackerId)
-                            )
-                        )
-                    }
-                }
-            }
-        }
-    }
-
-    /**
-     * Detect "when enchanted creature is turned face up" triggers on auras.
-     * Uses pre-indexed auras-by-target instead of scanning all battlefield permanents.
-     */
-    private fun detectEnchantedCreatureTurnedFaceUpTriggers(
-        state: GameState,
-        event: TurnFaceUpEvent,
-        triggers: MutableList<PendingTrigger>,
-        projected: ProjectedState,
-        index: TriggerIndex
-    ) {
-        val turnedFaceUpEntityId = event.entityId
-
-        for (entry in index.aurasByTarget[turnedFaceUpEntityId].orEmpty()) {
-            for (ability in entry.abilities) {
-                if (ability.trigger is GameEvent.EnchantedCreatureTurnedFaceUpEvent) {
-                    triggers.add(
-                        PendingTrigger(
-                            ability = ability,
-                            sourceId = entry.entityId,
-                            sourceName = entry.cardComponent.name,
-                            controllerId = entry.controllerId,
-                            triggerContext = TriggerContext.fromEvent(event)
-                        )
-                    )
-                }
-            }
-        }
-    }
-
-    /**
-     * Detect "when enchanted permanent becomes tapped" triggers on auras.
-     * Uses pre-indexed auras-by-target instead of scanning all battlefield permanents.
-     */
-    private fun detectEnchantedPermanentBecomesTappedTriggers(
-        state: GameState,
-        event: TappedEvent,
-        triggers: MutableList<PendingTrigger>,
-        projected: ProjectedState,
-        index: TriggerIndex
-    ) {
-        val tappedEntityId = event.entityId
-
-        for (entry in index.aurasByTarget[tappedEntityId].orEmpty()) {
-            for (ability in entry.abilities) {
-                if (ability.trigger is GameEvent.EnchantedPermanentBecomesTappedEvent) {
-                    triggers.add(
-                        PendingTrigger(
-                            ability = ability,
-                            sourceId = entry.entityId,
-                            sourceName = entry.cardComponent.name,
-                            controllerId = entry.controllerId,
-                            triggerContext = TriggerContext.fromEvent(event)
-                        )
-                    )
-                }
-            }
-        }
-    }
-
-    /**
-     * Detect "whenever a creature deals damage to you" triggers on permanents
-     * controlled by the damaged player. Uses pre-indexed damage-to-you observers
-     * instead of scanning all battlefield permanents.
-     */
-    private fun detectDamageToControllerTriggers(
-        state: GameState,
-        event: DamageDealtEvent,
-        triggers: MutableList<PendingTrigger>,
-        projected: ProjectedState,
-        index: TriggerIndex
-    ) {
-        val damageSourceId = event.sourceId ?: return
-        val damagedPlayerId = event.targetId
-
-        // Verify the damage source is a creature on the battlefield
-        val sourceContainer = state.getEntity(damageSourceId) ?: return
-        val sourceCard = sourceContainer.get<CardComponent>() ?: return
-        if (!sourceCard.typeLine.isCreature) return
-
-        for (entry in index.damageToYouObservers) {
-            // Only triggers on permanents controlled by the damaged player
-            if (entry.controllerId != damagedPlayerId) continue
-
-            for (ability in entry.abilities) {
-                val trigger = ability.trigger
-                if (trigger is GameEvent.DealsDamageEvent &&
-                    trigger.recipient == RecipientFilter.You &&
-                    trigger.sourceFilter == null &&
-                    ability.binding == TriggerBinding.ANY) {
-                    triggers.add(
-                        PendingTrigger(
-                            ability = ability,
-                            sourceId = entry.entityId,
-                            sourceName = entry.cardComponent.name,
-                            controllerId = entry.controllerId,
-                            triggerContext = TriggerContext(
-                                triggeringEntityId = damageSourceId,
-                                damageAmount = event.amount
-                            )
-                        )
-                    )
-                }
-            }
-        }
-    }
-
-    /**
-     * Detect "whenever a [subtype] deals combat damage to a player" triggers.
-     * Uses pre-indexed subtype damage observers instead of scanning all battlefield permanents.
-     */
-    private fun detectSubtypeDamageToPlayerTriggers(
-        state: GameState,
-        event: DamageDealtEvent,
-        triggers: MutableList<PendingTrigger>,
-        projected: ProjectedState,
-        index: TriggerIndex
-    ) {
-        val damageSourceId = event.sourceId ?: return
-        val damagedPlayerId = event.targetId
-
-        // Verify the damage source is a creature (face-down creatures have no subtypes)
-        val sourceContainer = state.getEntity(damageSourceId) ?: return
-        val sourceCard = sourceContainer.get<CardComponent>() ?: return
-        if (!sourceCard.typeLine.isCreature) return
-        if (sourceContainer.has<FaceDownComponent>()) return
-
-        for (entry in index.subtypeDamageObservers) {
-            for (ability in entry.abilities) {
-                val trigger = ability.trigger
-                if (trigger is GameEvent.DealsDamageEvent &&
-                    trigger.damageType == DamageType.Combat &&
-                    trigger.recipient == RecipientFilter.AnyPlayer &&
-                    trigger.sourceFilter != null) {
-                    // Check if the sourceFilter has a subtype requirement
-                    val filter = trigger.sourceFilter
-                    val subtypeValue = if (filter is GameObjectFilter) extractSubtypeFromFilter(filter) else null
-                    if (subtypeValue != null && projected.hasSubtype(damageSourceId, subtypeValue)) {
-                        triggers.add(
-                            PendingTrigger(
-                                ability = ability,
-                                sourceId = entry.entityId,
-                                sourceName = entry.cardComponent.name,
-                                controllerId = entry.controllerId,
-                                triggerContext = TriggerContext(
-                                    triggeringEntityId = damagedPlayerId,
-                                    damageAmount = event.amount
-                                )
-                            )
-                        )
-                    }
-                }
-            }
-        }
-    }
-
-    /**
      * Detect "when you gain control of this from another player" triggers.
      * Fires on the permanent whose control just changed, when the new controller
      * is different from the old controller.
@@ -1747,7 +934,7 @@ class TriggerDetector(
         // Only fire if control actually changed
         if (event.oldControllerId == event.newControllerId) return
 
-        val abilities = getTriggeredAbilities(entityId, cardComponent.cardDefinitionId, state)
+        val abilities = abilityResolver.getTriggeredAbilities(entityId, cardComponent.cardDefinitionId, state)
 
         for (ability in abilities) {
             if (ability.trigger is GameEvent.ControlChangeEvent && ability.binding == TriggerBinding.SELF) {
@@ -1766,741 +953,5 @@ class TriggerDetector(
                 )
             }
         }
-    }
-
-    private fun detectDamageSourceTriggers(
-        state: GameState,
-        event: DamageDealtEvent,
-        triggers: MutableList<PendingTrigger>,
-        projected: ProjectedState
-    ) {
-        val sourceId = event.sourceId ?: return
-        val container = state.getEntity(sourceId) ?: return
-        val cardComponent = container.get<CardComponent>() ?: return
-        // Fall back to ownerId if ControllerComponent was stripped (e.g., creature died to SBA
-        // during combat damage, but its damage trigger should still fire per Rule 603.10)
-        val controllerId = projected.getController(sourceId)
-            ?: container.get<ControllerComponent>()?.playerId
-            ?: cardComponent.ownerId ?: return
-
-        // Face-down creatures have no abilities (Rule 707.2)
-        if (container.has<FaceDownComponent>()) return
-
-        val abilities = getTriggeredAbilities(sourceId, cardComponent.cardDefinitionId, state)
-
-        for (ability in abilities) {
-            val trigger = ability.trigger
-            if (trigger is GameEvent.DealsDamageEvent && ability.binding == TriggerBinding.SELF) {
-                if (matchesDealsDamageTrigger(trigger, event, state)) {
-                    triggers.add(
-                        PendingTrigger(
-                            ability = ability,
-                            sourceId = sourceId,
-                            sourceName = cardComponent.name,
-                            controllerId = controllerId,
-                            triggerContext = TriggerContext.fromEvent(event)
-                        )
-                    )
-                }
-            }
-        }
-    }
-
-    /**
-     * Detect "whenever a creature/spell deals damage to this" triggers.
-     * For DamageReceivedEvent(source=Creature): source must be a creature on the battlefield.
-     * For DamageReceivedEvent(source=Spell): source must be an instant or sorcery.
-     * TriggeringEntityId is set to the damage SOURCE for retaliation effects.
-     *
-     * Handles both on-battlefield and off-battlefield cases (e.g., creature
-     * dies from lethal damage but trigger still fires per Rule 603.10).
-     */
-    private fun detectDamagedBySourceTriggers(
-        state: GameState,
-        event: DamageDealtEvent,
-        triggers: MutableList<PendingTrigger>
-    ) {
-        val sourceId = event.sourceId ?: return
-        val damagedEntityId = event.targetId
-
-        // Get the damaged entity (might be on battlefield or in graveyard)
-        val container = state.getEntity(damagedEntityId) ?: return
-        val cardComponent = container.get<CardComponent>() ?: return
-        val controllerId = container.get<ControllerComponent>()?.playerId
-            ?: cardComponent.ownerId ?: return
-
-        // Face-down creatures have no abilities (Rule 707.2)
-        if (container.has<FaceDownComponent>() || event.targetWasFaceDown) return
-
-        val abilities = getTriggeredAbilities(damagedEntityId, cardComponent.cardDefinitionId, state)
-
-        // Determine source type
-        val sourceContainer = state.getEntity(sourceId) ?: return
-        val sourceCard = sourceContainer.get<CardComponent>()
-        // Do NOT require the source to still be on the battlefield: combat damage is dealt
-        // simultaneously, so the attacker may have died from Tephraderm's damage in the same
-        // combat step (Rule 603.10 look-back). We check the card's type line instead of
-        // current zone to determine what it was when it dealt the damage.
-        val isCreatureSource = sourceCard?.typeLine?.isCreature == true
-        val isSpellSource = sourceCard != null && (sourceCard.typeLine.isInstant || sourceCard.typeLine.isSorcery)
-
-        for (ability in abilities) {
-            val trigger = ability.trigger
-            val matches = when {
-                trigger is GameEvent.DamageReceivedEvent && ability.binding == TriggerBinding.SELF &&
-                    trigger.source == SourceFilter.Creature && isCreatureSource -> true
-                trigger is GameEvent.DamageReceivedEvent && ability.binding == TriggerBinding.SELF &&
-                    trigger.source == SourceFilter.Spell && isSpellSource -> true
-                else -> false
-            }
-
-            if (matches) {
-                triggers.add(
-                    PendingTrigger(
-                        ability = ability,
-                        sourceId = damagedEntityId,
-                        sourceName = cardComponent.name,
-                        controllerId = controllerId,
-                        triggerContext = TriggerContext(
-                            triggeringEntityId = sourceId,
-                            damageAmount = event.amount
-                        )
-                    )
-                )
-            }
-        }
-    }
-
-    private fun matchesTrigger(
-        trigger: GameEvent,
-        binding: TriggerBinding,
-        event: EngineGameEvent,
-        sourceId: EntityId,
-        controllerId: EntityId,
-        state: GameState
-    ): Boolean {
-        return when (trigger) {
-            is GameEvent.ZoneChangeEvent -> matchesZoneChangeTrigger(trigger, binding, event, sourceId, controllerId, state)
-            is GameEvent.DrawEvent -> {
-                event is CardsDrawnEvent && matchesPlayer(trigger.player, event.playerId, controllerId)
-            }
-            is GameEvent.CardRevealedFromDrawEvent -> {
-                if (event !is CardRevealedFromDrawEvent) return false
-                if (event.playerId != controllerId) return false
-                val filter = trigger.cardFilter
-                if (filter != null) {
-                    val requiresCreature = filter.cardPredicates.any {
-                        it is com.wingedsheep.sdk.scripting.predicates.CardPredicate.IsCreature
-                    }
-                    if (requiresCreature && !event.isCreature) return false
-                }
-                true
-            }
-            is GameEvent.AttackEvent -> {
-                event is AttackersDeclaredEvent &&
-                    checkBinding(binding, sourceId, event.attackers) &&
-                    (!trigger.alone || event.attackers.size == 1)
-            }
-            is GameEvent.YouAttackEvent -> {
-                event is AttackersDeclaredEvent &&
-                    event.attackers.size >= trigger.minAttackers &&
-                    state.activePlayerId == controllerId
-            }
-            is GameEvent.BlockEvent -> {
-                event is BlockersDeclaredEvent &&
-                    (binding != TriggerBinding.SELF || event.blockers.keys.contains(sourceId))
-            }
-            is GameEvent.BecomesBlockedEvent -> {
-                event is BlockersDeclaredEvent &&
-                    (binding != TriggerBinding.SELF || event.blockers.values.any { it.contains(sourceId) })
-            }
-            is GameEvent.BlocksOrBecomesBlockedByEvent -> {
-                // Basic match: it's a BlockersDeclaredEvent and the source is involved in combat
-                // Per-partner trigger creation happens in detectTriggersForEvent
-                if (event !is BlockersDeclaredEvent) return false
-                if (binding != TriggerBinding.SELF) return false
-                // Source is a blocker or an attacker that's being blocked
-                event.blockers.keys.contains(sourceId) ||
-                    event.blockers.values.any { it.contains(sourceId) }
-            }
-            is GameEvent.DealsDamageEvent -> {
-                // SELF-bound DealsDamageEvent handled separately in detectDamageSourceTriggers
-                // Non-self (observer triggers like "whenever a creature deals damage to you") handled in
-                // detectDamageToControllerTriggers and detectSubtypeDamageToPlayerTriggers
-                false
-            }
-            is GameEvent.DamageReceivedEvent -> {
-                // Generic (source=Any) DamageReceivedEvent can match in the main loop
-                // Specific source-filtered ones are handled in detectDamagedBySourceTriggers
-                if (trigger.source != SourceFilter.Any) return false
-                event is DamageDealtEvent && (binding != TriggerBinding.SELF || event.targetId == sourceId)
-            }
-            is GameEvent.SpellCastEvent -> {
-                event is SpellCastEvent &&
-                    matchesPlayer(trigger.player, event.casterId, controllerId) &&
-                    matchesSpellTypeFilter(trigger, event, state) &&
-                    (trigger.kicked == null || trigger.kicked == event.wasKicked)
-            }
-            is GameEvent.SpellOrAbilityOnStackEvent -> {
-                // Intervening-if: only trigger if the spell/ability has a single target
-                val stackEntityId = when (event) {
-                    is SpellCastEvent -> event.spellEntityId
-                    is AbilityActivatedEvent -> event.abilityEntityId
-                    is AbilityTriggeredEvent -> event.abilityEntityId
-                    else -> null
-                }
-                if (stackEntityId == null) return false
-                val targets = state.getEntity(stackEntityId)
-                    ?.get<TargetsComponent>()?.targets
-                targets != null && targets.size == 1
-            }
-            is GameEvent.CycleEvent -> {
-                event is CardCycledEvent &&
-                    matchesPlayer(trigger.player, event.playerId, controllerId) &&
-                    (binding != TriggerBinding.SELF || event.cardId == sourceId)
-            }
-            is GameEvent.TapEvent -> {
-                event is TappedEvent && (binding != TriggerBinding.SELF || event.entityId == sourceId)
-            }
-            is GameEvent.UntapEvent -> {
-                event is UntappedEvent && (binding != TriggerBinding.SELF || event.entityId == sourceId)
-            }
-            is GameEvent.LifeGainEvent -> {
-                event is LifeChangedEvent &&
-                    event.reason == com.wingedsheep.engine.core.LifeChangeReason.LIFE_GAIN &&
-                    matchesPlayer(trigger.player, event.playerId, controllerId)
-            }
-            is GameEvent.BecomesTargetEvent -> {
-                event is BecomesTargetEvent && matchesBecomesTargetTrigger(trigger, binding, event, sourceId, controllerId, state)
-            }
-            is GameEvent.TurnFaceUpEvent -> {
-                event is TurnFaceUpEvent && (binding != TriggerBinding.SELF || event.entityId == sourceId)
-            }
-            is GameEvent.CreatureTurnedFaceUpEvent -> {
-                if (event !is TurnFaceUpEvent) return false
-                matchesPlayer(trigger.player, event.controllerId, controllerId)
-            }
-            is GameEvent.TransformEvent -> {
-                // Transform not yet implemented in new engine
-                false
-            }
-            // These are handled separately in their own detect* methods
-            is GameEvent.ControlChangeEvent -> false
-            // Phase/step triggers are handled separately
-            is GameEvent.StepEvent -> false
-            is GameEvent.EnchantedCreatureControllerStepEvent -> false
-            // Attached creature triggers are handled separately
-            is GameEvent.AttachedCreatureAttacksEvent -> false
-            is GameEvent.EnchantedCreatureDamageReceivedEvent -> false
-            is GameEvent.EnchantedCreatureDealsCombatDamageToPlayerEvent -> false
-            is GameEvent.EnchantedCreatureDealsDamageEvent -> false
-            is GameEvent.EnchantedCreatureDiesEvent -> false
-            is GameEvent.EnchantedPermanentLeavesBattlefieldEvent -> false
-            is GameEvent.EquippedCreatureDiesEvent -> false
-            is GameEvent.EnchantedCreatureTurnedFaceUpEvent -> false
-            is GameEvent.EnchantedPermanentBecomesTappedEvent -> false
-            // Creature-dealt-damage-by-source-dies triggers are handled separately
-            is GameEvent.CreatureDealtDamageBySourceDiesEvent -> false
-            // Replacement-effect-only events never match as triggers
-            is GameEvent.DamageEvent -> false
-            is GameEvent.CounterPlacementEvent -> false
-            is GameEvent.TokenCreationEvent -> false
-            is GameEvent.LifeLossEvent -> {
-                event is LifeChangedEvent &&
-                    event.reason != com.wingedsheep.engine.core.LifeChangeReason.LIFE_GAIN &&
-                    event.oldLife > event.newLife &&
-                    matchesPlayer(trigger.player, event.playerId, controllerId)
-            }
-            is GameEvent.DiscardEvent -> false
-            is GameEvent.SearchLibraryEvent -> false
-            // ExtraTurnEvent is only used as a replacement effect filter, not a trigger
-            is GameEvent.ExtraTurnEvent -> false
-            // Batching trigger — handled in detectLibraryToGraveyardBatchTriggers
-            is GameEvent.CardsPutIntoGraveyardFromLibraryEvent -> false
-        }
-    }
-
-    private fun matchesZoneChangeTrigger(
-        trigger: GameEvent.ZoneChangeEvent,
-        binding: TriggerBinding,
-        event: EngineGameEvent,
-        sourceId: EntityId,
-        controllerId: EntityId,
-        state: GameState
-    ): Boolean {
-        if (event !is ZoneChangeEvent) return false
-
-        // Match zones
-        if (trigger.from != null && event.fromZone != trigger.from) return false
-        if (trigger.to != null && event.toZone != trigger.to) return false
-
-        // Check binding
-        when (binding) {
-            TriggerBinding.SELF -> if (event.entityId != sourceId) return false
-            TriggerBinding.OTHER -> if (event.entityId == sourceId) return false
-            TriggerBinding.ANY -> { /* no entity restriction */ }
-        }
-
-        // Check filter
-        if (trigger.filter != GameObjectFilter.Any) {
-            val projected = state.projectedState
-            // Check card predicates (creature type, subtype, etc.)
-            // Note: entity may not exist in state if it was a token cleaned up by SBAs.
-            // In that case, fall back to lastKnownTypeLine from the event.
-            val entity = state.getEntity(event.entityId)
-            val cardComponent = entity?.get<CardComponent>()
-            val typeLine = cardComponent?.typeLine ?: event.lastKnownTypeLine
-            val isFaceDown = entity?.has<FaceDownComponent>() == true
-
-            for (predicate in trigger.filter.cardPredicates) {
-                when (predicate) {
-                    is com.wingedsheep.sdk.scripting.predicates.CardPredicate.IsCreature -> {
-                        // For dying creatures: use base state (they're already in graveyard)
-                        // Face-down permanents are 2/2 creatures (Rule 707.2) and count.
-                        val isCreature = isFaceDown || typeLine?.isCreature == true
-                        if (!isCreature) return false
-                    }
-                    is com.wingedsheep.sdk.scripting.predicates.CardPredicate.HasSubtype -> {
-                        // For entering creatures: use projected state (they're on battlefield)
-                        // For dying creatures: use base state (they're in graveyard, no projected subtypes)
-                        if (event.toZone == Zone.BATTLEFIELD) {
-                            if (!projected.hasSubtype(event.entityId, predicate.subtype.value)) return false
-                        } else {
-                            if (isFaceDown) return false
-                            if (typeLine == null) return false
-                            if (!typeLine.hasSubtype(predicate.subtype)) return false
-                        }
-                    }
-                    else -> {
-                        // For other predicates, check the entity's type
-                        if (cardComponent == null) return false
-                        if (!matchesCardPredicate(
-                                predicate, cardComponent, projected, event.entityId, isFaceDown,
-                                lastKnownPower = event.lastKnownPower,
-                                lastKnownToughness = event.lastKnownToughness
-                            )) return false
-                    }
-                }
-            }
-            // Check state predicates (face-down, tapped, etc.)
-            for (predicate in trigger.filter.statePredicates) {
-                when (predicate) {
-                    is com.wingedsheep.sdk.scripting.predicates.StatePredicate.IsFaceDown -> {
-                        val entity = state.getEntity(event.entityId) ?: return false
-                        if (!entity.has<FaceDownComponent>()) return false
-                    }
-                    else -> {}
-                }
-            }
-            // Check controller predicate (youControl)
-            if (trigger.filter.controllerPredicate != null) {
-                when (trigger.filter.controllerPredicate) {
-                    is com.wingedsheep.sdk.scripting.predicates.ControllerPredicate.ControlledByYou -> {
-                        if (event.ownerId != controllerId) return false
-                    }
-                    is com.wingedsheep.sdk.scripting.predicates.ControllerPredicate.ControlledByOpponent -> {
-                        if (event.ownerId == controllerId) return false
-                    }
-                    else -> {}
-                }
-            }
-        }
-
-        return true
-    }
-
-    private fun matchesCardPredicate(
-        predicate: com.wingedsheep.sdk.scripting.predicates.CardPredicate,
-        cardComponent: CardComponent,
-        projected: ProjectedState,
-        entityId: EntityId,
-        isFaceDown: Boolean = false,
-        lastKnownPower: Int? = null,
-        lastKnownToughness: Int? = null
-    ): Boolean {
-        return when (predicate) {
-            is com.wingedsheep.sdk.scripting.predicates.CardPredicate.IsCreature -> cardComponent.typeLine.isCreature
-            is com.wingedsheep.sdk.scripting.predicates.CardPredicate.HasSubtype ->
-                cardComponent.typeLine.hasSubtype(predicate.subtype)
-            is com.wingedsheep.sdk.scripting.predicates.CardPredicate.ManaValueAtLeast -> {
-                val cmc = if (isFaceDown) 0 else cardComponent.manaValue
-                cmc >= predicate.min
-            }
-            is com.wingedsheep.sdk.scripting.predicates.CardPredicate.ManaValueAtMost -> {
-                val cmc = if (isFaceDown) 0 else cardComponent.manaValue
-                cmc <= predicate.max
-            }
-            is com.wingedsheep.sdk.scripting.predicates.CardPredicate.ManaValueEquals -> {
-                val cmc = if (isFaceDown) 0 else cardComponent.manaValue
-                cmc == predicate.value
-            }
-            is com.wingedsheep.sdk.scripting.predicates.CardPredicate.PowerAtLeast -> {
-                val power = if (isFaceDown) 2
-                    else lastKnownPower ?: projected.getPower(entityId) ?: cardComponent.baseStats?.basePower ?: 0
-                power >= predicate.min
-            }
-            is com.wingedsheep.sdk.scripting.predicates.CardPredicate.PowerAtMost -> {
-                val power = if (isFaceDown) 2
-                    else lastKnownPower ?: projected.getPower(entityId) ?: cardComponent.baseStats?.basePower ?: 0
-                power <= predicate.max
-            }
-            is com.wingedsheep.sdk.scripting.predicates.CardPredicate.PowerEquals -> {
-                val power = if (isFaceDown) 2
-                    else lastKnownPower ?: projected.getPower(entityId) ?: cardComponent.baseStats?.basePower ?: 0
-                power == predicate.value
-            }
-            is com.wingedsheep.sdk.scripting.predicates.CardPredicate.ToughnessAtLeast -> {
-                val toughness = if (isFaceDown) 2
-                    else lastKnownToughness ?: projected.getToughness(entityId) ?: cardComponent.baseStats?.baseToughness ?: 0
-                toughness >= predicate.min
-            }
-            is com.wingedsheep.sdk.scripting.predicates.CardPredicate.ToughnessAtMost -> {
-                val toughness = if (isFaceDown) 2
-                    else lastKnownToughness ?: projected.getToughness(entityId) ?: cardComponent.baseStats?.baseToughness ?: 0
-                toughness <= predicate.max
-            }
-            is com.wingedsheep.sdk.scripting.predicates.CardPredicate.ToughnessEquals -> {
-                val toughness = if (isFaceDown) 2
-                    else lastKnownToughness ?: projected.getToughness(entityId) ?: cardComponent.baseStats?.baseToughness ?: 0
-                toughness == predicate.value
-            }
-            is com.wingedsheep.sdk.scripting.predicates.CardPredicate.Or ->
-                predicate.predicates.any { matchesCardPredicate(it, cardComponent, projected, entityId, isFaceDown, lastKnownPower, lastKnownToughness) }
-            is com.wingedsheep.sdk.scripting.predicates.CardPredicate.And ->
-                predicate.predicates.all { matchesCardPredicate(it, cardComponent, projected, entityId, isFaceDown, lastKnownPower, lastKnownToughness) }
-            is com.wingedsheep.sdk.scripting.predicates.CardPredicate.Not ->
-                !matchesCardPredicate(predicate.predicate, cardComponent, projected, entityId, isFaceDown, lastKnownPower, lastKnownToughness)
-            else -> true // Unknown predicates pass through
-        }
-    }
-
-    /**
-     * Check if a trigger event matches a death trigger pattern (ZoneChangeEvent from battlefield to graveyard).
-     */
-    private fun isDeathTrigger(trigger: GameEvent): Boolean {
-        return trigger is GameEvent.ZoneChangeEvent &&
-            trigger.from == Zone.BATTLEFIELD &&
-            trigger.to == Zone.GRAVEYARD
-    }
-
-    /**
-     * Check if a trigger event matches a leaves-battlefield pattern (ZoneChangeEvent from battlefield, to=null).
-     */
-    private fun isLeavesBattlefieldTrigger(trigger: GameEvent): Boolean {
-        return trigger is GameEvent.ZoneChangeEvent &&
-            trigger.from == Zone.BATTLEFIELD &&
-            trigger.to == null
-    }
-
-    /**
-     * Check binding for AttackEvent: SELF means sourceId must be in attackers.
-     */
-    private fun checkBinding(binding: TriggerBinding, sourceId: EntityId, entityIds: List<EntityId>): Boolean {
-        return when (binding) {
-            TriggerBinding.SELF -> sourceId in entityIds
-            TriggerBinding.OTHER -> true  // "whenever another creature attacks" (not currently used, but correct)
-            TriggerBinding.ANY -> true
-        }
-    }
-
-    /**
-     * Check if a Player filter matches the event's player.
-     */
-    private fun matchesPlayer(player: Player, eventPlayerId: EntityId, controllerId: EntityId): Boolean {
-        return when (player) {
-            Player.You -> eventPlayerId == controllerId
-            Player.Each -> true
-            Player.Opponent -> eventPlayerId != controllerId
-            else -> true
-        }
-    }
-
-    /**
-     * Extract a subtype value from a GameObjectFilter (used for DealsDamageEvent.sourceFilter).
-     */
-    private fun extractSubtypeFromFilter(filter: GameObjectFilter): String? {
-        for (predicate in filter.cardPredicates) {
-            if (predicate is com.wingedsheep.sdk.scripting.predicates.CardPredicate.HasSubtype) {
-                return predicate.subtype.value
-            }
-        }
-        return null
-    }
-
-    /**
-     * Check if a BecomesTargetEvent matches a BecomesTargetEvent trigger.
-     * Validates binding (SELF = targeted entity is this permanent) and
-     * checks the targetFilter against the targeted entity.
-     */
-    private fun matchesBecomesTargetTrigger(
-        trigger: GameEvent.BecomesTargetEvent,
-        binding: TriggerBinding,
-        event: BecomesTargetEvent,
-        sourceId: EntityId,
-        controllerId: EntityId,
-        state: GameState
-    ): Boolean {
-        // Check binding: SELF means this permanent was targeted
-        when (binding) {
-            TriggerBinding.SELF -> if (event.targetEntityId != sourceId) return false
-            TriggerBinding.OTHER -> if (event.targetEntityId == sourceId) return false
-            TriggerBinding.ANY -> { /* no entity restriction */ }
-        }
-
-        // Check targetFilter against the targeted entity
-        if (trigger.targetFilter != GameObjectFilter.Any) {
-            val projected = state.projectedState
-            val targetContainer = state.getEntity(event.targetEntityId) ?: return false
-            val targetCard = targetContainer.get<CardComponent>() ?: return false
-
-            // Check card predicates
-            for (predicate in trigger.targetFilter.cardPredicates) {
-                if (!matchesCardPredicate(predicate, targetCard, projected, event.targetEntityId)) return false
-            }
-
-            // Check controller predicate
-            if (trigger.targetFilter.controllerPredicate != null) {
-                val targetController = projected.getController(event.targetEntityId) ?: return false
-                when (trigger.targetFilter.controllerPredicate) {
-                    is com.wingedsheep.sdk.scripting.predicates.ControllerPredicate.ControlledByYou -> {
-                        if (targetController != controllerId) return false
-                    }
-                    is com.wingedsheep.sdk.scripting.predicates.ControllerPredicate.ControlledByOpponent -> {
-                        if (targetController == controllerId) return false
-                    }
-                    else -> {}
-                }
-            }
-        }
-
-        return true
-    }
-
-    private fun matchesDealsDamageTrigger(trigger: GameEvent.DealsDamageEvent, event: DamageDealtEvent, state: GameState): Boolean {
-        val combatMatches = trigger.damageType == DamageType.Any ||
-            (trigger.damageType == DamageType.Combat && event.isCombatDamage) ||
-            (trigger.damageType == DamageType.NonCombat && !event.isCombatDamage)
-        val recipientMatches = when (trigger.recipient) {
-            RecipientFilter.Any -> true
-            RecipientFilter.AnyPlayer -> event.targetId in state.turnOrder
-            RecipientFilter.AnyCreature -> event.targetId !in state.turnOrder
-            RecipientFilter.You -> false // handled separately in detectDamageToControllerTriggers
-            else -> true
-        }
-        return combatMatches && recipientMatches
-    }
-
-    private fun matchesStepTrigger(
-        trigger: GameEvent,
-        step: Step,
-        controllerId: EntityId,
-        activePlayerId: EntityId
-    ): Boolean {
-        if (trigger !is GameEvent.StepEvent) return false
-        if (step != trigger.step) return false
-        return matchesPlayerForStep(trigger.player, controllerId, activePlayerId)
-    }
-
-    private fun matchesPlayerForStep(player: Player, controllerId: EntityId, activePlayerId: EntityId): Boolean {
-        return when (player) {
-            Player.You -> controllerId == activePlayerId
-            Player.Each -> true
-            Player.Opponent, Player.EachOpponent -> controllerId != activePlayerId
-            else -> true
-        }
-    }
-
-    private fun matchesSpellTypeFilter(
-        trigger: GameEvent.SpellCastEvent,
-        event: SpellCastEvent,
-        state: GameState
-    ): Boolean {
-        val cardComponent = state.getEntity(event.spellEntityId)?.get<CardComponent>()
-            ?: return trigger.spellType == SpellTypeFilter.ANY
-
-        val typeMatches = when (trigger.spellType) {
-            SpellTypeFilter.ANY -> true
-            SpellTypeFilter.CREATURE -> cardComponent.typeLine.isCreature
-            SpellTypeFilter.NONCREATURE -> !cardComponent.typeLine.isCreature
-            SpellTypeFilter.INSTANT_OR_SORCERY ->
-                cardComponent.typeLine.isInstant || cardComponent.typeLine.isSorcery
-            SpellTypeFilter.ENCHANTMENT -> cardComponent.typeLine.isEnchantment
-            SpellTypeFilter.HISTORIC ->
-                cardComponent.typeLine.isArtifact || cardComponent.typeLine.isLegendary
-        }
-        if (!typeMatches) return false
-
-        // Face-down spells have mana value 0 (CR 707.2)
-        val isFaceDown = state.getEntity(event.spellEntityId)?.get<SpellOnStackComponent>()?.castFaceDown == true
-        val mv = if (isFaceDown) 0 else cardComponent.manaValue
-        if (trigger.manaValueAtLeast != null && mv < trigger.manaValueAtLeast!!) return false
-        if (trigger.manaValueAtMost != null && mv > trigger.manaValueAtMost!!) return false
-        if (trigger.manaValueEquals != null && mv != trigger.manaValueEquals!!) return false
-
-        return true
-    }
-
-    /**
-     * Filter out triggers whose intervening-if condition (Rule 603.4) is not met.
-     * If a triggered ability has a triggerCondition, it is only allowed to fire
-     * when that condition is true at the time of trigger detection.
-     */
-    private fun filterByTriggerCondition(
-        state: GameState,
-        triggers: List<PendingTrigger>
-    ): List<PendingTrigger> {
-        return triggers.filter { trigger ->
-            val condition = trigger.ability.triggerCondition ?: return@filter true
-            val context = EffectContext(
-                sourceId = trigger.sourceId,
-                controllerId = trigger.controllerId,
-                opponentId = state.turnOrder.firstOrNull { it != trigger.controllerId },
-                triggeringEntityId = trigger.triggerContext.triggeringEntityId
-            )
-            conditionEvaluator.evaluate(state, condition, context)
-        }
-    }
-
-    /**
-     * Sort triggers by APNAP order.
-     * Active player's triggers go on the stack first (resolve last),
-     * then non-active players in turn order.
-     */
-    private fun sortByApnapOrder(
-        state: GameState,
-        triggers: List<PendingTrigger>
-    ): List<PendingTrigger> {
-        val activePlayerId = state.activePlayerId ?: return triggers
-
-        // Group by controller
-        val byController = triggers.groupBy { it.controllerId }
-
-        // Get player order starting from active player
-        val playerOrder = state.turnOrder.let { players ->
-            val activeIndex = players.indexOf(activePlayerId)
-            if (activeIndex == -1) players
-            else players.drop(activeIndex) + players.take(activeIndex)
-        }
-
-        // Build result in APNAP order
-        // Active player's triggers first (they go on stack first = resolve last)
-        return playerOrder.flatMap { playerId ->
-            byController[playerId] ?: emptyList()
-        }
-    }
-}
-
-/**
- * A triggered ability that is waiting to go on the stack.
- */
-@kotlinx.serialization.Serializable
-data class PendingTrigger(
-    val ability: TriggeredAbility,
-    val sourceId: EntityId,
-    val sourceName: String,
-    val controllerId: EntityId,
-    val triggerContext: TriggerContext
-)
-
-/**
- * Context information about what caused a trigger.
- */
-@kotlinx.serialization.Serializable
-data class TriggerContext(
-    val triggeringEntityId: EntityId? = null,
-    val triggeringPlayerId: EntityId? = null,
-    val damageAmount: Int? = null,
-    val step: Step? = null,
-    val xValue: Int? = null,
-    /** Last known +1/+1 counter count when the source left the battlefield */
-    val counterCount: Int? = null
-) {
-    companion object {
-        fun fromEvent(event: com.wingedsheep.engine.core.GameEvent): TriggerContext {
-            return when (event) {
-                is ZoneChangeEvent -> TriggerContext(
-                    triggeringEntityId = event.entityId,
-                    counterCount = if (event.lastKnownCounterCount > 0) event.lastKnownCounterCount else null
-                )
-                is DamageDealtEvent -> TriggerContext(
-                    triggeringEntityId = event.targetId,
-                    damageAmount = event.amount
-                )
-                is SpellCastEvent -> TriggerContext(
-                    triggeringEntityId = event.spellEntityId,
-                    triggeringPlayerId = event.casterId
-                )
-                is CardsDrawnEvent -> TriggerContext(triggeringPlayerId = event.playerId)
-                is CardRevealedFromDrawEvent -> TriggerContext(
-                    triggeringEntityId = event.cardEntityId,
-                    triggeringPlayerId = event.playerId
-                )
-                is CardCycledEvent -> TriggerContext(triggeringPlayerId = event.playerId)
-                is AttackersDeclaredEvent -> TriggerContext()
-                is BlockersDeclaredEvent -> TriggerContext()
-                is TappedEvent -> TriggerContext(triggeringEntityId = event.entityId)
-                is UntappedEvent -> TriggerContext(triggeringEntityId = event.entityId)
-                is LifeChangedEvent -> TriggerContext(
-                    triggeringEntityId = event.playerId,
-                    triggeringPlayerId = event.playerId,
-                    damageAmount = when {
-                        event.reason == com.wingedsheep.engine.core.LifeChangeReason.LIFE_GAIN ->
-                            event.newLife - event.oldLife
-                        event.oldLife > event.newLife ->
-                            event.oldLife - event.newLife
-                        else -> null
-                    }
-                )
-                is TurnFaceUpEvent -> TriggerContext(
-                    triggeringEntityId = event.entityId,
-                    triggeringPlayerId = event.controllerId,
-                    xValue = event.xValue
-                )
-                is ControlChangedEvent -> TriggerContext(
-                    triggeringEntityId = event.permanentId,
-                    triggeringPlayerId = event.newControllerId
-                )
-                is BecomesTargetEvent -> TriggerContext(
-                    triggeringEntityId = event.targetEntityId
-                )
-                is AbilityActivatedEvent -> TriggerContext(
-                    triggeringEntityId = event.abilityEntityId,
-                    triggeringPlayerId = event.controllerId
-                )
-                is AbilityTriggeredEvent -> TriggerContext(
-                    triggeringEntityId = event.abilityEntityId,
-                    triggeringPlayerId = event.controllerId
-                )
-                else -> TriggerContext()
-            }
-        }
-    }
-}
-
-/**
- * Registry that provides triggered abilities for entities.
- */
-class AbilityRegistry {
-    private val abilitiesByDefinition = mutableMapOf<String, List<TriggeredAbility>>()
-
-    /**
-     * Register triggered abilities for a card definition.
-     */
-    fun register(cardDefinitionId: String, abilities: List<TriggeredAbility>) {
-        abilitiesByDefinition[cardDefinitionId] = abilities
-    }
-
-    /**
-     * Get all triggered abilities for an entity.
-     */
-    fun getTriggeredAbilities(entityId: EntityId, cardDefinitionId: String): List<TriggeredAbility> {
-        return abilitiesByDefinition[cardDefinitionId] ?: emptyList()
-    }
-
-    /**
-     * Clear all registered abilities.
-     */
-    fun clear() {
-        abilitiesByDefinition.clear()
     }
 }
