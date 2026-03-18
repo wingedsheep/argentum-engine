@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Web Client - Argentum Engine Wiki</title>
+  <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+<div class="page">
+  <aside class="sidebar">
+    <div class="sidebar-logo"><h2>Argentum Engine</h2><span>MTG Rules Engine Wiki</span></div>
+    <nav>
+      <div class="nav-section">
+        <div class="nav-section-title">Getting Started</div>
+        <a href="index.html">Home</a>
+        <a href="getting-started.html">Setup &amp; Workflow</a>
+        <a href="card-development.html">Card Development</a>
+      </div>
+      <div class="nav-section">
+        <div class="nav-section-title">Architecture</div>
+        <a href="architecture.html">Overview</a>
+        <a href="sdk.html">SDK Module</a>
+        <a href="rules-engine.html">Rules Engine</a>
+        <a href="game-server.html">Game Server</a>
+        <a href="web-client.html" class="active">Web Client</a>
+      </div>
+      <div class="nav-section">
+        <div class="nav-section-title">Reference</div>
+        <a href="effects-reference.html">Effects Reference</a>
+        <a href="components-reference.html">ECS Components</a>
+        <a href="testing.html">Testing Guide</a>
+      </div>
+    </nav>
+  </aside>
+
+  <main class="content">
+    <div class="content-inner">
+      <div class="breadcrumb"><a href="index.html">Home</a> <span>&rsaquo;</span> <a href="architecture.html">Architecture</a> <span>&rsaquo;</span> Web Client</div>
+      <h1>Web Client</h1>
+      <p class="subtitle">
+        React 18.3 browser UI following the <strong>dumb terminal</strong> pattern.
+        No game rules, no state computation &mdash; only intent capture and rendering.
+      </p>
+
+      <div class="callout">
+        <strong>Dumb Terminal Pattern:</strong> The server validates all actions, computes all state, and sends complete game state.
+        The client renders what the server sends and captures player clicks.
+      </div>
+
+      <h2 id="data-flow">Data Flow</h2>
+      <div class="diagram"><span class="a">Server</span> sends <span class="c">stateUpdate</span> (game state, events, legal actions)
+    |
+    v
+<span class="hl">Zustand store</span> updates game state
+    |
+    v
+<span class="g">React components</span> re-render game board
+    |
+    v
+User clicks card &rarr; Client checks <span class="c">legalActions</span> via hooks
+    |
+    v
+Client sends <span class="a">submitAction</span> with GameAction
+    |
+    v
+<span class="a">Server</span> validates, updates state, broadcasts new state</div>
+
+      <h2 id="store">Zustand Store</h2>
+      <p>The store is split into five domain slices:</p>
+
+      <h3>connectionSlice</h3>
+      <table>
+        <thead><tr><th>State</th><th>Actions</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><code>connectionStatus</code>, <code>playerId</code>, <code>sessionId</code>, <code>aiEnabled</code></td>
+            <td><code>connect(playerName)</code>, <code>disconnect()</code></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3>gameplaySlice</h3>
+      <table>
+        <thead><tr><th>State</th><th>Actions</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><code>gameState</code>, <code>legalActions</code>, <code>pendingDecision</code>, <code>mulliganState</code>, <code>fullControl</code>, <code>priorityMode</code>, <code>undoAvailable</code></td>
+            <td><code>submitAction()</code>, <code>concede()</code>, <code>requestUndo()</code>, <code>submitDecision()</code>, <code>keepHand()</code>, <code>mulligan()</code>, <code>cyclePriorityMode()</code></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3>lobbySlice</h3>
+      <p>Tournament lobbies, spectating, standing updates.</p>
+
+      <h3>draftSlice</h3>
+      <p>Sealed/draft deck building state.</p>
+
+      <h3>uiSlice</h3>
+      <p>Client-only UI state: targeting mode, combat mode, card selection, animations.</p>
+      <ul>
+        <li><strong>Targeting:</strong> <code>startTargeting()</code>, <code>addTarget()</code>, <code>confirmTargeting()</code></li>
+        <li><strong>Combat:</strong> <code>startCombat()</code>, <code>toggleAttacker()</code>, <code>assignBlocker()</code></li>
+        <li><strong>Animations:</strong> <code>addDrawAnimation()</code>, <code>addDamageAnimation()</code>, <code>addRevealAnimation()</code></li>
+      </ul>
+
+      <h2 id="websocket">WebSocket Communication</h2>
+      <p>The <code>GameWebSocket</code> class manages the connection:</p>
+      <ul>
+        <li><strong>Auto-reconnect:</strong> Exponential backoff (5 attempts, 1s base delay &times; 2^attempt)</li>
+        <li><strong>State versioning:</strong> Detects gaps in message sequence, requests resync</li>
+        <li><strong>Visibility detection:</strong> Requests resync when browser tab becomes visible</li>
+      </ul>
+
+      <h2 id="hooks">Hooks</h2>
+      <h3>useInteraction</h3>
+      <p>Central card interaction logic. Routes clicks through legal action checks:</p>
+<pre><code><span class="fn">processCardClick</span>(cardId): <span class="tp">CardClickResult</span>
+  &rarr; <span class="str">'noAction'</span>          <span class="cm">// Card has no legal actions</span>
+  &rarr; <span class="str">'singleAction'</span>      <span class="cm">// Auto-execute the one action</span>
+  &rarr; <span class="str">'multipleActions'</span>   <span class="cm">// Show action menu</span>
+  &rarr; <span class="str">'requiresTargeting'</span> <span class="cm">// Start targeting flow</span>
+  &rarr; <span class="str">'requiresXSelection'</span> <span class="cm">// X cost modal</span>
+  &rarr; <span class="str">'requiresConvokeSelection'</span></code></pre>
+
+      <h3>useTargeting</h3>
+      <p>Manages the targeting flow: <code>startTargeting()</code> &rarr; <code>addTarget()</code> &rarr; <code>confirmTargeting()</code></p>
+
+      <h3>useLegalActions</h3>
+      <p>Queries legal actions for a specific card/entity from the store.</p>
+
+      <h2 id="components">Component Structure</h2>
+<pre><code>src/components/
+&#x251c;&#x2500;&#x2500; game/
+&#x2502;   &#x251c;&#x2500;&#x2500; <span class="fn">GameBoard.tsx</span>          <span class="cm"># Main orchestrator</span>
+&#x2502;   &#x251c;&#x2500;&#x2500; card/
+&#x2502;   &#x2502;   &#x251c;&#x2500;&#x2500; <span class="fn">GameCard.tsx</span>       <span class="cm"># Single card rendering</span>
+&#x2502;   &#x2502;   &#x2514;&#x2500;&#x2500; <span class="fn">CardPreview.tsx</span>    <span class="cm"># Hover preview</span>
+&#x2502;   &#x251c;&#x2500;&#x2500; board/
+&#x2502;   &#x2502;   &#x251c;&#x2500;&#x2500; <span class="fn">Battlefield.tsx</span>    <span class="cm"># Battlefield zone</span>
+&#x2502;   &#x2502;   &#x251c;&#x2500;&#x2500; <span class="fn">HandZone.tsx</span>       <span class="cm"># Player hand</span>
+&#x2502;   &#x2502;   &#x251c;&#x2500;&#x2500; <span class="fn">StackZone.tsx</span>      <span class="cm"># Stack display</span>
+&#x2502;   &#x2502;   &#x2514;&#x2500;&#x2500; <span class="fn">ZonePiles.tsx</span>      <span class="cm"># Graveyard, library, exile</span>
+&#x2502;   &#x2514;&#x2500;&#x2500; overlay/
+&#x2502;       &#x251c;&#x2500;&#x2500; <span class="fn">TargetingOverlay.tsx</span>
+&#x2502;       &#x2514;&#x2500;&#x2500; <span class="fn">GameControls.tsx</span>
+&#x251c;&#x2500;&#x2500; combat/
+&#x2502;   &#x251c;&#x2500;&#x2500; <span class="fn">CombatArrows.tsx</span>       <span class="cm"># Attacker visualization</span>
+&#x2502;   &#x2514;&#x2500;&#x2500; <span class="fn">BlockerArrows.tsx</span>      <span class="cm"># Blocker assignment</span>
+&#x251c;&#x2500;&#x2500; decisions/
+&#x2502;   &#x251c;&#x2500;&#x2500; <span class="fn">DecisionUI.tsx</span>         <span class="cm"># Modal router</span>
+&#x2502;   &#x251c;&#x2500;&#x2500; <span class="fn">YesNoDecisionUI.tsx</span>
+&#x2502;   &#x251c;&#x2500;&#x2500; <span class="fn">DamageDistributionModal.tsx</span>
+&#x2502;   &#x251c;&#x2500;&#x2500; <span class="fn">LibrarySearchUI.tsx</span>
+&#x2502;   &#x2514;&#x2500;&#x2500; <span class="fn">OrderBlockersUI.tsx</span>
+&#x251c;&#x2500;&#x2500; ui/
+&#x2502;   &#x251c;&#x2500;&#x2500; <span class="fn">GameUI.tsx</span>             <span class="cm"># HUD: life, mana, phases</span>
+&#x2502;   &#x251c;&#x2500;&#x2500; <span class="fn">StepStrip.tsx</span>          <span class="cm"># Phase/step display</span>
+&#x2502;   &#x2514;&#x2500;&#x2500; <span class="fn">ActionMenu.tsx</span>         <span class="cm"># Card action menu</span>
+&#x251c;&#x2500;&#x2500; animations/
+&#x2502;   &#x251c;&#x2500;&#x2500; <span class="fn">DrawAnimations.tsx</span>     <span class="cm"># Card draw effects</span>
+&#x2502;   &#x251c;&#x2500;&#x2500; <span class="fn">DamageAnimations.tsx</span>   <span class="cm"># Damage numbers</span>
+&#x2502;   &#x2514;&#x2500;&#x2500; <span class="fn">RevealAnimations.tsx</span>   <span class="cm"># Card reveals</span>
+&#x251c;&#x2500;&#x2500; draft/                     <span class="cm"># Draft/sealed UI</span>
+&#x251c;&#x2500;&#x2500; tournament/                <span class="cm"># Tournament bracket</span>
+&#x251c;&#x2500;&#x2500; spectating/                <span class="cm"># Spectator view</span>
+&#x251c;&#x2500;&#x2500; replay/                    <span class="cm"># Replay viewer</span>
+&#x2514;&#x2500;&#x2500; mulligan/                  <span class="cm"># Mulligan UI</span></code></pre>
+
+      <h2 id="interaction-flows">Interaction Flows</h2>
+
+      <h3>Card Click &rarr; Action Execution</h3>
+      <ol>
+        <li>User clicks card</li>
+        <li><code>useInteraction.handleCardClick(cardId)</code> filters <code>legalActions</code></li>
+        <li>Result: single action (auto-execute), multiple (show menu), or requires modal</li>
+        <li><code>submitAction(action)</code> sends via WebSocket</li>
+      </ol>
+
+      <h3>Targeting Flow</h3>
+      <ol>
+        <li>Action requires targets &rarr; <code>startTargeting({ validTargets, min, max })</code></li>
+        <li><code>TargetingArrows</code> overlay highlights valid targets</li>
+        <li>User clicks valid target &rarr; <code>addTarget(entityId)</code></li>
+        <li>User confirms &rarr; <code>confirmTargeting()</code> &rarr; <code>submitAction()</code></li>
+      </ol>
+
+      <h3>Combat Flow</h3>
+      <ol>
+        <li>Declare Attackers step &rarr; <code>startCombat()</code></li>
+        <li>User toggles creatures &rarr; <code>toggleAttacker(creatureId)</code></li>
+        <li>Declare Blockers step &rarr; <code>assignBlocker(blocker, attacker)</code></li>
+        <li>User confirms &rarr; submits <code>DeclareAttackers</code>/<code>DeclareBlockers</code></li>
+      </ol>
+
+      <h3>Decision (e.g., Scry)</h3>
+      <ol>
+        <li>Server sends <code>pendingDecision</code> (ScryDecision)</li>
+        <li><code>DecisionUI</code> routes to <code>CardSelectionDecisionUI</code></li>
+        <li>User selects cards</li>
+        <li><code>submitDecision(selectedCards)</code> wraps as <code>SubmitDecision</code> action</li>
+      </ol>
+
+      <h2 id="selectors">Selectors</h2>
+      <p>Derived state via Zustand selectors (prefer over computing in components):</p>
+<pre><code><span class="kw">const</span> viewingPlayer = <span class="fn">useViewingPlayer</span>()
+<span class="kw">const</span> opponent = <span class="fn">useOpponent</span>()
+<span class="kw">const</span> stackCards = <span class="fn">useStackCards</span>()
+<span class="kw">const</span> battlefieldCards = <span class="fn">useBattlefieldCards</span>(playerId)</code></pre>
+
+      <h2 id="key-files">Key Files</h2>
+      <table>
+        <thead><tr><th>File</th><th>Purpose</th></tr></thead>
+        <tbody>
+          <tr><td><code>store/gameStore.ts</code></td><td>Zustand store combining all slices</td></tr>
+          <tr><td><code>store/selectors.ts</code></td><td>Derived state selectors</td></tr>
+          <tr><td><code>network/websocket.ts</code></td><td>WebSocket connection management</td></tr>
+          <tr><td><code>network/messageHandlers.ts</code></td><td>Server message processing</td></tr>
+          <tr><td><code>components/game/GameBoard.tsx</code></td><td>Main game board layout</td></tr>
+          <tr><td><code>hooks/useInteraction.ts</code></td><td>Card interaction logic</td></tr>
+          <tr><td><code>hooks/useTargeting.ts</code></td><td>Targeting flow</td></tr>
+          <tr><td><code>hooks/useLegalActions.ts</code></td><td>Legal action queries</td></tr>
+        </tbody>
+      </table>
+
+      <div class="page-nav">
+        <a href="game-server.html">
+          <div class="label">Previous</div>
+          <div class="title">&larr; Game Server</div>
+        </a>
+        <a href="effects-reference.html" class="next">
+          <div class="label">Next</div>
+          <div class="title">Effects Reference &rarr;</div>
+        </a>
+      </div>
+    </div>
+  </main>
+</div>
+</body>
+</html>

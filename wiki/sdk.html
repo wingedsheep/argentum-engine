@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SDK Module - Argentum Engine Wiki</title>
+  <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+<div class="page">
+  <aside class="sidebar">
+    <div class="sidebar-logo"><h2>Argentum Engine</h2><span>MTG Rules Engine Wiki</span></div>
+    <nav>
+      <div class="nav-section">
+        <div class="nav-section-title">Getting Started</div>
+        <a href="index.html">Home</a>
+        <a href="getting-started.html">Setup &amp; Workflow</a>
+        <a href="card-development.html">Card Development</a>
+      </div>
+      <div class="nav-section">
+        <div class="nav-section-title">Architecture</div>
+        <a href="architecture.html">Overview</a>
+        <a href="sdk.html" class="active">SDK Module</a>
+        <a href="rules-engine.html">Rules Engine</a>
+        <a href="game-server.html">Game Server</a>
+        <a href="web-client.html">Web Client</a>
+      </div>
+      <div class="nav-section">
+        <div class="nav-section-title">Reference</div>
+        <a href="effects-reference.html">Effects Reference</a>
+        <a href="components-reference.html">ECS Components</a>
+        <a href="testing.html">Testing Guide</a>
+      </div>
+    </nav>
+  </aside>
+
+  <main class="content">
+    <div class="content-inner">
+      <div class="breadcrumb"><a href="index.html">Home</a> <span>&rsaquo;</span> <a href="architecture.html">Architecture</a> <span>&rsaquo;</span> SDK Module</div>
+      <h1>SDK Module</h1>
+      <p class="subtitle">
+        The shared contract layer. Pure serializable data models, DSL builders, effects, triggers, filters,
+        and dynamic values. Zero execution logic &mdash; zero dependencies on other modules.
+      </p>
+
+      <div class="callout">
+        <strong>Design Principle:</strong>
+        Everything in mtg-sdk is a data structure annotated with <code>@Serializable</code>. The SDK defines
+        <em>what</em> happens; the rules-engine defines <em>how</em>.
+      </div>
+
+      <h2 id="structure">Package Structure</h2>
+<pre><code>com.wingedsheep.sdk/
+&#x251c;&#x2500;&#x2500; core/           <span class="cm"># Enums: Zone, Phase, Step, Keyword, CardType, Color, Subtype</span>
+&#x251c;&#x2500;&#x2500; model/          <span class="cm"># CardDefinition, CardScript, EntityId, CreatureStats</span>
+&#x251c;&#x2500;&#x2500; scripting/
+&#x2502;   &#x251c;&#x2500;&#x2500; effects/    <span class="cm"># Effect sealed hierarchy (damage, life, library, etc.)</span>
+&#x2502;   &#x251c;&#x2500;&#x2500; costs/      <span class="cm"># PayCost sealed hierarchy</span>
+&#x2502;   &#x251c;&#x2500;&#x2500; conditions/ <span class="cm"># Condition sealed hierarchy</span>
+&#x2502;   &#x251c;&#x2500;&#x2500; values/     <span class="cm"># DynamicAmount AST</span>
+&#x2502;   &#x251c;&#x2500;&#x2500; targets/    <span class="cm"># EffectTarget, TargetRequirement</span>
+&#x2502;   &#x2514;&#x2500;&#x2500; filters/    <span class="cm"># GameObjectFilter, TargetFilter, GroupFilter</span>
+&#x2514;&#x2500;&#x2500; dsl/            <span class="cm"># Facades: Effects, Triggers, Conditions, Costs, Filters, Targets</span>
+                      <span class="cm"># Builders: CardBuilder, SpellBuilder, AbilityBuilders</span>
+                      <span class="cm"># Patterns: EffectPatterns, LibraryPatterns, HandPatterns</span></code></pre>
+
+      <h2 id="card-definition">CardDefinition</h2>
+      <p>The master object defining a Magic card. Separates static attributes from behavioral logic.</p>
+      <table>
+        <thead><tr><th>Property</th><th>Type</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td><code>name</code></td><td><code>String</code></td><td>Card name</td></tr>
+          <tr><td><code>manaCost</code></td><td><code>ManaCost</code></td><td>Parsed from strings like <code>"{2}{U}{B}"</code></td></tr>
+          <tr><td><code>typeLine</code></td><td><code>TypeLine</code></td><td>Card type, supertype, subtype</td></tr>
+          <tr><td><code>creatureStats</code></td><td><code>CreatureStats?</code></td><td>Power/toughness</td></tr>
+          <tr><td><code>keywords</code></td><td><code>Set&lt;Keyword&gt;</code></td><td>Flying, Haste, Trample, etc.</td></tr>
+          <tr><td><code>script</code></td><td><code>CardScript</code></td><td>All behavioral logic</td></tr>
+          <tr><td><code>backFace</code></td><td><code>CardDefinition?</code></td><td>For double-faced cards</td></tr>
+          <tr><td><code>startingLoyalty</code></td><td><code>Int?</code></td><td>For planeswalkers</td></tr>
+          <tr><td><code>metadata</code></td><td><code>ScryfallMetadata</code></td><td>Rarity, artist, flavor, art URL</td></tr>
+        </tbody>
+      </table>
+      <p><strong>Factory methods:</strong> <code>creature()</code>, <code>sorcery()</code>, <code>instant()</code>, <code>basicLand()</code>, <code>enchantment()</code>, <code>aura()</code>, <code>artifact()</code>, <code>equipment()</code>, <code>artifactCreature()</code>, <code>planeswalker()</code>, <code>kindredInstant()</code>, <code>kindredEnchantment()</code></p>
+
+      <h2 id="card-script">CardScript</h2>
+      <p>Contains all behavioral logic of a card &mdash; effects, abilities, triggers, costs.</p>
+      <table>
+        <thead><tr><th>Property</th><th>Type</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td><code>spellEffect</code></td><td><code>Effect?</code></td><td>Effect when instant/sorcery resolves</td></tr>
+          <tr><td><code>targetRequirements</code></td><td><code>List&lt;TargetRequirement&gt;</code></td><td>Cast-time targets</td></tr>
+          <tr><td><code>triggeredAbilities</code></td><td><code>List&lt;TriggeredAbility&gt;</code></td><td>Event-driven abilities</td></tr>
+          <tr><td><code>activatedAbilities</code></td><td><code>List&lt;ActivatedAbility&gt;</code></td><td>Pay-to-activate abilities</td></tr>
+          <tr><td><code>staticAbilities</code></td><td><code>List&lt;StaticAbility&gt;</code></td><td>Continuous effects (Rule 613)</td></tr>
+          <tr><td><code>replacementEffects</code></td><td><code>List&lt;ReplacementEffect&gt;</code></td><td>Event interception</td></tr>
+          <tr><td><code>additionalCosts</code></td><td><code>List&lt;AdditionalCost&gt;</code></td><td>Non-mana costs</td></tr>
+          <tr><td><code>sagaChapters</code></td><td><code>List&lt;SagaChapterAbility&gt;</code></td><td>Saga chapter abilities</td></tr>
+        </tbody>
+      </table>
+
+      <h2 id="dsl">DSL System</h2>
+      <p>Entry point: <code>card(name, init: CardBuilder.() -&gt; Unit): CardDefinition</code></p>
+
+      <h3>CardBuilder Properties</h3>
+      <table>
+        <thead><tr><th>Property</th><th>Purpose</th></tr></thead>
+        <tbody>
+          <tr><td><code>manaCost</code></td><td>Mana cost string: <code>"{2}{U}"</code>, <code>"{R}"</code></td></tr>
+          <tr><td><code>typeLine</code></td><td>Type line: <code>"Creature &mdash; Human Wizard"</code></td></tr>
+          <tr><td><code>power / toughness</code></td><td>Fixed stats</td></tr>
+          <tr><td><code>dynamicPower / dynamicToughness</code></td><td>Dynamic stats (e.g., Tarmogoyf)</td></tr>
+          <tr><td><code>oracleText</code></td><td>Rules text</td></tr>
+          <tr><td><code>morph</code></td><td>Morph cost string</td></tr>
+          <tr><td><code>cantBeCountered</code></td><td>Spell is uncounterable</td></tr>
+        </tbody>
+      </table>
+
+      <h3>CardBuilder Methods</h3>
+      <table>
+        <thead><tr><th>Method</th><th>Purpose</th></tr></thead>
+        <tbody>
+          <tr><td><code>spell { }</code></td><td>Instant/sorcery effect + targeting</td></tr>
+          <tr><td><code>triggeredAbility { }</code></td><td>Event-triggered ability</td></tr>
+          <tr><td><code>activatedAbility { }</code></td><td>Pay-to-activate ability</td></tr>
+          <tr><td><code>staticAbility { }</code></td><td>Continuous effect</td></tr>
+          <tr><td><code>loyaltyAbility(cost) { }</code></td><td>Planeswalker ability</td></tr>
+          <tr><td><code>keywords(...)</code></td><td>Add keywords</td></tr>
+          <tr><td><code>flags(...)</code></td><td>Add ability flags</td></tr>
+          <tr><td><code>equipAbility(cost)</code></td><td>Equipment attach ability</td></tr>
+          <tr><td><code>sagaChapter(n) { }</code></td><td>Saga chapter</td></tr>
+          <tr><td><code>metadata { }</code></td><td>Rarity, artist, flavor text</td></tr>
+        </tbody>
+      </table>
+
+      <h2 id="effects-facade">Effects Facade</h2>
+      <p>The <code>Effects</code> object provides factory methods for all effect types. Always use these instead of raw constructors.</p>
+<pre><code><span class="cm">// Damage</span>
+Effects.<span class="fn">DealDamage</span>(<span class="num">3</span>, target)
+Effects.<span class="fn">Fight</span>(target1, target2)
+
+<span class="cm">// Life</span>
+Effects.<span class="fn">GainLife</span>(<span class="num">4</span>)
+Effects.<span class="fn">LoseLife</span>(<span class="num">2</span>, EffectTarget.PlayerRef(Player.TargetOpponent))
+
+<span class="cm">// Drawing</span>
+Effects.<span class="fn">DrawCards</span>(<span class="num">2</span>)
+Effects.<span class="fn">DrawUpTo</span>(<span class="num">3</span>)
+
+<span class="cm">// Removal</span>
+Effects.<span class="fn">Destroy</span>(target)
+Effects.<span class="fn">Exile</span>(target)
+Effects.<span class="fn">Sacrifice</span>(target)
+Effects.<span class="fn">ReturnToHand</span>(target)
+
+<span class="cm">// Permanents</span>
+Effects.<span class="fn">ModifyStats</span>(<span class="num">3</span>, <span class="num">3</span>, target)
+Effects.<span class="fn">Tap</span>(target)
+Effects.<span class="fn">GrantKeyword</span>(Keyword.FLYING, target)
+Effects.<span class="fn">AddCounters</span>(<span class="str">"+1/+1"</span>, <span class="num">2</span>, target)
+
+<span class="cm">// Tokens</span>
+Effects.<span class="fn">CreateToken</span>(Token.Soldier_1_1_White)
+Effects.<span class="fn">CreateTreasureTokens</span>(<span class="num">3</span>)
+
+<span class="cm">// Composites</span>
+Effects.<span class="fn">Branch</span>(condition, ifTrue, ifFalse)
+Effects.<span class="fn">MayPay</span>(cost, effect)</code></pre>
+      <p>See <a href="effects-reference.html">Effects Reference</a> for the complete catalog.</p>
+
+      <h2 id="effect-patterns">EffectPatterns</h2>
+      <p>Pre-built pipelines for common multi-step mechanics using the Gather &rarr; Select &rarr; Move pattern:</p>
+      <table>
+        <thead><tr><th>Method</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td><code>Effects.Scry(n)</code></td><td>Look at top N, put some on bottom</td></tr>
+          <tr><td><code>Effects.Surveil(n)</code></td><td>Like scry but selected cards go to graveyard</td></tr>
+          <tr><td><code>Effects.Mill(n)</code></td><td>Put top N into graveyard</td></tr>
+          <tr><td><code>Effects.SearchLibrary(filter)</code></td><td>Search library for matching card</td></tr>
+          <tr><td><code>EffectPatterns.lookAtTopAndKeep(7, 2)</code></td><td>Look at top 7, keep 2</td></tr>
+          <tr><td><code>EffectPatterns.wheelEffect(Player.Each)</code></td><td>Each player shuffles hand into library, draws</td></tr>
+          <tr><td><code>EffectPatterns.discardCards(n)</code></td><td>Discard N cards (player chooses)</td></tr>
+          <tr><td><code>EffectPatterns.loot(draw, discard)</code></td><td>Draw then discard</td></tr>
+          <tr><td><code>EffectPatterns.destroyGroup(filter)</code></td><td>Destroy all matching permanents</td></tr>
+          <tr><td><code>EffectPatterns.exileUntilEndStep(target)</code></td><td>Exile until end of step, then return</td></tr>
+        </tbody>
+      </table>
+
+      <h2 id="triggers">Trigger System</h2>
+      <p>Triggers are built from <code>GameEvent</code> + <code>TriggerBinding</code> (SELF, ANY, OTHER):</p>
+      <table>
+        <thead><tr><th>Trigger</th><th>Fires When</th></tr></thead>
+        <tbody>
+          <tr><td><code>Triggers.EntersBattlefield</code></td><td>This permanent enters</td></tr>
+          <tr><td><code>Triggers.Dies</code></td><td>This creature dies</td></tr>
+          <tr><td><code>Triggers.Attacks</code></td><td>This creature attacks</td></tr>
+          <tr><td><code>Triggers.AnyCreatureDies</code></td><td>Any creature dies</td></tr>
+          <tr><td><code>Triggers.OnUpkeep</code></td><td>Beginning of upkeep</td></tr>
+          <tr><td><code>Triggers.OnEndStep</code></td><td>Beginning of end step</td></tr>
+          <tr><td><code>Triggers.YouCastNoncreature</code></td><td>You cast a noncreature spell (prowess)</td></tr>
+        </tbody>
+      </table>
+
+      <h2 id="targets">Target System</h2>
+      <h3>EffectTarget (resolution-time)</h3>
+      <p>Specifies what an effect acts upon, resolved when the effect executes:</p>
+      <table>
+        <thead><tr><th>Target</th><th>Resolves To</th></tr></thead>
+        <tbody>
+          <tr><td><code>EffectTarget.Self</code></td><td>This permanent</td></tr>
+          <tr><td><code>EffectTarget.Controller</code></td><td>The ability&rsquo;s controller</td></tr>
+          <tr><td><code>EffectTarget.ContextTarget(0)</code></td><td>Cast-time target at index 0</td></tr>
+          <tr><td><code>EffectTarget.TriggeringEntity</code></td><td>Object that caused the trigger</td></tr>
+          <tr><td><code>EffectTarget.PlayerRef(Player.Opponent)</code></td><td>The opponent</td></tr>
+          <tr><td><code>EffectTarget.StoredEntityTarget("exiled")</code></td><td>Named variable from earlier effect</td></tr>
+        </tbody>
+      </table>
+
+      <h3>TargetRequirement (cast-time)</h3>
+      <p>Declares what a player must select when casting:</p>
+<pre><code><span class="cm">// Common targets via Targets facade</span>
+Targets.Creature            <span class="cm">// Target creature on battlefield</span>
+Targets.Player              <span class="cm">// Target player</span>
+Targets.Any                 <span class="cm">// Target any creature or player</span>
+Targets.CreatureYouControl  <span class="cm">// Target creature you control</span>
+Targets.SpellOnStack        <span class="cm">// Target spell on the stack</span></code></pre>
+
+      <h2 id="filters">Filter System</h2>
+      <p><code>GameObjectFilter</code> combines card, state, and controller predicates into a single composable filter:</p>
+<pre><code><span class="cm">// Base presets</span>
+GameObjectFilter.Creature
+GameObjectFilter.Permanent
+GameObjectFilter.InstantOrSorcery
+
+<span class="cm">// Fluent modifiers</span>
+GameObjectFilter.Creature
+    .<span class="fn">withColor</span>(Color.BLACK)
+    .<span class="fn">withSubtype</span>(<span class="str">"Zombie"</span>)
+    .<span class="fn">withKeyword</span>(Keyword.FLYING)
+    .<span class="fn">tapped</span>()
+    .<span class="fn">youControl</span>()
+    .<span class="fn">powerAtMost</span>(<span class="num">3</span>)</code></pre>
+
+      <h2 id="dynamic-amounts">DynamicAmount System</h2>
+      <p>AST nodes for numeric values that can be serialized and inspected:</p>
+      <table>
+        <thead><tr><th>Node</th><th>Evaluates To</th></tr></thead>
+        <tbody>
+          <tr><td><code>Fixed(3)</code></td><td>Literal 3</td></tr>
+          <tr><td><code>XValue</code></td><td>X value from spell cost</td></tr>
+          <tr><td><code>Count(You, BATTLEFIELD, Creature)</code></td><td>Creatures you control</td></tr>
+          <tr><td><code>CardTypesInAllGraveyards</code></td><td>Distinct card types in all graveyards</td></tr>
+          <tr><td><code>SourcePower</code></td><td>Source creature&rsquo;s power</td></tr>
+          <tr><td><code>CountersOnSelf("+1/+1")</code></td><td>+1/+1 counters on self</td></tr>
+          <tr><td><code>Add(left, right)</code></td><td>Sum of two amounts</td></tr>
+          <tr><td><code>TriggerDamageAmount</code></td><td>Damage dealt by trigger event</td></tr>
+        </tbody>
+      </table>
+
+      <h2 id="conditions">Condition System</h2>
+      <p>Boolean predicates for conditional effects and cast restrictions:</p>
+      <table>
+        <thead><tr><th>Condition</th><th>Checks</th></tr></thead>
+        <tbody>
+          <tr><td><code>Compare(left, op, right)</code></td><td>Numeric comparison (EQ, GT, LTE, etc.)</td></tr>
+          <tr><td><code>ControlsCreature</code></td><td>You control a creature</td></tr>
+          <tr><td><code>OpponentControlsMoreCreatures</code></td><td>Opponent has more creatures</td></tr>
+          <tr><td><code>SourceIsAttacking</code></td><td>Source is attacking</td></tr>
+          <tr><td><code>IsYourTurn</code></td><td>It&rsquo;s your turn</td></tr>
+          <tr><td><code>WasKicked</code></td><td>Spell was kicked</td></tr>
+          <tr><td><code>AllConditions([...])</code></td><td>AND of multiple conditions</td></tr>
+          <tr><td><code>AnyCondition([...])</code></td><td>OR of multiple conditions</td></tr>
+        </tbody>
+      </table>
+
+      <h2 id="costs">Cost System</h2>
+      <table>
+        <thead><tr><th>Cost Type</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td><code>Mana(cost)</code></td><td>Pay mana cost</td></tr>
+          <tr><td><code>Sacrifice(filter, count)</code></td><td>Sacrifice permanent(s)</td></tr>
+          <tr><td><code>Discard(filter, count)</code></td><td>Discard card(s)</td></tr>
+          <tr><td><code>PayLife(amount)</code></td><td>Pay life</td></tr>
+          <tr><td><code>Exile(filter, zone, count)</code></td><td>Exile from zone</td></tr>
+          <tr><td><code>RevealCard(filter)</code></td><td>Reveal card in hand</td></tr>
+          <tr><td><code>ReturnToHand(filter)</code></td><td>Return permanent to hand</td></tr>
+        </tbody>
+      </table>
+
+      <h2 id="ability-types">Ability Types</h2>
+      <h3>TriggeredAbility</h3>
+      <p>Fires when game events occur. Key properties: <code>trigger</code>, <code>effect</code>, <code>targetRequirements</code>, <code>optional</code> (may), <code>triggerCondition</code>.</p>
+
+      <h3>ActivatedAbility</h3>
+      <p>Activated by paying costs. Key properties: <code>cost</code>, <code>effect</code>, <code>targetRequirements</code>, <code>isManaAbility</code>, <code>timing</code>.</p>
+
+      <h3>StaticAbility</h3>
+      <p>Continuous effects applied via Rule 613 layers. Key properties: layer, ability object, <code>affectsFilter</code>, <code>duration</code>.</p>
+
+      <h3>ReplacementEffect</h3>
+      <p>Intercepts game events before they happen (no stack). Key properties: <code>event</code> (what to intercept), <code>replacement</code> (what happens instead).</p>
+
+      <h2 id="enums">Core Enumerations</h2>
+      <div class="card-grid">
+        <div class="card">
+          <h3>Zone</h3>
+          <p>LIBRARY, HAND, BATTLEFIELD, GRAVEYARD, STACK, EXILE, COMMAND</p>
+        </div>
+        <div class="card">
+          <h3>Phase</h3>
+          <p>BEGINNING, PRECOMBAT_MAIN, COMBAT, POSTCOMBAT_MAIN, ENDING</p>
+        </div>
+        <div class="card">
+          <h3>CardType</h3>
+          <p>CREATURE, SORCERY, INSTANT, ENCHANTMENT, ARTIFACT, LAND, PLANESWALKER, KINDRED</p>
+        </div>
+        <div class="card">
+          <h3>Keyword (50+)</h3>
+          <p>FLYING, TRAMPLE, HASTE, DEATHTOUCH, LIFELINK, HEXPROOF, FIRST_STRIKE, MENACE, PROWESS, MORPH, &hellip;</p>
+        </div>
+      </div>
+
+      <div class="page-nav">
+        <a href="architecture.html">
+          <div class="label">Previous</div>
+          <div class="title">&larr; Architecture</div>
+        </a>
+        <a href="rules-engine.html" class="next">
+          <div class="label">Next</div>
+          <div class="title">Rules Engine &rarr;</div>
+        </a>
+      </div>
+    </div>
+  </main>
+</div>
+</body>
+</html>

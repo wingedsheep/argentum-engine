@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rules Engine - Argentum Engine Wiki</title>
+  <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+<div class="page">
+  <aside class="sidebar">
+    <div class="sidebar-logo"><h2>Argentum Engine</h2><span>MTG Rules Engine Wiki</span></div>
+    <nav>
+      <div class="nav-section">
+        <div class="nav-section-title">Getting Started</div>
+        <a href="index.html">Home</a>
+        <a href="getting-started.html">Setup &amp; Workflow</a>
+        <a href="card-development.html">Card Development</a>
+      </div>
+      <div class="nav-section">
+        <div class="nav-section-title">Architecture</div>
+        <a href="architecture.html">Overview</a>
+        <a href="sdk.html">SDK Module</a>
+        <a href="rules-engine.html" class="active">Rules Engine</a>
+        <a href="game-server.html">Game Server</a>
+        <a href="web-client.html">Web Client</a>
+      </div>
+      <div class="nav-section">
+        <div class="nav-section-title">Reference</div>
+        <a href="effects-reference.html">Effects Reference</a>
+        <a href="components-reference.html">ECS Components</a>
+        <a href="testing.html">Testing Guide</a>
+      </div>
+    </nav>
+  </aside>
+
+  <main class="content">
+    <div class="content-inner">
+      <div class="breadcrumb"><a href="index.html">Home</a> <span>&rsaquo;</span> <a href="architecture.html">Architecture</a> <span>&rsaquo;</span> Rules Engine</div>
+      <h1>Rules Engine</h1>
+      <p class="subtitle">
+        The pure functional core. Immutable state, ECS architecture, action processing,
+        Rule 613 state projection, trigger detection, and the continuation system.
+        Zero server dependencies.
+      </p>
+
+      <h2 id="structure">Package Structure</h2>
+<pre><code>com.wingedsheep.engine/
+&#x251c;&#x2500;&#x2500; core/               <span class="cm"># ActionProcessor, GameAction, TurnManager, Continuation</span>
+&#x251c;&#x2500;&#x2500; state/
+&#x2502;   &#x251c;&#x2500;&#x2500; GameState.kt    <span class="cm"># Immutable game state</span>
+&#x2502;   &#x251c;&#x2500;&#x2500; ComponentContainer.kt
+&#x2502;   &#x2514;&#x2500;&#x2500; components/     <span class="cm"># identity/, battlefield/, combat/, player/, stack/</span>
+&#x251c;&#x2500;&#x2500; handlers/
+&#x2502;   &#x251c;&#x2500;&#x2500; actions/        <span class="cm"># ActionHandlerRegistry + per-action handlers</span>
+&#x2502;   &#x251c;&#x2500;&#x2500; effects/        <span class="cm"># EffectExecutorRegistry + per-effect executors</span>
+&#x2502;   &#x2514;&#x2500;&#x2500; continuations/  <span class="cm"># ContinuationResumerRegistry + resumers</span>
+&#x251c;&#x2500;&#x2500; mechanics/
+&#x2502;   &#x251c;&#x2500;&#x2500; layers/         <span class="cm"># StateProjector, ProjectedState (Rule 613)</span>
+&#x2502;   &#x251c;&#x2500;&#x2500; combat/         <span class="cm"># CombatManager, AttackPhaseManager, BlockPhaseManager</span>
+&#x2502;   &#x251c;&#x2500;&#x2500; mana/           <span class="cm"># ManaSolver, CostCalculator, ManaPool</span>
+&#x2502;   &#x251c;&#x2500;&#x2500; stack/          <span class="cm"># StackResolver</span>
+&#x2502;   &#x251c;&#x2500;&#x2500; targeting/      <span class="cm"># TargetValidator</span>
+&#x2502;   &#x2514;&#x2500;&#x2500; replacement/    <span class="cm"># ReplacementEffectChecker</span>
+&#x251c;&#x2500;&#x2500; event/              <span class="cm"># TriggerDetector, TriggerProcessor, sub-detectors</span>
+&#x2514;&#x2500;&#x2500; registry/           <span class="cm"># CardRegistry, SetLoader</span></code></pre>
+
+      <h2 id="game-state">GameState</h2>
+      <p>The immutable snapshot of the entire game. Every action produces a new <code>GameState</code>.</p>
+      <table>
+        <thead><tr><th>Property</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td><code>entities</code></td><td>Map of EntityId &rarr; ComponentContainer (all game objects)</td></tr>
+          <tr><td><code>zones</code></td><td>Map of ZoneKey &rarr; List&lt;EntityId&gt; (cards per zone)</td></tr>
+          <tr><td><code>turnNumber</code></td><td>Current turn number</td></tr>
+          <tr><td><code>activePlayerId</code></td><td>Active player</td></tr>
+          <tr><td><code>phase / step</code></td><td>Current phase and step</td></tr>
+          <tr><td><code>stack</code></td><td>Spells and abilities waiting to resolve</td></tr>
+          <tr><td><code>priorityPlayerId</code></td><td>Who has priority</td></tr>
+          <tr><td><code>pendingDecision</code></td><td>Decision awaiting player input (pauses engine)</td></tr>
+          <tr><td><code>continuationStack</code></td><td>Stack of ContinuationFrames for resuming</td></tr>
+          <tr><td><code>floatingEffects</code></td><td>Temporary effects from spells (until end of turn)</td></tr>
+          <tr><td><code>delayedTriggers</code></td><td>Triggers waiting for specific steps</td></tr>
+          <tr><td><code>timestamp</code></td><td>Counter for Rule 613 timestamp ordering</td></tr>
+        </tbody>
+      </table>
+      <p><strong>Lazy projection:</strong> <code>projectedState: ProjectedState</code> is cached per instance, applying all Rule 613 layers on-demand.</p>
+
+      <h2 id="action-processor">ActionProcessor</h2>
+      <p>The main entry point. A thin facade over the <code>ActionHandlerRegistry</code>:</p>
+      <ol>
+        <li>Validates basics (game not over, player exists)</li>
+        <li>Delegates to <code>ActionHandlerRegistry</code> by action type (KClass)</li>
+        <li>Returns <code>ExecutionResult</code> (new state, events, error/decision)</li>
+      </ol>
+      <h3>Registered Action Modules</h3>
+      <table>
+        <thead><tr><th>Module</th><th>Actions Handled</th></tr></thead>
+        <tbody>
+          <tr><td>SpecialActionsModule</td><td>Concede, ChooseManaColor</td></tr>
+          <tr><td>PriorityModule</td><td>PassPriority</td></tr>
+          <tr><td>LandModule</td><td>PlayLand</td></tr>
+          <tr><td>MulliganModule</td><td>TakeMulligan, KeepHand, BottomCards</td></tr>
+          <tr><td>CombatModule</td><td>DeclareAttackers, DeclareBlockers, OrderBlockers</td></tr>
+          <tr><td>AbilityModule</td><td>ActivateAbility, CycleCard, TypecycleCard, CrewVehicle</td></tr>
+          <tr><td>MorphModule</td><td>TurnFaceUp</td></tr>
+          <tr><td>SpellModule</td><td>CastSpell</td></tr>
+          <tr><td>DecisionModule</td><td>SubmitDecision</td></tr>
+        </tbody>
+      </table>
+
+      <h2 id="game-actions">GameAction Types</h2>
+      <p>All actions inherit from the <code>GameAction</code> sealed interface:</p>
+      <table>
+        <thead><tr><th>Category</th><th>Actions</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Priority</strong></td><td><code>PassPriority</code></td></tr>
+          <tr><td><strong>Spells</strong></td><td><code>CastSpell</code> (targets, xValue, paymentStrategy, morph, kicked)</td></tr>
+          <tr><td><strong>Abilities</strong></td><td><code>ActivateAbility</code>, <code>CycleCard</code>, <code>TypecycleCard</code></td></tr>
+          <tr><td><strong>Combat</strong></td><td><code>DeclareAttackers</code>, <code>DeclareBlockers</code>, <code>OrderBlockers</code></td></tr>
+          <tr><td><strong>Decisions</strong></td><td><code>MakeChoice</code>, <code>SelectTargets</code>, <code>SubmitDecision</code></td></tr>
+          <tr><td><strong>Mulligan</strong></td><td><code>TakeMulligan</code>, <code>KeepHand</code>, <code>BottomCards</code></td></tr>
+          <tr><td><strong>Special</strong></td><td><code>Concede</code>, <code>CrewVehicle</code>, <code>TurnFaceUp</code>, <code>ChooseManaColor</code></td></tr>
+        </tbody>
+      </table>
+
+      <h2 id="components">Component System (ECS)</h2>
+      <p><code>ComponentContainer</code> is an immutable map keyed by type name:</p>
+<pre><code>container.<span class="fn">get</span>&lt;<span class="tp">CardComponent</span>&gt;()       <span class="cm">// Get component or null</span>
+container.<span class="fn">require</span>&lt;<span class="tp">CardComponent</span>&gt;()   <span class="cm">// Get or throw</span>
+container.<span class="fn">has</span>&lt;<span class="tp">TappedComponent</span>&gt;()      <span class="cm">// Check presence</span>
+container.<span class="fn">with</span>(component)             <span class="cm">// Add/replace (returns new container)</span>
+container.<span class="fn">without</span>&lt;<span class="tp">TappedComponent</span>&gt;()  <span class="cm">// Remove (returns new container)</span></code></pre>
+      <p>See <a href="components-reference.html">Components Reference</a> for the complete catalog of component types.</p>
+
+      <h2 id="state-projector">State Projection (Rule 613)</h2>
+      <p>The <code>StateProjector</code> applies continuous effects in layer order to produce <code>ProjectedState</code>:</p>
+      <table>
+        <thead><tr><th>Layer</th><th>Effect Type</th><th>Example</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td>Copy effects</td><td>Clone copying a creature</td></tr>
+          <tr><td>2</td><td>Control-changing</td><td>Control Magic stealing a creature</td></tr>
+          <tr><td>3</td><td>Text-changing</td><td>Magical Hack changing text</td></tr>
+          <tr><td>4</td><td>Type-changing</td><td>Mistform becoming a Soldier</td></tr>
+          <tr><td>5</td><td>Color-changing</td><td>Shifting Sky changing colors</td></tr>
+          <tr><td>6</td><td>Ability add/remove</td><td>Levitation granting Flying</td></tr>
+          <tr><td>7a</td><td>Characteristic-defining abilities</td><td>Tarmogoyf&rsquo;s */* stats</td></tr>
+          <tr><td>7b</td><td>Set P/T to specific value</td><td>Humility making everything 1/1</td></tr>
+          <tr><td>7c</td><td>+N/+N modifications</td><td>Giant Growth giving +3/+3</td></tr>
+          <tr><td>7d</td><td>Counter modifications</td><td>+1/+1 and -1/-1 counters</td></tr>
+          <tr><td>7e</td><td>P/T switching</td><td>About Face switching P/T</td></tr>
+        </tbody>
+      </table>
+      <h3>Effect Sorting within a Layer</h3>
+      <ol>
+        <li><strong>Dependency (trial application):</strong> If applying effect A changes the outcome of effect B, then A must be applied first (Rule 613.8)</li>
+        <li><strong>Timestamp:</strong> Fallback ordering if no dependency detected</li>
+      </ol>
+
+      <div class="callout danger">
+        <strong>Critical Rule:</strong>
+        Always use <strong>projected state</strong> for game logic involving battlefield permanents
+        (P/T, controller, types, keywords). Base components hold raw data only. Using base state
+        for filtering misses continuous effects (type-changing, color-changing, etc.).
+      </div>
+
+      <h3>ProjectedState API</h3>
+<pre><code>projected.<span class="fn">getController</span>(entityId)      <span class="cm">// Who controls this?</span>
+projected.<span class="fn">getPower</span>(entityId)           <span class="cm">// Projected power</span>
+projected.<span class="fn">getToughness</span>(entityId)       <span class="cm">// Projected toughness</span>
+projected.<span class="fn">hasKeyword</span>(entityId, kw)     <span class="cm">// Has keyword after effects?</span>
+projected.<span class="fn">isCreature</span>(entityId)         <span class="cm">// Is it a creature after type changes?</span>
+projected.<span class="fn">hasColor</span>(entityId, color)    <span class="cm">// Color after color changes?</span>
+projected.<span class="fn">isFaceDown</span>(entityId)         <span class="cm">// Is it face-down?</span></code></pre>
+
+      <h2 id="triggers">Trigger System</h2>
+      <h3>TriggerDetector</h3>
+      <p>Observes <code>GameEvent</code>s and builds a list of <code>PendingTrigger</code> objects in APNAP order (Active Player, Non-Active Player):</p>
+      <ol>
+        <li><strong>buildTriggerIndex():</strong> Pre-scans battlefield permanents, buckets triggers by event type</li>
+        <li><strong>Sub-detectors:</strong> DeathAndLeaveTriggerDetector, DamageTriggerDetector, AttachmentTriggerDetector</li>
+        <li><strong>detectTriggers(state, events):</strong> For each event, returns matching triggers</li>
+        <li><strong>detectPhaseStepTriggers():</strong> Phase/step changes (called by PassPriorityHandler)</li>
+      </ol>
+
+      <h3>TriggerProcessor</h3>
+      <p>Puts triggered abilities on the stack:</p>
+      <ul>
+        <li>Processes one trigger at a time in APNAP order</li>
+        <li>If trigger has targets: pauses for TargetingDecision, pushes continuation</li>
+        <li>If multiple triggers and first pauses: remaining stored in <code>PendingTriggersContinuation</code></li>
+      </ul>
+
+      <h2 id="continuations">Continuation System</h2>
+      <p>A serializable alternative to closures. When the engine pauses for player input, it pushes a <code>ContinuationFrame</code> onto the stack:</p>
+      <div class="diagram"><span class="a">Engine executing spell</span>
+    |
+    v
+Needs player input (e.g., "choose cards to scry")
+    |
+    v
+Push <span class="c">ContinuationFrame</span> onto continuationStack
+Return <span class="hl">PendingDecision</span> to server
+    |
+    v
+Player responds via <span class="a">SubmitDecision</span>
+    |
+    v
+<span class="g">ContinuationHandler</span> pops frame, resumes execution</div>
+
+      <p><strong>80+ continuation types</strong> covering: effect pipeline resumption, targeting, combat damage assignment, modal choices, may effects, clone entering, amplify, storm copies, and more.</p>
+
+      <h2 id="combat">Combat System</h2>
+      <p>The <code>CombatManager</code> delegates to three phase managers:</p>
+      <table>
+        <thead><tr><th>Manager</th><th>Responsibility</th></tr></thead>
+        <tbody>
+          <tr><td><code>AttackPhaseManager</code></td><td>Validates attackers (summoning sickness, restrictions, tapped)</td></tr>
+          <tr><td><code>BlockPhaseManager</code></td><td>Validates blockers (evasion, flying, unblockable), mandatory blockers, attacker ordering</td></tr>
+          <tr><td><code>CombatDamageManager</code></td><td>Deals combat damage (handles first strike + regular steps separately)</td></tr>
+        </tbody>
+      </table>
+
+      <h2 id="turn">Turn Structure</h2>
+<pre><code><span class="kw">Beginning Phase</span>
+  &#x251c;&#x2500; Untap Step
+  &#x251c;&#x2500; Upkeep Step
+  &#x2514;&#x2500; Draw Step
+
+<span class="kw">Precombat Main Phase</span>
+
+<span class="kw">Combat Phase</span>
+  &#x251c;&#x2500; Begin Combat
+  &#x251c;&#x2500; Declare Attackers
+  &#x251c;&#x2500; Declare Blockers
+  &#x251c;&#x2500; Combat Damage (first strike if needed)
+  &#x251c;&#x2500; Combat Damage (regular)
+  &#x2514;&#x2500; End Combat
+
+<span class="kw">Postcombat Main Phase</span>
+
+<span class="kw">Ending Phase</span>
+  &#x251c;&#x2500; End Step
+  &#x2514;&#x2500; Cleanup (damage, discard to hand size)</code></pre>
+
+      <h2 id="mana">Mana System</h2>
+      <p>The <code>ManaSolver</code> finds optimal lands to tap for AutoPay:</p>
+      <ol>
+        <li>Pay colored costs first (prefer mono-color sources)</li>
+        <li>Colorless costs with colorless-only sources</li>
+        <li>Generic costs with remaining sources</li>
+      </ol>
+      <p><strong>PaymentStrategy:</strong> <code>AutoPay</code> (engine taps), <code>FromPool</code> (player floated mana), <code>Explicit</code> (player specifies sources).</p>
+
+      <h2 id="events">Game Events</h2>
+      <p>Every state mutation emits an explicit <code>GameEvent</code>:</p>
+      <table>
+        <thead><tr><th>Category</th><th>Events</th></tr></thead>
+        <tbody>
+          <tr><td>Zone Changes</td><td><code>ZoneChangeEvent</code> (includes last-known P/T, counters)</td></tr>
+          <tr><td>Life</td><td><code>LifeChangedEvent</code></td></tr>
+          <tr><td>Damage</td><td><code>DamageDealtEvent</code></td></tr>
+          <tr><td>Spells</td><td><code>SpellCastEvent</code>, <code>SpellResolvedEvent</code></td></tr>
+          <tr><td>Abilities</td><td><code>TriggeredAbilityEvent</code>, <code>AbilityActivatedEvent</code></td></tr>
+          <tr><td>Combat</td><td><code>AttackersDeclaredEvent</code>, <code>BlockersDeclaredEvent</code></td></tr>
+          <tr><td>Stats</td><td><code>StatsModifiedEvent</code>, <code>KeywordGrantedEvent</code></td></tr>
+          <tr><td>Counters</td><td><code>CountersAddedEvent</code></td></tr>
+          <tr><td>Turns</td><td><code>TurnStartedEvent</code>, <code>StepChangedEvent</code></td></tr>
+        </tbody>
+      </table>
+
+      <h2 id="effect-executors">Effect Executor System</h2>
+      <p>Effects are defined as data in mtg-sdk; executors in rules-engine implement <code>EffectExecutor&lt;T&gt;</code>:</p>
+      <table>
+        <thead><tr><th>Directory</th><th>Executors</th></tr></thead>
+        <tbody>
+          <tr><td><code>damage/</code></td><td>DealDamageExecutor, PreventDamageExecutor</td></tr>
+          <tr><td><code>drawing/</code></td><td>DrawCardsExecutor, DrawUpToExecutor</td></tr>
+          <tr><td><code>removal/</code></td><td>DestroyExecutor, ExileExecutor, SacrificeExecutor</td></tr>
+          <tr><td><code>token/</code></td><td>CreateTokenExecutor, CreateTokenCopyExecutor</td></tr>
+          <tr><td><code>permanent/</code></td><td>ModifyStatsExecutor, GrantKeywordExecutor, AddCountersExecutor</td></tr>
+          <tr><td><code>stack/</code></td><td>CopySpellExecutor, CounterSpellExecutor</td></tr>
+          <tr><td><code>pipeline/</code></td><td>GatherCardsExecutor, SelectFromCollectionExecutor, MoveCollectionExecutor</td></tr>
+          <tr><td><code>composite/</code></td><td>IfThenElseExecutor, ForEachTargetExecutor, ForEachPlayerExecutor</td></tr>
+        </tbody>
+      </table>
+      <p>Each executor is registered in an <code>ExecutorModule</code>, wired into the <code>EffectExecutorRegistry</code>.</p>
+
+      <div class="page-nav">
+        <a href="sdk.html">
+          <div class="label">Previous</div>
+          <div class="title">&larr; SDK Module</div>
+        </a>
+        <a href="game-server.html" class="next">
+          <div class="label">Next</div>
+          <div class="title">Game Server &rarr;</div>
+        </a>
+      </div>
+    </div>
+  </main>
+</div>
+</body>
+</html>

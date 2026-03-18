@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ECS Components - Argentum Engine Wiki</title>
+  <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+<div class="page">
+  <aside class="sidebar">
+    <div class="sidebar-logo"><h2>Argentum Engine</h2><span>MTG Rules Engine Wiki</span></div>
+    <nav>
+      <div class="nav-section">
+        <div class="nav-section-title">Getting Started</div>
+        <a href="index.html">Home</a>
+        <a href="getting-started.html">Setup &amp; Workflow</a>
+        <a href="card-development.html">Card Development</a>
+      </div>
+      <div class="nav-section">
+        <div class="nav-section-title">Architecture</div>
+        <a href="architecture.html">Overview</a>
+        <a href="sdk.html">SDK Module</a>
+        <a href="rules-engine.html">Rules Engine</a>
+        <a href="game-server.html">Game Server</a>
+        <a href="web-client.html">Web Client</a>
+      </div>
+      <div class="nav-section">
+        <div class="nav-section-title">Reference</div>
+        <a href="effects-reference.html">Effects Reference</a>
+        <a href="components-reference.html" class="active">ECS Components</a>
+        <a href="testing.html">Testing Guide</a>
+      </div>
+    </nav>
+  </aside>
+
+  <main class="content">
+    <div class="content-inner">
+      <div class="breadcrumb"><a href="index.html">Home</a> <span>&rsaquo;</span> ECS Components</div>
+      <h1>ECS Components Reference</h1>
+      <p class="subtitle">
+        All component types in the Entity-Component-System model. Components are pure data bags
+        attached to entities via <code>ComponentContainer</code>. Tag components (data objects)
+        represent binary state.
+      </p>
+
+      <h2 id="container">ComponentContainer API</h2>
+<pre><code>container.<span class="fn">get</span>&lt;<span class="tp">CardComponent</span>&gt;()        <span class="cm">// Get or null</span>
+container.<span class="fn">require</span>&lt;<span class="tp">CardComponent</span>&gt;()    <span class="cm">// Get or throw</span>
+container.<span class="fn">has</span>&lt;<span class="tp">TappedComponent</span>&gt;()       <span class="cm">// Boolean check</span>
+container.<span class="fn">with</span>(component)              <span class="cm">// Add/replace &rarr; new container</span>
+container.<span class="fn">without</span>&lt;<span class="tp">TappedComponent</span>&gt;()   <span class="cm">// Remove &rarr; new container</span></code></pre>
+
+      <h2 id="identity">Identity Components</h2>
+      <p>Located in <code>state/components/identity/</code>. Define what an entity <em>is</em>.</p>
+      <table>
+        <thead><tr><th>Component</th><th>Type</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td><code>CardComponent</code></td><td>Data</td><td>Card name, mana cost, type line, base stats, keywords, colors, oracle text, image URI</td></tr>
+          <tr><td><code>OwnerComponent</code></td><td>Data</td><td>Card owner (never changes)</td></tr>
+          <tr><td><code>ControllerComponent</code></td><td>Data</td><td>Current controller (can change from control effects)</td></tr>
+          <tr><td><code>TokenComponent</code></td><td>Tag</td><td>Entity is a token, not a card</td></tr>
+          <tr><td><code>CopyOfComponent</code></td><td>Data</td><td>Tracks what this card is copying</td></tr>
+          <tr><td><code>CantBeCounteredComponent</code></td><td>Tag</td><td>Spell can&rsquo;t be countered</td></tr>
+          <tr><td><code>FaceDownComponent</code></td><td>Tag</td><td>Card is face-down (2/2 creature)</td></tr>
+          <tr><td><code>ProtectionComponent</code></td><td>Data</td><td>Protection from colors/subtypes</td></tr>
+          <tr><td><code>HexproofFromColorComponent</code></td><td>Data</td><td>Hexproof from specific colors</td></tr>
+          <tr><td><code>TextReplacementComponent</code></td><td>Data</td><td>Text changed (Layer 3)</td></tr>
+        </tbody>
+      </table>
+
+      <h2 id="battlefield">Battlefield Components</h2>
+      <p>Located in <code>state/components/battlefield/</code>. Present only while on the battlefield.</p>
+      <table>
+        <thead><tr><th>Component</th><th>Type</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td><code>TappedComponent</code></td><td>Tag</td><td>Permanent is tapped</td></tr>
+          <tr><td><code>SummoningSicknessComponent</code></td><td>Tag</td><td>Creature has summoning sickness</td></tr>
+          <tr><td><code>AttachedToComponent</code></td><td>Data</td><td>Aura/Equipment target (entityId)</td></tr>
+          <tr><td><code>AttachmentsComponent</code></td><td>Data</td><td>List of attached entities</td></tr>
+          <tr><td><code>CountersComponent</code></td><td>Data</td><td>Map of counter types to counts (+1/+1, -1/-1, loyalty, etc.)</td></tr>
+          <tr><td><code>DamageComponent</code></td><td>Data</td><td>Damage marked on creature (amount)</td></tr>
+          <tr><td><code>EnteredThisTurnComponent</code></td><td>Tag</td><td>Permanent entered battlefield this turn</td></tr>
+          <tr><td><code>WasKickedComponent</code></td><td>Tag</td><td>Spell was kicked when cast</td></tr>
+          <tr><td><code>CastFromHandComponent</code></td><td>Tag</td><td>Creature was cast from hand (not cheated in)</td></tr>
+          <tr><td><code>TimestampComponent</code></td><td>Data</td><td>Timestamp for Rule 613 ordering</td></tr>
+          <tr><td><code>SagaComponent</code></td><td>Data</td><td>Which saga chapters have triggered</td></tr>
+          <tr><td><code>LinkedExileComponent</code></td><td>Data</td><td>Cards exiled by this permanent (Oblivion Ring)</td></tr>
+          <tr><td><code>AbilityActivatedThisTurnComponent</code></td><td>Data</td><td>Tracks &ldquo;activate once per turn&rdquo;</td></tr>
+          <tr><td><code>ReplacementEffectSourceComponent</code></td><td>Data</td><td>Static replacement effects on this permanent</td></tr>
+          <tr><td><code>ExileOnLeaveBattlefieldComponent</code></td><td>Tag</td><td>If leaves battlefield, exile instead of graveyard</td></tr>
+          <tr><td><code>GraveyardEntryTurnComponent</code></td><td>Data</td><td>When card was put into graveyard</td></tr>
+        </tbody>
+      </table>
+
+      <h2 id="combat">Combat Components</h2>
+      <p>Located in <code>state/components/combat/</code>. Present during combat.</p>
+      <table>
+        <thead><tr><th>Component</th><th>Type</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td><code>AttackingComponent</code></td><td>Tag</td><td>Creature is attacking</td></tr>
+          <tr><td><code>BlockingComponent</code></td><td>Data</td><td>Creature is blocking (list of attackers blocked)</td></tr>
+          <tr><td><code>MustAttackThisTurnComponent</code></td><td>Tag</td><td>Creature must attack if able</td></tr>
+          <tr><td><code>MustAttackPlayerComponent</code></td><td>Data</td><td>Must attack specific player</td></tr>
+          <tr><td><code>PlayerAttackedThisTurnComponent</code></td><td>Tag</td><td>Player attacked someone this turn</td></tr>
+          <tr><td><code>AttacksDoubleDamageComponent</code></td><td>Tag</td><td>Creature deals double combat damage</td></tr>
+          <tr><td><code>DivideCombatDamageFreely</code></td><td>Tag</td><td>Can assign combat damage freely</td></tr>
+          <tr><td><code>DamageDealtToCreaturesThisTurnComponent</code></td><td>Data</td><td>Tracks which creatures this dealt damage to</td></tr>
+          <tr><td><code>MarkedForDestructionAtEndOfCombatComponent</code></td><td>Tag</td><td>Destroy after combat</td></tr>
+          <tr><td><code>MarkedForSacrificeAtEndOfCombatComponent</code></td><td>Tag</td><td>Sacrifice after combat</td></tr>
+        </tbody>
+      </table>
+
+      <h2 id="player">Player Components</h2>
+      <p>Located in <code>state/components/player/</code>. Attached to player entities.</p>
+      <table>
+        <thead><tr><th>Component</th><th>Type</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td><code>ManaPoolComponent</code></td><td>Data</td><td>Available mana (W/U/B/R/G/colorless)</td></tr>
+          <tr><td><code>LandDropsComponent</code></td><td>Data</td><td>Land drops remaining this turn</td></tr>
+          <tr><td><code>MulliganStateComponent</code></td><td>Data</td><td>Mulligan history</td></tr>
+          <tr><td><code>CardsDrawnThisTurnComponent</code></td><td>Data</td><td>Cards drawn (for draw replacement)</td></tr>
+          <tr><td><code>DamageReceivedThisTurnComponent</code></td><td>Data</td><td>Total damage received this turn</td></tr>
+          <tr><td><code>NonTokenCreaturesDiedThisTurnComponent</code></td><td>Data</td><td>Creature death count</td></tr>
+          <tr><td><code>AdditionalCombatPhasesComponent</code></td><td>Data</td><td>Extra combat phases remaining</td></tr>
+          <tr><td><code>SkipCombatPhasesComponent</code></td><td>Data</td><td>Combat phases to skip</td></tr>
+          <tr><td><code>SkipNextTurnComponent</code></td><td>Tag</td><td>Skip next turn</td></tr>
+          <tr><td><code>SkipUntapComponent</code></td><td>Tag</td><td>Skip untap step</td></tr>
+          <tr><td><code>LoseAtEndStepComponent</code></td><td>Data</td><td>Lose game at specific end step</td></tr>
+          <tr><td><code>PlayerShroudComponent</code></td><td>Tag</td><td>Player has shroud</td></tr>
+          <tr><td><code>CantCastSpellsComponent</code></td><td>Tag</td><td>Player can&rsquo;t cast spells</td></tr>
+          <tr><td><code>PlayerLostComponent</code></td><td>Data</td><td>Player has lost (with reason)</td></tr>
+          <tr><td><code>DamageBonusComponent</code></td><td>Data</td><td>Flat damage bonus to sources</td></tr>
+        </tbody>
+      </table>
+
+      <h2 id="stack">Stack Components</h2>
+      <p>Located in <code>state/components/stack/</code>. Present while on the stack.</p>
+      <table>
+        <thead><tr><th>Component</th><th>Type</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td><code>SpellComponent</code></td><td>Data</td><td>Spell on stack (with cast info, payment, targets)</td></tr>
+          <tr><td><code>TriggeredAbilityOnStackComponent</code></td><td>Data</td><td>Triggered ability waiting to resolve</td></tr>
+          <tr><td><code>ChosenTarget</code></td><td>Data</td><td>Single chosen target (entityId or opponent)</td></tr>
+        </tbody>
+      </table>
+
+      <h2 id="grants">Grant Components</h2>
+      <p>Components that grant effects to a permanent&rsquo;s controller or other entities.</p>
+      <table>
+        <thead><tr><th>Component</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td><code>GrantsControllerShroudComponent</code></td><td>&ldquo;You have shroud&rdquo;</td></tr>
+          <tr><td><code>GrantsControllerHexproofComponent</code></td><td>&ldquo;You have hexproof&rdquo;</td></tr>
+          <tr><td><code>GrantsCantLoseGameComponent</code></td><td>&ldquo;You can&rsquo;t lose the game&rdquo;</td></tr>
+          <tr><td><code>CantBeTargetedByOpponentAbilitiesComponent</code></td><td>&ldquo;Can&rsquo;t be targeted by opponent abilities&rdquo;</td></tr>
+          <tr><td><code>GrantCantBeBlockedToSmallCreaturesComponent</code></td><td>Grant evasion to small creatures</td></tr>
+          <tr><td><code>PlayWithoutPayingCostComponent</code></td><td>May play without paying mana cost</td></tr>
+          <tr><td><code>MayPlayFromExileComponent</code></td><td>May play from exile</td></tr>
+        </tbody>
+      </table>
+
+      <h2 id="zone-changes">Zone Change Behavior</h2>
+      <p>When a permanent leaves the battlefield, <code>stripBattlefieldComponents()</code> removes all battlefield-only components
+      (TappedComponent, DamageComponent, CountersComponent, AttackingComponent, etc.), resetting the entity to its base identity.</p>
+
+      <div class="page-nav">
+        <a href="effects-reference.html">
+          <div class="label">Previous</div>
+          <div class="title">&larr; Effects Reference</div>
+        </a>
+        <a href="testing.html" class="next">
+          <div class="label">Next</div>
+          <div class="title">Testing Guide &rarr;</div>
+        </a>
+      </div>
+    </div>
+  </main>
+</div>
+</body>
+</html>

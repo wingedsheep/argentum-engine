@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Testing Guide - Argentum Engine Wiki</title>
+  <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+<div class="page">
+  <aside class="sidebar">
+    <div class="sidebar-logo"><h2>Argentum Engine</h2><span>MTG Rules Engine Wiki</span></div>
+    <nav>
+      <div class="nav-section">
+        <div class="nav-section-title">Getting Started</div>
+        <a href="index.html">Home</a>
+        <a href="getting-started.html">Setup &amp; Workflow</a>
+        <a href="card-development.html">Card Development</a>
+      </div>
+      <div class="nav-section">
+        <div class="nav-section-title">Architecture</div>
+        <a href="architecture.html">Overview</a>
+        <a href="sdk.html">SDK Module</a>
+        <a href="rules-engine.html">Rules Engine</a>
+        <a href="game-server.html">Game Server</a>
+        <a href="web-client.html">Web Client</a>
+      </div>
+      <div class="nav-section">
+        <div class="nav-section-title">Reference</div>
+        <a href="effects-reference.html">Effects Reference</a>
+        <a href="components-reference.html">ECS Components</a>
+        <a href="testing.html" class="active">Testing Guide</a>
+      </div>
+    </nav>
+  </aside>
+
+  <main class="content">
+    <div class="content-inner">
+      <div class="breadcrumb"><a href="index.html">Home</a> <span>&rsaquo;</span> Testing Guide</div>
+      <h1>Testing Guide</h1>
+      <p class="subtitle">
+        Test pyramid: unit tests, scenario tests, and full-stack E2E tests with Playwright.
+      </p>
+
+      <h2 id="pyramid">Test Pyramid</h2>
+      <table>
+        <thead><tr><th>Level</th><th>Framework</th><th>Scope</th><th>Command</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Unit</strong></td><td>Kotest</td><td>Component logic, handler execution</td><td><code>just test-rules</code></td></tr>
+          <tr><td><strong>Integration</strong></td><td>Kotest</td><td>Multi-action sequences, layer system</td><td><code>just test-rules</code></td></tr>
+          <tr><td><strong>Scenario</strong></td><td>Kotest</td><td>Full card interactions, edge cases</td><td><code>just test-class CardTest</code></td></tr>
+          <tr><td><strong>E2E</strong></td><td>Playwright</td><td>Full-stack browser tests</td><td><code>just e2e</code></td></tr>
+        </tbody>
+      </table>
+
+      <h2 id="commands">Test Commands</h2>
+      <table>
+        <thead><tr><th>Command</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td><code>just test</code></td><td>Run all tests</td></tr>
+          <tr><td><code>just test-rules</code></td><td>Engine tests only</td></tr>
+          <tr><td><code>just test-server</code></td><td>Server tests only</td></tr>
+          <tr><td><code>just test-class ClassName</code></td><td>Specific test class</td></tr>
+          <tr><td><code>just e2e</code></td><td>All E2E tests</td></tr>
+          <tr><td><code>just e2e-ui</code></td><td>Playwright interactive UI</td></tr>
+          <tr><td><code>just e2e-headed</code></td><td>Visible browser</td></tr>
+          <tr><td><code>just e2e-portal</code></td><td>Portal set only</td></tr>
+          <tr><td><code>just e2e-onslaught</code></td><td>Onslaught set only</td></tr>
+          <tr><td><code>just e2e-report</code></td><td>Run + open HTML report</td></tr>
+        </tbody>
+      </table>
+
+      <hr>
+
+      <h2 id="scenario">Scenario Tests (Kotest)</h2>
+      <p>Scenario tests use <code>ScenarioTestBase</code> with a builder pattern to set up game state and execute actions:</p>
+
+<pre><code><span class="kw">class</span> <span class="tp">LightningBoltTest</span> : <span class="tp">ScenarioTestBase</span>() {
+    <span class="fn">init</span> {
+        <span class="str">"Lightning Bolt deals 3 damage to player"</span> {
+            <span class="kw">val</span> state = <span class="fn">setupGame</span> {
+                player1 {
+                    hand(<span class="str">"Lightning Bolt"</span>)
+                    battlefield(<span class="str">"Mountain"</span>)
+                    library(<span class="str">"Mountain"</span>)
+                }
+                player2 {
+                    library(<span class="str">"Mountain"</span>)
+                }
+            }
+            <span class="kw">val</span> result = <span class="fn">castSpellTargetingPlayer</span>(
+                state, <span class="str">"Lightning Bolt"</span>, player2Id
+            )
+            result.<span class="fn">assertLifeTotal</span>(player2Id, <span class="num">17</span>)
+        }
+    }
+}</code></pre>
+
+      <h3>ScenarioTestBase Helper Methods</h3>
+      <table>
+        <thead><tr><th>Method</th><th>Purpose</th></tr></thead>
+        <tbody>
+          <tr><td><code>castSpell(state, cardName)</code></td><td>Cast a spell with no targets</td></tr>
+          <tr><td><code>castSpellTargetingPlayer(state, cardName, playerId)</code></td><td>Cast targeting a player</td></tr>
+          <tr><td><code>castSpellTargetingCreature(state, cardName, creatureName)</code></td><td>Cast targeting a creature</td></tr>
+          <tr><td><code>castSpellTargetingGraveyardCard(state, cardName, targetName)</code></td><td>Cast targeting card in graveyard</td></tr>
+          <tr><td><code>activateAbility(state, cardName)</code></td><td>Activate an ability</td></tr>
+          <tr><td><code>declareAttackers(state, creatureNames)</code></td><td>Declare attackers</td></tr>
+          <tr><td><code>declareBlockers(state, blockerMap)</code></td><td>Declare blockers</td></tr>
+          <tr><td><code>resolveStack(state)</code></td><td>Resolve top of stack</td></tr>
+        </tbody>
+      </table>
+
+      <div class="callout warning">
+        <strong>Important:</strong> <code>ScenarioTestBase.cardRegistry</code> only includes cards from registered sets (Portal, Onslaught, etc.).
+        Test creatures like &ldquo;Centaur Courser&rdquo; from <code>TestCards.kt</code> are NOT available.
+        Instead, create inline test cards with <code>CardDefinition.creature()</code> and register via <code>cardRegistry.register(card)</code>.
+      </div>
+
+      <div class="callout">
+        <strong>Always give test players at least one card in library</strong> to prevent draw-from-empty losses.
+      </div>
+
+      <hr>
+
+      <h2 id="e2e">E2E Tests (Playwright)</h2>
+      <p>Full-stack browser tests running against server + client. Located in <code>e2e-scenarios/</code>.</p>
+
+      <div class="callout warning">
+        <strong>Prerequisites:</strong> Server running (<code>just server</code>), client running (<code>just client</code>), and <code>GAME_DEV_ENDPOINTS_ENABLED=true</code>.
+      </div>
+
+      <h3>Test Structure</h3>
+<pre><code><span class="kw">import</span> { test, expect } <span class="kw">from</span> <span class="str">'../../fixtures/scenarioFixture'</span>
+
+<span class="fn">test</span>(<span class="str">'Lightning Bolt deals 3 damage'</span>, <span class="kw">async</span> ({ createGame }) =&gt; {
+  <span class="kw">const</span> { player1, player2 } = <span class="kw">await</span> <span class="fn">createGame</span>({
+    player1Name: <span class="str">'Alice'</span>,
+    player2Name: <span class="str">'Bob'</span>,
+    player1: {
+      hand: [<span class="str">'Lightning Bolt'</span>],
+      battlefield: [{ name: <span class="str">'Mountain'</span>, tapped: <span class="kw">false</span> }],
+      library: [<span class="str">'Mountain'</span>],
+    },
+    player2: {
+      battlefield: [{ name: <span class="str">'Glory Seeker'</span> }],
+      library: [<span class="str">'Mountain'</span>],
+    },
+    phase: <span class="str">'PRECOMBAT_MAIN'</span>,
+    activePlayer: <span class="num">1</span>,
+  })
+
+  <span class="kw">const</span> p1 = player1.gamePage
+  <span class="kw">await</span> p1.<span class="fn">clickCard</span>(<span class="str">'Lightning Bolt'</span>)
+  <span class="kw">await</span> p1.<span class="fn">selectAction</span>(<span class="str">'Cast'</span>)
+  <span class="kw">await</span> p1.<span class="fn">selectTarget</span>(<span class="str">'Glory Seeker'</span>)
+  <span class="kw">await</span> p1.<span class="fn">confirmTargets</span>()
+  <span class="cm">// Auto-resolves if opponent has no responses</span>
+  <span class="kw">await</span> p1.<span class="fn">expectNotOnBattlefield</span>(<span class="str">'Glory Seeker'</span>)
+})</code></pre>
+
+      <h3>ScenarioRequest Config</h3>
+      <table>
+        <thead><tr><th>Property</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td><code>player1 / player2</code></td><td><code>{ hand, battlefield, graveyard, library, lifeTotal }</code></td></tr>
+          <tr><td><code>battlefield items</code></td><td><code>{ name, tapped?, summoningSickness? }</code></td></tr>
+          <tr><td><code>phase</code></td><td><code>'BEGINNING'</code> | <code>'PRECOMBAT_MAIN'</code> | <code>'COMBAT'</code> | <code>'POSTCOMBAT_MAIN'</code> | <code>'ENDING'</code></td></tr>
+          <tr><td><code>step</code></td><td><code>'UPKEEP'</code>, <code>'DECLARE_ATTACKERS'</code>, etc.</td></tr>
+          <tr><td><code>activePlayer</code></td><td><code>1</code> or <code>2</code></td></tr>
+          <tr><td><code>player1StopAtSteps</code></td><td>Steps where auto-pass is disabled (e.g., <code>['UPKEEP']</code>)</td></tr>
+        </tbody>
+      </table>
+
+      <h3>GamePage API</h3>
+      <table>
+        <thead><tr><th>Category</th><th>Methods</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Card interaction</strong></td><td><code>clickCard(name)</code>, <code>selectCardInHand(name)</code>, <code>selectAction(label)</code></td></tr>
+          <tr><td><strong>Targeting</strong></td><td><code>selectTarget(name)</code>, <code>confirmTargets()</code>, <code>skipTargets()</code></td></tr>
+          <tr><td><strong>Priority</strong></td><td><code>pass()</code>, <code>resolveStack(text)</code></td></tr>
+          <tr><td><strong>Decisions</strong></td><td><code>answerYes()</code>, <code>answerNo()</code>, <code>selectNumber(n)</code>, <code>selectOption(text)</code>, <code>selectXValue(x)</code></td></tr>
+          <tr><td><strong>Combat</strong></td><td><code>attackAll()</code>, <code>attackWith(name)</code>, <code>declareAttacker(name)</code>, <code>declareBlocker(b, a)</code>, <code>confirmBlockers()</code>, <code>noBlocks()</code></td></tr>
+          <tr><td><strong>Overlays</strong></td><td><code>selectCardInZoneOverlay(name)</code>, <code>selectCardInDecision(name)</code>, <code>confirmSelection()</code>, <code>failToFind()</code></td></tr>
+          <tr><td><strong>Assertions</strong></td><td><code>expectOnBattlefield(name)</code>, <code>expectNotOnBattlefield(name)</code>, <code>expectInHand(name)</code>, <code>expectHandSize(n)</code>, <code>expectLifeTotal(id, n)</code>, <code>expectStats(name, "3/3")</code>, <code>expectTapped(name)</code></td></tr>
+          <tr><td><strong>Morph</strong></td><td><code>castFaceDown(name)</code>, <code>turnFaceUp(name)</code></td></tr>
+          <tr><td><strong>Damage dist.</strong></td><td><code>increaseDamageAllocation(name, times)</code>, <code>castSpellFromDistribution()</code>, <code>allocateDamage(name, amount)</code>, <code>confirmDamage()</code></td></tr>
+        </tbody>
+      </table>
+
+      <h3>Important Patterns</h3>
+
+      <h4>Auto-Pass</h4>
+      <p>When a player has no legal responses, they auto-pass. No explicit <code>p2.pass()</code> needed unless P2 actually has instant-speed responses.</p>
+
+      <h4>Stack Items Always Stop Opponent</h4>
+      <p>Opponent always gets priority to see and respond to stack items. Use <code>p2.pass()</code> or <code>p2.resolveStack('Card Name')</code>.</p>
+
+      <h4>Face-Down Creatures</h4>
+      <p>Alt text is <code>"Card back"</code>, not the card name. Use <code>clickCard('Card back')</code>. Turn face-up button label is <code>"Turn Face-Up"</code> (hyphenated).</p>
+
+      <h4>Activated Ability Buttons</h4>
+      <p>Show full ability description text, NOT &ldquo;Activate&rdquo;. Use partial text match: <code>selectAction('damage to target')</code>.</p>
+
+      <h4>Aura &amp; Sacrifice Targeting</h4>
+      <p>Uses the ChooseTargets modal. Need <code>confirmTargets()</code> after <code>selectTarget()</code>.</p>
+
+      <h4>MayEffect + Target Triggered Abilities</h4>
+      <p>Engine asks yes/no FIRST, then targets. Test flow: <code>resolveStack()</code> &rarr; <code>answerYes()</code> &rarr; <code>selectTargets()</code> &rarr; <code>resolveStack()</code>.</p>
+
+      <h3>Test Organization</h3>
+<pre><code>e2e-scenarios/
+&#x251c;&#x2500;&#x2500; fixtures/
+&#x2502;   &#x2514;&#x2500;&#x2500; <span class="fn">scenarioFixture.ts</span>   <span class="cm"># createGame fixture</span>
+&#x251c;&#x2500;&#x2500; helpers/
+&#x2502;   &#x251c;&#x2500;&#x2500; <span class="fn">gamePage.ts</span>          <span class="cm"># GamePage page object</span>
+&#x2502;   &#x251c;&#x2500;&#x2500; <span class="fn">scenarioApi.ts</span>       <span class="cm"># ScenarioRequest types</span>
+&#x2502;   &#x2514;&#x2500;&#x2500; <span class="fn">selectors.ts</span>         <span class="cm"># CSS/ARIA selectors</span>
+&#x2514;&#x2500;&#x2500; tests/
+    &#x251c;&#x2500;&#x2500; portal/              <span class="cm"># Portal set tests</span>
+    &#x251c;&#x2500;&#x2500; onslaught/           <span class="cm"># Onslaught set tests</span>
+    &#x251c;&#x2500;&#x2500; scourge/             <span class="cm"># Scourge set tests</span>
+    &#x251c;&#x2500;&#x2500; legions/             <span class="cm"># Legions set tests</span>
+    &#x251c;&#x2500;&#x2500; khans/               <span class="cm"># Khans of Tarkir tests</span>
+    &#x2514;&#x2500;&#x2500; general/             <span class="cm"># Combat, tournaments, mechanics</span></code></pre>
+
+      <div class="page-nav">
+        <a href="components-reference.html">
+          <div class="label">Previous</div>
+          <div class="title">&larr; ECS Components</div>
+        </a>
+        <a href="index.html" class="next">
+          <div class="label">Back to</div>
+          <div class="title">Home &rarr;</div>
+        </a>
+      </div>
+    </div>
+  </main>
+</div>
+</body>
+</html>

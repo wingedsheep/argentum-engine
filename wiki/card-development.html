@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Card Development - Argentum Engine Wiki</title>
+  <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+<div class="page">
+  <aside class="sidebar">
+    <div class="sidebar-logo"><h2>Argentum Engine</h2><span>MTG Rules Engine Wiki</span></div>
+    <nav>
+      <div class="nav-section">
+        <div class="nav-section-title">Getting Started</div>
+        <a href="index.html">Home</a>
+        <a href="getting-started.html">Setup &amp; Workflow</a>
+        <a href="card-development.html" class="active">Card Development</a>
+      </div>
+      <div class="nav-section">
+        <div class="nav-section-title">Architecture</div>
+        <a href="architecture.html">Overview</a>
+        <a href="sdk.html">SDK Module</a>
+        <a href="rules-engine.html">Rules Engine</a>
+        <a href="game-server.html">Game Server</a>
+        <a href="web-client.html">Web Client</a>
+      </div>
+      <div class="nav-section">
+        <div class="nav-section-title">Reference</div>
+        <a href="effects-reference.html">Effects Reference</a>
+        <a href="components-reference.html">ECS Components</a>
+        <a href="testing.html">Testing Guide</a>
+      </div>
+    </nav>
+  </aside>
+
+  <main class="content">
+    <div class="content-inner">
+      <div class="breadcrumb"><a href="index.html">Home</a> <span>&rsaquo;</span> Card Development</div>
+      <h1>Card Development Guide</h1>
+      <p class="subtitle">
+        How to implement new Magic cards using the <code>cardDef</code> DSL.
+        Patterns, examples, and best practices.
+      </p>
+
+      <h2 id="workflow">Workflow</h2>
+      <ol>
+        <li>Create file in <code>mtg-sets/src/.../definitions/{set}/cards/CardName.kt</code></li>
+        <li>Define card using <code>cardDef { }</code> DSL</li>
+        <li>Add to set definition in <code>definitions/{set}/YourSet.kt</code></li>
+        <li>Write scenario tests for interesting mechanics</li>
+        <li>Engine loads cards automatically via ServiceLoader</li>
+      </ol>
+
+      <h2 id="simple-instant">Simple Instant</h2>
+<pre><code><span class="kw">val</span> LightningBolt = <span class="fn">cardDef</span>(<span class="str">"Lightning Bolt"</span>) {
+    manaCost = <span class="str">"{R}"</span>
+    typeLine = <span class="str">"Instant"</span>
+
+    spell {
+        <span class="kw">val</span> any = <span class="fn">target</span>(<span class="str">"any"</span>, Targets.Any)
+        effect = Effects.<span class="fn">DealDamage</span>(<span class="num">3</span>, any)
+    }
+
+    metadata {
+        rarity = Rarity.COMMON
+    }
+}</code></pre>
+
+      <h2 id="vanilla-creature">Vanilla Creature</h2>
+<pre><code><span class="kw">val</span> GlorySeeker = <span class="fn">cardDef</span>(<span class="str">"Glory Seeker"</span>) {
+    manaCost = <span class="str">"{1}{W}"</span>
+    typeLine = <span class="str">"Creature &mdash; Human Soldier"</span>
+    power = <span class="num">2</span>
+    toughness = <span class="num">2</span>
+}</code></pre>
+
+      <h2 id="creature-keywords">Creature with Keywords</h2>
+<pre><code><span class="kw">val</span> AlabasterDragon = <span class="fn">cardDef</span>(<span class="str">"Alabaster Dragon"</span>) {
+    manaCost = <span class="str">"{4}{W}{W}"</span>
+    typeLine = <span class="str">"Creature &mdash; Dragon"</span>
+    power = <span class="num">4</span>; toughness = <span class="num">4</span>
+    <span class="fn">keywords</span>(Keyword.FLYING)
+
+    triggeredAbility {
+        trigger = Triggers.Dies
+        effect = Effects.<span class="fn">PutOnTopOfLibrary</span>(EffectTarget.Self)
+    }
+}</code></pre>
+
+      <h2 id="etb-trigger">ETB Triggered Ability</h2>
+<pre><code><span class="kw">val</span> Nekrataal = <span class="fn">cardDef</span>(<span class="str">"Nekrataal"</span>) {
+    manaCost = <span class="str">"{2}{B}{B}"</span>
+    typeLine = <span class="str">"Creature &mdash; Human Assassin"</span>
+    power = <span class="num">2</span>; toughness = <span class="num">1</span>
+    <span class="fn">keywords</span>(Keyword.FIRST_STRIKE)
+
+    triggeredAbility {
+        trigger = Triggers.EntersBattlefield
+        <span class="kw">val</span> t = <span class="fn">target</span>(<span class="str">"creature"</span>, Targets.NonblackNonartifactCreature)
+        effect = Effects.<span class="fn">Destroy</span>(t)
+    }
+}</code></pre>
+
+      <h2 id="activated-ability">Activated Ability</h2>
+<pre><code><span class="kw">val</span> Sparksmith = <span class="fn">cardDef</span>(<span class="str">"Sparksmith"</span>) {
+    manaCost = <span class="str">"{1}{R}"</span>
+    typeLine = <span class="str">"Creature &mdash; Goblin"</span>
+    power = <span class="num">1</span>; toughness = <span class="num">1</span>
+
+    activatedAbility {
+        cost = Costs.<span class="fn">Tap</span>
+        <span class="kw">val</span> t = <span class="fn">target</span>(<span class="str">"target"</span>, Targets.CreatureOrPlayer)
+        effect = Effects.<span class="fn">DealDamage</span>(
+            DynamicAmounts.<span class="fn">Count</span>(Player.You, Zone.BATTLEFIELD,
+                GameObjectFilter.Creature.<span class="fn">withSubtype</span>(<span class="str">"Goblin"</span>)),
+            t
+        ).<span class="fn">then</span>(Effects.<span class="fn">DealDamage</span>(
+            DynamicAmounts.<span class="fn">Count</span>(Player.You, Zone.BATTLEFIELD,
+                GameObjectFilter.Creature.<span class="fn">withSubtype</span>(<span class="str">"Goblin"</span>)),
+            EffectTarget.Controller
+        ))
+    }
+}</code></pre>
+
+      <h2 id="static-ability">Static Ability (Lord Effect)</h2>
+<pre><code><span class="kw">val</span> GoblinKing = <span class="fn">cardDef</span>(<span class="str">"Goblin King"</span>) {
+    manaCost = <span class="str">"{1}{R}{R}"</span>
+    typeLine = <span class="str">"Creature &mdash; Goblin"</span>
+    power = <span class="num">2</span>; toughness = <span class="num">2</span>
+
+    staticAbility {
+        ability = StaticAbilityType.<span class="fn">ModifyStatsForCreatureGroup</span>(
+            <span class="num">1</span>, <span class="num">1</span>
+        )
+        affectsFilter = AffectsFilter.<span class="fn">OtherCreaturesWithSubtype</span>(<span class="str">"Goblin"</span>)
+    }
+    staticAbility {
+        ability = StaticAbilityType.<span class="fn">GrantKeywordToGroup</span>(Keyword.MOUNTAINWALK)
+        affectsFilter = AffectsFilter.<span class="fn">OtherCreaturesWithSubtype</span>(<span class="str">"Goblin"</span>)
+    }
+}</code></pre>
+
+      <h2 id="composite">Composite Effects (then)</h2>
+<pre><code>spell {
+    <span class="kw">val</span> t = <span class="fn">target</span>(<span class="str">"permanent"</span>, Targets.Permanent)
+    effect = Effects.<span class="fn">ReturnToHand</span>(t)
+        .<span class="fn">then</span>(Effects.<span class="fn">Discard</span>(<span class="num">1</span>))
+}</code></pre>
+
+      <h2 id="conditional">Conditional Effects</h2>
+<pre><code>triggeredAbility {
+    trigger = Triggers.EntersBattlefield
+    effect = Effects.<span class="fn">Branch</span>(
+        condition = Conditions.<span class="fn">TopCardMatches</span>(Filters.Land),
+        ifTrue = Effects.<span class="fn">PutTopCardOnBattlefield</span>,
+        ifFalse = Effects.<span class="fn">DrawCards</span>(<span class="num">1</span>)
+    )
+}</code></pre>
+
+      <h2 id="reflexive">Reflexive Triggers</h2>
+      <p>For &ldquo;When you do&rdquo; abilities:</p>
+<pre><code>triggeredAbility {
+    trigger = Triggers.EntersBattlefield
+    effect = Effects.<span class="fn">ReflexiveTrigger</span>(
+        action = Effects.<span class="fn">Sacrifice</span>(TargetFilter.Creature.<span class="fn">other</span>()),
+        optional = <span class="kw">true</span>,
+        reflexiveEffect = Effects.<span class="fn">DealDamage</span>(
+            amount = Values.SacrificedCreaturePower,
+            target = TargetFilter.Any
+        )
+    )
+}</code></pre>
+
+      <h2 id="library-patterns">Library Manipulation (Pipeline Pattern)</h2>
+      <div class="callout">
+        <strong>Always prefer atomic pipeline effects</strong> over monolithic executors.
+        Library/zone mechanics should compose from Gather &rarr; Select &rarr; Move primitives.
+      </div>
+<pre><code><span class="cm">// Scry 2</span>
+effect = Effects.<span class="fn">Scry</span>(<span class="num">2</span>)
+
+<span class="cm">// Mill 3</span>
+effect = Effects.<span class="fn">Mill</span>(<span class="num">3</span>)
+
+<span class="cm">// Surveil 2 (like scry but graveyard)</span>
+effect = Effects.<span class="fn">Surveil</span>(<span class="num">2</span>)
+
+<span class="cm">// Search library for a basic land</span>
+effect = Effects.<span class="fn">SearchLibrary</span>(filter = GameObjectFilter.BasicLand)
+
+<span class="cm">// Look at top 7, keep 2, rest to graveyard</span>
+effect = EffectPatterns.<span class="fn">lookAtTopAndKeep</span>(count = <span class="num">7</span>, keepCount = <span class="num">2</span>)
+
+<span class="cm">// Wheel (each player shuffles hand, draws)</span>
+effect = EffectPatterns.<span class="fn">wheelEffect</span>(Player.Each)</code></pre>
+
+      <h2 id="morph">Morph</h2>
+<pre><code><span class="kw">val</span> SilentSpecter = <span class="fn">cardDef</span>(<span class="str">"Silent Specter"</span>) {
+    manaCost = <span class="str">"{4}{B}{B}"</span>
+    typeLine = <span class="str">"Creature &mdash; Specter"</span>
+    power = <span class="num">4</span>; toughness = <span class="num">4</span>
+    <span class="fn">keywords</span>(Keyword.FLYING)
+    morph = <span class="str">"{3}{B}{B}"</span>  <span class="cm">// Morph cost</span>
+
+    triggeredAbility {
+        trigger = Triggers.DealsCombatDamageToPlayer
+        effect = EffectPatterns.<span class="fn">discardCards</span>(<span class="num">2</span>, EffectTarget.DamagedPlayer)
+    }
+}</code></pre>
+
+      <h2 id="aura">Aura / Equipment</h2>
+<pre><code><span class="cm">// Aura</span>
+<span class="kw">val</span> Pacifism = <span class="fn">cardDef</span>(<span class="str">"Pacifism"</span>) {
+    manaCost = <span class="str">"{1}{W}"</span>
+    typeLine = <span class="str">"Enchantment &mdash; Aura"</span>
+    auraTarget = Targets.Creature
+
+    staticAbility {
+        ability = StaticAbilityType.<span class="fn">PreventAttackAndBlock</span>
+        affectsFilter = AffectsFilter.EnchantedCreature
+    }
+}
+
+<span class="cm">// Equipment</span>
+<span class="kw">val</span> Bonesplitter = <span class="fn">cardDef</span>(<span class="str">"Bonesplitter"</span>) {
+    manaCost = <span class="str">"{1}"</span>
+    typeLine = <span class="str">"Artifact &mdash; Equipment"</span>
+    <span class="fn">equipAbility</span>(<span class="str">"{1}"</span>)
+
+    staticAbility {
+        ability = StaticAbilityType.<span class="fn">ModifyEquippedCreatureStats</span>(<span class="num">2</span>, <span class="num">0</span>)
+        affectsFilter = AffectsFilter.EquippedCreature
+    }
+}</code></pre>
+
+      <h2 id="registration">Registering Cards</h2>
+<pre><code><span class="cm">// In definitions/{set}/MySet.kt</span>
+<span class="kw">val</span> MySet = <span class="fn">cardSet</span>(<span class="str">"MNS"</span>, <span class="str">"My New Set"</span>) {
+    <span class="fn">add</span>(LightningBolt)
+    <span class="fn">add</span>(GlorySeeker)
+    <span class="fn">add</span>(Sparksmith)
+}
+
+<span class="cm">// In provider/SetRegistry.kt</span>
+<span class="kw">object</span> <span class="tp">SetRegistry</span> {
+    <span class="kw">val</span> allSets = listOf(
+        PortalSet,
+        MySet  <span class="cm">// &lt;-- Register here</span>
+    )
+}</code></pre>
+
+      <h2 id="testing">Testing Your Card</h2>
+      <p>Write scenario tests using <code>ScenarioTestBase</code>:</p>
+<pre><code><span class="kw">class</span> <span class="tp">LightningBoltTest</span> : <span class="tp">ScenarioTestBase</span>() {
+    <span class="fn">init</span> {
+        <span class="str">"Lightning Bolt deals 3 damage"</span> {
+            <span class="kw">val</span> state = <span class="fn">setupGame</span> {
+                player1 {
+                    hand(<span class="str">"Lightning Bolt"</span>)
+                    battlefield(<span class="str">"Mountain"</span>)
+                    library(<span class="str">"Mountain"</span>)
+                }
+                player2 {
+                    library(<span class="str">"Mountain"</span>)
+                }
+            }
+            <span class="kw">val</span> result = <span class="fn">castSpellTargetingPlayer</span>(state, <span class="str">"Lightning Bolt"</span>, player2Id)
+            result.<span class="fn">assertLifeTotal</span>(player2Id, <span class="num">17</span>)
+        }
+    }
+}</code></pre>
+
+      <h2 id="best-practices">Best Practices</h2>
+      <ul>
+        <li>Use <code>Effects.*</code> facade methods, never raw effect constructors</li>
+        <li>Prefer <code>EffectPatterns</code> pipelines for library/zone mechanics</li>
+        <li>Use <code>.then()</code> to chain effects, not nested composites</li>
+        <li>Multiple static abilities on one card use multiple <code>staticAbility { }</code> blocks</li>
+        <li>Use <code>TargetFilter</code> for targeting, <code>GameObjectFilter</code> for filtering groups</li>
+        <li>Always give test players at least one card in library to prevent draw-from-empty losses</li>
+      </ul>
+
+      <div class="page-nav">
+        <a href="getting-started.html">
+          <div class="label">Previous</div>
+          <div class="title">&larr; Getting Started</div>
+        </a>
+        <a href="effects-reference.html" class="next">
+          <div class="label">Next</div>
+          <div class="title">Effects Reference &rarr;</div>
+        </a>
+      </div>
+    </div>
+  </main>
+</div>
+</body>
+</html>

@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Architecture - Argentum Engine Wiki</title>
+  <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+<div class="page">
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <h2>Argentum Engine</h2>
+      <span>MTG Rules Engine Wiki</span>
+    </div>
+    <nav>
+      <div class="nav-section">
+        <div class="nav-section-title">Getting Started</div>
+        <a href="index.html">Home</a>
+        <a href="getting-started.html">Setup &amp; Workflow</a>
+        <a href="card-development.html">Card Development</a>
+      </div>
+      <div class="nav-section">
+        <div class="nav-section-title">Architecture</div>
+        <a href="architecture.html" class="active">Overview</a>
+        <a href="sdk.html">SDK Module</a>
+        <a href="rules-engine.html">Rules Engine</a>
+        <a href="game-server.html">Game Server</a>
+        <a href="web-client.html">Web Client</a>
+      </div>
+      <div class="nav-section">
+        <div class="nav-section-title">Reference</div>
+        <a href="effects-reference.html">Effects Reference</a>
+        <a href="components-reference.html">ECS Components</a>
+        <a href="testing.html">Testing Guide</a>
+      </div>
+    </nav>
+  </aside>
+
+  <main class="content">
+    <div class="content-inner">
+      <div class="breadcrumb"><a href="index.html">Home</a> <span>&rsaquo;</span> Architecture</div>
+      <h1>Architecture Overview</h1>
+      <p class="subtitle">
+        High-level system design, core principles, and data flow through the Argentum Engine.
+      </p>
+
+      <h2 id="modules">Module Structure</h2>
+      <table>
+        <thead><tr><th>Module</th><th>Type</th><th>Purpose</th><th>Dependencies</th></tr></thead>
+        <tbody>
+          <tr><td><strong>mtg-sdk</strong></td><td>Kotlin Library</td><td>Shared contract &mdash; DSLs, data models, primitives</td><td>None</td></tr>
+          <tr><td><strong>mtg-sets</strong></td><td>Kotlin Library</td><td>Card definitions using SDK</td><td>mtg-sdk</td></tr>
+          <tr><td><strong>rules-engine</strong></td><td>Kotlin Library</td><td>Core MTG rules engine (zero server deps)</td><td>mtg-sdk</td></tr>
+          <tr><td><strong>game-server</strong></td><td>Spring Boot</td><td>Game orchestration, WebSocket, masking</td><td>rules-engine, mtg-sdk</td></tr>
+          <tr><td><strong>web-client</strong></td><td>React App</td><td>Browser UI (dumb terminal)</td><td>None (WebSocket)</td></tr>
+        </tbody>
+      </table>
+
+      <div class="diagram">                       <span class="hl">mtg-sdk</span>
+                  (shared contract)
+                     /         \
+                    /           \
+             <span class="g">mtg-sets</span>        <span class="c">rules-engine</span>
+         (card content)    (game logic)
+                    \           /
+                     \         /
+                    <span class="a">game-server</span>
+                (orchestration)
+                        |
+                   [WebSocket]
+                        |
+                   <span class="r">web-client</span>
+                  (browser UI)</div>
+
+      <h2 id="principles">Core Design Principles</h2>
+
+      <h3 id="data-driven">1. Data-Driven Design</h3>
+      <p>
+        Cards and abilities are <strong>purely serializable data structures</strong> with zero execution logic.
+        The SDK defines <em>what</em> happens; the engine defines <em>how</em> it happens.
+      </p>
+<pre><code><span class="cm">// This is DATA, not code. It describes behavior without implementing it.</span>
+<span class="kw">val</span> GiantGrowth = cardDef(<span class="str">"Giant Growth"</span>) {
+    manaCost = <span class="str">"{G}"</span>
+    typeLine = <span class="str">"Instant"</span>
+    spell {
+        effect = <span class="fn">Effects.ModifyStats</span>(<span class="num">3</span>, <span class="num">3</span>, Duration.EndOfTurn)
+        target = TargetFilter.Creature
+    }
+}</code></pre>
+      <p><strong>Why:</strong> State projection can inspect effects without triggering side effects. Cards serialize to JSON for networking. Definitions hot-reload without recompiling the engine.</p>
+
+      <h3 id="functional">2. Functional Core with Immutable State</h3>
+      <p>The engine operates as a pure function:</p>
+      <div class="diagram">(<span class="c">GameState</span>, <span class="a">GameAction</span>) <span class="op">&rarr;</span> <span class="g">ExecutionResult</span>(<span class="c">GameState</span>, List&lt;<span class="hl">GameEvent</span>&gt;)</div>
+      <p>Every action returns a brand-new state. No mutations. This enables time-travel debugging, AI simulations (hold an array of states), and eliminates concurrent modification bugs.</p>
+
+      <h3 id="ecs">3. Entity-Component-System (ECS)</h3>
+      <p>Instead of OOP inheritance (<code>class Creature : Permanent</code>), every game object is an <code>EntityId</code> with behavioral traits via <code>ComponentContainer</code>:</p>
+<pre><code><span class="cm">// A creature that becomes an enchantment? Just swap components.</span>
+<span class="kw">val</span> entity = container
+    .with(<span class="fn">CardComponent</span>(name = <span class="str">"Opalescence"</span>))
+    .with(<span class="fn">ControllerComponent</span>(playerId))
+    .with(<span class="fn">TappedComponent</span>)
+    .without&lt;<span class="tp">CreatureTypeComponent</span>&gt;()</code></pre>
+      <p><strong>Why:</strong> In Magic, objects constantly change their fundamental nature. A Land becomes a Creature, gains Flying, then turns face-down. ECS handles this by adding/removing components.</p>
+
+      <h3 id="ast">4. AST for Dynamic Values</h3>
+      <p>Numbers are <code>DynamicAmount</code> AST nodes, not lambdas:</p>
+<pre><code><span class="cm">// Tarmogoyf: P/T = card types in all graveyards</span>
+DynamicAmount.<span class="fn">CardTypesInAllGraveyards</span>
+
+<span class="cm">// Complex expression: (creatures you control) + 1</span>
+DynamicAmount.<span class="fn">Add</span>(
+    DynamicAmount.<span class="fn">Count</span>(Player.You, Zone.BATTLEFIELD, GameObjectFilter.Creature),
+    DynamicAmount.<span class="fn">Fixed</span>(<span class="num">1</span>)
+)</code></pre>
+      <p><strong>Why:</strong> Lambdas can&rsquo;t be serialized, inspected, or displayed in UI. AST nodes enable lazy evaluation, serialization, and dynamic text generation.</p>
+
+      <h3 id="late-binding">5. Late-Binding Targets</h3>
+      <p>Effects use references like <code>EffectTarget.ContextTarget(0)</code> instead of concrete entity IDs. Targets are chosen at cast time but resolved at resolution time.</p>
+
+      <h3 id="filters">6. Composable Filtering</h3>
+      <p>A single <code>GameObjectFilter</code> composes predicates instead of requiring hundreds of specific enums:</p>
+<pre><code><span class="cm">// "tapped creature an opponent controls with power 3 or less"</span>
+GameObjectFilter.Creature
+    .<span class="fn">tapped</span>()
+    .<span class="fn">opponentControls</span>()
+    .<span class="fn">powerAtMost</span>(<span class="num">3</span>)</code></pre>
+
+      <h3 id="projection">7. Base State vs. Projected State</h3>
+      <p>The engine separates <strong>Base State</strong> (card text + counters) from <strong>Projected State</strong> (after continuous effects). The <code>StateProjector</code> calculates projected state through Rule 613&rsquo;s 7 layers:</p>
+      <table>
+        <thead><tr><th>Layer</th><th>Effect Type</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td>Copy effects</td></tr>
+          <tr><td>2</td><td>Control-changing effects</td></tr>
+          <tr><td>3</td><td>Text-changing effects</td></tr>
+          <tr><td>4</td><td>Type-changing effects</td></tr>
+          <tr><td>5</td><td>Color-changing effects</td></tr>
+          <tr><td>6</td><td>Ability-adding/removing effects</td></tr>
+          <tr><td>7a&ndash;7e</td><td>Power/toughness modifications (5 sublayers)</td></tr>
+        </tbody>
+      </table>
+
+      <h3 id="continuations">8. Reentrant Continuations</h3>
+      <p>When resolution needs player input, the engine doesn&rsquo;t block. It pushes a serializable <code>ContinuationFrame</code> onto a stack and returns:</p>
+      <div class="diagram"><span class="a">CastSpell</span>(<span class="str">"Scry 2"</span>)
+  <span class="op">&rarr;</span> Engine pauses, returns <span class="c">PendingDecision</span>(ScryDecision)
+  <span class="op">&rarr;</span> Client shows scry UI, player selects
+  <span class="op">&rarr;</span> <span class="a">SubmitDecision</span>(selectedCards)
+  <span class="op">&rarr;</span> Engine pops <span class="g">ScrySelectionContinuation</span>, finishes resolution</div>
+
+      <h3 id="registries">9. Strategy-Based Registries</h3>
+      <p>Logic is decoupled from the core loop via registries:</p>
+      <ul>
+        <li><code>ActionHandlerRegistry</code> &mdash; maps <code>GameAction</code> types to handlers</li>
+        <li><code>EffectExecutorRegistry</code> &mdash; maps <code>Effect</code> types to executors</li>
+        <li><code>ContinuationResumerRegistry</code> &mdash; maps <code>ContinuationFrame</code> types to resumers</li>
+      </ul>
+      <p>Adding a new mechanic means registering a new handler. Zero changes to <code>ActionProcessor.kt</code>.</p>
+
+      <h3 id="events">10. Explicit Event Emission</h3>
+      <p>Every state mutation emits a <code>GameEvent</code>. The <code>TriggerDetector</code> observes events to determine triggered abilities, decoupling side effects from game logic.</p>
+
+      <hr>
+
+      <h2 id="data-flow">Data Flow</h2>
+      <div class="diagram"><span class="r">Client Click</span>
+    |
+    v
+<span class="a">WebSocket ClientMessage</span> (JSON)
+    |
+    v
+<span class="hl">GameWebSocketHandler</span> (routing)
+    |
+    v
+<span class="hl">GamePlayHandler</span> (domain logic)
+    |
+    v
+<span class="c">GameSession</span> (synchronized state container)
+    |
+    v
+<span class="c">ActionProcessor</span> (rules engine)
+    |
+    v
+<span class="g">ActionHandler</span> &rarr; <span class="g">EffectExecutor</span>
+    |
+    v
+New <span class="c">GameState</span> + List&lt;<span class="a">GameEvent</span>&gt;
+    |
+    v
+<span class="hl">TriggerDetector</span> (checks events for triggers)
+    |
+    v
+<span class="hl">ClientStateTransformer</span> (mask hidden info, project state)
+    |
+    v
+<span class="a">ServerMessage.StateUpdate</span> (WebSocket)
+    |
+    v
+<span class="r">Zustand Store</span> &rarr; <span class="r">React Re-render</span></div>
+
+      <h2 id="constraints">Key Constraints</h2>
+      <table>
+        <thead><tr><th>Rule</th><th>Rationale</th></tr></thead>
+        <tbody>
+          <tr><td>Never modify base components in-place</td><td>Immutable state &mdash; always return new state</td></tr>
+          <tr><td>Never put card-specific logic in engine</td><td>Use handlers and DSL instead</td></tr>
+          <tr><td>Never compute legal actions in client</td><td>Server sends legal actions list</td></tr>
+          <tr><td>Always use projected state for BF filtering</td><td>Base state misses continuous effects</td></tr>
+          <tr><td>Always emit events for animations</td><td>Never mutate silently</td></tr>
+          <tr><td>Use <code>Effects.*</code> facade, not raw constructors</td><td>DSL is the API contract</td></tr>
+          <tr><td>Prefer atomic pipeline effects</td><td>Gather/Select/Move via <code>EffectPatterns</code></td></tr>
+        </tbody>
+      </table>
+
+      <div class="page-nav">
+        <a href="getting-started.html">
+          <div class="label">Previous</div>
+          <div class="title">&larr; Getting Started</div>
+        </a>
+        <a href="sdk.html" class="next">
+          <div class="label">Next</div>
+          <div class="title">SDK Module &rarr;</div>
+        </a>
+      </div>
+    </div>
+  </main>
+</div>
+</body>
+</html>

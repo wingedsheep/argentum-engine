@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Effects Reference - Argentum Engine Wiki</title>
+  <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+<div class="page">
+  <aside class="sidebar">
+    <div class="sidebar-logo"><h2>Argentum Engine</h2><span>MTG Rules Engine Wiki</span></div>
+    <nav>
+      <div class="nav-section">
+        <div class="nav-section-title">Getting Started</div>
+        <a href="index.html">Home</a>
+        <a href="getting-started.html">Setup &amp; Workflow</a>
+        <a href="card-development.html">Card Development</a>
+      </div>
+      <div class="nav-section">
+        <div class="nav-section-title">Architecture</div>
+        <a href="architecture.html">Overview</a>
+        <a href="sdk.html">SDK Module</a>
+        <a href="rules-engine.html">Rules Engine</a>
+        <a href="game-server.html">Game Server</a>
+        <a href="web-client.html">Web Client</a>
+      </div>
+      <div class="nav-section">
+        <div class="nav-section-title">Reference</div>
+        <a href="effects-reference.html" class="active">Effects Reference</a>
+        <a href="components-reference.html">ECS Components</a>
+        <a href="testing.html">Testing Guide</a>
+      </div>
+    </nav>
+  </aside>
+
+  <main class="content">
+    <div class="content-inner">
+      <div class="breadcrumb"><a href="index.html">Home</a> <span>&rsaquo;</span> Effects Reference</div>
+      <h1>Effects Reference</h1>
+      <p class="subtitle">
+        Complete catalog of all effect types available in the SDK.
+        All effects are sealed interface subtypes of <code>Effect</code> and are purely serializable data.
+      </p>
+
+      <div class="callout">
+        <strong>Always use the <code>Effects</code> facade</strong> (e.g., <code>Effects.DealDamage()</code>)
+        instead of raw constructors (e.g., <code>DealDamageEffect()</code>) in card definitions.
+        Use <code>EffectPatterns</code> for multi-step pipelines.
+      </div>
+
+      <!-- DAMAGE -->
+      <h2 id="damage">Damage</h2>
+      <div class="effect-group">
+        <table>
+          <thead><tr><th>Effect</th><th>Description</th><th>Facade</th></tr></thead>
+          <tbody>
+            <tr><td><code>DealDamageEffect</code></td><td>Deal N damage to target</td><td><code>Effects.DealDamage(amount, target)</code></td></tr>
+            <tr><td><code>DividedDamageEffect</code></td><td>Divide damage among multiple targets</td><td><code>Effects.DividedDamage(total, targets)</code></td></tr>
+            <tr><td><code>FightEffect</code></td><td>Two creatures fight</td><td><code>Effects.Fight(target1, target2)</code></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- LIFE -->
+      <h2 id="life">Life</h2>
+      <div class="effect-group">
+        <table>
+          <thead><tr><th>Effect</th><th>Description</th><th>Facade</th></tr></thead>
+          <tbody>
+            <tr><td><code>GainLifeEffect</code></td><td>Gain N life</td><td><code>Effects.GainLife(amount, target)</code></td></tr>
+            <tr><td><code>LoseLifeEffect</code></td><td>Lose N life</td><td><code>Effects.LoseLife(amount, target)</code></td></tr>
+            <tr><td><code>PayLifeEffect</code></td><td>Pay N life as cost</td><td><code>Effects.PayLife(amount)</code></td></tr>
+            <tr><td><code>SetLifeTotalEffect</code></td><td>Set life to N</td><td><code>Effects.SetLifeTotal(amount)</code></td></tr>
+            <tr><td><code>ExchangeLifeAndPowerEffect</code></td><td>Exchange life with creature power</td><td>&mdash;</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- DRAWING -->
+      <h2 id="drawing">Drawing</h2>
+      <div class="effect-group">
+        <table>
+          <thead><tr><th>Effect</th><th>Description</th><th>Facade</th></tr></thead>
+          <tbody>
+            <tr><td><code>DrawCardsEffect</code></td><td>Draw N cards</td><td><code>Effects.DrawCards(count, target)</code></td></tr>
+            <tr><td><code>DrawUpToEffect</code></td><td>Draw up to N</td><td><code>Effects.DrawUpTo(maxCards, target)</code></td></tr>
+            <tr><td><code>LookAtTargetHandEffect</code></td><td>Look at target&rsquo;s hand</td><td>&mdash;</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- REMOVAL -->
+      <h2 id="removal">Removal &amp; Zone Movement</h2>
+      <div class="effect-group">
+        <table>
+          <thead><tr><th>Effect</th><th>Description</th><th>Facade</th></tr></thead>
+          <tbody>
+            <tr><td><code>MoveToZoneEffect</code></td><td>Move target to any zone</td><td><code>Effects.Destroy(t)</code>, <code>Effects.Exile(t)</code>, <code>Effects.ReturnToHand(t)</code>, <code>Effects.Discard(t)</code></td></tr>
+            <tr><td><code>SacrificeEffect</code></td><td>Sacrifice target permanent</td><td><code>Effects.Sacrifice(target)</code></td></tr>
+            <tr><td><code>ForceSacrificeEffect</code></td><td>Opponent sacrifices N matching</td><td><code>Effects.ForceSacrifice(filter, count)</code></td></tr>
+            <tr><td><code>RegenerateEffect</code></td><td>Regenerate creature</td><td><code>Effects.Regenerate(target)</code></td></tr>
+            <tr><td><code>MarkExileOnDeathEffect</code></td><td>If dies, exile instead</td><td>&mdash;</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- PERMANENT MODIFICATION -->
+      <h2 id="permanent">Permanent Modification</h2>
+      <div class="effect-group">
+        <table>
+          <thead><tr><th>Effect</th><th>Description</th><th>Facade</th></tr></thead>
+          <tbody>
+            <tr><td><code>ModifyStatsEffect</code></td><td>+N/+N or -N/-N</td><td><code>Effects.ModifyStats(power, toughness, target)</code></td></tr>
+            <tr><td><code>TapUntapEffect</code></td><td>Tap or untap target</td><td><code>Effects.Tap(t)</code>, <code>Effects.Untap(t)</code></td></tr>
+            <tr><td><code>TapUntapCollectionEffect</code></td><td>Tap/untap all matching</td><td>&mdash;</td></tr>
+            <tr><td><code>AddCountersEffect</code></td><td>Add N counters</td><td><code>Effects.AddCounters(type, amount, target)</code></td></tr>
+            <tr><td><code>GrantKeywordEffect</code></td><td>Grant keyword</td><td><code>Effects.GrantKeyword(kw, target)</code></td></tr>
+            <tr><td><code>RemoveKeywordEffect</code></td><td>Remove keyword</td><td>&mdash;</td></tr>
+            <tr><td><code>AddCardTypeEffect</code></td><td>Add card type</td><td>&mdash;</td></tr>
+            <tr><td><code>AddSubtypeEffect</code></td><td>Add subtype</td><td>&mdash;</td></tr>
+            <tr><td><code>BecomeCreatureEffect</code></td><td>Become creature with P/T</td><td>&mdash;</td></tr>
+            <tr><td><code>RemoveAllAbilitiesEffect</code></td><td>Lose all abilities</td><td>&mdash;</td></tr>
+            <tr><td><code>SetBasePowerEffect</code></td><td>Set base power</td><td>&mdash;</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- MANA -->
+      <h2 id="mana">Mana</h2>
+      <div class="effect-group">
+        <table>
+          <thead><tr><th>Effect</th><th>Description</th><th>Facade</th></tr></thead>
+          <tbody>
+            <tr><td><code>AddManaEffect</code></td><td>Add one colored mana</td><td><code>Effects.AddMana(Color.RED)</code></td></tr>
+            <tr><td><code>AddColorlessManaEffect</code></td><td>Add N colorless mana</td><td><code>Effects.AddColorlessMana(amount)</code></td></tr>
+            <tr><td><code>AddAnyColorManaEffect</code></td><td>Add N mana of any color</td><td><code>Effects.AddAnyColorMana(amount)</code></td></tr>
+            <tr><td><code>AddDynamicManaEffect</code></td><td>Dynamic mana amount</td><td>&mdash;</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- TOKENS -->
+      <h2 id="tokens">Tokens</h2>
+      <div class="effect-group">
+        <table>
+          <thead><tr><th>Effect</th><th>Description</th><th>Facade</th></tr></thead>
+          <tbody>
+            <tr><td><code>CreateTokenEffect</code></td><td>Create N token creatures</td><td><code>Effects.CreateToken(token, count)</code></td></tr>
+            <tr><td><code>CreateTreasureTokensEffect</code></td><td>Create Treasure tokens</td><td><code>Effects.CreateTreasureTokens(count)</code></td></tr>
+            <tr><td><code>CreateTokenCopyOfSourceEffect</code></td><td>Copy of source creature</td><td>&mdash;</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- STACK -->
+      <h2 id="stack">Stack &amp; Spells</h2>
+      <div class="effect-group">
+        <table>
+          <thead><tr><th>Effect</th><th>Description</th><th>Facade</th></tr></thead>
+          <tbody>
+            <tr><td><code>CounterSpellEffect</code></td><td>Counter target spell</td><td><code>Effects.CounterSpell()</code></td></tr>
+            <tr><td><code>CounterUnlessPaysEffect</code></td><td>Counter unless pays N</td><td><code>Effects.CounterUnlessPays(amount)</code></td></tr>
+            <tr><td><code>CounterAbilityEffect</code></td><td>Counter target ability</td><td><code>Effects.CounterAbility()</code></td></tr>
+            <tr><td><code>CopyTargetSpellEffect</code></td><td>Copy target spell</td><td>&mdash;</td></tr>
+            <tr><td><code>ChangeTargetEffect</code></td><td>Change spell&rsquo;s target</td><td>&mdash;</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- COMBAT -->
+      <h2 id="combat">Combat</h2>
+      <div class="effect-group">
+        <table>
+          <thead><tr><th>Effect</th><th>Description</th><th>Facade</th></tr></thead>
+          <tbody>
+            <tr><td><code>ProvokeEffect</code></td><td>Must block if able</td><td>&mdash;</td></tr>
+            <tr><td><code>MustBeBlockedEffect</code></td><td>Must be blocked</td><td>&mdash;</td></tr>
+            <tr><td><code>PreventCombatDamageFromEffect</code></td><td>Prevent combat damage from target</td><td>&mdash;</td></tr>
+            <tr><td><code>RemoveFromCombatEffect</code></td><td>Remove from combat</td><td>&mdash;</td></tr>
+            <tr><td><code>CantAttackOrBlockTargetEffect</code></td><td>Can&rsquo;t attack or block</td><td>&mdash;</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- CONTROL -->
+      <h2 id="control">Control</h2>
+      <div class="effect-group">
+        <table>
+          <thead><tr><th>Effect</th><th>Description</th><th>Facade</th></tr></thead>
+          <tbody>
+            <tr><td><code>GainControlEffect</code></td><td>Gain control of target</td><td><code>Effects.GainControl(target, duration)</code></td></tr>
+            <tr><td><code>ExchangeControlEffect</code></td><td>Exchange control of two permanents</td><td>&mdash;</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- COMPOSITE -->
+      <h2 id="composite">Composite &amp; Flow Control</h2>
+      <div class="effect-group">
+        <table>
+          <thead><tr><th>Effect</th><th>Description</th><th>Usage</th></tr></thead>
+          <tbody>
+            <tr><td><code>CompositeEffect</code></td><td>Sequence of effects</td><td><code>effect1.then(effect2)</code></td></tr>
+            <tr><td><code>MayEffect</code></td><td>&ldquo;You may&rdquo; optional</td><td><code>Effects.MayPay(cost, effect)</code></td></tr>
+            <tr><td><code>ConditionalEffect</code></td><td>If/else branch</td><td><code>Effects.Branch(condition, ifTrue, ifFalse)</code></td></tr>
+            <tr><td><code>ModalEffect</code></td><td>Choose one mode</td><td><code>Effects.Modal(modes)</code></td></tr>
+            <tr><td><code>OptionalCostEffect</code></td><td>&ldquo;May pay&rdquo; cost</td><td>&mdash;</td></tr>
+            <tr><td><code>ForEachTargetEffect</code></td><td>Apply to each target</td><td>&mdash;</td></tr>
+            <tr><td><code>ForEachPlayerEffect</code></td><td>Apply to each player</td><td>&mdash;</td></tr>
+            <tr><td><code>ForEachInGroupEffect</code></td><td>Apply to each matching permanent</td><td>&mdash;</td></tr>
+            <tr><td><code>ReflexiveTriggerEffect</code></td><td>&ldquo;When you do&rdquo;</td><td><code>Effects.ReflexiveTrigger(action, whenYouDo)</code></td></tr>
+            <tr><td><code>RepeatWhileEffect</code></td><td>Repeat while condition</td><td>&mdash;</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- LIBRARY PIPELINE -->
+      <h2 id="pipeline">Library Pipeline (Atomic Effects)</h2>
+      <div class="callout">
+        <strong>Preferred for library/zone manipulation.</strong> Compose from Gather &rarr; Select &rarr; Move primitives.
+      </div>
+      <div class="effect-group">
+        <table>
+          <thead><tr><th>Effect</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td><code>GatherCardsEffect</code></td><td>Collect cards into a named collection (no zone change)</td></tr>
+            <tr><td><code>SelectFromCollectionEffect</code></td><td>Present choice to split a collection</td></tr>
+            <tr><td><code>MoveCollectionEffect</code></td><td>Move named collection to a destination zone</td></tr>
+            <tr><td><code>RevealUntilEffect</code></td><td>Reveal from library until filter matches</td></tr>
+            <tr><td><code>ShuffleLibraryEffect</code></td><td>Shuffle target&rsquo;s library</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2 id="patterns">Pre-Built Patterns (EffectPatterns)</h2>
+      <table>
+        <thead><tr><th>Pattern</th><th>Composed From</th></tr></thead>
+        <tbody>
+          <tr><td><code>Scry(n)</code></td><td>Gather(top N) &rarr; Select(up to N for bottom) &rarr; Move(bottom) &rarr; Move(top)</td></tr>
+          <tr><td><code>Surveil(n)</code></td><td>Same as scry, selected go to graveyard</td></tr>
+          <tr><td><code>Mill(n)</code></td><td>Gather(top N) &rarr; Move(graveyard)</td></tr>
+          <tr><td><code>SearchLibrary(filter)</code></td><td>Gather(library, filter) &rarr; Select &rarr; Move(hand) &rarr; Shuffle</td></tr>
+          <tr><td><code>lookAtTopAndKeep(7, 2)</code></td><td>Gather(top 7) &rarr; Select(exactly 2) &rarr; Move(hand) &rarr; Move(rest to GY)</td></tr>
+          <tr><td><code>wheelEffect(Each)</code></td><td>ForEachPlayer: shuffle hand into library, draw that many</td></tr>
+          <tr><td><code>discardCards(n)</code></td><td>Gather(hand) &rarr; Select(exactly N) &rarr; Move(graveyard)</td></tr>
+          <tr><td><code>loot(draw, discard)</code></td><td>DrawCards &rarr; discardCards</td></tr>
+          <tr><td><code>destroyGroup(filter)</code></td><td>ForEachInGroup(filter, Destroy)</td></tr>
+          <tr><td><code>exileUntilEndStep(target)</code></td><td>Exile + delayed trigger at end step to return</td></tr>
+        </tbody>
+      </table>
+
+      <!-- PLAYER -->
+      <h2 id="player">Player Effects</h2>
+      <div class="effect-group">
+        <table>
+          <thead><tr><th>Effect</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td><code>TakeExtraTurnEffect</code></td><td>Take an extra turn</td></tr>
+            <tr><td><code>SkipCombatPhasesEffect</code></td><td>Skip combat phases</td></tr>
+            <tr><td><code>SkipUntapEffect</code></td><td>Skip untap step</td></tr>
+            <tr><td><code>PlayAdditionalLandsEffect</code></td><td>Play additional lands this turn</td></tr>
+            <tr><td><code>AddCombatPhaseEffect</code></td><td>Add extra combat phase</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- EXILE/LINKING -->
+      <h2 id="linking">Exile &amp; Linking</h2>
+      <div class="effect-group">
+        <table>
+          <thead><tr><th>Effect</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td><code>ExileUntilLeavesEffect</code></td><td>Oblivion Ring pattern: exile until this leaves</td></tr>
+            <tr><td><code>ReturnOneFromLinkedExileEffect</code></td><td>Return card from linked exile zone</td></tr>
+            <tr><td><code>ExileUntilEndStepEffect</code></td><td>Exile until end of step, then return</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="page-nav">
+        <a href="web-client.html">
+          <div class="label">Previous</div>
+          <div class="title">&larr; Web Client</div>
+        </a>
+        <a href="components-reference.html" class="next">
+          <div class="label">Next</div>
+          <div class="title">ECS Components &rarr;</div>
+        </a>
+      </div>
+    </div>
+  </main>
+</div>
+</body>
+</html>

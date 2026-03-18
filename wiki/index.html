@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Argentum Engine Wiki</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+<div class="page">
+
+  <!-- ===== Sidebar ===== -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <h2>Argentum Engine</h2>
+      <span>MTG Rules Engine Wiki</span>
+    </div>
+    <nav>
+      <div class="nav-section">
+        <div class="nav-section-title">Getting Started</div>
+        <a href="index.html" class="active">Home</a>
+        <a href="getting-started.html">Setup &amp; Workflow</a>
+        <a href="card-development.html">Card Development</a>
+      </div>
+      <div class="nav-section">
+        <div class="nav-section-title">Architecture</div>
+        <a href="architecture.html">Overview</a>
+        <a href="sdk.html">SDK Module</a>
+        <a href="rules-engine.html">Rules Engine</a>
+        <a href="game-server.html">Game Server</a>
+        <a href="web-client.html">Web Client</a>
+      </div>
+      <div class="nav-section">
+        <div class="nav-section-title">Reference</div>
+        <a href="effects-reference.html">Effects Reference</a>
+        <a href="components-reference.html">ECS Components</a>
+        <a href="testing.html">Testing Guide</a>
+      </div>
+    </nav>
+  </aside>
+
+  <!-- ===== Content ===== -->
+  <main class="content">
+    <div class="content-inner">
+
+      <h1>Argentum Engine</h1>
+      <p class="subtitle">
+        A professional Magic: The Gathering rules engine and online play platform.
+        Pure functional core in Kotlin, data-driven card definitions, and a React web client
+        following the dumb terminal pattern.
+      </p>
+
+      <h2 id="navigation">Quick Navigation</h2>
+
+      <h3>Getting Started</h3>
+      <div class="card-grid">
+        <div class="card">
+          <a href="getting-started.html">
+            <h3>Setup &amp; Workflow</h3>
+            <p>Prerequisites, build commands, environment configuration, and development workflow.</p>
+          </a>
+        </div>
+        <div class="card">
+          <a href="card-development.html">
+            <h3>Card Development Guide</h3>
+            <p>How to implement new Magic cards using the cardDef DSL, with patterns and examples.</p>
+          </a>
+        </div>
+      </div>
+
+      <h3>Architecture</h3>
+      <div class="card-grid">
+        <div class="card">
+          <a href="architecture.html">
+            <h3>Architecture Overview</h3>
+            <p>High-level system design, module dependencies, core principles, and data flow.</p>
+          </a>
+        </div>
+        <div class="card">
+          <a href="sdk.html">
+            <h3>SDK Module</h3>
+            <p>Shared contract layer: models, DSL builders, effects, triggers, filters, and dynamic values.</p>
+          </a>
+        </div>
+        <div class="card">
+          <a href="rules-engine.html">
+            <h3>Rules Engine</h3>
+            <p>Pure functional core: ECS architecture, action processing, state projection, and continuations.</p>
+          </a>
+        </div>
+        <div class="card">
+          <a href="game-server.html">
+            <h3>Game Server</h3>
+            <p>Spring Boot orchestration, WebSocket protocol, state masking, lobbies, and tournaments.</p>
+          </a>
+        </div>
+        <div class="card">
+          <a href="web-client.html">
+            <h3>Web Client</h3>
+            <p>React UI with Zustand state management, dumb terminal pattern, and WebSocket networking.</p>
+          </a>
+        </div>
+      </div>
+
+      <h3>Reference</h3>
+      <div class="card-grid">
+        <div class="card">
+          <a href="effects-reference.html">
+            <h3>Effects Reference</h3>
+            <p>Complete catalog of all effect types, composite patterns, and pipeline mechanics.</p>
+          </a>
+        </div>
+        <div class="card">
+          <a href="components-reference.html">
+            <h3>ECS Components</h3>
+            <p>All component types: identity, battlefield, combat, player, and stack components.</p>
+          </a>
+        </div>
+        <div class="card">
+          <a href="testing.html">
+            <h3>Testing Guide</h3>
+            <p>Unit tests, scenario tests, and E2E Playwright tests with the GamePage API.</p>
+          </a>
+        </div>
+      </div>
+
+      <hr>
+
+      <h2 id="tech-stack">Tech Stack</h2>
+      <table>
+        <thead>
+          <tr><th>Layer</th><th>Technology</th><th>Version</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Language</td><td>Kotlin</td><td>2.2.20</td></tr>
+          <tr><td>Build</td><td>Gradle</td><td>8.13</td></tr>
+          <tr><td>Runtime</td><td>JDK</td><td>21</td></tr>
+          <tr><td>Server</td><td>Spring Boot</td><td>3.4.3</td></tr>
+          <tr><td>Testing</td><td>Kotest</td><td>5.9.1</td></tr>
+          <tr><td>Frontend</td><td>React</td><td>18.3</td></tr>
+          <tr><td>Type System</td><td>TypeScript</td><td>5.6</td></tr>
+          <tr><td>State</td><td>Zustand</td><td>5.0</td></tr>
+          <tr><td>Bundler</td><td>Vite</td><td>5.4</td></tr>
+          <tr><td>E2E</td><td>Playwright</td><td>Latest</td></tr>
+        </tbody>
+      </table>
+
+      <h2 id="modules">Module Dependency Graph</h2>
+      <div class="diagram">                       <span class="hl">mtg-sdk</span>
+                  (shared contract)
+                     /         \
+                    /           \
+             <span class="g">mtg-sets</span>        <span class="c">rules-engine</span>
+         (card content)    (game logic)
+                    \           /
+                     \         /
+                    <span class="a">game-server</span>
+                (orchestration)
+                        |
+                   [WebSocket]
+                        |
+                   <span class="r">web-client</span>
+                  (browser UI)</div>
+
+      <h2 id="sets">Implemented Card Sets</h2>
+      <table>
+        <thead>
+          <tr><th>Set</th><th>Code</th><th>Cards</th><th>Status</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Portal</td><td><code>POR</code></td><td>195+</td><td><span class="badge badge-green">Complete</span></td></tr>
+          <tr><td>Onslaught</td><td><code>ONS</code></td><td>335</td><td><span class="badge badge-green">Complete</span></td></tr>
+          <tr><td>Legions</td><td><code>LGN</code></td><td>All</td><td><span class="badge badge-green">Complete</span></td></tr>
+          <tr><td>Scourge</td><td><code>SCG</code></td><td>143</td><td><span class="badge badge-green">Complete</span></td></tr>
+          <tr><td>Khans of Tarkir</td><td><code>KTK</code></td><td>All</td><td><span class="badge badge-green">Complete</span></td></tr>
+          <tr><td>Dominaria</td><td><code>DOM</code></td><td>Partial</td><td><span class="badge badge-amber">In Progress</span></td></tr>
+        </tbody>
+      </table>
+
+      <div class="page-nav">
+        <div></div>
+        <a href="getting-started.html" class="next">
+          <div class="label">Next</div>
+          <div class="title">Setup &amp; Workflow &rarr;</div>
+        </a>
+      </div>
+
+    </div>
+  </main>
+</div>
+</body>
+</html>

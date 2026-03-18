@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Getting Started - Argentum Engine Wiki</title>
+  <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+<div class="page">
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <h2>Argentum Engine</h2>
+      <span>MTG Rules Engine Wiki</span>
+    </div>
+    <nav>
+      <div class="nav-section">
+        <div class="nav-section-title">Getting Started</div>
+        <a href="index.html">Home</a>
+        <a href="getting-started.html" class="active">Setup &amp; Workflow</a>
+        <a href="card-development.html">Card Development</a>
+      </div>
+      <div class="nav-section">
+        <div class="nav-section-title">Architecture</div>
+        <a href="architecture.html">Overview</a>
+        <a href="sdk.html">SDK Module</a>
+        <a href="rules-engine.html">Rules Engine</a>
+        <a href="game-server.html">Game Server</a>
+        <a href="web-client.html">Web Client</a>
+      </div>
+      <div class="nav-section">
+        <div class="nav-section-title">Reference</div>
+        <a href="effects-reference.html">Effects Reference</a>
+        <a href="components-reference.html">ECS Components</a>
+        <a href="testing.html">Testing Guide</a>
+      </div>
+    </nav>
+  </aside>
+
+  <main class="content">
+    <div class="content-inner">
+      <div class="breadcrumb"><a href="index.html">Home</a> <span>&rsaquo;</span> Getting Started</div>
+      <h1>Getting Started</h1>
+      <p class="subtitle">Prerequisites, environment setup, build commands, and the development workflow.</p>
+
+      <h2 id="prerequisites">Prerequisites</h2>
+      <table>
+        <thead><tr><th>Tool</th><th>Version</th><th>Notes</th></tr></thead>
+        <tbody>
+          <tr><td><strong>JDK</strong></td><td>21+</td><td>Kotlin compilation &amp; server runtime</td></tr>
+          <tr><td><strong>Node.js</strong></td><td>18+</td><td>React web client</td></tr>
+          <tr><td><strong>just</strong></td><td>Latest</td><td>Recommended command runner (<a href="https://github.com/casey/just">github.com/casey/just</a>)</td></tr>
+          <tr><td><strong>Docker</strong></td><td>Latest</td><td>Optional &mdash; Redis-backed session persistence</td></tr>
+        </tbody>
+      </table>
+
+      <h2 id="setup">Initial Setup</h2>
+<pre><code><span class="cm"># Clone the repository</span>
+git clone &lt;repo-url&gt;
+cd argentum-engine
+
+<span class="cm"># Build the full project</span>
+just build
+
+<span class="cm"># Install web client dependencies</span>
+just client-install</code></pre>
+
+      <h2 id="env">Environment Configuration</h2>
+      <p>Copy <code>.env.example</code> to <code>.env</code> and configure:</p>
+<pre><code>CACHE_REDIS_ENABLED=false           <span class="cm"># Enable Redis for session persistence</span>
+REDIS_HOST=localhost
+REDIS_PORT=6379
+GAME_AI_ENABLED=false               <span class="cm"># Enable AI opponent (requires OpenRouter)</span>
+OPENROUTER_API_KEY=                  <span class="cm"># API key for AI opponent</span>
+GAME_DEV_ENDPOINTS_ENABLED=true     <span class="cm"># Required for E2E tests</span>
+GAME_SETS_ONSLAUGHT_ENABLED=true    <span class="cm"># Per-set enable flags</span></code></pre>
+
+      <h2 id="commands">Build Commands</h2>
+      <h3>Using <code>just</code> (recommended)</h3>
+      <table>
+        <thead><tr><th>Command</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td><code>just build</code></td><td>Build entire project</td></tr>
+          <tr><td><code>just test</code></td><td>Run all tests</td></tr>
+          <tr><td><code>just test-rules</code></td><td>Run rules-engine tests only</td></tr>
+          <tr><td><code>just test-server</code></td><td>Run game-server tests only</td></tr>
+          <tr><td><code>just test-class ClassName</code></td><td>Run a specific test class</td></tr>
+          <tr><td><code>just server</code></td><td>Start game server on <code>localhost:8080</code></td></tr>
+          <tr><td><code>just server-ons</code></td><td>Start server with Onslaught enabled</td></tr>
+          <tr><td><code>just client</code></td><td>Start React dev server on <code>localhost:5173</code></td></tr>
+          <tr><td><code>just client-install</code></td><td>Install web client npm dependencies</td></tr>
+          <tr><td><code>just client-build</code></td><td>Production build of web client</td></tr>
+          <tr><td><code>just client-typecheck</code></td><td>Run TypeScript type checking</td></tr>
+          <tr><td><code>just clean</code></td><td>Clean all build artifacts</td></tr>
+        </tbody>
+      </table>
+
+      <h3>Using Gradle directly</h3>
+<pre><code>./gradlew build                                           <span class="cm"># Full build</span>
+./gradlew test                                            <span class="cm"># All tests</span>
+./gradlew :rules-engine:test                              <span class="cm"># Engine tests only</span>
+./gradlew :rules-engine:test --tests <span class="str">"CreatureStatsTest"</span>   <span class="cm"># Specific test class</span>
+./gradlew :game-server:bootRun                            <span class="cm"># Start server</span></code></pre>
+
+      <h3>Web client directly</h3>
+<pre><code>cd web-client &amp;&amp; npm install       <span class="cm"># Install dependencies</span>
+cd web-client &amp;&amp; npm run dev       <span class="cm"># Dev server at localhost:5173</span>
+cd web-client &amp;&amp; npm run build     <span class="cm"># Production build</span>
+cd web-client &amp;&amp; npm run typecheck <span class="cm"># Type checking</span></code></pre>
+
+      <h2 id="running">Running the Application</h2>
+      <ol>
+        <li><strong>Start the server:</strong> <code>just server</code></li>
+        <li><strong>Start the client</strong> (separate terminal): <code>just client</code></li>
+        <li><strong>Open browser:</strong> Navigate to <code>http://localhost:5173</code></li>
+      </ol>
+
+      <h2 id="e2e">Running E2E Tests</h2>
+      <div class="callout warning">
+        <strong>Prerequisite:</strong> Both the server (<code>just server</code>) and client (<code>just client</code>) must be running.
+      </div>
+      <table>
+        <thead><tr><th>Command</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td><code>just e2e</code></td><td>Run all E2E tests</td></tr>
+          <tr><td><code>just e2e-ui</code></td><td>Interactive Playwright UI mode</td></tr>
+          <tr><td><code>just e2e-headed</code></td><td>Visible browser window</td></tr>
+          <tr><td><code>just e2e-portal</code></td><td>Portal set tests only</td></tr>
+          <tr><td><code>just e2e-onslaught</code></td><td>Onslaught set tests only</td></tr>
+          <tr><td><code>just e2e-report</code></td><td>Run + open HTML report</td></tr>
+        </tbody>
+      </table>
+
+      <h2 id="structure">Project Directory Structure</h2>
+<pre><code>argentum-engine/
+&#x251c;&#x2500;&#x2500; mtg-sdk/                 <span class="cm"># Shared contract: DSLs, data models, primitives</span>
+&#x251c;&#x2500;&#x2500; mtg-sets/                <span class="cm"># Card definitions (Portal, Onslaught, Legions, ...)</span>
+&#x251c;&#x2500;&#x2500; rules-engine/            <span class="cm"># Core MTG rules engine (zero server dependencies)</span>
+&#x251c;&#x2500;&#x2500; game-server/             <span class="cm"># Spring Boot: WebSocket, state masking, lobbies</span>
+&#x251c;&#x2500;&#x2500; web-client/              <span class="cm"># React app: browser UI (dumb terminal)</span>
+&#x251c;&#x2500;&#x2500; e2e-scenarios/           <span class="cm"># Playwright E2E tests</span>
+&#x251c;&#x2500;&#x2500; docs/                    <span class="cm"># Architecture documentation (12 files)</span>
+&#x251c;&#x2500;&#x2500; backlog/                 <span class="cm"># Feature backlogs and card tracking</span>
+&#x251c;&#x2500;&#x2500; assets/                  <span class="cm"># UI assets (backgrounds, icons)</span>
+&#x251c;&#x2500;&#x2500; justfile                 <span class="cm"># Task runner commands</span>
+&#x251c;&#x2500;&#x2500; docker-compose.yml       <span class="cm"># Production Docker setup</span>
+&#x2514;&#x2500;&#x2500; docker-compose.local.yml <span class="cm"># Local dev Docker setup</span></code></pre>
+
+      <h2 id="workflow">Development Workflow</h2>
+      <h3>Adding a New Card</h3>
+      <ol>
+        <li>Create card file in <code>mtg-sets/src/.../definitions/{set}/cards/</code></li>
+        <li>Define card using the <code>cardDef { }</code> DSL</li>
+        <li>Add to the set definition file</li>
+        <li>Write scenario tests for interesting mechanics</li>
+        <li>Engine loads cards automatically via ServiceLoader</li>
+      </ol>
+      <p>See the <a href="card-development.html">Card Development Guide</a> for detailed instructions.</p>
+
+      <h3>Adding a New Effect</h3>
+      <ol>
+        <li><strong>SDK:</strong> Add effect data class to <code>mtg-sdk/.../scripting/effects/</code></li>
+        <li><strong>SDK:</strong> Add factory method to <code>Effects.kt</code></li>
+        <li><strong>Engine:</strong> Create executor in <code>rules-engine/.../handlers/effects/</code></li>
+        <li><strong>Engine:</strong> Register executor in the appropriate <code>ExecutorModule</code></li>
+      </ol>
+
+      <div class="page-nav">
+        <a href="index.html">
+          <div class="label">Previous</div>
+          <div class="title">&larr; Home</div>
+        </a>
+        <a href="card-development.html" class="next">
+          <div class="label">Next</div>
+          <div class="title">Card Development &rarr;</div>
+        </a>
+      </div>
+    </div>
+  </main>
+</div>
+</body>
+</html>

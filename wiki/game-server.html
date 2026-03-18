@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Game Server - Argentum Engine Wiki</title>
+  <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+<div class="page">
+  <aside class="sidebar">
+    <div class="sidebar-logo"><h2>Argentum Engine</h2><span>MTG Rules Engine Wiki</span></div>
+    <nav>
+      <div class="nav-section">
+        <div class="nav-section-title">Getting Started</div>
+        <a href="index.html">Home</a>
+        <a href="getting-started.html">Setup &amp; Workflow</a>
+        <a href="card-development.html">Card Development</a>
+      </div>
+      <div class="nav-section">
+        <div class="nav-section-title">Architecture</div>
+        <a href="architecture.html">Overview</a>
+        <a href="sdk.html">SDK Module</a>
+        <a href="rules-engine.html">Rules Engine</a>
+        <a href="game-server.html" class="active">Game Server</a>
+        <a href="web-client.html">Web Client</a>
+      </div>
+      <div class="nav-section">
+        <div class="nav-section-title">Reference</div>
+        <a href="effects-reference.html">Effects Reference</a>
+        <a href="components-reference.html">ECS Components</a>
+        <a href="testing.html">Testing Guide</a>
+      </div>
+    </nav>
+  </aside>
+
+  <main class="content">
+    <div class="content-inner">
+      <div class="breadcrumb"><a href="index.html">Home</a> <span>&rsaquo;</span> <a href="architecture.html">Architecture</a> <span>&rsaquo;</span> Game Server</div>
+      <h1>Game Server</h1>
+      <p class="subtitle">
+        Spring Boot orchestration layer. WebSocket protocol, state masking (fog of war),
+        lobbies, tournaments, and the thin server pattern.
+      </p>
+
+      <h2 id="overview">Architecture</h2>
+      <p>The game server is a <strong>thin orchestration layer</strong> that wraps the rules engine. It contains zero game logic &mdash; all rules enforcement is delegated to the engine.</p>
+      <div class="diagram"><span class="r">WebSocket</span> &rarr; <span class="a">GameWebSocketHandler</span> &rarr; <span class="hl">Domain Handlers</span>
+                                                  |
+                                           <span class="c">GameSession</span>
+                                         (synchronized)
+                                                  |
+                                         <span class="g">ActionProcessor</span>
+                                          (rules engine)
+                                                  |
+                                     <span class="hl">ClientStateTransformer</span>
+                                      (mask + project)
+                                                  |
+                                    <span class="a">ServerMessage.StateUpdate</span>
+                                                  |
+                                          <span class="r">WebSocket</span></div>
+
+      <h2 id="game-session">GameSession</h2>
+      <p>The runtime game container. Thread-safe with <code>synchronized(stateLock)</code> on all state mutations.</p>
+
+      <h3>Key Responsibilities</h3>
+      <table>
+        <thead><tr><th>Feature</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Action Processing</strong></td><td>Routes <code>GameAction</code> through <code>ActionProcessor</code>, handles Success/PausedForDecision/Failure</td></tr>
+          <tr><td><strong>Undo System</strong></td><td>Checkpoints at undoable actions (land plays, combat declarations). Invalidated by information-revealing events, stack resolution, turn changes, or opponent actions.</td></tr>
+          <tr><td><strong>Auto-Pass</strong></td><td>Three modes: <span class="badge badge-blue">AUTO</span> (smart Arena-style), <span class="badge badge-amber">STOPS</span> (stop on opponent stack + combat), <span class="badge badge-red">FULL CONTROL</span> (never auto-pass)</td></tr>
+          <tr><td><strong>State Masking</strong></td><td>Uses <code>ClientStateTransformer</code> to mask state per player + <code>StateDiffCalculator</code> for delta compression</td></tr>
+          <tr><td><strong>Idempotency</strong></td><td><code>lastProcessedMessageId</code> ConcurrentHashMap prevents duplicate action processing</td></tr>
+          <tr><td><strong>Replay Recording</strong></td><td>Initial snapshot + deltas for memory-efficient replays</td></tr>
+          <tr><td><strong>Persistence</strong></td><td>Redis-backed state caching via <code>getStateForPersistence()</code> / <code>restoreFromPersistence()</code></td></tr>
+        </tbody>
+      </table>
+
+      <h2 id="websocket">WebSocket Handler</h2>
+      <p><code>GameWebSocketHandler</code> is a Spring <code>TextWebSocketHandler</code> that routes JSON messages to domain handlers:</p>
+      <table>
+        <thead><tr><th>Handler</th><th>Message Categories</th></tr></thead>
+        <tbody>
+          <tr><td><code>GamePlayHandler</code></td><td>SubmitAction, Mulligan, Concede, Undo, SetPriorityMode</td></tr>
+          <tr><td><code>LobbyHandler</code></td><td>Sealed/draft, tournament lifecycle</td></tr>
+          <tr><td><code>ConnectionHandler</code></td><td>Connect, Disconnect, Reconnect</td></tr>
+        </tbody>
+      </table>
+
+      <h2 id="protocol">Protocol Messages</h2>
+      <h3>Server &rarr; Client (50+ types)</h3>
+      <table>
+        <thead><tr><th>Category</th><th>Messages</th></tr></thead>
+        <tbody>
+          <tr><td>Connection</td><td><code>Connected</code>, <code>Reconnected</code>, <code>Error</code></td></tr>
+          <tr><td>Gameplay</td><td><code>StateUpdate</code>, <code>StateDeltaUpdate</code>, <code>GameOver</code>, <code>MulliganDecision</code></td></tr>
+          <tr><td>Sealed/Draft</td><td><code>SealedPoolGenerated</code>, <code>DraftPackReceived</code>, <code>DraftComplete</code></td></tr>
+          <tr><td>Tournament</td><td><code>TournamentStarted</code>, <code>TournamentMatchStarting</code>, <code>RoundComplete</code></td></tr>
+          <tr><td>Spectating</td><td><code>SpectatorStateUpdate</code>, <code>ActiveMatches</code></td></tr>
+        </tbody>
+      </table>
+
+      <h3>Client &rarr; Server (40+ types)</h3>
+      <table>
+        <thead><tr><th>Category</th><th>Messages</th></tr></thead>
+        <tbody>
+          <tr><td>Game Actions</td><td><code>SubmitAction</code>, <code>Concede</code>, <code>CancelGame</code>, <code>RequestUndo</code></td></tr>
+          <tr><td>Mulligan</td><td><code>KeepHand</code>, <code>Mulligan</code>, <code>ChooseBottomCards</code></td></tr>
+          <tr><td>Draft/Sealed</td><td><code>MakePick</code>, <code>SubmitSealedDeck</code>, <code>GridDraftPick</code></td></tr>
+          <tr><td>Priority</td><td><code>SetFullControl</code>, <code>SetPriorityMode</code>, <code>SetStopOverrides</code></td></tr>
+        </tbody>
+      </table>
+
+      <h2 id="state-masking">State Masking (Fog of War)</h2>
+      <p><code>ClientStateTransformer</code> transforms engine state into client-safe DTOs per player:</p>
+      <table>
+        <thead><tr><th>Zone</th><th>Visibility</th></tr></thead>
+        <tbody>
+          <tr><td>Library</td><td>Always hidden (size only)</td></tr>
+          <tr><td>Hand</td><td>Only owner sees cards; opponent sees count</td></tr>
+          <tr><td>Battlefield</td><td>Always visible (uses projected state)</td></tr>
+          <tr><td>Graveyard / Exile</td><td>Always visible</td></tr>
+          <tr><td>Stack</td><td>Always visible</td></tr>
+        </tbody>
+      </table>
+      <p><code>RevealedToComponent</code> overrides hiding for individually revealed cards.</p>
+
+      <h2 id="client-dto">Client DTO</h2>
+      <p><code>ClientGameState</code> is the sanitized state sent to each player:</p>
+<pre><code><span class="kw">data class</span> <span class="tp">ClientGameState</span>(
+    <span class="kw">val</span> viewingPlayerId: <span class="tp">EntityId</span>,
+    <span class="kw">val</span> cards: Map&lt;<span class="tp">EntityId</span>, <span class="tp">ClientCard</span>&gt;,   <span class="cm">// Visible cards only</span>
+    <span class="kw">val</span> zones: List&lt;<span class="tp">ClientZone</span>&gt;,           <span class="cm">// Zone info + sizes</span>
+    <span class="kw">val</span> players: List&lt;<span class="tp">ClientPlayer</span>&gt;,       <span class="cm">// Life, hand size, etc.</span>
+    <span class="kw">val</span> currentPhase: <span class="tp">Phase</span>,
+    <span class="kw">val</span> activePlayerId: <span class="tp">EntityId</span>,
+    <span class="kw">val</span> priorityPlayerId: <span class="tp">EntityId</span>,
+    <span class="kw">val</span> combat: <span class="tp">ClientCombatState</span>?,
+    <span class="kw">val</span> gameLog: List&lt;<span class="tp">ClientEvent</span>&gt;
+)</code></pre>
+
+      <h2 id="tournament">Tournament System</h2>
+      <p>The <code>TournamentLobby</code> implements a state machine:</p>
+      <div class="diagram"><span class="hl">WAITING_FOR_PLAYERS</span>
+        |
+   &#x250c;&#x2500;&#x2500;&#x2500;&#x2534;&#x2500;&#x2500;&#x2500;&#x2510;
+   v       v
+<span class="c">SEALED</span>   <span class="a">DRAFT</span>
+   |       |
+   v       v
+<span class="g">DECK_BUILDING</span>
+        |
+        v
+<span class="hl">TOURNAMENT_ACTIVE</span>
+        |
+        v
+<span class="g">TOURNAMENT_COMPLETE</span></div>
+
+      <h3>Key Features</h3>
+      <ul>
+        <li><strong>Dynamic matchmaking:</strong> Matches start when both players ready (not waiting for whole round)</li>
+        <li><strong>Per-lobby locks:</strong> Prevent race conditions on round advancement</li>
+        <li><strong>Epoch-based validation:</strong> Stale ready requests detected via <code>readyEpoch</code></li>
+        <li><strong>BYE handling:</strong> Auto-completes; client auto-readies</li>
+        <li><strong>Spectating:</strong> Enabled for all tournament matches</li>
+      </ul>
+
+      <h2 id="dev-scenarios">Dev Scenario Controller</h2>
+      <p>REST endpoint (<code>POST /api/dev/scenarios</code>) for E2E testing. Enabled by <code>game.dev-endpoints.enabled=true</code>.</p>
+      <ol>
+        <li>Client sends <code>ScenarioRequest</code> JSON (players, cards in zones, phase)</li>
+        <li><code>ScenarioBuilder</code> constructs engine <code>GameState</code> directly</li>
+        <li>Returns connection tokens for WebSocket</li>
+      </ol>
+
+      <h2 id="key-files">Key Files</h2>
+      <table>
+        <thead><tr><th>File</th><th>Purpose</th></tr></thead>
+        <tbody>
+          <tr><td><code>session/GameSession.kt</code></td><td>Runtime game management &amp; state</td></tr>
+          <tr><td><code>session/PlayerSession.kt</code></td><td>Per-player connection state</td></tr>
+          <tr><td><code>websocket/GameWebSocketHandler.kt</code></td><td>WebSocket message routing</td></tr>
+          <tr><td><code>protocol/ServerMessage.kt</code></td><td>Server &rarr; Client message types</td></tr>
+          <tr><td><code>protocol/ClientMessage.kt</code></td><td>Client &rarr; Server message types</td></tr>
+          <tr><td><code>dto/ClientDTO.kt</code></td><td>Client-facing data structures</td></tr>
+          <tr><td><code>dto/ClientStateTransformer.kt</code></td><td>Engine state &rarr; Client DTO</td></tr>
+          <tr><td><code>handler/LobbyHandler.kt</code></td><td>Lobby &amp; tournament management</td></tr>
+          <tr><td><code>controller/DevScenarioController.kt</code></td><td>E2E test scenario setup</td></tr>
+        </tbody>
+      </table>
+
+      <div class="page-nav">
+        <a href="rules-engine.html">
+          <div class="label">Previous</div>
+          <div class="title">&larr; Rules Engine</div>
+        </a>
+        <a href="web-client.html" class="next">
+          <div class="label">Next</div>
+          <div class="title">Web Client &rarr;</div>
+        </a>
+      </div>
+    </div>
+  </main>
+</div>
+</body>
+</html>
