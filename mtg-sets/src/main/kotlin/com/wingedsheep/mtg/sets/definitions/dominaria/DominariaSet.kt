@@ -83,6 +83,7 @@ object DominariaSet {
         FeralAbomination,
         FieryIntervention,
         FightWithFire,
+        FinalParting,
         FerventStrike,
         FirefistAdept,
         FireElemental,
