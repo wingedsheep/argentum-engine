@@ -2,11 +2,11 @@
 
 **Set Size:** 280 cards (249 unique card names + basic land variants)
 **Release Date:** April 27, 2018
-**Implemented:** 234 / 249
+**Implemented:** 235 / 249
 
 | Color      | Total | Done |
 |------------|-------|------|
-| White      | 38    | 35   |
+| White      | 38    | 36   |
 | Blue       | 37    | 34   |
 | Black      | 38    | 37   |
 | Red        | 38    | 34   |
@@ -31,7 +31,7 @@
 - [x] Arvad the Cursed
 - [x] Aryel, Knight of Windgrace
 - [x] Aven Sentry
-- [ ] Baird, Steward of Argive
+- [x] Baird, Steward of Argive
 - [x] Baloth Gorger
 - [x] Befuddle
 - [x] Benalish Honor Guard

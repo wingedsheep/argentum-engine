@@ -35,6 +35,7 @@ object DominariaSet {
         AvenSentry,
         AryelKnightOfWindgrace,
         ArvadTheCursed,
+        BairdStewardOfArgive,
         BalothGorger,
         BenalishHonorGuard,
         BenalishMarshal,
