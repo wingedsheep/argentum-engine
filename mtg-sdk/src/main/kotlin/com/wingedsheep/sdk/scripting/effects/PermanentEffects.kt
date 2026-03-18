@@ -490,32 +490,6 @@ data class TurnFaceUpEffect(
 }
 
 /**
- * Choose a creature type. Each creature becomes that type until end of turn.
- *
- * @deprecated Use [com.wingedsheep.sdk.dsl.EffectPatterns.becomeChosenTypeAllCreatures] instead,
- * which composes ChooseOptionEffect → ForEachInGroupEffect → SetCreatureSubtypesEffect pipeline.
- */
-@Deprecated("Use EffectPatterns.becomeChosenTypeAllCreatures() pipeline instead")
-@SerialName("BecomeChosenTypeAllCreatures")
-@Serializable
-data class BecomeChosenTypeAllCreaturesEffect(
-    val excludedTypes: List<String> = emptyList(),
-    val controllerOnly: Boolean = false,
-    val duration: Duration = Duration.EndOfTurn
-) : Effect {
-    override val description: String = buildString {
-        append("Choose a creature type")
-        if (excludedTypes.isNotEmpty()) append(" other than ${excludedTypes.joinToString(", ")}")
-        append(". Each creature ")
-        if (controllerOnly) append("you control ")
-        append("becomes that type")
-        if (duration.description.isNotEmpty()) append(" ${duration.description}")
-    }
-
-    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
-}
-
-/**
  * Target creature becomes the creature type of your choice until end of turn.
  * This replaces all creature subtypes with the chosen type.
  *
@@ -821,22 +795,6 @@ data class GrantActivatedAbilityToGroupEffect(
         return if (newFilter !== filter || newAbility !== ability)
             copy(filter = newFilter, ability = newAbility) else this
     }
-}
-
-/**
- * @deprecated Use `EffectPatterns.chooseCreatureTypeGainControl()` pipeline instead.
- * Kept for backward compatibility with serialized data.
- */
-@Deprecated("Use EffectPatterns.chooseCreatureTypeGainControl() pipeline instead")
-@SerialName("ChooseCreatureTypeGainControl")
-@Serializable
-data class ChooseCreatureTypeGainControlEffect(
-    val duration: Duration = Duration.Permanent
-) : Effect {
-    override val description: String =
-        "Choose a creature type. If you control more creatures of that type than each other player, you gain control of all creatures of that type"
-
-    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
 }
 
 /**

@@ -5,15 +5,12 @@ import com.wingedsheep.engine.mechanics.layers.ActiveFloatingEffect
 import com.wingedsheep.engine.mechanics.layers.FloatingEffectData
 import com.wingedsheep.engine.mechanics.layers.Layer
 import com.wingedsheep.engine.mechanics.layers.SerializableModification
-import com.wingedsheep.engine.mechanics.layers.Sublayer
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.identity.CardComponent
-import com.wingedsheep.engine.state.components.identity.FaceDownComponent
 import com.wingedsheep.engine.state.components.identity.TextReplacement
 import com.wingedsheep.engine.state.components.identity.TextReplacementCategory
 import com.wingedsheep.engine.state.components.identity.TextReplacementComponent
 import com.wingedsheep.engine.handlers.effects.library.ChooseCreatureTypePipelineExecutor
-import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.Duration
@@ -27,8 +24,6 @@ class CreatureTypeChoiceContinuationResumer(
         resumer(ChooseToCreatureTypeContinuation::class, ::resumeChooseToCreatureType),
         resumer(ChooseOptionPipelineContinuation::class, ::resumeChooseOptionPipeline),
         resumer(BecomeCreatureTypeContinuation::class, ::resumeBecomeCreatureType),
-        resumer(ChooseCreatureTypeGainControlContinuation::class, ::resumeChooseCreatureTypeGainControl),
-        resumer(BecomeChosenTypeAllCreaturesContinuation::class, ::resumeBecomeChosenTypeAllCreatures),
         resumer(EachPlayerChoosesCreatureTypeContinuation::class, ::resumeEachPlayerChoosesCreatureType)
     )
 
@@ -253,116 +248,6 @@ class CreatureTypeChoiceContinuationResumer(
     }
 
     /**
-     * Resume after player chose a creature type for Peer Pressure-style gain control.
-     *
-     * If the controller has strictly more creatures of the chosen type than each other
-     * player, gains control of all creatures of that type.
-     */
-    fun resumeChooseCreatureTypeGainControl(
-        state: GameState,
-        continuation: ChooseCreatureTypeGainControlContinuation,
-        response: DecisionResponse,
-        checkForMore: CheckForMore
-    ): ExecutionResult {
-        if (response !is OptionChosenResponse) {
-            return ExecutionResult.error(state, "Expected option choice response for creature type selection")
-        }
-
-        val chosenType = continuation.creatureTypes.getOrNull(response.optionIndex)
-            ?: return ExecutionResult.error(state, "Invalid creature type index: ${response.optionIndex}")
-
-        val result = applyChooseCreatureTypeGainControl(
-            state = state,
-            chosenType = chosenType,
-            controllerId = continuation.controllerId,
-            sourceId = continuation.sourceId,
-            sourceName = continuation.sourceName,
-            duration = continuation.duration
-        )
-
-        return if (result.isSuccess) {
-            checkForMore(result.state, result.events)
-        } else {
-            result
-        }
-    }
-
-    /**
-     * Resume after player chose a creature type for global type change.
-     *
-     * Sets all creatures on the battlefield to the chosen type via a floating effect.
-     */
-    fun resumeBecomeChosenTypeAllCreatures(
-        state: GameState,
-        continuation: BecomeChosenTypeAllCreaturesContinuation,
-        response: DecisionResponse,
-        checkForMore: CheckForMore
-    ): ExecutionResult {
-        if (response !is OptionChosenResponse) {
-            return ExecutionResult.error(state, "Expected option choice response for creature type selection")
-        }
-
-        val chosenType = continuation.creatureTypes.getOrNull(response.optionIndex)
-            ?: return ExecutionResult.error(state, "Invalid creature type index: ${response.optionIndex}")
-
-        // Find creatures on the battlefield (optionally filtered by controller)
-        val affectedEntities = mutableSetOf<EntityId>()
-        val events = mutableListOf<GameEvent>()
-        val projected = if (continuation.controllerOnly) state.projectedState else null
-
-        for (entityId in state.getBattlefield()) {
-            val container = state.getEntity(entityId) ?: continue
-            val cardComponent = container.get<CardComponent>() ?: continue
-
-            // Check if creature (face-down permanents are always creatures per Rule 707.2)
-            if (!cardComponent.typeLine.isCreature && !container.has<FaceDownComponent>()) continue
-
-            // If controllerOnly, only affect creatures the controller controls
-            if (continuation.controllerOnly && projected != null) {
-                val controller = projected.getController(entityId)
-                if (controller != continuation.controllerId) continue
-            }
-
-            affectedEntities.add(entityId)
-            events.add(
-                CreatureTypeChangedEvent(
-                    targetId = entityId,
-                    targetName = cardComponent.name,
-                    newType = chosenType,
-                    sourceName = continuation.sourceName ?: "Unknown"
-                )
-            )
-        }
-
-        if (affectedEntities.isEmpty()) {
-            return checkForMore(state, emptyList())
-        }
-
-        val floatingEffect = ActiveFloatingEffect(
-            id = EntityId.generate(),
-            effect = FloatingEffectData(
-                layer = Layer.TYPE,
-                sublayer = null,
-                modification = SerializableModification.SetCreatureSubtypes(
-                    subtypes = setOf(chosenType)
-                ),
-                affectedEntities = affectedEntities
-            ),
-            duration = continuation.duration,
-            sourceId = continuation.sourceId,
-            sourceName = continuation.sourceName,
-            controllerId = continuation.controllerId,
-            timestamp = System.currentTimeMillis()
-        )
-
-        val newState = state.copy(
-            floatingEffects = state.floatingEffects + floatingEffect
-        )
-
-        return checkForMore(newState, events)
-    }
-
-    /**
      * Resume after a player chose a creature type for "each player chooses a creature type" effects.
      *
      * Records the chosen type, asks the next player if any remain,
@@ -442,94 +327,4 @@ class CreatureTypeChoiceContinuationResumer(
         return checkForMore(newState, emptyList())
     }
 
-    companion object {
-
-        fun applyChooseCreatureTypeGainControl(
-            state: GameState,
-            chosenType: String,
-            controllerId: EntityId,
-            sourceId: EntityId?,
-            sourceName: String?,
-            duration: Duration
-        ): ExecutionResult {
-            val projected = state.projectedState
-
-            // Count creatures of the chosen type per player
-            val counts = state.turnOrder.associateWith { playerId ->
-                state.getBattlefield().count { entityId ->
-                    val container = state.getEntity(entityId) ?: return@count false
-                    val cardComponent = container.get<CardComponent>() ?: return@count false
-                    val isCreature = cardComponent.typeLine.isCreature || container.has<FaceDownComponent>()
-                    if (!isCreature) return@count false
-                    val controlledBy = container.get<ControllerComponent>()?.playerId
-                    controlledBy == playerId && projected.hasSubtype(entityId, chosenType)
-                }
-            }
-
-            val controllerCount = counts[controllerId] ?: 0
-            if (controllerCount == 0) {
-                return ExecutionResult.success(state, emptyList())
-            }
-
-            // Check if controller has strictly more than EACH other player
-            val otherPlayerCounts = counts.filter { it.key != controllerId }
-            val controllerHasMore = otherPlayerCounts.all { controllerCount > it.value }
-
-            if (!controllerHasMore) {
-                return ExecutionResult.success(state, emptyList())
-            }
-
-            // Gain control of all creatures of that type not already controlled by the controller
-            var newState = state
-            val events = mutableListOf<GameEvent>()
-
-            for (entityId in state.getBattlefield()) {
-                val container = newState.getEntity(entityId) ?: continue
-                val cardComponent = container.get<CardComponent>() ?: continue
-                val isCreature = cardComponent.typeLine.isCreature || container.has<FaceDownComponent>()
-                if (!isCreature) continue
-                if (!projected.hasSubtype(entityId, chosenType)) continue
-
-                val currentControllerId = container.get<ControllerComponent>()?.playerId
-                if (currentControllerId == controllerId) continue
-
-                // Remove any previous Layer.CONTROL floating effects from the same source on the same target
-                val filteredEffects = newState.floatingEffects.filter { floating ->
-                    !(floating.sourceId == sourceId &&
-                      floating.effect.layer == Layer.CONTROL &&
-                      entityId in floating.effect.affectedEntities)
-                }
-
-                val floatingEffect = ActiveFloatingEffect(
-                    id = EntityId.generate(),
-                    effect = FloatingEffectData(
-                        layer = Layer.CONTROL,
-                        sublayer = null,
-                        modification = SerializableModification.ChangeController(controllerId),
-                        affectedEntities = setOf(entityId)
-                    ),
-                    duration = duration,
-                    sourceId = sourceId,
-                    sourceName = sourceName,
-                    controllerId = controllerId,
-                    timestamp = System.currentTimeMillis()
-                )
-
-                newState = newState.copy(
-                    floatingEffects = filteredEffects + floatingEffect
-                )
-
-                events.add(
-                    ControlChangedEvent(
-                        permanentId = entityId,
-                        permanentName = cardComponent.name,
-                        oldControllerId = currentControllerId ?: controllerId,
-                        newControllerId = controllerId
-                    )
-                )
-            }
-
-            return ExecutionResult.success(newState, events)
-        }
-    }
 }

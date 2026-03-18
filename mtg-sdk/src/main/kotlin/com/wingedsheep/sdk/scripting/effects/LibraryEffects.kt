@@ -99,12 +99,3 @@ data class ExileFromTopRepeatingEffect(
     override fun applyTextReplacement(replacer: TextReplacer): Effect = this
 }
 
-@Deprecated("Use Effects.TakeFromLinkedExile() or EffectPatterns.takeFromLinkedExile() instead")
-@SerialName("TakeFromLinkedExile")
-@Serializable
-data object TakeFromLinkedExileEffect : Effect {
-    override val description: String =
-        "Put the top card of the exiled pile into your hand"
-
-    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
-}

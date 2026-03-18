@@ -2,7 +2,6 @@ package com.wingedsheep.sdk.scripting.effects
 
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.scripting.GameObjectFilter
-import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.text.TextReplacer
@@ -77,29 +76,6 @@ data class MarkExileControllerGraveyardOnDeathEffect(
     val target: EffectTarget
 ) : Effect {
     override val description: String = "When ${target.description} dies this turn, exile its controller's graveyard"
-    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
-}
-
-/**
- * Destroy all creatures that share a creature type with the sacrificed creature.
- * Used for Endemic Plague and similar effects.
- *
- * Requires that a creature was sacrificed as an additional cost (via context.sacrificedPermanents).
- * Looks up the sacrificed creature's subtypes, then destroys all creatures on the battlefield
- * that share at least one creature type.
- *
- * @param noRegenerate If true, destroyed creatures can't be regenerated
- */
-@Deprecated("Use Effects.DestroyAllSharingTypeWithSacrificed() or EffectPatterns.destroyAllSharingTypeWithSacrificed() instead")
-@SerialName("DestroyAllSharingTypeWithSacrificed")
-@Serializable
-data class DestroyAllSharingTypeWithSacrificedEffect(
-    val noRegenerate: Boolean = true
-) : Effect {
-    override val description: String = buildString {
-        append("Destroy all creatures that share a creature type with the sacrificed creature")
-        if (noRegenerate) append(". They can't be regenerated")
-    }
     override fun applyTextReplacement(replacer: TextReplacer): Effect = this
 }
 
@@ -266,26 +242,6 @@ data class SacrificeAtEndOfCombatEffect(
  *   updatedCollections under this key. Useful for "draw a card for each creature destroyed
  *   this way" patterns — compose with DrawCardsEffect(VariableReference("<key>_count")).
  */
-@Deprecated("Use Effects.DestroyAll() or EffectPatterns.destroyAllPipeline() instead")
-@SerialName("DestroyAll")
-@Serializable
-data class DestroyAllEffect(
-    val filter: GameObjectFilter,
-    val canRegenerate: Boolean = true,
-    val exceptSubtypesFromStored: String? = null,
-    val storeDestroyedAs: String? = null
-) : Effect {
-    override val description: String = buildString {
-        append("Destroy all ${filter.description}")
-        if (!canRegenerate) append(". They can't be regenerated")
-    }
-    override fun applyTextReplacement(replacer: TextReplacer): Effect {
-        val newFilter = filter.applyTextReplacement(replacer)
-        return if (newFilter !== filter) copy(filter = newFilter) else this
-    }
-}
-
-
 /**
  * Destroy all Equipment attached to the target permanent.
  * Used for Corrosive Ooze's delayed trigger at end of combat.
@@ -384,21 +340,6 @@ data class ReturnSelfToBattlefieldAttachedEffect(
  * @property filter Which permanents to exile (matched against projected state)
  * @property storeAs Collection name for storing exiled IDs (default "linked_exile")
  */
-@Deprecated("Use Effects.ExileGroupAndLink() or EffectPatterns.exileGroupAndLink() instead")
-@SerialName("ExileGroupAndLink")
-@Serializable
-data class ExileGroupAndLinkEffect(
-    val filter: GroupFilter,
-    val storeAs: String = "linked_exile"
-) : Effect {
-    override val description: String =
-        "Exile all ${filter.description} and link them to this permanent"
-    override fun applyTextReplacement(replacer: TextReplacer): Effect {
-        val newFilter = filter.applyTextReplacement(replacer)
-        return if (newFilter !== filter) copy(filter = newFilter) else this
-    }
-}
-
 /**
  * Return one card from the source's linked exile (LinkedExileComponent) to the
  * battlefield. The active player (whose upkeep it is) chooses one of their owned
