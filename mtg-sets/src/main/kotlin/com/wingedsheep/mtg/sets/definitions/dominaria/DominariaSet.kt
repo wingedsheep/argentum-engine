@@ -248,6 +248,7 @@ object DominariaSet {
         VerdantForce,
         VerixBladewing,
         ViciousOffering,
+        UrzasRuinousBlast,
         UrzasTome,
         VodalianArcanist,
         VoltaicServant,

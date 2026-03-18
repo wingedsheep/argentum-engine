@@ -2,11 +2,11 @@
 
 **Set Size:** 280 cards (249 unique card names + basic land variants)
 **Release Date:** April 27, 2018
-**Implemented:** 246 / 249
+**Implemented:** 247 / 249
 
 | Color      | Total | Done |
 |------------|-------|------|
-| White      | 38    | 37   |
+| White      | 38    | 38   |
 | Blue       | 37    | 36   |
 | Black      | 38    | 38   |
 | Red        | 38    | 37   |
@@ -243,7 +243,7 @@
 - [x] Untamed Kavu
 - [x] Unwind
 - [x] Urgoros, the Empty One
-- [ ] Urza's Ruinous Blast
+- [x] Urza's Ruinous Blast
 - [x] Urza's Tome
 - [x] Valduk, Keeper of the Flame
 - [x] Verdant Force
