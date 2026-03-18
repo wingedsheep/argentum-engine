@@ -300,7 +300,13 @@ data class SelectFromCollectionEffect(
     /** Label describing where non-selected cards go (e.g., "Put on top"). Shown in the UI. */
     val remainderLabel: String? = null,
     /** If true, use the targeting UI (click on battlefield) instead of modal overlay. */
-    val useTargetingUI: Boolean = false
+    val useTargetingUI: Boolean = false,
+    /**
+     * When true, all cards in the collection are shown to the player (even non-eligible ones).
+     * Non-eligible cards are displayed but not selectable. Used for "look at" effects like
+     * Adventurous Impulse where the player sees all cards but can only choose matching ones.
+     */
+    val showAllCards: Boolean = false
 ) : Effect {
     override val description: String = buildString {
         if (chooser == Chooser.Opponent) append("An opponent ")

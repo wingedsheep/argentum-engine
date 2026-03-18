@@ -276,6 +276,8 @@ export interface SelectCardsDecision extends PendingDecisionBase {
   readonly selectedLabel?: string | null
   /** Label describing where non-selected cards go (e.g., "Put on top") */
   readonly remainderLabel?: string | null
+  /** Cards shown to the player but not selectable (used for "look at" effects) */
+  readonly nonSelectableOptions?: readonly EntityId[]
 }
 
 /**

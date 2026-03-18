@@ -40,7 +40,8 @@ val AdventurousImpulse = card("Adventurous Impulse") {
                     filter = GameObjectFilter.Creature or GameObjectFilter.Land,
                     storeSelected = "kept",
                     storeRemainder = "rest",
-                    prompt = "You may reveal a creature or land card and put it into your hand"
+                    prompt = "You may reveal a creature or land card and put it into your hand",
+                    showAllCards = true
                 ),
                 MoveCollectionEffect(
                     from = "kept",

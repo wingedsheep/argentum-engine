@@ -7,10 +7,6 @@ import com.wingedsheep.engine.handlers.PredicateContext
 import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.handlers.effects.TargetResolutionUtils
-import com.wingedsheep.engine.handlers.effects.DamageUtils
-import com.wingedsheep.engine.handlers.effects.ZoneMovementUtils
-import com.wingedsheep.engine.handlers.effects.ReplacementEffectUtils
-import com.wingedsheep.engine.handlers.effects.BattlefieldFilterUtils
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.sdk.model.EntityId
@@ -127,13 +123,18 @@ class SelectFromCollectionExecutor : EffectExecutor<SelectFromCollectionEffect> 
             is SelectionMode.ChooseUpTo -> {
                 val count = amountEvaluator.evaluate(state, selection.count, context)
                 if (eligibleCards.isEmpty()) {
+                    if (effect.showAllCards && cards.isNotEmpty()) {
+                        // Show all cards even though none are selectable (e.g., "look at top 3, you may reveal a creature or land")
+                        return createDecision(state, context, effect, emptyList(), 0, 0, decidingPlayerId, allCards = cards, nonSelectableCards = cards)
+                    }
                     val collections = mutableMapOf(effect.storeSelected to emptyList<EntityId>())
                     if (remainderName != null) {
                         collections[remainderName] = cards
                     }
                     return ExecutionResult.success(state).copy(updatedCollections = collections)
                 }
-                createDecision(state, context, effect, eligibleCards, 0, minOf(count, eligibleCards.size), decidingPlayerId, allCards = cards)
+                val nonSelectable = if (effect.showAllCards) cards.filter { it !in eligibleCards } else emptyList()
+                createDecision(state, context, effect, eligibleCards, 0, minOf(count, eligibleCards.size), decidingPlayerId, allCards = cards, nonSelectableCards = nonSelectable)
             }
 
             is SelectionMode.Random -> {
@@ -173,7 +174,8 @@ class SelectFromCollectionExecutor : EffectExecutor<SelectFromCollectionEffect> 
         minSelections: Int,
         maxSelections: Int,
         decidingPlayerId: EntityId? = null,
-        allCards: List<EntityId> = cards
+        allCards: List<EntityId> = cards,
+        nonSelectableCards: List<EntityId> = emptyList()
     ): ExecutionResult {
         val playerId = decidingPlayerId ?: context.controllerId
         val decisionId = UUID.randomUUID().toString()
@@ -182,7 +184,8 @@ class SelectFromCollectionExecutor : EffectExecutor<SelectFromCollectionEffect> 
         }
 
         // Build card info for hidden-zone cards (library cards are normally hidden)
-        val cardInfoMap = cards.associateWith { cardId ->
+        val allDisplayCards = cards + nonSelectableCards
+        val cardInfoMap = allDisplayCards.associateWith { cardId ->
             val container = state.getEntity(cardId)
             val cardComponent = container?.get<CardComponent>()
             SearchCardInfo(
@@ -215,7 +218,8 @@ class SelectFromCollectionExecutor : EffectExecutor<SelectFromCollectionEffect> 
             cardInfo = cardInfoMap,
             selectedLabel = effect.selectedLabel,
             remainderLabel = effect.remainderLabel,
-            useTargetingUI = effect.useTargetingUI
+            useTargetingUI = effect.useTargetingUI,
+            nonSelectableOptions = nonSelectableCards
         )
 
         val continuation = SelectFromCollectionContinuation(

@@ -409,6 +409,14 @@
   box-shadow: 0 8px 20px var(--color-selected-shadow);
 }
 
+.decisionCardNonSelectable {
+  background-color: var(--bg-surface-3);
+  border: 2px solid var(--border-solid-dark);
+  box-shadow: var(--shadow-md);
+  opacity: 0.5;
+  cursor: default;
+}
+
 /* =========================================================================
  * Graveyard Card
  * ========================================================================= */

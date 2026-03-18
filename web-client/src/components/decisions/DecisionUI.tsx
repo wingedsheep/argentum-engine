@@ -1171,8 +1171,10 @@ function CardSelectionDecision({
   const availableWidth = responsive.viewportWidth - responsive.containerPadding * 2 - 32
   const gap = responsive.isMobile ? 4 : 8
   const maxCardWidth = responsive.isMobile ? 90 : 130
+  const nonSelectableOptions = decision.nonSelectableOptions ?? []
+  const totalCardCount = decision.options.length + nonSelectableOptions.length
   const cardWidth = calculateFittingCardWidth(
-    decision.options.length,
+    totalCardCount,
     availableWidth,
     gap,
     maxCardWidth,
@@ -1274,6 +1276,26 @@ function CardSelectionDecision({
               cardWidth={cardWidth}
               onMouseEnter={() => setHoveredCardId(cardId)}
               onMouseLeave={() => setHoveredCardId(null)}
+            />
+          )
+        })}
+        {nonSelectableOptions.map((cardId) => {
+          const cardInfoFromDecision = decision.cardInfo?.[cardId]
+          const cardFromState = gameState?.cards[cardId]
+          const cardName = cardInfoFromDecision?.name || cardFromState?.name || 'Unknown Card'
+          const imageUri = cardInfoFromDecision?.imageUri || cardFromState?.imageUri
+          return (
+            <DecisionCard
+              key={cardId}
+              cardId={cardId}
+              cardName={cardName}
+              imageUri={imageUri}
+              isSelected={false}
+              onClick={() => {}}
+              cardWidth={cardWidth}
+              onMouseEnter={() => setHoveredCardId(cardId)}
+              onMouseLeave={() => setHoveredCardId(null)}
+              nonSelectable
             />
           )
         })}
@@ -1721,6 +1743,7 @@ function DecisionCard({
   cardWidth = 130,
   onMouseEnter,
   onMouseLeave,
+  nonSelectable = false,
 }: {
   cardId: EntityId
   cardName: string
@@ -1730,6 +1753,7 @@ function DecisionCard({
   cardWidth?: number
   onMouseEnter?: () => void
   onMouseLeave?: () => void
+  nonSelectable?: boolean
 }) {
   const cardImageUrl = getCardImageUrl(cardName, imageUri)
 
@@ -1738,7 +1762,9 @@ function DecisionCard({
 
   const cardClasses = [
     styles.decisionCard,
-    isSelected ? styles.decisionCardSelected : styles.decisionCardDefault,
+    nonSelectable
+      ? styles.decisionCardNonSelectable
+      : isSelected ? styles.decisionCardSelected : styles.decisionCardDefault,
   ].filter(Boolean).join(' ')
 
   return (

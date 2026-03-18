@@ -132,7 +132,9 @@ data class SelectCardsDecision(
     /** Label describing where selected cards go (e.g., "Put on bottom") */
     val selectedLabel: String? = null,
     /** Label describing where non-selected cards go (e.g., "Put on top") */
-    val remainderLabel: String? = null
+    val remainderLabel: String? = null,
+    /** Cards shown to the player but not selectable (used for "look at" effects) */
+    val nonSelectableOptions: List<EntityId> = emptyList()
 ) : PendingDecision
 
 /**
