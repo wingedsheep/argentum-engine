@@ -286,6 +286,19 @@ data class DestroyAllEffect(
 }
 
 
+/**
+ * Destroy all Equipment attached to the target permanent.
+ * Used for Corrosive Ooze's delayed trigger at end of combat.
+ */
+@SerialName("DestroyAllEquipmentOnTarget")
+@Serializable
+data class DestroyAllEquipmentOnTargetEffect(
+    val target: EffectTarget
+) : Effect {
+    override val description: String = "Destroy all Equipment attached to ${target.description}"
+    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
+}
+
 @SerialName("MoveToZone")
 @Serializable
 data class MoveToZoneEffect(

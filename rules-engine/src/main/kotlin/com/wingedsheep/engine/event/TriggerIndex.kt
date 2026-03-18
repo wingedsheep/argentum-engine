@@ -136,6 +136,7 @@ class TriggerIndex(
             is SdkGameEvent.YouAttackEvent -> listOf(TriggerCategory.ATTACKERS_DECLARED)
             is SdkGameEvent.BlockEvent -> listOf(TriggerCategory.BLOCKERS_DECLARED)
             is SdkGameEvent.BecomesBlockedEvent -> listOf(TriggerCategory.BLOCKERS_DECLARED)
+            is SdkGameEvent.BlocksOrBecomesBlockedByEvent -> listOf(TriggerCategory.BLOCKERS_DECLARED)
             is SdkGameEvent.DamageReceivedEvent ->
                 if (trigger.source == SourceFilter.Any) listOf(TriggerCategory.DAMAGE_RECEIVED) else emptyList()
             is SdkGameEvent.SpellCastEvent -> listOf(TriggerCategory.SPELL_CAST)

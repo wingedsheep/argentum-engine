@@ -302,6 +302,11 @@ data class GameObjectFilter(
         statePredicates = statePredicates + StatePredicate.HasGreatestPower
     )
 
+    /** Must have at least one Equipment attached */
+    fun equipped() = copy(
+        statePredicates = statePredicates + StatePredicate.IsEquipped
+    )
+
     // =============================================================================
     // Fluent Builder Methods - Controller Predicates
     // =============================================================================

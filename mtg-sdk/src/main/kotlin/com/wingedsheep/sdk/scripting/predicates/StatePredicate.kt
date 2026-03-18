@@ -147,4 +147,15 @@ sealed interface StatePredicate {
     data object HasGreatestPower : StatePredicate {
         override val description: String = "with the greatest power"
     }
+
+    // =============================================================================
+    // Equipment State
+    // =============================================================================
+
+    /** Has at least one Equipment attached */
+    @SerialName("IsEquipped")
+    @Serializable
+    data object IsEquipped : StatePredicate {
+        override val description: String = "equipped"
+    }
 }

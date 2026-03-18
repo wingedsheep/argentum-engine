@@ -31,6 +31,7 @@ class RemovalExecutors(
     override fun executors(): List<EffectExecutor<*>> = listOf(
         AnyPlayerMayPayExecutor(),
         CantBeRegeneratedExecutor(),
+        DestroyAllEquipmentOnTargetExecutor(),
         ExileUntilLeavesExecutor(),
         MarkExileOnDeathExecutor(),
         MarkExileControllerGraveyardOnDeathExecutor(),

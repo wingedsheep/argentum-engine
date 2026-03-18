@@ -400,6 +400,34 @@ sealed interface GameEvent : TextReplaceable<GameEvent> {
         }
     }
 
+    /**
+     * When this creature blocks or becomes blocked by a creature matching [partnerFilter].
+     * Binding SELF = "when this creature blocks or becomes blocked by [filter]".
+     *
+     * TriggerContext.triggeringEntityId = the combat partner (the creature that matched the filter).
+     * Used for Corrosive Ooze.
+     */
+    @SerialName("BlocksOrBecomesBlockedByEvent")
+    @Serializable
+    data class BlocksOrBecomesBlockedByEvent(
+        val partnerFilter: GameObjectFilter? = null
+    ) : GameEvent {
+        override val description: String = buildString {
+            append("this creature blocks or becomes blocked by ")
+            if (partnerFilter != null) {
+                append(describeObjectForEvent(partnerFilter))
+            } else {
+                append("a creature")
+            }
+        }
+
+        override fun applyTextReplacement(replacer: TextReplacer): GameEvent {
+            val f = partnerFilter ?: return this
+            val newFilter = f.applyTextReplacement(replacer)
+            return if (newFilter !== f) copy(partnerFilter = newFilter) else this
+        }
+    }
+
     // ---- Damage Triggers ----
 
     /**

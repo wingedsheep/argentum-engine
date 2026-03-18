@@ -643,6 +643,47 @@ class TriggerDetector(
                                 }
                             }
                         }
+                    // For "blocks or becomes blocked by [filter]" (BlocksOrBecomesBlockedByEvent with SELF binding),
+                    // check both blocking and being-blocked relationships and create one trigger per matching partner.
+                    else if (ability.trigger is GameEvent.BlocksOrBecomesBlockedByEvent &&
+                        ability.binding == TriggerBinding.SELF && event is BlockersDeclaredEvent) {
+                        val trigger = ability.trigger as GameEvent.BlocksOrBecomesBlockedByEvent
+                        val partners = mutableListOf<EntityId>()
+
+                        // Case 1: Source creature is a blocker — its combat partners are the attackers it blocks
+                        val blockedAttackerIds = event.blockers[entityId]
+                        if (blockedAttackerIds != null) {
+                            partners.addAll(blockedAttackerIds)
+                        }
+
+                        // Case 2: Source creature is an attacker — its combat partners are blockers blocking it
+                        for ((blockerId, attackerIds) in event.blockers) {
+                            if (attackerIds.contains(entityId)) {
+                                partners.add(blockerId)
+                            }
+                        }
+
+                        for (partnerId in partners.distinct()) {
+                            val matchesFilter = if (trigger.partnerFilter != null) {
+                                predicateEvaluator.matchesWithProjection(
+                                    state, projected, partnerId, trigger.partnerFilter,
+                                    PredicateContext(controllerId = controllerId, sourceId = entityId)
+                                )
+                            } else {
+                                true
+                            }
+                            if (matchesFilter) {
+                                triggers.add(
+                                    PendingTrigger(
+                                        ability = ability,
+                                        sourceId = entityId,
+                                        sourceName = cardComponent.name,
+                                        controllerId = controllerId,
+                                        triggerContext = TriggerContext(triggeringEntityId = partnerId)
+                                    )
+                                )
+                            }
+                        }
                     } else {
                         // For abilities like Death Match where the triggered ability should be
                         // controlled by the triggering entity's controller, not the source's controller
@@ -1870,6 +1911,15 @@ class TriggerDetector(
             is GameEvent.BecomesBlockedEvent -> {
                 event is BlockersDeclaredEvent &&
                     (binding != TriggerBinding.SELF || event.blockers.values.any { it.contains(sourceId) })
+            }
+            is GameEvent.BlocksOrBecomesBlockedByEvent -> {
+                // Basic match: it's a BlockersDeclaredEvent and the source is involved in combat
+                // Per-partner trigger creation happens in detectTriggersForEvent
+                if (event !is BlockersDeclaredEvent) return false
+                if (binding != TriggerBinding.SELF) return false
+                // Source is a blocker or an attacker that's being blocked
+                event.blockers.keys.contains(sourceId) ||
+                    event.blockers.values.any { it.contains(sourceId) }
             }
             is GameEvent.DealsDamageEvent -> {
                 // SELF-bound DealsDamageEvent handled separately in detectDamageSourceTriggers

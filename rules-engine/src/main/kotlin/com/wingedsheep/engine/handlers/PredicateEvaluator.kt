@@ -2,6 +2,7 @@ package com.wingedsheep.engine.handlers
 
 import com.wingedsheep.engine.mechanics.layers.ProjectedState
 import com.wingedsheep.engine.state.GameState
+import com.wingedsheep.engine.state.components.battlefield.AttachmentsComponent
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.state.components.combat.AttackingComponent
 import com.wingedsheep.engine.state.components.combat.BlockingComponent
@@ -604,6 +605,17 @@ class PredicateEvaluator {
                     }
                 }
                 countersComponent.getCount(counterType) > 0
+            }
+
+            // Equipment state
+            StatePredicate.IsEquipped -> {
+                val attachments = container.get<AttachmentsComponent>()
+                if (attachments == null || attachments.attachedIds.isEmpty()) return false
+                attachments.attachedIds.any { attachId ->
+                    val attachContainer = state.getEntity(attachId)
+                    val card = attachContainer?.get<CardComponent>()
+                    card?.typeLine?.isEquipment == true
+                }
             }
 
             // Relative power

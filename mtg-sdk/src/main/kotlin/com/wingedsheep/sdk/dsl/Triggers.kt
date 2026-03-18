@@ -250,6 +250,15 @@ object Triggers {
     )
 
     /**
+     * When this creature blocks or becomes blocked by a creature matching the filter.
+     * TriggerContext.triggeringEntityId = the combat partner.
+     */
+    fun BlocksOrBecomesBlockedBy(filter: GameObjectFilter): TriggerSpec = TriggerSpec(
+        event = BlocksOrBecomesBlockedByEvent(partnerFilter = filter),
+        binding = TriggerBinding.SELF
+    )
+
+    /**
      * When this creature deals damage.
      */
     val DealsDamage: TriggerSpec = TriggerSpec(

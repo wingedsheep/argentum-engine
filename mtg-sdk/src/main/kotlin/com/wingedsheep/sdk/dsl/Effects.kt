@@ -88,6 +88,7 @@ import com.wingedsheep.sdk.scripting.effects.CopyNextSpellCastEffect
 import com.wingedsheep.sdk.scripting.effects.CopyTargetSpellEffect
 import com.wingedsheep.sdk.scripting.effects.AddCreatureTypeEffect
 import com.wingedsheep.sdk.scripting.effects.SetCreatureSubtypesEffect
+import com.wingedsheep.sdk.scripting.effects.DestroyAllEquipmentOnTargetEffect
 import com.wingedsheep.sdk.scripting.effects.ForceExileMultiZoneEffect
 import com.wingedsheep.sdk.scripting.effects.LoseGameEffect
 import com.wingedsheep.sdk.scripting.effects.SkipNextTurnEffect
@@ -315,6 +316,12 @@ object Effects {
     fun DestroyAllSharingTypeWithSacrificed(
         noRegenerate: Boolean = false
     ): Effect = EffectPatterns.destroyAllSharingTypeWithSacrificed(noRegenerate)
+
+    /**
+     * Destroy all Equipment attached to the target permanent.
+     */
+    fun DestroyAllEquipmentOnTarget(target: EffectTarget): Effect =
+        DestroyAllEquipmentOnTargetEffect(target)
 
     /**
      * Exile a target.

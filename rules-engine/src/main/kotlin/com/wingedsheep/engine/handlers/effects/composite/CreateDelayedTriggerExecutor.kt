@@ -10,6 +10,7 @@ import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.CreateDelayedTriggerEffect
 import com.wingedsheep.sdk.scripting.effects.Effect
+import com.wingedsheep.sdk.scripting.effects.DestroyAllEquipmentOnTargetEffect
 import com.wingedsheep.sdk.scripting.effects.SacrificeTargetEffect
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
@@ -77,6 +78,10 @@ class CreateDelayedTriggerExecutor : EffectExecutor<CreateDelayedTriggerEffect> 
                 )
             }
             is SacrificeTargetEffect -> {
+                val resolvedId = resolveTarget(effect.target, context)
+                if (resolvedId != null) effect.copy(target = EffectTarget.SpecificEntity(resolvedId)) else effect
+            }
+            is DestroyAllEquipmentOnTargetEffect -> {
                 val resolvedId = resolveTarget(effect.target, context)
                 if (resolvedId != null) effect.copy(target = EffectTarget.SpecificEntity(resolvedId)) else effect
             }
