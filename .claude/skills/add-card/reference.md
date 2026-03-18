@@ -1167,7 +1167,7 @@ Used in `OptionalCostEffect`, `MayPayManaEffect`, `AnyPlayerMayPayEffect`, `PayO
 - `ExtraTurnEvent(player)` — used by PreventExtraTurns replacement effect filter
 - `AttackEvent` / `YouAttackEvent(minAttackers)` / `BlockEvent` / `BecomesBlockedEvent(filter: GameObjectFilter? = null)`
 - `BecomesTargetEvent(targetFilter)` — when a permanent becomes the target of a spell or ability
-- `StepEvent(step, player)` / `EnchantedCreatureControllerStepEvent(step)` / `EnchantedCreatureTurnedFaceUpEvent` / `EnchantedPermanentBecomesTappedEvent`
+- `StepEvent(step, player)`
 - `SpellCastEvent(spellType, manaValueAtLeast?, manaValueAtMost?, manaValueEquals?, player)`
 - `CycleEvent(player)` / `TapEvent` / `UntapEvent`
 - `TurnFaceUpEvent` / `TransformEvent(intoBackFace?)` / `ControlChangeEvent`

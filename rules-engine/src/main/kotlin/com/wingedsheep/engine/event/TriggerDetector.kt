@@ -5,8 +5,6 @@ import com.wingedsheep.engine.core.AttackersDeclaredEvent
 import com.wingedsheep.engine.core.CardCycledEvent
 import com.wingedsheep.engine.core.ControlChangedEvent
 import com.wingedsheep.engine.core.DamageDealtEvent
-import com.wingedsheep.engine.core.TappedEvent
-import com.wingedsheep.engine.core.TurnFaceUpEvent
 import com.wingedsheep.engine.core.ZoneChangeEvent
 import com.wingedsheep.engine.core.GameEvent as EngineGameEvent
 import com.wingedsheep.engine.handlers.ConditionEvaluator
@@ -52,7 +50,7 @@ class TriggerDetector(
     private val abilityResolver = TriggerAbilityResolver(cardRegistry, abilityRegistry)
     private val deathAndLeaveDetector = DeathAndLeaveTriggerDetector(abilityResolver, matcher)
     private val damageDetector = DamageTriggerDetector(abilityResolver, matcher)
-    private val attachmentDetector = AttachmentTriggerDetector()
+    private val attachmentDetector = AttachmentTriggerDetector(matcher)
 
     /**
      * Build a trigger index for the current game state.
@@ -256,29 +254,26 @@ class TriggerDetector(
             }
         }
 
-        // Check battlefield entities with EnchantedCreatureControllerStepEvent triggers
-        for (entry in index.getEntitiesForCategory(TriggerCategory.ENCHANTED_STEP)) {
-            val container = state.getEntity(entry.entityId) ?: continue
-            for (ability in entry.abilities) {
-                if (ability.activeZone != Zone.BATTLEFIELD) continue
-                if (ability.trigger is GameEvent.EnchantedCreatureControllerStepEvent) {
-                    val stepEvent = ability.trigger as GameEvent.EnchantedCreatureControllerStepEvent
-                    if (step == stepEvent.step) {
-                        val attachedTo = container.get<AttachedToComponent>()?.targetId
-                        if (attachedTo != null) {
-                            val enchantedCreatureController = projected.getController(attachedTo)
-                            if (enchantedCreatureController != null && enchantedCreatureController == activePlayerId) {
-                                triggers.add(
-                                    PendingTrigger(
-                                        ability = ability,
-                                        sourceId = entry.entityId,
-                                        sourceName = entry.cardComponent.name,
-                                        controllerId = enchantedCreatureController,
-                                        triggerContext = TriggerContext(step = step, triggeringEntityId = activePlayerId)
-                                    )
-                                )
-                            }
-                        }
+        // Check ATTACHED step triggers on auras (e.g., Custody Battle, Lingering Death)
+        // For ATTACHED + StepEvent(Player.You), "you" = the attached creature's controller
+        for ((targetId, attachments) in index.aurasByTarget) {
+            val enchantedController = projected.getController(targetId) ?: continue
+            for (entry in attachments) {
+                for (ability in entry.abilities) {
+                    if (ability.binding != TriggerBinding.ATTACHED) continue
+                    if (ability.activeZone != Zone.BATTLEFIELD) continue
+                    val trigger = ability.trigger as? GameEvent.StepEvent ?: continue
+                    if (step != trigger.step) continue
+                    if (matcher.matchesPlayerForStep(trigger.player, enchantedController, activePlayerId)) {
+                        triggers.add(
+                            PendingTrigger(
+                                ability = ability,
+                                sourceId = entry.entityId,
+                                sourceName = entry.cardComponent.name,
+                                controllerId = enchantedController,
+                                triggerContext = TriggerContext(step = step, triggeringEntityId = activePlayerId)
+                            )
+                        )
                     }
                 }
             }
@@ -563,14 +558,9 @@ class TriggerDetector(
             deathAndLeaveDetector.detectDeathTriggers(state, event, triggers)
             // Handle "whenever a creature dealt damage by this creature this turn dies" triggers
             deathAndLeaveDetector.detectCreatureDealtDamageBySourceDiesTriggers(state, event, triggers, projected, index)
-            // Handle "when enchanted creature dies" triggers on auras that went to graveyard
+            // Handle ATTACHED zone-change triggers on auras that went to graveyard with their creature
             // (detected on the AURA's zone change event using lastKnownAttachedTo)
-            deathAndLeaveDetector.detectEnchantedCreatureDiesTriggers(state, event, triggers)
-            // Handle "when enchanted permanent leaves the battlefield" triggers on auras that went to graveyard
-            deathAndLeaveDetector.detectEnchantedPermanentLeavesBattlefieldTriggers(state, event, triggers)
-            // Handle "when equipped creature dies" triggers on equipment still on battlefield
-            // (detected on the CREATURE's zone change event using aurasByTarget index)
-            deathAndLeaveDetector.detectEquippedCreatureDiesTriggers(state, event, triggers, index)
+            deathAndLeaveDetector.detectDeadAuraAttachmentTriggers(state, event, triggers)
         }
 
         // Handle leaves-the-battlefield triggers (source is no longer on battlefield)
@@ -609,35 +599,9 @@ class TriggerDetector(
             damageDetector.detectSubtypeDamageToPlayerTriggers(state, event, triggers, projected, index)
         }
 
-        // Handle "when enchanted creature is dealt damage" triggers on auras (e.g., Frozen Solid)
-        if (event is DamageDealtEvent && !event.targetIsPlayer) {
-            attachmentDetector.detectEnchantedCreatureDamageTriggers(state, event, triggers, projected, index)
-        }
-
-        // Handle "when enchanted creature deals combat damage to a player" triggers on auras (e.g., One with Nature)
-        if (event is DamageDealtEvent && event.isCombatDamage && event.targetIsPlayer && event.sourceId != null) {
-            attachmentDetector.detectEnchantedCreatureDealsDamageTriggers(state, event, triggers, projected, index)
-        }
-
-        // Handle "when enchanted creature deals damage" triggers on auras (e.g., Guilty Conscience)
-        if (event is DamageDealtEvent && event.sourceId != null) {
-            attachmentDetector.detectEnchantedCreatureDealsDamageAnyTriggers(state, event, triggers, projected, index)
-        }
-
-        // Handle "when attached creature attacks" triggers for auras/equipment (e.g., Extra Arms, Heart-Piercer Bow)
-        if (event is AttackersDeclaredEvent) {
-            attachmentDetector.detectAttachedCreatureAttacksTriggers(state, event, triggers, projected, index)
-        }
-
-        // Handle "when enchanted creature is turned face up" triggers on auras (e.g., Fatal Mutation)
-        if (event is TurnFaceUpEvent) {
-            attachmentDetector.detectEnchantedCreatureTurnedFaceUpTriggers(state, event, triggers, projected, index)
-        }
-
-        // Handle "when enchanted permanent becomes tapped" triggers on auras (e.g., Uncontrolled Infestation)
-        if (event is TappedEvent) {
-            attachmentDetector.detectEnchantedPermanentBecomesTappedTriggers(state, event, triggers, projected, index)
-        }
+        // Handle all ATTACHED-bound triggers on auras/equipment (e.g., Frozen Solid, One with Nature,
+        // Guilty Conscience, Extra Arms, Heart-Piercer Bow, Fatal Mutation, Uncontrolled Infestation)
+        attachmentDetector.detectAttachmentTriggers(state, event, triggers, index)
 
         // Handle "when you gain control of this from another player" triggers (e.g., Risky Move)
         if (event is ControlChangedEvent) {

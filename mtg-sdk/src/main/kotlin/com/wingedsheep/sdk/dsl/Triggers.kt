@@ -372,8 +372,8 @@ object Triggers {
      * Used for auras that grant "At the beginning of your upkeep" to the enchanted creature.
      */
     val EnchantedCreatureControllerUpkeep: TriggerSpec = TriggerSpec(
-        event = EnchantedCreatureControllerStepEvent(Step.UPKEEP),
-        binding = TriggerBinding.ANY
+        event = StepEvent(Step.UPKEEP, Player.You),
+        binding = TriggerBinding.ATTACHED
     )
 
     /**
@@ -381,8 +381,8 @@ object Triggers {
      * Used for auras like Lingering Death that trigger on the enchanted creature's controller's end step.
      */
     val EnchantedCreatureControllerEndStep: TriggerSpec = TriggerSpec(
-        event = EnchantedCreatureControllerStepEvent(Step.END),
-        binding = TriggerBinding.ANY
+        event = StepEvent(Step.END, Player.You),
+        binding = TriggerBinding.ATTACHED
     )
 
     /**
@@ -555,8 +555,8 @@ object Triggers {
      * Used for auras like Demonic Vigor.
      */
     val EnchantedCreatureDies: TriggerSpec = TriggerSpec(
-        event = EnchantedCreatureDiesEvent,
-        binding = TriggerBinding.ANY
+        event = ZoneChangeEvent(from = Zone.BATTLEFIELD, to = Zone.GRAVEYARD),
+        binding = TriggerBinding.ATTACHED
     )
 
     /**
@@ -564,8 +564,8 @@ object Triggers {
      * Used for auras like Curator's Ward.
      */
     val EnchantedPermanentLeavesBattlefield: TriggerSpec = TriggerSpec(
-        event = EnchantedPermanentLeavesBattlefieldEvent,
-        binding = TriggerBinding.ANY
+        event = ZoneChangeEvent(from = Zone.BATTLEFIELD),
+        binding = TriggerBinding.ATTACHED
     )
 
     /**
@@ -573,8 +573,8 @@ object Triggers {
      * Used for auras like Frozen Solid.
      */
     val EnchantedCreatureTakesDamage: TriggerSpec = TriggerSpec(
-        event = EnchantedCreatureDamageReceivedEvent,
-        binding = TriggerBinding.ANY
+        event = DamageReceivedEvent(),
+        binding = TriggerBinding.ATTACHED
     )
 
     /**
@@ -582,28 +582,26 @@ object Triggers {
      * Used for auras like One with Nature.
      */
     val EnchantedCreatureDealsCombatDamageToPlayer: TriggerSpec = TriggerSpec(
-        event = EnchantedCreatureDealsCombatDamageToPlayerEvent,
-        binding = TriggerBinding.ANY
+        event = DealsDamageEvent(damageType = DamageType.Combat, recipient = RecipientFilter.AnyPlayer),
+        binding = TriggerBinding.ATTACHED
     )
 
     /**
      * Whenever the enchanted creature attacks.
      * Used for auras like Extra Arms.
-     * DSL alias — uses the generalized [AttachedCreatureAttacksEvent].
      */
     val EnchantedCreatureAttacks: TriggerSpec = TriggerSpec(
-        event = AttachedCreatureAttacksEvent,
-        binding = TriggerBinding.ANY
+        event = AttackEvent(),
+        binding = TriggerBinding.ATTACHED
     )
 
     /**
      * Whenever the equipped creature attacks.
      * Used for equipment like Heart-Piercer Bow.
-     * DSL alias — uses the generalized [AttachedCreatureAttacksEvent].
      */
     val EquippedCreatureAttacks: TriggerSpec = TriggerSpec(
-        event = AttachedCreatureAttacksEvent,
-        binding = TriggerBinding.ANY
+        event = AttackEvent(),
+        binding = TriggerBinding.ATTACHED
     )
 
     /**
@@ -613,8 +611,8 @@ object Triggers {
      * on the dying creature's zone change event.
      */
     val EquippedCreatureDies: TriggerSpec = TriggerSpec(
-        event = EquippedCreatureDiesEvent,
-        binding = TriggerBinding.ANY
+        event = ZoneChangeEvent(from = Zone.BATTLEFIELD, to = Zone.GRAVEYARD),
+        binding = TriggerBinding.ATTACHED
     )
 
     /**
@@ -622,8 +620,8 @@ object Triggers {
      * Used for auras like Guilty Conscience.
      */
     val EnchantedCreatureDealsDamage: TriggerSpec = TriggerSpec(
-        event = EnchantedCreatureDealsDamageEvent,
-        binding = TriggerBinding.ANY
+        event = DealsDamageEvent(),
+        binding = TriggerBinding.ATTACHED
     )
 
     /**
@@ -631,8 +629,8 @@ object Triggers {
      * Used for auras like Fatal Mutation.
      */
     val EnchantedCreatureTurnedFaceUp: TriggerSpec = TriggerSpec(
-        event = EnchantedCreatureTurnedFaceUpEvent,
-        binding = TriggerBinding.ANY
+        event = TurnFaceUpEvent,
+        binding = TriggerBinding.ATTACHED
     )
 
     /**
@@ -676,8 +674,8 @@ object Triggers {
      * Used for auras like Uncontrolled Infestation.
      */
     val EnchantedPermanentBecomesTapped: TriggerSpec = TriggerSpec(
-        event = EnchantedPermanentBecomesTappedEvent,
-        binding = TriggerBinding.ANY
+        event = TapEvent,
+        binding = TriggerBinding.ATTACHED
     )
 
     // =========================================================================

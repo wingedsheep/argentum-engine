@@ -15,5 +15,7 @@ enum class TriggerBinding {
     /** The event entity is NOT this permanent (e.g., "when another creature enters"). */
     OTHER,
     /** Any entity, or the trigger has no entity concept (e.g., phase triggers, spell cast triggers). */
-    ANY
+    ANY,
+    /** The event entity is the permanent this source is attached to (aura/equipment triggers). */
+    ATTACHED
 }

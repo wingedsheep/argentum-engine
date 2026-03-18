@@ -53,7 +53,6 @@ enum class TriggerCategory {
     BECOMES_TARGET,
     TURN_FACE_UP,
     STEP,
-    ENCHANTED_STEP,
     LIBRARY_TO_GRAVEYARD,
 }
 
@@ -128,32 +127,36 @@ class TriggerIndex(
          * Map a SDK trigger type to the engine event categories it responds to.
          * Only includes categories for triggers handled in the main detectTriggersForEvent loop.
          */
-        fun triggerToCategories(trigger: SdkGameEvent, binding: TriggerBinding): List<TriggerCategory> = when (trigger) {
-            is SdkGameEvent.ZoneChangeEvent -> listOf(TriggerCategory.ZONE_CHANGE)
-            is SdkGameEvent.DrawEvent -> listOf(TriggerCategory.DRAW)
-            is SdkGameEvent.CardRevealedFromDrawEvent -> listOf(TriggerCategory.CARD_REVEALED)
-            is SdkGameEvent.AttackEvent -> listOf(TriggerCategory.ATTACKERS_DECLARED)
-            is SdkGameEvent.YouAttackEvent -> listOf(TriggerCategory.ATTACKERS_DECLARED)
-            is SdkGameEvent.BlockEvent -> listOf(TriggerCategory.BLOCKERS_DECLARED)
-            is SdkGameEvent.BecomesBlockedEvent -> listOf(TriggerCategory.BLOCKERS_DECLARED)
-            is SdkGameEvent.BlocksOrBecomesBlockedByEvent -> listOf(TriggerCategory.BLOCKERS_DECLARED)
-            is SdkGameEvent.DamageReceivedEvent ->
-                if (trigger.source == SourceFilter.Any) listOf(TriggerCategory.DAMAGE_RECEIVED) else emptyList()
-            is SdkGameEvent.SpellCastEvent -> listOf(TriggerCategory.SPELL_CAST)
-            is SdkGameEvent.SpellOrAbilityOnStackEvent -> listOf(TriggerCategory.SPELL_OR_ABILITY)
-            is SdkGameEvent.CycleEvent -> listOf(TriggerCategory.CARD_CYCLED)
-            is SdkGameEvent.TapEvent -> listOf(TriggerCategory.TAPPED)
-            is SdkGameEvent.UntapEvent -> listOf(TriggerCategory.UNTAPPED)
-            is SdkGameEvent.LifeGainEvent -> listOf(TriggerCategory.LIFE_GAIN)
-            is SdkGameEvent.LifeLossEvent -> listOf(TriggerCategory.LIFE_LOSS)
-            is SdkGameEvent.BecomesTargetEvent -> listOf(TriggerCategory.BECOMES_TARGET)
-            is SdkGameEvent.TurnFaceUpEvent -> listOf(TriggerCategory.TURN_FACE_UP)
-            is SdkGameEvent.CreatureTurnedFaceUpEvent -> listOf(TriggerCategory.TURN_FACE_UP)
-            is SdkGameEvent.StepEvent -> listOf(TriggerCategory.STEP)
-            is SdkGameEvent.EnchantedCreatureControllerStepEvent -> listOf(TriggerCategory.ENCHANTED_STEP)
-            is SdkGameEvent.CardsPutIntoGraveyardFromLibraryEvent -> listOf(TriggerCategory.LIBRARY_TO_GRAVEYARD)
-            // These are handled by specialized detect methods, not the main loop
-            else -> emptyList()
+        fun triggerToCategories(trigger: SdkGameEvent, binding: TriggerBinding): List<TriggerCategory> {
+            // ATTACHED triggers are handled by AttachmentTriggerDetector via aurasByTarget index
+            if (binding == TriggerBinding.ATTACHED) return emptyList()
+
+            return when (trigger) {
+                is SdkGameEvent.ZoneChangeEvent -> listOf(TriggerCategory.ZONE_CHANGE)
+                is SdkGameEvent.DrawEvent -> listOf(TriggerCategory.DRAW)
+                is SdkGameEvent.CardRevealedFromDrawEvent -> listOf(TriggerCategory.CARD_REVEALED)
+                is SdkGameEvent.AttackEvent -> listOf(TriggerCategory.ATTACKERS_DECLARED)
+                is SdkGameEvent.YouAttackEvent -> listOf(TriggerCategory.ATTACKERS_DECLARED)
+                is SdkGameEvent.BlockEvent -> listOf(TriggerCategory.BLOCKERS_DECLARED)
+                is SdkGameEvent.BecomesBlockedEvent -> listOf(TriggerCategory.BLOCKERS_DECLARED)
+                is SdkGameEvent.BlocksOrBecomesBlockedByEvent -> listOf(TriggerCategory.BLOCKERS_DECLARED)
+                is SdkGameEvent.DamageReceivedEvent ->
+                    if (trigger.source == SourceFilter.Any) listOf(TriggerCategory.DAMAGE_RECEIVED) else emptyList()
+                is SdkGameEvent.SpellCastEvent -> listOf(TriggerCategory.SPELL_CAST)
+                is SdkGameEvent.SpellOrAbilityOnStackEvent -> listOf(TriggerCategory.SPELL_OR_ABILITY)
+                is SdkGameEvent.CycleEvent -> listOf(TriggerCategory.CARD_CYCLED)
+                is SdkGameEvent.TapEvent -> listOf(TriggerCategory.TAPPED)
+                is SdkGameEvent.UntapEvent -> listOf(TriggerCategory.UNTAPPED)
+                is SdkGameEvent.LifeGainEvent -> listOf(TriggerCategory.LIFE_GAIN)
+                is SdkGameEvent.LifeLossEvent -> listOf(TriggerCategory.LIFE_LOSS)
+                is SdkGameEvent.BecomesTargetEvent -> listOf(TriggerCategory.BECOMES_TARGET)
+                is SdkGameEvent.TurnFaceUpEvent -> listOf(TriggerCategory.TURN_FACE_UP)
+                is SdkGameEvent.CreatureTurnedFaceUpEvent -> listOf(TriggerCategory.TURN_FACE_UP)
+                is SdkGameEvent.StepEvent -> listOf(TriggerCategory.STEP)
+                is SdkGameEvent.CardsPutIntoGraveyardFromLibraryEvent -> listOf(TriggerCategory.LIBRARY_TO_GRAVEYARD)
+                // These are handled by specialized detect methods, not the main loop
+                else -> emptyList()
+            }
         }
 
         /**

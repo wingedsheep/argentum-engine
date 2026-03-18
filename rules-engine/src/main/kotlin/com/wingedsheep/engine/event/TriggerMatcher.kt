@@ -53,6 +53,9 @@ class TriggerMatcher(
         controllerId: EntityId,
         state: GameState
     ): Boolean {
+        // ATTACHED triggers are handled by AttachmentTriggerDetector, not the main loop
+        if (binding == TriggerBinding.ATTACHED) return false
+
         return when (trigger) {
             is GameEvent.ZoneChangeEvent -> matchesZoneChangeTrigger(trigger, binding, event, sourceId, controllerId, state)
             is GameEvent.DrawEvent -> {
@@ -162,17 +165,6 @@ class TriggerMatcher(
             is GameEvent.ControlChangeEvent -> false
             // Phase/step triggers are handled separately
             is GameEvent.StepEvent -> false
-            is GameEvent.EnchantedCreatureControllerStepEvent -> false
-            // Attached creature triggers are handled separately
-            is GameEvent.AttachedCreatureAttacksEvent -> false
-            is GameEvent.EnchantedCreatureDamageReceivedEvent -> false
-            is GameEvent.EnchantedCreatureDealsCombatDamageToPlayerEvent -> false
-            is GameEvent.EnchantedCreatureDealsDamageEvent -> false
-            is GameEvent.EnchantedCreatureDiesEvent -> false
-            is GameEvent.EnchantedPermanentLeavesBattlefieldEvent -> false
-            is GameEvent.EquippedCreatureDiesEvent -> false
-            is GameEvent.EnchantedCreatureTurnedFaceUpEvent -> false
-            is GameEvent.EnchantedPermanentBecomesTappedEvent -> false
             // Creature-dealt-damage-by-source-dies triggers are handled separately
             is GameEvent.CreatureDealtDamageBySourceDiesEvent -> false
             // Replacement-effect-only events never match as triggers
@@ -213,6 +205,7 @@ class TriggerMatcher(
             TriggerBinding.SELF -> if (event.entityId != sourceId) return false
             TriggerBinding.OTHER -> if (event.entityId == sourceId) return false
             TriggerBinding.ANY -> { /* no entity restriction */ }
+            TriggerBinding.ATTACHED -> return false // handled by AttachmentTriggerDetector
         }
 
         // Check filter
@@ -374,6 +367,7 @@ class TriggerMatcher(
             TriggerBinding.SELF -> sourceId in entityIds
             TriggerBinding.OTHER -> true  // "whenever another creature attacks" (not currently used, but correct)
             TriggerBinding.ANY -> true
+            TriggerBinding.ATTACHED -> false // handled by AttachmentTriggerDetector
         }
     }
 
@@ -419,6 +413,7 @@ class TriggerMatcher(
             TriggerBinding.SELF -> if (event.targetEntityId != sourceId) return false
             TriggerBinding.OTHER -> if (event.targetEntityId == sourceId) return false
             TriggerBinding.ANY -> { /* no entity restriction */ }
+            TriggerBinding.ATTACHED -> return false // handled by AttachmentTriggerDetector
         }
 
         // Check targetFilter against the targeted entity

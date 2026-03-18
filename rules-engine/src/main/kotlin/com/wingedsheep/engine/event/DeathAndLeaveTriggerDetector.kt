@@ -70,6 +70,9 @@ class DeathAndLeaveTriggerDetector(
                 TriggerBinding.OTHER -> {
                     // "Whenever another creature dies" - never matches its own death
                 }
+                TriggerBinding.ATTACHED -> {
+                    // Handled by detectDeadAuraAttachmentTriggers
+                }
             }
         }
     }
@@ -131,117 +134,46 @@ class DeathAndLeaveTriggerDetector(
     }
 
     /**
-     * Detect "when enchanted creature dies" triggers on auras.
-     * When an aura goes to graveyard because its enchanted creature died, the ZoneChangeEvent
-     * for the aura carries [ZoneChangeEvent.lastKnownAttachedTo] = the dying creature's ID.
-     * We look up the aura's card definition for EnchantedCreatureDiesEvent triggers.
+     * Detect ATTACHED zone-change triggers on auras that went to graveyard with their creature.
+     * When an aura goes to graveyard because its enchanted creature died/left, the ZoneChangeEvent
+     * for the aura carries [ZoneChangeEvent.lastKnownAttachedTo] = the creature's ID.
+     * We look up the aura's card definition for ATTACHED-bound ZoneChangeEvent triggers.
+     *
+     * Handles both "enchanted creature dies" and "enchanted permanent leaves the battlefield".
      */
-    fun detectEnchantedCreatureDiesTriggers(
+    fun detectDeadAuraAttachmentTriggers(
         state: GameState,
         event: ZoneChangeEvent,
         triggers: MutableList<PendingTrigger>
     ) {
-        // Only process if this is an aura that was attached to something
-        val attachedCreatureId = event.lastKnownAttachedTo ?: return
-
-        // "Dies" means moved to graveyard — verify the creature is actually in a graveyard
-        // (not exiled or bounced). Check all graveyards for the creature.
-        val creatureInGraveyard = state.turnOrder.any { playerId ->
-            attachedCreatureId in state.getGraveyard(playerId)
-        }
-        if (!creatureInGraveyard) return
+        val attachedEntityId = event.lastKnownAttachedTo ?: return
 
         val auraEntityId = event.entityId
         val container = state.getEntity(auraEntityId) ?: return
         val cardComponent = container.get<CardComponent>() ?: return
 
-        // Look up abilities from card definition (aura is now in graveyard, so use card def)
         val abilities = abilityResolver.getTriggeredAbilities(auraEntityId, cardComponent.cardDefinitionId, state)
+        val controllerId = event.ownerId
 
         for (ability in abilities) {
-            if (ability.trigger !is GameEvent.EnchantedCreatureDiesEvent) continue
-
-            val controllerId = event.ownerId
-            triggers.add(
-                PendingTrigger(
-                    ability = ability,
-                    sourceId = auraEntityId,
-                    sourceName = cardComponent.name,
-                    controllerId = controllerId,
-                    triggerContext = TriggerContext(triggeringEntityId = attachedCreatureId)
-                )
-            )
-        }
-    }
-
-    /**
-     * Detect "when enchanted permanent leaves the battlefield" triggers on auras.
-     * Similar to [detectEnchantedCreatureDiesTriggers] but fires for any zone change
-     * (not just dying). The enchanted permanent may have been exiled, bounced, etc.
-     */
-    fun detectEnchantedPermanentLeavesBattlefieldTriggers(
-        state: GameState,
-        event: ZoneChangeEvent,
-        triggers: MutableList<PendingTrigger>
-    ) {
-        // Only process if this is an aura that was attached to something
-        val attachedPermanentId = event.lastKnownAttachedTo ?: return
-
-        val auraEntityId = event.entityId
-        val container = state.getEntity(auraEntityId) ?: return
-        val cardComponent = container.get<CardComponent>() ?: return
-
-        // Look up abilities from card definition (aura is now in graveyard, so use card def)
-        val abilities = abilityResolver.getTriggeredAbilities(auraEntityId, cardComponent.cardDefinitionId, state)
-
-        for (ability in abilities) {
-            if (ability.trigger !is GameEvent.EnchantedPermanentLeavesBattlefieldEvent) continue
-
-            val controllerId = event.ownerId
-            triggers.add(
-                PendingTrigger(
-                    ability = ability,
-                    sourceId = auraEntityId,
-                    sourceName = cardComponent.name,
-                    controllerId = controllerId,
-                    triggerContext = TriggerContext(triggeringEntityId = attachedPermanentId)
-                )
-            )
-        }
-    }
-
-    /**
-     * Detect "when equipped creature dies" triggers on equipment.
-     * Unlike auras (which go to graveyard with the creature), equipment stays on the battlefield.
-     * When a creature dies, we check the aurasByTarget index for equipment attached to it
-     * that has EquippedCreatureDiesEvent triggers.
-     */
-    fun detectEquippedCreatureDiesTriggers(
-        state: GameState,
-        event: ZoneChangeEvent,
-        triggers: MutableList<PendingTrigger>,
-        index: TriggerIndex
-    ) {
-        val dyingCreatureId = event.entityId
-
-        for (entry in index.aurasByTarget[dyingCreatureId].orEmpty()) {
-            // Only process equipment (not auras — those are handled by detectEnchantedCreatureDiesTriggers)
-            val isEquipment = entry.cardComponent.typeLine.isEquipment
-            if (!isEquipment) continue
-
-            for (ability in entry.abilities) {
-                if (ability.trigger !is GameEvent.EquippedCreatureDiesEvent) continue
-
-                triggers.add(
-                    PendingTrigger(
-                        ability = ability,
-                        sourceId = entry.entityId,
-                        sourceName = entry.cardComponent.name,
-                        controllerId = entry.controllerId,
-                        triggerContext = TriggerContext(triggeringEntityId = dyingCreatureId)
-                    )
-                )
+            if (ability.binding != TriggerBinding.ATTACHED) continue
+            val trigger = ability.trigger
+            if (trigger !is GameEvent.ZoneChangeEvent) continue
+            if (trigger.from != null && trigger.from != Zone.BATTLEFIELD) continue
+            if (trigger.to != null) {
+                // "Dies" trigger: verify creature is actually in graveyard (not exiled or bounced)
+                val inTargetZone = state.turnOrder.any { attachedEntityId in state.getGraveyard(it) }
+                if (!inTargetZone) continue
             }
+            triggers.add(
+                PendingTrigger(
+                    ability = ability,
+                    sourceId = auraEntityId,
+                    sourceName = cardComponent.name,
+                    controllerId = controllerId,
+                    triggerContext = TriggerContext(triggeringEntityId = attachedEntityId)
+                )
+            )
         }
     }
 

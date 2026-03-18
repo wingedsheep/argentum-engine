@@ -7,8 +7,10 @@
         "triggeredAbilities": [
             {
                 "id": "ability_12",
-                "trigger": "EnchantedCreatureDamageReceivedEvent",
-                "binding": "ANY",
+                "trigger": {
+                    "type": "DamageReceivedEvent"
+                },
+                "binding": "ATTACHED",
                 "effect": {
                     "type": "MoveToZone",
                     "target": "EnchantedCreature",
