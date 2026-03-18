@@ -2,12 +2,12 @@
 
 **Set Size:** 280 cards (249 unique card names + basic land variants)
 **Release Date:** April 27, 2018
-**Implemented:** 229 / 249
+**Implemented:** 230 / 249
 
 | Color      | Total | Done |
 |------------|-------|------|
 | White      | 38    | 35   |
-| Blue       | 37    | 32   |
+| Blue       | 37    | 33   |
 | Black      | 38    | 36   |
 | Red        | 38    | 34   |
 | Green      | 37    | 33   |
@@ -233,7 +233,7 @@
 - [x] Thorn Elemental
 - [x] Thran Temporal Gateway
 - [x] Tiana, Ship's Caretaker
-- [ ] Time of Ice
+- [x] Time of Ice
 - [x] Tolarian Scholar
 - [x] Torgaar, Famine Incarnate
 - [x] Tragic Poet

@@ -222,6 +222,7 @@ object DominariaSet {
         ThallidSoothsayer,
         ThornElemental,
         ThranTemporalGateway,
+        TimeOfIce,
         TolarianScholar,
         TorgaarFamineIncarnate,
         TraxosScourgeOfKroog,
