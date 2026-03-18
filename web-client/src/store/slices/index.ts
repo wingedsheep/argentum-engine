@@ -8,4 +8,4 @@ export { createConnectionSlice, type ConnectionSlice, type ConnectionSliceState,
 export { createGameplaySlice, type GameplaySlice, type GameplaySliceState, type GameplaySliceActions } from './gameplaySlice'
 export { createLobbySlice, type LobbySlice, type LobbySliceState, type LobbySliceActions } from './lobbySlice'
 export { createDraftSlice, type DraftSlice, type DraftSliceState, type DraftSliceActions } from './draftSlice'
-export { createUISlice, type UISlice, type UISliceState, type UISliceActions } from './uiSlice'
+export { createUISlice, type UISlice, type UISliceState, type UISliceActions } from './ui'

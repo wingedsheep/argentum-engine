@@ -15,7 +15,7 @@ import { createConnectionSlice } from './slices/connectionSlice'
 import { createGameplaySlice } from './slices/gameplaySlice'
 import { createLobbySlice } from './slices/lobbySlice'
 import { createDraftSlice } from './slices/draftSlice'
-import { createUISlice } from './slices/uiSlice'
+import { createUISlice } from './slices/ui'
 import type { GameStore } from './slices/types'
 
 // Re-export types for backward compatibility
