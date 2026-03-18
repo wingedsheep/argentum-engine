@@ -148,6 +148,7 @@ object DominariaSet {
         MemorialToFolly,
         MemorialToGenius,
         MemorialToGlory,
+        MemorialToUnity,
         MemorialToWar,
         MerfolkTrickster,
         MesaUnicorn,

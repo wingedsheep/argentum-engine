@@ -2,7 +2,7 @@
 
 **Set Size:** 280 cards (249 unique card names + basic land variants)
 **Release Date:** April 27, 2018
-**Implemented:** 238 / 249
+**Implemented:** 239 / 249
 
 | Color      | Total | Done |
 |------------|-------|------|
@@ -13,7 +13,7 @@
 | Green      | 37    | 35   |
 | Multicolor | 19    | 19   |
 | Colorless  | 30    | 29   |
-| Land       | 12    | 11   |
+| Land       | 12    | 12   |
 
 ---
 
@@ -150,7 +150,7 @@
 - [x] Memorial to Folly
 - [x] Memorial to Genius
 - [x] Memorial to Glory
-- [ ] Memorial to Unity
+- [x] Memorial to Unity
 - [x] Memorial to War
 - [x] Merfolk Trickster
 - [x] Mesa Unicorn
