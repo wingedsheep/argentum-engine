@@ -1,4 +1,4 @@
-import { useGameStore } from '../../store/gameStore'
+import { useGameStore } from '@/store/gameStore.ts'
 
 /**
  * Displays an indicator when the opponent is making a decision.

@@ -1,4 +1,4 @@
-import { useGameStore, type LogEntry } from '../../store/gameStore'
+import { useGameStore, type LogEntry } from '@/store/gameStore.ts'
 import React, { useState, useRef, useEffect } from 'react'
 
 /**

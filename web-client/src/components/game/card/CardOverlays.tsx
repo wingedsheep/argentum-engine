@@ -1,6 +1,6 @@
 import React from 'react'
-import type { Keyword, AbilityFlag, ClientCardEffect, Color } from '../../../types'
-import { keywordManaClass, displayableKeywords } from '../../../assets/icons/keywords'
+import type { Keyword, AbilityFlag, ClientCardEffect, Color } from '@/types'
+import { keywordManaClass, displayableKeywords } from '@/assets/icons/keywords'
 import { styles } from '../board/styles'
 
 /** MTG color to mana-font protection class mapping */

@@ -1,4 +1,4 @@
-import type { EntityId } from '../../types'
+import type { EntityId } from '@/types'
 
 interface LifeCounterProps {
   playerId: EntityId // Used for click handling in future

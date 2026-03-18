@@ -1,11 +1,11 @@
 import { useState } from 'react'
-import { useZoneCards, useZone } from '../../../store/selectors'
-import type { ZoneId, ClientCard } from '../../../types'
-import { calculateFittingCardWidth } from '../../../hooks/useResponsive'
+import { useZoneCards, useZone } from '@/store/selectors.ts'
+import type { ZoneId, ClientCard } from '@/types'
+import { calculateFittingCardWidth } from '@/hooks/useResponsive.ts'
 import { useResponsiveContext } from './shared'
 import { styles } from './styles'
 import { GameCard } from '../card'
-import { CARD_BACK_IMAGE_URL } from '../../../utils/cardImages'
+import { CARD_BACK_IMAGE_URL } from '@/utils/cardImages.ts'
 
 /**
  * Row of cards (hand or other horizontal zone).

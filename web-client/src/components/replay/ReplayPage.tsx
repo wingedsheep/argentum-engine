@@ -1,12 +1,12 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { useGameStore } from '../../store/gameStore'
+import { useGameStore } from '@/store/gameStore.ts'
 import { SpectatorContext } from '../../contexts/SpectatorContext'
 import { GameBoard } from '../game/GameBoard'
 import { CombatArrows } from '../combat/CombatArrows'
-import type { SpectatingState } from '../../store/slices/types'
+import type { SpectatingState } from '@/store/slices'
 import type { SpectatorStateUpdate } from '../admin/ReplayViewer'
-import { reconstructSnapshots, type PublicReplayData } from '../../replay/reconstructSnapshots'
+import { reconstructSnapshots, type PublicReplayData } from '@/replay/reconstructSnapshots.ts'
 
 const HEADER_HEIGHT = 55
 

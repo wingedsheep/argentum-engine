@@ -1,9 +1,9 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react'
-import { useGameStore } from '../../../store/gameStore'
-import { useHasLegalActions } from '../../../store/selectors'
-import type { ClientCard, EntityId } from '../../../types'
-import { getCardImageUrl, getScryfallFallbackUrl, MORPH_FACE_DOWN_IMAGE_URL } from '../../../utils/cardImages'
-import { useInteraction } from '../../../hooks/useInteraction'
+import { useGameStore } from '@/store/gameStore.ts'
+import { useHasLegalActions } from '@/store/selectors.ts'
+import type { ClientCard, EntityId } from '@/types'
+import { getCardImageUrl, getScryfallFallbackUrl, MORPH_FACE_DOWN_IMAGE_URL } from '@/utils/cardImages.ts'
+import { useInteraction } from '@/hooks/useInteraction.ts'
 import {
   useResponsiveContext,
   hasMultipleCastingOptions,
@@ -26,9 +26,9 @@ import { styles } from '../board/styles'
 import {
   TARGET_COLOR, TARGET_COLOR_BRIGHT, TARGET_GLOW, TARGET_GLOW_BRIGHT, TARGET_GLOW_OUTER, TARGET_SHADOW,
   SELECTED_COLOR, SELECTED_GLOW, SELECTED_SHADOW,
-} from '../../../styles/targetingColors'
+} from '@/styles/targetingColors.ts'
 import { KeywordIcons, ActiveEffectBadges } from './CardOverlays'
-import { counterManaClass } from '../../../assets/icons/keywords'
+import { counterManaClass } from '@/assets/icons/keywords'
 
 interface GameCardProps {
   card: ClientCard

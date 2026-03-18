@@ -1,8 +1,8 @@
-import { useGameStore } from '../../store/gameStore'
+import { useGameStore } from '@/store/gameStore.ts'
 import { SpectatorContext } from '../../contexts/SpectatorContext'
 import { GameBoard } from '../game/GameBoard'
 import { CombatArrows } from '../combat/CombatArrows'
-import type { SpectatorDecisionStatus } from '../../types'
+import type { SpectatorDecisionStatus } from '@/types'
 
 // ============================================================================
 // SpectatorGameBoard - Read-only view of a game in progress

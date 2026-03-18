@@ -3,7 +3,7 @@
  * Shows which parts of a spell's mana cost are covered by the current mana pool.
  */
 
-import type { ClientManaPool } from '../../types'
+import type { ClientManaPool } from '@/types'
 import { ManaSymbol } from './ManaSymbols'
 
 interface ManaCostProgressProps {

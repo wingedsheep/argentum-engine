@@ -1,12 +1,12 @@
 import React from 'react'
-import { useGameStore } from '../../../store/gameStore'
-import type { ClientCard, EntityId } from '../../../types'
-import type { ResponsiveSizes } from '../../../hooks/useResponsive'
-import { calculateFittingCardWidth } from '../../../hooks/useResponsive'
-import { getCardImageUrl } from '../../../utils/cardImages'
+import { useGameStore } from '@/store/gameStore.ts'
+import type { ClientCard, EntityId } from '@/types'
+import type { ResponsiveSizes } from '@/hooks/useResponsive.ts'
+import { calculateFittingCardWidth } from '@/hooks/useResponsive.ts'
+import { getCardImageUrl } from '@/utils/cardImages.ts'
 import { useResponsiveContext, handleImageError } from '../board/shared'
 import { styles } from '../board/styles'
-import { TARGET_COLOR, TARGET_COLOR_BRIGHT } from '../../../styles/targetingColors'
+import { TARGET_COLOR, TARGET_COLOR_BRIGHT } from '@/styles/targetingColors.ts'
 
 /**
  * Graveyard targeting overlay - shows when targeting mode requires selecting cards from graveyards.

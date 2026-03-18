@@ -1,8 +1,8 @@
 import { useEffect, useState, useCallback, useRef } from 'react'
-import { useGameStore } from '../../store/gameStore'
+import { useGameStore } from '@/store/gameStore.ts'
 import type { SpectatorPlayerState, SpectatorCardInfo, SpectatorCombatState } from '../../types/messages'
-import { useResponsive } from '../../hooks/useResponsive'
-import { getCardImageUrl, getScryfallFallbackUrl } from '../../utils/cardImages'
+import { useResponsive } from '@/hooks/useResponsive.ts'
+import { getCardImageUrl, getScryfallFallbackUrl } from '@/utils/cardImages.ts'
 
 interface Point {
   x: number

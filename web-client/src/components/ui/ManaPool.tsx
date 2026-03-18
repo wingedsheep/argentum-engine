@@ -1,5 +1,5 @@
-import type { ClientManaPool } from '../../types'
-import { totalMana, isManaPoolEmpty } from '../../types'
+import type { ClientManaPool } from '@/types'
+import { totalMana, isManaPoolEmpty } from '@/types'
 import { ManaSymbol } from './ManaSymbols'
 
 interface ManaPoolProps {

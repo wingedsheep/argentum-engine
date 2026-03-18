@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { useGameStore } from '../../../store/gameStore'
+import { useGameStore } from '@/store/gameStore.ts'
 import { useResponsiveContext } from '../board/shared'
 
 /**

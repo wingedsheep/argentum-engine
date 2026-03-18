@@ -1,6 +1,6 @@
 import React from 'react'
-import { useGameStore } from '../../../store/gameStore'
-import type { EntityId, ClientPlayerEffect } from '../../../types'
+import { useGameStore } from '@/store/gameStore.ts'
+import type { EntityId, ClientPlayerEffect } from '@/types'
 import { useResponsiveContext, getEffectIcon } from '../board/shared'
 import { styles } from '../board/styles'
 

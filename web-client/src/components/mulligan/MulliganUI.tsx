@@ -1,8 +1,8 @@
 import { useState } from 'react'
-import { useGameStore, type MulliganState, type MulliganCardInfo } from '../../store/gameStore'
-import type { EntityId } from '../../types'
-import { useResponsive, calculateFittingCardWidth, type ResponsiveSizes } from '../../hooks/useResponsive'
-import { getCardImageUrl } from '../../utils/cardImages'
+import { useGameStore, type MulliganState, type MulliganCardInfo } from '@/store/gameStore.ts'
+import type { EntityId } from '@/types'
+import { useResponsive, calculateFittingCardWidth, type ResponsiveSizes } from '@/hooks/useResponsive.ts'
+import { getCardImageUrl } from '@/utils/cardImages.ts'
 import { StandaloneConcedeButton } from '../game/overlay'
 import styles from './MulliganUI.module.css'
 

@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react'
-import { useGameStore } from '../../../store/gameStore'
-import { selectGameState } from '../../../store/selectors'
-import type { EntityId } from '../../../types'
-import { getCardImageUrl } from '../../../utils/cardImages'
+import { useGameStore } from '@/store/gameStore.ts'
+import { selectGameState } from '@/store/selectors.ts'
+import type { EntityId } from '@/types'
+import { getCardImageUrl } from '@/utils/cardImages.ts'
 import { useResponsiveContext, handleImageError, getCounterStatModifier, hasStatCounters, getTokenFrameGradient, getTokenFrameTextColor, getPTColor } from '../board/shared'
 import { styles } from '../board/styles'
-import { counterManaClass } from '../../../assets/icons/keywords'
+import { counterManaClass } from '@/assets/icons/keywords'
 
 /**
  * Card preview overlay - shows enlarged card when hovering.

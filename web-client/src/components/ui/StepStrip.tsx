@@ -1,7 +1,7 @@
 import { useState, useCallback } from 'react'
-import { Phase, Step, StepShortNames } from '../../types'
-import { useResponsive } from '../../hooks/useResponsive'
-import type { PriorityMode } from '../../store/selectors'
+import { Phase, Step, StepShortNames } from '@/types'
+import { useResponsive } from '@/hooks/useResponsive.ts'
+import type { PriorityMode } from '@/store/selectors.ts'
 
 interface StepStripProps {
   phase: Phase

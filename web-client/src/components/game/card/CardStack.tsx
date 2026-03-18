@@ -1,4 +1,4 @@
-import type { GroupedCard } from '../../../store/selectors'
+import type { GroupedCard } from '@/store/selectors.ts'
 import { useResponsiveContext } from '../board/shared'
 import { GameCard } from './GameCard'
 

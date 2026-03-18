@@ -1,8 +1,8 @@
 import { useState, useMemo, useCallback, useEffect } from 'react'
-import { useGameStore, type DeckBuildingState } from '../../store/gameStore'
-import type { SealedCardInfo } from '../../types'
-import { useResponsive } from '../../hooks/useResponsive'
-import { getCardImageUrl } from '../../utils/cardImages'
+import { useGameStore, type DeckBuildingState } from '@/store/gameStore.ts'
+import type { SealedCardInfo } from '@/types'
+import { useResponsive } from '@/hooks/useResponsive.ts'
+import { getCardImageUrl } from '@/utils/cardImages.ts'
 import { ManaSymbol, ManaCost } from '../ui/ManaSymbols'
 import { SetSynergiesButton, type Archetype } from '../draft/SetSynergiesOverlay'
 
