@@ -80,6 +80,7 @@ object DominariaSet {
         Eviscerate,
         EvraHalcyonWitness,
         ExcavationElephant,
+        FallOfTheThran,
         FeralAbomination,
         FieryIntervention,
         FightWithFire,
