@@ -29,6 +29,8 @@ data class TypeLine(
 
     fun hasSubtype(subtype: Subtype): Boolean = subtype in subtypes
 
+    fun withoutLegendary(): TypeLine = copy(supertypes = supertypes - Supertype.LEGENDARY)
+
     override fun toString(): String = buildString {
         if (supertypes.isNotEmpty()) {
             append(supertypes.joinToString(" ") { it.displayName })

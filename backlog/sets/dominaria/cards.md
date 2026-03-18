@@ -2,7 +2,7 @@
 
 **Set Size:** 280 cards (249 unique card names + basic land variants)
 **Release Date:** April 27, 2018
-**Implemented:** 245 / 249
+**Implemented:** 246 / 249
 
 | Color      | Total | Done |
 |------------|-------|------|
@@ -12,7 +12,7 @@
 | Red        | 38    | 37   |
 | Green      | 37    | 36   |
 | Multicolor | 19    | 19   |
-| Colorless  | 30    | 29   |
+| Colorless  | 30    | 30   |
 | Land       | 12    | 12   |
 
 ---
@@ -110,7 +110,7 @@
 - [x] Hallar, the Firefletcher
 - [x] Haphazard Bombardment
 - [x] Healing Grace
-- [ ] Helm of the Host
+- [x] Helm of the Host
 - [x] Hinterland Harbor
 - [x] History of Benalia
 - [x] Homarid Explorer

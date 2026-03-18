@@ -70,6 +70,7 @@ import com.wingedsheep.sdk.scripting.effects.SelectTargetEffect
 import com.wingedsheep.sdk.scripting.effects.SeparatePermanentsIntoPilesEffect
 import com.wingedsheep.sdk.scripting.effects.TapUntapEffect
 import com.wingedsheep.sdk.scripting.effects.ZonePlacement
+import com.wingedsheep.sdk.scripting.effects.CreateTokenCopyOfEquippedCreatureEffect
 import com.wingedsheep.sdk.scripting.effects.CreateTokenCopyOfSourceEffect
 import com.wingedsheep.sdk.scripting.effects.CreateTokenEffect
 import com.wingedsheep.sdk.scripting.effects.CreateTreasureTokensEffect
@@ -692,6 +693,15 @@ object Effects {
      */
     fun CreateTokenCopyOfSelf(count: Int = 1): Effect =
         CreateTokenCopyOfSourceEffect(count)
+
+    /**
+     * Create a token that's a copy of the equipped creature.
+     * Used for equipment like Helm of the Host.
+     */
+    fun CreateTokenCopyOfEquippedCreature(
+        removeLegendary: Boolean = false,
+        grantHaste: Boolean = false
+    ): Effect = CreateTokenCopyOfEquippedCreatureEffect(removeLegendary, grantHaste)
 
     /**
      * Create Treasure tokens.

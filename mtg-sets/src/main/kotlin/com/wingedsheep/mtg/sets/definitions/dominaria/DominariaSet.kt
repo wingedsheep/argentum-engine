@@ -112,6 +112,7 @@ object DominariaSet {
         GrunnTheLonelyKing,
         HallarTheFirefletcher,
         HealingGrace,
+        HelmOfTheHost,
         HaphazardBombardment,
         HistoryOfBenalia,
         HinterlandHarbor,

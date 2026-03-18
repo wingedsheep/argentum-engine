@@ -178,6 +178,32 @@ data class CreateTokenCopyOfSourceEffect(
 }
 
 /**
+ * Create a token that's a copy of an equipped/attached creature.
+ * Used for equipment cards like Helm of the Host that create copies of the equipped creature.
+ *
+ * The source (this equipment) looks up its attached creature via [AttachedToComponent]
+ * and creates a token copy of that creature. The token can optionally have legendary
+ * removed and gain haste.
+ *
+ * @property removeLegendary If true, the token copy is not legendary
+ * @property grantHaste If true, the token gains haste
+ */
+@SerialName("CreateTokenCopyOfEquippedCreature")
+@Serializable
+data class CreateTokenCopyOfEquippedCreatureEffect(
+    val removeLegendary: Boolean = false,
+    val grantHaste: Boolean = false
+) : Effect {
+    override val description: String = buildString {
+        append("Create a token that's a copy of equipped creature")
+        if (removeLegendary) append(", except the token isn't legendary")
+        if (grantHaste) append(". That token gains haste")
+    }
+
+    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
+}
+
+/**
  * Effect that can be activated from the graveyard.
  * Used for cards like Goldmeadow Nomad with graveyard abilities.
  * Note: This is typically handled as an activated ability, not a spell effect.
