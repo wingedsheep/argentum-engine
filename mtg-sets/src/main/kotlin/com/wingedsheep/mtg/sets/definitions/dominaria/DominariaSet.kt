@@ -119,6 +119,7 @@ object DominariaSet {
         InvokeTheDivine,
         IsolatedChapel,
         JayaBallard,
+        JayasImmolatingInferno,
         JhoirasFamiliar,
         JhoiraWeatherlightCaptain,
         JodahArchmageEternal,

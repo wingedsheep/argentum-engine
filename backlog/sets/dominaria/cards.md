@@ -2,14 +2,14 @@
 
 **Set Size:** 280 cards (249 unique card names + basic land variants)
 **Release Date:** April 27, 2018
-**Implemented:** 240 / 249
+**Implemented:** 241 / 249
 
 | Color      | Total | Done |
 |------------|-------|------|
 | White      | 38    | 37   |
 | Blue       | 37    | 35   |
 | Black      | 38    | 38   |
-| Red        | 38    | 34   |
+| Red        | 38    | 35   |
 | Green      | 37    | 35   |
 | Multicolor | 19    | 19   |
 | Colorless  | 30    | 29   |
@@ -120,7 +120,7 @@
 - [x] Invoke the Divine
 - [x] Isolated Chapel
 - [x] Jaya Ballard
-- [ ] Jaya's Immolating Inferno
+- [x] Jaya's Immolating Inferno
 - [x] Jhoira's Familiar
 - [x] Jhoira, Weatherlight Captain
 - [x] Jodah, Archmage Eternal
