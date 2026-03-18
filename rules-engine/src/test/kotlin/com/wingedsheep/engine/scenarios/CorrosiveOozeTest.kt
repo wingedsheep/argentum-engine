@@ -47,9 +47,9 @@ class CorrosiveOozeTest : FunSpec({
     fun createDriver(): GameTestDriver {
         val driver = GameTestDriver()
         driver.registerCards(TestCards.all)
-        driver.cardRegistry.register(CorrosiveOoze)
-        driver.cardRegistry.register(testEquipment)
-        driver.cardRegistry.register(testEquipment2)
+        driver.registerCard(CorrosiveOoze)
+        driver.registerCard(testEquipment)
+        driver.registerCard(testEquipment2)
         return driver
     }
 
@@ -58,15 +58,16 @@ class CorrosiveOozeTest : FunSpec({
      */
     fun GameTestDriver.attachEquipment(equipmentId: EntityId, creatureId: EntityId) {
         // Add AttachedToComponent to the equipment
-        state = state.updateEntity(equipmentId) { container ->
+        var newState = state.updateEntity(equipmentId) { container ->
             container.with(AttachedToComponent(creatureId))
         }
         // Add/update AttachmentsComponent on the creature
-        state = state.updateEntity(creatureId) { container ->
+        newState = newState.updateEntity(creatureId) { container ->
             val existing = container.get<AttachmentsComponent>()
             val newIds = (existing?.attachedIds ?: emptyList()) + equipmentId
             container.with(AttachmentsComponent(newIds))
         }
+        replaceState(newState)
     }
 
     test("ooze blocks equipped creature - equipment destroyed at end of combat") {

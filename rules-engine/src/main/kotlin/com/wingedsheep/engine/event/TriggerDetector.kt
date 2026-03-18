@@ -643,6 +643,7 @@ class TriggerDetector(
                                 }
                             }
                         }
+                    }
                     // For "blocks or becomes blocked by [filter]" (BlocksOrBecomesBlockedByEvent with SELF binding),
                     // check both blocking and being-blocked relationships and create one trigger per matching partner.
                     else if (ability.trigger is GameEvent.BlocksOrBecomesBlockedByEvent &&
@@ -664,9 +665,10 @@ class TriggerDetector(
                         }
 
                         for (partnerId in partners.distinct()) {
-                            val matchesFilter = if (trigger.partnerFilter != null) {
+                            val partnerFilter = trigger.partnerFilter
+                            val matchesFilter = if (partnerFilter != null) {
                                 predicateEvaluator.matchesWithProjection(
-                                    state, projected, partnerId, trigger.partnerFilter,
+                                    state, projected, partnerId, partnerFilter,
                                     PredicateContext(controllerId = controllerId, sourceId = entityId)
                                 )
                             } else {
