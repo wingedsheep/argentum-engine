@@ -112,6 +112,7 @@ object DominariaSet {
         HallarTheFirefletcher,
         HealingGrace,
         HaphazardBombardment,
+        HistoryOfBenalia,
         HinterlandHarbor,
         IcyManipulator,
         InBolassClutches,

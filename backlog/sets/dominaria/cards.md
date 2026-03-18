@@ -2,11 +2,11 @@
 
 **Set Size:** 280 cards (249 unique card names + basic land variants)
 **Release Date:** April 27, 2018
-**Implemented:** 239 / 249
+**Implemented:** 240 / 249
 
 | Color      | Total | Done |
 |------------|-------|------|
-| White      | 38    | 36   |
+| White      | 38    | 37   |
 | Blue       | 37    | 35   |
 | Black      | 38    | 38   |
 | Red        | 38    | 34   |
@@ -112,7 +112,7 @@
 - [x] Healing Grace
 - [ ] Helm of the Host
 - [x] Hinterland Harbor
-- [ ] History of Benalia
+- [x] History of Benalia
 - [x] Homarid Explorer
 - [x] Howling Golem
 - [x] Icy Manipulator
