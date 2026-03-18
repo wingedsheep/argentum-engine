@@ -2,14 +2,14 @@
 
 **Set Size:** 280 cards (249 unique card names + basic land variants)
 **Release Date:** April 27, 2018
-**Implemented:** 242 / 249
+**Implemented:** 243 / 249
 
 | Color      | Total | Done |
 |------------|-------|------|
 | White      | 38    | 37   |
 | Blue       | 37    | 35   |
 | Black      | 38    | 38   |
-| Red        | 38    | 35   |
+| Red        | 38    | 36   |
 | Green      | 37    | 36   |
 | Multicolor | 19    | 19   |
 | Colorless  | 30    | 29   |
@@ -133,7 +133,7 @@
 - [x] Kazarov, Sengir Pureblood
 - [x] Keldon Overseer
 - [x] Keldon Raider
-- [ ] Keldon Warcaller
+- [x] Keldon Warcaller
 - [x] Knight of Grace
 - [x] Knight of Malice
 - [x] Knight of New Benalia

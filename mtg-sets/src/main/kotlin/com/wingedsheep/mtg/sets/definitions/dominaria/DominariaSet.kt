@@ -140,6 +140,7 @@ object DominariaSet {
         KamahlsDruidicVow,
         KazarovSengirPureblood,
         KeldonRaider,
+        KeldonWarcaller,
         LichsMastery,
         LingeringPhantom,
         LlanowarEnvoy,
