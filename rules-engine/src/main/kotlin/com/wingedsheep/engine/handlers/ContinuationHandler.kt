@@ -7,10 +7,8 @@ import com.wingedsheep.engine.handlers.effects.ReplacementEffectUtils
 import com.wingedsheep.engine.mechanics.combat.CombatManager
 import com.wingedsheep.engine.mechanics.stack.StackResolver
 import com.wingedsheep.engine.state.GameState
-import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.engine.state.components.stack.TriggeredAbilityOnStackComponent
-import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.effects.MayEffect
 
@@ -31,6 +29,8 @@ class ContinuationHandler(
     private val combatManager: CombatManager? = null,
     private val targetFinder: TargetFinder = TargetFinder()
 ) {
+
+    private val effectRunner = EffectContinuationRunner(effectExecutorRegistry)
 
     private val ctx = ContinuationContext(
         effectExecutorRegistry = effectExecutorRegistry,
@@ -53,7 +53,7 @@ class ContinuationHandler(
         registerModule(ColorChoiceContinuationResumer(ctx))
         registerModule(ChainSpellContinuationResumer(ctx))
         registerModule(CreatureTypeChoiceContinuationResumer(ctx))
-        registerModule(DrawReplacementContinuationResumer(ctx, ::entityIdToChosenTarget))
+        registerModule(DrawReplacementContinuationResumer(ctx))
         registerModule(CardSpecificContinuationResumer(ctx))
         registerModule(DiscardAndDrawContinuationResumer(ctx))
         registerModule(StateBasedContinuationResumer(ctx))
@@ -117,7 +117,7 @@ class ContinuationHandler(
         override fun autoResumers(): List<AutoResumer<*>> = listOf(
             autoResumer(PendingTriggersContinuation::class, canResume = { triggerProcessor != null }) { state, continuation, events, _ ->
                 val result = triggerProcessor!!.processTriggers(state, continuation.remainingTriggers)
-                mergeAndContinue(result, events)
+                com.wingedsheep.engine.handlers.continuations.mergeAndContinue(result, events)
             },
 
             autoResumer(ForEachTargetContinuation::class, canResume = { it.remainingTargets.isNotEmpty() }) { state, continuation, events, checkForMore ->
@@ -133,7 +133,7 @@ class ContinuationHandler(
                     continuation.remainingTargets,
                     outerContext
                 )
-                mergeAndContinue(result, events, checkForMore)
+                com.wingedsheep.engine.handlers.continuations.mergeAndContinue(result, events, checkForMore)
             },
 
             autoResumer(ForEachPlayerContinuation::class, canResume = { it.remainingPlayers.isNotEmpty() }) { state, continuation, events, checkForMore ->
@@ -146,7 +146,7 @@ class ContinuationHandler(
                     continuation.remainingPlayers,
                     continuation.effectContext
                 )
-                mergeAndContinue(result, events, checkForMore)
+                com.wingedsheep.engine.handlers.continuations.mergeAndContinue(result, events, checkForMore)
             },
 
             autoResumer(DrawReplacementRemainingDrawsContinuation::class) { state, continuation, events, checkForMore ->
@@ -154,11 +154,11 @@ class ContinuationHandler(
                     if (continuation.isDrawStep) {
                         val turnManager = com.wingedsheep.engine.core.TurnManager(cardRegistry = stackResolver.cardRegistry, effectExecutor = effectExecutorRegistry::execute)
                         val drawResult = turnManager.drawCards(state, continuation.drawingPlayerId, continuation.remainingDraws)
-                        mergeAndContinue(drawResult, events, checkForMore)
+                        com.wingedsheep.engine.handlers.continuations.mergeAndContinue(drawResult, events, checkForMore)
                     } else {
                         val drawExecutor = com.wingedsheep.engine.handlers.effects.drawing.DrawCardsExecutor(cardRegistry = stackResolver.cardRegistry, effectExecutor = effectExecutorRegistry::execute)
                         val drawResult = drawExecutor.executeDraws(state, continuation.drawingPlayerId, continuation.remainingDraws)
-                        mergeAndContinue(drawResult, events, checkForMore)
+                        com.wingedsheep.engine.handlers.continuations.mergeAndContinue(drawResult, events, checkForMore)
                     }
                 } else {
                     checkForMore(state, events)
@@ -168,7 +168,7 @@ class ContinuationHandler(
             autoResumer(CycleDrawContinuation::class) { state, continuation, events, checkForMore ->
                 val drawExecutor = com.wingedsheep.engine.handlers.effects.drawing.DrawCardsExecutor(cardRegistry = stackResolver.cardRegistry, effectExecutor = effectExecutorRegistry::execute)
                 val drawResult = drawExecutor.executeDraws(state, continuation.playerId, 1)
-                mergeAndContinue(drawResult, events, checkForMore)
+                com.wingedsheep.engine.handlers.continuations.mergeAndContinue(drawResult, events, checkForMore)
             },
 
             autoResumer(TypecycleSearchContinuation::class) { state, continuation, events, checkForMore ->
@@ -184,11 +184,11 @@ class ContinuationHandler(
                     opponentId = state.getOpponent(continuation.playerId)
                 )
                 val searchResult = effectExecutorRegistry.execute(state, searchEffect, effectContext)
-                mergeAndContinue(searchResult, events, checkForMore)
+                com.wingedsheep.engine.handlers.continuations.mergeAndContinue(searchResult, events, checkForMore)
             },
 
             autoResumer(EffectContinuation::class, canResume = { it.remainingEffects.isNotEmpty() }) { state, continuation, events, checkForMore ->
-                val (currentState, effectEvents) = executeRemainingEffects(state, continuation.remainingEffects, continuation.effectContext)
+                val (currentState, effectEvents) = effectRunner.executeRemainingEffects(state, continuation.remainingEffects, continuation.effectContext)
                 checkForMore(currentState, events + effectEvents)
             },
 
@@ -203,80 +203,9 @@ class ContinuationHandler(
                     effectExecutor = effectExecutorRegistry::execute,
                     priorEvents = events
                 )
-                mergeAndContinue(result, events = emptyList(), checkForMore)
+                com.wingedsheep.engine.handlers.continuations.mergeAndContinue(result, events = emptyList(), checkForMore)
             }
         )
-    }
-
-    // ─── Shared effect execution helper ───
-
-    /**
-     * Executes a list of effects in sequence, handling pauses, errors, and context updates.
-     * Returns the final state and accumulated events.
-     *
-     * Used by both [resumeEffect] (decision-resume path) and the EffectContinuation
-     * auto-resumer (checkForMoreContinuations path) to avoid duplicating the loop.
-     */
-    private fun executeRemainingEffects(
-        initialState: GameState,
-        effects: List<com.wingedsheep.sdk.scripting.effects.Effect>,
-        initialContext: EffectContext
-    ): ExecutionResult {
-        var currentContext = initialContext
-        var currentState = initialState
-        val allEvents = mutableListOf<GameEvent>()
-
-        for ((index, effect) in effects.withIndex()) {
-            val stillRemaining = effects.drop(index + 1)
-
-            val stateForExecution = if (stillRemaining.isNotEmpty()) {
-                val remainingContinuation = EffectContinuation(
-                    decisionId = "pending",
-                    remainingEffects = stillRemaining,
-                    effectContext = currentContext
-                )
-                currentState.pushContinuation(remainingContinuation)
-            } else {
-                currentState
-            }
-
-            val result = effectExecutorRegistry.execute(stateForExecution, effect, currentContext)
-
-            if (!result.isSuccess && !result.isPaused) {
-                currentState = if (stillRemaining.isNotEmpty()) {
-                    val (_, stateWithoutCont) = result.state.popContinuation()
-                    stateWithoutCont
-                } else {
-                    result.state
-                }
-                allEvents.addAll(result.events)
-                continue
-            }
-
-            if (result.isPaused) {
-                return ExecutionResult.paused(
-                    result.state,
-                    result.pendingDecision!!,
-                    allEvents + result.events
-                )
-            }
-
-            currentState = if (stillRemaining.isNotEmpty()) {
-                val (_, stateWithoutCont) = result.state.popContinuation()
-                stateWithoutCont
-            } else {
-                result.state
-            }
-            allEvents.addAll(result.events)
-
-            if (result.updatedCollections.isNotEmpty()) {
-                currentContext = currentContext.copy(
-                    storedCollections = currentContext.storedCollections + result.updatedCollections
-                )
-            }
-        }
-
-        return ExecutionResult.success(currentState, allEvents)
     }
 
     // ─── Core engine methods ───
@@ -287,7 +216,7 @@ class ContinuationHandler(
         response: DecisionResponse,
         checkForMore: CheckForMore
     ): ExecutionResult {
-        val result = executeRemainingEffects(state, continuation.remainingEffects, continuation.effectContext)
+        val result = effectRunner.executeRemainingEffects(state, continuation.remainingEffects, continuation.effectContext)
         if (result.isPaused) return result
         return checkForMore(result.state, result.events.toList())
     }
@@ -426,44 +355,6 @@ class ContinuationHandler(
             ?: ExecutionResult.success(state, events)
     }
 
-    /**
-     * Merges the result of a sub-operation with accumulated events and continues.
-     *
-     * Handles the common paused/error/success branching pattern:
-     * - Paused: returns immediately with merged events
-     * - Error: returns immediately with merged events and error
-     * - Success: recursively checks for more continuations (if checkForMore provided)
-     *            or returns success with merged events
-     */
-    private fun mergeAndContinue(
-        result: ExecutionResult,
-        events: List<GameEvent>,
-        checkForMore: CheckForMore? = null
-    ): ExecutionResult {
-        if (result.isPaused) {
-            return ExecutionResult.paused(
-                result.state,
-                result.pendingDecision!!,
-                events + result.events
-            )
-        }
-
-        if (!result.isSuccess) {
-            return ExecutionResult(
-                state = result.state,
-                events = events + result.events,
-                error = result.error
-            )
-        }
-
-        val mergedEvents = events + result.events
-        return if (checkForMore != null) {
-            checkForMore(result.newState, mergedEvents)
-        } else {
-            ExecutionResult.success(result.newState, mergedEvents)
-        }
-    }
-
     // ─── Generic drawing/repeat ───
 
     private fun resumeDrawUpTo(
@@ -547,27 +438,6 @@ class ContinuationHandler(
                 }
 
                 return checkForMore(result.state, result.events.toList())
-            }
-        }
-    }
-
-    // ─── Utility ───
-
-    private fun entityIdToChosenTarget(state: GameState, entityId: EntityId): ChosenTarget {
-        return when {
-            entityId in state.turnOrder -> ChosenTarget.Player(entityId)
-            entityId in state.getBattlefield() -> ChosenTarget.Permanent(entityId)
-            entityId in state.stack -> ChosenTarget.Spell(entityId)
-            else -> {
-                val graveyardOwner = state.turnOrder.find { playerId ->
-                    val graveyardZone = ZoneKey(playerId, Zone.GRAVEYARD)
-                    entityId in state.getZone(graveyardZone)
-                }
-                if (graveyardOwner != null) {
-                    ChosenTarget.Card(entityId, graveyardOwner, Zone.GRAVEYARD)
-                } else {
-                    ChosenTarget.Permanent(entityId)
-                }
             }
         }
     }

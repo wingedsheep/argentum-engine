@@ -184,7 +184,7 @@
 - [ ] Pond Prophet
 - [ ] Portent of Calamity
 - [ ] Psychic Whorl
-- [ ] Quaketusk Boar
+- [x] Quaketusk Boar
 - [ ] Rabbit Response
 - [ ] Rabid Gnaw
 - [ ] Raccoon Rallier

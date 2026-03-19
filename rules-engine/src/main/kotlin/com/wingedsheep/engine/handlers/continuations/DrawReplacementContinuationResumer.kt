@@ -10,12 +10,8 @@ import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.player.ManaPoolComponent
-import com.wingedsheep.engine.state.components.stack.ChosenTarget
-import com.wingedsheep.sdk.model.EntityId
-
 class DrawReplacementContinuationResumer(
-    private val ctx: ContinuationContext,
-    private val entityIdToChosenTarget: (GameState, EntityId) -> ChosenTarget
+    private val ctx: ContinuationContext
 ) : ContinuationResumerModule {
 
     override fun resumers(): List<ContinuationResumer<*>> = listOf(
@@ -323,7 +319,7 @@ class DrawReplacementContinuationResumer(
         // Convert selected targets to ChosenTargets
         val chosenTargets = response.selectedTargets.flatMap { (_, targetIds) ->
             targetIds.map { targetId ->
-                this.entityIdToChosenTarget(newState, targetId)
+                entityIdToChosenTarget(newState, targetId)
             }
         }
 

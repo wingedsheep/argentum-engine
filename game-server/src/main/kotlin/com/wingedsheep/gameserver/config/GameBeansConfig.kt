@@ -61,6 +61,9 @@ class GameBeansConfig(
             if (gameProperties.sets.dominariaEnabled) {
                 put(DominariaSet.SET_CODE, BoosterGenerator.dominariaSetConfig)
             }
+            if (gameProperties.sets.bloomburrowEnabled) {
+                put(BloomburrowSet.SET_CODE, BoosterGenerator.bloomburrowSetConfig)
+            }
         }
         return BoosterGenerator(sets)
     }
