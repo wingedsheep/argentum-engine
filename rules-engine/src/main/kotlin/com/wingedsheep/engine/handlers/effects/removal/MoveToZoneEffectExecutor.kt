@@ -6,6 +6,7 @@ import com.wingedsheep.engine.core.LibraryShuffledEvent
 import com.wingedsheep.engine.core.ZoneChangeEvent
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
+import com.wingedsheep.engine.handlers.effects.ZoneMovementUtils
 import com.wingedsheep.engine.handlers.effects.ZoneMovementUtils.cleanupCombatReferences
 import com.wingedsheep.engine.handlers.effects.ZoneMovementUtils.cleanupReverseAttachmentLink
 import com.wingedsheep.engine.handlers.effects.ZoneMovementUtils.destroyPermanent
@@ -270,6 +271,10 @@ class MoveToZoneEffectExecutor(
                 .with(TappedComponent)
         }
 
+        // Handle Saga entering the battlefield (Rule 714.3a)
+        val (sagaState, sagaEvents) = ZoneMovementUtils.applySagaEntryIfNeeded(newState, entityId)
+        newState = sagaState
+
         return ExecutionResult.success(
             newState,
             listOf(
@@ -280,7 +285,7 @@ class MoveToZoneEffectExecutor(
                     toZone = Zone.BATTLEFIELD,
                     ownerId = ownerId
                 )
-            )
+            ) + sagaEvents
         )
     }
 
@@ -346,6 +351,10 @@ class MoveToZoneEffectExecutor(
                 .with(SummoningSicknessComponent)
         }
 
+        // Handle Saga entering the battlefield (Rule 714.3a)
+        val (sagaState, sagaEvents) = ZoneMovementUtils.applySagaEntryIfNeeded(newState, entityId)
+        newState = sagaState
+
         return ExecutionResult.success(
             newState,
             listOf(
@@ -356,7 +365,7 @@ class MoveToZoneEffectExecutor(
                     toZone = Zone.BATTLEFIELD,
                     ownerId = ownerId
                 )
-            )
+            ) + sagaEvents
         )
     }
 

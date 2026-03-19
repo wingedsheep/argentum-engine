@@ -7,12 +7,33 @@ import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.core.Phase
 import com.wingedsheep.sdk.core.Step
+import com.wingedsheep.sdk.core.Zone
+import com.wingedsheep.sdk.dsl.card
+import com.wingedsheep.sdk.scripting.GameObjectFilter
+import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
+import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
+import com.wingedsheep.sdk.scripting.targets.TargetObject
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 
 class PhyrexianScripturesScenarioTest : ScenarioTestBase() {
 
+    // Test card: returns any permanent card from graveyard to battlefield
+    private val reanimatePermanent = card("Reanimate Permanent") {
+        manaCost = "{1}{W}"
+        typeLine = "Sorcery"
+
+        spell {
+            val t = target(
+                "permanent card in your graveyard",
+                TargetObject(filter = TargetFilter(GameObjectFilter.Permanent, zone = Zone.GRAVEYARD))
+            )
+            effect = MoveToZoneEffect(t, Zone.BATTLEFIELD)
+        }
+    }
+
     init {
+        cardRegistry.register(reanimatePermanent)
         context("Phyrexian Scriptures Saga") {
 
             test("Chapter I triggers on ETB: adds +1/+1 counter and makes creature artifact") {
@@ -122,6 +143,36 @@ class PhyrexianScripturesScenarioTest : ScenarioTestBase() {
 
                 // Grizzly Bears (now an artifact creature) should survive
                 game.isOnBattlefield("Grizzly Bears") shouldBe true
+            }
+        }
+
+        context("Saga put onto battlefield without casting") {
+
+            test("Saga entering battlefield via reanimate gets SagaComponent and lore counter") {
+                val game = scenario()
+                    .withPlayers("Player1", "Player2")
+                    .withCardInHand(1, "Reanimate Permanent")
+                    .withCardInGraveyard(1, "Phyrexian Scriptures")
+                    .withLandsOnBattlefield(1, "Plains", 2)
+                    .withCardInLibrary(1, "Plains")
+                    .withCardInLibrary(2, "Plains")
+                    .withActivePlayer(1)
+                    .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                    .build()
+
+                // Cast Reanimate Permanent targeting Phyrexian Scriptures in graveyard
+                game.castSpellTargetingGraveyardCard(1, "Reanimate Permanent", 1, "Phyrexian Scriptures")
+                game.resolveStack()
+
+                // Phyrexian Scriptures should be on the battlefield
+                val sagaId = game.findPermanent("Phyrexian Scriptures")
+                sagaId shouldNotBe null
+
+                // Should have SagaComponent and 1 lore counter (Rule 714.3a)
+                val sagaEntity = game.state.getEntity(sagaId!!)!!
+                sagaEntity.get<SagaComponent>() shouldNotBe null
+                sagaEntity.get<SagaComponent>()!!.triggeredChapters shouldBe setOf(1)
+                sagaEntity.get<CountersComponent>()!!.getCount(CounterType.LORE) shouldBe 1
             }
         }
     }

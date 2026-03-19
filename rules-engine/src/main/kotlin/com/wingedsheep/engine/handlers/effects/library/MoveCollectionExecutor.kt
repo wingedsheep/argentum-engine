@@ -14,10 +14,12 @@ import com.wingedsheep.engine.state.components.battlefield.SummoningSicknessComp
 import com.wingedsheep.engine.state.components.combat.AttackingComponent
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.state.components.battlefield.CountersComponent
+import com.wingedsheep.engine.state.components.battlefield.SagaComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.identity.FaceDownComponent
 import com.wingedsheep.engine.state.components.identity.OwnerComponent
+import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
@@ -617,6 +619,15 @@ class MoveCollectionExecutor(
                         if (defenderId != null) {
                             newContainer = newContainer.with(AttackingComponent(defenderId))
                         }
+                    }
+
+                    // Handle Saga entering the battlefield (Rule 714.3a)
+                    if (cardComp?.typeLine?.isSaga == true) {
+                        val current = newContainer.get<CountersComponent>() ?: CountersComponent()
+                        newContainer = newContainer
+                            .with(SagaComponent(triggeredChapters = setOf(1)))
+                            .with(current.withAdded(CounterType.LORE, 1))
+                        events.add(CountersAddedEvent(cardId, "LORE", 1, cardComp.name))
                     }
 
                     newState = newState.copy(entities = newState.entities + (cardId to newContainer))

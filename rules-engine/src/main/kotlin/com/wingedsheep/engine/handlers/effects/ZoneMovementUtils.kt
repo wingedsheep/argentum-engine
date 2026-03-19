@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.handlers.effects
 
+import com.wingedsheep.engine.core.CountersAddedEvent
 import com.wingedsheep.engine.core.ExecutionResult
 import com.wingedsheep.engine.core.ZoneChangeEvent
 import com.wingedsheep.engine.core.PermanentsSacrificedEvent
@@ -73,6 +74,29 @@ data class ZoneChangeRedirectResult(
 object ZoneMovementUtils {
 
     private val predicateEvaluator = PredicateEvaluator()
+
+    /**
+     * Apply Saga entry setup to an entity entering the battlefield (Rule 714.3a).
+     * Adds SagaComponent with chapter 1 marked as triggered, and adds an initial lore counter.
+     *
+     * @return Pair of (updated state, list of events to emit) — empty events if not a Saga
+     */
+    fun applySagaEntryIfNeeded(
+        state: GameState,
+        entityId: EntityId
+    ): Pair<GameState, List<EngineGameEvent>> {
+        val container = state.getEntity(entityId) ?: return state to emptyList()
+        val cardComponent = container.get<CardComponent>() ?: return state to emptyList()
+        if (!cardComponent.typeLine.isSaga) return state to emptyList()
+
+        val current = container.get<CountersComponent>() ?: CountersComponent()
+        val sagaComponent = SagaComponent(triggeredChapters = setOf(1))
+        val newState = state.updateEntity(entityId) { c ->
+            c.with(sagaComponent)
+                .with(current.withAdded(CounterType.LORE, 1))
+        }
+        return newState to listOf(CountersAddedEvent(entityId, "LORE", 1, cardComponent.name))
+    }
 
     /**
      * Clean up combat references to a leaving entity on other creatures.
@@ -363,11 +387,17 @@ object ZoneMovementUtils {
         }
 
         // Add controller component when moving to battlefield
+        val extraEvents = mutableListOf<EngineGameEvent>()
         if (actualTargetZone == Zone.BATTLEFIELD) {
             newState = newState.updateEntity(entityId) { c ->
                 c.with(ControllerComponent(ownerId))
                     .with(SummoningSicknessComponent)
             }
+
+            // Handle Saga entering the battlefield (Rule 714.3a)
+            val (sagaState, sagaEvents) = applySagaEntryIfNeeded(newState, entityId)
+            newState = sagaState
+            extraEvents.addAll(sagaEvents)
         }
 
         // Apply additional replacement effect (e.g., Ugin's Nexus extra turn)
@@ -387,7 +417,7 @@ object ZoneMovementUtils {
                     actualTargetZone,
                     ownerId
                 )
-            )
+            ) + extraEvents
         )
     }
 
