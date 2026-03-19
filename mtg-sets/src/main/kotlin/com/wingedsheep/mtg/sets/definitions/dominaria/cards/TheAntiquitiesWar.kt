@@ -50,7 +50,8 @@ val TheAntiquitiesWar = card("The Antiquities War") {
                 filter = GameObjectFilter.Artifact,
                 storeSelected = "kept",
                 storeRemainder = "rest",
-                prompt = "You may reveal an artifact card and put it into your hand"
+                prompt = "You may reveal an artifact card and put it into your hand",
+                showAllCards = true
             ),
             MoveCollectionEffect(
                 from = "kept",
