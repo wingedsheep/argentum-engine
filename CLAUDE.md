@@ -121,6 +121,11 @@ ordering.
 | `state/components/`                          | All component types (identity, state, combat)  |
 | `handlers/effects/EffectExecutorRegistry.kt` | Registry mapping effects to executors          |
 | `handlers/effects/*/`                        | Effect executors (damage, life, drawing, etc.) |
+| `legalactions/LegalActionEnumerator.kt`      | Coordinator: enumerates all legal actions      |
+| `legalactions/EnumerationContext.kt`         | Shared lazy-computed context for enumeration   |
+| `legalactions/LegalAction.kt`               | Engine-level legal action data types           |
+| `legalactions/enumerators/`                  | Per-category action enumerators                |
+| `legalactions/utils/`                        | Shared target/cost/permission utilities        |
 
 ### Key Files (mtg-sdk)
 
@@ -154,6 +159,7 @@ ordering.
 | `protocol/ClientMessage.kt`         | Client-to-server message types           |
 | `dto/ClientDTO.kt`                  | Data transfer objects for client         |
 | `dto/ClientStateTransformer.kt`     | Transforms engine state to client format |
+| `legalactions/LegalActionEnricher.kt` | Maps engine LegalAction → LegalActionInfo DTO |
 
 ## Core Architectural Choices
 

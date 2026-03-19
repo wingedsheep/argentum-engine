@@ -5,7 +5,7 @@ import com.wingedsheep.gameserver.dto.ClientEventTransformer
 import com.wingedsheep.gameserver.dto.ClientGameState
 import com.wingedsheep.gameserver.dto.ClientStateTransformer
 import com.wingedsheep.gameserver.dto.StateDiffCalculator
-import com.wingedsheep.gameserver.legalactions.LegalActionsCalculator
+import com.wingedsheep.gameserver.legalactions.LegalActionEnricher
 import com.wingedsheep.gameserver.protocol.GameOverReason
 import com.wingedsheep.gameserver.protocol.LegalActionInfo
 import com.wingedsheep.gameserver.protocol.ServerMessage
@@ -15,6 +15,7 @@ import com.wingedsheep.gameserver.replay.SpectatorReplayDiffCalculator
 import com.wingedsheep.engine.core.*
 import com.wingedsheep.engine.handlers.ConditionEvaluator
 import com.wingedsheep.engine.handlers.PredicateEvaluator
+import com.wingedsheep.engine.legalactions.LegalActionEnumerator
 import com.wingedsheep.engine.mechanics.combat.CombatManager
 import com.wingedsheep.engine.mechanics.mana.CostCalculator
 import com.wingedsheep.engine.mechanics.mana.ManaSolver
@@ -86,10 +87,11 @@ class GameSession(
     private val autoPassManager = AutoPassManager()
     private val spectatorStateBuilder = SpectatorStateBuilder(cardRegistry, stateTransformer)
     private val decisionEnricher = DecisionEnricher(cardRegistry)
-    private val legalActionsCalculator = LegalActionsCalculator(
+    private val legalActionEnumerator = LegalActionEnumerator(
         cardRegistry, manaSolver, costCalculator,
         predicateEvaluator, conditionEvaluator, turnManager
     )
+    private val legalActionEnricher = LegalActionEnricher(manaSolver, cardRegistry)
 
     /** Tracks the last processed messageId per player for idempotency */
     private val lastProcessedMessageId = java.util.concurrent.ConcurrentHashMap<EntityId, String>()
@@ -679,7 +681,8 @@ class GameSession(
         val state = gameState ?: return emptyList()
         if (state.priorityPlayerId != playerId) return emptyList()
         if (state.pendingDecision != null) return emptyList()
-        return legalActionsCalculator.calculate(state, playerId)
+        val engineActions = legalActionEnumerator.enumerate(state, playerId)
+        return legalActionEnricher.enrich(engineActions, state, playerId)
     }
 
 

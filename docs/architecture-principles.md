@@ -611,8 +611,10 @@ private val registry = ActionHandlerRegistry().apply {
 }
 ```
 
-Similarly, `EffectExecutorRegistry` maps each `Effect` type to its executor. Adding a new mechanic
-means creating a new `EffectExecutor` and registering it — no changes to `ActionProcessor`.
+Similarly, `EffectExecutorRegistry` maps each `Effect` type to its executor, and
+`LegalActionEnumerator` delegates to per-category `ActionEnumerator` implementations to discover
+legal actions. Adding a new mechanic means creating a new `EffectExecutor` and `ActionEnumerator`
+and registering them — no changes to `ActionProcessor` or `LegalActionEnumerator`.
 
 **Why registries instead of a monolithic processor?**
 
@@ -1016,7 +1018,7 @@ The server's responsibilities are strictly limited to:
 - **WebSocket routing:** Receiving client messages and dispatching to the right session
 - **Session management:** Player authentication, reconnection, spectating
 - **State transformation:** Converting engine state to client-safe DTOs
-- **Legal action calculation:** Computing what moves are available (but not *executing* them)
+- **Legal action enrichment:** Adding presentation data (mana source info, auto-tap previews) to engine-computed legal actions
 
 **Why keep the server thin?**
 
@@ -1116,9 +1118,9 @@ rendered strings, and flattens the component bag into direct fields. The client 
 - **Versioning.** The DTO contract can be versioned independently of the engine. This enables
   backwards-compatible client updates.
 
-### 3.4 Server-Authoritative Legal Actions
+### 3.4 Engine-Authoritative Legal Actions
 
-**Principle:** The server computes and sends every legal action with each state update.
+**Principle:** The engine computes all legal actions; the server enriches them with presentation data.
 
 Every `StateUpdate` message includes a `legalActions` list — the complete set of moves the priority
 player can make:
@@ -1136,15 +1138,28 @@ data class StateUpdate(
 ) : ServerMessage
 ```
 
-The `LegalActionsCalculator` evaluates the current game state against the rules to determine what's
-legal: which spells can be cast (considering mana, timing, targets), which abilities can be activated,
-whether lands can be played, and what combat actions are available.
+The `LegalActionEnumerator` (in `rules-engine`) evaluates the current game state against the rules
+to determine what's legal: which spells can be cast (considering mana, timing, targets), which
+abilities can be activated, whether lands can be played, and what combat actions are available. It
+delegates to per-category `ActionEnumerator` implementations (spells, abilities, combat, etc.),
+mirroring the `ActionHandler` registry pattern used for action execution.
 
-**Why compute legal actions server-side?**
+The server's `LegalActionEnricher` then maps the engine's `LegalAction` results to `LegalActionInfo`
+DTOs, adding presentation-only data: available mana source information for the pre-cast UI selection.
+The client protocol remains unchanged.
 
-- **Correctness.** Determining legal actions requires full rules knowledge — mana availability,
-  timing restrictions, target legality, spell interaction restrictions. This logic already exists
-  in the engine. Duplicating it in the client would be error-prone and a maintenance burden.
+```
+Engine: LegalActionEnumerator.enumerate(state, playerId) → List<LegalAction>
+Server: LegalActionEnricher.enrich(actions, state, playerId) → List<LegalActionInfo>
+```
+
+**Why compute legal actions in the engine?**
+
+- **Single source of truth.** Legal action enumeration reuses the same cost calculation, target
+  validation, and timing logic as action execution. Keeping both in the engine eliminates the risk
+  of the two diverging.
+- **AI and simulation.** The engine can now answer "what can this player do?" without a server,
+  enabling Monte Carlo Tree Search, automated testing, and headless simulation.
 - **Security.** The server validates every action before executing it. Even a modified client
   cannot perform illegal moves.
 - **Client simplicity.** The client simply checks "is there a legal action involving this card?"
@@ -1498,7 +1513,7 @@ complexity:
 | Dynamic values that change constantly | AST-based DynamicAmount |
 | Multiplayer with hidden information | Server-authoritative state + masking |
 | Client-server state divergence | Dumb terminal pattern |
-| Complex legal action computation | Server-driven interactivity |
+| Complex legal action computation | Engine-side enumeration + server enrichment |
 | Multi-game tournaments with drafting | State machine lobby + eager match starting |
 | Testing edge cases across the stack | Dev Scenario API + multi-layer test pyramid |
 

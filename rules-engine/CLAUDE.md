@@ -27,6 +27,9 @@ com.wingedsheep.engine
 │   ├── actions/   # ActionHandlerRegistry + per-action handlers (spell/, combat/, etc.)
 │   ├── effects/   # EffectExecutorRegistry + per-effect executors (damage/, drawing/, etc.)
 │   └── continuations/ # ContinuationHandler + per-type resumer modules
+├── legalactions/  # LegalActionEnumerator — "what can this player do?"
+│   ├── enumerators/ # Per-category enumerators (spells, abilities, combat, etc.)
+│   └── utils/     # Shared target/cost/permission helpers
 └── mechanics/
     ├── layers/    # StateProjector (Rule 613), ProjectedState
     ├── combat/    # CombatManager

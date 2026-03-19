@@ -42,7 +42,7 @@ Client WebSocket → GameWebSocketHandler → ConnectionHandler / GamePlayHandle
 | `ClientStateTransformer` | Transforms `GameState → ClientGameState` DTO with state masking |
 | `DevScenarioController` | REST endpoint for E2E scenario setup (`POST /api/dev/scenarios`) |
 | `AutoPassManager` | Arena-style priority auto-pass logic |
-| `LegalActionsCalculator` | Computes legal actions per player from current state |
+| `LegalActionEnricher` | Maps engine `LegalAction` → `LegalActionInfo` DTO (presentation enrichment) |
 
 ### GameSession threading
 
