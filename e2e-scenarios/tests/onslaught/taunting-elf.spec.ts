@@ -16,6 +16,7 @@ test.describe('Taunting Elf — must be blocked by all', () => {
       player2Name: 'Defender',
       player1: {
         battlefield: [{ name: 'Taunting Elf', tapped: false, summoningSickness: false }],
+        library: ['Mountain'],
       },
       player2: {
         battlefield: [{ name: 'Devoted Hero' }, { name: 'Glory Seeker' }, { name: 'Jungle Lion' }],
@@ -68,6 +69,7 @@ test.describe('Taunting Elf — must be blocked by all', () => {
           { name: 'Taunting Elf', tapped: false, summoningSickness: false },
           { name: 'Grizzly Bears', tapped: false, summoningSickness: false },
         ],
+        library: ['Mountain'],
       },
       player2: {
         battlefield: [{ name: 'Devoted Hero' }, { name: 'Glory Seeker' }],
