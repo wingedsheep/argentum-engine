@@ -8,6 +8,7 @@ import com.wingedsheep.mtg.sets.definitions.khans.KhansOfTarkirSet
 import com.wingedsheep.mtg.sets.definitions.legions.LegionsSet
 import com.wingedsheep.mtg.sets.definitions.onslaught.OnslaughtSet
 import com.wingedsheep.mtg.sets.definitions.portal.PortalSet
+import com.wingedsheep.mtg.sets.definitions.bloomburrow.BloomburrowSet
 import com.wingedsheep.mtg.sets.definitions.scourge.ScourgeSet
 import com.wingedsheep.engine.state.ComponentContainer
 import com.wingedsheep.engine.state.GameState
@@ -53,6 +54,7 @@ abstract class ScenarioTestBase : FunSpec() {
         register(LegionsSet.allCards)
         register(KhansOfTarkirSet.allCards)
         register(DominariaSet.allCards)
+        register(BloomburrowSet.allCards)
     }
     protected val actionProcessor = ActionProcessor(cardRegistry)
     protected val stateTransformer = ClientStateTransformer(cardRegistry)

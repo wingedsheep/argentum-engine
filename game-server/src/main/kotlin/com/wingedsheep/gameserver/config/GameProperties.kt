@@ -20,7 +20,8 @@ data class SetsProperties(
     val scourgeEnabled: Boolean = true,
     val legionsEnabled: Boolean = true,
     val khansEnabled: Boolean = true,
-    val dominariaEnabled: Boolean = false
+    val dominariaEnabled: Boolean = false,
+    val bloomburrowEnabled: Boolean = false
 )
 
 data class AdminProperties(

@@ -7,6 +7,7 @@ import com.wingedsheep.mtg.sets.definitions.onslaught.OnslaughtSet
 import com.wingedsheep.mtg.sets.definitions.legions.LegionsSet
 import com.wingedsheep.mtg.sets.definitions.scourge.ScourgeSet
 import com.wingedsheep.mtg.sets.definitions.khans.KhansOfTarkirSet
+import com.wingedsheep.mtg.sets.definitions.bloomburrow.BloomburrowSet
 import com.wingedsheep.mtg.sets.definitions.dominaria.DominariaSet
 import kotlin.random.Random
 
@@ -104,6 +105,17 @@ class BoosterGenerator(
             basicLands = PortalSet.basicLands,  // Dominaria has no basic lands implemented; use Portal lands
             incomplete = true,
             guaranteedLegendary = true
+        )
+
+        /**
+         * Bloomburrow set configuration.
+         */
+        val bloomburrowSetConfig = SetConfig(
+            setCode = BloomburrowSet.SET_CODE,
+            setName = BloomburrowSet.SET_NAME,
+            cards = BloomburrowSet.allCards,
+            basicLands = PortalSet.basicLands,  // Bloomburrow has no basic lands implemented; use Portal lands
+            incomplete = true
         )
     }
 
