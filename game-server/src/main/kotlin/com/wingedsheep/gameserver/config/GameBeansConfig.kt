@@ -3,6 +3,7 @@ package com.wingedsheep.gameserver.config
 import com.wingedsheep.gameserver.deck.RandomDeckGenerator
 import com.wingedsheep.gameserver.sealed.BoosterGenerator
 import com.wingedsheep.engine.registry.CardRegistry
+import com.wingedsheep.mtg.sets.definitions.bloomburrow.BloomburrowSet
 import com.wingedsheep.mtg.sets.definitions.dominaria.DominariaSet
 import com.wingedsheep.mtg.sets.definitions.khans.KhansOfTarkirSet
 import com.wingedsheep.mtg.sets.definitions.legions.LegionsSet
@@ -36,6 +37,9 @@ class GameBeansConfig(
         if (gameProperties.sets.dominariaEnabled) {
             register(DominariaSet.allCards)
         }
+        if (gameProperties.sets.bloomburrowEnabled) {
+            register(BloomburrowSet.allCards)
+        }
     }
 
     @Bean
@@ -57,6 +61,9 @@ class GameBeansConfig(
             if (gameProperties.sets.dominariaEnabled) {
                 put(DominariaSet.SET_CODE, BoosterGenerator.dominariaSetConfig)
             }
+            if (gameProperties.sets.bloomburrowEnabled) {
+                put(BloomburrowSet.SET_CODE, BoosterGenerator.bloomburrowSetConfig)
+            }
         }
         return BoosterGenerator(sets)
     }
@@ -69,6 +76,7 @@ class GameBeansConfig(
             if (gameProperties.sets.legionsEnabled) addAll(LegionsSet.allCards)
             if (gameProperties.sets.khansEnabled) addAll(KhansOfTarkirSet.allCards)
             if (gameProperties.sets.dominariaEnabled) addAll(DominariaSet.allCards)
+            if (gameProperties.sets.bloomburrowEnabled) addAll(BloomburrowSet.allCards)
         },
         basicLandVariants = PortalSet.basicLands,
         setCodes = buildList {
@@ -77,6 +85,7 @@ class GameBeansConfig(
             if (gameProperties.sets.legionsEnabled) add("LGN")
             if (gameProperties.sets.khansEnabled) add("KTK")
             if (gameProperties.sets.dominariaEnabled) add("DOM")
+            if (gameProperties.sets.bloomburrowEnabled) add("BLB")
         }
     )
 }

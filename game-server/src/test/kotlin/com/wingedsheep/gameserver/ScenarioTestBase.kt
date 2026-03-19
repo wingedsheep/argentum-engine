@@ -3,6 +3,7 @@ package com.wingedsheep.gameserver
 import com.wingedsheep.engine.core.*
 import com.wingedsheep.engine.core.DistributionResponse
 import com.wingedsheep.engine.registry.CardRegistry
+import com.wingedsheep.mtg.sets.definitions.bloomburrow.BloomburrowSet
 import com.wingedsheep.mtg.sets.definitions.dominaria.DominariaSet
 import com.wingedsheep.mtg.sets.definitions.khans.KhansOfTarkirSet
 import com.wingedsheep.mtg.sets.definitions.legions.LegionsSet
@@ -53,6 +54,7 @@ abstract class ScenarioTestBase : FunSpec() {
         register(LegionsSet.allCards)
         register(KhansOfTarkirSet.allCards)
         register(DominariaSet.allCards)
+        register(BloomburrowSet.allCards)
     }
     protected val actionProcessor = ActionProcessor(cardRegistry)
     protected val stateTransformer = ClientStateTransformer(cardRegistry)
