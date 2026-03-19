@@ -69,9 +69,7 @@ test.describe('Walking Desecration — creature type must attack', () => {
     await p2.expectBadge('Vengeful Dead', 'Must Attack')
     await p2.expectNoBadge('Glory Seeker', 'Must Attack')
 
-    // P1 clicks "To my turn" to pass through the rest of P2's turn
-    await p1.page.getByRole('button', { name: 'To my turn' }).click()
-
+    // P1 auto-passes (no legal actions — Walking Desecration and Swamp both tapped)
     // P2 advances to combat — must attack with Vengeful Dead (Zombie)
     await p2.pass()
     await p2.attackWith('Vengeful Dead')
