@@ -7,6 +7,7 @@ import com.wingedsheep.engine.core.LifeChangeReason
 import com.wingedsheep.engine.handlers.DynamicAmountEvaluator
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
+import com.wingedsheep.engine.handlers.effects.DamageUtils
 import com.wingedsheep.engine.handlers.effects.TargetResolutionUtils.resolvePlayerTargets
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.identity.LifeTotalComponent
@@ -45,6 +46,7 @@ class LoseLifeExecutor(
                 container.with(LifeTotalComponent(newLife))
             }
             events.add(LifeChangedEvent(playerId, currentLife, newLife, LifeChangeReason.LIFE_LOSS))
+            newState = DamageUtils.markLifeLostThisTurn(newState, playerId)
         }
 
         return ExecutionResult.success(newState, events)

@@ -235,6 +235,7 @@ class TurnFaceUpHandler(
                     c.with(LifeTotalComponent(newLife))
                 }
                 events.add(LifeChangedEvent(action.playerId, currentLife, newLife, LifeChangeReason.LIFE_LOSS))
+                currentState = com.wingedsheep.engine.handlers.effects.DamageUtils.markLifeLostThisTurn(currentState, action.playerId)
             }
             is PayCost.Mana -> {
                 val manaCost = costCalculator.increaseGenericCost(morphData.morphCost.cost, morphCostIncrease)

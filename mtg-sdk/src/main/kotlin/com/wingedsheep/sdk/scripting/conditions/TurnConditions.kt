@@ -64,6 +64,20 @@ data object YouAttackedThisTurn : Condition {
     override fun applyTextReplacement(replacer: TextReplacer): Condition = this
 }
 
+/**
+ * Condition: "If an opponent lost life this turn"
+ * Checks whether any opponent has lost life (from any source: damage, life loss, payment)
+ * at any point during the current turn. Per MTG rules, this cares about whether life was
+ * lost, not whether the net life total changed.
+ * Used for cards like Hired Claw.
+ */
+@SerialName("OpponentLostLifeThisTurn")
+@Serializable
+data object OpponentLostLifeThisTurn : Condition {
+    override val description: String = "if an opponent lost life this turn"
+    override fun applyTextReplacement(replacer: TextReplacer): Condition = this
+}
+
 // =============================================================================
 // Land Conditions
 // =============================================================================

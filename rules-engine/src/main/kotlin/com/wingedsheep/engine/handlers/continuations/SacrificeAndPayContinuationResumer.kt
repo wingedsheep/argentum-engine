@@ -294,9 +294,10 @@ class SacrificeAndPayContinuationResumer(
         val currentLife = playerContainer?.get<com.wingedsheep.engine.state.components.identity.LifeTotalComponent>()?.life ?: 0
         val newLife = currentLife - lifeToPay
 
-        val newState = state.updateEntity(playerId) {
+        var newState = state.updateEntity(playerId) {
             it.with(com.wingedsheep.engine.state.components.identity.LifeTotalComponent(newLife))
         }
+        newState = com.wingedsheep.engine.handlers.effects.DamageUtils.markLifeLostThisTurn(newState, playerId)
 
         val events = listOf(
             LifeChangedEvent(

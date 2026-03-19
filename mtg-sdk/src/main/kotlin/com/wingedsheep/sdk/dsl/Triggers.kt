@@ -217,6 +217,15 @@ object Triggers {
     )
 
     /**
+     * When you attack with one or more creatures matching the given filter.
+     * Example: "Whenever you attack with one or more Lizards"
+     */
+    fun YouAttackWithFilter(filter: GameObjectFilter): TriggerSpec = TriggerSpec(
+        event = YouAttackEvent(minAttackers = 1, attackerFilter = filter),
+        binding = TriggerBinding.ANY
+    )
+
+    /**
      * When this creature blocks.
      */
     val Blocks: TriggerSpec = TriggerSpec(

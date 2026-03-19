@@ -3,6 +3,7 @@ package com.wingedsheep.engine.handlers.effects.life
 import com.wingedsheep.engine.core.ExecutionResult
 import com.wingedsheep.engine.core.LifeChangedEvent
 import com.wingedsheep.engine.core.LifeChangeReason
+import com.wingedsheep.engine.handlers.effects.DamageUtils
 import com.wingedsheep.engine.core.GameEvent as EngineGameEvent
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
@@ -89,6 +90,9 @@ class ExchangeLifeAndPowerExecutor : EffectExecutor<ExchangeLifeAndPowerEffect> 
 
             val reason = if (currentPower > currentLife) LifeChangeReason.LIFE_GAIN else LifeChangeReason.LIFE_LOSS
             events.add(LifeChangedEvent(controllerId, currentLife, currentPower, reason))
+            if (currentPower < currentLife) {
+                newState = DamageUtils.markLifeLostThisTurn(newState, controllerId)
+            }
         }
 
         return ExecutionResult.success(newState, events)

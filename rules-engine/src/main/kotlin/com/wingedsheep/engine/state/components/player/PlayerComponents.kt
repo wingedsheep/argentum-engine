@@ -299,6 +299,16 @@ data class NonTokenCreaturesDiedThisTurnComponent(
 ) : Component
 
 /**
+ * Tracks whether this player has lost life during the current turn.
+ * Set whenever a LifeChangedEvent with a non-gain reason is emitted for this player.
+ * Cleared at end of turn by CleanupPhaseManager.
+ *
+ * Used for conditions like "if an opponent lost life this turn" (Hired Claw).
+ */
+@Serializable
+data object LifeLostThisTurnComponent : Component
+
+/**
  * Marker component indicating that a player should skip their entire next turn.
  * Applied by effects like Last Chance (which gives the opponent an "extra turn"
  * by skipping the other player's turn in a 2-player game).

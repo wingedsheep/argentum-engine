@@ -73,6 +73,7 @@ class GameBeansConfig(
             if (gameProperties.sets.legionsEnabled) addAll(LegionsSet.allCards)
             if (gameProperties.sets.khansEnabled) addAll(KhansOfTarkirSet.allCards)
             if (gameProperties.sets.dominariaEnabled) addAll(DominariaSet.allCards)
+            if (gameProperties.sets.bloomburrowEnabled) addAll(BloomburrowSet.allCards)
         },
         basicLandVariants = PortalSet.basicLands,
         setCodes = buildList {
@@ -81,6 +82,7 @@ class GameBeansConfig(
             if (gameProperties.sets.legionsEnabled) add("LGN")
             if (gameProperties.sets.khansEnabled) add("KTK")
             if (gameProperties.sets.dominariaEnabled) add("DOM")
+            if (gameProperties.sets.bloomburrowEnabled) add("BLB")
         }
     )
 }

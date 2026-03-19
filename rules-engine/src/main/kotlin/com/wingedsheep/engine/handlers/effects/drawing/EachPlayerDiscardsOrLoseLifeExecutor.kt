@@ -197,6 +197,7 @@ class EachPlayerDiscardsOrLoseLifeExecutor(
                             com.wingedsheep.engine.core.LifeChangeReason.LIFE_LOSS
                         )
                     )
+                    currentState = com.wingedsheep.engine.handlers.effects.DamageUtils.markLifeLostThisTurn(currentState, playerId)
                 }
             }
 

@@ -99,6 +99,7 @@ class CardSpecificContinuationResumer(
             }
 
             allEvents.add(LifeChangedEvent(playerId, currentLife, newLife, LifeChangeReason.LIFE_LOSS))
+            currentState = com.wingedsheep.engine.handlers.effects.DamageUtils.markLifeLostThisTurn(currentState, playerId)
         }
 
         // If the controller is one of the highest bidders, put counters on the source

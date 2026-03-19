@@ -198,6 +198,7 @@ object DamageUtils {
     /**
      * Track that [playerId] received [amount] damage this turn.
      * Updates the DamageReceivedThisTurnComponent on the player entity.
+     * Also marks the player as having lost life this turn (LifeLostThisTurnComponent).
      * Used for Final Punishment: "Target player loses life equal to the damage
      * already dealt to that player this turn."
      */
@@ -207,6 +208,18 @@ object DamageUtils {
             val existing = container.get<com.wingedsheep.engine.state.components.player.DamageReceivedThisTurnComponent>()
                 ?: com.wingedsheep.engine.state.components.player.DamageReceivedThisTurnComponent()
             container.with(com.wingedsheep.engine.state.components.player.DamageReceivedThisTurnComponent(existing.amount + amount))
+                .with(com.wingedsheep.engine.state.components.player.LifeLostThisTurnComponent)
+        }
+    }
+
+    /**
+     * Mark that [playerId] lost life this turn (non-damage life loss, e.g., from LoseLife effects or payments).
+     * Sets the LifeLostThisTurnComponent on the player entity.
+     * Used for conditions like "if an opponent lost life this turn" (Hired Claw).
+     */
+    fun markLifeLostThisTurn(state: GameState, playerId: EntityId): GameState {
+        return state.updateEntity(playerId) { container ->
+            container.with(com.wingedsheep.engine.state.components.player.LifeLostThisTurnComponent)
         }
     }
 

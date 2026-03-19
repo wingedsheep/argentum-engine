@@ -348,16 +348,28 @@ sealed interface GameEvent : TextReplaceable<GameEvent> {
 
     /**
      * When you attack with at least [minAttackers] creatures.
+     * Optional [attackerFilter] restricts which attackers count (e.g., Lizards only).
+     * When set, the trigger fires only if at least [minAttackers] of the declared
+     * attackers match the filter.
      */
     @SerialName("YouAttackEvent")
     @Serializable
     data class YouAttackEvent(
-        val minAttackers: Int = 1
+        val minAttackers: Int = 1,
+        val attackerFilter: GameObjectFilter? = null
     ) : GameEvent {
-        override val description: String = if (minAttackers <= 1) {
-            "you attack"
-        } else {
-            "you attack with $minAttackers or more creatures"
+        override val description: String = buildString {
+            append("you attack with ")
+            if (minAttackers <= 1) {
+                append("one or more ")
+            } else {
+                append("$minAttackers or more ")
+            }
+            if (attackerFilter != null) {
+                append(attackerFilter.description)
+            } else {
+                append("creatures")
+            }
         }
 
         override fun applyTextReplacement(replacer: TextReplacer): GameEvent = this

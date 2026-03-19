@@ -9,7 +9,7 @@
 | White      | 40    | 0    |
 | Blue       | 41    | 0    |
 | Black      | 40    | 0    |
-| Red        | 41    | 0    |
+| Red        | 41    | 1    |
 | Green      | 41    | 0    |
 | Multicolor | 39    | 0    |
 | Colorless  | 9     | 1    |
@@ -113,7 +113,7 @@
 - [ ] Helga, Skittish Seer
 - [ ] Hidden Grotto
 - [ ] High Stride
-- [ ] Hired Claw
+- [x] Hired Claw
 - [ ] Hivespine Wolverine
 - [ ] Hoarder's Overflow
 - [ ] Honored Dreyleader

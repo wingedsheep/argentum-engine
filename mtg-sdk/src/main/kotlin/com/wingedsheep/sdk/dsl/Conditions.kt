@@ -308,6 +308,13 @@ object Conditions {
     // =========================================================================
 
     /**
+     * If an opponent lost life this turn (from any source).
+     * Used for cards like Hired Claw: "Activate only if an opponent lost life this turn"
+     */
+    val OpponentLostLifeThisTurn: ConditionInterface =
+        com.wingedsheep.sdk.scripting.conditions.OpponentLostLifeThisTurn
+
+    /**
      * If it's your turn.
      */
     val IsYourTurn: ConditionInterface =

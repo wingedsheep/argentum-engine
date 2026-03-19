@@ -79,9 +79,24 @@ class TriggerMatcher(
                     (!trigger.alone || event.attackers.size == 1)
             }
             is GameEvent.YouAttackEvent -> {
-                event is AttackersDeclaredEvent &&
-                    event.attackers.size >= trigger.minAttackers &&
-                    state.activePlayerId == controllerId
+                if (event !is AttackersDeclaredEvent) return false
+                if (state.activePlayerId != controllerId) return false
+                val filter = trigger.attackerFilter
+                if (filter != null) {
+                    // Count attackers matching the filter
+                    val predicateEvaluator = PredicateEvaluator()
+                    val projected = state.projectedState
+                    val predicateContext = com.wingedsheep.engine.handlers.PredicateContext(
+                        controllerId = controllerId,
+                        sourceId = sourceId
+                    )
+                    val matchingCount = event.attackers.count { attackerId ->
+                        predicateEvaluator.matchesWithProjection(state, projected, attackerId, filter, predicateContext)
+                    }
+                    matchingCount >= trigger.minAttackers
+                } else {
+                    event.attackers.size >= trigger.minAttackers
+                }
             }
             is GameEvent.BlockEvent -> {
                 event is BlockersDeclaredEvent &&

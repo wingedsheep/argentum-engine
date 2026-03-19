@@ -18,6 +18,7 @@ import com.wingedsheep.engine.state.components.player.CantCastSpellsComponent
 import com.wingedsheep.engine.state.components.player.DamageBonusComponent
 import com.wingedsheep.engine.state.components.player.DamageReceivedThisTurnComponent
 import com.wingedsheep.engine.state.components.player.LandDropsComponent
+import com.wingedsheep.engine.state.components.player.LifeLostThisTurnComponent
 import com.wingedsheep.engine.state.components.player.ManaPoolComponent
 import com.wingedsheep.engine.state.components.player.NonTokenCreaturesDiedThisTurnComponent
 import com.wingedsheep.engine.state.components.player.PlayerEffectRemoval
@@ -275,6 +276,9 @@ class CleanupPhaseManager(
                 }
                 if (result.has<NonTokenCreaturesDiedThisTurnComponent>()) {
                     result = result.without<NonTokenCreaturesDiedThisTurnComponent>()
+                }
+                if (result.has<LifeLostThisTurnComponent>()) {
+                    result = result.without<LifeLostThisTurnComponent>()
                 }
                 result
             }

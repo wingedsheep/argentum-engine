@@ -44,6 +44,7 @@ import com.wingedsheep.sdk.scripting.conditions.WasCastFromHand
 import com.wingedsheep.sdk.scripting.conditions.SacrificedPermanentHadSubtype
 import com.wingedsheep.sdk.scripting.conditions.TargetMatchesFilter
 import com.wingedsheep.sdk.scripting.conditions.TriggeringEntityWasHistoric
+import com.wingedsheep.sdk.scripting.conditions.OpponentLostLifeThisTurn
 import com.wingedsheep.sdk.scripting.conditions.WasKicked
 import com.wingedsheep.sdk.scripting.conditions.YouAttackedThisTurn
 import com.wingedsheep.sdk.scripting.conditions.YouWereAttackedThisStep
@@ -95,6 +96,7 @@ class ConditionEvaluator {
             is IsNotYourTurn -> !evaluateIsYourTurn(state, context)
             is PlayedLandThisTurn -> evaluatePlayedLandThisTurn(state, context)
             is YouAttackedThisTurn -> evaluateYouAttackedThisTurn(state, context)
+            is OpponentLostLifeThisTurn -> evaluateOpponentLostLifeThisTurn(state, context)
             is YouWereAttackedThisStep -> evaluateYouWereAttackedThisStep(state, context)
             is YouWereDealtCombatDamageThisTurn -> evaluateYouWereDealtCombatDamageThisTurn(state, context)
 
@@ -238,6 +240,13 @@ class ConditionEvaluator {
 
     private fun evaluateYouAttackedThisTurn(state: GameState, context: EffectContext): Boolean {
         return state.getEntity(context.controllerId)?.has<PlayerAttackedThisTurnComponent>() == true
+    }
+
+    private fun evaluateOpponentLostLifeThisTurn(state: GameState, context: EffectContext): Boolean {
+        val opponents = state.turnOrder.filter { it != context.controllerId }
+        return opponents.any { opponentId ->
+            state.getEntity(opponentId)?.has<com.wingedsheep.engine.state.components.player.LifeLostThisTurnComponent>() == true
+        }
     }
 
     private fun evaluateYouWereAttackedThisStep(state: GameState, context: EffectContext): Boolean {

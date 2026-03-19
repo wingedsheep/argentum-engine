@@ -520,7 +520,7 @@ constructors.
 
 ### Combat
 
-- `Triggers.Attacks` / `Triggers.AttacksAlone` / `Triggers.AnyAttacks` / `Triggers.YouAttack` / `Triggers.NontokenCreatureYouControlAttacks`
+- `Triggers.Attacks` / `Triggers.AttacksAlone` / `Triggers.AnyAttacks` / `Triggers.YouAttack` / `Triggers.YouAttackWithFilter(filter: GameObjectFilter)` / `Triggers.NontokenCreatureYouControlAttacks`
 - `AttackEvent(filter: GameObjectFilter?, alone: Boolean = false)` — filter restricts which attackers trigger; `alone = true` requires the creature to be the only declared attacker
 - `Triggers.Blocks` / `Triggers.BecomesBlocked` / `Triggers.CreatureYouControlBecomesBlocked` / `Triggers.FilteredBecomesBlocked(filter: GameObjectFilter)` — any creature matching filter becomes blocked (any controller)
 - `Triggers.BecomesTarget` / `Triggers.BecomesTarget(filter: GameObjectFilter)` — when a permanent becomes target of spell/ability
@@ -689,6 +689,7 @@ constructors.
 ### Turn
 
 - `Conditions.IsYourTurn` / `.IsNotYourTurn`
+- `Conditions.OpponentLostLifeThisTurn` — true if any opponent lost life this turn (from any source)
 
 ### Composite
 
@@ -1165,7 +1166,7 @@ Used in `OptionalCostEffect`, `MayPayManaEffect`, `AnyPlayerMayPayEffect`, `PayO
 - `DrawEvent(player)` / `LifeGainEvent(player)` / `LifeLossEvent(player)`
 - `DiscardEvent(player, cardFilter?)` / `SearchLibraryEvent(player)`
 - `ExtraTurnEvent(player)` — used by PreventExtraTurns replacement effect filter
-- `AttackEvent` / `YouAttackEvent(minAttackers)` / `BlockEvent` / `BecomesBlockedEvent(filter: GameObjectFilter? = null)`
+- `AttackEvent` / `YouAttackEvent(minAttackers, attackerFilter: GameObjectFilter? = null)` / `BlockEvent` / `BecomesBlockedEvent(filter: GameObjectFilter? = null)`
 - `BecomesTargetEvent(targetFilter)` — when a permanent becomes the target of a spell or ability
 - `StepEvent(step, player)`
 - `SpellCastEvent(spellType, manaValueAtLeast?, manaValueAtMost?, manaValueEquals?, player)`
