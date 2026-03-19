@@ -40,7 +40,8 @@ val ScoutTheBorders = card("Scout the Borders") {
                     storeSelected = "kept",
                     storeRemainder = "rest",
                     selectedLabel = "Put in hand",
-                    remainderLabel = "Put in graveyard"
+                    remainderLabel = "Put in graveyard",
+                    showAllCards = true
                 ),
                 MoveCollectionEffect(
                     from = "kept",

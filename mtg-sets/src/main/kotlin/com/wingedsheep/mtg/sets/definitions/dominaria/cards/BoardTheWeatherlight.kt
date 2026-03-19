@@ -41,7 +41,8 @@ val BoardTheWeatherlight = card("Board the Weatherlight") {
                     filter = GameObjectFilter.Historic,
                     storeSelected = "kept",
                     storeRemainder = "rest",
-                    prompt = "You may reveal a historic card and put it into your hand"
+                    prompt = "You may reveal a historic card and put it into your hand",
+                    showAllCards = true
                 ),
                 MoveCollectionEffect(
                     from = "kept",

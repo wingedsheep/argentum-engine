@@ -70,7 +70,8 @@ val KamahlsDruidicVow = card("Kamahl's Druidic Vow") {
                     filter = LandOrLegendaryPermanent,
                     storeSelected = "chosen",
                     storeRemainder = "unchosen",
-                    prompt = "Put any number of land and/or legendary permanent cards onto the battlefield"
+                    prompt = "Put any number of land and/or legendary permanent cards onto the battlefield",
+                    showAllCards = true
                 ),
                 // Put chosen cards onto the battlefield
                 MoveCollectionEffect(

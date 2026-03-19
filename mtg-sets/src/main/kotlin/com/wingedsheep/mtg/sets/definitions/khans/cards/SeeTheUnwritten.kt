@@ -43,7 +43,8 @@ val SeeTheUnwritten = card("See the Unwritten") {
                     storeRemainder = "rest",
                     prompt = "Choose creature card${if (count > 1) "s" else ""} to put onto the battlefield",
                     selectedLabel = "Put onto the battlefield",
-                    remainderLabel = "Put into your graveyard"
+                    remainderLabel = "Put into your graveyard",
+                    showAllCards = true
                 ),
                 MoveCollectionEffect(
                     from = "selected",
