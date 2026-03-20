@@ -2,13 +2,13 @@
 
 **Set Size:** 266 cards
 **Release Date:** August 2, 2024
-**Implemented:** 10 / 266
+**Implemented:** 11 / 266
 
 | Color      | Total | Done |
 |------------|-------|------|
 | White      | 40    | 3    |
 | Blue       | 41    | 1    |
-| Black      | 40    | 1    |
+| Black      | 40    | 2    |
 | Red        | 41    | 2    |
 | Green      | 41    | 1    |
 | Multicolor | 39    | 0    |
@@ -75,7 +75,7 @@
 - [ ] Dreamdew Entrancer
 - [ ] Driftgloom Coyote
 - [ ] Druid of the Spade
-- [ ] Early Winter
+- [x] Early Winter
 - [ ] Eddymurk Crab
 - [ ] Eluge, the Shoreless Sea
 - [ ] Emberheart Challenger
