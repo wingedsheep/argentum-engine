@@ -2,7 +2,7 @@
 
 **Set Size:** 266 cards
 **Release Date:** August 2, 2024
-**Implemented:** 14 / 266
+**Implemented:** 15 / 266
 
 | Color      | Total | Done |
 |------------|-------|------|
@@ -10,7 +10,7 @@
 | Blue       | 41    | 2    |
 | Black      | 40    | 2    |
 | Red        | 41    | 3    |
-| Green      | 41    | 2    |
+| Green      | 41    | 3    |
 | Multicolor | 39    | 0    |
 | Colorless  | 9     | 1    |
 | Land       | 15    | 0    |
@@ -243,7 +243,7 @@
 - [ ] Tangle Tumbler
 - [ ] Teapot Slinger
 - [ ] Tempest Angler
-- [ ] Tender Wildguide
+- [x] Tender Wildguide
 - [ ] The Infamous Cruelclaw
 - [ ] Thistledown Players
 - [ ] Thornplate Intimidator

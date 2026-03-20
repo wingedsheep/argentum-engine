@@ -36,5 +36,6 @@ object BloomburrowSet {
         SinisterMonolith,
         SplashLasher,
         SunspineLynx,
+        TenderWildguide,
     )
 }
