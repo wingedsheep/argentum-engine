@@ -25,6 +25,7 @@ object BloomburrowSet {
         HeirloomEpic,
         HiredClaw,
         QuaketuskBoar,
+        SeasonedWarrenguard,
         ShorelineLooter,
         SinisterMonolith,
     )

@@ -2,11 +2,11 @@
 
 **Set Size:** 266 cards
 **Release Date:** August 2, 2024
-**Implemented:** 5 / 266
+**Implemented:** 6 / 266
 
 | Color      | Total | Done |
 |------------|-------|------|
-| White      | 40    | 0    |
+| White      | 40    | 1    |
 | Blue       | 41    | 1    |
 | Black      | 40    | 1    |
 | Red        | 41    | 1    |
@@ -209,7 +209,7 @@
 - [ ] Season of Weaving
 - [ ] Season of the Bold
 - [ ] Season of the Burrow
-- [ ] Seasoned Warrenguard
+- [x] Seasoned Warrenguard
 - [ ] Seedglaive Mentor
 - [ ] Seedpod Squire
 - [ ] Shore Up
