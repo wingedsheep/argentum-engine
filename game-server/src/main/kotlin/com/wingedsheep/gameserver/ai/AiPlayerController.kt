@@ -24,7 +24,7 @@ class AiPlayerController(
     private val properties: AiProperties,
     private val llmClient: LlmClient,
     private val playerId: EntityId
-) {
+) : AiController {
     private val decisionRegistry = AiDecisionHandlerRegistry()
     private val formatter = GameStateFormatter(decisionRegistry)
     private val parser = AiResponseParser()
@@ -40,7 +40,7 @@ class AiPlayerController(
      * Provide the AI with its deck composition so it can make informed decisions.
      * Called once when a game starts. The AI knows what cards are in the deck but not their order.
      */
-    fun setDeckList(deckList: Map<String, Int>, archetype: String? = null) {
+    override fun setDeckList(deckList: Map<String, Int>, archetype: String?) {
         val deckDescription = buildString {
             if (archetype != null) {
                 appendLine("=== YOUR DECK ARCHETYPE ===")
@@ -68,11 +68,11 @@ class AiPlayerController(
      * Choose an action from the list of legal actions.
      * Returns the chosen GameAction, or null to auto-pass.
      */
-    fun chooseAction(
+    override fun chooseAction(
         state: ClientGameState,
         legalActions: List<LegalActionInfo>,
         pendingDecision: PendingDecision?,
-        recentGameLog: List<String> = emptyList()
+        recentGameLog: List<String>
     ): ActionResponse {
         // Shortcut: only one legal action (usually PassPriority)
         // Exception: DeclareAttackers/DeclareBlockers come as the only action but need
@@ -172,7 +172,7 @@ class AiPlayerController(
      * Decide whether to keep or mulligan.
      * Returns true to keep, false to mulligan.
      */
-    fun decideMulligan(mulliganMessage: ServerMessage.MulliganDecision): Boolean {
+    override fun decideMulligan(mulliganMessage: ServerMessage.MulliganDecision): Boolean {
         val cards = mulliganMessage.cards
         val cardDisplays = mulliganMessage.hand.map { entityId ->
             val info = cards[entityId]
@@ -212,7 +212,7 @@ class AiPlayerController(
      * Choose cards to put on bottom after mulligan.
      * Returns entity IDs of cards to bottom.
      */
-    fun chooseBottomCards(message: ServerMessage.ChooseBottomCards): List<EntityId> {
+    override fun chooseBottomCards(message: ServerMessage.ChooseBottomCards): List<EntityId> {
         val cardCount = message.cardsToPutOnBottom
         val hand = message.hand
 

@@ -1132,6 +1132,14 @@ class GameSession(
      */
     fun getStateForTesting(): GameState? = gameState
 
+    /**
+     * Read-only snapshot of the current game state. Used by the engine AI controller
+     * to evaluate board positions and simulate actions.
+     *
+     * Thread-safe: GameState is immutable, so reading the reference is safe.
+     */
+    fun getStateSnapshot(): GameState? = gameState
+
     // =========================================================================
     // Persistence Support (for Redis caching)
     // =========================================================================

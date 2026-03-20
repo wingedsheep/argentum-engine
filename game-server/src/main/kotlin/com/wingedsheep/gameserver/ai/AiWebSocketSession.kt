@@ -34,7 +34,7 @@ private val logger = LoggerFactory.getLogger(AiWebSocketSession::class.java)
  */
 class AiWebSocketSession(
     private val aiPlayerId: EntityId,
-    private val controller: AiPlayerController,
+    private val controller: AiController,
     private val thinkingDelayMs: Long = 500,
     private val onActionReady: (EntityId, GameAction) -> Unit,
     private val onMulliganKeep: (EntityId) -> Unit,

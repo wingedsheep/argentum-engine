@@ -7,6 +7,7 @@ import com.wingedsheep.gameserver.session.PlayerIdentity
 import com.wingedsheep.gameserver.session.PlayerSession
 import com.wingedsheep.gameserver.session.SessionRegistry
 import com.wingedsheep.engine.core.GameAction
+import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.sdk.model.EntityId
 import org.slf4j.LoggerFactory
 import jakarta.annotation.PostConstruct
@@ -19,14 +20,16 @@ private val logger = LoggerFactory.getLogger(AiGameManager::class.java)
 /**
  * Manages the lifecycle of AI opponents in games.
  *
- * Creates AI components (controller, virtual session), registers them
- * in the game session, and wires up the async response callback.
+ * Supports two AI modes:
+ * - **engine** (default): Built-in rules-engine AI. No API key needed. Fast, deterministic.
+ * - **llm**: LLM-based AI via OpenAI-compatible API. Requires API key.
  */
 @Service
 class AiGameManager(
     private val gameProperties: GameProperties,
     private val sessionRegistry: SessionRegistry,
-    private val deckGenerator: RandomDeckGenerator
+    private val deckGenerator: RandomDeckGenerator,
+    private val cardRegistry: CardRegistry
 ) {
     private val activeSessions = ConcurrentHashMap<String, AiWebSocketSession>()
 
@@ -37,9 +40,13 @@ class AiGameManager(
             logger.info("AI opponent: disabled")
             return
         }
-        val provider = if (ai.baseUrl.contains("openrouter")) "OpenRouter" else "Local (${ai.baseUrl})"
-        logger.info("AI opponent: enabled | provider={} | model={} | deckbuilding-model={}",
-            provider, ai.model, ai.effectiveDeckbuildingModel)
+        if (ai.isEngineMode) {
+            logger.info("AI opponent: enabled | mode=engine (built-in)")
+        } else {
+            val provider = if (ai.baseUrl.contains("openrouter")) "OpenRouter" else "Local (${ai.baseUrl})"
+            logger.info("AI opponent: enabled | mode=llm | provider={} | model={} | deckbuilding-model={}",
+                provider, ai.model, ai.effectiveDeckbuildingModel)
+        }
     }
 
     companion object {
@@ -64,7 +71,33 @@ class AiGameManager(
         fun randomAiName(): String = "[AI] ${AI_NAMES.random()}"
     }
 
-    val isEnabled: Boolean get() = gameProperties.ai.enabled && gameProperties.ai.effectiveApiKey.isNotBlank()
+    val isEnabled: Boolean get() {
+        if (!gameProperties.ai.enabled) return false
+        // Engine mode doesn't need an API key
+        if (gameProperties.ai.isEngineMode) return true
+        // LLM mode requires an API key
+        return gameProperties.ai.effectiveApiKey.isNotBlank()
+    }
+
+    /**
+     * Create the appropriate AI controller based on configuration.
+     */
+    private fun createController(
+        aiPlayerId: EntityId,
+        gameSession: GameSession? = null
+    ): AiController {
+        val ai = gameProperties.ai
+        return if (ai.isEngineMode) {
+            EngineAiController(
+                cardRegistry = cardRegistry,
+                playerId = aiPlayerId,
+                gameStateProvider = { gameSession?.getStateSnapshot() }
+            )
+        } else {
+            val llmClient = LlmClient(ai)
+            AiPlayerController(ai, llmClient, aiPlayerId)
+        }
+    }
 
     /**
      * Create an AI opponent and add it to the game session.
@@ -84,14 +117,13 @@ class AiGameManager(
         onMulliganTake: (EntityId) -> Unit,
         onBottomCards: (EntityId, List<EntityId>) -> Unit
     ): PlayerSession {
-        require(isEnabled) { "AI is not enabled. Set game.ai.enabled=true and provide an API key." }
+        require(isEnabled) { "AI is not enabled. Set game.ai.enabled=true." }
 
         val aiPlayerId = EntityId("ai-${UUID.randomUUID().toString().take(8)}")
         val aiProperties = gameProperties.ai
         val aiName = randomAiName()
 
-        val llmClient = LlmClient(aiProperties)
-        val controller = AiPlayerController(aiProperties, llmClient, aiPlayerId)
+        val controller = createController(aiPlayerId, gameSession)
 
         val aiSession = AiWebSocketSession(
             aiPlayerId = aiPlayerId,
@@ -132,7 +164,8 @@ class AiGameManager(
 
         activeSessions[gameSession.sessionId] = aiSession
 
-        logger.info("Created AI opponent (${aiPlayerId.value}) for game ${gameSession.sessionId}")
+        logger.info("Created AI opponent ({}) for game {} [mode={}]",
+            aiPlayerId.value, gameSession.sessionId, aiProperties.mode)
         return playerSession
     }
 
@@ -144,13 +177,13 @@ class AiGameManager(
      * @return The AI PlayerIdentity, registered in SessionRegistry.
      */
     fun createAiIdentity(): PlayerIdentity {
-        require(isEnabled) { "AI is not enabled. Set game.ai.enabled=true and provide an API key." }
+        require(isEnabled) { "AI is not enabled. Set game.ai.enabled=true." }
 
         val aiPlayerId = EntityId("ai-${UUID.randomUUID().toString().take(8)}")
         val aiProperties = gameProperties.ai
 
-        val llmClient = LlmClient(aiProperties)
-        val controller = AiPlayerController(aiProperties, llmClient, aiPlayerId)
+        // Use a placeholder controller — will be replaced when match starts
+        val controller = createController(aiPlayerId)
 
         val aiSession = AiWebSocketSession(
             aiPlayerId = aiPlayerId,
@@ -182,7 +215,7 @@ class AiGameManager(
         // Track this AI identity so we know which players are AI
         aiPlayerIds.add(aiPlayerId)
 
-        logger.info("Created AI identity: {} ({})", identity.playerName, aiPlayerId.value)
+        logger.info("Created AI identity: {} ({}) [mode={}]", identity.playerName, aiPlayerId.value, aiProperties.mode)
         return identity
     }
 
@@ -206,8 +239,7 @@ class AiGameManager(
         }
 
         val aiProperties = gameProperties.ai
-        val llmClient = LlmClient(aiProperties)
-        val controller = AiPlayerController(aiProperties, llmClient, aiPlayerId)
+        val controller = createController(aiPlayerId, gameSession)
 
         // Give the AI knowledge of its deck composition
         if (deckList != null) {
@@ -236,7 +268,7 @@ class AiGameManager(
         }
 
         activeSessions[gameSession.sessionId] = newSession
-        logger.info("Wired AI {} for game {}", aiPlayerId.value, gameSession.sessionId)
+        logger.info("Wired AI {} for game {} [mode={}]", aiPlayerId.value, gameSession.sessionId, aiProperties.mode)
     }
 
     /** Set of all AI player IDs (persists across matches within a tournament). */

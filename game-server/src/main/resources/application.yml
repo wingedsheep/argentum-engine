@@ -29,7 +29,9 @@ game:
     # Password for admin replay feature. Feature is disabled if not set.
     password: ${GAME_ADMIN_PASSWORD:}
   ai:
-    enabled: ${GAME_AI_ENABLED:false}
+    enabled: ${GAME_AI_ENABLED:true}
+    # AI mode: "engine" (built-in, no API key needed) or "llm" (requires API key)
+    mode: ${GAME_AI_MODE:engine}
     base-url: ${GAME_AI_BASE_URL:https://openrouter.ai/api/v1}
     api-key: ${GAME_AI_API_KEY:${OPENROUTER_API_KEY:}}
     model: ${GAME_AI_MODEL:qwen/qwen3.5-flash-02-23}
