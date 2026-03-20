@@ -2,7 +2,7 @@
 
 **Set Size:** 266 cards
 **Release Date:** August 2, 2024
-**Implemented:** 17 / 266
+**Implemented:** 18 / 266
 
 | Color      | Total | Done |
 |------------|-------|------|
@@ -11,7 +11,7 @@
 | Black      | 40    | 2    |
 | Red        | 41    | 3    |
 | Green      | 41    | 3    |
-| Multicolor | 39    | 1    |
+| Multicolor | 39    | 2    |
 | Colorless  | 9     | 1    |
 | Land       | 15    | 0    |
 
@@ -72,7 +72,7 @@
 - [ ] Dour Port-Mage
 - [ ] Downwind Ambusher
 - [ ] Dragonhawk, Fate's Tempest
-- [ ] Dreamdew Entrancer
+- [x] Dreamdew Entrancer
 - [ ] Driftgloom Coyote
 - [ ] Druid of the Spade
 - [x] Early Winter
