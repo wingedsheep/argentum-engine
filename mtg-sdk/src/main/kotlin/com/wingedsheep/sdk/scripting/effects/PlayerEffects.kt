@@ -238,6 +238,29 @@ data class GrantShroudEffect(
 }
 
 /**
+ * Grants hexproof to a target entity for the specified duration.
+ * "You gain hexproof until end of turn."
+ *
+ * Used for cards like Dawn's Truce: "You and permanents you control gain hexproof until end of turn."
+ *
+ * - For player targets: adds PlayerHexproofComponent with appropriate removal timing
+ * - For permanent targets: creates a floating effect granting the Hexproof keyword
+ *
+ * @param target The entity to grant hexproof to (player, creature, or planeswalker)
+ * @param duration How long the hexproof lasts
+ */
+@SerialName("GrantHexproof")
+@Serializable
+data class GrantHexproofEffect(
+    val target: EffectTarget = EffectTarget.Controller,
+    val duration: Duration = Duration.EndOfTurn
+) : Effect {
+    override val description: String = "${target.description.replaceFirstChar { it.uppercase() }} gains hexproof ${duration.description}"
+
+    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
+}
+
+/**
  * Grant a flat damage bonus to a player's sources for the specified duration.
  * When a source matching the filter that the player controls would deal damage,
  * it deals that much damage plus the bonus amount instead.

@@ -8,6 +8,7 @@ import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.battlefield.CantBeTargetedByOpponentAbilitiesComponent
 import com.wingedsheep.engine.state.components.battlefield.GrantsControllerHexproofComponent
 import com.wingedsheep.engine.state.components.battlefield.GrantsControllerShroudComponent
+import com.wingedsheep.engine.state.components.player.PlayerHexproofComponent
 import com.wingedsheep.engine.state.components.player.PlayerShroudComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
@@ -540,6 +541,9 @@ class TargetValidator {
     }
 
     private fun playerHasHexproof(state: GameState, playerId: EntityId): Boolean {
+        val playerEntity = state.getEntity(playerId)
+        if (playerEntity?.has<PlayerHexproofComponent>() == true) return true
+
         return state.getBattlefield().any { entityId ->
             val container = state.getEntity(entityId) ?: return@any false
             container.get<GrantsControllerHexproofComponent>() != null &&

@@ -77,6 +77,7 @@ constructors.
 
 - `Effects.ModifyStats(power, toughness, target = ContextTarget(0))` — until end of turn
 - `Effects.ModifyStats(power: DynamicAmount, toughness: DynamicAmount, target)` — dynamic P/T
+- `Effects.GrantHexproof(target = Controller, duration = EndOfTurn)` — grant hexproof to player or permanent
 - `Effects.GrantKeyword(keyword, target = ContextTarget(0))` — until end of turn
 - `Effects.GrantKeywordToAttackersBlockedBy(keyword, target, duration)` — grant keyword to attackers blocked by target
 - `Effects.GrantExileOnLeave(target)` — exile instead of leaving battlefield (Kheru Lich Lord, Whip of Erebos)
@@ -410,7 +411,9 @@ constructors.
 | `TakeExtraTurnEffect`                              | `loseAtEndStep, target`                  | Extra turn (target defaults to Controller) |
 | `PreventLandPlaysThisTurnEffect`                   | (object)                                 | Prevent land plays                 |
 | `CreateGlobalTriggeredAbilityUntilEndOfTurnEffect` | `ability: TriggeredAbility`              | Global triggered ability until EOT |
+| `GrantHexproofEffect`                              | `target: EffectTarget = Controller, duration: Duration = EndOfTurn` | Grant hexproof (player or permanent) |
 | `GrantShroudEffect`                                | `target: EffectTarget = Controller, duration: Duration = EndOfTurn` | Grant shroud (player or permanent) |
+| `OptionalCostEffect`                               | `cost: Effect, ifPaid: Effect, ifNotPaid: Effect? = null` | "You may [cost]. If you do, [ifPaid]." with optional else |
 | `CantCastSpellsEffect`                             | `target: EffectTarget = PlayerRef(Opponent), duration: Duration = EndOfTurn` | Prevent target player from casting spells |
 | `GrantDamageBonusEffect`                           | `bonusAmount: Int, sourceFilter: SourceFilter = Any, target: EffectTarget = Controller, duration: Duration = EndOfTurn` | Grant flat damage bonus to player's sources |
 

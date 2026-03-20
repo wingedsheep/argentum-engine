@@ -22,6 +22,7 @@ import com.wingedsheep.engine.state.components.player.LifeLostThisTurnComponent
 import com.wingedsheep.engine.state.components.player.ManaPoolComponent
 import com.wingedsheep.engine.state.components.player.NonTokenCreaturesDiedThisTurnComponent
 import com.wingedsheep.engine.state.components.player.PlayerEffectRemoval
+import com.wingedsheep.engine.state.components.player.PlayerHexproofComponent
 import com.wingedsheep.engine.state.components.player.PlayerShroudComponent
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
@@ -262,6 +263,10 @@ class CleanupPhaseManager(
                 val shroud = result.get<PlayerShroudComponent>()
                 if (shroud?.removeOn == PlayerEffectRemoval.EndOfTurn) {
                     result = result.without<PlayerShroudComponent>()
+                }
+                val hexproof = result.get<PlayerHexproofComponent>()
+                if (hexproof?.removeOn == PlayerEffectRemoval.EndOfTurn) {
+                    result = result.without<PlayerHexproofComponent>()
                 }
                 val cantCast = result.get<CantCastSpellsComponent>()
                 if (cantCast?.removeOn == PlayerEffectRemoval.EndOfTurn) {

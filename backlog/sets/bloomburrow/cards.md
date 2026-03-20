@@ -2,11 +2,11 @@
 
 **Set Size:** 266 cards
 **Release Date:** August 2, 2024
-**Implemented:** 8 / 266
+**Implemented:** 9 / 266
 
 | Color      | Total | Done |
 |------------|-------|------|
-| White      | 40    | 1    |
+| White      | 40    | 2    |
 | Blue       | 41    | 1    |
 | Black      | 40    | 1    |
 | Red        | 41    | 2    |
@@ -64,7 +64,7 @@
 - [ ] Daggerfang Duo
 - [ ] Daring Waverider
 - [ ] Darkstar Augur
-- [ ] Dawn's Truce
+- [x] Dawn's Truce
 - [ ] Dazzling Denial
 - [ ] Dewdrop Cure
 - [ ] Dire Downdraft

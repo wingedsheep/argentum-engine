@@ -234,6 +234,21 @@ data class PlayerShroudComponent(
 ) : Component
 
 /**
+ * Marks a player as having hexproof — the player can't be the target of
+ * spells or abilities opponents control.
+ *
+ * Unlike shroud, hexproof allows the player to still target themselves.
+ *
+ * @param removeOn When this component should be removed:
+ *   - [PlayerEffectRemoval.EndOfTurn] — removed during end-of-turn cleanup (e.g., Dawn's Truce)
+ *   - [PlayerEffectRemoval.Permanent] — stays until explicitly removed
+ */
+@Serializable
+data class PlayerHexproofComponent(
+    val removeOn: PlayerEffectRemoval = PlayerEffectRemoval.EndOfTurn
+) : Component
+
+/**
  * Describes when a player-level effect component should be removed.
  */
 @Serializable

@@ -43,6 +43,7 @@ import com.wingedsheep.sdk.scripting.effects.GainControlByMostOfSubtypeEffect
 import com.wingedsheep.sdk.scripting.effects.GainControlEffect
 import com.wingedsheep.sdk.scripting.effects.GainLifeEffect
 import com.wingedsheep.sdk.scripting.effects.GrantExileOnLeaveEffect
+import com.wingedsheep.sdk.scripting.effects.GrantHexproofEffect
 import com.wingedsheep.sdk.scripting.effects.GrantKeywordEffect
 import com.wingedsheep.sdk.scripting.effects.GrantKeywordToAttackersBlockedByEffect
 import com.wingedsheep.sdk.scripting.effects.RemoveAllAbilitiesEffect
@@ -491,6 +492,14 @@ object Effects {
      */
     fun ModifyStats(power: DynamicAmount, toughness: DynamicAmount, target: EffectTarget = EffectTarget.ContextTarget(0)): Effect =
         ModifyStatsEffect(power, toughness, target)
+
+    /**
+     * Grant hexproof to a target (player or permanent) until end of turn.
+     * For players: adds PlayerHexproofComponent.
+     * For permanents: creates a floating effect granting the Hexproof keyword.
+     */
+    fun GrantHexproof(target: EffectTarget = EffectTarget.Controller, duration: Duration = Duration.EndOfTurn): Effect =
+        GrantHexproofEffect(target, duration)
 
     /**
      * Grant a keyword until end of turn.

@@ -1057,8 +1057,20 @@ class ClientStateTransformer(
             )
         }
 
+        // Check for PlayerHexproofComponent (e.g., Dawn's Truce)
+        if (container.has<PlayerHexproofComponent>()) {
+            effects.add(
+                ClientPlayerEffect(
+                    effectId = "player_hexproof",
+                    name = "Hexproof",
+                    description = "You have hexproof (you can't be the target of spells or abilities your opponents control)",
+                    icon = "shield"
+                )
+            )
+        }
+
         // Check for permanent-based player hexproof (e.g., Shalai, Voice of Plenty)
-        val hasHexproof = state.getBattlefield().any { entityId ->
+        val hasHexproof = !container.has<PlayerHexproofComponent>() && state.getBattlefield().any { entityId ->
             val entityContainer = state.getEntity(entityId) ?: return@any false
             entityContainer.get<GrantsControllerHexproofComponent>() != null &&
                 entityContainer.get<ControllerComponent>()?.playerId == playerId
