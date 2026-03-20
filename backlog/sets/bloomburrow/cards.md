@@ -2,14 +2,14 @@
 
 **Set Size:** 266 cards
 **Release Date:** August 2, 2024
-**Implemented:** 12 / 266
+**Implemented:** 13 / 266
 
 | Color      | Total | Done |
 |------------|-------|------|
 | White      | 40    | 3    |
 | Blue       | 41    | 2    |
 | Black      | 40    | 2    |
-| Red        | 41    | 2    |
+| Red        | 41    | 3    |
 | Green      | 41    | 1    |
 | Multicolor | 39    | 0    |
 | Colorless  | 9     | 1    |
@@ -177,7 +177,7 @@
 - [ ] Persistent Marshstalker
 - [ ] Pileated Provisioner
 - [ ] Plains
-- [ ] Playful Shove
+- [x] Playful Shove
 - [ ] Plumecreed Escort
 - [ ] Plumecreed Mentor
 - [ ] Polliwallop

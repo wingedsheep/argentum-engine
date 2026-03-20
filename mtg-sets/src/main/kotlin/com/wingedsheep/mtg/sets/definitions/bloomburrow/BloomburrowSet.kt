@@ -28,6 +28,7 @@ object BloomburrowSet {
         HiredClaw,
         JackdawSavior,
         HuntersTalent,
+        PlayfulShove,
         QuaketuskBoar,
         SeasonedWarrenguard,
         ShorelineLooter,
