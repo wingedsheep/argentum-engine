@@ -2,7 +2,7 @@
 
 **Set Size:** 266 cards
 **Release Date:** August 2, 2024
-**Implemented:** 13 / 266
+**Implemented:** 14 / 266
 
 | Color      | Total | Done |
 |------------|-------|------|
@@ -10,7 +10,7 @@
 | Blue       | 41    | 2    |
 | Black      | 40    | 2    |
 | Red        | 41    | 3    |
-| Green      | 41    | 1    |
+| Green      | 41    | 2    |
 | Multicolor | 39    | 0    |
 | Colorless  | 9     | 1    |
 | Land       | 15    | 0    |
@@ -82,7 +82,7 @@
 - [ ] Essence Channeler
 - [ ] Fabled Passage
 - [ ] Feather of Flight
-- [ ] Fecund Greenshell
+- [x] Fecund Greenshell
 - [ ] Feed the Cycle
 - [ ] Fell
 - [ ] Festival of Embers

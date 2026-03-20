@@ -24,6 +24,7 @@ object BloomburrowSet {
     val allCards = listOf(
         DawnsTruce,
         EarlyWinter,
+        FecundGreenshell,
         HeirloomEpic,
         HiredClaw,
         JackdawSavior,
