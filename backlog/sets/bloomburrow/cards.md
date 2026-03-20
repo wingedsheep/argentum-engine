@@ -2,7 +2,7 @@
 
 **Set Size:** 266 cards
 **Release Date:** August 2, 2024
-**Implemented:** 15 / 266
+**Implemented:** 16 / 266
 
 | Color      | Total | Done |
 |------------|-------|------|
@@ -11,7 +11,7 @@
 | Black      | 40    | 2    |
 | Red        | 41    | 3    |
 | Green      | 41    | 3    |
-| Multicolor | 39    | 0    |
+| Multicolor | 39    | 1    |
 | Colorless  | 9     | 1    |
 | Land       | 15    | 0    |
 
@@ -128,7 +128,7 @@
 - [ ] Island
 - [x] Jackdaw Savior
 - [ ] Jolly Gerbils
-- [ ] Junkblade Bruiser
+- [x] Junkblade Bruiser
 - [ ] Kastral, the Windcrested
 - [ ] Keen-Eyed Curator
 - [ ] Kindlespark Duo

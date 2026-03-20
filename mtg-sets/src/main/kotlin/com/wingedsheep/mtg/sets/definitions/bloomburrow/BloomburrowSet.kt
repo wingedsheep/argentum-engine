@@ -28,6 +28,7 @@ object BloomburrowSet {
         HeirloomEpic,
         HiredClaw,
         JackdawSavior,
+        JunkbladeBruiser,
         HuntersTalent,
         PlayfulShove,
         QuaketuskBoar,
