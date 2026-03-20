@@ -113,13 +113,22 @@ class AIPlayer(
         }
 
         /**
-         * Default evaluator: weighted combination of life, board, and card advantage.
+         * Default evaluator: weighted combination of strategic dimensions.
+         *
+         * Weights reflect how much each dimension contributes to winning:
+         * - Board presence is king — creatures win games
+         * - Threat assessment catches lethal-on-board situations the other features miss
+         * - Life matters more when it's low (handled by non-linear scaling inside the feature)
+         * - Card advantage is a long-term edge
+         * - Tempo (mana development) matters early but less late
          */
         fun defaultEvaluator(): BoardEvaluator = CompositeBoardEvaluator(
             listOf(
                 1.0 to LifeDifferential,
                 1.5 to BoardPresence,
-                1.2 to CardAdvantage
+                1.0 to CardAdvantage,
+                1.2 to ThreatAssessment,
+                0.6 to Tempo
             )
         )
     }

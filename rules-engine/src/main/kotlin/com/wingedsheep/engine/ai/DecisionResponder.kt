@@ -4,16 +4,19 @@ import com.wingedsheep.engine.ai.evaluation.BoardEvaluator
 import com.wingedsheep.engine.ai.evaluation.BoardPresence
 import com.wingedsheep.engine.core.*
 import com.wingedsheep.engine.state.GameState
+import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
+import com.wingedsheep.engine.state.components.identity.LifeTotalComponent
+import com.wingedsheep.sdk.core.Keyword
+import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
 
 /**
  * Handles all [PendingDecision] types by evaluating possible responses
  * and picking the one that leads to the best board state.
  *
- * For decisions with small branching factors (yes/no, single color), it
- * simulates each option. For large branching factors (card selection from
- * many options), it uses heuristics to avoid combinatorial explosion.
+ * For decisions with small branching factors (yes/no, color, mode), it
+ * simulates each option. For larger spaces, it uses MTG-aware heuristics.
  */
 class DecisionResponder(
     private val simulator: GameSimulator,
@@ -45,25 +48,58 @@ class DecisionResponder(
         decision: ChooseTargetsDecision,
         playerId: EntityId
     ): DecisionResponse {
-        // For single-target requirements, try each target and pick the best
         if (decision.targetRequirements.size == 1) {
             val req = decision.targetRequirements.first()
             val targets = decision.legalTargets[req.index] ?: return cancelOrFirst(decision)
             if (targets.isEmpty()) return cancelOrFirst(decision)
 
-            val best = pickBestBySimulation(state, targets, playerId) { target ->
+            // For small target pools, simulate each; for large pools, use heuristics then simulate top candidates
+            val candidates = if (targets.size <= 8) {
+                targets
+            } else {
+                // Pre-rank by heuristic, then simulate top 8
+                targets.sortedByDescending { targetHeuristic(state, it, playerId) }.take(8)
+            }
+
+            val best = pickBestBySimulation(state, candidates, playerId) { target ->
                 TargetsResponse(decision.id, mapOf(req.index to listOf(target)))
             }
             return TargetsResponse(decision.id, mapOf(req.index to listOf(best)))
         }
 
-        // Multi-target: pick best for each requirement independently
+        // Multi-target: simulate the best target for each requirement independently
         val selected = decision.targetRequirements.associate { req ->
             val targets = decision.legalTargets[req.index] ?: emptyList()
-            val chosen = if (targets.isNotEmpty()) listOf(targets.first()) else emptyList()
-            req.index to chosen
+            if (targets.isEmpty()) {
+                req.index to emptyList()
+            } else {
+                val best = pickBestBySimulation(state, targets.take(8), playerId) { target ->
+                    TargetsResponse(decision.id, mapOf(req.index to listOf(target)))
+                }
+                req.index to listOf(best)
+            }
         }
         return TargetsResponse(decision.id, selected)
+    }
+
+    /** Heuristic for pre-ranking targets before simulation. Higher = better target. */
+    private fun targetHeuristic(state: GameState, targetId: EntityId, playerId: EntityId): Double {
+        val projected = state.projectedState
+        val controller = projected.getController(targetId)
+
+        if (projected.isCreature(targetId)) {
+            val power = projected.getPower(targetId) ?: 0
+            val toughness = projected.getToughness(targetId) ?: 0
+            val value = power + toughness.toDouble()
+            // Opponent's creatures are better targets for removal
+            return if (controller != playerId) value + 5.0 else -value
+        }
+
+        // Players — prefer opponent
+        val isOpponent = targetId == state.getOpponent(playerId)
+        if (isOpponent) return 3.0
+
+        return 0.0
     }
 
     // ── Card selection ───────────────────────────────────────────────────
@@ -77,26 +113,46 @@ class DecisionResponder(
         val min = decision.minSelections
         val max = decision.maxSelections
 
-        // Forced selection
         if (min == options.size) {
             return CardsSelectedResponse(decision.id, options)
         }
 
-        // Discard-like: discard worst cards
-        if (min > 0 && decision.prompt.contains("discard", ignoreCase = true)) {
-            val ranked = rankCardsForDiscard(state, options, playerId)
-            return CardsSelectedResponse(decision.id, ranked.take(min))
-        }
+        // Context-aware ranking
+        val prompt = decision.prompt.lowercase()
+        val isDiscard = prompt.contains("discard")
+        val isSacrifice = prompt.contains("sacrifice")
+        val isScryBottom = decision.selectedLabel?.lowercase()?.contains("bottom") == true
+        val isChooseToKeep = prompt.contains("put") && prompt.contains("hand")
 
-        // Select best cards up to max (e.g., scry to top, keep in hand)
-        if (max > 0 && max < options.size) {
-            val ranked = rankCardsByValue(state, options, playerId)
-            return CardsSelectedResponse(decision.id, ranked.take(max))
+        return when {
+            isDiscard || isScryBottom -> {
+                // Pick cards we want LEAST (to discard / put on bottom)
+                val ranked = rankCardsContextual(state, options, playerId, wantToKeep = false)
+                CardsSelectedResponse(decision.id, ranked.take(min.coerceAtLeast(1).coerceAtMost(max)))
+            }
+            isSacrifice -> {
+                // Sacrifice least valuable permanents
+                val ranked = options.sortedBy { entityId ->
+                    val card = state.getEntity(entityId)?.get<CardComponent>() ?: return@sortedBy 0.0
+                    BoardPresence.permanentValue(state, state.projectedState, entityId, card)
+                }
+                CardsSelectedResponse(decision.id, ranked.take(min.coerceAtLeast(1).coerceAtMost(max)))
+            }
+            isChooseToKeep -> {
+                // Keep best cards
+                val ranked = rankCardsContextual(state, options, playerId, wantToKeep = true)
+                CardsSelectedResponse(decision.id, ranked.take(max.coerceAtMost(options.size)))
+            }
+            max > 0 && max < options.size -> {
+                // Generic "select up to N" — pick best
+                val ranked = rankCardsContextual(state, options, playerId, wantToKeep = true)
+                CardsSelectedResponse(decision.id, ranked.take(max))
+            }
+            else -> {
+                val ranked = rankCardsContextual(state, options, playerId, wantToKeep = true)
+                CardsSelectedResponse(decision.id, ranked.take(min.coerceAtLeast(0)))
+            }
         }
-
-        // Default: select minimum required, preferring best
-        val ranked = rankCardsByValue(state, options, playerId)
-        return CardsSelectedResponse(decision.id, ranked.take(min.coerceAtLeast(0)))
     }
 
     // ── Yes / No ─────────────────────────────────────────────────────────
@@ -108,10 +164,8 @@ class DecisionResponder(
     ): DecisionResponse {
         val yesResult = simulator.simulateDecision(state, YesNoResponse(decision.id, true))
         val noResult = simulator.simulateDecision(state, YesNoResponse(decision.id, false))
-
         val yesScore = evaluateResult(yesResult, playerId)
         val noScore = evaluateResult(noResult, playerId)
-
         return YesNoResponse(decision.id, yesScore >= noScore)
     }
 
@@ -127,12 +181,12 @@ class DecisionResponder(
             return ModesChosenResponse(decision.id, available.map { it.index })
         }
 
-        // Try each single mode and pick best
         val best = available.maxByOrNull { mode ->
-            val response = ModesChosenResponse(decision.id, listOf(mode.index))
-            evaluateResult(simulator.simulateDecision(state, response), playerId)
+            evaluateResult(
+                simulator.simulateDecision(state, ModesChosenResponse(decision.id, listOf(mode.index))),
+                playerId
+            )
         }!!
-
         return ModesChosenResponse(decision.id, listOf(best.index))
     }
 
@@ -144,10 +198,11 @@ class DecisionResponder(
         playerId: EntityId
     ): DecisionResponse {
         val best = decision.availableColors.maxByOrNull { color ->
-            val response = ColorChosenResponse(decision.id, color)
-            evaluateResult(simulator.simulateDecision(state, response), playerId)
+            evaluateResult(
+                simulator.simulateDecision(state, ColorChosenResponse(decision.id, color)),
+                playerId
+            )
         }!!
-
         return ColorChosenResponse(decision.id, best)
     }
 
@@ -158,18 +213,20 @@ class DecisionResponder(
         decision: ChooseNumberDecision,
         playerId: EntityId
     ): DecisionResponse {
-        // For small ranges, try each; for large ranges, sample key values
-        val candidates = if (decision.maxValue - decision.minValue <= 10) {
-            (decision.minValue..decision.maxValue).toList()
-        } else {
-            listOf(decision.minValue, decision.maxValue, (decision.minValue + decision.maxValue) / 2)
+        val range = decision.maxValue - decision.minValue
+        val candidates = when {
+            range <= 10 -> (decision.minValue..decision.maxValue).toList()
+            range <= 50 -> (decision.minValue..decision.maxValue step (range / 10).coerceAtLeast(1)).toList() +
+                listOf(decision.maxValue)
+            else -> listOf(decision.minValue, decision.maxValue, (decision.minValue + decision.maxValue) / 2)
         }
 
         val best = candidates.maxByOrNull { n ->
-            val response = NumberChosenResponse(decision.id, n)
-            evaluateResult(simulator.simulateDecision(state, response), playerId)
+            evaluateResult(
+                simulator.simulateDecision(state, NumberChosenResponse(decision.id, n)),
+                playerId
+            )
         }!!
-
         return NumberChosenResponse(decision.id, best)
     }
 
@@ -180,27 +237,53 @@ class DecisionResponder(
         decision: DistributeDecision,
         playerId: EntityId
     ): DecisionResponse {
+        val projected = state.projectedState
         val opponentId = state.getOpponent(playerId)
 
-        // Heuristic: concentrate damage on enemy creatures/players, spread minimums to own
         val distribution = mutableMapOf<EntityId, Int>()
         var remaining = decision.totalAmount
 
-        // Assign minimums first
+        // Assign minimums
         for (target in decision.targets) {
-            val min = decision.minPerTarget
-            distribution[target] = min
-            remaining -= min
+            distribution[target] = decision.minPerTarget
+            remaining -= decision.minPerTarget
         }
 
-        // Put remaining on the best target (opponent's creature or opponent player)
-        val bestTarget = decision.targets.maxByOrNull { target ->
-            if (target == opponentId) 10.0 // prefer hitting opponent
-            else if (isOpponentCreature(state, target, playerId)) creatureKillValue(state, target)
-            else -5.0 // don't want to damage own stuff
-        } ?: decision.targets.first()
+        // Smart distribution: try to kill creatures, then hit opponent
+        val targetPriority = decision.targets.sortedByDescending { target ->
+            when {
+                // Opponent player — good target but creatures first
+                target == opponentId -> 5.0
 
-        distribution[bestTarget] = (distribution[bestTarget] ?: 0) + remaining
+                // Opponent creature — value killing it
+                isOpponentCreature(state, target, playerId) -> {
+                    val toughness = projected.getToughness(target) ?: 0
+                    val damage = state.getEntity(target)?.get<com.wingedsheep.engine.state.components.battlefield.DamageComponent>()?.amount ?: 0
+                    val remainingToughness = toughness - damage
+                    val alreadyAssigned = distribution[target] ?: 0
+                    val neededToKill = (remainingToughness - alreadyAssigned).coerceAtLeast(0)
+
+                    // Prioritize creatures we can actually kill with remaining damage
+                    if (neededToKill <= remaining) {
+                        10.0 + creatureKillValue(state, target)
+                    } else {
+                        1.0 // can't kill it, low priority
+                    }
+                }
+
+                // Own creature — avoid
+                else -> -10.0
+            }
+        }
+
+        for (target in targetPriority) {
+            if (remaining <= 0) break
+            val max = decision.maxPerTarget[target] ?: remaining
+            val toAssign = remaining.coerceAtMost(max - (distribution[target] ?: 0))
+            distribution[target] = (distribution[target] ?: 0) + toAssign
+            remaining -= toAssign
+        }
+
         return DistributionResponse(decision.id, distribution)
     }
 
@@ -211,12 +294,20 @@ class DecisionResponder(
         decision: OrderObjectsDecision,
         playerId: EntityId
     ): DecisionResponse {
-        // For blocker ordering: order by threat (highest power first = kill first)
+        // For blocker ordering: kill the most threatening blocker first
+        val projected = state.projectedState
         val ordered = decision.objects.sortedByDescending { entityId ->
-            val projected = state.projectedState
             val power = projected.getPower(entityId) ?: 0
             val toughness = projected.getToughness(entityId) ?: 0
-            power + toughness
+            val keywords = projected.getKeywords(entityId)
+
+            var threat = power * 2.0 + toughness
+            // Deathtouch blockers must die first
+            if (Keyword.DEATHTOUCH.name in keywords) threat += 20.0
+            // First strike blockers deal damage before us
+            if (Keyword.FIRST_STRIKE.name in keywords) threat += 5.0
+            if (Keyword.LIFELINK.name in keywords) threat += 3.0
+            threat
         }
         return OrderedResponse(decision.id, ordered)
     }
@@ -228,11 +319,12 @@ class DecisionResponder(
         decision: SplitPilesDecision,
         playerId: EntityId
     ): DecisionResponse {
-        // Split into best half and worst half
-        val ranked = rankCardsByValue(state, decision.cards, playerId)
-        val half = ranked.size / 2
-        val pile1 = ranked.take(half)
-        val pile2 = ranked.drop(half)
+        // For Fact or Fiction style: opponent splits, we choose.
+        // When WE split: make one pile clearly better so opponent's choice is harder.
+        // Simple heuristic: put the best card alone, rest in other pile.
+        val ranked = rankCardsByInfo(decision.cards, decision.cardInfo, state, playerId)
+        val pile1 = ranked.take(1)
+        val pile2 = ranked.drop(1)
         return PilesSplitResponse(decision.id, listOf(pile1, pile2))
     }
 
@@ -246,10 +338,11 @@ class DecisionResponder(
         if (decision.options.size == 1) return OptionChosenResponse(decision.id, 0)
 
         val best = decision.options.indices.maxByOrNull { index ->
-            val response = OptionChosenResponse(decision.id, index)
-            evaluateResult(simulator.simulateDecision(state, response), playerId)
+            evaluateResult(
+                simulator.simulateDecision(state, OptionChosenResponse(decision.id, index)),
+                playerId
+            )
         }!!
-
         return OptionChosenResponse(decision.id, best)
     }
 
@@ -259,7 +352,7 @@ class DecisionResponder(
         state: GameState,
         decision: AssignDamageDecision
     ): DecisionResponse {
-        // Use the engine's pre-computed default: lethal to each blocker in order, rest to player
+        // Use the engine's defaults — lethal to each in order, rest to player
         return DamageAssignmentResponse(decision.id, decision.defaultAssignments)
     }
 
@@ -274,10 +367,9 @@ class DecisionResponder(
             return CardsSelectedResponse(decision.id, emptyList())
         }
 
-        // Rank by mana value (prefer cards we can cast soon)
+        // Context-aware search: what does my board need?
         val ranked = decision.options.sortedByDescending { entityId ->
-            val info = decision.cards[entityId]
-            searchCardScore(info)
+            searchCardContextualScore(state, decision.cards[entityId], playerId)
         }
 
         val count = decision.maxSelections.coerceAtMost(ranked.size)
@@ -291,10 +383,8 @@ class DecisionResponder(
         decision: ReorderLibraryDecision,
         playerId: EntityId
     ): DecisionResponse {
-        // Put best cards on top (first in list = top of library)
         val ranked = decision.cards.sortedByDescending { entityId ->
-            val info = decision.cardInfo[entityId]
-            searchCardScore(info)
+            searchCardContextualScore(state, decision.cardInfo[entityId], playerId)
         }
         return OrderedResponse(decision.id, ranked)
     }
@@ -302,15 +392,157 @@ class DecisionResponder(
     // ── Mana sources ─────────────────────────────────────────────────────
 
     private fun respondManaSelection(decision: SelectManaSourcesDecision): DecisionResponse {
-        // Always auto-pay — the solver's suggestion is good enough
         return ManaSourcesSelectedResponse(decision.id, autoPay = true)
     }
 
-    // ── Helpers ───────────────────────────────────────────────────────────
+    // ═════════════════════════════════════════════════════════════════════
+    // Card ranking engine
+    // ═════════════════════════════════════════════════════════════════════
+
+    /**
+     * Rank cards considering board context. [wantToKeep] = true means higher = better to keep;
+     * false means higher = better to discard/bottom.
+     */
+    private fun rankCardsContextual(
+        state: GameState,
+        cards: List<EntityId>,
+        playerId: EntityId,
+        wantToKeep: Boolean
+    ): List<EntityId> {
+        val projected = state.projectedState
+        val myLands = projected.getBattlefieldControlledBy(playerId).count { entityId ->
+            state.getEntity(entityId)?.get<CardComponent>()?.isLand == true
+        }
+        val myCreatures = projected.getBattlefieldControlledBy(playerId).count { entityId ->
+            projected.isCreature(entityId)
+        }
+        val handSize = state.getZone(playerId, Zone.HAND).size
+
+        val scored = cards.map { entityId ->
+            val card = state.getEntity(entityId)?.get<CardComponent>()
+            val score = if (card != null) {
+                contextualCardScore(card, myLands, myCreatures, handSize)
+            } else 0.0
+            entityId to score
+        }
+
+        return if (wantToKeep) {
+            scored.sortedByDescending { it.second }.map { it.first }
+        } else {
+            scored.sortedBy { it.second }.map { it.first }
+        }
+    }
+
+    /**
+     * Score a card based on what we need right now.
+     * Higher = more valuable to have/keep.
+     */
+    private fun contextualCardScore(
+        card: CardComponent,
+        myLands: Int,
+        myCreatures: Int,
+        handSize: Int
+    ): Double {
+        val mv = card.manaValue
+        val canCastNow = mv <= myLands
+
+        // Lands: valuable early, bad late
+        if (card.isLand) {
+            return when {
+                myLands <= 2 -> 8.0  // desperately need land
+                myLands <= 4 -> 5.0  // still want land
+                myLands <= 6 -> 2.0  // could use one more
+                else -> 0.5          // flood — land is nearly worthless
+            }
+        }
+
+        var score = 0.0
+
+        // Castable spells are more valuable than ones we can't cast yet
+        if (canCastNow) {
+            score += 3.0
+        } else {
+            // Expensive spells we can't cast are less useful right now
+            val turnsAway = (mv - myLands).coerceAtLeast(0)
+            score -= turnsAway * 0.5
+        }
+
+        // Creatures are always useful
+        if (card.isCreature) {
+            score += 2.0
+            if (myCreatures == 0) score += 3.0  // first creature is critical
+            // Keyword value
+            val keywords = card.baseKeywords
+            if (Keyword.FLYING in keywords) score += 1.0
+            if (Keyword.DEATHTOUCH in keywords) score += 1.0
+            if (Keyword.LIFELINK in keywords) score += 0.5
+        }
+
+        // Removal / instants are flexible
+        if (card.typeLine.isInstant) score += 2.5
+        if (card.typeLine.isSorcery) score += 2.0
+
+        // Higher mana value cards are generally more powerful (but only if castable)
+        if (canCastNow) score += mv * 0.3
+
+        return score
+    }
+
+    /** Score a SearchCardInfo for library search / reorder, considering board context. */
+    private fun searchCardContextualScore(
+        state: GameState,
+        info: SearchCardInfo?,
+        playerId: EntityId
+    ): Double {
+        if (info == null) return 0.0
+        val projected = state.projectedState
+
+        val myLands = projected.getBattlefieldControlledBy(playerId).count { entityId ->
+            state.getEntity(entityId)?.get<CardComponent>()?.isLand == true
+        }
+        val myCreatures = projected.getBattlefieldControlledBy(playerId).count { entityId ->
+            projected.isCreature(entityId)
+        }
+
+        val isLand = info.typeLine.contains("Land", ignoreCase = true)
+        val isCreature = info.typeLine.contains("Creature", ignoreCase = true)
+        val isInstant = info.typeLine.contains("Instant", ignoreCase = true)
+
+        if (isLand) {
+            return when {
+                myLands <= 2 -> 9.0
+                myLands <= 4 -> 5.0
+                else -> 1.0
+            }
+        }
+
+        var score = 3.0
+        if (isCreature) {
+            score += 2.0
+            if (myCreatures == 0) score += 3.0
+        }
+        if (isInstant) score += 1.0
+
+        return score
+    }
+
+    private fun rankCardsByInfo(
+        cards: List<EntityId>,
+        cardInfo: Map<EntityId, SearchCardInfo>?,
+        state: GameState,
+        playerId: EntityId
+    ): List<EntityId> {
+        return cards.sortedByDescending { entityId ->
+            searchCardContextualScore(state, cardInfo?.get(entityId), playerId)
+        }
+    }
+
+    // ═════════════════════════════════════════════════════════════════════
+    // Helpers
+    // ═════════════════════════════════════════════════════════════════════
 
     private fun evaluateResult(result: SimulationResult, playerId: EntityId): Double {
-        val state = result.state
-        return evaluator.evaluate(state, state.projectedState, playerId)
+        return evaluator.evaluate(result.state, result.state.projectedState, playerId)
     }
 
     private fun <T> pickBestBySimulation(
@@ -320,39 +552,16 @@ class DecisionResponder(
         buildResponse: (T) -> DecisionResponse
     ): T {
         return candidates.maxByOrNull { candidate ->
-            val response = buildResponse(candidate)
-            evaluateResult(simulator.simulateDecision(state, response), playerId)
+            evaluateResult(simulator.simulateDecision(state, buildResponse(candidate)), playerId)
         } ?: candidates.first()
     }
 
     private fun cancelOrFirst(decision: ChooseTargetsDecision): DecisionResponse {
         if (decision.canCancel) return CancelDecisionResponse(decision.id)
-        // Fallback: pick first legal target for each requirement
         val selected = decision.targetRequirements.associate { req ->
-            val targets = decision.legalTargets[req.index] ?: emptyList()
-            req.index to targets.take(req.minTargets)
+            req.index to (decision.legalTargets[req.index] ?: emptyList()).take(req.minTargets)
         }
         return TargetsResponse(decision.id, selected)
-    }
-
-    /** Rank cards by "what I'd prefer to discard" — low value = discard first. */
-    private fun rankCardsForDiscard(state: GameState, cards: List<EntityId>, playerId: EntityId): List<EntityId> {
-        return cards.sortedBy { entityId -> cardRetainValue(state, entityId) }
-    }
-
-    /** Rank cards by general desirability — high value first. */
-    private fun rankCardsByValue(state: GameState, cards: List<EntityId>, playerId: EntityId): List<EntityId> {
-        return cards.sortedByDescending { entityId -> cardRetainValue(state, entityId) }
-    }
-
-    /** How much we want to keep this card (higher = keep). */
-    private fun cardRetainValue(state: GameState, entityId: EntityId): Double {
-        val card = state.getEntity(entityId)?.get<CardComponent>() ?: return 0.0
-        // Creatures are generally more valuable than non-creatures
-        var value = card.manaValue.toDouble()
-        if (card.isCreature) value += 1.0
-        if (card.isLand) value -= 0.5  // lands are less valuable to keep when discarding
-        return value
     }
 
     private fun isOpponentCreature(state: GameState, entityId: EntityId, playerId: EntityId): Boolean {
@@ -361,20 +570,7 @@ class DecisionResponder(
     }
 
     private fun creatureKillValue(state: GameState, entityId: EntityId): Double {
-        val power = state.projectedState.getPower(entityId) ?: 0
-        val toughness = state.projectedState.getToughness(entityId) ?: 0
-        return (power + toughness).toDouble()
-    }
-
-    private fun searchCardScore(info: SearchCardInfo?): Double {
-        if (info == null) return 0.0
-        // Prefer non-lands with moderate mana cost
-        val isLand = info.typeLine.contains("Land", ignoreCase = true)
-        val isCreature = info.typeLine.contains("Creature", ignoreCase = true)
-        return when {
-            isLand -> 2.0
-            isCreature -> 5.0
-            else -> 4.0
-        }
+        val card = state.getEntity(entityId)?.get<CardComponent>() ?: return 0.0
+        return BoardPresence.permanentValue(state, state.projectedState, entityId, card)
     }
 }
