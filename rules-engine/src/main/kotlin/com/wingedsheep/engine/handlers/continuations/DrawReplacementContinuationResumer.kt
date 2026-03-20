@@ -10,6 +10,8 @@ import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.player.ManaPoolComponent
+import com.wingedsheep.sdk.model.EntityId
+
 class DrawReplacementContinuationResumer(
     private val ctx: ContinuationContext
 ) : ContinuationResumerModule {

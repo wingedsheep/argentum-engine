@@ -3,9 +3,7 @@ package com.wingedsheep.engine.handlers.continuations
 import com.wingedsheep.engine.core.*
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.state.GameState
-import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.identity.CardComponent
-import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.engine.state.components.stack.SpellOnStackComponent
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
@@ -703,22 +701,4 @@ class ModalAndCloneContinuationResumer(
         )
     }
 
-    private fun entityIdToChosenTarget(state: GameState, entityId: EntityId): ChosenTarget {
-        return when {
-            entityId in state.turnOrder -> ChosenTarget.Player(entityId)
-            entityId in state.getBattlefield() -> ChosenTarget.Permanent(entityId)
-            entityId in state.stack -> ChosenTarget.Spell(entityId)
-            else -> {
-                val graveyardOwner = state.turnOrder.find { playerId ->
-                    val graveyardZone = ZoneKey(playerId, Zone.GRAVEYARD)
-                    entityId in state.getZone(graveyardZone)
-                }
-                if (graveyardOwner != null) {
-                    ChosenTarget.Card(entityId, graveyardOwner, Zone.GRAVEYARD)
-                } else {
-                    ChosenTarget.Permanent(entityId)
-                }
-            }
-        }
-    }
 }

@@ -7,7 +7,7 @@
 | Color      | Total | Done |
 |------------|-------|------|
 | White      | 40    | 0    |
-| Blue       | 41    | 0    |
+| Blue       | 41    | 1    |
 | Black      | 40    | 0    |
 | Red        | 41    | 1    |
 | Green      | 41    | 0    |
@@ -213,7 +213,7 @@
 - [ ] Seedglaive Mentor
 - [ ] Seedpod Squire
 - [ ] Shore Up
-- [ ] Shoreline Looter
+- [x] Shoreline Looter
 - [ ] Short Bow
 - [ ] Shrike Force
 - [ ] Sinister Monolith
