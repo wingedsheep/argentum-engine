@@ -148,7 +148,7 @@ The LLM AI receives the same masked game state as a human player and responds th
 | Variable | Default | Description |
 |----------|---------|-------------|
 | `GAME_AI_ENABLED` | `true` | Enable the AI opponent feature |
-| `GAME_AI_MODE` | `engine` | `engine` — built-in AI (no API key needed); `llm` — LLM-powered AI |
+| `GAME_AI_MODE` | `llm` | `engine` — built-in AI (no API key needed); `llm` — LLM-powered AI |
 | `GAME_AI_BASE_URL` | `https://openrouter.ai/api/v1` | LLM API endpoint (LLM mode only) |
 | `GAME_AI_API_KEY` | | API key for LLM provider (LLM mode only) |
 | `GAME_AI_MODEL` | `google/gemini-3.1-flash-lite-preview` | LLM model name (LLM mode only) |
