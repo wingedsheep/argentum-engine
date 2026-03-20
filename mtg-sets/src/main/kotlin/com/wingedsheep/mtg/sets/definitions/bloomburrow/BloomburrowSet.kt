@@ -26,5 +26,6 @@ object BloomburrowSet {
         HiredClaw,
         QuaketuskBoar,
         ShorelineLooter,
+        SinisterMonolith,
     )
 }
