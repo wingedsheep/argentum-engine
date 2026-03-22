@@ -41,5 +41,6 @@ object BloomburrowSet {
         SplashLasher,
         SunspineLynx,
         TenderWildguide,
+        ValleyQuestcaller,
     )
 }

@@ -202,6 +202,18 @@ class PredicateEvaluator {
                     !hasSubtype
                 }
             }
+            is CardPredicate.HasAnyOfSubtypes -> {
+                if (projectedValues?.isFaceDown == true) {
+                    false
+                } else {
+                    predicate.subtypes.any { subtype ->
+                        projectedValues?.subtypes?.any { it.equals(subtype.value, ignoreCase = true) }
+                            ?: (card.typeLine.hasSubtype(subtype) ||
+                                (Keyword.CHANGELING in card.baseKeywords &&
+                                    subtype.value in Subtype.ALL_CREATURE_TYPES))
+                    }
+                }
+            }
             is CardPredicate.HasBasicLandType -> {
                 if (projectedValues?.isFaceDown == true) {
                     false  // Face-down has no land types
@@ -415,6 +427,14 @@ class PredicateEvaluator {
             is CardPredicate.NotSubtype -> {
                 if (container.has<FaceDownComponent>()) true
                 else !typeLine.hasSubtype(predicate.subtype)
+            }
+            is CardPredicate.HasAnyOfSubtypes -> {
+                if (container.has<FaceDownComponent>()) false
+                else predicate.subtypes.any { subtype ->
+                    typeLine.hasSubtype(subtype) ||
+                        (Keyword.CHANGELING in card.baseKeywords &&
+                            subtype.value in Subtype.ALL_CREATURE_TYPES)
+                }
             }
             is CardPredicate.HasBasicLandType -> {
                 if (container.has<FaceDownComponent>()) false

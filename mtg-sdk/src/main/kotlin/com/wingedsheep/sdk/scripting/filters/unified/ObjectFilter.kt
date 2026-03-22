@@ -243,6 +243,11 @@ data class GameObjectFilter(
         cardPredicates = cardPredicates + CardPredicate.HasSubtypeInStoredList(listName)
     )
 
+    /** Must have any one of the given subtypes (OR logic) */
+    fun withAnyOfSubtypes(subtypes: List<Subtype>) = copy(
+        cardPredicates = cardPredicates + CardPredicate.HasAnyOfSubtypes(subtypes)
+    )
+
     // =============================================================================
     // Fluent Builder Methods - State Predicates
     // =============================================================================

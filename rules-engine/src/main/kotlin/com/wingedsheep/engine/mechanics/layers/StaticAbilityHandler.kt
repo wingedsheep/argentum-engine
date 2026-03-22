@@ -607,7 +607,7 @@ class StaticAbilityHandler(
         // Check if the card predicates are creature-compatible (empty, IsCreature only, or IsCreature + subtype).
         // Non-creature type predicates (e.g., IsPlaneswalker) must fall through to Generic.
         val hasNonCreatureTypePredicate = baseFilter.cardPredicates.any {
-            it != CardPredicate.IsCreature && it !is CardPredicate.HasSubtype
+            it != CardPredicate.IsCreature && it !is CardPredicate.HasSubtype && it !is CardPredicate.HasAnyOfSubtypes
         }
         if (hasNonCreatureTypePredicate) {
             return AffectsFilter.Generic(filter)

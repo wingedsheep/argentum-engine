@@ -321,6 +321,8 @@ class TriggerMatcher(
             is com.wingedsheep.sdk.scripting.predicates.CardPredicate.IsCreature -> cardComponent.typeLine.isCreature
             is com.wingedsheep.sdk.scripting.predicates.CardPredicate.HasSubtype ->
                 cardComponent.typeLine.hasSubtype(predicate.subtype)
+            is com.wingedsheep.sdk.scripting.predicates.CardPredicate.HasAnyOfSubtypes ->
+                predicate.subtypes.any { cardComponent.typeLine.hasSubtype(it) }
             is com.wingedsheep.sdk.scripting.predicates.CardPredicate.ManaValueAtLeast -> {
                 val cmc = if (isFaceDown) 0 else cardComponent.manaValue
                 cmc >= predicate.min

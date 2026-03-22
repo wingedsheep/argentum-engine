@@ -399,6 +399,7 @@ class CostCalculator(
 
             is CardPredicate.HasSubtype -> typeLine.hasSubtype(predicate.subtype)
             is CardPredicate.NotSubtype -> !typeLine.hasSubtype(predicate.subtype)
+            is CardPredicate.HasAnyOfSubtypes -> predicate.subtypes.any { typeLine.hasSubtype(it) }
             is CardPredicate.HasBasicLandType -> typeLine.hasSubtype(Subtype(predicate.landType))
             is CardPredicate.NameEquals -> cardDef.name == predicate.name
 

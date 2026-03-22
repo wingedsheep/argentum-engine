@@ -631,7 +631,7 @@ constructors.
 
 - `Filters.Unified.any` / `.creature` / `.land` / `.basicLand` / `.artifact` / `.enchantment` / `.planeswalker`
 - `Filters.Unified.instant` / `.sorcery` / `.permanent` / `.nonlandPermanent` / `.instantOrSorcery`
-- `Filters.Unified.withColor(color)` / `.withSubtype(subtype)` / `.withKeyword(keyword)`
+- `Filters.Unified.withColor(color)` / `.withSubtype(subtype)` / `.withAnyOfSubtypes(listOf(Subtype("A"), Subtype("B")))` / `.withKeyword(keyword)`
 - `Filters.Unified.manaValueAtMost(max)` / `.manaValueAtLeast(min)`
 
 ---

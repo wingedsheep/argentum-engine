@@ -192,6 +192,20 @@ sealed interface CardPredicate : TextReplaceable<CardPredicate> {
         }
     }
 
+    /**
+     * Matches cards with any one of the given subtypes (OR logic).
+     * Used for "Rabbits, Bats, Birds, and/or Mice" patterns.
+     */
+    @SerialName("HasAnyOfSubtypes")
+    @Serializable
+    data class HasAnyOfSubtypes(val subtypes: List<Subtype>) : CardPredicate {
+        override val description: String = subtypes.joinToString(", ") { it.value }
+        override fun applyTextReplacement(replacer: TextReplacer): CardPredicate {
+            val newSubtypes = subtypes.map { replacer.replaceSubtype(it) }
+            return if (newSubtypes == subtypes) this else HasAnyOfSubtypes(newSubtypes)
+        }
+    }
+
     @SerialName("NotSubtype")
     @Serializable
     data class NotSubtype(val subtype: Subtype) : CardPredicate {

@@ -2,11 +2,11 @@
 
 **Set Size:** 266 cards
 **Release Date:** August 2, 2024
-**Implemented:** 19 / 266
+**Implemented:** 20 / 266
 
 | Color      | Total | Done |
 |------------|-------|------|
-| White      | 40    | 4    |
+| White      | 40    | 5    |
 | Blue       | 41    | 2    |
 | Black      | 40    | 2    |
 | Red        | 41    | 3    |
@@ -262,7 +262,7 @@
 - [ ] Valley Flamecaller
 - [ ] Valley Floodcaller
 - [ ] Valley Mightcaller
-- [ ] Valley Questcaller
+- [x] Valley Questcaller
 - [ ] Valley Rally
 - [ ] Valley Rotcaller
 - [ ] Veteran Guardmouse
