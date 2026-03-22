@@ -45,7 +45,8 @@ class SiegeGangCommanderTest : FunSpec({
                 power = 1,
                 toughness = 1,
                 colors = setOf(Color.RED),
-                creatureTypes = setOf("Goblin")
+                creatureTypes = setOf("Goblin"),
+                imageUri = "https://cards.scryfall.io/normal/front/e/9/e9577d3c-ee19-4b53-adac-b304287a066f.jpg?1561758362"
             )
         }
 

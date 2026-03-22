@@ -34,7 +34,8 @@ val CallerOfTheClaw = card("Caller of the Claw") {
             power = 2,
             toughness = 2,
             colors = setOf(Color.GREEN),
-            creatureTypes = setOf("Bear")
+            creatureTypes = setOf("Bear"),
+            imageUri = "https://cards.scryfall.io/normal/front/7/7/772dac39-269b-4a35-aad3-320279af833f.jpg?1675455454"
         )
     }
 

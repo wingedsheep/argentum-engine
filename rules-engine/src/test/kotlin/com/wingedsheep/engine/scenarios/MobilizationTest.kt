@@ -46,6 +46,7 @@ class MobilizationTest : FunSpec({
                 toughness = 1,
                 colors = setOf(Color.WHITE),
                 creatureTypes = setOf("Soldier"),
+                imageUri = "https://cards.scryfall.io/normal/front/c/8/c8ae31d1-9a6e-43f3-9b04-bd15699f73d6.jpg?1561758059"
             )
         }
     }

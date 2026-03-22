@@ -40,7 +40,8 @@ val DayOfTheDragons = card("Day of the Dragons") {
                     toughness = 5,
                     colors = setOf(Color.RED),
                     creatureTypes = setOf("Dragon"),
-                    keywords = setOf(Keyword.FLYING)
+                    keywords = setOf(Keyword.FLYING),
+                    imageUri = "https://cards.scryfall.io/normal/front/a/5/a5d4dd3b-0a5f-4d2c-aa6b-3c47e71e8c39.jpg?1730485632"
                 )
             )
     }

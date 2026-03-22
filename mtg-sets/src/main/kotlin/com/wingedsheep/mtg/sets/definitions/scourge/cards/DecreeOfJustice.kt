@@ -31,7 +31,8 @@ val DecreeOfJustice = card("Decree of Justice") {
             toughness = 4,
             colors = setOf(Color.WHITE),
             creatureTypes = setOf("Angel"),
-            keywords = setOf(Keyword.FLYING)
+            keywords = setOf(Keyword.FLYING),
+            imageUri = "https://cards.scryfall.io/normal/front/1/d/1dc88baf-217f-4b25-9945-75c33ae37dc2.jpg?1561756759"
         )
     }
 
@@ -45,7 +46,8 @@ val DecreeOfJustice = card("Decree of Justice") {
                 power = 1,
                 toughness = 1,
                 colors = setOf(Color.WHITE),
-                creatureTypes = setOf("Soldier")
+                creatureTypes = setOf("Soldier"),
+                imageUri = "https://cards.scryfall.io/normal/front/c/8/c8ae31d1-9a6e-43f3-9b04-bd15699f73d6.jpg?1561758059"
             )
         )
     }

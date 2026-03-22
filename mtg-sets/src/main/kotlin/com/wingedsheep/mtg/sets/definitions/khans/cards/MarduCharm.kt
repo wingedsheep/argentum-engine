@@ -52,7 +52,8 @@ val MarduCharm = card("Mardu Charm") {
                     toughness = 1,
                     colors = setOf(Color.WHITE),
                     creatureTypes = setOf("Warrior"),
-                    keywords = setOf(Keyword.FIRST_STRIKE)
+                    keywords = setOf(Keyword.FIRST_STRIKE),
+                    imageUri = "https://cards.scryfall.io/normal/front/a/f/af4c9101-85bf-4a4f-a496-ff6db7b531b7.jpg?1562639979"
                 )
             }
             mode("Target opponent reveals their hand, discard a noncreature, nonland card") {

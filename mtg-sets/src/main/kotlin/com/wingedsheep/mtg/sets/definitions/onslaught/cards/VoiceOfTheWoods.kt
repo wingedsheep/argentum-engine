@@ -29,7 +29,8 @@ val VoiceOfTheWoods = card("Voice of the Woods") {
             toughness = 7,
             colors = setOf(Color.GREEN),
             creatureTypes = setOf("Elemental"),
-            keywords = setOf(Keyword.TRAMPLE)
+            keywords = setOf(Keyword.TRAMPLE),
+            imageUri = "https://cards.scryfall.io/normal/front/5/e/5e37e5ee-d860-4a81-951b-d03bcea9feff.jpg?1715293284"
         )
     }
 

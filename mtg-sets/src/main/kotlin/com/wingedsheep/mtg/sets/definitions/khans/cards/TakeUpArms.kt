@@ -22,7 +22,8 @@ val TakeUpArms = card("Take Up Arms") {
             power = 1,
             toughness = 1,
             colors = setOf(Color.WHITE),
-            creatureTypes = setOf("Warrior")
+            creatureTypes = setOf("Warrior"),
+            imageUri = "https://cards.scryfall.io/normal/front/a/f/af4c9101-85bf-4a4f-a496-ff6db7b531b7.jpg?1562639979"
         )
     }
 
