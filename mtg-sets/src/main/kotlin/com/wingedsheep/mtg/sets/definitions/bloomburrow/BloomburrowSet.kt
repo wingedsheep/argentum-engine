@@ -28,6 +28,7 @@ object BloomburrowSet {
         FecundGreenshell,
         HeirloomEpic,
         HiredClaw,
+        HonoredDreyleader,
         JackdawSavior,
         JunkbladeBruiser,
         HuntersTalent,

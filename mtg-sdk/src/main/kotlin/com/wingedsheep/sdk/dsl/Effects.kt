@@ -13,6 +13,7 @@ import com.wingedsheep.sdk.scripting.effects.AddDynamicManaEffect
 import com.wingedsheep.sdk.scripting.effects.AddManaOfColorAmongEffect
 import com.wingedsheep.sdk.scripting.effects.AddCardTypeEffect
 import com.wingedsheep.sdk.scripting.effects.AddCountersEffect
+import com.wingedsheep.sdk.scripting.effects.AddDynamicCountersEffect
 import com.wingedsheep.sdk.scripting.effects.AddSubtypeEffect
 import com.wingedsheep.sdk.scripting.effects.AddCountersToCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.AddManaEffect
@@ -569,6 +570,12 @@ object Effects {
      */
     fun AddCounters(counterType: String, count: Int, target: EffectTarget): Effect =
         AddCountersEffect(counterType, count, target)
+
+    /**
+     * Add a dynamic number of counters.
+     */
+    fun AddDynamicCounters(counterType: String, amount: DynamicAmount, target: EffectTarget): Effect =
+        AddDynamicCountersEffect(counterType, amount, target)
 
     /**
      * Add counters to all entities in a named collection.

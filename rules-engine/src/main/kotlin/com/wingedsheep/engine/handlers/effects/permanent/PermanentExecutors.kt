@@ -21,6 +21,7 @@ class PermanentExecutors(
         GrantKeywordExecutor(),
         RemoveKeywordExecutor(),
         AddCountersExecutor(),
+        AddDynamicCountersExecutor(),
         AddCountersToCollectionExecutor(),
         TapUntapCollectionExecutor(),
         RemoveCountersExecutor(),

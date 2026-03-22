@@ -2,6 +2,7 @@ package com.wingedsheep.sdk.scripting.effects
 
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.text.TextReplacer
+import com.wingedsheep.sdk.scripting.values.DynamicAmount
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -22,6 +23,23 @@ data class AddCountersEffect(
 ) : Effect {
     override val description: String =
         "Put $count $counterType counter${if (count != 1) "s" else ""} on ${target.description}"
+
+    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
+}
+
+/**
+ * Add counters with a dynamic amount.
+ * "Put N +1/+1 counters on target creature, where N is [amount]"
+ */
+@SerialName("AddDynamicCounters")
+@Serializable
+data class AddDynamicCountersEffect(
+    val counterType: String,
+    val amount: DynamicAmount,
+    val target: EffectTarget
+) : Effect {
+    override val description: String =
+        "Put ${amount.description} $counterType counters on ${target.description}"
 
     override fun applyTextReplacement(replacer: TextReplacer): Effect = this
 }

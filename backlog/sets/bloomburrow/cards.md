@@ -2,7 +2,7 @@
 
 **Set Size:** 266 cards
 **Release Date:** August 2, 2024
-**Implemented:** 20 / 266
+**Implemented:** 21 / 266
 
 | Color      | Total | Done |
 |------------|-------|------|
@@ -10,7 +10,7 @@
 | Blue       | 41    | 2    |
 | Black      | 40    | 2    |
 | Red        | 41    | 3    |
-| Green      | 41    | 3    |
+| Green      | 41    | 4    |
 | Multicolor | 39    | 2    |
 | Colorless  | 9     | 1    |
 | Land       | 15    | 0    |
@@ -116,7 +116,7 @@
 - [x] Hired Claw
 - [ ] Hivespine Wolverine
 - [ ] Hoarder's Overflow
-- [ ] Honored Dreyleader
+- [x] Honored Dreyleader
 - [ ] Hop to It
 - [ ] Hugs, Grisly Guardian
 - [x] Hunter's Talent
