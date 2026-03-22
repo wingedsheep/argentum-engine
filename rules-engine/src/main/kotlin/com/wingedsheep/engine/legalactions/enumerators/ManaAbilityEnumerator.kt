@@ -44,7 +44,7 @@ class ManaAbilityEnumerator : ActionEnumerator {
 
             val entityLostAllAbilities = projected.hasLostAllAbilities(entityId)
 
-            val cardDef = context.cardRegistry.getCard(cardComponent.name) ?: continue
+            val cardDef = context.cardRegistry.getCard(cardComponent.name)
 
             // Include granted activated abilities that are mana abilities (both temporary and static)
             val grantedManaAbilities = state.grantedActivatedAbilities
@@ -55,9 +55,12 @@ class ManaAbilityEnumerator : ActionEnumerator {
                 .getStaticGrantedActivatedAbilities(entityId, state)
                 .filter { it.isManaAbility }
 
+            // If no card definition (e.g., tokens) and no granted/static mana abilities, skip
+            if (cardDef == null && grantedManaAbilities.isEmpty() && staticManaAbilities.isEmpty()) continue
+
             // If entity lost all abilities, only granted/static abilities remain (own abilities suppressed)
             val classLevel = container.get<com.wingedsheep.engine.state.components.battlefield.ClassLevelComponent>()?.currentLevel
-            val ownManaAbilities = if (entityLostAllAbilities) emptyList()
+            val ownManaAbilities = if (cardDef == null || entityLostAllAbilities) emptyList()
             else cardDef.script.effectiveActivatedAbilities(classLevel).filter { it.isManaAbility }
             val manaAbilities = ownManaAbilities + grantedManaAbilities + staticManaAbilities
 

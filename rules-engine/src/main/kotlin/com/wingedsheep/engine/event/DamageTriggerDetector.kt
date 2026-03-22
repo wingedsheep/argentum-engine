@@ -222,6 +222,38 @@ class DamageTriggerDetector(
     }
 
     /**
+     * Detect general damage observer triggers (DealsDamageEvent with ANY binding)
+     * that aren't handled by the specialized detectDamageToControllerTriggers or
+     * detectSubtypeDamageToPlayerTriggers methods.
+     * E.g., Kazarov: "Whenever a creature an opponent controls is dealt damage"
+     */
+    fun detectDamageObserverTriggers(
+        state: GameState,
+        event: DamageDealtEvent,
+        triggers: MutableList<PendingTrigger>,
+        index: TriggerIndex
+    ) {
+        for (entry in index.damageObservers) {
+            for (ability in entry.abilities) {
+                val trigger = ability.trigger
+                if (trigger is GameEvent.DealsDamageEvent && ability.binding == TriggerBinding.ANY) {
+                    if (matcher.matchesDealsDamageTrigger(trigger, event, state, entry.controllerId)) {
+                        triggers.add(
+                            PendingTrigger(
+                                ability = ability,
+                                sourceId = entry.entityId,
+                                sourceName = entry.cardComponent.name,
+                                controllerId = entry.controllerId,
+                                triggerContext = TriggerContext.fromEvent(event)
+                            )
+                        )
+                    }
+                }
+            }
+        }
+    }
+
+    /**
      * Detect "whenever a [subtype] deals combat damage to a player" triggers.
      * Uses pre-indexed subtype damage observers instead of scanning all battlefield permanents.
      */

@@ -63,7 +63,7 @@ class ActivatedAbilityEnumerator : ActionEnumerator {
             // Face-down creatures have no abilities (Rule 707.2)
             if (container.has<FaceDownComponent>()) continue
 
-            val cardDef = context.cardRegistry.getCard(cardComponent.name) ?: continue
+            val cardDef = context.cardRegistry.getCard(cardComponent.name)
             // Include granted activated abilities alongside the card's own abilities (both temporary and static)
             val grantedAbilities = state.grantedActivatedAbilities
                 .filter { it.entityId == entityId }
@@ -71,16 +71,19 @@ class ActivatedAbilityEnumerator : ActionEnumerator {
             val staticAbilities = context.castPermissionUtils.getStaticGrantedActivatedAbilities(entityId, state)
             val allAbilities = grantedAbilities + staticAbilities
 
+            // If no card definition (e.g., tokens) and no granted/static abilities, skip
+            if (cardDef == null && allAbilities.isEmpty()) continue
+
             // Get class level for Class enchantments (null for non-Class cards)
             val classLevelComponent = container.get<ClassLevelComponent>()
             val classLevel = classLevelComponent?.currentLevel
 
             // If entity lost all abilities, suppress its own non-mana abilities
-            val ownNonManaAbilities = if (projected.hasLostAllAbilities(entityId)) emptyList()
+            val ownNonManaAbilities = if (cardDef == null || projected.hasLostAllAbilities(entityId)) emptyList()
             else cardDef.script.effectiveActivatedAbilities(classLevel).filter { !it.isManaAbility }
 
             // Generate level-up abilities for Class enchantments
-            val levelUpAbilities = if (classLevelComponent != null && !projected.hasLostAllAbilities(entityId)) {
+            val levelUpAbilities = if (cardDef != null && classLevelComponent != null && !projected.hasLostAllAbilities(entityId)) {
                 generateClassLevelUpAbilities(cardDef, classLevelComponent)
             } else emptyList()
 

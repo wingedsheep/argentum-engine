@@ -73,6 +73,7 @@ class TriggerIndex(
     val grantProviders: List<GrantProviderEntry>,
     val damageToYouObservers: List<IndexedEntity>,
     val subtypeDamageObservers: List<IndexedEntity>,
+    val damageObservers: List<IndexedEntity>,
     val creatureDamageDeathTrackers: List<IndexedEntity>,
 ) {
     /**
@@ -120,6 +121,7 @@ class TriggerIndex(
             grantProviders = emptyList(),
             damageToYouObservers = emptyList(),
             subtypeDamageObservers = emptyList(),
+            damageObservers = emptyList(),
             creatureDamageDeathTrackers = emptyList(),
         )
 

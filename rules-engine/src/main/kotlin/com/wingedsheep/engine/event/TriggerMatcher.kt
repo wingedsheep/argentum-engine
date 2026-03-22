@@ -22,6 +22,7 @@ import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.mechanics.layers.ProjectedState
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.identity.CardComponent
+import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.identity.FaceDownComponent
 import com.wingedsheep.engine.state.components.stack.SpellOnStackComponent
 import com.wingedsheep.engine.state.components.stack.TargetsComponent
@@ -485,7 +486,12 @@ class TriggerMatcher(
         return true
     }
 
-    fun matchesDealsDamageTrigger(trigger: GameEvent.DealsDamageEvent, event: DamageDealtEvent, state: GameState): Boolean {
+    fun matchesDealsDamageTrigger(
+        trigger: GameEvent.DealsDamageEvent,
+        event: DamageDealtEvent,
+        state: GameState,
+        controllerId: EntityId? = null
+    ): Boolean {
         val combatMatches = trigger.damageType == DamageType.Any ||
             (trigger.damageType == DamageType.Combat && event.isCombatDamage) ||
             (trigger.damageType == DamageType.NonCombat && !event.isCombatDamage)
@@ -494,7 +500,28 @@ class TriggerMatcher(
             RecipientFilter.AnyPlayer -> event.targetId in state.turnOrder
             RecipientFilter.AnyCreature -> event.targetId !in state.turnOrder
             RecipientFilter.You -> false // handled separately in detectDamageToControllerTriggers
-            else -> true
+            RecipientFilter.Opponent -> {
+                event.targetId in state.turnOrder && event.targetId != controllerId
+            }
+            RecipientFilter.CreatureOpponentControls -> {
+                val targetEntity = state.getEntity(event.targetId)
+                val targetCard = targetEntity?.get<CardComponent>()
+                val targetController = targetEntity?.get<ControllerComponent>()?.playerId
+                targetCard?.typeLine?.isCreature == true && targetController != null && targetController != controllerId
+            }
+            RecipientFilter.CreatureYouControl -> {
+                val targetEntity = state.getEntity(event.targetId)
+                val targetCard = targetEntity?.get<CardComponent>()
+                val targetController = targetEntity?.get<ControllerComponent>()?.playerId
+                targetCard?.typeLine?.isCreature == true && targetController == controllerId
+            }
+            RecipientFilter.PermanentYouControl -> {
+                val targetController = state.getEntity(event.targetId)?.get<ControllerComponent>()?.playerId
+                targetController == controllerId
+            }
+            RecipientFilter.AnyPermanent -> event.targetId !in state.turnOrder
+            RecipientFilter.Self -> false // handled elsewhere
+            else -> false
         }
         return combatMatches && recipientMatches
     }

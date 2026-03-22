@@ -92,6 +92,7 @@ class TriggerDetector(
         val auraMap = HashMap<EntityId, MutableList<TriggerIndex.IndexedEntity>>()
         val damageToYou = mutableListOf<TriggerIndex.IndexedEntity>()
         val subtypeDmg = mutableListOf<TriggerIndex.IndexedEntity>()
+        val damageObs = mutableListOf<TriggerIndex.IndexedEntity>()
         val deathTrackers = mutableListOf<TriggerIndex.IndexedEntity>()
 
         for (entityId in state.getBattlefield()) {
@@ -118,12 +119,14 @@ class TriggerDetector(
                     if (trigger is GameEvent.DealsDamageEvent && ability.binding == TriggerBinding.ANY) {
                         if (trigger.recipient == RecipientFilter.You && trigger.sourceFilter == null) {
                             damageToYou.add(entry)
-                        }
-                        if (trigger.damageType == DamageType.Combat &&
+                        } else if (trigger.damageType == DamageType.Combat &&
                             trigger.recipient == RecipientFilter.AnyPlayer &&
                             trigger.sourceFilter != null
                         ) {
                             subtypeDmg.add(entry)
+                        } else {
+                            // General damage observer (e.g., Kazarov: "whenever a creature an opponent controls is dealt damage")
+                            damageObs.add(entry)
                         }
                     }
 
@@ -150,6 +153,7 @@ class TriggerDetector(
             grantProviders = grantProviders,
             damageToYouObservers = damageToYou,
             subtypeDamageObservers = subtypeDmg,
+            damageObservers = damageObs,
             creatureDamageDeathTrackers = deathTrackers,
         )
     }
@@ -594,6 +598,11 @@ class TriggerDetector(
         // Handle "whenever a creature deals damage to you" triggers (e.g., Aurification)
         if (event is DamageDealtEvent && event.sourceId != null && event.targetId in state.turnOrder) {
             damageDetector.detectDamageToControllerTriggers(state, event, triggers, projected, index)
+        }
+
+        // Handle general damage observer triggers (e.g., Kazarov: "whenever a creature an opponent controls is dealt damage")
+        if (event is DamageDealtEvent) {
+            damageDetector.detectDamageObserverTriggers(state, event, triggers, index)
         }
 
         // Handle "whenever a [subtype] deals combat damage to a player" triggers (e.g., Cabal Slaver)
