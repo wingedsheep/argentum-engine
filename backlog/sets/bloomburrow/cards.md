@@ -2,11 +2,11 @@
 
 **Set Size:** 266 cards
 **Release Date:** August 2, 2024
-**Implemented:** 22 / 266
+**Implemented:** 23 / 266
 
 | Color      | Total | Done |
 |------------|-------|------|
-| White      | 40    | 5    |
+| White      | 40    | 6    |
 | Blue       | 41    | 3    |
 | Black      | 40    | 2    |
 | Red        | 41    | 3    |
@@ -59,7 +59,7 @@
 - [ ] Corpseberry Cultivator
 - [ ] Coruscation Mage
 - [ ] Cruelclaw's Heist
-- [ ] Crumb and Get It
+- [x] Crumb and Get It
 - [ ] Curious Forager
 - [ ] Daggerfang Duo
 - [ ] Daring Waverider

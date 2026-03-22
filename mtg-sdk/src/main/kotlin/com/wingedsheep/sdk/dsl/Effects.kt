@@ -75,6 +75,7 @@ import com.wingedsheep.sdk.scripting.effects.ZonePlacement
 import com.wingedsheep.sdk.scripting.effects.CreateTokenCopyOfEquippedCreatureEffect
 import com.wingedsheep.sdk.scripting.effects.CreateTokenCopyOfSourceEffect
 import com.wingedsheep.sdk.scripting.effects.CreateTokenEffect
+import com.wingedsheep.sdk.scripting.effects.CreateFoodTokensEffect
 import com.wingedsheep.sdk.scripting.effects.CreateTreasureTokensEffect
 import com.wingedsheep.sdk.scripting.effects.CounterAbilityEffect
 import com.wingedsheep.sdk.scripting.effects.CounterSpellEffect
@@ -732,6 +733,16 @@ object Effects {
      */
     fun CreateTreasure(count: Int = 1): Effect =
         CreateTreasureTokensEffect(count)
+
+    /**
+     * Create Food artifact tokens.
+     * Food tokens have "{2}, {T}, Sacrifice this artifact: You gain 3 life."
+     *
+     * @param count Number of tokens to create
+     * @param controller Who controls the tokens (null = spell controller)
+     */
+    fun CreateFood(count: Int = 1, controller: EffectTarget? = null): Effect =
+        CreateFoodTokensEffect(count, controller)
 
     // =========================================================================
     // Protection Effects

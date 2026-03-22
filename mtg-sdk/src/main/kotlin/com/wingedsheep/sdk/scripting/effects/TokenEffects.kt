@@ -154,6 +154,28 @@ data class CreateTreasureTokensEffect(
 }
 
 /**
+ * Create Food artifact tokens.
+ * Food tokens have "{2}, {T}, Sacrifice this artifact: You gain 3 life."
+ *
+ * @property count Number of Food tokens to create
+ * @property controller Who controls the created tokens (null = spell controller)
+ */
+@SerialName("CreateFoodTokens")
+@Serializable
+data class CreateFoodTokensEffect(
+    val count: Int = 1,
+    val controller: EffectTarget? = null
+) : Effect {
+    override val description: String = if (count == 1) {
+        "Create a Food token"
+    } else {
+        "Create $count Food tokens"
+    }
+
+    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
+}
+
+/**
  * Create a token that's a copy of the source permanent.
  * "Create a token that's a copy of Mishra's Self-Replicator."
  *
