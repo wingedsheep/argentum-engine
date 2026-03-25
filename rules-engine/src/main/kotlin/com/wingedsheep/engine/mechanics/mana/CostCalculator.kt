@@ -108,6 +108,9 @@ class CostCalculator(
                 val controls = controlsMatchingPermanent(state, playerId, source.filter)
                 if (controls) source.amount else 0
             }
+            is CostReductionSource.CardsInGraveyardMatchingFilter -> {
+                countGraveyardCardsMatchingFilter(state, playerId, source.filter) * source.amountPerCard
+            }
         }
     }
 
@@ -173,6 +176,42 @@ class CostCalculator(
             filter.cardPredicates.all { predicate ->
                 matchesBattlefieldPredicate(entityId, cardDef, predicate, projectedState)
             }
+        }
+    }
+
+    /**
+     * Count cards in a player's graveyard that match a filter.
+     * Graveyard cards use base state (no continuous effects apply in graveyard).
+     */
+    private fun countGraveyardCardsMatchingFilter(state: GameState, playerId: EntityId, filter: GameObjectFilter): Int {
+        return state.getGraveyard(playerId).count { entityId ->
+            val card = state.getEntity(entityId)?.get<CardComponent>() ?: return@count false
+            val cardDef = cardRegistry.getCard(card.cardDefinitionId) ?: return@count false
+            filter.cardPredicates.all { predicate ->
+                matchesGraveyardPredicate(cardDef, predicate)
+            }
+        }
+    }
+
+    /**
+     * Match a graveyard card against a card predicate using base state.
+     */
+    private fun matchesGraveyardPredicate(
+        cardDef: CardDefinition,
+        predicate: CardPredicate
+    ): Boolean {
+        return when (predicate) {
+            is CardPredicate.IsCreature -> cardDef.typeLine.isCreature
+            is CardPredicate.IsArtifact -> cardDef.typeLine.isArtifact
+            is CardPredicate.IsEnchantment -> cardDef.typeLine.isEnchantment
+            is CardPredicate.IsLand -> cardDef.typeLine.isLand
+            is CardPredicate.IsInstant -> cardDef.typeLine.isInstant
+            is CardPredicate.IsSorcery -> cardDef.typeLine.isSorcery
+            is CardPredicate.HasSubtype -> predicate.subtype in cardDef.typeLine.subtypes
+            is CardPredicate.Or -> predicate.predicates.any { matchesGraveyardPredicate(cardDef, it) }
+            is CardPredicate.And -> predicate.predicates.all { matchesGraveyardPredicate(cardDef, it) }
+            is CardPredicate.Not -> !matchesGraveyardPredicate(cardDef, predicate.predicate)
+            else -> false
         }
     }
 

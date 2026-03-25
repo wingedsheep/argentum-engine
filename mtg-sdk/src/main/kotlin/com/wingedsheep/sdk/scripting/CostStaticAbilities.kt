@@ -182,6 +182,22 @@ sealed interface CostReductionSource {
     data class FixedIfControlFilter(val amount: Int, val filter: GameObjectFilter) : CostReductionSource {
         override val description: String = "$amount if you control a permanent matching ${filter.description}"
     }
+
+    /**
+     * Reduces cost by 1 for each card in your graveyard matching the filter.
+     * Used for Eddymurk Crab ("This spell costs {1} less to cast for each instant and sorcery card in your graveyard").
+     *
+     * @property filter The filter that graveyard cards must match to count toward the reduction
+     * @property amountPerCard The amount of generic mana reduced per matching card (typically 1)
+     */
+    @SerialName("CardsInGraveyardMatchingFilter")
+    @Serializable
+    data class CardsInGraveyardMatchingFilter(
+        val filter: GameObjectFilter,
+        val amountPerCard: Int = 1
+    ) : CostReductionSource {
+        override val description: String = "the number of ${filter.description} cards in your graveyard"
+    }
 }
 
 /**

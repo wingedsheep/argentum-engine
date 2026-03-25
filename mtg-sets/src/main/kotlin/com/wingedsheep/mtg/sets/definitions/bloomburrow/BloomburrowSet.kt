@@ -26,6 +26,7 @@ object BloomburrowSet {
         DawnsTruce,
         DreamdewEntrancer,
         EarlyWinter,
+        EddymurkCrab,
         FecundGreenshell,
         FlamecacheGecko,
         HeirloomEpic,
