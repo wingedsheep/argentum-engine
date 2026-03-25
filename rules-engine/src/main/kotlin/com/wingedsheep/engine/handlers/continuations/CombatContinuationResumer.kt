@@ -2,10 +2,12 @@ package com.wingedsheep.engine.handlers.continuations
 
 import com.wingedsheep.engine.core.*
 import com.wingedsheep.engine.handlers.effects.DamageUtils
+import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.mechanics.layers.ActiveFloatingEffect
 import com.wingedsheep.engine.mechanics.layers.FloatingEffectData
 import com.wingedsheep.engine.mechanics.layers.Layer
 import com.wingedsheep.engine.mechanics.layers.SerializableModification
+import com.wingedsheep.engine.mechanics.layers.addFloatingEffect
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.FaceDownComponent
@@ -389,26 +391,20 @@ class CombatContinuationResumer(
 
         val deflectSourceId = continuation.sourceId ?: EntityId.generate()
 
-        val floatingEffect = ActiveFloatingEffect(
-            id = EntityId.generate(),
-            effect = FloatingEffectData(
-                layer = Layer.ABILITY,
-                sublayer = null,
-                modification = SerializableModification.DeflectNextDamageFromSource(
-                    damageSourceId = chosenSourceId,
-                    deflectSourceId = deflectSourceId
-                ),
-                affectedEntities = setOf(continuation.controllerId)
-            ),
-            duration = com.wingedsheep.sdk.scripting.Duration.EndOfTurn,
+        val context = EffectContext(
             sourceId = continuation.sourceId,
-            sourceName = continuation.sourceName,
             controllerId = continuation.controllerId,
-            timestamp = System.currentTimeMillis()
+            opponentId = null
         )
-
-        val newState = state.copy(
-            floatingEffects = state.floatingEffects + floatingEffect
+        val newState = state.addFloatingEffect(
+            layer = Layer.ABILITY,
+            modification = SerializableModification.DeflectNextDamageFromSource(
+                damageSourceId = chosenSourceId,
+                deflectSourceId = deflectSourceId
+            ),
+            affectedEntities = setOf(continuation.controllerId),
+            duration = com.wingedsheep.sdk.scripting.Duration.EndOfTurn,
+            context = context
         )
 
         return checkForMore(newState, emptyList())
@@ -427,26 +423,20 @@ class CombatContinuationResumer(
         val chosenSourceId = response.selectedCards.firstOrNull()
             ?: return ExecutionResult.error(state, "No source selected")
 
-        val floatingEffect = ActiveFloatingEffect(
-            id = EntityId.generate(),
-            effect = FloatingEffectData(
-                layer = Layer.ABILITY,
-                sublayer = null,
-                modification = SerializableModification.PreventNextDamage(
-                    remainingAmount = continuation.amount,
-                    onlyFromSource = chosenSourceId
-                ),
-                affectedEntities = setOf(continuation.targetId)
-            ),
-            duration = com.wingedsheep.sdk.scripting.Duration.EndOfTurn,
+        val context = EffectContext(
             sourceId = continuation.sourceId,
-            sourceName = continuation.sourceName,
             controllerId = continuation.controllerId,
-            timestamp = System.currentTimeMillis()
+            opponentId = null
         )
-
-        val newState = state.copy(
-            floatingEffects = state.floatingEffects + floatingEffect
+        val newState = state.addFloatingEffect(
+            layer = Layer.ABILITY,
+            modification = SerializableModification.PreventNextDamage(
+                remainingAmount = continuation.amount,
+                onlyFromSource = chosenSourceId
+            ),
+            affectedEntities = setOf(continuation.targetId),
+            duration = com.wingedsheep.sdk.scripting.Duration.EndOfTurn,
+            context = context
         )
 
         return checkForMore(newState, emptyList())

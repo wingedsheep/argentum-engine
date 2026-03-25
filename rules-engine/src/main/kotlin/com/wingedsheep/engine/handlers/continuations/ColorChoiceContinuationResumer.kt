@@ -3,10 +3,10 @@ package com.wingedsheep.engine.handlers.continuations
 import com.wingedsheep.engine.core.*
 import com.wingedsheep.engine.handlers.PredicateContext
 import com.wingedsheep.engine.handlers.PredicateEvaluator
-import com.wingedsheep.engine.mechanics.layers.ActiveFloatingEffect
-import com.wingedsheep.engine.mechanics.layers.FloatingEffectData
+import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.mechanics.layers.Layer
 import com.wingedsheep.engine.mechanics.layers.SerializableModification
+import com.wingedsheep.engine.mechanics.layers.addFloatingEffect
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.FaceDownComponent
@@ -66,25 +66,19 @@ class ColorChoiceContinuationResumer(
             return checkForMore(state, events)
         }
 
-        val floatingEffect = ActiveFloatingEffect(
-            id = EntityId.generate(),
-            effect = FloatingEffectData(
-                layer = Layer.ABILITY,
-                sublayer = null,
-                modification = SerializableModification.GrantProtectionFromColor(
-                    chosenColor.name
-                ),
-                affectedEntities = affectedEntities
-            ),
-            duration = continuation.duration,
+        val context = EffectContext(
             sourceId = continuation.sourceId,
-            sourceName = continuation.sourceName,
             controllerId = controllerId,
-            timestamp = System.currentTimeMillis()
+            opponentId = null
         )
-
-        val newState = state.copy(
-            floatingEffects = state.floatingEffects + floatingEffect
+        val newState = state.addFloatingEffect(
+            layer = Layer.ABILITY,
+            modification = SerializableModification.GrantProtectionFromColor(
+                chosenColor.name
+            ),
+            affectedEntities = affectedEntities,
+            duration = continuation.duration,
+            context = context
         )
 
         return checkForMore(newState, events)
@@ -120,25 +114,19 @@ class ColorChoiceContinuationResumer(
             )
         )
 
-        val floatingEffect = ActiveFloatingEffect(
-            id = EntityId.generate(),
-            effect = FloatingEffectData(
-                layer = Layer.ABILITY,
-                sublayer = null,
-                modification = SerializableModification.GrantProtectionFromColor(
-                    chosenColor.name
-                ),
-                affectedEntities = setOf(targetEntityId)
-            ),
-            duration = continuation.duration,
+        val context = EffectContext(
             sourceId = continuation.sourceId,
-            sourceName = continuation.sourceName,
             controllerId = continuation.controllerId,
-            timestamp = System.currentTimeMillis()
+            opponentId = null
         )
-
-        val newState = state.copy(
-            floatingEffects = state.floatingEffects + floatingEffect
+        val newState = state.addFloatingEffect(
+            layer = Layer.ABILITY,
+            modification = SerializableModification.GrantProtectionFromColor(
+                chosenColor.name
+            ),
+            affectedEntities = setOf(targetEntityId),
+            duration = continuation.duration,
+            context = context
         )
 
         return checkForMore(newState, events)

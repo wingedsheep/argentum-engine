@@ -5,14 +5,12 @@ import com.wingedsheep.engine.core.ExecutionResult
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.handlers.effects.TargetResolutionUtils.resolveTarget
-import com.wingedsheep.engine.mechanics.layers.ActiveFloatingEffect
-import com.wingedsheep.engine.mechanics.layers.FloatingEffectData
 import com.wingedsheep.engine.mechanics.layers.Layer
 import com.wingedsheep.engine.mechanics.layers.SerializableModification
+import com.wingedsheep.engine.mechanics.layers.createFloatingEffect
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
-import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.Duration
 import com.wingedsheep.sdk.scripting.effects.GainControlByMostOfSubtypeEffect
 import kotlin.reflect.KClass
@@ -68,20 +66,14 @@ class GainControlByMostOfSubtypeExecutor : EffectExecutor<GainControlByMostOfSub
               targetId in floating.effect.affectedEntities)
         }
 
-        // Create new floating effect
-        val floatingEffect = ActiveFloatingEffect(
-            id = EntityId.generate(),
-            effect = FloatingEffectData(
-                layer = Layer.CONTROL,
-                sublayer = null,
-                modification = SerializableModification.ChangeController(newControllerId),
-                affectedEntities = setOf(targetId)
-            ),
+        // Create new floating effect — use controllerId override since control goes to subtype majority player
+        val controlContext = context.copy(controllerId = newControllerId)
+        val floatingEffect = state.createFloatingEffect(
+            layer = Layer.CONTROL,
+            modification = SerializableModification.ChangeController(newControllerId),
+            affectedEntities = setOf(targetId),
             duration = Duration.Permanent,
-            sourceId = context.sourceId,
-            sourceName = context.sourceId?.let { state.getEntity(it)?.get<CardComponent>()?.name },
-            controllerId = newControllerId,
-            timestamp = System.currentTimeMillis()
+            context = controlContext
         )
 
         val newState = state.copy(

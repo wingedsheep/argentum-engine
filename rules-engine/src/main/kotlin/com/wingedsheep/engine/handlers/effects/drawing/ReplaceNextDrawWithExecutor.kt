@@ -3,13 +3,11 @@ package com.wingedsheep.engine.handlers.effects.drawing
 import com.wingedsheep.engine.core.ExecutionResult
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
-import com.wingedsheep.engine.mechanics.layers.ActiveFloatingEffect
-import com.wingedsheep.engine.mechanics.layers.FloatingEffectData
 import com.wingedsheep.engine.mechanics.layers.Layer
 import com.wingedsheep.engine.mechanics.layers.SerializableModification
+import com.wingedsheep.engine.mechanics.layers.addFloatingEffect
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.identity.CardComponent
-import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.Duration
 import com.wingedsheep.sdk.scripting.effects.ReplaceNextDrawWithEffect
 import kotlin.reflect.KClass
@@ -42,21 +40,14 @@ class ReplaceNextDrawWithExecutor : EffectExecutor<ReplaceNextDrawWithEffect> {
             sourceName = sourceName
         )
 
-        val floatingEffect = ActiveFloatingEffect(
-            id = EntityId.generate(),
-            effect = FloatingEffectData(
-                layer = Layer.ABILITY,
-                sublayer = null,
-                modification = modification,
-                affectedEntities = setOf(context.controllerId)
-            ),
+        val newState = state.addFloatingEffect(
+            layer = Layer.ABILITY,
+            modification = modification,
+            affectedEntities = setOf(context.controllerId),
             duration = Duration.EndOfTurn,
-            sourceId = context.sourceId,
-            sourceName = sourceName,
-            controllerId = context.controllerId,
-            timestamp = System.currentTimeMillis()
+            context = context
         )
 
-        return ExecutionResult.success(state.copy(floatingEffects = state.floatingEffects + floatingEffect))
+        return ExecutionResult.success(newState)
     }
 }

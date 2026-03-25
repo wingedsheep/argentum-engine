@@ -4,14 +4,12 @@ import com.wingedsheep.engine.core.ExecutionResult
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.handlers.effects.TargetResolutionUtils.resolveTarget
-import com.wingedsheep.engine.mechanics.layers.ActiveFloatingEffect
-import com.wingedsheep.engine.mechanics.layers.FloatingEffectData
 import com.wingedsheep.engine.mechanics.layers.Layer
 import com.wingedsheep.engine.mechanics.layers.SerializableModification
 import com.wingedsheep.engine.mechanics.layers.Sublayer
+import com.wingedsheep.engine.mechanics.layers.addFloatingEffects
+import com.wingedsheep.engine.mechanics.layers.createFloatingEffect
 import com.wingedsheep.engine.state.GameState
-import com.wingedsheep.engine.state.components.identity.CardComponent
-import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.effects.AnimateLandEffect
 import kotlin.reflect.KClass
 
@@ -42,42 +40,29 @@ class AnimateLandExecutor : EffectExecutor<AnimateLandEffect> {
 
         val affectedEntities = setOf(targetId)
         val timestamp = System.currentTimeMillis()
-        val sourceName = context.sourceId?.let { state.getEntity(it)?.get<CardComponent>()?.name }
 
         // Floating effect 1: Add "Creature" type on Layer.TYPE
-        val addTypeEffect = ActiveFloatingEffect(
-            id = EntityId.generate(),
-            effect = FloatingEffectData(
-                layer = Layer.TYPE,
-                modification = SerializableModification.AddType("CREATURE"),
-                affectedEntities = affectedEntities
-            ),
+        val addTypeEffect = state.createFloatingEffect(
+            layer = Layer.TYPE,
+            modification = SerializableModification.AddType("CREATURE"),
+            affectedEntities = affectedEntities,
             duration = effect.duration,
-            sourceId = context.sourceId,
-            sourceName = sourceName,
-            controllerId = context.controllerId,
+            context = context,
             timestamp = timestamp
         )
 
         // Floating effect 2: Set base P/T on Layer.POWER_TOUGHNESS, Sublayer.SET_VALUES
-        val setPTEffect = ActiveFloatingEffect(
-            id = EntityId.generate(),
-            effect = FloatingEffectData(
-                layer = Layer.POWER_TOUGHNESS,
-                sublayer = Sublayer.SET_VALUES,
-                modification = SerializableModification.SetPowerToughness(effect.power, effect.toughness),
-                affectedEntities = affectedEntities
-            ),
+        val setPTEffect = state.createFloatingEffect(
+            layer = Layer.POWER_TOUGHNESS,
+            sublayer = Sublayer.SET_VALUES,
+            modification = SerializableModification.SetPowerToughness(effect.power, effect.toughness),
+            affectedEntities = affectedEntities,
             duration = effect.duration,
-            sourceId = context.sourceId,
-            sourceName = sourceName,
-            controllerId = context.controllerId,
+            context = context,
             timestamp = timestamp
         )
 
-        val newState = state.copy(
-            floatingEffects = state.floatingEffects + addTypeEffect + setPTEffect
-        )
+        val newState = state.addFloatingEffects(listOf(addTypeEffect, setPTEffect))
 
         return ExecutionResult.success(newState)
     }

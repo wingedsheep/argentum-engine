@@ -16,10 +16,9 @@ import com.wingedsheep.engine.handlers.effects.ZoneMovementUtils.destroyPermanen
 import com.wingedsheep.engine.handlers.effects.ZoneMovementUtils.moveCardToZone
 import com.wingedsheep.engine.handlers.effects.TargetResolutionUtils.resolvePlayerTarget
 import com.wingedsheep.engine.handlers.effects.TargetResolutionUtils.resolveTarget
-import com.wingedsheep.engine.mechanics.layers.ActiveFloatingEffect
-import com.wingedsheep.engine.mechanics.layers.FloatingEffectData
 import com.wingedsheep.engine.mechanics.layers.Layer
 import com.wingedsheep.engine.mechanics.layers.SerializableModification
+import com.wingedsheep.engine.mechanics.layers.addFloatingEffect
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.identity.CardComponent
@@ -210,22 +209,13 @@ class ChainCopyExecutor(
             ?: container.get<CardComponent>()?.ownerId
             ?: return ExecutionResult.success(state)
 
-        val floatingEffect = ActiveFloatingEffect(
-            id = EntityId.generate(),
-            effect = FloatingEffectData(
-                layer = Layer.ABILITY,
-                modification = SerializableModification.PreventAllDamageDealtBy,
-                affectedEntities = setOf(targetId)
-            ),
+        val newState = state.addFloatingEffect(
+            layer = Layer.ABILITY,
+            modification = SerializableModification.PreventAllDamageDealtBy,
+            affectedEntities = setOf(targetId),
             duration = com.wingedsheep.sdk.scripting.Duration.EndOfTurn,
-            sourceId = context.sourceId,
-            sourceName = effect.spellName,
-            controllerId = context.controllerId,
+            context = context,
             timestamp = state.timestamp
-        )
-
-        val newState = state.copy(
-            floatingEffects = state.floatingEffects + floatingEffect
         )
 
         return offerChainCopy(

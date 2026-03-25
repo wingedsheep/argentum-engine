@@ -4,13 +4,10 @@ import com.wingedsheep.engine.core.ExecutionResult
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.handlers.effects.BattlefieldFilterUtils
-import com.wingedsheep.engine.mechanics.layers.ActiveFloatingEffect
-import com.wingedsheep.engine.mechanics.layers.FloatingEffectData
 import com.wingedsheep.engine.mechanics.layers.Layer
 import com.wingedsheep.engine.mechanics.layers.SerializableModification
+import com.wingedsheep.engine.mechanics.layers.addFloatingEffect
 import com.wingedsheep.engine.state.GameState
-import com.wingedsheep.engine.state.components.identity.CardComponent
-import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.effects.GrantCantBeBlockedExceptByColorEffect
 import kotlin.reflect.KClass
 
@@ -41,25 +38,14 @@ class GrantCantBeBlockedExceptByColorExecutor : EffectExecutor<GrantCantBeBlocke
             return ExecutionResult.success(state)
         }
 
-        val floatingEffect = ActiveFloatingEffect(
-            id = EntityId.generate(),
-            effect = FloatingEffectData(
-                layer = Layer.ABILITY,
-                sublayer = null,
-                modification = SerializableModification.CantBeBlockedExceptByColor(
-                    color = effect.canOnlyBeBlockedByColor.name
-                ),
-                affectedEntities = affectedEntities
+        val newState = state.addFloatingEffect(
+            layer = Layer.ABILITY,
+            modification = SerializableModification.CantBeBlockedExceptByColor(
+                color = effect.canOnlyBeBlockedByColor.name
             ),
+            affectedEntities = affectedEntities,
             duration = effect.duration,
-            sourceId = context.sourceId,
-            sourceName = context.sourceId?.let { state.getEntity(it)?.get<CardComponent>()?.name },
-            controllerId = context.controllerId,
-            timestamp = System.currentTimeMillis()
-        )
-
-        val newState = state.copy(
-            floatingEffects = state.floatingEffects + floatingEffect
+            context = context
         )
 
         return ExecutionResult.success(newState)

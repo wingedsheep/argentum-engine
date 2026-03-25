@@ -5,14 +5,13 @@ import com.wingedsheep.engine.core.KeywordGrantedEvent
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.handlers.effects.TargetResolutionUtils.resolveTarget
-import com.wingedsheep.engine.mechanics.layers.ActiveFloatingEffect
-import com.wingedsheep.engine.mechanics.layers.FloatingEffectData
 import com.wingedsheep.engine.mechanics.layers.Layer
 import com.wingedsheep.engine.mechanics.layers.SerializableModification
+import com.wingedsheep.engine.mechanics.layers.addFloatingEffects
+import com.wingedsheep.engine.mechanics.layers.createFloatingEffect
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.combat.BlockedComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
-import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.effects.GrantKeywordToAttackersBlockedByEffect
 import kotlin.reflect.KClass
 
@@ -45,25 +44,16 @@ class GrantKeywordToAttackersBlockedByExecutor : EffectExecutor<GrantKeywordToAt
 
         // Create floating effects granting the keyword to each attacker
         val floatingEffects = attackerIds.map { attackerId ->
-            ActiveFloatingEffect(
-                id = EntityId.generate(),
-                effect = FloatingEffectData(
-                    layer = Layer.ABILITY,
-                    sublayer = null,
-                    modification = SerializableModification.GrantKeyword(effect.keyword),
-                    affectedEntities = setOf(attackerId)
-                ),
+            state.createFloatingEffect(
+                layer = Layer.ABILITY,
+                modification = SerializableModification.GrantKeyword(effect.keyword),
+                affectedEntities = setOf(attackerId),
                 duration = effect.duration,
-                sourceId = context.sourceId,
-                sourceName = context.sourceId?.let { state.getEntity(it)?.get<CardComponent>()?.name },
-                controllerId = context.controllerId,
-                timestamp = System.currentTimeMillis()
+                context = context
             )
         }
 
-        val newState = state.copy(
-            floatingEffects = state.floatingEffects + floatingEffects
-        )
+        val newState = state.addFloatingEffects(floatingEffects)
 
         val sourceName = context.sourceId?.let { state.getEntity(it)?.get<CardComponent>()?.name } ?: "Unknown"
         val events = attackerIds.mapNotNull { attackerId ->

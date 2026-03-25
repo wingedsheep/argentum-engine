@@ -4,15 +4,13 @@ import com.wingedsheep.engine.core.ExecutionResult
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.handlers.effects.TargetResolutionUtils.resolveTarget
-import com.wingedsheep.engine.mechanics.layers.ActiveFloatingEffect
-import com.wingedsheep.engine.mechanics.layers.FloatingEffectData
 import com.wingedsheep.engine.mechanics.layers.Layer
 import com.wingedsheep.engine.mechanics.layers.SerializableModification
+import com.wingedsheep.engine.mechanics.layers.addFloatingEffect
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.combat.AttackingComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
-import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.Duration
 import com.wingedsheep.sdk.scripting.effects.ProvokeEffect
 import kotlin.reflect.KClass
@@ -61,23 +59,12 @@ class ProvokeExecutor : EffectExecutor<ProvokeEffect> {
         }
 
         // Step 2: Create a floating effect forcing the target to block the source
-        val floatingEffect = ActiveFloatingEffect(
-            id = EntityId.generate(),
-            effect = FloatingEffectData(
-                layer = Layer.ABILITY,
-                sublayer = null,
-                modification = SerializableModification.MustBlockSpecificAttacker(sourceId),
-                affectedEntities = setOf(targetId)
-            ),
+        newState = newState.addFloatingEffect(
+            layer = Layer.ABILITY,
+            modification = SerializableModification.MustBlockSpecificAttacker(sourceId),
+            affectedEntities = setOf(targetId),
             duration = Duration.EndOfTurn,
-            sourceId = sourceId,
-            sourceName = sourceContainer.get<CardComponent>()?.name,
-            controllerId = context.controllerId,
-            timestamp = System.currentTimeMillis()
-        )
-
-        newState = newState.copy(
-            floatingEffects = newState.floatingEffects + floatingEffect
+            context = context
         )
 
         return ExecutionResult.success(newState)

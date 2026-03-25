@@ -4,13 +4,12 @@ import com.wingedsheep.engine.core.ExecutionResult
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.handlers.effects.TargetResolutionUtils
-import com.wingedsheep.engine.mechanics.layers.ActiveFloatingEffect
-import com.wingedsheep.engine.mechanics.layers.FloatingEffectData
 import com.wingedsheep.engine.mechanics.layers.Layer
 import com.wingedsheep.engine.mechanics.layers.SerializableModification
+import com.wingedsheep.engine.mechanics.layers.addFloatingEffects
+import com.wingedsheep.engine.mechanics.layers.createFloatingEffect
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.identity.CardComponent
-import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.effects.CantAttackOrBlockTargetEffect
 import kotlin.reflect.KClass
 
@@ -36,41 +35,24 @@ class CantAttackOrBlockTargetExecutor : EffectExecutor<CantAttackOrBlockTargetEf
         container.get<CardComponent>() ?: return ExecutionResult.success(state)
 
         val affectedEntities = setOf(entityId)
-        val sourceName = context.sourceId?.let { state.getEntity(it)?.get<CardComponent>()?.name }
 
-        val cantAttackEffect = ActiveFloatingEffect(
-            id = EntityId.generate(),
-            effect = FloatingEffectData(
-                layer = Layer.ABILITY,
-                sublayer = null,
-                modification = SerializableModification.SetCantAttack,
-                affectedEntities = affectedEntities
-            ),
+        val cantAttackEffect = state.createFloatingEffect(
+            layer = Layer.ABILITY,
+            modification = SerializableModification.SetCantAttack,
+            affectedEntities = affectedEntities,
             duration = effect.duration,
-            sourceId = context.sourceId,
-            sourceName = sourceName,
-            controllerId = context.controllerId,
-            timestamp = System.currentTimeMillis()
+            context = context
         )
 
-        val cantBlockEffect = ActiveFloatingEffect(
-            id = EntityId.generate(),
-            effect = FloatingEffectData(
-                layer = Layer.ABILITY,
-                sublayer = null,
-                modification = SerializableModification.SetCantBlock,
-                affectedEntities = affectedEntities
-            ),
+        val cantBlockEffect = state.createFloatingEffect(
+            layer = Layer.ABILITY,
+            modification = SerializableModification.SetCantBlock,
+            affectedEntities = affectedEntities,
             duration = effect.duration,
-            sourceId = context.sourceId,
-            sourceName = sourceName,
-            controllerId = context.controllerId,
-            timestamp = System.currentTimeMillis()
+            context = context
         )
 
-        val newState = state.copy(
-            floatingEffects = state.floatingEffects + cantAttackEffect + cantBlockEffect
-        )
+        val newState = state.addFloatingEffects(listOf(cantAttackEffect, cantBlockEffect))
 
         return ExecutionResult.success(newState)
     }

@@ -8,15 +8,12 @@ import com.wingedsheep.engine.core.GameEvent as EngineGameEvent
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.handlers.effects.TargetResolutionUtils.resolveTarget
-import com.wingedsheep.engine.mechanics.layers.ActiveFloatingEffect
-import com.wingedsheep.engine.mechanics.layers.FloatingEffectData
 import com.wingedsheep.engine.mechanics.layers.Layer
 import com.wingedsheep.engine.mechanics.layers.SerializableModification
 import com.wingedsheep.engine.mechanics.layers.Sublayer
+import com.wingedsheep.engine.mechanics.layers.addFloatingEffect
 import com.wingedsheep.engine.state.GameState
-import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.LifeTotalComponent
-import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.Duration
 import com.wingedsheep.sdk.scripting.effects.ExchangeLifeAndPowerEffect
 import kotlin.reflect.KClass
@@ -63,26 +60,16 @@ class ExchangeLifeAndPowerExecutor : EffectExecutor<ExchangeLifeAndPowerEffect> 
         val events = mutableListOf<EngineGameEvent>()
 
         // Set creature's base power to the player's former life total
-        val floatingEffect = ActiveFloatingEffect(
-            id = EntityId.generate(),
-            effect = FloatingEffectData(
-                layer = Layer.POWER_TOUGHNESS,
-                sublayer = Sublayer.SET_VALUES,
-                modification = SerializableModification.SetPower(currentLife),
-                affectedEntities = setOf(creatureId)
-            ),
+        var newState = state.addFloatingEffect(
+            layer = Layer.POWER_TOUGHNESS,
+            modification = SerializableModification.SetPower(currentLife),
+            affectedEntities = setOf(creatureId),
             duration = Duration.Permanent,
-            sourceId = context.sourceId,
-            sourceName = context.sourceId?.let { state.getEntity(it)?.get<CardComponent>()?.name },
-            controllerId = controllerId,
-            timestamp = System.currentTimeMillis()
+            context = context,
+            sublayer = Sublayer.SET_VALUES
         )
 
         // Set player's life total to the creature's former power
-        var newState = state.copy(
-            floatingEffects = state.floatingEffects + floatingEffect
-        )
-
         if (currentPower != currentLife) {
             newState = newState.updateEntity(controllerId) { container ->
                 container.with(LifeTotalComponent(currentPower))

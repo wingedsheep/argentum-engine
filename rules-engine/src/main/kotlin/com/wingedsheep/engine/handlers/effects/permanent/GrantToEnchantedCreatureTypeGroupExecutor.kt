@@ -7,10 +7,11 @@ import com.wingedsheep.engine.core.GameEvent as EngineGameEvent
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.mechanics.layers.ActiveFloatingEffect
-import com.wingedsheep.engine.mechanics.layers.FloatingEffectData
 import com.wingedsheep.engine.mechanics.layers.Layer
 import com.wingedsheep.engine.mechanics.layers.SerializableModification
 import com.wingedsheep.engine.mechanics.layers.Sublayer
+import com.wingedsheep.engine.mechanics.layers.addFloatingEffects
+import com.wingedsheep.engine.mechanics.layers.createFloatingEffect
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.battlefield.AttachedToComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
@@ -110,21 +111,16 @@ class GrantToEnchantedCreatureTypeGroupExecutor : EffectExecutor<GrantToEnchante
 
         if (effect.powerModifier != 0 || effect.toughnessModifier != 0) {
             floatingEffects.add(
-                ActiveFloatingEffect(
-                    id = EntityId.generate(),
-                    effect = FloatingEffectData(
-                        layer = Layer.POWER_TOUGHNESS,
-                        sublayer = Sublayer.MODIFICATIONS,
-                        modification = SerializableModification.ModifyPowerToughness(
-                            powerMod = effect.powerModifier,
-                            toughnessMod = effect.toughnessModifier
-                        ),
-                        affectedEntities = affectedEntities
+                state.createFloatingEffect(
+                    layer = Layer.POWER_TOUGHNESS,
+                    sublayer = Sublayer.MODIFICATIONS,
+                    modification = SerializableModification.ModifyPowerToughness(
+                        powerMod = effect.powerModifier,
+                        toughnessMod = effect.toughnessModifier
                     ),
+                    affectedEntities = affectedEntities,
                     duration = effect.duration,
-                    sourceId = context.sourceId,
-                    sourceName = sourceName,
-                    controllerId = context.controllerId,
+                    context = context,
                     timestamp = timestamp
                 )
             )
@@ -132,18 +128,12 @@ class GrantToEnchantedCreatureTypeGroupExecutor : EffectExecutor<GrantToEnchante
 
         if (keyword != null) {
             floatingEffects.add(
-                ActiveFloatingEffect(
-                    id = EntityId.generate(),
-                    effect = FloatingEffectData(
-                        layer = Layer.ABILITY,
-                        sublayer = null,
-                        modification = SerializableModification.GrantKeyword(keyword.name),
-                        affectedEntities = affectedEntities
-                    ),
+                state.createFloatingEffect(
+                    layer = Layer.ABILITY,
+                    modification = SerializableModification.GrantKeyword(keyword.name),
+                    affectedEntities = affectedEntities,
                     duration = effect.duration,
-                    sourceId = context.sourceId,
-                    sourceName = sourceName,
-                    controllerId = context.controllerId,
+                    context = context,
                     timestamp = timestamp
                 )
             )
@@ -151,26 +141,18 @@ class GrantToEnchantedCreatureTypeGroupExecutor : EffectExecutor<GrantToEnchante
 
         for (color in effect.protectionColors) {
             floatingEffects.add(
-                ActiveFloatingEffect(
-                    id = EntityId.generate(),
-                    effect = FloatingEffectData(
-                        layer = Layer.ABILITY,
-                        sublayer = null,
-                        modification = SerializableModification.GrantProtectionFromColor(color.name),
-                        affectedEntities = affectedEntities
-                    ),
+                state.createFloatingEffect(
+                    layer = Layer.ABILITY,
+                    modification = SerializableModification.GrantProtectionFromColor(color.name),
+                    affectedEntities = affectedEntities,
                     duration = effect.duration,
-                    sourceId = context.sourceId,
-                    sourceName = sourceName,
-                    controllerId = context.controllerId,
+                    context = context,
                     timestamp = timestamp
                 )
             )
         }
 
-        val newState = state.copy(
-            floatingEffects = state.floatingEffects + floatingEffects
-        )
+        val newState = state.addFloatingEffects(floatingEffects)
 
         return ExecutionResult.success(newState, events)
     }

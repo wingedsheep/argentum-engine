@@ -1,10 +1,10 @@
 package com.wingedsheep.engine.handlers.continuations
 
 import com.wingedsheep.engine.core.*
-import com.wingedsheep.engine.mechanics.layers.ActiveFloatingEffect
-import com.wingedsheep.engine.mechanics.layers.FloatingEffectData
+import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.mechanics.layers.Layer
 import com.wingedsheep.engine.mechanics.layers.SerializableModification
+import com.wingedsheep.engine.mechanics.layers.addFloatingEffect
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.TextReplacement
@@ -12,8 +12,6 @@ import com.wingedsheep.engine.state.components.identity.TextReplacementCategory
 import com.wingedsheep.engine.state.components.identity.TextReplacementComponent
 import com.wingedsheep.engine.handlers.effects.library.ChooseCreatureTypePipelineExecutor
 import com.wingedsheep.sdk.core.Subtype
-import com.wingedsheep.sdk.model.EntityId
-import com.wingedsheep.sdk.scripting.Duration
 
 class CreatureTypeChoiceContinuationResumer(
     private val services: com.wingedsheep.engine.core.EngineServices
@@ -216,25 +214,19 @@ class CreatureTypeChoiceContinuationResumer(
         val targetName = targetCard?.name ?: "creature"
 
         // Create a floating effect that sets creature subtypes
-        val floatingEffect = ActiveFloatingEffect(
-            id = EntityId.generate(),
-            effect = FloatingEffectData(
-                layer = Layer.TYPE,
-                sublayer = null,
-                modification = SerializableModification.SetCreatureSubtypes(
-                    subtypes = setOf(chosenType)
-                ),
-                affectedEntities = setOf(targetId)
-            ),
-            duration = continuation.duration,
+        val context = EffectContext(
             sourceId = continuation.sourceId,
-            sourceName = continuation.sourceName,
             controllerId = continuation.controllerId,
-            timestamp = System.currentTimeMillis()
+            opponentId = null
         )
-
-        val newState = state.copy(
-            floatingEffects = state.floatingEffects + floatingEffect
+        val newState = state.addFloatingEffect(
+            layer = Layer.TYPE,
+            modification = SerializableModification.SetCreatureSubtypes(
+                subtypes = setOf(chosenType)
+            ),
+            affectedEntities = setOf(targetId),
+            duration = continuation.duration,
+            context = context
         )
 
         val events = listOf(

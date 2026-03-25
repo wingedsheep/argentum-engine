@@ -5,13 +5,12 @@ import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.handlers.effects.TargetResolutionUtils.resolveTarget
 import com.wingedsheep.engine.mechanics.layers.ActiveFloatingEffect
-import com.wingedsheep.engine.mechanics.layers.FloatingEffectData
 import com.wingedsheep.engine.mechanics.layers.Layer
 import com.wingedsheep.engine.mechanics.layers.SerializableModification
 import com.wingedsheep.engine.mechanics.layers.Sublayer
+import com.wingedsheep.engine.mechanics.layers.addFloatingEffects
+import com.wingedsheep.engine.mechanics.layers.createFloatingEffect
 import com.wingedsheep.engine.state.GameState
-import com.wingedsheep.engine.state.components.identity.CardComponent
-import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.effects.BecomeCreatureEffect
 import kotlin.reflect.KClass
 
@@ -39,125 +38,85 @@ class BecomeCreatureExecutor : EffectExecutor<BecomeCreatureEffect> {
             return ExecutionResult.success(state)
         }
 
-        val controllerId = context.controllerId
+        context.controllerId
             ?: return ExecutionResult.error(state, "No controller for BecomeCreature effect")
 
         val affectedEntities = setOf(targetId)
         val timestamp = System.currentTimeMillis()
-        val sourceName = context.sourceId?.let { state.getEntity(it)?.get<CardComponent>()?.name }
 
         val floatingEffects = mutableListOf<ActiveFloatingEffect>()
 
         // Layer 4 (TYPE): Add CREATURE type
-        floatingEffects.add(createFloatingEffect(
+        floatingEffects.add(state.createFloatingEffect(
             layer = Layer.TYPE,
             modification = SerializableModification.AddType("CREATURE"),
             affectedEntities = affectedEntities,
             duration = effect.duration,
-            sourceId = context.sourceId,
-            sourceName = sourceName,
-            controllerId = controllerId,
+            context = context,
             timestamp = timestamp
         ))
 
         // Layer 4 (TYPE): Remove specified types (e.g., PLANESWALKER)
         for (type in effect.removeTypes) {
-            floatingEffects.add(createFloatingEffect(
+            floatingEffects.add(state.createFloatingEffect(
                 layer = Layer.TYPE,
                 modification = SerializableModification.RemoveType(type),
                 affectedEntities = affectedEntities,
                 duration = effect.duration,
-                sourceId = context.sourceId,
-                sourceName = sourceName,
-                controllerId = controllerId,
+                context = context,
                 timestamp = timestamp
             ))
         }
 
         // Layer 4 (TYPE): Set creature subtypes
         if (effect.creatureTypes.isNotEmpty()) {
-            floatingEffects.add(createFloatingEffect(
+            floatingEffects.add(state.createFloatingEffect(
                 layer = Layer.TYPE,
                 modification = SerializableModification.SetCreatureSubtypes(effect.creatureTypes),
                 affectedEntities = affectedEntities,
                 duration = effect.duration,
-                sourceId = context.sourceId,
-                sourceName = sourceName,
-                controllerId = controllerId,
+                context = context,
                 timestamp = timestamp
             ))
         }
 
         // Layer 5 (COLOR): Change color if specified
         if (effect.colors != null) {
-            floatingEffects.add(createFloatingEffect(
+            floatingEffects.add(state.createFloatingEffect(
                 layer = Layer.COLOR,
                 modification = SerializableModification.ChangeColor(effect.colors!!),
                 affectedEntities = affectedEntities,
                 duration = effect.duration,
-                sourceId = context.sourceId,
-                sourceName = sourceName,
-                controllerId = controllerId,
+                context = context,
                 timestamp = timestamp
             ))
         }
 
         // Layer 6 (ABILITY): Grant keywords
         for (keyword in effect.keywords) {
-            floatingEffects.add(createFloatingEffect(
+            floatingEffects.add(state.createFloatingEffect(
                 layer = Layer.ABILITY,
                 modification = SerializableModification.GrantKeyword(keyword.name),
                 affectedEntities = affectedEntities,
                 duration = effect.duration,
-                sourceId = context.sourceId,
-                sourceName = sourceName,
-                controllerId = controllerId,
+                context = context,
                 timestamp = timestamp
             ))
         }
 
         // Layer 7b (POWER_TOUGHNESS, SET_VALUES): Set base P/T
-        floatingEffects.add(createFloatingEffect(
+        floatingEffects.add(state.createFloatingEffect(
             layer = Layer.POWER_TOUGHNESS,
             sublayer = Sublayer.SET_VALUES,
             modification = SerializableModification.SetPowerToughness(effect.power, effect.toughness),
             affectedEntities = affectedEntities,
             duration = effect.duration,
-            sourceId = context.sourceId,
-            sourceName = sourceName,
-            controllerId = controllerId,
+            context = context,
             timestamp = timestamp
         ))
 
-        val newState = state.copy(
-            floatingEffects = state.floatingEffects + floatingEffects
-        )
+        val newState = state.addFloatingEffects(floatingEffects)
 
         return ExecutionResult.success(newState)
     }
-
-    private fun createFloatingEffect(
-        layer: Layer,
-        modification: SerializableModification,
-        affectedEntities: Set<EntityId>,
-        duration: com.wingedsheep.sdk.scripting.Duration,
-        sourceId: EntityId?,
-        sourceName: String?,
-        controllerId: EntityId,
-        timestamp: Long,
-        sublayer: Sublayer? = null
-    ): ActiveFloatingEffect = ActiveFloatingEffect(
-        id = EntityId.generate(),
-        effect = FloatingEffectData(
-            layer = layer,
-            sublayer = sublayer,
-            modification = modification,
-            affectedEntities = affectedEntities
-        ),
-        duration = duration,
-        sourceId = sourceId,
-        sourceName = sourceName,
-        controllerId = controllerId,
-        timestamp = timestamp
-    )
 }
