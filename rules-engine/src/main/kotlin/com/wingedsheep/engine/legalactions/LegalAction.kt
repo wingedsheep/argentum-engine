@@ -27,6 +27,7 @@ data class LegalAction(
 
     // Combat
     val validAttackers: List<EntityId>? = null,
+    val mandatoryAttackers: List<EntityId>? = null,
     val validAttackTargets: List<EntityId>? = null,
     val validBlockers: List<EntityId>? = null,
     val blockerMaxBlockCounts: Map<EntityId, Int>? = null,

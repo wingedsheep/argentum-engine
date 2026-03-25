@@ -922,6 +922,8 @@ data class LegalActionInfo(
     val targetRequirements: List<LegalActionTargetInfo>? = null,
     /** Valid attacker IDs for DeclareAttackers action */
     val validAttackers: List<EntityId>? = null,
+    /** Creature IDs that must attack this combat (from MustAttack, Taunt, etc.) */
+    val mandatoryAttackers: List<EntityId>? = null,
     /** Valid attack targets: opponent planeswalker IDs that can be attacked */
     val validAttackTargets: List<EntityId>? = null,
     /** Valid blocker IDs for DeclareBlockers action */

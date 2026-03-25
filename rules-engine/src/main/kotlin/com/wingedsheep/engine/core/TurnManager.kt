@@ -556,6 +556,10 @@ class TurnManager(
         }
     }
 
+    fun getMandatoryAttackers(state: GameState, playerId: EntityId): List<EntityId> {
+        return combatManager.getMandatoryAttackers(state, playerId)
+    }
+
     fun getMandatoryBlockerAssignments(state: GameState, playerId: EntityId): Map<EntityId, List<EntityId>> {
         return combatManager.getMandatoryBlockerAssignments(state, playerId)
     }

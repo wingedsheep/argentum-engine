@@ -46,6 +46,7 @@ class LegalActionEnricher(
             targetDescription = action.targetDescription,
             targetRequirements = action.targetRequirements?.map { it.toDto() },
             validAttackers = action.validAttackers,
+            mandatoryAttackers = action.mandatoryAttackers,
             validAttackTargets = action.validAttackTargets,
             validBlockers = action.validBlockers,
             blockerMaxBlockCounts = action.blockerMaxBlockCounts,

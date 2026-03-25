@@ -282,6 +282,40 @@ internal class AttackPhaseManager(
         }
     }
 
+    /**
+     * Get creatures that must attack this combat (for UI pre-selection).
+     * Includes creatures required by MustAttackPlayerComponent, MustAttackThisTurnComponent,
+     * and projected mustAttack (e.g., from static MustAttack ability like Valley Dasher).
+     */
+    fun getMandatoryAttackers(state: GameState, attackingPlayer: EntityId): List<EntityId> {
+        val validAttackers = getValidAttackers(state, attackingPlayer)
+        val projected = state.projectedState
+        val mandatory = mutableSetOf<EntityId>()
+
+        // 1. MustAttackPlayerComponent (Taunt effect) — all valid attackers must attack
+        val mustAttackPlayer = state.getEntity(attackingPlayer)?.get<MustAttackPlayerComponent>()
+        if (mustAttackPlayer != null && mustAttackPlayer.activeThisTurn) {
+            mandatory.addAll(validAttackers)
+        }
+
+        // 2. MustAttackThisTurnComponent (Walking Desecration) — individual creatures
+        for (attackerId in validAttackers) {
+            val container = state.getEntity(attackerId) ?: continue
+            if (container.has<MustAttackThisTurnComponent>()) {
+                mandatory.add(attackerId)
+            }
+        }
+
+        // 3. Projected mustAttack (static ability like Valley Dasher, Grand Melee)
+        for (attackerId in validAttackers) {
+            if (projected.mustAttack(attackerId)) {
+                mandatory.add(attackerId)
+            }
+        }
+
+        return mandatory.toList()
+    }
+
     // =========================================================================
     // Attack Taxes
     // =========================================================================

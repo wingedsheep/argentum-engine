@@ -70,6 +70,9 @@ class CombatManager(
     fun getMandatoryBlockerAssignments(state: GameState, blockingPlayer: EntityId): Map<EntityId, List<EntityId>> =
         blockPhase.getMandatoryBlockerAssignments(state, blockingPlayer)
 
+    fun getMandatoryAttackers(state: GameState, attackingPlayer: EntityId): List<EntityId> =
+        attackPhase.getMandatoryAttackers(state, attackingPlayer)
+
     fun createAttackerOrderDecision(
         state: GameState,
         attackingPlayer: EntityId,

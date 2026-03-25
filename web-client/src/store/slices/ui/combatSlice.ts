@@ -68,6 +68,12 @@ export const createCombatSlice: SliceCreator<CombatSlice> = (set, get) => ({
       }
 
       const isSelected = state.combatState.selectedAttackers.includes(creatureId)
+
+      // Don't allow deselecting mandatory attackers
+      if (isSelected && state.combatState.mandatoryAttackers.includes(creatureId)) {
+        return state
+      }
+
       const newAttackers = isSelected
         ? state.combatState.selectedAttackers.filter((id) => id !== creatureId)
         : [...state.combatState.selectedAttackers, creatureId]
@@ -289,7 +295,7 @@ export const createCombatSlice: SliceCreator<CombatSlice> = (set, get) => ({
       return {
         combatState: {
           ...state.combatState,
-          selectedAttackers: [],
+          selectedAttackers: [...state.combatState.mandatoryAttackers],
           attackerTargets: {},
         },
       }

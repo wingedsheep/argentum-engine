@@ -502,6 +502,8 @@ export interface LegalActionInfo {
   readonly targetRequirements?: readonly LegalActionTargetInfo[]
   /** Valid attacker IDs for DeclareAttackers action */
   readonly validAttackers?: readonly EntityId[]
+  /** Creature IDs that must attack this combat (from MustAttack, Taunt, etc.) */
+  readonly mandatoryAttackers?: readonly EntityId[]
   /** Valid attack targets: opponent planeswalker IDs that can be attacked */
   readonly validAttackTargets?: readonly EntityId[]
   /** Valid blocker IDs for DeclareBlockers action */

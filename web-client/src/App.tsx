@@ -138,14 +138,20 @@ export default function App() {
         ? [...attackersAction.validAttackTargets]
         : []
 
-      // Enter combat mode
+      // Get mandatory attackers (creatures that must attack, e.g., Valley Dasher)
+      const mandatoryAttackers: EntityId[] = attackersAction?.mandatoryAttackers
+        ? [...attackersAction.mandatoryAttackers]
+        : []
+
+      // Enter combat mode — pre-select mandatory attackers
       startCombat({
         mode: 'declareAttackers',
-        selectedAttackers: [],
+        selectedAttackers: [...mandatoryAttackers],
         attackerTargets: {},
         validAttackTargets,
         blockerAssignments: {},
         validCreatures,
+        mandatoryAttackers,
         attackingCreatures: [],
         mustBeBlockedAttackers: [],
         blockerMaxBlockCounts: {},
@@ -195,6 +201,7 @@ export default function App() {
         validAttackTargets: [],
         blockerAssignments,
         validCreatures,
+        mandatoryAttackers: [],
         attackingCreatures,
         mustBeBlockedAttackers,
         blockerMaxBlockCounts,

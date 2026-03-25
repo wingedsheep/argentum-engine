@@ -106,6 +106,8 @@ export interface CombatState {
   blockerAssignments: Record<EntityId, EntityId[]>
   /** Valid creatures that can participate (attackers or blockers depending on mode) */
   validCreatures: readonly EntityId[]
+  /** Creatures that must attack this combat (from MustAttack, Taunt, etc.) */
+  mandatoryAttackers: readonly EntityId[]
   /** For blockers mode: creatures that are attacking */
   attackingCreatures: readonly EntityId[]
   /** For blockers mode: attackers that must be blocked by all creatures able to block them */
