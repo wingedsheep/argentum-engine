@@ -366,6 +366,13 @@ class TriggerMatcher(
                     else lastKnownToughness ?: projected.getToughness(entityId) ?: cardComponent.baseStats?.baseToughness ?: 0
                 toughness == predicate.value
             }
+            is com.wingedsheep.sdk.scripting.predicates.CardPredicate.PowerOrToughnessAtLeast -> {
+                val power = if (isFaceDown) 2
+                    else lastKnownPower ?: projected.getPower(entityId) ?: cardComponent.baseStats?.basePower ?: 0
+                val toughness = if (isFaceDown) 2
+                    else lastKnownToughness ?: projected.getToughness(entityId) ?: cardComponent.baseStats?.baseToughness ?: 0
+                power >= predicate.min || toughness >= predicate.min
+            }
             is com.wingedsheep.sdk.scripting.predicates.CardPredicate.Or ->
                 predicate.predicates.any { matchesCardPredicate(it, cardComponent, projected, entityId, isFaceDown, lastKnownPower, lastKnownToughness) }
             is com.wingedsheep.sdk.scripting.predicates.CardPredicate.And ->

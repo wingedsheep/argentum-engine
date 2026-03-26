@@ -288,6 +288,11 @@ internal class AffectsFilterResolver {
         is CardPredicate.ToughnessAtMost -> (projected?.toughness ?: card.baseStats?.baseToughness ?: 0) <= predicate.max
         is CardPredicate.ToughnessAtLeast -> (projected?.toughness ?: card.baseStats?.baseToughness ?: 0) >= predicate.min
         is CardPredicate.ToughnessEquals -> (projected?.toughness ?: card.baseStats?.baseToughness) == predicate.value
+        is CardPredicate.PowerOrToughnessAtLeast -> {
+            val power = projected?.power ?: card.baseStats?.basePower ?: 0
+            val toughness = projected?.toughness ?: card.baseStats?.baseToughness ?: 0
+            power >= predicate.min || toughness >= predicate.min
+        }
         is CardPredicate.ManaValueEquals -> card.manaValue == predicate.value
         is CardPredicate.ManaValueAtMost -> card.manaValue <= predicate.max
         is CardPredicate.ManaValueAtLeast -> card.manaValue >= predicate.min

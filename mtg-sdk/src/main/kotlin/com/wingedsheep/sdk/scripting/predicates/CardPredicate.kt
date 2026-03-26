@@ -324,6 +324,14 @@ sealed interface CardPredicate : TextReplaceable<CardPredicate> {
         override fun applyTextReplacement(replacer: TextReplacer): CardPredicate = this
     }
 
+    /** Power or toughness is at least the given value (OR logic) */
+    @SerialName("PowerOrToughnessAtLeast")
+    @Serializable
+    data class PowerOrToughnessAtLeast(val min: Int) : CardPredicate {
+        override val description: String = "with power or toughness $min or greater"
+        override fun applyTextReplacement(replacer: TextReplacer): CardPredicate = this
+    }
+
     // =============================================================================
     // Context-relative Predicates (Pipeline Variable References)
     // =============================================================================

@@ -218,6 +218,11 @@ data class GameObjectFilter(
         cardPredicates = cardPredicates + CardPredicate.ToughnessAtLeast(min)
     )
 
+    /** Power or toughness at least */
+    fun powerOrToughnessAtLeast(min: Int) = copy(
+        cardPredicates = cardPredicates + CardPredicate.PowerOrToughnessAtLeast(min)
+    )
+
     /** Must be legendary */
     fun legendary() = copy(
         cardPredicates = cardPredicates + CardPredicate.IsLegendary

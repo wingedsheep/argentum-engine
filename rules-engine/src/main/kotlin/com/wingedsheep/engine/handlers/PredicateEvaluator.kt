@@ -269,6 +269,11 @@ class PredicateEvaluator {
                 val toughness = projectedValues?.toughness ?: card.baseStats?.baseToughness ?: 0
                 toughness >= predicate.min
             }
+            is CardPredicate.PowerOrToughnessAtLeast -> {
+                val power = projectedValues?.power ?: card.baseStats?.basePower ?: 0
+                val toughness = projectedValues?.toughness ?: card.baseStats?.baseToughness ?: 0
+                power >= predicate.min || toughness >= predicate.min
+            }
 
             // Source-relative predicates
             CardPredicate.NotOfSourceChosenType -> {
@@ -482,6 +487,12 @@ class PredicateEvaluator {
             is CardPredicate.ToughnessAtLeast -> {
                 val toughness = card.baseStats?.toughness
                 toughness is com.wingedsheep.sdk.model.CharacteristicValue.Fixed && toughness.value >= predicate.min
+            }
+            is CardPredicate.PowerOrToughnessAtLeast -> {
+                val power = card.baseStats?.power
+                val toughness = card.baseStats?.toughness
+                (power is com.wingedsheep.sdk.model.CharacteristicValue.Fixed && power.value >= predicate.min) ||
+                    (toughness is com.wingedsheep.sdk.model.CharacteristicValue.Fixed && toughness.value >= predicate.min)
             }
 
             // Source-relative predicates
