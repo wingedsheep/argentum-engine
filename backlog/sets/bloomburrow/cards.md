@@ -2,11 +2,11 @@
 
 **Set Size:** 266 cards
 **Release Date:** August 2, 2024
-**Implemented:** 44 / 266
+**Implemented:** 45 / 266
 
 | Color      | Total | Done |
 |------------|-------|------|
-| White      | 40    | 10   |
+| White      | 40    | 11   |
 | Blue       | 41    | 8    |
 | Black      | 40    | 7    |
 | Red        | 41    | 6    |
@@ -145,7 +145,7 @@
 - [ ] Lumra, Bellow of the Woods
 - [ ] Lunar Convocation
 - [ ] Lupinflower Village
-- [ ] Mabel's Mettle
+- [x] Mabel's Mettle
 - [ ] Mabel, Heir to Cragflame
 - [ ] Maha, Its Feathers Night
 - [ ] Manifold Mouse

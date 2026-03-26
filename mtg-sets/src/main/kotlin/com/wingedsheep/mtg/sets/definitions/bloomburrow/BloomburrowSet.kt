@@ -43,6 +43,7 @@ object BloomburrowSet {
         JunkbladeBruiser,
         HuntersTalent,
         MindSpiral,
+        MabelsMettle,
         MouseTrapper,
         NocturnalHunger,
         NettleGuard,
