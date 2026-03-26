@@ -22,8 +22,11 @@ import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.identity.FaceDownComponent
 import com.wingedsheep.engine.state.components.identity.LifeTotalComponent
+import com.wingedsheep.engine.state.components.battlefield.ClassLevelComponent
 import com.wingedsheep.engine.state.components.player.DamageBonusComponent
 import com.wingedsheep.engine.mechanics.layers.SerializableModification
+import com.wingedsheep.engine.registry.CardRegistry
+import com.wingedsheep.sdk.scripting.NoncombatDamageBonus
 import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Zone
@@ -45,6 +48,7 @@ import com.wingedsheep.sdk.scripting.references.Player
 object DamageUtils {
 
     private val predicateEvaluator = PredicateEvaluator()
+    lateinit var cardRegistry: CardRegistry
 
     /**
      * Deal damage to a target (player or creature).
@@ -586,7 +590,8 @@ object DamageUtils {
         state: GameState,
         targetId: EntityId,
         amount: Int,
-        sourceId: EntityId?
+        sourceId: EntityId?,
+        isCombatDamage: Boolean = false
     ): Int {
         if (amount <= 0) return 0
 
@@ -665,6 +670,32 @@ object DamageUtils {
                 if (!sourceMatches) continue
 
                 amplifiedAmount += damageBonusComponent.bonusAmount
+            }
+        }
+
+        // Check battlefield permanents for NoncombatDamageBonus static abilities (Artist's Talent Level 3)
+        if (sourceId != null && !isCombatDamage) {
+            val sourceController = state.getEntity(sourceId)?.get<ControllerComponent>()?.playerId
+            if (sourceController != null) {
+                for (entityId in state.getBattlefield(sourceController)) {
+                    val container = state.getEntity(entityId) ?: continue
+                    val card = container.get<CardComponent>() ?: continue
+                    val permanentDef = cardRegistry.getCard(card.cardDefinitionId) ?: continue
+                    val classLevel = container.get<ClassLevelComponent>()?.currentLevel
+
+                    for (ability in permanentDef.script.effectiveStaticAbilities(classLevel)) {
+                        if (ability !is NoncombatDamageBonus) continue
+
+                        // Check target is an opponent or a permanent an opponent controls
+                        val targetIsOpponent = targetId in state.turnOrder && targetId != sourceController
+                        val targetController = state.getEntity(targetId)?.get<ControllerComponent>()?.playerId
+                        val targetIsOpponentPermanent = targetController != null && targetController != sourceController
+
+                        if (targetIsOpponent || targetIsOpponentPermanent) {
+                            amplifiedAmount += ability.bonusAmount
+                        }
+                    }
+                }
             }
         }
 

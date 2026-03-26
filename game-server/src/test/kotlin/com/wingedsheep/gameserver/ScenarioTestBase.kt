@@ -144,7 +144,8 @@ abstract class ScenarioTestBase : FunSpec() {
             playerNumber: Int,
             cardName: String,
             tapped: Boolean = false,
-            summoningSickness: Boolean = false
+            summoningSickness: Boolean = false,
+            classLevel: Int? = null
         ): ScenarioBuilder {
             val playerId = if (playerNumber == 1) player1Id!! else player2Id!!
             val cardId = createCard(cardName, playerId)
@@ -172,9 +173,9 @@ abstract class ScenarioTestBase : FunSpec() {
                 container = staticHandler.addContinuousEffectComponent(container, cardDef)
                 container = staticHandler.addReplacementEffectComponent(container, cardDef)
 
-                // Add ClassLevelComponent for Class enchantments (starts at level 1)
+                // Add ClassLevelComponent for Class enchantments (starts at level 1, or specified level)
                 if (cardDef.isClass) {
-                    container = container.with(ClassLevelComponent(currentLevel = 1))
+                    container = container.with(ClassLevelComponent(currentLevel = classLevel ?: 1))
                 }
             }
 

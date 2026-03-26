@@ -321,3 +321,23 @@ data class AdditionalETBTriggers(
 ) : StaticAbility {
     override fun applyTextReplacement(replacer: TextReplacer): StaticAbility = this
 }
+
+/**
+ * If a source you control would deal noncombat damage to an opponent or a permanent
+ * an opponent controls, it deals that much damage plus the bonus amount instead.
+ *
+ * Used for Artist's Talent Level 3 and similar "noncombat damage amplification" effects.
+ * This is a static ability on a permanent — the bonus applies as long as the permanent
+ * is on the battlefield with this ability active.
+ *
+ * @property bonusAmount The flat bonus to add to noncombat damage dealt to opponents
+ */
+@SerialName("NoncombatDamageBonus")
+@Serializable
+data class NoncombatDamageBonus(
+    val bonusAmount: Int
+) : StaticAbility {
+    override val description: String =
+        "If a source you control would deal noncombat damage to an opponent or a permanent an opponent controls, it deals that much damage plus $bonusAmount instead"
+    override fun applyTextReplacement(replacer: TextReplacer): StaticAbility = this
+}

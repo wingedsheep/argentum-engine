@@ -981,6 +981,7 @@ Set via `staticAbility { ability = ... }`:
 - `GrantCantLoseGame` — controller can't lose the game (Lich's Mastery, Platinum Angel)
 - `ExtraLoyaltyActivation` — activate loyalty abilities of planeswalkers you control twice each turn (Oath of Teferi)
 - `AdditionalETBTriggers(creatureFilter)` — when a creature matching the filter ETBs under your control, triggered abilities of your permanents that fired from that event trigger an additional time (Naban, Dean of Iteration)
+- `NoncombatDamageBonus(bonusAmount)` — if a source you control would deal noncombat damage to an opponent or a permanent an opponent controls, it deals that much damage plus bonusAmount instead (Artist's Talent Level 3)
 - `CantCastSpells(target, duration)` — prevent target player from casting spells
 - `SkipNextTurn(target)` — target player skips their next turn
 - `AdditionalManaOnTap(color, amount: DynamicAmount)` — produce additional mana

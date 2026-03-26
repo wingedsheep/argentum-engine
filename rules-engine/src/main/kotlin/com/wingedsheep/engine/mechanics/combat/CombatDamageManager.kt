@@ -460,7 +460,7 @@ internal class CombatDamageManager(
         val isPlaneswalker = !isPlayer && projected.isPlaneswalker(assignment.targetId)
 
         val amplifiedAmount = DamageUtils.applyStaticDamageAmplification(
-            state, assignment.targetId, assignment.amount, assignment.sourceId
+            state, assignment.targetId, assignment.amount, assignment.sourceId, isCombatDamage = true
         )
 
         return when {
@@ -761,7 +761,7 @@ internal class CombatDamageManager(
                 val defenderId = attackingComponent.defenderId
                 if (!isProtectedFromAttackingCreatureDamage(state, defenderId) &&
                     !isCombatDamagePreventedByGroupFilter(state, attackerId, projected)) {
-                    val amplified = DamageUtils.applyStaticDamageAmplification(state, defenderId, attackerPower, attackerId)
+                    val amplified = DamageUtils.applyStaticDamageAmplification(state, defenderId, attackerPower, attackerId, isCombatDamage = true)
                     incomingDamage.getOrPut(defenderId) { mutableMapOf() }
                         .merge(attackerId, amplified) { a, b -> a + b }
                 }
@@ -778,7 +778,7 @@ internal class CombatDamageManager(
                     val targetContainer = state.getEntity(targetId)
                     val isPlayer = targetContainer?.get<LifeTotalComponent>() != null &&
                         targetContainer.get<CardComponent>() == null
-                    val amplified = DamageUtils.applyStaticDamageAmplification(state, targetId, damage, attackerId)
+                    val amplified = DamageUtils.applyStaticDamageAmplification(state, targetId, damage, attackerId, isCombatDamage = true)
                     if (isPlayer) {
                         incomingDamage.getOrPut(targetId) { mutableMapOf() }
                             .merge(attackerId, amplified) { a, b -> a + b }

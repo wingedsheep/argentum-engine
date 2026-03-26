@@ -2,6 +2,7 @@ package com.wingedsheep.engine.mechanics.mana
 
 import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.GameState
+import com.wingedsheep.engine.state.components.battlefield.ClassLevelComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.sdk.core.CardType
@@ -279,10 +280,12 @@ class CostCalculator(
 
         var reduction = 0
         for (entityId in state.getBattlefield(casterId)) {
-            val card = state.getEntity(entityId)?.get<CardComponent>() ?: continue
+            val container = state.getEntity(entityId) ?: continue
+            val card = container.get<CardComponent>() ?: continue
             val permanentDef = cardRegistry.getCard(card.cardDefinitionId) ?: continue
+            val classLevel = container.get<ClassLevelComponent>()?.currentLevel
 
-            for (ability in permanentDef.script.staticAbilities) {
+            for (ability in permanentDef.script.effectiveStaticAbilities(classLevel)) {
                 if (ability is ReduceSpellCostBySubtype &&
                     Subtype.of(ability.subtype) in spellSubtypes
                 ) {
@@ -312,10 +315,12 @@ class CostCalculator(
 
         var reduction = 0
         for (entityId in state.getBattlefield(casterId)) {
-            val card = state.getEntity(entityId)?.get<CardComponent>() ?: continue
+            val container = state.getEntity(entityId) ?: continue
+            val card = container.get<CardComponent>() ?: continue
             val permanentDef = cardRegistry.getCard(card.cardDefinitionId) ?: continue
+            val classLevel = container.get<ClassLevelComponent>()?.currentLevel
 
-            for (ability in permanentDef.script.staticAbilities) {
+            for (ability in permanentDef.script.effectiveStaticAbilities(classLevel)) {
                 if (ability is ReduceSpellCostByFilter &&
                     matchesCardDefinition(cardDef, ability.filter, entityId, state, projectedState)
                 ) {
@@ -344,10 +349,12 @@ class CostCalculator(
         val symbolsToRemove = mutableListOf<ManaSymbol>()
 
         for (entityId in state.getBattlefield(casterId)) {
-            val card = state.getEntity(entityId)?.get<CardComponent>() ?: continue
+            val container = state.getEntity(entityId) ?: continue
+            val card = container.get<CardComponent>() ?: continue
             val permanentDef = cardRegistry.getCard(card.cardDefinitionId) ?: continue
+            val classLevel = container.get<ClassLevelComponent>()?.currentLevel
 
-            for (ability in permanentDef.script.staticAbilities) {
+            for (ability in permanentDef.script.effectiveStaticAbilities(classLevel)) {
                 if (ability is ReduceSpellColoredCostBySubtype &&
                     Subtype.of(ability.subtype) in spellSubtypes
                 ) {
@@ -516,10 +523,12 @@ class CostCalculator(
         var increase = 0
         for (playerId in state.turnOrder) {
             for (entityId in state.getBattlefield(playerId)) {
-                val card = state.getEntity(entityId)?.get<CardComponent>() ?: continue
+                val container = state.getEntity(entityId) ?: continue
+                val card = container.get<CardComponent>() ?: continue
                 val permanentDef = cardRegistry.getCard(card.cardDefinitionId) ?: continue
+                val classLevel = container.get<ClassLevelComponent>()?.currentLevel
 
-                for (ability in permanentDef.script.staticAbilities) {
+                for (ability in permanentDef.script.effectiveStaticAbilities(classLevel)) {
                     if (ability is IncreaseSpellCostByFilter &&
                         matchesCardDefinition(cardDef, ability.filter)
                     ) {
@@ -619,10 +628,12 @@ class CostCalculator(
     fun findAlternativeCastingCosts(state: GameState, casterId: EntityId): List<ManaCost> {
         val costs = mutableListOf<ManaCost>()
         for (entityId in state.getBattlefield(casterId)) {
-            val card = state.getEntity(entityId)?.get<CardComponent>() ?: continue
+            val container = state.getEntity(entityId) ?: continue
+            val card = container.get<CardComponent>() ?: continue
             val permanentDef = cardRegistry.getCard(card.cardDefinitionId) ?: continue
+            val classLevel = container.get<ClassLevelComponent>()?.currentLevel
 
-            for (ability in permanentDef.script.staticAbilities) {
+            for (ability in permanentDef.script.effectiveStaticAbilities(classLevel)) {
                 if (ability is GrantAlternativeCastingCost) {
                     costs.add(ManaCost.parse(ability.cost))
                 }

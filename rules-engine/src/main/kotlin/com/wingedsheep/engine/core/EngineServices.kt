@@ -9,6 +9,7 @@ import com.wingedsheep.engine.handlers.EffectHandler
 import com.wingedsheep.engine.handlers.MulliganHandler
 import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.handlers.TargetFinder
+import com.wingedsheep.engine.handlers.effects.DamageUtils
 import com.wingedsheep.engine.handlers.effects.EffectExecutorRegistry
 import com.wingedsheep.engine.mechanics.StateBasedActionChecker
 import com.wingedsheep.engine.mechanics.combat.CombatManager
@@ -29,6 +30,9 @@ import com.wingedsheep.engine.registry.CardRegistry
 class EngineServices(
     val cardRegistry: CardRegistry
 ) {
+    init {
+        DamageUtils.cardRegistry = cardRegistry
+    }
     val combatManager = CombatManager(cardRegistry)
     val effectExecutorRegistry = EffectExecutorRegistry(cardRegistry = cardRegistry)
     val triggerDetector = TriggerDetector(cardRegistry)
