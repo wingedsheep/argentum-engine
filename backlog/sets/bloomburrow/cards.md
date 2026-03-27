@@ -2,7 +2,7 @@
 
 **Set Size:** 266 cards
 **Release Date:** August 2, 2024
-**Implemented:** 70 / 266
+**Implemented:** 71 / 266
 
 | Color      | Total | Done |
 |------------|-------|------|
@@ -10,7 +10,7 @@
 | Blue       | 41    | 10   |
 | Black      | 40    | 11   |
 | Red        | 41    | 12   |
-| Green      | 41    | 6    |
+| Green      | 41    | 7    |
 | Multicolor | 39    | 10   |
 | Colorless  | 9     | 2    |
 | Land       | 15    | 1    |
@@ -36,7 +36,7 @@
 - [x] Bonebind Orator
 - [ ] Bonecache Overseer
 - [ ] Brambleguard Captain
-- [ ] Brambleguard Veteran
+- [x] Brambleguard Veteran
 - [x] Brave-Kin Duo
 - [ ] Brazen Collector
 - [ ] Brightblade Stoat

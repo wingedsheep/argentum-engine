@@ -27,6 +27,7 @@ object BloomburrowSet {
         BarkformHarvester,
         BellowingCrier,
         BonebindOrator,
+        BrambleguardVeteran,
         BraveKinDuo,
         BywayBarterer,
         CamelliaTheSeedmiser,
