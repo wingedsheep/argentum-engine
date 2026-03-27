@@ -18,6 +18,7 @@ import com.wingedsheep.gameserver.session.SessionRegistry
 import com.wingedsheep.gameserver.session.GameSession
 import com.wingedsheep.gameserver.config.GameProperties
 import com.wingedsheep.engine.registry.CardRegistry
+import com.wingedsheep.gameserver.deck.EasterEggDeckInjector
 import com.wingedsheep.sdk.model.EntityId
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
@@ -273,8 +274,9 @@ class LobbyHandler(
         )
 
         sealedSession.players.forEach { (playerId, playerState) ->
-            val deck = playerState.submittedDeck
+            val baseDeck = playerState.submittedDeck
                 ?: throw IllegalStateException("Player $playerId has no submitted deck")
+            val deck = EasterEggDeckInjector.maybeInjectEasterEggs(playerState.session.playerName, baseDeck)
             gameSession.addPlayer(playerState.session, deck)
 
             // Store player info for persistence

@@ -13,6 +13,7 @@ import com.wingedsheep.gameserver.tournament.TournamentManager
 import com.wingedsheep.gameserver.tournament.TournamentMatch
 import com.wingedsheep.gameserver.tournament.TournamentRound
 import com.wingedsheep.engine.registry.CardRegistry
+import com.wingedsheep.gameserver.deck.EasterEggDeckInjector
 import com.wingedsheep.sdk.model.EntityId
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
@@ -407,8 +408,14 @@ class TournamentMatchHandler(
         val player1State = lobby.players[match.player1Id] ?: return
         val player2State = lobby.players[match.player2Id ?: return] ?: return
 
-        val deck1 = lobby.getSubmittedDeck(match.player1Id) ?: return
-        val deck2 = lobby.getSubmittedDeck(match.player2Id) ?: return
+        val deck1 = EasterEggDeckInjector.maybeInjectEasterEggs(
+            player1State.identity.playerName,
+            lobby.getSubmittedDeck(match.player1Id) ?: return
+        )
+        val deck2 = EasterEggDeckInjector.maybeInjectEasterEggs(
+            player2State.identity.playerName,
+            lobby.getSubmittedDeck(match.player2Id) ?: return
+        )
 
         val gameSession = GameSession(
             cardRegistry = cardRegistry,

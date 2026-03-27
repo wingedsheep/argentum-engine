@@ -93,12 +93,34 @@ object PredefinedTokens {
     }
 
     /**
+     * "Just One Glass" — a named Food token created by Sekshaas, Early Sleeper.
+     * Functionally identical to a Food token, but with custom name and art.
+     */
+    val JustOneGlass = card("Just One Glass") {
+        typeLine = "Artifact - Food"
+
+        activatedAbility {
+            cost = Costs.Composite(
+                Costs.Mana("{2}"),
+                Costs.Tap,
+                Costs.SacrificeSelf
+            )
+            effect = Effects.GainLife(3)
+        }
+
+        metadata {
+            imageUri = "/images/custom/just-one-glass.jpeg"
+        }
+    }
+
+    /**
      * All predefined token definitions.
      * Register these in the CardRegistry so token abilities are resolved.
      */
     val allTokens: List<CardDefinition> = listOf(
         Treasure,
         Food,
-        Lander
+        Lander,
+        JustOneGlass
     )
 }
