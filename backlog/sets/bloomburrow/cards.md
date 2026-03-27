@@ -2,7 +2,7 @@
 
 **Set Size:** 266 cards
 **Release Date:** August 2, 2024
-**Implemented:** 68 / 266
+**Implemented:** 69 / 266
 
 | Color      | Total | Done |
 |------------|-------|------|
@@ -13,7 +13,7 @@
 | Green      | 41    | 6    |
 | Multicolor | 39    | 10   |
 | Colorless  | 9     | 2    |
-| Land       | 15    | 0    |
+| Land       | 15    | 1    |
 
 ---
 
@@ -137,7 +137,7 @@
 - [ ] Knightfisher
 - [x] Lifecreed Duo
 - [ ] Lightshell Duo
-- [ ] Lilypad Village
+- [x] Lilypad Village
 - [ ] Lilysplash Mentor
 - [ ] Long River Lurker
 - [ ] Long River's Pull

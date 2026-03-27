@@ -29,6 +29,7 @@ fun ManaRestriction.isSatisfiedBy(context: SpellPaymentContext): Boolean = when 
     is ManaRestriction.InstantOrSorceryOnly -> context.isInstantOrSorcery
     is ManaRestriction.KickedSpellsOnly -> context.isKicked
     is ManaRestriction.CreatureMV4OrXCost -> context.isCreature && (context.manaValue >= 4 || context.hasXInCost)
+    is ManaRestriction.CreatureSpellsOnly -> context.isCreature
 }
 
 @Serializable

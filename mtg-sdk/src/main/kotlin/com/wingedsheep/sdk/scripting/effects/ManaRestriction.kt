@@ -40,4 +40,13 @@ sealed interface ManaRestriction {
         override val description: String =
             "Spend this mana only to cast creature spells with mana value 4 or greater or creature spells with {X} in their mana costs"
     }
+
+    /**
+     * "Spend this mana only to cast creature spells."
+     */
+    @SerialName("CreatureSpellsOnly")
+    @Serializable
+    data object CreatureSpellsOnly : ManaRestriction {
+        override val description: String = "Spend this mana only to cast creature spells"
+    }
 }

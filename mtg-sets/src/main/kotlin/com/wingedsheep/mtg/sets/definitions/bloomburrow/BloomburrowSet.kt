@@ -55,6 +55,7 @@ object BloomburrowSet {
         HuntersTalent,
         MindSpiral,
         LifecreedDuo,
+        LilypadVillage,
         MabelsMettle,
         ManifoldMouse,
         MoonriseCleric,
