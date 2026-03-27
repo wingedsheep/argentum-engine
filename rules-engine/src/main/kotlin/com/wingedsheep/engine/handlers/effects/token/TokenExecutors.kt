@@ -18,6 +18,7 @@ class TokenExecutors(
         CreateTokenExecutor(amountEvaluator, staticAbilityHandler),
         CreateTreasureExecutor(),
         CreateFoodTokenExecutor(),
+        CreateLanderTokenExecutor(),
         CreateChosenTokenExecutor(amountEvaluator),
         CreateTokenCopyOfSourceExecutor(cardRegistry, staticAbilityHandler),
         CreateTokenCopyOfEquippedCreatureExecutor(cardRegistry, staticAbilityHandler)

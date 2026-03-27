@@ -10,6 +10,7 @@ import com.wingedsheep.mtg.sets.definitions.legions.LegionsSet
 import com.wingedsheep.mtg.sets.definitions.onslaught.OnslaughtSet
 import com.wingedsheep.mtg.sets.definitions.portal.PortalSet
 import com.wingedsheep.mtg.sets.definitions.scourge.ScourgeSet
+import com.wingedsheep.mtg.sets.tokens.PredefinedTokens
 import com.wingedsheep.engine.state.ComponentContainer
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
@@ -49,6 +50,7 @@ import java.util.concurrent.atomic.AtomicLong
 abstract class ScenarioTestBase : FunSpec() {
 
     protected val cardRegistry = CardRegistry().apply {
+        register(PredefinedTokens.allTokens)
         register(PortalSet.allCards)
         register(OnslaughtSet.allCards)
         register(ScourgeSet.allCards)

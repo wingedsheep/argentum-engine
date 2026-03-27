@@ -10,6 +10,7 @@ import com.wingedsheep.mtg.sets.definitions.legions.LegionsSet
 import com.wingedsheep.mtg.sets.definitions.onslaught.OnslaughtSet
 import com.wingedsheep.mtg.sets.definitions.portal.PortalSet
 import com.wingedsheep.mtg.sets.definitions.scourge.ScourgeSet
+import com.wingedsheep.mtg.sets.tokens.PredefinedTokens
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 
@@ -20,6 +21,7 @@ class GameBeansConfig(
 
     @Bean
     fun cardRegistry(): CardRegistry = CardRegistry().apply {
+        register(PredefinedTokens.allTokens)
         register(PortalSet.allCards)
         register(PortalSet.basicLands)
         if (gameProperties.sets.onslaughtEnabled) {

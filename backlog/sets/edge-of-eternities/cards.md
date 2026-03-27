@@ -1,0 +1,269 @@
+# Edge of Eternities (EOE) - Card Checklist
+
+**Set Size:** 261 booster cards (excluding basic lands)
+**Release Date:** August 1, 2025
+**Implemented:** 0 / 261
+
+---
+
+- [ ] Adagia, Windswept Bastion
+- [ ] All-Fates Scroll
+- [ ] All-Fates Stalker
+- [ ] Alpharael, Dreaming Acolyte
+- [ ] Alpharael, Stonechosen
+- [ ] Annul
+- [ ] Anticausal Vestige
+- [ ] Archenemy's Charm
+- [ ] Astelli Reclaimer
+- [ ] Atmospheric Greenhouse
+- [ ] Atomic Microsizer
+- [ ] Auxiliary Boosters
+- [ ] Banishing Light
+- [ ] Beamsaw Prospector
+- [ ] Beyond the Quiet
+- [ ] Bioengineered Future
+- [ ] Biomechan Engineer
+- [ ] Biosynthic Burst
+- [ ] Biotech Specialist
+- [ ] Blade of the Swarm
+- [ ] Blooming Stinger
+- [ ] Bombard
+- [ ] Breeding Pool
+- [ ] Brightspear Zealot
+- [ ] Broodguard Elite
+- [ ] Bygone Colossus
+- [ ] Cerebral Download
+- [ ] Chorale of the Void
+- [ ] Chrome Companion
+- [ ] Close Encounter
+- [ ] Cloudsculpt Technician
+- [ ] Codecracker Hound
+- [ ] Comet Crawler
+- [ ] Command Bridge
+- [ ] Consult the Star Charts
+- [ ] Cosmogoyf
+- [ ] Cosmogrand Zenith
+- [ ] Cryogen Relic
+- [ ] Cryoshatter
+- [ ] Cut Propulsion
+- [ ] Dark Endurance
+- [ ] Dauntless Scrapbot
+- [ ] Dawnsire, Sunstar Dreadnought
+- [ ] Dawnstrike Vanguard
+- [ ] Debris Field Crusher
+- [ ] Decode Transmissions
+- [ ] Depressurize
+- [ ] Desculpting Blast
+- [ ] Devastating Onslaught
+- [ ] Diplomatic Relations
+- [ ] Divert Disaster
+- [ ] Dockworker Drone
+- [ ] Drill Too Deep
+- [ ] Drix Fatemaker
+- [ ] Dual-Sun Adepts
+- [ ] Dual-Sun Technique
+- [ ] Dubious Delicacy
+- [ ] Dyadrine, Synthesis Amalgam
+- [ ] Edge Rover
+- [ ] Elegy Acolyte
+- [ ] Embrace Oblivion
+- [ ] Emergency Eject
+- [ ] Emissary Escort
+- [ ] Entropic Battlecruiser
+- [ ] Eumidian Terrabotanist
+- [ ] Eusocial Engineering
+- [ ] Evendo, Waking Haven
+- [ ] Exalted Sunborn
+- [ ] Exosuit Savior
+- [ ] Extinguisher Battleship
+- [ ] Faller's Faithful
+- [ ] Famished Worldsire
+- [ ] Fell Gravship
+- [ ] Flight-Deck Coordinator
+- [ ] Focus Fire
+- [ ] Frenzied Baloth
+- [ ] Frontline War-Rager
+- [ ] Full Bore
+- [ ] Fungal Colossus
+- [ ] Galactic Wayfarer
+- [ ] Galvanizing Sawship
+- [ ] Genemorph Imago
+- [ ] Gene Pollinator
+- [ ] Germinating Wurm
+- [ ] Gigastorm Titan
+- [ ] Glacier Godmaw
+- [ ] Godless Shrine
+- [ ] Gravblade Heavy
+- [ ] Gravkill
+- [ ] Gravpack Monoist
+- [ ] Haliya, Ascendant Cadet
+- [ ] Haliya, Guided by Light
+- [ ] Hardlight Containment
+- [ ] Harmonious Grovestrider
+- [ ] Hemosymbic Mite
+- [ ] Honor
+- [ ] Honored Knight-Captain
+- [ ] Hullcarver
+- [ ] Hylderblade
+- [ ] Hymn of the Faller
+- [ ] Icecave Crasher
+- [ ] Icetill Explorer
+- [ ] Illvoi Galeblade
+- [ ] Illvoi Infiltrator
+- [ ] Illvoi Light Jammer
+- [ ] Illvoi Operative
+- [ ] Infinite Guideline Station
+- [ ] Insatiable Skittermaw
+- [ ] Interceptor Mechan
+- [ ] Intrepid Tenderfoot
+- [ ] Invasive Maneuvers
+- [ ] Kavaron Harrier
+- [ ] Kavaron, Memorial World
+- [ ] Kavaron Skywarden
+- [ ] Kavaron Turbodrone
+- [ ] Kav Landseeker
+- [ ] Knight Luminary
+- [ ] Larval Scoutlander
+- [ ] Lashwhip Predator
+- [ ] Lightless Evangel
+- [ ] Lightstall Inquisitor
+- [ ] Lithobraking
+- [ ] Loading Zone
+- [ ] Lost in Space
+- [ ] Lumen-Class Frigate
+- [ ] Luxknight Breacher
+- [ ] Mechan Assembler
+- [ ] Mechan Navigator
+- [ ] Mechanozoa
+- [ ] Mechan Shieldmate
+- [ ] Melded Moxite
+- [ ] Meltstrider Eulogist
+- [ ] Meltstrider's Gear
+- [ ] Meltstrider's Resolve
+- [ ] Memorial Team Leader
+- [ ] Memorial Vault
+- [ ] Mental Modulation
+- [ ] Mightform Harmonizer
+- [ ] Mm'menon, the Right Hand
+- [ ] Mm'menon, Uthros Exile
+- [ ] Molecular Modifier
+- [ ] Monoist Circuit-Feeder
+- [ ] Monoist Sentry
+- [ ] Moonlit Meditation
+- [ ] Mouth of the Storm
+- [ ] Mutinous Massacre
+- [ ] Nanoform Sentinel
+- [ ] Nebula Dragon
+- [ ] Nova Hellkite
+- [ ] Nutrient Block
+- [ ] Orbital Plunge
+- [ ] Oreplate Pangolin
+- [ ] Ouroboroid
+- [ ] Pain for All
+- [ ] Perigee Beckoner
+- [ ] Pinnacle Emissary
+- [ ] Pinnacle Kill-Ship
+- [ ] Pinnacle Starcage
+- [ ] Plasma Bolt
+- [ ] Possibility Technician
+- [ ] Pull Through the Weft
+- [ ] Pulsar Squadron Ace
+- [ ] Quantum Riddler
+- [ ] Radiant Strike
+- [ ] Ragost, Deft Gastronaut
+- [ ] Rayblade Trooper
+- [ ] Red Tiger Mechan
+- [ ] Remnant Elemental
+- [ ] Requiem Monolith
+- [ ] Reroute Systems
+- [ ] Rescue Skiff
+- [ ] Rig for War
+- [ ] Roving Actuator
+- [ ] Ruinous Rampage
+- [ ] Rust Harvester
+- [ ] Sacred Foundry
+- [ ] Sami's Curiosity
+- [ ] Sami, Ship's Engineer
+- [ ] Sami, Wildcat Captain
+- [ ] Scour for Scrap
+- [ ] Scout for Survivors
+- [ ] Scrounge for Eternity
+- [ ] Seam Rip
+- [ ] Secluded Starforge
+- [ ] Seedship Agrarian
+- [ ] Seedship Broodtender
+- [ ] Seedship Impact
+- [ ] Selfcraft Mechan
+- [ ] Shattered Wings
+- [ ] Singularity Rupture
+- [ ] Sinister Cryologist
+- [ ] Skystinger
+- [ ] Slagdrill Scrapper
+- [ ] Sledge-Class Seedship
+- [ ] Sothera, the Supervoid
+- [ ] Space-Time Anomaly
+- [ ] Specimen Freighter
+- [ ] Squire's Lightblade
+- [ ] Starbreach Whale
+- [ ] Starfield Shepherd
+- [ ] Starfield Vocalist
+- [ ] Starfighter Pilot
+- [ ] Starport Security
+- [ ] Starwinder
+- [ ] Station Monitor
+- [ ] Steelswarm Operator
+- [ ] Stomping Ground
+- [ ] Sunset Saboteur
+- [ ] Sunstar Chaplain
+- [ ] Sunstar Expansionist
+- [ ] Sunstar Lightsmith
+- [ ] Survey Mechan
+- [ ] Susurian Dirgecraft
+- [ ] Susurian Voidborn
+- [ ] Susur Secundi, Void Altar
+- [ ] Swarm Culler
+- [ ] Synthesizer Labship
+- [ ] Syr Vondam, Sunstar Exemplar
+- [ ] Syr Vondam, the Lucent
+- [ ] Systems Override
+- [ ] Tannuk, Memorial Ensign
+- [ ] Tannuk, Steadfast Second
+- [ ] Tapestry Warden
+- [ ] Temporal Intervention
+- [ ] Terminal Velocity
+- [ ] Terrapact Intimidator
+- [ ] Terrasymbiosis
+- [ ] Territorial Bruntar
+- [ ] Tezzeret, Cruel Captain
+- [ ] Thaumaton Torpedo
+- [ ] Thawbringer
+- [ ] The Dominion Bracelet
+- [ ] The Endstone
+- [ ] The Eternity Elevator
+- [ ] The Seriema
+- [ ] Thrumming Hivepool
+- [ ] Timeline Culler
+- [ ] Tractor Beam
+- [ ] Tragic Trajectory
+- [ ] Umbral Collar Zealot
+- [ ] Unravel
+- [ ] Uthros Psionicist
+- [ ] Uthros Scanship
+- [ ] Uthros, Titanic Godcore
+- [ ] Vaultguard Trooper
+- [ ] Virulent Silencer
+- [ ] Virus Beetle
+- [ ] Voidforged Titan
+- [ ] Vote Out
+- [ ] Warmaker Gunship
+- [ ] Watery Grave
+- [ ] Weapons Manufacturing
+- [ ] Wedgelight Rammer
+- [ ] Weftblade Enhancer
+- [ ] Weftstalker Ardent
+- [ ] Weftwalking
+- [ ] Wurmwall Sweeper
+- [ ] Xu-Ifit, Osteoharmonist
+- [ ] Zealous Display
+- [ ] Zero Point Ballad
+- [ ] Zookeeper Mechan

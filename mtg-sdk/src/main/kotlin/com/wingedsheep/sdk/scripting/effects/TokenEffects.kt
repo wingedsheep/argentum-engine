@@ -176,6 +176,29 @@ data class CreateFoodTokensEffect(
 }
 
 /**
+ * Create Lander artifact tokens.
+ * Lander tokens are artifacts with "{2}, {T}, Sacrifice this token: Search your library for a
+ * basic land card, put it onto the battlefield tapped, then shuffle."
+ *
+ * @property count Number of Lander tokens to create
+ * @property controller Who controls the created tokens (null = spell controller)
+ */
+@SerialName("CreateLanderTokens")
+@Serializable
+data class CreateLanderTokensEffect(
+    val count: Int = 1,
+    val controller: EffectTarget? = null
+) : Effect {
+    override val description: String = if (count == 1) {
+        "Create a Lander token"
+    } else {
+        "Create $count Lander tokens"
+    }
+
+    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
+}
+
+/**
  * Create a token that's a copy of the source permanent.
  * "Create a token that's a copy of Mishra's Self-Replicator."
  *

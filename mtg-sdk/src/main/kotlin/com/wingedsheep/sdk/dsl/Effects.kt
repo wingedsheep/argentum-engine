@@ -77,6 +77,7 @@ import com.wingedsheep.sdk.scripting.effects.CreateTokenCopyOfEquippedCreatureEf
 import com.wingedsheep.sdk.scripting.effects.CreateTokenCopyOfSourceEffect
 import com.wingedsheep.sdk.scripting.effects.CreateTokenEffect
 import com.wingedsheep.sdk.scripting.effects.CreateFoodTokensEffect
+import com.wingedsheep.sdk.scripting.effects.CreateLanderTokensEffect
 import com.wingedsheep.sdk.scripting.effects.CreateTreasureTokensEffect
 import com.wingedsheep.sdk.scripting.effects.CounterCondition
 import com.wingedsheep.sdk.scripting.effects.CounterDestination
@@ -754,6 +755,17 @@ object Effects {
      */
     fun CreateFood(count: Int = 1, controller: EffectTarget? = null): Effect =
         CreateFoodTokensEffect(count, controller)
+
+    /**
+     * Create Lander artifact tokens.
+     * Lander tokens have "{2}, {T}, Sacrifice this token: Search your library for a basic land
+     * card, put it onto the battlefield tapped, then shuffle."
+     *
+     * @param count Number of tokens to create
+     * @param controller Who controls the tokens (null = spell controller)
+     */
+    fun CreateLander(count: Int = 1, controller: EffectTarget? = null): Effect =
+        CreateLanderTokensEffect(count, controller)
 
     // =========================================================================
     // Protection Effects
