@@ -177,62 +177,65 @@ class TournamentMatchHandler(
             return
         }
 
-        if (lobby.state != com.wingedsheep.gameserver.lobby.LobbyState.TOURNAMENT_COMPLETE) {
-            ctx.sender.sendError(session, ErrorCode.INVALID_ACTION, "Tournament is not complete")
-            return
-        }
-
-        val tournament = ctx.lobbyRepository.findTournamentById(lobbyId)
-        if (tournament == null) {
-            ctx.sender.sendError(session, ErrorCode.INVALID_ACTION, "Tournament not found")
-            return
-        }
-
-        tournament.addExtraRound()
-        lobby.resumeTournament()
-
-        logger.info("Host ${identity.playerName} added extra rounds to tournament $lobbyId (now ${tournament.totalRounds} total)")
-
-        val connectedIds = lobby.players.values
-            .filter { it.identity.isConnected }
-            .map { it.identity.playerId }
-            .toSet()
-
-        val standings = tournament.getStandingsInfo(connectedIds)
-        val nextMatchups = tournament.peekNextRoundMatchups()
-
-        lobby.players.forEach { (playerId, playerState) ->
-            val ws = playerState.identity.webSocketSession
-            if (ws != null && ws.isOpen) {
-                val opponentId = nextMatchups[playerId]
-                val opponentName = opponentId?.let { lobby.players[it]?.identity?.playerName }
-                val hasBye = nextMatchups.containsKey(playerId) && opponentId == null
-
-                ctx.sender.send(ws, ServerMessage.TournamentResumed(
-                    lobbyId = lobbyId,
-                    totalRounds = tournament.totalRounds,
-                    standings = standings,
-                    nextOpponentName = opponentName,
-                    nextRoundHasBye = hasBye
-                ))
+        val lock = ctx.roundLocks.computeIfAbsent(lobbyId) { Any() }
+        synchronized(lock) {
+            if (lobby.state != com.wingedsheep.gameserver.lobby.LobbyState.TOURNAMENT_COMPLETE) {
+                ctx.sender.sendError(session, ErrorCode.INVALID_ACTION, "Tournament is not complete")
+                return
             }
-        }
 
-        lobby.spectators.forEach { (_, spectatorIdentity) ->
-            val ws = spectatorIdentity.webSocketSession
-            if (ws != null && ws.isOpen) {
-                ctx.sender.send(ws, ServerMessage.TournamentResumed(
-                    lobbyId = lobbyId,
-                    totalRounds = tournament.totalRounds,
-                    standings = standings
-                ))
+            val tournament = ctx.lobbyRepository.findTournamentById(lobbyId)
+            if (tournament == null) {
+                ctx.sender.sendError(session, ErrorCode.INVALID_ACTION, "Tournament not found")
+                return
             }
+
+            tournament.addExtraRound()
+            lobby.resumeTournament()
+
+            logger.info("Host ${identity.playerName} added extra rounds to tournament $lobbyId (now ${tournament.totalRounds} total)")
+
+            val connectedIds = lobby.players.values
+                .filter { it.identity.isConnected }
+                .map { it.identity.playerId }
+                .toSet()
+
+            val standings = tournament.getStandingsInfo(connectedIds)
+            val nextMatchups = tournament.peekNextRoundMatchups()
+
+            lobby.players.forEach { (playerId, playerState) ->
+                val ws = playerState.identity.webSocketSession
+                if (ws != null && ws.isOpen) {
+                    val opponentId = nextMatchups[playerId]
+                    val opponentName = opponentId?.let { lobby.players[it]?.identity?.playerName }
+                    val hasBye = nextMatchups.containsKey(playerId) && opponentId == null
+
+                    ctx.sender.send(ws, ServerMessage.TournamentResumed(
+                        lobbyId = lobbyId,
+                        totalRounds = tournament.totalRounds,
+                        standings = standings,
+                        nextOpponentName = opponentName,
+                        nextRoundHasBye = hasBye
+                    ))
+                }
+            }
+
+            lobby.spectators.forEach { (_, spectatorIdentity) ->
+                val ws = spectatorIdentity.webSocketSession
+                if (ws != null && ws.isOpen) {
+                    ctx.sender.send(ws, ServerMessage.TournamentResumed(
+                        lobbyId = lobbyId,
+                        totalRounds = tournament.totalRounds,
+                        standings = standings
+                    ))
+                }
+            }
+
+            autoReadyAiPlayers(lobby, tournament)
+
+            ctx.lobbyRepository.saveLobby(lobby)
+            ctx.lobbyRepository.saveTournament(lobbyId, tournament)
         }
-
-        autoReadyAiPlayers(lobby, tournament)
-
-        ctx.lobbyRepository.saveLobby(lobby)
-        ctx.lobbyRepository.saveTournament(lobbyId, tournament)
     }
 
     fun handleRoundComplete(lobbyId: String) {
