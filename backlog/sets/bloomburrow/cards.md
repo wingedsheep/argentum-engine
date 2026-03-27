@@ -2,7 +2,7 @@
 
 **Set Size:** 266 cards
 **Release Date:** August 2, 2024
-**Implemented:** 66 / 266
+**Implemented:** 67 / 266
 
 | Color      | Total | Done |
 |------------|-------|------|
@@ -11,7 +11,7 @@
 | Black      | 40    | 11   |
 | Red        | 41    | 11   |
 | Green      | 41    | 6    |
-| Multicolor | 39    | 9    |
+| Multicolor | 39    | 10   |
 | Colorless  | 9     | 2    |
 | Land       | 15    | 0    |
 
@@ -155,7 +155,7 @@
 - [ ] Mindwhisker
 - [ ] Mistbreath Elder
 - [ ] Mockingbird
-- [ ] Moonrise Cleric
+- [x] Moonrise Cleric
 - [ ] Moonstone Harbinger
 - [ ] Mountain
 - [x] Mouse Trapper

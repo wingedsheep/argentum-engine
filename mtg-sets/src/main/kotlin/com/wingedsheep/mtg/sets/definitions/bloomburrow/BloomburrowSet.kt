@@ -56,6 +56,7 @@ object BloomburrowSet {
         LifecreedDuo,
         MabelsMettle,
         ManifoldMouse,
+        MoonriseCleric,
         MouseTrapper,
         NocturnalHunger,
         NettleGuard,
