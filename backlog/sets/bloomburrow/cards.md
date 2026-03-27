@@ -2,13 +2,13 @@
 
 **Set Size:** 266 cards
 **Release Date:** August 2, 2024
-**Implemented:** 64 / 266
+**Implemented:** 65 / 266
 
 | Color      | Total | Done |
 |------------|-------|------|
 | White      | 40    | 14   |
 | Blue       | 41    | 9    |
-| Black      | 40    | 10   |
+| Black      | 40    | 11   |
 | Red        | 41    | 11   |
 | Green      | 41    | 6    |
 | Multicolor | 39    | 9    |
@@ -63,7 +63,7 @@
 - [ ] Curious Forager
 - [ ] Daggerfang Duo
 - [ ] Daring Waverider
-- [ ] Darkstar Augur
+- [x] Darkstar Augur
 - [x] Dawn's Truce
 - [ ] Dazzling Denial
 - [ ] Dewdrop Cure
