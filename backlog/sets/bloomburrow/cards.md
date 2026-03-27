@@ -2,12 +2,12 @@
 
 **Set Size:** 266 cards
 **Release Date:** August 2, 2024
-**Implemented:** 65 / 266
+**Implemented:** 66 / 266
 
 | Color      | Total | Done |
 |------------|-------|------|
 | White      | 40    | 14   |
-| Blue       | 41    | 9    |
+| Blue       | 41    | 10   |
 | Black      | 40    | 11   |
 | Red        | 41    | 11   |
 | Green      | 41    | 6    |
@@ -29,7 +29,7 @@
 - [ ] Bark-Knuckle Boxer
 - [x] Barkform Harvester
 - [ ] Baylen, the Haymaker
-- [ ] Bellowing Crier
+- [x] Bellowing Crier
 - [ ] Beza, the Bounding Spring
 - [ ] Blacksmith's Talent
 - [ ] Blooming Blast

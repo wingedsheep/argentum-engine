@@ -25,6 +25,7 @@ object BloomburrowSet {
         AgateBladeAssassin,
         ArtistsTalent,
         BarkformHarvester,
+        BellowingCrier,
         BonebindOrator,
         BraveKinDuo,
         BywayBarterer,
