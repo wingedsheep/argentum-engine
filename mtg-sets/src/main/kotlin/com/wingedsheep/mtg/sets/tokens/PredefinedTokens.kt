@@ -38,6 +38,12 @@ object PredefinedTokens {
                 shuffleAfter = true
             )
         }
+
+        metadata {
+            imageUri = "https://cards.scryfall.io/normal/front/8/5/85ef1950-219f-401b-8ff5-914f9aaec122.jpg?1752946491"
+            artist = "Jorge Jacinto"
+            collectorNumber = "8"
+        }
     }
 
     /**
