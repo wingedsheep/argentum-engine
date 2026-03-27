@@ -71,6 +71,7 @@ object BloomburrowSet {
         NocturnalHunger,
         NettleGuard,
         NightwhorlHermit,
+        PatchworkBanner,
         Overprotect,
         OsteomancerAdept,
         PondProphet,

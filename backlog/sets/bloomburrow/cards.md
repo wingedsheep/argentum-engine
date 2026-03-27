@@ -2,7 +2,7 @@
 
 **Set Size:** 266 cards
 **Release Date:** August 2, 2024
-**Implemented:** 81 / 266
+**Implemented:** 82 / 266
 
 | Color      | Total | Done |
 |------------|-------|------|
@@ -12,7 +12,7 @@
 | Red        | 41    | 15   |
 | Green      | 41    | 8    |
 | Multicolor | 39    | 11   |
-| Colorless  | 9     | 2    |
+| Colorless  | 9     | 3    |
 | Land       | 15    | 2    |
 
 ---
@@ -169,7 +169,7 @@
 - [ ] Otterball Antics
 - [x] Overprotect
 - [ ] Parting Gust
-- [ ] Patchwork Banner
+- [x] Patchwork Banner
 - [ ] Pawpatch Formation
 - [ ] Pawpatch Recruit
 - [ ] Pearl of Wisdom

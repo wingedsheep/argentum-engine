@@ -163,6 +163,27 @@ internal class AffectsFilterResolver {
                     (card.typeLine.isCreature || container.has<FaceDownComponent>()) && hasSubtype
                 }.toSet()
             }
+            is AffectsFilter.ChosenCreatureTypeCreaturesYouControl -> {
+                val chosenType = state.getEntity(sourceId)
+                    ?.get<ChosenCreatureTypeComponent>()?.creatureType
+                    ?: return emptySet()
+                val sourceController = state.getEntity(sourceId)
+                    ?.get<ControllerComponent>()?.playerId
+                    ?: return emptySet()
+                state.getBattlefield().filter { entityId ->
+                    val container = state.getEntity(entityId) ?: return@filter false
+                    val card = container.get<CardComponent>() ?: return@filter false
+                    val controller = container.get<ControllerComponent>()?.playerId
+                    val projected = projectedValues[entityId]
+                    val hasSubtype = if (projected != null) {
+                        projected.subtypes.any { it.equals(chosenType, ignoreCase = true) }
+                    } else {
+                        card.typeLine.hasSubtype(Subtype(chosenType))
+                    }
+                    controller == sourceController &&
+                        (card.typeLine.isCreature || container.has<FaceDownComponent>()) && hasSubtype
+                }.toSet()
+            }
             is AffectsFilter.Generic -> {
                 resolveGenericFilter(state, sourceId, filter.groupFilter, projectedValues)
             }
@@ -173,6 +194,7 @@ internal class AffectsFilterResolver {
         return filter is AffectsFilter.OtherCreaturesWithSubtype ||
             filter is AffectsFilter.WithSubtype ||
             filter is AffectsFilter.ChosenCreatureTypeCreatures ||
+            filter is AffectsFilter.ChosenCreatureTypeCreaturesYouControl ||
             (filter is AffectsFilter.Generic && filter.groupFilter.baseFilter.cardPredicates.any { it is CardPredicate.HasSubtype })
     }
 
@@ -183,6 +205,7 @@ internal class AffectsFilterResolver {
             filter is AffectsFilter.OtherCreaturesYouControl ||
             filter is AffectsFilter.OwnCreaturesWithCounter ||
             filter is AffectsFilter.OtherCreaturesWithSubtype ||
+            filter is AffectsFilter.ChosenCreatureTypeCreaturesYouControl ||
             (filter is AffectsFilter.Generic && filter.groupFilter.baseFilter.controllerPredicate != null)
     }
 

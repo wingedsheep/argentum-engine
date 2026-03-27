@@ -279,7 +279,10 @@ class StaticAbilityHandler(
                     layer = Layer.POWER_TOUGHNESS,
                     sublayer = Sublayer.MODIFICATIONS,
                     modification = Modification.ModifyPowerToughness(ability.powerBonus, ability.toughnessBonus),
-                    affectsFilter = AffectsFilter.ChosenCreatureTypeCreatures
+                    affectsFilter = if (ability.youControlOnly)
+                        AffectsFilter.ChosenCreatureTypeCreaturesYouControl
+                    else
+                        AffectsFilter.ChosenCreatureTypeCreatures
                 )
             }
             is GrantKeywordForChosenCreatureType -> {
