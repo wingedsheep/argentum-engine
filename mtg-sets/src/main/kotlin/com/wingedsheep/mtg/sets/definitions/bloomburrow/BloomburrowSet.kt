@@ -76,6 +76,7 @@ object BloomburrowSet {
         SunspineLynx,
         TenderWildguide,
         TidecallerMentor,
+        ThornvaultForager,
         ThundertrapTrainer,
         ValleyQuestcaller,
         WarrenWarleader,

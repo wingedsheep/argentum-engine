@@ -2,7 +2,7 @@
 
 **Set Size:** 266 cards
 **Release Date:** August 2, 2024
-**Implemented:** 60 / 266
+**Implemented:** 61 / 266
 
 | Color      | Total | Done |
 |------------|-------|------|
@@ -10,7 +10,7 @@
 | Blue       | 41    | 9    |
 | Black      | 40    | 9    |
 | Red        | 41    | 11   |
-| Green      | 41    | 5    |
+| Green      | 41    | 6    |
 | Multicolor | 39    | 9    |
 | Colorless  | 9     | 2    |
 | Land       | 15    | 0    |
@@ -247,7 +247,7 @@
 - [ ] The Infamous Cruelclaw
 - [ ] Thistledown Players
 - [ ] Thornplate Intimidator
-- [ ] Thornvault Forager
+- [x] Thornvault Forager
 - [ ] Thought Shucker
 - [ ] Thought-Stalker Warlock
 - [ ] Three Tree City
