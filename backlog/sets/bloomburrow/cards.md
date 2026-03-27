@@ -2,14 +2,14 @@
 
 **Set Size:** 266 cards
 **Release Date:** August 2, 2024
-**Implemented:** 69 / 266
+**Implemented:** 70 / 266
 
 | Color      | Total | Done |
 |------------|-------|------|
 | White      | 40    | 15   |
 | Blue       | 41    | 10   |
 | Black      | 40    | 11   |
-| Red        | 41    | 11   |
+| Red        | 41    | 12   |
 | Green      | 41    | 6    |
 | Multicolor | 39    | 10   |
 | Colorless  | 9     | 2    |
@@ -131,7 +131,7 @@
 - [x] Junkblade Bruiser
 - [ ] Kastral, the Windcrested
 - [ ] Keen-Eyed Curator
-- [ ] Kindlespark Duo
+- [x] Kindlespark Duo
 - [ ] Kitnap
 - [ ] Kitsa, Otterball Elite
 - [ ] Knightfisher
