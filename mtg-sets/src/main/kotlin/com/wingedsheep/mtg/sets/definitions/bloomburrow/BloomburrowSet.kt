@@ -23,6 +23,7 @@ object BloomburrowSet {
      */
     val allCards = listOf(
         ArtistsTalent,
+        BarkformHarvester,
         BonebindOrator,
         BraveKinDuo,
         BywayBarterer,
