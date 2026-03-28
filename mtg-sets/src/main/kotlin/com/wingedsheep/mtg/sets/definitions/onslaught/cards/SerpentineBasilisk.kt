@@ -1,11 +1,12 @@
 package com.wingedsheep.mtg.sets.definitions.onslaught.cards
 
+import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.effects.DelayedAction
-import com.wingedsheep.sdk.scripting.effects.MarkForDelayedActionEffect
+import com.wingedsheep.sdk.scripting.effects.CreateDelayedTriggerEffect
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
+import com.wingedsheep.sdk.core.Step
 
 /**
  * Serpentine Basilisk
@@ -25,7 +26,10 @@ val SerpentineBasilisk = card("Serpentine Basilisk") {
 
     triggeredAbility {
         trigger = Triggers.DealsCombatDamageToCreature
-        effect = MarkForDelayedActionEffect(EffectTarget.TriggeringEntity, DelayedAction.DESTROY)
+        effect = CreateDelayedTriggerEffect(
+                step = Step.END_COMBAT,
+                effect = Effects.Destroy(EffectTarget.TriggeringEntity)
+            )
     }
 
     morph = "{1}{G}{G}"

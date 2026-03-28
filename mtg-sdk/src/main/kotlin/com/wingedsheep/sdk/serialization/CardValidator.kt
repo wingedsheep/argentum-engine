@@ -11,7 +11,6 @@ import com.wingedsheep.sdk.scripting.effects.ChangeCreatureTypeTextEffect
 import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.ConditionalEffect
 import com.wingedsheep.sdk.scripting.effects.DealDamageEffect
-import com.wingedsheep.sdk.scripting.effects.MarkForDelayedActionEffect
 import com.wingedsheep.sdk.scripting.effects.Effect
 import com.wingedsheep.sdk.scripting.effects.ExileUntilLeavesEffect
 import com.wingedsheep.sdk.scripting.effects.FlipCoinEffect
@@ -225,7 +224,6 @@ object CardValidator {
             is RegenerateEffect -> effect.target
             is CantBeRegeneratedEffect -> effect.target
             is ExileUntilLeavesEffect -> effect.target
-            is MarkForDelayedActionEffect -> effect.target
             is MustBeBlockedEffect -> effect.target
             is RemoveFromCombatEffect -> effect.target
             is ForceSacrificeEffect -> effect.target

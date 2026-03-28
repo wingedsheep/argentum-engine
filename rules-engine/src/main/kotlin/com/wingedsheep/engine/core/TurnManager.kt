@@ -2,7 +2,6 @@ package com.wingedsheep.engine.core
 
 import com.wingedsheep.engine.handlers.DecisionHandler
 import com.wingedsheep.engine.handlers.EffectContext
-import com.wingedsheep.engine.handlers.effects.ZoneMovementUtils
 import com.wingedsheep.engine.mechanics.combat.CombatManager
 import com.wingedsheep.engine.mechanics.StateBasedActionChecker
 import com.wingedsheep.engine.state.GameState
@@ -10,11 +9,8 @@ import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.state.components.combat.AttackingComponent
 import com.wingedsheep.engine.state.components.combat.BlockingComponent
-import com.wingedsheep.engine.state.components.combat.MarkedForDestructionAtEndOfCombatComponent
-import com.wingedsheep.engine.state.components.combat.MarkedForSacrificeAtEndOfCombatComponent
 import com.wingedsheep.engine.state.components.combat.MustAttackPlayerComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
-import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.player.AdditionalCombatPhasesComponent
 import com.wingedsheep.engine.state.components.player.CardsDrawnThisTurnComponent
 import com.wingedsheep.engine.state.components.player.ManaSpentOnSpellsThisTurnComponent
@@ -325,47 +321,6 @@ class TurnManager(
             }
 
             Step.END_COMBAT -> {
-                // Process delayed "destroy at end of combat" effects (e.g. Serpentine Basilisk)
-                val markedForDestruction = newState.findEntitiesWith<MarkedForDestructionAtEndOfCombatComponent>()
-                for ((entityId, _) in markedForDestruction) {
-                    if (newState.getBattlefield().contains(entityId)) {
-                        val destroyResult = ZoneMovementUtils.destroyPermanent(newState, entityId)
-                        if (destroyResult.isSuccess) {
-                            newState = destroyResult.newState
-                            events.addAll(destroyResult.events)
-                        }
-                    }
-                    newState = newState.updateEntity(entityId) { container ->
-                        container.without<MarkedForDestructionAtEndOfCombatComponent>()
-                    }
-                }
-
-                // Process delayed "sacrifice at end of combat" effects (e.g. Mardu Blazebringer)
-                val markedForSacrifice = newState.findEntitiesWith<MarkedForSacrificeAtEndOfCombatComponent>()
-                for ((entityId, _) in markedForSacrifice) {
-                    if (newState.getBattlefield().contains(entityId)) {
-                        val container = newState.getEntity(entityId)
-                        val cardComponent = container?.get<CardComponent>()
-                        if (container != null && cardComponent != null) {
-                            val controllerId = container.get<ControllerComponent>()?.playerId
-                                ?: cardComponent.ownerId
-                            if (controllerId != null) {
-                                // Delegate zone movement to ZoneTransitionService for full cleanup
-                                val transitionResult = com.wingedsheep.engine.handlers.effects.ZoneTransitionService.moveToZone(
-                                    newState, entityId, Zone.GRAVEYARD
-                                )
-                                newState = transitionResult.state
-
-                                events.add(PermanentsSacrificedEvent(controllerId, listOf(entityId), listOf(cardComponent.name)))
-                                events.addAll(transitionResult.events)
-                            }
-                        }
-                    }
-                    newState = newState.updateEntity(entityId) { container ->
-                        container.without<MarkedForSacrificeAtEndOfCombatComponent>()
-                    }
-                }
-
                 // Clean up combat state (remove attacking/blocking components)
                 val endCombatResult = combatManager.endCombat(newState)
                 if (!endCombatResult.isSuccess) return endCombatResult

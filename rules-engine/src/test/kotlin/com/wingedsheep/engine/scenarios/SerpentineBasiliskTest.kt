@@ -60,18 +60,22 @@ class SerpentineBasiliskTest : FunSpec({
         // (no first strike creatures, so first strike step is skipped per CR 510.4)
         driver.currentStep shouldBe Step.COMBAT_DAMAGE
 
-        // Trigger goes on stack - both pass to resolve it
+        // Trigger goes on stack - both pass to resolve it (creates delayed trigger)
         driver.bothPass()
 
         // Centaur Courser should still be alive (3 toughness, took 2 damage)
-        // but marked for destruction at end of combat
-        driver.findPermanent(defender, "Centaur Courser") shouldNotBe null
+        val courserAfterTrigger = driver.findPermanent(defender, "Centaur Courser")
+        courserAfterTrigger shouldNotBe null
 
-        // Advance to end of combat - creature is destroyed
+        // Advance to end of combat - delayed trigger fires and goes on the stack
         driver.passPriorityUntil(Step.END_COMBAT)
 
+        // Resolve the delayed destroy trigger
+        driver.bothPass()
+
         // Centaur Courser should now be destroyed
-        driver.findPermanent(defender, "Centaur Courser") shouldBe null
+        val courserAfterEndCombat = driver.findPermanent(defender, "Centaur Courser")
+        courserAfterEndCombat shouldBe null
         driver.getGraveyardCardNames(defender) shouldContain "Centaur Courser"
     }
 

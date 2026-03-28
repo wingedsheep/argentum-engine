@@ -11,7 +11,6 @@ class CombatExecutors(
     private val amountEvaluator: DynamicAmountEvaluator = DynamicAmountEvaluator()
 ) : ExecutorModule {
     override fun executors(): List<EffectExecutor<*>> = listOf(
-        MarkForDelayedActionExecutor(),
         MustBeBlockedExecutor(),
         ProvokeExecutor(),
         ForceBlockExecutor(),

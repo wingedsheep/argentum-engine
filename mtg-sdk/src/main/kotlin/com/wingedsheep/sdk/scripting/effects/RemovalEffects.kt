@@ -206,42 +206,6 @@ data class ExileUntilLeavesEffect(
 }
 
 /**
- * The type of delayed action to perform at end of combat.
- */
-@Serializable
-enum class DelayedAction {
-    DESTROY,
-    SACRIFICE
-}
-
-/**
- * Mark a permanent for a delayed action at end of combat.
- *
- * When executed, adds a marker component to the target permanent. The TurnManager
- * processes these markers when the END_COMBAT step begins:
- * - [DelayedAction.DESTROY] adds MarkedForDestructionAtEndOfCombatComponent
- * - [DelayedAction.SACRIFICE] adds MarkedForSacrificeAtEndOfCombatComponent
- *
- * Used by Serpentine Basilisk ("destroy that creature at end of combat")
- * and Mardu Blazebringer ("sacrifice it at end of combat").
- *
- * @property target The permanent to mark
- * @property action Whether to destroy or sacrifice the permanent
- */
-@SerialName("MarkForDelayedAction")
-@Serializable
-data class MarkForDelayedActionEffect(
-    val target: EffectTarget,
-    val action: DelayedAction
-) : Effect {
-    override val description: String = when (action) {
-        DelayedAction.DESTROY -> "Destroy ${target.description} at end of combat"
-        DelayedAction.SACRIFICE -> "Sacrifice ${target.description} at end of combat"
-    }
-    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
-}
-
-/**
  * Destroy all permanents matching a filter.
  *
  * Optionally excludes permanents that have any subtype matching a stored list of strings
