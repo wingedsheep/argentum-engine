@@ -2,7 +2,7 @@
 
 **Set Size:** 266 cards
 **Release Date:** August 2, 2024
-**Implemented:** 98 / 266
+**Implemented:** 99 / 266
 
 | Color      | Total | Done |
 |------------|-------|------|
@@ -11,7 +11,7 @@
 | Black      | 40    | 16   |
 | Red        | 41    | 16   |
 | Green      | 41    | 12   |
-| Multicolor | 39    | 13   |
+| Multicolor | 39    | 14   |
 | Colorless  | 9     | 3    |
 | Land       | 15    | 2    |
 
@@ -210,7 +210,7 @@
 - [ ] Season of the Bold
 - [ ] Season of the Burrow
 - [x] Seasoned Warrenguard
-- [ ] Seedglaive Mentor
+- [x] Seedglaive Mentor
 - [ ] Seedpod Squire
 - [x] Shore Up
 - [x] Shoreline Looter

@@ -94,6 +94,7 @@ object BloomburrowSet {
         SazacapsBrew,
         ScavengersTalent,
         SeasonedWarrenguard,
+        SeedglaiveMentor,
         ShoreUp,
         ShorelineLooter,
         SinisterMonolith,
