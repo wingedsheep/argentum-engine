@@ -6,8 +6,10 @@ import com.wingedsheep.engine.handlers.TargetFinder
 import com.wingedsheep.engine.mechanics.mana.ManaSolver
 import com.wingedsheep.engine.mechanics.stack.StackResolver
 import com.wingedsheep.engine.state.GameState
+import com.wingedsheep.engine.state.components.battlefield.TriggeredAbilityFiredThisTurnComponent
 import com.wingedsheep.engine.state.components.stack.TriggeredAbilityOnStackComponent
 import com.wingedsheep.sdk.model.EntityId
+import com.wingedsheep.sdk.scripting.AbilityId
 import com.wingedsheep.sdk.scripting.effects.Effect
 import com.wingedsheep.sdk.scripting.effects.MayEffect
 import com.wingedsheep.sdk.scripting.effects.MayPayManaEffect
@@ -106,27 +108,34 @@ class TriggerProcessor(
      */
     private fun processSingleTrigger(state: GameState, trigger: PendingTrigger): ExecutionResult {
         val ability = trigger.ability
+        var currentState = state
+
+        // Mark once-per-turn triggers as fired so they don't trigger again this turn
+        if (ability.oncePerTurn) {
+            currentState = markTriggerFired(currentState, trigger.sourceId, ability.id)
+        }
+
         val targetRequirement = ability.targetRequirement
 
         // If the effect is a MayPayManaEffect AND has targets, ask payment first, then targets.
         // This reverses the old flow where targets were chosen before the pay question.
         if (targetRequirement != null && ability.effect is MayPayManaEffect) {
-            return processMayPayManaThenTargetTrigger(state, trigger, targetRequirement)
+            return processMayPayManaThenTargetTrigger(currentState, trigger, targetRequirement)
         }
 
         // If the effect is a MayEffect AND has targets, ask may first before target selection.
         // This gives the player a chance to decline before having to pick targets.
         if (targetRequirement != null && ability.effect is MayEffect) {
-            return processMayThenTargetTrigger(state, trigger, targetRequirement)
+            return processMayThenTargetTrigger(currentState, trigger, targetRequirement)
         }
 
         // Check if this ability requires targets
         if (targetRequirement != null) {
-            return processTargetedTrigger(state, trigger, targetRequirement)
+            return processTargetedTrigger(currentState, trigger, targetRequirement)
         }
 
         // No targets required - put directly on stack
-        return putTriggerOnStack(state, trigger, emptyList())
+        return putTriggerOnStack(currentState, trigger, emptyList())
     }
 
     /**
@@ -496,5 +505,16 @@ class TriggerProcessor(
 
         // Fallback to permanent (shouldn't happen if the target is valid)
         return com.wingedsheep.engine.state.components.stack.ChosenTarget.Permanent(targetId)
+    }
+
+    /**
+     * Mark a once-per-turn triggered ability as fired on its source entity.
+     */
+    private fun markTriggerFired(state: GameState, sourceId: EntityId, abilityId: AbilityId): GameState {
+        val entity = state.getEntity(sourceId) ?: return state
+        val tracker = entity.get<TriggeredAbilityFiredThisTurnComponent>()
+            ?: TriggeredAbilityFiredThisTurnComponent()
+        val updated = tracker.withFired(abilityId)
+        return state.updateEntity(sourceId) { it.with(updated) }
     }
 }

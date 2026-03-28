@@ -33,7 +33,10 @@ data class TriggeredAbility(
     val triggerCondition: Condition? = null,
     /** When true, the triggered ability is controlled by the triggering entity's controller
      * instead of the source permanent's controller. Used for cards like Death Match. */
-    val controlledByTriggeringEntityController: Boolean = false
+    val controlledByTriggeringEntityController: Boolean = false,
+    /** When true, this triggered ability triggers at most once each turn.
+     * Used for cards like Scavenger's Talent: "This ability triggers only once each turn." */
+    val oncePerTurn: Boolean = false
 ) : TextReplaceable<TriggeredAbility> {
     /** All target requirements for this ability (primary + additional). */
     val allTargetRequirements: List<TargetRequirement>
@@ -97,7 +100,8 @@ data class TriggeredAbility(
             elseEffect: Effect? = null,
             activeZone: Zone = Zone.BATTLEFIELD,
             triggerCondition: Condition? = null,
-            controlledByTriggeringEntityController: Boolean = false
+            controlledByTriggeringEntityController: Boolean = false,
+            oncePerTurn: Boolean = false
         ): TriggeredAbility =
             TriggeredAbility(
                 id = AbilityId.generate(),
@@ -110,7 +114,8 @@ data class TriggeredAbility(
                 elseEffect = elseEffect,
                 activeZone = activeZone,
                 triggerCondition = triggerCondition,
-                controlledByTriggeringEntityController = controlledByTriggeringEntityController
+                controlledByTriggeringEntityController = controlledByTriggeringEntityController,
+                oncePerTurn = oncePerTurn
             )
     }
 }

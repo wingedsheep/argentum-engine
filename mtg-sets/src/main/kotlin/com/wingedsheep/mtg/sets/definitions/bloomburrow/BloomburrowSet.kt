@@ -90,6 +90,7 @@ object BloomburrowSet {
         ReptilianRecruiter,
         RunAwayTogether,
         SazacapsBrew,
+        ScavengersTalent,
         SeasonedWarrenguard,
         ShoreUp,
         ShorelineLooter,

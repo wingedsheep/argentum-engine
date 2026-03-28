@@ -808,6 +808,8 @@ class TriggeredAbilityBuilder {
     var triggerCondition: Condition? = null
     /** When true, the triggered ability is controlled by the triggering entity's controller. */
     var controlledByTriggeringEntityController: Boolean = false
+    /** When true, this triggered ability triggers at most once each turn. */
+    var oncePerTurn: Boolean = false
 
     private val namedTargets = mutableListOf<Pair<String, TargetRequirement>>()
 
@@ -843,7 +845,8 @@ class TriggeredAbilityBuilder {
             elseEffect = elseEffect,
             activeZone = triggerZone,
             triggerCondition = triggerCondition,
-            controlledByTriggeringEntityController = controlledByTriggeringEntityController
+            controlledByTriggeringEntityController = controlledByTriggeringEntityController,
+            oncePerTurn = oncePerTurn
         )
     }
 }

@@ -48,7 +48,7 @@ class SacrificeExecutor(
         }
 
         // Find all valid permanents on the battlefield that the player controls
-        val validPermanents = findValidPermanents(state, controllerId, effect)
+        val validPermanents = findValidPermanents(state, controllerId, effect, sourceId)
 
         if (effect.any) {
             // "Sacrifice any number of..." - player chooses 0 to all
@@ -79,11 +79,17 @@ class SacrificeExecutor(
     private fun findValidPermanents(
         state: GameState,
         controllerId: EntityId,
-        effect: SacrificeEffect
+        effect: SacrificeEffect,
+        sourceId: EntityId? = null
     ): List<EntityId> {
-        return BattlefieldFilterUtils.findMatchingOnBattlefield(
+        val matches = BattlefieldFilterUtils.findMatchingOnBattlefield(
             state, effect.filter.youControl(), PredicateContext(controllerId = controllerId)
         )
+        return if (effect.excludeSource && sourceId != null) {
+            matches.filter { it != sourceId }
+        } else {
+            matches
+        }
     }
 
     private fun presentSacrificeDecision(

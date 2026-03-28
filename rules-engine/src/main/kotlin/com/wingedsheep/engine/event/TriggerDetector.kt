@@ -17,6 +17,7 @@ import com.wingedsheep.engine.state.components.battlefield.AttachedToComponent
 import com.wingedsheep.engine.state.components.battlefield.ClassLevelComponent
 import com.wingedsheep.engine.state.components.battlefield.CountersComponent
 import com.wingedsheep.engine.state.components.battlefield.SagaComponent
+import com.wingedsheep.engine.state.components.battlefield.TriggeredAbilityFiredThisTurnComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.identity.FaceDownComponent
@@ -202,8 +203,16 @@ class TriggerDetector(
         // permanents that fired from that event trigger an additional time per copy.
         duplicateETBTriggers(state, events, triggers)
 
+        // Filter out once-per-turn triggers that have already fired this turn
+        val filteredTriggers = triggers.filter { trigger ->
+            if (!trigger.ability.oncePerTurn) return@filter true
+            val entity = state.getEntity(trigger.sourceId)
+            val tracker = entity?.get<TriggeredAbilityFiredThisTurnComponent>()
+            tracker == null || !tracker.hasFired(trigger.ability.id)
+        }
+
         // Rule 603.4: Filter out triggers with unmet intervening-if conditions
-        return matcher.sortByApnapOrder(state, matcher.filterByTriggerCondition(state, triggers))
+        return matcher.sortByApnapOrder(state, matcher.filterByTriggerCondition(state, filteredTriggers))
     }
 
     /**
@@ -365,8 +374,16 @@ class TriggerDetector(
             }
         }
 
+        // Filter out once-per-turn triggers that have already fired this turn
+        val filteredTriggers = triggers.filter { trigger ->
+            if (!trigger.ability.oncePerTurn) return@filter true
+            val entity = state.getEntity(trigger.sourceId)
+            val tracker = entity?.get<TriggeredAbilityFiredThisTurnComponent>()
+            tracker == null || !tracker.hasFired(trigger.ability.id)
+        }
+
         // Rule 603.4: Filter out triggers with unmet intervening-if conditions
-        return matcher.sortByApnapOrder(state, matcher.filterByTriggerCondition(state, triggers))
+        return matcher.sortByApnapOrder(state, matcher.filterByTriggerCondition(state, filteredTriggers))
     }
 
     private fun detectTriggersForEvent(

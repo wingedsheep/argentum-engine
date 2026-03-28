@@ -186,6 +186,21 @@ data class AbilityActivatedThisTurnComponent(
 }
 
 /**
+ * Tracks which triggered abilities have fired this turn for "once each turn" restrictions.
+ * Used for cards like Scavenger's Talent: "This ability triggers only once each turn."
+ * Cleared at end of turn by CleanupPhaseManager.
+ */
+@Serializable
+data class TriggeredAbilityFiredThisTurnComponent(
+    val abilityIds: Set<AbilityId> = emptySet()
+) : Component {
+    fun withFired(abilityId: AbilityId): TriggeredAbilityFiredThisTurnComponent =
+        copy(abilityIds = abilityIds + abilityId)
+
+    fun hasFired(abilityId: AbilityId): Boolean = abilityId in abilityIds
+}
+
+/**
  * Tracks which controllers have targeted this permanent with spells or abilities this turn.
  * Used for Valiant triggers: "for the first time each turn".
  * Cleared at end of turn by CleanupPhaseManager.

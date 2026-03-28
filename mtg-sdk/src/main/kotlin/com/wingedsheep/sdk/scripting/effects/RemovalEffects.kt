@@ -92,14 +92,23 @@ data class MarkExileControllerGraveyardOnDeathEffect(
 data class SacrificeEffect(
     val filter: GameObjectFilter,
     val count: Int = 1,
-    val any: Boolean = false
+    val any: Boolean = false,
+    /** When true, the source permanent is excluded from valid sacrifice choices. */
+    val excludeSource: Boolean = false
 ) : Effect {
     override val description: String = buildString {
         append("sacrifice ")
         when {
             any -> append("any number of ${filter.description}s")
-            count == 1 -> append("a ${filter.description}")
-            else -> append("$count ${filter.description}s")
+            count == 1 -> {
+                if (excludeSource) append("another ") else append("a ")
+                append(filter.description)
+            }
+            else -> {
+                append("$count ")
+                if (excludeSource) append("other ")
+                append("${filter.description}s")
+            }
         }
     }
     override fun applyTextReplacement(replacer: TextReplacer): Effect {

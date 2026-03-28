@@ -245,7 +245,7 @@ constructors.
 | Effect                                      | Parameters                                            | Purpose                  |
 |---------------------------------------------|-------------------------------------------------------|--------------------------|
 | `MoveToZoneEffect`                          | `target, destination: Zone, placement, byDestruction, controllerOverride, linkToSource` | Unified zone movement    |
-| `SacrificeEffect`                           | `filter, count, any`                                  | Sacrifice permanents     |
+| `SacrificeEffect`                           | `filter, count, any, excludeSource`                   | Sacrifice permanents     |
 | `SacrificeSelfEffect`                       | (object)                                              | Sacrifice this permanent |
 | `SacrificeTargetEffect`                     | `target`                                              | Sacrifice specific permanent by target |
 | `ForceSacrificeEffect`                      | `filter, count, target`                               | Force opponent sacrifice |
@@ -596,6 +596,11 @@ constructors.
 ### Transform
 
 - `Triggers.Transforms` / `Triggers.TransformsToBack` / `Triggers.TransformsToFront`
+
+### Triggered Ability Builder Options
+
+- `oncePerTurn = true` — "This ability triggers only once each turn." Tracked via `TriggeredAbilityFiredThisTurnComponent`, cleaned up at end of turn.
+- `controlledByTriggeringEntityController = true` — triggered ability is controlled by the triggering entity's controller (Death Match)
 
 ---
 

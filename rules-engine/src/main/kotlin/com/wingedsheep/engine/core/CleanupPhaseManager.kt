@@ -7,6 +7,7 @@ import com.wingedsheep.engine.state.components.battlefield.AbilityActivatedThisT
 import com.wingedsheep.engine.state.components.battlefield.DamageComponent
 import com.wingedsheep.engine.state.components.battlefield.DamageDealtToCreaturesThisTurnComponent
 import com.wingedsheep.engine.state.components.battlefield.TargetedByControllerThisTurnComponent
+import com.wingedsheep.engine.state.components.battlefield.TriggeredAbilityFiredThisTurnComponent
 import com.wingedsheep.engine.state.components.battlefield.GraveyardPlayPermissionUsedComponent
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.state.components.combat.MustAttackThisTurnComponent
@@ -313,6 +314,9 @@ class CleanupPhaseManager(
             if (container.has<GraveyardPlayPermissionUsedComponent>()) {
                 needsUpdate = true
             }
+            if (container.has<TriggeredAbilityFiredThisTurnComponent>()) {
+                needsUpdate = true
+            }
             if (needsUpdate) {
                 newState = newState.updateEntity(entityId) { c ->
                     c.without<AbilityActivatedThisTurnComponent>()
@@ -320,6 +324,7 @@ class CleanupPhaseManager(
                         .without<TargetedByControllerThisTurnComponent>()
                         .without<PlayerAttackedThisTurnComponent>()
                         .without<GraveyardPlayPermissionUsedComponent>()
+                        .without<TriggeredAbilityFiredThisTurnComponent>()
                 }
             }
         }
