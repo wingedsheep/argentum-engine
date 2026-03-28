@@ -104,5 +104,6 @@ object BloomburrowSet {
         WildfireHowl,
         WickTheWhorledMind,
         YgraEaterOfAll,
+        ZoralineCosmosCaller,
     )
 }

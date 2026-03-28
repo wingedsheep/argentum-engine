@@ -2,7 +2,7 @@
 
 **Set Size:** 266 cards
 **Release Date:** August 2, 2024
-**Implemented:** 82 / 266
+**Implemented:** 83 / 266
 
 | Color      | Total | Done |
 |------------|-------|------|
@@ -11,7 +11,7 @@
 | Black      | 40    | 12   |
 | Red        | 41    | 15   |
 | Green      | 41    | 8    |
-| Multicolor | 39    | 11   |
+| Multicolor | 39    | 12   |
 | Colorless  | 9     | 3    |
 | Land       | 15    | 2    |
 
@@ -282,4 +282,4 @@
 - [x] Wildfire Howl
 - [ ] Wishing Well
 - [x] Ygra, Eater of All
-- [ ] Zoraline, Cosmos Caller
+- [x] Zoraline, Cosmos Caller
