@@ -2,7 +2,7 @@
 
 **Set Size:** 266 cards
 **Release Date:** August 2, 2024
-**Implemented:** 106 / 266
+**Implemented:** 107 / 266
 
 | Color      | Total | Done |
 |------------|-------|------|
@@ -13,7 +13,7 @@
 | Green      | 41    | 13   |
 | Multicolor | 39    | 14   |
 | Colorless  | 9     | 3    |
-| Land       | 15    | 4    |
+| Land       | 15    | 5    |
 
 ---
 
@@ -176,7 +176,7 @@
 - [ ] Peerless Recycling
 - [ ] Persistent Marshstalker
 - [x] Pileated Provisioner
-- [ ] Plains
+- [x] Plains
 - [x] Playful Shove
 - [ ] Plumecreed Escort
 - [ ] Plumecreed Mentor

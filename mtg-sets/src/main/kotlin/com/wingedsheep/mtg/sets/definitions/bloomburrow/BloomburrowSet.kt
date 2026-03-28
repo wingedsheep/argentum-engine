@@ -22,6 +22,7 @@ object BloomburrowSet {
      * All cards implemented from this set.
      */
     val allCards = listOf(
+        BloomburrowPlains,
         BloomburrowIsland,
         AgateBladeAssassin,
         ArtistsTalent,
