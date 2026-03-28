@@ -70,6 +70,7 @@ object BloomburrowSet {
         JackdawSavior,
         JunkbladeBruiser,
         KindlesparkDuo,
+        Knightfisher,
         HuntersTalent,
         MindSpiral,
         LifecreedDuo,

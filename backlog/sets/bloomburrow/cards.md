@@ -2,12 +2,12 @@
 
 **Set Size:** 266 cards
 **Release Date:** August 2, 2024
-**Implemented:** 104 / 266
+**Implemented:** 105 / 266
 
 | Color      | Total | Done |
 |------------|-------|------|
 | White      | 40    | 22   |
-| Blue       | 41    | 12   |
+| Blue       | 41    | 13   |
 | Black      | 40    | 16   |
 | Red        | 41    | 18   |
 | Green      | 41    | 12   |
@@ -134,7 +134,7 @@
 - [x] Kindlespark Duo
 - [ ] Kitnap
 - [ ] Kitsa, Otterball Elite
-- [ ] Knightfisher
+- [x] Knightfisher
 - [x] Lifecreed Duo
 - [ ] Lightshell Duo
 - [x] Lilypad Village
