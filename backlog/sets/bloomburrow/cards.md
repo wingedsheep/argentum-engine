@@ -2,7 +2,7 @@
 
 **Set Size:** 266 cards
 **Release Date:** August 2, 2024
-**Implemented:** 115 / 266
+**Implemented:** 116 / 266
 
 | Color      | Total | Done |
 |------------|-------|------|
@@ -11,7 +11,7 @@
 | Black      | 40    | 18   |
 | Red        | 41    | 18   |
 | Green      | 41    | 14   |
-| Multicolor | 39    | 15   |
+| Multicolor | 39    | 16   |
 | Colorless  | 9     | 3    |
 | Land       | 15    | 6    |
 
@@ -118,7 +118,7 @@
 - [ ] Hoarder's Overflow
 - [x] Honored Dreyleader
 - [x] Hop to It
-- [ ] Hugs, Grisly Guardian
+- [x] Hugs, Grisly Guardian
 - [x] Hunter's Talent
 - [ ] Huskburster Swarm
 - [ ] Innkeeper's Talent
