@@ -245,6 +245,20 @@ sealed interface GameEvent : TextReplaceable<GameEvent> {
         override fun applyTextReplacement(replacer: TextReplacer): GameEvent = this
     }
 
+    /**
+     * When a player would gain or lose life.
+     * Used for cards like Moonstone Harbinger: "Whenever you gain or lose life during your turn".
+     */
+    @SerialName("LifeGainOrLossEvent")
+    @Serializable
+    data class LifeGainOrLossEvent(
+        val player: Player = Player.You
+    ) : GameEvent {
+        override val description: String = "${player.description} would gain or lose life"
+
+        override fun applyTextReplacement(replacer: TextReplacer): GameEvent = this
+    }
+
     // =========================================================================
     // Extra Turn Events
     // =========================================================================

@@ -210,6 +210,11 @@ class TriggerMatcher(
                     event.oldLife > event.newLife &&
                     matchesPlayer(trigger.player, event.playerId, controllerId)
             }
+            is GameEvent.LifeGainOrLossEvent -> {
+                event is LifeChangedEvent &&
+                    event.oldLife != event.newLife &&
+                    matchesPlayer(trigger.player, event.playerId, controllerId)
+            }
             is GameEvent.DiscardEvent -> false
             is GameEvent.SearchLibraryEvent -> false
             // ExtraTurnEvent is only used as a replacement effect filter, not a trigger

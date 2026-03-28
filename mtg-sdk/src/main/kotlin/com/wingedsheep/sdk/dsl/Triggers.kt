@@ -824,6 +824,15 @@ object Triggers {
         binding = TriggerBinding.ANY
     )
 
+    /**
+     * Whenever you gain or lose life.
+     * Used for cards like Moonstone Harbinger.
+     */
+    val YouGainOrLoseLife: TriggerSpec = TriggerSpec(
+        event = LifeGainOrLossEvent(Player.You),
+        binding = TriggerBinding.ANY
+    )
+
     // =========================================================================
     // Sacrifice Triggers
     // =========================================================================

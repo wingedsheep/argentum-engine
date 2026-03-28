@@ -83,6 +83,7 @@ object BloomburrowSet {
         MabelsMettle,
         ManifoldMouse,
         MoonriseCleric,
+        MoonstoneHarbinger,
         MouseTrapper,
         MuerraTrashTactician,
         NocturnalHunger,
