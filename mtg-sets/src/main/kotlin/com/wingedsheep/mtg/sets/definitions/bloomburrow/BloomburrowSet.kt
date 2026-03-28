@@ -31,6 +31,7 @@ object BloomburrowSet {
         BrambleguardVeteran,
         BraveKinDuo,
         BywayBarterer,
+        ClementTheWorrywort,
         ConductElectricity,
         CamelliaTheSeedmiser,
         CorpseberryCultivator,

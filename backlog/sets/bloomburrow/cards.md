@@ -2,7 +2,7 @@
 
 **Set Size:** 266 cards
 **Release Date:** August 2, 2024
-**Implemented:** 83 / 266
+**Implemented:** 84 / 266
 
 | Color      | Total | Done |
 |------------|-------|------|
@@ -11,7 +11,7 @@
 | Black      | 40    | 12   |
 | Red        | 41    | 15   |
 | Green      | 41    | 8    |
-| Multicolor | 39    | 12   |
+| Multicolor | 39    | 13   |
 | Colorless  | 9     | 3    |
 | Land       | 15    | 2    |
 
@@ -51,7 +51,7 @@
 - [ ] Caretaker's Talent
 - [ ] Carrot Cake
 - [ ] Cindering Cutthroat
-- [ ] Clement, the Worrywort
+- [x] Clement, the Worrywort
 - [ ] Clifftop Lookout
 - [ ] Coiling Rebirth
 - [x] Conduct Electricity
