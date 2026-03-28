@@ -59,6 +59,7 @@ object BloomburrowSet {
         HeapedHarvest,
         HeirloomEpic,
         HelgaSkittishSeer,
+        HiddenGrotto,
         HiredClaw,
         HopToIt,
         HonoredDreyleader,

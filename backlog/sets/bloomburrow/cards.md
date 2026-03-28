@@ -2,7 +2,7 @@
 
 **Set Size:** 266 cards
 **Release Date:** August 2, 2024
-**Implemented:** 101 / 266
+**Implemented:** 102 / 266
 
 | Color      | Total | Done |
 |------------|-------|------|
@@ -13,7 +13,7 @@
 | Green      | 41    | 12   |
 | Multicolor | 39    | 14   |
 | Colorless  | 9     | 3    |
-| Land       | 15    | 2    |
+| Land       | 15    | 3    |
 
 ---
 
@@ -111,7 +111,7 @@
 - [ ] Hearthborn Battler
 - [x] Heirloom Epic
 - [x] Helga, Skittish Seer
-- [ ] Hidden Grotto
+- [x] Hidden Grotto
 - [ ] High Stride
 - [x] Hired Claw
 - [ ] Hivespine Wolverine
