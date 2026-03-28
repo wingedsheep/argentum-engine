@@ -2,14 +2,14 @@
 
 **Set Size:** 266 cards
 **Release Date:** August 2, 2024
-**Implemented:** 103 / 266
+**Implemented:** 104 / 266
 
 | Color      | Total | Done |
 |------------|-------|------|
 | White      | 40    | 22   |
 | Blue       | 41    | 12   |
 | Black      | 40    | 16   |
-| Red        | 41    | 17   |
+| Red        | 41    | 18   |
 | Green      | 41    | 12   |
 | Multicolor | 39    | 14   |
 | Colorless  | 9     | 3    |
@@ -38,7 +38,7 @@
 - [x] Brambleguard Captain
 - [x] Brambleguard Veteran
 - [x] Brave-Kin Duo
-- [ ] Brazen Collector
+- [x] Brazen Collector
 - [ ] Brightblade Stoat
 - [ ] Builder's Talent
 - [ ] Bumbleflower's Sharepot

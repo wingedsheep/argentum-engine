@@ -32,6 +32,7 @@ object BloomburrowSet {
         BonebindOrator,
         BrambleguardCaptain,
         BrambleguardVeteran,
+        BrazenCollector,
         BraveKinDuo,
         BywayBarterer,
         ClementTheWorrywort,
