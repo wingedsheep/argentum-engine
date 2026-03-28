@@ -34,10 +34,10 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v5
 
-      - name: Set up Node 18
+      - name: Set up Node 22
         uses: actions/setup-node@v5
         with:
-          node-version: 18
+          node-version: 22
           cache: npm
           cache-dependency-path: web-client/package-lock.json
 
@@ -70,10 +70,10 @@ jobs:
   #     - name: Setup Gradle
   #       uses: gradle/actions/setup-gradle@v4
   #
-  #     - name: Set up Node 18
+  #     - name: Set up Node 22
   #       uses: actions/setup-node@v5
   #       with:
-  #         node-version: 18
+  #         node-version: 22
   #         cache: npm
   #         cache-dependency-path: |
   #           web-client/package-lock.json

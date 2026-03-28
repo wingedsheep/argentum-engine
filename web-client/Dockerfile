@@ -1,4 +1,4 @@
-FROM node:20-alpine AS build
+FROM node:22-alpine AS build
 ARG COMMIT_HASH=unknown
 ENV VITE_COMMIT_HASH=$COMMIT_HASH
 WORKDIR /app
