@@ -113,7 +113,7 @@ class TemptingWurmTest : FunSpec({
         val decision = driver.pendingDecision
         decision shouldNotBe null
         decision.shouldBeInstanceOf<SelectCardsDecision>()
-        (decision as SelectCardsDecision).playerId shouldBe opponent
+        decision.playerId shouldBe opponent
 
         // The goblin should be among the options (along with any forests in hand)
         decision.options shouldContain goblin
@@ -195,7 +195,7 @@ class TemptingWurmTest : FunSpec({
         decision.shouldBeInstanceOf<SelectCardsDecision>()
 
         // Both goblin IDs should be in the options
-        (decision as SelectCardsDecision).options shouldContain goblin1
+        decision.options shouldContain goblin1
         decision.options shouldContain goblin2
 
         driver.submitCardSelection(opponent, listOf(goblin1, goblin2))
@@ -315,7 +315,7 @@ class TemptingWurmTest : FunSpec({
         // Opponent should be asked to select cards
         val selectDecision = driver.pendingDecision
         selectDecision.shouldBeInstanceOf<SelectCardsDecision>()
-        (selectDecision as SelectCardsDecision).options shouldContain pacifism
+        selectDecision.options shouldContain pacifism
 
         // Opponent selects Pacifism
         driver.submitCardSelection(opponent, listOf(pacifism))
@@ -323,7 +323,7 @@ class TemptingWurmTest : FunSpec({
         // Opponent should now be asked to choose a target for the aura
         val targetDecision = driver.pendingDecision
         targetDecision.shouldBeInstanceOf<ChooseTargetsDecision>()
-        (targetDecision as ChooseTargetsDecision).playerId shouldBe opponent
+        targetDecision.playerId shouldBe opponent
 
         // The goblin should be a legal target
         val legalTargets = targetDecision.legalTargets[0]!!

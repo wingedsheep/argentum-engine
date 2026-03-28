@@ -565,8 +565,12 @@ class StaticAbilityHandler(
         // Extract subtype from filter: Creature.withSubtype(X) has IsCreature + HasSubtype predicates
         val subtypePredicate = condition.filter.cardPredicates
             .filterIsInstance<CardPredicate.HasSubtype>()
-            .singleOrNull() ?: return null
-        return SourceProjectionCondition.ControllerControlsCreatureOfType(subtypePredicate.subtype.value)
+            .singleOrNull()
+        if (subtypePredicate != null) {
+            return SourceProjectionCondition.ControllerControlsCreatureOfType(subtypePredicate.subtype.value)
+        }
+        // General case: "as long as you control a [filter]" (e.g., token, enchantment)
+        return SourceProjectionCondition.ControllerControlsPermanentMatchingFilter(condition.filter)
     }
 
     /**

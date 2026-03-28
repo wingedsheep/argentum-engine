@@ -237,6 +237,16 @@ internal class EffectApplicator(
             val controllerId = sourceValues?.controllerId
             controllerId != null && state.activePlayerId == controllerId
         }
+        is SourceProjectionCondition.ControllerControlsPermanentMatchingFilter -> {
+            val controllerId = sourceValues?.controllerId
+            if (controllerId != null) {
+                val predicateEvaluator = PredicateEvaluator()
+                val intermediateProjected = buildIntermediateProjectedState(state, projectedValues)
+                state.getBattlefield(controllerId).any { entityId ->
+                    predicateEvaluator.matchesWithProjection(state, intermediateProjected, entityId, condition.filter, PredicateContext(controllerId = controllerId))
+                }
+            } else false
+        }
         is SourceProjectionCondition.AnyPlayerControlsPermanentMatchingFilter -> {
             val predicateEvaluator = PredicateEvaluator()
             val intermediateProjected = buildIntermediateProjectedState(state, projectedValues)

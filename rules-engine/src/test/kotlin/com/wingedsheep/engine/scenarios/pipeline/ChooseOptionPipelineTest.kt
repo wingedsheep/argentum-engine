@@ -90,9 +90,8 @@ class ChooseOptionPipelineTest : FunSpec({
         decision shouldNotBe null
         decision.shouldBeInstanceOf<ChooseOptionDecision>()
 
-        val chooseDecision = decision as ChooseOptionDecision
-        chooseDecision.playerId shouldBe activePlayer
-        chooseDecision.options shouldBe Subtype.ALL_CREATURE_TYPES
+        decision.playerId shouldBe activePlayer
+        decision.options shouldBe Subtype.ALL_CREATURE_TYPES
     }
 
     test("ChooseOptionEffect(CREATURE_TYPE) then draw — pipeline continues after choice") {

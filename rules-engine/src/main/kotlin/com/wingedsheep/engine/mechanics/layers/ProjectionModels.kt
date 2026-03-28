@@ -250,6 +250,15 @@ sealed interface SourceProjectionCondition {
     ) : SourceProjectionCondition
 
     /**
+     * The source permanent's controller controls a permanent matching the given filter.
+     * Used for "as long as you control a [filter]" conditions.
+     */
+    @Serializable
+    data class ControllerControlsPermanentMatchingFilter(
+        val filter: GameObjectFilter
+    ) : SourceProjectionCondition
+
+    /**
      * Negation wrapper for source projection conditions.
      * Used for "otherwise" clauses (e.g., "Otherwise, it gets -3/-3").
      */
