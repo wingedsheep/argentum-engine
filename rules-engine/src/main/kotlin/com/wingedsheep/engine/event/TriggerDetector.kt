@@ -73,18 +73,16 @@ class TriggerDetector(
         // Phase 1: Collect grant providers (needed to compute abilities for each entity)
         val grantProviders = mutableListOf<TriggerIndex.GrantProviderEntry>()
         val registry = cardRegistry
-        if (registry != null) {
-            for (permanentId in state.getBattlefield()) {
-                val container = state.getEntity(permanentId) ?: continue
-                val card = container.get<CardComponent>() ?: continue
-                if (container.has<FaceDownComponent>()) continue
-                val sourceControllerId = projected.getController(permanentId) ?: continue
-                val cardDef = registry.getCard(card.cardDefinitionId) ?: continue
-                val classLevel = container.get<ClassLevelComponent>()?.currentLevel
-                for (ability in cardDef.script.effectiveStaticAbilities(classLevel)) {
-                    if (ability is GrantTriggeredAbilityToCreatureGroup) {
-                        grantProviders.add(TriggerIndex.GrantProviderEntry(ability, sourceControllerId))
-                    }
+        for (permanentId in state.getBattlefield()) {
+            val container = state.getEntity(permanentId) ?: continue
+            val card = container.get<CardComponent>() ?: continue
+            if (container.has<FaceDownComponent>()) continue
+            val sourceControllerId = projected.getController(permanentId) ?: continue
+            val cardDef = registry.getCard(card.cardDefinitionId) ?: continue
+            val classLevel = container.get<ClassLevelComponent>()?.currentLevel
+            for (ability in cardDef.script.effectiveStaticAbilities(classLevel)) {
+                if (ability is GrantTriggeredAbilityToCreatureGroup) {
+                    grantProviders.add(TriggerIndex.GrantProviderEntry(ability, sourceControllerId))
                 }
             }
         }
@@ -851,7 +849,7 @@ class TriggerDetector(
         events: List<EngineGameEvent>,
         triggers: MutableList<PendingTrigger>
     ) {
-        val registry = cardRegistry ?: return
+        val registry = cardRegistry
 
         // Find all LORE counter addition events
         val loreEvents = events.filterIsInstance<CountersAddedEvent>().filter { it.counterType == "LORE" }
@@ -916,7 +914,7 @@ class TriggerDetector(
         events: List<EngineGameEvent>,
         triggers: MutableList<PendingTrigger>
     ) {
-        val registry = cardRegistry ?: return
+        val registry = cardRegistry
         val projected = state.projectedState
 
         // Find ETB events (zone changes to battlefield)

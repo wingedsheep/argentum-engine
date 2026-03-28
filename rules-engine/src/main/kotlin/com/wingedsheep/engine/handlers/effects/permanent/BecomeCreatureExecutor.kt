@@ -38,9 +38,6 @@ class BecomeCreatureExecutor : EffectExecutor<BecomeCreatureEffect> {
             return ExecutionResult.success(state)
         }
 
-        context.controllerId
-            ?: return ExecutionResult.error(state, "No controller for BecomeCreature effect")
-
         val affectedEntities = setOf(targetId)
         val timestamp = System.currentTimeMillis()
 

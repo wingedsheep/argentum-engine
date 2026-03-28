@@ -47,7 +47,6 @@ class ExchangeLifeAndPowerExecutor : EffectExecutor<ExchangeLifeAndPowerEffect> 
         }
 
         val controllerId = context.controllerId
-            ?: return ExecutionResult.success(state)
 
         // Read both values before making any changes (simultaneous exchange)
         val currentLife = state.getEntity(controllerId)?.get<LifeTotalComponent>()?.life

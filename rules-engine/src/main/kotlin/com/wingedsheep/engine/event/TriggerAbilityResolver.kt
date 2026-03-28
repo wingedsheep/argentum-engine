@@ -70,7 +70,7 @@ class TriggerAbilityResolver(
      * target entity matches the filter using its projected card data.
      */
     private fun getStaticGrantedTriggeredAbilities(entityId: EntityId, state: GameState): List<TriggeredAbility> {
-        val registry = cardRegistry ?: return emptyList()
+        val registry = cardRegistry
         val targetContainer = state.getEntity(entityId) ?: return emptyList()
         val targetCard = targetContainer.get<CardComponent>() ?: return emptyList()
         val projected = state.projectedState

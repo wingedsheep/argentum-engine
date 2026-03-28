@@ -130,53 +130,51 @@ class BeginningPhaseManager(
 
         // Untap permanents for non-active players with UntapDuringOtherUntapSteps (e.g., Seedborn Muse)
         // or UntapFilteredDuringOtherUntapSteps (e.g., Ivorytusk Fortress)
-        if (cardRegistry != null) {
-            val projectedForSeedborn = newState.projectedState
-            for (playerId in newState.turnOrder) {
-                if (playerId == activePlayer) continue
+        val projectedForSeedborn = newState.projectedState
+        for (playerId in newState.turnOrder) {
+            if (playerId == activePlayer) continue
 
-                var untapAll = false
-                val filteredUntapFilters = mutableListOf<GameObjectFilter>()
+            var untapAll = false
+            val filteredUntapFilters = mutableListOf<GameObjectFilter>()
 
-                for (permanentId in projectedForSeedborn.getBattlefieldControlledBy(playerId)) {
-                    val card = newState.getEntity(permanentId)?.get<CardComponent>() ?: continue
-                    val cardDef = cardRegistry.getCard(card.cardDefinitionId) ?: continue
-                    for (ability in cardDef.script.staticAbilities) {
-                        when (ability) {
-                            is UntapDuringOtherUntapSteps -> untapAll = true
-                            is UntapFilteredDuringOtherUntapSteps -> filteredUntapFilters.add(ability.filter)
-                            else -> {}
-                        }
+            for (permanentId in projectedForSeedborn.getBattlefieldControlledBy(playerId)) {
+                val card = newState.getEntity(permanentId)?.get<CardComponent>() ?: continue
+                val cardDef = cardRegistry.getCard(card.cardDefinitionId) ?: continue
+                for (ability in cardDef.script.staticAbilities) {
+                    when (ability) {
+                        is UntapDuringOtherUntapSteps -> untapAll = true
+                        is UntapFilteredDuringOtherUntapSteps -> filteredUntapFilters.add(ability.filter)
+                        else -> {}
                     }
                 }
+            }
 
-                if (untapAll) {
+            if (untapAll) {
+                val tappedPermanents = newState.entities.filter { (entityId, container) ->
+                    projectedForSeedborn.getController(entityId) == playerId &&
+                        container.has<TappedComponent>() &&
+                        !projectedForSeedborn.hasKeyword(entityId, AbilityFlag.DOESNT_UNTAP)
+                }.keys
+                for (entityId in tappedPermanents) {
+                    val cardName = newState.getEntity(entityId)?.get<CardComponent>()?.name ?: "Permanent"
+                    newState = newState.updateEntity(entityId) { it.without<TappedComponent>() }
+                    events.add(UntappedEvent(entityId, cardName))
+                }
+            } else if (filteredUntapFilters.isNotEmpty()) {
+                val alreadyUntapped = mutableSetOf<EntityId>()
+                for (filter in filteredUntapFilters) {
                     val tappedPermanents = newState.entities.filter { (entityId, container) ->
-                        projectedForSeedborn.getController(entityId) == playerId &&
+                        entityId !in alreadyUntapped &&
+                            projectedForSeedborn.getController(entityId) == playerId &&
                             container.has<TappedComponent>() &&
-                            !projectedForSeedborn.hasKeyword(entityId, AbilityFlag.DOESNT_UNTAP)
+                            !projectedForSeedborn.hasKeyword(entityId, AbilityFlag.DOESNT_UNTAP) &&
+                            matchesFilterForUntap(newState, projectedForSeedborn, entityId, container, filter)
                     }.keys
                     for (entityId in tappedPermanents) {
                         val cardName = newState.getEntity(entityId)?.get<CardComponent>()?.name ?: "Permanent"
                         newState = newState.updateEntity(entityId) { it.without<TappedComponent>() }
                         events.add(UntappedEvent(entityId, cardName))
-                    }
-                } else if (filteredUntapFilters.isNotEmpty()) {
-                    val alreadyUntapped = mutableSetOf<EntityId>()
-                    for (filter in filteredUntapFilters) {
-                        val tappedPermanents = newState.entities.filter { (entityId, container) ->
-                            entityId !in alreadyUntapped &&
-                                projectedForSeedborn.getController(entityId) == playerId &&
-                                container.has<TappedComponent>() &&
-                                !projectedForSeedborn.hasKeyword(entityId, AbilityFlag.DOESNT_UNTAP) &&
-                                matchesFilterForUntap(newState, projectedForSeedborn, entityId, container, filter)
-                        }.keys
-                        for (entityId in tappedPermanents) {
-                            val cardName = newState.getEntity(entityId)?.get<CardComponent>()?.name ?: "Permanent"
-                            newState = newState.updateEntity(entityId) { it.without<TappedComponent>() }
-                            events.add(UntappedEvent(entityId, cardName))
-                            alreadyUntapped.add(entityId)
-                        }
+                        alreadyUntapped.add(entityId)
                     }
                 }
             }

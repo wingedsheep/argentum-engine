@@ -183,7 +183,7 @@ class CleanupPhaseManager(
      * Used for cards like Upwelling: "Players don't lose unspent mana as steps and phases end."
      */
     private fun isManaPoolEmptyingPrevented(state: GameState): Boolean {
-        val registry = cardRegistry ?: return false
+        val registry = cardRegistry
         for (entityId in state.getBattlefield()) {
             val card = state.getEntity(entityId)?.get<CardComponent>() ?: continue
             val cardDef = registry.getCard(card.cardDefinitionId) ?: continue

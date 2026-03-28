@@ -383,7 +383,7 @@ class ManaSolver(
             val cardDef = cardRegistry.getCard(card.cardDefinitionId) ?: continue
 
             // Get mana cost
-            val manaCost = cardDef.manaCost ?: continue
+            val manaCost = cardDef.manaCost
 
             // Count colored symbols per color in this card's cost
             val cardColorCounts = mutableMapOf<Color, Int>()

@@ -356,14 +356,14 @@ class StackResolver(
             }
             newState = permanentResult.state
             events.addAll(permanentResult.events)
-            events.add(ResolvedEvent(spellId, cardComponent?.name ?: "Unknown"))
+            events.add(ResolvedEvent(spellId, cardComponent.name))
             events.add(
                 ZoneChangeEvent(
                     spellId,
-                    cardComponent?.name ?: "Unknown",
+                    cardComponent.name,
                     null, // Was on stack
                     Zone.BATTLEFIELD,
-                    cardComponent?.ownerId ?: spellComponent.casterId
+                    cardComponent.ownerId ?: spellComponent.casterId
                 )
             )
         } else {
@@ -432,7 +432,7 @@ class StackResolver(
                         },
                         context = DecisionContext(
                             sourceId = spellId,
-                            sourceName = cardComponent?.name,
+                            sourceName = cardComponent.name,
                             phase = DecisionPhase.RESOLUTION
                         ),
                         options = candidates,
@@ -468,7 +468,7 @@ class StackResolver(
                     prompt = "Choose a color",
                     context = DecisionContext(
                         sourceId = spellId,
-                        sourceName = cardComponent?.name,
+                        sourceName = cardComponent.name,
                         phase = DecisionPhase.RESOLUTION
                     )
                 )
@@ -502,7 +502,7 @@ class StackResolver(
                     prompt = "Choose a creature type",
                     context = DecisionContext(
                         sourceId = spellId,
-                        sourceName = cardComponent?.name,
+                        sourceName = cardComponent.name,
                         phase = DecisionPhase.RESOLUTION
                     ),
                     options = allCreatureTypes,
@@ -542,7 +542,7 @@ class StackResolver(
                         prompt = "Choose another creature you control",
                         context = DecisionContext(
                             sourceId = spellId,
-                            sourceName = cardComponent?.name,
+                            sourceName = cardComponent.name,
                             phase = DecisionPhase.RESOLUTION
                         ),
                         options = battlefieldCreatures,
@@ -570,7 +570,7 @@ class StackResolver(
             val amplifyEffect = cardDef.script.replacementEffects.filterIsInstance<com.wingedsheep.sdk.scripting.AmplifyEffect>().firstOrNull()
             if (amplifyEffect != null) {
                 // Get the entering creature's subtypes from its card definition
-                val creatureSubtypes = cardComponent?.typeLine?.subtypes?.map { it.value }?.toSet() ?: emptySet()
+                val creatureSubtypes = cardComponent.typeLine.subtypes.map { it.value }.toSet()
 
                 // Find hand cards that share a creature type with this creature
                 val handZone = ZoneKey(controllerId, Zone.HAND)
@@ -585,10 +585,10 @@ class StackResolver(
                     val decision = SelectCardsDecision(
                         id = decisionId,
                         playerId = controllerId,
-                        prompt = "Reveal cards from your hand that share a creature type with ${cardComponent?.name} (Amplify ${amplifyEffect.countersPerReveal})",
+                        prompt = "Reveal cards from your hand that share a creature type with ${cardComponent.name} (Amplify ${amplifyEffect.countersPerReveal})",
                         context = DecisionContext(
                             sourceId = spellId,
-                            sourceName = cardComponent?.name,
+                            sourceName = cardComponent.name,
                             phase = DecisionPhase.RESOLUTION
                         ),
                         options = validHandCards,

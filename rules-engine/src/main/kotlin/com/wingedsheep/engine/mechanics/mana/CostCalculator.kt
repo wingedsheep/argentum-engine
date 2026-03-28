@@ -147,7 +147,7 @@ class CostCalculator(
                 is CharacteristicValue.DynamicWithOffset -> p.offset  // Use base offset for now
                 null -> 0
             }
-            val projectedPower: Int? = projectedState?.getPower(entityId)
+            val projectedPower: Int? = projectedState.getPower(entityId)
             val power: Int = (projectedPower ?: basePower).coerceAtLeast(0)
 
             totalPower += power  // Negative power doesn't reduce cost

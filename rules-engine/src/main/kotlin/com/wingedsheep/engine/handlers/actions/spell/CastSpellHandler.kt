@@ -734,7 +734,6 @@ class CastSpellHandler(
                         val fromZone = when (additionalCost) {
                             is AdditionalCost.ExileVariableCards -> additionalCost.fromZone
                             is AdditionalCost.ExileCards -> additionalCost.fromZone
-                            else -> com.wingedsheep.sdk.scripting.CostZone.GRAVEYARD
                         }
                         val zone = when (fromZone) {
                             com.wingedsheep.sdk.scripting.CostZone.GRAVEYARD -> Zone.GRAVEYARD
@@ -1070,7 +1069,7 @@ class CastSpellHandler(
         val typeToCardIds = mutableMapOf<String, MutableList<EntityId>>()
         for (cardId in zoneCards) {
             val cc = currentState.getEntity(cardId)?.get<CardComponent>() ?: continue
-            val typeLine = cc.typeLine ?: continue
+            val typeLine = cc.typeLine
             if (typeLine.isCreature) {
                 for (subtype in typeLine.subtypes) {
                     typeToCardIds.getOrPut(subtype.value) { mutableListOf() }.add(cardId)
