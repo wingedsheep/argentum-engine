@@ -165,6 +165,9 @@ object DynamicAmounts {
     fun nonTokenCreaturesDiedThisTurn(player: Player = Player.You): DynamicAmount =
         DynamicAmount.NonTokenCreaturesDiedThisTurn(player)
 
+    fun creaturesDiedThisTurn(player: Player = Player.You): DynamicAmount =
+        DynamicAmount.CreaturesDiedThisTurn(player)
+
     // =========================================================================
     // Entity property shortcuts (composable entity + property)
     // =========================================================================

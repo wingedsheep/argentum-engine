@@ -539,4 +539,17 @@ sealed interface DynamicAmount : TextReplaceable<DynamicAmount> {
         override val description: String = "the number of nontoken creatures put into ${player.possessive} graveyard from the battlefield this turn"
         override fun applyTextReplacement(replacer: TextReplacer): DynamicAmount = this
     }
+
+    /**
+     * Count of all creatures (including tokens) that died under a player's control this turn.
+     * Used for Season of Loss: "Draw a card for each creature that died under your control this turn."
+     *
+     * Reads from CreaturesDiedThisTurnComponent on the player entity.
+     */
+    @SerialName("CreaturesDiedThisTurn")
+    @Serializable
+    data class CreaturesDiedThisTurn(val player: Player) : DynamicAmount {
+        override val description: String = "the number of creatures that died under ${player.possessive} control this turn"
+        override fun applyTextReplacement(replacer: TextReplacer): DynamicAmount = this
+    }
 }

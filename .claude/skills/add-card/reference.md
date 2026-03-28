@@ -355,6 +355,7 @@ constructors.
 | `CompositeEffect`            | `effects: List<Effect>`                               | Chain multiple effects         |
 | `MayEffect`                  | `effect, descriptionOverride?`                        | "You may..."                   |
 | `ModalEffect`                | `modes: List<Mode>, chooseCount`                      | "Choose one/two..."            |
+| `BudgetModalEffect`          | `budget: Int, modes: List<BudgetMode>`                | "Choose up to N worth of modes" (Season cycle) |
 | `OptionalCostEffect`         | `cost, ifPaid, ifNotPaid?`                            | "You may [cost]. If you do..." |
 | `ReflexiveTriggerEffect`     | `action, optional, reflexiveEffect`                   | "When you do..."               |
 | `PayOrSufferEffect`          | `cost: PayCost, suffer, player`                       | "Unless [cost], [suffer]"      |

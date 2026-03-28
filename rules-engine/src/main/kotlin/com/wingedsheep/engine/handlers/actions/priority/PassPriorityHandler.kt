@@ -18,6 +18,7 @@ import com.wingedsheep.engine.state.components.combat.AttackersDeclaredThisComba
 import com.wingedsheep.engine.state.components.combat.BlockersDeclaredThisCombatComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.TokenComponent
+import com.wingedsheep.engine.state.components.player.CreaturesDiedThisTurnComponent
 import com.wingedsheep.engine.state.components.player.NonTokenCreaturesDiedThisTurnComponent
 import com.wingedsheep.engine.state.components.stack.ActivatedAbilityOnStackComponent
 import com.wingedsheep.engine.state.components.stack.SpellOnStackComponent
@@ -209,30 +210,13 @@ class PassPriorityHandler(
     }
 
     /**
-     * Scan events for ZoneChangeEvents where a nontoken creature moved from
-     * battlefield to graveyard, and update the owner's death tracking component.
+     * No-op: creature death tracking is now done inline in ZoneTransitionService.moveToZone()
+     * so that subsequent effects in the same chain can see updated counts.
+     * This method is kept for API compatibility with the call sites.
      */
+    @Suppress("UNUSED_PARAMETER")
     private fun trackNonTokenCreatureDeaths(state: GameState, events: List<GameEvent>): GameState {
-        var newState = state
-        for (event in events) {
-            if (event is ZoneChangeEvent &&
-                event.fromZone == Zone.BATTLEFIELD &&
-                event.toZone == Zone.GRAVEYARD
-            ) {
-                val container = newState.getEntity(event.entityId) ?: continue
-                if (container.has<TokenComponent>()) continue
-                val card = container.get<CardComponent>() ?: continue
-                if (!card.typeLine.isCreature) continue
-
-                val ownerId = event.ownerId
-                newState = newState.updateEntity(ownerId) { playerContainer ->
-                    val existing = playerContainer.get<NonTokenCreaturesDiedThisTurnComponent>()
-                        ?: NonTokenCreaturesDiedThisTurnComponent()
-                    playerContainer.with(NonTokenCreaturesDiedThisTurnComponent(existing.count + 1))
-                }
-            }
-        }
-        return newState
+        return state
     }
 
     companion object {

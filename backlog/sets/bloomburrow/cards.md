@@ -2,13 +2,13 @@
 
 **Set Size:** 266 cards
 **Release Date:** August 2, 2024
-**Implemented:** 110 / 266
+**Implemented:** 111 / 266
 
 | Color      | Total | Done |
 |------------|-------|------|
 | White      | 40    | 22   |
 | Blue       | 41    | 15   |
-| Black      | 40    | 16   |
+| Black      | 40    | 17   |
 | Red        | 41    | 18   |
 | Green      | 41    | 14   |
 | Multicolor | 39    | 14   |
@@ -205,7 +205,7 @@
 - [x] Scavenger's Talent
 - [ ] Scrapshooter
 - [ ] Season of Gathering
-- [ ] Season of Loss
+- [x] Season of Loss
 - [ ] Season of Weaving
 - [ ] Season of the Bold
 - [ ] Season of the Burrow

@@ -369,6 +369,17 @@ data class NonTokenCreaturesDiedThisTurnComponent(
 ) : Component
 
 /**
+ * Tracks the number of all creatures (including tokens) that died under this player's
+ * control during the current turn. Cleared at end of turn by CleanupPhaseManager.
+ *
+ * Used by Season of Loss: "Draw a card for each creature that died under your control this turn."
+ */
+@Serializable
+data class CreaturesDiedThisTurnComponent(
+    val count: Int = 0
+) : Component
+
+/**
  * Tracks whether this player has lost life during the current turn.
  * Set whenever a LifeChangedEvent with a non-gain reason is emitted for this player.
  * Cleared at end of turn by CleanupPhaseManager.

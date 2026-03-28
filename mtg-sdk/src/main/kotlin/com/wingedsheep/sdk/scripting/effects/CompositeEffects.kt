@@ -619,6 +619,80 @@ data class FlipTwoCoinsEffect(
 }
 
 // =============================================================================
+// Budget Modal (Pawprint / Season Cycle)
+// =============================================================================
+
+/**
+ * Represents a single mode in a budget modal spell.
+ *
+ * Each mode has a cost (in "pawprints" or other currency) and an effect.
+ * Players can select modes multiple times as long as the total cost doesn't
+ * exceed the budget.
+ *
+ * @property cost The cost of this mode (e.g., 1, 2, or 3 pawprints)
+ * @property effect The effect when this mode is chosen
+ * @property description Human-readable description of the mode
+ */
+@Serializable
+data class BudgetMode(
+    val cost: Int,
+    val effect: Effect,
+    val description: String = effect.description
+) {
+    fun applyTextReplacement(replacer: TextReplacer): BudgetMode {
+        val newEffect = effect.applyTextReplacement(replacer)
+        return if (newEffect !== effect) copy(effect = newEffect) else this
+    }
+}
+
+/**
+ * Budget-based modal spell effect — "Choose up to N {P} worth of modes."
+ *
+ * Used by the Bloomburrow Season cycle (Season of Loss, Season of the Bold, etc.)
+ * where each mode has a different cost and the player distributes a budget among them.
+ * The same mode can be chosen multiple times. Modes execute in printed order.
+ *
+ * Example (Season of Loss):
+ * ```kotlin
+ * BudgetModalEffect(
+ *     budget = 5,
+ *     modes = listOf(
+ *         BudgetMode(1, eachPlayerSacrificesCreature, "Each player sacrifices a creature"),
+ *         BudgetMode(2, drawForDeadCreatures, "Draw a card for each creature that died this turn"),
+ *         BudgetMode(3, opponentLosesLifeForGraveyard, "Each opponent loses X life")
+ *     )
+ * )
+ * ```
+ *
+ * @property budget The total budget available (e.g., 5 pawprints)
+ * @property modes The modes with their costs and effects
+ */
+@SerialName("BudgetModal")
+@Serializable
+data class BudgetModalEffect(
+    val budget: Int,
+    val modes: List<BudgetMode>
+) : Effect {
+    override val description: String = buildString {
+        append("Choose up to $budget worth of modes:\n")
+        modes.forEachIndexed { index, mode ->
+            append("• (${mode.cost}) ${mode.description}")
+            if (index < modes.lastIndex) append("\n")
+        }
+    }
+
+    override fun applyTextReplacement(replacer: TextReplacer): Effect {
+        var anyChanged = false
+        val newModes = modes.map { mode ->
+            val newMode = mode.applyTextReplacement(replacer)
+            if (newMode !== mode) anyChanged = true
+            newMode
+        }
+        return if (anyChanged) copy(modes = newModes) else this
+    }
+}
+
+// =============================================================================
 // Repeat Conditions
 // =============================================================================
 

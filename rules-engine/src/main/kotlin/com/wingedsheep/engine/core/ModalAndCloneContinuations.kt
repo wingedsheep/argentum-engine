@@ -1,6 +1,7 @@
 package com.wingedsheep.engine.core
 
 import com.wingedsheep.sdk.model.EntityId
+import com.wingedsheep.sdk.scripting.effects.BudgetMode
 import com.wingedsheep.sdk.scripting.effects.Effect
 import com.wingedsheep.sdk.scripting.effects.Mode
 import com.wingedsheep.sdk.scripting.targets.TargetRequirement
@@ -160,4 +161,29 @@ data class AmplifyEntersContinuation(
     val controllerId: EntityId,
     val ownerId: EntityId,
     val countersPerReveal: Int
+) : ContinuationFrame
+
+/**
+ * Resume after player chooses a budget modal combination (e.g., Season cycle pawprint modes).
+ *
+ * The executor pre-computes all valid combinations of modes that fit within the budget
+ * and presents them as options. After the player chooses, this continuation maps the
+ * chosen option back to a list of mode effects and executes them in order.
+ *
+ * @property controllerId The player who controls the spell
+ * @property sourceId The spell entity
+ * @property sourceName Name of the source for event messages
+ * @property modes The budget modes (cost + effect)
+ * @property combinations Pre-computed valid combinations, each a list of mode indices
+ * @property opponentId The opponent player ID
+ */
+@Serializable
+data class BudgetModalContinuation(
+    override val decisionId: String,
+    val controllerId: EntityId,
+    val sourceId: EntityId?,
+    val sourceName: String?,
+    val modes: List<@Serializable BudgetMode>,
+    val combinations: List<List<Int>>,
+    val opponentId: EntityId? = null
 ) : ContinuationFrame

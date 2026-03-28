@@ -22,6 +22,7 @@ import com.wingedsheep.engine.state.components.player.DamageReceivedThisTurnComp
 import com.wingedsheep.engine.state.components.player.LandDropsComponent
 import com.wingedsheep.engine.state.components.player.LifeLostThisTurnComponent
 import com.wingedsheep.engine.state.components.player.ManaPoolComponent
+import com.wingedsheep.engine.state.components.player.CreaturesDiedThisTurnComponent
 import com.wingedsheep.engine.state.components.player.NonTokenCreaturesDiedThisTurnComponent
 import com.wingedsheep.engine.state.components.player.PlayerEffectRemoval
 import com.wingedsheep.engine.state.components.player.MayCastCreaturesFromGraveyardWithForageComponent
@@ -288,6 +289,9 @@ class CleanupPhaseManager(
                 }
                 if (result.has<NonTokenCreaturesDiedThisTurnComponent>()) {
                     result = result.without<NonTokenCreaturesDiedThisTurnComponent>()
+                }
+                if (result.has<CreaturesDiedThisTurnComponent>()) {
+                    result = result.without<CreaturesDiedThisTurnComponent>()
                 }
                 if (result.has<LifeLostThisTurnComponent>()) {
                     result = result.without<LifeLostThisTurnComponent>()

@@ -177,6 +177,7 @@ val engineSerializersModule = SerializersModule {
         subclass(PreventDamageFromChosenSourceContinuation::class)
         subclass(AddDynamicManaContinuation::class)
         subclass(AssignAsUnblockedContinuation::class)
+        subclass(BudgetModalContinuation::class)
     }
 
     // Component hierarchy (for GameState persistence)

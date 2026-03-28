@@ -8,6 +8,7 @@ import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.stack.SpellOnStackComponent
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
+import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.targets.TargetOpponent
 import com.wingedsheep.sdk.scripting.targets.TargetPlayer
 
@@ -23,7 +24,8 @@ class ModalAndCloneContinuationResumer(
         resumer(ChooseCreatureTypeEntersContinuation::class, ::resumeChooseCreatureTypeEnters),
         resumer(ChooseCreatureEntersContinuation::class, ::resumeChooseCreatureEnters),
         resumer(AmplifyEntersContinuation::class, ::resumeAmplifyEnters),
-        resumer(CastWithCreatureTypeContinuation::class, ::resumeCastWithCreatureType)
+        resumer(CastWithCreatureTypeContinuation::class, ::resumeCastWithCreatureType),
+        resumer(BudgetModalContinuation::class, ::resumeBudgetModal)
     )
 
     fun resumeModal(
@@ -645,6 +647,49 @@ class ModalAndCloneContinuationResumer(
         )
 
         return checkForMore(newState, events)
+    }
+
+    /**
+     * Resume after player chose a budget modal combination (Season cycle pawprints).
+     * Maps the chosen option index to a list of mode effects and executes them
+     * in printed order as a CompositeEffect.
+     */
+    fun resumeBudgetModal(
+        state: GameState,
+        continuation: BudgetModalContinuation,
+        response: DecisionResponse,
+        checkForMore: CheckForMore
+    ): ExecutionResult {
+        if (response !is OptionChosenResponse) {
+            return ExecutionResult.error(state, "Expected option response for budget modal spell")
+        }
+
+        val comboIndex = response.optionIndex
+        if (comboIndex < 0 || comboIndex >= continuation.combinations.size) {
+            return ExecutionResult.error(state, "Invalid combination index: $comboIndex")
+        }
+
+        val selectedCombo = continuation.combinations[comboIndex]
+
+        // Empty combination = no modes chosen
+        if (selectedCombo.isEmpty()) {
+            return checkForMore(state, emptyList())
+        }
+
+        // Build a CompositeEffect from the selected modes in order
+        val effects = selectedCombo.map { modeIndex ->
+            continuation.modes[modeIndex].effect
+        }
+
+        val context = EffectContext(
+            sourceId = continuation.sourceId,
+            controllerId = continuation.controllerId,
+            opponentId = continuation.opponentId
+        )
+
+        val result = services.effectExecutorRegistry.execute(state, CompositeEffect(effects), context)
+        if (result.isPaused) return result
+        return checkForMore(result.state, result.events.toList())
     }
 
     /**

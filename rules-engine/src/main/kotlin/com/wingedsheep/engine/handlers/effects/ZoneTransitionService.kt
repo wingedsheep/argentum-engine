@@ -14,6 +14,9 @@ import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.identity.FaceDownComponent
 import com.wingedsheep.engine.state.components.identity.MorphDataComponent
 import com.wingedsheep.engine.state.components.identity.RevealedToComponent
+import com.wingedsheep.engine.state.components.identity.TokenComponent
+import com.wingedsheep.engine.state.components.player.CreaturesDiedThisTurnComponent
+import com.wingedsheep.engine.state.components.player.NonTokenCreaturesDiedThisTurnComponent
 import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
@@ -226,6 +229,25 @@ object ZoneTransitionService {
                 lastKnownAttachedTo = if (leavingBattlefield) lastKnownAttachedTo else null
             )
         )
+
+        // 8b. Track creature deaths inline so subsequent effects can see counts
+        if (leavingBattlefield && actualDestZone == Zone.GRAVEYARD && cardComponent.typeLine.isCreature) {
+            val isToken = container.has<TokenComponent>()
+            // Track all creature deaths (including tokens)
+            newState = newState.updateEntity(controllerId) { playerContainer ->
+                val existing = playerContainer.get<CreaturesDiedThisTurnComponent>()
+                    ?: CreaturesDiedThisTurnComponent()
+                playerContainer.with(CreaturesDiedThisTurnComponent(existing.count + 1))
+            }
+            // Track non-token creature deaths separately
+            if (!isToken) {
+                newState = newState.updateEntity(controllerId) { playerContainer ->
+                    val existing = playerContainer.get<NonTokenCreaturesDiedThisTurnComponent>()
+                        ?: NonTokenCreaturesDiedThisTurnComponent()
+                    playerContainer.with(NonTokenCreaturesDiedThisTurnComponent(existing.count + 1))
+                }
+            }
+        }
 
         // 9. Apply redirect additional effects if any
         if (redirectResult.additionalEffect != null) {

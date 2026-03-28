@@ -27,6 +27,7 @@ class CompositeExecutors(
     private val mayEffectExecutor by lazy { MayEffectExecutor(effectExecutor) }
     private val mayPayManaExecutor by lazy { MayPayManaExecutor(cardRegistry, effectExecutor) }
     private val mayPayXForEffectExecutor by lazy { MayPayXForEffectExecutor(cardRegistry, effectExecutor) }
+    private val budgetModalEffectExecutor by lazy { BudgetModalEffectExecutor(effectExecutor) }
     private val modalEffectExecutor by lazy { ModalEffectExecutor(effectExecutor) }
     private val optionalCostEffectExecutor by lazy { OptionalCostEffectExecutor(effectExecutor) }
     private val payManaCostExecutor by lazy { PayManaCostExecutor(cardRegistry) }
@@ -46,6 +47,7 @@ class CompositeExecutors(
     }
 
     override fun executors(): List<EffectExecutor<*>> = listOf(
+        budgetModalEffectExecutor,
         compositeEffectExecutor,
         conditionalEffectExecutor,
         createDelayedTriggerExecutor,

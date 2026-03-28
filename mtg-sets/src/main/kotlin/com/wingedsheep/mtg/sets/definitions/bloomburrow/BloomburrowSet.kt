@@ -101,6 +101,7 @@ object BloomburrowSet {
         RunAwayTogether,
         SazacapsBrew,
         ScavengersTalent,
+        SeasonOfLoss,
         SeasonedWarrenguard,
         SeedglaiveMentor,
         ShoreUp,
