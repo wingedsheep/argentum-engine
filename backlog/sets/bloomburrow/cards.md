@@ -2,7 +2,7 @@
 
 **Set Size:** 266 cards
 **Release Date:** August 2, 2024
-**Implemented:** 112 / 266
+**Implemented:** 113 / 266
 
 | Color      | Total | Done |
 |------------|-------|------|
@@ -13,7 +13,7 @@
 | Green      | 41    | 14   |
 | Multicolor | 39    | 14   |
 | Colorless  | 9     | 3    |
-| Land       | 15    | 5    |
+| Land       | 15    | 6    |
 
 ---
 
@@ -80,7 +80,7 @@
 - [ ] Eluge, the Shoreless Sea
 - [x] Emberheart Challenger
 - [ ] Essence Channeler
-- [ ] Fabled Passage
+- [x] Fabled Passage
 - [x] Feather of Flight
 - [x] Fecund Greenshell
 - [ ] Feed the Cycle
