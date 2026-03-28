@@ -2,12 +2,12 @@
 
 **Set Size:** 266 cards
 **Release Date:** August 2, 2024
-**Implemented:** 111 / 266
+**Implemented:** 112 / 266
 
 | Color      | Total | Done |
 |------------|-------|------|
 | White      | 40    | 22   |
-| Blue       | 41    | 15   |
+| Blue       | 41    | 16   |
 | Black      | 40    | 17   |
 | Red        | 41    | 18   |
 | Green      | 41    | 14   |
@@ -260,7 +260,7 @@
 - [ ] Treetop Sentries
 - [ ] Uncharted Haven
 - [ ] Valley Flamecaller
-- [ ] Valley Floodcaller
+- [x] Valley Floodcaller
 - [x] Valley Mightcaller
 - [x] Valley Questcaller
 - [x] Valley Rally
