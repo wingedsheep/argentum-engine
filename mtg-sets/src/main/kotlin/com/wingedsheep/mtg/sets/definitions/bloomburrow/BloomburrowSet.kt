@@ -62,6 +62,7 @@ object BloomburrowSet {
         HiredClaw,
         HopToIt,
         HonoredDreyleader,
+        IntrepidRabbit,
         IridescentVinelasher,
         JackdawSavior,
         JunkbladeBruiser,

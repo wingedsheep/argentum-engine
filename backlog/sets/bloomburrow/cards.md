@@ -2,11 +2,11 @@
 
 **Set Size:** 266 cards
 **Release Date:** August 2, 2024
-**Implemented:** 99 / 266
+**Implemented:** 100 / 266
 
 | Color      | Total | Done |
 |------------|-------|------|
-| White      | 40    | 21   |
+| White      | 40    | 22   |
 | Blue       | 41    | 12   |
 | Black      | 40    | 16   |
 | Red        | 41    | 16   |
@@ -123,7 +123,7 @@
 - [ ] Huskburster Swarm
 - [ ] Innkeeper's Talent
 - [ ] Into the Flood Maw
-- [ ] Intrepid Rabbit
+- [x] Intrepid Rabbit
 - [x] Iridescent Vinelasher
 - [ ] Island
 - [x] Jackdaw Savior
