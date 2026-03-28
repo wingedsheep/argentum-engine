@@ -2,12 +2,12 @@
 
 **Set Size:** 266 cards
 **Release Date:** August 2, 2024
-**Implemented:** 107 / 266
+**Implemented:** 108 / 266
 
 | Color      | Total | Done |
 |------------|-------|------|
 | White      | 40    | 22   |
-| Blue       | 41    | 13   |
+| Blue       | 41    | 14   |
 | Black      | 40    | 16   |
 | Red        | 41    | 18   |
 | Green      | 41    | 13   |
@@ -122,7 +122,7 @@
 - [x] Hunter's Talent
 - [ ] Huskburster Swarm
 - [ ] Innkeeper's Talent
-- [ ] Into the Flood Maw
+- [x] Into the Flood Maw
 - [x] Intrepid Rabbit
 - [x] Iridescent Vinelasher
 - [x] Island
