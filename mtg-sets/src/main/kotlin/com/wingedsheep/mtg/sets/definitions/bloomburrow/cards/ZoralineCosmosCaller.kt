@@ -1,6 +1,5 @@
 package com.wingedsheep.mtg.sets.definitions.bloomburrow.cards
 
-import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.Zone
@@ -16,9 +15,11 @@ import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
 import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
-import com.wingedsheep.sdk.scripting.effects.MayPayManaEffect
+import com.wingedsheep.sdk.scripting.effects.AddCountersToCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
+import com.wingedsheep.sdk.scripting.effects.OptionalCostEffect
 import com.wingedsheep.sdk.scripting.effects.PayLifeEffect
+import com.wingedsheep.sdk.scripting.effects.PayManaCostEffect
 import com.wingedsheep.sdk.scripting.effects.SelectFromCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.SelectionMode
 import com.wingedsheep.sdk.scripting.references.Player
@@ -90,12 +91,15 @@ val ZoralineCosmosCaller = card("Zoraline, Cosmos Caller") {
  * May pay {W}{B} and 2 life → return nonland permanent card MV ≤ 3
  * from graveyard to battlefield with a finality counter.
  */
-private fun zoralineReanimateEffect() = MayPayManaEffect(
-    cost = ManaCost.parse("{W}{B}"),
-    effect = CompositeEffect(
+private fun zoralineReanimateEffect() = OptionalCostEffect(
+    cost = CompositeEffect(
         listOf(
-            // Pay 2 life
-            PayLifeEffect(2),
+            PayManaCostEffect(ManaCost.parse("{W}{B}")),
+            PayLifeEffect(2)
+        )
+    ),
+    ifPaid = CompositeEffect(
+        listOf(
             // Gather nonland permanent cards with MV ≤ 3 from your graveyard
             GatherCardsEffect(
                 source = CardSource.FromZone(
@@ -109,14 +113,16 @@ private fun zoralineReanimateEffect() = MayPayManaEffect(
             SelectFromCollectionEffect(
                 from = "eligible",
                 selection = SelectionMode.ChooseExactly(DynamicAmount.Fixed(1)),
-                storeSelected = "chosen"
+                storeSelected = "chosen",
+                prompt = "Choose a nonland permanent card with mana value 3 or less to return to the battlefield"
             ),
-            // Move to battlefield with a finality counter
+            // Move to battlefield
             MoveCollectionEffect(
                 from = "chosen",
-                destination = CardDestination.ToZone(Zone.BATTLEFIELD),
-                addCounterType = CounterType.FINALITY
-            )
+                destination = CardDestination.ToZone(Zone.BATTLEFIELD)
+            ),
+            // Add finality counter
+            AddCountersToCollectionEffect("chosen", "finality", 1)
         )
     )
 )

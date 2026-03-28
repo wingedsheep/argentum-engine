@@ -942,6 +942,21 @@ export const styles: Record<string, React.CSSProperties> = {
     fontWeight: 700,
     zIndex: 5,
   } as React.CSSProperties,
+  // Finality counter badge (reanimated permanents — exiled instead of dying)
+  finalityCounterBadge: {
+    position: 'absolute',
+    bottom: 34,
+    right: 4,
+    backgroundColor: 'rgba(30, 30, 30, 0.95)',
+    borderRadius: 4,
+    border: '1px solid rgba(160, 160, 160, 0.6)',
+    display: 'flex',
+    alignItems: 'center',
+    gap: 2,
+    color: '#b0b0b0',
+    fontWeight: 700,
+    zIndex: 5,
+  } as React.CSSProperties,
   // Saga lore counter badge (shown in P/T position for sagas)
   sagaLoreBadge: {
     position: 'absolute',

@@ -1,6 +1,7 @@
 package com.wingedsheep.sdk.scripting.effects
 
 import com.wingedsheep.sdk.core.Color
+import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.text.TextReplacer
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
@@ -10,6 +11,17 @@ import kotlinx.serialization.Serializable
 // =============================================================================
 // Mana Effects
 // =============================================================================
+
+/**
+ * Non-optional mana payment during resolution.
+ * Auto-taps lands and deducts the cost from the controller's mana pool.
+ */
+@SerialName("PayManaCost")
+@Serializable
+data class PayManaCostEffect(val cost: ManaCost) : Effect {
+    override val description: String = "Pay $cost"
+    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
+}
 
 /**
  * Add mana effect.

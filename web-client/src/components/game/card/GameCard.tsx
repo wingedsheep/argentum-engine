@@ -21,6 +21,7 @@ import {
   getTokenFrameTextColor,
   getCardFallbackColor,
   getLoreCounters,
+  getFinalityCounters,
 } from '../board/shared'
 import { styles } from '../board/styles'
 import {
@@ -1028,6 +1029,20 @@ export function GameCard({
           <i className={`ms ms-${counterManaClass.TRAP}`} style={{ fontSize: responsive.isMobile ? 8 : 10 }} />
           <span style={{ fontWeight: 700 }}>
             {getTrapCounters(card)}
+          </span>
+        </div>
+      )}
+
+      {/* Finality counter badge */}
+      {battlefield && getFinalityCounters(card) > 0 && (
+        <div style={{
+          ...styles.finalityCounterBadge,
+          fontSize: responsive.isMobile ? 9 : 11,
+          padding: responsive.isMobile ? '1px 4px' : '2px 6px',
+        }}>
+          <i className={`ms ms-${counterManaClass.FINALITY}`} style={{ fontSize: responsive.isMobile ? 8 : 10 }} />
+          <span style={{ fontWeight: 700 }}>
+            {getFinalityCounters(card)}
           </span>
         </div>
       )}

@@ -52,4 +52,5 @@ export const counterManaClass: Record<string, string> = {
   TRAP: 'counter-arrow',
   DEPLETION: 'counter-void',
   LORE: 'counter-lore',
+  FINALITY: 'counter-finality',
 }

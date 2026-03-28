@@ -29,6 +29,7 @@ class CompositeExecutors(
     private val mayPayXForEffectExecutor by lazy { MayPayXForEffectExecutor(cardRegistry, effectExecutor) }
     private val modalEffectExecutor by lazy { ModalEffectExecutor(effectExecutor) }
     private val optionalCostEffectExecutor by lazy { OptionalCostEffectExecutor(effectExecutor) }
+    private val payManaCostExecutor by lazy { PayManaCostExecutor(cardRegistry) }
     private val reflexiveTriggerEffectExecutor by lazy { ReflexiveTriggerEffectExecutor(effectExecutor) }
     private val flipCoinExecutor by lazy { FlipCoinExecutor(effectExecutor) }
     private val forEachInGroupExecutor by lazy { ForEachInGroupExecutor(effectExecutor) }
@@ -56,6 +57,7 @@ class CompositeExecutors(
         mayPayXForEffectExecutor,
         modalEffectExecutor,
         optionalCostEffectExecutor,
+        payManaCostExecutor,
         reflexiveTriggerEffectExecutor,
         flipCoinExecutor,
         flipTwoCoinsExecutor,

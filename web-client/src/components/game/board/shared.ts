@@ -171,6 +171,13 @@ export function getLoreCounters(card: ClientCard): number {
 }
 
 /**
+ * Get the number of finality counters on a card.
+ */
+export function getFinalityCounters(card: ClientCard): number {
+  return card.counters[CounterType.FINALITY] ?? 0
+}
+
+/**
  * Get an emoji or icon for an effect based on its icon identifier.
  */
 export function getEffectIcon(icon: string): string {
