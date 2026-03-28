@@ -45,7 +45,9 @@ import com.wingedsheep.sdk.scripting.conditions.WasCastFromZone
 import com.wingedsheep.sdk.scripting.conditions.SacrificedPermanentHadSubtype
 import com.wingedsheep.sdk.scripting.conditions.TargetMatchesFilter
 import com.wingedsheep.sdk.scripting.conditions.TriggeringEntityWasHistoric
+import com.wingedsheep.sdk.scripting.conditions.CardsLeftGraveyardThisTurn
 import com.wingedsheep.sdk.scripting.conditions.OpponentLostLifeThisTurn
+import com.wingedsheep.sdk.scripting.conditions.SacrificedFoodThisTurn
 import com.wingedsheep.sdk.scripting.conditions.WasKicked
 import com.wingedsheep.sdk.scripting.conditions.YouAttackedThisTurn
 import com.wingedsheep.sdk.scripting.conditions.YouWereAttackedThisStep
@@ -101,6 +103,8 @@ class ConditionEvaluator {
             is OpponentLostLifeThisTurn -> evaluateOpponentLostLifeThisTurn(state, context)
             is YouWereAttackedThisStep -> evaluateYouWereAttackedThisStep(state, context)
             is YouWereDealtCombatDamageThisTurn -> evaluateYouWereDealtCombatDamageThisTurn(state, context)
+            is CardsLeftGraveyardThisTurn -> evaluateCardsLeftGraveyardThisTurn(state, condition, context)
+            is SacrificedFoodThisTurn -> evaluateSacrificedFoodThisTurn(state, context)
 
             // Stack conditions
             is OpponentSpellOnStack -> evaluateOpponentSpellOnStack(state, context)
@@ -272,6 +276,17 @@ class ConditionEvaluator {
     private fun evaluateYouWereDealtCombatDamageThisTurn(state: GameState, context: EffectContext): Boolean {
         // TODO: Track if player was dealt combat damage this turn
         return false
+    }
+
+    private fun evaluateCardsLeftGraveyardThisTurn(state: GameState, condition: CardsLeftGraveyardThisTurn, context: EffectContext): Boolean {
+        val component = state.getEntity(context.controllerId)
+            ?.get<com.wingedsheep.engine.state.components.player.CardsLeftGraveyardThisTurnComponent>()
+        return (component?.count ?: 0) >= condition.count
+    }
+
+    private fun evaluateSacrificedFoodThisTurn(state: GameState, context: EffectContext): Boolean {
+        return state.getEntity(context.controllerId)
+            ?.has<com.wingedsheep.engine.state.components.player.SacrificedFoodThisTurnComponent>() == true
     }
 
     private fun evaluateOpponentSpellOnStack(state: GameState, context: EffectContext): Boolean {

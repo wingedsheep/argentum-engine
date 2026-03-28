@@ -39,8 +39,10 @@ class SacrificeSelfExecutor : EffectExecutor<SacrificeSelfEffect> {
 
         val sourceName = state.getEntity(sourceId)?.get<CardComponent>()?.name ?: "Unknown"
 
+        var newState = ZoneTransitionService.trackFoodSacrifice(state, listOf(sourceId), controllerId)
+
         val transitionResult = ZoneTransitionService.moveToZone(
-            state, sourceId, Zone.GRAVEYARD, fromZoneKey = battlefieldZone
+            newState, sourceId, Zone.GRAVEYARD, fromZoneKey = battlefieldZone
         )
 
         val events = mutableListOf<GameEvent>()

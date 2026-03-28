@@ -95,6 +95,32 @@ data object PlayedLandThisTurn : Condition {
 }
 
 // =============================================================================
+// Graveyard/Sacrifice Tracking Conditions
+// =============================================================================
+
+/**
+ * Condition: "If N or more cards left your graveyard this turn"
+ * Used for Bonecache Overseer.
+ */
+@SerialName("CardsLeftGraveyardThisTurn")
+@Serializable
+data class CardsLeftGraveyardThisTurn(val count: Int) : Condition {
+    override val description: String = "if $count or more cards left your graveyard this turn"
+    override fun applyTextReplacement(replacer: TextReplacer): Condition = this
+}
+
+/**
+ * Condition: "If you've sacrificed a Food this turn"
+ * Used for Bonecache Overseer.
+ */
+@SerialName("SacrificedFoodThisTurn")
+@Serializable
+data object SacrificedFoodThisTurn : Condition {
+    override val description: String = "if you've sacrificed a Food this turn"
+    override fun applyTextReplacement(replacer: TextReplacer): Condition = this
+}
+
+// =============================================================================
 // Stack Conditions
 // =============================================================================
 

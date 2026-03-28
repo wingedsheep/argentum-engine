@@ -154,6 +154,7 @@ class SacrificeExecutor(
                 newState.getEntity(id)?.get<CardComponent>()?.name ?: "Unknown"
             }
             events.add(PermanentsSacrificedEvent(controllerId, permanentIds, permanentNames))
+            newState = ZoneTransitionService.trackFoodSacrifice(newState, permanentIds, controllerId)
         }
 
         for (permanentId in permanentIds) {

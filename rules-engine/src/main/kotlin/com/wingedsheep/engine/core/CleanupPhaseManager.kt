@@ -19,8 +19,10 @@ import com.wingedsheep.engine.state.components.player.AdditionalCombatPhasesComp
 import com.wingedsheep.engine.state.components.player.CantCastSpellsComponent
 import com.wingedsheep.engine.state.components.player.DamageBonusComponent
 import com.wingedsheep.engine.state.components.player.DamageReceivedThisTurnComponent
+import com.wingedsheep.engine.state.components.player.CardsLeftGraveyardThisTurnComponent
 import com.wingedsheep.engine.state.components.player.LandDropsComponent
 import com.wingedsheep.engine.state.components.player.LifeLostThisTurnComponent
+import com.wingedsheep.engine.state.components.player.SacrificedFoodThisTurnComponent
 import com.wingedsheep.engine.state.components.player.ManaPoolComponent
 import com.wingedsheep.engine.state.components.player.CreaturesDiedThisTurnComponent
 import com.wingedsheep.engine.state.components.player.NonTokenCreaturesDiedThisTurnComponent
@@ -295,6 +297,12 @@ class CleanupPhaseManager(
                 }
                 if (result.has<LifeLostThisTurnComponent>()) {
                     result = result.without<LifeLostThisTurnComponent>()
+                }
+                if (result.has<CardsLeftGraveyardThisTurnComponent>()) {
+                    result = result.without<CardsLeftGraveyardThisTurnComponent>()
+                }
+                if (result.has<SacrificedFoodThisTurnComponent>()) {
+                    result = result.without<SacrificedFoodThisTurnComponent>()
                 }
                 result
             }

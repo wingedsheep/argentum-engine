@@ -390,6 +390,25 @@ data class CreaturesDiedThisTurnComponent(
 data object LifeLostThisTurnComponent : Component
 
 /**
+ * Tracks the number of cards that left this player's graveyard this turn.
+ * Cleared at end of turn by CleanupPhaseManager.
+ *
+ * Used for conditions like "if three or more cards left your graveyard this turn"
+ * (Bonecache Overseer).
+ */
+@Serializable
+data class CardsLeftGraveyardThisTurnComponent(val count: Int = 0) : Component
+
+/**
+ * Marker component indicating that this player has sacrificed a Food artifact this turn.
+ * Cleared at end of turn by CleanupPhaseManager.
+ *
+ * Used for conditions like "if you've sacrificed a Food this turn" (Bonecache Overseer).
+ */
+@Serializable
+data object SacrificedFoodThisTurnComponent : Component
+
+/**
  * Marker component indicating that a player should skip their entire next turn.
  * Applied by effects like Last Chance (which gives the opponent an "extra turn"
  * by skipping the other player's turn in a 2-player game).

@@ -268,6 +268,9 @@ class CostHandler(
                     // read the enchanted creature from the sacrificed aura at resolution time.
                     val attachedTo = sacrificeContainer.get<com.wingedsheep.engine.state.components.battlefield.AttachedToComponent>()
 
+                    // Track Food sacrifice before zone transition
+                    newState = com.wingedsheep.engine.handlers.effects.ZoneTransitionService.trackFoodSacrifice(newState, listOf(toSacrifice), sacrificeController)
+
                     // Delegate zone movement to ZoneTransitionService for full cleanup
                     val transitionResult = com.wingedsheep.engine.handlers.effects.ZoneTransitionService.moveToZone(
                         newState, toSacrifice, Zone.GRAVEYARD
@@ -382,9 +385,12 @@ class CostHandler(
                 // creature from the source at resolution time.
                 val attachedTo = sourceContainer.get<com.wingedsheep.engine.state.components.battlefield.AttachedToComponent>()
 
+                // Track Food sacrifice before zone transition
+                var preState = com.wingedsheep.engine.handlers.effects.ZoneTransitionService.trackFoodSacrifice(state, listOf(sourceId), sourceController)
+
                 // Delegate zone movement to ZoneTransitionService for full cleanup
                 val transitionResult = com.wingedsheep.engine.handlers.effects.ZoneTransitionService.moveToZone(
-                    state, sourceId, Zone.GRAVEYARD
+                    preState, sourceId, Zone.GRAVEYARD
                 )
 
                 // Restore AttachedToComponent on the entity in graveyard for effects that need it
@@ -519,8 +525,9 @@ class CostHandler(
                     val foodName = state.getEntity(foodId)?.get<CardComponent>()?.name ?: "Food"
                     val foodController = state.getEntity(foodId)?.get<ControllerComponent>()?.playerId ?: controllerId
 
+                    var newState = com.wingedsheep.engine.handlers.effects.ZoneTransitionService.trackFoodSacrifice(state, listOf(foodId), foodController)
                     val transitionResult = com.wingedsheep.engine.handlers.effects.ZoneTransitionService.moveToZone(
-                        state, foodId, Zone.GRAVEYARD
+                        newState, foodId, Zone.GRAVEYARD
                     )
                     val events = mutableListOf<GameEvent>()
                     events.add(PermanentsSacrificedEvent(foodController, listOf(foodId), listOf(foodName)))

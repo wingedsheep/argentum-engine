@@ -27,6 +27,7 @@ object BloomburrowSet {
         AgateBladeAssassin,
         ArtistsTalent,
         BarkKnuckleBoxer,
+        BonecacheOverseer,
         BarkformHarvester,
         BaylenTheHaymaker,
         BellowingCrier,

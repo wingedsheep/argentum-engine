@@ -2,13 +2,13 @@
 
 **Set Size:** 266 cards
 **Release Date:** August 2, 2024
-**Implemented:** 117 / 266
+**Implemented:** 118 / 266
 
 | Color      | Total | Done |
 |------------|-------|------|
 | White      | 40    | 22   |
 | Blue       | 41    | 16   |
-| Black      | 40    | 19   |
+| Black      | 40    | 20   |
 | Red        | 41    | 18   |
 | Green      | 41    | 14   |
 | Multicolor | 39    | 16   |
@@ -34,7 +34,7 @@
 - [ ] Blacksmith's Talent
 - [ ] Blooming Blast
 - [x] Bonebind Orator
-- [ ] Bonecache Overseer
+- [x] Bonecache Overseer
 - [x] Brambleguard Captain
 - [x] Brambleguard Veteran
 - [x] Brave-Kin Duo

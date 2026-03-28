@@ -15,9 +15,12 @@ import com.wingedsheep.engine.state.components.identity.FaceDownComponent
 import com.wingedsheep.engine.state.components.identity.MorphDataComponent
 import com.wingedsheep.engine.state.components.identity.RevealedToComponent
 import com.wingedsheep.engine.state.components.identity.TokenComponent
+import com.wingedsheep.engine.state.components.player.CardsLeftGraveyardThisTurnComponent
 import com.wingedsheep.engine.state.components.player.CreaturesDiedThisTurnComponent
 import com.wingedsheep.engine.state.components.player.NonTokenCreaturesDiedThisTurnComponent
+import com.wingedsheep.engine.state.components.player.SacrificedFoodThisTurnComponent
 import com.wingedsheep.sdk.core.CounterType
+import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
 
@@ -249,6 +252,15 @@ object ZoneTransitionService {
             }
         }
 
+        // 8c. Track cards leaving the graveyard
+        if (fromZone == Zone.GRAVEYARD) {
+            newState = newState.updateEntity(ownerId) { playerContainer ->
+                val existing = playerContainer.get<CardsLeftGraveyardThisTurnComponent>()
+                    ?: CardsLeftGraveyardThisTurnComponent()
+                playerContainer.with(CardsLeftGraveyardThisTurnComponent(existing.count + 1))
+            }
+        }
+
         // 9. Apply redirect additional effects if any
         if (redirectResult.additionalEffect != null) {
             newState = ZoneMovementUtils.applyReplacementAdditionalEffect(
@@ -308,6 +320,24 @@ object ZoneTransitionService {
         }
 
         return ZoneTransitionResult(state = currentState, events = allEvents)
+    }
+
+    /**
+     * Track Food sacrifice for the given permanents.
+     * Call this when permanents are sacrificed to mark if any were Food artifacts.
+     */
+    fun trackFoodSacrifice(state: GameState, permanentIds: List<EntityId>, controllerId: EntityId): GameState {
+        var newState = state
+        for (permId in permanentIds) {
+            val card = newState.getEntity(permId)?.get<CardComponent>() ?: continue
+            if (card.typeLine.hasSubtype(Subtype.FOOD)) {
+                newState = newState.updateEntity(controllerId) { container ->
+                    container.with(SacrificedFoodThisTurnComponent)
+                }
+                break // Only need to mark once
+            }
+        }
+        return newState
     }
 
     // ── Private helpers ──

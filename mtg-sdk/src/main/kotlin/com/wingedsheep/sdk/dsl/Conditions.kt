@@ -330,6 +330,18 @@ object Conditions {
         com.wingedsheep.sdk.scripting.conditions.OpponentLostLifeThisTurn
 
     /**
+     * If N or more cards left your graveyard this turn.
+     */
+    fun CardsLeftGraveyardThisTurn(count: Int): ConditionInterface =
+        com.wingedsheep.sdk.scripting.conditions.CardsLeftGraveyardThisTurn(count)
+
+    /**
+     * If you've sacrificed a Food this turn.
+     */
+    val SacrificedFoodThisTurn: ConditionInterface =
+        com.wingedsheep.sdk.scripting.conditions.SacrificedFoodThisTurn
+
+    /**
      * If it's your turn.
      */
     val IsYourTurn: ConditionInterface =

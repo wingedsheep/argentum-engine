@@ -54,6 +54,7 @@ class SacrificeAndPayContinuationResumer(
                 newState.getEntity(id)?.get<CardComponent>()?.name ?: "Unknown"
             }
             events.add(PermanentsSacrificedEvent(playerId, selectedPermanents, permanentNames))
+            newState = ZoneTransitionService.trackFoodSacrifice(newState, selectedPermanents, playerId)
         }
 
         for (permanentId in selectedPermanents) {

@@ -56,9 +56,12 @@ class SacrificeTargetExecutor : EffectExecutor<SacrificeTargetEffect> {
             ?: cardComponent.ownerId
             ?: controllerId
 
+        // Track Food sacrifice before zone transition
+        var newState = ZoneTransitionService.trackFoodSacrifice(state, listOf(targetId), controllerId)
+
         // Delegate zone movement to ZoneTransitionService
         val transitionResult = ZoneTransitionService.moveToZone(
-            state, targetId, Zone.GRAVEYARD, fromZoneKey = currentZone
+            newState, targetId, Zone.GRAVEYARD, fromZoneKey = currentZone
         )
 
         val events = mutableListOf<GameEvent>()
