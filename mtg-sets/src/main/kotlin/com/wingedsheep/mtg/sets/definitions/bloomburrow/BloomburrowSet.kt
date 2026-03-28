@@ -113,6 +113,7 @@ object BloomburrowSet {
         ThornvaultForager,
         ThundertrapTrainer,
         ValleyQuestcaller,
+        ValleyRally,
         ValleyRotcaller,
         WarrenWarleader,
         WaxWaneWitness,
