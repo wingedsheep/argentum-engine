@@ -2,11 +2,11 @@
 
 **Set Size:** 266 cards
 **Release Date:** August 2, 2024
-**Implemented:** 88 / 266
+**Implemented:** 89 / 266
 
 | Color      | Total | Done |
 |------------|-------|------|
-| White      | 40    | 19   |
+| White      | 40    | 20   |
 | Blue       | 41    | 10   |
 | Black      | 40    | 12   |
 | Red        | 41    | 16   |
@@ -218,7 +218,7 @@
 - [ ] Shrike Force
 - [x] Sinister Monolith
 - [ ] Skyskipper Duo
-- [ ] Sonar Strike
+- [x] Sonar Strike
 - [ ] Spellgyre
 - [x] Splash Lasher
 - [ ] Splash Portal

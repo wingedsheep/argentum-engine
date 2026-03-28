@@ -92,6 +92,7 @@ object BloomburrowSet {
         ShoreUp,
         ShorelineLooter,
         SinisterMonolith,
+        SonarStrike,
         SplashLasher,
         SteampathCharger,
         StormcatchMentor,
