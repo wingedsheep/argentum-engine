@@ -149,6 +149,29 @@ data class ModifyStatsPerSharedCreatureType(
 }
 
 /**
+ * Sets the base toughness of a group of creatures.
+ * Used for Maha, Its Feathers Night: "Creatures your opponents control have base toughness 1."
+ *
+ * This is a Layer 7b (POWER_TOUGHNESS, SET_VALUES) continuous effect that only sets toughness,
+ * leaving power unchanged.
+ *
+ * @property toughness The base toughness to set
+ * @property filter Which creatures are affected
+ */
+@SerialName("SetBaseToughnessForCreatureGroup")
+@Serializable
+data class SetBaseToughnessForCreatureGroup(
+    val toughness: Int,
+    val filter: GroupFilter
+) : StaticAbility {
+    override val description: String = "${filter.description} have base toughness $toughness"
+    override fun applyTextReplacement(replacer: TextReplacer): StaticAbility {
+        val newFilter = filter.applyTextReplacement(replacer)
+        return if (newFilter !== filter) copy(filter = newFilter) else this
+    }
+}
+
+/**
  * Sets the base power and toughness of the target permanent.
  * Used for Deep Freeze: "Enchanted creature has base power and toughness 0/4."
  * Also used for Turn to Frog, Darksteel Mutation, and similar effects.

@@ -313,6 +313,8 @@ sealed interface Modification {
     @Serializable
     data class SetPower(val power: Int) : Modification
     @Serializable
+    data class SetToughness(val toughness: Int) : Modification
+    @Serializable
     data class ModifyPowerToughness(val powerMod: Int, val toughnessMod: Int) : Modification
     @Serializable
     data class SwitchPowerToughness(val targetId: EntityId) : Modification
@@ -351,6 +353,24 @@ sealed interface Modification {
      */
     @Serializable
     data class SetBasicLandTypes(val subtypes: Set<String>) : Modification
+
+    /**
+     * Replace ALL card types with the given set.
+     * Used for "is a Food artifact" effects that completely replace card types.
+     * Removes all existing card types (Creature, Land, Enchantment, etc.)
+     * and replaces them with the specified types.
+     */
+    @Serializable
+    data class SetCardTypes(val types: Set<String>) : Modification
+
+    /**
+     * Replace ALL subtypes with the given set.
+     * Used for "is a Food artifact" effects that completely replace subtypes.
+     * Removes all existing subtypes and replaces them with the specified types.
+     */
+    @Serializable
+    data class SetAllSubtypes(val subtypes: Set<String>) : Modification
+
     @Serializable
     data class ChangeController(val newControllerId: EntityId) : Modification
 

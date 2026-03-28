@@ -941,6 +941,7 @@ Set via `staticAbility { ability = ... }`:
 - `GrantKeywordByCounter(keyword, counterType)` — grant keyword when counter present
 - `ModifyStats(powerBonus, toughnessBonus, target: StaticTarget)` — P/T bonus
 - `ModifyStatsForCreatureGroup(powerBonus, toughnessBonus, filter: AffectsFilter)` — P/T to group
+- `SetBaseToughnessForCreatureGroup(toughness, filter: GroupFilter)` — set base toughness for a group (Layer 7b SET_VALUES)
 - `ModifyStatsForChosenCreatureType(powerBonus, toughnessBonus)` — P/T to chosen type
 - `ModifyStatsByCounterOnSource(counterType, powerModPerCounter, toughnessModPerCounter, target)` — P/T per counter
 - `ModifyStatsPerSharedCreatureType(powerModPerCreature, toughnessModPerCreature, target)` — P/T per creature sharing a type

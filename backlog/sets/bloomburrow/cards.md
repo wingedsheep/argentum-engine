@@ -2,13 +2,13 @@
 
 **Set Size:** 266 cards
 **Release Date:** August 2, 2024
-**Implemented:** 116 / 266
+**Implemented:** 117 / 266
 
 | Color      | Total | Done |
 |------------|-------|------|
 | White      | 40    | 22   |
 | Blue       | 41    | 16   |
-| Black      | 40    | 18   |
+| Black      | 40    | 19   |
 | Red        | 41    | 18   |
 | Green      | 41    | 14   |
 | Multicolor | 39    | 16   |
@@ -147,7 +147,7 @@
 - [x] Lupinflower Village
 - [x] Mabel's Mettle
 - [ ] Mabel, Heir to Cragflame
-- [ ] Maha, Its Feathers Night
+- [x] Maha, Its Feathers Night
 - [x] Manifold Mouse
 - [ ] Might of the Meek
 - [ ] Mind Drill Assailant

@@ -38,7 +38,9 @@ import com.wingedsheep.sdk.scripting.AnimateLandGroup
 import com.wingedsheep.sdk.scripting.GrantAdditionalTypesToGroup
 import com.wingedsheep.sdk.scripting.GrantColor
 import com.wingedsheep.sdk.scripting.LoseAllAbilities
+import com.wingedsheep.sdk.scripting.TransformPermanent
 import com.wingedsheep.sdk.scripting.SetBasePowerToughnessStatic
+import com.wingedsheep.sdk.scripting.SetBaseToughnessForCreatureGroup
 import com.wingedsheep.sdk.scripting.CantBeTargetedByOpponentAbilities
 import com.wingedsheep.sdk.scripting.GrantHexproofToController
 import com.wingedsheep.sdk.scripting.GrantShroudToController
@@ -170,6 +172,7 @@ class StaticAbilityHandler(
         return when (ability) {
             is AnimateLandGroup -> convertAnimateLandGroup(ability)
             is GrantAdditionalTypesToGroup -> convertGrantAdditionalTypesToGroup(ability)
+            is TransformPermanent -> convertTransformPermanent(ability)
             else -> listOfNotNull(convertStaticAbility(ability))
         }
     }
@@ -243,6 +246,48 @@ class StaticAbilityHandler(
                 layer = Layer.TYPE,
                 sublayer = null,
                 modification = Modification.AddSubtype(subtype),
+                affectsFilter = filter
+            ))
+        }
+
+        return effects
+    }
+
+    /**
+     * Convert TransformPermanent to multiple continuous effects across layers.
+     * "Enchanted permanent is a colorless Food artifact..."
+     */
+    private fun convertTransformPermanent(ability: TransformPermanent): List<ContinuousEffectData> {
+        val filter = convertStaticTarget(ability.target)
+        val effects = mutableListOf<ContinuousEffectData>()
+
+        // Layer 4 (TYPE): Set card types (replaces all existing)
+        if (ability.setCardTypes.isNotEmpty()) {
+            effects.add(ContinuousEffectData(
+                layer = Layer.TYPE,
+                sublayer = null,
+                modification = Modification.SetCardTypes(ability.setCardTypes),
+                affectsFilter = filter
+            ))
+        }
+
+        // Layer 4 (TYPE): Set subtypes (replaces all existing)
+        if (ability.setSubtypes.isNotEmpty()) {
+            effects.add(ContinuousEffectData(
+                layer = Layer.TYPE,
+                sublayer = null,
+                modification = Modification.SetAllSubtypes(ability.setSubtypes),
+                affectsFilter = filter
+            ))
+        }
+
+        // Layer 5 (COLOR): Set colors (empty set = colorless)
+        val colors = ability.setColors
+        if (colors != null) {
+            effects.add(ContinuousEffectData(
+                layer = Layer.COLOR,
+                sublayer = null,
+                modification = Modification.ChangeColor(colors.map { it.name }.toSet()),
                 affectsFilter = filter
             ))
         }
@@ -490,6 +535,14 @@ class StaticAbilityHandler(
                     sublayer = Sublayer.SET_VALUES,
                     modification = Modification.SetPowerToughness(ability.power, ability.toughness),
                     affectsFilter = convertStaticTarget(ability.target)
+                )
+            }
+            is SetBaseToughnessForCreatureGroup -> {
+                ContinuousEffectData(
+                    layer = Layer.POWER_TOUGHNESS,
+                    sublayer = Sublayer.SET_VALUES,
+                    modification = Modification.SetToughness(ability.toughness),
+                    affectsFilter = convertGroupFilter(ability.filter)
                 )
             }
             is LoseAllAbilities -> {

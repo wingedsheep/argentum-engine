@@ -82,6 +82,7 @@ object BloomburrowSet {
         LilypadVillage,
         LupinflowerVillage,
         MabelsMettle,
+        MahaItsFeathersNight,
         ManifoldMouse,
         MoonriseCleric,
         MoonstoneHarbinger,

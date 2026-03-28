@@ -42,6 +42,9 @@ internal class EffectApplicator(
                 is Modification.SetPower -> {
                     values.power = mod.power
                 }
+                is Modification.SetToughness -> {
+                    values.toughness = mod.toughness
+                }
                 is Modification.ModifyPowerToughness -> {
                     values.power = (values.power ?: 0) + mod.powerMod
                     values.toughness = (values.toughness ?: 0) + mod.toughnessMod
@@ -88,6 +91,15 @@ internal class EffectApplicator(
                     values.types.removeAll { it in basicLandTypes }
                     values.subtypes.addAll(mod.subtypes)
                     values.types.addAll(mod.subtypes)
+                }
+                is Modification.SetCardTypes -> {
+                    val cardTypeStrings = setOf("CREATURE", "ARTIFACT", "ENCHANTMENT", "LAND", "PLANESWALKER", "INSTANT", "SORCERY", "BATTLE", "KINDRED")
+                    values.types.removeAll { it in cardTypeStrings }
+                    values.types.addAll(mod.types)
+                }
+                is Modification.SetAllSubtypes -> {
+                    values.subtypes.clear()
+                    values.subtypes.addAll(mod.subtypes)
                 }
                 is Modification.ChangeController -> {
                     values.controllerId = mod.newControllerId
