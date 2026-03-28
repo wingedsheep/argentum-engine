@@ -20,7 +20,7 @@ state transitions.
 **Tech Stack:**
 
 - **Backend:** Kotlin 2.3.20, Gradle 8.14, JDK 21, Kotest 6.1.5 (testing), Spring Boot 4.0.4
-- **Frontend:** React 18.3, TypeScript 5.6, Zustand 5.0 (state), Vite 5.4 (build)
+- **Frontend:** React 19.2, TypeScript 5.9, Zustand 5.0 (state), Vite 8.0 (build)
 
 ## Build Commands
 
