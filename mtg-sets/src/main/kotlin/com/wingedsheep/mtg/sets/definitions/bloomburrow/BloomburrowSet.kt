@@ -55,6 +55,7 @@ object BloomburrowSet {
         EmberheartChallenger,
         EddymurkCrab,
         FabledPassage,
+        FeedTheCycle,
         Fell,
         FeatherOfFlight,
         FecundGreenshell,
