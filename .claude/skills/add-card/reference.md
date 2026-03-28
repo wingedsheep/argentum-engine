@@ -783,6 +783,11 @@ CompositeEffect(
 )
 ```
 
+**Reference implementation:** See `ZoralineCosmosCaller.kt` (Bloomburrow) for a complex card that composes
+`MayPayManaEffect` → `PayLifeEffect` → `GatherCardsEffect` → `SelectFromCollectionEffect` → `MoveCollectionEffect`
+into a reflexive "pay mana + life, reanimate with finality counter" pipeline — a good example of building sophisticated
+abilities from atomic primitives.
+
 ### Atomic Building Blocks
 
 | Effect                                                                                                                         | Purpose                                          |
