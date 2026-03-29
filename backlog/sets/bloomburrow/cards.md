@@ -2,7 +2,7 @@
 
 **Set Size:** 266 cards
 **Release Date:** August 2, 2024
-**Implemented:** 124 / 266
+**Implemented:** 125 / 266
 
 | Color      | Total | Done |
 |------------|-------|------|
@@ -10,7 +10,7 @@
 | Blue       | 41    | 16   |
 | Black      | 40    | 22   |
 | Red        | 41    | 20   |
-| Green      | 41    | 15   |
+| Green      | 41    | 16   |
 | Multicolor | 39    | 16   |
 | Colorless  | 9     | 3    |
 | Land       | 15    | 6    |
@@ -112,7 +112,7 @@
 - [x] Heirloom Epic
 - [x] Helga, Skittish Seer
 - [x] Hidden Grotto
-- [ ] High Stride
+- [x] High Stride
 - [x] Hired Claw
 - [ ] Hivespine Wolverine
 - [ ] Hoarder's Overflow
