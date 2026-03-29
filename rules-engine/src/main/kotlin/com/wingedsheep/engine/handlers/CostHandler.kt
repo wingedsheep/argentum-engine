@@ -114,9 +114,8 @@ class CostHandler(
                 state.getZone(battlefieldZone).contains(sourceId)
             }
             is AbilityCost.ExileSelf -> {
-                // Source must be on the battlefield
-                val battlefieldZone = ZoneKey(controllerId, Zone.BATTLEFIELD)
-                state.getZone(battlefieldZone).contains(sourceId)
+                // Source must exist (can be on battlefield or in graveyard for graveyard abilities)
+                state.getEntity(sourceId) != null
             }
             is AbilityCost.TapPermanents -> {
                 val candidates = findUntappedMatchingPermanentsUnified(state, controllerId, cost.filter)

@@ -85,6 +85,9 @@ class GraveyardAbilityEnumerator : ActionEnumerator {
                                         costCanBePaid = false; break
                                     }
                                 }
+                                is AbilityCost.ExileSelf -> {
+                                    // Always payable — the card is in the graveyard
+                                }
                                 else -> {}
                             }
                         }
