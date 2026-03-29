@@ -225,6 +225,8 @@ class TriggerMatcher(
             is GameEvent.PermanentsSacrificedEvent -> false
             // Combat damage batch triggers are handled by detectCombatDamageBatchTriggers
             is GameEvent.OneOrMoreDealCombatDamageToPlayerEvent -> false
+            // Leave battlefield without dying batch triggers are handled by detectLeaveBattlefieldWithoutDyingBatchTriggers
+            is GameEvent.LeaveBattlefieldWithoutDyingEvent -> false
         }
     }
 

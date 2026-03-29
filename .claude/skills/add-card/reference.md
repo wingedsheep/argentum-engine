@@ -1207,6 +1207,7 @@ Used in `OptionalCostEffect`, `MayPayManaEffect`, `AnyPlayerMayPayEffect`, `PayO
 - `CycleEvent(player)` / `TapEvent` / `UntapEvent`
 - `TurnFaceUpEvent` / `TransformEvent(intoBackFace?)` / `ControlChangeEvent`
 - `OneOrMoreDealCombatDamageToPlayerEvent(sourceFilter)` — batching trigger: "whenever one or more [filter] you control deal combat damage to a player" (fires at most once per combat damage step)
+- `LeaveBattlefieldWithoutDyingEvent(filter, excludeSelf)` — batching trigger: "whenever one or more [filter] you control leave the battlefield without dying" (fires at most once per event batch; excludeSelf for "other" clause)
 
 ### Event Filters
 

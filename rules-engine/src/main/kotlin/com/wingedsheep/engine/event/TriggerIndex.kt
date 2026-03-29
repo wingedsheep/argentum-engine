@@ -57,6 +57,7 @@ enum class TriggerCategory {
     LIBRARY_TO_GRAVEYARD,
     SACRIFICE,
     COMBAT_DAMAGE_BATCH,
+    LEAVE_WITHOUT_DYING,
 }
 
 /**
@@ -163,6 +164,7 @@ class TriggerIndex(
                 is SdkGameEvent.CardsPutIntoGraveyardFromLibraryEvent -> listOf(TriggerCategory.LIBRARY_TO_GRAVEYARD)
                 is SdkGameEvent.PermanentsSacrificedEvent -> listOf(TriggerCategory.SACRIFICE)
                 is SdkGameEvent.OneOrMoreDealCombatDamageToPlayerEvent -> listOf(TriggerCategory.COMBAT_DAMAGE_BATCH)
+                is SdkGameEvent.LeaveBattlefieldWithoutDyingEvent -> listOf(TriggerCategory.LEAVE_WITHOUT_DYING)
                 // These are handled by specialized detect methods, not the main loop
                 else -> emptyList()
             }

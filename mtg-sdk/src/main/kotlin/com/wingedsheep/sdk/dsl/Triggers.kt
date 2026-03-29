@@ -863,6 +863,26 @@ object Triggers {
     )
 
     // =========================================================================
+    // Leave Battlefield Without Dying Triggers
+    // =========================================================================
+
+    /**
+     * Whenever one or more other creatures you control leave the battlefield without dying.
+     * Batching trigger — fires at most once per event batch.
+     * "Without dying" means the creature moves to any zone other than the graveyard.
+     *
+     * Example: "Whenever one or more other creatures you control leave the battlefield without dying, draw a card."
+     * → OneOrMoreLeaveWithoutDying(excludeSelf = true)
+     */
+    fun OneOrMoreLeaveWithoutDying(
+        filter: GameObjectFilter = GameObjectFilter.Creature,
+        excludeSelf: Boolean = false
+    ): TriggerSpec = TriggerSpec(
+        event = LeaveBattlefieldWithoutDyingEvent(filter = filter, excludeSelf = excludeSelf),
+        binding = TriggerBinding.ANY
+    )
+
+    // =========================================================================
     // Expend Triggers (Bloomburrow)
     // =========================================================================
 

@@ -55,6 +55,7 @@ object BloomburrowSet {
         DawnsTruce,
         DireDowndraft,
         Diresight,
+        DourPortMage,
         DreamdewEntrancer,
         DruidOfTheSpade,
         DriftgloomCoyote,

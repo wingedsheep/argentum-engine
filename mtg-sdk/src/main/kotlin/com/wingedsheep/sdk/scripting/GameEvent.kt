@@ -897,6 +897,41 @@ sealed interface GameEvent : TextReplaceable<GameEvent> {
             return if (newFilter !== sourceFilter) copy(sourceFilter = newFilter) else this
         }
     }
+
+    // =========================================================================
+    // Leave Battlefield Without Dying Batch Triggers
+    // =========================================================================
+
+    /**
+     * Whenever one or more creatures you control leave the battlefield without dying.
+     * Batching trigger — fires at most once per event batch regardless of how many
+     * creatures left. "Without dying" means moving to any zone other than graveyard
+     * (e.g., exiled, returned to hand, put on library).
+     *
+     * Examples:
+     *   → LeaveBattlefieldWithoutDyingEvent()
+     *     "Whenever one or more creatures you control leave the battlefield without dying"
+     *   → LeaveBattlefieldWithoutDyingEvent(filter = GameObjectFilter.Creature)
+     *     Same, with explicit creature filter
+     */
+    @SerialName("LeaveBattlefieldWithoutDyingEvent")
+    @Serializable
+    data class LeaveBattlefieldWithoutDyingEvent(
+        val filter: GameObjectFilter = GameObjectFilter.Companion.Creature,
+        val excludeSelf: Boolean = false
+    ) : GameEvent {
+        override val description: String = buildString {
+            append("one or more ")
+            if (excludeSelf) append("other ")
+            append(describeObjectForEvent(filter))
+            append(" you control leave the battlefield without dying")
+        }
+
+        override fun applyTextReplacement(replacer: TextReplacer): GameEvent {
+            val newFilter = filter.applyTextReplacement(replacer)
+            return if (newFilter !== filter) copy(filter = newFilter) else this
+        }
+    }
 }
 
 /**

@@ -203,6 +203,11 @@ class TriggerDetector(
         // and fires the trigger at most once per observer.
         detectCombatDamageBatchTriggers(state, events, triggers, state.projectedState, index)
 
+        // Detect "whenever one or more creatures you control leave the battlefield without dying"
+        // batching triggers (e.g., Dour Port-Mage). Groups zone changes from battlefield to
+        // non-graveyard zones and fires the trigger at most once per observer.
+        detectLeaveBattlefieldWithoutDyingBatchTriggers(state, events, triggers, index)
+
         // Detect Saga chapter triggers from lore counter additions
         detectSagaChapterTriggers(state, events, triggers)
 
@@ -892,6 +897,77 @@ class TriggerDetector(
                             is com.wingedsheep.sdk.scripting.predicates.CardPredicate.IsCreature -> true
                             is com.wingedsheep.sdk.scripting.predicates.CardPredicate.HasSubtype ->
                                 projected.hasSubtype(info.sourceId, predicate.subtype.value)
+                            else -> true
+                        }
+                    }
+                }
+
+                if (hasMatch) {
+                    triggers.add(
+                        PendingTrigger(
+                            ability = ability,
+                            sourceId = entry.entityId,
+                            sourceName = entry.cardComponent.name,
+                            controllerId = controllerId,
+                            triggerContext = TriggerContext()
+                        )
+                    )
+                }
+            }
+        }
+    }
+
+    /**
+     * Detect "whenever one or more creatures you control leave the battlefield without dying"
+     * batching triggers. Groups zone changes from battlefield to non-graveyard zones and fires
+     * matching triggers at most once per observer, regardless of how many creatures left.
+     */
+    private fun detectLeaveBattlefieldWithoutDyingBatchTriggers(
+        state: GameState,
+        events: List<EngineGameEvent>,
+        triggers: MutableList<PendingTrigger>,
+        index: TriggerIndex
+    ) {
+        // Collect all zone changes from battlefield to non-graveyard zones, grouped by owner
+        // (owner approximates controller; the entity has already left the battlefield)
+        data class LeaveInfo(val entityId: EntityId, val cardComponent: CardComponent)
+        val leavesByController = mutableMapOf<EntityId, MutableList<LeaveInfo>>()
+        for (event in events) {
+            if (event is ZoneChangeEvent && event.fromZone == Zone.BATTLEFIELD &&
+                event.toZone != Zone.GRAVEYARD) {
+                val entity = state.getEntity(event.entityId) ?: continue
+                val card = entity.get<CardComponent>() ?: continue
+                if (!card.typeLine.isCreature) continue
+                leavesByController.getOrPut(event.ownerId) { mutableListOf() }
+                    .add(LeaveInfo(event.entityId, card))
+            }
+        }
+        if (leavesByController.isEmpty()) return
+
+        for (entry in index.getEntitiesForCategory(TriggerCategory.LEAVE_WITHOUT_DYING)) {
+            for (ability in entry.abilities) {
+                val trigger = ability.trigger
+                if (trigger !is GameEvent.LeaveBattlefieldWithoutDyingEvent) continue
+
+                val controllerId = entry.controllerId
+                val controllerLeaves = leavesByController[controllerId] ?: continue
+
+                // Filter out self if excludeSelf is set
+                val relevantLeaves = if (trigger.excludeSelf) {
+                    controllerLeaves.filter { it.entityId != entry.entityId }
+                } else {
+                    controllerLeaves
+                }
+                if (relevantLeaves.isEmpty()) continue
+
+                // Check if any leaving creature matches the filter
+                val hasMatch = relevantLeaves.any { info ->
+                    trigger.filter.cardPredicates.all { predicate ->
+                        when (predicate) {
+                            is com.wingedsheep.sdk.scripting.predicates.CardPredicate.IsCreature ->
+                                info.cardComponent.typeLine.isCreature
+                            is com.wingedsheep.sdk.scripting.predicates.CardPredicate.HasSubtype ->
+                                info.cardComponent.typeLine.hasSubtype(predicate.subtype)
                             else -> true
                         }
                     }

@@ -2,12 +2,12 @@
 
 **Set Size:** 266 cards
 **Release Date:** August 2, 2024
-**Implemented:** 153 / 266
+**Implemented:** 154 / 266
 
 | Color      | Total | Done |
 |------------|-------|------|
 | White      | 40    | 27   |
-| Blue       | 41    | 19   |
+| Blue       | 41    | 20   |
 | Black      | 40    | 26   |
 | Red        | 41    | 23   |
 | Green      | 41    | 19   |
@@ -69,7 +69,7 @@
 - [ ] Dewdrop Cure
 - [x] Dire Downdraft
 - [x] Diresight
-- [ ] Dour Port-Mage
+- [x] Dour Port-Mage
 - [ ] Downwind Ambusher
 - [ ] Dragonhawk, Fate's Tempest
 - [x] Dreamdew Entrancer
