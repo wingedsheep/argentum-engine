@@ -2,7 +2,7 @@
 
 **Set Size:** 266 cards
 **Release Date:** August 2, 2024
-**Implemented:** 126 / 266
+**Implemented:** 127 / 266
 
 | Color      | Total | Done |
 |------------|-------|------|
@@ -11,7 +11,7 @@
 | Black      | 40    | 23   |
 | Red        | 41    | 20   |
 | Green      | 41    | 16   |
-| Multicolor | 39    | 16   |
+| Multicolor | 39    | 17   |
 | Colorless  | 9     | 3    |
 | Land       | 15    | 6    |
 
@@ -42,7 +42,7 @@
 - [ ] Brightblade Stoat
 - [ ] Builder's Talent
 - [ ] Bumbleflower's Sharepot
-- [ ] Burrowguard Mentor
+- [x] Burrowguard Mentor
 - [ ] Bushy Bodyguard
 - [x] Byway Barterer
 - [ ] Cache Grab

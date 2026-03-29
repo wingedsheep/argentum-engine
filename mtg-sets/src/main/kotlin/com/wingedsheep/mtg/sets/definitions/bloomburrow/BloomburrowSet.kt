@@ -36,6 +36,7 @@ object BloomburrowSet {
         BrambleguardVeteran,
         BrazenCollector,
         BraveKinDuo,
+        BurrowguardMentor,
         BywayBarterer,
         ClementTheWorrywort,
         ConductElectricity,
