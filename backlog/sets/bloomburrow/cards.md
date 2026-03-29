@@ -2,7 +2,7 @@
 
 **Set Size:** 266 cards
 **Release Date:** August 2, 2024
-**Implemented:** 128 / 266
+**Implemented:** 131 / 266
 
 | Color      | Total | Done |
 |------------|-------|------|
@@ -13,7 +13,7 @@
 | Green      | 41    | 16   |
 | Multicolor | 39    | 17   |
 | Colorless  | 9     | 3    |
-| Land       | 15    | 6    |
+| Land       | 15    | 9    |
 
 ---
 
@@ -92,7 +92,7 @@
 - [x] Flamecache Gecko
 - [x] Flowerfoot Swordmaster
 - [ ] For the Common Good
-- [ ] Forest
+- [x] Forest
 - [ ] Fountainport
 - [ ] Fountainport Bell
 - [x] Frilled Sparkshooter
@@ -157,7 +157,7 @@
 - [ ] Mockingbird
 - [x] Moonrise Cleric
 - [x] Moonstone Harbinger
-- [ ] Mountain
+- [x] Mountain
 - [x] Mouse Trapper
 - [ ] Mudflat Village
 - [x] Muerra, Trash Tactician
@@ -238,7 +238,7 @@
 - [ ] Sugar Coat
 - [ ] Sunshower Druid
 - [x] Sunspine Lynx
-- [ ] Swamp
+- [x] Swamp
 - [ ] Take Out the Trash
 - [ ] Tangle Tumbler
 - [ ] Teapot Slinger
