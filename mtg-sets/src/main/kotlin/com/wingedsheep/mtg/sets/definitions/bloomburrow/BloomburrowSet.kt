@@ -71,6 +71,7 @@ object BloomburrowSet {
         Fountainport,
         GlidediveDuo,
         GossipsTalent,
+        HeadOfTheHomestead,
         HazardrootHerbalist,
         HeapedHarvest,
         HeirloomEpic,

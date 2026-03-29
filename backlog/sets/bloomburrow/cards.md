@@ -2,7 +2,7 @@
 
 **Set Size:** 266 cards
 **Release Date:** August 2, 2024
-**Implemented:** 148 / 266
+**Implemented:** 149 / 266
 
 | Color      | Total | Done |
 |------------|-------|------|
@@ -11,7 +11,7 @@
 | Black      | 40    | 25   |
 | Red        | 41    | 23   |
 | Green      | 41    | 19   |
-| Multicolor | 39    | 18   |
+| Multicolor | 39    | 19   |
 | Colorless  | 9     | 3    |
 | Land       | 15    | 11   |
 
@@ -105,7 +105,7 @@
 - [ ] Harvestrite Host
 - [x] Hazardroot Herbalist
 - [ ] Hazel's Nocturne
-- [ ] Head of the Homestead
+- [x] Head of the Homestead
 - [x] Heaped Harvest
 - [ ] Heartfire Hero
 - [ ] Hearthborn Battler
