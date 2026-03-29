@@ -139,6 +139,7 @@ object BloomburrowSet {
         SplashLasher,
         StickytongueSentinel,
         SugarCoat,
+        Stargaze,
         StarscapeCleric,
         SteampathCharger,
         StormcatchMentor,

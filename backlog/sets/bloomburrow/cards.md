@@ -2,13 +2,13 @@
 
 **Set Size:** 266 cards
 **Release Date:** August 2, 2024
-**Implemented:** 151 / 266
+**Implemented:** 152 / 266
 
 | Color      | Total | Done |
 |------------|-------|------|
 | White      | 40    | 27   |
 | Blue       | 41    | 19   |
-| Black      | 40    | 25   |
+| Black      | 40    | 26   |
 | Red        | 41    | 23   |
 | Green      | 41    | 19   |
 | Multicolor | 39    | 21   |
@@ -225,7 +225,7 @@
 - [ ] Star Charter
 - [ ] Starfall Invocation
 - [ ] Starforged Sword
-- [ ] Stargaze
+- [x] Stargaze
 - [ ] Starlit Soothsayer
 - [x] Starscape Cleric
 - [ ] Starseer Mentor
