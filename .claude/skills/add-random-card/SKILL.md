@@ -17,6 +17,7 @@ Implement a random unimplemented card from the backlog file at `$ARGUMENTS`.
 
 1. Collect all unimplemented cards (`- [ ]`) into a numbered list (0-indexed).
 2. Use `jot -r 1 0 <max_index>` to generate a true random index. Use that index to select the card — LLM "random" picks are not truly random.
+3. **Always implement the selected card** — do NOT re-roll or pick a different card because the selected one looks complex or requires new effects/mechanics. The whole point is to make progress on whatever card is chosen.
 
 ## Step 3: Determine the Set Code
 
