@@ -2,13 +2,13 @@
 
 **Set Size:** 266 cards
 **Release Date:** August 2, 2024
-**Implemented:** 145 / 266
+**Implemented:** 146 / 266
 
 | Color      | Total | Done |
 |------------|-------|------|
 | White      | 40    | 26   |
 | Blue       | 41    | 18   |
-| Black      | 40    | 24   |
+| Black      | 40    | 25   |
 | Red        | 41    | 23   |
 | Green      | 41    | 19   |
 | Multicolor | 39    | 18   |
@@ -227,7 +227,7 @@
 - [ ] Starforged Sword
 - [ ] Stargaze
 - [ ] Starlit Soothsayer
-- [ ] Starscape Cleric
+- [x] Starscape Cleric
 - [ ] Starseer Mentor
 - [x] Steampath Charger
 - [x] Stickytongue Sentinel
