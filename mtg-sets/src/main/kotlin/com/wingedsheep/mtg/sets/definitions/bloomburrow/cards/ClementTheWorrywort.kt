@@ -112,7 +112,8 @@ val ClementTheWorrywort = card("Clement, the Worrywort") {
                     restriction = ManaRestriction.CreatureSpellsOnly
                 ),
                 isManaAbility = true,
-                timing = TimingRule.ManaAbility
+                timing = TimingRule.ManaAbility,
+                descriptionOverride = "{T}: Add {G} or {U}. Spend this mana only to cast a creature spell."
             ),
             filter = GroupFilter(GameObjectFilter.Creature.withSubtype("Frog").youControl())
         )
