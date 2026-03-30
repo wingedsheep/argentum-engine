@@ -103,6 +103,7 @@ object BloomburrowSet {
         MabelsMettle,
         MahaItsFeathersNight,
         ManifoldMouse,
+        MightOfTheMeek,
         MoonriseCleric,
         MoonstoneHarbinger,
         MouseTrapper,
