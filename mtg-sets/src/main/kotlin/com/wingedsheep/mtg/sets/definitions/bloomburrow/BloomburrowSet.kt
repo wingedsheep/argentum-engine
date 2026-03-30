@@ -144,6 +144,7 @@ object BloomburrowSet {
         RepelCalamity,
         ReptilianRecruiter,
         RockfaceVillage,
+        RoughshodDuo,
         RunAwayTogether,
         Savor,
         SazacapsBrew,
