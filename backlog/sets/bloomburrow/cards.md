@@ -2,18 +2,18 @@
 
 **Set Size:** 266 cards
 **Release Date:** August 2, 2024
-**Implemented:** 169 / 266
+**Implemented:** 174 / 266
 
 | Color      | Total | Done |
 |------------|-------|------|
 | White      | 40    | 27   |
-| Blue       | 41    | 23   |
+| Blue       | 41    | 25   |
 | Black      | 40    | 30   |
-| Red        | 41    | 25   |
+| Red        | 41    | 26   |
 | Green      | 41    | 22   |
-| Multicolor | 39    | 24   |
+| Multicolor | 39    | 25   |
 | Colorless  | 9     | 4    |
-| Land       | 15    | 11   |
+| Land       | 15    | 12   |
 
 ---
 
@@ -164,7 +164,7 @@
 - [x] Nettle Guard
 - [x] Nightwhorl Hermit
 - [x] Nocturnal Hunger
-- [ ] Oakhollow Village
+- [x] Oakhollow Village
 - [x] Osteomancer Adept
 - [ ] Otterball Antics
 - [x] Overprotect
@@ -172,7 +172,7 @@
 - [x] Patchwork Banner
 - [x] Pawpatch Formation
 - [x] Pawpatch Recruit
-- [ ] Pearl of Wisdom
+- [x] Pearl of Wisdom
 - [ ] Peerless Recycling
 - [ ] Persistent Marshstalker
 - [x] Pileated Provisioner
@@ -187,7 +187,7 @@
 - [x] Quaketusk Boar
 - [x] Rabbit Response
 - [x] Rabid Gnaw
-- [ ] Raccoon Rallier
+- [x] Raccoon Rallier
 - [ ] Ral, Crackling Wit
 - [x] Ravine Raider
 - [x] Repel Calamity
@@ -221,7 +221,7 @@
 - [x] Sonar Strike
 - [x] Spellgyre
 - [x] Splash Lasher
-- [ ] Splash Portal
+- [x] Splash Portal
 - [ ] Star Charter
 - [ ] Starfall Invocation
 - [ ] Starforged Sword
