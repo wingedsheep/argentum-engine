@@ -285,6 +285,7 @@ export enum CounterType {
   DEPLETION = 'DEPLETION',
   EGG = 'EGG',
   LORE = 'LORE',
+  STUN = 'STUN',
   FINALITY = 'FINALITY',
 }
 
@@ -301,6 +302,7 @@ export const CounterTypeDisplayNames: Record<CounterType, string> = {
   [CounterType.DEPLETION]: 'Depletion',
   [CounterType.EGG]: 'Egg',
   [CounterType.LORE]: 'Lore',
+  [CounterType.STUN]: 'Stun',
   [CounterType.FINALITY]: 'Finality',
 }
 

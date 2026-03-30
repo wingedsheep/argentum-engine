@@ -123,10 +123,21 @@ class BeginningPhaseManager(
         }
 
         // No MAY_NOT_UNTAP permanents - untap everything normally
+        // But first handle stun counters: if a permanent with a stun counter would untap,
+        // remove a stun counter instead (CR 122.1b)
         for (entityId in permanentsAfterCantUntap) {
             val cardName = newState.getEntity(entityId)?.get<CardComponent>()?.name ?: "Permanent"
-            newState = newState.updateEntity(entityId) { it.without<TappedComponent>() }
-            events.add(UntappedEvent(entityId, cardName))
+            val stunCounters = newState.getEntity(entityId)?.get<CountersComponent>()?.getCount(CounterType.STUN) ?: 0
+            if (stunCounters > 0) {
+                // Remove a stun counter instead of untapping
+                newState = newState.updateEntity(entityId) { container ->
+                    val counters = container.get<CountersComponent>() ?: CountersComponent()
+                    container.with(counters.withRemoved(CounterType.STUN, 1))
+                }
+            } else {
+                newState = newState.updateEntity(entityId) { it.without<TappedComponent>() }
+                events.add(UntappedEvent(entityId, cardName))
+            }
         }
 
         // Untap permanents for non-active players with UntapDuringOtherUntapSteps (e.g., Seedborn Muse)
@@ -158,8 +169,16 @@ class BeginningPhaseManager(
                 }.keys
                 for (entityId in tappedPermanents) {
                     val cardName = newState.getEntity(entityId)?.get<CardComponent>()?.name ?: "Permanent"
-                    newState = newState.updateEntity(entityId) { it.without<TappedComponent>() }
-                    events.add(UntappedEvent(entityId, cardName))
+                    val stunCounters = newState.getEntity(entityId)?.get<CountersComponent>()?.getCount(CounterType.STUN) ?: 0
+                    if (stunCounters > 0) {
+                        newState = newState.updateEntity(entityId) { container ->
+                            val counters = container.get<CountersComponent>() ?: CountersComponent()
+                            container.with(counters.withRemoved(CounterType.STUN, 1))
+                        }
+                    } else {
+                        newState = newState.updateEntity(entityId) { it.without<TappedComponent>() }
+                        events.add(UntappedEvent(entityId, cardName))
+                    }
                 }
             } else if (filteredUntapFilters.isNotEmpty()) {
                 val alreadyUntapped = mutableSetOf<EntityId>()
@@ -173,8 +192,16 @@ class BeginningPhaseManager(
                     }.keys
                     for (entityId in tappedPermanents) {
                         val cardName = newState.getEntity(entityId)?.get<CardComponent>()?.name ?: "Permanent"
-                        newState = newState.updateEntity(entityId) { it.without<TappedComponent>() }
-                        events.add(UntappedEvent(entityId, cardName))
+                        val stunCounters = newState.getEntity(entityId)?.get<CountersComponent>()?.getCount(CounterType.STUN) ?: 0
+                        if (stunCounters > 0) {
+                            newState = newState.updateEntity(entityId) { container ->
+                                val counters = container.get<CountersComponent>() ?: CountersComponent()
+                                container.with(counters.withRemoved(CounterType.STUN, 1))
+                            }
+                        } else {
+                            newState = newState.updateEntity(entityId) { it.without<TappedComponent>() }
+                            events.add(UntappedEvent(entityId, cardName))
+                        }
                         alreadyUntapped.add(entityId)
                     }
                 }

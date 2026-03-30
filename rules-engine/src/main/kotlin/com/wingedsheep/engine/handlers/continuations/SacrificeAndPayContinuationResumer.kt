@@ -13,8 +13,10 @@ import com.wingedsheep.engine.mechanics.mana.ManaPool
 import com.wingedsheep.engine.mechanics.mana.ManaSolver
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
+import com.wingedsheep.engine.state.components.battlefield.CountersComponent
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
+import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.engine.state.components.player.ManaPoolComponent
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.scripting.Duration
@@ -576,10 +578,19 @@ class SacrificeAndPayContinuationResumer(
         val events = mutableListOf<GameEvent>()
 
         // Untap the permanents that the player did NOT choose to keep tapped
+        // Handle stun counters: remove a stun counter instead of untapping (CR 122.1b)
         for (entityId in toUntap) {
             val cardName = newState.getEntity(entityId)?.get<CardComponent>()?.name ?: "Permanent"
-            newState = newState.updateEntity(entityId) { it.without<TappedComponent>() }
-            events.add(UntappedEvent(entityId, cardName))
+            val stunCounters = newState.getEntity(entityId)?.get<CountersComponent>()?.getCount(CounterType.STUN) ?: 0
+            if (stunCounters > 0) {
+                newState = newState.updateEntity(entityId) { container ->
+                    val counters = container.get<CountersComponent>() ?: CountersComponent()
+                    container.with(counters.withRemoved(CounterType.STUN, 1))
+                }
+            } else {
+                newState = newState.updateEntity(entityId) { it.without<TappedComponent>() }
+                events.add(UntappedEvent(entityId, cardName))
+            }
         }
 
         // Remove WhileSourceTapped floating effects whose source is no longer tapped

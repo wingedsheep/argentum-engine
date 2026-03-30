@@ -942,6 +942,21 @@ export const styles: Record<string, React.CSSProperties> = {
     fontWeight: 700,
     zIndex: 5,
   } as React.CSSProperties,
+  // Stun counter badge (prevents untapping)
+  stunCounterBadge: {
+    position: 'absolute',
+    top: 4,
+    left: 4,
+    backgroundColor: 'rgba(100, 40, 20, 0.95)',
+    borderRadius: 4,
+    border: '1px solid rgba(255, 140, 40, 0.6)',
+    display: 'flex',
+    alignItems: 'center',
+    gap: 2,
+    color: '#ff9030',
+    fontWeight: 700,
+    zIndex: 5,
+  } as React.CSSProperties,
   // Finality counter badge (reanimated permanents — exiled instead of dying)
   finalityCounterBadge: {
     position: 'absolute',

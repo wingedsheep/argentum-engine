@@ -21,6 +21,7 @@ import {
   getTokenFrameTextColor,
   getCardFallbackColor,
   getLoreCounters,
+  getStunCounters,
   getFinalityCounters,
 } from '../board/shared'
 import { styles } from '../board/styles'
@@ -1029,6 +1030,20 @@ export function GameCard({
           <i className={`ms ms-${counterManaClass.TRAP}`} style={{ fontSize: responsive.isMobile ? 8 : 10 }} />
           <span style={{ fontWeight: 700 }}>
             {getTrapCounters(card)}
+          </span>
+        </div>
+      )}
+
+      {/* Stun counter badge */}
+      {battlefield && getStunCounters(card) > 0 && (
+        <div style={{
+          ...styles.stunCounterBadge,
+          fontSize: responsive.isMobile ? 9 : 11,
+          padding: responsive.isMobile ? '1px 4px' : '2px 6px',
+        }}>
+          <i className={`ms ms-${counterManaClass.STUN}`} style={{ fontSize: responsive.isMobile ? 8 : 10 }} />
+          <span style={{ fontWeight: 700 }}>
+            {getStunCounters(card)}
           </span>
         </div>
       )}

@@ -171,6 +171,13 @@ export function getLoreCounters(card: ClientCard): number {
 }
 
 /**
+ * Get the number of stun counters on a card.
+ */
+export function getStunCounters(card: ClientCard): number {
+  return card.counters[CounterType.STUN] ?? 0
+}
+
+/**
  * Get the number of finality counters on a card.
  */
 export function getFinalityCounters(card: ClientCard): number {
