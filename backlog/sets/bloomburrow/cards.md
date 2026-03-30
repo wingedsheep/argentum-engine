@@ -2,13 +2,13 @@
 
 **Set Size:** 266 cards
 **Release Date:** August 2, 2024
-**Implemented:** 182 / 266
+**Implemented:** 183 / 266
 
 | Color      | Total | Done |
 |------------|-------|------|
 | White      | 40    | 27   |
 | Blue       | 41    | 27   |
-| Black      | 40    | 30   |
+| Black      | 40    | 31   |
 | Red        | 41    | 27   |
 | Green      | 41    | 23   |
 | Multicolor | 39    | 27   |
@@ -201,7 +201,7 @@
 - [x] Salvation Swan
 - [x] Savor
 - [x] Sazacap's Brew
-- [ ] Scales of Shale
+- [x] Scales of Shale
 - [x] Scavenger's Talent
 - [ ] Scrapshooter
 - [ ] Season of Gathering

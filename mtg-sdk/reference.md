@@ -929,7 +929,7 @@ Used via `keywordAbility(...)` or `keywordAbilities(...)` in card DSL:
 - **Counters**: `Modular(count)`, `Fabricate(count)`, `Renown(count)`, `Tribute(count)`
 - **Time**: `Fading(count)`, `Vanishing(count)`
 - **Vehicles**: `Crew(power)`
-- **Cost**: `Affinity(forType)`, `Cycling(cost)`, `Typecycling(type, cost)`, `Kicker(cost)`, `KickerWithAdditionalCost(cost: AdditionalCost)`, `Multikicker(cost)`
+- **Cost**: `Affinity(forType)`, `AffinityForSubtype(forSubtype)`, `Cycling(cost)`, `Typecycling(type, cost)`, `Kicker(cost)`, `KickerWithAdditionalCost(cost: AdditionalCost)`, `Multikicker(cost)`
 - **Transform**: `Morph(cost, faceUpEffect?)`, `Absorb(count)` — `faceUpEffect` is an `Effect` executed as a replacement effect when turned face up (e.g., `AddCountersEffect` for Hooded Hydra)
 
 Companion helpers: `KeywordAbility.of(keyword)`, `.ward(cost)`, `.wardLife(amount)`, `.wardDiscard(count, random)`,

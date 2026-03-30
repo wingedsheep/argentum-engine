@@ -4,6 +4,7 @@ import com.wingedsheep.sdk.core.CardType
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.ManaCost
+import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.scripting.costs.PayCost
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -324,6 +325,16 @@ sealed interface KeywordAbility {
     @Serializable
     data class Affinity(val forType: CardType) : KeywordAbility {
         override val description: String = "Affinity for ${forType.displayName.lowercase()}s"
+    }
+
+    /**
+     * Affinity for a creature subtype.
+     * "Affinity for Lizards" - This spell costs {1} less to cast for each Lizard you control.
+     */
+    @SerialName("AffinityForSubtype")
+    @Serializable
+    data class AffinityForSubtype(val forSubtype: Subtype) : KeywordAbility {
+        override val description: String = "Affinity for ${forSubtype.value}s"
     }
 
     // =========================================================================

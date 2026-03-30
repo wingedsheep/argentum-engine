@@ -68,6 +68,9 @@ class CostCalculator(
             if (keywordAbility is KeywordAbility.Affinity) {
                 totalReduction += countPermanentsOfType(state, casterId, keywordAbility.forType)
             }
+            if (keywordAbility is KeywordAbility.AffinityForSubtype) {
+                totalReduction += countPermanentsWithSubtype(state, casterId, keywordAbility.forSubtype)
+            }
         }
 
         // Evaluate ReduceSpellCostBySubtype from battlefield permanents controlled by the caster
@@ -259,6 +262,17 @@ class CostCalculator(
         return state.getBattlefield(playerId).count { entityId ->
             val card = state.getEntity(entityId)?.get<CardComponent>()
             card?.typeLine?.cardTypes?.contains(cardType) == true
+        }
+    }
+
+    /**
+     * Count permanents with a specific subtype controlled by a player.
+     * Used for Affinity for subtypes (e.g., "Affinity for Lizards").
+     */
+    private fun countPermanentsWithSubtype(state: GameState, playerId: EntityId, subtype: Subtype): Int {
+        return state.getBattlefield(playerId).count { entityId ->
+            val card = state.getEntity(entityId)?.get<CardComponent>()
+            card?.typeLine?.subtypes?.contains(subtype) == true
         }
     }
 
@@ -667,7 +681,9 @@ class CostCalculator(
          */
         fun hasCostReduction(cardDef: CardDefinition): Boolean {
             val hasSpellCostReduction = cardDef.script.staticAbilities.any { it is SpellCostReduction }
-            val hasAffinity = cardDef.keywordAbilities.any { it is KeywordAbility.Affinity }
+            val hasAffinity = cardDef.keywordAbilities.any {
+                it is KeywordAbility.Affinity || it is KeywordAbility.AffinityForSubtype
+            }
             return hasSpellCostReduction || hasAffinity
         }
     }

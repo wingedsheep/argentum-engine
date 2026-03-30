@@ -145,6 +145,7 @@ object BloomburrowSet {
         RunAwayTogether,
         Savor,
         SazacapsBrew,
+        ScalesOfShale,
         ScavengersTalent,
         SeasonOfLoss,
         SeasonOfWeaving,
