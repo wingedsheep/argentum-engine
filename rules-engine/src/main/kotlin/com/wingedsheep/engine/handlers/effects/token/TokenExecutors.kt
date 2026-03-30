@@ -20,6 +20,7 @@ class TokenExecutors(
         CreateChosenTokenExecutor(amountEvaluator),
         CreateTokenCopyOfSourceExecutor(cardRegistry, staticAbilityHandler),
         CreateTokenCopyOfEquippedCreatureExecutor(cardRegistry, staticAbilityHandler),
-        CreateTokenCopyOfChosenPermanentExecutor(cardRegistry, staticAbilityHandler)
+        CreateTokenCopyOfChosenPermanentExecutor(cardRegistry, staticAbilityHandler),
+        CreateTokenCopyOfTargetExecutor(amountEvaluator, staticAbilityHandler)
     )
 }

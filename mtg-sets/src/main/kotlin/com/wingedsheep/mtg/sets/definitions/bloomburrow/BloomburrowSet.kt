@@ -70,6 +70,7 @@ object BloomburrowSet {
         FlamecacheGecko,
         FrilledSparkshooter,
         FlowerfootSwordmaster,
+        ForTheCommonGood,
         Fountainport,
         GlidediveDuo,
         GossipsTalent,

@@ -2,7 +2,7 @@
 
 **Set Size:** 266 cards
 **Release Date:** August 2, 2024
-**Implemented:** 156 / 266
+**Implemented:** 157 / 266
 
 | Color      | Total | Done |
 |------------|-------|------|
@@ -10,7 +10,7 @@
 | Blue       | 41    | 22   |
 | Black      | 40    | 26   |
 | Red        | 41    | 23   |
-| Green      | 41    | 19   |
+| Green      | 41    | 20   |
 | Multicolor | 39    | 22   |
 | Colorless  | 9     | 3    |
 | Land       | 15    | 11   |
@@ -91,7 +91,7 @@
 - [ ] Fireglass Mentor
 - [x] Flamecache Gecko
 - [x] Flowerfoot Swordmaster
-- [ ] For the Common Good
+- [x] For the Common Good
 - [x] Forest
 - [x] Fountainport
 - [ ] Fountainport Bell

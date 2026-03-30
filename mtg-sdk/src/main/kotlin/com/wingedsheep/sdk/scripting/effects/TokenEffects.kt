@@ -273,3 +273,24 @@ data class CreateTokenCopyOfChosenPermanentEffect(
         return if (newFilter !== filter) copy(filter = newFilter) else this
     }
 }
+
+/**
+ * Create token copies of a targeted permanent.
+ * "Create X tokens that are copies of target token you control."
+ *
+ * The target is chosen at cast time via [EffectTarget.ContextTarget]. At resolution,
+ * creates [count] token copies of that targeted permanent.
+ *
+ * @property target The targeted permanent to copy (usually ContextTarget(0))
+ * @property count Number of copies to create (supports DynamicAmount for X spells)
+ */
+@SerialName("CreateTokenCopyOfTarget")
+@Serializable
+data class CreateTokenCopyOfTargetEffect(
+    val target: EffectTarget,
+    val count: DynamicAmount = DynamicAmount.Fixed(1)
+) : Effect {
+    override val description: String = "Create ${count.description} token copies of target permanent"
+
+    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
+}
