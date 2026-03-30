@@ -2,7 +2,7 @@
 
 **Set Size:** 266 cards
 **Release Date:** August 2, 2024
-**Implemented:** 162 / 266
+**Implemented:** 163 / 266
 
 | Color      | Total | Done |
 |------------|-------|------|
@@ -12,7 +12,7 @@
 | Red        | 41    | 24   |
 | Green      | 41    | 22   |
 | Multicolor | 39    | 23   |
-| Colorless  | 9     | 3    |
+| Colorless  | 9     | 4    |
 | Land       | 15    | 11   |
 
 ---
@@ -94,7 +94,7 @@
 - [x] For the Common Good
 - [x] Forest
 - [x] Fountainport
-- [ ] Fountainport Bell
+- [x] Fountainport Bell
 - [x] Frilled Sparkshooter
 - [ ] Galewind Moose
 - [ ] Gev, Scaled Scorch

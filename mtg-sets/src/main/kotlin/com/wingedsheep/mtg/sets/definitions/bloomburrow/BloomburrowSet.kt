@@ -72,6 +72,7 @@ object BloomburrowSet {
         FlowerfootSwordmaster,
         ForTheCommonGood,
         Fountainport,
+        FountainportBell,
         GlidediveDuo,
         GossipsTalent,
         HeadOfTheHomestead,
