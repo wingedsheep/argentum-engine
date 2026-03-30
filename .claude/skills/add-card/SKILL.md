@@ -28,7 +28,7 @@ Implement the card specified in `$ARGUMENTS`. The card name is the main argument
 
 **Always prefer atomic effects over monolithic effects** for reusability.
 
-1. **Consult [reference.md](reference.md)** — complete inventory of all DSL facades (`Effects.*`, `Targets.*`, `Triggers.*`, `Filters.*`, `Costs.*`, `Conditions.*`, `DynamicAmounts.*`, `EffectPatterns.*`), raw effect types, keywords, static abilities, replacement effects, and more.
+1. **Consult [reference.md](../../../mtg-sdk/reference.md)** — complete inventory of all DSL facades (`Effects.*`, `Targets.*`, `Triggers.*`, `Filters.*`, `Costs.*`, `Conditions.*`, `DynamicAmounts.*`, `EffectPatterns.*`), raw effect types, keywords, static abilities, replacement effects, and more.
 2. **Search existing cards** with similar mechanics: `grep -r "<keyword-or-effect>" mtg-sets/src/main/kotlin/`
 
 ## Step 3: Model the Card
@@ -92,7 +92,7 @@ If the card needs effects, keywords, triggers, conditions, or static abilities t
 - **4.7 Add Replacement Effect** (if needed) in `mtg-sdk/.../scripting/ReplacementEffect.kt`
 - **4.8 Add Trigger** (if needed) in `mtg-sdk/.../scripting/trigger/` + facade in `mtg-sdk/.../dsl/Triggers.kt`
 - **4.9 Add Condition** (if needed) in `mtg-sdk/.../scripting/condition/` + facade in `mtg-sdk/.../dsl/Conditions.kt`
-- **4.10 Update [reference.md](reference.md)** with all new types added
+- **4.10 Update [reference.md](../../../mtg-sdk/reference.md)** with all new types added
 
 For code templates, see [examples.md](examples.md).
 Read [architecture-principles.md](../../../docs/architecture-principles.md) to understand the application architecture? 
@@ -104,7 +104,7 @@ Read [architecture-principles.md](../../../docs/architecture-principles.md) to u
 **File**: `game-server/src/test/kotlin/com/wingedsheep/gameserver/scenarios/{CardName}ScenarioTest.kt`
 
 - Set up minimal board state, exercise new effect in isolation, verify state changes, cover edge cases
-- See [examples.md](examples.md) and [reference.md](reference.md) for test templates and helpers
+- See [examples.md](examples.md) and [reference.md](../../../mtg-sdk/reference.md) for test templates and helpers
 
 ## Step 6: Frontend Changes for New Effects
 
