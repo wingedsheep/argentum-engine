@@ -6,6 +6,7 @@ import com.wingedsheep.engine.handlers.PredicateContext
 import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.GameState
+import com.wingedsheep.engine.state.components.battlefield.AbilityActivatedEverComponent
 import com.wingedsheep.engine.state.components.battlefield.AbilityActivatedThisTurnComponent
 import com.wingedsheep.engine.state.components.battlefield.GraveyardPlayPermissionUsedComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
@@ -59,6 +60,13 @@ class CastPermissionUtils(
                 if (sourceId == null || abilityId == null) true
                 else {
                     val tracker = state.getEntity(sourceId)?.get<AbilityActivatedThisTurnComponent>()
+                    tracker == null || !tracker.hasActivated(abilityId)
+                }
+            }
+            is ActivationRestriction.Once -> {
+                if (sourceId == null || abilityId == null) true
+                else {
+                    val tracker = state.getEntity(sourceId)?.get<AbilityActivatedEverComponent>()
                     tracker == null || !tracker.hasActivated(abilityId)
                 }
             }

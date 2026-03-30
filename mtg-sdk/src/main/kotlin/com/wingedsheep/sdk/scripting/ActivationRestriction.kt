@@ -64,6 +64,14 @@ sealed interface ActivationRestriction {
     data object OncePerTurn : ActivationRestriction
 
     /**
+     * Restrict activation to only once ever (for the lifetime of the permanent).
+     * Example: "Activate only once."
+     */
+    @SerialName("Once")
+    @Serializable
+    data object Once : ActivationRestriction
+
+    /**
      * Any player may activate this ability, not just the controller.
      * Example: Lethal Vapors: "{0}: Destroy Lethal Vapors. You skip your next turn. Any player may activate this ability."
      */

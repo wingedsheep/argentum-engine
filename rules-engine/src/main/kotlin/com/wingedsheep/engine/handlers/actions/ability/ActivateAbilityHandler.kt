@@ -27,6 +27,7 @@ import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.battlefield.AttachedToComponent
 import com.wingedsheep.engine.state.components.battlefield.ClassLevelComponent
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
+import com.wingedsheep.engine.state.components.battlefield.AbilityActivatedEverComponent
 import com.wingedsheep.engine.state.components.battlefield.AbilityActivatedThisTurnComponent
 import com.wingedsheep.engine.state.components.battlefield.SummoningSicknessComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
@@ -500,6 +501,16 @@ class ActivateAbilityHandler(
             if (currentState.getEntity(action.sourceId) != null) {
                 currentState = currentState.updateEntity(action.sourceId) { c ->
                     val tracker = c.get<AbilityActivatedThisTurnComponent>() ?: AbilityActivatedThisTurnComponent()
+                    c.with(tracker.withActivated(ability.id))
+                }
+            }
+        }
+
+        // Track once-ever activation if the ability has an Once restriction
+        if (ability.restrictions.any { it is ActivationRestriction.Once || (it is ActivationRestriction.All && it.restrictions.any { r -> r is ActivationRestriction.Once }) }) {
+            if (currentState.getEntity(action.sourceId) != null) {
+                currentState = currentState.updateEntity(action.sourceId) { c ->
+                    val tracker = c.get<AbilityActivatedEverComponent>() ?: AbilityActivatedEverComponent()
                     c.with(tracker.withActivated(ability.id))
                 }
             }
@@ -981,6 +992,12 @@ class ActivateAbilityHandler(
                 val tracker = state.getEntity(sourceId)?.get<AbilityActivatedThisTurnComponent>()
                 if (tracker != null && tracker.hasActivated(abilityId)) {
                     "This ability can only be activated once each turn"
+                } else null
+            }
+            is ActivationRestriction.Once -> {
+                val tracker = state.getEntity(sourceId)?.get<AbilityActivatedEverComponent>()
+                if (tracker != null && tracker.hasActivated(abilityId)) {
+                    "This ability can only be activated once"
                 } else null
             }
             is ActivationRestriction.All -> {

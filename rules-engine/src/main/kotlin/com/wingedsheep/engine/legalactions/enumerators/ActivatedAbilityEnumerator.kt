@@ -425,8 +425,8 @@ class ActivatedAbilityEnumerator : ActionEnumerator {
                     && !abilityHasXCost
                     && ability.effect !is LevelUpClassEffect
                     && !ability.restrictions.any {
-                    it is ActivationRestriction.OncePerTurn ||
-                        (it is ActivationRestriction.All && it.restrictions.any { r -> r is ActivationRestriction.OncePerTurn })
+                    it is ActivationRestriction.OncePerTurn || it is ActivationRestriction.Once ||
+                        (it is ActivationRestriction.All && it.restrictions.any { r -> r is ActivationRestriction.OncePerTurn || r is ActivationRestriction.Once })
                 }
                 val maxRepeatableActivations: Int? = if (isRepeatEligible && abilityManaCost != null) {
                     val availableSources = context.manaSolver.getAvailableManaCount(state, playerId)

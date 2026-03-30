@@ -186,6 +186,21 @@ data class AbilityActivatedThisTurnComponent(
 }
 
 /**
+ * Tracks which activated abilities have been activated ever (not cleared at end of turn).
+ * Used for "Activate only once" restrictions (e.g., Thought Shucker).
+ * NOT cleared at end of turn — persists for the permanent's lifetime.
+ */
+@Serializable
+data class AbilityActivatedEverComponent(
+    val abilityIds: Set<AbilityId> = emptySet()
+) : Component {
+    fun withActivated(abilityId: AbilityId): AbilityActivatedEverComponent =
+        copy(abilityIds = abilityIds + abilityId)
+
+    fun hasActivated(abilityId: AbilityId): Boolean = abilityId in abilityIds
+}
+
+/**
  * Tracks which triggered abilities have fired this turn for "once each turn" restrictions.
  * Used for cards like Scavenger's Talent: "This ability triggers only once each turn."
  * Cleared at end of turn by CleanupPhaseManager.

@@ -1129,6 +1129,7 @@ Used via `restrictions = listOf(...)` in activated abilities:
 - `ActivationRestriction.AnyPlayerMay` — any player may activate (not just the controller)
 - `ActivationRestriction.OnlyDuringYourTurn`
 - `ActivationRestriction.OncePerTurn` — limit activation to once per turn
+- `ActivationRestriction.Once` — limit activation to only once ever (permanent lifetime)
 - `ActivationRestriction.BeforeStep(step)` / `DuringPhase(phase)` / `DuringStep(step)`
 - `ActivationRestriction.OnlyIfCondition(condition)`
 - `ActivationRestriction.All(restrictions...)` — combine multiple

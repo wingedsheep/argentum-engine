@@ -154,6 +154,7 @@ object BloomburrowSet {
         TidecallerMentor,
         ThornplateIntimidator,
         ThornvaultForager,
+        ThoughtShucker,
         ThreeTreeRootweaver,
         TreeguardDuo,
         ThundertrapTrainer,
