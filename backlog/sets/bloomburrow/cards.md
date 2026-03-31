@@ -2,7 +2,7 @@
 
 **Set Size:** 266 cards
 **Release Date:** August 2, 2024
-**Implemented:** 194 / 266
+**Implemented:** 195 / 266
 
 | Color      | Total | Done |
 |------------|-------|------|
@@ -10,7 +10,7 @@
 | Blue       | 41    | 27   |
 | Black      | 40    | 32   |
 | Red        | 41    | 30   |
-| Green      | 41    | 26   |
+| Green      | 41    | 27   |
 | Multicolor | 39    | 30   |
 | Colorless  | 9     | 5    |
 | Land       | 15    | 13   |
@@ -96,7 +96,7 @@
 - [x] Fountainport
 - [x] Fountainport Bell
 - [x] Frilled Sparkshooter
-- [ ] Galewind Moose
+- [x] Galewind Moose
 - [x] Gev, Scaled Scorch
 - [ ] Glarb, Calamity's Augur
 - [x] Glidedive Duo
