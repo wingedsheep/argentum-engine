@@ -928,6 +928,22 @@ object Triggers {
     )
 
     // =========================================================================
+    // Nth Spell Cast Triggers
+    // =========================================================================
+
+    /**
+     * Whenever a player casts their Nth spell each turn.
+     * Example: "Whenever a player casts their second spell each turn" → NthSpellCast(2)
+     *
+     * @param n The spell number (e.g., 2 for "second spell")
+     * @param player Which player's spell count to track (default: any player)
+     */
+    fun NthSpellCast(n: Int, player: Player = Player.Each): TriggerSpec = TriggerSpec(
+        event = NthSpellCastEvent(nthSpell = n, player = player),
+        binding = TriggerBinding.ANY
+    )
+
+    // =========================================================================
     // Expend Triggers (Bloomburrow)
     // =========================================================================
 

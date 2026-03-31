@@ -596,6 +596,36 @@ sealed interface GameEvent : TextReplaceable<GameEvent> {
     }
 
     /**
+     * When a player casts their Nth spell in a turn.
+     * Fires on SpellCastEvent when the casting player's per-turn spell count
+     * crosses the specified threshold.
+     *
+     * Used by cards like Hearthborn Battler: "Whenever a player casts their second spell each turn"
+     *
+     * @param nthSpell The spell number that triggers this (e.g., 2 for "second spell")
+     * @param player Which player's spell count to track
+     */
+    @SerialName("NthSpellCastEvent")
+    @Serializable
+    data class NthSpellCastEvent(
+        val nthSpell: Int,
+        val player: Player = Player.Each
+    ) : GameEvent {
+        override val description: String = buildString {
+            append(player.description)
+            append(" casts their ")
+            append(when (nthSpell) {
+                2 -> "second"
+                3 -> "third"
+                else -> "${nthSpell}th"
+            })
+            append(" spell each turn")
+        }
+
+        override fun applyTextReplacement(replacer: TextReplacer): GameEvent = this
+    }
+
+    /**
      * When you expend N — i.e., you spend your Nth total mana to cast spells
      * during a turn. Triggers at most once per turn per threshold.
      *

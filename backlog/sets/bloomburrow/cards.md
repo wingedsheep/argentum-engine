@@ -2,14 +2,14 @@
 
 **Set Size:** 266 cards
 **Release Date:** August 2, 2024
-**Implemented:** 189 / 266
+**Implemented:** 190 / 266
 
 | Color      | Total | Done |
 |------------|-------|------|
 | White      | 40    | 27   |
 | Blue       | 41    | 27   |
 | Black      | 40    | 32   |
-| Red        | 41    | 29   |
+| Red        | 41    | 30   |
 | Green      | 41    | 25   |
 | Multicolor | 39    | 28   |
 | Colorless  | 9     | 5    |
@@ -108,7 +108,7 @@
 - [x] Head of the Homestead
 - [x] Heaped Harvest
 - [ ] Heartfire Hero
-- [ ] Hearthborn Battler
+- [x] Hearthborn Battler
 - [x] Heirloom Epic
 - [x] Helga, Skittish Seer
 - [x] Hidden Grotto

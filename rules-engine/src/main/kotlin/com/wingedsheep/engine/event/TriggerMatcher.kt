@@ -136,6 +136,14 @@ class TriggerMatcher(
                     matchesSpellTypeFilter(trigger, event, state) &&
                     (trigger.kicked == null || trigger.kicked == event.wasKicked)
             }
+            is GameEvent.NthSpellCastEvent -> {
+                // Fires on SpellCastEvent when the casting player's per-turn spell count
+                // reaches exactly the specified threshold (e.g., 2 for "second spell").
+                if (event !is SpellCastEvent) return false
+                if (!matchesPlayer(trigger.player, event.casterId, controllerId)) return false
+                val currentCount = state.playerSpellsCastThisTurn[event.casterId] ?: 0
+                currentCount == trigger.nthSpell
+            }
             is GameEvent.ExpendEvent -> {
                 // Expend triggers when cumulative mana spent on spells this turn
                 // crosses the threshold. Fires on SpellCastEvent only.

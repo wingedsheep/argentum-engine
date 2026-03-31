@@ -151,6 +151,7 @@ class TriggerIndex(
                 is SdkGameEvent.DamageReceivedEvent ->
                     if (trigger.source == SourceFilter.Any) listOf(TriggerCategory.DAMAGE_RECEIVED) else emptyList()
                 is SdkGameEvent.SpellCastEvent -> listOf(TriggerCategory.SPELL_CAST)
+                is SdkGameEvent.NthSpellCastEvent -> listOf(TriggerCategory.SPELL_CAST)
                 is SdkGameEvent.ExpendEvent -> listOf(TriggerCategory.SPELL_CAST)
                 is SdkGameEvent.SpellOrAbilityOnStackEvent -> listOf(TriggerCategory.SPELL_OR_ABILITY)
                 is SdkGameEvent.CycleEvent -> listOf(TriggerCategory.CARD_CYCLED)

@@ -569,6 +569,7 @@ constructors.
 - `Triggers.YouCastEnchantment`
 - `Triggers.YouCastHistoric` — whenever you cast a historic spell (artifact, legendary, or Saga)
 - `Triggers.YouCastKickedSpell` — whenever you cast a kicked spell
+- `Triggers.NthSpellCast(n, player)` — whenever a player casts their Nth spell each turn (e.g., `NthSpellCast(2)` for "second spell")
 - `Triggers.AnySpellOrAbilityOnStack` — whenever any spell or ability is put onto the stack (any player)
 
 ### Card Drawing
@@ -1210,6 +1211,7 @@ Used in `OptionalCostEffect`, `MayPayManaEffect`, `AnyPlayerMayPayEffect`, `PayO
 - `BecomesTargetEvent(targetFilter, byYou: Boolean = false, firstTimeEachTurn: Boolean = false)` — when a permanent becomes the target of a spell or ability; `byYou` restricts to spells/abilities controlled by trigger's controller; `firstTimeEachTurn` restricts to first time each turn (Valiant)
 - `StepEvent(step, player)`
 - `SpellCastEvent(spellType, manaValueAtLeast?, manaValueAtMost?, manaValueEquals?, player)`
+- `NthSpellCastEvent(nthSpell, player)` — fires when a player's per-turn spell count reaches exactly N
 - `CycleEvent(player)` / `TapEvent` / `UntapEvent`
 - `TurnFaceUpEvent` / `TransformEvent(intoBackFace?)` / `ControlChangeEvent`
 - `OneOrMoreDealCombatDamageToPlayerEvent(sourceFilter)` — batching trigger: "whenever one or more [filter] you control deal combat damage to a player" (fires at most once per combat damage step)
