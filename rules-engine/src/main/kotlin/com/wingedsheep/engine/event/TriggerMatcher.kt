@@ -236,6 +236,8 @@ class TriggerMatcher(
             is GameEvent.OneOrMoreDealCombatDamageToPlayerEvent -> false
             // Leave battlefield without dying batch triggers are handled by detectLeaveBattlefieldWithoutDyingBatchTriggers
             is GameEvent.LeaveBattlefieldWithoutDyingEvent -> false
+            // Enter battlefield batch triggers are handled by detectPermanentsEnteredBatchTriggers
+            is GameEvent.PermanentsEnteredEvent -> false
             is GameEvent.CountersPlacedEvent -> {
                 if (event !is CountersAddedEvent) return false
                 if (trigger.counterType != event.counterType) return false

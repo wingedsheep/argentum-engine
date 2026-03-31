@@ -38,6 +38,7 @@ object BloomburrowSet {
         BellowingCrier,
         BloomingBlast,
         BonebindOrator,
+        BuildersTalent,
         BrambleguardCaptain,
         BrambleguardVeteran,
         BrazenCollector,

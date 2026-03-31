@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.event
 
+import com.wingedsheep.engine.core.ClassLevelChangedEvent
 import com.wingedsheep.engine.core.CountersAddedEvent
 import com.wingedsheep.engine.core.AttackersDeclaredEvent
 import com.wingedsheep.engine.core.CardCycledEvent
@@ -21,6 +22,7 @@ import com.wingedsheep.engine.state.components.battlefield.TriggeredAbilityFired
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.identity.FaceDownComponent
+import com.wingedsheep.engine.state.components.identity.TokenComponent
 import com.wingedsheep.engine.state.components.identity.OwnerComponent
 import com.wingedsheep.engine.mechanics.layers.ProjectedState
 import com.wingedsheep.sdk.core.CounterType
@@ -207,6 +209,15 @@ class TriggerDetector(
         // batching triggers (e.g., Dour Port-Mage). Groups zone changes from battlefield to
         // non-graveyard zones and fires the trigger at most once per observer.
         detectLeaveBattlefieldWithoutDyingBatchTriggers(state, events, triggers, index)
+
+        // Detect "whenever one or more [filtered] permanents you control enter the battlefield"
+        // batching triggers (e.g., Builder's Talent). Groups zone changes to battlefield
+        // and fires the trigger at most once per observer.
+        detectPermanentsEnteredBatchTriggers(state, events, triggers, index)
+
+        // Detect "When this Class becomes level N" triggers.
+        // Class level-up events fire ETB triggers from the newly gained class level.
+        detectClassLevelUpTriggers(state, events, triggers)
 
         // Detect Saga chapter triggers from lore counter additions
         detectSagaChapterTriggers(state, events, triggers)
@@ -980,6 +991,119 @@ class TriggerDetector(
                             sourceId = entry.entityId,
                             sourceName = entry.cardComponent.name,
                             controllerId = controllerId,
+                            triggerContext = TriggerContext()
+                        )
+                    )
+                }
+            }
+        }
+    }
+
+    /**
+     * Detect "whenever one or more [filtered] permanents you control enter the battlefield"
+     * batching triggers.
+     *
+     * Groups ZoneChangeEvent with toZone == BATTLEFIELD by controller and fires the trigger
+     * at most once per observer, regardless of how many permanents entered.
+     */
+    private fun detectPermanentsEnteredBatchTriggers(
+        state: GameState,
+        events: List<EngineGameEvent>,
+        triggers: MutableList<PendingTrigger>,
+        index: TriggerIndex
+    ) {
+        // Collect all zone changes to battlefield, grouped by controller
+        data class EnterInfo(val entityId: EntityId, val cardComponent: CardComponent, val isToken: Boolean)
+        val entersByController = mutableMapOf<EntityId, MutableList<EnterInfo>>()
+        for (event in events) {
+            if (event is ZoneChangeEvent && event.toZone == Zone.BATTLEFIELD) {
+                val entity = state.getEntity(event.entityId) ?: continue
+                val card = entity.get<CardComponent>() ?: continue
+                val isToken = entity.has<TokenComponent>()
+                val controllerId = entity.get<ControllerComponent>()?.playerId ?: event.ownerId
+                entersByController.getOrPut(controllerId) { mutableListOf() }
+                    .add(EnterInfo(event.entityId, card, isToken))
+            }
+        }
+        if (entersByController.isEmpty()) return
+
+        for (entry in index.getEntitiesForCategory(TriggerCategory.PERMANENTS_ENTERED_BATCH)) {
+            for (ability in entry.abilities) {
+                val trigger = ability.trigger
+                if (trigger !is GameEvent.PermanentsEnteredEvent) continue
+
+                val controllerId = entry.controllerId
+                val controllerEnters = entersByController[controllerId] ?: continue
+
+                // Check if any entering permanent matches the filter
+                val hasMatch = controllerEnters.any { info ->
+                    trigger.filter.cardPredicates.all { predicate ->
+                        when (predicate) {
+                            is com.wingedsheep.sdk.scripting.predicates.CardPredicate.IsCreature -> info.cardComponent.typeLine.isCreature
+                            is com.wingedsheep.sdk.scripting.predicates.CardPredicate.IsNoncreature -> !info.cardComponent.typeLine.isCreature
+                            is com.wingedsheep.sdk.scripting.predicates.CardPredicate.IsNonland -> !info.cardComponent.typeLine.isLand
+                            is com.wingedsheep.sdk.scripting.predicates.CardPredicate.IsPermanent -> info.cardComponent.typeLine.isPermanent
+                            is com.wingedsheep.sdk.scripting.predicates.CardPredicate.HasSubtype -> info.cardComponent.typeLine.hasSubtype(predicate.subtype)
+                            is com.wingedsheep.sdk.scripting.predicates.CardPredicate.IsArtifact -> info.cardComponent.typeLine.isArtifact
+                            is com.wingedsheep.sdk.scripting.predicates.CardPredicate.IsEnchantment -> info.cardComponent.typeLine.isEnchantment
+                            is com.wingedsheep.sdk.scripting.predicates.CardPredicate.IsToken -> info.isToken
+                            is com.wingedsheep.sdk.scripting.predicates.CardPredicate.IsNontoken -> !info.isToken
+                            else -> true
+                        }
+                    }
+                }
+
+                if (hasMatch) {
+                    triggers.add(
+                        PendingTrigger(
+                            ability = ability,
+                            sourceId = entry.entityId,
+                            sourceName = entry.cardComponent.name,
+                            controllerId = controllerId,
+                            triggerContext = TriggerContext()
+                        )
+                    )
+                }
+            }
+        }
+    }
+
+    /**
+     * Detect "When this Class becomes level N" triggers.
+     *
+     * When a ClassLevelChangedEvent is emitted, checks if the newly gained class level
+     * has any ETB triggers (trigger = ZoneChangeEvent(to = BATTLEFIELD) with SELF binding)
+     * and fires them.
+     */
+    private fun detectClassLevelUpTriggers(
+        state: GameState,
+        events: List<EngineGameEvent>,
+        triggers: MutableList<PendingTrigger>
+    ) {
+        for (event in events) {
+            if (event !is ClassLevelChangedEvent) continue
+
+            val entity = state.getEntity(event.entityId) ?: continue
+            val card = entity.get<CardComponent>() ?: continue
+            val cardDef = cardRegistry.getCard(card.cardDefinitionId) ?: continue
+
+            // Find the class level that was just gained
+            val levelAbility = cardDef.classLevels.find { it.level == event.newLevel } ?: continue
+
+            // Check for ETB triggers in the newly gained level
+            for (ability in levelAbility.triggeredAbilities) {
+                val trigger = ability.trigger
+                // "When this Class becomes level N" is modeled as an ETB trigger
+                if (trigger is GameEvent.ZoneChangeEvent &&
+                    trigger.to == Zone.BATTLEFIELD &&
+                    ability.binding == TriggerBinding.SELF
+                ) {
+                    triggers.add(
+                        PendingTrigger(
+                            ability = ability,
+                            sourceId = event.entityId,
+                            sourceName = card.name,
+                            controllerId = event.controllerId,
                             triggerContext = TriggerContext()
                         )
                     )

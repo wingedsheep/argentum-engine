@@ -59,6 +59,7 @@ enum class TriggerCategory {
     SACRIFICE,
     COMBAT_DAMAGE_BATCH,
     LEAVE_WITHOUT_DYING,
+    PERMANENTS_ENTERED_BATCH,
     COUNTERS_ADDED,
 }
 
@@ -168,6 +169,7 @@ class TriggerIndex(
                 is SdkGameEvent.PermanentsSacrificedEvent -> listOf(TriggerCategory.SACRIFICE)
                 is SdkGameEvent.OneOrMoreDealCombatDamageToPlayerEvent -> listOf(TriggerCategory.COMBAT_DAMAGE_BATCH)
                 is SdkGameEvent.LeaveBattlefieldWithoutDyingEvent -> listOf(TriggerCategory.LEAVE_WITHOUT_DYING)
+                is SdkGameEvent.PermanentsEnteredEvent -> listOf(TriggerCategory.PERMANENTS_ENTERED_BATCH)
                 is SdkGameEvent.CountersPlacedEvent -> listOf(TriggerCategory.COUNTERS_ADDED)
                 // These are handled by specialized detect methods, not the main loop
                 else -> emptyList()

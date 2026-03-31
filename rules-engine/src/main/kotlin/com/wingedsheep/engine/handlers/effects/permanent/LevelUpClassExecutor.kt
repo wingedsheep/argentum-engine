@@ -1,10 +1,12 @@
 package com.wingedsheep.engine.handlers.effects.permanent
 
+import com.wingedsheep.engine.core.ClassLevelChangedEvent
 import com.wingedsheep.engine.core.ExecutionResult
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.battlefield.ClassLevelComponent
+import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.sdk.scripting.effects.LevelUpClassEffect
 import kotlin.reflect.KClass
 
@@ -33,6 +35,11 @@ class LevelUpClassExecutor : EffectExecutor<LevelUpClassEffect> {
             c.with(classComponent.withLevelUp())
         }
 
-        return ExecutionResult.success(newState)
+        val controllerId = container.get<ControllerComponent>()?.playerId ?: return ExecutionResult.success(newState)
+
+        return ExecutionResult.success(
+            newState,
+            listOf(ClassLevelChangedEvent(sourceId, effect.targetLevel, controllerId))
+        )
     }
 }

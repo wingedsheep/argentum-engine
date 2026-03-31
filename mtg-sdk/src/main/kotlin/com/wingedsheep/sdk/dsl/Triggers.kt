@@ -937,6 +937,22 @@ object Triggers {
     )
 
     // =========================================================================
+    // Enter Battlefield Batch Triggers
+    // =========================================================================
+
+    /**
+     * Whenever one or more permanents matching a filter you control enter the battlefield.
+     * Batching trigger — fires at most once per event batch.
+     *
+     * Example: "Whenever one or more noncreature, nonland permanents you control enter"
+     * → OneOrMorePermanentsEnter(GameObjectFilter.Noncreature and GameObjectFilter.Nonland)
+     */
+    fun OneOrMorePermanentsEnter(filter: GameObjectFilter = GameObjectFilter.Any): TriggerSpec = TriggerSpec(
+        event = PermanentsEnteredEvent(filter = filter),
+        binding = TriggerBinding.ANY
+    )
+
+    // =========================================================================
     // Nth Spell Cast Triggers
     // =========================================================================
 

@@ -992,7 +992,8 @@ is PermanentsSacrificedEvent -> {
             is KeywordGrantedEvent,
             is TurnedFaceDownEvent,
             is CreatureTypeChangedEvent,
-            is BecomesTargetEvent -> null
+            is BecomesTargetEvent,
+            is ClassLevelChangedEvent -> null
         }
     }
 }

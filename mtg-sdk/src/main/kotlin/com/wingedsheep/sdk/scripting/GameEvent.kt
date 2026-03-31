@@ -998,6 +998,38 @@ sealed interface GameEvent : TextReplaceable<GameEvent> {
             return if (newFilter !== filter) copy(filter = newFilter) else this
         }
     }
+
+    // =========================================================================
+    // Enter Battlefield Batch Triggers
+    // =========================================================================
+
+    /**
+     * Whenever one or more permanents matching a filter you control enter the battlefield.
+     * Batching trigger — fires at most once per event batch regardless of how many
+     * permanents entered.
+     *
+     * Examples:
+     *   → PermanentsEnteredEvent(filter = GameObjectFilter.Noncreature and GameObjectFilter.Nonland)
+     *     "Whenever one or more noncreature, nonland permanents you control enter"
+     *   → PermanentsEnteredEvent()
+     *     "Whenever one or more permanents you control enter"
+     */
+    @SerialName("PermanentsEnteredEvent")
+    @Serializable
+    data class PermanentsEnteredEvent(
+        val filter: GameObjectFilter = GameObjectFilter.Any
+    ) : GameEvent {
+        override val description: String = buildString {
+            append("one or more ")
+            append(describeObjectForEvent(filter))
+            append(" you control enter the battlefield")
+        }
+
+        override fun applyTextReplacement(replacer: TextReplacer): GameEvent {
+            val newFilter = filter.applyTextReplacement(replacer)
+            return if (newFilter !== filter) copy(filter = newFilter) else this
+        }
+    }
 }
 
 /**

@@ -599,6 +599,10 @@ constructors.
 
 - `Triggers.CreaturesPutIntoGraveyardFromLibrary` — whenever one or more creature cards are put into your graveyard from your library (batching trigger, fires at most once per event batch)
 
+### Enter Battlefield (Batching)
+
+- `Triggers.OneOrMorePermanentsEnter(filter)` — whenever one or more permanents matching filter you control enter the battlefield (batching trigger, fires at most once per event batch). Example: `Triggers.OneOrMorePermanentsEnter(GameObjectFilter.Noncreature and GameObjectFilter.Nonland)`
+
 ### Transform
 
 - `Triggers.Transforms` / `Triggers.TransformsToBack` / `Triggers.TransformsToFront`
@@ -1220,6 +1224,7 @@ Used in `OptionalCostEffect`, `MayPayManaEffect`, `AnyPlayerMayPayEffect`, `PayO
 - `TurnFaceUpEvent` / `TransformEvent(intoBackFace?)` / `ControlChangeEvent`
 - `OneOrMoreDealCombatDamageToPlayerEvent(sourceFilter)` — batching trigger: "whenever one or more [filter] you control deal combat damage to a player" (fires at most once per combat damage step)
 - `LeaveBattlefieldWithoutDyingEvent(filter, excludeSelf)` — batching trigger: "whenever one or more [filter] you control leave the battlefield without dying" (fires at most once per event batch; excludeSelf for "other" clause)
+- `PermanentsEnteredEvent(filter)` — batching trigger: "whenever one or more [filter] permanents you control enter the battlefield" (fires at most once per event batch)
 
 ### Event Filters
 

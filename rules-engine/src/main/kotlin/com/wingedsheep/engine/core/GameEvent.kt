@@ -496,6 +496,22 @@ data class PermanentsSacrificedEvent(
 ) : GameEvent
 
 // =============================================================================
+// Class Level Events
+// =============================================================================
+
+/**
+ * A Class enchantment gained a new level.
+ * Used to fire "When this Class becomes level N" triggers.
+ */
+@Serializable
+@SerialName("ClassLevelChangedEvent")
+data class ClassLevelChangedEvent(
+    val entityId: EntityId,
+    val newLevel: Int,
+    val controllerId: EntityId
+) : GameEvent
+
+// =============================================================================
 // Decision Events
 // =============================================================================
 
