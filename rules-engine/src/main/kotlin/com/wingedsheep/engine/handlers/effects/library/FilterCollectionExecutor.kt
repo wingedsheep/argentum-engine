@@ -12,6 +12,8 @@ import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.effects.CollectionFilter
 import com.wingedsheep.sdk.scripting.effects.FilterCollectionEffect
+import com.wingedsheep.sdk.scripting.values.EntityReference
+import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import kotlin.reflect.KClass
 
 /**
@@ -91,6 +93,11 @@ class FilterCollectionExecutor : EffectExecutor<FilterCollectionEffect> {
                     manaValue <= maxManaValue
                 }
             }
+
+            is CollectionFilter.ExcludeEntity -> {
+                val excludedId = resolveEntityReference(filter.entity, context)
+                cards.partition { it != excludedId }
+            }
         }
 
         val updatedCollections = mutableMapOf(effect.storeMatching to matching)
@@ -101,4 +108,21 @@ class FilterCollectionExecutor : EffectExecutor<FilterCollectionEffect> {
 
         return ExecutionResult.success(state).copy(updatedCollections = updatedCollections)
     }
+
+    private fun resolveEntityReference(ref: EntityReference, context: EffectContext): EntityId? =
+        when (ref) {
+            is EntityReference.Source -> context.sourceId
+            is EntityReference.Target -> {
+                val target = context.targets.getOrNull(ref.index)
+                when (target) {
+                    is ChosenTarget.Permanent -> target.entityId
+                    is ChosenTarget.Spell -> target.spellEntityId
+                    is ChosenTarget.Player -> target.playerId
+                    else -> null
+                }
+            }
+            is EntityReference.Sacrificed -> context.sacrificedPermanents.getOrNull(ref.index)
+            is EntityReference.TappedAsCost -> context.tappedPermanents.getOrNull(ref.index)
+            is EntityReference.Triggering -> context.triggeringEntityId
+        }
 }

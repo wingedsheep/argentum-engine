@@ -34,10 +34,11 @@ import com.wingedsheep.sdk.scripting.values.EntityReference
  * return another target creature card with lesser mana value from your
  * graveyard to the battlefield.
  *
- * The "lesser mana value" constraint is modeled using a pipeline:
- * Gather creature cards from graveyard → Filter by mana value less than the
- * dying creature's → Select one → Move to battlefield. This uses "choose"
- * rather than "target" semantics, which is a minor simplification.
+ * The "lesser mana value" and "another" constraints are modeled using a pipeline:
+ * Gather creature cards from graveyard → Exclude the triggering (dying) creature →
+ * Filter by mana value less than the dying creature's → Select one → Move to
+ * battlefield. This uses "choose" rather than "target" semantics, which is a minor
+ * simplification.
  */
 val JackdawSavior = card("Jackdaw Savior") {
     manaCost = "{2}{W}"
@@ -59,7 +60,7 @@ val JackdawSavior = card("Jackdaw Savior") {
             binding = TriggerBinding.ANY
         )
 
-        // Pipeline: gather creature cards from graveyard, filter by lesser MV, select one, move to battlefield
+        // Pipeline: gather creature cards from graveyard, exclude dying creature ("another"), filter by lesser MV, select one, move to battlefield
         effect = CompositeEffect(listOf(
             GatherCardsEffect(
                 source = CardSource.FromZone(Zone.GRAVEYARD, Player.You, GameObjectFilter.Creature),
@@ -67,6 +68,11 @@ val JackdawSavior = card("Jackdaw Savior") {
             ),
             FilterCollectionEffect(
                 from = "graveyardCreatures",
+                filter = CollectionFilter.ExcludeEntity(EntityReference.Triggering),
+                storeMatching = "otherCreatures"
+            ),
+            FilterCollectionEffect(
+                from = "otherCreatures",
                 filter = CollectionFilter.ManaValueAtMost(
                     DynamicAmount.Subtract(
                         DynamicAmount.EntityProperty(EntityReference.Triggering, EntityNumericProperty.ManaValue),

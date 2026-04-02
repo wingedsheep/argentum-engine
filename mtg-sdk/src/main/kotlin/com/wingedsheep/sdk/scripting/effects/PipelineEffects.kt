@@ -8,6 +8,7 @@ import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.targets.TargetRequirement
 import com.wingedsheep.sdk.scripting.text.TextReplacer
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
+import com.wingedsheep.sdk.scripting.values.EntityReference
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -664,6 +665,16 @@ sealed interface CollectionFilter {
     @SerialName("ManaValueAtMost")
     @Serializable
     data class ManaValueAtMost(val max: DynamicAmount) : CollectionFilter
+
+    /**
+     * Exclude the entity referenced by [entity] from the collection.
+     * Used for "another" constraints (e.g., "return another creature card").
+     *
+     * @property entity The entity reference to exclude
+     */
+    @SerialName("ExcludeEntity")
+    @Serializable
+    data class ExcludeEntity(val entity: EntityReference) : CollectionFilter
 }
 
 /**
