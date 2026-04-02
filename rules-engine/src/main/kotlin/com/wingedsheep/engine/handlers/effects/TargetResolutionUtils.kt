@@ -49,6 +49,11 @@ object TargetResolutionUtils {
             val sourceId = context.sourceId ?: return null
             return state.getEntity(sourceId)?.get<com.wingedsheep.engine.state.components.identity.ChosenCreatureComponent>()?.creatureId
         }
+        if (effectTarget is EffectTarget.TargetController) {
+            val targetEntity = context.targets.firstOrNull()?.toEntityId() ?: return null
+            return state.getEntity(targetEntity)?.get<ControllerComponent>()?.playerId
+                ?: state.getEntity(targetEntity)?.get<CardComponent>()?.ownerId
+        }
         if (effectTarget is EffectTarget.ControllerOfTriggeringEntity) {
             val triggerId = context.triggeringEntityId ?: return null
             val entity = state.getEntity(triggerId) ?: return null
