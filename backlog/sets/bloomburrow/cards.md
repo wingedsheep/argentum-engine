@@ -2,13 +2,13 @@
 
 **Set Size:** 266 cards
 **Release Date:** August 2, 2024
-**Implemented:** 222 / 266
+**Implemented:** 223 / 266
 
 | Color      | Total | Done |
 |------------|-------|------|
 | White      | 40    | 33   |
 | Blue       | 41    | 33   |
-| Black      | 40    | 32   |
+| Black      | 40    | 33   |
 | Red        | 41    | 33   |
 | Green      | 41    | 36   |
 | Multicolor | 39    | 31   |
@@ -193,7 +193,7 @@
 - [x] Repel Calamity
 - [x] Reptilian Recruiter
 - [x] Rockface Village
-- [ ] Rottenmouth Viper
+- [x] Rottenmouth Viper
 - [x] Roughshod Duo
 - [x] Run Away Together
 - [x] Rust-Shield Rampager

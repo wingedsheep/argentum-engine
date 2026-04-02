@@ -375,6 +375,7 @@ constructors.
 | `ForEachPlayerEffect`        | `players: Player, effects: List<Effect>`              | Iterate per player             |
 | `FlipCoinEffect`             | `wonEffect?, lostEffect?`                             | Flip a coin                    |
 | `RepeatWhileEffect`          | `body, repeatCondition`                               | Repeat while condition         |
+| `RepeatDynamicTimesEffect`   | `amount: DynamicAmount, body: Effect`                 | Repeat body N times            |
 | `SelectTargetEffect`         | `requirement, storeAs`                                | Select and store a target      |
 
 ### Combat

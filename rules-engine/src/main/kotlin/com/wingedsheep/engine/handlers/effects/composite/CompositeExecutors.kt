@@ -42,6 +42,7 @@ class CompositeExecutors(
     private val conditionalOnCollectionExecutor by lazy { ConditionalOnCollectionExecutor(effectExecutor) }
     private val flipTwoCoinsExecutor by lazy { FlipTwoCoinsExecutor(effectExecutor) }
     private val chooseActionEffectExecutor by lazy { ChooseActionEffectExecutor(effectExecutor) }
+    private val repeatDynamicTimesExecutor by lazy { RepeatDynamicTimesExecutor(effectExecutor) }
 
     /**
      * Initialize the module with the parent registry's execute function.
@@ -70,6 +71,7 @@ class CompositeExecutors(
         flipCoinExecutor,
         flipTwoCoinsExecutor,
         repeatWhileExecutor,
+        repeatDynamicTimesExecutor,
         conditionalOnCollectionExecutor
     )
 }

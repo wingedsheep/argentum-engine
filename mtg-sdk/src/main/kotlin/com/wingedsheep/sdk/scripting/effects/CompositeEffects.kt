@@ -800,6 +800,45 @@ data class RepeatWhileEffect(
 }
 
 // =============================================================================
+// Repeat Dynamic Times
+// =============================================================================
+
+/**
+ * Repeat a body effect N times, where N is determined by a [DynamicAmount].
+ *
+ * The amount is evaluated once when the effect starts executing. Then the body
+ * is executed that many times in sequence. If any iteration pauses for a decision,
+ * remaining iterations resume via the standard [CompositeEffect] continuation.
+ *
+ * Example (Rottenmouth Viper - for each blight counter):
+ * ```kotlin
+ * RepeatDynamicTimesEffect(
+ *     amount = DynamicAmounts.countersOnSelf(CounterTypeFilter.Named("blight")),
+ *     body = ForEachPlayerEffect(
+ *         players = Player.EachOpponent,
+ *         effects = listOf(chooseAction)
+ *     )
+ * )
+ * ```
+ *
+ * @property amount How many times to repeat (evaluated once at execution start)
+ * @property body The effect to execute each iteration
+ */
+@SerialName("RepeatDynamicTimes")
+@Serializable
+data class RepeatDynamicTimesEffect(
+    val amount: DynamicAmount,
+    val body: Effect
+) : Effect {
+    override val description: String = "Repeat ${body.description} a number of times"
+
+    override fun applyTextReplacement(replacer: TextReplacer): Effect {
+        val newBody = body.applyTextReplacement(replacer)
+        return if (newBody !== body) copy(body = newBody) else this
+    }
+}
+
+// =============================================================================
 // Choose Action (Player Chooses Between Effects)
 // =============================================================================
 
