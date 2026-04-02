@@ -25,6 +25,7 @@ import {
   getFinalityCounters,
   getSupplyCounters,
   getStashCounters,
+  getFlyingCounters,
 } from '../board/shared'
 import { styles } from '../board/styles'
 import {
@@ -1088,6 +1089,20 @@ export function GameCard({
           <i className={`ms ms-${counterManaClass.STASH}`} style={{ fontSize: responsive.isMobile ? 8 : 10 }} />
           <span style={{ fontWeight: 700 }}>
             {getStashCounters(card)}
+          </span>
+        </div>
+      )}
+
+      {/* Flying counter badge */}
+      {battlefield && getFlyingCounters(card) > 0 && (
+        <div style={{
+          ...styles.flyingCounterBadge,
+          fontSize: responsive.isMobile ? 9 : 11,
+          padding: responsive.isMobile ? '1px 4px' : '2px 6px',
+        }}>
+          <i className={`ms ms-${counterManaClass.FLYING}`} style={{ fontSize: responsive.isMobile ? 8 : 10 }} />
+          <span style={{ fontWeight: 700 }}>
+            {getFlyingCounters(card)}
           </span>
         </div>
       )}

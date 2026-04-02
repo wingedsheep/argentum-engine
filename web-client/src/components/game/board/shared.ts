@@ -199,6 +199,13 @@ export function getStashCounters(card: ClientCard): number {
 }
 
 /**
+ * Get the number of flying counters on a card.
+ */
+export function getFlyingCounters(card: ClientCard): number {
+  return card.counters[CounterType.FLYING] ?? 0
+}
+
+/**
  * Get an emoji or icon for an effect based on its icon identifier.
  */
 export function getEffectIcon(icon: string): string {
