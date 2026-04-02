@@ -126,6 +126,7 @@ object BloomburrowSet {
         LongRiverLurker,
         LongRiversPull,
         LongstalkBrawl,
+        LumraBellowOfTheWoods,
         LunarConvocation,
         LupinflowerVillage,
         MabelsMettle,
