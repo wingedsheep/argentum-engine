@@ -9,5 +9,5 @@ game:
     mode: engine
     base-url: ${GAME_AI_BASE_URL:http://localhost:11434/v1}
     api-key: ${GAME_AI_API_KEY:ollama}
-    model: ${GAME_AI_MODEL:qwen3.5}
+    model: ${GAME_AI_MODEL:qwen/qwen3.6-plus:free}
     timeout-ms: ${GAME_AI_TIMEOUT_MS:120000}

@@ -36,7 +36,7 @@ data class AiProperties(
     val baseUrl: String = "https://openrouter.ai/api/v1",
     val apiKey: String = "",
     val openRouterApiKey: String = "",
-    val model: String = "qwen/qwen3.5-flash-02-23",
+    val model: String = "qwen/qwen3.6-plus:free",
     val deckbuildingModel: String = "",
     val reasoningEffort: String = "low",
     val maxRetries: Int = 2,
