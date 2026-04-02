@@ -4,9 +4,12 @@ import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.CardSource
 import com.wingedsheep.sdk.scripting.effects.CardDestination
+import com.wingedsheep.sdk.scripting.effects.ChooseActionEffect
 import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.DealDamageEffect
 import com.wingedsheep.sdk.scripting.effects.Effect
+import com.wingedsheep.sdk.scripting.effects.EffectChoice
+import com.wingedsheep.sdk.scripting.effects.FeasibilityCheck
 import com.wingedsheep.sdk.scripting.effects.ForEachPlayerEffect
 import com.wingedsheep.sdk.scripting.effects.GainLifeEffect
 import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
@@ -127,4 +130,77 @@ object MiscPatterns {
             ShuffleLibraryEffect()
         )
     )
+
+    /**
+     * Forage — exile three cards from your graveyard or sacrifice a Food.
+     *
+     * Returns a [ChooseActionEffect] with feasibility checks so the choice is only
+     * offered when the player can actually fulfill at least one option.
+     *
+     * @param afterEffect optional effect appended to each mode (e.g., add counters)
+     */
+    fun forage(afterEffect: Effect? = null): ChooseActionEffect {
+        val exileFromGraveyard = CompositeEffect(
+            buildList {
+                add(
+                    GatherCardsEffect(
+                        source = CardSource.FromZone(Zone.GRAVEYARD, Player.You),
+                        storeAs = "graveCards"
+                    )
+                )
+                add(
+                    SelectFromCollectionEffect(
+                        from = "graveCards",
+                        selection = SelectionMode.ChooseExactly(DynamicAmount.Fixed(3)),
+                        storeSelected = "exileCards",
+                        prompt = "Choose 3 cards from your graveyard to exile (forage)"
+                    )
+                )
+                add(
+                    MoveCollectionEffect(
+                        from = "exileCards",
+                        destination = CardDestination.ToZone(Zone.EXILE)
+                    )
+                )
+                if (afterEffect != null) add(afterEffect)
+            }
+        )
+
+        val sacrificeFood = if (afterEffect != null) {
+            CompositeEffect(
+                listOf(
+                    SacrificeEffect(
+                        filter = GameObjectFilter.Any.withSubtype("Food"),
+                        count = 1
+                    ),
+                    afterEffect
+                )
+            )
+        } else {
+            SacrificeEffect(
+                filter = GameObjectFilter.Any.withSubtype("Food"),
+                count = 1
+            )
+        }
+
+        return ChooseActionEffect(
+            choices = listOf(
+                EffectChoice(
+                    label = "Exile three cards from your graveyard",
+                    effect = exileFromGraveyard,
+                    feasibilityCheck = FeasibilityCheck.HasCardsInZone(
+                        zone = Zone.GRAVEYARD,
+                        count = 3
+                    )
+                ),
+                EffectChoice(
+                    label = "Sacrifice a Food",
+                    effect = sacrificeFood,
+                    feasibilityCheck = FeasibilityCheck.ControlsPermanentMatching(
+                        filter = GameObjectFilter.Any.withSubtype("Food")
+                    )
+                )
+            )
+        )
+    }
 }

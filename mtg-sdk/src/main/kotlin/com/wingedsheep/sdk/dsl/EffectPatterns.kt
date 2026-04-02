@@ -6,6 +6,7 @@ import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.scripting.Duration
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.CardDestination
+import com.wingedsheep.sdk.scripting.effects.ChooseActionEffect
 import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.Effect
 import com.wingedsheep.sdk.scripting.effects.ForEachInGroupEffect
@@ -43,6 +44,13 @@ object EffectPatterns {
 
     fun mayPayOrElse(cost: Effect, ifPaid: Effect, ifNotPaid: Effect): OptionalCostEffect =
         MiscPatterns.mayPayOrElse(cost, ifPaid, ifNotPaid)
+
+    // =========================================================================
+    // Forage Patterns (MiscPatterns)
+    // =========================================================================
+
+    fun forage(afterEffect: Effect? = null): ChooseActionEffect =
+        MiscPatterns.forage(afterEffect)
 
     // =========================================================================
     // Sacrifice Patterns (MiscPatterns)
