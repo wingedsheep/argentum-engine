@@ -1,5 +1,6 @@
 package com.wingedsheep.mtg.sets.definitions.scourge.cards
 
+import com.wingedsheep.sdk.core.Counters
 import com.wingedsheep.sdk.dsl.Costs
 import com.wingedsheep.sdk.dsl.Targets
 import com.wingedsheep.sdk.dsl.card
@@ -21,7 +22,7 @@ val UnspeakableSymbol = card("Unspeakable Symbol") {
         cost = Costs.PayLife(3)
         val t = target("target creature", Targets.Creature)
         effect = AddCountersEffect(
-            counterType = "+1/+1",
+            counterType = Counters.PLUS_ONE_PLUS_ONE,
             count = 1,
             target = t
         )

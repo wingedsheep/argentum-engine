@@ -1,5 +1,6 @@
 package com.wingedsheep.mtg.sets.definitions.dominaria.cards
 
+import com.wingedsheep.sdk.core.Counters
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
@@ -27,7 +28,7 @@ val KeldonWarcaller = card("Keldon Warcaller") {
         val saga = target("Saga you control", TargetObject(
             filter = TargetFilter(GameObjectFilter.Enchantment.withSubtype("Saga").youControl())
         ))
-        effect = Effects.AddCounters("lore", 1, saga)
+        effect = Effects.AddCounters(Counters.LORE, 1, saga)
     }
 
     metadata {

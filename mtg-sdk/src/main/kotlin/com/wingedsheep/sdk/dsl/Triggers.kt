@@ -1,5 +1,6 @@
 package com.wingedsheep.sdk.dsl
 
+import com.wingedsheep.sdk.core.Counters
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.core.Zone
@@ -610,7 +611,7 @@ object Triggers {
      */
     val PlusOneCountersPlacedOnYourCreature: TriggerSpec = TriggerSpec(
         event = CountersPlacedEvent(
-            counterType = "+1/+1",
+            counterType = Counters.PLUS_ONE_PLUS_ONE,
             filter = GameObjectFilter.Creature.youControl()
         ),
         binding = TriggerBinding.ANY

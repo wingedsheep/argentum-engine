@@ -1,5 +1,6 @@
 package com.wingedsheep.mtg.sets.definitions.dominaria.cards
 
+import com.wingedsheep.sdk.core.Counters
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.core.Zone
@@ -37,7 +38,7 @@ val MarwynTheNurturer = card("Marwyn, the Nurturer") {
             ),
             TriggerBinding.OTHER
         )
-        effect = Effects.AddCounters("+1/+1", 1, EffectTarget.Self)
+        effect = Effects.AddCounters(Counters.PLUS_ONE_PLUS_ONE, 1, EffectTarget.Self)
     }
 
     activatedAbility {

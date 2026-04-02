@@ -1,5 +1,6 @@
 package com.wingedsheep.mtg.sets.definitions.dominaria.cards
 
+import com.wingedsheep.sdk.core.Counters
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.dsl.Effects
@@ -43,7 +44,7 @@ val DarigaazReincarnated = card("Darigaaz Reincarnated") {
     replacementEffect(
         RedirectZoneChangeWithEffect(
             newDestination = Zone.EXILE,
-            additionalEffect = AddCountersEffect("egg", 3, EffectTarget.Self),
+            additionalEffect = AddCountersEffect(Counters.EGG, 3, EffectTarget.Self),
             selfOnly = true,
             appliesTo = GameEvent.ZoneChangeEvent(
                 filter = GameObjectFilter.Any,
@@ -59,14 +60,14 @@ val DarigaazReincarnated = card("Darigaaz Reincarnated") {
         trigger = Triggers.YourUpkeep
         triggerZone = Zone.EXILE
         triggerCondition = Compare(
-            DynamicAmounts.countersOnSelf(CounterTypeFilter.Named("egg")),
+            DynamicAmounts.countersOnSelf(CounterTypeFilter.Named(Counters.EGG)),
             ComparisonOperator.GTE,
             DynamicAmount.Fixed(1)
         )
-        effect = RemoveCountersEffect("egg", 1, EffectTarget.Self) then
+        effect = RemoveCountersEffect(Counters.EGG, 1, EffectTarget.Self) then
             ConditionalEffect(
                 condition = Compare(
-                    DynamicAmounts.countersOnSelf(CounterTypeFilter.Named("egg")),
+                    DynamicAmounts.countersOnSelf(CounterTypeFilter.Named(Counters.EGG)),
                     ComparisonOperator.EQ,
                     DynamicAmount.Fixed(0)
                 ),

@@ -1,5 +1,6 @@
 package com.wingedsheep.mtg.sets.definitions.dominaria.cards
 
+import com.wingedsheep.sdk.core.Counters
 import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.dsl.card
@@ -75,7 +76,7 @@ val KarnScionOfUrza = card("Karn, Scion of Urza") {
                     source = CardSource.FromZone(
                         zone = Zone.EXILE,
                         player = Player.You,
-                        filter = GameObjectFilter.Any.withCounter("silver")
+                        filter = GameObjectFilter.Any.withCounter(Counters.SILVER)
                     ),
                     storeAs = "silverExiled"
                 ),

@@ -1,5 +1,6 @@
 package com.wingedsheep.mtg.sets.definitions.bloomburrow.cards
 
+import com.wingedsheep.sdk.core.Counters
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Targets
 import com.wingedsheep.sdk.dsl.Triggers
@@ -39,7 +40,7 @@ val HivespineWolverine = card("Hivespine Wolverine") {
         effect = ModalEffect.chooseOne(
             // Mode 1: Put a +1/+1 counter on target creature you control
             Mode.withTarget(
-                Effects.AddCounters("+1/+1", 1, EffectTarget.ContextTarget(0)),
+                Effects.AddCounters(Counters.PLUS_ONE_PLUS_ONE, 1, EffectTarget.ContextTarget(0)),
                 Targets.CreatureYouControl,
                 "Put a +1/+1 counter on target creature you control"
             ),

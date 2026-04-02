@@ -1,5 +1,6 @@
 package com.wingedsheep.mtg.sets.definitions.dominaria.cards
 
+import com.wingedsheep.sdk.core.Counters
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.dsl.Costs
 import com.wingedsheep.sdk.dsl.Effects
@@ -32,7 +33,7 @@ val KazarovSengirPureblood = card("Kazarov, Sengir Pureblood") {
 
     triggeredAbility {
         trigger = TriggerSpec(DealsDamageEvent(recipient = RecipientFilter.CreatureOpponentControls), TriggerBinding.ANY)
-        effect = Effects.AddCounters("+1/+1", 1, EffectTarget.Self)
+        effect = Effects.AddCounters(Counters.PLUS_ONE_PLUS_ONE, 1, EffectTarget.Self)
     }
 
     activatedAbility {

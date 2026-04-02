@@ -1,5 +1,6 @@
 package com.wingedsheep.mtg.sets.definitions.scourge.cards
 
+import com.wingedsheep.sdk.core.Counters
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Targets
 import com.wingedsheep.sdk.dsl.Triggers
@@ -42,11 +43,11 @@ val DecreeOfSilence = card("Decree of Silence") {
             binding = TriggerBinding.ANY
         )
         effect = Effects.CounterTriggeringSpell()
-            .then(Effects.AddCounters("depletion", 1, EffectTarget.Self))
+            .then(Effects.AddCounters(Counters.DEPLETION, 1, EffectTarget.Self))
             .then(
                 ConditionalEffect(
                     condition = Compare(
-                        DynamicAmounts.countersOnSelf(CounterTypeFilter.Named("depletion")),
+                        DynamicAmounts.countersOnSelf(CounterTypeFilter.Named(Counters.DEPLETION)),
                         ComparisonOperator.GTE,
                         DynamicAmount.Fixed(3)
                     ),

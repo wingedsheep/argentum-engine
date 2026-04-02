@@ -1,5 +1,6 @@
 package com.wingedsheep.mtg.sets.definitions.onslaught.cards
 
+import com.wingedsheep.sdk.core.Counters
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.dsl.Targets
 import com.wingedsheep.sdk.model.Rarity
@@ -23,7 +24,7 @@ val InvigoratingBoon = card("Invigorating Boon") {
         val t = target("target", Targets.Creature)
         effect = MayEffect(
             AddCountersEffect(
-                counterType = "+1/+1",
+                counterType = Counters.PLUS_ONE_PLUS_ONE,
                 count = 1,
                 target = t
             )

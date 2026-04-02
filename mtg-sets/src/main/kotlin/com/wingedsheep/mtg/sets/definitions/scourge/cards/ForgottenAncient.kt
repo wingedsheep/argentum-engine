@@ -1,5 +1,6 @@
 package com.wingedsheep.mtg.sets.definitions.scourge.cards
 
+import com.wingedsheep.sdk.core.Counters
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
@@ -35,7 +36,7 @@ val ForgottenAncient = card("Forgotten Ancient") {
         )
         effect = MayEffect(
             AddCountersEffect(
-                counterType = "+1/+1",
+                counterType = Counters.PLUS_ONE_PLUS_ONE,
                 count = 1,
                 target = EffectTarget.Self
             )
@@ -44,7 +45,7 @@ val ForgottenAncient = card("Forgotten Ancient") {
 
     triggeredAbility {
         trigger = Triggers.YourUpkeep
-        effect = MayEffect(Effects.DistributeCountersFromSelf("+1/+1"))
+        effect = MayEffect(Effects.DistributeCountersFromSelf(Counters.PLUS_ONE_PLUS_ONE))
     }
 
     metadata {

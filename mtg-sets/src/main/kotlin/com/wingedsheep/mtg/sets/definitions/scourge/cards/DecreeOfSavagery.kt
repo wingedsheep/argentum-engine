@@ -1,5 +1,6 @@
 package com.wingedsheep.mtg.sets.definitions.scourge.cards
 
+import com.wingedsheep.sdk.core.Counters
 import com.wingedsheep.sdk.dsl.Targets
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
@@ -28,7 +29,7 @@ val DecreeOfSavagery = card("Decree of Savagery") {
         effect = ForEachInGroupEffect(
             filter = GroupFilter.AllCreaturesYouControl,
             effect = AddCountersEffect(
-                counterType = "+1/+1",
+                counterType = Counters.PLUS_ONE_PLUS_ONE,
                 count = 4,
                 target = EffectTarget.Self
             )
@@ -42,7 +43,7 @@ val DecreeOfSavagery = card("Decree of Savagery") {
         val t = target("target creature", Targets.Creature)
         effect = MayEffect(
             AddCountersEffect(
-                counterType = "+1/+1",
+                counterType = Counters.PLUS_ONE_PLUS_ONE,
                 count = 4,
                 target = t
             )

@@ -1,5 +1,6 @@
 package com.wingedsheep.mtg.sets.definitions.khans.cards
 
+import com.wingedsheep.sdk.core.Counters
 import com.wingedsheep.sdk.dsl.Costs
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.card
@@ -25,7 +26,7 @@ val SaltRoadPatrol = card("Salt Road Patrol") {
     activatedAbility {
         cost = Costs.Composite(Costs.Mana("{1}{W}"), Costs.Tap)
         timing = TimingRule.SorcerySpeed
-        effect = Effects.AddCounters("+1/+1", 1, EffectTarget.Self)
+        effect = Effects.AddCounters(Counters.PLUS_ONE_PLUS_ONE, 1, EffectTarget.Self)
     }
 
     metadata {

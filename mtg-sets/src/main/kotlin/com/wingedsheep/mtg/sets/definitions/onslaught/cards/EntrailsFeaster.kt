@@ -1,5 +1,6 @@
 package com.wingedsheep.mtg.sets.definitions.onslaught.cards
 
+import com.wingedsheep.sdk.core.Counters
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
@@ -37,7 +38,7 @@ val EntrailsFeaster = card("Entrails Feaster") {
         effect = CompositeEffect(
             listOf(
                 MoveToZoneEffect(t, Zone.EXILE),
-                AddCountersEffect("+1/+1", 1, EffectTarget.Self)
+                AddCountersEffect(Counters.PLUS_ONE_PLUS_ONE, 1, EffectTarget.Self)
             )
         )
         elseEffect = TapUntapEffect(EffectTarget.Self, tap = true)

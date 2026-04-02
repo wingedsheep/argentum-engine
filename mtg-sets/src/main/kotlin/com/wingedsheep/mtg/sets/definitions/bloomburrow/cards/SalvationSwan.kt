@@ -1,5 +1,6 @@
 package com.wingedsheep.mtg.sets.definitions.bloomburrow.cards
 
+import com.wingedsheep.sdk.core.Counters
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.core.Subtype
@@ -66,7 +67,7 @@ val SalvationSwan = card("Salvation Swan") {
                 step = Step.END,
                 effect = CompositeEffect(listOf(
                     MoveToZoneEffect(creature, Zone.BATTLEFIELD),
-                    Effects.AddCounters("flying", 1, creature)
+                    Effects.AddCounters(Counters.FLYING, 1, creature)
                 ))
             )
         ))

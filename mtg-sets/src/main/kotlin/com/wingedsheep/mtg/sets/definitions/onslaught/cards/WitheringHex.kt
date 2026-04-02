@@ -1,5 +1,6 @@
 package com.wingedsheep.mtg.sets.definitions.onslaught.cards
 
+import com.wingedsheep.sdk.core.Counters
 import com.wingedsheep.sdk.dsl.Targets
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
@@ -25,12 +26,12 @@ val WitheringHex = card("Withering Hex") {
 
     triggeredAbility {
         trigger = Triggers.AnyPlayerCycles
-        effect = AddCountersEffect("plague", 1, EffectTarget.Self)
+        effect = AddCountersEffect(Counters.PLAGUE, 1, EffectTarget.Self)
     }
 
     staticAbility {
         ability = ModifyStatsByCounterOnSource(
-            counterType = "plague",
+            counterType = Counters.PLAGUE,
             powerModPerCounter = -1,
             toughnessModPerCounter = -1
         )

@@ -1,5 +1,6 @@
 package com.wingedsheep.mtg.sets.definitions.dominaria.cards
 
+import com.wingedsheep.sdk.core.Counters
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.dsl.card
@@ -63,7 +64,7 @@ val SongOfFreyalise = card("Song of Freyalise") {
         effect = CompositeEffect(listOf(
             ForEachInGroupEffect(
                 filter = creaturesYouControl,
-                effect = AddCountersEffect("+1/+1", 1, EffectTarget.Self)
+                effect = AddCountersEffect(Counters.PLUS_ONE_PLUS_ONE, 1, EffectTarget.Self)
             ),
             ForEachInGroupEffect(
                 filter = creaturesYouControl,

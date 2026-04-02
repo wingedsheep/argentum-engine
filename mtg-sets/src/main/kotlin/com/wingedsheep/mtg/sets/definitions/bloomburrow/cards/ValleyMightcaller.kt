@@ -1,5 +1,6 @@
 package com.wingedsheep.mtg.sets.definitions.bloomburrow.cards
 
+import com.wingedsheep.sdk.core.Counters
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.core.Zone
@@ -49,7 +50,7 @@ val ValleyMightcaller = card("Valley Mightcaller") {
             ),
             binding = TriggerBinding.OTHER
         )
-        effect = Effects.AddCounters("+1/+1", 1, EffectTarget.Self)
+        effect = Effects.AddCounters(Counters.PLUS_ONE_PLUS_ONE, 1, EffectTarget.Self)
     }
 
     metadata {

@@ -1,5 +1,6 @@
 package com.wingedsheep.mtg.sets.definitions.khans.cards
 
+import com.wingedsheep.sdk.core.Counters
 import com.wingedsheep.sdk.dsl.Filters
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
@@ -21,7 +22,7 @@ val IvorytuskFortress = card("Ivorytusk Fortress") {
 
     staticAbility {
         ability = UntapFilteredDuringOtherUntapSteps(
-            filter = Filters.Creature.withCounter("+1/+1")
+            filter = Filters.Creature.withCounter(Counters.PLUS_ONE_PLUS_ONE)
         )
     }
 

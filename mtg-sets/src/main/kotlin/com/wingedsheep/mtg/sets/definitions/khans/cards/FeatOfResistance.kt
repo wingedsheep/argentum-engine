@@ -1,5 +1,6 @@
 package com.wingedsheep.mtg.sets.definitions.khans.cards
 
+import com.wingedsheep.sdk.core.Counters
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Targets
 import com.wingedsheep.sdk.dsl.card
@@ -19,7 +20,7 @@ val FeatOfResistance = card("Feat of Resistance") {
 
     spell {
         val t = target("target", Targets.CreatureYouControl)
-        effect = Effects.AddCounters("+1/+1", 1, t)
+        effect = Effects.AddCounters(Counters.PLUS_ONE_PLUS_ONE, 1, t)
             .then(Effects.ChooseColorAndGrantProtectionToTarget(t))
     }
 

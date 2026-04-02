@@ -1,5 +1,6 @@
 package com.wingedsheep.mtg.sets.definitions.dominaria.cards
 
+import com.wingedsheep.sdk.core.Counters
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
@@ -54,7 +55,7 @@ val HaphazardBombardment = card("Haphazard Bombardment") {
                 prompt = "Choose four nonenchantment permanents you don't control",
                 useTargetingUI = true
             ),
-            Effects.AddCountersToCollection("chosen", "aim")
+            Effects.AddCountersToCollection("chosen", Counters.AIM)
         ))
     }
 
@@ -64,7 +65,7 @@ val HaphazardBombardment = card("Haphazard Bombardment") {
         triggerCondition = Compare(
             left = DynamicAmount.AggregateBattlefield(
                 player = Player.Opponent,
-                filter = GameObjectFilter.Any.withCounter("aim"),
+                filter = GameObjectFilter.Any.withCounter(Counters.AIM),
                 aggregation = Aggregation.COUNT
             ),
             operator = ComparisonOperator.GTE,
@@ -73,7 +74,7 @@ val HaphazardBombardment = card("Haphazard Bombardment") {
         effect = CompositeEffect(listOf(
             GatherCardsEffect(
                 source = CardSource.BattlefieldMatching(
-                    filter = GameObjectFilter.Any.withCounter("aim").opponentControls()
+                    filter = GameObjectFilter.Any.withCounter(Counters.AIM).opponentControls()
                 ),
                 storeAs = "aim_permanents"
             ),

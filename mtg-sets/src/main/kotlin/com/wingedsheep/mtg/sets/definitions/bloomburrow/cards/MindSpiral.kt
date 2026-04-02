@@ -1,5 +1,6 @@
 package com.wingedsheep.mtg.sets.definitions.bloomburrow.cards
 
+import com.wingedsheep.sdk.core.Counters
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Targets
@@ -59,7 +60,7 @@ val MindSpiral = card("Mind Spiral") {
                         ),
                         DrawCardsEffect(3, EffectTarget.ContextTarget(0)),
                         Effects.Tap(EffectTarget.ContextTarget(1)),
-                        Effects.AddCounters("stun", 1, EffectTarget.ContextTarget(1))
+                        Effects.AddCounters(Counters.STUN, 1, EffectTarget.ContextTarget(1))
                     )
                 ),
                 targetRequirements = listOf(

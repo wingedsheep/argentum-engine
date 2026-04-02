@@ -1,5 +1,6 @@
 package com.wingedsheep.mtg.sets.definitions.scourge.cards
 
+import com.wingedsheep.sdk.core.Counters
 import com.wingedsheep.sdk.dsl.Targets
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.core.ManaCost
@@ -34,7 +35,7 @@ val ConsumptiveGoo = card("Consumptive Goo") {
             duration = Duration.EndOfTurn
         ).then(
             AddCountersEffect(
-                counterType = "+1/+1",
+                counterType = Counters.PLUS_ONE_PLUS_ONE,
                 count = 1,
                 target = EffectTarget.Self
             )

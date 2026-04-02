@@ -1,5 +1,6 @@
 package com.wingedsheep.mtg.sets.definitions.edgeofeternities.cards
 
+import com.wingedsheep.sdk.core.Counters
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.dsl.EffectPatterns
@@ -46,7 +47,7 @@ val SledgeClassSeedship = card("Sledge-Class Seedship") {
             excludeSelf = true
         )
         effect = Effects.AddDynamicCounters(
-            counterType = "charge",
+            counterType = Counters.CHARGE,
             amount = DynamicAmount.EntityProperty(
                 entity = EntityReference.TappedAsCost(),
                 numericProperty = EntityNumericProperty.Power
@@ -61,7 +62,7 @@ val SledgeClassSeedship = card("Sledge-Class Seedship") {
         condition = Compare(
             left = DynamicAmount.EntityProperty(
                 entity = EntityReference.Source,
-                numericProperty = EntityNumericProperty.CounterCount(CounterTypeFilter.Named("charge"))
+                numericProperty = EntityNumericProperty.CounterCount(CounterTypeFilter.Named(Counters.CHARGE))
             ),
             operator = ComparisonOperator.GTE,
             right = DynamicAmount.Fixed(7)
@@ -74,7 +75,7 @@ val SledgeClassSeedship = card("Sledge-Class Seedship") {
         condition = Compare(
             left = DynamicAmount.EntityProperty(
                 entity = EntityReference.Source,
-                numericProperty = EntityNumericProperty.CounterCount(CounterTypeFilter.Named("charge"))
+                numericProperty = EntityNumericProperty.CounterCount(CounterTypeFilter.Named(Counters.CHARGE))
             ),
             operator = ComparisonOperator.GTE,
             right = DynamicAmount.Fixed(7)

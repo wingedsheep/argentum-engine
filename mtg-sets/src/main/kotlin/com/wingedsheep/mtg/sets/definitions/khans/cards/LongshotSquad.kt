@@ -1,5 +1,6 @@
 package com.wingedsheep.mtg.sets.definitions.khans.cards
 
+import com.wingedsheep.sdk.core.Counters
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.dsl.Costs
 import com.wingedsheep.sdk.dsl.Effects
@@ -28,11 +29,11 @@ val LongshotSquad = card("Longshot Squad") {
     activatedAbility {
         cost = Costs.Composite(Costs.Mana("{1}{G}"), Costs.Tap)
         timing = TimingRule.SorcerySpeed
-        effect = Effects.AddCounters("+1/+1", 1, EffectTarget.Self)
+        effect = Effects.AddCounters(Counters.PLUS_ONE_PLUS_ONE, 1, EffectTarget.Self)
     }
 
     // Each creature you control with a +1/+1 counter on it has reach.
-    staticAbility { ability = GrantKeywordByCounter(Keyword.REACH, "+1/+1", controllerOnly = true) }
+    staticAbility { ability = GrantKeywordByCounter(Keyword.REACH, Counters.PLUS_ONE_PLUS_ONE, controllerOnly = true) }
 
     metadata {
         rarity = Rarity.COMMON

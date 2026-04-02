@@ -1,5 +1,6 @@
 package com.wingedsheep.sdk.scripting.effects
 
+import com.wingedsheep.sdk.core.Counters
 import com.wingedsheep.sdk.scripting.text.TextReplacer
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -21,7 +22,7 @@ import kotlinx.serialization.Serializable
 @SerialName("SecretBid")
 @Serializable
 data class SecretBidEffect(
-    val counterType: String = "+1/+1",
+    val counterType: String = Counters.PLUS_ONE_PLUS_ONE,
     val counterCount: Int = 2
 ) : Effect {
     override val description: String =

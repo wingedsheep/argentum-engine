@@ -1,5 +1,6 @@
 package com.wingedsheep.mtg.sets.definitions.onslaught.cards
 
+import com.wingedsheep.sdk.core.Counters
 import com.wingedsheep.sdk.dsl.Costs
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
@@ -28,7 +29,7 @@ val RiptideReplicator = card("Riptide Replicator") {
     replacementEffect(EntersWithColorChoice())
     replacementEffect(EntersWithCreatureTypeChoice())
     replacementEffect(EntersWithDynamicCounters(
-        counterType = CounterTypeFilter.Named("charge"),
+        counterType = CounterTypeFilter.Named(Counters.CHARGE),
         count = DynamicAmount.XValue
     ))
 
@@ -38,8 +39,8 @@ val RiptideReplicator = card("Riptide Replicator") {
             Costs.Tap
         )
         effect = CreateChosenTokenEffect(
-            dynamicPower = DynamicAmounts.countersOnSelf(CounterTypeFilter.Named("charge")),
-            dynamicToughness = DynamicAmounts.countersOnSelf(CounterTypeFilter.Named("charge"))
+            dynamicPower = DynamicAmounts.countersOnSelf(CounterTypeFilter.Named(Counters.CHARGE)),
+            dynamicToughness = DynamicAmounts.countersOnSelf(CounterTypeFilter.Named(Counters.CHARGE))
         )
     }
 

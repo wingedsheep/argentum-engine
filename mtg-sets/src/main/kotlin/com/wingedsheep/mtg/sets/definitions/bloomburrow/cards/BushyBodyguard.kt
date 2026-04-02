@@ -1,5 +1,6 @@
 package com.wingedsheep.mtg.sets.definitions.bloomburrow.cards
 
+import com.wingedsheep.sdk.core.Counters
 import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.dsl.Effects
@@ -43,7 +44,7 @@ val BushyBodyguard = card("Bushy Bodyguard") {
         trigger = Triggers.EntersBattlefield
         effect = MayEffect(
             effect = EffectPatterns.forage(
-                afterEffect = Effects.AddCounters("+1/+1", 2, EffectTarget.Self)
+                afterEffect = Effects.AddCounters(Counters.PLUS_ONE_PLUS_ONE, 2, EffectTarget.Self)
             ),
             description_override = "You may forage"
         )

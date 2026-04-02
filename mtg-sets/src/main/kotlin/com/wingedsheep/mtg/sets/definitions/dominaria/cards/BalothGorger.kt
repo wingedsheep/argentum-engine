@@ -1,5 +1,6 @@
 package com.wingedsheep.mtg.sets.definitions.dominaria.cards
 
+import com.wingedsheep.sdk.core.Counters
 import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Triggers
@@ -29,7 +30,7 @@ val BalothGorger = card("Baloth Gorger") {
     triggeredAbility {
         trigger = Triggers.EntersBattlefield
         triggerCondition = WasKicked
-        effect = Effects.AddCounters("+1/+1", 3, EffectTarget.Self)
+        effect = Effects.AddCounters(Counters.PLUS_ONE_PLUS_ONE, 3, EffectTarget.Self)
     }
 
     metadata {

@@ -1,5 +1,6 @@
 package com.wingedsheep.mtg.sets.definitions.dominaria.cards
 
+import com.wingedsheep.sdk.core.Counters
 import com.wingedsheep.sdk.dsl.Conditions
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.card
@@ -30,7 +31,7 @@ val AncientAnimus = card("Ancient Animus") {
         ))
         effect = ConditionalEffect(
             condition = Conditions.TargetMatchesFilter(GameObjectFilter.Any.legendary()),
-            effect = Effects.AddCounters("+1/+1", 1, yourCreature)
+            effect = Effects.AddCounters(Counters.PLUS_ONE_PLUS_ONE, 1, yourCreature)
         ).then(Effects.Fight(yourCreature, theirCreature))
     }
 

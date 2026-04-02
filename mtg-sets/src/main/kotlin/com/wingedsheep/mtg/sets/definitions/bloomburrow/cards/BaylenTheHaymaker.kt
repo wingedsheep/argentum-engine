@@ -1,5 +1,6 @@
 package com.wingedsheep.mtg.sets.definitions.bloomburrow.cards
 
+import com.wingedsheep.sdk.core.Counters
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.card
@@ -39,7 +40,7 @@ val BaylenTheHaymaker = card("Baylen, the Haymaker") {
 
     activatedAbility {
         cost = AbilityCost.TapPermanents(4, GameObjectFilter.Token)
-        effect = Effects.AddCounters("+1/+1", 3, EffectTarget.Self)
+        effect = Effects.AddCounters(Counters.PLUS_ONE_PLUS_ONE, 3, EffectTarget.Self)
             .then(Effects.GrantKeyword(Keyword.TRAMPLE, EffectTarget.Self))
     }
 

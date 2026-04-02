@@ -1,5 +1,6 @@
 package com.wingedsheep.gameserver.dto
 
+import com.wingedsheep.sdk.core.Counters
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.engine.core.*
 import kotlinx.serialization.SerialName
@@ -871,7 +872,7 @@ object ClientEventTransformer {
             is LoyaltyChangedEvent -> ClientEvent.CounterAdded(
                 permanentId = event.entityId,
                 permanentName = event.entityName,
-                counterType = "loyalty",
+                counterType = Counters.LOYALTY,
                 count = event.change
             )
 

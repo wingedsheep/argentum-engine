@@ -1,5 +1,6 @@
 package com.wingedsheep.mtg.sets.definitions.bloomburrow.cards
 
+import com.wingedsheep.sdk.core.Counters
 import com.wingedsheep.sdk.dsl.Costs
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Triggers
@@ -25,13 +26,13 @@ val StockingThePantry = card("Stocking the Pantry") {
 
     triggeredAbility {
         trigger = Triggers.PlusOneCountersPlacedOnYourCreature
-        effect = Effects.AddCounters("supply", 1, EffectTarget.Self)
+        effect = Effects.AddCounters(Counters.SUPPLY, 1, EffectTarget.Self)
     }
 
     activatedAbility {
         cost = Costs.Composite(
             Costs.Mana("{2}"),
-            Costs.RemoveCounterFromSelf("supply")
+            Costs.RemoveCounterFromSelf(Counters.SUPPLY)
         )
         effect = Effects.DrawCards(1)
     }

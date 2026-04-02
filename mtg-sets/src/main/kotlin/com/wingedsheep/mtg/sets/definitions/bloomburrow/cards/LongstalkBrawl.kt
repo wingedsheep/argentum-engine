@@ -1,5 +1,6 @@
 package com.wingedsheep.mtg.sets.definitions.bloomburrow.cards
 
+import com.wingedsheep.sdk.core.Counters
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Targets
@@ -53,7 +54,7 @@ val LongstalkBrawl = card("Longstalk Brawl") {
                     controller = EffectTarget.PlayerRef(Player.EachOpponent),
                     imageUri = "https://cards.scryfall.io/normal/front/d/e/de0d6700-49f0-4233-97ba-cef7821c30ed.jpg?1721431109"
                 )
-                    .then(Effects.AddCounters("+1/+1", 1, EffectTarget.ContextTarget(0)))
+                    .then(Effects.AddCounters(Counters.PLUS_ONE_PLUS_ONE, 1, EffectTarget.ContextTarget(0)))
                     .then(Effects.Fight(EffectTarget.ContextTarget(0), EffectTarget.ContextTarget(1))),
                 targetRequirements = listOf(Targets.CreatureYouControl, Targets.CreatureOpponentControls),
                 description = "Promise a gift — opponent creates a tapped 1/1 blue Fish token, +1/+1 counter on your creature, then fight"

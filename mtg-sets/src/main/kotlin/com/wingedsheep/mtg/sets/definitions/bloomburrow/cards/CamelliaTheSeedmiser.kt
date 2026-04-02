@@ -1,5 +1,6 @@
 package com.wingedsheep.mtg.sets.definitions.bloomburrow.cards
 
+import com.wingedsheep.sdk.core.Counters
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.dsl.Costs
@@ -70,7 +71,7 @@ val CamelliaTheSeedmiser = card("Camellia, the Seedmiser") {
                 excludeSelf = true
             ),
             effect = AddCountersEffect(
-                counterType = "+1/+1",
+                counterType = Counters.PLUS_ONE_PLUS_ONE,
                 count = 1,
                 target = EffectTarget.Self
             )

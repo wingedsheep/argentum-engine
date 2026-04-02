@@ -1,5 +1,6 @@
 package com.wingedsheep.mtg.sets.definitions.bloomburrow.cards
 
+import com.wingedsheep.sdk.core.Counters
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.dsl.Conditions
 import com.wingedsheep.sdk.dsl.Costs
@@ -31,7 +32,7 @@ val CinderingCutthroat = card("Cindering Cutthroat") {
     triggeredAbility {
         trigger = Triggers.EntersBattlefield
         triggerCondition = Conditions.OpponentLostLifeThisTurn
-        effect = Effects.AddCounters("+1/+1", 1, EffectTarget.Self)
+        effect = Effects.AddCounters(Counters.PLUS_ONE_PLUS_ONE, 1, EffectTarget.Self)
     }
 
     // {1}{B/R}: This creature gains menace until end of turn

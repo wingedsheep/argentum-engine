@@ -1,5 +1,6 @@
 package com.wingedsheep.mtg.sets.definitions.dominaria.cards
 
+import com.wingedsheep.sdk.core.Counters
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Triggers
@@ -30,7 +31,7 @@ val HallarTheFirefletcher = card("Hallar, the Firefletcher") {
 
     triggeredAbility {
         trigger = Triggers.YouCastKickedSpell
-        effect = Effects.AddCounters("+1/+1", 1, EffectTarget.Self)
+        effect = Effects.AddCounters(Counters.PLUS_ONE_PLUS_ONE, 1, EffectTarget.Self)
             .then(Effects.DealDamage(
                 DynamicAmounts.countersOnSelf(CounterTypeFilter.PlusOnePlusOne),
                 EffectTarget.PlayerRef(Player.EachOpponent)

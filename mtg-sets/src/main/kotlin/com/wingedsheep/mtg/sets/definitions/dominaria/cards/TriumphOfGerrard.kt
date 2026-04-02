@@ -1,5 +1,6 @@
 package com.wingedsheep.mtg.sets.definitions.dominaria.cards
 
+import com.wingedsheep.sdk.core.Counters
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.card
@@ -31,12 +32,12 @@ val TriumphOfGerrard = card("Triumph of Gerrard") {
 
     sagaChapter(1) {
         val creature = target("creature you control with the greatest power", greatestPowerTarget)
-        effect = Effects.AddCounters("+1/+1", 1, creature)
+        effect = Effects.AddCounters(Counters.PLUS_ONE_PLUS_ONE, 1, creature)
     }
 
     sagaChapter(2) {
         val creature = target("creature you control with the greatest power", greatestPowerTarget)
-        effect = Effects.AddCounters("+1/+1", 1, creature)
+        effect = Effects.AddCounters(Counters.PLUS_ONE_PLUS_ONE, 1, creature)
     }
 
     sagaChapter(3) {

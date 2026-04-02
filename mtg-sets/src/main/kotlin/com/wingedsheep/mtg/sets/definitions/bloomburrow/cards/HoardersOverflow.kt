@@ -1,5 +1,6 @@
 package com.wingedsheep.mtg.sets.definitions.bloomburrow.cards
 
+import com.wingedsheep.sdk.core.Counters
 import com.wingedsheep.sdk.dsl.Costs
 import com.wingedsheep.sdk.dsl.DynamicAmounts
 import com.wingedsheep.sdk.dsl.EffectPatterns
@@ -33,13 +34,13 @@ val HoardersOverflow = card("Hoarder's Overflow") {
     // When this enchantment enters, put a stash counter on it.
     triggeredAbility {
         trigger = Triggers.EntersBattlefield
-        effect = Effects.AddCounters("stash", 1, EffectTarget.Self)
+        effect = Effects.AddCounters(Counters.STASH, 1, EffectTarget.Self)
     }
 
     // Whenever you expend 4, put a stash counter on it.
     triggeredAbility {
         trigger = Triggers.Expend(4)
-        effect = Effects.AddCounters("stash", 1, EffectTarget.Self)
+        effect = Effects.AddCounters(Counters.STASH, 1, EffectTarget.Self)
     }
 
     // {1}{R}, Sacrifice this enchantment: Discard your hand, then draw cards equal to
@@ -50,7 +51,7 @@ val HoardersOverflow = card("Hoarder's Overflow") {
             listOf(
                 EffectPatterns.discardHand(),
                 DrawCardsEffect(
-                    count = DynamicAmounts.countersOnSelf(CounterTypeFilter.Named("stash")),
+                    count = DynamicAmounts.countersOnSelf(CounterTypeFilter.Named(Counters.STASH)),
                     target = EffectTarget.Controller
                 ),
                 SacrificeSelfEffect

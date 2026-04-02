@@ -1,5 +1,6 @@
 package com.wingedsheep.mtg.sets.definitions.custom
 
+import com.wingedsheep.sdk.core.Counters
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.core.Zone
@@ -90,7 +91,7 @@ val SekshaasEarlySleeper = card("Sekshaas, Early Sleeper") {
     // Climb {1}{G} — +1/+1 counter, sorcery speed
     activatedAbility {
         cost = Costs.Mana("{1}{G}")
-        effect = Effects.AddCounters("+1/+1", 1, EffectTarget.Self)
+        effect = Effects.AddCounters(Counters.PLUS_ONE_PLUS_ONE, 1, EffectTarget.Self)
         timing = TimingRule.SorcerySpeed
     }
 

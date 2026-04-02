@@ -1,5 +1,6 @@
 package com.wingedsheep.sdk.scripting.effects
 
+import com.wingedsheep.sdk.core.Counters
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.text.TextReplacer
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
@@ -117,7 +118,7 @@ data class AddCountersToCollectionEffect(
 @SerialName("DistributeCountersFromSelf")
 @Serializable
 data class DistributeCountersFromSelfEffect(
-    val counterType: String = "+1/+1"
+    val counterType: String = Counters.PLUS_ONE_PLUS_ONE
 ) : Effect {
     override val description: String =
         "Move any number of $counterType counters from this creature onto other creatures"
@@ -141,7 +142,7 @@ data class DistributeCountersFromSelfEffect(
 @Serializable
 data class DistributeCountersAmongTargetsEffect(
     val totalCounters: Int,
-    val counterType: String = "+1/+1",
+    val counterType: String = Counters.PLUS_ONE_PLUS_ONE,
     val minPerTarget: Int = 1
 ) : Effect {
     override val description: String =

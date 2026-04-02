@@ -1,5 +1,6 @@
 package com.wingedsheep.mtg.sets.definitions.dominaria.cards
 
+import com.wingedsheep.sdk.core.Counters
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Targets
 import com.wingedsheep.sdk.dsl.card
@@ -30,7 +31,7 @@ val PhyrexianScriptures = card("Phyrexian Scriptures") {
     sagaChapter(1) {
         val creature = target("creature", Targets.UpToCreatures(1))
         effect = CompositeEffect(listOf(
-            Effects.AddCounters("+1/+1", 1, creature),
+            Effects.AddCounters(Counters.PLUS_ONE_PLUS_ONE, 1, creature),
             Effects.AddCardType("ARTIFACT", creature)
         ))
     }

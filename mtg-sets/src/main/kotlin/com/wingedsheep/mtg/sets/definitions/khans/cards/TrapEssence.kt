@@ -1,5 +1,6 @@
 package com.wingedsheep.mtg.sets.definitions.khans.cards
 
+import com.wingedsheep.sdk.core.Counters
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Targets
 import com.wingedsheep.sdk.dsl.card
@@ -25,7 +26,7 @@ val TrapEssence = card("Trap Essence") {
         target("creature spell", Targets.CreatureSpell)
         val creature = target("creature", TargetCreature(optional = true))
         effect = Effects.CounterSpell()
-            .then(Effects.AddCounters("+1/+1", 2, creature))
+            .then(Effects.AddCounters(Counters.PLUS_ONE_PLUS_ONE, 2, creature))
     }
 
     metadata {

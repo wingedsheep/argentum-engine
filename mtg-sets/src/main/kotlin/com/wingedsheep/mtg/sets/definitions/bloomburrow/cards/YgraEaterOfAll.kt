@@ -1,5 +1,6 @@
 package com.wingedsheep.mtg.sets.definitions.bloomburrow.cards
 
+import com.wingedsheep.sdk.core.Counters
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.dsl.Costs
 import com.wingedsheep.sdk.dsl.Effects
@@ -69,7 +70,7 @@ val YgraEaterOfAll = card("Ygra, Eater of All") {
             ),
             binding = TriggerBinding.OTHER
         )
-        effect = Effects.AddCounters("plus_one_plus_one", 2, EffectTarget.Self)
+        effect = Effects.AddCounters(Counters.PLUS_ONE_PLUS_ONE, 2, EffectTarget.Self)
     }
 
     metadata {

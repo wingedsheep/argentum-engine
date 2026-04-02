@@ -1,5 +1,6 @@
 package com.wingedsheep.mtg.sets.definitions.dominaria.cards
 
+import com.wingedsheep.sdk.core.Counters
 import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
@@ -23,11 +24,11 @@ val WildOnslaught = card("Wild Onslaught") {
             condition = WasKicked,
             effect = ForEachInGroupEffect(
                 filter = GroupFilter.AllCreaturesYouControl,
-                effect = AddCountersEffect("+1/+1", 2, EffectTarget.Self)
+                effect = AddCountersEffect(Counters.PLUS_ONE_PLUS_ONE, 2, EffectTarget.Self)
             ),
             elseEffect = ForEachInGroupEffect(
                 filter = GroupFilter.AllCreaturesYouControl,
-                effect = AddCountersEffect("+1/+1", 1, EffectTarget.Self)
+                effect = AddCountersEffect(Counters.PLUS_ONE_PLUS_ONE, 1, EffectTarget.Self)
             )
         )
     }

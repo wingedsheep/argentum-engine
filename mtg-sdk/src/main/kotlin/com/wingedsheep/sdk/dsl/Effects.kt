@@ -2,6 +2,7 @@ package com.wingedsheep.sdk.dsl
 
 import com.wingedsheep.sdk.core.AbilityFlag
 import com.wingedsheep.sdk.core.Color
+import com.wingedsheep.sdk.core.Counters
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.Subtype
@@ -602,14 +603,14 @@ object Effects {
      * Distribute any number of counters from this creature onto other creatures.
      * Used for Forgotten Ancient's upkeep ability.
      */
-    fun DistributeCountersFromSelf(counterType: String = "+1/+1"): Effect =
+    fun DistributeCountersFromSelf(counterType: String = Counters.PLUS_ONE_PLUS_ONE): Effect =
         com.wingedsheep.sdk.scripting.effects.DistributeCountersFromSelfEffect(counterType)
 
     /**
      * Distribute counters among targets from context.
      * "Distribute N counters among one or more target creatures."
      */
-    fun DistributeCountersAmongTargets(totalCounters: Int, counterType: String = "+1/+1", minPerTarget: Int = 1): Effect =
+    fun DistributeCountersAmongTargets(totalCounters: Int, counterType: String = Counters.PLUS_ONE_PLUS_ONE, minPerTarget: Int = 1): Effect =
         com.wingedsheep.sdk.scripting.effects.DistributeCountersAmongTargetsEffect(totalCounters, counterType, minPerTarget)
 
     /**

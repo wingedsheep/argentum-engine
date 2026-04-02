@@ -793,7 +793,7 @@ sealed interface GameEvent : TextReplaceable<GameEvent> {
      *
      * Examples:
      * - "Whenever you put one or more +1/+1 counters on a creature you control"
-     *   → CountersPlacedEvent(counterType = "+1/+1", filter = GameObjectFilter.Creature.youControl())
+     *   → CountersPlacedEvent(counterType = Counters.PLUS_ONE_PLUS_ONE, filter = GameObjectFilter.Creature.youControl())
      *
      * @property counterType The counter type to match (e.g., "+1/+1", "LORE")
      * @property filter Filter for the permanent receiving counters

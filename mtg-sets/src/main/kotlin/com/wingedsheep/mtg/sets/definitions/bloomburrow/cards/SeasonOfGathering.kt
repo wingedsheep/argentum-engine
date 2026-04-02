@@ -1,5 +1,6 @@
 package com.wingedsheep.mtg.sets.definitions.bloomburrow.cards
 
+import com.wingedsheep.sdk.core.Counters
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.dsl.DynamicAmounts
 import com.wingedsheep.sdk.dsl.Effects
@@ -44,7 +45,7 @@ val SeasonOfGathering = card("Season of Gathering") {
                 BudgetMode(
                     cost = 1,
                     effect = Effects.SelectTarget(Targets.CreatureYouControl, "chosenCreature")
-                        .then(Effects.AddCounters("+1/+1", 1, EffectTarget.PipelineTarget("chosenCreature")))
+                        .then(Effects.AddCounters(Counters.PLUS_ONE_PLUS_ONE, 1, EffectTarget.PipelineTarget("chosenCreature")))
                         .then(Effects.GrantKeyword(Keyword.VIGILANCE, EffectTarget.PipelineTarget("chosenCreature")))
                         .then(Effects.GrantKeyword(Keyword.TRAMPLE, EffectTarget.PipelineTarget("chosenCreature"))),
                     description = "Put a +1/+1 counter on a creature you control. It gains vigilance and trample until end of turn"

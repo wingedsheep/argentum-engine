@@ -1,5 +1,6 @@
 package com.wingedsheep.mtg.sets.definitions.scourge.cards
 
+import com.wingedsheep.sdk.core.Counters
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
@@ -28,7 +29,7 @@ val ForceBubble = card("Force Bubble") {
     // Sacrifice threshold handles the state-triggered "when 4+ counters, sacrifice" ability
     replacementEffect(
         ReplaceDamageWithCounters(
-            counterType = "depletion",
+            counterType = Counters.DEPLETION,
             sacrificeThreshold = 4,
             appliesTo = GameEvent.DamageEvent(recipient = RecipientFilter.You)
         )
@@ -37,7 +38,7 @@ val ForceBubble = card("Force Bubble") {
     // At the beginning of each end step, remove all depletion counters
     triggeredAbility {
         trigger = Triggers.EachEndStep
-        effect = RemoveCountersEffect("depletion", Int.MAX_VALUE, EffectTarget.Self)
+        effect = RemoveCountersEffect(Counters.DEPLETION, Int.MAX_VALUE, EffectTarget.Self)
     }
 
     metadata {
