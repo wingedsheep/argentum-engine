@@ -26,8 +26,9 @@ val WhiskerquillScribe = card("Whiskerquill Scribe") {
     triggeredAbility {
         trigger = Triggers.Valiant
         effect = MayEffect(
-            EffectPatterns.discardCards(1)
-                .then(Effects.DrawCards(1))
+            effect = EffectPatterns.discardCards(1)
+                .then(Effects.DrawCards(1)),
+            description_override = "You may discard a card. If you do, draw a card."
         )
     }
 
