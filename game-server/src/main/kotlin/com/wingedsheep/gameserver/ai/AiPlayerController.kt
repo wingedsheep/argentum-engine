@@ -855,9 +855,10 @@ class AiPlayerController(
         picksRequired: Int,
         passDirection: String
     ): List<String> {
-        // Initialize draft history with system prompt on first pick
+        // Initialize draft history with system prompt on first pick.
+        // Explicit cache breakpoint on the system prompt — stable across all picks.
         if (draftHistory.isEmpty()) {
-            draftHistory.add(ChatMessage("system", DRAFT_SYSTEM_PROMPT))
+            draftHistory.add(ChatMessage("system", DRAFT_SYSTEM_PROMPT, cacheControl = CacheControl()))
         }
 
         val prompt = formatDraftPickPrompt(pack, pickedSoFar, packNumber, pickNumber, picksRequired, passDirection)

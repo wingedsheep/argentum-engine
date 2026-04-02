@@ -102,11 +102,11 @@ class AiDeckBuilder(
         logger.info("AI deckbuilder step 1 (evaluate) prompt ({} chars)", prompt.length)
 
         val messages = listOf(
-            ChatMessage("system", EVALUATE_SYSTEM_PROMPT),
+            ChatMessage("system", EVALUATE_SYSTEM_PROMPT, cacheControl = CacheControl()),
             ChatMessage("user", prompt)
         )
 
-        val response = llmClient.chatCompletion(messages, properties.effectiveDeckbuildingModel)
+        val response = llmClient.chatCompletion(messages, properties.effectiveDeckbuildingModel, cacheControl = CacheControl())
         if (response == null) {
             logger.warn("AI deckbuilder: step 1 (evaluate) failed")
             return null
@@ -186,11 +186,11 @@ class AiDeckBuilder(
         logger.info("AI deckbuilder step 2 (build) prompt ({} chars)", prompt.length)
 
         val messages = listOf(
-            ChatMessage("system", BUILD_SYSTEM_PROMPT),
+            ChatMessage("system", BUILD_SYSTEM_PROMPT, cacheControl = CacheControl()),
             ChatMessage("user", prompt)
         )
 
-        val response = llmClient.chatCompletion(messages, properties.effectiveDeckbuildingModel)
+        val response = llmClient.chatCompletion(messages, properties.effectiveDeckbuildingModel, cacheControl = CacheControl())
         if (response == null) {
             logger.warn("AI deckbuilder: step 2 (build) failed")
             return null
