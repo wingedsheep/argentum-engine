@@ -78,7 +78,8 @@ val CruelclawsHeist = card("Cruelclaw's Heist") {
                 CompositeEffect(
                     listOf(DrawCardsEffect(1, EffectTarget.ContextTarget(0))) +
                     revealChooseExile +
-                    listOf(GrantMayPlayFromExileEffect(from = "chosenCard", permanent = true))
+                    listOf(GrantMayPlayFromExileEffect(from = "chosenCard", permanent = true)) +
+                    listOf(Effects.GiftGiven())
                 ),
                 Targets.Opponent,
                 "Promise a gift — an opponent draws a card, then exile a nonland card from target opponent's hand (you may cast it from exile)"

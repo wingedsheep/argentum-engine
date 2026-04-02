@@ -306,3 +306,20 @@ data class GrantDamageBonusEffect(
 
     override fun applyTextReplacement(replacer: TextReplacer): Effect = this
 }
+
+// =============================================================================
+// Gift Effects
+// =============================================================================
+
+/**
+ * Signals that a gift was given (Bloomburrow gift mechanic).
+ * Emits a GiftGivenEvent so that cards like Jolly Gerbils can trigger.
+ * This effect has no game state change — it only produces the event.
+ */
+@SerialName("GiftGiven")
+@Serializable
+data object GiftGivenEffect : Effect {
+    override val description: String = "Give a gift"
+
+    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
+}

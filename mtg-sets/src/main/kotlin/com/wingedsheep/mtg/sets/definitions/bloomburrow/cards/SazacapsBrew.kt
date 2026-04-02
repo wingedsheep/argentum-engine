@@ -68,7 +68,8 @@ val SazacapsBrew = card("Sazacap's Brew") {
                             toughnessModifier = 0,
                             target = EffectTarget.ContextTarget(1),
                             duration = Duration.EndOfTurn
-                        )
+                        ),
+                        Effects.GiftGiven()
                     )
                 ),
                 targetRequirements = listOf(

@@ -786,6 +786,19 @@ object Triggers {
     )
 
     // =========================================================================
+    // Gift Triggers
+    // =========================================================================
+
+    /**
+     * Whenever you give a gift.
+     * Used by Jolly Gerbils: "Whenever you give a gift, draw a card."
+     */
+    val YouGiveAGift: TriggerSpec = TriggerSpec(
+        event = GiftGivenEvent(Player.You),
+        binding = TriggerBinding.ANY
+    )
+
+    // =========================================================================
     // Transform Triggers
     // =========================================================================
 

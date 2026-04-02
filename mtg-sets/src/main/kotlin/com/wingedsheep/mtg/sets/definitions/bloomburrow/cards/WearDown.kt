@@ -44,7 +44,8 @@ val WearDown = card("Wear Down") {
                     listOf(
                         DrawCardsEffect(1, EffectTarget.PlayerRef(Player.EachOpponent)),
                         Effects.Destroy(EffectTarget.ContextTarget(0)),
-                        Effects.Destroy(EffectTarget.ContextTarget(1))
+                        Effects.Destroy(EffectTarget.ContextTarget(1)),
+                        Effects.GiftGiven()
                     )
                 ),
                 targetRequirements = listOf(Targets.ArtifactOrEnchantment, Targets.ArtifactOrEnchantment),

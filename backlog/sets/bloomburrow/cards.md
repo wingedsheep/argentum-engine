@@ -2,11 +2,11 @@
 
 **Set Size:** 266 cards
 **Release Date:** August 2, 2024
-**Implemented:** 219 / 266
+**Implemented:** 220 / 266
 
 | Color      | Total | Done |
 |------------|-------|------|
-| White      | 40    | 32   |
+| White      | 40    | 33   |
 | Blue       | 41    | 33   |
 | Black      | 40    | 32   |
 | Red        | 41    | 32   |
@@ -127,7 +127,7 @@
 - [x] Iridescent Vinelasher
 - [x] Island
 - [x] Jackdaw Savior
-- [ ] Jolly Gerbils
+- [x] Jolly Gerbils
 - [x] Junkblade Bruiser
 - [x] Kastral, the Windcrested
 - [x] Keen-Eyed Curator

@@ -46,7 +46,8 @@ val DawnsTruce = card("Dawn's Truce") {
             Mode.noTarget(
                 DrawCardsEffect(1, EffectTarget.PlayerRef(Player.EachOpponent))
                     .then(hexproofEffects)
-                    .then(EffectPatterns.grantKeywordToAll(Keyword.INDESTRUCTIBLE, Filters.Group.permanentsYouControl)),
+                    .then(EffectPatterns.grantKeywordToAll(Keyword.INDESTRUCTIBLE, Filters.Group.permanentsYouControl))
+                    .then(Effects.GiftGiven()),
                 "Promise a gift — an opponent draws a card, you and permanents you control gain hexproof until end of turn, permanents you control also gain indestructible until end of turn"
             )
         )

@@ -57,7 +57,8 @@ val StarforgedSword = card("Starforged Sword") {
                     controller = EffectTarget.PlayerRef(Player.EachOpponent),
                     tapped = true,
                     imageUri = "https://cards.scryfall.io/normal/front/d/e/de0d6700-49f0-4233-97ba-cef7821c30ed.jpg?1721431109"
-                ).then(Effects.AttachEquipment(EffectTarget.ContextTarget(0))),
+                ).then(Effects.AttachEquipment(EffectTarget.ContextTarget(0)))
+                    .then(Effects.GiftGiven()),
                 Targets.CreatureYouControl,
                 "Promise a gift — opponent creates a tapped 1/1 blue Fish token, attach to target creature you control"
             )

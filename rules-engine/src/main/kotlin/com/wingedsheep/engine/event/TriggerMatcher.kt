@@ -6,6 +6,7 @@ import com.wingedsheep.engine.core.AbilityTriggeredEvent
 import com.wingedsheep.engine.core.AttackersDeclaredEvent
 import com.wingedsheep.engine.core.BlockersDeclaredEvent
 import com.wingedsheep.engine.core.CardCycledEvent
+import com.wingedsheep.engine.core.GiftGivenEvent
 import com.wingedsheep.engine.core.CardRevealedFromDrawEvent
 import com.wingedsheep.engine.core.CardsDrawnEvent
 import com.wingedsheep.engine.core.CountersAddedEvent
@@ -177,6 +178,10 @@ class TriggerMatcher(
                 event is CardCycledEvent &&
                     matchesPlayer(trigger.player, event.playerId, controllerId) &&
                     (binding != TriggerBinding.SELF || event.cardId == sourceId)
+            }
+            is GameEvent.GiftGivenEvent -> {
+                event is GiftGivenEvent &&
+                    matchesPlayer(trigger.player, event.controllerId, controllerId)
             }
             is GameEvent.TapEvent -> {
                 event is TappedEvent && (binding != TriggerBinding.SELF || event.entityId == sourceId)

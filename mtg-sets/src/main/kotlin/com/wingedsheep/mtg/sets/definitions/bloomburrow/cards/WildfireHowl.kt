@@ -1,5 +1,6 @@
 package com.wingedsheep.mtg.sets.definitions.bloomburrow.cards
 
+import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Targets
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
@@ -50,7 +51,8 @@ val WildfireHowl = card("Wildfire Howl") {
                     listOf(
                         DrawCardsEffect(1, EffectTarget.PlayerRef(Player.EachOpponent)),
                         DealDamageEffect(1, EffectTarget.ContextTarget(0)),
-                        damageToEachCreature
+                        damageToEachCreature,
+                        Effects.GiftGiven()
                     )
                 ),
                 Targets.Any,

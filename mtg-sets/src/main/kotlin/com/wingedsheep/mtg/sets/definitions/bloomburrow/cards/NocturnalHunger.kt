@@ -40,7 +40,8 @@ val NocturnalHunger = card("Nocturnal Hunger") {
             // Mode 2: Gift a Food — opponent creates Food token, then destroy target creature
             Mode.withTarget(
                 Effects.CreateFood(1, EffectTarget.PlayerRef(Player.EachOpponent))
-                    .then(destroyEffect),
+                    .then(destroyEffect)
+                    .then(Effects.GiftGiven()),
                 Targets.Creature,
                 "Promise a gift — opponent creates a Food token, then destroy target creature"
             )

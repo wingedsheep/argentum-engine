@@ -593,6 +593,12 @@ constructors.
 
 - `Triggers.YouCycleThis` (when you cycle this card) / `Triggers.YouCycle` (whenever you cycle any card) / `Triggers.AnyPlayerCycles`
 
+### Gift
+
+- `Triggers.YouGiveAGift` — whenever you give a gift (Bloomburrow gift mechanic)
+- `Effects.GiftGiven()` — emit GiftGivenEvent; add to gift modes so triggers fire
+- `GiftGivenEffect` — data object, no state change, just emits event
+
 ### Life
 
 - `Triggers.YouGainLife` / `Triggers.AnyPlayerGainsLife`

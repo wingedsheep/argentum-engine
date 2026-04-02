@@ -488,6 +488,23 @@ sealed interface ClientEvent {
     ) : ClientEvent
 
     // =========================================================================
+    // Gift Events
+    // =========================================================================
+
+    @Serializable
+    @SerialName("giftGiven")
+    data class GiftGiven(
+        val playerId: EntityId,
+        val sourceName: String?,
+        val isYours: Boolean? = null,
+        override val description: String = when (isYours) {
+            true -> "You gave a gift${sourceName?.let { " with $it" } ?: ""}"
+            false -> "Opponent gave a gift${sourceName?.let { " with $it" } ?: ""}"
+            null -> "A gift was given${sourceName?.let { " with $it" } ?: ""}"
+        }
+    ) : ClientEvent
+
+    // =========================================================================
     // Library Events
     // =========================================================================
 
@@ -929,6 +946,12 @@ is PermanentsSacrificedEvent -> {
                 playerId = event.playerId,
                 cardName = event.cardName,
                 isYours = event.playerId == viewingPlayerId
+            )
+
+            is GiftGivenEvent -> ClientEvent.GiftGiven(
+                playerId = event.controllerId,
+                sourceName = event.sourceName,
+                isYours = event.controllerId == viewingPlayerId
             )
 
             is LibraryShuffledEvent -> ClientEvent.LibraryShuffled(

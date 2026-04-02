@@ -43,6 +43,7 @@ import com.wingedsheep.sdk.scripting.effects.SacrificeTargetEffect
 import com.wingedsheep.sdk.scripting.effects.ExchangeControlEffect
 import com.wingedsheep.sdk.scripting.effects.ExchangeLifeAndPowerEffect
 import com.wingedsheep.sdk.scripting.effects.GainControlByMostOfSubtypeEffect
+import com.wingedsheep.sdk.scripting.effects.GiftGivenEffect
 import com.wingedsheep.sdk.scripting.effects.GainControlEffect
 import com.wingedsheep.sdk.scripting.effects.GainLifeEffect
 import com.wingedsheep.sdk.scripting.effects.GrantExileOnLeaveEffect
@@ -1353,4 +1354,14 @@ object Effects {
         copyTargetRequirement = com.wingedsheep.sdk.scripting.targets.TargetObject(filter = targetFilter),
         spellName = spellName
     )
+
+    // =========================================================================
+    // Gift
+    // =========================================================================
+
+    /**
+     * Signal that a gift was given (Bloomburrow gift mechanic).
+     * Add this to gift modes so that "whenever you give a gift" triggers fire.
+     */
+    fun GiftGiven(): Effect = GiftGivenEffect
 }

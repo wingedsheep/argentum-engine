@@ -44,7 +44,8 @@ val CrumbAndGetIt = card("Crumb and Get It") {
             Mode.withTarget(
                 Effects.CreateFood(1, EffectTarget.PlayerRef(Player.EachOpponent))
                     .then(baseEffect)
-                    .then(Effects.GrantKeyword(Keyword.INDESTRUCTIBLE, EffectTarget.ContextTarget(0))),
+                    .then(Effects.GrantKeyword(Keyword.INDESTRUCTIBLE, EffectTarget.ContextTarget(0)))
+                    .then(Effects.GiftGiven()),
                 Targets.CreatureYouControl,
                 "Promise a gift — opponent creates a Food token, target creature you control gets +2/+2 and gains indestructible until end of turn"
             )

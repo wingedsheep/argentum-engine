@@ -114,6 +114,7 @@ object BloomburrowSet {
         IntoTheFloodMaw,
         IridescentVinelasher,
         JackdawSavior,
+        JollyGerbils,
         JunkbladeBruiser,
         KastralTheWindcrested,
         KeenEyedCurator,

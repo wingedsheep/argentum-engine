@@ -776,6 +776,25 @@ data class CardCycledEvent(
 ) : GameEvent
 
 // =============================================================================
+// Gift Events
+// =============================================================================
+
+/**
+ * A player gave a gift (Bloomburrow gift mechanic).
+ * Emitted when a gift mode is chosen and the gift effect resolves.
+ *
+ * @property controllerId The player who gave the gift
+ * @property sourceId The card/spell that provided the gift
+ * @property sourceName The name of the source card
+ */
+@Serializable
+data class GiftGivenEvent(
+    val controllerId: EntityId,
+    val sourceId: EntityId?,
+    val sourceName: String?
+) : GameEvent
+
+// =============================================================================
 // Coin Flip Events
 // =============================================================================
 

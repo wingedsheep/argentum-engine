@@ -36,7 +36,8 @@ val LongRiversPull = card("Long River's Pull") {
             Mode.withTarget(
                 effect = CompositeEffect(listOf(
                     DrawCardsEffect(1, EffectTarget.PlayerRef(Player.EachOpponent)),
-                    Effects.CounterSpell()
+                    Effects.CounterSpell(),
+                    Effects.GiftGiven()
                 )),
                 target = Targets.Spell,
                 description = "Gift a card — counter target spell"

@@ -42,7 +42,8 @@ val BloomingBlast = card("Blooming Blast") {
             Mode.withTarget(
                 CreatePredefinedTokenEffect("Treasure", 1, EffectTarget.PlayerRef(Player.EachOpponent))
                     .then(Effects.DealDamage(2, EffectTarget.ContextTarget(0)))
-                    .then(Effects.DealDamage(3, EffectTarget.TargetController)),
+                    .then(Effects.DealDamage(3, EffectTarget.TargetController))
+                    .then(Effects.GiftGiven()),
                 Targets.Creature,
                 "Promise a gift — opponent creates a Treasure token, deal 2 damage to target creature and 3 damage to its controller"
             )

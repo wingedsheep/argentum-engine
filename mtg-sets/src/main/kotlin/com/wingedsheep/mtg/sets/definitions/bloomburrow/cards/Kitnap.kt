@@ -48,7 +48,8 @@ val Kitnap = card("Kitnap") {
             // Mode 2: Gift a card — opponent draws a card, tap enchanted creature (no stun counters)
             Mode.noTarget(
                 DrawCardsEffect(1, EffectTarget.PlayerRef(Player.EachOpponent))
-                    .then(Effects.Tap(EffectTarget.EnchantedCreature)),
+                    .then(Effects.Tap(EffectTarget.EnchantedCreature))
+                    .then(Effects.GiftGiven()),
                 "Promise a gift — an opponent draws a card, tap enchanted creature"
             )
         )

@@ -60,7 +60,8 @@ val MindSpiral = card("Mind Spiral") {
                         ),
                         DrawCardsEffect(3, EffectTarget.ContextTarget(0)),
                         Effects.Tap(EffectTarget.ContextTarget(1)),
-                        Effects.AddCounters(Counters.STUN, 1, EffectTarget.ContextTarget(1))
+                        Effects.AddCounters(Counters.STUN, 1, EffectTarget.ContextTarget(1)),
+                        Effects.GiftGiven()
                     )
                 ),
                 targetRequirements = listOf(

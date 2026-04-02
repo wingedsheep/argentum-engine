@@ -50,7 +50,8 @@ val IntoTheFloodMaw = card("Into the Flood Maw") {
                     controller = EffectTarget.PlayerRef(Player.EachOpponent),
                     tapped = true,
                     imageUri = "https://cards.scryfall.io/normal/front/d/e/de0d6700-49f0-4233-97ba-cef7821c30ed.jpg?1721431109"
-                ).then(Effects.ReturnToHand(EffectTarget.ContextTarget(0))),
+                ).then(Effects.ReturnToHand(EffectTarget.ContextTarget(0)))
+                    .then(Effects.GiftGiven()),
                 TargetPermanent(filter = TargetFilter.NonlandPermanentOpponentControls),
                 "Promise a gift — opponent creates a tapped 1/1 blue Fish token, then return target nonland permanent an opponent controls to its owner's hand"
             )

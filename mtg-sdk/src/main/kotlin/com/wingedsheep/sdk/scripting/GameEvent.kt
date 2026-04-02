@@ -663,6 +663,22 @@ sealed interface GameEvent : TextReplaceable<GameEvent> {
         override fun applyTextReplacement(replacer: TextReplacer): GameEvent = this
     }
 
+    // ---- Gift Triggers ----
+
+    /**
+     * When a player gives a gift (Bloomburrow gift mechanic).
+     * Used by cards like Jolly Gerbils: "Whenever you give a gift, draw a card."
+     */
+    @SerialName("GiftGivenEvent")
+    @Serializable
+    data class GiftGivenEvent(
+        val player: Player = Player.You
+    ) : GameEvent {
+        override val description: String = "${player.description} gives a gift"
+
+        override fun applyTextReplacement(replacer: TextReplacer): GameEvent = this
+    }
+
     // ---- Targeting Triggers ----
 
     /**
