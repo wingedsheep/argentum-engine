@@ -308,6 +308,10 @@ class TournamentMatchHandler(
             ctx.sender.send(ws, roundComplete)
         }
 
+        if (!tournament.isComplete) {
+            autoReadyAiPlayers(lobby, tournament)
+        }
+
         ctx.lobbyRepository.saveLobby(lobby)
         ctx.lobbyRepository.saveTournament(lobbyId, tournament)
 
