@@ -47,6 +47,7 @@ val HoardersOverflow = card("Hoarder's Overflow") {
     // the number of stash counters on this enchantment.
     activatedAbility {
         cost = Costs.Mana("{1}{R}")
+        description = "{1}{R}, Sacrifice: Discard your hand, draw cards equal to stash counters"
         effect = CompositeEffect(
             listOf(
                 EffectPatterns.discardHand(),
