@@ -7,6 +7,7 @@ import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.gameserver.dto.ClientGameState
 import com.wingedsheep.gameserver.protocol.LegalActionInfo
 import com.wingedsheep.gameserver.protocol.ServerMessage
+import com.wingedsheep.gameserver.protocol.ServerMessage.SealedCardInfo
 import com.wingedsheep.sdk.model.EntityId
 import org.slf4j.LoggerFactory
 
@@ -122,6 +123,180 @@ class EngineAiController(
 
     override fun setDeckList(deckList: Map<String, Int>, archetype: String?) {
         // Engine AI evaluates board state directly — deck knowledge isn't needed
+    }
+
+    // =========================================================================
+    // Draft Picking (Heuristic)
+    // =========================================================================
+
+    /** Colors committed to so far, tracked by counting colored mana symbols in picked cards. */
+    private fun inferColors(pickedSoFar: List<SealedCardInfo>): Map<Char, Int> {
+        val colorCounts = mutableMapOf<Char, Int>()
+        for (card in pickedSoFar) {
+            val cost = card.manaCost ?: continue
+            for (symbol in listOf('W', 'U', 'B', 'R', 'G')) {
+                val count = cost.count { it == symbol }
+                if (count > 0) colorCounts[symbol] = (colorCounts[symbol] ?: 0) + count
+            }
+        }
+        return colorCounts
+    }
+
+    override fun chooseDraftPick(
+        pack: List<SealedCardInfo>,
+        pickedSoFar: List<SealedCardInfo>,
+        packNumber: Int,
+        pickNumber: Int,
+        picksRequired: Int
+    ): List<String> {
+        val colorCommitment = inferColors(pickedSoFar)
+        val ranked = pack.sortedByDescending { rateCard(it, colorCommitment, pickedSoFar) }
+        val picks = ranked.take(picksRequired).map { it.name }
+        logger.info("Engine AI draft pick P{}p{}: {} (from {} cards, committed colors: {})",
+            packNumber, pickNumber, picks.joinToString(", "), pack.size,
+            colorCommitment.entries.sortedByDescending { it.value }.take(2).joinToString("") { "${it.key}" })
+        return picks
+    }
+
+    override fun chooseWinstonAction(
+        pileCards: List<SealedCardInfo>,
+        pileIndex: Int,
+        pileSizes: List<Int>,
+        pickedSoFar: List<SealedCardInfo>
+    ): Boolean {
+        val colorCommitment = inferColors(pickedSoFar)
+        val totalRating = pileCards.sumOf { rateCard(it, colorCommitment, pickedSoFar) }
+        // Take pile if average card quality is decent, or if there's a standout card
+        val avgRating = totalRating / pileCards.size.coerceAtLeast(1)
+        val bestCard = pileCards.maxByOrNull { rateCard(it, colorCommitment, pickedSoFar) }
+        val bestRating = if (bestCard != null) rateCard(bestCard, colorCommitment, pickedSoFar) else 0.0
+
+        // More willing to take larger piles (more cards = more value even if some are weak)
+        val sizeBonus = (pileCards.size - 1) * 1.0
+        val take = avgRating + sizeBonus >= 5.0 || bestRating >= 8.0
+
+        // On the last pile, always take (forced by Winston rules, but just in case)
+        val isLastPile = pileIndex == pileSizes.size - 1
+
+        logger.info("Engine AI Winston pile {}: {} cards, avg={}, best={} → {}",
+            pileIndex, pileCards.size, "%.1f".format(avgRating), "%.1f".format(bestRating),
+            if (take || isLastPile) "TAKE" else "SKIP")
+        return take || isLastPile
+    }
+
+    override fun chooseGridDraftPick(
+        grid: List<SealedCardInfo?>,
+        availableSelections: List<String>,
+        pickedSoFar: List<SealedCardInfo>
+    ): String {
+        val colorCommitment = inferColors(pickedSoFar)
+
+        // Rate each available selection by sum of card ratings in that row/column
+        val best = availableSelections.maxByOrNull { selection ->
+            val cards = getGridCards(grid, selection)
+            cards.sumOf { rateCard(it, colorCommitment, pickedSoFar) }
+        } ?: availableSelections.first()
+
+        val cards = getGridCards(grid, best)
+        logger.info("Engine AI grid pick: {} (cards: {})",
+            best, cards.joinToString(", ") { it.name })
+        return best
+    }
+
+    private fun getGridCards(grid: List<SealedCardInfo?>, selection: String): List<SealedCardInfo> {
+        val indices = when {
+            selection.startsWith("ROW_") -> {
+                val row = selection.removePrefix("ROW_").toInt()
+                listOf(row * 3, row * 3 + 1, row * 3 + 2)
+            }
+            selection.startsWith("COL_") -> {
+                val col = selection.removePrefix("COL_").toInt()
+                listOf(col, col + 3, col + 6)
+            }
+            else -> emptyList()
+        }
+        return indices.mapNotNull { if (it < grid.size) grid[it] else null }
+    }
+
+    /**
+     * Rate a card for draft picking. Higher = better pick.
+     * Considers rarity, creature stats, removal potential, mana curve, and color fit.
+     */
+    private fun rateCard(card: SealedCardInfo, colorCommitment: Map<Char, Int>, pickedSoFar: List<SealedCardInfo>): Double {
+        var score = 0.0
+
+        // Rarity bonus
+        score += when (card.rarity.uppercase()) {
+            "MYTHIC" -> 12.0
+            "RARE" -> 10.0
+            "UNCOMMON" -> 6.0
+            "COMMON" -> 3.0
+            else -> 2.0
+        }
+
+        // Creature stats bonus
+        if (card.power != null && card.toughness != null) {
+            val stats = card.power + card.toughness
+            val cmc = parseCmc(card.manaCost ?: "")
+            // Efficient creatures score higher (stats relative to cost)
+            if (cmc > 0) {
+                score += (stats.toDouble() / cmc) * 2.0
+            }
+            score += 1.0 // Creatures are generally good in limited
+        }
+
+        // Removal / interaction bonus (heuristic: check oracle text)
+        val oracle = card.oracleText?.lowercase() ?: ""
+        if (oracle.contains("destroy") || oracle.contains("exile") || oracle.contains("damage") ||
+            oracle.contains("fight") || oracle.contains("-") && oracle.contains("/-")) {
+            score += 3.0
+        }
+
+        // Evasion bonus
+        if (oracle.contains("flying") || oracle.contains("menace") || oracle.contains("trample") ||
+            oracle.contains("unblockable") || oracle.contains("can't be blocked")) {
+            score += 2.0
+        }
+
+        // Card advantage bonus
+        if (oracle.contains("draw") || oracle.contains("create") && oracle.contains("token")) {
+            score += 2.0
+        }
+
+        // Color fit — reward cards that match our committed colors, penalize off-color
+        val cardColors = extractColors(card.manaCost)
+        if (cardColors.isNotEmpty() && colorCommitment.isNotEmpty()) {
+            val topColors = colorCommitment.entries.sortedByDescending { it.value }.take(2).map { it.key }.toSet()
+            val onColor = cardColors.all { it in topColors }
+            val splashable = cardColors.size == 1 && parseCmc(card.manaCost ?: "") >= 4
+            when {
+                onColor -> score += 2.0
+                splashable -> score += 0.5
+                pickedSoFar.size >= 8 -> score -= 3.0  // Penalize off-color after early picks
+                else -> {} // Early picks: don't penalize too much, still exploring
+            }
+        }
+
+        // Mana curve consideration — prefer 2-4 drops in limited
+        val cmc = parseCmc(card.manaCost ?: "")
+        if (cmc in 2..4) score += 1.0
+        if (cmc >= 7) score -= 1.0
+
+        // Lands are generally low priority in draft (you get basics)
+        if (card.typeLine.contains("Land", ignoreCase = true)) {
+            score -= 2.0
+            // But nonbasic dual lands are good
+            if (oracle.contains("add") && (oracle.contains("or") || oracle.contains("any color"))) {
+                score += 4.0
+            }
+        }
+
+        return score
+    }
+
+    private fun extractColors(manaCost: String?): Set<Char> {
+        if (manaCost == null) return emptySet()
+        return setOf('W', 'U', 'B', 'R', 'G').filter { it in manaCost }.toSet()
     }
 
     private fun parseCmc(manaCost: String): Int {

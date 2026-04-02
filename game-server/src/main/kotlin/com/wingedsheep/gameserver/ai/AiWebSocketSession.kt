@@ -42,6 +42,22 @@ class AiWebSocketSession(
     private val onBottomCards: (EntityId, List<EntityId>) -> Unit
 ) : WebSocketSession {
 
+    // =========================================================================
+    // Draft callbacks — set by LobbyHandler when a draft starts
+    // =========================================================================
+
+    /** Called when AI makes a booster draft pick. Args: (playerId, cardNames) */
+    @Volatile var onDraftPick: ((EntityId, List<String>) -> Unit)? = null
+
+    /** Called when AI takes a Winston pile. Args: (playerId) */
+    @Volatile var onWinstonTakePile: ((EntityId) -> Unit)? = null
+
+    /** Called when AI skips a Winston pile. Args: (playerId) */
+    @Volatile var onWinstonSkipPile: ((EntityId) -> Unit)? = null
+
+    /** Called when AI makes a grid draft pick. Args: (playerId, selection) */
+    @Volatile var onGridDraftPick: ((EntityId, String) -> Unit)? = null
+
     private val sessionId = "ai-${UUID.randomUUID()}"
     private val open = AtomicBoolean(true)
     private val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
@@ -162,6 +178,49 @@ class AiWebSocketSession(
                 scope.cancel()
             }
 
+            // =================================================================
+            // Draft messages
+            // =================================================================
+
+            is ServerMessage.DraftPackReceived -> {
+                logger.info("AI received DraftPackReceived: pack={}, pick={}, cards={}, picksPerRound={}",
+                    message.packNumber, message.pickNumber, message.cards.size, message.picksPerRound)
+                handleDraftPack(message)
+            }
+
+            is ServerMessage.DraftPickConfirmed -> {
+                logger.info("AI draft pick confirmed: {} (total: {})",
+                    message.cardNames.joinToString(", "), message.totalPicked)
+            }
+
+            is ServerMessage.DraftComplete -> {
+                logger.info("AI draft complete: {} cards picked", message.pickedCards.size)
+            }
+
+            is ServerMessage.WinstonDraftState -> {
+                if (message.isYourTurn) {
+                    logger.info("AI received WinstonDraftState: pile={}, pileCards={}, pileSizes={}",
+                        message.currentPileIndex, message.currentPileCards?.size, message.pileSizes)
+                    handleWinstonTurn(message)
+                } else {
+                    logger.info("AI waiting for opponent's Winston turn")
+                }
+            }
+
+            is ServerMessage.GridDraftState -> {
+                if (message.isYourTurn) {
+                    logger.info("AI received GridDraftState: grid #{}, selections={}",
+                        message.gridNumber, message.availableSelections)
+                    handleGridDraftTurn(message)
+                } else {
+                    logger.info("AI waiting for opponent's grid draft turn")
+                }
+            }
+
+            is ServerMessage.SealedPoolGenerated -> {
+                logger.info("AI received SealedPoolGenerated: {} cards", message.cardPool.size)
+            }
+
             else -> {
                 logger.info("AI received message type: {}", message::class.simpleName)
             }
@@ -277,6 +336,83 @@ class AiWebSocketSession(
                 submitResponse(ActionResponse.SubmitAction(passAction.action))
             }
         }
+    }
+
+    // =========================================================================
+    // Draft pick handlers
+    // =========================================================================
+
+    private suspend fun handleDraftPack(message: ServerMessage.DraftPackReceived) {
+        val callback = onDraftPick
+        if (callback == null) {
+            logger.warn("AI received draft pack but no onDraftPick callback is set")
+            return
+        }
+
+        delay(thinkingDelayMs)
+
+        val picks = controller.chooseDraftPick(
+            pack = message.cards,
+            pickedSoFar = message.pickedCards,
+            packNumber = message.packNumber,
+            pickNumber = message.pickNumber,
+            picksRequired = message.picksPerRound
+        )
+        logger.info("AI draft pick: {}", picks.joinToString(", "))
+        callback(aiPlayerId, picks)
+    }
+
+    private suspend fun handleWinstonTurn(message: ServerMessage.WinstonDraftState) {
+        val pileCards = message.currentPileCards
+        if (pileCards == null) {
+            logger.warn("AI Winston turn but no pile cards visible")
+            return
+        }
+
+        delay(thinkingDelayMs)
+
+        val take = controller.chooseWinstonAction(
+            pileCards = pileCards,
+            pileIndex = message.currentPileIndex,
+            pileSizes = message.pileSizes,
+            pickedSoFar = message.pickedCards
+        )
+
+        if (take) {
+            val callback = onWinstonTakePile
+            if (callback != null) {
+                logger.info("AI Winston: TAKE pile {}", message.currentPileIndex)
+                callback(aiPlayerId)
+            } else {
+                logger.warn("AI wants to take Winston pile but no callback set")
+            }
+        } else {
+            val callback = onWinstonSkipPile
+            if (callback != null) {
+                logger.info("AI Winston: SKIP pile {}", message.currentPileIndex)
+                callback(aiPlayerId)
+            } else {
+                logger.warn("AI wants to skip Winston pile but no callback set")
+            }
+        }
+    }
+
+    private suspend fun handleGridDraftTurn(message: ServerMessage.GridDraftState) {
+        val callback = onGridDraftPick
+        if (callback == null) {
+            logger.warn("AI received grid draft turn but no onGridDraftPick callback is set")
+            return
+        }
+
+        delay(thinkingDelayMs)
+
+        val selection = controller.chooseGridDraftPick(
+            grid = message.grid,
+            availableSelections = message.availableSelections,
+            pickedSoFar = message.pickedCards
+        )
+        logger.info("AI grid draft pick: {}", selection)
+        callback(aiPlayerId, selection)
     }
 
     private fun submitResponse(response: ActionResponse) {

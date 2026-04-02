@@ -22,6 +22,9 @@ class WinstonDraftHandler(
 ) {
     private val logger = LoggerFactory.getLogger(WinstonDraftHandler::class.java)
 
+    /** Callback invoked when draft completes — set by LobbyHandler to trigger AI deck building. */
+    @Volatile var onDraftComplete: ((TournamentLobby) -> Unit)? = null
+
     fun handleWinstonTakePile(session: WebSocketSession) {
         val (identity, lobby) = ctx.getIdentityAndLobby(session) ?: return
 
@@ -96,6 +99,9 @@ class WinstonDraftHandler(
                 }
 
                 ctx.broadcastLobbyUpdate(lobby)
+
+                // Trigger AI deck building after draft completes
+                onDraftComplete?.invoke(lobby)
             }
 
             is WinstonActionResult.Error -> {

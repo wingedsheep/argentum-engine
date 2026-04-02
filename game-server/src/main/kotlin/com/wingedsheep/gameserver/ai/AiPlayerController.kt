@@ -6,6 +6,7 @@ import com.wingedsheep.gameserver.config.AiProperties
 import com.wingedsheep.gameserver.dto.ClientGameState
 import com.wingedsheep.gameserver.protocol.LegalActionInfo
 import com.wingedsheep.gameserver.protocol.ServerMessage
+import com.wingedsheep.gameserver.protocol.ServerMessage.SealedCardInfo
 import com.wingedsheep.engine.core.*
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.sdk.core.Color
@@ -832,6 +833,231 @@ class AiPlayerController(
             return heuristicAction(emptyList(), state)
         }
         return ActionResponse.SubmitDecision(playerId, response)
+    }
+
+    // =========================================================================
+    // Draft Picking (LLM)
+    // =========================================================================
+
+    override fun chooseDraftPick(
+        pack: List<SealedCardInfo>,
+        pickedSoFar: List<SealedCardInfo>,
+        packNumber: Int,
+        pickNumber: Int,
+        picksRequired: Int
+    ): List<String> {
+        val prompt = formatDraftPickPrompt(pack, pickedSoFar, packNumber, pickNumber, picksRequired)
+        logger.info("AI draft pick prompt ({} chars)", prompt.length)
+
+        val response = queryLlmEphemeral(prompt)
+        if (response != null) {
+            val answer = extractAnswer(response) ?: response
+            val picked = parseDraftPickResponse(answer, pack, picksRequired)
+            if (picked.isNotEmpty()) {
+                logger.info("AI LLM draft pick P{}p{}: {}", packNumber, pickNumber, picked.joinToString(", "))
+                return picked
+            }
+            logger.warn("AI failed to parse draft pick LLM response: {}", response)
+        }
+
+        // Fallback: pick by rarity then alphabetical
+        val fallback = pack.sortedByDescending { rarityScore(it.rarity) }.take(picksRequired).map { it.name }
+        logger.info("AI draft pick fallback P{}p{}: {}", packNumber, pickNumber, fallback.joinToString(", "))
+        return fallback
+    }
+
+    override fun chooseWinstonAction(
+        pileCards: List<SealedCardInfo>,
+        pileIndex: Int,
+        pileSizes: List<Int>,
+        pickedSoFar: List<SealedCardInfo>
+    ): Boolean {
+        val prompt = formatWinstonPrompt(pileCards, pileIndex, pileSizes, pickedSoFar)
+        logger.info("AI Winston prompt ({} chars)", prompt.length)
+
+        val response = queryLlmEphemeral(prompt)
+        if (response != null) {
+            val answer = (extractAnswer(response) ?: response).trim().lowercase()
+            if (answer.contains("take")) return true
+            if (answer.contains("skip")) return false
+        }
+
+        // Fallback: take if pile has 3+ cards or a rare
+        val hasRare = pileCards.any { it.rarity.uppercase() in listOf("RARE", "MYTHIC") }
+        return pileCards.size >= 3 || hasRare
+    }
+
+    override fun chooseGridDraftPick(
+        grid: List<SealedCardInfo?>,
+        availableSelections: List<String>,
+        pickedSoFar: List<SealedCardInfo>
+    ): String {
+        val prompt = formatGridDraftPrompt(grid, availableSelections, pickedSoFar)
+        logger.info("AI grid draft prompt ({} chars)", prompt.length)
+
+        val response = queryLlmEphemeral(prompt)
+        if (response != null) {
+            val answer = (extractAnswer(response) ?: response).trim().uppercase()
+            // Match against available selections
+            val match = availableSelections.find { answer.contains(it) }
+            if (match != null) {
+                logger.info("AI LLM grid draft pick: {}", match)
+                return match
+            }
+        }
+
+        // Fallback: pick selection with most non-null cards
+        return availableSelections.maxByOrNull { sel ->
+            getGridIndices(sel).count { i -> i < grid.size && grid[i] != null }
+        } ?: availableSelections.first()
+    }
+
+    private fun formatDraftPickPrompt(
+        pack: List<SealedCardInfo>,
+        pickedSoFar: List<SealedCardInfo>,
+        packNumber: Int,
+        pickNumber: Int,
+        picksRequired: Int
+    ): String = buildString {
+        appendLine("You are drafting Magic: The Gathering cards. Pick $picksRequired card${if (picksRequired > 1) "s" else ""} from this pack.")
+        appendLine()
+        appendLine("Pack $packNumber, Pick $pickNumber")
+        appendLine()
+        appendLine("PACK (choose from these):")
+        for ((i, card) in pack.withIndex()) {
+            val stats = if (card.power != null) " ${card.power}/${card.toughness}" else ""
+            val oracle = if (!card.oracleText.isNullOrBlank()) " — ${card.oracleText}" else ""
+            appendLine("  ${('A' + i)}. ${card.name} ${card.manaCost ?: ""} [${card.typeLine}]$stats [${card.rarity}]$oracle")
+        }
+
+        if (pickedSoFar.isNotEmpty()) {
+            appendLine()
+            appendLine("YOUR PICKS SO FAR (${pickedSoFar.size} cards):")
+            val grouped = pickedSoFar.groupBy { it.name }
+            for ((name, copies) in grouped.entries.sortedBy { it.value.first().manaCost ?: "zzz" }) {
+                val count = if (copies.size > 1) "${copies.size}x " else ""
+                appendLine("  $count${name} ${copies.first().manaCost ?: ""} [${copies.first().typeLine}]")
+            }
+        }
+
+        appendLine()
+        appendLine("DRAFT STRATEGY:")
+        appendLine("- Early picks (1-3): take the best card regardless of color")
+        appendLine("- Mid picks (4-8): start committing to 2 colors based on what's open")
+        appendLine("- Late picks (9+): stay in your colors, fill curve gaps")
+        appendLine("- Prioritize: removal > efficient creatures > evasion > card advantage > fillers")
+        appendLine("- Good mana curve: enough 2-drops and 3-drops to not fall behind")
+        appendLine()
+        appendLine("Reply with ONLY the letter(s) of your pick. Example: A")
+    }
+
+    private fun formatWinstonPrompt(
+        pileCards: List<SealedCardInfo>,
+        pileIndex: Int,
+        pileSizes: List<Int>,
+        pickedSoFar: List<SealedCardInfo>
+    ): String = buildString {
+        appendLine("Winston Draft: You are looking at pile ${pileIndex + 1} of ${pileSizes.size}.")
+        appendLine("Pile sizes: ${pileSizes.joinToString(", ")}")
+        appendLine()
+        appendLine("CURRENT PILE (${pileCards.size} cards):")
+        for (card in pileCards) {
+            val stats = if (card.power != null) " ${card.power}/${card.toughness}" else ""
+            appendLine("  ${card.name} ${card.manaCost ?: ""} [${card.typeLine}]$stats [${card.rarity}]")
+        }
+
+        if (pickedSoFar.isNotEmpty()) {
+            appendLine()
+            appendLine("YOUR PICKS SO FAR (${pickedSoFar.size} cards):")
+            pickedSoFar.groupBy { it.name }.forEach { (name, copies) ->
+                appendLine("  ${if (copies.size > 1) "${copies.size}x " else ""}$name")
+            }
+        }
+
+        appendLine()
+        appendLine("Reply with ONLY: TAKE or SKIP")
+    }
+
+    private fun formatGridDraftPrompt(
+        grid: List<SealedCardInfo?>,
+        availableSelections: List<String>,
+        pickedSoFar: List<SealedCardInfo>
+    ): String = buildString {
+        appendLine("Grid Draft: Choose a row or column from the 3x3 grid.")
+        appendLine()
+        appendLine("GRID:")
+        for (row in 0..2) {
+            val cells = (0..2).map { col ->
+                val card = grid.getOrNull(row * 3 + col)
+                card?.let { "${it.name} ${it.manaCost ?: ""}" } ?: "[empty]"
+            }
+            appendLine("  Row $row: ${cells.joinToString(" | ")}")
+        }
+
+        appendLine()
+        appendLine("AVAILABLE SELECTIONS: ${availableSelections.joinToString(", ")}")
+
+        if (pickedSoFar.isNotEmpty()) {
+            appendLine()
+            appendLine("YOUR PICKS SO FAR (${pickedSoFar.size} cards):")
+            pickedSoFar.groupBy { it.name }.forEach { (name, copies) ->
+                appendLine("  ${if (copies.size > 1) "${copies.size}x " else ""}$name")
+            }
+        }
+
+        appendLine()
+        appendLine("Reply with ONLY the selection (e.g., ROW_0 or COL_1)")
+    }
+
+    private fun parseDraftPickResponse(response: String, pack: List<SealedCardInfo>, picksRequired: Int): List<String> {
+        val cleaned = response.trim().uppercase()
+        val picks = mutableListOf<String>()
+
+        // Try letter-based picks (A, B, C, ...)
+        for (ch in cleaned) {
+            if (ch in 'A'..'Z') {
+                val index = ch - 'A'
+                if (index < pack.size) {
+                    picks.add(pack[index].name)
+                }
+            }
+            if (picks.size >= picksRequired) break
+        }
+
+        if (picks.size >= picksRequired) return picks
+
+        // Try matching card names directly
+        picks.clear()
+        for (card in pack) {
+            if (cleaned.contains(card.name.uppercase())) {
+                picks.add(card.name)
+                if (picks.size >= picksRequired) break
+            }
+        }
+
+        return picks
+    }
+
+    private fun getGridIndices(selection: String): List<Int> {
+        return when {
+            selection.startsWith("ROW_") -> {
+                val row = selection.removePrefix("ROW_").toIntOrNull() ?: return emptyList()
+                listOf(row * 3, row * 3 + 1, row * 3 + 2)
+            }
+            selection.startsWith("COL_") -> {
+                val col = selection.removePrefix("COL_").toIntOrNull() ?: return emptyList()
+                listOf(col, col + 3, col + 6)
+            }
+            else -> emptyList()
+        }
+    }
+
+    private fun rarityScore(rarity: String): Int = when (rarity.uppercase()) {
+        "MYTHIC" -> 4
+        "RARE" -> 3
+        "UNCOMMON" -> 2
+        "COMMON" -> 1
+        else -> 0
     }
 
     companion object {

@@ -21,6 +21,9 @@ class BoosterDraftHandler(
 ) {
     private val logger = LoggerFactory.getLogger(BoosterDraftHandler::class.java)
 
+    /** Callback invoked when draft completes — set by LobbyHandler to trigger AI deck building. */
+    @Volatile var onDraftComplete: ((TournamentLobby) -> Unit)? = null
+
     fun handleMakePick(session: WebSocketSession, message: ClientMessage.MakePick) {
         val token = ctx.sessionRegistry.getTokenByWsId(session.id)
         val identity = token?.let { ctx.sessionRegistry.getIdentityByToken(it) }
@@ -98,6 +101,9 @@ class BoosterDraftHandler(
 
             ctx.broadcastLobbyUpdate(lobby)
             ctx.lobbyRepository.saveLobby(lobby)
+
+            // Trigger AI deck building after draft completes
+            onDraftComplete?.invoke(lobby)
         }
     }
 

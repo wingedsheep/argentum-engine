@@ -23,6 +23,9 @@ class GridDraftHandler(
 ) {
     private val logger = LoggerFactory.getLogger(GridDraftHandler::class.java)
 
+    /** Callback invoked when draft completes — set by LobbyHandler to trigger AI deck building. */
+    @Volatile var onDraftComplete: ((TournamentLobby) -> Unit)? = null
+
     fun handleGridDraftPick(session: WebSocketSession, message: ClientMessage.GridDraftPick) {
         val token = ctx.sessionRegistry.getTokenByWsId(session.id)
         val identity = token?.let { ctx.sessionRegistry.getIdentityByToken(it) }
@@ -96,6 +99,9 @@ class GridDraftHandler(
                         }
                     }
                     ctx.broadcastLobbyUpdate(lobby)
+
+                    // Trigger AI deck building after draft completes
+                    onDraftComplete?.invoke(lobby)
                 } else {
                     logger.info("Grid draft: group complete, other group(s) still active in lobby ${lobby.lobbyId}")
                     lobby.pickTimerJob?.cancel()

@@ -1,6 +1,7 @@
 package com.wingedsheep.gameserver.handler
 
 import com.wingedsheep.gameserver.ai.AiGameManager
+import com.wingedsheep.gameserver.ai.AiWebSocketSession
 import com.wingedsheep.gameserver.handler.ConnectionHandler.Companion.cardToSealedCardInfo
 import com.wingedsheep.gameserver.lobby.LobbyState
 import com.wingedsheep.gameserver.lobby.TournamentFormat
@@ -20,6 +21,7 @@ import com.wingedsheep.gameserver.config.GameProperties
 import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.gameserver.deck.EasterEggDeckInjector
 import com.wingedsheep.sdk.model.EntityId
+import jakarta.annotation.PostConstruct
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.slf4j.LoggerFactory
@@ -45,6 +47,13 @@ class LobbyHandler(
     private val tournamentMatchHandler: TournamentMatchHandler
 ) {
     private val logger = LoggerFactory.getLogger(LobbyHandler::class.java)
+
+    @PostConstruct
+    fun wireCallbacks() {
+        boosterDraftHandler.onDraftComplete = { lobby -> launchAiDeckBuilding(lobby) }
+        winstonDraftHandler.onDraftComplete = { lobby -> launchAiDeckBuilding(lobby) }
+        gridDraftHandler.onDraftComplete = { lobby -> launchAiDeckBuilding(lobby) }
+    }
 
     @Volatile
     var waitingSealedSession: SealedSession? = null
@@ -855,7 +864,10 @@ class LobbyHandler(
 
                 logger.info("Lobby ${lobby.lobbyId} started drafting (${lobby.playerCount} players)")
 
-                // Send first packs to all players
+                // Wire AI draft callbacks before broadcasting packs
+                wireAiDraftCallbacks(lobby)
+
+                // Send first packs to all players (AI sessions will auto-pick via callbacks)
                 boosterDraftHandler.broadcastDraftPacks(lobby)
 
                 // Start the pick timer
@@ -876,6 +888,9 @@ class LobbyHandler(
 
                 logger.info("Lobby ${lobby.lobbyId} started Winston Draft (2 players)")
 
+                // Wire AI draft callbacks before broadcasting state
+                wireAiDraftCallbacks(lobby)
+
                 // Send initial state to both players
                 winstonDraftHandler.broadcastWinstonDraftState(lobby, null)
 
@@ -890,6 +905,9 @@ class LobbyHandler(
                 }
 
                 logger.info("Lobby ${lobby.lobbyId} started grid draft (${lobby.playerCount} players)")
+
+                // Wire AI draft callbacks before broadcasting state
+                wireAiDraftCallbacks(lobby)
 
                 // Broadcast initial grid state
                 gridDraftHandler.broadcastGridDraftState(lobby, null)
@@ -1045,6 +1063,117 @@ class LobbyHandler(
             val tournament = tournamentMatchHandler.ensureTournamentCreated(lobby)
             tournamentMatchHandler.autoReadyAiPlayers(lobby, tournament)
             lobbyRepository.saveLobby(lobby)
+        }
+    }
+
+    // =========================================================================
+    // AI Draft Integration
+    // =========================================================================
+
+    /**
+     * Wire draft callbacks on all AI players' sessions so their picks route
+     * back into the lobby. Called once when a draft starts.
+     */
+    private fun wireAiDraftCallbacks(lobby: TournamentLobby) {
+        val aiPlayers = lobby.players.filter { (playerId, _) -> aiGameManager.isAiPlayer(playerId) }
+        if (aiPlayers.isEmpty()) return
+
+        for ((_, playerState) in aiPlayers) {
+            val ws = playerState.identity.webSocketSession as? AiWebSocketSession ?: continue
+
+            ws.onDraftPick = { playerId, cardNames ->
+                handleAiBoosterDraftPick(lobby, playerId, cardNames)
+            }
+
+            ws.onWinstonTakePile = { playerId ->
+                handleAiWinstonTakePile(lobby, playerId)
+            }
+
+            ws.onWinstonSkipPile = { playerId ->
+                handleAiWinstonSkipPile(lobby, playerId)
+            }
+
+            ws.onGridDraftPick = { playerId, selection ->
+                handleAiGridDraftPick(lobby, playerId, selection)
+            }
+        }
+
+        logger.info("Wired draft callbacks for {} AI players in lobby {}", aiPlayers.size, lobby.lobbyId)
+    }
+
+    private fun handleAiBoosterDraftPick(lobby: TournamentLobby, playerId: EntityId, cardNames: List<String>) {
+        if (lobby.state != LobbyState.DRAFTING) return
+
+        val result = lobby.makePick(playerId, cardNames)
+        when (result) {
+            is com.wingedsheep.gameserver.lobby.PickResult.Success -> {
+                val playerState = lobby.players[playerId]
+                logger.info("AI ${playerState?.identity?.playerName} picked ${result.pickedCards.map { it.name }.joinToString(", ")} (${result.totalPicked} total)")
+
+                val ws = playerState?.identity?.webSocketSession
+                if (ws != null && ws.isOpen) {
+                    sender.send(ws, ServerMessage.DraftPickConfirmed(
+                        cardNames = result.pickedCards.map { it.name },
+                        totalPicked = result.totalPicked
+                    ))
+                }
+
+                // Broadcast pick made
+                val identity = playerState?.identity
+                if (identity != null) {
+                    val message = ServerMessage.DraftPickMade(
+                        playerId = identity.playerId.value,
+                        playerName = identity.playerName,
+                        waitingForPlayers = result.waitingForPlayers
+                    )
+                    lobby.players.forEach { (_, ps) ->
+                        val pws = ps.identity.webSocketSession
+                        if (pws != null && pws.isOpen) {
+                            sender.send(pws, message)
+                        }
+                    }
+                }
+
+                lobbyRepository.saveLobby(lobby)
+
+                if (lobby.allPlayersPicked()) {
+                    boosterDraftHandler.processDraftRound(lobby)
+                }
+            }
+            is com.wingedsheep.gameserver.lobby.PickResult.Error -> {
+                logger.warn("AI draft pick failed for {}: {}", playerId.value, result.message)
+                // Fallback: auto-pick first cards
+                val fallback = lobby.autoPickFirstCards(playerId)
+                if (fallback is com.wingedsheep.gameserver.lobby.PickResult.Success && lobby.allPlayersPicked()) {
+                    boosterDraftHandler.processDraftRound(lobby)
+                }
+            }
+        }
+    }
+
+    private fun handleAiWinstonTakePile(lobby: TournamentLobby, playerId: EntityId) {
+        // Delegate to the WinstonDraftHandler's internal logic by simulating the action
+        // We need to get the AI's WebSocket session to route through the handler
+        val playerState = lobby.players[playerId]
+        val ws = playerState?.identity?.webSocketSession
+        if (ws != null) {
+            winstonDraftHandler.handleWinstonTakePile(ws)
+        }
+    }
+
+    private fun handleAiWinstonSkipPile(lobby: TournamentLobby, playerId: EntityId) {
+        val playerState = lobby.players[playerId]
+        val ws = playerState?.identity?.webSocketSession
+        if (ws != null) {
+            winstonDraftHandler.handleWinstonSkipPile(ws)
+        }
+    }
+
+    private fun handleAiGridDraftPick(lobby: TournamentLobby, playerId: EntityId, selection: String) {
+        val playerState = lobby.players[playerId]
+        val ws = playerState?.identity?.webSocketSession
+        if (ws != null) {
+            gridDraftHandler.handleGridDraftPick(ws, ClientMessage.GridDraftPick(selection))
         }
     }
 
