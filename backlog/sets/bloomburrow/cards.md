@@ -2,12 +2,12 @@
 
 **Set Size:** 266 cards
 **Release Date:** August 2, 2024
-**Implemented:** 218 / 266
+**Implemented:** 219 / 266
 
 | Color      | Total | Done |
 |------------|-------|------|
 | White      | 40    | 32   |
-| Blue       | 41    | 32   |
+| Blue       | 41    | 33   |
 | Black      | 40    | 32   |
 | Red        | 41    | 32   |
 | Green      | 41    | 35   |
@@ -154,7 +154,7 @@
 - [x] Mind Spiral
 - [x] Mindwhisker
 - [ ] Mistbreath Elder
-- [ ] Mockingbird
+- [x] Mockingbird
 - [x] Moonrise Cleric
 - [x] Moonstone Harbinger
 - [x] Mountain

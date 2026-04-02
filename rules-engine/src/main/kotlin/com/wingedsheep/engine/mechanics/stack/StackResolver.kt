@@ -414,11 +414,25 @@ class StackResolver(
             if (entersAsCopy != null) {
                 // Find all permanents on the battlefield matching the copy filter
                 val copyFilter = entersAsCopy.copyFilter
-                val candidates = state.getBattlefield().filter { entityId ->
+                var candidates = state.getBattlefield().filter { entityId ->
                     predicateEvaluator.matches(
                         state, entityId, copyFilter,
                         PredicateContext(controllerId = controllerId)
                     )
+                }
+
+                // Filter by mana value ≤ total mana spent (for Mockingbird-style effects)
+                if (entersAsCopy.filterByTotalManaSpent) {
+                    val xValue = spellComponent.xValue ?: 0
+                    // Total mana spent = X + non-X portion of mana cost
+                    val baseNonXCost = cardComponent.manaCost.symbols
+                        .filterNot { it is com.wingedsheep.sdk.core.ManaSymbol.X }
+                        .sumOf { it.cmc }
+                    val totalManaSpent = xValue + baseNonXCost
+                    candidates = candidates.filter { entityId ->
+                        val targetCard = state.getEntity(entityId)?.get<CardComponent>()
+                        (targetCard?.manaValue ?: 0) <= totalManaSpent
+                    }
                 }
 
                 if (candidates.isNotEmpty()) {
@@ -450,7 +464,9 @@ class StackResolver(
                         spellId = spellId,
                         controllerId = controllerId,
                         ownerId = ownerId,
-                        castFaceDown = spellComponent.castFaceDown
+                        castFaceDown = spellComponent.castFaceDown,
+                        additionalSubtypes = entersAsCopy.additionalSubtypes,
+                        additionalKeywords = entersAsCopy.additionalKeywords
                     )
 
                     val pausedState = state

@@ -245,9 +245,22 @@ class ModalAndCloneContinuationResumer(
 
             if (targetCardComponent != null) {
                 // Create a copy of the target's CardComponent, keeping Clone's ownerId
-                val copiedCardComponent = targetCardComponent.copy(
+                // Apply additional subtypes and keywords if specified (e.g., Mockingbird adds Bird + flying)
+                var copiedCardComponent = targetCardComponent.copy(
                     ownerId = ownerId
                 )
+                if (continuation.additionalSubtypes.isNotEmpty()) {
+                    val newSubtypes = copiedCardComponent.typeLine.subtypes +
+                        continuation.additionalSubtypes.map { com.wingedsheep.sdk.core.Subtype(it) }
+                    copiedCardComponent = copiedCardComponent.copy(
+                        typeLine = copiedCardComponent.typeLine.copy(subtypes = newSubtypes)
+                    )
+                }
+                if (continuation.additionalKeywords.isNotEmpty()) {
+                    copiedCardComponent = copiedCardComponent.copy(
+                        baseKeywords = copiedCardComponent.baseKeywords + continuation.additionalKeywords
+                    )
+                }
 
                 // Update entity with copied card component and copy tracking
                 newState = newState.updateEntity(spellId) { c ->

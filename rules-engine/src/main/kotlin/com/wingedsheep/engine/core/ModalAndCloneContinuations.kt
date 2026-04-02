@@ -1,6 +1,7 @@
 package com.wingedsheep.engine.core
 
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
+import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.effects.BudgetMode
 import com.wingedsheep.sdk.scripting.effects.Effect
@@ -75,6 +76,8 @@ data class ModalTargetContinuation(
  * @property ownerId The owner of the card
  * @property castFaceDown Whether the spell was cast face-down
  * @property optional Whether the copy is optional (Clone is optional)
+ * @property additionalSubtypes Subtypes to add to the copy (e.g., "Bird" for Mockingbird)
+ * @property additionalKeywords Keywords to grant to the copy (e.g., FLYING for Mockingbird)
  */
 @Serializable
 data class CloneEntersContinuation(
@@ -82,7 +85,9 @@ data class CloneEntersContinuation(
     val spellId: EntityId,
     val controllerId: EntityId,
     val ownerId: EntityId,
-    val castFaceDown: Boolean
+    val castFaceDown: Boolean,
+    val additionalSubtypes: List<String> = emptyList(),
+    val additionalKeywords: List<Keyword> = emptyList()
 ) : ContinuationFrame
 
 /**

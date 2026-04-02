@@ -1098,7 +1098,7 @@ Used in card definitions for effects that intercept events before they happen:
 - `EntersWithCounters(counterType, count, appliesTo)` — Master Biomancer
 - `EntersWithDynamicCounters(counterType, count: DynamicAmount, appliesTo)` — dynamic counter entry
 - `UndyingEffect(appliesTo)` / `PersistEffect(appliesTo)`
-- `EntersAsCopy(optional, copyFilter, appliesTo)` — clone effects (copyFilter defaults to Creature; use `GameObjectFilter.NonlandPermanent` for Clever Impersonator)
+- `EntersAsCopy(optional, copyFilter, filterByTotalManaSpent, additionalSubtypes, additionalKeywords, appliesTo)` — clone effects (copyFilter defaults to Creature; use `GameObjectFilter.NonlandPermanent` for Clever Impersonator; `filterByTotalManaSpent` for X-cost clones like Mockingbird; `additionalSubtypes`/`additionalKeywords` for "except it's a Bird and has flying")
 - `EntersWithColorChoice(appliesTo)` — choose color on entry
 - `EntersWithCreatureTypeChoice(opponentChooses, appliesTo)` — choose creature type on entry
 - `EntersWithCreatureChoice(appliesTo)` — choose another creature you control on entry (Dauntless Bodyguard). Stores chosen creature as `ChosenCreatureComponent`. Reference via `EffectTarget.ChosenCreature`

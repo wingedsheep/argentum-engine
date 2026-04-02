@@ -1,6 +1,7 @@
 package com.wingedsheep.sdk.scripting
 
 import com.wingedsheep.sdk.core.Zone
+import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.scripting.conditions.Condition
 import com.wingedsheep.sdk.scripting.effects.Effect
 import com.wingedsheep.sdk.scripting.events.CounterTypeFilter
@@ -526,12 +527,19 @@ data class ModifyLifeGain(
  *
  * @param copyFilter Filter for what can be copied. Defaults to creatures only (Clone).
  *                   Use [GameObjectFilter.Companion.NonlandPermanent] for Clever Impersonator.
+ * @param filterByTotalManaSpent When true, only creatures with mana value ≤ total mana spent
+ *                                to cast this spell are valid copy targets. Used for Mockingbird.
+ * @param additionalSubtypes Subtypes to add to the copy (e.g., "Bird" for Mockingbird).
+ * @param additionalKeywords Keywords to grant to the copy (e.g., FLYING for Mockingbird).
  */
 @SerialName("EntersAsCopy")
 @Serializable
 data class EntersAsCopy(
     val optional: Boolean = true,
     val copyFilter: GameObjectFilter = GameObjectFilter.Creature,
+    val filterByTotalManaSpent: Boolean = false,
+    val additionalSubtypes: List<String> = emptyList(),
+    val additionalKeywords: List<Keyword> = emptyList(),
     override val appliesTo: GameEvent = GameEvent.ZoneChangeEvent(
         filter = GameObjectFilter.Any,
         to = Zone.BATTLEFIELD
