@@ -37,6 +37,7 @@ object BloomburrowSet {
         BarkformHarvester,
         BaylenTheHaymaker,
         BellowingCrier,
+        BezaTheBoundingSpring,
         BloomingBlast,
         BonebindOrator,
         BuildersTalent,
