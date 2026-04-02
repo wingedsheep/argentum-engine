@@ -2,7 +2,7 @@
 
 **Set Size:** 266 cards
 **Release Date:** August 2, 2024
-**Implemented:** 203 / 266
+**Implemented:** 204 / 266
 
 | Color      | Total | Done |
 |------------|-------|------|
@@ -10,7 +10,7 @@
 | Blue       | 41    | 30   |
 | Black      | 40    | 32   |
 | Red        | 41    | 32   |
-| Green      | 41    | 28   |
+| Green      | 41    | 29   |
 | Multicolor | 39    | 30   |
 | Colorless  | 9     | 6    |
 | Land       | 15    | 13   |
@@ -141,7 +141,7 @@
 - [ ] Lilysplash Mentor
 - [ ] Long River Lurker
 - [x] Long River's Pull
-- [ ] Longstalk Brawl
+- [x] Longstalk Brawl
 - [ ] Lumra, Bellow of the Woods
 - [x] Lunar Convocation
 - [x] Lupinflower Village

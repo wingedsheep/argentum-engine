@@ -118,6 +118,7 @@ object BloomburrowSet {
         LifecreedDuo,
         LilypadVillage,
         LongRiversPull,
+        LongstalkBrawl,
         LunarConvocation,
         LupinflowerVillage,
         MabelsMettle,
