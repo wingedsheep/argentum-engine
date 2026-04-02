@@ -303,6 +303,7 @@ constructors.
 | `ChooseCreatureTypeGainControlEffect`       | `duration`                                                                  | Choose type, gain control                |
 | `GrantToEnchantedCreatureTypeGroupEffect`   | `powerModifier, toughnessModifier, keyword?, protectionColors, duration`    | Grant to enchanted creature's type group |
 | `SetBasePowerEffect`                        | `target, power: DynamicAmount, duration`                                    | Set base power only (leave toughness)    |
+| `SetBasePowerToughnessEffect`               | `target, power: Int, toughness: Int, duration`                              | Set base P/T via floating effect         |
 | `AnimateLandEffect`                         | `target, power, toughness, duration`                                        | Animate land                             |
 | `DistributeCountersFromSelfEffect`          | `counterType`                                                               | Move counters from self to other creatures |
 | `DistributeCountersAmongTargetsEffect`      | `totalCounters, counterType, minPerTarget`                                  | Distribute N counters among targets        |

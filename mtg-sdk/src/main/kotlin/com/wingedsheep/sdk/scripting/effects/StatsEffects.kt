@@ -93,6 +93,34 @@ data class SetBasePowerEffect(
 }
 
 /**
+ * Sets a creature's base power and toughness to fixed values via a floating continuous effect.
+ * Creates a floating effect at Layer.POWER_TOUGHNESS, Sublayer.SET_VALUES that overrides both
+ * power and toughness.
+ *
+ * Used for cards like Azure Beastbinder: "it has base power and toughness 2/2 until your next turn".
+ *
+ * @property target The creature whose base P/T is being set
+ * @property power The base power value
+ * @property toughness The base toughness value
+ * @property duration How long the effect lasts
+ */
+@SerialName("SetBasePowerToughness")
+@Serializable
+data class SetBasePowerToughnessEffect(
+    val target: EffectTarget,
+    val power: Int,
+    val toughness: Int,
+    val duration: Duration = Duration.Permanent
+) : Effect {
+    override val description: String = buildString {
+        append("${target.description} has base power and toughness $power/$toughness")
+        if (duration.description.isNotEmpty()) append(" ${duration.description}")
+    }
+
+    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
+}
+
+/**
  * Effect that transforms multiple creatures at once.
  * Used for effects like Curious Colossus: "each creature target opponent controls
  * loses all abilities, becomes a Coward, and has base P/T 1/1."

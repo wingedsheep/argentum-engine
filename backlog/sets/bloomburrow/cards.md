@@ -2,12 +2,12 @@
 
 **Set Size:** 266 cards
 **Release Date:** August 2, 2024
-**Implemented:** 207 / 266
+**Implemented:** 208 / 266
 
 | Color      | Total | Done |
 |------------|-------|------|
 | White      | 40    | 30   |
-| Blue       | 41    | 30   |
+| Blue       | 41    | 31   |
 | Black      | 40    | 32   |
 | Red        | 41    | 32   |
 | Green      | 41    | 31   |
@@ -22,7 +22,7 @@
 - [x] Alania's Pathmaker
 - [x] Alania, Divergent Storm
 - [x] Artist's Talent
-- [ ] Azure Beastbinder
+- [x] Azure Beastbinder
 - [ ] Bakersbane Duo
 - [x] Bandit's Talent
 - [x] Banishing Light

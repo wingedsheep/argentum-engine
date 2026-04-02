@@ -49,6 +49,7 @@ class PermanentExecutors(
         AddCardTypeExecutor(),
         BecomeCreatureExecutor(),
         SetBasePowerExecutor(amountEvaluator),
+        SetBasePowerToughnessExecutor(),
         DistributeCountersFromSelfExecutor(),
         DistributeCountersAmongTargetsExecutor(),
         AttachEquipmentExecutor(),
