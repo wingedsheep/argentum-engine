@@ -15,6 +15,7 @@ import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.state.components.combat.AttackingComponent
 import com.wingedsheep.engine.state.components.identity.TokenComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
+import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.TypeLine
 import com.wingedsheep.sdk.core.Zone
@@ -24,8 +25,11 @@ import com.wingedsheep.engine.core.ZoneChangeEvent
 import com.wingedsheep.engine.event.GrantedTriggeredAbility
 import com.wingedsheep.engine.handlers.effects.TargetResolutionUtils
 import com.wingedsheep.engine.mechanics.layers.StaticAbilityHandler
+import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.scripting.Duration
+import com.wingedsheep.sdk.scripting.TriggeredAbility
 import com.wingedsheep.sdk.scripting.effects.CreateTokenEffect
+import com.wingedsheep.sdk.scripting.effects.ModifyStatsEffect
 import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import java.util.UUID
@@ -154,6 +158,30 @@ class CreateTokenExecutor(
                         grantedTriggeredAbilities = newState.grantedTriggeredAbilities + grant
                     )
                 }
+            }
+        }
+
+        // Prowess is a keyword ability with an intrinsic triggered ability.
+        // Grant it automatically when the token has the PROWESS keyword.
+        if (Keyword.PROWESS in effect.keywords) {
+            val prowessAbility = TriggeredAbility.create(
+                trigger = Triggers.YouCastNoncreature.event,
+                binding = Triggers.YouCastNoncreature.binding,
+                effect = ModifyStatsEffect(
+                    powerModifier = 1,
+                    toughnessModifier = 1,
+                    target = EffectTarget.Self
+                )
+            )
+            for (tokenId in createdTokens) {
+                val grant = GrantedTriggeredAbility(
+                    entityId = tokenId,
+                    ability = prowessAbility,
+                    duration = Duration.Permanent
+                )
+                newState = newState.copy(
+                    grantedTriggeredAbilities = newState.grantedTriggeredAbilities + grant
+                )
             }
         }
 
