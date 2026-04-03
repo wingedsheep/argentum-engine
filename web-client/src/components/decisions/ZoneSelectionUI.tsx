@@ -83,10 +83,10 @@ export function ZoneSelectionUI({
   const hoverCard = useGameStore((s) => s.hoverCard)
 
   // Handle hover - use global store if enabled
-  const handleMouseEnter = (cardId: EntityId) => {
+  const handleMouseEnter = (cardId: EntityId, e: React.MouseEvent) => {
     setHoveredCardId(cardId)
     if (useGlobalHover) {
-      hoverCard(cardId)
+      hoverCard(cardId, { x: e.clientX, y: e.clientY })
     }
   }
 
@@ -286,7 +286,7 @@ export function ZoneSelectionUI({
             onClick={() => toggleCard(card.id)}
             cardWidth={cardWidth}
             isMobile={responsive.isMobile}
-            onMouseEnter={() => handleMouseEnter(card.id)}
+            onMouseEnter={(e: React.MouseEvent) => handleMouseEnter(card.id, e)}
             onMouseLeave={handleMouseLeave}
           />
         ))}
@@ -425,7 +425,7 @@ function ZoneCard({
   onClick: () => void
   cardWidth: number
   isMobile: boolean
-  onMouseEnter?: () => void
+  onMouseEnter?: (e: React.MouseEvent) => void
   onMouseLeave?: () => void
 }) {
   const cardImageUrl = getCardImageUrl(card.name, card.imageUri)

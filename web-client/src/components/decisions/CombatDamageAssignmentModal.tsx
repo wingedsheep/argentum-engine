@@ -117,8 +117,8 @@ export function CombatDamageAssignmentModal({ decision }: { decision: AssignDama
     submitDamageAssignment(distribution)
   }
 
-  const handleMouseEnter = (cardId: EntityId) => {
-    hoverCard(cardId)
+  const handleMouseEnter = (cardId: EntityId, e: React.MouseEvent) => {
+    hoverCard(cardId, { x: e.clientX, y: e.clientY })
   }
 
   const handleMouseLeave = () => {
@@ -281,7 +281,7 @@ export function CombatDamageAssignmentModal({ decision }: { decision: AssignDama
                 </div>
               ) : (
                 <div
-                  onMouseEnter={() => handleMouseEnter(target.id)}
+                  onMouseEnter={(e) => handleMouseEnter(target.id, e)}
                   onMouseLeave={handleMouseLeave}
                   style={{
                     width: cardWidth,

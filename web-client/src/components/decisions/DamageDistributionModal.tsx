@@ -95,8 +95,8 @@ export function DamageDistributionModal() {
     updateDamageDistribution(targetId, current - 1)
   }
 
-  const handleMouseEnter = (cardId: EntityId) => {
-    hoverCard(cardId)
+  const handleMouseEnter = (cardId: EntityId, e: React.MouseEvent) => {
+    hoverCard(cardId, { x: e.clientX, y: e.clientY })
   }
 
   const handleMouseLeave = () => {
@@ -204,7 +204,7 @@ export function DamageDistributionModal() {
             >
               {/* Card image */}
               <div
-                onMouseEnter={() => handleMouseEnter(card.id)}
+                onMouseEnter={(e) => handleMouseEnter(card.id, e)}
                 onMouseLeave={handleMouseLeave}
                 style={{
                   width: cardWidth,

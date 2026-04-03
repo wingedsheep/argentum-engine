@@ -1,8 +1,9 @@
-import { useState } from 'react'
-import { useGameStore, type MulliganState, type MulliganCardInfo } from '@/store/gameStore.ts'
+import { useState, useCallback } from 'react'
+import { useGameStore, type MulliganState } from '@/store/gameStore.ts'
 import type { EntityId } from '@/types'
 import { useResponsive, calculateFittingCardWidth, type ResponsiveSizes } from '@/hooks/useResponsive.ts'
 import { getCardImageUrl } from '@/utils/cardImages.ts'
+import { HoverCardPreview } from '../ui/HoverCardPreview'
 import { StandaloneConcedeButton } from '../game/overlay'
 import styles from './MulliganUI.module.css'
 
@@ -13,7 +14,17 @@ export function MulliganUI() {
   const mulliganState = useGameStore((state) => state.mulliganState)
   const responsive = useResponsive()
   const [hoveredCardId, setHoveredCardId] = useState<EntityId | null>(null)
+  const [hoverPos, setHoverPos] = useState<{ x: number; y: number } | null>(null)
   const [minimized, setMinimized] = useState(false)
+
+  const handleHover = useCallback((cardId: EntityId | null, e?: React.MouseEvent) => {
+    setHoveredCardId(cardId)
+    if (cardId && e) {
+      setHoverPos({ x: e.clientX, y: e.clientY })
+    } else {
+      setHoverPos(null)
+    }
+  }, [])
 
   if (!mulliganState) return null
 
@@ -36,14 +47,14 @@ export function MulliganUI() {
     <div className={styles.overlay}>
       <StandaloneConcedeButton />
       {mulliganState.phase === 'deciding' ? (
-        <MulliganDecision state={mulliganState} responsive={responsive} onHoverCard={setHoveredCardId} />
+        <MulliganDecision state={mulliganState} responsive={responsive} onHoverCard={handleHover} />
       ) : (
-        <ChooseBottomCards state={mulliganState} responsive={responsive} onHoverCard={setHoveredCardId} onMinimize={() => setMinimized(true)} />
+        <ChooseBottomCards state={mulliganState} responsive={responsive} onHoverCard={handleHover} onMinimize={() => setMinimized(true)} />
       )}
 
       {/* Card preview on hover */}
       {hoveredCardInfo && !responsive.isMobile && (
-        <MulliganCardPreview cardInfo={hoveredCardInfo} />
+        <HoverCardPreview name={hoveredCardInfo.name} imageUri={hoveredCardInfo.imageUri} pos={hoverPos} />
       )}
     </div>
   )
@@ -52,7 +63,7 @@ export function MulliganUI() {
 /**
  * Mulligan decision phase - keep or mulligan.
  */
-function MulliganDecision({ state, responsive, onHoverCard }: { state: MulliganState; responsive: ResponsiveSizes; onHoverCard: (cardId: EntityId | null) => void }) {
+function MulliganDecision({ state, responsive, onHoverCard }: { state: MulliganState; responsive: ResponsiveSizes; onHoverCard: (cardId: EntityId | null, e?: React.MouseEvent) => void }) {
   const keepHand = useGameStore((s) => s.keepHand)
   const mulligan = useGameStore((s) => s.mulligan)
   const tournamentState = useGameStore((s) => s.tournamentState)
@@ -119,7 +130,8 @@ function MulliganDecision({ state, responsive, onHoverCard }: { state: MulliganS
               imageUri={cardInfo?.imageUri}
               selectable={false}
               cardWidth={cardWidth}
-              onMouseEnter={() => onHoverCard(cardId)}
+              onMouseEnter={(e: React.MouseEvent) => onHoverCard(cardId, e)}
+              onMouseMove={(e: React.MouseEvent) => onHoverCard(cardId, e)}
               onMouseLeave={() => onHoverCard(null)}
             />
           )
@@ -143,7 +155,7 @@ function MulliganDecision({ state, responsive, onHoverCard }: { state: MulliganS
 /**
  * Choose cards to put on bottom after keeping.
  */
-function ChooseBottomCards({ state, responsive, onHoverCard, onMinimize }: { state: MulliganState; responsive: ResponsiveSizes; onHoverCard: (cardId: EntityId | null) => void; onMinimize: () => void }) {
+function ChooseBottomCards({ state, responsive, onHoverCard, onMinimize }: { state: MulliganState; responsive: ResponsiveSizes; onHoverCard: (cardId: EntityId | null, e?: React.MouseEvent) => void; onMinimize: () => void }) {
   const chooseBottomCards = useGameStore((s) => s.chooseBottomCards)
   const toggleMulliganCard = useGameStore((s) => s.toggleMulliganCard)
 
@@ -180,7 +192,8 @@ function ChooseBottomCards({ state, responsive, onHoverCard, onMinimize }: { sta
               isSelected={state.selectedCards.includes(cardId)}
               onClick={() => toggleMulliganCard(cardId)}
               cardWidth={cardWidth}
-              onMouseEnter={() => onHoverCard(cardId)}
+              onMouseEnter={(e: React.MouseEvent) => onHoverCard(cardId, e)}
+              onMouseMove={(e: React.MouseEvent) => onHoverCard(cardId, e)}
               onMouseLeave={() => onHoverCard(null)}
             />
           )
@@ -217,6 +230,7 @@ function MulliganCard({
   onClick,
   cardWidth = 130,
   onMouseEnter,
+  onMouseMove,
   onMouseLeave,
 }: {
   cardId: EntityId
@@ -226,7 +240,8 @@ function MulliganCard({
   isSelected?: boolean
   onClick?: () => void
   cardWidth?: number
-  onMouseEnter?: () => void
+  onMouseEnter?: (e: React.MouseEvent) => void
+  onMouseMove?: (e: React.MouseEvent) => void
   onMouseLeave?: () => void
 }) {
   // Use provided imageUri or fall back to Scryfall API
@@ -247,6 +262,7 @@ function MulliganCard({
     <div
       onClick={selectable ? onClick : undefined}
       onMouseEnter={onMouseEnter}
+      onMouseMove={onMouseMove}
       onMouseLeave={onMouseLeave}
       className={cardClasses}
       style={{
@@ -275,30 +291,3 @@ function MulliganCard({
   )
 }
 
-/**
- * Card preview overlay - shows enlarged card when hovering.
- */
-function MulliganCardPreview({ cardInfo }: { cardInfo: MulliganCardInfo }) {
-  const cardImageUrl = getCardImageUrl(cardInfo.name, cardInfo.imageUri, 'large')
-
-  const previewWidth = 280
-  const previewHeight = Math.round(previewWidth * 1.4)
-
-  return (
-    <div className={styles.previewContainer}>
-      <div
-        className={styles.previewCard}
-        style={{
-          width: previewWidth,
-          height: previewHeight,
-        }}
-      >
-        <img
-          src={cardImageUrl}
-          alt={cardInfo.name}
-          className={styles.previewImage}
-        />
-      </div>
-    </div>
-  )
-}

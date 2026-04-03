@@ -95,9 +95,9 @@ export function ReorderCardsUI({ decision, responsive }: ReorderCardsUIProps) {
     submitOrderedDecision(orderedCards)
   }
 
-  const handleMouseEnter = useCallback((cardId: EntityId) => {
+  const handleMouseEnter = useCallback((cardId: EntityId, e: React.MouseEvent) => {
     setHoveredCardId(cardId)
-    hoverCard(cardId)
+    hoverCard(cardId, { x: e.clientX, y: e.clientY })
   }, [hoverCard])
 
   const handleMouseLeave = useCallback(() => {
@@ -284,7 +284,7 @@ export function ReorderCardsUI({ decision, responsive }: ReorderCardsUIProps) {
                   onDragEnd={handleDragEnd}
                   onMoveLeft={() => moveCard(index, 'left')}
                   onMoveRight={() => moveCard(index, 'right')}
-                  onMouseEnter={() => handleMouseEnter(cardId)}
+                  onMouseEnter={(e: React.MouseEvent) => handleMouseEnter(cardId, e)}
                   onMouseLeave={handleMouseLeave}
                 />
               </div>
@@ -391,7 +391,7 @@ function ReorderCard({
   onDragEnd: () => void
   onMoveLeft: () => void
   onMoveRight: () => void
-  onMouseEnter: () => void
+  onMouseEnter: (e: React.MouseEvent) => void
   onMouseLeave: () => void
 }) {
   const cardName = cardInfo?.name || 'Unknown Card'

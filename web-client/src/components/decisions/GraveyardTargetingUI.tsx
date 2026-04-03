@@ -233,9 +233,9 @@ function GraveyardCardSelection({
   }
 
   // Handle hover using global store (for the CardPreview component)
-  const handleMouseEnter = (cardId: EntityId) => {
+  const handleMouseEnter = (cardId: EntityId, e: React.MouseEvent) => {
     setHoveredCardId(cardId)
-    hoverCard(cardId)
+    hoverCard(cardId, { x: e.clientX, y: e.clientY })
   }
 
   const handleMouseLeave = () => {
@@ -284,7 +284,7 @@ function GraveyardCardSelection({
             isHovered={hoveredCardId === card.id}
             onClick={() => toggleCard(card.id)}
             cardWidth={cardWidth}
-            onMouseEnter={() => handleMouseEnter(card.id)}
+            onMouseEnter={(e: React.MouseEvent) => handleMouseEnter(card.id, e)}
             onMouseLeave={handleMouseLeave}
           />
         ))}
@@ -327,7 +327,7 @@ function GraveyardCard({
   isHovered: boolean
   onClick: () => void
   cardWidth: number
-  onMouseEnter?: () => void
+  onMouseEnter?: (e: React.MouseEvent) => void
   onMouseLeave?: () => void
 }) {
   const cardImageUrl = getCardImageUrl(card.name, card.imageUri)

@@ -168,7 +168,7 @@ export function OrderBlockersUI({ decision, responsive }: OrderBlockersUIProps) 
         <AttackerCardDisplay
           card={attackerCard}
           isMobile={responsive.isMobile}
-          onMouseEnter={() => hoverCard(attackerCard.id)}
+          onMouseEnter={(e: React.MouseEvent) => hoverCard(attackerCard.id, { x: e.clientX, y: e.clientY })}
           onMouseLeave={() => hoverCard(null)}
         />
       )}
@@ -280,7 +280,7 @@ export function OrderBlockersUI({ decision, responsive }: OrderBlockersUIProps) 
                   onDragEnd={handleDragEnd}
                   onMoveLeft={() => moveCard(index, 'left')}
                   onMoveRight={() => moveCard(index, 'right')}
-                  onMouseEnter={() => hoverCard(blockerId)}
+                  onMouseEnter={(e: React.MouseEvent) => hoverCard(blockerId, { x: e.clientX, y: e.clientY })}
                   onMouseLeave={() => hoverCard(null)}
                 />
               </div>
@@ -380,7 +380,7 @@ function BlockerCard({
   onDragEnd: () => void
   onMoveLeft: () => void
   onMoveRight: () => void
-  onMouseEnter: () => void
+  onMouseEnter: (e: React.MouseEvent) => void
   onMouseLeave: () => void
 }) {
   const cardName = cardInfo?.name || 'Unknown Card'
@@ -585,7 +585,7 @@ function AttackerCardDisplay({
 }: {
   card: ClientCard
   isMobile: boolean
-  onMouseEnter: () => void
+  onMouseEnter: (e: React.MouseEvent) => void
   onMouseLeave: () => void
 }) {
   const cardWidth = isMobile ? 120 : 160

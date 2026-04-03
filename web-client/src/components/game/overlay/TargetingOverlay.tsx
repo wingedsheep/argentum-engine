@@ -290,7 +290,7 @@ function GraveyardTargetingOverlay({
             <div
               key={card.id}
               onClick={() => toggleCard(card.id)}
-              onMouseEnter={() => hoverCard(card.id)}
+              onMouseEnter={(e) => hoverCard(card.id, { x: e.clientX, y: e.clientY })}
               onMouseLeave={() => hoverCard(null)}
               style={{
                 width: cardWidth,

@@ -111,10 +111,16 @@ export function GameCard({
   /** Whether the attacker was already selected when drag started (to know if short press = select or deselect) */
   const attackerWasSelected = useRef(false)
 
-  // Hover handlers for card preview
-  const handleMouseEnter = useCallback(() => {
-    hoverCard(card.id)
+  // Hover handlers for card preview — track position via onMouseMove like the deckbuilder
+  const updateHoverPosition = useGameStore((s) => s.updateHoverPosition)
+
+  const handleMouseEnter = useCallback((e: React.MouseEvent) => {
+    hoverCard(card.id, { x: e.clientX, y: e.clientY })
   }, [card.id, hoverCard])
+
+  const handleMouseMove = useCallback((e: React.MouseEvent) => {
+    updateHoverPosition({ x: e.clientX, y: e.clientY })
+  }, [updateHoverPosition])
 
   const handleMouseLeave = useCallback(() => {
     hoverCard(null)
@@ -765,6 +771,7 @@ export function GameCard({
       onTouchEnd={() => { handleTouchEndPreview(); handlePointerUp() }}
       onTouchMove={handleTouchMovePreview}
       onMouseEnter={handleMouseEnter}
+      onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
       style={{
         ...styles.card,

@@ -689,6 +689,7 @@ export type GameStore = {
   counterDistributionState: CounterDistributionState | null
   manaSelectionState: ManaSelectionState | null
   hoveredCardId: EntityId | null
+  hoverPosition: { x: number; y: number } | null
   autoTapPreview: readonly EntityId[] | null
   draggingBlockerId: EntityId | null
   draggingAttackerId: EntityId | null
@@ -709,7 +710,8 @@ export type GameStore = {
   coinFlipAnimations: readonly CoinFlipAnimation[]
   targetReselectedAnimations: readonly TargetReselectedAnimation[]
   selectCard: (cardId: EntityId | null) => void
-  hoverCard: (cardId: EntityId | null) => void
+  hoverCard: (cardId: EntityId | null, position?: { x: number; y: number }) => void
+  updateHoverPosition: (position: { x: number; y: number }) => void
   startTargeting: (state: TargetingState) => void
   addTarget: (targetId: EntityId) => void
   removeTarget: (targetId: EntityId) => void

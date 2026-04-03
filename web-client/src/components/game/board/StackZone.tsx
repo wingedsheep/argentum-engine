@@ -66,8 +66,8 @@ export function StackDisplay() {
         return sourceId ? gameState?.cards[sourceId] : null
       })()
     : null
-  const stackImageWidth = responsive.isMobile ? 44 : 60
-  const stackImageHeight = responsive.isMobile ? 62 : 84
+  const stackImageWidth = responsive.isMobile ? 44 : 80
+  const stackImageHeight = responsive.isMobile ? 62 : 112
 
   return (
     <div style={{
@@ -128,7 +128,7 @@ export function StackDisplay() {
                     } : {}),
                   }}
                   onClick={() => handleStackItemClick(card.id)}
-                  onMouseEnter={() => hoverCard(card.id)}
+                  onMouseEnter={(e) => hoverCard(card.id, { x: e.clientX, y: e.clientY })}
                   onMouseLeave={() => hoverCard(null)}
                 >
                   <img
@@ -246,7 +246,7 @@ export function StackDisplay() {
           {/* Source card image */}
           {sourceCard && (
             <div
-              onMouseEnter={() => sourceCard && hoverCard(pendingDecision.context.sourceId!)}
+              onMouseEnter={(e) => sourceCard && hoverCard(pendingDecision.context.sourceId!, { x: e.clientX, y: e.clientY })}
               onMouseLeave={() => hoverCard(null)}
             >
               <img

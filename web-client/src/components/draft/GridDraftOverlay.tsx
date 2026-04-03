@@ -5,6 +5,7 @@ import type { SealedCardInfo, LobbySettings } from '@/types'
 import { useResponsive } from '@/hooks/useResponsive.ts'
 import { getCardImageUrl } from '@/utils/cardImages.ts'
 import { ManaCost } from '../ui/ManaSymbols'
+import { HoverCardPreview } from '../ui/HoverCardPreview'
 import { SetSynergiesButton } from './SetSynergiesOverlay'
 
 /**
@@ -822,7 +823,7 @@ function GridDrafter({ gridState, settings }: { gridState: GridDraftState; setti
 
       {/* Card preview on hover */}
       {hoveredCard && hoverPos && (
-        <CardPreview card={hoveredCard} position={hoverPos} />
+        <HoverCardPreview name={hoveredCard.name} imageUri={hoveredCard.imageUri} pos={hoverPos} rulings={hoveredCard.rulings} />
       )}
 
       <style>{`
@@ -1073,67 +1074,6 @@ function GridCard({ card, isHighlighted, onHover, width }: {
               fontSize: 10, fontWeight: 700, color: '#fff',
               textAlign: 'right', marginTop: 2,
             }}>
-              {card.power}/{card.toughness}
-            </div>
-          )}
-        </div>
-      )}
-    </div>
-  )
-}
-
-/**
- * Card preview popup on hover.
- */
-function CardPreview({ card, position }: { card: SealedCardInfo; position: { x: number; y: number } }) {
-  const imageUrl = getCardImageUrl(card.name, card.imageUri, 'large')
-  const previewWidth = 250
-  const previewHeight = 350
-  const margin = 20
-
-  // Position to the side of cursor, avoiding going off-screen
-  const left = position.x + previewWidth + margin + 20 < window.innerWidth
-    ? position.x + margin
-    : position.x - previewWidth - margin
-  const top = Math.max(10, Math.min(position.y - previewHeight / 2, window.innerHeight - previewHeight - 10))
-
-  return (
-    <div style={{
-      position: 'fixed', left, top,
-      width: previewWidth,
-      zIndex: 200,
-      pointerEvents: 'none',
-      borderRadius: 8,
-      overflow: 'hidden',
-      boxShadow: '0 8px 32px rgba(0,0,0,0.6)',
-      border: '1px solid rgba(255,255,255,0.2)',
-      transition: 'top 0.05s, left 0.05s',
-    }}>
-      {imageUrl ? (
-        <img src={imageUrl} alt={card.name} style={{ width: '100%', display: 'block' }} />
-      ) : (
-        <div style={{
-          background: '#1a1a2e', padding: 16,
-          minHeight: previewHeight,
-        }}>
-          <div style={{ fontWeight: 700, color: '#fff', fontSize: 14, marginBottom: 4 }}>
-            {card.name}
-          </div>
-          {card.manaCost && (
-            <div style={{ marginBottom: 8 }}>
-              <ManaCost cost={card.manaCost} size={14} />
-            </div>
-          )}
-          <div style={{ color: 'rgba(255,255,255,0.6)', fontSize: 12, marginBottom: 8 }}>
-            {card.typeLine}
-          </div>
-          {card.oracleText && (
-            <div style={{ color: 'rgba(255,255,255,0.8)', fontSize: 12, lineHeight: 1.4 }}>
-              {card.oracleText}
-            </div>
-          )}
-          {card.power != null && card.toughness != null && (
-            <div style={{ fontWeight: 700, color: '#fff', fontSize: 14, textAlign: 'right', marginTop: 8 }}>
               {card.power}/{card.toughness}
             </div>
           )}

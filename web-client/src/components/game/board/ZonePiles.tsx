@@ -79,7 +79,7 @@ export function ZonePile({ player, isOpponent = false }: { player: ClientPlayer;
           data-graveyard-id={player.playerId}
           style={{ ...styles.graveyardPile, ...pileStyle, cursor: graveyardCards.length > 0 ? 'pointer' : 'default' }}
           onClick={() => { if (graveyardCards.length > 0) setBrowsingGraveyard(true) }}
-          onMouseEnter={() => { if (topGraveyardCard) hoverCard(topGraveyardCard.id) }}
+          onMouseEnter={(e) => { if (topGraveyardCard) hoverCard(topGraveyardCard.id, { x: e.clientX, y: e.clientY }) }}
           onMouseLeave={() => hoverCard(null)}
         >
           {topGraveyardCard ? (
@@ -135,7 +135,7 @@ export function ZonePile({ player, isOpponent = false }: { player: ClientPlayer;
           data-exile-id={player.playerId}
           style={{ ...styles.exilePile, ...pileStyle, cursor: exileCards.length > 0 ? 'pointer' : 'default' }}
           onClick={() => { if (exileCards.length > 0) setBrowsingExile(true) }}
-          onMouseEnter={() => { if (topExileCard) hoverCard(topExileCard.id) }}
+          onMouseEnter={(e) => { if (topExileCard) hoverCard(topExileCard.id, { x: e.clientX, y: e.clientY }) }}
           onMouseLeave={() => hoverCard(null)}
         >
           {topExileCard ? (
@@ -232,7 +232,7 @@ function GraveyardBrowser({ cards, onClose }: { cards: readonly ClientCard[], on
             <div
               key={card.id}
               style={{ width: cardWidth, height: cardHeight, borderRadius: 6, overflow: 'hidden', flexShrink: 0 }}
-              onMouseEnter={() => hoverCard(card.id)}
+              onMouseEnter={(e) => hoverCard(card.id, { x: e.clientX, y: e.clientY })}
               onMouseLeave={() => hoverCard(null)}
             >
               <img
@@ -347,7 +347,7 @@ function ExileBrowser({ cards, onClose }: { cards: readonly ClientCard[], onClos
             <div
               key={card.id}
               style={{ width: cardWidth, height: cardHeight, borderRadius: 6, overflow: 'hidden', flexShrink: 0 }}
-              onMouseEnter={() => hoverCard(card.id)}
+              onMouseEnter={(e) => hoverCard(card.id, { x: e.clientX, y: e.clientY })}
               onMouseLeave={() => hoverCard(null)}
             >
               <img

@@ -16,6 +16,7 @@ import type {
 export interface AnimationSliceState {
   selectedCardId: EntityId | null
   hoveredCardId: EntityId | null
+  hoverPosition: { x: number; y: number } | null
   autoTapPreview: readonly EntityId[] | null
   revealedHandCardIds: readonly EntityId[] | null
   revealedCardsInfo: {
@@ -35,7 +36,8 @@ export interface AnimationSliceState {
 
 export interface AnimationSliceActions {
   selectCard: (cardId: EntityId | null) => void
-  hoverCard: (cardId: EntityId | null) => void
+  hoverCard: (cardId: EntityId | null, position?: { x: number; y: number }) => void
+  updateHoverPosition: (position: { x: number; y: number }) => void
   setAutoTapPreview: (preview: readonly EntityId[] | null) => void
   showRevealedHand: (cardIds: readonly EntityId[]) => void
   dismissRevealedHand: () => void
@@ -60,6 +62,7 @@ export type AnimationSlice = AnimationSliceState & AnimationSliceActions
 export const createAnimationSlice: SliceCreator<AnimationSlice> = (set, get) => ({
   selectedCardId: null,
   hoveredCardId: null,
+  hoverPosition: null,
   autoTapPreview: null,
   revealedHandCardIds: null,
   revealedCardsInfo: null,
@@ -75,7 +78,7 @@ export const createAnimationSlice: SliceCreator<AnimationSlice> = (set, get) => 
     set({ selectedCardId: cardId })
   },
 
-  hoverCard: (cardId) => {
+  hoverCard: (cardId, position) => {
     let autoTapPreview: readonly EntityId[] | null = null
     if (cardId) {
       const { legalActions, pendingDecision } = get()
@@ -95,7 +98,11 @@ export const createAnimationSlice: SliceCreator<AnimationSlice> = (set, get) => 
         }
       }
     }
-    set({ hoveredCardId: cardId, autoTapPreview })
+    set({ hoveredCardId: cardId, hoverPosition: position ?? null, autoTapPreview })
+  },
+
+  updateHoverPosition: (position) => {
+    set({ hoverPosition: position })
   },
 
   setAutoTapPreview: (preview) => {

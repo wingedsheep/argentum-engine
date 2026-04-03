@@ -80,9 +80,9 @@ export function RevealedCardsUI() {
   const cardHeight = Math.round(cardWidth * 1.4)
 
   // Handle hover using global store (for the CardPreview component)
-  const handleMouseEnter = (cardId: EntityId) => {
+  const handleMouseEnter = (cardId: EntityId, e: React.MouseEvent) => {
     setHoveredCardId(cardId)
-    hoverCard(cardId)
+    hoverCard(cardId, { x: e.clientX, y: e.clientY })
   }
 
   const handleMouseLeave = () => {
@@ -131,7 +131,7 @@ export function RevealedCardsUI() {
             return (
               <div
                 key={card.id}
-                onMouseEnter={() => handleMouseEnter(card.id)}
+                onMouseEnter={(e) => handleMouseEnter(card.id, e)}
                 onMouseLeave={handleMouseLeave}
                 className={styles.card}
                 style={{
