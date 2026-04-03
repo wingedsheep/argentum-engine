@@ -226,12 +226,8 @@ class SkirkVolcanistScenarioTest : ScenarioTestBase() {
                 val bearsId = game.findPermanent("Grizzly Bears")!!
                 game.selectTargets(listOf(cadetId, bearsId))
 
-                // Ability goes on stack — resolve it
-                // With two targets, need to distribute damage
-                // Should get a DistributeDecision
-                game.resolveStack()
-
-                withClue("Should have a distribute decision") {
+                // Per MTG rules, damage distribution is chosen at targeting time (before ability goes on stack)
+                withClue("Should have a distribute decision after target selection") {
                     game.state.pendingDecision shouldNotBe null
                     game.state.pendingDecision shouldBe io.kotest.matchers.types.beInstanceOf<DistributeDecision>()
                 }
@@ -239,8 +235,8 @@ class SkirkVolcanistScenarioTest : ScenarioTestBase() {
                 // Distribute: 1 to Raging Goblin, 2 to Grizzly Bears
                 game.submitDistribution(mapOf(cadetId to 1, bearsId to 2))
 
-                // Pass priority to trigger SBA checking (lethal damage kills creatures)
-                game.passPriority()
+                // Ability goes on stack with distribution locked in — resolve it
+                game.resolveStack()
 
                 // Raging Goblin (1/1) should be dead from 1 damage
                 val cadetAfter = game.findPermanent("Raging Goblin")

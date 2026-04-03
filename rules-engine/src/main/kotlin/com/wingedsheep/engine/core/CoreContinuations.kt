@@ -55,6 +55,40 @@ data class TriggeredAbilityContinuation(
 ) : ContinuationFrame
 
 /**
+ * Resume placing a triggered ability on the stack after the player distributes damage.
+ *
+ * When a triggered ability uses DividedDamageEffect and has multiple targets,
+ * we first ask for targets (via TriggeredAbilityContinuation), then pause again
+ * to ask how to divide the damage among those targets. Once the distribution is
+ * chosen, the ability goes on the stack with the distribution locked in.
+ *
+ * @property sourceId The permanent that has the triggered ability
+ * @property sourceName Name of the source card for display
+ * @property controllerId The player who controls the triggered ability
+ * @property effect The effect to execute when the ability resolves
+ * @property description Human-readable description of the ability
+ * @property selectedTargets The targets already chosen in the previous step
+ * @property targetRequirements The target requirements for the ability
+ * @property totalDamage The total damage to distribute
+ */
+@Serializable
+data class TriggerDamageDistributionContinuation(
+    override val decisionId: String,
+    val sourceId: EntityId,
+    val sourceName: String,
+    val controllerId: EntityId,
+    val effect: Effect,
+    val description: String,
+    val triggerDamageAmount: Int? = null,
+    val triggeringEntityId: EntityId? = null,
+    val triggeringPlayerId: EntityId? = null,
+    val triggerCounterCount: Int? = null,
+    val selectedTargets: List<ChosenTarget>,
+    val targetRequirements: List<TargetRequirement>,
+    val totalDamage: Int
+) : ContinuationFrame
+
+/**
  * Stores remaining pending triggers that still need to be processed.
  *
  * When multiple triggered abilities fire from the same event and the first

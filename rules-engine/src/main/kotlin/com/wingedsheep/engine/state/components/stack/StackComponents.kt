@@ -42,7 +42,8 @@ data class TriggeredAbilityOnStackComponent(
     val triggeringEntityId: EntityId? = null,
     val triggeringPlayerId: EntityId? = null,
     val xValue: Int? = null,
-    val triggerCounterCount: Int? = null
+    val triggerCounterCount: Int? = null,
+    val damageDistribution: Map<EntityId, Int>? = null  // For DividedDamageEffect - pre-chosen damage allocation
 ) : Component {
     val hasTargets: Boolean = false  // Will be updated based on effect
 }

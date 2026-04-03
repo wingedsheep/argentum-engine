@@ -2,8 +2,11 @@ package com.wingedsheep.engine.handlers.continuations
 
 import com.wingedsheep.engine.core.*
 import com.wingedsheep.engine.state.GameState
+import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.stack.TriggeredAbilityOnStackComponent
+import com.wingedsheep.sdk.scripting.effects.DividedDamageEffect
 import com.wingedsheep.sdk.scripting.effects.MayEffect
+import java.util.UUID
 
 /**
  * Handles core effect and trigger resumption:
@@ -21,6 +24,7 @@ class EffectAndTriggerContinuationResumer(
     override fun resumers(): List<ContinuationResumer<*>> = listOf(
         resumer(EffectContinuation::class, ::resumeEffect),
         resumer(TriggeredAbilityContinuation::class, ::resumeTriggeredAbility),
+        resumer(TriggerDamageDistributionContinuation::class, ::resumeTriggerDamageDistribution),
         resumer(ResolveSpellContinuation::class) { state, _, _, _ ->
             ExecutionResult.success(state)
         },
@@ -74,6 +78,14 @@ class EffectAndTriggerContinuationResumer(
             return checkForMore(state, emptyList())
         }
 
+        // Check if this is a DividedDamageEffect with multiple targets — need distribution
+        val effect = continuation.effect
+        if (effect is DividedDamageEffect && selectedTargets.size > 1) {
+            return createTriggerDamageDistributionDecision(
+                state, continuation, selectedTargets, effect.totalDamage, checkForMore
+            )
+        }
+
         val abilityComponent = TriggeredAbilityOnStackComponent(
             sourceId = continuation.sourceId,
             sourceName = continuation.sourceName,
@@ -88,6 +100,114 @@ class EffectAndTriggerContinuationResumer(
 
         val stackResult = services.stackResolver.putTriggeredAbility(
             state, abilityComponent, selectedTargets, continuation.targetRequirements
+        )
+
+        if (!stackResult.isSuccess) {
+            return stackResult
+        }
+
+        return checkForMore(stackResult.newState, stackResult.events.toList())
+    }
+
+    /**
+     * After targets are selected for a triggered ability with DividedDamageEffect,
+     * pause to ask how to distribute damage among the chosen targets.
+     */
+    private fun createTriggerDamageDistributionDecision(
+        state: GameState,
+        continuation: TriggeredAbilityContinuation,
+        selectedTargets: List<com.wingedsheep.engine.state.components.stack.ChosenTarget>,
+        totalDamage: Int,
+        checkForMore: CheckForMore
+    ): ExecutionResult {
+        val sourceName = continuation.sourceId.let { sourceId ->
+            state.getEntity(sourceId)?.get<CardComponent>()?.name
+        } ?: continuation.sourceName
+
+        val targetEntityIds = selectedTargets.map { target ->
+            when (target) {
+                is com.wingedsheep.engine.state.components.stack.ChosenTarget.Player -> target.playerId
+                is com.wingedsheep.engine.state.components.stack.ChosenTarget.Permanent -> target.entityId
+                is com.wingedsheep.engine.state.components.stack.ChosenTarget.Card -> target.cardId
+                is com.wingedsheep.engine.state.components.stack.ChosenTarget.Spell -> target.spellEntityId
+            }
+        }
+        val decisionId = UUID.randomUUID().toString()
+        val decision = DistributeDecision(
+            id = decisionId,
+            playerId = continuation.controllerId,
+            prompt = "Divide $totalDamage damage among ${selectedTargets.size} targets",
+            context = DecisionContext(
+                sourceId = continuation.sourceId,
+                sourceName = sourceName,
+                phase = DecisionPhase.CASTING
+            ),
+            totalAmount = totalDamage,
+            targets = targetEntityIds,
+            minPerTarget = 1
+        )
+
+        val distributionContinuation = TriggerDamageDistributionContinuation(
+            decisionId = decisionId,
+            sourceId = continuation.sourceId,
+            sourceName = continuation.sourceName,
+            controllerId = continuation.controllerId,
+            effect = continuation.effect,
+            description = continuation.description,
+            triggerDamageAmount = continuation.triggerDamageAmount,
+            triggeringEntityId = continuation.triggeringEntityId,
+            triggeringPlayerId = continuation.triggeringPlayerId,
+            triggerCounterCount = continuation.triggerCounterCount,
+            selectedTargets = selectedTargets,
+            targetRequirements = continuation.targetRequirements,
+            totalDamage = totalDamage
+        )
+
+        val newState = state
+            .withPendingDecision(decision)
+            .pushContinuation(distributionContinuation)
+
+        val events = listOf(
+            DecisionRequestedEvent(
+                decisionId = decisionId,
+                playerId = continuation.controllerId,
+                decisionType = "DISTRIBUTE",
+                prompt = decision.prompt
+            )
+        )
+
+        return ExecutionResult.paused(newState, decision, events)
+    }
+
+    /**
+     * Resume after player distributes damage for a triggered ability's DividedDamageEffect.
+     * Put the ability on the stack with the distribution locked in.
+     */
+    private fun resumeTriggerDamageDistribution(
+        state: GameState,
+        continuation: TriggerDamageDistributionContinuation,
+        response: DecisionResponse,
+        checkForMore: CheckForMore
+    ): ExecutionResult {
+        if (response !is DistributionResponse) {
+            return ExecutionResult.error(state, "Expected distribution response for triggered ability damage")
+        }
+
+        val abilityComponent = TriggeredAbilityOnStackComponent(
+            sourceId = continuation.sourceId,
+            sourceName = continuation.sourceName,
+            controllerId = continuation.controllerId,
+            effect = continuation.effect,
+            description = continuation.description,
+            triggerDamageAmount = continuation.triggerDamageAmount,
+            triggeringEntityId = continuation.triggeringEntityId,
+            triggeringPlayerId = continuation.triggeringPlayerId,
+            triggerCounterCount = continuation.triggerCounterCount,
+            damageDistribution = response.distribution
+        )
+
+        val stackResult = services.stackResolver.putTriggeredAbility(
+            state, abilityComponent, continuation.selectedTargets, continuation.targetRequirements
         )
 
         if (!stackResult.isSuccess) {

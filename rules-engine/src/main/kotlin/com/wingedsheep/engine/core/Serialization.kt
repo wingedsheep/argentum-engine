@@ -123,6 +123,7 @@ val engineSerializersModule = SerializersModule {
     polymorphic(ContinuationFrame::class) {
         subclass(EffectContinuation::class)
         subclass(TriggeredAbilityContinuation::class)
+        subclass(TriggerDamageDistributionContinuation::class)
         subclass(DamageAssignmentContinuation::class)
         subclass(ResolveSpellContinuation::class)
         subclass(SacrificeContinuation::class)

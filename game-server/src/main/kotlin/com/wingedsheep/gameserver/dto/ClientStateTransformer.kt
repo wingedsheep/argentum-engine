@@ -774,7 +774,7 @@ class ClientStateTransformer(
             copyOf = container.get<com.wingedsheep.engine.state.components.identity.CopyOfComponent>()?.let { copyComp ->
                 cardRegistry.getCard(copyComp.originalCardDefinitionId)?.name
             },
-            damageDistribution = spellOnStack?.damageDistribution?.takeIf { it.isNotEmpty() },
+            damageDistribution = (spellOnStack?.damageDistribution ?: container.get<TriggeredAbilityOnStackComponent>()?.damageDistribution)?.takeIf { it.isNotEmpty() },
             sagaTotalChapters = cardDef?.finalChapter,
             classLevel = container.get<com.wingedsheep.engine.state.components.battlefield.ClassLevelComponent>()?.currentLevel,
             classMaxLevel = cardDef?.maxClassLevel,
