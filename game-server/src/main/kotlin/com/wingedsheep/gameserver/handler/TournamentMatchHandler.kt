@@ -398,10 +398,12 @@ class TournamentMatchHandler(
         if (tournament.hasIncompleteMatchBefore(opponentId, round.roundNumber)) return
 
         logger.info("Both players ready, starting match: ${identity.playerName} vs ${lobby.players[opponentId]?.identity?.playerName}")
-        startSingleMatch(lobby, tournament, round, match)
+        val started = startSingleMatch(lobby, tournament, round, match)
 
-        lobby.clearPlayerReady(identity.playerId)
-        lobby.clearPlayerReady(opponentId)
+        if (started) {
+            lobby.clearPlayerReady(identity.playerId)
+            lobby.clearPlayerReady(opponentId)
+        }
     }
 
     fun startSingleMatch(
@@ -409,16 +411,16 @@ class TournamentMatchHandler(
         tournament: TournamentManager,
         round: TournamentRound,
         match: TournamentMatch
-    ) {
-        val player1State = lobby.players[match.player1Id] ?: return
-        val player2State = lobby.players[match.player2Id ?: return] ?: return
+    ): Boolean {
+        val player1State = lobby.players[match.player1Id] ?: return false
+        val player2State = lobby.players[match.player2Id ?: return false] ?: return false
 
         val baseDeck1 = BoosterGenerator.distributeBasicLandVariants(
-            lobby.getSubmittedDeck(match.player1Id) ?: return,
+            lobby.getSubmittedDeck(match.player1Id) ?: return false,
             lobby.allBasicLandVariants
         )
         val baseDeck2 = BoosterGenerator.distributeBasicLandVariants(
-            lobby.getSubmittedDeck(match.player2Id) ?: return,
+            lobby.getSubmittedDeck(match.player2Id) ?: return false,
             lobby.allBasicLandVariants
         )
         val deck1 = EasterEggDeckInjector.maybeInjectEasterEggs(
@@ -516,6 +518,7 @@ class TournamentMatchHandler(
         gamePlayHandler.startGame(gameSession)
 
         spectatingHandler.broadcastActiveMatchesToWaitingPlayers(lobby.lobbyId)
+        return true
     }
 
     fun ensureTournamentCreated(lobby: TournamentLobby): TournamentManager {
@@ -713,6 +716,7 @@ class TournamentMatchHandler(
     fun autoReadyAiPlayers(lobby: TournamentLobby, tournament: TournamentManager) {
         for ((playerId, playerState) in lobby.players) {
             if (!aiGameManager.isAiPlayer(playerId)) continue
+            if (!playerState.hasSubmittedDeck) continue
 
             val wasNewlyReady = lobby.markPlayerReady(playerId)
             if (wasNewlyReady) {
