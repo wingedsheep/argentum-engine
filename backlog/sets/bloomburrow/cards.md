@@ -2,7 +2,7 @@
 
 **Set Size:** 266 cards
 **Release Date:** August 2, 2024
-**Implemented:** 252 / 266
+**Implemented:** 253 / 266
 
 | Color      | Total | Done |
 |------------|-------|------|
@@ -11,7 +11,7 @@
 | Black      | 40    | 37   |
 | Red        | 41    | 38   |
 | Green      | 41    | 37   |
-| Multicolor | 39    | 35   |
+| Multicolor | 39    | 36   |
 | Colorless  | 9     | 9    |
 | Land       | 15    | 15   |
 
@@ -138,7 +138,7 @@
 - [x] Lifecreed Duo
 - [x] Lightshell Duo
 - [x] Lilypad Village
-- [ ] Lilysplash Mentor
+- [x] Lilysplash Mentor
 - [x] Long River Lurker
 - [x] Long River's Pull
 - [x] Longstalk Brawl

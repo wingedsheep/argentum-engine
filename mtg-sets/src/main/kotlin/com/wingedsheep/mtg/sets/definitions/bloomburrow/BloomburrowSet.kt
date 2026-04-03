@@ -141,6 +141,7 @@ object BloomburrowSet {
         LightshellDuo,
         LifecreedDuo,
         LilypadVillage,
+        LilysplashMentor,
         LongRiverLurker,
         LongRiversPull,
         LongstalkBrawl,
