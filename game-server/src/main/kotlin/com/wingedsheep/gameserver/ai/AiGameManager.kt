@@ -295,23 +295,4 @@ class AiGameManager(
      */
     fun hasAiPlayer(gameSessionId: String): Boolean = activeSessions.containsKey(gameSessionId)
 
-    /**
-     * Try to build a deck using LLM-assisted deckbuilding.
-     * Returns null if the required data isn't available (e.g., no card pool on the generator).
-     */
-    private fun tryAiDeckBuild(llmClient: LlmClient): AiDeckResult? {
-        return try {
-            val builder = AiDeckBuilder(
-                properties = gameProperties.ai,
-                llmClient = llmClient,
-                cardPool = deckGenerator.cardPool,
-                basicLandVariants = deckGenerator.basicLandVariants,
-                setCodes = deckGenerator.setCodes
-            )
-            builder.build()
-        } catch (e: Exception) {
-            logger.warn("AI deckbuilder failed, falling back to random: {}", e.message)
-            null
-        }
-    }
 }
