@@ -141,6 +141,7 @@ object BloomburrowSet {
         MahaItsFeathersNight,
         ManifoldMouse,
         MightOfTheMeek,
+        MindDrillAssailant,
         Mockingbird,
         MoonriseCleric,
         MoonstoneHarbinger,

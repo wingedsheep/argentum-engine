@@ -2,7 +2,7 @@
 
 **Set Size:** 266 cards
 **Release Date:** August 2, 2024
-**Implemented:** 235 / 266
+**Implemented:** 236 / 266
 
 | Color      | Total | Done |
 |------------|-------|------|
@@ -11,7 +11,7 @@
 | Black      | 40    | 35   |
 | Red        | 41    | 35   |
 | Green      | 41    | 36   |
-| Multicolor | 39    | 32   |
+| Multicolor | 39    | 33   |
 | Colorless  | 9     | 9    |
 | Land       | 15    | 14   |
 
@@ -150,7 +150,7 @@
 - [x] Maha, Its Feathers Night
 - [x] Manifold Mouse
 - [x] Might of the Meek
-- [ ] Mind Drill Assailant
+- [x] Mind Drill Assailant
 - [x] Mind Spiral
 - [x] Mindwhisker
 - [ ] Mistbreath Elder
