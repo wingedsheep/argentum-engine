@@ -222,6 +222,7 @@ object BloomburrowSet {
         StarforgedSword,
         StarscapeCleric,
         StarseerMentor,
+        StarlitSoothsayer,
         SteampathCharger,
         StormcatchMentor,
         StormchasersTalent,
