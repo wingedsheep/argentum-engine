@@ -54,9 +54,14 @@ class EngineAiController(
             return ActionResponse.SubmitAction(PassPriority(playerId))
         }
 
-        // Single action → just take it
+        // Single action → just take it, UNLESS it's a combat declaration
+        // (DeclareAttackers/DeclareBlockers default to empty maps and need the AI to fill them in)
         if (legalActions.size == 1) {
-            return ActionResponse.SubmitAction(legalActions.first().action)
+            val action = legalActions.first().action
+            val isCombatDeclaration = action is DeclareAttackers || action is DeclareBlockers
+            if (!isCombatDeclaration) {
+                return ActionResponse.SubmitAction(action)
+            }
         }
 
         // Use the engine AI to choose the best action from the real game state
