@@ -2,14 +2,14 @@
 
 **Set Size:** 266 cards
 **Release Date:** August 2, 2024
-**Implemented:** 249 / 266
+**Implemented:** 250 / 266
 
 | Color      | Total | Done |
 |------------|-------|------|
 | White      | 40    | 38   |
 | Blue       | 41    | 39   |
 | Black      | 40    | 36   |
-| Red        | 41    | 37   |
+| Red        | 41    | 38   |
 | Green      | 41    | 37   |
 | Multicolor | 39    | 35   |
 | Colorless  | 9     | 9    |
@@ -107,7 +107,7 @@
 - [x] Hazel's Nocturne
 - [x] Head of the Homestead
 - [x] Heaped Harvest
-- [ ] Heartfire Hero
+- [x] Heartfire Hero
 - [x] Hearthborn Battler
 - [x] Heirloom Epic
 - [x] Helga, Skittish Seer

@@ -109,6 +109,7 @@ object BloomburrowSet {
         HazardrootHerbalist,
         HazelsNocturne,
         HeapedHarvest,
+        HeartfireHero,
         HearthbornBattler,
         HeirloomEpic,
         HelgaSkittishSeer,
