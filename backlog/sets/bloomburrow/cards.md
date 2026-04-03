@@ -6,10 +6,10 @@
 
 | Color      | Total | Done |
 |------------|-------|------|
-| White      | 40    | 39   |
+| White      | 40    | 40   |
 | Blue       | 41    | 41   |
-| Black      | 40    | 39   |
-| Red        | 41    | 40   |
+| Black      | 40    | 40   |
+| Red        | 41    | 41   |
 | Green      | 41    | 41   |
 | Multicolor | 39    | 39   |
 | Colorless  | 9     | 9    |
