@@ -200,6 +200,7 @@ object BloomburrowSet {
         ScavengersTalent,
         SeasonOfGathering,
         SeasonOfLoss,
+        SeasonOfTheBold,
         SeasonOfTheBurrow,
         SeasonOfWeaving,
         SeasonedWarrenguard,
