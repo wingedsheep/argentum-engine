@@ -17,12 +17,24 @@ class SealedDeckGenerator(
     private val logger = LoggerFactory.getLogger(SealedDeckGenerator::class.java)
 
     /**
+     * Picks a random available set code.
+     */
+    fun randomSetCode(): String = boosterGenerator.availableSets.keys.random()
+
+    /**
      * Generates a sealed deck from 8 boosters of a random available set.
      *
      * @return A map of card name (or "Name#SetCode-CollectorNumber" for lands) to count
      */
-    fun generate(): Map<String, Int> {
-        val setCode = boosterGenerator.availableSets.keys.random()
+    fun generate(): Map<String, Int> = generate(randomSetCode())
+
+    /**
+     * Generates a sealed deck from 8 boosters of the specified set.
+     *
+     * @param setCode The set to generate boosters from
+     * @return A map of card name (or "Name#SetCode-CollectorNumber" for lands) to count
+     */
+    fun generate(setCode: String): Map<String, Int> {
         val setName = boosterGenerator.availableSets[setCode]!!.setName
 
         val pool = boosterGenerator.generateSealedPool(setCode, boosterCount = 8)

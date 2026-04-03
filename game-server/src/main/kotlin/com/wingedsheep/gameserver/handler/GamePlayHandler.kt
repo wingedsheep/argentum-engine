@@ -85,9 +85,12 @@ class GamePlayHandler(
             return
         }
 
-        val deckList = if (message.deckList.isEmpty()) {
-            val randomDeck = deckGenerator.generate()
-            logger.info("Generated random deck for ${playerSession.playerName}: ${randomDeck.entries.take(5)}... (${randomDeck.values.sum()} cards)")
+        // Pick a shared set for quick games so both players draft from the same pool
+        val quickGameSetCode = if (message.deckList.isEmpty()) deckGenerator.randomSetCode() else null
+
+        val deckList = if (quickGameSetCode != null) {
+            val randomDeck = deckGenerator.generate(quickGameSetCode)
+            logger.info("Generated random deck for ${playerSession.playerName} from set $quickGameSetCode: ${randomDeck.entries.take(5)}... (${randomDeck.values.sum()} cards)")
             randomDeck
         } else {
             message.deckList
@@ -117,9 +120,10 @@ class GamePlayHandler(
             logger.info("Game created vs AI: ${gameSession.sessionId} by ${playerSession.playerName}")
             sender.send(session, ServerMessage.GameCreated(gameSession.sessionId))
 
-            // Create AI opponent with async callbacks
+            // Create AI opponent with async callbacks, using same set as human player
             aiGameManager.createAiOpponent(
                 gameSession = gameSession,
+                setCode = quickGameSetCode,
                 onActionReady = { aiPlayerId, action ->
                     handleAiAction(gameSession, aiPlayerId, action)
                 },

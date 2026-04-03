@@ -112,6 +112,7 @@ class AiGameManager(
      */
     fun createAiOpponent(
         gameSession: GameSession,
+        setCode: String? = null,
         onActionReady: (EntityId, GameAction) -> Unit,
         onMulliganKeep: (EntityId) -> Unit,
         onMulliganTake: (EntityId) -> Unit,
@@ -151,8 +152,8 @@ class AiGameManager(
         identity.webSocketSession = aiSession
         sessionRegistry.register(identity, aiSession, playerSession)
 
-        // Quick games use a random deck — no LLM deckbuilding needed
-        val aiDeck = deckGenerator.generate()
+        // Quick games use a sealed deck — use same set as human player if provided
+        val aiDeck = if (setCode != null) deckGenerator.generate(setCode) else deckGenerator.generate()
         gameSession.addPlayer(playerSession, aiDeck)
 
         // Give the AI knowledge of its deck composition
