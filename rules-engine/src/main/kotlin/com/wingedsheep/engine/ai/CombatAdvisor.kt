@@ -7,6 +7,7 @@ import com.wingedsheep.engine.core.GameAction
 import com.wingedsheep.engine.core.PassPriority
 import com.wingedsheep.engine.legalactions.LegalAction
 import com.wingedsheep.engine.mechanics.layers.ProjectedState
+import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.state.components.identity.LifeTotalComponent
@@ -23,7 +24,8 @@ import com.wingedsheep.sdk.model.EntityId
  */
 class CombatAdvisor(
     private val simulator: GameSimulator,
-    private val evaluator: BoardEvaluator
+    private val evaluator: BoardEvaluator,
+    private val cardRegistry: CardRegistry? = null
 ) {
     /**
      * Build a DeclareAttackers action choosing which creatures to send in.
@@ -538,7 +540,7 @@ class CombatAdvisor(
      * Profit mode: look for favorable trades, accounting for first strike, lifelink,
      * and life-scaled trade willingness. At low life, accepts worse trades to prevent damage.
      */
-    /** Return unassigned blockers that can legally block [attacker] (evasion check). */
+    /** Return unassigned blockers that can legally block [attacker] (evasion + blocker restriction check). */
     private fun availableBlockersFor(
         state: GameState,
         projected: ProjectedState,
@@ -546,7 +548,7 @@ class CombatAdvisor(
         validBlockers: List<EntityId>,
         assignedBlockers: Set<EntityId>
     ): List<EntityId> {
-        return validBlockers.filter { it !in assignedBlockers && CombatMath.canBeBlockedBy(state, projected, attacker, it) }
+        return validBlockers.filter { it !in assignedBlockers && CombatMath.canBeBlockedBy(state, projected, attacker, it, cardRegistry) }
     }
 
     private fun assignBlocksForProfit(

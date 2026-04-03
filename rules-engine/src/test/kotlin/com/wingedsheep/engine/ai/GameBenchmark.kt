@@ -16,7 +16,7 @@ import kotlin.math.roundToInt
 import kotlin.time.measureTime
 
 private val logFile = java.io.File(System.getProperty("java.io.tmpdir"), "benchmark-progress.log").also {
-    it.writeText("") // clear on start
+    it.writeText("")
 }
 
 private fun log(msg: String) {
@@ -26,13 +26,14 @@ private fun log(msg: String) {
 
 /**
  * Benchmark: runs N AI-vs-AI games in parallel with random sealed decks.
+ * Writes per-game CSV data for graphing.
  *
  * Disabled by default. Run with:
  *   ./gradlew :rules-engine:test --tests "*.GameBenchmark" -Dbenchmark=true
  */
 class GameBenchmark : FunSpec({
 
-    val numGames = 10
+    val numGames = System.getProperty("benchmarkGames")?.toIntOrNull() ?: 10
     val benchmarkEnabled = System.getProperty("benchmark") == "true"
 
     test("benchmark: $numGames AI-vs-AI games in parallel (random sealed decks)").config(enabled = benchmarkEnabled) {
@@ -43,45 +44,70 @@ class GameBenchmark : FunSpec({
         val completionService = ExecutorCompletionService<GameResult>(pool)
         val finished = AtomicInteger(0)
 
-        log("=== BENCHMARK: $numGames games on $cores threads (random sealed decks, maxTurns=20) ===")
+        // CSV output file for graphing
+        val csvFile = java.io.File(System.getProperty("java.io.tmpdir"), "benchmark-results.csv")
+        csvFile.writeText("game,turns,actions,duration_ms,winner,p1_life,p2_life,completed,colors_p1,colors_p2,peak_memory_kb\n")
+
+        val runtime = Runtime.getRuntime()
+
+        log("=== BENCHMARK: $numGames games on $cores threads (random sealed decks, maxTurns=50) ===")
+        log("CSV output: ${csvFile.absolutePath}")
 
         val wallTime = measureTime {
             (1..numGames).forEach { i ->
                 completionService.submit {
                     val deck1 = buildRandomSealedDeck(allCards)
                     val deck2 = buildRandomSealedDeck(allCards)
-                    log("  [Game $i] started [${deckSummary(deck1)} vs ${deckSummary(deck2)}]")
-                    playGame(registry, deck1, deck2, i, maxTurns = 20) { turn, p1Life, p2Life, actions ->
-                        log("  [Game $i] turn $turn: P1=$p1Life P2=$p2Life ($actions actions)")
+                    if (i <= 10 || i % 10 == 0) {
+                        log("  [Game $i] started [${deckSummary(deck1)} vs ${deckSummary(deck2)}]")
+                    }
+                    playGame(registry, deck1, deck2, i, maxTurns = 50) { turn, p1Life, p2Life, actions ->
+                        if (i <= 10 && turn % 5 == 0) {
+                            log("  [Game $i] turn $turn: P1=$p1Life P2=$p2Life ($actions actions)")
+                        }
                     }.also { r ->
                         val n = finished.incrementAndGet()
-                        log("  [Game $i] done ($n/$numGames): ${r.turns} turns, ${r.actions} actions, " +
-                                "${r.durationMs}ms, ${r.winner} (${r.p1Life} vs ${r.p2Life})")
+                        if (n <= 10 || n % 10 == 0 || n == numGames) {
+                            log("  [Game $i] done ($n/$numGames): ${r.turns} turns, ${r.actions} actions, " +
+                                    "${r.durationMs}ms, ${r.winner} (${r.p1Life} vs ${r.p2Life})")
+                        }
                     }
                 }
             }
 
             val results = (1..numGames).map { completionService.take().get() }
 
+            // Write CSV
+            for (r in results) {
+                csvFile.appendText("${r.id},${r.turns},${r.actions},${r.durationMs},${r.winner}," +
+                        "${r.p1Life},${r.p2Life},${r.gameOver},${r.deck1Summary},${r.deck2Summary},${r.peakMemoryKb}\n")
+            }
+
             val completed = results.count { it.gameOver }
-            val avgTurns = results.map { it.turns }.average().roundToInt()
-            val avgActions = results.map { it.actions }.average().roundToInt()
-            val avgMs = results.map { it.durationMs }.average().roundToInt()
+            val avgTurns = results.map { it.turns }.average()
+            val avgActions = results.map { it.actions }.average()
+            val avgMs = results.map { it.durationMs }.average()
             val totalActions = results.sumOf { it.actions }
             val totalCpuMs = results.sumOf { it.durationMs }
+            val avgMemKb = results.map { it.peakMemoryKb }.average()
+            val maxMemKb = results.maxOf { it.peakMemoryKb }
 
             log("")
-            log("--- SUMMARY ---")
-            log("Completed: $completed / ${results.size}")
-            log("Turns:     avg=$avgTurns, min=${results.minOf { it.turns }}, max=${results.maxOf { it.turns }}")
-            log("Actions:   avg=$avgActions, min=${results.minOf { it.actions }}, max=${results.maxOf { it.actions }}")
-            log("CPU time:  avg=${avgMs}ms, min=${results.minOf { it.durationMs }}ms, max=${results.maxOf { it.durationMs }}ms")
+            log("--- SUMMARY ($numGames games) ---")
+            log("Completed:  $completed / ${results.size} (${completed * 100 / results.size}%)")
+            log("Turns:      avg=${String.format("%.1f", avgTurns)}, min=${results.minOf { it.turns }}, max=${results.maxOf { it.turns }}")
+            log("Actions:    avg=${avgActions.roundToInt()}, min=${results.minOf { it.actions }}, max=${results.maxOf { it.actions }}")
+            log("CPU/game:   avg=${avgMs.roundToInt()}ms, min=${results.minOf { it.durationMs }}ms, max=${results.maxOf { it.durationMs }}ms")
+            log("Memory:     avg=${avgMemKb.roundToInt()}KB/game, max=${maxMemKb}KB/game")
             if (totalCpuMs > 0) {
                 log("Throughput: ~${(totalActions * 1000.0 / totalCpuMs).roundToInt()} actions/sec (per thread)")
+                log("Games/sec:  ~${String.format("%.1f", results.size * 1000.0 / totalCpuMs)} (per thread)")
             }
+            log("CSV: ${csvFile.absolutePath}")
         }
 
-        log("Wall time: ${wallTime.inWholeMilliseconds}ms")
+        log("Wall time:  ${wallTime.inWholeMilliseconds}ms (${numGames} games on $cores threads)")
+        log("Effective:  ~${String.format("%.1f", numGames * 1000.0 / wallTime.inWholeMilliseconds)} games/sec (wall clock)")
         pool.shutdown()
     }
 })
@@ -89,7 +115,7 @@ class GameBenchmark : FunSpec({
 private data class GameResult(
     val id: Int, val turns: Int, val actions: Int, val durationMs: Long,
     val winner: String, val p1Life: Int, val p2Life: Int, val gameOver: Boolean,
-    val deck1Summary: String, val deck2Summary: String
+    val deck1Summary: String, val deck2Summary: String, val peakMemoryKb: Long
 )
 
 private fun buildRandomSealedDeck(allCards: List<CardDefinition>): Deck {
@@ -137,6 +163,8 @@ private fun playGame(
     val initializer = GameInitializer(registry)
     var actionCount = 0
     var turns = 0
+    val runtime = Runtime.getRuntime()
+    var peakMemory = runtime.totalMemory() - runtime.freeMemory()
 
     val result = initializer.initializeGame(
         GameConfig(
@@ -157,13 +185,12 @@ private fun playGame(
 
     val duration = measureTime {
         while (!state.gameOver && turns < maxTurns) {
-            // Detect infinite loops: if turn hasn't advanced in 1000 iterations, bail out
             if (actionCount - lastProgressAction > 1000 && turns == lastProgressTurn) {
                 stuckCount++
                 if (stuckCount >= 3) {
                     val who = when (state.priorityPlayerId) { p1 -> "P1"; p2 -> "P2"; else -> "none" }
                     val decision = state.pendingDecision?.let { it::class.simpleName } ?: "none"
-                    log("  [Game $id] STUCK at turn=$turns phase=${state.phase} step=${state.step} $who priority, decision=$decision, breaking out")
+                    log("  [Game $id] STUCK at turn=$turns phase=${state.phase} step=${state.step} $who priority, decision=$decision")
                     break
                 }
             }
@@ -172,8 +199,7 @@ private fun playGame(
                 lastProgressAction = actionCount
                 stuckCount = 0
             }
-            val iterStart = System.currentTimeMillis()
-            // Handle pending decisions first (e.g., DeclareAttackers) before priority
+
             val d = state.pendingDecision
             val next: GameState? = if (d != null) {
                 actionCount++
@@ -193,13 +219,22 @@ private fun playGame(
                 val p2Life = state.getEntity(p2)?.get<LifeTotalComponent>()?.life ?: 0
                 onTurn(turns, p1Life, p2Life, actionCount)
             }
+
+            // Sample memory every 50 actions
+            if (actionCount % 50 == 0) {
+                val used = runtime.totalMemory() - runtime.freeMemory()
+                if (used > peakMemory) peakMemory = used
+            }
         }
     }
+
+    val finalMemory = runtime.totalMemory() - runtime.freeMemory()
+    if (finalMemory > peakMemory) peakMemory = finalMemory
 
     return GameResult(
         id = id, turns = turns, actions = actionCount, durationMs = duration.inWholeMilliseconds,
         winner = when {
-            !state.gameOver -> "draw (turn limit)"
+            !state.gameOver -> "draw"
             state.winnerId == p1 -> "P1"
             state.winnerId == p2 -> "P2"
             else -> "draw"
@@ -208,6 +243,7 @@ private fun playGame(
         p2Life = state.getEntity(p2)?.get<LifeTotalComponent>()?.life ?: 0,
         gameOver = state.gameOver,
         deck1Summary = deckSummary(deck1),
-        deck2Summary = deckSummary(deck2)
+        deck2Summary = deckSummary(deck2),
+        peakMemoryKb = peakMemory / 1024
     )
 }

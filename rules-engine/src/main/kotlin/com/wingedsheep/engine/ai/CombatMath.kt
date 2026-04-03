@@ -1,6 +1,7 @@
 package com.wingedsheep.engine.ai
 
 import com.wingedsheep.engine.mechanics.layers.ProjectedState
+import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.battlefield.DamageComponent
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
@@ -8,6 +9,9 @@ import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.sdk.core.AbilityFlag
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.model.EntityId
+import com.wingedsheep.sdk.scripting.CanOnlyBlockCreaturesWithKeyword
+import com.wingedsheep.sdk.scripting.CantBlockCreaturesWithGreaterPower
+import com.wingedsheep.sdk.scripting.StaticTarget
 
 /**
  * Pure utility functions for combat math used by CombatAdvisor.
@@ -28,7 +32,8 @@ object CombatMath {
         state: GameState,
         projected: ProjectedState,
         attacker: EntityId,
-        blocker: EntityId
+        blocker: EntityId,
+        cardRegistry: CardRegistry? = null
     ): Boolean {
         val aKeywords = projected.getKeywords(attacker)
         val bKeywords = projected.getKeywords(blocker)
@@ -81,6 +86,32 @@ object CombatMath {
             if (Keyword.ISLANDWALK.name in aKeywords && defenderLands.any { projected.hasSubtype(it, "Island") }) return false
             if (Keyword.MOUNTAINWALK.name in aKeywords && defenderLands.any { projected.hasSubtype(it, "Mountain") }) return false
             if (Keyword.PLAINSWALK.name in aKeywords && defenderLands.any { projected.hasSubtype(it, "Plains") }) return false
+        }
+
+        // Blocker-side restrictions (e.g., "can block only creatures with flying")
+        if (cardRegistry != null) {
+            val blockerCard = state.getEntity(blocker)?.get<CardComponent>()
+            if (blockerCard != null) {
+                val cardDef = cardRegistry.getCard(blockerCard.cardDefinitionId)
+                if (cardDef != null) {
+                    for (ability in cardDef.staticAbilities) {
+                        when (ability) {
+                            is CanOnlyBlockCreaturesWithKeyword -> {
+                                if (ability.target == StaticTarget.SourceCreature &&
+                                    !projected.hasKeyword(attacker, ability.keyword)) return false
+                            }
+                            is CantBlockCreaturesWithGreaterPower -> {
+                                if (ability.target == StaticTarget.SourceCreature) {
+                                    val aPower = projected.getPower(attacker) ?: 0
+                                    val bPower = projected.getPower(blocker) ?: 0
+                                    if (aPower > bPower) return false
+                                }
+                            }
+                            else -> {}
+                        }
+                    }
+                }
+            }
         }
 
         return true

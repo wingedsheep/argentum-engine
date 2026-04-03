@@ -88,10 +88,20 @@ class AIPlayer(
             val result = processor.process(current, action)
             if (result.error != null) {
                 // Action was illegal — submit a safe fallback action
-                val fallback = when (current.step) {
-                    Step.DECLARE_ATTACKERS -> DeclareAttackers(playerId, emptyMap())
-                    Step.DECLARE_BLOCKERS -> {
-                        // Build minimal valid blocker map from mandatory assignments
+                val fallback = when {
+                    current.step == Step.DECLARE_ATTACKERS && current.activePlayerId == playerId -> {
+                        // Include mandatory attackers to avoid rejection
+                        val legalActions = simulator.getLegalActions(current, playerId)
+                        val attackAction = legalActions.find { it.actionType == "DeclareAttackers" }
+                        val mandatory = attackAction?.mandatoryAttackers ?: emptyList()
+                        val opponentId = current.turnOrder.firstOrNull { it != playerId }
+                        val attackerMap = if (mandatory.isNotEmpty() && opponentId != null) {
+                            mandatory.associateWith { opponentId }
+                        } else emptyMap()
+                        DeclareAttackers(playerId, attackerMap)
+                    }
+                    current.step == Step.DECLARE_BLOCKERS && current.activePlayerId != playerId -> {
+                        // Include mandatory blockers to avoid rejection
                         val legalActions = simulator.getLegalActions(current, playerId)
                         val blockerAction = legalActions.find { it.actionType == "DeclareBlockers" }
                         val mandatory = blockerAction?.mandatoryBlockerAssignments ?: emptyMap()
@@ -125,11 +135,12 @@ class AIPlayer(
         fun create(cardRegistry: CardRegistry, playerId: EntityId): AIPlayer {
             val simulator = GameSimulator(cardRegistry)
             val evaluator = defaultEvaluator()
+            val combatAdvisor = CombatAdvisor(simulator, evaluator, cardRegistry)
             return AIPlayer(
                 playerId = playerId,
                 simulator = simulator,
                 evaluator = evaluator,
-                strategist = Strategist(simulator, evaluator),
+                strategist = Strategist(simulator, evaluator, combatAdvisor = combatAdvisor),
                 responder = DecisionResponder(simulator, evaluator)
             )
         }
