@@ -185,6 +185,7 @@ constructors.
 - `Effects.GrantAttackBlockTaxPerCreatureType(target, creatureType, manaCostPer, duration)` — grant "can't attack or block unless pays {X} per creature type" (Whipgrass Entangler)
 - `RedirectCombatDamageToControllerEffect(target)` — next time creature deals combat damage this turn, deals it to controller instead (Goblin Psychopath)
 - `Effects.AttachEquipment(target)` — attach this equipment to target creature (for equip abilities)
+- `Effects.AttachTargetEquipmentToCreature(equipmentTarget, creatureTarget)` — attach a targeted Equipment to a targeted creature (both explicit targets, not source)
 - `Effects.DeflectNextDamageFromChosenSource()` — choose a source, prevent next damage from it, deal that much to source's controller (Deflecting Palm)
 - `Effects.PreventNextDamageFromChosenSource(amount, target)` — choose a source, prevent next N damage from it to target (Healing Grace)
 
@@ -349,7 +350,7 @@ constructors.
 |----------------------------------|---------------------------------------------------------------------------------------------|--------------------------------|
 | `CreateTokenEffect`              | `count: DynamicAmount, power, toughness, colors, creatureTypes, keywords, name?, imageUri?, tapped?, attacking?, legendary?, exileAtStep?` | Create token (tapped = enter tapped, attacking = enter attacking, legendary = legendary supertype, exileAtStep = create delayed trigger to exile tokens at that step) |
 | `CreateChosenTokenEffect`        | `dynamicPower: DynamicAmount, dynamicToughness: DynamicAmount`                              | Create token with chosen stats |
-| `CreatePredefinedTokenEffect`    | `tokenType: String, count: Int, controller: EffectTarget?`                                  | Create predefined tokens (Treasure, Food, Lander). Use `Effects.CreateTreasure()`, `Effects.CreateFood()`, `Effects.CreateLander()` facades. |
+| `CreatePredefinedTokenEffect`    | `tokenType: String, count: Int, controller: EffectTarget?`                                  | Create predefined tokens (Treasure, Food, Lander, Sword). Use `Effects.CreateTreasure()`, `Effects.CreateFood()`, `Effects.CreateLander()`, `Effects.CreateSword()` facades. |
 | `CreateTokenCopyOfSourceEffect`  | `count: Int`                                                                                | Create token copy of source permanent |
 | `CreateTokenFromGraveyardEffect` | `power, toughness, colors, creatureTypes`                                                   | Token from graveyard           |
 

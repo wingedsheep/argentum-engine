@@ -39,6 +39,7 @@ object BloomburrowSet {
         BaylenTheHaymaker,
         BellowingCrier,
         BezaTheBoundingSpring,
+        BlacksmithsTalent,
         BloomingBlast,
         BonebindOrator,
         BuildersTalent,

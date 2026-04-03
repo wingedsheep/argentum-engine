@@ -3,6 +3,7 @@ package com.wingedsheep.mtg.sets.tokens
 import com.wingedsheep.sdk.dsl.Costs
 import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.dsl.Effects
+import com.wingedsheep.sdk.dsl.Filters
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.scripting.effects.SearchDestination
@@ -114,6 +115,26 @@ object PredefinedTokens {
     }
 
     /**
+     * Sword token — a colorless Equipment artifact with:
+     * "Equipped creature gets +1/+1" and equip {2}.
+     * Created by Blacksmith's Talent.
+     */
+    val Sword = card("Sword") {
+        typeLine = "Artifact — Equipment"
+
+        staticAbility {
+            effect = Effects.ModifyStats(+1, +1)
+            filter = Filters.EquippedCreature
+        }
+
+        equipAbility("{2}")
+
+        metadata {
+            imageUri = "https://cards.scryfall.io/normal/front/b/b/bb1e78e6-a9e7-48a4-9231-61fb331c5837.jpg?1721426299"
+        }
+    }
+
+    /**
      * All predefined token definitions.
      * Register these in the CardRegistry so token abilities are resolved.
      */
@@ -121,6 +142,7 @@ object PredefinedTokens {
         Treasure,
         Food,
         Lander,
-        JustOneGlass
+        JustOneGlass,
+        Sword
     )
 }

@@ -2,14 +2,14 @@
 
 **Set Size:** 266 cards
 **Release Date:** August 2, 2024
-**Implemented:** 246 / 266
+**Implemented:** 247 / 266
 
 | Color      | Total | Done |
 |------------|-------|------|
 | White      | 40    | 37   |
 | Blue       | 41    | 39   |
 | Black      | 40    | 36   |
-| Red        | 41    | 36   |
+| Red        | 41    | 37   |
 | Green      | 41    | 37   |
 | Multicolor | 39    | 35   |
 | Colorless  | 9     | 9    |
@@ -31,7 +31,7 @@
 - [x] Baylen, the Haymaker
 - [x] Bellowing Crier
 - [x] Beza, the Bounding Spring
-- [ ] Blacksmith's Talent
+- [x] Blacksmith's Talent
 - [x] Blooming Blast
 - [x] Bonebind Orator
 - [x] Bonecache Overseer

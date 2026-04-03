@@ -134,6 +134,26 @@ data class AttachEquipmentEffect(
 }
 
 /**
+ * Attach a targeted Equipment to a targeted creature.
+ * Unlike [AttachEquipmentEffect] which uses the source as the equipment,
+ * this effect uses two explicit targets — one for the Equipment, one for the creature.
+ * Used for Blacksmith's Talent Level 2: "attach target Equipment you control to up to one
+ * target creature you control."
+ *
+ * @property equipmentTarget The Equipment to attach (e.g., ContextTarget(0))
+ * @property creatureTarget The creature to attach it to (e.g., ContextTarget(1))
+ */
+@SerialName("AttachTargetEquipmentToCreature")
+@Serializable
+data class AttachTargetEquipmentToCreatureEffect(
+    val equipmentTarget: EffectTarget = EffectTarget.ContextTarget(0),
+    val creatureTarget: EffectTarget = EffectTarget.ContextTarget(1)
+) : Effect {
+    override val description: String = "Attach ${equipmentTarget.description} to ${creatureTarget.description}"
+    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
+}
+
+/**
  * Mark a permanent so that if it would leave the battlefield, it is exiled instead.
  * Used by Kheru Lich Lord, Whip of Erebos, Sneak Attack, and similar reanimation effects.
  *

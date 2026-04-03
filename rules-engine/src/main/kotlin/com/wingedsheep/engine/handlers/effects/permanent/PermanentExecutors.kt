@@ -53,6 +53,7 @@ class PermanentExecutors(
         DistributeCountersFromSelfExecutor(),
         DistributeCountersAmongTargetsExecutor(),
         AttachEquipmentExecutor(),
+        AttachTargetEquipmentToCreatureExecutor(),
         GrantExileOnLeaveExecutor(),
         RemoveAllAbilitiesExecutor(),
         LevelUpClassExecutor(),

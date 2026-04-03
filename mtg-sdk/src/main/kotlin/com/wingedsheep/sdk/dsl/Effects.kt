@@ -795,6 +795,13 @@ object Effects {
     fun CreateLander(count: Int = 1, controller: EffectTarget? = null): Effect =
         CreatePredefinedTokenEffect("Lander", count, controller)
 
+    /**
+     * Create Sword Equipment artifact tokens.
+     * "Equipped creature gets +1/+1" and equip {2}.
+     */
+    fun CreateSword(count: Int = 1): Effect =
+        CreatePredefinedTokenEffect("Sword", count)
+
     // =========================================================================
     // Protection Effects
     // =========================================================================
@@ -1198,6 +1205,17 @@ object Effects {
      */
     fun AttachEquipment(target: EffectTarget = EffectTarget.ContextTarget(0)): Effect =
         com.wingedsheep.sdk.scripting.effects.AttachEquipmentEffect(target)
+
+    /**
+     * Attach a targeted Equipment to a targeted creature.
+     * Both the Equipment and creature are explicit targets (not the source).
+     */
+    fun AttachTargetEquipmentToCreature(
+        equipmentTarget: EffectTarget = EffectTarget.ContextTarget(0),
+        creatureTarget: EffectTarget = EffectTarget.ContextTarget(1)
+    ): Effect = com.wingedsheep.sdk.scripting.effects.AttachTargetEquipmentToCreatureEffect(
+        equipmentTarget, creatureTarget
+    )
 
     // =========================================================================
     // Animate Effects
