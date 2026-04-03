@@ -71,6 +71,7 @@ object BloomburrowSet {
         DarkstarAugur,
         DazzlingDenial,
         DawnsTruce,
+        DewdropCure,
         DireDowndraft,
         Diresight,
         DourPortMage,
