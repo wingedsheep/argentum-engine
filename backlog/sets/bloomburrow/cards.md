@@ -2,7 +2,7 @@
 
 **Set Size:** 266 cards
 **Release Date:** August 2, 2024
-**Implemented:** 261 / 266
+**Implemented:** 262 / 266
 
 | Color      | Total | Done |
 |------------|-------|------|
@@ -10,7 +10,7 @@
 | Blue       | 41    | 41   |
 | Black      | 40    | 37   |
 | Red        | 41    | 40   |
-| Green      | 41    | 39   |
+| Green      | 41    | 40   |
 | Multicolor | 39    | 38   |
 | Colorless  | 9     | 9    |
 | Land       | 15    | 15   |
@@ -153,7 +153,7 @@
 - [x] Mind Drill Assailant
 - [x] Mind Spiral
 - [x] Mindwhisker
-- [ ] Mistbreath Elder
+- [x] Mistbreath Elder
 - [x] Mockingbird
 - [x] Moonrise Cleric
 - [x] Moonstone Harbinger

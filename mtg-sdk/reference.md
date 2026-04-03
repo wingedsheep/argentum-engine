@@ -252,6 +252,7 @@ constructors.
 | `SacrificeSelfEffect`                       | (object)                                              | Sacrifice this permanent |
 | `SacrificeTargetEffect`                     | `target`                                              | Sacrifice specific permanent by target |
 | `ForceSacrificeEffect`                      | `filter, count, target`                               | Force opponent sacrifice |
+| `ForceReturnOwnPermanentEffect`             | `filter, excludeSource`                               | Controller returns own permanent to hand |
 | `RegenerateEffect`                          | `target`                                              | Regenerate               |
 | `CantBeRegeneratedEffect`                   | `target`                                              | Prevents regeneration    |
 | `MarkExileOnDeathEffect`                    | `target`                                              | Mark for exile on death  |

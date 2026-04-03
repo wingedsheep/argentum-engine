@@ -139,6 +139,7 @@ object BloomburrowSet {
         Knightfisher,
         HuntersTalent,
         InnkeepersTalent,
+        MistbreathElder,
         Mindwhisker,
         MindSpiral,
         LightshellDuo,

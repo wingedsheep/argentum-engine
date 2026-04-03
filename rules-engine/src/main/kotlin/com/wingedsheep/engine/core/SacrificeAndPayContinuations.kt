@@ -32,6 +32,17 @@ data class SacrificeContinuation(
 ) : ContinuationFrame
 
 /**
+ * Resume after player selects a permanent to return to its owner's hand.
+ * Used for ForceReturnOwnPermanentEffect (e.g., Mistbreath Elder).
+ */
+@Serializable
+data class ReturnToHandContinuation(
+    override val decisionId: String,
+    val playerId: EntityId,
+    val sourceId: EntityId?
+) : ContinuationFrame
+
+/**
  * Resume after player selects cards for multi-zone exile.
  * Used for Lich's Mastery: "exile a permanent you control or a card from your hand or graveyard."
  *

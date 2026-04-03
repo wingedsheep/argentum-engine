@@ -3,6 +3,7 @@ package com.wingedsheep.engine.handlers.continuations
 import com.wingedsheep.engine.core.*
 import com.wingedsheep.engine.handlers.effects.removal.ForceExileMultiZoneExecutor
 import com.wingedsheep.engine.handlers.effects.removal.ForceSacrificeExecutor
+import com.wingedsheep.engine.handlers.effects.removal.ForceReturnOwnPermanentExecutor
 import com.wingedsheep.engine.handlers.effects.ZoneTransitionService
 import com.wingedsheep.engine.handlers.DecisionHandler
 import com.wingedsheep.engine.handlers.EffectContext
@@ -29,6 +30,7 @@ class SacrificeAndPayContinuationResumer(
 
     override fun resumers(): List<ContinuationResumer<*>> = listOf(
         resumer(SacrificeContinuation::class, ::resumeSacrifice),
+        resumer(ReturnToHandContinuation::class, ::resumeReturnToHand),
         resumer(ExileMultiZoneContinuation::class, ::resumeExileMultiZone),
         resumer(PayOrSufferContinuation::class, ::resumePayOrSuffer),
         resumer(PayOrSufferChoiceContinuation::class, ::resumePayOrSufferChoice),
@@ -86,6 +88,25 @@ class SacrificeAndPayContinuationResumer(
         }
 
         return checkForMore(newState, events)
+    }
+
+    fun resumeReturnToHand(
+        state: GameState,
+        continuation: ReturnToHandContinuation,
+        response: DecisionResponse,
+        checkForMore: CheckForMore
+    ): ExecutionResult {
+        if (response !is CardsSelectedResponse) {
+            return ExecutionResult.error(state, "Expected card selection response for return to hand")
+        }
+
+        val selectedPermanent = response.selectedCards.firstOrNull()
+            ?: return checkForMore(state, emptyList())
+
+        val executor = ForceReturnOwnPermanentExecutor()
+        val result = executor.returnPermanentToHand(state, selectedPermanent)
+
+        return checkForMore(result.state, result.events.toList())
     }
 
     fun resumeExileMultiZone(
