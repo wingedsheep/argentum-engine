@@ -84,6 +84,7 @@ object BloomburrowSet {
         Fell,
         FeatherOfFlight,
         FecundGreenshell,
+        FinchFormation,
         FireglassMentor,
         FlamecacheGecko,
         FrilledSparkshooter,
