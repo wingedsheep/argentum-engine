@@ -80,6 +80,7 @@ object BloomburrowSet {
         EarlyWinter,
         EmberheartChallenger,
         EddymurkCrab,
+        EssenceChanneler,
         FabledPassage,
         FeedTheCycle,
         Fell,

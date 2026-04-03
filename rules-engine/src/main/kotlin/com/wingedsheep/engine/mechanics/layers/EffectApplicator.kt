@@ -249,6 +249,11 @@ internal class EffectApplicator(
             val controllerId = sourceValues?.controllerId
             controllerId != null && state.activePlayerId == controllerId
         }
+        is SourceProjectionCondition.ControllerLostLifeThisTurn -> {
+            val controllerId = sourceValues?.controllerId
+            controllerId != null && state.getEntity(controllerId)
+                ?.has<com.wingedsheep.engine.state.components.player.LifeLostThisTurnComponent>() == true
+        }
         is SourceProjectionCondition.ControllerControlsPermanentMatchingFilter -> {
             val controllerId = sourceValues?.controllerId
             if (controllerId != null) {

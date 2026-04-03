@@ -51,6 +51,7 @@ import com.wingedsheep.sdk.scripting.conditions.OpponentLostLifeThisTurn
 import com.wingedsheep.sdk.scripting.conditions.YouGainedLifeThisTurn
 import com.wingedsheep.sdk.scripting.conditions.YouGainedAndLostLifeThisTurn
 import com.wingedsheep.sdk.scripting.conditions.YouGainedOrLostLifeThisTurn
+import com.wingedsheep.sdk.scripting.conditions.YouLostLifeThisTurn
 import com.wingedsheep.sdk.scripting.conditions.SacrificedFoodThisTurn
 import com.wingedsheep.sdk.scripting.conditions.IsFirstSpellOfTypeCastThisTurn
 import com.wingedsheep.sdk.scripting.conditions.SourceAbilityResolvedNTimesThisTurn
@@ -108,6 +109,7 @@ class ConditionEvaluator {
             is YouAttackedThisTurn -> evaluateYouAttackedThisTurn(state, context)
             is YouGainedLifeThisTurn -> evaluateYouGainedLifeThisTurn(state, context)
             is YouGainedOrLostLifeThisTurn -> evaluateYouGainedOrLostLifeThisTurn(state, context)
+            is YouLostLifeThisTurn -> evaluateYouLostLifeThisTurn(state, context)
             is YouGainedAndLostLifeThisTurn -> evaluateYouGainedAndLostLifeThisTurn(state, context)
             is OpponentLostLifeThisTurn -> evaluateOpponentLostLifeThisTurn(state, context)
             is YouWereAttackedThisStep -> evaluateYouWereAttackedThisStep(state, context)
@@ -281,6 +283,11 @@ class ConditionEvaluator {
     private fun evaluateYouGainedLifeThisTurn(state: GameState, context: EffectContext): Boolean {
         return state.getEntity(context.controllerId)
             ?.has<com.wingedsheep.engine.state.components.player.LifeGainedThisTurnComponent>() == true
+    }
+
+    private fun evaluateYouLostLifeThisTurn(state: GameState, context: EffectContext): Boolean {
+        return state.getEntity(context.controllerId)
+            ?.has<com.wingedsheep.engine.state.components.player.LifeLostThisTurnComponent>() == true
     }
 
     private fun evaluateYouGainedOrLostLifeThisTurn(state: GameState, context: EffectContext): Boolean {

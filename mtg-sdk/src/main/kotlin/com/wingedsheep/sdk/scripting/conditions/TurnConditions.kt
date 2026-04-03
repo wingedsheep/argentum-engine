@@ -84,6 +84,18 @@ data object YouGainedLifeThisTurn : Condition {
 }
 
 /**
+ * Condition: "as long as you've lost life this turn"
+ * Checks whether the controller has lost life at any point during the current turn.
+ * Used for Essence Channeler.
+ */
+@SerialName("YouLostLifeThisTurn")
+@Serializable
+data object YouLostLifeThisTurn : Condition {
+    override val description: String = "as long as you've lost life this turn"
+    override fun applyTextReplacement(replacer: TextReplacer): Condition = this
+}
+
+/**
  * Condition: "if you gained and lost life this turn"
  * Checks whether the controller has BOTH gained AND lost life during the current turn.
  * Used for Lunar Convocation's second ability.

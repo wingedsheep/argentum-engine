@@ -594,6 +594,7 @@ class StaticAbilityHandler(
             }
             is Exists -> mapExistsToSourceProjectionCondition(condition)
             is IsYourTurn -> SourceProjectionCondition.IsYourTurn
+            is com.wingedsheep.sdk.scripting.conditions.YouLostLifeThisTurn -> SourceProjectionCondition.ControllerLostLifeThisTurn
             is Compare -> SourceProjectionCondition.Compare(condition.left, condition.operator, condition.right)
             else -> null
         }

@@ -337,6 +337,13 @@ object Conditions {
         com.wingedsheep.sdk.scripting.conditions.YouGainedOrLostLifeThisTurn
 
     /**
+     * As long as you've lost life this turn.
+     * Used for Essence Channeler.
+     */
+    val YouLostLifeThisTurn: ConditionInterface =
+        com.wingedsheep.sdk.scripting.conditions.YouLostLifeThisTurn
+
+    /**
      * If you gained and lost life this turn.
      * Used for Lunar Convocation's second ability.
      */

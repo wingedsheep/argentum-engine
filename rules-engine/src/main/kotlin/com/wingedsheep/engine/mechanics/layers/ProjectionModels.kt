@@ -241,6 +241,13 @@ sealed interface SourceProjectionCondition {
     data object IsYourTurn : SourceProjectionCondition
 
     /**
+     * The source permanent's controller has lost life this turn.
+     * Used for "has [keyword] as long as you've lost life this turn."
+     */
+    @Serializable
+    data object ControllerLostLifeThisTurn : SourceProjectionCondition
+
+    /**
      * Any player controls a permanent matching the given filter.
      * Used for "gets +X/+Y as long as any player controls a [color] permanent."
      */

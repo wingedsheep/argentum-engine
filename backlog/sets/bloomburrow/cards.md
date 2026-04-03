@@ -2,11 +2,11 @@
 
 **Set Size:** 266 cards
 **Release Date:** August 2, 2024
-**Implemented:** 240 / 266
+**Implemented:** 241 / 266
 
 | Color      | Total | Done |
 |------------|-------|------|
-| White      | 40    | 36   |
+| White      | 40    | 37   |
 | Blue       | 41    | 37   |
 | Black      | 40    | 35   |
 | Red        | 41    | 35   |
@@ -79,7 +79,7 @@
 - [x] Eddymurk Crab
 - [ ] Eluge, the Shoreless Sea
 - [x] Emberheart Challenger
-- [ ] Essence Channeler
+- [x] Essence Channeler
 - [x] Fabled Passage
 - [x] Feather of Flight
 - [x] Fecund Greenshell
