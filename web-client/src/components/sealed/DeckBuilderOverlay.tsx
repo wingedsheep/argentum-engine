@@ -1134,17 +1134,43 @@ function DeckBuilder({ state }: { state: DeckBuildingState }) {
             transform: 'translateX(-50%)',
             backgroundColor: 'rgba(76, 175, 80, 0.9)',
             color: 'white',
-            padding: '12px 24px',
+            padding: '16px 28px',
             borderRadius: 8,
             fontWeight: 600,
             fontSize: responsive.fontSize.large,
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: 6,
           }}
         >
-          Deck submitted! Waiting for opponent...
+          <span>Deck submitted!</span>
+          {!state.opponentReady && (
+            <span style={{ fontSize: responsive.fontSize.small, opacity: 0.9 }}>
+              Opponent is still building their deck
+              <AnimatedDots />
+            </span>
+          )}
         </div>
       )}
     </div>
   )
+}
+
+/**
+ * Animated ellipsis dots for loading/waiting indicators.
+ */
+function AnimatedDots() {
+  const [dotCount, setDotCount] = useState(0)
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setDotCount((prev) => (prev + 1) % 4)
+    }, 500)
+    return () => clearInterval(interval)
+  }, [])
+
+  return <span style={{ display: 'inline-block', width: '1.5em', textAlign: 'left' }}>{'.'.repeat(dotCount)}</span>
 }
 
 /**
