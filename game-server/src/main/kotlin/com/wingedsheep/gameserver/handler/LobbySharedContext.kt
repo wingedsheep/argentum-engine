@@ -29,6 +29,14 @@ class LobbySharedContext(
     /** Per-lobby locks for round advancement to prevent concurrent ready/round-complete races */
     val roundLocks = java.util.concurrent.ConcurrentHashMap<String, Any>()
 
+    /**
+     * Remove lock entries for lobbies that no longer exist.
+     * Called by [ZombieSessionSweeper] to prevent unbounded map growth.
+     */
+    fun sweepStaleLocks(activeLobbyIds: Set<String>) {
+        roundLocks.keys.removeAll { it !in activeLobbyIds }
+    }
+
     fun getIdentityAndLobby(session: WebSocketSession): Pair<PlayerIdentity, TournamentLobby>? {
         val token = sessionRegistry.getTokenByWsId(session.id)
         val identity = token?.let { sessionRegistry.getIdentityByToken(it) }

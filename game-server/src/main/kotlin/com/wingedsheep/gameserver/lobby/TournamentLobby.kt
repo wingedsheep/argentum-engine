@@ -202,6 +202,11 @@ class TournamentLobby(
     var state: LobbyState = LobbyState.WAITING_FOR_PLAYERS
         private set
 
+    /** Timestamp (epoch millis) when the tournament was marked complete, or null if still active. */
+    @Volatile
+    var completedAt: Long? = null
+        private set
+
     /** Basic lands available for deck building (one variant per type, for client display) */
     val basicLands: Map<String, CardDefinition> by lazy {
         boosterGenerator.getBasicLands(setCodes)
@@ -1177,6 +1182,7 @@ class TournamentLobby(
      */
     fun completeTournament() {
         state = LobbyState.TOURNAMENT_COMPLETE
+        completedAt = System.currentTimeMillis()
     }
 
     /**
@@ -1186,6 +1192,7 @@ class TournamentLobby(
     fun resumeTournament() {
         require(state == LobbyState.TOURNAMENT_COMPLETE) { "Tournament is not complete" }
         state = LobbyState.TOURNAMENT_ACTIVE
+        completedAt = null
         clearReadyState()
     }
 
@@ -1342,10 +1349,12 @@ class TournamentLobby(
      */
     internal fun restoreFromPersistence(
         state: LobbyState,
-        hostPlayerId: EntityId?
+        hostPlayerId: EntityId?,
+        completedAt: Long? = null
     ) {
         this.state = state
         this.hostPlayerId = hostPlayerId
+        this.completedAt = completedAt
     }
 
     /**

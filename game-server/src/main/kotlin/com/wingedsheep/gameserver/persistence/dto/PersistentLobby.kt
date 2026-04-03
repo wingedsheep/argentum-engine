@@ -28,7 +28,9 @@ data class PersistentTournamentLobby(
     val winstonActivePlayerIndex: Int = 0,
     val winstonCurrentPileIndex: Int = 0,
     /** Card names each player has seen during Winston Draft: playerId -> list of card names */
-    val winstonSeenCardNames: Map<String, List<String>> = emptyMap()
+    val winstonSeenCardNames: Map<String, List<String>> = emptyMap(),
+    /** Epoch millis when tournament was marked complete, or null if still active */
+    val completedAt: Long? = null
 )
 
 /**

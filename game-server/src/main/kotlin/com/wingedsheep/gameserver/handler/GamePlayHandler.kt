@@ -50,6 +50,15 @@ class GamePlayHandler(
     private val lastActiveMatchBroadcast = ConcurrentHashMap<String, Long>()
     private val activeMatchBroadcastIntervalMs = 1000L
 
+    /**
+     * Remove tracking entries for game sessions that no longer exist.
+     * Called by [ZombieSessionSweeper] to prevent unbounded map growth.
+     */
+    fun sweepStaleEntries(activeGameSessionIds: Set<String>, activeLobbyIds: Set<String>) {
+        mulliganBroadcastSent.keys.removeAll { it !in activeGameSessionIds }
+        lastActiveMatchBroadcast.keys.removeAll { it !in activeLobbyIds }
+    }
+
     // Callback to broadcast active matches during ongoing games (throttled)
     var broadcastActiveMatchesCallback: ((String) -> Unit)? = null
 

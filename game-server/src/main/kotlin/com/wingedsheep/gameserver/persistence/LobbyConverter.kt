@@ -56,7 +56,8 @@ fun TournamentLobby.toPersistent(): PersistentTournamentLobby {
         winstonPileNames = winstonPiles.map { pile -> pile.map { it.name } },
         winstonActivePlayerIndex = winstonActivePlayerIndex,
         winstonCurrentPileIndex = winstonCurrentPileIndex,
-        winstonSeenCardNames = winstonSeenCards.mapKeys { it.key.value }.mapValues { it.value.toList() }
+        winstonSeenCardNames = winstonSeenCards.mapKeys { it.key.value }.mapValues { it.value.toList() },
+        completedAt = completedAt
     )
 }
 
@@ -130,7 +131,8 @@ fun restoreTournamentLobby(
     // Restore state via internal method
     lobby.restoreFromPersistence(
         state = LobbyState.valueOf(persistent.state),
-        hostPlayerId = persistent.hostPlayerId?.let { EntityId(it) }
+        hostPlayerId = persistent.hostPlayerId?.let { EntityId(it) },
+        completedAt = persistent.completedAt
     )
 
     // Restore draft state if applicable
