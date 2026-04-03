@@ -2,7 +2,7 @@
 
 **Set Size:** 266 cards
 **Release Date:** August 2, 2024
-**Implemented:** 260 / 266
+**Implemented:** 261 / 266
 
 | Color      | Total | Done |
 |------------|-------|------|
@@ -10,7 +10,7 @@
 | Blue       | 41    | 41   |
 | Black      | 40    | 37   |
 | Red        | 41    | 40   |
-| Green      | 41    | 38   |
+| Green      | 41    | 39   |
 | Multicolor | 39    | 38   |
 | Colorless  | 9     | 9    |
 | Land       | 15    | 15   |
@@ -121,7 +121,7 @@
 - [x] Hugs, Grisly Guardian
 - [x] Hunter's Talent
 - [x] Huskburster Swarm
-- [ ] Innkeeper's Talent
+- [x] Innkeeper's Talent
 - [x] Into the Flood Maw
 - [x] Intrepid Rabbit
 - [x] Iridescent Vinelasher

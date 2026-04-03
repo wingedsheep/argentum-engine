@@ -131,6 +131,13 @@ sealed interface StatePredicate {
         override val description: String = "with a $counterType counter"
     }
 
+    /** Has any counter of any type */
+    @SerialName("HasAnyCounter")
+    @Serializable
+    data object HasAnyCounter : StatePredicate {
+        override val description: String = "with counters"
+    }
+
     // =============================================================================
     // Relative Power Predicates
     // =============================================================================

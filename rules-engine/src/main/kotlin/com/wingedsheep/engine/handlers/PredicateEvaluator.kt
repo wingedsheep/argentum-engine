@@ -632,6 +632,10 @@ class PredicateEvaluator {
                 }
                 countersComponent.getCount(counterType) > 0
             }
+            StatePredicate.HasAnyCounter -> {
+                val countersComponent = container.get<CountersComponent>()
+                countersComponent != null && countersComponent.counters.values.any { it > 0 }
+            }
 
             // Equipment state
             StatePredicate.IsEquipped -> {

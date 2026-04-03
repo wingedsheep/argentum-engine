@@ -1030,6 +1030,7 @@ class ClassLevelBuilder(private val level: Int, private val costString: String) 
     private val triggeredAbilities: MutableList<TriggeredAbility> = mutableListOf()
     private val staticAbilities: MutableList<StaticAbility> = mutableListOf()
     private val activatedAbilities: MutableList<ActivatedAbility> = mutableListOf()
+    private val replacementEffects: MutableList<ReplacementEffect> = mutableListOf()
 
     /**
      * Add a triggered ability gained at this class level.
@@ -1058,13 +1059,21 @@ class ClassLevelBuilder(private val level: Int, private val costString: String) 
         activatedAbilities.add(builder.build())
     }
 
+    /**
+     * Add a replacement effect gained at this class level.
+     */
+    fun replacementEffect(effect: ReplacementEffect) {
+        replacementEffects.add(effect)
+    }
+
     fun build(): ClassLevelAbility {
         return ClassLevelAbility(
             level = level,
             cost = ManaCost.parse(costString),
             triggeredAbilities = triggeredAbilities.toList(),
             staticAbilities = staticAbilities.toList(),
-            activatedAbilities = activatedAbilities.toList()
+            activatedAbilities = activatedAbilities.toList(),
+            replacementEffects = replacementEffects.toList()
         )
     }
 }

@@ -2,6 +2,7 @@ package com.wingedsheep.engine.mechanics.layers
 
 import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.ComponentContainer
+import com.wingedsheep.engine.state.components.battlefield.ClassLevelComponent
 import com.wingedsheep.engine.state.components.battlefield.CantBeTargetedByOpponentAbilitiesComponent
 import com.wingedsheep.engine.state.components.battlefield.GrantCantBeBlockedToSmallCreaturesComponent
 import com.wingedsheep.engine.state.components.battlefield.GrantsCantLoseGameComponent
@@ -717,10 +718,34 @@ class StaticAbilityHandler(
         container: ComponentContainer,
         cardDefinition: CardDefinition
     ): ComponentContainer {
-        val runtimeEffects = cardDefinition.script.replacementEffects.filter { it is PreventDamage || it is DoubleDamage || it is ModifyDamageAmount || it is PreventLifeGain || it is com.wingedsheep.sdk.scripting.DamageCantBePrevented || it is ReplaceDamageWithCounters || it is com.wingedsheep.sdk.scripting.ReplaceDrawWithEffect || it is com.wingedsheep.sdk.scripting.ModifyCounterPlacement || it is com.wingedsheep.sdk.scripting.RedirectZoneChange || it is com.wingedsheep.sdk.scripting.PreventExtraTurns || it is com.wingedsheep.sdk.scripting.RedirectZoneChangeWithEffect || it is com.wingedsheep.sdk.scripting.EntersWithCounters || it is com.wingedsheep.sdk.scripting.EntersWithDynamicCounters }
+        val classLevel = container.get<ClassLevelComponent>()?.currentLevel
+        val runtimeEffects = collectRuntimeReplacementEffects(cardDefinition, classLevel)
         if (runtimeEffects.isEmpty()) return container
         return container.with(ReplacementEffectSourceComponent(runtimeEffects))
     }
+
+    private fun collectRuntimeReplacementEffects(
+        cardDefinition: CardDefinition,
+        classLevel: Int?
+    ): List<com.wingedsheep.sdk.scripting.ReplacementEffect> {
+        val effects = cardDefinition.script.replacementEffects.filter { isRuntimeReplacementEffect(it) }.toMutableList()
+        if (classLevel != null) {
+            for (level in cardDefinition.script.classLevels) {
+                if (level.level <= classLevel) {
+                    effects.addAll(level.replacementEffects.filter { isRuntimeReplacementEffect(it) })
+                }
+            }
+        }
+        return effects
+    }
+
+    private fun isRuntimeReplacementEffect(it: com.wingedsheep.sdk.scripting.ReplacementEffect): Boolean =
+        it is PreventDamage || it is DoubleDamage || it is ModifyDamageAmount || it is PreventLifeGain ||
+        it is com.wingedsheep.sdk.scripting.DamageCantBePrevented || it is ReplaceDamageWithCounters ||
+        it is com.wingedsheep.sdk.scripting.ReplaceDrawWithEffect || it is com.wingedsheep.sdk.scripting.ModifyCounterPlacement ||
+        it is com.wingedsheep.sdk.scripting.RedirectZoneChange || it is com.wingedsheep.sdk.scripting.PreventExtraTurns ||
+        it is com.wingedsheep.sdk.scripting.RedirectZoneChangeWithEffect || it is com.wingedsheep.sdk.scripting.EntersWithCounters ||
+        it is com.wingedsheep.sdk.scripting.EntersWithDynamicCounters || it is com.wingedsheep.sdk.scripting.DoubleCounterPlacement
 
     /**
      * Convert a GroupFilter to an AffectsFilter.

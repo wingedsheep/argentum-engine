@@ -4,6 +4,7 @@ import com.wingedsheep.engine.core.ClassLevelChangedEvent
 import com.wingedsheep.engine.core.ExecutionResult
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
+import com.wingedsheep.engine.mechanics.layers.StaticAbilityHandler
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.battlefield.ClassLevelComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
@@ -14,7 +15,9 @@ import kotlin.reflect.KClass
  * Executor for the LevelUpClassEffect.
  * Advances a Class enchantment to the specified target level.
  */
-class LevelUpClassExecutor : EffectExecutor<LevelUpClassEffect> {
+class LevelUpClassExecutor(
+    private val staticAbilityHandler: StaticAbilityHandler? = null
+) : EffectExecutor<LevelUpClassEffect> {
     override val effectType: KClass<LevelUpClassEffect> = LevelUpClassEffect::class
 
     override fun execute(
@@ -31,8 +34,15 @@ class LevelUpClassExecutor : EffectExecutor<LevelUpClassEffect> {
             return ExecutionResult.success(state)
         }
 
-        val newState = state.updateEntity(sourceId) { c ->
+        var newState = state.updateEntity(sourceId) { c ->
             c.with(classComponent.withLevelUp())
+        }
+
+        // Re-add replacement effects to include any from the new class level
+        if (staticAbilityHandler != null) {
+            newState = newState.updateEntity(sourceId) { c ->
+                staticAbilityHandler.addReplacementEffectComponent(c)
+            }
         }
 
         val controllerId = container.get<ControllerComponent>()?.playerId ?: return ExecutionResult.success(newState)

@@ -321,6 +321,11 @@ data class GameObjectFilter(
         statePredicates = statePredicates + StatePredicate.HasCounter(counterType)
     )
 
+    /** Must have any counter of any type */
+    fun withAnyCounter() = copy(
+        statePredicates = statePredicates + StatePredicate.HasAnyCounter
+    )
+
     /** Must have the greatest power among creatures its controller controls */
     fun hasGreatestPower() = copy(
         statePredicates = statePredicates + StatePredicate.HasGreatestPower

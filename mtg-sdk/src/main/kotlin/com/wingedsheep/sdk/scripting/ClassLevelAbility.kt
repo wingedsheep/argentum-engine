@@ -1,6 +1,7 @@
 package com.wingedsheep.sdk.scripting
 
 import com.wingedsheep.sdk.core.ManaCost
+import com.wingedsheep.sdk.scripting.ReplacementEffect
 import kotlinx.serialization.Serializable
 
 /**
@@ -27,5 +28,6 @@ data class ClassLevelAbility(
     val cost: ManaCost,
     val triggeredAbilities: List<TriggeredAbility> = emptyList(),
     val staticAbilities: List<StaticAbility> = emptyList(),
-    val activatedAbilities: List<ActivatedAbility> = emptyList()
+    val activatedAbilities: List<ActivatedAbility> = emptyList(),
+    val replacementEffects: List<ReplacementEffect> = emptyList()
 )

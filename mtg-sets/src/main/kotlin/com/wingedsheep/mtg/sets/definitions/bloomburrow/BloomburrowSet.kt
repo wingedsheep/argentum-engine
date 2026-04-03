@@ -138,6 +138,7 @@ object BloomburrowSet {
         KitsaOtterballElite,
         Knightfisher,
         HuntersTalent,
+        InnkeepersTalent,
         Mindwhisker,
         MindSpiral,
         LightshellDuo,

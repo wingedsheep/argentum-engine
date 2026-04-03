@@ -7,6 +7,7 @@ import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.model.EntityId
+import com.wingedsheep.sdk.scripting.DoubleCounterPlacement
 import com.wingedsheep.sdk.scripting.ModifyCounterPlacement
 import com.wingedsheep.sdk.scripting.PreventExtraTurns
 import com.wingedsheep.sdk.scripting.events.CounterTypeFilter
@@ -62,9 +63,11 @@ object ReplacementEffectUtils {
             val sourceControllerId = container.get<ControllerComponent>()?.playerId ?: continue
 
             for (effect in replacementComponent.replacementEffects) {
-                if (effect !is ModifyCounterPlacement) continue
-
-                val counterEvent = effect.appliesTo
+                val counterEvent = when (effect) {
+                    is ModifyCounterPlacement -> effect.appliesTo
+                    is DoubleCounterPlacement -> effect.appliesTo
+                    else -> continue
+                }
                 if (counterEvent !is com.wingedsheep.sdk.scripting.GameEvent.CounterPlacementEvent) continue
 
                 // Check counter type filter
@@ -87,25 +90,40 @@ object ReplacementEffectUtils {
                 if (!counterTypeMatches) continue
 
                 // Check recipient filter
-                val recipientMatches = when (counterEvent.recipient) {
-                    is RecipientFilter.CreatureYouControl -> {
-                        val isCreature = state.getEntity(targetId)?.get<CardComponent>()?.typeLine?.isCreature == true
-                        val isControlled = state.getEntity(targetId)?.get<ControllerComponent>()?.playerId == sourceControllerId
-                        isCreature && isControlled
-                    }
-                    is RecipientFilter.Any -> true
-                    is RecipientFilter.Self -> targetId == entityId
-                    is RecipientFilter.PermanentYouControl -> {
-                        state.getEntity(targetId)?.get<ControllerComponent>()?.playerId == sourceControllerId
-                    }
-                    else -> false
-                }
+                val recipientMatches = matchesRecipientFilter(
+                    counterEvent.recipient, state, targetId, entityId, sourceControllerId
+                )
                 if (!recipientMatches) continue
 
-                modifiedCount += effect.modifier
+                when (effect) {
+                    is ModifyCounterPlacement -> modifiedCount += effect.modifier
+                    is DoubleCounterPlacement -> modifiedCount *= 2
+                    else -> {}
+                }
             }
         }
 
         return modifiedCount.coerceAtLeast(0)
+    }
+
+    private fun matchesRecipientFilter(
+        recipient: RecipientFilter,
+        state: GameState,
+        targetId: EntityId,
+        sourceEntityId: EntityId,
+        sourceControllerId: EntityId
+    ): Boolean = when (recipient) {
+        is RecipientFilter.CreatureYouControl -> {
+            val isCreature = state.getEntity(targetId)?.get<CardComponent>()?.typeLine?.isCreature == true
+            val isControlled = state.getEntity(targetId)?.get<ControllerComponent>()?.playerId == sourceControllerId
+            isCreature && isControlled
+        }
+        is RecipientFilter.Any -> true
+        is RecipientFilter.Self -> targetId == sourceEntityId
+        is RecipientFilter.PermanentYouControl -> {
+            state.getEntity(targetId)?.get<ControllerComponent>()?.playerId == sourceControllerId
+        }
+        is RecipientFilter.You -> targetId == sourceControllerId
+        else -> false
     }
 }

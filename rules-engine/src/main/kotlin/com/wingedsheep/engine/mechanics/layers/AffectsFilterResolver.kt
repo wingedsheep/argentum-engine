@@ -281,6 +281,23 @@ internal class AffectsFilterResolver {
         StatePredicate.IsTapped -> container.has<TappedComponent>()
         StatePredicate.IsUntapped -> !container.has<TappedComponent>()
         StatePredicate.IsFaceDown -> isFaceDown
+        StatePredicate.HasAnyCounter -> {
+            val counters = container.get<CountersComponent>()
+            counters != null && counters.counters.values.any { it > 0 }
+        }
+        is StatePredicate.HasCounter -> {
+            val counters = container.get<CountersComponent>()
+            if (counters != null) {
+                try {
+                    val counterType = com.wingedsheep.sdk.core.CounterType.valueOf(
+                        predicate.counterType.uppercase().replace(' ', '_')
+                    )
+                    (counters.getCount(counterType)) > 0
+                } catch (_: IllegalArgumentException) {
+                    false
+                }
+            } else false
+        }
         is StatePredicate.Or -> predicate.predicates.any { matchesStatePredicateForProjection(it, container, isFaceDown) }
         is StatePredicate.And -> predicate.predicates.all { matchesStatePredicateForProjection(it, container, isFaceDown) }
         is StatePredicate.Not -> !matchesStatePredicateForProjection(predicate.predicate, container, isFaceDown)

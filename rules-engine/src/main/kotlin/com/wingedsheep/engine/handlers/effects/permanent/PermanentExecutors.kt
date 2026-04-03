@@ -4,6 +4,7 @@ import com.wingedsheep.engine.handlers.DecisionHandler
 import com.wingedsheep.engine.handlers.DynamicAmountEvaluator
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.handlers.effects.ExecutorModule
+import com.wingedsheep.engine.mechanics.layers.StaticAbilityHandler
 import com.wingedsheep.engine.registry.CardRegistry
 
 /**
@@ -14,6 +15,8 @@ class PermanentExecutors(
     private val amountEvaluator: DynamicAmountEvaluator = DynamicAmountEvaluator(),
     private val cardRegistry: CardRegistry
 ) : ExecutorModule {
+    private val staticAbilityHandler = StaticAbilityHandler(cardRegistry)
+
     override fun executors(): List<EffectExecutor<*>> = listOf(
         TapUntapExecutor(),
         TapTargetCreaturesExecutor(),
@@ -56,7 +59,7 @@ class PermanentExecutors(
         AttachTargetEquipmentToCreatureExecutor(),
         GrantExileOnLeaveExecutor(),
         RemoveAllAbilitiesExecutor(),
-        LevelUpClassExecutor(),
+        LevelUpClassExecutor(staticAbilityHandler),
         IncrementAbilityResolutionCountExecutor()
     )
 }

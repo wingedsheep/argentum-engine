@@ -173,14 +173,15 @@ abstract class ScenarioTestBase : FunSpec() {
             // and replacement effects (e.g., PreventDamage from Daunting Defender)
             val cardDef = cardRegistry.getCard(cardName)
             if (cardDef != null) {
-                val staticHandler = StaticAbilityHandler(cardRegistry)
-                container = staticHandler.addContinuousEffectComponent(container, cardDef)
-                container = staticHandler.addReplacementEffectComponent(container, cardDef)
-
-                // Add ClassLevelComponent for Class enchantments (starts at level 1, or specified level)
+                // Add ClassLevelComponent for Class enchantments BEFORE static/replacement effects
+                // so that class-level-gated abilities are included
                 if (cardDef.isClass) {
                     container = container.with(ClassLevelComponent(currentLevel = classLevel ?: 1))
                 }
+
+                val staticHandler = StaticAbilityHandler(cardRegistry)
+                container = staticHandler.addContinuousEffectComponent(container, cardDef)
+                container = staticHandler.addReplacementEffectComponent(container, cardDef)
             }
 
             state = state.withEntity(cardId, container)
