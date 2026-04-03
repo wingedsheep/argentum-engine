@@ -154,6 +154,20 @@ sealed interface EffectTarget {
     }
 
     /**
+     * CONTROLLER OF PIPELINE TARGET: Refers to the controller of an entity stored in
+     * a pipeline collection. Used for effects like "Exile target nonland permanent.
+     * Its controller draws a card." where the target was selected via SelectTargetEffect.
+     *
+     * @property collectionName The name of the stored collection containing the target
+     * @property index Which target in the collection (defaults to 0 for single-target)
+     */
+    @SerialName("ControllerOfPipelineTarget")
+    @Serializable
+    data class ControllerOfPipelineTarget(val collectionName: String, val index: Int = 0) : EffectTarget {
+        override val description: String = "its controller"
+    }
+
+    /**
      * CHOSEN CREATURE: Refers to the creature chosen when this permanent entered the battlefield.
      * Used by cards like Dauntless Bodyguard that store a chosen creature reference.
      */

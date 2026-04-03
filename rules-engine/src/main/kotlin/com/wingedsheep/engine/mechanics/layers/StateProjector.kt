@@ -45,7 +45,8 @@ import com.wingedsheep.sdk.scripting.values.DynamicAmount
  * Mapping from keyword counter types to the keyword name they grant (Rule 122.1b).
  */
 private val KEYWORD_COUNTER_MAP = mapOf(
-    CounterType.FLYING to Keyword.FLYING.name
+    CounterType.FLYING to Keyword.FLYING.name,
+    CounterType.INDESTRUCTIBLE to Keyword.INDESTRUCTIBLE.name
 )
 
 class StateProjector(

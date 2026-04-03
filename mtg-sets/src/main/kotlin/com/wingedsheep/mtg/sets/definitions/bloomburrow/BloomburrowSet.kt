@@ -188,6 +188,7 @@ object BloomburrowSet {
         ScavengersTalent,
         SeasonOfGathering,
         SeasonOfLoss,
+        SeasonOfTheBurrow,
         SeasonOfWeaving,
         SeasonedWarrenguard,
         SeedpodSquire,

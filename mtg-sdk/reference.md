@@ -1191,6 +1191,7 @@ All target references for effects (sealed interface):
 - `EffectTarget.ChosenCreature` — creature chosen when permanent entered (reads `ChosenCreatureComponent`)
 - `EffectTarget.TriggeringEntity` — the entity that caused the trigger
 - `EffectTarget.ControllerOfTriggeringEntity` — controller of the triggering entity
+- `EffectTarget.ControllerOfPipelineTarget(collectionName, index)` — controller of a pipeline-stored entity
 
 ---
 

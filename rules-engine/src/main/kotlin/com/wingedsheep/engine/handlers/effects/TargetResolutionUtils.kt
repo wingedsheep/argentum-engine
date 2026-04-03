@@ -60,6 +60,12 @@ object TargetResolutionUtils {
             return entity.get<ControllerComponent>()?.playerId
                 ?: entity.get<CardComponent>()?.ownerId
         }
+        if (effectTarget is EffectTarget.ControllerOfPipelineTarget) {
+            val targetEntityId = context.pipeline.storedCollections[effectTarget.collectionName]?.getOrNull(effectTarget.index) ?: return null
+            val entity = state.getEntity(targetEntityId) ?: return null
+            return entity.get<ControllerComponent>()?.playerId
+                ?: entity.get<CardComponent>()?.ownerId
+        }
         if (effectTarget is EffectTarget.PipelineTarget) {
             return context.pipeline.storedCollections[effectTarget.collectionName]?.getOrNull(effectTarget.index)
         }
@@ -99,6 +105,13 @@ object TargetResolutionUtils {
             val targetEntity = context.targets.firstOrNull()?.toEntityId() ?: return null
             return state.getEntity(targetEntity)?.get<ControllerComponent>()?.playerId
                 ?: state.getEntity(targetEntity)?.get<CardComponent>()?.ownerId
+        }
+
+        // Handle ControllerOfPipelineTarget: look up controller of the pipeline-stored entity
+        if (effectTarget is EffectTarget.ControllerOfPipelineTarget) {
+            val targetEntityId = context.pipeline.storedCollections[effectTarget.collectionName]?.getOrNull(effectTarget.index) ?: return null
+            return state.getEntity(targetEntityId)?.get<ControllerComponent>()?.playerId
+                ?: state.getEntity(targetEntityId)?.get<CardComponent>()?.ownerId
         }
 
         // Handle state-dependent relational references

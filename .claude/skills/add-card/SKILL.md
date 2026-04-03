@@ -88,6 +88,11 @@ If the card needs effects, keywords, triggers, conditions, or static abilities t
 - **4.3 Register Executor** in `{Category}Executors.kt`
 - **4.4 Add DSL Facade** in `mtg-sdk/.../dsl/Effects.kt`
 - **4.5 Add Keyword** (if needed) in `mtg-sdk/.../core/Keyword.kt` + `web-client/src/types/enums.ts` (enum + KeywordDisplayNames) + `web-client/src/assets/icons/keywords/index.ts` if icon needed
+- **4.5b Add Counter Type** (if needed) — counter types span 4 layers and ALL must be updated:
+  1. `mtg-sdk/.../core/CounterType.kt` — add enum value + `Counters` string constant
+  2. `rules-engine/.../mechanics/layers/StateProjector.kt` — add to `KEYWORD_COUNTER_MAP` if it's a keyword counter (flying, indestructible, trample, etc.) so it grants the keyword via projected state
+  3. `web-client/src/types/enums.ts` — add to `CounterType` enum + `CounterTypeDisplayNames`
+  4. `web-client/src/assets/icons/keywords/index.ts` — add to `counterManaClass` (use `ability-<keyword>` for keyword counters, `counter-<style>` for others)
 - **4.6 Add Static Ability** (if needed) in `mtg-sdk/.../scripting/StaticAbility.kt`
 - **4.7 Add Replacement Effect** (if needed) in `mtg-sdk/.../scripting/ReplacementEffect.kt`
 - **4.8 Add Trigger** (if needed) in `mtg-sdk/.../scripting/trigger/` + facade in `mtg-sdk/.../dsl/Triggers.kt`
@@ -106,13 +111,40 @@ Read [architecture-principles.md](../../../docs/architecture-principles.md) to u
 - Set up minimal board state, exercise new effect in isolation, verify state changes, cover edge cases
 - See [examples.md](examples.md) and [reference.md](../../../mtg-sdk/reference.md) for test templates and helpers
 
-## Step 6: Frontend Changes for New Effects
+## Step 6: Player Experience Review
 
-**Only if new effects require UX changes** (new decision type, overlay, targeting flow, zone interaction, player prompt).
+**Always do this step.** Walk through the card from the player's perspective — what will they see and click?
 
+### 6.1 Trace the player flow
+
+For each ability/mode on the card, answer:
+1. **How does the player activate it?** Action menu button? Auto-triggered? What does the button text say — is it clear?
+2. **What decisions does the player make?** Targeting, selecting cards, choosing options, ordering?
+3. **Which UI component handles each decision?** Map each decision to a specific component in `web-client/src/components/decisions/`:
+   - Selecting permanents on battlefield → `BattlefieldSelectionUI` / `BattlefieldTargetingUI` (player clicks cards in-place, seeing counters/effects/duplicates clearly)
+   - Selecting cards in graveyard → `GraveyardTargetingUI` (zone overlay)
+   - Selecting cards in hand → hand card click flow
+   - Selecting from library (search) → `LibrarySearchUI`
+   - Choosing from multiple zones → `MultiZoneSelectionUI` (clear zone labels)
+   - Budget/pawprint modes → `BudgetModalDecisionUI`
+   - Yes/no → `YesNoDecisionUI`
+   - Choose color/number/option → respective decision UIs
+4. **Is the routing correct?** Check that the decision type emitted by the engine executor maps to the right UI component in `DecisionUI.tsx`.
+
+### 6.2 UX anti-patterns to watch for
+
+- **Overlay when battlefield selection is better:** If the player is choosing among permanents already in play, prefer on-battlefield selection over a card list overlay. Overlays hide board context (counters, effects, which duplicate is which).
+- **Flat card list when zones differ:** If a card says "choose from your hand or graveyard", the UI must show zone labels — not dump all cards into one flat row. Use `MultiZoneSelectionUI` or separate decision steps.
+- **Overly complex action menus:** If a modal spell enumerates all mode combinations as separate action buttons, that's bad UX. Budget modes should use `BudgetModalDecisionUI`, modal spells should use the mode selection overlay.
+- **Unclear ability descriptions:** The `description` field on `BudgetMode`, `Mode`, and activated abilities becomes button/label text. Write these from the player's perspective — concise but unambiguous.
+- **Missing targeting context:** When targeting in a zone overlay, players can't see the full board. If the card targets "a creature you control", on-battlefield selection is almost always better than an overlay list.
+
+### 6.3 Implement frontend changes if needed
+
+If the existing components don't handle the card's UX well:
 1. Check existing components in `web-client/src/components/decisions/`
-2. Plan and implement minimal UI changes
-3. Skip if no new frontend mechanics needed
+2. Prefer extending an existing component over creating a new one
+3. If a new decision type or component is truly needed, implement it
 
 ## Step 7: E2E Tests for New Visual/UX Effects
 
