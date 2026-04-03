@@ -143,6 +143,13 @@ object TargetResolutionUtils {
                 context.pipeline.storedCollections[effectTarget.collectionName]?.getOrNull(effectTarget.index)
                     ?.let { listOf(it) } ?: emptyList()
             }
+            is EffectTarget.ControllerOfPipelineTarget -> {
+                val targetEntityId = context.pipeline.storedCollections[effectTarget.collectionName]?.getOrNull(effectTarget.index) ?: return emptyList()
+                val entity = state.getEntity(targetEntityId) ?: return emptyList()
+                val controllerId = entity.get<ControllerComponent>()?.playerId
+                    ?: entity.get<CardComponent>()?.ownerId
+                controllerId?.let { listOf(it) } ?: emptyList()
+            }
             is EffectTarget.PlayerRef -> when (effectTarget.player) {
                 Player.Each -> state.turnOrder
                 Player.EachOpponent -> state.turnOrder.filter { it != context.controllerId }
