@@ -8,7 +8,7 @@
 |------------|-------|------|
 | White      | 40    | 39   |
 | Blue       | 41    | 41   |
-| Black      | 40    | 38   |
+| Black      | 40    | 39   |
 | Red        | 41    | 40   |
 | Green      | 41    | 41   |
 | Multicolor | 39    | 39   |
@@ -174,7 +174,7 @@
 - [x] Pawpatch Recruit
 - [x] Pearl of Wisdom
 - [x] Peerless Recycling
-- [ ] Persistent Marshstalker
+- [x] Persistent Marshstalker
 - [x] Pileated Provisioner
 - [x] Plains
 - [x] Playful Shove

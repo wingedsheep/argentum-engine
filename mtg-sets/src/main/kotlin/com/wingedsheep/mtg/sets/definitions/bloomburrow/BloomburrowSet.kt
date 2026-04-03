@@ -180,6 +180,7 @@ object BloomburrowSet {
         OtterballAntics,
         PearlOfWisdom,
         PeerlessRecycling,
+        PersistentMarshstalker,
         Polliwallop,
         PondProphet,
         PlayfulShove,
