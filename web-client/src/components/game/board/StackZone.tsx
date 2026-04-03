@@ -55,7 +55,7 @@ export function StackDisplay() {
   }
 
   // Offset between cards - shows a sliver of each card below
-  const cardOffset = 20
+  const cardOffset = 25
   // Top of stack (most recently cast, resolves first) is last in the array
   const topCard = stackCards[stackCards.length - 1]
 
@@ -66,13 +66,13 @@ export function StackDisplay() {
         return sourceId ? gameState?.cards[sourceId] : null
       })()
     : null
-  const stackImageWidth = responsive.isMobile ? 44 : 80
-  const stackImageHeight = responsive.isMobile ? 62 : 112
+  const stackImageWidth = responsive.isMobile ? 55 : 140
+  const stackImageHeight = responsive.isMobile ? 77 : 196
 
   return (
     <div style={{
       position: 'fixed',
-      left: responsive.isMobile ? 4 : 16,
+      left: responsive.isMobile ? 12 : 120,
       top: '50%',
       transform: 'translateY(-50%)',
       display: 'flex',

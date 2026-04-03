@@ -679,7 +679,7 @@ export const styles: Record<string, React.CSSProperties> = {
   stackItemName: {
     color: '#ccc',
     marginTop: 4,
-    maxWidth: 80,
+    maxWidth: 100,
     overflow: 'hidden',
     textOverflow: 'ellipsis',
     whiteSpace: 'nowrap',
