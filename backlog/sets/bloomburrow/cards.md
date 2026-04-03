@@ -2,12 +2,12 @@
 
 **Set Size:** 266 cards
 **Release Date:** August 2, 2024
-**Implemented:** 258 / 266
+**Implemented:** 259 / 266
 
 | Color      | Total | Done |
 |------------|-------|------|
 | White      | 40    | 39   |
-| Blue       | 41    | 40   |
+| Blue       | 41    | 41   |
 | Black      | 40    | 37   |
 | Red        | 41    | 40   |
 | Green      | 41    | 38   |
@@ -46,7 +46,7 @@
 - [x] Bushy Bodyguard
 - [x] Byway Barterer
 - [x] Cache Grab
-- [ ] Calamitous Tide
+- [x] Calamitous Tide
 - [x] Camellia, the Seedmiser
 - [x] Caretaker's Talent
 - [x] Carrot Cake
