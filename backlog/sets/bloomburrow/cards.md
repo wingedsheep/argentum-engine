@@ -2,7 +2,7 @@
 
 **Set Size:** 266 cards
 **Release Date:** August 2, 2024
-**Implemented:** 257 / 266
+**Implemented:** 258 / 266
 
 | Color      | Total | Done |
 |------------|-------|------|
@@ -10,7 +10,7 @@
 | Blue       | 41    | 40   |
 | Black      | 40    | 37   |
 | Red        | 41    | 40   |
-| Green      | 41    | 37   |
+| Green      | 41    | 38   |
 | Multicolor | 39    | 37   |
 | Colorless  | 9     | 9    |
 | Land       | 15    | 15   |
@@ -180,7 +180,7 @@
 - [x] Playful Shove
 - [x] Plumecreed Escort
 - [x] Plumecreed Mentor
-- [ ] Polliwallop
+- [x] Polliwallop
 - [x] Pond Prophet
 - [x] Portent of Calamity
 - [x] Psychic Whorl
