@@ -218,6 +218,7 @@ object BloomburrowSet {
         ThornplateIntimidator,
         ThornvaultForager,
         ThoughtShucker,
+        ThreeTreeCity,
         ThreeTreeRootweaver,
         ThreeTreeScribe,
         TreeguardDuo,

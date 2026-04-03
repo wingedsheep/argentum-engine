@@ -131,6 +131,25 @@ data class ChooseCreatureTypeEntersContinuation(
 ) : ContinuationFrame
 
 /**
+ * Resume after player chooses a creature type for a land with "as enters, choose a creature type".
+ *
+ * Unlike [ChooseCreatureTypeEntersContinuation] (used for spells), this is used for lands
+ * that are played directly to the battlefield. The land is already on the battlefield when
+ * this continuation fires — it just needs the ChosenCreatureTypeComponent stored.
+ *
+ * @property landId The land entity already on the battlefield
+ * @property controllerId The player who played the land
+ * @property creatureTypes The list of creature types presented to the player
+ */
+@Serializable
+data class ChooseCreatureTypeLandEntersContinuation(
+    override val decisionId: String,
+    val landId: EntityId,
+    val controllerId: EntityId,
+    val creatureTypes: List<String>
+) : ContinuationFrame
+
+/**
  * Resume after player chooses a creature for an "as enters, choose another creature you control" effect.
  *
  * When a permanent with EntersWithCreatureChoice resolves, the player is asked to choose

@@ -779,6 +779,7 @@ constructors.
 - `DynamicAmount.Count(player, zone, filter)` /
   `DynamicAmount.AggregateBattlefield(player, filter, aggregation?, property?, excludeSelf?)` /
   `DynamicAmount.AggregateZone(player, zone, filter, aggregation?, property?)` — zone-generic aggregate for non-battlefield zones (graveyard, hand, library, exile)
+- `DynamicAmount.CountCreaturesOfSourceChosenType` — count creatures you control of the source's chosen creature type (Three Tree City)
 - `DynamicAmount.Conditional(condition, ifTrue, ifFalse)` — conditional amount
 - Fluent: `DynamicAmounts.battlefield(player, filter).count()` / `.maxManaValue()` / `.maxPower()` / `.maxToughness()` /
   `.minToughness()` / `.sumPower()`

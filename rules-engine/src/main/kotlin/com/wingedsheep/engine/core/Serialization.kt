@@ -147,6 +147,7 @@ val engineSerializersModule = SerializersModule {
         subclass(CloneEntersContinuation::class)
         subclass(ChooseColorEntersContinuation::class)
         subclass(ChooseCreatureTypeEntersContinuation::class)
+        subclass(ChooseCreatureTypeLandEntersContinuation::class)
         subclass(ChooseCreatureEntersContinuation::class)
         subclass(AmplifyEntersContinuation::class)
         subclass(CastWithCreatureTypeContinuation::class)

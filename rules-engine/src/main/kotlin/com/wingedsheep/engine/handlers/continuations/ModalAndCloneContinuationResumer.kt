@@ -22,6 +22,7 @@ class ModalAndCloneContinuationResumer(
         resumer(CloneEntersContinuation::class, ::resumeCloneEnters),
         resumer(ChooseColorEntersContinuation::class, ::resumeChooseColorEnters),
         resumer(ChooseCreatureTypeEntersContinuation::class, ::resumeChooseCreatureTypeEnters),
+        resumer(ChooseCreatureTypeLandEntersContinuation::class, ::resumeChooseCreatureTypeLandEnters),
         resumer(ChooseCreatureEntersContinuation::class, ::resumeChooseCreatureEnters),
         resumer(AmplifyEntersContinuation::class, ::resumeAmplifyEnters),
         resumer(CastWithCreatureTypeContinuation::class, ::resumeCastWithCreatureType),
@@ -463,6 +464,30 @@ class ModalAndCloneContinuationResumer(
         )
 
         return checkForMore(newState, events)
+    }
+
+    /**
+     * Resume after player chooses a creature type for a land with "as enters, choose a creature type"
+     * (e.g., Three Tree City). The land is already on the battlefield — just store the chosen type.
+     */
+    fun resumeChooseCreatureTypeLandEnters(
+        state: GameState,
+        continuation: ChooseCreatureTypeLandEntersContinuation,
+        response: DecisionResponse,
+        checkForMore: CheckForMore
+    ): ExecutionResult {
+        if (response !is OptionChosenResponse) {
+            return ExecutionResult.error(state, "Expected option chosen response for creature type choice")
+        }
+
+        val chosenType = continuation.creatureTypes.getOrNull(response.optionIndex)
+            ?: return ExecutionResult.error(state, "Invalid creature type index: ${response.optionIndex}")
+
+        val newState = state.updateEntity(continuation.landId) { c ->
+            c.with(com.wingedsheep.engine.state.components.identity.ChosenCreatureTypeComponent(chosenType))
+        }
+
+        return checkForMore(newState, emptyList())
     }
 
     /**

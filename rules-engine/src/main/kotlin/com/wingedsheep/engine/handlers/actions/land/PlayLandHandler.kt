@@ -22,6 +22,7 @@ import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.state.components.battlefield.GraveyardPlayPermissionUsedComponent
 import com.wingedsheep.sdk.core.CardType
 import com.wingedsheep.sdk.scripting.EntersTapped
+import com.wingedsheep.sdk.scripting.EntersWithCreatureTypeChoice
 import com.wingedsheep.sdk.scripting.MayPlayPermanentsFromGraveyard
 import com.wingedsheep.sdk.scripting.PlayFromTopOfLibrary
 import com.wingedsheep.sdk.scripting.PlayLandsAndCastFilteredFromTopOfLibrary
@@ -150,6 +151,62 @@ class PlayLandHandler(
                         c.with(TappedComponent)
                     }
                 }
+            }
+        }
+
+        // Check for "as enters, choose a creature type" replacement effect
+        if (cardDef != null) {
+            val entersWithChoice = cardDef.script.replacementEffects
+                .filterIsInstance<EntersWithCreatureTypeChoice>().firstOrNull()
+            if (entersWithChoice != null) {
+                // Use up a land drop first
+                newState = newState.updateEntity(action.playerId) { c ->
+                    val landDrops = c.get<LandDropsComponent>() ?: LandDropsComponent()
+                    c.with(landDrops.use())
+                }
+
+                val zoneChangeEvent = ZoneChangeEvent(
+                    action.cardId,
+                    cardComponent.name,
+                    fromZone,
+                    Zone.BATTLEFIELD,
+                    action.playerId
+                )
+                val events = listOf(zoneChangeEvent)
+                newState = newState.tick()
+
+                val allCreatureTypes = com.wingedsheep.sdk.core.Subtype.ALL_CREATURE_TYPES
+                val chooserId = if (entersWithChoice.opponentChooses) {
+                    newState.turnOrder.firstOrNull { it != action.playerId } ?: action.playerId
+                } else {
+                    action.playerId
+                }
+                val decisionId = "choose-creature-type-land-enters-${action.cardId.value}"
+                val decision = com.wingedsheep.engine.core.ChooseOptionDecision(
+                    id = decisionId,
+                    playerId = chooserId,
+                    prompt = "Choose a creature type",
+                    context = com.wingedsheep.engine.core.DecisionContext(
+                        sourceId = action.cardId,
+                        sourceName = cardComponent.name,
+                        phase = com.wingedsheep.engine.core.DecisionPhase.RESOLUTION
+                    ),
+                    options = allCreatureTypes,
+                    defaultSearch = ""
+                )
+
+                val continuation = com.wingedsheep.engine.core.ChooseCreatureTypeLandEntersContinuation(
+                    decisionId = decisionId,
+                    landId = action.cardId,
+                    controllerId = action.playerId,
+                    creatureTypes = allCreatureTypes
+                )
+
+                val pausedState = newState
+                    .pushContinuation(continuation)
+                    .withPendingDecision(decision)
+
+                return ExecutionResult.paused(pausedState, decision, events)
             }
         }
 

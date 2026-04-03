@@ -652,4 +652,18 @@ sealed interface DynamicAmount : TextReplaceable<DynamicAmount> {
         override val description: String = "the number of creatures that were exiled under your opponents' control this turn"
         override fun applyTextReplacement(replacer: TextReplacer): DynamicAmount = this
     }
+
+    /**
+     * Count creatures the controller controls that have the creature type chosen by the source permanent.
+     * Used for Three Tree City: "Add an amount of mana of that color equal to the number of creatures
+     * you control of the chosen type."
+     *
+     * Reads ChosenCreatureTypeComponent from the source entity.
+     */
+    @SerialName("CountCreaturesOfSourceChosenType")
+    @Serializable
+    data object CountCreaturesOfSourceChosenType : DynamicAmount {
+        override val description: String = "the number of creatures you control of the chosen type"
+        override fun applyTextReplacement(replacer: TextReplacer): DynamicAmount = this
+    }
 }

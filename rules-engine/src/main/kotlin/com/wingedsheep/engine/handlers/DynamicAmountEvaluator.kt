@@ -258,6 +258,33 @@ class DynamicAmountEvaluator(
                     subtypes.intersect(triggeringSubtypes).isNotEmpty()
                 }
             }
+
+            is DynamicAmount.CountCreaturesOfSourceChosenType -> {
+                val sourceId = context.sourceId ?: return 0
+                val chosenType = state.getEntity(sourceId)
+                    ?.get<com.wingedsheep.engine.state.components.identity.ChosenCreatureTypeComponent>()
+                    ?.creatureType ?: return 0
+
+                val projected = if (projectForBattlefieldCounting) {
+                    state.projectedState
+                } else null
+
+                state.getBattlefield().count { entityId ->
+                    val controllerId = projected?.getController(entityId)
+                        ?: state.getEntity(entityId)?.get<ControllerComponent>()?.playerId
+                    if (controllerId != context.controllerId) return@count false
+                    val isCreature = if (projected != null) {
+                        "CREATURE" in projected.getTypes(entityId)
+                    } else {
+                        state.getEntity(entityId)?.get<CardComponent>()?.typeLine?.isCreature ?: false
+                    }
+                    if (!isCreature) return@count false
+                    val subtypes = projected?.getSubtypes(entityId)
+                        ?: state.getEntity(entityId)?.get<CardComponent>()?.typeLine?.subtypes?.map { it.value }?.toSet()
+                        ?: return@count false
+                    chosenType in subtypes
+                }
+            }
         }
     }
 
