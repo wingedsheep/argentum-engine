@@ -2,11 +2,11 @@
 
 **Set Size:** 266 cards
 **Release Date:** August 2, 2024
-**Implemented:** 226 / 266
+**Implemented:** 227 / 266
 
 | Color      | Total | Done |
 |------------|-------|------|
-| White      | 40    | 33   |
+| White      | 40    | 34   |
 | Blue       | 41    | 33   |
 | Black      | 40    | 35   |
 | Red        | 41    | 33   |
@@ -223,7 +223,7 @@
 - [x] Splash Lasher
 - [x] Splash Portal
 - [x] Star Charter
-- [ ] Starfall Invocation
+- [x] Starfall Invocation
 - [x] Starforged Sword
 - [x] Stargaze
 - [ ] Starlit Soothsayer
