@@ -57,7 +57,6 @@ export function HoverCardPreview({ name, imageUri, imageSize = 'large', pos, rul
   let left = 20
   if (pos) {
     const vw = window.innerWidth
-    const vh = window.innerHeight
 
     if (pos.x + previewWidth + MARGIN < vw - VIEWPORT_PADDING) {
       left = pos.x + MARGIN
