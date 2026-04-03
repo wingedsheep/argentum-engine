@@ -1,6 +1,7 @@
 package com.wingedsheep.gameserver.handler
 
 import com.wingedsheep.gameserver.ai.AiGameManager
+import com.wingedsheep.gameserver.ai.flattenOracle
 import com.wingedsheep.gameserver.ai.AiWebSocketSession
 import com.wingedsheep.gameserver.handler.ConnectionHandler.Companion.cardToSealedCardInfo
 import com.wingedsheep.gameserver.lobby.LobbyState
@@ -1271,7 +1272,7 @@ class LobbyHandler(
                 for ((name, copies) in grouped.entries.sortedBy { it.value.first().cmc }) {
                     val card = copies.first()
                     val stats = if (card.creatureStats != null) " ${card.creatureStats}" else ""
-                    val oracle = if (card.oracleText.isNotBlank()) " — ${card.oracleText.take(120)}" else ""
+                    val oracle = if (card.oracleText.isNotBlank()) " — ${card.oracleText.flattenOracle()}" else ""
                     val count = if (copies.size > 1) "${copies.size}x " else ""
                     appendLine("  $count${card.name} ${card.manaCost} — ${card.typeLine}$stats$oracle")
                 }
@@ -1284,7 +1285,7 @@ class LobbyHandler(
                 for ((name, copies) in grouped) {
                     val card = copies.first()
                     val count = if (copies.size > 1) "${copies.size}x " else ""
-                    val oracle = if (card.oracleText.isNotBlank()) " — ${card.oracleText.take(80)}" else ""
+                    val oracle = if (card.oracleText.isNotBlank()) " — ${card.oracleText.flattenOracle()}" else ""
                     appendLine("  $count${card.name}$oracle")
                 }
             }
