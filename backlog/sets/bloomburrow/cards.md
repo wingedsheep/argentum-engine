@@ -2,7 +2,7 @@
 
 **Set Size:** 266 cards
 **Release Date:** August 2, 2024
-**Implemented:** 248 / 266
+**Implemented:** 249 / 266
 
 | Color      | Total | Done |
 |------------|-------|------|
@@ -13,7 +13,7 @@
 | Green      | 41    | 37   |
 | Multicolor | 39    | 35   |
 | Colorless  | 9     | 9    |
-| Land       | 15    | 14   |
+| Land       | 15    | 15   |
 
 ---
 
@@ -258,7 +258,7 @@
 - [x] Tidecaller Mentor
 - [x] Treeguard Duo
 - [x] Treetop Sentries
-- [ ] Uncharted Haven
+- [x] Uncharted Haven
 - [x] Valley Flamecaller
 - [x] Valley Floodcaller
 - [x] Valley Mightcaller
