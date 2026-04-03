@@ -263,6 +263,7 @@ object BloomburrowSet {
         ValleyQuestcaller,
         ValleyRally,
         ValleyRotcaller,
+        VeteranGuardmouse,
         VinereapMentor,
         VrenTheRelentless,
         WaterspoutWarden,
