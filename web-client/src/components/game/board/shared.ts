@@ -213,6 +213,13 @@ export function getBlightCounters(card: ClientCard): number {
 }
 
 /**
+ * Get the number of flood counters on a card.
+ */
+export function getFloodCounters(card: ClientCard): number {
+  return card.counters[CounterType.FLOOD] ?? 0
+}
+
+/**
  * Get an emoji or icon for an effect based on its icon identifier.
  */
 export function getEffectIcon(icon: string): string {

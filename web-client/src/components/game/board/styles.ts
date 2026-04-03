@@ -1002,6 +1002,21 @@ export const styles: Record<string, React.CSSProperties> = {
     fontWeight: 700,
     zIndex: 5,
   } as React.CSSProperties,
+  // Flood counter badge (for Eluge, the Shoreless Sea etc.)
+  floodCounterBadge: {
+    position: 'absolute',
+    top: 4,
+    right: 4,
+    backgroundColor: 'rgba(20, 60, 100, 0.95)',
+    borderRadius: 4,
+    border: '1px solid rgba(80, 160, 220, 0.6)',
+    display: 'flex',
+    alignItems: 'center',
+    gap: 2,
+    color: '#60b8e0',
+    fontWeight: 700,
+    zIndex: 5,
+  } as React.CSSProperties,
   // Blight counter badge (for Rottenmouth Viper etc.)
   blightCounterBadge: {
     position: 'absolute',
