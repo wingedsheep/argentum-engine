@@ -2,12 +2,12 @@
 
 **Set Size:** 266 cards
 **Release Date:** August 2, 2024
-**Implemented:** 242 / 266
+**Implemented:** 243 / 266
 
 | Color      | Total | Done |
 |------------|-------|------|
 | White      | 40    | 37   |
-| Blue       | 41    | 38   |
+| Blue       | 41    | 39   |
 | Black      | 40    | 35   |
 | Red        | 41    | 35   |
 | Green      | 41    | 37   |
@@ -133,7 +133,7 @@
 - [x] Keen-Eyed Curator
 - [x] Kindlespark Duo
 - [x] Kitnap
-- [ ] Kitsa, Otterball Elite
+- [x] Kitsa, Otterball Elite
 - [x] Knightfisher
 - [x] Lifecreed Duo
 - [x] Lightshell Duo

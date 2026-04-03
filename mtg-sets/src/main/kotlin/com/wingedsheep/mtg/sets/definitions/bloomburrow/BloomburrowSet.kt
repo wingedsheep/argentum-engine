@@ -127,6 +127,7 @@ object BloomburrowSet {
         KeenEyedCurator,
         KindlesparkDuo,
         Kitnap,
+        KitsaOtterballElite,
         Knightfisher,
         HuntersTalent,
         Mindwhisker,

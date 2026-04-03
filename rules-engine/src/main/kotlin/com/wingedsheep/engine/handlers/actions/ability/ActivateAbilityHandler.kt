@@ -978,7 +978,7 @@ class ActivateAbilityHandler(
             is ActivationRestriction.OnlyIfCondition -> {
                 val opponentId = state.turnOrder.firstOrNull { it != playerId }
                 val context = EffectContext(
-                    sourceId = null,
+                    sourceId = sourceId,
                     controllerId = playerId,
                     opponentId = opponentId,
                     targets = emptyList(),
