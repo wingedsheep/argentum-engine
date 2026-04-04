@@ -104,6 +104,11 @@ class CombatAdvisor(
             retainDefenders(state, projected, playerId, opponentId, opponentCrackbackCreatures, attackerMap, myLife)
         }
 
+        // ── Combined attack validation: simulate full attack + counterattack risk ──
+        if (attackerMap.size > 1 && System.currentTimeMillis() < simulationDeadline) {
+            validateCombinedAttack(state, projected, playerId, opponentId, attackerMap, myLife, simulationDeadline)
+        }
+
         return DeclareAttackers(playerId, attackerMap)
     }
 
@@ -152,7 +157,7 @@ class CombatAdvisor(
         assignBlocksForProfit(state, projected, validBlockers, attackers, assignedBlockers, blockedAttackers, blockerMap)
         assignGangBlocks(state, projected, validBlockers, attackers, assignedBlockers, blockedAttackers, blockerMap)
 
-        if (!isLifeInDanger(state, projected, attackers, blockerMap, myLife)) {
+        if (!isLifeInDanger(state, projected, attackers, blockerMap, myLife, playerId)) {
             return DeclareBlockers(playerId, blockerMap)
         }
 
@@ -163,7 +168,7 @@ class CombatAdvisor(
         assignGangBlocks(state, projected, validBlockers, attackers, assignedBlockers, blockedAttackers, blockerMap)
         reinforceBlocksAgainstTrample(state, projected, validBlockers, attackers, assignedBlockers, blockerMap)
 
-        if (!isLifeInDanger(state, projected, attackers, blockerMap, myLife)) {
+        if (!isLifeInDanger(state, projected, attackers, blockerMap, myLife, playerId)) {
             return DeclareBlockers(playerId, blockerMap)
         }
 
@@ -177,28 +182,64 @@ class CombatAdvisor(
     }
 
     /**
-     * Check if unblocked damage would kill us after current blocking assignments.
+     * Check if unblocked damage would kill us — either this turn (immediate lethal)
+     * or set us up to die on the opponent's next attack (next-turn lethal).
+     *
+     * The next-turn check considers all opponent creatures (they'll untap) vs our
+     * available blockers, and returns true if the combined damage across both turns
+     * would be fatal. This makes the AI block more aggressively when at low life.
      */
     private fun isLifeInDanger(
         state: GameState,
         projected: ProjectedState,
         attackers: List<EntityId>,
         blockerMap: Map<EntityId, List<EntityId>>,
-        myLife: Int
+        myLife: Int,
+        playerId: EntityId
     ): Boolean {
+        val incomingDamage = calculateIncomingDamage(state, projected, attackers, blockerMap)
+
+        // Immediate lethal
+        if (incomingDamage >= myLife) return true
+
+        // Next-turn check: after taking this damage, would opponent's next attack kill us?
+        val lifeAfter = myLife - incomingDamage
+        val opponentId = state.getOpponent(playerId) ?: return false
+
+        // Our blockers next turn: untapped creatures that aren't currently assigned to block
+        // (conservatively — some may die in this combat, but this is a fast heuristic)
+        val myBlockers = projected.getBattlefieldControlledBy(playerId)
+            .filter { entityId ->
+                projected.isCreature(entityId) &&
+                    state.getEntity(entityId)?.has<TappedComponent>() != true
+            }
+
+        val nextTurnDamage = CombatMath.estimateNextTurnDamage(state, projected, opponentId, myBlockers)
+        if (nextTurnDamage > 0 && lifeAfter <= nextTurnDamage) return true
+
+        return false
+    }
+
+    /**
+     * Calculate damage that will get through given current blocking assignments.
+     * Accounts for unblocked creatures and trample overflow.
+     */
+    private fun calculateIncomingDamage(
+        state: GameState,
+        projected: ProjectedState,
+        attackers: List<EntityId>,
+        blockerMap: Map<EntityId, List<EntityId>>
+    ): Int {
         val blockedAttackerIds = blockerMap.values.flatten().toSet()
         var incomingDamage = 0
         for (attacker in attackers) {
             val aPower = projected.getPower(attacker) ?: 0
             if (aPower <= 0) continue
             if (attacker !in blockedAttackerIds) {
-                // Unblocked — full damage
                 incomingDamage += aPower
             } else {
-                // Blocked — only trample overflow gets through
                 val aKeywords = projected.getKeywords(attacker)
                 if (Keyword.TRAMPLE.name in aKeywords) {
-                    // Find all blockers assigned to this attacker
                     val blockers = blockerMap.entries
                         .filter { (_, targets) -> attacker in targets }
                         .map { it.key }
@@ -209,7 +250,7 @@ class CombatAdvisor(
                 }
             }
         }
-        return incomingDamage >= myLife
+        return incomingDamage
     }
 
     /**
@@ -335,11 +376,7 @@ class CombatAdvisor(
     }
 
     /**
-     * Simulate a single creature attacking: declare it as attacker, pass priority
-     * through to declare blockers, let the blocking AI choose blocks, then resolve
-     * through combat damage to get the post-combat state.
-     *
-     * Returns the post-combat GameState, or null if the simulation fails.
+     * Simulate a single creature attacking. Convenience wrapper around [simulateFullAttack].
      */
     private fun simulateSingleAttack(
         state: GameState,
@@ -347,12 +384,27 @@ class CombatAdvisor(
         opponentId: EntityId
     ): GameState? {
         val playerId = state.turnOrder.find { it != opponentId } ?: return null
-        val attackAction = DeclareAttackers(playerId, mapOf(attackerId to opponentId))
+        return simulateFullAttack(state, playerId, opponentId, mapOf(attackerId to opponentId))
+    }
+
+    /**
+     * Simulate a full attack with an arbitrary set of attackers: declare attackers,
+     * pass priority through to declare blockers, let the blocking AI choose blocks,
+     * then resolve through combat damage to get the post-combat state.
+     *
+     * Returns the post-combat GameState, or null if the simulation fails.
+     */
+    private fun simulateFullAttack(
+        state: GameState,
+        playerId: EntityId,
+        opponentId: EntityId,
+        attackerMap: Map<EntityId, EntityId>
+    ): GameState? {
+        if (attackerMap.isEmpty()) return state
+        val attackAction = DeclareAttackers(playerId, attackerMap)
         var current = simulator.simulate(state, attackAction).state
 
         // Drive through combat: pass priority, handle blockers, resolve damage.
-        // Only enumerate legal actions when we expect a DeclareBlockers step (for the opponent).
-        // Otherwise just pass priority directly to avoid expensive enumeration.
         var iterations = 0
         var needsBlockerCheck = true
         while (iterations < 50 && !current.gameOver && current.pendingDecision == null) {
@@ -360,21 +412,17 @@ class CombatAdvisor(
             val priorityPlayer = current.priorityPlayerId ?: break
 
             if (needsBlockerCheck && priorityPlayer == opponentId) {
-                // Opponent has priority — check if this is the declare blockers step
                 val legalActions = simulator.getLegalActions(current, opponentId)
                 val blockAction = legalActions.find { it.actionType == "DeclareBlockers" }
                 if (blockAction != null) {
                     val blockerAction = chooseBlockers(current, blockAction, opponentId)
                     current = simulator.simulate(current, blockerAction).state
-                    needsBlockerCheck = false // Blockers already declared, no need to check again
+                    needsBlockerCheck = false
                     continue
                 }
             }
 
-            // Pass priority to advance through combat steps
             current = simulator.simulate(current, PassPriority(priorityPlayer)).state
-
-            // Stop once we've left combat
             if (current.phase != Phase.COMBAT) break
         }
 
@@ -489,6 +537,82 @@ class CombatAdvisor(
                 state, projected, opponentCrackbackCreatures, updatedBlockers
             )
             if (updatedCrackback < myLife) break
+        }
+    }
+
+    /**
+     * Validate the combined attack by simulating the full combat sequence
+     * (our attack → opponent blocks → combat damage) and checking if the
+     * post-combat position is acceptable, including counterattack risk.
+     *
+     * If the simulation shows the attack makes our position significantly worse
+     * (factoring in the opponent's counterattack on their next turn), trim the
+     * least valuable non-evasive attackers until the outlook improves.
+     */
+    private fun validateCombinedAttack(
+        state: GameState,
+        projected: ProjectedState,
+        playerId: EntityId,
+        opponentId: EntityId,
+        attackerMap: MutableMap<EntityId, EntityId>,
+        myLife: Int,
+        deadline: Long
+    ) {
+        val baseScore = evaluator.evaluate(state, projected, playerId)
+        val postCombat = simulateFullAttack(state, playerId, opponentId, attackerMap.toMap()) ?: return
+        val postProjected = postCombat.projectedState
+
+        var postScore = evaluator.evaluate(postCombat, postProjected, playerId)
+
+        // Factor in counterattack risk: all opponent creatures can attack next turn (they'll untap)
+        val allOpponentCreatures = postProjected.getBattlefieldControlledBy(opponentId)
+            .filter { postProjected.isCreature(it) && Keyword.DEFENDER.name !in postProjected.getKeywords(it) }
+        val myBlockersPostCombat = postProjected.getBattlefieldControlledBy(playerId)
+            .filter { postProjected.isCreature(it) && postCombat.getEntity(it)?.has<TappedComponent>() != true }
+
+        val counterDmg = CombatMath.calculateDamageThroughOptimalBlocking(
+            postCombat, postProjected, allOpponentCreatures, myBlockersPostCombat
+        )
+        val postLife = postCombat.getEntity(playerId)?.get<LifeTotalComponent>()?.life ?: myLife
+
+        // Penalize if counterattack is lethal or puts us in critical danger
+        if (counterDmg >= postLife) {
+            postScore -= 15.0
+        } else if (postLife - counterDmg <= 5) {
+            postScore -= (6.0 - (postLife - counterDmg)) * 1.5
+        }
+
+        // If combined attack makes our position notably worse, trim attackers
+        if (postScore < baseScore - 2.0) {
+            val opponentCreatures = CombatMath.getOpponentUntappedCreatures(state, projected, opponentId)
+            val removable = attackerMap.keys.toList()
+                .filter { Keyword.VIGILANCE.name !in projected.getKeywords(it) }
+                .filter { !CombatMath.isEvasive(state, projected, it, opponentCreatures) }
+                .sortedBy { projected.getPower(it) ?: 0 }
+
+            for (attacker in removable) {
+                if (System.currentTimeMillis() > deadline) break
+                if (attackerMap.size <= 1) break
+                attackerMap.remove(attacker)
+
+                // Re-simulate with fewer attackers to check if acceptable now
+                val retryState = simulateFullAttack(state, playerId, opponentId, attackerMap.toMap()) ?: break
+                val retryProjected = retryState.projectedState
+                val retryScore = evaluator.evaluate(retryState, retryProjected, playerId)
+
+                // Also re-check counterattack
+                val retryBlockers = retryProjected.getBattlefieldControlledBy(playerId)
+                    .filter { retryProjected.isCreature(it) && retryState.getEntity(it)?.has<TappedComponent>() != true }
+                val retryCounterDmg = CombatMath.calculateDamageThroughOptimalBlocking(
+                    retryState, retryProjected, allOpponentCreatures, retryBlockers
+                )
+                val retryLife = retryState.getEntity(playerId)?.get<LifeTotalComponent>()?.life ?: myLife
+                var adjustedScore = retryScore
+                if (retryCounterDmg >= retryLife) adjustedScore -= 15.0
+                else if (retryLife - retryCounterDmg <= 5) adjustedScore -= (6.0 - (retryLife - retryCounterDmg)) * 1.5
+
+                if (adjustedScore >= baseScore - 1.0) break
+            }
         }
     }
 
