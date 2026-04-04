@@ -113,12 +113,28 @@ class CombatAdvisor(
         if (seedMap.size < validAttackers.size) {
             val unblockedSlots = validAttackers.size - opponentCreatures.size
             if (unblockedSlots > 0) {
-                // Add remaining creatures sorted by power descending — the best ones go unblocked
                 val remaining = validAttackers
                     .filter { it !in seedMap && (projected.getPower(it) ?: 0) > 0 }
                     .sortedByDescending { projected.getPower(it) ?: 0 }
+
+                // Estimate opponent's crack-back: all their creatures could attack next turn
+                val myLife = state.getEntity(playerId)?.get<LifeTotalComponent>()?.life ?: 20
+                val allOpponentCreatures = projected.getBattlefieldControlledBy(opponentId).filter {
+                    projected.isCreature(it) && Keyword.DEFENDER.name !in projected.getKeywords(it)
+                }
+                val opponentTotalPower = allOpponentCreatures.sumOf {
+                    (projected.getPower(it) ?: 0).coerceAtLeast(0)
+                }
+
+                // If opponent can threaten lethal next turn, hold back our best blocker
+                val holdBack = if (opponentTotalPower > 0 && myLife <= opponentTotalPower * 2) {
+                    remaining.maxByOrNull { projected.getToughness(it) ?: 0 }
+                } else null
+
                 for (entityId in remaining) {
-                    seedMap[entityId] = opponentId
+                    if (entityId != holdBack) {
+                        seedMap[entityId] = opponentId
+                    }
                 }
             }
         }
@@ -201,9 +217,12 @@ class CombatAdvisor(
             seedMap
         }
 
-        // ── Chump-block pass: if still facing lethal, assign remaining blockers ──
+        // ── Chump-block pass: if facing immediate lethal, assign remaining blockers ──
+        // Only chump-block when unblocked damage would kill us THIS turn.
+        // Don't chump-block for next-turn lethal — losing a blocker now makes next turn worse.
         val assignedBlockers = bestMap.keys.toMutableSet()
-        if (isLifeInDanger(state, projected, attackers, bestMap, myLife, playerId)) {
+        val incomingDamage = calculateIncomingDamage(state, projected, attackers, bestMap)
+        if (incomingDamage >= myLife) {
             val unblockedAttackers = attackers
                 .filter { attacker -> bestMap.values.none { attacker in it } }
                 .sortedByDescending { CombatMath.effectiveDamage(projected, it) }
