@@ -38,10 +38,12 @@ class LevelUpClassExecutor(
             c.with(classComponent.withLevelUp())
         }
 
-        // Re-add replacement effects to include any from the new class level
+        // Re-add continuous effects and replacement effects to include any from the new class level
         if (staticAbilityHandler != null) {
             newState = newState.updateEntity(sourceId) { c ->
-                staticAbilityHandler.addReplacementEffectComponent(c)
+                var updated = staticAbilityHandler.addContinuousEffectComponent(c)
+                updated = staticAbilityHandler.addReplacementEffectComponent(updated)
+                updated
             }
         }
 

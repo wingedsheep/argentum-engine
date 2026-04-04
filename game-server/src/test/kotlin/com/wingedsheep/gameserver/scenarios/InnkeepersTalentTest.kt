@@ -4,6 +4,7 @@ import com.wingedsheep.engine.state.components.battlefield.ClassLevelComponent
 import com.wingedsheep.engine.state.components.battlefield.CountersComponent
 import com.wingedsheep.gameserver.ScenarioTestBase
 import com.wingedsheep.sdk.core.CounterType
+import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Phase
 import com.wingedsheep.sdk.core.Step
 import io.kotest.assertions.withClue
@@ -50,6 +51,57 @@ class InnkeepersTalentTest : ScenarioTestBase() {
                 withClue("Hired Claw should have 1 +1/+1 counter (after ${iterations} iterations, phase=${game.state.phase}, step=${game.state.step})") {
                     counters shouldNotBe null
                     counters?.getCount(CounterType.PLUS_ONE_PLUS_ONE) shouldBe 1
+                }
+            }
+        }
+
+        context("Innkeeper's Talent Level 2 — ward for permanents with counters") {
+            test("permanents you control with counters have ward") {
+                val game = scenario()
+                    .withPlayers("Player", "Opponent")
+                    .withCardOnBattlefield(1, "Innkeeper's Talent", classLevel = 2)
+                    .withCardOnBattlefield(1, "Hired Claw", summoningSickness = false)
+                    .withCardInLibrary(1, "Forest")
+                    .withCardInLibrary(2, "Forest")
+                    .withActivePlayer(1)
+                    .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                    .build()
+
+                val hiredClawId = game.findPermanent("Hired Claw")!!
+
+                // Advance to combat to trigger the Level 1 ability (put +1/+1 counter)
+                var iterations = 0
+                while (iterations < 20) {
+                    if (game.state.pendingDecision != null) {
+                        game.selectTargets(listOf(hiredClawId))
+                        continue
+                    }
+                    if (game.state.step == Step.DECLARE_ATTACKERS) break
+                    game.passPriority()
+                    iterations++
+                }
+
+                if (game.state.stack.isNotEmpty()) {
+                    game.resolveStack()
+                }
+
+                // Hired Claw now has a +1/+1 counter
+                val counters = game.state.getEntity(hiredClawId)?.get<CountersComponent>()
+                withClue("Hired Claw should have a +1/+1 counter") {
+                    counters shouldNotBe null
+                    counters?.getCount(CounterType.PLUS_ONE_PLUS_ONE) shouldBe 1
+                }
+
+                // Check that Hired Claw now has ward keyword via projected state
+                val projected = game.state.projectedState
+                withClue("Hired Claw with a counter should have ward from Level 2") {
+                    projected.hasKeyword(hiredClawId, Keyword.WARD) shouldBe true
+                }
+
+                // Innkeeper's Talent itself should NOT have ward (no counters on it)
+                val talentId = game.findPermanent("Innkeeper's Talent")!!
+                withClue("Innkeeper's Talent without counters should not have ward") {
+                    projected.hasKeyword(talentId, Keyword.WARD) shouldBe false
                 }
             }
         }

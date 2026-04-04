@@ -115,8 +115,12 @@ class StaticAbilityHandler(
     ): ComponentContainer {
         var result = container
 
+        // Use effective static abilities which includes class level abilities
+        val classLevel = container.get<ClassLevelComponent>()?.currentLevel
+        val allStaticAbilities = cardDefinition.script.effectiveStaticAbilities(classLevel)
+
         // Convert static abilities to continuous effect data
-        val effectsData = cardDefinition.staticAbilities.flatMap { ability ->
+        val effectsData = allStaticAbilities.flatMap { ability ->
             convertStaticAbilities(ability)
         }
 
@@ -125,25 +129,25 @@ class StaticAbilityHandler(
         }
 
         // Add tag component for abilities that grant controller-level effects
-        if (cardDefinition.staticAbilities.any { it is GrantShroudToController }) {
+        if (allStaticAbilities.any { it is GrantShroudToController }) {
             result = result.with(GrantsControllerShroudComponent)
         }
-        if (cardDefinition.staticAbilities.any { it is GrantHexproofToController }) {
+        if (allStaticAbilities.any { it is GrantHexproofToController }) {
             result = result.with(GrantsControllerHexproofComponent)
         }
 
         // Add tag component for "you can't lose the game"
-        if (cardDefinition.staticAbilities.any { it is com.wingedsheep.sdk.scripting.GrantCantLoseGame }) {
+        if (allStaticAbilities.any { it is com.wingedsheep.sdk.scripting.GrantCantLoseGame }) {
             result = result.with(GrantsCantLoseGameComponent)
         }
 
         // Add tag component for "can't be the target of abilities your opponents control"
-        if (cardDefinition.staticAbilities.any { it is CantBeTargetedByOpponentAbilities }) {
+        if (allStaticAbilities.any { it is CantBeTargetedByOpponentAbilities }) {
             result = result.with(CantBeTargetedByOpponentAbilitiesComponent)
         }
 
         // Add component for "creatures you control with power or toughness N or less can't be blocked"
-        val smallCreaturesAbility = cardDefinition.staticAbilities
+        val smallCreaturesAbility = allStaticAbilities
             .filterIsInstance<GrantCantBeBlockedToSmallCreatures>()
             .firstOrNull()
         if (smallCreaturesAbility != null) {
