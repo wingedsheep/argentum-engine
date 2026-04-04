@@ -1,6 +1,7 @@
 package com.wingedsheep.engine.scenarios
 
 import com.wingedsheep.engine.core.ActivateAbility
+import com.wingedsheep.engine.core.SelectManaSourcesDecision
 import com.wingedsheep.engine.core.YesNoDecision
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.engine.support.GameTestDriver
@@ -276,8 +277,15 @@ class DisruptivePitmageTest : FunSpec({
         val decision = driver.pendingDecision as YesNoDecision
         decision.playerId shouldBe player2
 
-        // Player 2 chooses to pay — should auto-tap a land
+        // Player 2 chooses to pay
         driver.submitYesNo(player2, true)
+
+        // Now a mana source selection decision should appear
+        driver.isPaused shouldBe true
+        driver.pendingDecision.shouldBeInstanceOf<SelectManaSourcesDecision>()
+
+        // Auto-pay the mana source selection
+        driver.submitManaAutoPayOrDecline(player2, autoPay = true)
 
         // Lightning Bolt should still be on the stack (not countered)
         driver.stackSize shouldBe 1
