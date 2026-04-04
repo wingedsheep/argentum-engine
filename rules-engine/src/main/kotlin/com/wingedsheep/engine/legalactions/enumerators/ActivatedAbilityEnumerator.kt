@@ -80,7 +80,7 @@ class ActivatedAbilityEnumerator : ActionEnumerator {
 
             // If entity lost all abilities, suppress its own non-mana abilities
             val ownNonManaAbilities = if (cardDef == null || projected.hasLostAllAbilities(entityId)) emptyList()
-            else cardDef.script.effectiveActivatedAbilities(classLevel).filter { !it.isManaAbility }
+            else cardDef.script.effectiveActivatedAbilities(classLevel).filter { !it.isManaAbility && it.activateFromZone == Zone.BATTLEFIELD }
 
             // Generate level-up abilities for Class enchantments
             val levelUpAbilities = if (cardDef != null && classLevelComponent != null && !projected.hasLostAllAbilities(entityId)) {
@@ -545,7 +545,7 @@ class ActivatedAbilityEnumerator : ActionEnumerator {
 
             val cardDef = context.cardRegistry.getCard(cardComponent.name) ?: continue
             val anyPlayerAbilities = cardDef.script.activatedAbilities.filter { ability ->
-                !ability.isManaAbility && ability.restrictions.any { it is ActivationRestriction.AnyPlayerMay }
+                !ability.isManaAbility && ability.activateFromZone == Zone.BATTLEFIELD && ability.restrictions.any { it is ActivationRestriction.AnyPlayerMay }
             }
             if (anyPlayerAbilities.isEmpty()) continue
 
