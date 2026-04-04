@@ -2,7 +2,6 @@ package com.wingedsheep.mtg.sets.definitions.bloomburrow.cards
 
 import com.wingedsheep.sdk.core.AbilityFlag
 import com.wingedsheep.sdk.core.Keyword
-import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Targets
 import com.wingedsheep.sdk.dsl.Triggers
@@ -11,11 +10,7 @@ import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.GrantKeywordToCreatureGroup
 import com.wingedsheep.sdk.scripting.KeywordAbility
-import com.wingedsheep.sdk.scripting.effects.CompositeEffect
-import com.wingedsheep.sdk.scripting.effects.MayEffect
-import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
-import com.wingedsheep.sdk.scripting.targets.EffectTarget
 
 /**
  * Long River Lurker
@@ -56,26 +51,14 @@ val LongRiverLurker = card("Long River Lurker") {
         )
     }
 
-    // ETB: target creature you control can't be blocked this turn +
-    // whenever that creature deals combat damage this turn, may exile-return
+    // ETB: target creature you control can't be blocked this turn
+    // NOTE: The "whenever that creature deals combat damage this turn, you may exile it
+    // and return it" part requires an event-based delayed trigger (on combat damage)
+    // which the engine doesn't support yet. Only the can't-be-blocked grant is modeled.
     triggeredAbility {
         trigger = Triggers.EntersBattlefield
         val creature = target("creature you control", Targets.CreatureYouControl)
-        effect = CompositeEffect(listOf(
-            // Target creature can't be blocked this turn
-            Effects.GrantKeyword(AbilityFlag.CANT_BE_BLOCKED, creature),
-            // Flicker effect: exile then return to battlefield
-            // This approximates the delayed combat damage trigger — the creature
-            // can't be blocked, so it will deal combat damage to a player.
-            // TODO: Proper implementation requires event-based delayed triggers
-            // that fire "whenever that creature deals combat damage this turn"
-            MayEffect(
-                CompositeEffect(listOf(
-                    MoveToZoneEffect(creature, Zone.EXILE),
-                    MoveToZoneEffect(creature, Zone.BATTLEFIELD)
-                ))
-            )
-        ))
+        effect = Effects.GrantKeyword(AbilityFlag.CANT_BE_BLOCKED, creature)
     }
 
     metadata {
