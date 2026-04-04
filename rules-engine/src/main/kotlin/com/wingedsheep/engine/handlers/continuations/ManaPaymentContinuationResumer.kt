@@ -19,6 +19,7 @@ class ManaPaymentContinuationResumer(
         resumer(CounterUnlessPaysManaSelectionContinuation::class, ::resumeCounterUnlessPaysManaSelection),
         resumer(ChangeSpellTargetContinuation::class, ::resumeChangeSpellTarget),
         resumer(MayPayManaContinuation::class, ::resumeMayPayMana),
+        resumer(MayPayManaSelectionContinuation::class, ::resumeMayPayManaSelection),
         resumer(MayPayManaTriggerContinuation::class, ::resumeMayPayManaTrigger),
         resumer(MayPayXContinuation::class, ::resumeMayPayX),
         resumer(ManaSourceSelectionContinuation::class, ::resumeManaSourceSelection)
@@ -302,7 +303,7 @@ class ManaPaymentContinuationResumer(
             return checkForMore(state, emptyList())
         }
 
-        // Player chose to pay — auto-tap sources and deduct mana
+        // Player chose to pay — check if floating mana covers the cost
         val playerId = continuation.playerId
         val playerEntity = state.getEntity(playerId)
             ?: return ExecutionResult.error(state, "Paying player not found")
@@ -311,15 +312,119 @@ class ManaPaymentContinuationResumer(
             ?: return ExecutionResult.error(state, "Player has no mana pool")
 
         val manaPool = ManaPool(
-            manaPoolComponent.white,
-            manaPoolComponent.blue,
-            manaPoolComponent.black,
-            manaPoolComponent.red,
-            manaPoolComponent.green,
-            manaPoolComponent.colorless
+            manaPoolComponent.white, manaPoolComponent.blue, manaPoolComponent.black,
+            manaPoolComponent.red, manaPoolComponent.green, manaPoolComponent.colorless
+        )
+        val partialResult = manaPool.payPartial(continuation.manaCost)
+
+        if (partialResult.remainingCost.isEmpty()) {
+            // Floating mana covers the cost — pay immediately and execute inner effect
+            val newPool = manaPool.pay(continuation.manaCost)
+                ?: return ExecutionResult.error(state, "Cannot pay mana cost from floating mana")
+            var currentState = state.updateEntity(playerId) { container ->
+                container.with(
+                    ManaPoolComponent(
+                        white = newPool.white, blue = newPool.blue, black = newPool.black,
+                        red = newPool.red, green = newPool.green, colorless = newPool.colorless
+                    )
+                )
+            }
+
+            val effectResult = services.effectExecutorRegistry.execute(currentState, continuation.effect, continuation.effectContext)
+            if (effectResult.error != null) return effectResult
+            return checkForMore(effectResult.state, effectResult.events)
+        }
+
+        // Need to tap sources — show mana source selection UI
+        val manaSolver = ManaSolver(services.cardRegistry)
+        val sources = manaSolver.findAvailableManaSources(state, playerId)
+        val sourceOptions = sources.map { source ->
+            ManaSourceOption(
+                entityId = source.entityId,
+                name = source.name,
+                producesColors = source.producesColors,
+                producesColorless = source.producesColorless
+            )
+        }
+
+        val solution = manaSolver.solve(state, playerId, partialResult.remainingCost)
+        val autoPaySuggestion = solution?.sources?.map { it.entityId } ?: emptyList()
+
+        val decisionId = java.util.UUID.randomUUID().toString()
+        val decision = SelectManaSourcesDecision(
+            id = decisionId,
+            playerId = playerId,
+            prompt = "Pay ${continuation.manaCost}",
+            context = DecisionContext(
+                sourceId = continuation.effectContext.sourceId,
+                sourceName = continuation.sourceName ?: "You may pay",
+                phase = DecisionPhase.RESOLUTION
+            ),
+            availableSources = sourceOptions,
+            requiredCost = continuation.manaCost.toString(),
+            autoPaySuggestion = autoPaySuggestion,
+            canDecline = true
         )
 
-        // Try to pay from floating mana first, then tap sources for the rest
+        val manaSelectionContinuation = MayPayManaSelectionContinuation(
+            decisionId = decisionId,
+            playerId = playerId,
+            sourceName = continuation.sourceName,
+            manaCost = continuation.manaCost,
+            effect = continuation.effect,
+            effectContext = continuation.effectContext,
+            availableSources = sourceOptions,
+            autoPaySuggestion = autoPaySuggestion
+        )
+
+        val stateWithDecision = state.withPendingDecision(decision)
+        val stateWithContinuation = stateWithDecision.pushContinuation(manaSelectionContinuation)
+
+        return ExecutionResult.paused(
+            stateWithContinuation,
+            decision,
+            listOf(
+                DecisionRequestedEvent(
+                    decisionId = decisionId,
+                    playerId = playerId,
+                    decisionType = "SELECT_MANA_SOURCES",
+                    prompt = decision.prompt
+                )
+            )
+        )
+    }
+
+    /**
+     * Resume after the controller selects mana sources for a "you may pay" ability
+     * (non-targeted). Taps sources, deducts mana, executes the inner effect.
+     */
+    fun resumeMayPayManaSelection(
+        state: GameState,
+        continuation: MayPayManaSelectionContinuation,
+        response: DecisionResponse,
+        checkForMore: CheckForMore
+    ): ExecutionResult {
+        if (response !is ManaSourcesSelectedResponse) {
+            return ExecutionResult.error(state, "Expected mana sources selected response")
+        }
+
+        // Declined — do nothing
+        if (!response.autoPay && response.selectedSources.isEmpty()) {
+            return checkForMore(state, emptyList())
+        }
+
+        val playerId = continuation.playerId
+        val playerEntity = state.getEntity(playerId)
+            ?: return ExecutionResult.error(state, "Paying player not found")
+
+        val manaPoolComponent = playerEntity.get<ManaPoolComponent>()
+            ?: return ExecutionResult.error(state, "Player has no mana pool")
+
+        val manaPool = ManaPool(
+            manaPoolComponent.white, manaPoolComponent.blue, manaPoolComponent.black,
+            manaPoolComponent.red, manaPoolComponent.green, manaPoolComponent.colorless
+        )
+
         val partialResult = manaPool.payPartial(continuation.manaCost)
         val remainingCost = partialResult.remainingCost
         var currentPool = manaPool
@@ -327,52 +432,59 @@ class ManaPaymentContinuationResumer(
         val events = mutableListOf<GameEvent>()
 
         if (!remainingCost.isEmpty()) {
-            // Need to tap sources for the remaining cost
-            val manaSolver = ManaSolver(services.cardRegistry)
-            val solution = manaSolver.solve(currentState, playerId, remainingCost)
-                ?: return ExecutionResult.error(state, "Cannot pay mana cost")
+            if (response.autoPay) {
+                val manaSolver = ManaSolver(services.cardRegistry)
+                val solution = manaSolver.solve(currentState, playerId, remainingCost)
+                    ?: return ExecutionResult.error(state, "Cannot pay mana cost with auto-pay")
 
-            // Tap sources and add their mana to the pool
-            for (source in solution.sources) {
-                currentState = currentState.updateEntity(source.entityId) { c ->
-                    c.with(TappedComponent)
+                for (source in solution.sources) {
+                    currentState = currentState.updateEntity(source.entityId) { c ->
+                        c.with(TappedComponent)
+                    }
+                    events.add(TappedEvent(source.entityId, source.name))
                 }
-                events.add(TappedEvent(source.entityId, source.name))
-            }
+                for ((_, production) in solution.manaProduced) {
+                    currentPool = if (production.color != null) {
+                        currentPool.add(production.color, production.amount)
+                    } else {
+                        currentPool.addColorless(production.colorless)
+                    }
+                }
+            } else {
+                val sourceMap = continuation.availableSources.associateBy { it.entityId }
+                for (sourceId in response.selectedSources) {
+                    val source = sourceMap[sourceId]
+                        ?: return ExecutionResult.error(state, "Selected source $sourceId is not a valid mana source")
 
-            for ((_, production) in solution.manaProduced) {
-                currentPool = if (production.color != null) {
-                    currentPool.add(production.color)
-                } else {
-                    currentPool.addColorless(production.colorless)
+                    currentState = currentState.updateEntity(sourceId) { c ->
+                        c.with(TappedComponent)
+                    }
+                    events.add(TappedEvent(sourceId, source.name))
+
+                    if (source.producesColors.isNotEmpty()) {
+                        currentPool = currentPool.add(source.producesColors.first())
+                    } else if (source.producesColorless) {
+                        currentPool = currentPool.addColorless(1)
+                    }
                 }
             }
         }
 
-        // Deduct the cost from the pool
         val newPool = currentPool.pay(continuation.manaCost)
-            ?: return ExecutionResult.error(state, "Cannot pay mana cost after auto-tap")
+            ?: return ExecutionResult.error(state, "Cannot pay mana cost after tapping sources")
 
         currentState = currentState.updateEntity(playerId) { container ->
             container.with(
                 ManaPoolComponent(
-                    white = newPool.white,
-                    blue = newPool.blue,
-                    black = newPool.black,
-                    red = newPool.red,
-                    green = newPool.green,
-                    colorless = newPool.colorless
+                    white = newPool.white, blue = newPool.blue, black = newPool.black,
+                    red = newPool.red, green = newPool.green, colorless = newPool.colorless
                 )
             )
         }
 
         // Execute the inner effect
-        val context = continuation.effectContext
-        val effectResult = services.effectExecutorRegistry.execute(currentState, continuation.effect, context)
-
-        if (effectResult.error != null) {
-            return effectResult
-        }
+        val effectResult = services.effectExecutorRegistry.execute(currentState, continuation.effect, continuation.effectContext)
+        if (effectResult.error != null) return effectResult
 
         val allEvents = events + effectResult.events
         return checkForMore(effectResult.state, allEvents)

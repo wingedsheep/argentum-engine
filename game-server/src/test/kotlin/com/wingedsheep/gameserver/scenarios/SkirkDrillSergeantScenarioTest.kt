@@ -31,6 +31,7 @@ class SkirkDrillSergeantScenarioTest : ScenarioTestBase() {
                 // Skirk Drill Sergeant triggers — "you may pay {2}{R}"
                 game.hasPendingDecision() shouldBe true
                 game.answerYesNo(true)
+                game.submitManaSourcesAutoPay()
 
                 // Resolve the triggered ability
                 game.resolveStack()
@@ -58,6 +59,7 @@ class SkirkDrillSergeantScenarioTest : ScenarioTestBase() {
                 game.resolveStack()
 
                 game.answerYesNo(true)
+                game.submitManaSourcesAutoPay()
                 game.resolveStack()
 
                 // Glory Seeker is not a Goblin, should go to graveyard not battlefield
@@ -113,6 +115,7 @@ class SkirkDrillSergeantScenarioTest : ScenarioTestBase() {
                 // Self-death trigger fires — "you may pay {2}{R}"
                 game.hasPendingDecision() shouldBe true
                 game.answerYesNo(true)
+                game.submitManaSourcesAutoPay()
                 game.resolveStack()
 
                 // Goblin Goon should be on the battlefield

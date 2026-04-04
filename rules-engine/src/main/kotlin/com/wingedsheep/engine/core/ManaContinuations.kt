@@ -61,6 +61,30 @@ data class MayPayManaContinuation(
 ) : ContinuationFrame
 
 /**
+ * Resume after the controller selects mana sources to pay a "you may pay" cost
+ * for a non-targeted triggered ability. After payment, the inner effect is executed.
+ *
+ * @property playerId The player paying
+ * @property sourceName Name of the source for display
+ * @property manaCost The mana cost to pay
+ * @property effect The effect to execute after payment
+ * @property effectContext The context for effect execution
+ * @property availableSources Available mana sources the player can choose from
+ * @property autoPaySuggestion Pre-computed auto-tap suggestion
+ */
+@Serializable
+data class MayPayManaSelectionContinuation(
+    override val decisionId: String,
+    val playerId: EntityId,
+    val sourceName: String?,
+    val manaCost: ManaCost,
+    val effect: Effect,
+    val effectContext: EffectContext,
+    val availableSources: List<ManaSourceOption>,
+    val autoPaySuggestion: List<EntityId>
+) : ContinuationFrame
+
+/**
  * Resume after the controller chooses an X value for "you may pay {X}" effects.
  * The player selects a number (0 to max affordable), and if > 0, we pay that mana
  * and execute the inner effect with the chosen X value.

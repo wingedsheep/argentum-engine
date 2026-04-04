@@ -54,6 +54,7 @@ class KheruLichLordScenarioTest : ScenarioTestBase() {
 
                 // Player decides to pay {2}{B}
                 game.answerYesNo(true)
+                game.submitManaSourcesAutoPay()
 
                 withClue("Hill Giant should be on the battlefield") {
                     game.isOnBattlefield("Hill Giant") shouldBe true
@@ -105,6 +106,7 @@ class KheruLichLordScenarioTest : ScenarioTestBase() {
                 game.passUntilPhase(Phase.BEGINNING, Step.UPKEEP)
                 game.resolveStack()
                 game.answerYesNo(true)
+                game.submitManaSourcesAutoPay()
 
                 withClue("Hill Giant should be on the battlefield") {
                     game.isOnBattlefield("Hill Giant") shouldBe true
@@ -141,6 +143,7 @@ class KheruLichLordScenarioTest : ScenarioTestBase() {
 
                 // Player pays {2}{B} even though there are no creatures in graveyard
                 game.answerYesNo(true)
+                game.submitManaSourcesAutoPay()
 
                 withClue("Only Kheru Lich Lord should be on the battlefield") {
                     game.isOnBattlefield("Kheru Lich Lord") shouldBe true
