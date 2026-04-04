@@ -35,6 +35,7 @@ class BloomburrowAdvisorModule : CardAdvisorModule {
         registry.register(GiftBounceAdvisor)
         registry.register(GiftValueAdvisor)
         registry.register(GraveyardRetrievalAdvisor)
+        registry.register(BiteSpellAdvisor)
         registry.register(FlashCreatureAdvisor)
     }
 }
@@ -135,7 +136,6 @@ object CombatTrickAdvisor : CardAdvisor {
         "Might of the Meek",
         "Rabbit Response",
         "Valley Rally",
-        "Rabid Gnaw",
         // Flash aura (combat trick)
         "Feather of Flight",
     )
@@ -183,7 +183,6 @@ object InstantRemovalAdvisor : CardAdvisor {
         "Take Out the Trash",
         "Early Winter",
         "Conduct Electricity",
-        "Polliwallop",
     )
 
     override fun evaluateCast(context: CastContext): Double? {
@@ -598,5 +597,79 @@ object FlashCreatureAdvisor : CardAdvisor {
         }
 
         return null
+    }
+}
+
+// ═════════════════════════════════════════════════════════════════════════════
+// Bite / Fight spells — joint target simulation
+// ═════════════════════════════════════════════════════════════════════════════
+
+/**
+ * Bite and fight spells — cards where your creature deals damage to (or fights)
+ * an opponent's creature. The two targets are coupled — damage depends on the
+ * attacking creature's power — but the generic AI picks each target independently.
+ *
+ * This advisor does joint simulation: try combinations of (my creature, their creature)
+ * and pick the pair that produces the best board state. This lets the AI understand
+ * that pumping the 4/4 to deal 5 damage kills the opponent's 5/5, or that the 6/6
+ * should fight the 5/5 rather than the 1/1.
+ *
+ * Covers: Rabid Gnaw (bite + pump), Polliwallop (bite × 2), Longstalk Brawl (fight),
+ * Hunter's Talent (bite on ETB).
+ */
+object BiteSpellAdvisor : CardAdvisor {
+    override val cardNames = setOf(
+        "Rabid Gnaw",
+        "Polliwallop",
+        "Longstalk Brawl",
+        "Hunter's Talent",
+    )
+
+    override fun respondToDecision(context: AdvisorDecisionContext): DecisionResponse? {
+        // Handle gift mode choice for Longstalk Brawl
+        if (context.decision is ChooseModeDecision) {
+            return pickBestGiftMode(context, context.decision)
+        }
+
+        val decision = context.decision as? ChooseTargetsDecision ?: return null
+        if (decision.targetRequirements.size != 2) return null
+
+        val req0 = decision.targetRequirements[0]
+        val req1 = decision.targetRequirements[1]
+        val myCreatures = decision.legalTargets[req0.index] ?: return null
+        val theirCreatures = decision.legalTargets[req1.index] ?: return null
+
+        if (myCreatures.isEmpty() || theirCreatures.isEmpty()) return null
+
+        // Cap combinations to avoid explosion (6 * 6 = 36 simulations max)
+        val myCandidates = myCreatures.take(6)
+        val theirCandidates = theirCreatures.take(6)
+
+        var bestScore = Double.NEGATIVE_INFINITY
+        var bestMine: EntityId = myCandidates.first()
+        var bestTheirs: EntityId = theirCandidates.first()
+
+        for (mine in myCandidates) {
+            for (theirs in theirCandidates) {
+                val response = TargetsResponse(
+                    decision.id,
+                    mapOf(req0.index to listOf(mine), req1.index to listOf(theirs))
+                )
+                val result = context.simulator.simulateDecision(context.state, response)
+                val score = context.evaluator.evaluate(
+                    result.state, result.state.projectedState, context.playerId
+                )
+                if (score > bestScore) {
+                    bestScore = score
+                    bestMine = mine
+                    bestTheirs = theirs
+                }
+            }
+        }
+
+        return TargetsResponse(
+            decision.id,
+            mapOf(req0.index to listOf(bestMine), req1.index to listOf(bestTheirs))
+        )
     }
 }
