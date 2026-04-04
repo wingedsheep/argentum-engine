@@ -268,8 +268,12 @@ private fun playAdvisorGame(
                     if (r.error != null) {
                         recentActions.addLast("  ERROR: ${r.error}")
                         // Try safe fallback depending on step
+                        val blockersAlreadyDeclared = state.getEntity(prioId)
+                            ?.has<com.wingedsheep.engine.state.components.combat.BlockersDeclaredThisCombatComponent>() == true
+                        val attackersAlreadyDeclared = state.getEntity(prioId)
+                            ?.has<com.wingedsheep.engine.state.components.combat.AttackersDeclaredThisCombatComponent>() == true
                         val fallbackAction: GameAction = when {
-                            state.step == Step.DECLARE_BLOCKERS && state.activePlayerId != prioId -> {
+                            state.step == Step.DECLARE_BLOCKERS && state.activePlayerId != prioId && !blockersAlreadyDeclared -> {
                                 val sim = GameSimulator(registry)
                                 val la = sim.getLegalActions(state, prioId).find { it.actionType == "DeclareBlockers" }
                                 val mandatory = la?.mandatoryBlockerAssignments ?: emptyMap()
@@ -277,7 +281,7 @@ private fun playAdvisorGame(
                                     if (targets.isNotEmpty()) listOf(targets.first()) else emptyList()
                                 })
                             }
-                            state.step == Step.DECLARE_ATTACKERS && state.activePlayerId == prioId -> {
+                            state.step == Step.DECLARE_ATTACKERS && state.activePlayerId == prioId && !attackersAlreadyDeclared -> {
                                 val sim = GameSimulator(registry)
                                 val la = sim.getLegalActions(state, prioId).find { it.actionType == "DeclareAttackers" }
                                 val mandatory = la?.mandatoryAttackers ?: emptyList()
