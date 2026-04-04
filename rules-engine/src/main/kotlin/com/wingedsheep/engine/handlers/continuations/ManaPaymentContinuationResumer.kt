@@ -332,6 +332,7 @@ class ManaPaymentContinuationResumer(
 
             val effectResult = services.effectExecutorRegistry.execute(currentState, continuation.effect, continuation.effectContext)
             if (effectResult.error != null) return effectResult
+            if (effectResult.isPaused) return effectResult
             return checkForMore(effectResult.state, effectResult.events)
         }
 
@@ -485,6 +486,7 @@ class ManaPaymentContinuationResumer(
         // Execute the inner effect
         val effectResult = services.effectExecutorRegistry.execute(currentState, continuation.effect, continuation.effectContext)
         if (effectResult.error != null) return effectResult
+        if (effectResult.isPaused) return effectResult
 
         val allEvents = events + effectResult.events
         return checkForMore(effectResult.state, allEvents)
@@ -666,6 +668,7 @@ class ManaPaymentContinuationResumer(
         if (effectResult.error != null) {
             return effectResult
         }
+        if (effectResult.isPaused) return effectResult
 
         val allEvents = events + effectResult.events
         return checkForMore(effectResult.state, allEvents)
