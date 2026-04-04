@@ -131,6 +131,23 @@ data class ChooseCreatureTypeEntersContinuation(
 ) : ContinuationFrame
 
 /**
+ * Resume after player chooses a color for a land with "as enters, choose a color".
+ *
+ * Unlike [ChooseColorEntersContinuation] (used for spells), this is used for lands
+ * that are played directly to the battlefield. The land is already on the battlefield when
+ * this continuation fires — it just needs the ChosenColorComponent stored.
+ *
+ * @property landId The land entity already on the battlefield
+ * @property controllerId The player who played the land
+ */
+@Serializable
+data class ChooseColorLandEntersContinuation(
+    override val decisionId: String,
+    val landId: EntityId,
+    val controllerId: EntityId
+) : ContinuationFrame
+
+/**
  * Resume after player chooses a creature type for a land with "as enters, choose a creature type".
  *
  * Unlike [ChooseCreatureTypeEntersContinuation] (used for spells), this is used for lands

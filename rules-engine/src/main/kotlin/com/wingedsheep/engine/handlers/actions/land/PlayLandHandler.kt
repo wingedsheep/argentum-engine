@@ -22,6 +22,7 @@ import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.state.components.battlefield.GraveyardPlayPermissionUsedComponent
 import com.wingedsheep.sdk.core.CardType
 import com.wingedsheep.sdk.scripting.EntersTapped
+import com.wingedsheep.sdk.scripting.EntersWithColorChoice
 import com.wingedsheep.sdk.scripting.EntersWithCreatureTypeChoice
 import com.wingedsheep.sdk.scripting.MayPlayPermanentsFromGraveyard
 import com.wingedsheep.sdk.scripting.PlayFromTopOfLibrary
@@ -151,6 +152,53 @@ class PlayLandHandler(
                         c.with(TappedComponent)
                     }
                 }
+            }
+        }
+
+        // Check for "as enters, choose a color" replacement effect
+        if (cardDef != null) {
+            val entersWithColorChoice = cardDef.script.replacementEffects
+                .filterIsInstance<EntersWithColorChoice>().firstOrNull()
+            if (entersWithColorChoice != null) {
+                // Use up a land drop first
+                newState = newState.updateEntity(action.playerId) { c ->
+                    val landDrops = c.get<LandDropsComponent>() ?: LandDropsComponent()
+                    c.with(landDrops.use())
+                }
+
+                val zoneChangeEvent = ZoneChangeEvent(
+                    action.cardId,
+                    cardComponent.name,
+                    fromZone,
+                    Zone.BATTLEFIELD,
+                    action.playerId
+                )
+                val events = listOf(zoneChangeEvent)
+                newState = newState.tick()
+
+                val decisionId = "choose-color-land-enters-${action.cardId.value}"
+                val decision = com.wingedsheep.engine.core.ChooseColorDecision(
+                    id = decisionId,
+                    playerId = action.playerId,
+                    prompt = "Choose a color",
+                    context = com.wingedsheep.engine.core.DecisionContext(
+                        sourceId = action.cardId,
+                        sourceName = cardComponent.name,
+                        phase = com.wingedsheep.engine.core.DecisionPhase.RESOLUTION
+                    )
+                )
+
+                val continuation = com.wingedsheep.engine.core.ChooseColorLandEntersContinuation(
+                    decisionId = decisionId,
+                    landId = action.cardId,
+                    controllerId = action.playerId
+                )
+
+                val pausedState = newState
+                    .pushContinuation(continuation)
+                    .withPendingDecision(decision)
+
+                return ExecutionResult.paused(pausedState, decision, events)
             }
         }
 

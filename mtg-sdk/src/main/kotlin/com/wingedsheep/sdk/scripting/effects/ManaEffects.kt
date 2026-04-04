@@ -132,6 +132,37 @@ data class AddDynamicManaEffect(
 }
 
 /**
+ * Add one mana of the color chosen as the permanent entered the battlefield.
+ * "{T}: Add one mana of the chosen color."
+ *
+ * At resolution, the executor reads the [ChosenColorComponent] from the source permanent
+ * and produces mana of that color. If no color was chosen (shouldn't happen in practice),
+ * no mana is produced.
+ */
+@SerialName("AddManaOfChosenColor")
+@Serializable
+data class AddManaOfChosenColorEffect(
+    val amount: DynamicAmount = DynamicAmount.Fixed(1),
+    val restriction: ManaRestriction? = null
+) : Effect {
+    constructor(amount: Int, restriction: ManaRestriction? = null) : this(DynamicAmount.Fixed(amount), restriction)
+
+    override val description: String = buildString {
+        append(when (val a = amount) {
+            is DynamicAmount.Fixed -> if (a.amount == 1) {
+                "Add one mana of the chosen color"
+            } else {
+                "Add ${a.amount} mana of the chosen color"
+            }
+            else -> "Add ${a.description} mana of the chosen color"
+        })
+        if (restriction != null) append(". ${restriction.description}")
+    }
+
+    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
+}
+
+/**
  * Add one mana of any color among permanents matching a filter that you control.
  * "{T}: Add one mana of any color among legendary creatures and planeswalkers you control."
  *

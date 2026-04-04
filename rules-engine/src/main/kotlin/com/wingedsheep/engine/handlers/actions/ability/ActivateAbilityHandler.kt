@@ -51,6 +51,7 @@ import com.wingedsheep.sdk.scripting.GrantActivatedAbilityToCreatureGroup
 import com.wingedsheep.sdk.scripting.TimingRule
 import com.wingedsheep.sdk.scripting.effects.LevelUpClassEffect
 import com.wingedsheep.sdk.scripting.effects.AddAnyColorManaEffect
+import com.wingedsheep.sdk.scripting.effects.AddManaOfChosenColorEffect
 import com.wingedsheep.sdk.scripting.effects.AddColorlessManaEffect
 import com.wingedsheep.sdk.scripting.effects.AddManaEffect
 import com.wingedsheep.sdk.scripting.effects.AddManaOfColorAmongEffect
@@ -627,6 +628,26 @@ class ActivateAbilityHandler(
                         green = if (chosenColor == Color.GREEN) amount else 0,
                         colorless = 0
                     )
+                }
+                is AddManaOfChosenColorEffect -> {
+                    val chosenColor = state.getEntity(action.sourceId)
+                        ?.get<com.wingedsheep.engine.state.components.identity.ChosenColorComponent>()?.color
+                    if (chosenColor != null) {
+                        val amount = dynamicAmountEvaluator.evaluate(state, effect.amount, context)
+                        ManaAddedEvent(
+                            playerId = action.playerId,
+                            sourceId = action.sourceId,
+                            sourceName = cardComponent.name,
+                            white = if (chosenColor == Color.WHITE) amount else 0,
+                            blue = if (chosenColor == Color.BLUE) amount else 0,
+                            black = if (chosenColor == Color.BLACK) amount else 0,
+                            red = if (chosenColor == Color.RED) amount else 0,
+                            green = if (chosenColor == Color.GREEN) amount else 0,
+                            colorless = 0
+                        )
+                    } else {
+                        null
+                    }
                 }
                 is AddManaOfColorAmongEffect -> {
                     // Determine what color was actually added by comparing mana pools

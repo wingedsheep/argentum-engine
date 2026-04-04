@@ -22,10 +22,9 @@ val UnchartedHaven = card("Uncharted Haven") {
     replacementEffect(EntersWithColorChoice())
 
     // {T}: Add one mana of the chosen color
-    // Modeled as AddAnyColorMana — the player picks the color when tapping
     activatedAbility {
         cost = Costs.Tap
-        effect = Effects.AddAnyColorMana(1)
+        effect = Effects.AddManaOfChosenColor()
         manaAbility = true
     }
 

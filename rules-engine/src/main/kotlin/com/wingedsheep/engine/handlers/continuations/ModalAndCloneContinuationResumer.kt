@@ -22,6 +22,7 @@ class ModalAndCloneContinuationResumer(
         resumer(CloneEntersContinuation::class, ::resumeCloneEnters),
         resumer(ChooseColorEntersContinuation::class, ::resumeChooseColorEnters),
         resumer(ChooseCreatureTypeEntersContinuation::class, ::resumeChooseCreatureTypeEnters),
+        resumer(ChooseColorLandEntersContinuation::class, ::resumeChooseColorLandEnters),
         resumer(ChooseCreatureTypeLandEntersContinuation::class, ::resumeChooseCreatureTypeLandEnters),
         resumer(ChooseCreatureEntersContinuation::class, ::resumeChooseCreatureEnters),
         resumer(AmplifyEntersContinuation::class, ::resumeAmplifyEnters),
@@ -464,6 +465,68 @@ class ModalAndCloneContinuationResumer(
         )
 
         return checkForMore(newState, events)
+    }
+
+    /**
+     * Resume after player chooses a color for a land with "as enters, choose a color"
+     * (e.g., Uncharted Haven). The land is already on the battlefield — just store the chosen color.
+     */
+    fun resumeChooseColorLandEnters(
+        state: GameState,
+        continuation: ChooseColorLandEntersContinuation,
+        response: DecisionResponse,
+        checkForMore: CheckForMore
+    ): ExecutionResult {
+        if (response !is ColorChosenResponse) {
+            return ExecutionResult.error(state, "Expected color choice response for land color enters effect")
+        }
+
+        var newState = state.updateEntity(continuation.landId) { c ->
+            c.with(com.wingedsheep.engine.state.components.identity.ChosenColorComponent(response.color))
+        }
+
+        // Check if the land also needs a creature type choice
+        val landContainer = newState.getEntity(continuation.landId)
+        val cardComponent = landContainer?.get<CardComponent>()
+        val cardDef = cardComponent?.let { services.cardRegistry.getCard(it.cardDefinitionId) }
+        val entersWithCreatureTypeChoice = cardDef?.script?.replacementEffects
+            ?.filterIsInstance<com.wingedsheep.sdk.scripting.EntersWithCreatureTypeChoice>()?.firstOrNull()
+
+        if (entersWithCreatureTypeChoice != null) {
+            val allCreatureTypes = com.wingedsheep.sdk.core.Subtype.ALL_CREATURE_TYPES
+            val chooserId = if (entersWithCreatureTypeChoice.opponentChooses) {
+                newState.turnOrder.firstOrNull { it != continuation.controllerId } ?: continuation.controllerId
+            } else {
+                continuation.controllerId
+            }
+            val decisionId = "choose-creature-type-land-enters-${continuation.landId.value}"
+            val decision = ChooseOptionDecision(
+                id = decisionId,
+                playerId = chooserId,
+                prompt = "Choose a creature type",
+                context = DecisionContext(
+                    sourceId = continuation.landId,
+                    sourceName = cardComponent.name,
+                    phase = DecisionPhase.RESOLUTION
+                ),
+                options = allCreatureTypes,
+                defaultSearch = ""
+            )
+
+            val creatureTypeContinuation = ChooseCreatureTypeLandEntersContinuation(
+                decisionId = decisionId,
+                landId = continuation.landId,
+                controllerId = continuation.controllerId,
+                creatureTypes = allCreatureTypes
+            )
+
+            val pausedState = newState
+                .pushContinuation(creatureTypeContinuation)
+                .withPendingDecision(decision)
+            return ExecutionResult.paused(pausedState, decision)
+        }
+
+        return checkForMore(newState, emptyList())
     }
 
     /**

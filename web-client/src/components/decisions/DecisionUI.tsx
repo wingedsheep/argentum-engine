@@ -156,12 +156,9 @@ export function DecisionUI() {
   }
 
   // Handle ChooseColorDecision (e.g., "Choose a color for protection")
+  // Rendered as a floating bottom panel so the battlefield stays visible
   if (pendingDecision.type === 'ChooseColorDecision') {
-    return (
-      <div className={styles.overlay}>
-        <ChooseColorDecisionUI decision={pendingDecision} />
-      </div>
-    )
+    return <ChooseColorDecisionUI decision={pendingDecision} />
   }
 
   // Handle SelectCardsDecision

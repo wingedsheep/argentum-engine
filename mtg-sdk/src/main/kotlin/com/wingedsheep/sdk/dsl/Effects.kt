@@ -11,6 +11,7 @@ import com.wingedsheep.sdk.scripting.*
 import com.wingedsheep.sdk.scripting.effects.AddAnyColorManaEffect
 import com.wingedsheep.sdk.scripting.effects.AddColorlessManaEffect
 import com.wingedsheep.sdk.scripting.effects.AddDynamicManaEffect
+import com.wingedsheep.sdk.scripting.effects.AddManaOfChosenColorEffect
 import com.wingedsheep.sdk.scripting.effects.AddManaOfColorAmongEffect
 import com.wingedsheep.sdk.scripting.effects.ManaRestriction
 import com.wingedsheep.sdk.scripting.effects.AddCardTypeEffect
@@ -701,6 +702,13 @@ object Effects {
      */
     fun AddDynamicMana(amount: DynamicAmount, allowedColors: Set<Color>, restriction: ManaRestriction? = null): Effect =
         AddDynamicManaEffect(amount, allowedColors, restriction)
+
+    /**
+     * Add one mana of the color chosen when this permanent entered the battlefield.
+     * Used for cards like Uncharted Haven.
+     */
+    fun AddManaOfChosenColor(amount: Int = 1, restriction: ManaRestriction? = null): Effect =
+        AddManaOfChosenColorEffect(amount, restriction)
 
     /**
      * Add one mana of any color among permanents matching a filter that you control.
