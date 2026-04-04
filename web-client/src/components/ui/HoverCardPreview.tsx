@@ -14,6 +14,8 @@ export interface HoverCardPreviewProps {
   rulings?: readonly { date: string; text: string }[] | undefined
   /** Extra content rendered below the card image (e.g., stats breakdown, keywords) */
   children?: ReactNode
+  /** Content rendered as an overlay on top of the card image */
+  overlay?: ReactNode
   /** Estimated extra height from children, used for vertical positioning (default 0) */
   extraHeight?: number
 }
@@ -22,7 +24,7 @@ export interface HoverCardPreviewProps {
  * Shared card hover preview — positions a large card image near the cursor.
  * Used by the game board, deck builder, and all draft overlays.
  */
-export function HoverCardPreview({ name, imageUri, imageSize = 'large', pos, rulings, children, extraHeight = 0 }: HoverCardPreviewProps) {
+export function HoverCardPreview({ name, imageUri, imageSize = 'large', pos, rulings, children, overlay, extraHeight = 0 }: HoverCardPreviewProps) {
   const [showRulings, setShowRulings] = useState(false)
   const [lastCardName, setLastCardName] = useState<string | null>(null)
 
@@ -92,6 +94,7 @@ export function HoverCardPreview({ name, imageUri, imageSize = 'large', pos, rul
     >
       <div
         style={{
+          position: 'relative',
           width: previewWidth,
           height: previewHeight,
           borderRadius: 12,
@@ -104,6 +107,7 @@ export function HoverCardPreview({ name, imageUri, imageSize = 'large', pos, rul
           alt={name}
           style={{ width: '100%', height: '100%', objectFit: 'cover' }}
         />
+        {overlay}
       </div>
 
       {children}

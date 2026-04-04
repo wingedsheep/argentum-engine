@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
 import { useGameStore } from '@/store/gameStore.ts'
-import { selectGameState, useCardLegalActions } from '@/store/selectors.ts'
+import { selectGameState, selectViewingPlayerId, useCardLegalActions } from '@/store/selectors.ts'
+import { ZoneType, zoneIdEquals } from '@/types'
 import { getCardImageUrl } from '@/utils/cardImages.ts'
 import { useResponsiveContext, handleImageError, getCounterStatModifier, hasStatCounters, getTokenFrameGradient, getTokenFrameTextColor, getPTColor } from '../board/shared'
 import { styles } from '../board/styles'
@@ -16,13 +17,23 @@ export function CardPreview() {
   const hoveredCardId = useGameStore((state) => state.hoveredCardId)
   const hoverPosition = useGameStore((state) => state.hoverPosition)
   const gameState = useGameStore(selectGameState)
+  const playerId = useGameStore(selectViewingPlayerId)
   const responsive = useResponsiveContext()
 
   // All hooks must be called before any early return
   const cardActions = useCardLegalActions(hoveredCardId)
   const card = hoveredCardId && gameState ? gameState.cards[hoveredCardId] ?? null : null
+
+  // Check if hovered card is in the player's hand
+  const isInHand = useMemo(() => {
+    if (!hoveredCardId || !gameState || !playerId) return false
+    const handZoneId = { zoneType: ZoneType.HAND, ownerId: playerId }
+    const handZone = gameState.zones.find((z) => zoneIdEquals(z.zoneId, handZoneId))
+    return handZone?.cardIds.includes(hoveredCardId) ?? false
+  }, [hoveredCardId, gameState, playerId])
+
   const manaCostInfo = useMemo(() => {
-    if (!card?.manaCost) return null
+    if (!isInHand || !card?.manaCost) return null
     const castAction = cardActions.find((a) =>
       a.action.type === 'CastSpell' && a.actionType !== 'CastFaceDown' && a.actionType !== 'CastWithKicker' && a.actionType !== 'CastSpellMode'
     )
@@ -47,7 +58,7 @@ export function CardPreview() {
       isReduced: effectiveMV < baseMV,
       isIncreased: effectiveMV > baseMV,
     }
-  }, [cardActions, card?.manaCost])
+  }, [isInHand, cardActions, card?.manaCost])
 
   if (!card) return null
 
@@ -78,9 +89,37 @@ export function CardPreview() {
   // Estimate extra height for positioning
   let extraHeight = 0
   const GAP = 8
-  if (manaCostInfo) extraHeight += 36 + GAP
+  // manaCostInfo overlay is on the image itself, no extra height needed
   if (hasStatModifications) extraHeight += 80 + GAP
   if (card.keywords.length > 0 || (card.abilityFlags && card.abilityFlags.length > 0)) extraHeight += 40 + GAP
+
+  // Mana cost overlay badge for the card image (only for hand cards)
+  const manaCostOverlay = manaCostInfo ? (
+    <div style={{
+      position: 'absolute',
+      top: 8,
+      right: 8,
+      backgroundColor: manaCostInfo.effectiveCost
+        ? 'rgba(0, 0, 0, 0.85)'
+        : 'rgba(0, 0, 0, 0.7)',
+      padding: '3px 6px',
+      borderRadius: 6,
+      border: `1px solid ${
+        manaCostInfo.isReduced ? 'rgba(0, 200, 80, 0.5)'
+        : manaCostInfo.isIncreased ? 'rgba(255, 68, 68, 0.5)'
+        : 'rgba(255, 255, 255, 0.3)'
+      }`,
+      boxShadow: manaCostInfo.isReduced ? '0 0 8px rgba(0, 200, 80, 0.3)'
+        : manaCostInfo.isIncreased ? '0 0 8px rgba(255, 68, 68, 0.3)'
+        : 'none',
+      display: 'flex',
+      alignItems: 'center',
+      gap: 2,
+      zIndex: 5,
+    }}>
+      <ManaCost cost={manaCostInfo.effectiveCost ?? manaCostInfo.baseCost} size={18} gap={2} />
+    </div>
+  ) : null
 
   return (
     <HoverCardPreview
@@ -89,49 +128,8 @@ export function CardPreview() {
       pos={hoverPosition}
       rulings={card.rulings}
       extraHeight={extraHeight}
+      overlay={manaCostOverlay}
     >
-      {/* Mana cost panel — always shown, with modification indicator when cost changes */}
-      {manaCostInfo && (
-        <div style={{
-          ...styles.cardPreviewStatsBox,
-          display: 'flex',
-          flexDirection: 'row',
-          alignItems: 'center',
-          gap: 8,
-          padding: '6px 12px',
-        }}>
-          {manaCostInfo.effectiveCost ? (
-            <>
-              <span style={{
-                color: '#888',
-                fontSize: 12,
-                textDecoration: 'line-through',
-                display: 'flex',
-                alignItems: 'center',
-              }}>
-                <ManaCost cost={manaCostInfo.baseCost} size={14} gap={1} />
-              </span>
-              <span style={{ color: '#888', fontSize: 14 }}>&rarr;</span>
-              <span style={{
-                display: 'flex',
-                alignItems: 'center',
-                filter: manaCostInfo.isReduced
-                  ? 'drop-shadow(0 0 3px rgba(0, 200, 80, 0.5))'
-                  : manaCostInfo.isIncreased
-                    ? 'drop-shadow(0 0 3px rgba(255, 68, 68, 0.5))'
-                    : 'none',
-              }}>
-                <ManaCost cost={manaCostInfo.effectiveCost} size={16} gap={1} />
-              </span>
-            </>
-          ) : (
-            <span style={{ display: 'flex', alignItems: 'center' }}>
-              <ManaCost cost={manaCostInfo.baseCost} size={16} gap={1} />
-            </span>
-          )}
-        </div>
-      )}
-
       {/* Stats box (for creatures with modifications) */}
       {card.power !== null && card.toughness !== null && hasStatModifications && (
         <div style={styles.cardPreviewStatsBox}>
