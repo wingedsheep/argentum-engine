@@ -30,7 +30,9 @@ data class TriggerContext(
     val step: Step? = null,
     val xValue: Int? = null,
     /** Last known +1/+1 counter count when the source left the battlefield */
-    val counterCount: Int? = null
+    val counterCount: Int? = null,
+    /** The spell or ability entity that targeted a permanent (for ward triggers) */
+    val targetingSourceEntityId: EntityId? = null
 ) {
     companion object {
         fun fromEvent(event: com.wingedsheep.engine.core.GameEvent): TriggerContext {
@@ -79,7 +81,8 @@ data class TriggerContext(
                     triggeringPlayerId = event.newControllerId
                 )
                 is BecomesTargetEvent -> TriggerContext(
-                    triggeringEntityId = event.targetEntityId
+                    triggeringEntityId = event.targetEntityId,
+                    targetingSourceEntityId = event.sourceEntityId
                 )
                 is AbilityActivatedEvent -> TriggerContext(
                     triggeringEntityId = event.abilityEntityId,

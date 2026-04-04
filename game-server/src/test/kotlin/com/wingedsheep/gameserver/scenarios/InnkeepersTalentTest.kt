@@ -106,6 +106,133 @@ class InnkeepersTalentTest : ScenarioTestBase() {
             }
         }
 
+        context("Innkeeper's Talent Level 2 — ward enforcement") {
+            test("ward counters spell when opponent can't pay") {
+                val game = scenario()
+                    .withPlayers("Player", "Opponent")
+                    .withCardOnBattlefield(1, "Innkeeper's Talent", classLevel = 2)
+                    .withCardOnBattlefield(1, "Hired Claw", summoningSickness = false)
+                    .withCardInHand(2, "Carbonize")
+                    .withLandsOnBattlefield(2, "Mountain", 3) // Exactly enough for Carbonize, nothing left for ward
+                    .withCardInLibrary(1, "Forest")
+                    .withCardInLibrary(2, "Mountain")
+                    .withActivePlayer(2)
+                    .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                    .build()
+
+                // Manually add a +1/+1 counter to Hired Claw so ward is active
+                val hiredClawId = game.findPermanent("Hired Claw")!!
+                game.state = game.state.updateEntity(hiredClawId) { c ->
+                    val counters = CountersComponent().withAdded(CounterType.PLUS_ONE_PLUS_ONE, 1)
+                    c.with(counters)
+                }
+
+                // Verify ward is active
+                game.state.projectedState.hasKeyword(hiredClawId, Keyword.WARD) shouldBe true
+
+                // Opponent casts Carbonize targeting Hired Claw (taps all 3 Mountains)
+                val castResult = game.castSpell(2, "Carbonize", hiredClawId)
+                withClue("Should cast Carbonize: ${castResult.error}") {
+                    castResult.error shouldBe null
+                }
+
+                // Ward trigger goes on the stack; resolve it.
+                // Opponent can't pay {1} (no untapped lands), so ward auto-counters Carbonize.
+                game.resolveStack()
+
+                // Carbonize was countered — Hired Claw should still be on battlefield
+                withClue("Hired Claw should still be on the battlefield (Carbonize was countered by ward)") {
+                    game.findPermanent("Hired Claw") shouldNotBe null
+                }
+            }
+
+            test("ward counters spell when opponent chooses not to pay") {
+                val game = scenario()
+                    .withPlayers("Player", "Opponent")
+                    .withCardOnBattlefield(1, "Innkeeper's Talent", classLevel = 2)
+                    .withCardOnBattlefield(1, "Hired Claw", summoningSickness = false)
+                    .withCardInHand(2, "Carbonize")
+                    .withLandsOnBattlefield(2, "Mountain", 4) // 3 for Carbonize + 1 for ward, but opponent declines
+                    .withCardInLibrary(1, "Forest")
+                    .withCardInLibrary(2, "Mountain")
+                    .withActivePlayer(2)
+                    .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                    .build()
+
+                // Manually add a +1/+1 counter to Hired Claw so ward is active
+                val hiredClawId = game.findPermanent("Hired Claw")!!
+                game.state = game.state.updateEntity(hiredClawId) { c ->
+                    val counters = CountersComponent().withAdded(CounterType.PLUS_ONE_PLUS_ONE, 1)
+                    c.with(counters)
+                }
+
+                // Opponent casts Carbonize targeting Hired Claw
+                val castResult = game.castSpell(2, "Carbonize", hiredClawId)
+                withClue("Should cast Carbonize: ${castResult.error}") {
+                    castResult.error shouldBe null
+                }
+
+                // Ward trigger resolves → "pay {1}?" decision
+                game.resolveStack()
+                withClue("Should have a pending decision for ward payment") {
+                    game.state.pendingDecision shouldNotBe null
+                }
+
+                // Opponent chooses not to pay
+                game.answerYesNo(false)
+
+                // Carbonize should have been countered
+                game.resolveStack()
+
+                withClue("Hired Claw should still be on the battlefield (Carbonize was countered by ward)") {
+                    game.findPermanent("Hired Claw") shouldNotBe null
+                }
+            }
+
+            test("ward allows spell when opponent pays") {
+                val game = scenario()
+                    .withPlayers("Player", "Opponent")
+                    .withCardOnBattlefield(1, "Innkeeper's Talent", classLevel = 2)
+                    .withCardOnBattlefield(1, "Hired Claw", summoningSickness = false)
+                    .withCardInHand(2, "Carbonize")
+                    .withLandsOnBattlefield(2, "Mountain", 4) // 4 mountains: 3 for Carbonize + 1 for ward
+                    .withCardInLibrary(1, "Forest")
+                    .withCardInLibrary(2, "Mountain")
+                    .withActivePlayer(2)
+                    .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                    .build()
+
+                // Manually add a +1/+1 counter to Hired Claw so ward is active
+                val hiredClawId = game.findPermanent("Hired Claw")!!
+                game.state = game.state.updateEntity(hiredClawId) { c ->
+                    val counters = CountersComponent().withAdded(CounterType.PLUS_ONE_PLUS_ONE, 1)
+                    c.with(counters)
+                }
+
+                // Opponent casts Carbonize targeting Hired Claw
+                val castResult = game.castSpell(2, "Carbonize", hiredClawId)
+                withClue("Should cast Carbonize: ${castResult.error}") {
+                    castResult.error shouldBe null
+                }
+
+                // Ward trigger resolves → "pay {1}?" decision
+                game.resolveStack()
+                withClue("Should have a pending decision for ward payment") {
+                    game.state.pendingDecision shouldNotBe null
+                }
+
+                // Opponent pays {1}
+                game.answerYesNo(true)
+
+                // Carbonize resolves — Hired Claw takes 3 damage and should die
+                game.resolveStack()
+
+                withClue("Hired Claw should have been destroyed by Carbonize (opponent paid ward)") {
+                    game.findPermanent("Hired Claw") shouldBe null
+                }
+            }
+        }
+
         context("Innkeeper's Talent Level 3 — double counter placement") {
             test("doubling counter placement at level 3") {
                 val game = scenario()

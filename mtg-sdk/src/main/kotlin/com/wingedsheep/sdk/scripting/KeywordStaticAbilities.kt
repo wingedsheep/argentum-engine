@@ -62,6 +62,26 @@ data class GrantKeywordToCreatureGroup(
 }
 
 /**
+ * Grants ward with a mana cost to permanents matching a filter.
+ * Unlike GrantKeywordToCreatureGroup (which only grants the keyword flag), this also
+ * generates a ward triggered ability so ward is mechanically enforced.
+ *
+ * Example: Innkeeper's Talent Level 2 — "Permanents you control with counters on them have ward {1}."
+ */
+@SerialName("GrantWardToGroup")
+@Serializable
+data class GrantWardToGroup(
+    val manaCost: String,
+    val filter: GroupFilter
+) : StaticAbility {
+    override val description: String = "${filter.description} have ward $manaCost"
+    override fun applyTextReplacement(replacer: TextReplacer): StaticAbility {
+        val newFilter = filter.applyTextReplacement(replacer)
+        return if (newFilter !== filter) copy(filter = newFilter) else this
+    }
+}
+
+/**
  * Grants a keyword to creatures of the chosen creature type.
  * Used for "As this enters, choose a creature type. Creatures of the chosen type have [keyword]."
  * The chosen type is stored on the permanent via ChosenCreatureTypeComponent and resolved dynamically.

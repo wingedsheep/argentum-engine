@@ -43,6 +43,7 @@ data class TriggeredAbilityOnStackComponent(
     val triggeringPlayerId: EntityId? = null,
     val xValue: Int? = null,
     val triggerCounterCount: Int? = null,
+    val targetingSourceEntityId: EntityId? = null,  // The spell/ability that targeted this permanent (for ward)
     val damageDistribution: Map<EntityId, Int>? = null,  // For DividedDamageEffect - pre-chosen damage allocation
     val copyIndex: Int? = null,    // Which copy number this is (1, 2, 3...) for storm/copy effects
     val copyTotal: Int? = null     // Total number of copies being created

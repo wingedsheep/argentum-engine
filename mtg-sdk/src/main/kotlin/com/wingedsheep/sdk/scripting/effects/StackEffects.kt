@@ -163,6 +163,27 @@ data class CounterEffect(
 }
 
 // =============================================================================
+// Stack Effects — Ward
+// =============================================================================
+
+/**
+ * Counter the spell or ability that targeted this permanent unless its controller pays a mana cost.
+ * Used by ward triggered abilities. The targeting source is identified via
+ * context.targetingSourceEntityId (set by BecomesTargetEvent).
+ *
+ * Ward {1} → WardCounterEffect("{1}")
+ */
+@SerialName("WardCounter")
+@Serializable
+data class WardCounterEffect(
+    val manaCost: String
+) : Effect {
+    override val description: String = "Counter it unless its controller pays $manaCost"
+
+    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
+}
+
+// =============================================================================
 // Stack Effects — Other
 // =============================================================================
 

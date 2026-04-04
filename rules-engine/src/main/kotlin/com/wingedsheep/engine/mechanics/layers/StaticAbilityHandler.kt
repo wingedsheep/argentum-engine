@@ -62,6 +62,7 @@ import com.wingedsheep.sdk.scripting.GrantCantBeBlockedExceptBySubtype
 import com.wingedsheep.sdk.scripting.GrantCantBeBlockedToSmallCreatures
 import com.wingedsheep.sdk.scripting.GrantDynamicStatsEffect
 import com.wingedsheep.sdk.scripting.GrantKeywordToCreatureGroup
+import com.wingedsheep.sdk.scripting.GrantWardToGroup
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.scripting.predicates.CardPredicate
 import com.wingedsheep.sdk.scripting.predicates.ControllerPredicate
@@ -316,6 +317,16 @@ class StaticAbilityHandler(
                     layer = Layer.ABILITY,
                     sublayer = null,
                     modification = Modification.GrantKeyword(ability.keyword.name),
+                    affectsFilter = convertGroupFilter(ability.filter)
+                )
+            }
+            is GrantWardToGroup -> {
+                // Grant the WARD keyword for display; the triggered ability is generated
+                // by TriggerAbilityResolver.getWardTriggeredAbilities()
+                ContinuousEffectData(
+                    layer = Layer.ABILITY,
+                    sublayer = null,
+                    modification = Modification.GrantKeyword("WARD"),
                     affectsFilter = convertGroupFilter(ability.filter)
                 )
             }

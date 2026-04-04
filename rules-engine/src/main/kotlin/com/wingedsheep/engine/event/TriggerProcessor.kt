@@ -431,7 +431,8 @@ class TriggerProcessor(
             triggeringEntityId = trigger.triggerContext.triggeringEntityId,
             triggeringPlayerId = trigger.triggerContext.triggeringPlayerId,
             xValue = trigger.triggerContext.xValue,
-            triggerCounterCount = trigger.triggerContext.counterCount
+            triggerCounterCount = trigger.triggerContext.counterCount,
+            targetingSourceEntityId = trigger.triggerContext.targetingSourceEntityId
         )
 
         return stackResolver.putTriggeredAbility(

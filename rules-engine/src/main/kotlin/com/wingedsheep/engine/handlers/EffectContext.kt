@@ -43,6 +43,8 @@ data class EffectContext(
     val triggeringEntityId: EntityId? = null,
     /** The player associated with the trigger event (e.g., the player who cast a spell for SpellCastEvent) */
     val triggeringPlayerId: EntityId? = null,
+    /** The spell or ability that targeted a permanent (for ward triggers) */
+    val targetingSourceEntityId: EntityId? = null,
     // --- Choice state ---
     /** Color chosen for "add one mana of any color" abilities */
     val manaColorChoice: Color? = null,
