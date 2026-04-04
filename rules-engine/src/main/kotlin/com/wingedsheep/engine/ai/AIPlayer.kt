@@ -1,5 +1,7 @@
 package com.wingedsheep.engine.ai
 
+import com.wingedsheep.engine.ai.advisor.CardAdvisorModule
+import com.wingedsheep.engine.ai.advisor.CardAdvisorRegistry
 import com.wingedsheep.engine.ai.evaluation.*
 import com.wingedsheep.engine.core.*
 import com.wingedsheep.engine.legalactions.LegalAction
@@ -131,8 +133,18 @@ class AIPlayer(
     companion object {
         /**
          * Create an AI player with the default evaluation weights.
+         *
+         * @param advisorModules Per-set card advisor modules. Each module registers
+         *   [CardAdvisor]s that override generic AI behavior for specific cards.
          */
-        fun create(cardRegistry: CardRegistry, playerId: EntityId): AIPlayer {
+        fun create(
+            cardRegistry: CardRegistry,
+            playerId: EntityId,
+            advisorModules: List<CardAdvisorModule> = emptyList()
+        ): AIPlayer {
+            val advisorRegistry = CardAdvisorRegistry()
+            advisorModules.forEach { it.register(advisorRegistry) }
+
             val simulator = GameSimulator(cardRegistry)
             val evaluator = defaultEvaluator()
             val combatAdvisor = CombatAdvisor(simulator, evaluator, cardRegistry)
@@ -140,8 +152,8 @@ class AIPlayer(
                 playerId = playerId,
                 simulator = simulator,
                 evaluator = evaluator,
-                strategist = Strategist(simulator, evaluator, combatAdvisor = combatAdvisor),
-                responder = DecisionResponder(simulator, evaluator)
+                strategist = Strategist(simulator, evaluator, combatAdvisor = combatAdvisor, advisorRegistry = advisorRegistry),
+                responder = DecisionResponder(simulator, evaluator, advisorRegistry = advisorRegistry)
             )
         }
 

@@ -1,8 +1,13 @@
 package com.wingedsheep.engine.ai
 
+import com.wingedsheep.engine.ai.advisor.CardAdvisorRegistry
+import com.wingedsheep.engine.ai.advisor.CastContext
 import com.wingedsheep.engine.ai.evaluation.BoardEvaluator
+import com.wingedsheep.engine.core.ActivateAbility
+import com.wingedsheep.engine.core.CastSpell
 import com.wingedsheep.engine.legalactions.LegalAction
 import com.wingedsheep.engine.state.GameState
+import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.sdk.model.EntityId
 
 /**
@@ -14,12 +19,14 @@ import com.wingedsheep.sdk.model.EntityId
  *    multi-ply [Searcher] to break the tie considering opponent responses.
  *
  * Combat decisions are delegated to [CombatAdvisor].
+ * Card-specific overrides are handled by [CardAdvisorRegistry].
  */
 class Strategist(
     private val simulator: GameSimulator,
     private val evaluator: BoardEvaluator,
     private val searcher: Searcher = Searcher(simulator, evaluator),
-    private val combatAdvisor: CombatAdvisor = CombatAdvisor(simulator, evaluator)
+    private val combatAdvisor: CombatAdvisor = CombatAdvisor(simulator, evaluator),
+    private val advisorRegistry: CardAdvisorRegistry = CardAdvisorRegistry()
 ) {
     fun chooseAction(
         state: GameState,
@@ -49,7 +56,7 @@ class Strategist(
         }
 
         val scored = affordable.map { action ->
-            action to evaluate1Ply(state, action, playerId)
+            action to evaluate1Ply(state, action, playerId, passScore)
         }
 
         // ── Phase 2: Adaptive deep search on close contenders ──
@@ -111,8 +118,33 @@ class Strategist(
         return legalAction.copy(action = action)
     }
 
-    private fun evaluate1Ply(state: GameState, action: LegalAction, playerId: EntityId): Double {
+    private fun evaluate1Ply(state: GameState, action: LegalAction, playerId: EntityId, passScore: Double? = null): Double {
         val result = simulator.simulate(state, action.action)
-        return evaluator.evaluate(result.state, result.state.projectedState, playerId)
+        val defaultScore = evaluator.evaluate(result.state, result.state.projectedState, playerId)
+
+        // Check for card-specific advisor override
+        val cardName = resolveCardName(state, action) ?: return defaultScore
+        val advisor = advisorRegistry.getAdvisor(cardName) ?: return defaultScore
+        val context = CastContext(
+            state = state,
+            projected = state.projectedState,
+            playerId = playerId,
+            action = action,
+            passScore = passScore ?: evaluator.evaluate(state, state.projectedState, playerId),
+            defaultScore = defaultScore,
+            evaluator = evaluator,
+            simulator = simulator
+        )
+        return advisor.evaluateCast(context) ?: defaultScore
+    }
+
+    /** Resolve the card name from a legal action's underlying GameAction. */
+    private fun resolveCardName(state: GameState, action: LegalAction): String? {
+        val entityId = when (val gameAction = action.action) {
+            is CastSpell -> gameAction.cardId
+            is ActivateAbility -> gameAction.sourceId
+            else -> return null
+        }
+        return state.getEntity(entityId)?.get<CardComponent>()?.name
     }
 }

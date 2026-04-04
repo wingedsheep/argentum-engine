@@ -1,5 +1,7 @@
 package com.wingedsheep.engine.ai
 
+import com.wingedsheep.engine.ai.advisor.AdvisorDecisionContext
+import com.wingedsheep.engine.ai.advisor.CardAdvisorRegistry
 import com.wingedsheep.engine.ai.evaluation.BoardEvaluator
 import com.wingedsheep.engine.ai.evaluation.BoardPresence
 import com.wingedsheep.engine.core.*
@@ -17,12 +19,34 @@ import com.wingedsheep.sdk.model.EntityId
  *
  * For decisions with small branching factors (yes/no, color, mode), it
  * simulates each option. For larger spaces, it uses MTG-aware heuristics.
+ *
+ * Card-specific overrides are checked first via [CardAdvisorRegistry].
  */
 class DecisionResponder(
     private val simulator: GameSimulator,
-    private val evaluator: BoardEvaluator
+    private val evaluator: BoardEvaluator,
+    private val advisorRegistry: CardAdvisorRegistry = CardAdvisorRegistry()
 ) {
     fun respond(state: GameState, decision: PendingDecision, playerId: EntityId): DecisionResponse {
+        // Try card-specific advisor first
+        val sourceName = decision.context.sourceName
+        if (sourceName != null) {
+            val advisor = advisorRegistry.getAdvisor(sourceName)
+            if (advisor != null) {
+                val ctx = AdvisorDecisionContext(
+                    state = state,
+                    projected = state.projectedState,
+                    playerId = playerId,
+                    decision = decision,
+                    sourceCardName = sourceName,
+                    evaluator = evaluator,
+                    simulator = simulator
+                )
+                advisor.respondToDecision(ctx)?.let { return it }
+            }
+        }
+
+        // Fall through to generic logic
         return when (decision) {
             is ChooseTargetsDecision -> respondTargets(state, decision, playerId)
             is SelectCardsDecision -> respondSelectCards(state, decision, playerId)
