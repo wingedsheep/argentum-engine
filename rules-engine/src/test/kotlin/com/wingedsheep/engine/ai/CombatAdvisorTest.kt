@@ -120,14 +120,16 @@ class CombatAdvisorTest : FunSpec({
     fun buildAttackAction(
         playerId: EntityId,
         validAttackers: List<EntityId>,
-        validTargets: List<EntityId>
+        validTargets: List<EntityId>,
+        mandatoryAttackers: List<EntityId> = emptyList()
     ): LegalAction {
         return LegalAction(
             action = DeclareAttackers(playerId, emptyMap()),
             actionType = "DeclareAttackers",
             description = "Declare attackers",
             validAttackers = validAttackers,
-            validAttackTargets = validTargets
+            validAttackTargets = validTargets,
+            mandatoryAttackers = mandatoryAttackers.ifEmpty { null }
         )
     }
 
@@ -136,13 +138,15 @@ class CombatAdvisorTest : FunSpec({
      */
     fun buildBlockAction(
         playerId: EntityId,
-        validBlockers: List<EntityId>
+        validBlockers: List<EntityId>,
+        mandatoryBlockerAssignments: Map<EntityId, List<EntityId>> = emptyMap()
     ): LegalAction {
         return LegalAction(
             action = DeclareBlockers(playerId, emptyMap()),
             actionType = "DeclareBlockers",
             description = "Declare blockers",
-            validBlockers = validBlockers
+            validBlockers = validBlockers,
+            mandatoryBlockerAssignments = mandatoryBlockerAssignments.ifEmpty { null }
         )
     }
 
@@ -1399,6 +1403,230 @@ class CombatAdvisorTest : FunSpec({
         // Should block the lifelink creature — 4 effective damage prevented vs 2
         result.blockers shouldContainKey blocker
         result.blockers[blocker] shouldBe listOf(attLL)
+    }
+
+    // ═════════════════════════════════════════════════════════════════════
+    // Mandatory attackers and blockers
+    // ═════════════════════════════════════════════════════════════════════
+
+    test("mandatory attacker is always included in attack plan") {
+        // A creature with "must attack" (e.g., Berserker) must be in the attack map
+        // even if attacking is otherwise bad (opponent has bigger blocker).
+        val cards = listOf(smallCreature, bigGround)
+        val (driver, _, advisor) = setup(cards)
+        val p1 = driver.player1
+        val p2 = driver.player2
+
+        driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
+
+        val mustAttack = driver.putCreatureOnBattlefield(p1, "Eager Cadet")
+        driver.removeSummoningSickness(mustAttack)
+
+        val blocker = driver.putCreatureOnBattlefield(p2, "Hill Giant")
+        driver.removeSummoningSickness(blocker)
+
+        // 1/1 must attack into a 3/3 — would normally never attack, but it's mandatory
+        val legalAction = buildAttackAction(
+            p1, listOf(mustAttack), listOf(p2),
+            mandatoryAttackers = listOf(mustAttack)
+        )
+        val result = advisor.chooseAttackers(driver.state, legalAction, p1) as DeclareAttackers
+
+        result.attackers shouldContainKey mustAttack
+    }
+
+    test("mandatory attacker included alongside optional attackers") {
+        // One creature must attack, one is optional. The mandatory one is always present;
+        // the optional one is included based on normal evaluation.
+        val cards = listOf(smallCreature, flyingCreature, bigGround)
+        val (driver, _, advisor) = setup(cards)
+        val p1 = driver.player1
+        val p2 = driver.player2
+
+        driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
+
+        val mustAttack = driver.putCreatureOnBattlefield(p1, "Eager Cadet")
+        val optionalFlyer = driver.putCreatureOnBattlefield(p1, "Wind Drake")
+        driver.removeSummoningSickness(mustAttack)
+        driver.removeSummoningSickness(optionalFlyer)
+
+        val blocker = driver.putCreatureOnBattlefield(p2, "Hill Giant")
+        driver.removeSummoningSickness(blocker)
+
+        val legalAction = buildAttackAction(
+            p1, listOf(mustAttack, optionalFlyer), listOf(p2),
+            mandatoryAttackers = listOf(mustAttack)
+        )
+        val result = advisor.chooseAttackers(driver.state, legalAction, p1) as DeclareAttackers
+
+        // Mandatory 1/1 must attack
+        result.attackers shouldContainKey mustAttack
+        // Evasive flyer should also attack (no-downside)
+        result.attackers shouldContainKey optionalFlyer
+    }
+
+    test("all creatures attack when all are mandatory") {
+        // All creatures must attack (e.g., Taunt effect). Even if it's suicidal.
+        val cards = listOf(smallCreature, groundBlocker, bigGround)
+        val (driver, _, advisor) = setup(cards)
+        val p1 = driver.player1
+        val p2 = driver.player2
+
+        driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
+
+        val att1 = driver.putCreatureOnBattlefield(p1, "Eager Cadet")
+        val att2 = driver.putCreatureOnBattlefield(p1, "Grizzly Bears")
+        driver.removeSummoningSickness(att1)
+        driver.removeSummoningSickness(att2)
+
+        // Opponent has a huge blocker
+        val blocker = driver.putCreatureOnBattlefield(p2, "Hill Giant")
+        driver.removeSummoningSickness(blocker)
+
+        val legalAction = buildAttackAction(
+            p1, listOf(att1, att2), listOf(p2),
+            mandatoryAttackers = listOf(att1, att2)
+        )
+        val result = advisor.chooseAttackers(driver.state, legalAction, p1) as DeclareAttackers
+
+        // Both must attack regardless
+        result.attackers.size shouldBe 2
+        result.attackers shouldContainKey att1
+        result.attackers shouldContainKey att2
+    }
+
+    test("mandatory blocker blocks the required attacker") {
+        // Provoke: a specific blocker must block a specific attacker.
+        // The AI must include this assignment even if the trade is bad.
+        val cards = listOf(bigCreature, smallCreature)
+        val (driver, _, advisor) = setup(cards)
+        val p1 = driver.player1
+        val p2 = driver.player2
+
+        driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
+
+        val attacker = driver.putCreatureOnBattlefield(p1, "Colossus")
+        driver.removeSummoningSickness(attacker)
+
+        val forcedBlocker = driver.putCreatureOnBattlefield(p2, "Eager Cadet")
+        driver.removeSummoningSickness(forcedBlocker)
+
+        driver.passPriorityUntil(Step.DECLARE_ATTACKERS)
+        driver.submit(DeclareAttackers(p1, mapOf(attacker to p2)))
+        driver.passPriorityUntil(Step.DECLARE_BLOCKERS)
+
+        // 1/1 is forced to block the 6/6 (provoke) — suicidal but mandatory
+        val legalAction = buildBlockAction(
+            p2, listOf(forcedBlocker),
+            mandatoryBlockerAssignments = mapOf(forcedBlocker to listOf(attacker))
+        )
+        val result = advisor.chooseBlockers(driver.state, legalAction, p2) as DeclareBlockers
+
+        result.blockers shouldContainKey forcedBlocker
+        result.blockers[forcedBlocker] shouldBe listOf(attacker)
+    }
+
+    test("mandatory blocker assigned while other blockers use heuristic") {
+        // One blocker is forced (provoke), others are free to choose optimally.
+        val deathtouchCreature = CardDefinition.creature(
+            name = "Typhoid Rats", manaCost = ManaCost.parse("{B}"),
+            subtypes = setOf(Subtype("Rat")), power = 1, toughness = 1,
+            keywords = setOf(Keyword.DEATHTOUCH)
+        )
+        val cards = listOf(bigCreature, bigGround, smallCreature, deathtouchCreature)
+        val (driver, _, advisor) = setup(cards)
+        val p1 = driver.player1
+        val p2 = driver.player2
+
+        driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
+
+        // P1 attacks with 6/6 and 3/3
+        val att66 = driver.putCreatureOnBattlefield(p1, "Colossus")
+        val att33 = driver.putCreatureOnBattlefield(p1, "Hill Giant")
+        driver.removeSummoningSickness(att66)
+        driver.removeSummoningSickness(att33)
+
+        // P2 has 1/1 (forced to block 6/6 via provoke) and 1/1 deathtouch (free)
+        val forced = driver.putCreatureOnBattlefield(p2, "Eager Cadet")
+        val freeBlocker = driver.putCreatureOnBattlefield(p2, "Typhoid Rats")
+        driver.removeSummoningSickness(forced)
+        driver.removeSummoningSickness(freeBlocker)
+
+        driver.passPriorityUntil(Step.DECLARE_ATTACKERS)
+        driver.submit(DeclareAttackers(p1, mapOf(att66 to p2, att33 to p2)))
+        driver.passPriorityUntil(Step.DECLARE_BLOCKERS)
+
+        val legalAction = buildBlockAction(
+            p2, listOf(forced, freeBlocker),
+            mandatoryBlockerAssignments = mapOf(forced to listOf(att66))
+        )
+        val result = advisor.chooseBlockers(driver.state, legalAction, p2) as DeclareBlockers
+
+        // Forced 1/1 must block the 6/6
+        result.blockers shouldContainKey forced
+        result.blockers[forced] shouldBe listOf(att66)
+
+        // Deathtouch 1/1 should freely choose to block the 3/3 (kills it in a trade)
+        result.blockers shouldContainKey freeBlocker
+        result.blockers[freeBlocker] shouldBe listOf(att33)
+    }
+
+    test("local search does not remove mandatory attacker") {
+        // Even if the local search thinks removing an attacker improves the score,
+        // mandatory attackers must stay in the plan.
+        val cards = listOf(smallCreature, bigCreature)
+        val (driver, _, advisor) = setup(cards)
+        val p1 = driver.player1
+        val p2 = driver.player2
+
+        driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
+
+        val mustAttack = driver.putCreatureOnBattlefield(p1, "Eager Cadet")
+        driver.removeSummoningSickness(mustAttack)
+
+        // Big blocker that will kill the 1/1
+        val blocker = driver.putCreatureOnBattlefield(p2, "Colossus")
+        driver.removeSummoningSickness(blocker)
+
+        val legalAction = buildAttackAction(
+            p1, listOf(mustAttack), listOf(p2),
+            mandatoryAttackers = listOf(mustAttack)
+        )
+        val result = advisor.chooseAttackers(driver.state, legalAction, p1) as DeclareAttackers
+
+        // Must attack even though it's walking into a 6/6
+        result.attackers shouldContainKey mustAttack
+    }
+
+    test("local search does not remove mandatory blocker") {
+        // Even if removing a blocker would improve the board evaluation,
+        // mandatory blockers must stay in the plan.
+        val cards = listOf(bigCreature, smallCreature)
+        val (driver, _, advisor) = setup(cards)
+        val p1 = driver.player1
+        val p2 = driver.player2
+
+        driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
+
+        val attacker = driver.putCreatureOnBattlefield(p1, "Colossus")
+        driver.removeSummoningSickness(attacker)
+
+        val forced = driver.putCreatureOnBattlefield(p2, "Eager Cadet")
+        driver.removeSummoningSickness(forced)
+
+        driver.passPriorityUntil(Step.DECLARE_ATTACKERS)
+        driver.submit(DeclareAttackers(p1, mapOf(attacker to p2)))
+        driver.passPriorityUntil(Step.DECLARE_BLOCKERS)
+
+        // 1/1 forced to block 6/6 — terrible trade but mandatory
+        val legalAction = buildBlockAction(
+            p2, listOf(forced),
+            mandatoryBlockerAssignments = mapOf(forced to listOf(attacker))
+        )
+        val result = advisor.chooseBlockers(driver.state, legalAction, p2) as DeclareBlockers
+
+        result.blockers shouldContainKey forced
+        result.blockers[forced] shouldBe listOf(attacker)
     }
 
     // ═════════════════════════════════════════════════════════════════════

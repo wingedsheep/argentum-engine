@@ -377,7 +377,8 @@ class CombatAdvisor(
         myLife: Int
     ) {
         val tradeRatio = CombatMath.tradeWillingnessRatio(myLife)
-        val blockedAttackers = mutableSetOf<EntityId>()
+        // Track which attackers are already blocked (e.g., by mandatory blockers)
+        val blockedAttackers = blockerMap.values.flatten().toMutableSet()
 
         // ── Pass 1: Free kills — blocker kills attacker and survives ──
         for (attacker in sortedAttackers) {
