@@ -35,6 +35,7 @@ class BloomburrowAdvisorModule : CardAdvisorModule {
         registry.register(GiftBounceAdvisor)
         registry.register(GiftValueAdvisor)
         registry.register(GraveyardRetrievalAdvisor)
+        registry.register(FlashCreatureAdvisor)
     }
 }
 
@@ -146,13 +147,18 @@ object CombatTrickAdvisor : CardAdvisor {
         // During combat: let default simulation decide (it works well here)
         if (isCombatStep(state)) return null
 
-        // On opponent's turn outside combat: small penalty but allow it
-        // (could be protecting from removal)
-        if (isOpponentsTurn(state, playerId) && !isCombatStep(state)) {
+        // Something on the stack (opponent's removal, combat trick, etc.):
+        // let simulation decide freely — it will correctly evaluate whether
+        // hexproof/indestructible/toughness buff saves our creature
+        if (state.stack.isNotEmpty()) return null
+
+        // Opponent's turn, empty stack: small penalty — hold for combat or
+        // a response to removal rather than casting proactively
+        if (isOpponentsTurn(state, playerId)) {
             return context.defaultScore - 1.0
         }
 
-        // Own main phase: heavily penalize — hold the trick for combat
+        // Own main phase, empty stack: heavily penalize — hold for combat
         if (isOwnMainPhase(state, playerId)) {
             return context.passScore - 1.0
         }
@@ -554,5 +560,43 @@ object GraveyardRetrievalAdvisor : CardAdvisor {
 
         val count = req.maxTargets.coerceAtMost(ranked.size)
         return TargetsResponse(decision.id, mapOf(req.index to ranked.take(count)))
+    }
+}
+
+// ═════════════════════════════════════════════════════════════════════════════
+// Flash Creatures — prefer casting on opponent's turn after attackers declared
+// ═════════════════════════════════════════════════════════════════════════════
+
+/**
+ * Flash creatures with big bodies (e.g., Galewind Moose 6/6 flash vigilance reach).
+ *
+ * The generic AI casts these during its own main phase because it sees
+ * "big creature = good board." But flash creatures are far more valuable
+ * when cast after the opponent declares attackers — they can block
+ * immediately and the opponent can't play around them.
+ */
+object FlashCreatureAdvisor : CardAdvisor {
+    override val cardNames = setOf(
+        "Galewind Moose",
+    )
+
+    override fun evaluateCast(context: CastContext): Double? {
+        val state = context.state
+        val playerId = context.playerId
+
+        // Opponent's declare attackers or later combat step: ideal timing — ambush block
+        if (isOpponentsTurn(state, playerId) && isCombatStep(state)) {
+            return context.defaultScore + 3.0
+        }
+
+        // Opponent's turn outside combat: still good (they can't remove it before attacking)
+        if (isOpponentsTurn(state, playerId)) return null
+
+        // Own main phase: penalize — hold for opponent's combat
+        if (isOwnMainPhase(state, playerId)) {
+            return context.defaultScore - 4.0
+        }
+
+        return null
     }
 }
