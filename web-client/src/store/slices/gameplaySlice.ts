@@ -44,8 +44,8 @@ export interface GameplaySliceState {
 }
 
 export interface GameplaySliceActions {
-  createGame: (deckList: Record<string, number>) => void
-  createAiGame: (deckList: Record<string, number>) => void
+  createGame: (deckList: Record<string, number>, setCode?: string) => void
+  createAiGame: (deckList: Record<string, number>, setCode?: string) => void
   joinGame: (sessionId: string, deckList: Record<string, number>) => void
   submitAction: (action: GameAction) => void
   submitDecision: (selectedCards: readonly EntityId[]) => void
@@ -101,12 +101,12 @@ export const createGameplaySlice: SliceCreator<GameplaySlice> = (set, get) => ({
   autoTapEnabled: localStorage.getItem('argentum-auto-tap') !== 'false',
 
   // Actions
-  createGame: (deckList) => {
-    getWebSocket()?.send(createCreateGameMessage(deckList))
+  createGame: (deckList, setCode) => {
+    getWebSocket()?.send(createCreateGameMessage(deckList, undefined, setCode))
   },
 
-  createAiGame: (deckList) => {
-    getWebSocket()?.send(createCreateGameMessage(deckList, true))
+  createAiGame: (deckList, setCode) => {
+    getWebSocket()?.send(createCreateGameMessage(deckList, true, setCode))
   },
 
   joinGame: (sessionId, deckList) => {

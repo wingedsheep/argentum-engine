@@ -77,6 +77,7 @@ export interface ConnectedMessage {
   readonly playerId: string
   readonly token: string
   readonly aiEnabled?: boolean
+  readonly availableSets?: readonly AvailableSet[]
 }
 
 /**
@@ -89,6 +90,7 @@ export interface ReconnectedMessage {
   readonly context: 'lobby' | 'drafting' | 'deckBuilding' | 'game' | 'tournament' | null
   readonly contextId: string | null
   readonly aiEnabled?: boolean
+  readonly availableSets?: readonly AvailableSet[]
 }
 
 /**
@@ -1283,6 +1285,7 @@ export interface CreateGameMessage {
   readonly type: 'createGame'
   readonly deckList: Record<string, number>
   readonly vsAi?: boolean
+  readonly setCode?: string
 }
 
 /**
@@ -1447,8 +1450,9 @@ export function createConnectMessage(playerName: string, token?: string): Connec
   return token ? { type: 'connect', playerName, token } : { type: 'connect', playerName }
 }
 
-export function createCreateGameMessage(deckList: Record<string, number>, vsAi?: boolean): CreateGameMessage {
-  return vsAi ? { type: 'createGame', deckList, vsAi } : { type: 'createGame', deckList }
+export function createCreateGameMessage(deckList: Record<string, number>, vsAi?: boolean, setCode?: string): CreateGameMessage {
+  const msg: CreateGameMessage = { type: 'createGame', deckList, ...(vsAi ? { vsAi } : {}), ...(setCode ? { setCode } : {}) }
+  return msg
 }
 
 export function createJoinGameMessage(sessionId: string, deckList: Record<string, number>): JoinGameMessage {

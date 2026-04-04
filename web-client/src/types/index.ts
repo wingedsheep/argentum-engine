@@ -196,6 +196,8 @@ export type {
   ManaSourceOption,
   SelectManaSourcesDecision,
   SplitPilesDecision,
+  // Set types
+  AvailableSet,
   // Sealed Draft types
   SealedCardInfo,
   SealedGameCreatedMessage,

@@ -8,6 +8,7 @@ import com.wingedsheep.gameserver.protocol.GameOverReason
 import com.wingedsheep.gameserver.protocol.ServerMessage
 import com.wingedsheep.gameserver.repository.GameRepository
 import com.wingedsheep.gameserver.repository.LobbyRepository
+import com.wingedsheep.gameserver.sealed.BoosterGenerator
 import com.wingedsheep.gameserver.session.PlayerIdentity
 import com.wingedsheep.gameserver.session.PlayerSession
 import com.wingedsheep.gameserver.session.SessionRegistry
@@ -23,9 +24,21 @@ class ConnectionHandler(
     private val gameRepository: GameRepository,
     private val lobbyRepository: LobbyRepository,
     private val sender: MessageSender,
-    private val aiGameManager: AiGameManager
+    private val aiGameManager: AiGameManager,
+    private val boosterGenerator: BoosterGenerator
 ) {
     private val logger = LoggerFactory.getLogger(ConnectionHandler::class.java)
+
+    private fun buildAvailableSetsList() = boosterGenerator.availableSets.values.map { config ->
+        ServerMessage.AvailableSet(
+            code = config.setCode,
+            name = config.setName,
+            incomplete = config.incomplete,
+            block = config.block,
+            implementedCount = config.cards.size,
+            totalCount = config.totalSetSize
+        )
+    }
 
     fun handleConnect(session: WebSocketSession, message: ClientMessage.Connect) {
         if (sessionRegistry.getPlayerSession(session.id) != null) {
@@ -59,7 +72,12 @@ class ConnectionHandler(
         sessionRegistry.register(identity, session, playerSession)
 
         logger.info("Player connected: ${message.playerName} (${playerId.value}), token: ${identity.token}")
-        sender.send(session, ServerMessage.Connected(playerId.value, identity.token, aiEnabled = aiGameManager.isEnabled))
+        sender.send(session, ServerMessage.Connected(
+            playerId.value,
+            identity.token,
+            aiEnabled = aiGameManager.isEnabled,
+            availableSets = buildAvailableSetsList()
+        ))
     }
 
     private fun handleReconnect(session: WebSocketSession, identity: PlayerIdentity) {
@@ -153,7 +171,8 @@ class ConnectionHandler(
             token = identity.token,
             context = context,
             contextId = contextId,
-            aiEnabled = aiGameManager.isEnabled
+            aiEnabled = aiGameManager.isEnabled,
+            availableSets = buildAvailableSetsList()
         ))
 
         when (context) {

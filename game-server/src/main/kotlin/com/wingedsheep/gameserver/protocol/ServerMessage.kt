@@ -21,7 +21,12 @@ sealed interface ServerMessage {
      */
     @Serializable
     @SerialName("connected")
-    data class Connected(val playerId: String, val token: String, val aiEnabled: Boolean = false) : ServerMessage
+    data class Connected(
+        val playerId: String,
+        val token: String,
+        val aiEnabled: Boolean = false,
+        val availableSets: List<AvailableSet> = emptyList()
+    ) : ServerMessage
 
     /**
      * Reconnection confirmed — client's previous session has been restored.
@@ -35,7 +40,8 @@ sealed interface ServerMessage {
         val context: String? = null,
         /** Session/lobby ID the player is currently in */
         val contextId: String? = null,
-        val aiEnabled: Boolean = false
+        val aiEnabled: Boolean = false,
+        val availableSets: List<AvailableSet> = emptyList()
     ) : ServerMessage
 
     /**

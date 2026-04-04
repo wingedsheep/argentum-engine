@@ -24,7 +24,7 @@ sealed interface ClientMessage {
      */
     @Serializable
     @SerialName("createGame")
-    data class CreateGame(val deckList: Map<String, Int>, val vsAi: Boolean = false) : ClientMessage
+    data class CreateGame(val deckList: Map<String, Int>, val vsAi: Boolean = false, val setCode: String? = null) : ClientMessage
 
     /**
      * Join an existing game with a session ID and deck list.

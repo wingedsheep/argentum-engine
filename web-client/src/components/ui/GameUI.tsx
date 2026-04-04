@@ -50,12 +50,14 @@ function ConnectionOverlay({
   const createGame = useGameStore((state) => state.createGame)
   const createAiGame = useGameStore((state) => state.createAiGame)
   const aiEnabled = useGameStore((state) => state.aiEnabled)
+  const availableSets = useGameStore((state) => state.availableSets)
   const joinGame = useGameStore((state) => state.joinGame)
   const createTournamentLobby = useGameStore((state) => state.createTournamentLobby)
   const joinLobby = useGameStore((state) => state.joinLobby)
   const lobbyState = useGameStore((state) => state.lobbyState)
   const [joinSessionId, setJoinSessionId] = useState('')
   const [gameMode, setGameMode] = useState<GameMode>('normal')
+  const [selectedSetCode, setSelectedSetCode] = useState<string>('random')
   const [playerName, setPlayerName] = useState(() => localStorage.getItem('argentum-player-name') || '')
 
   const [nameConfirmed, setNameConfirmed] = useState(() => !!localStorage.getItem('argentum-player-name'))
@@ -72,12 +74,14 @@ function ConnectionOverlay({
   // Empty deck triggers server-side random deck generation from Portal set
   const randomDeck = {}
 
+  const quickGameSetCode = selectedSetCode === 'random' ? undefined : selectedSetCode
+
   const handleCreate = () => {
     if (gameMode === 'tournament') {
       // Create lobby with default settings - host can change in lobby
       createTournamentLobby(['KTK'], 'SEALED')
     } else {
-      createGame(randomDeck)
+      createGame(randomDeck, quickGameSetCode)
     }
   }
 
@@ -197,6 +201,23 @@ function ConnectionOverlay({
               </p>
             )}
 
+            {gameMode === 'normal' && availableSets.length > 0 && (
+              <select
+                value={selectedSetCode}
+                onChange={(e) => setSelectedSetCode(e.target.value)}
+                className={styles.setSelect}
+              >
+                <option value="random">Random Set</option>
+                {[...availableSets]
+                  .sort((a, b) => a.name.localeCompare(b.name))
+                  .map((set) => (
+                    <option key={set.code} value={set.code}>
+                      {set.name}
+                    </option>
+                  ))}
+              </select>
+            )}
+
             <button
               onClick={handleCreate}
               className={gameMode === 'tournament' ? styles.tournamentButton : styles.primaryButton}
@@ -206,7 +227,7 @@ function ConnectionOverlay({
 
             {gameMode === 'normal' && aiEnabled && (
               <button
-                onClick={() => createAiGame(randomDeck)}
+                onClick={() => createAiGame(randomDeck, quickGameSetCode)}
                 className={styles.aiButton}
               >
                 Play vs AI

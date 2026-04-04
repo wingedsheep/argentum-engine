@@ -3,6 +3,7 @@
  */
 import type { SliceCreator, EntityId } from './types'
 import type { ConnectionStatus } from '@/network/websocket.ts'
+import type { AvailableSet } from '@/types'
 import { GameWebSocket, getWebSocketUrl } from '@/network/websocket.ts'
 import { handleServerMessage, createLoggingHandlers } from '@/network/messageHandlers.ts'
 import { createConnectMessage, ErrorCode } from '@/types'
@@ -20,6 +21,7 @@ export interface ConnectionSliceState {
   sessionId: string | null
   pendingTournamentId: string | null
   aiEnabled: boolean
+  availableSets: readonly AvailableSet[]
 }
 
 export interface ConnectionSliceActions {
@@ -37,6 +39,7 @@ export const createConnectionSlice: SliceCreator<ConnectionSlice> = (set, get) =
   sessionId: null,
   pendingTournamentId: null,
   aiEnabled: false,
+  availableSets: [],
 
   // Actions
   connect: (playerName) => {

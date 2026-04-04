@@ -16,6 +16,7 @@ export function createConnectionHandlers(set: SetState, get: GetState): Pick<Mes
         connectionStatus: 'connected',
         playerId: entityId(msg.playerId),
         aiEnabled: msg.aiEnabled ?? false,
+        availableSets: msg.availableSets ?? [],
       })
 
       // Auto-join tournament if we have a pending tournament ID (from /tournament/:lobbyId route)
@@ -34,6 +35,7 @@ export function createConnectionHandlers(set: SetState, get: GetState): Pick<Mes
         connectionStatus: 'connected',
         playerId: entityId(msg.playerId),
         aiEnabled: msg.aiEnabled ?? false,
+        availableSets: msg.availableSets ?? [],
       }
       if (msg.context === 'game' && msg.contextId) {
         updates.sessionId = msg.contextId

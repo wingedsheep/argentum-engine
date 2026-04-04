@@ -24,6 +24,7 @@ import type {
   SpectatorPlayerState,
   SealedCardInfo,
   Step,
+  AvailableSet,
 } from '@/types'
 import type { ConnectionStatus } from '@/network/websocket.ts'
 import type { CounterRemovalCreatureInfo, SpectatorCombatState, SpectatorDecisionStatus } from '@/types/messages.ts'
@@ -574,6 +575,7 @@ export type GameStore = {
   sessionId: string | null
   pendingTournamentId: string | null
   aiEnabled: boolean
+  availableSets: readonly AvailableSet[]
   connect: (playerName: string) => void
   disconnect: () => void
   setPendingTournamentId: (lobbyId: string | null) => void
@@ -598,8 +600,8 @@ export type GameStore = {
   /** Seconds remaining on opponent's disconnect countdown (null = connected) */
   opponentDisconnectCountdown: number | null
   autoTapEnabled: boolean
-  createGame: (deckList: Record<string, number>) => void
-  createAiGame: (deckList: Record<string, number>) => void
+  createGame: (deckList: Record<string, number>, setCode?: string) => void
+  createAiGame: (deckList: Record<string, number>, setCode?: string) => void
   joinGame: (sessionId: string, deckList: Record<string, number>) => void
   submitAction: (action: GameAction) => void
   submitDecision: (selectedCards: readonly EntityId[]) => void
