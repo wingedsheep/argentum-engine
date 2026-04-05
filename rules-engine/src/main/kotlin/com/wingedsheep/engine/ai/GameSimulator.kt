@@ -19,6 +19,20 @@ class GameSimulator(
     private val enumerator: LegalActionEnumerator = LegalActionEnumerator.create(cardRegistry)
 ) {
     /**
+     * Optional resolver for non-trivial decisions encountered during simulation.
+     * Set after constructing the [DecisionResponder] to enable full spell resolution
+     * for modal spells, fight spells with gift modes, etc.
+     *
+     * Without this, simulations that hit a non-trivial decision (e.g., ChooseModeDecision
+     * with 2+ modes) return [SimulationResult.NeedsDecision] and the evaluator scores the
+     * unresolved state — which makes every modal spell look worse than passing.
+     */
+    var decisionResolver: ((GameState, PendingDecision) -> DecisionResponse)? = null
+
+    /** Guard against recursive resolution — inner simulations (from DecisionResponder
+     *  evaluating alternatives) should NOT re-enter the resolver. */
+    private var isResolving = false
+    /**
      * Simulate an action and resolve the stack to completion.
      *
      * After executing the action, both players auto-pass priority until
@@ -83,15 +97,34 @@ class GameSimulator(
                 return SimulationResult.Illegal(current.state, allEvents, current.error)
             }
 
-            // Auto-resolve trivial decisions
+            // Auto-resolve trivial decisions; use decisionResolver for non-trivial ones
             if (current.isPaused) {
                 val decision = current.pendingDecision!!
-                val trivialResponse = trivialResponseFor(decision) ?: break
-                val submitAction = SubmitDecision(decision.playerId, trivialResponse)
-                current = processor.process(current.state, submitAction)
-                allEvents = allEvents + current.events
-                iterations++
-                continue
+                val trivialResponse = trivialResponseFor(decision)
+                if (trivialResponse != null) {
+                    val submitAction = SubmitDecision(decision.playerId, trivialResponse)
+                    current = processor.process(current.state, submitAction)
+                    allEvents = allEvents + current.events
+                    iterations++
+                    continue
+                }
+                // Non-trivial decision: try the pluggable resolver (but not recursively —
+                // inner simulations from DecisionResponder evaluating alternatives break here)
+                val resolver = decisionResolver
+                if (resolver != null && !isResolving) {
+                    try {
+                        isResolving = true
+                        val response = resolver(current.state, decision)
+                        val submitAction = SubmitDecision(decision.playerId, response)
+                        current = processor.process(current.state, submitAction)
+                        allEvents = allEvents + current.events
+                        iterations++
+                    } finally {
+                        isResolving = false
+                    }
+                    continue
+                }
+                break
             }
 
             // Stack is non-empty — auto-pass priority for whoever has it

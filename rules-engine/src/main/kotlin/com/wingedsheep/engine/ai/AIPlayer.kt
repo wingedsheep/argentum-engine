@@ -148,12 +148,21 @@ class AIPlayer(
             val simulator = GameSimulator(cardRegistry)
             val evaluator = defaultEvaluator()
             val combatAdvisor = CombatAdvisor(simulator, evaluator, cardRegistry, advisorRegistry)
+            val responder = DecisionResponder(simulator, evaluator, advisorRegistry = advisorRegistry)
+
+            // Wire up the decision resolver so simulations can resolve non-trivial
+            // decisions (modal spells, gift choices, etc.) instead of returning
+            // NeedsDecision with an unresolved board state.
+            simulator.decisionResolver = { state, decision ->
+                responder.respond(state, decision, decision.playerId)
+            }
+
             return AIPlayer(
                 playerId = playerId,
                 simulator = simulator,
                 evaluator = evaluator,
                 strategist = Strategist(simulator, evaluator, combatAdvisor = combatAdvisor, advisorRegistry = advisorRegistry),
-                responder = DecisionResponder(simulator, evaluator, advisorRegistry = advisorRegistry)
+                responder = responder
             )
         }
 

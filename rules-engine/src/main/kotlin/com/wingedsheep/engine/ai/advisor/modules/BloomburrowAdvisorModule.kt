@@ -22,6 +22,7 @@ import com.wingedsheep.sdk.model.EntityId
 class BloomburrowAdvisorModule : CardAdvisorModule {
     override fun register(registry: CardAdvisorRegistry) {
         registry.register(CombatTrickAdvisor)
+        registry.register(FlashAuraAdvisor)
         registry.register(InstantRemovalAdvisor)
         registry.register(CounterspellAdvisor)
         registry.register(SpellgyreAdvisor)
@@ -137,8 +138,6 @@ object CombatTrickAdvisor : CardAdvisor {
         "Might of the Meek",
         "Rabbit Response",
         "Valley Rally",
-        // Flash aura (combat trick)
-        "Feather of Flight",
     )
 
     override fun evaluateCast(context: CastContext): Double? {
@@ -169,13 +168,55 @@ object CombatTrickAdvisor : CardAdvisor {
 }
 
 // ═════════════════════════════════════════════════════════════════════════════
-// Instant Removal — prefer opponent's turn or combat, but allow clearing blockers
+// Flash Auras — prefer combat but fine to cast proactively (they cantrip)
 // ═════════════════════════════════════════════════════════════════════════════
 
 /**
- * Instant-speed removal should be held for the opponent's turn or combat
- * rather than cast proactively during main phase. Sorcery-speed removal
- * doesn't need an advisor since it can only be cast at sorcery speed anyway.
+ * Flash auras that draw a card on ETB (e.g., Feather of Flight).
+ *
+ * Unlike pure combat tricks, these are card-neutral and give permanent buffs.
+ * Combat timing is still ideal (surprise blocker with flying), but casting
+ * during main phase is acceptable — the card draw and permanent evasion
+ * are valuable enough to justify proactive use.
+ */
+object FlashAuraAdvisor : CardAdvisor {
+    override val cardNames = setOf(
+        "Feather of Flight",
+    )
+
+    override fun evaluateCast(context: CastContext): Double? {
+        val state = context.state
+        val playerId = context.playerId
+
+        // During combat: ideal — surprise flying blocker or save a creature
+        if (isCombatStep(state)) return context.defaultScore + 1.0
+
+        // Something on the stack (opponent's removal): let simulation decide
+        // freely — the aura might save our creature
+        if (state.stack.isNotEmpty()) return null
+
+        // Opponent's turn outside combat: decent timing
+        if (isOpponentsTurn(state, playerId)) return null
+
+        // Own main phase: light penalty — prefer combat timing but don't
+        // block it. The card draw makes it card-neutral, and flying is
+        // a permanent upgrade worth deploying.
+        if (isOwnMainPhase(state, playerId)) {
+            return context.defaultScore - 0.5
+        }
+
+        return null
+    }
+}
+
+// ═════════════════════════════════════════════════════════════════════════════
+// Instant Removal — prefer combat or opponent's turn, bonus during combat
+// ═════════════════════════════════════════════════════════════════════════════
+
+/**
+ * Instant-speed removal should ideally be used during combat or the opponent's
+ * turn, but shouldn't be hoarded forever. Give a bonus during combat (the ideal
+ * timing) and a moderate penalty during own main phase.
  */
 object InstantRemovalAdvisor : CardAdvisor {
     override val cardNames = setOf(
@@ -192,14 +233,21 @@ object InstantRemovalAdvisor : CardAdvisor {
         val state = context.state
         val playerId = context.playerId
 
-        // During combat or opponent's turn: let simulation decide
-        if (isCombatStep(state) || isOpponentsTurn(state, playerId)) return null
+        // During combat: ideal timing — bonus to push past the pass threshold.
+        // Killing an attacker prevents combat damage; killing a blocker lets ours through.
+        if (isCombatStep(state)) {
+            return context.defaultScore + 1.5
+        }
 
-        // Own main phase: penalize. The default simulation sees
-        // "creature gone = good" but misses the timing advantage
-        // of removing an attacker mid-combat.
+        // Opponent's turn outside combat: good timing (they can't rebuild).
+        // Let simulation decide freely.
+        if (isOpponentsTurn(state, playerId)) return null
+
+        // Own main phase: moderate penalty — prefer holding for combat,
+        // but don't completely block it when the target is high-value
+        // (e.g., killing a tapped 5/5 is still worth it).
         if (isOwnMainPhase(state, playerId)) {
-            return context.defaultScore - 3.0
+            return context.defaultScore - 2.0
         }
 
         return null
