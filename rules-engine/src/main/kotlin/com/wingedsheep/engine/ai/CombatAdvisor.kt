@@ -524,14 +524,16 @@ class CombatAdvisor(
             blockedAttackers.add(attacker)
         }
 
-        // ── Pass 3: Damage prevention — blocker survives, prevents damage ──
+        // ── Pass 3: Damage prevention — blocker survives, always block ──
+        // If the blocker survives, the cost is essentially zero (blocking doesn't tap).
+        // Always take free damage prevention.
         for (attacker in sortedAttackers) {
             if (attacker in blockedAttackers) continue
             val aPower = projected.getPower(attacker) ?: 0
             if (aPower <= 0) continue
 
             val blocker = findSingleBlocker(state, projected, attacker, validBlockers, assignedBlockers) { info ->
-                info.weSurvive && info.blockerValue < aPower * 1.5
+                info.weSurvive
             } ?: continue
 
             blockerMap[blocker] = listOf(attacker)

@@ -1882,6 +1882,51 @@ class CombatAdvisorTest : FunSpec({
     }
 
     // ═════════════════════════════════════════════════════════════════════
+    // Damage prevention: always block when blocker survives
+    // ═════════════════════════════════════════════════════════════════════
+
+    test("0/2 flyer blocks 1/1 ground creature for free damage prevention") {
+        // 0/2 flying survives blocking a 1/1 — blocking is free, prevents 1 damage.
+        // Should always block regardless of how valuable the blocker is.
+        val cards = listOf(flyingCreature, smallCreature)
+        val envoy = CardDefinition.creature(
+            name = "Aven Envoy",
+            manaCost = ManaCost.parse("{U}"),
+            subtypes = setOf(Subtype("Bird"), Subtype("Soldier")),
+            power = 0, toughness = 2,
+            keywords = setOf(Keyword.FLYING)
+        )
+        val wizard = CardDefinition.creature(
+            name = "Fugitive Wizard",
+            manaCost = ManaCost.parse("{U}"),
+            subtypes = setOf(Subtype("Human"), Subtype("Wizard")),
+            power = 1, toughness = 1
+        )
+        val allCards = listOf(envoy, wizard)
+        val (driver, _, advisor) = setup(allCards)
+        val p1 = driver.player1
+        val p2 = driver.player2
+
+        driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
+
+        val attacker = driver.putCreatureOnBattlefield(p1, "Fugitive Wizard")
+        driver.removeSummoningSickness(attacker)
+
+        val blocker = driver.putCreatureOnBattlefield(p2, "Aven Envoy")
+        driver.removeSummoningSickness(blocker)
+
+        driver.passPriorityUntil(Step.DECLARE_ATTACKERS)
+        driver.submit(DeclareAttackers(p1, mapOf(attacker to p2)))
+        driver.passPriorityUntil(Step.DECLARE_BLOCKERS)
+
+        val legalAction = buildBlockAction(p2, listOf(blocker))
+        val result = advisor.chooseBlockers(driver.state, legalAction, p2) as DeclareBlockers
+
+        // 0/2 survives blocking 1/1 — should always block for free damage prevention
+        result.blockers shouldContainKey blocker
+    }
+
+    // ═════════════════════════════════════════════════════════════════════
     // Combat trade value ignores tapped/sickness state
     // ═════════════════════════════════════════════════════════════════════
 
