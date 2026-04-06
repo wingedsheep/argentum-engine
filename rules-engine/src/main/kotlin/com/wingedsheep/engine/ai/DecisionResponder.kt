@@ -89,7 +89,17 @@ class DecisionResponder(
             val best = pickBestBySimulation(state, candidates, playerId) { target ->
                 TargetsResponse(decision.id, mapOf(req.index to listOf(target)))
             }
-            return TargetsResponse(decision.id, mapOf(req.index to listOf(best)))
+            val bestResponse = TargetsResponse(decision.id, mapOf(req.index to listOf(best)))
+
+            // For optional targets (minTargets == 0), also consider picking no targets
+            if (req.minTargets == 0) {
+                val skipResponse = TargetsResponse(decision.id, mapOf(req.index to emptyList()))
+                val bestScore = evaluateResult(simulator.simulateDecision(state, bestResponse), playerId)
+                val skipScore = evaluateResult(simulator.simulateDecision(state, skipResponse), playerId)
+                if (skipScore >= bestScore) return skipResponse
+            }
+
+            return bestResponse
         }
 
         // Multi-target: simulate the best target for each requirement independently
@@ -101,7 +111,17 @@ class DecisionResponder(
                 val best = pickBestBySimulation(state, targets.take(8), playerId) { target ->
                     TargetsResponse(decision.id, mapOf(req.index to listOf(target)))
                 }
-                req.index to listOf(best)
+                // For optional targets, compare best pick against skipping
+                if (req.minTargets == 0) {
+                    val pickResponse = TargetsResponse(decision.id, mapOf(req.index to listOf(best)))
+                    val skipResponse = TargetsResponse(decision.id, mapOf(req.index to emptyList()))
+                    val pickScore = evaluateResult(simulator.simulateDecision(state, pickResponse), playerId)
+                    val skipScore = evaluateResult(simulator.simulateDecision(state, skipResponse), playerId)
+                    if (skipScore >= pickScore) req.index to emptyList()
+                    else req.index to listOf(best)
+                } else {
+                    req.index to listOf(best)
+                }
             }
         }
         return TargetsResponse(decision.id, selected)
