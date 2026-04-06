@@ -76,6 +76,8 @@ class EffectContinuationRunner(
             }
         }
 
-        return ExecutionResult.success(currentState, allEvents)
+        // Return accumulated collections so callers can propagate them
+        val accumulatedCollections = currentContext.pipeline.storedCollections - initialContext.pipeline.storedCollections.keys
+        return ExecutionResult(currentState, allEvents, updatedCollections = accumulatedCollections)
     }
 }

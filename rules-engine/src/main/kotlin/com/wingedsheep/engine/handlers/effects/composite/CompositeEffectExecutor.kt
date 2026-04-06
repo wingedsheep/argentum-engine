@@ -111,6 +111,8 @@ class CompositeEffectExecutor(
             }
         }
 
-        return ExecutionResult.success(currentState, allEvents)
+        // Return accumulated collections so parent composites can see them
+        val accumulatedCollections = currentContext.pipeline.storedCollections - context.pipeline.storedCollections.keys
+        return ExecutionResult(currentState, allEvents, updatedCollections = accumulatedCollections)
     }
 }
