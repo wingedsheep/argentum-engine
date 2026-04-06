@@ -1,7 +1,10 @@
 package com.wingedsheep.engine.ai.evaluation
 
+import com.wingedsheep.engine.mechanics.layers.ActiveFloatingEffect
 import com.wingedsheep.engine.mechanics.layers.ProjectedState
+import com.wingedsheep.engine.mechanics.layers.SerializableModification
 import com.wingedsheep.engine.state.GameState
+import com.wingedsheep.sdk.scripting.Duration
 import com.wingedsheep.engine.state.components.battlefield.CountersComponent
 import com.wingedsheep.engine.state.components.battlefield.DamageComponent
 import com.wingedsheep.engine.state.components.battlefield.SummoningSicknessComponent
@@ -104,8 +107,15 @@ object BoardPresence : BoardFeature {
         val toughness = projected.getToughness(entityId) ?: 0
         val keywords = projected.getKeywords(entityId)
 
+        // Discount temporary P/T modifications. "Until end of turn" effects expire
+        // at cleanup — evaluate using the permanent stats so killing a 2/2 with -2/-2
+        // scores better than merely shrinking a 2/3 (which recovers next turn).
+        val tempMod = temporaryPTModification(state, entityId)
+        val settledPower = (power - tempMod.first).coerceAtLeast(0)
+        val settledToughness = (toughness - tempMod.second).coerceAtLeast(0)
+
         // Base: power matters more than toughness for winning
-        var value = power * 1.0 + toughness * 0.4
+        var value = settledPower * 1.0 + settledToughness * 0.4
 
         // ── Evasion (the most important combat keyword category) ──
         if (Keyword.FLYING.name in keywords) value += 1.5 + power * 0.3
@@ -165,6 +175,25 @@ object BoardPresence : BoardFeature {
         }
 
         return value.coerceAtLeast(0.1)
+    }
+
+    /**
+     * Sum temporary P/T modifications from "until end of turn" floating effects.
+     * Returns (powerMod, toughnessMod) that will expire at cleanup.
+     */
+    private fun temporaryPTModification(state: GameState, entityId: EntityId): Pair<Int, Int> {
+        var powerMod = 0
+        var toughnessMod = 0
+        for (effect in state.floatingEffects) {
+            if (effect.duration != Duration.EndOfTurn) continue
+            if (entityId !in effect.effect.affectedEntities) continue
+            val mod = effect.effect.modification
+            if (mod is SerializableModification.ModifyPowerToughness) {
+                powerMod += mod.powerMod
+                toughnessMod += mod.toughnessMod
+            }
+        }
+        return powerMod to toughnessMod
     }
 }
 

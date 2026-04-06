@@ -227,6 +227,7 @@ object InstantRemovalAdvisor : CardAdvisor {
         "Conduct Electricity",
         "Dire Downdraft",
         "Feed the Cycle",
+        "Savor",
     )
 
     override fun evaluateCast(context: CastContext): Double? {
