@@ -912,7 +912,11 @@ class StackResolver(
         val destZoneKey = ZoneKey(ownerId, destinationZone)
 
         newState = newState.updateEntity(spellId) { c ->
-            c.without<SpellOnStackComponent>().without<TargetsComponent>()
+            c.without<SpellOnStackComponent>()
+                .without<TargetsComponent>()
+                .without<com.wingedsheep.engine.state.components.identity.MayPlayFromExileComponent>()
+                .without<com.wingedsheep.engine.state.components.identity.PlayWithoutPayingCostComponent>()
+                .without<ExileAfterResolveComponent>()
         }
         newState = newState.addToZone(destZoneKey, spellId)
 

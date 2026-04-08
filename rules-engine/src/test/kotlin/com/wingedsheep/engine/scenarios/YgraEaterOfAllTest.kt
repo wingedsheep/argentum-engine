@@ -43,4 +43,17 @@ class YgraEaterOfAllTest : FunSpec({
         projected.getSubtypes(opponentBear).contains("Food") shouldBe true
         projected.getTypes(opponentBear).contains("ARTIFACT") shouldBe true
     }
+
+    test("Ygra itself is not a Food artifact") {
+        val driver = createDriver()
+        driver.initMirrorMatch(deck = Deck.of("Forest" to 20, "Swamp" to 20))
+        val active = driver.activePlayer!!
+        driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
+
+        val ygra = driver.putCreatureOnBattlefield(active, "Ygra, Eater of All")
+
+        val projected = StateProjector().project(driver.state)
+        projected.getSubtypes(ygra).contains("Food") shouldBe false
+        projected.getTypes(ygra).contains("ARTIFACT") shouldBe false
+    }
 })

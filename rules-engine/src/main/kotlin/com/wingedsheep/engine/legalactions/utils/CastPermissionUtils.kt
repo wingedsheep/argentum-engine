@@ -259,6 +259,7 @@ class CastPermissionUtils(
             for (ability in cardDef.staticAbilities) {
                 when (ability) {
                     is com.wingedsheep.sdk.scripting.GrantActivatedAbilityToCreatureGroup -> {
+                        if (ability.filter.excludeSelf && permanentId == entityId) continue
                         val filter = ability.filter.baseFilter
                         val matchesAll = filter.cardPredicates.all { predicate ->
                             when (predicate) {

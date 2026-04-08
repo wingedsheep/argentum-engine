@@ -817,6 +817,7 @@ class ManaSolver(
             val cardDef = cardRegistry.getCard(card.cardDefinitionId) ?: continue
             for (ability in cardDef.staticAbilities) {
                 if (ability is GrantActivatedAbilityToCreatureGroup) {
+                    if (ability.filter.excludeSelf && permanentId == entityId) continue
                     val filter = ability.filter.baseFilter
                     val matchesAll = filter.cardPredicates.all { predicate ->
                         when (predicate) {
