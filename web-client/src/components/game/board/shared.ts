@@ -220,6 +220,13 @@ export function getFloodCounters(card: ClientCard): number {
 }
 
 /**
+ * Get the number of coin counters on a card.
+ */
+export function getCoinCounters(card: ClientCard): number {
+  return card.counters[CounterType.COIN] ?? 0
+}
+
+/**
  * Get an emoji or icon for an effect based on its icon identifier.
  */
 export function getEffectIcon(icon: string): string {

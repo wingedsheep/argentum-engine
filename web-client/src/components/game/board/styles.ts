@@ -1031,6 +1031,21 @@ export const styles: Record<string, React.CSSProperties> = {
     fontWeight: 700,
     zIndex: 5,
   } as React.CSSProperties,
+  // Coin counter badge (for Wishing Well etc.)
+  coinCounterBadge: {
+    position: 'absolute',
+    top: 4,
+    right: 4,
+    backgroundColor: 'rgba(80, 60, 10, 0.95)',
+    borderRadius: 4,
+    border: '1px solid rgba(220, 180, 60, 0.7)',
+    display: 'flex',
+    alignItems: 'center',
+    gap: 2,
+    color: '#ffd966',
+    fontWeight: 700,
+    zIndex: 5,
+  } as React.CSSProperties,
   // Blight counter badge (for Rottenmouth Viper etc.)
   blightCounterBadge: {
     position: 'absolute',
