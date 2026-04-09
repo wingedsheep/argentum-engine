@@ -99,13 +99,15 @@ class CleanupPhaseManager(
             )
         }
 
-        // Remove damage from all creatures
-        val creaturesWithDamage = newState.entities.filter { (_, container) ->
-            container.has<DamageComponent>() &&
-                container.get<CardComponent>()?.typeLine?.isCreature == true
+        // Remove damage from all permanents on the battlefield (Rule 514.2).
+        // Includes vehicles that reverted from creature status this turn — their damage
+        // (and P/T from the expired floating effect) must be cleared.
+        val battlefield = newState.getBattlefield().toSet()
+        val permanentsWithDamage = newState.entities.filter { (entityId, container) ->
+            entityId in battlefield && container.has<DamageComponent>()
         }.keys
 
-        for (entityId in creaturesWithDamage) {
+        for (entityId in permanentsWithDamage) {
             newState = newState.updateEntity(entityId) { it.without<DamageComponent>() }
         }
 
