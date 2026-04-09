@@ -12,7 +12,9 @@ import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.CreateDelayedTriggerEffect
 import com.wingedsheep.sdk.scripting.effects.Effect
 import com.wingedsheep.sdk.scripting.effects.DestroyAllEquipmentOnTargetEffect
+import com.wingedsheep.sdk.scripting.effects.MayEffect
 import com.wingedsheep.sdk.scripting.effects.SacrificeTargetEffect
+import com.wingedsheep.sdk.scripting.effects.StoreResultEffect
 import com.wingedsheep.sdk.scripting.effects.WarpExileEffect
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
@@ -47,6 +49,10 @@ class CreateDelayedTriggerExecutor : EffectExecutor<CreateDelayedTriggerEffect> 
         // has concrete entity IDs when it fires later.
         val resolvedEffect = resolveContextTargets(effect.effect, context)
 
+        // For event-based delayed triggers, bake the watched target into a concrete
+        // entity id so matching later is cheap and doesn't need the original context.
+        val watchedEntityId = effect.watchedTarget?.let { resolveTarget(it, context) }
+
         val delayedTrigger = DelayedTriggeredAbility(
             id = UUID.randomUUID().toString(),
             effect = resolvedEffect,
@@ -54,7 +60,10 @@ class CreateDelayedTriggerExecutor : EffectExecutor<CreateDelayedTriggerEffect> 
             sourceId = sourceId,
             sourceName = sourceName,
             controllerId = context.controllerId,
-            fireOnlyOnControllersTurn = effect.fireOnlyOnControllersTurn
+            fireOnlyOnControllersTurn = effect.fireOnlyOnControllersTurn,
+            trigger = effect.trigger,
+            watchedEntityId = watchedEntityId,
+            expiry = if (effect.trigger != null) effect.expiry else null
         )
 
         return ExecutionResult.success(state.addDelayedTrigger(delayedTrigger))
@@ -98,6 +107,14 @@ class CreateDelayedTriggerExecutor : EffectExecutor<CreateDelayedTriggerEffect> 
             is CompositeEffect -> effect.copy(
                 effects = effect.effects.map { resolveContextTargets(it, context) }
             )
+            is MayEffect -> {
+                val inner = resolveContextTargets(effect.effect, context)
+                if (inner !== effect.effect) effect.copy(effect = inner) else effect
+            }
+            is StoreResultEffect -> {
+                val inner = resolveContextTargets(effect.effect, context)
+                if (inner !== effect.effect) effect.copy(effect = inner) else effect
+            }
             else -> effect
         }
     }

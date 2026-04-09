@@ -227,6 +227,10 @@ class TriggerDetector(
         // permanents that fired from that event trigger an additional time per copy.
         duplicateETBTriggers(state, events, triggers)
 
+        // Detect event-based delayed triggers (e.g. Long River Lurker's
+        // "whenever that creature deals combat damage this turn, you may exile it").
+        detectEventBasedDelayedTriggers(state, events, triggers)
+
         // Filter out once-per-turn triggers that have already fired this turn
         val filteredTriggers = triggers.filter { trigger ->
             if (!trigger.ability.oncePerTurn) return@filter true
@@ -246,7 +250,8 @@ class TriggerDetector(
     fun detectDelayedTriggers(state: GameState, step: Step): Pair<List<PendingTrigger>, Set<String>> {
         val activePlayer = state.activePlayerId
         val matching = state.delayedTriggers.filter { delayed ->
-            delayed.fireAtStep == step &&
+            delayed.trigger == null &&
+                delayed.fireAtStep == step &&
                 (!delayed.fireOnlyOnControllersTurn || delayed.controllerId == activePlayer)
         }
         if (matching.isEmpty()) return emptyList<PendingTrigger>() to emptySet()
@@ -408,6 +413,67 @@ class TriggerDetector(
 
         // Rule 603.4: Filter out triggers with unmet intervening-if conditions
         return matcher.sortByApnapOrder(state, matcher.filterByTriggerCondition(state, filteredTriggers))
+    }
+
+    /**
+     * Detect event-based delayed triggered abilities scoped to a watched entity.
+     *
+     * Unlike step-based delayed triggers, event-based ones are NOT consumed on fire —
+     * they may fire multiple times before expiry (e.g., double strike combat damage).
+     * They are removed only by their [DelayedTriggerExpiry] (e.g., end of turn cleanup).
+     */
+    private fun detectEventBasedDelayedTriggers(
+        state: GameState,
+        events: List<EngineGameEvent>,
+        triggers: MutableList<PendingTrigger>
+    ) {
+        val eventBased = state.delayedTriggers.filter { it.trigger != null }
+        if (eventBased.isEmpty()) return
+
+        for (event in events) {
+            for (delayed in eventBased) {
+                val spec = delayed.trigger ?: continue
+                if (!matchesEventForWatchedEntity(spec, event, delayed.watchedEntityId, delayed.controllerId, state)) continue
+                triggers.add(
+                    PendingTrigger(
+                        ability = TriggeredAbility.create(
+                            trigger = spec.event,
+                            binding = spec.binding,
+                            effect = delayed.effect
+                        ),
+                        sourceId = delayed.sourceId,
+                        sourceName = delayed.sourceName,
+                        controllerId = delayed.controllerId,
+                        triggerContext = TriggerContext.fromEvent(event).copy(
+                            triggeringEntityId = delayed.watchedEntityId
+                                ?: TriggerContext.fromEvent(event).triggeringEntityId
+                        )
+                    )
+                )
+            }
+        }
+    }
+
+    /**
+     * Match an event against a delayed-trigger TriggerSpec, scoped to a watched entity.
+     * Currently supports DealsDamageEvent (the only category that needs this today).
+     */
+    private fun matchesEventForWatchedEntity(
+        spec: com.wingedsheep.sdk.scripting.TriggerSpec,
+        event: EngineGameEvent,
+        watchedEntityId: EntityId?,
+        controllerId: EntityId,
+        state: GameState
+    ): Boolean {
+        val specEvent = spec.event
+        return when (specEvent) {
+            is com.wingedsheep.sdk.scripting.GameEvent.DealsDamageEvent -> {
+                if (event !is com.wingedsheep.engine.core.DamageDealtEvent) return false
+                if (watchedEntityId != null && event.sourceId != watchedEntityId) return false
+                matcher.matchesDealsDamageTrigger(specEvent, event, state, controllerId)
+            }
+            else -> false
+        }
     }
 
     private fun detectTriggersForEvent(

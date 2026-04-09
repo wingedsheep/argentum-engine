@@ -2,6 +2,7 @@ package com.wingedsheep.mtg.sets.definitions.bloomburrow.cards
 
 import com.wingedsheep.sdk.core.AbilityFlag
 import com.wingedsheep.sdk.core.Keyword
+import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Targets
 import com.wingedsheep.sdk.dsl.Triggers
@@ -10,7 +11,13 @@ import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.GrantKeywordToCreatureGroup
 import com.wingedsheep.sdk.scripting.KeywordAbility
+import com.wingedsheep.sdk.scripting.effects.CompositeEffect
+import com.wingedsheep.sdk.scripting.effects.CreateDelayedTriggerEffect
+import com.wingedsheep.sdk.scripting.effects.DelayedTriggerExpiry
+import com.wingedsheep.sdk.scripting.effects.MayEffect
+import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
+import com.wingedsheep.sdk.scripting.targets.EffectTarget
 
 /**
  * Long River Lurker
@@ -51,14 +58,26 @@ val LongRiverLurker = card("Long River Lurker") {
         )
     }
 
-    // ETB: target creature you control can't be blocked this turn
-    // NOTE: The "whenever that creature deals combat damage this turn, you may exile it
-    // and return it" part requires an event-based delayed trigger (on combat damage)
-    // which the engine doesn't support yet. Only the can't-be-blocked grant is modeled.
+    // ETB: target creature you control can't be blocked this turn, and whenever that
+    // creature deals combat damage this turn, you may exile it and return it.
     triggeredAbility {
         trigger = Triggers.EntersBattlefield
         val creature = target("creature you control", Targets.CreatureYouControl)
-        effect = Effects.GrantKeyword(AbilityFlag.CANT_BE_BLOCKED, creature)
+        effect = CompositeEffect(listOf(
+            Effects.GrantKeyword(AbilityFlag.CANT_BE_BLOCKED, creature),
+            CreateDelayedTriggerEffect(
+                effect = MayEffect(
+                    effect = CompositeEffect(listOf(
+                        MoveToZoneEffect(EffectTarget.ContextTarget(0), Zone.EXILE),
+                        MoveToZoneEffect(EffectTarget.ContextTarget(0), Zone.BATTLEFIELD)
+                    )),
+                    description_override = "You may exile that creature. If you do, return it to the battlefield under its owner's control."
+                ),
+                trigger = Triggers.DealsCombatDamage,
+                watchedTarget = EffectTarget.ContextTarget(0),
+                expiry = DelayedTriggerExpiry.EndOfTurn
+            )
+        ))
     }
 
     metadata {

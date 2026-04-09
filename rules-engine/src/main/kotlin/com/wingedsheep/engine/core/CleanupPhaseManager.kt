@@ -401,6 +401,17 @@ class CleanupPhaseManager(
             }
         }
 
+        // 10. Expire event-based delayed triggered abilities with EndOfTurn expiry
+        // (e.g., Long River Lurker's "whenever that creature deals combat damage this turn").
+        if (newState.delayedTriggers.isNotEmpty()) {
+            val remainingDelayed = newState.delayedTriggers.filter { delayed ->
+                delayed.expiry !is com.wingedsheep.sdk.scripting.effects.DelayedTriggerExpiry.EndOfTurn
+            }
+            if (remainingDelayed.size != newState.delayedTriggers.size) {
+                newState = newState.copy(delayedTriggers = remainingDelayed)
+            }
+        }
+
         return newState
     }
 }

@@ -6,6 +6,7 @@ import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.AdditionalCost
+import com.wingedsheep.sdk.scripting.TriggerSpec
 import com.wingedsheep.sdk.scripting.conditions.Condition
 import com.wingedsheep.sdk.scripting.effects.Effect
 import com.wingedsheep.sdk.scripting.costs.PayCost
@@ -318,16 +319,49 @@ data class PayOrSufferEffect(
 @SerialName("CreateDelayedTrigger")
 @Serializable
 data class CreateDelayedTriggerEffect(
-    val step: Step,
+    val step: Step? = null,
     val effect: Effect,
-    val fireOnlyOnControllersTurn: Boolean = false
+    val fireOnlyOnControllersTurn: Boolean = false,
+    /**
+     * Event-based trigger. When non-null, the delayed trigger fires whenever
+     * an event matching this TriggerSpec occurs (scoped to [watchedTarget] if set),
+     * and remains resident until [expiry] removes it. When null, the delayed
+     * trigger is step-based (fires at the beginning of [step]).
+     */
+    val trigger: TriggerSpec? = null,
+    /**
+     * For event-based delayed triggers: the entity that scopes the trigger.
+     * The trigger only fires for events sourced from this entity. Context
+     * references (e.g. ContextTarget(0)) are baked into a concrete entity id
+     * at creation time by CreateDelayedTriggerExecutor.
+     */
+    val watchedTarget: EffectTarget? = null,
+    /**
+     * For event-based delayed triggers: when the ability is removed.
+     */
+    val expiry: DelayedTriggerExpiry = DelayedTriggerExpiry.EndOfTurn
 ) : Effect {
-    override val description: String = "create a delayed trigger at the beginning of the next ${step.displayName}"
+    override val description: String = when {
+        trigger != null -> "create a delayed trigger that fires on ${trigger.event::class.simpleName}"
+        step != null -> "create a delayed trigger at the beginning of the next ${step.displayName}"
+        else -> "create a delayed trigger"
+    }
 
     override fun applyTextReplacement(replacer: TextReplacer): Effect {
         val newEffect = effect.applyTextReplacement(replacer)
         return if (newEffect !== effect) copy(effect = newEffect) else this
     }
+}
+
+/**
+ * Expiry rule for an event-based delayed triggered ability.
+ */
+@Serializable
+sealed interface DelayedTriggerExpiry {
+    /** Remove the delayed trigger at the end of the current turn. */
+    @SerialName("DelayedTriggerExpiry.EndOfTurn")
+    @Serializable
+    data object EndOfTurn : DelayedTriggerExpiry
 }
 
 /**
