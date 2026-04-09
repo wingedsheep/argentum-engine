@@ -207,6 +207,17 @@ export interface ClientCard {
 
   /** For Class enchantments: the maximum class level (e.g., 3). Null for non-Classes. */
   readonly classMaxLevel?: number | null
+
+  /**
+   * Threshold-style progress: present on cards whose static ability turns on at a
+   * graveyard-size milestone (e.g. classic Threshold = 7+). Lets the UI render a badge
+   * showing current/required graveyard count for the card's controller.
+   */
+  readonly thresholdInfo?: {
+    readonly current: number
+    readonly required: number
+    readonly active: boolean
+  } | null
 }
 
 /**

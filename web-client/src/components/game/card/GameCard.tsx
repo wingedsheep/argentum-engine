@@ -981,6 +981,42 @@ export function GameCard({
         </div>
       )}
 
+      {/* Threshold progress badge (graveyard-gated static abilities) */}
+      {card.thresholdInfo && (
+        <div
+          title={`Graveyard threshold: ${card.thresholdInfo.current}/${card.thresholdInfo.required}${card.thresholdInfo.active ? ' (active)' : ''}`}
+          style={{
+            position: 'absolute',
+            top: 2,
+            left: 2,
+            display: 'flex',
+            alignItems: 'center',
+            gap: 2,
+            padding: responsive.isMobile ? '1px 4px' : '2px 6px',
+            borderRadius: 8,
+            fontSize: responsive.isMobile ? 9 : 11,
+            fontWeight: 700,
+            background: card.thresholdInfo.active
+              ? 'linear-gradient(135deg, #c9a227, #f5d76e)'
+              : 'rgba(20, 20, 20, 0.78)',
+            color: card.thresholdInfo.active ? '#1a1200' : '#e6e6e6',
+            border: card.thresholdInfo.active
+              ? '1px solid #fff3b0'
+              : '1px solid rgba(255,255,255,0.25)',
+            boxShadow: card.thresholdInfo.active
+              ? '0 0 6px rgba(245, 215, 110, 0.85)'
+              : '0 1px 2px rgba(0,0,0,0.5)',
+            pointerEvents: 'none',
+            zIndex: 3,
+          }}
+        >
+          <i className="ms ms-counter-graveyard" style={{ fontSize: responsive.isMobile ? 8 : 10 }} />
+          <span>
+            {Math.min(card.thresholdInfo.current, card.thresholdInfo.required)}/{card.thresholdInfo.required}
+          </span>
+        </div>
+      )}
+
       {/* Counter badge for creatures with +1/+1 or -1/-1 counters */}
       {battlefield && hasStatCounters(card) && (
         <div style={{

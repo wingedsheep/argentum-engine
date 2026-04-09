@@ -227,7 +227,25 @@ data class ClientCard(
     val classLevel: Int? = null,
 
     /** For Class enchantments: the maximum class level (e.g., 3). Null for non-Classes. */
-    val classMaxLevel: Int? = null
+    val classMaxLevel: Int? = null,
+
+    /**
+     * For cards with a "threshold"-style static ability (one whose condition compares the
+     * controller's graveyard size to a fixed number, e.g., "as long as there are seven or
+     * more cards in your graveyard"). Lets the client render a progress badge.
+     */
+    val thresholdInfo: ClientThresholdInfo? = null
+)
+
+/**
+ * Threshold progress for cards whose static ability turns on at a graveyard-size milestone.
+ * Both `current` and `required` are graveyard card counts for the card's controller.
+ */
+@Serializable
+data class ClientThresholdInfo(
+    val current: Int,
+    val required: Int,
+    val active: Boolean
 )
 
 /**

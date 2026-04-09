@@ -30,9 +30,15 @@ import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.scripting.LookAtFaceDownCreatures
 import com.wingedsheep.sdk.scripting.LookAtTopOfLibrary
 import com.wingedsheep.sdk.scripting.PlayFromTopOfLibrary
+import com.wingedsheep.sdk.scripting.conditions.AllConditions
+import com.wingedsheep.sdk.scripting.conditions.AnyCondition
 import com.wingedsheep.sdk.scripting.conditions.Compare
 import com.wingedsheep.sdk.scripting.conditions.ComparisonOperator
 import com.wingedsheep.sdk.scripting.conditions.Condition
+import com.wingedsheep.sdk.scripting.conditions.NotCondition
+import com.wingedsheep.sdk.scripting.ConditionalStaticAbility
+import com.wingedsheep.sdk.scripting.references.Player as ScriptPlayer
+import com.wingedsheep.sdk.scripting.values.DynamicAmount
 
 /**
  * Transforms internal game state into client-facing DTOs.
@@ -727,6 +733,19 @@ class ClientStateTransformer(
         val playableFromExile = zoneKey.zoneType == Zone.EXILE &&
             container.get<MayPlayFromExileComponent>()?.controllerId == viewingPlayerId
 
+        // Threshold-style progress badge: detect static abilities gated on
+        // "controller's graveyard has at least N cards".
+        val thresholdInfo = cardDef?.let { def ->
+            findGraveyardThreshold(def)?.let { required ->
+                val current = state.getGraveyard(controllerId).size
+                ClientThresholdInfo(
+                    current = current,
+                    required = required,
+                    active = current >= required
+                )
+            }
+        }
+
         return ClientCard(
             id = entityId,
             name = cardComponent.name,
@@ -781,6 +800,7 @@ class ClientStateTransformer(
             sagaTotalChapters = cardDef?.finalChapter,
             classLevel = container.get<com.wingedsheep.engine.state.components.battlefield.ClassLevelComponent>()?.currentLevel,
             classMaxLevel = cardDef?.maxClassLevel,
+            thresholdInfo = thresholdInfo,
             stackText = if (zoneKey.zoneType == Zone.STACK && spellOnStack != null && cardDef != null) {
                 when {
                     spellOnStack.castFaceDown -> "Cast as a face-down 2/2 creature"
@@ -1629,5 +1649,55 @@ class ClientStateTransformer(
             }
         }
         return null
+    }
+
+    /**
+     * If any of the card's static abilities is gated on "you have at least N cards in
+     * your graveyard" (the classic threshold pattern, also used by delirium-style cards),
+     * return the smallest such N. Returns null if no such gate exists.
+     */
+    private fun findGraveyardThreshold(cardDef: CardDefinition): Int? {
+        val thresholds = cardDef.script.staticAbilities
+            .filterIsInstance<ConditionalStaticAbility>()
+            .flatMap { extractGraveyardThresholds(it.condition) }
+        return thresholds.minOrNull()
+    }
+
+    private fun extractGraveyardThresholds(condition: Condition): List<Int> = when (condition) {
+        is Compare -> {
+            val n = matchYourGraveyardAtLeast(condition)
+            if (n != null) listOf(n) else emptyList()
+        }
+        is AllConditions -> condition.conditions.flatMap { extractGraveyardThresholds(it) }
+        is AnyCondition -> condition.conditions.flatMap { extractGraveyardThresholds(it) }
+        is NotCondition -> emptyList()
+        else -> emptyList()
+    }
+
+    /**
+     * Matches `Count(You, GRAVEYARD, Any) >= Fixed(N)` and the symmetric `Fixed(N) <= Count(...)`.
+     * Returns N or null. Filters that count a subset (e.g. only creatures) are ignored — the
+     * UI badge tracks raw graveyard size which is what threshold uses.
+     */
+    private fun matchYourGraveyardAtLeast(compare: Compare): Int? {
+        fun isYourGraveyardCount(amount: DynamicAmount): Boolean =
+            amount is DynamicAmount.Count &&
+                amount.player == ScriptPlayer.You &&
+                amount.zone == Zone.GRAVEYARD &&
+                amount.filter == com.wingedsheep.sdk.scripting.GameObjectFilter.Any
+
+        val left = compare.left
+        val right = compare.right
+        return when (compare.operator) {
+            ComparisonOperator.GTE ->
+                if (isYourGraveyardCount(left) && right is DynamicAmount.Fixed) right.amount else null
+            ComparisonOperator.LTE ->
+                if (isYourGraveyardCount(right) && left is DynamicAmount.Fixed) left.amount else null
+            ComparisonOperator.GT ->
+                if (isYourGraveyardCount(left) && right is DynamicAmount.Fixed) right.amount + 1 else null
+            ComparisonOperator.LT ->
+                if (isYourGraveyardCount(right) && left is DynamicAmount.Fixed) left.amount + 1 else null
+            else -> null
+        }
     }
 }
