@@ -185,6 +185,9 @@ class ConditionEvaluator {
     }
 
     private fun evaluateWasCastFromHand(state: GameState, context: EffectContext): Boolean {
+        // For spells resolving, check context.castFromZone (set from SpellOnStackComponent)
+        if (context.castFromZone == Zone.HAND) return true
+        // For permanents (triggered abilities), fall back to battlefield component
         val sourceId = context.sourceId ?: return false
         return state.getEntity(sourceId)?.has<CastFromHandComponent>() == true
     }
