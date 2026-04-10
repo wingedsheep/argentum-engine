@@ -19,21 +19,42 @@ class DeathAndLeaveTriggerDetector(
     private val matcher: TriggerMatcher
 ) {
 
+    /**
+     * Resolve the dying entity's identity either from its still-present container or from
+     * last-known info on the event. The latter fallback is required for tokens, which are
+     * removed from the game by 704.5s in the same SBA pass that puts them in the graveyard
+     * (see [com.wingedsheep.engine.mechanics.sba.zone.TokensInWrongZonesCheck]).
+     */
+    private data class DyingEntityInfo(
+        val cardDefinitionId: String,
+        val name: String
+    )
+
+    private fun resolveDyingEntity(state: GameState, event: ZoneChangeEvent): DyingEntityInfo? {
+        val container = state.getEntity(event.entityId)
+        if (container != null) {
+            // Face-down creatures have no abilities (Rule 707.2)
+            if (container.has<FaceDownComponent>()) return null
+            val cardComponent = container.get<CardComponent>() ?: return null
+            return DyingEntityInfo(cardComponent.cardDefinitionId, cardComponent.name)
+        }
+        // Entity is gone (e.g., token already cleaned up by 704.5s). Fall back to the
+        // last-known info captured on the event.
+        val cardDefId = event.lastKnownCardDefinitionId ?: return null
+        return DyingEntityInfo(cardDefId, event.entityName)
+    }
+
     fun detectDeathTriggers(
         state: GameState,
         event: ZoneChangeEvent,
         triggers: MutableList<PendingTrigger>
     ) {
         val entityId = event.entityId
-        val container = state.getEntity(entityId) ?: return
-        val cardComponent = container.get<CardComponent>() ?: return
-
-        // Face-down creatures have no abilities (Rule 707.2)
-        if (container.has<FaceDownComponent>()) return
+        val info = resolveDyingEntity(state, event) ?: return
 
         // For "When this creature dies" - the creature might be in graveyard now
         // Look up abilities by card definition
-        val abilities = abilityResolver.getTriggeredAbilities(entityId, cardComponent.cardDefinitionId, state)
+        val abilities = abilityResolver.getTriggeredAbilities(entityId, info.cardDefinitionId, state)
         val controllerId = event.ownerId
 
         for (ability in abilities) {
@@ -46,7 +67,7 @@ class DeathAndLeaveTriggerDetector(
                         PendingTrigger(
                             ability = ability,
                             sourceId = entityId,
-                            sourceName = cardComponent.name,
+                            sourceName = info.name,
                             controllerId = controllerId,
                             triggerContext = TriggerContext.fromEvent(event)
                         )
@@ -60,7 +81,7 @@ class DeathAndLeaveTriggerDetector(
                             PendingTrigger(
                                 ability = ability,
                                 sourceId = entityId,
-                                sourceName = cardComponent.name,
+                                sourceName = info.name,
                                 controllerId = controllerId,
                                 triggerContext = TriggerContext.fromEvent(event)
                             )
@@ -101,16 +122,13 @@ class DeathAndLeaveTriggerDetector(
         // For each dead creature, check its triggers against OTHER death events
         for (deadEvent in deathEvents) {
             val deadEntityId = deadEvent.entityId
-            val container = state.getEntity(deadEntityId) ?: continue
-            val cardComponent = container.get<CardComponent>() ?: continue
-
-            // Face-down creatures have no abilities (Rule 707.2)
-            if (container.has<FaceDownComponent>()) continue
 
             // Skip if this creature is still on the battlefield (already handled by main loop)
             if (deadEntityId in state.getBattlefield()) continue
 
-            val abilities = abilityResolver.getTriggeredAbilities(deadEntityId, cardComponent.cardDefinitionId, state)
+            val info = resolveDyingEntity(state, deadEvent) ?: continue
+
+            val abilities = abilityResolver.getTriggeredAbilities(deadEntityId, info.cardDefinitionId, state)
             val controllerId = deadEvent.ownerId
 
             for (ability in abilities) {
@@ -122,7 +140,7 @@ class DeathAndLeaveTriggerDetector(
                             PendingTrigger(
                                 ability = ability,
                                 sourceId = deadEntityId,
-                                sourceName = cardComponent.name,
+                                sourceName = info.name,
                                 controllerId = controllerId,
                                 triggerContext = TriggerContext.fromEvent(otherDeathEvent)
                             )
@@ -225,13 +243,9 @@ class DeathAndLeaveTriggerDetector(
         triggers: MutableList<PendingTrigger>
     ) {
         val entityId = event.entityId
-        val container = state.getEntity(entityId) ?: return
-        val cardComponent = container.get<CardComponent>() ?: return
+        val info = resolveDyingEntity(state, event) ?: return
 
-        // Face-down creatures have no abilities (Rule 707.2)
-        if (container.has<FaceDownComponent>()) return
-
-        val abilities = abilityResolver.getTriggeredAbilities(entityId, cardComponent.cardDefinitionId, state)
+        val abilities = abilityResolver.getTriggeredAbilities(entityId, info.cardDefinitionId, state)
         val controllerId = event.ownerId
 
         for (ability in abilities) {
@@ -240,7 +254,7 @@ class DeathAndLeaveTriggerDetector(
                     PendingTrigger(
                         ability = ability,
                         sourceId = entityId,
-                        sourceName = cardComponent.name,
+                        sourceName = info.name,
                         controllerId = controllerId,
                         triggerContext = TriggerContext.fromEvent(event)
                     )

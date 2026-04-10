@@ -42,6 +42,12 @@ data class ZoneChangeEvent(
     val lastKnownAttachedTo: EntityId? = null,
     /** Last known type line when leaving battlefield (for trigger detection when entity has been cleaned up, e.g., tokens) */
     val lastKnownTypeLine: TypeLine? = null,
+    /**
+     * Last known card definition id when leaving battlefield. Needed so dies/leaves triggers can
+     * still be resolved for tokens after 704.5s cleans them out of the graveyard in the same SBA
+     * pass as they were put there.
+     */
+    val lastKnownCardDefinitionId: String? = null,
     /** X value from the spell that put this permanent onto the battlefield (for ETB triggers using DynamicAmount.XValue) */
     val xValue: Int? = null
 ) : GameEvent
