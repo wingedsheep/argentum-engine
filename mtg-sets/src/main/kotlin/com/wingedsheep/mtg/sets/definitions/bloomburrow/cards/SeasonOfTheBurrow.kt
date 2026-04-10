@@ -55,7 +55,10 @@ val SeasonOfTheBurrow = card("Season of the Burrow") {
                 BudgetMode(
                     cost = 2,
                     effect = SelectTargetEffect(
-                        requirement = TargetObject(filter = TargetFilter.NonlandPermanent),
+                        requirement = TargetObject(
+                            filter = TargetFilter.NonlandPermanent,
+                            id = "target nonland permanent to exile"
+                        ),
                         storeAs = "exileTarget"
                     )
                         .then(Effects.Exile(EffectTarget.PipelineTarget("exileTarget")))
@@ -74,7 +77,8 @@ val SeasonOfTheBurrow = card("Season of the Burrow") {
                             filter = TargetFilter(
                                 GameObjectFilter.Permanent.manaValueAtMost(3).ownedByYou(),
                                 zone = Zone.GRAVEYARD
-                            )
+                            ),
+                            id = "target permanent card with mana value 3 or less in your graveyard"
                         ),
                         storeAs = "returnTarget"
                     )
