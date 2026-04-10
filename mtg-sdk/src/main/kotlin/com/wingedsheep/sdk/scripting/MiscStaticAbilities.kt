@@ -3,44 +3,10 @@ package com.wingedsheep.sdk.scripting
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.scripting.conditions.Condition
-import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.scripting.text.TextReplacer
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-
-/**
- * Global effect that affects multiple permanents.
- */
-@SerialName("GlobalEffect")
-@Serializable
-data class GlobalEffect(
-    val effectType: GlobalEffectType,
-    val filter: GroupFilter = GroupFilter.AllCreatures
-) : StaticAbility {
-    override val description: String = effectType.description
-    override fun applyTextReplacement(replacer: TextReplacer): StaticAbility {
-        val newFilter = filter.applyTextReplacement(replacer)
-        return if (newFilter !== filter) copy(filter = newFilter) else this
-    }
-}
-
-/**
- * Types of global effects from enchantments.
- */
-@Serializable
-enum class GlobalEffectType(val description: String) {
-    ALL_CREATURES_GET_PLUS_ONE_PLUS_ONE("All creatures get +1/+1"),
-    YOUR_CREATURES_GET_PLUS_ONE_PLUS_ONE("Creatures you control get +1/+1"),
-    OPPONENT_CREATURES_GET_MINUS_ONE_MINUS_ONE("Creatures your opponents control get -1/-1"),
-    ALL_CREATURES_HAVE_FLYING("All creatures have flying"),
-    YOUR_CREATURES_HAVE_VIGILANCE("Creatures you control have vigilance"),
-    YOUR_CREATURES_HAVE_LIFELINK("Creatures you control have lifelink"),
-    CREATURES_CANT_ATTACK("Creatures can't attack"),
-    CREATURES_CANT_BLOCK("Creatures can't block"),
-    ALL_CREATURES_MUST_ATTACK("All creatures attack each combat if able"),
-    ALL_CREATURES_MUST_BLOCK("All creatures block each combat if able")
-}
 
 /**
  * You control enchanted permanent.

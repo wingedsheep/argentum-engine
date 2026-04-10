@@ -53,8 +53,9 @@ import com.wingedsheep.sdk.scripting.conditions.IsYourTurn
 import com.wingedsheep.sdk.scripting.conditions.NotCondition
 import com.wingedsheep.sdk.scripting.conditions.SourceHasKeyword
 import com.wingedsheep.sdk.scripting.conditions.SourceHasSubtype
-import com.wingedsheep.sdk.scripting.GlobalEffect
-import com.wingedsheep.sdk.scripting.GlobalEffectType
+import com.wingedsheep.sdk.scripting.CantAttackForCreatureGroup
+import com.wingedsheep.sdk.scripting.MustAttackForCreatureGroup
+import com.wingedsheep.sdk.scripting.MustBlockForCreatureGroup
 import com.wingedsheep.sdk.scripting.GrantKeyword
 import com.wingedsheep.sdk.scripting.GrantKeywordForChosenCreatureType
 import com.wingedsheep.sdk.scripting.RemoveKeywordStatic
@@ -429,6 +430,30 @@ class StaticAbilityHandler(
                     affectsFilter = convertGroupFilter(ability.filter)
                 )
             }
+            is CantAttackForCreatureGroup -> {
+                ContinuousEffectData(
+                    layer = Layer.ABILITY,
+                    sublayer = null,
+                    modification = Modification.SetCantAttack,
+                    affectsFilter = convertGroupFilter(ability.filter)
+                )
+            }
+            is MustAttackForCreatureGroup -> {
+                ContinuousEffectData(
+                    layer = Layer.ABILITY,
+                    sublayer = null,
+                    modification = Modification.SetMustAttack,
+                    affectsFilter = convertGroupFilter(ability.filter)
+                )
+            }
+            is MustBlockForCreatureGroup -> {
+                ContinuousEffectData(
+                    layer = Layer.ABILITY,
+                    sublayer = null,
+                    modification = Modification.SetMustBlock,
+                    affectsFilter = convertGroupFilter(ability.filter)
+                )
+            }
             is CanBlockAdditionalForCreatureGroup -> {
                 ContinuousEffectData(
                     layer = Layer.ABILITY,
@@ -588,7 +613,6 @@ class StaticAbilityHandler(
                     affectsFilter = convertStaticTarget(ability.target)
                 )
             }
-            is GlobalEffect -> convertGlobalEffect(ability)
             is ConditionalStaticAbility -> convertConditionalStaticAbility(ability)
             else -> null
         }
@@ -660,46 +684,6 @@ class StaticAbilityHandler(
         }
         // General case: "as long as you control a [filter]" (e.g., token, enchantment)
         return SourceProjectionCondition.ControllerControlsPermanentMatchingFilter(condition.filter)
-    }
-
-    /**
-     * Convert a GlobalEffect to ContinuousEffectData.
-     */
-    private fun convertGlobalEffect(effect: GlobalEffect): ContinuousEffectData {
-        val (layer, sublayer, modification) = when (effect.effectType) {
-            GlobalEffectType.ALL_CREATURES_GET_PLUS_ONE_PLUS_ONE,
-            GlobalEffectType.YOUR_CREATURES_GET_PLUS_ONE_PLUS_ONE ->
-                Triple(Layer.POWER_TOUGHNESS, Sublayer.MODIFICATIONS, Modification.ModifyPowerToughness(1, 1))
-
-            GlobalEffectType.OPPONENT_CREATURES_GET_MINUS_ONE_MINUS_ONE ->
-                Triple(Layer.POWER_TOUGHNESS, Sublayer.MODIFICATIONS, Modification.ModifyPowerToughness(-1, -1))
-
-            GlobalEffectType.ALL_CREATURES_HAVE_FLYING ->
-                Triple(Layer.ABILITY, null, Modification.GrantKeyword("FLYING"))
-
-            GlobalEffectType.YOUR_CREATURES_HAVE_VIGILANCE ->
-                Triple(Layer.ABILITY, null, Modification.GrantKeyword("VIGILANCE"))
-
-            GlobalEffectType.YOUR_CREATURES_HAVE_LIFELINK ->
-                Triple(Layer.ABILITY, null, Modification.GrantKeyword("LIFELINK"))
-
-            GlobalEffectType.CREATURES_CANT_ATTACK,
-            GlobalEffectType.CREATURES_CANT_BLOCK ->
-                Triple(Layer.ABILITY, null, Modification.NoOp)
-
-            GlobalEffectType.ALL_CREATURES_MUST_ATTACK ->
-                Triple(Layer.ABILITY, null, Modification.SetMustAttack)
-
-            GlobalEffectType.ALL_CREATURES_MUST_BLOCK ->
-                Triple(Layer.ABILITY, null, Modification.SetMustBlock)
-        }
-
-        return ContinuousEffectData(
-            layer = layer,
-            sublayer = sublayer,
-            modification = modification,
-            affectsFilter = convertGroupFilter(effect.filter)
-        )
     }
 
     /**

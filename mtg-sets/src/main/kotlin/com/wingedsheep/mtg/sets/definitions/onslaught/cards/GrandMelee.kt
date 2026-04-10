@@ -2,8 +2,9 @@ package com.wingedsheep.mtg.sets.definitions.onslaught.cards
 
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.GlobalEffect
-import com.wingedsheep.sdk.scripting.GlobalEffectType
+import com.wingedsheep.sdk.scripting.MustAttackForCreatureGroup
+import com.wingedsheep.sdk.scripting.MustBlockForCreatureGroup
+import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 
 /**
  * Grand Melee
@@ -18,11 +19,11 @@ val GrandMelee = card("Grand Melee") {
     oracleText = "All creatures attack each combat if able.\nAll creatures block each combat if able."
 
     staticAbility {
-        ability = GlobalEffect(GlobalEffectType.ALL_CREATURES_MUST_ATTACK)
+        ability = MustAttackForCreatureGroup(GroupFilter.AllCreatures)
     }
 
     staticAbility {
-        ability = GlobalEffect(GlobalEffectType.ALL_CREATURES_MUST_BLOCK)
+        ability = MustBlockForCreatureGroup(GroupFilter.AllCreatures)
     }
 
     metadata {

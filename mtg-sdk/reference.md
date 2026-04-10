@@ -996,7 +996,6 @@ Set via `staticAbility { ability = ... }`:
 - `ModifyStatsByCounterOnSource(counterType, powerModPerCounter, toughnessModPerCounter, target)` — P/T per counter
 - `ModifyStatsPerSharedCreatureType(powerModPerCreature, toughnessModPerCreature, target)` — P/T per creature sharing a type
 - `GrantDynamicStatsEffect(target, powerBonus: DynamicAmount, toughnessBonus: DynamicAmount)`
-- `GlobalEffect(effectType: GlobalEffectType, filter)` — global anthem/debuff
 - `GrantProtection(color, target)` — grant protection from color
 - `GrantProtectionFromChosenColorToGroup(filter: GroupFilter)` — grant protection from chosen color (via `EntersWithColorChoice`) to a group
 
@@ -1007,7 +1006,10 @@ Set via `staticAbility { ability = ... }`:
 ### Combat Restrictions
 
 - `CantAttack(target)` / `CantBlock(target)` / `MustAttack(target)`
+- `CantAttackForCreatureGroup(filter: GroupFilter)` — prevents creatures matching filter from attacking
 - `CantBlockForCreatureGroup(filter: GroupFilter)` — prevents creatures matching filter from blocking (e.g., "Beasts can't block")
+- `MustAttackForCreatureGroup(filter: GroupFilter)` — forces creatures matching filter to attack each combat if able
+- `MustBlockForCreatureGroup(filter: GroupFilter)` — forces creatures matching filter to block each combat if able
 - `CantAttackUnless(condition: CombatCondition, target)` — conditional attack restriction
 - `CantBlockUnless(condition: CombatCondition, target)` — conditional block restriction
 - `CombatCondition.ControlMoreCreatures` — you control more creatures than opponent
@@ -1081,12 +1083,6 @@ Set via `staticAbility { ability = ... }`:
 - `ReduceFaceDownCastingCost(amount)` — reduce face-down casting cost
 - `GrantAlternativeCastingCost(cost: String)` — grants an alternative mana cost for all spells cast by this permanent's controller (e.g., Jodah: `"{W}{U}{B}{R}{G}"`)
 - `ConditionalStaticAbility(ability, condition)` — conditional static
-
-### GlobalEffectType values
-
-`ALL_CREATURES_GET_PLUS_ONE_PLUS_ONE`, `YOUR_CREATURES_GET_PLUS_ONE_PLUS_ONE`,
-`OPPONENT_CREATURES_GET_MINUS_ONE_MINUS_ONE`, `ALL_CREATURES_HAVE_FLYING`, `YOUR_CREATURES_HAVE_VIGILANCE`,
-`YOUR_CREATURES_HAVE_LIFELINK`, `CREATURES_CANT_ATTACK`, `CREATURES_CANT_BLOCK`
 
 ### StaticTarget values
 

@@ -64,6 +64,60 @@ data class CantBlockForCreatureGroup(
 }
 
 /**
+ * Prevents a group of creatures matching a filter from attacking.
+ * Used for enchantments like "Creatures can't attack."
+ *
+ * @property filter The group of creatures that can't attack
+ */
+@SerialName("CantAttackForCreatureGroup")
+@Serializable
+data class CantAttackForCreatureGroup(
+    val filter: GroupFilter
+) : StaticAbility {
+    override val description: String = "${filter.description} can't attack"
+    override fun applyTextReplacement(replacer: TextReplacer): StaticAbility {
+        val newFilter = filter.applyTextReplacement(replacer)
+        return if (newFilter !== filter) copy(filter = newFilter) else this
+    }
+}
+
+/**
+ * Forces a group of creatures matching a filter to attack each combat if able.
+ * Used for enchantments like Grand Melee: "All creatures attack each combat if able."
+ *
+ * @property filter The group of creatures that must attack
+ */
+@SerialName("MustAttackForCreatureGroup")
+@Serializable
+data class MustAttackForCreatureGroup(
+    val filter: GroupFilter
+) : StaticAbility {
+    override val description: String = "${filter.description} attack each combat if able"
+    override fun applyTextReplacement(replacer: TextReplacer): StaticAbility {
+        val newFilter = filter.applyTextReplacement(replacer)
+        return if (newFilter !== filter) copy(filter = newFilter) else this
+    }
+}
+
+/**
+ * Forces a group of creatures matching a filter to block each combat if able.
+ * Used for enchantments like Grand Melee: "All creatures block each combat if able."
+ *
+ * @property filter The group of creatures that must block
+ */
+@SerialName("MustBlockForCreatureGroup")
+@Serializable
+data class MustBlockForCreatureGroup(
+    val filter: GroupFilter
+) : StaticAbility {
+    override val description: String = "${filter.description} block each combat if able"
+    override fun applyTextReplacement(replacer: TextReplacer): StaticAbility {
+        val newFilter = filter.applyTextReplacement(replacer)
+        return if (newFilter !== filter) copy(filter = newFilter) else this
+    }
+}
+
+/**
  * Creature assigns combat damage equal to its toughness rather than its power.
  * Conditional variant: only when toughness is greater than power.
  * Used for cards like Bark of Doran, Doran the Siege Tower, etc.
