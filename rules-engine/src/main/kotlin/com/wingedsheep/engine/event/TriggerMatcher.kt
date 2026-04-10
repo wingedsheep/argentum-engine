@@ -37,7 +37,7 @@ import com.wingedsheep.sdk.scripting.TriggerBinding
 import com.wingedsheep.sdk.scripting.events.DamageType
 import com.wingedsheep.sdk.scripting.events.RecipientFilter
 import com.wingedsheep.sdk.scripting.events.SourceFilter
-import com.wingedsheep.sdk.scripting.events.SpellTypeFilter
+
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.engine.core.GameEvent as EngineGameEvent
 
@@ -134,7 +134,7 @@ class TriggerMatcher(
             is GameEvent.SpellCastEvent -> {
                 event is SpellCastEvent &&
                     matchesPlayer(trigger.player, event.casterId, controllerId) &&
-                    matchesSpellTypeFilter(trigger, event, state) &&
+                    matchesSpellFilter(trigger.spellFilter, event, state) &&
                     (trigger.kicked == null || trigger.kicked == event.wasKicked)
             }
             is GameEvent.NthSpellCastEvent -> {
@@ -627,45 +627,23 @@ class TriggerMatcher(
         }
     }
 
-    fun matchesSpellTypeFilter(
-        trigger: GameEvent.SpellCastEvent,
+    fun matchesSpellFilter(
+        spellFilter: GameObjectFilter,
         event: SpellCastEvent,
         state: GameState
     ): Boolean {
-        val cardComponent = state.getEntity(event.spellEntityId)?.get<CardComponent>()
-            ?: return trigger.spellType == SpellTypeFilter.ANY
+        // No card predicates = match any spell (equivalent to old SpellTypeFilter.ANY)
+        if (spellFilter.cardPredicates.isEmpty()) return true
+
+        val container = state.getEntity(event.spellEntityId) ?: return false
 
         // Face-down spells have no characteristics (CR 707.2) — they don't match any type filter
-        val isFaceDown = state.getEntity(event.spellEntityId)?.get<SpellOnStackComponent>()?.castFaceDown == true
+        val isFaceDown = container.get<SpellOnStackComponent>()?.castFaceDown == true
+        if (isFaceDown) return false
 
-        val typeMatches = when (trigger.spellType) {
-            SpellTypeFilter.ANY -> true
-            SpellTypeFilter.CREATURE -> !isFaceDown && cardComponent.typeLine.isCreature
-            SpellTypeFilter.NONCREATURE -> !isFaceDown && !cardComponent.typeLine.isCreature
-            SpellTypeFilter.INSTANT_OR_SORCERY ->
-                !isFaceDown && (cardComponent.typeLine.isInstant || cardComponent.typeLine.isSorcery)
-            SpellTypeFilter.ENCHANTMENT -> !isFaceDown && cardComponent.typeLine.isEnchantment
-            SpellTypeFilter.HISTORIC -> !isFaceDown && cardComponent.typeLine.isHistoric
-        }
-
-        // orSubtype: match if spellType matches OR spell has this subtype (e.g., "noncreature or Otter spell")
-        val orSubtypeMatches = trigger.orSubtype != null && !isFaceDown &&
-            cardComponent.typeLine.subtypes.contains(trigger.orSubtype!!)
-
-        if (!typeMatches && !orSubtypeMatches) return false
-
-        val mv = if (isFaceDown) 0 else cardComponent.manaValue
-        if (trigger.manaValueAtLeast != null && mv < trigger.manaValueAtLeast!!) return false
-        if (trigger.manaValueAtMost != null && mv > trigger.manaValueAtMost!!) return false
-        if (trigger.manaValueEquals != null && mv != trigger.manaValueEquals!!) return false
-
-        // Check subtype filter (e.g., "cast a Lizard spell")
-        if (trigger.subtype != null) {
-            if (isFaceDown) return false
-            if (!cardComponent.typeLine.subtypes.contains(trigger.subtype!!)) return false
-        }
-
-        return true
+        // Use base-state matching (spells on the stack don't get continuous effects)
+        val context = com.wingedsheep.engine.handlers.PredicateContext(controllerId = event.casterId)
+        return predicateEvaluator.matches(state, event.spellEntityId, spellFilter, context)
     }
 
     /**

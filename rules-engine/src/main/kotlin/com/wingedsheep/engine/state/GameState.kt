@@ -6,8 +6,10 @@ import com.wingedsheep.engine.event.GlobalGrantedTriggeredAbility
 import com.wingedsheep.engine.event.GrantedActivatedAbility
 import com.wingedsheep.engine.event.GrantedTriggeredAbility
 import com.wingedsheep.engine.mechanics.layers.ActiveFloatingEffect
+import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.Phase
 import com.wingedsheep.sdk.core.Step
+import com.wingedsheep.sdk.core.TypeLine
 import com.wingedsheep.engine.state.components.battlefield.GraveyardEntryTurnComponent
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.sdk.core.Zone
@@ -90,8 +92,8 @@ data class GameState(
     /** Per-player spell count this turn, used for Damping Sphere-style tax effects */
     val playerSpellsCastThisTurn: Map<EntityId, Int> = emptyMap(),
 
-    /** Per-player spell types cast this turn with counts, for conditional evasion and "first of type" triggers */
-    val spellTypesCastThisTurn: Map<EntityId, Map<String, Int>> = emptyMap(),
+    /** Per-player spell records cast this turn, for conditional evasion and "first of type" triggers */
+    val spellsCastThisTurnByPlayer: Map<EntityId, List<CastSpellRecord>> = emptyMap(),
 
     /** Pending spell copies — copy the next instant/sorcery spell cast by a player (e.g., Howl of the Horde) */
     val pendingSpellCopies: List<PendingSpellCopy> = emptyList(),
@@ -427,3 +429,15 @@ data class ZoneKey(
 ) {
     override fun toString(): String = "${ownerId.value}:${zoneType.name}"
 }
+
+/**
+ * Snapshot of a spell's card characteristics at cast time,
+ * used for retroactive filter matching (e.g., "did you cast a historic spell this turn?").
+ */
+@Serializable
+data class CastSpellRecord(
+    val typeLine: TypeLine,
+    val manaValue: Int,
+    val colors: Set<Color>,
+    val isFaceDown: Boolean
+)

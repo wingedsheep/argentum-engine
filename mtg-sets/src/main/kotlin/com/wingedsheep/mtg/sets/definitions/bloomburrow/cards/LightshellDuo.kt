@@ -21,7 +21,7 @@ val LightshellDuo = card("Lightshell Duo") {
     power = 3
     toughness = 4
 
-    keywords(Keyword.PROWESS)
+    prowess()
 
     triggeredAbility {
         trigger = Triggers.EntersBattlefield

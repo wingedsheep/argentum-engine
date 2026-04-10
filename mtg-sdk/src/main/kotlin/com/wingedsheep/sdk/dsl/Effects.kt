@@ -1441,6 +1441,6 @@ object Effects {
      */
     fun GrantSpellKeyword(
         keyword: com.wingedsheep.sdk.core.Keyword,
-        spellFilter: com.wingedsheep.sdk.scripting.events.SpellTypeFilter
+        spellFilter: com.wingedsheep.sdk.scripting.GameObjectFilter
     ): Effect = GrantSpellKeywordEffect(keyword, spellFilter)
 }

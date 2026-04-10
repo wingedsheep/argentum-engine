@@ -101,7 +101,7 @@ class TurnManager(
             priorityPassedBy = emptySet(),
             spellsCastThisTurn = 0,
             playerSpellsCastThisTurn = emptyMap(),
-            spellTypesCastThisTurn = emptyMap(),
+            spellsCastThisTurnByPlayer = emptyMap(),
             pendingSpellCopies = emptyList(),
             spellWarpedThisTurn = false
         )

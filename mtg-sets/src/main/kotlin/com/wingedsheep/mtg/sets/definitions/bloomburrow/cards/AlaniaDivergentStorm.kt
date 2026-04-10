@@ -7,6 +7,7 @@ import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.conditions.AnyCondition
 import com.wingedsheep.sdk.scripting.conditions.IsFirstSpellOfTypeCastThisTurn
+import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.CopyTargetSpellEffect
 import com.wingedsheep.sdk.scripting.effects.DrawCardsEffect
 import com.wingedsheep.sdk.scripting.effects.ReflexiveTriggerEffect
@@ -33,9 +34,9 @@ val AlaniaDivergentStorm = card("Alania, Divergent Storm") {
         trigger = Triggers.YouCastSpell
         triggerCondition = AnyCondition(
             listOf(
-                IsFirstSpellOfTypeCastThisTurn("INSTANT"),
-                IsFirstSpellOfTypeCastThisTurn("SORCERY"),
-                IsFirstSpellOfTypeCastThisTurn("SUBTYPE_OTTER")
+                IsFirstSpellOfTypeCastThisTurn(GameObjectFilter.Instant),
+                IsFirstSpellOfTypeCastThisTurn(GameObjectFilter.Sorcery),
+                IsFirstSpellOfTypeCastThisTurn(GameObjectFilter.Any.withSubtype(com.wingedsheep.sdk.core.Subtype("Otter")))
             )
         )
         val opponent = target("opponent", Targets.Opponent)

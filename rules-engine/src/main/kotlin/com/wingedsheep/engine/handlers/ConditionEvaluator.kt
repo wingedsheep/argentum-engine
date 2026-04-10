@@ -424,8 +424,9 @@ class ConditionEvaluator {
         condition: IsFirstSpellOfTypeCastThisTurn,
         context: EffectContext
     ): Boolean {
-        val castCounts = state.spellTypesCastThisTurn[context.controllerId] ?: return false
-        val count = castCounts[condition.spellCategory] ?: 0
+        val records = state.spellsCastThisTurnByPlayer[context.controllerId] ?: return false
+        val evaluator = PredicateEvaluator()
+        val count = records.count { evaluator.matchesFilter(it, condition.spellFilter) }
         return count == 1
     }
 

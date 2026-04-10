@@ -13,8 +13,15 @@
                 "id": "ability_7",
                 "trigger": {
                     "type": "SpellCastEvent",
-                    "spellType": "CREATURE",
-                    "manaValueAtLeast": 6
+                    "spellFilter": {
+                        "cardPredicates": [
+                            "IsCreature",
+                            {
+                                "type": "ManaValueAtLeast",
+                                "min": 6
+                            }
+                        ]
+                    }
                 },
                 "binding": "ANY",
                 "effect": {

@@ -12,7 +12,7 @@ import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Phase
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.model.EntityId
-import com.wingedsheep.sdk.scripting.events.SpellTypeFilter
+import com.wingedsheep.sdk.scripting.GameObjectFilter
 import io.kotest.assertions.withClue
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
@@ -57,7 +57,7 @@ class RalCracklingWitScenarioTest : ScenarioTestBase() {
         val playerId = if (playerNumber == 1) player1Id else player2Id
         state = state.updateEntity(playerId) { c ->
             c.with(GrantedSpellKeywordsComponent(
-                listOf(SpellKeywordGrant(Keyword.STORM, SpellTypeFilter.INSTANT_OR_SORCERY))
+                listOf(SpellKeywordGrant(Keyword.STORM, GameObjectFilter.InstantOrSorcery))
             ))
         }
     }

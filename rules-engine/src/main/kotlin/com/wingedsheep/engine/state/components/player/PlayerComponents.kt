@@ -6,7 +6,7 @@ import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.scripting.effects.ManaRestriction
 import com.wingedsheep.sdk.scripting.events.SourceFilter
-import com.wingedsheep.sdk.scripting.events.SpellTypeFilter
+import com.wingedsheep.sdk.scripting.GameObjectFilter
 import kotlinx.serialization.Serializable
 
 /**
@@ -490,13 +490,13 @@ data class GrantedSpellKeywordsComponent(
 ) : Component
 
 /**
- * A single keyword grant for spells of a specific type.
+ * A single keyword grant for spells matching a filter.
  *
  * @param keyword The keyword to grant (e.g., STORM)
- * @param spellFilter Which spells get the keyword (e.g., INSTANT_OR_SORCERY)
+ * @param spellFilter Which spells get the keyword (e.g., GameObjectFilter.InstantOrSorcery)
  */
 @Serializable
 data class SpellKeywordGrant(
     val keyword: Keyword,
-    val spellFilter: SpellTypeFilter
+    val spellFilter: GameObjectFilter
 )

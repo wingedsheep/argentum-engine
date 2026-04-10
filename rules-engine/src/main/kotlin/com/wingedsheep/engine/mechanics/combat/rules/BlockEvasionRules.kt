@@ -403,9 +403,11 @@ class GrantCantBeBlockedToSmallCreaturesRule : BlockEvasionRule {
 
 /**
  * CantBeBlockedIfCastSpellType: Can't be blocked if the attacker's controller
- * has cast a spell of the specified type this turn (e.g., Relic Runner + historic).
+ * has cast a spell matching the filter this turn (e.g., Relic Runner + historic).
  */
-class CantBeBlockedIfCastSpellTypeRule : BlockEvasionRule {
+class CantBeBlockedIfCastSpellTypeRule(
+    private val predicateEvaluator: com.wingedsheep.engine.handlers.PredicateEvaluator
+) : BlockEvasionRule {
     override fun check(ctx: BlockCheckContext): String? {
         val attackerCard = ctx.state.getEntity(ctx.attackerId)?.get<CardComponent>() ?: return null
         val cardDef = ctx.cardRegistry.getCard(attackerCard.cardDefinitionId) ?: return null
@@ -413,10 +415,10 @@ class CantBeBlockedIfCastSpellTypeRule : BlockEvasionRule {
             ?: return null
 
         val attackerController = ctx.projected.getController(ctx.attackerId) ?: return null
-        val castTypes = ctx.state.spellTypesCastThisTurn[attackerController] ?: return null
+        val records = ctx.state.spellsCastThisTurnByPlayer[attackerController] ?: return null
 
-        if ((castTypes[restriction.spellType.name] ?: 0) > 0) {
-            return "${attackerCard.name} can't be blocked (controller cast a ${restriction.spellType.name.lowercase().replace('_', ' ')} spell this turn)"
+        if (records.any { predicateEvaluator.matchesFilter(it, restriction.spellFilter) }) {
+            return "${attackerCard.name} can't be blocked (controller cast a ${restriction.spellFilter.description} spell this turn)"
         }
         return null
     }
@@ -425,7 +427,9 @@ class CantBeBlockedIfCastSpellTypeRule : BlockEvasionRule {
 /**
  * Default set of block evasion rules, ordered for efficient short-circuiting.
  */
-fun defaultBlockEvasionRules(): List<BlockEvasionRule> = listOf(
+fun defaultBlockEvasionRules(
+    predicateEvaluator: com.wingedsheep.engine.handlers.PredicateEvaluator = com.wingedsheep.engine.handlers.PredicateEvaluator()
+): List<BlockEvasionRule> = listOf(
     UnblockableRule(),
     FlyingRule(),
     HorsemanshipRule(),
@@ -440,7 +444,7 @@ fun defaultBlockEvasionRules(): List<BlockEvasionRule> = listOf(
     CantBeBlockedExceptBySubtypeRule(),
     CantBeBlockedUnlessDefenderSharesCreatureTypeRule(),
     GrantCantBeBlockedToSmallCreaturesRule(),
-    CantBeBlockedIfCastSpellTypeRule(),
+    CantBeBlockedIfCastSpellTypeRule(predicateEvaluator),
     ProtectionFromColorRule(),
     ProtectionFromSubtypeRule(),
     CanOnlyBlockCreaturesWithKeywordRule(),

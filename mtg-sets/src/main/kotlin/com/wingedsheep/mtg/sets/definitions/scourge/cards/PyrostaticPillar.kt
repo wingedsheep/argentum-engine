@@ -6,6 +6,7 @@ import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameEvent
 import com.wingedsheep.sdk.scripting.TriggerBinding
 import com.wingedsheep.sdk.scripting.TriggerSpec
+import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 
@@ -16,7 +17,7 @@ val PyrostaticPillar = card("Pyrostatic Pillar") {
 
     triggeredAbility {
         trigger = TriggerSpec(
-            event = GameEvent.SpellCastEvent(player = Player.Each, manaValueAtMost = 3),
+            event = GameEvent.SpellCastEvent(spellFilter = GameObjectFilter.Any.manaValueAtMost(3), player = Player.Each),
             binding = TriggerBinding.ANY
         )
         effect = Effects.DealDamage(2, EffectTarget.PlayerRef(Player.TriggeringPlayer))

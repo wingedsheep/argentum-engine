@@ -10,7 +10,7 @@ import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.CreateTokenEffect
-import com.wingedsheep.sdk.scripting.events.SpellTypeFilter
+import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 
 /**
@@ -57,7 +57,7 @@ val RalCracklingWit = card("Ral, Crackling Wit") {
         effect = CompositeEffect(
             listOf(
                 Effects.DrawCards(3),
-                Effects.GrantSpellKeyword(Keyword.STORM, SpellTypeFilter.INSTANT_OR_SORCERY)
+                Effects.GrantSpellKeyword(Keyword.STORM, GameObjectFilter.InstantOrSorcery)
             )
         )
     }

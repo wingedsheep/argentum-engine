@@ -1168,14 +1168,9 @@ class ClientStateTransformer(
         val grantedKeywords = playerContainer?.get<GrantedSpellKeywordsComponent>()
         if (grantedKeywords != null) {
             for (grant in grantedKeywords.grants) {
-                val spellTypeDesc = when (grant.spellFilter) {
-                    com.wingedsheep.sdk.scripting.events.SpellTypeFilter.ANY -> "Spells"
-                    com.wingedsheep.sdk.scripting.events.SpellTypeFilter.CREATURE -> "Creature spells"
-                    com.wingedsheep.sdk.scripting.events.SpellTypeFilter.NONCREATURE -> "Noncreature spells"
-                    com.wingedsheep.sdk.scripting.events.SpellTypeFilter.INSTANT_OR_SORCERY -> "Instant and sorcery spells"
-                    com.wingedsheep.sdk.scripting.events.SpellTypeFilter.ENCHANTMENT -> "Enchantment spells"
-                    com.wingedsheep.sdk.scripting.events.SpellTypeFilter.HISTORIC -> "Historic spells"
-                }
+                val filterDesc = grant.spellFilter.description
+                val spellTypeDesc = if (filterDesc == "card" || filterDesc.isBlank()) "Spells"
+                    else "${filterDesc.replaceFirstChar { it.uppercase() }} spells"
                 effects.add(
                     ClientPlayerEffect(
                         effectId = "emblem_spell_keyword_${grant.keyword.name.lowercase()}",

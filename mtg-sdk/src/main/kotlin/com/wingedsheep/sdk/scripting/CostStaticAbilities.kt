@@ -251,17 +251,16 @@ sealed interface CostReductionSource {
 }
 
 /**
- * Reduces the colored mana cost of the first spell of a type you cast each turn,
+ * Reduces the colored mana cost of the first spell matching a filter you cast each turn,
  * by a per-unit mana symbol multiplied by a dynamic count.
  * Used for Eluge: "The first instant or sorcery spell you cast each turn costs {U} less
  * for each land you control with a flood counter on it."
  *
- * This is a battlefield-based static ability. The engine checks the player's spell type
- * cast count to determine "first of type" eligibility, then evaluates the count source
+ * This is a battlefield-based static ability. The engine checks the player's spell records
+ * to determine "first of type" eligibility, then evaluates the count source
  * and applies colored mana reduction.
  *
  * @property spellFilter The filter that spells must match (card predicates only)
- * @property spellCategory The spell category for "first of type" tracking (e.g., "INSTANT_OR_SORCERY")
  * @property manaReductionPerUnit The colored mana symbol to remove per unit (e.g., "{U}")
  * @property countSource How the number of reduction units is determined
  */
@@ -269,11 +268,10 @@ sealed interface CostReductionSource {
 @Serializable
 data class ReduceFirstSpellOfTypeColoredCost(
     val spellFilter: GameObjectFilter,
-    val spellCategory: String,
     val manaReductionPerUnit: String,
     val countSource: CostReductionSource
 ) : StaticAbility {
-    override val description: String = "The first ${spellCategory.lowercase().replace('_', ' ')} spell you cast each turn costs $manaReductionPerUnit less to cast for each ${countSource.description}"
+    override val description: String = "The first ${spellFilter.description} spell you cast each turn costs $manaReductionPerUnit less to cast for each ${countSource.description}"
     override fun applyTextReplacement(replacer: TextReplacer): StaticAbility {
         val newFilter = spellFilter.applyTextReplacement(replacer)
         return if (newFilter !== spellFilter) copy(spellFilter = newFilter) else this

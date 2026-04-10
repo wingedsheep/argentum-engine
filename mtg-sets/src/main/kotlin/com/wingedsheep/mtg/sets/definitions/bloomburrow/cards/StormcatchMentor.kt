@@ -23,7 +23,8 @@ val StormcatchMentor = card("Stormcatch Mentor") {
     toughness = 1
     oracleText = "Haste\nProwess (Whenever you cast a noncreature spell, this creature gets +1/+1 until end of turn.)\nInstant and sorcery spells you cast cost {1} less to cast."
 
-    keywords(Keyword.HASTE, Keyword.PROWESS)
+    keywords(Keyword.HASTE)
+    prowess()
 
     staticAbility {
         ability = ReduceSpellCostByFilter(

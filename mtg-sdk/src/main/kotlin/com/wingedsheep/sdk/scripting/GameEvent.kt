@@ -8,7 +8,6 @@ import com.wingedsheep.sdk.scripting.events.CounterTypeFilter
 import com.wingedsheep.sdk.scripting.events.DamageType
 import com.wingedsheep.sdk.scripting.events.RecipientFilter
 import com.wingedsheep.sdk.scripting.events.SourceFilter
-import com.wingedsheep.sdk.scripting.events.SpellTypeFilter
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.text.TextReplaceable
 import com.wingedsheep.sdk.scripting.text.TextReplacer
@@ -33,7 +32,7 @@ import kotlinx.serialization.Serializable
  *
  * Supporting filter types are organized in the events/ subdirectory:
  * - EventFilters.kt - RecipientFilter, SourceFilter, DamageType,
- *                     CounterTypeFilter, ControllerFilter, Player, SpellTypeFilter
+ *                     CounterTypeFilter, ControllerFilter, Player
  * - Zone.kt - Zone enumeration
  */
 @Serializable
@@ -568,39 +567,21 @@ sealed interface GameEvent : TextReplaceable<GameEvent> {
     @SerialName("SpellCastEvent")
     @Serializable
     data class SpellCastEvent(
-        val spellType: SpellTypeFilter = SpellTypeFilter.ANY,
-        val manaValueAtLeast: Int? = null,
-        val manaValueAtMost: Int? = null,
-        val manaValueEquals: Int? = null,
+        val spellFilter: GameObjectFilter = GameObjectFilter.Any,
         val kicked: Boolean? = null,
-        val player: Player = Player.You,
-        val subtype: Subtype? = null,
-        val orSubtype: Subtype? = null
+        val player: Player = Player.You
     ) : GameEvent {
         override val description: String = buildString {
             append(player.description)
             append(" casts ")
             if (kicked == true) append("a kicked ")
-            if (subtype != null) {
-                append("a ${subtype.value} spell")
-            } else if (orSubtype != null) {
-                when (spellType) {
-                    SpellTypeFilter.NONCREATURE -> append("a noncreature or ${orSubtype.value} spell")
-                    else -> append("a spell or ${orSubtype.value} spell")
-                }
+            val filterDesc = spellFilter.description
+            if (filterDesc == "card" || filterDesc.isBlank()) {
+                if (kicked != true) append("a spell") else append("spell")
             } else {
-                when (spellType) {
-                    SpellTypeFilter.ANY -> if (kicked != true) append("a spell") else append("spell")
-                    SpellTypeFilter.CREATURE -> if (kicked != true) append("a creature spell") else append("creature spell")
-                    SpellTypeFilter.NONCREATURE -> if (kicked != true) append("a noncreature spell") else append("noncreature spell")
-                    SpellTypeFilter.INSTANT_OR_SORCERY -> if (kicked != true) append("an instant or sorcery spell") else append("instant or sorcery spell")
-                    SpellTypeFilter.ENCHANTMENT -> if (kicked != true) append("an enchantment spell") else append("enchantment spell")
-                    SpellTypeFilter.HISTORIC -> if (kicked != true) append("a historic spell") else append("historic spell")
-                }
+                if (kicked != true) append("a ") else Unit
+                append("$filterDesc spell")
             }
-            if (manaValueAtLeast != null) append(" with mana value $manaValueAtLeast or greater")
-            if (manaValueAtMost != null) append(" with mana value $manaValueAtMost or less")
-            if (manaValueEquals != null) append(" with mana value $manaValueEquals")
         }
 
         override fun applyTextReplacement(replacer: TextReplacer): GameEvent = this

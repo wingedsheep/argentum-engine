@@ -5,7 +5,7 @@ import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.effects.AddCountersEffect
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
-import com.wingedsheep.sdk.scripting.events.SpellTypeFilter
+import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.GameEvent.SpellCastEvent
 import com.wingedsheep.sdk.scripting.TriggerBinding
 import com.wingedsheep.sdk.scripting.TriggerSpec
@@ -29,8 +29,7 @@ val Kurgadon = card("Kurgadon") {
     triggeredAbility {
         trigger = TriggerSpec(
             SpellCastEvent(
-                spellType = SpellTypeFilter.CREATURE,
-                manaValueAtLeast = 6,
+                spellFilter = GameObjectFilter.Creature.manaValueAtLeast(6),
                 player = Player.You
             ),
             TriggerBinding.ANY

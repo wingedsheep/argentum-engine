@@ -1,5 +1,6 @@
 package com.wingedsheep.sdk.scripting.conditions
 
+import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.text.TextReplacer
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -127,18 +128,16 @@ data object OpponentLostLifeThisTurn : Condition {
 }
 
 /**
- * Condition: "if this is the first spell of a given type category cast by you this turn"
- * Checks the per-player spell type count tracker. The spell category uses the same keys
- * as GameState.spellTypesCastThisTurn (e.g., "INSTANT", "SORCERY", "SUBTYPE_OTTER").
- * The condition is true if the count for that category is exactly 1 (just this spell).
- * Used for Alania, Divergent Storm.
+ * Condition: "if this is the first spell matching the given filter cast by you this turn"
+ * Checks the per-player spell record tracker. The condition is true if exactly one spell
+ * matching the filter has been cast (just this spell). Used for Alania, Divergent Storm.
  */
 @SerialName("IsFirstSpellOfTypeCastThisTurn")
 @Serializable
 data class IsFirstSpellOfTypeCastThisTurn(
-    val spellCategory: String
+    val spellFilter: GameObjectFilter
 ) : Condition {
-    override val description: String = "if it's the first ${spellCategory.lowercase().replace('_', ' ')} spell you've cast this turn"
+    override val description: String = "if it's the first ${spellFilter.description} spell you've cast this turn"
     override fun applyTextReplacement(replacer: TextReplacer): Condition = this
 }
 

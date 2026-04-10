@@ -32,7 +32,8 @@ val EmberheartChallenger = card("Emberheart Challenger") {
     toughness = 2
     oracleText = "Haste\nProwess\nValiant — Whenever this creature becomes the target of a spell or ability you control for the first time each turn, exile the top card of your library. Until end of turn, you may play that card."
 
-    keywords(Keyword.HASTE, Keyword.PROWESS)
+    keywords(Keyword.HASTE)
+    prowess()
 
     triggeredAbility {
         trigger = Triggers.Valiant

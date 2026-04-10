@@ -168,24 +168,6 @@ sealed interface SourceFilter {
 }
 
 // =============================================================================
-// Spell Type Filters
-// =============================================================================
-
-/**
- * Filter for spell types in triggers.
- */
-@Serializable
-enum class SpellTypeFilter {
-    ANY,
-    CREATURE,
-    NONCREATURE,
-    INSTANT_OR_SORCERY,
-    ENCHANTMENT,
-    /** Artifacts, legendaries, and Sagas. */
-    HISTORIC
-}
-
-// =============================================================================
 // Damage Type - Classification of damage
 // =============================================================================
 

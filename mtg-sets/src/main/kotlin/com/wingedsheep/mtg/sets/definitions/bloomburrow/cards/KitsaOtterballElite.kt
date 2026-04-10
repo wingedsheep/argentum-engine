@@ -33,7 +33,8 @@ val KitsaOtterballElite = card("Kitsa, Otterball Elite") {
     toughness = 3
     oracleText = "Vigilance\nProwess (Whenever you cast a noncreature spell, this creature gets +1/+1 until end of turn.)\n{T}: Draw a card, then discard a card.\n{2}, {T}: Copy target instant or sorcery spell you control. You may choose new targets for the copy. Activate only if Kitsa's power is 3 or greater."
 
-    keywords(Keyword.VIGILANCE, Keyword.PROWESS)
+    keywords(Keyword.VIGILANCE)
+    prowess()
 
     // {T}: Draw a card, then discard a card.
     activatedAbility {

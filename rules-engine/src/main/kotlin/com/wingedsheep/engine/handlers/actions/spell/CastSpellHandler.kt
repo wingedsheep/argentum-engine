@@ -65,7 +65,7 @@ import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.PlayFromTopOfLibrary
 import com.wingedsheep.sdk.scripting.predicates.CardPredicate
 import com.wingedsheep.sdk.core.Keyword
-import com.wingedsheep.sdk.scripting.events.SpellTypeFilter
+
 import com.wingedsheep.engine.handlers.effects.TargetResolutionUtils.toEntityId
 import com.wingedsheep.engine.state.components.player.GrantedSpellKeywordsComponent
 import com.wingedsheep.engine.state.components.stack.TriggeredAbilityOnStackComponent
@@ -996,30 +996,18 @@ class CastSpellHandler(
             spellWarpedThisTurn = currentState.spellWarpedThisTurn || wasWarped
         )
 
-        // Track spell types cast this turn (for conditional evasion like Relic Runner, and "first of type" triggers)
-        if (!action.castFaceDown) {
-            val spellTypes = buildSet {
-                add("ANY")
-                if (cardComponent.typeLine.isCreature) add("CREATURE")
-                if (!cardComponent.typeLine.isCreature) add("NONCREATURE")
-                if (cardComponent.typeLine.isInstant) add("INSTANT")
-                if (cardComponent.typeLine.isSorcery) add("SORCERY")
-                if (cardComponent.typeLine.isInstant || cardComponent.typeLine.isSorcery) add("INSTANT_OR_SORCERY")
-                if (cardComponent.typeLine.isEnchantment) add("ENCHANTMENT")
-                if (cardComponent.typeLine.isArtifact || cardComponent.typeLine.isLegendary) add("HISTORIC")
-                // Track subtypes for "first Otter spell" etc.
-                for (subtype in cardComponent.typeLine.subtypes) {
-                    add("SUBTYPE_${subtype.value.uppercase()}")
-                }
-            }
-            val existingCounts = currentState.spellTypesCastThisTurn[action.playerId] ?: emptyMap()
-            val updatedCounts = existingCounts.toMutableMap()
-            for (type in spellTypes) {
-                updatedCounts[type] = (updatedCounts[type] ?: 0) + 1
-            }
+        // Track spell records cast this turn (for conditional evasion like Relic Runner, and "first of type" triggers)
+        run {
+            val record = com.wingedsheep.engine.state.CastSpellRecord(
+                typeLine = cardComponent.typeLine,
+                manaValue = cardComponent.manaValue,
+                colors = cardComponent.colors,
+                isFaceDown = action.castFaceDown
+            )
+            val existing = currentState.spellsCastThisTurnByPlayer[action.playerId] ?: emptyList()
             currentState = currentState.copy(
-                spellTypesCastThisTurn = currentState.spellTypesCastThisTurn +
-                    (action.playerId to updatedCounts)
+                spellsCastThisTurnByPlayer = currentState.spellsCastThisTurnByPlayer +
+                    (action.playerId to existing + record)
             )
         }
 
@@ -1066,15 +1054,10 @@ class CastSpellHandler(
         val hasStormFromGrant = run {
             val playerContainer = currentCastState.getEntity(action.playerId)
             val grants = playerContainer?.get<GrantedSpellKeywordsComponent>()?.grants ?: emptyList()
+            val evalContext = PredicateContext(controllerId = action.playerId)
             grants.any { grant ->
-                grant.keyword == Keyword.STORM && when (grant.spellFilter) {
-                    SpellTypeFilter.ANY -> true
-                    SpellTypeFilter.CREATURE -> cardComponent.typeLine.isCreature
-                    SpellTypeFilter.NONCREATURE -> !cardComponent.typeLine.isCreature
-                    SpellTypeFilter.INSTANT_OR_SORCERY -> cardComponent.typeLine.isInstant || cardComponent.typeLine.isSorcery
-                    SpellTypeFilter.ENCHANTMENT -> cardComponent.typeLine.isEnchantment
-                    SpellTypeFilter.HISTORIC -> cardComponent.typeLine.isHistoric
-                }
+                grant.keyword == Keyword.STORM &&
+                    predicateEvaluator.matches(currentCastState, action.cardId, grant.spellFilter, evalContext)
             }
         }
         if (!action.castFaceDown && stormCount > 0 && cardDef != null &&

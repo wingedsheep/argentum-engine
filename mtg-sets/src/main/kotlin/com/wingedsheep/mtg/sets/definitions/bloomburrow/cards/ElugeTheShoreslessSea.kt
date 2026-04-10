@@ -63,7 +63,6 @@ val ElugeTheShoreslessSea = card("Eluge, the Shoreless Sea") {
     staticAbility {
         ability = ReduceFirstSpellOfTypeColoredCost(
             spellFilter = GameObjectFilter.InstantOrSorcery,
-            spellCategory = "INSTANT_OR_SORCERY",
             manaReductionPerUnit = "{U}",
             countSource = CostReductionSource.PermanentsWithCounterYouControl(
                 filter = GameObjectFilter.Land,

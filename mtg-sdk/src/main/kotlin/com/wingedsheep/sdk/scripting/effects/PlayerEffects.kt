@@ -4,7 +4,7 @@ import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.scripting.Duration
 import com.wingedsheep.sdk.scripting.TriggeredAbility
 import com.wingedsheep.sdk.scripting.events.SourceFilter
-import com.wingedsheep.sdk.scripting.events.SpellTypeFilter
+import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.text.TextReplacer
@@ -337,10 +337,10 @@ data object GiftGivenEffect : Effect {
 @Serializable
 data class GrantSpellKeywordEffect(
     val keyword: Keyword,
-    val spellFilter: SpellTypeFilter
+    val spellFilter: GameObjectFilter
 ) : Effect {
     override val description: String =
-        "${spellFilter.name.lowercase().replace('_', ' ')} spells you cast have ${keyword.displayName.lowercase()}"
+        "${spellFilter.description} spells you cast have ${keyword.displayName.lowercase()}"
 
     override fun applyTextReplacement(replacer: TextReplacer): Effect = this
 }

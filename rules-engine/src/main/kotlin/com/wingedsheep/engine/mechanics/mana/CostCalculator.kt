@@ -516,7 +516,8 @@ class CostCalculator(
                 if (ability is ReduceFirstSpellOfTypeColoredCost &&
                     matchesCardDefinition(cardDef, ability.spellFilter)
                 ) {
-                    val castCount = state.spellTypesCastThisTurn[casterId]?.get(ability.spellCategory) ?: 0
+                    val records = state.spellsCastThisTurnByPlayer[casterId] ?: emptyList()
+                    val castCount = records.count { predicateEvaluator.matchesFilter(it, ability.spellFilter) }
                     if (castCount == 0) {
                         val units = evaluateReduction(state, ability.countSource, casterId)
                         val reductionSymbol = ManaCost.parse(ability.manaReductionPerUnit)

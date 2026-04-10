@@ -26,6 +26,7 @@ import com.wingedsheep.sdk.scripting.predicates.CardPredicate
 import com.wingedsheep.sdk.scripting.predicates.ControllerPredicate
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.predicates.StatePredicate
+import com.wingedsheep.engine.state.CastSpellRecord
 
 /**
  * Evaluates the new unified predicates and filters against game state.
@@ -718,6 +719,96 @@ class PredicateEvaluator {
                     ControllerPredicate.OwnedByYou, ControllerPredicate.OwnedByOpponent -> true
                 }
             }
+        }
+    }
+
+    // =========================================================================
+    // CastSpellRecord matching (for retroactive spell-type queries)
+    // =========================================================================
+
+    /**
+     * Evaluate a GameObjectFilter against a CastSpellRecord (a snapshot of a spell's
+     * characteristics at cast time). Used for "did you cast a historic spell this turn?" etc.
+     *
+     * Only card predicates are evaluated — state and controller predicates are skipped
+     * since they're not meaningful for historical cast records.
+     *
+     * Face-down spells have no characteristics per CR 707.2, so only filters with
+     * no card predicates (i.e. GameObjectFilter.Any) match them.
+     */
+    fun matchesFilter(record: CastSpellRecord, filter: GameObjectFilter): Boolean {
+        if (filter.cardPredicates.isEmpty()) return true
+        if (record.isFaceDown) return false
+
+        return if (filter.matchAll) {
+            filter.cardPredicates.all { matchesRecordPredicate(record, it) }
+        } else {
+            filter.cardPredicates.any { matchesRecordPredicate(record, it) }
+        }
+    }
+
+    private fun matchesRecordPredicate(record: CastSpellRecord, predicate: CardPredicate): Boolean {
+        val typeLine = record.typeLine
+        return when (predicate) {
+            // Type predicates
+            CardPredicate.IsCreature -> typeLine.isCreature
+            CardPredicate.IsLand -> typeLine.isLand
+            CardPredicate.IsArtifact -> typeLine.isArtifact
+            CardPredicate.IsEnchantment -> typeLine.isEnchantment
+            CardPredicate.IsPlaneswalker -> com.wingedsheep.sdk.core.CardType.PLANESWALKER in typeLine.cardTypes
+            CardPredicate.IsInstant -> typeLine.isInstant
+            CardPredicate.IsSorcery -> typeLine.isSorcery
+            CardPredicate.IsBasicLand -> typeLine.isBasicLand
+            CardPredicate.IsPermanent -> typeLine.isPermanent
+            CardPredicate.IsNonland -> !typeLine.isLand
+            CardPredicate.IsNoncreature -> !typeLine.isCreature
+            CardPredicate.IsNonenchantment -> !typeLine.isEnchantment
+            CardPredicate.IsToken -> false // cast spells are never tokens
+            CardPredicate.IsNontoken -> true
+            CardPredicate.IsLegendary -> typeLine.isLegendary
+            CardPredicate.IsNonlegendary -> !typeLine.isLegendary
+
+            // Color predicates
+            is CardPredicate.HasColor -> predicate.color in record.colors
+            is CardPredicate.NotColor -> predicate.color !in record.colors
+            CardPredicate.IsColorless -> record.colors.isEmpty()
+            CardPredicate.IsMulticolored -> record.colors.size > 1
+            CardPredicate.IsMonocolored -> record.colors.size == 1
+
+            // Subtype predicates
+            is CardPredicate.HasSubtype -> typeLine.hasSubtype(predicate.subtype)
+            is CardPredicate.NotSubtype -> !typeLine.hasSubtype(predicate.subtype)
+            is CardPredicate.HasAnyOfSubtypes -> predicate.subtypes.any { typeLine.hasSubtype(it) }
+            is CardPredicate.HasBasicLandType -> typeLine.hasSubtype(Subtype(predicate.landType))
+
+            // Mana value predicates
+            is CardPredicate.ManaValueEquals -> record.manaValue == predicate.value
+            is CardPredicate.ManaValueAtMost -> record.manaValue <= predicate.max
+            is CardPredicate.ManaValueAtLeast -> record.manaValue >= predicate.min
+
+            // Power/toughness — not meaningful for cast records
+            is CardPredicate.PowerEquals, is CardPredicate.PowerAtMost, is CardPredicate.PowerAtLeast,
+            is CardPredicate.ToughnessEquals, is CardPredicate.ToughnessAtMost, is CardPredicate.ToughnessAtLeast,
+            is CardPredicate.PowerOrToughnessAtLeast -> false
+
+            // Name predicates — not stored in record
+            is CardPredicate.NameEquals -> false
+
+            // Keyword predicates — not stored in record
+            is CardPredicate.HasKeyword, is CardPredicate.NotKeyword -> false
+
+            // Source-relative and context predicates — not applicable
+            CardPredicate.NotOfSourceChosenType, CardPredicate.SharesCreatureTypeWithSource,
+            CardPredicate.SharesCreatureTypeWithTriggeringEntity -> false
+            is CardPredicate.HasSubtypeFromVariable, is CardPredicate.HasSubtypeInStoredList -> false
+
+            // Stack ability check — cast spells are not abilities
+            CardPredicate.IsActivatedOrTriggeredAbility -> false
+
+            // Composite predicates
+            is CardPredicate.And -> predicate.predicates.all { matchesRecordPredicate(record, it) }
+            is CardPredicate.Or -> predicate.predicates.any { matchesRecordPredicate(record, it) }
+            is CardPredicate.Not -> !matchesRecordPredicate(record, predicate.predicate)
         }
     }
 }

@@ -3,7 +3,7 @@ package com.wingedsheep.mtg.sets.definitions.dominaria.cards
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.CantBeBlockedIfCastSpellType
-import com.wingedsheep.sdk.scripting.events.SpellTypeFilter
+import com.wingedsheep.sdk.scripting.GameObjectFilter
 
 val RelicRunner = card("Relic Runner") {
     manaCost = "{1}{U}"
@@ -13,7 +13,7 @@ val RelicRunner = card("Relic Runner") {
     toughness = 1
 
     staticAbility {
-        ability = CantBeBlockedIfCastSpellType(spellType = SpellTypeFilter.HISTORIC)
+        ability = CantBeBlockedIfCastSpellType(spellFilter = GameObjectFilter.Historic)
     }
 
     metadata {

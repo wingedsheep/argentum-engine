@@ -11,7 +11,7 @@ import com.wingedsheep.sdk.scripting.TriggerSpec
 import com.wingedsheep.sdk.scripting.events.DamageType
 import com.wingedsheep.sdk.scripting.events.RecipientFilter
 import com.wingedsheep.sdk.scripting.events.SourceFilter
-import com.wingedsheep.sdk.scripting.events.SpellTypeFilter
+
 import com.wingedsheep.sdk.scripting.predicates.CardPredicate
 import com.wingedsheep.sdk.scripting.predicates.ControllerPredicate
 import com.wingedsheep.sdk.scripting.references.Player
@@ -535,7 +535,7 @@ object Triggers {
      * Whenever you cast a creature spell.
      */
     val YouCastCreature: TriggerSpec = TriggerSpec(
-        event = SpellCastEvent(spellType = SpellTypeFilter.CREATURE, player = Player.You),
+        event = SpellCastEvent(spellFilter = GameObjectFilter.Creature, player = Player.You),
         binding = TriggerBinding.ANY
     )
 
@@ -543,7 +543,7 @@ object Triggers {
      * Whenever you cast a noncreature spell.
      */
     val YouCastNoncreature: TriggerSpec = TriggerSpec(
-        event = SpellCastEvent(spellType = SpellTypeFilter.NONCREATURE, player = Player.You),
+        event = SpellCastEvent(spellFilter = GameObjectFilter.Noncreature, player = Player.You),
         binding = TriggerBinding.ANY
     )
 
@@ -552,7 +552,10 @@ object Triggers {
      * Uses OR logic: triggers on noncreature spells OR spells with the given subtype.
      */
     fun YouCastNoncreatureOrSubtype(subtype: Subtype): TriggerSpec = TriggerSpec(
-        event = SpellCastEvent(spellType = SpellTypeFilter.NONCREATURE, orSubtype = subtype, player = Player.You),
+        event = SpellCastEvent(
+            spellFilter = GameObjectFilter.Noncreature or GameObjectFilter.Any.withSubtype(subtype),
+            player = Player.You
+        ),
         binding = TriggerBinding.ANY
     )
 
@@ -560,7 +563,7 @@ object Triggers {
      * Whenever you cast an instant or sorcery.
      */
     val YouCastInstantOrSorcery: TriggerSpec = TriggerSpec(
-        event = SpellCastEvent(spellType = SpellTypeFilter.INSTANT_OR_SORCERY, player = Player.You),
+        event = SpellCastEvent(spellFilter = GameObjectFilter.InstantOrSorcery, player = Player.You),
         binding = TriggerBinding.ANY
     )
 
@@ -568,7 +571,7 @@ object Triggers {
      * Whenever you cast an enchantment spell.
      */
     val YouCastEnchantment: TriggerSpec = TriggerSpec(
-        event = SpellCastEvent(spellType = SpellTypeFilter.ENCHANTMENT, player = Player.You),
+        event = SpellCastEvent(spellFilter = GameObjectFilter.Enchantment, player = Player.You),
         binding = TriggerBinding.ANY
     )
 
@@ -577,7 +580,7 @@ object Triggers {
      * Historic = artifact, legendary, or Saga.
      */
     val YouCastHistoric: TriggerSpec = TriggerSpec(
-        event = SpellCastEvent(spellType = SpellTypeFilter.HISTORIC, player = Player.You),
+        event = SpellCastEvent(spellFilter = GameObjectFilter.Historic, player = Player.You),
         binding = TriggerBinding.ANY
     )
 
@@ -586,7 +589,7 @@ object Triggers {
      * Example: "Whenever you cast a Lizard spell" → YouCastSubtype(Subtype.LIZARD)
      */
     fun YouCastSubtype(subtype: Subtype): TriggerSpec = TriggerSpec(
-        event = SpellCastEvent(player = Player.You, subtype = subtype),
+        event = SpellCastEvent(spellFilter = GameObjectFilter.Any.withSubtype(subtype), player = Player.You),
         binding = TriggerBinding.ANY
     )
 

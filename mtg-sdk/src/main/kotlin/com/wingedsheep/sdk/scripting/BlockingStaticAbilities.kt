@@ -2,7 +2,6 @@ package com.wingedsheep.sdk.scripting
 
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.Keyword
-import com.wingedsheep.sdk.scripting.events.SpellTypeFilter
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.scripting.text.TextReplacer
 import kotlinx.serialization.SerialName
@@ -213,23 +212,24 @@ data class GrantCantBeBlockedToSmallCreatures(
 }
 
 /**
- * This creature can't be blocked if its controller has cast a spell of the specified
- * type this turn. Used for Relic Runner: "can't be blocked if you've cast a historic
- * spell this turn."
+ * This creature can't be blocked if its controller has cast a spell matching
+ * the given filter this turn. Used for Relic Runner: "can't be blocked if you've
+ * cast a historic spell this turn."
  *
- * The engine tracks which spell types each player has cast this turn in
- * `GameState.spellTypesCastThisTurn`. The block evasion rule checks this map.
+ * The engine tracks spell records per player per turn in
+ * `GameState.spellsCastThisTurnByPlayer`. The block evasion rule evaluates the filter
+ * against those records.
  *
- * @property spellType The type of spell that grants unblockability when cast
+ * @property spellFilter The filter that cast spells must match to grant unblockability
  * @property target What this ability applies to
  */
 @SerialName("CantBeBlockedIfCastSpellType")
 @Serializable
 data class CantBeBlockedIfCastSpellType(
-    val spellType: SpellTypeFilter,
+    val spellFilter: GameObjectFilter,
     val target: StaticTarget = StaticTarget.SourceCreature
 ) : StaticAbility {
-    override val description: String = "can't be blocked if you've cast a ${spellType.name.lowercase().replace('_', ' ')} spell this turn"
+    override val description: String = "can't be blocked if you've cast a ${spellFilter.description} spell this turn"
     override fun applyTextReplacement(replacer: TextReplacer): StaticAbility = this
 }
 

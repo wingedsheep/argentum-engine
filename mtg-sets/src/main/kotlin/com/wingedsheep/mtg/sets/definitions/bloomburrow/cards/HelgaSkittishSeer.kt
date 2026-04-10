@@ -13,7 +13,7 @@ import com.wingedsheep.sdk.scripting.effects.AddCountersEffect
 import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.DrawCardsEffect
 import com.wingedsheep.sdk.scripting.effects.GainLifeEffect
-import com.wingedsheep.sdk.scripting.events.SpellTypeFilter
+import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
@@ -46,8 +46,7 @@ val HelgaSkittishSeer = card("Helga, Skittish Seer") {
     triggeredAbility {
         trigger = TriggerSpec(
             SpellCastEvent(
-                spellType = SpellTypeFilter.CREATURE,
-                manaValueAtLeast = 4,
+                spellFilter = GameObjectFilter.Creature.manaValueAtLeast(4),
                 player = Player.You
             ),
             TriggerBinding.ANY
