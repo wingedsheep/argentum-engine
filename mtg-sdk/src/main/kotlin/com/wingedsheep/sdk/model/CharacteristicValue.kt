@@ -17,10 +17,10 @@ import kotlinx.serialization.Serializable
  * CharacteristicValue.Fixed(3)
  *
  * // Dynamic value (Tarmogoyf)
- * CharacteristicValue.Dynamic(DynamicAmount.CardTypesInAllGraveyards)
+ * CharacteristicValue.Dynamic(DynamicAmount.AggregateZone(Player.Each, Zone.GRAVEYARD, aggregation = Aggregation.DISTINCT_TYPES))
  *
  * // Dynamic with offset (Tarmogoyf's toughness = * + 1)
- * CharacteristicValue.DynamicWithOffset(DynamicAmount.CardTypesInAllGraveyards, 1)
+ * CharacteristicValue.DynamicWithOffset(DynamicAmount.AggregateZone(Player.Each, Zone.GRAVEYARD, aggregation = Aggregation.DISTINCT_TYPES), 1)
  * ```
  */
 @Serializable(with = CharacteristicValueSerializer::class)

@@ -172,7 +172,7 @@ class CardBuilder(private val name: String) {
 
     /**
      * Set dynamic stats from the same source with optional offsets.
-     * Example: `dynamicStats(DynamicAmount.CardTypesInAllGraveyards, toughnessOffset = 1)` for Tarmogoyf.
+     * Example: `dynamicStats(DynamicAmount.AggregateZone(Player.Each, Zone.GRAVEYARD, aggregation = Aggregation.DISTINCT_TYPES), toughnessOffset = 1)` for Tarmogoyf.
      */
     fun dynamicStats(source: DynamicAmount, powerOffset: Int = 0, toughnessOffset: Int = 0) {
         dynamicPower = CharacteristicValue.dynamic(source, powerOffset)

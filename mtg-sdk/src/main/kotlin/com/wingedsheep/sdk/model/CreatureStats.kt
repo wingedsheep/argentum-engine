@@ -16,8 +16,8 @@ import kotlinx.serialization.Serializable
  *
  * // Dynamic stats (Tarmogoyf)
  * CreatureStats(
- *     power = CharacteristicValue.dynamic(DynamicAmount.CardTypesInAllGraveyards),
- *     toughness = CharacteristicValue.dynamic(DynamicAmount.CardTypesInAllGraveyards) + 1
+ *     power = CharacteristicValue.dynamic(DynamicAmount.AggregateZone(Player.Each, Zone.GRAVEYARD, aggregation = Aggregation.DISTINCT_TYPES)),
+ *     toughness = CharacteristicValue.dynamic(DynamicAmount.AggregateZone(Player.Each, Zone.GRAVEYARD, aggregation = Aggregation.DISTINCT_TYPES)) + 1
  * )
  * ```
  */

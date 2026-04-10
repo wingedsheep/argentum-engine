@@ -19,5 +19,9 @@ enum class CardNumericProperty(val description: String) {
  */
 @Serializable
 enum class Aggregation {
-    COUNT, MAX, MIN, SUM
+    COUNT, MAX, MIN, SUM,
+    /** Count distinct card types across all matched entities */
+    DISTINCT_TYPES,
+    /** Count distinct colors across all matched entities */
+    DISTINCT_COLORS
 }

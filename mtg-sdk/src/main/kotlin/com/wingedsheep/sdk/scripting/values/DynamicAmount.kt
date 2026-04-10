@@ -109,31 +109,6 @@ sealed interface DynamicAmount : TextReplaceable<DynamicAmount> {
     }
 
     /**
-     * Count of colors among permanents you control.
-     */
-    @SerialName("ColorsAmongPermanentsYouControl")
-    @Serializable
-    data object ColorsAmongPermanentsYouControl : DynamicAmount {
-        override val description: String = "the number of colors among permanents you control"
-        override fun applyTextReplacement(replacer: TextReplacer): DynamicAmount = this
-    }
-
-    // =========================================================================
-    // Graveyard-based DynamicAmounts (for Tarmogoyf, etc.)
-    // =========================================================================
-
-    /**
-     * Count of card types among cards in all graveyards.
-     * Used for Tarmogoyf's characteristic-defining ability.
-     */
-    @SerialName("CardTypesInAllGraveyards")
-    @Serializable
-    data object CardTypesInAllGraveyards : DynamicAmount {
-        override val description: String = "the number of card types among cards in all graveyards"
-        override fun applyTextReplacement(replacer: TextReplacer): DynamicAmount = this
-    }
-
-    /**
      * Count of distinct card types among cards exiled and linked to the source permanent.
      * Used for Keen-Eyed Curator: "four or more card types among cards exiled with this creature"
      */
@@ -477,6 +452,16 @@ sealed interface DynamicAmount : TextReplaceable<DynamicAmount> {
                     if (excludeSelf) append("other ")
                     append(pluralize(filter.description))
                 }
+                Aggregation.DISTINCT_TYPES -> {
+                    append("the number of card types among ")
+                    if (excludeSelf) append("other ")
+                    append(pluralize(filter.description))
+                }
+                Aggregation.DISTINCT_COLORS -> {
+                    append("the number of colors among ")
+                    if (excludeSelf) append("other ")
+                    append(pluralize(filter.description))
+                }
             }
             append(" ")
             when (player) {
@@ -541,6 +526,14 @@ sealed interface DynamicAmount : TextReplaceable<DynamicAmount> {
                 }
                 Aggregation.SUM -> {
                     append("the total ${property?.description ?: "value"} of ")
+                    append(pluralize(filter.description))
+                }
+                Aggregation.DISTINCT_TYPES -> {
+                    append("the number of card types among ")
+                    append(pluralize(filter.description))
+                }
+                Aggregation.DISTINCT_COLORS -> {
+                    append("the number of colors among ")
                     append(pluralize(filter.description))
                 }
             }

@@ -34,6 +34,8 @@ import com.wingedsheep.sdk.scripting.events.SourceFilter
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.GameEvent
+import com.wingedsheep.sdk.scripting.references.Player
+import com.wingedsheep.sdk.scripting.values.Aggregation
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
 import com.wingedsheep.sdk.scripting.values.EffectVariable
 import io.kotest.core.spec.style.DescribeSpec
@@ -674,7 +676,11 @@ class CardDslTest : DescribeSpec({
 
                 // */*+1 where * is number of card types in all graveyards
                 dynamicStats(
-                    DynamicAmount.CardTypesInAllGraveyards,
+                    DynamicAmount.AggregateZone(
+                        player = Player.Each,
+                        zone = Zone.GRAVEYARD,
+                        aggregation = Aggregation.DISTINCT_TYPES
+                    ),
                     powerOffset = 0,
                     toughnessOffset = 1
                 )

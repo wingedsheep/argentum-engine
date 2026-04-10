@@ -116,12 +116,6 @@ class DynamicAmountEvaluator(
             is DynamicAmount.TriggerLifeLossAmount -> context.triggerDamageAmount ?: 0
             is DynamicAmount.LastKnownCounterCount -> context.triggerCounterCount ?: 0
 
-            // Other types - return 0 for unimplemented
-            is DynamicAmount.CardTypesInAllGraveyards -> {
-                // TODO: Count unique card types across all graveyards
-                0
-            }
-
             is DynamicAmount.CardTypesInLinkedExile -> {
                 val sourceId = context.sourceId ?: return 0
                 val linkedExile = state.getEntity(sourceId)
@@ -135,11 +129,6 @@ class DynamicAmountEvaluator(
                     cardTypes.addAll(card.typeLine.cardTypes)
                 }
                 cardTypes.size
-            }
-
-            is DynamicAmount.ColorsAmongPermanentsYouControl -> {
-                // TODO: Count unique colors
-                0
             }
 
             // Unified counting
@@ -349,6 +338,20 @@ class DynamicAmountEvaluator(
                 val prop = amount.property ?: return 0
                 matchingEntities.sumOf { resolveCardNumericProperty(state, projected, it, prop) }
             }
+            Aggregation.DISTINCT_TYPES -> {
+                matchingEntities.flatMapTo(mutableSetOf()) { entityId ->
+                    projected?.getTypes(entityId)
+                        ?: state.getEntity(entityId)?.get<CardComponent>()?.typeLine?.cardTypes?.map { it.name }?.toSet()
+                        ?: emptySet()
+                }.size
+            }
+            Aggregation.DISTINCT_COLORS -> {
+                matchingEntities.flatMapTo(mutableSetOf()) { entityId ->
+                    projected?.getColors(entityId)
+                        ?: state.getEntity(entityId)?.get<CardComponent>()?.colors?.map { it.name }?.toSet()
+                        ?: emptySet()
+                }.size
+            }
         }
     }
 
@@ -385,6 +388,18 @@ class DynamicAmountEvaluator(
             Aggregation.SUM -> {
                 val prop = amount.property ?: return 0
                 matchingEntities.sumOf { resolveCardNumericProperty(state, null, it, prop) }
+            }
+            Aggregation.DISTINCT_TYPES -> {
+                matchingEntities.flatMapTo(mutableSetOf()) { entityId ->
+                    state.getEntity(entityId)?.get<CardComponent>()?.typeLine?.cardTypes?.map { it.name }?.toSet()
+                        ?: emptySet()
+                }.size
+            }
+            Aggregation.DISTINCT_COLORS -> {
+                matchingEntities.flatMapTo(mutableSetOf()) { entityId ->
+                    state.getEntity(entityId)?.get<CardComponent>()?.colors?.map { it.name }?.toSet()
+                        ?: emptySet()
+                }.size
             }
         }
     }
