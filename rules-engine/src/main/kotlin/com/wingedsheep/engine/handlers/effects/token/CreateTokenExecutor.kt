@@ -10,6 +10,7 @@ import com.wingedsheep.engine.state.ComponentContainer
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
+import com.wingedsheep.engine.state.components.battlefield.EnteredThisTurnComponent
 import com.wingedsheep.engine.state.components.battlefield.SummoningSicknessComponent
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.state.components.battlefield.CountersComponent
@@ -101,7 +102,8 @@ class CreateTokenExecutor(
                 tokenComponent,
                 TokenComponent,
                 ControllerComponent(tokenControllerId),
-                SummoningSicknessComponent
+                SummoningSicknessComponent,
+                EnteredThisTurnComponent
             )
             if (effect.tapped) {
                 components.add(TappedComponent)
