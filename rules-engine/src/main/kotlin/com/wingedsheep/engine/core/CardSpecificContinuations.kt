@@ -26,8 +26,7 @@ data class PutFromHandContinuation(
  * Resume after a player chooses a number for secret bidding effects (Menacing Ogre).
  *
  * Each player secretly chooses a number. After all players have chosen,
- * each player with the highest number loses that much life. If the controller
- * is one of those players, execute the [winnerEffect].
+ * execute outcome effects per matching bidder (xValue = bid, controllerId = bidder).
  *
  * @property sourceId The creature that entered the battlefield
  * @property sourceName Name of the source for display
@@ -35,7 +34,9 @@ data class PutFromHandContinuation(
  * @property currentPlayerId The player whose choice we are waiting for
  * @property remainingPlayers Players who still need to choose (APNAP order)
  * @property chosenNumbers Numbers chosen so far by each player
- * @property winnerEffect Effect to execute if controller has the highest bid (e.g., add counters)
+ * @property highestBidderEffect Effect executed per highest bidder
+ * @property lowestBidderEffect Effect executed per lowest non-zero bidder
+ * @property tiedBidderEffect Effect executed per bidder when all non-zero bids are equal
  */
 @Serializable
 data class SecretBidContinuation(
@@ -46,7 +47,9 @@ data class SecretBidContinuation(
     val currentPlayerId: EntityId,
     val remainingPlayers: List<EntityId>,
     val chosenNumbers: Map<EntityId, Int>,
-    val winnerEffect: Effect?
+    val highestBidderEffect: Effect?,
+    val lowestBidderEffect: Effect?,
+    val tiedBidderEffect: Effect?
 ) : ContinuationFrame
 
 /**

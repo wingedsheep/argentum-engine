@@ -12,6 +12,19 @@ import kotlinx.serialization.Serializable
 // =============================================================================
 
 /**
+ * Condition: "If you control this permanent"
+ * Checks whether the effect's controllerId matches the source's controller.
+ * Used in contexts where controllerId is overridden (e.g., per-player iteration)
+ * to gate effects that should only apply to the source's actual controller.
+ */
+@SerialName("YouControlSource")
+@Serializable
+data object YouControlSource : Condition {
+    override val description: String = "if you control this permanent"
+    override fun applyTextReplacement(replacer: TextReplacer): Condition = this
+}
+
+/**
  * Condition: "If this creature is attacking"
  */
 @SerialName("SourceIsAttacking")

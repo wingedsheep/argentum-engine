@@ -83,7 +83,9 @@ class SecretBidExecutor(
             currentPlayerId = playerId,
             remainingPlayers = remainingPlayers,
             chosenNumbers = chosenNumbers,
-            winnerEffect = effect.winnerEffect
+            highestBidderEffect = effect.highestBidderEffect,
+            lowestBidderEffect = effect.lowestBidderEffect,
+            tiedBidderEffect = effect.tiedBidderEffect
         )
 
         val stateWithContinuation = decisionResult.state.pushContinuation(continuation)

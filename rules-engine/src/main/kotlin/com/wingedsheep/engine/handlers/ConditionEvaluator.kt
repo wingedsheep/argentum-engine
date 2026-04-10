@@ -60,6 +60,7 @@ import com.wingedsheep.sdk.scripting.conditions.SacrificedFoodThisTurn
 import com.wingedsheep.sdk.scripting.conditions.IsFirstSpellOfTypeCastThisTurn
 import com.wingedsheep.sdk.scripting.conditions.SourceAbilityResolvedNTimesThisTurn
 import com.wingedsheep.sdk.scripting.conditions.WasKicked
+import com.wingedsheep.sdk.scripting.conditions.YouControlSource
 import com.wingedsheep.sdk.scripting.conditions.YouAttackedThisTurn
 import com.wingedsheep.sdk.scripting.conditions.YouWereAttackedThisStep
 import com.wingedsheep.sdk.scripting.conditions.YouWereDealtCombatDamageThisTurn
@@ -90,6 +91,7 @@ class ConditionEvaluator {
             is EnchantedCreatureHasSubtype -> evaluateEnchantedCreatureHasSubtype(state, condition, context)
 
             // Source conditions
+            is YouControlSource -> evaluateYouControlSource(state, context)
             is WasCastFromHand -> evaluateWasCastFromHand(state, context)
             is WasCastFromZone -> evaluateWasCastFromZone(state, condition, context)
             is WasKicked -> evaluateWasKicked(state, context)
@@ -186,6 +188,12 @@ class ConditionEvaluator {
         }
 
         return if (condition.negate) !found else found
+    }
+
+    private fun evaluateYouControlSource(state: GameState, context: EffectContext): Boolean {
+        val sourceId = context.sourceId ?: return false
+        val sourceController = state.getEntity(sourceId)?.get<ControllerComponent>()?.playerId ?: return false
+        return context.controllerId == sourceController
     }
 
     private fun evaluateWasCastFromHand(state: GameState, context: EffectContext): Boolean {

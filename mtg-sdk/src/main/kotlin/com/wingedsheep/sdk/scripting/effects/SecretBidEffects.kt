@@ -10,26 +10,42 @@ import kotlinx.serialization.Serializable
 
 /**
  * Each player secretly chooses a number. Then those numbers are revealed.
- * Each player with the highest number loses that much life.
- * If the controller is one of those players, apply the [winnerEffect] (if any).
  *
- * The "highest bidder loses life equal to bid" behaviour is intrinsic to the
- * secret-bid mechanic and handled by the executor. The [winnerEffect] is the
- * composable reward (e.g., add counters, draw cards) applied when the controller
- * wins (or ties for highest).
+ * Effects are executed per matching bidder with `xValue` = bid amount and
+ * `controllerId` = that bidder. Use `ConditionalEffect(YouControlSource, ...)`
+ * to gate effects that should only apply to the source's controller.
  *
- * @property winnerEffect Effect applied to the source if the controller has the highest bid (or null for no reward)
+ * When all players bid the same non-zero value, they are all both highest
+ * and lowest — both effects fire. Zero-bids are excluded from all outcomes.
+ *
+ * @property highestBidderEffect Effect executed per player with the highest bid (or null)
+ * @property lowestBidderEffect Effect executed per player with the lowest non-zero bid (or null)
+ * @property tiedBidderEffect Effect executed per player when all non-zero bids are equal (or null)
  */
 @SerialName("SecretBid")
 @Serializable
 data class SecretBidEffect(
-    val winnerEffect: Effect? = null
+    val highestBidderEffect: Effect? = null,
+    val lowestBidderEffect: Effect? = null,
+    val tiedBidderEffect: Effect? = null
 ) : Effect {
-    override val description: String =
-        "Each player secretly chooses a number. Then those numbers are revealed. " +
-            "Each player with the highest number loses that much life." +
-            (winnerEffect?.let { " If you are one of those players, ${it.description}." } ?: "")
+    override val description: String = buildString {
+        append("Each player secretly chooses a number. Then those numbers are revealed.")
+        highestBidderEffect?.let {
+            append(" Each player with the highest number ${it.description}.")
+        }
+        lowestBidderEffect?.let {
+            append(" Each player with the lowest number ${it.description}.")
+        }
+        tiedBidderEffect?.let {
+            append(" If there is a tie, each tied player ${it.description}.")
+        }
+    }
 
     override fun applyTextReplacement(replacer: TextReplacer): Effect =
-        copy(winnerEffect = winnerEffect?.applyTextReplacement(replacer))
+        copy(
+            highestBidderEffect = highestBidderEffect?.applyTextReplacement(replacer),
+            lowestBidderEffect = lowestBidderEffect?.applyTextReplacement(replacer),
+            tiedBidderEffect = tiedBidderEffect?.applyTextReplacement(replacer)
+        )
 }
