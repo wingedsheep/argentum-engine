@@ -5,20 +5,20 @@ import com.wingedsheep.sdk.scripting.effects.ChainCopyEffect
 import kotlinx.serialization.Serializable
 
 /**
- * Resume after primary discard effect needs card selection (Chain of Smog).
+ * Resume after the inner action's continuations have all resolved.
  *
- * When the card selection is answered, discards the selected cards, then offers
- * the chain copy via ChainCopyDecisionContinuation.
+ * Pushed before executing the inner action; fires after any intermediate
+ * decisions (e.g., discard card selection) complete. Simply calls offerChainCopy().
  *
  * @property effect The unified chain copy effect (carries all variant info)
- * @property playerId The player who is discarding
+ * @property recipientPlayerId The player who will be offered the copy
  * @property sourceId The source entity of the original spell/ability
  */
 @Serializable
-data class ChainCopyPrimaryDiscardContinuation(
+data class ChainCopyAfterActionContinuation(
     override val decisionId: String,
     val effect: ChainCopyEffect,
-    val playerId: EntityId,
+    val recipientPlayerId: EntityId,
     val sourceId: EntityId?
 ) : ContinuationFrame
 

@@ -43,6 +43,7 @@ class EffectExecutorRegistry(
     private val compositeExecutors = CompositeExecutors(cardRegistry, TargetFinder(), decisionHandler)
     private val drawingExecutors = DrawingExecutors(amountEvaluator, decisionHandler, cardRegistry = cardRegistry)
     private val removalExecutors = RemovalExecutors(cardRegistry)
+    private val chainExecutors = ChainExecutors()
 
     init {
         // Register all effect executors by module
@@ -56,7 +57,6 @@ class EffectExecutorRegistry(
         registerModule(PlayerExecutors(decisionHandler))
         registerModule(InformationExecutors())
         registerModule(CombatExecutors(amountEvaluator))
-        registerModule(ChainExecutors())
 
         // Deferred initialization for recursive executors
         compositeExecutors.initialize(::execute)
@@ -65,6 +65,8 @@ class EffectExecutorRegistry(
         registerModule(drawingExecutors)
         removalExecutors.initialize(::execute)
         registerModule(removalExecutors)
+        chainExecutors.initialize(::execute)
+        registerModule(chainExecutors)
     }
 
     /**

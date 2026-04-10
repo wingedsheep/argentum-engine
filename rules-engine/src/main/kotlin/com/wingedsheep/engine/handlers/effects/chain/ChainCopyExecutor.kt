@@ -1,24 +1,13 @@
 package com.wingedsheep.engine.handlers.effects.chain
 
 import com.wingedsheep.engine.core.*
-import com.wingedsheep.engine.handlers.DecisionHandler
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.PredicateContext
 import com.wingedsheep.engine.handlers.TargetFinder
-import com.wingedsheep.engine.handlers.effects.EffectExecutor
-import com.wingedsheep.engine.handlers.effects.TargetResolutionUtils
-import com.wingedsheep.engine.handlers.effects.DamageUtils
-import com.wingedsheep.engine.handlers.effects.ZoneMovementUtils
-import com.wingedsheep.engine.handlers.effects.ReplacementEffectUtils
 import com.wingedsheep.engine.handlers.effects.BattlefieldFilterUtils
-import com.wingedsheep.engine.handlers.effects.DamageUtils.dealDamageToTarget
-import com.wingedsheep.engine.handlers.effects.ZoneMovementUtils.destroyPermanent
-import com.wingedsheep.engine.handlers.effects.ZoneMovementUtils.moveCardToZone
+import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.handlers.effects.TargetResolutionUtils.resolvePlayerTarget
 import com.wingedsheep.engine.handlers.effects.TargetResolutionUtils.resolveTarget
-import com.wingedsheep.engine.mechanics.layers.Layer
-import com.wingedsheep.engine.mechanics.layers.SerializableModification
-import com.wingedsheep.engine.mechanics.layers.addFloatingEffect
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.identity.CardComponent
@@ -26,22 +15,22 @@ import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.GameObjectFilter
-import com.wingedsheep.sdk.scripting.effects.ChainAction
-import com.wingedsheep.sdk.scripting.effects.ChainCopyCost
+import com.wingedsheep.sdk.scripting.costs.PayCost
 import com.wingedsheep.sdk.scripting.effects.ChainCopyEffect
 import com.wingedsheep.sdk.scripting.effects.CopyRecipient
+import com.wingedsheep.sdk.scripting.effects.Effect
 import java.util.UUID
 import kotlin.reflect.KClass
 
 /**
  * Unified executor for all Chain of X effects.
  *
- * Executes the primary action, then determines who gets the copy offer,
- * checks prerequisites, and pauses for the yes/no decision.
+ * Resolves the copy recipient, delegates the primary action to the effect
+ * executor registry, then offers the chain copy to the recipient.
  */
 class ChainCopyExecutor(
     private val targetFinder: TargetFinder = TargetFinder(),
-    private val decisionHandler: DecisionHandler = DecisionHandler()
+    private val effectExecutor: (GameState, Effect, EffectContext) -> ExecutionResult
 ) : EffectExecutor<ChainCopyEffect> {
 
     override val effectType: KClass<ChainCopyEffect> = ChainCopyEffect::class
@@ -51,184 +40,82 @@ class ChainCopyExecutor(
         effect: ChainCopyEffect,
         context: EffectContext
     ): ExecutionResult {
-        // Step 1: Execute the primary action
-        return when (val action = effect.action) {
-            is ChainAction.Destroy -> executeDestroy(state, effect, context)
-            is ChainAction.BounceToHand -> executeBounce(state, effect, context)
-            is ChainAction.DealDamage -> executeDamage(state, effect, action, context)
-            is ChainAction.Discard -> executeDiscard(state, effect, action, context)
-            is ChainAction.PreventAllDamageDealt -> executePreventDamage(state, effect, context)
-        }
-    }
-
-    // =========================================================================
-    // Primary action executors
-    // =========================================================================
-
-    private fun executeDestroy(
-        state: GameState,
-        effect: ChainCopyEffect,
-        context: EffectContext
-    ): ExecutionResult {
-        val targetId = resolveTarget(effect.target, context)
+        // Step 1: Determine who gets the copy offer BEFORE executing the action
+        val recipientPlayerId = resolveRecipient(state, effect, context)
             ?: return ExecutionResult.success(state)
 
-        val container = state.getEntity(targetId)
-            ?: return ExecutionResult.success(state)
-
-        val projected = state.projectedState
-        val targetControllerId = projected.getController(targetId)
-            ?: container.get<CardComponent>()?.ownerId
-            ?: return ExecutionResult.success(state)
-
-        val destroyResult = destroyPermanent(state, targetId)
-        if (!destroyResult.isSuccess) return destroyResult
-
-        return offerChainCopy(
-            destroyResult.state, destroyResult.events.toMutableList(),
-            targetControllerId, effect, context
-        )
-    }
-
-    private fun executeBounce(
-        state: GameState,
-        effect: ChainCopyEffect,
-        context: EffectContext
-    ): ExecutionResult {
-        val targetId = resolveTarget(effect.target, context)
-            ?: return ExecutionResult.success(state)
-
-        val container = state.getEntity(targetId)
-            ?: return ExecutionResult.success(state)
-
-        val projected = state.projectedState
-        val targetControllerId = projected.getController(targetId)
-            ?: container.get<CardComponent>()?.ownerId
-            ?: return ExecutionResult.success(state)
-
-        val bounceResult = moveCardToZone(state, targetId, Zone.HAND)
-        if (!bounceResult.isSuccess) return bounceResult
-
-        return offerChainCopy(
-            bounceResult.state, bounceResult.events.toMutableList(),
-            targetControllerId, effect, context
-        )
-    }
-
-    private fun executeDamage(
-        state: GameState,
-        effect: ChainCopyEffect,
-        action: ChainAction.DealDamage,
-        context: EffectContext
-    ): ExecutionResult {
-        val targetId = resolveTarget(effect.target, context, state)
-            ?: return ExecutionResult.success(state)
-
-        val affectedPlayerId = resolveAffectedPlayer(state, targetId)
-            ?: return ExecutionResult.success(state)
-
-        val damageResult = dealDamageToTarget(state, targetId, action.amount, context.sourceId)
-        if (!damageResult.isSuccess) return damageResult
-
-        return offerChainCopy(
-            damageResult.state, damageResult.events.toMutableList(),
-            affectedPlayerId, effect, context
-        )
-    }
-
-    private fun executeDiscard(
-        state: GameState,
-        effect: ChainCopyEffect,
-        action: ChainAction.Discard,
-        context: EffectContext
-    ): ExecutionResult {
-        val targetPlayerId = resolvePlayerTarget(effect.target, context)
-            ?: return ExecutionResult.success(state)
-
-        val handZone = ZoneKey(targetPlayerId, Zone.HAND)
-        val hand = state.getZone(handZone)
-
-        // If hand has fewer cards than required, discard all immediately
-        if (hand.size <= action.count) {
-            val discardResult = discardCards(state, targetPlayerId, hand)
-            if (!discardResult.isSuccess) return discardResult
-
-            return offerChainCopy(
-                discardResult.state, discardResult.events.toMutableList(),
-                targetPlayerId, effect, context
-            )
-        }
-
-        // Player must choose which cards to discard
-        val sourceName = context.sourceId?.let { sourceId ->
-            state.getEntity(sourceId)?.get<CardComponent>()?.name
-        }
-
-        val decisionResult = decisionHandler.createCardSelectionDecision(
-            state = state,
-            playerId = targetPlayerId,
-            sourceId = context.sourceId,
-            sourceName = sourceName,
-            prompt = "Choose ${action.count} card${if (action.count > 1) "s" else ""} to discard",
-            options = hand,
-            minSelections = action.count,
-            maxSelections = action.count,
-            ordered = false,
-            phase = DecisionPhase.RESOLUTION
-        )
-
-        val continuation = ChainCopyPrimaryDiscardContinuation(
-            decisionId = decisionResult.pendingDecision!!.id,
+        // Step 2: Pre-push after-action continuation (sits below any inner continuations)
+        val afterActionContinuation = ChainCopyAfterActionContinuation(
+            decisionId = "chain-after-action-${UUID.randomUUID()}",
             effect = effect,
-            playerId = targetPlayerId,
+            recipientPlayerId = recipientPlayerId,
             sourceId = context.sourceId
         )
+        val stateWithContinuation = state.pushContinuation(afterActionContinuation)
 
-        val stateWithContinuation = decisionResult.state.pushContinuation(continuation)
+        // Step 3: Execute the inner action via the registry
+        val actionResult = effectExecutor(stateWithContinuation, effect.action, context)
 
-        return ExecutionResult.paused(
-            stateWithContinuation,
-            decisionResult.pendingDecision,
-            decisionResult.events
+        if (actionResult.pendingDecision != null) {
+            // Inner action paused (e.g., discard card selection).
+            // The inner continuation sits on top, our after-action continuation below.
+            // After the inner decisions resolve, the auto-resumer will fire offerChainCopy.
+            return actionResult
+        }
+
+        // Step 4: Inner action completed (success or error) — pop the unused after-action continuation
+        val (_, stateAfterPop) = actionResult.state.popContinuation()
+
+        if (!actionResult.isSuccess) {
+            return actionResult.copy(state = stateAfterPop)
+        }
+
+        // Step 5: Inner action succeeded immediately — offer the chain copy
+        return offerChainCopy(
+            stateAfterPop, actionResult.events.toMutableList(),
+            recipientPlayerId, effect, context
         )
     }
 
-    private fun executePreventDamage(
+    /**
+     * Determine who gets offered the copy based on the effect's [CopyRecipient]
+     * and the resolved target.
+     */
+    private fun resolveRecipient(
         state: GameState,
         effect: ChainCopyEffect,
         context: EffectContext
-    ): ExecutionResult {
-        val targetId = resolveTarget(effect.target, context)
-            ?: return ExecutionResult.success(state)
+    ): EntityId? {
+        return when (effect.copyRecipient) {
+            CopyRecipient.TARGET_CONTROLLER -> {
+                val targetId = resolveTarget(effect.target, context)
+                    ?: return null
+                val projected = state.projectedState
+                projected.getController(targetId)
+                    ?: state.getEntity(targetId)?.get<CardComponent>()?.ownerId
+            }
+            CopyRecipient.TARGET_PLAYER -> {
+                resolvePlayerTarget(effect.target, context)
+            }
+            CopyRecipient.AFFECTED_PLAYER -> {
+                val targetId = resolveTarget(effect.target, context, state)
+                    ?: return null
+                resolveAffectedPlayer(state, targetId)
+            }
+        }
+    }
 
-        val container = state.getEntity(targetId)
-            ?: return ExecutionResult.success(state)
-
-        val projected = state.projectedState
-        val targetControllerId = projected.getController(targetId)
-            ?: container.get<CardComponent>()?.ownerId
-            ?: return ExecutionResult.success(state)
-
-        val newState = state.addFloatingEffect(
-            layer = Layer.ABILITY,
-            modification = SerializableModification.PreventAllDamageDealtBy,
-            affectedEntities = setOf(targetId),
-            duration = com.wingedsheep.sdk.scripting.Duration.EndOfTurn,
-            context = context,
-            timestamp = state.timestamp
-        )
-
-        return offerChainCopy(
-            newState, mutableListOf(),
-            targetControllerId, effect, context
-        )
+    private fun resolveAffectedPlayer(state: GameState, targetId: EntityId): EntityId? {
+        val entity = state.getEntity(targetId) ?: return null
+        val controller = entity.get<ControllerComponent>()
+        return controller?.playerId ?: targetId
     }
 
     // =========================================================================
     // Chain copy offer logic
     // =========================================================================
 
-    private fun offerChainCopy(
+    fun offerChainCopy(
         state: GameState,
         events: MutableList<GameEvent>,
         recipientPlayerId: EntityId,
@@ -236,19 +123,8 @@ class ChainCopyExecutor(
         context: EffectContext
     ): ExecutionResult {
         // Check cost prerequisites
-        if (effect.copyCost is ChainCopyCost.SacrificeALand) {
-            val controllerLands = findControllerLands(state, recipientPlayerId)
-            if (controllerLands.isEmpty()) {
-                return ExecutionResult.success(state, events)
-            }
-        }
-
-        if (effect.copyCost is ChainCopyCost.DiscardACard) {
-            val handZone = ZoneKey(recipientPlayerId, Zone.HAND)
-            val hand = state.getZone(handZone)
-            if (hand.isEmpty()) {
-                return ExecutionResult.success(state, events)
-            }
+        if (!canPayCopyCost(state, recipientPlayerId, effect.copyCost)) {
+            return ExecutionResult.success(state, events)
         }
 
         // Check if there are valid targets for a potential copy
@@ -265,16 +141,17 @@ class ChainCopyExecutor(
             state.getEntity(sourceId)?.get<CardComponent>()?.name
         } ?: effect.spellName
 
-        val prompt = when (effect.copyCost) {
-            is ChainCopyCost.NoCost -> "Copy ${effect.spellName} and choose a new target?"
-            is ChainCopyCost.SacrificeALand -> "Sacrifice a land to copy ${effect.spellName} and choose a new target?"
-            is ChainCopyCost.DiscardACard -> "Discard a card to copy ${effect.spellName}?"
+        val copyCost = effect.copyCost
+        val prompt = if (copyCost == null) {
+            "Copy ${effect.spellName} and choose a new target?"
+        } else {
+            "${copyCost.description.replaceFirstChar { it.uppercase() }} to copy ${effect.spellName} and choose a new target?"
         }
 
-        val (yesText, noText) = when (effect.copyCost) {
-            is ChainCopyCost.NoCost -> "Copy" to "Decline"
-            is ChainCopyCost.SacrificeALand -> "Sacrifice a land" to "Decline"
-            is ChainCopyCost.DiscardACard -> "Discard and Copy" to "Decline"
+        val (yesText, noText) = if (copyCost == null) {
+            "Copy" to "Decline"
+        } else {
+            copyCost.description.replaceFirstChar { it.uppercase() } to "Decline"
         }
 
         val decision = YesNoDecision(
@@ -313,43 +190,33 @@ class ChainCopyExecutor(
         )
     }
 
-    // =========================================================================
-    // Utility methods
-    // =========================================================================
-
-    private fun resolveAffectedPlayer(state: GameState, targetId: EntityId): EntityId? {
-        val entity = state.getEntity(targetId) ?: return null
-        return if (entity.get<ControllerComponent>() != null) {
-            entity.get<ControllerComponent>()!!.playerId
-        } else {
-            targetId
-        }
-    }
-
-    private fun discardCards(
-        state: GameState,
-        playerId: EntityId,
-        cardIds: List<EntityId>
-    ): ExecutionResult {
-        var newState = state
-        val handZone = ZoneKey(playerId, Zone.HAND)
-        val graveyardZone = ZoneKey(playerId, Zone.GRAVEYARD)
-
-        for (cardId in cardIds) {
-            newState = newState.removeFromZone(handZone, cardId)
-            newState = newState.addToZone(graveyardZone, cardId)
+    companion object {
+        /**
+         * Check if the recipient can pay the copy cost.
+         */
+        fun canPayCopyCost(state: GameState, playerId: EntityId, cost: PayCost?): Boolean {
+            if (cost == null) return true
+            return when (cost) {
+                is PayCost.Sacrifice -> {
+                    findMatchingPermanents(state, playerId, cost.filter).size >= cost.count
+                }
+                is PayCost.Discard -> {
+                    val handZone = ZoneKey(playerId, Zone.HAND)
+                    val hand = state.getZone(handZone)
+                    hand.size >= cost.count
+                }
+                else -> true
+            }
         }
 
-        val cardNames = cardIds.map { state.getEntity(it)?.get<CardComponent>()?.name ?: "Card" }
-        return ExecutionResult.success(
-            newState,
-            listOf(CardsDiscardedEvent(playerId, cardIds, cardNames))
-        )
-    }
-
-    fun findControllerLands(state: GameState, controllerId: EntityId): List<EntityId> {
-        return BattlefieldFilterUtils.findMatchingOnBattlefield(
-            state, GameObjectFilter.Land.youControl(), PredicateContext(controllerId = controllerId)
-        )
+        fun findMatchingPermanents(
+            state: GameState,
+            controllerId: EntityId,
+            filter: GameObjectFilter
+        ): List<EntityId> {
+            return BattlefieldFilterUtils.findMatchingOnBattlefield(
+                state, filter.youControl(), PredicateContext(controllerId = controllerId)
+            )
+        }
     }
 }

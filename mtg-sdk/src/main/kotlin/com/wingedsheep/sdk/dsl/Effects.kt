@@ -1336,11 +1336,10 @@ object Effects {
         targetFilter: com.wingedsheep.sdk.scripting.filters.unified.TargetFilter,
         spellName: String
     ): Effect = com.wingedsheep.sdk.scripting.effects.ChainCopyEffect(
-        action = com.wingedsheep.sdk.scripting.effects.ChainAction.Destroy,
+        action = Destroy(target),
         target = target,
         targetFilter = targetFilter,
         copyRecipient = com.wingedsheep.sdk.scripting.effects.CopyRecipient.TARGET_CONTROLLER,
-        copyCost = com.wingedsheep.sdk.scripting.effects.ChainCopyCost.NoCost,
         copyTargetRequirement = com.wingedsheep.sdk.scripting.targets.TargetObject(filter = targetFilter),
         spellName = spellName
     )
@@ -1354,11 +1353,13 @@ object Effects {
         targetFilter: com.wingedsheep.sdk.scripting.filters.unified.TargetFilter,
         spellName: String
     ): Effect = com.wingedsheep.sdk.scripting.effects.ChainCopyEffect(
-        action = com.wingedsheep.sdk.scripting.effects.ChainAction.BounceToHand,
+        action = ReturnToHand(target),
         target = target,
         targetFilter = targetFilter,
         copyRecipient = com.wingedsheep.sdk.scripting.effects.CopyRecipient.TARGET_CONTROLLER,
-        copyCost = com.wingedsheep.sdk.scripting.effects.ChainCopyCost.SacrificeALand,
+        copyCost = com.wingedsheep.sdk.scripting.costs.PayCost.Sacrifice(
+            filter = com.wingedsheep.sdk.scripting.GameObjectFilter.Land
+        ),
         copyTargetRequirement = com.wingedsheep.sdk.scripting.targets.TargetObject(filter = targetFilter),
         spellName = spellName
     )
@@ -1372,10 +1373,10 @@ object Effects {
         target: EffectTarget,
         spellName: String
     ): Effect = com.wingedsheep.sdk.scripting.effects.ChainCopyEffect(
-        action = com.wingedsheep.sdk.scripting.effects.ChainAction.DealDamage(amount),
+        action = DealDamage(amount, target),
         target = target,
         copyRecipient = com.wingedsheep.sdk.scripting.effects.CopyRecipient.AFFECTED_PLAYER,
-        copyCost = com.wingedsheep.sdk.scripting.effects.ChainCopyCost.DiscardACard,
+        copyCost = com.wingedsheep.sdk.scripting.costs.PayCost.Discard(),
         copyTargetRequirement = com.wingedsheep.sdk.scripting.targets.AnyTarget(),
         spellName = spellName
     )
@@ -1389,10 +1390,9 @@ object Effects {
         target: EffectTarget,
         spellName: String
     ): Effect = com.wingedsheep.sdk.scripting.effects.ChainCopyEffect(
-        action = com.wingedsheep.sdk.scripting.effects.ChainAction.Discard(count),
+        action = EffectPatterns.discardCards(count, target),
         target = target,
         copyRecipient = com.wingedsheep.sdk.scripting.effects.CopyRecipient.TARGET_PLAYER,
-        copyCost = com.wingedsheep.sdk.scripting.effects.ChainCopyCost.NoCost,
         copyTargetRequirement = com.wingedsheep.sdk.scripting.targets.TargetPlayer(),
         spellName = spellName
     )
@@ -1406,11 +1406,13 @@ object Effects {
         targetFilter: com.wingedsheep.sdk.scripting.filters.unified.TargetFilter,
         spellName: String
     ): Effect = com.wingedsheep.sdk.scripting.effects.ChainCopyEffect(
-        action = com.wingedsheep.sdk.scripting.effects.ChainAction.PreventAllDamageDealt,
+        action = PreventAllDamageDealtBy(target),
         target = target,
         targetFilter = targetFilter,
         copyRecipient = com.wingedsheep.sdk.scripting.effects.CopyRecipient.TARGET_CONTROLLER,
-        copyCost = com.wingedsheep.sdk.scripting.effects.ChainCopyCost.SacrificeALand,
+        copyCost = com.wingedsheep.sdk.scripting.costs.PayCost.Sacrifice(
+            filter = com.wingedsheep.sdk.scripting.GameObjectFilter.Land
+        ),
         copyTargetRequirement = com.wingedsheep.sdk.scripting.targets.TargetObject(filter = targetFilter),
         spellName = spellName
     )

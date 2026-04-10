@@ -1,8 +1,7 @@
 package com.wingedsheep.engine.handlers.continuations
 
 import com.wingedsheep.engine.core.*
-import com.wingedsheep.engine.handlers.PredicateContext
-import com.wingedsheep.engine.handlers.PredicateEvaluator
+import com.wingedsheep.engine.handlers.effects.chain.ChainCopyExecutor
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.identity.CardComponent
@@ -12,9 +11,8 @@ import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.engine.state.components.stack.TriggeredAbilityOnStackComponent
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
-import com.wingedsheep.sdk.scripting.GameObjectFilter
-import com.wingedsheep.sdk.scripting.effects.ChainCopyCost
-import com.wingedsheep.sdk.scripting.effects.ChainCopyEffect
+import com.wingedsheep.sdk.scripting.costs.PayCost
+import com.wingedsheep.sdk.scripting.effects.*
 import com.wingedsheep.sdk.scripting.targets.AnyTarget
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.targets.TargetObject
@@ -22,49 +20,22 @@ import com.wingedsheep.sdk.scripting.targets.TargetPlayer
 
 class ChainSpellContinuationResumer(
     private val services: com.wingedsheep.engine.core.EngineServices
-) : ContinuationResumerModule {
+) : ContinuationResumerModule, AutoResumerModule {
 
     override fun resumers(): List<ContinuationResumer<*>> = listOf(
-        resumer(ChainCopyPrimaryDiscardContinuation::class, ::resumeChainCopyPrimaryDiscard),
         resumer(ChainCopyDecisionContinuation::class, ::resumeChainCopyDecision),
         resumer(ChainCopyCostContinuation::class, ::resumeChainCopyCost),
         resumer(ChainCopyTargetContinuation::class, ::resumeChainCopyTarget)
     )
 
-    // =========================================================================
-    // 1. Primary Discard (Chain of Smog — card selection before chain offer)
-    // =========================================================================
-
-    fun resumeChainCopyPrimaryDiscard(
-        state: GameState,
-        continuation: ChainCopyPrimaryDiscardContinuation,
-        response: DecisionResponse,
-        checkForMore: CheckForMore
-    ): ExecutionResult {
-        if (response !is CardsSelectedResponse) {
-            return ExecutionResult.error(state, "Expected card selection response for chain primary discard")
+    override fun autoResumers(): List<AutoResumer<*>> = listOf(
+        autoResumer(ChainCopyAfterActionContinuation::class) { state, continuation, events, checkForMore ->
+            offerChainCopy(
+                state, events.toMutableList(),
+                continuation.recipientPlayerId, continuation.effect, continuation.sourceId, checkForMore
+            )
         }
-
-        val playerId = continuation.playerId
-        val selectedCards = response.selectedCards
-
-        var newState = state
-        val handZone = ZoneKey(playerId, Zone.HAND)
-        val graveyardZone = ZoneKey(playerId, Zone.GRAVEYARD)
-
-        for (cardId in selectedCards) {
-            newState = newState.removeFromZone(handZone, cardId)
-            newState = newState.addToZone(graveyardZone, cardId)
-        }
-
-        val discardNames = selectedCards.map { state.getEntity(it)?.get<CardComponent>()?.name ?: "Card" }
-        val events = mutableListOf<GameEvent>(
-            CardsDiscardedEvent(playerId, selectedCards, discardNames)
-        )
-
-        // Now offer the chain copy
-        return offerChainCopy(newState, events, playerId, continuation.effect, continuation.sourceId, checkForMore)
-    }
+    )
 
     // =========================================================================
     // 2. Yes/No Decision (do you want to copy?)
@@ -86,41 +57,58 @@ class ChainSpellContinuationResumer(
 
         val effect = continuation.effect
         val controllerId = continuation.copyControllerId
+        val copyCost = effect.copyCost
 
-        // If there's a cost, present cost payment
-        return when (effect.copyCost) {
-            is ChainCopyCost.NoCost -> presentTargetSelection(
+        // If there's no cost, go directly to target selection
+        if (copyCost == null) {
+            return presentTargetSelection(
                 state, emptyList(), controllerId, effect, continuation.sourceId, checkForMore
             )
-            is ChainCopyCost.SacrificeALand -> {
-                val controllerLands = findControllerLands(state, controllerId)
-                if (controllerLands.isEmpty()) {
+        }
+
+        // Present cost payment based on PayCost type
+        return when (copyCost) {
+            is PayCost.Sacrifice -> {
+                val candidates = ChainCopyExecutor.findMatchingPermanents(state, controllerId, copyCost.filter)
+                if (candidates.size < copyCost.count) {
                     return checkForMore(state, emptyList())
                 }
-                if (controllerLands.size == 1) {
-                    // Auto-sacrifice the only land
-                    return sacrificeLandAndPresentTargets(
-                        state, controllerId, controllerLands.first(),
+                if (candidates.size == copyCost.count) {
+                    // Auto-pay when exactly enough resources
+                    return payCostAndPresentTargets(
+                        state, controllerId, copyCost, candidates,
                         effect, continuation.sourceId, checkForMore
                     )
                 }
-                presentCostSelection(state, controllerId, effect, continuation.sourceId, controllerLands,
-                    "Choose a land to sacrifice for the copy of ${effect.spellName}")
+                presentCostSelection(
+                    state, controllerId, effect, continuation.sourceId, candidates,
+                    "Choose a ${copyCost.filter.description} to sacrifice for the copy of ${effect.spellName}",
+                    useTargetingUI = true
+                )
             }
-            is ChainCopyCost.DiscardACard -> {
+            is PayCost.Discard -> {
                 val handZone = ZoneKey(controllerId, Zone.HAND)
                 val hand = state.getZone(handZone)
-                if (hand.isEmpty()) {
+                if (hand.size < copyCost.count) {
                     return checkForMore(state, emptyList())
                 }
-                presentCostSelection(state, controllerId, effect, continuation.sourceId, hand,
-                    "Choose a card to discard for ${effect.spellName}")
+                presentCostSelection(
+                    state, controllerId, effect, continuation.sourceId, hand,
+                    "Choose a card to discard for ${effect.spellName}",
+                    useTargetingUI = false
+                )
+            }
+            else -> {
+                // Unsupported cost type — skip
+                presentTargetSelection(
+                    state, emptyList(), controllerId, effect, continuation.sourceId, checkForMore
+                )
             }
         }
     }
 
     // =========================================================================
-    // 3. Cost Payment (sacrifice land / discard card)
+    // 3. Cost Payment (sacrifice / discard)
     // =========================================================================
 
     fun resumeChainCopyCost(
@@ -133,45 +121,21 @@ class ChainSpellContinuationResumer(
             return ExecutionResult.error(state, "Expected card selection response for chain copy cost")
         }
 
-        val selectedCard = response.selectedCards.firstOrNull()
-            ?: return checkForMore(state, emptyList())
-
-        if (selectedCard !in continuation.candidateOptions) {
-            return ExecutionResult.error(state, "Invalid chain copy cost selection: $selectedCard")
+        val selectedCards = response.selectedCards
+        if (selectedCards.isEmpty()) {
+            return checkForMore(state, emptyList())
         }
 
-        return when (continuation.effect.copyCost) {
-            is ChainCopyCost.SacrificeALand -> {
-                sacrificeLandAndPresentTargets(
-                    state, continuation.copyControllerId, selectedCard,
-                    continuation.effect, continuation.sourceId, checkForMore
-                )
-            }
-            is ChainCopyCost.DiscardACard -> {
-                val playerId = continuation.copyControllerId
-                val handZone = ZoneKey(playerId, Zone.HAND)
-                val graveyardZone = ZoneKey(playerId, Zone.GRAVEYARD)
-
-                var newState = state.removeFromZone(handZone, selectedCard)
-                newState = newState.addToZone(graveyardZone, selectedCard)
-
-                val selectedCardName = state.getEntity(selectedCard)?.get<CardComponent>()?.name ?: "Card"
-                val events = mutableListOf<GameEvent>(
-                    CardsDiscardedEvent(playerId, listOf(selectedCard), listOf(selectedCardName))
-                )
-
-                presentTargetSelection(
-                    newState, events, playerId, continuation.effect, continuation.sourceId, checkForMore
-                )
-            }
-            is ChainCopyCost.NoCost -> {
-                // Should not reach here, but handle gracefully
-                presentTargetSelection(
-                    state, emptyList(), continuation.copyControllerId,
-                    continuation.effect, continuation.sourceId, checkForMore
-                )
+        for (card in selectedCards) {
+            if (card !in continuation.candidateOptions) {
+                return ExecutionResult.error(state, "Invalid chain copy cost selection: $card")
             }
         }
+
+        return payCostAndPresentTargets(
+            state, continuation.copyControllerId, continuation.effect.copyCost!!, selectedCards,
+            continuation.effect, continuation.sourceId, checkForMore
+        )
     }
 
     // =========================================================================
@@ -211,8 +175,12 @@ class ChainSpellContinuationResumer(
             else -> ChosenTarget.Permanent(selectedTarget)
         }
 
-        // Build the copy effect with BoundVariable target
-        val copyEffect = effect.copy(target = EffectTarget.BoundVariable("chainTarget"))
+        // Build the copy effect with BoundVariable target — update both the outer
+        // ChainCopyEffect.target and the inner action's target so the copy resolves
+        // against the new binding.
+        val newTarget = EffectTarget.BoundVariable("chainTarget")
+        val updatedAction = replaceActionTarget(effect.action, newTarget)
+        val copyEffect = effect.copy(target = newTarget, action = updatedAction)
 
         // Build the target requirement with the binding id
         val copyTargetReq = when (val req = effect.copyTargetRequirement) {
@@ -254,6 +222,11 @@ class ChainSpellContinuationResumer(
         sourceId: EntityId?,
         checkForMore: CheckForMore
     ): ExecutionResult {
+        // Check cost prerequisites
+        if (!ChainCopyExecutor.canPayCopyCost(state, recipientPlayerId, effect.copyCost)) {
+            return checkForMore(state, events)
+        }
+
         // Check if there are valid targets for a potential copy
         val legalTargets = services.targetFinder.findLegalTargets(
             state, effect.copyTargetRequirement, recipientPlayerId, sourceId
@@ -263,17 +236,31 @@ class ChainSpellContinuationResumer(
         }
 
         val decisionId = java.util.UUID.randomUUID().toString()
+
+        val copyCost = effect.copyCost
+        val prompt = if (copyCost == null) {
+            "Copy ${effect.spellName} and choose a new target?"
+        } else {
+            "${copyCost.description.replaceFirstChar { it.uppercase() }} to copy ${effect.spellName}?"
+        }
+
+        val (yesText, noText) = if (copyCost == null) {
+            "Copy" to "Decline"
+        } else {
+            copyCost.description.replaceFirstChar { it.uppercase() } to "Decline"
+        }
+
         val decision = YesNoDecision(
             id = decisionId,
             playerId = recipientPlayerId,
-            prompt = "Copy ${effect.spellName} and choose a new target?",
+            prompt = prompt,
             context = DecisionContext(
                 sourceId = sourceId,
                 sourceName = effect.spellName,
                 phase = DecisionPhase.RESOLUTION
             ),
-            yesText = "Copy",
-            noText = "Decline"
+            yesText = yesText,
+            noText = noText
         )
 
         val copyContinuation = ChainCopyDecisionContinuation(
@@ -305,10 +292,10 @@ class ChainSpellContinuationResumer(
         effect: ChainCopyEffect,
         sourceId: EntityId?,
         options: List<EntityId>,
-        prompt: String
+        prompt: String,
+        useTargetingUI: Boolean
     ): ExecutionResult {
         val decisionId = java.util.UUID.randomUUID().toString()
-        val useTargetingUI = effect.copyCost is ChainCopyCost.SacrificeALand
         val decision = SelectCardsDecision(
             id = decisionId,
             playerId = controllerId,
@@ -404,52 +391,79 @@ class ChainSpellContinuationResumer(
         )
     }
 
-    private fun sacrificeLandAndPresentTargets(
+    /**
+     * Pay the selected cost resources, then present target selection for the copy.
+     */
+    private fun payCostAndPresentTargets(
         state: GameState,
         controllerId: EntityId,
-        landId: EntityId,
+        cost: PayCost,
+        selectedCards: List<EntityId>,
         effect: ChainCopyEffect,
         sourceId: EntityId?,
         checkForMore: CheckForMore
     ): ExecutionResult {
-        val container = state.getEntity(landId) ?: return checkForMore(state, emptyList())
-        val cardComponent = container.get<CardComponent>()
-            ?: return checkForMore(state, emptyList())
+        var newState = state
+        val events = mutableListOf<GameEvent>()
 
-        val currentZone = state.zones.entries.find { (_, cards) -> landId in cards }?.key
-            ?: return checkForMore(state, emptyList())
+        when (cost) {
+            is PayCost.Sacrifice -> {
+                for (cardId in selectedCards) {
+                    val container = newState.getEntity(cardId) ?: continue
+                    val cardComponent = container.get<CardComponent>() ?: continue
+                    val currentZone = newState.zones.entries.find { (_, cards) -> cardId in cards }?.key
+                        ?: continue
+                    val ownerId = container.get<OwnerComponent>()?.playerId
+                        ?: cardComponent.ownerId
+                        ?: controllerId
+                    val graveyardZone = ZoneKey(ownerId, Zone.GRAVEYARD)
 
-        val ownerId = container.get<OwnerComponent>()?.playerId
-            ?: cardComponent.ownerId
-            ?: controllerId
-        val graveyardZone = ZoneKey(ownerId, Zone.GRAVEYARD)
+                    newState = newState.removeFromZone(currentZone, cardId)
+                    newState = newState.addToZone(graveyardZone, cardId)
 
-        var newState = state.removeFromZone(currentZone, landId)
-        newState = newState.addToZone(graveyardZone, landId)
+                    events.add(PermanentsSacrificedEvent(controllerId, listOf(cardId), listOf(cardComponent.name)))
+                    events.add(ZoneChangeEvent(
+                        entityId = cardId,
+                        entityName = cardComponent.name,
+                        fromZone = Zone.BATTLEFIELD,
+                        toZone = Zone.GRAVEYARD,
+                        ownerId = ownerId
+                    ))
+                }
+            }
+            is PayCost.Discard -> {
+                val handZone = ZoneKey(controllerId, Zone.HAND)
+                val graveyardZone = ZoneKey(controllerId, Zone.GRAVEYARD)
 
-        val sacrificeEvents = mutableListOf<GameEvent>(
-            PermanentsSacrificedEvent(controllerId, listOf(landId), listOf(cardComponent.name)),
-            ZoneChangeEvent(
-                entityId = landId,
-                entityName = cardComponent.name,
-                fromZone = Zone.BATTLEFIELD,
-                toZone = Zone.GRAVEYARD,
-                ownerId = ownerId
-            )
-        )
+                for (cardId in selectedCards) {
+                    newState = newState.removeFromZone(handZone, cardId)
+                    newState = newState.addToZone(graveyardZone, cardId)
+                }
+
+                val cardNames = selectedCards.map { newState.getEntity(it)?.get<CardComponent>()?.name ?: state.getEntity(it)?.get<CardComponent>()?.name ?: "Card" }
+                events.add(CardsDiscardedEvent(controllerId, selectedCards, cardNames))
+            }
+            else -> { /* Unsupported cost type — no-op */ }
+        }
 
         return presentTargetSelection(
-            newState, sacrificeEvents, controllerId, effect, sourceId, checkForMore
+            newState, events, controllerId, effect, sourceId, checkForMore
         )
     }
 
-    fun findControllerLands(state: GameState, controllerId: EntityId): List<EntityId> {
-        val projected = state.projectedState
-        val controlledPermanents = projected.getBattlefieldControlledBy(controllerId)
-        val predicateEvaluator = PredicateEvaluator()
-        val context = PredicateContext(controllerId = controllerId)
-        return controlledPermanents.filter { permanentId ->
-            predicateEvaluator.matchesWithProjection(state, projected, permanentId, GameObjectFilter.Land, context)
+    /**
+     * Replace the target in a known inner action effect so the chain copy
+     * resolves against the new target binding.
+     *
+     * CompositeEffect (discard pipeline) converts targets to Player enums at
+     * construction time, so it doesn't need updating.
+     */
+    private fun replaceActionTarget(action: Effect, newTarget: EffectTarget): Effect {
+        return when (action) {
+            is MoveToZoneEffect -> action.copy(target = newTarget)
+            is DealDamageEffect -> action.copy(target = newTarget)
+            is PreventDamageEffect -> action.copy(target = newTarget)
+            else -> action
         }
     }
 }

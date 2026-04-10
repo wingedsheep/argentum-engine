@@ -156,7 +156,7 @@ val engineSerializersModule = SerializersModule {
         subclass(AmplifyEntersContinuation::class)
         subclass(CastWithCreatureTypeContinuation::class)
         subclass(MoveCollectionAuraTargetContinuation::class)
-        subclass(ChainCopyPrimaryDiscardContinuation::class)
+        subclass(ChainCopyAfterActionContinuation::class)
         subclass(ChainCopyDecisionContinuation::class)
         subclass(ChainCopyCostContinuation::class)
         subclass(ChainCopyTargetContinuation::class)
