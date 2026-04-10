@@ -493,42 +493,39 @@ class StackResolver(
                 // null means choice couldn't be presented (e.g., no creatures on battlefield) — fall through
             }
 
-            // Check for Amplify replacement effect
-            val amplifyEffect = cardDef.script.replacementEffects.filterIsInstance<com.wingedsheep.sdk.scripting.AmplifyEffect>().firstOrNull()
-            if (amplifyEffect != null) {
-                // Get the entering creature's subtypes from its card definition
-                val creatureSubtypes = cardComponent.typeLine.subtypes.map { it.value }.toSet()
-
-                // Find hand cards that share a creature type with this creature
-                val handZone = ZoneKey(controllerId, Zone.HAND)
-                val validHandCards = state.getZone(handZone).filter { cardId ->
-                    val handCard = state.getEntity(cardId)?.get<CardComponent>() ?: return@filter false
-                    if (!handCard.typeLine.isCreature) return@filter false
-                    handCard.typeLine.subtypes.map { it.value }.any { it in creatureSubtypes }
+            // Check for EntersWithRevealCounters replacement effect (Amplify mechanic)
+            val revealCountersEffect = cardDef.script.replacementEffects.filterIsInstance<com.wingedsheep.sdk.scripting.EntersWithRevealCounters>().firstOrNull()
+            if (revealCountersEffect != null) {
+                // Find cards in the reveal source zone that match the effect's filter
+                val revealZone = ZoneKey(controllerId, revealCountersEffect.revealSource)
+                val predicateContext = PredicateContext(controllerId = controllerId, sourceId = spellId)
+                val validCards = state.getZone(revealZone).filter { cardId ->
+                    predicateEvaluator.matches(state, cardId, revealCountersEffect.filter, predicateContext)
                 }
 
-                if (validHandCards.isNotEmpty()) {
-                    val decisionId = "amplify-enters-${spellId.value}"
+                if (validCards.isNotEmpty()) {
+                    val decisionId = "reveal-counters-enters-${spellId.value}"
                     val decision = SelectCardsDecision(
                         id = decisionId,
                         playerId = controllerId,
-                        prompt = "Reveal cards from your hand that share a creature type with ${cardComponent.name} (Amplify ${amplifyEffect.countersPerReveal})",
+                        prompt = "Reveal cards from your ${revealCountersEffect.revealSource.name.lowercase()} that match ${cardComponent.name} (${revealCountersEffect.countersPerReveal} ${revealCountersEffect.counterType} counter${if (revealCountersEffect.countersPerReveal > 1) "s" else ""} each)",
                         context = DecisionContext(
                             sourceId = spellId,
                             sourceName = cardComponent.name,
                             phase = DecisionPhase.RESOLUTION
                         ),
-                        options = validHandCards,
+                        options = validCards,
                         minSelections = 0,
-                        maxSelections = validHandCards.size
+                        maxSelections = validCards.size
                     )
 
-                    val continuation = AmplifyEntersContinuation(
+                    val continuation = RevealCountersContinuation(
                         decisionId = decisionId,
                         spellId = spellId,
                         controllerId = controllerId,
                         ownerId = ownerId,
-                        countersPerReveal = amplifyEffect.countersPerReveal
+                        counterType = revealCountersEffect.counterType,
+                        countersPerReveal = revealCountersEffect.countersPerReveal
                     )
 
                     val pausedState = state
@@ -536,7 +533,7 @@ class StackResolver(
                         .withPendingDecision(decision)
                     return ExecutionResult.paused(pausedState, decision)
                 }
-                // No valid hand cards — enter normally without counters
+                // No valid cards — enter normally without counters
             }
         }
 

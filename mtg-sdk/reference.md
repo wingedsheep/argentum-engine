@@ -1114,7 +1114,7 @@ Used in card definitions for effects that intercept events before they happen:
 - `UndyingEffect(appliesTo)` / `PersistEffect(appliesTo)`
 - `EntersAsCopy(optional, copyFilter, filterByTotalManaSpent, additionalSubtypes, additionalKeywords, appliesTo)` — clone effects (copyFilter defaults to Creature; use `GameObjectFilter.NonlandPermanent` for Clever Impersonator; `filterByTotalManaSpent` for X-cost clones like Mockingbird; `additionalSubtypes`/`additionalKeywords` for "except it's a Bird and has flying")
 - `EntersWithChoice(choiceType, chooser?, appliesTo)` — unified "as enters, choose X" effect. `choiceType`: `ChoiceType.COLOR`, `ChoiceType.CREATURE_TYPE`, or `ChoiceType.CREATURE_ON_BATTLEFIELD`. `chooser` defaults to `Player.You`; use `Player.Opponent` for Callous Oppressor. Stores chosen value as `ChosenColorComponent`, `ChosenCreatureTypeComponent`, or `ChosenCreatureComponent`. Reference chosen creature via `EffectTarget.ChosenCreature`
-- `AmplifyEffect(countersPerReveal, appliesTo)` — Amplify N: reveal cards sharing creature type from hand, put N +1/+1 counters per card
+- `EntersWithRevealCounters(filter?, revealSource?, counterType?, countersPerReveal, appliesTo)` — as this creature enters, reveal cards matching filter from a zone, put N counters per card. Defaults reproduce Amplify: filter = creatures sharing type with source, revealSource = HAND, counterType = "+1/+1"
 
 ### Damage
 

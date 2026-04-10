@@ -6,7 +6,7 @@ import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Targets
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.AmplifyEffect
+import com.wingedsheep.sdk.scripting.EntersWithRevealCounters
 import com.wingedsheep.sdk.scripting.events.CounterTypeFilter
 import com.wingedsheep.sdk.dsl.DynamicAmounts
 
@@ -29,7 +29,7 @@ val CanopyCrawler = card("Canopy Crawler") {
 
     keywords(Keyword.AMPLIFY)
 
-    replacementEffect(AmplifyEffect(countersPerReveal = 1))
+    replacementEffect(EntersWithRevealCounters(countersPerReveal = 1))
 
     activatedAbility {
         cost = Costs.Tap

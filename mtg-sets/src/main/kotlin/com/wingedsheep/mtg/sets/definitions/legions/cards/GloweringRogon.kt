@@ -3,7 +3,7 @@ package com.wingedsheep.mtg.sets.definitions.legions.cards
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.AmplifyEffect
+import com.wingedsheep.sdk.scripting.EntersWithRevealCounters
 
 /**
  * Glowering Rogon
@@ -22,7 +22,7 @@ val GloweringRogon = card("Glowering Rogon") {
 
     keywords(Keyword.AMPLIFY)
 
-    replacementEffect(AmplifyEffect(countersPerReveal = 1))
+    replacementEffect(EntersWithRevealCounters(countersPerReveal = 1))
 
     metadata {
         rarity = Rarity.COMMON

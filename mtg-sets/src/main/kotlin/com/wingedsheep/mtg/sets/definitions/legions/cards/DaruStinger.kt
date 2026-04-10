@@ -4,7 +4,7 @@ import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.dsl.Costs
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.AmplifyEffect
+import com.wingedsheep.sdk.scripting.EntersWithRevealCounters
 import com.wingedsheep.sdk.scripting.effects.DealDamageEffect
 import com.wingedsheep.sdk.scripting.events.CounterTypeFilter
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
@@ -30,7 +30,7 @@ val DaruStinger = card("Daru Stinger") {
 
     keywords(Keyword.AMPLIFY)
 
-    replacementEffect(AmplifyEffect(countersPerReveal = 1))
+    replacementEffect(EntersWithRevealCounters(countersPerReveal = 1))
 
     activatedAbility {
         cost = Costs.Tap

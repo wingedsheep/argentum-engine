@@ -22,7 +22,7 @@ class ModalAndCloneContinuationResumer(
         resumer(CloneEntersContinuation::class, ::resumeCloneEnters),
         resumer(EntersWithChoiceSpellContinuation::class, ::resumeEntersWithChoiceSpell),
         resumer(EntersWithChoiceLandContinuation::class, ::resumeEntersWithChoiceLand),
-        resumer(AmplifyEntersContinuation::class, ::resumeAmplifyEnters),
+        resumer(RevealCountersContinuation::class, ::resumeRevealCounters),
         resumer(CastWithCreatureTypeContinuation::class, ::resumeCastWithCreatureType),
         resumer(BudgetModalContinuation::class, ::resumeBudgetModal),
         resumer(CreateTokenCopyOfChosenContinuation::class, ::resumeCreateTokenCopyOfChosen),
@@ -554,19 +554,19 @@ class ModalAndCloneContinuationResumer(
     }
 
     /**
-     * Resume after player reveals cards from hand for Amplify.
+     * Resume after player reveals cards for enters-with-reveal-counters.
      *
-     * Adds +1/+1 counters based on how many cards were revealed, then completes
+     * Adds counters based on how many cards were revealed, then completes
      * the permanent entry to the battlefield.
      */
-    fun resumeAmplifyEnters(
+    fun resumeRevealCounters(
         state: GameState,
-        continuation: AmplifyEntersContinuation,
+        continuation: RevealCountersContinuation,
         response: DecisionResponse,
         checkForMore: CheckForMore
     ): ExecutionResult {
         if (response !is CardsSelectedResponse) {
-            return ExecutionResult.error(state, "Expected card selection response for Amplify")
+            return ExecutionResult.error(state, "Expected card selection response for reveal counters")
         }
 
         val spellId = continuation.spellId
@@ -576,18 +576,18 @@ class ModalAndCloneContinuationResumer(
 
         var newState = state
 
-        // Add +1/+1 counters based on revealed cards
+        // Add counters based on revealed cards
         val revealEvents = mutableListOf<GameEvent>()
         if (revealedCards.isNotEmpty()) {
-            val counterCount = revealedCards.size * continuation.countersPerReveal
-            val current = newState.getEntity(spellId)
-                ?.get<com.wingedsheep.engine.state.components.battlefield.CountersComponent>()
-                ?: com.wingedsheep.engine.state.components.battlefield.CountersComponent()
-            newState = newState.updateEntity(spellId) { c ->
-                c.with(current.withAdded(
-                    com.wingedsheep.sdk.core.CounterType.PLUS_ONE_PLUS_ONE,
-                    counterCount
-                ))
+            val resolvedCounterType = resolveCounterTypeFromString(continuation.counterType)
+            if (resolvedCounterType != null) {
+                val counterCount = revealedCards.size * continuation.countersPerReveal
+                val current = newState.getEntity(spellId)
+                    ?.get<com.wingedsheep.engine.state.components.battlefield.CountersComponent>()
+                    ?: com.wingedsheep.engine.state.components.battlefield.CountersComponent()
+                newState = newState.updateEntity(spellId) { c ->
+                    c.with(current.withAdded(resolvedCounterType, counterCount))
+                }
             }
 
             // Emit reveal event so opponent can see the revealed cards
@@ -640,6 +640,21 @@ class ModalAndCloneContinuationResumer(
         )
 
         return checkForMore(newState, events)
+    }
+
+    private fun resolveCounterTypeFromString(counterType: String): com.wingedsheep.sdk.core.CounterType? {
+        // Map string constants (from Counters object) to enum values
+        val byDescription = com.wingedsheep.sdk.core.CounterType.entries.associateBy { entry ->
+            entry.name.lowercase().replace('_', ' ')
+        }
+        return when (counterType) {
+            "+1/+1" -> com.wingedsheep.sdk.core.CounterType.PLUS_ONE_PLUS_ONE
+            "-1/-1" -> com.wingedsheep.sdk.core.CounterType.MINUS_ONE_MINUS_ONE
+            else -> byDescription[counterType.lowercase()] ?: run {
+                System.err.println("WARNING: Unknown counter type '$counterType' in EntersWithRevealCounters, skipping counter placement")
+                null
+            }
+        }
     }
 
     /**

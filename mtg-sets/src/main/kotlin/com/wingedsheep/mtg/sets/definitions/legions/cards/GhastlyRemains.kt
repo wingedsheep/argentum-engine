@@ -6,7 +6,7 @@ import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.AmplifyEffect
+import com.wingedsheep.sdk.scripting.EntersWithRevealCounters
 import com.wingedsheep.sdk.scripting.effects.MayPayManaEffect
 import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
@@ -29,7 +29,7 @@ val GhastlyRemains = card("Ghastly Remains") {
     oracleText = "Amplify 1 (As this creature enters, put a +1/+1 counter on it for each Zombie card you reveal in your hand.)\nAt the beginning of your upkeep, if Ghastly Remains is in your graveyard, you may pay {B}{B}{B}. If you do, return Ghastly Remains to your hand."
 
     keywords(Keyword.AMPLIFY)
-    replacementEffect(AmplifyEffect(countersPerReveal = 1))
+    replacementEffect(EntersWithRevealCounters(countersPerReveal = 1))
 
     triggeredAbility {
         trigger = Triggers.YourUpkeep

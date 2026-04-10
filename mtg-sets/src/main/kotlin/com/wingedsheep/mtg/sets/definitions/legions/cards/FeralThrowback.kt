@@ -6,7 +6,7 @@ import com.wingedsheep.sdk.dsl.Targets
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.AmplifyEffect
+import com.wingedsheep.sdk.scripting.EntersWithRevealCounters
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 
 /**
@@ -28,7 +28,7 @@ val FeralThrowback = card("Feral Throwback") {
 
     keywords(Keyword.AMPLIFY, Keyword.PROVOKE)
 
-    replacementEffect(AmplifyEffect(countersPerReveal = 2))
+    replacementEffect(EntersWithRevealCounters(countersPerReveal = 2))
 
     triggeredAbility {
         trigger = Triggers.Attacks

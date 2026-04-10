@@ -10,6 +10,7 @@ import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.text.TextReplaceable
 import com.wingedsheep.sdk.scripting.text.TextReplacer
+import com.wingedsheep.sdk.scripting.predicates.CardPredicate
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -645,19 +646,33 @@ data class EntersWithChoice(
 }
 
 // =============================================================================
-// Amplify Replacement Effect
+// Enters-With-Reveal-Counters Replacement Effect
 // =============================================================================
 
 /**
- * Amplify N - As this creature enters, you may reveal any number of cards from
- * your hand that share a creature type with it. For each card revealed this way,
- * put N +1/+1 counters on this creature.
+ * As this creature enters, you may reveal any number of cards from a zone
+ * that match a filter. For each card revealed, put N counters on this creature.
  *
- * Example: Embalmed Brawler (Amplify 1), Kilnmouth Dragon (Amplify 3)
+ * Generalizes the Amplify mechanic — the default parameters reproduce Amplify
+ * exactly (reveal creatures from hand sharing a type, +1/+1 counters).
+ *
+ * @param filter Which cards can be revealed (default: creatures sharing a creature type with this)
+ * @param revealSource Which zone to reveal from (default: HAND)
+ * @param counterType Counter type description (default: "+1/+1")
+ * @param countersPerReveal How many counters per revealed card
+ *
+ * Examples:
+ * - Embalmed Brawler (Amplify 1): `EntersWithRevealCounters(countersPerReveal = 1)`
+ * - Kilnmouth Dragon (Amplify 3): `EntersWithRevealCounters(countersPerReveal = 3)`
  */
-@SerialName("Amplify")
+@SerialName("EntersWithRevealCounters")
 @Serializable
-data class AmplifyEffect(
+data class EntersWithRevealCounters(
+    val filter: GameObjectFilter = GameObjectFilter(
+        cardPredicates = listOf(CardPredicate.IsCreature, CardPredicate.SharesCreatureTypeWithSource)
+    ),
+    val revealSource: Zone = Zone.HAND,
+    val counterType: String = "+1/+1",
     val countersPerReveal: Int,
     override val appliesTo: GameEvent = GameEvent.ZoneChangeEvent(
         filter = GameObjectFilter.Creature.youControl(),
@@ -665,11 +680,12 @@ data class AmplifyEffect(
     )
 ) : ReplacementEffect {
     override val description: String =
-        "Amplify $countersPerReveal — As this creature enters, you may reveal any number of cards from your hand that share a creature type with it. For each card revealed this way, put $countersPerReveal +1/+1 counter${if (countersPerReveal > 1) "s" else ""} on it."
+        "As this creature enters, you may reveal any number of cards from your ${revealSource.name.lowercase()} that match. For each card revealed this way, put $countersPerReveal $counterType counter${if (countersPerReveal > 1) "s" else ""} on it."
 
     override fun applyTextReplacement(replacer: TextReplacer): ReplacementEffect {
+        val newFilter = filter.applyTextReplacement(replacer)
         val newAppliesTo = appliesTo.applyTextReplacement(replacer)
-        return if (newAppliesTo !== appliesTo) copy(appliesTo = newAppliesTo) else this
+        return if (newFilter !== filter || newAppliesTo !== appliesTo) copy(filter = newFilter, appliesTo = newAppliesTo) else this
     }
 }
 

@@ -136,23 +136,25 @@ data class EntersWithChoiceLandContinuation(
 ) : ContinuationFrame
 
 /**
- * Resume after player reveals cards from hand for Amplify.
+ * Resume after player reveals cards for enters-with-reveal-counters (Amplify mechanic).
  *
- * When a creature with Amplify enters, the controller may reveal cards from hand
- * that share a creature type. For each revealed card, N +1/+1 counters are placed
- * on the creature as it enters.
+ * When a creature with this replacement effect enters, the controller may reveal
+ * cards matching a filter. For each revealed card, N counters are placed on the
+ * creature as it enters.
  *
  * @property spellId The spell entity being resolved
  * @property controllerId The player who cast the spell
  * @property ownerId The card's owner
- * @property countersPerReveal Number of +1/+1 counters per revealed card (the N in "Amplify N")
+ * @property counterType Counter type description (e.g., "+1/+1")
+ * @property countersPerReveal Number of counters per revealed card
  */
 @Serializable
-data class AmplifyEntersContinuation(
+data class RevealCountersContinuation(
     override val decisionId: String,
     val spellId: EntityId,
     val controllerId: EntityId,
     val ownerId: EntityId,
+    val counterType: String,
     val countersPerReveal: Int
 ) : ContinuationFrame
 
