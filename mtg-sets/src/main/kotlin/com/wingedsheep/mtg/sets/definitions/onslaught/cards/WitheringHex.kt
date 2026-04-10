@@ -4,9 +4,14 @@ import com.wingedsheep.sdk.core.Counters
 import com.wingedsheep.sdk.dsl.Targets
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
+import com.wingedsheep.sdk.scripting.GrantDynamicStatsEffect
+import com.wingedsheep.sdk.scripting.StaticTarget
 import com.wingedsheep.sdk.scripting.effects.AddCountersEffect
+import com.wingedsheep.sdk.scripting.events.CounterTypeFilter
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
-import com.wingedsheep.sdk.scripting.ModifyStatsByCounterOnSource
+import com.wingedsheep.sdk.scripting.values.DynamicAmount
+import com.wingedsheep.sdk.scripting.values.EntityNumericProperty
+import com.wingedsheep.sdk.scripting.values.EntityReference
 import com.wingedsheep.sdk.dsl.Triggers
 
 /**
@@ -30,10 +35,14 @@ val WitheringHex = card("Withering Hex") {
     }
 
     staticAbility {
-        ability = ModifyStatsByCounterOnSource(
-            counterType = Counters.PLAGUE,
-            powerModPerCounter = -1,
-            toughnessModPerCounter = -1
+        val plagueCounters = DynamicAmount.EntityProperty(
+            EntityReference.Source,
+            EntityNumericProperty.CounterCount(CounterTypeFilter.Named(Counters.PLAGUE))
+        )
+        ability = GrantDynamicStatsEffect(
+            target = StaticTarget.AttachedCreature,
+            powerBonus = DynamicAmount.Multiply(plagueCounters, -1),
+            toughnessBonus = DynamicAmount.Multiply(plagueCounters, -1)
         )
     }
 

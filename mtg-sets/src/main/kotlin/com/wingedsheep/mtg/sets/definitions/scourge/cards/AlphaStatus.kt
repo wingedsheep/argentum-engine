@@ -3,8 +3,10 @@ package com.wingedsheep.mtg.sets.definitions.scourge.cards
 import com.wingedsheep.sdk.dsl.Targets
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.ModifyStatsPerSharedCreatureType
+import com.wingedsheep.sdk.scripting.GrantDynamicStatsEffect
 import com.wingedsheep.sdk.scripting.StaticTarget
+import com.wingedsheep.sdk.scripting.values.DynamicAmount
+import com.wingedsheep.sdk.scripting.values.EntityReference
 
 /**
  * Alpha Status
@@ -22,7 +24,12 @@ val AlphaStatus = card("Alpha Status") {
     auraTarget = Targets.Creature
 
     staticAbility {
-        ability = ModifyStatsPerSharedCreatureType(2, 2, StaticTarget.AttachedCreature)
+        val sharedTypeCount = DynamicAmount.CreaturesSharingTypeWithEntity(EntityReference.AffectedEntity)
+        ability = GrantDynamicStatsEffect(
+            target = StaticTarget.AttachedCreature,
+            powerBonus = DynamicAmount.Multiply(sharedTypeCount, 2),
+            toughnessBonus = DynamicAmount.Multiply(sharedTypeCount, 2)
+        )
     }
 
     metadata {

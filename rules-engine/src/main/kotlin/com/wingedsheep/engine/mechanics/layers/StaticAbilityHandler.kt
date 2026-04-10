@@ -35,8 +35,6 @@ import com.wingedsheep.sdk.scripting.GrantSubtype
 import com.wingedsheep.sdk.scripting.GrantCardType
 import com.wingedsheep.sdk.scripting.GrantSupertype
 import com.wingedsheep.sdk.scripting.GrantProtectionFromChosenColorToGroup
-import com.wingedsheep.sdk.scripting.ModifyStatsByCounterOnSource
-import com.wingedsheep.sdk.scripting.ModifyStatsPerSharedCreatureType
 import com.wingedsheep.sdk.scripting.AnimateLandGroup
 import com.wingedsheep.sdk.scripting.GrantAdditionalTypesToGroup
 import com.wingedsheep.sdk.scripting.GrantColor
@@ -450,25 +448,6 @@ class StaticAbilityHandler(
             is GrantCardType -> {
                 ContinuousEffectData(
                     modification = Modification.AddType(ability.cardType.uppercase()),
-                    affectsFilter = convertStaticTarget(ability.target)
-                )
-            }
-            is ModifyStatsPerSharedCreatureType -> {
-                ContinuousEffectData(
-                    modification = Modification.ModifyPowerToughnessPerSharedCreatureType(
-                        ability.powerModPerCreature,
-                        ability.toughnessModPerCreature
-                    ),
-                    affectsFilter = convertStaticTarget(ability.target)
-                )
-            }
-            is ModifyStatsByCounterOnSource -> {
-                ContinuousEffectData(
-                    modification = Modification.ModifyPowerToughnessPerSourceCounter(
-                        ability.counterType,
-                        ability.powerModPerCounter,
-                        ability.toughnessModPerCounter
-                    ),
                     affectsFilter = convertStaticTarget(ability.target)
                 )
             }

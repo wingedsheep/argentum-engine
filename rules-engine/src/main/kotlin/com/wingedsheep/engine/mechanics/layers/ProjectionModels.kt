@@ -510,33 +510,6 @@ sealed interface Modification {
     }
 
     /**
-     * Dynamic power/toughness modification based on counters on the source permanent.
-     * The actual modification is computed at projection time by reading counter count from source.
-     */
-    @Serializable
-    data class ModifyPowerToughnessPerSourceCounter(
-        val counterType: String,
-        val powerModPerCounter: Int,
-        val toughnessModPerCounter: Int
-    ) : Modification {
-        override val layer get() = Layer.POWER_TOUGHNESS
-        override val sublayer get() = Sublayer.MODIFICATIONS
-    }
-
-    /**
-     * Dynamic power/toughness modification based on other creatures sharing a creature type
-     * with the affected entity. The actual modification is computed at projection time.
-     */
-    @Serializable
-    data class ModifyPowerToughnessPerSharedCreatureType(
-        val powerModPerCreature: Int,
-        val toughnessModPerCreature: Int
-    ) : Modification {
-        override val layer get() = Layer.POWER_TOUGHNESS
-        override val sublayer get() = Sublayer.MODIFICATIONS
-    }
-
-    /**
      * Dynamic power/toughness modification based on a DynamicAmount.
      * The actual modification is computed at projection time by evaluating the DynamicAmount.
      * Used for effects like "gets +2/+2 for each face-down creature on the battlefield."

@@ -53,6 +53,9 @@ data class EffectContext(
     // --- Zone state ---
     /** Zone the spell was cast from (e.g., HAND, GRAVEYARD for flashback) */
     val castFromZone: Zone? = null,
+    // --- Projection state ---
+    /** The entity being modified during continuous effect projection (for DynamicAmount evaluation) */
+    val affectedEntityId: EntityId? = null,
     // --- Pipeline state ---
     val pipeline: PipelineState = PipelineState.EMPTY
 ) {

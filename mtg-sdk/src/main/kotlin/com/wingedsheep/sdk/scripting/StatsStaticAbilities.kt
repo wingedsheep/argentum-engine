@@ -68,59 +68,6 @@ data class GrantDynamicStatsEffect(
 }
 
 /**
- * Modifies the attached creature's power/toughness based on counters on the source permanent.
- * Used for auras like Withering Hex: "Enchanted creature gets -1/-1 for each plague counter
- * on this Aura."
- *
- * The modification is dynamic — recalculated during state projection based on the current
- * number of counters on the source (the aura itself).
- *
- * @property counterType The counter type to count on the source
- * @property powerModPerCounter Power modification per counter (e.g., -1)
- * @property toughnessModPerCounter Toughness modification per counter (e.g., -1)
- * @property target What this ability applies to (typically AttachedCreature for auras)
- */
-@SerialName("ModifyStatsByCounterOnSource")
-@Serializable
-data class ModifyStatsByCounterOnSource(
-    val counterType: String,
-    val powerModPerCounter: Int,
-    val toughnessModPerCounter: Int,
-    val target: StaticTarget = StaticTarget.AttachedCreature
-) : StaticAbility {
-    override val description: String = buildString {
-        val powerStr = if (powerModPerCounter >= 0) "+$powerModPerCounter" else "$powerModPerCounter"
-        val toughStr = if (toughnessModPerCounter >= 0) "+$toughnessModPerCounter" else "$toughnessModPerCounter"
-        append("$powerStr/$toughStr for each $counterType counter on this permanent")
-    }
-    override fun applyTextReplacement(replacer: TextReplacer): StaticAbility = this
-}
-
-/**
- * Modifies power/toughness based on the number of other creatures that share a creature type
- * with the target creature. Used for Alpha Status: "Enchanted creature gets +2/+2 for each
- * other creature on the battlefield that shares a creature type with it."
- *
- * @property powerModPerCreature Power bonus per matching creature (e.g., +2)
- * @property toughnessModPerCreature Toughness bonus per matching creature (e.g., +2)
- * @property target What this ability applies to (typically AttachedCreature for auras)
- */
-@SerialName("ModifyStatsPerSharedCreatureType")
-@Serializable
-data class ModifyStatsPerSharedCreatureType(
-    val powerModPerCreature: Int,
-    val toughnessModPerCreature: Int,
-    val target: StaticTarget = StaticTarget.AttachedCreature
-) : StaticAbility {
-    override val description: String = buildString {
-        val powerStr = if (powerModPerCreature >= 0) "+$powerModPerCreature" else "$powerModPerCreature"
-        val toughStr = if (toughnessModPerCreature >= 0) "+$toughnessModPerCreature" else "$toughnessModPerCreature"
-        append("$powerStr/$toughStr for each other creature that shares a creature type with it")
-    }
-    override fun applyTextReplacement(replacer: TextReplacer): StaticAbility = this
-}
-
-/**
  * Sets the base toughness of a group of creatures.
  * Used for Maha, Its Feathers Night: "Creatures your opponents control have base toughness 1."
  *

@@ -136,43 +136,6 @@ internal class EffectApplicator(
                 is Modification.CanBlockAdditional -> {
                     values.additionalBlockCount += mod.count
                 }
-                is Modification.ModifyPowerToughnessPerSourceCounter -> {
-                    val counterType = try {
-                        CounterType.valueOf(
-                            mod.counterType.uppercase()
-                                .replace(' ', '_')
-                                .replace('+', 'P')
-                                .replace('-', 'M')
-                                .replace("/", "_")
-                        )
-                    } catch (e: IllegalArgumentException) { null }
-                    val counterCount = if (counterType != null) {
-                        state.getEntity(effect.sourceId)
-                            ?.get<CountersComponent>()
-                            ?.getCount(counterType) ?: 0
-                    } else 0
-                    if (counterCount > 0) {
-                        values.power = (values.power ?: 0) + mod.powerModPerCounter * counterCount
-                        values.toughness = (values.toughness ?: 0) + mod.toughnessModPerCounter * counterCount
-                    }
-                }
-                is Modification.ModifyPowerToughnessPerSharedCreatureType -> {
-                    val entitySubtypes = values.subtypes
-                    if (entitySubtypes.isNotEmpty()) {
-                        val creatureSubtypes = entitySubtypes.toSet()
-                        val count = state.getBattlefield().count { otherId ->
-                            if (otherId == entityId) return@count false
-                            val otherValues = projectedValues[otherId] ?: return@count false
-                            val isCreature = "CREATURE" in otherValues.types
-                            if (!isCreature) return@count false
-                            otherValues.subtypes.any { it in creatureSubtypes }
-                        }
-                        if (count > 0) {
-                            values.power = (values.power ?: 0) + mod.powerModPerCreature * count
-                            values.toughness = (values.toughness ?: 0) + mod.toughnessModPerCreature * count
-                        }
-                    }
-                }
                 is Modification.CantBeBlockedExceptBySubtype -> {
                     values.cantBeBlockedExceptBySubtypes.add(mod.subtype)
                 }
@@ -183,7 +146,8 @@ internal class EffectApplicator(
                         val context = EffectContext(
                             sourceId = effect.sourceId,
                             controllerId = controllerId,
-                            opponentId = state.getOpponent(controllerId)
+                            opponentId = state.getOpponent(controllerId),
+                            affectedEntityId = entityId
                         )
                         val intermediateProjected = buildIntermediateProjectedState(state, projectedValues)
                         val powerMod = dynamicAmountEvaluator.evaluate(state, mod.powerBonus, context, intermediateProjected)

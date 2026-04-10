@@ -48,4 +48,11 @@ sealed interface EntityReference {
     data class TappedAsCost(val index: Int = 0) : EntityReference {
         override val description: String = "the tapped creature"
     }
+
+    /** The entity being modified by a continuous effect during state projection. */
+    @SerialName("AffectedEntity")
+    @Serializable
+    data object AffectedEntity : EntityReference {
+        override val description: String = "it"
+    }
 }

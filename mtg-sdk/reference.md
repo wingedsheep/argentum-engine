@@ -992,9 +992,7 @@ Set via `staticAbility { ability = ... }`:
 - `ModifyStats(powerBonus, toughnessBonus, target: StaticTarget)` — P/T bonus
 - `ModifyStatsForCreatureGroup(powerBonus, toughnessBonus, filter: GroupFilter)` — P/T to group (use `GroupFilter.ChosenSubtypeCreatures()` for chosen-type lord effects)
 - `SetBaseToughnessForCreatureGroup(toughness, filter: GroupFilter)` — set base toughness for a group (Layer 7b SET_VALUES)
-- `ModifyStatsByCounterOnSource(counterType, powerModPerCounter, toughnessModPerCounter, target)` — P/T per counter
-- `ModifyStatsPerSharedCreatureType(powerModPerCreature, toughnessModPerCreature, target)` — P/T per creature sharing a type
-- `GrantDynamicStatsEffect(target, powerBonus: DynamicAmount, toughnessBonus: DynamicAmount)`
+- `GrantDynamicStatsEffect(target, powerBonus: DynamicAmount, toughnessBonus: DynamicAmount)` — dynamic P/T (use `EntityProperty(Source, CounterCount(...))` for counter-based, `CreaturesSharingTypeWithEntity(AffectedEntity)` for shared-type)
 - `GrantProtection(color, target)` — grant protection from color
 - `GrantProtectionFromChosenColorToGroup(filter: GroupFilter)` — grant protection from chosen color (via `EntersWithChoice(ChoiceType.COLOR)`) to a group
 
