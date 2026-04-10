@@ -197,8 +197,6 @@ class StaticAbilityHandler(
 
         // Layer 4 (TYPE): Add "Creature" type
         effects.add(ContinuousEffectData(
-            layer = Layer.TYPE,
-            sublayer = null,
             modification = Modification.AddType("CREATURE"),
             affectsFilter = filter
         ))
@@ -206,8 +204,6 @@ class StaticAbilityHandler(
         // Layer 4 (TYPE): Add creature subtypes (e.g., "Elf")
         for (subtype in ability.creatureSubtypes) {
             effects.add(ContinuousEffectData(
-                layer = Layer.TYPE,
-                sublayer = null,
                 modification = Modification.AddSubtype(subtype),
                 affectsFilter = filter
             ))
@@ -216,8 +212,6 @@ class StaticAbilityHandler(
         // Layer 5 (COLOR): Add colors (e.g., GREEN)
         if (ability.colors.isNotEmpty()) {
             effects.add(ContinuousEffectData(
-                layer = Layer.COLOR,
-                sublayer = null,
                 modification = Modification.AddColor(ability.colors.map { it.name }.toSet()),
                 affectsFilter = filter
             ))
@@ -225,8 +219,6 @@ class StaticAbilityHandler(
 
         // Layer 7b (POWER_TOUGHNESS, SET_VALUES): Set P/T
         effects.add(ContinuousEffectData(
-            layer = Layer.POWER_TOUGHNESS,
-            sublayer = Sublayer.SET_VALUES,
             modification = Modification.SetPowerToughness(ability.power, ability.toughness),
             affectsFilter = filter
         ))
@@ -244,8 +236,6 @@ class StaticAbilityHandler(
 
         for (cardType in ability.addCardTypes) {
             effects.add(ContinuousEffectData(
-                layer = Layer.TYPE,
-                sublayer = null,
                 modification = Modification.AddType(cardType),
                 affectsFilter = filter
             ))
@@ -253,8 +243,6 @@ class StaticAbilityHandler(
 
         for (subtype in ability.addSubtypes) {
             effects.add(ContinuousEffectData(
-                layer = Layer.TYPE,
-                sublayer = null,
                 modification = Modification.AddSubtype(subtype),
                 affectsFilter = filter
             ))
@@ -274,8 +262,6 @@ class StaticAbilityHandler(
         // Layer 4 (TYPE): Set card types (replaces all existing)
         if (ability.setCardTypes.isNotEmpty()) {
             effects.add(ContinuousEffectData(
-                layer = Layer.TYPE,
-                sublayer = null,
                 modification = Modification.SetCardTypes(ability.setCardTypes),
                 affectsFilter = filter
             ))
@@ -284,8 +270,6 @@ class StaticAbilityHandler(
         // Layer 4 (TYPE): Set subtypes (replaces all existing)
         if (ability.setSubtypes.isNotEmpty()) {
             effects.add(ContinuousEffectData(
-                layer = Layer.TYPE,
-                sublayer = null,
                 modification = Modification.SetAllSubtypes(ability.setSubtypes),
                 affectsFilter = filter
             ))
@@ -295,8 +279,6 @@ class StaticAbilityHandler(
         val colors = ability.setColors
         if (colors != null) {
             effects.add(ContinuousEffectData(
-                layer = Layer.COLOR,
-                sublayer = null,
                 modification = Modification.ChangeColor(colors.map { it.name }.toSet()),
                 affectsFilter = filter
             ))
@@ -315,8 +297,6 @@ class StaticAbilityHandler(
         return when (ability) {
             is GrantKeywordToCreatureGroup -> {
                 ContinuousEffectData(
-                    layer = Layer.ABILITY,
-                    sublayer = null,
                     modification = Modification.GrantKeyword(ability.keyword.name),
                     affectsFilter = convertGroupFilter(ability.filter)
                 )
@@ -325,24 +305,18 @@ class StaticAbilityHandler(
                 // Grant the WARD keyword for display; the triggered ability is generated
                 // by TriggerAbilityResolver.getWardTriggeredAbilities()
                 ContinuousEffectData(
-                    layer = Layer.ABILITY,
-                    sublayer = null,
                     modification = Modification.GrantKeyword("WARD"),
                     affectsFilter = convertGroupFilter(ability.filter)
                 )
             }
             is ModifyStatsForCreatureGroup -> {
                 ContinuousEffectData(
-                    layer = Layer.POWER_TOUGHNESS,
-                    sublayer = Sublayer.MODIFICATIONS,
                     modification = Modification.ModifyPowerToughness(ability.powerBonus, ability.toughnessBonus),
                     affectsFilter = convertGroupFilter(ability.filter)
                 )
             }
             is ModifyStatsForChosenCreatureType -> {
                 ContinuousEffectData(
-                    layer = Layer.POWER_TOUGHNESS,
-                    sublayer = Sublayer.MODIFICATIONS,
                     modification = Modification.ModifyPowerToughness(ability.powerBonus, ability.toughnessBonus),
                     affectsFilter = if (ability.youControlOnly)
                         AffectsFilter.ChosenCreatureTypeCreaturesYouControl
@@ -352,120 +326,90 @@ class StaticAbilityHandler(
             }
             is GrantKeywordForChosenCreatureType -> {
                 ContinuousEffectData(
-                    layer = Layer.ABILITY,
-                    sublayer = null,
                     modification = Modification.GrantKeyword(ability.keyword.name),
                     affectsFilter = AffectsFilter.ChosenCreatureTypeCreatures
                 )
             }
             is GrantProtectionFromChosenColorToGroup -> {
                 ContinuousEffectData(
-                    layer = Layer.ABILITY,
-                    sublayer = null,
                     modification = Modification.GrantProtectionFromChosenColor,
                     affectsFilter = convertGroupFilter(ability.filter)
                 )
             }
             is ModifyStats -> {
                 ContinuousEffectData(
-                    layer = Layer.POWER_TOUGHNESS,
-                    sublayer = Sublayer.MODIFICATIONS,
                     modification = Modification.ModifyPowerToughness(ability.powerBonus, ability.toughnessBonus),
                     affectsFilter = convertStaticTarget(ability.target)
                 )
             }
             is GrantDynamicStatsEffect -> {
                 ContinuousEffectData(
-                    layer = Layer.POWER_TOUGHNESS,
-                    sublayer = Sublayer.MODIFICATIONS,
                     modification = Modification.ModifyPowerToughnessDynamic(ability.powerBonus, ability.toughnessBonus),
                     affectsFilter = convertStaticTarget(ability.target)
                 )
             }
             is GrantKeyword -> {
                 ContinuousEffectData(
-                    layer = Layer.ABILITY,
-                    sublayer = null,
                     modification = Modification.GrantKeyword(ability.keyword),
                     affectsFilter = convertStaticTarget(ability.target)
                 )
             }
             is RemoveKeywordStatic -> {
                 ContinuousEffectData(
-                    layer = Layer.ABILITY,
-                    sublayer = null,
                     modification = Modification.RemoveKeyword(ability.keyword),
                     affectsFilter = convertStaticTarget(ability.target)
                 )
             }
             is CantBeBlocked -> {
                 ContinuousEffectData(
-                    layer = Layer.ABILITY,
-                    sublayer = null,
                     modification = Modification.GrantKeyword(com.wingedsheep.sdk.core.AbilityFlag.CANT_BE_BLOCKED.name),
                     affectsFilter = convertStaticTarget(ability.target)
                 )
             }
             is CantAttack -> {
                 ContinuousEffectData(
-                    layer = Layer.ABILITY,
-                    sublayer = null,
                     modification = Modification.SetCantAttack,
                     affectsFilter = convertStaticTarget(ability.target)
                 )
             }
             is CantBlock -> {
                 ContinuousEffectData(
-                    layer = Layer.ABILITY,
-                    sublayer = null,
                     modification = Modification.SetCantBlock,
                     affectsFilter = convertStaticTarget(ability.target)
                 )
             }
             is CantBlockForCreatureGroup -> {
                 ContinuousEffectData(
-                    layer = Layer.ABILITY,
-                    sublayer = null,
                     modification = Modification.SetCantBlock,
                     affectsFilter = convertGroupFilter(ability.filter)
                 )
             }
             is CantAttackForCreatureGroup -> {
                 ContinuousEffectData(
-                    layer = Layer.ABILITY,
-                    sublayer = null,
                     modification = Modification.SetCantAttack,
                     affectsFilter = convertGroupFilter(ability.filter)
                 )
             }
             is MustAttackForCreatureGroup -> {
                 ContinuousEffectData(
-                    layer = Layer.ABILITY,
-                    sublayer = null,
                     modification = Modification.SetMustAttack,
                     affectsFilter = convertGroupFilter(ability.filter)
                 )
             }
             is MustBlockForCreatureGroup -> {
                 ContinuousEffectData(
-                    layer = Layer.ABILITY,
-                    sublayer = null,
                     modification = Modification.SetMustBlock,
                     affectsFilter = convertGroupFilter(ability.filter)
                 )
             }
             is CanBlockAdditionalForCreatureGroup -> {
                 ContinuousEffectData(
-                    layer = Layer.ABILITY,
-                    sublayer = null,
                     modification = Modification.CanBlockAdditional(ability.count),
                     affectsFilter = convertGroupFilter(ability.filter)
                 )
             }
             is MustAttack -> {
                 ContinuousEffectData(
-                    layer = Layer.ABILITY,
-                    sublayer = null,
                     modification = Modification.SetMustAttack,
                     affectsFilter = convertStaticTarget(ability.target)
                 )
@@ -475,8 +419,6 @@ class StaticAbilityHandler(
                 // The actual newControllerId is resolved dynamically by the StateProjector
                 // using a placeholder; the Aura's controller is used at projection time
                 ContinuousEffectData(
-                    layer = Layer.CONTROL,
-                    sublayer = null,
                     modification = Modification.ChangeControllerToSourceController,
                     affectsFilter = AffectsFilter.AttachedPermanent
                 )
@@ -485,16 +427,12 @@ class StaticAbilityHandler(
                 // "Enchanted land is an [type]" - Layer 4 type-changing effect
                 // Replaces all basic land subtypes with the specified type (Rule 305.7)
                 ContinuousEffectData(
-                    layer = Layer.TYPE,
-                    sublayer = null,
                     modification = Modification.SetBasicLandTypes(setOf(ability.landType)),
                     affectsFilter = AffectsFilter.AttachedPermanent
                 )
             }
             is GrantKeywordByCounter -> {
                 ContinuousEffectData(
-                    layer = Layer.ABILITY,
-                    sublayer = null,
                     modification = Modification.GrantKeyword(ability.keyword.name),
                     affectsFilter = if (ability.controllerOnly)
                         AffectsFilter.OwnCreaturesWithCounter(ability.counterType)
@@ -504,48 +442,36 @@ class StaticAbilityHandler(
             }
             is AddCreatureTypeByCounter -> {
                 ContinuousEffectData(
-                    layer = Layer.TYPE,
-                    sublayer = null,
                     modification = Modification.AddSubtype(ability.creatureType),
                     affectsFilter = AffectsFilter.CreaturesWithCounter(ability.counterType)
                 )
             }
             is AddLandTypeByCounter -> {
                 ContinuousEffectData(
-                    layer = Layer.TYPE,
-                    sublayer = null,
                     modification = Modification.AddSubtype(ability.landType),
                     affectsFilter = AffectsFilter.LandsWithCounter(ability.counterType)
                 )
             }
             is GrantSubtype -> {
                 ContinuousEffectData(
-                    layer = Layer.TYPE,
-                    sublayer = null,
                     modification = Modification.AddSubtype(ability.subtype),
                     affectsFilter = convertStaticTarget(ability.target)
                 )
             }
             is GrantSupertype -> {
                 ContinuousEffectData(
-                    layer = Layer.TYPE,
-                    sublayer = null,
                     modification = Modification.AddType(ability.supertype),
                     affectsFilter = convertStaticTarget(ability.target)
                 )
             }
             is GrantCardType -> {
                 ContinuousEffectData(
-                    layer = Layer.TYPE,
-                    sublayer = null,
                     modification = Modification.AddType(ability.cardType.uppercase()),
                     affectsFilter = convertStaticTarget(ability.target)
                 )
             }
             is ModifyStatsPerSharedCreatureType -> {
                 ContinuousEffectData(
-                    layer = Layer.POWER_TOUGHNESS,
-                    sublayer = Sublayer.MODIFICATIONS,
                     modification = Modification.ModifyPowerToughnessPerSharedCreatureType(
                         ability.powerModPerCreature,
                         ability.toughnessModPerCreature
@@ -555,8 +481,6 @@ class StaticAbilityHandler(
             }
             is ModifyStatsByCounterOnSource -> {
                 ContinuousEffectData(
-                    layer = Layer.POWER_TOUGHNESS,
-                    sublayer = Sublayer.MODIFICATIONS,
                     modification = Modification.ModifyPowerToughnessPerSourceCounter(
                         ability.counterType,
                         ability.powerModPerCounter,
@@ -567,48 +491,36 @@ class StaticAbilityHandler(
             }
             is GrantProtection -> {
                 ContinuousEffectData(
-                    layer = Layer.ABILITY,
-                    sublayer = null,
                     modification = Modification.GrantProtectionFromColor(ability.color.name),
                     affectsFilter = convertStaticTarget(ability.target)
                 )
             }
             is GrantCantBeBlockedExceptBySubtype -> {
                 ContinuousEffectData(
-                    layer = Layer.ABILITY,
-                    sublayer = null,
                     modification = Modification.CantBeBlockedExceptBySubtype(ability.requiredSubtype),
                     affectsFilter = convertGroupFilter(ability.filter)
                 )
             }
             is GrantColor -> {
                 ContinuousEffectData(
-                    layer = Layer.COLOR,
-                    sublayer = null,
                     modification = Modification.AddColor(setOf(ability.color.name)),
                     affectsFilter = convertStaticTarget(ability.target)
                 )
             }
             is SetBasePowerToughnessStatic -> {
                 ContinuousEffectData(
-                    layer = Layer.POWER_TOUGHNESS,
-                    sublayer = Sublayer.SET_VALUES,
                     modification = Modification.SetPowerToughness(ability.power, ability.toughness),
                     affectsFilter = convertStaticTarget(ability.target)
                 )
             }
             is SetBaseToughnessForCreatureGroup -> {
                 ContinuousEffectData(
-                    layer = Layer.POWER_TOUGHNESS,
-                    sublayer = Sublayer.SET_VALUES,
                     modification = Modification.SetToughness(ability.toughness),
                     affectsFilter = convertGroupFilter(ability.filter)
                 )
             }
             is LoseAllAbilities -> {
                 ContinuousEffectData(
-                    layer = Layer.ABILITY,
-                    sublayer = null,
                     modification = Modification.RemoveAllAbilities,
                     affectsFilter = convertStaticTarget(ability.target)
                 )

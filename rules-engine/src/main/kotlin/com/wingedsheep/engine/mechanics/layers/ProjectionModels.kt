@@ -20,15 +20,20 @@ data class ContinuousEffectSourceComponent(
 
 /**
  * Data for a single continuous effect.
+ *
+ * The [layer] and [sublayer] are derived from the [modification], which declares
+ * its own Rule 613 layer. This ensures the layer assignment is always consistent
+ * with the modification type.
  */
 @Serializable
 data class ContinuousEffectData(
-    val layer: Layer,
-    val sublayer: Sublayer? = null,
     val modification: Modification,
     val affectsFilter: AffectsFilter? = null,
     val sourceCondition: SourceProjectionCondition? = null
-)
+) {
+    val layer: Layer get() = modification.layer
+    val sublayer: Sublayer? get() = modification.sublayer
+}
 
 /**
  * Filter for determining which entities are affected.
@@ -183,19 +188,22 @@ sealed interface AffectsFilter {
 }
 
 /**
- * Represents a continuous effect that modifies the game state.
+ * Represents an active continuous effect during state projection.
+ *
+ * The [layer] and [sublayer] are derived from the [modification].
  */
 @Serializable
 data class ContinuousEffect(
     val sourceId: EntityId,
-    val layer: Layer,
-    val sublayer: Sublayer? = null,
     val timestamp: Long,
     val modification: Modification,
     val affectedEntities: Set<EntityId> = emptySet(),
     val sourceCondition: SourceProjectionCondition? = null,
     val affectsFilter: AffectsFilter? = null
-)
+) {
+    val layer: Layer get() = modification.layer
+    val sublayer: Sublayer? get() = modification.sublayer
+}
 
 /**
  * Conditions evaluated during state projection against projected values.
@@ -320,46 +328,64 @@ enum class Sublayer {
 }
 
 /**
- * Types of modifications that can be applied.
+ * Types of modifications that can be applied by continuous effects.
+ *
+ * Each modification declares its own [layer] and [sublayer], making the Rule 613 layer
+ * assignment explicit and self-documenting. This prevents mismatches between the modification
+ * type and the layer it's applied in.
  */
 @Serializable
 sealed interface Modification {
+    /** The Rule 613 layer this modification applies in. */
+    val layer: Layer
+    /** The sublayer within Layer 7 (P/T), or null for other layers. */
+    val sublayer: Sublayer? get() = null
+
+    // --- Layer 2: Control-changing ---
+
     @Serializable
-    data class SetPowerToughness(val power: Int, val toughness: Int) : Modification
+    data class ChangeController(val newControllerId: EntityId) : Modification {
+        override val layer get() = Layer.CONTROL
+    }
+
+    /**
+     * Change controller to whoever controls the source of this effect.
+     * Used for Aura effects like "You control enchanted permanent" where
+     * the controller is resolved dynamically at projection time.
+     */
     @Serializable
-    data class SetPower(val power: Int) : Modification
+    data object ChangeControllerToSourceController : Modification {
+        override val layer get() = Layer.CONTROL
+    }
+
+    // --- Layer 4: Type-changing ---
+
     @Serializable
-    data class SetToughness(val toughness: Int) : Modification
+    data class AddType(val type: String) : Modification {
+        override val layer get() = Layer.TYPE
+    }
     @Serializable
-    data class ModifyPowerToughness(val powerMod: Int, val toughnessMod: Int) : Modification
-    @Serializable
-    data class SwitchPowerToughness(val targetId: EntityId) : Modification
-    @Serializable
-    data class GrantKeyword(val keyword: String) : Modification
-    @Serializable
-    data class RemoveKeyword(val keyword: String) : Modification
-    @Serializable
-    data class ChangeColor(val colors: Set<String>) : Modification
-    @Serializable
-    data class AddColor(val colors: Set<String>) : Modification
-    @Serializable
-    data class AddType(val type: String) : Modification
-    @Serializable
-    data class RemoveType(val type: String) : Modification
+    data class RemoveType(val type: String) : Modification {
+        override val layer get() = Layer.TYPE
+    }
 
     /**
      * Add a subtype (also adds to types set).
      * Used for effects like "is a Wall in addition to its other creature types."
      */
     @Serializable
-    data class AddSubtype(val subtype: String) : Modification
+    data class AddSubtype(val subtype: String) : Modification {
+        override val layer get() = Layer.TYPE
+    }
 
     /**
      * Replace all creature subtypes with the given set.
      * Used by "becomes the creature type of your choice" effects.
      */
     @Serializable
-    data class SetCreatureSubtypes(val subtypes: Set<String>) : Modification
+    data class SetCreatureSubtypes(val subtypes: Set<String>) : Modification {
+        override val layer get() = Layer.TYPE
+    }
 
     /**
      * Replace all basic land subtypes with the given set (Rule 305.7).
@@ -368,7 +394,9 @@ sealed interface Modification {
      * and replaces them with the specified types.
      */
     @Serializable
-    data class SetBasicLandTypes(val subtypes: Set<String>) : Modification
+    data class SetBasicLandTypes(val subtypes: Set<String>) : Modification {
+        override val layer get() = Layer.TYPE
+    }
 
     /**
      * Replace ALL card types with the given set.
@@ -377,7 +405,9 @@ sealed interface Modification {
      * and replaces them with the specified types.
      */
     @Serializable
-    data class SetCardTypes(val types: Set<String>) : Modification
+    data class SetCardTypes(val types: Set<String>) : Modification {
+        override val layer get() = Layer.TYPE
+    }
 
     /**
      * Replace ALL subtypes with the given set.
@@ -385,42 +415,117 @@ sealed interface Modification {
      * Removes all existing subtypes and replaces them with the specified types.
      */
     @Serializable
-    data class SetAllSubtypes(val subtypes: Set<String>) : Modification
+    data class SetAllSubtypes(val subtypes: Set<String>) : Modification {
+        override val layer get() = Layer.TYPE
+    }
+
+    // --- Layer 5: Color-changing ---
 
     @Serializable
-    data class ChangeController(val newControllerId: EntityId) : Modification
+    data class ChangeColor(val colors: Set<String>) : Modification {
+        override val layer get() = Layer.COLOR
+    }
+    @Serializable
+    data class AddColor(val colors: Set<String>) : Modification {
+        override val layer get() = Layer.COLOR
+    }
+
+    // --- Layer 6: Ability-adding/removing ---
+
+    @Serializable
+    data class GrantKeyword(val keyword: String) : Modification {
+        override val layer get() = Layer.ABILITY
+    }
+    @Serializable
+    data class RemoveKeyword(val keyword: String) : Modification {
+        override val layer get() = Layer.ABILITY
+    }
 
     /**
-     * Change controller to whoever controls the source of this effect.
-     * Used for Aura effects like "You control enchanted permanent" where
-     * the controller is resolved dynamically at projection time.
+     * Removes all abilities from the affected entity.
+     * Used for effects like Deep Freeze ("loses all other abilities") and Turn to Frog.
+     * Clears all keywords and sets the lostAllAbilities flag which suppresses
+     * activated abilities, triggered abilities, and static abilities.
      */
     @Serializable
-    data object ChangeControllerToSourceController : Modification
+    data object RemoveAllAbilities : Modification {
+        override val layer get() = Layer.ABILITY
+    }
 
     @Serializable
-    data class GrantProtectionFromColor(val color: String) : Modification
+    data class GrantProtectionFromColor(val color: String) : Modification {
+        override val layer get() = Layer.ABILITY
+    }
 
     /**
      * Grants protection from the chosen color (resolved dynamically from source's ChosenColorComponent).
      * Used for Ward Sliver: "All Slivers have protection from the chosen color."
      */
     @Serializable
-    data object GrantProtectionFromChosenColor : Modification
+    data object GrantProtectionFromChosenColor : Modification {
+        override val layer get() = Layer.ABILITY
+    }
 
     @Serializable
-    data object SetCantAttack : Modification
+    data object SetCantAttack : Modification {
+        override val layer get() = Layer.ABILITY
+    }
     @Serializable
-    data object SetCantBlock : Modification
+    data object SetCantBlock : Modification {
+        override val layer get() = Layer.ABILITY
+    }
 
     @Serializable
-    data object SetMustAttack : Modification
+    data object SetMustAttack : Modification {
+        override val layer get() = Layer.ABILITY
+    }
     @Serializable
-    data object SetMustBlock : Modification
+    data object SetMustBlock : Modification {
+        override val layer get() = Layer.ABILITY
+    }
 
     /** Grants "can block an additional N creatures" to affected entities. Cumulative. */
     @Serializable
-    data class CanBlockAdditional(val count: Int = 1) : Modification
+    data class CanBlockAdditional(val count: Int = 1) : Modification {
+        override val layer get() = Layer.ABILITY
+    }
+
+    /**
+     * Blocking restriction: creature can only be blocked by creatures with a specific subtype.
+     * Used for Shifting Sliver: "Slivers can't be blocked except by Slivers."
+     */
+    @Serializable
+    data class CantBeBlockedExceptBySubtype(val subtype: String) : Modification {
+        override val layer get() = Layer.ABILITY
+    }
+
+    // --- Layer 7: Power/toughness ---
+
+    @Serializable
+    data class SetPowerToughness(val power: Int, val toughness: Int) : Modification {
+        override val layer get() = Layer.POWER_TOUGHNESS
+        override val sublayer get() = Sublayer.SET_VALUES
+    }
+    @Serializable
+    data class SetPower(val power: Int) : Modification {
+        override val layer get() = Layer.POWER_TOUGHNESS
+        override val sublayer get() = Sublayer.SET_VALUES
+    }
+    @Serializable
+    data class SetToughness(val toughness: Int) : Modification {
+        override val layer get() = Layer.POWER_TOUGHNESS
+        override val sublayer get() = Sublayer.SET_VALUES
+    }
+    @Serializable
+    data class ModifyPowerToughness(val powerMod: Int, val toughnessMod: Int) : Modification {
+        override val layer get() = Layer.POWER_TOUGHNESS
+        override val sublayer get() = Sublayer.MODIFICATIONS
+    }
+    @Serializable
+    data class SwitchPowerToughness(val targetId: EntityId) : Modification {
+        override val layer get() = Layer.POWER_TOUGHNESS
+        override val sublayer get() = Sublayer.SWITCH
+    }
 
     /**
      * Dynamic power/toughness modification based on counters on the source permanent.
@@ -431,7 +536,10 @@ sealed interface Modification {
         val counterType: String,
         val powerModPerCounter: Int,
         val toughnessModPerCounter: Int
-    ) : Modification
+    ) : Modification {
+        override val layer get() = Layer.POWER_TOUGHNESS
+        override val sublayer get() = Sublayer.MODIFICATIONS
+    }
 
     /**
      * Dynamic power/toughness modification based on other creatures sharing a creature type
@@ -441,14 +549,10 @@ sealed interface Modification {
     data class ModifyPowerToughnessPerSharedCreatureType(
         val powerModPerCreature: Int,
         val toughnessModPerCreature: Int
-    ) : Modification
-
-    /**
-     * Blocking restriction: creature can only be blocked by creatures with a specific subtype.
-     * Used for Shifting Sliver: "Slivers can't be blocked except by Slivers."
-     */
-    @Serializable
-    data class CantBeBlockedExceptBySubtype(val subtype: String) : Modification
+    ) : Modification {
+        override val layer get() = Layer.POWER_TOUGHNESS
+        override val sublayer get() = Sublayer.MODIFICATIONS
+    }
 
     /**
      * Dynamic power/toughness modification based on a DynamicAmount.
@@ -459,20 +563,18 @@ sealed interface Modification {
     data class ModifyPowerToughnessDynamic(
         val powerBonus: DynamicAmount,
         val toughnessBonus: DynamicAmount
-    ) : Modification
+    ) : Modification {
+        override val layer get() = Layer.POWER_TOUGHNESS
+        override val sublayer get() = Sublayer.MODIFICATIONS
+    }
 
-    /**
-     * Removes all abilities from the affected entity.
-     * Used for effects like Deep Freeze ("loses all other abilities") and Turn to Frog.
-     * Clears all keywords and sets the lostAllAbilities flag which suppresses
-     * activated abilities, triggered abilities, and static abilities.
-     */
-    @Serializable
-    data object RemoveAllAbilities : Modification
+    // --- No-op ---
 
     /** No-op modification for effects that don't modify projected state (e.g., combat restrictions) */
     @Serializable
-    data object NoOp : Modification
+    data object NoOp : Modification {
+        override val layer get() = Layer.ABILITY
+    }
 }
 
 /**

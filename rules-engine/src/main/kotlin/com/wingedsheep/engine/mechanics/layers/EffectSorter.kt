@@ -78,7 +78,18 @@ internal class EffectSorter {
         effectB: ContinuousEffect,
         state: GameState
     ): Boolean {
-        if (effectB.modification is Modification.AddType || effectB.modification is Modification.RemoveType) {
+        // Type-changing effects: any effect that changes types, subtypes, or land types
+        // creates a dependency for other effects sharing those entities, because changing
+        // types can change what other effects apply to or what they accomplish.
+        // This covers Blood Moon + Urborg: SetBasicLandTypes on Urborg changes what
+        // Urborg's AddSubtype effect does (it ceases to exist once Urborg is a Mountain).
+        if (effectB.modification is Modification.AddType ||
+            effectB.modification is Modification.RemoveType ||
+            effectB.modification is Modification.SetBasicLandTypes ||
+            effectB.modification is Modification.SetCardTypes ||
+            effectB.modification is Modification.SetAllSubtypes ||
+            effectB.modification is Modification.SetCreatureSubtypes ||
+            effectB.modification is Modification.AddSubtype) {
             return effectA.affectedEntities.any { it in effectB.affectedEntities }
         }
         // GrantKeyword depends on RemoveAllAbilities — apply removal first, then re-add specific keywords

@@ -22,6 +22,25 @@ import com.wingedsheep.sdk.scripting.predicates.StatePredicate
  */
 internal class AffectsFilterResolver {
 
+    /**
+     * Check if an entity is a creature, preferring projected types over base types.
+     * This ensures that Layer 4 type changes (e.g., Opalescence making enchantments into creatures)
+     * are visible to creature-filtering effects in later layers.
+     */
+    private fun isCreatureInProjection(
+        state: GameState,
+        entityId: EntityId,
+        projectedValues: Map<EntityId, MutableProjectedValues>
+    ): Boolean {
+        val projected = projectedValues[entityId]
+        if (projected != null) {
+            return "CREATURE" in projected.types || projected.isFaceDown
+        }
+        val container = state.getEntity(entityId) ?: return false
+        val card = container.get<CardComponent>() ?: return false
+        return card.typeLine.isCreature || container.has<FaceDownComponent>()
+    }
+
     fun resolveAffectedEntities(
         state: GameState,
         sourceId: EntityId,
@@ -36,26 +55,24 @@ internal class AffectsFilterResolver {
                 val controller = projectedController(state, sourceId, projectedValues)
                     ?: return emptySet()
                 state.getBattlefield().filter { entityId ->
-                    val container = state.getEntity(entityId) ?: return@filter false
-                    val card = container.get<CardComponent>() ?: return@filter false
+                    state.getEntity(entityId)?.get<CardComponent>() ?: return@filter false
                     val entityController = projectedController(state, entityId, projectedValues)
-                    (card.typeLine.isCreature || container.has<FaceDownComponent>()) && entityController == controller
+                    isCreatureInProjection(state, entityId, projectedValues) && entityController == controller
                 }.toSet()
             }
             is AffectsFilter.AllCreatures -> {
                 state.getBattlefield().filter { entityId ->
-                    val container = state.getEntity(entityId) ?: return@filter false
-                    container.get<CardComponent>()?.typeLine?.isCreature == true || container.has<FaceDownComponent>()
+                    state.getEntity(entityId)?.get<CardComponent>() ?: return@filter false
+                    isCreatureInProjection(state, entityId, projectedValues)
                 }.toSet()
             }
             is AffectsFilter.AllCreaturesOpponentsControl -> {
                 val controller = projectedController(state, sourceId, projectedValues)
                     ?: return emptySet()
                 state.getBattlefield().filter { entityId ->
-                    val container = state.getEntity(entityId) ?: return@filter false
-                    val card = container.get<CardComponent>() ?: return@filter false
+                    state.getEntity(entityId)?.get<CardComponent>() ?: return@filter false
                     val entityController = projectedController(state, entityId, projectedValues)
-                    (card.typeLine.isCreature || container.has<FaceDownComponent>()) && entityController != controller
+                    isCreatureInProjection(state, entityId, projectedValues) && entityController != controller
                 }.toSet()
             }
             is AffectsFilter.SpecificEntities -> filter.entityIds
@@ -81,7 +98,7 @@ internal class AffectsFilterResolver {
                     } else {
                         card.typeLine.hasSubtype(Subtype(filter.subtype))
                     }
-                    (card.typeLine.isCreature || container.has<FaceDownComponent>()) && hasSubtype
+                    isCreatureInProjection(state, entityId, projectedValues) && hasSubtype
                 }.toSet()
             }
             is AffectsFilter.OtherTappedCreaturesYouControl -> {
@@ -90,10 +107,10 @@ internal class AffectsFilterResolver {
                 state.getBattlefield().filter { entityId ->
                     if (entityId == sourceId) return@filter false
                     val container = state.getEntity(entityId) ?: return@filter false
-                    val card = container.get<CardComponent>() ?: return@filter false
+                    container.get<CardComponent>() ?: return@filter false
                     val entityController = projectedController(state, entityId, projectedValues)
                     val isTapped = container.has<TappedComponent>()
-                    (card.typeLine.isCreature || container.has<FaceDownComponent>()) && entityController == controller && isTapped
+                    isCreatureInProjection(state, entityId, projectedValues) && entityController == controller && isTapped
                 }.toSet()
             }
             is AffectsFilter.OtherCreaturesYouControl -> {
@@ -102,16 +119,16 @@ internal class AffectsFilterResolver {
                 state.getBattlefield().filter { entityId ->
                     if (entityId == sourceId) return@filter false
                     val container = state.getEntity(entityId) ?: return@filter false
-                    val card = container.get<CardComponent>() ?: return@filter false
+                    container.get<CardComponent>() ?: return@filter false
                     val entityController = projectedController(state, entityId, projectedValues)
-                    (card.typeLine.isCreature || container.has<FaceDownComponent>()) && entityController == controller
+                    isCreatureInProjection(state, entityId, projectedValues) && entityController == controller
                 }.toSet()
             }
             is AffectsFilter.AllOtherCreatures -> {
                 state.getBattlefield().filter { entityId ->
                     if (entityId == sourceId) return@filter false
-                    val container = state.getEntity(entityId) ?: return@filter false
-                    container.get<CardComponent>()?.typeLine?.isCreature == true || container.has<FaceDownComponent>()
+                    state.getEntity(entityId)?.get<CardComponent>() ?: return@filter false
+                    isCreatureInProjection(state, entityId, projectedValues)
                 }.toSet()
             }
             is AffectsFilter.AttachedPermanent -> {
@@ -216,6 +233,30 @@ internal class AffectsFilterResolver {
             filter is AffectsFilter.OtherCreaturesWithSubtype ||
             filter is AffectsFilter.ChosenCreatureTypeCreaturesYouControl ||
             (filter is AffectsFilter.Generic && filter.groupFilter.baseFilter.controllerPredicate != null)
+    }
+
+    /**
+     * Returns true if the filter depends on an entity's creature status.
+     * These filters must be re-resolved after Layer 4 (type-changing) effects apply,
+     * since a permanent may have become a creature (e.g., Opalescence) or stopped
+     * being a creature after Layer 4.
+     */
+    fun isCreatureDependentFilter(filter: AffectsFilter): Boolean {
+        return filter is AffectsFilter.AllCreatures ||
+            filter is AffectsFilter.AllCreaturesYouControl ||
+            filter is AffectsFilter.AllCreaturesOpponentsControl ||
+            filter is AffectsFilter.OtherCreaturesYouControl ||
+            filter is AffectsFilter.AllOtherCreatures ||
+            filter is AffectsFilter.OtherCreaturesWithSubtype ||
+            filter is AffectsFilter.OtherTappedCreaturesYouControl ||
+            filter is AffectsFilter.OwnCreaturesWithCounter ||
+            filter is AffectsFilter.CreaturesWithCounter ||
+            filter is AffectsFilter.ChosenCreatureTypeCreatures ||
+            filter is AffectsFilter.ChosenCreatureTypeCreaturesYouControl ||
+            filter is AffectsFilter.FaceDownCreatures ||
+            (filter is AffectsFilter.Generic && filter.groupFilter.baseFilter.cardPredicates.any {
+                it is CardPredicate.IsCreature
+            })
     }
 
     private fun resolveGenericFilter(

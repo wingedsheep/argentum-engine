@@ -125,17 +125,14 @@ class StateProjector(
         // Sort effects by layer and dependency
         val sortedEffects = effectSorter.sortByLayerAndDependency(effects, state)
 
-        // Apply continuous effects for layers 1-6 first (before CDA resolution)
-        // Split into two passes: Layer 2 (control) first, then re-resolve controller-dependent
-        // filters for layers 3-6 so that control-changing effects are respected (e.g., stealing
-        // Ainok Bond-Kin with Act of Treason should grant first strike to the new controller's creatures).
-        val preControlEffects = sortedEffects.filter { it.layer == Layer.CONTROL }
-        for (effect in preControlEffects) {
+        // === Layer 2 (Control) ===
+        val controlEffects = sortedEffects.filter { it.layer == Layer.CONTROL }
+        for (effect in controlEffects) {
             effectApplicator.applyEffect(effect, state, projectedValues)
         }
 
-        // Re-resolve affected entities for post-control layers with controller-dependent filters
-        val postControlEffects = sortedEffects.filter { it.layer != Layer.CONTROL && it.layer != Layer.POWER_TOUGHNESS }
+        // Re-resolve controller-dependent filters for layers 3-6 now that control is established
+        val nonControlNonPTEffects = sortedEffects.filter { it.layer != Layer.CONTROL && it.layer != Layer.POWER_TOUGHNESS }
             .map { effect ->
                 if (effect.affectsFilter != null && filterResolver.isControllerDependentFilter(effect.affectsFilter)) {
                     effect.copy(affectedEntities = filterResolver.resolveAffectedEntities(state, effect.sourceId, effect.affectsFilter, projectedValues))
@@ -143,18 +140,62 @@ class StateProjector(
                     effect
                 }
             }
-        for (effect in postControlEffects) {
+
+        // === Layers 3-4 (Text + Type) ===
+        // Apply type-changing effects first so creature-dependent filters in layers 5-6
+        // see permanents that became creatures (e.g., Opalescence making enchantments creatures).
+        val typeLayerEffects = nonControlNonPTEffects.filter { it.layer == Layer.TEXT || it.layer == Layer.TYPE }
+        for (effect in typeLayerEffects) {
+            effectApplicator.applyEffect(effect, state, projectedValues)
+        }
+
+        // Re-resolve creature-dependent filters for layers 5-6 now that type changes are applied
+        val postTypeEffects = nonControlNonPTEffects.filter { it.layer != Layer.TEXT && it.layer != Layer.TYPE }
+            .map { effect ->
+                if (effect.affectsFilter != null && filterResolver.isCreatureDependentFilter(effect.affectsFilter)) {
+                    effect.copy(affectedEntities = filterResolver.resolveAffectedEntities(state, effect.sourceId, effect.affectsFilter, projectedValues))
+                } else {
+                    effect
+                }
+            }
+
+        // === Layers 5-6 (Color + Ability) ===
+        for (effect in postTypeEffects) {
             effectApplicator.applyEffect(effect, state, projectedValues)
         }
 
         // Resolve CDAs (Layer 7a) - evaluate dynamic power/toughness
         resolveCDAs(state, projectedValues, dynamicStatEntities)
 
-        // Re-resolve affected entities for Layer 7 effects that depend on subtypes or controller
-        val resolvedLayer7Effects = sortedEffects.map { effect ->
-            if (effect.layer == Layer.POWER_TOUGHNESS && effect.affectsFilter != null &&
+        // Collect sources that generate RemoveAllAbilities effects. These sources (e.g., Humility)
+        // should not have their own effects suppressed even when they themselves lose abilities,
+        // because their continuous effects are self-sustaining (removing the ability that removes
+        // abilities would create a paradox).
+        val removeAllAbilitiesSources = sortedEffects
+            .filter { it.modification is Modification.RemoveAllAbilities }
+            .map { it.sourceId }
+            .toSet()
+
+        // Re-resolve affected entities for Layer 7 effects that depend on subtypes, controller, or creature type.
+        // Also suppress effects from sources that lost all abilities in Layer 6 (Rule 613: Humility
+        // removing a lord's abilities means its continuous effects no longer apply in Layer 7).
+        // Exception: sources that themselves generate RemoveAllAbilities are exempt — their effects
+        // are self-sustaining (e.g., Humility's own P/T-setting effect persists).
+        val resolvedLayer7Effects = sortedEffects.mapNotNull { effect ->
+            if (effect.layer != Layer.POWER_TOUGHNESS) return@mapNotNull effect
+
+            // Suppress effects from sources that lost all abilities (e.g., a lord under Humility),
+            // but NOT from sources that are themselves the source of a RemoveAllAbilities effect.
+            val sourceProjected = projectedValues[effect.sourceId]
+            if (sourceProjected != null && sourceProjected.lostAllAbilities &&
+                effect.sourceId !in removeAllAbilitiesSources) {
+                return@mapNotNull null
+            }
+
+            if (effect.affectsFilter != null &&
                 (filterResolver.isSubtypeDependentFilter(effect.affectsFilter) ||
-                    filterResolver.isControllerDependentFilter(effect.affectsFilter))) {
+                    filterResolver.isControllerDependentFilter(effect.affectsFilter) ||
+                    filterResolver.isCreatureDependentFilter(effect.affectsFilter))) {
                 effect.copy(affectedEntities = filterResolver.resolveAffectedEntities(state, effect.sourceId, effect.affectsFilter, projectedValues))
             } else {
                 effect
@@ -286,8 +327,6 @@ class StateProjector(
                     }
                     ContinuousEffect(
                         sourceId = entityId,
-                        layer = effect.layer,
-                        sublayer = effect.sublayer,
                         timestamp = container.get<com.wingedsheep.engine.state.components.battlefield.TimestampComponent>()?.timestamp
                             ?: state.timestamp,
                         modification = effect.modification,
@@ -327,8 +366,6 @@ class StateProjector(
                 effects.add(
                     ContinuousEffect(
                         sourceId = floating.sourceId ?: EntityId("floating-${floating.id}"),
-                        layer = floating.effect.layer,
-                        sublayer = floating.effect.sublayer,
                         timestamp = floating.timestamp,
                         modification = floating.effect.modification.toModification(),
                         affectedEntities = validAffectedEntities
