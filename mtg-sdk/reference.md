@@ -434,6 +434,7 @@ constructors.
 | `CounterEffect`                  | `target, targetSource, destination, condition, filter` | Unified counter — see below |
 
 **CounterEffect parameter combinations (use `Effects.*` facades):**
+
 | Facade Method | Equivalent CounterEffect | Purpose |
 |---|---|---|
 | `Effects.CounterSpell()` | `CounterEffect()` | Counter target spell |
@@ -1022,8 +1023,9 @@ Set via `staticAbility { ability = ... }`:
 ### Evasion
 
 - `CantBeBlocked(target)` — this creature can't be blocked (use with ConditionalStaticAbility for conditional unblockability)
-- `CantBeBlockedByColor(colors, target)` / `CantBeBlockedByPower(minPower, target)` / `CantBeBlockedByPowerOrLess(maxPower, target)`
-- `CantBeBlockedExceptByKeyword(requiredKeyword, target)` / `CantBeBlockedByMoreThan(maxBlockers, target)`
+- `CantBeBlockedBy(blockerFilter, target)` — can't be blocked by creatures matching filter (replaces color/power/subtype variants)
+- `CantBeBlockedExceptBy(blockerFilter, target)` — can only be blocked by creatures matching filter
+- `CantBeBlockedByMoreThan(maxBlockers, target)`
 - `CantBeBlockedUnlessDefenderSharesCreatureType(minSharedCount, target)`
 
 ### Damage

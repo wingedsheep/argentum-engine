@@ -5,7 +5,7 @@ import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.CantBeBlockedByPower
+import com.wingedsheep.sdk.scripting.CantBeBlockedBy
 import com.wingedsheep.sdk.scripting.Duration
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.RemoveAllAbilitiesEffect
@@ -41,7 +41,7 @@ val AzureBeastbinder = card("Azure Beastbinder") {
 
     // Can't be blocked by creatures with power 2 or greater
     staticAbility {
-        ability = CantBeBlockedByPower(minPower = 2)
+        ability = CantBeBlockedBy(GameObjectFilter.Creature.powerAtLeast(2))
     }
 
     // Whenever this creature attacks, up to one target loses abilities + base 2/2 if creature

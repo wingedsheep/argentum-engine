@@ -5,7 +5,8 @@ import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.CantBeBlockedByPowerOrLess
+import com.wingedsheep.sdk.scripting.CantBeBlockedBy
+import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.conditions.YouAttackedThisTurn
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 
@@ -32,7 +33,7 @@ val WarNameAspirant = card("War-Name Aspirant") {
     }
 
     staticAbility {
-        ability = CantBeBlockedByPowerOrLess(maxPower = 1)
+        ability = CantBeBlockedBy(GameObjectFilter.Creature.powerAtMost(1))
     }
 
     metadata {

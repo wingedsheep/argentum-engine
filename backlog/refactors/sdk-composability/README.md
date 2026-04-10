@@ -8,7 +8,7 @@ These are the patterns most likely to block new card definitions. Fix first.
 
 - ~~[Remove GlobalEffectType enum](remove-global-effect-type.md) — delete redundant enum, use existing group static abilities~~ **DONE**
 - ~~[Replace SpellTypeFilter with GameObjectFilter](replace-spell-type-filter.md) — `SpellCastEvent` should use composable filters, not a closed enum + inline fields~~ **DONE**
-- [Unify blocking evasion](unify-blocking-evasion.md) — collapse 12+ blocking restriction classes into 2 parameterized types
+- ~~[Unify blocking evasion](unify-blocking-evasion.md) — collapse 12+ blocking restriction classes into 2 parameterized types~~ **DONE**
 - [Generic DynamicAmount](generic-dynamic-amount.md) — replace ~10 card-specific counting variants with generic primitives
 
 ## Tier 2 — Blocks specific card patterns

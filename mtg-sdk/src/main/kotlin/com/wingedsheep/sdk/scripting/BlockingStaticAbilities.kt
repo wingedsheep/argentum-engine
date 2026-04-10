@@ -1,6 +1,5 @@
 package com.wingedsheep.sdk.scripting
 
-import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.scripting.text.TextReplacer
@@ -21,33 +20,45 @@ data class CantBeBlocked(
 }
 
 /**
- * This creature can't be blocked by creatures of the specified color(s).
- * Used for cards like Sacred Knight: "can't be blocked by black creatures"
- * or "can't be blocked by black and/or red creatures."
+ * This creature can't be blocked by creatures matching the filter.
+ * Unified type replacing CantBeBlockedByColor, CantBeBlockedByPower,
+ * CantBeBlockedByPowerOrLess, and CantBeBlockedBySubtype.
  *
- * @property colors The set of colors that cannot block this creature
+ * Examples:
+ * - Can't be blocked by Walls: `CantBeBlockedBy(GameObjectFilter.Creature.withSubtype("Wall"))`
+ * - Can't be blocked by creatures with power 2+: `CantBeBlockedBy(GameObjectFilter.Creature.powerAtLeast(2))`
+ * - Can't be blocked by black/red creatures: `CantBeBlockedBy(GameObjectFilter.Creature.withAnyColor(BLACK, RED))`
+ *
+ * @property blockerFilter Filter describing which creatures cannot block this creature
  * @property target What this ability applies to
  */
-@SerialName("CantBeBlockedByColor")
+@SerialName("CantBeBlockedBy")
 @Serializable
-data class CantBeBlockedByColor(
-    val colors: Set<Color>,
+data class CantBeBlockedBy(
+    val blockerFilter: GameObjectFilter,
     val target: StaticTarget = StaticTarget.SourceCreature
 ) : StaticAbility {
-    override val description: String = buildString {
-        append("can't be blocked by ")
-        val colorNames = colors.map { it.displayName.lowercase() }
-        when (colorNames.size) {
-            1 -> append("${colorNames.first()} creatures")
-            2 -> append("${colorNames[0]} and/or ${colorNames[1]} creatures")
-            else -> append(colorNames.dropLast(1).joinToString(", ") + ", and/or ${colorNames.last()} creatures")
-        }
-    }
+    override val description: String = "can't be blocked by ${blockerFilter.description}"
+    override fun applyTextReplacement(replacer: TextReplacer): StaticAbility = this
+}
 
-    /** Convenience constructor for a single color. */
-    constructor(color: Color, target: StaticTarget = StaticTarget.SourceCreature)
-        : this(setOf(color), target)
-
+/**
+ * This creature can't be blocked except by creatures matching the filter.
+ * Unified type replacing CantBeBlockedExceptByKeyword.
+ *
+ * Examples:
+ * - Can't be blocked except by flyers: `CantBeBlockedExceptBy(GameObjectFilter.Creature.withKeyword(FLYING))`
+ *
+ * @property blockerFilter Filter describing which creatures CAN block this creature
+ * @property target What this ability applies to
+ */
+@SerialName("CantBeBlockedExceptBy")
+@Serializable
+data class CantBeBlockedExceptBy(
+    val blockerFilter: GameObjectFilter,
+    val target: StaticTarget = StaticTarget.SourceCreature
+) : StaticAbility {
+    override val description: String = "can't be blocked except by ${blockerFilter.description}"
     override fun applyTextReplacement(replacer: TextReplacer): StaticAbility = this
 }
 
@@ -87,40 +98,6 @@ data class GrantCantBeBlockedExceptBySubtype(
 }
 
 /**
- * This creature can't be blocked by creatures with power X or greater.
- * Used for cards like Fleet-Footed Monk: "can't be blocked by creatures with power 2 or greater."
- *
- * @property minPower The minimum power a creature must have to be excluded from blocking
- * @property target What this ability applies to (typically SourceCreature)
- */
-@SerialName("CantBeBlockedByPower")
-@Serializable
-data class CantBeBlockedByPower(
-    val minPower: Int,
-    val target: StaticTarget = StaticTarget.SourceCreature
-) : StaticAbility {
-    override val description: String = "can't be blocked by creatures with power $minPower or greater"
-    override fun applyTextReplacement(replacer: TextReplacer): StaticAbility = this
-}
-
-/**
- * This creature can't be blocked by creatures with power X or less.
- * Used for cards like War-Name Aspirant: "can't be blocked by creatures with power 1 or less."
- *
- * @property maxPower The maximum power a creature can have and still be excluded from blocking
- * @property target What this ability applies to (typically SourceCreature)
- */
-@SerialName("CantBeBlockedByPowerOrLess")
-@Serializable
-data class CantBeBlockedByPowerOrLess(
-    val maxPower: Int,
-    val target: StaticTarget = StaticTarget.SourceCreature
-) : StaticAbility {
-    override val description: String = "can't be blocked by creatures with power $maxPower or less"
-    override fun applyTextReplacement(replacer: TextReplacer): StaticAbility = this
-}
-
-/**
  * This creature can't block creatures with power greater than this creature's power.
  * Used for cards like Spitfire Handler.
  *
@@ -134,40 +111,6 @@ data class CantBlockCreaturesWithGreaterPower(
     val target: StaticTarget = StaticTarget.SourceCreature
 ) : StaticAbility {
     override val description: String = "can't block creatures with power greater than this creature's power"
-    override fun applyTextReplacement(replacer: TextReplacer): StaticAbility = this
-}
-
-/**
- * This creature can't be blocked by creatures with a specific subtype.
- * Used for Juggernaut: "can't be blocked by Walls."
- *
- * @property subtype The subtype that prevents blocking (e.g., "Wall")
- * @property target What this ability applies to (typically SourceCreature)
- */
-@SerialName("CantBeBlockedBySubtype")
-@Serializable
-data class CantBeBlockedBySubtype(
-    val subtype: String,
-    val target: StaticTarget = StaticTarget.SourceCreature
-) : StaticAbility {
-    override val description: String = "can't be blocked by ${subtype}s"
-    override fun applyTextReplacement(replacer: TextReplacer): StaticAbility = this
-}
-
-/**
- * This creature can't be blocked except by creatures with a specific keyword.
- * Used for Flying, Shadow, Horsemanship, etc.
- *
- * @property requiredKeyword The keyword blockers must have
- * @property target What this ability applies to
- */
-@SerialName("CantBeBlockedExceptByKeyword")
-@Serializable
-data class CantBeBlockedExceptByKeyword(
-    val requiredKeyword: Keyword,
-    val target: StaticTarget = StaticTarget.SourceCreature
-) : StaticAbility {
-    override val description: String = "can't be blocked except by creatures with ${requiredKeyword.displayName.lowercase()}"
     override fun applyTextReplacement(replacer: TextReplacer): StaticAbility = this
 }
 

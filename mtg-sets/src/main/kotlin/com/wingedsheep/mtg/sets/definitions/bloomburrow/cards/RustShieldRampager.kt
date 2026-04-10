@@ -5,7 +5,8 @@ import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.CantBeBlockedByPowerOrLess
+import com.wingedsheep.sdk.scripting.CantBeBlockedBy
+import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.KeywordAbility
 import com.wingedsheep.sdk.scripting.conditions.WasKicked
 
@@ -38,7 +39,7 @@ val RustShieldRampager = card("Rust-Shield Rampager") {
     }
 
     staticAbility {
-        ability = CantBeBlockedByPowerOrLess(maxPower = 2)
+        ability = CantBeBlockedBy(GameObjectFilter.Creature.powerAtMost(2))
     }
 
     metadata {

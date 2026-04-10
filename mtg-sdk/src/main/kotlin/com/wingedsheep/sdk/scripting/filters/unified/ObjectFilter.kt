@@ -145,6 +145,11 @@ data class GameObjectFilter(
         cardPredicates = cardPredicates + CardPredicate.HasColor(color)
     )
 
+    /** Match any of the specified colors (OR logic) */
+    fun withAnyColor(vararg colors: Color) = copy(
+        cardPredicates = cardPredicates + CardPredicate.Or(colors.map { CardPredicate.HasColor(it) })
+    )
+
     /** Exclude a color */
     fun notColor(color: Color) = copy(
         cardPredicates = cardPredicates + CardPredicate.NotColor(color)

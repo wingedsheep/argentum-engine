@@ -10,8 +10,16 @@
     "script": {
         "staticAbilities": [
             {
-                "type": "CantBeBlockedExceptByKeyword",
-                "requiredKeyword": "FLYING"
+                "type": "CantBeBlockedExceptBy",
+                "blockerFilter": {
+                    "cardPredicates": [
+                        "IsCreature",
+                        {
+                            "type": "HasKeyword",
+                            "keyword": "FLYING"
+                        }
+                    ]
+                }
             }
         ]
     },

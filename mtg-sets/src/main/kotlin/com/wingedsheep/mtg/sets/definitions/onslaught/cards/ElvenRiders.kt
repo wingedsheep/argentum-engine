@@ -3,7 +3,8 @@ package com.wingedsheep.mtg.sets.definitions.onslaught.cards
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.CantBeBlockedExceptByKeyword
+import com.wingedsheep.sdk.scripting.CantBeBlockedExceptBy
+import com.wingedsheep.sdk.scripting.GameObjectFilter
 
 /**
  * Elven Riders
@@ -20,7 +21,7 @@ val ElvenRiders = card("Elven Riders") {
     oracleText = "Elven Riders can't be blocked except by creatures with flying."
 
     staticAbility {
-        ability = CantBeBlockedExceptByKeyword(Keyword.FLYING)
+        ability = CantBeBlockedExceptBy(GameObjectFilter.Creature.withKeyword(Keyword.FLYING))
     }
 
     metadata {

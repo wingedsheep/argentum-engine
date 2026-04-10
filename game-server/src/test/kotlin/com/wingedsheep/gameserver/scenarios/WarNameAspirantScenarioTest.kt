@@ -10,7 +10,7 @@ import io.kotest.matchers.shouldNotBe
 import io.kotest.matchers.string.shouldContainIgnoringCase
 
 /**
- * Scenario tests for War-Name Aspirant's CantBeBlockedByPowerOrLess static ability.
+ * Scenario tests for War-Name Aspirant's CantBeBlockedBy blocking restriction.
  *
  * War-Name Aspirant: {1}{R} 2/1 Creature — Human Warrior
  * "Raid — This creature enters with a +1/+1 counter on it if you attacked this turn."
@@ -19,7 +19,7 @@ import io.kotest.matchers.string.shouldContainIgnoringCase
 class WarNameAspirantScenarioTest : ScenarioTestBase() {
 
     init {
-        context("CantBeBlockedByPowerOrLess blocking restriction") {
+        context("CantBeBlockedBy blocking restriction") {
 
             test("cannot be blocked by creature with power 1") {
                 val game = scenario()

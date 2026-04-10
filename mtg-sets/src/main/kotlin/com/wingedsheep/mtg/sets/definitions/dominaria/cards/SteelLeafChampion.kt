@@ -2,7 +2,8 @@ package com.wingedsheep.mtg.sets.definitions.dominaria.cards
 
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.CantBeBlockedByPowerOrLess
+import com.wingedsheep.sdk.scripting.CantBeBlockedBy
+import com.wingedsheep.sdk.scripting.GameObjectFilter
 
 /**
  * Steel Leaf Champion
@@ -19,7 +20,7 @@ val SteelLeafChampion = card("Steel Leaf Champion") {
     oracleText = "Steel Leaf Champion can't be blocked by creatures with power 2 or less."
 
     staticAbility {
-        ability = CantBeBlockedByPowerOrLess(maxPower = 2)
+        ability = CantBeBlockedBy(GameObjectFilter.Creature.powerAtMost(2))
     }
 
     metadata {

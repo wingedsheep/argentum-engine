@@ -9,9 +9,10 @@ import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.sdk.core.AbilityFlag
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.model.EntityId
+import com.wingedsheep.engine.handlers.PredicateContext
+import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.sdk.scripting.CanOnlyBlockCreaturesWithKeyword
-import com.wingedsheep.sdk.scripting.CantBeBlockedByPower
-import com.wingedsheep.sdk.scripting.CantBeBlockedByPowerOrLess
+import com.wingedsheep.sdk.scripting.CantBeBlockedBy
 import com.wingedsheep.sdk.scripting.CantBlockCreaturesWithGreaterPower
 import com.wingedsheep.sdk.scripting.StaticTarget
 
@@ -90,22 +91,20 @@ object CombatMath {
             if (Keyword.PLAINSWALK.name in aKeywords && defenderLands.any { projected.hasSubtype(it, "Plains") }) return false
         }
 
-        // Attacker-side power restrictions (e.g., "can't be blocked by creatures with power 2 or less")
+        // Attacker-side filter restrictions (e.g., "can't be blocked by creatures with power 2 or less")
         if (cardRegistry != null) {
             val attackerCard = state.getEntity(attacker)?.get<CardComponent>()
             if (attackerCard != null) {
                 val attackerDef = cardRegistry.getCard(attackerCard.cardDefinitionId)
                 if (attackerDef != null) {
-                    val bPower = projected.getPower(blocker) ?: 0
-                    for (ability in attackerDef.staticAbilities) {
-                        when (ability) {
-                            is CantBeBlockedByPower -> {
-                                if (ability.target == StaticTarget.SourceCreature && bPower >= ability.minPower) return false
+                    val attackerController = projected.getController(attacker)
+                    val predicateEvaluator = PredicateEvaluator()
+                    for (ability in attackerDef.staticAbilities.filterIsInstance<CantBeBlockedBy>()) {
+                        if (ability.target == StaticTarget.SourceCreature && attackerController != null) {
+                            val ctx = PredicateContext(controllerId = attackerController, sourceId = attacker)
+                            if (predicateEvaluator.matchesWithProjection(state, projected, blocker, ability.blockerFilter, ctx)) {
+                                return false
                             }
-                            is CantBeBlockedByPowerOrLess -> {
-                                if (ability.target == StaticTarget.SourceCreature && bPower <= ability.maxPower) return false
-                            }
-                            else -> {}
                         }
                     }
                 }

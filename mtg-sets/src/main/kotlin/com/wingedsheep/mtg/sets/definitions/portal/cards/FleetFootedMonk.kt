@@ -2,7 +2,8 @@ package com.wingedsheep.mtg.sets.definitions.portal.cards
 
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.CantBeBlockedByPower
+import com.wingedsheep.sdk.scripting.CantBeBlockedBy
+import com.wingedsheep.sdk.scripting.GameObjectFilter
 
 /**
  * Fleet-Footed Monk
@@ -18,7 +19,7 @@ val FleetFootedMonk = card("Fleet-Footed Monk") {
     toughness = 1
 
     staticAbility {
-        ability = CantBeBlockedByPower(minPower = 2)
+        ability = CantBeBlockedBy(GameObjectFilter.Creature.powerAtLeast(2))
     }
 
     metadata {

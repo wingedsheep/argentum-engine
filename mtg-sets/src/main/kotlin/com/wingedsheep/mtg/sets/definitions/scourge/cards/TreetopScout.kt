@@ -3,7 +3,8 @@ package com.wingedsheep.mtg.sets.definitions.scourge.cards
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.CantBeBlockedExceptByKeyword
+import com.wingedsheep.sdk.scripting.CantBeBlockedExceptBy
+import com.wingedsheep.sdk.scripting.GameObjectFilter
 
 /**
  * Treetop Scout
@@ -20,7 +21,7 @@ val TreetopScout = card("Treetop Scout") {
     oracleText = "Treetop Scout can't be blocked except by creatures with flying."
 
     staticAbility {
-        ability = CantBeBlockedExceptByKeyword(Keyword.FLYING)
+        ability = CantBeBlockedExceptBy(GameObjectFilter.Creature.withKeyword(Keyword.FLYING))
     }
 
     metadata {

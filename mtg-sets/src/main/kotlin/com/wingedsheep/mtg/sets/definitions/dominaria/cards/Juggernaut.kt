@@ -2,7 +2,8 @@ package com.wingedsheep.mtg.sets.definitions.dominaria.cards
 
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.CantBeBlockedBySubtype
+import com.wingedsheep.sdk.scripting.CantBeBlockedBy
+import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.MustAttack
 
 /**
@@ -25,7 +26,7 @@ val Juggernaut = card("Juggernaut") {
     }
 
     staticAbility {
-        ability = CantBeBlockedBySubtype("Wall")
+        ability = CantBeBlockedBy(GameObjectFilter.Creature.withSubtype("Wall"))
     }
 
     metadata {
