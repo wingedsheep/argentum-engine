@@ -150,9 +150,11 @@ class StateProjector(
         // Resolve CDAs (Layer 7a) - evaluate dynamic power/toughness
         resolveCDAs(state, projectedValues, dynamicStatEntities)
 
-        // Re-resolve affected entities for Layer 7 effects that depend on subtypes
+        // Re-resolve affected entities for Layer 7 effects that depend on subtypes or controller
         val resolvedLayer7Effects = sortedEffects.map { effect ->
-            if (effect.layer == Layer.POWER_TOUGHNESS && effect.affectsFilter != null && filterResolver.isSubtypeDependentFilter(effect.affectsFilter)) {
+            if (effect.layer == Layer.POWER_TOUGHNESS && effect.affectsFilter != null &&
+                (filterResolver.isSubtypeDependentFilter(effect.affectsFilter) ||
+                    filterResolver.isControllerDependentFilter(effect.affectsFilter))) {
                 effect.copy(affectedEntities = filterResolver.resolveAffectedEntities(state, effect.sourceId, effect.affectsFilter, projectedValues))
             } else {
                 effect
