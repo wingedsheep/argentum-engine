@@ -26,5 +26,5 @@ Low impact — either unused by any current card, single-card mechanics, or set-
 
 - [Decompose card-specific triggers](decompose-card-specific-triggers.md) — `CreatureDealtDamageBySourceDiesEvent` and `AttackEvent.alone` (both currently unused)
 - [Merge Undying/Persist](merge-undying-persist.md) — two identical patterns differing only by counter type (currently unused)
-- [Decompose SecretBidEffect](decompose-secret-bid.md) — monolithic single-card effect (Menacing Ogre only)
+- ~~[Decompose SecretBidEffect](decompose-secret-bid.md) — monolithic single-card effect (Menacing Ogre only)~~ **DONE**
 - [Decompose AmplifyEffect](decompose-amplify.md) — set-specific replacement effect, should compose from pipeline primitives

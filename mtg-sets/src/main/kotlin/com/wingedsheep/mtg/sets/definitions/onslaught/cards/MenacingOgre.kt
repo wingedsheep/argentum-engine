@@ -2,9 +2,11 @@ package com.wingedsheep.mtg.sets.definitions.onslaught.cards
 
 import com.wingedsheep.sdk.core.Counters
 import com.wingedsheep.sdk.core.Keyword
+import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.effects.SecretBidEffect
+import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.dsl.Triggers
 
 /**
@@ -29,8 +31,7 @@ val MenacingOgre = card("Menacing Ogre") {
     triggeredAbility {
         trigger = Triggers.EntersBattlefield
         effect = SecretBidEffect(
-            counterType = Counters.PLUS_ONE_PLUS_ONE,
-            counterCount = 2
+            winnerEffect = Effects.AddCounters(Counters.PLUS_ONE_PLUS_ONE, 2, EffectTarget.Self)
         )
     }
 

@@ -27,7 +27,7 @@ data class PutFromHandContinuation(
  *
  * Each player secretly chooses a number. After all players have chosen,
  * each player with the highest number loses that much life. If the controller
- * is one of those players, put counters on the source creature.
+ * is one of those players, execute the [winnerEffect].
  *
  * @property sourceId The creature that entered the battlefield
  * @property sourceName Name of the source for display
@@ -35,8 +35,7 @@ data class PutFromHandContinuation(
  * @property currentPlayerId The player whose choice we are waiting for
  * @property remainingPlayers Players who still need to choose (APNAP order)
  * @property chosenNumbers Numbers chosen so far by each player
- * @property counterType Type of counter to add if controller has highest bid
- * @property counterCount Number of counters to add
+ * @property winnerEffect Effect to execute if controller has the highest bid (e.g., add counters)
  */
 @Serializable
 data class SecretBidContinuation(
@@ -47,8 +46,7 @@ data class SecretBidContinuation(
     val currentPlayerId: EntityId,
     val remainingPlayers: List<EntityId>,
     val chosenNumbers: Map<EntityId, Int>,
-    val counterType: String,
-    val counterCount: Int
+    val winnerEffect: Effect?
 ) : ContinuationFrame
 
 /**

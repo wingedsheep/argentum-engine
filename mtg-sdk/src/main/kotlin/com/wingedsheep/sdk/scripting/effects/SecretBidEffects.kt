@@ -1,6 +1,5 @@
 package com.wingedsheep.sdk.scripting.effects
 
-import com.wingedsheep.sdk.core.Counters
 import com.wingedsheep.sdk.scripting.text.TextReplacer
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -12,23 +11,25 @@ import kotlinx.serialization.Serializable
 /**
  * Each player secretly chooses a number. Then those numbers are revealed.
  * Each player with the highest number loses that much life.
- * If the controller is one of those players, put counters on the source.
+ * If the controller is one of those players, apply the [winnerEffect] (if any).
  *
- * Used for Menacing Ogre's enters-the-battlefield trigger.
+ * The "highest bidder loses life equal to bid" behaviour is intrinsic to the
+ * secret-bid mechanic and handled by the executor. The [winnerEffect] is the
+ * composable reward (e.g., add counters, draw cards) applied when the controller
+ * wins (or ties for highest).
  *
- * @property counterType Type of counter to put on the source (e.g., "+1/+1")
- * @property counterCount Number of counters to put on the source if controller has the highest bid
+ * @property winnerEffect Effect applied to the source if the controller has the highest bid (or null for no reward)
  */
 @SerialName("SecretBid")
 @Serializable
 data class SecretBidEffect(
-    val counterType: String = Counters.PLUS_ONE_PLUS_ONE,
-    val counterCount: Int = 2
+    val winnerEffect: Effect? = null
 ) : Effect {
     override val description: String =
         "Each player secretly chooses a number. Then those numbers are revealed. " +
-            "Each player with the highest number loses that much life. " +
-            "If you are one of those players, put $counterCount $counterType counters on this creature."
+            "Each player with the highest number loses that much life." +
+            (winnerEffect?.let { " If you are one of those players, ${it.description}." } ?: "")
 
-    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
+    override fun applyTextReplacement(replacer: TextReplacer): Effect =
+        copy(winnerEffect = winnerEffect?.applyTextReplacement(replacer))
 }

@@ -73,7 +73,7 @@ class CardSpecificContinuationResumer(
     }
 
     /**
-     * Resolve the secret bid: find highest number, apply life loss and counters.
+     * Resolve the secret bid: find highest number, apply life loss, and execute winner effect.
      */
     private fun resolveSecretBid(
         state: GameState,
@@ -102,30 +102,19 @@ class CardSpecificContinuationResumer(
             currentState = com.wingedsheep.engine.handlers.effects.DamageUtils.markLifeLostThisTurn(currentState, playerId)
         }
 
-        // If the controller is one of the highest bidders, put counters on the source
-        if (highestBidders.containsKey(continuation.controllerId) && continuation.sourceId != null) {
-            val counterType = try {
-                com.wingedsheep.sdk.core.CounterType.valueOf(
-                    continuation.counterType.uppercase()
-                        .replace(' ', '_')
-                        .replace('+', 'P')
-                        .replace('-', 'M')
-                        .replace("/", "_")
-                )
-            } catch (e: IllegalArgumentException) {
-                com.wingedsheep.sdk.core.CounterType.PLUS_ONE_PLUS_ONE
-            }
+        // If the controller is one of the highest bidders, execute the winner effect
+        val winnerEffect = continuation.winnerEffect
+        if (winnerEffect != null && highestBidders.containsKey(continuation.controllerId) && continuation.sourceId != null) {
+            val effectContext = com.wingedsheep.engine.handlers.EffectContext(
+                sourceId = continuation.sourceId,
+                controllerId = continuation.controllerId,
+                opponentId = currentState.turnOrder.firstOrNull { it != continuation.controllerId }
+            )
 
-            val current = currentState.getEntity(continuation.sourceId)
-                ?.get<com.wingedsheep.engine.state.components.battlefield.CountersComponent>()
-                ?: com.wingedsheep.engine.state.components.battlefield.CountersComponent()
-
-            currentState = currentState.updateEntity(continuation.sourceId) { container ->
-                container.with(current.withAdded(counterType, continuation.counterCount))
-            }
-
-            val entityName = currentState.getEntity(continuation.sourceId)?.get<CardComponent>()?.name ?: ""
-            allEvents.add(CountersAddedEvent(continuation.sourceId, continuation.counterType, continuation.counterCount, entityName))
+            val effectResult = services.effectExecutorRegistry.execute(currentState, winnerEffect, effectContext)
+            if (effectResult.error != null) return effectResult
+            currentState = effectResult.state
+            allEvents.addAll(effectResult.events)
         }
 
         return checkForMore(currentState, allEvents)
