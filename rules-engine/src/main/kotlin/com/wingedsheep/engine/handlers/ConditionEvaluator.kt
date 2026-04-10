@@ -4,6 +4,9 @@ import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.battlefield.AttachedToComponent
 import com.wingedsheep.engine.state.components.battlefield.CastFromHandComponent
+import com.wingedsheep.engine.state.components.battlefield.EnteredThisTurnComponent
+import com.wingedsheep.engine.state.components.battlefield.HasDealtCombatDamageToPlayerComponent
+import com.wingedsheep.engine.state.components.battlefield.HasDealtDamageComponent
 import com.wingedsheep.engine.state.components.battlefield.WasKickedComponent
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.state.components.combat.AttackingComponent
@@ -13,6 +16,7 @@ import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.identity.LifeTotalComponent
 import com.wingedsheep.engine.state.components.player.LandDropsComponent
+import com.wingedsheep.engine.state.components.player.WasDealtCombatDamageThisTurnComponent
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.core.Zone
@@ -242,13 +246,13 @@ class ConditionEvaluator {
     }
 
     private fun evaluateSourceEnteredThisTurn(state: GameState, context: EffectContext): Boolean {
-        // TODO: Track when permanents entered the battlefield
-        return false
+        val sourceId = context.sourceId ?: return false
+        return state.getEntity(sourceId)?.has<EnteredThisTurnComponent>() == true
     }
 
     private fun evaluateSourceHasDealtDamage(state: GameState, context: EffectContext): Boolean {
-        // TODO: Track damage dealt by source this turn
-        return false
+        val sourceId = context.sourceId ?: return false
+        return state.getEntity(sourceId)?.has<HasDealtDamageComponent>() == true
     }
 
     private fun evaluateSourceHasSubtype(state: GameState, condition: SourceHasSubtype, context: EffectContext): Boolean {
@@ -275,8 +279,8 @@ class ConditionEvaluator {
     }
 
     private fun evaluateSourceHasDealtCombatDamageToPlayer(state: GameState, context: EffectContext): Boolean {
-        // TODO: Track combat damage dealt to players
-        return false
+        val sourceId = context.sourceId ?: return false
+        return state.getEntity(sourceId)?.has<HasDealtCombatDamageToPlayerComponent>() == true
     }
 
     private fun evaluateYouAttackedThisTurn(state: GameState, context: EffectContext): Boolean {
@@ -320,8 +324,7 @@ class ConditionEvaluator {
     }
 
     private fun evaluateYouWereDealtCombatDamageThisTurn(state: GameState, context: EffectContext): Boolean {
-        // TODO: Track if player was dealt combat damage this turn
-        return false
+        return state.getEntity(context.controllerId)?.has<WasDealtCombatDamageThisTurnComponent>() == true
     }
 
     private fun evaluateCardsLeftGraveyardThisTurn(state: GameState, condition: CardsLeftGraveyardThisTurn, context: EffectContext): Boolean {

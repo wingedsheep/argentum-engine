@@ -330,6 +330,30 @@ data class LinkedExileComponent(
 ) : Component
 
 /**
+ * Marks a permanent as having been dealt damage this turn.
+ * Cleared at end of turn by CleanupPhaseManager.
+ * Used for StatePredicate.WasDealtDamageThisTurn.
+ */
+@Serializable
+data object WasDealtDamageThisTurnComponent : Component
+
+/**
+ * Marks a permanent as having dealt damage since entering the battlefield.
+ * NOT cleared at end of turn — persists for the permanent's lifetime on the battlefield.
+ * Used for StatePredicate.HasDealtDamage and SourceHasDealtDamage condition.
+ */
+@Serializable
+data object HasDealtDamageComponent : Component
+
+/**
+ * Marks a permanent as having dealt combat damage to a player since entering the battlefield.
+ * NOT cleared at end of turn — persists for the permanent's lifetime on the battlefield.
+ * Used for StatePredicate.HasDealtCombatDamageToPlayer and SourceHasDealtCombatDamageToPlayer condition.
+ */
+@Serializable
+data object HasDealtCombatDamageToPlayerComponent : Component
+
+/**
  * Tracks the turn number when a card was put into the graveyard.
  * Used by effects like Garna, the Bloodflame to return creature cards
  * that were put into the graveyard this turn.

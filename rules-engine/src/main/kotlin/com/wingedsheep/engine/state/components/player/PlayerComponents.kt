@@ -434,6 +434,14 @@ data class CardsLeftGraveyardThisTurnComponent(val count: Int = 0) : Component
 data object SacrificedFoodThisTurnComponent : Component
 
 /**
+ * Marks a player as having been dealt combat damage this turn.
+ * Cleared at end of turn by CleanupPhaseManager.
+ * Used for YouWereDealtCombatDamageThisTurn condition.
+ */
+@Serializable
+data object WasDealtCombatDamageThisTurnComponent : Component
+
+/**
  * Marker component indicating that a player should skip their entire next turn.
  * Applied by effects like Last Chance (which gives the opponent an "extra turn"
  * by skipping the other player's turn in a 2-player game).

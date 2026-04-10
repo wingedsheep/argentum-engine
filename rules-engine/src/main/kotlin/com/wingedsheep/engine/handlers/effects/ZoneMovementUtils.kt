@@ -15,6 +15,9 @@ import com.wingedsheep.engine.state.components.battlefield.AttachmentsComponent
 import com.wingedsheep.engine.state.components.battlefield.CountersComponent
 import com.wingedsheep.engine.state.components.battlefield.DamageComponent
 import com.wingedsheep.engine.state.components.battlefield.DamageDealtToCreaturesThisTurnComponent
+import com.wingedsheep.engine.state.components.battlefield.HasDealtCombatDamageToPlayerComponent
+import com.wingedsheep.engine.state.components.battlefield.HasDealtDamageComponent
+import com.wingedsheep.engine.state.components.battlefield.WasDealtDamageThisTurnComponent
 import com.wingedsheep.engine.state.components.battlefield.EnteredThisTurnComponent
 import com.wingedsheep.engine.state.components.battlefield.ExileOnLeaveBattlefieldComponent
 import com.wingedsheep.engine.state.components.battlefield.SagaComponent
@@ -233,6 +236,9 @@ object ZoneMovementUtils {
             .without<WarpedComponent>()
             .without<DamageComponent>()
             .without<DamageDealtToCreaturesThisTurnComponent>()
+            .without<WasDealtDamageThisTurnComponent>()
+            .without<HasDealtDamageComponent>()
+            .without<HasDealtCombatDamageToPlayerComponent>()
             .without<CountersComponent>()
             .without<AttachedToComponent>()
             .without<AttachmentsComponent>()

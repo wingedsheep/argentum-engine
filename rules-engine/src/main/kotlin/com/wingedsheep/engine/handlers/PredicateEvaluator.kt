@@ -4,6 +4,9 @@ import com.wingedsheep.engine.mechanics.layers.ProjectedState
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.battlefield.AttachmentsComponent
 import com.wingedsheep.engine.state.components.battlefield.EnteredThisTurnComponent
+import com.wingedsheep.engine.state.components.battlefield.HasDealtCombatDamageToPlayerComponent
+import com.wingedsheep.engine.state.components.battlefield.HasDealtDamageComponent
+import com.wingedsheep.engine.state.components.battlefield.WasDealtDamageThisTurnComponent
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.state.components.combat.AttackingComponent
 import com.wingedsheep.engine.state.components.combat.BlockingComponent
@@ -652,16 +655,13 @@ class PredicateEvaluator {
 
             // Damage state
             StatePredicate.WasDealtDamageThisTurn -> {
-                // TODO: Implement damage tracking
-                false
+                container.has<WasDealtDamageThisTurnComponent>()
             }
             StatePredicate.HasDealtDamage -> {
-                // TODO: Implement damage tracking
-                false
+                container.has<HasDealtDamageComponent>()
             }
             StatePredicate.HasDealtCombatDamageToPlayer -> {
-                // TODO: Implement damage tracking
-                false
+                container.has<HasDealtCombatDamageToPlayerComponent>()
             }
 
             // Face-down state

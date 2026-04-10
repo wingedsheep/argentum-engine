@@ -17,6 +17,8 @@ import com.wingedsheep.engine.state.components.battlefield.AttachedToComponent
 import com.wingedsheep.engine.state.components.battlefield.CountersComponent
 import com.wingedsheep.engine.state.components.battlefield.DamageComponent
 import com.wingedsheep.engine.state.components.battlefield.DamageDealtToCreaturesThisTurnComponent
+import com.wingedsheep.engine.state.components.battlefield.HasDealtDamageComponent
+import com.wingedsheep.engine.state.components.battlefield.WasDealtDamageThisTurnComponent
 import com.wingedsheep.engine.state.components.battlefield.ReplacementEffectSourceComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
@@ -170,9 +172,20 @@ object DamageUtils {
                     deathtouchDamageReceived = hasDeathtouch || (existingDamage?.deathtouchDamageReceived == true)
                 ))
             }
+            // Mark creature as having been dealt damage this turn
+            newState = newState.updateEntity(targetId) { container ->
+                container.with(WasDealtDamageThisTurnComponent)
+            }
             // Track damage source for "creature dealt damage by this dies" triggers
             if (sourceId != null) {
                 newState = trackDamageDealtToCreature(newState, sourceId, targetId)
+            }
+        }
+
+        // Mark source as having dealt damage (lifetime tracking)
+        if (sourceId != null && sourceId in newState.getBattlefield()) {
+            newState = newState.updateEntity(sourceId) { container ->
+                container.with(HasDealtDamageComponent)
             }
         }
 

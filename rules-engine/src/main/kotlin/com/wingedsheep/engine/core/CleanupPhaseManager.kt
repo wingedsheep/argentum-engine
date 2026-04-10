@@ -7,6 +7,7 @@ import com.wingedsheep.engine.state.components.battlefield.AbilityActivatedThisT
 import com.wingedsheep.engine.state.components.battlefield.AbilityResolutionCountThisTurnComponent
 import com.wingedsheep.engine.state.components.battlefield.DamageComponent
 import com.wingedsheep.engine.state.components.battlefield.DamageDealtToCreaturesThisTurnComponent
+import com.wingedsheep.engine.state.components.battlefield.WasDealtDamageThisTurnComponent
 import com.wingedsheep.engine.state.components.battlefield.TargetedByControllerThisTurnComponent
 import com.wingedsheep.engine.state.components.battlefield.TriggeredAbilityFiredThisTurnComponent
 import com.wingedsheep.engine.state.components.battlefield.GraveyardPlayPermissionUsedComponent
@@ -25,6 +26,7 @@ import com.wingedsheep.engine.state.components.player.LandDropsComponent
 import com.wingedsheep.engine.state.components.player.LifeGainedThisTurnComponent
 import com.wingedsheep.engine.state.components.player.LifeLostThisTurnComponent
 import com.wingedsheep.engine.state.components.player.SacrificedFoodThisTurnComponent
+import com.wingedsheep.engine.state.components.player.WasDealtCombatDamageThisTurnComponent
 import com.wingedsheep.engine.state.components.player.ManaPoolComponent
 import com.wingedsheep.engine.state.components.player.CreaturesDiedThisTurnComponent
 import com.wingedsheep.engine.state.components.player.NonTokenCreaturesDiedThisTurnComponent
@@ -324,6 +326,9 @@ class CleanupPhaseManager(
                 if (result.has<SacrificedFoodThisTurnComponent>()) {
                     result = result.without<SacrificedFoodThisTurnComponent>()
                 }
+                if (result.has<WasDealtCombatDamageThisTurnComponent>()) {
+                    result = result.without<WasDealtCombatDamageThisTurnComponent>()
+                }
                 result
             }
         }
@@ -352,6 +357,9 @@ class CleanupPhaseManager(
             if (container.has<AbilityResolutionCountThisTurnComponent>()) {
                 needsUpdate = true
             }
+            if (container.has<WasDealtDamageThisTurnComponent>()) {
+                needsUpdate = true
+            }
             if (needsUpdate) {
                 newState = newState.updateEntity(entityId) { c ->
                     c.without<AbilityActivatedThisTurnComponent>()
@@ -361,6 +369,7 @@ class CleanupPhaseManager(
                         .without<GraveyardPlayPermissionUsedComponent>()
                         .without<TriggeredAbilityFiredThisTurnComponent>()
                         .without<AbilityResolutionCountThisTurnComponent>()
+                        .without<WasDealtDamageThisTurnComponent>()
                 }
             }
         }

@@ -11,6 +11,10 @@ import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.battlefield.CountersComponent
 import com.wingedsheep.engine.state.components.battlefield.DamageComponent
+import com.wingedsheep.engine.state.components.battlefield.HasDealtCombatDamageToPlayerComponent
+import com.wingedsheep.engine.state.components.battlefield.HasDealtDamageComponent
+import com.wingedsheep.engine.state.components.battlefield.WasDealtDamageThisTurnComponent
+import com.wingedsheep.engine.state.components.player.WasDealtCombatDamageThisTurnComponent
 import com.wingedsheep.engine.state.components.combat.AttackingComponent
 import com.wingedsheep.engine.state.components.combat.BlockedComponent
 import com.wingedsheep.engine.state.components.combat.BlockingComponent
@@ -525,6 +529,17 @@ internal class CombatDamageManager(
         }
         newState = DamageUtils.trackDamageReceivedByPlayer(newState, targetId, effectiveAmount)
 
+        // Track combat damage: source dealt damage + dealt combat damage to player
+        if (sourceId in newState.getBattlefield()) {
+            newState = newState.updateEntity(sourceId) { container ->
+                container.with(HasDealtDamageComponent).with(HasDealtCombatDamageToPlayerComponent)
+            }
+        }
+        // Track that player was dealt combat damage this turn
+        newState = newState.updateEntity(targetId) { container ->
+            container.with(WasDealtCombatDamageThisTurnComponent)
+        }
+
         val sourceName = state.getEntity(sourceId)?.get<CardComponent>()?.name ?: "Creature"
         events.add(DamageDealtEvent(sourceId, targetId, effectiveAmount, true,
             sourceName = sourceName, targetName = "Player", targetIsPlayer = true))
@@ -563,6 +578,13 @@ internal class CombatDamageManager(
         val currentLoyalty = counters.getCount(com.wingedsheep.sdk.core.CounterType.LOYALTY)
         newState = newState.updateEntity(targetId) { container ->
             container.with(counters.withRemoved(com.wingedsheep.sdk.core.CounterType.LOYALTY, effectiveAmount))
+        }
+
+        // Track that source dealt damage
+        if (sourceId in newState.getBattlefield()) {
+            newState = newState.updateEntity(sourceId) { container ->
+                container.with(HasDealtDamageComponent)
+            }
         }
 
         val sourceName = newState.getEntity(sourceId)?.get<CardComponent>()?.name ?: "Creature"
@@ -636,6 +658,16 @@ internal class CombatDamageManager(
                 container.with(LifeTotalComponent(newLife))
             }
             newState = DamageUtils.trackDamageReceivedByPlayer(newState, targetId, amount)
+            // Track combat damage: source dealt damage + dealt combat damage to player
+            if (sourceId in newState.getBattlefield()) {
+                newState = newState.updateEntity(sourceId) { container ->
+                    container.with(HasDealtDamageComponent).with(HasDealtCombatDamageToPlayerComponent)
+                }
+            }
+            // Track that player was dealt combat damage this turn
+            newState = newState.updateEntity(targetId) { container ->
+                container.with(WasDealtCombatDamageThisTurnComponent)
+            }
             val sourceName = newState.getEntity(sourceId)?.get<CardComponent>()?.name ?: "Creature"
             events.add(DamageDealtEvent(sourceId, targetId, amount, true,
                 sourceName = sourceName, targetName = "Player", targetIsPlayer = true))
@@ -646,6 +678,12 @@ internal class CombatDamageManager(
             val currentLoyalty = counters.getCount(com.wingedsheep.sdk.core.CounterType.LOYALTY)
             newState = newState.updateEntity(targetId) { container ->
                 container.with(counters.withRemoved(com.wingedsheep.sdk.core.CounterType.LOYALTY, amount))
+            }
+            // Track that source dealt damage
+            if (sourceId in newState.getBattlefield()) {
+                newState = newState.updateEntity(sourceId) { container ->
+                    container.with(HasDealtDamageComponent)
+                }
             }
             val sourceName = newState.getEntity(sourceId)?.get<CardComponent>()?.name ?: "Creature"
             val targetName = newState.getEntity(targetId)?.get<CardComponent>()?.name ?: "Planeswalker"
@@ -663,6 +701,16 @@ internal class CombatDamageManager(
                     amount = currentDamage + amount,
                     deathtouchDamageReceived = hasDeathtouch || (existingDamage?.deathtouchDamageReceived == true)
                 ))
+            }
+            // Mark creature as having been dealt damage this turn
+            newState = newState.updateEntity(targetId) { container ->
+                container.with(WasDealtDamageThisTurnComponent)
+            }
+            // Track that source dealt damage
+            if (sourceId in newState.getBattlefield()) {
+                newState = newState.updateEntity(sourceId) { container ->
+                    container.with(HasDealtDamageComponent)
+                }
             }
             newState = DamageUtils.trackDamageDealtToCreature(newState, sourceId, targetId)
             val sourceName = newState.getEntity(sourceId)?.get<CardComponent>()?.name ?: "Creature"

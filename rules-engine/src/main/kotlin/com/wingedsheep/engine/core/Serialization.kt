@@ -213,6 +213,9 @@ val engineSerializersModule = SerializersModule {
         subclass(AttachedToComponent::class)
         subclass(AttachmentsComponent::class)
         subclass(EnteredThisTurnComponent::class)
+        subclass(WasDealtDamageThisTurnComponent::class)
+        subclass(HasDealtDamageComponent::class)
+        subclass(HasDealtCombatDamageToPlayerComponent::class)
         subclass(TimestampComponent::class)
 
         // Combat components
@@ -236,6 +239,7 @@ val engineSerializersModule = SerializersModule {
         subclass(PlayerLostComponent::class)
         subclass(LoseAtEndStepComponent::class)
         subclass(CardsDrawnThisTurnComponent::class)
+        subclass(WasDealtCombatDamageThisTurnComponent::class)
 
         // Stack components
         subclass(SpellOnStackComponent::class)
