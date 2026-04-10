@@ -5,6 +5,7 @@ import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.dsl.Conditions
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Triggers
+import com.wingedsheep.sdk.scripting.effects.CreatePredefinedTokenEffect
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
@@ -39,7 +40,7 @@ val BlacksmithsTalent = card("Blacksmith's Talent") {
     // Level 1: ETB — create a Sword Equipment token
     triggeredAbility {
         trigger = Triggers.EntersBattlefield
-        effect = Effects.CreateSword()
+        effect = CreatePredefinedTokenEffect("Sword")
     }
 
     // Level 2: At the beginning of combat on your turn, attach target Equipment to up to one target creature

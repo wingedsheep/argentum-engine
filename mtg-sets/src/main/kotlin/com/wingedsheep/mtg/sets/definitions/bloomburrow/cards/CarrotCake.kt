@@ -7,8 +7,6 @@ import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.effects.CreateTokenEffect
-import com.wingedsheep.sdk.scripting.values.DynamicAmount
 
 /**
  * Carrot Cake {1}{W}
@@ -27,30 +25,24 @@ val CarrotCake = card("Carrot Cake") {
     typeLine = "Artifact — Food"
     oracleText = "When this artifact enters and when you sacrifice it, create a 1/1 white Rabbit creature token and scry 1.\n{2}, {T}, Sacrifice this artifact: You gain 3 life."
 
+    val createRabbitAndScry = Effects.CreateToken(
+        power = 1,
+        toughness = 1,
+        colors = setOf(Color.WHITE),
+        creatureTypes = setOf("Rabbit"),
+        imageUri = "https://cards.scryfall.io/normal/front/8/1/81de52ef-7515-4958-abea-fb8ebdcef93c.jpg?1721431122"
+    ).then(EffectPatterns.scry(1))
+
     // When this artifact enters — create Rabbit token + scry 1
     triggeredAbility {
         trigger = Triggers.EntersBattlefield
-        effect = CreateTokenEffect(
-            count = DynamicAmount.Fixed(1),
-            power = 1,
-            toughness = 1,
-            colors = setOf(Color.WHITE),
-            creatureTypes = setOf("Rabbit"),
-            imageUri = "https://cards.scryfall.io/normal/front/8/1/81de52ef-7515-4958-abea-fb8ebdcef93c.jpg?1721431122"
-        ).then(EffectPatterns.scry(1))
+        effect = createRabbitAndScry
     }
 
     // When you sacrifice it — same effect (create Rabbit token + scry 1)
     triggeredAbility {
         trigger = Triggers.Dies
-        effect = CreateTokenEffect(
-            count = DynamicAmount.Fixed(1),
-            power = 1,
-            toughness = 1,
-            colors = setOf(Color.WHITE),
-            creatureTypes = setOf("Rabbit"),
-            imageUri = "https://cards.scryfall.io/normal/front/8/1/81de52ef-7515-4958-abea-fb8ebdcef93c.jpg?1721431122"
-        ).then(EffectPatterns.scry(1))
+        effect = createRabbitAndScry
     }
 
     // Standard Food ability: {2}, {T}, Sacrifice: You gain 3 life

@@ -2,6 +2,7 @@ package com.wingedsheep.mtg.sets.definitions.bloomburrow.cards
 
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Triggers
+import com.wingedsheep.sdk.scripting.effects.CreatePredefinedTokenEffect
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
@@ -40,7 +41,7 @@ val MabelHeirToCragflame = card("Mabel, Heir to Cragflame") {
     // ETB: create Cragflame Equipment token
     triggeredAbility {
         trigger = Triggers.EntersBattlefield
-        effect = Effects.CreateCragflame()
+        effect = CreatePredefinedTokenEffect("Cragflame")
     }
 
     metadata {
