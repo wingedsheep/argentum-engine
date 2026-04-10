@@ -155,24 +155,6 @@ sealed interface AffectsFilter {
     }
 
     /**
-     * All creatures of the chosen creature type (resolved dynamically from source's ChosenCreatureTypeComponent).
-     * Used for Shared Triumph: "Creatures of the chosen type get +1/+1."
-     */
-    @Serializable
-    data object ChosenCreatureTypeCreatures : AffectsFilter {
-        override fun applyTextReplacement(replacer: TextReplacer): AffectsFilter = this
-    }
-
-    /**
-     * Creatures you control of the chosen creature type.
-     * Used for Patchwork Banner: "Creatures you control of the chosen type get +1/+1."
-     */
-    @Serializable
-    data object ChosenCreatureTypeCreaturesYouControl : AffectsFilter {
-        override fun applyTextReplacement(replacer: TextReplacer): AffectsFilter = this
-    }
-
-    /**
      * Generic filter that preserves the full GroupFilter and evaluates it
      * against in-progress projected values during state projection.
      * Used as a fallback when specific AffectsFilter variants don't cover

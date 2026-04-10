@@ -57,7 +57,6 @@ import com.wingedsheep.sdk.scripting.CantAttackForCreatureGroup
 import com.wingedsheep.sdk.scripting.MustAttackForCreatureGroup
 import com.wingedsheep.sdk.scripting.MustBlockForCreatureGroup
 import com.wingedsheep.sdk.scripting.GrantKeyword
-import com.wingedsheep.sdk.scripting.GrantKeywordForChosenCreatureType
 import com.wingedsheep.sdk.scripting.RemoveKeywordStatic
 import com.wingedsheep.sdk.scripting.GrantCantBeBlockedExceptBySubtype
 import com.wingedsheep.sdk.scripting.GrantCantBeBlockedToSmallCreatures
@@ -68,7 +67,6 @@ import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.scripting.predicates.CardPredicate
 import com.wingedsheep.sdk.scripting.predicates.ControllerPredicate
 import com.wingedsheep.sdk.scripting.ModifyStats
-import com.wingedsheep.sdk.scripting.ModifyStatsForChosenCreatureType
 import com.wingedsheep.sdk.scripting.ModifyStatsForCreatureGroup
 import com.wingedsheep.sdk.scripting.predicates.StatePredicate
 import com.wingedsheep.sdk.scripting.StaticAbility
@@ -313,21 +311,6 @@ class StaticAbilityHandler(
                 ContinuousEffectData(
                     modification = Modification.ModifyPowerToughness(ability.powerBonus, ability.toughnessBonus),
                     affectsFilter = convertGroupFilter(ability.filter)
-                )
-            }
-            is ModifyStatsForChosenCreatureType -> {
-                ContinuousEffectData(
-                    modification = Modification.ModifyPowerToughness(ability.powerBonus, ability.toughnessBonus),
-                    affectsFilter = if (ability.youControlOnly)
-                        AffectsFilter.ChosenCreatureTypeCreaturesYouControl
-                    else
-                        AffectsFilter.ChosenCreatureTypeCreatures
-                )
-            }
-            is GrantKeywordForChosenCreatureType -> {
-                ContinuousEffectData(
-                    modification = Modification.GrantKeyword(ability.keyword.name),
-                    affectsFilter = AffectsFilter.ChosenCreatureTypeCreatures
                 )
             }
             is GrantProtectionFromChosenColorToGroup -> {
@@ -676,6 +659,12 @@ class StaticAbilityHandler(
             it != CardPredicate.IsCreature && it !is CardPredicate.HasSubtype && it !is CardPredicate.HasAnyOfSubtypes
         }
         if (hasNonCreatureTypePredicate) {
+            return AffectsFilter.Generic(filter)
+        }
+
+        // Chosen subtype filters must go through Generic so resolveGenericFilter can
+        // read ChosenCreatureTypeComponent from the source entity
+        if (filter.chosenSubtypeKey != null) {
             return AffectsFilter.Generic(filter)
         }
 
