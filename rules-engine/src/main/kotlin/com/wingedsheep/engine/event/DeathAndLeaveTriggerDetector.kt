@@ -235,7 +235,13 @@ class DeathAndLeaveTriggerDetector(
 
     /**
      * Detect "leaves the battlefield" triggers on permanents that just left.
-     * Similar to detectDeathTriggers, but handles ZoneChangeEvent(from=BATTLEFIELD) with SELF binding.
+     * Similar to detectDeathTriggers, but handles ZoneChangeEvent(from=BATTLEFIELD).
+     *
+     * SELF binding always fires. ANY binding fires if the leaving entity itself matches the
+     * trigger's filter (e.g., Three Tree Scribe's "Whenever this creature or another creature
+     * you control leaves the battlefield without dying" must fire when the Scribe itself
+     * leaves — the main battlefield loop misses this because the source is no longer on the
+     * battlefield by the time the event is processed).
      */
     fun detectLeavesBattlefieldTriggers(
         state: GameState,
@@ -249,16 +255,41 @@ class DeathAndLeaveTriggerDetector(
         val controllerId = event.ownerId
 
         for (ability in abilities) {
-            if (matcher.isLeavesBattlefieldTrigger(ability.trigger) && ability.binding == TriggerBinding.SELF) {
-                triggers.add(
-                    PendingTrigger(
-                        ability = ability,
-                        sourceId = entityId,
-                        sourceName = info.name,
-                        controllerId = controllerId,
-                        triggerContext = TriggerContext.fromEvent(event)
+            if (!matcher.isLeavesBattlefieldTrigger(ability.trigger)) continue
+
+            when (ability.binding) {
+                TriggerBinding.SELF -> {
+                    triggers.add(
+                        PendingTrigger(
+                            ability = ability,
+                            sourceId = entityId,
+                            sourceName = info.name,
+                            controllerId = controllerId,
+                            triggerContext = TriggerContext.fromEvent(event)
+                        )
                     )
-                )
+                }
+                TriggerBinding.ANY -> {
+                    // "Whenever [this creature or] another creature you control leaves..." —
+                    // check the event against the trigger's filter/excludeTo/binding.
+                    if (matcher.matchesTrigger(ability.trigger, ability.binding, event, entityId, controllerId, state)) {
+                        triggers.add(
+                            PendingTrigger(
+                                ability = ability,
+                                sourceId = entityId,
+                                sourceName = info.name,
+                                controllerId = controllerId,
+                                triggerContext = TriggerContext.fromEvent(event)
+                            )
+                        )
+                    }
+                }
+                TriggerBinding.OTHER -> {
+                    // "Whenever another permanent leaves" never fires for its own departure.
+                }
+                TriggerBinding.ATTACHED -> {
+                    // Handled by attachment detectors.
+                }
             }
         }
     }
