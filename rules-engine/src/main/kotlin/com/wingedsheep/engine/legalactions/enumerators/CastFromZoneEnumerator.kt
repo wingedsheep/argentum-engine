@@ -1053,11 +1053,11 @@ class CastFromZoneEnumerator : ActionEnumerator {
         val graveyardCards = state.getZone(ZoneKey(playerId, Zone.GRAVEYARD))
 
         // Check if forage can be paid at all (Food on battlefield)
+        val projected = state.projectedState
         val hasFood = state.getBattlefield().any { permId ->
-            val permContainer = state.getEntity(permId) ?: return@any false
-            val permCard = permContainer.get<CardComponent>() ?: return@any false
-            val permController = permContainer.get<ControllerComponent>()?.playerId
-            permController == playerId && permCard.typeLine.hasSubtype(Subtype.FOOD)
+            state.getEntity(permId) ?: return@any false
+            projected.getController(permId) == playerId &&
+                projected.hasSubtype(permId, Subtype.FOOD.value)
         }
 
         for (cardId in graveyardCards) {

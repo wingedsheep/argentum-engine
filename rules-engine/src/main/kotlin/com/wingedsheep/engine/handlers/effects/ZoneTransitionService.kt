@@ -20,8 +20,10 @@ import com.wingedsheep.engine.state.components.player.CreaturesDiedThisTurnCompo
 import com.wingedsheep.engine.state.components.player.NonTokenCreaturesDiedThisTurnComponent
 import com.wingedsheep.engine.state.components.player.OpponentCreaturesExiledThisTurnComponent
 import com.wingedsheep.engine.state.components.player.SacrificedFoodThisTurnComponent
+import com.wingedsheep.sdk.core.CardType
 import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.core.Subtype
+import com.wingedsheep.sdk.core.TypeLine
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
 
@@ -123,6 +125,7 @@ object ZoneTransitionService {
         var lastKnownCounterCount = 0
         var lastKnownPower: Int? = null
         var lastKnownToughness: Int? = null
+        var lastKnownTypeLine: TypeLine? = null
         var lastKnownAttachedTo = options.lastKnownAttachedTo
 
         if (leavingBattlefield) {
@@ -131,6 +134,9 @@ object ZoneTransitionService {
             val projected = state.projectedState
             lastKnownPower = projected.getPower(entityId)
             lastKnownToughness = projected.getToughness(entityId)
+            // Capture the projected typeLine so leaves-battlefield triggers see types/subtypes
+            // granted by continuous effects (e.g., Ygra makes other creatures Food artifacts).
+            lastKnownTypeLine = buildProjectedTypeLine(cardComponent, state, entityId)
             if (lastKnownAttachedTo == null) {
                 lastKnownAttachedTo = container.get<AttachedToComponent>()?.targetId
             }
@@ -229,8 +235,9 @@ object ZoneTransitionService {
                 lastKnownCounterCount = lastKnownCounterCount,
                 lastKnownPower = lastKnownPower,
                 lastKnownToughness = lastKnownToughness,
-                lastKnownTypeLine = if (leavingBattlefield) cardComponent.typeLine else null,
-                lastKnownAttachedTo = if (leavingBattlefield) lastKnownAttachedTo else null
+                lastKnownTypeLine = lastKnownTypeLine,
+                lastKnownAttachedTo = if (leavingBattlefield) lastKnownAttachedTo else null,
+                lastKnownCardDefinitionId = if (leavingBattlefield) cardComponent.cardDefinitionId else null
             )
         )
 
@@ -345,9 +352,10 @@ object ZoneTransitionService {
      */
     fun trackFoodSacrifice(state: GameState, permanentIds: List<EntityId>, controllerId: EntityId): GameState {
         var newState = state
+        val projected = state.projectedState
         for (permId in permanentIds) {
-            val card = newState.getEntity(permId)?.get<CardComponent>() ?: continue
-            if (card.typeLine.hasSubtype(Subtype.FOOD)) {
+            newState.getEntity(permId)?.get<CardComponent>() ?: continue
+            if (projected.hasSubtype(permId, Subtype.FOOD.value)) {
                 newState = newState.updateEntity(controllerId) { container ->
                     container.with(SacrificedFoodThisTurnComponent)
                 }
@@ -477,6 +485,33 @@ object ZoneTransitionService {
      */
     private fun stripBattlefieldComponents(container: ComponentContainer): ComponentContainer {
         return ZoneMovementUtils.stripBattlefieldComponents(container)
+    }
+
+    /**
+     * Build a TypeLine that reflects the projected types/subtypes for a permanent
+     * leaving the battlefield. This lets leaves-battlefield triggers match on types
+     * granted by continuous effects (e.g., "whenever a Food is put into a graveyard"
+     * firing for creatures Ygra turned into Food artifacts).
+     *
+     * Falls back to the base typeLine if projection has no entry for the entity.
+     */
+    private fun buildProjectedTypeLine(
+        cardComponent: CardComponent,
+        state: GameState,
+        entityId: EntityId
+    ): TypeLine {
+        val baseTypeLine = cardComponent.typeLine
+        val projected = state.projectedState.getProjectedValues(entityId) ?: return baseTypeLine
+
+        val cardTypes = projected.types
+            .mapNotNull { runCatching { CardType.valueOf(it) }.getOrNull() }
+            .toSet()
+            .ifEmpty { baseTypeLine.cardTypes }
+        val subtypes = projected.subtypes.map { Subtype(it) }.toSet()
+        return baseTypeLine.copy(
+            cardTypes = cardTypes,
+            subtypes = subtypes
+        )
     }
 
     /**

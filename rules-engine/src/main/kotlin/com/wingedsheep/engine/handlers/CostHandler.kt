@@ -160,11 +160,11 @@ class CostHandler(
             is AbilityCost.Forage -> {
                 // Can forage if: 3+ cards in graveyard OR a Food artifact on battlefield
                 val graveyardSize = state.getZone(ZoneKey(controllerId, Zone.GRAVEYARD)).size
+                val projected = state.projectedState
                 val hasFood = state.getBattlefield().any { permId ->
-                    val permContainer = state.getEntity(permId) ?: return@any false
-                    val permCard = permContainer.get<CardComponent>() ?: return@any false
-                    val permController = permContainer.get<ControllerComponent>()?.playerId
-                    permController == controllerId && permCard.typeLine.hasSubtype(Subtype.FOOD)
+                    state.getEntity(permId) ?: return@any false
+                    projected.getController(permId) == controllerId &&
+                        projected.hasSubtype(permId, Subtype.FOOD.value)
                 }
                 graveyardSize >= 3 || hasFood
             }
@@ -518,11 +518,11 @@ class CostHandler(
             }
             is AbilityCost.Forage -> {
                 // Forage: sacrifice a Food if available, otherwise exile 3 cards from graveyard
+                val projected = state.projectedState
                 val foods = state.getBattlefield().filter { permId ->
-                    val permContainer = state.getEntity(permId) ?: return@filter false
-                    val permCard = permContainer.get<CardComponent>() ?: return@filter false
-                    val permController = permContainer.get<ControllerComponent>()?.playerId
-                    permController == controllerId && permCard.typeLine.hasSubtype(Subtype.FOOD)
+                    state.getEntity(permId) ?: return@filter false
+                    projected.getController(permId) == controllerId &&
+                        projected.hasSubtype(permId, Subtype.FOOD.value)
                 }
 
                 if (foods.isNotEmpty()) {
@@ -627,11 +627,11 @@ class CostHandler(
             is AdditionalCost.Forage -> {
                 // Can forage if: 3+ cards in graveyard OR a Food artifact on battlefield
                 val graveyardSize = state.getZone(ZoneKey(controllerId, Zone.GRAVEYARD)).size
+                val projected = state.projectedState
                 val hasFood = state.getBattlefield().any { permId ->
-                    val permContainer = state.getEntity(permId) ?: return@any false
-                    val permCard = permContainer.get<CardComponent>() ?: return@any false
-                    val permController = permContainer.get<ControllerComponent>()?.playerId
-                    permController == controllerId && permCard.typeLine.hasSubtype(Subtype.FOOD)
+                    state.getEntity(permId) ?: return@any false
+                    projected.getController(permId) == controllerId &&
+                        projected.hasSubtype(permId, Subtype.FOOD.value)
                 }
                 graveyardSize >= 3 || hasFood
             }

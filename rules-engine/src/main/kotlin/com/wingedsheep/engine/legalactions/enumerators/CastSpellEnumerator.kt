@@ -324,11 +324,11 @@ class CastSpellEnumerator : ActionEnumerator {
                                 }
                                 is AdditionalCost.Forage -> {
                                     val graveyardSize = state.getZone(ZoneKey(playerId, Zone.GRAVEYARD)).size
+                                    val projected = state.projectedState
                                     val hasFood = state.getBattlefield().any { permId ->
-                                        val permContainer = state.getEntity(permId) ?: return@any false
-                                        val permCard = permContainer.get<CardComponent>() ?: return@any false
-                                        val permController = permContainer.get<ControllerComponent>()?.playerId
-                                        permController == playerId && permCard.typeLine.hasSubtype(com.wingedsheep.sdk.core.Subtype.FOOD)
+                                        state.getEntity(permId) ?: return@any false
+                                        projected.getController(permId) == playerId &&
+                                            projected.hasSubtype(permId, com.wingedsheep.sdk.core.Subtype.FOOD.value)
                                     }
                                     if (graveyardSize < 3 && !hasFood) modeCanPayAdditionalCosts = false
                                 }

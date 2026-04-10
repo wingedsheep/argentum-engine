@@ -294,7 +294,15 @@ class TriggerMatcher(
             // In that case, fall back to lastKnownTypeLine from the event.
             val entity = state.getEntity(event.entityId)
             val cardComponent = entity?.get<CardComponent>()
-            val typeLine = cardComponent?.typeLine ?: event.lastKnownTypeLine
+            // For permanents leaving the battlefield, prefer lastKnownTypeLine since it
+            // captures the projected types/subtypes at the moment of leaving (e.g., a creature
+            // that was a Food artifact only because of Ygra's continuous effect). The base
+            // cardComponent.typeLine in the new zone has only the printed types.
+            val typeLine = if (event.fromZone == Zone.BATTLEFIELD && event.lastKnownTypeLine != null) {
+                event.lastKnownTypeLine
+            } else {
+                cardComponent?.typeLine ?: event.lastKnownTypeLine
+            }
             val isFaceDown = entity?.has<FaceDownComponent>() == true
 
             for (predicate in trigger.filter.cardPredicates) {
