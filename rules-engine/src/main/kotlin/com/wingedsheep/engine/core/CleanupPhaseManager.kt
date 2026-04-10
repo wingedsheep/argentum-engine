@@ -131,12 +131,21 @@ class CleanupPhaseManager(
      * step (to prevent untapping), then removed afterward.
      */
     fun expireUntilYourNextTurnEffects(state: GameState, activePlayer: EntityId): GameState {
-        val remaining = state.floatingEffects.filter { floatingEffect ->
+        val remainingFloating = state.floatingEffects.filter { floatingEffect ->
             !(floatingEffect.duration is Duration.UntilYourNextTurn &&
                 floatingEffect.controllerId == activePlayer)
         }
-        return if (remaining.size != state.floatingEffects.size) {
-            state.copy(floatingEffects = remaining)
+        val remainingGlobal = state.globalGrantedTriggeredAbilities.filter { grant ->
+            !(grant.duration is Duration.UntilYourNextTurn &&
+                grant.controllerId == activePlayer)
+        }
+        val floatingChanged = remainingFloating.size != state.floatingEffects.size
+        val globalChanged = remainingGlobal.size != state.globalGrantedTriggeredAbilities.size
+        return if (floatingChanged || globalChanged) {
+            state.copy(
+                floatingEffects = if (floatingChanged) remainingFloating else state.floatingEffects,
+                globalGrantedTriggeredAbilities = if (globalChanged) remainingGlobal else state.globalGrantedTriggeredAbilities
+            )
         } else {
             state
         }

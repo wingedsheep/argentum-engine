@@ -165,6 +165,28 @@ data class CreatePermanentGlobalTriggeredAbilityEffect(
 }
 
 /**
+ * Create a global triggered ability with a specified duration.
+ * Used for temporary triggered abilities like "Until the end of your next turn, whenever..."
+ *
+ * @property ability The triggered ability to create
+ * @property duration How long the ability lasts
+ */
+@SerialName("CreateGlobalTriggeredAbilityWithDuration")
+@Serializable
+data class CreateGlobalTriggeredAbilityWithDurationEffect(
+    val ability: TriggeredAbility,
+    val duration: Duration
+) : Effect {
+    override val description: String =
+        "Until ${duration.description}, ${ability.description.replaceFirstChar { it.lowercase() }}"
+
+    override fun applyTextReplacement(replacer: TextReplacer): Effect {
+        val newAbility = ability.applyTextReplacement(replacer)
+        return if (newAbility !== ability) copy(ability = newAbility) else this
+    }
+}
+
+/**
  * Target player skips their next turn.
  * Used for cards like Lethal Vapors: "You skip your next turn."
  *

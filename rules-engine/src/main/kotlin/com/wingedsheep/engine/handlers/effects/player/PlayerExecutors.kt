@@ -14,6 +14,7 @@ class PlayerExecutors(
         AddCombatPhaseExecutor(),
         CantCastSpellsExecutor(),
         CreateGlobalTriggeredAbilityUntilEndOfTurnExecutor(),
+        CreateGlobalTriggeredAbilityWithDurationExecutor(),
         CreatePermanentGlobalTriggeredAbilityExecutor(),
         GiftGivenExecutor(),
         GrantCastCreaturesFromGraveyardWithForageExecutor(),

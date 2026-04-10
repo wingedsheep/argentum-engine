@@ -64,6 +64,7 @@ import com.wingedsheep.sdk.scripting.effects.PutOnTopOrBottomOfLibraryEffect
 import com.wingedsheep.sdk.scripting.effects.ExileFromTopRepeatingEffect
 import com.wingedsheep.sdk.scripting.effects.ExileOpponentsGraveyardsEffect
 import com.wingedsheep.sdk.scripting.effects.ExileUntilLeavesEffect
+import com.wingedsheep.sdk.scripting.effects.CreateGlobalTriggeredAbilityWithDurationEffect
 import com.wingedsheep.sdk.scripting.effects.CreatePermanentGlobalTriggeredAbilityEffect
 import com.wingedsheep.sdk.scripting.effects.ReturnCreaturesPutInGraveyardThisTurnEffect
 import com.wingedsheep.sdk.scripting.effects.ReturnOneFromLinkedExileEffect
@@ -398,6 +399,13 @@ object Effects {
      */
     fun CreatePermanentGlobalTriggeredAbility(ability: TriggeredAbility): Effect =
         CreatePermanentGlobalTriggeredAbilityEffect(ability)
+
+    /**
+     * Create a global triggered ability with a specified duration.
+     * Used for temporary triggered abilities like "Until the end of your next turn, whenever..."
+     */
+    fun CreateGlobalTriggeredAbilityWithDuration(ability: TriggeredAbility, duration: Duration): Effect =
+        CreateGlobalTriggeredAbilityWithDurationEffect(ability, duration)
 
     /**
      * Return to hand.

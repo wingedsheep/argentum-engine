@@ -1143,22 +1143,25 @@ class ClientStateTransformer(
             )
         }
 
-        // Check for permanent global triggered abilities (emblems) controlled by this player
-        // Group by source name so a single emblem with multiple abilities shows as one badge
-        val emblemsBySource = state.globalGrantedTriggeredAbilities
-            .filter { it.controllerId == playerId && it.duration == Duration.Permanent }
-            .groupBy { it.sourceName }
+        // Check for global triggered abilities controlled by this player
+        // Group by source name so abilities from the same source show as one badge
+        val globalAbilitiesBySource = state.globalGrantedTriggeredAbilities
+            .filter { it.controllerId == playerId }
+            .groupBy { it.sourceName to it.duration }
 
-        for ((sourceName, abilities) in emblemsBySource) {
+        for ((key, abilities) in globalAbilitiesBySource) {
+            val (sourceName, duration) = key
             val description = abilities.joinToString(" ") {
                 it.descriptionOverride ?: it.ability.description
             }
+            val isPermanent = duration == Duration.Permanent
+            val durationSuffix = if (isPermanent) "" else " (${duration.description})"
             effects.add(
                 ClientPlayerEffect(
-                    effectId = "emblem_${sourceName.lowercase().replace(" ", "_").replace(",", "")}",
-                    name = "$sourceName Emblem",
-                    description = description,
-                    icon = "emblem"
+                    effectId = "emblem_${sourceName.lowercase().replace(" ", "_").replace(",", "")}${if (!isPermanent) "_temp" else ""}",
+                    name = if (isPermanent) "$sourceName Emblem" else sourceName,
+                    description = description + durationSuffix,
+                    icon = if (isPermanent) "emblem" else "triggered-ability"
                 )
             )
         }

@@ -5,6 +5,8 @@ import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Targets
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
+import com.wingedsheep.sdk.scripting.Duration
+import com.wingedsheep.sdk.scripting.TriggeredAbility
 import com.wingedsheep.sdk.scripting.effects.BudgetModalEffect
 import com.wingedsheep.sdk.scripting.effects.BudgetMode
 import com.wingedsheep.sdk.scripting.effects.CardDestination
@@ -14,8 +16,11 @@ import com.wingedsheep.sdk.scripting.effects.DealDamageEffect
 import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
 import com.wingedsheep.sdk.scripting.effects.GrantMayPlayFromExileEffect
 import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
-import com.wingedsheep.sdk.scripting.effects.SelectTargetEffect
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
+import com.wingedsheep.sdk.scripting.targets.TargetCreature
+import com.wingedsheep.sdk.scripting.GameEvent.SpellCastEvent
+import com.wingedsheep.sdk.scripting.TriggerBinding
+import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
 
 /**
@@ -28,11 +33,6 @@ import com.wingedsheep.sdk.scripting.values.DynamicAmount
  *           you may play them.
  * {P}{P}{P} — Until the end of your next turn, whenever you cast a spell, Season of the
  *             Bold deals 2 damage to up to one target creature.
- *
- * NOTE: Mode 3 is approximated as "deal 2 damage to up to one target creature" per selection.
- * The full implementation requires a temporary event-based triggered ability that fires on
- * spell cast, which the engine does not yet support. The correct behavior would create a
- * floating triggered ability lasting until end of next turn.
  */
 val SeasonOfTheBold = card("Season of the Bold") {
     manaCost = "{3}{R}{R}"
@@ -69,21 +69,23 @@ val SeasonOfTheBold = card("Season of the Bold") {
                     )),
                     description = "Exile the top two cards of your library. Until the end of your next turn, you may play them"
                 ),
-                // {P}{P}{P} — Deal 2 damage to up to one target creature
-                // TODO: Full implementation needs a temporary "whenever you cast a spell" triggered ability
-                // lasting until end of next turn. Currently approximated as immediate damage.
+                // {P}{P}{P} — Until end of your next turn, whenever you cast a spell,
+                // Season of the Bold deals 2 damage to up to one target creature
                 BudgetMode(
                     cost = 3,
-                    effect = SelectTargetEffect(
-                        Targets.Creature,
-                        "targetCreature"
-                    ).then(
-                        DealDamageEffect(
-                            amount = DynamicAmount.Fixed(2),
-                            target = EffectTarget.PipelineTarget("targetCreature")
-                        )
+                    effect = Effects.CreateGlobalTriggeredAbilityWithDuration(
+                        ability = TriggeredAbility.create(
+                            trigger = SpellCastEvent(player = Player.You),
+                            binding = TriggerBinding.ANY,
+                            effect = DealDamageEffect(
+                                amount = DynamicAmount.Fixed(2),
+                                target = EffectTarget.ContextTarget(0)
+                            ),
+                            targetRequirement = TargetCreature(optional = true)
+                        ),
+                        duration = Duration.UntilYourNextTurn
                     ),
-                    description = "Deal 2 damage to up to one target creature (approximation — full spell-cast trigger not yet supported)"
+                    description = "Until the end of your next turn, whenever you cast a spell, Season of the Bold deals 2 damage to up to one target creature"
                 )
             )
         )
