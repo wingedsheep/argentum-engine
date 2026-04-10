@@ -249,7 +249,14 @@ class ConnectionHandler(
                 }
 
                 logger.info("Player disconnected: ${identity.playerName} (starting ${gracePeriodMinutes}m grace period, tournament=$isInTournament)")
-                identity.webSocketSession = null
+                // Only clear the WebSocket session if it still matches the disconnecting session.
+                // If handleReconnect already swapped in a new session, don't overwrite it.
+                if (identity.webSocketSession == null || identity.webSocketSession?.id == session.id) {
+                    identity.webSocketSession = null
+                } else {
+                    logger.info("Player ${identity.playerName} reconnected during disconnect processing (session changed), ignoring stale disconnect")
+                    return
+                }
 
                 val gracePeriodSeconds = gracePeriodMinutes * 60
                 identity.disconnectExpiresAt = System.currentTimeMillis() + gracePeriodSeconds * 1000
@@ -304,6 +311,14 @@ class ConnectionHandler(
     }
 
     private fun handleDisconnectTimeout(token: String) {
+        // Re-check connectivity before removing — handles race where player reconnected
+        // after the disconnect timer was scheduled but before handleReconnect cancelled it.
+        val preCheckIdentity = sessionRegistry.getIdentityByToken(token)
+        if (preCheckIdentity?.isConnected == true) {
+            logger.info("Disconnect timeout for ${preCheckIdentity.playerName} — player is connected, skipping abandonment")
+            return
+        }
+
         val identity = sessionRegistry.removeIdentity(token) ?: return
 
         logger.info("Disconnect timeout for ${identity.playerName} — treating as abandonment")
@@ -355,11 +370,19 @@ class ConnectionHandler(
         val identity = sessionRegistry.getIdentityByToken(token) ?: return
         identity.gameDisconnectTimer = null
 
-        // Only concede if still disconnected and still in a game
+        // Only concede if still disconnected and still in a game.
+        // Check both the identity's WebSocket AND the game session's player session,
+        // to guard against a race where handleDisconnect overwrote the identity's
+        // webSocketSession after handleReconnect had already restored it.
         if (identity.isConnected) return
         val gameSessionId = identity.currentGameSessionId ?: return
         val gameSession = gameRepository.findById(gameSessionId) ?: return
         if (gameSession.isGameOver()) return
+        val playerSession = gameSession.getPlayerSession(identity.playerId)
+        if (playerSession?.isConnected == true) {
+            logger.info("Game disconnect timeout for ${identity.playerName} — player is connected in game session, skipping auto-concede")
+            return
+        }
 
         logger.info("Game disconnect timeout for ${identity.playerName} — auto-conceding")
         gameSession.playerConcedes(identity.playerId)
