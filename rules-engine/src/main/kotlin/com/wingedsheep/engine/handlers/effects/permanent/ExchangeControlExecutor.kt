@@ -58,26 +58,25 @@ class ExchangeControlExecutor : EffectExecutor<ExchangeControlEffect> {
         // If both creatures already have the same controller, no-op
         if (controller1 == controller2) return ExecutionResult.success(state)
 
-        val now = System.currentTimeMillis()
-
         // Create floating effect: target1 gets controller2
         val floating1 = state.createFloatingEffect(
             layer = Layer.CONTROL,
             modification = SerializableModification.ChangeController(controller2),
             affectedEntities = setOf(target1Id),
             duration = Duration.Permanent,
-            context = context,
-            timestamp = now
+            context = context
         )
 
-        // Create floating effect: target2 gets controller1
+        // Create floating effect: target2 gets controller1.
+        // +1 preserves deterministic ordering between the two effects within Layer.CONTROL
+        // (they affect different entities, so this is cosmetic, but matches the prior behavior).
         val floating2 = state.createFloatingEffect(
             layer = Layer.CONTROL,
             modification = SerializableModification.ChangeController(controller1),
             affectedEntities = setOf(target2Id),
             duration = Duration.Permanent,
             context = context,
-            timestamp = now + 1
+            timestamp = state.timestamp + 1
         )
 
         val newState = state.addFloatingEffects(listOf(floating1, floating2))

@@ -39,7 +39,6 @@ class AnimateLandExecutor : EffectExecutor<AnimateLandEffect> {
         }
 
         val affectedEntities = setOf(targetId)
-        val timestamp = System.currentTimeMillis()
 
         // Floating effect 1: Add "Creature" type on Layer.TYPE
         val addTypeEffect = state.createFloatingEffect(
@@ -47,8 +46,7 @@ class AnimateLandExecutor : EffectExecutor<AnimateLandEffect> {
             modification = SerializableModification.AddType("CREATURE"),
             affectedEntities = affectedEntities,
             duration = effect.duration,
-            context = context,
-            timestamp = timestamp
+            context = context
         )
 
         // Floating effect 2: Set base P/T on Layer.POWER_TOUGHNESS, Sublayer.SET_VALUES
@@ -58,8 +56,7 @@ class AnimateLandExecutor : EffectExecutor<AnimateLandEffect> {
             modification = SerializableModification.SetPowerToughness(effect.power, effect.toughness),
             affectedEntities = affectedEntities,
             duration = effect.duration,
-            context = context,
-            timestamp = timestamp
+            context = context
         )
 
         val newState = state.addFloatingEffects(listOf(addTypeEffect, setPTEffect))

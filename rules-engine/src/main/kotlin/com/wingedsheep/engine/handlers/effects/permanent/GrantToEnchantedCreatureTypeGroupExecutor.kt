@@ -107,7 +107,6 @@ class GrantToEnchantedCreatureTypeGroupExecutor : EffectExecutor<GrantToEnchante
 
         // Create floating effects
         val floatingEffects = mutableListOf<ActiveFloatingEffect>()
-        val timestamp = System.currentTimeMillis()
 
         if (effect.powerModifier != 0 || effect.toughnessModifier != 0) {
             floatingEffects.add(
@@ -120,8 +119,7 @@ class GrantToEnchantedCreatureTypeGroupExecutor : EffectExecutor<GrantToEnchante
                     ),
                     affectedEntities = affectedEntities,
                     duration = effect.duration,
-                    context = context,
-                    timestamp = timestamp
+                    context = context
                 )
             )
         }
@@ -133,8 +131,7 @@ class GrantToEnchantedCreatureTypeGroupExecutor : EffectExecutor<GrantToEnchante
                     modification = SerializableModification.GrantKeyword(keyword.name),
                     affectedEntities = affectedEntities,
                     duration = effect.duration,
-                    context = context,
-                    timestamp = timestamp
+                    context = context
                 )
             )
         }
@@ -146,8 +143,7 @@ class GrantToEnchantedCreatureTypeGroupExecutor : EffectExecutor<GrantToEnchante
                     modification = SerializableModification.GrantProtectionFromColor(color.name),
                     affectedEntities = affectedEntities,
                     duration = effect.duration,
-                    context = context,
-                    timestamp = timestamp
+                    context = context
                 )
             )
         }

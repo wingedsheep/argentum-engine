@@ -101,7 +101,7 @@ class CombatContinuationResumer(
         val shieldIndex = updatedEffects.indexOfFirst { it.id == continuation.shieldEffectId }
         val originalShield = if (shieldIndex >= 0) updatedEffects.removeAt(shieldIndex) else null
 
-        val timestamp = originalShield?.timestamp ?: System.currentTimeMillis()
+        val timestamp = originalShield?.timestamp ?: state.timestamp
         for ((sourceId, preventionAmount) in response.distribution) {
             if (preventionAmount <= 0) continue
             updatedEffects.add(

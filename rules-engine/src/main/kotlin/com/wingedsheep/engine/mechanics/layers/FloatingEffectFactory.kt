@@ -12,6 +12,10 @@ import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
  *
  * Handles all boilerplate: ID generation, source name lookup, timestamp, and state copy.
  * Callers specify only what varies: layer, modification, affected entities, and duration.
+ *
+ * The timestamp defaults to the state's monotonic [GameState.timestamp] (see principle §2.1).
+ * Wall-clock time must never be used here — it makes Rule 613 layer ordering nondeterministic
+ * and breaks replay, state verification, and MCTS simulation.
  */
 fun GameState.addFloatingEffect(
     layer: Layer,
@@ -21,7 +25,7 @@ fun GameState.addFloatingEffect(
     context: EffectContext,
     sublayer: Sublayer? = null,
     dynamicGroupFilter: GroupFilter? = null,
-    timestamp: Long = System.currentTimeMillis()
+    timestamp: Long = this.timestamp
 ): GameState {
     val effect = createFloatingEffect(
         layer = layer,
@@ -41,6 +45,9 @@ fun GameState.addFloatingEffect(
  *
  * Use when building multiple effects to add atomically via [addFloatingEffects],
  * or when the state copy needs custom logic (e.g., filtering existing effects first).
+ *
+ * The timestamp defaults to the state's monotonic [GameState.timestamp] — see the note
+ * on [addFloatingEffect] for why wall-clock time is forbidden.
  */
 fun GameState.createFloatingEffect(
     layer: Layer,
@@ -50,7 +57,7 @@ fun GameState.createFloatingEffect(
     context: EffectContext,
     sublayer: Sublayer? = null,
     dynamicGroupFilter: GroupFilter? = null,
-    timestamp: Long = System.currentTimeMillis()
+    timestamp: Long = this.timestamp
 ): ActiveFloatingEffect {
     val sourceName = context.sourceId?.let { getEntity(it)?.get<CardComponent>()?.name }
     return ActiveFloatingEffect(

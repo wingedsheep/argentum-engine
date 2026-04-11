@@ -39,7 +39,6 @@ class BecomeCreatureExecutor : EffectExecutor<BecomeCreatureEffect> {
         }
 
         val affectedEntities = setOf(targetId)
-        val timestamp = System.currentTimeMillis()
 
         val floatingEffects = mutableListOf<ActiveFloatingEffect>()
 
@@ -49,8 +48,7 @@ class BecomeCreatureExecutor : EffectExecutor<BecomeCreatureEffect> {
             modification = SerializableModification.AddType("CREATURE"),
             affectedEntities = affectedEntities,
             duration = effect.duration,
-            context = context,
-            timestamp = timestamp
+            context = context
         ))
 
         // Layer 4 (TYPE): Remove specified types (e.g., PLANESWALKER)
@@ -60,8 +58,7 @@ class BecomeCreatureExecutor : EffectExecutor<BecomeCreatureEffect> {
                 modification = SerializableModification.RemoveType(type),
                 affectedEntities = affectedEntities,
                 duration = effect.duration,
-                context = context,
-                timestamp = timestamp
+                context = context
             ))
         }
 
@@ -72,8 +69,7 @@ class BecomeCreatureExecutor : EffectExecutor<BecomeCreatureEffect> {
                 modification = SerializableModification.SetCreatureSubtypes(effect.creatureTypes),
                 affectedEntities = affectedEntities,
                 duration = effect.duration,
-                context = context,
-                timestamp = timestamp
+                context = context
             ))
         }
 
@@ -84,8 +80,7 @@ class BecomeCreatureExecutor : EffectExecutor<BecomeCreatureEffect> {
                 modification = SerializableModification.ChangeColor(effect.colors!!),
                 affectedEntities = affectedEntities,
                 duration = effect.duration,
-                context = context,
-                timestamp = timestamp
+                context = context
             ))
         }
 
@@ -96,8 +91,7 @@ class BecomeCreatureExecutor : EffectExecutor<BecomeCreatureEffect> {
                 modification = SerializableModification.GrantKeyword(keyword.name),
                 affectedEntities = affectedEntities,
                 duration = effect.duration,
-                context = context,
-                timestamp = timestamp
+                context = context
             ))
         }
 
@@ -108,8 +102,7 @@ class BecomeCreatureExecutor : EffectExecutor<BecomeCreatureEffect> {
             modification = SerializableModification.SetPowerToughness(effect.power, effect.toughness),
             affectedEntities = affectedEntities,
             duration = effect.duration,
-            context = context,
-            timestamp = timestamp
+            context = context
         ))
 
         val newState = state.addFloatingEffects(floatingEffects)
