@@ -1,6 +1,7 @@
 package com.wingedsheep.engine.core
 
 import com.wingedsheep.sdk.model.EntityId
+import com.wingedsheep.sdk.scripting.effects.SelectionRestriction
 import kotlinx.serialization.Serializable
 
 /**
@@ -28,7 +29,14 @@ data class SelectFromCollectionContinuation(
     val allCards: List<EntityId>,
     val storeSelected: String,
     val storeRemainder: String?,
-    val storedCollections: Map<String, List<EntityId>> = emptyMap()
+    val storedCollections: Map<String, List<EntityId>> = emptyMap(),
+    /**
+     * Restrictions that tightened the selection bounds. The resumer uses these
+     * to normalize the player's response: e.g. [SelectionRestriction.OnePerCardType]
+     * drops any extra cards that share a card type with an already-kept selection,
+     * routing them into the remainder collection.
+     */
+    val restrictions: List<SelectionRestriction> = emptyList()
 ) : ContinuationFrame
 
 /**

@@ -28,7 +28,7 @@ class ConditionalOnCollectionExecutor(
         val collection = context.pipeline.storedCollections[effect.collection] ?: emptyList()
 
         val elseEffect = effect.ifEmpty
-        return if (collection.isNotEmpty()) {
+        return if (collection.size >= effect.minSize) {
             effectExecutor(state, effect.ifNotEmpty, context)
         } else if (elseEffect != null) {
             effectExecutor(state, elseEffect, context)

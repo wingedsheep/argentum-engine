@@ -212,6 +212,40 @@ sealed interface SelectionMode {
 }
 
 /**
+ * Additional constraint on a selection beyond what [SelectionMode] expresses.
+ *
+ * Restrictions compose with the base selection mode: the mode sets the bounds
+ * (e.g., "up to 9") and restrictions narrow what combinations are valid
+ * (e.g., "at most one of each card type"). The executor uses restrictions to
+ * tighten the selection's maximum and normalize the player's response on
+ * resolution so no invalid combination is accepted.
+ *
+ * This is a sealed interface so new restrictions (e.g., "distinct mana values",
+ * "no two cards of the same color") can be added without touching the mode.
+ */
+@Serializable
+sealed interface SelectionRestriction {
+    val description: String
+
+    /**
+     * At most one card of each card type may be selected. The natural upper
+     * bound is the number of distinct card types present in the source
+     * collection (nine in practice — artifact, battle, creature, enchantment,
+     * instant, kindred, land, planeswalker, sorcery). Used for "for each card
+     * type, you may ..." effects like Portent of Calamity.
+     *
+     * The executor enforces the constraint server-side: if the player's
+     * response names multiple cards sharing a card type, only the first such
+     * card (in response order) is kept for each type.
+     */
+    @SerialName("OnePerCardType")
+    @Serializable
+    data object OnePerCardType : SelectionRestriction {
+        override val description: String = "at most one card of each card type"
+    }
+}
+
+/**
  * Who makes the selection decision.
  */
 @Serializable
@@ -309,7 +343,13 @@ data class SelectFromCollectionEffect(
      * Non-eligible cards are displayed but not selectable. Used for "look at" effects like
      * Adventurous Impulse where the player sees all cards but can only choose matching ones.
      */
-    val showAllCards: Boolean = false
+    val showAllCards: Boolean = false,
+    /**
+     * Additional constraints applied on top of [selection]. The executor tightens the
+     * effective maximum using these and normalizes the player's response so invalid
+     * combinations are rejected. Defaults to empty (no extra constraints).
+     */
+    val restrictions: List<SelectionRestriction> = emptyList()
 ) : Effect {
     override val description: String = buildString {
         if (chooser == Chooser.Opponent) append("An opponent ")
@@ -559,24 +599,32 @@ data class GrantMayPlayFromExileEffect(
 }
 
 /**
- * Conditionally execute an effect based on whether a named collection is non-empty.
+ * Conditionally execute an effect based on the size of a named collection.
  *
  * Used for "if you do" effects where a subsequent action depends on whether
- * a previous pipeline step actually moved/selected any cards.
+ * a previous pipeline step actually moved/selected any cards. Defaults to
+ * "non-empty" semantics ([minSize] = 1) but accepts a higher threshold for
+ * "if 4 or more" style checks like Portent of Calamity.
  *
  * @property collection Name of the collection to check
- * @property ifNotEmpty Effect to execute if the collection has at least one card
- * @property ifEmpty Effect to execute if the collection is empty (optional)
+ * @property ifNotEmpty Effect to execute if the collection has at least [minSize] cards
+ * @property ifEmpty Effect to execute otherwise (optional)
+ * @property minSize Inclusive minimum collection size required to run [ifNotEmpty]
  */
 @SerialName("ConditionalOnCollection")
 @Serializable
 data class ConditionalOnCollectionEffect(
     val collection: String,
     val ifNotEmpty: Effect,
-    val ifEmpty: Effect? = null
+    val ifEmpty: Effect? = null,
+    val minSize: Int = 1
 ) : Effect {
     override val description: String = buildString {
-        append("If $collection is not empty, ")
+        if (minSize <= 1) {
+            append("If $collection is not empty, ")
+        } else {
+            append("If $collection has at least $minSize cards, ")
+        }
         append(ifNotEmpty.description.replaceFirstChar { it.lowercase() })
         if (ifEmpty != null) {
             append(". Otherwise, ")

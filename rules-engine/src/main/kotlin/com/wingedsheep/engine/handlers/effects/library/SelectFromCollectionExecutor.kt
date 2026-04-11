@@ -15,6 +15,7 @@ import com.wingedsheep.sdk.scripting.effects.Chooser
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.SelectFromCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.SelectionMode
+import com.wingedsheep.sdk.scripting.effects.SelectionRestriction
 import java.util.UUID
 import kotlin.reflect.KClass
 
@@ -88,6 +89,11 @@ class SelectFromCollectionExecutor : EffectExecutor<SelectFromCollectionEffect> 
                 ?: return ExecutionResult.error(state, "No triggering player for TriggeringPlayer chooser")
         }
 
+        // Restrictions can tighten the maximum number of selectable cards (e.g.,
+        // OnePerCardType caps the max at the number of distinct card types present).
+        // They are also propagated into the continuation for response-time normalization.
+        val restrictionCeiling = restrictionCeiling(effect.restrictions, state, eligibleCards)
+
         return when (val selection = effect.selection) {
             is SelectionMode.All -> {
                 // Auto-select all eligible, no decision needed
@@ -99,7 +105,8 @@ class SelectFromCollectionExecutor : EffectExecutor<SelectFromCollectionEffect> 
             }
 
             is SelectionMode.ChooseExactly -> {
-                val count = amountEvaluator.evaluate(state, selection.count, context)
+                val requested = amountEvaluator.evaluate(state, selection.count, context)
+                val count = minOf(requested, restrictionCeiling)
                 if (eligibleCards.isEmpty() || count == 0) {
                     // No eligible cards or zero requested — auto-select nothing
                     val collections = mutableMapOf(effect.storeSelected to emptyList<EntityId>())
@@ -108,7 +115,7 @@ class SelectFromCollectionExecutor : EffectExecutor<SelectFromCollectionEffect> 
                     }
                     return ExecutionResult.success(state).copy(updatedCollections = collections)
                 }
-                if (count >= eligibleCards.size) {
+                if (count >= eligibleCards.size && effect.restrictions.isEmpty()) {
                     // Must select all eligible — no choice needed
                     val collections = mutableMapOf(effect.storeSelected to eligibleCards)
                     if (remainderName != null) {
@@ -116,12 +123,14 @@ class SelectFromCollectionExecutor : EffectExecutor<SelectFromCollectionEffect> 
                     }
                     ExecutionResult.success(state).copy(updatedCollections = collections)
                 } else {
-                    createDecision(state, context, effect, eligibleCards, minOf(count, eligibleCards.size), minOf(count, eligibleCards.size), decidingPlayerId, allCards = cards)
+                    val clamped = minOf(count, eligibleCards.size)
+                    createDecision(state, context, effect, eligibleCards, clamped, clamped, decidingPlayerId, allCards = cards)
                 }
             }
 
             is SelectionMode.ChooseUpTo -> {
-                val count = amountEvaluator.evaluate(state, selection.count, context)
+                val requested = amountEvaluator.evaluate(state, selection.count, context)
+                val count = minOf(requested, restrictionCeiling)
                 if (eligibleCards.isEmpty()) {
                     if (effect.showAllCards && cards.isNotEmpty()) {
                         // Show all cards even though none are selectable (e.g., "look at top 3, you may reveal a creature or land")
@@ -139,7 +148,7 @@ class SelectFromCollectionExecutor : EffectExecutor<SelectFromCollectionEffect> 
 
             is SelectionMode.Random -> {
                 // No player decision — engine randomly picks N cards
-                val count = amountEvaluator.evaluate(state, selection.count, context)
+                val count = minOf(amountEvaluator.evaluate(state, selection.count, context), restrictionCeiling)
                 val selected = eligibleCards.shuffled().take(count)
                 val collections = mutableMapOf(effect.storeSelected to selected)
                 if (remainderName != null) {
@@ -155,9 +164,36 @@ class SelectFromCollectionExecutor : EffectExecutor<SelectFromCollectionEffect> 
                     if (remainderName != null) collections[remainderName] = cards
                     return ExecutionResult.success(state).copy(updatedCollections = collections)
                 }
-                createDecision(state, context, effect, eligibleCards, 0, eligibleCards.size, decidingPlayerId, allCards = cards)
+                val maxSelectable = minOf(eligibleCards.size, restrictionCeiling)
+                createDecision(state, context, effect, eligibleCards, 0, maxSelectable, decidingPlayerId, allCards = cards)
             }
         }
+    }
+
+    /**
+     * Compute the tightest upper bound on the number of cards that may be selected
+     * given the active [restrictions]. Returns [Int.MAX_VALUE] when no restriction
+     * narrows the bound.
+     */
+    private fun restrictionCeiling(
+        restrictions: List<SelectionRestriction>,
+        state: GameState,
+        eligibleCards: List<EntityId>
+    ): Int {
+        if (restrictions.isEmpty()) return Int.MAX_VALUE
+        var ceiling = Int.MAX_VALUE
+        for (restriction in restrictions) {
+            val limit = when (restriction) {
+                is SelectionRestriction.OnePerCardType -> {
+                    val distinctTypes = eligibleCards.flatMap { cardId ->
+                        state.getEntity(cardId)?.get<CardComponent>()?.typeLine?.cardTypes ?: emptySet()
+                    }.toSet()
+                    distinctTypes.size.coerceAtLeast(0)
+                }
+            }
+            if (limit < ceiling) ceiling = limit
+        }
+        return ceiling
     }
 
     /**
@@ -230,7 +266,8 @@ class SelectFromCollectionExecutor : EffectExecutor<SelectFromCollectionEffect> 
             allCards = allCards,
             storeSelected = effect.storeSelected,
             storeRemainder = effect.storeRemainder,
-            storedCollections = context.pipeline.storedCollections
+            storedCollections = context.pipeline.storedCollections,
+            restrictions = effect.restrictions
         )
 
         val stateWithDecision = state.withPendingDecision(decision)

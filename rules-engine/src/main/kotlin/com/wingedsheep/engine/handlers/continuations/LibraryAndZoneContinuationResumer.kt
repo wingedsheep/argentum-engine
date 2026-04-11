@@ -7,7 +7,9 @@ import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.OwnerComponent
 import com.wingedsheep.sdk.core.Zone
+import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.effects.SearchDestination
+import com.wingedsheep.sdk.scripting.effects.SelectionRestriction
 import com.wingedsheep.sdk.scripting.effects.ZonePlacement
 
 class LibraryAndZoneContinuationResumer(
@@ -345,9 +347,44 @@ class LibraryAndZoneContinuationResumer(
             return ExecutionResult.error(state, "Expected card selection response for SelectFromCollection")
         }
 
-        val selectedSet = response.selectedCards.toSet()
-        val selected = continuation.allCards.filter { it in selectedSet }
-        val remainder = continuation.allCards.filter { it !in selectedSet }
+        // Apply any selection restrictions server-side. Iterate the player's
+        // response order so earlier picks win when a restriction rejects a later
+        // one; rejected cards fall through into the remainder collection.
+        val acceptedSet: Set<EntityId> = if (continuation.restrictions.isEmpty()) {
+            response.selectedCards.toSet()
+        } else {
+            val kept = mutableSetOf<EntityId>()
+            val claimedTypes = mutableSetOf<com.wingedsheep.sdk.core.CardType>()
+            for (cardId in response.selectedCards) {
+                val acceptsAllRestrictions = continuation.restrictions.all { restriction ->
+                    when (restriction) {
+                        is SelectionRestriction.OnePerCardType -> {
+                            val cardTypes = state.getEntity(cardId)
+                                ?.get<com.wingedsheep.engine.state.components.identity.CardComponent>()
+                                ?.typeLine?.cardTypes ?: emptySet()
+                            cardTypes.isEmpty() || cardTypes.none { it in claimedTypes }
+                        }
+                    }
+                }
+                if (acceptsAllRestrictions) {
+                    kept += cardId
+                    // Update restriction bookkeeping for subsequent picks.
+                    for (restriction in continuation.restrictions) {
+                        when (restriction) {
+                            is SelectionRestriction.OnePerCardType -> {
+                                claimedTypes += state.getEntity(cardId)
+                                    ?.get<com.wingedsheep.engine.state.components.identity.CardComponent>()
+                                    ?.typeLine?.cardTypes ?: emptySet()
+                            }
+                        }
+                    }
+                }
+            }
+            kept
+        }
+
+        val selected = continuation.allCards.filter { it in acceptedSet }
+        val remainder = continuation.allCards.filter { it !in acceptedSet }
 
         // Build the updated collections
         val updatedCollections = continuation.storedCollections.toMutableMap()
