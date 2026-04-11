@@ -568,6 +568,8 @@ enum class GameEndReason {
     ALTERNATIVE_WIN,
     CARD_EFFECT,
     DRAW,
+    /** Rule 104.4c — SBAs never stabilized, treated as an unbreakable infinite loop. */
+    INFINITE_LOOP,
     UNKNOWN
 }
 

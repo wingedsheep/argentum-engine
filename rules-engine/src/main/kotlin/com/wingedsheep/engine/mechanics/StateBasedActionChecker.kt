@@ -47,7 +47,25 @@ class StateBasedActionChecker(
 
         // Keep checking until no SBAs apply
         var actionsApplied: Boolean
+        var iterations = 0
+        var lastIterationEvents: List<GameEvent> = emptyList()
         do {
+            if (iterations >= MAX_SBA_ITERATIONS) {
+                // SBAs did not stabilize. Per MTG rule 104.4c, an unbreakable infinite
+                // loop ends the game in a draw — that's the correct outcome whether this
+                // is a legitimate combo (e.g. Worldgorger Dragon shenanigans) or a bug
+                // (a misbehaving replacement effect / card script). We still log to
+                // stderr so developers can distinguish the two cases after the fact.
+                System.err.println(
+                    "StateBasedActionChecker: SBAs did not stabilize after " +
+                            "$MAX_SBA_ITERATIONS iterations — ending game as a draw " +
+                            "(rule 104.4c). Last iteration events: $lastIterationEvents"
+                )
+                val drawnState = currentState.copy(gameOver = true, winnerId = null)
+                val drawEvent = GameEndedEvent(winnerId = null, reason = GameEndReason.INFINITE_LOOP)
+                return ExecutionResult.success(drawnState, allEvents + drawEvent)
+            }
+
             val result = checkOnce(currentState)
 
             // If an SBA needs player input (e.g., legend rule choice), return paused
@@ -60,8 +78,10 @@ class StateBasedActionChecker(
             }
 
             actionsApplied = result.events.isNotEmpty()
+            lastIterationEvents = result.events
             currentState = result.newState
             allEvents.addAll(result.events)
+            iterations++
         } while (actionsApplied)
 
         return ExecutionResult.success(currentState, allEvents)
@@ -94,6 +114,14 @@ class StateBasedActionChecker(
     }
 
     companion object {
+        /**
+         * Maximum number of SBA iterations before the checker bails out. SBAs normally
+         * stabilize in 1–3 passes; exceeding this cap means either a bug (replacement
+         * effect / trigger regenerating events forever) or a legitimate MTG infinite
+         * loop (rule 726). Either way the engine must not hang.
+         */
+        const val MAX_SBA_ITERATIONS = 1000
+
         fun buildDefaultRegistry(
             decisionHandler: DecisionHandler = DecisionHandler(),
             cardRegistry: com.wingedsheep.engine.registry.CardRegistry

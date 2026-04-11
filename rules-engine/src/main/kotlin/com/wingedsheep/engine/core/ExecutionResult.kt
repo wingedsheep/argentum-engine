@@ -148,12 +148,22 @@ data class ExecutionResult(
 
     /**
      * Convert to the new EngineResult type.
+     *
+     * When the game is over, the reason is pulled from the most recent
+     * [GameEndedEvent] in `events` — that event is the authoritative record of
+     * *why* the game ended (life loss, draw, infinite loop, etc.). Falls back to
+     * [GameEndReason.UNKNOWN] only if no such event is present.
      */
     fun toEngineResult(): EngineResult {
         return when {
             error != null -> EngineResult.Failure(state, FailureReason.RULE, error)
             pendingDecision != null -> EngineResult.PausedForDecision(state, pendingDecision, events)
-            state.gameOver -> EngineResult.GameOver(state, state.winnerId, GameEndReason.UNKNOWN, events)
+            state.gameOver -> {
+                val reason = events.filterIsInstance<GameEndedEvent>()
+                    .lastOrNull()?.reason
+                    ?: GameEndReason.UNKNOWN
+                EngineResult.GameOver(state, state.winnerId, reason, events)
+            }
             else -> EngineResult.Success(state, events)
         }
     }
