@@ -86,6 +86,10 @@ class GatherCardsExecutor : EffectExecutor<GatherCardsEffect> {
                 context.pipeline.storedCollections[source.variableName] ?: emptyList()
             }
 
+            is CardSource.TappedAsCost -> {
+                context.tappedPermanents
+            }
+
             is CardSource.ControlledPermanents -> {
                 val playerId = resolvePlayer(source.player, context, state)
                     ?: return ExecutionResult.error(state, "Could not resolve player for GatherCards ControlledPermanents")

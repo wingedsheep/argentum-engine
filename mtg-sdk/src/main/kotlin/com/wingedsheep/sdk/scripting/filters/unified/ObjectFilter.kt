@@ -259,6 +259,16 @@ data class GameObjectFilter(
         cardPredicates = cardPredicates + CardPredicate.HasSubtypeInStoredList(listName)
     )
 
+    /**
+     * Must share at least one subtype with every group in the stored subtype list
+     * `pipeline.storedSubtypeGroups[groupName]`. Pair with
+     * [com.wingedsheep.sdk.scripting.effects.GatherSubtypesEffect] to populate the
+     * stored groups from an entity collection.
+     */
+    fun withSubtypeInEachStoredGroup(groupName: String) = copy(
+        cardPredicates = cardPredicates + CardPredicate.HasSubtypeInEachStoredGroup(groupName)
+    )
+
     /** Must have any one of the given subtypes (OR logic) */
     fun withAnyOfSubtypes(subtypes: List<Subtype>) = copy(
         cardPredicates = cardPredicates + CardPredicate.HasAnyOfSubtypes(subtypes)

@@ -22,6 +22,12 @@ data class PipelineState(
     val storedNumbers: Map<String, Int> = emptyMap(),
     /** Named string lists stored by pipeline effects (e.g., chosen creature types). */
     val storedStringLists: Map<String, List<String>> = emptyMap(),
+    /**
+     * Named lists of subtype sets produced by `GatherSubtypesEffect`. Each entry is
+     * `List<Set<String>>` — one subtype set per source entity in the order they were
+     * gathered. Consumed by `CardPredicate.HasSubtypeInEachStoredGroup`.
+     */
+    val storedSubtypeGroups: Map<String, List<Set<String>>> = emptyMap(),
     /** When inside a ForEachInGroupEffect, the current iteration entity. EffectTarget.Self resolves to this. */
     val iterationTarget: EntityId? = null
 ) {

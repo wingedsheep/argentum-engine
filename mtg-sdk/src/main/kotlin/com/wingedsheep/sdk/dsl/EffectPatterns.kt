@@ -6,8 +6,14 @@ import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.scripting.Duration
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.CardDestination
+import com.wingedsheep.sdk.scripting.effects.CardSource
 import com.wingedsheep.sdk.scripting.effects.ChooseActionEffect
 import com.wingedsheep.sdk.scripting.effects.CompositeEffect
+import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
+import com.wingedsheep.sdk.scripting.effects.GatherSubtypesEffect
+import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
+import com.wingedsheep.sdk.scripting.effects.SelectFromCollectionEffect
+import com.wingedsheep.sdk.scripting.effects.SelectionMode
 import com.wingedsheep.sdk.scripting.effects.Effect
 import com.wingedsheep.sdk.scripting.effects.ForEachInGroupEffect
 import com.wingedsheep.sdk.scripting.effects.ForEachPlayerEffect
@@ -279,6 +285,42 @@ object EffectPatterns {
 
     fun destroyAllSharingTypeWithSacrificed(noRegenerate: Boolean = false): CompositeEffect =
         CreatureTypePatterns.destroyAllSharingTypeWithSacrificed(noRegenerate)
+
+    /**
+     * Cryptic Gateway pipeline: gather subtypes of permanents tapped as cost, then let
+     * the controller pick a creature from hand that shares a type with each of them.
+     *
+     * Pipeline: TappedAsCost → GatherSubtypes → GatherCards(hand, sharing filter) →
+     * Select(up to 1) → Move(battlefield)
+     */
+    fun putCreatureFromHandSharingTypeWithTapped(): CompositeEffect = CompositeEffect(listOf(
+        GatherCardsEffect(
+            source = CardSource.TappedAsCost,
+            storeAs = "tappedPermanents"
+        ),
+        GatherSubtypesEffect(
+            from = "tappedPermanents",
+            storeAs = "tappedSubtypes"
+        ),
+        GatherCardsEffect(
+            source = CardSource.FromZone(
+                zone = Zone.HAND,
+                player = Player.You,
+                filter = GameObjectFilter.Creature.withSubtypeInEachStoredGroup("tappedSubtypes")
+            ),
+            storeAs = "candidates"
+        ),
+        SelectFromCollectionEffect(
+            from = "candidates",
+            selection = SelectionMode.ChooseUpTo(DynamicAmount.Fixed(1)),
+            storeSelected = "chosen",
+            prompt = "You may put a creature card from your hand onto the battlefield"
+        ),
+        MoveCollectionEffect(
+            from = "chosen",
+            destination = CardDestination.ToZone(Zone.BATTLEFIELD)
+        )
+    ))
 
     // =========================================================================
     // Exile Patterns (ExilePatterns)

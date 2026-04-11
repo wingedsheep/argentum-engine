@@ -12,9 +12,10 @@ import com.wingedsheep.sdk.scripting.effects.DealDamageEffect
 import com.wingedsheep.sdk.scripting.effects.Effect
 import com.wingedsheep.sdk.scripting.effects.ForEachTargetEffect
 import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
+import com.wingedsheep.sdk.scripting.effects.GatherUntilMatchEffect
 import com.wingedsheep.sdk.scripting.effects.ModifyStatsEffect
 import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
-import com.wingedsheep.sdk.scripting.effects.RevealUntilEffect
+import com.wingedsheep.sdk.scripting.effects.RevealCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.SearchDestination
 import com.wingedsheep.sdk.scripting.effects.SelectFromCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.SelectionMode
@@ -351,11 +352,12 @@ object LibraryPatterns {
 
     fun revealUntilNonlandDealDamage(target: EffectTarget): CompositeEffect = CompositeEffect(
         listOf(
-            RevealUntilEffect(
-                matchFilter = GameObjectFilter.Nonland,
+            GatherUntilMatchEffect(
+                filter = GameObjectFilter.Nonland,
                 storeMatch = "nonland",
                 storeRevealed = "allRevealed"
             ),
+            RevealCollectionEffect(from = "allRevealed"),
             DealDamageEffect(
                 amount = DynamicAmount.StoredCardManaValue("nonland"),
                 target = target
@@ -373,11 +375,12 @@ object LibraryPatterns {
 
     fun revealUntilNonlandDealDamageEachTarget(): ForEachTargetEffect = ForEachTargetEffect(
         listOf(
-            RevealUntilEffect(
-                matchFilter = GameObjectFilter.Nonland,
+            GatherUntilMatchEffect(
+                filter = GameObjectFilter.Nonland,
                 storeMatch = "nonland",
                 storeRevealed = "allRevealed"
             ),
+            RevealCollectionEffect(from = "allRevealed"),
             DealDamageEffect(
                 amount = DynamicAmount.StoredCardManaValue("nonland"),
                 target = EffectTarget.ContextTarget(0)
@@ -395,11 +398,12 @@ object LibraryPatterns {
 
     fun revealUntilNonlandModifyStats(): CompositeEffect = CompositeEffect(
         listOf(
-            RevealUntilEffect(
-                matchFilter = GameObjectFilter.Nonland,
+            GatherUntilMatchEffect(
+                filter = GameObjectFilter.Nonland,
                 storeMatch = "nonland",
                 storeRevealed = "allRevealed"
             ),
+            RevealCollectionEffect(from = "allRevealed"),
             ModifyStatsEffect(
                 powerModifier = DynamicAmount.StoredCardManaValue("nonland"),
                 toughnessModifier = DynamicAmount.Fixed(0),
@@ -419,12 +423,12 @@ object LibraryPatterns {
     fun revealUntilCreatureTypeToBattlefield(): CompositeEffect = CompositeEffect(
         listOf(
             ChooseCreatureTypeEffect,
-            RevealUntilEffect(
-                matchFilter = GameObjectFilter.Creature,
+            GatherUntilMatchEffect(
+                filter = GameObjectFilter.Creature.withSubtypeFromVariable("chosenCreatureType"),
                 storeMatch = "found",
-                storeRevealed = "allRevealed",
-                matchChosenCreatureType = true
+                storeRevealed = "allRevealed"
             ),
+            RevealCollectionEffect(from = "allRevealed"),
             MoveCollectionEffect(
                 from = "found",
                 destination = CardDestination.ToZone(Zone.BATTLEFIELD)

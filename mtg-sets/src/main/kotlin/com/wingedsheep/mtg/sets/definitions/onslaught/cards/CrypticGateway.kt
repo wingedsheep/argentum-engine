@@ -1,10 +1,10 @@
 package com.wingedsheep.mtg.sets.definitions.onslaught.cards
 
 import com.wingedsheep.sdk.dsl.Costs
+import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
-import com.wingedsheep.sdk.scripting.effects.PutCreatureFromHandSharingTypeWithTappedEffect
 
 /**
  * Cryptic Gateway
@@ -20,7 +20,7 @@ val CrypticGateway = card("Cryptic Gateway") {
 
     activatedAbility {
         cost = Costs.TapPermanents(2, GameObjectFilter.Creature)
-        effect = PutCreatureFromHandSharingTypeWithTappedEffect
+        effect = EffectPatterns.putCreatureFromHandSharingTypeWithTapped()
     }
 
     metadata {

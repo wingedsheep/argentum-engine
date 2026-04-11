@@ -103,16 +103,25 @@ class CompositeEffectExecutor(
             }
             allEvents.addAll(result.events)
 
-            // Merge any updated collections from the sub-effect into the context
-            if (result.updatedCollections.isNotEmpty()) {
+            // Merge any updated collections / subtype groups from the sub-effect into the context
+            if (result.updatedCollections.isNotEmpty() || result.updatedSubtypeGroups.isNotEmpty()) {
                 currentContext = currentContext.copy(
-                    pipeline = currentContext.pipeline.copy(storedCollections = currentContext.pipeline.storedCollections + result.updatedCollections)
+                    pipeline = currentContext.pipeline.copy(
+                        storedCollections = currentContext.pipeline.storedCollections + result.updatedCollections,
+                        storedSubtypeGroups = currentContext.pipeline.storedSubtypeGroups + result.updatedSubtypeGroups
+                    )
                 )
             }
         }
 
-        // Return accumulated collections so parent composites can see them
+        // Return accumulated collections / subtype groups so parent composites can see them
         val accumulatedCollections = currentContext.pipeline.storedCollections - context.pipeline.storedCollections.keys
-        return ExecutionResult(currentState, allEvents, updatedCollections = accumulatedCollections)
+        val accumulatedSubtypeGroups = currentContext.pipeline.storedSubtypeGroups - context.pipeline.storedSubtypeGroups.keys
+        return ExecutionResult(
+            currentState,
+            allEvents,
+            updatedCollections = accumulatedCollections,
+            updatedSubtypeGroups = accumulatedSubtypeGroups
+        )
     }
 }

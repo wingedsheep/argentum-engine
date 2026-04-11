@@ -113,6 +113,12 @@ data class ExecutionResult(
     val pendingDecision: PendingDecision? = null,
     /** Updated card collections from pipeline effects (GatherCards, SelectFromCollection) */
     val updatedCollections: Map<String, List<EntityId>> = emptyMap(),
+    /**
+     * Updated subtype-group lists from pipeline effects (e.g., `GatherSubtypesEffect`).
+     * Each entry is a list of subtype sets — one `Set<String>` per source entity.
+     * Consumed by `CardPredicate.HasSubtypeInEachStoredGroup`.
+     */
+    val updatedSubtypeGroups: Map<String, List<Set<String>>> = emptyMap(),
     /** Tells the server what to do with the undo checkpoint after this action */
     val undoPolicy: UndoCheckpointAction = UndoCheckpointAction.CLEAR
 ) {
@@ -135,7 +141,8 @@ data class ExecutionResult(
             events = events + next.events,
             error = next.error,
             pendingDecision = next.pendingDecision,
-            updatedCollections = updatedCollections + next.updatedCollections
+            updatedCollections = updatedCollections + next.updatedCollections,
+            updatedSubtypeGroups = updatedSubtypeGroups + next.updatedSubtypeGroups
         )
     }
 

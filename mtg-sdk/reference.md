@@ -327,7 +327,7 @@ constructors.
 | `EffectPatterns.searchTargetLibraryExile(count, filter)`                            | Search target's library and exile (pipeline)        |
 | `Effects.ShuffleAndExileTopPlayFree()`                                              | (none)                                              | Shuffle + exile top + grant exile+free play (Mind's Desire) |
 | `EffectPatterns.shuffleAndExileTopPlayFree()`                                       | (none)                                              | Pipeline: shuffle, exile top, grant exile+free play |
-| `PutCreatureFromHandSharingTypeWithTappedEffect`                                    | (object)                                            | Put creature from hand sharing type               |
+| `EffectPatterns.putCreatureFromHandSharingTypeWithTapped()`                          | (none)                                              | Pipeline: Gather tapped subtypes → filter hand → select → move to battlefield |
 | `ShuffleLibraryEffect`                                                              | `target`                                            | Shuffle library                                   |
 | `TakeFromLinkedExileEffect`                                                         | (object)                                            | Put top card of linked exile pile into hand       |
 | `GrantMayPlayFromExileEffect`                                                       | `from`                                              | Grant play-from-exile permission to cards in collection |
@@ -848,7 +848,9 @@ abilities from atomic primitives.
 | `GatherCardsEffect(source, storeAs, revealed)`                                                                                 | Gather cards from a zone into a named collection |
 | `SelectFromCollectionEffect(from, selection, chooser, filter, storeSelected, storeRemainder, matchChosenCreatureType, prompt)` | Player selects from a collection                 |
 | `MoveCollectionEffect(from, destination, order, revealed, moveType, linkToSource)`                                            | Move a collection to a zone                      |
-| `RevealUntilEffect(source, matchFilter, storeMatch, storeRevealed, matchChosenCreatureType)`                                   | Reveal until filter matches                      |
+| `GatherUntilMatchEffect(player, filter, storeMatch, storeRevealed)`                                                            | Walk library until filter matches, store both    |
+| `GatherSubtypesEffect(from, storeAs)`                                                                                          | Extract subtypes of entities into storedSubtypeGroups |
+| `RevealCollectionEffect(from)`                                                                                                  | Emit CardsRevealedEvent for a stored collection  |
 | `ChooseCreatureTypeEffect`                                                                                                     | Choose a creature type (data object)             |
 | `FilterCollectionEffect(from, filter, storeMatching, storeNonMatching?)`                                                       | Filter collection into matching/non-matching     |
 | `SelectTargetEffect(requirement, storeAs)`                                                                                     | Select and store a target                        |
@@ -859,7 +861,8 @@ Filters: `CollectionFilter.MatchesFilter(filter)`, `CollectionFilter.ExcludeSubt
 `CollectionFilter.ManaValueEquals(value: DynamicAmount)` — keep only cards with mana value exactly equal to dynamic amount (e.g., counters on source)
 
 Sources: `CardSource.TopOfLibrary(count, player)`, `CardSource.FromZone(zone, player, filter)`,
-`CardSource.FromVariable(name)`, `CardSource.ControlledPermanents(player, filter)`,
+`CardSource.FromVariable(name)`, `CardSource.TappedAsCost` (permanents tapped as cost),
+`CardSource.ControlledPermanents(player, filter)`,
 `CardSource.FromMultipleZones(zones, player, filter)` — gather cards from multiple zones (e.g., graveyard + hand + library)
 Destinations: `CardDestination.ToZone(zone, player, placement)`
 Placements: `ZonePlacement.Top`, `.Bottom`, `.Shuffled`, `.Default`, `.Tapped`

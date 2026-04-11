@@ -157,9 +157,12 @@ class ForEachPlayerExecutor(
             }
             allEvents.addAll(result.events)
 
-            if (result.updatedCollections.isNotEmpty()) {
+            if (result.updatedCollections.isNotEmpty() || result.updatedSubtypeGroups.isNotEmpty()) {
                 currentContext = currentContext.copy(
-                    pipeline = currentContext.pipeline.copy(storedCollections = currentContext.pipeline.storedCollections + result.updatedCollections)
+                    pipeline = currentContext.pipeline.copy(
+                        storedCollections = currentContext.pipeline.storedCollections + result.updatedCollections,
+                        storedSubtypeGroups = currentContext.pipeline.storedSubtypeGroups + result.updatedSubtypeGroups
+                    )
                 )
             }
         }

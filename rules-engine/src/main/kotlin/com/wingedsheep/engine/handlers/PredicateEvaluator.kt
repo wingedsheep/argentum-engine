@@ -353,6 +353,18 @@ class PredicateEvaluator {
                 }
             }
 
+            is CardPredicate.HasSubtypeInEachStoredGroup -> {
+                val groups = context?.storedSubtypeGroups?.get(predicate.groupName) ?: return false
+                if (groups.isEmpty()) return false
+                val entitySubtypes = projectedValues?.subtypes ?: card.typeLine.subtypes.map { it.value }.toSet()
+                if (entitySubtypes.isEmpty()) return false
+                groups.all { group ->
+                    entitySubtypes.any { entitySubtype ->
+                        group.any { it.equals(entitySubtype, ignoreCase = true) }
+                    }
+                }
+            }
+
             // Composite predicates
             is CardPredicate.And -> {
                 predicate.predicates.all { matchesCardPredicateWithProjection(state, projected, entityId, it, context) }
@@ -583,6 +595,18 @@ class PredicateEvaluator {
                 val storedTypes = context?.storedStringLists?.get(predicate.listName) ?: return false
                 card.typeLine.subtypes.any { subtype ->
                     storedTypes.any { it.equals(subtype.value, ignoreCase = true) }
+                }
+            }
+
+            is CardPredicate.HasSubtypeInEachStoredGroup -> {
+                val groups = context?.storedSubtypeGroups?.get(predicate.groupName) ?: return false
+                if (groups.isEmpty()) return false
+                val entitySubtypes = card.typeLine.subtypes.map { it.value }.toSet()
+                if (entitySubtypes.isEmpty()) return false
+                groups.all { group ->
+                    entitySubtypes.any { entitySubtype ->
+                        group.any { it.equals(entitySubtype, ignoreCase = true) }
+                    }
                 }
             }
 
@@ -857,7 +881,8 @@ class PredicateEvaluator {
             CardPredicate.NotOfSourceChosenType, CardPredicate.SharesCreatureTypeWithSource,
             CardPredicate.SharesCreatureTypeWithTriggeringEntity, CardPredicate.HasChosenSubtype,
             is CardPredicate.SharesCreatureTypeWith -> false
-            is CardPredicate.HasSubtypeFromVariable, is CardPredicate.HasSubtypeInStoredList -> false
+            is CardPredicate.HasSubtypeFromVariable, is CardPredicate.HasSubtypeInStoredList,
+            is CardPredicate.HasSubtypeInEachStoredGroup -> false
 
             // Stack ability check — cast spells are not abilities
             CardPredicate.IsActivatedOrTriggeredAbility -> false
@@ -885,7 +910,14 @@ data class PredicateContext(
     /** Named values chosen by the player during pipeline execution (e.g., creature type, color). */
     val chosenValues: Map<String, String> = emptyMap(),
     /** Named string lists stored by pipeline effects (e.g., chosen creature types). */
-    val storedStringLists: Map<String, List<String>> = emptyMap()
+    val storedStringLists: Map<String, List<String>> = emptyMap(),
+    /**
+     * Named lists of subtype sets stored by pipeline effects — one `Set<String>` per
+     * source entity. Populated by `GatherSubtypesEffect`. Used by
+     * [CardPredicate.HasSubtypeInEachStoredGroup] to implement "shares a subtype with
+     * each of" semantics.
+     */
+    val storedSubtypeGroups: Map<String, List<Set<String>>> = emptyMap()
 ) {
     companion object {
         /**
@@ -899,7 +931,8 @@ data class PredicateContext(
                 sourceId = context.sourceId,
                 triggeringEntityId = context.triggeringEntityId,
                 chosenValues = context.pipeline.chosenValues,
-                storedStringLists = context.pipeline.storedStringLists
+                storedStringLists = context.pipeline.storedStringLists,
+                storedSubtypeGroups = context.pipeline.storedSubtypeGroups
             )
         }
     }

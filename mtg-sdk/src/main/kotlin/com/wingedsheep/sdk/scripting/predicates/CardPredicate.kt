@@ -353,6 +353,31 @@ sealed interface CardPredicate : TextReplaceable<CardPredicate> {
         override fun applyTextReplacement(replacer: TextReplacer): CardPredicate = this
     }
 
+    /**
+     * Matches cards that share at least one subtype with **each** subtype group stored
+     * under the named key in the pipeline's `storedSubtypeGroups` map. A group is a
+     * `Set<String>` of subtypes — typically produced by
+     * [com.wingedsheep.sdk.scripting.effects.GatherSubtypesEffect] which reads an
+     * entity collection from `storedCollections` and extracts each entity's projected
+     * subtypes into a `List<Set<String>>`.
+     *
+     * Semantics: for every group `G_i` in the stored list, the card's subtype set `C`
+     * must satisfy `C ∩ G_i ≠ ∅`. This is stricter than "shares a subtype with any
+     * one group" but looser than "has a subtype in the intersection of groups" — e.g.,
+     * tap {Elf, Warrior} + {Goblin, Rogue}, a Warrior-Rogue card matches (shares
+     * Warrior with the first group and Rogue with the second) even though the
+     * intersection is empty.
+     *
+     * Used by Cryptic Gateway: "creature card that shares a creature type with each
+     * creature tapped this way".
+     */
+    @SerialName("HasSubtypeInEachStoredGroup")
+    @Serializable
+    data class HasSubtypeInEachStoredGroup(val groupName: String) : CardPredicate {
+        override val description: String = "that shares a creature type with each of them"
+        override fun applyTextReplacement(replacer: TextReplacer): CardPredicate = this
+    }
+
     // =============================================================================
     // Source-relative Predicates
     // =============================================================================

@@ -146,7 +146,7 @@ class CreatureTypeChoiceContinuationResumer(
      *
      * Special case: when storeAs == "chosenCreatureType", additionally injects
      * into the dedicated chosenCreatureType field for backward compatibility
-     * with RevealUntilExecutor and SelectFromCollectionExecutor.
+     * with SelectFromCollectionExecutor and HasSubtypeFromVariable predicate.
      */
     fun resumeChooseOptionPipeline(
         state: GameState,

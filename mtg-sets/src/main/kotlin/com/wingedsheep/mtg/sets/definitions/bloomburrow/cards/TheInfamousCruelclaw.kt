@@ -13,8 +13,9 @@ import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.GrantMayPlayFromExileEffect
 import com.wingedsheep.sdk.scripting.effects.GrantPlayWithAdditionalCostEffect
 import com.wingedsheep.sdk.scripting.effects.GrantPlayWithoutPayingCostEffect
+import com.wingedsheep.sdk.scripting.effects.GatherUntilMatchEffect
 import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
-import com.wingedsheep.sdk.scripting.effects.RevealUntilEffect
+import com.wingedsheep.sdk.scripting.effects.RevealCollectionEffect
 
 /**
  * The Infamous Cruelclaw
@@ -42,11 +43,12 @@ val TheInfamousCruelclaw = card("The Infamous Cruelclaw") {
         effect = CompositeEffect(
             listOf(
                 // Exile from top until nonland
-                RevealUntilEffect(
-                    matchFilter = GameObjectFilter.Nonland,
+                GatherUntilMatchEffect(
+                    filter = GameObjectFilter.Nonland,
                     storeMatch = "nonland",
                     storeRevealed = "allRevealed"
                 ),
+                RevealCollectionEffect(from = "allRevealed"),
                 // Move all revealed cards to exile
                 MoveCollectionEffect(
                     from = "allRevealed",

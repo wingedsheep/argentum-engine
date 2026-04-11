@@ -69,15 +69,24 @@ class EffectContinuationRunner(
             }
             allEvents.addAll(result.events)
 
-            if (result.updatedCollections.isNotEmpty()) {
+            if (result.updatedCollections.isNotEmpty() || result.updatedSubtypeGroups.isNotEmpty()) {
                 currentContext = currentContext.copy(
-                    pipeline = currentContext.pipeline.copy(storedCollections = currentContext.pipeline.storedCollections + result.updatedCollections)
+                    pipeline = currentContext.pipeline.copy(
+                        storedCollections = currentContext.pipeline.storedCollections + result.updatedCollections,
+                        storedSubtypeGroups = currentContext.pipeline.storedSubtypeGroups + result.updatedSubtypeGroups
+                    )
                 )
             }
         }
 
-        // Return accumulated collections so callers can propagate them
+        // Return accumulated collections / subtype groups so callers can propagate them
         val accumulatedCollections = currentContext.pipeline.storedCollections - initialContext.pipeline.storedCollections.keys
-        return ExecutionResult(currentState, allEvents, updatedCollections = accumulatedCollections)
+        val accumulatedSubtypeGroups = currentContext.pipeline.storedSubtypeGroups - initialContext.pipeline.storedSubtypeGroups.keys
+        return ExecutionResult(
+            currentState,
+            allEvents,
+            updatedCollections = accumulatedCollections,
+            updatedSubtypeGroups = accumulatedSubtypeGroups
+        )
     }
 }

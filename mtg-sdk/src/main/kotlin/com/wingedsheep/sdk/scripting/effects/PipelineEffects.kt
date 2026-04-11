@@ -111,6 +111,19 @@ sealed interface CardSource {
     }
 
     /**
+     * Permanents that were tapped as part of the ability's activation cost.
+     * Reads from `EffectContext.tappedPermanents`, populated at cost-payment time.
+     *
+     * Use with [GatherSubtypesEffect] to extract the tapped creatures' subtypes
+     * for filtering (e.g., Cryptic Gateway).
+     */
+    @SerialName("TappedAsCost")
+    @Serializable
+    data object TappedAsCost : CardSource {
+        override val description: String = "creatures tapped this way"
+    }
+
+    /**
      * Cards from the source permanent's linked exile (LinkedExileComponent).
      * Returns the entity IDs stored in the component, filtered to only those
      * currently in exile.
@@ -303,6 +316,79 @@ data class GatherCardsEffect(
 }
 
 /**
+ * Extract the subtypes of each entity in a stored collection and save the result
+ * as a list of subtype sets in `storedSubtypeGroups[storeAs]`.
+ *
+ * Pair with [CardPredicate.HasSubtypeInEachStoredGroup] to implement "shares a
+ * creature type with each of" semantics. Example pipeline (Cryptic Gateway):
+ *
+ * ```
+ * GatherCards(TappedAsCost, storeAs = "tapped")          // → storedCollections
+ * GatherSubtypes(from = "tapped", storeAs = "tappedTypes") // → storedSubtypeGroups
+ * GatherCards(Hand, Creature.withSubtypeInEachStoredGroup("tappedTypes"), ...)
+ * ```
+ *
+ * @property from Name of the stored collection whose entities' subtypes to extract
+ * @property storeAs Key under which the `List<Set<String>>` is stored
+ */
+@SerialName("GatherSubtypes")
+@Serializable
+data class GatherSubtypesEffect(
+    val from: String,
+    val storeAs: String
+) : Effect {
+    override val description: String = "gather subtypes of the $from entities"
+    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
+}
+
+/**
+ * Walk a player's library top-down until a card matching [filter] is found.
+ * Stores both the match (0 or 1 card) and all revealed cards (including the match)
+ * as named collections.
+ *
+ * Does **not** emit a reveal event — pair with [RevealCollectionEffect] for that.
+ *
+ * @property player Whose library to walk
+ * @property filter The predicate that stops the walk when matched
+ * @property storeMatch Collection name for the matching card (empty if no match found)
+ * @property storeRevealed Collection name for ALL cards seen (including the match)
+ */
+@SerialName("GatherUntilMatch")
+@Serializable
+data class GatherUntilMatchEffect(
+    val player: Player = Player.You,
+    val filter: GameObjectFilter,
+    val storeMatch: String,
+    val storeRevealed: String
+) : Effect {
+    override val description: String = buildString {
+        append("Reveal cards from the top of ")
+        append(player.possessive)
+        append(" library until you reveal a ${filter.description} card")
+    }
+
+    override fun applyTextReplacement(replacer: TextReplacer): Effect {
+        val newFilter = filter.applyTextReplacement(replacer)
+        return if (newFilter !== filter) copy(filter = newFilter) else this
+    }
+}
+
+/**
+ * Emit a [com.wingedsheep.engine.core.CardsRevealedEvent] for all cards in the
+ * named stored collection. Does not move or change any cards.
+ *
+ * @property from Name of the stored collection to reveal
+ */
+@SerialName("RevealCollection")
+@Serializable
+data class RevealCollectionEffect(
+    val from: String
+) : Effect {
+    override val description: String = "Reveal the $from cards"
+    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
+}
+
+/**
  * Select cards from a named collection, splitting into selected and remainder.
  *
  * This is the middle step in a pipeline: it presents a choice to the player
@@ -429,42 +515,9 @@ data class MoveCollectionEffect(
  * If no matching card is found (entire library is revealed), [storeMatch] will
  * be empty and [storeRevealed] will contain all revealed cards.
  *
- * @property source Whose library to reveal from
- * @property matchFilter The filter that stops the reveal (e.g., GameObjectFilter.Nonland)
- * @property storeMatch Name to store the matching card under
- * @property storeRevealed Name to store ALL revealed cards under (including the match)
- */
-@SerialName("RevealUntil")
-@Serializable
-data class RevealUntilEffect(
-    val source: Player = Player.You,
-    val matchFilter: GameObjectFilter,
-    val storeMatch: String,
-    val storeRevealed: String,
-    /**
-     * When true, the match condition additionally requires the card to be a creature
-     * with the subtype stored in the effect context's chosenCreatureType.
-     * Used for "reveal until you reveal a creature card of the chosen type" patterns.
-     */
-    val matchChosenCreatureType: Boolean = false
-) : Effect {
-    override val description: String = buildString {
-        append("Reveal cards from the top of ")
-        append(source.possessive)
-        append(" library until you reveal a ${matchFilter.description} card")
-        if (matchChosenCreatureType) append(" of the chosen type")
-    }
-
-    override fun applyTextReplacement(replacer: TextReplacer): Effect {
-        val newFilter = matchFilter.applyTextReplacement(replacer)
-        return if (newFilter !== matchFilter) copy(matchFilter = newFilter) else this
-    }
-}
-
-/**
  * Choose a creature type. Stores the chosen type in the effect context
- * for use by subsequent pipeline steps (e.g., RevealUntilEffect with
- * matchChosenCreatureType = true).
+ * for use by subsequent pipeline steps (e.g., GatherUntilMatchEffect with
+ * a `withSubtypeFromVariable("chosenCreatureType")` filter).
  *
  * This is a pipeline step that pauses for player input.
  */

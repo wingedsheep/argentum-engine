@@ -42,27 +42,6 @@ enum class SearchDestination(val description: String) {
 
 
 /**
- * You may put a creature card from your hand that shares a creature type
- * with each creature tapped as part of the cost onto the battlefield.
- *
- * Used for Cryptic Gateway: "Tap two untapped creatures you control:
- * You may put a creature card from your hand that shares a creature type
- * with each creature tapped this way onto the battlefield."
- *
- * Requires tappedPermanents in EffectContext to determine valid choices.
- */
-
-@SerialName("PutCreatureFromHandSharingTypeWithTapped")
-@Serializable
-data object PutCreatureFromHandSharingTypeWithTappedEffect : Effect {
-    override val description: String =
-        "You may put a creature card from your hand that shares a creature type " +
-        "with each creature tapped this way onto the battlefield"
-
-    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
-}
-
-/**
  * Take the top card from the source permanent's linked exile pile and put it
  * into the controller's hand. Used by Parallel Thoughts and similar cards that
  * exile a pile of cards and later retrieve from it.
