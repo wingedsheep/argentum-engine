@@ -69,19 +69,26 @@ and `controlledBattlefield(playerId)` is sufficient guard.
 
 ---
 
-### 1.2 Complete the placeholder cost / decision handlers
+### 1.2 Complete the placeholder cost / decision handlers — ✅ Resolved
 
-**Why it matters.** Principle §2.10 requires costs to be validated and executed uniformly. Today
-three pieces of the payment / decision pipeline are stubs. Cards that touch them will silently
-misbehave — and because the rest of the engine trusts them, failures manifest far from the bug.
+**Why it mattered.** Principle §2.10 requires costs to be validated and executed uniformly.
+Three pieces of the payment / decision pipeline were stubs; cards that touched them would have
+silently misbehaved.
 
-**Locations.**
-- `handlers/CostHandler.kt:378` — `// TODO: Discard self` — self-discard as a cost
-- `handlers/actions/decision/MakeChoiceHandler.kt:13,19,24` — modal spell mode selection stubs
-- `handlers/actions/decision/SelectTargetsHandler.kt:13,19,24` — target selection stubs
-
-**Fix.** Implement each, add scenario tests that exercise discard-as-cost, modal spells, and
-target selection respectively.
+**Resolution.**
+- `CostHandler.AbilityCost.DiscardSelf` now moves the source card from its owner's hand to the
+  graveyard, emits `CardsDiscardedEvent` + `ZoneChangeEvent`, and fails cleanly when the card
+  isn't in hand. Covered by `CostHandlerDiscardSelfTest`.
+- `MakeChoiceHandler` / `SelectTargetsHandler` — **deleted** along with the `MakeChoice` and
+  `SelectTargets` `GameAction` types (plus Serialization registration and the web-client type
+  mirrors). These actions were fully orphaned: nothing in the engine, sets, tests, or game-server
+  ever constructed them. Modal spell mode selection and target selection already go through
+  `SubmitDecision` + `ChooseModeDecision`/`ModesChosenResponse` and
+  `ChooseTargetsDecision`/`TargetsResponse`, dispatched by `SubmitDecisionHandler`. Eliminating
+  the stub path is the uniform answer per §2.10; the real path is already exercised by the
+  modal-spell scenario tests (`castSpellWithMode` across `LongRiversPullScenarioTest`,
+  `JollyGerbilsScenarioTest`, `CrumbAndGetItScenarioTest`, `DawnsTruceScenarioTest`) and every
+  targeted-spell scenario test in the corpus.
 
 ---
 
@@ -90,7 +97,7 @@ target selection respectively.
 These aren't bugs, but they make each new card more expensive than it should be and they're
 visible violations of stated principles.
 
-### 2.1 Decompose monolithic executors into atomic pipelines
+### 2.1 Decompose monolithic executors into atomic pipelines ✅ (tracked)
 
 **Why it matters.** Principle §1.5 is explicit: "Adding a card that says 'Look at the top 5, put
 2 on bottom, rest on top' requires zero new effect executors." Several executors in the current
@@ -100,18 +107,20 @@ will spawn sibling monoliths rather than reusing the pipeline.
 Items already tracked on
 [`atomic-effect-decomposition.md`](../atomic-effect-decomposition.md) and the
 [`sdk-composability/`](../sdk-composability/) folder cover most of the known SDK gaps and should
-be progressed. The following are **new** findings that are not yet tracked:
+be progressed. The following findings were added on 2026-04-11:
 
-| Executor | Lines | Why it's wrong | Desired shape |
-|---|---|---|---|
-| `handlers/effects/library/RevealUntilExecutor.kt` | 136 | Gather + filter + reveal baked together | `Gather(top N) → Filter → Reveal → Move` via atomic primitives |
-| `handlers/effects/removal/ExileUntilLeavesExecutor.kt` | 77 | Exile + linked-return bundled | `MoveToZone(exile) + StoreEntityRefEffect` (see `atomic-effect-decomposition.md`'s Oblivion Ring item) |
-| `handlers/effects/library/PutCreatureFromHandSharingTypeExecutor.kt` | 98 | Context-aware filter baked into executor | Replace with `GatherCards(hand, filter=matches-stored-type)` once filter supports stored references |
-| `handlers/effects/drawing/DrawCardsExecutor.kt` | 429 | God executor: draw + replacement shields + prompt-on-draw + draw-step reveal | Split into `DrawCardPrimitiveExecutor` + `DrawReplacementDispatcher` |
+| Executor | Lines | Why it's wrong | Desired shape | Tracked at |
+|---|---|---|---|---|
+| `handlers/effects/library/RevealUntilExecutor.kt` | 136 | Gather + filter + reveal baked together | `Gather(top N) → Filter → Reveal → Move` via atomic primitives | [`atomic-effect-decomposition.md` → `RevealUntilEffect`](../atomic-effect-decomposition.md) |
+| `handlers/effects/removal/ExileUntilLeavesExecutor.kt` | 77 | Exile + linked-return bundled | `MoveToZone(exile, storeAs) + StoredEntityTarget` return trigger | [`atomic-effect-decomposition.md` → `ExileUntilLeavesEffect`](../atomic-effect-decomposition.md) |
+| `handlers/effects/library/PutCreatureFromHandSharingTypeExecutor.kt` | 98 | Context-aware filter baked into executor | Replace with `GatherCards(hand, filter=SharesSubtypeWith(ctxKey))` once filter supports stored references | [`atomic-effect-decomposition.md` → `PutCreatureFromHandSharingTypeWithTappedEffect`](../atomic-effect-decomposition.md) |
+| `handlers/effects/drawing/DrawCardsExecutor.kt` | 429 | God executor: draw + replacement shields + prompt-on-draw + draw-step reveal | Split into `DrawCardPrimitiveExecutor` + `DrawReplacementDispatcher` | [`decompose-draw-cards-executor.md`](./decompose-draw-cards-executor.md) |
 
-**Fix.** Create tracked items under `backlog/refactors/atomic-effect-decomposition.md` or
-`sdk-composability/` for each row. `DrawCardsExecutor` in particular deserves its own ticket
-because it's the largest single executor in the tree and handles conceptually independent things.
+**Status.** Each row now has a tracked item. The first three share SDK-level prerequisites
+(`storeAs` on `MoveToZoneEffect`, `StoredEntityTarget`, `SharesSubtypeWith(contextKey)` filter,
+`CardSource.LibraryStreaming` + standalone `RevealCollectionEffect`); see the "New Primitives
+Needed" table at the bottom of `atomic-effect-decomposition.md`. The `DrawCardsExecutor` ticket is
+a pure engine refactor with no SDK prerequisites and can proceed independently.
 
 ---
 
@@ -294,8 +303,8 @@ This document deliberately does **not** re-list items already tracked elsewhere.
 
 **Recommended order of attack:**
 1. ~~Tier 1.1 — add the `controlledBattlefield` helper, then grep-and-replace every raw `ZoneKey(_, BATTLEFIELD)` inside `handlers/effects/`.~~ ✅ Done.
-2. Tier 2.2 (`EffectContext.resolveTarget`) — single mechanical pass, unlocks downstream cleanup of every effect executor.
-3. Tier 2.1 items one at a time, as the set they serve comes up for implementation.
-4. Tier 2.3 (folder reorg) once 2.1 has stabilized so file moves don't churn in-flight work.
+2. ~~Tier 2.1 — audit monolithic executors and file decomposition tickets.~~ ✅ Tracked (see 2.1 above). Implementation of each ticket proceeds when the set it serves comes up.
+3. Tier 2.2 (`EffectContext.resolveTarget`) — single mechanical pass, unlocks downstream cleanup of every effect executor.
+4. Tier 2.3 (folder reorg) once 2.1 tickets have stabilized so file moves don't churn in-flight work.
 5. Tier 2.4 (serialization reflection test) — cheap, high insurance value.
 6. Tier 1.2 and everything else opportunistically.

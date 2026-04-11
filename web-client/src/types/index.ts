@@ -124,8 +124,6 @@ export type {
   DeclareAttackersAction,
   DeclareBlockersAction,
   OrderBlockersAction,
-  MakeChoiceAction,
-  SelectTargetsAction,
   ChooseManaColorAction,
   SubmitDecisionAction,
   TakeMulliganAction,

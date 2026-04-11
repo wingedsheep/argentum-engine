@@ -8,15 +8,15 @@ import com.wingedsheep.engine.handlers.actions.ActionHandlerModule
  *
  * Special actions include:
  * - Concede: Player gives up
- * - MakeChoice: Modal spell or ability choices
- * - SelectTargets: Target selection for triggered abilities
  * - ChooseManaColor: Choosing a color for "any color" mana effects
+ *
+ * Modal spell mode selection and target selection go through [SubmitDecision] with the
+ * appropriate [DecisionResponse] subtype (`ModesChosenResponse`, `TargetsResponse`) — see
+ * `handlers/actions/decision/SubmitDecisionHandler.kt`. There is no separate action type for them.
  */
 class SpecialActionsModule : ActionHandlerModule {
     override fun handlers(): List<ActionHandler<*>> = listOf(
         ConcedeHandler(),
-        MakeChoiceHandler(),
-        SelectTargetsHandler(),
         ChooseManaColorHandler()
     )
 }

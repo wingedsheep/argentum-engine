@@ -19,8 +19,6 @@ export type GameAction =
   | DeclareAttackersAction
   | DeclareBlockersAction
   | OrderBlockersAction
-  | MakeChoiceAction
-  | SelectTargetsAction
   | ChooseManaColorAction
   | SubmitDecisionAction
   | TakeMulliganAction
@@ -194,20 +192,6 @@ export interface OrderBlockersAction {
 // =============================================================================
 // Decision Actions
 // =============================================================================
-
-export interface MakeChoiceAction {
-  readonly type: 'MakeChoice'
-  readonly playerId: EntityId
-  readonly decisionId: string
-  readonly choiceIndex: number
-}
-
-export interface SelectTargetsAction {
-  readonly type: 'SelectTargets'
-  readonly playerId: EntityId
-  readonly abilityEntityId: EntityId
-  readonly targets: readonly ChosenTarget[]
-}
 
 export interface ChooseManaColorAction {
   readonly type: 'ChooseManaColor'

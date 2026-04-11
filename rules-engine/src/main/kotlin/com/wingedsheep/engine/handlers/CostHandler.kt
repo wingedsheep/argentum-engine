@@ -375,8 +375,35 @@ class CostHandler(
                 }
             }
             is AbilityCost.DiscardSelf -> {
-                // TODO: Discard self
-                CostPaymentResult.success(state, manaPool)
+                // Discard the source card from its owner's hand.
+                val sourceContainer = state.getEntity(sourceId)
+                    ?: return CostPaymentResult.failure("Source card not found")
+                val ownerId = sourceContainer.get<OwnerComponent>()?.playerId
+                    ?: sourceContainer.get<ControllerComponent>()?.playerId
+                    ?: return CostPaymentResult.failure("Source card has no owner")
+
+                val handZone = ZoneKey(ownerId, Zone.HAND)
+                if (!state.getZone(handZone).contains(sourceId)) {
+                    return CostPaymentResult.failure("Source card is not in its owner's hand")
+                }
+
+                val graveyardZone = ZoneKey(ownerId, Zone.GRAVEYARD)
+                var newState = state.removeFromZone(handZone, sourceId)
+                newState = newState.addToZone(graveyardZone, sourceId)
+
+                val cardName = sourceContainer.get<CardComponent>()?.name ?: "Card"
+                val events = listOf<GameEvent>(
+                    CardsDiscardedEvent(ownerId, listOf(sourceId), listOf(cardName)),
+                    ZoneChangeEvent(
+                        entityId = sourceId,
+                        entityName = cardName,
+                        fromZone = Zone.HAND,
+                        toZone = Zone.GRAVEYARD,
+                        ownerId = ownerId
+                    )
+                )
+
+                CostPaymentResult.success(newState, manaPool, events)
             }
             is AbilityCost.SacrificeSelf -> {
                 // Sacrifice the source permanent

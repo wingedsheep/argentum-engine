@@ -34,8 +34,6 @@ val engineSerializersModule = SerializersModule {
         subclass(DeclareAttackers::class)
         subclass(DeclareBlockers::class)
         subclass(OrderBlockers::class)
-        subclass(MakeChoice::class)
-        subclass(SelectTargets::class)
         subclass(ChooseManaColor::class)
         subclass(SubmitDecision::class)
         subclass(TakeMulligan::class)

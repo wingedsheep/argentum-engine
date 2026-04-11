@@ -221,32 +221,6 @@ data class OrderBlockers(
 ) : GameAction
 
 // =============================================================================
-// Decision Actions
-// =============================================================================
-
-/**
- * Player makes a choice (modal spells, may effects, etc.).
- */
-@Serializable
-@SerialName("MakeChoice")
-data class MakeChoice(
-    override val playerId: EntityId,
-    val decisionId: String,
-    val choiceIndex: Int
-) : GameAction
-
-/**
- * Player selects targets for a triggered ability.
- */
-@Serializable
-@SerialName("SelectTargets")
-data class SelectTargets(
-    override val playerId: EntityId,
-    val abilityEntityId: EntityId,
-    val targets: List<ChosenTarget>
-) : GameAction
-
-// =============================================================================
 // Mana Actions
 // =============================================================================
 
