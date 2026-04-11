@@ -33,6 +33,36 @@ The scenario API only accepts cards registered in the card registry. To find ava
 
 **Available sets:** Portal, Onslaught, Scourge, Legions, Khans of Tarkir
 
+## Step 2b: Audit Card Abilities for Testability
+
+If the scenario is about testing a specific card, read the card definition file and enumerate **every** ability the card has:
+
+- **Spell effects** (what happens on resolution)
+- **Triggered abilities** (ETB, dies, on attack, on upkeep, on cycle, etc.)
+- **Activated abilities** (tap abilities, sacrifice costs, mana costs)
+- **Static abilities** (lord effects, keywords, continuous effects)
+- **Alternative costs / special actions** (morph, cycling, kicker, etc.)
+- **Keywords** (flying, trample, haste — relevant for combat scenarios)
+
+For each ability, verify the scenario enables testing it:
+
+| Ability type | Scenario requirement |
+|---|---|
+| Spell effect / ETB trigger | Card in hand + enough mana to cast it |
+| Activated ability (tap cost) | Card on battlefield without summoning sickness (or with haste) |
+| Activated ability (sacrifice cost) | Card on battlefield + valid sacrifice targets |
+| Activated ability (mana cost) | Card on battlefield + enough untapped lands |
+| Triggered ability (on attack) | Card on battlefield ready to attack + combat phase accessible |
+| Triggered ability (on damage) | Card on battlefield + combat or damage source available |
+| Triggered ability (on death/dies) | Card on battlefield + a way to destroy it (opponent has removal, or combat) |
+| Triggered ability (on upkeep/end step) | Use `stopAtSteps: ["UPKEEP"]` or `["END"]` and set appropriate phase |
+| Triggered ability (on cycle) | Card with cycling in hand + mana for cycling cost |
+| Static/lord ability | Card on battlefield + other creatures it affects |
+| Keyword (flying, trample, etc.) | Creatures on both sides for meaningful combat |
+| Morph / face-down | Card in hand + 3 generic mana available; morph-up cost mana on battlefield |
+
+If the scenario cannot cover an ability, adjust the board state (add lands, creatures, move card to correct zone, change phase, add stop-at-steps). If a single scenario genuinely cannot test all abilities (e.g., both "ETB" and "dies" triggers require different starting positions), note this to the user and suggest generating a second scenario, or set up the board so the card can be cast and then destroyed in the same game sequence.
+
 ## Step 3: Build the Scenario JSON
 
 Create a valid `ScenarioRequest` JSON matching this schema:
