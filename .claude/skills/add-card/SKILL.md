@@ -28,8 +28,9 @@ Implement the card specified in `$ARGUMENTS`. The card name is the main argument
 
 **Always prefer atomic effects over monolithic effects** for reusability.
 
-1. **Consult [reference.md](../../../mtg-sdk/reference.md)** — complete inventory of all DSL facades (`Effects.*`, `Targets.*`, `Triggers.*`, `Filters.*`, `Costs.*`, `Conditions.*`, `DynamicAmounts.*`, `EffectPatterns.*`), raw effect types, keywords, static abilities, replacement effects, and more.
-2. **Search existing cards** with similar mechanics: `grep -r "<keyword-or-effect>" mtg-sets/src/main/kotlin/`
+1. **Read [docs/architecture-principles.md](../../../docs/architecture-principles.md)** — understand the application architecture, design decisions, and how effects/executors/continuations fit together before implementing anything.
+2. **Read [mtg-sdk/reference.md](../../../mtg-sdk/reference.md)** — complete inventory of all DSL facades (`Effects.*`, `Targets.*`, `Triggers.*`, `Filters.*`, `Costs.*`, `Conditions.*`, `DynamicAmounts.*`, `EffectPatterns.*`), raw effect types, keywords, static abilities, replacement effects, and more.
+3. **Search existing cards** with similar mechanics: `grep -r "<keyword-or-effect>" mtg-sets/src/main/kotlin/`
 
 ## Step 3: Model the Card
 
@@ -104,7 +105,7 @@ If the card needs effects, keywords, triggers, conditions, or static abilities t
 - **4.10 Update [reference.md](../../../mtg-sdk/reference.md)** with all new types added
 
 For code templates, see [examples.md](examples.md).
-Read [architecture-principles.md](../../../docs/architecture-principles.md) to understand the application architecture? 
+Refer back to [architecture-principles.md](../../../docs/architecture-principles.md) and [reference.md](../../../mtg-sdk/reference.md) from Step 2 as needed.
 
 ## Step 5: Write Scenario Tests for New Effects
 
