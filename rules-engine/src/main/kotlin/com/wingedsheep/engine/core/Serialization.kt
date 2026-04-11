@@ -40,6 +40,10 @@ val engineSerializersModule = SerializersModule {
         subclass(KeepHand::class)
         subclass(BottomCards::class)
         subclass(Concede::class)
+        subclass(CrewVehicle::class)
+        subclass(CycleCard::class)
+        subclass(TurnFaceUp::class)
+        subclass(TypecycleCard::class)
     }
 
     // GameEvent hierarchy
@@ -81,6 +85,27 @@ val engineSerializersModule = SerializersModule {
         subclass(CreatureDestroyedEvent::class)
         subclass(ManaAddedEvent::class)
         subclass(ManaSpentEvent::class)
+        subclass(AbilityCounteredEvent::class)
+        subclass(BecomesTargetEvent::class)
+        subclass(CardCycledEvent::class)
+        subclass(CardsRevealedEvent::class)
+        subclass(ClassLevelChangedEvent::class)
+        subclass(CoinFlipEvent::class)
+        subclass(ControlChangedEvent::class)
+        subclass(CreatureTypeChangedEvent::class)
+        subclass(CreatureTypeChosenEvent::class)
+        subclass(GiftGivenEvent::class)
+        subclass(HandLookedAtEvent::class)
+        subclass(HandRevealedEvent::class)
+        subclass(KeywordGrantedEvent::class)
+        subclass(LibraryReorderedEvent::class)
+        subclass(LookedAtCardsEvent::class)
+        subclass(LoyaltyChangedEvent::class)
+        subclass(PermanentsSacrificedEvent::class)
+        subclass(StatsModifiedEvent::class)
+        subclass(TargetReselectedEvent::class)
+        subclass(TurnFaceUpEvent::class)
+        subclass(TurnedFaceDownEvent::class)
     }
 
     // PendingDecision hierarchy
@@ -98,6 +123,8 @@ val engineSerializersModule = SerializersModule {
         subclass(BudgetModalDecision::class)
         subclass(AssignDamageDecision::class)
         subclass(SearchLibraryDecision::class)
+        subclass(ReorderLibraryDecision::class)
+        subclass(SelectManaSourcesDecision::class)
     }
 
     // DecisionResponse hierarchy
@@ -115,6 +142,7 @@ val engineSerializersModule = SerializersModule {
         subclass(BudgetModalResponse::class)
         subclass(DamageAssignmentResponse::class)
         subclass(CancelDecisionResponse::class)
+        subclass(ManaSourcesSelectedResponse::class)
     }
 
     // ContinuationFrame hierarchy
@@ -181,6 +209,24 @@ val engineSerializersModule = SerializersModule {
         subclass(AssignAsUnblockedContinuation::class)
         subclass(BudgetModalContinuation::class)
         subclass(PutOnTopOrBottomContinuation::class)
+        subclass(AnyPlayerMayPayContinuation::class)
+        subclass(ChooseActionContinuation::class)
+        subclass(CounterUnlessPaysManaSelectionContinuation::class)
+        subclass(CreateTokenCopyOfChosenContinuation::class)
+        subclass(DistributeDamageContinuation::class)
+        subclass(EachPlayerDiscardsOrLoseLifeContinuation::class)
+        subclass(ManaSourceSelectionContinuation::class)
+        subclass(MayPayManaContinuation::class)
+        subclass(MayPayManaSelectionContinuation::class)
+        subclass(MayPayManaTriggerContinuation::class)
+        subclass(MayPayXContinuation::class)
+        subclass(MayTriggerContinuation::class)
+        subclass(PutOnBottomOfLibraryContinuation::class)
+        subclass(ReflexiveTriggerResolveContinuation::class)
+        subclass(ReflexiveTriggerTargetContinuation::class)
+        subclass(ReturnFromGraveyardContinuation::class)
+        subclass(ReturnFromLinkedExileContinuation::class)
+        subclass(StaticDrawReplacementContinuation::class)
     }
 
     // Component hierarchy (for GameState persistence)
@@ -201,6 +247,14 @@ val engineSerializersModule = SerializersModule {
         subclass(CopyOfComponent::class)
         subclass(ChosenColorComponent::class)
         subclass(ChosenCreatureTypeComponent::class)
+        subclass(CantBeCounteredComponent::class)
+        subclass(ChosenCreatureComponent::class)
+        subclass(ExileAfterResolveComponent::class)
+        subclass(HasMorphAbilityComponent::class)
+        subclass(MayPlayFromExileComponent::class)
+        subclass(PlayWithAdditionalCostComponent::class)
+        subclass(PlayWithoutPayingCostComponent::class)
+        subclass(WarpExiledComponent::class)
 
         // Battlefield components
         subclass(TappedComponent::class)
@@ -215,6 +269,26 @@ val engineSerializersModule = SerializersModule {
         subclass(HasDealtDamageComponent::class)
         subclass(HasDealtCombatDamageToPlayerComponent::class)
         subclass(TimestampComponent::class)
+        subclass(AbilityActivatedEverComponent::class)
+        subclass(AbilityActivatedThisTurnComponent::class)
+        subclass(AbilityResolutionCountThisTurnComponent::class)
+        subclass(CantBeTargetedByOpponentAbilitiesComponent::class)
+        subclass(ClassLevelComponent::class)
+        subclass(DamageDealtToCreaturesThisTurnComponent::class)
+        subclass(ExileOnLeaveBattlefieldComponent::class)
+        subclass(GrantCantBeBlockedToSmallCreaturesComponent::class)
+        subclass(GrantsCantLoseGameComponent::class)
+        subclass(GrantsControllerHexproofComponent::class)
+        subclass(GrantsControllerShroudComponent::class)
+        subclass(GraveyardEntryTurnComponent::class)
+        subclass(GraveyardPlayPermissionUsedComponent::class)
+        subclass(LinkedExileComponent::class)
+        subclass(ReplacementEffectSourceComponent::class)
+        subclass(SagaComponent::class)
+        subclass(TargetedByControllerThisTurnComponent::class)
+        subclass(TriggeredAbilityFiredThisTurnComponent::class)
+        subclass(WarpedComponent::class)
+        subclass(WasKickedComponent::class)
 
         // Combat components
         subclass(AttackingComponent::class)
@@ -227,6 +301,9 @@ val engineSerializersModule = SerializersModule {
         subclass(RequiresManualDamageAssignmentComponent::class)
         subclass(AttackersDeclaredThisCombatComponent::class)
         subclass(BlockersDeclaredThisCombatComponent::class)
+        subclass(MustAttackPlayerComponent::class)
+        subclass(MustAttackThisTurnComponent::class)
+        subclass(PlayerAttackedThisTurnComponent::class)
 
         // Player components
         subclass(ManaPoolComponent::class)
@@ -238,6 +315,23 @@ val engineSerializersModule = SerializersModule {
         subclass(LoseAtEndStepComponent::class)
         subclass(CardsDrawnThisTurnComponent::class)
         subclass(WasDealtCombatDamageThisTurnComponent::class)
+        subclass(AdditionalCombatPhasesComponent::class)
+        subclass(CantCastSpellsComponent::class)
+        subclass(CardsLeftGraveyardThisTurnComponent::class)
+        subclass(CreaturesDiedThisTurnComponent::class)
+        subclass(DamageBonusComponent::class)
+        subclass(DamageReceivedThisTurnComponent::class)
+        subclass(GrantedSpellKeywordsComponent::class)
+        subclass(LifeGainedThisTurnComponent::class)
+        subclass(LifeLostThisTurnComponent::class)
+        subclass(ManaSpentOnSpellsThisTurnComponent::class)
+        subclass(MayCastCreaturesFromGraveyardWithForageComponent::class)
+        subclass(NonTokenCreaturesDiedThisTurnComponent::class)
+        subclass(OpponentCreaturesExiledThisTurnComponent::class)
+        subclass(PlayerHexproofComponent::class)
+        subclass(PlayerShroudComponent::class)
+        subclass(SacrificedFoodThisTurnComponent::class)
+        subclass(SkipNextTurnComponent::class)
 
         // Stack components
         subclass(SpellOnStackComponent::class)
