@@ -272,10 +272,32 @@ data class GameState(
     }
 
     /**
-     * Get entities on a player's battlefield.
+     * Get entities in a player's owner-keyed battlefield zone.
+     *
+     * **This returns OWNED entities, not CONTROLLED entities.** Control-changing
+     * effects (Annex, Threaten, Mind Control) do not move entities between
+     * owner-keyed zones — they apply a Layer 2 floating effect that the
+     * [projectedState] reads. For game logic that asks "what does this player
+     * control?", use [controlledBattlefield] instead.
+     *
+     * The zone map is the source of truth for **ownership**; controller queries
+     * always go through projection (Architecture Principle §2.3).
      */
     fun getBattlefield(playerId: EntityId): List<EntityId> =
         getZone(playerId, Zone.BATTLEFIELD)
+
+    /**
+     * Get entities on the battlefield currently **controlled by** [playerId],
+     * after Rule 613 continuous effects have been applied (Layer 2 control
+     * changes). This is the correct view for almost all game logic — costs,
+     * targeting, static-ability scans, replacement-effect dispatch, and so on.
+     *
+     * Convenience wrapper around [ProjectedState.getBattlefieldControlledBy]
+     * that lets executors avoid spelling out `state.projectedState.…` at every
+     * call site.
+     */
+    fun controlledBattlefield(playerId: EntityId): List<EntityId> =
+        projectedState.getBattlefieldControlledBy(playerId)
 
     /**
      * Get a player's hand.

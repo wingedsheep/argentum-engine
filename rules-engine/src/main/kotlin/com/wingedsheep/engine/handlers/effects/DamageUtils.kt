@@ -746,9 +746,10 @@ object DamageUtils {
 
         // Check battlefield permanents for NoncombatDamageBonus static abilities (Artist's Talent Level 3)
         if (sourceId != null && !isCombatDamage) {
-            val sourceController = state.getEntity(sourceId)?.get<ControllerComponent>()?.playerId
+            val sourceController = projected.getController(sourceId)
+                ?: state.getEntity(sourceId)?.get<ControllerComponent>()?.playerId
             if (sourceController != null) {
-                for (entityId in state.getBattlefield(sourceController)) {
+                for (entityId in state.controlledBattlefield(sourceController)) {
                     val container = state.getEntity(entityId) ?: continue
                     val card = container.get<CardComponent>() ?: continue
                     val permanentDef = cardRegistry.getCard(card.cardDefinitionId) ?: continue

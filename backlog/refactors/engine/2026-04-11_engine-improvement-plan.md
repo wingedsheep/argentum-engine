@@ -37,32 +37,35 @@ executors and duplication that is making each new card more expensive than it sh
 
 These block replayability or represent direct violations of stated principles. Fix first.
 
-### 1.1 Enforce "controlled by" queries via projected state everywhere
+### 1.1 Enforce "controlled by" queries via projected state everywhere ✅
 
-**Why it matters.** Principle §2.3 mandates that game logic read projected state, never raw
-components. The rules-engine CLAUDE.md already documents this: *"Always read projected state for
-game logic (P/T, controller, types, keywords)."* Despite this, token-creation executors still read
-the base battlefield zone by controller id, so control-change effects (Threaten, Annex) can cause
-tokens to be created in the wrong player's zone.
+**Status.** Fixed on 2026-04-11. `GameState.controlledBattlefield(playerId)` is the canonical
+helper for "what does this player control on the battlefield"; it forwards to
+`projectedState.getBattlefieldControlledBy(...)`. The docstring on
+`GameState.getBattlefield(playerId)` now spells out that it returns the **owner-keyed** zone, not
+the controlled-by view, and points readers at the new helper.
 
-**Locations (representative, not exhaustive).**
-- `handlers/effects/token/CreateTokenExecutor.kt:146` — `ZoneKey(controllerId, Zone.BATTLEFIELD)`
-- `handlers/effects/token/CreateTokenCopyOfSourceExecutor.kt:94`
-- Other token / permanent executors that index by raw zone
+The three remaining base-state battlefield-by-controller reads inside `handlers/effects/` were
+fixed in the same change:
 
-Meanwhile correct uses: `handlers/effects/drawing/DrawCardsExecutor.kt:235,267,368` and
-`handlers/effects/library/GatherCardsExecutor.kt:93` already use
-`projectedState.getBattlefieldControlledBy(...)`.
+| Site | Fix |
+|---|---|
+| `DamageUtils.kt:751` (NoncombatDamageBonus scan) | now iterates `state.controlledBattlefield(sourceController)` and resolves `sourceController` via `projected.getController(sourceId)` first |
+| `LookAtFaceDownExecutor.kt:73` (look at face-down creatures a player controls) | switched to `state.controlledBattlefield(targetPlayerId)` so Annex'd / Threaten'd face-down creatures are revealed correctly |
+| `WarpExileExecutor.kt:44` (presence check on warp exile delayed trigger) | simplified to the no-arg `state.getBattlefield()`, which is the right primitive for an "is the entity still on the battlefield somewhere" check |
 
-**Fix.**
-1. Add a single helper on `ActionContext` / `EnumerationContext`:
-   `context.controlledBattlefield(playerId): List<EntityId>` that always goes through the
-   projector.
-2. Replace every direct `state.zones[ZoneKey(_, Zone.BATTLEFIELD)]` call inside `handlers/effects/`
-   with that helper (grep the module to build the work list).
-3. Consider making `ZoneKey(playerId, BATTLEFIELD)` access `internal` and require effects to go
-   through `ProjectedState`. The zone map stays the source of truth for ownership; controller
-   queries always go through projection.
+The token-creation executors flagged in the original write-up (`CreateTokenExecutor.kt:146`,
+`CreateTokenCopyOfSourceExecutor.kt:94`, etc.) turned out to be **writes**, not reads, and the
+`controllerId` they pass to `ZoneKey(_, BATTLEFIELD)` is already the projected controller of the
+source ability — `TriggerDetector` resolves that via `projected.getController(entityId)` at
+line 104. So there is no token-zone bug to fix; the write goes to the correct owner-keyed zone
+because tokens are owned by the player who created them.
+
+The "make `ZoneKey(_, BATTLEFIELD)` access `internal`" idea from the original fix list was
+**not** taken: writes (token creation, ETB resolution) legitimately need to address a specific
+owner-keyed zone, and clamping the visibility would force all those write paths through
+indirection without any new safety. The naming + docstring split between `getBattlefield(playerId)`
+and `controlledBattlefield(playerId)` is sufficient guard.
 
 ---
 
@@ -290,8 +293,8 @@ This document deliberately does **not** re-list items already tracked elsewhere.
 | 🟢 4 Low | 4.1–4.5 | Observability, naming, minor rules corrections | 5 |
 
 **Recommended order of attack:**
-1. Tier 2.2 (`EffectContext.resolveTarget`) — single mechanical pass, unlocks downstream cleanup of every effect executor.
-2. Tier 1.1 — add the `controlledBattlefield` helper, then grep-and-replace every raw `ZoneKey(_, BATTLEFIELD)` inside `handlers/effects/`.
+1. ~~Tier 1.1 — add the `controlledBattlefield` helper, then grep-and-replace every raw `ZoneKey(_, BATTLEFIELD)` inside `handlers/effects/`.~~ ✅ Done.
+2. Tier 2.2 (`EffectContext.resolveTarget`) — single mechanical pass, unlocks downstream cleanup of every effect executor.
 3. Tier 2.1 items one at a time, as the set they serve comes up for implementation.
 4. Tier 2.3 (folder reorg) once 2.1 has stabilized so file moves don't churn in-flight work.
 5. Tier 2.4 (serialization reflection test) — cheap, high insurance value.

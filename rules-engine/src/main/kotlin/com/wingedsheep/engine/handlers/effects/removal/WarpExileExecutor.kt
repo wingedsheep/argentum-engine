@@ -40,10 +40,7 @@ class WarpExileExecutor : EffectExecutor<WarpExileEffect> {
             ?: return ExecutionResult.success(state)
 
         // Only exile if the permanent is still on the battlefield
-        val isOnBattlefield = state.turnOrder.any { pid ->
-            targetId in state.getBattlefield(pid)
-        }
-        if (!isOnBattlefield) return ExecutionResult.success(state)
+        if (targetId !in state.getBattlefield()) return ExecutionResult.success(state)
 
         // Use ZoneTransitionService for proper cleanup (strip battlefield components, etc.)
         val transitionResult = ZoneTransitionService.moveToZone(

@@ -70,7 +70,7 @@ class LookAtFaceDownExecutor : EffectExecutor<LookAtFaceDownEffect> {
         val targetPlayerId = resolvePlayerTarget(effect.target, context)
             ?: return ExecutionResult.error(state, "No valid target player for look at all face-down creatures")
 
-        val battlefield = state.getBattlefield(targetPlayerId)
+        val battlefield = state.controlledBattlefield(targetPlayerId)
         val faceDownCreatures = battlefield.filter { entityId ->
             val container = state.getEntity(entityId)
             container != null && container.has<FaceDownComponent>()
