@@ -630,6 +630,8 @@ export interface AdditionalCostInfo {
   readonly validExileTargets?: readonly EntityId[]
   readonly exileMinCount?: number
   readonly exileMaxCount?: number
+  readonly validBeholdTargets?: readonly EntityId[]
+  readonly beholdCount?: number
   readonly counterRemovalCreatures?: readonly CounterRemovalCreatureInfo[]
 }
 

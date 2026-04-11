@@ -108,6 +108,17 @@ object ExilePatterns {
         )
     ))
 
+    fun returnLinkedExileToHand(storeAs: String = "linked_return_hand"): CompositeEffect = CompositeEffect(listOf(
+        GatherCardsEffect(
+            source = CardSource.FromLinkedExile(),
+            storeAs = storeAs
+        ),
+        MoveCollectionEffect(
+            from = storeAs,
+            destination = CardDestination.ToZone(Zone.HAND)
+        )
+    ))
+
     fun takeFromLinkedExile(storeAs: String = "linked_take"): CompositeEffect = CompositeEffect(listOf(
         GatherCardsEffect(
             source = CardSource.FromLinkedExile(count = 1),

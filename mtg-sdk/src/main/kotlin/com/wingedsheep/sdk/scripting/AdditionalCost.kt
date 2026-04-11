@@ -20,6 +20,18 @@ sealed interface AdditionalCost : TextReplaceable<AdditionalCost> {
     /** Human-readable description of the cost */
     val description: String
 
+    companion object {
+        /** "behold a [filter] and exile it" — Behold + ExileFromStorage composed as one cost. */
+        fun BeholdAndExile(
+            filter: GameObjectFilter,
+            count: Int = 1,
+            storeAs: String = "beheld"
+        ): Composite = Composite(listOf(
+            Behold(filter = filter, count = count, storeAs = storeAs),
+            ExileFromStorage(from = storeAs, linkToSource = true)
+        ))
+    }
+
     /**
      * Sacrifice a permanent matching the given filter.
      * Example: "Sacrifice a green creature" for Natural Order
@@ -193,6 +205,81 @@ sealed interface AdditionalCost : TextReplaceable<AdditionalCost> {
         override fun applyTextReplacement(replacer: TextReplacer): AdditionalCost = this
     }
 
+    /**
+     * Behold: choose a matching permanent you control or reveal a matching card from your hand.
+     * Used by Lorwyn Eclipsed cards.
+     *
+     * Stores the chosen card IDs in [AdditionalCostPayment.beheldCards] and populates
+     * pipeline storage under [storeAs] so downstream costs (e.g., [ExileFromStorage])
+     * or effects can reference them.
+     *
+     * @property filter Which cards/permanents can be beheld (e.g., Elf, Kithkin, Goblin)
+     * @property count Number of cards to behold
+     * @property storeAs Pipeline storage key for the chosen cards
+     */
+    @SerialName("Behold")
+    @Serializable
+    data class Behold(
+        val filter: GameObjectFilter = GameObjectFilter.Any,
+        val count: Int = 1,
+        val storeAs: String = "beheld"
+    ) : AdditionalCost {
+        override val description: String = buildString {
+            append("Behold ")
+            if (count == 1) {
+                append("a ")
+            } else {
+                append("$count ")
+            }
+            append(filter.description)
+            if (count != 1) append("s")
+        }
+
+        override fun applyTextReplacement(replacer: TextReplacer): AdditionalCost {
+            val newFilter = filter.applyTextReplacement(replacer)
+            return if (newFilter !== filter) copy(filter = newFilter) else this
+        }
+    }
+
+    /**
+     * Exile cards from a named pipeline collection and optionally link them to the
+     * source spell/permanent via LinkedExileComponent.
+     *
+     * General-purpose: consumes whatever a preceding cost stored under [from].
+     * Example: Behold stores as "beheld", then ExileFromStorage("beheld") exiles those cards.
+     *
+     * @property from Pipeline storage key to read card IDs from
+     * @property linkToSource Whether to add LinkedExileComponent (for LTB return patterns)
+     */
+    @SerialName("ExileFromStorage")
+    @Serializable
+    data class ExileFromStorage(
+        val from: String,
+        val linkToSource: Boolean = false
+    ) : AdditionalCost {
+        override val description: String = "Exile the chosen card"
+        override fun applyTextReplacement(replacer: TextReplacer): AdditionalCost = this
+    }
+
+    /**
+     * A composite additional cost that groups multiple atomic costs into a single logical cost.
+     * The engine processes the steps in order, with pipeline storage flowing between them.
+     *
+     * Example: "behold an Elf and exile it" is [Behold] + [ExileFromStorage] composed together.
+     */
+    @SerialName("Composite")
+    @Serializable
+    data class Composite(
+        val steps: List<AdditionalCost>
+    ) : AdditionalCost {
+        override val description: String = steps.joinToString(", ") { it.description }
+
+        override fun applyTextReplacement(replacer: TextReplacer): AdditionalCost {
+            val newSteps = steps.map { it.applyTextReplacement(replacer) }
+            return if (newSteps.zip(steps).any { (a, b) -> a !== b }) copy(steps = newSteps) else this
+        }
+    }
+
     @SerialName("TapPermanents")
     @Serializable
     data class TapPermanents(
@@ -247,6 +334,9 @@ data class AdditionalCostPayment(
     /** Cards that were exiled */
     val exiledCards: List<EntityId> = emptyList(),
 
+    /** Cards chosen via Behold (from battlefield or hand) */
+    val beheldCards: List<EntityId> = emptyList(),
+
     /** Permanents that were tapped */
     val tappedPermanents: List<EntityId> = emptyList(),
 
@@ -262,6 +352,7 @@ data class AdditionalCostPayment(
                 discardedCards.isEmpty() &&
                 lifePaid == 0 &&
                 exiledCards.isEmpty() &&
+                beheldCards.isEmpty() &&
                 tappedPermanents.isEmpty() &&
                 bouncedPermanents.isEmpty() &&
                 counterRemovals.isEmpty()

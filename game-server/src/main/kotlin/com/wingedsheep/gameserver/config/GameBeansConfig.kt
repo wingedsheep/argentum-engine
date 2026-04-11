@@ -11,6 +11,7 @@ import com.wingedsheep.mtg.sets.definitions.khans.KhansOfTarkirSet
 import com.wingedsheep.mtg.sets.definitions.legions.LegionsSet
 import com.wingedsheep.mtg.sets.definitions.onslaught.OnslaughtSet
 import com.wingedsheep.mtg.sets.definitions.portal.PortalSet
+import com.wingedsheep.mtg.sets.definitions.lorwyneclipsed.LorwynEclipsedSet
 import com.wingedsheep.mtg.sets.definitions.scourge.ScourgeSet
 import com.wingedsheep.mtg.sets.definitions.custom.JustOneGlassToken
 import com.wingedsheep.mtg.sets.definitions.custom.SekshaasEarlySleeper
@@ -58,6 +59,9 @@ class GameBeansConfig(
         if (gameProperties.sets.edgeOfEternitiesEnabled) {
             register(EdgeOfEternitiesSet.allCards)
             register(EdgeOfEternitiesSet.basicLands)
+        }
+        if (gameProperties.sets.lorwynEclipsedEnabled) {
+            register(LorwynEclipsedSet.allCards)
         }
         // Easter egg card — injected into Rick's deck at game start
         register(SekshaasEarlySleeper)
@@ -107,6 +111,7 @@ class GameBeansConfig(
             if (gameProperties.sets.dominariaEnabled) addAll(DominariaSet.allCards)
             if (gameProperties.sets.bloomburrowEnabled) addAll(BloomburrowSet.allCards)
             if (gameProperties.sets.edgeOfEternitiesEnabled) addAll(EdgeOfEternitiesSet.allCards)
+            if (gameProperties.sets.lorwynEclipsedEnabled) addAll(LorwynEclipsedSet.allCards)
         },
         basicLandVariants = PortalSet.basicLands,
         setCodes = buildList {

@@ -461,6 +461,7 @@ export function TargetingOverlay() {
   const isTapPermanent = targetingState.isTapPermanentSelection
   const isDiscard = targetingState.isDiscardSelection
   const isReveal = targetingState.isRevealSelection
+  const isBehold = targetingState.isBeholdSelection
 
   // Check if targets are graveyard cards — use explicit targetZone when available,
   // fall back to inspecting gameState.cards for backward compatibility
@@ -518,23 +519,25 @@ export function TargetingOverlay() {
     : null
 
   // Build the prompt text based on selection type
-  const promptText = isDiscard
-    ? `Select card to discard (${targetDisplay})`
-    : isReveal
-      ? `Select card to reveal (${targetDisplay})`
-      : isTapPermanent
-        ? `Select permanents to tap (${targetDisplay})`
-        : isSacrifice
-          ? `Select creature to sacrifice (${targetDisplay})`
-          : targetingState.targetDescription
-            ? `Select ${targetingState.targetDescription} (${targetDisplay})`
-            : `Select targets (${targetDisplay})`
+  const promptText = isBehold
+    ? `Select a card to behold (${targetDisplay})`
+    : isDiscard
+      ? `Select card to discard (${targetDisplay})`
+      : isReveal
+        ? `Select card to reveal (${targetDisplay})`
+        : isTapPermanent
+          ? `Select permanents to tap (${targetDisplay})`
+          : isSacrifice
+            ? `Select creature to sacrifice (${targetDisplay})`
+            : targetingState.targetDescription
+              ? `Select ${targetingState.targetDescription} (${targetDisplay})`
+              : `Select targets (${targetDisplay})`
 
   const hintText = hasMaxTargets
-    ? isDiscard ? 'Card selected' : isReveal ? 'Card selected' : isTapPermanent ? 'Permanents selected' : isSacrifice ? 'Creature selected' : 'Maximum targets selected'
+    ? isBehold ? 'Card selected' : isDiscard ? 'Card selected' : isReveal ? 'Card selected' : isTapPermanent ? 'Permanents selected' : isSacrifice ? 'Creature selected' : 'Maximum targets selected'
     : hasEnoughTargets
       ? 'Click Confirm or select more'
-      : isDiscard ? 'Click a card in your hand' : isReveal ? 'Click a card in your hand' : isTapPermanent ? 'Click a highlighted permanent' : isSacrifice ? 'Click a creature you control' : 'Click a highlighted target'
+      : isBehold ? 'Click a creature you control or a card in your hand' : isDiscard ? 'Click a card in your hand' : isReveal ? 'Click a card in your hand' : isTapPermanent ? 'Click a highlighted permanent' : isSacrifice ? 'Click a creature you control' : 'Click a highlighted target'
 
   return (
     <div style={{

@@ -10,6 +10,7 @@ import com.wingedsheep.mtg.sets.definitions.khans.KhansOfTarkirSet
 import com.wingedsheep.mtg.sets.definitions.legions.LegionsSet
 import com.wingedsheep.mtg.sets.definitions.onslaught.OnslaughtSet
 import com.wingedsheep.mtg.sets.definitions.portal.PortalSet
+import com.wingedsheep.mtg.sets.definitions.lorwyneclipsed.LorwynEclipsedSet
 import com.wingedsheep.mtg.sets.definitions.scourge.ScourgeSet
 import com.wingedsheep.mtg.sets.tokens.PredefinedTokens
 import com.wingedsheep.engine.state.ComponentContainer
@@ -60,6 +61,7 @@ abstract class ScenarioTestBase : FunSpec() {
         register(DominariaSet.allCards)
         register(BloomburrowSet.allCards)
         register(EdgeOfEternitiesSet.allCards)
+        register(LorwynEclipsedSet.allCards)
     }
     protected val actionProcessor = ActionProcessor(cardRegistry)
     protected val stateTransformer = ClientStateTransformer(cardRegistry)
@@ -1170,6 +1172,39 @@ abstract class ScenarioTestBase : FunSpec() {
             )
             val targets = listOf(ChosenTarget.Permanent(targetId))
             return execute(CastSpell(playerId, cardId, targets, additionalCostPayment = payment))
+        }
+
+        /**
+         * Cast a spell with a Behold cost (choose a card from battlefield or hand to behold).
+         * @param playerNumber The player casting the spell (1 or 2)
+         * @param spellName The name of the spell to cast
+         * @param beholdCardName The name of the card to behold (from battlefield or hand)
+         */
+        fun castSpellWithBeholdCost(
+            playerNumber: Int,
+            spellName: String,
+            beholdCardName: String
+        ): ExecutionResult {
+            val playerId = if (playerNumber == 1) player1Id else player2Id
+            val hand = state.getHand(playerId)
+            val cardId = hand.find { entityId ->
+                state.getEntity(entityId)?.get<CardComponent>()?.name == spellName
+            } ?: error("Card '$spellName' not found in player $playerNumber's hand")
+
+            // Look for the behold target on the battlefield first, then in hand
+            val beholdId = state.getBattlefield().find { entityId ->
+                val container = state.getEntity(entityId) ?: return@find false
+                container.get<CardComponent>()?.name == beholdCardName &&
+                    container.get<ControllerComponent>()?.playerId == playerId
+            } ?: hand.find { entityId ->
+                entityId != cardId &&
+                    state.getEntity(entityId)?.get<CardComponent>()?.name == beholdCardName
+            } ?: error("Card '$beholdCardName' not found on player $playerNumber's battlefield or in hand")
+
+            val payment = com.wingedsheep.sdk.scripting.AdditionalCostPayment(
+                beheldCards = listOf(beholdId)
+            )
+            return execute(CastSpell(playerId, cardId, emptyList(), additionalCostPayment = payment))
         }
     }
 }

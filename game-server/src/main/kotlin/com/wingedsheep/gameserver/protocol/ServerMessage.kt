@@ -1051,6 +1051,10 @@ data class AdditionalCostInfo(
     val exileMinCount: Int = 0,
     /** Maximum number of cards that can be exiled */
     val exileMaxCount: Int = 0,
+    /** Valid cards to behold (from battlefield or hand) */
+    val validBeholdTargets: List<EntityId> = emptyList(),
+    /** Number of cards to behold */
+    val beholdCount: Int = 0,
     /** Creatures with +1/+1 counters for RemoveXPlusOnePlusOneCounters cost */
     val counterRemovalCreatures: List<CounterRemovalCreatureInfo> = emptyList()
 )

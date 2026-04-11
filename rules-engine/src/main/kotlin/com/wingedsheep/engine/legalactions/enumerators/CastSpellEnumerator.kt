@@ -70,8 +70,13 @@ class CastSpellEnumerator : ActionEnumerator {
             var exileMinCount = 0
             var discardTargets = emptyList<EntityId>()
             var discardCount = 0
+            var beholdTargets = emptyList<EntityId>()
+            var beholdCount = 0
             var canPayAdditionalCosts = true
-            for (cost in additionalCosts) {
+            val flattenedCosts = additionalCosts.flatMap {
+                if (it is AdditionalCost.Composite) it.steps else listOf(it)
+            }
+            for (cost in flattenedCosts) {
                 when (cost) {
                     is AdditionalCost.SacrificePermanent -> {
                         val validSacTargets = context.costUtils.findSacrificeTargets(state, playerId, cost)
@@ -101,6 +106,27 @@ class CastSpellEnumerator : ActionEnumerator {
                         }
                         exileTargets = validExileTargets
                         exileMinCount = cost.count
+                    }
+                    is AdditionalCost.Behold -> {
+                        // Find matching permanents on battlefield (projected) + matching cards in hand
+                        val projected = state.projectedState
+                        val predicateContext = PredicateContext(controllerId = playerId)
+                        val battlefieldMatches = projected.getBattlefieldControlledBy(playerId).filter { permId ->
+                            context.predicateEvaluator.matchesWithProjection(state, projected, permId, cost.filter, predicateContext)
+                        }
+                        val handZone = ZoneKey(playerId, Zone.HAND)
+                        val handMatches = state.getZone(handZone)
+                            .filter { it != cardId } // Exclude the card being cast
+                            .filter { context.predicateEvaluator.matches(state, it, cost.filter, predicateContext) }
+                        val allTargets = battlefieldMatches + handMatches
+                        if (allTargets.size < cost.count) {
+                            canPayAdditionalCosts = false
+                        }
+                        beholdTargets = allTargets
+                        beholdCount = cost.count
+                    }
+                    is AdditionalCost.ExileFromStorage -> {
+                        // Payability determined by the preceding Behold cost
                     }
                     is AdditionalCost.DiscardCards -> {
                         val handZone = ZoneKey(playerId, Zone.HAND)
@@ -202,7 +228,8 @@ class CastSpellEnumerator : ActionEnumerator {
             // Build additional cost info for the client
             val costInfo = buildAdditionalCostData(
                 additionalCosts, sacrificeTargets, variableSacrificeTargets,
-                exileTargets, exileMinCount, discardTargets, discardCount
+                exileTargets, exileMinCount, discardTargets, discardCount,
+                beholdTargets, beholdCount
             )
 
             // Calculate X cost info if the spell has X in its cost
@@ -790,7 +817,9 @@ class CastSpellEnumerator : ActionEnumerator {
         exileTargets: List<EntityId>,
         exileMinCount: Int,
         discardTargets: List<EntityId>,
-        discardCount: Int
+        discardCount: Int,
+        beholdTargets: List<EntityId> = emptyList(),
+        beholdCount: Int = 0
     ): AdditionalCostData? {
         return if (variableSacrificeTargets.isNotEmpty()) {
             val varSacCost = additionalCosts.filterIsInstance<AdditionalCost.SacrificeCreaturesForCostReduction>().firstOrNull()
@@ -830,6 +859,14 @@ class CastSpellEnumerator : ActionEnumerator {
                 costType = "DiscardCard",
                 validDiscardTargets = discardTargets,
                 discardCount = discardCount
+            )
+        } else if (beholdTargets.isNotEmpty()) {
+            val beholdCost = additionalCosts.filterIsInstance<AdditionalCost.Behold>().firstOrNull()
+            AdditionalCostData(
+                description = beholdCost?.description ?: "Behold a card",
+                costType = "Behold",
+                validBeholdTargets = beholdTargets,
+                beholdCount = beholdCount
             )
         } else null
     }

@@ -25,7 +25,8 @@ data class SpellOnStackComponent(
     val chosenCreatureType: String? = null,  // For spells that choose a creature type during casting (e.g., Aphetto Dredging)
     val exiledCardCount: Int = 0,  // For variable exile additional costs (e.g., Chill Haunting)
     val castFromZone: Zone? = null,  // Zone the spell was cast from (e.g., HAND for normal casting)
-    val wasWarped: Boolean = false   // For warp - permanent is exiled at end step
+    val wasWarped: Boolean = false,  // For warp - permanent is exiled at end step
+    val beheldCards: List<EntityId> = emptyList()  // Cards chosen via Behold (stored in pipeline as named collection)
 ) : Component
 
 /**

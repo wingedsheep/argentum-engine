@@ -2,7 +2,7 @@
 
 **Set Size:** 273 cards (main set, per Scryfall `set:ecl`)
 **Release Date:** January 23, 2026
-**Implemented:** 0 / 273
+**Implemented:** 1 / 273
 
 | Color      | Total | Done |
 |------------|-------|------|
@@ -10,7 +10,7 @@
 | Blue       | 39    | 0    |
 | Black      | 38    | 0    |
 | Red        | 39    | 0    |
-| Green      | 39    | 0    |
+| Green      | 39    | 1    |
 | Multicolor | 49    | 0    |
 | Colorless  | 18    | 0    |
 | Land       | 12    | 0    |
@@ -195,7 +195,7 @@
 - [ ] Bristlebane Battler
 - [ ] Bristlebane Outrider
 - [ ] Celestial Reunion
-- [ ] Champions of the Perfect
+- [x] Champions of the Perfect
 - [ ] Chomping Changeling
 - [ ] Crossroads Watcher
 - [ ] Dawn's Light Archer

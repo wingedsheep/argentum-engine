@@ -381,6 +381,12 @@ object Effects {
     fun ReturnLinkedExileUnderOwnersControl(): Effect = EffectPatterns.returnLinkedExile(underOwnersControl = true)
 
     /**
+     * Return all cards linked to the source permanent (via LinkedExileComponent)
+     * to their owner's hand.
+     */
+    fun ReturnLinkedExileToHand(): Effect = ExilePatterns.returnLinkedExileToHand()
+
+    /**
      * Return one card from the source's linked exile to the battlefield.
      * The active player chooses one of their owned exiled cards.
      */

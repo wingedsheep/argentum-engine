@@ -72,6 +72,8 @@ export interface TargetingState {
   isRevealSelection?: boolean
   /** If set, this targeting phase is for returning permanents to hand as a cost */
   isBounceSelection?: boolean
+  /** If set, this targeting phase is for beholding (choosing from battlefield or hand) */
+  isBeholdSelection?: boolean
   /** The original action info, used to chain sacrifice -> spell targeting -> damage distribution */
   pendingActionInfo?: LegalActionInfo
   /** Current target requirement index for multi-target spells (0-indexed) */

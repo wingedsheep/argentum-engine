@@ -119,6 +119,8 @@ class LegalActionEnricher(
         validExileTargets = validExileTargets,
         exileMinCount = exileMinCount,
         exileMaxCount = exileMaxCount,
+        validBeholdTargets = validBeholdTargets,
+        beholdCount = beholdCount,
         counterRemovalCreatures = counterRemovalCreatures.map { it.toDto() }
     )
 

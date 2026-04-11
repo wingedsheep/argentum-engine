@@ -112,6 +112,7 @@ export function computePhases(actionInfo: LegalActionInfo, options?: ComputePhas
       'ExileFromGraveyard',
       'ExileFromZone',
       'RevealCard',
+      'Behold',
     ]
 
     if (costTypesNeedingSelection.includes(costType)) {
@@ -235,7 +236,9 @@ export function mergeResult(
             ? { discardedCards: selectedTargets }
             : costType === 'ExileFromGraveyard'
               ? { exiledCards: selectedTargets }
-              : { sacrificedPermanents: selectedTargets }
+              : costType === 'Behold'
+                ? { beheldCards: selectedTargets }
+                : { sacrificedPermanents: selectedTargets }
         return { ...action, additionalCostPayment }
       }
       if (action.type === 'ActivateAbility') {
@@ -458,6 +461,13 @@ export function enterPhase(
           maxTargets = costInfo.discardCount ?? 1
           flags.isSacrificeSelection = true
           flags.isRevealSelection = true
+          break
+        case 'Behold':
+          validTargets = [...(costInfo.validBeholdTargets ?? [])]
+          minTargets = costInfo.beholdCount ?? 1
+          maxTargets = costInfo.beholdCount ?? 1
+          flags.isSacrificeSelection = true
+          flags.isBeholdSelection = true
           break
         default:
           return

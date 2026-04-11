@@ -11,6 +11,7 @@ import com.wingedsheep.engine.core.ExecutionResult
 import com.wingedsheep.engine.core.LifeChangedEvent
 import com.wingedsheep.engine.core.LifeChangeReason
 import com.wingedsheep.engine.core.CardsDiscardedEvent
+import com.wingedsheep.engine.core.CardsRevealedEvent
 import com.wingedsheep.engine.core.GameEvent
 import com.wingedsheep.engine.core.ManaSpentEvent
 import com.wingedsheep.engine.mechanics.mana.SpellPaymentContext
@@ -495,7 +496,10 @@ class CastSpellHandler(
         action: CastSpell
     ): String? {
         val projected = state.projectedState
-        for (additionalCost in additionalCosts) {
+        val flattenedCosts = additionalCosts.flatMap {
+            if (it is AdditionalCost.Composite) it.steps else listOf(it)
+        }
+        for (additionalCost in flattenedCosts) {
             when (additionalCost) {
                 is AdditionalCost.SacrificePermanent -> {
                     val sacrificed = action.additionalCostPayment?.sacrificedPermanents ?: emptyList()
@@ -643,6 +647,38 @@ class CastSpellHandler(
                         }
                     }
                 }
+                is AdditionalCost.Behold -> {
+                    val chosen = action.additionalCostPayment?.beheldCards ?: emptyList()
+                    if (chosen.size < additionalCost.count) {
+                        return "You must behold ${additionalCost.count} ${additionalCost.filter.description}(s)"
+                    }
+                    val handZone = ZoneKey(action.playerId, Zone.HAND)
+                    val handCards = state.getZone(handZone)
+                    val battlefieldCards = state.getBattlefield()
+                    val context = PredicateContext(controllerId = action.playerId)
+                    for (cardId in chosen) {
+                        val inHand = cardId in handCards && cardId != action.cardId
+                        val onBattlefield = cardId in battlefieldCards &&
+                            projected.getController(cardId) == action.playerId
+                        if (!inHand && !onBattlefield) {
+                            return "Beheld card must be a card in your hand or a permanent you control"
+                        }
+                        if (onBattlefield) {
+                            if (!predicateEvaluator.matchesWithProjection(state, projected, cardId, additionalCost.filter, context)) {
+                                val cardName = state.getEntity(cardId)?.get<CardComponent>()?.name ?: "Card"
+                                return "$cardName doesn't match the required filter: ${additionalCost.filter.description}"
+                            }
+                        } else {
+                            if (!predicateEvaluator.matches(state, cardId, additionalCost.filter, context)) {
+                                val cardName = state.getEntity(cardId)?.get<CardComponent>()?.name ?: "Card"
+                                return "$cardName doesn't match the required filter: ${additionalCost.filter.description}"
+                            }
+                        }
+                    }
+                }
+                is AdditionalCost.ExileFromStorage -> {
+                    // Validated by the preceding Behold cost — nothing extra needed
+                }
                 else -> {}
             }
         }
@@ -727,6 +763,9 @@ class CastSpellHandler(
         val sacrificedPermanentIds = mutableListOf<EntityId>()
         val sacrificedPermanentSubtypes = mutableMapOf<EntityId, Set<String>>()
         var exiledCardCount = 0
+        val beheldCards = mutableListOf<EntityId>()
+        /** Pipeline storage populated by Behold, consumed by ExileFromStorage */
+        val costPipelineCollections = mutableMapOf<String, List<EntityId>>()
 
         // Collect all additional costs: script costs + kicker additional cost (if kicked)
         // + self-alternative cost's additional costs (if using alternative cost)
@@ -751,8 +790,11 @@ class CastSpellHandler(
             if (runtimeCostComp != null) addAll(runtimeCostComp.additionalCosts)
         }
 
-        if (allAdditionalCosts.isNotEmpty() && action.additionalCostPayment != null) {
-            for (additionalCost in allAdditionalCosts) {
+        val flattenedAllCosts = allAdditionalCosts.flatMap {
+            if (it is AdditionalCost.Composite) it.steps else listOf(it)
+        }
+        if (flattenedAllCosts.isNotEmpty() && action.additionalCostPayment != null) {
+            for (additionalCost in flattenedAllCosts) {
                 when (additionalCost) {
                     is AdditionalCost.SacrificePermanent -> {
                         // Project state to capture text-changed subtypes before sacrifice
@@ -887,6 +929,65 @@ class CastSpellHandler(
                         val reduction = action.additionalCostPayment.sacrificedPermanents.size * additionalCost.costReductionPerCreature
                         if (reduction > 0) {
                             effectiveCost = effectiveCost.reduceGeneric(reduction)
+                        }
+                    }
+                    is AdditionalCost.Behold -> {
+                        // Store beheld card IDs in pipeline for downstream costs/effects
+                        val chosen = action.additionalCostPayment.beheldCards
+                        beheldCards.addAll(chosen)
+                        costPipelineCollections[additionalCost.storeAs] = chosen
+
+                        // Behold reveals the chosen card(s) to all players
+                        if (chosen.isNotEmpty()) {
+                            val cardNames = chosen.mapNotNull { currentState.getEntity(it)?.get<CardComponent>()?.name }
+                            val imageUris = chosen.map { id ->
+                                val defId = currentState.getEntity(id)?.get<CardComponent>()?.cardDefinitionId
+                                defId?.let { cardRegistry.getCard(it)?.metadata?.imageUri }
+                            }
+                            events.add(CardsRevealedEvent(
+                                revealingPlayerId = action.playerId,
+                                cardIds = chosen,
+                                cardNames = cardNames,
+                                imageUris = imageUris,
+                                source = "Behold"
+                            ))
+                        }
+                    }
+                    is AdditionalCost.ExileFromStorage -> {
+                        // Exile cards from pipeline collection (e.g., beheld cards)
+                        val cardsToExile = costPipelineCollections[additionalCost.from] ?: emptyList()
+                        for (cardId in cardsToExile) {
+                            val cardContainer = currentState.getEntity(cardId) ?: continue
+                            val card = cardContainer.get<CardComponent>() ?: continue
+
+                            // Determine source zone (could be battlefield or hand)
+                            val controllerId = cardContainer.get<ControllerComponent>()?.playerId ?: action.playerId
+                            val ownerId = card.ownerId ?: action.playerId
+                            val sourceZone = if (cardId in currentState.getBattlefield()) {
+                                ZoneKey(controllerId, Zone.BATTLEFIELD)
+                            } else {
+                                ZoneKey(action.playerId, Zone.HAND)
+                            }
+                            val exileZone = ZoneKey(ownerId, Zone.EXILE)
+
+                            currentState = currentState.removeFromZone(sourceZone, cardId)
+                            currentState = currentState.addToZone(exileZone, cardId)
+
+                            events.add(ZoneChangeEvent(
+                                entityId = cardId,
+                                entityName = card.name,
+                                fromZone = sourceZone.zoneType,
+                                toZone = Zone.EXILE,
+                                ownerId = ownerId
+                            ))
+                        }
+                        // Link exiled cards to spell entity for LTB triggers
+                        if (additionalCost.linkToSource && cardsToExile.isNotEmpty()) {
+                            currentState = currentState.updateEntity(action.cardId) { c ->
+                                c.with(com.wingedsheep.engine.state.components.battlefield.LinkedExileComponent(
+                                    exiledIds = cardsToExile
+                                ))
+                            }
                         }
                     }
                     else -> {}
@@ -1031,7 +1132,8 @@ class CastSpellHandler(
             wasKicked = action.wasKicked,
             wasWarped = wasWarped,
             chosenModes = if (action.chosenMode != null) listOf(action.chosenMode) else emptyList(),
-            totalManaSpent = manaSpentThisCast
+            totalManaSpent = manaSpentThisCast,
+            beheldCards = beheldCards
         )
 
         if (!castResult.isSuccess) {

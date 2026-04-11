@@ -662,6 +662,26 @@ class CostHandler(
                 }
                 graveyardSize >= 3 || hasFood
             }
+            is AdditionalCost.Behold -> {
+                // Can behold if matching permanent on battlefield or matching card in hand
+                val projected = state.projectedState
+                val predicateContext = PredicateContext(controllerId = controllerId)
+                val hasBattlefieldMatch = projected.getBattlefieldControlledBy(controllerId).any { permId ->
+                    predicateEvaluator.matchesWithProjection(state, projected, permId, cost.filter, predicateContext)
+                }
+                val hasHandMatch = state.getHand(controllerId).any { cardId ->
+                    predicateEvaluator.matches(state, cardId, cost.filter, predicateContext)
+                }
+                hasBattlefieldMatch || hasHandMatch
+            }
+            is AdditionalCost.ExileFromStorage -> {
+                // Payability determined by the preceding cost that populated the storage
+                true
+            }
+            is AdditionalCost.Composite -> {
+                // All steps must be payable
+                cost.steps.all { canPayAdditionalCost(state, it, controllerId) }
+            }
         }
     }
 

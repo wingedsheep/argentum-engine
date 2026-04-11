@@ -102,7 +102,8 @@ class StackResolver(
         wasKicked: Boolean = false,
         wasWarped: Boolean = false,
         chosenModes: List<Int> = emptyList(),
-        totalManaSpent: Int = 0
+        totalManaSpent: Int = 0,
+        beheldCards: List<EntityId> = emptyList()
     ): ExecutionResult {
         val container = state.getEntity(cardId)
             ?: return ExecutionResult.error(state, "Card not found: $cardId")
@@ -130,7 +131,8 @@ class StackResolver(
                 chosenCreatureType = chosenCreatureType,
                 exiledCardCount = exiledCardCount,
                 castFromZone = castFromZone,
-                wasWarped = wasWarped
+                wasWarped = wasWarped,
+                beheldCards = beheldCards
             ))
             if (targets.isNotEmpty()) {
                 updated = updated.with(TargetsComponent(targets, targetRequirements))
@@ -757,7 +759,11 @@ class StackResolver(
                 chosenCreatureType = spellComponent.chosenCreatureType,
                 exiledCardCount = spellComponent.exiledCardCount,
                 castFromZone = spellComponent.castFromZone,
-                pipeline = PipelineState(namedTargets = EffectContext.buildNamedTargets(targetRequirements, targets))
+                pipeline = PipelineState(
+                    namedTargets = EffectContext.buildNamedTargets(targetRequirements, targets),
+                    storedCollections = if (spellComponent.beheldCards.isNotEmpty())
+                        mapOf("beheld" to spellComponent.beheldCards) else emptyMap()
+                )
             )
 
             val effectResult = effectHandler.execute(newState, spellEffect, context)

@@ -54,6 +54,7 @@ export interface AdditionalCostPayment {
   readonly discardedCards?: readonly EntityId[]
   readonly lifePaid?: number
   readonly exiledCards?: readonly EntityId[]
+  readonly beheldCards?: readonly EntityId[]
   readonly tappedPermanents?: readonly EntityId[]
   readonly bouncedPermanents?: readonly EntityId[]
   readonly counterRemovals?: Readonly<Record<EntityId, number>>
