@@ -876,7 +876,11 @@ object ClientEventTransformer {
             }
 
             is CardsRevealedEvent -> {
-                // Public reveal - all players see this event
+                // Skip reveal overlay for the revealing player when revealToSelf is false
+                // (e.g., behold from hand — the caster already knows what they chose)
+                if (!event.revealToSelf && event.revealingPlayerId == viewingPlayerId) {
+                    return null
+                }
                 ClientEvent.CardsRevealed(
                     revealingPlayerId = event.revealingPlayerId,
                     cardIds = event.cardIds,

@@ -679,7 +679,9 @@ data class CardsRevealedEvent(
     val cardIds: List<EntityId>,
     val cardNames: List<String>,
     val imageUris: List<String?> = emptyList(),
-    val source: String? = null
+    val source: String? = null,
+    /** If false, the revealing player does not see the reveal overlay (e.g., behold from hand) */
+    val revealToSelf: Boolean = true
 ) : GameEvent
 
 /**

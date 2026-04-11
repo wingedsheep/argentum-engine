@@ -949,7 +949,8 @@ class CastSpellHandler(
                                 cardIds = chosen,
                                 cardNames = cardNames,
                                 imageUris = imageUris,
-                                source = cardComponent.name
+                                source = cardComponent.name,
+                                revealToSelf = false
                             ))
                         }
                     }
