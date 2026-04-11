@@ -176,6 +176,8 @@ export function GameCard({
   const isInTargetingMode = targetingState !== null
   const isValidTarget = targetingState?.validTargets.includes(card.id) ?? false
   const isSelectedTarget = targetingState?.selectedTargets.includes(card.id) ?? false
+  const isBeingCast = isInTargetingMode && targetingState?.action != null &&
+    'cardId' in targetingState.action && targetingState.action.cardId === card.id
 
   // Check if this card is a valid target in a pending ChooseTargetsDecision (single-requirement only)
   const isChooseTargetsDecision = pendingDecision?.type === 'ChooseTargetsDecision'
@@ -765,6 +767,10 @@ export function GameCard({
     // Dim purple border for ghost cards that aren't playable
     borderStyle = '2px solid #6644aa'
     boxShadow = '0 0 8px rgba(102, 68, 170, 0.4), 0 0 16px rgba(102, 68, 170, 0.2)'
+  } else if (isBeingCast) {
+    // Amber border for the card currently being cast (not selectable as a cost target)
+    borderStyle = '2px solid #d4a017'
+    boxShadow = '0 0 12px rgba(212, 160, 23, 0.5), 0 0 24px rgba(212, 160, 23, 0.3)'
   } else if (isPlayable && isHovered) {
     // Bright cyan highlight when hovering over a playable card
     borderStyle = `3px solid ${TARGET_COLOR_BRIGHT}`
@@ -1591,6 +1597,37 @@ export function GameCard({
           >
             +
           </button>
+        </div>
+      )}
+
+      {/* "Casting" badge for the spell being cast during cost selection */}
+      {isBeingCast && (
+        <div style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          backgroundColor: 'rgba(0, 0, 0, 0.45)',
+          borderRadius: 'inherit',
+          zIndex: 15,
+          pointerEvents: 'none',
+        }}>
+          <span style={{
+            backgroundColor: 'rgba(212, 160, 23, 0.9)',
+            color: '#fff',
+            fontSize: responsive.isMobile ? 10 : 13,
+            fontWeight: 700,
+            padding: responsive.isMobile ? '2px 6px' : '3px 10px',
+            borderRadius: 4,
+            textTransform: 'uppercase',
+            letterSpacing: 1,
+          }}>
+            Casting
+          </span>
         </div>
       )}
 
