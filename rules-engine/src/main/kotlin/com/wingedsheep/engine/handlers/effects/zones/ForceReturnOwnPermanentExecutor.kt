@@ -1,4 +1,4 @@
-package com.wingedsheep.engine.handlers.effects.removal
+package com.wingedsheep.engine.handlers.effects.zones
 
 import com.wingedsheep.engine.core.DecisionPhase
 import com.wingedsheep.engine.core.ExecutionResult

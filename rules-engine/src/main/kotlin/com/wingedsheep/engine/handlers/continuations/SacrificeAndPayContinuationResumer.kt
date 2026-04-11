@@ -1,9 +1,9 @@
 package com.wingedsheep.engine.handlers.continuations
 
 import com.wingedsheep.engine.core.*
-import com.wingedsheep.engine.handlers.effects.removal.ForceExileMultiZoneExecutor
-import com.wingedsheep.engine.handlers.effects.removal.ForceSacrificeExecutor
-import com.wingedsheep.engine.handlers.effects.removal.ForceReturnOwnPermanentExecutor
+import com.wingedsheep.engine.handlers.effects.zones.ForceExileMultiZoneExecutor
+import com.wingedsheep.engine.handlers.effects.zones.ForceSacrificeExecutor
+import com.wingedsheep.engine.handlers.effects.zones.ForceReturnOwnPermanentExecutor
 import com.wingedsheep.engine.handlers.effects.ZoneTransitionService
 import com.wingedsheep.engine.handlers.DecisionHandler
 import com.wingedsheep.engine.handlers.EffectContext
@@ -265,7 +265,7 @@ class SacrificeAndPayContinuationResumer(
         }
 
         // Player chose to pay - execute random discard
-        val result = com.wingedsheep.engine.handlers.effects.removal.PayOrSufferExecutor.executeRandomDiscard(
+        val result = com.wingedsheep.engine.handlers.effects.player.PayOrSufferExecutor.executeRandomDiscard(
             state,
             continuation.playerId,
             continuation.filter,

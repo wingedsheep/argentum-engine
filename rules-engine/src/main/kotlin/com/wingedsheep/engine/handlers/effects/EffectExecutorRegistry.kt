@@ -14,11 +14,13 @@ import com.wingedsheep.engine.handlers.effects.information.InformationExecutors
 import com.wingedsheep.engine.handlers.effects.library.LibraryExecutors
 import com.wingedsheep.engine.handlers.effects.life.LifeExecutors
 import com.wingedsheep.engine.handlers.effects.mana.ManaExecutors
+import com.wingedsheep.engine.handlers.effects.linkedexile.LinkedExileExecutors
 import com.wingedsheep.engine.handlers.effects.permanent.PermanentExecutors
 import com.wingedsheep.engine.handlers.effects.player.PlayerExecutors
-import com.wingedsheep.engine.handlers.effects.removal.RemovalExecutors
+import com.wingedsheep.engine.handlers.effects.regeneration.RegenerationExecutors
 import com.wingedsheep.engine.handlers.effects.stack.StackExecutors
 import com.wingedsheep.engine.handlers.effects.token.TokenExecutors
+import com.wingedsheep.engine.handlers.effects.zones.ZonesExecutors
 import com.wingedsheep.engine.mechanics.layers.StaticAbilityHandler
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.sdk.scripting.effects.Effect
@@ -42,7 +44,7 @@ class EffectExecutorRegistry(
     private val executors = mutableMapOf<KClass<out Effect>, EffectExecutor<*>>()
     private val compositeExecutors = CompositeExecutors(cardRegistry, TargetFinder(), decisionHandler)
     private val drawingExecutors = DrawingExecutors(amountEvaluator, decisionHandler, cardRegistry = cardRegistry)
-    private val removalExecutors = RemovalExecutors(cardRegistry)
+    private val playerExecutors = PlayerExecutors(decisionHandler, cardRegistry)
     private val chainExecutors = ChainExecutors()
 
     init {
@@ -54,17 +56,19 @@ class EffectExecutorRegistry(
         registerModule(TokenExecutors(amountEvaluator, StaticAbilityHandler(cardRegistry), cardRegistry))
         registerModule(LibraryExecutors(cardRegistry = cardRegistry, targetFinder = TargetFinder()))
         registerModule(StackExecutors(amountEvaluator, cardRegistry))
-        registerModule(PlayerExecutors(decisionHandler))
         registerModule(InformationExecutors())
         registerModule(CombatExecutors(amountEvaluator))
+        registerModule(ZonesExecutors(cardRegistry))
+        registerModule(LinkedExileExecutors())
+        registerModule(RegenerationExecutors())
 
         // Deferred initialization for recursive executors
         compositeExecutors.initialize(::execute)
         registerModule(compositeExecutors)
         drawingExecutors.initialize(::execute)
         registerModule(drawingExecutors)
-        removalExecutors.initialize(::execute)
-        registerModule(removalExecutors)
+        playerExecutors.initialize(::execute)
+        registerModule(playerExecutors)
         chainExecutors.initialize(::execute)
         registerModule(chainExecutors)
     }

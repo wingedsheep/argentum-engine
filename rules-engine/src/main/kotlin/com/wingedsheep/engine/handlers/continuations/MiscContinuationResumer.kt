@@ -296,7 +296,7 @@ class MiscContinuationResumer(
             return ExecutionResult.error(state, "Selected card is not in the eligible linked exile cards")
         }
 
-        val result = com.wingedsheep.engine.handlers.effects.removal.ReturnOneFromLinkedExileExecutor
+        val result = com.wingedsheep.engine.handlers.effects.linkedexile.ReturnOneFromLinkedExileExecutor
             .returnCardToBattlefield(state, selectedCard, continuation.sourceId)
 
         return checkForMore(result.state, result.events)
