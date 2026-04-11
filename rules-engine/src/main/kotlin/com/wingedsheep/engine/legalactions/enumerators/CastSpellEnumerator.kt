@@ -861,7 +861,8 @@ class CastSpellEnumerator : ActionEnumerator {
                 discardCount = discardCount
             )
         } else if (beholdTargets.isNotEmpty()) {
-            val beholdCost = additionalCosts.filterIsInstance<AdditionalCost.Behold>().firstOrNull()
+            val flatCosts = additionalCosts.flatMap { if (it is AdditionalCost.Composite) it.steps else listOf(it) }
+            val beholdCost = flatCosts.filterIsInstance<AdditionalCost.Behold>().firstOrNull()
             AdditionalCostData(
                 description = beholdCost?.description ?: "Behold a card",
                 costType = "Behold",
