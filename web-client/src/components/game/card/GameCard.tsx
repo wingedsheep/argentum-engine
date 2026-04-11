@@ -823,7 +823,7 @@ export function GameCard({
         transform: `${isTapped ? 'rotate(90deg)' : ''} ${isSelected && (!isInCombatMode || !isCombatRoleCard) ? 'translateY(-8px)' : ''}`,
         transformOrigin: 'center',
         boxShadow,
-        opacity: isBeingDragged ? 0.6 : isGhost ? 0.55 : 1,
+        opacity: isBeingDragged ? 0.6 : isGhost ? 0.55 : (inHand && isInTargetingMode && !isValidTarget && !isBeingCast) ? 0.35 : 1,
         userSelect: 'none',
       }}
     >
