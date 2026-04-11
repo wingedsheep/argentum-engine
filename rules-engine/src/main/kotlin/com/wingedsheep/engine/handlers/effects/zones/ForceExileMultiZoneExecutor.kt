@@ -5,7 +5,6 @@ import com.wingedsheep.engine.handlers.DecisionHandler
 import com.wingedsheep.engine.handlers.DynamicAmountEvaluator
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
-import com.wingedsheep.engine.handlers.effects.TargetResolutionUtils
 import com.wingedsheep.engine.handlers.effects.ZoneEntryOptions
 import com.wingedsheep.engine.handlers.effects.ZoneTransitionService
 import com.wingedsheep.engine.state.GameState
@@ -39,7 +38,7 @@ class ForceExileMultiZoneExecutor(
         effect: ForceExileMultiZoneEffect,
         context: EffectContext
     ): ExecutionResult {
-        val playerId = TargetResolutionUtils.resolvePlayerTarget(effect.target, context)
+        val playerId = context.resolvePlayerTarget(effect.target)
             ?: return ExecutionResult.error(state, "No valid player for force exile multi-zone")
 
         val count = amountEvaluator.evaluate(state, effect.count, context)

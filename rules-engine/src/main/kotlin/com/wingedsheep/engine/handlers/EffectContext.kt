@@ -1,9 +1,12 @@
 package com.wingedsheep.engine.handlers
 
+import com.wingedsheep.engine.handlers.effects.TargetResolutionUtils
+import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
+import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.targets.TargetRequirement
 import kotlinx.serialization.Serializable
 
@@ -59,6 +62,60 @@ data class EffectContext(
     // --- Pipeline state ---
     val pipeline: PipelineState = PipelineState.EMPTY
 ) {
+    /**
+     * Resolve a symbolic effect target to a concrete entity id using just the context.
+     *
+     * Stateless resolution — handles self, controller, context targets, bound variables,
+     * pipeline targets, triggering entity, etc. For relational references that need to look
+     * up components (e.g., [EffectTarget.EnchantedCreature], [EffectTarget.TargetController]),
+     * use the overload that also takes [GameState].
+     */
+    fun resolveTarget(target: EffectTarget): EntityId? =
+        TargetResolutionUtils.resolveTarget(target, this)
+
+    /**
+     * Resolve a symbolic effect target to a concrete entity id, consulting [state] for
+     * relational references (attachments, controllers, owners).
+     */
+    fun resolveTarget(target: EffectTarget, state: GameState): EntityId? =
+        TargetResolutionUtils.resolveTarget(target, this, state)
+
+    /**
+     * Resolve a symbolic effect target and throw if it cannot be resolved.
+     * Use when the caller knows by construction that the target must exist.
+     */
+    fun requireTarget(target: EffectTarget): EntityId =
+        resolveTarget(target) ?: error("Cannot resolve target: $target")
+
+    /**
+     * Resolve a symbolic effect target using [state] and throw if it cannot be resolved.
+     */
+    fun requireTarget(target: EffectTarget, state: GameState): EntityId =
+        resolveTarget(target, state) ?: error("Cannot resolve target: $target")
+
+    /**
+     * Resolve a player reference target (e.g., "target player", "each opponent") to a
+     * single player entity id. Stateless overload — see [resolvePlayerTargets] for
+     * multi-player results.
+     */
+    fun resolvePlayerTarget(target: EffectTarget): EntityId? =
+        TargetResolutionUtils.resolvePlayerTarget(target, this)
+
+    /**
+     * Resolve a player reference target, consulting [state] for relational references
+     * like [com.wingedsheep.sdk.scripting.references.Player.OwnerOf] /
+     * [com.wingedsheep.sdk.scripting.references.Player.ControllerOf].
+     */
+    fun resolvePlayerTarget(target: EffectTarget, state: GameState): EntityId? =
+        TargetResolutionUtils.resolvePlayerTarget(target, this, state)
+
+    /**
+     * Resolve a player reference target to a list of player ids (for multi-player effects
+     * like "each player" / "each opponent").
+     */
+    fun resolvePlayerTargets(target: EffectTarget, state: GameState): List<EntityId> =
+        TargetResolutionUtils.resolvePlayerTargets(target, state, this)
+
     companion object {
         /**
          * Build a named targets map from target requirements and chosen targets.

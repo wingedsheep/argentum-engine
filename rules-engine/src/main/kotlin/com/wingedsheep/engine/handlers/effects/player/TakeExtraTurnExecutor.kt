@@ -3,7 +3,6 @@ package com.wingedsheep.engine.handlers.effects.player
 import com.wingedsheep.engine.core.ExecutionResult
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
-import com.wingedsheep.engine.handlers.effects.TargetResolutionUtils
 import com.wingedsheep.engine.handlers.effects.ReplacementEffectUtils
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.player.LoseAtEndStepComponent
@@ -33,7 +32,7 @@ class TakeExtraTurnExecutor : EffectExecutor<TakeExtraTurnEffect> {
         context: EffectContext
     ): ExecutionResult {
         // Resolve who takes the extra turn — defaults to the controller
-        val turnTakerId = TargetResolutionUtils.resolveTarget(effect.target, context, state)
+        val turnTakerId = context.resolveTarget(effect.target, state)
             ?: context.controllerId
 
         // Check if extra turns are prevented (e.g., Ugin's Nexus on the battlefield)

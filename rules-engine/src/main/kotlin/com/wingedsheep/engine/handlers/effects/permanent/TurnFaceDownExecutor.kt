@@ -4,7 +4,6 @@ import com.wingedsheep.engine.core.ExecutionResult
 import com.wingedsheep.engine.core.TurnedFaceDownEvent
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
-import com.wingedsheep.engine.handlers.effects.TargetResolutionUtils.resolveTarget
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.identity.FaceDownComponent
@@ -28,7 +27,7 @@ class TurnFaceDownExecutor : EffectExecutor<TurnFaceDownEffect> {
         effect: TurnFaceDownEffect,
         context: EffectContext
     ): ExecutionResult {
-        val targetId = resolveTarget(effect.target, context)
+        val targetId = context.resolveTarget(effect.target)
             ?: return ExecutionResult.error(state, "No valid target for turn face down")
 
         val container = state.getEntity(targetId)

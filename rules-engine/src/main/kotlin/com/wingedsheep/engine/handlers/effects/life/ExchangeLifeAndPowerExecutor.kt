@@ -7,7 +7,6 @@ import com.wingedsheep.engine.handlers.effects.DamageUtils
 import com.wingedsheep.engine.core.GameEvent as EngineGameEvent
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
-import com.wingedsheep.engine.handlers.effects.TargetResolutionUtils.resolveTarget
 import com.wingedsheep.engine.mechanics.layers.Layer
 import com.wingedsheep.engine.mechanics.layers.SerializableModification
 import com.wingedsheep.engine.mechanics.layers.Sublayer
@@ -38,7 +37,7 @@ class ExchangeLifeAndPowerExecutor : EffectExecutor<ExchangeLifeAndPowerEffect> 
         effect: ExchangeLifeAndPowerEffect,
         context: EffectContext
     ): ExecutionResult {
-        val creatureId = resolveTarget(effect.target, context, state)
+        val creatureId = context.resolveTarget(effect.target, state)
             ?: return ExecutionResult.success(state)
 
         // Creature must be on the battlefield

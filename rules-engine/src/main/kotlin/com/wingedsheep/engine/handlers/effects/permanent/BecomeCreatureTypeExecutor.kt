@@ -3,7 +3,6 @@ package com.wingedsheep.engine.handlers.effects.permanent
 import com.wingedsheep.engine.core.*
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
-import com.wingedsheep.engine.handlers.effects.TargetResolutionUtils.resolveTarget
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.sdk.core.Subtype
@@ -30,7 +29,7 @@ class BecomeCreatureTypeExecutor : EffectExecutor<BecomeCreatureTypeEffect> {
         effect: BecomeCreatureTypeEffect,
         context: EffectContext
     ): ExecutionResult {
-        val targetId = resolveTarget(effect.target, context, state)
+        val targetId = context.resolveTarget(effect.target, state)
             ?: return ExecutionResult.success(state.tick())
 
         // Target must still be on the battlefield

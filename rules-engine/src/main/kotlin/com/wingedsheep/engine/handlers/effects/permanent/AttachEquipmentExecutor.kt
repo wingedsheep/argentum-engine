@@ -3,7 +3,6 @@ package com.wingedsheep.engine.handlers.effects.permanent
 import com.wingedsheep.engine.core.ExecutionResult
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
-import com.wingedsheep.engine.handlers.effects.TargetResolutionUtils.resolveTarget
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.battlefield.AttachedToComponent
 import com.wingedsheep.engine.state.components.battlefield.AttachmentsComponent
@@ -26,7 +25,7 @@ class AttachEquipmentExecutor : EffectExecutor<AttachEquipmentEffect> {
         val equipmentId = context.sourceId
             ?: return ExecutionResult.error(state, "No source for attach equipment")
 
-        val targetId = resolveTarget(effect.target, context, state)
+        val targetId = context.resolveTarget(effect.target, state)
             ?: return ExecutionResult.error(state, "No valid target for attach equipment")
 
         var newState = state

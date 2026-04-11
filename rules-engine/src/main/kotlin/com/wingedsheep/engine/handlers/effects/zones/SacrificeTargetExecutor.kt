@@ -3,7 +3,6 @@ package com.wingedsheep.engine.handlers.effects.removal
 import com.wingedsheep.engine.core.*
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
-import com.wingedsheep.engine.handlers.effects.TargetResolutionUtils.resolveTarget
 import com.wingedsheep.engine.handlers.effects.ZoneTransitionService
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.identity.CardComponent
@@ -33,7 +32,7 @@ class SacrificeTargetExecutor : EffectExecutor<SacrificeTargetEffect> {
         effect: SacrificeTargetEffect,
         context: EffectContext
     ): ExecutionResult {
-        val targetId = resolveTarget(effect.target, context)
+        val targetId = context.resolveTarget(effect.target)
             ?: return ExecutionResult.success(state)
 
         // Find the zone the permanent is in

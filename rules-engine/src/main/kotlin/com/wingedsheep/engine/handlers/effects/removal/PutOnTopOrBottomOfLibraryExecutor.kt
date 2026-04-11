@@ -3,7 +3,6 @@ package com.wingedsheep.engine.handlers.effects.removal
 import com.wingedsheep.engine.core.*
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
-import com.wingedsheep.engine.handlers.effects.TargetResolutionUtils.resolveTarget
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.OwnerComponent
@@ -26,7 +25,7 @@ class PutOnTopOrBottomOfLibraryExecutor : EffectExecutor<PutOnTopOrBottomOfLibra
         effect: PutOnTopOrBottomOfLibraryEffect,
         context: EffectContext
     ): ExecutionResult {
-        val targetId = resolveTarget(effect.target, context, state)
+        val targetId = context.resolveTarget(effect.target, state)
             ?: return ExecutionResult.error(state, "No valid target for put on top or bottom of library")
 
         val container = state.getEntity(targetId)

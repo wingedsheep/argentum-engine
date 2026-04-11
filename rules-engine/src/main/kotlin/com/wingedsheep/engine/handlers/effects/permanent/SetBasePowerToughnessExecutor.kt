@@ -3,7 +3,6 @@ package com.wingedsheep.engine.handlers.effects.permanent
 import com.wingedsheep.engine.core.ExecutionResult
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
-import com.wingedsheep.engine.handlers.effects.TargetResolutionUtils.resolveTarget
 import com.wingedsheep.engine.mechanics.layers.Layer
 import com.wingedsheep.engine.mechanics.layers.SerializableModification
 import com.wingedsheep.engine.mechanics.layers.Sublayer
@@ -25,7 +24,7 @@ class SetBasePowerToughnessExecutor : EffectExecutor<SetBasePowerToughnessEffect
         effect: SetBasePowerToughnessEffect,
         context: EffectContext
     ): ExecutionResult {
-        val targetId = resolveTarget(effect.target, context, state)
+        val targetId = context.resolveTarget(effect.target, state)
             ?: return ExecutionResult.success(state)
 
         if (targetId !in state.getBattlefield()) {

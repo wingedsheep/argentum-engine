@@ -4,7 +4,6 @@ import com.wingedsheep.engine.core.ExecutionResult
 import com.wingedsheep.engine.core.ZoneChangeEvent
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
-import com.wingedsheep.engine.handlers.effects.TargetResolutionUtils.resolveTarget
 import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.mechanics.layers.StaticAbilityHandler
 import com.wingedsheep.engine.state.GameState
@@ -46,7 +45,7 @@ class ReturnSelfToBattlefieldAttachedExecutor(
         val sourceId = context.sourceId
             ?: return ExecutionResult.error(state, "No source entity for ReturnSelfToBattlefieldAttached")
 
-        val attachTargetId = resolveTarget(effect.target, context, state)
+        val attachTargetId = context.resolveTarget(effect.target, state)
             ?: return ExecutionResult.error(state, "No valid attachment target")
 
         // Verify the attachment target is on the battlefield

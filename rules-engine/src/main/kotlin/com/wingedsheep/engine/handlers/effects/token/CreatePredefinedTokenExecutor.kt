@@ -4,7 +4,6 @@ import com.wingedsheep.engine.core.ExecutionResult
 import com.wingedsheep.engine.core.ZoneChangeEvent
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
-import com.wingedsheep.engine.handlers.effects.TargetResolutionUtils
 import com.wingedsheep.engine.mechanics.layers.StaticAbilityHandler
 import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.ComponentContainer
@@ -46,7 +45,7 @@ class CreatePredefinedTokenExecutor(
 
         val controller = effect.controller
         val tokenControllerId = if (controller != null) {
-            TargetResolutionUtils.resolvePlayerTarget(controller, context, state)
+            context.resolvePlayerTarget(controller, state)
                 ?: context.controllerId
         } else {
             context.controllerId

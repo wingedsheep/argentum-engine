@@ -4,7 +4,6 @@ import com.wingedsheep.engine.core.ExecutionResult
 import com.wingedsheep.engine.event.GrantedTriggeredAbility
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
-import com.wingedsheep.engine.handlers.effects.TargetResolutionUtils.resolveTarget
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.sdk.scripting.effects.GrantTriggeredAbilityEffect
@@ -28,7 +27,7 @@ class GrantTriggeredAbilityExecutor : EffectExecutor<GrantTriggeredAbilityEffect
         effect: GrantTriggeredAbilityEffect,
         context: EffectContext
     ): ExecutionResult {
-        val targetId = resolveTarget(effect.target, context)
+        val targetId = context.resolveTarget(effect.target)
             ?: return ExecutionResult.error(state, "No valid target for triggered ability grant")
 
         // Verify target exists and is a creature on the battlefield

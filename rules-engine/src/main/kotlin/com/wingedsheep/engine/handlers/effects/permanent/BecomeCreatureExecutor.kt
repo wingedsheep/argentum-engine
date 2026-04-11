@@ -3,7 +3,6 @@ package com.wingedsheep.engine.handlers.effects.permanent
 import com.wingedsheep.engine.core.ExecutionResult
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
-import com.wingedsheep.engine.handlers.effects.TargetResolutionUtils.resolveTarget
 import com.wingedsheep.engine.mechanics.layers.ActiveFloatingEffect
 import com.wingedsheep.engine.mechanics.layers.Layer
 import com.wingedsheep.engine.mechanics.layers.SerializableModification
@@ -30,7 +29,7 @@ class BecomeCreatureExecutor : EffectExecutor<BecomeCreatureEffect> {
         effect: BecomeCreatureEffect,
         context: EffectContext
     ): ExecutionResult {
-        val targetId = resolveTarget(effect.target, context)
+        val targetId = context.resolveTarget(effect.target)
             ?: return ExecutionResult.success(state)
 
         // Verify the target is still on the battlefield

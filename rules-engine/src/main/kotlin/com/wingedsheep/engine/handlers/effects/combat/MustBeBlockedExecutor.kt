@@ -3,7 +3,6 @@ package com.wingedsheep.engine.handlers.effects.combat
 import com.wingedsheep.engine.core.ExecutionResult
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
-import com.wingedsheep.engine.handlers.effects.TargetResolutionUtils.resolveTarget
 import com.wingedsheep.engine.mechanics.layers.Layer
 import com.wingedsheep.engine.mechanics.layers.SerializableModification
 import com.wingedsheep.engine.mechanics.layers.addFloatingEffect
@@ -31,7 +30,7 @@ class MustBeBlockedExecutor : EffectExecutor<MustBeBlockedEffect> {
         context: EffectContext
     ): ExecutionResult {
         // Resolve the target creature
-        val targetId = resolveTarget(effect.target, context)
+        val targetId = context.resolveTarget(effect.target)
             ?: return ExecutionResult.error(state, "No valid target for must-be-blocked effect")
 
         // Verify target exists and is a creature

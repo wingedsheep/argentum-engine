@@ -124,22 +124,26 @@ a pure engine refactor with no SDK prerequisites and can proceed independently.
 
 ---
 
-### 2.2 Extract `EffectContext.resolveTarget()` helper
+### 2.2 Extract `EffectContext.resolveTarget()` helper ✅
 
-**Why it matters.** `TargetResolutionUtils.resolveTarget(...)` is called from **71 places**
-across `handlers/effects/`. Every executor imports the utility and repeats the same "resolve or
-error" boilerplate. The executors could be 20-30% shorter if `EffectContext` (which is already
-threaded through every executor) exposed a direct method.
+**Status.** Fixed on 2026-04-11. `EffectContext` now exposes member methods that delegate to
+`TargetResolutionUtils`:
 
-**Fix.**
 ```kotlin
-// EffectContext.kt
-fun resolveTarget(effectTarget: EffectTarget): EntityId? = ...
-fun requireTarget(effectTarget: EffectTarget): EntityId = ...
+fun resolveTarget(target: EffectTarget): EntityId?
+fun resolveTarget(target: EffectTarget, state: GameState): EntityId?
+fun requireTarget(target: EffectTarget): EntityId                    // throws on null
+fun requireTarget(target: EffectTarget, state: GameState): EntityId  // throws on null
+fun resolvePlayerTarget(target: EffectTarget): EntityId?
+fun resolvePlayerTarget(target: EffectTarget, state: GameState): EntityId?
+fun resolvePlayerTargets(target: EffectTarget, state: GameState): List<EntityId>
 ```
-Then mechanically replace every `TargetResolutionUtils.resolveTarget(effect.target, context, state)`
-with `context.resolveTarget(effect.target)`. The utility object can stay as the backing
-implementation; the call sites just get cleaner.
+
+All 87 executor files migrated from `TargetResolutionUtils.resolveTarget(effect.target, context, state)`
+to `context.resolveTarget(effect.target, state)` (and the player-target equivalents). Member imports
+of `TargetResolutionUtils.resolveTarget` / `.resolvePlayerTarget` / `.resolvePlayerTargets` were
+cleaned up across the tree. The utility object remains as the backing implementation and still hosts
+`toEntityId` (an extension on `ChosenTarget`), which intentionally stays put.
 
 ---
 
@@ -304,7 +308,7 @@ This document deliberately does **not** re-list items already tracked elsewhere.
 **Recommended order of attack:**
 1. ~~Tier 1.1 — add the `controlledBattlefield` helper, then grep-and-replace every raw `ZoneKey(_, BATTLEFIELD)` inside `handlers/effects/`.~~ ✅ Done.
 2. ~~Tier 2.1 — audit monolithic executors and file decomposition tickets.~~ ✅ Tracked (see 2.1 above). Implementation of each ticket proceeds when the set it serves comes up.
-3. Tier 2.2 (`EffectContext.resolveTarget`) — single mechanical pass, unlocks downstream cleanup of every effect executor.
+3. ~~Tier 2.2 (`EffectContext.resolveTarget`) — single mechanical pass, unlocks downstream cleanup of every effect executor.~~ ✅ Done.
 4. Tier 2.3 (folder reorg) once 2.1 tickets have stabilized so file moves don't churn in-flight work.
 5. Tier 2.4 (serialization reflection test) — cheap, high insurance value.
 6. Tier 1.2 and everything else opportunistically.

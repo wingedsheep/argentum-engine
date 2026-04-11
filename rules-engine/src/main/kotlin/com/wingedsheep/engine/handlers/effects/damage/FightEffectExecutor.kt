@@ -5,7 +5,6 @@ import com.wingedsheep.engine.core.GameEvent
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.handlers.effects.DamageUtils.dealDamageToTarget
-import com.wingedsheep.engine.handlers.effects.TargetResolutionUtils.resolveTarget
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.sdk.scripting.effects.FightEffect
 import kotlin.reflect.KClass
@@ -24,10 +23,10 @@ class FightEffectExecutor : EffectExecutor<FightEffect> {
         effect: FightEffect,
         context: EffectContext
     ): ExecutionResult {
-        val target1Id = resolveTarget(effect.target1, context, state)
+        val target1Id = context.resolveTarget(effect.target1, state)
             ?: return ExecutionResult.error(state, "No valid first target for fight")
 
-        val target2Id = resolveTarget(effect.target2, context, state)
+        val target2Id = context.resolveTarget(effect.target2, state)
             ?: return ExecutionResult.error(state, "No valid second target for fight")
 
         // Get projected power for each creature (projected state accounts for buffs/debuffs)

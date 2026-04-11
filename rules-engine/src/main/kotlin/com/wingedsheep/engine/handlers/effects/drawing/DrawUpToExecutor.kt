@@ -4,7 +4,6 @@ import com.wingedsheep.engine.core.*
 import com.wingedsheep.engine.handlers.DecisionHandler
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
-import com.wingedsheep.engine.handlers.effects.TargetResolutionUtils
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.identity.CardComponent
@@ -35,7 +34,7 @@ class DrawUpToExecutor(
         effect: DrawUpToEffect,
         context: EffectContext
     ): ExecutionResult {
-        val playerId = TargetResolutionUtils.resolvePlayerTarget(effect.target, context)
+        val playerId = context.resolvePlayerTarget(effect.target)
             ?: return ExecutionResult.error(state, "DrawUpTo: could not resolve player target")
 
         val sourceName = context.sourceId?.let { sourceId ->

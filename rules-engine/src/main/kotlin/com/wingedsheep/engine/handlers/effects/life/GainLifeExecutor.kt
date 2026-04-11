@@ -8,7 +8,6 @@ import com.wingedsheep.engine.handlers.DynamicAmountEvaluator
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.handlers.effects.DamageUtils
-import com.wingedsheep.engine.handlers.effects.TargetResolutionUtils.resolvePlayerTargets
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.battlefield.ReplacementEffectSourceComponent
 import com.wingedsheep.engine.state.components.identity.LifeTotalComponent
@@ -33,7 +32,7 @@ class GainLifeExecutor(
         effect: GainLifeEffect,
         context: EffectContext
     ): ExecutionResult {
-        val playerIds = resolvePlayerTargets(effect.target, state, context)
+        val playerIds = context.resolvePlayerTargets(effect.target, state)
         if (playerIds.isEmpty()) {
             return ExecutionResult.error(state, "No valid target for life gain")
         }

@@ -8,7 +8,6 @@ import com.wingedsheep.engine.handlers.effects.ZoneEntryOptions
 import com.wingedsheep.engine.handlers.effects.ZoneMovementUtils
 import com.wingedsheep.engine.handlers.effects.ZoneMovementUtils.destroyPermanent
 import com.wingedsheep.engine.handlers.effects.ZoneTransitionService
-import com.wingedsheep.engine.handlers.effects.TargetResolutionUtils.resolveTarget
 import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.battlefield.LinkedExileComponent
@@ -39,7 +38,7 @@ class MoveToZoneEffectExecutor(
         effect: MoveToZoneEffect,
         context: EffectContext
     ): ExecutionResult {
-        val targetId = resolveTarget(effect.target, context, state)
+        val targetId = context.resolveTarget(effect.target, state)
             ?: return ExecutionResult.error(state, "No valid target for move to zone")
 
         // byDestruction delegates to destroyPermanent (handles indestructible)
@@ -68,7 +67,7 @@ class MoveToZoneEffectExecutor(
         // Resolve controller override for "under your control" effects
         val controllerOverride = effect.controllerOverride
         val controllerId = if (controllerOverride != null && effect.destination == Zone.BATTLEFIELD) {
-            resolveTarget(controllerOverride, context, state) ?: ownerId
+            context.resolveTarget(controllerOverride, state) ?: ownerId
         } else {
             ownerId
         }

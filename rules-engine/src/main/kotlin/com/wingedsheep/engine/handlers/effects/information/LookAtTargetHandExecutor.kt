@@ -4,7 +4,6 @@ import com.wingedsheep.engine.core.ExecutionResult
 import com.wingedsheep.engine.core.HandLookedAtEvent
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
-import com.wingedsheep.engine.handlers.effects.TargetResolutionUtils.resolveTarget
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.identity.RevealedToComponent
 import com.wingedsheep.sdk.scripting.effects.LookAtTargetHandEffect
@@ -27,7 +26,7 @@ class LookAtTargetHandExecutor : EffectExecutor<LookAtTargetHandEffect> {
         effect: LookAtTargetHandEffect,
         context: EffectContext
     ): ExecutionResult {
-        val targetPlayerId = resolveTarget(effect.target, context)
+        val targetPlayerId = context.resolveTarget(effect.target)
             ?: return ExecutionResult.error(state, "No valid target player for look at hand")
 
         val viewingPlayerId = context.controllerId

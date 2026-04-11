@@ -3,7 +3,6 @@ package com.wingedsheep.engine.handlers.effects.removal
 import com.wingedsheep.engine.core.ExecutionResult
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
-import com.wingedsheep.engine.handlers.effects.TargetResolutionUtils.resolveTarget
 import com.wingedsheep.engine.handlers.effects.ZoneTransitionService
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.identity.CardComponent
@@ -30,7 +29,7 @@ class WarpExileExecutor : EffectExecutor<WarpExileEffect> {
         effect: WarpExileEffect,
         context: EffectContext
     ): ExecutionResult {
-        val targetId = resolveTarget(effect.target, context, state)
+        val targetId = context.resolveTarget(effect.target, state)
             ?: return ExecutionResult.success(state) // Permanent may have already left the battlefield
 
         val container = state.getEntity(targetId)

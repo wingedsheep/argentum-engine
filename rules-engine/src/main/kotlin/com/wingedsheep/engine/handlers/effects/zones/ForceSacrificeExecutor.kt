@@ -6,7 +6,6 @@ import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.PredicateContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.handlers.effects.BattlefieldFilterUtils
-import com.wingedsheep.engine.handlers.effects.TargetResolutionUtils.resolvePlayerTargets
 import com.wingedsheep.engine.handlers.effects.ZoneTransitionService
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.identity.CardComponent
@@ -39,7 +38,7 @@ class ForceSacrificeExecutor(
         effect: ForceSacrificeEffect,
         context: EffectContext
     ): ExecutionResult {
-        val playerIds = resolvePlayerTargets(effect.target, state, context)
+        val playerIds = context.resolvePlayerTargets(effect.target, state)
         if (playerIds.isEmpty()) {
             return ExecutionResult.error(state, "No valid player for force sacrifice")
         }

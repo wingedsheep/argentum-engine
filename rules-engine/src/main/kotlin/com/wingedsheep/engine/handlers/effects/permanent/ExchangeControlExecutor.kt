@@ -4,7 +4,6 @@ import com.wingedsheep.engine.core.ControlChangedEvent
 import com.wingedsheep.engine.core.ExecutionResult
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
-import com.wingedsheep.engine.handlers.effects.TargetResolutionUtils.resolveTarget
 import com.wingedsheep.engine.mechanics.layers.Layer
 import com.wingedsheep.engine.mechanics.layers.SerializableModification
 import com.wingedsheep.engine.mechanics.layers.addFloatingEffects
@@ -31,10 +30,10 @@ class ExchangeControlExecutor : EffectExecutor<ExchangeControlEffect> {
         effect: ExchangeControlEffect,
         context: EffectContext
     ): ExecutionResult {
-        val target1Id = resolveTarget(effect.target1, context)
+        val target1Id = context.resolveTarget(effect.target1)
             ?: return ExecutionResult.error(state, "No valid first target for exchange")
 
-        val target2Id = resolveTarget(effect.target2, context)
+        val target2Id = context.resolveTarget(effect.target2)
             ?: return ExecutionResult.error(state, "No valid second target for exchange")
 
         val container1 = state.getEntity(target1Id)

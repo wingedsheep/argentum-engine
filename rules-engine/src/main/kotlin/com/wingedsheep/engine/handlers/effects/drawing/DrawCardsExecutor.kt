@@ -5,7 +5,6 @@ import com.wingedsheep.engine.core.GameEvent
 import com.wingedsheep.engine.handlers.DynamicAmountEvaluator
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
-import com.wingedsheep.engine.handlers.effects.TargetResolutionUtils
 import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.sdk.model.EntityId
@@ -38,7 +37,7 @@ class DrawCardsExecutor(
         effect: DrawCardsEffect,
         context: EffectContext
     ): ExecutionResult {
-        val playerIds = TargetResolutionUtils.resolvePlayerTargets(effect.target, state, context)
+        val playerIds = context.resolvePlayerTargets(effect.target, state)
         if (playerIds.isEmpty()) {
             return ExecutionResult.error(state, "No valid player for draw")
         }

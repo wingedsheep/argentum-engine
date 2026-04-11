@@ -3,7 +3,6 @@ package com.wingedsheep.engine.handlers.effects.combat
 import com.wingedsheep.engine.core.ExecutionResult
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
-import com.wingedsheep.engine.handlers.effects.TargetResolutionUtils.resolvePlayerTarget
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.combat.MustAttackPlayerComponent
 import com.wingedsheep.sdk.scripting.effects.TauntEffect
@@ -28,7 +27,7 @@ class TauntExecutor : EffectExecutor<TauntEffect> {
         context: EffectContext
     ): ExecutionResult {
         // Resolve the target player (whose creatures must attack)
-        val targetPlayerId = resolvePlayerTarget(effect.target, context)
+        val targetPlayerId = context.resolvePlayerTarget(effect.target)
             ?: return ExecutionResult.error(state, "No valid target player for Taunt effect")
 
         // The defender is the controller of Taunt (the caster)

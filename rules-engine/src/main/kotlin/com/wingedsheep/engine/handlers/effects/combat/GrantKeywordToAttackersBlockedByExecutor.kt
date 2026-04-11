@@ -4,7 +4,6 @@ import com.wingedsheep.engine.core.ExecutionResult
 import com.wingedsheep.engine.core.KeywordGrantedEvent
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
-import com.wingedsheep.engine.handlers.effects.TargetResolutionUtils.resolveTarget
 import com.wingedsheep.engine.mechanics.layers.Layer
 import com.wingedsheep.engine.mechanics.layers.SerializableModification
 import com.wingedsheep.engine.mechanics.layers.addFloatingEffects
@@ -30,7 +29,7 @@ class GrantKeywordToAttackersBlockedByExecutor : EffectExecutor<GrantKeywordToAt
         effect: GrantKeywordToAttackersBlockedByEffect,
         context: EffectContext
     ): ExecutionResult {
-        val blockerId = resolveTarget(effect.target, context)
+        val blockerId = context.resolveTarget(effect.target)
             ?: return ExecutionResult.success(state)
 
         // Find all attackers that were blocked by this creature

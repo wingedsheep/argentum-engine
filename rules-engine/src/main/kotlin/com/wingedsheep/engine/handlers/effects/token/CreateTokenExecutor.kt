@@ -26,7 +26,6 @@ import com.wingedsheep.sdk.model.CreatureStats
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.engine.core.ZoneChangeEvent
 import com.wingedsheep.engine.event.GrantedTriggeredAbility
-import com.wingedsheep.engine.handlers.effects.TargetResolutionUtils
 import com.wingedsheep.engine.mechanics.layers.StaticAbilityHandler
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.scripting.Duration
@@ -62,7 +61,7 @@ class CreateTokenExecutor(
         // Resolve who receives the token — defaults to spell/ability controller
         val controller = effect.controller
         val tokenControllerId = if (controller != null) {
-            TargetResolutionUtils.resolvePlayerTarget(controller, context, state)
+            context.resolvePlayerTarget(controller, state)
                 ?: context.controllerId
         } else {
             context.controllerId

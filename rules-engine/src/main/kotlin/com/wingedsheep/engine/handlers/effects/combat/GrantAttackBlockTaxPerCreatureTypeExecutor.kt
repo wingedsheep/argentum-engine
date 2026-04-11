@@ -3,7 +3,6 @@ package com.wingedsheep.engine.handlers.effects.combat
 import com.wingedsheep.engine.core.ExecutionResult
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
-import com.wingedsheep.engine.handlers.effects.TargetResolutionUtils
 import com.wingedsheep.engine.mechanics.layers.Layer
 import com.wingedsheep.engine.mechanics.layers.SerializableModification
 import com.wingedsheep.engine.mechanics.layers.addFloatingEffect
@@ -27,7 +26,7 @@ class GrantAttackBlockTaxPerCreatureTypeExecutor : EffectExecutor<GrantAttackBlo
         effect: GrantAttackBlockTaxPerCreatureTypeEffect,
         context: EffectContext
     ): ExecutionResult {
-        val entityId = TargetResolutionUtils.resolveTarget(effect.target, context)
+        val entityId = context.resolveTarget(effect.target)
             ?: return ExecutionResult.success(state)
         val container = state.getEntity(entityId) ?: return ExecutionResult.success(state)
         container.get<CardComponent>() ?: return ExecutionResult.success(state)

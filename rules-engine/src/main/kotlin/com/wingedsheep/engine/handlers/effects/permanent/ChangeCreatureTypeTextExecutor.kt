@@ -4,7 +4,6 @@ import com.wingedsheep.engine.core.*
 import com.wingedsheep.engine.handlers.DecisionHandler
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
-import com.wingedsheep.engine.handlers.effects.TargetResolutionUtils
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.sdk.core.Subtype
@@ -39,7 +38,7 @@ class ChangeCreatureTypeTextExecutor(
         effect: ChangeCreatureTypeTextEffect,
         context: EffectContext
     ): ExecutionResult {
-        val targetId = TargetResolutionUtils.resolveTarget(effect.target, context)
+        val targetId = context.resolveTarget(effect.target)
             ?: return ExecutionResult.success(state.tick())
 
         // Target must still exist (on battlefield or stack)

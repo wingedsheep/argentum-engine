@@ -6,7 +6,6 @@ import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.PredicateContext
 import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
-import com.wingedsheep.engine.handlers.effects.TargetResolutionUtils
 import com.wingedsheep.engine.handlers.effects.BattlefieldFilterUtils
 import com.wingedsheep.engine.mechanics.mana.ManaSolver
 import com.wingedsheep.engine.state.GameState
@@ -56,7 +55,7 @@ class PayOrSufferExecutor(
             ?: return ExecutionResult.error(state, "No source for pay or suffer effect")
 
         // Resolve who must pay — defaults to controller but can be the opponent (e.g., "target opponent loses 3 life unless they sacrifice")
-        val payingPlayerId = TargetResolutionUtils.resolvePlayerTarget(effect.player, context)
+        val payingPlayerId = context.resolvePlayerTarget(effect.player)
             ?: context.controllerId
 
         // Find source card info

@@ -8,7 +8,6 @@ import com.wingedsheep.engine.core.SelectCardsDecision
 import com.wingedsheep.engine.handlers.DynamicAmountEvaluator
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
-import com.wingedsheep.engine.handlers.effects.TargetResolutionUtils.resolveTarget
 import com.wingedsheep.engine.mechanics.layers.Layer
 import com.wingedsheep.engine.mechanics.layers.SerializableModification
 import com.wingedsheep.engine.mechanics.layers.addFloatingEffect
@@ -110,7 +109,7 @@ class PreventDamageExecutor(
             return ExecutionResult.paused(newState, decision)
         } else {
             // Prevention-only path: prevent N damage from chosen source
-            val targetId = resolveTarget(effect.target, context)
+            val targetId = context.resolveTarget(effect.target)
                 ?: return ExecutionResult.error(state, "Could not resolve target for PreventDamageEffect with ChosenSource")
             val amount = effect.amount?.let { amountEvaluator.evaluate(state, it, context) } ?: 0
             if (amount <= 0 && effect.amount != null) return ExecutionResult.success(state)
@@ -190,7 +189,7 @@ class PreventDamageExecutor(
 
             // Bidirectional combat damage prevention (to and by target)
             effect.direction == PreventionDirection.Both -> {
-                val targetId = resolveTarget(effect.target, context)
+                val targetId = context.resolveTarget(effect.target)
                     ?: return ExecutionResult.success(state)
                 state.getEntity(targetId) ?: return ExecutionResult.success(state)
                 affectedEntities = setOf(targetId)
@@ -200,7 +199,7 @@ class PreventDamageExecutor(
             // Prevent all damage FROM target (silencing)
             effect.direction == PreventionDirection.FromTarget &&
             effect.amount == null -> {
-                val targetId = resolveTarget(effect.target, context)
+                val targetId = context.resolveTarget(effect.target)
                     ?: return ExecutionResult.success(state)
                 state.getEntity(targetId) ?: return ExecutionResult.success(state)
                 affectedEntities = setOf(targetId)
@@ -209,7 +208,7 @@ class PreventDamageExecutor(
 
             // Amount-based prevention (prevent next N damage to target)
             effect.amount != null -> {
-                val targetId = resolveTarget(effect.target, context)
+                val targetId = context.resolveTarget(effect.target)
                     ?: return ExecutionResult.error(state, "Could not resolve target for PreventDamageEffect")
                 val effectAmount = effect.amount!!
                 val amount = amountEvaluator.evaluate(state, effectAmount, context)

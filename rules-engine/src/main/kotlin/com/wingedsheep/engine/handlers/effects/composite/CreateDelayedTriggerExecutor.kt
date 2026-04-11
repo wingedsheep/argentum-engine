@@ -4,7 +4,6 @@ import com.wingedsheep.engine.core.ExecutionResult
 import com.wingedsheep.engine.event.DelayedTriggeredAbility
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
-import com.wingedsheep.engine.handlers.effects.TargetResolutionUtils.resolveTarget
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.sdk.scripting.effects.AddCountersEffect
@@ -52,7 +51,7 @@ class CreateDelayedTriggerExecutor : EffectExecutor<CreateDelayedTriggerEffect> 
 
         // For event-based delayed triggers, bake the watched target into a concrete
         // entity id so matching later is cheap and doesn't need the original context.
-        val watchedEntityId = effect.watchedTarget?.let { resolveTarget(it, context) }
+        val watchedEntityId = effect.watchedTarget?.let { context.resolveTarget(it) }
 
         // Calculate notBeforeTurn for "your next end step" effects.
         // turnNumber increments once per full round (when turnOrder[0] starts),
@@ -90,9 +89,9 @@ class CreateDelayedTriggerExecutor : EffectExecutor<CreateDelayedTriggerEffect> 
     private fun resolveContextTargets(effect: Effect, context: EffectContext): Effect {
         return when (effect) {
             is MoveToZoneEffect -> {
-                val resolvedId = resolveTarget(effect.target, context)
+                val resolvedId = context.resolveTarget(effect.target)
                 val resolvedController = effect.controllerOverride?.let { co ->
-                    resolveTarget(co, context)?.let { EffectTarget.SpecificEntity(it) }
+                    context.resolveTarget(co)?.let { EffectTarget.SpecificEntity(it) }
                 }
                 effect.copy(
                     target = if (resolvedId != null) EffectTarget.SpecificEntity(resolvedId) else effect.target,
@@ -100,19 +99,19 @@ class CreateDelayedTriggerExecutor : EffectExecutor<CreateDelayedTriggerEffect> 
                 )
             }
             is SacrificeTargetEffect -> {
-                val resolvedId = resolveTarget(effect.target, context)
+                val resolvedId = context.resolveTarget(effect.target)
                 if (resolvedId != null) effect.copy(target = EffectTarget.SpecificEntity(resolvedId)) else effect
             }
             is DestroyAllEquipmentOnTargetEffect -> {
-                val resolvedId = resolveTarget(effect.target, context)
+                val resolvedId = context.resolveTarget(effect.target)
                 if (resolvedId != null) effect.copy(target = EffectTarget.SpecificEntity(resolvedId)) else effect
             }
             is WarpExileEffect -> {
-                val resolvedId = resolveTarget(effect.target, context)
+                val resolvedId = context.resolveTarget(effect.target)
                 if (resolvedId != null) effect.copy(target = EffectTarget.SpecificEntity(resolvedId)) else effect
             }
             is AddCountersEffect -> {
-                val resolvedId = resolveTarget(effect.target, context)
+                val resolvedId = context.resolveTarget(effect.target)
                 if (resolvedId != null) effect.copy(target = EffectTarget.SpecificEntity(resolvedId)) else effect
             }
             is DealDamagePerEntityInZoneEffect -> {
@@ -121,7 +120,7 @@ class CreateDelayedTriggerExecutor : EffectExecutor<CreateDelayedTriggerEffect> 
                     context.pipeline.storedCollections[name]
                 } ?: effect.entityIds
                 val resolvedSource = effect.damageSource?.let { ds ->
-                    resolveTarget(ds, context)?.let { EffectTarget.SpecificEntity(it) }
+                    context.resolveTarget(ds)?.let { EffectTarget.SpecificEntity(it) }
                 }
                 effect.copy(
                     entityIds = resolvedIds,

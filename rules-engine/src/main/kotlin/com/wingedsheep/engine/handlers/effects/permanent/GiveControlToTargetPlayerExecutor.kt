@@ -4,8 +4,6 @@ import com.wingedsheep.engine.core.ControlChangedEvent
 import com.wingedsheep.engine.core.ExecutionResult
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
-import com.wingedsheep.engine.handlers.effects.TargetResolutionUtils.resolveTarget
-import com.wingedsheep.engine.handlers.effects.TargetResolutionUtils.resolvePlayerTarget
 import com.wingedsheep.engine.mechanics.layers.Layer
 import com.wingedsheep.engine.mechanics.layers.SerializableModification
 import com.wingedsheep.engine.mechanics.layers.createFloatingEffect
@@ -30,7 +28,7 @@ class GiveControlToTargetPlayerExecutor : EffectExecutor<GiveControlToTargetPlay
         effect: GiveControlToTargetPlayerEffect,
         context: EffectContext
     ): ExecutionResult {
-        val targetId = resolveTarget(effect.permanent, context, state)
+        val targetId = context.resolveTarget(effect.permanent, state)
             ?: return ExecutionResult.error(state, "No valid permanent for control change")
 
         val targetContainer = state.getEntity(targetId)
@@ -39,7 +37,7 @@ class GiveControlToTargetPlayerExecutor : EffectExecutor<GiveControlToTargetPlay
         val cardComponent = targetContainer.get<CardComponent>()
             ?: return ExecutionResult.error(state, "Target is not a card")
 
-        val newControllerId = resolvePlayerTarget(effect.newController, context)
+        val newControllerId = context.resolvePlayerTarget(effect.newController)
             ?: return ExecutionResult.error(state, "No valid player target for control change")
 
         val currentControllerId = targetContainer.get<ControllerComponent>()?.playerId

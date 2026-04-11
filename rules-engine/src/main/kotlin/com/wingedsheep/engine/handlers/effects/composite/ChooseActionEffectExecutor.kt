@@ -7,7 +7,6 @@ import com.wingedsheep.engine.handlers.PredicateContext
 import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.handlers.effects.BattlefieldFilterUtils
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
-import com.wingedsheep.engine.handlers.effects.TargetResolutionUtils
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.identity.CardComponent
@@ -40,7 +39,7 @@ class ChooseActionEffectExecutor(
         context: EffectContext
     ): ExecutionResult {
         // Resolve who makes the choice
-        val choosingPlayerId = TargetResolutionUtils.resolvePlayerTarget(effect.player, context)
+        val choosingPlayerId = context.resolvePlayerTarget(effect.player)
             ?: return ExecutionResult.error(state, "Could not resolve player for ChooseActionEffect")
 
         // Filter to feasible choices

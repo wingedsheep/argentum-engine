@@ -3,7 +3,6 @@ package com.wingedsheep.engine.handlers.effects.permanent
 import com.wingedsheep.engine.core.ExecutionResult
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
-import com.wingedsheep.engine.handlers.effects.TargetResolutionUtils.resolveTarget
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.battlefield.AttachedToComponent
 import com.wingedsheep.engine.state.components.battlefield.AttachmentsComponent
@@ -25,10 +24,10 @@ class AttachTargetEquipmentToCreatureExecutor : EffectExecutor<AttachTargetEquip
         effect: AttachTargetEquipmentToCreatureEffect,
         context: EffectContext
     ): ExecutionResult {
-        val equipmentId = resolveTarget(effect.equipmentTarget, context, state)
+        val equipmentId = context.resolveTarget(effect.equipmentTarget, state)
             ?: return ExecutionResult.error(state, "No valid equipment target for attach")
 
-        val creatureId = resolveTarget(effect.creatureTarget, context, state)
+        val creatureId = context.resolveTarget(effect.creatureTarget, state)
             ?: return ExecutionResult.success(state) // "up to one" — no creature target is OK
 
         var newState = state

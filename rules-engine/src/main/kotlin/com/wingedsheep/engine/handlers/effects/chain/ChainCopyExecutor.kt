@@ -6,8 +6,6 @@ import com.wingedsheep.engine.handlers.PredicateContext
 import com.wingedsheep.engine.handlers.TargetFinder
 import com.wingedsheep.engine.handlers.effects.BattlefieldFilterUtils
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
-import com.wingedsheep.engine.handlers.effects.TargetResolutionUtils.resolvePlayerTarget
-import com.wingedsheep.engine.handlers.effects.TargetResolutionUtils.resolveTarget
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.identity.CardComponent
@@ -88,17 +86,17 @@ class ChainCopyExecutor(
     ): EntityId? {
         return when (effect.copyRecipient) {
             CopyRecipient.TARGET_CONTROLLER -> {
-                val targetId = resolveTarget(effect.target, context)
+                val targetId = context.resolveTarget(effect.target)
                     ?: return null
                 val projected = state.projectedState
                 projected.getController(targetId)
                     ?: state.getEntity(targetId)?.get<CardComponent>()?.ownerId
             }
             CopyRecipient.TARGET_PLAYER -> {
-                resolvePlayerTarget(effect.target, context)
+                context.resolvePlayerTarget(effect.target)
             }
             CopyRecipient.AFFECTED_PLAYER -> {
-                val targetId = resolveTarget(effect.target, context, state)
+                val targetId = context.resolveTarget(effect.target, state)
                     ?: return null
                 resolveAffectedPlayer(state, targetId)
             }

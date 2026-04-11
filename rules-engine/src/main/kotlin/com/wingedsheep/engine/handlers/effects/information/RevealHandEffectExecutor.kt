@@ -4,7 +4,6 @@ import com.wingedsheep.engine.core.ExecutionResult
 import com.wingedsheep.engine.core.HandRevealedEvent
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
-import com.wingedsheep.engine.handlers.effects.TargetResolutionUtils.resolvePlayerTarget
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.identity.RevealedToComponent
 import com.wingedsheep.sdk.scripting.effects.RevealHandEffect
@@ -27,7 +26,7 @@ class RevealHandEffectExecutor : EffectExecutor<RevealHandEffect> {
         effect: RevealHandEffect,
         context: EffectContext
     ): ExecutionResult {
-        val targetPlayerId = resolvePlayerTarget(effect.target, context)
+        val targetPlayerId = context.resolvePlayerTarget(effect.target)
             ?: return ExecutionResult.error(state, "No valid target player for reveal hand")
 
         // Get all cards in the target player's hand
