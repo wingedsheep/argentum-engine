@@ -69,15 +69,6 @@ class TurnManager(
     ): ExecutionResult? =
         drawPhaseManager.checkPromptOnDraw(state, playerId, drawCount, isDrawStep, declinedSourceIds)
 
-    /** Check for static draw replacement effects. Delegates to [DrawPhaseManager]. */
-    internal fun checkStaticDrawReplacement(
-        state: GameState,
-        playerId: EntityId,
-        drawCount: Int,
-        drawnCardsSoFar: List<EntityId> = emptyList()
-    ): ExecutionResult? =
-        drawPhaseManager.checkStaticDrawReplacement(state, playerId, drawCount, drawnCardsSoFar)
-
     // ── Turn lifecycle ──
 
     /**
