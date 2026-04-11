@@ -520,7 +520,7 @@ export function TargetingOverlay() {
 
   // Build the prompt text based on selection type
   const promptText = isBehold
-    ? `Select a card to behold (${targetDisplay})`
+    ? `${targetingState.targetDescription ?? 'Behold a card'} (${targetDisplay})`
     : isDiscard
       ? `Select card to discard (${targetDisplay})`
       : isReveal

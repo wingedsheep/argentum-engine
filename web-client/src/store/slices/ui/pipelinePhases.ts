@@ -468,6 +468,7 @@ export function enterPhase(
           maxTargets = costInfo.beholdCount ?? 1
           flags.isSacrificeSelection = true
           flags.isBeholdSelection = true
+          flags.targetDescription = costInfo.description
           break
         default:
           return
