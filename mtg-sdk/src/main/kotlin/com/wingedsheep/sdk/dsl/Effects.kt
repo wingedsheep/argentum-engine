@@ -800,9 +800,12 @@ object Effects {
     /**
      * Create Treasure tokens.
      * "{T}, Sacrifice this artifact: Add one mana of any color."
+     *
+     * @param count Number of tokens to create
+     * @param tapped Whether the tokens enter the battlefield tapped
      */
-    fun CreateTreasure(count: Int = 1): Effect =
-        CreatePredefinedTokenEffect("Treasure", count)
+    fun CreateTreasure(count: Int = 1, tapped: Boolean = false): Effect =
+        CreatePredefinedTokenEffect("Treasure", count, tapped = tapped)
 
     /**
      * Create Food artifact tokens.

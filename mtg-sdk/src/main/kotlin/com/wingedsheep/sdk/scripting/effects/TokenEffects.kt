@@ -151,18 +151,21 @@ data class CreateTokenEffect(
  * @property tokenType Name of the predefined token (must match a registered CardDefinition)
  * @property count Number of tokens to create
  * @property controller Who controls the created tokens (null = spell controller)
+ * @property tapped Whether the created tokens enter the battlefield tapped
  */
 @SerialName("CreatePredefinedToken")
 @Serializable
 data class CreatePredefinedTokenEffect(
     val tokenType: String,
     val count: Int = 1,
-    val controller: EffectTarget? = null
+    val controller: EffectTarget? = null,
+    val tapped: Boolean = false
 ) : Effect {
-    override val description: String = if (count == 1) {
-        "Create a $tokenType token"
-    } else {
-        "Create $count $tokenType tokens"
+    override val description: String = buildString {
+        append(if (count == 1) "Create a " else "Create $count ")
+        if (tapped) append("tapped ")
+        append(tokenType)
+        append(if (count == 1) " token" else " tokens")
     }
 
     override fun applyTextReplacement(replacer: TextReplacer): Effect = this

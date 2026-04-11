@@ -152,6 +152,14 @@ class DynamicAmountEvaluator(
                 if (met) evaluate(state, amount.ifTrue, context) else evaluate(state, amount.ifFalse, context)
             }
 
+            is DynamicAmount.CountPlayersWith -> {
+                val eval = conditionEvaluator ?: ConditionEvaluator()
+                val playerIds = resolveUnifiedPlayerIds(state, amount.scope, context)
+                playerIds.count { playerId ->
+                    eval.evaluate(state, amount.condition, context.copy(controllerId = playerId))
+                }
+            }
+
             // Composable entity property — replaces SourcePower, TargetPower, CountersOnSelf, etc.
             is DynamicAmount.EntityProperty -> {
                 val entityId = resolveEntityId(amount.entity, context) ?: return 0

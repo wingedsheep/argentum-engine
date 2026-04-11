@@ -269,6 +269,27 @@ sealed interface DynamicAmount : TextReplaceable<DynamicAmount> {
         }
     }
 
+    /**
+     * Count of players in [scope] for whom [condition] evaluates to true.
+     *
+     * The condition is evaluated with the context's controllerId rebound to each candidate
+     * player in turn, so `Player.You` inside the condition refers to the player being tested.
+     * Used for effects like "draw an additional card for each opponent who has one or fewer
+     * cards in hand" (Bandit's Talent, level 3).
+     */
+    @SerialName("CountPlayersWith")
+    @Serializable
+    data class CountPlayersWith(
+        val scope: Player,
+        val condition: Condition
+    ) : DynamicAmount {
+        override val description: String = "the number of ${scope.description} for whom ${condition.description}"
+        override fun applyTextReplacement(replacer: TextReplacer): DynamicAmount {
+            val newCondition = (condition as? TextReplaceable<*>)?.applyTextReplacement(replacer) as? Condition ?: condition
+            return if (newCondition !== condition) copy(condition = newCondition) else this
+        }
+    }
+
     // =========================================================================
     // Context-based Values - Values from cost payment or trigger context
     // =========================================================================

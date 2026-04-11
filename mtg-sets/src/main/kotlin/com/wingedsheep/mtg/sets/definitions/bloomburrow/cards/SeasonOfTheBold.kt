@@ -47,10 +47,9 @@ val SeasonOfTheBold = card("Season of the Bold") {
             budget = 5,
             modes = listOf(
                 // {P} — Create a tapped Treasure token
-                // Note: Predefined tokens don't support entering tapped; enters untapped
                 BudgetMode(
                     cost = 1,
-                    effect = Effects.CreateTreasure(),
+                    effect = Effects.CreateTreasure(tapped = true),
                     description = "Create a tapped Treasure token"
                 ),
                 // {P}{P} — Exile top 2 and play until end of next turn

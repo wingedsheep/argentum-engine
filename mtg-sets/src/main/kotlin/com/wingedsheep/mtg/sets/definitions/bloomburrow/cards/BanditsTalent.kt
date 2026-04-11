@@ -9,7 +9,6 @@ import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.conditions.Compare
 import com.wingedsheep.sdk.scripting.conditions.ComparisonOperator
 import com.wingedsheep.sdk.scripting.costs.PayCost
-import com.wingedsheep.sdk.scripting.effects.ConditionalEffect
 import com.wingedsheep.sdk.scripting.effects.DrawCardsEffect
 import com.wingedsheep.sdk.scripting.effects.ForEachPlayerEffect
 import com.wingedsheep.sdk.scripting.effects.LoseLifeEffect
@@ -74,17 +73,18 @@ val BanditsTalent = card("Bandit's Talent") {
 
     // Level 3: At the beginning of your draw step, draw an additional card for each opponent
     // who has one or fewer cards in hand.
-    // In a 2-player game, this is "if the opponent has ≤1 cards, draw 1 extra card."
     classLevel(3, "{3}{B}") {
         triggeredAbility {
             trigger = Triggers.YourDrawStep
-            effect = ConditionalEffect(
-                condition = Compare(
-                    left = DynamicAmount.Count(Player.Opponent, Zone.HAND),
-                    operator = ComparisonOperator.LTE,
-                    right = DynamicAmount.Fixed(1)
-                ),
-                effect = DrawCardsEffect(1)
+            effect = DrawCardsEffect(
+                count = DynamicAmount.CountPlayersWith(
+                    scope = Player.EachOpponent,
+                    condition = Compare(
+                        left = DynamicAmount.Count(Player.You, Zone.HAND),
+                        operator = ComparisonOperator.LTE,
+                        right = DynamicAmount.Fixed(1)
+                    )
+                )
             )
         }
     }

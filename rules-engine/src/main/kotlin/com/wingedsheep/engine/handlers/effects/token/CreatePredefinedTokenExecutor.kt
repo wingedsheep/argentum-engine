@@ -10,6 +10,7 @@ import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.ComponentContainer
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
+import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.identity.TokenComponent
@@ -72,6 +73,10 @@ class CreatePredefinedTokenExecutor(
                 TokenComponent,
                 ControllerComponent(tokenControllerId)
             )
+
+            if (effect.tapped) {
+                container = container.with(TappedComponent)
+            }
 
             // Wire up static abilities (e.g., equip bonuses, lord effects) from the
             // predefined token's CardDefinition into a ContinuousEffectSourceComponent
