@@ -5,11 +5,11 @@
 [versions]
 kotlin = "2.3.20"
 kotlinxDatetime = "0.7.1"
-kotlinxSerializationJSON = "1.10.0"
+kotlinxSerializationJSON = "1.11.0"
 kotlinxCoroutines = "1.10.2"
 kotest = "6.1.5"
 mockk = "1.14.9"
-springBoot = "4.0.4"
+springBoot = "4.0.5"
 springdocOpenapi = "3.0.2"
 
 [libraries]
