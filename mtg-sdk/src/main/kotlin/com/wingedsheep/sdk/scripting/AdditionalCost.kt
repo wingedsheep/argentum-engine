@@ -227,12 +227,15 @@ sealed interface AdditionalCost : TextReplaceable<AdditionalCost> {
         override val description: String = buildString {
             append("Behold ")
             if (count == 1) {
-                append("a ")
+                val filterDesc = filter.description
+                val article = if (filterDesc.firstOrNull()?.lowercase() in listOf("a", "e", "i", "o", "u")) "an" else "a"
+                append("$article ")
+                append(filterDesc)
             } else {
                 append("$count ")
+                append(filter.description)
+                append("s")
             }
-            append(filter.description)
-            if (count != 1) append("s")
         }
 
         override fun applyTextReplacement(replacer: TextReplacer): AdditionalCost {
