@@ -633,6 +633,8 @@ export interface AdditionalCostInfo {
   readonly validBeholdTargets?: readonly EntityId[]
   readonly beholdCount?: number
   readonly counterRemovalCreatures?: readonly CounterRemovalCreatureInfo[]
+  readonly validBlightTargets?: readonly EntityId[]
+  readonly blightAmount?: number
 }
 
 export interface CounterRemovalCreatureInfo {

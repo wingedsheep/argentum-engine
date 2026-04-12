@@ -138,7 +138,9 @@ data class AdditionalCostData(
     val exileMaxCount: Int = 0,
     val validBeholdTargets: List<EntityId> = emptyList(),
     val beholdCount: Int = 0,
-    val counterRemovalCreatures: List<CounterRemovalCreatureData> = emptyList()
+    val counterRemovalCreatures: List<CounterRemovalCreatureData> = emptyList(),
+    val validBlightTargets: List<EntityId> = emptyList(),
+    val blightAmount: Int = 0
 )
 
 /**

@@ -1056,7 +1056,11 @@ data class AdditionalCostInfo(
     /** Number of cards to behold */
     val beholdCount: Int = 0,
     /** Creatures with +1/+1 counters for RemoveXPlusOnePlusOneCounters cost */
-    val counterRemovalCreatures: List<CounterRemovalCreatureInfo> = emptyList()
+    val counterRemovalCreatures: List<CounterRemovalCreatureInfo> = emptyList(),
+    /** Valid creatures to blight (put -1/-1 counters on) */
+    val validBlightTargets: List<EntityId> = emptyList(),
+    /** Number of -1/-1 counters for blight */
+    val blightAmount: Int = 0
 )
 
 /**

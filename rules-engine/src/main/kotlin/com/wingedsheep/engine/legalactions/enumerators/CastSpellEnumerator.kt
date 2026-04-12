@@ -72,6 +72,8 @@ class CastSpellEnumerator : ActionEnumerator {
             var discardCount = 0
             var beholdTargets = emptyList<EntityId>()
             var beholdCount = 0
+            var blightOrPayCost: AdditionalCost.BlightOrPay? = null
+            var blightCreatures = emptyList<EntityId>()
             var canPayAdditionalCosts = true
             val flattenedCosts = additionalCosts.flatMap {
                 if (it is AdditionalCost.Composite) it.steps else listOf(it)
@@ -144,6 +146,14 @@ class CastSpellEnumerator : ActionEnumerator {
                         discardTargets = validDiscards
                         discardCount = cost.count
                     }
+                    is AdditionalCost.BlightOrPay -> {
+                        // Always payable: player can always choose the "pay mana" path
+                        // Find creatures for the blight path
+                        blightOrPayCost = cost
+                        val projected = state.projectedState
+                        blightCreatures = projected.getBattlefieldControlledBy(playerId)
+                            .filter { projected.isCreature(it) }
+                    }
                     else -> {}
                 }
             }
@@ -158,6 +168,12 @@ class CastSpellEnumerator : ActionEnumerator {
             if (variableSacrificeTargets.isNotEmpty() && variableSacrificeReduction > 0) {
                 val maxReduction = variableSacrificeTargets.size * variableSacrificeReduction
                 effectiveCost = effectiveCost.reduceGeneric(maxReduction)
+            }
+
+            // Save base cost for blight path, then add extra mana for the "pay" path
+            val blightBaseCost = effectiveCost
+            if (blightOrPayCost != null) {
+                effectiveCost = effectiveCost + ManaCost.parse(blightOrPayCost!!.alternativeManaCost)
             }
 
             // Check mana affordability (including Convoke/Delve if available)
@@ -219,7 +235,12 @@ class CastSpellEnumerator : ActionEnumerator {
                 canPayMana && canPayAdditional
             } else false
 
-            if (!canAfford && !canAffordAlternative && !canAffordSelfAlternative) continue
+            // Check blight path affordability (base cost without the extra mana, but needs a creature)
+            val canAffordBlightPath = if (blightOrPayCost != null && blightCreatures.isNotEmpty()) {
+                context.manaSolver.canPay(state, playerId, blightBaseCost, spellContext = spellContext, precomputedSources = cachedSources)
+            } else false
+
+            if (!canAfford && !canAffordAlternative && !canAffordSelfAlternative && !canAffordBlightPath) continue
 
             val targetReqs = buildList {
                 addAll(cardDef.script.targetRequirements)
@@ -232,6 +253,22 @@ class CastSpellEnumerator : ActionEnumerator {
                 exileTargets, exileMinCount, discardTargets, discardCount,
                 beholdTargets, beholdCount
             )
+
+            // Compute blight path info (separate legal action with lower mana cost + blight target selection)
+            val blightPathInfo = if (canAffordBlightPath && blightOrPayCost != null) {
+                val blightManaCostString = blightBaseCost.toString()
+                val blightAutoTapPreview = if (context.skipAutoTapPreview) null else {
+                    context.manaSolver.solve(state, playerId, blightBaseCost, precomputedSources = cachedSources)
+                        ?.sources?.map { it.entityId }
+                }
+                val blightCostInfo = AdditionalCostData(
+                    description = blightOrPayCost!!.description,
+                    costType = "Blight",
+                    validBlightTargets = blightCreatures,
+                    blightAmount = blightOrPayCost!!.blightAmount
+                )
+                Triple(blightManaCostString, blightAutoTapPreview, blightCostInfo)
+            } else null
 
             // Calculate X cost info if the spell has X in its cost
             val hasXCost = effectiveCost.hasX
@@ -527,6 +564,19 @@ class CastSpellEnumerator : ActionEnumerator {
                                 autoTapPreview = selfAltCostResult.autoTapPreview
                             ))
                         }
+                        if (blightPathInfo != null) {
+                            result.add(LegalAction(
+                                actionType = "CastSpell",
+                                description = "Cast ${cardComponent.name} (Blight ${blightOrPayCost!!.blightAmount})",
+                                action = CastSpell(playerId, cardId, targets = listOf(autoSelectedTarget)),
+                                additionalCostInfo = blightPathInfo.third,
+                                manaCostString = blightPathInfo.first,
+                                requiresDamageDistribution = requiresDamageDistribution,
+                                totalDamageToDistribute = totalDamageToDistribute,
+                                minDamagePerTarget = minDamagePerTarget,
+                                autoTapPreview = blightPathInfo.second
+                            ))
+                        }
                     } else {
                         if (canAfford) {
                             result.add(LegalAction(
@@ -591,6 +641,25 @@ class CastSpellEnumerator : ActionEnumerator {
                                 autoTapPreview = selfAltCostResult.autoTapPreview
                             ))
                         }
+                        if (blightPathInfo != null) {
+                            result.add(LegalAction(
+                                actionType = "CastSpell",
+                                description = "Cast ${cardComponent.name} (Blight ${blightOrPayCost!!.blightAmount})",
+                                action = CastSpell(playerId, cardId),
+                                validTargets = firstReqInfo.validTargets,
+                                requiresTargets = true,
+                                targetCount = firstReq.count,
+                                minTargets = firstReq.effectiveMinCount,
+                                targetDescription = firstReq.description,
+                                targetRequirements = if (targetReqInfos.size > 1) targetReqInfos else null,
+                                additionalCostInfo = blightPathInfo.third,
+                                manaCostString = blightPathInfo.first,
+                                requiresDamageDistribution = requiresDamageDistribution,
+                                totalDamageToDistribute = totalDamageToDistribute,
+                                minDamagePerTarget = minDamagePerTarget,
+                                autoTapPreview = blightPathInfo.second
+                            ))
+                        }
                     }
                 }
             } else {
@@ -629,6 +698,16 @@ class CastSpellEnumerator : ActionEnumerator {
                         manaCostString = selfAltCostResult.manaCostString,
                         additionalCostInfo = selfAltCostResult.additionalCostInfo,
                         autoTapPreview = selfAltCostResult.autoTapPreview
+                    ))
+                }
+                if (blightPathInfo != null) {
+                    result.add(LegalAction(
+                        actionType = "CastSpell",
+                        description = "Cast ${cardComponent.name} (Blight ${blightOrPayCost!!.blightAmount})",
+                        action = CastSpell(playerId, cardId),
+                        additionalCostInfo = blightPathInfo.third,
+                        manaCostString = blightPathInfo.first,
+                        autoTapPreview = blightPathInfo.second
                     ))
                 }
             }

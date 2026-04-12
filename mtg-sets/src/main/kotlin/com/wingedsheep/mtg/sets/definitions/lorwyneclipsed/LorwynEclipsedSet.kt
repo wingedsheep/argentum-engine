@@ -23,5 +23,6 @@ object LorwynEclipsedSet {
         GoldmeadowNomad,
         HovelHurler,
         SteamVents,
+        WildUnraveling,
     )
 }

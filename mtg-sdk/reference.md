@@ -1156,6 +1156,7 @@ Used via `additionalCost(...)` in card DSL for spell additional costs:
 - `AdditionalCost.ExileCards(count, filter, fromZone)` — Delve-style
 - `AdditionalCost.ExileVariableCards(minCount, filter, fromZone)` — Variable exile cost (Chill Haunting)
 - `AdditionalCost.TapPermanents(count, filter)` — Convoke-style
+- `AdditionalCost.BlightOrPay(blightAmount, alternativeManaCost)` — Blight N or pay extra mana (Wild Unraveling)
 
 CostZone enum: `HAND`, `GRAVEYARD`, `LIBRARY`, `BATTLEFIELD`
 

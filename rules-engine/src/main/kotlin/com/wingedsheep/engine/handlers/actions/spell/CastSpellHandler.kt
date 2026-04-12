@@ -37,7 +37,11 @@ import com.wingedsheep.engine.mechanics.targeting.TargetValidator
 import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
+import com.wingedsheep.engine.core.CountersAddedEvent
+import com.wingedsheep.engine.state.components.battlefield.CountersComponent
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
+import com.wingedsheep.sdk.core.Counters
+import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.identity.MayPlayFromExileComponent
@@ -252,6 +256,19 @@ class CastSpellHandler(
                 effectiveCost = ManaCost(effectiveCost.symbols + kickerAbility.cost.symbols)
             } else if (offspringAbility != null) {
                 effectiveCost = ManaCost(effectiveCost.symbols + offspringAbility.cost.symbols)
+            }
+        }
+
+        // Apply BlightOrPay "pay mana" adjustment in validation
+        if (cardDef != null && !playForFree) {
+            val blightOrPay = cardDef.script.additionalCosts
+                .filterIsInstance<AdditionalCost.BlightOrPay>()
+                .firstOrNull()
+            if (blightOrPay != null) {
+                val choseBlight = action.additionalCostPayment?.blightTargets?.isNotEmpty() == true
+                if (!choseBlight) {
+                    effectiveCost = effectiveCost + ManaCost.parse(blightOrPay.alternativeManaCost)
+                }
             }
         }
 
@@ -679,6 +696,30 @@ class CastSpellHandler(
                 is AdditionalCost.ExileFromStorage -> {
                     // Validated by the preceding Behold cost — nothing extra needed
                 }
+                is AdditionalCost.BlightOrPay -> {
+                    // BlightOrPay: player chose blight if blightTargets is non-empty,
+                    // otherwise chose to pay extra mana (validated via mana payment)
+                    val blightTargets = action.additionalCostPayment?.blightTargets ?: emptyList()
+                    if (blightTargets.isNotEmpty()) {
+                        // Validate the blight target
+                        val targetId = blightTargets.first()
+                        val container = state.getEntity(targetId)
+                            ?: return "Blight target not found: $targetId"
+                        container.get<CardComponent>()
+                            ?: return "Blight target is not a card: $targetId"
+                        val controller = projected.getController(targetId)
+                        if (controller != action.playerId) {
+                            return "You can only blight creatures you control"
+                        }
+                        if (targetId !in state.getBattlefield()) {
+                            return "Blight target is not on the battlefield: $targetId"
+                        }
+                        if (!projected.isCreature(targetId)) {
+                            return "Blight target must be a creature"
+                        }
+                    }
+                    // If blightTargets is empty, the player is paying extra mana instead
+                }
                 else -> {}
             }
         }
@@ -756,6 +797,19 @@ class CastSpellHandler(
             val modeManaCost = chosenMode?.additionalManaCost
             if (modeManaCost != null) {
                 effectiveCost = effectiveCost + ManaCost.parse(modeManaCost)
+            }
+        }
+
+        // Apply BlightOrPay: if player chose "pay mana" path (no blight targets), add extra mana
+        if (cardDef != null && !playForFreeInExecute) {
+            val blightOrPay = cardDef.script.additionalCosts
+                .filterIsInstance<AdditionalCost.BlightOrPay>()
+                .firstOrNull()
+            if (blightOrPay != null) {
+                val choseBlight = action.additionalCostPayment?.blightTargets?.isNotEmpty() == true
+                if (!choseBlight) {
+                    effectiveCost = effectiveCost + ManaCost.parse(blightOrPay.alternativeManaCost)
+                }
             }
         }
 
@@ -990,6 +1044,28 @@ class CastSpellHandler(
                                 ))
                             }
                         }
+                    }
+                    is AdditionalCost.BlightOrPay -> {
+                        // Apply -1/-1 counters if the player chose the blight path
+                        val blightTargets = action.additionalCostPayment.blightTargets
+                        if (blightTargets.isNotEmpty()) {
+                            val targetId = blightTargets.first()
+                            val targetContainer = currentState.getEntity(targetId)
+                            if (targetContainer != null) {
+                                val counters = targetContainer.get<CountersComponent>() ?: CountersComponent()
+                                currentState = currentState.updateEntity(targetId) { c ->
+                                    c.with(counters.withAdded(CounterType.MINUS_ONE_MINUS_ONE, additionalCost.blightAmount))
+                                }
+                                val targetName = targetContainer.get<CardComponent>()?.name ?: "Creature"
+                                events.add(CountersAddedEvent(
+                                    entityId = targetId,
+                                    counterType = Counters.MINUS_ONE_MINUS_ONE,
+                                    amount = additionalCost.blightAmount,
+                                    entityName = targetName
+                                ))
+                            }
+                        }
+                        // If blightTargets is empty, "pay mana" path — extra mana already added to effectiveCost
                     }
                     else -> {}
                 }

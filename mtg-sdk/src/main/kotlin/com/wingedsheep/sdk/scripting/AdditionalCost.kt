@@ -206,6 +206,27 @@ sealed interface AdditionalCost : TextReplaceable<AdditionalCost> {
     }
 
     /**
+     * Blight N or pay additional mana: the caster must either put N -1/-1 counters on a creature
+     * they control, or pay extra mana on top of the spell's base mana cost.
+     * Used by Lorwyn Eclipsed cards (e.g., Wild Unraveling).
+     *
+     * The enumerator produces two legal actions: one for the blight path (base cost + creature selection)
+     * and one for the pay path (base cost + [alternativeManaCost]).
+     *
+     * @property blightAmount Number of -1/-1 counters to place
+     * @property alternativeManaCost Extra mana to pay instead of blighting (e.g., "{1}")
+     */
+    @SerialName("BlightOrPay")
+    @Serializable
+    data class BlightOrPay(
+        val blightAmount: Int,
+        val alternativeManaCost: String
+    ) : AdditionalCost {
+        override val description: String = "Blight $blightAmount or pay $alternativeManaCost"
+        override fun applyTextReplacement(replacer: TextReplacer): AdditionalCost = this
+    }
+
+    /**
      * Behold: choose a matching permanent you control or reveal a matching card from your hand.
      * Used by Lorwyn Eclipsed cards.
      *
@@ -347,7 +368,10 @@ data class AdditionalCostPayment(
     val bouncedPermanents: List<EntityId> = emptyList(),
 
     /** Counter removals: entity ID -> number of +1/+1 counters to remove from that creature */
-    val counterRemovals: Map<EntityId, Int> = emptyMap()
+    val counterRemovals: Map<EntityId, Int> = emptyMap(),
+
+    /** Creature that received -1/-1 counters via Blight */
+    val blightTargets: List<EntityId> = emptyList()
 ) {
     /** Check if any costs were paid */
     val isEmpty: Boolean
@@ -358,7 +382,8 @@ data class AdditionalCostPayment(
                 beheldCards.isEmpty() &&
                 tappedPermanents.isEmpty() &&
                 bouncedPermanents.isEmpty() &&
-                counterRemovals.isEmpty()
+                counterRemovals.isEmpty() &&
+                blightTargets.isEmpty()
 
     companion object {
         val NONE = AdditionalCostPayment()

@@ -58,6 +58,7 @@ export interface AdditionalCostPayment {
   readonly tappedPermanents?: readonly EntityId[]
   readonly bouncedPermanents?: readonly EntityId[]
   readonly counterRemovals?: Readonly<Record<EntityId, number>>
+  readonly blightTargets?: readonly EntityId[]
 }
 
 export interface AlternativePaymentChoice {

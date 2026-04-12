@@ -678,6 +678,10 @@ class CostHandler(
                 // Payability determined by the preceding cost that populated the storage
                 true
             }
+            is AdditionalCost.BlightOrPay -> {
+                // Always payable: player can always choose the "pay mana" path
+                true
+            }
             is AdditionalCost.Composite -> {
                 // All steps must be payable
                 cost.steps.all { canPayAdditionalCost(state, it, controllerId) }

@@ -121,7 +121,9 @@ class LegalActionEnricher(
         exileMaxCount = exileMaxCount,
         validBeholdTargets = validBeholdTargets,
         beholdCount = beholdCount,
-        counterRemovalCreatures = counterRemovalCreatures.map { it.toDto() }
+        counterRemovalCreatures = counterRemovalCreatures.map { it.toDto() },
+        validBlightTargets = validBlightTargets,
+        blightAmount = blightAmount
     )
 
     private fun ConvokeCreatureData.toDto() = ConvokeCreatureInfo(
