@@ -30,7 +30,8 @@ class DecisionHandler {
         sourceId: EntityId,
         sourceName: String,
         requirements: List<TargetRequirementInfo>,
-        legalTargets: Map<Int, List<EntityId>>
+        legalTargets: Map<Int, List<EntityId>>,
+        effectHint: String? = null
     ): ExecutionResult {
         val decision = ChooseTargetsDecision(
             id = generateDecisionId(),
@@ -39,7 +40,8 @@ class DecisionHandler {
             context = DecisionContext(
                 sourceId = sourceId,
                 sourceName = sourceName,
-                phase = DecisionPhase.CASTING
+                phase = DecisionPhase.CASTING,
+                effectHint = effectHint
             ),
             targetRequirements = requirements,
             legalTargets = legalTargets

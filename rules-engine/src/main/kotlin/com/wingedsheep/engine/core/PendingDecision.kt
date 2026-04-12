@@ -47,7 +47,10 @@ data class DecisionContext(
     val triggeringEntityId: EntityId? = null,
 
     /** If true, render the yes/no decision inline on the triggering entity card (e.g., Dragon auras) */
-    val inlineOnTrigger: Boolean = false
+    val inlineOnTrigger: Boolean = false,
+
+    /** Resolved effect description for display (e.g., "-6/-6 until end of turn") */
+    val effectHint: String? = null
 )
 
 /**
@@ -586,4 +589,49 @@ data class ManaSourcesSelectedResponse(
 @SerialName("CancelDecisionResponse")
 data class CancelDecisionResponse(
     override val decisionId: String
+) : DecisionResponse
+
+// =============================================================================
+// Trigger Ordering Decision
+// =============================================================================
+
+/**
+ * A single triggered ability option for ordering.
+ */
+@Serializable
+data class TriggerOrderOption(
+    val index: Int,
+    val sourceName: String,
+    val description: String
+)
+
+/**
+ * Player must choose the order in which simultaneous triggered abilities
+ * go on the stack (Rule 603.3b).
+ *
+ * The first trigger in the submitted order goes on the stack first (resolves last).
+ * The last trigger goes on the stack last (resolves first).
+ *
+ * @property triggers The triggered abilities to order, with descriptions
+ */
+@Serializable
+@SerialName("OrderTriggersDecision")
+data class OrderTriggersDecision(
+    override val id: String,
+    override val playerId: EntityId,
+    override val prompt: String,
+    override val context: DecisionContext,
+    val triggers: List<TriggerOrderOption>
+) : PendingDecision
+
+/**
+ * Response to OrderTriggersDecision.
+ * Contains indices from the original trigger list in the desired stack order
+ * (first = bottom of stack / resolves last, last = top of stack / resolves first).
+ */
+@Serializable
+@SerialName("TriggerOrderResponse")
+data class TriggerOrderResponse(
+    override val decisionId: String,
+    val orderedIndices: List<Int>
 ) : DecisionResponse

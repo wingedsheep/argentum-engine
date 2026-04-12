@@ -247,23 +247,24 @@ class ReflexiveTriggerEffectExecutor(
             )
         }
 
-        // Resolve dynamic amounts for the prompt so the player sees concrete values (e.g., "-4/-4")
+        // Resolve dynamic amounts so the player sees concrete values (e.g., "-6/-6 until end of turn")
         val effectHint = try {
             val resolver: (com.wingedsheep.sdk.scripting.values.DynamicAmount) -> Int = { amount ->
                 amountEvaluator.evaluate(state, amount, context)
             }
             val resolved = reflexiveEffect.runtimeDescription(resolver)
-            if (resolved != reflexiveEffect.description) " ($resolved)" else ""
-        } catch (_: Exception) { "" }
+            if (resolved != reflexiveEffect.description) resolved else null
+        } catch (_: Exception) { null }
 
         // Create the target selection decision
         val decisionResult = decisionHandler.createTargetDecision(
             state = state,
             playerId = controllerId,
             sourceId = sourceId ?: com.wingedsheep.sdk.model.EntityId("unknown"),
-            sourceName = "$sourceName$effectHint",
+            sourceName = sourceName,
             requirements = requirementInfos,
-            legalTargets = allLegalTargets
+            legalTargets = allLegalTargets,
+            effectHint = effectHint
         )
 
         if (!decisionResult.isPaused || decisionResult.pendingDecision == null) {

@@ -246,6 +246,8 @@ export interface DecisionContext {
   readonly triggeringEntityId?: EntityId
   /** If true, render yes/no inline on the triggering entity card (e.g., Dragon auras) */
   readonly inlineOnTrigger?: boolean
+  /** Resolved effect description (e.g., "-6/-6 until end of turn") */
+  readonly effectHint?: string
 }
 
 /**
@@ -359,6 +361,26 @@ export interface OrderObjectsDecision extends PendingDecisionBase {
   readonly type: 'OrderObjectsDecision'
   readonly objects: readonly EntityId[]
   readonly cardInfo?: Record<EntityId, SearchCardInfo>
+}
+
+/**
+ * A single triggered ability option for ordering.
+ */
+export interface TriggerOrderOption {
+  readonly index: number
+  readonly sourceName: string
+  readonly description: string
+}
+
+/**
+ * Player must choose the order for simultaneous triggered abilities (Rule 603.3b).
+ *
+ * The first trigger in the submitted order goes on the stack first (resolves last).
+ * The last trigger goes on the stack last (resolves first).
+ */
+export interface OrderTriggersDecision extends PendingDecisionBase {
+  readonly type: 'OrderTriggersDecision'
+  readonly triggers: readonly TriggerOrderOption[]
 }
 
 /**
@@ -482,6 +504,7 @@ export type PendingDecision =
   | SearchLibraryDecision
   | ReorderLibraryDecision
   | OrderObjectsDecision
+  | OrderTriggersDecision
   | ChooseNumberDecision
   | ChooseOptionDecision
   | BudgetModalDecision
