@@ -364,26 +364,6 @@ export interface OrderObjectsDecision extends PendingDecisionBase {
 }
 
 /**
- * A single triggered ability option for ordering.
- */
-export interface TriggerOrderOption {
-  readonly index: number
-  readonly sourceName: string
-  readonly description: string
-}
-
-/**
- * Player must choose the order for simultaneous triggered abilities (Rule 603.3b).
- *
- * The first trigger in the submitted order goes on the stack first (resolves last).
- * The last trigger goes on the stack last (resolves first).
- */
-export interface OrderTriggersDecision extends PendingDecisionBase {
-  readonly type: 'OrderTriggersDecision'
-  readonly triggers: readonly TriggerOrderOption[]
-}
-
-/**
  * Player must choose a number (e.g., how many cards to draw).
  */
 export interface ChooseNumberDecision extends PendingDecisionBase {
@@ -504,7 +484,6 @@ export type PendingDecision =
   | SearchLibraryDecision
   | ReorderLibraryDecision
   | OrderObjectsDecision
-  | OrderTriggersDecision
   | ChooseNumberDecision
   | ChooseOptionDecision
   | BudgetModalDecision
