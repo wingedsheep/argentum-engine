@@ -2,6 +2,7 @@ package com.wingedsheep.engine.handlers.effects.composite
 
 import com.wingedsheep.engine.core.*
 import com.wingedsheep.engine.handlers.DecisionHandler
+import com.wingedsheep.engine.handlers.DynamicAmountEvaluator
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.TargetFinder
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
@@ -41,7 +42,8 @@ import kotlin.reflect.KClass
 class ReflexiveTriggerEffectExecutor(
     private val effectExecutor: (GameState, Effect, EffectContext) -> EffectResult,
     private val targetFinder: TargetFinder,
-    private val decisionHandler: DecisionHandler
+    private val decisionHandler: DecisionHandler,
+    private val amountEvaluator: DynamicAmountEvaluator = DynamicAmountEvaluator()
 ) : EffectExecutor<ReflexiveTriggerEffect> {
 
     override val effectType: KClass<ReflexiveTriggerEffect> = ReflexiveTriggerEffect::class
@@ -245,12 +247,21 @@ class ReflexiveTriggerEffectExecutor(
             )
         }
 
+        // Resolve dynamic amounts for the prompt so the player sees concrete values (e.g., "-4/-4")
+        val effectHint = try {
+            val resolver: (com.wingedsheep.sdk.scripting.values.DynamicAmount) -> Int = { amount ->
+                amountEvaluator.evaluate(state, amount, context)
+            }
+            val resolved = reflexiveEffect.runtimeDescription(resolver)
+            if (resolved != reflexiveEffect.description) " ($resolved)" else ""
+        } catch (_: Exception) { "" }
+
         // Create the target selection decision
         val decisionResult = decisionHandler.createTargetDecision(
             state = state,
             playerId = controllerId,
             sourceId = sourceId ?: com.wingedsheep.sdk.model.EntityId("unknown"),
-            sourceName = sourceName,
+            sourceName = "$sourceName$effectHint",
             requirements = requirementInfos,
             legalTargets = allLegalTargets
         )
