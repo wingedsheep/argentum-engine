@@ -66,7 +66,7 @@ class CastPaymentProcessor(
         return when (action.paymentStrategy) {
             is PaymentStrategy.FromPool -> payFromPool(state, action.playerId, effectiveCost, cardName, xValue, spellContext)
             is PaymentStrategy.AutoPay -> autoPay(state, action.playerId, effectiveCost, cardName, xValue, spellContext)
-            is PaymentStrategy.Explicit -> explicitPay(state, action.paymentStrategy, cardName)
+            is PaymentStrategy.Explicit -> explicitPay(state, action.playerId, action.paymentStrategy, cardName)
         }
     }
 
@@ -313,21 +313,75 @@ class CastPaymentProcessor(
 
     private fun explicitPay(
         state: GameState,
+        playerId: EntityId,
         strategy: PaymentStrategy.Explicit,
         cardName: String
     ): PaymentResult {
         var currentState = state
         val events = mutableListOf<GameEvent>()
 
+        var whiteSpent = 0
+        var blueSpent = 0
+        var blackSpent = 0
+        var redSpent = 0
+        var greenSpent = 0
+        var colorlessSpent = 0
+
+        // Pre-compute mana sources once for color tracking
+        val allSources = manaSolver.findAvailableManaSources(state, playerId)
+
         for (sourceId in strategy.manaAbilitiesToActivate) {
             val sourceName = currentState.getEntity(sourceId)
                 ?.get<CardComponent>()?.name ?: "Unknown"
 
-            currentState = currentState.updateEntity(sourceId) { container ->
-                container.with(TappedComponent)
+            currentState = currentState.updateEntity(sourceId) { c ->
+                c.with(TappedComponent)
             }
             events.add(TappedEvent(sourceId, sourceName))
+
+            // Track mana color produced by this source for mana-spent-gated triggers
+            val source = allSources.find { it.entityId == sourceId }
+            if (source != null) {
+                val amount = source.manaAmount
+                if (source.producesColors.size == 1) {
+                    when (source.producesColors.first()) {
+                        Color.WHITE -> whiteSpent += amount
+                        Color.BLUE -> blueSpent += amount
+                        Color.BLACK -> blackSpent += amount
+                        Color.RED -> redSpent += amount
+                        Color.GREEN -> greenSpent += amount
+                    }
+                } else if (source.producesColors.isEmpty()) {
+                    colorlessSpent += amount
+                } else {
+                    // Multi-color source — count each produced color equally.
+                    // The mana-spent condition uses "at least N of color", so over-counting
+                    // is correct for dual lands: tapping Steam Vents counts as both U and R.
+                    for (color in source.producesColors) {
+                        when (color) {
+                            Color.WHITE -> whiteSpent += amount
+                            Color.BLUE -> blueSpent += amount
+                            Color.BLACK -> blackSpent += amount
+                            Color.RED -> redSpent += amount
+                            Color.GREEN -> greenSpent += amount
+                        }
+                    }
+                }
+            }
         }
+
+        events.add(
+            ManaSpentEvent(
+                playerId = playerId,
+                reason = "Cast $cardName",
+                white = whiteSpent,
+                blue = blueSpent,
+                black = blackSpent,
+                red = redSpent,
+                green = greenSpent,
+                colorless = colorlessSpent
+            )
+        )
 
         return PaymentResult(currentState, events, null)
     }
