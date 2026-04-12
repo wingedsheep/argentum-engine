@@ -20,5 +20,6 @@ object LorwynEclipsedSet {
     val allCards = listOf(
         ChampionsOfThePerfect,
         ClachanFestival,
+        GoldmeadowNomad,
     )
 }

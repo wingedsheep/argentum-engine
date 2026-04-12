@@ -2,11 +2,11 @@
 
 **Set Size:** 273 cards (main set, per Scryfall `set:ecl`)
 **Release Date:** January 23, 2026
-**Implemented:** 2 / 273
+**Implemented:** 3 / 273
 
 | Color      | Total | Done |
 |------------|-------|------|
-| White      | 39    | 1    |
+| White      | 39    | 2    |
 | Blue       | 39    | 0    |
 | Black      | 38    | 0    |
 | Red        | 39    | 0    |
@@ -34,7 +34,7 @@
 - [ ] Evershrike's Gift
 - [ ] Flock Impostor
 - [ ] Gallant Fowlknight
-- [ ] Goldmeadow Nomad
+- [x] Goldmeadow Nomad
 - [ ] Keep Out
 - [ ] Kinbinding
 - [ ] Kinsbaile Aspirant
