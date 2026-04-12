@@ -21,6 +21,7 @@ object LorwynEclipsedSet {
         ChampionsOfThePerfect,
         ClachanFestival,
         GoldmeadowNomad,
+        HovelHurler,
         SteamVents,
     )
 }

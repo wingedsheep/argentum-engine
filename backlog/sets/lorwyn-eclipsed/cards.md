@@ -2,7 +2,7 @@
 
 **Set Size:** 273 cards (main set, per Scryfall `set:ecl`)
 **Release Date:** January 23, 2026
-**Implemented:** 4 / 273
+**Implemented:** 5 / 273
 
 | Color      | Total | Done |
 |------------|-------|------|
@@ -11,7 +11,7 @@
 | Black      | 38    | 0    |
 | Red        | 39    | 0    |
 | Green      | 39    | 1    |
-| Multicolor | 49    | 0    |
+| Multicolor | 49    | 1    |
 | Colorless  | 18    | 0    |
 | Land       | 12    | 1    |
 
@@ -256,7 +256,7 @@
 - [ ] Glister Bairn
 - [ ] Grub's Command
 - [ ] High Perfect Morcant
-- [ ] Hovel Hurler
+- [x] Hovel Hurler
 - [ ] Kirol, Attentive First-Year
 - [ ] Lluwen, Imperfect Naturalist
 - [ ] Maralen, Fae Ascendant
