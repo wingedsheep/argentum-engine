@@ -322,7 +322,10 @@ class PredicateEvaluator {
                     ?.get<ChosenCreatureTypeComponent>()?.creatureType
                     ?: return false
                 val entitySubtypes = projectedValues?.subtypes ?: card.typeLine.subtypes.map { it.value }.toSet()
-                entitySubtypes.any { it.equals(chosenType, ignoreCase = true) }
+                entitySubtypes.any { it.equals(chosenType, ignoreCase = true) } ||
+                    // Changeling: has all creature types in all zones
+                    (Keyword.CHANGELING in card.baseKeywords &&
+                        chosenType in Subtype.ALL_CREATURE_TYPES)
             }
 
             is CardPredicate.SharesCreatureTypeWith -> {
@@ -571,7 +574,10 @@ class PredicateEvaluator {
                 val chosenType = state.getEntity(sourceId)
                     ?.get<ChosenCreatureTypeComponent>()?.creatureType
                     ?: return false
-                card.typeLine.subtypes.any { it.value.equals(chosenType, ignoreCase = true) }
+                card.typeLine.subtypes.any { it.value.equals(chosenType, ignoreCase = true) } ||
+                    // Changeling: has all creature types in all zones
+                    (Keyword.CHANGELING in card.baseKeywords &&
+                        chosenType in Subtype.ALL_CREATURE_TYPES)
             }
 
             is CardPredicate.SharesCreatureTypeWith -> {

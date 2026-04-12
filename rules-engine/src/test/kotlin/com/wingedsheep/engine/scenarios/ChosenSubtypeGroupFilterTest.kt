@@ -3,8 +3,11 @@ package com.wingedsheep.engine.scenarios
 import com.wingedsheep.engine.core.ChooseOptionDecision
 import com.wingedsheep.engine.core.OptionChosenResponse
 import com.wingedsheep.engine.mechanics.layers.StateProjector
+import com.wingedsheep.engine.state.components.identity.ChosenCreatureTypeComponent
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
+import com.wingedsheep.mtg.sets.definitions.lorwyneclipsed.cards.ChronicleOfVictory
+import com.wingedsheep.mtg.sets.definitions.lorwyneclipsed.cards.FeistySpikeling
 import com.wingedsheep.sdk.core.*
 import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.CardScript
@@ -214,5 +217,78 @@ class ChosenSubtypeGroupFilterTest : FunSpec({
         val projected = projector.project(driver.state)
         projected.getPower(elfId) shouldBe 1
         projected.getToughness(elfId) shouldBe 1
+    }
+
+    test("changeling creature gets +2/+2 from Chronicle of Victory's chosen type buff") {
+        val driver = GameTestDriver()
+        val changeling = CardDefinition.creature(
+            name = "Test Changeling",
+            manaCost = ManaCost.parse("{1}{R}"),
+            subtypes = setOf(Subtype("Shapeshifter")),
+            power = 2,
+            toughness = 1,
+            keywords = setOf(Keyword.CHANGELING)
+        )
+        driver.registerCards(TestCards.all + listOf(ChronicleOfVictory, changeling))
+        driver.initMirrorMatch(
+            deck = Deck.of("Mountain" to 20, "Plains" to 20),
+            skipMulligans = true
+        )
+
+        val activePlayer = driver.activePlayer!!
+        driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
+
+        // Put Chronicle of Victory on battlefield with chosen type "Elf"
+        val chronicle = driver.putPermanentOnBattlefield(activePlayer, "Chronicle of Victory")
+        driver.replaceState(driver.state.updateEntity(chronicle) { c ->
+            c.with(ChosenCreatureTypeComponent("Elf"))
+        })
+
+        // Put changeling on battlefield
+        val changelingId = driver.putCreatureOnBattlefield(activePlayer, "Test Changeling")
+
+        // Changeling should get +2/+2 (it has all creature types including Elf)
+        val projected = projector.project(driver.state)
+        projected.getPower(changelingId) shouldBe 4    // 2 + 2
+        projected.getToughness(changelingId) shouldBe 3 // 1 + 2
+    }
+
+    test("casting changeling spell triggers Chronicle of Victory's draw ability") {
+        val driver = GameTestDriver()
+        val changeling = CardDefinition.creature(
+            name = "Test Changeling",
+            manaCost = ManaCost.parse("{1}{R}"),
+            subtypes = setOf(Subtype("Shapeshifter")),
+            power = 2,
+            toughness = 1,
+            keywords = setOf(Keyword.CHANGELING)
+        )
+        driver.registerCards(TestCards.all + listOf(ChronicleOfVictory, changeling))
+        driver.initMirrorMatch(
+            deck = Deck.of("Mountain" to 20, "Plains" to 20),
+            skipMulligans = true
+        )
+
+        val activePlayer = driver.activePlayer!!
+        driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
+
+        // Put Chronicle of Victory on battlefield with chosen type "Elf"
+        val chronicle = driver.putPermanentOnBattlefield(activePlayer, "Chronicle of Victory")
+        driver.replaceState(driver.state.updateEntity(chronicle) { c ->
+            c.with(ChosenCreatureTypeComponent("Elf"))
+        })
+
+        val handSizeBefore = driver.getHandSize(activePlayer)
+
+        // Cast changeling creature — should trigger "draw a card"
+        val spell = driver.putCardInHand(activePlayer, "Test Changeling")
+        driver.giveMana(activePlayer, Color.RED, 2)
+        driver.castSpell(activePlayer, spell)
+        driver.bothPass() // resolve the changeling spell
+
+        // Should have drawn a card from Chronicle's trigger
+        // Hand size: started at handSizeBefore, +1 from putting changeling in hand,
+        // -1 from casting it, +1 from draw trigger = handSizeBefore + 1
+        driver.getHandSize(activePlayer) shouldBe handSizeBefore + 1
     }
 })
