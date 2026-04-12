@@ -98,6 +98,7 @@ import com.wingedsheep.sdk.scripting.effects.CopyEachSpellCastEffect
 import com.wingedsheep.sdk.scripting.effects.CopyNextSpellCastEffect
 import com.wingedsheep.sdk.scripting.effects.CopyTargetSpellEffect
 import com.wingedsheep.sdk.scripting.effects.AddCreatureTypeEffect
+import com.wingedsheep.sdk.scripting.effects.LoseAllCreatureTypesEffect
 import com.wingedsheep.sdk.scripting.effects.SetCreatureSubtypesEffect
 import com.wingedsheep.sdk.scripting.effects.DestroyAllEquipmentOnTargetEffect
 import com.wingedsheep.sdk.scripting.effects.ForceExileMultiZoneEffect
@@ -597,6 +598,13 @@ object Effects {
      */
     fun RemoveAllAbilities(target: EffectTarget = EffectTarget.ContextTarget(0), duration: Duration = Duration.EndOfTurn): Effect =
         RemoveAllAbilitiesEffect(target, duration)
+
+    /**
+     * Remove all creature types from a target creature.
+     * "Target creature loses all creature types until end of turn."
+     */
+    fun LoseAllCreatureTypes(target: EffectTarget = EffectTarget.ContextTarget(0), duration: Duration = Duration.EndOfTurn): Effect =
+        LoseAllCreatureTypesEffect(target, duration)
 
     /**
      * Set creature subtypes for a single target.

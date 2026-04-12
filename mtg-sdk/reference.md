@@ -99,6 +99,7 @@ constructors.
 - `Effects.GrantKeywordToAll(keyword, filter: GroupFilter, duration)` — keyword to group
 - `Effects.RemoveKeyword(keyword, target, duration)` — remove keyword from single target
 - `Effects.RemoveKeywordFromAll(keyword, filter: GroupFilter, duration)` — remove keyword from group
+- `Effects.LoseAllCreatureTypes(target, duration = EndOfTurn)` — remove all creature types from target creature
 - `Effects.SetCreatureSubtypes(subtypes: Set<String>, target, duration)` — set creature subtypes on single target
 - `Effects.ModifyStatsForAll(power, toughness, filter: GroupFilter, duration)` — P/T for group (Int or DynamicAmount overloads)
 - `Effects.DealDamageToAll(amount, filter: GroupFilter)` — also accepts `DynamicAmount`

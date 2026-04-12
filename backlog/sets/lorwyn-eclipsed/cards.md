@@ -2,13 +2,13 @@
 
 **Set Size:** 273 cards (main set, per Scryfall `set:ecl`)
 **Release Date:** January 23, 2026
-**Implemented:** 11 / 273
+**Implemented:** 12 / 273
 
 | Color      | Total | Done |
 |------------|-------|------|
 | White      | 39    | 2    |
 | Blue       | 39    | 2    |
-| Black      | 38    | 1    |
+| Black      | 38    | 2    |
 | Red        | 39    | 0    |
 | Green      | 39    | 3    |
 | Multicolor | 49    | 1    |
@@ -132,7 +132,7 @@
 - [ ] Moonshadow
 - [ ] Mornsong Aria
 - [ ] Mudbutton Cursetosser
-- [ ] Nameless Inversion
+- [x] Nameless Inversion
 - [ ] Nightmare Sower
 - [ ] Perfect Intimidation
 - [ ] Requiting Hex

@@ -25,6 +25,7 @@ object LorwynEclipsedSet {
         GoldmeadowNomad,
         HovelHurler,
         MirrormindCrown,
+        NamelessInversion,
         SaplingNursery,
         SteamVents,
         WanderwineFarewell,
