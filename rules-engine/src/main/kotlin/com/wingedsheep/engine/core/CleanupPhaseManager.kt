@@ -12,6 +12,7 @@ import com.wingedsheep.engine.state.components.battlefield.TargetedByControllerT
 import com.wingedsheep.engine.state.components.battlefield.TriggeredAbilityFiredThisTurnComponent
 import com.wingedsheep.engine.state.components.battlefield.GraveyardPlayPermissionUsedComponent
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
+import com.wingedsheep.engine.state.components.battlefield.TokenReplacementOfferedThisTurnComponent
 import com.wingedsheep.engine.state.components.combat.MustAttackThisTurnComponent
 import com.wingedsheep.engine.state.components.combat.PlayerAttackedThisTurnComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
@@ -357,6 +358,9 @@ class CleanupPhaseManager(
             if (container.has<AbilityResolutionCountThisTurnComponent>()) {
                 needsUpdate = true
             }
+            if (container.has<TokenReplacementOfferedThisTurnComponent>()) {
+                needsUpdate = true
+            }
             if (container.has<WasDealtDamageThisTurnComponent>()) {
                 needsUpdate = true
             }
@@ -369,6 +373,7 @@ class CleanupPhaseManager(
                         .without<GraveyardPlayPermissionUsedComponent>()
                         .without<TriggeredAbilityFiredThisTurnComponent>()
                         .without<AbilityResolutionCountThisTurnComponent>()
+                        .without<TokenReplacementOfferedThisTurnComponent>()
                         .without<WasDealtDamageThisTurnComponent>()
                 }
             }

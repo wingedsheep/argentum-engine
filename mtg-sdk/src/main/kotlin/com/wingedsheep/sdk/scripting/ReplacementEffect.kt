@@ -785,6 +785,43 @@ data class RedirectZoneChangeWithEffect(
 }
 
 // =============================================================================
+// Token Creation Replacement Effects
+// =============================================================================
+
+/**
+ * Replace token creation with creating token copies of the equipped creature.
+ * Example: Mirrormind Crown — "As long as this Equipment is attached to a creature,
+ * the first time you would create one or more tokens each turn, you may instead
+ * create that many tokens that are copies of equipped creature."
+ *
+ * @param optional If true, the player may choose whether to apply the replacement ("you may")
+ * @param oncePerTurn If true, only applies to the first token creation each turn
+ */
+@SerialName("ReplaceTokenCreationWithEquippedCopy")
+@Serializable
+data class ReplaceTokenCreationWithEquippedCopy(
+    val optional: Boolean = true,
+    val oncePerTurn: Boolean = true,
+    override val appliesTo: GameEvent = GameEvent.TokenCreationEvent()
+) : ReplacementEffect {
+    override val description: String = buildString {
+        append("As long as this Equipment is attached to a creature, ")
+        if (oncePerTurn) append("the first time ")
+        append("you would create one or more tokens")
+        if (oncePerTurn) append(" each turn")
+        append(", ")
+        if (optional) append("you may instead ")
+        else append("instead ")
+        append("create that many tokens that are copies of equipped creature")
+    }
+
+    override fun applyTextReplacement(replacer: TextReplacer): ReplacementEffect {
+        val newAppliesTo = appliesTo.applyTextReplacement(replacer)
+        return if (newAppliesTo !== appliesTo) copy(appliesTo = newAppliesTo) else this
+    }
+}
+
+// =============================================================================
 // Generic Replacement Effect
 // =============================================================================
 

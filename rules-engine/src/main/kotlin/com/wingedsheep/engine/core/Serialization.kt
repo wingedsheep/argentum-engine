@@ -229,6 +229,7 @@ val engineSerializersModule = SerializersModule {
         subclass(ReturnFromGraveyardContinuation::class)
         subclass(ReturnFromLinkedExileContinuation::class)
         subclass(StaticDrawReplacementContinuation::class)
+        subclass(TokenCreationReplacementContinuation::class)
     }
 
     // Component hierarchy (for GameState persistence)
@@ -274,6 +275,7 @@ val engineSerializersModule = SerializersModule {
         subclass(AbilityActivatedEverComponent::class)
         subclass(AbilityActivatedThisTurnComponent::class)
         subclass(AbilityResolutionCountThisTurnComponent::class)
+        subclass(TokenReplacementOfferedThisTurnComponent::class)
         subclass(CantBeTargetedByOpponentAbilitiesComponent::class)
         subclass(ClassLevelComponent::class)
         subclass(DamageDealtToCreaturesThisTurnComponent::class)

@@ -22,6 +22,7 @@ object LorwynEclipsedSet {
         ClachanFestival,
         GoldmeadowNomad,
         HovelHurler,
+        MirrormindCrown,
         SteamVents,
         WildUnraveling,
     )

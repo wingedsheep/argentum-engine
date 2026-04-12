@@ -228,6 +228,14 @@ data class AbilityResolutionCountThisTurnComponent(
 }
 
 /**
+ * Marks an equipment that has already offered its token creation replacement this turn.
+ * Used by ReplaceTokenCreationWithEquippedCopy (Mirrormind Crown) to enforce "first time each turn".
+ * Cleared at end of turn by CleanupPhaseManager.
+ */
+@Serializable
+data object TokenReplacementOfferedThisTurnComponent : Component
+
+/**
  * Tracks which controllers have targeted this permanent with spells or abilities this turn.
  * Used for Valiant triggers: "for the first time each turn".
  * Cleared at end of turn by CleanupPhaseManager.
