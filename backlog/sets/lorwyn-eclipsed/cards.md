@@ -2,7 +2,7 @@
 
 **Set Size:** 273 cards (main set, per Scryfall `set:ecl`)
 **Release Date:** January 23, 2026
-**Implemented:** 13 / 273
+**Implemented:** 14 / 273
 
 | Color      | Total | Done |
 |------------|-------|------|
@@ -10,7 +10,7 @@
 | Blue       | 39    | 2    |
 | Black      | 38    | 2    |
 | Red        | 39    | 0    |
-| Green      | 39    | 3    |
+| Green      | 39    | 4    |
 | Multicolor | 49    | 2    |
 | Colorless  | 18    | 1    |
 | Land       | 12    | 1    |
@@ -225,7 +225,7 @@
 - [ ] Thoughtweft Charge
 - [ ] Unforgiving Aim
 - [ ] Vinebred Brawler
-- [ ] Virulent Emissary
+- [x] Virulent Emissary
 - [ ] Wildvine Pummeler
 
 ## Multicolor (49)

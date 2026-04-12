@@ -29,6 +29,7 @@ object LorwynEclipsedSet {
         NamelessInversion,
         SaplingNursery,
         SteamVents,
+        VirulentEmissary,
         WanderwineFarewell,
         WildUnraveling,
     )
