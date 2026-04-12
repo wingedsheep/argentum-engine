@@ -23,6 +23,7 @@ object LorwynEclipsedSet {
         ChampionsOfThePerfect,
         ClachanFestival,
         DawnsLightArcher,
+        DeepchannelDuelist,
         GoldmeadowNomad,
         HovelHurler,
         MirrormindCrown,
