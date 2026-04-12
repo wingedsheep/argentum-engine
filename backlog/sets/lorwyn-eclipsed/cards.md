@@ -2,12 +2,12 @@
 
 **Set Size:** 273 cards (main set, per Scryfall `set:ecl`)
 **Release Date:** January 23, 2026
-**Implemented:** 10 / 273
+**Implemented:** 11 / 273
 
 | Color      | Total | Done |
 |------------|-------|------|
 | White      | 39    | 2    |
-| Blue       | 39    | 1    |
+| Blue       | 39    | 2    |
 | Black      | 38    | 1    |
 | Red        | 39    | 0    |
 | Green      | 39    | 3    |
@@ -100,7 +100,7 @@
 - [ ] Unexpected Assistance
 - [ ] Unwelcome Sprite
 - [ ] Wanderwine Distracter
-- [ ] Wanderwine Farewell
+- [x] Wanderwine Farewell
 - [x] Wild Unraveling
 
 ## Black (38)

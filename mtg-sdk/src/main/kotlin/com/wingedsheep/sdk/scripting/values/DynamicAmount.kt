@@ -644,4 +644,16 @@ sealed interface DynamicAmount : TextReplaceable<DynamicAmount> {
         override fun applyTextReplacement(replacer: TextReplacer): DynamicAmount = this
     }
 
+    /**
+     * The number of targets in the current effect context.
+     * Used for "for each permanent returned this way" effects where the count
+     * equals the number of (still-legal) targets at resolution time.
+     */
+    @SerialName("TargetCount")
+    @Serializable
+    data object TargetCount : DynamicAmount {
+        override val description: String = "the number of targets"
+        override fun applyTextReplacement(replacer: TextReplacer): DynamicAmount = this
+    }
+
 }

@@ -27,6 +27,7 @@ object LorwynEclipsedSet {
         MirrormindCrown,
         SaplingNursery,
         SteamVents,
+        WanderwineFarewell,
         WildUnraveling,
     )
 }

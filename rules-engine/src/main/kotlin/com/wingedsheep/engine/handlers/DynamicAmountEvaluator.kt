@@ -214,6 +214,8 @@ class DynamicAmountEvaluator(
                 }
             }
 
+            is DynamicAmount.TargetCount -> context.targets.size
+
             is DynamicAmount.CreaturesSharingTypeWithEntity -> {
                 val entityId = resolveEntityId(amount.entity, context) ?: return 0
                 val projected = if (projectForBattlefieldCounting) state.projectedState else null

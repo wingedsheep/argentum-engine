@@ -780,6 +780,7 @@ constructors.
 - `DynamicAmount.SourcePower` / `.SourceToughness` / `.TriggerDamageAmount` / `.TriggerLifeGainAmount` / `.LastKnownCounterCount`
 - `DynamicAmount.ColorsAmongPermanentsYouControl` / `.CardTypesInAllGraveyards` / `.CardTypesInLinkedExile`
 - `DynamicAmount.CountersOnSelf(counterType)` / `.CountersOnTarget(counterType, targetIndex)` / `.CreaturesSharingTypeWithTriggeringEntity`
+- `DynamicAmount.TargetCount` — number of targets in the current effect context (for "for each target" token creation)
 - `DynamicAmount.VariableReference(variableName)` / `.StoredCardManaValue(collectionName)` / `.AdditionalCostExiledCount`
 - `DynamicAmount.AttachmentsOnSelf` — count of Auras and Equipment attached to the source entity
 - `DynamicAmount.NumberOfBlockers` / `DynamicAmounts.numberOfBlockers()` — number of creatures blocking the triggering entity
