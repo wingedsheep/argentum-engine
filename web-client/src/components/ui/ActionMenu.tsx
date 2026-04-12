@@ -50,9 +50,10 @@ function buildActionOptions(
   }
 
   // Find each type of action - server sends all potential actions with isAffordable flag
-  const castAction = legalActions.find(
+  const castActions = legalActions.filter(
     (a) => a.action.type === 'CastSpell' && a.actionType !== 'CastFaceDown' && a.actionType !== 'CastWithKicker'
   )
+  const castAction = castActions[0] ?? null
   const kickerAction = legalActions.find((a) => a.actionType === 'CastWithKicker')
   const morphAction = legalActions.find((a) => a.actionType === 'CastFaceDown')
   const cycleAction = legalActions.find((a) => a.action.type === 'CycleCard')
@@ -61,7 +62,7 @@ function buildActionOptions(
 
   // Debug: log found actions
   if (import.meta.env.DEV) {
-    console.log('buildActionOptions - found:', { castAction: !!castAction, morphAction: !!morphAction, cycleAction: !!cycleAction, playLandAction: !!playLandAction })
+    console.log('buildActionOptions - found:', { castAction: !!castAction, castActions: castActions.length, morphAction: !!morphAction, cycleAction: !!cycleAction, playLandAction: !!playLandAction })
     // Extra debug for cycling
     legalActions.forEach((a, i) => {
       console.log(`  action[${i}]: action.type=${a.action.type}, actionType=${a.actionType}, isCycleCard=${a.action.type === 'CycleCard'}`)
@@ -81,8 +82,20 @@ function buildActionOptions(
         actionType: 'cast',
       })
     })
+  } else if (castActions.length > 1) {
+    // 1b. Multiple cast options (e.g., BlightOrPay — blight path vs pay path)
+    castActions.forEach((ca, index) => {
+      options.push({
+        key: `cast-${index}`,
+        label: ca.description,
+        manaCost: ca.manaCostString || cardInfo.manaCost || null,
+        isAvailable: ca.isAffordable !== false,
+        action: ca,
+        actionType: 'cast',
+      })
+    })
   } else if (castAction) {
-    // 1b. Normal cast (for non-land, non-modal cards)
+    // 1c. Normal cast (for non-land, non-modal cards)
     options.push({
       key: 'cast',
       label: `Cast ${cardInfo.name}`,

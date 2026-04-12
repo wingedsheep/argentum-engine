@@ -262,7 +262,7 @@ class CastSpellEnumerator : ActionEnumerator {
                         ?.sources?.map { it.entityId }
                 }
                 val blightCostInfo = AdditionalCostData(
-                    description = blightOrPayCost!!.description,
+                    description = "creature to blight",
                     costType = "Blight",
                     validBlightTargets = blightCreatures,
                     blightAmount = blightOrPayCost!!.blightAmount

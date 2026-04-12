@@ -113,6 +113,7 @@ export function computePhases(actionInfo: LegalActionInfo, options?: ComputePhas
       'ExileFromZone',
       'RevealCard',
       'Behold',
+      'Blight',
     ]
 
     if (costTypesNeedingSelection.includes(costType)) {
@@ -238,7 +239,9 @@ export function mergeResult(
               ? { exiledCards: selectedTargets }
               : costType === 'Behold'
                 ? { beheldCards: selectedTargets }
-                : { sacrificedPermanents: selectedTargets }
+                : costType === 'Blight'
+                  ? { blightTargets: selectedTargets }
+                  : { sacrificedPermanents: selectedTargets }
         return { ...action, additionalCostPayment }
       }
       if (action.type === 'ActivateAbility') {
@@ -468,6 +471,12 @@ export function enterPhase(
           maxTargets = costInfo.beholdCount ?? 1
           flags.isSacrificeSelection = true
           flags.isBeholdSelection = true
+          flags.targetDescription = costInfo.description
+          break
+        case 'Blight':
+          validTargets = [...(costInfo.validBlightTargets ?? [])]
+          minTargets = 1
+          maxTargets = 1
           flags.targetDescription = costInfo.description
           break
         default:

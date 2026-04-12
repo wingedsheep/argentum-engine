@@ -70,8 +70,8 @@ export const createTargetingSlice: SliceCreator<TargetingSlice> = (set, get) => 
 
     const currentPhase = pipelineState.remainingPhases[0]
 
-    // Cost payment phase (sacrifice/discard/tap/bounce/exile selection)
-    if (currentPhase?.type === 'costPayment' && targetingState.isSacrificeSelection) {
+    // Cost payment phase (sacrifice/discard/tap/bounce/exile/blight selection)
+    if (currentPhase?.type === 'costPayment') {
       const costType =
         pipelineState.actionInfo.additionalCostInfo?.costType ?? 'SacrificePermanent'
       set({ targetingState: null })
