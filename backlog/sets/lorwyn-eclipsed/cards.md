@@ -2,11 +2,11 @@
 
 **Set Size:** 273 cards (main set, per Scryfall `set:ecl`)
 **Release Date:** January 23, 2026
-**Implemented:** 1 / 273
+**Implemented:** 2 / 273
 
 | Color      | Total | Done |
 |------------|-------|------|
-| White      | 39    | 0    |
+| White      | 39    | 1    |
 | Blue       | 39    | 0    |
 | Black      | 38    | 0    |
 | Red        | 39    | 0    |
@@ -27,7 +27,7 @@
 - [ ] Bark of Doran
 - [ ] Burdened Stoneback
 - [ ] Champion of the Clachan
-- [ ] Clachan Festival
+- [x] Clachan Festival
 - [ ] Crib Swap
 - [ ] Curious Colossus
 - [ ] Encumbered Reejerey
