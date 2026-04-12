@@ -1,6 +1,6 @@
 # Evoke (Alternative Cost → Sacrifice on ETB)
 
-**Status:** Not implemented
+**Status:** Implemented
 **Cards affected in Lorwyn Eclipsed:** 5 — Incarnation cycle (`Catharsis`, `Deceit`, `Emptiness`,
 `Wistfulness`, and one more). All are six-mana hybrid creatures with a cheap two-mana evoke cost.
 **Priority:** High — blocks the whole Incarnation cycle, which anchors the Elemental/tribal theme.

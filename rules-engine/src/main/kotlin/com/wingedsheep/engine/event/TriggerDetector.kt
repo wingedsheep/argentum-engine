@@ -231,6 +231,10 @@ class TriggerDetector(
         // "whenever that creature deals combat damage this turn, you may exile it").
         detectEventBasedDelayedTriggers(state, events, triggers)
 
+        // Detect evoke sacrifice triggers: when a permanent enters with EvokedComponent,
+        // create a "sacrifice self" delayed trigger (CR 702.74)
+        detectEvokeSacrificeTriggers(state, events, triggers)
+
         // Filter out once-per-turn triggers that have already fired this turn
         val filteredTriggers = triggers.filter { trigger ->
             if (!trigger.ability.oncePerTurn) return@filter true
@@ -423,6 +427,45 @@ class TriggerDetector(
      * they may fire multiple times before expiry (e.g., double strike combat damage).
      * They are removed only by their [DelayedTriggerExpiry] (e.g., end of turn cleanup).
      */
+    /**
+     * When a permanent enters the battlefield with EvokedComponent, create a "sacrifice self"
+     * trigger that goes on the stack as a separate triggered ability (CR 702.74).
+     * The ETB triggers and the sacrifice trigger are siblings on the stack — the player
+     * can respond between them.
+     */
+    private fun detectEvokeSacrificeTriggers(
+        state: GameState,
+        events: List<EngineGameEvent>,
+        triggers: MutableList<PendingTrigger>
+    ) {
+        val etbEvents = events.filterIsInstance<ZoneChangeEvent>().filter { it.toZone == Zone.BATTLEFIELD }
+        for (event in etbEvents) {
+            val entity = state.getEntity(event.entityId) ?: continue
+            if (!entity.has<com.wingedsheep.engine.state.components.battlefield.EvokedComponent>()) continue
+            val cardComponent = entity.get<CardComponent>() ?: continue
+            val controllerId = entity.get<ControllerComponent>()?.playerId ?: event.ownerId
+
+            // Create a sacrifice-self trigger
+            val sacrificeAbility = TriggeredAbility.create(
+                trigger = com.wingedsheep.sdk.scripting.GameEvent.ZoneChangeEvent(to = Zone.BATTLEFIELD),
+                binding = TriggerBinding.SELF,
+                effect = com.wingedsheep.sdk.dsl.Effects.SacrificeTarget(
+                    com.wingedsheep.sdk.scripting.targets.EffectTarget.Self
+                ),
+                descriptionOverride = "Evoke — Sacrifice ${cardComponent.name}"
+            )
+            triggers.add(
+                PendingTrigger(
+                    ability = sacrificeAbility,
+                    sourceId = event.entityId,
+                    sourceName = cardComponent.name,
+                    controllerId = controllerId,
+                    triggerContext = TriggerContext(triggeringEntityId = event.entityId)
+                )
+            )
+        }
+    }
+
     private fun detectEventBasedDelayedTriggers(
         state: GameState,
         events: List<EngineGameEvent>,

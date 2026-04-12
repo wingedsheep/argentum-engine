@@ -1,6 +1,6 @@
 # Mana-Spent-to-Cast Gated ETB Triggers
 
-**Status:** Not implemented
+**Status:** Implemented
 **Cards affected in Lorwyn Eclipsed:** 5 — the full Incarnation cycle (`Catharsis`, `Deceit`,
 `Emptiness`, `Wistfulness`, one more). Each has two ETB triggers, each gated on a specific
 colored-mana payment.

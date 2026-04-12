@@ -19,6 +19,7 @@ object LorwynEclipsedSet {
 
     val allCards = listOf(
         BarbedBloodletter,
+        Catharsis,
         ChampionsOfThePerfect,
         ClachanFestival,
         DawnsLightArcher,

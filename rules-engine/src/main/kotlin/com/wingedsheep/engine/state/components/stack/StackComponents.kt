@@ -26,7 +26,14 @@ data class SpellOnStackComponent(
     val exiledCardCount: Int = 0,  // For variable exile additional costs (e.g., Chill Haunting)
     val castFromZone: Zone? = null,  // Zone the spell was cast from (e.g., HAND for normal casting)
     val wasWarped: Boolean = false,  // For warp - permanent is exiled at end step
-    val beheldCards: List<EntityId> = emptyList()  // Cards chosen via Behold (stored in pipeline as named collection)
+    val wasEvoked: Boolean = false,  // For evoke - permanent is sacrificed on ETB
+    val beheldCards: List<EntityId> = emptyList(),  // Cards chosen via Behold (stored in pipeline as named collection)
+    val manaSpentWhite: Int = 0,  // Mana colors spent for mana-spent-gated triggers
+    val manaSpentBlue: Int = 0,
+    val manaSpentBlack: Int = 0,
+    val manaSpentRed: Int = 0,
+    val manaSpentGreen: Int = 0,
+    val manaSpentColorless: Int = 0
 ) : Component
 
 /**

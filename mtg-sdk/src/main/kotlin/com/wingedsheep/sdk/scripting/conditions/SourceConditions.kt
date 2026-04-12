@@ -137,6 +137,37 @@ data object WasKicked : Condition {
 }
 
 /**
+ * Condition: "If {W}{W} was spent to cast it" (mana-spent gating)
+ * Used for Lorwyn Incarnation cycle (Catharsis, Deceit, Emptiness, etc.)
+ * where ETB triggers are gated on specific mana colors spent to cast.
+ *
+ * Checks the CastRecordComponent on the permanent for per-color mana spent.
+ * Each pip in [requiredWhite], [requiredBlue], etc. must have been spent.
+ */
+@SerialName("ManaSpentToCastIncludes")
+@Serializable
+data class ManaSpentToCastIncludes(
+    val requiredWhite: Int = 0,
+    val requiredBlue: Int = 0,
+    val requiredBlack: Int = 0,
+    val requiredRed: Int = 0,
+    val requiredGreen: Int = 0
+) : Condition {
+    override val description: String = buildString {
+        append("if ")
+        val parts = mutableListOf<String>()
+        repeat(requiredWhite) { parts.add("{W}") }
+        repeat(requiredBlue) { parts.add("{U}") }
+        repeat(requiredBlack) { parts.add("{B}") }
+        repeat(requiredRed) { parts.add("{R}") }
+        repeat(requiredGreen) { parts.add("{G}") }
+        append(parts.joinToString(""))
+        append(" was spent to cast it")
+    }
+    override fun applyTextReplacement(replacer: TextReplacer): Condition = this
+}
+
+/**
  * Condition: "As long as this creature is a [subtype]"
  * Used for cards like Mistform Wall: "This creature has defender as long as it's a Wall."
  *

@@ -245,6 +245,13 @@ class CardBuilder(private val name: String) {
      */
     var selfAlternativeCost: SelfAlternativeCost? = null
 
+    /**
+     * Evoke cost. If set, the creature can be cast for this cost as an alternative.
+     * When evoked, the creature is sacrificed when it enters the battlefield.
+     * The evoke cost is specified as a mana string, e.g., "{R/W}{R/W}".
+     */
+    var evoke: String? = null
+
     // =========================================================================
     // Internal State
     // =========================================================================
@@ -536,6 +543,7 @@ class CardBuilder(private val name: String) {
                 morphCost != null -> add(KeywordAbility.Morph(morphCost!!, morphFaceUpEffect))
             }
             if (warp != null) add(KeywordAbility.Warp(ManaCost.parse(warp!!)))
+            if (evoke != null) add(KeywordAbility.Evoke(ManaCost.parse(evoke!!)))
         }
 
         return CardDefinition(

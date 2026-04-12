@@ -101,9 +101,16 @@ class StackResolver(
         exiledCardCount: Int = 0,
         wasKicked: Boolean = false,
         wasWarped: Boolean = false,
+        wasEvoked: Boolean = false,
         chosenModes: List<Int> = emptyList(),
         totalManaSpent: Int = 0,
-        beheldCards: List<EntityId> = emptyList()
+        beheldCards: List<EntityId> = emptyList(),
+        manaSpentWhite: Int = 0,
+        manaSpentBlue: Int = 0,
+        manaSpentBlack: Int = 0,
+        manaSpentRed: Int = 0,
+        manaSpentGreen: Int = 0,
+        manaSpentColorless: Int = 0
     ): ExecutionResult {
         val container = state.getEntity(cardId)
             ?: return ExecutionResult.error(state, "Card not found: $cardId")
@@ -132,7 +139,14 @@ class StackResolver(
                 exiledCardCount = exiledCardCount,
                 castFromZone = castFromZone,
                 wasWarped = wasWarped,
-                beheldCards = beheldCards
+                wasEvoked = wasEvoked,
+                beheldCards = beheldCards,
+                manaSpentWhite = manaSpentWhite,
+                manaSpentBlue = manaSpentBlue,
+                manaSpentBlack = manaSpentBlack,
+                manaSpentRed = manaSpentRed,
+                manaSpentGreen = manaSpentGreen,
+                manaSpentColorless = manaSpentColorless
             ))
             if (targets.isNotEmpty()) {
                 updated = updated.with(TargetsComponent(targets, targetRequirements))
@@ -635,6 +649,25 @@ class StackResolver(
             // Track if this permanent was cast for its warp cost
             if (spellComponent.wasWarped) {
                 updated = updated.with(WarpedComponent)
+            }
+
+            // Track if this permanent was cast for its evoke cost
+            if (spellComponent.wasEvoked) {
+                updated = updated.with(com.wingedsheep.engine.state.components.battlefield.EvokedComponent)
+            }
+
+            // Record mana colors spent to cast (for mana-spent-gated triggers)
+            if (spellComponent.manaSpentWhite > 0 || spellComponent.manaSpentBlue > 0 ||
+                spellComponent.manaSpentBlack > 0 || spellComponent.manaSpentRed > 0 ||
+                spellComponent.manaSpentGreen > 0 || spellComponent.manaSpentColorless > 0) {
+                updated = updated.with(com.wingedsheep.engine.state.components.battlefield.CastRecordComponent(
+                    whiteSpent = spellComponent.manaSpentWhite,
+                    blueSpent = spellComponent.manaSpentBlue,
+                    blackSpent = spellComponent.manaSpentBlack,
+                    redSpent = spellComponent.manaSpentRed,
+                    greenSpent = spellComponent.manaSpentGreen,
+                    colorlessSpent = spellComponent.manaSpentColorless
+                ))
             }
 
             // Add continuous effects from static abilities (but not for face-down creatures)

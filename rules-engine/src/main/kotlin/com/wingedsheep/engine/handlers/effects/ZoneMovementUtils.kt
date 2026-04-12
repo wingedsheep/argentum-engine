@@ -24,6 +24,8 @@ import com.wingedsheep.engine.state.components.battlefield.SagaComponent
 import com.wingedsheep.engine.state.components.battlefield.ReplacementEffectSourceComponent
 import com.wingedsheep.engine.state.components.battlefield.CastFromHandComponent
 import com.wingedsheep.engine.state.components.battlefield.WarpedComponent
+import com.wingedsheep.engine.state.components.battlefield.EvokedComponent
+import com.wingedsheep.engine.state.components.battlefield.CastRecordComponent
 import com.wingedsheep.engine.state.components.battlefield.WasKickedComponent
 import com.wingedsheep.engine.state.components.battlefield.SummoningSicknessComponent
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
@@ -234,6 +236,10 @@ object ZoneMovementUtils {
             .without<CastFromHandComponent>()
             .without<WasKickedComponent>()
             .without<WarpedComponent>()
+            .without<EvokedComponent>()
+            // Note: CastRecordComponent is NOT stripped here — it needs to persist
+            // for intervening-if checks on mana-spent-gated triggers that may still
+            // be on the stack when the permanent leaves the battlefield (e.g., evoke).
             .without<DamageComponent>()
             .without<DamageDealtToCreaturesThisTurnComponent>()
             .without<WasDealtDamageThisTurnComponent>()

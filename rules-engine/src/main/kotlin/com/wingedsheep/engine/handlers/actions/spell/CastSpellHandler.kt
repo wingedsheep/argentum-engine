@@ -224,16 +224,22 @@ class CastSpellHandler(
                             || zoneResolver.hasWarpFromExilePermission(state, action.playerId, action.cardId))) {
                     costCalculator.calculateEffectiveCostWithAlternativeBase(state, cardDef, warpAbility.cost, action.playerId)
                 } else {
-                    // Check self-alternative cost (e.g., Zahid's {3}{U} + tap artifact)
-                    val selfAltCost = cardDef.script.selfAlternativeCost
-                    if (selfAltCost != null) {
-                        val altMana = ManaCost.parse(selfAltCost.manaCost)
-                        costCalculator.calculateEffectiveCostWithAlternativeBase(state, cardDef, altMana, action.playerId)
+                    // Check evoke cost
+                    val evokeAbility = cardDef.keywordAbilities.filterIsInstance<KeywordAbility.Evoke>().firstOrNull()
+                    if (evokeAbility != null) {
+                        costCalculator.calculateEffectiveCostWithAlternativeBase(state, cardDef, evokeAbility.cost, action.playerId)
                     } else {
-                        // Fall back to battlefield-granted alternative cost (e.g., Jodah's {W}{U}{B}{R}{G})
-                        val altCosts = costCalculator.findAlternativeCastingCosts(state, action.playerId)
-                        if (altCosts.isEmpty()) return "No alternative casting cost available"
-                        costCalculator.calculateEffectiveCostWithAlternativeBase(state, cardDef, altCosts.first())
+                        // Check self-alternative cost (e.g., Zahid's {3}{U} + tap artifact)
+                        val selfAltCost = cardDef.script.selfAlternativeCost
+                        if (selfAltCost != null) {
+                            val altMana = ManaCost.parse(selfAltCost.manaCost)
+                            costCalculator.calculateEffectiveCostWithAlternativeBase(state, cardDef, altMana, action.playerId)
+                        } else {
+                            // Fall back to battlefield-granted alternative cost (e.g., Jodah's {W}{U}{B}{R}{G})
+                            val altCosts = costCalculator.findAlternativeCastingCosts(state, action.playerId)
+                            if (altCosts.isEmpty()) return "No alternative casting cost available"
+                            costCalculator.calculateEffectiveCostWithAlternativeBase(state, cardDef, altCosts.first())
+                        }
                     }
                 }
             }
@@ -752,16 +758,22 @@ class CastSpellHandler(
                             || zoneResolver.hasWarpFromExilePermission(currentState, action.playerId, action.cardId))) {
                     costCalculator.calculateEffectiveCostWithAlternativeBase(currentState, cardDef, warpAbility.cost, action.playerId)
                 } else {
-                    val selfAltCost = cardDef.script.selfAlternativeCost
-                    if (selfAltCost != null) {
-                        val altMana = ManaCost.parse(selfAltCost.manaCost)
-                        costCalculator.calculateEffectiveCostWithAlternativeBase(currentState, cardDef, altMana, action.playerId)
+                    // Check evoke cost
+                    val evokeAbility = cardDef.keywordAbilities.filterIsInstance<KeywordAbility.Evoke>().firstOrNull()
+                    if (evokeAbility != null) {
+                        costCalculator.calculateEffectiveCostWithAlternativeBase(currentState, cardDef, evokeAbility.cost, action.playerId)
                     } else {
-                        val altCosts = costCalculator.findAlternativeCastingCosts(currentState, action.playerId)
-                        if (altCosts.isNotEmpty()) {
-                            costCalculator.calculateEffectiveCostWithAlternativeBase(currentState, cardDef, altCosts.first())
+                        val selfAltCost = cardDef.script.selfAlternativeCost
+                        if (selfAltCost != null) {
+                            val altMana = ManaCost.parse(selfAltCost.manaCost)
+                            costCalculator.calculateEffectiveCostWithAlternativeBase(currentState, cardDef, altMana, action.playerId)
                         } else {
-                            cardComponent.manaCost
+                            val altCosts = costCalculator.findAlternativeCastingCosts(currentState, action.playerId)
+                            if (altCosts.isNotEmpty()) {
+                                costCalculator.calculateEffectiveCostWithAlternativeBase(currentState, cardDef, altCosts.first())
+                            } else {
+                                cardComponent.manaCost
+                            }
                         }
                     }
                 }
@@ -1162,6 +1174,13 @@ class CastSpellHandler(
         val wasWarped = action.useAlternativeCost && cardDef != null &&
             cardDef.keywordAbilities.any { it is KeywordAbility.Warp }
 
+        // Determine if this spell is being cast using evoke
+        val wasEvoked = action.useAlternativeCost && cardDef != null &&
+            cardDef.keywordAbilities.any { it is KeywordAbility.Evoke }
+
+        // Extract per-color mana spent from payment events (for mana-spent-gated triggers)
+        val manaSpentEvent = paymentResult.events.filterIsInstance<ManaSpentEvent>().firstOrNull()
+
         // Capture storm count before incrementing (spells cast before this one)
         val stormCount = currentState.spellsCastThisTurn
 
@@ -1208,9 +1227,16 @@ class CastSpellHandler(
             exiledCardCount = exiledCardCount,
             wasKicked = action.wasKicked,
             wasWarped = wasWarped,
+            wasEvoked = wasEvoked,
             chosenModes = if (action.chosenMode != null) listOf(action.chosenMode) else emptyList(),
             totalManaSpent = manaSpentThisCast,
-            beheldCards = beheldCards
+            beheldCards = beheldCards,
+            manaSpentWhite = manaSpentEvent?.white ?: 0,
+            manaSpentBlue = manaSpentEvent?.blue ?: 0,
+            manaSpentBlack = manaSpentEvent?.black ?: 0,
+            manaSpentRed = manaSpentEvent?.red ?: 0,
+            manaSpentGreen = manaSpentEvent?.green ?: 0,
+            manaSpentColorless = manaSpentEvent?.colorless ?: 0
         )
 
         if (!castResult.isSuccess) {

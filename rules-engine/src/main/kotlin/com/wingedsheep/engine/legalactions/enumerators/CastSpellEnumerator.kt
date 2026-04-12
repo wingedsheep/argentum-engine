@@ -235,12 +235,19 @@ class CastSpellEnumerator : ActionEnumerator {
                 canPayMana && canPayAdditional
             } else false
 
+            // Check evoke cost (alternative cost from Evoke keyword)
+            val evokeAbility = cardDef.keywordAbilities.filterIsInstance<KeywordAbility.Evoke>().firstOrNull()
+            val canAffordEvoke = if (evokeAbility != null) {
+                val evokeMana = context.costCalculator.calculateEffectiveCostWithAlternativeBase(state, cardDef, evokeAbility.cost, playerId)
+                context.manaSolver.canPay(state, playerId, evokeMana, precomputedSources = cachedSources)
+            } else false
+
             // Check blight path affordability (base cost without the extra mana, but needs a creature)
             val canAffordBlightPath = if (blightOrPayCost != null && blightCreatures.isNotEmpty()) {
                 context.manaSolver.canPay(state, playerId, blightBaseCost, spellContext = spellContext, precomputedSources = cachedSources)
             } else false
 
-            if (!canAfford && !canAffordAlternative && !canAffordSelfAlternative && !canAffordBlightPath) continue
+            if (!canAfford && !canAffordAlternative && !canAffordSelfAlternative && !canAffordEvoke && !canAffordBlightPath) continue
 
             val targetReqs = buildList {
                 addAll(cardDef.script.targetRequirements)
@@ -338,6 +345,20 @@ class CastSpellEnumerator : ActionEnumerator {
                     manaCostString = selfAltEffective.toString(),
                     autoTapPreview = selfAltPreview,
                     additionalCostInfo = addlCostInfo
+                )
+            } else null
+
+            // Compute evoke cost info
+            val evokeCostResult = if (canAffordEvoke && evokeAbility != null) {
+                val evokeMana = context.costCalculator.calculateEffectiveCostWithAlternativeBase(state, cardDef, evokeAbility.cost, playerId)
+                val evokePreview = if (context.skipAutoTapPreview) null else {
+                    context.manaSolver.solve(state, playerId, evokeMana, precomputedSources = cachedSources)
+                        ?.sources?.map { it.entityId }
+                }
+                SelfAltCostResult(
+                    manaCostString = evokeMana.toString(),
+                    autoTapPreview = evokePreview,
+                    additionalCostInfo = null
                 )
             } else null
 
@@ -566,6 +587,15 @@ class CastSpellEnumerator : ActionEnumerator {
                                 autoTapPreview = selfAltCostResult.autoTapPreview
                             ))
                         }
+                        if (evokeCostResult != null) {
+                            result.add(LegalAction(
+                                actionType = "CastWithAlternativeCost",
+                                description = "Evoke ${cardComponent.name} (${evokeCostResult.manaCostString})",
+                                action = CastSpell(playerId, cardId, targets = listOf(autoSelectedTarget), useAlternativeCost = true),
+                                manaCostString = evokeCostResult.manaCostString,
+                                autoTapPreview = evokeCostResult.autoTapPreview
+                            ))
+                        }
                         if (blightPathInfo != null) {
                             result.add(LegalAction(
                                 actionType = "CastSpell",
@@ -643,6 +673,21 @@ class CastSpellEnumerator : ActionEnumerator {
                                 autoTapPreview = selfAltCostResult.autoTapPreview
                             ))
                         }
+                        if (evokeCostResult != null) {
+                            result.add(LegalAction(
+                                actionType = "CastWithAlternativeCost",
+                                description = "Evoke ${cardComponent.name} (${evokeCostResult.manaCostString})",
+                                action = CastSpell(playerId, cardId, useAlternativeCost = true),
+                                validTargets = firstReqInfo.validTargets,
+                                requiresTargets = true,
+                                targetCount = firstReq.count,
+                                minTargets = firstReq.effectiveMinCount,
+                                targetDescription = firstReq.description,
+                                targetRequirements = if (targetReqInfos.size > 1) targetReqInfos else null,
+                                manaCostString = evokeCostResult.manaCostString,
+                                autoTapPreview = evokeCostResult.autoTapPreview
+                            ))
+                        }
                         if (blightPathInfo != null) {
                             result.add(LegalAction(
                                 actionType = "CastSpell",
@@ -700,6 +745,15 @@ class CastSpellEnumerator : ActionEnumerator {
                         manaCostString = selfAltCostResult.manaCostString,
                         additionalCostInfo = selfAltCostResult.additionalCostInfo,
                         autoTapPreview = selfAltCostResult.autoTapPreview
+                    ))
+                }
+                if (evokeCostResult != null) {
+                    result.add(LegalAction(
+                        actionType = "CastWithAlternativeCost",
+                        description = "Evoke ${cardComponent.name} (${evokeCostResult.manaCostString})",
+                        action = CastSpell(playerId, cardId, useAlternativeCost = true),
+                        manaCostString = evokeCostResult.manaCostString,
+                        autoTapPreview = evokeCostResult.autoTapPreview
                     ))
                 }
                 if (blightPathInfo != null) {

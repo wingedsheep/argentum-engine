@@ -726,6 +726,7 @@ constructors.
 - `Conditions.WasCastFromHand` — source permanent was cast from hand
 - `Conditions.WasCastFromZone(zone)` — spell was cast from specified zone (e.g., `Zone.GRAVEYARD` for flashback)
 - `Conditions.WasCastFromGraveyard` — shorthand for `WasCastFromZone(Zone.GRAVEYARD)`
+- `Conditions.ManaSpentToCastIncludes(requiredWhite, requiredBlue, requiredBlack, requiredRed, requiredGreen)` — true if at least the specified amount of each color was spent to cast this spell (mana-spent gating, e.g., Lorwyn Incarnation cycle)
 - `Conditions.SourceIsAttacking` / `.SourceIsBlocking`
 - `Conditions.SourceIsTapped` / `.SourceIsUntapped`
 - `Conditions.SourceHasSubtype(subtype)` — source has specific subtype
@@ -977,10 +978,11 @@ Used via `keywordAbility(...)` or `keywordAbilities(...)` in card DSL:
 - **Vehicles**: `Crew(power)`
 - **Cost**: `Affinity(forType)`, `AffinityForSubtype(forSubtype)`, `Cycling(cost)`, `Typecycling(type, cost)`, `Kicker(cost)`, `KickerWithAdditionalCost(cost: AdditionalCost)`, `Multikicker(cost)`
 - **Transform**: `Morph(cost, faceUpEffect?)`, `Absorb(count)` — `faceUpEffect` is an `Effect` executed as a replacement effect when turned face up (e.g., `AddCountersEffect` for Hooded Hydra)
+- **Alternative Cost**: `Evoke(cost: ManaCost)` — cast for evoke cost; sacrificed on ETB. DSL: `evoke = "{R/W}{R/W}"`. Engine detects ETB + `EvokedComponent` and creates sacrifice trigger.
 
 Companion helpers: `KeywordAbility.of(keyword)`, `.ward(cost)`, `.wardLife(amount)`, `.wardDiscard(count, random)`,
 `.hexproofFrom(color)`, `.protectionFrom(color)`, `.protectionFrom(vararg colors)`, `.protectionFromSubtype(subtype)`,
-`.cycling(cost)`, `.morph(cost)`, `.morphPayLife(amount)`
+`.cycling(cost)`, `.morph(cost)`, `.morphPayLife(amount)`, `.evoke(cost)`
 
 ---
 

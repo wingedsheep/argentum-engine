@@ -469,6 +469,25 @@ sealed interface KeywordAbility {
     }
 
     // =========================================================================
+    // Evoke
+    // =========================================================================
+
+    /**
+     * Evoke with a mana cost.
+     * "Evoke {R/W}{R/W}" - You may cast this spell for its evoke cost.
+     * If you do, it's sacrificed when it enters the battlefield.
+     *
+     * Evoke is an alternative cost. When cast for evoke, the creature enters
+     * the battlefield normally (ETB triggers fire), then a separate "sacrifice self"
+     * delayed trigger goes on the stack. Players can respond between ETB and sacrifice.
+     */
+    @SerialName("Evoke")
+    @Serializable
+    data class Evoke(val cost: ManaCost) : KeywordAbility {
+        override val description: String = "Evoke $cost"
+    }
+
+    // =========================================================================
     // Companion Methods
     // =========================================================================
 
@@ -545,5 +564,10 @@ sealed interface KeywordAbility {
          * Create Warp with mana cost from string.
          */
         fun warp(cost: String): KeywordAbility = Warp(ManaCost.parse(cost))
+
+        /**
+         * Create Evoke with mana cost from string.
+         */
+        fun evoke(cost: String): KeywordAbility = Evoke(ManaCost.parse(cost))
     }
 }

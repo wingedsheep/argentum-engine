@@ -46,6 +46,29 @@ data object WasKickedComponent : Component
 data object WarpedComponent : Component
 
 /**
+ * Marks a permanent as having been cast for its evoke cost.
+ * Added when an evoked spell resolves from the stack.
+ * TriggerDetector detects this on ETB and creates a "sacrifice self" delayed trigger.
+ */
+@Serializable
+data object EvokedComponent : Component
+
+/**
+ * Records the mana colors spent to cast this permanent.
+ * Used by mana-spent-gated trigger conditions (e.g., "if {W}{W} was spent to cast it").
+ * Stripped when the permanent leaves the battlefield.
+ */
+@Serializable
+data class CastRecordComponent(
+    val whiteSpent: Int = 0,
+    val blueSpent: Int = 0,
+    val blackSpent: Int = 0,
+    val redSpent: Int = 0,
+    val greenSpent: Int = 0,
+    val colorlessSpent: Int = 0
+) : Component
+
+/**
  * Marks a permanent so that if it would leave the battlefield, it is exiled instead.
  * Used by Kheru Lich Lord, Whip of Erebos, Sneak Attack, and similar reanimation effects.
  */

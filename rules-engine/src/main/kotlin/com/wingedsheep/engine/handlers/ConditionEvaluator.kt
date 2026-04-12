@@ -7,6 +7,7 @@ import com.wingedsheep.engine.state.components.battlefield.CastFromHandComponent
 import com.wingedsheep.engine.state.components.battlefield.EnteredThisTurnComponent
 import com.wingedsheep.engine.state.components.battlefield.HasDealtCombatDamageToPlayerComponent
 import com.wingedsheep.engine.state.components.battlefield.HasDealtDamageComponent
+import com.wingedsheep.engine.state.components.battlefield.CastRecordComponent
 import com.wingedsheep.engine.state.components.battlefield.WasKickedComponent
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.state.components.combat.AttackingComponent
@@ -59,6 +60,7 @@ import com.wingedsheep.sdk.scripting.conditions.YouLostLifeThisTurn
 import com.wingedsheep.sdk.scripting.conditions.SacrificedFoodThisTurn
 import com.wingedsheep.sdk.scripting.conditions.IsFirstSpellOfTypeCastThisTurn
 import com.wingedsheep.sdk.scripting.conditions.SourceAbilityResolvedNTimesThisTurn
+import com.wingedsheep.sdk.scripting.conditions.ManaSpentToCastIncludes
 import com.wingedsheep.sdk.scripting.conditions.WasKicked
 import com.wingedsheep.sdk.scripting.conditions.YouControlSource
 import com.wingedsheep.sdk.scripting.conditions.YouAttackedThisTurn
@@ -95,6 +97,7 @@ class ConditionEvaluator {
             is WasCastFromHand -> evaluateWasCastFromHand(state, context)
             is WasCastFromZone -> evaluateWasCastFromZone(state, condition, context)
             is WasKicked -> evaluateWasKicked(state, context)
+            is ManaSpentToCastIncludes -> evaluateManaSpentToCastIncludes(state, condition, context)
             is SourceIsAttacking -> evaluateSourceAttacking(state, context)
             is SourceIsBlocking -> evaluateSourceBlocking(state, context)
             is SourceIsTapped -> evaluateSourceTapped(state, context)
@@ -221,6 +224,20 @@ class ConditionEvaluator {
         if (state.getEntity(sourceId)?.has<WasKickedComponent>() == true) return true
         // Fall back to context (for spell resolution, e.g. kicker additional effects)
         return context.wasKicked
+    }
+
+    private fun evaluateManaSpentToCastIncludes(
+        state: GameState,
+        condition: ManaSpentToCastIncludes,
+        context: EffectContext
+    ): Boolean {
+        val sourceId = context.sourceId ?: return false
+        val record = state.getEntity(sourceId)?.get<CastRecordComponent>() ?: return false
+        return record.whiteSpent >= condition.requiredWhite &&
+            record.blueSpent >= condition.requiredBlue &&
+            record.blackSpent >= condition.requiredBlack &&
+            record.redSpent >= condition.requiredRed &&
+            record.greenSpent >= condition.requiredGreen
     }
 
     private fun evaluateSourceAttacking(state: GameState, context: EffectContext): Boolean {
