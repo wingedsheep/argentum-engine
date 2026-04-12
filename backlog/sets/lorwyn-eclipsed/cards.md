@@ -2,7 +2,7 @@
 
 **Set Size:** 273 cards (main set, per Scryfall `set:ecl`)
 **Release Date:** January 23, 2026
-**Implemented:** 7 / 273
+**Implemented:** 8 / 273
 
 | Color      | Total | Done |
 |------------|-------|------|
@@ -10,7 +10,7 @@
 | Blue       | 39    | 1    |
 | Black      | 38    | 0    |
 | Red        | 39    | 0    |
-| Green      | 39    | 1    |
+| Green      | 39    | 2    |
 | Multicolor | 49    | 1    |
 | Colorless  | 18    | 1    |
 | Land       | 12    | 1    |
@@ -216,7 +216,7 @@
 - [ ] Prismatic Undercurrents
 - [ ] Pummeler for Hire
 - [ ] Safewright Cavalry
-- [ ] Sapling Nursery
+- [x] Sapling Nursery
 - [ ] Selfless Safewright
 - [ ] Shimmerwilds Growth
 - [ ] Spry and Mighty
