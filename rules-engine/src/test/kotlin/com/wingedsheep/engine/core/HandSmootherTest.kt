@@ -418,7 +418,7 @@ class HandSmootherTest : FunSpec({
             initialHand.size shouldBe 7
 
             // Take a mulligan
-            val mulliganResult = processor.process(result.state, TakeMulligan(player1))
+            val mulliganResult = processor.process(result.state, TakeMulligan(player1)).result
             mulliganResult.isSuccess shouldBe true
 
             // New hand should have 7 cards (will need to bottom 1 after keeping)

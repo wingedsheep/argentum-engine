@@ -2156,7 +2156,7 @@ class CombatAdvisorTest : FunSpec({
                     if (decision != null) {
                         val ai = if (decision.playerId == p1) ai1 else ai2
                         val response = ai.respondToDecision(state, decision)
-                        val r = processor.process(state, SubmitDecision(decision.playerId, response))
+                        val r = processor.process(state, SubmitDecision(decision.playerId, response)).result
                         if (r.error != null) null else r.state
                     } else null
                 }

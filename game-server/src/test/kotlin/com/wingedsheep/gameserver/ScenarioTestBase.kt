@@ -369,7 +369,7 @@ abstract class ScenarioTestBase : FunSpec() {
          * Execute an action and update the state.
          */
         fun execute(action: GameAction): ExecutionResult {
-            val result = actionProcessor.process(state, action)
+            val result = actionProcessor.process(state, action).result
             if (result.error == null) {
                 state = result.state
             }

@@ -160,12 +160,12 @@ private fun playRandomGame(
             }
 
             val t0 = System.nanoTime()
-            val r = processor.process(state, action)
+            val r = processor.process(state, action).result
             processNs += System.nanoTime() - t0
             if (r.error != null) {
                 // If random action failed, just pass priority
                 val t1 = System.nanoTime()
-                val fallback = processor.process(state, PassPriority(action.playerId))
+                val fallback = processor.process(state, PassPriority(action.playerId)).result
                 processNs += System.nanoTime() - t1
                 if (fallback.error != null) break
                 state = fallback.state

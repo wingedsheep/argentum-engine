@@ -323,19 +323,26 @@ The `ActionProcessor` is the entry point:
 
 ```kotlin
 class ActionProcessor {
-    fun process(state: GameState, action: GameAction): ExecutionResult
+    fun process(state: GameState, action: GameAction): ProcessedAction
 }
+
+data class ProcessedAction(
+    val result: ExecutionResult,
+    val undoPolicy: UndoCheckpointAction = UndoCheckpointAction.CLEAR
+)
 ```
 
-`ExecutionResult` captures the three possible outcomes of any action:
+`ProcessedAction` pairs the core result with an undo checkpoint policy — the engine computes
+the policy based on game rules, and the server follows it mechanically. `ExecutionResult` itself
+captures the three possible outcomes of any action:
 
 ```kotlin
-sealed interface EngineResult {
-    data class Success(val state: GameState, val events: List<GameEvent>) : EngineResult
-    data class PausedForDecision(val state: GameState, val decision: PendingDecision, ...) : EngineResult
-    data class Failure(val state: GameState, val error: String) : EngineResult
-    data class GameOver(val state: GameState, val events: List<GameEvent>) : EngineResult
-}
+data class ExecutionResult(
+    val state: GameState,
+    val events: List<GameEvent> = emptyList(),
+    val error: String? = null,
+    val pendingDecision: PendingDecision? = null
+)
 ```
 
 The `PausedForDecision` case is central to how the engine handles player input mid-resolution — when a

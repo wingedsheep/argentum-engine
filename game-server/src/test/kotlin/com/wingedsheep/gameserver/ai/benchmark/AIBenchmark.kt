@@ -307,7 +307,7 @@ private fun playGame(
             log.appendLine("T$turns [${state.step.name}] ${label(actingPlayer)}: ${describeAction(gameAction)}")
 
             // Execute through production ActionProcessor
-            val result = processor.process(state, gameAction)
+            val result = processor.process(state, gameAction).result
             if (result.error != null) {
                 log.appendLine("  ERROR: ${result.error}")
                 // Fallback: if a decision was pending, use engine AI to answer it;
@@ -322,7 +322,7 @@ private fun playGame(
                     log.appendLine("  *** ENGINE FALLBACK: ${label(actingPlayer)} action failed, passing priority ***")
                     PassPriority(actingPlayer)
                 }
-                val fallback = processor.process(state, fallbackAction)
+                val fallback = processor.process(state, fallbackAction).result
                 if (fallback.error != null) {
                     log.appendLine("  FALLBACK FAILED: ${fallback.error}")
                     drawReason = "error(${result.error})"

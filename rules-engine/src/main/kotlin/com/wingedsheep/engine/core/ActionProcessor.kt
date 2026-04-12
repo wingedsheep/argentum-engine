@@ -15,13 +15,23 @@ import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.core.UndoPolicyComputer
 
 /**
+ * Wraps the result of [ActionProcessor.process] with an undo checkpoint policy.
+ *
+ * The engine computes the policy; the server follows it mechanically.
+ */
+data class ProcessedAction(
+    val result: ExecutionResult,
+    val undoPolicy: UndoCheckpointAction = UndoCheckpointAction.CLEAR
+)
+
+/**
  * The central action processor for the game engine.
  *
  * This is the main entry point for all game actions. It validates actions,
  * executes them against the game state, and returns the result.
  *
  * The processor is stateless - it's a pure function:
- * (GameState, GameAction) -> ExecutionResult(GameState, Events)
+ * (GameState, GameAction) -> ProcessedAction(ExecutionResult, UndoCheckpointAction)
  *
  * Action handling is delegated to specialized handlers registered in the
  * ActionHandlerRegistry. This class serves as a thin facade that:
@@ -59,24 +69,27 @@ class ActionProcessor(
      * @param action The action to process
      * @return ExecutionResult with new state, events, and any error or pending decision
      */
-    fun process(state: GameState, action: GameAction): ExecutionResult {
+    fun process(state: GameState, action: GameAction): ProcessedAction {
         // Basic validation that applies to all actions
         val basicError = validateBasics(state, action)
         if (basicError != null) {
-            return ExecutionResult.error(state, basicError)
+            return ProcessedAction(ExecutionResult.error(state, basicError))
         }
 
         // Delegate to the handler registry for action-specific validation
         val validationError = registry.validate(state, action)
         if (validationError != null) {
-            return ExecutionResult.error(state, validationError)
+            return ProcessedAction(ExecutionResult.error(state, validationError))
         }
 
         // Execute the action and compute undo policy
         val result = registry.execute(state, action)
-        if (!computeUndo) return result
-        val undoPolicy = UndoPolicyComputer.compute(action, state, result, services.cardRegistry)
-        return result.copy(undoPolicy = undoPolicy)
+        val undoPolicy = if (computeUndo) {
+            UndoPolicyComputer.compute(action, state, result, services.cardRegistry)
+        } else {
+            UndoCheckpointAction.CLEAR
+        }
+        return ProcessedAction(result, undoPolicy)
     }
 
     /**

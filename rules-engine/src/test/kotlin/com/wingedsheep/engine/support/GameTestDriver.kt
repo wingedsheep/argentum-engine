@@ -161,7 +161,7 @@ class GameTestDriver {
      * @throws IllegalStateException if the action fails
      */
     fun submit(action: GameAction): ExecutionResult {
-        val result = processor.process(_state, action)
+        val result = processor.process(_state, action).result
         if (result.isSuccess || result.isPaused) {
             _state = result.newState
             _events.addAll(result.events)
@@ -184,7 +184,7 @@ class GameTestDriver {
      * Submit an action and expect it to fail.
      */
     fun submitExpectFailure(action: GameAction): ExecutionResult {
-        val result = processor.process(_state, action)
+        val result = processor.process(_state, action).result
         if (result.isSuccess) {
             throw AssertionError("Expected action to fail but it succeeded")
         }

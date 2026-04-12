@@ -204,7 +204,7 @@ private fun playGame(
             val next: GameState? = if (d != null) {
                 actionCount++
                 val ai = if (d.playerId == p1) ai1 else ai2
-                val r = processor.process(state, SubmitDecision(d.playerId, ai.respondToDecision(state, d)))
+                val r = processor.process(state, SubmitDecision(d.playerId, ai.respondToDecision(state, d))).result
                 if (r.error != null) null else r.state
             } else when (state.priorityPlayerId) {
                 p1 -> { actionCount++; ai1.playPriorityWindow(state, processor) }

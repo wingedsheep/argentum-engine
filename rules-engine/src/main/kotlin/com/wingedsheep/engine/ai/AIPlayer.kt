@@ -75,7 +75,7 @@ class AIPlayer(
                 val decision = current.pendingDecision
                 if (decision.playerId != playerId) break // not our decision
                 val response = respondToDecision(current, decision)
-                val result = processor.process(current, SubmitDecision(playerId, response))
+                val result = processor.process(current, SubmitDecision(playerId, response)).result
                 if (result.error != null) break
                 current = result.state
                 iterations++
@@ -87,7 +87,7 @@ class AIPlayer(
 
             // Choose and execute an action
             val action = chooseAction(current)
-            val result = processor.process(current, action)
+            val result = processor.process(current, action).result
             if (result.error != null) {
                 // Action was illegal — submit a safe fallback action
                 val fallback = when {
@@ -114,7 +114,7 @@ class AIPlayer(
                     }
                     else -> PassPriority(playerId)
                 }
-                val fallbackResult = processor.process(current, fallback)
+                val fallbackResult = processor.process(current, fallback).result
                 if (fallbackResult.error != null) break
                 current = fallbackResult.state
                 iterations++

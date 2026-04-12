@@ -248,7 +248,7 @@ private fun playAdvisorGame(
                 val response = ai.respondToDecision(state, d)
                 recentActions.addLast("#$actionCount Decision(${d.javaClass.simpleName} player=${if (d.playerId == advisedId) "adv" else "gen"}) -> ${response.javaClass.simpleName}")
                 if (recentActions.size > 30) recentActions.removeFirst()
-                val r = processor.process(state, SubmitDecision(d.playerId, response))
+                val r = processor.process(state, SubmitDecision(d.playerId, response)).result
                 if (r.error != null) {
                     recentActions.addLast("  ERROR: ${r.error}")
                     drawReason = "error(${r.error})"
@@ -264,7 +264,7 @@ private fun playAdvisorGame(
                     val actionDesc = action.javaClass.simpleName
                     recentActions.addLast("#$actionCount Action($label) step=${state.step.name} -> $actionDesc")
                     if (recentActions.size > 50) recentActions.removeFirst()
-                    val r = processor.process(state, action)
+                    val r = processor.process(state, action).result
                     if (r.error != null) {
                         recentActions.addLast("  ERROR: ${r.error}")
                         // Try safe fallback depending on step
@@ -290,7 +290,7 @@ private fun playAdvisorGame(
                             }
                             else -> PassPriority(prioId)
                         }
-                        val fallback = processor.process(state, fallbackAction)
+                        val fallback = processor.process(state, fallbackAction).result
                         if (fallback.error != null) {
                             drawReason = "error(${r.error} + fallback: ${fallback.error})"
                             null

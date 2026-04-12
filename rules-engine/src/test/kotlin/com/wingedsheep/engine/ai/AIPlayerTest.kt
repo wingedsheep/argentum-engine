@@ -78,7 +78,7 @@ class AIPlayerTest : FunSpec({
                     val d = state.pendingDecision
                     if (d != null) {
                         val ai = if (d.playerId == p1) ai1 else ai2
-                        val r = processor.process(state, SubmitDecision(d.playerId, ai.respondToDecision(state, d)))
+                        val r = processor.process(state, SubmitDecision(d.playerId, ai.respondToDecision(state, d))).result
                         if (r.error != null) null else r.state
                     } else null
                 }
@@ -144,7 +144,7 @@ class AIPlayerTest : FunSpec({
                     if (decision != null) {
                         val ai = if (decision.playerId == p1) ai1 else ai2
                         val response = ai.respondToDecision(state, decision)
-                        val result = processor.process(state, SubmitDecision(decision.playerId, response))
+                        val result = processor.process(state, SubmitDecision(decision.playerId, response)).result
                         if (result.error != null) null else result.state
                     } else null
                 }
@@ -232,7 +232,7 @@ class AIPlayerTest : FunSpec({
             // Play a land
             val landAction = actions.find { it.actionType == "PlayLand" }
             if (landAction != null) {
-                val result = processor.process(state, landAction.action)
+                val result = processor.process(state, landAction.action).result
                 state = result.state
             }
 
@@ -292,7 +292,7 @@ class AIPlayerTest : FunSpec({
             val simulator = GameSimulator(registry)
             val landAction = simulator.getLegalActions(state, p1).find { it.actionType == "PlayLand" }
             if (landAction != null) {
-                state = processor.process(state, landAction.action).state
+                state = processor.process(state, landAction.action).result.state
             }
 
             // Now the AI should choose to cast Raging Goblin (not pass)

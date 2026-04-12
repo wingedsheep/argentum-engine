@@ -90,7 +90,7 @@ class SpellCastingAdvisorTest : FunSpec({
                     if (decision != null) {
                         val responder = if (decision.playerId == aiPlayerId) ai else opponent
                         val response = responder.respondToDecision(state, decision)
-                        val result = processor.process(state, SubmitDecision(decision.playerId, response))
+                        val result = processor.process(state, SubmitDecision(decision.playerId, response)).result
                         if (result.error != null) null else result.state
                     } else null
                 }

@@ -42,7 +42,7 @@ class GameSimulator(
      * not just "spell on stack, lands tapped".
      */
     fun simulate(state: GameState, action: GameAction): SimulationResult {
-        val result = processor.process(state, action)
+        val result = processor.process(state, action).result
         return resolveToQuietState(result)
     }
 
@@ -53,7 +53,7 @@ class GameSimulator(
         val pending = state.pendingDecision
             ?: return SimulationResult.Illegal(state, emptyList(), "No pending decision")
         val action = SubmitDecision(pending.playerId, response)
-        val result = processor.process(state, action)
+        val result = processor.process(state, action).result
         return resolveToQuietState(result)
     }
 
@@ -104,7 +104,7 @@ class GameSimulator(
                 val trivialResponse = trivialResponseFor(decision)
                 if (trivialResponse != null) {
                     val submitAction = SubmitDecision(decision.playerId, trivialResponse)
-                    current = processor.process(current.state, submitAction)
+                    current = processor.process(current.state, submitAction).result
                     allEvents = allEvents + current.events
                     iterations++
                     continue
@@ -117,7 +117,7 @@ class GameSimulator(
                         isResolving = true
                         val response = resolver(current.state, decision)
                         val submitAction = SubmitDecision(decision.playerId, response)
-                        current = processor.process(current.state, submitAction)
+                        current = processor.process(current.state, submitAction).result
                         allEvents = allEvents + current.events
                         iterations++
                     } finally {
@@ -134,7 +134,7 @@ class GameSimulator(
             val state = current.state
             if (state.stack.isNotEmpty() && state.priorityPlayerId != null && !state.gameOver) {
                 val passAction = PassPriority(state.priorityPlayerId)
-                current = processor.process(state, passAction)
+                current = processor.process(state, passAction).result
                 allEvents = allEvents + current.events
                 iterations++
                 continue

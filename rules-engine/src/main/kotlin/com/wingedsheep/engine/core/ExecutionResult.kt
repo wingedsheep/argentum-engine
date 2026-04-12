@@ -27,9 +27,7 @@ data class ExecutionResult(
      * Each entry is a list of subtype sets — one `Set<String>` per source entity.
      * Consumed by `CardPredicate.HasSubtypeInEachStoredGroup`.
      */
-    val updatedSubtypeGroups: Map<String, List<Set<String>>> = emptyMap(),
-    /** Tells the server what to do with the undo checkpoint after this action */
-    val undoPolicy: UndoCheckpointAction = UndoCheckpointAction.CLEAR
+    val updatedSubtypeGroups: Map<String, List<Set<String>>> = emptyMap()
 ) {
     val isSuccess: Boolean get() = error == null && pendingDecision == null
     val isPaused: Boolean get() = pendingDecision != null

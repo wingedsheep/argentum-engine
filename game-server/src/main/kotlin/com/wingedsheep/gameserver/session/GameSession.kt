@@ -341,7 +341,7 @@ class GameSession(
         val state = gameState ?: return MulliganActionResult.Failure("Game not started")
 
         val action = KeepHand(playerId)
-        val result = actionProcessor.process(state, action)
+        val result = actionProcessor.process(state, action).result
 
         val error = result.error
         if (error != null) {
@@ -366,7 +366,7 @@ class GameSession(
         val state = gameState ?: return MulliganActionResult.Failure("Game not started")
 
         val action = TakeMulligan(playerId)
-        val result = actionProcessor.process(state, action)
+        val result = actionProcessor.process(state, action).result
 
         val error = result.error
         if (error != null) {
@@ -386,7 +386,7 @@ class GameSession(
         val state = gameState ?: return MulliganActionResult.Failure("Game not started")
 
         val action = BottomCards(playerId, cardIds)
-        val result = actionProcessor.process(state, action)
+        val result = actionProcessor.process(state, action).result
 
         val error = result.error
         if (error != null) {
@@ -500,7 +500,7 @@ class GameSession(
             clearCheckpoint()
         }
 
-        val result = actionProcessor.process(state, action)
+        val (result, undoPolicy) = actionProcessor.process(state, action)
 
         val error = result.error
         if (error != null) {
@@ -508,7 +508,7 @@ class GameSession(
         }
 
         // Apply the engine's undo policy
-        applyUndoPolicy(result.undoPolicy, action, state, playerId)
+        applyUndoPolicy(undoPolicy, action, state, playerId)
 
         gameState = result.state
         if (messageId != null) lastProcessedMessageId[playerId] = messageId
@@ -527,7 +527,7 @@ class GameSession(
     fun playerConcedes(playerId: EntityId): GameState? = synchronized(stateLock) {
         val state = gameState ?: return null
         val action = Concede(playerId)
-        val result = actionProcessor.process(state, action)
+        val result = actionProcessor.process(state, action).result
 
         gameState = result.state
         result.state
@@ -842,7 +842,7 @@ class GameSession(
 
             else -> PassPriority(playerId)
         }
-        val result = actionProcessor.process(state, action)
+        val (result, undoPolicy) = actionProcessor.process(state, action)
 
         val error = result.error
         if (error != null) {
@@ -855,7 +855,7 @@ class GameSession(
         }
 
         // Apply the engine's undo policy
-        applyUndoPolicy(result.undoPolicy, action, state, playerId)
+        applyUndoPolicy(undoPolicy, action, state, playerId)
 
         gameState = result.state
         val pendingDecision = result.pendingDecision
