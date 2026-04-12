@@ -58,7 +58,10 @@ enum class Keyword(val displayName: String) {
     FLASHBACK("Flashback"),
 
     // ── Creature mechanics ────────────────────────────────
-    OFFSPRING("Offspring");
+    OFFSPRING("Offspring"),
+
+    // ── Damage modification ──────────────────────────────
+    WITHER("Wither");
 
     companion object {
         fun fromString(value: String): Keyword? =

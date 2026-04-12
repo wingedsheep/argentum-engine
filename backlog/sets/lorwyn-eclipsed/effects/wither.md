@@ -1,7 +1,7 @@
 # Wither
 
-**Status:** Not implemented
-**Cards affected in Lorwyn Eclipsed:** 1 (`Spinerock Tyrant`).
+**Status:** Implemented
+**Cards affected in Lorwyn Eclipsed:** 1 (`Spinerock Tyrant`), plus `Barbed Bloodletter` (grants wither).
 **Priority:** Low — single card, legacy keyword, but cheap to add alongside Blight since both are
 -1/-1 counter mechanics.
 

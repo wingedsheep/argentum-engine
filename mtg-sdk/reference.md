@@ -950,6 +950,10 @@ reveal creatures, create tokens
 
 `STORM`
 
+### Damage Modification
+
+`WITHER` — Damage dealt to creatures by this source is dealt in the form of -1/-1 counters (CR 702.79)
+
 ### Restrictions
 
 `DOESNT_UNTAP`, `MAY_NOT_UNTAP`

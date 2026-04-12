@@ -162,15 +162,26 @@ object DamageUtils {
             val targetName = newState.getEntity(targetId)?.get<CardComponent>()?.name ?: "Planeswalker"
             events.add(LoyaltyChangedEvent(targetId, targetName, -(effectiveAmount.coerceAtMost(currentLoyalty))))
         } else {
-            // It's a creature - mark damage
-            val existingDamage = newState.getEntity(targetId)?.get<DamageComponent>()
-            val currentDamage = existingDamage?.amount ?: 0
-            val hasDeathtouch = sourceId != null && projected.hasKeyword(sourceId, Keyword.DEATHTOUCH)
-            newState = newState.updateEntity(targetId) { container ->
-                container.with(DamageComponent(
-                    amount = currentDamage + effectiveAmount,
-                    deathtouchDamageReceived = hasDeathtouch || (existingDamage?.deathtouchDamageReceived == true)
-                ))
+            // It's a creature - mark damage (or place -1/-1 counters if source has wither)
+            val hasWither = sourceId != null && projected.hasKeyword(sourceId, Keyword.WITHER)
+            if (hasWither) {
+                // Wither (CR 702.79): damage to creatures is dealt in the form of -1/-1 counters
+                val counters = newState.getEntity(targetId)?.get<CountersComponent>() ?: CountersComponent()
+                newState = newState.updateEntity(targetId) { container ->
+                    container.with(counters.withAdded(CounterType.MINUS_ONE_MINUS_ONE, effectiveAmount))
+                }
+                events.add(CountersAddedEvent(targetId, CounterType.MINUS_ONE_MINUS_ONE.name, effectiveAmount,
+                    newState.getEntity(targetId)?.get<CardComponent>()?.name ?: "Creature"))
+            } else {
+                val existingDamage = newState.getEntity(targetId)?.get<DamageComponent>()
+                val currentDamage = existingDamage?.amount ?: 0
+                val hasDeathtouch = sourceId != null && projected.hasKeyword(sourceId, Keyword.DEATHTOUCH)
+                newState = newState.updateEntity(targetId) { container ->
+                    container.with(DamageComponent(
+                        amount = currentDamage + effectiveAmount,
+                        deathtouchDamageReceived = hasDeathtouch || (existingDamage?.deathtouchDamageReceived == true)
+                    ))
+                }
             }
             // Mark creature as having been dealt damage this turn
             newState = newState.updateEntity(targetId) { container ->
