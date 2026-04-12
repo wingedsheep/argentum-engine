@@ -151,11 +151,11 @@ class ActivatedAbilityEnumerator : ActionEnumerator {
                         }
                     }
                     is AbilityCost.Mana -> {
-                        if (!context.manaSolver.canPay(state, playerId, effectiveCost.cost)) {
+                        if (!context.manaSolver.canPay(state, playerId, effectiveCost.cost, precomputedSources = context.availableManaSources)) {
                             // If the ability has convoke, check if affordable with convoke creatures
                             if (ability.hasConvoke) {
                                 val creatures = context.costUtils.findConvokeCreatures(state, playerId)
-                                if (!context.costUtils.canAffordWithConvoke(state, playerId, effectiveCost.cost, creatures)) {
+                                if (!context.costUtils.canAffordWithConvoke(state, playerId, effectiveCost.cost, creatures, precomputedSources = context.availableManaSources)) {
                                     costAffordable = false
                                 }
                             } else {
@@ -216,11 +216,11 @@ class ActivatedAbilityEnumerator : ActionEnumerator {
                                     }
                                 }
                                 is AbilityCost.Mana -> {
-                                    if (!context.manaSolver.canPay(state, playerId, subCost.cost, excludeSources = excludeFromMana)) {
+                                    if (!context.manaSolver.canPay(state, playerId, subCost.cost, excludeSources = excludeFromMana, precomputedSources = context.availableManaSources)) {
                                         // If the ability has convoke, check with convoke creatures
                                         if (ability.hasConvoke) {
                                             val creatures = context.costUtils.findConvokeCreatures(state, playerId)
-                                            if (!context.costUtils.canAffordWithConvoke(state, playerId, subCost.cost, creatures)) {
+                                            if (!context.costUtils.canAffordWithConvoke(state, playerId, subCost.cost, creatures, precomputedSources = context.availableManaSources)) {
                                                 costCanBePaid = false
                                                 break
                                             }
@@ -414,12 +414,12 @@ class ActivatedAbilityEnumerator : ActionEnumerator {
                 val abilityHasXCost = abilityHasXInManaCost || hasRemoveXCountersCost || hasTapXPermanentsCost
 
                 val abilityMaxAffordableX: Int? = if (abilityHasXCost) {
-                    context.costUtils.calculateMaxAffordableX(state, playerId, ability.cost, abilityManaCost)
+                    context.costUtils.calculateMaxAffordableX(state, playerId, ability.cost, abilityManaCost, precomputedSources = context.availableManaSources)
                 } else null
 
                 // Compute auto-tap preview for UI highlighting
                 val abilityAutoTapPreview = if (abilityManaCost != null && !abilityHasXCost) {
-                    context.manaSolver.solve(state, playerId, abilityManaCost)?.sources?.map { it.entityId }
+                    context.manaSolver.solve(state, playerId, abilityManaCost, precomputedSources = context.availableManaSources)?.sources?.map { it.entityId }
                 } else null
 
                 // Compute maxRepeatableActivations for eligible self-targeting abilities
@@ -432,7 +432,7 @@ class ActivatedAbilityEnumerator : ActionEnumerator {
                         (it is ActivationRestriction.All && it.restrictions.any { r -> r is ActivationRestriction.OncePerTurn || r is ActivationRestriction.Once })
                 }
                 val maxRepeatableActivations: Int? = if (isRepeatEligible && abilityManaCost != null) {
-                    val availableSources = context.manaSolver.getAvailableManaCount(state, playerId)
+                    val availableSources = context.manaSolver.getAvailableManaCount(state, playerId, precomputedSources = context.availableManaSources)
                     val costPerActivation = abilityManaCost.cmc
                     if (costPerActivation > 0) {
                         val maxRepeats = availableSources / costPerActivation
@@ -563,7 +563,7 @@ class ActivatedAbilityEnumerator : ActionEnumerator {
                 val anyPlayerManaCostString = when (effectiveCost) {
                     is AbilityCost.Free -> null
                     is AbilityCost.Mana -> {
-                        if (!context.manaSolver.canPay(state, playerId, effectiveCost.cost)) continue
+                        if (!context.manaSolver.canPay(state, playerId, effectiveCost.cost, precomputedSources = context.availableManaSources)) continue
                         effectiveCost.cost.toString()
                     }
                     else -> continue // Other costs on opponent's permanents not yet supported

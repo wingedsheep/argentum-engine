@@ -59,7 +59,7 @@ class GraveyardAbilityEnumerator : ActionEnumerator {
 
                 when (effectiveCost) {
                     is AbilityCost.Mana -> {
-                        if (!context.manaSolver.canPay(state, playerId, effectiveCost.cost)) costCanBePaid = false
+                        if (!context.manaSolver.canPay(state, playerId, effectiveCost.cost, precomputedSources = context.availableManaSources)) costCanBePaid = false
                     }
                     is AbilityCost.Discard -> {
                         hasDiscardCost = true
@@ -69,7 +69,7 @@ class GraveyardAbilityEnumerator : ActionEnumerator {
                         for (subCost in effectiveCost.costs) {
                             when (subCost) {
                                 is AbilityCost.Mana -> {
-                                    if (!context.manaSolver.canPay(state, playerId, subCost.cost)) {
+                                    if (!context.manaSolver.canPay(state, playerId, subCost.cost, precomputedSources = context.availableManaSources)) {
                                         costCanBePaid = false; break
                                     }
                                 }
@@ -132,14 +132,14 @@ class GraveyardAbilityEnumerator : ActionEnumerator {
                 val graveyardManaCostString = abilityManaCost?.toString()
                 val abilityHasXCost = abilityManaCost?.hasX == true
                 val abilityMaxAffordableX: Int? = if (abilityHasXCost) {
-                    val availableSources = context.manaSolver.getAvailableManaCount(state, playerId)
+                    val availableSources = context.manaSolver.getAvailableManaCount(state, playerId, precomputedSources = context.availableManaSources)
                     val fixedCost = abilityManaCost.cmc
                     (availableSources - fixedCost).coerceAtLeast(0)
                 } else null
 
                 // Compute auto-tap preview for UI highlighting
                 val abilityAutoTapPreview = if (abilityManaCost != null && !abilityHasXCost) {
-                    context.manaSolver.solve(state, playerId, abilityManaCost)?.sources?.map { it.entityId }
+                    context.manaSolver.solve(state, playerId, abilityManaCost, precomputedSources = context.availableManaSources)?.sources?.map { it.entityId }
                 } else null
 
                 // Check for target requirements

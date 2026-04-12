@@ -116,7 +116,8 @@ class CastFromZoneEnumerator : ActionEnumerator {
                     } else {
                         topCardComponent.manaCost
                     }
-                    val canAfford = context.manaSolver.canPay(state, playerId, topEffectiveCost)
+                    val cachedSources = context.availableManaSources
+                    val canAfford = context.manaSolver.canPay(state, playerId, topEffectiveCost, precomputedSources = cachedSources)
                     if (canAfford) {
                         val targetReqs = buildList {
                             addAll(topCardDef?.script?.targetRequirements ?: emptyList())
@@ -126,12 +127,12 @@ class CastFromZoneEnumerator : ActionEnumerator {
                         val manaCostString = topEffectiveCost.toString()
                         val hasXCost = topEffectiveCost.hasX
                         val maxAffordableX: Int? = if (hasXCost) {
-                            val availableSources = context.manaSolver.getAvailableManaCount(state, playerId)
+                            val availableSources = context.manaSolver.getAvailableManaCount(state, playerId, precomputedSources = cachedSources)
                             val fixedCost = topEffectiveCost.cmc
                             val xSymbolCount = topEffectiveCost.xCount.coerceAtLeast(1)
                             ((availableSources - fixedCost) / xSymbolCount).coerceAtLeast(0)
                         } else null
-                        val autoTapSolution = context.manaSolver.solve(state, playerId, topEffectiveCost)
+                        val autoTapSolution = context.manaSolver.solve(state, playerId, topEffectiveCost, precomputedSources = cachedSources)
                         val autoTapPreview = autoTapSolution?.sources?.map { it.entityId }
 
                         if (targetReqs.isNotEmpty()) {
@@ -182,7 +183,7 @@ class CastFromZoneEnumerator : ActionEnumerator {
                 val hasMorph = topCardDef.keywordAbilities.any { it is KeywordAbility.Morph }
                 if (hasMorph) {
                     val morphCost = context.costCalculator.calculateFaceDownCost(state, playerId)
-                    val canAffordMorph = context.manaSolver.canPay(state, playerId, morphCost)
+                    val canAffordMorph = context.manaSolver.canPay(state, playerId, morphCost, precomputedSources = context.availableManaSources)
                     result.add(
                         LegalAction(
                             actionType = "CastFaceDown",
@@ -269,7 +270,7 @@ class CastFromZoneEnumerator : ActionEnumerator {
                         } else {
                             cardComponent.manaCost
                         }
-                        context.manaSolver.canPay(state, playerId, effectiveCost)
+                        context.manaSolver.canPay(state, playerId, effectiveCost, precomputedSources = context.availableManaSources)
                     }
 
                     // Build additional cost info from runtime component
@@ -420,7 +421,7 @@ class CastFromZoneEnumerator : ActionEnumerator {
                         } else {
                             exiledCard.manaCost
                         }
-                        context.manaSolver.canPay(state, playerId, effectiveCost)
+                        context.manaSolver.canPay(state, playerId, effectiveCost, precomputedSources = context.availableManaSources)
                     }
 
                     if (hasCorrectTiming && meetsRestrictions && canAfford) {
@@ -526,7 +527,7 @@ class CastFromZoneEnumerator : ActionEnumerator {
                     val meetsRestrictions = context.castPermissionUtils.checkCastRestrictions(state, playerId, castRestrictions)
                     val effectiveCost = context.costCalculator.calculateEffectiveCost(state, cardDef, playerId)
                     val costString = effectiveCost.toString()
-                    val canAfford = context.manaSolver.canPay(state, playerId, effectiveCost)
+                    val canAfford = context.manaSolver.canPay(state, playerId, effectiveCost, precomputedSources = context.availableManaSources)
 
                     if (hasCorrectTiming && meetsRestrictions && canAfford) {
                         val targetReqs = buildList {
@@ -634,7 +635,7 @@ class CastFromZoneEnumerator : ActionEnumerator {
                 val meetsRestrictions = context.castPermissionUtils.checkCastRestrictions(state, playerId, castRestrictions)
                 val effectiveCost = context.costCalculator.calculateEffectiveCost(state, cardDef, playerId)
                 val costString = effectiveCost.toString()
-                val canAfford = context.manaSolver.canPay(state, playerId, effectiveCost)
+                val canAfford = context.manaSolver.canPay(state, playerId, effectiveCost, precomputedSources = context.availableManaSources)
 
                 if (hasCorrectTiming && meetsRestrictions && canAfford) {
                     val targetReqs = buildList {
@@ -743,7 +744,7 @@ class CastFromZoneEnumerator : ActionEnumerator {
                 state, cardDef, flashback.cost, playerId
             )
             val costString = effectiveCost.toString()
-            val canAfford = context.manaSolver.canPay(state, playerId, effectiveCost)
+            val canAfford = context.manaSolver.canPay(state, playerId, effectiveCost, precomputedSources = context.availableManaSources)
 
             if (!canAfford) {
                 result.add(
@@ -764,7 +765,7 @@ class CastFromZoneEnumerator : ActionEnumerator {
                 cardDef.script.auraTarget?.let { add(it) }
             }
 
-            val autoTapSolution = context.manaSolver.solve(state, playerId, effectiveCost)
+            val autoTapSolution = context.manaSolver.solve(state, playerId, effectiveCost, precomputedSources = context.availableManaSources)
             val autoTapPreview = autoTapSolution?.sources?.map { it.entityId }
 
             if (targetReqs.isNotEmpty()) {
@@ -856,7 +857,7 @@ class CastFromZoneEnumerator : ActionEnumerator {
                 state, cardDef, warpAbility.cost, playerId
             )
             val costString = effectiveCost.toString()
-            val canAfford = context.manaSolver.canPay(state, playerId, effectiveCost)
+            val canAfford = context.manaSolver.canPay(state, playerId, effectiveCost, precomputedSources = context.availableManaSources)
 
             if (!canAfford) {
                 result.add(
@@ -877,7 +878,7 @@ class CastFromZoneEnumerator : ActionEnumerator {
                 cardDef.script.auraTarget?.let { add(it) }
             }
 
-            val autoTapSolution = context.manaSolver.solve(state, playerId, effectiveCost)
+            val autoTapSolution = context.manaSolver.solve(state, playerId, effectiveCost, precomputedSources = context.availableManaSources)
             val autoTapPreview = autoTapSolution?.sources?.map { it.entityId }
 
             if (targetReqs.isNotEmpty()) {
@@ -970,7 +971,7 @@ class CastFromZoneEnumerator : ActionEnumerator {
                 state, cardDef, warpAbility.cost, playerId
             )
             val costString = effectiveCost.toString()
-            val canAfford = context.manaSolver.canPay(state, playerId, effectiveCost)
+            val canAfford = context.manaSolver.canPay(state, playerId, effectiveCost, precomputedSources = context.availableManaSources)
 
             if (!canAfford) {
                 result.add(
@@ -991,7 +992,7 @@ class CastFromZoneEnumerator : ActionEnumerator {
                 cardDef.script.auraTarget?.let { add(it) }
             }
 
-            val autoTapSolution = context.manaSolver.solve(state, playerId, effectiveCost)
+            val autoTapSolution = context.manaSolver.solve(state, playerId, effectiveCost, precomputedSources = context.availableManaSources)
             val autoTapPreview = autoTapSolution?.sources?.map { it.entityId }
 
             if (targetReqs.isNotEmpty()) {
@@ -1096,7 +1097,7 @@ class CastFromZoneEnumerator : ActionEnumerator {
 
             val effectiveCost = context.costCalculator.calculateEffectiveCost(state, cardDef, playerId)
             val costString = effectiveCost.toString()
-            val affordable = context.manaSolver.canPay(state, playerId, effectiveCost)
+            val affordable = context.manaSolver.canPay(state, playerId, effectiveCost, precomputedSources = context.availableManaSources)
 
             if (affordable) {
                 val targetReqs = buildList {
@@ -1217,7 +1218,7 @@ class CastFromZoneEnumerator : ActionEnumerator {
 
                 val effectiveCost = context.costCalculator.calculateEffectiveCost(state, cardDef, playerId)
                 val costString = effectiveCost.toString()
-                val canAfford = context.manaSolver.canPay(state, playerId, effectiveCost)
+                val canAfford = context.manaSolver.canPay(state, playerId, effectiveCost, precomputedSources = context.availableManaSources)
 
                 if (!canAfford) {
                     result.add(
@@ -1239,7 +1240,7 @@ class CastFromZoneEnumerator : ActionEnumerator {
                     cardDef.script.auraTarget?.let { add(it) }
                 }
 
-                val autoTapSolution = context.manaSolver.solve(state, playerId, effectiveCost)
+                val autoTapSolution = context.manaSolver.solve(state, playerId, effectiveCost, precomputedSources = context.availableManaSources)
                 val autoTapPreview = autoTapSolution?.sources?.map { it.entityId }
 
                 if (targetReqs.isNotEmpty()) {

@@ -135,7 +135,7 @@ class ManaAbilityEnumerator : ActionEnumerator {
                                     }
                                 }
                                 is AbilityCost.Mana -> {
-                                    if (!context.manaSolver.canPay(state, playerId, subCost.cost, excludeSources = excludeFromMana)) {
+                                    if (!context.manaSolver.canPay(state, playerId, subCost.cost, excludeSources = excludeFromMana, precomputedSources = context.availableManaSources)) {
                                         affordable = false; break
                                     }
                                 }

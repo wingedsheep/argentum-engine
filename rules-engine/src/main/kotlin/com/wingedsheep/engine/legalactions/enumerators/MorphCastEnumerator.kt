@@ -25,8 +25,8 @@ class MorphCastEnumerator : ActionEnumerator {
         val playerId = context.playerId
 
         val morphCost = context.costCalculator.calculateFaceDownCost(state, playerId)
-        val canAffordMorph = context.manaSolver.canPay(state, playerId, morphCost)
-        val morphAutoTapSolution = context.manaSolver.solve(state, playerId, morphCost)
+        val canAffordMorph = context.manaSolver.canPay(state, playerId, morphCost, precomputedSources = context.availableManaSources)
+        val morphAutoTapSolution = context.manaSolver.solve(state, playerId, morphCost, precomputedSources = context.availableManaSources)
         val morphAutoTapPreview = morphAutoTapSolution?.sources?.map { it.entityId }
 
         val hand = state.getHand(playerId)
@@ -53,7 +53,7 @@ class MorphCastEnumerator : ActionEnumerator {
             // Check if we can afford to cast normally — if not, add unaffordable cast action
             // This ensures the player sees both options in the cast modal
             val normalEffectiveCost = context.costCalculator.calculateEffectiveCost(state, cardDef, playerId)
-            val canAffordNormal = context.manaSolver.canPay(state, playerId, normalEffectiveCost)
+            val canAffordNormal = context.manaSolver.canPay(state, playerId, normalEffectiveCost, precomputedSources = context.availableManaSources)
             if (!canAffordNormal) {
                 result.add(
                     LegalAction(

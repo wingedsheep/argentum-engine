@@ -43,8 +43,8 @@ class CyclingEnumerator : ActionEnumerator {
 
             // Add cycling action if present and not prevented
             if (cyclingAbility != null && !cyclingPrevented) {
-                val canAffordCycling = context.manaSolver.canPay(state, playerId, cyclingAbility.cost)
-                val cyclingAutoTapSolution = context.manaSolver.solve(state, playerId, cyclingAbility.cost)
+                val canAffordCycling = context.manaSolver.canPay(state, playerId, cyclingAbility.cost, precomputedSources = context.availableManaSources)
+                val cyclingAutoTapSolution = context.manaSolver.solve(state, playerId, cyclingAbility.cost, precomputedSources = context.availableManaSources)
                 val cyclingAutoTapPreview = cyclingAutoTapSolution?.sources?.map { it.entityId }
                 result.add(
                     LegalAction(
@@ -60,8 +60,8 @@ class CyclingEnumerator : ActionEnumerator {
 
             // Add typecycling action if present and not prevented
             if (typecyclingAbility != null && !cyclingPrevented) {
-                val canAffordTypecycling = context.manaSolver.canPay(state, playerId, typecyclingAbility.cost)
-                val typecyclingAutoTapSolution = context.manaSolver.solve(state, playerId, typecyclingAbility.cost)
+                val canAffordTypecycling = context.manaSolver.canPay(state, playerId, typecyclingAbility.cost, precomputedSources = context.availableManaSources)
+                val typecyclingAutoTapSolution = context.manaSolver.solve(state, playerId, typecyclingAbility.cost, precomputedSources = context.availableManaSources)
                 val typecyclingAutoTapPreview = typecyclingAutoTapSolution?.sources?.map { it.entityId }
                 result.add(
                     LegalAction(
@@ -86,7 +86,7 @@ class CyclingEnumerator : ActionEnumerator {
                 if (canCastTiming) {
                     // Check if we can afford to cast normally (with cost reductions)
                     val cycleEffectiveCost = context.costCalculator.calculateEffectiveCost(state, cardDef, playerId)
-                    val canAffordNormal = context.manaSolver.canPay(state, playerId, cycleEffectiveCost)
+                    val canAffordNormal = context.manaSolver.canPay(state, playerId, cycleEffectiveCost, precomputedSources = context.availableManaSources)
 
                     // If the spell requires targets, check if valid targets exist
                     val targetReqs = cardDef.script.targetRequirements

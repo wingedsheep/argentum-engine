@@ -7,6 +7,7 @@ import com.wingedsheep.engine.legalactions.ConvokeCreatureData
 import com.wingedsheep.engine.legalactions.CounterRemovalCreatureData
 import com.wingedsheep.engine.legalactions.DelveCardData
 import com.wingedsheep.engine.mechanics.mana.CostCalculator
+import com.wingedsheep.engine.mechanics.mana.ManaSource
 import com.wingedsheep.engine.mechanics.mana.ManaSolver
 import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.GameState
@@ -208,9 +209,10 @@ class CostEnumerationUtils(
         state: GameState,
         playerId: EntityId,
         manaCost: ManaCost,
-        convokeCreatures: List<ConvokeCreatureData>
+        convokeCreatures: List<ConvokeCreatureData>,
+        precomputedSources: List<ManaSource>? = null
     ): Boolean {
-        val availableMana = manaSolver.getAvailableManaCount(state, playerId)
+        val availableMana = manaSolver.getAvailableManaCount(state, playerId, precomputedSources)
         val totalResources = availableMana + convokeCreatures.size
         if (totalResources < manaCost.cmc) return false
 
@@ -248,23 +250,25 @@ class CostEnumerationUtils(
         state: GameState,
         playerId: EntityId,
         manaCost: ManaCost,
-        delveCards: List<DelveCardData>
+        delveCards: List<DelveCardData>,
+        precomputedSources: List<ManaSource>? = null
     ): Boolean {
         val maxDelve = minOf(delveCards.size, manaCost.genericAmount)
         val reducedCost = manaCost.reduceGeneric(maxDelve)
-        return manaSolver.canPay(state, playerId, reducedCost)
+        return manaSolver.canPay(state, playerId, reducedCost, precomputedSources = precomputedSources)
     }
 
     fun calculateMinDelveNeeded(
         state: GameState,
         playerId: EntityId,
         manaCost: ManaCost,
-        delveCards: List<DelveCardData>
+        delveCards: List<DelveCardData>,
+        precomputedSources: List<ManaSource>? = null
     ): Int {
-        if (manaSolver.canPay(state, playerId, manaCost)) return 0
+        if (manaSolver.canPay(state, playerId, manaCost, precomputedSources = precomputedSources)) return 0
         val maxDelve = minOf(delveCards.size, manaCost.genericAmount)
         for (delveCount in 1..maxDelve) {
-            if (manaSolver.canPay(state, playerId, manaCost.reduceGeneric(delveCount))) {
+            if (manaSolver.canPay(state, playerId, manaCost.reduceGeneric(delveCount), precomputedSources = precomputedSources)) {
                 return delveCount
             }
         }
@@ -331,10 +335,11 @@ class CostEnumerationUtils(
         state: GameState,
         playerId: EntityId,
         abilityCost: AbilityCost,
-        manaCost: ManaCost?
+        manaCost: ManaCost?,
+        precomputedSources: List<ManaSource>? = null
     ): Int {
         var maxX = if (manaCost != null && manaCost.hasX) {
-            val availableSources = manaSolver.getAvailableManaCount(state, playerId)
+            val availableSources = manaSolver.getAvailableManaCount(state, playerId, precomputedSources)
             val fixedCost = manaCost.cmc
             (availableSources - fixedCost).coerceAtLeast(0)
         } else {

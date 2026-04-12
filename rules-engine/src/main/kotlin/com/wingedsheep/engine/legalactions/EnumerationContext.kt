@@ -8,6 +8,7 @@ import com.wingedsheep.engine.legalactions.utils.CostEnumerationUtils
 import com.wingedsheep.engine.legalactions.utils.TargetEnumerationUtils
 import com.wingedsheep.engine.mechanics.layers.ProjectedState
 import com.wingedsheep.engine.mechanics.mana.CostCalculator
+import com.wingedsheep.engine.mechanics.mana.ManaSource
 import com.wingedsheep.engine.mechanics.mana.ManaSolver
 import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.GameState
@@ -42,6 +43,11 @@ class EnumerationContext(
     // Battlefield permanents controlled by player (via projected state)
     val battlefieldPermanents: List<EntityId> by lazy {
         projected.getBattlefieldControlledBy(playerId)
+    }
+
+    // Available mana sources (cached per enumeration pass — avoids redundant battlefield scans)
+    val availableManaSources: List<ManaSource> by lazy {
+        manaSolver.findAvailableManaSources(state, playerId)
     }
 
     // Timing flags

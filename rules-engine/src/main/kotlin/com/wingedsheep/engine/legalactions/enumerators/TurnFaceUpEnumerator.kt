@@ -43,7 +43,7 @@ class TurnFaceUpEnumerator : ActionEnumerator {
                     val effectiveCost = context.costCalculator.increaseGenericCost(cost.cost, morphCostIncrease)
                     if (effectiveCost.hasX) {
                         // X morph cost (e.g., {X}{X}{R}) — always show as available with X selection
-                        val availableSources = context.manaSolver.getAvailableManaCount(state, playerId)
+                        val availableSources = context.manaSolver.getAvailableManaCount(state, playerId, precomputedSources = context.availableManaSources)
                         val fixedCost = effectiveCost.cmc // X contributes 0 to CMC
                         val xSymbolCount = effectiveCost.xCount.coerceAtLeast(1)
                         val maxX = ((availableSources - fixedCost) / xSymbolCount).coerceAtLeast(0)
@@ -57,8 +57,8 @@ class TurnFaceUpEnumerator : ActionEnumerator {
                                 maxAffordableX = maxX
                             )
                         )
-                    } else if (context.manaSolver.canPay(state, playerId, effectiveCost)) {
-                        val autoTapSolution = context.manaSolver.solve(state, playerId, effectiveCost)
+                    } else if (context.manaSolver.canPay(state, playerId, effectiveCost, precomputedSources = context.availableManaSources)) {
+                        val autoTapSolution = context.manaSolver.solve(state, playerId, effectiveCost, precomputedSources = context.availableManaSources)
                         val autoTapPreview = autoTapSolution?.sources?.map { it.entityId }
                         result.add(
                             LegalAction(
