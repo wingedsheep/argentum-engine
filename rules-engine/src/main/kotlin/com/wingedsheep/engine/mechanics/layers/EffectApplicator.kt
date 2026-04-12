@@ -9,6 +9,7 @@ import com.wingedsheep.engine.state.components.battlefield.CountersComponent
 import com.wingedsheep.engine.state.components.identity.ChosenColorComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.sdk.core.CounterType
+import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.conditions.ComparisonOperator
 
@@ -57,6 +58,10 @@ internal class EffectApplicator(
                 }
                 is Modification.GrantKeyword -> {
                     values.keywords.add(mod.keyword)
+                    // Changeling grants all creature types (Rule 702.73)
+                    if (mod.keyword == Keyword.CHANGELING.name) {
+                        values.subtypes.addAll(com.wingedsheep.sdk.core.Subtype.ALL_CREATURE_TYPES)
+                    }
                 }
                 is Modification.RemoveKeyword -> {
                     values.keywords.remove(mod.keyword)
