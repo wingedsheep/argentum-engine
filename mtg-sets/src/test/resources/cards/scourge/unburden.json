@@ -36,7 +36,8 @@
                         }
                     },
                     "chooser": "TargetPlayer",
-                    "storeSelected": "discarded"
+                    "storeSelected": "discarded",
+                    "prompt": "Choose 2 cards to discard"
                 },
                 {
                     "type": "MoveCollection",
