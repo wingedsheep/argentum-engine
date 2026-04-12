@@ -29,7 +29,8 @@ import com.wingedsheep.engine.core.UndoPolicyComputer
  * 2. Delegates to the appropriate handler via the registry
  */
 class ActionProcessor(
-    private val services: EngineServices
+    private val services: EngineServices,
+    private val computeUndo: Boolean = true
 ) {
     /**
      * Backward-compatible constructor: wraps a CardRegistry in EngineServices.
@@ -73,6 +74,7 @@ class ActionProcessor(
 
         // Execute the action and compute undo policy
         val result = registry.execute(state, action)
+        if (!computeUndo) return result
         val undoPolicy = UndoPolicyComputer.compute(action, state, result, services.cardRegistry)
         return result.copy(undoPolicy = undoPolicy)
     }

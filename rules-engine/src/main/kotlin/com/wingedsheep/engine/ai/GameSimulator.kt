@@ -15,7 +15,7 @@ import com.wingedsheep.sdk.model.EntityId
  */
 class GameSimulator(
     private val cardRegistry: CardRegistry,
-    private val processor: ActionProcessor = ActionProcessor(cardRegistry),
+    private val processor: ActionProcessor = ActionProcessor(EngineServices(cardRegistry), computeUndo = false),
     private val enumerator: LegalActionEnumerator = LegalActionEnumerator.create(cardRegistry)
 ) {
     /**
