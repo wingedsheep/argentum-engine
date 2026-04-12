@@ -35,19 +35,10 @@ val Catharsis = card("Catharsis") {
 
     evoke = "{R/W}{R/W}"
 
-    triggeredAbility {
-        trigger = Triggers.EntersBattlefield
-        triggerCondition = Conditions.ManaSpentToCastIncludes(requiredWhite = 2)
-        effect = Effects.CreateToken(
-            power = 1,
-            toughness = 1,
-            colors = setOf(Color.GREEN, Color.WHITE),
-            creatureTypes = setOf("Kithkin"),
-            count = 2,
-            imageUri = "https://cards.scryfall.io/normal/front/2/e/2ed11e1b-2289-48d2-8d96-ee7e590ecfd4.jpg?1767955680"
-        )
-    }
-
+    // Red gate defined first so it goes on the stack first (bottom).
+    // White gate defined second so it goes on top and resolves first,
+    // creating tokens before the pump effect. This way the tokens
+    // also receive the +1/+1 and haste buff.
     triggeredAbility {
         trigger = Triggers.EntersBattlefield
         triggerCondition = Conditions.ManaSpentToCastIncludes(requiredRed = 2)
@@ -62,6 +53,19 @@ val Catharsis = card("Catharsis") {
                     GrantKeywordEffect(Keyword.HASTE, EffectTarget.Self)
                 )
             )
+        )
+    }
+
+    triggeredAbility {
+        trigger = Triggers.EntersBattlefield
+        triggerCondition = Conditions.ManaSpentToCastIncludes(requiredWhite = 2)
+        effect = Effects.CreateToken(
+            power = 1,
+            toughness = 1,
+            colors = setOf(Color.GREEN, Color.WHITE),
+            creatureTypes = setOf("Kithkin"),
+            count = 2,
+            imageUri = "https://cards.scryfall.io/normal/front/2/e/2ed11e1b-2289-48d2-8d96-ee7e590ecfd4.jpg?1767955680"
         )
     }
 

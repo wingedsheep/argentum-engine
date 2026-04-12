@@ -165,6 +165,12 @@ class CatharsisScenarioTest : ScenarioTestBase() {
             val catharsisId = catharsis.first()
             projected.getPower(catharsisId) shouldBe 4
             projected.getToughness(catharsisId) shouldBe 5
+
+            // Default resolution order: tokens first, then pump.
+            // Tokens created before pump resolves, so they also get +1/+1.
+            val tokenId = tokens.first()
+            projected.getPower(tokenId) shouldBe 2
+            projected.getToughness(tokenId) shouldBe 2
         }
 
     }
