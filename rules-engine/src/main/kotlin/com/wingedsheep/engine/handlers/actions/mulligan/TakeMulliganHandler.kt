@@ -1,6 +1,5 @@
 package com.wingedsheep.engine.handlers.actions.mulligan
 
-import com.wingedsheep.engine.core.EngineResult
 import com.wingedsheep.engine.core.ExecutionResult
 import com.wingedsheep.engine.core.TakeMulligan
 import com.wingedsheep.engine.core.TurnManager
@@ -39,12 +38,9 @@ class TakeMulliganHandler(
     }
 
     override fun execute(state: GameState, action: TakeMulligan): ExecutionResult {
-        return when (val result = mulliganHandler.handleTakeMulligan(state, action)) {
-            is EngineResult.Success -> checkMulliganCompletion(result.newState, result.events)
-            is EngineResult.Failure -> ExecutionResult.error(result.originalState, result.message)
-            is EngineResult.PausedForDecision -> ExecutionResult.paused(result.partialState, result.decision, result.events)
-            is EngineResult.GameOver -> ExecutionResult.success(result.finalState.copy(gameOver = true, winnerId = result.winnerId), result.events)
-        }
+        val result = mulliganHandler.handleTakeMulligan(state, action)
+        if (!result.isSuccess) return result
+        return checkMulliganCompletion(result.newState, result.events)
     }
 
     /**

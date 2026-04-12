@@ -72,25 +72,17 @@ class MulliganHandler {
     fun handleTakeMulligan(
         state: GameState,
         action: TakeMulligan
-    ): EngineResult {
+    ): ExecutionResult {
         val playerId = action.playerId
         val mullState = getMulliganState(state, playerId)
 
         // Validate player can mulligan
         if (mullState.hasKept) {
-            return EngineResult.Failure(
-                state,
-                FailureReason.RULE,
-                "Player has already kept their hand"
-            )
+            return ExecutionResult.error(state, "Player has already kept their hand")
         }
 
         if (!mullState.canMulligan) {
-            return EngineResult.Failure(
-                state,
-                FailureReason.RULE,
-                "Cannot mulligan - hand size would be 0"
-            )
+            return ExecutionResult.error(state, "Cannot mulligan - hand size would be 0")
         }
 
         val events = mutableListOf<GameEvent>()
@@ -147,7 +139,7 @@ class MulliganHandler {
             events.add(CardsDrawnEvent(playerId, drawnCardIds.size, drawnCardIds, cardNames))
         }
 
-        return EngineResult.Success(newState, events)
+        return ExecutionResult.success(newState, events)
     }
 
     /**
@@ -156,17 +148,13 @@ class MulliganHandler {
     fun handleKeepHand(
         state: GameState,
         action: KeepHand
-    ): EngineResult {
+    ): ExecutionResult {
         val playerId = action.playerId
         val mullState = getMulliganState(state, playerId)
 
         // Validate player hasn't already kept
         if (mullState.hasKept) {
-            return EngineResult.Failure(
-                state,
-                FailureReason.RULE,
-                "Player has already kept their hand"
-            )
+            return ExecutionResult.error(state, "Player has already kept their hand")
         }
 
         // Mark player as having kept
@@ -175,7 +163,7 @@ class MulliganHandler {
             container.with(newMullState)
         }
 
-        return EngineResult.Success(newState, emptyList())
+        return ExecutionResult.success(newState, emptyList())
     }
 
     /**
@@ -184,24 +172,19 @@ class MulliganHandler {
     fun handleBottomCards(
         state: GameState,
         action: BottomCards
-    ): EngineResult {
+    ): ExecutionResult {
         val playerId = action.playerId
         val mullState = getMulliganState(state, playerId)
 
         // Validate player has kept
         if (!mullState.hasKept) {
-            return EngineResult.Failure(
-                state,
-                FailureReason.RULE,
-                "Player has not kept their hand yet"
-            )
+            return ExecutionResult.error(state, "Player has not kept their hand yet")
         }
 
         // Validate correct number of cards
         if (action.cardIds.size != mullState.cardsToBottom) {
-            return EngineResult.Failure(
+            return ExecutionResult.error(
                 state,
-                FailureReason.RULE,
                 "Must put exactly ${mullState.cardsToBottom} cards on bottom, got ${action.cardIds.size}"
             )
         }
@@ -210,11 +193,7 @@ class MulliganHandler {
         val hand = state.getHand(playerId).toSet()
         val invalidCards = action.cardIds.filter { it !in hand }
         if (invalidCards.isNotEmpty()) {
-            return EngineResult.Failure(
-                state,
-                FailureReason.RULE,
-                "Cards not in hand: $invalidCards"
-            )
+            return ExecutionResult.error(state, "Cards not in hand: $invalidCards")
         }
 
         val events = mutableListOf<GameEvent>()
@@ -248,7 +227,7 @@ class MulliganHandler {
             container.with(clearedMullState)
         }
 
-        return EngineResult.Success(newState, events)
+        return ExecutionResult.success(newState, events)
     }
 
     /**
