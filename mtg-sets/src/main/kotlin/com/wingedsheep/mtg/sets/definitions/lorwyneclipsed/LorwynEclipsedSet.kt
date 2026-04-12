@@ -20,6 +20,7 @@ object LorwynEclipsedSet {
     val allCards = listOf(
         ChampionsOfThePerfect,
         ClachanFestival,
+        DawnsLightArcher,
         GoldmeadowNomad,
         HovelHurler,
         MirrormindCrown,

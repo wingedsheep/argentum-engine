@@ -2,7 +2,7 @@
 
 **Set Size:** 273 cards (main set, per Scryfall `set:ecl`)
 **Release Date:** January 23, 2026
-**Implemented:** 8 / 273
+**Implemented:** 9 / 273
 
 | Color      | Total | Done |
 |------------|-------|------|
@@ -10,7 +10,7 @@
 | Blue       | 39    | 1    |
 | Black      | 38    | 0    |
 | Red        | 39    | 0    |
-| Green      | 39    | 2    |
+| Green      | 39    | 3    |
 | Multicolor | 49    | 1    |
 | Colorless  | 18    | 1    |
 | Land       | 12    | 1    |
@@ -198,7 +198,7 @@
 - [x] Champions of the Perfect
 - [ ] Chomping Changeling
 - [ ] Crossroads Watcher
-- [ ] Dawn's Light Archer
+- [x] Dawn's Light Archer
 - [ ] Dundoolin Weaver
 - [ ] Formidable Speaker
 - [ ] Gilt-Leaf's Embrace
