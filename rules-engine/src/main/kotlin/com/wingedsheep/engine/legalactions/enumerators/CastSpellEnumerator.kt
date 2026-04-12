@@ -286,11 +286,13 @@ class CastSpellEnumerator : ActionEnumerator {
             // For Delve/Convoke spells, solve against the reduced cost so the preview
             // reflects what the player actually needs to tap after alternative payment
             val autoTapPreview = if (context.skipAutoTapPreview) null else {
-                val autoTapCost = if (hasDelve && delveCards != null && delveCards.isNotEmpty()) {
-                    val maxDelve = minOf(delveCards.size, effectiveCost.genericAmount)
-                    effectiveCost.reduceGeneric(maxDelve)
-                } else {
-                    effectiveCost
+                var autoTapCost = effectiveCost
+                if (hasDelve && delveCards != null && delveCards.isNotEmpty()) {
+                    val maxDelve = minOf(delveCards.size, autoTapCost.genericAmount)
+                    autoTapCost = autoTapCost.reduceGeneric(maxDelve)
+                }
+                if (hasConvoke && convokeCreatures != null && convokeCreatures.isNotEmpty()) {
+                    autoTapCost = autoTapCost.reduceByConvoke(convokeCreatures.map { it.colors })
                 }
                 context.manaSolver.solve(state, playerId, autoTapCost, precomputedSources = cachedSources)
                     ?.sources?.map { it.entityId }

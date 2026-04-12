@@ -56,6 +56,35 @@ data class ManaCost(val symbols: List<ManaSymbol>) {
         }
     }
 
+    /**
+     * Reduce this cost by the maximum convoke contribution from the given creatures.
+     * Each creature pays for one colored symbol matching its color, or one generic mana.
+     * Colored symbols are matched greedily first, then remaining creatures pay generic.
+     */
+    fun reduceByConvoke(creatureColors: List<Set<Color>>): ManaCost {
+        if (creatureColors.isEmpty()) return this
+        val remainingColored = symbols.filter { it is ManaSymbol.Colored }.toMutableList()
+        var genericReduction = 0
+
+        for (colors in creatureColors) {
+            // Try to match a colored symbol first
+            val matchIndex = remainingColored.indexOfFirst { symbol ->
+                symbol is ManaSymbol.Colored && symbol.color in colors
+            }
+            if (matchIndex >= 0) {
+                remainingColored.removeAt(matchIndex)
+            } else {
+                // Pay generic
+                genericReduction++
+            }
+        }
+
+        val otherSymbols = symbols.filter { it !is ManaSymbol.Generic && it !is ManaSymbol.Colored }
+        val newGenericAmount = (genericAmount - genericReduction).coerceAtLeast(0)
+        val genericSymbols = if (newGenericAmount > 0) listOf(ManaSymbol.Generic(newGenericAmount)) else emptyList()
+        return ManaCost(genericSymbols + remainingColored + otherSymbols)
+    }
+
     operator fun plus(other: ManaCost): ManaCost {
         val mergedGeneric = this.genericAmount + other.genericAmount
         val nonGeneric = this.symbols.filterNot { it is ManaSymbol.Generic } +
