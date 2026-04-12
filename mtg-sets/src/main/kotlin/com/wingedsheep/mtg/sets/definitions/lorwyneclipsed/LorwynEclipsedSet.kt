@@ -21,6 +21,7 @@ object LorwynEclipsedSet {
         BarbedBloodletter,
         Catharsis,
         ChampionsOfThePerfect,
+        ChronicleOfVictory,
         ClachanFestival,
         DawnsLightArcher,
         DeepchannelDuelist,

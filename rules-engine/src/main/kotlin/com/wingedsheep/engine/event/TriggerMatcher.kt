@@ -134,7 +134,7 @@ class TriggerMatcher(
             is GameEvent.SpellCastEvent -> {
                 event is SpellCastEvent &&
                     matchesPlayer(trigger.player, event.casterId, controllerId) &&
-                    matchesSpellFilter(trigger.spellFilter, event, state) &&
+                    matchesSpellFilter(trigger.spellFilter, event, state, sourceId) &&
                     (trigger.kicked == null || trigger.kicked == event.wasKicked)
             }
             is GameEvent.NthSpellCastEvent -> {
@@ -638,7 +638,8 @@ class TriggerMatcher(
     fun matchesSpellFilter(
         spellFilter: GameObjectFilter,
         event: SpellCastEvent,
-        state: GameState
+        state: GameState,
+        triggerSourceId: EntityId? = null
     ): Boolean {
         // No card predicates = match any spell (equivalent to old SpellTypeFilter.ANY)
         if (spellFilter.cardPredicates.isEmpty()) return true
@@ -650,7 +651,11 @@ class TriggerMatcher(
         if (isFaceDown) return false
 
         // Use base-state matching (spells on the stack don't get continuous effects)
-        val context = com.wingedsheep.engine.handlers.PredicateContext(controllerId = event.casterId)
+        // Pass sourceId so HasChosenSubtype can read the trigger source's ChosenCreatureTypeComponent
+        val context = com.wingedsheep.engine.handlers.PredicateContext(
+            controllerId = event.casterId,
+            sourceId = triggerSourceId
+        )
         return predicateEvaluator.matches(state, event.spellEntityId, spellFilter, context)
     }
 
