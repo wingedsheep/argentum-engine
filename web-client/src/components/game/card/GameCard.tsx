@@ -105,6 +105,7 @@ export function GameCard({
   const manaSelectionState = useGameStore((state) => state.manaSelectionState)
   const toggleManaSource = useGameStore((state) => state.toggleManaSource)
   const toggleCrewCreature = useGameStore((state) => state.toggleCrewCreature)
+  const toggleConvokeCreature = useGameStore((state) => state.toggleConvokeCreature)
   const submitYesNoDecision = useGameStore((state) => state.submitYesNoDecision)
   const responsive = useResponsiveContext()
   const { handleCardClick, handleDoubleClick, executeAction } = useInteraction()
@@ -215,6 +216,12 @@ export function GameCard({
   const isInCrewMode = crewSelectionState !== null
   const isValidCrewCreature = crewSelectionState?.validCreatures.some((c) => c.entityId === card.id) ?? false
   const isSelectedCrewCreature = crewSelectionState?.selectedCreatures.includes(card.id) ?? false
+
+  // Convoke selection checks
+  const convokeSelectionState = useGameStore((state) => state.convokeSelectionState)
+  const isInConvokeMode = convokeSelectionState !== null
+  const isValidConvokeCreature = convokeSelectionState?.validCreatures.some((c) => c.entityId === card.id) ?? false
+  const isSelectedConvokeCreature = convokeSelectionState?.selectedCreatures.some((c) => c.entityId === card.id) ?? false
 
   // Trigger YesNo check (inline buttons on triggering entity card, only when inlineOnTrigger is set)
   const isTriggerYesNo = pendingDecision?.type === 'YesNoDecision'
@@ -568,6 +575,46 @@ export function GameCard({
       return
     }
 
+    // Handle convoke selection mode - click to toggle creature
+    if (isInConvokeMode && isValidConvokeCreature) {
+      // If already selected, deselect (payingColor doesn't matter for deselect)
+      if (isSelectedConvokeCreature) {
+        toggleConvokeCreature(card.id, card.name, null)
+      } else {
+        // Determine best color payment based on creature colors and remaining cost
+        const creatureInfo = convokeSelectionState.validCreatures.find((c) => c.entityId === card.id)
+        const colors = creatureInfo?.colors ?? []
+        // Parse remaining cost to find colored symbols still needed
+        const manaCost = convokeSelectionState.manaCost
+        const symbols: string[] = []
+        const regex = /\{([^}]+)\}/g
+        let m
+        while ((m = regex.exec(manaCost)) !== null) symbols.push(m[1]!)
+        // Remove symbols already covered by existing selections
+        const remaining = [...symbols]
+        for (const sel of convokeSelectionState.selectedCreatures) {
+          if (sel.payingColor) {
+            const idx = remaining.indexOf(sel.payingColor)
+            if (idx >= 0) remaining.splice(idx, 1)
+          } else {
+            const gIdx = remaining.findIndex(s => /^\d+$/.test(s))
+            if (gIdx >= 0) {
+              const val = parseInt(remaining[gIdx]!, 10)
+              if (val > 1) remaining[gIdx] = String(val - 1)
+              else remaining.splice(gIdx, 1)
+            }
+          }
+        }
+        // Pick a color this creature can pay that's still needed
+        let payingColor: string | null = null
+        for (const color of colors) {
+          if (remaining.includes(color)) { payingColor = color; break }
+        }
+        toggleConvokeCreature(card.id, card.name, payingColor)
+      }
+      return
+    }
+
     // Block all other interactions during crew mode
     if (isInCrewMode) return
 
@@ -728,6 +775,18 @@ export function GameCard({
     // Blue highlight for valid crew creatures
     borderStyle = `2px solid ${TARGET_COLOR}`
     boxShadow = `0 0 12px ${TARGET_GLOW}, 0 0 24px ${TARGET_SHADOW}`
+  } else if (isSelectedConvokeCreature) {
+    // Green highlight for selected convoke creatures
+    borderStyle = `3px solid ${SELECTED_COLOR}`
+    boxShadow = `0 0 20px ${SELECTED_GLOW}, 0 0 40px ${SELECTED_SHADOW}`
+  } else if (isValidConvokeCreature && isHovered) {
+    // Bright blue highlight when hovering over a valid convoke creature
+    borderStyle = `3px solid ${TARGET_COLOR_BRIGHT}`
+    boxShadow = `0 0 20px ${TARGET_GLOW_BRIGHT}, 0 0 40px ${TARGET_GLOW_OUTER}`
+  } else if (isValidConvokeCreature) {
+    // Blue highlight for valid convoke creatures
+    borderStyle = `2px solid ${TARGET_COLOR}`
+    boxShadow = `0 0 12px ${TARGET_GLOW}, 0 0 24px ${TARGET_SHADOW}`
   } else if (isSelected && (!isInCombatMode || !isCombatRoleCard)) {
     borderStyle = '3px solid #ffff00'
     boxShadow = '0 8px 20px rgba(255, 255, 0, 0.4)'
@@ -786,7 +845,7 @@ export function GameCard({
   }
 
   // Determine cursor
-  const canInteract = interactive || isValidTarget || isValidDecisionTarget || isValidDecisionSelection || isValidAttacker || isValidBlocker || isAttackingInBlockerMode || isValidPlaneswalkerTarget || canDragToPlay || isDistributeTarget || isManaValidSource || isValidCrewCreature
+  const canInteract = interactive || isValidTarget || isValidDecisionTarget || isValidDecisionSelection || isValidAttacker || isValidBlocker || isAttackingInBlockerMode || isValidPlaneswalkerTarget || canDragToPlay || isDistributeTarget || isManaValidSource || isValidCrewCreature || isValidConvokeCreature
   const baseCursor = canInteract ? 'pointer' : 'default'
   const cursor = isValidBlocker || isValidAttacker || isSelectedAsAttacker || canDragToPlay ? 'grab' : baseCursor
 
