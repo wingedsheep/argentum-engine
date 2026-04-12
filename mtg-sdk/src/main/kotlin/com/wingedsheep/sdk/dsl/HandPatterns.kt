@@ -90,7 +90,8 @@ object HandPatterns {
                     from = "hand",
                     selection = SelectionMode.ChooseExactly(DynamicAmount.Fixed(count)),
                     chooser = chooser,
-                    storeSelected = "discarded"
+                    storeSelected = "discarded",
+                    prompt = "Choose $count card${if (count != 1) "s" else ""} to discard"
                 ),
                 MoveCollectionEffect(
                     from = "discarded",
