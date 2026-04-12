@@ -14,6 +14,12 @@ Prioritized checklist across all improvement areas. Each item references its sou
 - [ ] Split LobbyHandler by feature ([architecture #5](game-server-architecture.md#5-split-lobbyhandler-by-feature))
 - [ ] Formalize PlayerIdentity state machine ([architecture #6](game-server-architecture.md#6-formalize-playeridentity-state-machine))
 
+### Engine Performance (MCTS / AI Training)
+- [ ] Cache mana sources per enumeration pass ([perf #1](engine-performance.md#1-cache-mana-sources-per-enumeration-pass)) — highest-impact single change
+- [ ] Skip auto-tap preview in MCTS mode ([perf #2](engine-performance.md#2-skip-auto-tap-preview-in-mcts-mode))
+- [ ] Cache trigger index within PassPriority ([perf #3](engine-performance.md#3-cache-trigger-index-within-passpriority))
+- [ ] Skip undo policy computation ([perf #4](engine-performance.md#4-skip-undo-policy-computation))
+
 ### Game Server Scalability
 - [x] Delta state updates — partial diffs instead of full state on every action ([scalability #1](game-server-scalability.md#1-full-state-sent-on-every-action-no-delta-updates)) — *in progress, almost finished*
 - [ ] Move JSON serialization outside per-session lock ([scalability #2](game-server-scalability.md#2-json-serialization-under-per-session-lock-messagesenderkt32))
@@ -44,6 +50,11 @@ Prioritized checklist across all improvement areas. Each item references its sou
 - [ ] Add unit tests for extracted classes ([architecture #9](game-server-architecture.md#9-improve-unit-test-coverage))
 - [ ] Deduplicate state masking logic ([architecture #10](game-server-architecture.md#10-deduplicate-state-masking))
 - [ ] Clean up protocol message types (polymorphic serialization) ([architecture #11](game-server-architecture.md#11-clean-up-protocol-message-types))
+
+### Engine Performance (MCTS / AI Training)
+- [ ] Slim enumeration mode for MCTS ([perf #5](engine-performance.md#5-slim-enumeration-mode-for-mcts))
+- [ ] Lazy event collection ([perf #6](engine-performance.md#6-lazy-event-collection))
+- [ ] Batch zone transition copies ([perf #7](engine-performance.md#7-reduce-gamestate-copies-per-zone-transition))
 
 ### Game Server Scalability
 - [ ] Configure server thread pool explicitly ([scalability #7](game-server-scalability.md#7-no-server-thread-pool-configuration-applicationyml))
@@ -77,6 +88,11 @@ Prioritized checklist across all improvement areas. Each item references its sou
 - [ ] Add structured logging with MDC context ([architecture #13](game-server-architecture.md#13-add-structured-logging-with-context))
 - [ ] Consider coroutine-based concurrency ([architecture #14](game-server-architecture.md#14-consider-coroutine-based-concurrency))
 - [ ] Consolidate configuration classes ([architecture #15](game-server-architecture.md#15-consolidate-configuration-classes))
+
+### Engine Performance (MCTS / AI Training)
+- [ ] Incremental state projection ([perf #8](engine-performance.md#8-incremental-state-projection))
+- [ ] Persistent data structures for GameState ([perf #9](engine-performance.md#9-persistent-data-structures-for-gamestate))
+- [ ] Dedicated MCTS simulation mode ([perf #10](engine-performance.md#10-dedicated-mcts-actionprocessor-configuration))
 
 ### Game Server Scalability
 - [ ] Dynamic card registry (ServiceLoader hot-reload) ([scalability #11](game-server-scalability.md#11-card-registry-is-hard-coded-gamebeansconfigt20-35))
