@@ -35,3 +35,35 @@ export function getRemainingCostSymbols(originalSymbols: string[], delveCount: n
   }
   return remaining
 }
+
+/**
+ * Build the remaining mana cost symbols after applying convoke creatures.
+ * Each creature pays for one colored symbol (if its color matches) or one generic mana.
+ */
+export function getRemainingCostAfterConvoke(
+  originalSymbols: string[],
+  convokedCreatures: Record<string, { color: string | null }>
+): string[] {
+  const remaining = [...originalSymbols]
+
+  for (const { color } of Object.values(convokedCreatures)) {
+    if (color) {
+      // Creature pays for a colored symbol
+      const idx = remaining.indexOf(color)
+      if (idx >= 0) remaining.splice(idx, 1)
+    } else {
+      // Creature pays for generic mana
+      const gIdx = remaining.findIndex(s => /^\d+$/.test(s))
+      if (gIdx >= 0) {
+        const val = parseInt(remaining[gIdx]!, 10)
+        if (val > 1) {
+          remaining[gIdx] = String(val - 1)
+        } else {
+          remaining.splice(gIdx, 1)
+        }
+      }
+    }
+  }
+
+  return remaining
+}

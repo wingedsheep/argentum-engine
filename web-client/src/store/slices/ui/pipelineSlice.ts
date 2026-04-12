@@ -10,7 +10,7 @@ import type { SliceCreator, ActionPipelineState, PhaseResult } from '../types'
 import type { CastSpellAction, LegalActionInfo } from '@/types'
 import { computePhases, mergeResult, enterPhase } from './pipelinePhases'
 import type { PipelineStoreMethods } from './pipelinePhases'
-import { parseManaCost as parseManaCostUtil, getRemainingCostSymbols } from '@/utils/manaCost'
+import { parseManaCost as parseManaCostUtil, getRemainingCostSymbols, getRemainingCostAfterConvoke } from '@/utils/manaCost'
 
 export interface PipelineSliceState {
   pipelineState: ActionPipelineState | null
@@ -92,6 +92,23 @@ export const createPipelineSlice: SliceCreator<PipelineSlice> = (set, get) => ({
         hasDelve: _,
         validDelveCards: _2,
         minDelveNeeded: _3,
+        ...restActionInfo
+      } = actionInfo
+      actionInfo = {
+        ...restActionInfo,
+        manaCostString: modifiedManaCost,
+        action: mergedAction,
+      }
+    }
+
+    // If convoke modified the mana cost, update actionInfo for subsequent phases
+    if (result.type === 'convoke') {
+      const originalSymbols = parseManaCostUtil(actionInfo.manaCostString ?? '')
+      const remainingSymbols = getRemainingCostAfterConvoke(originalSymbols, result.convokedCreatures)
+      const modifiedManaCost = remainingSymbols.map((s) => `{${s}}`).join('')
+      const {
+        hasConvoke: _,
+        validConvokeCreatures: _2,
         ...restActionInfo
       } = actionInfo
       actionInfo = {

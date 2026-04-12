@@ -67,7 +67,7 @@ class LegalActionEnricher(
             totalDamageToDistribute = action.totalDamageToDistribute,
             minDamagePerTarget = action.minDamagePerTarget,
             autoTapPreview = action.autoTapPreview,
-            availableManaSources = if (action.autoTapPreview != null) manaSourceInfos else null,
+            availableManaSources = if (action.autoTapPreview != null || action.hasConvoke || action.hasDelve) manaSourceInfos else null,
             sourceZone = action.sourceZone,
             hasCrew = action.hasCrew,
             crewPower = action.crewPower,
