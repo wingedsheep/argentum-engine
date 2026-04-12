@@ -26,6 +26,7 @@ object LorwynEclipsedSet {
         DeepchannelDuelist,
         Emptiness,
         FeistySpikeling,
+        GlamerGifter,
         GoldmeadowNomad,
         HovelHurler,
         MirrormindCrown,
