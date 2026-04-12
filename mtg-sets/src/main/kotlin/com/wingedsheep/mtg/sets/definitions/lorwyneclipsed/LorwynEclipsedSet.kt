@@ -24,6 +24,7 @@ object LorwynEclipsedSet {
         ClachanFestival,
         DawnsLightArcher,
         DeepchannelDuelist,
+        Emptiness,
         GoldmeadowNomad,
         HovelHurler,
         MirrormindCrown,

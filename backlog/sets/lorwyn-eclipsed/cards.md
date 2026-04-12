@@ -2,7 +2,7 @@
 
 **Set Size:** 273 cards (main set, per Scryfall `set:ecl`)
 **Release Date:** January 23, 2026
-**Implemented:** 15 / 273
+**Implemented:** 16 / 273
 
 | Color      | Total | Done |
 |------------|-------|------|
@@ -11,7 +11,7 @@
 | Black      | 38    | 2    |
 | Red        | 39    | 0    |
 | Green      | 39    | 4    |
-| Multicolor | 49    | 3    |
+| Multicolor | 49    | 4    |
 | Colorless  | 18    | 1    |
 | Land       | 12    | 1    |
 
@@ -248,7 +248,7 @@
 - [ ] Eclipsed Flamekin
 - [ ] Eclipsed Kithkin
 - [ ] Eclipsed Merrow
-- [ ] Emptiness
+- [x] Emptiness
 - [ ] Feisty Spikeling
 - [ ] Figure of Fable
 - [ ] Flaring Cinder
