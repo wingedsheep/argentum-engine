@@ -856,10 +856,14 @@ class CostHandler(
     }
 
     private fun resolveNamedCounterType(name: String): CounterType {
-        return try {
-            CounterType.valueOf(name.uppercase().replace(' ', '_'))
-        } catch (_: IllegalArgumentException) {
-            CounterType.PLUS_ONE_PLUS_ONE
+        return when (name) {
+            "+1/+1" -> CounterType.PLUS_ONE_PLUS_ONE
+            "-1/-1" -> CounterType.MINUS_ONE_MINUS_ONE
+            else -> try {
+                CounterType.valueOf(name.uppercase().replace(' ', '_'))
+            } catch (_: IllegalArgumentException) {
+                CounterType.PLUS_ONE_PLUS_ONE
+            }
         }
     }
 
