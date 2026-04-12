@@ -65,7 +65,7 @@ class MiscContinuationResumer(
             controllerId = continuation.playerId,
             opponentId = null
         )
-        val result = services.effectExecutorRegistry.execute(currentState, drawEffect, drawContext)
+        val result = services.effectExecutorRegistry.execute(currentState, drawEffect, drawContext).toExecutionResult()
 
         if (result.isPaused) {
             return result
@@ -109,7 +109,7 @@ class MiscContinuationResumer(
                 )
 
                 if (result.isPaused) {
-                    return result
+                    return result.toExecutionResult()
                 }
 
                 return checkForMore(result.state, result.events.toList())

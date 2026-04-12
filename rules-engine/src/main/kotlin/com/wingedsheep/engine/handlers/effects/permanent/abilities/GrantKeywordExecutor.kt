@@ -1,6 +1,6 @@
 package com.wingedsheep.engine.handlers.effects.permanent.abilities
 
-import com.wingedsheep.engine.core.ExecutionResult
+import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.core.KeywordGrantedEvent
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
@@ -24,19 +24,19 @@ class GrantKeywordExecutor : EffectExecutor<GrantKeywordEffect> {
         state: GameState,
         effect: GrantKeywordEffect,
         context: EffectContext
-    ): ExecutionResult {
+    ): EffectResult {
         // Resolve the target creature
         val targetId = context.resolveTarget(effect.target, state)
-            ?: return ExecutionResult.error(state, "No valid target for keyword grant")
+            ?: return EffectResult.error(state, "No valid target for keyword grant")
 
         // Verify target exists and is a creature (use projected types for animated lands etc.)
         val targetContainer = state.getEntity(targetId)
-            ?: return ExecutionResult.error(state, "Target creature no longer exists")
+            ?: return EffectResult.error(state, "Target creature no longer exists")
         val cardComponent = targetContainer.get<CardComponent>()
-            ?: return ExecutionResult.error(state, "Target is not a card")
+            ?: return EffectResult.error(state, "Target is not a card")
         val projected = state.projectedState
         if (!projected.isCreature(targetId)) {
-            return ExecutionResult.error(state, "Target is not a creature")
+            return EffectResult.error(state, "Target is not a creature")
         }
 
         // Create a floating effect for the keyword grant
@@ -59,6 +59,6 @@ class GrantKeywordExecutor : EffectExecutor<GrantKeywordEffect> {
             )
         )
 
-        return ExecutionResult.success(newState, events)
+        return EffectResult.success(newState, events)
     }
 }

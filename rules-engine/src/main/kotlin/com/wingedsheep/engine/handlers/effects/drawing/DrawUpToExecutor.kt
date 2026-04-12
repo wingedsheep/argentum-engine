@@ -33,9 +33,9 @@ class DrawUpToExecutor(
         state: GameState,
         effect: DrawUpToEffect,
         context: EffectContext
-    ): ExecutionResult {
+    ): EffectResult {
         val playerId = context.resolvePlayerTarget(effect.target)
-            ?: return ExecutionResult.error(state, "DrawUpTo: could not resolve player target")
+            ?: return EffectResult.error(state, "DrawUpTo: could not resolve player target")
 
         val sourceName = context.sourceId?.let { sourceId ->
             state.getEntity(sourceId)?.get<CardComponent>()?.name
@@ -51,7 +51,7 @@ class DrawUpToExecutor(
             return if (storeAs != null) {
                 injectStoredNumber(state, storeAs, effect.maxCards)
             } else {
-                ExecutionResult.success(state)
+                EffectResult.success(state)
             }
         }
 
@@ -78,7 +78,7 @@ class DrawUpToExecutor(
 
         val stateWithContinuation = decisionResult.state.pushContinuation(continuation)
 
-        return ExecutionResult.paused(
+        return EffectResult.paused(
             stateWithContinuation,
             decisionResult.pendingDecision,
             decisionResult.events
@@ -90,7 +90,7 @@ class DrawUpToExecutor(
          * Inject a stored number into the next EffectContinuation on the stack,
          * following the same injection pattern as SelectFromCollectionContinuation.
          */
-        fun injectStoredNumber(state: GameState, name: String, value: Int): ExecutionResult {
+        fun injectStoredNumber(state: GameState, name: String, value: Int): EffectResult {
             val nextFrame = state.peekContinuation()
             val newState = if (nextFrame is EffectContinuation) {
                 val (_, stateAfterPop) = state.popContinuation()
@@ -102,7 +102,7 @@ class DrawUpToExecutor(
             } else {
                 state
             }
-            return ExecutionResult.success(newState)
+            return EffectResult.success(newState)
         }
     }
 }

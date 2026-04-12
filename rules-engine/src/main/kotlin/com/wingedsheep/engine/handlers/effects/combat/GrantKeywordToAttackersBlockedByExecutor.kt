@@ -1,6 +1,6 @@
 package com.wingedsheep.engine.handlers.effects.combat
 
-import com.wingedsheep.engine.core.ExecutionResult
+import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.core.KeywordGrantedEvent
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
@@ -28,9 +28,9 @@ class GrantKeywordToAttackersBlockedByExecutor : EffectExecutor<GrantKeywordToAt
         state: GameState,
         effect: GrantKeywordToAttackersBlockedByEffect,
         context: EffectContext
-    ): ExecutionResult {
+    ): EffectResult {
         val blockerId = context.resolveTarget(effect.target)
-            ?: return ExecutionResult.success(state)
+            ?: return EffectResult.success(state)
 
         // Find all attackers that were blocked by this creature
         val attackerIds = state.findEntitiesWith<BlockedComponent>()
@@ -38,7 +38,7 @@ class GrantKeywordToAttackersBlockedByExecutor : EffectExecutor<GrantKeywordToAt
             .map { (entityId, _) -> entityId }
 
         if (attackerIds.isEmpty()) {
-            return ExecutionResult.success(state)
+            return EffectResult.success(state)
         }
 
         // Create floating effects granting the keyword to each attacker
@@ -65,6 +65,6 @@ class GrantKeywordToAttackersBlockedByExecutor : EffectExecutor<GrantKeywordToAt
             )
         }
 
-        return ExecutionResult.success(newState, events)
+        return EffectResult.success(newState, events)
     }
 }

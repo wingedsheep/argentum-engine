@@ -1,6 +1,6 @@
 package com.wingedsheep.engine.handlers.effects.drawing
 
-import com.wingedsheep.engine.core.ExecutionResult
+import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.core.GameEvent
 import com.wingedsheep.engine.handlers.DynamicAmountEvaluator
 import com.wingedsheep.engine.handlers.EffectContext
@@ -24,7 +24,7 @@ import kotlin.reflect.KClass
 class DrawCardsExecutor(
     private val amountEvaluator: DynamicAmountEvaluator = DynamicAmountEvaluator(),
     cardRegistry: CardRegistry,
-    effectExecutor: ((GameState, Effect, EffectContext) -> ExecutionResult)? = null
+    effectExecutor: ((GameState, Effect, EffectContext) -> EffectResult)? = null
 ) : EffectExecutor<DrawCardsEffect> {
 
     override val effectType: KClass<DrawCardsEffect> = DrawCardsEffect::class
@@ -36,10 +36,10 @@ class DrawCardsExecutor(
         state: GameState,
         effect: DrawCardsEffect,
         context: EffectContext
-    ): ExecutionResult {
+    ): EffectResult {
         val playerIds = context.resolvePlayerTargets(effect.target, state)
         if (playerIds.isEmpty()) {
-            return ExecutionResult.error(state, "No valid player for draw")
+            return EffectResult.error(state, "No valid player for draw")
         }
 
         val count = amountEvaluator.evaluate(state, effect.count, context)
@@ -51,10 +51,10 @@ class DrawCardsExecutor(
             currentState = result.state
             allEvents.addAll(result.events)
             if (result.pendingDecision != null) {
-                return ExecutionResult.paused(currentState, result.pendingDecision, allEvents)
+                return EffectResult.paused(currentState, result.pendingDecision, allEvents)
             }
         }
-        return ExecutionResult.success(currentState, allEvents)
+        return EffectResult.success(currentState, allEvents)
     }
 
     /**
@@ -82,7 +82,7 @@ class DrawCardsExecutor(
         playerId: EntityId,
         count: Int,
         skipPrompts: Boolean = false
-    ): ExecutionResult {
+    ): EffectResult {
         return DrawLoop.run(
             state = state,
             playerId = playerId,
@@ -110,7 +110,7 @@ class DrawCardsExecutor(
         remainingDrawCount: Int,
         drawnCardsSoFar: List<EntityId>,
         declinedSourceIds: List<EntityId> = emptyList()
-    ): ExecutionResult? = dispatcher.checkPromptOnDraw(
+    ): EffectResult? = dispatcher.checkPromptOnDraw(
         state = state,
         playerId = playerId,
         drawCount = remainingDrawCount,

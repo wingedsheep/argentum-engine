@@ -1,7 +1,7 @@
 package com.wingedsheep.engine.handlers.effects.permanent.counters
 
 import com.wingedsheep.engine.core.CountersAddedEvent
-import com.wingedsheep.engine.core.ExecutionResult
+import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.handlers.effects.ReplacementEffectUtils
@@ -24,11 +24,11 @@ class AddCountersToCollectionExecutor : EffectExecutor<AddCountersToCollectionEf
         state: GameState,
         effect: AddCountersToCollectionEffect,
         context: EffectContext
-    ): ExecutionResult {
+    ): EffectResult {
         val entityIds = context.pipeline.storedCollections[effect.collectionName]
-            ?: return ExecutionResult.success(state)
+            ?: return EffectResult.success(state)
 
-        if (entityIds.isEmpty()) return ExecutionResult.success(state)
+        if (entityIds.isEmpty()) return EffectResult.success(state)
 
         val counterType = try {
             CounterType.valueOf(
@@ -61,6 +61,6 @@ class AddCountersToCollectionExecutor : EffectExecutor<AddCountersToCollectionEf
             events.add(CountersAddedEvent(entityId, effect.counterType, modifiedCount, entityName))
         }
 
-        return ExecutionResult.success(currentState, events)
+        return EffectResult.success(currentState, events)
     }
 }

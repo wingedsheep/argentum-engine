@@ -28,7 +28,7 @@ import kotlin.reflect.KClass
  */
 class OptionalCostEffectExecutor(
     private val cardRegistry: CardRegistry,
-    private val effectExecutor: (GameState, Effect, EffectContext) -> ExecutionResult
+    private val effectExecutor: (GameState, Effect, EffectContext) -> EffectResult
 ) : EffectExecutor<OptionalCostEffect> {
 
     override val effectType: KClass<OptionalCostEffect> = OptionalCostEffect::class
@@ -39,7 +39,7 @@ class OptionalCostEffectExecutor(
         state: GameState,
         effect: OptionalCostEffect,
         context: EffectContext
-    ): ExecutionResult {
+    ): EffectResult {
         val playerId = context.controllerId
 
         // If the player can't actually pay the cost, skip the prompt entirely
@@ -49,7 +49,7 @@ class OptionalCostEffectExecutor(
         if (!canAfford(state, playerId, effect.cost)) {
             return effect.ifNotPaid
                 ?.let { effectExecutor(state, it, context) }
-                ?: ExecutionResult.success(state)
+                ?: EffectResult.success(state)
         }
 
         val sourceName = context.sourceId?.let { sourceId ->
@@ -86,7 +86,7 @@ class OptionalCostEffectExecutor(
         val stateWithDecision = state.withPendingDecision(decision)
         val stateWithContinuation = stateWithDecision.pushContinuation(continuation)
 
-        return ExecutionResult.paused(
+        return EffectResult.paused(
             stateWithContinuation,
             decision,
             listOf(

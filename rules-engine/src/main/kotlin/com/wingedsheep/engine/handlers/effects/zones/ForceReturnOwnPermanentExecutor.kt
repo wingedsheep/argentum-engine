@@ -1,7 +1,7 @@
 package com.wingedsheep.engine.handlers.effects.zones
 
 import com.wingedsheep.engine.core.DecisionPhase
-import com.wingedsheep.engine.core.ExecutionResult
+import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.core.ReturnToHandContinuation
 import com.wingedsheep.engine.handlers.DecisionHandler
 import com.wingedsheep.engine.handlers.EffectContext
@@ -33,7 +33,7 @@ class ForceReturnOwnPermanentExecutor(
         state: GameState,
         effect: ForceReturnOwnPermanentEffect,
         context: EffectContext
-    ): ExecutionResult {
+    ): EffectResult {
         val controllerId = context.controllerId
         val sourceId = context.sourceId
         val excludeId = if (effect.excludeSource) sourceId else null
@@ -43,7 +43,7 @@ class ForceReturnOwnPermanentExecutor(
         )
 
         if (validPermanents.isEmpty()) {
-            return ExecutionResult.success(state)
+            return EffectResult.success(state)
         }
 
         if (validPermanents.size == 1) {
@@ -74,7 +74,7 @@ class ForceReturnOwnPermanentExecutor(
 
         val stateWithContinuation = decisionResult.state.pushContinuation(continuation)
 
-        return ExecutionResult.paused(
+        return EffectResult.paused(
             stateWithContinuation,
             decisionResult.pendingDecision,
             decisionResult.events.toList()
@@ -84,8 +84,8 @@ class ForceReturnOwnPermanentExecutor(
     internal fun returnPermanentToHand(
         state: GameState,
         permanentId: EntityId
-    ): ExecutionResult {
+    ): EffectResult {
         val transitionResult = ZoneTransitionService.moveToZone(state, permanentId, Zone.HAND)
-        return ExecutionResult.success(transitionResult.state, transitionResult.events)
+        return EffectResult.success(transitionResult.state, transitionResult.events)
     }
 }

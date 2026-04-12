@@ -23,7 +23,7 @@ import kotlin.reflect.KClass
  * sub-effects that themselves push continuations.
  */
 class ForEachTargetExecutor(
-    private val effectExecutor: (GameState, Effect, EffectContext) -> ExecutionResult
+    private val effectExecutor: (GameState, Effect, EffectContext) -> EffectResult
 ) : EffectExecutor<ForEachTargetEffect> {
 
     override val effectType: KClass<ForEachTargetEffect> = ForEachTargetEffect::class
@@ -32,9 +32,9 @@ class ForEachTargetExecutor(
         state: GameState,
         effect: ForEachTargetEffect,
         context: EffectContext
-    ): ExecutionResult {
+    ): EffectResult {
         if (context.targets.isEmpty()) {
-            return ExecutionResult.success(state)
+            return EffectResult.success(state)
         }
 
         return processTargets(state, effect.effects, context.targets, context)
@@ -49,7 +49,7 @@ class ForEachTargetExecutor(
         effects: List<Effect>,
         targets: List<ChosenTarget>,
         outerContext: EffectContext
-    ): ExecutionResult {
+    ): EffectResult {
         var currentState = state
         val allEvents = mutableListOf<GameEvent>()
 
@@ -80,7 +80,7 @@ class ForEachTargetExecutor(
 
             if (result.isPaused) {
                 // Sub-effect needs a decision. ForEachTargetContinuation is underneath.
-                return ExecutionResult.paused(
+                return EffectResult.paused(
                     result.state,
                     result.pendingDecision!!,
                     allEvents + result.events
@@ -97,7 +97,7 @@ class ForEachTargetExecutor(
             allEvents.addAll(result.events)
         }
 
-        return ExecutionResult.success(currentState, allEvents)
+        return EffectResult.success(currentState, allEvents)
     }
 
     /**
@@ -108,7 +108,7 @@ class ForEachTargetExecutor(
         state: GameState,
         effects: List<Effect>,
         context: EffectContext
-    ): ExecutionResult {
+    ): EffectResult {
         var currentState = state
         var currentContext = context
         val allEvents = mutableListOf<GameEvent>()
@@ -142,7 +142,7 @@ class ForEachTargetExecutor(
             }
 
             if (result.isPaused) {
-                return ExecutionResult.paused(
+                return EffectResult.paused(
                     result.state,
                     result.pendingDecision!!,
                     allEvents + result.events
@@ -167,6 +167,6 @@ class ForEachTargetExecutor(
             }
         }
 
-        return ExecutionResult.success(currentState, allEvents)
+        return EffectResult.success(currentState, allEvents)
     }
 }

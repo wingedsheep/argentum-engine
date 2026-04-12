@@ -1,6 +1,6 @@
 package com.wingedsheep.engine.handlers.effects.composite
 
-import com.wingedsheep.engine.core.ExecutionResult
+import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.handlers.DecisionHandler
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.TargetFinder
@@ -21,7 +21,7 @@ class CompositeExecutors(
     private val targetFinder: TargetFinder = TargetFinder(),
     private val decisionHandler: DecisionHandler = DecisionHandler()
 ) : ExecutorModule {
-    private lateinit var effectExecutor: (GameState, Effect, EffectContext) -> ExecutionResult
+    private lateinit var effectExecutor: (GameState, Effect, EffectContext) -> EffectResult
 
     private val compositeEffectExecutor by lazy { CompositeEffectExecutor(effectExecutor) }
     private val conditionalEffectExecutor by lazy { ConditionalEffectExecutor(effectExecutor) }
@@ -48,7 +48,7 @@ class CompositeExecutors(
      * Initialize the module with the parent registry's execute function.
      * Must be called before executors() is accessed.
      */
-    fun initialize(executor: (GameState, Effect, EffectContext) -> ExecutionResult) {
+    fun initialize(executor: (GameState, Effect, EffectContext) -> EffectResult) {
         this.effectExecutor = executor
     }
 

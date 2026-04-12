@@ -1,6 +1,6 @@
 package com.wingedsheep.engine.handlers.effects.token
 
-import com.wingedsheep.engine.core.ExecutionResult
+import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.event.DelayedTriggeredAbility
 import com.wingedsheep.engine.handlers.DynamicAmountEvaluator
 import com.wingedsheep.engine.handlers.EffectContext
@@ -54,9 +54,13 @@ class CreateTokenExecutor(
         state: GameState,
         effect: CreateTokenEffect,
         context: EffectContext
-    ): ExecutionResult {
+    ): EffectResult {
         val count = amountEvaluator.evaluate(state, effect.count, context)
-        if (count <= 0) return ExecutionResult.success(state)
+        if (count <= 0) return EffectResult.success(state)
+
+        // Check for token creation replacement effects (e.g., Mirrormind Crown)
+        val replacementResult = TokenCreationReplacementHelper.checkReplacement(state, effect, context, count)
+        if (replacementResult != null) return replacementResult
 
         // Resolve who receives the token — defaults to spell/ability controller
         val controller = effect.controller
@@ -218,6 +222,6 @@ class CreateTokenExecutor(
             )
         }
 
-        return ExecutionResult.success(newState, events)
+        return EffectResult.success(newState, events)
     }
 }

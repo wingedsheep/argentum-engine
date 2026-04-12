@@ -1,7 +1,7 @@
 package com.wingedsheep.engine.handlers.effects.composite
 
 import com.wingedsheep.engine.core.EffectContinuation
-import com.wingedsheep.engine.core.ExecutionResult
+import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.state.GameState
@@ -19,7 +19,7 @@ import kotlin.reflect.KClass
  * @param effectExecutor Function to execute a sub-effect (provided by registry)
  */
 class CompositeEffectExecutor(
-    private val effectExecutor: (GameState, Effect, EffectContext) -> ExecutionResult
+    private val effectExecutor: (GameState, Effect, EffectContext) -> EffectResult
 ) : EffectExecutor<CompositeEffect> {
 
     override val effectType: KClass<CompositeEffect> = CompositeEffect::class
@@ -28,7 +28,7 @@ class CompositeEffectExecutor(
         state: GameState,
         effect: CompositeEffect,
         context: EffectContext
-    ): ExecutionResult {
+    ): EffectResult {
         var currentState = state
         var currentContext = context
         val allEvents = mutableListOf<com.wingedsheep.engine.core.GameEvent>()
@@ -66,7 +66,7 @@ class CompositeEffectExecutor(
                     } else {
                         result.state
                     }
-                    return ExecutionResult.success(cleanState, allEvents + result.events)
+                    return EffectResult.success(cleanState, allEvents + result.events)
                 }
                 // Sub-effect failed - skip it and continue with remaining effects.
                 // Per MTG rules, when a spell or ability resolves, you do as much as
@@ -87,7 +87,7 @@ class CompositeEffectExecutor(
                 // Its continuation is on top of the stack.
                 // Our pre-pushed EffectContinuation is underneath, ready to be
                 // processed by checkForMoreContinuations after the sub-effect resolves.
-                return ExecutionResult.paused(
+                return EffectResult.paused(
                     result.state,
                     result.pendingDecision!!,
                     allEvents + result.events
@@ -117,7 +117,7 @@ class CompositeEffectExecutor(
         // Return accumulated collections / subtype groups so parent composites can see them
         val accumulatedCollections = currentContext.pipeline.storedCollections - context.pipeline.storedCollections.keys
         val accumulatedSubtypeGroups = currentContext.pipeline.storedSubtypeGroups - context.pipeline.storedSubtypeGroups.keys
-        return ExecutionResult(
+        return EffectResult(
             currentState,
             allEvents,
             updatedCollections = accumulatedCollections,

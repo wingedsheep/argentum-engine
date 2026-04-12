@@ -1,6 +1,6 @@
 package com.wingedsheep.engine.handlers.effects.damage
 
-import com.wingedsheep.engine.core.ExecutionResult
+import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.core.GameEvent as EngineGameEvent
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.DamageUtils.dealDamageToTarget
@@ -27,7 +27,7 @@ class DealDamagePerEntityInZoneExecutor : EffectExecutor<DealDamagePerEntityInZo
         state: GameState,
         effect: DealDamagePerEntityInZoneEffect,
         context: EffectContext
-    ): ExecutionResult {
+    ): EffectResult {
         // Count how many of the tracked entities are still in the specified zone
         val stillInZone = effect.entityIds.count { entityId ->
             state.zones.any { (zoneKey, entities) ->
@@ -36,7 +36,7 @@ class DealDamagePerEntityInZoneExecutor : EffectExecutor<DealDamagePerEntityInZo
         }
 
         if (stillInZone == 0) {
-            return ExecutionResult.success(state)
+            return EffectResult.success(state)
         }
 
         val totalDamage = stillInZone * effect.damagePerEntity
@@ -52,7 +52,7 @@ class DealDamagePerEntityInZoneExecutor : EffectExecutor<DealDamagePerEntityInZo
         if (effect.target is EffectTarget.PlayerRef) {
             val playerIds = context.resolvePlayerTargets(effect.target, state)
             if (playerIds.isEmpty()) {
-                return ExecutionResult.success(state)
+                return EffectResult.success(state)
             }
 
             var newState = state
@@ -62,12 +62,12 @@ class DealDamagePerEntityInZoneExecutor : EffectExecutor<DealDamagePerEntityInZo
                 newState = result.newState
                 events.addAll(result.events)
             }
-            return ExecutionResult.success(newState, events)
+            return EffectResult.success(newState, events)
         }
 
         // Single target resolution
         val targetId = context.resolveTarget(effect.target, state)
-            ?: return ExecutionResult.error(state, "No valid target for damage")
+            ?: return EffectResult.error(state, "No valid target for damage")
 
         return dealDamageToTarget(state, targetId, totalDamage, sourceId, cantBePrevented = false)
     }

@@ -26,7 +26,7 @@ class ChooseCreatureTypePipelineExecutor : EffectExecutor<ChooseCreatureTypeEffe
         state: GameState,
         effect: ChooseCreatureTypeEffect,
         context: EffectContext
-    ): ExecutionResult {
+    ): EffectResult {
         val controllerId = context.controllerId
         val allCreatureTypes = Subtype.ALL_CREATURE_TYPES
         val sourceName = context.sourceId?.let { state.getEntity(it)?.get<CardComponent>()?.name }
@@ -56,7 +56,7 @@ class ChooseCreatureTypePipelineExecutor : EffectExecutor<ChooseCreatureTypeEffe
         val stateWithDecision = state.withPendingDecision(decision)
         val stateWithContinuation = stateWithDecision.pushContinuation(continuation)
 
-        return ExecutionResult.paused(
+        return EffectResult.paused(
             stateWithContinuation,
             decision,
             listOf(

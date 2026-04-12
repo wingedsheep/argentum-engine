@@ -1,6 +1,6 @@
 package com.wingedsheep.engine.handlers.effects.permanent.abilities
 
-import com.wingedsheep.engine.core.ExecutionResult
+import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.core.KeywordGrantedEvent
 import com.wingedsheep.engine.core.StatsModifiedEvent
 import com.wingedsheep.engine.core.GameEvent as EngineGameEvent
@@ -38,24 +38,24 @@ class GrantToEnchantedCreatureTypeGroupExecutor : EffectExecutor<GrantToEnchante
         state: GameState,
         effect: GrantToEnchantedCreatureTypeGroupEffect,
         context: EffectContext
-    ): ExecutionResult {
+    ): EffectResult {
         // Find the enchanted creature via AttachedToComponent on the source (aura)
         val sourceId = context.sourceId
-            ?: return ExecutionResult.success(state)
+            ?: return EffectResult.success(state)
         val sourceContainer = state.getEntity(sourceId)
-            ?: return ExecutionResult.success(state)
+            ?: return EffectResult.success(state)
         val enchantedCreatureId = sourceContainer.get<AttachedToComponent>()?.targetId
-            ?: return ExecutionResult.success(state)
+            ?: return EffectResult.success(state)
 
         // Get the enchanted creature's subtypes
         val enchantedContainer = state.getEntity(enchantedCreatureId)
-            ?: return ExecutionResult.success(state)
+            ?: return EffectResult.success(state)
         val enchantedCard = enchantedContainer.get<CardComponent>()
-            ?: return ExecutionResult.success(state)
+            ?: return EffectResult.success(state)
         val enchantedSubtypes = enchantedCard.typeLine.subtypes.map { it.value }.toSet()
 
         if (enchantedSubtypes.isEmpty()) {
-            return ExecutionResult.success(state)
+            return EffectResult.success(state)
         }
 
         // Find all creatures on battlefield sharing at least one creature type
@@ -102,7 +102,7 @@ class GrantToEnchantedCreatureTypeGroupExecutor : EffectExecutor<GrantToEnchante
         }
 
         if (affectedEntities.isEmpty()) {
-            return ExecutionResult.success(state)
+            return EffectResult.success(state)
         }
 
         // Create floating effects
@@ -150,6 +150,6 @@ class GrantToEnchantedCreatureTypeGroupExecutor : EffectExecutor<GrantToEnchante
 
         val newState = state.addFloatingEffects(floatingEffects)
 
-        return ExecutionResult.success(newState, events)
+        return EffectResult.success(newState, events)
     }
 }

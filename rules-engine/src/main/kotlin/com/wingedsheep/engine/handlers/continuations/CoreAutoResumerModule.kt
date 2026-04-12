@@ -37,7 +37,7 @@ class CoreAutoResumerModule(
                 continuation.effects,
                 continuation.remainingTargets,
                 outerContext
-            )
+            ).toExecutionResult()
             mergeAndContinue(result, events, checkForMore)
         },
 
@@ -50,7 +50,7 @@ class CoreAutoResumerModule(
                 continuation.effects,
                 continuation.remainingPlayers,
                 continuation.effectContext
-            )
+            ).toExecutionResult()
             mergeAndContinue(result, events, checkForMore)
         },
 
@@ -62,7 +62,7 @@ class CoreAutoResumerModule(
                     mergeAndContinue(drawResult, events, checkForMore)
                 } else {
                     val drawExecutor = com.wingedsheep.engine.handlers.effects.drawing.DrawCardsExecutor(cardRegistry = services.cardRegistry, effectExecutor = services.effectExecutorRegistry::execute)
-                    val drawResult = drawExecutor.executeDraws(state, continuation.drawingPlayerId, continuation.remainingDraws)
+                    val drawResult = drawExecutor.executeDraws(state, continuation.drawingPlayerId, continuation.remainingDraws).toExecutionResult()
                     mergeAndContinue(drawResult, events, checkForMore)
                 }
             } else {
@@ -72,7 +72,7 @@ class CoreAutoResumerModule(
 
         autoResumer(CycleDrawContinuation::class) { state, continuation, events, checkForMore ->
             val drawExecutor = com.wingedsheep.engine.handlers.effects.drawing.DrawCardsExecutor(cardRegistry = services.cardRegistry, effectExecutor = services.effectExecutorRegistry::execute)
-            val drawResult = drawExecutor.executeDraws(state, continuation.playerId, 1)
+            val drawResult = drawExecutor.executeDraws(state, continuation.playerId, 1).toExecutionResult()
             mergeAndContinue(drawResult, events, checkForMore)
         },
 
@@ -88,13 +88,16 @@ class CoreAutoResumerModule(
                 controllerId = continuation.playerId,
                 opponentId = state.getOpponent(continuation.playerId)
             )
-            val searchResult = services.effectExecutorRegistry.execute(state, searchEffect, effectContext)
+            val searchResult = services.effectExecutorRegistry.execute(state, searchEffect, effectContext).toExecutionResult()
             mergeAndContinue(searchResult, events, checkForMore)
         },
 
         autoResumer(EffectContinuation::class, canResume = { it.remainingEffects.isNotEmpty() }) { state, continuation, events, checkForMore ->
-            val (currentState, effectEvents) = effectRunner.executeRemainingEffects(state, continuation.remainingEffects, continuation.effectContext)
-            checkForMore(currentState, events + effectEvents)
+            val runResult = effectRunner.executeRemainingEffects(state, continuation.remainingEffects, continuation.effectContext)
+            if (runResult.isPaused) {
+                return@autoResumer ExecutionResult.paused(runResult.state, runResult.pendingDecision!!, events + runResult.events)
+            }
+            checkForMore(runResult.state, events + runResult.events)
         },
 
         autoResumer(RepeatWhileContinuation::class, canResume = { it.phase == RepeatWhilePhase.AFTER_BODY }) { state, continuation, events, checkForMore ->
@@ -108,7 +111,7 @@ class CoreAutoResumerModule(
                 effectExecutor = services.effectExecutorRegistry::execute,
                 priorEvents = events
             )
-            mergeAndContinue(result, events = emptyList(), checkForMore)
+            mergeAndContinue(result.toExecutionResult(), events = emptyList(), checkForMore)
         },
 
         autoResumer(ReflexiveTriggerTargetContinuation::class) { state, continuation, events, checkForMore ->
@@ -127,7 +130,7 @@ class CoreAutoResumerModule(
             )
             // Don't mergeAndContinue here — presentReflexiveTargets already returns
             // the correct result (paused with target decision, or success if no targets)
-            result
+            result.toExecutionResult()
         }
     )
 }

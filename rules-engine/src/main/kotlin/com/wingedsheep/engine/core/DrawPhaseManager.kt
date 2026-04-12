@@ -29,7 +29,7 @@ import com.wingedsheep.sdk.scripting.effects.Effect
 class DrawPhaseManager(
     private val cardRegistry: com.wingedsheep.engine.registry.CardRegistry,
     @Suppress("unused") private val decisionHandler: DecisionHandler,
-    effectExecutor: ((GameState, Effect, EffectContext) -> ExecutionResult)?
+    effectExecutor: ((GameState, Effect, EffectContext) -> EffectResult)?
 ) {
 
     private val primitive = DrawCardPrimitive(cardRegistry)
@@ -87,7 +87,7 @@ class DrawPhaseManager(
             skipStaticReplacement = skipPrompts,
             skipPromptOnDraw = true,
             emptyLibraryReason = "Library is empty"
-        )
+        ).toExecutionResult()
     }
 
     /**
@@ -108,5 +108,5 @@ class DrawPhaseManager(
         drawnCardsSoFar = emptyList(),
         isDrawStep = isDrawStep,
         declinedSourceIds = declinedSourceIds
-    )
+    )?.toExecutionResult()
 }

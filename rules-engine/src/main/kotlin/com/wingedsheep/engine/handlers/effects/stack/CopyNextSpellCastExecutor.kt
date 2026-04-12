@@ -1,6 +1,6 @@
 package com.wingedsheep.engine.handlers.effects.stack
 
-import com.wingedsheep.engine.core.ExecutionResult
+import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.state.GameState
@@ -25,7 +25,7 @@ class CopyNextSpellCastExecutor : EffectExecutor<CopyNextSpellCastEffect> {
         state: GameState,
         effect: CopyNextSpellCastEffect,
         context: EffectContext
-    ): ExecutionResult {
+    ): EffectResult {
         val sourceId = context.sourceId ?: EntityId.generate()
         val sourceName = state.getEntity(sourceId)?.get<CardComponent>()?.name ?: "Unknown"
 
@@ -38,6 +38,6 @@ class CopyNextSpellCastExecutor : EffectExecutor<CopyNextSpellCastEffect> {
         val newState = state.copy(
             pendingSpellCopies = state.pendingSpellCopies + pending
         )
-        return ExecutionResult.success(newState)
+        return EffectResult.success(newState)
     }
 }

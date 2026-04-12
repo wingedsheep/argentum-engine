@@ -1,6 +1,6 @@
 package com.wingedsheep.engine.handlers.effects.permanent.types
 
-import com.wingedsheep.engine.core.ExecutionResult
+import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.core.TurnedFaceDownEvent
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
@@ -26,16 +26,16 @@ class TurnFaceDownExecutor : EffectExecutor<TurnFaceDownEffect> {
         state: GameState,
         effect: TurnFaceDownEffect,
         context: EffectContext
-    ): ExecutionResult {
+    ): EffectResult {
         val targetId = context.resolveTarget(effect.target)
-            ?: return ExecutionResult.error(state, "No valid target for turn face down")
+            ?: return EffectResult.error(state, "No valid target for turn face down")
 
         val container = state.getEntity(targetId)
-            ?: return ExecutionResult.error(state, "Target entity not found")
+            ?: return EffectResult.error(state, "Target entity not found")
 
         // Already face-down — nothing to do
         if (container.has<FaceDownComponent>()) {
-            return ExecutionResult.success(state)
+            return EffectResult.success(state)
         }
 
         val controllerId = container.get<ControllerComponent>()?.playerId ?: context.controllerId
@@ -44,7 +44,7 @@ class TurnFaceDownExecutor : EffectExecutor<TurnFaceDownEffect> {
             c.with(FaceDownComponent)
         }
 
-        return ExecutionResult.success(
+        return EffectResult.success(
             newState,
             listOf(TurnedFaceDownEvent(targetId, controllerId))
         )

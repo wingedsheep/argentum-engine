@@ -1,6 +1,6 @@
 package com.wingedsheep.engine.handlers.effects.life
 
-import com.wingedsheep.engine.core.ExecutionResult
+import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.core.LifeChangedEvent
 import com.wingedsheep.engine.core.LifeChangeReason
 import com.wingedsheep.engine.handlers.effects.DamageUtils
@@ -36,24 +36,24 @@ class ExchangeLifeAndPowerExecutor : EffectExecutor<ExchangeLifeAndPowerEffect> 
         state: GameState,
         effect: ExchangeLifeAndPowerEffect,
         context: EffectContext
-    ): ExecutionResult {
+    ): EffectResult {
         val creatureId = context.resolveTarget(effect.target, state)
-            ?: return ExecutionResult.success(state)
+            ?: return EffectResult.success(state)
 
         // Creature must be on the battlefield
         if (creatureId !in state.getBattlefield()) {
-            return ExecutionResult.success(state)
+            return EffectResult.success(state)
         }
 
         val controllerId = context.controllerId
 
         // Read both values before making any changes (simultaneous exchange)
         val currentLife = state.getEntity(controllerId)?.get<LifeTotalComponent>()?.life
-            ?: return ExecutionResult.success(state)
+            ?: return EffectResult.success(state)
 
         val projected = state.projectedState
         val currentPower = projected.getPower(creatureId)
-            ?: return ExecutionResult.success(state)
+            ?: return EffectResult.success(state)
 
         val events = mutableListOf<EngineGameEvent>()
 
@@ -83,6 +83,6 @@ class ExchangeLifeAndPowerExecutor : EffectExecutor<ExchangeLifeAndPowerEffect> 
             }
         }
 
-        return ExecutionResult.success(newState, events)
+        return EffectResult.success(newState, events)
     }
 }

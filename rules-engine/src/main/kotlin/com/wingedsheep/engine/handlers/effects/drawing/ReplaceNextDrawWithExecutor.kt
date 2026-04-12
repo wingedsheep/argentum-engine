@@ -1,6 +1,6 @@
 package com.wingedsheep.engine.handlers.effects.drawing
 
-import com.wingedsheep.engine.core.ExecutionResult
+import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.mechanics.layers.Layer
@@ -29,7 +29,7 @@ class ReplaceNextDrawWithExecutor : EffectExecutor<ReplaceNextDrawWithEffect> {
         state: GameState,
         effect: ReplaceNextDrawWithEffect,
         context: EffectContext
-    ): ExecutionResult {
+    ): EffectResult {
         val sourceName = context.sourceId?.let { state.getEntity(it)?.get<CardComponent>()?.name }
 
         val modification = SerializableModification.ReplaceDrawWithEffect(
@@ -48,6 +48,6 @@ class ReplaceNextDrawWithExecutor : EffectExecutor<ReplaceNextDrawWithEffect> {
             context = context
         )
 
-        return ExecutionResult.success(newState)
+        return EffectResult.success(newState)
     }
 }

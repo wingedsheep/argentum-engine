@@ -40,12 +40,12 @@ class ReadTheRunesExecutor(
         state: GameState,
         effect: ReadTheRunesEffect,
         context: EffectContext
-    ): ExecutionResult {
+    ): EffectResult {
         val playerId = context.controllerId
         val xValue = context.xValue ?: 0
 
         if (xValue <= 0) {
-            return ExecutionResult.success(state)
+            return EffectResult.success(state)
         }
 
         // Draw X cards
@@ -87,9 +87,9 @@ class ReadTheRunesExecutor(
             sourceName: String?,
             remainingChoices: Int,
             priorEvents: List<GameEvent> = emptyList()
-        ): ExecutionResult {
+        ): EffectResult {
             if (remainingChoices <= 0) {
-                return ExecutionResult.success(state, priorEvents)
+                return EffectResult.success(state, priorEvents)
             }
 
             val handZone = ZoneKey(playerId, Zone.HAND)
@@ -131,7 +131,7 @@ class ReadTheRunesExecutor(
             permanents: List<EntityId>,
             remainingChoices: Int,
             priorEvents: List<GameEvent>
-        ): ExecutionResult {
+        ): EffectResult {
             val decisionResult = decisionHandlerStatic.createCardSelectionDecision(
                 state = state,
                 playerId = playerId,
@@ -157,7 +157,7 @@ class ReadTheRunesExecutor(
 
             val stateWithContinuation = decisionResult.state.pushContinuation(continuation)
 
-            return ExecutionResult.paused(
+            return EffectResult.paused(
                 stateWithContinuation,
                 decisionResult.pendingDecision,
                 priorEvents + decisionResult.events
@@ -175,7 +175,7 @@ class ReadTheRunesExecutor(
             permanents: List<EntityId>,
             remainingChoices: Int,
             priorEvents: List<GameEvent>
-        ): ExecutionResult {
+        ): EffectResult {
             // If only 1 permanent, auto-sacrifice
             if (permanents.size == 1) {
                 val permanentId = permanents.first()
@@ -211,7 +211,7 @@ class ReadTheRunesExecutor(
 
             val stateWithContinuation = decisionResult.state.pushContinuation(continuation)
 
-            return ExecutionResult.paused(
+            return EffectResult.paused(
                 stateWithContinuation,
                 decisionResult.pendingDecision,
                 priorEvents + decisionResult.events
@@ -229,7 +229,7 @@ class ReadTheRunesExecutor(
             hand: List<EntityId>,
             remainingChoices: Int,
             priorEvents: List<GameEvent>
-        ): ExecutionResult {
+        ): EffectResult {
             // If only 1 card, auto-discard
             if (hand.size == 1) {
                 val cardId = hand.first()
@@ -264,7 +264,7 @@ class ReadTheRunesExecutor(
 
             val stateWithContinuation = decisionResult.state.pushContinuation(continuation)
 
-            return ExecutionResult.paused(
+            return EffectResult.paused(
                 stateWithContinuation,
                 decisionResult.pendingDecision,
                 priorEvents + decisionResult.events
@@ -282,7 +282,7 @@ class ReadTheRunesExecutor(
         /**
          * Sacrifice a permanent.
          */
-        fun sacrificePermanent(state: GameState, playerId: EntityId, permanentId: EntityId): ExecutionResult {
+        fun sacrificePermanent(state: GameState, playerId: EntityId, permanentId: EntityId): EffectResult {
             val battlefieldZone = ZoneKey(playerId, Zone.BATTLEFIELD)
             val graveyardZone = ZoneKey(playerId, Zone.GRAVEYARD)
 
@@ -302,13 +302,13 @@ class ReadTheRunesExecutor(
                 )
             )
 
-            return ExecutionResult.success(newState, events)
+            return EffectResult.success(newState, events)
         }
 
         /**
          * Discard a card.
          */
-        fun discardCard(state: GameState, playerId: EntityId, cardId: EntityId): ExecutionResult {
+        fun discardCard(state: GameState, playerId: EntityId, cardId: EntityId): EffectResult {
             val handZone = ZoneKey(playerId, Zone.HAND)
             val graveyardZone = ZoneKey(playerId, Zone.GRAVEYARD)
 
@@ -328,7 +328,7 @@ class ReadTheRunesExecutor(
                 )
             )
 
-            return ExecutionResult.success(newState, events)
+            return EffectResult.success(newState, events)
         }
     }
 }

@@ -1,6 +1,6 @@
 package com.wingedsheep.engine.handlers.effects.token
 
-import com.wingedsheep.engine.core.ExecutionResult
+import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.core.ZoneChangeEvent
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
@@ -39,9 +39,9 @@ class CreatePredefinedTokenExecutor(
         state: GameState,
         effect: CreatePredefinedTokenEffect,
         context: EffectContext
-    ): ExecutionResult {
+    ): EffectResult {
         val cardDef = cardRegistry.getCard(effect.tokenType)
-            ?: return ExecutionResult.error(state, "No CardDefinition registered for predefined token '${effect.tokenType}'")
+            ?: return EffectResult.error(state, "No CardDefinition registered for predefined token '${effect.tokenType}'")
 
         val controller = effect.controller
         val tokenControllerId = if (controller != null) {
@@ -101,6 +101,6 @@ class CreatePredefinedTokenExecutor(
             )
         }
 
-        return ExecutionResult.success(newState, events)
+        return EffectResult.success(newState, events)
     }
 }

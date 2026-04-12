@@ -1,6 +1,6 @@
 package com.wingedsheep.engine.handlers.effects.player
 
-import com.wingedsheep.engine.core.ExecutionResult
+import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.state.GameState
@@ -24,7 +24,7 @@ class GrantCastCreaturesFromGraveyardWithForageExecutor :
         state: GameState,
         effect: GrantCastCreaturesFromGraveyardWithForageEffect,
         context: EffectContext
-    ): ExecutionResult {
+    ): EffectResult {
         val playerId = context.controllerId
         val removeOn = when (effect.duration) {
             is Duration.Permanent -> PlayerEffectRemoval.Permanent
@@ -40,6 +40,6 @@ class GrantCastCreaturesFromGraveyardWithForageExecutor :
             )
         }
 
-        return ExecutionResult.success(newState)
+        return EffectResult.success(newState)
     }
 }

@@ -41,9 +41,9 @@ class SelectFromCollectionExecutor : EffectExecutor<SelectFromCollectionEffect> 
         state: GameState,
         effect: SelectFromCollectionEffect,
         context: EffectContext
-    ): ExecutionResult {
+    ): EffectResult {
         val cards = context.pipeline.storedCollections[effect.from]
-            ?: return ExecutionResult.error(state, "No collection named '${effect.from}' in storedCollections")
+            ?: return EffectResult.error(state, "No collection named '${effect.from}' in storedCollections")
 
         val remainderName = effect.storeRemainder
 
@@ -53,7 +53,7 @@ class SelectFromCollectionExecutor : EffectExecutor<SelectFromCollectionEffect> 
             if (remainderName != null) {
                 collections[remainderName] = emptyList()
             }
-            return ExecutionResult.success(state).copy(updatedCollections = collections)
+            return EffectResult.success(state).copy(updatedCollections = collections)
         }
 
         // Apply filter to narrow selectable cards (e.g., "creature card" for Animal Magnetism)
@@ -81,12 +81,12 @@ class SelectFromCollectionExecutor : EffectExecutor<SelectFromCollectionEffect> 
         val decidingPlayerId = when (effect.chooser) {
             Chooser.Controller -> null // null = default to controller in createDecision
             Chooser.Opponent -> context.opponentId
-                ?: return ExecutionResult.error(state, "No opponent for Opponent chooser")
+                ?: return EffectResult.error(state, "No opponent for Opponent chooser")
             Chooser.TargetPlayer -> context.targets.firstOrNull()?.let {
                 TargetResolutionUtils.run { it.toEntityId() }
-            } ?: return ExecutionResult.error(state, "No target player for TargetPlayer chooser")
+            } ?: return EffectResult.error(state, "No target player for TargetPlayer chooser")
             Chooser.TriggeringPlayer -> context.triggeringEntityId
-                ?: return ExecutionResult.error(state, "No triggering player for TriggeringPlayer chooser")
+                ?: return EffectResult.error(state, "No triggering player for TriggeringPlayer chooser")
         }
 
         // Restrictions can tighten the maximum number of selectable cards (e.g.,
@@ -101,7 +101,7 @@ class SelectFromCollectionExecutor : EffectExecutor<SelectFromCollectionEffect> 
                 if (remainderName != null) {
                     collections[remainderName] = cards.filter { it !in eligibleCards }
                 }
-                ExecutionResult.success(state).copy(updatedCollections = collections)
+                EffectResult.success(state).copy(updatedCollections = collections)
             }
 
             is SelectionMode.ChooseExactly -> {
@@ -113,7 +113,7 @@ class SelectFromCollectionExecutor : EffectExecutor<SelectFromCollectionEffect> 
                     if (remainderName != null) {
                         collections[remainderName] = cards
                     }
-                    return ExecutionResult.success(state).copy(updatedCollections = collections)
+                    return EffectResult.success(state).copy(updatedCollections = collections)
                 }
                 if (count >= eligibleCards.size && effect.restrictions.isEmpty()) {
                     // Must select all eligible — no choice needed
@@ -121,7 +121,7 @@ class SelectFromCollectionExecutor : EffectExecutor<SelectFromCollectionEffect> 
                     if (remainderName != null) {
                         collections[remainderName] = cards.filter { it !in eligibleCards }
                     }
-                    ExecutionResult.success(state).copy(updatedCollections = collections)
+                    EffectResult.success(state).copy(updatedCollections = collections)
                 } else {
                     val clamped = minOf(count, eligibleCards.size)
                     createDecision(state, context, effect, eligibleCards, clamped, clamped, decidingPlayerId, allCards = cards)
@@ -140,7 +140,7 @@ class SelectFromCollectionExecutor : EffectExecutor<SelectFromCollectionEffect> 
                     if (remainderName != null) {
                         collections[remainderName] = cards
                     }
-                    return ExecutionResult.success(state).copy(updatedCollections = collections)
+                    return EffectResult.success(state).copy(updatedCollections = collections)
                 }
                 val nonSelectable = if (effect.showAllCards) cards.filter { it !in eligibleCards } else emptyList()
                 createDecision(state, context, effect, eligibleCards, 0, minOf(count, eligibleCards.size), decidingPlayerId, allCards = cards, nonSelectableCards = nonSelectable)
@@ -154,7 +154,7 @@ class SelectFromCollectionExecutor : EffectExecutor<SelectFromCollectionEffect> 
                 if (remainderName != null) {
                     collections[remainderName] = cards.filter { it !in selected }
                 }
-                ExecutionResult.success(state).copy(updatedCollections = collections)
+                EffectResult.success(state).copy(updatedCollections = collections)
             }
 
             is SelectionMode.ChooseAnyNumber -> {
@@ -162,7 +162,7 @@ class SelectFromCollectionExecutor : EffectExecutor<SelectFromCollectionEffect> 
                 if (eligibleCards.isEmpty()) {
                     val collections = mutableMapOf(effect.storeSelected to emptyList<EntityId>())
                     if (remainderName != null) collections[remainderName] = cards
-                    return ExecutionResult.success(state).copy(updatedCollections = collections)
+                    return EffectResult.success(state).copy(updatedCollections = collections)
                 }
                 val maxSelectable = minOf(eligibleCards.size, restrictionCeiling)
                 createDecision(state, context, effect, eligibleCards, 0, maxSelectable, decidingPlayerId, allCards = cards)
@@ -212,7 +212,7 @@ class SelectFromCollectionExecutor : EffectExecutor<SelectFromCollectionEffect> 
         decidingPlayerId: EntityId? = null,
         allCards: List<EntityId> = cards,
         nonSelectableCards: List<EntityId> = emptyList()
-    ): ExecutionResult {
+    ): EffectResult {
         val playerId = decidingPlayerId ?: context.controllerId
         val decisionId = UUID.randomUUID().toString()
         val sourceName = context.sourceId?.let { sourceId ->
@@ -273,7 +273,7 @@ class SelectFromCollectionExecutor : EffectExecutor<SelectFromCollectionEffect> 
         val stateWithDecision = state.withPendingDecision(decision)
         val stateWithContinuation = stateWithDecision.pushContinuation(continuation)
 
-        return ExecutionResult.paused(
+        return EffectResult.paused(
             stateWithContinuation,
             decision,
             listOf(

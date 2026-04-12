@@ -1,6 +1,6 @@
 package com.wingedsheep.engine.handlers.effects.library
 
-import com.wingedsheep.engine.core.ExecutionResult
+import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.PredicateContext
 import com.wingedsheep.engine.handlers.PredicateEvaluator
@@ -36,15 +36,15 @@ class GatherUntilMatchExecutor : EffectExecutor<GatherUntilMatchEffect> {
         state: GameState,
         effect: GatherUntilMatchEffect,
         context: EffectContext
-    ): ExecutionResult {
+    ): EffectResult {
         val playerId = resolvePlayer(effect.player, context, state)
-            ?: return ExecutionResult.error(state, "Could not resolve player for GatherUntilMatch")
+            ?: return EffectResult.error(state, "Could not resolve player for GatherUntilMatch")
 
         val libraryZone = ZoneKey(playerId, Zone.LIBRARY)
         val library = state.getZone(libraryZone)
 
         if (library.isEmpty()) {
-            return ExecutionResult.success(state).copy(
+            return EffectResult.success(state).copy(
                 updatedCollections = mapOf(
                     effect.storeMatch to emptyList(),
                     effect.storeRevealed to emptyList()
@@ -67,7 +67,7 @@ class GatherUntilMatchExecutor : EffectExecutor<GatherUntilMatchEffect> {
 
         val matchList = if (matchCard != null) listOf(matchCard) else emptyList()
 
-        return ExecutionResult.success(state).copy(
+        return EffectResult.success(state).copy(
             updatedCollections = mapOf(
                 effect.storeMatch to matchList,
                 effect.storeRevealed to allRevealed.toList()

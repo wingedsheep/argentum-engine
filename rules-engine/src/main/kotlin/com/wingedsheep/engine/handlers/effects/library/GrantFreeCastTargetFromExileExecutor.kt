@@ -1,6 +1,6 @@
 package com.wingedsheep.engine.handlers.effects.library
 
-import com.wingedsheep.engine.core.ExecutionResult
+import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.state.GameState
@@ -28,9 +28,9 @@ class GrantFreeCastTargetFromExileExecutor : EffectExecutor<GrantFreeCastTargetF
         state: GameState,
         effect: GrantFreeCastTargetFromExileEffect,
         context: EffectContext
-    ): ExecutionResult {
+    ): EffectResult {
         val controllerId = context.controllerId
-        val targetId = context.resolveTarget(effect.target) ?: return ExecutionResult.success(state)
+        val targetId = context.resolveTarget(effect.target) ?: return EffectResult.success(state)
 
         val newState = state.updateEntity(targetId) { container ->
             var updated = container
@@ -42,6 +42,6 @@ class GrantFreeCastTargetFromExileExecutor : EffectExecutor<GrantFreeCastTargetF
             updated
         }
 
-        return ExecutionResult.success(newState)
+        return EffectResult.success(newState)
     }
 }

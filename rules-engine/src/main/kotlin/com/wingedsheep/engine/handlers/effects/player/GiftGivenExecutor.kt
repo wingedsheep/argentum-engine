@@ -1,6 +1,6 @@
 package com.wingedsheep.engine.handlers.effects.player
 
-import com.wingedsheep.engine.core.ExecutionResult
+import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.core.GiftGivenEvent
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
@@ -22,9 +22,9 @@ class GiftGivenExecutor : EffectExecutor<GiftGivenEffect> {
         state: GameState,
         effect: GiftGivenEffect,
         context: EffectContext
-    ): ExecutionResult {
+    ): EffectResult {
         val sourceName = context.sourceId?.let { state.getEntity(it)?.get<CardComponent>()?.name }
-        return ExecutionResult.success(
+        return EffectResult.success(
             state,
             listOf(
                 GiftGivenEvent(

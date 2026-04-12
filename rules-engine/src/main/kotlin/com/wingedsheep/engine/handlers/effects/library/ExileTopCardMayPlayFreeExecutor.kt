@@ -1,6 +1,6 @@
 package com.wingedsheep.engine.handlers.effects.library
 
-import com.wingedsheep.engine.core.ExecutionResult
+import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.state.GameState
@@ -24,7 +24,7 @@ class GrantMayPlayFromExileExecutor : EffectExecutor<GrantMayPlayFromExileEffect
         state: GameState,
         effect: GrantMayPlayFromExileEffect,
         context: EffectContext
-    ): ExecutionResult {
+    ): EffectResult {
         val controllerId = context.controllerId
         val collection = context.pipeline.storedCollections[effect.from] ?: emptyList()
 
@@ -47,7 +47,7 @@ class GrantMayPlayFromExileExecutor : EffectExecutor<GrantMayPlayFromExileEffect
             }
         }
 
-        return ExecutionResult.success(newState)
+        return EffectResult.success(newState)
     }
 
     /**
@@ -87,7 +87,7 @@ class GrantPlayWithoutPayingCostExecutor : EffectExecutor<GrantPlayWithoutPaying
         state: GameState,
         effect: GrantPlayWithoutPayingCostEffect,
         context: EffectContext
-    ): ExecutionResult {
+    ): EffectResult {
         val controllerId = context.controllerId
         val collection = context.pipeline.storedCollections[effect.from] ?: emptyList()
 
@@ -98,6 +98,6 @@ class GrantPlayWithoutPayingCostExecutor : EffectExecutor<GrantPlayWithoutPaying
             }
         }
 
-        return ExecutionResult.success(newState)
+        return EffectResult.success(newState)
     }
 }

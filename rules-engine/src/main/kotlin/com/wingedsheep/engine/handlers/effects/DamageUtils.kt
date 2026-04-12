@@ -2,7 +2,7 @@ package com.wingedsheep.engine.handlers.effects
 
 import com.wingedsheep.engine.core.CountersAddedEvent
 import com.wingedsheep.engine.core.DamageDealtEvent
-import com.wingedsheep.engine.core.ExecutionResult
+import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.core.LifeChangedEvent
 import com.wingedsheep.engine.core.LifeChangeReason
 import com.wingedsheep.engine.core.LoyaltyChangedEvent
@@ -69,8 +69,8 @@ object DamageUtils {
         amount: Int,
         sourceId: EntityId?,
         cantBePrevented: Boolean = false
-    ): ExecutionResult {
-        if (amount <= 0) return ExecutionResult.success(state)
+    ): EffectResult {
+        if (amount <= 0) return EffectResult.success(state)
 
         // Check for global "damage can't be prevented" effects (Sunspine Lynx, Leyline of Punishment)
         @Suppress("NAME_SHADOWING")
@@ -85,7 +85,7 @@ object DamageUtils {
                 // Partial redirection — deal remaining damage to original target
                 val afterRedirect = redirectResult.state
                 val remainingResult = dealDamageToTarget(afterRedirect, targetId, remainingDamage, sourceId, cantBePrevented)
-                ExecutionResult.success(remainingResult.state, redirectResult.events + remainingResult.events)
+                EffectResult.success(remainingResult.state, redirectResult.events + remainingResult.events)
             } else {
                 redirectResult
             }
@@ -95,7 +95,7 @@ object DamageUtils {
         if (!cantBePrevented && sourceId != null) {
             // Check if all damage from this source is prevented (Chain of Silence)
             if (isAllDamageFromSourcePrevented(state, sourceId)) {
-                return ExecutionResult.success(state)
+                return EffectResult.success(state)
             }
 
             val projected = state.projectedState
@@ -103,13 +103,13 @@ object DamageUtils {
             for (colorName in sourceColors) {
                 if (projected.hasKeyword(targetId, "PROTECTION_FROM_$colorName")) {
                     // Damage is prevented — return success with no state change
-                    return ExecutionResult.success(state)
+                    return EffectResult.success(state)
                 }
             }
             val sourceSubtypes = projected.getSubtypes(sourceId)
             for (subtype in sourceSubtypes) {
                 if (projected.hasKeyword(targetId, "PROTECTION_FROM_SUBTYPE_${subtype.uppercase()}")) {
-                    return ExecutionResult.success(state)
+                    return EffectResult.success(state)
                 }
             }
         }
@@ -137,7 +137,7 @@ object DamageUtils {
             newState = shieldState
             effectiveAmount = reducedAmount
         }
-        if (effectiveAmount <= 0) return ExecutionResult.success(newState)
+        if (effectiveAmount <= 0) return EffectResult.success(newState)
 
         val events = mutableListOf<EngineGameEvent>()
 
@@ -215,7 +215,7 @@ object DamageUtils {
             }
         }
 
-        return ExecutionResult.success(newState, events)
+        return EffectResult.success(newState, events)
     }
 
     /**
@@ -475,7 +475,7 @@ object DamageUtils {
         targetId: EntityId,
         damageAmount: Int,
         sourceId: EntityId
-    ): ExecutionResult? {
+    ): EffectResult? {
         val shieldIndex = state.floatingEffects.indexOfFirst { effect ->
             val mod = effect.effect.modification
             mod is SerializableModification.DeflectNextDamageFromSource &&
@@ -496,7 +496,7 @@ object DamageUtils {
         val sourceController = newState.getEntity(sourceId)?.get<ControllerComponent>()?.playerId
         if (sourceController == null) {
             // Source has no controller (e.g., it left the game) — damage is still prevented
-            return ExecutionResult.success(newState)
+            return EffectResult.success(newState)
         }
 
         // Deal the reflected damage to the source's controller, sourced from the deflecting card
@@ -808,7 +808,7 @@ object DamageUtils {
         targetId: EntityId,
         amount: Int,
         sourceId: EntityId?
-    ): ExecutionResult? {
+    ): EffectResult? {
         if (amount <= 0) return null
 
         for (entityId in state.getBattlefield()) {
@@ -876,7 +876,7 @@ object DamageUtils {
                     events.addAll(transitionResult.events)
                 }
 
-                return ExecutionResult.success(newState, events)
+                return EffectResult.success(newState, events)
             }
         }
 

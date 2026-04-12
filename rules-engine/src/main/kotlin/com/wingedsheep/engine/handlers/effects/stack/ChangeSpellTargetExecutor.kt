@@ -1,7 +1,7 @@
 package com.wingedsheep.engine.handlers.effects.stack
 
 import com.wingedsheep.engine.core.ChangeSpellTargetContinuation
-import com.wingedsheep.engine.core.ExecutionResult
+import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.handlers.DecisionHandler
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
@@ -35,15 +35,15 @@ class ChangeSpellTargetExecutor : EffectExecutor<ChangeSpellTargetEffect> {
         state: GameState,
         effect: ChangeSpellTargetEffect,
         context: EffectContext
-    ): ExecutionResult {
+    ): EffectResult {
         // 1. Get target spell
         val targetSpell = context.targets.firstOrNull()
         if (targetSpell !is ChosenTarget.Spell) {
-            return ExecutionResult.error(state, "No valid spell target for ChangeSpellTarget")
+            return EffectResult.error(state, "No valid spell target for ChangeSpellTarget")
         }
 
         val spellEntity = state.getEntity(targetSpell.spellEntityId)
-            ?: return ExecutionResult.error(state, "Spell not found on stack")
+            ?: return EffectResult.error(state, "Spell not found on stack")
 
         // 2. Get the spell's targets
         val targetsComponent = spellEntity.get<TargetsComponent>()
@@ -51,25 +51,25 @@ class ChangeSpellTargetExecutor : EffectExecutor<ChangeSpellTargetEffect> {
 
         // 3. Validate: spell must have exactly one target
         if (spellTargets.size != 1) {
-            return ExecutionResult.success(state)
+            return EffectResult.success(state)
         }
 
         // 4. Validate: that target must be a creature on the battlefield
         val singleTarget = spellTargets.first()
         if (singleTarget !is ChosenTarget.Permanent) {
-            return ExecutionResult.success(state)
+            return EffectResult.success(state)
         }
 
         val projected = state.projectedState
 
         // Check the target is a creature using projected types
         if (!projected.hasType(singleTarget.entityId, "CREATURE")) {
-            return ExecutionResult.success(state)
+            return EffectResult.success(state)
         }
 
         // If targetMustBeSource, verify the spell's target is the source of this effect
         if (effect.targetMustBeSource && singleTarget.entityId != context.sourceId) {
-            return ExecutionResult.success(state)
+            return EffectResult.success(state)
         }
 
         // 5. Find all other creatures on the battlefield as legal new targets
@@ -81,7 +81,7 @@ class ChangeSpellTargetExecutor : EffectExecutor<ChangeSpellTargetEffect> {
 
         if (otherCreatures.isEmpty()) {
             // No other creatures to redirect to
-            return ExecutionResult.success(state)
+            return EffectResult.success(state)
         }
 
         // 6. Present selection decision to the controller
@@ -107,7 +107,7 @@ class ChangeSpellTargetExecutor : EffectExecutor<ChangeSpellTargetEffect> {
 
         val stateWithContinuation = decisionResult.state.pushContinuation(continuation)
 
-        return ExecutionResult.paused(
+        return EffectResult.paused(
             stateWithContinuation,
             decisionResult.pendingDecision,
             decisionResult.events

@@ -1,7 +1,7 @@
 package com.wingedsheep.engine.handlers.effects.library
 
 import com.wingedsheep.engine.core.CardsRevealedEvent
-import com.wingedsheep.engine.core.ExecutionResult
+import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.state.GameState
@@ -25,12 +25,12 @@ class RevealCollectionExecutor : EffectExecutor<RevealCollectionEffect> {
         state: GameState,
         effect: RevealCollectionEffect,
         context: EffectContext
-    ): ExecutionResult {
+    ): EffectResult {
         val cards = context.pipeline.storedCollections[effect.from]
-            ?: return ExecutionResult.error(state, "No collection named '${effect.from}' in storedCollections")
+            ?: return EffectResult.error(state, "No collection named '${effect.from}' in storedCollections")
 
         if (cards.isEmpty()) {
-            return ExecutionResult.success(state)
+            return EffectResult.success(state)
         }
 
         val cardNames = cards.map { cardId ->
@@ -49,6 +49,6 @@ class RevealCollectionExecutor : EffectExecutor<RevealCollectionEffect> {
             source = sourceName
         )
 
-        return ExecutionResult.success(state, listOf(event))
+        return EffectResult.success(state, listOf(event))
     }
 }

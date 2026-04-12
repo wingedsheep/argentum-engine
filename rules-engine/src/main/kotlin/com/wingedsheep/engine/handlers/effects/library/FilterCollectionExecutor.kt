@@ -1,6 +1,6 @@
 package com.wingedsheep.engine.handlers.effects.library
 
-import com.wingedsheep.engine.core.ExecutionResult
+import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.handlers.DynamicAmountEvaluator
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.PredicateContext
@@ -33,9 +33,9 @@ class FilterCollectionExecutor : EffectExecutor<FilterCollectionEffect> {
         state: GameState,
         effect: FilterCollectionEffect,
         context: EffectContext
-    ): ExecutionResult {
+    ): EffectResult {
         val cards = context.pipeline.storedCollections[effect.from]
-            ?: return ExecutionResult.error(state, "No collection named '${effect.from}' in storedCollections")
+            ?: return EffectResult.error(state, "No collection named '${effect.from}' in storedCollections")
 
         val filter = effect.filter
         val projected = state.projectedState
@@ -115,7 +115,7 @@ class FilterCollectionExecutor : EffectExecutor<FilterCollectionEffect> {
             updatedCollections[storeNonMatching] = nonMatching
         }
 
-        return ExecutionResult.success(state).copy(updatedCollections = updatedCollections)
+        return EffectResult.success(state).copy(updatedCollections = updatedCollections)
     }
 
     private fun resolveEntityReference(ref: EntityReference, context: EffectContext): EntityId? =

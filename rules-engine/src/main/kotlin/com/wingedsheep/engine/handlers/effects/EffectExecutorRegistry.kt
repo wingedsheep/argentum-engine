@@ -1,6 +1,6 @@
 package com.wingedsheep.engine.handlers.effects
 
-import com.wingedsheep.engine.core.ExecutionResult
+import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.handlers.DecisionHandler
 import com.wingedsheep.engine.handlers.DynamicAmountEvaluator
 import com.wingedsheep.engine.handlers.EffectContext
@@ -99,9 +99,9 @@ class EffectExecutorRegistry(
      * @return The execution result with new state and events
      */
     @Suppress("UNCHECKED_CAST")
-    fun execute(state: GameState, effect: Effect, context: EffectContext): ExecutionResult {
+    fun execute(state: GameState, effect: Effect, context: EffectContext): EffectResult {
         val executor = executors[effect::class] as? EffectExecutor<Effect>
-            ?: return ExecutionResult.success(state) // Unhandled effect type
+            ?: return EffectResult.success(state) // Unhandled effect type
         return executor.execute(state, effect, context)
     }
 

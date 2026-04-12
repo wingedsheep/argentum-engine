@@ -1,6 +1,6 @@
 package com.wingedsheep.engine.handlers.effects.zones
 
-import com.wingedsheep.engine.core.ExecutionResult
+import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.handlers.effects.ZoneMovementUtils.destroyPermanent
@@ -22,20 +22,20 @@ class DestroyAllEquipmentOnTargetExecutor : EffectExecutor<DestroyAllEquipmentOn
         state: GameState,
         effect: DestroyAllEquipmentOnTargetEffect,
         context: EffectContext
-    ): ExecutionResult {
+    ): EffectResult {
         val targetId = context.resolveTarget(effect.target)
-            ?: return ExecutionResult.success(state)
+            ?: return EffectResult.success(state)
 
         // Verify target is still on the battlefield
         if (!state.getBattlefield().contains(targetId)) {
-            return ExecutionResult.success(state)
+            return EffectResult.success(state)
         }
 
         val container = state.getEntity(targetId)
-            ?: return ExecutionResult.success(state)
+            ?: return EffectResult.success(state)
 
         val attachments = container.get<AttachmentsComponent>()
-            ?: return ExecutionResult.success(state)
+            ?: return EffectResult.success(state)
 
         // Find all equipment IDs
         val equipmentIds = attachments.attachedIds.filter { attachId ->
@@ -45,7 +45,7 @@ class DestroyAllEquipmentOnTargetExecutor : EffectExecutor<DestroyAllEquipmentOn
         }
 
         if (equipmentIds.isEmpty()) {
-            return ExecutionResult.success(state)
+            return EffectResult.success(state)
         }
 
         // Destroy each equipment
@@ -61,6 +61,6 @@ class DestroyAllEquipmentOnTargetExecutor : EffectExecutor<DestroyAllEquipmentOn
             }
         }
 
-        return ExecutionResult.success(currentState, allEvents)
+        return EffectResult.success(currentState, allEvents)
     }
 }

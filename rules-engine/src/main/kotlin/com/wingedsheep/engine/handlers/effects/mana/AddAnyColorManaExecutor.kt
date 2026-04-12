@@ -1,6 +1,6 @@
 package com.wingedsheep.engine.handlers.effects.mana
 
-import com.wingedsheep.engine.core.ExecutionResult
+import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.handlers.DynamicAmountEvaluator
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
@@ -27,11 +27,11 @@ class AddAnyColorManaExecutor(
         state: GameState,
         effect: AddAnyColorManaEffect,
         context: EffectContext
-    ): ExecutionResult {
+    ): EffectResult {
         val color = context.manaColorChoice ?: Color.GREEN
         val amount = amountEvaluator.evaluate(state, effect.amount, context)
         if (amount <= 0) {
-            return ExecutionResult.success(state)
+            return EffectResult.success(state)
         }
 
         val newState = state.updateEntity(context.controllerId) { container ->
@@ -44,6 +44,6 @@ class AddAnyColorManaExecutor(
             container.with(updatedPool)
         }
 
-        return ExecutionResult.success(newState)
+        return EffectResult.success(newState)
     }
 }

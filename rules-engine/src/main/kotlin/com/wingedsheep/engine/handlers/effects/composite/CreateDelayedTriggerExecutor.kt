@@ -1,6 +1,6 @@
 package com.wingedsheep.engine.handlers.effects.composite
 
-import com.wingedsheep.engine.core.ExecutionResult
+import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.event.DelayedTriggeredAbility
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
@@ -39,9 +39,9 @@ class CreateDelayedTriggerExecutor : EffectExecutor<CreateDelayedTriggerEffect> 
         state: GameState,
         effect: CreateDelayedTriggerEffect,
         context: EffectContext
-    ): ExecutionResult {
+    ): EffectResult {
         val sourceId = context.sourceId
-            ?: return ExecutionResult.error(state, "CreateDelayedTrigger requires a source ID")
+            ?: return EffectResult.error(state, "CreateDelayedTrigger requires a source ID")
 
         val sourceName = state.getEntity(sourceId)?.get<CardComponent>()?.name ?: "Unknown"
 
@@ -76,7 +76,7 @@ class CreateDelayedTriggerExecutor : EffectExecutor<CreateDelayedTriggerEffect> 
             notBeforeTurn = notBeforeTurn
         )
 
-        return ExecutionResult.success(state.addDelayedTrigger(delayedTrigger))
+        return EffectResult.success(state.addDelayedTrigger(delayedTrigger))
     }
 
     /**

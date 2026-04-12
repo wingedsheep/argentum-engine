@@ -1,6 +1,6 @@
 package com.wingedsheep.engine.handlers.effects.combat
 
-import com.wingedsheep.engine.core.ExecutionResult
+import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.state.GameState
@@ -24,18 +24,18 @@ class RemoveFromCombatExecutor : EffectExecutor<RemoveFromCombatEffect> {
         state: GameState,
         effect: RemoveFromCombatEffect,
         context: EffectContext
-    ): ExecutionResult {
+    ): EffectResult {
         val targetId = context.resolveTarget(effect.target)
-            ?: return ExecutionResult.success(state)
+            ?: return EffectResult.success(state)
 
         val entity = state.getEntity(targetId)
-            ?: return ExecutionResult.success(state)
+            ?: return EffectResult.success(state)
 
         // Check if this creature is actually in combat
         val isAttacking = entity.has<AttackingComponent>()
         val isBlocking = entity.has<BlockingComponent>()
         if (!isAttacking && !isBlocking) {
-            return ExecutionResult.success(state)
+            return EffectResult.success(state)
         }
 
         // Remove combat components from the target
@@ -91,6 +91,6 @@ class RemoveFromCombatExecutor : EffectExecutor<RemoveFromCombatEffect> {
             }
         }
 
-        return ExecutionResult.success(newState)
+        return EffectResult.success(newState)
     }
 }

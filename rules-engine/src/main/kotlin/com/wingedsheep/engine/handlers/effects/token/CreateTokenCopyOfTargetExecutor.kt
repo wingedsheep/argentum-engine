@@ -1,6 +1,6 @@
 package com.wingedsheep.engine.handlers.effects.token
 
-import com.wingedsheep.engine.core.ExecutionResult
+import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.core.ZoneChangeEvent
 import com.wingedsheep.engine.handlers.DynamicAmountEvaluator
 import com.wingedsheep.engine.handlers.EffectContext
@@ -36,18 +36,18 @@ class CreateTokenCopyOfTargetExecutor(
         state: GameState,
         effect: CreateTokenCopyOfTargetEffect,
         context: EffectContext
-    ): ExecutionResult {
+    ): EffectResult {
         val targetId = context.resolveTarget(effect.target, state)
-            ?: return ExecutionResult.success(state)
+            ?: return EffectResult.success(state)
 
         val targetContainer = state.getEntity(targetId)
-            ?: return ExecutionResult.success(state)
+            ?: return EffectResult.success(state)
 
         val targetCard = targetContainer.get<CardComponent>()
-            ?: return ExecutionResult.success(state)
+            ?: return EffectResult.success(state)
 
         val count = amountEvaluator.evaluate(state, effect.count, context)
-        if (count <= 0) return ExecutionResult.success(state)
+        if (count <= 0) return EffectResult.success(state)
 
         val controllerId = context.controllerId
         var newState = state
@@ -92,6 +92,6 @@ class CreateTokenCopyOfTargetExecutor(
             )
         }
 
-        return ExecutionResult.success(newState, events)
+        return EffectResult.success(newState, events)
     }
 }

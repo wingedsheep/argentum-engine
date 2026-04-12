@@ -1,6 +1,6 @@
 package com.wingedsheep.engine.handlers.effects.combat
 
-import com.wingedsheep.engine.core.ExecutionResult
+import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.mechanics.layers.Layer
@@ -27,16 +27,16 @@ class RedirectNextDamageExecutor : EffectExecutor<RedirectNextDamageEffect> {
         state: GameState,
         effect: RedirectNextDamageEffect,
         context: EffectContext
-    ): ExecutionResult {
+    ): EffectResult {
         val redirectToId = context.resolveTarget(effect.redirectTo)
-            ?: return ExecutionResult.error(state, "Could not resolve redirect target for RedirectNextDamageEffect")
+            ?: return EffectResult.error(state, "Could not resolve redirect target for RedirectNextDamageEffect")
 
         val protectedIds = effect.protectedTargets.mapNotNull { target ->
             context.resolveTarget(target)
         }.toSet()
 
         if (protectedIds.isEmpty()) {
-            return ExecutionResult.error(state, "Could not resolve any protected targets for RedirectNextDamageEffect")
+            return EffectResult.error(state, "Could not resolve any protected targets for RedirectNextDamageEffect")
         }
 
         val newState = state.addFloatingEffect(
@@ -47,6 +47,6 @@ class RedirectNextDamageExecutor : EffectExecutor<RedirectNextDamageEffect> {
             context = context
         )
 
-        return ExecutionResult.success(newState)
+        return EffectResult.success(newState)
     }
 }

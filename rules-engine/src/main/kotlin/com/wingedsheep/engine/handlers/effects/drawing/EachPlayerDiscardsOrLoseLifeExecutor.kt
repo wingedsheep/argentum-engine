@@ -2,7 +2,7 @@ package com.wingedsheep.engine.handlers.effects.drawing
 
 import com.wingedsheep.engine.core.DecisionPhase
 import com.wingedsheep.engine.core.EachPlayerDiscardsOrLoseLifeContinuation
-import com.wingedsheep.engine.core.ExecutionResult
+import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.handlers.DecisionHandler
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
@@ -34,9 +34,9 @@ class EachPlayerDiscardsOrLoseLifeExecutor(
         state: GameState,
         effect: EachPlayerDiscardsOrLoseLifeEffect,
         context: EffectContext
-    ): ExecutionResult {
+    ): EffectResult {
         val activePlayer = state.activePlayerId
-            ?: return ExecutionResult.error(state, "No active player")
+            ?: return EffectResult.error(state, "No active player")
 
         val playerOrder = listOf(activePlayer) + state.turnOrder.filter { it != activePlayer }
 
@@ -57,7 +57,7 @@ class EachPlayerDiscardsOrLoseLifeExecutor(
         currentPlayerIndex: Int,
         discardedCreature: Map<EntityId, Boolean>,
         lifeLoss: Int
-    ): ExecutionResult {
+    ): EffectResult {
         val playerId = playerOrder[currentPlayerIndex]
         val handZone = ZoneKey(playerId, Zone.HAND)
         val hand = state.getZone(handZone)
@@ -99,11 +99,11 @@ class EachPlayerDiscardsOrLoseLifeExecutor(
                     discardedCreature = newDiscardedCreature,
                     lifeLoss = lifeLoss
                 )
-                ExecutionResult(nextResult.state, events + nextResult.events, nextResult.error)
+                EffectResult(nextResult.state, events + nextResult.events, nextResult.error)
             } else {
                 // All done, apply life loss
                 val lifeLossResult = applyLifeLoss(newState, newDiscardedCreature, lifeLoss)
-                ExecutionResult(lifeLossResult.state, events + lifeLossResult.events, lifeLossResult.error)
+                EffectResult(lifeLossResult.state, events + lifeLossResult.events, lifeLossResult.error)
             }
         }
 
@@ -140,7 +140,7 @@ class EachPlayerDiscardsOrLoseLifeExecutor(
 
         val stateWithContinuation = decisionResult.state.pushContinuation(continuation)
 
-        return ExecutionResult.paused(
+        return EffectResult.paused(
             stateWithContinuation,
             decisionResult.pendingDecision,
             decisionResult.events
@@ -154,7 +154,7 @@ class EachPlayerDiscardsOrLoseLifeExecutor(
         currentPlayerIndex: Int,
         discardedCreature: Map<EntityId, Boolean>,
         lifeLoss: Int
-    ): ExecutionResult {
+    ): EffectResult {
         val nextIndex = currentPlayerIndex + 1
         return if (nextIndex < playerOrder.size) {
             askPlayerToDiscard(
@@ -178,7 +178,7 @@ class EachPlayerDiscardsOrLoseLifeExecutor(
             state: GameState,
             discardedCreature: Map<EntityId, Boolean>,
             lifeLoss: Int
-        ): ExecutionResult {
+        ): EffectResult {
             var currentState = state
             val events = mutableListOf<com.wingedsheep.engine.core.GameEvent>()
 
@@ -201,7 +201,7 @@ class EachPlayerDiscardsOrLoseLifeExecutor(
                 }
             }
 
-            return ExecutionResult.success(currentState, events)
+            return EffectResult.success(currentState, events)
         }
     }
 }

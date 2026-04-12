@@ -28,7 +28,7 @@ import kotlin.reflect.KClass
  */
 class ChainCopyExecutor(
     private val targetFinder: TargetFinder = TargetFinder(),
-    private val effectExecutor: (GameState, Effect, EffectContext) -> ExecutionResult
+    private val effectExecutor: (GameState, Effect, EffectContext) -> EffectResult
 ) : EffectExecutor<ChainCopyEffect> {
 
     override val effectType: KClass<ChainCopyEffect> = ChainCopyEffect::class
@@ -37,10 +37,10 @@ class ChainCopyExecutor(
         state: GameState,
         effect: ChainCopyEffect,
         context: EffectContext
-    ): ExecutionResult {
+    ): EffectResult {
         // Step 1: Determine who gets the copy offer BEFORE executing the action
         val recipientPlayerId = resolveRecipient(state, effect, context)
-            ?: return ExecutionResult.success(state)
+            ?: return EffectResult.success(state)
 
         // Step 2: Pre-push after-action continuation (sits below any inner continuations)
         val afterActionContinuation = ChainCopyAfterActionContinuation(
@@ -119,10 +119,10 @@ class ChainCopyExecutor(
         recipientPlayerId: EntityId,
         effect: ChainCopyEffect,
         context: EffectContext
-    ): ExecutionResult {
+    ): EffectResult {
         // Check cost prerequisites
         if (!canPayCopyCost(state, recipientPlayerId, effect.copyCost)) {
-            return ExecutionResult.success(state, events)
+            return EffectResult.success(state, events)
         }
 
         // Check if there are valid targets for a potential copy
@@ -130,7 +130,7 @@ class ChainCopyExecutor(
             state, effect.copyTargetRequirement, recipientPlayerId, context.sourceId
         )
         if (legalTargets.isEmpty()) {
-            return ExecutionResult.success(state, events)
+            return EffectResult.success(state, events)
         }
 
         // Build the yes/no decision
@@ -174,7 +174,7 @@ class ChainCopyExecutor(
 
         val newState = state.withPendingDecision(decision).pushContinuation(continuation)
 
-        return ExecutionResult.paused(
+        return EffectResult.paused(
             newState,
             decision,
             events + listOf(

@@ -32,15 +32,15 @@ class ReturnOneFromLinkedExileExecutor : EffectExecutor<ReturnOneFromLinkedExile
         state: GameState,
         effect: ReturnOneFromLinkedExileEffect,
         context: EffectContext
-    ): ExecutionResult {
+    ): EffectResult {
         val sourceId = context.sourceId
-            ?: return ExecutionResult.success(state)
+            ?: return EffectResult.success(state)
 
         // Read the LinkedExileComponent from the source entity
         val sourceContainer = state.getEntity(sourceId)
-            ?: return ExecutionResult.success(state)
+            ?: return EffectResult.success(state)
         val linkedExile = sourceContainer.get<LinkedExileComponent>()
-            ?: return ExecutionResult.success(state)
+            ?: return EffectResult.success(state)
 
         // Find which linked cards are still in exile
         val allLinkedCards = linkedExile.exiledIds.filter { entityId ->
@@ -50,12 +50,12 @@ class ReturnOneFromLinkedExileExecutor : EffectExecutor<ReturnOneFromLinkedExile
         // If no cards remain in exile, remove the global triggered ability
         if (allLinkedCards.isEmpty()) {
             val newState = removeGlobalAbilityForSource(state, sourceId)
-            return ExecutionResult.success(newState)
+            return EffectResult.success(newState)
         }
 
         // The active player (whose upkeep it is) is the triggering entity
         val activePlayerId = context.triggeringEntityId
-            ?: return ExecutionResult.success(state)
+            ?: return EffectResult.success(state)
 
         // Find cards owned by the active player
         val playerCards = allLinkedCards.filter { entityId ->
@@ -66,7 +66,7 @@ class ReturnOneFromLinkedExileExecutor : EffectExecutor<ReturnOneFromLinkedExile
         }
 
         if (playerCards.isEmpty()) {
-            return ExecutionResult.success(state)
+            return EffectResult.success(state)
         }
 
         if (playerCards.size == 1) {
@@ -115,7 +115,7 @@ class ReturnOneFromLinkedExileExecutor : EffectExecutor<ReturnOneFromLinkedExile
         val stateWithDecision = state.withPendingDecision(decision)
         val stateWithContinuation = stateWithDecision.pushContinuation(continuation)
 
-        return ExecutionResult.paused(
+        return EffectResult.paused(
             stateWithContinuation,
             decision,
             listOf(
@@ -134,18 +134,18 @@ class ReturnOneFromLinkedExileExecutor : EffectExecutor<ReturnOneFromLinkedExile
             state: GameState,
             cardId: EntityId,
             sourceId: EntityId
-        ): ExecutionResult {
+        ): EffectResult {
             val container = state.getEntity(cardId)
-                ?: return ExecutionResult.success(state)
+                ?: return EffectResult.success(state)
             val cardComponent = container.get<CardComponent>()
-                ?: return ExecutionResult.success(state)
+                ?: return EffectResult.success(state)
 
             val ownerId = container.get<OwnerComponent>()?.playerId
                 ?: cardComponent.ownerId
-                ?: return ExecutionResult.success(state)
+                ?: return EffectResult.success(state)
 
             val currentZone = state.zones.entries.find { (_, cards) -> cardId in cards }?.key
-                ?: return ExecutionResult.success(state)
+                ?: return EffectResult.success(state)
 
             val battlefieldZone = ZoneKey(ownerId, Zone.BATTLEFIELD)
 
@@ -174,7 +174,7 @@ class ReturnOneFromLinkedExileExecutor : EffectExecutor<ReturnOneFromLinkedExile
                 }
             }
 
-            return ExecutionResult.success(newState, events)
+            return EffectResult.success(newState, events)
         }
 
         fun removeGlobalAbilityForSource(state: GameState, sourceId: EntityId): GameState {

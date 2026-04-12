@@ -1,6 +1,6 @@
 package com.wingedsheep.engine.handlers.effects.life
 
-import com.wingedsheep.engine.core.ExecutionResult
+import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.core.LifeChangedEvent
 import com.wingedsheep.engine.core.LifeChangeReason
 import com.wingedsheep.engine.core.GameEvent as EngineGameEvent
@@ -30,10 +30,10 @@ class SetLifeTotalExecutor(
         state: GameState,
         effect: SetLifeTotalEffect,
         context: EffectContext
-    ): ExecutionResult {
+    ): EffectResult {
         val playerIds = context.resolvePlayerTargets(effect.target, state)
         if (playerIds.isEmpty()) {
-            return ExecutionResult.error(state, "Could not resolve target for SetLifeTotal")
+            return EffectResult.error(state, "Could not resolve target for SetLifeTotal")
         }
 
         var newState = state
@@ -61,6 +61,6 @@ class SetLifeTotalExecutor(
             }
         }
 
-        return ExecutionResult.success(newState, events)
+        return EffectResult.success(newState, events)
     }
 }

@@ -1,6 +1,6 @@
 package com.wingedsheep.engine.handlers.effects.zones
 
-import com.wingedsheep.engine.core.ExecutionResult
+import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.core.ZoneChangeEvent
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
@@ -29,8 +29,8 @@ class ReturnCreaturesPutInGraveyardThisTurnExecutor : EffectExecutor<ReturnCreat
         state: GameState,
         effect: ReturnCreaturesPutInGraveyardThisTurnEffect,
         context: EffectContext
-    ): ExecutionResult {
-        val playerId = resolvePlayer(effect.player, context) ?: return ExecutionResult.success(state)
+    ): EffectResult {
+        val playerId = resolvePlayer(effect.player, context) ?: return EffectResult.success(state)
         val graveyardKey = ZoneKey(playerId, Zone.GRAVEYARD)
         val graveyardIds = state.getZone(graveyardKey)
 
@@ -43,7 +43,7 @@ class ReturnCreaturesPutInGraveyardThisTurnExecutor : EffectExecutor<ReturnCreat
         }
 
         if (creaturesToReturn.isEmpty()) {
-            return ExecutionResult.success(state)
+            return EffectResult.success(state)
         }
 
         var newState = state
@@ -68,7 +68,7 @@ class ReturnCreaturesPutInGraveyardThisTurnExecutor : EffectExecutor<ReturnCreat
             )
         }
 
-        return ExecutionResult.success(newState, events)
+        return EffectResult.success(newState, events)
     }
 
     private fun resolvePlayer(player: Player, context: EffectContext) = when (player) {

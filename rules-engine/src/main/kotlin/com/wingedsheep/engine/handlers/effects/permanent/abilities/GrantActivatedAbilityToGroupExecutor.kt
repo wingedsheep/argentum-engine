@@ -1,6 +1,6 @@
 package com.wingedsheep.engine.handlers.effects.permanent.abilities
 
-import com.wingedsheep.engine.core.ExecutionResult
+import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.event.GrantedActivatedAbility
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
@@ -23,13 +23,13 @@ class GrantActivatedAbilityToGroupExecutor : EffectExecutor<GrantActivatedAbilit
         state: GameState,
         effect: GrantActivatedAbilityToGroupEffect,
         context: EffectContext
-    ): ExecutionResult {
+    ): EffectResult {
         val filter = effect.filter
         val excludeSelfId = if (filter.excludeSelf) context.sourceId else null
         val matched = BattlefieldFilterUtils.findMatchingOnBattlefield(state, filter.baseFilter, context, excludeSelfId)
 
         if (matched.isEmpty()) {
-            return ExecutionResult.success(state)
+            return EffectResult.success(state)
         }
 
         val grants = matched.map { entityId ->
@@ -44,6 +44,6 @@ class GrantActivatedAbilityToGroupExecutor : EffectExecutor<GrantActivatedAbilit
             grantedActivatedAbilities = state.grantedActivatedAbilities + grants
         )
 
-        return ExecutionResult.success(newState)
+        return EffectResult.success(newState)
     }
 }

@@ -1,6 +1,6 @@
 package com.wingedsheep.engine.handlers.effects.regeneration
 
-import com.wingedsheep.engine.core.ExecutionResult
+import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.mechanics.layers.Layer
@@ -26,9 +26,9 @@ class CantBeRegeneratedExecutor : EffectExecutor<CantBeRegeneratedEffect> {
         state: GameState,
         effect: CantBeRegeneratedEffect,
         context: EffectContext
-    ): ExecutionResult {
+    ): EffectResult {
         val targetId = context.resolveTarget(effect.target)
-            ?: return ExecutionResult.error(state, "No valid target for can't be regenerated")
+            ?: return EffectResult.error(state, "No valid target for can't be regenerated")
 
         val newState = state.addFloatingEffect(
             layer = Layer.ABILITY,
@@ -38,6 +38,6 @@ class CantBeRegeneratedExecutor : EffectExecutor<CantBeRegeneratedEffect> {
             context = context
         )
 
-        return ExecutionResult.success(newState)
+        return EffectResult.success(newState)
     }
 }

@@ -1,6 +1,6 @@
 package com.wingedsheep.engine.handlers.effects.permanent.tapping
 
-import com.wingedsheep.engine.core.ExecutionResult
+import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.core.TappedEvent
 import com.wingedsheep.engine.core.GameEvent as EngineGameEvent
 import com.wingedsheep.engine.handlers.EffectContext
@@ -27,7 +27,7 @@ class TapTargetCreaturesExecutor : EffectExecutor<TapTargetCreaturesEffect> {
         state: GameState,
         effect: TapTargetCreaturesEffect,
         context: EffectContext
-    ): ExecutionResult {
+    ): EffectResult {
         var newState = state
         val events = mutableListOf<EngineGameEvent>()
 
@@ -45,6 +45,6 @@ class TapTargetCreaturesExecutor : EffectExecutor<TapTargetCreaturesEffect> {
             events.add(TappedEvent(entityId, cardComponent.name))
         }
 
-        return ExecutionResult.success(newState, events)
+        return EffectResult.success(newState, events)
     }
 }

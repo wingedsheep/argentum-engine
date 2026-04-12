@@ -27,7 +27,7 @@ class ChooseOptionPipelineExecutor : EffectExecutor<ChooseOptionEffect> {
         state: GameState,
         effect: ChooseOptionEffect,
         context: EffectContext
-    ): ExecutionResult {
+    ): EffectResult {
         val controllerId = context.controllerId
         val sourceName = context.sourceId?.let { state.getEntity(it)?.get<CardComponent>()?.name }
 
@@ -71,7 +71,7 @@ class ChooseOptionPipelineExecutor : EffectExecutor<ChooseOptionEffect> {
         val stateWithDecision = state.withPendingDecision(decision)
         val stateWithContinuation = stateWithDecision.pushContinuation(continuation)
 
-        return ExecutionResult.paused(
+        return EffectResult.paused(
             stateWithContinuation,
             decision,
             listOf(

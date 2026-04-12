@@ -1,6 +1,6 @@
 package com.wingedsheep.engine.handlers.effects.permanent.abilities
 
-import com.wingedsheep.engine.core.ExecutionResult
+import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.mechanics.layers.Layer
@@ -23,17 +23,17 @@ class RemoveAllAbilitiesExecutor : EffectExecutor<RemoveAllAbilitiesEffect> {
         state: GameState,
         effect: RemoveAllAbilitiesEffect,
         context: EffectContext
-    ): ExecutionResult {
+    ): EffectResult {
         val targetId = context.resolveTarget(effect.target)
-            ?: return ExecutionResult.error(state, "No valid target for remove abilities")
+            ?: return EffectResult.error(state, "No valid target for remove abilities")
 
         val targetContainer = state.getEntity(targetId)
-            ?: return ExecutionResult.error(state, "Target creature no longer exists")
+            ?: return EffectResult.error(state, "Target creature no longer exists")
         val cardComponent = targetContainer.get<CardComponent>()
-            ?: return ExecutionResult.error(state, "Target is not a card")
+            ?: return EffectResult.error(state, "Target is not a card")
         val projected = state.projectedState
         if (!projected.isCreature(targetId)) {
-            return ExecutionResult.error(state, "Target is not a creature")
+            return EffectResult.error(state, "Target is not a creature")
         }
 
         val newState = state.addFloatingEffect(
@@ -44,6 +44,6 @@ class RemoveAllAbilitiesExecutor : EffectExecutor<RemoveAllAbilitiesEffect> {
             context = context
         )
 
-        return ExecutionResult.success(newState, emptyList())
+        return EffectResult.success(newState, emptyList())
     }
 }

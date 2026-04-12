@@ -37,13 +37,13 @@ class ChangeCreatureTypeTextExecutor(
         state: GameState,
         effect: ChangeCreatureTypeTextEffect,
         context: EffectContext
-    ): ExecutionResult {
+    ): EffectResult {
         val targetId = context.resolveTarget(effect.target)
-            ?: return ExecutionResult.success(state.tick())
+            ?: return EffectResult.success(state.tick())
 
         // Target must still exist (on battlefield or stack)
         if (targetId !in state.getBattlefield() && targetId !in state.stack) {
-            return ExecutionResult.success(state.tick())
+            return EffectResult.success(state.tick())
         }
 
         val allCreatureTypes = Subtype.ALL_CREATURE_TYPES
@@ -82,7 +82,7 @@ class ChangeCreatureTypeTextExecutor(
         val stateWithDecision = state.withPendingDecision(decision)
         val stateWithContinuation = stateWithDecision.pushContinuation(continuation)
 
-        return ExecutionResult.paused(
+        return EffectResult.paused(
             stateWithContinuation,
             decision,
             listOf(

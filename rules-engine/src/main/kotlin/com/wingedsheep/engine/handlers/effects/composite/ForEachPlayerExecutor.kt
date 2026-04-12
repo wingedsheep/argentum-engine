@@ -21,7 +21,7 @@ import kotlin.reflect.KClass
  * Uses the same pre-push/pop continuation pattern as ForEachTargetExecutor.
  */
 class ForEachPlayerExecutor(
-    private val effectExecutor: (GameState, Effect, EffectContext) -> ExecutionResult
+    private val effectExecutor: (GameState, Effect, EffectContext) -> EffectResult
 ) : EffectExecutor<ForEachPlayerEffect> {
 
     override val effectType: KClass<ForEachPlayerEffect> = ForEachPlayerEffect::class
@@ -30,10 +30,10 @@ class ForEachPlayerExecutor(
         state: GameState,
         effect: ForEachPlayerEffect,
         context: EffectContext
-    ): ExecutionResult {
+    ): EffectResult {
         val playerIds = resolvePlayers(effect.players, state, context)
         if (playerIds.isEmpty()) {
-            return ExecutionResult.success(state)
+            return EffectResult.success(state)
         }
 
         return processPlayers(state, effect.effects, playerIds, context)
@@ -48,7 +48,7 @@ class ForEachPlayerExecutor(
         effects: List<Effect>,
         players: List<EntityId>,
         outerContext: EffectContext
-    ): ExecutionResult {
+    ): EffectResult {
         var currentState = state
         val allEvents = mutableListOf<GameEvent>()
 
@@ -80,7 +80,7 @@ class ForEachPlayerExecutor(
 
             if (result.isPaused) {
                 // Sub-effect needs a decision. ForEachPlayerContinuation is underneath.
-                return ExecutionResult.paused(
+                return EffectResult.paused(
                     result.state,
                     result.pendingDecision!!,
                     allEvents + result.events
@@ -97,7 +97,7 @@ class ForEachPlayerExecutor(
             allEvents.addAll(result.events)
         }
 
-        return ExecutionResult.success(currentState, allEvents)
+        return EffectResult.success(currentState, allEvents)
     }
 
     /**
@@ -108,7 +108,7 @@ class ForEachPlayerExecutor(
         state: GameState,
         effects: List<Effect>,
         context: EffectContext
-    ): ExecutionResult {
+    ): EffectResult {
         var currentState = state
         var currentContext = context
         val allEvents = mutableListOf<GameEvent>()
@@ -142,7 +142,7 @@ class ForEachPlayerExecutor(
             }
 
             if (result.isPaused) {
-                return ExecutionResult.paused(
+                return EffectResult.paused(
                     result.state,
                     result.pendingDecision!!,
                     allEvents + result.events
@@ -167,7 +167,7 @@ class ForEachPlayerExecutor(
             }
         }
 
-        return ExecutionResult.success(currentState, allEvents)
+        return EffectResult.success(currentState, allEvents)
     }
 
     private fun resolvePlayers(player: Player, state: GameState, context: EffectContext): List<EntityId> {

@@ -1,6 +1,6 @@
 package com.wingedsheep.engine.handlers.effects.chain
 
-import com.wingedsheep.engine.core.ExecutionResult
+import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.handlers.effects.ExecutorModule
@@ -15,11 +15,11 @@ import com.wingedsheep.sdk.scripting.effects.Effect
  * the inner action to the registry).
  */
 class ChainExecutors : ExecutorModule {
-    private lateinit var effectExecutor: (GameState, Effect, EffectContext) -> ExecutionResult
+    private lateinit var effectExecutor: (GameState, Effect, EffectContext) -> EffectResult
 
     private val chainCopyExecutor by lazy { ChainCopyExecutor(effectExecutor = effectExecutor) }
 
-    fun initialize(executor: (GameState, Effect, EffectContext) -> ExecutionResult) {
+    fun initialize(executor: (GameState, Effect, EffectContext) -> EffectResult) {
         effectExecutor = executor
     }
 

@@ -1,6 +1,6 @@
 package com.wingedsheep.engine.handlers.effects.permanent.stats
 
-import com.wingedsheep.engine.core.ExecutionResult
+import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.mechanics.layers.Layer
@@ -23,12 +23,12 @@ class SetBasePowerToughnessExecutor : EffectExecutor<SetBasePowerToughnessEffect
         state: GameState,
         effect: SetBasePowerToughnessEffect,
         context: EffectContext
-    ): ExecutionResult {
+    ): EffectResult {
         val targetId = context.resolveTarget(effect.target, state)
-            ?: return ExecutionResult.success(state)
+            ?: return EffectResult.success(state)
 
         if (targetId !in state.getBattlefield()) {
-            return ExecutionResult.success(state)
+            return EffectResult.success(state)
         }
 
         val newState = state.addFloatingEffect(
@@ -40,6 +40,6 @@ class SetBasePowerToughnessExecutor : EffectExecutor<SetBasePowerToughnessEffect
             sublayer = Sublayer.SET_VALUES
         )
 
-        return ExecutionResult.success(newState)
+        return EffectResult.success(newState)
     }
 }

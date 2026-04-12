@@ -1,6 +1,6 @@
 package com.wingedsheep.engine.handlers.effects.combat
 
-import com.wingedsheep.engine.core.ExecutionResult
+import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.mechanics.layers.Layer
@@ -26,7 +26,7 @@ class CantBlockGroupExecutor : EffectExecutor<CantBlockGroupEffect> {
         state: GameState,
         effect: CantBlockGroupEffect,
         context: EffectContext
-    ): ExecutionResult {
+    ): EffectResult {
         val newState = state.addFloatingEffect(
             layer = Layer.ABILITY,
             modification = SerializableModification.SetCantBlock,
@@ -36,6 +36,6 @@ class CantBlockGroupExecutor : EffectExecutor<CantBlockGroupEffect> {
             dynamicGroupFilter = effect.filter
         )
 
-        return ExecutionResult.success(newState)
+        return EffectResult.success(newState)
     }
 }

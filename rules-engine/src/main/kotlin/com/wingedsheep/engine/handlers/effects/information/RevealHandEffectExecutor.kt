@@ -1,6 +1,6 @@
 package com.wingedsheep.engine.handlers.effects.information
 
-import com.wingedsheep.engine.core.ExecutionResult
+import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.core.HandRevealedEvent
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
@@ -25,16 +25,16 @@ class RevealHandEffectExecutor : EffectExecutor<RevealHandEffect> {
         state: GameState,
         effect: RevealHandEffect,
         context: EffectContext
-    ): ExecutionResult {
+    ): EffectResult {
         val targetPlayerId = context.resolvePlayerTarget(effect.target)
-            ?: return ExecutionResult.error(state, "No valid target player for reveal hand")
+            ?: return EffectResult.error(state, "No valid target player for reveal hand")
 
         // Get all cards in the target player's hand
         val handCards = state.getHand(targetPlayerId)
 
         if (handCards.isEmpty()) {
             // Empty hand - nothing to reveal, but still emit event
-            return ExecutionResult.success(
+            return EffectResult.success(
                 state,
                 listOf(HandRevealedEvent(targetPlayerId, emptyList()))
             )
@@ -62,7 +62,7 @@ class RevealHandEffectExecutor : EffectExecutor<RevealHandEffect> {
             }
         }
 
-        return ExecutionResult.success(
+        return EffectResult.success(
             newState,
             listOf(HandRevealedEvent(targetPlayerId, handCards))
         )

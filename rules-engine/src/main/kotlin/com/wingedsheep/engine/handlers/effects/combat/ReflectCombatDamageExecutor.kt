@@ -1,6 +1,6 @@
 package com.wingedsheep.engine.handlers.effects.combat
 
-import com.wingedsheep.engine.core.ExecutionResult
+import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.mechanics.layers.Layer
@@ -28,7 +28,7 @@ class ReflectCombatDamageExecutor : EffectExecutor<ReflectCombatDamageEffect> {
         state: GameState,
         effect: ReflectCombatDamageEffect,
         context: EffectContext
-    ): ExecutionResult {
+    ): EffectResult {
         // The protected player is the controller of the spell (the player casting Harsh Justice)
         val protectedPlayerId = context.controllerId
 
@@ -43,6 +43,6 @@ class ReflectCombatDamageExecutor : EffectExecutor<ReflectCombatDamageEffect> {
             context = context
         )
 
-        return ExecutionResult.success(newState)
+        return EffectResult.success(newState)
     }
 }

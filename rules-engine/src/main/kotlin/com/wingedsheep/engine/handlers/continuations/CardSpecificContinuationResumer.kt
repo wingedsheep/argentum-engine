@@ -141,7 +141,7 @@ class CardSpecificContinuationResumer(
             opponentId = state.turnOrder.firstOrNull { it != playerId },
             xValue = bidAmount
         )
-        return services.effectExecutorRegistry.execute(state, effect, context)
+        return services.effectExecutorRegistry.execute(state, effect, context).toExecutionResult()
     }
 
     fun resumeReadTheRunes(
@@ -162,11 +162,11 @@ class CardSpecificContinuationResumer(
                 if (selectedCards.isNotEmpty()) {
                     // Player chose to sacrifice a permanent
                     val permanentId = selectedCards.first()
-                    val result = ReadTheRunesExecutor.sacrificePermanent(state, playerId, permanentId)
+                    val result = ReadTheRunesExecutor.sacrificePermanent(state, playerId, permanentId).toExecutionResult()
                     val loopResult = ReadTheRunesExecutor.startChoiceLoop(
                         result.state, playerId, continuation.sourceId, continuation.sourceName,
                         continuation.remainingChoices - 1
-                    )
+                    ).toExecutionResult()
                     if (loopResult.isPaused) {
                         ExecutionResult.paused(
                             loopResult.state,
@@ -184,18 +184,18 @@ class CardSpecificContinuationResumer(
                         val loopResult = ReadTheRunesExecutor.startChoiceLoop(
                             state, playerId, continuation.sourceId, continuation.sourceName,
                             continuation.remainingChoices - 1
-                        )
+                        ).toExecutionResult()
                         if (loopResult.isPaused) {
                             return loopResult
                         }
                         checkForMore(loopResult.state, loopResult.events)
                     } else if (hand.size == 1) {
                         // Auto-discard only card
-                        val result = ReadTheRunesExecutor.discardCard(state, playerId, hand.first())
+                        val result = ReadTheRunesExecutor.discardCard(state, playerId, hand.first()).toExecutionResult()
                         val loopResult = ReadTheRunesExecutor.startChoiceLoop(
                             result.state, playerId, continuation.sourceId, continuation.sourceName,
                             continuation.remainingChoices - 1
-                        )
+                        ).toExecutionResult()
                         if (loopResult.isPaused) {
                             ExecutionResult.paused(
                                 loopResult.state,
@@ -244,11 +244,11 @@ class CardSpecificContinuationResumer(
                     return ExecutionResult.error(state, "Must select a card to discard for Read the Runes")
                 }
                 val cardId = selectedCards.first()
-                val result = ReadTheRunesExecutor.discardCard(state, playerId, cardId)
+                val result = ReadTheRunesExecutor.discardCard(state, playerId, cardId).toExecutionResult()
                 val loopResult = ReadTheRunesExecutor.startChoiceLoop(
                     result.state, playerId, continuation.sourceId, continuation.sourceName,
                     continuation.remainingChoices - 1
-                )
+                ).toExecutionResult()
                 if (loopResult.isPaused) {
                     ExecutionResult.paused(
                         loopResult.state,

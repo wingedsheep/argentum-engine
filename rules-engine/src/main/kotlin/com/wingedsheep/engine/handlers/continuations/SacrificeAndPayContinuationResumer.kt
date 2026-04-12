@@ -177,7 +177,7 @@ class SacrificeAndPayContinuationResumer(
                 targets = continuation.targets,
                 pipeline = PipelineState(namedTargets = continuation.namedTargets)
             )
-            val result = services.effectExecutorRegistry.execute(state, continuation.sufferEffect, context)
+            val result = services.effectExecutorRegistry.execute(state, continuation.sufferEffect, context).toExecutionResult()
             return if (result.isPaused) result else checkForMore(result.state, result.events.toList())
         }
 
@@ -194,7 +194,7 @@ class SacrificeAndPayContinuationResumer(
             targets = continuation.targets,
             pipeline = PipelineState(namedTargets = continuation.namedTargets)
         )
-        val result = services.effectExecutorRegistry.execute(state, singleCostEffect, context)
+        val result = services.effectExecutorRegistry.execute(state, singleCostEffect, context).toExecutionResult()
         return if (result.isPaused) result else checkForMore(result.state, result.events.toList())
     }
 
@@ -506,7 +506,7 @@ class SacrificeAndPayContinuationResumer(
         )
 
         // Execute the suffer effect using the registry
-        val result = services.effectExecutorRegistry.execute(state, sufferEffect, context)
+        val result = services.effectExecutorRegistry.execute(state, sufferEffect, context).toExecutionResult()
 
         return if (result.isPaused) {
             result
@@ -553,7 +553,7 @@ class SacrificeAndPayContinuationResumer(
                 controllerId = continuation.controllerId,
                 opponentId = null
             )
-            val consequenceResult = services.effectExecutorRegistry.execute(newState, continuation.consequence, context)
+            val consequenceResult = services.effectExecutorRegistry.execute(newState, continuation.consequence, context).toExecutionResult()
             val allEvents = events + consequenceResult.events
 
             return if (consequenceResult.isPaused) {

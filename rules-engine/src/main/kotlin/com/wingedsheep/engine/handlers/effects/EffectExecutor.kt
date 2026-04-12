@@ -1,6 +1,6 @@
 package com.wingedsheep.engine.handlers.effects
 
-import com.wingedsheep.engine.core.ExecutionResult
+import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.sdk.scripting.effects.Effect
@@ -27,7 +27,7 @@ interface EffectExecutor<T : Effect> {
      * @param state The current game state
      * @param effect The effect to execute
      * @param context The execution context (source, controller, targets, etc.)
-     * @return The execution result with new state and events
+     * @return The effect result with new state, events, and any pipeline updates
      */
-    fun execute(state: GameState, effect: T, context: EffectContext): ExecutionResult
+    fun execute(state: GameState, effect: T, context: EffectContext): EffectResult
 }

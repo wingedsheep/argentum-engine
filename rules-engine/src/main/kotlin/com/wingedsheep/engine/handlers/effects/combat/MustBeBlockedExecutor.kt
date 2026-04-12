@@ -1,6 +1,6 @@
 package com.wingedsheep.engine.handlers.effects.combat
 
-import com.wingedsheep.engine.core.ExecutionResult
+import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.mechanics.layers.Layer
@@ -28,18 +28,18 @@ class MustBeBlockedExecutor : EffectExecutor<MustBeBlockedEffect> {
         state: GameState,
         effect: MustBeBlockedEffect,
         context: EffectContext
-    ): ExecutionResult {
+    ): EffectResult {
         // Resolve the target creature
         val targetId = context.resolveTarget(effect.target)
-            ?: return ExecutionResult.error(state, "No valid target for must-be-blocked effect")
+            ?: return EffectResult.error(state, "No valid target for must-be-blocked effect")
 
         // Verify target exists and is a creature
         val targetContainer = state.getEntity(targetId)
-            ?: return ExecutionResult.error(state, "Target creature no longer exists")
+            ?: return EffectResult.error(state, "Target creature no longer exists")
         val cardComponent = targetContainer.get<CardComponent>()
-            ?: return ExecutionResult.error(state, "Target is not a card")
+            ?: return EffectResult.error(state, "Target is not a card")
         if (!cardComponent.typeLine.isCreature) {
-            return ExecutionResult.error(state, "Target is not a creature")
+            return EffectResult.error(state, "Target is not a creature")
         }
 
         // Create a floating effect marking this creature as "must be blocked"
@@ -57,6 +57,6 @@ class MustBeBlockedExecutor : EffectExecutor<MustBeBlockedEffect> {
             context = context
         )
 
-        return ExecutionResult.success(newState)
+        return EffectResult.success(newState)
     }
 }

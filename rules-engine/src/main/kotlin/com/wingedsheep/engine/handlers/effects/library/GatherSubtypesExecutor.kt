@@ -1,6 +1,6 @@
 package com.wingedsheep.engine.handlers.effects.library
 
-import com.wingedsheep.engine.core.ExecutionResult
+import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.state.GameState
@@ -26,9 +26,9 @@ class GatherSubtypesExecutor : EffectExecutor<GatherSubtypesEffect> {
         state: GameState,
         effect: GatherSubtypesEffect,
         context: EffectContext
-    ): ExecutionResult {
+    ): EffectResult {
         val entities = context.pipeline.storedCollections[effect.from]
-            ?: return ExecutionResult.error(state, "No collection named '${effect.from}' in storedCollections")
+            ?: return EffectResult.error(state, "No collection named '${effect.from}' in storedCollections")
 
         val projected = state.projectedState
         val subtypeGroups = entities.map { entityId ->
@@ -43,7 +43,7 @@ class GatherSubtypesExecutor : EffectExecutor<GatherSubtypesEffect> {
             }
         }
 
-        return ExecutionResult.success(state).copy(
+        return EffectResult.success(state).copy(
             updatedSubtypeGroups = mapOf(effect.storeAs to subtypeGroups)
         )
     }

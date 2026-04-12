@@ -1,6 +1,6 @@
 package com.wingedsheep.engine.handlers.effects.combat
 
-import com.wingedsheep.engine.core.ExecutionResult
+import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.mechanics.layers.Layer
@@ -29,27 +29,27 @@ class ProvokeExecutor : EffectExecutor<ProvokeEffect> {
         state: GameState,
         effect: ProvokeEffect,
         context: EffectContext
-    ): ExecutionResult {
+    ): EffectResult {
         val targetId = context.resolveTarget(effect.target)
-            ?: return ExecutionResult.error(state, "No valid target for provoke effect")
+            ?: return EffectResult.error(state, "No valid target for provoke effect")
 
         val targetContainer = state.getEntity(targetId)
-            ?: return ExecutionResult.error(state, "Target creature no longer exists")
+            ?: return EffectResult.error(state, "Target creature no longer exists")
         val cardComponent = targetContainer.get<CardComponent>()
-            ?: return ExecutionResult.error(state, "Target is not a card")
+            ?: return EffectResult.error(state, "Target is not a card")
         if (!cardComponent.typeLine.isCreature) {
-            return ExecutionResult.error(state, "Target is not a creature")
+            return EffectResult.error(state, "Target is not a creature")
         }
 
         // The source is the creature with provoke (the attacker)
         val sourceId = context.sourceId
-            ?: return ExecutionResult.error(state, "No source for provoke effect")
+            ?: return EffectResult.error(state, "No source for provoke effect")
 
         // Verify source is attacking
         val sourceContainer = state.getEntity(sourceId)
-            ?: return ExecutionResult.error(state, "Source creature no longer exists")
+            ?: return EffectResult.error(state, "Source creature no longer exists")
         if (!sourceContainer.has<AttackingComponent>()) {
-            return ExecutionResult.error(state, "Source creature is not attacking")
+            return EffectResult.error(state, "Source creature is not attacking")
         }
 
         // Step 1: Untap the target creature
@@ -66,6 +66,6 @@ class ProvokeExecutor : EffectExecutor<ProvokeEffect> {
             context = context
         )
 
-        return ExecutionResult.success(newState)
+        return EffectResult.success(newState)
     }
 }

@@ -1,6 +1,6 @@
 package com.wingedsheep.engine.handlers.effects.composite
 
-import com.wingedsheep.engine.core.ExecutionResult
+import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.handlers.DynamicAmountEvaluator
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
@@ -19,7 +19,7 @@ import kotlin.reflect.KClass
  * for pause/resume) without needing a dedicated continuation type.
  */
 class RepeatDynamicTimesExecutor(
-    private val effectExecutor: (GameState, Effect, EffectContext) -> ExecutionResult,
+    private val effectExecutor: (GameState, Effect, EffectContext) -> EffectResult,
     private val amountEvaluator: DynamicAmountEvaluator = DynamicAmountEvaluator()
 ) : EffectExecutor<RepeatDynamicTimesEffect> {
 
@@ -29,9 +29,9 @@ class RepeatDynamicTimesExecutor(
         state: GameState,
         effect: RepeatDynamicTimesEffect,
         context: EffectContext
-    ): ExecutionResult {
+    ): EffectResult {
         val count = amountEvaluator.evaluate(state, effect.amount, context)
-        if (count <= 0) return ExecutionResult.success(state)
+        if (count <= 0) return EffectResult.success(state)
 
         val repeatedEffects = (1..count).map { effect.body }
         val compositeEffect = CompositeEffect(repeatedEffects)

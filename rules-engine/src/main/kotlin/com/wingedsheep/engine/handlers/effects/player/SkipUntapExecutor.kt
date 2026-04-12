@@ -1,6 +1,6 @@
 package com.wingedsheep.engine.handlers.effects.player
 
-import com.wingedsheep.engine.core.ExecutionResult
+import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.state.GameState
@@ -25,14 +25,14 @@ class SkipUntapExecutor : EffectExecutor<SkipUntapEffect> {
         state: GameState,
         effect: SkipUntapEffect,
         context: EffectContext
-    ): ExecutionResult {
+    ): EffectResult {
         // Get the target player from the context
         val targetPlayerId = context.targets.firstOrNull()?.let { target ->
             when (target) {
                 is ChosenTarget.Player -> target.playerId
                 else -> null
             }
-        } ?: return ExecutionResult.error(state, "No valid player target for SkipUntapEffect")
+        } ?: return EffectResult.error(state, "No valid player target for SkipUntapEffect")
 
         // Add the SkipUntapComponent to the target player
         val newState = state.updateEntity(targetPlayerId) { container ->
@@ -44,6 +44,6 @@ class SkipUntapExecutor : EffectExecutor<SkipUntapEffect> {
             )
         }
 
-        return ExecutionResult.success(newState)
+        return EffectResult.success(newState)
     }
 }

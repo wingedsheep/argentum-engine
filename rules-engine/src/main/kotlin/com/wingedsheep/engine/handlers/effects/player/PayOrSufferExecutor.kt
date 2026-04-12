@@ -39,7 +39,7 @@ import kotlin.reflect.KClass
 class PayOrSufferExecutor(
     private val cardRegistry: com.wingedsheep.engine.registry.CardRegistry,
     private val decisionHandler: DecisionHandler = DecisionHandler(),
-    private val executeEffect: ((GameState, Effect, EffectContext) -> ExecutionResult)? = null
+    private val executeEffect: ((GameState, Effect, EffectContext) -> EffectResult)? = null
 ) : EffectExecutor<PayOrSufferEffect> {
 
     override val effectType: KClass<PayOrSufferEffect> = PayOrSufferEffect::class
@@ -50,9 +50,9 @@ class PayOrSufferExecutor(
         state: GameState,
         effect: PayOrSufferEffect,
         context: EffectContext
-    ): ExecutionResult {
+    ): EffectResult {
         val sourceId = context.sourceId
-            ?: return ExecutionResult.error(state, "No source for pay or suffer effect")
+            ?: return EffectResult.error(state, "No source for pay or suffer effect")
 
         // Resolve who must pay — defaults to controller but can be the opponent (e.g., "target opponent loses 3 life unless they sacrifice")
         val payingPlayerId = context.resolvePlayerTarget(effect.player)
@@ -60,9 +60,9 @@ class PayOrSufferExecutor(
 
         // Find source card info
         val sourceContainer = state.getEntity(sourceId)
-            ?: return ExecutionResult.error(state, "Source entity not found")
+            ?: return EffectResult.error(state, "Source entity not found")
         val sourceCard = sourceContainer.get<CardComponent>()
-            ?: return ExecutionResult.error(state, "Source has no card component")
+            ?: return EffectResult.error(state, "Source has no card component")
 
         return when (val cost = effect.cost) {
             is PayCost.Discard -> handleDiscardCost(state, effect, context, cost, sourceId, sourceCard.name, payingPlayerId)
@@ -71,8 +71,8 @@ class PayOrSufferExecutor(
             is PayCost.Mana -> handleManaCost(state, effect, context, cost, sourceId, sourceCard.name, payingPlayerId)
             is PayCost.Exile -> handleExileCost(state, effect, context, cost, sourceId, sourceCard.name, payingPlayerId)
             is PayCost.Choice -> handleChoiceCost(state, effect, context, cost, sourceId, sourceCard.name, payingPlayerId)
-            is PayCost.ReturnToHand -> ExecutionResult.error(state, "ReturnToHand payment for PayOrSuffer not yet implemented")
-            is PayCost.RevealCard -> ExecutionResult.error(state, "RevealCard payment for PayOrSuffer not yet implemented")
+            is PayCost.ReturnToHand -> EffectResult.error(state, "ReturnToHand payment for PayOrSuffer not yet implemented")
+            is PayCost.RevealCard -> EffectResult.error(state, "RevealCard payment for PayOrSuffer not yet implemented")
         }
     }
 
@@ -87,7 +87,7 @@ class PayOrSufferExecutor(
         sourceId: EntityId,
         sourceName: String,
         controllerId: EntityId
-    ): ExecutionResult {
+    ): EffectResult {
         // Handle random discard separately
         if (cost.random) {
             return handleRandomDiscard(state, effect, context, cost, sourceId, sourceName, controllerId)
@@ -134,7 +134,7 @@ class PayOrSufferExecutor(
 
         val stateWithContinuation = decisionResult.state.pushContinuation(continuation)
 
-        return ExecutionResult.paused(
+        return EffectResult.paused(
             stateWithContinuation,
             decisionResult.pendingDecision,
             decisionResult.events
@@ -153,7 +153,7 @@ class PayOrSufferExecutor(
         sourceId: EntityId,
         sourceName: String,
         controllerId: EntityId
-    ): ExecutionResult {
+    ): EffectResult {
         val validCards = findValidCardsInHand(state, controllerId, cost.filter)
 
         // If no valid cards, execute suffer effect automatically
@@ -195,7 +195,7 @@ class PayOrSufferExecutor(
         val stateWithDecision = state.withPendingDecision(decision)
         val stateWithContinuation = stateWithDecision.pushContinuation(continuation)
 
-        return ExecutionResult.paused(
+        return EffectResult.paused(
             stateWithContinuation,
             decision,
             listOf(
@@ -220,7 +220,7 @@ class PayOrSufferExecutor(
         sourceId: EntityId,
         sourceName: String,
         controllerId: EntityId
-    ): ExecutionResult {
+    ): EffectResult {
         // Find all valid permanents on the battlefield that the player controls
         val validPermanents = findValidPermanentsOnBattlefield(state, controllerId, cost.filter, sourceId)
 
@@ -263,7 +263,7 @@ class PayOrSufferExecutor(
 
         val stateWithContinuation = decisionResult.state.pushContinuation(continuation)
 
-        return ExecutionResult.paused(
+        return EffectResult.paused(
             stateWithContinuation,
             decisionResult.pendingDecision,
             decisionResult.events
@@ -281,7 +281,7 @@ class PayOrSufferExecutor(
         sourceId: EntityId,
         sourceName: String,
         controllerId: EntityId
-    ): ExecutionResult {
+    ): EffectResult {
         // Check if player has enough life to pay (must have more than the cost)
         val playerContainer = state.getEntity(controllerId)
         val playerLife = playerContainer?.get<com.wingedsheep.engine.state.components.identity.LifeTotalComponent>()?.life ?: 0
@@ -325,7 +325,7 @@ class PayOrSufferExecutor(
         val stateWithDecision = state.withPendingDecision(decision)
         val stateWithContinuation = stateWithDecision.pushContinuation(continuation)
 
-        return ExecutionResult.paused(
+        return EffectResult.paused(
             stateWithContinuation,
             decision,
             listOf(
@@ -350,7 +350,7 @@ class PayOrSufferExecutor(
         sourceId: EntityId,
         sourceName: String,
         controllerId: EntityId
-    ): ExecutionResult {
+    ): EffectResult {
         val validCards = findValidCardsInZone(state, controllerId, cost.filter, cost.zone)
 
         if (validCards.size < cost.count) {
@@ -389,7 +389,7 @@ class PayOrSufferExecutor(
 
         val stateWithContinuation = decisionResult.state.pushContinuation(continuation)
 
-        return ExecutionResult.paused(
+        return EffectResult.paused(
             stateWithContinuation,
             decisionResult.pendingDecision,
             decisionResult.events
@@ -407,7 +407,7 @@ class PayOrSufferExecutor(
         sourceId: EntityId,
         sourceName: String,
         controllerId: EntityId
-    ): ExecutionResult {
+    ): EffectResult {
         // Check if the player can pay the mana cost
         val manaSolver = ManaSolver(cardRegistry)
         if (!manaSolver.canPay(state, controllerId, cost.cost)) {
@@ -450,7 +450,7 @@ class PayOrSufferExecutor(
         val stateWithDecision = state.withPendingDecision(decision)
         val stateWithContinuation = stateWithDecision.pushContinuation(continuation)
 
-        return ExecutionResult.paused(
+        return EffectResult.paused(
             stateWithContinuation,
             decision,
             listOf(
@@ -475,7 +475,7 @@ class PayOrSufferExecutor(
         sourceId: EntityId,
         sourceName: String,
         payingPlayerId: EntityId
-    ): ExecutionResult {
+    ): EffectResult {
         // Build available options: only include costs the player can actually pay
         val availableOptions = mutableListOf<Pair<Int, String>>()
         for ((index, option) in cost.options.withIndex()) {
@@ -523,7 +523,7 @@ class PayOrSufferExecutor(
         val stateWithDecision = state.withPendingDecision(decision)
         val stateWithContinuation = stateWithDecision.pushContinuation(continuation)
 
-        return ExecutionResult.paused(
+        return EffectResult.paused(
             stateWithContinuation,
             decision,
             listOf(
@@ -622,7 +622,7 @@ class PayOrSufferExecutor(
         state: GameState,
         sufferEffect: Effect,
         context: EffectContext
-    ): ExecutionResult {
+    ): EffectResult {
         // Use injected executor if available, otherwise handle common cases
         if (executeEffect != null) {
             return executeEffect.invoke(state, sufferEffect, context)
@@ -632,21 +632,21 @@ class PayOrSufferExecutor(
         return when (sufferEffect) {
             is SacrificeSelfEffect -> {
                 // Handle "sacrifice this" - the most common suffer effect
-                val sourceId = context.sourceId ?: return ExecutionResult.success(state)
+                val sourceId = context.sourceId ?: return EffectResult.success(state)
                 val controllerId = context.controllerId
                 sacrificePermanent(state, controllerId, sourceId)
             }
             is SacrificeEffect -> {
                 // Handle "sacrifice this" when using SacrificeEffect
                 // For PayOrSufferEffect, we assume it means sacrifice self
-                val sourceId = context.sourceId ?: return ExecutionResult.success(state)
+                val sourceId = context.sourceId ?: return EffectResult.success(state)
                 val controllerId = context.controllerId
                 sacrificePermanent(state, controllerId, sourceId)
             }
             else -> {
                 // For other effects, we'd need the full executor registry
                 // This should be handled by the registry in practice
-                ExecutionResult.error(state, "Cannot execute suffer effect: ${sufferEffect::class.simpleName}")
+                EffectResult.error(state, "Cannot execute suffer effect: ${sufferEffect::class.simpleName}")
             }
         }
     }
@@ -658,13 +658,13 @@ class PayOrSufferExecutor(
         state: GameState,
         playerId: EntityId,
         permanentId: EntityId
-    ): ExecutionResult {
+    ): EffectResult {
         val battlefieldZone = ZoneKey(playerId, Zone.BATTLEFIELD)
         val graveyardZone = ZoneKey(playerId, Zone.GRAVEYARD)
 
         // Check if the permanent is still on the battlefield
         if (permanentId !in state.getZone(battlefieldZone)) {
-            return ExecutionResult.success(state)
+            return EffectResult.success(state)
         }
 
         val permanentName = state.getEntity(permanentId)?.get<CardComponent>()?.name ?: "Unknown"
@@ -683,7 +683,7 @@ class PayOrSufferExecutor(
             )
         )
 
-        return ExecutionResult.success(newState, events)
+        return EffectResult.success(newState, events)
     }
 
     /**
@@ -752,7 +752,7 @@ class PayOrSufferExecutor(
             playerId: EntityId,
             filter: GameObjectFilter,
             count: Int
-        ): ExecutionResult {
+        ): EffectResult {
             val handZone = ZoneKey(playerId, Zone.HAND)
             val graveyardZone = ZoneKey(playerId, Zone.GRAVEYARD)
             val hand = state.getZone(handZone)
@@ -764,7 +764,7 @@ class PayOrSufferExecutor(
             }
 
             if (validCards.isEmpty()) {
-                return ExecutionResult.success(state)
+                return EffectResult.success(state)
             }
 
             // Randomly select cards to discard
@@ -790,7 +790,7 @@ class PayOrSufferExecutor(
             val discardNames = cardsToDiscard.map { state.getEntity(it)?.get<CardComponent>()?.name ?: "Card" }
             events.add(0, CardsDiscardedEvent(playerId, cardsToDiscard, discardNames))
 
-            return ExecutionResult.success(newState, events)
+            return EffectResult.success(newState, events)
         }
     }
 }

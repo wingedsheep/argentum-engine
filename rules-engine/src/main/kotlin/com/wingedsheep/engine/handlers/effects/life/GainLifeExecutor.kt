@@ -1,6 +1,6 @@
 package com.wingedsheep.engine.handlers.effects.life
 
-import com.wingedsheep.engine.core.ExecutionResult
+import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.core.GameEvent as EngineGameEvent
 import com.wingedsheep.engine.core.LifeChangedEvent
 import com.wingedsheep.engine.core.LifeChangeReason
@@ -31,10 +31,10 @@ class GainLifeExecutor(
         state: GameState,
         effect: GainLifeEffect,
         context: EffectContext
-    ): ExecutionResult {
+    ): EffectResult {
         val playerIds = context.resolvePlayerTargets(effect.target, state)
         if (playerIds.isEmpty()) {
-            return ExecutionResult.error(state, "No valid target for life gain")
+            return EffectResult.error(state, "No valid target for life gain")
         }
 
         val amount = amountEvaluator.evaluate(state, effect.amount, context)
@@ -54,7 +54,7 @@ class GainLifeExecutor(
             events.add(LifeChangedEvent(playerId, currentLife, newLife, LifeChangeReason.LIFE_GAIN))
         }
 
-        return ExecutionResult.success(newState, events)
+        return EffectResult.success(newState, events)
     }
 
     /**

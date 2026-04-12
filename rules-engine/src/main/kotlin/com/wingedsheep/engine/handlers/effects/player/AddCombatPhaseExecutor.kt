@@ -1,6 +1,6 @@
 package com.wingedsheep.engine.handlers.effects.player
 
-import com.wingedsheep.engine.core.ExecutionResult
+import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.state.GameState
@@ -25,9 +25,9 @@ class AddCombatPhaseExecutor : EffectExecutor<AddCombatPhaseEffect> {
         state: GameState,
         effect: AddCombatPhaseEffect,
         context: EffectContext
-    ): ExecutionResult {
+    ): EffectResult {
         val activePlayer = state.activePlayerId
-            ?: return ExecutionResult.error(state, "No active player for AddCombatPhaseEffect")
+            ?: return EffectResult.error(state, "No active player for AddCombatPhaseEffect")
 
         val existing = state.getEntity(activePlayer)?.get<AdditionalCombatPhasesComponent>()
         val newCount = (existing?.count ?: 0) + 1
@@ -36,6 +36,6 @@ class AddCombatPhaseExecutor : EffectExecutor<AddCombatPhaseEffect> {
             container.with(AdditionalCombatPhasesComponent(count = newCount))
         }
 
-        return ExecutionResult.success(newState)
+        return EffectResult.success(newState)
     }
 }

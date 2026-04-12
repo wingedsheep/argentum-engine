@@ -1,6 +1,6 @@
 package com.wingedsheep.engine.handlers.effects.permanent.types
 
-import com.wingedsheep.engine.core.ExecutionResult
+import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.mechanics.layers.Layer
@@ -22,23 +22,23 @@ class SetCreatureSubtypesExecutor : EffectExecutor<SetCreatureSubtypesEffect> {
         state: GameState,
         effect: SetCreatureSubtypesEffect,
         context: EffectContext
-    ): ExecutionResult {
+    ): EffectResult {
         val targetId = context.resolveTarget(effect.target)
-            ?: return ExecutionResult.success(state)
+            ?: return EffectResult.success(state)
 
         if (targetId !in state.getBattlefield()) {
-            return ExecutionResult.success(state)
+            return EffectResult.success(state)
         }
 
         val projected = state.projectedState
         if (!projected.isCreature(targetId)) {
-            return ExecutionResult.success(state)
+            return EffectResult.success(state)
         }
 
         // Resolve subtypes: from chosen value in context, or from hardcoded field
         val subtypes = if (effect.fromChosenValueKey != null) {
             val chosen = context.pipeline.chosenValues[effect.fromChosenValueKey]
-                ?: return ExecutionResult.success(state)
+                ?: return EffectResult.success(state)
             setOf(chosen)
         } else {
             effect.subtypes
@@ -52,6 +52,6 @@ class SetCreatureSubtypesExecutor : EffectExecutor<SetCreatureSubtypesEffect> {
             context = context
         )
 
-        return ExecutionResult.success(newState)
+        return EffectResult.success(newState)
     }
 }

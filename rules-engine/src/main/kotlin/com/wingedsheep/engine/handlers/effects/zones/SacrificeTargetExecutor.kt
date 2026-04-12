@@ -31,24 +31,24 @@ class SacrificeTargetExecutor : EffectExecutor<SacrificeTargetEffect> {
         state: GameState,
         effect: SacrificeTargetEffect,
         context: EffectContext
-    ): ExecutionResult {
+    ): EffectResult {
         val targetId = context.resolveTarget(effect.target)
-            ?: return ExecutionResult.success(state)
+            ?: return EffectResult.success(state)
 
         // Find the zone the permanent is in
         val currentZone = state.zones.entries.find { (_, cards) -> targetId in cards }?.key
-            ?: return ExecutionResult.success(state)
+            ?: return EffectResult.success(state)
 
         // Must be on the battlefield to sacrifice
         if (currentZone.zoneType != Zone.BATTLEFIELD) {
-            return ExecutionResult.success(state)
+            return EffectResult.success(state)
         }
 
         val container = state.getEntity(targetId)
-            ?: return ExecutionResult.success(state)
+            ?: return EffectResult.success(state)
 
         val cardComponent = container.get<CardComponent>()
-            ?: return ExecutionResult.success(state)
+            ?: return EffectResult.success(state)
 
         val controllerId = container.get<ControllerComponent>()?.playerId ?: context.controllerId
         val ownerId = container.get<OwnerComponent>()?.playerId
@@ -67,6 +67,6 @@ class SacrificeTargetExecutor : EffectExecutor<SacrificeTargetEffect> {
         events.add(PermanentsSacrificedEvent(controllerId, listOf(targetId), listOf(cardComponent.name)))
         events.addAll(transitionResult.events)
 
-        return ExecutionResult.success(transitionResult.state, events)
+        return EffectResult.success(transitionResult.state, events)
     }
 }

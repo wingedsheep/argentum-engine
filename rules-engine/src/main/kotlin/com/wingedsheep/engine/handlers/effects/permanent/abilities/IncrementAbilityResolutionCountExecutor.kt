@@ -1,6 +1,6 @@
 package com.wingedsheep.engine.handlers.effects.permanent.abilities
 
-import com.wingedsheep.engine.core.ExecutionResult
+import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.state.GameState
@@ -21,13 +21,13 @@ class IncrementAbilityResolutionCountExecutor : EffectExecutor<IncrementAbilityR
         state: GameState,
         effect: IncrementAbilityResolutionCountEffect,
         context: EffectContext
-    ): ExecutionResult {
+    ): EffectResult {
         val sourceId = context.sourceId
-            ?: return ExecutionResult.success(state)
+            ?: return EffectResult.success(state)
 
         // Only increment if the source is still on the battlefield
         state.getEntity(sourceId)
-            ?: return ExecutionResult.success(state)
+            ?: return EffectResult.success(state)
 
         val current = state.getEntity(sourceId)?.get<AbilityResolutionCountThisTurnComponent>()
             ?: AbilityResolutionCountThisTurnComponent()
@@ -36,6 +36,6 @@ class IncrementAbilityResolutionCountExecutor : EffectExecutor<IncrementAbilityR
             container.with(current.incremented())
         }
 
-        return ExecutionResult.success(newState)
+        return EffectResult.success(newState)
     }
 }

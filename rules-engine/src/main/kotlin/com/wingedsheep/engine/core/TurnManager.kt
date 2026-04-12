@@ -46,7 +46,7 @@ class TurnManager(
     private val combatManager: CombatManager = CombatManager(cardRegistry),
     private val sbaChecker: StateBasedActionChecker = StateBasedActionChecker(cardRegistry = cardRegistry),
     private val decisionHandler: DecisionHandler = DecisionHandler(),
-    private val effectExecutor: ((GameState, Effect, EffectContext) -> ExecutionResult)? = null
+    private val effectExecutor: ((GameState, Effect, EffectContext) -> EffectResult)? = null
 ) {
 
     val cleanupPhaseManager = CleanupPhaseManager(cardRegistry, decisionHandler)

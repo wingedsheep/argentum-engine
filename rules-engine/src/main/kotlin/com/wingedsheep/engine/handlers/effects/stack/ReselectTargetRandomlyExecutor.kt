@@ -1,6 +1,6 @@
 package com.wingedsheep.engine.handlers.effects.stack
 
-import com.wingedsheep.engine.core.ExecutionResult
+import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.PredicateContext
 import com.wingedsheep.engine.handlers.PredicateEvaluator
@@ -34,21 +34,21 @@ class ReselectTargetRandomlyExecutor : EffectExecutor<ReselectTargetRandomlyEffe
         state: GameState,
         effect: ReselectTargetRandomlyEffect,
         context: EffectContext
-    ): ExecutionResult {
+    ): EffectResult {
         // 1. Get the triggering spell/ability from context
         val triggeringEntityId = context.triggeringEntityId
-            ?: return ExecutionResult.success(state)
+            ?: return EffectResult.success(state)
 
         val stackEntity = state.getEntity(triggeringEntityId)
-            ?: return ExecutionResult.success(state)
+            ?: return EffectResult.success(state)
 
         // 2. Check if it has exactly one target
         val targetsComponent = stackEntity.get<TargetsComponent>()
-            ?: return ExecutionResult.success(state)
+            ?: return EffectResult.success(state)
 
         val spellTargets = targetsComponent.targets
         if (spellTargets.size != 1) {
-            return ExecutionResult.success(state)
+            return EffectResult.success(state)
         }
 
         val currentTarget = spellTargets.first()
@@ -59,7 +59,7 @@ class ReselectTargetRandomlyExecutor : EffectExecutor<ReselectTargetRandomlyEffe
 
         if (legalTargets.isEmpty()) {
             // No legal targets at all — keep current target
-            return ExecutionResult.success(state)
+            return EffectResult.success(state)
         }
 
         // 4. Randomly pick one (may be the same as current — per ruling)
@@ -67,7 +67,7 @@ class ReselectTargetRandomlyExecutor : EffectExecutor<ReselectTargetRandomlyEffe
 
         // 5. Build the new ChosenTarget based on what was chosen
         val newTarget = buildChosenTarget(state, chosenTargetId, currentTarget)
-            ?: return ExecutionResult.success(state)
+            ?: return EffectResult.success(state)
 
         // 6. Update the target on the stack entity
         val newTargetsComponent = targetsComponent.copy(
@@ -99,7 +99,7 @@ class ReselectTargetRandomlyExecutor : EffectExecutor<ReselectTargetRandomlyEffe
             emptyList()
         }
 
-        return ExecutionResult.success(newState, events)
+        return EffectResult.success(newState, events)
     }
 
     /**

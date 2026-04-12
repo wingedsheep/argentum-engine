@@ -1,7 +1,7 @@
 package com.wingedsheep.engine.handlers.effects.permanent.control
 
 import com.wingedsheep.engine.core.ControlChangedEvent
-import com.wingedsheep.engine.core.ExecutionResult
+import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.mechanics.layers.Layer
@@ -28,15 +28,15 @@ class GainControlByMostOfSubtypeExecutor : EffectExecutor<GainControlByMostOfSub
         state: GameState,
         effect: GainControlByMostOfSubtypeEffect,
         context: EffectContext
-    ): ExecutionResult {
+    ): EffectResult {
         val targetId = context.resolveTarget(effect.target)
-            ?: return ExecutionResult.error(state, "No valid target for control change")
+            ?: return EffectResult.error(state, "No valid target for control change")
 
         val targetContainer = state.getEntity(targetId)
-            ?: return ExecutionResult.error(state, "Target permanent no longer exists")
+            ?: return EffectResult.error(state, "Target permanent no longer exists")
 
         val cardComponent = targetContainer.get<CardComponent>()
-            ?: return ExecutionResult.error(state, "Target is not a card")
+            ?: return EffectResult.error(state, "Target is not a card")
 
         // Count creatures of the subtype per player
         val counts = state.turnOrder.associateWith { playerId ->
@@ -46,17 +46,17 @@ class GainControlByMostOfSubtypeExecutor : EffectExecutor<GainControlByMostOfSub
             }
         }
 
-        val maxCount = counts.values.maxOrNull() ?: return ExecutionResult.success(state)
-        if (maxCount == 0) return ExecutionResult.success(state)
+        val maxCount = counts.values.maxOrNull() ?: return EffectResult.success(state)
+        if (maxCount == 0) return EffectResult.success(state)
 
         val playersWithMax = counts.filter { it.value == maxCount }
-        if (playersWithMax.size != 1) return ExecutionResult.success(state)
+        if (playersWithMax.size != 1) return EffectResult.success(state)
 
         val newControllerId = playersWithMax.keys.first()
 
         // If that player already controls the target, no-op
         val currentControllerId = targetContainer.get<ControllerComponent>()?.playerId
-        if (currentControllerId == newControllerId) return ExecutionResult.success(state)
+        if (currentControllerId == newControllerId) return EffectResult.success(state)
 
         // Remove any previous Layer.CONTROL floating effects from the same source on the same target
         val filteredEffects = state.floatingEffects.filter { floating ->
@@ -88,6 +88,6 @@ class GainControlByMostOfSubtypeExecutor : EffectExecutor<GainControlByMostOfSub
             )
         )
 
-        return ExecutionResult.success(newState, events)
+        return EffectResult.success(newState, events)
     }
 }

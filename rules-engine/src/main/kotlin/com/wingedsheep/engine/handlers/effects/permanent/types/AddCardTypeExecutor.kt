@@ -1,6 +1,6 @@
 package com.wingedsheep.engine.handlers.effects.permanent.types
 
-import com.wingedsheep.engine.core.ExecutionResult
+import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.mechanics.layers.Layer
@@ -24,13 +24,13 @@ class AddCardTypeExecutor : EffectExecutor<AddCardTypeEffect> {
         state: GameState,
         effect: AddCardTypeEffect,
         context: EffectContext
-    ): ExecutionResult {
+    ): EffectResult {
         val targetId = context.resolveTarget(effect.target)
-            ?: return ExecutionResult.success(state)
+            ?: return EffectResult.success(state)
 
         // Verify the target is still on the battlefield
         if (targetId !in state.getBattlefield()) {
-            return ExecutionResult.success(state)
+            return EffectResult.success(state)
         }
 
         val newState = state.addFloatingEffect(
@@ -41,6 +41,6 @@ class AddCardTypeExecutor : EffectExecutor<AddCardTypeEffect> {
             context = context
         )
 
-        return ExecutionResult.success(newState)
+        return EffectResult.success(newState)
     }
 }

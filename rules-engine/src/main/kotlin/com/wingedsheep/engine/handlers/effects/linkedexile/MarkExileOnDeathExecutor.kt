@@ -1,6 +1,6 @@
 package com.wingedsheep.engine.handlers.effects.linkedexile
 
-import com.wingedsheep.engine.core.ExecutionResult
+import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.mechanics.layers.Layer
@@ -27,14 +27,14 @@ class MarkExileOnDeathExecutor : EffectExecutor<MarkExileOnDeathEffect> {
         state: GameState,
         effect: MarkExileOnDeathEffect,
         context: EffectContext
-    ): ExecutionResult {
+    ): EffectResult {
         val targetId = context.resolveTarget(effect.target)
-            ?: return ExecutionResult.error(state, "No valid target for exile-on-death marker")
+            ?: return EffectResult.error(state, "No valid target for exile-on-death marker")
 
         // Only applies to creatures, not players
         val isPlayer = state.getEntity(targetId)?.get<LifeTotalComponent>() != null
         if (isPlayer) {
-            return ExecutionResult.success(state)
+            return EffectResult.success(state)
         }
 
         val newState = state.addFloatingEffect(
@@ -45,6 +45,6 @@ class MarkExileOnDeathExecutor : EffectExecutor<MarkExileOnDeathEffect> {
             context = context
         )
 
-        return ExecutionResult.success(newState)
+        return EffectResult.success(newState)
     }
 }

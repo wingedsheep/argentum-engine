@@ -5,7 +5,7 @@ import com.wingedsheep.engine.core.DecisionPhase
 import com.wingedsheep.engine.core.DecisionRequestedEvent
 import com.wingedsheep.engine.core.DistributeDecision
 import com.wingedsheep.engine.core.DistributeDamageContinuation
-import com.wingedsheep.engine.core.ExecutionResult
+import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.handlers.DecisionHandler
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
@@ -39,12 +39,12 @@ class DividedDamageExecutor(
         state: GameState,
         effect: DividedDamageEffect,
         context: EffectContext
-    ): ExecutionResult {
+    ): EffectResult {
         // Get the targets from context
         val targets = context.targets.map { it.toEntityId() }
 
         if (targets.isEmpty()) {
-            return ExecutionResult.error(state, "No targets for divided damage")
+            return EffectResult.error(state, "No targets for divided damage")
         }
 
         // If there's only one target, deal all damage directly
@@ -75,7 +75,7 @@ class DividedDamageExecutor(
             }
         }
 
-        return ExecutionResult.success(currentState, events)
+        return EffectResult.success(currentState, events)
     }
 
     /**
@@ -87,7 +87,7 @@ class DividedDamageExecutor(
         effect: DividedDamageEffect,
         context: EffectContext,
         targets: List<com.wingedsheep.sdk.model.EntityId>
-    ): ExecutionResult {
+    ): EffectResult {
         val sourceName = context.sourceId?.let { sourceId ->
             state.getEntity(sourceId)?.get<CardComponent>()?.name
         } ?: "Effect"
@@ -128,6 +128,6 @@ class DividedDamageExecutor(
             )
         )
 
-        return ExecutionResult.paused(newState, decision, events)
+        return EffectResult.paused(newState, decision, events)
     }
 }

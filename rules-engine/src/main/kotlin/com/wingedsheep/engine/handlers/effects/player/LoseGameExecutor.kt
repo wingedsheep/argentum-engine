@@ -1,6 +1,6 @@
 package com.wingedsheep.engine.handlers.effects.player
 
-import com.wingedsheep.engine.core.ExecutionResult
+import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.core.GameEndReason
 import com.wingedsheep.engine.core.PlayerLostEvent
 import com.wingedsheep.engine.handlers.EffectContext
@@ -25,15 +25,15 @@ class LoseGameExecutor : EffectExecutor<LoseGameEffect> {
         state: GameState,
         effect: LoseGameEffect,
         context: EffectContext
-    ): ExecutionResult {
+    ): EffectResult {
         val targetId = context.resolvePlayerTarget(effect.target)
-            ?: return ExecutionResult.error(state, "No target player for LoseGameEffect")
+            ?: return EffectResult.error(state, "No target player for LoseGameEffect")
 
         // Check if player has already lost
         val container = state.getEntity(targetId)
-            ?: return ExecutionResult.error(state, "Target player not found")
+            ?: return EffectResult.error(state, "Target player not found")
         if (container.has<PlayerLostComponent>()) {
-            return ExecutionResult.success(state)
+            return EffectResult.success(state)
         }
 
         // Check if player can't lose the game
@@ -43,7 +43,7 @@ class LoseGameExecutor : EffectExecutor<LoseGameEffect> {
                 c.get<ControllerComponent>()?.playerId == targetId
         }
         if (cantLose) {
-            return ExecutionResult.success(state)
+            return EffectResult.success(state)
         }
 
         val newState = state.updateEntity(targetId) { c ->
@@ -54,6 +54,6 @@ class LoseGameExecutor : EffectExecutor<LoseGameEffect> {
             PlayerLostEvent(targetId, GameEndReason.CARD_EFFECT, effect.message)
         )
 
-        return ExecutionResult.success(newState, events)
+        return EffectResult.success(newState, events)
     }
 }

@@ -1,7 +1,7 @@
 package com.wingedsheep.engine.handlers.effects.composite
 
 import com.wingedsheep.engine.core.CoinFlipEvent
-import com.wingedsheep.engine.core.ExecutionResult
+import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.state.GameState
@@ -17,7 +17,7 @@ import kotlin.reflect.KClass
  * @param effectExecutor Function to execute a sub-effect (provided by registry)
  */
 class FlipCoinExecutor(
-    private val effectExecutor: (GameState, Effect, EffectContext) -> ExecutionResult
+    private val effectExecutor: (GameState, Effect, EffectContext) -> EffectResult
 ) : EffectExecutor<FlipCoinEffect> {
 
     override val effectType: KClass<FlipCoinEffect> = FlipCoinEffect::class
@@ -26,7 +26,7 @@ class FlipCoinExecutor(
         state: GameState,
         effect: FlipCoinEffect,
         context: EffectContext
-    ): ExecutionResult {
+    ): EffectResult {
         val won = kotlin.random.Random.nextBoolean()
 
         val sourceId = context.sourceId
@@ -36,7 +36,7 @@ class FlipCoinExecutor(
         val subEffect = if (won) effect.wonEffect else effect.lostEffect
 
         if (subEffect == null) {
-            return ExecutionResult.success(state, listOf(event))
+            return EffectResult.success(state, listOf(event))
         }
 
         val result = effectExecutor(state, subEffect, context)

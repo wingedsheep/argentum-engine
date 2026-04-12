@@ -1,6 +1,6 @@
 package com.wingedsheep.engine.handlers.effects.composite
 
-import com.wingedsheep.engine.core.ExecutionResult
+import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.handlers.ConditionEvaluator
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
@@ -16,7 +16,7 @@ import kotlin.reflect.KClass
  * @param effectExecutor Function to execute a sub-effect (provided by registry)
  */
 class ConditionalEffectExecutor(
-    private val effectExecutor: (GameState, Effect, EffectContext) -> ExecutionResult
+    private val effectExecutor: (GameState, Effect, EffectContext) -> EffectResult
 ) : EffectExecutor<ConditionalEffect> {
 
     override val effectType: KClass<ConditionalEffect> = ConditionalEffect::class
@@ -27,7 +27,7 @@ class ConditionalEffectExecutor(
         state: GameState,
         effect: ConditionalEffect,
         context: EffectContext
-    ): ExecutionResult {
+    ): EffectResult {
         val conditionMet = conditionEvaluator.evaluate(state, effect.condition, context)
         val elseEffect = effect.elseEffect
 
@@ -36,7 +36,7 @@ class ConditionalEffectExecutor(
         } else if (elseEffect != null) {
             effectExecutor(state, elseEffect, context)
         } else {
-            ExecutionResult.success(state)
+            EffectResult.success(state)
         }
     }
 }

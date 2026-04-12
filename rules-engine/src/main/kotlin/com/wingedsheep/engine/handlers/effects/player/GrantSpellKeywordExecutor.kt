@@ -1,6 +1,6 @@
 package com.wingedsheep.engine.handlers.effects.player
 
-import com.wingedsheep.engine.core.ExecutionResult
+import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.state.GameState
@@ -24,9 +24,9 @@ class GrantSpellKeywordExecutor : EffectExecutor<GrantSpellKeywordEffect> {
         state: GameState,
         effect: GrantSpellKeywordEffect,
         context: EffectContext
-    ): ExecutionResult {
+    ): EffectResult {
         val playerId = context.controllerId
-        val playerContainer = state.getEntity(playerId) ?: return ExecutionResult.success(state)
+        val playerContainer = state.getEntity(playerId) ?: return EffectResult.success(state)
 
         val newGrant = SpellKeywordGrant(effect.keyword, effect.spellFilter)
 
@@ -40,6 +40,6 @@ class GrantSpellKeywordExecutor : EffectExecutor<GrantSpellKeywordEffect> {
         val newContainer = playerContainer.with(updated)
         val newState = state.withEntity(playerId, newContainer)
 
-        return ExecutionResult.success(newState)
+        return EffectResult.success(newState)
     }
 }

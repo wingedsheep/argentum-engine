@@ -1,6 +1,6 @@
 package com.wingedsheep.engine.handlers.effects.information
 
-import com.wingedsheep.engine.core.ExecutionResult
+import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.core.HandLookedAtEvent
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
@@ -25,9 +25,9 @@ class LookAtTargetHandExecutor : EffectExecutor<LookAtTargetHandEffect> {
         state: GameState,
         effect: LookAtTargetHandEffect,
         context: EffectContext
-    ): ExecutionResult {
+    ): EffectResult {
         val targetPlayerId = context.resolveTarget(effect.target)
-            ?: return ExecutionResult.error(state, "No valid target player for look at hand")
+            ?: return EffectResult.error(state, "No valid target player for look at hand")
 
         val viewingPlayerId = context.controllerId
 
@@ -36,7 +36,7 @@ class LookAtTargetHandExecutor : EffectExecutor<LookAtTargetHandEffect> {
 
         if (handCards.isEmpty()) {
             // Empty hand - nothing to reveal, but still emit event
-            return ExecutionResult.success(
+            return EffectResult.success(
                 state,
                 listOf(HandLookedAtEvent(viewingPlayerId, targetPlayerId, emptyList()))
             )
@@ -55,7 +55,7 @@ class LookAtTargetHandExecutor : EffectExecutor<LookAtTargetHandEffect> {
             }
         }
 
-        return ExecutionResult.success(
+        return EffectResult.success(
             newState,
             listOf(HandLookedAtEvent(viewingPlayerId, targetPlayerId, handCards))
         )

@@ -1,6 +1,6 @@
 package com.wingedsheep.engine.handlers.effects.zones
 
-import com.wingedsheep.engine.core.ExecutionResult
+import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.handlers.effects.LibraryPlacement
@@ -37,9 +37,9 @@ class MoveToZoneEffectExecutor(
         state: GameState,
         effect: MoveToZoneEffect,
         context: EffectContext
-    ): ExecutionResult {
+    ): EffectResult {
         val targetId = context.resolveTarget(effect.target, state)
-            ?: return ExecutionResult.error(state, "No valid target for move to zone")
+            ?: return EffectResult.error(state, "No valid target for move to zone")
 
         // byDestruction delegates to destroyPermanent (handles indestructible)
         if (effect.byDestruction) {
@@ -47,21 +47,21 @@ class MoveToZoneEffectExecutor(
         }
 
         val container = state.getEntity(targetId)
-            ?: return ExecutionResult.error(state, "Target entity not found: $targetId")
+            ?: return EffectResult.error(state, "Target entity not found: $targetId")
 
         val cardComponent = container.get<CardComponent>()
-            ?: return ExecutionResult.error(state, "Target is not a card: $targetId")
+            ?: return EffectResult.error(state, "Target is not a card: $targetId")
 
         val ownerId = container.get<OwnerComponent>()?.playerId
             ?: cardComponent.ownerId
-            ?: return ExecutionResult.error(state, "Cannot determine card owner")
+            ?: return EffectResult.error(state, "Cannot determine card owner")
 
         val currentZone = findEntityZone(state, targetId)
-            ?: return ExecutionResult.error(state, "Card not found in any zone: $targetId")
+            ?: return EffectResult.error(state, "Card not found in any zone: $targetId")
 
         // If fromZone is specified, skip the move if the target is not in the expected zone
         if (effect.fromZone != null && currentZone.zoneType != effect.fromZone) {
-            return ExecutionResult.success(state, emptyList())
+            return EffectResult.success(state, emptyList())
         }
 
         // Resolve controller override for "under your control" effects
@@ -83,9 +83,9 @@ class MoveToZoneEffectExecutor(
 
         // Link exiled card to source permanent via LinkedExileComponent
         if (effect.linkToSource && effect.destination == Zone.EXILE) {
-            val sourceId = context.sourceId ?: return ExecutionResult.success(resultState, transitionResult.events)
+            val sourceId = context.sourceId ?: return EffectResult.success(resultState, transitionResult.events)
             val sourceContainer = resultState.getEntity(sourceId)
-                ?: return ExecutionResult.success(resultState, transitionResult.events)
+                ?: return EffectResult.success(resultState, transitionResult.events)
             val existingLinked = sourceContainer.get<LinkedExileComponent>()
             val allExiled = (existingLinked?.exiledIds ?: emptyList()) + listOf(targetId)
             resultState = resultState.updateEntity(sourceId) { c ->
@@ -93,7 +93,7 @@ class MoveToZoneEffectExecutor(
             }
         }
 
-        return ExecutionResult.success(resultState, transitionResult.events)
+        return EffectResult.success(resultState, transitionResult.events)
     }
 
     /**

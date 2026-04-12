@@ -19,7 +19,7 @@ import kotlin.reflect.KClass
  */
 class MayPayXForEffectExecutor(
     private val cardRegistry: com.wingedsheep.engine.registry.CardRegistry,
-    private val effectExecutor: (GameState, Effect, EffectContext) -> ExecutionResult
+    private val effectExecutor: (GameState, Effect, EffectContext) -> EffectResult
 ) : EffectExecutor<MayPayXForEffect> {
 
     override val effectType: KClass<MayPayXForEffect> = MayPayXForEffect::class
@@ -28,7 +28,7 @@ class MayPayXForEffectExecutor(
         state: GameState,
         effect: MayPayXForEffect,
         context: EffectContext
-    ): ExecutionResult {
+    ): EffectResult {
         val playerId = context.controllerId
 
         // Calculate max affordable X
@@ -37,7 +37,7 @@ class MayPayXForEffectExecutor(
 
         if (maxAffordable <= 0) {
             // Can't pay anything — skip silently
-            return ExecutionResult.success(state)
+            return EffectResult.success(state)
         }
 
         // Get source name for the prompt
@@ -72,7 +72,7 @@ class MayPayXForEffectExecutor(
         val stateWithDecision = state.withPendingDecision(decision)
         val stateWithContinuation = stateWithDecision.pushContinuation(continuation)
 
-        return ExecutionResult.paused(
+        return EffectResult.paused(
             stateWithContinuation,
             decision,
             listOf(

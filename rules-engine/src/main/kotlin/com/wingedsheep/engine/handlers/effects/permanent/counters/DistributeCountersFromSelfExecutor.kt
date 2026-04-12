@@ -5,7 +5,7 @@ import com.wingedsheep.engine.core.DecisionPhase
 import com.wingedsheep.engine.core.DecisionRequestedEvent
 import com.wingedsheep.engine.core.DistributeCountersContinuation
 import com.wingedsheep.engine.core.DistributeDecision
-import com.wingedsheep.engine.core.ExecutionResult
+import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.state.GameState
@@ -33,9 +33,9 @@ class DistributeCountersFromSelfExecutor : EffectExecutor<DistributeCountersFrom
         state: GameState,
         effect: DistributeCountersFromSelfEffect,
         context: EffectContext
-    ): ExecutionResult {
+    ): EffectResult {
         val sourceId = context.sourceId
-            ?: return ExecutionResult.error(state, "No source for distribute counters effect")
+            ?: return EffectResult.error(state, "No source for distribute counters effect")
 
         val counterType = try {
             CounterType.valueOf(
@@ -51,12 +51,12 @@ class DistributeCountersFromSelfExecutor : EffectExecutor<DistributeCountersFrom
 
         // Check how many counters are on the source
         val sourceEntity = state.getEntity(sourceId)
-            ?: return ExecutionResult.success(state, emptyList())
+            ?: return EffectResult.success(state, emptyList())
         val countersComponent = sourceEntity.get<CountersComponent>() ?: CountersComponent()
         val totalCounters = countersComponent.getCount(counterType)
 
         if (totalCounters <= 0) {
-            return ExecutionResult.success(state, emptyList())
+            return EffectResult.success(state, emptyList())
         }
 
         // Find all other creatures on the battlefield
@@ -69,7 +69,7 @@ class DistributeCountersFromSelfExecutor : EffectExecutor<DistributeCountersFrom
             }
 
         if (otherCreatures.isEmpty()) {
-            return ExecutionResult.success(state, emptyList())
+            return EffectResult.success(state, emptyList())
         }
 
         val sourceName = sourceEntity.get<CardComponent>()?.name ?: "Creature"
@@ -110,6 +110,6 @@ class DistributeCountersFromSelfExecutor : EffectExecutor<DistributeCountersFrom
             )
         )
 
-        return ExecutionResult.paused(newState, decision, events)
+        return EffectResult.paused(newState, decision, events)
     }
 }

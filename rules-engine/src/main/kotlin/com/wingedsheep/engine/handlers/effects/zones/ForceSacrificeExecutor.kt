@@ -37,10 +37,10 @@ class ForceSacrificeExecutor(
         state: GameState,
         effect: ForceSacrificeEffect,
         context: EffectContext
-    ): ExecutionResult {
+    ): EffectResult {
         val playerIds = context.resolvePlayerTargets(effect.target, state)
         if (playerIds.isEmpty()) {
-            return ExecutionResult.error(state, "No valid player for force sacrifice")
+            return EffectResult.error(state, "No valid player for force sacrifice")
         }
 
         return processPlayers(state, playerIds, effect.filter, effect.count, context.sourceId)
@@ -57,7 +57,7 @@ class ForceSacrificeExecutor(
         filter: GameObjectFilter,
         count: Int,
         sourceId: EntityId?
-    ): ExecutionResult {
+    ): EffectResult {
         val sourceName = if (sourceId != null) {
             state.getEntity(sourceId)?.get<CardComponent>()?.name ?: "Unknown"
         } else {
@@ -92,7 +92,7 @@ class ForceSacrificeExecutor(
             )
         }
 
-        return ExecutionResult.success(currentState, allEvents)
+        return EffectResult.success(currentState, allEvents)
     }
 
     private fun findValidPermanents(
@@ -117,7 +117,7 @@ class ForceSacrificeExecutor(
         filter: GameObjectFilter,
         count: Int,
         priorEvents: List<GameEvent>
-    ): ExecutionResult {
+    ): EffectResult {
         val prompt = buildString {
             append("Choose ")
             if (minSelections == 1) append("a creature") else append("$minSelections creatures")
@@ -150,7 +150,7 @@ class ForceSacrificeExecutor(
 
         val stateWithContinuation = decisionResult.state.pushContinuation(continuation)
 
-        return ExecutionResult.paused(
+        return EffectResult.paused(
             stateWithContinuation,
             decisionResult.pendingDecision,
             priorEvents + decisionResult.events
@@ -161,7 +161,7 @@ class ForceSacrificeExecutor(
         state: GameState,
         playerId: EntityId,
         permanentIds: List<EntityId>
-    ): ExecutionResult {
+    ): EffectResult {
         var newState = state
         val events = mutableListOf<GameEvent>()
 
@@ -181,6 +181,6 @@ class ForceSacrificeExecutor(
             events.addAll(transitionResult.events)
         }
 
-        return ExecutionResult.success(newState, events)
+        return EffectResult.success(newState, events)
     }
 }

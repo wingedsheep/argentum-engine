@@ -1,7 +1,7 @@
 package com.wingedsheep.engine.handlers.effects.stack
 
 import com.wingedsheep.engine.core.ChangeSpellTargetContinuation
-import com.wingedsheep.engine.core.ExecutionResult
+import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.handlers.DecisionHandler
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.PredicateContext
@@ -40,15 +40,15 @@ class ChangeTargetExecutor : EffectExecutor<ChangeTargetEffect> {
         state: GameState,
         effect: ChangeTargetEffect,
         context: EffectContext
-    ): ExecutionResult {
+    ): EffectResult {
         // 1. Get target spell/ability
         val targetSpell = context.targets.firstOrNull()
         if (targetSpell !is ChosenTarget.Spell) {
-            return ExecutionResult.error(state, "No valid spell/ability target for ChangeTarget")
+            return EffectResult.error(state, "No valid spell/ability target for ChangeTarget")
         }
 
         val stackEntity = state.getEntity(targetSpell.spellEntityId)
-            ?: return ExecutionResult.error(state, "Spell/ability not found on stack")
+            ?: return EffectResult.error(state, "Spell/ability not found on stack")
 
         // 2. Get the spell/ability's targets
         val targetsComponent = stackEntity.get<TargetsComponent>()
@@ -56,7 +56,7 @@ class ChangeTargetExecutor : EffectExecutor<ChangeTargetEffect> {
 
         // Must have exactly one target
         if (spellTargets.size != 1) {
-            return ExecutionResult.success(state)
+            return EffectResult.success(state)
         }
 
         val currentTarget = spellTargets.first()
@@ -67,7 +67,7 @@ class ChangeTargetExecutor : EffectExecutor<ChangeTargetEffect> {
 
         if (legalNewTargets.isEmpty()) {
             // No other legal targets to redirect to
-            return ExecutionResult.success(state)
+            return EffectResult.success(state)
         }
 
         // 4. Present selection decision to the controller
@@ -93,7 +93,7 @@ class ChangeTargetExecutor : EffectExecutor<ChangeTargetEffect> {
 
         val stateWithContinuation = decisionResult.state.pushContinuation(continuation)
 
-        return ExecutionResult.paused(
+        return EffectResult.paused(
             stateWithContinuation,
             decisionResult.pendingDecision,
             decisionResult.events

@@ -26,7 +26,7 @@ import kotlin.reflect.KClass
  * If zero remain, nothing happens.
  */
 class ChooseActionEffectExecutor(
-    private val effectExecutor: (GameState, Effect, EffectContext) -> ExecutionResult
+    private val effectExecutor: (GameState, Effect, EffectContext) -> EffectResult
 ) : EffectExecutor<ChooseActionEffect> {
 
     override val effectType: KClass<ChooseActionEffect> = ChooseActionEffect::class
@@ -37,10 +37,10 @@ class ChooseActionEffectExecutor(
         state: GameState,
         effect: ChooseActionEffect,
         context: EffectContext
-    ): ExecutionResult {
+    ): EffectResult {
         // Resolve who makes the choice
         val choosingPlayerId = context.resolvePlayerTarget(effect.player)
-            ?: return ExecutionResult.error(state, "Could not resolve player for ChooseActionEffect")
+            ?: return EffectResult.error(state, "Could not resolve player for ChooseActionEffect")
 
         // Filter to feasible choices
         val feasibleChoices = effect.choices.filter { choice ->
@@ -48,7 +48,7 @@ class ChooseActionEffectExecutor(
         }
 
         if (feasibleChoices.isEmpty()) {
-            return ExecutionResult.success(state)
+            return EffectResult.success(state)
         }
 
         // If only one option, auto-execute it
@@ -90,7 +90,7 @@ class ChooseActionEffectExecutor(
         val stateWithDecision = state.withPendingDecision(decision)
         val stateWithContinuation = stateWithDecision.pushContinuation(continuation)
 
-        return ExecutionResult.paused(
+        return EffectResult.paused(
             stateWithContinuation,
             decision,
             listOf(

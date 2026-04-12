@@ -1,6 +1,6 @@
 package com.wingedsheep.engine.handlers.effects.permanent.stats
 
-import com.wingedsheep.engine.core.ExecutionResult
+import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.handlers.DynamicAmountEvaluator
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
@@ -30,13 +30,13 @@ class SetBasePowerExecutor(
         state: GameState,
         effect: SetBasePowerEffect,
         context: EffectContext
-    ): ExecutionResult {
+    ): EffectResult {
         val targetId = context.resolveTarget(effect.target, state)
-            ?: return ExecutionResult.success(state)
+            ?: return EffectResult.success(state)
 
         // Verify target is on the battlefield
         if (targetId !in state.getBattlefield()) {
-            return ExecutionResult.success(state)
+            return EffectResult.success(state)
         }
 
         val powerValue = amountEvaluator.evaluate(state, effect.power, context)
@@ -50,6 +50,6 @@ class SetBasePowerExecutor(
             sublayer = Sublayer.SET_VALUES
         )
 
-        return ExecutionResult.success(newState)
+        return EffectResult.success(newState)
     }
 }

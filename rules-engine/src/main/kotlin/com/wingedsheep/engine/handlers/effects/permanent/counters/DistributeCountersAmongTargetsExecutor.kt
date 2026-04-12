@@ -1,7 +1,7 @@
 package com.wingedsheep.engine.handlers.effects.permanent.counters
 
 import com.wingedsheep.engine.core.CountersAddedEvent
-import com.wingedsheep.engine.core.ExecutionResult
+import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.core.GameEvent
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
@@ -33,13 +33,13 @@ class DistributeCountersAmongTargetsExecutor : EffectExecutor<DistributeCounters
         state: GameState,
         effect: DistributeCountersAmongTargetsEffect,
         context: EffectContext
-    ): ExecutionResult {
+    ): EffectResult {
         val targetIds = context.targets
             .map { it.toEntityId() }
             .filter { state.getEntity(it) != null }
 
         if (targetIds.isEmpty()) {
-            return ExecutionResult.success(state)
+            return EffectResult.success(state)
         }
 
         val counterType = try {
@@ -77,7 +77,7 @@ class DistributeCountersAmongTargetsExecutor : EffectExecutor<DistributeCounters
             events.add(CountersAddedEvent(targetId, effect.counterType, modifiedCount, entityName))
         }
 
-        return ExecutionResult.success(currentState, events)
+        return EffectResult.success(currentState, events)
     }
 
     private fun calculateDistribution(totalCounters: Int, targetCount: Int): List<Int> {

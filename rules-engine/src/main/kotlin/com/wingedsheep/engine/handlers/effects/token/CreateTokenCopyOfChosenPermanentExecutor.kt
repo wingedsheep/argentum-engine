@@ -39,7 +39,7 @@ class CreateTokenCopyOfChosenPermanentExecutor(
         state: GameState,
         effect: CreateTokenCopyOfChosenPermanentEffect,
         context: EffectContext
-    ): ExecutionResult {
+    ): EffectResult {
         val controllerId = context.controllerId
         val sourceId = context.sourceId
         val sourceName = sourceId?.let { state.getEntity(it)?.get<CardComponent>()?.name }
@@ -51,7 +51,7 @@ class CreateTokenCopyOfChosenPermanentExecutor(
         )
 
         if (candidates.isEmpty()) {
-            return ExecutionResult.success(state)
+            return EffectResult.success(state)
         }
 
         if (candidates.size == 1) {
@@ -83,7 +83,7 @@ class CreateTokenCopyOfChosenPermanentExecutor(
 
         val stateWithContinuation = decisionResult.state.pushContinuation(continuation)
 
-        return ExecutionResult.paused(
+        return EffectResult.paused(
             stateWithContinuation,
             decisionResult.pendingDecision,
             decisionResult.events
@@ -100,12 +100,12 @@ class CreateTokenCopyOfChosenPermanentExecutor(
             chosenId: EntityId,
             controllerId: EntityId,
             staticAbilityHandler: StaticAbilityHandler? = null
-        ): ExecutionResult {
+        ): EffectResult {
             val chosenContainer = state.getEntity(chosenId)
-                ?: return ExecutionResult.success(state)
+                ?: return EffectResult.success(state)
 
             val chosenCard = chosenContainer.get<CardComponent>()
-                ?: return ExecutionResult.success(state)
+                ?: return EffectResult.success(state)
 
             val tokenId = EntityId.generate()
 
@@ -137,7 +137,7 @@ class CreateTokenCopyOfChosenPermanentExecutor(
                 ownerId = controllerId
             )
 
-            return ExecutionResult.success(newState, listOf(event))
+            return EffectResult.success(newState, listOf(event))
         }
     }
 }

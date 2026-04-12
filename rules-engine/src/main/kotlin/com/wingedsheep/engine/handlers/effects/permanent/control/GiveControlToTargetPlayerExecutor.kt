@@ -1,7 +1,7 @@
 package com.wingedsheep.engine.handlers.effects.permanent.control
 
 import com.wingedsheep.engine.core.ControlChangedEvent
-import com.wingedsheep.engine.core.ExecutionResult
+import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.mechanics.layers.Layer
@@ -27,18 +27,18 @@ class GiveControlToTargetPlayerExecutor : EffectExecutor<GiveControlToTargetPlay
         state: GameState,
         effect: GiveControlToTargetPlayerEffect,
         context: EffectContext
-    ): ExecutionResult {
+    ): EffectResult {
         val targetId = context.resolveTarget(effect.permanent, state)
-            ?: return ExecutionResult.error(state, "No valid permanent for control change")
+            ?: return EffectResult.error(state, "No valid permanent for control change")
 
         val targetContainer = state.getEntity(targetId)
-            ?: return ExecutionResult.error(state, "Target permanent no longer exists")
+            ?: return EffectResult.error(state, "Target permanent no longer exists")
 
         val cardComponent = targetContainer.get<CardComponent>()
-            ?: return ExecutionResult.error(state, "Target is not a card")
+            ?: return EffectResult.error(state, "Target is not a card")
 
         val newControllerId = context.resolvePlayerTarget(effect.newController)
-            ?: return ExecutionResult.error(state, "No valid player target for control change")
+            ?: return EffectResult.error(state, "No valid player target for control change")
 
         val currentControllerId = targetContainer.get<ControllerComponent>()?.playerId
 
@@ -73,6 +73,6 @@ class GiveControlToTargetPlayerExecutor : EffectExecutor<GiveControlToTargetPlay
             )
         )
 
-        return ExecutionResult.success(newState, events)
+        return EffectResult.success(newState, events)
     }
 }

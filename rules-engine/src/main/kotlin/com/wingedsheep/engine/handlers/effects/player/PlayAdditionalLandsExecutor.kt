@@ -1,6 +1,6 @@
 package com.wingedsheep.engine.handlers.effects.player
 
-import com.wingedsheep.engine.core.ExecutionResult
+import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.state.GameState
@@ -23,11 +23,11 @@ class PlayAdditionalLandsExecutor : EffectExecutor<PlayAdditionalLandsEffect> {
         state: GameState,
         effect: PlayAdditionalLandsEffect,
         context: EffectContext
-    ): ExecutionResult {
+    ): EffectResult {
         val playerId = context.controllerId
 
         val currentLandDrops = state.getEntity(playerId)?.get<LandDropsComponent>()
-            ?: return ExecutionResult.error(state, "Player has no LandDropsComponent")
+            ?: return EffectResult.error(state, "Player has no LandDropsComponent")
 
         val newLandDrops = currentLandDrops.copy(
             remaining = currentLandDrops.remaining + effect.count
@@ -37,6 +37,6 @@ class PlayAdditionalLandsExecutor : EffectExecutor<PlayAdditionalLandsEffect> {
             container.with(newLandDrops)
         }
 
-        return ExecutionResult.success(newState)
+        return EffectResult.success(newState)
     }
 }

@@ -1,6 +1,6 @@
 package com.wingedsheep.engine.handlers.effects.combat
 
-import com.wingedsheep.engine.core.ExecutionResult
+import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.state.GameState
@@ -25,17 +25,17 @@ class TauntExecutor : EffectExecutor<TauntEffect> {
         state: GameState,
         effect: TauntEffect,
         context: EffectContext
-    ): ExecutionResult {
+    ): EffectResult {
         // Resolve the target player (whose creatures must attack)
         val targetPlayerId = context.resolvePlayerTarget(effect.target)
-            ?: return ExecutionResult.error(state, "No valid target player for Taunt effect")
+            ?: return EffectResult.error(state, "No valid target player for Taunt effect")
 
         // The defender is the controller of Taunt (the caster)
         val defenderId = context.controllerId
 
         // Cannot taunt yourself
         if (targetPlayerId == defenderId) {
-            return ExecutionResult.error(state, "Cannot target yourself with Taunt")
+            return EffectResult.error(state, "Cannot target yourself with Taunt")
         }
 
         // Add MustAttackPlayerComponent to the target player
@@ -48,6 +48,6 @@ class TauntExecutor : EffectExecutor<TauntEffect> {
             )
         }
 
-        return ExecutionResult.success(newState)
+        return EffectResult.success(newState)
     }
 }

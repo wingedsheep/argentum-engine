@@ -1,7 +1,7 @@
 package com.wingedsheep.engine.handlers.effects.permanent.counters
 
 import com.wingedsheep.engine.core.CountersAddedEvent
-import com.wingedsheep.engine.core.ExecutionResult
+import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.handlers.DynamicAmountEvaluator
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
@@ -25,15 +25,15 @@ class AddDynamicCountersExecutor : EffectExecutor<AddDynamicCountersEffect> {
         state: GameState,
         effect: AddDynamicCountersEffect,
         context: EffectContext
-    ): ExecutionResult {
+    ): EffectResult {
         val targetId = context.resolveTarget(effect.target)
-            ?: return ExecutionResult.error(state, "No valid target for counters")
+            ?: return EffectResult.error(state, "No valid target for counters")
 
         val evaluator = DynamicAmountEvaluator()
         val count = evaluator.evaluate(state, effect.amount, context)
 
         if (count <= 0) {
-            return ExecutionResult.success(state, emptyList())
+            return EffectResult.success(state, emptyList())
         }
 
         val counterType = try {
@@ -60,7 +60,7 @@ class AddDynamicCountersExecutor : EffectExecutor<AddDynamicCountersEffect> {
 
         val entityName = state.getEntity(targetId)?.get<CardComponent>()?.name ?: ""
 
-        return ExecutionResult.success(
+        return EffectResult.success(
             newState,
             listOf(CountersAddedEvent(targetId, effect.counterType, modifiedCount, entityName))
         )

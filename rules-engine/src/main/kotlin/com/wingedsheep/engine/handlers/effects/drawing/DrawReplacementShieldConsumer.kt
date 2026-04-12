@@ -1,7 +1,7 @@
 package com.wingedsheep.engine.handlers.effects.drawing
 
 import com.wingedsheep.engine.core.DrawReplacementRemainingDrawsContinuation
-import com.wingedsheep.engine.core.ExecutionResult
+import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.core.GameEvent
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.PipelineState
@@ -18,7 +18,7 @@ import com.wingedsheep.sdk.scripting.effects.Effect
  * (draw step draws) to replace individual card draws with alternative effects.
  */
 class DrawReplacementShieldConsumer(
-    private val effectExecutor: (GameState, Effect, EffectContext) -> ExecutionResult
+    private val effectExecutor: (GameState, Effect, EffectContext) -> EffectResult
 ) {
     /**
      * Result of consuming a shield.
@@ -28,7 +28,7 @@ class DrawReplacementShieldConsumer(
         data class Synchronous(val state: GameState, val events: List<GameEvent>) : ConsumeResult
 
         /** The replacement effect paused for a decision (e.g., bounce selection, discard choice). */
-        data class Paused(val result: ExecutionResult) : ConsumeResult
+        data class Paused(val result: EffectResult) : ConsumeResult
     }
 
     /**

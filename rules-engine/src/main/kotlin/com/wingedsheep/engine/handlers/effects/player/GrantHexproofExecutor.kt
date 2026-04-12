@@ -1,6 +1,6 @@
 package com.wingedsheep.engine.handlers.effects.player
 
-import com.wingedsheep.engine.core.ExecutionResult
+import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.core.KeywordGrantedEvent
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
@@ -31,9 +31,9 @@ class GrantHexproofExecutor : EffectExecutor<GrantHexproofEffect> {
         state: GameState,
         effect: GrantHexproofEffect,
         context: EffectContext
-    ): ExecutionResult {
+    ): EffectResult {
         val targetId = context.resolveTarget(effect.target)
-            ?: return ExecutionResult.error(state, "No valid target for hexproof grant")
+            ?: return EffectResult.error(state, "No valid target for hexproof grant")
 
         // Check if target is a player
         if (state.turnOrder.contains(targetId)) {
@@ -44,14 +44,14 @@ class GrantHexproofExecutor : EffectExecutor<GrantHexproofEffect> {
             val newState = state.updateEntity(targetId) { container ->
                 container.with(PlayerHexproofComponent(removeOn = removeOn))
             }
-            return ExecutionResult.success(newState)
+            return EffectResult.success(newState)
         }
 
         // Target is a permanent — grant hexproof keyword via floating effect
         val targetContainer = state.getEntity(targetId)
-            ?: return ExecutionResult.error(state, "Target no longer exists")
+            ?: return EffectResult.error(state, "Target no longer exists")
         val cardComponent = targetContainer.get<CardComponent>()
-            ?: return ExecutionResult.error(state, "Target is not a card")
+            ?: return EffectResult.error(state, "Target is not a card")
 
         val newState = state.addFloatingEffect(
             layer = Layer.ABILITY,
@@ -71,6 +71,6 @@ class GrantHexproofExecutor : EffectExecutor<GrantHexproofEffect> {
             )
         )
 
-        return ExecutionResult.success(newState, events)
+        return EffectResult.success(newState, events)
     }
 }

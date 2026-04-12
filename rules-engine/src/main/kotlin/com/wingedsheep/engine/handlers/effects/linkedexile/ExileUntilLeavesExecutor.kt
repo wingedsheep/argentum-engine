@@ -1,6 +1,6 @@
 package com.wingedsheep.engine.handlers.effects.linkedexile
 
-import com.wingedsheep.engine.core.ExecutionResult
+import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.handlers.effects.ZoneEntryOptions
@@ -33,21 +33,21 @@ class ExileUntilLeavesExecutor : EffectExecutor<ExileUntilLeavesEffect> {
         state: GameState,
         effect: ExileUntilLeavesEffect,
         context: EffectContext
-    ): ExecutionResult {
+    ): EffectResult {
         val sourceId = context.sourceId
-            ?: return ExecutionResult.success(state)
+            ?: return EffectResult.success(state)
 
         // Modern template: if source is no longer on the battlefield, do nothing
         if (sourceId !in state.getBattlefield()) {
-            return ExecutionResult.success(state)
+            return EffectResult.success(state)
         }
 
         val targetId = context.resolveTarget(effect.target)
-            ?: return ExecutionResult.success(state)
+            ?: return EffectResult.success(state)
 
         // Verify target is on the battlefield
         if (targetId !in state.getBattlefield()) {
-            return ExecutionResult.success(state)
+            return EffectResult.success(state)
         }
 
         // Delegate zone movement to ZoneTransitionService
@@ -68,7 +68,7 @@ class ExileUntilLeavesExecutor : EffectExecutor<ExileUntilLeavesEffect> {
             }
         }
 
-        return ExecutionResult(
+        return EffectResult(
             state = newState,
             events = transitionResult.events
         )

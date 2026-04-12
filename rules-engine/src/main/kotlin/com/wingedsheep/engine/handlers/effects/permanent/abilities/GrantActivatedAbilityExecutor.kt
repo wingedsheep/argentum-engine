@@ -1,6 +1,6 @@
 package com.wingedsheep.engine.handlers.effects.permanent.abilities
 
-import com.wingedsheep.engine.core.ExecutionResult
+import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.event.GrantedActivatedAbility
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
@@ -26,20 +26,20 @@ class GrantActivatedAbilityExecutor : EffectExecutor<GrantActivatedAbilityEffect
         state: GameState,
         effect: GrantActivatedAbilityEffect,
         context: EffectContext
-    ): ExecutionResult {
+    ): EffectResult {
         val targetId = context.resolveTarget(effect.target)
-            ?: return ExecutionResult.error(state, "No valid target for activated ability grant")
+            ?: return EffectResult.error(state, "No valid target for activated ability grant")
 
         // Verify target exists and is a creature on the battlefield
         val targetContainer = state.getEntity(targetId)
-            ?: return ExecutionResult.error(state, "Target creature no longer exists")
+            ?: return EffectResult.error(state, "Target creature no longer exists")
         val cardComponent = targetContainer.get<CardComponent>()
-            ?: return ExecutionResult.error(state, "Target is not a card")
+            ?: return EffectResult.error(state, "Target is not a card")
         if (!cardComponent.typeLine.isCreature) {
-            return ExecutionResult.error(state, "Target is not a creature")
+            return EffectResult.error(state, "Target is not a creature")
         }
         if (!state.getBattlefield().contains(targetId)) {
-            return ExecutionResult.error(state, "Target is not on the battlefield")
+            return EffectResult.error(state, "Target is not on the battlefield")
         }
 
         val grant = GrantedActivatedAbility(
@@ -52,6 +52,6 @@ class GrantActivatedAbilityExecutor : EffectExecutor<GrantActivatedAbilityEffect
             grantedActivatedAbilities = state.grantedActivatedAbilities + grant
         )
 
-        return ExecutionResult.success(newState)
+        return EffectResult.success(newState)
     }
 }

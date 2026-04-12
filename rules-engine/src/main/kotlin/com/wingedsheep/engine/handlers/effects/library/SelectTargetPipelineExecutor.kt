@@ -30,7 +30,7 @@ class SelectTargetPipelineExecutor(
         state: GameState,
         effect: SelectTargetEffect,
         context: EffectContext
-    ): ExecutionResult {
+    ): EffectResult {
         val controllerId = context.controllerId
         val sourceId = context.sourceId
 
@@ -43,14 +43,14 @@ class SelectTargetPipelineExecutor(
 
         if (legalTargets.isEmpty()) {
             // No legal targets — store empty collection, pipeline continues gracefully
-            return ExecutionResult.success(state).copy(
+            return EffectResult.success(state).copy(
                 updatedCollections = mapOf(effect.storeAs to emptyList())
             )
         }
 
         if (legalTargets.size == 1) {
             // Single legal target — auto-select
-            return ExecutionResult.success(state).copy(
+            return EffectResult.success(state).copy(
                 updatedCollections = mapOf(effect.storeAs to legalTargets)
             )
         }
@@ -64,7 +64,7 @@ class SelectTargetPipelineExecutor(
         context: EffectContext,
         effect: SelectTargetEffect,
         legalTargets: List<EntityId>
-    ): ExecutionResult {
+    ): EffectResult {
         val decisionId = UUID.randomUUID().toString()
         val controllerId = context.controllerId
         val sourceName = context.sourceId?.let { state.getEntity(it)?.get<CardComponent>()?.name }
@@ -101,7 +101,7 @@ class SelectTargetPipelineExecutor(
         val stateWithDecision = state.withPendingDecision(decision)
         val stateWithContinuation = stateWithDecision.pushContinuation(continuation)
 
-        return ExecutionResult.paused(
+        return EffectResult.paused(
             stateWithContinuation,
             decision,
             listOf(

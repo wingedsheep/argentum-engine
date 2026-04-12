@@ -1,6 +1,6 @@
 package com.wingedsheep.engine.handlers.effects.damage
 
-import com.wingedsheep.engine.core.ExecutionResult
+import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.core.GameEvent as EngineGameEvent
 import com.wingedsheep.engine.handlers.DynamicAmountEvaluator
 import com.wingedsheep.engine.handlers.EffectContext
@@ -26,10 +26,10 @@ class DealDamageExecutor(
         state: GameState,
         effect: DealDamageEffect,
         context: EffectContext
-    ): ExecutionResult {
+    ): EffectResult {
         val amount = amountEvaluator.evaluate(state, effect.amount, context)
         if (amount <= 0) {
-            return ExecutionResult.success(state)
+            return EffectResult.success(state)
         }
 
         // Use damageSource override if specified (e.g., EnchantedCreature for Lavamancer's Skill)
@@ -44,7 +44,7 @@ class DealDamageExecutor(
         if (effect.target is EffectTarget.PlayerRef) {
             val playerIds = context.resolvePlayerTargets(effect.target, state)
             if (playerIds.isEmpty()) {
-                return ExecutionResult.error(state, "No valid target for damage")
+                return EffectResult.error(state, "No valid target for damage")
             }
 
             var newState = state
@@ -54,12 +54,12 @@ class DealDamageExecutor(
                 newState = result.newState
                 events.addAll(result.events)
             }
-            return ExecutionResult.success(newState, events)
+            return EffectResult.success(newState, events)
         }
 
         // Single target resolution
         val targetId = context.resolveTarget(effect.target, state)
-            ?: return ExecutionResult.error(state, "No valid target for damage")
+            ?: return EffectResult.error(state, "No valid target for damage")
 
         return dealDamageToTarget(state, targetId, amount, sourceId, effect.cantBePrevented)
     }

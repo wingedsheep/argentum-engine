@@ -1,6 +1,6 @@
 package com.wingedsheep.engine.handlers.effects.information
 
-import com.wingedsheep.engine.core.ExecutionResult
+import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.core.LookedAtCardsEvent
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
@@ -26,7 +26,7 @@ class LookAtFaceDownExecutor : EffectExecutor<LookAtFaceDownEffect> {
         state: GameState,
         effect: LookAtFaceDownEffect,
         context: EffectContext
-    ): ExecutionResult {
+    ): EffectResult {
         val viewingPlayerId = context.controllerId
 
         return when (effect.scope) {
@@ -40,9 +40,9 @@ class LookAtFaceDownExecutor : EffectExecutor<LookAtFaceDownEffect> {
         effect: LookAtFaceDownEffect,
         context: EffectContext,
         viewingPlayerId: com.wingedsheep.sdk.model.EntityId
-    ): ExecutionResult {
+    ): EffectResult {
         val targetId = context.resolveTarget(effect.target)
-            ?: return ExecutionResult.error(state, "No valid target for look at face-down creature")
+            ?: return EffectResult.error(state, "No valid target for look at face-down creature")
 
         val newState = state.updateEntity(targetId) { container ->
             val existing = container.get<RevealedToComponent>()
@@ -53,7 +53,7 @@ class LookAtFaceDownExecutor : EffectExecutor<LookAtFaceDownEffect> {
             }
         }
 
-        return ExecutionResult.success(
+        return EffectResult.success(
             newState,
             listOf(LookedAtCardsEvent(viewingPlayerId, listOf(targetId), source = "Look at face-down creature"))
         )
@@ -64,9 +64,9 @@ class LookAtFaceDownExecutor : EffectExecutor<LookAtFaceDownEffect> {
         effect: LookAtFaceDownEffect,
         context: EffectContext,
         viewingPlayerId: com.wingedsheep.sdk.model.EntityId
-    ): ExecutionResult {
+    ): EffectResult {
         val targetPlayerId = context.resolvePlayerTarget(effect.target)
-            ?: return ExecutionResult.error(state, "No valid target player for look at all face-down creatures")
+            ?: return EffectResult.error(state, "No valid target player for look at all face-down creatures")
 
         val battlefield = state.controlledBattlefield(targetPlayerId)
         val faceDownCreatures = battlefield.filter { entityId ->
@@ -75,7 +75,7 @@ class LookAtFaceDownExecutor : EffectExecutor<LookAtFaceDownEffect> {
         }
 
         if (faceDownCreatures.isEmpty()) {
-            return ExecutionResult.success(state)
+            return EffectResult.success(state)
         }
 
         var newState = state
@@ -90,7 +90,7 @@ class LookAtFaceDownExecutor : EffectExecutor<LookAtFaceDownEffect> {
             }
         }
 
-        return ExecutionResult.success(
+        return EffectResult.success(
             newState,
             listOf(LookedAtCardsEvent(viewingPlayerId, faceDownCreatures, source = "Look at face-down creatures"))
         )

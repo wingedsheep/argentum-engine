@@ -2,7 +2,7 @@ package com.wingedsheep.engine.handlers.effects.permanent.protection
 
 import com.wingedsheep.engine.core.ChooseColorProtectionContinuation
 import com.wingedsheep.engine.core.DecisionPhase
-import com.wingedsheep.engine.core.ExecutionResult
+import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.handlers.DecisionHandler
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
@@ -30,7 +30,7 @@ class ChooseColorProtectionExecutor(
         state: GameState,
         effect: ChooseColorAndGrantProtectionToGroupEffect,
         context: EffectContext
-    ): ExecutionResult {
+    ): EffectResult {
         val sourceName = context.sourceId?.let { state.getEntity(it)?.get<CardComponent>()?.name } ?: "Unknown"
 
         // Create the color choice decision
@@ -55,7 +55,7 @@ class ChooseColorProtectionExecutor(
 
         val stateWithContinuation = decisionResult.state.pushContinuation(continuation)
 
-        return ExecutionResult.paused(
+        return EffectResult.paused(
             stateWithContinuation,
             decisionResult.pendingDecision,
             decisionResult.events

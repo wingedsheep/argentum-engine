@@ -1,6 +1,6 @@
 package com.wingedsheep.engine.handlers.effects.zones
 
-import com.wingedsheep.engine.core.ExecutionResult
+import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.core.GameEvent
 import com.wingedsheep.engine.core.ZoneChangeEvent
 import com.wingedsheep.engine.handlers.EffectContext
@@ -24,7 +24,7 @@ class ExileOpponentsGraveyardsExecutor : EffectExecutor<ExileOpponentsGraveyards
         state: GameState,
         effect: ExileOpponentsGraveyardsEffect,
         context: EffectContext
-    ): ExecutionResult {
+    ): EffectResult {
         var newState = state
         val events = mutableListOf<GameEvent>()
         val controllerId = context.controllerId
@@ -56,6 +56,6 @@ class ExileOpponentsGraveyardsExecutor : EffectExecutor<ExileOpponentsGraveyards
             }
         }
 
-        return ExecutionResult.success(newState, events)
+        return EffectResult.success(newState, events)
     }
 }

@@ -25,13 +25,13 @@ class EachPlayerChoosesCreatureTypeExecutor : EffectExecutor<EachPlayerChoosesCr
         state: GameState,
         effect: EachPlayerChoosesCreatureTypeEffect,
         context: EffectContext
-    ): ExecutionResult {
+    ): EffectResult {
         val allCreatureTypes = Subtype.ALL_CREATURE_TYPES
         val sourceName = context.sourceId?.let { state.getEntity(it)?.get<CardComponent>()?.name }
 
         // Get players in APNAP order (active player first)
         val activePlayer = state.activePlayerId
-            ?: return ExecutionResult.error(state, "No active player")
+            ?: return EffectResult.error(state, "No active player")
         val playerOrder = listOf(activePlayer) + state.turnOrder.filter { it != activePlayer }
 
         val firstPlayer = playerOrder.first()
@@ -65,7 +65,7 @@ class EachPlayerChoosesCreatureTypeExecutor : EffectExecutor<EachPlayerChoosesCr
         val stateWithDecision = state.withPendingDecision(decision)
         val stateWithContinuation = stateWithDecision.pushContinuation(continuation)
 
-        return ExecutionResult.paused(
+        return EffectResult.paused(
             stateWithContinuation,
             decision,
             listOf(

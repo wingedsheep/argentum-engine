@@ -4,7 +4,7 @@ import com.wingedsheep.engine.core.CounterUnlessPaysManaSelectionContinuation
 import com.wingedsheep.engine.core.DecisionContext
 import com.wingedsheep.engine.core.DecisionPhase
 import com.wingedsheep.engine.core.DecisionRequestedEvent
-import com.wingedsheep.engine.core.ExecutionResult
+import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.core.ManaSourceOption
 import com.wingedsheep.engine.core.SelectManaSourcesDecision
 import com.wingedsheep.engine.handlers.EffectContext
@@ -41,23 +41,23 @@ class WardCounterEffectExecutor(
         state: GameState,
         effect: WardCounterEffect,
         context: EffectContext
-    ): ExecutionResult {
+    ): EffectResult {
         val spellEntityId = context.targetingSourceEntityId
-            ?: return ExecutionResult.success(state) // No targeting source — do nothing
+            ?: return EffectResult.success(state) // No targeting source — do nothing
 
         // Check if the spell/ability is still on the stack
         if (!state.stack.contains(spellEntityId)) {
-            return ExecutionResult.success(state) // Already left the stack — do nothing
+            return EffectResult.success(state) // Already left the stack — do nothing
         }
 
         val container = state.getEntity(spellEntityId)
-            ?: return ExecutionResult.success(state)
+            ?: return EffectResult.success(state)
 
         // Find the controller of the spell/ability
         val payingPlayerId = container.get<SpellOnStackComponent>()?.casterId
             ?: container.get<ActivatedAbilityOnStackComponent>()?.controllerId
             ?: container.get<TriggeredAbilityOnStackComponent>()?.controllerId
-            ?: return ExecutionResult.success(state)
+            ?: return EffectResult.success(state)
 
         val manaCost = ManaCost.parse(effect.manaCost)
 
@@ -111,7 +111,7 @@ class WardCounterEffectExecutor(
         val stateWithDecision = state.withPendingDecision(decision)
         val stateWithContinuation = stateWithDecision.pushContinuation(continuation)
 
-        return ExecutionResult.paused(
+        return EffectResult.paused(
             stateWithContinuation,
             decision,
             listOf(
@@ -129,12 +129,12 @@ class WardCounterEffectExecutor(
         state: GameState,
         entityId: EntityId,
         container: ComponentContainer
-    ): ExecutionResult {
+    ): EffectResult {
         val resolver = StackResolver(cardRegistry = cardRegistry)
-        return if (container.has<SpellOnStackComponent>()) {
+        return EffectResult.from(if (container.has<SpellOnStackComponent>()) {
             resolver.counterSpell(state, entityId)
         } else {
             resolver.counterAbility(state, entityId)
-        }
+        })
     }
 }

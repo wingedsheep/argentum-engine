@@ -1,6 +1,6 @@
 package com.wingedsheep.engine.handlers.effects.life
 
-import com.wingedsheep.engine.core.ExecutionResult
+import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.core.LifeChangedEvent
 import com.wingedsheep.engine.core.LifeChangeReason
 import com.wingedsheep.engine.handlers.EffectContext
@@ -24,7 +24,7 @@ class OwnerGainsLifeExecutor : EffectExecutor<OwnerGainsLifeEffect> {
         state: GameState,
         effect: OwnerGainsLifeEffect,
         context: EffectContext
-    ): ExecutionResult {
+    ): EffectResult {
         // Get the first target from the context (the creature that was targeted by the spell)
         val targetId = context.targets.firstOrNull()?.let {
             when (it) {
@@ -32,17 +32,17 @@ class OwnerGainsLifeExecutor : EffectExecutor<OwnerGainsLifeEffect> {
                 is com.wingedsheep.engine.state.components.stack.ChosenTarget.Card -> it.cardId
                 else -> null
             }
-        } ?: return ExecutionResult.success(state) // No target, effect fizzles gracefully
+        } ?: return EffectResult.success(state) // No target, effect fizzles gracefully
 
         // Find the owner of the targeted permanent
         val targetContainer = state.getEntity(targetId)
         val ownerId = targetContainer?.get<OwnerComponent>()?.playerId
             ?: targetContainer?.get<CardComponent>()?.ownerId
-            ?: return ExecutionResult.success(state) // Can't determine owner, effect fizzles
+            ?: return EffectResult.success(state) // Can't determine owner, effect fizzles
 
         // Get the owner's current life total
         val currentLife = state.getEntity(ownerId)?.get<LifeTotalComponent>()?.life
-            ?: return ExecutionResult.error(state, "Owner has no life total")
+            ?: return EffectResult.error(state, "Owner has no life total")
 
         // Apply life gain
         val newLife = currentLife + effect.amount
@@ -51,7 +51,7 @@ class OwnerGainsLifeExecutor : EffectExecutor<OwnerGainsLifeEffect> {
         }
         newState = com.wingedsheep.engine.handlers.effects.DamageUtils.markLifeGainedThisTurn(newState, ownerId)
 
-        return ExecutionResult.success(
+        return EffectResult.success(
             newState,
             listOf(LifeChangedEvent(ownerId, currentLife, newLife, LifeChangeReason.LIFE_GAIN))
         )

@@ -1,6 +1,6 @@
 package com.wingedsheep.engine.handlers.effects.combat
 
-import com.wingedsheep.engine.core.ExecutionResult
+import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.state.GameState
@@ -22,15 +22,15 @@ class MarkMustAttackThisTurnExecutor : EffectExecutor<MarkMustAttackThisTurnEffe
         state: GameState,
         effect: MarkMustAttackThisTurnEffect,
         context: EffectContext
-    ): ExecutionResult {
+    ): EffectResult {
         val targetId = context.resolveTarget(effect.target)
-            ?: return ExecutionResult.success(state)
+            ?: return EffectResult.success(state)
 
         if (targetId !in state.getBattlefield()) {
-            return ExecutionResult.success(state)
+            return EffectResult.success(state)
         }
 
         val newState = state.updateEntity(targetId) { it.with(MustAttackThisTurnComponent) }
-        return ExecutionResult.success(newState)
+        return EffectResult.success(newState)
     }
 }

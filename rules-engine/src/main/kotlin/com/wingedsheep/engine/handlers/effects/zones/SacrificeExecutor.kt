@@ -37,7 +37,7 @@ class SacrificeExecutor(
         state: GameState,
         effect: SacrificeEffect,
         context: EffectContext
-    ): ExecutionResult {
+    ): EffectResult {
         val controllerId = context.controllerId
         val sourceId = context.sourceId
 
@@ -61,7 +61,7 @@ class SacrificeExecutor(
         // Standard sacrifice: must sacrifice exactly `count` permanents
         if (validPermanents.size < effect.count) {
             // Not enough valid permanents - effect does nothing (per MTG rules)
-            return ExecutionResult.success(state)
+            return EffectResult.success(state)
         }
 
         if (validPermanents.size == effect.count) {
@@ -100,7 +100,7 @@ class SacrificeExecutor(
         validPermanents: List<EntityId>,
         minSelections: Int,
         maxSelections: Int
-    ): ExecutionResult {
+    ): EffectResult {
         val prompt = buildString {
             append("Choose ")
             when {
@@ -134,7 +134,7 @@ class SacrificeExecutor(
 
         val stateWithContinuation = decisionResult.state.pushContinuation(continuation)
 
-        return ExecutionResult.paused(
+        return EffectResult.paused(
             stateWithContinuation,
             decisionResult.pendingDecision,
             decisionResult.events
@@ -145,7 +145,7 @@ class SacrificeExecutor(
         state: GameState,
         controllerId: EntityId,
         permanentIds: List<EntityId>
-    ): ExecutionResult {
+    ): EffectResult {
         var newState = state
         val events = mutableListOf<GameEvent>()
 
@@ -165,6 +165,6 @@ class SacrificeExecutor(
             events.addAll(transitionResult.events)
         }
 
-        return ExecutionResult.success(newState, events)
+        return EffectResult.success(newState, events)
     }
 }

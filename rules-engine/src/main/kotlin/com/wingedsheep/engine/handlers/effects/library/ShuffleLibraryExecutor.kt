@@ -1,6 +1,6 @@
 package com.wingedsheep.engine.handlers.effects.library
 
-import com.wingedsheep.engine.core.ExecutionResult
+import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.core.LibraryShuffledEvent
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
@@ -22,15 +22,15 @@ class ShuffleLibraryExecutor : EffectExecutor<ShuffleLibraryEffect> {
         state: GameState,
         effect: ShuffleLibraryEffect,
         context: EffectContext
-    ): ExecutionResult {
+    ): EffectResult {
         val targetId = context.resolvePlayerTarget(effect.target)
-            ?: return ExecutionResult.error(state, "No valid player for shuffle")
+            ?: return EffectResult.error(state, "No valid player for shuffle")
 
         val libraryZone = ZoneKey(targetId, Zone.LIBRARY)
         val library = state.getZone(libraryZone).shuffled()
 
         val newZones = state.zones + (libraryZone to library)
-        return ExecutionResult.success(
+        return EffectResult.success(
             state.copy(zones = newZones),
             listOf(LibraryShuffledEvent(targetId))
         )

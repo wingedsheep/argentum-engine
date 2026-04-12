@@ -1,7 +1,7 @@
 package com.wingedsheep.engine.handlers.effects
 
 import com.wingedsheep.engine.core.CountersAddedEvent
-import com.wingedsheep.engine.core.ExecutionResult
+import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.core.ZoneChangeEvent
 import com.wingedsheep.engine.core.PermanentsSacrificedEvent
 import com.wingedsheep.engine.core.GameEvent as EngineGameEvent
@@ -266,16 +266,16 @@ object ZoneMovementUtils {
      * @param canRegenerate If false, regeneration shields are not checked (e.g. Wrath of God)
      * @return The execution result with updated state and events
      */
-    fun destroyPermanent(state: GameState, entityId: EntityId, canRegenerate: Boolean = true): ExecutionResult {
+    fun destroyPermanent(state: GameState, entityId: EntityId, canRegenerate: Boolean = true): EffectResult {
         val container = state.getEntity(entityId)
-            ?: return ExecutionResult.error(state, "Entity not found: $entityId")
+            ?: return EffectResult.error(state, "Entity not found: $entityId")
 
         container.get<CardComponent>()
-            ?: return ExecutionResult.error(state, "Not a card: $entityId")
+            ?: return EffectResult.error(state, "Not a card: $entityId")
 
         // Check for indestructible - indestructible permanents can't be destroyed
         if (state.projectedState.hasKeyword(entityId, Keyword.INDESTRUCTIBLE)) {
-            return ExecutionResult.success(state)
+            return EffectResult.success(state)
         }
 
         // Check for regeneration shields
@@ -288,7 +288,7 @@ object ZoneMovementUtils {
 
         // Delegate to ZoneTransitionService
         val result = ZoneTransitionService.moveToZone(state, entityId, Zone.GRAVEYARD)
-        return ExecutionResult.success(result.state, result.events)
+        return EffectResult.success(result.state, result.events)
     }
 
     /**
@@ -300,15 +300,15 @@ object ZoneMovementUtils {
      * @param targetZone The destination zone type
      * @return The execution result with updated state and events
      */
-    fun moveCardToZone(state: GameState, entityId: EntityId, targetZone: Zone): ExecutionResult {
+    fun moveCardToZone(state: GameState, entityId: EntityId, targetZone: Zone): EffectResult {
         val container = state.getEntity(entityId)
-            ?: return ExecutionResult.error(state, "Entity not found")
+            ?: return EffectResult.error(state, "Entity not found")
 
         container.get<CardComponent>()
-            ?: return ExecutionResult.error(state, "Not a card")
+            ?: return EffectResult.error(state, "Not a card")
 
         val result = ZoneTransitionService.moveToZone(state, entityId, targetZone)
-        return ExecutionResult.success(result.state, result.events)
+        return EffectResult.success(result.state, result.events)
     }
 
     /**
@@ -537,9 +537,9 @@ object ZoneMovementUtils {
      * @param entityId The entity being regenerated
      * @return ExecutionResult with the regenerated creature still on the battlefield
      */
-    fun applyRegenerationReplacement(state: GameState, entityId: EntityId): ExecutionResult {
+    fun applyRegenerationReplacement(state: GameState, entityId: EntityId): EffectResult {
         val entity = state.getEntity(entityId)
-            ?: return ExecutionResult.success(state)
+            ?: return EffectResult.success(state)
 
         val isAttacking = entity.has<AttackingComponent>()
         val isBlocking = entity.has<BlockingComponent>()
@@ -589,7 +589,7 @@ object ZoneMovementUtils {
             }
         }
 
-        return ExecutionResult.success(newState)
+        return EffectResult.success(newState)
     }
 
     /**
@@ -600,14 +600,14 @@ object ZoneMovementUtils {
      * @param targetZone The destination zone type
      * @return The execution result with updated state and events
      */
-    fun movePermanentToZone(state: GameState, entityId: EntityId, targetZone: Zone): ExecutionResult {
+    fun movePermanentToZone(state: GameState, entityId: EntityId, targetZone: Zone): EffectResult {
         val container = state.getEntity(entityId)
-            ?: return ExecutionResult.error(state, "Entity not found")
+            ?: return EffectResult.error(state, "Entity not found")
 
         container.get<CardComponent>()
-            ?: return ExecutionResult.error(state, "Not a card")
+            ?: return EffectResult.error(state, "Not a card")
 
         val result = ZoneTransitionService.moveToZone(state, entityId, targetZone)
-        return ExecutionResult.success(result.state, result.events)
+        return EffectResult.success(result.state, result.events)
     }
 }

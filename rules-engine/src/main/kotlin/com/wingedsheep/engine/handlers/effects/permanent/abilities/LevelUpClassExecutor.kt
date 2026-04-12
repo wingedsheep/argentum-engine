@@ -1,7 +1,7 @@
 package com.wingedsheep.engine.handlers.effects.permanent.abilities
 
 import com.wingedsheep.engine.core.ClassLevelChangedEvent
-import com.wingedsheep.engine.core.ExecutionResult
+import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.mechanics.layers.StaticAbilityHandler
@@ -24,14 +24,14 @@ class LevelUpClassExecutor(
         state: GameState,
         effect: LevelUpClassEffect,
         context: EffectContext
-    ): ExecutionResult {
-        val sourceId = context.sourceId ?: return ExecutionResult.success(state)
-        val container = state.getEntity(sourceId) ?: return ExecutionResult.success(state)
-        val classComponent = container.get<ClassLevelComponent>() ?: return ExecutionResult.success(state)
+    ): EffectResult {
+        val sourceId = context.sourceId ?: return EffectResult.success(state)
+        val container = state.getEntity(sourceId) ?: return EffectResult.success(state)
+        val classComponent = container.get<ClassLevelComponent>() ?: return EffectResult.success(state)
 
         // Only level up if the target level is exactly one above current
         if (effect.targetLevel != classComponent.currentLevel + 1) {
-            return ExecutionResult.success(state)
+            return EffectResult.success(state)
         }
 
         var newState = state.updateEntity(sourceId) { c ->
@@ -47,9 +47,9 @@ class LevelUpClassExecutor(
             }
         }
 
-        val controllerId = container.get<ControllerComponent>()?.playerId ?: return ExecutionResult.success(newState)
+        val controllerId = container.get<ControllerComponent>()?.playerId ?: return EffectResult.success(newState)
 
-        return ExecutionResult.success(
+        return EffectResult.success(
             newState,
             listOf(ClassLevelChangedEvent(sourceId, effect.targetLevel, controllerId))
         )

@@ -1,6 +1,6 @@
 package com.wingedsheep.engine.handlers.effects.mana
 
-import com.wingedsheep.engine.core.ExecutionResult
+import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.handlers.effects.BattlefieldFilterUtils
@@ -26,7 +26,7 @@ class AddManaOfColorAmongExecutor : EffectExecutor<AddManaOfColorAmongEffect> {
         state: GameState,
         effect: AddManaOfColorAmongEffect,
         context: EffectContext
-    ): ExecutionResult {
+    ): EffectResult {
         val projected = state.projectedState
         val matched = BattlefieldFilterUtils.findMatchingOnBattlefield(state, effect.filter, context)
 
@@ -40,7 +40,7 @@ class AddManaOfColorAmongExecutor : EffectExecutor<AddManaOfColorAmongEffect> {
         }
 
         if (availableColors.isEmpty()) {
-            return ExecutionResult.success(state)
+            return EffectResult.success(state)
         }
 
         // Use the chosen color, defaulting to the first available color
@@ -57,6 +57,6 @@ class AddManaOfColorAmongExecutor : EffectExecutor<AddManaOfColorAmongEffect> {
             container.with(updatedPool)
         }
 
-        return ExecutionResult.success(newState)
+        return EffectResult.success(newState)
     }
 }

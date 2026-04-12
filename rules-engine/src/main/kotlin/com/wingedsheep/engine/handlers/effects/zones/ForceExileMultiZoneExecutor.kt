@@ -37,13 +37,13 @@ class ForceExileMultiZoneExecutor(
         state: GameState,
         effect: ForceExileMultiZoneEffect,
         context: EffectContext
-    ): ExecutionResult {
+    ): EffectResult {
         val playerId = context.resolvePlayerTarget(effect.target)
-            ?: return ExecutionResult.error(state, "No valid player for force exile multi-zone")
+            ?: return EffectResult.error(state, "No valid player for force exile multi-zone")
 
         val count = amountEvaluator.evaluate(state, effect.count, context)
         if (count <= 0) {
-            return ExecutionResult.success(state)
+            return EffectResult.success(state)
         }
 
         val sourceId = context.sourceId
@@ -57,7 +57,7 @@ class ForceExileMultiZoneExecutor(
         val allOptions = gatherOptions(state, playerId)
 
         if (allOptions.isEmpty()) {
-            return ExecutionResult.success(state)
+            return EffectResult.success(state)
         }
 
         val exileCount = minOf(count, allOptions.size)
@@ -93,7 +93,7 @@ class ForceExileMultiZoneExecutor(
 
         val stateWithContinuation = decisionResult.state.pushContinuation(continuation)
 
-        return ExecutionResult.paused(
+        return EffectResult.paused(
             stateWithContinuation,
             decisionResult.pendingDecision,
             decisionResult.events
@@ -131,7 +131,7 @@ class ForceExileMultiZoneExecutor(
             state: GameState,
             playerId: EntityId,
             entityIds: List<EntityId>
-        ): ExecutionResult {
+        ): EffectResult {
             var currentState = state
             val allEvents = mutableListOf<GameEvent>()
 
@@ -144,7 +144,7 @@ class ForceExileMultiZoneExecutor(
                 allEvents.addAll(transitionResult.events)
             }
 
-            return ExecutionResult.success(currentState, allEvents)
+            return EffectResult.success(currentState, allEvents)
         }
     }
 }

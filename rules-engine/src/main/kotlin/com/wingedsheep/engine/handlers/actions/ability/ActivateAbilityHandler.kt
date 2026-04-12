@@ -546,7 +546,7 @@ class ActivateAbilityHandler(
                 manaColorChoice = action.manaColorChoice
             )
 
-            val effectResult = effectExecutorRegistry.execute(currentState, finalEffect, context)
+            val effectResult = effectExecutorRegistry.execute(currentState, finalEffect, context).toExecutionResult()
             if (!effectResult.isSuccess) {
                 return effectResult
             }

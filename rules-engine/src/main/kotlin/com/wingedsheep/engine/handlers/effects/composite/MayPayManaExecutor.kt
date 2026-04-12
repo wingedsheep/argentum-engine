@@ -20,7 +20,7 @@ import kotlin.reflect.KClass
  */
 class MayPayManaExecutor(
     private val cardRegistry: com.wingedsheep.engine.registry.CardRegistry,
-    private val effectExecutor: (GameState, Effect, EffectContext) -> ExecutionResult
+    private val effectExecutor: (GameState, Effect, EffectContext) -> EffectResult
 ) : EffectExecutor<MayPayManaEffect> {
 
     override val effectType: KClass<MayPayManaEffect> = MayPayManaEffect::class
@@ -29,14 +29,14 @@ class MayPayManaExecutor(
         state: GameState,
         effect: MayPayManaEffect,
         context: EffectContext
-    ): ExecutionResult {
+    ): EffectResult {
         val playerId = context.controllerId
 
         // Check if the player can pay the mana cost
         val manaSolver = ManaSolver(cardRegistry)
         if (!manaSolver.canPay(state, playerId, effect.cost)) {
             // Can't pay — skip silently
-            return ExecutionResult.success(state)
+            return EffectResult.success(state)
         }
 
         // Get source name for the prompt
@@ -73,7 +73,7 @@ class MayPayManaExecutor(
         val stateWithDecision = state.withPendingDecision(decision)
         val stateWithContinuation = stateWithDecision.pushContinuation(continuation)
 
-        return ExecutionResult.paused(
+        return EffectResult.paused(
             stateWithContinuation,
             decision,
             listOf(

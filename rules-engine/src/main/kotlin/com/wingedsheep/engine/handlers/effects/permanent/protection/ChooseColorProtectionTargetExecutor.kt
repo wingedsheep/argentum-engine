@@ -2,7 +2,7 @@ package com.wingedsheep.engine.handlers.effects.permanent.protection
 
 import com.wingedsheep.engine.core.ChooseColorProtectionTargetContinuation
 import com.wingedsheep.engine.core.DecisionPhase
-import com.wingedsheep.engine.core.ExecutionResult
+import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.handlers.DecisionHandler
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
@@ -30,9 +30,9 @@ class ChooseColorProtectionTargetExecutor(
         state: GameState,
         effect: ChooseColorAndGrantProtectionToTargetEffect,
         context: EffectContext
-    ): ExecutionResult {
+    ): EffectResult {
         val targetEntityId = context.resolveTarget(effect.target, state)
-            ?: return ExecutionResult.error(state, "Could not resolve target for protection effect")
+            ?: return EffectResult.error(state, "Could not resolve target for protection effect")
 
         val sourceName = context.sourceId?.let { state.getEntity(it)?.get<CardComponent>()?.name } ?: "Unknown"
 
@@ -58,7 +58,7 @@ class ChooseColorProtectionTargetExecutor(
 
         val stateWithContinuation = decisionResult.state.pushContinuation(continuation)
 
-        return ExecutionResult.paused(
+        return EffectResult.paused(
             stateWithContinuation,
             decisionResult.pendingDecision,
             decisionResult.events

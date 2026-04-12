@@ -1,7 +1,7 @@
 package com.wingedsheep.engine.handlers.effects.drawing
 
 import com.wingedsheep.engine.core.CardsDrawnEvent
-import com.wingedsheep.engine.core.ExecutionResult
+import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.core.GameEvent
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.identity.CardComponent
@@ -57,7 +57,7 @@ object DrawLoop {
         skipStaticReplacement: Boolean = false,
         skipPromptOnDraw: Boolean = false,
         emptyLibraryReason: String = "Empty library"
-    ): ExecutionResult {
+    ): EffectResult {
         var newState = state
         val drawnCards = mutableListOf<EntityId>()
         val perCardEvents = mutableListOf<GameEvent>()
@@ -121,14 +121,14 @@ object DrawLoop {
         playerId: EntityId,
         drawnCards: List<EntityId>,
         perCardEvents: List<GameEvent>
-    ): ExecutionResult {
+    ): EffectResult {
         val events = mutableListOf<GameEvent>()
         if (drawnCards.isNotEmpty()) {
             val cardNames = drawnCards.map { state.getEntity(it)?.get<CardComponent>()?.name ?: "Card" }
             events.add(CardsDrawnEvent(playerId, drawnCards.size, drawnCards, cardNames))
         }
         events.addAll(perCardEvents)
-        return ExecutionResult.success(state, events)
+        return EffectResult.success(state, events)
     }
 
     /**
@@ -142,8 +142,8 @@ object DrawLoop {
         playerId: EntityId,
         drawnCards: List<EntityId>,
         perCardEvents: List<GameEvent>,
-        pauseResult: ExecutionResult
-    ): ExecutionResult {
+        pauseResult: EffectResult
+    ): EffectResult {
         val allEvents = mutableListOf<GameEvent>()
         if (drawnCards.isNotEmpty()) {
             val cardNames = drawnCards.map { state.getEntity(it)?.get<CardComponent>()?.name ?: "Card" }
@@ -151,7 +151,7 @@ object DrawLoop {
         }
         allEvents.addAll(perCardEvents)
         allEvents.addAll(pauseResult.events)
-        return ExecutionResult.paused(
+        return EffectResult.paused(
             pauseResult.state,
             pauseResult.pendingDecision!!,
             allEvents

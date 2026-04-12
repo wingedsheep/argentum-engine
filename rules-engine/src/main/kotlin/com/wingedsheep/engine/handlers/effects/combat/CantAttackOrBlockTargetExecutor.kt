@@ -1,6 +1,6 @@
 package com.wingedsheep.engine.handlers.effects.combat
 
-import com.wingedsheep.engine.core.ExecutionResult
+import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.mechanics.layers.Layer
@@ -27,11 +27,11 @@ class CantAttackOrBlockTargetExecutor : EffectExecutor<CantAttackOrBlockTargetEf
         state: GameState,
         effect: CantAttackOrBlockTargetEffect,
         context: EffectContext
-    ): ExecutionResult {
+    ): EffectResult {
         val entityId = context.resolveTarget(effect.target)
-            ?: return ExecutionResult.success(state)
-        val container = state.getEntity(entityId) ?: return ExecutionResult.success(state)
-        container.get<CardComponent>() ?: return ExecutionResult.success(state)
+            ?: return EffectResult.success(state)
+        val container = state.getEntity(entityId) ?: return EffectResult.success(state)
+        container.get<CardComponent>() ?: return EffectResult.success(state)
 
         val affectedEntities = setOf(entityId)
 
@@ -53,6 +53,6 @@ class CantAttackOrBlockTargetExecutor : EffectExecutor<CantAttackOrBlockTargetEf
 
         val newState = state.addFloatingEffects(listOf(cantAttackEffect, cantBlockEffect))
 
-        return ExecutionResult.success(newState)
+        return EffectResult.success(newState)
     }
 }

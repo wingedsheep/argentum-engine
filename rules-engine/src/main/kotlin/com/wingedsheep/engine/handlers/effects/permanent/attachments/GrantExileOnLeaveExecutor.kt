@@ -1,6 +1,6 @@
 package com.wingedsheep.engine.handlers.effects.permanent.attachments
 
-import com.wingedsheep.engine.core.ExecutionResult
+import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.state.GameState
@@ -22,18 +22,18 @@ class GrantExileOnLeaveExecutor : EffectExecutor<GrantExileOnLeaveEffect> {
         state: GameState,
         effect: GrantExileOnLeaveEffect,
         context: EffectContext
-    ): ExecutionResult {
+    ): EffectResult {
         val targetId = context.resolveTarget(effect.target)
-            ?: return ExecutionResult.error(state, "No valid target for exile-on-leave grant")
+            ?: return EffectResult.error(state, "No valid target for exile-on-leave grant")
 
         if (state.getEntity(targetId) == null) {
-            return ExecutionResult.error(state, "Target entity not found")
+            return EffectResult.error(state, "Target entity not found")
         }
 
         val newState = state.updateEntity(targetId) { container ->
             container.with(ExileOnLeaveBattlefieldComponent)
         }
 
-        return ExecutionResult.success(newState)
+        return EffectResult.success(newState)
     }
 }

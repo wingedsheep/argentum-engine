@@ -1,6 +1,6 @@
 package com.wingedsheep.engine.handlers.effects.player
 
-import com.wingedsheep.engine.core.ExecutionResult
+import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.handlers.effects.ReplacementEffectUtils
@@ -30,19 +30,19 @@ class TakeExtraTurnExecutor : EffectExecutor<TakeExtraTurnEffect> {
         state: GameState,
         effect: TakeExtraTurnEffect,
         context: EffectContext
-    ): ExecutionResult {
+    ): EffectResult {
         // Resolve who takes the extra turn — defaults to the controller
         val turnTakerId = context.resolveTarget(effect.target, state)
             ?: context.controllerId
 
         // Check if extra turns are prevented (e.g., Ugin's Nexus on the battlefield)
         if (ReplacementEffectUtils.isExtraTurnPrevented(state)) {
-            return ExecutionResult.success(state)
+            return EffectResult.success(state)
         }
 
         // In a 2-player game, "take an extra turn" means the other player skips their next turn
         val otherPlayerId = state.getOpponent(turnTakerId)
-            ?: return ExecutionResult.error(state, "No opponent found")
+            ?: return EffectResult.error(state, "No opponent found")
 
         // Add SkipNextTurnComponent to the other player
         var newState = state.updateEntity(otherPlayerId) { container ->
@@ -62,6 +62,6 @@ class TakeExtraTurnExecutor : EffectExecutor<TakeExtraTurnEffect> {
             }
         }
 
-        return ExecutionResult.success(newState)
+        return EffectResult.success(newState)
     }
 }

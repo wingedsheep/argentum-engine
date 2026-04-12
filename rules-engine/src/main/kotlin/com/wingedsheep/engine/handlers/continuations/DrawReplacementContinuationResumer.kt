@@ -196,7 +196,7 @@ class DrawReplacementContinuationResumer(
             )
             val effectResult = services.effectExecutorRegistry.execute(
                 newState, continuation.abilityEffect, effectContext
-            )
+            ).toExecutionResult()
             if (effectResult.isSuccess) {
                 newState = effectResult.newState
                 events.addAll(effectResult.events)
@@ -255,7 +255,7 @@ class DrawReplacementContinuationResumer(
             // Player activated - use DrawCardsExecutor with cardRegistry so it can prompt
             // again for subsequent draws (e.g., Arcanis draws 3, player can activate 3 times)
             val drawExecutor = DrawCardsExecutor(cardRegistry = services.cardRegistry, effectExecutor = services.effectExecutorRegistry::execute)
-            val drawResult = drawExecutor.executeDraws(newState, playerId, continuation.drawCount)
+            val drawResult = drawExecutor.executeDraws(newState, playerId, continuation.drawCount).toExecutionResult()
             if (drawResult.isPaused) {
                 return ExecutionResult.paused(
                     drawResult.state,
@@ -269,7 +269,7 @@ class DrawReplacementContinuationResumer(
             // Player declined all abilities - draw 1 card normally,
             // then continue remaining draws with prompting enabled
             val singleDrawExecutor = DrawCardsExecutor(cardRegistry = services.cardRegistry, effectExecutor = services.effectExecutorRegistry::execute)
-            val singleDrawResult = singleDrawExecutor.executeDraws(newState, playerId, 1, skipPrompts = true)
+            val singleDrawResult = singleDrawExecutor.executeDraws(newState, playerId, 1, skipPrompts = true).toExecutionResult()
             if (singleDrawResult.isPaused) {
                 return ExecutionResult.paused(
                     singleDrawResult.state,
@@ -284,7 +284,7 @@ class DrawReplacementContinuationResumer(
             val remainingDraws = continuation.drawCount - 1
             if (remainingDraws > 0) {
                 val drawExecutor = DrawCardsExecutor(cardRegistry = services.cardRegistry, effectExecutor = services.effectExecutorRegistry::execute)
-                val drawResult = drawExecutor.executeDraws(newState, playerId, remainingDraws)
+                val drawResult = drawExecutor.executeDraws(newState, playerId, remainingDraws).toExecutionResult()
                 if (drawResult.isPaused) {
                     return ExecutionResult.paused(
                         drawResult.state,
@@ -337,7 +337,7 @@ class DrawReplacementContinuationResumer(
         )
         val effectResult = services.effectExecutorRegistry.execute(
             newState, continuation.abilityEffect, effectContext
-        )
+        ).toExecutionResult()
         if (effectResult.isSuccess) {
             newState = effectResult.newState
             events.addAll(effectResult.events)
@@ -360,7 +360,7 @@ class DrawReplacementContinuationResumer(
         } else {
             // Spell/ability draws - use DrawCardsExecutor with cardRegistry for subsequent prompts
             val drawExecutor = DrawCardsExecutor(cardRegistry = services.cardRegistry, effectExecutor = services.effectExecutorRegistry::execute)
-            val drawResult = drawExecutor.executeDraws(newState, playerId, continuation.drawCount)
+            val drawResult = drawExecutor.executeDraws(newState, playerId, continuation.drawCount).toExecutionResult()
             if (drawResult.isPaused) {
                 return ExecutionResult.paused(
                     drawResult.state,
@@ -407,7 +407,7 @@ class DrawReplacementContinuationResumer(
             )
             val effectResult = services.effectExecutorRegistry.execute(
                 newState, continuation.replacementEffect, effectContext
-            )
+            ).toExecutionResult()
             if (effectResult.isSuccess) {
                 newState = effectResult.newState
                 events.addAll(effectResult.events)
@@ -415,7 +415,7 @@ class DrawReplacementContinuationResumer(
         } else {
             // Player declined - draw 1 card normally (skip prompts since we already handled them)
             val singleDrawExecutor = DrawCardsExecutor(cardRegistry = services.cardRegistry, effectExecutor = services.effectExecutorRegistry::execute)
-            val singleDrawResult = singleDrawExecutor.executeDraws(newState, playerId, 1, skipPrompts = true)
+            val singleDrawResult = singleDrawExecutor.executeDraws(newState, playerId, 1, skipPrompts = true).toExecutionResult()
             if (singleDrawResult.isPaused) {
                 return ExecutionResult.paused(
                     singleDrawResult.state,
@@ -441,7 +441,7 @@ class DrawReplacementContinuationResumer(
                 )
                 turnManager.drawCards(newState, playerId, remainingDraws)
             } else {
-                drawExecutor.executeDraws(newState, playerId, remainingDraws)
+                drawExecutor.executeDraws(newState, playerId, remainingDraws).toExecutionResult()
             }
             if (drawResult.isPaused) {
                 return ExecutionResult.paused(

@@ -1,6 +1,6 @@
 package com.wingedsheep.engine.handlers.effects.permanent.types
 
-import com.wingedsheep.engine.core.ExecutionResult
+import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.mechanics.layers.Layer
@@ -28,13 +28,13 @@ class AnimateLandExecutor : EffectExecutor<AnimateLandEffect> {
         state: GameState,
         effect: AnimateLandEffect,
         context: EffectContext
-    ): ExecutionResult {
+    ): EffectResult {
         val targetId = context.resolveTarget(effect.target)
-            ?: return ExecutionResult.success(state)
+            ?: return EffectResult.success(state)
 
         // Verify the target is still on the battlefield
         if (targetId !in state.getBattlefield()) {
-            return ExecutionResult.success(state)
+            return EffectResult.success(state)
         }
 
         val affectedEntities = setOf(targetId)
@@ -60,6 +60,6 @@ class AnimateLandExecutor : EffectExecutor<AnimateLandEffect> {
 
         val newState = state.addFloatingEffects(listOf(addTypeEffect, setPTEffect))
 
-        return ExecutionResult.success(newState)
+        return EffectResult.success(newState)
     }
 }

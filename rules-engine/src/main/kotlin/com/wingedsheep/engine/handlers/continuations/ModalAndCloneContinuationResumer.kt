@@ -98,7 +98,7 @@ class ModalAndCloneContinuationResumer(
                         targets = chosenTargets,
                         pipeline = PipelineState(namedTargets = EffectContext.buildNamedTargets(chosenMode.targetRequirements, chosenTargets))
                     )
-                    val result = services.effectExecutorRegistry.execute(state, chosenMode.effect, context)
+                    val result = services.effectExecutorRegistry.execute(state, chosenMode.effect, context).toExecutionResult()
                     if (result.isPaused) return result
                     return checkForMore(result.state, result.events.toList())
                 }
@@ -159,7 +159,7 @@ class ModalAndCloneContinuationResumer(
             triggeringEntityId = continuation.triggeringEntityId
         )
 
-        val result = services.effectExecutorRegistry.execute(state, chosenMode.effect, context)
+        val result = services.effectExecutorRegistry.execute(state, chosenMode.effect, context).toExecutionResult()
         if (result.isPaused) return result
         return checkForMore(result.state, result.events.toList())
     }
@@ -202,7 +202,7 @@ class ModalAndCloneContinuationResumer(
             pipeline = PipelineState(namedTargets = EffectContext.buildNamedTargets(continuation.targetRequirements, chosenTargets))
         )
 
-        val result = services.effectExecutorRegistry.execute(state, continuation.effect, context)
+        val result = services.effectExecutorRegistry.execute(state, continuation.effect, context).toExecutionResult()
         if (result.isPaused) return result
         return checkForMore(result.state, result.events.toList())
     }
@@ -846,7 +846,7 @@ class ModalAndCloneContinuationResumer(
             opponentId = continuation.opponentId
         )
 
-        val result = services.effectExecutorRegistry.execute(state, CompositeEffect(effects), context)
+        val result = services.effectExecutorRegistry.execute(state, CompositeEffect(effects), context).toExecutionResult()
         if (result.isPaused) return result
         return checkForMore(result.state, result.events.toList())
     }
@@ -873,7 +873,7 @@ class ModalAndCloneContinuationResumer(
         val result = com.wingedsheep.engine.handlers.effects.token.CreateTokenCopyOfChosenPermanentExecutor.createTokenCopy(
             state, chosenId, continuation.controllerId,
             staticAbilityHandler
-        )
+        ).toExecutionResult()
         if (result.isPaused) return result
         return checkForMore(result.state, result.events.toList())
     }
@@ -962,7 +962,7 @@ class ModalAndCloneContinuationResumer(
             pipeline = PipelineState(namedTargets = continuation.namedTargets)
         )
 
-        val result = services.effectExecutorRegistry.execute(state, chosenEffect, context)
+        val result = services.effectExecutorRegistry.execute(state, chosenEffect, context).toExecutionResult()
 
         return if (result.isPaused) {
             result

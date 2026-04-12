@@ -1,7 +1,7 @@
 package com.wingedsheep.engine.handlers.effects.composite
 
 import com.wingedsheep.engine.core.CoinFlipEvent
-import com.wingedsheep.engine.core.ExecutionResult
+import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.state.GameState
@@ -15,7 +15,7 @@ import kotlin.reflect.KClass
  * Flips two coins and executes the appropriate sub-effect based on the combined outcome.
  */
 class FlipTwoCoinsExecutor(
-    private val effectExecutor: (GameState, Effect, EffectContext) -> ExecutionResult
+    private val effectExecutor: (GameState, Effect, EffectContext) -> EffectResult
 ) : EffectExecutor<FlipTwoCoinsEffect> {
 
     override val effectType: KClass<FlipTwoCoinsEffect> = FlipTwoCoinsEffect::class
@@ -24,7 +24,7 @@ class FlipTwoCoinsExecutor(
         state: GameState,
         effect: FlipTwoCoinsEffect,
         context: EffectContext
-    ): ExecutionResult {
+    ): EffectResult {
         val coin1 = kotlin.random.Random.nextBoolean()
         val coin2 = kotlin.random.Random.nextBoolean()
 
@@ -43,7 +43,7 @@ class FlipTwoCoinsExecutor(
         }
 
         if (subEffect == null) {
-            return ExecutionResult.success(state, events)
+            return EffectResult.success(state, events)
         }
 
         val result = effectExecutor(state, subEffect, context)

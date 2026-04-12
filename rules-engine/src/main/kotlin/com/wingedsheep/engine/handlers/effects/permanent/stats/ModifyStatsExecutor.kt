@@ -1,6 +1,6 @@
 package com.wingedsheep.engine.handlers.effects.permanent.stats
 
-import com.wingedsheep.engine.core.ExecutionResult
+import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.core.StatsModifiedEvent
 import com.wingedsheep.engine.handlers.DynamicAmountEvaluator
 import com.wingedsheep.engine.handlers.EffectContext
@@ -31,19 +31,19 @@ class ModifyStatsExecutor(
         state: GameState,
         effect: ModifyStatsEffect,
         context: EffectContext
-    ): ExecutionResult {
+    ): EffectResult {
         // Resolve the target creature
         val targetId = context.resolveTarget(effect.target, state)
-            ?: return ExecutionResult.error(state, "No valid target for stat modification")
+            ?: return EffectResult.error(state, "No valid target for stat modification")
 
         // Verify target exists and is a creature (use projected types for animated lands etc.)
         val targetContainer = state.getEntity(targetId)
-            ?: return ExecutionResult.error(state, "Target creature no longer exists")
+            ?: return EffectResult.error(state, "Target creature no longer exists")
         val cardComponent = targetContainer.get<CardComponent>()
-            ?: return ExecutionResult.error(state, "Target is not a card")
+            ?: return EffectResult.error(state, "Target is not a card")
         val projected = state.projectedState
         if (!projected.isCreature(targetId) && !targetContainer.has<FaceDownComponent>()) {
-            return ExecutionResult.error(state, "Target is not a creature")
+            return EffectResult.error(state, "Target is not a creature")
         }
 
         val powerMod = amountEvaluator.evaluate(state, effect.powerModifier, context)
@@ -71,6 +71,6 @@ class ModifyStatsExecutor(
             )
         )
 
-        return ExecutionResult.success(newState, events)
+        return EffectResult.success(newState, events)
     }
 }

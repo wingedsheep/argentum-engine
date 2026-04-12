@@ -39,7 +39,7 @@ import kotlin.reflect.KClass
  * @param decisionHandler Handler for creating target decisions
  */
 class ReflexiveTriggerEffectExecutor(
-    private val effectExecutor: (GameState, Effect, EffectContext) -> ExecutionResult,
+    private val effectExecutor: (GameState, Effect, EffectContext) -> EffectResult,
     private val targetFinder: TargetFinder,
     private val decisionHandler: DecisionHandler
 ) : EffectExecutor<ReflexiveTriggerEffect> {
@@ -50,7 +50,7 @@ class ReflexiveTriggerEffectExecutor(
         state: GameState,
         effect: ReflexiveTriggerEffect,
         context: EffectContext
-    ): ExecutionResult {
+    ): EffectResult {
         if (effect.optional) {
             return presentOptionalChoice(state, effect, context)
         }
@@ -65,14 +65,14 @@ class ReflexiveTriggerEffectExecutor(
         state: GameState,
         effect: ReflexiveTriggerEffect,
         context: EffectContext
-    ): ExecutionResult {
+    ): EffectResult {
         // If the action is a ChooseActionEffect with no feasible choices, skip the decision
         if (effect.action is ChooseActionEffect) {
             val chooseEffect = effect.action as ChooseActionEffect
             val anyFeasible = chooseEffect.choices.any { choice ->
                 checkFeasibility(state, context.controllerId, choice.feasibilityCheck)
             }
-            if (!anyFeasible) return ExecutionResult.success(state)
+            if (!anyFeasible) return EffectResult.success(state)
         }
 
         val playerId = context.controllerId
@@ -116,7 +116,7 @@ class ReflexiveTriggerEffectExecutor(
         val stateWithDecision = state.withPendingDecision(decision)
         val stateWithContinuation = stateWithDecision.pushContinuation(continuation)
 
-        return ExecutionResult.paused(
+        return EffectResult.paused(
             stateWithContinuation,
             decision,
             listOf(
@@ -141,7 +141,7 @@ class ReflexiveTriggerEffectExecutor(
         state: GameState,
         effect: ReflexiveTriggerEffect,
         context: EffectContext
-    ): ExecutionResult {
+    ): EffectResult {
         // Pre-push continuation for reflexive targeting
         val continuation = ReflexiveTriggerTargetContinuation(
             decisionId = "pending",
@@ -162,7 +162,7 @@ class ReflexiveTriggerEffectExecutor(
         if (!result.isSuccess) {
             // Action failed — pop our continuation, skip reflexive effect
             val (_, stateWithoutCont) = result.state.popContinuation()
-            return ExecutionResult.success(stateWithoutCont, result.events.toList())
+            return EffectResult.success(stateWithoutCont, result.events.toList())
         }
 
         // Action succeeded — pop our continuation, present reflexive targets
@@ -180,7 +180,7 @@ class ReflexiveTriggerEffectExecutor(
         targetRequirements: List<TargetRequirement>,
         context: EffectContext,
         priorEvents: List<GameEvent>
-    ): ExecutionResult {
+    ): EffectResult {
         val controllerId = context.controllerId
         val sourceId = context.sourceId
         val sourceName = sourceId?.let { state.getEntity(it)?.get<CardComponent>()?.name } ?: "ability"
@@ -201,7 +201,7 @@ class ReflexiveTriggerEffectExecutor(
         for ((index, req) in targetRequirements.withIndex()) {
             val legalTargets = allLegalTargets[index] ?: emptyList()
             if (legalTargets.isEmpty() && req.effectiveMinCount > 0) {
-                return ExecutionResult.success(
+                return EffectResult.success(
                     state,
                     priorEvents + AbilityFizzledEvent(
                         sourceId ?: com.wingedsheep.sdk.model.EntityId("unknown"),
@@ -228,9 +228,9 @@ class ReflexiveTriggerEffectExecutor(
                 )
                 val reflexiveResult = effectExecutor(state, reflexiveEffect, contextWithTargets)
                 return if (reflexiveResult.isPaused) {
-                    ExecutionResult.paused(reflexiveResult.state, reflexiveResult.pendingDecision!!, priorEvents + reflexiveResult.events)
+                    EffectResult.paused(reflexiveResult.state, reflexiveResult.pendingDecision!!, priorEvents + reflexiveResult.events)
                 } else {
-                    ExecutionResult.success(reflexiveResult.state, priorEvents + reflexiveResult.events)
+                    EffectResult.success(reflexiveResult.state, priorEvents + reflexiveResult.events)
                 }
             }
         }
@@ -256,7 +256,7 @@ class ReflexiveTriggerEffectExecutor(
         )
 
         if (!decisionResult.isPaused || decisionResult.pendingDecision == null) {
-            return ExecutionResult.error(state, "Failed to create target decision for reflexive trigger")
+            return EffectResult.error(state, "Failed to create target decision for reflexive trigger")
         }
 
         // Push continuation to execute reflexive effect after targets are chosen
@@ -268,7 +268,7 @@ class ReflexiveTriggerEffectExecutor(
         )
         val stateWithContinuation = decisionResult.state.pushContinuation(resolveContinuation)
 
-        return ExecutionResult.paused(
+        return EffectResult.paused(
             stateWithContinuation,
             decisionResult.pendingDecision,
             priorEvents + decisionResult.events.toList()
@@ -283,7 +283,7 @@ class ReflexiveTriggerEffectExecutor(
         state: GameState,
         effect: ReflexiveTriggerEffect,
         context: EffectContext
-    ): ExecutionResult {
+    ): EffectResult {
         val compositeEffect = CompositeEffect(listOf(effect.action, effect.reflexiveEffect))
         return effectExecutor(state, compositeEffect, context)
     }

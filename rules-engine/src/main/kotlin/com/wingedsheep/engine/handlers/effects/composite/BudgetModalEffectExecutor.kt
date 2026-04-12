@@ -19,7 +19,7 @@ import kotlin.reflect.KClass
  * in printed order.
  */
 class BudgetModalEffectExecutor(
-    private val effectExecutor: (GameState, Effect, EffectContext) -> ExecutionResult
+    private val effectExecutor: (GameState, Effect, EffectContext) -> EffectResult
 ) : EffectExecutor<BudgetModalEffect> {
 
     override val effectType: KClass<BudgetModalEffect> = BudgetModalEffect::class
@@ -28,7 +28,7 @@ class BudgetModalEffectExecutor(
         state: GameState,
         effect: BudgetModalEffect,
         context: EffectContext
-    ): ExecutionResult {
+    ): EffectResult {
         val playerId = context.controllerId
         val sourceName = context.sourceId?.let { sourceId ->
             state.getEntity(sourceId)?.get<CardComponent>()?.name
@@ -64,7 +64,7 @@ class BudgetModalEffectExecutor(
         val stateWithDecision = state.withPendingDecision(decision)
         val stateWithContinuation = stateWithDecision.pushContinuation(continuation)
 
-        return ExecutionResult.paused(
+        return EffectResult.paused(
             stateWithContinuation,
             decision,
             listOf(

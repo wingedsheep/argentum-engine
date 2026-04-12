@@ -24,9 +24,9 @@ class SacrificeSelfExecutor : EffectExecutor<SacrificeSelfEffect> {
         state: GameState,
         effect: SacrificeSelfEffect,
         context: EffectContext
-    ): ExecutionResult {
+    ): EffectResult {
         val sourceId = context.sourceId
-            ?: return ExecutionResult.success(state) // No source to sacrifice
+            ?: return EffectResult.success(state) // No source to sacrifice
 
         val controllerId = context.controllerId
         val battlefieldZone = ZoneKey(controllerId, Zone.BATTLEFIELD)
@@ -34,7 +34,7 @@ class SacrificeSelfExecutor : EffectExecutor<SacrificeSelfEffect> {
 
         // Check if the source is still on the battlefield
         if (sourceId !in state.getZone(battlefieldZone)) {
-            return ExecutionResult.success(state)
+            return EffectResult.success(state)
         }
 
         val sourceName = state.getEntity(sourceId)?.get<CardComponent>()?.name ?: "Unknown"
@@ -49,6 +49,6 @@ class SacrificeSelfExecutor : EffectExecutor<SacrificeSelfEffect> {
         events.add(PermanentsSacrificedEvent(controllerId, listOf(sourceId), listOf(sourceName)))
         events.addAll(transitionResult.events)
 
-        return ExecutionResult.success(transitionResult.state, events)
+        return EffectResult.success(transitionResult.state, events)
     }
 }

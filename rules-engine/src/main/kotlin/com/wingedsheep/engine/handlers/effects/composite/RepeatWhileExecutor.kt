@@ -30,7 +30,7 @@ import kotlin.reflect.KClass
  * and either starts another iteration or completes.
  */
 class RepeatWhileExecutor(
-    private val effectExecutor: (GameState, Effect, EffectContext) -> ExecutionResult
+    private val effectExecutor: (GameState, Effect, EffectContext) -> EffectResult
 ) : EffectExecutor<RepeatWhileEffect> {
 
     override val effectType: KClass<RepeatWhileEffect> = RepeatWhileEffect::class
@@ -39,12 +39,12 @@ class RepeatWhileExecutor(
         state: GameState,
         effect: RepeatWhileEffect,
         context: EffectContext
-    ): ExecutionResult {
+    ): EffectResult {
         // Resolve the decider ID (for PlayerChooses) once at the start
         val resolvedDeciderId = when (val cond = effect.repeatCondition) {
             is RepeatCondition.PlayerChooses ->
                 context.resolvePlayerTarget(cond.decider)
-                    ?: return ExecutionResult.error(state, "RepeatWhile: could not resolve decider target")
+                    ?: return EffectResult.error(state, "RepeatWhile: could not resolve decider target")
             is RepeatCondition.WhileCondition -> null
         }
 
@@ -78,9 +78,9 @@ class RepeatWhileExecutor(
             resolvedDeciderId: EntityId?,
             context: EffectContext,
             sourceName: String?,
-            effectExecutor: (GameState, Effect, EffectContext) -> ExecutionResult,
+            effectExecutor: (GameState, Effect, EffectContext) -> EffectResult,
             priorEvents: List<GameEvent>
-        ): ExecutionResult {
+        ): EffectResult {
             // Pre-push AFTER_BODY continuation
             val afterBodyContinuation = RepeatWhileContinuation(
                 decisionId = "pending",
@@ -100,7 +100,7 @@ class RepeatWhileExecutor(
             if (result.isPaused) {
                 // Body paused — AFTER_BODY continuation is below body's continuation on the stack.
                 // checkForMoreContinuations will handle AFTER_BODY after the body's decision resolves.
-                return ExecutionResult.paused(
+                return EffectResult.paused(
                     result.state,
                     result.pendingDecision!!,
                     priorEvents + result.events
@@ -110,7 +110,7 @@ class RepeatWhileExecutor(
             if (!result.isSuccess) {
                 // Body failed — pop AFTER_BODY and return error
                 val (_, stateWithoutCont) = result.state.popContinuation()
-                return ExecutionResult(stateWithoutCont, priorEvents + result.events, result.error)
+                return EffectResult(stateWithoutCont, priorEvents + result.events, result.error)
             }
 
             // Body completed synchronously — pop AFTER_BODY and ask condition
@@ -140,10 +140,10 @@ class RepeatWhileExecutor(
             resolvedDeciderId: EntityId?,
             context: EffectContext,
             sourceName: String?,
-            effectExecutor: (GameState, Effect, EffectContext) -> ExecutionResult,
+            effectExecutor: (GameState, Effect, EffectContext) -> EffectResult,
             priorEvents: List<GameEvent>,
             conditionEvaluator: com.wingedsheep.engine.handlers.ConditionEvaluator? = null
-        ): ExecutionResult {
+        ): EffectResult {
             return when (repeatCondition) {
                 is RepeatCondition.PlayerChooses -> {
                     askDecider(
@@ -171,7 +171,7 @@ class RepeatWhileExecutor(
                             priorEvents = priorEvents
                         )
                     } else {
-                        ExecutionResult.success(state, priorEvents)
+                        EffectResult.success(state, priorEvents)
                     }
                 }
             }
@@ -189,7 +189,7 @@ class RepeatWhileExecutor(
             context: EffectContext,
             sourceName: String?,
             priorEvents: List<GameEvent>
-        ): ExecutionResult {
+        ): EffectResult {
             val decisionHandler = DecisionHandler()
             val decisionResult = decisionHandler.createYesNoDecision(
                 state = state,
@@ -214,7 +214,7 @@ class RepeatWhileExecutor(
 
             val stateWithContinuation = decisionResult.state.pushContinuation(continuation)
 
-            return ExecutionResult.paused(
+            return EffectResult.paused(
                 stateWithContinuation,
                 decisionResult.pendingDecision,
                 priorEvents + decisionResult.events

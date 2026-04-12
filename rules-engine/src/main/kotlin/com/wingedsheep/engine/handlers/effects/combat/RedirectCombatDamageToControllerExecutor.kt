@@ -1,6 +1,6 @@
 package com.wingedsheep.engine.handlers.effects.combat
 
-import com.wingedsheep.engine.core.ExecutionResult
+import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.mechanics.layers.Layer
@@ -26,13 +26,13 @@ class RedirectCombatDamageToControllerExecutor : EffectExecutor<RedirectCombatDa
         state: GameState,
         effect: RedirectCombatDamageToControllerEffect,
         context: EffectContext
-    ): ExecutionResult {
+    ): EffectResult {
         val targetId = context.resolveTarget(effect.target)
-            ?: return ExecutionResult.success(state)
+            ?: return EffectResult.success(state)
 
         // Verify target still exists
         state.getEntity(targetId)
-            ?: return ExecutionResult.success(state)
+            ?: return EffectResult.success(state)
 
         val newState = state.addFloatingEffect(
             layer = Layer.ABILITY,
@@ -43,6 +43,6 @@ class RedirectCombatDamageToControllerExecutor : EffectExecutor<RedirectCombatDa
             timestamp = state.timestamp
         )
 
-        return ExecutionResult.success(newState)
+        return EffectResult.success(newState)
     }
 }

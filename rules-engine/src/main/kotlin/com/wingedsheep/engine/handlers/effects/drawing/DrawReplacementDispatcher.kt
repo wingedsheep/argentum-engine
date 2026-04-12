@@ -4,7 +4,7 @@ import com.wingedsheep.engine.core.DecisionContext
 import com.wingedsheep.engine.core.DecisionPhase
 import com.wingedsheep.engine.core.DecisionRequestedEvent
 import com.wingedsheep.engine.core.DrawReplacementActivationContinuation
-import com.wingedsheep.engine.core.ExecutionResult
+import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.core.GameEvent
 import com.wingedsheep.engine.core.ManaSourceOption
 import com.wingedsheep.engine.core.SelectManaSourcesDecision
@@ -43,7 +43,7 @@ import java.util.UUID
  */
 class DrawReplacementDispatcher(
     private val cardRegistry: CardRegistry,
-    private val effectExecutor: ((GameState, Effect, EffectContext) -> ExecutionResult)?
+    private val effectExecutor: ((GameState, Effect, EffectContext) -> EffectResult)?
 ) {
     /**
      * The outcome of [checkBeforeDraw].
@@ -63,7 +63,7 @@ class DrawReplacementDispatcher(
          * A replacement emitted a decision and the draw is paused. The caller
          * must return this result (possibly with its own events prepended).
          */
-        data class Paused(val result: ExecutionResult) : DispatchResult
+        data class Paused(val result: EffectResult) : DispatchResult
     }
 
     /**
@@ -155,7 +155,7 @@ class DrawReplacementDispatcher(
         drawCount: Int,
         drawnCardsSoFar: List<EntityId>,
         isDrawStep: Boolean
-    ): ExecutionResult? {
+    ): EffectResult? {
         val projected = state.projectedState
         val controlledPermanents = projected.getBattlefieldControlledBy(playerId)
 
@@ -200,7 +200,7 @@ class DrawReplacementDispatcher(
                 val stateWithDecision = state.withPendingDecision(decision)
                 val stateWithContinuation = stateWithDecision.pushContinuation(continuation)
 
-                return ExecutionResult.paused(
+                return EffectResult.paused(
                     stateWithContinuation,
                     decision,
                     listOf(
@@ -233,7 +233,7 @@ class DrawReplacementDispatcher(
         drawnCardsSoFar: List<EntityId>,
         isDrawStep: Boolean,
         declinedSourceIds: List<EntityId> = emptyList()
-    ): ExecutionResult? {
+    ): EffectResult? {
         val projected = state.projectedState
         val controlledPermanents = projected.getBattlefieldControlledBy(playerId)
 
@@ -302,7 +302,7 @@ class DrawReplacementDispatcher(
                 val stateWithDecision = state.withPendingDecision(decision)
                 val stateWithContinuation = stateWithDecision.pushContinuation(continuation)
 
-                return ExecutionResult.paused(
+                return EffectResult.paused(
                     stateWithContinuation,
                     decision,
                     listOf(

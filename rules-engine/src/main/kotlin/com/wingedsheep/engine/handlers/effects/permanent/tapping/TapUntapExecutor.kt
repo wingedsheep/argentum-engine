@@ -1,6 +1,6 @@
 package com.wingedsheep.engine.handlers.effects.permanent.tapping
 
-import com.wingedsheep.engine.core.ExecutionResult
+import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.core.TappedEvent
 import com.wingedsheep.engine.core.UntappedEvent
 import com.wingedsheep.engine.handlers.EffectContext
@@ -23,9 +23,9 @@ class TapUntapExecutor : EffectExecutor<TapUntapEffect> {
         state: GameState,
         effect: TapUntapEffect,
         context: EffectContext
-    ): ExecutionResult {
+    ): EffectResult {
         val targetId = context.resolveTarget(effect.target, state)
-            ?: return ExecutionResult.error(state, "No valid target for tap/untap")
+            ?: return EffectResult.error(state, "No valid target for tap/untap")
 
         val cardName = state.getEntity(targetId)?.get<CardComponent>()?.name ?: "Permanent"
 
@@ -43,6 +43,6 @@ class TapUntapExecutor : EffectExecutor<TapUntapEffect> {
             UntappedEvent(targetId, cardName)
         }
 
-        return ExecutionResult.success(newState, listOf(event))
+        return EffectResult.success(newState, listOf(event))
     }
 }

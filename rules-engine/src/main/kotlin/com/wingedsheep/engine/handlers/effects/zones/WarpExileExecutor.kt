@@ -1,6 +1,6 @@
 package com.wingedsheep.engine.handlers.effects.zones
 
-import com.wingedsheep.engine.core.ExecutionResult
+import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.handlers.effects.ZoneTransitionService
@@ -28,18 +28,18 @@ class WarpExileExecutor : EffectExecutor<WarpExileEffect> {
         state: GameState,
         effect: WarpExileEffect,
         context: EffectContext
-    ): ExecutionResult {
+    ): EffectResult {
         val targetId = context.resolveTarget(effect.target, state)
-            ?: return ExecutionResult.success(state) // Permanent may have already left the battlefield
+            ?: return EffectResult.success(state) // Permanent may have already left the battlefield
 
         val container = state.getEntity(targetId)
-            ?: return ExecutionResult.success(state)
+            ?: return EffectResult.success(state)
 
         container.get<CardComponent>()
-            ?: return ExecutionResult.success(state)
+            ?: return EffectResult.success(state)
 
         // Only exile if the permanent is still on the battlefield
-        if (targetId !in state.getBattlefield()) return ExecutionResult.success(state)
+        if (targetId !in state.getBattlefield()) return EffectResult.success(state)
 
         // Use ZoneTransitionService for proper cleanup (strip battlefield components, etc.)
         val transitionResult = ZoneTransitionService.moveToZone(
@@ -53,6 +53,6 @@ class WarpExileExecutor : EffectExecutor<WarpExileEffect> {
             c.with(WarpExiledComponent(controllerId = context.controllerId))
         }
 
-        return ExecutionResult.success(newState, transitionResult.events)
+        return EffectResult.success(newState, transitionResult.events)
     }
 }

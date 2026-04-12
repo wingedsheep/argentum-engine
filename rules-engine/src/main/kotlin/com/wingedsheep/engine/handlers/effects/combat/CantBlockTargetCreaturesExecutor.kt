@@ -1,6 +1,6 @@
 package com.wingedsheep.engine.handlers.effects.combat
 
-import com.wingedsheep.engine.core.ExecutionResult
+import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.handlers.effects.TargetResolutionUtils.toEntityId
@@ -28,7 +28,7 @@ class CantBlockTargetCreaturesExecutor : EffectExecutor<CantBlockTargetCreatures
         state: GameState,
         effect: CantBlockTargetCreaturesEffect,
         context: EffectContext
-    ): ExecutionResult {
+    ): EffectResult {
         val affectedEntities = mutableSetOf<EntityId>()
 
         for (chosenTarget in context.targets) {
@@ -40,7 +40,7 @@ class CantBlockTargetCreaturesExecutor : EffectExecutor<CantBlockTargetCreatures
         }
 
         if (affectedEntities.isEmpty()) {
-            return ExecutionResult.success(state)
+            return EffectResult.success(state)
         }
 
         val newState = state.addFloatingEffect(
@@ -51,6 +51,6 @@ class CantBlockTargetCreaturesExecutor : EffectExecutor<CantBlockTargetCreatures
             context = context
         )
 
-        return ExecutionResult.success(newState)
+        return EffectResult.success(newState)
     }
 }

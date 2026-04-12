@@ -32,16 +32,16 @@ class CopyTargetSpellExecutor(
         state: GameState,
         effect: CopyTargetSpellEffect,
         context: EffectContext
-    ): ExecutionResult {
+    ): EffectResult {
         val spellEntityId = context.resolveTarget(effect.target)
-            ?: return ExecutionResult.error(state, "No target spell to copy")
+            ?: return EffectResult.error(state, "No target spell to copy")
 
         val container = state.getEntity(spellEntityId)
-            ?: return ExecutionResult.error(state, "Target spell entity not found on stack")
+            ?: return EffectResult.error(state, "Target spell entity not found on stack")
 
         val cardComponent = container.get<CardComponent>()
         val spellEffect = cardComponent?.spellEffect
-            ?: return ExecutionResult.error(state, "Target spell has no effect to copy")
+            ?: return EffectResult.error(state, "Target spell has no effect to copy")
 
         val spellName = cardComponent.name
         val targetsComponent = container.get<TargetsComponent>()
@@ -58,7 +58,7 @@ class CopyTargetSpellExecutor(
                 effect = spellEffect,
                 description = "Copy of $spellName"
             )
-            return stackResolver.putTriggeredAbility(state, copyAbility)
+            return EffectResult.from(stackResolver.putTriggeredAbility(state, copyAbility))
         }
 
         // Spell has targets — prompt for new target selection
@@ -71,7 +71,7 @@ class CopyTargetSpellExecutor(
         spellEffect: com.wingedsheep.sdk.scripting.effects.Effect,
         targetRequirements: List<com.wingedsheep.sdk.scripting.targets.TargetRequirement>,
         spellName: String
-    ): ExecutionResult {
+    ): EffectResult {
         val decisionId = "copy-spell-target-${System.nanoTime()}"
 
         val legalTargetsMap = mutableMapOf<Int, List<EntityId>>()
@@ -85,7 +85,7 @@ class CopyTargetSpellExecutor(
         // If no legal targets for any requirement, skip copy
         val hasNoLegalTargets = legalTargetsMap.any { (_, targets) -> targets.isEmpty() }
         if (hasNoLegalTargets) {
-            return ExecutionResult.success(state)
+            return EffectResult.success(state)
         }
 
         // Reuse StormCopyTargetContinuation with 1 copy
@@ -120,6 +120,6 @@ class CopyTargetSpellExecutor(
         val stateWithDecision = state.withPendingDecision(decision)
         val stateWithContinuation = stateWithDecision.pushContinuation(continuation)
 
-        return ExecutionResult.paused(stateWithContinuation, decision)
+        return EffectResult.paused(stateWithContinuation, decision)
     }
 }

@@ -1,6 +1,6 @@
 package com.wingedsheep.engine.handlers.effects.player
 
-import com.wingedsheep.engine.core.ExecutionResult
+import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.state.GameState
@@ -22,7 +22,7 @@ class SkipNextTurnExecutor : EffectExecutor<SkipNextTurnEffect> {
         state: GameState,
         effect: SkipNextTurnEffect,
         context: EffectContext
-    ): ExecutionResult {
+    ): EffectResult {
         val target = effect.target
         val targetPlayerId = when (target) {
             is EffectTarget.Controller -> context.controllerId
@@ -30,17 +30,17 @@ class SkipNextTurnExecutor : EffectExecutor<SkipNextTurnEffect> {
                 when (target.player) {
                     Player.You -> context.controllerId
                     Player.Opponent, Player.TargetOpponent -> context.opponentId
-                        ?: return ExecutionResult.error(state, "No opponent found")
-                    else -> return ExecutionResult.error(state, "Unsupported player reference for SkipNextTurnEffect")
+                        ?: return EffectResult.error(state, "No opponent found")
+                    else -> return EffectResult.error(state, "Unsupported player reference for SkipNextTurnEffect")
                 }
             }
-            else -> return ExecutionResult.error(state, "Unsupported target for SkipNextTurnEffect")
+            else -> return EffectResult.error(state, "Unsupported target for SkipNextTurnEffect")
         }
 
         val newState = state.updateEntity(targetPlayerId) { container ->
             container.with(SkipNextTurnComponent)
         }
 
-        return ExecutionResult.success(newState)
+        return EffectResult.success(newState)
     }
 }

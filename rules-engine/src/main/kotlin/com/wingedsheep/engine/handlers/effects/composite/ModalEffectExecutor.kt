@@ -31,7 +31,7 @@ import kotlin.reflect.KClass
  * @param effectExecutor Function to execute a sub-effect (provided by registry)
  */
 class ModalEffectExecutor(
-    private val effectExecutor: (GameState, Effect, EffectContext) -> ExecutionResult
+    private val effectExecutor: (GameState, Effect, EffectContext) -> EffectResult
 ) : EffectExecutor<ModalEffect> {
 
     override val effectType: KClass<ModalEffect> = ModalEffect::class
@@ -40,13 +40,13 @@ class ModalEffectExecutor(
         state: GameState,
         effect: ModalEffect,
         context: EffectContext
-    ): ExecutionResult {
+    ): EffectResult {
         // Check if mode was already chosen at cast time
         val spellOnStack = context.sourceId?.let { state.getEntity(it)?.get<SpellOnStackComponent>() }
         if (spellOnStack != null && spellOnStack.chosenModes.isNotEmpty()) {
             val modeIndex = spellOnStack.chosenModes.first()
             val chosenMode = effect.modes.getOrNull(modeIndex)
-                ?: return ExecutionResult.error(state, "Invalid pre-chosen mode index: $modeIndex")
+                ?: return EffectResult.error(state, "Invalid pre-chosen mode index: $modeIndex")
 
             // Execute the pre-chosen mode directly (targets were already selected at cast time)
             return effectExecutor(state, chosenMode.effect, context)
@@ -93,7 +93,7 @@ class ModalEffectExecutor(
         val stateWithDecision = state.withPendingDecision(decision)
         val stateWithContinuation = stateWithDecision.pushContinuation(continuation)
 
-        return ExecutionResult.paused(
+        return EffectResult.paused(
             stateWithContinuation,
             decision,
             listOf(

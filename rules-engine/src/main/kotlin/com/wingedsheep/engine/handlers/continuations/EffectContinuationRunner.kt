@@ -1,7 +1,7 @@
 package com.wingedsheep.engine.handlers.continuations
 
 import com.wingedsheep.engine.core.EffectContinuation
-import com.wingedsheep.engine.core.ExecutionResult
+import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutorRegistry
 import com.wingedsheep.engine.state.GameState
@@ -21,7 +21,7 @@ class EffectContinuationRunner(
         initialState: GameState,
         effects: List<Effect>,
         initialContext: EffectContext
-    ): ExecutionResult {
+    ): EffectResult {
         var currentContext = initialContext
         var currentState = initialState
         val allEvents = mutableListOf<com.wingedsheep.engine.core.GameEvent>()
@@ -54,7 +54,7 @@ class EffectContinuationRunner(
             }
 
             if (result.isPaused) {
-                return ExecutionResult.paused(
+                return EffectResult.paused(
                     result.state,
                     result.pendingDecision!!,
                     allEvents + result.events
@@ -82,7 +82,7 @@ class EffectContinuationRunner(
         // Return accumulated collections / subtype groups so callers can propagate them
         val accumulatedCollections = currentContext.pipeline.storedCollections - initialContext.pipeline.storedCollections.keys
         val accumulatedSubtypeGroups = currentContext.pipeline.storedSubtypeGroups - initialContext.pipeline.storedSubtypeGroups.keys
-        return ExecutionResult(
+        return EffectResult(
             currentState,
             allEvents,
             updatedCollections = accumulatedCollections,

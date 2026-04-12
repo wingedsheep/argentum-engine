@@ -46,9 +46,9 @@ class MoveCollectionExecutor(
         state: GameState,
         effect: MoveCollectionEffect,
         context: EffectContext
-    ): ExecutionResult {
+    ): EffectResult {
         val cards = context.pipeline.storedCollections[effect.from]
-            ?: return ExecutionResult.error(state, "No collection named '${effect.from}' in storedCollections")
+            ?: return EffectResult.error(state, "No collection named '${effect.from}' in storedCollections")
 
         val destination = effect.destination
         if (cards.isEmpty()) {
@@ -62,10 +62,10 @@ class MoveCollectionExecutor(
                     val destZoneKey = ZoneKey(destPlayerId, Zone.LIBRARY)
                     val library = state.getZone(destZoneKey)
                     val newState = state.copy(zones = state.zones + (destZoneKey to library.shuffled()))
-                    return ExecutionResult.success(newState, listOf(LibraryShuffledEvent(destPlayerId)))
+                    return EffectResult.success(newState, listOf(LibraryShuffledEvent(destPlayerId)))
                 }
             }
-            return ExecutionResult.success(state)
+            return EffectResult.success(state)
         }
 
         return when (destination) {
@@ -86,7 +86,7 @@ class MoveCollectionExecutor(
                             c.with(existing.withAdded(counterType, 1))
                         }
                     }
-                    result = ExecutionResult.success(newState, result.events).copy(updatedCollections = result.updatedCollections)
+                    result = EffectResult.success(newState, result.events).copy(updatedCollections = result.updatedCollections)
                 }
                 result
             }
@@ -98,10 +98,10 @@ class MoveCollectionExecutor(
      * Used by Parallel Thoughts and similar cards that need to track exiled cards.
      */
     private fun linkCardsToSource(
-        result: ExecutionResult,
+        result: EffectResult,
         context: EffectContext,
         cards: List<EntityId>
-    ): ExecutionResult {
+    ): EffectResult {
         val sourceId = context.sourceId ?: return result
         var newState = result.state
         val sourceContainer = newState.getEntity(sourceId) ?: return result
@@ -110,7 +110,7 @@ class MoveCollectionExecutor(
         newState = newState.updateEntity(sourceId) { c ->
             c.with(com.wingedsheep.engine.state.components.battlefield.LinkedExileComponent(allExiled))
         }
-        return ExecutionResult.success(newState, result.events)
+        return EffectResult.success(newState, result.events)
     }
 
     /**
@@ -118,10 +118,10 @@ class MoveCollectionExecutor(
      * Inverse of [linkCardsToSource] — used when taking cards from a linked exile pile.
      */
     private fun unlinkCardsFromSource(
-        result: ExecutionResult,
+        result: EffectResult,
         context: EffectContext,
         cards: List<EntityId>
-    ): ExecutionResult {
+    ): EffectResult {
         val sourceId = context.sourceId ?: return result
         var newState = result.state
         val sourceContainer = newState.getEntity(sourceId) ?: return result
@@ -131,7 +131,7 @@ class MoveCollectionExecutor(
         newState = newState.updateEntity(sourceId) { c ->
             c.with(com.wingedsheep.engine.state.components.battlefield.LinkedExileComponent(remaining))
         }
-        return ExecutionResult.success(newState, result.events)
+        return EffectResult.success(newState, result.events)
     }
 
     private fun moveToZone(
@@ -146,9 +146,9 @@ class MoveCollectionExecutor(
         noRegenerate: Boolean = false,
         storeMovedAs: String? = null,
         underOwnersControl: Boolean = false
-    ): ExecutionResult {
+    ): EffectResult {
         val destPlayerId = resolvePlayer(destination.player, context, state)
-            ?: return ExecutionResult.error(state, "Could not resolve destination player for MoveCollection")
+            ?: return EffectResult.error(state, "Could not resolve destination player for MoveCollection")
 
         val destZone = destination.zone
 
@@ -176,7 +176,7 @@ class MoveCollectionExecutor(
         destZone: Zone,
         destPlayerId: EntityId,
         placement: ZonePlacement = ZonePlacement.Top
-    ): ExecutionResult {
+    ): EffectResult {
         val playerId = context.controllerId
 
         // Build card info map for the UI
@@ -231,7 +231,7 @@ class MoveCollectionExecutor(
         val stateWithDecision = state.withPendingDecision(decision)
         val stateWithContinuation = stateWithDecision.pushContinuation(continuation)
 
-        return ExecutionResult.paused(
+        return EffectResult.paused(
             stateWithContinuation,
             decision,
             listOf(
@@ -261,7 +261,7 @@ class MoveCollectionExecutor(
         noRegenerate: Boolean = false,
         storeMovedAs: String? = null,
         underOwnersControl: Boolean = false
-    ): ExecutionResult {
+    ): EffectResult {
         val destZone = destination.zone
 
         // When moving to battlefield, detect auras that need target selection (Rule 303.4f)
@@ -322,7 +322,7 @@ class MoveCollectionExecutor(
         remainingAuras: List<EntityId>,
         sourceId: EntityId?,
         sourceName: String?
-    ): ExecutionResult {
+    ): EffectResult {
         val cardComponent = state.getEntity(auraId)?.get<CardComponent>()
         val cardDef = cardComponent?.let { cardRegistry.getCard(it.cardDefinitionId) }
         val auraTarget = cardDef?.script?.auraTarget
@@ -383,7 +383,7 @@ class MoveCollectionExecutor(
         val stateWithDecision = state.withPendingDecision(decision)
         val stateWithContinuation = stateWithDecision.pushContinuation(continuation)
 
-        return ExecutionResult(
+        return EffectResult(
             state = stateWithContinuation,
             events = events,
             pendingDecision = decision
@@ -401,7 +401,7 @@ class MoveCollectionExecutor(
         destPlayerId: EntityId,
         sourceId: EntityId?,
         sourceName: String?
-    ): ExecutionResult {
+    ): EffectResult {
         if (remainingAuras.isNotEmpty()) {
             return askAuraTargetForMoveCollection(
                 state = state,
@@ -414,7 +414,7 @@ class MoveCollectionExecutor(
                 sourceName = sourceName
             )
         }
-        return ExecutionResult.success(state, events)
+        return EffectResult.success(state, events)
     }
 
     /**
@@ -479,7 +479,7 @@ class MoveCollectionExecutor(
         noRegenerate: Boolean = false,
         storeMovedAs: String? = null,
         underOwnersControl: Boolean = false
-    ): ExecutionResult {
+    ): EffectResult {
         val destZone = destination.zone
         val events = mutableListOf<GameEvent>()
         var newState = state
@@ -592,7 +592,7 @@ class MoveCollectionExecutor(
             emptyMap()
         }
 
-        return ExecutionResult.success(newState, events).copy(updatedCollections = updatedCollections)
+        return EffectResult.success(newState, events).copy(updatedCollections = updatedCollections)
     }
 
     /**

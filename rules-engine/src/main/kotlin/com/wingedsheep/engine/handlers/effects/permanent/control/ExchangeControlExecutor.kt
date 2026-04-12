@@ -1,7 +1,7 @@
 package com.wingedsheep.engine.handlers.effects.permanent.control
 
 import com.wingedsheep.engine.core.ControlChangedEvent
-import com.wingedsheep.engine.core.ExecutionResult
+import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.mechanics.layers.Layer
@@ -29,33 +29,33 @@ class ExchangeControlExecutor : EffectExecutor<ExchangeControlEffect> {
         state: GameState,
         effect: ExchangeControlEffect,
         context: EffectContext
-    ): ExecutionResult {
+    ): EffectResult {
         val target1Id = context.resolveTarget(effect.target1)
-            ?: return ExecutionResult.error(state, "No valid first target for exchange")
+            ?: return EffectResult.error(state, "No valid first target for exchange")
 
         val target2Id = context.resolveTarget(effect.target2)
-            ?: return ExecutionResult.error(state, "No valid second target for exchange")
+            ?: return EffectResult.error(state, "No valid second target for exchange")
 
         val container1 = state.getEntity(target1Id)
-            ?: return ExecutionResult.error(state, "First target no longer exists")
+            ?: return EffectResult.error(state, "First target no longer exists")
 
         val container2 = state.getEntity(target2Id)
-            ?: return ExecutionResult.error(state, "Second target no longer exists")
+            ?: return EffectResult.error(state, "Second target no longer exists")
 
         val card1 = container1.get<CardComponent>()
-            ?: return ExecutionResult.error(state, "First target is not a card")
+            ?: return EffectResult.error(state, "First target is not a card")
 
         val card2 = container2.get<CardComponent>()
-            ?: return ExecutionResult.error(state, "Second target is not a card")
+            ?: return EffectResult.error(state, "Second target is not a card")
 
         val controller1 = container1.get<ControllerComponent>()?.playerId
-            ?: return ExecutionResult.error(state, "First target has no controller")
+            ?: return EffectResult.error(state, "First target has no controller")
 
         val controller2 = container2.get<ControllerComponent>()?.playerId
-            ?: return ExecutionResult.error(state, "Second target has no controller")
+            ?: return EffectResult.error(state, "Second target has no controller")
 
         // If both creatures already have the same controller, no-op
-        if (controller1 == controller2) return ExecutionResult.success(state)
+        if (controller1 == controller2) return EffectResult.success(state)
 
         // Create floating effect: target1 gets controller2
         val floating1 = state.createFloatingEffect(
@@ -95,6 +95,6 @@ class ExchangeControlExecutor : EffectExecutor<ExchangeControlEffect> {
             )
         )
 
-        return ExecutionResult.success(newState, events)
+        return EffectResult.success(newState, events)
     }
 }

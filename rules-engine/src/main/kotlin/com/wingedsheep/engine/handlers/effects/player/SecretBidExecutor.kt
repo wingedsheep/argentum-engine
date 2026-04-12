@@ -30,9 +30,9 @@ class SecretBidExecutor(
         state: GameState,
         effect: SecretBidEffect,
         context: EffectContext
-    ): ExecutionResult {
+    ): EffectResult {
         val activePlayer = state.activePlayerId
-            ?: return ExecutionResult.error(state, "No active player")
+            ?: return EffectResult.error(state, "No active player")
 
         val playerOrder = listOf(activePlayer) + state.turnOrder.filter { it != activePlayer }
 
@@ -53,7 +53,7 @@ class SecretBidExecutor(
         playerOrder: List<EntityId>,
         currentPlayerIndex: Int,
         chosenNumbers: Map<EntityId, Int>
-    ): ExecutionResult {
+    ): EffectResult {
         val playerId = playerOrder[currentPlayerIndex]
 
         val sourceName = context.sourceId?.let { sourceId ->
@@ -90,7 +90,7 @@ class SecretBidExecutor(
 
         val stateWithContinuation = decisionResult.state.pushContinuation(continuation)
 
-        return ExecutionResult.paused(
+        return EffectResult.paused(
             stateWithContinuation,
             decisionResult.pendingDecision,
             decisionResult.events

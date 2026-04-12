@@ -1,6 +1,6 @@
 package com.wingedsheep.engine.handlers.effects.permanent.types
 
-import com.wingedsheep.engine.core.ExecutionResult
+import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.mechanics.layers.Layer
@@ -23,17 +23,17 @@ class AddSubtypeExecutor : EffectExecutor<AddSubtypeEffect> {
         state: GameState,
         effect: AddSubtypeEffect,
         context: EffectContext
-    ): ExecutionResult {
+    ): EffectResult {
         val targetId = context.resolveTarget(effect.target)
-            ?: return ExecutionResult.success(state)
+            ?: return EffectResult.success(state)
 
         if (targetId !in state.getBattlefield()) {
-            return ExecutionResult.success(state)
+            return EffectResult.success(state)
         }
 
         val subtype = if (effect.fromChosenValueKey != null) {
             context.pipeline.chosenValues[effect.fromChosenValueKey]
-                ?: return ExecutionResult.success(state)
+                ?: return EffectResult.success(state)
         } else {
             effect.subtype
         }
@@ -46,6 +46,6 @@ class AddSubtypeExecutor : EffectExecutor<AddSubtypeEffect> {
             context = context
         )
 
-        return ExecutionResult.success(newState)
+        return EffectResult.success(newState)
     }
 }

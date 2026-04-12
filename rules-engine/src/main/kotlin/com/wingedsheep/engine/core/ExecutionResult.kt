@@ -1,7 +1,6 @@
 package com.wingedsheep.engine.core
 
 import com.wingedsheep.engine.state.GameState
-import com.wingedsheep.sdk.model.EntityId
 import kotlinx.serialization.Serializable
 
 /**
@@ -19,15 +18,7 @@ data class ExecutionResult(
     val state: GameState,
     val events: List<GameEvent> = emptyList(),
     val error: String? = null,
-    val pendingDecision: PendingDecision? = null,
-    /** Updated card collections from pipeline effects (GatherCards, SelectFromCollection) */
-    val updatedCollections: Map<String, List<EntityId>> = emptyMap(),
-    /**
-     * Updated subtype-group lists from pipeline effects (e.g., `GatherSubtypesEffect`).
-     * Each entry is a list of subtype sets — one `Set<String>` per source entity.
-     * Consumed by `CardPredicate.HasSubtypeInEachStoredGroup`.
-     */
-    val updatedSubtypeGroups: Map<String, List<Set<String>>> = emptyMap()
+    val pendingDecision: PendingDecision? = null
 ) {
     val isSuccess: Boolean get() = error == null && pendingDecision == null
     val isPaused: Boolean get() = pendingDecision != null

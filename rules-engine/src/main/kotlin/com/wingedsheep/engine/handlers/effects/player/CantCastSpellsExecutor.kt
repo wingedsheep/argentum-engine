@@ -1,6 +1,6 @@
 package com.wingedsheep.engine.handlers.effects.player
 
-import com.wingedsheep.engine.core.ExecutionResult
+import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.state.GameState
@@ -22,12 +22,12 @@ class CantCastSpellsExecutor : EffectExecutor<CantCastSpellsEffect> {
         state: GameState,
         effect: CantCastSpellsEffect,
         context: EffectContext
-    ): ExecutionResult {
+    ): EffectResult {
         val targetId = context.resolvePlayerTarget(effect.target)
-            ?: return ExecutionResult.error(state, "No valid target for can't cast spells effect")
+            ?: return EffectResult.error(state, "No valid target for can't cast spells effect")
 
         if (!state.turnOrder.contains(targetId)) {
-            return ExecutionResult.error(state, "Target is not a player")
+            return EffectResult.error(state, "Target is not a player")
         }
 
         val removeOn = when (effect.duration) {
@@ -39,6 +39,6 @@ class CantCastSpellsExecutor : EffectExecutor<CantCastSpellsEffect> {
             container.with(CantCastSpellsComponent(removeOn = removeOn))
         }
 
-        return ExecutionResult.success(newState)
+        return EffectResult.success(newState)
     }
 }

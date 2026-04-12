@@ -24,19 +24,19 @@ class PutOnTopOrBottomOfLibraryExecutor : EffectExecutor<PutOnTopOrBottomOfLibra
         state: GameState,
         effect: PutOnTopOrBottomOfLibraryEffect,
         context: EffectContext
-    ): ExecutionResult {
+    ): EffectResult {
         val targetId = context.resolveTarget(effect.target, state)
-            ?: return ExecutionResult.error(state, "No valid target for put on top or bottom of library")
+            ?: return EffectResult.error(state, "No valid target for put on top or bottom of library")
 
         val container = state.getEntity(targetId)
-            ?: return ExecutionResult.error(state, "Target entity not found: $targetId")
+            ?: return EffectResult.error(state, "Target entity not found: $targetId")
 
         val cardComponent = container.get<CardComponent>()
-            ?: return ExecutionResult.error(state, "Target is not a card: $targetId")
+            ?: return EffectResult.error(state, "Target is not a card: $targetId")
 
         val ownerId = container.get<OwnerComponent>()?.playerId
             ?: cardComponent.ownerId
-            ?: return ExecutionResult.error(state, "Cannot determine card owner")
+            ?: return EffectResult.error(state, "Cannot determine card owner")
 
         val sourceName = context.sourceId?.let { state.getEntity(it)?.get<CardComponent>()?.name }
 
@@ -66,7 +66,7 @@ class PutOnTopOrBottomOfLibraryExecutor : EffectExecutor<PutOnTopOrBottomOfLibra
         val stateWithDecision = state.withPendingDecision(decision)
         val stateWithContinuation = stateWithDecision.pushContinuation(continuation)
 
-        return ExecutionResult.paused(
+        return EffectResult.paused(
             stateWithContinuation,
             decision,
             listOf(

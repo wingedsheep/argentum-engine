@@ -1,6 +1,6 @@
 package com.wingedsheep.engine.handlers.effects.life
 
-import com.wingedsheep.engine.core.ExecutionResult
+import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.core.GameEvent as EngineGameEvent
 import com.wingedsheep.engine.core.LifeChangedEvent
 import com.wingedsheep.engine.core.LifeChangeReason
@@ -24,11 +24,11 @@ class PayLifeEffectExecutor : EffectExecutor<PayLifeEffect> {
         state: GameState,
         effect: PayLifeEffect,
         context: EffectContext
-    ): ExecutionResult {
+    ): EffectResult {
         val playerId = context.controllerId
 
         val currentLife = state.getEntity(playerId)?.get<LifeTotalComponent>()?.life
-            ?: return ExecutionResult.error(state, "Player not found for life payment")
+            ?: return EffectResult.error(state, "Player not found for life payment")
 
         val newLife = currentLife - effect.amount
         val newState = state.updateEntity(playerId) { container ->
@@ -40,6 +40,6 @@ class PayLifeEffectExecutor : EffectExecutor<PayLifeEffect> {
         )
 
         val finalState = DamageUtils.markLifeLostThisTurn(newState, playerId)
-        return ExecutionResult.success(finalState, events)
+        return EffectResult.success(finalState, events)
     }
 }

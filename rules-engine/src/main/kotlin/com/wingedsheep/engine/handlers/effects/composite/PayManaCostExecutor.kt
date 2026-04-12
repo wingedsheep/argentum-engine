@@ -1,6 +1,6 @@
 package com.wingedsheep.engine.handlers.effects.composite
 
-import com.wingedsheep.engine.core.ExecutionResult
+import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.core.GameEvent
 import com.wingedsheep.engine.core.TappedEvent
 import com.wingedsheep.engine.handlers.EffectContext
@@ -28,14 +28,14 @@ class PayManaCostExecutor(
         state: GameState,
         effect: PayManaCostEffect,
         context: EffectContext
-    ): ExecutionResult {
+    ): EffectResult {
         val playerId = context.controllerId
 
         val playerEntity = state.getEntity(playerId)
-            ?: return ExecutionResult.error(state, "Paying player not found")
+            ?: return EffectResult.error(state, "Paying player not found")
 
         val manaPoolComponent = playerEntity.get<ManaPoolComponent>()
-            ?: return ExecutionResult.error(state, "Player has no mana pool")
+            ?: return EffectResult.error(state, "Player has no mana pool")
 
         val manaPool = ManaPool(
             manaPoolComponent.white,
@@ -55,7 +55,7 @@ class PayManaCostExecutor(
         if (!remainingCost.isEmpty()) {
             val manaSolver = ManaSolver(cardRegistry)
             val solution = manaSolver.solve(currentState, playerId, remainingCost)
-                ?: return ExecutionResult.error(state, "Cannot pay mana cost")
+                ?: return EffectResult.error(state, "Cannot pay mana cost")
 
             for (source in solution.sources) {
                 currentState = currentState.updateEntity(source.entityId) { c ->
@@ -74,7 +74,7 @@ class PayManaCostExecutor(
         }
 
         val newPool = currentPool.pay(effect.cost)
-            ?: return ExecutionResult.error(state, "Cannot pay mana cost after auto-tap")
+            ?: return EffectResult.error(state, "Cannot pay mana cost after auto-tap")
 
         currentState = currentState.updateEntity(playerId) { container ->
             container.with(
@@ -89,6 +89,6 @@ class PayManaCostExecutor(
             )
         }
 
-        return ExecutionResult.success(currentState, events)
+        return EffectResult.success(currentState, events)
     }
 }

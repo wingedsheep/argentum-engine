@@ -1,6 +1,6 @@
 package com.wingedsheep.engine.handlers.effects.life
 
-import com.wingedsheep.engine.core.ExecutionResult
+import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.core.GameEvent as EngineGameEvent
 import com.wingedsheep.engine.core.LifeChangedEvent
 import com.wingedsheep.engine.core.LifeChangeReason
@@ -27,10 +27,10 @@ class LoseLifeExecutor(
         state: GameState,
         effect: LoseLifeEffect,
         context: EffectContext
-    ): ExecutionResult {
+    ): EffectResult {
         val playerIds = context.resolvePlayerTargets(effect.target, state)
         if (playerIds.isEmpty()) {
-            return ExecutionResult.error(state, "No valid target for life loss")
+            return EffectResult.error(state, "No valid target for life loss")
         }
 
         val amount = amountEvaluator.evaluate(state, effect.amount, context)
@@ -48,6 +48,6 @@ class LoseLifeExecutor(
             newState = DamageUtils.markLifeLostThisTurn(newState, playerId)
         }
 
-        return ExecutionResult.success(newState, events)
+        return EffectResult.success(newState, events)
     }
 }

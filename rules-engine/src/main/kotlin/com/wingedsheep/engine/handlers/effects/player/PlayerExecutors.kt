@@ -1,6 +1,6 @@
 package com.wingedsheep.engine.handlers.effects.player
 
-import com.wingedsheep.engine.core.ExecutionResult
+import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.handlers.DecisionHandler
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
@@ -19,7 +19,7 @@ class PlayerExecutors(
     private val decisionHandler: DecisionHandler = DecisionHandler(),
     private val cardRegistry: CardRegistry
 ) : ExecutorModule {
-    private lateinit var effectExecutor: (GameState, Effect, EffectContext) -> ExecutionResult
+    private lateinit var effectExecutor: (GameState, Effect, EffectContext) -> EffectResult
 
     private val payOrSufferExecutor by lazy {
         PayOrSufferExecutor(cardRegistry = cardRegistry, executeEffect = effectExecutor)
@@ -29,7 +29,7 @@ class PlayerExecutors(
      * Initialize the module with the parent registry's execute function.
      * Must be called before executors() is accessed.
      */
-    fun initialize(executor: (GameState, Effect, EffectContext) -> ExecutionResult) {
+    fun initialize(executor: (GameState, Effect, EffectContext) -> EffectResult) {
         this.effectExecutor = executor
     }
 

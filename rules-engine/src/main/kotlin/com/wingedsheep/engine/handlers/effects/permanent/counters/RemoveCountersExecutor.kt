@@ -1,7 +1,7 @@
 package com.wingedsheep.engine.handlers.effects.permanent.counters
 
 import com.wingedsheep.engine.core.CountersRemovedEvent
-import com.wingedsheep.engine.core.ExecutionResult
+import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.state.GameState
@@ -23,9 +23,9 @@ class RemoveCountersExecutor : EffectExecutor<RemoveCountersEffect> {
         state: GameState,
         effect: RemoveCountersEffect,
         context: EffectContext
-    ): ExecutionResult {
+    ): EffectResult {
         val targetId = context.resolveTarget(effect.target)
-            ?: return ExecutionResult.error(state, "No valid target for counter removal")
+            ?: return EffectResult.error(state, "No valid target for counter removal")
 
         val counterType = try {
             CounterType.valueOf(
@@ -47,7 +47,7 @@ class RemoveCountersExecutor : EffectExecutor<RemoveCountersEffect> {
 
         val entityName = state.getEntity(targetId)?.get<CardComponent>()?.name ?: ""
 
-        return ExecutionResult.success(
+        return EffectResult.success(
             newState,
             listOf(CountersRemovedEvent(targetId, effect.counterType, effect.count, entityName))
         )

@@ -1,6 +1,6 @@
 package com.wingedsheep.engine.handlers.effects.token
 
-import com.wingedsheep.engine.core.ExecutionResult
+import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.core.ZoneChangeEvent
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
@@ -42,23 +42,23 @@ class CreateTokenCopyOfEquippedCreatureExecutor(
         state: GameState,
         effect: CreateTokenCopyOfEquippedCreatureEffect,
         context: EffectContext
-    ): ExecutionResult {
+    ): EffectResult {
         val sourceId = context.sourceId
-            ?: return ExecutionResult.success(state)
+            ?: return EffectResult.success(state)
 
         val sourceContainer = state.getEntity(sourceId)
-            ?: return ExecutionResult.success(state)
+            ?: return EffectResult.success(state)
 
         // Find the equipped creature via AttachedToComponent
         val attachedTo = sourceContainer.get<AttachedToComponent>()
-            ?: return ExecutionResult.success(state) // Not equipped, do nothing
+            ?: return EffectResult.success(state) // Not equipped, do nothing
 
         val equippedId = attachedTo.targetId
         val equippedContainer = state.getEntity(equippedId)
-            ?: return ExecutionResult.success(state)
+            ?: return EffectResult.success(state)
 
         val equippedCard = equippedContainer.get<CardComponent>()
-            ?: return ExecutionResult.success(state)
+            ?: return EffectResult.success(state)
 
         val controllerId = context.controllerId
 
@@ -111,6 +111,6 @@ class CreateTokenCopyOfEquippedCreatureExecutor(
             )
         )
 
-        return ExecutionResult.success(newState, events)
+        return EffectResult.success(newState, events)
     }
 }

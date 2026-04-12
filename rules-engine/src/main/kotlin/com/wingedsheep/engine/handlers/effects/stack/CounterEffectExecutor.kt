@@ -1,7 +1,7 @@
 package com.wingedsheep.engine.handlers.effects.stack
 
 import com.wingedsheep.engine.core.CounterUnlessPaysContinuation
-import com.wingedsheep.engine.core.ExecutionResult
+import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.handlers.DecisionHandler
 import com.wingedsheep.engine.handlers.DynamicAmountEvaluator
 import com.wingedsheep.engine.handlers.EffectContext
@@ -45,14 +45,14 @@ class CounterEffectExecutor(
         state: GameState,
         effect: CounterEffect,
         context: EffectContext
-    ): ExecutionResult {
+    ): EffectResult {
         // Step 1: Resolve the spell/ability entity ID
         val entityId = resolveCounterTarget(effect, context, state)
             ?: return if (effect.targetSource == CounterTargetSource.TriggeringEntity) {
                 // Triggering entity no longer on stack — nothing to counter
-                ExecutionResult.success(state)
+                EffectResult.success(state)
             } else {
-                ExecutionResult.error(state, "No valid target to counter")
+                EffectResult.error(state, "No valid target to counter")
             }
 
         // Step 2: Validate filter if present
@@ -60,7 +60,7 @@ class CounterEffectExecutor(
         if (filter != null) {
             val predicateContext = PredicateContext.fromEffectContext(context)
             if (!predicateEvaluator.matches(state, entityId, filter.baseFilter, predicateContext)) {
-                return ExecutionResult.error(state, "Target does not match filter: ${filter.baseFilter.description}")
+                return EffectResult.error(state, "Target does not match filter: ${filter.baseFilter.description}")
             }
         }
 
@@ -90,9 +90,9 @@ class CounterEffectExecutor(
         effect: CounterEffect,
         entityId: EntityId,
         context: EffectContext
-    ): ExecutionResult {
+    ): EffectResult {
         val resolver = StackResolver(cardRegistry = cardRegistry)
-        return when (effect.target) {
+        return EffectResult.from(when (effect.target) {
             CounterTarget.Ability -> resolver.counterAbility(state, entityId)
             CounterTarget.Spell -> when (val dest = effect.counterDestination) {
                 CounterDestination.Graveyard -> resolver.counterSpell(state, entityId)
@@ -100,7 +100,7 @@ class CounterEffectExecutor(
                     state, entityId, dest.grantFreeCast, context.controllerId
                 )
             }
-        }
+        })
     }
 
     private fun handleUnlessPaysMana(
@@ -109,9 +109,9 @@ class CounterEffectExecutor(
         spellEntityId: EntityId,
         cost: ManaCost,
         context: EffectContext
-    ): ExecutionResult {
+    ): EffectResult {
         val payingPlayerId = getSpellCasterId(state, spellEntityId)
-            ?: return ExecutionResult.error(state, "Spell not found on stack")
+            ?: return EffectResult.error(state, "Spell not found on stack")
 
         val manaSolver = ManaSolver(cardRegistry)
         if (!manaSolver.canPay(state, payingPlayerId, cost)) {
@@ -127,15 +127,15 @@ class CounterEffectExecutor(
         spellEntityId: EntityId,
         condition: CounterCondition.UnlessPaysDynamic,
         context: EffectContext
-    ): ExecutionResult {
+    ): EffectResult {
         val payingPlayerId = getSpellCasterId(state, spellEntityId)
-            ?: return ExecutionResult.error(state, "Spell not found on stack")
+            ?: return EffectResult.error(state, "Spell not found on stack")
 
         val totalGenericCost = amountEvaluator.evaluate(state, condition.amount, context)
 
         if (totalGenericCost <= 0) {
             // Cost is 0 or negative — spell is not countered
-            return ExecutionResult.success(state)
+            return EffectResult.success(state)
         }
 
         val manaCost = ManaCost(listOf(ManaSymbol.Generic(totalGenericCost)))
@@ -161,7 +161,7 @@ class CounterEffectExecutor(
         payingPlayerId: EntityId,
         manaCost: ManaCost,
         context: EffectContext
-    ): ExecutionResult {
+    ): EffectResult {
         val decisionResult = decisionHandler.createYesNoDecision(
             state = state,
             playerId = payingPlayerId,
@@ -187,7 +187,7 @@ class CounterEffectExecutor(
 
         val stateWithContinuation = decisionResult.state.pushContinuation(continuation)
 
-        return ExecutionResult.paused(
+        return EffectResult.paused(
             stateWithContinuation,
             decisionResult.pendingDecision,
             decisionResult.events

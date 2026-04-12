@@ -28,20 +28,20 @@ class BecomeCreatureTypeExecutor : EffectExecutor<BecomeCreatureTypeEffect> {
         state: GameState,
         effect: BecomeCreatureTypeEffect,
         context: EffectContext
-    ): ExecutionResult {
+    ): EffectResult {
         val targetId = context.resolveTarget(effect.target, state)
-            ?: return ExecutionResult.success(state.tick())
+            ?: return EffectResult.success(state.tick())
 
         // Target must still be on the battlefield
         if (targetId !in state.getBattlefield()) {
-            return ExecutionResult.success(state.tick())
+            return EffectResult.success(state.tick())
         }
 
         val targetCard = state.getEntity(targetId)?.get<CardComponent>()
-            ?: return ExecutionResult.success(state.tick())
+            ?: return EffectResult.success(state.tick())
 
         if (!targetCard.typeLine.isCreature) {
-            return ExecutionResult.success(state.tick())
+            return EffectResult.success(state.tick())
         }
 
         val allCreatureTypes = if (effect.excludedTypes.isNotEmpty()) {
@@ -83,7 +83,7 @@ class BecomeCreatureTypeExecutor : EffectExecutor<BecomeCreatureTypeEffect> {
         val stateWithDecision = state.withPendingDecision(decision)
         val stateWithContinuation = stateWithDecision.pushContinuation(continuation)
 
-        return ExecutionResult.paused(
+        return EffectResult.paused(
             stateWithContinuation,
             decision,
             listOf(

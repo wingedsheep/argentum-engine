@@ -32,9 +32,9 @@ class StormCopyEffectExecutor(
         state: GameState,
         effect: StormCopyEffect,
         context: EffectContext
-    ): ExecutionResult {
+    ): EffectResult {
         if (effect.copyCount <= 0) {
-            return ExecutionResult.success(state)
+            return EffectResult.success(state)
         }
 
         val stackResolver = StackResolver(cardRegistry = cardRegistry)
@@ -53,7 +53,7 @@ class StormCopyEffectExecutor(
         effect: StormCopyEffect,
         context: EffectContext,
         stackResolver: StackResolver
-    ): ExecutionResult {
+    ): EffectResult {
         var currentState = state
         val allEvents = mutableListOf<GameEvent>()
 
@@ -67,13 +67,13 @@ class StormCopyEffectExecutor(
                 copyIndex = i,
                 copyTotal = effect.copyCount
             )
-            val result = stackResolver.putTriggeredAbility(currentState, copyAbility)
+            val result = EffectResult.from(stackResolver.putTriggeredAbility(currentState, copyAbility))
             if (!result.isSuccess) return result
             currentState = result.newState
             allEvents.addAll(result.events)
         }
 
-        return ExecutionResult.success(currentState, allEvents)
+        return EffectResult.success(currentState, allEvents)
     }
 
     private fun promptForNextCopyTarget(
@@ -81,7 +81,7 @@ class StormCopyEffectExecutor(
         effect: StormCopyEffect,
         context: EffectContext,
         remainingCopies: Int
-    ): ExecutionResult {
+    ): EffectResult {
         val decisionId = "storm-copy-target-${System.nanoTime()}"
 
         // Find legal targets for the copy
@@ -96,7 +96,7 @@ class StormCopyEffectExecutor(
         // If no legal targets for any requirement, skip this copy and remaining copies
         val hasNoLegalTargets = legalTargetsMap.any { (_, targets) -> targets.isEmpty() }
         if (hasNoLegalTargets) {
-            return ExecutionResult.success(state)
+            return EffectResult.success(state)
         }
 
         // Push continuation for resuming after target selection
@@ -133,6 +133,6 @@ class StormCopyEffectExecutor(
         val stateWithDecision = state.withPendingDecision(decision)
         val stateWithContinuation = stateWithDecision.pushContinuation(continuation)
 
-        return ExecutionResult.paused(stateWithContinuation, decision)
+        return EffectResult.paused(stateWithContinuation, decision)
     }
 }

@@ -1,6 +1,6 @@
 package com.wingedsheep.engine.handlers.effects.permanent.attachments
 
-import com.wingedsheep.engine.core.ExecutionResult
+import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.state.GameState
@@ -21,12 +21,12 @@ class AttachEquipmentExecutor : EffectExecutor<AttachEquipmentEffect> {
         state: GameState,
         effect: AttachEquipmentEffect,
         context: EffectContext
-    ): ExecutionResult {
+    ): EffectResult {
         val equipmentId = context.sourceId
-            ?: return ExecutionResult.error(state, "No source for attach equipment")
+            ?: return EffectResult.error(state, "No source for attach equipment")
 
         val targetId = context.resolveTarget(effect.target, state)
-            ?: return ExecutionResult.error(state, "No valid target for attach equipment")
+            ?: return EffectResult.error(state, "No valid target for attach equipment")
 
         var newState = state
 
@@ -60,6 +60,6 @@ class AttachEquipmentExecutor : EffectExecutor<AttachEquipmentEffect> {
             container.with(AttachmentsComponent(updatedIds))
         }
 
-        return ExecutionResult.success(newState)
+        return EffectResult.success(newState)
     }
 }

@@ -1,6 +1,6 @@
 package com.wingedsheep.engine.handlers.effects.token
 
-import com.wingedsheep.engine.core.ExecutionResult
+import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.handlers.DynamicAmountEvaluator
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
@@ -133,9 +133,9 @@ class CreateChosenTokenExecutor(
         state: GameState,
         effect: CreateChosenTokenEffect,
         context: EffectContext
-    ): ExecutionResult {
-        val sourceId = context.sourceId ?: return ExecutionResult.success(state)
-        val sourceEntity = state.getEntity(sourceId) ?: return ExecutionResult.success(state)
+    ): EffectResult {
+        val sourceId = context.sourceId ?: return EffectResult.success(state)
+        val sourceEntity = state.getEntity(sourceId) ?: return EffectResult.success(state)
 
         // Read chosen color and creature type from source
         val chosenColor = sourceEntity.get<ChosenColorComponent>()?.color
@@ -185,6 +185,6 @@ class CreateChosenTokenExecutor(
             )
         )
 
-        return ExecutionResult.success(newState, events)
+        return EffectResult.success(newState, events)
     }
 }

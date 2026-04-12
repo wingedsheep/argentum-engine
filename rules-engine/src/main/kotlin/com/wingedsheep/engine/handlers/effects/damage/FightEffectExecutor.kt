@@ -1,6 +1,6 @@
 package com.wingedsheep.engine.handlers.effects.damage
 
-import com.wingedsheep.engine.core.ExecutionResult
+import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.core.GameEvent
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
@@ -22,12 +22,12 @@ class FightEffectExecutor : EffectExecutor<FightEffect> {
         state: GameState,
         effect: FightEffect,
         context: EffectContext
-    ): ExecutionResult {
+    ): EffectResult {
         val target1Id = context.resolveTarget(effect.target1, state)
-            ?: return ExecutionResult.error(state, "No valid first target for fight")
+            ?: return EffectResult.error(state, "No valid first target for fight")
 
         val target2Id = context.resolveTarget(effect.target2, state)
-            ?: return ExecutionResult.error(state, "No valid second target for fight")
+            ?: return EffectResult.error(state, "No valid second target for fight")
 
         // Get projected power for each creature (projected state accounts for buffs/debuffs)
         val projected = state.projectedState
@@ -51,6 +51,6 @@ class FightEffectExecutor : EffectExecutor<FightEffect> {
             allEvents.addAll(result2.events)
         }
 
-        return ExecutionResult.success(currentState, allEvents)
+        return EffectResult.success(currentState, allEvents)
     }
 }

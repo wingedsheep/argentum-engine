@@ -1,6 +1,6 @@
 package com.wingedsheep.engine.handlers
 
-import com.wingedsheep.engine.core.ExecutionResult
+import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.handlers.effects.EffectExecutorRegistry
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.sdk.scripting.effects.Effect
@@ -27,7 +27,7 @@ class EffectHandler(
         state: GameState,
         effect: Effect,
         context: EffectContext
-    ): ExecutionResult {
+    ): EffectResult {
         return registry.execute(state, effect, context)
     }
 }

@@ -1,6 +1,6 @@
 package com.wingedsheep.engine.handlers.effects.combat
 
-import com.wingedsheep.engine.core.ExecutionResult
+import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.handlers.effects.BattlefieldFilterUtils
@@ -27,7 +27,7 @@ class GrantCantBeBlockedExceptByColorExecutor : EffectExecutor<GrantCantBeBlocke
         state: GameState,
         effect: GrantCantBeBlockedExceptByColorEffect,
         context: EffectContext
-    ): ExecutionResult {
+    ): EffectResult {
         val filter = effect.filter
         val excludeSelfId = if (filter.excludeSelf) context.sourceId else null
         val affectedEntities = BattlefieldFilterUtils.findMatchingOnBattlefield(
@@ -35,7 +35,7 @@ class GrantCantBeBlockedExceptByColorExecutor : EffectExecutor<GrantCantBeBlocke
         ).toSet()
 
         if (affectedEntities.isEmpty()) {
-            return ExecutionResult.success(state)
+            return EffectResult.success(state)
         }
 
         val newState = state.addFloatingEffect(
@@ -48,6 +48,6 @@ class GrantCantBeBlockedExceptByColorExecutor : EffectExecutor<GrantCantBeBlocke
             context = context
         )
 
-        return ExecutionResult.success(newState)
+        return EffectResult.success(newState)
     }
 }

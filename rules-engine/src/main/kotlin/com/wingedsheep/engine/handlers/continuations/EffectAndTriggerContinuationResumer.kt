@@ -39,9 +39,9 @@ class EffectAndTriggerContinuationResumer(
         response: DecisionResponse,
         checkForMore: CheckForMore
     ): ExecutionResult {
-        val result = effectRunner.executeRemainingEffects(state, continuation.remainingEffects, continuation.effectContext)
-        if (result.isPaused) return result
-        return checkForMore(result.state, result.events.toList())
+        val effectResult = effectRunner.executeRemainingEffects(state, continuation.remainingEffects, continuation.effectContext)
+        if (effectResult.isPaused) return effectResult.toExecutionResult()
+        return checkForMore(effectResult.state, effectResult.events.toList())
     }
 
     private fun resumeTriggeredAbility(
@@ -272,7 +272,7 @@ class EffectAndTriggerContinuationResumer(
             return checkForMore(state, emptyList())
         }
 
-        val result = services.effectExecutorRegistry.execute(state, effectToExecute, context)
+        val result = services.effectExecutorRegistry.execute(state, effectToExecute, context).toExecutionResult()
 
         if (result.isPaused) {
             return result
@@ -310,7 +310,7 @@ class EffectAndTriggerContinuationResumer(
             )
         )
 
-        val result = services.effectExecutorRegistry.execute(state, continuation.reflexiveEffect, context)
+        val result = services.effectExecutorRegistry.execute(state, continuation.reflexiveEffect, context).toExecutionResult()
 
         if (result.isPaused) {
             return result

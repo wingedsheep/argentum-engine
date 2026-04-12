@@ -18,7 +18,7 @@ import kotlin.reflect.KClass
  * @param effectExecutor Function to execute a sub-effect (provided by registry)
  */
 class MayEffectExecutor(
-    private val effectExecutor: (GameState, Effect, EffectContext) -> ExecutionResult
+    private val effectExecutor: (GameState, Effect, EffectContext) -> EffectResult
 ) : EffectExecutor<MayEffect> {
 
     override val effectType: KClass<MayEffect> = MayEffect::class
@@ -27,14 +27,14 @@ class MayEffectExecutor(
         state: GameState,
         effect: MayEffect,
         context: EffectContext
-    ): ExecutionResult {
+    ): EffectResult {
         // If sourceRequiredZone is specified, check if source is still in that zone
         if (effect.sourceRequiredZone != null && context.sourceId != null) {
             val inRequiredZone = state.zones.any { (zoneKey, entities) ->
                 zoneKey.zoneType == effect.sourceRequiredZone && context.sourceId in entities
             }
             if (!inRequiredZone) {
-                return ExecutionResult.success(state) // Action impossible, skip silently
+                return EffectResult.success(state) // Action impossible, skip silently
             }
         }
 
@@ -44,7 +44,7 @@ class MayEffectExecutor(
             val anyFeasible = chooseEffect.choices.any { choice ->
                 checkFeasibility(state, context.controllerId, choice.feasibilityCheck)
             }
-            if (!anyFeasible) return ExecutionResult.success(state)
+            if (!anyFeasible) return EffectResult.success(state)
         }
 
         val playerId = context.controllerId
@@ -86,7 +86,7 @@ class MayEffectExecutor(
         val stateWithDecision = state.withPendingDecision(decision)
         val stateWithContinuation = stateWithDecision.pushContinuation(continuation)
 
-        return ExecutionResult.paused(
+        return EffectResult.paused(
             stateWithContinuation,
             decision,
             listOf(

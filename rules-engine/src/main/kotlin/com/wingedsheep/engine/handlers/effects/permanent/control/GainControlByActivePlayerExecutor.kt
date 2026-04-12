@@ -1,7 +1,7 @@
 package com.wingedsheep.engine.handlers.effects.permanent.control
 
 import com.wingedsheep.engine.core.ControlChangedEvent
-import com.wingedsheep.engine.core.ExecutionResult
+import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.mechanics.layers.Layer
@@ -30,22 +30,22 @@ class GainControlByActivePlayerExecutor : EffectExecutor<GainControlByActivePlay
         state: GameState,
         effect: GainControlByActivePlayerEffect,
         context: EffectContext
-    ): ExecutionResult {
+    ): EffectResult {
         val targetId = context.resolveTarget(effect.target)
-            ?: return ExecutionResult.error(state, "No valid target for control change")
+            ?: return EffectResult.error(state, "No valid target for control change")
 
         val targetContainer = state.getEntity(targetId)
-            ?: return ExecutionResult.error(state, "Target permanent no longer exists")
+            ?: return EffectResult.error(state, "Target permanent no longer exists")
 
         val cardComponent = targetContainer.get<CardComponent>()
-            ?: return ExecutionResult.error(state, "Target is not a card")
+            ?: return EffectResult.error(state, "Target is not a card")
 
         val newControllerId = state.activePlayerId
-            ?: return ExecutionResult.error(state, "No active player")
+            ?: return EffectResult.error(state, "No active player")
 
         // If that player already controls the target, no-op
         val currentControllerId = targetContainer.get<ControllerComponent>()?.playerId
-        if (currentControllerId == newControllerId) return ExecutionResult.success(state)
+        if (currentControllerId == newControllerId) return EffectResult.success(state)
 
         // Remove any previous Layer.CONTROL floating effects from the same source on the same target
         val filteredEffects = state.floatingEffects.filter { floating ->
@@ -77,6 +77,6 @@ class GainControlByActivePlayerExecutor : EffectExecutor<GainControlByActivePlay
             )
         )
 
-        return ExecutionResult.success(newState, events)
+        return EffectResult.success(newState, events)
     }
 }

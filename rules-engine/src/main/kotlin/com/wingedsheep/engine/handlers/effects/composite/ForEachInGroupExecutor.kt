@@ -1,6 +1,6 @@
 package com.wingedsheep.engine.handlers.effects.composite
 
-import com.wingedsheep.engine.core.ExecutionResult
+import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.core.GameEvent
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
@@ -26,7 +26,7 @@ import kotlin.reflect.KClass
  * so entities destroyed during iteration don't affect the list.
  */
 class ForEachInGroupExecutor(
-    private val effectExecutor: (GameState, Effect, EffectContext) -> ExecutionResult
+    private val effectExecutor: (GameState, Effect, EffectContext) -> EffectResult
 ) : EffectExecutor<ForEachInGroupEffect> {
 
     override val effectType: KClass<ForEachInGroupEffect> = ForEachInGroupEffect::class
@@ -35,12 +35,12 @@ class ForEachInGroupExecutor(
         state: GameState,
         effect: ForEachInGroupEffect,
         context: EffectContext
-    ): ExecutionResult {
+    ): EffectResult {
         // 1. Snapshot: resolve filter against current game state
         val matchedEntities = resolveGroup(state, effect, context)
 
         if (matchedEntities.isEmpty()) {
-            return ExecutionResult.success(state)
+            return EffectResult.success(state)
         }
 
         var currentState = state
@@ -60,7 +60,7 @@ class ForEachInGroupExecutor(
 
             if (result.isPaused) {
                 // Inner effect needs a decision - propagate pause
-                return ExecutionResult.paused(
+                return EffectResult.paused(
                     result.state,
                     result.pendingDecision!!,
                     allEvents + result.events
@@ -71,7 +71,7 @@ class ForEachInGroupExecutor(
             allEvents.addAll(result.events)
         }
 
-        return ExecutionResult.success(currentState, allEvents)
+        return EffectResult.success(currentState, allEvents)
     }
 
     /**

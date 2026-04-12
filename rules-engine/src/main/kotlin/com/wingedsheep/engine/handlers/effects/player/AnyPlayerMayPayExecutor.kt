@@ -35,18 +35,18 @@ class AnyPlayerMayPayExecutor(
         state: GameState,
         effect: AnyPlayerMayPayEffect,
         context: EffectContext
-    ): ExecutionResult {
+    ): EffectResult {
         val sourceId = context.sourceId
-            ?: return ExecutionResult.error(state, "No source for any player may pay effect")
+            ?: return EffectResult.error(state, "No source for any player may pay effect")
 
         val sourceContainer = state.getEntity(sourceId)
-            ?: return ExecutionResult.error(state, "Source entity not found")
+            ?: return EffectResult.error(state, "Source entity not found")
         val sourceCard = sourceContainer.get<CardComponent>()
-            ?: return ExecutionResult.error(state, "Source has no card component")
+            ?: return EffectResult.error(state, "Source has no card component")
 
         // Get players in APNAP order
         val activePlayer = state.activePlayerId
-            ?: return ExecutionResult.error(state, "No active player")
+            ?: return EffectResult.error(state, "No active player")
         val playerOrder = listOf(activePlayer) + state.turnOrder.filter { it != activePlayer }
 
         return askNextPlayer(state, effect, context, sourceId, sourceCard.name, playerOrder, 0)
@@ -64,7 +64,7 @@ class AnyPlayerMayPayExecutor(
         sourceName: String,
         playerOrder: List<EntityId>,
         currentIndex: Int
-    ): ExecutionResult {
+    ): EffectResult {
         // Find the next player who can pay
         var index = currentIndex
         while (index < playerOrder.size) {
@@ -77,7 +77,7 @@ class AnyPlayerMayPayExecutor(
 
         // No more players can pay - nothing happens
         if (index >= playerOrder.size) {
-            return ExecutionResult.success(state)
+            return EffectResult.success(state)
         }
 
         val playerId = playerOrder[index]
@@ -86,7 +86,7 @@ class AnyPlayerMayPayExecutor(
                 state, effect, context, cost, sourceId, sourceName,
                 playerId, playerOrder, index
             )
-            else -> ExecutionResult.error(state, "Unsupported cost type for AnyPlayerMayPay: ${cost::class.simpleName}")
+            else -> EffectResult.error(state, "Unsupported cost type for AnyPlayerMayPay: ${cost::class.simpleName}")
         }
     }
 
@@ -115,7 +115,7 @@ class AnyPlayerMayPayExecutor(
         playerId: EntityId,
         playerOrder: List<EntityId>,
         currentIndex: Int
-    ): ExecutionResult {
+    ): EffectResult {
         val validPermanents = findValidPermanentsOnBattlefield(state, playerId, cost.filter, sourceId)
 
         val prompt = "You may sacrifice ${cost.count} ${cost.filter.description}s to cause $sourceName to be sacrificed, or skip"
@@ -149,7 +149,7 @@ class AnyPlayerMayPayExecutor(
 
         val stateWithContinuation = decisionResult.state.pushContinuation(continuation)
 
-        return ExecutionResult.paused(
+        return EffectResult.paused(
             stateWithContinuation,
             decisionResult.pendingDecision,
             decisionResult.events

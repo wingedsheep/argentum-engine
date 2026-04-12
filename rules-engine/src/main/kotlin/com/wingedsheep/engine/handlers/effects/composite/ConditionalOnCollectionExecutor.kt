@@ -1,6 +1,6 @@
 package com.wingedsheep.engine.handlers.effects.composite
 
-import com.wingedsheep.engine.core.ExecutionResult
+import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.state.GameState
@@ -15,7 +15,7 @@ import kotlin.reflect.KClass
  * then delegates to the appropriate sub-effect.
  */
 class ConditionalOnCollectionExecutor(
-    private val effectExecutor: (GameState, Effect, EffectContext) -> ExecutionResult
+    private val effectExecutor: (GameState, Effect, EffectContext) -> EffectResult
 ) : EffectExecutor<ConditionalOnCollectionEffect> {
 
     override val effectType: KClass<ConditionalOnCollectionEffect> = ConditionalOnCollectionEffect::class
@@ -24,7 +24,7 @@ class ConditionalOnCollectionExecutor(
         state: GameState,
         effect: ConditionalOnCollectionEffect,
         context: EffectContext
-    ): ExecutionResult {
+    ): EffectResult {
         val collection = context.pipeline.storedCollections[effect.collection] ?: emptyList()
 
         val elseEffect = effect.ifEmpty
@@ -33,7 +33,7 @@ class ConditionalOnCollectionExecutor(
         } else if (elseEffect != null) {
             effectExecutor(state, elseEffect, context)
         } else {
-            ExecutionResult.success(state)
+            EffectResult.success(state)
         }
     }
 }

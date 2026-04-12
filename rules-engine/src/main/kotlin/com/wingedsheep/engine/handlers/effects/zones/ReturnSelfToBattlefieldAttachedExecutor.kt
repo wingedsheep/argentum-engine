@@ -1,6 +1,6 @@
 package com.wingedsheep.engine.handlers.effects.zones
 
-import com.wingedsheep.engine.core.ExecutionResult
+import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.core.ZoneChangeEvent
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
@@ -41,36 +41,36 @@ class ReturnSelfToBattlefieldAttachedExecutor(
         state: GameState,
         effect: ReturnSelfToBattlefieldAttachedEffect,
         context: EffectContext
-    ): ExecutionResult {
+    ): EffectResult {
         val sourceId = context.sourceId
-            ?: return ExecutionResult.error(state, "No source entity for ReturnSelfToBattlefieldAttached")
+            ?: return EffectResult.error(state, "No source entity for ReturnSelfToBattlefieldAttached")
 
         val attachTargetId = context.resolveTarget(effect.target, state)
-            ?: return ExecutionResult.error(state, "No valid attachment target")
+            ?: return EffectResult.error(state, "No valid attachment target")
 
         // Verify the attachment target is on the battlefield
         val targetOnBattlefield = state.getBattlefield().contains(attachTargetId)
         if (!targetOnBattlefield) {
-            return ExecutionResult.success(state) // Target left battlefield, do nothing
+            return EffectResult.success(state) // Target left battlefield, do nothing
         }
 
         val sourceContainer = state.getEntity(sourceId)
-            ?: return ExecutionResult.error(state, "Source entity not found: $sourceId")
+            ?: return EffectResult.error(state, "Source entity not found: $sourceId")
 
         val cardComponent = sourceContainer.get<CardComponent>()
-            ?: return ExecutionResult.error(state, "Source is not a card: $sourceId")
+            ?: return EffectResult.error(state, "Source is not a card: $sourceId")
 
         val ownerId = sourceContainer.get<OwnerComponent>()?.playerId
             ?: cardComponent.ownerId
-            ?: return ExecutionResult.error(state, "Cannot determine source owner")
+            ?: return EffectResult.error(state, "Cannot determine source owner")
 
         // Find current zone
         val currentZone = findEntityZone(state, sourceId)
-            ?: return ExecutionResult.error(state, "Source not found in any zone: $sourceId")
+            ?: return EffectResult.error(state, "Source not found in any zone: $sourceId")
 
         // Don't return if already on battlefield
         if (currentZone.zoneType == Zone.BATTLEFIELD) {
-            return ExecutionResult.success(state)
+            return EffectResult.success(state)
         }
 
         // Determine the controller: use the attachment target's controller
@@ -109,7 +109,7 @@ class ReturnSelfToBattlefieldAttachedExecutor(
             )
         )
 
-        return ExecutionResult.success(newState, events)
+        return EffectResult.success(newState, events)
     }
 
     private fun findEntityZone(state: GameState, entityId: com.wingedsheep.sdk.model.EntityId): ZoneKey? {

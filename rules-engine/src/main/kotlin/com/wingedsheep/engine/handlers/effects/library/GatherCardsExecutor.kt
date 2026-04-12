@@ -1,7 +1,7 @@
 package com.wingedsheep.engine.handlers.effects.library
 
 import com.wingedsheep.engine.core.CardsRevealedEvent
-import com.wingedsheep.engine.core.ExecutionResult
+import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.handlers.DynamicAmountEvaluator
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.PredicateContext
@@ -41,11 +41,11 @@ class GatherCardsExecutor : EffectExecutor<GatherCardsEffect> {
         state: GameState,
         effect: GatherCardsEffect,
         context: EffectContext
-    ): ExecutionResult {
+    ): EffectResult {
         val cards = when (val source = effect.source) {
             is CardSource.TopOfLibrary -> {
                 val playerId = resolvePlayer(source.player, context, state)
-                    ?: return ExecutionResult.error(state, "Could not resolve player for GatherCards")
+                    ?: return EffectResult.error(state, "Could not resolve player for GatherCards")
                 val count = amountEvaluator.evaluate(state, source.count, context)
                 val libraryZone = ZoneKey(playerId, Zone.LIBRARY)
                 state.getZone(libraryZone).take(count)
@@ -53,7 +53,7 @@ class GatherCardsExecutor : EffectExecutor<GatherCardsEffect> {
 
             is CardSource.FromZone -> {
                 val playerId = resolvePlayer(source.player, context, state)
-                    ?: return ExecutionResult.error(state, "Could not resolve player for GatherCards")
+                    ?: return EffectResult.error(state, "Could not resolve player for GatherCards")
                 val zone = ZoneKey(playerId, source.zone)
                 val allCards = state.getZone(zone)
                 if (source.filter != GameObjectFilter.Any) {
@@ -68,7 +68,7 @@ class GatherCardsExecutor : EffectExecutor<GatherCardsEffect> {
 
             is CardSource.FromMultipleZones -> {
                 val playerId = resolvePlayer(source.player, context, state)
-                    ?: return ExecutionResult.error(state, "Could not resolve player for GatherCards")
+                    ?: return EffectResult.error(state, "Could not resolve player for GatherCards")
                 val allCards = source.zones.flatMap { zone ->
                     state.getZone(ZoneKey(playerId, zone))
                 }
@@ -92,7 +92,7 @@ class GatherCardsExecutor : EffectExecutor<GatherCardsEffect> {
 
             is CardSource.ControlledPermanents -> {
                 val playerId = resolvePlayer(source.player, context, state)
-                    ?: return ExecutionResult.error(state, "Could not resolve player for GatherCards ControlledPermanents")
+                    ?: return EffectResult.error(state, "Could not resolve player for GatherCards ControlledPermanents")
                 val projected = state.projectedState
                 val controlled = projected.getBattlefieldControlledBy(playerId)
                 if (source.filter != GameObjectFilter.Any) {
@@ -108,7 +108,7 @@ class GatherCardsExecutor : EffectExecutor<GatherCardsEffect> {
             is CardSource.BattlefieldMatching -> {
                 val resolvedPlayerId = if (source.player != Player.Each) {
                     resolvePlayer(source.player, context, state)
-                        ?: return ExecutionResult.error(state, "Could not resolve player for GatherCards BattlefieldMatching")
+                        ?: return EffectResult.error(state, "Could not resolve player for GatherCards BattlefieldMatching")
                 } else null
                 val baseFilter = if (resolvedPlayerId != null) source.filter.youControl() else source.filter
                 val excludeSelfId = if (source.excludeSelf) context.sourceId else null
@@ -138,11 +138,11 @@ class GatherCardsExecutor : EffectExecutor<GatherCardsEffect> {
 
             is CardSource.FromLinkedExile -> {
                 val sourceId = context.sourceId
-                    ?: return ExecutionResult.error(state, "No source entity for FromLinkedExile")
+                    ?: return EffectResult.error(state, "No source entity for FromLinkedExile")
                 val sourceContainer = state.getEntity(sourceId)
-                    ?: return ExecutionResult.error(state, "Source entity not found for FromLinkedExile")
+                    ?: return EffectResult.error(state, "Source entity not found for FromLinkedExile")
                 val linked = sourceContainer.get<LinkedExileComponent>()
-                    ?: return ExecutionResult.success(state).copy(
+                    ?: return EffectResult.success(state).copy(
                         updatedCollections = mapOf(effect.storeAs to emptyList())
                     )
                 // Filter to only entities currently in exile
@@ -158,7 +158,7 @@ class GatherCardsExecutor : EffectExecutor<GatherCardsEffect> {
         }
 
         if (cards.isEmpty()) {
-            return ExecutionResult.success(state).copy(
+            return EffectResult.success(state).copy(
                 updatedCollections = mapOf(effect.storeAs to emptyList())
             )
         }
@@ -186,7 +186,7 @@ class GatherCardsExecutor : EffectExecutor<GatherCardsEffect> {
             emptyList()
         }
 
-        return ExecutionResult.success(state, events).copy(
+        return EffectResult.success(state, events).copy(
             updatedCollections = mapOf(effect.storeAs to cards)
         )
     }

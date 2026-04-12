@@ -1,6 +1,6 @@
 package com.wingedsheep.engine.handlers.effects.player
 
-import com.wingedsheep.engine.core.ExecutionResult
+import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.state.GameState
@@ -23,13 +23,13 @@ class GrantDamageBonusExecutor : EffectExecutor<GrantDamageBonusEffect> {
         state: GameState,
         effect: GrantDamageBonusEffect,
         context: EffectContext
-    ): ExecutionResult {
+    ): EffectResult {
         val targetId = context.resolveTarget(effect.target)
-            ?: return ExecutionResult.error(state, "No valid target for damage bonus grant")
+            ?: return EffectResult.error(state, "No valid target for damage bonus grant")
 
         // Only valid for player targets
         if (!state.turnOrder.contains(targetId)) {
-            return ExecutionResult.error(state, "Damage bonus can only be granted to players")
+            return EffectResult.error(state, "Damage bonus can only be granted to players")
         }
 
         val removeOn = when (effect.duration) {
@@ -45,6 +45,6 @@ class GrantDamageBonusExecutor : EffectExecutor<GrantDamageBonusEffect> {
             ))
         }
 
-        return ExecutionResult.success(newState)
+        return EffectResult.success(newState)
     }
 }

@@ -33,19 +33,19 @@ class AddDynamicManaExecutor(
         state: GameState,
         effect: AddDynamicManaEffect,
         context: EffectContext
-    ): ExecutionResult {
+    ): EffectResult {
         val amount = amountEvaluator.evaluate(state, effect.amountSource, context)
         if (amount <= 0) {
-            return ExecutionResult.success(state)
+            return EffectResult.success(state)
         }
 
         val colors = effect.allowedColors.toList().sorted()
 
         // Single color — just add it all
         if (colors.size <= 1) {
-            val color = colors.firstOrNull() ?: return ExecutionResult.success(state)
+            val color = colors.firstOrNull() ?: return EffectResult.success(state)
             val newState = addMana(state, context.controllerId, mapOf(color to amount), effect.restriction)
-            return ExecutionResult.success(newState)
+            return EffectResult.success(newState)
         }
 
         // Two+ colors — ask the player how to split
@@ -80,7 +80,7 @@ class AddDynamicManaExecutor(
 
         val stateWithContinuation = decisionResult.state.pushContinuation(continuation)
 
-        return ExecutionResult.paused(
+        return EffectResult.paused(
             stateWithContinuation,
             decisionResult.pendingDecision,
             decisionResult.events
