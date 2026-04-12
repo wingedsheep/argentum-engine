@@ -44,8 +44,10 @@ class CyclingEnumerator : ActionEnumerator {
             // Add cycling action if present and not prevented
             if (cyclingAbility != null && !cyclingPrevented) {
                 val canAffordCycling = context.manaSolver.canPay(state, playerId, cyclingAbility.cost, precomputedSources = context.availableManaSources)
-                val cyclingAutoTapSolution = context.manaSolver.solve(state, playerId, cyclingAbility.cost, precomputedSources = context.availableManaSources)
-                val cyclingAutoTapPreview = cyclingAutoTapSolution?.sources?.map { it.entityId }
+                val cyclingAutoTapPreview = if (context.skipAutoTapPreview) null else {
+                    context.manaSolver.solve(state, playerId, cyclingAbility.cost, precomputedSources = context.availableManaSources)
+                        ?.sources?.map { it.entityId }
+                }
                 result.add(
                     LegalAction(
                         actionType = "CycleCard",
@@ -61,8 +63,10 @@ class CyclingEnumerator : ActionEnumerator {
             // Add typecycling action if present and not prevented
             if (typecyclingAbility != null && !cyclingPrevented) {
                 val canAffordTypecycling = context.manaSolver.canPay(state, playerId, typecyclingAbility.cost, precomputedSources = context.availableManaSources)
-                val typecyclingAutoTapSolution = context.manaSolver.solve(state, playerId, typecyclingAbility.cost, precomputedSources = context.availableManaSources)
-                val typecyclingAutoTapPreview = typecyclingAutoTapSolution?.sources?.map { it.entityId }
+                val typecyclingAutoTapPreview = if (context.skipAutoTapPreview) null else {
+                    context.manaSolver.solve(state, playerId, typecyclingAbility.cost, precomputedSources = context.availableManaSources)
+                        ?.sources?.map { it.entityId }
+                }
                 result.add(
                     LegalAction(
                         actionType = "TypecycleCard",

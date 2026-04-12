@@ -58,8 +58,10 @@ class TurnFaceUpEnumerator : ActionEnumerator {
                             )
                         )
                     } else if (context.manaSolver.canPay(state, playerId, effectiveCost, precomputedSources = context.availableManaSources)) {
-                        val autoTapSolution = context.manaSolver.solve(state, playerId, effectiveCost, precomputedSources = context.availableManaSources)
-                        val autoTapPreview = autoTapSolution?.sources?.map { it.entityId }
+                        val autoTapPreview = if (context.skipAutoTapPreview) null else {
+                            context.manaSolver.solve(state, playerId, effectiveCost, precomputedSources = context.availableManaSources)
+                                ?.sources?.map { it.entityId }
+                        }
                         result.add(
                             LegalAction(
                                 actionType = "ActivateAbility",

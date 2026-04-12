@@ -17,6 +17,18 @@ import com.wingedsheep.engine.state.components.player.LandDropsComponent
 import com.wingedsheep.sdk.model.EntityId
 
 /**
+ * Controls what data is computed during enumeration.
+ *
+ * [FULL] computes everything including auto-tap previews for the UI.
+ * [ACTIONS_ONLY] skips auto-tap preview solve() calls — used by MCTS/simulation
+ * where only the GameAction matters, not which lands to highlight.
+ */
+enum class EnumerationMode {
+    FULL,
+    ACTIONS_ONLY
+}
+
+/**
  * Shared precomputed state for a single enumeration pass.
  *
  * Cross-cutting values are computed lazily at most once. All enumerators
@@ -30,8 +42,10 @@ class EnumerationContext(
     val costCalculator: CostCalculator,
     val predicateEvaluator: PredicateEvaluator,
     val conditionEvaluator: ConditionEvaluator,
-    val turnManager: TurnManager
+    val turnManager: TurnManager,
+    val mode: EnumerationMode = EnumerationMode.FULL
 ) {
+    val skipAutoTapPreview: Boolean get() = mode == EnumerationMode.ACTIONS_ONLY
     // Utility classes (lazy initialized)
     val targetUtils by lazy { TargetEnumerationUtils(predicateEvaluator) }
     val costUtils by lazy { CostEnumerationUtils(manaSolver, costCalculator, predicateEvaluator, cardRegistry) }

@@ -417,10 +417,9 @@ class ActivatedAbilityEnumerator : ActionEnumerator {
                     context.costUtils.calculateMaxAffordableX(state, playerId, ability.cost, abilityManaCost, precomputedSources = context.availableManaSources)
                 } else null
 
-                // Compute auto-tap preview for UI highlighting
-                val abilityAutoTapPreview = if (abilityManaCost != null && !abilityHasXCost) {
-                    context.manaSolver.solve(state, playerId, abilityManaCost, precomputedSources = context.availableManaSources)?.sources?.map { it.entityId }
-                } else null
+                // Compute auto-tap preview for UI highlighting (skipped in ACTIONS_ONLY mode)
+                val abilityAutoTapPreview = if (context.skipAutoTapPreview || abilityManaCost == null || abilityHasXCost) null
+                else context.manaSolver.solve(state, playerId, abilityManaCost, precomputedSources = context.availableManaSources)?.sources?.map { it.entityId }
 
                 // Compute maxRepeatableActivations for eligible self-targeting abilities
                 // Eligible: pure mana cost, no X, no once-per-turn restriction, not a class level-up

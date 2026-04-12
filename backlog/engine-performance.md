@@ -13,7 +13,7 @@ on redundant recomputation instead.
 
 ## Phase 1 — Quick Wins (no API changes)
 
-### 1. Cache mana sources per enumeration pass
+### 1. ~~Cache mana sources per enumeration pass~~ ✅ Done
 
 **Problem:** `ManaSolver.findAvailableManaSources()` scans the entire projected battlefield on every
 call — checking tapped status, summoning sickness, haste, subtypes, and abilities for each permanent.
@@ -37,7 +37,7 @@ list is immutable within a single enumeration pass.
 
 **Impact:** ~30-40% reduction in enumeration time. Highest-value single change.
 
-### 2. Skip auto-tap preview in MCTS mode
+### 2. ~~Skip auto-tap preview in MCTS mode~~ ✅ Done
 
 **Problem:** `CastSpellEnumerator` calls `ManaSolver.solve()` separately after `canPay()` to compute
 `autoTapPreview` (which lands to tap for the client UI). For MCTS, only the `GameAction` matters — not
@@ -50,6 +50,8 @@ When set, `CastSpellEnumerator` skips the `solve()` call for preview and leaves 
 - `EnumerationContext.kt` — add `mode: EnumerationMode` field (`FULL` / `ACTIONS_ONLY`)
 - `CastSpellEnumerator.kt` — skip preview `solve()` calls (~lines 256, 270, 278, 376)
 - `LegalActionEnumerator.kt` — accept mode parameter
+- All other enumerators with auto-tap solve calls: `CastFromZoneEnumerator`, `ActivatedAbilityEnumerator`,
+  `CyclingEnumerator`, `MorphCastEnumerator`, `TurnFaceUpEnumerator`, `GraveyardAbilityEnumerator`
 
 **Impact:** ~25% reduction in enumeration time for MCTS use case.
 
@@ -72,7 +74,7 @@ to both methods.
 **Impact:** ~15-20% reduction in processing time. Eliminates 2-3 redundant battlefield scans per
 PassPriority.
 
-### 4. Skip undo policy computation
+### 4. ~~Skip undo policy computation~~ ✅ Done
 
 **Problem:** `UndoPolicyComputer.compute()` runs on every action, classifying the action and scanning
 all events for information-revealing properties. Then `result.copy(undoPolicy = ...)` allocates a new

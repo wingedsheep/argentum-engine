@@ -26,8 +26,10 @@ class MorphCastEnumerator : ActionEnumerator {
 
         val morphCost = context.costCalculator.calculateFaceDownCost(state, playerId)
         val canAffordMorph = context.manaSolver.canPay(state, playerId, morphCost, precomputedSources = context.availableManaSources)
-        val morphAutoTapSolution = context.manaSolver.solve(state, playerId, morphCost, precomputedSources = context.availableManaSources)
-        val morphAutoTapPreview = morphAutoTapSolution?.sources?.map { it.entityId }
+        val morphAutoTapPreview = if (context.skipAutoTapPreview) null else {
+            context.manaSolver.solve(state, playerId, morphCost, precomputedSources = context.availableManaSources)
+                ?.sources?.map { it.entityId }
+        }
 
         val hand = state.getHand(playerId)
         for (cardId in hand) {

@@ -46,9 +46,15 @@ class LegalActionEnumerator(
      *
      * @param state The current game state
      * @param playerId The player to enumerate actions for
+     * @param mode Controls what data is computed. [EnumerationMode.ACTIONS_ONLY] skips
+     *   auto-tap preview computation for simulation/MCTS use.
      * @return All legal actions (including unaffordable ones marked with affordable=false)
      */
-    fun enumerate(state: GameState, playerId: EntityId): List<LegalAction> {
+    fun enumerate(
+        state: GameState,
+        playerId: EntityId,
+        mode: EnumerationMode = EnumerationMode.FULL
+    ): List<LegalAction> {
         val context = EnumerationContext(
             state = state,
             playerId = playerId,
@@ -57,7 +63,8 @@ class LegalActionEnumerator(
             costCalculator = costCalculator,
             predicateEvaluator = predicateEvaluator,
             conditionEvaluator = conditionEvaluator,
-            turnManager = turnManager
+            turnManager = turnManager,
+            mode = mode
         )
 
         // Combat declaration steps are exclusive — only combat actions, no spells/abilities/pass

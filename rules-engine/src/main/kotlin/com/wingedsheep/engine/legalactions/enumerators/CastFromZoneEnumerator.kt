@@ -132,8 +132,10 @@ class CastFromZoneEnumerator : ActionEnumerator {
                             val xSymbolCount = topEffectiveCost.xCount.coerceAtLeast(1)
                             ((availableSources - fixedCost) / xSymbolCount).coerceAtLeast(0)
                         } else null
-                        val autoTapSolution = context.manaSolver.solve(state, playerId, topEffectiveCost, precomputedSources = cachedSources)
-                        val autoTapPreview = autoTapSolution?.sources?.map { it.entityId }
+                        val autoTapPreview = if (context.skipAutoTapPreview) null else {
+                            context.manaSolver.solve(state, playerId, topEffectiveCost, precomputedSources = cachedSources)
+                                ?.sources?.map { it.entityId }
+                        }
 
                         if (targetReqs.isNotEmpty()) {
                             val targetInfos = context.targetUtils.buildTargetInfos(state, playerId, targetReqs)
@@ -765,8 +767,10 @@ class CastFromZoneEnumerator : ActionEnumerator {
                 cardDef.script.auraTarget?.let { add(it) }
             }
 
-            val autoTapSolution = context.manaSolver.solve(state, playerId, effectiveCost, precomputedSources = context.availableManaSources)
-            val autoTapPreview = autoTapSolution?.sources?.map { it.entityId }
+            val autoTapPreview = if (context.skipAutoTapPreview) null else {
+                context.manaSolver.solve(state, playerId, effectiveCost, precomputedSources = context.availableManaSources)
+                    ?.sources?.map { it.entityId }
+            }
 
             if (targetReqs.isNotEmpty()) {
                 val targetInfos = context.targetUtils.buildTargetInfos(state, playerId, targetReqs)
@@ -878,8 +882,10 @@ class CastFromZoneEnumerator : ActionEnumerator {
                 cardDef.script.auraTarget?.let { add(it) }
             }
 
-            val autoTapSolution = context.manaSolver.solve(state, playerId, effectiveCost, precomputedSources = context.availableManaSources)
-            val autoTapPreview = autoTapSolution?.sources?.map { it.entityId }
+            val autoTapPreview = if (context.skipAutoTapPreview) null else {
+                context.manaSolver.solve(state, playerId, effectiveCost, precomputedSources = context.availableManaSources)
+                    ?.sources?.map { it.entityId }
+            }
 
             if (targetReqs.isNotEmpty()) {
                 val targetInfos = context.targetUtils.buildTargetInfos(state, playerId, targetReqs)
@@ -992,8 +998,10 @@ class CastFromZoneEnumerator : ActionEnumerator {
                 cardDef.script.auraTarget?.let { add(it) }
             }
 
-            val autoTapSolution = context.manaSolver.solve(state, playerId, effectiveCost, precomputedSources = context.availableManaSources)
-            val autoTapPreview = autoTapSolution?.sources?.map { it.entityId }
+            val autoTapPreview = if (context.skipAutoTapPreview) null else {
+                context.manaSolver.solve(state, playerId, effectiveCost, precomputedSources = context.availableManaSources)
+                    ?.sources?.map { it.entityId }
+            }
 
             if (targetReqs.isNotEmpty()) {
                 val targetInfos = context.targetUtils.buildTargetInfos(state, playerId, targetReqs)
@@ -1240,8 +1248,10 @@ class CastFromZoneEnumerator : ActionEnumerator {
                     cardDef.script.auraTarget?.let { add(it) }
                 }
 
-                val autoTapSolution = context.manaSolver.solve(state, playerId, effectiveCost, precomputedSources = context.availableManaSources)
-                val autoTapPreview = autoTapSolution?.sources?.map { it.entityId }
+                val autoTapPreview = if (context.skipAutoTapPreview) null else {
+                    context.manaSolver.solve(state, playerId, effectiveCost, precomputedSources = context.availableManaSources)
+                        ?.sources?.map { it.entityId }
+                }
 
                 if (targetReqs.isNotEmpty()) {
                     val targetInfos = context.targetUtils.buildTargetInfos(state, playerId, targetReqs)

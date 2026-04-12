@@ -137,10 +137,9 @@ class GraveyardAbilityEnumerator : ActionEnumerator {
                     (availableSources - fixedCost).coerceAtLeast(0)
                 } else null
 
-                // Compute auto-tap preview for UI highlighting
-                val abilityAutoTapPreview = if (abilityManaCost != null && !abilityHasXCost) {
-                    context.manaSolver.solve(state, playerId, abilityManaCost, precomputedSources = context.availableManaSources)?.sources?.map { it.entityId }
-                } else null
+                // Compute auto-tap preview for UI highlighting (skipped in ACTIONS_ONLY mode)
+                val abilityAutoTapPreview = if (context.skipAutoTapPreview || abilityManaCost == null || abilityHasXCost) null
+                else context.manaSolver.solve(state, playerId, abilityManaCost, precomputedSources = context.availableManaSources)?.sources?.map { it.entityId }
 
                 // Check for target requirements
                 val targetReqs = ability.targetRequirements

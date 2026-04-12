@@ -1,6 +1,7 @@
 package com.wingedsheep.engine.ai
 
 import com.wingedsheep.engine.core.*
+import com.wingedsheep.engine.legalactions.EnumerationMode
 import com.wingedsheep.engine.legalactions.LegalAction
 import com.wingedsheep.engine.legalactions.LegalActionEnumerator
 import com.wingedsheep.engine.registry.CardRegistry
@@ -60,7 +61,7 @@ class GameSimulator(
      * Get all legal actions for a player.
      */
     fun getLegalActions(state: GameState, playerId: EntityId): List<LegalAction> {
-        return enumerator.enumerate(state, playerId)
+        return enumerator.enumerate(state, playerId, EnumerationMode.ACTIONS_ONLY)
     }
 
     /**

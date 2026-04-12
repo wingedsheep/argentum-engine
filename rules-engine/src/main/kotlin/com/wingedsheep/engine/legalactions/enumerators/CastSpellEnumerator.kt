@@ -245,17 +245,19 @@ class CastSpellEnumerator : ActionEnumerator {
             // Always include mana cost string for cast actions
             val manaCostString = effectiveCost.toString()
 
-            // Compute auto-tap preview for UI highlighting
+            // Compute auto-tap preview for UI highlighting (skipped in ACTIONS_ONLY mode)
             // For Delve/Convoke spells, solve against the reduced cost so the preview
             // reflects what the player actually needs to tap after alternative payment
-            val autoTapCost = if (hasDelve && delveCards != null && delveCards.isNotEmpty()) {
-                val maxDelve = minOf(delveCards.size, effectiveCost.genericAmount)
-                effectiveCost.reduceGeneric(maxDelve)
-            } else {
-                effectiveCost
+            val autoTapPreview = if (context.skipAutoTapPreview) null else {
+                val autoTapCost = if (hasDelve && delveCards != null && delveCards.isNotEmpty()) {
+                    val maxDelve = minOf(delveCards.size, effectiveCost.genericAmount)
+                    effectiveCost.reduceGeneric(maxDelve)
+                } else {
+                    effectiveCost
+                }
+                context.manaSolver.solve(state, playerId, autoTapCost, precomputedSources = cachedSources)
+                    ?.sources?.map { it.entityId }
             }
-            val autoTapSolution = context.manaSolver.solve(state, playerId, autoTapCost, precomputedSources = cachedSources)
-            val autoTapPreview = autoTapSolution?.sources?.map { it.entityId }
 
             // Check for DividedDamageEffect to flag damage distribution requirement
             val spellEffect = cardDef.script.spellEffect
@@ -268,15 +270,21 @@ class CastSpellEnumerator : ActionEnumerator {
             val altCostInfo = if (canAffordAlternative) {
                 val altCost = context.alternativeCastingCosts.first()
                 val altEffective = context.costCalculator.calculateEffectiveCostWithAlternativeBase(state, cardDef, altCost)
-                val altSolution = context.manaSolver.solve(state, playerId, altEffective, precomputedSources = cachedSources)
-                Triple(altEffective.toString(), altSolution?.sources?.map { it.entityId }, context.manaSolver.canPay(state, playerId, altEffective, precomputedSources = cachedSources))
+                val altPreview = if (context.skipAutoTapPreview) null else {
+                    context.manaSolver.solve(state, playerId, altEffective, precomputedSources = cachedSources)
+                        ?.sources?.map { it.entityId }
+                }
+                Triple(altEffective.toString(), altPreview, context.manaSolver.canPay(state, playerId, altEffective, precomputedSources = cachedSources))
             } else null
 
             // Compute self-alternative cost info (e.g., Zahid)
             val selfAltCostResult = if (canAffordSelfAlternative && selfAltCost != null) {
                 val selfAltMana = ManaCost.parse(selfAltCost.manaCost)
                 val selfAltEffective = context.costCalculator.calculateEffectiveCostWithAlternativeBase(state, cardDef, selfAltMana, playerId)
-                val selfAltSolution = context.manaSolver.solve(state, playerId, selfAltEffective, precomputedSources = cachedSources)
+                val selfAltPreview = if (context.skipAutoTapPreview) null else {
+                    context.manaSolver.solve(state, playerId, selfAltEffective, precomputedSources = cachedSources)
+                        ?.sources?.map { it.entityId }
+                }
                 val tapCost = selfAltCost.additionalCosts.filterIsInstance<AdditionalCost.TapPermanents>().firstOrNull()
                 val tapTargets = if (tapCost != null) context.costUtils.findAbilityTapTargets(state, playerId, tapCost.filter) else null
                 val addlCostInfo = if (tapTargets != null && tapCost != null) {
@@ -289,7 +297,7 @@ class CastSpellEnumerator : ActionEnumerator {
                 } else null
                 SelfAltCostResult(
                     manaCostString = selfAltEffective.toString(),
-                    autoTapPreview = selfAltSolution?.sources?.map { it.entityId },
+                    autoTapPreview = selfAltPreview,
                     additionalCostInfo = addlCostInfo
                 )
             } else null
@@ -373,13 +381,10 @@ class CastSpellEnumerator : ActionEnumerator {
                     }
 
                     val modeManaCostString = modeEffectiveCost.toString()
-                    val modeAutoTapSolution = if (modeExtraManaCost != null) {
+                    val modeAutoTapPreview = if (context.skipAutoTapPreview) null
+                    else if (modeExtraManaCost != null) {
                         context.manaSolver.solve(state, playerId, modeEffectiveCost, precomputedSources = cachedSources)
-                    } else {
-                        autoTapSolution
-                    }
-                    val modeAutoTapPreview = if (modeExtraManaCost != null) {
-                        modeAutoTapSolution?.sources?.map { it.entityId }
+                            ?.sources?.map { it.entityId }
                     } else {
                         autoTapPreview
                     }
@@ -691,8 +696,10 @@ class CastSpellEnumerator : ActionEnumerator {
             )
             val canAffordKickedMana = context.manaSolver.canPay(state, playerId, kickedCost, spellContext = kickedSpellContext, precomputedSources = context.availableManaSources)
             val kickedCostString = kickedCost.toString()
-            val kickedAutoTapSolution = context.manaSolver.solve(state, playerId, kickedCost, spellContext = kickedSpellContext, precomputedSources = context.availableManaSources)
-            val kickedAutoTapPreview = kickedAutoTapSolution?.sources?.map { it.entityId }
+            val kickedAutoTapPreview = if (context.skipAutoTapPreview) null else {
+                context.manaSolver.solve(state, playerId, kickedCost, spellContext = kickedSpellContext, precomputedSources = context.availableManaSources)
+                    ?.sources?.map { it.entityId }
+            }
 
             // Check additional cost payability (e.g., sacrifice a creature)
             var kickerCostInfo: AdditionalCostData? = null
