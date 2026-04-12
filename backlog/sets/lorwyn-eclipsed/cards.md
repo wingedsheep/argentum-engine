@@ -2,7 +2,7 @@
 
 **Set Size:** 273 cards (main set, per Scryfall `set:ecl`)
 **Release Date:** January 23, 2026
-**Implemented:** 3 / 273
+**Implemented:** 4 / 273
 
 | Color      | Total | Done |
 |------------|-------|------|
@@ -13,7 +13,7 @@
 | Green      | 39    | 1    |
 | Multicolor | 49    | 0    |
 | Colorless  | 18    | 0    |
-| Land       | 12    | 0    |
+| Land       | 12    | 1    |
 
 > **Note:** Before implementing any card, check the `effects/` directory in this folder for any
 > new mechanic it relies on (Evoke, Blight, Vivid, mana-spent gating, Basic landcycling, Wither).
@@ -312,6 +312,6 @@
 - [ ] Mountain
 - [ ] Overgrown Tomb
 - [ ] Plains
-- [ ] Steam Vents
+- [x] Steam Vents
 - [ ] Swamp
 - [ ] Temple Garden

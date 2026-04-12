@@ -192,24 +192,27 @@ data class RedirectZoneChange(
 
 /**
  * Permanent enters the battlefield tapped.
- * Example: Glacial Fortress (conditional), tap lands, Thalia Heretic Cathar
+ * Example: Glacial Fortress (conditional), tap lands, Thalia Heretic Cathar, Steam Vents (pay life)
  *
  * @param unlessCondition If non-null, the permanent only enters tapped when this condition is NOT met.
  *                        Used for "check lands" like Sulfur Falls ("enters tapped unless you control an Island or a Mountain").
+ * @param payLifeCost If non-null, the player may pay this much life to have the permanent enter untapped.
+ *                    Used for "shock lands" like Steam Vents ("you may pay 2 life. If you don't, it enters tapped").
  */
 @SerialName("EntersTapped")
 @Serializable
 data class EntersTapped(
     val unlessCondition: Condition? = null,
+    val payLifeCost: Int? = null,
     override val appliesTo: GameEvent = GameEvent.ZoneChangeEvent(
         filter = GameObjectFilter.Any,
         to = Zone.BATTLEFIELD
     )
 ) : ReplacementEffect {
-    override val description: String = if (unlessCondition != null) {
-        "This permanent enters tapped unless ${unlessCondition.description}"
-    } else {
-        "If ${appliesTo.description}, it enters tapped"
+    override val description: String = when {
+        payLifeCost != null -> "As this permanent enters, you may pay $payLifeCost life. If you don't, it enters tapped."
+        unlessCondition != null -> "This permanent enters tapped unless ${unlessCondition.description}"
+        else -> "If ${appliesTo.description}, it enters tapped"
     }
 
     override fun applyTextReplacement(replacer: TextReplacer): ReplacementEffect {

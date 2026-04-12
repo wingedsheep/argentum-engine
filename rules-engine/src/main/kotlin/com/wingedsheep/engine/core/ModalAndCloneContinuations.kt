@@ -2,6 +2,7 @@ package com.wingedsheep.engine.core
 
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.sdk.core.Keyword
+import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.effects.BudgetMode
 import com.wingedsheep.sdk.scripting.effects.Effect
@@ -133,6 +134,47 @@ data class EntersWithChoiceLandContinuation(
     val controllerId: EntityId,
     val choiceType: com.wingedsheep.sdk.scripting.ChoiceType,
     val creatureTypes: List<String> = emptyList()
+) : ContinuationFrame
+
+/**
+ * Resume after player answers yes/no to "pay life or enter tapped" for a land played directly.
+ *
+ * Used for shock lands like Steam Vents. The land is already on the battlefield when this
+ * continuation fires — if the player pays life, the land stays untapped; if not, it gets tapped.
+ *
+ * @property landId The land entity already on the battlefield
+ * @property controllerId The player who played the land
+ * @property lifeCost The amount of life to pay if they choose yes
+ * @property fromZone The zone the land was played from (for the ZoneChangeEvent)
+ */
+@Serializable
+data class PayLifeOrEnterTappedLandContinuation(
+    override val decisionId: String,
+    val landId: EntityId,
+    val controllerId: EntityId,
+    val lifeCost: Int,
+    val fromZone: Zone
+) : ContinuationFrame
+
+/**
+ * Resume after player answers yes/no to "pay life or enter tapped" for a spell resolving.
+ *
+ * Used for shock lands entering via effects (e.g., fetched onto the battlefield).
+ * The spell is still being resolved — if the player pays life, the permanent enters untapped;
+ * if not, it gets tapped.
+ *
+ * @property spellId The spell entity being resolved
+ * @property controllerId The player who controls the spell
+ * @property ownerId The owner of the card
+ * @property lifeCost The amount of life to pay if they choose yes
+ */
+@Serializable
+data class PayLifeOrEnterTappedSpellContinuation(
+    override val decisionId: String,
+    val spellId: EntityId,
+    val controllerId: EntityId,
+    val ownerId: EntityId,
+    val lifeCost: Int
 ) : ContinuationFrame
 
 /**

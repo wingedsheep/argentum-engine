@@ -138,20 +138,62 @@ class PlayLandHandler(
         if (cardDef != null) {
             val entersTapped = cardDef.script.replacementEffects.filterIsInstance<EntersTapped>().firstOrNull()
             if (entersTapped != null) {
-                val shouldEnterTapped = if (entersTapped.unlessCondition != null) {
-                    // Conditional: enters tapped UNLESS condition is met
-                    val context = EffectContext(
-                        sourceId = action.cardId,
-                        controllerId = action.playerId,
-                        opponentId = newState.turnOrder.firstOrNull { it != action.playerId }
+                if (entersTapped.payLifeCost != null) {
+                    // Shock land: ask the player if they want to pay life
+                    // Use up a land drop first
+                    newState = newState.updateEntity(action.playerId) { c ->
+                        val landDrops = c.get<LandDropsComponent>() ?: LandDropsComponent()
+                        c.with(landDrops.use())
+                    }
+
+                    val zoneChangeEvent = com.wingedsheep.engine.core.ZoneChangeEvent(
+                        action.cardId,
+                        cardComponent.name,
+                        fromZone,
+                        Zone.BATTLEFIELD,
+                        action.playerId
                     )
-                    !ConditionEvaluator().evaluate(newState, entersTapped.unlessCondition!!, context)
+                    val events = listOf(zoneChangeEvent)
+                    newState = newState.tick()
+
+                    val decisionId = "pay-life-or-enter-tapped-${action.cardId.value}"
+                    val decision = com.wingedsheep.engine.core.YesNoDecision(
+                        id = decisionId,
+                        playerId = action.playerId,
+                        prompt = "Pay ${entersTapped.payLifeCost} life to have ${cardComponent.name} enter untapped?",
+                        context = com.wingedsheep.engine.core.DecisionContext(
+                            sourceId = action.cardId,
+                            sourceName = cardComponent.name,
+                            phase = com.wingedsheep.engine.core.DecisionPhase.RESOLUTION
+                        )
+                    )
+                    val continuation = com.wingedsheep.engine.core.PayLifeOrEnterTappedLandContinuation(
+                        decisionId = decisionId,
+                        landId = action.cardId,
+                        controllerId = action.playerId,
+                        lifeCost = entersTapped.payLifeCost!!,
+                        fromZone = fromZone
+                    )
+                    val pausedState = newState
+                        .pushContinuation(continuation)
+                        .withPendingDecision(decision)
+                    return ExecutionResult.paused(pausedState, decision, events)
                 } else {
-                    true
-                }
-                if (shouldEnterTapped) {
-                    newState = newState.updateEntity(action.cardId) { c ->
-                        c.with(TappedComponent)
+                    val shouldEnterTapped = if (entersTapped.unlessCondition != null) {
+                        // Conditional: enters tapped UNLESS condition is met
+                        val context = EffectContext(
+                            sourceId = action.cardId,
+                            controllerId = action.playerId,
+                            opponentId = newState.turnOrder.firstOrNull { it != action.playerId }
+                        )
+                        !ConditionEvaluator().evaluate(newState, entersTapped.unlessCondition!!, context)
+                    } else {
+                        true
+                    }
+                    if (shouldEnterTapped) {
+                        newState = newState.updateEntity(action.cardId) { c ->
+                            c.with(TappedComponent)
+                        }
                     }
                 }
             }

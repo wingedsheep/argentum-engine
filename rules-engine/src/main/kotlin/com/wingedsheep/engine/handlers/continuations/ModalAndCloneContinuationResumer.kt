@@ -22,6 +22,8 @@ class ModalAndCloneContinuationResumer(
         resumer(CloneEntersContinuation::class, ::resumeCloneEnters),
         resumer(EntersWithChoiceSpellContinuation::class, ::resumeEntersWithChoiceSpell),
         resumer(EntersWithChoiceLandContinuation::class, ::resumeEntersWithChoiceLand),
+        resumer(PayLifeOrEnterTappedLandContinuation::class, ::resumePayLifeOrEnterTappedLand),
+        resumer(PayLifeOrEnterTappedSpellContinuation::class, ::resumePayLifeOrEnterTappedSpell),
         resumer(RevealCountersContinuation::class, ::resumeRevealCounters),
         resumer(CastWithCreatureTypeContinuation::class, ::resumeCastWithCreatureType),
         resumer(BudgetModalContinuation::class, ::resumeBudgetModal),
@@ -488,6 +490,147 @@ class ModalAndCloneContinuationResumer(
         }
 
         return checkForMore(newState, emptyList())
+    }
+
+    /**
+     * Resume after player answers yes/no to "pay life or enter tapped" for a land played directly.
+     *
+     * The land is already on the battlefield. If yes -> pay life, land stays untapped.
+     * If no -> land gets tapped. Then detect and process triggers from the land entering.
+     */
+    fun resumePayLifeOrEnterTappedLand(
+        state: GameState,
+        continuation: PayLifeOrEnterTappedLandContinuation,
+        response: DecisionResponse,
+        checkForMore: CheckForMore
+    ): ExecutionResult {
+        if (response !is YesNoResponse) {
+            return ExecutionResult.error(state, "Expected yes/no response for pay life or enter tapped")
+        }
+
+        var newState = state
+        val events = mutableListOf<GameEvent>()
+
+        if (response.choice) {
+            // Player chose to pay life
+            val currentLife = newState.getEntity(continuation.controllerId)
+                ?.get<com.wingedsheep.engine.state.components.identity.LifeTotalComponent>()?.life
+                ?: return ExecutionResult.error(state, "Player has no life total")
+            val newLife = currentLife - continuation.lifeCost
+            newState = newState.updateEntity(continuation.controllerId) { container ->
+                container.with(com.wingedsheep.engine.state.components.identity.LifeTotalComponent(newLife))
+            }
+            newState = com.wingedsheep.engine.handlers.effects.DamageUtils.markLifeLostThisTurn(
+                newState, continuation.controllerId
+            )
+            events.add(LifeChangedEvent(continuation.controllerId, currentLife, newLife, LifeChangeReason.PAYMENT))
+        } else {
+            // Player chose not to pay — land enters tapped
+            newState = newState.updateEntity(continuation.landId) { c ->
+                c.with(com.wingedsheep.engine.state.components.battlefield.TappedComponent)
+            }
+        }
+
+        // Detect and process any triggers from the land entering (e.g., landfall)
+        val landContainer = newState.getEntity(continuation.landId)
+        val cardComponent = landContainer?.get<CardComponent>()
+        val zoneChangeEvent = ZoneChangeEvent(
+            continuation.landId,
+            cardComponent?.name ?: "Unknown",
+            continuation.fromZone,
+            Zone.BATTLEFIELD,
+            continuation.controllerId
+        )
+        val triggerEvents = listOf(zoneChangeEvent)
+        val triggers = services.triggerDetector.detectTriggers(newState, triggerEvents)
+        if (triggers.isNotEmpty()) {
+            val triggerResult = services.triggerProcessor.processTriggers(newState, triggers)
+
+            if (triggerResult.isPaused) {
+                return ExecutionResult.paused(
+                    triggerResult.state,
+                    triggerResult.pendingDecision!!,
+                    events + triggerResult.events
+                )
+            }
+
+            return ExecutionResult.success(
+                triggerResult.newState,
+                events + triggerResult.events
+            )
+        }
+
+        return checkForMore(newState, events)
+    }
+
+    /**
+     * Resume after player answers yes/no to "pay life or enter tapped" for a spell resolving.
+     *
+     * If yes -> pay life, permanent enters untapped. If no -> permanent enters tapped.
+     * Then completes the permanent entry to the battlefield.
+     */
+    fun resumePayLifeOrEnterTappedSpell(
+        state: GameState,
+        continuation: PayLifeOrEnterTappedSpellContinuation,
+        response: DecisionResponse,
+        checkForMore: CheckForMore
+    ): ExecutionResult {
+        if (response !is YesNoResponse) {
+            return ExecutionResult.error(state, "Expected yes/no response for pay life or enter tapped")
+        }
+
+        var newState = state
+        val events = mutableListOf<GameEvent>()
+
+        if (response.choice) {
+            // Player chose to pay life
+            val currentLife = newState.getEntity(continuation.controllerId)
+                ?.get<com.wingedsheep.engine.state.components.identity.LifeTotalComponent>()?.life
+                ?: return ExecutionResult.error(state, "Player has no life total")
+            val newLife = currentLife - continuation.lifeCost
+            newState = newState.updateEntity(continuation.controllerId) { container ->
+                container.with(com.wingedsheep.engine.state.components.identity.LifeTotalComponent(newLife))
+            }
+            newState = com.wingedsheep.engine.handlers.effects.DamageUtils.markLifeLostThisTurn(
+                newState, continuation.controllerId
+            )
+            events.add(LifeChangedEvent(continuation.controllerId, currentLife, newLife, LifeChangeReason.PAYMENT))
+        }
+
+        // Complete the permanent entry
+        val spellContainer = newState.getEntity(continuation.spellId)
+            ?: return ExecutionResult.error(state, "Spell entity not found: ${continuation.spellId}")
+
+        val cardComponent = spellContainer.get<CardComponent>()
+        val spellComponent = spellContainer.get<SpellOnStackComponent>()
+            ?: return ExecutionResult.error(state, "Spell has no SpellOnStackComponent")
+
+        val cardDef = cardComponent?.let { services.cardRegistry.getCard(it.cardDefinitionId) }
+        val (enterState, enterEvents) = services.stackResolver.enterPermanentOnBattlefield(
+            newState, continuation.spellId, spellComponent, cardComponent, cardDef
+        )
+        newState = enterState
+        events.addAll(enterEvents)
+
+        // If player declined to pay life, tap the permanent
+        if (!response.choice) {
+            newState = newState.updateEntity(continuation.spellId) { c ->
+                c.with(com.wingedsheep.engine.state.components.battlefield.TappedComponent)
+            }
+        }
+
+        events.add(ResolvedEvent(continuation.spellId, cardComponent?.name ?: "Unknown"))
+        events.add(
+            ZoneChangeEvent(
+                continuation.spellId,
+                cardComponent?.name ?: "Unknown",
+                null,
+                Zone.BATTLEFIELD,
+                continuation.ownerId
+            )
+        )
+
+        return checkForMore(newState, events)
     }
 
     /**

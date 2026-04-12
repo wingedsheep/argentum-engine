@@ -539,6 +539,35 @@ class StackResolver(
             }
         }
 
+        // Check for "pay life or enter tapped" (shock lands) before entering the battlefield
+        if (cardDef != null && !spellComponent.castFaceDown) {
+            val entersTapped = cardDef.script.replacementEffects.filterIsInstance<EntersTapped>().firstOrNull()
+            if (entersTapped?.payLifeCost != null) {
+                val decisionId = "pay-life-or-enter-tapped-spell-${spellId.value}"
+                val decision = YesNoDecision(
+                    id = decisionId,
+                    playerId = controllerId,
+                    prompt = "Pay ${entersTapped.payLifeCost} life to have ${cardComponent?.name ?: "this land"} enter untapped?",
+                    context = DecisionContext(
+                        sourceId = spellId,
+                        sourceName = cardComponent?.name,
+                        phase = DecisionPhase.RESOLUTION
+                    )
+                )
+                val continuation = PayLifeOrEnterTappedSpellContinuation(
+                    decisionId = decisionId,
+                    spellId = spellId,
+                    controllerId = controllerId,
+                    ownerId = ownerId,
+                    lifeCost = entersTapped.payLifeCost!!
+                )
+                val pausedState = state
+                    .pushContinuation(continuation)
+                    .withPendingDecision(decision)
+                return ExecutionResult.paused(pausedState, decision)
+            }
+        }
+
         // Normal permanent entry
         val (newState, enterEvents) = enterPermanentOnBattlefield(state, spellId, spellComponent, cardComponent, cardDef)
         val sagaEvents = if (cardDef != null && !spellComponent.castFaceDown && cardDef.isSaga) {
@@ -634,9 +663,10 @@ class StackResolver(
         }
 
         // Handle "enters the battlefield tapped" replacement effect
+        // Note: payLifeCost shock lands are handled in resolvePermanentSpell before this method is called.
         if (cardDef != null && !spellComponent.castFaceDown) {
             val entersTapped = cardDef.script.replacementEffects.filterIsInstance<EntersTapped>().firstOrNull()
-            if (entersTapped != null) {
+            if (entersTapped != null && entersTapped.payLifeCost == null) {
                 val shouldEnterTapped = if (entersTapped.unlessCondition != null) {
                     val context = EffectContext(
                         sourceId = spellId,
