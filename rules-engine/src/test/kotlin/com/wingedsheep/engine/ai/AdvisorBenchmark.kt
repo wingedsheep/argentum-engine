@@ -228,8 +228,8 @@ private fun playAdvisorGame(
                 println("  [STUCK] Legal actions for priority player: ${legalActions.map { la ->
                     val desc = la.actionType
                     val extra = when {
-                        la.validAttackers != null -> " validAtk=${la.validAttackers!!.size} mandatoryAtk=${la.mandatoryAttackers?.size ?: 0}"
-                        la.validBlockers != null -> " validBlk=${la.validBlockers!!.size} mandatoryBlk=${la.mandatoryBlockerAssignments?.size ?: 0}"
+                        la.validAttackers != null -> " validAtk=${la.validAttackers.size} mandatoryAtk=${la.mandatoryAttackers?.size ?: 0}"
+                        la.validBlockers != null -> " validBlk=${la.validBlockers.size} mandatoryBlk=${la.mandatoryBlockerAssignments?.size ?: 0}"
                         else -> ""
                     }
                     "$desc$extra"

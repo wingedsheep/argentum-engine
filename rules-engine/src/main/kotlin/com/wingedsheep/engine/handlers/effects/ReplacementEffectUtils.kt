@@ -98,7 +98,6 @@ object ReplacementEffectUtils {
                 when (effect) {
                     is ModifyCounterPlacement -> modifiedCount += effect.modifier
                     is DoubleCounterPlacement -> modifiedCount *= 2
-                    else -> {}
                 }
             }
         }

@@ -285,7 +285,7 @@ class CastFromZoneEnumerator : ActionEnumerator {
                         buildRuntimeAdditionalCostInfo(state, playerId, comp)
                     }
                     val canPayAdditionalCost = exileAdditionalCostInfo == null ||
-                        checkRuntimeAdditionalCostAffordability(state, playerId, runtimeAdditionalCost!!)
+                        checkRuntimeAdditionalCostAffordability(state, playerId, runtimeAdditionalCost)
 
                     if (hasCorrectTiming && meetsRestrictions && canAfford && canPayAdditionalCost) {
                         val targetReqs = buildList {

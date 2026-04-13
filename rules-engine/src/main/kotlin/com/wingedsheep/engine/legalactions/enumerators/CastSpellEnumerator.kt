@@ -173,7 +173,7 @@ class CastSpellEnumerator : ActionEnumerator {
             // Save base cost for blight path, then add extra mana for the "pay" path
             val blightBaseCost = effectiveCost
             if (blightOrPayCost != null) {
-                effectiveCost = effectiveCost + ManaCost.parse(blightOrPayCost!!.alternativeManaCost)
+                effectiveCost = effectiveCost + ManaCost.parse(blightOrPayCost.alternativeManaCost)
             }
 
             // Check mana affordability (including Convoke/Delve if available)
@@ -272,7 +272,7 @@ class CastSpellEnumerator : ActionEnumerator {
                     description = "creature to blight",
                     costType = "Blight",
                     validBlightTargets = blightCreatures,
-                    blightAmount = blightOrPayCost!!.blightAmount
+                    blightAmount = blightOrPayCost.blightAmount
                 )
                 Triple(blightManaCostString, blightAutoTapPreview, blightCostInfo)
             } else null

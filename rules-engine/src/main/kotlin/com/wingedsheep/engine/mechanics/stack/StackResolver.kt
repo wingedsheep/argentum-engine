@@ -561,10 +561,10 @@ class StackResolver(
                 val decision = YesNoDecision(
                     id = decisionId,
                     playerId = controllerId,
-                    prompt = "Pay ${entersTapped.payLifeCost} life to have ${cardComponent?.name ?: "this land"} enter untapped?",
+                    prompt = "Pay ${entersTapped.payLifeCost} life to have ${cardComponent.name} enter untapped?",
                     context = DecisionContext(
                         sourceId = spellId,
-                        sourceName = cardComponent?.name,
+                        sourceName = cardComponent.name,
                         phase = DecisionPhase.RESOLUTION
                     )
                 )
@@ -1251,7 +1251,7 @@ class StackResolver(
     ): Boolean {
         if (event !is com.wingedsheep.sdk.scripting.GameEvent.ZoneChangeEvent) return false
         if (event.to != com.wingedsheep.sdk.core.Zone.BATTLEFIELD) return false
-        val filter = event.filter ?: return true
+        val filter = event.filter
 
         val predicateContext = PredicateContext(
             sourceId = enteringEntityId,

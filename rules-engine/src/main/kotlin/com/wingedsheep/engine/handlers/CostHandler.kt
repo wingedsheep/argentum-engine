@@ -260,10 +260,8 @@ class CostHandler(
                         ?: return CostPaymentResult.failure("Sacrifice target has no controller")
                     val sacrificeName = sacrificeContainer.get<CardComponent>()?.name ?: "Unknown"
 
-                    if (sacrificeFilter != null) {
-                        if (!predicateEvaluator.matchesWithProjection(state, projected, toSacrifice, sacrificeFilter, context)) {
-                            return CostPaymentResult.failure("Sacrifice target does not match the required filter")
-                        }
+                    if (!predicateEvaluator.matchesWithProjection(state, projected, toSacrifice, sacrificeFilter, context)) {
+                        return CostPaymentResult.failure("Sacrifice target does not match the required filter")
                     }
                     // Validate excludeSelf: "sacrifice another creature" cannot sacrifice the source
                     if (cost is AbilityCost.Sacrifice && cost.excludeSelf && toSacrifice == sourceId) {
