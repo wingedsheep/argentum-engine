@@ -22,10 +22,14 @@ import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.GrantMayCastFromLinkedExile
 import com.wingedsheep.sdk.core.ManaCost
+import com.wingedsheep.sdk.scripting.AdditionalCost
 import com.wingedsheep.sdk.scripting.KeywordAbility
 import com.wingedsheep.sdk.scripting.MayCastFromGraveyardWithLifeCost
 import com.wingedsheep.sdk.scripting.MayCastSelfFromZones
+import com.wingedsheep.sdk.scripting.effects.DividedDamageEffect
 import com.wingedsheep.sdk.scripting.predicates.CardPredicate
+import com.wingedsheep.engine.mechanics.mana.SpellPaymentContext
+import com.wingedsheep.engine.state.components.stack.ChosenTarget
 
 /**
  * Enumerates spells and lands castable/playable from non-hand zones:
@@ -52,6 +56,7 @@ class CastFromZoneEnumerator : ActionEnumerator {
         enumerateGraveyardWithLifeCost(context, result)
         enumerateWarpFromHand(context, result)
         enumerateWarpFromExile(context, result)
+        enumerateKickerForZoneCasts(context, result)
 
         return result
     }
@@ -1292,6 +1297,190 @@ class CastFromZoneEnumerator : ActionEnumerator {
                 }
             }
         }
+    }
+
+    // =========================================================================
+    // Kicker/offspring variants for zone casts
+    // =========================================================================
+
+    /**
+     * Post-processes the collected zone-cast results to generate kicked/offspring variants.
+     * For each affordable CastSpell action already in the result list, checks if the card
+     * has kicker or offspring and adds a CastWithKicker variant if so.
+     */
+    private fun enumerateKickerForZoneCasts(
+        context: EnumerationContext,
+        result: MutableList<LegalAction>
+    ) {
+        val state = context.state
+        val playerId = context.playerId
+        if (context.cantCastSpells) return
+
+        // Collect card IDs that have affordable normal casts from zones (not flashback/warp)
+        val zoneCastCardIds = result
+            .filter { it.actionType == "CastSpell" && it.affordable && it.sourceZone != null }
+            .mapNotNull { (it.action as? CastSpell)?.cardId }
+            .toSet()
+
+        val kickerActions = mutableListOf<LegalAction>()
+
+        for (cardId in zoneCastCardIds) {
+            val cardComponent = state.getEntity(cardId)?.get<CardComponent>() ?: continue
+            if (cardComponent.typeLine.isLand) continue
+
+            val cardDef = context.cardRegistry.getCard(cardComponent.name) ?: continue
+            val manaKicker = cardDef.keywordAbilities
+                .filterIsInstance<KeywordAbility.Kicker>()
+                .firstOrNull()
+            val additionalCostKicker = cardDef.keywordAbilities
+                .filterIsInstance<KeywordAbility.KickerWithAdditionalCost>()
+                .firstOrNull()
+            val offspringAbility = cardDef.keywordAbilities
+                .filterIsInstance<KeywordAbility.Offspring>()
+                .firstOrNull()
+            if (manaKicker == null && additionalCostKicker == null && offspringAbility == null) continue
+
+            // Determine source zone from the existing action
+            val sourceZone = result
+                .first { it.actionType == "CastSpell" && (it.action as? CastSpell)?.cardId == cardId && it.sourceZone != null }
+                .sourceZone
+
+            // Calculate kicked cost
+            val baseCost = context.costCalculator.calculateEffectiveCost(state, cardDef, playerId)
+            val kickedCost = if (manaKicker != null) {
+                baseCost + manaKicker.cost
+            } else if (offspringAbility != null) {
+                baseCost + offspringAbility.cost
+            } else {
+                baseCost
+            }
+            val kickedSpellContext = SpellPaymentContext(
+                isInstantOrSorcery = cardComponent.typeLine.isInstant || cardComponent.typeLine.isSorcery,
+                isKicked = true,
+                isCreature = cardComponent.typeLine.isCreature,
+                manaValue = cardComponent.manaCost.cmc,
+                hasXInCost = cardComponent.manaCost.hasX
+            )
+            val canAffordKickedMana = context.manaSolver.canPay(
+                state, playerId, kickedCost,
+                spellContext = kickedSpellContext,
+                precomputedSources = context.availableManaSources
+            )
+            val kickedCostString = kickedCost.toString()
+            val kickedAutoTapPreview = if (context.skipAutoTapPreview) null else {
+                context.manaSolver.solve(
+                    state, playerId, kickedCost,
+                    spellContext = kickedSpellContext,
+                    precomputedSources = context.availableManaSources
+                )?.sources?.map { it.entityId }
+            }
+
+            // Check additional cost payability
+            var kickerCostInfo: AdditionalCostData? = null
+            var canPayKickerAdditionalCost = true
+            if (additionalCostKicker != null) {
+                when (val cost = additionalCostKicker.cost) {
+                    is AdditionalCost.SacrificePermanent -> {
+                        val validSacTargets = context.costUtils.findSacrificeTargets(state, playerId, cost)
+                        if (validSacTargets.size < cost.count) {
+                            canPayKickerAdditionalCost = false
+                        } else {
+                            kickerCostInfo = AdditionalCostData(
+                                description = cost.description,
+                                costType = "SacrificePermanent",
+                                validSacrificeTargets = validSacTargets,
+                                sacrificeCount = cost.count
+                            )
+                        }
+                    }
+                    else -> {}
+                }
+            }
+
+            val canAffordKicked = canAffordKickedMana && canPayKickerAdditionalCost
+
+            // Build target info — use kickerTargetRequirements if available
+            val kickerBaseReqs = if (cardDef.script.kickerTargetRequirements.isNotEmpty()) {
+                cardDef.script.kickerTargetRequirements
+            } else {
+                cardDef.script.targetRequirements
+            }
+            val targetReqs = buildList {
+                addAll(kickerBaseReqs)
+                cardDef.script.auraTarget?.let { add(it) }
+            }
+
+            val kickLabel = if (offspringAbility != null) "Offspring" else "Kicked"
+
+            // Check for DividedDamageEffect in the kicked spell effect
+            val kickerSpellEffect = cardDef.script.kickerSpellEffect ?: cardDef.script.spellEffect
+            val kickerDividedDamage = kickerSpellEffect as? DividedDamageEffect
+            val kickerRequiresDamageDistribution = kickerDividedDamage != null
+            val kickerTotalDamage = kickerDividedDamage?.totalDamage
+            val kickerMinDamagePerTarget = if (kickerDividedDamage != null) 1 else null
+
+            if (targetReqs.isNotEmpty()) {
+                val targetReqInfos = context.targetUtils.buildTargetInfos(state, playerId, targetReqs)
+                val allRequirementsSatisfied = context.targetUtils.allRequirementsSatisfied(targetReqInfos)
+                if (allRequirementsSatisfied) {
+                    val firstReq = targetReqs.first()
+                    val firstReqInfo = targetReqInfos.first()
+
+                    val canAutoSelect = targetReqs.size == 1 &&
+                        context.targetUtils.shouldAutoSelectPlayerTarget(firstReq, firstReqInfo.validTargets)
+
+                    if (canAutoSelect) {
+                        val autoSelectedTarget = ChosenTarget.Player(firstReqInfo.validTargets.first())
+                        kickerActions.add(LegalAction(
+                            actionType = "CastWithKicker",
+                            description = "Cast ${cardComponent.name} ($kickLabel)",
+                            action = CastSpell(playerId, cardId, targets = listOf(autoSelectedTarget), wasKicked = true),
+                            affordable = canAffordKicked,
+                            manaCostString = kickedCostString,
+                            autoTapPreview = kickedAutoTapPreview,
+                            additionalCostInfo = kickerCostInfo,
+                            requiresDamageDistribution = kickerRequiresDamageDistribution,
+                            totalDamageToDistribute = kickerTotalDamage,
+                            minDamagePerTarget = kickerMinDamagePerTarget,
+                            sourceZone = sourceZone
+                        ))
+                    } else {
+                        kickerActions.add(LegalAction(
+                            actionType = "CastWithKicker",
+                            description = "Cast ${cardComponent.name} ($kickLabel)",
+                            action = CastSpell(playerId, cardId, wasKicked = true),
+                            validTargets = firstReqInfo.validTargets,
+                            requiresTargets = true,
+                            targetCount = firstReq.count,
+                            minTargets = firstReq.effectiveMinCount,
+                            targetDescription = firstReq.description,
+                            targetRequirements = if (targetReqInfos.size > 1) targetReqInfos else null,
+                            affordable = canAffordKicked,
+                            manaCostString = kickedCostString,
+                            autoTapPreview = kickedAutoTapPreview,
+                            additionalCostInfo = kickerCostInfo,
+                            requiresDamageDistribution = kickerRequiresDamageDistribution,
+                            totalDamageToDistribute = kickerTotalDamage,
+                            minDamagePerTarget = kickerMinDamagePerTarget,
+                            sourceZone = sourceZone
+                        ))
+                    }
+                }
+            } else {
+                kickerActions.add(LegalAction(
+                    actionType = "CastWithKicker",
+                    description = "Cast ${cardComponent.name} ($kickLabel)",
+                    action = CastSpell(playerId, cardId, wasKicked = true),
+                    affordable = canAffordKicked,
+                    manaCostString = kickedCostString,
+                    autoTapPreview = kickedAutoTapPreview,
+                    additionalCostInfo = kickerCostInfo,
+                    sourceZone = sourceZone
+                ))
+            }
+        }
+
+        result.addAll(kickerActions)
     }
 
     // =========================================================================
