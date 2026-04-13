@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.handlers
 
+import com.wingedsheep.engine.state.CastSpellRecord
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.battlefield.AttachedToComponent
@@ -452,8 +453,21 @@ class ConditionEvaluator {
         condition: IsFirstSpellOfTypeCastThisTurn,
         context: EffectContext
     ): Boolean {
-        val records = state.spellsCastThisTurnByPlayer[context.controllerId] ?: return false
+        // The triggering spell itself must match the filter — otherwise casting an artifact
+        // when one instant was already cast this turn would incorrectly match the Instant filter.
+        val triggeringId = context.triggeringEntityId ?: return false
+        val entity = state.getEntity(triggeringId) ?: return false
+        val card = entity.get<CardComponent>() ?: return false
+        val triggeringRecord = CastSpellRecord(
+            typeLine = card.typeLine,
+            manaValue = card.manaValue,
+            colors = card.colors,
+            isFaceDown = entity.has<com.wingedsheep.engine.state.components.identity.FaceDownComponent>()
+        )
         val evaluator = PredicateEvaluator()
+        if (!evaluator.matchesFilter(triggeringRecord, condition.spellFilter)) return false
+
+        val records = state.spellsCastThisTurnByPlayer[context.controllerId] ?: return false
         val count = records.count { evaluator.matchesFilter(it, condition.spellFilter) }
         return count == 1
     }
