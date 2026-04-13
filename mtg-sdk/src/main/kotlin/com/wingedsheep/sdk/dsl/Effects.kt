@@ -142,15 +142,15 @@ object Effects {
      * Deal damage to a target.
      * No default — every damage effect must explicitly declare its target.
      */
-    fun DealDamage(amount: Int, target: EffectTarget): Effect =
-        DealDamageEffect(amount, target)
+    fun DealDamage(amount: Int, target: EffectTarget, damageSource: EffectTarget? = null): Effect =
+        DealDamageEffect(amount, target, damageSource = damageSource)
 
     /**
      * Deal dynamic damage to a target.
      * Used for effects like "deal damage equal to the number of lands you control".
      */
-    fun DealDamage(amount: DynamicAmount, target: EffectTarget): Effect =
-        DealDamageEffect(amount, target)
+    fun DealDamage(amount: DynamicAmount, target: EffectTarget, damageSource: EffectTarget? = null): Effect =
+        DealDamageEffect(amount, target, damageSource = damageSource)
 
     /**
      * Deal X damage to a target, where X is the spell's X value.
