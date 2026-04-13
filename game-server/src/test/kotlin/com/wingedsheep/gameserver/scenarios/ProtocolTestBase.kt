@@ -77,10 +77,13 @@ abstract class ProtocolTestBase : FunSpec() {
     }
 
     protected val activeClients = mutableListOf<TestClient>()
+    private val activeContainers = mutableListOf<WsWebSocketContainer>()
 
     override suspend fun afterTest(testCase: TestCase, result: TestResult) {
         activeClients.forEach { it.close() }
         activeClients.clear()
+        activeContainers.forEach { runCatching { it.destroy() } }
+        activeContainers.clear()
         super.afterTest(testCase, result)
     }
 
@@ -90,7 +93,7 @@ abstract class ProtocolTestBase : FunSpec() {
         defaultMaxSessionIdleTimeout = 300_000L
         defaultMaxTextMessageBufferSize = 1024 * 1024
         defaultMaxBinaryMessageBufferSize = 1024 * 1024
-    }
+    }.also { activeContainers.add(it) }
 
     protected fun createClient(): TestClient {
         val client = TestClient(json, createWsContainer(), wsUrl())

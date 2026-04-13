@@ -12,6 +12,8 @@ import com.wingedsheep.gameserver.session.SessionRegistry
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
+import org.springframework.beans.factory.DisposableBean
 import org.springframework.stereotype.Component
 import org.springframework.web.socket.WebSocketSession
 
@@ -22,7 +24,7 @@ class LobbySharedContext(
     val lobbyRepository: LobbyRepository,
     val sender: MessageSender,
     val aiGameManager: AiGameManager
-) {
+) : DisposableBean {
     /** Coroutine scope for draft timers */
     val draftScope = CoroutineScope(Dispatchers.Default + SupervisorJob())
 
@@ -85,6 +87,10 @@ class LobbySharedContext(
         if (ws != null && ws.isOpen) {
             sender.send(ws, ServerMessage.DraftTimerUpdate(secondsRemaining))
         }
+    }
+
+    override fun destroy() {
+        draftScope.cancel()
     }
 
     fun cleanUpSpectatingState(identity: PlayerIdentity) {

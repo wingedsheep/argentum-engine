@@ -1,6 +1,7 @@
 package com.wingedsheep.gameserver.session
 
 import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.DisposableBean
 import org.springframework.stereotype.Component
 import org.springframework.web.socket.WebSocketSession
 import java.util.concurrent.ConcurrentHashMap
@@ -10,7 +11,7 @@ import java.util.concurrent.ScheduledFuture
 import java.util.concurrent.TimeUnit
 
 @Component
-class SessionRegistry {
+class SessionRegistry : DisposableBean {
 
     private val logger = LoggerFactory.getLogger(SessionRegistry::class.java)
 
@@ -104,5 +105,9 @@ class SessionRegistry {
             wsToToken.remove(oldWsId)
             sessionLocks.remove(oldWsId)
         }
+    }
+
+    override fun destroy() {
+        disconnectScheduler.shutdownNow()
     }
 }

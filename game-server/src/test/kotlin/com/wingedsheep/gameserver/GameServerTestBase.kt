@@ -47,10 +47,13 @@ abstract class GameServerTestBase : FunSpec() {
     }
 
     protected val activeClients = mutableListOf<TestWebSocketClient>()
+    private val activeContainers = mutableListOf<org.apache.tomcat.websocket.WsWebSocketContainer>()
 
     override suspend fun afterTest(testCase: io.kotest.core.test.TestCase, result: io.kotest.engine.test.TestResult) {
         activeClients.forEach { it.close() }
         activeClients.clear()
+        activeContainers.forEach { runCatching { it.destroy() } }
+        activeContainers.clear()
         super.afterTest(testCase, result)
     }
 
@@ -58,7 +61,7 @@ abstract class GameServerTestBase : FunSpec() {
         defaultMaxSessionIdleTimeout = 300_000L
         defaultMaxTextMessageBufferSize = 1024 * 1024
         defaultMaxBinaryMessageBufferSize = 1024 * 1024
-    }
+    }.also { activeContainers.add(it) }
 
     protected fun createClient(): TestWebSocketClient {
         val client = TestWebSocketClient(json, createWsContainer(), wsUrl())
