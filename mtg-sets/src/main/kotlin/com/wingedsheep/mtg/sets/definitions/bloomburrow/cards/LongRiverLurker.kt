@@ -1,7 +1,6 @@
 package com.wingedsheep.mtg.sets.definitions.bloomburrow.cards
 
 import com.wingedsheep.sdk.core.AbilityFlag
-import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Targets
@@ -9,7 +8,7 @@ import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
-import com.wingedsheep.sdk.scripting.GrantKeywordToCreatureGroup
+import com.wingedsheep.sdk.scripting.GrantWardToGroup
 import com.wingedsheep.sdk.scripting.KeywordAbility
 import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.CreateDelayedTriggerEffect
@@ -30,10 +29,6 @@ import com.wingedsheep.sdk.scripting.targets.EffectTarget
  * Whenever that creature deals combat damage this turn, you may exile it. If you do,
  * return it to the battlefield under its owner's control.
  *
- * Note: Ward is modeled as a keyword but not yet mechanically enforced by the engine.
- * The "other Frogs have ward {1}" lord is modeled via GrantKeywordToCreatureGroup
- * which will display ward on the Frogs but won't enforce the cost until ward is implemented.
- *
  * The ETB grants "can't be blocked this turn" to the target. The combat damage
  * exile-return delayed trigger is modeled as part of the ETB composite effect but
  * requires the target to actually deal combat damage first (which the "can't be blocked"
@@ -49,11 +44,9 @@ val LongRiverLurker = card("Long River Lurker") {
     keywordAbility(KeywordAbility.ward("{1}"))
 
     // Other Frogs you control have ward {1}
-    // Note: Ward keyword grant — displays ward on Frogs but mechanical enforcement
-    // requires ward engine implementation
     staticAbility {
-        ability = GrantKeywordToCreatureGroup(
-            keyword = Keyword.WARD,
+        ability = GrantWardToGroup(
+            manaCost = "{1}",
             filter = GroupFilter(GameObjectFilter.Creature.withSubtype("Frog").youControl()).other()
         )
     }

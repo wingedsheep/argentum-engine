@@ -234,11 +234,12 @@ class StackResolver(
         )
 
         // Emit BecomesTargetEvent for each permanent target
+        // Use abilityId (the entity on the stack) as source so ward can counter it
         for (target in targets) {
             if (target is ChosenTarget.Permanent) {
                 val targetName = newState.getEntity(target.entityId)?.get<CardComponent>()?.name ?: "Unknown"
                 val firstTime = !hasBeenTargetedByController(newState, target.entityId, ability.controllerId)
-                events.add(BecomesTargetEvent(target.entityId, targetName, ability.sourceId, ability.controllerId, firstTime))
+                events.add(BecomesTargetEvent(target.entityId, targetName, abilityId, ability.controllerId, firstTime))
                 newState = markTargetedByController(newState, target.entityId, ability.controllerId)
             }
         }
@@ -279,11 +280,12 @@ class StackResolver(
         )
 
         // Emit BecomesTargetEvent for each permanent target
+        // Use abilityId (the entity on the stack) as source so ward can counter it
         for (target in targets) {
             if (target is ChosenTarget.Permanent) {
                 val targetName = newState.getEntity(target.entityId)?.get<CardComponent>()?.name ?: "Unknown"
                 val firstTime = !hasBeenTargetedByController(newState, target.entityId, ability.controllerId)
-                events.add(BecomesTargetEvent(target.entityId, targetName, ability.sourceId, ability.controllerId, firstTime))
+                events.add(BecomesTargetEvent(target.entityId, targetName, abilityId, ability.controllerId, firstTime))
                 newState = markTargetedByController(newState, target.entityId, ability.controllerId)
             }
         }
