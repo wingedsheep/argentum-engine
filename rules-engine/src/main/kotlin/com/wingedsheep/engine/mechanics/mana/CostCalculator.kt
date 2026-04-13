@@ -380,22 +380,24 @@ class CostCalculator(
     /**
      * Count permanents of a specific card type controlled by a player.
      * Used for Affinity keyword.
+     * Uses projected state for both controller and type (respects control-changing and type-changing effects).
      */
     private fun countPermanentsOfType(state: GameState, playerId: EntityId, cardType: CardType): Int {
-        return state.getBattlefield(playerId).count { entityId ->
-            val card = state.getEntity(entityId)?.get<CardComponent>()
-            card?.typeLine?.cardTypes?.contains(cardType) == true
+        val projected = state.projectedState
+        return state.controlledBattlefield(playerId).count { entityId ->
+            projected.hasType(entityId, cardType.name)
         }
     }
 
     /**
      * Count permanents with a specific subtype controlled by a player.
      * Used for Affinity for subtypes (e.g., "Affinity for Lizards").
+     * Uses projected state for both controller and subtype (respects control-changing and type-changing effects).
      */
     private fun countPermanentsWithSubtype(state: GameState, playerId: EntityId, subtype: Subtype): Int {
-        return state.getBattlefield(playerId).count { entityId ->
-            val card = state.getEntity(entityId)?.get<CardComponent>()
-            card?.typeLine?.subtypes?.contains(subtype) == true
+        val projected = state.projectedState
+        return state.controlledBattlefield(playerId).count { entityId ->
+            projected.hasSubtype(entityId, subtype.value)
         }
     }
 
