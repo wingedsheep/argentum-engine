@@ -26,6 +26,7 @@ object LorwynEclipsedSet {
         ClachanFestival,
         DawnsLightArcher,
         DeepchannelDuelist,
+        EclipsedMerrow,
         Emptiness,
         FeistySpikeling,
         GlamerGifter,
