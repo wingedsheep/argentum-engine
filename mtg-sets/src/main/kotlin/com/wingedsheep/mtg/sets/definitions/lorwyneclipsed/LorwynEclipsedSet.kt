@@ -33,6 +33,7 @@ object LorwynEclipsedSet {
         HovelHurler,
         MirrormindCrown,
         NamelessInversion,
+        NoggleTheMind,
         SaplingNursery,
         SteamVents,
         VirulentEmissary,
