@@ -56,7 +56,7 @@ class RuthlessNegotiationScenarioTest : ScenarioTestBase() {
                 decision.shouldBeInstanceOf<SelectCardsDecision>()
 
                 // Opponent selects first card to exile
-                game.selectCards(listOf((decision as SelectCardsDecision).options.first()))
+                game.selectCards(listOf(decision.options.first()))
 
                 // Opponent should have 1 card in hand (started with 2, exiled 1)
                 val opponentHand = game.state.getHand(game.player2Id)
@@ -118,7 +118,7 @@ class RuthlessNegotiationScenarioTest : ScenarioTestBase() {
                 decision.shouldBeInstanceOf<SelectCardsDecision>()
 
                 // Opponent selects first card to exile
-                game.selectCards(listOf((decision as SelectCardsDecision).options.first()))
+                game.selectCards(listOf(decision.options.first()))
 
                 // Opponent should have 1 card in hand
                 val opponentHand = game.state.getHand(game.player2Id)

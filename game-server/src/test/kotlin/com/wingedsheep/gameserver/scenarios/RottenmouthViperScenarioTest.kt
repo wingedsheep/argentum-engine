@@ -71,7 +71,7 @@ class RottenmouthViperScenarioTest : ScenarioTestBase() {
                 // Opponent gets choice: discard or lose 4 life (no nonland permanents)
                 val decision = game.getPendingDecision()
                 decision.shouldBeInstanceOf<ChooseOptionDecision>()
-                val options = (decision as ChooseOptionDecision).options
+                val options = decision.options
                 options.size shouldBe 2
 
                 // Choose "Discard a card"

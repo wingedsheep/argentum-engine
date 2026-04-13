@@ -98,7 +98,6 @@ class MistformWallTypeChangeInteractionTest : ScenarioTestBase() {
                 game.hasPendingDecision() shouldBe true
                 val decision = game.getPendingDecision()
                 decision.shouldBeInstanceOf<ReorderLibraryDecision>()
-                decision as ReorderLibraryDecision
                 withClue("Should see 2 cards (2 Wizards: Information Dealer + Mistform Wall as Wizard)") {
                     decision.cards.size shouldBe 2
                 }

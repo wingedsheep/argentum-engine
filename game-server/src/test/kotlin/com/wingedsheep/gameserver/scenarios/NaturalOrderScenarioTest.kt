@@ -205,7 +205,7 @@ class NaturalOrderScenarioTest : ScenarioTestBase() {
                 }
                 withClue("Mystic Denial action should have valid targets (the Natural Order on stack)") {
                     mysticDenialAction!!.validTargets.shouldNotBeNull()
-                    mysticDenialAction.validTargets!!.size shouldBe 1
+                    mysticDenialAction.validTargets.size shouldBe 1
                 }
 
                 // The target should be the Natural Order spell

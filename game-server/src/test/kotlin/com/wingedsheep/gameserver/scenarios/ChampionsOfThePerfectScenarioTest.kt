@@ -115,7 +115,7 @@ class ChampionsOfThePerfectScenarioTest : ScenarioTestBase() {
                 val linked = game.state.getEntity(championsId!!)?.get<LinkedExileComponent>()
                 withClue("Champions should have LinkedExileComponent with the exiled Elf") {
                     linked.shouldNotBeNull()
-                    linked!!.exiledIds.size shouldBe 1
+                    linked.exiledIds.size shouldBe 1
                 }
             }
         }

@@ -33,7 +33,7 @@ class ArtificialEvolutionScenarioTest : ScenarioTestBase() {
         val decision = getPendingDecision()
         decision.shouldNotBeNull()
         decision.shouldBeInstanceOf<ChooseOptionDecision>()
-        val options = (decision as ChooseOptionDecision).options
+        val options = decision.options
         val index = options.indexOf(typeName)
         withClue("Creature type '$typeName' should be in options $options") {
             (index >= 0) shouldBe true
@@ -169,7 +169,7 @@ class ArtificialEvolutionScenarioTest : ScenarioTestBase() {
                 val fromDecision = game.getPendingDecision()
                 fromDecision.shouldNotBeNull()
                 fromDecision.shouldBeInstanceOf<ChooseOptionDecision>()
-                val fromOptions = (fromDecision as ChooseOptionDecision).options
+                val fromOptions = fromDecision.options
                 withClue("Wall should be available as the FROM creature type") {
                     fromOptions shouldContain "Wall"
                 }
@@ -182,7 +182,7 @@ class ArtificialEvolutionScenarioTest : ScenarioTestBase() {
                 val toDecision = game.getPendingDecision()
                 toDecision.shouldNotBeNull()
                 toDecision.shouldBeInstanceOf<ChooseOptionDecision>()
-                val toOptions = (toDecision as ChooseOptionDecision).options
+                val toOptions = toDecision.options
                 withClue("Wall must not be available as the TO creature type (card restriction)") {
                     toOptions shouldNotContain "Wall"
                 }

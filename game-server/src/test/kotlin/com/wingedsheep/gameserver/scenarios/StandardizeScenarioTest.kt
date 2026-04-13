@@ -23,7 +23,7 @@ class StandardizeScenarioTest : ScenarioTestBase() {
         val decision = getPendingDecision()
         decision.shouldNotBeNull()
         decision.shouldBeInstanceOf<ChooseOptionDecision>()
-        val options = (decision as ChooseOptionDecision).options
+        val options = decision.options
         val index = options.indexOf(typeName)
         withClue("Creature type '$typeName' should be in options $options") {
             (index >= 0) shouldBe true
@@ -102,7 +102,7 @@ class StandardizeScenarioTest : ScenarioTestBase() {
                 val decision = game.getPendingDecision()
                 decision.shouldNotBeNull()
                 decision.shouldBeInstanceOf<ChooseOptionDecision>()
-                (decision as ChooseOptionDecision).options shouldNotContain "Wall"
+                decision.options shouldNotContain "Wall"
             }
 
             test("effect expires at end of turn") {

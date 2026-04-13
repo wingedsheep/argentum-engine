@@ -71,7 +71,7 @@ class KamahlFistOfKrosaScenarioTest : ScenarioTestBase() {
                 }
                 withClue("Animated forest should be 1/1") {
                     animatedForest!!.power shouldBe 1
-                    animatedForest!!.toughness shouldBe 1
+                    animatedForest.toughness shouldBe 1
                 }
 
                 // Advance to combat - the animated land should be a valid attacker

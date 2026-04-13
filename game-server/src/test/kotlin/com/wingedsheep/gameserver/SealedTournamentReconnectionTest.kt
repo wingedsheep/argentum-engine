@@ -259,7 +259,7 @@ class SealedTournamentReconnectionTest : FunSpec() {
                 if (matchPlayer != null && gameSessionId != null) {
                     // Wait for game to start (mulligan phase)
                     eventually(5.seconds) {
-                        matchPlayer!!.client.messages.any {
+                        matchPlayer.client.messages.any {
                             it is ServerMessage.GameStarted || it is ServerMessage.MulliganDecision
                         } shouldBe true
                     }

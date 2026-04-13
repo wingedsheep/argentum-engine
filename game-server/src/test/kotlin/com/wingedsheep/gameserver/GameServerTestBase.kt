@@ -231,14 +231,14 @@ abstract class GameServerTestBase : FunSpec() {
             delta.updatedCards?.forEach { (id, card) -> prevCards[id] = card }
 
             val zones = if (delta.updatedZones != null) {
-                val updatedMap = delta.updatedZones!!.associateBy { it.zoneId }
+                val updatedMap = delta.updatedZones.associateBy { it.zoneId }
                 previous.zones.map { updatedMap[it.zoneId] ?: it }
             } else {
                 previous.zones
             }
 
             val gameLog = if (delta.newLogEntries != null) {
-                previous.gameLog + delta.newLogEntries!!
+                previous.gameLog + delta.newLogEntries
             } else {
                 previous.gameLog
             }

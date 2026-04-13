@@ -57,7 +57,7 @@ class InformationDealerScenarioTest : ScenarioTestBase() {
                 game.hasPendingDecision() shouldBe true
                 val decision = game.getPendingDecision()
                 decision.shouldBeInstanceOf<ReorderLibraryDecision>()
-                decision as ReorderLibraryDecision
+
                 withClue("Should see 1 card") {
                     decision.cards.size shouldBe 1
                 }
@@ -90,7 +90,7 @@ class InformationDealerScenarioTest : ScenarioTestBase() {
                 game.hasPendingDecision() shouldBe true
                 val decision = game.getPendingDecision()
                 decision.shouldBeInstanceOf<ReorderLibraryDecision>()
-                decision as ReorderLibraryDecision
+
                 withClue("Should see 2 cards") {
                     decision.cards.size shouldBe 2
                 }
@@ -126,7 +126,7 @@ class InformationDealerScenarioTest : ScenarioTestBase() {
                 game.hasPendingDecision() shouldBe true
                 val decision = game.getPendingDecision()
                 decision.shouldBeInstanceOf<ReorderLibraryDecision>()
-                decision as ReorderLibraryDecision
+
                 withClue("Should see 3 cards") {
                     decision.cards.size shouldBe 3
                 }
@@ -159,7 +159,7 @@ class InformationDealerScenarioTest : ScenarioTestBase() {
                 game.hasPendingDecision() shouldBe true
                 val decision = game.getPendingDecision()
                 decision.shouldBeInstanceOf<ReorderLibraryDecision>()
-                decision as ReorderLibraryDecision
+
                 withClue("Should see 1 card") {
                     decision.cards.size shouldBe 1
                 }
@@ -185,7 +185,7 @@ class InformationDealerScenarioTest : ScenarioTestBase() {
                 game.hasPendingDecision() shouldBe true
                 val decision = game.getPendingDecision()
                 decision.shouldBeInstanceOf<ReorderLibraryDecision>()
-                decision as ReorderLibraryDecision
+
                 withClue("Should see 1 card") {
                     decision.cards.size shouldBe 1
                 }

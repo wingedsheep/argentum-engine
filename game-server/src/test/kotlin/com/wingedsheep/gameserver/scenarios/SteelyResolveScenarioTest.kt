@@ -28,7 +28,7 @@ class SteelyResolveScenarioTest : ScenarioTestBase() {
         val decision = getPendingDecision()
         decision.shouldNotBeNull()
         decision.shouldBeInstanceOf<ChooseOptionDecision>()
-        val options = (decision as ChooseOptionDecision).options
+        val options = decision.options
         val index = options.indexOf(typeName)
         withClue("Creature type '$typeName' should be in options") {
             (index >= 0) shouldBe true

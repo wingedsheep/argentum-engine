@@ -53,7 +53,7 @@ class AvenFateshaperScenarioTest : ScenarioTestBase() {
                 game.hasPendingDecision() shouldBe true
                 val decision = game.getPendingDecision()
                 decision.shouldBeInstanceOf<ReorderLibraryDecision>()
-                decision as ReorderLibraryDecision
+
                 decision.cards.size shouldBe 4
 
                 // Get the top 4 cards and reverse them
@@ -114,7 +114,7 @@ class AvenFateshaperScenarioTest : ScenarioTestBase() {
                 game.hasPendingDecision() shouldBe true
                 val decision = game.getPendingDecision()
                 decision.shouldBeInstanceOf<ReorderLibraryDecision>()
-                decision as ReorderLibraryDecision
+
                 decision.cards.size shouldBe 4
 
                 // Get the top 4 cards and reverse them

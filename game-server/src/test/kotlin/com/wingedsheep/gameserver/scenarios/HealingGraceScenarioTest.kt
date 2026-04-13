@@ -22,7 +22,7 @@ class HealingGraceScenarioTest : ScenarioTestBase() {
         val decision = getPendingDecision()
         decision.shouldNotBeNull()
         decision.shouldBeInstanceOf<SelectCardsDecision>()
-        val selectDecision = decision as SelectCardsDecision
+        val selectDecision = decision
         val entityId = selectDecision.options.first { id ->
             state.getEntity(id)?.get<CardComponent>()?.name == sourceName
         }

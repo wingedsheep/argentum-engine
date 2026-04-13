@@ -212,7 +212,7 @@ class MysticDenialScenarioTest : ScenarioTestBase() {
                 }
                 withClue("Mystic Denial action should have valid targets (the spell on stack)") {
                     mysticDenialAction!!.validTargets.shouldNotBeNull()
-                    mysticDenialAction.validTargets!!.size shouldBe 1
+                    mysticDenialAction.validTargets.size shouldBe 1
                 }
 
                 // Verify the target is Grizzly Bears spell on the stack
@@ -310,7 +310,7 @@ class MysticDenialScenarioTest : ScenarioTestBase() {
                 }
                 withClue("Mystic Denial action should have valid targets (the spell on stack)") {
                     mysticDenialAction!!.validTargets.shouldNotBeNull()
-                    mysticDenialAction.validTargets!!.size shouldBe 1
+                    mysticDenialAction.validTargets.size shouldBe 1
                 }
 
                 // Verify the target is Grizzly Bears spell on the stack
