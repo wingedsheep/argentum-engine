@@ -1316,15 +1316,16 @@ class CastFromZoneEnumerator : ActionEnumerator {
         val playerId = context.playerId
         if (context.cantCastSpells) return
 
-        // Collect card IDs that have affordable normal casts from zones (not flashback/warp)
-        val zoneCastCardIds = result
+        // Collect affordable zone-cast actions (not flashback/warp)
+        val zoneCastActions = result
             .filter { it.actionType == "CastSpell" && it.affordable && it.sourceZone != null }
-            .mapNotNull { (it.action as? CastSpell)?.cardId }
-            .toSet()
+            .mapNotNull { la -> (la.action as? CastSpell)?.let { it.cardId to la } }
+            .toMap()
 
         val kickerActions = mutableListOf<LegalAction>()
 
-        for (cardId in zoneCastCardIds) {
+        for ((cardId, originalAction) in zoneCastActions) {
+            val originalCast = originalAction.action as CastSpell
             val cardComponent = state.getEntity(cardId)?.get<CardComponent>() ?: continue
             if (cardComponent.typeLine.isLand) continue
 
@@ -1340,10 +1341,7 @@ class CastFromZoneEnumerator : ActionEnumerator {
                 .firstOrNull()
             if (manaKicker == null && additionalCostKicker == null && offspringAbility == null) continue
 
-            // Determine source zone from the existing action
-            val sourceZone = result
-                .first { it.actionType == "CastSpell" && (it.action as? CastSpell)?.cardId == cardId && it.sourceZone != null }
-                .sourceZone
+            val sourceZone = originalAction.sourceZone
 
             // Calculate kicked cost
             val baseCost = context.costCalculator.calculateEffectiveCost(state, cardDef, playerId)
@@ -1434,7 +1432,7 @@ class CastFromZoneEnumerator : ActionEnumerator {
                         kickerActions.add(LegalAction(
                             actionType = "CastWithKicker",
                             description = "Cast ${cardComponent.name} ($kickLabel)",
-                            action = CastSpell(playerId, cardId, targets = listOf(autoSelectedTarget), wasKicked = true),
+                            action = CastSpell(playerId, cardId, targets = listOf(autoSelectedTarget), wasKicked = true, graveyardLifeCost = originalCast.graveyardLifeCost),
                             affordable = canAffordKicked,
                             manaCostString = kickedCostString,
                             autoTapPreview = kickedAutoTapPreview,
@@ -1442,13 +1440,14 @@ class CastFromZoneEnumerator : ActionEnumerator {
                             requiresDamageDistribution = kickerRequiresDamageDistribution,
                             totalDamageToDistribute = kickerTotalDamage,
                             minDamagePerTarget = kickerMinDamagePerTarget,
-                            sourceZone = sourceZone
+                            sourceZone = sourceZone,
+                            additionalLifeCost = originalAction.additionalLifeCost
                         ))
                     } else {
                         kickerActions.add(LegalAction(
                             actionType = "CastWithKicker",
                             description = "Cast ${cardComponent.name} ($kickLabel)",
-                            action = CastSpell(playerId, cardId, wasKicked = true),
+                            action = CastSpell(playerId, cardId, wasKicked = true, graveyardLifeCost = originalCast.graveyardLifeCost),
                             validTargets = firstReqInfo.validTargets,
                             requiresTargets = true,
                             targetCount = firstReq.count,
@@ -1462,7 +1461,8 @@ class CastFromZoneEnumerator : ActionEnumerator {
                             requiresDamageDistribution = kickerRequiresDamageDistribution,
                             totalDamageToDistribute = kickerTotalDamage,
                             minDamagePerTarget = kickerMinDamagePerTarget,
-                            sourceZone = sourceZone
+                            sourceZone = sourceZone,
+                            additionalLifeCost = originalAction.additionalLifeCost
                         ))
                     }
                 }
@@ -1470,12 +1470,13 @@ class CastFromZoneEnumerator : ActionEnumerator {
                 kickerActions.add(LegalAction(
                     actionType = "CastWithKicker",
                     description = "Cast ${cardComponent.name} ($kickLabel)",
-                    action = CastSpell(playerId, cardId, wasKicked = true),
+                    action = CastSpell(playerId, cardId, wasKicked = true, graveyardLifeCost = originalCast.graveyardLifeCost),
                     affordable = canAffordKicked,
                     manaCostString = kickedCostString,
                     autoTapPreview = kickedAutoTapPreview,
                     additionalCostInfo = kickerCostInfo,
-                    sourceZone = sourceZone
+                    sourceZone = sourceZone,
+                    additionalLifeCost = originalAction.additionalLifeCost
                 ))
             }
         }

@@ -10,7 +10,9 @@ import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Deck
+import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.KeywordAbility
+import com.wingedsheep.sdk.scripting.MayCastFromGraveyardWithLifeCost
 import com.wingedsheep.sdk.scripting.MayCastSelfFromZones
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
@@ -33,6 +35,29 @@ class CastKickerFromZoneTest : FunSpec({
         staticAbility {
             ability = MayCastSelfFromZones(zones = listOf(Zone.GRAVEYARD))
         }
+    }
+
+    // Enabler that lets you cast instants/sorceries from graveyard by paying 1 life
+    val graveyardLifeCostEnabler = card("Test Graveyard Enabler") {
+        manaCost = "{R}"
+        typeLine = "Enchantment"
+
+        staticAbility {
+            ability = MayCastFromGraveyardWithLifeCost(
+                filter = GameObjectFilter.InstantOrSorcery,
+                lifeCost = 1,
+                duringYourTurnOnly = true
+            )
+        }
+    }
+
+    // Kicker instant to cast from graveyard via the life-cost enabler
+    val kickerInstant = card("Test Kicker Bolt") {
+        manaCost = "{R}"
+        typeLine = "Instant"
+        oracleText = "Kicker {2}. Test Kicker Bolt deals 2 damage to target player."
+
+        keywordAbility(KeywordAbility.Kicker(ManaCost.parse("{2}")))
     }
 
     test("casting kicked from graveyard applies WasKickedComponent") {
@@ -109,5 +134,43 @@ class CastKickerFromZoneTest : FunSpec({
         val creatures = driver.getCreatures(p1)
         creatures.size shouldBe 1
         driver.state.getEntity(creatures.first())?.has<WasKickedComponent>() shouldBe false
+    }
+
+    test("casting kicked from graveyard with life cost succeeds") {
+        val driver = GameTestDriver()
+        driver.registerCards(TestCards.all)
+        driver.registerCard(graveyardLifeCostEnabler)
+        driver.registerCard(kickerInstant)
+
+        driver.initMirrorMatch(
+            deck = Deck.of("Mountain" to 30)
+        )
+
+        val p1 = driver.player1
+
+        // Put enabler on battlefield
+        driver.putPermanentOnBattlefield(p1, "Test Graveyard Enabler")
+        // Put kicker instant in graveyard
+        val cardId = driver.putCardInGraveyard(p1, "Test Kicker Bolt")
+
+        // Put 3 mountains on battlefield (1 for base + 2 for kicker)
+        repeat(3) { driver.putLandOnBattlefield(p1, "Mountain") }
+
+        driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
+
+        // Cast with kicker from graveyard, paying 1 life
+        val result = driver.submit(
+            CastSpell(
+                playerId = p1,
+                cardId = cardId,
+                wasKicked = true,
+                graveyardLifeCost = 1,
+                paymentStrategy = PaymentStrategy.AutoPay
+            )
+        )
+        result.isSuccess shouldBe true
+
+        // Verify life was paid
+        driver.getLifeTotal(p1) shouldBe 19
     }
 })
