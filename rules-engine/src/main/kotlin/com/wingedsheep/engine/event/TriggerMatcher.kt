@@ -333,6 +333,18 @@ class TriggerMatcher(
                             if (!typeLine.hasSubtype(predicate.subtype)) return false
                         }
                     }
+                    is com.wingedsheep.sdk.scripting.predicates.CardPredicate.HasKeyword -> {
+                        // For entering creatures: use projected state (they're on battlefield)
+                        // For dying/leaving creatures: use lastKnownKeywords from the event since
+                        // the creature is no longer on the battlefield and projected state won't
+                        // have its keywords (e.g., Jackdaw Savior: "whenever a creature you control
+                        // with flying dies").
+                        if (event.fromZone == Zone.BATTLEFIELD && event.lastKnownKeywords.isNotEmpty()) {
+                            if (predicate.keyword.name !in event.lastKnownKeywords) return false
+                        } else {
+                            if (!projected.hasKeyword(event.entityId, predicate.keyword)) return false
+                        }
+                    }
                     else -> {
                         // For other predicates, check the entity's type
                         if (cardComponent == null) return false

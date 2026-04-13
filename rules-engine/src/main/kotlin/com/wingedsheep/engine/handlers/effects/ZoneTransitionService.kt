@@ -126,6 +126,7 @@ object ZoneTransitionService {
         var lastKnownPower: Int? = null
         var lastKnownToughness: Int? = null
         var lastKnownTypeLine: TypeLine? = null
+        var lastKnownKeywords: Set<String> = emptySet()
         var lastKnownAttachedTo = options.lastKnownAttachedTo
 
         if (leavingBattlefield) {
@@ -137,6 +138,9 @@ object ZoneTransitionService {
             // Capture the projected typeLine so leaves-battlefield triggers see types/subtypes
             // granted by continuous effects (e.g., Ygra makes other creatures Food artifacts).
             lastKnownTypeLine = buildProjectedTypeLine(cardComponent, state, entityId)
+            // Capture projected keywords so dies/leaves triggers can check keyword filters
+            // (e.g., Jackdaw Savior: "whenever a creature you control with flying dies").
+            lastKnownKeywords = projected.getKeywords(entityId)
             if (lastKnownAttachedTo == null) {
                 lastKnownAttachedTo = container.get<AttachedToComponent>()?.targetId
             }
@@ -236,6 +240,7 @@ object ZoneTransitionService {
                 lastKnownPower = lastKnownPower,
                 lastKnownToughness = lastKnownToughness,
                 lastKnownTypeLine = lastKnownTypeLine,
+                lastKnownKeywords = lastKnownKeywords,
                 lastKnownAttachedTo = if (leavingBattlefield) lastKnownAttachedTo else null,
                 lastKnownCardDefinitionId = if (leavingBattlefield) cardComponent.cardDefinitionId else null
             )
