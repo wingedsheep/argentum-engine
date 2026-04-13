@@ -7,7 +7,7 @@ import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.EntersWithCounters
 import com.wingedsheep.sdk.scripting.TimingRule
-import com.wingedsheep.sdk.scripting.effects.CantBlockTargetCreaturesEffect
+import com.wingedsheep.sdk.scripting.effects.CantBlockEffect
 import com.wingedsheep.sdk.scripting.events.CounterTypeFilter
 
 /**
@@ -39,7 +39,7 @@ val BramblebackBrute = card("Brambleback Brute") {
             Costs.RemoveCounterFromSelf(Counters.MINUS_ONE_MINUS_ONE)
         )
         val creature = target("creature", Targets.Creature)
-        effect = CantBlockTargetCreaturesEffect()
+        effect = CantBlockEffect(target = creature)
         timing = TimingRule.SorcerySpeed
     }
 

@@ -307,22 +307,40 @@ data class CantBlockGroupEffect(
 }
 
 /**
- * Target creatures can't block this turn.
- * Used for Wave of Indifference: "X target creatures can't block this turn."
+ * Target creature can't block this turn.
  *
- * Works with multi-target spells - applies "can't block" to all creatures
- * in context.targets by creating a floating effect until end of turn.
+ * For multi-target spells, wrap in ForEachTargetEffect with EffectTarget.ContextTarget(0).
+ *
+ * @property target The creature that can't block
+ * @property duration How long the restriction lasts
  */
 @SerialName("CantBlockTargetCreatures")
 @Serializable
-data class CantBlockTargetCreaturesEffect(
+data class CantBlockEffect(
+    val target: EffectTarget,
     val duration: Duration = Duration.EndOfTurn
 ) : Effect {
-    override val description: String = "Target creatures can't block this turn"
+    override val description: String = "${target.description} can't block this turn"
 
     override fun applyTextReplacement(replacer: TextReplacer): Effect = this
 }
 
+/**
+ * Target creature can't attack this turn.
+ *
+ * @property target The creature that can't attack
+ * @property duration How long the restriction lasts
+ */
+@SerialName("CantAttack")
+@Serializable
+data class CantAttackEffect(
+    val target: EffectTarget,
+    val duration: Duration = Duration.EndOfTurn
+) : Effect {
+    override val description: String = "${target.description} can't attack this turn"
+
+    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
+}
 
 /**
  * Remove a creature from combat.
@@ -455,26 +473,6 @@ data class RedirectCombatDamageToControllerEffect(
 ) : Effect {
     override val description: String =
         "The next time ${target.description} would deal combat damage this turn, it deals that damage to you instead"
-
-    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
-}
-
-/**
- * Target creature can't attack or block this turn.
- * Used for Briber's Purse and similar targeted restriction effects.
- *
- * Creates two floating effects (SetCantAttack + SetCantBlock) on the targeted creature.
- *
- * @property target The creature to restrict
- * @property duration How long the restriction lasts
- */
-@SerialName("CantAttackOrBlockTarget")
-@Serializable
-data class CantAttackOrBlockTargetEffect(
-    val target: EffectTarget = EffectTarget.ContextTarget(0),
-    val duration: Duration = Duration.EndOfTurn
-) : Effect {
-    override val description: String = "Target creature can't attack or block this turn"
 
     override fun applyTextReplacement(replacer: TextReplacer): Effect = this
 }

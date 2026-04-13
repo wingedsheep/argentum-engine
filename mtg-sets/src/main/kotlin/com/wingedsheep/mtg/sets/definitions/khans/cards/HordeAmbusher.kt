@@ -8,7 +8,7 @@ import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.costs.PayCost
-import com.wingedsheep.sdk.scripting.effects.CantBlockTargetCreaturesEffect
+import com.wingedsheep.sdk.scripting.effects.CantBlockEffect
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 
 /**
@@ -37,7 +37,7 @@ val HordeAmbusher = card("Horde Ambusher") {
     triggeredAbility {
         trigger = Triggers.TurnedFaceUp
         val creature = target("creature", Targets.Creature)
-        effect = CantBlockTargetCreaturesEffect()
+        effect = CantBlockEffect(target = creature)
     }
 
     metadata {

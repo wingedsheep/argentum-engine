@@ -397,8 +397,8 @@ constructors.
 | `GrantKeywordToAttackersBlockedByEffect`            | `target, keyword, duration`                 | Grant keyword to blocked attackers |
 | `ProvokeEffect`                                     | `target`                                    | Untap + force block source      |
 | `CantBlockGroupEffect`                              | `filter: GroupFilter, duration`             | Group can't block this turn     |
-| `CantBlockTargetCreaturesEffect`                    | `duration`                                  | Can't block target creatures    |
-| `CantAttackOrBlockTargetEffect`                     | `target, duration`                          | Target can't attack or block    |
+| `CantBlockEffect`                                   | `target, duration`                          | Target can't block this turn    |
+| `CantAttackEffect`                                  | `target, duration`                          | Target can't attack this turn   |
 | `PreventNextDamageEffect`                           | `amount: DynamicAmount, target`             | Prevent next N damage           |
 | `RemoveFromCombatEffect`                            | `target`                                    | Remove from combat              |
 | `MarkMustAttackThisTurnEffect`                      | `target`                                    | Mark creature must attack       |

@@ -27,7 +27,8 @@ import com.wingedsheep.sdk.scripting.effects.SetBasePowerEffect
 import com.wingedsheep.sdk.scripting.effects.ChooseColorAndGrantProtectionToGroupEffect
 import com.wingedsheep.sdk.scripting.effects.ChooseColorAndGrantProtectionToTargetEffect
 import com.wingedsheep.sdk.scripting.effects.CantAttackGroupEffect
-import com.wingedsheep.sdk.scripting.effects.CantAttackOrBlockTargetEffect
+import com.wingedsheep.sdk.scripting.effects.CantAttackEffect
+import com.wingedsheep.sdk.scripting.effects.CantBlockEffect
 import com.wingedsheep.sdk.scripting.effects.CantBlockGroupEffect
 import com.wingedsheep.sdk.scripting.effects.CantCastSpellsEffect
 import com.wingedsheep.sdk.scripting.effects.CompositeEffect
@@ -1072,10 +1073,22 @@ object Effects {
         CantBlockGroupEffect(filter, duration)
 
     /**
+     * Target creature can't attack this turn.
+     */
+    fun CantAttack(target: EffectTarget = EffectTarget.ContextTarget(0), duration: Duration = Duration.EndOfTurn): Effect =
+        CantAttackEffect(target, duration)
+
+    /**
+     * Target creature can't block this turn.
+     */
+    fun CantBlock(target: EffectTarget = EffectTarget.ContextTarget(0), duration: Duration = Duration.EndOfTurn): Effect =
+        CantBlockEffect(target, duration)
+
+    /**
      * Target creature can't attack or block this turn.
      */
     fun CantAttackOrBlock(target: EffectTarget = EffectTarget.ContextTarget(0), duration: Duration = Duration.EndOfTurn): Effect =
-        CantAttackOrBlockTargetEffect(target, duration)
+        CompositeEffect(listOf(CantAttackEffect(target, duration), CantBlockEffect(target, duration)))
 
     // =========================================================================
     // Special Effects
