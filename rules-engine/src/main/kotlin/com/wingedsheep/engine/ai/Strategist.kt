@@ -49,7 +49,9 @@ class Strategist(
         if (legalActions.size == 1) return legalActions.first()
 
         val pass = legalActions.find { it.actionType == "PassPriority" }
-        val affordable = legalActions.filter { it.affordable && !it.isManaAbility && it.actionType != "PassPriority" }
+        val affordable = preferKickerVariants(
+            legalActions.filter { it.affordable && !it.isManaAbility && it.actionType != "PassPriority" }
+        )
 
         if (affordable.isEmpty()) return pass ?: legalActions.first()
 
@@ -242,6 +244,36 @@ class Strategist(
         }
 
         return castSpell.copy(targets = chosenTargets)
+    }
+
+    /**
+     * When both a normal cast and a kicker/offspring variant of the same card are
+     * affordable, drop the normal variant. The kicker variant is strictly better —
+     * it does everything the normal cast does plus the kicker bonus (e.g., offspring
+     * creates an additional token). Keeping both inflates the candidate list and
+     * triggers unnecessary deep search (the two variants score close together,
+     * tripping the "close call" heuristic).
+     */
+    private fun preferKickerVariants(actions: List<LegalAction>): List<LegalAction> {
+        // Collect cardIds that have an affordable CastWithKicker variant
+        val kickedCardIds = mutableSetOf<EntityId>()
+        for (action in actions) {
+            if (action.actionType == "CastWithKicker") {
+                val castSpell = action.action as? CastSpell ?: continue
+                kickedCardIds.add(castSpell.cardId)
+            }
+        }
+        if (kickedCardIds.isEmpty()) return actions
+
+        // Remove the normal CastSpell variant for those cards
+        return actions.filter { action ->
+            if (action.actionType == "CastSpell") {
+                val castSpell = action.action as? CastSpell ?: return@filter true
+                castSpell.cardId !in kickedCardIds
+            } else {
+                true
+            }
+        }
     }
 
     /** Resolve the card name from a legal action's underlying GameAction. */
