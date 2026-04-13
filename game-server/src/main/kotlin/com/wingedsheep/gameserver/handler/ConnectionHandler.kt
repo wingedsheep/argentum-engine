@@ -229,6 +229,14 @@ class ConnectionHandler(
         if (token != null) {
             val identity = sessionRegistry.getIdentityByToken(token)
             if (identity != null) {
+                // If the identity was replaced by preRegisterIdentity (e.g., new E2E scenario
+                // with the same token), the playerId will differ. Skip disconnect logic to avoid
+                // setting timers on the new identity.
+                if (playerSession != null && identity.playerId != playerSession.playerId) {
+                    logger.info("Identity for token ${token.take(8)} was replaced (different player), ignoring stale disconnect")
+                    return
+                }
+
                 // If the player has already reconnected with a new WebSocket session,
                 // this disconnect is stale (from the old session). Skip disconnect logic
                 // to avoid overwriting the new session and starting spurious timers.

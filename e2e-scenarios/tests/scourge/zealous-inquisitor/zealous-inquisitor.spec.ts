@@ -65,8 +65,11 @@ test('redirect 1 combat damage to target creature', async ({ createGame }) => {
   await p1.selectTarget('Elvish Pioneer')
   await p1.confirmTargets()
 
-  // P2 resolves the ability — after this, combat damage proceeds automatically
+  // P2 resolves the ability
   await p2.pass()
+
+  // P1 still has priority after ability resolution — pass to proceed to combat damage
+  await p1.pass()
 
   // Results: Elvish Pioneer dies (1 redirected damage), Glory Seeker dies (2 from Inquisitor),
   // Zealous Inquisitor survives (only took 1 of the 2 damage)

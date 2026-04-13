@@ -188,16 +188,14 @@ test.describe('Treasure Cruise (Delve)', () => {
     await p1.screenshot('Delve selector — no cards selected')
 
     // Cast without exiling anything (pay full cost from lands)
-    await p1.page.getByRole('button', { name: 'Cast' }).click()
+    await p1.page.getByRole('button', { name: 'Cast', exact: true }).click()
 
-    // Mana selection appears — confirm mana payment
+    // Mana selection appears — confirm mana payment (all 8 Islands pre-selected)
     await p1.page.locator('button').filter({ hasText: /^Confirm/ }).waitFor({ state: 'visible', timeout: 10_000 })
     await p1.page.locator('button').filter({ hasText: /^Confirm/ }).click()
 
-    // Opponent resolves
-    // Wait for spell to appear on P2's stack, then resolve
-    await p2.page.getByText('Draw 3 cards').waitFor({ state: 'visible', timeout: 10_000 })
-    await p2.pass()
+    // Opponent resolves — stack items always stop opponent
+    await p2.resolveStack('Treasure Cruise')
 
     // Should have drawn 3 cards
     await p1.expectHandSize(3)

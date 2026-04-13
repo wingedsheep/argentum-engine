@@ -290,18 +290,13 @@ class CastSpellEnumerator : ActionEnumerator {
             val manaCostString = effectiveCost.toString()
 
             // Compute auto-tap preview for UI highlighting (skipped in ACTIONS_ONLY mode)
-            // For Delve/Convoke spells, solve against the reduced cost so the preview
-            // reflects what the player actually needs to tap after alternative payment
+            // For Delve/Convoke spells, solve against the FULL cost (no alternative payment
+            // reduction) so the preview covers the worst case. The player selects delve/convoke
+            // first, then the mana selection UI starts with all needed sources pre-selected.
+            // The client clears autoTapPreview after delve/convoke if the actual reduction
+            // differs, but using the full cost here avoids under-selecting sources.
             val autoTapPreview = if (context.skipAutoTapPreview) null else {
-                var autoTapCost = effectiveCost
-                if (hasDelve && delveCards != null && delveCards.isNotEmpty()) {
-                    val maxDelve = minOf(delveCards.size, autoTapCost.genericAmount)
-                    autoTapCost = autoTapCost.reduceGeneric(maxDelve)
-                }
-                if (hasConvoke && convokeCreatures != null && convokeCreatures.isNotEmpty()) {
-                    autoTapCost = autoTapCost.reduceByConvoke(convokeCreatures.map { it.colors })
-                }
-                context.manaSolver.solve(state, playerId, autoTapCost, precomputedSources = cachedSources)
+                context.manaSolver.solve(state, playerId, effectiveCost, precomputedSources = cachedSources)
                     ?.sources?.map { it.entityId }
             }
 

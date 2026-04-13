@@ -340,7 +340,7 @@ export class GamePage {
   /** Assert the number of real (non-ghost) cards visible in the player's hand. */
   async expectHandSize(count: number) {
     const handZone = this.page.locator(HAND)
-    const realCards = handZone.locator('[data-card-id]:not([data-ghost="true"])').locator('img[alt]')
+    const realCards = handZone.locator('[data-card-id]:not([data-ghost="true"])')
     await expect(realCards).toHaveCount(count, { timeout: 10_000 })
   }
 
