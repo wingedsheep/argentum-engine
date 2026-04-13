@@ -11,6 +11,7 @@ kotest = "6.1.5"
 mockk = "1.14.9"
 springBoot = "4.0.5"
 springdocOpenapi = "3.0.2"
+kover = "0.9.1"
 
 [libraries]
 kotlinGradlePlugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
@@ -43,3 +44,4 @@ kotlinPluginSerialization = { id = "org.jetbrains.kotlin.plugin.serialization", 
 kotlinPluginSpring = { id = "org.jetbrains.kotlin.plugin.spring", version.ref = "kotlin" }
 springBoot = { id = "org.springframework.boot", version.ref = "springBoot" }
 springDependencyManagement = { id = "io.spring.dependency-management", version = "1.1.7" }
+kover = { id = "org.jetbrains.kotlinx.kover", version.ref = "kover" }

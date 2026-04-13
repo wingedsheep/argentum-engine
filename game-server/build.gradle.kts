@@ -4,6 +4,7 @@ plugins {
     alias(libs.plugins.kotlinPluginSpring)
     alias(libs.plugins.springBoot)
     alias(libs.plugins.springDependencyManagement)
+    alias(libs.plugins.kover)
 }
 
 dependencies {
