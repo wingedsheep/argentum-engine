@@ -4,6 +4,7 @@ import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.state.GameState
+import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.sdk.scripting.effects.ConditionalOnCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.Effect
 import kotlin.reflect.KClass
@@ -27,8 +28,16 @@ class ConditionalOnCollectionExecutor(
     ): EffectResult {
         val collection = context.pipeline.storedCollections[effect.collection] ?: emptyList()
 
+        val measuredSize = if (effect.countDistinctCardTypes) {
+            collection.flatMap { entityId ->
+                state.getEntity(entityId)?.get<CardComponent>()?.typeLine?.cardTypes ?: emptySet()
+            }.toSet().size
+        } else {
+            collection.size
+        }
+
         val elseEffect = effect.ifEmpty
-        return if (collection.size >= effect.minSize) {
+        return if (measuredSize >= effect.minSize) {
             effectExecutor(state, effect.ifNotEmpty, context)
         } else if (elseEffect != null) {
             effectExecutor(state, elseEffect, context)

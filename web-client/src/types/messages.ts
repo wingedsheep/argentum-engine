@@ -282,6 +282,8 @@ export interface SelectCardsDecision extends PendingDecisionBase {
   readonly remainderLabel?: string | null
   /** Cards shown to the player but not selectable (used for "look at" effects) */
   readonly nonSelectableOptions?: readonly EntityId[]
+  /** When true, at most one card of each card type may be selected */
+  readonly onePerCardType?: boolean
 }
 
 /**

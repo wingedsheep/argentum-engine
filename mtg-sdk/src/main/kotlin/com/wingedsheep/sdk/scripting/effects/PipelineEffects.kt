@@ -670,11 +670,17 @@ data class ConditionalOnCollectionEffect(
     val collection: String,
     val ifNotEmpty: Effect,
     val ifEmpty: Effect? = null,
-    val minSize: Int = 1
+    val minSize: Int = 1,
+    /** When true, [minSize] is compared against the count of distinct card types across all
+     *  cards in the collection rather than the raw collection size. An Artifact Creature in
+     *  the collection contributes both Artifact and Creature to the count. */
+    val countDistinctCardTypes: Boolean = false
 ) : Effect {
     override val description: String = buildString {
         if (minSize <= 1) {
             append("If $collection is not empty, ")
+        } else if (countDistinctCardTypes) {
+            append("If $collection covers at least $minSize card types, ")
         } else {
             append("If $collection has at least $minSize cards, ")
         }

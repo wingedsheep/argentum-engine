@@ -255,7 +255,8 @@ class SelectFromCollectionExecutor : EffectExecutor<SelectFromCollectionEffect> 
             selectedLabel = effect.selectedLabel,
             remainderLabel = effect.remainderLabel,
             useTargetingUI = effect.useTargetingUI,
-            nonSelectableOptions = nonSelectableCards
+            nonSelectableOptions = nonSelectableCards,
+            onePerCardType = effect.restrictions.any { it is SelectionRestriction.OnePerCardType }
         )
 
         val continuation = SelectFromCollectionContinuation(

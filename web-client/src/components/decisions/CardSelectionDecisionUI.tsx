@@ -1,10 +1,22 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useGameStore } from '@/store/gameStore.ts'
 import type { EntityId, SelectCardsDecision } from '@/types'
 import { calculateFittingCardWidth, type ResponsiveSizes } from '@/hooks/useResponsive.ts'
 import { getCardImageUrl } from '@/utils/cardImages.ts'
 import { DecisionCard, DecisionCardPreview } from './DecisionComponents'
 import styles from './DecisionUI.module.css'
+
+/** Known MTG card types used for OnePerCardType restriction enforcement. */
+const CARD_TYPES = new Set([
+  'Artifact', 'Battle', 'Creature', 'Enchantment', 'Instant',
+  'Kindred', 'Land', 'Planeswalker', 'Sorcery',
+])
+
+/** Extract card types from a type-line string (e.g. "Artifact Creature — Golem" → ["Artifact", "Creature"]). */
+function extractCardTypes(typeLine: string): string[] {
+  const mainTypes = typeLine.split('—')[0] ?? typeLine
+  return mainTypes.trim().split(/\s+/).filter((w) => CARD_TYPES.has(w))
+}
 
 /**
  * Card selection decision - select cards from a list.
@@ -49,6 +61,26 @@ export function CardSelectionDecision({
     45
   )
 
+  // OnePerCardType: compute which types are already claimed by selected cards
+  const claimedTypes = useMemo(() => {
+    if (!decision.onePerCardType) return new Set<string>()
+    const types = new Set<string>()
+    for (const id of selectedCards) {
+      const typeLine = decision.cardInfo?.[id]?.typeLine ?? gameState?.cards[id]?.typeLine ?? ''
+      for (const t of extractCardTypes(typeLine)) types.add(t)
+    }
+    return types
+  }, [decision.onePerCardType, decision.cardInfo, selectedCards, gameState?.cards])
+
+  /** Check if a card is disabled by the OnePerCardType restriction. */
+  const isCardDisabled = (cardId: EntityId): boolean => {
+    if (!decision.onePerCardType) return false
+    if (selectedCards.includes(cardId)) return false // already selected — can deselect
+    const typeLine = decision.cardInfo?.[cardId]?.typeLine ?? gameState?.cards[cardId]?.typeLine ?? ''
+    const types = extractCardTypes(typeLine)
+    return types.length > 0 && types.some((t) => claimedTypes.has(t))
+  }
+
   const toggleCard = (cardId: EntityId) => {
     setSelectedCards((prev) => {
       if (prev.includes(cardId)) {
@@ -56,6 +88,10 @@ export function CardSelectionDecision({
       }
       // Don't allow selecting more than max
       if (prev.length >= decision.maxSelections) {
+        return prev
+      }
+      // OnePerCardType: block if types already claimed
+      if (isCardDisabled(cardId)) {
         return prev
       }
       return [...prev, cardId]
@@ -133,6 +169,7 @@ export function CardSelectionDecision({
           const cardFromState = gameState?.cards[cardId]
           const cardName = cardInfoFromDecision?.name || cardFromState?.name || 'Unknown Card'
           const imageUri = cardInfoFromDecision?.imageUri || cardFromState?.imageUri
+          const disabled = isCardDisabled(cardId)
           return (
             <DecisionCard
               key={cardId}
@@ -144,6 +181,7 @@ export function CardSelectionDecision({
               cardWidth={cardWidth}
               onMouseEnter={() => setHoveredCardId(cardId)}
               onMouseLeave={() => setHoveredCardId(null)}
+              nonSelectable={disabled}
             />
           )
         })}

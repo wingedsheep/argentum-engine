@@ -63,7 +63,7 @@ val PortentOfCalamity = card("Portent of Calamity") {
                     restrictions = listOf(SelectionRestriction.OnePerCardType),
                     storeSelected = "exiled",
                     storeRemainder = "graveyardPile",
-                    prompt = "For each card type, you may exile a card of that type",
+                    prompt = "Choose cards to exile — at most one per card type. Unchosen cards go to your graveyard.",
                     selectedLabel = "Exile",
                     remainderLabel = "Graveyard"
                 ),
@@ -83,6 +83,7 @@ val PortentOfCalamity = card("Portent of Calamity") {
                 ConditionalOnCollectionEffect(
                     collection = "exiled",
                     minSize = 4,
+                    countDistinctCardTypes = true,
                     ifNotEmpty = CompositeEffect(
                         listOf(
                             SelectFromCollectionEffect(

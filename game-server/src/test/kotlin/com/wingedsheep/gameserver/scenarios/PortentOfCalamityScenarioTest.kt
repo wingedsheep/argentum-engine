@@ -170,6 +170,46 @@ class PortentOfCalamityScenarioTest : ScenarioTestBase() {
                 game.state.getExile(game.player1Id) shouldHaveSize 0
             }
 
+            test("artifact creature counts as two types - 3 cards can produce 4 distinct types triggering free cast") {
+                // Library top 3: Barkform Harvester (Artifact Creature), Shivan Fire (Instant), Island (Land)
+                // Types covered: Artifact + Creature + Instant + Land = 4 distinct types
+                // 4 ≥ 4 → free-cast branch triggers even though only 3 cards were exiled.
+                val game = scenario()
+                    .withPlayers("Player 1", "Player 2")
+                    .withCardInHand(1, "Portent of Calamity")
+                    .withLandsOnBattlefield(1, "Island", 4) // {X=3}{U}
+                    .withCardInLibrary(1, "Barkform Harvester")  // Artifact Creature
+                    .withCardInLibrary(1, "Shivan Fire")         // Instant
+                    .withCardInLibrary(1, "Island")              // Basic Land
+                    .withActivePlayer(1)
+                    .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                    .build()
+
+                game.castXSpell(1, "Portent of Calamity", xValue = 3)
+                game.resolveStack()
+
+                // Exile all 3 cards (each has a unique card type relative to the others).
+                game.hasPendingDecision() shouldBe true
+                val options = (game.getPendingDecision() as com.wingedsheep.engine.core.SelectCardsDecision).options
+                game.selectCards(options.toList())
+                game.resolveStack()
+
+                // 3 cards exiled covering 4 distinct types (Artifact, Creature, Instant, Land)
+                // → free-cast selection should appear.
+                withClue("Free-cast decision should appear because artifact creature counts as 2 types (4 total ≥ 4)") {
+                    game.hasPendingDecision() shouldBe true
+                }
+
+                // Decline the free cast — all 3 should go to hand.
+                game.skipSelection()
+                game.resolveStack()
+
+                game.isInHand(1, "Barkform Harvester") shouldBe true
+                game.isInHand(1, "Shivan Fire") shouldBe true
+                game.isInHand(1, "Island") shouldBe true
+                game.state.getExile(game.player1Id) shouldHaveSize 0
+            }
+
             test("pile of three creatures limits exile selection to a single card") {
                 // When every revealed card shares the creature type, OnePerCardType caps
                 // the selection max at 1 — the player can only exile one of them.
