@@ -55,6 +55,31 @@ function calculateRemainingCost(
 }
 
 /**
+ * Calculate the total mana value of remaining cost symbols.
+ * Generic symbols count as their numeric value, colored symbols count as 1 each.
+ */
+function totalManaNeeded(symbols: string[]): number {
+  let total = 0
+  for (const s of symbols) {
+    const num = parseInt(s, 10)
+    total += isNaN(num) ? 1 : num
+  }
+  return total
+}
+
+/**
+ * Calculate the total mana available from mana sources.
+ */
+function totalManaAvailable(sources: readonly { manaAmount?: number }[] | undefined | null): number {
+  if (!sources) return 0
+  let total = 0
+  for (const s of sources) {
+    total += s.manaAmount ?? 1
+  }
+  return total
+}
+
+/**
  * Compact floating HUD bar for convoke selection.
  * Shows mana cost progress and confirm/cancel buttons while
  * creatures are selected directly on the battlefield.
@@ -78,6 +103,10 @@ export function ConvokeSelector() {
 
   const { cardName, selectedCreatures, actionInfo } = convokeSelectionState
   const isAbility = actionInfo.action.type === 'ActivateAbility'
+
+  const manaNeeded = totalManaNeeded(remainingSymbols)
+  const manaFromSources = totalManaAvailable(actionInfo.availableManaSources)
+  const canAfford = manaNeeded <= manaFromSources
 
   return (
     <div style={styles.bar}>
@@ -109,8 +138,8 @@ export function ConvokeSelector() {
         Cancel
       </button>
       <button
-        onClick={confirmConvokeSelection}
-        style={styles.confirmButton}
+        onClick={canAfford ? confirmConvokeSelection : undefined}
+        style={canAfford ? styles.confirmButton : styles.confirmButtonDisabled}
       >
         {isAbility ? 'Activate' : 'Cast'}
       </button>
@@ -208,5 +237,14 @@ const styles: Record<string, React.CSSProperties> = {
     border: 'none',
     borderRadius: 6,
     cursor: 'pointer',
+  },
+  confirmButtonDisabled: {
+    padding: '6px 14px',
+    fontSize: 13,
+    backgroundColor: '#333',
+    color: '#666',
+    border: 'none',
+    borderRadius: 6,
+    cursor: 'not-allowed',
   },
 }
