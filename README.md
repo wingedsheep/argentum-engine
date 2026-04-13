@@ -1,5 +1,7 @@
 # Argentum Engine
 
+[![Coverage](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/wingedsheep/6bdaf97194bddfe4924f1d5c17a08d4f/raw/coverage.json)](https://github.com/wingedsheep/argentum-engine/actions/workflows/ci.yml)
+
 <img src="assets/argentum-engine-white.jpeg" alt="Argentum Engine" width="400px">
 
 *Before the oil. Before the corruption. There was only perfection.*
