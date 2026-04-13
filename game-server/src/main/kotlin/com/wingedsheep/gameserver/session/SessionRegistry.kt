@@ -81,9 +81,20 @@ class SessionRegistry {
     /**
      * Pre-register a player identity for dev scenario testing.
      * The identity will be associated with a WebSocket session when the player connects.
+     *
+     * Cancels any disconnect timers from a previous identity with the same token to prevent
+     * a stale timer from removing the newly registered identity (race condition when E2E tests
+     * reuse the same static tokens sequentially).
      */
     fun preRegisterIdentity(identity: PlayerIdentity) {
-        playerIdentities[identity.token] = identity
+        val existing = playerIdentities.put(identity.token, identity)
+        if (existing != null) {
+            existing.disconnectTimer?.cancel(false)
+            existing.disconnectTimer = null
+            existing.gameDisconnectTimer?.cancel(false)
+            existing.gameDisconnectTimer = null
+            existing.disconnectExpiresAt = null
+        }
     }
 
     fun removeOldWsMapping(token: String) {

@@ -318,6 +318,12 @@ class ConnectionHandler(
             logger.info("Disconnect timeout for ${preCheckIdentity.playerName} — player is connected, skipping abandonment")
             return
         }
+        // If the identity's disconnect timer was cleared (e.g. by preRegisterIdentity replacing
+        // the old identity), this timer is stale — skip to avoid removing a newer identity.
+        if (preCheckIdentity != null && preCheckIdentity.disconnectExpiresAt == null) {
+            logger.info("Disconnect timeout for token $token — identity was replaced (no disconnectExpiresAt), skipping")
+            return
+        }
 
         val identity = sessionRegistry.removeIdentity(token) ?: return
 

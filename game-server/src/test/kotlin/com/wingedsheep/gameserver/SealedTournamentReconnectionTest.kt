@@ -783,9 +783,9 @@ class SealedTournamentReconnectionTest : FunSpec() {
                 // Loser concedes
                 round2Loser.client.send(ClientMessage.Concede)
 
-                // Wait for RoundComplete for round 2
+                // Wait for RoundComplete for round 2 — wait for ALL players
                 eventually(10.seconds) {
-                    players.any { p ->
+                    players.all { p ->
                         p.client.messages.filterIsInstance<ServerMessage.RoundComplete>()
                             .any { it.round == 2 }
                     } shouldBe true
@@ -861,9 +861,9 @@ class SealedTournamentReconnectionTest : FunSpec() {
                 // One player concedes
                 round3MatchPlayers[1].client.send(ClientMessage.Concede)
 
-                // Wait for tournament complete
+                // Wait for tournament complete — wait for ALL players to receive it
                 eventually(10.seconds) {
-                    players.any { p ->
+                    players.all { p ->
                         p.client.messages.any { it is ServerMessage.TournamentComplete } ||
                         p.client.messages.filterIsInstance<ServerMessage.RoundComplete>()
                             .any { it.isTournamentComplete }
