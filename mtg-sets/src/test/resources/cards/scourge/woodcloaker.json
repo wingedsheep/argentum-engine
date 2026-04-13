@@ -19,7 +19,7 @@
     "script": {
         "triggeredAbilities": [
             {
-                "id": "ability_8",
+                "id": "ability_18",
                 "trigger": "TurnFaceUpEvent",
                 "effect": {
                     "type": "GrantKeyword",

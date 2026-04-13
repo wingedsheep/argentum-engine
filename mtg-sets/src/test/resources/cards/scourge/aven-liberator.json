@@ -22,7 +22,7 @@
     "script": {
         "triggeredAbilities": [
             {
-                "id": "ability_19",
+                "id": "ability_70",
                 "trigger": "TurnFaceUpEvent",
                 "effect": {
                     "type": "ChooseColorAndGrantProtectionToTarget",

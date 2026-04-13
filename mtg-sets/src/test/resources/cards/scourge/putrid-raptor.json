@@ -12,7 +12,7 @@
             "type": "Morph",
             "morphCost": {
                 "type": "Discard",
-                "filter": "creature Zombie"
+                "filter": "Zombie"
             }
         }
     ],

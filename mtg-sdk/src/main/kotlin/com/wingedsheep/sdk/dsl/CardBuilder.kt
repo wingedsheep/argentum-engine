@@ -546,13 +546,17 @@ class CardBuilder(private val name: String) {
             if (evoke != null) add(KeywordAbility.Evoke(ManaCost.parse(evoke!!)))
         }
 
+        // Derive simple keywords from parameterized keyword abilities
+        val derivedKeywords = finalKeywordAbilities.mapNotNull { it.keyword }.toSet()
+        val finalKeywords = keywordSet + derivedKeywords
+
         return CardDefinition(
             name = name,
             manaCost = parsedManaCost,
             typeLine = parsedTypeLine,
             oracleText = oracleText,
             creatureStats = creatureStats,
-            keywords = keywordSet.toSet(),
+            keywords = finalKeywords,
             flags = flagSet.toSet(),
             keywordAbilities = finalKeywordAbilities,
             script = script,

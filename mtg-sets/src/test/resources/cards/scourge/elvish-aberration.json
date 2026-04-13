@@ -17,7 +17,7 @@
     "script": {
         "activatedAbilities": [
             {
-                "id": "ability_5",
+                "id": "ability_10",
                 "cost": "CostTap",
                 "effect": {
                     "type": "AddMana",

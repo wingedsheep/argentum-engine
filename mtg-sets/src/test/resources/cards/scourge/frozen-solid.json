@@ -6,10 +6,8 @@
     "script": {
         "triggeredAbilities": [
             {
-                "id": "ability_12",
-                "trigger": {
-                    "type": "DamageReceivedEvent"
-                },
+                "id": "ability_40",
+                "trigger": "DamageReceivedEvent",
                 "binding": "ATTACHED",
                 "effect": {
                     "type": "MoveToZone",

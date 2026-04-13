@@ -31,12 +31,19 @@ sealed interface KeywordAbility {
     val description: String
 
     /**
+     * Returns the simple [Keyword] enum that corresponds to this parameterized keyword ability,
+     * or null if there is no direct mapping. Used to automatically populate [CardDefinition.keywords]
+     * so that parameterized keyword abilities (e.g., Ward {1}) are visible in the base keyword set.
+     */
+    val keyword: Keyword? get() = null
+
+    /**
      * Simple keyword with no parameters.
      * Examples: Flying, Trample, Haste
      */
     @SerialName("Simple")
     @Serializable
-    data class Simple(val keyword: Keyword) : KeywordAbility {
+    data class Simple(override val keyword: Keyword) : KeywordAbility {
         override val description: String = keyword.displayName
     }
 
@@ -52,6 +59,7 @@ sealed interface KeywordAbility {
     @SerialName("WardMana")
     @Serializable
     data class WardMana(val cost: ManaCost) : KeywordAbility {
+        override val keyword: Keyword = Keyword.WARD
         override val description: String = "Ward $cost"
     }
 
@@ -62,6 +70,7 @@ sealed interface KeywordAbility {
     @SerialName("WardLife")
     @Serializable
     data class WardLife(val amount: Int) : KeywordAbility {
+        override val keyword: Keyword = Keyword.WARD
         override val description: String = "Ward—Pay $amount life"
     }
 
@@ -72,6 +81,7 @@ sealed interface KeywordAbility {
     @SerialName("WardDiscard")
     @Serializable
     data class WardDiscard(val count: Int = 1, val random: Boolean = false) : KeywordAbility {
+        override val keyword: Keyword = Keyword.WARD
         override val description: String = buildString {
             append("Ward—Discard ")
             if (count == 1) {
@@ -90,6 +100,7 @@ sealed interface KeywordAbility {
     @SerialName("WardSacrifice")
     @Serializable
     data class WardSacrifice(val filter: GameObjectFilter) : KeywordAbility {
+        override val keyword: Keyword = Keyword.WARD
         override val description: String = "Ward—Sacrifice a ${filter.description}"
     }
 
@@ -324,6 +335,7 @@ sealed interface KeywordAbility {
     @SerialName("Affinity")
     @Serializable
     data class Affinity(val forType: CardType) : KeywordAbility {
+        override val keyword: Keyword = Keyword.AFFINITY
         override val description: String = "Affinity for ${forType.displayName.lowercase()}s"
     }
 
@@ -334,6 +346,7 @@ sealed interface KeywordAbility {
     @SerialName("AffinityForSubtype")
     @Serializable
     data class AffinityForSubtype(val forSubtype: Subtype) : KeywordAbility {
+        override val keyword: Keyword = Keyword.AFFINITY
         override val description: String = "Affinity for ${forSubtype.value}s"
     }
 
@@ -431,6 +444,7 @@ sealed interface KeywordAbility {
     @SerialName("Flashback")
     @Serializable
     data class Flashback(val cost: ManaCost) : KeywordAbility {
+        override val keyword: Keyword = Keyword.FLASHBACK
         override val description: String = "Flashback $cost"
     }
 
@@ -465,6 +479,7 @@ sealed interface KeywordAbility {
     @SerialName("Offspring")
     @Serializable
     data class Offspring(val cost: ManaCost) : KeywordAbility {
+        override val keyword: Keyword = Keyword.OFFSPRING
         override val description: String = "Offspring $cost"
     }
 
@@ -484,6 +499,7 @@ sealed interface KeywordAbility {
     @SerialName("Evoke")
     @Serializable
     data class Evoke(val cost: ManaCost) : KeywordAbility {
+        override val keyword: Keyword = Keyword.EVOKE
         override val description: String = "Evoke $cost"
     }
 

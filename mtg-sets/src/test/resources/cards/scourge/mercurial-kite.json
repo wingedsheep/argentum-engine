@@ -5,7 +5,7 @@
     "oracleText": "Flying\nWhenever Mercurial Kite deals combat damage to a creature, tap that creature. It doesn't untap during its controller's next untap step.",
     "creatureStats": {
         "power": 2,
-        "toughness": 1
+        "toughness": 2
     },
     "keywords": [
         "FLYING"
@@ -13,7 +13,7 @@
     "script": {
         "triggeredAbilities": [
             {
-                "id": "ability_10",
+                "id": "ability_26",
                 "trigger": {
                     "type": "DealsDamageEvent",
                     "damageType": "DamageCombat",

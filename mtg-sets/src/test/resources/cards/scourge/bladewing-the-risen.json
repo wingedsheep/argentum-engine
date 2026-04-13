@@ -13,7 +13,7 @@
     "script": {
         "triggeredAbilities": [
             {
-                "id": "ability_2",
+                "id": "ability_3",
                 "trigger": {
                     "type": "ZoneChangeEvent",
                     "to": "Battlefield"
@@ -39,7 +39,7 @@
         ],
         "activatedAbilities": [
             {
-                "id": "ability_3",
+                "id": "ability_4",
                 "cost": {
                     "type": "CostMana",
                     "cost": "{B}{R}"

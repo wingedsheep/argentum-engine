@@ -19,7 +19,7 @@
     "script": {
         "triggeredAbilities": [
             {
-                "id": "ability_11",
+                "id": "ability_31",
                 "trigger": "TurnFaceUpEvent",
                 "effect": {
                     "type": "Composite",
@@ -42,7 +42,8 @@
                                     "amount": 2
                                 }
                             },
-                            "storeSelected": "discarded"
+                            "storeSelected": "discarded",
+                            "prompt": "Choose 2 cards to discard"
                         },
                         {
                             "type": "MoveCollection",

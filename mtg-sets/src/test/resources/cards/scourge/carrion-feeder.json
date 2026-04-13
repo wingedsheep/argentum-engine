@@ -10,7 +10,7 @@
     "script": {
         "activatedAbilities": [
             {
-                "id": "ability_4",
+                "id": "ability_7",
                 "cost": {
                     "type": "CostSacrifice",
                     "filter": "creature"
