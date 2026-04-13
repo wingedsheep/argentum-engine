@@ -40,6 +40,7 @@ object LorwynEclipsedSet {
         VirulentEmissary,
         WanderwineFarewell,
         WildUnraveling,
+        WildvinePummeler,
 
         // Basic lands
     ) + LorwynEclipsedBasicLands
