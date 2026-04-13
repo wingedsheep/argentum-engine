@@ -114,6 +114,8 @@ export interface ActivateAbilityAction {
   /** Number of times to repeat this activation (for batch activation) */
   readonly repeatCount?: number
   readonly paymentStrategy?: PaymentStrategy
+  /** Alternative payment choices (e.g., convoke for abilities like Heirloom Epic) */
+  readonly alternativePayment?: AlternativePaymentChoice
 }
 
 // =============================================================================

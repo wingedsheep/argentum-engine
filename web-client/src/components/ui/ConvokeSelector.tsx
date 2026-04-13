@@ -76,12 +76,13 @@ export function ConvokeSelector() {
 
   if (!convokeSelectionState) return null
 
-  const { cardName, selectedCreatures } = convokeSelectionState
+  const { cardName, selectedCreatures, actionInfo } = convokeSelectionState
+  const isAbility = actionInfo.action.type === 'ActivateAbility'
 
   return (
     <div style={styles.bar}>
       <span style={styles.label}>
-        Convoke <strong>{cardName}</strong>
+        {isAbility ? 'Tap creatures for' : 'Convoke'} <strong>{cardName}</strong>
       </span>
       <span style={styles.divider} />
       <span style={styles.costLabel}>Cost:</span>
@@ -111,7 +112,7 @@ export function ConvokeSelector() {
         onClick={confirmConvokeSelection}
         style={styles.confirmButton}
       >
-        Cast
+        {isAbility ? 'Activate' : 'Cast'}
       </button>
     </div>
   )

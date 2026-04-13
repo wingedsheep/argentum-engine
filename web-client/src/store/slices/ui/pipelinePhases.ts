@@ -79,9 +79,9 @@ export function computePhases(actionInfo: LegalActionInfo, options?: ComputePhas
     }
   }
 
-  // 3. Convoke
+  // 3. Convoke (spells with Convoke keyword, or activated abilities with hasConvoke like Heirloom Epic)
   if (
-    actionInfo.action.type === 'CastSpell' &&
+    (actionInfo.action.type === 'CastSpell' || actionInfo.action.type === 'ActivateAbility') &&
     actionInfo.hasConvoke &&
     actionInfo.validConvokeCreatures &&
     actionInfo.validConvokeCreatures.length > 0
@@ -198,7 +198,7 @@ export function mergeResult(
     }
 
     case 'convoke': {
-      if (action.type === 'CastSpell') {
+      if (action.type === 'CastSpell' || action.type === 'ActivateAbility') {
         return {
           ...action,
           alternativePayment: {
