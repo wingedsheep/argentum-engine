@@ -1,5 +1,6 @@
 package com.wingedsheep.sdk.scripting.predicates
 
+import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -49,6 +50,20 @@ sealed interface ControllerPredicate {
     @SerialName("ControlledByTargetPlayer")
     @Serializable
     data object ControlledByTargetPlayer : ControllerPredicate {
+        override val description: String = "target player controls"
+    }
+
+    /**
+     * Controlled by the player referenced by an explicit [EffectTarget].
+     *
+     * Use this when a filter needs to scope to a specific named/bound player target
+     * picked earlier in the same spell or ability — e.g., modal Commands where one
+     * mode says "creatures target player controls". Keeps the target→filter wiring
+     * explicit instead of relying on implicit "first player target" inference.
+     */
+    @SerialName("ControlledByReferencedPlayer")
+    @Serializable
+    data class ControlledByReferencedPlayer(val target: EffectTarget) : ControllerPredicate {
         override val description: String = "target player controls"
     }
 

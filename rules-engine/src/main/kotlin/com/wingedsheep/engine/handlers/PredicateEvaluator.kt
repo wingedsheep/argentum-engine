@@ -29,8 +29,10 @@ import com.wingedsheep.sdk.scripting.predicates.CardPredicate
 import com.wingedsheep.sdk.scripting.predicates.ControllerPredicate
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.predicates.StatePredicate
+import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.values.EntityReference
 import com.wingedsheep.engine.state.CastSpellRecord
+import com.wingedsheep.engine.state.components.stack.ChosenTarget
 
 /**
  * Evaluates the new unified predicates and filters against game state.
@@ -408,6 +410,9 @@ class PredicateEvaluator {
             }
             ControllerPredicate.ControlledByTargetPlayer -> {
                 context.targetPlayerId?.let { controllerId == it } ?: false
+            }
+            is ControllerPredicate.ControlledByReferencedPlayer -> {
+                context.resolvePlayerTarget(predicate.target)?.let { controllerId == it } ?: false
             }
             ControllerPredicate.OwnedByYou -> {
                 val card = state.getEntity(entityId)?.get<CardComponent>()
@@ -801,6 +806,9 @@ class PredicateEvaluator {
                     ControllerPredicate.ControlledByTargetPlayer -> {
                         context.targetPlayerId?.let { controllerId == it } ?: false
                     }
+                    is ControllerPredicate.ControlledByReferencedPlayer -> {
+                        context.resolvePlayerTarget(predicate.target)?.let { controllerId == it } ?: false
+                    }
                     // Already handled above
                     ControllerPredicate.OwnedByYou, ControllerPredicate.OwnedByOpponent -> true
                 }
@@ -923,22 +931,52 @@ data class PredicateContext(
      * [CardPredicate.HasSubtypeInEachStoredGroup] to implement "shares a subtype with
      * each of" semantics.
      */
-    val storedSubtypeGroups: Map<String, List<Set<String>>> = emptyMap()
+    val storedSubtypeGroups: Map<String, List<Set<String>>> = emptyMap(),
+    /** Ordered targets chosen for the effect; used to resolve explicit EffectTarget references. */
+    val targets: List<ChosenTarget> = emptyList(),
+    /** Named targets bound via the DSL, mapped by name. */
+    val namedTargets: Map<String, ChosenTarget> = emptyMap()
 ) {
+    /**
+     * Resolve an [EffectTarget] reference to a concrete player [EntityId].
+     *
+     * Supports [EffectTarget.BoundVariable] (maps by target name), [EffectTarget.ContextTarget]
+     * (maps by position in [targets]), and [EffectTarget.Controller]. Returns `null` when the
+     * reference doesn't resolve to a player — filters that depend on a player target will then
+     * match nothing, which is the safe default.
+     */
+    fun resolvePlayerTarget(target: EffectTarget): EntityId? {
+        val chosen: ChosenTarget? = when (target) {
+            is EffectTarget.BoundVariable -> namedTargets[target.name]
+            is EffectTarget.ContextTarget -> targets.getOrNull(target.index)
+            EffectTarget.Controller -> return controllerId
+            else -> null
+        }
+        return (chosen as? ChosenTarget.Player)?.playerId
+    }
+
     companion object {
         /**
          * Create from EffectContext for compatibility.
          */
         fun fromEffectContext(context: EffectContext): PredicateContext {
+            // Derive the concretely chosen player target from the effect's targets.
+            // Falls back to opponentId when no player target is present — preserves the
+            // historic behavior for cards that reference "target opponent" implicitly.
+            val chosenPlayerTarget = context.targets.firstNotNullOfOrNull { target ->
+                (target as? ChosenTarget.Player)?.playerId
+            }
             return PredicateContext(
                 controllerId = context.controllerId,
                 targetOpponentId = context.opponentId,
-                targetPlayerId = context.opponentId,
+                targetPlayerId = chosenPlayerTarget ?: context.opponentId,
                 sourceId = context.sourceId,
                 triggeringEntityId = context.triggeringEntityId,
                 chosenValues = context.pipeline.chosenValues,
                 storedStringLists = context.pipeline.storedStringLists,
-                storedSubtypeGroups = context.pipeline.storedSubtypeGroups
+                storedSubtypeGroups = context.pipeline.storedSubtypeGroups,
+                targets = context.targets,
+                namedTargets = context.pipeline.namedTargets
             )
         }
     }

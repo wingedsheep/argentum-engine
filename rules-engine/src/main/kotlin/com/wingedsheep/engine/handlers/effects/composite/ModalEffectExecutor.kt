@@ -52,7 +52,8 @@ class ModalEffectExecutor(
             return effectExecutor(state, chosenMode.effect, context)
         }
 
-        // Mode not pre-chosen — present mode selection decision (legacy flow for triggered/activated modal abilities)
+        // Mode not pre-chosen — present mode selection decision (legacy flow for
+        // triggered/activated modal abilities, and "Choose N" modal spells like Commands).
         val playerId = context.controllerId
 
         // Get source name for the prompt
@@ -62,13 +63,17 @@ class ModalEffectExecutor(
 
         // Build mode descriptions for the decision
         val modeDescriptions = effect.modes.map { it.description }
+        val availableIndices = effect.modes.indices.toList()
+
+        val basePrompt = "Choose a mode for ${sourceName ?: "modal spell"}"
+        val prompt = if (effect.chooseCount > 1) "$basePrompt (1 of ${effect.chooseCount})" else basePrompt
 
         // Create option decision for mode selection
         val decisionId = UUID.randomUUID().toString()
         val decision = ChooseOptionDecision(
             id = decisionId,
             playerId = playerId,
-            prompt = "Choose a mode for ${sourceName ?: "modal spell"}",
+            prompt = prompt,
             context = DecisionContext(
                 sourceId = context.sourceId,
                 sourceName = sourceName,
@@ -86,7 +91,10 @@ class ModalEffectExecutor(
             modes = effect.modes,
             xValue = context.xValue,
             opponentId = context.opponentId,
-            triggeringEntityId = context.triggeringEntityId
+            triggeringEntityId = context.triggeringEntityId,
+            chooseCount = effect.chooseCount,
+            selectedModeIndices = emptyList(),
+            availableIndices = availableIndices
         )
 
         // Push continuation and return paused state

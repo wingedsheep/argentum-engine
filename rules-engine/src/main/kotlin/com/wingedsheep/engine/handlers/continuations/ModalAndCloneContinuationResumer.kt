@@ -9,6 +9,7 @@ import com.wingedsheep.engine.state.components.stack.SpellOnStackComponent
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.effects.CompositeEffect
+import com.wingedsheep.sdk.scripting.effects.Mode
 import com.wingedsheep.sdk.scripting.targets.TargetOpponent
 import com.wingedsheep.sdk.scripting.targets.TargetPlayer
 
@@ -41,25 +42,133 @@ class ModalAndCloneContinuationResumer(
             return ExecutionResult.error(state, "Expected option response for modal spell")
         }
 
-        val modeIndex = response.optionIndex
-        if (modeIndex < 0 || modeIndex >= continuation.modes.size) {
-            return ExecutionResult.error(state, "Invalid mode index: $modeIndex")
+        val availableIndices = continuation.availableIndices ?: continuation.modes.indices.toList()
+        val optionIndex = response.optionIndex
+        if (optionIndex < 0 || optionIndex >= availableIndices.size) {
+            return ExecutionResult.error(state, "Invalid mode option index: $optionIndex")
+        }
+        val originalModeIndex = availableIndices[optionIndex]
+        val newSelectedIndices = continuation.selectedModeIndices + originalModeIndex
+        val newAvailableIndices = availableIndices.toMutableList().also { it.removeAt(optionIndex) }
+
+        // More modes still need to be picked — present the next ChooseOptionDecision.
+        if (newSelectedIndices.size < continuation.chooseCount && newAvailableIndices.isNotEmpty()) {
+            val sourceName = continuation.sourceName ?: "modal spell"
+            val decisionId = java.util.UUID.randomUUID().toString()
+            val prompt = "Choose a mode for $sourceName (${newSelectedIndices.size + 1} of ${continuation.chooseCount})"
+            val decision = ChooseOptionDecision(
+                id = decisionId,
+                playerId = continuation.controllerId,
+                prompt = prompt,
+                context = DecisionContext(
+                    sourceId = continuation.sourceId,
+                    sourceName = continuation.sourceName,
+                    phase = DecisionPhase.RESOLUTION
+                ),
+                options = newAvailableIndices.map { continuation.modes[it].description }
+            )
+            val nextContinuation = continuation.copy(
+                decisionId = decisionId,
+                selectedModeIndices = newSelectedIndices,
+                availableIndices = newAvailableIndices
+            )
+            val stateWithDecision = state.withPendingDecision(decision)
+            val stateWithContinuation = stateWithDecision.pushContinuation(nextContinuation)
+            return ExecutionResult.paused(
+                stateWithContinuation,
+                decision,
+                listOf(
+                    DecisionRequestedEvent(
+                        decisionId = decisionId,
+                        playerId = continuation.controllerId,
+                        decisionType = "CHOOSE_OPTION",
+                        prompt = decision.prompt
+                    )
+                )
+            )
         }
 
-        val chosenMode = continuation.modes[modeIndex]
+        // All modes chosen (or no more available) — execute them in the order they were picked.
+        val chosenModes = newSelectedIndices.map { continuation.modes[it] }
+        // For single-mode flow, preserve revert-to-mode-selection by passing the full modes list
+        // when there's only one chosen mode and it needs targets. For multi-mode, don't allow cancel.
+        val allowCancelBackToModes = continuation.chooseCount == 1
+        return processChosenModeQueue(
+            state = state,
+            queue = chosenModes,
+            controllerId = continuation.controllerId,
+            sourceId = continuation.sourceId,
+            sourceName = continuation.sourceName,
+            xValue = continuation.xValue,
+            opponentId = continuation.opponentId,
+            triggeringEntityId = continuation.triggeringEntityId,
+            allowCancelBackToModesList = if (allowCancelBackToModes) continuation.modes else null,
+            accumulatedEvents = emptyList(),
+            checkForMore = checkForMore
+        )
+    }
 
-        // If the chosen mode has target requirements, pause for target selection
-        if (chosenMode.targetRequirements.isNotEmpty()) {
-            val sourceId = continuation.sourceId
-            val sourceName = continuation.sourceName ?: "modal spell"
+    /**
+     * Sequentially resolve a queue of chosen modal-spell modes.
+     *
+     * - Modes that need no targets execute immediately; their events accumulate.
+     * - The first mode requiring targets pauses the resolution with a
+     *   [ChooseTargetsDecision]; remaining modes ride along on the
+     *   [ModalTargetContinuation] so they fire once targets are selected.
+     * - Modes whose targets have all become illegal are silently skipped (fizzle),
+     *   matching Rule 608.2b ("if all targets have become illegal... the effect does
+     *   nothing"). We apply it per-mode since targets are picked per-mode here.
+     */
+    private fun processChosenModeQueue(
+        state: GameState,
+        queue: List<Mode>,
+        controllerId: EntityId,
+        sourceId: EntityId?,
+        sourceName: String?,
+        xValue: Int?,
+        opponentId: EntityId?,
+        triggeringEntityId: EntityId?,
+        allowCancelBackToModesList: List<Mode>?,
+        accumulatedEvents: List<GameEvent>,
+        checkForMore: CheckForMore
+    ): ExecutionResult {
+        var currentState = state
+        val events = accumulatedEvents.toMutableList()
+        var remaining = queue
 
-            // Find valid targets for each requirement
+        while (remaining.isNotEmpty()) {
+            val head = remaining.first()
+            val tail = remaining.drop(1)
+            val displayName = sourceName ?: "modal spell"
+
+            if (head.targetRequirements.isEmpty()) {
+                // No targets — execute directly.
+                val context = EffectContext(
+                    sourceId = sourceId,
+                    controllerId = controllerId,
+                    opponentId = opponentId,
+                    xValue = xValue,
+                    triggeringEntityId = triggeringEntityId
+                )
+                val result = services.effectExecutorRegistry.execute(currentState, head.effect, context).toExecutionResult()
+                events.addAll(result.events)
+                currentState = result.state
+                if (result.isPaused) {
+                    // Nested pause (rare) — we can't cleanly resume remaining modes from here,
+                    // so surface the pause. Remaining modes are lost in this edge case.
+                    return result.copy(events = events.toList())
+                }
+                remaining = tail
+                continue
+            }
+
+            // Targets required — find legal targets, auto-select / skip / pause as needed.
             val legalTargetsMap = mutableMapOf<Int, List<EntityId>>()
-            val requirementInfos = chosenMode.targetRequirements.mapIndexed { index, req ->
+            val requirementInfos = head.targetRequirements.mapIndexed { index, req ->
                 val legalTargets = services.targetFinder.findLegalTargets(
-                    state = state,
+                    state = currentState,
                     requirement = req,
-                    controllerId = continuation.controllerId,
+                    controllerId = controllerId,
                     sourceId = sourceId
                 )
                 legalTargetsMap[index] = legalTargets
@@ -71,45 +180,49 @@ class ModalAndCloneContinuationResumer(
                 )
             }
 
-            // Check if all requirements can be satisfied
             val allSatisfied = requirementInfos.all { info ->
                 (legalTargetsMap[info.index]?.isNotEmpty() == true) || info.minTargets == 0
             }
-
             if (!allSatisfied) {
-                // No valid targets for the chosen mode - fizzle
-                return checkForMore(state, emptyList())
+                // Fizzle just this mode; continue with the rest.
+                remaining = tail
+                continue
             }
 
-            // If single player-target requirement with exactly one valid target, auto-select
-            if (chosenMode.targetRequirements.size == 1) {
-                val req = chosenMode.targetRequirements[0]
+            // Auto-select single player target.
+            if (head.targetRequirements.size == 1) {
+                val req = head.targetRequirements[0]
                 val targets = legalTargetsMap[0] ?: emptyList()
                 val isPlayerTarget = req is TargetPlayer || req is TargetOpponent
                 if (isPlayerTarget && targets.size == 1 && req.count == 1) {
-                    // Auto-select the single target
-                    val chosenTarget = entityIdToChosenTarget(state, targets[0])
+                    val chosenTarget = entityIdToChosenTarget(currentState, targets[0])
                     val chosenTargets = listOf(chosenTarget)
                     val context = EffectContext(
                         sourceId = sourceId,
-                        controllerId = continuation.controllerId,
-                        opponentId = continuation.opponentId,
-                        xValue = continuation.xValue,
+                        controllerId = controllerId,
+                        opponentId = opponentId,
+                        xValue = xValue,
                         targets = chosenTargets,
-                        pipeline = PipelineState(namedTargets = EffectContext.buildNamedTargets(chosenMode.targetRequirements, chosenTargets))
+                        pipeline = PipelineState(namedTargets = EffectContext.buildNamedTargets(head.targetRequirements, chosenTargets)),
+                        triggeringEntityId = triggeringEntityId
                     )
-                    val result = services.effectExecutorRegistry.execute(state, chosenMode.effect, context).toExecutionResult()
-                    if (result.isPaused) return result
-                    return checkForMore(result.state, result.events.toList())
+                    val result = services.effectExecutorRegistry.execute(currentState, head.effect, context).toExecutionResult()
+                    events.addAll(result.events)
+                    currentState = result.state
+                    if (result.isPaused) return result.copy(events = events.toList())
+                    remaining = tail
+                    continue
                 }
             }
 
-            // Create target selection decision (with cancel support to go back to mode selection)
+            // Pause for target selection. Always surface the mode description so the
+            // player knows which mode of a Choose-N modal spell they are targeting for.
             val decisionId = java.util.UUID.randomUUID().toString()
+            val prompt = "Choose targets for $displayName — ${head.description}"
             val decision = ChooseTargetsDecision(
                 id = decisionId,
-                playerId = continuation.controllerId,
-                prompt = "Choose targets for $sourceName",
+                playerId = controllerId,
+                prompt = prompt,
                 context = DecisionContext(
                     sourceId = sourceId,
                     sourceName = sourceName,
@@ -117,32 +230,33 @@ class ModalAndCloneContinuationResumer(
                 ),
                 targetRequirements = requirementInfos,
                 legalTargets = legalTargetsMap,
-                canCancel = true
+                canCancel = allowCancelBackToModesList != null && tail.isEmpty()
             )
 
             val modalTargetContinuation = ModalTargetContinuation(
                 decisionId = decisionId,
-                controllerId = continuation.controllerId,
+                controllerId = controllerId,
                 sourceId = sourceId,
                 sourceName = sourceName,
-                effect = chosenMode.effect,
-                xValue = continuation.xValue,
-                opponentId = continuation.opponentId,
-                targetRequirements = chosenMode.targetRequirements,
-                modes = continuation.modes,
-                triggeringEntityId = continuation.triggeringEntityId
+                effect = head.effect,
+                xValue = xValue,
+                opponentId = opponentId,
+                targetRequirements = head.targetRequirements,
+                modes = if (tail.isEmpty()) allowCancelBackToModesList else null,
+                triggeringEntityId = triggeringEntityId,
+                remainingChosenModes = tail
             )
 
-            val stateWithDecision = state.withPendingDecision(decision)
+            val stateWithDecision = currentState.withPendingDecision(decision)
             val stateWithContinuation = stateWithDecision.pushContinuation(modalTargetContinuation)
 
             return ExecutionResult.paused(
                 stateWithContinuation,
                 decision,
-                listOf(
+                events + listOf(
                     DecisionRequestedEvent(
                         decisionId = decisionId,
-                        playerId = continuation.controllerId,
+                        playerId = controllerId,
                         decisionType = "CHOOSE_TARGETS",
                         prompt = decision.prompt
                     )
@@ -150,18 +264,7 @@ class ModalAndCloneContinuationResumer(
             )
         }
 
-        // No targets needed - execute the effect directly
-        val context = EffectContext(
-            sourceId = continuation.sourceId,
-            controllerId = continuation.controllerId,
-            opponentId = continuation.opponentId,
-            xValue = continuation.xValue,
-            triggeringEntityId = continuation.triggeringEntityId
-        )
-
-        val result = services.effectExecutorRegistry.execute(state, chosenMode.effect, context).toExecutionResult()
-        if (result.isPaused) return result
-        return checkForMore(result.state, result.events.toList())
+        return checkForMore(currentState, events.toList())
     }
 
     /**
@@ -174,7 +277,7 @@ class ModalAndCloneContinuationResumer(
         response: DecisionResponse,
         checkForMore: CheckForMore
     ): ExecutionResult {
-        // Handle cancel: go back to mode selection
+        // Handle cancel: go back to mode selection (single-mode flow only)
         if (response is CancelDecisionResponse && continuation.modes != null) {
             return revertToModeSelection(state, continuation)
         }
@@ -199,11 +302,30 @@ class ModalAndCloneContinuationResumer(
             opponentId = continuation.opponentId,
             xValue = continuation.xValue,
             targets = chosenTargets,
-            pipeline = PipelineState(namedTargets = EffectContext.buildNamedTargets(continuation.targetRequirements, chosenTargets))
+            pipeline = PipelineState(namedTargets = EffectContext.buildNamedTargets(continuation.targetRequirements, chosenTargets)),
+            triggeringEntityId = continuation.triggeringEntityId
         )
 
         val result = services.effectExecutorRegistry.execute(state, continuation.effect, context).toExecutionResult()
         if (result.isPaused) return result
+
+        // If more chosen modes remain (choose-N modal), process them next.
+        if (continuation.remainingChosenModes.isNotEmpty()) {
+            return processChosenModeQueue(
+                state = result.state,
+                queue = continuation.remainingChosenModes,
+                controllerId = continuation.controllerId,
+                sourceId = continuation.sourceId,
+                sourceName = continuation.sourceName,
+                xValue = continuation.xValue,
+                opponentId = continuation.opponentId,
+                triggeringEntityId = continuation.triggeringEntityId,
+                allowCancelBackToModesList = null,
+                accumulatedEvents = result.events.toList(),
+                checkForMore = checkForMore
+            )
+        }
+
         return checkForMore(result.state, result.events.toList())
     }
 

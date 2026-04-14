@@ -6,6 +6,7 @@ import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.scripting.predicates.CardPredicate
 import com.wingedsheep.sdk.scripting.predicates.ControllerPredicate
 import com.wingedsheep.sdk.scripting.predicates.StatePredicate
+import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.text.TextReplaceable
 import com.wingedsheep.sdk.scripting.text.TextReplacer
 import com.wingedsheep.sdk.scripting.values.EntityReference
@@ -377,6 +378,17 @@ data class GameObjectFilter(
 
     /** Must be controlled by the target player */
     fun targetPlayerControls() = copy(controllerPredicate = ControllerPredicate.ControlledByTargetPlayer)
+
+    /**
+     * Must be controlled by the player referenced by [target].
+     *
+     * Preferred over [targetPlayerControls] when a spell declares the player target
+     * explicitly (e.g., `val p = target("target player", TargetPlayer())`) and threads
+     * that reference into the filter — avoids relying on implicit "first player target"
+     * resolution.
+     */
+    fun targetPlayerControls(target: EffectTarget) =
+        copy(controllerPredicate = ControllerPredicate.ControlledByReferencedPlayer(target))
 
     /** Must be owned by you (for cards in graveyards/exile that don't have controllers) */
     fun ownedByYou() = copy(controllerPredicate = ControllerPredicate.OwnedByYou)

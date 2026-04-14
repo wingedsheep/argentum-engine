@@ -43,10 +43,10 @@ val SyggsCommand = card("Sygg's Command") {
                 effect = Effects.CreateTokenCopyOfTarget(merfolk)
             }
             mode("Creatures target player controls gain lifelink until end of turn") {
-                target("target player", TargetPlayer())
+                val player = target("target player", TargetPlayer())
                 effect = EffectPatterns.grantKeywordToAll(
                     keyword = Keyword.LIFELINK,
-                    filter = GroupFilter(GameObjectFilter.Creature.targetPlayerControls())
+                    filter = GroupFilter(GameObjectFilter.Creature.targetPlayerControls(player))
                 )
             }
             mode("Target player draws a card") {

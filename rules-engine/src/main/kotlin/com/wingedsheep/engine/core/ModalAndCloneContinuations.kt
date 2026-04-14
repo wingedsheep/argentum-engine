@@ -18,12 +18,21 @@ import kotlinx.serialization.Serializable
  * with a list of modes. After they choose, we need to execute the chosen mode's
  * effect, potentially after target selection.
  *
+ * For "Choose N" modal spells (Commands), the player iteratively picks modes one
+ * at a time. [selectedModeIndices] accumulates the picks (in order) and
+ * [availableIndices] narrows the options each step. Once
+ * `selectedModeIndices.size == chooseCount`, the chosen modes are executed in
+ * the order they were selected.
+ *
  * @property controllerId The player who controls the spell/ability
  * @property sourceId The spell/ability that has the modal effect
  * @property sourceName Name of the source for event messages
- * @property modes The serialized modes (effects + target requirements)
+ * @property modes The full list of modes (indexed by original position)
  * @property xValue The X value if applicable
  * @property opponentId The opponent player ID
+ * @property chooseCount Total modes to pick (1 for classic modal, 2+ for Commands)
+ * @property selectedModeIndices Original mode indices already picked, in order
+ * @property availableIndices Original mode indices still offered; null = all
  */
 @Serializable
 data class ModalContinuation(
@@ -34,7 +43,10 @@ data class ModalContinuation(
     val modes: List<@Serializable Mode>,
     val xValue: Int? = null,
     val opponentId: EntityId? = null,
-    val triggeringEntityId: EntityId? = null
+    val triggeringEntityId: EntityId? = null,
+    val chooseCount: Int = 1,
+    val selectedModeIndices: List<Int> = emptyList(),
+    val availableIndices: List<Int>? = null
 ) : ContinuationFrame
 
 /**
@@ -62,7 +74,9 @@ data class ModalTargetContinuation(
     val targetRequirements: List<TargetRequirement> = emptyList(),
     /** Original modes list for cancelling back to mode selection */
     val modes: List<@Serializable Mode>? = null,
-    val triggeringEntityId: EntityId? = null
+    val triggeringEntityId: EntityId? = null,
+    /** For "Choose N" modal spells: modes still queued to execute after this one. */
+    val remainingChosenModes: List<@Serializable Mode> = emptyList()
 ) : ContinuationFrame
 
 /**
