@@ -2,7 +2,7 @@
 
 **Set Size:** 273 cards (main set, per Scryfall `set:ecl`)
 **Release Date:** January 23, 2026
-**Implemented:** 28 / 273
+**Implemented:** 29 / 273
 
 | Color      | Total | Done |
 |------------|-------|------|
@@ -11,7 +11,7 @@
 | Black      | 38    | 2    |
 | Red        | 39    | 1    |
 | Green      | 39    | 5    |
-| Multicolor | 49    | 6    |
+| Multicolor | 49    | 7    |
 | Colorless  | 18    | 2    |
 | Land       | 12    | 6    |
 
@@ -270,7 +270,7 @@
 - [ ] Sanar, Innovative First-Year
 - [ ] Shadow Urchin
 - [ ] Stoic Grove-Guide
-- [ ] Sygg's Command
+- [x] Sygg's Command
 - [ ] Tam, Mindful First-Year
 - [ ] Thoughtweft Lieutenant
 - [ ] Trystan's Command

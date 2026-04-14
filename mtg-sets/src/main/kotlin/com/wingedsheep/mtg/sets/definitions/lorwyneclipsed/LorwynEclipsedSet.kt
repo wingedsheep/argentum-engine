@@ -37,6 +37,7 @@ object LorwynEclipsedSet {
         NoggleTheMind,
         SaplingNursery,
         SteamVents,
+        SyggsCommand,
         VirulentEmissary,
         WanderwineFarewell,
         WildUnraveling,
