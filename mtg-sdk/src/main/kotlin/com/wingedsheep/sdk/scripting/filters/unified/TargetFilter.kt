@@ -39,7 +39,14 @@ import kotlinx.serialization.Serializable
 data class TargetFilter(
     val baseFilter: GameObjectFilter,
     val zone: Zone = Zone.BATTLEFIELD,
-    val excludeSelf: Boolean = false
+    val excludeSelf: Boolean = false,
+    /**
+     * If true, the entity referenced by the trigger's `triggeringEntityId` is excluded.
+     * Models "other than that creature" phrasing where "that creature" = the trigger's
+     * triggering entity (e.g., the creature that became the target of an opponent's spell),
+     * not the source of the ability.
+     */
+    val excludeTriggeringEntity: Boolean = false
 ) : TextReplaceable<TargetFilter> {
     val description: String
         get() = buildDescription()
@@ -268,6 +275,13 @@ data class TargetFilter(
 
     /** Exclude the source permanent */
     fun other() = copy(excludeSelf = true)
+
+    /**
+     * Exclude the trigger's triggering entity (e.g., the creature that became the target
+     * of an opponent's spell/ability). Use for "other than that creature" phrasing where
+     * "that creature" refers to the event, not the ability source.
+     */
+    fun otherThanTriggeringEntity() = copy(excludeTriggeringEntity = true)
 
     /** Target in a different zone */
     fun inZone(zone: Zone) = copy(zone = zone)

@@ -59,7 +59,8 @@ class TargetFinder(
         controllerId: EntityId,
         sourceId: EntityId? = null,
         ignoreTargetingRestrictions: Boolean = false,
-        targetingSourceType: TargetingSourceType = TargetingSourceType.ANY
+        targetingSourceType: TargetingSourceType = TargetingSourceType.ANY,
+        triggeringEntityId: EntityId? = null
     ): List<EntityId> {
         return when (requirement) {
             is TargetPlayer -> findPlayerTargets(state, requirement, controllerId)
@@ -69,11 +70,11 @@ class TargetFinder(
             is TargetOpponentOrPlaneswalker -> findOpponentOrPlaneswalkerTargets(state, controllerId, sourceId, targetingSourceType)
             is TargetPlayerOrPlaneswalker -> findPlayerOrPlaneswalkerTargets(state, controllerId, sourceId, targetingSourceType)
             is TargetCreatureOrPlaneswalker -> findCreatureOrPlaneswalkerTargets(state, controllerId, sourceId, targetingSourceType)
-            is TargetObject -> findObjectTargets(state, requirement, controllerId, sourceId, ignoreTargetingRestrictions, targetingSourceType)
+            is TargetObject -> findObjectTargets(state, requirement, controllerId, sourceId, ignoreTargetingRestrictions, targetingSourceType, triggeringEntityId)
             is TargetSpellOrPermanent -> findSpellOrPermanentTargets(state, controllerId, sourceId, targetingSourceType)
             is TargetOther -> {
                 // For TargetOther, find targets for the base requirement but exclude the source
-                val baseTargets = findLegalTargets(state, requirement.baseRequirement, controllerId, sourceId, ignoreTargetingRestrictions, targetingSourceType)
+                val baseTargets = findLegalTargets(state, requirement.baseRequirement, controllerId, sourceId, ignoreTargetingRestrictions, targetingSourceType, triggeringEntityId)
                 val excludeId = requirement.excludeSourceId ?: sourceId
                 if (excludeId != null) baseTargets.filter { it != excludeId } else baseTargets
             }
@@ -198,7 +199,8 @@ class TargetFinder(
         controllerId: EntityId,
         sourceId: EntityId?,
         ignoreTargetingRestrictions: Boolean = false,
-        targetingSourceType: TargetingSourceType = TargetingSourceType.ANY
+        targetingSourceType: TargetingSourceType = TargetingSourceType.ANY,
+        triggeringEntityId: EntityId? = null
     ): List<EntityId> {
         val projected = state.projectedState
         val battlefield = state.getBattlefield()
@@ -207,6 +209,11 @@ class TargetFinder(
         return battlefield.filter { entityId ->
             // Exclude self if filter says "other"
             if (filter.excludeSelf && entityId == sourceId) {
+                return@filter false
+            }
+            // Exclude the trigger's triggering entity (e.g., "other than that creature"
+            // for Pawpatch-style triggers where "that creature" is the targeted permanent).
+            if (filter.excludeTriggeringEntity && triggeringEntityId != null && entityId == triggeringEntityId) {
                 return@filter false
             }
 
@@ -386,11 +393,12 @@ class TargetFinder(
         controllerId: EntityId,
         sourceId: EntityId?,
         ignoreTargetingRestrictions: Boolean = false,
-        targetingSourceType: TargetingSourceType = TargetingSourceType.ANY
+        targetingSourceType: TargetingSourceType = TargetingSourceType.ANY,
+        triggeringEntityId: EntityId? = null
     ): List<EntityId> {
         val filter = requirement.filter
         return when (filter.zone) {
-            Zone.BATTLEFIELD -> findPermanentTargets(state, requirement, controllerId, sourceId, ignoreTargetingRestrictions, targetingSourceType)
+            Zone.BATTLEFIELD -> findPermanentTargets(state, requirement, controllerId, sourceId, ignoreTargetingRestrictions, targetingSourceType, triggeringEntityId)
             Zone.GRAVEYARD -> findGraveyardTargets(state, filter, controllerId)
             Zone.STACK -> findSpellTargets(state, requirement, controllerId)
             else -> findCardTargetsInZone(state, filter, controllerId)

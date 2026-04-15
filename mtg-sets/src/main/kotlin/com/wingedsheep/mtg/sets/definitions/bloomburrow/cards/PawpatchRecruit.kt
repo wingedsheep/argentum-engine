@@ -49,12 +49,13 @@ val PawpatchRecruit = card("Pawpatch Recruit") {
 
     // Whenever a creature you control becomes the target of an opponent's spell/ability,
     // put a +1/+1 counter on target creature you control other than that creature.
-    // Note: "other than that creature" approximated with other() (excludes source)
+    // "That creature" = the creature that was targeted (the trigger's triggering entity),
+    // not the Pawpatch Recruit source.
     triggeredAbility {
         trigger = Triggers.CreatureYouControlBecomesTargetByOpponent()
         val creature = target(
             "target creature you control other than that creature",
-            TargetCreature(filter = TargetFilter.CreatureYouControl.other())
+            TargetCreature(filter = TargetFilter.CreatureYouControl.otherThanTriggeringEntity())
         )
         effect = Effects.AddCounters(Counters.PLUS_ONE_PLUS_ONE, 1, creature)
     }

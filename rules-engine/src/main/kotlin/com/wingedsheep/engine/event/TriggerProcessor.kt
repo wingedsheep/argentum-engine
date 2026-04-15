@@ -159,7 +159,8 @@ class TriggerProcessor(
             state = state,
             requirement = targetRequirement,
             controllerId = trigger.controllerId,
-            sourceId = trigger.sourceId
+            sourceId = trigger.sourceId,
+            triggeringEntityId = trigger.triggerContext.triggeringEntityId
         )
 
         if (legalTargets.isEmpty() && targetRequirement.effectiveMinCount > 0) {
@@ -241,7 +242,8 @@ class TriggerProcessor(
             state = state,
             requirement = targetRequirement,
             controllerId = trigger.controllerId,
-            sourceId = trigger.sourceId
+            sourceId = trigger.sourceId,
+            triggeringEntityId = trigger.triggerContext.triggeringEntityId
         )
 
         if (legalTargets.isEmpty() && targetRequirement.effectiveMinCount > 0) {
@@ -315,7 +317,8 @@ class TriggerProcessor(
                 state = state,
                 requirement = req,
                 controllerId = trigger.controllerId,
-                sourceId = trigger.sourceId
+                sourceId = trigger.sourceId,
+                triggeringEntityId = trigger.triggerContext.triggeringEntityId
             )
             allLegalTargets[index] = legalTargets
         }
