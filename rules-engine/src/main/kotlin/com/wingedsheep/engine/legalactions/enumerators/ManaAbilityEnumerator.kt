@@ -5,6 +5,7 @@ import com.wingedsheep.engine.legalactions.ActionEnumerator
 import com.wingedsheep.engine.legalactions.AdditionalCostData
 import com.wingedsheep.engine.legalactions.EnumerationContext
 import com.wingedsheep.engine.legalactions.LegalAction
+import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.battlefield.SummoningSicknessComponent
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
@@ -13,6 +14,8 @@ import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.identity.FaceDownComponent
 import com.wingedsheep.engine.state.components.identity.TextReplacementComponent
 import com.wingedsheep.sdk.core.Keyword
+import com.wingedsheep.sdk.core.Subtype
+import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.AbilityCost
 import com.wingedsheep.sdk.scripting.GameObjectFilter
@@ -178,6 +181,18 @@ class ManaAbilityEnumerator : ActionEnumerator {
                                 }
                                 is AbilityCost.ReturnToHand -> {
                                     // Bounce costs not typical for mana abilities but handle for completeness
+                                }
+                                is AbilityCost.Forage -> {
+                                    val graveyardSize = state.getZone(ZoneKey(playerId, Zone.GRAVEYARD)).size
+                                    val projected = state.projectedState
+                                    val hasFood = state.getBattlefield().any { permId ->
+                                        state.getEntity(permId) ?: return@any false
+                                        projected.getController(permId) == playerId &&
+                                            projected.hasSubtype(permId, Subtype.FOOD.value)
+                                    }
+                                    if (graveyardSize < 3 && !hasFood) {
+                                        affordable = false; break
+                                    }
                                 }
                                 else -> {}
                             }
