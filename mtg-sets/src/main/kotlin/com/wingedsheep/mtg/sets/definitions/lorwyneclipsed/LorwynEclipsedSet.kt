@@ -18,6 +18,7 @@ object LorwynEclipsedSet {
     const val SET_NAME = "Lorwyn Eclipsed"
 
     val allCards = listOf(
+        AppealToEirdu,
         BarbedBloodletter,
         Blossombind,
         BramblebackBrute,
