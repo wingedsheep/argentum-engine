@@ -68,6 +68,35 @@ data class AdditionalManaOnTap(
 }
 
 /**
+ * Whenever a player taps a land matching [filter] for mana, that player adds
+ * [amount] additional mana of any type that land produced.
+ *
+ * Used for Mana Flare–style global land-mana amplifiers. Lavaleaper uses this
+ * with `GameObjectFilter.BasicLand` and `DynamicAmount.Fixed(1)`.
+ *
+ * This is a triggered mana ability — it resolves immediately without using the
+ * stack (per Rule 605). The controller of the land (the player tapping) receives
+ * the bonus mana of the same color(s) that were produced by the tap.
+ *
+ * @property filter Which lands qualify (e.g., basic, snow, Forest)
+ * @property amount How many additional mana to produce per tap
+ */
+@SerialName("AdditionalManaOnLandTap")
+@Serializable
+data class AdditionalManaOnLandTap(
+    val filter: GameObjectFilter,
+    val amount: DynamicAmount = DynamicAmount.Fixed(1)
+) : StaticAbility {
+    override val description: String =
+        "Whenever a player taps a ${filter.description} for mana, that player adds one mana of any type that land produced."
+    override fun applyTextReplacement(replacer: TextReplacer): StaticAbility {
+        val newFilter = filter.applyTextReplacement(replacer)
+        val newAmount = amount.applyTextReplacement(replacer)
+        return if (newFilter !== filter || newAmount !== amount) copy(filter = newFilter, amount = newAmount) else this
+    }
+}
+
+/**
  * Play with the top card of your library revealed.
  * You may play lands and cast spells from the top of your library.
  * Used for Future Sight.

@@ -28,6 +28,7 @@ import com.wingedsheep.sdk.scripting.effects.AddManaOfChosenColorEffect
 import com.wingedsheep.sdk.scripting.effects.AddManaOfColorAmongEffect
 import com.wingedsheep.sdk.scripting.effects.ManaRestriction
 import com.wingedsheep.sdk.scripting.ActivatedAbility
+import com.wingedsheep.sdk.scripting.AdditionalManaOnLandTap
 import com.wingedsheep.sdk.scripting.AdditionalManaOnTap
 import com.wingedsheep.sdk.scripting.DampLandManaProduction
 import com.wingedsheep.sdk.scripting.GrantActivatedAbilityToCreatureGroup
@@ -722,6 +723,7 @@ class ManaSolver(
                 canAttack = false
             )
         }.map { source -> augmentWithAuraBonusMana(state, source, playerId) }
+            .map { source -> augmentWithGlobalLandTapBonusMana(state, source) }
             .let { sources ->
                 if (hasDampLandManaProduction(state)) applyLandManaDampening(sources) else sources
             }
@@ -794,6 +796,61 @@ class ManaSolver(
 
         return if (totalBonus > 0) {
             source.copy(bonusManaPerTap = totalBonus, bonusManaColor = bonusColor)
+        } else {
+            source
+        }
+    }
+
+    /**
+     * Augments a mana source with bonus mana from global [AdditionalManaOnLandTap]
+     * abilities (e.g., Lavaleaper, Heartbeat of Spring). When any permanent on the
+     * battlefield has this ability and its filter matches this source, the source
+     * produces one additional mana of the same color per triggering ability.
+     *
+     * Only applies to lands — the oracle wording is specifically about taps for mana.
+     * The bonus color is the source's first produced color (basic lands produce a
+     * single color, so this is unambiguous for the canonical use case).
+     */
+    private fun augmentWithGlobalLandTapBonusMana(
+        state: GameState,
+        source: ManaSource
+    ): ManaSource {
+        if (!source.isLand) return source
+        val landColor = source.producesColors.firstOrNull() ?: return source
+
+        val landController = state.getEntity(source.entityId)
+            ?.get<ControllerComponent>()?.playerId ?: return source
+
+        var totalBonus = 0
+        for (entityId in state.getBattlefield()) {
+            val container = state.getEntity(entityId) ?: continue
+            val card = container.get<CardComponent>() ?: continue
+            val cardDef = cardRegistry.getCard(card.cardDefinitionId) ?: continue
+
+            for (staticAbility in cardDef.script.staticAbilities) {
+                val onLandTap = staticAbility as? AdditionalManaOnLandTap ?: continue
+
+                val filterContext = PredicateContext(controllerId = landController, sourceId = entityId)
+                if (!predicateEvaluator.matches(state, source.entityId, onLandTap.filter, filterContext)) continue
+
+                val opponentId = state.turnOrder.firstOrNull { it != landController }
+                val effectContext = EffectContext(
+                    sourceId = entityId,
+                    controllerId = landController,
+                    opponentId = opponentId,
+                    targets = emptyList(),
+                    xValue = null
+                )
+                val amount = dynamicAmountEvaluator.evaluate(state, onLandTap.amount, effectContext)
+                if (amount > 0) totalBonus += amount
+            }
+        }
+
+        return if (totalBonus > 0) {
+            source.copy(
+                bonusManaPerTap = source.bonusManaPerTap + totalBonus,
+                bonusManaColor = source.bonusManaColor ?: landColor
+            )
         } else {
             source
         }

@@ -2,14 +2,14 @@
 
 **Set Size:** 273 cards (main set, per Scryfall `set:ecl`)
 **Release Date:** January 23, 2026
-**Implemented:** 36 / 273
+**Implemented:** 37 / 273
 
 | Color      | Total | Done |
 |------------|-------|------|
 | White      | 39    | 3    |
 | Blue       | 39    | 8    |
 | Black      | 38    | 3    |
-| Red        | 39    | 1    |
+| Red        | 39    | 2    |
 | Green      | 39    | 5    |
 | Multicolor | 49    | 8    |
 | Colorless  | 18    | 2    |
@@ -171,7 +171,7 @@
 - [ ] Kindle the Inner Flame
 - [ ] Kulrath Zealot
 - [ ] Lasting Tarfire
-- [ ] Lavaleaper
+- [x] Lavaleaper
 - [ ] Meek Attack
 - [ ] Reckless Ransacking
 - [ ] Scuzzback Scrounger

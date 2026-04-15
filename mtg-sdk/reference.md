@@ -1059,6 +1059,7 @@ Set via `staticAbility { ability = ... }`:
 - `CantCastSpells(target, duration)` — prevent target player from casting spells
 - `SkipNextTurn(target)` — target player skips their next turn
 - `AdditionalManaOnTap(color, amount: DynamicAmount)` — produce additional mana
+- `AdditionalManaOnLandTap(filter: GameObjectFilter, amount: DynamicAmount)` — global triggered mana ability: whenever any player taps a land matching the filter for mana, that player adds `amount` additional mana of the color the land produced (Lavaleaper, Heartbeat of Spring–style effects)
 - `PlayFromTopOfLibrary` — play cards from top of library (revealed to all)
 - `CastSpellTypesFromTopOfLibrary(filter: GameObjectFilter)` — cast matching spells from top of library (e.g., instants/sorceries only)
 - `PlayLandsAndCastFilteredFromTopOfLibrary(spellFilter: GameObjectFilter)` — play lands + cast spells matching filter from top of library (e.g., MV 4+)

@@ -38,6 +38,7 @@ object LorwynEclipsedSet {
         GlamerGifter,
         GoldmeadowNomad,
         HovelHurler,
+        Lavaleaper,
         MirrormindCrown,
         NamelessInversion,
         NoggleTheMind,

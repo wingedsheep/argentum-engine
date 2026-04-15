@@ -56,7 +56,10 @@ import com.wingedsheep.sdk.scripting.effects.AddColorlessManaEffect
 import com.wingedsheep.sdk.scripting.effects.AddManaEffect
 import com.wingedsheep.sdk.scripting.effects.AddManaOfColorAmongEffect
 import com.wingedsheep.sdk.scripting.effects.CompositeEffect
+import com.wingedsheep.sdk.scripting.AdditionalManaOnLandTap
 import com.wingedsheep.sdk.scripting.AdditionalManaOnTap
+import com.wingedsheep.engine.handlers.PredicateEvaluator
+import com.wingedsheep.engine.handlers.PredicateContext
 import com.wingedsheep.engine.handlers.CostPaymentChoices
 import com.wingedsheep.engine.state.components.identity.OwnerComponent
 import com.wingedsheep.sdk.core.Zone
@@ -727,7 +730,14 @@ class ActivateAbilityHandler(
                 currentState, action.sourceId, action.playerId, events + effectResult.events
             )
             currentState = additionalManaResult.state
-            val allManaEvents = additionalManaResult.events
+
+            // Check for global "additional mana on land tap" abilities (e.g., Lavaleaper)
+            // Triggered mana ability — resolves immediately, mirrors the color produced
+            val onLandTapResult = resolveAdditionalManaOnLandTap(
+                currentState, action.sourceId, action.playerId, manaEvent, additionalManaResult.events
+            )
+            currentState = onLandTapResult.state
+            val allManaEvents = onLandTapResult.events
 
             return ExecutionResult.success(currentState, allManaEvents)
         }
@@ -1053,6 +1063,7 @@ class ActivateAbilityHandler(
     )
 
     private val dynamicAmountEvaluator = DynamicAmountEvaluator()
+    private val predicateEvaluator = PredicateEvaluator()
 
     /**
      * Check if any permanent on the battlefield has DampLandManaProduction static ability.
@@ -1124,6 +1135,94 @@ class ActivateAbilityHandler(
                     red = if (additionalMana.color == Color.RED) amount else 0,
                     green = if (additionalMana.color == Color.GREEN) amount else 0,
                     colorless = 0
+                ))
+            }
+        }
+
+        return AdditionalManaResult(currentState, events)
+    }
+
+    /**
+     * After a land's mana ability resolves, check for permanents on the battlefield
+     * with [AdditionalManaOnLandTap] whose filter matches the tapped land (e.g.,
+     * Lavaleaper's "basic land" filter). Each matching ability adds one mana of the
+     * same color(s) produced by the tap to the tapping player's pool.
+     *
+     * Like [AdditionalManaOnTap], this is a triggered mana ability that resolves
+     * immediately without using the stack.
+     */
+    private fun resolveAdditionalManaOnLandTap(
+        state: GameState,
+        sourceId: EntityId,
+        controllerId: EntityId,
+        manaEvent: ManaAddedEvent?,
+        existingEvents: List<GameEvent>
+    ): AdditionalManaResult {
+        if (manaEvent == null) return AdditionalManaResult(state, existingEvents)
+
+        val sourceContainer = state.getEntity(sourceId)
+            ?: return AdditionalManaResult(state, existingEvents)
+        val sourceCard = sourceContainer.get<CardComponent>()
+            ?: return AdditionalManaResult(state, existingEvents)
+        if (!sourceCard.typeLine.isLand) return AdditionalManaResult(state, existingEvents)
+
+        var currentState = state
+        val events = existingEvents.toMutableList()
+
+        for (entityId in currentState.getBattlefield()) {
+            val container = currentState.getEntity(entityId) ?: continue
+            val card = container.get<CardComponent>() ?: continue
+            val cardDef = cardRegistry.getCard(card.cardDefinitionId) ?: continue
+
+            for (staticAbility in cardDef.script.staticAbilities) {
+                val onLandTap = staticAbility as? AdditionalManaOnLandTap ?: continue
+
+                val filterContext = PredicateContext(controllerId = controllerId, sourceId = entityId)
+                if (!predicateEvaluator.matches(currentState, sourceId, onLandTap.filter, filterContext)) continue
+
+                val opponentId = currentState.turnOrder.firstOrNull { it != controllerId }
+                val effectContext = EffectContext(
+                    sourceId = entityId,
+                    controllerId = controllerId,
+                    opponentId = opponentId,
+                    targets = emptyList(),
+                    xValue = null
+                )
+                val bonusAmount = dynamicAmountEvaluator.evaluate(currentState, onLandTap.amount, effectContext)
+                if (bonusAmount <= 0) continue
+
+                // "One mana of any type that land produced" — pick the single color
+                // produced by the tap. Basic lands produce exactly one color, so this
+                // is unambiguous. For multi-color producers, fall back to the first
+                // non-zero color in the event.
+                val bonusColor: Color? = when {
+                    manaEvent.white > 0 -> Color.WHITE
+                    manaEvent.blue > 0 -> Color.BLUE
+                    manaEvent.black > 0 -> Color.BLACK
+                    manaEvent.red > 0 -> Color.RED
+                    manaEvent.green > 0 -> Color.GREEN
+                    else -> null
+                }
+                val bonusColorless = bonusColor == null && manaEvent.colorless > 0
+                if (bonusColor == null && !bonusColorless) continue
+
+                currentState = currentState.updateEntity(controllerId) { c ->
+                    val pool = c.get<ManaPoolComponent>() ?: ManaPoolComponent()
+                    val newPool = if (bonusColor != null) pool.add(bonusColor, bonusAmount)
+                                  else pool.addColorless(bonusAmount)
+                    c.with(newPool)
+                }
+
+                events.add(ManaAddedEvent(
+                    playerId = controllerId,
+                    sourceId = entityId,
+                    sourceName = card.name,
+                    white = if (bonusColor == Color.WHITE) bonusAmount else 0,
+                    blue = if (bonusColor == Color.BLUE) bonusAmount else 0,
+                    black = if (bonusColor == Color.BLACK) bonusAmount else 0,
+                    red = if (bonusColor == Color.RED) bonusAmount else 0,
+                    green = if (bonusColor == Color.GREEN) bonusAmount else 0,
+                    colorless = if (bonusColorless) bonusAmount else 0
                 ))
             }
         }
