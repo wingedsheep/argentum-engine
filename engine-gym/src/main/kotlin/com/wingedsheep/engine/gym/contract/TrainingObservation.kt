@@ -143,6 +143,18 @@ data class EntityFeatures(
     val manaCost: String,
     val manaValue: Int,
 
+    /**
+     * The card's printed rules text (oracle text), e.g.
+     * `"Flying\nWhen Dawnhand Eulogist dies, draw a card."`.
+     *
+     * Reflects the base card definition — it is *not* rewritten by Rule
+     * 613 text-changing effects, so a Copy-Enchantment-style scenario
+     * will occasionally lie to a strict reader. For most cards it is
+     * the single most informative field an agent can read, and without
+     * it an NN has no way to know what a card actually does.
+     */
+    val oracleText: String = "",
+
     /** Projected power — null if not a creature (via projection). */
     val power: Int?,
     /** Projected toughness — null if not a creature. */
@@ -166,6 +178,8 @@ data class StackItemView(
     val controllerId: EntityId?,
     val name: String,
     val kind: StackItemKind,
+    /** Printed oracle text of the card backing this stack item — empty for stackless triggers. */
+    val oracleText: String = "",
     val targets: List<EntityId> = emptyList()
 )
 

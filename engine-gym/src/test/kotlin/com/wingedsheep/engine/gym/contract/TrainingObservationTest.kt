@@ -16,6 +16,7 @@ import io.kotest.matchers.ints.shouldBeGreaterThan
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
+import io.kotest.matchers.string.shouldContain
 import io.kotest.matchers.string.shouldMatch
 import kotlinx.serialization.json.Json
 
@@ -108,6 +109,31 @@ class TrainingObservationTest : FunSpec({
         val theirHandRevealed = revealed.zones.single { it.ownerId == opponent && it.zoneType == Zone.HAND }
         theirHandRevealed.hidden.shouldBeFalse()
         theirHandRevealed.cards.size shouldBe theirHandRevealed.size
+    }
+
+    test("oracle text is serialized for cards in visible zones") {
+        // Raging Goblin's printed text is "Haste" — that's what the agent
+        // needs to see to know the creature can attack the turn it enters.
+        val env = newEnv()
+        val me = env.playerIds[0]
+
+        val obs = ObservationBuilder().build(env.state, me, env.legalActions()).observation
+        val myHand = obs.zones.single { it.ownerId == me && it.zoneType == Zone.HAND }
+
+        // At least one card should be in the opening hand; every card there
+        // is fully visible to the perspective player including its oracle text.
+        myHand.cards.shouldNotBeEmpty()
+        val rages = myHand.cards.filter { it.name == "Raging Goblin" }
+        if (rages.isNotEmpty()) {
+            rages.first().oracleText shouldContain "Haste"
+        }
+        // Round-trip through JSON — oracle text must survive.
+        val encoded = json.encodeToString(TrainingObservation.serializer(), obs)
+        val decoded = json.decodeFromString(TrainingObservation.serializer(), encoded)
+        decoded.zones.flatMap { it.cards }.forEach { c ->
+            // Every serialized card either has empty oracle text or preserves it.
+            c.oracleText shouldBe (obs.zones.flatMap { it.cards }.first { it.entityId == c.entityId }.oracleText)
+        }
     }
 
     test("stateDigest is stable for equivalent observations and changes when state changes") {

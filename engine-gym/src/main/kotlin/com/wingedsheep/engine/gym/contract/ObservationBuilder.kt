@@ -248,6 +248,7 @@ class ObservationBuilder(
             keywords = keywords,
             manaCost = card?.manaCost?.toString() ?: "",
             manaValue = card?.manaValue ?: 0,
+            oracleText = card?.oracleText ?: "",
             power = if (onBattlefield) projected.getPower(entityId) else null,
             toughness = if (onBattlefield) projected.getToughness(entityId) else null,
             tapped = onBattlefield && container.get<TappedComponent>() != null,
@@ -280,6 +281,7 @@ class ObservationBuilder(
             controllerId = state.projectedState.getController(entityId),
             name = card?.name ?: "",
             kind = kind,
+            oracleText = card?.oracleText ?: "",
             targets = emptyList()
         )
     }
