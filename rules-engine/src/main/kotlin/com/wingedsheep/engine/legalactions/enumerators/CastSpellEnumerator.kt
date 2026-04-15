@@ -289,12 +289,16 @@ class CastSpellEnumerator : ActionEnumerator {
             // Always include mana cost string for cast actions
             val manaCostString = effectiveCost.toString()
 
-            // Compute auto-tap preview for UI highlighting (skipped in ACTIONS_ONLY mode)
-            // For Delve/Convoke spells, solve against the FULL cost (no alternative payment
-            // reduction) so the preview covers the worst case. The player selects delve/convoke
-            // first, then the mana selection UI starts with all needed sources pre-selected.
-            // The client clears autoTapPreview after delve/convoke if the actual reduction
-            // differs, but using the full cost here avoids under-selecting sources.
+            // Compute auto-tap preview for UI highlighting (skipped in ACTIONS_ONLY mode).
+            //
+            // The solver runs against the FULL effective cost (before alt payment reduction)
+            // so the preview covers the worst case — the complete set of sources needed if
+            // the player declines to use convoke/delve. The engine is authoritative: when
+            // the action is actually submitted with an Explicit payment strategy,
+            // `CastPaymentProcessor.explicitPay` re-solves with the non-chosen sources
+            // excluded and only taps the minimum subset required after any alt-payment
+            // reduction. The client derives the live preview (trimming this set down once
+            // convoke/delve is applied) from the same ordered source list.
             val autoTapPreview = if (context.skipAutoTapPreview) null else {
                 context.manaSolver.solve(state, playerId, effectiveCost, precomputedSources = cachedSources)
                     ?.sources?.map { it.entityId }

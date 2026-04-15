@@ -417,7 +417,10 @@ class ActivatedAbilityEnumerator : ActionEnumerator {
                     context.costUtils.calculateMaxAffordableX(state, playerId, ability.cost, abilityManaCost, precomputedSources = context.availableManaSources)
                 } else null
 
-                // Compute auto-tap preview for UI highlighting (skipped in ACTIONS_ONLY mode)
+                // Compute auto-tap preview for UI highlighting (skipped in ACTIONS_ONLY mode).
+                // The solver runs against the full ability cost; the client trims this set
+                // down once convoke is applied, and the engine re-solves at payment time
+                // with the non-chosen sources excluded (see ActivateAbilityHandler.execute).
                 val abilityAutoTapPreview = if (context.skipAutoTapPreview || abilityManaCost == null || abilityHasXCost) null
                 else context.manaSolver.solve(state, playerId, abilityManaCost, precomputedSources = context.availableManaSources)?.sources?.map { it.entityId }
 

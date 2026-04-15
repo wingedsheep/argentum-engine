@@ -357,15 +357,28 @@ class ActivateAbilityHandler(
         if (manaCost != null) {
             when (action.paymentStrategy) {
                 is PaymentStrategy.Explicit -> {
-                    // Tap specified sources explicitly — mana pool deduction is skipped
-                    // by stripping the Mana cost below (same as CastSpellHandler.explicitPay)
-                    for (sourceId in action.paymentStrategy.manaAbilitiesToActivate) {
-                        val sourceName = currentState.getEntity(sourceId)
-                            ?.get<CardComponent>()?.name ?: "Unknown"
-                        currentState = currentState.updateEntity(sourceId) { c ->
+                    // Tap only the minimum subset of chosen sources required to cover the
+                    // (already convoke-reduced) mana cost — the client's auto-tap preview
+                    // is computed against the full cost and may over-select. Solving with
+                    // the non-chosen sources excluded matches the behavior in
+                    // CastPaymentProcessor.explicitPay and keeps validation and execution
+                    // in sync. Mana pool deduction is skipped by stripping the Mana cost
+                    // below; tapping the solved subset is the payment.
+                    val chosen = action.paymentStrategy.manaAbilitiesToActivate.toSet()
+                    val excluded = manaSolver.findAvailableManaSources(currentState, action.playerId)
+                        .map { it.entityId }
+                        .filter { it !in chosen }
+                        .toSet()
+                    val solution = manaSolver.solve(
+                        currentState, action.playerId, manaCost, manaXValue, excludeSources = excluded
+                    ) ?: return ExecutionResult.error(state, "Selected mana sources cannot pay this ability's cost")
+                    for (source in solution.sources) {
+                        val sourceName = currentState.getEntity(source.entityId)
+                            ?.get<CardComponent>()?.name ?: source.name
+                        currentState = currentState.updateEntity(source.entityId) { c ->
                             c.with(TappedComponent)
                         }
-                        events.add(TappedEvent(sourceId, sourceName))
+                        events.add(TappedEvent(source.entityId, sourceName))
                     }
                 }
                 else -> {

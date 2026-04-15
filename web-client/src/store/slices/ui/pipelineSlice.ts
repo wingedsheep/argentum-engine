@@ -7,10 +7,15 @@
  * current subscriptions.
  */
 import type { SliceCreator, ActionPipelineState, PhaseResult } from '../types'
-import type { CastSpellAction, LegalActionInfo } from '@/types'
+import type { CastSpellAction, EntityId, LegalActionInfo } from '@/types'
 import { computePhases, mergeResult, enterPhase } from './pipelinePhases'
 import type { PipelineStoreMethods } from './pipelinePhases'
-import { parseManaCost as parseManaCostUtil, getRemainingCostSymbols, getRemainingCostAfterConvoke } from '@/utils/manaCost'
+import {
+  parseManaCost as parseManaCostUtil,
+  getRemainingCostSymbols,
+  getRemainingCostAfterConvoke,
+  trimAutoTapPreview,
+} from '@/utils/manaCost'
 
 export interface PipelineSliceState {
   pipelineState: ActionPipelineState | null
@@ -83,37 +88,54 @@ export const createPipelineSlice: SliceCreator<PipelineSlice> = (set, get) => ({
     // Merge result into accumulated action
     const mergedAction = mergeResult(accumulatedAction, actionInfo, result, gameState)
 
-    // If delve modified the mana cost, update actionInfo for subsequent phases
+    // If delve modified the mana cost, update actionInfo for subsequent phases.
+    // Also trim the server's full-cost autoTapPreview down to the subset needed for
+    // the reduced cost — the engine will re-solve on submit, but this keeps the UI
+    // pre-selection honest about what will actually tap.
     if (result.type === 'delve') {
       const originalSymbols = parseManaCostUtil(actionInfo.manaCostString ?? '')
       const remainingSymbols = getRemainingCostSymbols(originalSymbols, result.delvedCards.length)
       const modifiedManaCost = remainingSymbols.map((s) => `{${s}}`).join('')
+      const trimmedPreview: readonly EntityId[] | undefined =
+        actionInfo.autoTapPreview && actionInfo.availableManaSources
+          ? trimAutoTapPreview(actionInfo.autoTapPreview, actionInfo.availableManaSources, remainingSymbols)
+          : actionInfo.autoTapPreview
       const {
         hasDelve: _,
         validDelveCards: _2,
         minDelveNeeded: _3,
+        autoTapPreview: _4,
         ...restActionInfo
       } = actionInfo
       actionInfo = {
         ...restActionInfo,
         manaCostString: modifiedManaCost,
+        ...(trimmedPreview !== undefined ? { autoTapPreview: trimmedPreview } : {}),
         action: mergedAction,
       }
     }
 
-    // If convoke modified the mana cost, update actionInfo for subsequent phases
+    // If convoke modified the mana cost, update actionInfo for subsequent phases.
+    // Trim the preview similarly so the manaSource phase pre-selection reflects the
+    // reduced cost rather than over-selecting based on the original full cost.
     if (result.type === 'convoke') {
       const originalSymbols = parseManaCostUtil(actionInfo.manaCostString ?? '')
       const remainingSymbols = getRemainingCostAfterConvoke(originalSymbols, result.convokedCreatures)
       const modifiedManaCost = remainingSymbols.map((s) => `{${s}}`).join('')
+      const trimmedPreview: readonly EntityId[] | undefined =
+        actionInfo.autoTapPreview && actionInfo.availableManaSources
+          ? trimAutoTapPreview(actionInfo.autoTapPreview, actionInfo.availableManaSources, remainingSymbols)
+          : actionInfo.autoTapPreview
       const {
         hasConvoke: _,
         validConvokeCreatures: _2,
+        autoTapPreview: _3,
         ...restActionInfo
       } = actionInfo
       actionInfo = {
         ...restActionInfo,
         manaCostString: modifiedManaCost,
+        ...(trimmedPreview !== undefined ? { autoTapPreview: trimmedPreview } : {}),
         action: mergedAction,
       }
     }

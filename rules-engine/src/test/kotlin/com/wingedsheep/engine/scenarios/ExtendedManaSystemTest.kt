@@ -7,6 +7,7 @@ import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.battlefield.SummoningSicknessComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
+import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
 import com.wingedsheep.sdk.core.Color
@@ -319,6 +320,68 @@ class ExtendedManaSystemTest : FunSpec({
 
             // Note: Full integration test would require turn advancement
             // This test verifies the structure is in place
+        }
+
+        test("explicit payment with convoke does not over-tap lands") {
+            // Regression test: auto-tap preview is computed server-side against the full
+            // mana cost. When the player subsequently chose convoke creatures, the client
+            // forwarded the over-sized land selection as PaymentStrategy.Explicit. The
+            // old `explicitPay` unconditionally tapped every listed source — so a spell
+            // whose cost was fully covered by convoke still tapped a land's worth of mana
+            // extra. Now `explicitPay` delegates to the mana solver with the non-chosen
+            // sources excluded, and only taps the minimum subset required for the
+            // (already alt-payment-reduced) cost.
+            val driver = createDriver()
+            driver.initMirrorMatch(
+                deck = Deck.of(
+                    "Mountain" to 20,
+                    "Stoke the Flames" to 10,
+                    "Goblin Guide" to 10
+                )
+            )
+
+            val activePlayer = driver.activePlayer!!
+            val opponent = driver.getOpponent(activePlayer)
+            driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
+
+            // Stage: 4 untapped Mountains and 2 untapped, sick-free Goblin Guides.
+            val mountains = (1..4).map { driver.putLandOnBattlefield(activePlayer, "Mountain") }
+            val goblins = (1..2).map {
+                val id = driver.putCardInHand(activePlayer, "Goblin Guide")
+                driver.giveMana(activePlayer, Color.RED, 1)
+                driver.castSpell(activePlayer, id)
+                driver.bothPass()
+                id
+            }
+            goblins.forEach { driver.removeSummoningSickness(it) }
+
+            val stoke = driver.putCardInHand(activePlayer, "Stoke the Flames")
+
+            // Simulate the client state: auto-tap preview picked all 4 Mountains for
+            // the full cost of {2}{R}{R}, then the player chose both Goblins to convoke
+            // for {R}. The remaining cost is {2} — only two Mountains are needed.
+            val result = driver.submit(
+                CastSpell(
+                    playerId = activePlayer,
+                    cardId = stoke,
+                    targets = listOf(ChosenTarget.Player(opponent)),
+                    paymentStrategy = PaymentStrategy.Explicit(mountains),
+                    alternativePayment = AlternativePaymentChoice(
+                        convokedCreatures = goblins.associateWith { ConvokePayment(Color.RED) }
+                    )
+                )
+            )
+
+            result.isSuccess shouldBe true
+
+            // Both goblins are tapped by convoke.
+            goblins.all { driver.isTapped(it) } shouldBe true
+
+            // Only 2 of the 4 Mountains should be tapped — the solver picks the minimum
+            // subset of the chosen sources required to pay {2}. Before the fix, all 4
+            // Mountains would have been tapped.
+            mountains.count { driver.isTapped(it) } shouldBe 2
+            mountains.count { !driver.isTapped(it) } shouldBe 2
         }
     }
 

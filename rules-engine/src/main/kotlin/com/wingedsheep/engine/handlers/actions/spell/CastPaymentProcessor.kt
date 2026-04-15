@@ -8,7 +8,6 @@ import com.wingedsheep.engine.handlers.CostHandler
 import com.wingedsheep.engine.mechanics.mana.ManaSolver
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
-import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.player.ManaPoolComponent
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.ManaCost
@@ -66,7 +65,15 @@ class CastPaymentProcessor(
         return when (action.paymentStrategy) {
             is PaymentStrategy.FromPool -> payFromPool(state, action.playerId, effectiveCost, cardName, xValue, spellContext)
             is PaymentStrategy.AutoPay -> autoPay(state, action.playerId, effectiveCost, cardName, xValue, spellContext)
-            is PaymentStrategy.Explicit -> explicitPay(state, action.playerId, action.paymentStrategy, cardName)
+            is PaymentStrategy.Explicit -> explicitPay(
+                state,
+                action.playerId,
+                action.paymentStrategy,
+                effectiveCost,
+                cardName,
+                xValue,
+                spellContext
+            )
         }
     }
 
@@ -185,7 +192,8 @@ class CastPaymentProcessor(
         cost: ManaCost,
         cardName: String,
         xValue: Int,
-        spellContext: SpellPaymentContext? = null
+        spellContext: SpellPaymentContext? = null,
+        excludeSources: Set<EntityId> = emptySet()
     ): PaymentResult {
         var currentState = state
         val events = mutableListOf<GameEvent>()
@@ -262,7 +270,7 @@ class CastPaymentProcessor(
 
         // Tap lands for remaining cost (using xRemainingToPay instead of full xValue)
         if (!remainingCost.isEmpty() || xRemainingToPay > 0) {
-            val solution = manaSolver.solve(currentState, playerId, remainingCost, xRemainingToPay, spellContext = spellContext)
+            val solution = manaSolver.solve(currentState, playerId, remainingCost, xRemainingToPay, excludeSources = excludeSources, spellContext = spellContext)
                 ?: return PaymentResult(currentState, events, "Not enough mana to auto-pay")
 
             for (source in solution.sources) {
@@ -311,79 +319,35 @@ class CastPaymentProcessor(
         return PaymentResult(currentState, events, null)
     }
 
+    /**
+     * Pay a spell's mana cost using only the player-chosen sources as candidates.
+     *
+     * The client's mana selection UI can over-specify sources — for example, when a
+     * spell with convoke reduces its cost after creatures are tapped, the pre-cast
+     * auto-tap preview (computed against the full cost) over-selects lands. Rather
+     * than tapping every chosen source unconditionally, we delegate to the mana
+     * solver with the non-chosen sources excluded, so only the minimum subset
+     * actually needed to cover the (already cost-reduced) payment gets tapped.
+     *
+     * Validation (`CastSpellHandler.validatePayment`) already uses the same solver
+     * call with the same exclusion — execution matching validation ensures we never
+     * tap lands that weren't required.
+     */
     private fun explicitPay(
         state: GameState,
         playerId: EntityId,
         strategy: PaymentStrategy.Explicit,
-        cardName: String
+        cost: ManaCost,
+        cardName: String,
+        xValue: Int,
+        spellContext: SpellPaymentContext? = null
     ): PaymentResult {
-        var currentState = state
-        val events = mutableListOf<GameEvent>()
-
-        var whiteSpent = 0
-        var blueSpent = 0
-        var blackSpent = 0
-        var redSpent = 0
-        var greenSpent = 0
-        var colorlessSpent = 0
-
-        // Pre-compute mana sources once for color tracking
-        val allSources = manaSolver.findAvailableManaSources(state, playerId)
-
-        for (sourceId in strategy.manaAbilitiesToActivate) {
-            val sourceName = currentState.getEntity(sourceId)
-                ?.get<CardComponent>()?.name ?: "Unknown"
-
-            currentState = currentState.updateEntity(sourceId) { c ->
-                c.with(TappedComponent)
-            }
-            events.add(TappedEvent(sourceId, sourceName))
-
-            // Track mana color produced by this source for mana-spent-gated triggers
-            val source = allSources.find { it.entityId == sourceId }
-            if (source != null) {
-                val amount = source.manaAmount
-                if (source.producesColors.size == 1) {
-                    when (source.producesColors.first()) {
-                        Color.WHITE -> whiteSpent += amount
-                        Color.BLUE -> blueSpent += amount
-                        Color.BLACK -> blackSpent += amount
-                        Color.RED -> redSpent += amount
-                        Color.GREEN -> greenSpent += amount
-                    }
-                } else if (source.producesColors.isEmpty()) {
-                    colorlessSpent += amount
-                } else {
-                    // Multi-color source — count each produced color equally.
-                    // The mana-spent condition uses "at least N of color", so over-counting
-                    // is correct for dual lands: tapping Steam Vents counts as both U and R.
-                    for (color in source.producesColors) {
-                        when (color) {
-                            Color.WHITE -> whiteSpent += amount
-                            Color.BLUE -> blueSpent += amount
-                            Color.BLACK -> blackSpent += amount
-                            Color.RED -> redSpent += amount
-                            Color.GREEN -> greenSpent += amount
-                        }
-                    }
-                }
-            }
-        }
-
-        events.add(
-            ManaSpentEvent(
-                playerId = playerId,
-                reason = "Cast $cardName",
-                white = whiteSpent,
-                blue = blueSpent,
-                black = blackSpent,
-                red = redSpent,
-                green = greenSpent,
-                colorless = colorlessSpent
-            )
-        )
-
-        return PaymentResult(currentState, events, null)
+        val chosenSet = strategy.manaAbilitiesToActivate.toSet()
+        val excluded = manaSolver.findAvailableManaSources(state, playerId)
+            .map { it.entityId }
+            .filter { it !in chosenSet }
+            .toSet()
+        return autoPay(state, playerId, cost, cardName, xValue, spellContext, excluded)
     }
 
     /**
