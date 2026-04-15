@@ -1,6 +1,7 @@
 package com.wingedsheep.mtg.sets.definitions.lorwyneclipsed
 
 import com.wingedsheep.mtg.sets.definitions.lorwyneclipsed.cards.*
+import com.wingedsheep.mtg.sets.definitions.onslaught.OnslaughtSet
 
 /**
  * Lorwyn Eclipsed Set (2026)
@@ -19,6 +20,7 @@ object LorwynEclipsedSet {
 
     val allCards = listOf(
         AppealToEirdu,
+        AquitectsDefenses,
         BarbedBloodletter,
         Blossombind,
         BramblebackBrute,
@@ -51,4 +53,6 @@ object LorwynEclipsedSet {
 
         // Basic lands
     ) + LorwynEclipsedBasicLands
+
+    val basicLands = LorwynEclipsedBasicLands.map { it.copy(setCode = OnslaughtSet.SET_CODE) }
 }
