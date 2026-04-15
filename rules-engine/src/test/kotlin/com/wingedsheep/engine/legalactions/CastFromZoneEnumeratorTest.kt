@@ -1,20 +1,16 @@
 package com.wingedsheep.engine.legalactions
 
 import com.wingedsheep.engine.core.CastSpell
-import com.wingedsheep.engine.legalactions.support.EnumerationTestDriver
+import com.wingedsheep.engine.legalactions.support.setupP1
 import com.wingedsheep.engine.legalactions.support.shouldContainCastOf
 import com.wingedsheep.engine.legalactions.support.shouldNotContainCastOf
-import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.MayPlayFromExileComponent
-import com.wingedsheep.engine.support.TestCards
 import com.wingedsheep.mtg.sets.definitions.bloomburrow.cards.OtterballAntics
 import com.wingedsheep.mtg.sets.definitions.dominaria.cards.SqueeTheImmortal
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.core.Zone
-import com.wingedsheep.sdk.model.CardDefinition
-import com.wingedsheep.sdk.model.Deck
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
@@ -37,72 +33,13 @@ import io.kotest.matchers.shouldBe
  */
 class CastFromZoneEnumeratorTest : FunSpec({
 
-    /**
-     * Place [extraCards] into P1's [targetZone]. Uses state surgery so we don't
-     * need to play a real game to seed graveyards/exile zones. Lands listed in
-     * [battlefieldCards] are dropped onto P1's battlefield so casts can be
-     * funded.
-     */
-    fun setupP1(
-        battlefieldCards: List<String>,
-        extraCardsInZone: Pair<Zone, List<String>>,
-        extraLibraryCards: List<String> = emptyList(),
-        extraSetCards: List<CardDefinition> = emptyList(),
-        atStep: Step = Step.PRECOMBAT_MAIN
-    ): EnumerationTestDriver {
-        val driver = EnumerationTestDriver()
-        driver.registerCards(TestCards.all)
-        driver.registerCards(extraSetCards)
-        // Build a deck containing everything we'll seed plus filler.
-        val (zone, zoneCards) = extraCardsInZone
-        val deckSpec = (battlefieldCards + zoneCards + extraLibraryCards)
-            .groupingBy { it }.eachCount()
-            .map { (name, count) -> name to (count + 4) }
-            .toMutableList()
-        deckSpec.add("Forest" to 30)
-        driver.game.initMirrorMatch(
-            deck = Deck.of(*deckSpec.toTypedArray()),
-            skipMulligans = true
-        )
-        driver.game.passPriorityUntil(atStep)
-
-        var state: GameState = driver.game.state
-        val hand = ZoneKey(driver.player1, Zone.HAND)
-        val library = ZoneKey(driver.player1, Zone.LIBRARY)
-        val battlefield = ZoneKey(driver.player1, Zone.BATTLEFIELD)
-        val target = ZoneKey(driver.player1, zone)
-
-        // CRITICAL: empty P1's hand back into library before placement. Otherwise
-        // shuffle luck can leave extra copies of requested cards (e.g., Squee)
-        // sitting in hand, and CastSpellEnumerator emits them as plain hand
-        // casts with sourceZone=null, polluting the result.
-        for (handId in state.getZone(hand).toList()) {
-            state = state.moveToZone(handId, hand, library)
-        }
-
-        fun pluckFromLibrary(name: String): com.wingedsheep.sdk.model.EntityId {
-            return state.getZone(library).firstOrNull { id ->
-                state.getEntity(id)?.get<CardComponent>()?.name == name
-            } ?: error("setupP1: '$name' not present in P1's library — add it to the deck spec via battlefieldCards/zoneCards/extraLibraryCards")
-        }
-
-        for (name in battlefieldCards) {
-            state = state.moveToZone(pluckFromLibrary(name), library, battlefield)
-        }
-        for (name in zoneCards) {
-            state = state.moveToZone(pluckFromLibrary(name), library, target)
-        }
-        driver.game.replaceState(state)
-        return driver
-    }
-
     // -------------------------------------------------------------------------
     context("Flashback (graveyard alternative cost)") {
 
         test("Otterball Antics in graveyard with sufficient mana surfaces a CastWithFlashback action") {
             val driver = setupP1(
-                battlefieldCards = listOf("Island", "Island", "Island", "Island"),
-                extraCardsInZone = Zone.GRAVEYARD to listOf("Otterball Antics"),
+                battlefield = listOf("Island", "Island", "Island", "Island"),
+                graveyard = listOf("Otterball Antics"),
                 extraSetCards = listOf(OtterballAntics)
             )
 
@@ -122,8 +59,8 @@ class CastFromZoneEnumeratorTest : FunSpec({
             // emits an unaffordable entry (unlike base CastSpell, which drops the
             // action entirely).
             val driver = setupP1(
-                battlefieldCards = listOf("Island", "Island"),
-                extraCardsInZone = Zone.GRAVEYARD to listOf("Otterball Antics"),
+                battlefield = listOf("Island", "Island"),
+                graveyard = listOf("Otterball Antics"),
                 extraSetCards = listOf(OtterballAntics)
             )
 
@@ -136,8 +73,8 @@ class CastFromZoneEnumeratorTest : FunSpec({
 
         test("sorcery flashback is blocked at instant speed (upkeep step)") {
             val driver = setupP1(
-                battlefieldCards = listOf("Island", "Island", "Island", "Island"),
-                extraCardsInZone = Zone.GRAVEYARD to listOf("Otterball Antics"),
+                battlefield = listOf("Island", "Island", "Island", "Island"),
+                graveyard = listOf("Otterball Antics"),
                 extraSetCards = listOf(OtterballAntics),
                 atStep = Step.UPKEEP
             )
@@ -147,8 +84,7 @@ class CastFromZoneEnumeratorTest : FunSpec({
 
         test("an empty graveyard produces no flashback actions") {
             val driver = setupP1(
-                battlefieldCards = listOf("Island"),
-                extraCardsInZone = Zone.GRAVEYARD to emptyList(),
+                battlefield = listOf("Island"),
                 extraSetCards = listOf(OtterballAntics)
             )
 
@@ -164,8 +100,8 @@ class CastFromZoneEnumeratorTest : FunSpec({
 
         test("Lightning Bolt in exile with MayPlayFromExile produces a CastSpell action") {
             val driver = setupP1(
-                battlefieldCards = listOf("Mountain"),
-                extraCardsInZone = Zone.EXILE to listOf("Lightning Bolt")
+                battlefield = listOf("Mountain"),
+                exile = listOf("Lightning Bolt")
             )
             // Attach the permission to the exiled card.
             val exiledId = driver.game.state.getZone(ZoneKey(driver.player1, Zone.EXILE))
@@ -186,8 +122,8 @@ class CastFromZoneEnumeratorTest : FunSpec({
 
         test("an exiled card without the permission component is NOT castable") {
             val driver = setupP1(
-                battlefieldCards = listOf("Mountain"),
-                extraCardsInZone = Zone.EXILE to listOf("Lightning Bolt")
+                battlefield = listOf("Mountain"),
+                exile = listOf("Lightning Bolt")
             )
             // No MayPlayFromExile attached.
 
@@ -196,8 +132,8 @@ class CastFromZoneEnumeratorTest : FunSpec({
 
         test("exile permission belonging to opponent does not authorize me to cast") {
             val driver = setupP1(
-                battlefieldCards = listOf("Mountain"),
-                extraCardsInZone = Zone.EXILE to listOf("Lightning Bolt")
+                battlefield = listOf("Mountain"),
+                exile = listOf("Lightning Bolt")
             )
             val exiledId = driver.game.state.getZone(ZoneKey(driver.player1, Zone.EXILE))
                 .first { id ->
@@ -220,9 +156,8 @@ class CastFromZoneEnumeratorTest : FunSpec({
             // We don't need to actually pay for Future Sight — placing it on the
             // battlefield via surgery is enough.
             val driver = setupP1(
-                battlefieldCards = listOf("Future Sight", "Mountain"),
-                extraCardsInZone = Zone.GRAVEYARD to emptyList(),
-                extraLibraryCards = listOf("Lightning Bolt")
+                battlefield = listOf("Future Sight", "Mountain"),
+                extraLibrary = listOf("Lightning Bolt")
             )
 
             // Move a Lightning Bolt to be the top of P1's library.
@@ -246,8 +181,7 @@ class CastFromZoneEnumeratorTest : FunSpec({
 
         test("without Future Sight, the top card of library is NOT castable") {
             val driver = setupP1(
-                battlefieldCards = listOf("Mountain"),
-                extraCardsInZone = Zone.GRAVEYARD to emptyList()
+                battlefield = listOf("Mountain")
             )
             // Top of library is a random Forest from filler — definitely not
             // Lightning Bolt. Either way, no permission means no library cast.
@@ -264,8 +198,8 @@ class CastFromZoneEnumeratorTest : FunSpec({
 
         test("Squee in graveyard with sufficient mana is castable from graveyard") {
             val driver = setupP1(
-                battlefieldCards = listOf("Mountain", "Mountain", "Mountain"),
-                extraCardsInZone = Zone.GRAVEYARD to listOf("Squee, the Immortal"),
+                battlefield = listOf("Mountain", "Mountain", "Mountain"),
+                graveyard = listOf("Squee, the Immortal"),
                 extraSetCards = listOf(SqueeTheImmortal)
             )
 
@@ -280,8 +214,8 @@ class CastFromZoneEnumeratorTest : FunSpec({
 
         test("Squee in exile is also castable (intrinsic permission covers both zones)") {
             val driver = setupP1(
-                battlefieldCards = listOf("Mountain", "Mountain", "Mountain"),
-                extraCardsInZone = Zone.EXILE to listOf("Squee, the Immortal"),
+                battlefield = listOf("Mountain", "Mountain", "Mountain"),
+                exile = listOf("Squee, the Immortal"),
                 extraSetCards = listOf(SqueeTheImmortal)
             )
 
@@ -293,8 +227,7 @@ class CastFromZoneEnumeratorTest : FunSpec({
 
         test("Squee with no mana is shown as unaffordable") {
             val driver = setupP1(
-                battlefieldCards = emptyList(),
-                extraCardsInZone = Zone.GRAVEYARD to listOf("Squee, the Immortal"),
+                graveyard = listOf("Squee, the Immortal"),
                 extraSetCards = listOf(SqueeTheImmortal)
             )
 
@@ -306,8 +239,8 @@ class CastFromZoneEnumeratorTest : FunSpec({
 
         test("Squee as a creature is sorcery-speed-only — no upkeep cast") {
             val driver = setupP1(
-                battlefieldCards = listOf("Mountain", "Mountain", "Mountain"),
-                extraCardsInZone = Zone.GRAVEYARD to listOf("Squee, the Immortal"),
+                battlefield = listOf("Mountain", "Mountain", "Mountain"),
+                graveyard = listOf("Squee, the Immortal"),
                 extraSetCards = listOf(SqueeTheImmortal),
                 atStep = Step.UPKEEP
             )
