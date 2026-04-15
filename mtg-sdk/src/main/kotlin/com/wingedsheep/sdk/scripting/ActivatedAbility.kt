@@ -381,15 +381,20 @@ sealed interface AbilityCost : TextReplaceable<AbilityCost> {
     }
 
     /**
-     * Remove a counter of the specified type from this permanent.
+     * Remove one or more counters of the specified type from this permanent.
      * Used for artifacts with charge/gem counters as activation costs.
      *
      * @property counterType The type of counter to remove (e.g., "gem", "charge")
+     * @property count Number of counters to remove (defaults to 1)
      */
     @SerialName("CostRemoveCounterFromSelf")
     @Serializable
-    data class RemoveCounterFromSelf(val counterType: String) : AbilityCost {
-        override val description: String = "Remove a $counterType counter from this permanent"
+    data class RemoveCounterFromSelf(val counterType: String, val count: Int = 1) : AbilityCost {
+        override val description: String = if (count == 1) {
+            "Remove a $counterType counter from this permanent"
+        } else {
+            "Remove $count $counterType counters from this permanent"
+        }
         override fun applyTextReplacement(replacer: TextReplacer): AbilityCost = this
     }
 

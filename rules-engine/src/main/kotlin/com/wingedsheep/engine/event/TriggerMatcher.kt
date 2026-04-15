@@ -24,8 +24,11 @@ import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.mechanics.layers.ProjectedState
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.identity.CardComponent
+import com.wingedsheep.engine.state.components.identity.ChosenCreatureTypeComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.identity.FaceDownComponent
+import com.wingedsheep.sdk.core.Keyword
+import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.engine.state.components.stack.SpellOnStackComponent
 import com.wingedsheep.engine.state.components.stack.TargetsComponent
 import com.wingedsheep.sdk.core.Step
@@ -344,6 +347,22 @@ class TriggerMatcher(
                         } else {
                             if (!projected.hasKeyword(event.entityId, predicate.keyword)) return false
                         }
+                    }
+                    is com.wingedsheep.sdk.scripting.predicates.CardPredicate.HasChosenSubtype -> {
+                        // Resolve the chosen subtype from the trigger source's ChosenCreatureTypeComponent
+                        // and check that the entering/leaving entity has that subtype.
+                        val chosenType = state.getEntity(sourceId)
+                            ?.get<ChosenCreatureTypeComponent>()?.creatureType
+                            ?: return false
+                        val hasSubtype = if (event.toZone == Zone.BATTLEFIELD) {
+                            projected.hasSubtype(event.entityId, chosenType)
+                        } else {
+                            typeLine?.subtypes?.any { it.value.equals(chosenType, ignoreCase = true) } == true
+                        }
+                        val isChangelingCreatureType = cardComponent != null &&
+                            Keyword.CHANGELING in cardComponent.baseKeywords &&
+                            chosenType in Subtype.ALL_CREATURE_TYPES
+                        if (!hasSubtype && !isChangelingCreatureType) return false
                     }
                     else -> {
                         // For other predicates, check the entity's type

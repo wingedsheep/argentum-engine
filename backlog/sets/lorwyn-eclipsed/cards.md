@@ -2,12 +2,12 @@
 
 **Set Size:** 273 cards (main set, per Scryfall `set:ecl`)
 **Release Date:** January 23, 2026
-**Implemented:** 30 / 273
+**Implemented:** 31 / 273
 
 | Color      | Total | Done |
 |------------|-------|------|
 | White      | 39    | 2    |
-| Blue       | 39    | 4    |
+| Blue       | 39    | 5    |
 | Black      | 38    | 2    |
 | Red        | 39    | 1    |
 | Green      | 39    | 5    |
@@ -83,7 +83,7 @@
 - [ ] Omni-Changeling
 - [ ] Pestered Wellguard
 - [ ] Rime Chill
-- [ ] Rimefire Torque
+- [x] Rimefire Torque
 - [ ] Rimekin Recluse
 - [ ] Run Away Together
 - [ ] Shinestriker

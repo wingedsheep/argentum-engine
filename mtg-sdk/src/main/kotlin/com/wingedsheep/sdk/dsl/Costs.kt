@@ -195,11 +195,11 @@ object Costs {
     val RemoveXPlusOnePlusOneCounters: AbilityCost = AbilityCost.RemoveXPlusOnePlusOneCounters
 
     /**
-     * Remove a counter of the specified type from this permanent.
+     * Remove one or more counters of the specified type from this permanent.
      * Used for artifacts with charge/gem counters as activation costs.
      */
-    fun RemoveCounterFromSelf(counterType: String): AbilityCost =
-        AbilityCost.RemoveCounterFromSelf(counterType)
+    fun RemoveCounterFromSelf(counterType: String, count: Int = 1): AbilityCost =
+        AbilityCost.RemoveCounterFromSelf(counterType, count)
 
     // =========================================================================
     // Composite Costs

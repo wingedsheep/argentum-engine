@@ -155,7 +155,7 @@ class CostHandler(
             is AbilityCost.RemoveCounterFromSelf -> {
                 val counters = state.getEntity(sourceId)?.get<CountersComponent>()
                 val counterType = resolveNamedCounterType(cost.counterType)
-                (counters?.getCount(counterType) ?: 0) > 0
+                (counters?.getCount(counterType) ?: 0) >= cost.count
             }
             is AbilityCost.Forage -> {
                 // Can forage if: 3+ cards in graveyard OR a Food artifact on battlefield
@@ -532,12 +532,12 @@ class CostHandler(
                 val counters = state.getEntity(sourceId)?.get<CountersComponent>()
                     ?: return CostPaymentResult.failure("Source has no counters")
                 val currentCount = counters.getCount(counterType)
-                if (currentCount <= 0) {
-                    return CostPaymentResult.failure("Source has no ${cost.counterType} counters to remove")
+                if (currentCount < cost.count) {
+                    return CostPaymentResult.failure("Source has only $currentCount ${cost.counterType} counters, needs ${cost.count}")
                 }
                 val newState = state.updateEntity(sourceId) { container ->
                     val c = container.get<CountersComponent>() ?: CountersComponent()
-                    container.with(c.withRemoved(counterType, 1))
+                    container.with(c.withRemoved(counterType, cost.count))
                 }
                 CostPaymentResult.success(newState, manaPool)
             }

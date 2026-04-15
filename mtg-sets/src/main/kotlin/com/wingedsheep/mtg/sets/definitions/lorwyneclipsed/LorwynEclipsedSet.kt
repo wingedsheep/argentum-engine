@@ -36,6 +36,7 @@ object LorwynEclipsedSet {
         MirrormindCrown,
         NamelessInversion,
         NoggleTheMind,
+        RimefireTorque,
         SaplingNursery,
         SteamVents,
         SyggsCommand,
