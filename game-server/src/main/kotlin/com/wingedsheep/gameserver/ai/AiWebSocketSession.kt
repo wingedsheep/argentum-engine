@@ -321,11 +321,37 @@ class AiWebSocketSession(
                         )
                     )
                 }
+                is com.wingedsheep.engine.core.SelectCardsDecision -> {
+                    // Pick the first `minSelections` options — matches SelectCardsHandler.heuristic.
+                    // Not an ideal choice, but submitting *something* valid is strictly better
+                    // than silently hanging the game.
+                    logger.warn("AI fallback: no cached state for SelectCardsDecision '{}', picking first {} option(s)",
+                        pendingDecision.prompt, pendingDecision.minSelections)
+                    ActionResponse.SubmitDecision(
+                        aiPlayerId,
+                        com.wingedsheep.engine.core.CardsSelectedResponse(
+                            decisionId = pendingDecision.id,
+                            selectedCards = pendingDecision.options.take(pendingDecision.minSelections)
+                        )
+                    )
+                }
                 else -> {
-                    logger.warn("AI fallback: can't resolve {} without full state, passing if possible",
-                        pendingDecision::class.simpleName)
                     val passAction = legalActions.find { it.actionType == "PassPriority" }
-                    if (passAction != null) ActionResponse.SubmitAction(passAction.action) else return
+                    if (passAction != null) {
+                        logger.warn("AI fallback: can't resolve {} without full state, passing priority",
+                            pendingDecision::class.simpleName)
+                        ActionResponse.SubmitAction(passAction.action)
+                    } else {
+                        // No PassPriority available (we hold the decision, no state to answer it).
+                        // Silently returning here hangs the game — log loudly so this surfaces.
+                        logger.error(
+                            "AI fallback: cannot auto-resolve {} (id={}, prompt=\"{}\") without cached state and no PassPriority available — AI cannot progress. Add handling for this decision type in handleActionsOnlyFallback.",
+                            pendingDecision::class.simpleName,
+                            pendingDecision.id,
+                            pendingDecision.prompt
+                        )
+                        return
+                    }
                 }
             }
             submitResponse(autoResponse)

@@ -37,6 +37,7 @@ object LorwynEclipsedSet {
         FlaringCinder,
         GlamerGifter,
         GoldmeadowNomad,
+        HarmonizedCrescendo,
         HovelHurler,
         Lavaleaper,
         MirrormindCrown,
