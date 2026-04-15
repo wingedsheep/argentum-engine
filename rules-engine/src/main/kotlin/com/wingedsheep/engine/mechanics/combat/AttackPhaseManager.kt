@@ -103,15 +103,20 @@ internal class AttackPhaseManager(
         // Apply attacker components and tap attacking creatures
         var newState = taxResult.newState
         val taxEvents = taxResult.events.toMutableList()
+        val tapEvents = mutableListOf<TappedEvent>()
         for ((attackerId, defenderId) in attackers) {
+            val hasVigilance = projected.hasKeyword(attackerId, Keyword.VIGILANCE)
             newState = newState.updateEntity(attackerId) { container ->
                 var updated = container.with(AttackingComponent(defenderId))
                 // Tap attacking creatures (unless they have vigilance)
-                val hasVigilance = projected.hasKeyword(attackerId, Keyword.VIGILANCE)
                 if (!hasVigilance) {
                     updated = updated.with(TappedComponent)
                 }
                 updated
+            }
+            if (!hasVigilance) {
+                val attackerName = state.getEntity(attackerId)?.get<CardComponent>()?.name ?: "Creature"
+                tapEvents.add(TappedEvent(attackerId, attackerName))
             }
         }
 
@@ -128,7 +133,7 @@ internal class AttackPhaseManager(
         val attackerNames = attackers.keys.map { state.getEntity(it)?.get<CardComponent>()?.name ?: "Creature" }
         return ExecutionResult.success(
             newState,
-            taxEvents + listOf(AttackersDeclaredEvent(attackers.keys.toList(), attackerNames, attackingPlayer))
+            taxEvents + tapEvents + listOf(AttackersDeclaredEvent(attackers.keys.toList(), attackerNames, attackingPlayer))
         )
     }
 
