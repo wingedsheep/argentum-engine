@@ -32,7 +32,7 @@ class GrantHexproofExecutor : EffectExecutor<GrantHexproofEffect> {
         effect: GrantHexproofEffect,
         context: EffectContext
     ): EffectResult {
-        val targetId = context.resolveTarget(effect.target)
+        val targetId = context.resolveTarget(effect.target, state)
             ?: return EffectResult.error(state, "No valid target for hexproof grant")
 
         // Check if target is a player
