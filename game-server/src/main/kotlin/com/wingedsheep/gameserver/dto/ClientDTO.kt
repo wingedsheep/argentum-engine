@@ -178,6 +178,9 @@ data class ClientCard(
     /** Whether this spell was kicked (only present on stack) */
     val wasKicked: Boolean = false,
 
+    /** Whether this spell promised a gift (Bloomburrow gift mechanic — only present on stack) */
+    val giftPromised: Boolean = false,
+
     /** Chosen X value for spells with X in their cost (only present on stack) */
     val chosenX: Int? = null,
 

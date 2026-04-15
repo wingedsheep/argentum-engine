@@ -157,6 +157,9 @@ export interface ClientCard {
   /** Whether this spell was kicked (only present on stack) */
   readonly wasKicked?: boolean
 
+  /** Whether this spell promised a gift (Bloomburrow gift mechanic — only present on stack) */
+  readonly giftPromised?: boolean
+
   /** Chosen X value for spells with X in their cost (only present on stack) */
   readonly chosenX?: number | null
 

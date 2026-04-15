@@ -161,6 +161,19 @@ export function StackDisplay() {
                       Kicked
                     </div>
                   )}
+                  {/* Show gift badge when the caster promised a gift (Bloomburrow) */}
+                  {card.giftPromised && (
+                    <div
+                      style={{
+                        ...styles.stackGiftBadge,
+                        top: card.wasKicked ? 26 : 4,
+                      }}
+                      title="Gift promised"
+                    >
+                      <i className="ms ms-ability-gift" style={{ fontSize: 12 }} />
+                      <span>Gift</span>
+                    </div>
+                  )}
                   {/* Show copy badge for storm/copy effects */}
                   {card.copyIndex != null && card.copyTotal != null && (
                     <div style={styles.stackCopyBadge}>

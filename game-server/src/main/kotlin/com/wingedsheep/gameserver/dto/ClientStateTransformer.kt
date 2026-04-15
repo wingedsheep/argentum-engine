@@ -22,7 +22,11 @@ import com.wingedsheep.engine.state.components.stack.TriggeredAbilityOnStackComp
 import com.wingedsheep.engine.state.components.stack.SpellOnStackComponent
 import com.wingedsheep.engine.handlers.DynamicAmountEvaluator
 import com.wingedsheep.engine.handlers.EffectContext
+import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.Effect
+import com.wingedsheep.sdk.scripting.effects.GiftGivenEffect
+import com.wingedsheep.sdk.scripting.effects.MayEffect
+import com.wingedsheep.sdk.scripting.effects.ModalEffect
 import com.wingedsheep.engine.mechanics.layers.ProjectedState
 import com.wingedsheep.engine.mechanics.layers.SerializableModification
 import com.wingedsheep.engine.registry.CardRegistry
@@ -685,6 +689,21 @@ class ClientStateTransformer(
         // Get kicker status for spells on the stack
         val wasKicked = spellOnStack?.wasKicked ?: false
 
+        // Detect whether this spell promised a gift (Bloomburrow gift mechanic).
+        // Gift is modeled as a modal choice: the "promise" mode's effect tree contains
+        // GiftGivenEffect. Surface this to opponents so they can see at a glance that
+        // a gift is coming on resolution, rather than having to parse the mode description.
+        val giftPromised = spellOnStack?.let { comp ->
+            if (comp.chosenModes.isEmpty()) return@let false
+            val spellEffect = cardRegistry.getCard(cardComponent.cardDefinitionId)?.script?.spellEffect
+                ?: return@let false
+            val modal = spellEffect as? ModalEffect ?: return@let false
+            comp.chosenModes.any { idx ->
+                val mode = modal.modes.getOrNull(idx) ?: return@any false
+                effectTreeContainsGift(mode.effect)
+            }
+        } ?: false
+
         // Get chosen X value for spells on the stack
         val chosenX = spellOnStack?.xValue
 
@@ -788,6 +807,7 @@ class ClientStateTransformer(
                 ClientRuling(date = it.date, text = it.text)
             } ?: emptyList(),
             wasKicked = wasKicked,
+            giftPromised = giftPromised,
             chosenX = chosenX,
             chosenCreatureType = chosenCreatureType,
             chosenColor = chosenColor,
@@ -817,6 +837,14 @@ class ClientStateTransformer(
         )
     }
 
+    private fun effectTreeContainsGift(effect: Effect): Boolean = when (effect) {
+        is GiftGivenEffect -> true
+        is CompositeEffect -> effect.effects.any { effectTreeContainsGift(it) }
+        is MayEffect -> effectTreeContainsGift(effect.effect)
+        is ModalEffect -> effect.modes.any { effectTreeContainsGift(it.effect) }
+        else -> false
+    }
+
     /**
      * Generate stack text with dynamic amounts evaluated to concrete values.
      * Falls back to static description if evaluation fails.
@@ -830,7 +858,7 @@ class ClientStateTransformer(
         val effect = cardDef.script.spellEffect ?: return null
 
         // For modal spells with a mode chosen at cast time, show the chosen mode description
-        if (spellOnStack.chosenModes.isNotEmpty() && effect is com.wingedsheep.sdk.scripting.effects.ModalEffect) {
+        if (spellOnStack.chosenModes.isNotEmpty() && effect is ModalEffect) {
             val modeIndex = spellOnStack.chosenModes.first()
             val chosenMode = effect.modes.getOrNull(modeIndex)
             if (chosenMode != null) {
