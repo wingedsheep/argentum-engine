@@ -45,6 +45,13 @@ class SetLifeTotalExecutor(
 
             val newLife = amountEvaluator.evaluate(newState, effect.amount, context)
 
+            // Per Sunspine Lynx ruling: if an effect would set a player's life total
+            // higher than their current life total while life gain is prevented, their
+            // life total doesn't change.
+            if (newLife > currentLife && DamageUtils.isLifeGainPrevented(newState, playerId)) {
+                continue
+            }
+
             if (newLife != currentLife) {
                 newState = newState.updateEntity(playerId) { container ->
                     container.with(LifeTotalComponent(newLife))

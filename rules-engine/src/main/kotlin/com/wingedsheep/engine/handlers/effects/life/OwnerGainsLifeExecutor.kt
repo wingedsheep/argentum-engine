@@ -4,6 +4,7 @@ import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.core.LifeChangedEvent
 import com.wingedsheep.engine.core.LifeChangeReason
 import com.wingedsheep.engine.handlers.EffectContext
+import com.wingedsheep.engine.handlers.effects.DamageUtils
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.identity.CardComponent
@@ -44,12 +45,17 @@ class OwnerGainsLifeExecutor : EffectExecutor<OwnerGainsLifeEffect> {
         val currentLife = state.getEntity(ownerId)?.get<LifeTotalComponent>()?.life
             ?: return EffectResult.error(state, "Owner has no life total")
 
+        // Respect PreventLifeGain replacement effects (e.g. Sunspine Lynx, Sulfuric Vortex)
+        if (DamageUtils.isLifeGainPrevented(state, ownerId)) {
+            return EffectResult.success(state)
+        }
+
         // Apply life gain
         val newLife = currentLife + effect.amount
         var newState = state.updateEntity(ownerId) { container ->
             container.with(LifeTotalComponent(newLife))
         }
-        newState = com.wingedsheep.engine.handlers.effects.DamageUtils.markLifeGainedThisTurn(newState, ownerId)
+        newState = DamageUtils.markLifeGainedThisTurn(newState, ownerId)
 
         return EffectResult.success(
             newState,

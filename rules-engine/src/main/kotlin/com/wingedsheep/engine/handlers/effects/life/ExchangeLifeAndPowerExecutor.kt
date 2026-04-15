@@ -67,8 +67,12 @@ class ExchangeLifeAndPowerExecutor : EffectExecutor<ExchangeLifeAndPowerEffect> 
             sublayer = Sublayer.SET_VALUES
         )
 
-        // Set player's life total to the creature's former power
-        if (currentPower != currentLife) {
+        // Set player's life total to the creature's former power. If the life side of
+        // the exchange would be a life gain and gain is prevented (e.g. Sunspine Lynx),
+        // that side doesn't happen — the creature's power change above still stands.
+        val lifeSideBlocked = currentPower > currentLife &&
+            DamageUtils.isLifeGainPrevented(newState, controllerId)
+        if (currentPower != currentLife && !lifeSideBlocked) {
             newState = newState.updateEntity(controllerId) { container ->
                 container.with(LifeTotalComponent(currentPower))
             }
