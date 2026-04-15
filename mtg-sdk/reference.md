@@ -959,7 +959,7 @@ reveal creatures, create tokens
 
 ### Restrictions
 
-`DOESNT_UNTAP`, `MAY_NOT_UNTAP`
+`DOESNT_UNTAP`, `MAY_NOT_UNTAP`, `CANT_RECEIVE_COUNTERS`
 
 ---
 
@@ -1048,7 +1048,7 @@ Set via `staticAbility { ability = ... }`:
 
 ### Other
 
-- `CantReceiveCounters(target)`
+- `CantReceiveCounters(target)` — target can't have counters put on it (grants `AbilityFlag.CANT_RECEIVE_COUNTERS`; checked by `AddCountersExecutor`)
 - `ControlEnchantedPermanent` — control the enchanted permanent
 - `GrantShroudToController` — controller has shroud
 - `GrantHexproofToController` — controller has hexproof (opponents can't target; self-targeting still allowed)

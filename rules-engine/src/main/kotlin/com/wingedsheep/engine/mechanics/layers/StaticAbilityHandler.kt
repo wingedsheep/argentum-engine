@@ -43,6 +43,7 @@ import com.wingedsheep.sdk.scripting.TransformPermanent
 import com.wingedsheep.sdk.scripting.SetBasePowerToughnessStatic
 import com.wingedsheep.sdk.scripting.SetBaseToughnessForCreatureGroup
 import com.wingedsheep.sdk.scripting.CantBeTargetedByOpponentAbilities
+import com.wingedsheep.sdk.scripting.CantReceiveCounters
 import com.wingedsheep.sdk.scripting.GrantHexproofToController
 import com.wingedsheep.sdk.scripting.GrantShroudToController
 import com.wingedsheep.sdk.scripting.conditions.EnchantedCreatureHasSubtype
@@ -454,6 +455,12 @@ class StaticAbilityHandler(
             is GrantProtection -> {
                 ContinuousEffectData(
                     modification = Modification.GrantProtectionFromColor(ability.color.name),
+                    affectsFilter = convertStaticTarget(ability.target)
+                )
+            }
+            is CantReceiveCounters -> {
+                ContinuousEffectData(
+                    modification = Modification.GrantKeyword(com.wingedsheep.sdk.core.AbilityFlag.CANT_RECEIVE_COUNTERS.name),
                     affectsFilter = convertStaticTarget(ability.target)
                 )
             }

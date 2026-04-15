@@ -240,6 +240,7 @@ export enum AbilityFlag {
   CANT_BE_BLOCKED_BY_MORE_THAN_ONE = 'CANT_BE_BLOCKED_BY_MORE_THAN_ONE',
   DOESNT_UNTAP = 'DOESNT_UNTAP',
   MAY_NOT_UNTAP = 'MAY_NOT_UNTAP',
+  CANT_RECEIVE_COUNTERS = 'CANT_RECEIVE_COUNTERS',
 }
 
 export const AbilityFlagDisplayNames: Record<AbilityFlag, string> = {
@@ -247,6 +248,7 @@ export const AbilityFlagDisplayNames: Record<AbilityFlag, string> = {
   [AbilityFlag.CANT_BE_BLOCKED_BY_MORE_THAN_ONE]: "Can't be blocked by more than one creature",
   [AbilityFlag.DOESNT_UNTAP]: "Doesn't untap during your untap step",
   [AbilityFlag.MAY_NOT_UNTAP]: 'You may choose not to untap',
+  [AbilityFlag.CANT_RECEIVE_COUNTERS]: "Can't have counters put on it",
 }
 
 /**

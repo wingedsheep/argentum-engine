@@ -20,5 +20,8 @@ enum class AbilityFlag(val displayName: String) {
 
     // ── Untap restriction flags ─────────────────────────────────
     DOESNT_UNTAP("Doesn't untap during your untap step"),
-    MAY_NOT_UNTAP("You may choose not to untap")
+    MAY_NOT_UNTAP("You may choose not to untap"),
+
+    // ── Counter restriction flags ───────────────────────────────
+    CANT_RECEIVE_COUNTERS("Can't have counters put on it")
 }

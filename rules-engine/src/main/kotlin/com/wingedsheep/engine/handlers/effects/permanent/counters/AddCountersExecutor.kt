@@ -8,6 +8,7 @@ import com.wingedsheep.engine.handlers.effects.ReplacementEffectUtils
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.battlefield.CountersComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
+import com.wingedsheep.sdk.core.AbilityFlag
 import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.scripting.effects.AddCountersEffect
 import kotlin.reflect.KClass
@@ -27,6 +28,10 @@ class AddCountersExecutor : EffectExecutor<AddCountersEffect> {
     ): EffectResult {
         val targetId = context.resolveTarget(effect.target)
             ?: return EffectResult.error(state, "No valid target for counters")
+
+        if (state.projectedState.hasKeyword(targetId, AbilityFlag.CANT_RECEIVE_COUNTERS)) {
+            return EffectResult.success(state, emptyList())
+        }
 
         val counterType = when (effect.counterType) {
             "+1/+1" -> CounterType.PLUS_ONE_PLUS_ONE
