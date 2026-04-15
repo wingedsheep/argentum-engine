@@ -1,6 +1,6 @@
 package com.wingedsheep.engine.gym.service
 
-import com.wingedsheep.engine.ai.BoosterGenerator
+import com.wingedsheep.engine.limited.BoosterGenerator
 import com.wingedsheep.engine.core.PassPriority
 import com.wingedsheep.engine.gym.contract.ResolvedAction
 import com.wingedsheep.engine.registry.CardRegistry

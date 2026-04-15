@@ -1,6 +1,6 @@
 package com.wingedsheep.gymserver.config
 
-import com.wingedsheep.engine.ai.BoosterGenerator
+import com.wingedsheep.engine.limited.BoosterGenerator
 import com.wingedsheep.engine.gym.service.MultiEnvService
 import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.mtg.sets.definitions.bloomburrow.BloomburrowSet

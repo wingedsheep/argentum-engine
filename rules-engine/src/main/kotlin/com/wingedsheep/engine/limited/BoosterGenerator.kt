@@ -1,4 +1,4 @@
-package com.wingedsheep.engine.ai
+package com.wingedsheep.engine.limited
 
 import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.Rarity
@@ -12,13 +12,12 @@ import kotlin.random.Random
  * - 3 Uncommons
  * - 1 Rare (with ~12.5% chance of Mythic if the set has mythics)
  *
- * ## Why this lives in rules-engine
+ * ## Scope
  *
- * The generator is a pure function of (set configs) → card pool. It has no
- * Spring, I/O, or WebSocket dependencies, which is exactly what the gym
- * training loop needs. Callers supply their own [SetConfig] map — the
- * generator itself does not import any specific card set, so it stays
- * compatible with rules-engine's "no card-specific dependencies" rule.
+ * A pure function of (set configs) → card pool. No Spring, I/O, or WebSocket
+ * dependencies. Callers supply their own [SetConfig] map — the generator
+ * itself does not import any specific card set, so it stays compatible with
+ * rules-engine's "no card-specific dependencies" rule.
  *
  * Application-level set catalogues (Portal, Bloomburrow, …) live in their
  * respective consumer modules (e.g. `game-server`'s `sealed/SetConfigs.kt`).

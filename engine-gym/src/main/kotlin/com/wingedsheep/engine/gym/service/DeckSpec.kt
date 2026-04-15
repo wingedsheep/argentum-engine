@@ -10,7 +10,7 @@ import kotlinx.serialization.Serializable
  * - [Explicit]: constructed lists provided by the caller (e.g., a MageZero
  *   test run submitting its own decks).
  * - [RandomSealed]: generate a fresh sealed deck from a registered set using
- *   the heuristic deck builder. Requires a [com.wingedsheep.engine.ai.BoosterGenerator]
+ *   the heuristic deck builder. Requires a [com.wingedsheep.engine.limited.BoosterGenerator]
  *   to be wired into [DeckResolver].
  */
 @Serializable

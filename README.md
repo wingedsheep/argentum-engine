@@ -59,6 +59,7 @@ The client runs at `http://localhost:5173` and connects to the server at `http:/
 | `just test-server` | Run game-server tests only |
 | `just test-gym` | Run engine-gym tests only |
 | `just test-gym-server` | Run engine-gym-server HTTP tests only |
+| `just test-gym-trainer` | Run engine-gym-trainer (MCTS + self-play) tests only |
 | `just clean` | Clean build artifacts |
 
 **Development**
@@ -168,7 +169,8 @@ argentum-engine/
 ├── mtg-sets/             # Card definitions (Portal, Onslaught, Legions, Scourge, Khans, Dominaria)
 ├── rules-engine/         # Core MTG rules engine (no server dependencies)
 ├── engine-gym/           # RL/MCTS environment wrapper (GameEnvironment, MultiEnvService)
-├── engine-gym-server/    # Spring Boot HTTP transport for engine-gym (training loops)
+├── engine-gym-server/    # Spring Boot HTTP transport for engine-gym (Python trainers)
+├── engine-gym-trainer/   # JVM-side MCTS + self-play SPI for AlphaZero-style projects
 ├── game-server/          # Spring Boot game server & matchmaking
 ├── web-client/           # React/TypeScript browser UI
 └── e2e-scenarios/        # Playwright end-to-end tests
@@ -244,6 +246,18 @@ JSON is handled end-to-end by kotlinx.serialization — sealed hierarchies (`Dec
 Start the server with `just gym-server` (port **8081**, so it doesn't collide with the game server on 8080). Running it does not require the web client or Redis.
 
 **Deliberately out of scope for the current scaffold:** authentication, env-lifetime TTLs, byte-based snapshots, metrics. Bind to localhost until you add auth.
+
+### JVM-side trainer — `engine-gym-trainer`
+
+For AlphaZero-shaped projects that want tree search in the JVM and only use Python as a stateless NN inference server (MageZero-style): a small SPI + a PUCT MCTS + a self-play loop.
+
+- **Four plug-in traits:** `StateFeaturizer<T>`, `ActionFeaturizer` (multi-head first-class), `Evaluator<T>`, `SelfPlaySink<T>`.
+- **Built-in `AlphaZeroSearch`** with PUCT, optional Dirichlet root noise, using `GameEnvironment.fork()` for O(1) tree expansion.
+- **Built-in `SelfPlayLoop`** with temperature schedule that labels training rows with the final outcome before flushing.
+- **Batteries-included defaults** so a training loop runs end-to-end with zero NN setup: a heuristic evaluator wrapping the engine's `BoardEvaluator`, a structural featurizer, a hash-bucket action featurizer, a JSONL sink, and a random structured-decision resolver.
+- **Wire format kept minimal** — `RemoteHttpEvaluator` POSTs features + legal slots and parses `{priors, value}`. Swap codec by subclassing.
+
+See [`engine-gym-trainer/README.md`](engine-gym-trainer/README.md) for the full design write-up and a 30-line hello-world.
 
 ## Why "Argentum"?
 

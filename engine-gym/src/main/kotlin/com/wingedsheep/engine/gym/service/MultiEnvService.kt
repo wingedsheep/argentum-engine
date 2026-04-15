@@ -1,6 +1,6 @@
 package com.wingedsheep.engine.gym.service
 
-import com.wingedsheep.engine.ai.BoosterGenerator
+import com.wingedsheep.engine.limited.BoosterGenerator
 import com.wingedsheep.engine.core.DecisionResponse
 import com.wingedsheep.engine.core.GameConfig
 import com.wingedsheep.engine.core.PlayerConfig

@@ -70,6 +70,7 @@ The project follows a strict **Domain-Driven Design (DDD)** with clear separatio
 | **rules-engine** | Kotlin Library  | Core MTG rules engine (zero server dependencies)   | mtg-sdk           |
 | **engine-gym**   | Kotlin Library  | RL/MCTS environment wrapper around rules-engine    | rules-engine, sdk |
 | **engine-gym-server** | Spring Boot App | HTTP transport for engine-gym (port 8081) | engine-gym, sets |
+| **engine-gym-trainer** | Kotlin Library | JVM-side MCTS + self-play + SPI for RL projects | engine-gym, sdk |
 | **game-server**  | Spring Boot App | Game orchestration, WebSocket, state masking       | rules-engine, sdk |
 | **web-client**   | React App       | Browser UI (dumb terminal, no game logic)          | None              |
 

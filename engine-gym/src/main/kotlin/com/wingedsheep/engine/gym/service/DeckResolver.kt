@@ -1,7 +1,7 @@
 package com.wingedsheep.engine.gym.service
 
-import com.wingedsheep.engine.ai.BoosterGenerator
-import com.wingedsheep.engine.ai.SealedDeckGenerator
+import com.wingedsheep.engine.limited.BoosterGenerator
+import com.wingedsheep.engine.limited.SealedDeckGenerator
 import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.sdk.model.Deck
 

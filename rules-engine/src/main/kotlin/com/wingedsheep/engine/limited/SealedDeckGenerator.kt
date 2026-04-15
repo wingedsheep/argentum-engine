@@ -1,8 +1,10 @@
-package com.wingedsheep.engine.ai
+package com.wingedsheep.engine.limited
+
+import com.wingedsheep.engine.ai.buildHeuristicSealedDeck
 
 /**
- * Generates a 40-card sealed deck by opening 8 boosters from a random set
- * and using the heuristic deck builder to pick the best cards.
+ * Generates a 40-card sealed deck by opening 8 boosters from a set and
+ * selecting a playable build from the resulting pool.
  *
  * Basic land names in the output are distributed across art variants
  * from the selected set.

@@ -65,6 +65,11 @@ gym-server:
 test-gym-server:
     ./gradlew :engine-gym-server:test
 
+# Run engine-gym-trainer tests (MCTS + self-play)
+[group: 'build']
+test-gym-trainer:
+    ./gradlew :engine-gym-trainer:test
+
 # Start the web client in dev mode
 [group: 'dev']
 client:
