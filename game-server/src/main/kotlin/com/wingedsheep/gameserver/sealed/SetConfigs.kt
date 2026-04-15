@@ -6,6 +6,7 @@ import com.wingedsheep.mtg.sets.definitions.dominaria.DominariaSet
 import com.wingedsheep.mtg.sets.definitions.edgeofeternities.EdgeOfEternitiesSet
 import com.wingedsheep.mtg.sets.definitions.khans.KhansOfTarkirSet
 import com.wingedsheep.mtg.sets.definitions.legions.LegionsSet
+import com.wingedsheep.mtg.sets.definitions.lorwyneclipsed.LorwynEclipsedSet
 import com.wingedsheep.mtg.sets.definitions.onslaught.OnslaughtSet
 import com.wingedsheep.mtg.sets.definitions.portal.PortalSet
 import com.wingedsheep.mtg.sets.definitions.scourge.ScourgeSet
@@ -78,6 +79,15 @@ object SetConfigs {
         basicLands = BloomburrowSet.basicLands,
         incomplete = false,
         totalSetSize = 272
+    )
+
+    val lorwynEclipsedSetConfig = BoosterGenerator.SetConfig(
+        setCode = LorwynEclipsedSet.SET_CODE,
+        setName = LorwynEclipsedSet.SET_NAME,
+        cards = LorwynEclipsedSet.allCards,
+        basicLands = LorwynEclipsedSet.basicLands,
+        incomplete = true,
+        totalSetSize = 273
     )
 
     val edgeOfEternitiesSetConfig = BoosterGenerator.SetConfig(

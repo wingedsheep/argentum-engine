@@ -91,6 +91,9 @@ class GameBeansConfig(
             if (gameProperties.sets.bloomburrowEnabled) {
                 put(BloomburrowSet.SET_CODE, SetConfigs.bloomburrowSetConfig)
             }
+            if (gameProperties.sets.lorwynEclipsedEnabled) {
+                put(LorwynEclipsedSet.SET_CODE, SetConfigs.lorwynEclipsedSetConfig)
+            }
             if (gameProperties.sets.edgeOfEternitiesEnabled) {
                 put(EdgeOfEternitiesSet.SET_CODE, SetConfigs.edgeOfEternitiesSetConfig)
             }
