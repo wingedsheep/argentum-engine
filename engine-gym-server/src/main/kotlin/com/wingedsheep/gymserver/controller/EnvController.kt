@@ -14,6 +14,8 @@ import com.wingedsheep.gymserver.dto.StepBatchItem
 import com.wingedsheep.gymserver.dto.StepBatchResult
 import com.wingedsheep.gymserver.dto.StepBody
 import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.media.Content
+import io.swagger.v3.oas.annotations.media.ExampleObject
 import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
@@ -52,7 +54,116 @@ class EnvController(
 
     @Operation(
         summary = "Create a new env",
-        description = "Reserves an `envId`, initialises a game per `EnvConfig`, and returns the opening observation."
+        description = """
+            Reserves an `envId`, initialises a game per `EnvConfig`, and
+            returns the opening observation.
+
+            `players` must have at least two entries. Each player's `deck`
+            is a discriminated union:
+
+            - `{"type": "Explicit", "cards": {"Mountain": 17, ...}}` for a
+              hand-crafted deck list keyed by card name. Variant suffixes
+              like `"Plains#BLB-270"` are tolerated — the base name is
+              what the engine looks up.
+            - `{"type": "RandomSealed", "setCode": "BLB", "boosterCount": 8}`
+              to generate a sealed deck on demand from a registered set.
+
+            Defaults: `skipMulligans=true` (faster rollouts),
+            `startingPlayerIndex=null` (random), `perspectivePlayerIndex=0`,
+            `revealAll=false`. Start with an explicit deck until you're
+            confident the set's basic-land variants are registered —
+            sealed requires variant registration.
+        """,
+        requestBody = io.swagger.v3.oas.annotations.parameters.RequestBody(
+            required = true,
+            content = [Content(
+                mediaType = "application/json",
+                examples = [
+                    ExampleObject(
+                        name = "Explicit — mono-red Portal",
+                        summary = "Constructed decks, Alice goes first, skip mulligans",
+                        value = """
+{
+  "players": [
+    {
+      "name": "Alice",
+      "deck": {
+        "type": "Explicit",
+        "cards": {
+          "Mountain": 17,
+          "Raging Goblin": 3
+        }
+      },
+      "startingLife": 20
+    },
+    {
+      "name": "Bob",
+      "deck": {
+        "type": "Explicit",
+        "cards": {
+          "Mountain": 17,
+          "Raging Goblin": 3
+        }
+      },
+      "startingLife": 20
+    }
+  ],
+  "skipMulligans": true,
+  "startingPlayerIndex": 0,
+  "perspectivePlayerIndex": 0,
+  "revealAll": false
+}
+                        """
+                    ),
+                    ExampleObject(
+                        name = "Random sealed — Bloomburrow",
+                        summary = "Both players open 8 BLB boosters and a heuristic picks the 40-card build",
+                        value = """
+{
+  "players": [
+    {
+      "name": "Alice",
+      "deck": { "type": "RandomSealed", "setCode": "BLB", "boosterCount": 8 }
+    },
+    {
+      "name": "Bob",
+      "deck": { "type": "RandomSealed", "setCode": "BLB", "boosterCount": 8 }
+    }
+  ],
+  "skipMulligans": true
+}
+                        """
+                    ),
+                    ExampleObject(
+                        name = "Debug — reveal all, hand-smoothed",
+                        summary = "Opponent hand + libraries visible and MTGA-style hand smoothing on. Never use for real self-play.",
+                        value = """
+{
+  "players": [
+    {
+      "name": "Alice",
+      "deck": {
+        "type": "Explicit",
+        "cards": { "Mountain": 17, "Raging Goblin": 3 }
+      }
+    },
+    {
+      "name": "Bob",
+      "deck": {
+        "type": "Explicit",
+        "cards": { "Mountain": 17, "Raging Goblin": 3 }
+      }
+    }
+  ],
+  "skipMulligans": true,
+  "useHandSmoother": true,
+  "revealAll": true
+}
+                        """
+                    )
+                ]
+            )]
+        )
     )
     @PostMapping
     fun create(@RequestBody config: EnvConfig): CreateEnvResponse {
