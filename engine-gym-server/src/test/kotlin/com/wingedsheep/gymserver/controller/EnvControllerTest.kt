@@ -108,6 +108,20 @@ class EnvControllerTest : FunSpec() {
             response.body() shouldContain "Environments"  // tag name from EnvController
         }
 
+        test("OpenAPI spec has no Kotlin inline-class mangled property names") {
+            // Regression for the `id-v2tQoa0` / `ownerId-Z9UYGMk` cosmetic bug:
+            // Kotlin mangles @JvmInline value class getter method names, and
+            // Springdoc's reflection introspection picks those names up unless
+            // the `stripInlineClassMangling` customizer in OpenApiConfig runs.
+            val body = get("/v3/api-docs").body()
+            // Any property ending in `-XXXXXX` with mixed case/digits is suspect.
+            val suspicious = Regex("\"([A-Za-z]+-[A-Za-z0-9_]{5,})\"\\s*:\\s*\\{")
+                .findAll(body)
+                .map { it.groupValues[1] }
+                .toList()
+            suspicious shouldBe emptyList()
+        }
+
         test("GET /swagger-ui/index.html serves the UI") {
             // The `/swagger-ui.html` path redirects to `/swagger-ui/index.html`;
             // we hit the underlying page directly so a default HttpClient
