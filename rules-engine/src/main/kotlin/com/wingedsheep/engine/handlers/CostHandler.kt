@@ -542,16 +542,31 @@ class CostHandler(
                 CostPaymentResult.success(newState, manaPool)
             }
             is AbilityCost.Forage -> {
-                // Forage: sacrifice a Food if available, otherwise exile 3 cards from graveyard
                 val projected = state.projectedState
+                val graveyardZone = ZoneKey(controllerId, Zone.GRAVEYARD)
+                val graveyardCards = state.getZone(graveyardZone)
                 val foods = state.getBattlefield().filter { permId ->
                     state.getEntity(permId) ?: return@filter false
                     projected.getController(permId) == controllerId &&
                         projected.hasSubtype(permId, Subtype.FOOD.value)
                 }
 
-                if (foods.isNotEmpty()) {
-                    // Sacrifice a Food (auto-select first available)
+                // Player explicitly picked 3 graveyard cards to exile — honor that path.
+                val playerExile = choices.exileChoices.takeIf { it.size >= 3 && it.all { id -> id in graveyardCards } }
+                if (playerExile != null) {
+                    val toExile = playerExile.take(3)
+                    var newState = state
+                    val events = mutableListOf<GameEvent>()
+                    for (cardId in toExile) {
+                        val transitionResult = com.wingedsheep.engine.handlers.effects.ZoneTransitionService.moveToZone(
+                            newState, cardId, Zone.EXILE
+                        )
+                        newState = transitionResult.state
+                        events.addAll(transitionResult.events)
+                    }
+                    CostPaymentResult.success(newState, manaPool, events)
+                } else if (foods.isNotEmpty()) {
+                    // Sacrifice a Food (respecting player's choice if provided).
                     val foodId = choices.sacrificeChoices.firstOrNull()?.takeIf { it in foods } ?: foods.first()
                     val foodName = state.getEntity(foodId)?.get<CardComponent>()?.name ?: "Food"
                     val foodController = state.getEntity(foodId)?.get<ControllerComponent>()?.playerId ?: controllerId
@@ -564,15 +579,8 @@ class CostHandler(
                     events.add(PermanentsSacrificedEvent(foodController, listOf(foodId), listOf(foodName)))
                     events.addAll(transitionResult.events)
                     CostPaymentResult.success(transitionResult.state, manaPool, events)
-                } else {
-                    // Exile 3 cards from graveyard
-                    val graveyardZone = ZoneKey(controllerId, Zone.GRAVEYARD)
-                    val graveyardCards = state.getZone(graveyardZone)
-                    if (graveyardCards.size < 3) {
-                        return CostPaymentResult.failure("Cannot forage: need 3 cards in graveyard or a Food")
-                    }
-                    val toExile = (choices.exileChoices.takeIf { it.size >= 3 }?.take(3)
-                        ?: graveyardCards.take(3))
+                } else if (graveyardCards.size >= 3) {
+                    val toExile = graveyardCards.take(3)
                     var newState = state
                     val events = mutableListOf<GameEvent>()
                     for (cardId in toExile) {
@@ -583,6 +591,8 @@ class CostHandler(
                         events.addAll(transitionResult.events)
                     }
                     CostPaymentResult.success(newState, manaPool, events)
+                } else {
+                    CostPaymentResult.failure("Cannot forage: need 3 cards in graveyard or a Food")
                 }
             }
             is AbilityCost.Composite -> {

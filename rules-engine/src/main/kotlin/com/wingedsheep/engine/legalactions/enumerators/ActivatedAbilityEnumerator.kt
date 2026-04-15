@@ -127,6 +127,9 @@ class ActivatedAbilityEnumerator : ActionEnumerator {
                 var tapCost: AbilityCost.TapPermanents? = null
                 var bounceTargets: List<EntityId>? = null
                 var bounceCost: AbilityCost.ReturnToHand? = null
+                var hasForageCost = false
+                var forageGraveyardCards: List<EntityId> = emptyList()
+                var forageFoodTargets: List<EntityId> = emptyList()
                 var costAffordable = true
 
                 when (effectiveCost) {
@@ -307,17 +310,20 @@ class ActivatedAbilityEnumerator : ActionEnumerator {
                                 is AbilityCost.Forage -> {
                                     // Forage: can exile 3 from graveyard OR sacrifice a Food
                                     val graveyardZone = ZoneKey(playerId, Zone.GRAVEYARD)
-                                    val graveyardSize = state.getZone(graveyardZone).size
+                                    val graveyardCards = state.getZone(graveyardZone)
                                     val projected = state.projectedState
-                                    val hasFood = state.getBattlefield().any { permId ->
-                                        state.getEntity(permId) ?: return@any false
+                                    val foods = state.getBattlefield().filter { permId ->
+                                        state.getEntity(permId) ?: return@filter false
                                         projected.getController(permId) == playerId &&
                                             projected.hasSubtype(permId, com.wingedsheep.sdk.core.Subtype.FOOD.value)
                                     }
-                                    if (graveyardSize < 3 && !hasFood) {
+                                    if (graveyardCards.size < 3 && foods.isEmpty()) {
                                         costCanBePaid = false
                                         break
                                     }
+                                    hasForageCost = true
+                                    forageGraveyardCards = graveyardCards
+                                    forageFoodTargets = foods
                                 }
                                 is AbilityCost.ExileXFromGraveyard -> {
                                     // ExileXFromGraveyard: validated via maxAffordableX cap below
@@ -395,7 +401,8 @@ class ActivatedAbilityEnumerator : ActionEnumerator {
                 val costInfo = buildAdditionalCostInfo(
                     ability, tapTargets, tapCost, hasTapXPermanentsCost,
                     sacrificeTargets, sacrificeCost, bounceTargets, bounceCost,
-                    counterRemovalCreatures
+                    counterRemovalCreatures,
+                    hasForageCost, forageGraveyardCards, forageFoodTargets
                 )
 
                 // Calculate X cost info for activated abilities with X in their mana cost
@@ -651,7 +658,10 @@ class ActivatedAbilityEnumerator : ActionEnumerator {
         sacrificeCost: AbilityCost.Sacrifice?,
         bounceTargets: List<EntityId>?,
         bounceCost: AbilityCost.ReturnToHand?,
-        counterRemovalCreatures: List<CounterRemovalCreatureData>
+        counterRemovalCreatures: List<CounterRemovalCreatureData>,
+        hasForageCost: Boolean = false,
+        forageGraveyardCards: List<EntityId> = emptyList(),
+        forageFoodTargets: List<EntityId> = emptyList()
     ): AdditionalCostData? {
         if (tapTargets != null && tapCost != null) {
             return AdditionalCostData(
@@ -713,6 +723,27 @@ class ActivatedAbilityEnumerator : ActionEnumerator {
                 costType = "RemoveCounters",
                 counterRemovalCreatures = counterRemovalCreatures
             )
+        }
+        if (hasForageCost) {
+            // Prefer the exile path when 3+ cards are in the graveyard — lets the player
+            // pick exactly which cards to exile. Otherwise fall back to sacrificing a Food.
+            if (forageGraveyardCards.size >= 3) {
+                return AdditionalCostData(
+                    description = "Forage — exile 3 cards from your graveyard",
+                    costType = "ExileFromGraveyard",
+                    validExileTargets = forageGraveyardCards,
+                    exileMinCount = 3,
+                    exileMaxCount = 3
+                )
+            }
+            if (forageFoodTargets.isNotEmpty()) {
+                return AdditionalCostData(
+                    description = "Forage — sacrifice a Food",
+                    costType = "SacrificePermanent",
+                    validSacrificeTargets = forageFoodTargets,
+                    sacrificeCount = 1
+                )
+            }
         }
         return null
     }
