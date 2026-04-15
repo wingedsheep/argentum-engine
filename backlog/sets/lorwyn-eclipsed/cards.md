@@ -2,12 +2,12 @@
 
 **Set Size:** 273 cards (main set, per Scryfall `set:ecl`)
 **Release Date:** January 23, 2026
-**Implemented:** 33 / 273
+**Implemented:** 34 / 273
 
 | Color      | Total | Done |
 |------------|-------|------|
 | White      | 39    | 3    |
-| Blue       | 39    | 6    |
+| Blue       | 39    | 7    |
 | Black      | 38    | 2    |
 | Red        | 39    | 1    |
 | Green      | 39    | 5    |
@@ -88,7 +88,7 @@
 - [ ] Run Away Together
 - [ ] Shinestriker
 - [ ] Silvergill Mentor
-- [ ] Silvergill Peddler
+- [x] Silvergill Peddler
 - [ ] Spell Snare
 - [ ] Stratosoarer
 - [ ] Summit Sentinel

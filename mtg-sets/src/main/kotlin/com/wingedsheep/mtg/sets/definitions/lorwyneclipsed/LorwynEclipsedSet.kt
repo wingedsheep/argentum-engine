@@ -40,6 +40,7 @@ object LorwynEclipsedSet {
         NoggleTheMind,
         RimefireTorque,
         SaplingNursery,
+        SilvergillPeddler,
         SteamVents,
         SyggsCommand,
         VirulentEmissary,
