@@ -45,9 +45,8 @@ Client action
   → ActionProcessor.process()
   → ActionHandlerRegistry  (finds handler by KClass)
   → Handler.validate() then .execute()
-  → PostActionProcessor.processTriggersAndReturnPriority()
-      → TriggerDetector.detectTriggers(state, events)
-      → TriggerProcessor.processTriggers()
+      → handler calls TriggerDetector.detectTriggers(state, events)
+      → TriggerProcessor.processTriggers() (may pause for target selection)
   → ExecutionResult (success | paused | error)
 
 If paused: client submits decision
