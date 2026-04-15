@@ -103,6 +103,8 @@ class ModalAndCloneContinuationResumer(
             opponentId = continuation.opponentId,
             triggeringEntityId = continuation.triggeringEntityId,
             allowCancelBackToModesList = if (allowCancelBackToModes) continuation.modes else null,
+            outerTargets = continuation.outerTargets,
+            outerNamedTargets = continuation.outerNamedTargets,
             accumulatedEvents = emptyList(),
             checkForMore = checkForMore
         )
@@ -129,6 +131,8 @@ class ModalAndCloneContinuationResumer(
         opponentId: EntityId?,
         triggeringEntityId: EntityId?,
         allowCancelBackToModesList: List<Mode>?,
+        outerTargets: List<com.wingedsheep.engine.state.components.stack.ChosenTarget>,
+        outerNamedTargets: Map<String, com.wingedsheep.engine.state.components.stack.ChosenTarget>,
         accumulatedEvents: List<GameEvent>,
         checkForMore: CheckForMore
     ): ExecutionResult {
@@ -142,12 +146,16 @@ class ModalAndCloneContinuationResumer(
             val displayName = sourceName ?: "modal spell"
 
             if (head.targetRequirements.isEmpty()) {
-                // No targets — execute directly.
+                // No targets — execute directly, inheriting outer-scope targets so
+                // EffectTarget.ContextTarget references in the inner effect resolve
+                // to the targets chosen by the enclosing spell/ability.
                 val context = EffectContext(
                     sourceId = sourceId,
                     controllerId = controllerId,
                     opponentId = opponentId,
                     xValue = xValue,
+                    targets = outerTargets,
+                    pipeline = PipelineState(namedTargets = outerNamedTargets),
                     triggeringEntityId = triggeringEntityId
                 )
                 val result = services.effectExecutorRegistry.execute(currentState, head.effect, context).toExecutionResult()
@@ -244,7 +252,9 @@ class ModalAndCloneContinuationResumer(
                 targetRequirements = head.targetRequirements,
                 modes = if (tail.isEmpty()) allowCancelBackToModesList else null,
                 triggeringEntityId = triggeringEntityId,
-                remainingChosenModes = tail
+                remainingChosenModes = tail,
+                outerTargets = outerTargets,
+                outerNamedTargets = outerNamedTargets
             )
 
             val stateWithDecision = currentState.withPendingDecision(decision)
@@ -321,6 +331,8 @@ class ModalAndCloneContinuationResumer(
                 opponentId = continuation.opponentId,
                 triggeringEntityId = continuation.triggeringEntityId,
                 allowCancelBackToModesList = null,
+                outerTargets = continuation.outerTargets,
+                outerNamedTargets = continuation.outerNamedTargets,
                 accumulatedEvents = result.events.toList(),
                 checkForMore = checkForMore
             )
@@ -1033,7 +1045,9 @@ class ModalAndCloneContinuationResumer(
             modes = modes,
             xValue = continuation.xValue,
             opponentId = continuation.opponentId,
-            triggeringEntityId = continuation.triggeringEntityId
+            triggeringEntityId = continuation.triggeringEntityId,
+            outerTargets = continuation.outerTargets,
+            outerNamedTargets = continuation.outerNamedTargets
         )
 
         val stateWithDecision = state.withPendingDecision(decision)

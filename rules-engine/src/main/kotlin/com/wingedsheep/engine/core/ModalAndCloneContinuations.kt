@@ -33,6 +33,11 @@ import kotlinx.serialization.Serializable
  * @property chooseCount Total modes to pick (1 for classic modal, 2+ for Commands)
  * @property selectedModeIndices Original mode indices already picked, in order
  * @property availableIndices Original mode indices still offered; null = all
+ * @property outerTargets Targets from the enclosing spell/ability (e.g., the
+ *   target chosen by a triggered ability whose effect is a ModalEffect). These
+ *   are propagated into each no-target mode's EffectContext so inner effects
+ *   can resolve `EffectTarget.ContextTarget(n)` references to the outer scope.
+ * @property outerNamedTargets Named targets from the enclosing pipeline state.
  */
 @Serializable
 data class ModalContinuation(
@@ -46,7 +51,9 @@ data class ModalContinuation(
     val triggeringEntityId: EntityId? = null,
     val chooseCount: Int = 1,
     val selectedModeIndices: List<Int> = emptyList(),
-    val availableIndices: List<Int>? = null
+    val availableIndices: List<Int>? = null,
+    val outerTargets: List<ChosenTarget> = emptyList(),
+    val outerNamedTargets: Map<String, ChosenTarget> = emptyMap()
 ) : ContinuationFrame
 
 /**
@@ -76,7 +83,11 @@ data class ModalTargetContinuation(
     val modes: List<@Serializable Mode>? = null,
     val triggeringEntityId: EntityId? = null,
     /** For "Choose N" modal spells: modes still queued to execute after this one. */
-    val remainingChosenModes: List<@Serializable Mode> = emptyList()
+    val remainingChosenModes: List<@Serializable Mode> = emptyList(),
+    /** Outer-scope targets from the enclosing spell/ability, propagated to any
+     *  remaining no-target modes. See [ModalContinuation.outerTargets]. */
+    val outerTargets: List<ChosenTarget> = emptyList(),
+    val outerNamedTargets: Map<String, ChosenTarget> = emptyMap()
 ) : ContinuationFrame
 
 /**

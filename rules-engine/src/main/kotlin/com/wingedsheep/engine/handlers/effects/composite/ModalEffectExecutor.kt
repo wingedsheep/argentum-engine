@@ -82,7 +82,11 @@ class ModalEffectExecutor(
             options = modeDescriptions
         )
 
-        // Create continuation to resume after player's choice
+        // Create continuation to resume after player's choice.
+        // Preserve outer-scope targets so no-target modes can resolve ContextTarget
+        // references to targets chosen by the enclosing spell/ability (e.g.,
+        // Manifold Mouse's BeginCombat trigger targets a Mouse, then picks a
+        // keyword mode that grants the keyword to that outer target).
         val continuation = ModalContinuation(
             decisionId = decisionId,
             controllerId = context.controllerId,
@@ -94,7 +98,9 @@ class ModalEffectExecutor(
             triggeringEntityId = context.triggeringEntityId,
             chooseCount = effect.chooseCount,
             selectedModeIndices = emptyList(),
-            availableIndices = availableIndices
+            availableIndices = availableIndices,
+            outerTargets = context.targets,
+            outerNamedTargets = context.pipeline.namedTargets
         )
 
         // Push continuation and return paused state
