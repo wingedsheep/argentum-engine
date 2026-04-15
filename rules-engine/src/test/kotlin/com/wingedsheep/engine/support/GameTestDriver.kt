@@ -53,7 +53,7 @@ import com.wingedsheep.sdk.model.EntityId
  * ```
  */
 class GameTestDriver {
-    private val cardRegistry = CardRegistry()
+    val cardRegistry: CardRegistry = CardRegistry()
     private val processor: ActionProcessor = ActionProcessor(cardRegistry)
     private var _state: GameState = GameState()
     private val _events = mutableListOf<GameEvent>()
