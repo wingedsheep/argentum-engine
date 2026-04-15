@@ -18,6 +18,7 @@ import com.wingedsheep.sdk.scripting.effects.StoreResultEffect
 import com.wingedsheep.sdk.scripting.effects.WarpExileEffect
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
+import com.wingedsheep.sdk.core.Step
 import java.util.UUID
 import kotlin.reflect.KClass
 
@@ -53,11 +54,15 @@ class CreateDelayedTriggerExecutor : EffectExecutor<CreateDelayedTriggerEffect> 
         // entity id so matching later is cheap and doesn't need the original context.
         val watchedEntityId = effect.watchedTarget?.let { context.resolveTarget(it) }
 
-        // Calculate notBeforeTurn for "your next end step" effects.
-        // turnNumber increments once per full round (when turnOrder[0] starts),
-        // so the controller's next turn is always turnNumber + 1.
+        // "At the beginning of your next end step" fires at the next upcoming end step
+        // on the controller's turn. If we're still before the end step on the controller's
+        // current turn, that end step qualifies — don't skip to the following turn.
+        // Only bump notBeforeTurn when the current turn's end step has already begun (or passed),
+        // i.e. we're in END or CLEANUP on the controller's turn.
         val notBeforeTurn = if (effect.onControllerNextTurn) {
-            state.turnNumber + 1
+            val onControllersTurn = context.controllerId == state.activePlayerId
+            val endStepAlreadyStarted = state.step == Step.END || state.step == Step.CLEANUP
+            if (onControllersTurn && endStepAlreadyStarted) state.turnNumber + 1 else null
         } else {
             null
         }

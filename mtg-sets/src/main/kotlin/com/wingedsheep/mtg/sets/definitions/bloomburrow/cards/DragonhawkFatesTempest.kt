@@ -54,7 +54,7 @@ val DragonhawkFatesTempest = card("Dragonhawk, Fate's Tempest") {
             from = "exiledCards",
             destination = CardDestination.ToZone(Zone.EXILE)
         ),
-        GrantMayPlayFromExileEffect("exiledCards", untilEndOfNextTurn = true),
+        GrantMayPlayFromExileEffect("exiledCards"),
         CreateDelayedTriggerEffect(
             step = Step.END,
             fireOnlyOnControllersTurn = true,

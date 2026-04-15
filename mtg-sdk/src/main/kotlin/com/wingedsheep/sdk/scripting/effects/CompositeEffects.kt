@@ -341,9 +341,12 @@ data class CreateDelayedTriggerEffect(
      */
     val expiry: DelayedTriggerExpiry = DelayedTriggerExpiry.EndOfTurn,
     /**
-     * If true, the delayed trigger won't fire until the controller's next turn.
-     * Used for "at the beginning of your next end step" effects where "next"
-     * means the end step of the controller's following turn, not the current one.
+     * If true, applies "your next end step" timing semantics: the trigger fires at
+     * the next upcoming end step on the controller's turn. If the controller's
+     * current-turn end step hasn't started yet, the trigger fires this turn; only if
+     * it's already started (END or CLEANUP step on the controller's turn) is the
+     * trigger deferred to the controller's following turn. Typically combined with
+     * [fireOnlyOnControllersTurn] = true.
      */
     val onControllerNextTurn: Boolean = false
 ) : Effect {
