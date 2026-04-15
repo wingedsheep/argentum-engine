@@ -64,11 +64,8 @@ class TournamentMatchHandler(
             return
         }
 
-        val epochBeforeLock = lobby.readyEpoch
-
         val lock = ctx.roundLocks.computeIfAbsent(lobbyId) { Any() }
         synchronized(lock) {
-            if (lobby.readyEpoch != epochBeforeLock) return
             while (true) {
                 val needsPrepare = tournament.currentRound == null ||
                         tournament.currentRound?.isComplete == true
