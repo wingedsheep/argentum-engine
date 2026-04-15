@@ -415,7 +415,8 @@ class DevScenarioController(
                         1, card.name,
                         tapped = card.tapped ?: false,
                         summoningSickness = card.summoningSickness ?: false,
-                        counters = card.counters ?: emptyMap()
+                        counters = card.counters ?: emptyMap(),
+                        chosenCreatureType = card.chosenCreatureType
                     )
                 }
                 config.battlefield?.forEach { card ->
@@ -434,7 +435,8 @@ class DevScenarioController(
                         2, card.name,
                         tapped = card.tapped ?: false,
                         summoningSickness = card.summoningSickness ?: false,
-                        counters = card.counters ?: emptyMap()
+                        counters = card.counters ?: emptyMap(),
+                        chosenCreatureType = card.chosenCreatureType
                     )
                 }
                 config.battlefield?.forEach { card ->
@@ -620,7 +622,8 @@ class DevScenarioController(
             cardName: String,
             tapped: Boolean = false,
             summoningSickness: Boolean = false,
-            counters: Map<String, Int> = emptyMap()
+            counters: Map<String, Int> = emptyMap(),
+            chosenCreatureType: String? = null
         ): ScenarioBuilder {
             val playerId = if (playerNumber == 1) player1Id!! else player2Id!!
             val cardId = createCard(cardName, playerId)
@@ -641,6 +644,10 @@ class DevScenarioController(
             if (counters.isNotEmpty()) {
                 val counterMap = counters.mapKeys { CounterType.valueOf(it.key) }
                 container = container.with(CountersComponent(counterMap))
+            }
+
+            if (chosenCreatureType != null) {
+                container = container.with(ChosenCreatureTypeComponent(chosenCreatureType))
             }
 
             // Add continuous effects from static abilities and replacement effects
@@ -838,7 +845,9 @@ data class BattlefieldCardConfig(
     val tapped: Boolean? = false,
     val summoningSickness: Boolean? = false,
     val counters: Map<String, Int>? = null,
-    val attachedTo: String? = null
+    val attachedTo: String? = null,
+    /** For permanents with "As this enters, choose a creature type" — skips the ETB choice by pre-setting it. */
+    val chosenCreatureType: String? = null
 )
 
 data class ScenarioResponse(
