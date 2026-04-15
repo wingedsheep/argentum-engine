@@ -392,6 +392,7 @@ class TournamentMatchHandler(
 
         if (opponentId !in lobby.getReadyPlayerIds()) return
 
+        if (tournament.hasIncompleteMatchBefore(identity.playerId, round.roundNumber)) return
         if (tournament.hasIncompleteMatchBefore(opponentId, round.roundNumber)) return
 
         logger.info("Both players ready, starting match: ${identity.playerName} vs ${lobby.players[opponentId]?.identity?.playerName}")
@@ -765,9 +766,11 @@ class TournamentMatchHandler(
             if (playerId in lobby.getReadyPlayerIds()) continue
 
             val nextMatch = tournament.getNextMatchForPlayer(playerId) ?: continue
-            val (_, match) = nextMatch
+            val (nextRound, match) = nextMatch
             val opponentId = if (match.player1Id == playerId) match.player2Id else match.player1Id
             if (opponentId == null || !aiGameManager.isAiPlayer(opponentId)) continue
+
+            if (tournament.hasIncompleteMatchBefore(playerId, nextRound.roundNumber)) continue
 
             lobby.markPlayerReady(playerId)
             logger.info("Auto-readied ${playerState.identity.playerName} (opponent is AI)")
