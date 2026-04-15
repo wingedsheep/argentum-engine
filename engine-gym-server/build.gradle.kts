@@ -16,6 +16,7 @@ dependencies {
 
     implementation(libs.bundles.kotlinxEcosystem)
     implementation(libs.springBootStarterWeb)
+    implementation(libs.springdocOpenapi)
     implementation(kotlin("reflect"))
 
     testImplementation(libs.springBootStarterTest)

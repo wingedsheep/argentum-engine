@@ -13,6 +13,8 @@ import com.wingedsheep.gymserver.dto.RestoreBody
 import com.wingedsheep.gymserver.dto.StepBatchItem
 import com.wingedsheep.gymserver.dto.StepBatchResult
 import com.wingedsheep.gymserver.dto.StepBody
+import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
@@ -39,6 +41,7 @@ import org.springframework.web.bind.annotation.RestController
  */
 @RestController
 @RequestMapping("/envs")
+@Tag(name = "Environments", description = "Create, drive and tear down MTG game environments for RL / MCTS training.")
 class EnvController(
     private val multiEnvService: MultiEnvService
 ) {
@@ -47,15 +50,24 @@ class EnvController(
     // Lifecycle
     // =========================================================================
 
+    @Operation(
+        summary = "Create a new env",
+        description = "Reserves an `envId`, initialises a game per `EnvConfig`, and returns the opening observation."
+    )
     @PostMapping
     fun create(@RequestBody config: EnvConfig): CreateEnvResponse {
         val created = multiEnvService.create(config)
         return CreateEnvResponse(created.envId, created.observation.observation)
     }
 
+    @Operation(summary = "List live env IDs")
     @GetMapping
     fun list(): List<EnvId> = multiEnvService.listEnvs().toList()
 
+    @Operation(
+        summary = "Reset an existing env",
+        description = "Keeps the same `envId` and reruns game initialisation with the supplied config."
+    )
     @PostMapping("/{id}/reset")
     fun reset(
         @PathVariable id: String,
@@ -63,6 +75,10 @@ class EnvController(
     ): TrainingObservation =
         multiEnvService.reset(EnvId(id), config).observation
 
+    @Operation(
+        summary = "Dispose a batch of envs",
+        description = "Removes the supplied `envIds` from the registry. Idempotent — unknown IDs are silently ignored."
+    )
     @DeleteMapping
     fun dispose(@RequestBody body: DisposeBody): ResponseEntity<Unit> {
         multiEnvService.dispose(body.envIds)
@@ -73,6 +89,10 @@ class EnvController(
     // Observations
     // =========================================================================
 
+    @Operation(
+        summary = "Observe an env without advancing",
+        description = "Pass `revealAll=true` only for debug tooling — never for real self-play, since it leaks opponent hand and libraries."
+    )
     @GetMapping("/{id}")
     fun observe(
         @PathVariable id: String,
@@ -84,6 +104,10 @@ class EnvController(
     // Stepping
     // =========================================================================
 
+    @Operation(
+        summary = "Advance an env by one action",
+        description = "`actionId` must come from the most recent observation. Stale IDs return 400."
+    )
     @PostMapping("/{id}/step")
     fun step(
         @PathVariable id: String,
@@ -91,6 +115,10 @@ class EnvController(
     ): TrainingObservation =
         multiEnvService.step(StepRequest(EnvId(id), body.actionId)).observation
 
+    @Operation(
+        summary = "Advance many envs in parallel",
+        description = "Results are returned in request order. Safe because each env runs in its own worker thread."
+    )
     @PostMapping("/step-batch")
     fun stepBatch(@RequestBody items: List<StepBatchItem>): List<StepBatchResult> {
         val requests = items.map { StepRequest(it.envId, it.actionId) }
@@ -99,6 +127,16 @@ class EnvController(
         }
     }
 
+    @Operation(
+        summary = "Submit a structured decision",
+        description = """
+            For pending decisions the folded action-ID space can't express —
+            ChooseTargets, Distribute, Order, SplitPiles, Search, Reorder,
+            AssignDamage, SelectManaSources, multi-select SelectCards,
+            multi-mode ChooseMode, BudgetModal.
+            Returns 409 if the env is not currently paused on a decision.
+        """
+    )
     @PostMapping("/{id}/decision")
     fun submitDecision(
         @PathVariable id: String,
@@ -110,6 +148,10 @@ class EnvController(
     // Fork / snapshot / restore
     // =========================================================================
 
+    @Operation(
+        summary = "Fork an env N times",
+        description = "Because `GameState` is immutable, each fork shares state with its source for free; divergence only costs from the first `step` onwards."
+    )
     @PostMapping("/{id}/fork")
     fun fork(
         @PathVariable id: String,
@@ -117,10 +159,15 @@ class EnvController(
     ): List<EnvId> =
         multiEnvService.fork(EnvId(id), count)
 
+    @Operation(summary = "Save a snapshot of an env's current state")
     @PostMapping("/{id}/snapshot")
     fun snapshot(@PathVariable id: String): SnapshotHandle =
         multiEnvService.snapshot(EnvId(id))
 
+    @Operation(
+        summary = "Restore an env from a snapshot",
+        description = "Perspective and reveal settings are preserved; only the underlying `GameState` changes."
+    )
     @PostMapping("/{id}/restore")
     fun restore(
         @PathVariable id: String,

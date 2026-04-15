@@ -99,6 +99,24 @@ class EnvControllerTest : FunSpec() {
             response.body() shouldContain "\"ok\""
         }
 
+        test("GET /v3/api-docs serves the OpenAPI spec") {
+            val response = get("/v3/api-docs")
+            response.statusCode() shouldBe 200
+            // Sanity-check a couple of endpoints appear in the spec.
+            response.body() shouldContain "\"/envs\""
+            response.body() shouldContain "\"/envs/{id}/step\""
+            response.body() shouldContain "Environments"  // tag name from EnvController
+        }
+
+        test("GET /swagger-ui/index.html serves the UI") {
+            // The `/swagger-ui.html` path redirects to `/swagger-ui/index.html`;
+            // we hit the underlying page directly so a default HttpClient
+            // (which follows redirects by default) doesn't matter.
+            val response = get("/swagger-ui/index.html")
+            response.statusCode() shouldBe 200
+            response.body() shouldContain "Swagger UI"
+        }
+
         test("create -> observe -> step -> dispose round-trips over HTTP") {
             // -- create --
             val createResponse = postJson("/envs", json.encodeToString(twoPlayerConfig()))

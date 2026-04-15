@@ -122,6 +122,24 @@ just gym-server                # default config, port 8081
 The process has no persistence — env state is all in-memory. Restart
 clears everything.
 
+## Interactive docs — Swagger UI
+
+Every endpoint is documented in-process. Once the server is running:
+
+- `http://localhost:8081/swagger-ui.html` — browsable UI with request bodies, response schemas, and a "Try it out" button wired to the real service
+- `http://localhost:8081/v3/api-docs` — the raw OpenAPI 3 JSON spec
+
+This is the fastest way to verify a Python client's payload shape —
+`POST /envs` in the UI, inspect the response, then copy the wire bytes
+into your client.
+
+Disable the UI in any deployment where the endpoint surface should not
+be discoverable:
+
+```bash
+GYM_OPENAPI_ENABLED=false ./gradlew :engine-gym-server:bootRun
+```
+
 ## Tests
 
 ```bash
