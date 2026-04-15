@@ -29,6 +29,7 @@ object LorwynEclipsedSet {
         EclipsedMerrow,
         Emptiness,
         FeistySpikeling,
+        FlaringCinder,
         GlamerGifter,
         GoldmeadowNomad,
         HovelHurler,
