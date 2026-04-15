@@ -22,7 +22,7 @@ export default defineConfig({
           command: 'cd .. && GAME_DEV_ENDPOINTS_ENABLED=true ./gradlew :game-server:bootRun',
           url: 'http://localhost:8080/api/dev/scenarios/cards',
           reuseExistingServer: !process.env.CI,
-          timeout: 120_000,
+          timeout: 300_000,
         },
         {
           command: 'cd ../web-client && npm run dev',
