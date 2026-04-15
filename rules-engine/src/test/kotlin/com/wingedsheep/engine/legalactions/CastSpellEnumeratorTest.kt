@@ -8,10 +8,14 @@ import com.wingedsheep.engine.legalactions.support.shouldContainCastOf
 import com.wingedsheep.engine.legalactions.support.shouldNotContainCastOf
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.player.CantCastSpellsComponent
+import com.wingedsheep.mtg.sets.definitions.dominaria.cards.StrongholdConfessor
+import com.wingedsheep.mtg.sets.definitions.khans.cards.TormentingVoice
 import com.wingedsheep.sdk.core.Step
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.collections.shouldContain
+import io.kotest.matchers.collections.shouldHaveSize
+import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 
@@ -173,6 +177,206 @@ class CastSpellEnumeratorTest : FunSpec({
 
         view shouldNotContainCastOf "Grizzly Bears"
         view shouldNotContainCastOf "Lightning Bolt"
+    }
+
+    // -------------------------------------------------------------------------
+    // X-in-mana cost (Blaze: {X}{R})
+    // -------------------------------------------------------------------------
+
+    test("X-cost spell reports hasXCost=true and maxAffordableX from available mana") {
+        val driver = setupP1(
+            hand = listOf("Blaze"),
+            battlefield = listOf("Mountain", "Mountain", "Mountain", "Mountain")
+        )
+
+        val cast = driver.enumerateFor(driver.player1).castActionsFor("Blaze").first()
+
+        cast.hasXCost shouldBe true
+        // {X}{R} with 4 mountains: fixed cost 1 (the R), X can be up to 3.
+        cast.maxAffordableX shouldBe 3
+        cast.manaCostString shouldBe "{X}{R}"
+    }
+
+    test("X-cost spell with just the fixed mana emits with maxAffordableX=0") {
+        val driver = setupP1(
+            hand = listOf("Blaze"),
+            battlefield = listOf("Mountain")
+        )
+
+        val cast = driver.enumerateFor(driver.player1).castActionsFor("Blaze").first()
+
+        cast.hasXCost shouldBe true
+        cast.maxAffordableX shouldBe 0
+    }
+
+    // -------------------------------------------------------------------------
+    // Sacrifice as additional cost (Skulltap: sacrifice a creature)
+    // -------------------------------------------------------------------------
+
+    test("additional Sacrifice cost with a creature on the battlefield — cost info populated") {
+        val driver = setupP1(
+            hand = listOf("Skulltap"),
+            battlefield = listOf("Swamp", "Swamp", "Grizzly Bears")
+        )
+
+        val cast = driver.enumerateFor(driver.player1).castActionsFor("Skulltap").first()
+
+        cast.affordable shouldBe true
+        val costInfo = cast.additionalCostInfo.shouldNotBeNull()
+        costInfo.costType shouldBe "SacrificePermanent"
+        costInfo.sacrificeCount shouldBe 1
+        costInfo.validSacrificeTargets shouldHaveSize 1
+    }
+
+    test("additional Sacrifice cost with no creatures — cast is NOT enumerated") {
+        val driver = setupP1(
+            hand = listOf("Skulltap"),
+            battlefield = listOf("Swamp", "Swamp")  // no creatures to sacrifice
+        )
+
+        driver.enumerateFor(driver.player1) shouldNotContainCastOf "Skulltap"
+    }
+
+    // -------------------------------------------------------------------------
+    // Discard as additional cost (Tormenting Voice: discard a card)
+    // -------------------------------------------------------------------------
+
+    test("additional Discard cost with a spare card in hand — cost info populated") {
+        val driver = setupP1(
+            hand = listOf("Tormenting Voice", "Grizzly Bears"),  // Bears is discardable
+            battlefield = listOf("Mountain", "Mountain"),
+            extraSetCards = listOf(TormentingVoice)
+        )
+
+        val cast = driver.enumerateFor(driver.player1).castActionsFor("Tormenting Voice").first()
+
+        cast.affordable shouldBe true
+        val costInfo = cast.additionalCostInfo.shouldNotBeNull()
+        costInfo.costType shouldBe "DiscardCard"
+        costInfo.discardCount shouldBe 1
+        // Only 1 valid discard target — the Bears. The spell itself is excluded.
+        costInfo.validDiscardTargets shouldHaveSize 1
+    }
+
+    test("additional Discard cost with only the spell itself in hand — NOT enumerated") {
+        // Tormenting Voice alone in hand: the spell is excluded from discard
+        // targets (cost.kt filters `it != cardId`), so no valid discards remain.
+        val driver = setupP1(
+            hand = listOf("Tormenting Voice"),
+            battlefield = listOf("Mountain", "Mountain"),
+            extraSetCards = listOf(TormentingVoice)
+        )
+
+        driver.enumerateFor(driver.player1) shouldNotContainCastOf "Tormenting Voice"
+    }
+
+    // -------------------------------------------------------------------------
+    // Kicker (Stronghold Confessor: {B}, kicker {3})
+    // -------------------------------------------------------------------------
+
+    test("Kicker surfaces a separate CastWithKicker action alongside the base cast") {
+        val driver = setupP1(
+            hand = listOf("Stronghold Confessor"),
+            battlefield = listOf("Swamp", "Swamp", "Swamp", "Swamp"),  // enough for kicked cost {3}{B}
+            extraSetCards = listOf(StrongholdConfessor)
+        )
+
+        val casts = driver.enumerateFor(driver.player1).castActionsFor("Stronghold Confessor")
+
+        // Base cast + kicker cast.
+        casts shouldHaveSize 2
+        casts.map { it.actionType }.toSet() shouldBe setOf("CastSpell", "CastWithKicker")
+        val kicked = casts.single { it.actionType == "CastWithKicker" }
+        kicked.affordable shouldBe true
+        // Kicker adds {3} to the base {B} cost.
+        kicked.manaCostString shouldBe "{3}{B}"
+        (kicked.action as CastSpell).wasKicked shouldBe true
+    }
+
+    test("Kicker action is emitted as unaffordable when the kicked cost can't be paid") {
+        // Only 1 Swamp — enough for {B} base, not for {4}{B} kicked.
+        val driver = setupP1(
+            hand = listOf("Stronghold Confessor"),
+            battlefield = listOf("Swamp"),
+            extraSetCards = listOf(StrongholdConfessor)
+        )
+
+        val kicked = driver.enumerateFor(driver.player1)
+            .castActionsFor("Stronghold Confessor")
+            .single { it.actionType == "CastWithKicker" }
+
+        kicked.affordable shouldBe false
+    }
+
+    // -------------------------------------------------------------------------
+    // Damage distribution (Forked Lightning)
+    // -------------------------------------------------------------------------
+
+    test("DividedDamageEffect spell reports requiresDamageDistribution and totals") {
+        // Forked Lightning: {3}{R}, "4 damage divided among 1–3 creatures"
+        val driver = setupP1(
+            hand = listOf("Forked Lightning"),
+            battlefield = listOf("Mountain", "Mountain", "Mountain", "Mountain", "Grizzly Bears")
+        )
+
+        val cast = driver.enumerateFor(driver.player1).castActionsFor("Forked Lightning").first()
+
+        cast.requiresDamageDistribution shouldBe true
+        cast.totalDamageToDistribute shouldBe 4
+        cast.minDamagePerTarget shouldBe 1
+        cast.requiresTargets shouldBe true
+    }
+
+    // -------------------------------------------------------------------------
+    // Convoke (Stoke the Flames — creatures may tap to pay)
+    // -------------------------------------------------------------------------
+
+    test("Convoke spell surfaces convokeCreatures and hasConvoke=true") {
+        // Stoke the Flames: {2}{R}{R} with Convoke. 4 Mountains alone would cover it;
+        // we add Grizzly Bears to ensure convokeCreatures is populated for the UI.
+        val driver = setupP1(
+            hand = listOf("Stoke the Flames"),
+            battlefield = listOf("Mountain", "Mountain", "Mountain", "Mountain", "Grizzly Bears")
+        )
+
+        val cast = driver.enumerateFor(driver.player1).castActionsFor("Stoke the Flames").first()
+
+        cast.hasConvoke shouldBe true
+        val creatures = cast.convokeCreatures.shouldNotBeNull()
+        creatures shouldHaveSize 1  // just the Grizzly Bears
+        creatures.single().name shouldBe "Grizzly Bears"
+    }
+
+    test("Convoke makes an otherwise unpayable spell payable via creature taps") {
+        // Only 3 Mountains (3 mana) but 1 Grizzly Bears (can tap for 1 generic).
+        // Convoke lets us pay {2}{R}{R} = 4 by combining 3 mana + 1 creature tap.
+        val driver = setupP1(
+            hand = listOf("Stoke the Flames"),
+            battlefield = listOf("Mountain", "Mountain", "Mountain", "Grizzly Bears")
+        )
+
+        driver.enumerateFor(driver.player1) shouldContainAffordableCastOf "Stoke the Flames"
+    }
+
+    // -------------------------------------------------------------------------
+    // Delve (Gurmag Angler — exile graveyard cards to pay generic)
+    // -------------------------------------------------------------------------
+
+    test("Delve spell surfaces delveCards and minDelveNeeded") {
+        // Gurmag Angler: {6}{B} with Delve. 2 Swamps + 5 graveyard cards = delve
+        // 5 to cover the remaining 5 generic mana (total available 2 + 5 = 7 ≥ 7).
+        val driver = setupP1(
+            hand = listOf("Gurmag Angler"),
+            battlefield = listOf("Swamp", "Swamp"),
+            graveyard = listOf("Grizzly Bears", "Forest", "Forest", "Forest", "Forest")
+        )
+
+        val cast = driver.enumerateFor(driver.player1).castActionsFor("Gurmag Angler").first()
+
+        cast.hasDelve shouldBe true
+        val delveCards = cast.delveCards.shouldNotBeNull()
+        delveCards shouldHaveSize 5  // all graveyard cards are delve-able
+        cast.minDelveNeeded shouldBe 5  // 7 cost - 2 swamps
     }
 
 })
