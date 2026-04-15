@@ -152,7 +152,7 @@ export function DecisionUI() {
 
   // Handle AssignDamageDecision (combat damage assignment to blockers/player)
   if (pendingDecision.type === 'AssignDamageDecision') {
-    return <CombatDamageAssignmentModal decision={pendingDecision} />
+    return <CombatDamageAssignmentModal key={pendingDecision.id} decision={pendingDecision} />
   }
 
   // Handle ChooseColorDecision (e.g., "Choose a color for protection")
