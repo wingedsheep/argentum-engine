@@ -1,7 +1,7 @@
 package com.wingedsheep.gameserver.controller
 
 import com.wingedsheep.gameserver.handler.LobbyHandler
-import com.wingedsheep.gameserver.sealed.BoosterGenerator
+import com.wingedsheep.engine.limited.BoosterGenerator
 import org.slf4j.LoggerFactory
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.http.ResponseEntity

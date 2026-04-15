@@ -6,7 +6,7 @@ import com.wingedsheep.gameserver.lobby.LobbyState
 import com.wingedsheep.gameserver.lobby.TournamentFormat
 import com.wingedsheep.gameserver.lobby.TournamentLobby
 import com.wingedsheep.gameserver.persistence.dto.*
-import com.wingedsheep.gameserver.sealed.BoosterGenerator
+import com.wingedsheep.engine.limited.BoosterGenerator
 import com.wingedsheep.gameserver.sealed.SealedPlayerState
 import com.wingedsheep.gameserver.sealed.SealedSession
 import com.wingedsheep.gameserver.sealed.SealedSessionState

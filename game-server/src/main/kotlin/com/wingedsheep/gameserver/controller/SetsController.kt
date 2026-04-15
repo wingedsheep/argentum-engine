@@ -1,7 +1,7 @@
 package com.wingedsheep.gameserver.controller
 
 import com.wingedsheep.gameserver.deck.SetArchetypes
-import com.wingedsheep.gameserver.sealed.BoosterGenerator
+import com.wingedsheep.engine.limited.BoosterGenerator
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestMapping

@@ -1,7 +1,7 @@
 package com.wingedsheep.gameserver.ai
 
 import com.wingedsheep.gameserver.config.GameProperties
-import com.wingedsheep.gameserver.deck.SealedDeckGenerator
+import com.wingedsheep.engine.limited.SealedDeckGenerator
 import com.wingedsheep.gameserver.session.GameSession
 import com.wingedsheep.gameserver.session.PlayerIdentity
 import com.wingedsheep.gameserver.session.PlayerSession

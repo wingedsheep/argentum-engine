@@ -10,7 +10,7 @@ import com.wingedsheep.gameserver.persistence.persistenceJson
 import com.wingedsheep.gameserver.persistence.restoreTournamentLobby
 import com.wingedsheep.gameserver.persistence.restoreTournamentManager
 import com.wingedsheep.gameserver.persistence.toPersistent
-import com.wingedsheep.gameserver.sealed.BoosterGenerator
+import com.wingedsheep.engine.limited.BoosterGenerator
 import com.wingedsheep.gameserver.sealed.SealedSession
 import com.wingedsheep.gameserver.session.PlayerIdentity
 import com.wingedsheep.gameserver.tournament.TournamentManager

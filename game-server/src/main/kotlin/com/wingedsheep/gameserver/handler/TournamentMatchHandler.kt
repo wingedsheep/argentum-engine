@@ -14,7 +14,7 @@ import com.wingedsheep.gameserver.tournament.TournamentMatch
 import com.wingedsheep.gameserver.tournament.TournamentRound
 import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.gameserver.deck.EasterEggDeckInjector
-import com.wingedsheep.gameserver.sealed.BoosterGenerator
+import com.wingedsheep.engine.limited.BoosterGenerator
 import com.wingedsheep.sdk.model.EntityId
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component

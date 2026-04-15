@@ -8,7 +8,7 @@ import com.wingedsheep.gameserver.protocol.GameOverReason
 import com.wingedsheep.gameserver.protocol.ServerMessage
 import com.wingedsheep.gameserver.repository.GameRepository
 import com.wingedsheep.gameserver.repository.LobbyRepository
-import com.wingedsheep.gameserver.sealed.BoosterGenerator
+import com.wingedsheep.engine.limited.BoosterGenerator
 import com.wingedsheep.gameserver.session.PlayerIdentity
 import com.wingedsheep.gameserver.session.PlayerSession
 import com.wingedsheep.gameserver.session.SessionRegistry

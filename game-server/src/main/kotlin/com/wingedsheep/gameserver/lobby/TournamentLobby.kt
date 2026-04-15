@@ -1,7 +1,7 @@
 package com.wingedsheep.gameserver.lobby
 
 import com.wingedsheep.gameserver.protocol.ServerMessage
-import com.wingedsheep.gameserver.sealed.BoosterGenerator
+import com.wingedsheep.engine.limited.BoosterGenerator
 import com.wingedsheep.gameserver.session.PlayerIdentity
 import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.EntityId

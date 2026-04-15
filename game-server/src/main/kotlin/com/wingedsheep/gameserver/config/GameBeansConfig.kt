@@ -1,9 +1,10 @@
 package com.wingedsheep.gameserver.config
 
 import com.wingedsheep.gameserver.deck.RandomDeckGenerator
-import com.wingedsheep.gameserver.deck.SealedDeckGenerator
-import com.wingedsheep.gameserver.sealed.BoosterGenerator
+import com.wingedsheep.engine.limited.SealedDeckGenerator
+import com.wingedsheep.engine.limited.BoosterGenerator
 import com.wingedsheep.engine.registry.CardRegistry
+import com.wingedsheep.gameserver.sealed.SetConfigs
 import com.wingedsheep.mtg.sets.definitions.bloomburrow.BloomburrowSet
 import com.wingedsheep.mtg.sets.definitions.edgeofeternities.EdgeOfEternitiesSet
 import com.wingedsheep.mtg.sets.definitions.dominaria.DominariaSet
@@ -71,27 +72,27 @@ class GameBeansConfig(
     @Bean
     fun boosterGenerator(): BoosterGenerator {
         val sets = buildMap {
-            put(PortalSet.SET_CODE, BoosterGenerator.portalSetConfig)
+            put(PortalSet.SET_CODE, SetConfigs.portalSetConfig)
             if (gameProperties.sets.onslaughtEnabled) {
-                put(OnslaughtSet.SET_CODE, BoosterGenerator.onslaughtSetConfig)
+                put(OnslaughtSet.SET_CODE, SetConfigs.onslaughtSetConfig)
             }
             if (gameProperties.sets.scourgeEnabled) {
-                put(ScourgeSet.SET_CODE, BoosterGenerator.scourgeSetConfig)
+                put(ScourgeSet.SET_CODE, SetConfigs.scourgeSetConfig)
             }
             if (gameProperties.sets.legionsEnabled) {
-                put(LegionsSet.SET_CODE, BoosterGenerator.legionsSetConfig)
+                put(LegionsSet.SET_CODE, SetConfigs.legionsSetConfig)
             }
             if (gameProperties.sets.khansEnabled) {
-                put(KhansOfTarkirSet.SET_CODE, BoosterGenerator.khansSetConfig)
+                put(KhansOfTarkirSet.SET_CODE, SetConfigs.khansSetConfig)
             }
             if (gameProperties.sets.dominariaEnabled) {
-                put(DominariaSet.SET_CODE, BoosterGenerator.dominariaSetConfig)
+                put(DominariaSet.SET_CODE, SetConfigs.dominariaSetConfig)
             }
             if (gameProperties.sets.bloomburrowEnabled) {
-                put(BloomburrowSet.SET_CODE, BoosterGenerator.bloomburrowSetConfig)
+                put(BloomburrowSet.SET_CODE, SetConfigs.bloomburrowSetConfig)
             }
             if (gameProperties.sets.edgeOfEternitiesEnabled) {
-                put(EdgeOfEternitiesSet.SET_CODE, BoosterGenerator.edgeOfEternitiesSetConfig)
+                put(EdgeOfEternitiesSet.SET_CODE, SetConfigs.edgeOfEternitiesSetConfig)
             }
         }
         return BoosterGenerator(sets)
