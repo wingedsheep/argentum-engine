@@ -234,6 +234,25 @@ class GameEnvironment private constructor(
     }
 
     /**
+     * Restore this environment to a previously-captured [state] and roster.
+     *
+     * Intended for MCTS rollouts and the snapshot/restore flow in
+     * `MultiEnvService`. Because [GameState] is fully immutable, this is an
+     * O(1) reference swap — no deep copy.
+     *
+     * @param state The game state to install.
+     * @param playerIds The player turn order associated with [state].
+     * @param stepCount Optional step-counter to restore; defaults to 0.
+     */
+    fun restore(state: GameState, playerIds: List<EntityId>, stepCount: Int = 0) {
+        this.state = state
+        this.playerIds = playerIds
+        this.events = emptyList()
+        this.lastStepEvents = emptyList()
+        this.stepCount = stepCount
+    }
+
+    /**
      * Get the terminal reward for each player.
      *
      * - Win = +1.0

@@ -23,5 +23,6 @@ include(":game-server")
 include(":rules-engine")
 include(":mtg-sdk")
 include(":mtg-sets")
+include(":engine-gym")
 
 rootProject.name = "argentum-engine"
