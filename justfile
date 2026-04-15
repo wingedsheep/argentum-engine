@@ -25,6 +25,11 @@ test-rules:
 test-server:
     ./gradlew :game-server:test
 
+# Run tests for engine-gym only
+[group: 'build']
+test-gym:
+    ./gradlew :engine-gym:test
+
 # Run a specific test class (e.g., just test-class CreatureStatsTest)
 [group: 'build']
 test-class CLASS:
@@ -49,6 +54,16 @@ server:
 [group: 'dev']
 server-ons:
     @if [ -f .env ]; then set -a && source .env && set +a; fi && GAME_SETS_ONSLAUGHT_ENABLED=true ./gradlew :game-server:bootRun --args='--spring.profiles.active=local'
+
+# Start the gym HTTP server on port 8081 (for RL / MCTS training loops)
+[group: 'dev']
+gym-server:
+    ./gradlew :engine-gym-server:bootRun
+
+# Run engine-gym-server tests
+[group: 'build']
+test-gym-server:
+    ./gradlew :engine-gym-server:test
 
 # Start the web client in dev mode
 [group: 'dev']

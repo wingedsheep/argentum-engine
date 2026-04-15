@@ -1,0 +1,12 @@
+server:
+  # Distinct port from game-server (8080) so both can run side-by-side
+  # during development.
+  port: 8081
+
+spring:
+  application:
+    name: argentum-engine-gym-server
+
+logging:
+  level:
+    com.wingedsheep.gymserver: DEBUG

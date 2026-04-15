@@ -19,6 +19,7 @@ Argentum Engine is a modular MTG implementation consisting of:
 - **Rules Engine** — A deterministic Kotlin library implementing MTG comprehensive rules
 - **Game Server** — Spring Boot backend for online multiplayer
 - **Web Client** — Browser-based UI
+- **Gym** — An RL/MCTS environment wrapper around the rules engine, with an HTTP transport for Python training loops
 
 ## Getting Started
 
@@ -56,12 +57,15 @@ The client runs at `http://localhost:5173` and connects to the server at `http:/
 | `just test` | Run all tests |
 | `just test-rules` | Run rules-engine tests only |
 | `just test-server` | Run game-server tests only |
+| `just test-gym` | Run engine-gym tests only |
+| `just test-gym-server` | Run engine-gym-server HTTP tests only |
 | `just clean` | Clean build artifacts |
 
 **Development**
 | Command | Description |
 |---------|-------------|
-| `just server` | Start the game server |
+| `just server` | Start the game server (port 8080) |
+| `just gym-server` | Start the gym HTTP server (port 8081) — for RL/MCTS training |
 | `just client` | Start the web client dev server |
 | `just client-install` | Install web client dependencies |
 
@@ -160,12 +164,14 @@ The LLM AI receives the same masked game state as a human player and responds th
 
 ```
 argentum-engine/
-├── mtg-sdk/          # Shared contract — DSLs, data models, primitives
-├── mtg-sets/         # Card definitions (Portal, Onslaught, Legions, Scourge, Khans, Dominaria)
-├── rules-engine/     # Core MTG rules engine (no server dependencies)
-├── game-server/      # Spring Boot game server & matchmaking
-├── web-client/       # React/TypeScript browser UI
-└── e2e-scenarios/    # Playwright end-to-end tests
+├── mtg-sdk/              # Shared contract — DSLs, data models, primitives
+├── mtg-sets/             # Card definitions (Portal, Onslaught, Legions, Scourge, Khans, Dominaria)
+├── rules-engine/         # Core MTG rules engine (no server dependencies)
+├── engine-gym/           # RL/MCTS environment wrapper (GameEnvironment, MultiEnvService)
+├── engine-gym-server/    # Spring Boot HTTP transport for engine-gym (training loops)
+├── game-server/          # Spring Boot game server & matchmaking
+├── web-client/           # React/TypeScript browser UI
+└── e2e-scenarios/        # Playwright end-to-end tests
 ```
 
 ## Rules Engine
@@ -197,6 +203,47 @@ Cards are defined as pure data using a Kotlin DSL — no card-specific logic in 
 
 - Real-time game state sync via WebSocket
 - Targeting, combat, and decision UIs
+
+## Gym — RL & MCTS Environment
+
+For agent research and reinforcement-learning training, the engine also ships as a Gymnasium-style environment. A trainer drives many games in parallel against a stable JSON contract, without touching the game server or the browser UI.
+
+### Library — `engine-gym`
+
+A transport-agnostic Kotlin library that wraps the rules engine in a stateful `reset / step / observe / legalActions` API with MCTS-friendly affordances:
+
+- **Immutable state + O(1) fork** — `GameEnvironment.fork()` returns a sibling env pointing at the same `GameState`. Because state is never mutated in place, tree expansion is free.
+- **Snapshot / restore** — `MultiEnvService.snapshot()` returns an opaque handle; `restore()` swaps the env back to that state in O(1). Designed to grow a byte-blob variant for cross-process MCTS workers.
+- **Batch stepping** — `MultiEnvService.stepBatch()` fans out per-env steps across a work-stealing pool, so vectorised rollouts run in parallel.
+- **Decision-aware** — pauses on `PendingDecision`s (scry, targets, search, distribute…); simple decisions fold into the numeric action-ID space, complex ones expose a structured response channel.
+- **Stable observation schema** — `TrainingObservation` has a `schemaHash` so Python clients fail fast on contract drift; every observation carries a `stateDigest` usable as an MCTS transposition-table key.
+- **Information hiding** — opponent hand and libraries are masked by default; `revealAll` is available for debug scripts.
+
+### HTTP transport — `engine-gym-server`
+
+A thin Spring Boot shell that exposes `MultiEnvService` over HTTP so a Python agent can drive the engine without a JVM embedding:
+
+| Method & path | Maps to |
+|---|---|
+| `POST /envs` | `MultiEnvService.create` |
+| `GET /envs` | `listEnvs` |
+| `DELETE /envs` | `dispose` |
+| `GET /envs/{id}` | `observe` |
+| `POST /envs/{id}/reset` | `reset` |
+| `POST /envs/{id}/step` | `step` |
+| `POST /envs/step-batch` | `stepBatch` |
+| `POST /envs/{id}/decision` | `submitDecision` (structured `DecisionResponse`) |
+| `POST /envs/{id}/fork?count=N` | `fork` |
+| `POST /envs/{id}/snapshot` | `snapshot` |
+| `POST /envs/{id}/restore` | `restore` |
+| `GET /schema-hash` | observation-schema version (fail-fast on drift) |
+| `GET /health` | liveness probe |
+
+JSON is handled end-to-end by kotlinx.serialization — sealed hierarchies (`DeckSpec`, `DecisionResponse`) round-trip via `@SerialName` discriminators without extra adapter code.
+
+Start the server with `just gym-server` (port **8081**, so it doesn't collide with the game server on 8080). Running it does not require the web client or Redis.
+
+**Deliberately out of scope for the current scaffold:** authentication, env-lifetime TTLs, byte-based snapshots, metrics. Bind to localhost until you add auth.
 
 ## Why "Argentum"?
 
