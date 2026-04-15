@@ -2,13 +2,13 @@
 
 **Set Size:** 273 cards (main set, per Scryfall `set:ecl`)
 **Release Date:** January 23, 2026
-**Implemented:** 34 / 273
+**Implemented:** 35 / 273
 
 | Color      | Total | Done |
 |------------|-------|------|
 | White      | 39    | 3    |
 | Blue       | 39    | 7    |
-| Black      | 38    | 2    |
+| Black      | 38    | 3    |
 | Red        | 39    | 1    |
 | Green      | 39    | 5    |
 | Multicolor | 49    | 8    |
@@ -119,7 +119,7 @@
 - [ ] Creakwood Safewright
 - [ ] Darkness Descends
 - [ ] Dawnhand Dissident
-- [ ] Dawnhand Eulogist
+- [x] Dawnhand Eulogist
 - [ ] Dose of Dawnglow
 - [ ] Dream Seizer
 - [ ] Gloom Ripper

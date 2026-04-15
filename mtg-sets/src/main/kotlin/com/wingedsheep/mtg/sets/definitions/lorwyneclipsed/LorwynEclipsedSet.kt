@@ -26,6 +26,7 @@ object LorwynEclipsedSet {
         ChampionsOfThePerfect,
         ChronicleOfVictory,
         ClachanFestival,
+        DawnhandEulogist,
         DawnsLightArcher,
         DeepchannelDuelist,
         EclipsedMerrow,
