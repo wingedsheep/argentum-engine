@@ -16,6 +16,7 @@ val RagingGoblin = card("Raging Goblin") {
     typeLine = "Creature — Goblin Berserker"
     power = 1
     toughness = 1
+    oracleText = "Haste"
 
     keywords(Keyword.HASTE)
 
