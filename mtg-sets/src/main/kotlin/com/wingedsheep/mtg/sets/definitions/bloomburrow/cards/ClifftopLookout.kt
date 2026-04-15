@@ -6,12 +6,15 @@ import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
-import com.wingedsheep.sdk.scripting.effects.ZonePlacement
 import com.wingedsheep.sdk.scripting.effects.CardDestination
+import com.wingedsheep.sdk.scripting.effects.CardOrder
+import com.wingedsheep.sdk.scripting.effects.CollectionFilter
 import com.wingedsheep.sdk.scripting.effects.CompositeEffect
+import com.wingedsheep.sdk.scripting.effects.FilterCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.GatherUntilMatchEffect
 import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.RevealCollectionEffect
+import com.wingedsheep.sdk.scripting.effects.ZonePlacement
 
 /**
  * Clifftop Lookout
@@ -38,16 +41,23 @@ val ClifftopLookout = card("Clifftop Lookout") {
             GatherUntilMatchEffect(
                 filter = GameObjectFilter.Land,
                 storeMatch = "revealedLand",
-                storeRevealed = "otherRevealed"
+                storeRevealed = "allRevealed"
             ),
-            RevealCollectionEffect(from = "otherRevealed"),
+            RevealCollectionEffect(from = "allRevealed"),
+            // allRevealed includes the matched land, so subtract it before bottoming.
+            FilterCollectionEffect(
+                from = "allRevealed",
+                filter = CollectionFilter.ExcludeOtherCollection("revealedLand"),
+                storeMatching = "nonLandRevealed"
+            ),
             MoveCollectionEffect(
                 from = "revealedLand",
                 destination = CardDestination.ToZone(Zone.BATTLEFIELD, placement = ZonePlacement.Tapped)
             ),
             MoveCollectionEffect(
-                from = "otherRevealed",
-                destination = CardDestination.ToZone(Zone.LIBRARY, placement = ZonePlacement.Bottom)
+                from = "nonLandRevealed",
+                destination = CardDestination.ToZone(Zone.LIBRARY, placement = ZonePlacement.Bottom),
+                order = CardOrder.Random
             )
         ))
     }

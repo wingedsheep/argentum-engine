@@ -107,6 +107,12 @@ class FilterCollectionExecutor : EffectExecutor<FilterCollectionEffect> {
                 val excludedId = resolveEntityReference(filter.entity, context)
                 cards.partition { it != excludedId }
             }
+
+            is CollectionFilter.ExcludeOtherCollection -> {
+                val excluded = context.pipeline.storedCollections[filter.otherCollectionName]
+                    ?.toSet() ?: emptySet()
+                cards.partition { it !in excluded }
+            }
         }
 
         val updatedCollections = mutableMapOf(effect.storeMatching to matching)

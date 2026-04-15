@@ -848,6 +848,18 @@ sealed interface CollectionFilter {
     @SerialName("ExcludeEntity")
     @Serializable
     data class ExcludeEntity(val entity: EntityReference) : CollectionFilter
+
+    /**
+     * Exclude all entities present in another stored collection — i.e., set difference.
+     * Used when one collection is a superset of another and you need the remainder
+     * (e.g., GatherUntilMatch stores the match in both `storeMatch` and `storeRevealed`;
+     * use this to compute "the rest of the revealed cards").
+     *
+     * @property otherCollectionName Name of the collection whose entities should be excluded
+     */
+    @SerialName("ExcludeOtherCollection")
+    @Serializable
+    data class ExcludeOtherCollection(val otherCollectionName: String) : CollectionFilter
 }
 
 /**
