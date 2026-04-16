@@ -65,9 +65,27 @@ class LegalActionEnricher(
             crewPower = action.crewPower,
             validCrewCreatures = action.crewCreatures?.map { it.toDto() },
             maxRepeatableActivations = action.maxRepeatableActivations,
+            modalEnumeration = action.modalEnumeration?.toDto(),
             holdPriority = action.holdPriority
         )
     }
+
+    private fun ModalLegalEnumeration.toDto() = ModalLegalEnumerationInfo(
+        chooseCount = chooseCount,
+        minChooseCount = minChooseCount,
+        allowRepeat = allowRepeat,
+        modes = modes.map { it.toDto() },
+        unavailableIndices = unavailableIndices
+    )
+
+    private fun ModalEnumerationMode.toDto() = ModalEnumerationModeInfo(
+        index = index,
+        description = description,
+        available = available,
+        additionalManaCost = additionalManaCost,
+        additionalCostInfo = additionalCostInfo?.toDto(),
+        targetRequirements = targetRequirements.map { it.toDto() }
+    )
 
     private fun buildManaSourceInfos(state: GameState, playerId: EntityId): List<ManaSourceInfo>? {
         val sources = manaSolver.findAvailableManaSources(state, playerId)

@@ -65,7 +65,33 @@ data class LegalActionInfo(
     val hasCrew: Boolean = false,
     val crewPower: Int? = null,
     val validCrewCreatures: List<CrewCreatureInfo>? = null,
+    val modalEnumeration: ModalLegalEnumerationInfo? = null,
     val holdPriority: Boolean = false
+)
+
+/**
+ * DTO for a choose-N modal spell's cast-time enumeration payload (rules 700.2).
+ *
+ * Mirrors [com.wingedsheep.engine.legalactions.ModalLegalEnumeration]; the client
+ * uses this to drive the mode/target decision loop.
+ */
+@Serializable
+data class ModalLegalEnumerationInfo(
+    val chooseCount: Int,
+    val minChooseCount: Int,
+    val allowRepeat: Boolean,
+    val modes: List<ModalEnumerationModeInfo>,
+    val unavailableIndices: List<Int>
+)
+
+@Serializable
+data class ModalEnumerationModeInfo(
+    val index: Int,
+    val description: String,
+    val available: Boolean,
+    val additionalManaCost: String? = null,
+    val additionalCostInfo: AdditionalCostInfo? = null,
+    val targetRequirements: List<LegalActionTargetInfo> = emptyList()
 )
 
 @Serializable

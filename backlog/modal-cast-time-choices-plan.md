@@ -240,11 +240,16 @@ Verified integration (already wired by Phases 1–4 & 9):
 - `CastSpellHandler.validateChosenModeShape` rejects `chosen.size < minChooseCount` at the finalized-cast boundary.
 - No new engine surface needed — entirely driven through existing `ChooseOptionDecision` / continuation infrastructure.
 
-### Phase 11 — Wire-up / registrations
+### Phase 11 — Wire-up / registrations [DONE]
 
 - Register new continuations in `Serialization.kt:183`.
 - Register resumer in `ContinuationHandler` alongside existing `ModalAndCloneContinuationResumer`.
 - Update `LegalAction` to include `modalEnumeration: ModalLegalEnumeration?` and expose through server DTO layer.
+
+Completed wiring:
+- `Serialization.kt` (lines 185–186) registers both `CastModalModeSelectionContinuation` and `CastModalTargetSelectionContinuation` as `ContinuationFrame` subclasses.
+- `ContinuationHandler.kt:45` registers `CastModalContinuationResumer` alongside `ModalAndCloneContinuationResumer`.
+- `LegalAction.modalEnumeration: ModalLegalEnumeration?` already present on the engine side (line 82). Added matching DTO types `ModalLegalEnumerationInfo` / `ModalEnumerationModeInfo` in `LegalActionPresentation.kt`, extended `LegalActionInfo` with `modalEnumeration: ModalLegalEnumerationInfo?`, and wired the mapping in `LegalActionEnricher.toLegalActionInfo` (via new `toDto()` extensions on `ModalLegalEnumeration` / `ModalEnumerationMode`).
 
 ---
 
