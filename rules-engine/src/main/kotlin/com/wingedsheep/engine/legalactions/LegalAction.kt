@@ -76,8 +76,61 @@ data class LegalAction(
     // Additional life cost (e.g., Festival of Embers graveyard casting)
     val additionalLifeCost: Int = 0,
 
+    // Modal cast-time enumeration payload (rules 700.2). Only populated when
+    // [actionType] is "CastSpellModal" and the spell has [ModalEffect.chooseCount] > 1.
+    // The client uses this to drive the cast-time mode/target decision loop.
+    val modalEnumeration: ModalLegalEnumeration? = null,
+
     // When true, prevents auto-pass whenever this action is available
     val holdPriority: Boolean = false
+)
+
+/**
+ * Per-mode enumeration data for a choose-N modal spell.
+ *
+ * Carries everything the client needs to offer mode selection at cast time:
+ * which modes exist, which are unavailable (700.2a — can't target, can't pay
+ * additional cost), and the per-mode cost deltas and target requirements.
+ *
+ * Modes marked `available = false` must not be pickable.
+ *
+ * @property chooseCount Maximum number of modes the player may pick.
+ * @property minChooseCount Minimum number of modes required (< chooseCount for
+ *           "choose one or both" / "choose one or more").
+ * @property allowRepeat When true, the same mode index may be chosen more than
+ *           once (rules 700.2d — Escalate / Spree).
+ * @property modes One entry per declared mode, in printed order.
+ * @property unavailableIndices Convenience list of mode indices flagged
+ *           unavailable. Equal to `modes.filterNot { it.available }.map { it.index }`.
+ */
+data class ModalLegalEnumeration(
+    val chooseCount: Int,
+    val minChooseCount: Int,
+    val allowRepeat: Boolean,
+    val modes: List<ModalEnumerationMode>,
+    val unavailableIndices: List<Int>
+)
+
+/**
+ * A single mode offered for cast-time selection on a choose-N modal spell.
+ *
+ * @property index Printed mode index (0-based).
+ * @property description Rendered mode text, e.g. "Target creature gets +3/+3 until end of turn".
+ * @property available False when the mode has no legal targets (700.2a) or when
+ *           the caster cannot pay this mode's [additionalManaCost] / additional costs.
+ * @property additionalManaCost Extra mana this mode adds to the spell's cost, if any
+ *           (rendered string form — pure-add deltas such as "{B}").
+ * @property additionalCostInfo Per-mode non-mana additional cost info when the mode
+ *           overrides the card-level [AdditionalCost]s (rules 700.2h). Null otherwise.
+ * @property targetRequirements Target slots for this mode; empty if the mode has none.
+ */
+data class ModalEnumerationMode(
+    val index: Int,
+    val description: String,
+    val available: Boolean,
+    val additionalManaCost: String? = null,
+    val additionalCostInfo: AdditionalCostData? = null,
+    val targetRequirements: List<TargetInfo> = emptyList()
 )
 
 /**
