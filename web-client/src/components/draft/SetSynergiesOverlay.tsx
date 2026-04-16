@@ -320,6 +320,72 @@ const SET_SYNERGIES: Record<string, SetSynergies> = {
       },
     ],
   },
+  BLB: {
+    setCode: 'BLB',
+    setName: 'Bloomburrow',
+    archetypes: [
+      {
+        name: 'Birds',
+        colors: ['W', 'U'],
+        creatureTypes: ['Bird'],
+        description: 'Mix fliers and ground support creatures. Flier payoffs buff your non-flying forces and vice versa, creating a two-axis attack that keeps opponents stretched thin.',
+      },
+      {
+        name: 'Bats',
+        colors: ['W', 'B'],
+        creatureTypes: ['Bat'],
+        description: 'Use life as a resource — white gains it, black spends it. Bats reward you for both gaining and losing life, letting you flip between aggression and defense as needed.',
+      },
+      {
+        name: 'Mice',
+        colors: ['W', 'R'],
+        creatureTypes: ['Mouse'],
+        description: 'Built around Valiant — the first time each turn a creature is targeted by a spell or ability, it gets a bonus. Target your own creatures with spells and abilities for fast, combat-focused aggro.',
+      },
+      {
+        name: 'Rats',
+        colors: ['U', 'B'],
+        creatureTypes: ['Rat'],
+        description: 'Threshold deck that unlocks powerful bonuses once you have 7+ cards in your graveyard. Self-mill fills the yard quickly, and the deck can tilt aggro or control depending on the matchup.',
+      },
+      {
+        name: 'Otters',
+        colors: ['U', 'R'],
+        creatureTypes: ['Otter'],
+        description: 'Cast a high volume of instants and sorceries to trigger Prowess on your Otter creatures. Classic Izzet spell-slinger that gets bigger the more spells you cast.',
+      },
+      {
+        name: 'Frogs',
+        colors: ['U', 'G'],
+        creatureTypes: ['Frog'],
+        description: 'Value engine built around bouncing and blinking Frogs to re-trigger ETB effects. Mana-intensive but generates enormous card advantage in the late game.',
+      },
+      {
+        name: 'Lizards',
+        colors: ['B', 'R'],
+        creatureTypes: ['Lizard'],
+        description: 'Aggressive deck that rewards dealing damage to opponents and forcing life loss. Creatures gain bonuses when opponents lose life, combining relentless pressure with black removal.',
+      },
+      {
+        name: 'Squirrels',
+        colors: ['B', 'G'],
+        creatureTypes: ['Squirrel'],
+        description: 'Grindy midrange built around the Forage mechanic — sacrifice Food tokens or exile cards from graveyards for value. Squirrels synergize with food production and graveyard interactions.',
+      },
+      {
+        name: 'Raccoons',
+        colors: ['R', 'G'],
+        creatureTypes: ['Raccoon'],
+        description: 'Ramp into massive Raccoon threats, all of which have Expend 4 triggered abilities that fire when you spend 4 or more mana in a turn. Play mana dorks into oversized haymakers.',
+      },
+      {
+        name: 'Rabbits',
+        colors: ['G', 'W'],
+        creatureTypes: ['Rabbit'],
+        description: 'Flood the board with Rabbit tokens, then use mass pump and anthem effects to swing for lethal all at once. One of the most popular and powerful archetypes in the format.',
+      },
+    ],
+  },
 }
 
 /**
