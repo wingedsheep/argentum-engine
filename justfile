@@ -204,4 +204,4 @@ e2e-install:
 # Use LLM deck building: just watch-ai-match "z-ai/glm-5.1" "qwen/qwen3.6-plus" "false"
 [group: 'e2e']
 watch-ai-match MODEL1="z-ai/glm-5.1" MODEL2="qwen/qwen3.6-plus" HEURISTIC="true":
-    cd e2e-scenarios && AI_MODEL_P1={{MODEL1}} AI_MODEL_P2={{MODEL2}} AI_HEURISTIC_DECK={{HEURISTIC}} SKIP_WEB_SERVER=true npx playwright test tests/general/ai-match --headed
+    cd e2e-scenarios && AI_MATCH=true AI_MODEL_P1={{MODEL1}} AI_MODEL_P2={{MODEL2}} AI_HEURISTIC_DECK={{HEURISTIC}} SKIP_WEB_SERVER=true npx playwright test tests/general/ai-match --headed

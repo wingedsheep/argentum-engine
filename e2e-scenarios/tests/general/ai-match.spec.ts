@@ -27,6 +27,13 @@ test.use({
 const SERVER_URL = 'http://localhost:8080'
 const CLIENT_URL = 'http://localhost:5173'
 
+// Skipped by default — this is a long-running LLM-driven spectator test.
+// Opt in via `just watch-ai-match` (which sets AI_MATCH=true), or export AI_MATCH=true manually.
+test.skip(
+  !process.env.AI_MATCH,
+  'AI vs AI match is opt-in — set AI_MATCH=true or use `just watch-ai-match`'
+)
+
 test('AI vs AI Bloomburrow match', async ({ page, request }) => {
   test.setTimeout(20 * 60 * 1000) // 20 minutes — LLM games can be slow
 
