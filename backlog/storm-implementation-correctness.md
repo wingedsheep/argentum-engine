@@ -57,7 +57,7 @@ Each copy is pushed via `stackResolver.putTriggeredAbility(...)` — so the copy
 
 The order below is roughly by severity.
 
-### 1. Copies are triggered abilities, not spell copies (**highest impact**)
+### 1. Copies are triggered abilities, not spell copies (**highest impact**)  [DONE]
 
 Per rule 707.12 a copy of an instant/sorcery spell is itself a spell on the stack with the original's name, types, subtypes, colors, mana value, and ability text. Our copies are `TriggeredAbilityOnStackComponent` instances, so:
 
@@ -65,7 +65,7 @@ Per rule 707.12 a copy of an instant/sorcery spell is itself a spell on the stac
 - **"Whenever a player casts a red spell" and similar spell-type-matching effects won't see the copies as matching spells.** (Although those are "cast" triggers — which copies shouldn't fire anyway per 707.10 — filter-on-stack continuous effects still care.)
 - **Cards that check the stack for a specific spell type** (e.g., "you may cast an instant spell this turn only if there's a creature spell on the stack") can't see copies as spells.
 
-### 2. Copies read `cardDef.script.spellEffect`, bypassing runtime text replacement
+### 2. Copies read `cardDef.script.spellEffect`, bypassing runtime text replacement  [DONE]
 
 `CastSpellHandler.kt:1342` uses `cardDef.script.spellEffect` to build the `StormCopyEffect`, not the effect stored on the cast spell's `CardComponent.spellEffect` or its `SpellOnStackComponent`. That means any text-replacement effect that was applied to the spell *as it was cast* (Artificial Evolution, Mind Bend, Glamer Spinners-style rewrites) is not reflected on the copies.
 
