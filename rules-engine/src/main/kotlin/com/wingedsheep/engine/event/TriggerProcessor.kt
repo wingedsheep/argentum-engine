@@ -396,7 +396,9 @@ class TriggerProcessor(
             triggeringPlayerId = trigger.triggerContext.triggeringPlayerId,
             elseEffect = ability.elseEffect,
             targetRequirements = allRequirements,
-            triggerCounterCount = trigger.triggerContext.counterCount
+            triggerCounterCount = trigger.triggerContext.counterCount,
+            lastKnownPower = trigger.triggerContext.lastKnownPower,
+            lastKnownToughness = trigger.triggerContext.lastKnownToughness
         )
 
         // Push the continuation onto the stack
@@ -435,7 +437,9 @@ class TriggerProcessor(
             triggeringPlayerId = trigger.triggerContext.triggeringPlayerId,
             xValue = trigger.triggerContext.xValue,
             triggerCounterCount = trigger.triggerContext.counterCount,
-            targetingSourceEntityId = trigger.triggerContext.targetingSourceEntityId
+            targetingSourceEntityId = trigger.triggerContext.targetingSourceEntityId,
+            lastKnownPower = trigger.triggerContext.lastKnownPower,
+            lastKnownToughness = trigger.triggerContext.lastKnownToughness
         )
 
         return stackResolver.putTriggeredAbility(

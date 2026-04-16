@@ -54,7 +54,9 @@ data class TriggeredAbilityOnStackComponent(
     val targetingSourceEntityId: EntityId? = null,  // The spell/ability that targeted this permanent (for ward)
     val damageDistribution: Map<EntityId, Int>? = null,  // For DividedDamageEffect - pre-chosen damage allocation
     val copyIndex: Int? = null,    // Which copy number this is (1, 2, 3...) for storm/copy effects
-    val copyTotal: Int? = null     // Total number of copies being created
+    val copyTotal: Int? = null,    // Total number of copies being created
+    val lastKnownPower: Int? = null,    // Power at the moment the triggering entity left the battlefield (dies/leaves)
+    val lastKnownToughness: Int? = null // Toughness at the moment the triggering entity left the battlefield (dies/leaves)
 ) : Component {
     val hasTargets: Boolean = false  // Will be updated based on effect
 }

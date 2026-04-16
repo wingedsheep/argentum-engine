@@ -48,6 +48,10 @@ data class EffectContext(
     val triggeringPlayerId: EntityId? = null,
     /** The spell or ability that targeted a permanent (for ward triggers) */
     val targetingSourceEntityId: EntityId? = null,
+    /** Power of the triggering entity the moment it left the battlefield (dies/leaves triggers) */
+    val triggerLastKnownPower: Int? = null,
+    /** Toughness of the triggering entity the moment it left the battlefield (dies/leaves triggers) */
+    val triggerLastKnownToughness: Int? = null,
     // --- Choice state ---
     /** Color chosen for "add one mana of any color" abilities */
     val manaColorChoice: Color? = null,

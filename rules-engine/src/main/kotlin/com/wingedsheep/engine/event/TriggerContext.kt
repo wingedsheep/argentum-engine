@@ -32,7 +32,11 @@ data class TriggerContext(
     /** Last known +1/+1 counter count when the source left the battlefield */
     val counterCount: Int? = null,
     /** The spell or ability entity that targeted a permanent (for ward triggers) */
-    val targetingSourceEntityId: EntityId? = null
+    val targetingSourceEntityId: EntityId? = null,
+    /** Last known power when the triggering entity left the battlefield (for dies/leaves triggers) */
+    val lastKnownPower: Int? = null,
+    /** Last known toughness when the triggering entity left the battlefield (for dies/leaves triggers) */
+    val lastKnownToughness: Int? = null
 ) {
     companion object {
         fun fromEvent(event: com.wingedsheep.engine.core.GameEvent): TriggerContext {
@@ -40,7 +44,9 @@ data class TriggerContext(
                 is ZoneChangeEvent -> TriggerContext(
                     triggeringEntityId = event.entityId,
                     counterCount = if (event.lastKnownCounterCount > 0) event.lastKnownCounterCount else null,
-                    xValue = event.xValue
+                    xValue = event.xValue,
+                    lastKnownPower = event.lastKnownPower,
+                    lastKnownToughness = event.lastKnownToughness
                 )
                 is DamageDealtEvent -> TriggerContext(
                     triggeringEntityId = event.targetId,

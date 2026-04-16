@@ -560,6 +560,13 @@ class DynamicAmountEvaluator(
             val projectedValue = if (isPower) projected.getPower(entityId) else projected.getToughness(entityId)
             if (projectedValue != null) return projectedValue
         }
+        // Last-known-info fallback for dies/leaves-the-battlefield triggers: when the
+        // triggering entity is no longer on the battlefield, its projected P/T is gone,
+        // so consult the value captured on the ZoneChangeEvent (Rule 603.10, 112.7a).
+        if (entityId == context.triggeringEntityId || entityId == context.sourceId) {
+            val lastKnown = if (isPower) context.triggerLastKnownPower else context.triggerLastKnownToughness
+            if (lastKnown != null) return lastKnown
+        }
         // Fall back to base stats (entity not on battlefield or projection disabled)
         return resolveCharacteristicValue(state, entityId, isPower, context)
     }

@@ -996,6 +996,8 @@ class StackResolver(
             triggeringEntityId = abilityComponent.triggeringEntityId,
             triggeringPlayerId = abilityComponent.triggeringPlayerId,
             targetingSourceEntityId = abilityComponent.targetingSourceEntityId,
+            triggerLastKnownPower = abilityComponent.lastKnownPower,
+            triggerLastKnownToughness = abilityComponent.lastKnownToughness,
             xValue = abilityComponent.xValue,
             damageDistribution = abilityComponent.damageDistribution,
             pipeline = PipelineState(namedTargets = EffectContext.buildNamedTargets(targetReqs, resolvedTargets2))
