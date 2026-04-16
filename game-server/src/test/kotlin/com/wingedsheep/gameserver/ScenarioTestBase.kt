@@ -11,6 +11,7 @@ import com.wingedsheep.mtg.sets.definitions.legions.LegionsSet
 import com.wingedsheep.mtg.sets.definitions.onslaught.OnslaughtSet
 import com.wingedsheep.mtg.sets.definitions.portal.PortalSet
 import com.wingedsheep.mtg.sets.definitions.lorwyneclipsed.LorwynEclipsedSet
+import com.wingedsheep.mtg.sets.definitions.lostcavernsofixalan.LostCavernsOfIxalanSet
 import com.wingedsheep.mtg.sets.definitions.scourge.ScourgeSet
 import com.wingedsheep.mtg.sets.tokens.PredefinedTokens
 import com.wingedsheep.engine.state.ComponentContainer
@@ -62,6 +63,7 @@ abstract class ScenarioTestBase : FunSpec() {
         register(BloomburrowSet.allCards)
         register(EdgeOfEternitiesSet.allCards)
         register(LorwynEclipsedSet.allCards)
+        register(LostCavernsOfIxalanSet.allCards)
     }
     protected val actionProcessor = ActionProcessor(cardRegistry)
     protected val stateTransformer = ClientStateTransformer(cardRegistry)

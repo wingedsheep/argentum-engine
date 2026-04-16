@@ -22,17 +22,17 @@ additional baseline opponents. Those deck lists aren't public; start with the th
 
 ## Coverage summary
 
-**Implemented** (4 / 44 unique cards): Kitsa, Otterball Elite · Iridescent Vinelasher ·
-Island · Swamp.
+**Implemented** (5 / 44 unique cards): Kitsa, Otterball Elite · Iridescent Vinelasher ·
+Malcolm, Alluring Scoundrel · Island · Swamp.
 
-**Missing** (40 unique cards — 6 creatures + 1 planeswalker + 14 instants + 1 sorcery +
-4 enchantments + 6 nonbasic lands + 8 more creatures). One card (Cecil, Dark Knight) and
+**Missing** (39 unique cards — 6 creatures + 1 planeswalker + 14 instants + 1 sorcery +
+4 enchantments + 6 nonbasic lands + 7 more creatures). One card (Cecil, Dark Knight) and
 one enchantment (Unholy Annex) are double-faced / modal DFCs and depend on DFC support.
 
 ## UWTempo (60 cards)
 
 ### Creatures (14)
-- [ ] Malcolm, Alluring Scoundrel ×4
+- [x] Malcolm, Alluring Scoundrel ×4 *(Lost Caverns of Ixalan)*
 - [ ] Skrelv, Defector Mite ×4
 - [ ] Sleep-Cursed Faerie ×2
 - [x] Kitsa, Otterball Elite ×4 *(Bloomburrow)*

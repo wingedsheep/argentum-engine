@@ -301,6 +301,7 @@ export enum CounterType {
   BLIGHT = 'BLIGHT',
   COIN = 'COIN',
   FLOOD = 'FLOOD',
+  CHORUS = 'CHORUS',
 }
 
 export const CounterTypeDisplayNames: Record<CounterType, string> = {
@@ -325,6 +326,7 @@ export const CounterTypeDisplayNames: Record<CounterType, string> = {
   [CounterType.BLIGHT]: 'Blight',
   [CounterType.COIN]: 'Coin',
   [CounterType.FLOOD]: 'Flood',
+  [CounterType.CHORUS]: 'Chorus',
 }
 
 /**

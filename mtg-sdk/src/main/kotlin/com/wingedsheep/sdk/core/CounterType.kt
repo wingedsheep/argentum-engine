@@ -29,7 +29,8 @@ enum class CounterType {
     STASH,
     BLIGHT,
     COIN,
-    FLOOD
+    FLOOD,
+    CHORUS
 }
 
 /**
@@ -60,4 +61,5 @@ object Counters {
     const val BLIGHT = "blight"
     const val COIN = "coin"
     const val FLOOD = "flood"
+    const val CHORUS = "chorus"
 }
