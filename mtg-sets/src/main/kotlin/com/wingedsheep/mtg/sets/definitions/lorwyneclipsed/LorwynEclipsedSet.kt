@@ -55,6 +55,7 @@ object LorwynEclipsedSet {
         SaplingNursery,
         SilvergillPeddler,
         SteamVents,
+        StoicGroveGuide,
         SyggsCommand,
         VirulentEmissary,
         WanderwineFarewell,
