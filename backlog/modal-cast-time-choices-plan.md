@@ -188,7 +188,7 @@ state.getEntity(originalSpellId)?.get<SpellOnStackComponent>()?.let { orig ->
 
 For copies where the copy controller is allowed to re-choose targets: copy keeps `chosenModes`, resets `modeTargetsOrdered` to empty, runs `processChosenModeQueue` with a pre-fixed mode list — modes stay fixed (700.2g), targets re-chosen.
 
-### Phase 7 — Priority / resolution-time validation plumbing
+### Phase 7 — Priority / resolution-time validation plumbing [DONE]
 
 File: `rules-engine/.../mechanics/stack/StackResolver.kt` (line 89)
 

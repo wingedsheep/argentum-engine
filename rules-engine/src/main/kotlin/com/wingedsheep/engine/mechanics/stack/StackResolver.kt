@@ -127,6 +127,20 @@ class StackResolver(
         // Remove from current zone (typically hand)
         var newState = removeFromCurrentZone(state, cardId, casterId)
 
+        // Build the flat target union for choose-N modal spells (Rule 700.2 / 601.2c).
+        // TargetsComponent holds the union so existing target-arrow rendering and resolution-time
+        // re-validation keep working; per-mode breakdown lives on SpellOnStackComponent.
+        val effectiveTargets = if (modeTargetsOrdered.isNotEmpty()) {
+            modeTargetsOrdered.flatten()
+        } else {
+            targets
+        }
+        val effectiveTargetRequirements = if (modeTargetRequirements.isNotEmpty() && targetRequirements.isEmpty()) {
+            chosenModes.flatMap { modeTargetRequirements[it] ?: emptyList() }
+        } else {
+            targetRequirements
+        }
+
         // Add spell components
         newState = newState.updateEntity(cardId) { c ->
             var updated = c.with(SpellOnStackComponent(
@@ -154,8 +168,8 @@ class StackResolver(
                 manaSpentGreen = manaSpentGreen,
                 manaSpentColorless = manaSpentColorless
             ))
-            if (targets.isNotEmpty()) {
-                updated = updated.with(TargetsComponent(targets, targetRequirements))
+            if (effectiveTargets.isNotEmpty()) {
+                updated = updated.with(TargetsComponent(effectiveTargets, effectiveTargetRequirements))
             }
             // Add morph data for creatures with morph (needed for face-down casting and
             // for effects like Backslide that target "creature with a morph ability")
@@ -179,7 +193,7 @@ class StackResolver(
         val eventName = if (castFaceDown) "Face-down creature" else cardComponent.name
 
         // Collect target names for the cast event log
-        val targetNames = targets.mapNotNull { target ->
+        val targetNames = effectiveTargets.mapNotNull { target ->
             when (target) {
                 is ChosenTarget.Permanent -> newState.getEntity(target.entityId)?.get<CardComponent>()?.name
                 is ChosenTarget.Player -> if (target.playerId == casterId) "themselves" else "opponent"
@@ -193,7 +207,7 @@ class StackResolver(
 
         // Emit BecomesTargetEvent for each permanent target (Rule 601.2c)
         // Also track targeting for Valiant ("first time each turn")
-        for (target in targets) {
+        for (target in effectiveTargets) {
             if (target is ChosenTarget.Permanent) {
                 val targetName = newState.getEntity(target.entityId)?.get<CardComponent>()?.name ?: "Unknown"
                 val firstTime = !hasBeenTargetedByController(newState, target.entityId, casterId)

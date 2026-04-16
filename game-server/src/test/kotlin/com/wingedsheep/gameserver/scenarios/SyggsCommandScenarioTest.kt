@@ -25,9 +25,11 @@ import io.kotest.matchers.types.shouldBeInstanceOf
  *   2. Target player draws a card.
  *   3. Tap target creature. Put a stun counter on it.
  *
- * These tests primarily exercise the engine's Choose-N modal spell flow:
- * the player picks two modes iteratively, then each chosen mode resolves
- * in order (pausing for its own target selection when required).
+ * These tests exercise the cast-time choose-N modal flow (rules 601.2b–c / 700.2):
+ * modes and per-mode targets are picked *before* the spell hits the stack. The
+ * enumerator also applies 700.2a (modes with no legal targets are not offered),
+ * so when none of Alice's permanents are Merfolk the first mode is filtered out
+ * and only 3 modes are offered.
  */
 class SyggsCommandScenarioTest : ScenarioTestBase() {
 
@@ -60,19 +62,22 @@ class SyggsCommandScenarioTest : ScenarioTestBase() {
                 val bobHandBefore = game.state.getHand(bob).size
 
                 game.castSpell(1, "Sygg's Command")
+
+                // Cast-time mode selection (Phase 4). Mode 0 ("Create token copy of target
+                // Merfolk you control") is filtered by 700.2a since Alice controls no Merfolk,
+                // so the offered indices are [1, 2, 3].
+                // First pick (1 of 2): mode 2 ("Target player draws a card") at offered-position 1.
+                game.chooseMode(1)
+                // Remaining offered indices: [1, 3]. Pick mode 3 ("Tap target creature. Put a
+                // stun counter on it") at offered-position 1.
+                game.chooseMode(1)
+
+                // Per-mode targets (cast-time), in pick order.
+                game.selectTargets(listOf(bob))      // mode 2 (draw) target
+                game.selectTargets(listOf(bearsId))  // mode 3 (tap + stun) target
+
+                // Spell is on the stack with pre-chosen modes and per-mode targets — resolve.
                 game.resolveStack()
-
-                // First pick (1 of 2): mode 2 = "Target player draws a card" at original index 2.
-                game.chooseMode(2)
-                // Second pick (2 of 2): remaining options are modes [0, 1, 3]; pick mode 3
-                // ("Tap target creature. Put a stun counter on it") which is now at position 2.
-                game.chooseMode(2)
-
-                // Mode 2 (draw) resolves first — pause for target player selection.
-                game.selectTargets(listOf(bob))
-
-                // Mode 3 (tap + stun) resolves next — pause for target creature.
-                game.selectTargets(listOf(bearsId))
 
                 withClue("Bob should have drawn a card") {
                     game.state.getHand(bob).size shouldBe bobHandBefore + 1
@@ -112,17 +117,18 @@ class SyggsCommandScenarioTest : ScenarioTestBase() {
                 val bobGiantId = game.findPermanent("Hill Giant")!!
 
                 game.castSpell(1, "Sygg's Command")
+
+                // Offered indices = [1, 2, 3] (mode 0 filtered — no Merfolk).
+                // Pick mode 1 (lifelink) at offered-position 0; remaining = [2, 3].
+                game.chooseMode(0)
+                // Pick mode 2 (draw) at offered-position 0.
+                game.chooseMode(0)
+
+                // Per-mode targets at cast time: lifelink → Alice, then draw → Alice.
+                game.selectTargets(listOf(alice))
+                game.selectTargets(listOf(alice))
+
                 game.resolveStack()
-
-                // Pick mode 1 (lifelink to target player's creatures) then mode 2 (draw) as filler.
-                game.chooseMode(1)
-                // Remaining: [0, 2, 3]. Pick mode 2 "Target player draws a card" at position 1.
-                game.chooseMode(1)
-
-                // First resolves: lifelink mode — target Alice herself.
-                game.selectTargets(listOf(alice))
-                // Then draw mode — target Alice.
-                game.selectTargets(listOf(alice))
 
                 val projected = stateProjector.project(game.state)
                 withClue("Alice's Grizzly Bears should gain lifelink") {
@@ -152,13 +158,14 @@ class SyggsCommandScenarioTest : ScenarioTestBase() {
                 val bobGiantId = game.findPermanent("Hill Giant")!!
 
                 game.castSpell(1, "Sygg's Command")
-                game.resolveStack()
 
-                game.chooseMode(1) // lifelink
-                game.chooseMode(1) // draw (mode 2 at position 1 of [0,2,3])
+                game.chooseMode(0) // lifelink (offered-position 0 of [1, 2, 3])
+                game.chooseMode(0) // draw     (offered-position 0 of [2, 3])
 
                 game.selectTargets(listOf(bob))    // lifelink target: Bob
                 game.selectTargets(listOf(bob))    // draw target: Bob
+
+                game.resolveStack()
 
                 val projected = stateProjector.project(game.state)
                 withClue("Bob's Hill Giant should gain lifelink") {
