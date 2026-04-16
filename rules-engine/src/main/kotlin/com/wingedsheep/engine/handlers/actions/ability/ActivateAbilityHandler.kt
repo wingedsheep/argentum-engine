@@ -357,6 +357,9 @@ class ActivateAbilityHandler(
         val manaCost = effectiveManaCost
         // Only pass xValue to auto-tap when X is in the mana cost itself (not in a non-mana cost like counter removal)
         val manaXValue = if (manaCost?.hasX == true) xValue else 0
+        // If the outer ability's cost includes Tap, the source itself cannot also be used
+        // as a mana source — the single "tap" it has is already consumed by the outer cost.
+        val selfExcludedSources = if (hasTapCost(effectiveCost)) setOf(action.sourceId) else emptySet()
         if (manaCost != null) {
             when (action.paymentStrategy) {
                 is PaymentStrategy.Explicit -> {
@@ -371,7 +374,7 @@ class ActivateAbilityHandler(
                     val excluded = manaSolver.findAvailableManaSources(currentState, action.playerId)
                         .map { it.entityId }
                         .filter { it !in chosen }
-                        .toSet()
+                        .toSet() + selfExcludedSources
                     val solution = manaSolver.solve(
                         currentState, action.playerId, manaCost, manaXValue, excludeSources = excluded
                     ) ?: return ExecutionResult.error(state, "Selected mana sources cannot pay this ability's cost")
@@ -385,7 +388,7 @@ class ActivateAbilityHandler(
                     }
                 }
                 else -> {
-                    val autoTapResult = autoTapForManaCost(currentState, action.playerId, manaPool, manaCost, cardComponent.name, manaXValue)
+                    val autoTapResult = autoTapForManaCost(currentState, action.playerId, manaPool, manaCost, cardComponent.name, manaXValue, selfExcludedSources)
                         ?: return ExecutionResult.error(state, "Not enough mana to activate this ability")
                     currentState = autoTapResult.newState
                     manaPool = autoTapResult.newPool
@@ -880,8 +883,7 @@ class ActivateAbilityHandler(
             is AbilityCost.Mana -> manaSolver.canPay(state, playerId, cost.cost)
             is AbilityCost.Composite -> {
                 // If composite cost includes Tap, the source itself can't also be used as a mana source
-                val hasTapCost = cost.costs.any { it is AbilityCost.Tap }
-                val excludeSources = if (hasTapCost) setOf(sourceId) else emptySet()
+                val excludeSources = if (hasTapCost(cost)) setOf(sourceId) else emptySet()
                 cost.costs.all { subCost ->
                     when (subCost) {
                         is AbilityCost.Mana -> manaSolver.canPay(state, playerId, subCost.cost, excludeSources = excludeSources)
@@ -891,6 +893,16 @@ class ActivateAbilityHandler(
             }
             else -> costHandler.canPayAbilityCost(state, cost, sourceId, playerId, manaPool)
         }
+    }
+
+    /**
+     * Whether the given ability cost includes a Tap sub-cost.
+     * The source of a Tap-cost ability cannot also serve as a mana source during payment.
+     */
+    private fun hasTapCost(cost: AbilityCost): Boolean = when (cost) {
+        is AbilityCost.Tap -> true
+        is AbilityCost.Composite -> cost.costs.any { it is AbilityCost.Tap }
+        else -> false
     }
 
     /**
@@ -919,7 +931,8 @@ class ActivateAbilityHandler(
         pool: ManaPool,
         cost: ManaCost,
         sourceName: String,
-        xValue: Int = 0
+        xValue: Int = 0,
+        excludeSources: Set<com.wingedsheep.sdk.model.EntityId> = emptySet()
     ): AutoTapResult? {
         // Determine what the floating pool can cover
         val partialResult = pool.payPartial(cost)
@@ -931,7 +944,7 @@ class ActivateAbilityHandler(
         }
 
         // Tap sources for the remaining cost (xValue is treated as additional generic mana)
-        val solution = manaSolver.solve(state, playerId, remainingCost, xValue)
+        val solution = manaSolver.solve(state, playerId, remainingCost, xValue, excludeSources = excludeSources)
             ?: return null
 
         var currentState = state

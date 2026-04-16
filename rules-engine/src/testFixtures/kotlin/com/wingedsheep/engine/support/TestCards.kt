@@ -1,5 +1,11 @@
 package com.wingedsheep.engine.support
 
+import com.wingedsheep.mtg.sets.definitions.bloomburrow.BloomburrowSet
+import com.wingedsheep.mtg.sets.definitions.dominaria.DominariaSet
+import com.wingedsheep.mtg.sets.definitions.edgeofeternities.EdgeOfEternitiesSet
+import com.wingedsheep.mtg.sets.definitions.khans.KhansOfTarkirSet
+import com.wingedsheep.mtg.sets.definitions.legions.LegionsSet
+import com.wingedsheep.mtg.sets.definitions.lorwyneclipsed.LorwynEclipsedSet
 import com.wingedsheep.mtg.sets.definitions.onslaught.OnslaughtSet
 import com.wingedsheep.mtg.sets.definitions.portal.PortalSet
 import com.wingedsheep.mtg.sets.definitions.scourge.ScourgeSet
@@ -688,5 +694,14 @@ object TestCards {
     )
 
     val all: List<CardDefinition> =
-        PortalSet.allCards + OnslaughtSet.allCards + ScourgeSet.allCards + testOnlyCards
+        PortalSet.allCards +
+            OnslaughtSet.allCards +
+            ScourgeSet.allCards +
+            LegionsSet.allCards +
+            KhansOfTarkirSet.allCards +
+            DominariaSet.allCards +
+            BloomburrowSet.allCards +
+            LorwynEclipsedSet.allCards +
+            EdgeOfEternitiesSet.allCards +
+            testOnlyCards
 }
