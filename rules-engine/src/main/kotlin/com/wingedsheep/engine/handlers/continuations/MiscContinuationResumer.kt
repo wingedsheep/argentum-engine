@@ -164,10 +164,30 @@ class MiscContinuationResumer(
             legalTargetsMap[index] = legalTargets
         }
 
-        // If no legal targets available, skip remaining copies
+        // 707.7b: if no legal replacement exists for any remaining copy, still put
+        // each copy on the stack inheriting the source's (illegal) targets so it
+        // fizzles on resolution per 608.2b / 112.3b. The battlefield doesn't change
+        // between copy creations, so legality is the same for all remaining copies.
         val hasNoLegalTargets = legalTargetsMap.any { (_, targets) -> targets.isEmpty() }
         if (hasNoLegalTargets) {
-            return checkForMore(currentState, allEvents)
+            var loopState = currentState
+            val loopEvents = allEvents
+            var copiesLeft = remainingAfterThis
+            while (copiesLeft > 0) {
+                val nextCopyIndex = continuation.totalCopies - copiesLeft + 1
+                val res = services.stackResolver.putSpellCopy(
+                    state = loopState,
+                    sourceSpellId = continuation.sourceId,
+                    copyIndex = nextCopyIndex,
+                    copyTotal = continuation.totalCopies,
+                    controllerId = continuation.controllerId
+                )
+                if (!res.isSuccess) return res
+                loopState = res.newState
+                loopEvents.addAll(res.events)
+                copiesLeft--
+            }
+            return checkForMore(loopState, loopEvents)
         }
 
         val nextContinuation = StormCopyTargetContinuation(

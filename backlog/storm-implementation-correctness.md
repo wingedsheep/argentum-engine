@@ -154,10 +154,12 @@ This is the single biggest change. The goal: when `StormCopyEffect` resolves, ea
 
 Landed as `StormCopyModalTargetContinuation` driving a `driveStormModalCopies` loop in `StormCopyEffectExecutor`. Modes without target requirements (and modes with requirements but no legal targets) inherit an empty slot / the original's per-mode targets respectively; modes that have legal targets prompt for retargeting. Bug #4 in the divergences list is also resolved.
 
-### Phase 5 — Illegal targets → copy still created
+### Phase 5 — Illegal targets → copy still created [DONE]
 
 1. When a target requirement has no legal targets, still call `putSpellCopy` with the chosen-targets list populated with whatever we can fill; leave the impossible slots empty. On resolution, Rule 608.2b will fizzle it.
 2. Remove the early-return at `StormCopyEffectExecutor.kt:114-118`.
+
+Landed as a per-copy loop in `StormCopyEffectExecutor.promptForNextCopyTarget` and a mirror loop in `MiscContinuationResumer.resumeStormCopyTarget`: when no legal replacement exists, each remaining copy is still pushed via `StackResolver.putSpellCopy` without target overrides, so it inherits the source's (now-illegal) targets via the `putSpellCopy` fallback chain and fizzles on resolution per 608.2b / 112.3b (`fizzleSpell` already removes `CopyOfComponent` spells from existence and emits `SpellFizzledEvent`). The modal-source fallback at `driveStormModalCopies` already inherits per-mode source targets and matches this behavior; its comment was updated to reflect Phase 5. Coverage: `StormIllegalTargetFizzleTest` verifies the copy lands on the stack with the inherited targets for both single-copy and multi-copy cases. Bug #5 in the divergences list is resolved.
 
 ### Phase 6 — Support multiple instances of Storm
 

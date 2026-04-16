@@ -116,58 +116,82 @@ class StormCopyEffectExecutor(
         context: EffectContext,
         remainingCopies: Int
     ): EffectResult {
-        val decisionId = "storm-copy-target-${System.nanoTime()}"
+        val sourceId = context.sourceId
+            ?: return EffectResult.error(state, "Storm copy has no source spell to copy")
+        val stackResolver = StackResolver(cardRegistry = cardRegistry)
 
-        // Find legal targets for the copy
-        val legalTargetsMap = mutableMapOf<Int, List<EntityId>>()
-        for ((index, requirement) in effect.spellTargetRequirements.withIndex()) {
-            val legalTargets = targetFinder.findLegalTargets(
-                state, requirement, context.controllerId, context.sourceId
+        var currentState = state
+        val allEvents = mutableListOf<GameEvent>()
+        var copiesLeft = remainingCopies
+
+        // Walk copies one at a time. If the copy can be retargeted legally, pause
+        // with a ChooseTargetsDecision; otherwise put it on the stack inheriting
+        // the source's (now-illegal) targets per 707.7b — it fizzles on resolution
+        // per 608.2b / 112.3b.
+        while (copiesLeft > 0) {
+            val legalTargetsMap = mutableMapOf<Int, List<EntityId>>()
+            for ((index, requirement) in effect.spellTargetRequirements.withIndex()) {
+                val legalTargets = targetFinder.findLegalTargets(
+                    currentState, requirement, context.controllerId, sourceId
+                )
+                legalTargetsMap[index] = legalTargets
+            }
+
+            val hasNoLegalTargets = legalTargetsMap.any { (_, targets) -> targets.isEmpty() }
+            if (hasNoLegalTargets) {
+                val copyIndex = effect.copyCount - copiesLeft + 1
+                val copyResult = stackResolver.putSpellCopy(
+                    state = currentState,
+                    sourceSpellId = sourceId,
+                    copyIndex = copyIndex,
+                    copyTotal = effect.copyCount,
+                    controllerId = context.controllerId
+                )
+                if (!copyResult.isSuccess) return EffectResult.from(copyResult)
+                currentState = copyResult.newState
+                allEvents.addAll(copyResult.events)
+                copiesLeft--
+                continue
+            }
+
+            val decisionId = "storm-copy-target-${System.nanoTime()}"
+            val continuation = StormCopyTargetContinuation(
+                decisionId = decisionId,
+                remainingCopies = copiesLeft,
+                spellEffect = effect.spellEffect,
+                spellTargetRequirements = effect.spellTargetRequirements,
+                spellName = effect.spellName,
+                controllerId = context.controllerId,
+                sourceId = sourceId,
+                totalCopies = effect.copyCount
             )
-            legalTargetsMap[index] = legalTargets
-        }
+            val targetReqInfos = effect.spellTargetRequirements.mapIndexed { index, req ->
+                TargetRequirementInfo(
+                    index = index,
+                    description = req.description
+                )
+            }
 
-        // If no legal targets for any requirement, skip this copy and remaining copies
-        val hasNoLegalTargets = legalTargetsMap.any { (_, targets) -> targets.isEmpty() }
-        if (hasNoLegalTargets) {
-            return EffectResult.success(state)
-        }
-
-        // Push continuation for resuming after target selection
-        val continuation = StormCopyTargetContinuation(
-            decisionId = decisionId,
-            remainingCopies = remainingCopies,
-            spellEffect = effect.spellEffect,
-            spellTargetRequirements = effect.spellTargetRequirements,
-            spellName = effect.spellName,
-            controllerId = context.controllerId,
-            sourceId = context.sourceId ?: EntityId.generate(),
-            totalCopies = effect.copyCount
-        )
-        val targetReqInfos = effect.spellTargetRequirements.mapIndexed { index, req ->
-            TargetRequirementInfo(
-                index = index,
-                description = req.description
+            val copyNumber = effect.copyCount - copiesLeft + 1
+            val decision = ChooseTargetsDecision(
+                id = decisionId,
+                playerId = context.controllerId,
+                prompt = "Choose targets for Storm copy $copyNumber of ${effect.spellName}",
+                context = DecisionContext(
+                    phase = DecisionPhase.CASTING,
+                    sourceName = effect.spellName
+                ),
+                targetRequirements = targetReqInfos,
+                legalTargets = legalTargetsMap
             )
+
+            val stateWithDecision = currentState.withPendingDecision(decision)
+            val stateWithContinuation = stateWithDecision.pushContinuation(continuation)
+
+            return EffectResult.paused(stateWithContinuation, decision, allEvents)
         }
 
-        val copyNumber = effect.copyCount - remainingCopies + 1
-        val decision = ChooseTargetsDecision(
-            id = decisionId,
-            playerId = context.controllerId,
-            prompt = "Choose targets for Storm copy $copyNumber of ${effect.spellName}",
-            context = DecisionContext(
-                phase = DecisionPhase.CASTING,
-                sourceName = effect.spellName
-            ),
-            targetRequirements = targetReqInfos,
-            legalTargets = legalTargetsMap
-        )
-
-        val stateWithDecision = state.withPendingDecision(decision)
-        val stateWithContinuation = stateWithDecision.pushContinuation(continuation)
-
-        return EffectResult.paused(stateWithContinuation, decision)
+        return EffectResult.success(currentState, allEvents)
     }
 
     companion object {
@@ -229,9 +253,9 @@ class StormCopyEffectExecutor(
 
                     val hasNoLegalTargets = legalTargetsMap.any { (_, t) -> t.isEmpty() }
                     if (hasNoLegalTargets) {
-                        // Fall back to the original's targets for this mode; a future
-                        // phase will instead create the copy with illegal targets and
-                        // let it fizzle per 707.7b / 608.2b.
+                        // 707.7b: no legal replacement — the copy still goes on the stack
+                        // with the source's (now-illegal) targets for this mode and fizzles
+                        // on resolution per 608.2b / 112.3b.
                         accumulated = accumulated + listOf(sourceModeTargetsOrdered.getOrNull(ordinal) ?: emptyList())
                         ordinal++
                         continue
