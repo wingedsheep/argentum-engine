@@ -444,6 +444,7 @@ class ClientStateTransformer(
                 triggeringEntityId = triggeringId,
                 imageUri = cardDef?.metadata?.imageUri ?: sourceCard?.imageUri,
                 sourceZone = sourceZone,
+                chosenX = triggeredAbility.xValue,
                 copyIndex = triggeredAbility.copyIndex,
                 copyTotal = triggeredAbility.copyTotal
             )

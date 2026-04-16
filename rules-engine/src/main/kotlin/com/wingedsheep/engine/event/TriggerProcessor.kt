@@ -8,13 +8,19 @@ import com.wingedsheep.engine.mechanics.stack.StackResolver
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.battlefield.TriggeredAbilityFiredThisTurnComponent
 import com.wingedsheep.engine.state.components.stack.TriggeredAbilityOnStackComponent
+import com.wingedsheep.engine.handlers.DynamicAmountEvaluator
+import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.AbilityId
+import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.Effect
 import com.wingedsheep.sdk.scripting.effects.MayEffect
 import com.wingedsheep.sdk.scripting.effects.MayPayManaEffect
+import com.wingedsheep.sdk.scripting.effects.SelectFromCollectionEffect
+import com.wingedsheep.sdk.scripting.effects.SelectionMode
 import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.sdk.scripting.targets.TargetRequirement
+import com.wingedsheep.sdk.scripting.values.DynamicAmount
 
 /**
  * Processes triggered abilities by putting them on the stack.
@@ -435,7 +441,7 @@ class TriggerProcessor(
             triggerDamageAmount = trigger.triggerContext.damageAmount,
             triggeringEntityId = trigger.triggerContext.triggeringEntityId,
             triggeringPlayerId = trigger.triggerContext.triggeringPlayerId,
-            xValue = trigger.triggerContext.xValue,
+            xValue = trigger.triggerContext.xValue ?: computeXForDisplay(state, trigger),
             triggerCounterCount = trigger.triggerContext.counterCount,
             targetingSourceEntityId = trigger.triggerContext.targetingSourceEntityId,
             lastKnownPower = trigger.triggerContext.lastKnownPower,
@@ -513,6 +519,33 @@ class TriggerProcessor(
 
         // Fallback to permanent (shouldn't happen if the target is valid)
         return com.wingedsheep.engine.state.components.stack.ChosenTarget.Permanent(targetId)
+    }
+
+    /**
+     * Compute the X value for display on the stack for triggered abilities that use a variable
+     * ChooseUpTo DynamicAmount (e.g., Prismatic Undercurrents searching for up to X basic lands).
+     *
+     * Returns null if the ability's effect doesn't contain a non-Fixed ChooseUpTo selection.
+     */
+    private fun computeXForDisplay(state: GameState, trigger: PendingTrigger): Int? {
+        val amount = findChooseUpToAmount(trigger.ability.effect) ?: return null
+        if (amount is DynamicAmount.Fixed) return null
+        val context = EffectContext(
+            sourceId = trigger.sourceId,
+            controllerId = trigger.controllerId,
+            opponentId = state.getOpponent(trigger.controllerId)
+        )
+        return DynamicAmountEvaluator().evaluate(state, amount, context)
+    }
+
+    /**
+     * Recursively walk an effect tree looking for the first SelectFromCollectionEffect
+     * with a ChooseUpTo selection mode.
+     */
+    private fun findChooseUpToAmount(effect: Effect): DynamicAmount? = when (effect) {
+        is SelectFromCollectionEffect -> (effect.selection as? SelectionMode.ChooseUpTo)?.count
+        is CompositeEffect -> effect.effects.firstNotNullOfOrNull { findChooseUpToAmount(it) }
+        else -> null
     }
 
     /**
