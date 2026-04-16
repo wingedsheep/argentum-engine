@@ -38,15 +38,12 @@ import com.wingedsheep.sdk.scripting.values.DynamicAmount
  * paying its mana cost.
  *
  * Implementation notes:
- *  - The "cast the discarded card without paying its mana cost" clause reuses the
- *    exile-based free-cast pipeline (same pattern as Wishing Well / Portent of
- *    Calamity). After the card is discarded to the graveyard, if the counter
- *    threshold is met we move it from graveyard to exile and grant a one-shot
- *    free cast via `GrantFreeCastTargetFromExileEffect`.
- *  - If the controller declines the free cast, the card remains in exile rather
- *    than returning to the graveyard. This is a minor deviation from oracle text
- *    but matches how the engine models comparable "may cast" windows for other
- *    cards (see PortentOfCalamity and WishingWell).
+ *  - The "cast the discarded card without paying its mana cost" clause leaves the
+ *    discarded card in the graveyard (per oracle text) and grants one-shot free-cast
+ *    permission directly on the graveyard card via `GrantFreeCastTargetFromExileEffect`.
+ *    The cast-from-zone resolver recognizes `MayPlayFromExileComponent` on cards in
+ *    either exile or the graveyard, so no exile detour is needed. If the controller
+ *    declines the free cast, the card simply stays in the graveyard.
  */
 val MalcolmAlluringScoundrel = card("Malcolm, Alluring Scoundrel") {
     manaCost = "{1}{U}"
@@ -82,23 +79,16 @@ val MalcolmAlluringScoundrel = card("Malcolm, Alluring Scoundrel") {
                     moveType = MoveType.Discard
                 ),
                 // If Malcolm has four or more chorus counters, the controller may cast
-                // the discarded card for free. Move it to exile and grant the permission.
+                // the discarded card for free. The card stays in the graveyard per oracle
+                // text — we just grant the permission on the graveyard card.
                 ConditionalEffect(
                     condition = Compare(
                         DynamicAmounts.countersOnSelf(CounterTypeFilter.Named(Counters.CHORUS)),
                         ComparisonOperator.GTE,
                         DynamicAmount.Fixed(4)
                     ),
-                    effect = CompositeEffect(
-                        listOf(
-                            MoveCollectionEffect(
-                                from = "discarded",
-                                destination = CardDestination.ToZone(Zone.EXILE, Player.You)
-                            ),
-                            GrantFreeCastTargetFromExileEffect(
-                                target = EffectTarget.PipelineTarget("discarded", 0)
-                            )
-                        )
+                    effect = GrantFreeCastTargetFromExileEffect(
+                        target = EffectTarget.PipelineTarget("discarded", 0)
                     )
                 )
             )

@@ -57,10 +57,12 @@ class CastZoneResolver(
     }
 
     /**
-     * Check if a card is in exile and has MayPlayFromExileComponent granting
-     * the player permission to play it from exile. Checks all players' exile zones
+     * Check if a card is in exile or a graveyard and has `MayPlayFromExileComponent`
+     * granting the player permission to play it. Checks all players' exile zones
      * because cards like Villainous Wealth exile from an opponent's library (cards
      * remain in their owner's exile zone but are castable by the spell's controller).
+     * Graveyard coverage handles free-cast grants that leave the card in the
+     * graveyard (e.g. Malcolm, Alluring Scoundrel).
      *
      * Also checks for permanents with GrantMayCastFromLinkedExile static ability
      * (e.g., Rona, Disciple of Gix) that link exiled cards via LinkedExileComponent.
@@ -70,10 +72,11 @@ class CastZoneResolver(
         playerId: EntityId,
         cardId: EntityId
     ): Boolean {
-        val inAnyExile = state.turnOrder.any { pid ->
-            cardId in state.getZone(ZoneKey(pid, Zone.EXILE))
+        val inExileOrGraveyard = state.turnOrder.any { pid ->
+            cardId in state.getZone(ZoneKey(pid, Zone.EXILE)) ||
+                cardId in state.getZone(ZoneKey(pid, Zone.GRAVEYARD))
         }
-        if (!inAnyExile) return false
+        if (!inExileOrGraveyard) return false
 
         // Check direct MayPlayFromExileComponent grant
         val component = state.getEntity(cardId)?.get<MayPlayFromExileComponent>()

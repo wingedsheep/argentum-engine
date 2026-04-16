@@ -136,11 +136,20 @@ class MalcolmAlluringScoundrelTest : ScenarioTestBase() {
                 game.selectCards(listOf(shockId))
                 game.resolveStack()
 
-                // Shock should have been moved from graveyard to exile and granted free-cast permission
+                // Per oracle, Shock stays in the graveyard; the free-cast grant is applied
+                // directly to the graveyard card (zone resolver accepts cards in either
+                // exile or graveyard with MayPlayFromExileComponent).
                 val shockContainer = game.state.getEntity(shockId)
                 val inExile = game.state.getExile(game.player1Id).contains(shockId)
-                withClue("Discarded Shock should now be in exile for the free-cast window") {
-                    inExile shouldBe true
+                withClue("Discarded Shock should NOT be moved to exile") {
+                    inExile shouldBe false
+                }
+
+                val shockStillInGraveyard = game.state.getGraveyard(game.player1Id).any {
+                    game.state.getEntity(it)?.get<CardComponent>()?.name == "Shock"
+                }
+                withClue("Discarded Shock should remain in the graveyard") {
+                    shockStillInGraveyard shouldBe true
                 }
 
                 val mayPlay = shockContainer?.get<MayPlayFromExileComponent>()
@@ -151,13 +160,6 @@ class MalcolmAlluringScoundrelTest : ScenarioTestBase() {
                 val freeCast = shockContainer?.get<PlayWithoutPayingCostComponent>()
                 withClue("Shock should have PlayWithoutPayingCostComponent for player 1") {
                     (freeCast != null && freeCast.controllerId == game.player1Id) shouldBe true
-                }
-
-                val shockStillInGraveyard = game.state.getGraveyard(game.player1Id).any {
-                    game.state.getEntity(it)?.get<CardComponent>()?.name == "Shock"
-                }
-                withClue("Shock should not still be in the graveyard after being moved to exile") {
-                    shockStillInGraveyard shouldBe false
                 }
             }
         }

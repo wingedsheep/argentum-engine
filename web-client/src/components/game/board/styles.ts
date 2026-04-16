@@ -1063,6 +1063,21 @@ export const styles: Record<string, React.CSSProperties> = {
     fontWeight: 700,
     zIndex: 5,
   } as React.CSSProperties,
+  // Chorus counter badge (for Malcolm, Alluring Scoundrel etc.)
+  chorusCounterBadge: {
+    position: 'absolute',
+    top: 4,
+    right: 4,
+    backgroundColor: 'rgba(70, 30, 90, 0.95)',
+    borderRadius: 4,
+    border: '1px solid rgba(190, 120, 220, 0.6)',
+    display: 'flex',
+    alignItems: 'center',
+    gap: 2,
+    color: '#e0b8ff',
+    fontWeight: 700,
+    zIndex: 5,
+  } as React.CSSProperties,
   // Blight counter badge (for Rottenmouth Viper etc.)
   blightCounterBadge: {
     position: 'absolute',

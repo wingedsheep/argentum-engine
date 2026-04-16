@@ -30,6 +30,7 @@ import {
   getBlightCounters,
   getFloodCounters,
   getCoinCounters,
+  getChorusCounters,
 } from '../board/shared'
 import { styles } from '../board/styles'
 import {
@@ -1274,6 +1275,20 @@ export function GameCard({
           <i className={`ms ms-${counterManaClass.COIN}`} style={{ fontSize: responsive.isMobile ? 8 : 10 }} />
           <span style={{ fontWeight: 700 }}>
             {getCoinCounters(card)}
+          </span>
+        </div>
+      )}
+
+      {/* Chorus counter badge */}
+      {battlefield && getChorusCounters(card) > 0 && (
+        <div style={{
+          ...styles.chorusCounterBadge,
+          fontSize: responsive.isMobile ? 9 : 11,
+          padding: responsive.isMobile ? '1px 4px' : '2px 6px',
+        }}>
+          <i className={`ms ms-${counterManaClass.CHORUS}`} style={{ fontSize: responsive.isMobile ? 8 : 10 }} />
+          <span style={{ fontWeight: 700 }}>
+            {getChorusCounters(card)}
           </span>
         </div>
       )}

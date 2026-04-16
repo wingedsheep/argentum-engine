@@ -219,9 +219,12 @@ class CastFromZoneEnumerator : ActionEnumerator {
         val linkedExileCardIds = mutableSetOf<EntityId>()
 
         // Check all players' exile zones because cards like Villainous Wealth exile from
-        // an opponent's library (cards stay in their owner's exile zone).
-        val exileZone = state.turnOrder.flatMap { pid -> state.getExile(pid) }
-        for (cardId in exileZone) {
+        // an opponent's library (cards stay in their owner's exile zone). Graveyards
+        // are included so per-card grants that leave the discarded card in the graveyard
+        // (e.g. Malcolm, Alluring Scoundrel) are castable without a detour through exile.
+        val exileCandidates = state.turnOrder.flatMap { pid -> state.getExile(pid).map { it to "EXILE" } }
+        val graveyardCandidates = state.turnOrder.flatMap { pid -> state.getGraveyard(pid).map { it to "GRAVEYARD" } }
+        for ((cardId, sourceZoneLabel) in exileCandidates + graveyardCandidates) {
             val container = state.getEntity(cardId) ?: continue
             val exileComponent = container.get<MayPlayFromExileComponent>() ?: continue
             if (exileComponent.controllerId != playerId) continue
@@ -230,7 +233,7 @@ class CastFromZoneEnumerator : ActionEnumerator {
                 ?.takeIf { it.controllerId == playerId }
             val cardComponent = container.get<CardComponent>() ?: continue
 
-            // Land in exile
+            // Land with play permission
             if (cardComponent.typeLine.isLand) {
                 result.add(
                     LegalAction(
@@ -238,12 +241,12 @@ class CastFromZoneEnumerator : ActionEnumerator {
                         description = "Play ${cardComponent.name}",
                         action = PlayLand(playerId, cardId),
                         affordable = context.canPlayLand,
-                        sourceZone = "EXILE"
+                        sourceZone = sourceZoneLabel
                     )
                 )
             }
 
-            // Non-land spell from exile
+            // Non-land spell with play permission
             if (!cardComponent.typeLine.isLand) {
                 if (context.cantCastSpells) {
                     val costString = if (playForFree) "{0}" else cardComponent.manaCost.toString()
@@ -254,7 +257,7 @@ class CastFromZoneEnumerator : ActionEnumerator {
                             action = CastSpell(playerId, cardId),
                             affordable = false,
                             manaCostString = costString,
-                            sourceZone = "EXILE"
+                            sourceZone = sourceZoneLabel
                         )
                     )
                 } else {
@@ -311,7 +314,7 @@ class CastFromZoneEnumerator : ActionEnumerator {
                                         targetDescription = firstReq.description,
                                         targetRequirements = if (targetInfos.size > 1) targetInfos else null,
                                         manaCostString = costString,
-                                        sourceZone = "EXILE",
+                                        sourceZone = sourceZoneLabel,
                                         additionalCostInfo = exileAdditionalCostInfo
                                     )
                                 )
@@ -323,7 +326,7 @@ class CastFromZoneEnumerator : ActionEnumerator {
                                     description = "Cast ${cardComponent.name}",
                                     action = CastSpell(playerId, cardId),
                                     manaCostString = costString,
-                                    sourceZone = "EXILE",
+                                    sourceZone = sourceZoneLabel,
                                     additionalCostInfo = exileAdditionalCostInfo
                                 )
                             )
@@ -337,7 +340,7 @@ class CastFromZoneEnumerator : ActionEnumerator {
                                 action = CastSpell(playerId, cardId),
                                 affordable = false,
                                 manaCostString = costString,
-                                sourceZone = "EXILE"
+                                sourceZone = sourceZoneLabel
                             )
                         )
                     }
