@@ -7,6 +7,7 @@ import com.wingedsheep.engine.view.ClientGameState
 import com.wingedsheep.engine.view.LegalActionInfo
 import com.wingedsheep.engine.core.*
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
+import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
 import org.slf4j.LoggerFactory
 
@@ -598,20 +599,23 @@ class LlmAiPlayerController(
                     appendLine("  [${GameStateFormatter.actionLetter(i)}] ${card.name} ${card.power}/${card.toughness}$keywordStr$flagStr$oracle")
                 }
                 val opponentCreatures = state.cards.values.filter {
-                    it.controllerId == opponentId && "Creature" in it.cardTypes && !it.isTapped
+                    it.controllerId == opponentId &&
+                        "Creature" in it.cardTypes &&
+                        it.zone?.zoneType == Zone.BATTLEFIELD
                 }
                 if (opponentCreatures.isNotEmpty()) {
                     appendLine()
-                    appendLine("Opponent's untapped creatures (potential blockers):")
-                    for (card in opponentCreatures) {
+                    appendLine("Opponent's creatures on the battlefield:")
+                    for (card in opponentCreatures.sortedBy { it.isTapped }) {
                         val keywords = card.keywords.takeIf { it.isNotEmpty() }?.joinToString(", ") { it.name.lowercase() } ?: ""
                         val keywordStr = if (keywords.isNotEmpty()) " [$keywords]" else ""
+                        val tappedStr = if (card.isTapped) " [TAPPED — cannot block this combat]" else ""
                         val oracle = card.oracleText.takeIf { it.isNotBlank() }?.let { " — \"${it.flattenOracle()}\"" } ?: ""
-                        appendLine("  ${card.name} ${card.power}/${card.toughness}$keywordStr$oracle")
+                        appendLine("  ${card.name} ${card.power}/${card.toughness}$keywordStr$tappedStr$oracle")
                     }
                 } else {
                     appendLine()
-                    appendLine("Opponent has NO untapped creatures to block.")
+                    appendLine("Opponent has NO creatures on the battlefield.")
                 }
                 appendLine()
                 appendLine("Reply with ONLY the creature letters to attack with, or NONE.")
