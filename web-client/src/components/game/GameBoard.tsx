@@ -1,7 +1,7 @@
 import { useMemo, useCallback } from 'react'
 import { useGameStore } from '@/store/gameStore'
 import { useInteraction } from '@/hooks/useInteraction'
-import { useViewingPlayer, useOpponent, useStackCards, selectPriorityMode, useGhostCards, useRevealedLibraryTopCard } from '@/store/selectors'
+import { useViewingPlayer, useOpponent, useStackCards, selectPriorityMode, useGhostCards, useRevealedLibraryTopCard, useBattlefieldCards } from '@/store/selectors'
 import { hand, getNextStep, StepShortNames } from '@/types'
 import { StepStrip } from '../ui/StepStrip'
 import { ManaPool } from '../ui/ManaPool'
@@ -70,7 +70,21 @@ export function GameBoard({ spectatorMode = false, topOffset = 0 }: GameBoardPro
   const manaSelectionState = useGameStore((state) => state.manaSelectionState)
   const cancelManaSelection = useGameStore((state) => state.cancelManaSelection)
   const { executeAction } = useInteraction()
-  const responsive = useResponsive(topOffset)
+
+  // Card counts per battlefield zone — used by useResponsive to decide when wrapping
+  // will occur and shrink cards so the wrapped rows fit vertically.
+  const battlefieldCards = useBattlefieldCards()
+  const zoneRowCounts = useMemo(
+    () => [
+      battlefieldCards.playerCreatures.length + battlefieldCards.playerPlaneswalkers.length,
+      battlefieldCards.playerLands.length + battlefieldCards.playerOther.length,
+      battlefieldCards.opponentCreatures.length + battlefieldCards.opponentPlaneswalkers.length,
+      battlefieldCards.opponentLands.length + battlefieldCards.opponentOther.length,
+    ],
+    [battlefieldCards]
+  )
+
+  const responsive = useResponsive(topOffset, zoneRowCounts)
 
   // Confirm mana selection: if pipeline is active, advance it; otherwise build
   // modified LegalActionInfo with Explicit payment and route through executeAction
@@ -328,7 +342,7 @@ export function GameBoard({ spectatorMode = false, topOffset = 0 }: GameBoardPro
           style={{
             ...styles.spectatorNameLabel,
             position: 'fixed',
-            top: topOffset + responsive.smallCardHeight + responsive.handBattlefieldGap + 8,
+            top: topOffset + responsive.smallCardHeight + responsive.opponentHandBattlefieldGap + 8,
             left: 16,
           }}
         >
@@ -340,9 +354,9 @@ export function GameBoard({ spectatorMode = false, topOffset = 0 }: GameBoardPro
       <div style={{
         ...styles.opponentArea,
         marginTop: -responsive.containerPadding + responsive.sectionGap,
-        paddingTop: responsive.smallCardHeight + topOffset + responsive.handBattlefieldGap,
+        paddingTop: responsive.smallCardHeight + topOffset + responsive.opponentHandBattlefieldGap,
       }}>
-        <div style={styles.playerRowWithZones}>
+        <div style={{ ...styles.playerRowWithZones, alignItems: 'flex-start' }}>
           <div style={styles.playerMainArea}>
             {/* Opponent battlefield - lands first (closer to opponent), then creatures */}
             <Battlefield isOpponent spectatorMode={spectatorMode} />

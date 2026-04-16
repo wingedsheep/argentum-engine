@@ -173,7 +173,9 @@ export function Battlefield({ isOpponent, spectatorMode = false }: { isOpponent:
   ) => (
     <div style={{
       display: 'grid',
-      gridTemplateColumns: '1fr auto 1fr',
+      // Left spacer can shrink to 0; right column grows to fit side items without wrapping,
+      // which lets the center items shift left into the left-spacer space.
+      gridTemplateColumns: 'minmax(0, 1fr) auto minmax(max-content, 1fr)',
       alignItems: 'end',
       width: '100%',
       ...extra,
@@ -203,11 +205,12 @@ export function Battlefield({ isOpponent, spectatorMode = false }: { isOpponent:
       }}>
         {sideItems.length > 0 && centerItems.length > 0 && (
           <div style={{
-            width: 1,
+            width: 24,
             alignSelf: 'stretch',
-            backgroundColor: '#555',
             marginRight: responsive.cardGap,
-            borderRadius: 1,
+            background: 'radial-gradient(ellipse at center, rgba(120, 140, 180, 0.12) 0%, rgba(120, 140, 180, 0.04) 45%, transparent 75%)',
+            pointerEvents: 'none',
+            flexShrink: 0,
           }} />
         )}
         {sideItems.map((group) => renderWithAttachments(group))}
@@ -215,13 +218,15 @@ export function Battlefield({ isOpponent, spectatorMode = false }: { isOpponent:
     </div>
   )
 
+  const dividerMargin = Math.max(10, Math.round(responsive.battlefieldCardHeight * 0.1))
   const renderDivider = () => showDivider ? (
     <div
       style={{
-        width: '40%',
-        height: 1,
-        backgroundColor: '#444',
-        margin: '6px 0',
+        width: '70%',
+        height: 24,
+        margin: `${dividerMargin}px 0`,
+        background: 'radial-gradient(ellipse at center, rgba(120, 140, 180, 0.12) 0%, rgba(120, 140, 180, 0.04) 45%, transparent 75%)',
+        pointerEvents: 'none',
       }}
     />
   ) : null
@@ -246,14 +251,14 @@ export function Battlefield({ isOpponent, spectatorMode = false }: { isOpponent:
         <>
           {frontRow}
           {renderDivider()}
-          {renderGridRow(groupedLands, groupedOther, { marginBottom: -40 })}
+          {renderGridRow(groupedLands, groupedOther)}
         </>
       )}
 
       {/* For opponent: back row (top, near hand), then front row (bottom, toward center) */}
       {isOpponent && (
         <>
-          {renderGridRow(groupedLands, groupedOther, { marginTop: -40 })}
+          {renderGridRow(groupedLands, groupedOther)}
           {renderDivider()}
           {frontRow}
         </>

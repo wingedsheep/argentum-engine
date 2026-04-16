@@ -28,7 +28,8 @@ export interface ResponsiveSizes {
   containerPadding: number
 
   // Layout-specific spacing (replaces hard-coded values)
-  handBattlefieldGap: number    // Space between hand and battlefield
+  handBattlefieldGap: number            // Space between player hand and battlefield
+  opponentHandBattlefieldGap: number    // Space between opponent hand (small) and battlefield
   battlefieldRowPadding: number // Min padding in battlefield rows
   zonePileOffset: number        // Vertical offset for deck/graveyard piles
   centerAreaHeight: number      // Height of center area (life + phase)
@@ -97,8 +98,14 @@ export function useViewportSize(): ViewportSize {
  * Hook to get responsive sizes based on viewport.
  *
  * @param topOffset - Optional offset to subtract from available height (e.g., spectator header)
+ * @param zoneRowCounts - Card counts per battlefield zone [playerCreatures+PW, playerLands+Other,
+ *                        opponentCreatures+PW, opponentLands+Other]. When a zone wraps to a second
+ *                        physical row, cards shrink so the wrapped rows fit vertically.
  */
-export function useResponsive(topOffset: number = 0): ResponsiveSizes {
+export function useResponsive(
+  topOffset: number = 0,
+  zoneRowCounts: readonly number[] = [0, 0, 0, 0],
+): ResponsiveSizes {
   const { width, height } = useViewportSize()
 
   return useMemo(() => {
@@ -114,10 +121,10 @@ export function useResponsive(topOffset: number = 0): ResponsiveSizes {
     // =========================================================================
 
     // Card widths scale with viewport width
-    const baseCardWidth = isMobile ? 70 : isTablet ? 90 : 120
-    const baseSmallCardWidth = isMobile ? 30 : isCompact ? 40 : isTablet ? 50 : 60
-    const baseBattlefieldCardWidth = isMobile ? 60 : isTablet ? 80 : 100
-    const basePileWidth = isMobile ? 40 : isCompact ? 50 : isTablet ? 60 : 70
+    const baseCardWidth = isMobile ? 70 : isTablet ? 90 : 150
+    const baseSmallCardWidth = isMobile ? 30 : isCompact ? 40 : isTablet ? 50 : 75
+    const baseBattlefieldCardWidth = isMobile ? 60 : isTablet ? 80 : 125
+    const basePileWidth = isMobile ? 40 : isCompact ? 50 : isTablet ? 60 : 88
 
     const cardRatio = 1.4 // MTG card aspect ratio
 
@@ -172,7 +179,25 @@ export function useResponsive(topOffset: number = 0): ResponsiveSizes {
     //   - Section gaps and padding: ~0.4 equivalent rows
     // Total: 7.0 equivalent battlefield card heights
     //
-    const effectiveCardRows = 7.0
+    const baseEffectiveCardRows = 7.0
+
+    // Horizontal budget for a single physical row (used to decide wrapping).
+    const zonePileColumnWidth = basePileWidth + containerPadding * 2 + 16
+    const widthBudget = Math.max(200, width - containerPadding * 2 - zonePileColumnWidth)
+
+    // How many cards fit in one physical row at base size (before any scaling).
+    const cardsFitPerRow = Math.max(1, Math.floor((widthBudget + cardGap) / (baseBattlefieldCardWidth + cardGap)))
+
+    // Compute wrap rows per zone. A zone with 0 cards contributes 0 rows; otherwise it uses
+    // at least 1 row, with wrapping for counts that exceed `cardsFitPerRow`.
+    const wrapRowsPerZone = zoneRowCounts.map((count) =>
+      count <= 0 ? 0 : Math.ceil(count / cardsFitPerRow)
+    )
+    // By default the layout assumes 1 row per zone (4 zones total). Extra rows from wrap
+    // push the content beyond the base budget and force cards to shrink.
+    const defaultZonesWithCards = wrapRowsPerZone.filter((r) => r > 0).length || 4
+    const extraWrapRows = wrapRowsPerZone.reduce((sum, r) => sum + Math.max(0, r - 1), 0)
+    const effectiveCardRows = baseEffectiveCardRows + extraWrapRows * (4 / defaultZonesWithCards)
 
     // Fixed elements that don't scale with cards
     const fixedHeight = topOffset + centerAreaHeight + (containerPadding * 2) + (sectionGap * 4)
@@ -184,8 +209,10 @@ export function useResponsive(topOffset: number = 0): ResponsiveSizes {
     const maxBattlefieldHeight = availableForCards / effectiveCardRows
     const maxBattlefieldWidth = maxBattlefieldHeight / cardRatio
 
-    // Scale factor: how much to shrink from base sizes to fit
-    const heightScale = Math.min(1, maxBattlefieldWidth / baseBattlefieldCardWidth)
+    // Height-based shrink: cards shrink vertically if the (possibly-wrapped) rows exceed budget.
+    const heightScaleRaw = maxBattlefieldWidth / baseBattlefieldCardWidth
+
+    const heightScale = Math.min(1, heightScaleRaw)
 
     // =========================================================================
     // Final Card Sizes (after scaling)
@@ -213,10 +240,11 @@ export function useResponsive(topOffset: number = 0): ResponsiveSizes {
     //   - Hover lift space (40px in HandFan)
     //   - Card rotation at edges
     // We need enough gap to prevent overlap with battlefield lands
-    const handBattlefieldGap = Math.round(Math.max(cardGap * 4, cardHeight * 0.3))
+    const handBattlefieldGap = Math.round(Math.max(cardGap * 4, cardHeight * 0.4))
+    const opponentHandBattlefieldGap = 0
 
     // Minimum padding inside battlefield rows (for visual breathing room)
-    const battlefieldRowPadding = Math.round(battlefieldCardHeight * 0.4)
+    const battlefieldRowPadding = Math.round(battlefieldCardHeight * 0.08)
 
     // Vertical offset for zone piles (deck/graveyard) to avoid buttons
     // Scales with pile size to maintain proportion
@@ -247,6 +275,7 @@ export function useResponsive(topOffset: number = 0): ResponsiveSizes {
       sectionGap,
       containerPadding,
       handBattlefieldGap,
+      opponentHandBattlefieldGap,
       battlefieldRowPadding,
       zonePileOffset,
       centerAreaHeight,
