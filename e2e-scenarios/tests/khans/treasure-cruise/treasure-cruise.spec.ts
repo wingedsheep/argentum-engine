@@ -71,9 +71,7 @@ test.describe('Treasure Cruise (Delve)', () => {
     await p1.screenshot('Cast with delve')
 
     // Opponent resolves the spell
-    // Wait for spell to appear on P2's stack, then resolve
-    await p2.page.getByText('Draw 3 cards').waitFor({ state: 'visible', timeout: 10_000 })
-    await p2.pass()
+    await p2.resolveStack('Treasure Cruise')
 
     // Player 1 should have drawn 3 cards (started with Treasure Cruise which was cast)
     // Hand should now contain the 3 drawn cards
@@ -137,9 +135,7 @@ test.describe('Treasure Cruise (Delve)', () => {
     await p1.page.locator('button').filter({ hasText: /^Confirm/ }).click()
 
     // Opponent resolves
-    // Wait for spell to appear on P2's stack, then resolve
-    await p2.page.getByText('Draw 3 cards').waitFor({ state: 'visible', timeout: 10_000 })
-    await p2.pass()
+    await p2.resolveStack('Treasure Cruise')
 
     // Should have drawn 3 cards
     await p1.expectHandSize(3)
