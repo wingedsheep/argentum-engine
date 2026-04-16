@@ -3,6 +3,7 @@ package com.wingedsheep.engine.handlers.actions.priority
 import com.wingedsheep.engine.core.ExecutionResult
 import com.wingedsheep.engine.core.GameEvent
 import com.wingedsheep.engine.core.PassPriority
+import com.wingedsheep.engine.core.PendingTriggersContinuation
 import com.wingedsheep.engine.core.PriorityChangedEvent
 import com.wingedsheep.engine.core.StepChangedEvent
 import com.wingedsheep.engine.core.TurnManager
@@ -144,7 +145,37 @@ class PassPriorityHandler(
                 ?: container.get<ActivatedAbilityOnStackComponent>()?.controllerId
         } ?: state.activePlayerId
 
+        val preResolutionStackSize = state.continuationStack.size
         val result = stackResolver.resolveTop(state)
+
+        // If resolution paused mid-way (e.g., Broken Bond destroys a creature then asks
+        // "may put a land from hand"), triggers from events emitted before the pause
+        // would otherwise be lost — they never reach detectTriggers because the paused
+        // branch below returns early. Detect them now and queue them as a
+        // PendingTriggersContinuation beneath the frames this resolution pushed, so
+        // they fire after the spell finishes resolving (via checkForMoreContinuations).
+        if (result.isPaused) {
+            val triggers = triggerDetector.detectTriggers(
+                trackNonTokenCreatureDeaths(result.newState, result.events),
+                result.events
+            )
+            if (triggers.isNotEmpty()) {
+                val pendingTriggers = PendingTriggersContinuation(
+                    decisionId = "resolution-deferred-triggers-${java.util.UUID.randomUUID()}",
+                    remainingTriggers = triggers
+                )
+                val stack = result.newState.continuationStack
+                val newStack = stack.subList(0, preResolutionStackSize) +
+                    pendingTriggers +
+                    stack.subList(preResolutionStackSize, stack.size)
+                return ExecutionResult.paused(
+                    result.newState.copy(continuationStack = newStack),
+                    result.pendingDecision!!,
+                    result.events
+                )
+            }
+            return result
+        }
 
         if (!result.isSuccess) {
             return result
