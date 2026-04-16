@@ -227,10 +227,18 @@ Completed changes:
 - `StackZone.tsx` now renders a bulleted per-mode list under the top stack card when `perModeTargets` is populated, with each mode's targets shown in italic below. Falls back to the existing `stackText` block when no per-mode data is present.
 - Verified the cast-time mode-selection prompt already carries `(X of N)` progress (`CastSpellHandler.presentCastModalModeDecision`). Also appended the already-picked mode descriptions (`"Already picked: …"`) to the prompt, and added `white-space: pre-line` to `.title` in `DecisionUI.module.css` so the multi-line prompt renders.
 
-### Phase 10 — `allowRepeat` + `minChooseCount` integration
+### Phase 10 — `allowRepeat` + `minChooseCount` integration [DONE]
 
 - **`allowRepeat=true`**: in `CastModalModeSelectionContinuation`, `availableIndices` is `null` (re-initialized to `modes.indices` every step). Resumer does NOT remove chosen index. Validate rejects duplicates when `!allowRepeat`.
 - **`minChooseCount < chooseCount`**: mode-selection decision offers a "Done" pseudo-option once `selectedModeIndices.size >= minChooseCount`. Reuses existing `ChooseOptionDecision` infrastructure.
+
+Verified integration (already wired by Phases 1–4 & 9):
+- `CastModalModeSelectionContinuation.availableIndices: List<Int>? = null` — `CastSpellHandler.pauseForCastTimeModeSelection` passes `null` when `modalEffect.allowRepeat`, and the full pre-filtered legal list as `repeatAvailableIndices` otherwise.
+- `CastModalContinuationResumer.resumeCastModalModeSelection` keeps `nextAvailable = null` when `allowRepeat`, carrying the original `offeredIndices` as `repeatAvailable` — no chosen-index narrowing.
+- `CastSpellHandler.validateChosenModeShape` rejects `chosen.distinct().size != chosen.size` when `!modalEffect.allowRepeat`.
+- `CastSpellHandler.presentCastModalModeDecision` appends a `"Done"` option when `selectedModeIndices.size in minChooseCount..<chooseCount`; the resumer recognises `optionIndex == offeredIndices.size` as the Done slot.
+- `CastSpellHandler.validateChosenModeShape` rejects `chosen.size < minChooseCount` at the finalized-cast boundary.
+- No new engine surface needed — entirely driven through existing `ChooseOptionDecision` / continuation infrastructure.
 
 ### Phase 11 — Wire-up / registrations
 
