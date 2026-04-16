@@ -1,8 +1,8 @@
 package com.wingedsheep.gameserver.ai
 
-import com.wingedsheep.ai.llm.AiController
-import com.wingedsheep.ai.llm.AiPlayerController
-import com.wingedsheep.ai.llm.EngineAiController
+import com.wingedsheep.ai.AiPlayerController
+import com.wingedsheep.ai.engine.EngineAiPlayerController
+import com.wingedsheep.ai.llm.LlmAiPlayerController
 import com.wingedsheep.ai.llm.LlmClient
 import com.wingedsheep.gameserver.config.GameProperties
 import com.wingedsheep.ai.engine.SealedDeckGenerator
@@ -89,18 +89,23 @@ class AiGameManager(
     private fun createController(
         aiPlayerId: EntityId,
         gameSession: GameSession? = null
-    ): AiController {
+    ): AiPlayerController {
         val ai = gameProperties.ai
         val aiConfig = ai.toAiConfig()
         return if (ai.isEngineMode) {
-            EngineAiController(
+            EngineAiPlayerController(
                 cardRegistry = cardRegistry,
                 playerId = aiPlayerId,
                 gameStateProvider = { gameSession?.getStateSnapshot() }
             )
         } else {
+            val engineFallback = EngineAiPlayerController(
+                cardRegistry = cardRegistry,
+                playerId = aiPlayerId,
+                gameStateProvider = { gameSession?.getStateSnapshot() }
+            )
             val llmClient = LlmClient(aiConfig)
-            AiPlayerController(aiConfig, llmClient, aiPlayerId)
+            LlmAiPlayerController(aiConfig, llmClient, aiPlayerId, fallback = engineFallback)
         }
     }
 

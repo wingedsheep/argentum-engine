@@ -43,17 +43,4 @@ class BudgetModalHandler : AiDecisionHandler<BudgetModalDecision> {
         return BudgetModalResponse(decisionId = decision.id, selectedModeIndices = indices)
     }
 
-    override fun heuristic(decision: BudgetModalDecision, state: ClientGameState): DecisionResponse {
-        // Greedy: pick cheapest mode repeatedly until budget exhausted
-        val sorted = decision.modes.withIndex().sortedBy { it.value.cost }
-        val selected = mutableListOf<Int>()
-        var remaining = decision.budget
-        for ((idx, mode) in sorted) {
-            while (mode.cost <= remaining) {
-                selected.add(idx)
-                remaining -= mode.cost
-            }
-        }
-        return BudgetModalResponse(decisionId = decision.id, selectedModeIndices = selected)
-    }
 }

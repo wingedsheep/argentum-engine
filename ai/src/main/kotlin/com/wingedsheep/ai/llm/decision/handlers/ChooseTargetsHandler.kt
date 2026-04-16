@@ -97,20 +97,4 @@ class ChooseTargetsHandler : AiDecisionHandler<ChooseTargetsDecision> {
         }
     }
 
-    override fun heuristic(decision: ChooseTargetsDecision, state: ClientGameState): DecisionResponse {
-        val myId = state.viewingPlayerId
-        val targets = decision.targetRequirements.associate { req ->
-            val valid = decision.legalTargets[req.index] ?: emptyList()
-            // Prefer opponent's creatures for targeting heuristic (most targets are harmful)
-            val opponentTargets = valid.filter { tid ->
-                val card = state.cards[tid]
-                card != null && card.controllerId != myId
-            }
-            val preferred = if (opponentTargets.isNotEmpty()) opponentTargets else valid
-            // Pick highest-power targets first
-            val sorted = preferred.sortedByDescending { tid -> state.cards[tid]?.power ?: 0 }
-            req.index to sorted.take(req.minTargets)
-        }
-        return TargetsResponse(decisionId = decision.id, selectedTargets = targets)
-    }
 }

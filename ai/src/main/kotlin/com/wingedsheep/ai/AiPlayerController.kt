@@ -1,5 +1,10 @@
-package com.wingedsheep.ai.llm
+package com.wingedsheep.ai
 
+import com.wingedsheep.ai.llm.BottomCardsInfo
+import com.wingedsheep.ai.llm.CardSummary
+import com.wingedsheep.ai.llm.MulliganInfo
+import com.wingedsheep.engine.core.DecisionResponse
+import com.wingedsheep.engine.core.GameAction
 import com.wingedsheep.engine.core.PendingDecision
 import com.wingedsheep.engine.view.ClientGameState
 import com.wingedsheep.engine.view.LegalActionInfo
@@ -9,10 +14,10 @@ import com.wingedsheep.sdk.model.EntityId
  * Common interface for AI controllers.
  *
  * Two implementations:
- * - [AiPlayerController] — LLM-based (sends game state to an LLM API)
- * - [EngineAiController] — Rules-engine based (uses the built-in [com.wingedsheep.ai.engine.AIPlayer])
+ * - [com.wingedsheep.ai.llm.LlmAiPlayerController] — LLM-based (sends game state to an LLM API)
+ * - [com.wingedsheep.ai.engine.EngineAiPlayerController] — Rules-engine based (uses the built-in [com.wingedsheep.ai.engine.AIPlayer])
  */
-interface AiController {
+interface AiPlayerController {
     /**
      * Choose an action from the legal actions or respond to a pending decision.
      */
@@ -91,4 +96,15 @@ interface AiController {
         availableSelections: List<String>,
         pickedSoFar: List<CardSummary>
     ): String
+}
+
+/**
+ * Represents the AI's response to a game prompt.
+ */
+sealed interface ActionResponse {
+    /** Submit a game action (cast spell, pass priority, declare attackers, etc.) */
+    data class SubmitAction(val action: GameAction) : ActionResponse
+
+    /** Submit a decision response */
+    data class SubmitDecision(val playerId: EntityId, val response: DecisionResponse) : ActionResponse
 }

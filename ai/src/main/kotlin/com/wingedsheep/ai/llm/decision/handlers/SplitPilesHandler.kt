@@ -50,11 +50,4 @@ class SplitPilesHandler : AiDecisionHandler<SplitPilesDecision> {
         } else null
     }
 
-    override fun heuristic(decision: SplitPilesDecision, state: ClientGameState): DecisionResponse {
-        val half = decision.cards.size / 2
-        return PilesSplitResponse(
-            decisionId = decision.id,
-            piles = listOf(decision.cards.take(half), decision.cards.drop(half))
-        )
-    }
 }

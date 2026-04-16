@@ -42,7 +42,4 @@ class ReorderLibraryHandler : AiDecisionHandler<ReorderLibraryDecision> {
         return OrderedResponse(decisionId = decision.id, orderedObjects = ordering.map { decision.cards[it] })
     }
 
-    override fun heuristic(decision: ReorderLibraryDecision, state: ClientGameState): DecisionResponse {
-        return OrderedResponse(decisionId = decision.id, orderedObjects = decision.cards)
-    }
 }

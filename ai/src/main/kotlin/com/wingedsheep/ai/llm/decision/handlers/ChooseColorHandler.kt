@@ -7,7 +7,6 @@ import com.wingedsheep.ai.llm.AiResponseParser
 import com.wingedsheep.ai.llm.GameStateFormatter
 import com.wingedsheep.ai.llm.decision.AiDecisionHandler
 import com.wingedsheep.engine.view.ClientGameState
-import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.model.EntityId
 import kotlin.reflect.KClass
 
@@ -42,10 +41,4 @@ class ChooseColorHandler : AiDecisionHandler<ChooseColorDecision> {
         return ColorChosenResponse(decisionId = decision.id, color = colors[index])
     }
 
-    override fun heuristic(decision: ChooseColorDecision, state: ClientGameState): DecisionResponse {
-        return ColorChosenResponse(
-            decisionId = decision.id,
-            color = decision.availableColors.firstOrNull() ?: Color.WHITE
-        )
-    }
 }

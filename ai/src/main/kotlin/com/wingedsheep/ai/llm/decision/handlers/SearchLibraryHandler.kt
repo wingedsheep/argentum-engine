@@ -52,12 +52,4 @@ class SearchLibraryHandler : AiDecisionHandler<SearchLibraryDecision> {
         return CardsSelectedResponse(decisionId = decision.id, selectedCards = selected)
     }
 
-    override fun heuristic(decision: SearchLibraryDecision, state: ClientGameState): DecisionResponse {
-        val selected = if (decision.options.isNotEmpty()) {
-            decision.options.take(decision.maxSelections.coerceAtMost(1))
-        } else {
-            emptyList()
-        }
-        return CardsSelectedResponse(decisionId = decision.id, selectedCards = selected)
-    }
 }

@@ -45,49 +45,4 @@ class DistributeHandler : AiDecisionHandler<DistributeDecision> {
         return DistributionResponse(decisionId = decision.id, distribution = entityDist)
     }
 
-    override fun heuristic(decision: DistributeDecision, state: ClientGameState): DecisionResponse {
-        val myId = state.viewingPlayerId
-        // Concentrate damage to kill creatures, prioritizing opponent's biggest threats.
-        // Sort opponent targets by toughness (try to kill the biggest we can), then own targets last.
-        val targets = decision.targets.sortedWith(compareBy<EntityId> { tid ->
-            val card = state.cards[tid]
-            if (card != null && card.controllerId == myId) 1 else 0 // Opponent's targets first
-        }.thenByDescending { tid ->
-            state.cards[tid]?.toughness ?: 0 // Biggest first among opponent's
-        })
-
-        val dist = mutableMapOf<EntityId, Int>()
-        var remaining = decision.totalAmount
-
-        // Assign minimum required to each target first
-        for (tid in targets) {
-            val min = decision.minPerTarget.coerceAtLeast(0)
-            dist[tid] = min
-            remaining -= min
-        }
-
-        // Then pile remaining damage onto the best targets (try to reach lethal toughness)
-        for (tid in targets) {
-            if (remaining <= 0) break
-            val card = state.cards[tid]
-            val toughness = card?.toughness ?: 1
-            val damage = card?.damage ?: 0
-            val currentAssigned = dist[tid] ?: 0
-            val neededToKill = (toughness - damage - currentAssigned).coerceAtLeast(0)
-            val maxForTarget = decision.maxPerTarget[tid] ?: Int.MAX_VALUE
-            val extra = neededToKill.coerceAtMost(remaining).coerceAtMost(maxForTarget - currentAssigned)
-            if (extra > 0) {
-                dist[tid] = currentAssigned + extra
-                remaining -= extra
-            }
-        }
-
-        // If still remaining, dump on first target
-        if (remaining > 0 && targets.isNotEmpty()) {
-            val firstTarget = targets.first()
-            dist[firstTarget] = (dist[firstTarget] ?: 0) + remaining
-        }
-
-        return DistributionResponse(decisionId = decision.id, distribution = dist)
-    }
 }

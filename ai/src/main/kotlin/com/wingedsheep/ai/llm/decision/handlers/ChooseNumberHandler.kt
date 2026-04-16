@@ -36,7 +36,4 @@ class ChooseNumberHandler : AiDecisionHandler<ChooseNumberDecision> {
         return NumberChosenResponse(decisionId = decision.id, number = number)
     }
 
-    override fun heuristic(decision: ChooseNumberDecision, state: ClientGameState): DecisionResponse {
-        return NumberChosenResponse(decisionId = decision.id, number = decision.minValue)
-    }
 }

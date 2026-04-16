@@ -1,8 +1,12 @@
-package com.wingedsheep.ai.llm
+package com.wingedsheep.ai.engine
 
-import com.wingedsheep.ai.engine.AIPlayer
+import com.wingedsheep.ai.ActionResponse
+import com.wingedsheep.ai.AiPlayerController
 import com.wingedsheep.ai.engine.advisor.modules.BloomburrowAdvisorModule
 import com.wingedsheep.ai.engine.advisor.modules.OnslaughtAdvisorModule
+import com.wingedsheep.ai.llm.BottomCardsInfo
+import com.wingedsheep.ai.llm.CardSummary
+import com.wingedsheep.ai.llm.MulliganInfo
 import com.wingedsheep.engine.core.*
 import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.GameState
@@ -11,7 +15,7 @@ import com.wingedsheep.engine.view.LegalActionInfo
 import com.wingedsheep.sdk.model.EntityId
 import org.slf4j.LoggerFactory
 
-private val logger = LoggerFactory.getLogger(EngineAiController::class.java)
+private val logger = LoggerFactory.getLogger(EngineAiPlayerController::class.java)
 
 /**
  * AI controller powered by the built-in rules-engine [AIPlayer].
@@ -23,11 +27,11 @@ private val logger = LoggerFactory.getLogger(EngineAiController::class.java)
  * the [com.wingedsheep.gameserver.session.GameSession]. This allows the engine AI
  * to simulate actions and evaluate board states accurately.
  */
-class EngineAiController(
+class EngineAiPlayerController(
     private val cardRegistry: CardRegistry,
     private val playerId: EntityId,
     private val gameStateProvider: () -> GameState?
-) : AiController {
+) : AiPlayerController {
 
     private val aiPlayer = AIPlayer.create(
         cardRegistry, playerId,

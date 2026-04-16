@@ -43,7 +43,4 @@ class OrderObjectsHandler : AiDecisionHandler<OrderObjectsDecision> {
         return OrderedResponse(decisionId = decision.id, orderedObjects = ordering.map { decision.objects[it] })
     }
 
-    override fun heuristic(decision: OrderObjectsDecision, state: ClientGameState): DecisionResponse {
-        return OrderedResponse(decisionId = decision.id, orderedObjects = decision.objects)
-    }
 }

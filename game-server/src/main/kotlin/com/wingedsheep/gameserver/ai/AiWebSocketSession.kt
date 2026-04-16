@@ -1,7 +1,7 @@
 package com.wingedsheep.gameserver.ai
 
-import com.wingedsheep.ai.llm.AiController
-import com.wingedsheep.ai.llm.ActionResponse
+import com.wingedsheep.ai.AiPlayerController
+import com.wingedsheep.ai.ActionResponse
 import com.wingedsheep.ai.llm.BottomCardsInfo
 import com.wingedsheep.ai.llm.CardRuling
 import com.wingedsheep.ai.llm.CardSummary
@@ -40,7 +40,7 @@ private val logger = LoggerFactory.getLogger(AiWebSocketSession::class.java)
  */
 class AiWebSocketSession(
     private val aiPlayerId: EntityId,
-    private val controller: AiController,
+    private val controller: AiPlayerController,
     private val thinkingDelayMs: Long = 500,
     private val onActionReady: (EntityId, GameAction) -> Unit,
     private val onMulliganKeep: (EntityId) -> Unit,

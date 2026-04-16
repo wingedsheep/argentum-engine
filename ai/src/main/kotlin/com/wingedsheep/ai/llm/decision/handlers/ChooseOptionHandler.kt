@@ -38,7 +38,4 @@ class ChooseOptionHandler : AiDecisionHandler<ChooseOptionDecision> {
         return OptionChosenResponse(decisionId = decision.id, optionIndex = index)
     }
 
-    override fun heuristic(decision: ChooseOptionDecision, state: ClientGameState): DecisionResponse {
-        return OptionChosenResponse(decisionId = decision.id, optionIndex = 0)
-    }
 }

@@ -12,7 +12,7 @@ import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 
 /**
- * Verifies that the in-process engine AI (used by EngineAiController) actually
+ * Verifies that the in-process engine AI (used by EngineAiPlayerController) actually
  * produces a valid CardsSelectedResponse when asked to sacrifice one of several
  * creatures tied for greatest power — the scenario the user reported as freezing.
  *
@@ -49,7 +49,7 @@ class EngineAiCracklingDoomTest : ScenarioTestBase() {
                 decision.playerId shouldBe game.player2Id
                 (decision as SelectCardsDecision).options.size shouldBe 2
 
-                // Instantiate the real engine AI (same class EngineAiController uses)
+                // Instantiate the real engine AI (same class EngineAiPlayerController uses)
                 // and ask it to respond to the pending decision.
                 val ai = AIPlayer.create(cardRegistry, game.player2Id)
                 val response = ai.respondToDecision(game.state, decision)

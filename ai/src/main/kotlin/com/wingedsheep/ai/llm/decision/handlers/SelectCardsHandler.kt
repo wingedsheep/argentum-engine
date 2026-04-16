@@ -56,10 +56,4 @@ class SelectCardsHandler : AiDecisionHandler<SelectCardsDecision> {
         } else null
     }
 
-    override fun heuristic(decision: SelectCardsDecision, state: ClientGameState): DecisionResponse {
-        return CardsSelectedResponse(
-            decisionId = decision.id,
-            selectedCards = decision.options.take(decision.minSelections)
-        )
-    }
 }

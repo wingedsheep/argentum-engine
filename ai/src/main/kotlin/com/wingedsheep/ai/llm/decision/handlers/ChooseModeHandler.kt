@@ -41,11 +41,4 @@ class ChooseModeHandler : AiDecisionHandler<ChooseModeDecision> {
         return ModesChosenResponse(decisionId = decision.id, selectedModes = listOf(decision.modes[index].index))
     }
 
-    override fun heuristic(decision: ChooseModeDecision, state: ClientGameState): DecisionResponse {
-        val firstAvailable = decision.modes.firstOrNull { it.available }
-        return ModesChosenResponse(
-            decisionId = decision.id,
-            selectedModes = listOf(firstAvailable?.index ?: 0)
-        )
-    }
 }

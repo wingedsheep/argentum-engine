@@ -1,29 +1,29 @@
 package com.wingedsheep.ai.llm
 
-import com.wingedsheep.ai.llm.decision.AiDecisionHandler
+import com.wingedsheep.ai.ActionResponse
+import com.wingedsheep.ai.AiPlayerController
 import com.wingedsheep.ai.llm.decision.AiDecisionHandlerRegistry
-import com.wingedsheep.ai.llm.AiConfig
 import com.wingedsheep.engine.view.ClientGameState
 import com.wingedsheep.engine.view.LegalActionInfo
 import com.wingedsheep.engine.core.*
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
-import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.model.EntityId
 import org.slf4j.LoggerFactory
 
-private val logger = LoggerFactory.getLogger(AiPlayerController::class.java)
+private val logger = LoggerFactory.getLogger(LlmAiPlayerController::class.java)
 
 /**
- * The AI "brain" that decides what action to take given the current game state.
+ * LLM-based AI controller that sends game state to an LLM API and parses responses.
  *
  * Maintains a rolling conversation history with the LLM and handles
- * retries with fallback to heuristics.
+ * retries with fallback to an optional [fallback] controller (typically the engine AI).
  */
-class AiPlayerController(
+class LlmAiPlayerController(
     private val properties: AiConfig,
     private val llmClient: LlmClient,
-    private val playerId: EntityId
-) : AiController {
+    private val playerId: EntityId,
+    private val fallback: AiPlayerController? = null
+) : AiPlayerController {
     private val decisionRegistry = AiDecisionHandlerRegistry()
     private val formatter = GameStateFormatter(decisionRegistry)
     private val parser = AiResponseParser()
@@ -160,19 +160,17 @@ class AiPlayerController(
             }
         }
 
-        logger.warn("AI falling back to heuristic after LLM failure")
-
-        // Fallback: heuristic
-        val heuristic = if (pendingDecision != null) {
-            heuristicDecision(pendingDecision, state)
-        } else {
-            heuristicAction(filteredActions, state)
+        // Fallback: delegate to engine AI if available
+        if (fallback != null) {
+            logger.warn("AI falling back to engine AI after LLM failure")
+            return fallback.chooseAction(state, legalActions, pendingDecision, recentGameLog)
         }
-        logger.info("AI heuristic result: {}", when (heuristic) {
-            is ActionResponse.SubmitAction -> "Action(${heuristic.action::class.simpleName})"
-            is ActionResponse.SubmitDecision -> "Decision(${heuristic.response::class.simpleName})"
-        })
-        return heuristic
+
+        // Last-resort: no fallback configured, just pass
+        logger.warn("AI no fallback configured, passing priority")
+        val passAction = legalActions.find { it.actionType == "PassPriority" }
+        if (passAction != null) return ActionResponse.SubmitAction(passAction.action)
+        return ActionResponse.SubmitAction(legalActions.first().action)
     }
 
     /**
@@ -211,9 +209,15 @@ class AiPlayerController(
             }
         }
 
-        // Heuristic: keep if mulliganCount >= 2, otherwise mulligan
+        // Fallback: delegate to engine AI
+        if (fallback != null) {
+            logger.warn("AI mulligan falling back to engine AI")
+            return fallback.decideMulligan(mulliganMessage)
+        }
+
+        // Last-resort: keep if mulliganCount >= 2
         val keep = mulliganMessage.mulliganCount >= 2
-        logger.info("AI mulligan heuristic: ${if (keep) "keep" else "mulligan"} (mulligan count: ${mulliganMessage.mulliganCount})")
+        logger.info("AI mulligan last-resort: ${if (keep) "keep" else "mulligan"}")
         return keep
     }
 
@@ -252,7 +256,13 @@ class AiPlayerController(
             }
         }
 
-        // Heuristic: bottom the last N cards
+        // Fallback: delegate to engine AI
+        if (fallback != null) {
+            logger.warn("AI bottom cards falling back to engine AI")
+            return fallback.chooseBottomCards(message)
+        }
+
+        // Last-resort: bottom the last N cards
         return hand.takeLast(cardCount)
     }
 
@@ -774,77 +784,6 @@ class AiPlayerController(
     }
 
     // =========================================================================
-    // Heuristic fallbacks
-    // =========================================================================
-
-    private fun heuristicAction(legalActions: List<LegalActionInfo>, state: ClientGameState? = null): ActionResponse {
-        // 1. Play a land first (never miss a land drop)
-        val playLand = legalActions.find { it.actionType == "PlayLand" }
-        if (playLand != null) {
-            logger.info("AI heuristic: playing land")
-            return ActionResponse.SubmitAction(playLand.action)
-        }
-        // 2. Cast a spell — prefer the cheapest affordable spell so more mana is left
-        //    for additional casts this turn (the heuristic will be called again with updated state).
-        val affordableSpells = legalActions.filter {
-            (it.actionType == "CastSpell" || it.actionType == "CastFaceDown") && it.isAffordable
-        }
-        if (affordableSpells.isNotEmpty()) {
-            // Among affordable spells, prefer creatures over non-creatures, then cheapest first
-            // so remaining mana can be used for a second spell this turn.
-            val bestSpell = affordableSpells.minByOrNull { estimateManaCost(it.manaCostString) }!!
-            logger.info("AI heuristic: casting {} (cheapest affordable, saving mana for more)", bestSpell.description)
-            return ActionResponse.SubmitAction(maybeAddTargets(bestSpell, state))
-        }
-        // 3. Activate affordable non-mana abilities
-        val activateAbility = legalActions.find {
-            it.actionType == "ActivateAbility" && it.isAffordable && !it.isManaAbility
-        }
-        if (activateAbility != null) {
-            logger.info("AI heuristic: activating ability {}", activateAbility.description)
-            return ActionResponse.SubmitAction(maybeAddTargets(activateAbility, state))
-        }
-        // 4. Pass priority
-        val passAction = legalActions.find { it.actionType == "PassPriority" }
-        if (passAction != null) {
-            logger.info("AI heuristic: passing priority")
-            return ActionResponse.SubmitAction(passAction.action)
-        }
-        logger.info("AI heuristic: selecting first legal action")
-        return ActionResponse.SubmitAction(legalActions.first().action)
-    }
-
-    /**
-     * Estimate the converted mana cost from a mana cost string like "{2}{R}{G}".
-     * Used by heuristics to prefer casting expensive spells first.
-     */
-    private fun estimateManaCost(manaCostString: String?): Int {
-        if (manaCostString.isNullOrBlank()) return 0
-        var total = 0
-        val genericPattern = Regex("""\{(\d+)}""")
-        for (match in genericPattern.findAll(manaCostString)) {
-            total += match.groupValues[1].toIntOrNull() ?: 0
-        }
-        // Count colored symbols ({W}, {U}, {B}, {R}, {G}) as 1 each
-        val coloredPattern = Regex("""\{[WUBRGC]}""")
-        total += coloredPattern.findAll(manaCostString).count()
-        return total
-    }
-
-    private fun heuristicDecision(decision: PendingDecision, state: ClientGameState): ActionResponse {
-        logger.info("AI heuristic for decision: ${decision::class.simpleName}")
-        val handler = decisionRegistry.getHandler(decision)
-        val response = if (handler != null) {
-            handler.heuristic(decision, state)
-        } else {
-            logger.warn("No handler for decision type: ${decision::class.simpleName}")
-            // Last resort: try to pass priority
-            return heuristicAction(emptyList(), state)
-        }
-        return ActionResponse.SubmitDecision(playerId, response)
-    }
-
-    // =========================================================================
     // Draft Picking (LLM)
     // =========================================================================
 
@@ -881,10 +820,16 @@ class AiPlayerController(
             draftHistory.removeLastOrNull()
         }
 
-        // Fallback: pick by rarity then alphabetical
-        val fallback = pack.sortedByDescending { rarityScore(it.rarity ?: "") }.take(picksRequired).map { it.name }
-        logger.info("AI draft pick fallback P{}p{}: {}", packNumber, pickNumber, fallback.joinToString(", "))
-        return fallback
+        // Fallback: delegate to engine AI
+        if (fallback != null) {
+            logger.warn("AI draft pick falling back to engine AI P{}p{}", packNumber, pickNumber)
+            return fallback.chooseDraftPick(pack, pickedSoFar, packNumber, pickNumber, picksRequired, passDirection)
+        }
+
+        // Last-resort: pick by rarity
+        val sorted = pack.sortedByDescending { rarityScore(it.rarity ?: "") }.take(picksRequired).map { it.name }
+        logger.info("AI draft pick last-resort P{}p{}: {}", packNumber, pickNumber, sorted.joinToString(", "))
+        return sorted
     }
 
     override fun chooseWinstonAction(
@@ -911,7 +856,13 @@ class AiPlayerController(
             draftHistory.removeLastOrNull()
         }
 
-        // Fallback: take if pile has 3+ cards or a rare
+        // Fallback: delegate to engine AI
+        if (fallback != null) {
+            logger.warn("AI Winston falling back to engine AI")
+            return fallback.chooseWinstonAction(pileCards, pileIndex, pileSizes, pickedSoFar)
+        }
+
+        // Last-resort: take if pile has 3+ cards or a rare
         val hasRare = pileCards.any { it.rarity?.uppercase() in listOf("RARE", "MYTHIC") }
         return pileCards.size >= 3 || hasRare
     }
@@ -942,7 +893,13 @@ class AiPlayerController(
             draftHistory.removeLastOrNull()
         }
 
-        // Fallback: pick selection with most non-null cards
+        // Fallback: delegate to engine AI
+        if (fallback != null) {
+            logger.warn("AI grid draft falling back to engine AI")
+            return fallback.chooseGridDraftPick(grid, availableSelections, pickedSoFar)
+        }
+
+        // Last-resort: pick selection with most non-null cards
         return availableSelections.maxByOrNull { sel ->
             getGridIndices(sel).count { i -> i < grid.size && grid[i] != null }
         } ?: availableSelections.first()
@@ -1206,15 +1163,4 @@ class AiPlayerController(
             - In combat, think about what each attack or block costs you versus what it gains you.
         """.trimIndent()
     }
-}
-
-/**
- * Represents the AI's response to a game prompt.
- */
-sealed interface ActionResponse {
-    /** Submit a game action (cast spell, pass priority, declare attackers, etc.) */
-    data class SubmitAction(val action: GameAction) : ActionResponse
-
-    /** Submit a decision response */
-    data class SubmitDecision(val playerId: EntityId, val response: DecisionResponse) : ActionResponse
 }

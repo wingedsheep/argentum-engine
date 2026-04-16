@@ -9,9 +9,10 @@ import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.LifeTotalComponent
+import com.wingedsheep.ai.ActionResponse
+import com.wingedsheep.ai.AiPlayerController
+import com.wingedsheep.ai.engine.EngineAiPlayerController
 import com.wingedsheep.ai.llm.*
-import com.wingedsheep.gameserver.ai.*
-import com.wingedsheep.gameserver.config.AiProperties
 import com.wingedsheep.engine.view.ClientEventTransformer
 import com.wingedsheep.engine.view.ClientStateTransformer
 import com.wingedsheep.engine.view.LegalActionEnricher
@@ -36,7 +37,7 @@ import kotlin.time.measureTime
  * Configurable AI benchmark.
  *
  * Engine-vs-engine uses the fast synchronous path (same as AdvisorBenchmark).
- * LLM players use the production [AiController] interface with [AiPlayerController].
+ * LLM players use the production [AiPlayerController] interface with [LlmAiPlayerController].
  *
  * Disabled by default. Run with system properties:
  *
@@ -207,11 +208,11 @@ private data class GameResult(
 private data class GameRunResult(val result: GameResult, val log: String)
 
 // ═════════════════════════════════════════════════════════════════════════════
-// Game runner — synchronous loop using AiController.chooseAction() directly
+// Game runner — synchronous loop using AiPlayerController.chooseAction() directly
 //
-// Engine players use EngineAiController (wraps AIPlayer — same as production).
-// LLM players use AiPlayerController (formats state, queries LLM — same as production).
-// Both go through the AiController interface, the same code path as real games,
+// Engine players use EngineAiPlayerController (wraps AIPlayer — same as production).
+// LLM players use LlmAiPlayerController (formats state, queries LLM — same as production).
+// Both go through the AiPlayerController interface, the same code path as real games,
 // just called synchronously instead of through AiWebSocketSession's async coroutines.
 // ═════════════════════════════════════════════════════════════════════════════
 
@@ -369,15 +370,16 @@ private fun playGame(
 private fun createController(
     config: PlayerType, registry: CardRegistry, playerId: EntityId,
     stateProvider: () -> GameState?
-): AiController = when (config) {
-    is PlayerType.Engine -> EngineAiController(registry, playerId, stateProvider)
+): AiPlayerController = when (config) {
+    is PlayerType.Engine -> EngineAiPlayerController(registry, playerId, stateProvider)
     is PlayerType.Llm -> {
         val aiConfig = AiConfig(
             mode = "llm", baseUrl = config.baseUrl, apiKey = config.apiKey,
             model = config.model, reasoningEffort = config.reasoningEffort,
             maxRetries = 2, timeoutMs = 300000
         )
-        AiPlayerController(aiConfig, LlmClient(aiConfig), playerId)
+        val engineFallback = EngineAiPlayerController(registry, playerId, stateProvider)
+        LlmAiPlayerController(aiConfig, LlmClient(aiConfig), playerId, fallback = engineFallback)
     }
 }
 
@@ -387,16 +389,12 @@ private fun createController(
 
 private fun buildDeck(config: PlayerType, pool: List<CardDefinition>, registry: CardRegistry): Deck {
     val deckMap = if (config.deckBuilder == "llm" && config is PlayerType.Llm) {
-        val props = AiProperties(
-            mode = "llm", baseUrl = config.baseUrl, apiKey = config.apiKey,
-            model = config.model, reasoningEffort = config.reasoningEffort, timeoutMs = 300000
-        )
         val aiConfig = AiConfig(
             mode = "llm", baseUrl = config.baseUrl, apiKey = config.apiKey,
             model = config.model, reasoningEffort = config.reasoningEffort, timeoutMs = 300000
         )
         try {
-            AiDeckBuilder(props, LlmClient(aiConfig), pool, BloomburrowSet.basicLands, listOf("BLB")).build().deckList
+            AiDeckBuilder(config.model, LlmClient(aiConfig), pool, BloomburrowSet.basicLands, listOf("BLB")).build().deckList
         } catch (e: Exception) {
             println("  [WARN] LLM deck build failed: ${e.message}, falling back to heuristic")
             buildHeuristicSealedDeck(pool)

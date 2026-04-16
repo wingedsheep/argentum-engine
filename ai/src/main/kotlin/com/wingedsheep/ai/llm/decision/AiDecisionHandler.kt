@@ -14,8 +14,10 @@ import kotlin.reflect.KClass
  * Each handler encapsulates:
  * - Formatting the decision for the LLM
  * - Parsing the LLM's response
- * - Heuristic fallback when the LLM fails
  * - Optional auto-resolve (skip LLM entirely)
+ *
+ * When the LLM fails, the [com.wingedsheep.ai.llm.LlmAiPlayerController] delegates
+ * to its fallback [com.wingedsheep.ai.AiPlayerController] (typically the engine AI).
  *
  * Adding a new decision type = one new handler file + one registry line.
  */
@@ -43,7 +45,4 @@ interface AiDecisionHandler<D : PendingDecision> {
         state: ClientGameState,
         parser: AiResponseParser
     ): DecisionResponse?
-
-    /** Deterministic fallback when the LLM fails or returns garbage. */
-    fun heuristic(decision: D, state: ClientGameState): DecisionResponse
 }

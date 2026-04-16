@@ -45,7 +45,4 @@ class AssignDamageHandler : AiDecisionHandler<AssignDamageDecision> {
         return DamageAssignmentResponse(decisionId = decision.id, assignments = decision.defaultAssignments)
     }
 
-    override fun heuristic(decision: AssignDamageDecision, state: ClientGameState): DecisionResponse {
-        return DamageAssignmentResponse(decisionId = decision.id, assignments = decision.defaultAssignments)
-    }
 }

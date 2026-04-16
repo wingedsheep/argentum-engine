@@ -37,7 +37,4 @@ class SelectManaSourcesHandler : AiDecisionHandler<SelectManaSourcesDecision> {
         return ManaSourcesSelectedResponse(decisionId = decision.id, autoPay = true)
     }
 
-    override fun heuristic(decision: SelectManaSourcesDecision, state: ClientGameState): DecisionResponse {
-        return ManaSourcesSelectedResponse(decisionId = decision.id, autoPay = true)
-    }
 }
