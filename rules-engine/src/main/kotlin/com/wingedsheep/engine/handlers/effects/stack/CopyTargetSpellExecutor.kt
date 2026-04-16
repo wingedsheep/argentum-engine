@@ -88,12 +88,13 @@ class CopyTargetSpellExecutor(
         }
 
         // Spell has targets — prompt for new target selection
-        return promptForCopyTargets(state, context, spellEffect, targetRequirements, spellName)
+        return promptForCopyTargets(state, context, spellEntityId, spellEffect, targetRequirements, spellName)
     }
 
     private fun promptForCopyTargets(
         state: GameState,
         context: EffectContext,
+        spellEntityId: EntityId,
         spellEffect: com.wingedsheep.sdk.scripting.effects.Effect,
         targetRequirements: List<com.wingedsheep.sdk.scripting.targets.TargetRequirement>,
         spellName: String
@@ -114,7 +115,11 @@ class CopyTargetSpellExecutor(
             return EffectResult.success(state)
         }
 
-        // Reuse StormCopyTargetContinuation with 1 copy
+        // Reuse StormCopyTargetContinuation with 1 copy. The resumer clones the
+        // SpellOnStackComponent off this sourceId via putSpellCopy (Phase 1 of
+        // spell-copies-as-spells), so it must point at the targeted spell on the
+        // stack — not the trigger source (e.g., Mischievous Quanar / Naru Meha are
+        // creatures with no SpellOnStackComponent).
         val continuation = StormCopyTargetContinuation(
             decisionId = decisionId,
             remainingCopies = 1,
@@ -122,7 +127,7 @@ class CopyTargetSpellExecutor(
             spellTargetRequirements = targetRequirements,
             spellName = spellName,
             controllerId = context.controllerId,
-            sourceId = context.sourceId ?: EntityId.generate()
+            sourceId = spellEntityId
         )
         val targetReqInfos = targetRequirements.mapIndexed { index, req ->
             TargetRequirementInfo(
