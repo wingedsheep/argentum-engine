@@ -32,6 +32,10 @@ data class ZoneChangeEvent(
     val ownerId: EntityId,
     /** Last known +1/+1 counter count when leaving battlefield (for death triggers needing last known info) */
     val lastKnownCounterCount: Int = 0,
+    /** Last known -1/-1 counter count when leaving battlefield (used by the persist keyword's "had no -1/-1 counters" check) */
+    val lastKnownMinusOneMinusOneCounterCount: Int = 0,
+    /** True if the leaving entity was a token. Used to suppress persist-style return triggers on tokens (Rule 702.79b). */
+    val lastKnownWasToken: Boolean = false,
     /** Last known projected power when leaving battlefield (for trigger filters needing last known info) */
     val lastKnownPower: Int? = null,
     /** Last known projected toughness when leaving battlefield (for trigger filters needing last known info) */

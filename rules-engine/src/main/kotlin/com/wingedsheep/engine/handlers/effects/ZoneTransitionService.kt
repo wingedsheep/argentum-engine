@@ -123,15 +123,19 @@ object ZoneTransitionService {
 
         // 2. Capture last-known info if leaving battlefield
         var lastKnownCounterCount = 0
+        var lastKnownMinusOneMinusOneCounterCount = 0
         var lastKnownPower: Int? = null
         var lastKnownToughness: Int? = null
         var lastKnownTypeLine: TypeLine? = null
         var lastKnownKeywords: Set<String> = emptySet()
         var lastKnownAttachedTo = options.lastKnownAttachedTo
+        var lastKnownWasToken = false
 
         if (leavingBattlefield) {
-            lastKnownCounterCount = container.get<CountersComponent>()
-                ?.getCount(CounterType.PLUS_ONE_PLUS_ONE) ?: 0
+            val countersComponent = container.get<CountersComponent>()
+            lastKnownCounterCount = countersComponent?.getCount(CounterType.PLUS_ONE_PLUS_ONE) ?: 0
+            lastKnownMinusOneMinusOneCounterCount =
+                countersComponent?.getCount(CounterType.MINUS_ONE_MINUS_ONE) ?: 0
             val projected = state.projectedState
             lastKnownPower = projected.getPower(entityId)
             lastKnownToughness = projected.getToughness(entityId)
@@ -144,6 +148,7 @@ object ZoneTransitionService {
             if (lastKnownAttachedTo == null) {
                 lastKnownAttachedTo = container.get<AttachedToComponent>()?.targetId
             }
+            lastKnownWasToken = container.has<TokenComponent>()
         }
 
         // 3. Check zone change redirect (unless skipped)
@@ -237,6 +242,8 @@ object ZoneTransitionService {
                 toZone = actualDestZone,
                 ownerId = ownerId,
                 lastKnownCounterCount = lastKnownCounterCount,
+                lastKnownMinusOneMinusOneCounterCount = lastKnownMinusOneMinusOneCounterCount,
+                lastKnownWasToken = lastKnownWasToken,
                 lastKnownPower = lastKnownPower,
                 lastKnownToughness = lastKnownToughness,
                 lastKnownTypeLine = lastKnownTypeLine,

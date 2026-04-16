@@ -576,6 +576,19 @@ object TestCards {
         oracleText = "Test enchantment with no abilities."
     )
 
+    /**
+     * Safehold Elite — 2/2 with persist. Used to exercise the persist keyword pipeline.
+     */
+    val SafeholdElite = CardDefinition.creature(
+        name = "Safehold Elite",
+        manaCost = ManaCost.parse("{G}{W}"),
+        subtypes = setOf(Subtype("Kithkin"), Subtype("Warrior")),
+        power = 2,
+        toughness = 2,
+        oracleText = "Persist",
+        keywords = setOf(Keyword.PERSIST)
+    )
+
     // =========================================================================
     // All Test Cards
     // =========================================================================
@@ -615,6 +628,8 @@ object TestCards {
         StokeBrillianceToken,
         // Enchantments
         TestEnchantment,
+        // Persist
+        SafeholdElite,
         // Instants
         LightningBolt,
         GiantGrowth,

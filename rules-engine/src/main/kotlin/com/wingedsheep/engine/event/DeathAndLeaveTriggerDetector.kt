@@ -6,9 +6,17 @@ import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.battlefield.DamageDealtToCreaturesThisTurnComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.FaceDownComponent
+import com.wingedsheep.engine.state.components.identity.TokenComponent
+import com.wingedsheep.sdk.core.Counters
+import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.scripting.GameEvent
 import com.wingedsheep.sdk.scripting.TriggerBinding
+import com.wingedsheep.sdk.scripting.TriggeredAbility
+import com.wingedsheep.sdk.scripting.effects.AddCountersEffect
+import com.wingedsheep.sdk.scripting.effects.CompositeEffect
+import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
+import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.engine.core.GameEvent as EngineGameEvent
 
 /**
@@ -231,6 +239,64 @@ class DeathAndLeaveTriggerDetector(
                 )
             }
         }
+    }
+
+    /**
+     * Detect persist triggers (CR 702.79) when a nontoken creature dies with no -1/-1 counters on it.
+     *
+     * Persist is a triggered ability keyword: "When this creature is put into a graveyard from the
+     * battlefield, if it had no -1/-1 counters on it, return it to the battlefield under its owner's
+     * control with a -1/-1 counter on it."
+     *
+     * Checks projected keywords captured on the event — both intrinsic persist (printed on the card)
+     * and granted persist (e.g., from a lord's static ability) reach projected keywords the same way.
+     *
+     * Suppresses on tokens: per 702.79b, persist does not return tokens (they cease to exist via
+     * 704.5s before any return could happen).
+     */
+    fun detectPersistTriggers(
+        state: GameState,
+        event: ZoneChangeEvent,
+        triggers: MutableList<PendingTrigger>
+    ) {
+        if (event.fromZone != Zone.BATTLEFIELD || event.toZone != Zone.GRAVEYARD) return
+        if (event.lastKnownWasToken) return
+        if (event.lastKnownMinusOneMinusOneCounterCount > 0) return
+        if (Keyword.PERSIST.name !in event.lastKnownKeywords) return
+
+        val info = resolveDyingEntity(state, event) ?: return
+
+        val persistAbility = TriggeredAbility.create(
+            trigger = GameEvent.ZoneChangeEvent(
+                from = Zone.BATTLEFIELD,
+                to = Zone.GRAVEYARD
+            ),
+            binding = TriggerBinding.SELF,
+            effect = CompositeEffect(
+                listOf(
+                    MoveToZoneEffect(
+                        target = EffectTarget.Self,
+                        destination = Zone.BATTLEFIELD
+                    ),
+                    AddCountersEffect(
+                        counterType = Counters.MINUS_ONE_MINUS_ONE,
+                        count = 1,
+                        target = EffectTarget.Self
+                    )
+                )
+            ),
+            descriptionOverride = "Persist — Return ${info.name} to the battlefield with a -1/-1 counter on it"
+        )
+
+        triggers.add(
+            PendingTrigger(
+                ability = persistAbility,
+                sourceId = event.entityId,
+                sourceName = info.name,
+                controllerId = event.ownerId,
+                triggerContext = TriggerContext.fromEvent(event)
+            )
+        )
     }
 
     /**

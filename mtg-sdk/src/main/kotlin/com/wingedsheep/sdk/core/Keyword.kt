@@ -60,6 +60,7 @@ enum class Keyword(val displayName: String) {
 
     // ── Creature mechanics ────────────────────────────────
     OFFSPRING("Offspring"),
+    PERSIST("Persist"),
 
     // ── Damage modification ──────────────────────────────
     WITHER("Wither");

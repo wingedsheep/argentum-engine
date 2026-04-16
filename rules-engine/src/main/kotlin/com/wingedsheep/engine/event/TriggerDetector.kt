@@ -724,6 +724,8 @@ class TriggerDetector(
             // Handle ATTACHED zone-change triggers on auras that went to graveyard with their creature
             // (detected on the AURA's zone change event using lastKnownAttachedTo)
             deathAndLeaveDetector.detectDeadAuraAttachmentTriggers(state, event, triggers)
+            // Handle persist (CR 702.79) — nontoken creature with persist dies with no -1/-1 counter
+            deathAndLeaveDetector.detectPersistTriggers(state, event, triggers)
         }
 
         // Handle leaves-the-battlefield triggers (source is no longer on battlefield)
