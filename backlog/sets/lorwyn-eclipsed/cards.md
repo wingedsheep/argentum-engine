@@ -2,7 +2,7 @@
 
 **Set Size:** 273 cards (main set, per Scryfall `set:ecl`)
 **Release Date:** January 23, 2026
-**Implemented:** 45 / 273
+**Implemented:** 46 / 273
 
 | Color      | Total | Done |
 |------------|-------|------|
@@ -11,7 +11,7 @@
 | Black      | 38    | 4    |
 | Red        | 39    | 2    |
 | Green      | 39    | 6    |
-| Multicolor | 49    | 10   |
+| Multicolor | 49    | 11   |
 | Colorless  | 18    | 3    |
 | Land       | 12    | 6    |
 
@@ -242,7 +242,7 @@
 - [x] Deepchannel Duelist
 - [ ] Deepway Navigator
 - [ ] Doran, Besieged by Time
-- [ ] Dream Harvest
+- [x] Dream Harvest
 - [ ] Eclipsed Boggart
 - [ ] Eclipsed Elf
 - [ ] Eclipsed Flamekin

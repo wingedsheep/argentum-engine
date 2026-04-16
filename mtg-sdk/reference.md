@@ -150,6 +150,7 @@ constructors.
 - `Effects.Surveil(count)` — returns CompositeEffect (Gather → Select → Move pipeline)
 - `Effects.TakeFromLinkedExile()` — put top card of linked exile pile into hand
 - `Effects.ExileFromTopRepeating(matchFilter, repeatIfManaValueAtLeast, damagePerCard)` — exile from top until match, put in hand, repeat if MV >= threshold, deal damage per card to hand (Demonlord Belzenlok)
+- `Effects.ExileLibraryUntilManaValue(players = EachOpponent, threshold, storeAs)` — for each matching player, exile top of library until cumulative mana value ≥ threshold; accumulates exiled IDs in `storeAs` under the spell's controller so downstream `GrantMayPlayFromExileEffect` / `GrantPlayWithoutPayingCostEffect` grant permission to the caster (Dream Harvest)
 
 ### Stack
 
@@ -336,6 +337,7 @@ constructors.
 | `GrantPlayWithAdditionalCostEffect`                                                 | `from, additionalCost`                              | Grant play-from-exile with additional cost (e.g., discard) |
 | `GrantFreeCastTargetFromExileEffect`                                                | `target, exileAfterResolve`                         | Grant single target in exile free cast + optional exile-after-resolve |
 | `ExileFromTopRepeatingEffect`                                                       | `matchFilter, repeatIfManaValueAtLeast, damagePerCard` | Exile from top until match, put in hand, repeat if MV >= threshold, deal damage (Demonlord Belzenlok) |
+| `ExileLibraryUntilManaValueEffect`                                                  | `players, threshold, storeAs`                       | For each matching player, exile top of library until cumulative mana value ≥ threshold; accumulate IDs in collection (Dream Harvest) |
 
 ### Mana
 

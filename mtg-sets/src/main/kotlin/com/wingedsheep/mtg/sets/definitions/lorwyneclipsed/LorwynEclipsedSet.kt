@@ -32,6 +32,7 @@ object LorwynEclipsedSet {
         DawnhandEulogist,
         DawnsLightArcher,
         DeepchannelDuelist,
+        DreamHarvest,
         EclipsedMerrow,
         EirduCarrierOfDawn,
         Emptiness,

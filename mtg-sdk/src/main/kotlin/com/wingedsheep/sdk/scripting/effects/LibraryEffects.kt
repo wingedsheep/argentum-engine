@@ -1,8 +1,10 @@
 package com.wingedsheep.sdk.scripting.effects
 
 import com.wingedsheep.sdk.scripting.GameObjectFilter
+import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.text.TextReplacer
+import com.wingedsheep.sdk.scripting.values.DynamicAmount
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -73,6 +75,40 @@ data class ExileFromTopRepeatingEffect(
         if (damagePerCard > 0) {
             append("Deal $damagePerCard damage to you for each card put into your hand this way.")
         }
+    }
+
+    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
+}
+
+/**
+ * For each matching player, exile cards from the top of their library until
+ * the total mana value of cards exiled this way for that player reaches at
+ * least [threshold]. All exiled card entity IDs (across every matched player)
+ * are stored in the pipeline collection [storeAs] so downstream steps — e.g.
+ * [GrantMayPlayFromExileEffect] + [GrantPlayWithoutPayingCostEffect] — operate
+ * on them with the outer controller preserved.
+ *
+ * {X} in a library card's cost contributes 0 to mana value (matching rule
+ * 107.3b / Dream Harvest ruling). If a player's library is exhausted before
+ * the threshold is met, all of that player's remaining library is exiled.
+ *
+ * Used for Dream Harvest ("Each opponent exiles cards from the top of their
+ * library until they have exiled cards with total mana value 5 or greater").
+ */
+@SerialName("ExileLibraryUntilManaValue")
+@Serializable
+data class ExileLibraryUntilManaValueEffect(
+    val players: Player = Player.EachOpponent,
+    val threshold: DynamicAmount,
+    val storeAs: String
+) : Effect {
+    override val description: String = buildString {
+        append(players.description.replaceFirstChar { it.uppercase() })
+        append(" exiles cards from the top of ")
+        append(players.possessive)
+        append(" library until ")
+        append(if (players == Player.You) "you have" else "they have")
+        append(" exiled cards with total mana value ${threshold.description} or greater this way")
     }
 
     override fun applyTextReplacement(replacer: TextReplacer): Effect = this

@@ -64,6 +64,7 @@ import com.wingedsheep.sdk.scripting.effects.ModifyStatsEffect
 import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
 import com.wingedsheep.sdk.scripting.effects.PutOnTopOrBottomOfLibraryEffect
 import com.wingedsheep.sdk.scripting.effects.ExileFromTopRepeatingEffect
+import com.wingedsheep.sdk.scripting.effects.ExileLibraryUntilManaValueEffect
 import com.wingedsheep.sdk.scripting.effects.ExileOpponentsGraveyardsEffect
 import com.wingedsheep.sdk.scripting.effects.ExileUntilLeavesEffect
 import com.wingedsheep.sdk.scripting.effects.CreateGlobalTriggeredAbilityWithDurationEffect
@@ -527,6 +528,27 @@ object Effects {
         repeatIfManaValueAtLeast: Int = 4,
         damagePerCard: Int = 1
     ): Effect = ExileFromTopRepeatingEffect(matchFilter, repeatIfManaValueAtLeast, damagePerCard)
+
+    /**
+     * For each matching player, exile cards from the top of their library until
+     * the total mana value of cards exiled this way for that player reaches at
+     * least [threshold]. All exiled card entity IDs are stored in the pipeline
+     * collection [storeAs] for downstream pipeline steps (e.g., granting free
+     * cast permission via [GrantMayPlayFromExileEffect] +
+     * [GrantPlayWithoutPayingCostEffect]).
+     *
+     * Used for Dream Harvest ("Each opponent exiles cards from the top of their
+     * library until they have exiled cards with total mana value 5 or greater").
+     */
+    fun ExileLibraryUntilManaValue(
+        players: Player = Player.EachOpponent,
+        threshold: Int,
+        storeAs: String
+    ): Effect = ExileLibraryUntilManaValueEffect(
+        players = players,
+        threshold = DynamicAmount.Fixed(threshold),
+        storeAs = storeAs
+    )
 
     // =========================================================================
     // Stat Modification Effects
