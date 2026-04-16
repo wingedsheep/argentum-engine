@@ -2,6 +2,7 @@ package com.wingedsheep.engine.mechanics.layers
 
 import com.wingedsheep.engine.state.ComponentContainer
 import com.wingedsheep.engine.state.GameState
+import com.wingedsheep.engine.state.components.battlefield.AttachmentsComponent
 import com.wingedsheep.engine.state.components.battlefield.CountersComponent
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
@@ -272,7 +273,7 @@ internal class AffectsFilterResolver {
 
             // Check state predicates
             for (predicate in baseFilter.statePredicates) {
-                if (!matchesStatePredicateForProjection(predicate, container, isFaceDown)) {
+                if (!matchesStatePredicateForProjection(state, predicate, container, isFaceDown)) {
                     return@filter false
                 }
             }
@@ -287,6 +288,7 @@ internal class AffectsFilterResolver {
     }
 
     private fun matchesStatePredicateForProjection(
+        state: GameState,
         predicate: StatePredicate,
         container: ComponentContainer,
         isFaceDown: Boolean
@@ -294,6 +296,12 @@ internal class AffectsFilterResolver {
         StatePredicate.IsTapped -> container.has<TappedComponent>()
         StatePredicate.IsUntapped -> !container.has<TappedComponent>()
         StatePredicate.IsFaceDown -> isFaceDown
+        StatePredicate.IsEquipped -> {
+            val attachments = container.get<AttachmentsComponent>()
+            attachments != null && attachments.attachedIds.any { attachId ->
+                state.getEntity(attachId)?.get<CardComponent>()?.typeLine?.isEquipment == true
+            }
+        }
         StatePredicate.HasAnyCounter -> {
             val counters = container.get<CountersComponent>()
             counters != null && counters.counters.values.any { it > 0 }
@@ -311,9 +319,9 @@ internal class AffectsFilterResolver {
                 }
             } else false
         }
-        is StatePredicate.Or -> predicate.predicates.any { matchesStatePredicateForProjection(it, container, isFaceDown) }
-        is StatePredicate.And -> predicate.predicates.all { matchesStatePredicateForProjection(it, container, isFaceDown) }
-        is StatePredicate.Not -> !matchesStatePredicateForProjection(predicate.predicate, container, isFaceDown)
+        is StatePredicate.Or -> predicate.predicates.any { matchesStatePredicateForProjection(state, it, container, isFaceDown) }
+        is StatePredicate.And -> predicate.predicates.all { matchesStatePredicateForProjection(state, it, container, isFaceDown) }
+        is StatePredicate.Not -> !matchesStatePredicateForProjection(state, predicate.predicate, container, isFaceDown)
         else -> true
     }
 
