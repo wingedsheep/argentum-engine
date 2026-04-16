@@ -386,6 +386,72 @@ const SET_SYNERGIES: Record<string, SetSynergies> = {
       },
     ],
   },
+  ECL: {
+    setCode: 'ECL',
+    setName: 'Lorwyn Eclipsed',
+    archetypes: [
+      {
+        name: 'Kithkin',
+        colors: ['G', 'W'],
+        creatureTypes: ['Kithkin'],
+        description: 'Flood the board with 1/1 Kithkin tokens, then use Convoke to cast expensive spells for free. Mass pump effects turn the token horde lethal.',
+      },
+      {
+        name: 'Merfolk',
+        colors: ['W', 'U'],
+        creatureTypes: ['Merfolk'],
+        description: 'Merfolk untap each other after combat and chain together card draw. Control the pace of the game with bounce and tempo plays while building an unstoppable Merrow tide.',
+      },
+      {
+        name: 'Faeries',
+        colors: ['U', 'B'],
+        creatureTypes: ['Faerie'],
+        description: 'Operate entirely at flash speed — drop Faeries at end of turn, steal blockers, and lock out opponents with aerial superiority. A control deck that wins with evasion.',
+      },
+      {
+        name: 'Boggarts',
+        colors: ['B', 'R'],
+        creatureTypes: ['Goblin'],
+        description: 'Relentless Boggart aggro backed by Wither. Your attackers deal damage as -1/-1 counters, permanently shrinking blockers. Blight provides flexible sacrifice payoffs.',
+      },
+      {
+        name: 'Giants',
+        colors: ['R', 'G'],
+        creatureTypes: ['Giant'],
+        description: 'Ramp into enormous Giants and close the game with overwhelming power. Green acceleration feeds Red haymakers that are simply too large to deal with.',
+      },
+      {
+        name: 'Elves',
+        colors: ['B', 'G'],
+        creatureTypes: ['Elf'],
+        description: 'Tribal midrange that uses Blight as a resource. Elves build critical mass while Blight costs enable powerful sacrifice synergies and graveyard recursion.',
+      },
+      {
+        name: 'Treefolk',
+        colors: ['W', 'B'],
+        creatureTypes: ['Treefolk'],
+        description: 'High-toughness Treefolk form an impenetrable wall while grinding out advantage. Evoke spells like Emptiness provide burst value and the deck wins through sheer attrition.',
+      },
+      {
+        name: 'Elementals',
+        colors: ['U', 'R'],
+        creatureTypes: ['Elemental'],
+        description: 'Flamekin Elementals reward casting instants and sorceries. Evoke provides flexible tempo plays — pay the cheap cost for a burst of value, or go full price for a permanent threat.',
+      },
+      {
+        name: 'Warriors',
+        colors: ['W', 'R'],
+        creatureTypes: ['Warrior'],
+        description: 'Aggressive Warriors with mana-spent payoffs. Hybrid mana costs unlock dual bonuses — spend white for tokens and resilience, red for pump and haste — giving the deck flexible tools to close games.',
+      },
+      {
+        name: 'Changelings',
+        colors: ['U', 'G'],
+        creatureTypes: ['Shapeshifter'],
+        description: 'Changelings count as every creature type simultaneously, triggering Kithkin, Merfolk, Elf, and Faerie payoffs all at once. A tribal swiss-army-knife deck with enormous flexibility.',
+      },
+    ],
+  },
 }
 
 /**
