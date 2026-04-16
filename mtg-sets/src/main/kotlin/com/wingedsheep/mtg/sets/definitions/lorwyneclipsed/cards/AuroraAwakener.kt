@@ -2,8 +2,6 @@ package com.wingedsheep.mtg.sets.definitions.lorwyneclipsed.cards
 
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Zone
-import com.wingedsheep.sdk.dsl.DynamicAmounts
-import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
@@ -43,21 +41,26 @@ val AuroraAwakener = card("Aurora Awakener") {
 
     keywords(Keyword.TRAMPLE)
 
-    triggeredAbility {
-        trigger = Triggers.EntersBattlefield
-        effect = CompositeEffect(listOf(
+    vividEtb { colorCount ->
+        CompositeEffect(listOf(
             GatherUntilMatchEffect(
                 filter = GameObjectFilter.Permanent,
                 storeMatch = "permanentsFound",
                 storeRevealed = "allRevealed",
-                count = DynamicAmounts.colorsAmongPermanents()
+                count = colorCount
             ),
+            // Public reveal so spectators/opponent see what was walked. The caster's
+            // selection modal below supersedes this reveal in the UI.
             RevealCollectionEffect(from = "allRevealed"),
+            // Single-step reveal+select for the caster: the modal shows every revealed
+            // card with only the permanents selectable.
             SelectFromCollectionEffect(
-                from = "permanentsFound",
+                from = "allRevealed",
                 selection = SelectionMode.ChooseAnyNumber,
+                filter = GameObjectFilter.Permanent,
+                showAllCards = true,
                 storeSelected = "toBattlefield",
-                storeRemainder = "unchosenPermanents",
+                storeRemainder = "unchosenRevealed",
                 selectedLabel = "Put onto the battlefield",
                 remainderLabel = "Put on bottom of library"
             ),

@@ -160,12 +160,17 @@ class SelectFromCollectionExecutor : EffectExecutor<SelectFromCollectionEffect> 
             is SelectionMode.ChooseAnyNumber -> {
                 // Player picks 0 to all eligible cards
                 if (eligibleCards.isEmpty()) {
+                    if (effect.showAllCards && cards.isNotEmpty()) {
+                        // Show all cards even though none are selectable (caster still sees the reveal).
+                        return createDecision(state, context, effect, emptyList(), 0, 0, decidingPlayerId, allCards = cards, nonSelectableCards = cards)
+                    }
                     val collections = mutableMapOf(effect.storeSelected to emptyList<EntityId>())
                     if (remainderName != null) collections[remainderName] = cards
                     return EffectResult.success(state).copy(updatedCollections = collections)
                 }
                 val maxSelectable = minOf(eligibleCards.size, restrictionCeiling)
-                createDecision(state, context, effect, eligibleCards, 0, maxSelectable, decidingPlayerId, allCards = cards)
+                val nonSelectable = if (effect.showAllCards) cards.filter { it !in eligibleCards } else emptyList()
+                createDecision(state, context, effect, eligibleCards, 0, maxSelectable, decidingPlayerId, allCards = cards, nonSelectableCards = nonSelectable)
             }
         }
     }

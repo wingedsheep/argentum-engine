@@ -309,6 +309,52 @@ class CardBuilder(private val name: String) {
     }
 
     /**
+     * Add the Vivid ability-word tag for display and attach an ETB triggered ability
+     * whose effect scales with the number of distinct colors among permanents you
+     * control (Lorwyn Eclipsed, effect-scaling half).
+     *
+     * The factory receives a [DynamicAmount] representing that colour count so the
+     * effect composes with it naturally, e.g.:
+     *
+     * ```kotlin
+     * vividEtb { colors ->
+     *     CompositeEffect(listOf(
+     *         GatherUntilMatchEffect(filter = GameObjectFilter.Permanent, count = colors, ...),
+     *         ...
+     *     ))
+     * }
+     * ```
+     *
+     * This is a DSL convenience — it emits an ordinary [TriggeredAbility] and a
+     * [Keyword.VIVID] tag, so the resulting [CardDefinition] serializes/deserializes
+     * exactly like a hand-written equivalent.
+     */
+    fun vividEtb(effectFactory: (DynamicAmount) -> Effect) {
+        keywordSet.add(Keyword.VIVID)
+        triggeredAbilities.add(
+            TriggeredAbility.create(
+                trigger = Triggers.EntersBattlefield.event,
+                binding = Triggers.EntersBattlefield.binding,
+                effect = effectFactory(DynamicAmounts.colorsAmongPermanents())
+            )
+        )
+    }
+
+    /**
+     * Add the Vivid ability-word tag for display and the "This spell costs {1} less
+     * to cast for each colour among permanents you control" cost reduction
+     * (Lorwyn Eclipsed, cost-reduction half).
+     *
+     * Like [vividEtb], this emits normal serializable data — a [Keyword.VIVID] tag
+     * plus a [SpellCostReduction] static ability sourced from
+     * [CostReductionSource.ColorsAmongPermanentsYouControl].
+     */
+    fun vividCostReduction() {
+        keywordSet.add(Keyword.VIVID)
+        staticAbilities.add(SpellCostReduction(CostReductionSource.ColorsAmongPermanentsYouControl))
+    }
+
+    /**
      * Add a parameterized keyword ability.
      * Examples: ward {2}, protection from blue, annihilator 2
      */

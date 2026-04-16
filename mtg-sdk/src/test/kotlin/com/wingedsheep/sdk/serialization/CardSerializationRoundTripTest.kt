@@ -339,6 +339,51 @@ class CardSerializationRoundTripTest : DescribeSpec({
             parsed.allowRepeat shouldBe false
         }
 
+        it("should round-trip a card built with the vividEtb DSL helper") {
+            val card = card("Test Vivid ETB Card") {
+                manaCost = "{4}{G}"
+                typeLine = "Creature — Elemental"
+                power = 3
+                toughness = 3
+
+                vividEtb { colors ->
+                    DrawCardsEffect(count = colors, target = EffectTarget.Controller)
+                }
+            }
+
+            val serialized = CardLoader.toJson(card)
+            // Vivid ability-word tag is in the keyword set.
+            serialized shouldContain "\"VIVID\""
+            // The ETB wraps a normal triggered ability + DynamicAmount around colorsAmongPermanents.
+            serialized shouldContain "\"DrawCards\""
+            serialized shouldContain "\"AggregateBattlefield\""
+            serialized shouldContain "\"DISTINCT_COLORS\""
+
+            val deserialized = CardLoader.fromJson(serialized)
+            deserialized.keywords.contains(Keyword.VIVID) shouldBe true
+            deserialized.script.triggeredAbilities.size shouldBe 1
+        }
+
+        it("should round-trip a card built with the vividCostReduction DSL helper") {
+            val card = card("Test Vivid Cost Reduction Card") {
+                manaCost = "{5}{R}"
+                typeLine = "Creature — Dragon"
+                power = 4
+                toughness = 4
+
+                vividCostReduction()
+            }
+
+            val serialized = CardLoader.toJson(card)
+            serialized shouldContain "\"VIVID\""
+            serialized shouldContain "SpellCostReduction"
+            serialized shouldContain "ColorsAmongPermanentsYouControl"
+
+            val deserialized = CardLoader.fromJson(serialized)
+            deserialized.keywords.contains(Keyword.VIVID) shouldBe true
+            deserialized.script.staticAbilities.size shouldBe 1
+        }
+
         it("should round-trip activated ability costs") {
             val card = card("Ancestor's Prophet") {
                 manaCost = "{4}{W}"

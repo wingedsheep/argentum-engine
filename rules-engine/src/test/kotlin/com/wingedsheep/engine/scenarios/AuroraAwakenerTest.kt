@@ -136,15 +136,12 @@ class AuroraAwakenerTest : FunSpec({
         library shouldContain deep
     }
 
-    test("library with no permanents resolves without any battlefield placement") {
+    test("library with no permanents — caster still sees the reveal modal, confirms empty, no battlefield placement") {
         val driver = createDriver()
-        // Library is only Plains; the Plains are lands (permanents) — swap for a non-permanent setup.
-        // We place Instant-like non-permanents on top, then only basic Plains exist below.
-        // In this engine's TestCards, we use a small vanilla non-permanent by relying on registered
-        // cards. Since every MTG card is essentially either a permanent or a non-permanent spell,
-        // any instant/sorcery works here. Clifftop Lookout's test uses only Grizzly Bears (creature);
-        // we instead stack the library with a mix and rely on the GatherUntilMatch fallthrough
-        // when no permanents are found.
+        // Library is entirely non-permanent (Lightning Bolt). The walk reveals every card,
+        // finds zero permanents, and presents the caster with the combined reveal+select
+        // modal containing only non-selectable (grayed-out) cards. Confirming an empty
+        // selection resumes the pipeline, and the revealed cards get bottomed.
         driver.initMirrorMatch(deck = Deck.of("Lightning Bolt" to 40))
 
         val activePlayer = driver.activePlayer!!
@@ -159,7 +156,16 @@ class AuroraAwakenerTest : FunSpec({
         driver.bothPass()
         driver.bothPass()
 
-        // With no permanents revealed, there's no selection decision — the trigger finishes cleanly.
+        // The combined reveal+select UX still shows the revealed cards, even when none are
+        // selectable, so the caster sees what was walked.
+        driver.isPaused shouldBe true
+        val selectDecision = driver.pendingDecision as SelectCardsDecision
+        selectDecision.options shouldBe emptyList()
+        selectDecision.nonSelectableOptions.size shouldBe libraryBefore.size
+        selectDecision.maxSelections shouldBe 0
+
+        driver.submitCardSelection(activePlayer, emptyList())
+
         driver.isPaused shouldBe false
 
         // Aurora is still on the battlefield.

@@ -1,9 +1,30 @@
 import { useState } from 'react'
 import { useGameStore } from '@/store/gameStore.ts'
-import type { EntityId } from '@/types'
+import type { EntityId, PendingDecision } from '@/types'
 import { useResponsive, calculateFittingCardWidth } from '@/hooks/useResponsive.ts'
 import { getCardImageUrl } from '@/utils/cardImages.ts'
 import styles from './RevealedCardsUI.module.css'
+
+/**
+ * When the caster's reveal is immediately followed by a SelectCards decision whose
+ * selectable + non-selectable options cover every revealed card, suppress the
+ * reveal overlay for the caster — the selection modal itself is the reveal for
+ * them (opponent still sees the reveal normally via their own gameplay update).
+ *
+ * Used for combined reveal+select flows like Aurora Awakener's Vivid ETB.
+ */
+function isRevealCoveredByDecision(
+  revealedIds: readonly EntityId[] | null | undefined,
+  decision: PendingDecision | null
+): boolean {
+  if (!revealedIds || revealedIds.length === 0 || !decision) return false
+  if (decision.type !== 'SelectCardsDecision') return false
+  const covered = new Set<EntityId>([
+    ...decision.options,
+    ...(decision.nonSelectableOptions ?? []),
+  ])
+  return revealedIds.every((id) => covered.has(id))
+}
 
 /**
  * Overlay that shows revealed cards - either from a "look at hand" / "reveal hand"
@@ -16,6 +37,7 @@ export function RevealedCardsUI() {
   const revealedCardsInfo = useGameStore((state) => state.revealedCardsInfo)
   const revealedHandCardIds = useGameStore((state) => state.revealedHandCardIds)
   const gameState = useGameStore((state) => state.gameState)
+  const pendingDecision = useGameStore((state) => state.pendingDecision)
   const dismissRevealedCards = useGameStore((state) => state.dismissRevealedCards)
   const dismissRevealedHand = useGameStore((state) => state.dismissRevealedHand)
   const hoverCard = useGameStore((state) => state.hoverCard)
@@ -28,6 +50,17 @@ export function RevealedCardsUI() {
   const isCardReveal = !!revealedCardsInfo
 
   if ((!isHandReveal && !isCardReveal) || !gameState) return null
+
+  // Combined reveal+select UX: when the caster is about to pick from the revealed
+  // cards (e.g., Aurora Awakener's Vivid ETB), the selection modal already shows
+  // every revealed card — so skip the redundant reveal overlay for that player.
+  if (
+    isCardReveal &&
+    revealedCardsInfo!.isYourReveal &&
+    isRevealCoveredByDecision(revealedCardsInfo!.cardIds, pendingDecision)
+  ) {
+    return null
+  }
 
   // Build card list depending on the reveal type
   const cards = isHandReveal

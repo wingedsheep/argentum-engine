@@ -3,8 +3,6 @@ package com.wingedsheep.mtg.sets.definitions.lorwyneclipsed.cards
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.CostReductionSource
-import com.wingedsheep.sdk.scripting.SpellCostReduction
 
 /**
  * Wildvine Pummeler
@@ -23,10 +21,7 @@ val WildvinePummeler = card("Wildvine Pummeler") {
     oracleText = "Vivid — This spell costs {1} less to cast for each color among permanents you control.\nReach, trample"
 
     keywords(Keyword.REACH, Keyword.TRAMPLE)
-
-    staticAbility {
-        ability = SpellCostReduction(CostReductionSource.ColorsAmongPermanentsYouControl)
-    }
+    vividCostReduction()
 
     metadata {
         rarity = Rarity.COMMON

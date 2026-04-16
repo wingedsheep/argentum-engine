@@ -63,7 +63,18 @@ enum class Keyword(val displayName: String) {
     PERSIST("Persist"),
 
     // ── Damage modification ──────────────────────────────
-    WITHER("Wither");
+    WITHER("Wither"),
+
+    // ── Ability words (display prefix, no uniform mechanic) ──
+    /**
+     * Vivid (Lorwyn Eclipsed).
+     * Ability word — flavor prefix for effects whose magnitude scales with the
+     * number of distinct colors among permanents you control. No mechanical
+     * behavior is attached to this keyword itself; each Vivid card still spells
+     * out its own effect. Wired via the `vivid…` DSL helpers on [CardBuilder]
+     * or by adding the appropriate effect/static ability directly.
+     */
+    VIVID("Vivid");
 
     companion object {
         fun fromString(value: String): Keyword? =

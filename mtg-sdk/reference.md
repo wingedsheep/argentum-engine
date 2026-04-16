@@ -960,6 +960,10 @@ reveal creatures, create tokens
 
 `WITHER` — Damage dealt to creatures by this source is dealt in the form of -1/-1 counters (CR 702.79)
 
+### Ability Words (display-only, no uniform mechanic)
+
+`VIVID` (Lorwyn Eclipsed) — flavor prefix for effects scaled by the number of distinct colours among permanents you control. Attach via `vividEtb { colors -> ... }` (ETB scaling half) or `vividCostReduction()` (cost-reduction half) on `CardBuilder`.
+
 ### Restrictions
 
 `DOESNT_UNTAP`, `MAY_NOT_UNTAP`, `CANT_RECEIVE_COUNTERS`

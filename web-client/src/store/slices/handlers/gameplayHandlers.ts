@@ -38,6 +38,21 @@ function getEventPlayerId(event: { type: string; playerId?: string; casterId?: s
   }
 }
 
+/**
+ * True when every revealed card ID is present in the given SelectCards decision's
+ * selectable + non-selectable options. Used to suppress a redundant reveal overlay
+ * for the caster when the selection modal already displays the revealed cards.
+ */
+function isRevealCoveredBySelectDecision(
+  revealedIds: readonly EntityId[],
+  options: readonly EntityId[],
+  nonSelectableOptions: readonly EntityId[]
+): boolean {
+  if (revealedIds.length === 0) return false
+  const covered = new Set<EntityId>([...options, ...nonSelectableOptions])
+  return revealedIds.every((id) => covered.has(id))
+}
+
 function getEventLogType(eventType: string): 'action' | 'turn' | 'combat' | 'system' {
   switch (eventType) {
     case 'turnChanged': return 'turn'
@@ -245,8 +260,20 @@ function processStateUpdate(
     })),
     waitingForOpponentMulligan: false,
     revealedHandCardIds: handLookedAtEvent?.cardIds ?? handRevealedEvent?.cardIds ?? state.revealedHandCardIds,
+    // Combined reveal+select UX (e.g., Aurora Awakener's Vivid ETB): if this update
+    // carries both a reveal to the caster AND a SelectCards decision covering every
+    // revealed card, the selection modal is the reveal for them — suppress the
+    // overlay entirely so it doesn't appear before or after the selection resolves.
     revealedCardsInfo: cardsRevealedEvent
-      ? { cardIds: cardsRevealedEvent.cardIds, cardNames: cardsRevealedEvent.cardNames, imageUris: cardsRevealedEvent.imageUris, source: cardsRevealedEvent.source, isYourReveal: cardsRevealedEvent.revealingPlayerId === playerId }
+      ? (cardsRevealedEvent.revealingPlayerId === playerId &&
+         msg.pendingDecision?.type === 'SelectCardsDecision' &&
+         isRevealCoveredBySelectDecision(
+           cardsRevealedEvent.cardIds,
+           msg.pendingDecision.options,
+           msg.pendingDecision.nonSelectableOptions ?? []
+         )
+          ? null
+          : { cardIds: cardsRevealedEvent.cardIds, cardNames: cardsRevealedEvent.cardNames, imageUris: cardsRevealedEvent.imageUris, source: cardsRevealedEvent.source, isYourReveal: cardsRevealedEvent.revealingPlayerId === playerId })
       : state.revealedCardsInfo,
     opponentAttackerTargets: resolvedState.combat ? null : state.opponentAttackerTargets,
     opponentBlockerAssignments: (resolvedState.combat?.blockers?.length || !resolvedState.combat) ? null : state.opponentBlockerAssignments,
