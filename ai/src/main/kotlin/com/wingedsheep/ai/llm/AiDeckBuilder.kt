@@ -1,13 +1,8 @@
-package com.wingedsheep.gameserver.ai
+package com.wingedsheep.ai.llm
 
-import com.wingedsheep.ai.llm.CacheControl
-import com.wingedsheep.ai.llm.ChatMessage
-import com.wingedsheep.ai.llm.LlmClient
-import com.wingedsheep.gameserver.config.AiProperties
-import com.wingedsheep.gameserver.deck.Archetype
-import com.wingedsheep.gameserver.deck.RandomDeckGenerator
-import com.wingedsheep.gameserver.deck.SetArchetypes
-import com.wingedsheep.sdk.core.Color
+import com.wingedsheep.ai.engine.deck.Archetype
+import com.wingedsheep.ai.engine.deck.RandomDeckGenerator
+import com.wingedsheep.ai.engine.deck.SetArchetypes
 import com.wingedsheep.sdk.model.CardDefinition
 import org.slf4j.LoggerFactory
 
@@ -32,7 +27,7 @@ data class AiDeckResult(
  * Falls back to [RandomDeckGenerator] if either step fails.
  */
 class AiDeckBuilder(
-    private val properties: AiProperties,
+    private val deckbuildingModel: String,
     private val llmClient: LlmClient,
     private val cardPool: List<CardDefinition>,
     private val basicLandVariants: List<CardDefinition>,
@@ -109,7 +104,7 @@ class AiDeckBuilder(
             ChatMessage("user", prompt)
         )
 
-        val response = llmClient.chatCompletion(messages, properties.effectiveDeckbuildingModel, cacheControl = CacheControl())
+        val response = llmClient.chatCompletion(messages, deckbuildingModel, cacheControl = CacheControl())
         if (response == null) {
             logger.warn("AI deckbuilder: step 1 (evaluate) failed")
             return null
@@ -193,7 +188,7 @@ class AiDeckBuilder(
             ChatMessage("user", prompt)
         )
 
-        val response = llmClient.chatCompletion(messages, properties.effectiveDeckbuildingModel, cacheControl = CacheControl())
+        val response = llmClient.chatCompletion(messages, deckbuildingModel, cacheControl = CacheControl())
         if (response == null) {
             logger.warn("AI deckbuilder: step 2 (build) failed")
             return null

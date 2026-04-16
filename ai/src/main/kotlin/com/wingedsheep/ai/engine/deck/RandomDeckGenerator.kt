@@ -1,4 +1,4 @@
-package com.wingedsheep.gameserver.deck
+package com.wingedsheep.ai.engine.deck
 
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.model.CardDefinition
