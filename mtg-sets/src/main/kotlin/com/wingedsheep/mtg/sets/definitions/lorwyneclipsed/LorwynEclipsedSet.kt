@@ -32,6 +32,7 @@ object LorwynEclipsedSet {
         DawnsLightArcher,
         DeepchannelDuelist,
         EclipsedMerrow,
+        EirduCarrierOfDawn,
         Emptiness,
         FeistySpikeling,
         FlaringCinder,

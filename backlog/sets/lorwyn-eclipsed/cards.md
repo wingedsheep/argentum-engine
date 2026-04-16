@@ -2,7 +2,7 @@
 
 **Set Size:** 273 cards (main set, per Scryfall `set:ecl`)
 **Release Date:** January 23, 2026
-**Implemented:** 38 / 273
+**Implemented:** 39 / 273
 
 | Color      | Total | Done |
 |------------|-------|------|
@@ -12,7 +12,7 @@
 | Red        | 39    | 2    |
 | Green      | 39    | 5    |
 | Multicolor | 49    | 8    |
-| Colorless  | 18    | 2    |
+| Colorless  | 18    | 3    |
 | Land       | 12    | 6    |
 
 > **Note:** Before implementing any card, check the `effects/` directory in this folder for any
@@ -287,7 +287,7 @@
 - [ ] Changeling Wayfinder
 - [x] Chronicle of Victory
 - [ ] Dawn-Blessed Pennant
-- [ ] Eirdu, Carrier of Dawn // Isilu, Carrier of Twilight
+- [x] Eirdu, Carrier of Dawn // Isilu, Carrier of Twilight
 - [ ] Firdoch Core
 - [ ] Foraging Wickermaw
 - [ ] Gathering Stone
