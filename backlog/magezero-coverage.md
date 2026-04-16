@@ -22,10 +22,10 @@ additional baseline opponents. Those deck lists aren't public; start with the th
 
 ## Coverage summary
 
-**Implemented** (5 / 44 unique cards): Kitsa, Otterball Elite · Iridescent Vinelasher ·
-Malcolm, Alluring Scoundrel · Island · Swamp.
+**Implemented** (6 / 44 unique cards): Kitsa, Otterball Elite · Iridescent Vinelasher ·
+Malcolm, Alluring Scoundrel · Negate · Island · Swamp.
 
-**Missing** (39 unique cards — 6 creatures + 1 planeswalker + 14 instants + 1 sorcery +
+**Missing** (38 unique cards — 6 creatures + 1 planeswalker + 13 instants + 1 sorcery +
 4 enchantments + 6 nonbasic lands + 7 more creatures). One card (Cecil, Dark Knight) and
 one enchantment (Unholy Annex) are double-faced / modal DFCs and depend on DFC support.
 
@@ -39,7 +39,7 @@ one enchantment (Unholy Annex) are double-faced / modal DFCs and depend on DFC s
 
 ### Instants (14)
 - [ ] Bounce Off ×4
-- [ ] Negate ×2
+- [x] Negate ×2 *(Foundations)*
 - [ ] No More Lies ×4
 - [ ] Soul Partition ×2
 - [ ] Spell Pierce ×2
@@ -78,7 +78,7 @@ one enchantment (Unholy Annex) are double-faced / modal DFCs and depend on DFC s
 - [ ] Flow of Knowledge ×2
 - [ ] Impulse ×2
 - [ ] Memory Deluge ×1
-- [ ] Negate ×2 *(shared with UWTempo)*
+- [x] Negate ×2 *(shared with UWTempo)*
 - [ ] Spell Pierce ×2 *(shared with UWTempo)*
 - [ ] Thirst for Discovery ×2
 
