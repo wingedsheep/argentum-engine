@@ -87,6 +87,7 @@ import com.wingedsheep.sdk.scripting.effects.CreateTokenCopyOfSourceEffect
 import com.wingedsheep.sdk.scripting.effects.CreateTokenCopyOfTargetEffect
 import com.wingedsheep.sdk.scripting.effects.CreateTokenEffect
 import com.wingedsheep.sdk.scripting.effects.CreatePredefinedTokenEffect
+import com.wingedsheep.sdk.scripting.effects.CounterAllOnStackEffect
 import com.wingedsheep.sdk.scripting.effects.CounterCondition
 import com.wingedsheep.sdk.scripting.effects.CounterDestination
 import com.wingedsheep.sdk.scripting.effects.CounterEffect
@@ -977,6 +978,27 @@ object Effects {
      */
     fun CounterAbility(): Effect =
         CounterEffect(target = CounterTarget.Ability)
+
+    /**
+     * Counter all spells and abilities your opponents control on the stack.
+     * "Counter all spells your opponents control and all abilities your opponents control."
+     *
+     * If [storeCountAs] is set, the countered entity IDs are stored in the pipeline
+     * under that name. A subsequent effect can reference the count via
+     * `DynamicAmount.VariableReference("${storeCountAs}_count")`.
+     *
+     * Used by Glen Elendra's Answer for its Faerie-token-per-countered-object rider.
+     */
+    fun CounterAllOpponentStackObjects(
+        spells: Boolean = true,
+        abilities: Boolean = true,
+        storeCountAs: String? = null
+    ): Effect = CounterAllOnStackEffect(
+        spells = spells,
+        abilities = abilities,
+        opponentsOnly = true,
+        storeCountAs = storeCountAs
+    )
 
     /**
      * Change the target of a spell to another creature.

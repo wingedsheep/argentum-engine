@@ -37,6 +37,7 @@ object LorwynEclipsedSet {
         FeistySpikeling,
         FlaringCinder,
         GlamerGifter,
+        GlenElendrasAnswer,
         GoldmeadowNomad,
         HarmonizedCrescendo,
         HovelHurler,

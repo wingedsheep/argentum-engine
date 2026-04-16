@@ -163,6 +163,50 @@ data class CounterEffect(
 }
 
 // =============================================================================
+// Stack Effects — Counter All
+// =============================================================================
+
+/**
+ * Counter every spell and/or ability on the stack matching the controller filter.
+ * Non-targeted — resolves against whatever is on the stack at resolution time.
+ *
+ * Used by "mass counter" effects like Glen Elendra's Answer:
+ * "Counter all spells your opponents control and all abilities your opponents control."
+ *
+ * If [storeCountAs] is set, the countered entity IDs are stored in the pipeline as
+ * a named collection. Subsequent pipeline effects can read the count via
+ * [com.wingedsheep.sdk.scripting.values.DynamicAmount.VariableReference] using the
+ * key `"$storeCountAs" + "_count"` (e.g., "countered_count").
+ *
+ * @property spells Whether to counter spells on the stack
+ * @property abilities Whether to counter activated/triggered abilities on the stack
+ * @property opponentsOnly If true (default), only counter objects controlled by the
+ *   effect source's opponents; if false, counter every matching object on the stack
+ * @property storeCountAs Optional pipeline variable name to store the countered entity
+ *   IDs under (for downstream `VariableReference("<name>_count")` usage)
+ */
+@SerialName("CounterAllOnStack")
+@Serializable
+data class CounterAllOnStackEffect(
+    val spells: Boolean = true,
+    val abilities: Boolean = true,
+    val opponentsOnly: Boolean = true,
+    val storeCountAs: String? = null
+) : Effect {
+    override val description: String = buildString {
+        append("Counter all ")
+        val parts = buildList {
+            if (spells) add("spells")
+            if (abilities) add("abilities")
+        }
+        append(parts.joinToString(" and "))
+        if (opponentsOnly) append(" your opponents control")
+    }
+
+    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
+}
+
+// =============================================================================
 // Stack Effects — Ward
 // =============================================================================
 
