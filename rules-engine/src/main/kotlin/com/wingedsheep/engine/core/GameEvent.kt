@@ -740,6 +740,22 @@ data class TurnedFaceDownEvent(
     val controllerId: EntityId
 ) : GameEvent
 
+/**
+ * A double-faced permanent transformed (CR 701.28).
+ *
+ * [intoBackFace] is true when the permanent transformed from its front face to its back face,
+ * and false when it transformed from its back face to its front face.
+ * [newFaceName] is the name of the face that is now up after transform.
+ */
+@Serializable
+@SerialName("TransformedEvent")
+data class TransformedEvent(
+    val entityId: EntityId,
+    val intoBackFace: Boolean,
+    val newFaceName: String,
+    val controllerId: EntityId
+) : GameEvent
+
 // =============================================================================
 // Control Events
 // =============================================================================

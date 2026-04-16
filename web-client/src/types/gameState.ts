@@ -109,6 +109,19 @@ export interface ClientCard {
   readonly hasSummoningSickness: boolean
   readonly isTransformed: boolean
 
+  /** True when this card is a double-faced card (DFC). */
+  readonly isDoubleFaced?: boolean
+  /** For DFCs currently on the battlefield: 'FRONT' or 'BACK'. Null otherwise. */
+  readonly currentFace?: 'FRONT' | 'BACK' | null
+  /** Back face display name for DFCs. */
+  readonly backFaceName?: string | null
+  /** Back face type line for DFCs. */
+  readonly backFaceTypeLine?: string | null
+  /** Back face oracle text for DFCs. */
+  readonly backFaceOracleText?: string | null
+  /** Back face image URI for DFCs. */
+  readonly backFaceImageUri?: string | null
+
   /** Combat state (if in combat) */
   readonly isAttacking: boolean
   readonly isBlocking: boolean

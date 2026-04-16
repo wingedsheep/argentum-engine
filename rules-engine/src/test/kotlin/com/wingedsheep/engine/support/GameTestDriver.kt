@@ -703,6 +703,16 @@ class GameTestDriver {
         if (cardDef.keywordAbilities.any { it is com.wingedsheep.sdk.scripting.KeywordAbility.Morph }) {
             container = container.with(com.wingedsheep.engine.state.components.identity.HasMorphAbilityComponent)
         }
+        // Attach DoubleFacedComponent so transforms work (Rule 712).
+        if (cardDef.isDoubleFaced) {
+            container = container.with(
+                com.wingedsheep.engine.state.components.identity.DoubleFacedComponent(
+                    frontCardDefinitionId = cardDef.name,
+                    backCardDefinitionId = cardDef.backFace!!.name,
+                    currentFace = com.wingedsheep.engine.state.components.identity.DoubleFacedComponent.Face.FRONT
+                )
+            )
+        }
 
         // Add continuous effects from static abilities
         val staticAbilityHandler = com.wingedsheep.engine.mechanics.layers.StaticAbilityHandler(cardRegistry)

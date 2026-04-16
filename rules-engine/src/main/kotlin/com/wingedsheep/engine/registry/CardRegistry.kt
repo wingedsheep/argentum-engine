@@ -22,6 +22,10 @@ class CardRegistry {
 
     /**
      * Register a single card definition.
+     *
+     * Double-faced cards (where `card.isDoubleFaced`) are also registered under the back face's
+     * name so the back face is resolvable by name (e.g., after a transform). The back face entry
+     * carries no further `backFace` pointer — it stands alone as the back-face identity.
      */
     fun register(card: CardDefinition) {
         cardsByName[card.name] = card
@@ -36,6 +40,15 @@ class CardRegistry {
                 "${card.name}#$collectorNumber"
             }
             cardsByNameAndNumber[key] = card
+        }
+
+        // Auto-register the back face as a standalone entry so lookups by its name succeed.
+        // The TransformEffectExecutor resolves face definitions via this registry.
+        card.backFace?.let { backFace ->
+            // Don't clobber an existing registration (e.g., if someone already registered the back face).
+            if (!cardsByName.containsKey(backFace.name)) {
+                cardsByName[backFace.name] = backFace
+            }
         }
     }
 

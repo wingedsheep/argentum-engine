@@ -237,7 +237,25 @@ data class ClientCard(
      * controller's graveyard size to a fixed number, e.g., "as long as there are seven or
      * more cards in your graveyard"). Lets the client render a progress badge.
      */
-    val thresholdInfo: ClientThresholdInfo? = null
+    val thresholdInfo: ClientThresholdInfo? = null,
+
+    /** Whether this is a double-faced card (DFC). */
+    val isDoubleFaced: Boolean = false,
+
+    /** Which face is currently up on a DFC permanent: "FRONT" or "BACK" (null if not a DFC). */
+    val currentFace: String? = null,
+
+    /** Back face's display name for DFCs. Null if not a DFC. */
+    val backFaceName: String? = null,
+
+    /** Back face's type line for DFCs. */
+    val backFaceTypeLine: String? = null,
+
+    /** Back face's oracle text for DFCs. */
+    val backFaceOracleText: String? = null,
+
+    /** Back face's image URI for DFCs. */
+    val backFaceImageUri: String? = null
 )
 
 /**

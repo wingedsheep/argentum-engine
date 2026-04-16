@@ -46,6 +46,7 @@ import com.wingedsheep.engine.handlers.effects.permanent.types.LoseAllCreatureTy
 import com.wingedsheep.engine.handlers.effects.permanent.types.ChangeGroupColorExecutor
 import com.wingedsheep.engine.handlers.effects.permanent.types.SetCreatureSubtypesExecutor
 import com.wingedsheep.engine.handlers.effects.permanent.types.SetGroupCreatureSubtypesExecutor
+import com.wingedsheep.engine.handlers.effects.permanent.types.TransformEffectExecutor
 import com.wingedsheep.engine.handlers.effects.permanent.types.TurnFaceDownExecutor
 import com.wingedsheep.engine.handlers.effects.permanent.types.TurnFaceUpExecutor
 import com.wingedsheep.engine.mechanics.layers.StaticAbilityHandler
@@ -97,6 +98,7 @@ class PermanentExecutors(
         LoseAllCreatureTypesExecutor(),
         SetCreatureSubtypesExecutor(),
         SetGroupCreatureSubtypesExecutor(),
+        TransformEffectExecutor(cardRegistry),
         TurnFaceDownExecutor(),
         TurnFaceUpExecutor(cardRegistry),
         // attachments

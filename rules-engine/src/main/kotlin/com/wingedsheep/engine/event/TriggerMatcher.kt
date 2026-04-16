@@ -15,6 +15,7 @@ import com.wingedsheep.engine.core.LifeChangedEvent
 import com.wingedsheep.engine.core.SpellCastEvent
 import com.wingedsheep.engine.state.components.player.ManaSpentOnSpellsThisTurnComponent
 import com.wingedsheep.engine.core.TappedEvent
+import com.wingedsheep.engine.core.TransformedEvent
 import com.wingedsheep.engine.core.TurnFaceUpEvent
 import com.wingedsheep.engine.core.UntappedEvent
 import com.wingedsheep.engine.core.ZoneChangeEvent
@@ -208,8 +209,13 @@ class TriggerMatcher(
                 matchesPlayer(trigger.player, event.controllerId, controllerId)
             }
             is GameEvent.TransformEvent -> {
-                // Transform not yet implemented in new engine
-                false
+                if (event !is TransformedEvent) return false
+                // SELF binding must match the transforming permanent
+                if (binding == TriggerBinding.SELF && event.entityId != sourceId) return false
+                // intoBackFace==null matches any transform; true/false filters by direction
+                val directionMatches = trigger.intoBackFace == null ||
+                    trigger.intoBackFace == event.intoBackFace
+                directionMatches
             }
             // These are handled separately in their own detect* methods
             is GameEvent.ControlChangeEvent -> false

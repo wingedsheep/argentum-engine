@@ -436,6 +436,21 @@ sealed interface ClientEvent {
         }
     ) : ClientEvent
 
+    @Serializable
+    @SerialName("transformed")
+    data class Transformed(
+        val cardId: EntityId,
+        val newFaceName: String,
+        val intoBackFace: Boolean,
+        val controllerId: EntityId,
+        val isYours: Boolean? = null,
+        override val description: String = when (isYours) {
+            true -> "Your permanent transformed into $newFaceName"
+            false -> "Opponent's permanent transformed into $newFaceName"
+            null -> "A permanent transformed into $newFaceName"
+        }
+    ) : ClientEvent
+
     // =========================================================================
     // Turn Events
     // =========================================================================
@@ -908,6 +923,14 @@ object ClientEventTransformer {
             is TurnFaceUpEvent -> ClientEvent.TurnedFaceUp(
                 cardId = event.entityId,
                 cardName = event.cardName,
+                controllerId = event.controllerId,
+                isYours = event.controllerId == viewingPlayerId
+            )
+
+            is TransformedEvent -> ClientEvent.Transformed(
+                cardId = event.entityId,
+                newFaceName = event.newFaceName,
+                intoBackFace = event.intoBackFace,
                 controllerId = event.controllerId,
                 isYours = event.controllerId == viewingPlayerId
             )

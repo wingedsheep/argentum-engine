@@ -63,6 +63,7 @@ enum class TriggerCategory {
     PERMANENTS_ENTERED_BATCH,
     COUNTERS_ADDED,
     GIFT_GIVEN,
+    TRANSFORM,
 }
 
 /**
@@ -174,6 +175,7 @@ class TriggerIndex(
                 is SdkGameEvent.PermanentsEnteredEvent -> listOf(TriggerCategory.PERMANENTS_ENTERED_BATCH)
                 is SdkGameEvent.CountersPlacedEvent -> listOf(TriggerCategory.COUNTERS_ADDED)
                 is SdkGameEvent.GiftGivenEvent -> listOf(TriggerCategory.GIFT_GIVEN)
+                is SdkGameEvent.TransformEvent -> listOf(TriggerCategory.TRANSFORM)
                 // These are handled by specialized detect methods, not the main loop
                 else -> emptyList()
             }
@@ -203,6 +205,7 @@ class TriggerIndex(
             is TurnFaceUpEvent -> TURN_FACE_UP_LIST
             is CountersAddedEvent -> COUNTERS_ADDED_LIST
             is GiftGivenEvent -> GIFT_GIVEN_LIST
+            is com.wingedsheep.engine.core.TransformedEvent -> TRANSFORM_LIST
             else -> emptyList()
         }
 
@@ -224,5 +227,6 @@ class TriggerIndex(
         private val TURN_FACE_UP_LIST = listOf(TriggerCategory.TURN_FACE_UP)
         private val COUNTERS_ADDED_LIST = listOf(TriggerCategory.COUNTERS_ADDED)
         private val GIFT_GIVEN_LIST = listOf(TriggerCategory.GIFT_GIVEN)
+        private val TRANSFORM_LIST = listOf(TriggerCategory.TRANSFORM)
     }
 }

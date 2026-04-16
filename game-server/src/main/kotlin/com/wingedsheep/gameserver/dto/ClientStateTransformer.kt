@@ -833,8 +833,36 @@ class ClientStateTransformer(
                     // Unambiguous permanent cast — no text needed
                     else -> null
                 }
-            } else null
+            } else null,
+            isDoubleFaced = container.has<com.wingedsheep.engine.state.components.identity.DoubleFacedComponent>() || cardDef?.isDoubleFaced == true,
+            currentFace = container.get<com.wingedsheep.engine.state.components.identity.DoubleFacedComponent>()?.currentFace?.name
+                ?: if (cardDef?.isDoubleFaced == true) "FRONT" else null,
+            backFaceName = dfcBackFace(container, cardDef)?.name,
+            backFaceTypeLine = dfcBackFace(container, cardDef)?.typeLine?.toString(),
+            backFaceOracleText = dfcBackFace(container, cardDef)?.oracleText,
+            backFaceImageUri = dfcBackFace(container, cardDef)?.metadata?.imageUri
         )
+    }
+
+    /**
+     * Resolve the back face [CardDefinition] for a DFC client DTO. Looks at the permanent's
+     * [com.wingedsheep.engine.state.components.identity.DoubleFacedComponent] first (so a
+     * transformed permanent still exposes its other face), and falls back to the card
+     * definition's `backFace` pointer for cards not currently on the battlefield.
+     */
+    private fun dfcBackFace(
+        container: com.wingedsheep.engine.state.ComponentContainer,
+        cardDef: CardDefinition?
+    ): CardDefinition? {
+        val dfc = container.get<com.wingedsheep.engine.state.components.identity.DoubleFacedComponent>()
+        if (dfc != null) {
+            val otherId = when (dfc.currentFace) {
+                com.wingedsheep.engine.state.components.identity.DoubleFacedComponent.Face.FRONT -> dfc.backCardDefinitionId
+                com.wingedsheep.engine.state.components.identity.DoubleFacedComponent.Face.BACK -> dfc.frontCardDefinitionId
+            }
+            cardRegistry.getCard(otherId)?.let { return it }
+        }
+        return cardDef?.backFace
     }
 
     private fun effectTreeContainsGift(effect: Effect): Boolean = when (effect) {

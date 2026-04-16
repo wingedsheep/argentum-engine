@@ -82,6 +82,10 @@ data class TriggerContext(
                     triggeringPlayerId = event.controllerId,
                     xValue = event.xValue
                 )
+                is com.wingedsheep.engine.core.TransformedEvent -> TriggerContext(
+                    triggeringEntityId = event.entityId,
+                    triggeringPlayerId = event.controllerId
+                )
                 is ControlChangedEvent -> TriggerContext(
                     triggeringEntityId = event.permanentId,
                     triggeringPlayerId = event.newControllerId

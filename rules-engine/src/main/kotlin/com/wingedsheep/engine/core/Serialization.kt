@@ -106,6 +106,7 @@ val engineSerializersModule = SerializersModule {
         subclass(TargetReselectedEvent::class)
         subclass(TurnFaceUpEvent::class)
         subclass(TurnedFaceDownEvent::class)
+        subclass(TransformedEvent::class)
     }
 
     // PendingDecision hierarchy
@@ -248,6 +249,7 @@ val engineSerializersModule = SerializersModule {
         subclass(ProtectionComponent::class)
         subclass(HexproofFromColorComponent::class)
         subclass(CopyOfComponent::class)
+        subclass(com.wingedsheep.engine.state.components.identity.DoubleFacedComponent::class)
         subclass(ChosenColorComponent::class)
         subclass(ChosenCreatureTypeComponent::class)
         subclass(CantBeCounteredComponent::class)

@@ -589,6 +589,49 @@ object TestCards {
         keywords = setOf(Keyword.PERSIST)
     )
 
+    /**
+     * Back face of the DFC test pair — a 4/4 Werewolf with no abilities.
+     */
+    val TestDfcBack = CardDefinition.creature(
+        name = "Test DFC Back",
+        manaCost = ManaCost.ZERO,
+        subtypes = setOf(Subtype("Werewolf")),
+        power = 4,
+        toughness = 4,
+        oracleText = ""
+    )
+
+    /**
+     * Front face of the DFC test pair — a 2/2 Human. Registering this card auto-registers
+     * the back face via [com.wingedsheep.engine.registry.CardRegistry.register].
+     */
+    val TestDfcFront: CardDefinition = CardDefinition.doubleFacedCreature(
+        frontFace = CardDefinition.creature(
+            name = "Test DFC Front",
+            manaCost = ManaCost.parse("{2}{G}"),
+            subtypes = setOf(Subtype("Human")),
+            power = 2,
+            toughness = 2,
+            oracleText = ""
+        ),
+        backFace = TestDfcBack
+    )
+
+    /**
+     * Transform target creature — sorcery used to exercise [TransformEffect] end-to-end.
+     */
+    val TransformTargetCreature = CardDefinition.sorcery(
+        name = "Transform Target Creature",
+        manaCost = ManaCost.parse("{1}{U}"),
+        oracleText = "Transform target creature.",
+        script = CardScript.spell(
+            effect = com.wingedsheep.sdk.scripting.effects.TransformEffect(
+                target = EffectTarget.BoundVariable("target")
+            ),
+            TargetCreature(id = "target")
+        )
+    )
+
     // =========================================================================
     // All Test Cards
     // =========================================================================
@@ -630,6 +673,10 @@ object TestCards {
         TestEnchantment,
         // Persist
         SafeholdElite,
+        // Double-faced cards
+        TestDfcFront,
+        // Transform test helper
+        TransformTargetCreature,
         // Instants
         LightningBolt,
         GiantGrowth,

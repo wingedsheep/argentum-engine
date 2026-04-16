@@ -748,6 +748,21 @@ class StackResolver(
             }
         }
 
+        // Handle double-faced cards entering the battlefield (Rule 712)
+        // DFCs always enter on their front face (Rule 712.4).
+        if (cardDef != null && !spellComponent.castFaceDown && cardDef.isDoubleFaced) {
+            val backFace = cardDef.backFace!!
+            newState = newState.updateEntity(spellId) { c ->
+                c.with(
+                    com.wingedsheep.engine.state.components.identity.DoubleFacedComponent(
+                        frontCardDefinitionId = cardDef.name,
+                        backCardDefinitionId = backFace.name,
+                        currentFace = com.wingedsheep.engine.state.components.identity.DoubleFacedComponent.Face.FRONT
+                    )
+                )
+            }
+        }
+
         // Handle Saga entering the battlefield (Rule 714.3a)
         // Add SagaComponent and initial lore counter (triggers chapter I detection)
         if (cardDef != null && !spellComponent.castFaceDown && cardDef.isSaga) {
