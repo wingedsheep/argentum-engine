@@ -60,30 +60,32 @@ class GlenElendrasAnswerScenarioTest : ScenarioTestBase() {
             }
 
             test("counters multiple opponent spells and creates a token for each") {
+                // To stack two opponent spells simultaneously, P1 casts a sorcery-speed
+                // creature first (legal only with an empty stack) and then stacks an
+                // instant on top while still holding priority. Two creatures cannot
+                // coexist on the stack because of the sorcery-speed restriction.
                 val game = scenario()
                     .withPlayers("Player1", "Player2")
-                    .withCardInHand(1, "Grizzly Bears")
                     .withCardInHand(1, "Glory Seeker")
+                    .withCardInHand(1, "Spark Spray")
                     .withCardInHand(2, "Glen Elendra's Answer")
-                    .withLandsOnBattlefield(1, "Forest", 2)
                     .withLandsOnBattlefield(1, "Plains", 2)
+                    .withLandsOnBattlefield(1, "Mountain", 1)
                     .withLandsOnBattlefield(2, "Island", 4)
-                    .withCardInLibrary(1, "Forest")
+                    .withCardInLibrary(1, "Plains")
                     .withCardInLibrary(2, "Island")
                     .withActivePlayer(1)
                     .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
                     .build()
 
-                val bearsResult = game.castSpell(1, "Grizzly Bears")
-                withClue("Grizzly Bears should be cast: ${bearsResult.error}") {
-                    bearsResult.error shouldBe null
-                }
-                game.execute(PassPriority(game.player1Id))
-                game.execute(PassPriority(game.player2Id))
-
                 val seekerResult = game.castSpell(1, "Glory Seeker")
-                withClue("Glory Seeker should be cast on top of Grizzly Bears: ${seekerResult.error}") {
+                withClue("Glory Seeker should be cast: ${seekerResult.error}") {
                     seekerResult.error shouldBe null
+                }
+
+                val sprayResult = game.castSpellTargetingPlayer(1, "Spark Spray", 2)
+                withClue("Spark Spray should be cast on top of Glory Seeker: ${sprayResult.error}") {
+                    sprayResult.error shouldBe null
                 }
                 game.execute(PassPriority(game.player1Id))
 
@@ -94,11 +96,11 @@ class GlenElendrasAnswerScenarioTest : ScenarioTestBase() {
 
                 game.resolveStack()
 
-                withClue("Grizzly Bears should have been countered") {
-                    game.isInGraveyard(1, "Grizzly Bears") shouldBe true
-                }
                 withClue("Glory Seeker should have been countered") {
                     game.isInGraveyard(1, "Glory Seeker") shouldBe true
+                }
+                withClue("Spark Spray should have been countered") {
+                    game.isInGraveyard(1, "Spark Spray") shouldBe true
                 }
                 withClue("Two Faerie tokens should be created for Player 2") {
                     game.findAllPermanents("Faerie Token").size shouldBe 2
