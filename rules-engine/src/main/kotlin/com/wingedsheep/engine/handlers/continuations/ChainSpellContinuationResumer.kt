@@ -8,6 +8,7 @@ import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.identity.OwnerComponent
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
+import com.wingedsheep.engine.state.components.stack.SpellOnStackComponent
 import com.wingedsheep.engine.state.components.stack.TriggeredAbilityOnStackComponent
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
@@ -190,12 +191,18 @@ class ChainSpellContinuationResumer(
             else -> req
         }
 
+        // 700.2g: propagate chosen modes from the source spell if it was modal.
+        // Targets are re-chosen via the chain target flow, so modeTargetsOrdered
+        // is not inherited (the copy controller picks a new target above).
+        val sourceSpell = continuation.sourceId?.let { state.getEntity(it)?.get<SpellOnStackComponent>() }
         val ability = TriggeredAbilityOnStackComponent(
             sourceId = continuation.sourceId ?: EntityId.generate(),
             sourceName = effect.spellName,
             controllerId = continuation.copyControllerId,
             effect = copyEffect,
-            description = "Copy of ${effect.spellName}"
+            description = "Copy of ${effect.spellName}",
+            chosenModes = sourceSpell?.chosenModes ?: emptyList(),
+            modeTargetRequirements = sourceSpell?.modeTargetRequirements ?: emptyMap()
         )
 
         val targets = listOf(chosenTarget)

@@ -7,6 +7,7 @@ import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.mechanics.stack.StackResolver
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.identity.CardComponent
+import com.wingedsheep.engine.state.components.stack.SpellOnStackComponent
 import com.wingedsheep.engine.state.components.stack.TargetsComponent
 import com.wingedsheep.engine.state.components.stack.TriggeredAbilityOnStackComponent
 import com.wingedsheep.sdk.model.EntityId
@@ -48,6 +49,31 @@ class CopyTargetSpellExecutor(
         val targetRequirements = targetsComponent?.targetRequirements ?: emptyList()
 
         val stackResolver = StackResolver(cardRegistry = cardRegistry)
+
+        // Propagate modal info from the source spell (700.2g — copies keep the
+        // same chosen modes). Targets inherit by default; a future enhancement
+        // may let the copy controller re-choose per-mode targets.
+        val sourceSpell = container.get<SpellOnStackComponent>()
+        val inheritedChosenModes = sourceSpell?.chosenModes ?: emptyList()
+        val inheritedModeTargets = sourceSpell?.modeTargetsOrdered ?: emptyList()
+        val inheritedModeTargetRequirements = sourceSpell?.modeTargetRequirements ?: emptyMap()
+
+        // If the source was modal (per-mode targets), skip flat re-targeting and
+        // inherit modes/targets directly. Full per-mode retargeting is out of
+        // scope for this phase.
+        if (inheritedChosenModes.isNotEmpty()) {
+            val copyAbility = TriggeredAbilityOnStackComponent(
+                sourceId = context.sourceId ?: EntityId.generate(),
+                sourceName = spellName,
+                controllerId = context.controllerId,
+                effect = spellEffect,
+                description = "Copy of $spellName",
+                chosenModes = inheritedChosenModes,
+                modeTargetsOrdered = inheritedModeTargets,
+                modeTargetRequirements = inheritedModeTargetRequirements
+            )
+            return EffectResult.from(stackResolver.putTriggeredAbility(state, copyAbility))
+        }
 
         // If the original spell has no targets, create the copy immediately
         if (targetRequirements.isEmpty()) {

@@ -59,7 +59,14 @@ data class TriggeredAbilityOnStackComponent(
     val copyIndex: Int? = null,    // Which copy number this is (1, 2, 3...) for storm/copy effects
     val copyTotal: Int? = null,    // Total number of copies being created
     val lastKnownPower: Int? = null,    // Power at the moment the triggering entity left the battlefield (dies/leaves)
-    val lastKnownToughness: Int? = null // Toughness at the moment the triggering entity left the battlefield (dies/leaves)
+    val lastKnownToughness: Int? = null, // Toughness at the moment the triggering entity left the battlefield (dies/leaves)
+    // Modal fields — populated when this triggered ability is a copy of a modal spell (700.2g).
+    // Copies inherit the original's chosen modes; targets either inherit too (StormCopy default)
+    // or are re-chosen by the copy controller while modes stay fixed.
+    val chosenModes: List<Int> = emptyList(),
+    val modeTargetsOrdered: List<List<ChosenTarget>> = emptyList(),
+    val modeTargetRequirements: Map<Int, List<TargetRequirement>> = emptyMap(),
+    val modeDamageDistribution: Map<Int, Map<EntityId, Int>> = emptyMap()
 ) : Component {
     val hasTargets: Boolean = false  // Will be updated based on effect
 }

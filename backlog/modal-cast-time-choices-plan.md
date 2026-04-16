@@ -171,7 +171,7 @@ Extend from "first mode only" to iterate all chosen modes:
 
 Critically: **when `chosenModes.isEmpty()` on a ModalEffect**, use the existing resolution-time `ModalContinuation` path. This preserves modal triggered abilities (603.3c).
 
-### Phase 6 — Spell copy propagation (700.2g)
+### Phase 6 — Spell copy propagation (700.2g) [DONE]
 
 Files:
 - `rules-engine/.../handlers/effects/stack/StormCopyEffectExecutor.kt`

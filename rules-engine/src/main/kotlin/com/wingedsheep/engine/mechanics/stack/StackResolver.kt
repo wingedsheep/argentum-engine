@@ -842,6 +842,9 @@ class StackResolver(
                 sacrificedPermanents = spellComponent.sacrificedPermanents,
                 sacrificedPermanentSubtypes = spellComponent.sacrificedPermanentSubtypes,
                 damageDistribution = spellComponent.damageDistribution,
+                chosenModes = spellComponent.chosenModes,
+                modeTargetsOrdered = spellComponent.modeTargetsOrdered,
+                modeTargetRequirements = spellComponent.modeTargetRequirements,
                 chosenCreatureType = spellComponent.chosenCreatureType,
                 exiledCardCount = spellComponent.exiledCardCount,
                 castFromZone = spellComponent.castFromZone,
@@ -1021,6 +1024,9 @@ class StackResolver(
             triggerLastKnownToughness = abilityComponent.lastKnownToughness,
             xValue = abilityComponent.xValue,
             damageDistribution = abilityComponent.damageDistribution,
+            chosenModes = abilityComponent.chosenModes,
+            modeTargetsOrdered = abilityComponent.modeTargetsOrdered,
+            modeTargetRequirements = abilityComponent.modeTargetRequirements,
             pipeline = PipelineState(namedTargets = EffectContext.buildNamedTargets(targetReqs, resolvedTargets2))
         )
 

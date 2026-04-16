@@ -33,6 +33,15 @@ data class EffectContext(
     val sacrificedPermanentSubtypes: Map<EntityId, Set<String>> = emptyMap(),
     /** Pre-chosen damage distribution for DividedDamageEffect spells (target ID -> damage amount) */
     val damageDistribution: Map<EntityId, Int>? = null,
+    /**
+     * Pre-chosen modes for modal spells/abilities (700.2). Populated at stack resolution
+     * from either [SpellOnStackComponent] or [TriggeredAbilityOnStackComponent]. When
+     * non-empty, [ModalEffectExecutor] iterates these modes with per-mode targets from
+     * [modeTargetsOrdered] instead of prompting for a mode decision.
+     */
+    val chosenModes: List<Int> = emptyList(),
+    val modeTargetsOrdered: List<List<ChosenTarget>> = emptyList(),
+    val modeTargetRequirements: Map<Int, List<TargetRequirement>> = emptyMap(),
     /** Number of cards exiled as an additional cost (for ExileVariableCards) */
     val exiledCardCount: Int = 0,
     /** Permanents tapped as part of an activated ability's cost (e.g., Cryptic Gateway) */

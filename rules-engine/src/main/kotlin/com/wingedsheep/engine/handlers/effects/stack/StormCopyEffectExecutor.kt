@@ -7,6 +7,7 @@ import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.mechanics.stack.StackResolver
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
+import com.wingedsheep.engine.state.components.stack.SpellOnStackComponent
 import com.wingedsheep.engine.state.components.stack.TriggeredAbilityOnStackComponent
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.effects.StormCopyEffect
@@ -39,6 +40,14 @@ class StormCopyEffectExecutor(
 
         val stackResolver = StackResolver(cardRegistry = cardRegistry)
 
+        // Modal source (700.2g): targets live per-mode on the original's
+        // [SpellOnStackComponent], not as a flat TargetsComponent. Inherit modes
+        // and per-mode targets onto each copy directly — no flat re-targeting.
+        val sourceSpell = context.sourceId?.let { state.getEntity(it)?.get<SpellOnStackComponent>() }
+        if (sourceSpell != null && sourceSpell.chosenModes.isNotEmpty()) {
+            return createAllCopiesNoTargets(state, effect, context, stackResolver)
+        }
+
         // If spell has no targets, create all copies immediately
         if (effect.spellTargetRequirements.isEmpty()) {
             return createAllCopiesNoTargets(state, effect, context, stackResolver)
@@ -57,6 +66,12 @@ class StormCopyEffectExecutor(
         var currentState = state
         val allEvents = mutableListOf<GameEvent>()
 
+        // Propagate modal info from the source spell (700.2g — copies inherit chosen modes).
+        val sourceSpell = context.sourceId?.let { state.getEntity(it)?.get<SpellOnStackComponent>() }
+        val inheritedChosenModes = sourceSpell?.chosenModes ?: emptyList()
+        val inheritedModeTargets = sourceSpell?.modeTargetsOrdered ?: emptyList()
+        val inheritedModeTargetRequirements = sourceSpell?.modeTargetRequirements ?: emptyMap()
+
         for (i in 1..effect.copyCount) {
             val copyAbility = TriggeredAbilityOnStackComponent(
                 sourceId = context.sourceId ?: EntityId.generate(),
@@ -65,7 +80,10 @@ class StormCopyEffectExecutor(
                 effect = effect.spellEffect,
                 description = "Storm copy of ${effect.spellName} ($i/${effect.copyCount})",
                 copyIndex = i,
-                copyTotal = effect.copyCount
+                copyTotal = effect.copyCount,
+                chosenModes = inheritedChosenModes,
+                modeTargetsOrdered = inheritedModeTargets,
+                modeTargetRequirements = inheritedModeTargetRequirements
             )
             val result = EffectResult.from(stackResolver.putTriggeredAbility(currentState, copyAbility))
             if (!result.isSuccess) return result

@@ -48,9 +48,12 @@ class ModalEffectExecutor(
         effect: ModalEffect,
         context: EffectContext
     ): EffectResult {
-        val spellOnStack = context.sourceId?.let { state.getEntity(it)?.get<SpellOnStackComponent>() }
-        if (spellOnStack != null && spellOnStack.chosenModes.isNotEmpty()) {
-            return executePreChosenModes(state, effect, context, spellOnStack)
+        // Pre-chosen modes flow: used for both direct spell casts and copies
+        // (storm / CopyTargetSpell / chain). Both resolvers populate the modal
+        // fields from the appropriate stack component (SpellOnStackComponent for
+        // spells, TriggeredAbilityOnStackComponent for copies — 700.2g).
+        if (context.chosenModes.isNotEmpty()) {
+            return executePreChosenModes(state, effect, context)
         }
 
         // Mode not pre-chosen — present mode selection decision (legacy flow for
@@ -125,10 +128,14 @@ class ModalEffectExecutor(
     private fun executePreChosenModes(
         state: GameState,
         effect: ModalEffect,
-        context: EffectContext,
-        spellOnStack: SpellOnStackComponent
+        context: EffectContext
     ): EffectResult {
-        val entries = buildModeEntries(effect, spellOnStack)
+        val entries = buildModeEntries(
+            effect,
+            chosenModes = context.chosenModes,
+            modeTargetsOrdered = context.modeTargetsOrdered,
+            modeTargetRequirements = context.modeTargetRequirements
+        )
         val sourceName = context.sourceId?.let { id -> state.getEntity(id)?.get<CardComponent>()?.name }
         val baseCtx = ModalPreChosenBaseContext(
             controllerId = context.controllerId,
@@ -142,12 +149,17 @@ class ModalEffectExecutor(
     }
 
     companion object {
-        /** Build the drain queue from the spell's chosenModes / modeTargetsOrdered. */
-        fun buildModeEntries(effect: ModalEffect, spellOnStack: SpellOnStackComponent): List<ModalPreChosenEntry> {
-            return spellOnStack.chosenModes.mapIndexed { ordinal, modeIndex ->
+        /** Build the drain queue from pre-chosen modes / targets. */
+        fun buildModeEntries(
+            effect: ModalEffect,
+            chosenModes: List<Int>,
+            modeTargetsOrdered: List<List<com.wingedsheep.engine.state.components.stack.ChosenTarget>>,
+            modeTargetRequirements: Map<Int, List<com.wingedsheep.sdk.scripting.targets.TargetRequirement>>
+        ): List<ModalPreChosenEntry> {
+            return chosenModes.mapIndexed { ordinal, modeIndex ->
                 val mode = effect.modes.getOrNull(modeIndex)
-                val targets = spellOnStack.modeTargetsOrdered.getOrNull(ordinal) ?: emptyList()
-                val reqs = spellOnStack.modeTargetRequirements[modeIndex]
+                val targets = modeTargetsOrdered.getOrNull(ordinal) ?: emptyList()
+                val reqs = modeTargetRequirements[modeIndex]
                     ?: mode?.targetRequirements
                     ?: emptyList()
                 ModalPreChosenEntry(
@@ -157,6 +169,15 @@ class ModalEffectExecutor(
                 )
             }
         }
+
+        /** Convenience overload reading from a [SpellOnStackComponent]. */
+        fun buildModeEntries(effect: ModalEffect, spellOnStack: SpellOnStackComponent): List<ModalPreChosenEntry> =
+            buildModeEntries(
+                effect,
+                spellOnStack.chosenModes,
+                spellOnStack.modeTargetsOrdered,
+                spellOnStack.modeTargetRequirements
+            )
     }
 }
 
