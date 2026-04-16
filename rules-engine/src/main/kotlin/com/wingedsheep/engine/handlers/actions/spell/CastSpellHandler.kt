@@ -1381,9 +1381,14 @@ class CastSpellHandler(
                         spellTargetRequirements = spellTargetRequirements,
                         spellName = cardComponent.name
                     )
+                    // sourceId must point to the spell being copied (action.cardId), not the
+                    // originating permanent (e.g., Howl of the Horde). StormCopyEffectExecutor
+                    // uses sourceId to clone the SpellOnStackComponent via putSpellCopy (Phase 1
+                    // of spell-copies-as-spells); the originating permanent may be in the
+                    // graveyard by the time the trigger resolves.
                     val copyAbility = TriggeredAbilityOnStackComponent(
-                        sourceId = matchingCopies.first().sourceId,
-                        sourceName = matchingCopies.first().sourceName,
+                        sourceId = action.cardId,
+                        sourceName = cardComponent.name,
                         controllerId = action.playerId,
                         effect = copyEffect,
                         description = "Copy ${cardComponent.name} $totalCopies time(s)"
