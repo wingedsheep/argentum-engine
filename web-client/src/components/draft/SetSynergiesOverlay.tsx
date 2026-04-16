@@ -852,13 +852,18 @@ function RarityBadge({ label, count, color }: { label: string; count: number; co
   )
 }
 
-function getArchetypeImagePath(setCode: string, archetypeName: string): string {
+const IMAGE_EXTENSIONS = ['.png', '.jpg', '.jpeg'] as const
+
+function getArchetypeImageCandidates(setCode: string, archetypeName: string): string[] {
   const normalized = archetypeName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
-  return `/images/archetypes/${setCode.toLowerCase()}-${normalized}.png`
+  const base = `/images/archetypes/${setCode.toLowerCase()}-${normalized}`
+  return IMAGE_EXTENSIONS.map((ext) => `${base}${ext}`)
 }
 
 function ArchetypeCard({ archetype, setCode, clickable, onClick, cardPool }: { archetype: Archetype; setCode: string; clickable?: boolean; onClick?: () => void; cardPool?: readonly SealedCardInfo[] }) {
   const [imageLoaded, setImageLoaded] = useState(false)
+  const [srcIndex, setSrcIndex] = useState(0)
+  const imageCandidates = useMemo(() => getArchetypeImageCandidates(setCode, archetype.name), [setCode, archetype.name])
 
   const rarities = useMemo(() => {
     if (!cardPool || cardPool.length === 0) return null
@@ -971,10 +976,14 @@ function ArchetypeCard({ archetype, setCode, clickable, onClick, cardPool }: { a
         </p>
       </div>
       <img
-        src={getArchetypeImagePath(setCode, archetype.name)}
+        src={imageCandidates[srcIndex]}
         alt={archetype.name}
         onLoad={() => setImageLoaded(true)}
-        onError={() => setImageLoaded(false)}
+        onError={() => {
+          if (srcIndex < imageCandidates.length - 1) {
+            setSrcIndex(srcIndex + 1)
+          }
+        }}
         style={{
           width: 140,
           height: 100,
