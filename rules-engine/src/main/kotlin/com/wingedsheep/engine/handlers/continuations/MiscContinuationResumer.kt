@@ -4,7 +4,6 @@ import com.wingedsheep.engine.core.*
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.ReplacementEffectUtils
 import com.wingedsheep.engine.state.GameState
-import com.wingedsheep.engine.state.components.stack.TriggeredAbilityOnStackComponent
 import com.wingedsheep.sdk.model.EntityId
 
 /**
@@ -134,19 +133,16 @@ class MiscContinuationResumer(
         val allEvents = mutableListOf<GameEvent>()
         var currentState = state
 
-        // Create the copy with the selected targets
+        // Put the copy on the stack as a spell (707.12).
         val copyIndex = continuation.totalCopies - continuation.remainingCopies + 1
-        val copyAbility = TriggeredAbilityOnStackComponent(
-            sourceId = continuation.sourceId,
-            sourceName = continuation.spellName,
-            controllerId = continuation.controllerId,
-            effect = continuation.spellEffect,
-            description = "Storm copy of ${continuation.spellName}",
+        val stackResult = services.stackResolver.putSpellCopy(
+            state = currentState,
+            sourceSpellId = continuation.sourceId,
+            targets = selectedTargets,
+            targetRequirements = continuation.spellTargetRequirements,
             copyIndex = copyIndex,
-            copyTotal = continuation.totalCopies
-        )
-        val stackResult = services.stackResolver.putTriggeredAbility(
-            currentState, copyAbility, selectedTargets, continuation.spellTargetRequirements
+            copyTotal = continuation.totalCopies,
+            controllerId = continuation.controllerId
         )
         if (!stackResult.isSuccess) return stackResult
         currentState = stackResult.newState

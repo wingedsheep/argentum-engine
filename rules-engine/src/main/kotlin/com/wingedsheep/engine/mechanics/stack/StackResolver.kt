@@ -22,6 +22,7 @@ import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.state.components.identity.CantBeCounteredComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
+import com.wingedsheep.engine.state.components.identity.CopyOfComponent
 import com.wingedsheep.engine.state.components.identity.FaceDownComponent
 import com.wingedsheep.engine.state.components.identity.MorphDataComponent
 import com.wingedsheep.engine.state.components.identity.MayPlayFromExileComponent
@@ -268,6 +269,111 @@ class StackResolver(
             newState.tick(),
             events
         )
+    }
+
+    /**
+     * Put a copy of a spell on the stack.
+     *
+     * Per rule 707.7/707.12, a copy of an instant or sorcery spell is itself a spell on the
+     * stack with the original's characteristics. We clone the source's [CardComponent] and
+     * [SpellOnStackComponent] onto a new entity, tag it with [CopyOfComponent], and push it.
+     *
+     * Per rule 707.10 a copy isn't cast — this emits a [SpellCopiedEvent], not a
+     * [SpellCastEvent], so "whenever you cast a spell" triggers don't fire.
+     *
+     * Targets and modal choices default to inheriting from the source. Callers may override
+     * them (e.g., Storm's per-copy retargeting).
+     */
+    fun putSpellCopy(
+        state: GameState,
+        sourceSpellId: EntityId,
+        targets: List<ChosenTarget> = emptyList(),
+        targetRequirements: List<TargetRequirement> = emptyList(),
+        chosenModes: List<Int>? = null,
+        modeTargetsOrdered: List<List<ChosenTarget>>? = null,
+        modeTargetRequirements: Map<Int, List<TargetRequirement>>? = null,
+        copyIndex: Int? = null,
+        copyTotal: Int? = null,
+        controllerId: EntityId? = null
+    ): ExecutionResult {
+        val sourceContainer = state.getEntity(sourceSpellId)
+            ?: return ExecutionResult.error(state, "Source spell not found: $sourceSpellId")
+        val sourceCard = sourceContainer.get<CardComponent>()
+            ?: return ExecutionResult.error(state, "Source is not a card: $sourceSpellId")
+        val sourceSpell = sourceContainer.get<SpellOnStackComponent>()
+            ?: return ExecutionResult.error(state, "Source is not a spell on stack: $sourceSpellId")
+        val sourceTargets = sourceContainer.get<TargetsComponent>()
+
+        val copyId = EntityId.generate()
+        val copyController = controllerId ?: sourceSpell.casterId
+
+        val effectiveModes = chosenModes ?: sourceSpell.chosenModes
+        val effectiveModeTargets = modeTargetsOrdered ?: sourceSpell.modeTargetsOrdered
+        val effectiveModeRequirements = modeTargetRequirements ?: sourceSpell.modeTargetRequirements
+
+        // Determine final flat targets/requirements for the copy's TargetsComponent.
+        val effectiveTargets = when {
+            targets.isNotEmpty() -> targets
+            effectiveModes.isNotEmpty() -> effectiveModeTargets.flatten()
+            else -> sourceTargets?.targets ?: emptyList()
+        }
+        val effectiveRequirements = when {
+            targetRequirements.isNotEmpty() -> targetRequirements
+            effectiveModes.isNotEmpty() ->
+                effectiveModes.flatMap { effectiveModeRequirements[it] ?: emptyList() }
+            else -> sourceTargets?.targetRequirements ?: emptyList()
+        }
+
+        // Clone the card characteristics. The CardComponent keeps the same cardDefinitionId,
+        // name, types, colors, mana cost, and spellEffect (707.7c / 707.12).
+        val copiedCardComp = sourceCard.copy(ownerId = copyController)
+
+        // Clone cast-time state; the copy inherits the original's decisions (xValue,
+        // sacrificed permanents, mana-spent colors, etc.) per 707.7c.
+        val copiedSpellComp = sourceSpell.copy(
+            casterId = copyController,
+            chosenModes = effectiveModes,
+            modeTargetsOrdered = effectiveModeTargets,
+            modeTargetRequirements = effectiveModeRequirements
+        )
+
+        var container = ComponentContainer.of(copiedCardComp, copiedSpellComp)
+        if (effectiveTargets.isNotEmpty()) {
+            container = container.with(TargetsComponent(effectiveTargets, effectiveRequirements))
+        }
+        container = container.with(
+            CopyOfComponent(
+                originalCardDefinitionId = sourceCard.cardDefinitionId,
+                copiedCardDefinitionId = sourceCard.cardDefinitionId
+            )
+        )
+
+        var newState = state.withEntity(copyId, container)
+        newState = newState.pushToStack(copyId).copy(priorityPassedBy = emptySet())
+
+        val events = mutableListOf<GameEvent>(
+            SpellCopiedEvent(
+                copyEntityId = copyId,
+                cardName = sourceCard.name,
+                controllerId = copyController,
+                originalSpellId = sourceSpellId,
+                copyIndex = copyIndex,
+                copyTotal = copyTotal
+            )
+        )
+
+        // Emit BecomesTargetEvent for each permanent target — the copy is its own source
+        // on the stack (ward on the target can counter the copy independently).
+        for (target in effectiveTargets) {
+            if (target is ChosenTarget.Permanent) {
+                val targetName = newState.getEntity(target.entityId)?.get<CardComponent>()?.name ?: "Unknown"
+                val firstTime = !hasBeenTargetedByController(newState, target.entityId, copyController)
+                events.add(BecomesTargetEvent(target.entityId, targetName, copyId, copyController, firstTime))
+                newState = markTargetedByController(newState, target.entityId, copyController)
+            }
+        }
+
+        return ExecutionResult.success(newState.tick(), events)
     }
 
     /**
@@ -875,6 +981,17 @@ class StackResolver(
             // to graveyard/exile (it has already resolved from the stack). The decision only
             // determines how the effect completes.
             if (effectResult.isPaused) {
+                val pausedIsCopy = effectResult.state.getEntity(spellId)?.has<CopyOfComponent>() == true
+                if (pausedIsCopy) {
+                    // Rule 112.3b — copies cease to exist when they leave the stack.
+                    val pausedState = effectResult.state.removeEntity(spellId)
+                    return ExecutionResult.paused(
+                        pausedState,
+                        effectResult.pendingDecision!!,
+                        events + effectResult.events
+                    )
+                }
+
                 val ownerId = cardComponent?.ownerId ?: spellComponent.casterId
                 val pausedCardDef = cardComponent?.let { cardRegistry.getCard(it.name) }
                 val pausedSelfExile = pausedCardDef?.script?.selfExileOnResolve == true
@@ -912,6 +1029,14 @@ class StackResolver(
             // second target missing) should be preserved.
             newState = effectResult.newState
             events.addAll(effectResult.events)
+        }
+
+        // Rule 112.3b: a copy of a spell ceases to exist when it leaves the stack —
+        // it does not go to a graveyard or exile.
+        val isCopy = newState.getEntity(spellId)?.has<CopyOfComponent>() == true
+        if (isCopy) {
+            newState = newState.removeEntity(spellId)
+            return ExecutionResult.success(newState, events)
         }
 
         // Move to graveyard (or exile if selfExileOnResolve, flashback, or ExileAfterResolveComponent)
@@ -955,6 +1080,18 @@ class StackResolver(
         cardComponent: CardComponent?,
         spellComponent: SpellOnStackComponent
     ): ExecutionResult {
+        // Rule 112.3b — a copy that fizzles ceases to exist rather than moving to graveyard/exile.
+        val isCopy = state.getEntity(spellId)?.has<CopyOfComponent>() == true
+        if (isCopy) {
+            val newState = state.removeEntity(spellId)
+            return ExecutionResult.success(
+                newState,
+                listOf(
+                    SpellFizzledEvent(spellId, cardComponent?.name ?: "Unknown", "All targets are invalid")
+                )
+            )
+        }
+
         val ownerId = cardComponent?.ownerId ?: spellComponent.casterId
         val cardDef = cardComponent?.let { cardRegistry.getCard(it.name) }
         val flashbackExile = spellComponent.castFromZone == Zone.GRAVEYARD &&

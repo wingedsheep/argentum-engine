@@ -219,6 +219,22 @@ data class ResolvedEvent(
 ) : GameEvent
 
 /**
+ * A copy of a spell was put onto the stack (Storm, Fork, Copy Target Spell, etc.).
+ * Per rule 707.10 copies aren't cast, so this event is distinct from [SpellCastEvent]
+ * and must not match "whenever you cast" triggers.
+ */
+@Serializable
+@SerialName("SpellCopiedEvent")
+data class SpellCopiedEvent(
+    val copyEntityId: EntityId,
+    val cardName: String,
+    val controllerId: EntityId,
+    val originalSpellId: EntityId? = null,
+    val copyIndex: Int? = null,
+    val copyTotal: Int? = null
+) : GameEvent
+
+/**
  * A spell was countered.
  */
 @Serializable

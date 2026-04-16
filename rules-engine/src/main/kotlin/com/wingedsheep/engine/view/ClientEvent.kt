@@ -1044,6 +1044,7 @@ is PermanentsSacrificedEvent -> {
             is TurnedFaceDownEvent,
             is CreatureTypeChangedEvent,
             is BecomesTargetEvent,
+            is SpellCopiedEvent,
             is ClassLevelChangedEvent -> null
         }
     }

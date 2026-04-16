@@ -6,9 +6,7 @@ import com.wingedsheep.engine.handlers.TargetFinder
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.mechanics.stack.StackResolver
 import com.wingedsheep.engine.state.GameState
-import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.engine.state.components.stack.SpellOnStackComponent
-import com.wingedsheep.engine.state.components.stack.TriggeredAbilityOnStackComponent
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.effects.StormCopyEffect
 import com.wingedsheep.sdk.scripting.targets.TargetRequirement
@@ -63,29 +61,24 @@ class StormCopyEffectExecutor(
         context: EffectContext,
         stackResolver: StackResolver
     ): EffectResult {
+        val sourceId = context.sourceId
+            ?: return EffectResult.error(state, "Storm copy has no source spell to copy")
+
         var currentState = state
         val allEvents = mutableListOf<GameEvent>()
 
-        // Propagate modal info from the source spell (700.2g — copies inherit chosen modes).
-        val sourceSpell = context.sourceId?.let { state.getEntity(it)?.get<SpellOnStackComponent>() }
-        val inheritedChosenModes = sourceSpell?.chosenModes ?: emptyList()
-        val inheritedModeTargets = sourceSpell?.modeTargetsOrdered ?: emptyList()
-        val inheritedModeTargetRequirements = sourceSpell?.modeTargetRequirements ?: emptyMap()
-
         for (i in 1..effect.copyCount) {
-            val copyAbility = TriggeredAbilityOnStackComponent(
-                sourceId = context.sourceId ?: EntityId.generate(),
-                sourceName = effect.spellName,
-                controllerId = context.controllerId,
-                effect = effect.spellEffect,
-                description = "Storm copy of ${effect.spellName} ($i/${effect.copyCount})",
-                copyIndex = i,
-                copyTotal = effect.copyCount,
-                chosenModes = inheritedChosenModes,
-                modeTargetsOrdered = inheritedModeTargets,
-                modeTargetRequirements = inheritedModeTargetRequirements
+            // Put the copy on the stack as a spell (707.12). Modes/targets default to the
+            // source's — putSpellCopy reads them off the source SpellOnStackComponent.
+            val result = EffectResult.from(
+                stackResolver.putSpellCopy(
+                    state = currentState,
+                    sourceSpellId = sourceId,
+                    copyIndex = i,
+                    copyTotal = effect.copyCount,
+                    controllerId = context.controllerId
+                )
             )
-            val result = EffectResult.from(stackResolver.putTriggeredAbility(currentState, copyAbility))
             if (!result.isSuccess) return result
             currentState = result.newState
             allEvents.addAll(result.events)
