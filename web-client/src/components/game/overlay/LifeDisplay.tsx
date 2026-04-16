@@ -12,7 +12,6 @@ export function LifeDisplay({
   isPlayer = false,
   playerId,
   playerName,
-  spectatorMode = false,
 }: {
   life: number
   isPlayer?: boolean
@@ -153,16 +152,20 @@ export function LifeDisplay({
             top: -8,
             left: '50%',
             transform: 'translateX(-50%)',
+            maxWidth: size + 32,
             fontSize: 9,
             fontWeight: 'bold',
             color: isPlayer ? '#4a9aea' : '#aa6aca',
             backgroundColor: '#1a1a2e',
-            padding: '1px 4px',
+            padding: '1px 6px',
             borderRadius: 3,
             whiteSpace: 'nowrap',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
           }}
+          title={playerName}
         >
-          {spectatorMode && playerName ? playerName.toUpperCase() : (isPlayer ? 'YOU' : 'OPPONENT')}
+          {playerName ? playerName.toUpperCase() : (isPlayer ? 'YOU' : 'OPPONENT')}
         </span>
         <span style={{ color: life <= 5 ? '#ff4444' : '#ffffff' }}>{life}</span>
 
