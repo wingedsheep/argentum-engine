@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useMemo, useState, useEffect, useCallback } from 'react'
 import { useGameStore } from '@/store/gameStore.ts'
 import { selectGameState, selectViewingPlayerId, useCardLegalActions } from '@/store/selectors.ts'
 import { ZoneType, zoneIdEquals } from '@/types'
@@ -31,6 +31,27 @@ export function CardPreview() {
     const handZone = gameState.zones.find((z) => zoneIdEquals(z.zoneId, handZoneId))
     return handZone?.cardIds.includes(hoveredCardId) ?? false
   }, [hoveredCardId, gameState, playerId])
+
+  // DFC flip state — press F while hovering to see the other face
+  const isDfc = card?.isDoubleFaced === true
+  const [dfcFlipped, setDfcFlipped] = useState(false)
+
+  // Reset flip when hovering a different card
+  useEffect(() => {
+    setDfcFlipped(false)
+  }, [hoveredCardId])
+
+  const handleFlipKey = useCallback((e: KeyboardEvent) => {
+    if (e.key === 'f' || e.key === 'F') {
+      setDfcFlipped((prev) => !prev)
+    }
+  }, [])
+
+  useEffect(() => {
+    if (!isDfc) return
+    window.addEventListener('keydown', handleFlipKey)
+    return () => window.removeEventListener('keydown', handleFlipKey)
+  }, [isDfc, handleFlipKey])
 
   const manaCostInfo = useMemo(() => {
     if (!isInHand || !card?.manaCost) return null
@@ -68,8 +89,14 @@ export function CardPreview() {
   }
 
   const isRevealedFaceDown = card.isFaceDown && !!card.revealedName
-  const displayName = isRevealedFaceDown ? card.revealedName! : card.name
-  const displayImageUri = isRevealedFaceDown ? (card.revealedImageUri ?? undefined) : card.imageUri
+  // When DFC is flipped via F key, show the other face
+  const showingBackFace = isDfc && dfcFlipped
+  const displayName = showingBackFace && card.backFaceName
+    ? card.backFaceName
+    : isRevealedFaceDown ? card.revealedName! : card.name
+  const displayImageUri = showingBackFace && card.backFaceImageUri
+    ? card.backFaceImageUri
+    : isRevealedFaceDown ? (card.revealedImageUri ?? undefined) : card.imageUri
 
   // Determine if stats are modified
   const isPowerBuffed = card.power !== null && card.basePower !== null && card.power > card.basePower
@@ -94,32 +121,68 @@ export function CardPreview() {
   if (card.keywords.length > 0 || (card.abilityFlags && card.abilityFlags.length > 0)) extraHeight += 40 + GAP
 
   // Mana cost overlay badge for the card image (only for hand cards)
-  const manaCostOverlay = manaCostInfo ? (
-    <div style={{
-      position: 'absolute',
-      top: 8,
-      right: 8,
-      backgroundColor: manaCostInfo.effectiveCost
-        ? 'rgba(0, 0, 0, 0.85)'
-        : 'rgba(0, 0, 0, 0.7)',
-      padding: '3px 6px',
-      borderRadius: 6,
-      border: `1px solid ${
-        manaCostInfo.isReduced ? 'rgba(0, 200, 80, 0.5)'
-        : manaCostInfo.isIncreased ? 'rgba(255, 68, 68, 0.5)'
-        : 'rgba(255, 255, 255, 0.3)'
-      }`,
-      boxShadow: manaCostInfo.isReduced ? '0 0 8px rgba(0, 200, 80, 0.3)'
-        : manaCostInfo.isIncreased ? '0 0 8px rgba(255, 68, 68, 0.3)'
-        : 'none',
-      display: 'flex',
-      alignItems: 'center',
-      gap: 2,
-      zIndex: 5,
-    }}>
-      <ManaCost cost={manaCostInfo.effectiveCost ?? manaCostInfo.baseCost} size={18} gap={2} />
-    </div>
-  ) : null
+  const previewOverlay = (
+    <>
+      {manaCostInfo && (
+        <div style={{
+          position: 'absolute',
+          top: 8,
+          right: 8,
+          backgroundColor: manaCostInfo.effectiveCost
+            ? 'rgba(0, 0, 0, 0.85)'
+            : 'rgba(0, 0, 0, 0.7)',
+          padding: '3px 6px',
+          borderRadius: 6,
+          border: `1px solid ${
+            manaCostInfo.isReduced ? 'rgba(0, 200, 80, 0.5)'
+            : manaCostInfo.isIncreased ? 'rgba(255, 68, 68, 0.5)'
+            : 'rgba(255, 255, 255, 0.3)'
+          }`,
+          boxShadow: manaCostInfo.isReduced ? '0 0 8px rgba(0, 200, 80, 0.3)'
+            : manaCostInfo.isIncreased ? '0 0 8px rgba(255, 68, 68, 0.3)'
+            : 'none',
+          display: 'flex',
+          alignItems: 'center',
+          gap: 2,
+          zIndex: 5,
+        }}>
+          <ManaCost cost={manaCostInfo.effectiveCost ?? manaCostInfo.baseCost} size={18} gap={2} />
+        </div>
+      )}
+      {isDfc && (
+        <div style={{
+          position: 'absolute',
+          bottom: 10,
+          left: '50%',
+          transform: 'translateX(-50%)',
+          backgroundColor: 'rgba(0, 0, 0, 0.88)',
+          color: '#d0d4e0',
+          fontSize: 13,
+          fontWeight: 600,
+          padding: '5px 12px',
+          borderRadius: 6,
+          border: '1px solid rgba(180, 190, 220, 0.5)',
+          boxShadow: '0 2px 8px rgba(0, 0, 0, 0.5)',
+          whiteSpace: 'nowrap',
+          zIndex: 5,
+          display: 'flex',
+          alignItems: 'center',
+          gap: 6,
+        }}>
+          <i className={`ms ms-dfc-${showingBackFace ? 'night' : 'day'}`} style={{ fontSize: 14 }} />
+          <span style={{
+            backgroundColor: 'rgba(255, 255, 255, 0.15)',
+            padding: '1px 6px',
+            borderRadius: 3,
+            fontSize: 12,
+            fontWeight: 700,
+            letterSpacing: 0.5,
+          }}>F</span>
+          <span>to flip</span>
+        </div>
+      )}
+    </>
+  )
 
   return (
     <HoverCardPreview
@@ -128,7 +191,7 @@ export function CardPreview() {
       pos={hoverPosition}
       rulings={card.rulings}
       extraHeight={extraHeight}
-      overlay={manaCostOverlay}
+      overlay={previewOverlay}
     >
       {/* Stats box (for creatures with modifications) */}
       {card.power !== null && card.toughness !== null && hasStatModifications && (

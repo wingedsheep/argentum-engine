@@ -1424,6 +1424,26 @@ export function GameCard({
         </div>
       )}
 
+      {/* DFC (double-faced card) indicator badge */}
+      {!faceDown && battlefield && card.isDoubleFaced && (
+        <div style={{
+          position: 'absolute',
+          top: card.copyOf ? 20 : 4,
+          left: 4,
+          backgroundColor: 'rgba(20, 20, 40, 0.9)',
+          color: card.currentFace === 'BACK' ? '#b0b8d0' : '#f0d060',
+          fontSize: responsive.isMobile ? 10 : 13,
+          padding: responsive.isMobile ? '1px 3px' : '2px 5px',
+          borderRadius: 4,
+          border: `1px solid ${card.currentFace === 'BACK' ? 'rgba(160, 170, 200, 0.5)' : 'rgba(240, 208, 96, 0.5)'}`,
+          pointerEvents: 'none',
+          zIndex: 5,
+          lineHeight: 1,
+        }}>
+          <i className={`ms ms-dfc-${card.currentFace === 'BACK' ? 'night' : 'day'}`} />
+        </div>
+      )}
+
       {/* Copy indicator badge (e.g., Clever Impersonator copying Wind Drake) */}
       {!faceDown && card.copyOf && (
         <div style={{

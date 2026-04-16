@@ -16,7 +16,7 @@ import com.wingedsheep.engine.mechanics.layers.StaticAbilityHandler
 import com.wingedsheep.sdk.scripting.KeywordAbility
 import com.wingedsheep.engine.state.components.player.LandDropsComponent
 import com.wingedsheep.engine.state.components.player.ManaPoolComponent
-import com.wingedsheep.gameserver.dto.ClientStateTransformer
+import com.wingedsheep.engine.view.ClientStateTransformer
 import com.wingedsheep.gameserver.repository.GameRepository
 import com.wingedsheep.gameserver.session.GameSession
 import com.wingedsheep.gameserver.session.PlayerIdentity
@@ -670,6 +670,17 @@ class DevScenarioController(
                         .map { it.chapter }
                         .toSet()
                     container = container.with(SagaComponent(triggeredChapters))
+                }
+
+                // Add DoubleFacedComponent for DFCs (Rule 712)
+                if (cardDef.isDoubleFaced && cardDef.backFace != null) {
+                    container = container.with(
+                        DoubleFacedComponent(
+                            frontCardDefinitionId = cardDef.name,
+                            backCardDefinitionId = cardDef.backFace!!.name,
+                            currentFace = DoubleFacedComponent.Face.FRONT
+                        )
+                    )
                 }
             }
 
