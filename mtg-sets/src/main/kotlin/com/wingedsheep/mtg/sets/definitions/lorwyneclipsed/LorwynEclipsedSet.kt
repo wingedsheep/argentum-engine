@@ -24,6 +24,7 @@ object LorwynEclipsedSet {
         BarbedBloodletter,
         Blossombind,
         BramblebackBrute,
+        BrigidsCommand,
         Catharsis,
         ChampionsOfThePerfect,
         ChronicleOfVictory,

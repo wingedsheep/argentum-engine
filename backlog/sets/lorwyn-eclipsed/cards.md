@@ -2,7 +2,7 @@
 
 **Set Size:** 273 cards (main set, per Scryfall `set:ecl`)
 **Release Date:** January 23, 2026
-**Implemented:** 42 / 273
+**Implemented:** 43 / 273
 
 | Color      | Total | Done |
 |------------|-------|------|
@@ -11,7 +11,7 @@
 | Black      | 38    | 3    |
 | Red        | 39    | 2    |
 | Green      | 39    | 6    |
-| Multicolor | 49    | 9    |
+| Multicolor | 49    | 10   |
 | Colorless  | 18    | 3    |
 | Land       | 12    | 6    |
 
@@ -234,7 +234,7 @@
 - [ ] Ashling's Command
 - [ ] Boggart Cursecrafter
 - [ ] Bre of Clan Stoutarm
-- [ ] Brigid's Command
+- [x] Brigid's Command
 - [x] Catharsis
 - [ ] Chaos Spewer
 - [ ] Chitinous Graspling
