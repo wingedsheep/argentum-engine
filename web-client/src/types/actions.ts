@@ -86,8 +86,15 @@ export interface CastSpellAction {
   readonly wasKicked?: boolean
   /** Pre-chosen damage distribution for DividedDamageEffect spells (target ID -> damage amount) */
   readonly damageDistribution?: Record<EntityId, number>
-  /** Chosen modal mode index (for modal spells where mode is selected at cast time) */
-  readonly chosenMode?: number
+  /**
+   * Chosen modal mode indices (rule 700.2). Ordered; the same index may repeat when the
+   * spell's ModalEffect has `allowRepeat = true` (Escalate/Spree).
+   */
+  readonly chosenModes?: readonly number[]
+  /** Per-mode target bindings, aligned 1:1 with `chosenModes`. */
+  readonly modeTargetsOrdered?: readonly (readonly ChosenTarget[])[]
+  /** Per-mode DividedDamageEffect allocations (future). */
+  readonly modeDamageDistribution?: Record<number, Record<EntityId, number>>
 }
 
 export type PaymentStrategy =

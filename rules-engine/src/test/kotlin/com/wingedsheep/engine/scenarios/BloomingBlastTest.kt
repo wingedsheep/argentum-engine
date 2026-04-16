@@ -50,7 +50,8 @@ class BloomingBlastTest : FunSpec({
             playerId = activePlayer,
             cardId = spell,
             targets = listOf(ChosenTarget.Permanent(creatureId)),
-            chosenMode = 0
+            chosenModes = listOf(0),
+            modeTargetsOrdered = listOf(listOf(ChosenTarget.Permanent(creatureId)))
         ))
         result.isSuccess shouldBe true
 
@@ -85,7 +86,8 @@ class BloomingBlastTest : FunSpec({
             playerId = activePlayer,
             cardId = spell,
             targets = listOf(ChosenTarget.Permanent(creatureId)),
-            chosenMode = 1
+            chosenModes = listOf(1),
+            modeTargetsOrdered = listOf(listOf(ChosenTarget.Permanent(creatureId)))
         ))
         result.isSuccess shouldBe true
 

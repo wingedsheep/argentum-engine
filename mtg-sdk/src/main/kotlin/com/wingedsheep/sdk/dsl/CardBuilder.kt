@@ -734,8 +734,13 @@ class SpellBuilder {
      * }
      * ```
      */
-    fun modal(chooseCount: Int = 1, init: ModalBuilder.() -> Unit) {
-        val builder = ModalBuilder(chooseCount)
+    fun modal(
+        chooseCount: Int = 1,
+        minChooseCount: Int = chooseCount,
+        allowRepeat: Boolean = false,
+        init: ModalBuilder.() -> Unit
+    ) {
+        val builder = ModalBuilder(chooseCount, minChooseCount, allowRepeat)
         builder.init()
         effect = builder.build()
     }
@@ -749,7 +754,11 @@ class SpellBuilder {
  * Builder for modal spells with per-mode targeting.
  */
 @CardDsl
-class ModalBuilder(private val chooseCount: Int) {
+class ModalBuilder(
+    private val chooseCount: Int,
+    private val minChooseCount: Int = chooseCount,
+    private val allowRepeat: Boolean = false
+) {
     private val modes: MutableList<Mode> = mutableListOf()
 
     /**
@@ -768,7 +777,8 @@ class ModalBuilder(private val chooseCount: Int) {
         modes.add(Mode.noTarget(effect, description))
     }
 
-    internal fun build(): ModalEffect = ModalEffect(modes.toList(), chooseCount)
+    internal fun build(): ModalEffect =
+        ModalEffect(modes.toList(), chooseCount, minChooseCount, allowRepeat)
 }
 
 /**

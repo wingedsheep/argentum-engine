@@ -17,7 +17,10 @@ data class SpellOnStackComponent(
     val casterId: EntityId,
     val xValue: Int? = null,  // For X spells
     val wasKicked: Boolean = false,  // For kicker costs
-    val chosenModes: List<Int> = emptyList(),  // For modal spells
+    val chosenModes: List<Int> = emptyList(),  // For modal spells (700.2). Ordered; same index may repeat when allowRepeat.
+    val modeTargetsOrdered: List<List<ChosenTarget>> = emptyList(),  // Per-mode chosen targets, aligned 1:1 with chosenModes
+    val modeTargetRequirements: Map<Int, List<TargetRequirement>> = emptyMap(),  // Per-mode TargetRequirements for 608.2b re-validation at resolution
+    val modeDamageDistribution: Map<Int, Map<EntityId, Int>> = emptyMap(),  // Per-mode DividedDamageEffect allocations (future)
     val sacrificedPermanents: List<EntityId> = emptyList(),  // For additional costs
     val sacrificedPermanentSubtypes: Map<EntityId, Set<String>> = emptyMap(),  // Projected subtypes at time of sacrifice
     val castFaceDown: Boolean = false,  // For morph - creature enters face-down

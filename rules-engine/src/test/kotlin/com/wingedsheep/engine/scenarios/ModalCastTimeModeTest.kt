@@ -15,7 +15,7 @@ import io.kotest.matchers.shouldBe
 
 /**
  * Tests that modal spells support cast-time mode selection.
- * When chosenMode is set on CastSpell, the mode decision is skipped at resolution
+ * When chosenModes is set on CastSpell, the mode decision is skipped at resolution
  * and the spell's stackText shows which mode was chosen.
  */
 class ModalCastTimeModeTest : FunSpec({
@@ -64,7 +64,8 @@ class ModalCastTimeModeTest : FunSpec({
             playerId = activePlayer,
             cardId = charm,
             targets = listOf(com.wingedsheep.engine.state.components.stack.ChosenTarget.Permanent(creatureId)),
-            chosenMode = 0
+            chosenModes = listOf(0),
+            modeTargetsOrdered = listOf(listOf(com.wingedsheep.engine.state.components.stack.ChosenTarget.Permanent(creatureId)))
         ))
         result.isSuccess shouldBe true
 
@@ -101,7 +102,7 @@ class ModalCastTimeModeTest : FunSpec({
         val result = driver.submit(CastSpell(
             playerId = activePlayer,
             cardId = charm,
-            chosenMode = 1
+            chosenModes = listOf(1)
         ))
         result.isSuccess shouldBe true
 
@@ -118,7 +119,7 @@ class ModalCastTimeModeTest : FunSpec({
         driver.assertLifeTotal(activePlayer, 18)
     }
 
-    test("Abzan Charm without chosenMode uses legacy resolution-time mode selection") {
+    test("Abzan Charm without chosenModes uses legacy resolution-time mode selection") {
         val driver = createDriver()
         driver.initMirrorMatch(
             deck = Deck.of("Forest" to 20, "Plains" to 20),
@@ -133,7 +134,7 @@ class ModalCastTimeModeTest : FunSpec({
         driver.giveMana(activePlayer, Color.GREEN, 1)
         val charm = driver.putCardInHand(activePlayer, "Abzan Charm")
 
-        // Cast without chosenMode — legacy flow
+        // Cast without chosenModes — legacy flow
         driver.castSpell(activePlayer, charm)
 
         // Both pass → spell resolves → should pause for mode selection

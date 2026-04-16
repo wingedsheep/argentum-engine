@@ -60,6 +60,7 @@ import com.wingedsheep.sdk.scripting.CastRestriction
 import com.wingedsheep.sdk.scripting.effects.DividedDamageEffect
 import com.wingedsheep.sdk.scripting.effects.ModalEffect
 import com.wingedsheep.sdk.scripting.effects.StormCopyEffect
+import com.wingedsheep.sdk.scripting.targets.TargetRequirement
 import com.wingedsheep.sdk.scripting.KeywordAbility
 import com.wingedsheep.sdk.scripting.GrantFlashToSpellType
 import com.wingedsheep.sdk.scripting.CastSpellTypesFromTopOfLibrary
@@ -314,10 +315,11 @@ class CastSpellHandler(
         // Use mode-specific targets for modal spells, kickerTargetRequirements when kicked
         if (cardDef != null) {
             val modalEffect = cardDef.script.spellEffect as? com.wingedsheep.sdk.scripting.effects.ModalEffect
-            val baseTargetReqs = if (action.chosenMode != null && modalEffect != null) {
-                // Modal spell with mode chosen at cast time — validate against mode-specific targets
-                val mode = modalEffect.modes.getOrNull(action.chosenMode)
-                mode?.targetRequirements ?: emptyList()
+            val baseTargetReqs = if (action.chosenModes.isNotEmpty() && modalEffect != null) {
+                // Modal spell with mode(s) chosen at cast time — validate against the union of per-mode requirements.
+                action.chosenModes.flatMap { modeIndex ->
+                    modalEffect.modes.getOrNull(modeIndex)?.targetRequirements ?: emptyList()
+                }
             } else if (action.wasKicked && cardDef.script.kickerTargetRequirements.isNotEmpty()) {
                 cardDef.script.kickerTargetRequirements
             } else {
@@ -502,21 +504,23 @@ class CastSpellHandler(
 
     /**
      * Resolves the additional costs for a spell, considering per-mode overrides.
-     * If the chosen mode specifies its own additionalCosts, those are used instead of card-level costs.
+     *
+     * If any chosen mode specifies its own additionalCosts, costs from every such mode are unioned
+     * (rule 700.2h — per-mode additional costs stack). Modes with a null override fall through to
+     * the card-level costs. If no chosen mode provides overrides, card-level costs are used.
      */
     private fun resolveAdditionalCostsForMode(
         cardDef: com.wingedsheep.sdk.model.CardDefinition,
         action: CastSpell
     ): List<AdditionalCost> {
-        if (action.chosenMode != null) {
-            val modalEffect = cardDef.script.spellEffect as? ModalEffect
-            val chosenMode = modalEffect?.modes?.getOrNull(action.chosenMode)
-            val modeCosts = chosenMode?.additionalCosts
-            if (modeCosts != null) {
-                return modeCosts
-            }
+        if (action.chosenModes.isEmpty()) return cardDef.script.additionalCosts
+        val modalEffect = cardDef.script.spellEffect as? ModalEffect ?: return cardDef.script.additionalCosts
+
+        val perModeOverrides = action.chosenModes.mapNotNull { modeIndex ->
+            modalEffect.modes.getOrNull(modeIndex)?.additionalCosts
         }
-        return cardDef.script.additionalCosts
+        if (perModeOverrides.isEmpty()) return cardDef.script.additionalCosts
+        return perModeOverrides.flatten()
     }
 
     private fun validateAdditionalCosts(
@@ -808,13 +812,15 @@ class CastSpellHandler(
             }
         }
 
-        // Apply per-mode additional mana cost (e.g., Feed the Cycle "pay {B}" mode)
-        if (cardDef != null && action.chosenMode != null) {
+        // Apply per-mode additional mana cost (e.g., Feed the Cycle "pay {B}" mode).
+        // With choose-N (rule 700.2h), the additional mana cost of every chosen mode stacks.
+        if (cardDef != null && action.chosenModes.isNotEmpty()) {
             val modalEffect = cardDef.script.spellEffect as? ModalEffect
-            val chosenMode = modalEffect?.modes?.getOrNull(action.chosenMode)
-            val modeManaCost = chosenMode?.additionalManaCost
-            if (modeManaCost != null) {
-                effectiveCost = effectiveCost + ManaCost.parse(modeManaCost)
+            if (modalEffect != null) {
+                for (modeIndex in action.chosenModes) {
+                    val modeManaCost = modalEffect.modes.getOrNull(modeIndex)?.additionalManaCost ?: continue
+                    effectiveCost = effectiveCost + ManaCost.parse(modeManaCost)
+                }
             }
         }
 
@@ -1145,15 +1151,23 @@ class CastSpellHandler(
             currentState = com.wingedsheep.engine.handlers.effects.DamageUtils.markLifeLostThisTurn(currentState, action.playerId)
         }
 
-        // Compute target requirements for resolution-time re-validation (Rule 608.2b)
-        // Use mode-specific target requirements when a modal mode was chosen at cast time,
-        // or kickerTargetRequirements when spell is kicked and alternate targets are defined
+        // Compute target requirements for resolution-time re-validation (Rule 608.2b).
+        // For modal spells with cast-time mode picks, union the per-mode requirements so resolution can
+        // re-check every targeted slot. Per-mode breakdown is persisted on SpellOnStackComponent.modeTargetRequirements.
+        val modalEffectForTargets = cardDef?.script?.spellEffect as? com.wingedsheep.sdk.scripting.effects.ModalEffect
+        val perModeTargetRequirements: Map<Int, List<TargetRequirement>> =
+            if (modalEffectForTargets != null && action.chosenModes.isNotEmpty()) {
+                action.chosenModes.distinct().associateWith { idx ->
+                    modalEffectForTargets.modes.getOrNull(idx)?.targetRequirements ?: emptyList()
+                }
+            } else emptyMap()
+
         val spellTargetRequirements = if (cardDef != null) {
-            val modalEffect = cardDef.script.spellEffect as? com.wingedsheep.sdk.scripting.effects.ModalEffect
-            val baseTargetReqs = if (action.chosenMode != null && modalEffect != null) {
-                // Modal spell with mode chosen at cast time — use mode-specific targets
-                val mode = modalEffect.modes.getOrNull(action.chosenMode)
-                mode?.targetRequirements ?: emptyList()
+            val baseTargetReqs = if (action.chosenModes.isNotEmpty() && modalEffectForTargets != null) {
+                // Modal spell with modes chosen at cast time — union per-mode requirements
+                action.chosenModes.flatMap { idx ->
+                    modalEffectForTargets.modes.getOrNull(idx)?.targetRequirements ?: emptyList()
+                }
             } else if (action.wasKicked && cardDef.script.kickerTargetRequirements.isNotEmpty()) {
                 cardDef.script.kickerTargetRequirements
             } else {
@@ -1234,7 +1248,10 @@ class CastSpellHandler(
             wasKicked = action.wasKicked,
             wasWarped = wasWarped,
             wasEvoked = wasEvoked,
-            chosenModes = if (action.chosenMode != null) listOf(action.chosenMode) else emptyList(),
+            chosenModes = action.chosenModes,
+            modeTargetsOrdered = action.modeTargetsOrdered,
+            modeTargetRequirements = perModeTargetRequirements,
+            modeDamageDistribution = action.modeDamageDistribution,
             totalManaSpent = manaSpentThisCast,
             beheldCards = beheldCards,
             manaSpentWhite = manaSpentEvent?.white ?: 0,

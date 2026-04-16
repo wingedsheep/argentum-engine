@@ -421,7 +421,13 @@ abstract class ScenarioTestBase : FunSpec() {
                 emptyList()
             }
 
-            return execute(CastSpell(playerId, cardId, targets, chosenMode = modeIndex))
+            return execute(CastSpell(
+                playerId,
+                cardId,
+                targets,
+                chosenModes = listOf(modeIndex),
+                modeTargetsOrdered = if (targets.isNotEmpty()) listOf(targets) else emptyList()
+            ))
         }
 
         /**

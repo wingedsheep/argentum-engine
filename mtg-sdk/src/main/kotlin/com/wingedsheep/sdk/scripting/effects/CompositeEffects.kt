@@ -111,6 +111,8 @@ data class Mode(
  * Modal spell effect - choose one or more of several modes.
  * "Choose one — [Mode A] or [Mode B]"
  * "Choose two — [Mode A], [Mode B], [Mode C], or [Mode D]"
+ * "Choose one or both — [Mode A], [Mode B]"
+ * "Choose one or more —" (Escalate / Spree style, combined with [allowRepeat] on Spree)
  *
  * Each mode can have its own targeting requirements, which are combined
  * based on which modes are chosen when the spell is cast.
@@ -129,27 +131,40 @@ data class Mode(
  * ```
  *
  * @property modes List of possible modes to choose from
- * @property chooseCount How many modes to choose (default 1)
+ * @property chooseCount Maximum number of modes to choose (default 1)
+ * @property minChooseCount Minimum number of modes to choose. Defaults to [chooseCount]
+ *           (i.e. "choose exactly N"). Set lower for "choose one or both" / "choose one or more" (rules 700.2).
+ * @property allowRepeat If true, the same mode index may be chosen more than once
+ *           (rules 700.2d — Escalate/Spree-style).
  */
 @SerialName("Modal")
 @Serializable
 data class ModalEffect(
     val modes: List<Mode>,
-    val chooseCount: Int = 1
+    val chooseCount: Int = 1,
+    val minChooseCount: Int = chooseCount,
+    val allowRepeat: Boolean = false
 ) : Effect {
     override val description: String = buildString {
         append("Choose ")
-        when (chooseCount) {
-            1 -> append("one")
-            2 -> append("two")
-            3 -> append("three")
-            else -> append(chooseCount)
+        when {
+            minChooseCount < chooseCount && chooseCount == 2 && modes.size == 2 -> append("one or both")
+            minChooseCount < chooseCount -> append("one or more")
+            else -> when (chooseCount) {
+                1 -> append("one")
+                2 -> append("two")
+                3 -> append("three")
+                else -> append(chooseCount)
+            }
         }
         append(" —\n")
         modes.forEachIndexed { index, mode ->
             append("• ")
             append(mode.description)
             if (index < modes.lastIndex) append("\n")
+        }
+        if (allowRepeat) {
+            append("\nYou may choose the same mode more than once.")
         }
     }
 

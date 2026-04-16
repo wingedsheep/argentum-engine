@@ -46,7 +46,8 @@ class LongRiversPullScenarioTest : ScenarioTestBase() {
                 playerId = game.player1Id,
                 cardId = counterSpellId,
                 targets = listOf(ChosenTarget.Spell(spellOnStack)),
-                chosenMode = 0
+                chosenModes = listOf(0),
+                modeTargetsOrdered = listOf(listOf(ChosenTarget.Spell(spellOnStack)))
             ))
             result.isSuccess shouldBe true
 
@@ -96,7 +97,8 @@ class LongRiversPullScenarioTest : ScenarioTestBase() {
                 playerId = game.player1Id,
                 cardId = counterSpellId,
                 targets = listOf(ChosenTarget.Spell(spellOnStack)),
-                chosenMode = 1
+                chosenModes = listOf(1),
+                modeTargetsOrdered = listOf(listOf(ChosenTarget.Spell(spellOnStack)))
             ))
             result.isSuccess shouldBe true
 
@@ -147,7 +149,8 @@ class LongRiversPullScenarioTest : ScenarioTestBase() {
                 playerId = game.player1Id,
                 cardId = counterSpellId,
                 targets = listOf(ChosenTarget.Spell(spellOnStack)),
-                chosenMode = 0
+                chosenModes = listOf(0),
+                modeTargetsOrdered = listOf(listOf(ChosenTarget.Spell(spellOnStack)))
             ))
             // Should fail — Blooming Blast is not a creature spell
             result.isSuccess shouldBe false

@@ -13,6 +13,8 @@ import com.wingedsheep.sdk.scripting.effects.ForEachInGroupEffect
 import com.wingedsheep.sdk.scripting.effects.GainControlEffect
 import com.wingedsheep.sdk.scripting.effects.GainLifeEffect
 import com.wingedsheep.sdk.scripting.effects.LoseLifeEffect
+import com.wingedsheep.sdk.scripting.effects.Mode
+import com.wingedsheep.sdk.scripting.effects.ModalEffect
 import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.scripting.predicates.CardPredicate
@@ -276,6 +278,66 @@ class CardSerializationRoundTripTest : DescribeSpec({
     }
 
     describe("Condition round-trip serialization") {
+
+        it("should round-trip ModalEffect with minChooseCount and allowRepeat") {
+            val card = card("Flexible Command") {
+                manaCost = "{1}{U}{U}"
+                typeLine = "Instant"
+                spell {
+                    modal(chooseCount = 3, minChooseCount = 1, allowRepeat = true) {
+                        mode("Draw a card", DrawCardsEffect(DynamicAmount.Fixed(1), EffectTarget.Controller))
+                        mode("Gain 2 life", GainLifeEffect(DynamicAmount.Fixed(2), EffectTarget.Controller))
+                        mode("Opponent loses 1 life", LoseLifeEffect(DynamicAmount.Fixed(1), EffectTarget.Controller))
+                    }
+                }
+            }
+
+            val serialized = CardLoader.toJson(card)
+            serialized shouldContain "Modal"
+            serialized shouldContain "minChooseCount"
+            serialized shouldContain "allowRepeat"
+
+            val deserialized = CardLoader.fromJson(serialized)
+            val modal = deserialized.script.spellEffect.shouldBeInstanceOf<ModalEffect>()
+            modal.chooseCount shouldBe 3
+            modal.minChooseCount shouldBe 1
+            modal.allowRepeat shouldBe true
+            modal.modes.size shouldBe 3
+            modal.description shouldContain "Choose one or more"
+            modal.description shouldContain "You may choose the same mode more than once."
+        }
+
+        it("should default minChooseCount = chooseCount and allowRepeat = false for older payloads") {
+            val directModal = ModalEffect(
+                modes = listOf(
+                    Mode.noTarget(DrawCardsEffect(DynamicAmount.Fixed(1), EffectTarget.Controller), "Draw a card"),
+                    Mode.noTarget(GainLifeEffect(DynamicAmount.Fixed(2), EffectTarget.Controller), "Gain 2 life")
+                ),
+                chooseCount = 2
+            )
+            directModal.minChooseCount shouldBe 2
+            directModal.allowRepeat shouldBe false
+
+            // Produce a payload written by an older schema by round-tripping through
+            // the current serializer and stripping the new fields.
+            val fullJson = json.encodeToString(
+                com.wingedsheep.sdk.scripting.effects.Effect.serializer(),
+                directModal
+            )
+            val legacyJson = fullJson
+                .replace(Regex(",\\s*\"minChooseCount\"\\s*:\\s*\\d+"), "")
+                .replace(Regex(",\\s*\"allowRepeat\"\\s*:\\s*(true|false)"), "")
+            legacyJson shouldContain "\"chooseCount\""
+            (legacyJson.contains("minChooseCount") || legacyJson.contains("allowRepeat")) shouldBe false
+
+            val parsed = json.decodeFromString(
+                com.wingedsheep.sdk.scripting.effects.Effect.serializer(),
+                legacyJson
+            ).shouldBeInstanceOf<ModalEffect>()
+            parsed.chooseCount shouldBe 2
+            parsed.minChooseCount shouldBe 2
+            parsed.allowRepeat shouldBe false
+        }
 
         it("should round-trip activated ability costs") {
             val card = card("Ancestor's Prophet") {

@@ -41,12 +41,18 @@ data class PassPriority(
  *
  * @property playerId The player casting the spell
  * @property cardId The card being cast
- * @property targets Chosen targets for the spell
+ * @property targets Chosen targets for the spell (flat union of mode targets for modal spells —
+ *           use [modeTargetsOrdered] to recover per-mode bindings)
  * @property xValue The value of X for X-cost spells
  * @property paymentStrategy How the player intends to pay the mana cost
  * @property alternativePayment Optional alternative payment choices (Delve, Convoke)
  * @property castFaceDown If true, cast as a face-down 2/2 creature for {3} (morph)
  * @property damageDistribution Pre-chosen damage distribution for DividedDamageEffect spells (target ID -> damage amount)
+ * @property chosenModes Cast-time mode choices for modal spells (rules 700.2). Ordered; the same index
+ *           may repeat when the [ModalEffect.allowRepeat] flag is set (Escalate/Spree).
+ * @property modeTargetsOrdered Per-mode target bindings, aligned 1:1 with [chosenModes]. Required for
+ *           choose-N modal spells so the resolution pipeline can resolve `ContextTarget(k)` inside each mode's scope.
+ * @property modeDamageDistribution Per-mode DividedDamageEffect allocations (future — no current card uses this).
  */
 @Serializable
 @SerialName("CastSpell")
@@ -62,7 +68,9 @@ data class CastSpell(
     val wasKicked: Boolean = false,
     val damageDistribution: Map<EntityId, Int>? = null,
     val useAlternativeCost: Boolean = false,
-    val chosenMode: Int? = null,
+    val chosenModes: List<Int> = emptyList(),
+    val modeTargetsOrdered: List<List<ChosenTarget>> = emptyList(),
+    val modeDamageDistribution: Map<Int, Map<EntityId, Int>> = emptyMap(),
     val graveyardLifeCost: Int = 0
 ) : GameAction
 

@@ -469,7 +469,13 @@ class CastSpellEnumerator : ActionEnumerator {
                             result.add(LegalAction(
                                 actionType = "CastSpellMode",
                                 description = mode.description,
-                                action = CastSpell(playerId, cardId, targets = listOf(autoTarget), chosenMode = modeIndex),
+                                action = CastSpell(
+                                playerId,
+                                cardId,
+                                targets = listOf(autoTarget),
+                                chosenModes = listOf(modeIndex),
+                                modeTargetsOrdered = listOf(listOf(autoTarget))
+                            ),
                                 hasXCost = hasXCost,
                                 maxAffordableX = maxAffordableX,
                                 additionalCostInfo = modeCostInfo,
@@ -485,7 +491,7 @@ class CastSpellEnumerator : ActionEnumerator {
                             result.add(LegalAction(
                                 actionType = "CastSpellMode",
                                 description = mode.description,
-                                action = CastSpell(playerId, cardId, chosenMode = modeIndex),
+                                action = CastSpell(playerId, cardId, chosenModes = listOf(modeIndex)),
                                 validTargets = firstInfo.validTargets,
                                 requiresTargets = true,
                                 targetCount = firstReq.count,
@@ -509,7 +515,7 @@ class CastSpellEnumerator : ActionEnumerator {
                         result.add(LegalAction(
                             actionType = "CastSpellMode",
                             description = mode.description,
-                            action = CastSpell(playerId, cardId, chosenMode = modeIndex),
+                            action = CastSpell(playerId, cardId, chosenModes = listOf(modeIndex)),
                             hasXCost = hasXCost,
                             maxAffordableX = maxAffordableX,
                             additionalCostInfo = modeCostInfo,
