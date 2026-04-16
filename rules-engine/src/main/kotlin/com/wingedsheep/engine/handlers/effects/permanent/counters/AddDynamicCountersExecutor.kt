@@ -9,7 +9,6 @@ import com.wingedsheep.engine.handlers.effects.ReplacementEffectUtils
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.battlefield.CountersComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
-import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.scripting.effects.AddDynamicCountersEffect
 import kotlin.reflect.KClass
 
@@ -36,17 +35,7 @@ class AddDynamicCountersExecutor : EffectExecutor<AddDynamicCountersEffect> {
             return EffectResult.success(state, emptyList())
         }
 
-        val counterType = try {
-            CounterType.valueOf(
-                effect.counterType.uppercase()
-                    .replace(' ', '_')
-                    .replace('+', 'P')
-                    .replace('-', 'M')
-                    .replace("/", "_")
-            )
-        } catch (e: IllegalArgumentException) {
-            CounterType.PLUS_ONE_PLUS_ONE
-        }
+        val counterType = resolveCounterType(effect.counterType)
 
         val current = state.getEntity(targetId)?.get<CountersComponent>() ?: CountersComponent()
 

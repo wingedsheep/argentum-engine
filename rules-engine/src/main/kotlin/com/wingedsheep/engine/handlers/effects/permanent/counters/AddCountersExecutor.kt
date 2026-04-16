@@ -33,21 +33,7 @@ class AddCountersExecutor : EffectExecutor<AddCountersEffect> {
             return EffectResult.success(state, emptyList())
         }
 
-        val counterType = when (effect.counterType) {
-            "+1/+1" -> CounterType.PLUS_ONE_PLUS_ONE
-            "-1/-1" -> CounterType.MINUS_ONE_MINUS_ONE
-            else -> try {
-                CounterType.valueOf(
-                    effect.counterType.uppercase()
-                        .replace(' ', '_')
-                        .replace('+', 'P')
-                        .replace('-', 'M')
-                        .replace("/", "_")
-                )
-            } catch (e: IllegalArgumentException) {
-                CounterType.PLUS_ONE_PLUS_ONE
-            }
-        }
+        val counterType = resolveCounterType(effect.counterType)
 
         val current = state.getEntity(targetId)?.get<CountersComponent>() ?: CountersComponent()
 

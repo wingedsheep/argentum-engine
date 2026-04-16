@@ -10,7 +10,6 @@ import com.wingedsheep.engine.handlers.effects.TargetResolutionUtils.toEntityId
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.battlefield.CountersComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
-import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.scripting.effects.DistributeCountersAmongTargetsEffect
 import kotlin.reflect.KClass
 
@@ -42,17 +41,7 @@ class DistributeCountersAmongTargetsExecutor : EffectExecutor<DistributeCounters
             return EffectResult.success(state)
         }
 
-        val counterType = try {
-            CounterType.valueOf(
-                effect.counterType.uppercase()
-                    .replace(' ', '_')
-                    .replace('+', 'P')
-                    .replace('-', 'M')
-                    .replace("/", "_")
-            )
-        } catch (e: IllegalArgumentException) {
-            CounterType.PLUS_ONE_PLUS_ONE
-        }
+        val counterType = resolveCounterType(effect.counterType)
 
         // Calculate distribution: each target gets at least minPerTarget, remainder to first
         val distribution = calculateDistribution(effect.totalCounters, targetIds.size)
