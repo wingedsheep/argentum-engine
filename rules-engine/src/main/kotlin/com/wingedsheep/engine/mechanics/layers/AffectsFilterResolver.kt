@@ -4,11 +4,19 @@ import com.wingedsheep.engine.state.ComponentContainer
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.battlefield.AttachmentsComponent
 import com.wingedsheep.engine.state.components.battlefield.CountersComponent
+import com.wingedsheep.engine.state.components.battlefield.EnteredThisTurnComponent
+import com.wingedsheep.engine.state.components.battlefield.HasDealtCombatDamageToPlayerComponent
+import com.wingedsheep.engine.state.components.battlefield.HasDealtDamageComponent
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
+import com.wingedsheep.engine.state.components.battlefield.WasDealtDamageThisTurnComponent
+import com.wingedsheep.engine.state.components.combat.AttackingComponent
+import com.wingedsheep.engine.state.components.combat.BlockingComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.ChosenCreatureTypeComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.identity.FaceDownComponent
+import com.wingedsheep.engine.state.components.identity.HasMorphAbilityComponent
+import com.wingedsheep.engine.state.components.identity.MorphDataComponent
 import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Subtype
@@ -273,7 +281,7 @@ internal class AffectsFilterResolver {
 
             // Check state predicates
             for (predicate in baseFilter.statePredicates) {
-                if (!matchesStatePredicateForProjection(state, predicate, container, isFaceDown)) {
+                if (!matchesStatePredicateForProjection(state, entityId, predicate, container, isFaceDown, projectedValues)) {
                     return@filter false
                 }
             }
@@ -289,19 +297,41 @@ internal class AffectsFilterResolver {
 
     private fun matchesStatePredicateForProjection(
         state: GameState,
+        entityId: EntityId,
         predicate: StatePredicate,
         container: ComponentContainer,
-        isFaceDown: Boolean
+        isFaceDown: Boolean,
+        projectedValues: Map<EntityId, MutableProjectedValues>
     ): Boolean = when (predicate) {
         StatePredicate.IsTapped -> container.has<TappedComponent>()
         StatePredicate.IsUntapped -> !container.has<TappedComponent>()
+        StatePredicate.IsAttacking -> container.has<AttackingComponent>()
+        StatePredicate.IsBlocking -> container.has<BlockingComponent>()
+        StatePredicate.IsBlocked -> {
+            container.has<AttackingComponent>() && state.getBattlefield().any { blockerId ->
+                state.getEntity(blockerId)?.get<BlockingComponent>()?.blockedAttackerIds?.contains(entityId) == true
+            }
+        }
+        StatePredicate.IsUnblocked -> {
+            container.has<AttackingComponent>() && state.getBattlefield().none { blockerId ->
+                state.getEntity(blockerId)?.get<BlockingComponent>()?.blockedAttackerIds?.contains(entityId) == true
+            }
+        }
+        StatePredicate.EnteredThisTurn -> container.has<EnteredThisTurnComponent>()
+        StatePredicate.WasDealtDamageThisTurn -> container.has<WasDealtDamageThisTurnComponent>()
+        StatePredicate.HasDealtDamage -> container.has<HasDealtDamageComponent>()
+        StatePredicate.HasDealtCombatDamageToPlayer -> container.has<HasDealtCombatDamageToPlayerComponent>()
         StatePredicate.IsFaceDown -> isFaceDown
+        StatePredicate.IsFaceUp -> !isFaceDown
+        StatePredicate.HasMorphAbility ->
+            container.has<MorphDataComponent>() || container.has<HasMorphAbilityComponent>()
         StatePredicate.IsEquipped -> {
             val attachments = container.get<AttachmentsComponent>()
             attachments != null && attachments.attachedIds.any { attachId ->
                 state.getEntity(attachId)?.get<CardComponent>()?.typeLine?.isEquipment == true
             }
         }
+        StatePredicate.HasGreatestPower -> hasGreatestPowerInProjection(state, entityId, container, projectedValues)
         StatePredicate.HasAnyCounter -> {
             val counters = container.get<CountersComponent>()
             counters != null && counters.counters.values.any { it > 0 }
@@ -310,7 +340,7 @@ internal class AffectsFilterResolver {
             val counters = container.get<CountersComponent>()
             if (counters != null) {
                 try {
-                    val counterType = com.wingedsheep.sdk.core.CounterType.valueOf(
+                    val counterType = CounterType.valueOf(
                         predicate.counterType.uppercase().replace(' ', '_')
                     )
                     (counters.getCount(counterType)) > 0
@@ -319,10 +349,39 @@ internal class AffectsFilterResolver {
                 }
             } else false
         }
-        is StatePredicate.Or -> predicate.predicates.any { matchesStatePredicateForProjection(state, it, container, isFaceDown) }
-        is StatePredicate.And -> predicate.predicates.all { matchesStatePredicateForProjection(state, it, container, isFaceDown) }
-        is StatePredicate.Not -> !matchesStatePredicateForProjection(state, predicate.predicate, container, isFaceDown)
-        else -> true
+        is StatePredicate.Or -> predicate.predicates.any {
+            matchesStatePredicateForProjection(state, entityId, it, container, isFaceDown, projectedValues)
+        }
+        is StatePredicate.And -> predicate.predicates.all {
+            matchesStatePredicateForProjection(state, entityId, it, container, isFaceDown, projectedValues)
+        }
+        is StatePredicate.Not -> !matchesStatePredicateForProjection(
+            state, entityId, predicate.predicate, container, isFaceDown, projectedValues
+        )
+    }
+
+    private fun hasGreatestPowerInProjection(
+        state: GameState,
+        entityId: EntityId,
+        container: ComponentContainer,
+        projectedValues: Map<EntityId, MutableProjectedValues>
+    ): Boolean {
+        val entityController = projectedController(state, entityId, projectedValues) ?: return false
+        val entityPower = projectedValues[entityId]?.power
+            ?: container.get<CardComponent>()?.baseStats?.basePower
+            ?: return false
+        val maxPower = state.getBattlefield()
+            .filter { id ->
+                projectedController(state, id, projectedValues) == entityController &&
+                    isCreatureInProjection(state, id, projectedValues)
+            }
+            .maxOfOrNull {
+                projectedValues[it]?.power
+                    ?: state.getEntity(it)?.get<CardComponent>()?.baseStats?.basePower
+                    ?: Int.MIN_VALUE
+            }
+            ?: return false
+        return entityPower >= maxPower
     }
 
     private fun matchesCardPredicateForProjection(
