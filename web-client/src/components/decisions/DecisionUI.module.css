@@ -103,6 +103,7 @@
   margin: 0;
   text-align: center;
   font-size: var(--font-xl);
+  white-space: pre-line;
 }
 
 @media (max-width: 639px) {

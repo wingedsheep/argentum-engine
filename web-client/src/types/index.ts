@@ -58,6 +58,7 @@ export type {
   ClientCombatTarget,
   ClientBlocker,
   ClientChosenTarget,
+  ClientPerModeTargetGroup,
 } from './gameState'
 export {
   totalMana,

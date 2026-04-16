@@ -316,6 +316,55 @@ export function StackDisplay() {
     {(() => {
       if (!topCard) return null
       const isAbility = topCard.typeLine === 'Ability' || topCard.typeLine === 'Triggered Ability'
+
+      // Modal spells with cast-time mode choices (700.2) render per-mode descriptions with their
+      // chosen targets below, so opponents can see exactly what's been committed before responding.
+      const perModeGroups = topCard.perModeTargets ?? []
+      if (!isAbility && perModeGroups.length > 0) {
+        return (
+          <div style={{
+            padding: responsive.isMobile ? '4px 6px' : '6px 10px',
+            backgroundColor: 'rgba(30, 18, 50, 0.85)',
+            borderRadius: 6,
+            border: '1px solid rgba(150, 100, 200, 0.3)',
+            maxWidth: responsive.isMobile ? 140 : 200,
+            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.4)',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 4,
+          }}>
+            {perModeGroups.map((group, i) => (
+              <div key={i} style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                <div style={{
+                  color: '#e0d4f0',
+                  fontSize: responsive.isMobile ? 9 : 10,
+                  lineHeight: 1.35,
+                  fontWeight: 600,
+                  display: 'flex',
+                  gap: 4,
+                }}>
+                  <span style={{ color: '#b8a8cc' }}>•</span>
+                  <span style={{ flex: 1 }}>
+                    <AbilityText text={group.modeDescription} size={responsive.isMobile ? 9 : 10} />
+                  </span>
+                </div>
+                {group.targetNames.length > 0 && (
+                  <div style={{
+                    color: '#ffcc66',
+                    fontSize: responsive.isMobile ? 8 : 9,
+                    lineHeight: 1.3,
+                    paddingLeft: 10,
+                    fontStyle: 'italic',
+                  }}>
+                    → {group.targetNames.join(', ')}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        )
+      }
+
       const displayText = isAbility ? topCard.oracleText : topCard.stackText
       if (!displayText) return null
       return (

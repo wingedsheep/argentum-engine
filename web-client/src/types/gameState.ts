@@ -200,6 +200,19 @@ export interface ClientCard {
   /** Specific ability text when on the stack (e.g., spell effect description, not full oracle text) */
   readonly stackText?: string | null
 
+  /**
+   * Runtime descriptions of each chosen mode, in the order they were picked (rule 700.2).
+   * Empty for non-modal spells and for modal spells whose mode hasn't been selected yet.
+   * For opponent visibility of choose-N commands (Brigid's Command, Sygg's Command, etc.).
+   */
+  readonly chosenModeDescriptions?: readonly string[]
+
+  /**
+   * Per-mode target groups for modal spells on the stack, aligned 1:1 with `chosenModeDescriptions`.
+   * Each group carries the mode description, chosen targets (for arrows), and human-readable target names.
+   */
+  readonly perModeTargets?: readonly ClientPerModeTargetGroup[]
+
   /** Revealed name for face-down creatures that this player has peeked at (e.g., via Spy Network) */
   readonly revealedName?: string | null
 
@@ -403,6 +416,26 @@ export type ClientChosenTarget =
   | { readonly type: 'Permanent'; readonly entityId: EntityId }
   | { readonly type: 'Spell'; readonly spellEntityId: EntityId }
   | { readonly type: 'Card'; readonly cardId: EntityId }
+
+/**
+ * A group of targets chosen for a single mode of a modal spell on the stack. The index
+ * refers to the position within `ClientCard.perModeTargets`, not the original `Mode` index
+ * (the same mode can appear twice with `allowRepeat`).
+ * Matches backend ClientPerModeTargetGroup.kt
+ */
+export interface ClientPerModeTargetGroup {
+  /** The mode index in the spell's `ModalEffect.modes` list. */
+  readonly modeIndex: number
+  /** Runtime description of the mode, with dynamic amounts evaluated. */
+  readonly modeDescription: string
+  /** Chosen targets for this mode, for arrow rendering. */
+  readonly targets: readonly ClientChosenTarget[]
+  /**
+   * Human-readable target names aligned 1:1 with `targets`. For hidden-zone targets, the name
+   * is generic ("a card in Opponent's hand") to avoid leaking hidden information.
+   */
+  readonly targetNames: readonly string[]
+}
 
 /**
  * Helper to check if a card is a creature.

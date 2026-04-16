@@ -1585,7 +1585,11 @@ class CastSpellHandler(
 
         val decisionId = java.util.UUID.randomUUID().toString()
         val pickNumber = selectedModeIndices.size + 1
-        val prompt = "Choose a mode for $cardName ($pickNumber of ${modalEffect.chooseCount})"
+        val alreadyPicked = if (selectedModeIndices.isNotEmpty()) {
+            val labels = selectedModeIndices.map { modalEffect.modes[it].description }
+            "\nAlready picked: ${labels.joinToString("; ")}"
+        } else ""
+        val prompt = "Choose a mode for $cardName ($pickNumber of ${modalEffect.chooseCount})$alreadyPicked"
         val decision = ChooseOptionDecision(
             id = decisionId,
             playerId = casterId,

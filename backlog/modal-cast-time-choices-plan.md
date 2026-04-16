@@ -215,12 +215,17 @@ Files:
    - Build `perModeTargets` from `spellOnStack.modeTargetsOrdered` — resolve each `ChosenTarget` to `(entityId, targetName)`. Target names visible regardless of hidden-zone rules (they're on the stack).
    - `stackText` becomes a `\n`-joined concatenation for choose-N (so existing text renderer still works).
 
-### Phase 9 — Web client
+### Phase 9 — Web client [DONE]
 
 - **Stack viewer**: `web-client/src/components/game/board/StackZone.tsx` (line 319 where `stackText` is rendered). Render `chosenModeDescriptions` as a bulleted list under card name. For each mode, render target names below the mode description. Targeting arrows already render from `targets`; no change needed.
 - **Cast-time mode selection UI**: existing `ChooseOptionDecisionUI.tsx` handles single-mode selection. For the sequence (pick mode 1 → mode 2 → targets for mode 1 → targets for mode 2 …), each pause is a normal `ChooseOption`/`ChooseTargets` decision — no new components needed. Verify the decision prompt shows `(X of N)` progress.
 - **Modes already picked display**: show already-chosen modes in the prompt context.
-- **Per-mode additional cost preview**: when picking a mode with `additionalManaCost` or `additionalCosts`, UI shows running cost via `modalEnumeration` from Phase 3.
+- **Per-mode additional cost preview**: when picking a mode with `additionalManaCost` or `additionalCosts`, UI shows running cost via `modalEnumeration` from Phase 3. (Deferred — depends on Phase 11 surfacing `modalEnumeration` through the server DTO.)
+
+Completed changes:
+- Added `ClientPerModeTargetGroup` type + `chosenModeDescriptions` / `perModeTargets` fields to `ClientCard` in `web-client/src/types/gameState.ts`; exported from `types/index.ts`.
+- `StackZone.tsx` now renders a bulleted per-mode list under the top stack card when `perModeTargets` is populated, with each mode's targets shown in italic below. Falls back to the existing `stackText` block when no per-mode data is present.
+- Verified the cast-time mode-selection prompt already carries `(X of N)` progress (`CastSpellHandler.presentCastModalModeDecision`). Also appended the already-picked mode descriptions (`"Already picked: …"`) to the prompt, and added `white-space: pre-line` to `.title` in `DecisionUI.module.css` so the multi-line prompt renders.
 
 ### Phase 10 — `allowRepeat` + `minChooseCount` integration
 
