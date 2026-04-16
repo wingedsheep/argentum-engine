@@ -342,16 +342,17 @@ data class GatherSubtypesEffect(
 }
 
 /**
- * Walk a player's library top-down until a card matching [filter] is found.
- * Stores both the match (0 or 1 card) and all revealed cards (including the match)
- * as named collections.
+ * Walk a player's library top-down until [count] cards matching [filter] have been
+ * revealed (or the library runs out). Stores the matches (0..count cards) and all
+ * revealed cards (including any matches) as named collections.
  *
  * Does **not** emit a reveal event — pair with [RevealCollectionEffect] for that.
  *
  * @property player Whose library to walk
- * @property filter The predicate that stops the walk when matched
- * @property storeMatch Collection name for the matching card (empty if no match found)
- * @property storeRevealed Collection name for ALL cards seen (including the match)
+ * @property filter The predicate that counts toward stopping when matched
+ * @property storeMatch Collection name for the matching cards (empty if no matches found)
+ * @property storeRevealed Collection name for ALL cards seen (including any matches)
+ * @property count How many matches to gather before stopping (defaults to 1)
  */
 @SerialName("GatherUntilMatch")
 @Serializable
@@ -359,17 +360,19 @@ data class GatherUntilMatchEffect(
     val player: Player = Player.You,
     val filter: GameObjectFilter,
     val storeMatch: String,
-    val storeRevealed: String
+    val storeRevealed: String,
+    val count: DynamicAmount = DynamicAmount.Fixed(1)
 ) : Effect {
     override val description: String = buildString {
         append("Reveal cards from the top of ")
         append(player.possessive)
-        append(" library until you reveal a ${filter.description} card")
+        append(" library until you reveal ${count.description} ${filter.description} card(s)")
     }
 
     override fun applyTextReplacement(replacer: TextReplacer): Effect {
         val newFilter = filter.applyTextReplacement(replacer)
-        return if (newFilter !== filter) copy(filter = newFilter) else this
+        val newCount = count.applyTextReplacement(replacer)
+        return if (newFilter !== filter || newCount !== count) copy(filter = newFilter, count = newCount) else this
     }
 }
 

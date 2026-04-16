@@ -776,6 +776,7 @@ constructors.
 - `DynamicAmounts.landsOfTypeTargetOpponentControls(landType, multiplier)` /
   `.creaturesOfColorTargetOpponentControls(color, multiplier)`
 - `DynamicAmounts.handSizeDifferenceFromTargetOpponent()`
+- `DynamicAmounts.colorsAmongPermanents(player, filter)` — distinct colors among permanents (Lorwyn Eclipsed Vivid)
 
 ### Raw DynamicAmount types
 
@@ -853,7 +854,7 @@ abilities from atomic primitives.
 | `GatherCardsEffect(source, storeAs, revealed)`                                                                                 | Gather cards from a zone into a named collection |
 | `SelectFromCollectionEffect(from, selection, chooser, filter, storeSelected, storeRemainder, matchChosenCreatureType, prompt)` | Player selects from a collection                 |
 | `MoveCollectionEffect(from, destination, order, revealed, moveType, linkToSource)`                                            | Move a collection to a zone                      |
-| `GatherUntilMatchEffect(player, filter, storeMatch, storeRevealed)`                                                            | Walk library until filter matches, store both    |
+| `GatherUntilMatchEffect(player, filter, storeMatch, storeRevealed, count)`                                                     | Walk library until `count` matches (default 1), store both |
 | `GatherSubtypesEffect(from, storeAs)`                                                                                          | Extract subtypes of entities into storedSubtypeGroups |
 | `RevealCollectionEffect(from)`                                                                                                  | Emit CardsRevealedEvent for a stored collection  |
 | `ChooseCreatureTypeEffect`                                                                                                     | Choose a creature type (data object)             |

@@ -1,6 +1,7 @@
 package com.wingedsheep.engine.handlers.effects.library
 
 import com.wingedsheep.engine.core.EffectResult
+import com.wingedsheep.engine.handlers.DynamicAmountEvaluator
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.PredicateContext
 import com.wingedsheep.engine.handlers.PredicateEvaluator
@@ -17,20 +18,23 @@ import kotlin.reflect.KClass
 /**
  * Executor for [GatherUntilMatchEffect].
  *
- * Walks a player's library top-down. For each card, evaluates the filter. On the first
- * match, stops and stores both the match and all revealed cards as named collections.
+ * Walks a player's library top-down, collecting cards until [GatherUntilMatchEffect.count]
+ * matching cards have been revealed (or the library runs out). Stores the matches and
+ * all revealed cards as named collections.
  *
  * Does NOT emit a reveal event — pair with [RevealCollectionExecutor] for that.
  *
  * Edge cases:
  * - Empty library: both collections are empty
- * - No match found: storeMatch is empty, storeRevealed contains the entire library
+ * - Count evaluates to ≤ 0: both collections are empty (no cards walked)
+ * - Fewer matches than count: storeMatch has what was found; storeRevealed is the whole library
  */
 class GatherUntilMatchExecutor : EffectExecutor<GatherUntilMatchEffect> {
 
     override val effectType: KClass<GatherUntilMatchEffect> = GatherUntilMatchEffect::class
 
     private val predicateEvaluator = PredicateEvaluator()
+    private val amountEvaluator = DynamicAmountEvaluator()
 
     override fun execute(
         state: GameState,
@@ -39,6 +43,16 @@ class GatherUntilMatchExecutor : EffectExecutor<GatherUntilMatchEffect> {
     ): EffectResult {
         val playerId = resolvePlayer(effect.player, context, state)
             ?: return EffectResult.error(state, "Could not resolve player for GatherUntilMatch")
+
+        val targetCount = amountEvaluator.evaluate(state, effect.count, context)
+        if (targetCount <= 0) {
+            return EffectResult.success(state).copy(
+                updatedCollections = mapOf(
+                    effect.storeMatch to emptyList(),
+                    effect.storeRevealed to emptyList()
+                )
+            )
+        }
 
         val libraryZone = ZoneKey(playerId, Zone.LIBRARY)
         val library = state.getZone(libraryZone)
@@ -54,22 +68,20 @@ class GatherUntilMatchExecutor : EffectExecutor<GatherUntilMatchEffect> {
 
         val predicateContext = PredicateContext.fromEffectContext(context)
         val allRevealed = mutableListOf<EntityId>()
-        var matchCard: EntityId? = null
+        val matches = mutableListOf<EntityId>()
 
         for (cardId in library) {
             allRevealed.add(cardId)
 
             if (predicateEvaluator.matches(state, cardId, effect.filter, predicateContext)) {
-                matchCard = cardId
-                break
+                matches.add(cardId)
+                if (matches.size >= targetCount) break
             }
         }
 
-        val matchList = if (matchCard != null) listOf(matchCard) else emptyList()
-
         return EffectResult.success(state).copy(
             updatedCollections = mapOf(
-                effect.storeMatch to matchList,
+                effect.storeMatch to matches.toList(),
                 effect.storeRevealed to allRevealed.toList()
             )
         )

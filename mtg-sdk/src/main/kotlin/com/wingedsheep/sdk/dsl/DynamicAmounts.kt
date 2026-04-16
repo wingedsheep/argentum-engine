@@ -103,6 +103,17 @@ object DynamicAmounts {
     // Battlefield counting (convenience shortcuts)
     // =========================================================================
 
+    /**
+     * The number of distinct colors among permanents [player] controls.
+     * Used for Lorwyn Eclipsed's Vivid mechanic (effect-scaling half).
+     * Maxes out at 5. Reads colors via projected state, so recolor effects apply.
+     */
+    fun colorsAmongPermanents(
+        player: Player = Player.You,
+        filter: GameObjectFilter = GameObjectFilter.Permanent
+    ): DynamicAmount =
+        DynamicAmount.AggregateBattlefield(player, filter, Aggregation.DISTINCT_COLORS)
+
     fun creaturesYouControl(): DynamicAmount =
         battlefield(Player.You, GameObjectFilter.Creature).count()
 
