@@ -152,7 +152,7 @@ class ClientStateTransformer(
             for (entityId in state.stack) {
                 if (entityId !in cards) {
                     val clientCard = transformCard(state, entityId, stackZoneKey, projectedState, viewingPlayerId, isSpectator)
-                        ?: transformAbilityOnStack(state, entityId)
+                        ?: transformAbilityOnStack(state, entityId, viewingPlayerId)
                     if (clientCard != null) {
                         cards[entityId] = clientCard
                     }
@@ -327,7 +327,11 @@ class ClientStateTransformer(
      * Transform an activated or triggered ability on the stack into a ClientCard DTO.
      * These don't have CardComponent, so we create a synthetic card representation.
      */
-    private fun transformAbilityOnStack(state: GameState, entityId: EntityId): ClientCard? {
+    private fun transformAbilityOnStack(
+        state: GameState,
+        entityId: EntityId,
+        viewingPlayerId: EntityId
+    ): ClientCard? {
         val container = state.getEntity(entityId) ?: return null
 
         // Helper to transform targets
@@ -408,6 +412,39 @@ class ClientStateTransformer(
             // Find the source entity's current zone (for graveyard trigger styling)
             val sourceZone = findEntityZone(state, triggeredAbility.sourceId)
 
+            // Modal-copy breakdown: spell copies carry the original's chosenModes (700.2g) so the
+            // opponent can see the same per-mode text and target names on the copy.
+            val triggeredModal = triggeredAbility.effect as? ModalEffect
+            val triggeredModeDescriptions: List<String> =
+                if (triggeredModal != null && triggeredAbility.chosenModes.isNotEmpty()) {
+                    val evaluator = DynamicAmountEvaluator()
+                    val context = EffectContext(
+                        sourceId = entityId,
+                        controllerId = triggeredAbility.controllerId,
+                        opponentId = state.getOpponent(triggeredAbility.controllerId),
+                        xValue = triggeredAbility.xValue
+                    )
+                    triggeredAbility.chosenModes.map { modeIndex ->
+                        val mode = triggeredModal.modes.getOrNull(modeIndex)
+                            ?: return@map "Unknown mode"
+                        try {
+                            mode.effect.runtimeDescription { amount -> evaluator.evaluate(state, amount, context) }
+                        } catch (_: Exception) {
+                            mode.description
+                        }
+                    }
+                } else emptyList()
+            val triggeredPerModeTargets: List<ClientPerModeTargetGroup> =
+                if (triggeredAbility.chosenModes.isNotEmpty()) {
+                    buildPerModeTargetGroups(
+                        state,
+                        triggeredAbility.chosenModes,
+                        triggeredAbility.modeTargetsOrdered,
+                        triggeredModeDescriptions,
+                        viewingPlayerId
+                    )
+                } else emptyList()
+
             return ClientCard(
                 id = entityId,
                 name = "${triggeredAbility.sourceName} trigger",
@@ -446,7 +483,9 @@ class ClientStateTransformer(
                 sourceZone = sourceZone,
                 chosenX = triggeredAbility.xValue,
                 copyIndex = triggeredAbility.copyIndex,
-                copyTotal = triggeredAbility.copyTotal
+                copyTotal = triggeredAbility.copyTotal,
+                chosenModeDescriptions = triggeredModeDescriptions,
+                perModeTargets = triggeredPerModeTargets
             )
         }
 
@@ -687,6 +726,31 @@ class ClientStateTransformer(
             }
         } ?: emptyList()
 
+        // Per-mode breakdown for modal spells whose modes/targets were chosen at cast time (700.2).
+        // Opponents see the same data so they can respond with counterspells knowing what's coming.
+        val modalEffectForStack = (cardDef?.script?.spellEffect as? ModalEffect)
+        val chosenModeDescriptions: List<String> = if (
+            zoneKey.zoneType == Zone.STACK &&
+            spellOnStack != null &&
+            modalEffectForStack != null &&
+            spellOnStack.chosenModes.isNotEmpty()
+        ) {
+            buildChosenModeDescriptions(state, entityId, spellOnStack, modalEffectForStack)
+        } else emptyList()
+        val perModeTargets: List<ClientPerModeTargetGroup> = if (
+            zoneKey.zoneType == Zone.STACK &&
+            spellOnStack != null &&
+            spellOnStack.chosenModes.isNotEmpty()
+        ) {
+            buildPerModeTargetGroups(
+                state,
+                spellOnStack.chosenModes,
+                spellOnStack.modeTargetsOrdered,
+                chosenModeDescriptions,
+                viewingPlayerId
+            )
+        } else emptyList()
+
         // Get kicker status for spells on the stack
         val wasKicked = spellOnStack?.wasKicked ?: false
 
@@ -835,6 +899,8 @@ class ClientStateTransformer(
                     else -> null
                 }
             } else null,
+            chosenModeDescriptions = chosenModeDescriptions,
+            perModeTargets = perModeTargets,
             isDoubleFaced = container.has<com.wingedsheep.engine.state.components.identity.DoubleFacedComponent>() || cardDef?.isDoubleFaced == true,
             currentFace = container.get<com.wingedsheep.engine.state.components.identity.DoubleFacedComponent>()?.currentFace?.name
                 ?: if (cardDef?.isDoubleFaced == true) "FRONT" else null,
@@ -886,26 +952,12 @@ class ClientStateTransformer(
     ): String? {
         val effect = cardDef.script.spellEffect ?: return null
 
-        // For modal spells with a mode chosen at cast time, show the chosen mode description
+        // For modal spells with modes chosen at cast time, concatenate all chosen mode
+        // descriptions (choose-N commands show every picked mode, in order, one per line).
         if (spellOnStack.chosenModes.isNotEmpty() && effect is ModalEffect) {
-            val modeIndex = spellOnStack.chosenModes.first()
-            val chosenMode = effect.modes.getOrNull(modeIndex)
-            if (chosenMode != null) {
-                return try {
-                    val evaluator = DynamicAmountEvaluator()
-                    val context = EffectContext(
-                        sourceId = spellEntityId,
-                        controllerId = spellOnStack.casterId,
-                        opponentId = state.getOpponent(spellOnStack.casterId),
-                        xValue = spellOnStack.xValue,
-                        sacrificedPermanents = spellOnStack.sacrificedPermanents,
-                        sacrificedPermanentSubtypes = spellOnStack.sacrificedPermanentSubtypes,
-                        exiledCardCount = spellOnStack.exiledCardCount
-                    )
-                    chosenMode.effect.runtimeDescription { amount -> evaluator.evaluate(state, amount, context) }
-                } catch (_: Exception) {
-                    chosenMode.description
-                }
+            val descriptions = buildChosenModeDescriptions(state, spellEntityId, spellOnStack, effect)
+            if (descriptions.isNotEmpty()) {
+                return descriptions.joinToString("\n")
             }
         }
 
@@ -923,6 +975,100 @@ class ClientStateTransformer(
             effect.runtimeDescription { amount -> evaluator.evaluate(state, amount, context) }
         } catch (_: Exception) {
             effect.description
+        }
+    }
+
+    /**
+     * Evaluate each chosen mode's runtime description for a modal spell on the stack. Aligned
+     * 1:1 with [SpellOnStackComponent.chosenModes]; unknown indices yield "Unknown mode" so the
+     * client still sees a placeholder rather than silently dropping entries.
+     */
+    private fun buildChosenModeDescriptions(
+        state: GameState,
+        spellEntityId: EntityId,
+        spellOnStack: SpellOnStackComponent,
+        modal: ModalEffect
+    ): List<String> {
+        if (spellOnStack.chosenModes.isEmpty()) return emptyList()
+        val evaluator = DynamicAmountEvaluator()
+        val context = EffectContext(
+            sourceId = spellEntityId,
+            controllerId = spellOnStack.casterId,
+            opponentId = state.getOpponent(spellOnStack.casterId),
+            xValue = spellOnStack.xValue,
+            sacrificedPermanents = spellOnStack.sacrificedPermanents,
+            sacrificedPermanentSubtypes = spellOnStack.sacrificedPermanentSubtypes,
+            exiledCardCount = spellOnStack.exiledCardCount
+        )
+        return spellOnStack.chosenModes.map { modeIndex ->
+            val mode = modal.modes.getOrNull(modeIndex) ?: return@map "Unknown mode"
+            try {
+                mode.effect.runtimeDescription { amount -> evaluator.evaluate(state, amount, context) }
+            } catch (_: Exception) {
+                mode.description
+            }
+        }
+    }
+
+    /**
+     * Build per-mode target groups for a modal spell on the stack, aligned with
+     * [SpellOnStackComponent.modeTargetsOrdered]. Hidden-zone targets are redacted to a generic
+     * "a card in X's hand/library" string when the viewer does not own the zone.
+     */
+    private fun buildPerModeTargetGroups(
+        state: GameState,
+        chosenModes: List<Int>,
+        modeTargetsOrdered: List<List<ChosenTarget>>,
+        modeDescriptions: List<String>,
+        viewingPlayerId: EntityId
+    ): List<ClientPerModeTargetGroup> {
+        if (chosenModes.isEmpty()) return emptyList()
+        return chosenModes.mapIndexed { index, modeIndex ->
+            val rawTargets = modeTargetsOrdered.getOrNull(index) ?: emptyList()
+            val clientTargets = rawTargets.map { target ->
+                when (target) {
+                    is ChosenTarget.Player -> ClientChosenTarget.Player(target.playerId)
+                    is ChosenTarget.Permanent -> ClientChosenTarget.Permanent(target.entityId)
+                    is ChosenTarget.Spell -> ClientChosenTarget.Spell(target.spellEntityId)
+                    is ChosenTarget.Card -> ClientChosenTarget.Card(target.cardId)
+                }
+            }
+            val targetNames = rawTargets.map { target ->
+                resolveTargetDisplayName(state, target, viewingPlayerId)
+            }
+            ClientPerModeTargetGroup(
+                modeIndex = modeIndex,
+                modeDescription = modeDescriptions.getOrNull(index) ?: "",
+                targets = clientTargets,
+                targetNames = targetNames
+            )
+        }
+    }
+
+    /**
+     * Resolve a [ChosenTarget] to a human-readable display name for the stack view. Cards in
+     * hidden zones are redacted unless the viewing player owns the zone.
+     */
+    private fun resolveTargetDisplayName(
+        state: GameState,
+        target: ChosenTarget,
+        viewingPlayerId: EntityId
+    ): String = when (target) {
+        is ChosenTarget.Player -> state.getEntity(target.playerId)
+            ?.get<PlayerComponent>()?.name ?: "a player"
+        is ChosenTarget.Permanent -> state.getEntity(target.entityId)
+            ?.get<CardComponent>()?.name ?: "a permanent"
+        is ChosenTarget.Spell -> state.getEntity(target.spellEntityId)
+            ?.get<CardComponent>()?.name ?: "a spell"
+        is ChosenTarget.Card -> {
+            val hiddenZone = target.zone == Zone.HAND || target.zone == Zone.LIBRARY
+            if (hiddenZone && target.ownerId != viewingPlayerId) {
+                val ownerName = state.getEntity(target.ownerId)
+                    ?.get<PlayerComponent>()?.name ?: "opponent"
+                "a card in ${ownerName}'s ${target.zone.name.lowercase()}"
+            } else {
+                state.getEntity(target.cardId)?.get<CardComponent>()?.name ?: "a card"
+            }
         }
     }
 

@@ -208,6 +208,20 @@ data class ClientCard(
     /** Specific ability text when on the stack (e.g., spell effect description, not full oracle text) */
     val stackText: String? = null,
 
+    /**
+     * Runtime descriptions of each chosen mode, in the order they were picked (700.2). Empty for
+     * non-modal spells and for modal spells whose mode hasn't been selected yet. For opponent
+     * visibility of choose-N commands (Brigid's Command, Sygg's Command, etc.).
+     */
+    val chosenModeDescriptions: List<String> = emptyList(),
+
+    /**
+     * Per-mode target groups for modal spells on the stack, aligned 1:1 with
+     * [chosenModeDescriptions]. Each group carries the mode's description, the chosen targets
+     * (for arrow rendering), and human-readable target names (for text rendering).
+     */
+    val perModeTargets: List<ClientPerModeTargetGroup> = emptyList(),
+
     /** Revealed name for face-down creatures that this player has peeked at (e.g., via Spy Network) */
     val revealedName: String? = null,
 
@@ -425,6 +439,27 @@ data class ClientBlocker(
     val creatureId: EntityId,
     val creatureName: String,
     val blockingAttacker: EntityId
+)
+
+/**
+ * A group of targets chosen for a single mode of a modal spell on the stack. The index refers to
+ * the position within [ClientCard.perModeTargets], not the original [Mode] index (the same mode
+ * can appear twice with [ModalEffect.allowRepeat]).
+ */
+@Serializable
+data class ClientPerModeTargetGroup(
+    /** The mode index in the spell's [ModalEffect.modes] list. */
+    val modeIndex: Int,
+    /** Runtime description of the mode, with dynamic amounts evaluated. */
+    val modeDescription: String,
+    /** Chosen targets for this mode, for arrow rendering. */
+    val targets: List<ClientChosenTarget> = emptyList(),
+    /**
+     * Human-readable target names aligned 1:1 with [targets]. For hidden-zone targets (e.g., a
+     * card in an opponent's hand), the name is generic ("a card in Opponent's hand") to avoid
+     * leaking hidden information.
+     */
+    val targetNames: List<String> = emptyList()
 )
 
 /**

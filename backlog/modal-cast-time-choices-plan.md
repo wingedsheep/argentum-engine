@@ -197,7 +197,7 @@ File: `rules-engine/.../mechanics/stack/StackResolver.kt` (line 89)
 - Populate `TargetsComponent` (line 152) with the **union** of all mode targets so existing "target arrow" rendering works. Per-mode breakdown lives in `SpellOnStackComponent`.
 - Emit `BecomesTargetEvent` per targeted permanent in the union (line 190).
 
-### Phase 8 — Server DTO + stack opponent visibility
+### Phase 8 — Server DTO + stack opponent visibility [DONE]
 
 Files:
 - `rules-engine/.../view/ClientDTO.kt`
