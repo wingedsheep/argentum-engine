@@ -150,6 +150,15 @@ object LibraryPatterns {
         entersTapped: Boolean = false,
         shuffleAfter: Boolean = true,
         reveal: Boolean = false
+    ): CompositeEffect = searchLibrary(filter, DynamicAmount.Fixed(count), destination, entersTapped, shuffleAfter, reveal)
+
+    fun searchLibrary(
+        filter: GameObjectFilter = GameObjectFilter.Any,
+        count: DynamicAmount,
+        destination: SearchDestination = SearchDestination.HAND,
+        entersTapped: Boolean = false,
+        shuffleAfter: Boolean = true,
+        reveal: Boolean = false
     ): CompositeEffect {
         val effects = mutableListOf<Effect>()
 
@@ -163,7 +172,7 @@ object LibraryPatterns {
         effects.add(
             SelectFromCollectionEffect(
                 from = "searchable",
-                selection = SelectionMode.ChooseUpTo(DynamicAmount.Fixed(count)),
+                selection = SelectionMode.ChooseUpTo(count),
                 storeSelected = "found"
             )
         )

@@ -2,7 +2,7 @@
 
 **Set Size:** 273 cards (main set, per Scryfall `set:ecl`)
 **Release Date:** January 23, 2026
-**Implemented:** 39 / 273
+**Implemented:** 40 / 273
 
 | Color      | Total | Done |
 |------------|-------|------|
@@ -10,7 +10,7 @@
 | Blue       | 39    | 9    |
 | Black      | 38    | 3    |
 | Red        | 39    | 2    |
-| Green      | 39    | 5    |
+| Green      | 39    | 6    |
 | Multicolor | 49    | 8    |
 | Colorless  | 18    | 3    |
 | Land       | 12    | 6    |
@@ -213,7 +213,7 @@
 - [ ] Mutable Explorer
 - [ ] Pitiless Fists
 - [ ] Prismabasher
-- [ ] Prismatic Undercurrents
+- [x] Prismatic Undercurrents
 - [ ] Pummeler for Hire
 - [ ] Safewright Cavalry
 - [x] Sapling Nursery

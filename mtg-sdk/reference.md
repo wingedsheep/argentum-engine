@@ -143,7 +143,7 @@ constructors.
 - `Effects.EachPlayerSearchesLibrary(filter, count: DynamicAmount)` — each player searches
 - `Effects.HeadGames(target)` — look at target's hand, rearrange library
 - `Effects.Mill(count, target = Controller)` — also accepts `DynamicAmount` for variable mill
-- `Effects.SearchLibrary(filter, count = 1, destination = HAND, entersTapped, shuffle, reveal)`
+- `Effects.SearchLibrary(filter, count = 1, destination = HAND, entersTapped, shuffle, reveal)` — `count` can be `Int` or `DynamicAmount` (e.g., `DynamicAmount.AggregateBattlefield(..., DISTINCT_COLORS)` for Prismatic Undercurrents-style variable search)
 - `Effects.SearchMultipleZones(zones, filter, count = 1, destination = BATTLEFIELD, entersTapped)` — search graveyard/hand/library for a card and put it onto destination
 - `Effects.SearchLibraryNthFromTop(filter = Any, positionFromTop = 2)` — search, shuffle, put Nth from top (Long-Term Plans: positionFromTop=2)
 - `Effects.Scry(count)` — returns CompositeEffect (Gather → Select → Move pipeline)

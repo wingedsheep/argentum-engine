@@ -185,6 +185,16 @@ object EffectPatterns {
     ): CompositeEffect =
         LibraryPatterns.searchLibrary(filter, count, destination, entersTapped, shuffleAfter, reveal)
 
+    fun searchLibrary(
+        filter: GameObjectFilter = GameObjectFilter.Any,
+        count: DynamicAmount,
+        destination: SearchDestination = SearchDestination.HAND,
+        entersTapped: Boolean = false,
+        shuffleAfter: Boolean = true,
+        reveal: Boolean = false
+    ): CompositeEffect =
+        LibraryPatterns.searchLibrary(filter, count, destination, entersTapped, shuffleAfter, reveal)
+
     fun searchMultipleZones(
         zones: List<Zone>,
         filter: GameObjectFilter = GameObjectFilter.Any,
