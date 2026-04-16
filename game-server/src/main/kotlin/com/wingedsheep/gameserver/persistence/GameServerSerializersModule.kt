@@ -1,7 +1,7 @@
 package com.wingedsheep.gameserver.persistence
 
 import com.wingedsheep.engine.core.engineSerializersModule
-import com.wingedsheep.gameserver.dto.ClientEvent
+import com.wingedsheep.engine.view.ClientEvent
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.modules.SerializersModule
 import kotlinx.serialization.modules.polymorphic

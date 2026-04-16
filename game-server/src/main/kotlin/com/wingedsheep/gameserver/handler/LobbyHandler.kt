@@ -1,7 +1,6 @@
 package com.wingedsheep.gameserver.handler
 
 import com.wingedsheep.gameserver.ai.AiGameManager
-import com.wingedsheep.gameserver.ai.flattenOracle
 import com.wingedsheep.gameserver.ai.AiWebSocketSession
 import com.wingedsheep.gameserver.handler.ConnectionHandler.Companion.cardToSealedCardInfo
 import com.wingedsheep.gameserver.lobby.LobbyState
@@ -1273,7 +1272,7 @@ class LobbyHandler(
                 for ((name, copies) in grouped.entries.sortedBy { it.value.first().cmc }) {
                     val card = copies.first()
                     val stats = if (card.creatureStats != null) " ${card.creatureStats}" else ""
-                    val oracle = if (card.oracleText.isNotBlank()) " — ${card.oracleText.flattenOracle()}" else ""
+                    val oracle = if (card.oracleText.isNotBlank()) " — ${card.oracleText.replace("\n", " / ")}" else ""
                     val count = if (copies.size > 1) "${copies.size}x " else ""
                     appendLine("  $count${card.name} ${card.manaCost} — ${card.typeLine}$stats$oracle")
                 }
@@ -1286,7 +1285,7 @@ class LobbyHandler(
                 for ((name, copies) in grouped) {
                     val card = copies.first()
                     val count = if (copies.size > 1) "${copies.size}x " else ""
-                    val oracle = if (card.oracleText.isNotBlank()) " — ${card.oracleText.flattenOracle()}" else ""
+                    val oracle = if (card.oracleText.isNotBlank()) " — ${card.oracleText.replace("\n", " / ")}" else ""
                     appendLine("  $count${card.name}$oracle")
                 }
             }
@@ -1297,13 +1296,21 @@ class LobbyHandler(
             appendLine("9x Forest")
         }
 
-        val client = com.wingedsheep.gameserver.ai.LlmClient(aiProperties)
+        val aiConfig = com.wingedsheep.ai.llm.AiConfig(
+            enabled = aiProperties.enabled, mode = aiProperties.mode,
+            baseUrl = aiProperties.baseUrl, apiKey = aiProperties.apiKey,
+            openRouterApiKey = aiProperties.openRouterApiKey, model = aiProperties.model,
+            deckbuildingModel = aiProperties.deckbuildingModel,
+            reasoningEffort = aiProperties.reasoningEffort, maxRetries = aiProperties.maxRetries,
+            timeoutMs = aiProperties.timeoutMs, thinkingDelayMs = aiProperties.thinkingDelayMs
+        )
+        val client = com.wingedsheep.ai.llm.LlmClient(aiConfig)
         val messages = listOf(
-            com.wingedsheep.gameserver.ai.ChatMessage("system",
+            com.wingedsheep.ai.llm.ChatMessage("system",
                 "You are an expert Magic: The Gathering limited deckbuilder. " +
                 "Analyze the sealed pool, pick the best 2 colors (with optional light splash), " +
                 "and build a strong 40-card deck. Reply ONLY with the deck list."),
-            com.wingedsheep.gameserver.ai.ChatMessage("user", prompt)
+            com.wingedsheep.ai.llm.ChatMessage("user", prompt)
         )
 
         logger.info("AI sealed deckbuild prompt ({} chars)", prompt.length)

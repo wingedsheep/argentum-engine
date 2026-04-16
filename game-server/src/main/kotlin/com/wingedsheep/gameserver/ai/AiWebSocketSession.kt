@@ -1,13 +1,19 @@
 package com.wingedsheep.gameserver.ai
 
+import com.wingedsheep.ai.llm.AiController
+import com.wingedsheep.ai.llm.ActionResponse
+import com.wingedsheep.ai.llm.BottomCardsInfo
+import com.wingedsheep.ai.llm.CardRuling
+import com.wingedsheep.ai.llm.CardSummary
+import com.wingedsheep.ai.llm.MulliganInfo
 import com.wingedsheep.engine.core.DeclareBlockers
 import com.wingedsheep.engine.core.GameAction
 import com.wingedsheep.engine.core.PendingDecision
 import com.wingedsheep.engine.core.SubmitDecision
 import com.wingedsheep.engine.core.engineSerializersModule
-import com.wingedsheep.gameserver.dto.ClientGameState
-import com.wingedsheep.gameserver.dto.StateDelta
-import com.wingedsheep.gameserver.protocol.LegalActionInfo
+import com.wingedsheep.engine.view.ClientGameState
+import com.wingedsheep.engine.view.StateDelta
+import com.wingedsheep.engine.view.LegalActionInfo
 import com.wingedsheep.gameserver.protocol.ServerMessage
 import com.wingedsheep.sdk.model.EntityId
 import kotlinx.coroutines.*
@@ -133,7 +139,7 @@ class AiWebSocketSession(
                 logger.info("AI received MulliganDecision: mulliganCount={}, hand={} cards, onThePlay={}",
                     message.mulliganCount, message.hand.size, message.isOnThePlay)
                 delay(thinkingDelayMs)
-                val keep = controller.decideMulligan(message)
+                val keep = controller.decideMulligan(message.toMulliganInfo())
                 logger.info("AI mulligan result: {}", if (keep) "KEEP" else "MULLIGAN")
                 if (keep) {
                     onMulliganKeep(aiPlayerId)
@@ -145,7 +151,7 @@ class AiWebSocketSession(
             is ServerMessage.ChooseBottomCards -> {
                 logger.info("AI received ChooseBottomCards: hand={}, bottomCount={}", message.hand.size, message.cardsToPutOnBottom)
                 delay(thinkingDelayMs)
-                val bottomCards = controller.chooseBottomCards(message)
+                val bottomCards = controller.chooseBottomCards(message.toBottomCardsInfo())
                 logger.info("AI chose bottom cards: {}", bottomCards)
                 onBottomCards(aiPlayerId, bottomCards)
             }
@@ -378,8 +384,8 @@ class AiWebSocketSession(
         delay(thinkingDelayMs)
 
         val picks = controller.chooseDraftPick(
-            pack = message.cards,
-            pickedSoFar = message.pickedCards,
+            pack = message.cards.map { it.toCardSummary() },
+            pickedSoFar = message.pickedCards.map { it.toCardSummary() },
             packNumber = message.packNumber,
             pickNumber = message.pickNumber,
             picksRequired = message.picksPerRound,
@@ -399,10 +405,10 @@ class AiWebSocketSession(
         delay(thinkingDelayMs)
 
         val take = controller.chooseWinstonAction(
-            pileCards = pileCards,
+            pileCards = pileCards.map { it.toCardSummary() },
             pileIndex = message.currentPileIndex,
             pileSizes = message.pileSizes,
-            pickedSoFar = message.pickedCards
+            pickedSoFar = message.pickedCards.map { it.toCardSummary() }
         )
 
         if (take) {
@@ -434,9 +440,9 @@ class AiWebSocketSession(
         delay(thinkingDelayMs)
 
         val selection = controller.chooseGridDraftPick(
-            grid = message.grid,
+            grid = message.grid.map { it?.toCardSummary() },
             availableSelections = message.availableSelections,
-            pickedSoFar = message.pickedCards
+            pickedSoFar = message.pickedCards.map { it.toCardSummary() }
         )
         logger.info("AI grid draft pick: {}", selection)
         callback(aiPlayerId, selection)
@@ -467,15 +473,17 @@ class AiWebSocketSession(
         delta.addedCards?.forEach { (id, card) -> cards[id] = card }
         delta.updatedCards?.forEach { (id, card) -> cards[id] = card }
 
-        val zones = if (delta.updatedZones != null) {
-            val updatedMap = delta.updatedZones.associateBy { it.zoneId }
+        val updatedZones = delta.updatedZones
+        val zones = if (updatedZones != null) {
+            val updatedMap = updatedZones.associateBy { it.zoneId }
             previous.zones.map { updatedMap[it.zoneId] ?: it }
         } else {
             previous.zones
         }
 
-        val gameLog = if (delta.newLogEntries != null) {
-            previous.gameLog + delta.newLogEntries
+        val newLogEntries = delta.newLogEntries
+        val gameLog = if (newLogEntries != null) {
+            previous.gameLog + newLogEntries
         } else {
             previous.gameLog
         }
@@ -536,3 +544,38 @@ class AiWebSocketSession(
         shutdown()
     }
 }
+
+private fun ServerMessage.MulliganDecision.toMulliganInfo() = MulliganInfo(
+    hand = hand,
+    mulliganCount = mulliganCount,
+    cardsToPutOnBottom = cardsToPutOnBottom,
+    cards = cards.mapValues { (_, v) -> v.toCardSummary() },
+    isOnThePlay = isOnThePlay
+)
+
+private fun ServerMessage.ChooseBottomCards.toBottomCardsInfo() = BottomCardsInfo(
+    hand = hand,
+    cardsToPutOnBottom = cardsToPutOnBottom,
+    cards = cards.mapValues { (_, v) -> v.toCardSummary() }
+)
+
+private fun ServerMessage.MulliganCardInfo.toCardSummary() = CardSummary(
+    name = name,
+    manaCost = manaCost,
+    typeLine = typeLine,
+    power = power,
+    toughness = toughness,
+    oracleText = oracleText
+)
+
+private fun ServerMessage.SealedCardInfo.toCardSummary() = CardSummary(
+    name = name,
+    manaCost = manaCost,
+    typeLine = typeLine,
+    rarity = rarity,
+    imageUri = imageUri,
+    power = power,
+    toughness = toughness,
+    oracleText = oracleText,
+    rulings = rulings.map { CardRuling(it.date, it.text) }
+)

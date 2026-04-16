@@ -13,8 +13,8 @@ import com.wingedsheep.engine.state.components.identity.FaceDownComponent
 import com.wingedsheep.engine.state.components.identity.LifeTotalComponent
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.engine.state.components.stack.TargetsComponent
-import com.wingedsheep.gameserver.dto.ClientGameState
-import com.wingedsheep.gameserver.dto.ClientStateTransformer
+import com.wingedsheep.engine.view.ClientGameState
+import com.wingedsheep.engine.view.ClientStateTransformer
 import com.wingedsheep.gameserver.protocol.ServerMessage
 import com.wingedsheep.sdk.core.Phase
 import com.wingedsheep.sdk.core.Zone

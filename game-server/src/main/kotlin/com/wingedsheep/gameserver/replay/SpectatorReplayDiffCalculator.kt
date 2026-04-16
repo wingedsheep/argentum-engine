@@ -1,6 +1,6 @@
 package com.wingedsheep.gameserver.replay
 
-import com.wingedsheep.gameserver.dto.StateDiffCalculator
+import com.wingedsheep.engine.view.StateDiffCalculator
 import com.wingedsheep.gameserver.protocol.ServerMessage
 
 /**

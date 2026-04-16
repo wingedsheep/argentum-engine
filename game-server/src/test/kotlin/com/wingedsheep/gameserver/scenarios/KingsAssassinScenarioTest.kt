@@ -146,7 +146,7 @@ class KingsAssassinScenarioTest : ScenarioTestBase() {
 
                 withClue("Target should be a Permanent targeting the hero") {
                     val target = abilityCard!!.targets.first()
-                    target shouldBe com.wingedsheep.gameserver.dto.ClientChosenTarget.Permanent(heroId)
+                    target shouldBe com.wingedsheep.engine.view.ClientChosenTarget.Permanent(heroId)
                 }
 
                 withClue("Ability should have the source card's image URI") {

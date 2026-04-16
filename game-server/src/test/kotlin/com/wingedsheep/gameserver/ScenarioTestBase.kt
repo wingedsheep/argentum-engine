@@ -33,8 +33,8 @@ import com.wingedsheep.engine.state.components.combat.BlockersDeclaredThisCombat
 import com.wingedsheep.engine.state.components.player.ManaPoolComponent
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.engine.mechanics.layers.StaticAbilityHandler
-import com.wingedsheep.gameserver.dto.ClientGameState
-import com.wingedsheep.gameserver.dto.ClientStateTransformer
+import com.wingedsheep.engine.view.ClientGameState
+import com.wingedsheep.engine.view.ClientStateTransformer
 import com.wingedsheep.sdk.core.Phase
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.core.Zone

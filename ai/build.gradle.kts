@@ -8,6 +8,7 @@ dependencies {
     implementation(project(":mtg-sdk"))
 
     implementation(libs.bundles.kotlinxEcosystem)
+    compileOnly(libs.slf4jApi)
 
     testImplementation(testFixtures(project(":rules-engine")))
     testImplementation(project(":mtg-sets"))

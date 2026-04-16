@@ -13,8 +13,8 @@ import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.combat.AttackingComponent
 import com.wingedsheep.engine.state.components.combat.BlockersDeclaredThisCombatComponent
 import com.wingedsheep.engine.state.components.combat.BlockingComponent
-import com.wingedsheep.gameserver.protocol.AdditionalCostInfo
-import com.wingedsheep.gameserver.protocol.LegalActionInfo
+import com.wingedsheep.engine.view.AdditionalCostInfo
+import com.wingedsheep.engine.view.LegalActionInfo
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Phase
 import com.wingedsheep.sdk.core.Step

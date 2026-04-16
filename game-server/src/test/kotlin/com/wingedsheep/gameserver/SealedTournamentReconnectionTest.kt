@@ -1018,7 +1018,7 @@ class SealedTournamentReconnectionTest : FunSpec() {
         fun latestLobbyUpdate(): ServerMessage.LobbyUpdate? =
             messages.filterIsInstance<ServerMessage.LobbyUpdate>().lastOrNull()
 
-        fun latestState(): com.wingedsheep.gameserver.dto.ClientGameState? =
+        fun latestState(): com.wingedsheep.engine.view.ClientGameState? =
             messages.filterIsInstance<ServerMessage.StateUpdate>().lastOrNull()?.state
     }
 }

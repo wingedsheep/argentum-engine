@@ -1,5 +1,9 @@
 package com.wingedsheep.gameserver.ai
 
+import com.wingedsheep.ai.llm.AiController
+import com.wingedsheep.ai.llm.AiPlayerController
+import com.wingedsheep.ai.llm.EngineAiController
+import com.wingedsheep.ai.llm.LlmClient
 import com.wingedsheep.gameserver.config.GameProperties
 import com.wingedsheep.ai.engine.SealedDeckGenerator
 import com.wingedsheep.gameserver.session.GameSession
@@ -87,6 +91,7 @@ class AiGameManager(
         gameSession: GameSession? = null
     ): AiController {
         val ai = gameProperties.ai
+        val aiConfig = ai.toAiConfig()
         return if (ai.isEngineMode) {
             EngineAiController(
                 cardRegistry = cardRegistry,
@@ -94,10 +99,18 @@ class AiGameManager(
                 gameStateProvider = { gameSession?.getStateSnapshot() }
             )
         } else {
-            val llmClient = LlmClient(ai)
-            AiPlayerController(ai, llmClient, aiPlayerId)
+            val llmClient = LlmClient(aiConfig)
+            AiPlayerController(aiConfig, llmClient, aiPlayerId)
         }
     }
+
+    private fun com.wingedsheep.gameserver.config.AiProperties.toAiConfig() = com.wingedsheep.ai.llm.AiConfig(
+        enabled = enabled, mode = mode, baseUrl = baseUrl,
+        apiKey = apiKey, openRouterApiKey = openRouterApiKey,
+        model = model, deckbuildingModel = deckbuildingModel,
+        reasoningEffort = reasoningEffort, maxRetries = maxRetries,
+        timeoutMs = timeoutMs, thinkingDelayMs = thinkingDelayMs
+    )
 
     /**
      * Create an AI opponent and add it to the game session.

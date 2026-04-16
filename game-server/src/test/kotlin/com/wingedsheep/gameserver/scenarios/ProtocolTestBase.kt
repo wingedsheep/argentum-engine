@@ -15,10 +15,10 @@ import com.wingedsheep.engine.state.components.identity.OwnerComponent
 import com.wingedsheep.engine.state.components.identity.PlayerComponent
 import com.wingedsheep.engine.state.components.player.LandDropsComponent
 import com.wingedsheep.engine.state.components.player.ManaPoolComponent
-import com.wingedsheep.gameserver.dto.ClientCard
-import com.wingedsheep.gameserver.dto.ClientGameState
+import com.wingedsheep.engine.view.ClientCard
+import com.wingedsheep.engine.view.ClientGameState
 import com.wingedsheep.gameserver.protocol.ClientMessage
-import com.wingedsheep.gameserver.protocol.LegalActionInfo
+import com.wingedsheep.engine.view.LegalActionInfo
 import com.wingedsheep.gameserver.protocol.ServerMessage
 import com.wingedsheep.sdk.core.Phase
 import com.wingedsheep.sdk.core.Step
@@ -506,21 +506,23 @@ abstract class ProtocolTestBase : FunSpec() {
             return requireLatestState()
         }
 
-        private fun applyDelta(previous: ClientGameState, delta: com.wingedsheep.gameserver.dto.StateDelta): ClientGameState {
+        private fun applyDelta(previous: ClientGameState, delta: com.wingedsheep.engine.view.StateDelta): ClientGameState {
             val cards = previous.cards.toMutableMap()
             delta.removedCardIds?.forEach { cards.remove(it) }
             delta.addedCards?.forEach { (id, card) -> cards[id] = card }
             delta.updatedCards?.forEach { (id, card) -> cards[id] = card }
 
-            val zones = if (delta.updatedZones != null) {
-                val updatedMap = delta.updatedZones.associateBy { it.zoneId }
+            val updatedZones = delta.updatedZones
+            val zones = if (updatedZones != null) {
+                val updatedMap = updatedZones.associateBy { it.zoneId }
                 previous.zones.map { updatedMap[it.zoneId] ?: it }
             } else {
                 previous.zones
             }
 
-            val gameLog = if (delta.newLogEntries != null) {
-                previous.gameLog + delta.newLogEntries
+            val newLogEntries = delta.newLogEntries
+            val gameLog = if (newLogEntries != null) {
+                previous.gameLog + newLogEntries
             } else {
                 previous.gameLog
             }

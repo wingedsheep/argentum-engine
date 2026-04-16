@@ -1,6 +1,6 @@
 package com.wingedsheep.gameserver.replay
 
-import com.wingedsheep.gameserver.dto.StateDelta
+import com.wingedsheep.engine.view.StateDelta
 import com.wingedsheep.gameserver.protocol.ServerMessage
 import kotlinx.serialization.Serializable
 

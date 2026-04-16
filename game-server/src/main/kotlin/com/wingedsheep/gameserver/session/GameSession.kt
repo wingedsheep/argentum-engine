@@ -1,13 +1,13 @@
 package com.wingedsheep.gameserver.session
 
-import com.wingedsheep.gameserver.dto.ClientEvent
-import com.wingedsheep.gameserver.dto.ClientEventTransformer
-import com.wingedsheep.gameserver.dto.ClientGameState
-import com.wingedsheep.gameserver.dto.ClientStateTransformer
-import com.wingedsheep.gameserver.dto.StateDiffCalculator
-import com.wingedsheep.gameserver.legalactions.LegalActionEnricher
+import com.wingedsheep.engine.view.ClientEvent
+import com.wingedsheep.engine.view.ClientEventTransformer
+import com.wingedsheep.engine.view.ClientGameState
+import com.wingedsheep.engine.view.ClientStateTransformer
+import com.wingedsheep.engine.view.StateDiffCalculator
+import com.wingedsheep.engine.view.LegalActionEnricher
 import com.wingedsheep.gameserver.protocol.GameOverReason
-import com.wingedsheep.gameserver.protocol.LegalActionInfo
+import com.wingedsheep.engine.view.LegalActionInfo
 import com.wingedsheep.gameserver.protocol.ServerMessage
 import com.wingedsheep.gameserver.priority.AutoPassManager
 import com.wingedsheep.gameserver.replay.SpectatorReplayDelta

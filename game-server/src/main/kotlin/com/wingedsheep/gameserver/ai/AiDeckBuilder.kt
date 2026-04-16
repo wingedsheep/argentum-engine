@@ -1,5 +1,8 @@
 package com.wingedsheep.gameserver.ai
 
+import com.wingedsheep.ai.llm.CacheControl
+import com.wingedsheep.ai.llm.ChatMessage
+import com.wingedsheep.ai.llm.LlmClient
 import com.wingedsheep.gameserver.config.AiProperties
 import com.wingedsheep.gameserver.deck.Archetype
 import com.wingedsheep.gameserver.deck.RandomDeckGenerator
@@ -156,7 +159,7 @@ class AiDeckBuilder(
                 val prefix = if (count > 1) "${count}x " else "  "
                 val stats = if (card.creatureStats != null) " ${card.creatureStats}" else ""
                 val rarity = card.metadata.rarity.name.lowercase().replaceFirstChar { it.uppercase() }
-                val oracle = if (card.oracleText.isNotBlank()) " — ${card.oracleText.flattenOracle()}" else ""
+                val oracle = if (card.oracleText.isNotBlank()) " — ${card.oracleText.replace("\n", " / ")}" else ""
                 appendLine("$prefix${card.name} ${card.manaCost} — ${card.typeLine}$stats [$rarity]$oracle")
             }
             appendLine()
@@ -165,7 +168,7 @@ class AiDeckBuilder(
         if (nonbasicLands.isNotEmpty()) {
             appendLine("Non-basic Lands:")
             for (land in nonbasicLands.distinctBy { it.name }.sortedBy { it.name }) {
-                val oracle = if (land.oracleText.isNotBlank()) " — ${land.oracleText.flattenOracle()}" else ""
+                val oracle = if (land.oracleText.isNotBlank()) " — ${land.oracleText.replace("\n", " / ")}" else ""
                 appendLine("  ${land.name} — ${land.typeLine}$oracle")
             }
             appendLine()

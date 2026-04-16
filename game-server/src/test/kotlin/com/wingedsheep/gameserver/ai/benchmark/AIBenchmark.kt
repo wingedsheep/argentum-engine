@@ -9,12 +9,13 @@ import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.LifeTotalComponent
+import com.wingedsheep.ai.llm.*
 import com.wingedsheep.gameserver.ai.*
 import com.wingedsheep.gameserver.config.AiProperties
-import com.wingedsheep.gameserver.dto.ClientEventTransformer
-import com.wingedsheep.gameserver.dto.ClientStateTransformer
-import com.wingedsheep.gameserver.legalactions.LegalActionEnricher
-import com.wingedsheep.gameserver.protocol.LegalActionInfo
+import com.wingedsheep.engine.view.ClientEventTransformer
+import com.wingedsheep.engine.view.ClientStateTransformer
+import com.wingedsheep.engine.view.LegalActionEnricher
+import com.wingedsheep.engine.view.LegalActionInfo
 import com.wingedsheep.engine.legalactions.LegalActionEnumerator
 import com.wingedsheep.engine.mechanics.mana.ManaSolver
 import com.wingedsheep.mtg.sets.definitions.bloomburrow.BloomburrowSet
@@ -371,12 +372,12 @@ private fun createController(
 ): AiController = when (config) {
     is PlayerType.Engine -> EngineAiController(registry, playerId, stateProvider)
     is PlayerType.Llm -> {
-        val props = AiProperties(
+        val aiConfig = AiConfig(
             mode = "llm", baseUrl = config.baseUrl, apiKey = config.apiKey,
             model = config.model, reasoningEffort = config.reasoningEffort,
             maxRetries = 2, timeoutMs = 300000
         )
-        AiPlayerController(props, LlmClient(props), playerId)
+        AiPlayerController(aiConfig, LlmClient(aiConfig), playerId)
     }
 }
 
@@ -390,8 +391,12 @@ private fun buildDeck(config: PlayerType, pool: List<CardDefinition>, registry: 
             mode = "llm", baseUrl = config.baseUrl, apiKey = config.apiKey,
             model = config.model, reasoningEffort = config.reasoningEffort, timeoutMs = 300000
         )
+        val aiConfig = AiConfig(
+            mode = "llm", baseUrl = config.baseUrl, apiKey = config.apiKey,
+            model = config.model, reasoningEffort = config.reasoningEffort, timeoutMs = 300000
+        )
         try {
-            AiDeckBuilder(props, LlmClient(props), pool, BloomburrowSet.basicLands, listOf("BLB")).build().deckList
+            AiDeckBuilder(props, LlmClient(aiConfig), pool, BloomburrowSet.basicLands, listOf("BLB")).build().deckList
         } catch (e: Exception) {
             println("  [WARN] LLM deck build failed: ${e.message}, falling back to heuristic")
             buildHeuristicSealedDeck(pool)
@@ -442,9 +447,9 @@ private fun deckSummary(deck: Deck): String {
 private fun accumulateLog(events: List<GameEvent>, viewingPlayer: EntityId, log: MutableList<String>, maxSize: Int) {
     val clientEvents = ClientEventTransformer.transform(events, viewingPlayer)
     for (event in clientEvents) {
-        if (event is com.wingedsheep.gameserver.dto.ClientEvent.PermanentTapped) continue
-        if (event is com.wingedsheep.gameserver.dto.ClientEvent.PermanentUntapped) continue
-        if (event is com.wingedsheep.gameserver.dto.ClientEvent.ManaAdded) continue
+        if (event is com.wingedsheep.engine.view.ClientEvent.PermanentTapped) continue
+        if (event is com.wingedsheep.engine.view.ClientEvent.PermanentUntapped) continue
+        if (event is com.wingedsheep.engine.view.ClientEvent.ManaAdded) continue
         log.add(event.description)
         if (log.size > maxSize) log.removeFirst()
     }
@@ -464,9 +469,9 @@ private fun describeAction(action: GameAction): String = when (action) {
 private fun logEvents(events: List<GameEvent>, log: StringBuilder) {
     val clientEvents = ClientEventTransformer.transform(events, EntityId("spectator"))
     for (event in clientEvents) {
-        if (event is com.wingedsheep.gameserver.dto.ClientEvent.PermanentTapped) continue
-        if (event is com.wingedsheep.gameserver.dto.ClientEvent.PermanentUntapped) continue
-        if (event is com.wingedsheep.gameserver.dto.ClientEvent.ManaAdded) continue
+        if (event is com.wingedsheep.engine.view.ClientEvent.PermanentTapped) continue
+        if (event is com.wingedsheep.engine.view.ClientEvent.PermanentUntapped) continue
+        if (event is com.wingedsheep.engine.view.ClientEvent.ManaAdded) continue
         log.appendLine("  → ${event.description}")
     }
 }

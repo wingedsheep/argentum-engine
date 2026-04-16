@@ -1,7 +1,7 @@
 package com.wingedsheep.gameserver.persistence
 
 import com.wingedsheep.engine.registry.CardRegistry
-import com.wingedsheep.gameserver.dto.ClientEvent
+import com.wingedsheep.engine.view.ClientEvent
 import com.wingedsheep.gameserver.persistence.dto.PersistentGameSession
 import com.wingedsheep.gameserver.persistence.dto.PersistentPlayerInfo
 import com.wingedsheep.gameserver.session.GameSession

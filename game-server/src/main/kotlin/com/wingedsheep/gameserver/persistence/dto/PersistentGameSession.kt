@@ -1,7 +1,7 @@
 package com.wingedsheep.gameserver.persistence.dto
 
 import com.wingedsheep.engine.state.GameState
-import com.wingedsheep.gameserver.dto.ClientEvent
+import com.wingedsheep.engine.view.ClientEvent
 import kotlinx.serialization.Serializable
 
 /**

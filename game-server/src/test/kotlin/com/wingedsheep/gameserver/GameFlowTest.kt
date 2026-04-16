@@ -1,6 +1,6 @@
 package com.wingedsheep.gameserver
 
-import com.wingedsheep.gameserver.protocol.LegalActionInfo
+import com.wingedsheep.engine.view.LegalActionInfo
 import com.wingedsheep.gameserver.protocol.ClientMessage
 import com.wingedsheep.gameserver.protocol.ServerMessage
 import com.wingedsheep.engine.core.*

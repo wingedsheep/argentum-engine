@@ -24,6 +24,7 @@ kotestProperty = { module = "io.kotest:kotest-property", version.ref = "kotest" 
 kotestExtensionsSpring = { module = "io.kotest:kotest-extensions-spring", version.ref = "kotest" }
 kotlinxCoroutinesTest = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "kotlinxCoroutines" }
 mockk = { module = "io.mockk:mockk", version.ref = "mockk" }
+slf4jApi = { module = "org.slf4j:slf4j-api", version = "2.0.16" }
 
 # Spring Boot dependencies
 springBootStarterWeb = { module = "org.springframework.boot:spring-boot-starter-web", version.ref = "springBoot" }

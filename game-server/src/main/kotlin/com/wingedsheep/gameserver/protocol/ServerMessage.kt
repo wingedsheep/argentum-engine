@@ -1,8 +1,10 @@
 package com.wingedsheep.gameserver.protocol
 
-import com.wingedsheep.gameserver.dto.ClientEvent
-import com.wingedsheep.gameserver.dto.ClientGameState
-import com.wingedsheep.gameserver.dto.StateDelta
+import com.wingedsheep.engine.view.ClientEvent
+import com.wingedsheep.engine.view.ClientGameState
+import com.wingedsheep.engine.view.StateDelta
+import com.wingedsheep.engine.view.LegalActionInfo
+import com.wingedsheep.engine.view.ManaSourceInfo
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.model.EntityId
@@ -134,19 +136,6 @@ sealed interface ServerMessage {
     data class StopOverrideInfo(
         val myTurnStops: Set<Step>,
         val opponentTurnStops: Set<Step>
-    )
-
-    /**
-     * Info about a mana source available for pre-cast selection.
-     */
-    @Serializable
-    data class ManaSourceInfo(
-        val entityId: EntityId,
-        val name: String,
-        val imageUri: String? = null,
-        val producesColors: List<String> = emptyList(),
-        val producesColorless: Boolean = false,
-        val manaAmount: Int = 1
     )
 
     /**
@@ -891,192 +880,6 @@ sealed interface ServerMessage {
     ) : ServerMessage
 }
 
-/**
- * Information about a single target requirement for legal actions.
- * Includes valid targets so the client knows which entities can be selected.
- */
-@Serializable
-data class LegalActionTargetInfo(
-    val index: Int,
-    val description: String,
-    val minTargets: Int,
-    val maxTargets: Int,
-    val validTargets: List<EntityId>,
-    /** The zone these targets are in (e.g., "Graveyard" for graveyard targets). Null for battlefield targets. */
-    val targetZone: String? = null
-)
-
-/**
- * Information about a legal action the player can take.
- */
-@Serializable
-data class LegalActionInfo(
-    val actionType: String,
-    val description: String,
-    val action: GameAction,
-    /** Whether this action can currently be afforded/executed. False means the option exists but player can't pay the cost. */
-    val isAffordable: Boolean = true,
-    /** Valid target IDs if this action requires targeting */
-    val validTargets: List<EntityId>? = null,
-    /** Whether this action requires selecting targets before submission */
-    val requiresTargets: Boolean = false,
-    /** Maximum number of targets (default 1) */
-    val targetCount: Int = 1,
-    /** Minimum number of targets required (default = targetCount) */
-    val minTargets: Int = targetCount,
-    /** Description of the target requirement */
-    val targetDescription: String? = null,
-    /** Multiple target requirements for spells with multiple distinct targets */
-    val targetRequirements: List<LegalActionTargetInfo>? = null,
-    /** Valid attacker IDs for DeclareAttackers action */
-    val validAttackers: List<EntityId>? = null,
-    /** Creature IDs that must attack this combat (from MustAttack, Taunt, etc.) */
-    val mandatoryAttackers: List<EntityId>? = null,
-    /** Valid attack targets: opponent planeswalker IDs that can be attacked */
-    val validAttackTargets: List<EntityId>? = null,
-    /** Valid blocker IDs for DeclareBlockers action */
-    val validBlockers: List<EntityId>? = null,
-    /** Whether this spell has X in its mana cost */
-    val hasXCost: Boolean = false,
-    /** Maximum X value the player can afford (null if not X cost spell) */
-    val maxAffordableX: Int? = null,
-    /** Minimum X value (usually 0) */
-    val minX: Int = 0,
-    /** Whether this is a mana ability (doesn't highlight card as playable) */
-    val isManaAbility: Boolean = false,
-    /** Additional cost info - sacrifice targets, etc. */
-    val additionalCostInfo: AdditionalCostInfo? = null,
-    /** Whether this spell has Convoke */
-    val hasConvoke: Boolean = false,
-    /** Creatures that can be tapped to help pay for Convoke */
-    val validConvokeCreatures: List<ConvokeCreatureInfo>? = null,
-    /** Whether this spell has Delve */
-    val hasDelve: Boolean = false,
-    /** Cards in graveyard that can be exiled for Delve */
-    val validDelveCards: List<DelveCardInfo>? = null,
-    /** Minimum number of cards to exile via Delve to afford this spell */
-    val minDelveNeeded: Int? = null,
-    /** The spell's mana cost for Convoke/Delve UI display */
-    val manaCostString: String? = null,
-    /** Whether this spell requires damage distribution at cast time (for DividedDamageEffect) */
-    val requiresDamageDistribution: Boolean = false,
-    /** Total damage to distribute for DividedDamageEffect spells */
-    val totalDamageToDistribute: Int? = null,
-    /** Minimum damage per target (usually 1 per MTG rules) */
-    val minDamagePerTarget: Int? = null,
-    /** Preview of which lands/sources would be auto-tapped if this spell is cast (for UI highlighting) */
-    val autoTapPreview: List<EntityId>? = null,
-    /** Available mana sources for pre-cast selection (for mana-costing actions) */
-    val availableManaSources: List<ServerMessage.ManaSourceInfo>? = null,
-    /** Whether this ability produces mana of any color and needs a color choice from the player */
-    val requiresManaColorChoice: Boolean = false,
-    /** Source zone if this action is from a non-hand zone (e.g., "LIBRARY" for Future Sight) */
-    val sourceZone: String? = null,
-    /** Max block counts for blockers that can block more than one attacker */
-    val blockerMaxBlockCounts: Map<EntityId, Int>? = null,
-    /** Pre-computed mandatory blocker→attacker assignments from Provoke / MustBeBlockedByAll */
-    val mandatoryBlockerAssignments: Map<EntityId, List<EntityId>>? = null,
-    /** Maximum times this ability can be activated in a batch (for repeat-eligible self-targeting abilities) */
-    val maxRepeatableActivations: Int? = null,
-    /** Whether this action is a Crew ability requiring creature selection */
-    val hasCrew: Boolean = false,
-    /** The crew power requirement (N in "Crew N") */
-    val crewPower: Int? = null,
-    /** Creatures that can be tapped to crew this vehicle */
-    val validCrewCreatures: List<CrewCreatureInfo>? = null,
-    /** When true, prevents auto-pass whenever this action is available */
-    val holdPriority: Boolean = false
-)
-
-/**
- * Information about a creature that can be tapped for Convoke.
- */
-@Serializable
-data class ConvokeCreatureInfo(
-    val entityId: EntityId,
-    val name: String,
-    /** Colors this creature can pay (based on its colors) */
-    val colors: Set<Color>
-)
-
-/**
- * Information about a card in graveyard that can be exiled for Delve.
- */
-@Serializable
-data class DelveCardInfo(
-    val entityId: EntityId,
-    val name: String,
-    val imageUri: String? = null
-)
-
-/**
- * Information about a creature that can be tapped to crew a Vehicle.
- */
-@Serializable
-data class CrewCreatureInfo(
-    val entityId: EntityId,
-    val name: String,
-    /** Projected power of this creature */
-    val power: Int
-)
-
-/**
- * Information about additional costs for a spell.
- */
-@Serializable
-data class AdditionalCostInfo(
-    /** Description of the additional cost */
-    val description: String,
-    /** Type of additional cost */
-    val costType: String,
-    /** Valid targets for sacrifice costs */
-    val validSacrificeTargets: List<EntityId> = emptyList(),
-    /** Number of permanents to sacrifice */
-    val sacrificeCount: Int = 1,
-    /** Valid targets for tap costs */
-    val validTapTargets: List<EntityId> = emptyList(),
-    /** Number of permanents to tap */
-    val tapCount: Int = 0,
-    /** Valid cards to discard from hand */
-    val validDiscardTargets: List<EntityId> = emptyList(),
-    /** Number of cards to discard */
-    val discardCount: Int = 0,
-    /** Valid permanents to return to hand */
-    val validBounceTargets: List<EntityId> = emptyList(),
-    /** Number of permanents to return */
-    val bounceCount: Int = 0,
-    /** Valid cards to exile from graveyard (or other zone) */
-    val validExileTargets: List<EntityId> = emptyList(),
-    /** Minimum number of cards to exile (for variable exile costs) */
-    val exileMinCount: Int = 0,
-    /** Maximum number of cards that can be exiled */
-    val exileMaxCount: Int = 0,
-    /** Valid cards to behold (from battlefield or hand) */
-    val validBeholdTargets: List<EntityId> = emptyList(),
-    /** Number of cards to behold */
-    val beholdCount: Int = 0,
-    /** Creatures with +1/+1 counters for RemoveXPlusOnePlusOneCounters cost */
-    val counterRemovalCreatures: List<CounterRemovalCreatureInfo> = emptyList(),
-    /** Valid creatures to blight (put -1/-1 counters on) */
-    val validBlightTargets: List<EntityId> = emptyList(),
-    /** Number of -1/-1 counters for blight */
-    val blightAmount: Int = 0
-)
-
-/**
- * Information about a creature that has +1/+1 counters available for removal.
- */
-@Serializable
-data class CounterRemovalCreatureInfo(
-    val entityId: EntityId,
-    val name: String,
-    val availableCounters: Int,
-    val imageUri: String? = null
-)
-
-/**
- * Error codes for server error responses.
- */
 @Serializable
 enum class ErrorCode {
     NOT_CONNECTED,
@@ -1089,9 +892,6 @@ enum class ErrorCode {
     INTERNAL_ERROR
 }
 
-/**
- * Reasons why a game ended.
- */
 @Serializable
 enum class GameOverReason {
     LIFE_ZERO,
