@@ -40,7 +40,7 @@ All the backlog's claims check out against head, with refinements:
 
 ## Implementation phases
 
-### Phase 1 — SDK: extend `ModalEffect` / `Mode`
+### Phase 1 — SDK: extend `ModalEffect` / `Mode` [DONE]
 
 File: `mtg-sdk/.../scripting/effects/CompositeEffects.kt`
 
@@ -55,7 +55,7 @@ Why: prereq for both `minChooseCount` tests (Austere Command) and `allowRepeat` 
 
 Risks: Serialization round-trip — `ModalEffect` is already `@Serializable` and all fields have defaults, so existing card JSON still parses. Add a SDK serialization round-trip test covering both new fields.
 
-### Phase 2 — Engine core: extend `CastSpell` and `SpellOnStackComponent`
+### Phase 2 — Engine core: extend `CastSpell` and `SpellOnStackComponent` [DONE]
 
 File: `rules-engine/.../core/GameAction.kt` (lines 51–67).
 
@@ -76,7 +76,7 @@ File: `rules-engine/.../state/components/stack/StackComponents.kt`
 
 Risks: `SpellOnStackComponent` is serialized over the wire. Existing saved games / in-flight serializations will deserialize fine because `modeTargetsOrdered` defaults to empty. Add a dedicated serialization round-trip test with `chosenModes = [0, 0], modeTargetsOrdered = [[Permanent(a)], [Permanent(b)]]`.
 
-### Phase 3 — `CastSpellEnumerator` rewrite for choose-N
+### Phase 3 — `CastSpellEnumerator` rewrite for choose-N [DONE]
 
 File: `rules-engine/.../legalactions/enumerators/CastSpellEnumerator.kt`
 
@@ -96,7 +96,7 @@ File: `rules-engine/.../legalactions/enumerators/CastSpellEnumerator.kt`
 
 Risks: `LegalAction` shape change is a client-visible DTO. Must update `ClientStateTransformer`'s legal-action mapping and `web-client`.
 
-### Phase 4 — `CastSpellHandler` + new `CastModalContinuation`
+### Phase 4 — `CastSpellHandler` + new `CastModalContinuation` [DONE]
 
 File: `rules-engine/.../handlers/actions/spell/CastSpellHandler.kt`
 

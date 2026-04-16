@@ -74,6 +74,7 @@ import com.wingedsheep.sdk.core.Keyword
 
 import com.wingedsheep.engine.handlers.effects.TargetResolutionUtils.toEntityId
 import com.wingedsheep.engine.state.components.player.GrantedSpellKeywordsComponent
+import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.engine.state.components.stack.TriggeredAbilityOnStackComponent
 import kotlin.reflect.KClass
 
@@ -99,6 +100,7 @@ class CastSpellHandler(
     private val conditionEvaluator: ConditionEvaluator,
     private val triggerDetector: TriggerDetector,
     private val triggerProcessor: TriggerProcessor,
+    private val targetFinder: com.wingedsheep.engine.handlers.TargetFinder = com.wingedsheep.engine.handlers.TargetFinder(),
 ) : ActionHandler<CastSpell> {
     override val actionType: KClass<CastSpell> = CastSpell::class
 
@@ -164,6 +166,17 @@ class CastSpellHandler(
             val restrictionError = validateCastRestrictions(state, cardDef.script.castRestrictions, action.playerId)
             if (restrictionError != null) {
                 return restrictionError
+            }
+        }
+
+        // Choose-N modal shape checks (rules 700.2a / 700.2d). Enforced only when the
+        // action arrives with chosenModes populated — the cast-time continuation flow
+        // starts with an empty list which falls through to the pause in execute().
+        if (cardDef != null && action.chosenModes.isNotEmpty()) {
+            val modalEffect = cardDef.script.spellEffect as? ModalEffect
+            if (modalEffect != null) {
+                val modalError = validateChosenModeShape(modalEffect, action)
+                if (modalError != null) return modalError
             }
         }
 
@@ -503,6 +516,35 @@ class CastSpellHandler(
     }
 
     /**
+     * Validates the shape of a choose-N modal cast action (rules 700.2a / 700.2d).
+     *
+     * Checks: mode indices are in range, chosen count falls within
+     * `[minChooseCount, chooseCount]`, duplicates only appear when `allowRepeat`, and
+     * `modeTargetsOrdered` (if provided) is aligned 1:1 with `chosenModes`.
+     */
+    private fun validateChosenModeShape(modalEffect: ModalEffect, action: CastSpell): String? {
+        val chosen = action.chosenModes
+        for (idx in chosen) {
+            if (idx < 0 || idx >= modalEffect.modes.size) {
+                return "Invalid mode index: $idx"
+            }
+        }
+        if (chosen.size < modalEffect.minChooseCount) {
+            return "Too few modes chosen: ${chosen.size} (minimum ${modalEffect.minChooseCount})"
+        }
+        if (chosen.size > modalEffect.chooseCount) {
+            return "Too many modes chosen: ${chosen.size} (maximum ${modalEffect.chooseCount})"
+        }
+        if (!modalEffect.allowRepeat && chosen.distinct().size != chosen.size) {
+            return "Modes cannot be chosen more than once for this spell"
+        }
+        if (action.modeTargetsOrdered.isNotEmpty() && action.modeTargetsOrdered.size != chosen.size) {
+            return "modeTargetsOrdered size (${action.modeTargetsOrdered.size}) must match chosenModes size (${chosen.size})"
+        }
+        return null
+    }
+
+    /**
      * Resolves the additional costs for a spell, considering per-mode overrides.
      *
      * If any chosen mode specifies its own additionalCosts, costs from every such mode are unioned
@@ -751,6 +793,13 @@ class CastSpellHandler(
 
         val xValue = action.xValue ?: 0
         val cardDef = cardRegistry.getCard(cardComponent.cardDefinitionId)
+
+        // Cast-time mode selection for choose-N modal spells (rules 601.2b, 700.2).
+        // Must run before cost payment so cancellation leaves no side effects.
+        val modalEffect = cardDef?.script?.spellEffect as? ModalEffect
+        if (modalEffect != null && action.chosenModes.isEmpty() && modalEffect.chooseCount > 1) {
+            return pauseForCastTimeModeSelection(currentState, action, cardComponent, modalEffect)
+        }
 
         // Calculate effective cost (free if PlayWithoutPayingCostComponent is present)
         val playForFreeInExecute = zoneResolver.hasPlayWithoutPayingCost(currentState, action.playerId, action.cardId)
@@ -1459,6 +1508,250 @@ class CastSpellHandler(
         )
     }
 
+    /**
+     * Initial entry point for choose-N modal cast-time mode selection (rule 700.2).
+     *
+     * Pre-filters modes by 700.2a target legality, then pauses with a ChooseOption
+     * decision in the CASTING phase. The resumer iterates until `chooseCount` modes
+     * are picked (or "Done" fires once `minChooseCount` is satisfied), then
+     * transitions to per-mode target selection or directly back into [execute] with
+     * a fully populated action.
+     */
+    private fun pauseForCastTimeModeSelection(
+        currentState: GameState,
+        action: CastSpell,
+        cardComponent: CardComponent,
+        modalEffect: ModalEffect
+    ): ExecutionResult {
+        val available = modalEffect.modes.withIndex()
+            .filter { (_, mode) -> modeHasSatisfiableTargets(currentState, action.playerId, action.cardId, mode) }
+            .map { it.index }
+
+        if (available.size < modalEffect.minChooseCount) {
+            return ExecutionResult.error(currentState, "No legal mode selection available for ${cardComponent.name}")
+        }
+
+        return presentCastModalModeDecision(
+            state = currentState,
+            cardId = action.cardId,
+            casterId = action.playerId,
+            cardName = cardComponent.name,
+            baseCastAction = action,
+            modalEffect = modalEffect,
+            selectedModeIndices = emptyList(),
+            availableIndices = if (modalEffect.allowRepeat) null else available,
+            repeatAvailableIndices = if (modalEffect.allowRepeat) available else null
+        )
+    }
+
+    /**
+     * Check whether a modal mode can potentially be cast — either it has no targets, or
+     * at least one legal target exists for each of its [TargetRequirement]s (rule 700.2a).
+     */
+    private fun modeHasSatisfiableTargets(
+        state: GameState,
+        casterId: EntityId,
+        sourceId: EntityId,
+        mode: com.wingedsheep.sdk.scripting.effects.Mode
+    ): Boolean {
+        if (mode.targetRequirements.isEmpty()) return true
+        return mode.targetRequirements.all { req ->
+            req.effectiveMinCount == 0 ||
+                targetFinder.findLegalTargets(state, req, casterId, sourceId).isNotEmpty()
+        }
+    }
+
+    /**
+     * Build a ChooseOptionDecision + CastModalModeSelectionContinuation for the next
+     * mode pick. Shared between the initial pause (here) and the iterative resumer.
+     */
+    internal fun presentCastModalModeDecision(
+        state: GameState,
+        cardId: EntityId,
+        casterId: EntityId,
+        cardName: String,
+        baseCastAction: CastSpell,
+        modalEffect: ModalEffect,
+        selectedModeIndices: List<Int>,
+        availableIndices: List<Int>?,
+        repeatAvailableIndices: List<Int>?
+    ): ExecutionResult {
+        val offerIndices = availableIndices ?: repeatAvailableIndices ?: modalEffect.modes.indices.toList()
+        val doneOffered = selectedModeIndices.size >= modalEffect.minChooseCount &&
+            selectedModeIndices.size < modalEffect.chooseCount
+
+        val optionLabels = offerIndices.map { modalEffect.modes[it].description } +
+            (if (doneOffered) listOf("Done") else emptyList())
+
+        val decisionId = java.util.UUID.randomUUID().toString()
+        val pickNumber = selectedModeIndices.size + 1
+        val prompt = "Choose a mode for $cardName ($pickNumber of ${modalEffect.chooseCount})"
+        val decision = ChooseOptionDecision(
+            id = decisionId,
+            playerId = casterId,
+            prompt = prompt,
+            context = DecisionContext(
+                sourceId = cardId,
+                sourceName = cardName,
+                phase = DecisionPhase.CASTING
+            ),
+            options = optionLabels
+        )
+
+        val continuation = com.wingedsheep.engine.core.CastModalModeSelectionContinuation(
+            decisionId = decisionId,
+            cardId = cardId,
+            casterId = casterId,
+            baseCastAction = baseCastAction,
+            modes = modalEffect.modes,
+            chooseCount = modalEffect.chooseCount,
+            minChooseCount = modalEffect.minChooseCount,
+            allowRepeat = modalEffect.allowRepeat,
+            offeredIndices = offerIndices,
+            availableIndices = availableIndices,
+            selectedModeIndices = selectedModeIndices,
+            doneOptionOffered = doneOffered
+        )
+
+        val pausedState = state
+            .pushContinuation(continuation)
+            .withPendingDecision(decision)
+            .withPriority(casterId)
+
+        return ExecutionResult.paused(
+            pausedState,
+            decision,
+            listOf(
+                DecisionRequestedEvent(
+                    decisionId = decisionId,
+                    playerId = casterId,
+                    decisionType = "CHOOSE_OPTION",
+                    prompt = decision.prompt
+                )
+            )
+        )
+    }
+
+    /**
+     * Build a ChooseTargetsDecision + CastModalTargetSelectionContinuation for the next
+     * mode that needs targets. Skips modes whose requirements are empty, advancing the
+     * ordinal and appending an empty target list until it finds one that needs targets
+     * or all modes are resolved.
+     */
+    internal fun presentCastModalTargetDecision(
+        state: GameState,
+        cardId: EntityId,
+        casterId: EntityId,
+        cardName: String,
+        baseCastAction: CastSpell,
+        modes: List<com.wingedsheep.sdk.scripting.effects.Mode>,
+        chosenModeIndices: List<Int>,
+        resolvedModeTargets: List<List<ChosenTarget>>,
+        currentOrdinal: Int
+    ): ExecutionResult {
+        var ordinal = currentOrdinal
+        var targetsAccum = resolvedModeTargets
+
+        while (ordinal < chosenModeIndices.size) {
+            val modeIndex = chosenModeIndices[ordinal]
+            val mode = modes[modeIndex]
+            if (mode.targetRequirements.isEmpty()) {
+                targetsAccum = targetsAccum + listOf(emptyList())
+                ordinal++
+                continue
+            }
+
+            // Find legal targets per requirement. If any required slot has no legal
+            // targets (and is mandatory), this mode can't resolve — surface an error.
+            val legalTargetsMap = mutableMapOf<Int, List<EntityId>>()
+            val requirementInfos = mode.targetRequirements.mapIndexed { index, req ->
+                val legal = targetFinder.findLegalTargets(state, req, casterId, cardId)
+                legalTargetsMap[index] = legal
+                com.wingedsheep.engine.core.TargetRequirementInfo(
+                    index = index,
+                    description = req.description,
+                    minTargets = req.effectiveMinCount,
+                    maxTargets = req.count
+                )
+            }
+            val allSatisfied = requirementInfos.all { info ->
+                (legalTargetsMap[info.index]?.isNotEmpty() == true) || info.minTargets == 0
+            }
+            if (!allSatisfied) {
+                return ExecutionResult.error(state, "No legal targets for mode: ${mode.description}")
+            }
+
+            val decisionId = java.util.UUID.randomUUID().toString()
+            val pickNumber = ordinal + 1
+            val prompt = "Choose targets for $cardName — ${mode.description} ($pickNumber of ${chosenModeIndices.size})"
+            val decision = com.wingedsheep.engine.core.ChooseTargetsDecision(
+                id = decisionId,
+                playerId = casterId,
+                prompt = prompt,
+                context = DecisionContext(
+                    sourceId = cardId,
+                    sourceName = cardName,
+                    phase = DecisionPhase.CASTING
+                ),
+                targetRequirements = requirementInfos,
+                legalTargets = legalTargetsMap,
+                canCancel = false
+            )
+
+            val continuation = com.wingedsheep.engine.core.CastModalTargetSelectionContinuation(
+                decisionId = decisionId,
+                cardId = cardId,
+                casterId = casterId,
+                baseCastAction = baseCastAction,
+                modes = modes,
+                chosenModeIndices = chosenModeIndices,
+                resolvedModeTargets = targetsAccum,
+                currentOrdinal = ordinal
+            )
+
+            val pausedState = state
+                .pushContinuation(continuation)
+                .withPendingDecision(decision)
+                .withPriority(casterId)
+
+            return ExecutionResult.paused(
+                pausedState,
+                decision,
+                listOf(
+                    DecisionRequestedEvent(
+                        decisionId = decisionId,
+                        playerId = casterId,
+                        decisionType = "CHOOSE_TARGETS",
+                        prompt = decision.prompt
+                    )
+                )
+            )
+        }
+
+        // All modes resolved without needing another decision — finalize directly.
+        return finalizeModalCast(state, baseCastAction, chosenModeIndices, targetsAccum)
+    }
+
+    /**
+     * Complete a choose-N modal cast by re-entering [execute] with a finalized
+     * [CastSpell] action. `chosenModes`, `modeTargetsOrdered`, and the flat `targets`
+     * union are populated so the normal cost / target / stack flow runs exactly once.
+     */
+    internal fun finalizeModalCast(
+        state: GameState,
+        baseCastAction: CastSpell,
+        chosenModeIndices: List<Int>,
+        resolvedModeTargets: List<List<ChosenTarget>>
+    ): ExecutionResult {
+        val flatTargets = resolvedModeTargets.flatten()
+        val finalAction = baseCastAction.copy(
+            chosenModes = chosenModeIndices,
+            modeTargetsOrdered = resolvedModeTargets,
+            targets = flatTargets
+        )
+        return execute(state, finalAction)
+    }
+
     companion object {
         fun create(services: EngineServices): CastSpellHandler {
             return CastSpellHandler(
@@ -1472,7 +1765,8 @@ class CastSpellHandler(
                 services.targetValidator,
                 services.conditionEvaluator,
                 services.triggerDetector,
-                services.triggerProcessor
+                services.triggerProcessor,
+                services.targetFinder
             )
         }
     }

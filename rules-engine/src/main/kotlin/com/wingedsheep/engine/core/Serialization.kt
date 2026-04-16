@@ -181,6 +181,8 @@ val engineSerializersModule = SerializersModule {
         subclass(PayLifeOrEnterTappedSpellContinuation::class)
         subclass(RevealCountersContinuation::class)
         subclass(CastWithCreatureTypeContinuation::class)
+        subclass(CastModalModeSelectionContinuation::class)
+        subclass(CastModalTargetSelectionContinuation::class)
         subclass(MoveCollectionAuraTargetContinuation::class)
         subclass(ChainCopyAfterActionContinuation::class)
         subclass(ChainCopyDecisionContinuation::class)
