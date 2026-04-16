@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.core
 
+import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.effects.Effect
 import com.wingedsheep.sdk.scripting.targets.TargetRequirement
@@ -94,6 +95,42 @@ data class StormCopyTargetContinuation(
     val controllerId: EntityId,
     val sourceId: EntityId,
     val totalCopies: Int = remainingCopies  // Original total copies (defaults to remainingCopies for backward compat)
+) : ContinuationFrame
+
+/**
+ * Resume Storm modal target selection (rule 702.40a + 707.7c).
+ *
+ * Modal Storm spells keep their chosen modes on every copy (700.2g — modes are
+ * decided once by the caster), but the copy controller may re-choose targets
+ * for each mode per 702.40a. This continuation iterates through chosen modes
+ * for a single copy, pausing once per mode that has target requirements and
+ * advancing without prompt for no-target modes. When all modes are collected
+ * for a copy, the copy is pushed on the stack and the loop restarts for the
+ * next copy.
+ *
+ * @property remainingCopies Copies still to create (including the one being built)
+ * @property totalCopies Original copy count (for copyIndex labeling)
+ * @property spellName Display name of the original spell
+ * @property controllerId Player who controls the copies and picks targets
+ * @property sourceId Original spell's entity ID on the stack
+ * @property chosenModes Inherited chosen mode indices — fixed for every copy
+ * @property modeTargetRequirements Inherited per-mode target requirements
+ * @property accumulatedOrdinalTargets Targets chosen so far for the current copy,
+ *   aligned 1:1 with [chosenModes] positions 0..[currentOrdinal]-1
+ * @property currentOrdinal Index into [chosenModes] whose targets we are collecting
+ */
+@Serializable
+data class StormCopyModalTargetContinuation(
+    override val decisionId: String,
+    val remainingCopies: Int,
+    val totalCopies: Int,
+    val spellName: String,
+    val controllerId: EntityId,
+    val sourceId: EntityId,
+    val chosenModes: List<Int>,
+    val modeTargetRequirements: Map<Int, List<TargetRequirement>>,
+    val accumulatedOrdinalTargets: List<List<ChosenTarget>>,
+    val currentOrdinal: Int
 ) : ContinuationFrame
 
 /**

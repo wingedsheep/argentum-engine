@@ -24,6 +24,7 @@ class MiscContinuationResumer(
         resumer(DrawUpToContinuation::class, ::resumeDrawUpTo),
         resumer(RepeatWhileContinuation::class, ::resumeRepeatWhile),
         resumer(StormCopyTargetContinuation::class, ::resumeStormCopyTarget),
+        resumer(StormCopyModalTargetContinuation::class, ::resumeStormCopyModalTarget),
         resumer(DistributeCountersContinuation::class, ::resumeDistributeCounters),
         resumer(AddDynamicManaContinuation::class, ::resumeAddDynamicMana),
         resumer(ReturnFromLinkedExileContinuation::class) { state, continuation, response, checkForMore ->
@@ -204,6 +205,46 @@ class MiscContinuationResumer(
         currentState = currentState.pushContinuation(nextContinuation)
 
         return ExecutionResult.paused(currentState, decision, allEvents)
+    }
+
+    private fun resumeStormCopyModalTarget(
+        state: GameState,
+        continuation: StormCopyModalTargetContinuation,
+        response: DecisionResponse,
+        checkForMore: CheckForMore
+    ): ExecutionResult {
+        if (response !is TargetsResponse) {
+            return ExecutionResult.error(state, "Expected target selection response for Storm modal copy")
+        }
+
+        val selectedTargets = response.selectedTargets.entries
+            .sortedBy { it.key }
+            .flatMap { (_, ids) -> ids.map { entityId -> entityIdToChosenTarget(state, entityId) } }
+
+        val updatedAccumulated = continuation.accumulatedOrdinalTargets + listOf(selectedTargets)
+        val nextOrdinal = continuation.currentOrdinal + 1
+
+        val result = com.wingedsheep.engine.handlers.effects.stack.StormCopyEffectExecutor.driveStormModalCopies(
+            state = state,
+            stackResolver = services.stackResolver,
+            targetFinder = services.targetFinder,
+            sourceId = continuation.sourceId,
+            controllerId = continuation.controllerId,
+            spellName = continuation.spellName,
+            chosenModes = continuation.chosenModes,
+            modeTargetRequirements = continuation.modeTargetRequirements,
+            accumulatedOrdinalTargets = updatedAccumulated,
+            currentOrdinal = nextOrdinal,
+            remainingCopies = continuation.remainingCopies,
+            totalCopies = continuation.totalCopies,
+            priorEvents = emptyList()
+        )
+
+        if (result.isPaused) {
+            return result
+        }
+
+        return checkForMore(result.state, result.events.toList())
     }
 
     private fun resumeDistributeCounters(

@@ -88,7 +88,7 @@ Per 707.7c, a copy inherits *all* decisions made for the original. Today we only
 
 We should build copies by cloning the `SpellOnStackComponent` of the original (minus payment/cast-only flags), not by constructing a fresh effect from the card definition.
 
-### 4. Modal spells with targets — copies can't re-choose per-mode targets
+### 4. Modal spells with targets — copies can't re-choose per-mode targets  [DONE]
 
 `StormCopyEffectExecutor.kt` lines 47–49 explicitly short-circuit: if `chosenModes.isNotEmpty()`, all copies inherit targets verbatim and the controller never gets to pick new ones. Storm's rules text ("you may choose new targets for any of the copies") makes no modal exception — for modal targeted spells (rare in Scourge, but plausible for future sets and directly reachable via Ral's granted Storm on any modal instant/sorcery), we need per-mode retargeting decisions.
 
@@ -146,11 +146,13 @@ This is the single biggest change. The goal: when `StormCopyEffect` resolves, ea
 2. `chosenModes` / `modeTargetsOrdered` / `modeTargetRequirements` carry over by default (already handled today; fold into the clone).
 3. Skip fields that are payment-specific and shouldn't re-trigger (e.g., don't re-emit `ManaSpentEvent` for copies — mana is only spent once per 707.10).
 
-### Phase 4 — Per-mode retargeting for modal spells
+### Phase 4 — Per-mode retargeting for modal spells [DONE]
 
 1. In `StormCopyEffectExecutor`, when the source has non-empty `chosenModes`, build a sequence of `ChooseTargetsDecision`s — one per mode that has targets — instead of inheriting verbatim.
 2. Reuse `StormCopyTargetContinuation` but extend it with a mode cursor, or introduce `StormCopyModalTargetContinuation` if it keeps the control flow simpler.
 3. After the final mode's targets are chosen for a copy, put that copy on the stack and move to the next copy.
+
+Landed as `StormCopyModalTargetContinuation` driving a `driveStormModalCopies` loop in `StormCopyEffectExecutor`. Modes without target requirements (and modes with requirements but no legal targets) inherit an empty slot / the original's per-mode targets respectively; modes that have legal targets prompt for retargeting. Bug #4 in the divergences list is also resolved.
 
 ### Phase 5 — Illegal targets → copy still created
 

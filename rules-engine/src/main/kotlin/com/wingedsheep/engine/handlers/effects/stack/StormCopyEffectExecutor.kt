@@ -6,6 +6,7 @@ import com.wingedsheep.engine.handlers.TargetFinder
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.mechanics.stack.StackResolver
 import com.wingedsheep.engine.state.GameState
+import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.engine.state.components.stack.SpellOnStackComponent
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.effects.StormCopyEffect
@@ -39,11 +40,33 @@ class StormCopyEffectExecutor(
         val stackResolver = StackResolver(cardRegistry = cardRegistry)
 
         // Modal source (700.2g): targets live per-mode on the original's
-        // [SpellOnStackComponent], not as a flat TargetsComponent. Inherit modes
-        // and per-mode targets onto each copy directly — no flat re-targeting.
+        // [SpellOnStackComponent], not as a flat TargetsComponent. Modes are fixed
+        // for every copy, but per 702.40a the copy controller may pick new targets
+        // for each mode — iterate per-mode / per-copy via StormCopyModalTargetContinuation.
         val sourceSpell = context.sourceId?.let { state.getEntity(it)?.get<SpellOnStackComponent>() }
         if (sourceSpell != null && sourceSpell.chosenModes.isNotEmpty()) {
-            return createAllCopiesNoTargets(state, effect, context, stackResolver)
+            val sourceId = context.sourceId
+            val hasAnyTargetedMode = sourceSpell.chosenModes.any { modeIdx ->
+                sourceSpell.modeTargetRequirements[modeIdx]?.isNotEmpty() == true
+            }
+            if (!hasAnyTargetedMode) {
+                return createAllCopiesNoTargets(state, effect, context, stackResolver)
+            }
+            return EffectResult.from(driveStormModalCopies(
+                state = state,
+                stackResolver = stackResolver,
+                targetFinder = targetFinder,
+                sourceId = sourceId,
+                controllerId = context.controllerId,
+                spellName = effect.spellName,
+                chosenModes = sourceSpell.chosenModes,
+                modeTargetRequirements = sourceSpell.modeTargetRequirements,
+                accumulatedOrdinalTargets = emptyList(),
+                currentOrdinal = 0,
+                remainingCopies = effect.copyCount,
+                totalCopies = effect.copyCount,
+                priorEvents = emptyList()
+            ))
         }
 
         // If spell has no targets, create all copies immediately
@@ -145,5 +168,135 @@ class StormCopyEffectExecutor(
         val stateWithContinuation = stateWithDecision.pushContinuation(continuation)
 
         return EffectResult.paused(stateWithContinuation, decision)
+    }
+
+    companion object {
+        /**
+         * Drive per-copy / per-mode retargeting for a modal Storm source.
+         *
+         * Loops through [chosenModes] for the current copy; for each mode with
+         * target requirements it pauses with a [ChooseTargetsDecision] and pushes a
+         * [StormCopyModalTargetContinuation]; modes without requirements inherit
+         * an empty target slot. When all ordinals are collected the copy is
+         * pushed onto the stack via [StackResolver.putSpellCopy] and the loop
+         * restarts for the next copy.
+         *
+         * Called from [execute] on first entry and from the resumer after each
+         * TargetsResponse appends a mode's targets.
+         */
+        fun driveStormModalCopies(
+            state: GameState,
+            stackResolver: StackResolver,
+            targetFinder: TargetFinder,
+            sourceId: EntityId,
+            controllerId: EntityId,
+            spellName: String,
+            chosenModes: List<Int>,
+            modeTargetRequirements: Map<Int, List<TargetRequirement>>,
+            accumulatedOrdinalTargets: List<List<ChosenTarget>>,
+            currentOrdinal: Int,
+            remainingCopies: Int,
+            totalCopies: Int,
+            priorEvents: List<GameEvent>
+        ): ExecutionResult {
+            var currentState = state
+            val allEvents = priorEvents.toMutableList()
+            var accumulated = accumulatedOrdinalTargets
+            var ordinal = currentOrdinal
+            var copiesLeft = remainingCopies
+
+            val sourceSpellComp = currentState.getEntity(sourceId)?.get<SpellOnStackComponent>()
+                ?: return ExecutionResult.error(currentState, "Storm source spell not found: $sourceId")
+            val sourceModeTargetsOrdered = sourceSpellComp.modeTargetsOrdered
+
+            while (copiesLeft > 0) {
+                while (ordinal < chosenModes.size) {
+                    val modeIndex = chosenModes[ordinal]
+                    val reqs = modeTargetRequirements[modeIndex] ?: emptyList()
+
+                    if (reqs.isEmpty()) {
+                        accumulated = accumulated + listOf(emptyList())
+                        ordinal++
+                        continue
+                    }
+
+                    val legalTargetsMap = mutableMapOf<Int, List<EntityId>>()
+                    for ((reqIndex, requirement) in reqs.withIndex()) {
+                        legalTargetsMap[reqIndex] = targetFinder.findLegalTargets(
+                            currentState, requirement, controllerId, sourceId
+                        )
+                    }
+
+                    val hasNoLegalTargets = legalTargetsMap.any { (_, t) -> t.isEmpty() }
+                    if (hasNoLegalTargets) {
+                        // Fall back to the original's targets for this mode; a future
+                        // phase will instead create the copy with illegal targets and
+                        // let it fizzle per 707.7b / 608.2b.
+                        accumulated = accumulated + listOf(sourceModeTargetsOrdered.getOrNull(ordinal) ?: emptyList())
+                        ordinal++
+                        continue
+                    }
+
+                    val decisionId = "storm-copy-modal-target-${System.nanoTime()}"
+                    val copyNumber = totalCopies - copiesLeft + 1
+                    val decision = ChooseTargetsDecision(
+                        id = decisionId,
+                        playerId = controllerId,
+                        prompt = "Choose targets for Storm copy $copyNumber of $spellName " +
+                            "(mode ${ordinal + 1} of ${chosenModes.size})",
+                        context = DecisionContext(
+                            phase = DecisionPhase.CASTING,
+                            sourceName = spellName
+                        ),
+                        targetRequirements = reqs.mapIndexed { index, req ->
+                            TargetRequirementInfo(
+                                index = index,
+                                description = req.description
+                            )
+                        },
+                        legalTargets = legalTargetsMap
+                    )
+
+                    val continuation = StormCopyModalTargetContinuation(
+                        decisionId = decisionId,
+                        remainingCopies = copiesLeft,
+                        totalCopies = totalCopies,
+                        spellName = spellName,
+                        controllerId = controllerId,
+                        sourceId = sourceId,
+                        chosenModes = chosenModes,
+                        modeTargetRequirements = modeTargetRequirements,
+                        accumulatedOrdinalTargets = accumulated,
+                        currentOrdinal = ordinal
+                    )
+
+                    val pausedState = currentState
+                        .withPendingDecision(decision)
+                        .pushContinuation(continuation)
+                    return ExecutionResult.paused(pausedState, decision, allEvents)
+                }
+
+                val copyIndex = totalCopies - copiesLeft + 1
+                val copyResult = stackResolver.putSpellCopy(
+                    state = currentState,
+                    sourceSpellId = sourceId,
+                    chosenModes = chosenModes,
+                    modeTargetsOrdered = accumulated,
+                    modeTargetRequirements = modeTargetRequirements,
+                    copyIndex = copyIndex,
+                    copyTotal = totalCopies,
+                    controllerId = controllerId
+                )
+                if (!copyResult.isSuccess) return copyResult
+                currentState = copyResult.newState
+                allEvents.addAll(copyResult.events)
+
+                copiesLeft--
+                accumulated = emptyList()
+                ordinal = 0
+            }
+
+            return ExecutionResult.success(currentState, allEvents)
+        }
     }
 }

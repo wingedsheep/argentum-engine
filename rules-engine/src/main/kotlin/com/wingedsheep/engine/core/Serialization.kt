@@ -210,6 +210,7 @@ val engineSerializersModule = SerializersModule {
         subclass(TypecycleSearchContinuation::class)
         subclass(DistributeCountersContinuation::class)
         subclass(StormCopyTargetContinuation::class)
+        subclass(StormCopyModalTargetContinuation::class)
         subclass(DeflectDamageSourceChoiceContinuation::class)
         subclass(PreventDamageFromChosenSourceContinuation::class)
         subclass(AddDynamicManaContinuation::class)
