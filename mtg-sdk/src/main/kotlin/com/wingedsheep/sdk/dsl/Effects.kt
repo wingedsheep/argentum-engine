@@ -56,6 +56,7 @@ import com.wingedsheep.sdk.scripting.effects.GrantHexproofEffect
 import com.wingedsheep.sdk.scripting.effects.GrantKeywordEffect
 import com.wingedsheep.sdk.scripting.effects.GrantKeywordToAttackersBlockedByEffect
 import com.wingedsheep.sdk.scripting.effects.RemoveAllAbilitiesEffect
+import com.wingedsheep.sdk.scripting.effects.RemoveCountersEffect
 import com.wingedsheep.sdk.scripting.effects.RemoveKeywordEffect
 import com.wingedsheep.sdk.scripting.effects.LoseLifeEffect
 import com.wingedsheep.sdk.scripting.effects.SetLifeTotalEffect
@@ -633,6 +634,13 @@ object Effects {
      */
     fun AddDynamicCounters(counterType: String, amount: DynamicAmount, target: EffectTarget): Effect =
         AddDynamicCountersEffect(counterType, amount, target)
+
+    /**
+     * Remove counters of a given type from a target. No-op if the target has fewer
+     * than `count` counters of that type.
+     */
+    fun RemoveCounters(counterType: String, count: Int, target: EffectTarget): Effect =
+        RemoveCountersEffect(counterType, count, target)
 
     /**
      * Add counters to all entities in a named collection.

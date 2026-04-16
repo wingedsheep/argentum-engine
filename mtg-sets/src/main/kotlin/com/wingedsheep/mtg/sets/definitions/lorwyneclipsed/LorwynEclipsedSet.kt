@@ -41,6 +41,7 @@ object LorwynEclipsedSet {
         GlenElendrasAnswer,
         GoldmeadowNomad,
         HarmonizedCrescendo,
+        HeirloomAuntie,
         HovelHurler,
         Lavaleaper,
         MirrormindCrown,
