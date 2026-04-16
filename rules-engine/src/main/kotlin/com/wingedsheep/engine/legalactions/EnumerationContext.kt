@@ -8,6 +8,7 @@ import com.wingedsheep.engine.legalactions.utils.CostEnumerationUtils
 import com.wingedsheep.engine.legalactions.utils.TargetEnumerationUtils
 import com.wingedsheep.engine.mechanics.layers.ProjectedState
 import com.wingedsheep.engine.mechanics.mana.CostCalculator
+import com.wingedsheep.engine.mechanics.mana.GrantedKeywordResolver
 import com.wingedsheep.engine.mechanics.mana.ManaSource
 import com.wingedsheep.engine.mechanics.mana.ManaSolver
 import com.wingedsheep.engine.registry.CardRegistry
@@ -46,6 +47,8 @@ class EnumerationContext(
     val mode: EnumerationMode = EnumerationMode.FULL
 ) {
     val skipAutoTapPreview: Boolean get() = mode == EnumerationMode.ACTIONS_ONLY
+    // Granted-keyword resolver (e.g., convoke granted by Eirdu via GrantKeywordToOwnSpells)
+    val grantedKeywordResolver by lazy { GrantedKeywordResolver(cardRegistry) }
     // Utility classes (lazy initialized)
     val targetUtils by lazy { TargetEnumerationUtils(predicateEvaluator) }
     val costUtils by lazy { CostEnumerationUtils(manaSolver, costCalculator, predicateEvaluator, cardRegistry) }

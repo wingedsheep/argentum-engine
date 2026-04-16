@@ -38,9 +38,12 @@ data class AlternativePaymentResult(
  *             {1} or one mana of that creature's color.
  *
  * Alternative payments are applied AFTER cost reductions (like Ghalta/Affinity) but BEFORE
- * normal mana payment.
+ * normal mana payment. Keyword checks go through [GrantedKeywordResolver] so both intrinsic
+ * (printed) and granted (static-ability) convoke/delve resolve through one code path.
  */
-class AlternativePaymentHandler {
+class AlternativePaymentHandler(
+    private val resolver: GrantedKeywordResolver? = null
+) {
 
     /**
      * Apply alternative payment choices to reduce the effective cost.
@@ -65,7 +68,7 @@ class AlternativePaymentHandler {
 
         // Handle Delve
         if (payment.delvedCards.isNotEmpty()) {
-            val hasDelve = cardDef.keywords.contains(Keyword.DELVE)
+            val hasDelve = effectivelyHasKeyword(state, playerId, cardDef, Keyword.DELVE)
             if (hasDelve) {
                 val delveResult = applyDelve(currentState, reducedCost, payment.delvedCards, playerId)
                 currentState = delveResult.newState
@@ -76,7 +79,7 @@ class AlternativePaymentHandler {
 
         // Handle Convoke
         if (payment.convokedCreatures.isNotEmpty()) {
-            val hasConvoke = cardDef.keywords.contains(Keyword.CONVOKE)
+            val hasConvoke = effectivelyHasKeyword(state, playerId, cardDef, Keyword.CONVOKE)
             if (hasConvoke) {
                 val convokeResult = applyConvoke(currentState, reducedCost, payment.convokedCreatures, playerId)
                 currentState = convokeResult.newState
@@ -222,19 +225,27 @@ class AlternativePaymentHandler {
     /**
      * Calculate the reduced cost after alternative payment without mutating state.
      * Used during validation to check if the player can afford the spell.
+     *
+     * [state] and [playerId] are used to detect keywords granted by battlefield permanents
+     * (e.g., Eirdu: "Creature spells you cast have convoke."). Pass null to keep the legacy
+     * behaviour that only consults the card's printed keywords.
      */
     fun calculateReducedCost(
         cost: ManaCost,
         payment: AlternativePaymentChoice,
-        cardDef: CardDefinition
+        cardDef: CardDefinition,
+        state: GameState? = null,
+        playerId: EntityId? = null
     ): ManaCost {
         var reducedCost = cost
 
-        if (payment.delvedCards.isNotEmpty() && cardDef.keywords.contains(Keyword.DELVE)) {
+        val hasDelve = effectivelyHasKeyword(state, playerId, cardDef, Keyword.DELVE)
+        if (payment.delvedCards.isNotEmpty() && hasDelve) {
             reducedCost = reduceGenericCost(reducedCost, payment.delvedCards.size)
         }
 
-        if (payment.convokedCreatures.isNotEmpty() && cardDef.keywords.contains(Keyword.CONVOKE)) {
+        val hasConvoke = effectivelyHasKeyword(state, playerId, cardDef, Keyword.CONVOKE)
+        if (payment.convokedCreatures.isNotEmpty() && hasConvoke) {
             for ((_, convokePayment) in payment.convokedCreatures) {
                 val paymentColor = convokePayment.color
                 reducedCost = if (paymentColor != null) {
@@ -246,6 +257,22 @@ class AlternativePaymentHandler {
         }
 
         return reducedCost
+    }
+
+    /**
+     * True when [cardDef] effectively has [keyword] — either printed on the card or granted by
+     * a battlefield permanent [playerId] controls. Returns the printed check when
+     * state/playerId/resolver aren't available.
+     */
+    private fun effectivelyHasKeyword(
+        state: GameState?,
+        playerId: EntityId?,
+        cardDef: CardDefinition,
+        keyword: Keyword
+    ): Boolean {
+        if (cardDef.keywords.contains(keyword)) return true
+        if (state == null || playerId == null || resolver == null) return false
+        return resolver.hasKeyword(state, playerId, cardDef, keyword)
     }
 
     /**
@@ -293,9 +320,22 @@ class AlternativePaymentHandler {
         return reducedCost
     }
 
+    /**
+     * Does [cardDef] support alternative payment when cast by [playerId] in [state]?
+     * Returns true when the card prints DELVE/CONVOKE or a battlefield permanent grants one.
+     */
+    fun supportsAlternativePayment(
+        state: GameState,
+        playerId: EntityId,
+        cardDef: CardDefinition
+    ): Boolean =
+        effectivelyHasKeyword(state, playerId, cardDef, Keyword.DELVE) ||
+            effectivelyHasKeyword(state, playerId, cardDef, Keyword.CONVOKE)
+
     companion object {
         /**
-         * Check if a card definition supports alternative payment.
+         * Legacy check — considers only the card's printed keywords. Prefer the instance method
+         * that accounts for granted keywords.
          */
         fun supportsAlternativePayment(cardDef: CardDefinition): Boolean {
             return cardDef.keywords.contains(Keyword.DELVE) ||

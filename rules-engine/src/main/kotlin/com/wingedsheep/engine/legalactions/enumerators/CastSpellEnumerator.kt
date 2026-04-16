@@ -176,13 +176,15 @@ class CastSpellEnumerator : ActionEnumerator {
                 effectiveCost = effectiveCost + ManaCost.parse(blightOrPayCost.alternativeManaCost)
             }
 
-            // Check mana affordability (including Convoke/Delve if available)
-            val hasConvoke = cardDef.keywords.contains(Keyword.CONVOKE)
+            // Check mana affordability (including Convoke/Delve if available).
+            // Convoke and Delve can be printed on the card or granted at runtime by a
+            // battlefield permanent (e.g., Eirdu's "Creature spells you cast have convoke.").
+            val hasConvoke = context.grantedKeywordResolver.hasKeyword(state, playerId, cardDef, Keyword.CONVOKE)
             val convokeCreatures = if (hasConvoke) {
                 context.costUtils.findConvokeCreatures(state, playerId)
             } else null
 
-            val hasDelve = cardDef.keywords.contains(Keyword.DELVE)
+            val hasDelve = context.grantedKeywordResolver.hasKeyword(state, playerId, cardDef, Keyword.DELVE)
             val delveCards = if (hasDelve) {
                 context.costUtils.findDelveCards(state, playerId)
             } else null

@@ -1,5 +1,6 @@
 package com.wingedsheep.sdk.scripting
 
+import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.scripting.text.TextReplacer
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -94,6 +95,33 @@ data class GrantMayCastFromLinkedExile(
 ) : StaticAbility {
     override val description: String = "You may cast ${filter.description} cards exiled with this permanent."
     override fun applyTextReplacement(replacer: TextReplacer): StaticAbility = this
+}
+
+/**
+ * Grants a keyword (typically a cost-modifying one like CONVOKE or DELVE) to spells cast by this
+ * permanent's controller that match [spellFilter].
+ *
+ * Used for cards like Eirdu, Carrier of Dawn: "Creature spells you cast have convoke." The engine
+ * consults battlefield permanents with this static ability when computing legal casts and alternative
+ * payments, treating the granted keyword as if it were printed on the spell.
+ *
+ * Scoped to the controller of the source permanent — "you cast" semantics in the oracle text.
+ *
+ * @property keyword The keyword that matching spells gain while this permanent is in play.
+ * @property spellFilter Which spells gain the keyword (defaults to creature spells).
+ */
+@SerialName("GrantKeywordToOwnSpells")
+@Serializable
+data class GrantKeywordToOwnSpells(
+    val keyword: Keyword,
+    val spellFilter: GameObjectFilter = GameObjectFilter.Creature
+) : StaticAbility {
+    override val description: String =
+        "${spellFilter.description.replaceFirstChar { it.uppercase() }} spells you cast have ${keyword.displayName.lowercase()}"
+    override fun applyTextReplacement(replacer: TextReplacer): StaticAbility {
+        val newFilter = spellFilter.applyTextReplacement(replacer)
+        return if (newFilter !== spellFilter) copy(spellFilter = newFilter) else this
+    }
 }
 
 /**

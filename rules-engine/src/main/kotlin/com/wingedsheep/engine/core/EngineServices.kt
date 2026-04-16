@@ -15,6 +15,7 @@ import com.wingedsheep.engine.mechanics.StateBasedActionChecker
 import com.wingedsheep.engine.mechanics.combat.CombatManager
 import com.wingedsheep.engine.mechanics.mana.AlternativePaymentHandler
 import com.wingedsheep.engine.mechanics.mana.CostCalculator
+import com.wingedsheep.engine.mechanics.mana.GrantedKeywordResolver
 import com.wingedsheep.engine.mechanics.mana.ManaSolver
 import com.wingedsheep.engine.mechanics.stack.StackResolver
 import com.wingedsheep.engine.mechanics.targeting.TargetValidator
@@ -43,7 +44,8 @@ class EngineServices(
     val triggerProcessor = TriggerProcessor(cardRegistry = cardRegistry, stackResolver = stackResolver)
     val manaSolver = ManaSolver(cardRegistry)
     val costCalculator = CostCalculator(cardRegistry)
-    val alternativePaymentHandler = AlternativePaymentHandler()
+    val grantedKeywordResolver = GrantedKeywordResolver(cardRegistry)
+    val alternativePaymentHandler = AlternativePaymentHandler(grantedKeywordResolver)
     val costHandler = CostHandler()
     val mulliganHandler = MulliganHandler()
     val conditionEvaluator = ConditionEvaluator()
