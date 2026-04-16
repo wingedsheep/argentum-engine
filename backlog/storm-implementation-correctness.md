@@ -140,7 +140,7 @@ This is the single biggest change. The goal: when `StormCopyEffect` resolves, ea
 2. `StormCopyEffect` becomes thinner: instead of carrying a snapshot of `spellEffect` and `spellTargetRequirements`, carry only `originalSpellEntityId`, `copyCount`, and the controller who gets to retarget. The executor reads everything else from the stack.
 3. Retire `spellEffect` / `spellTargetRequirements` fields on `StormCopyEffect` in a follow-up once nothing else reads them.
 
-### Phase 3 — Propagate every cast-time decision
+### Phase 3 — Propagate every cast-time decision [DONE]
 
 1. When creating a copy via `putSpellCopy`, copy these fields from the original `SpellOnStackComponent`: `xValue`, `wasKicked`, `wasWarped`, `wasEvoked`, `sacrificedPermanents`, `sacrificedPermanentSubtypes`, `damageDistribution`, `chosenCreatureType`, `exiledCardCount`, `beheldCards`, `manaSpentWhite/Blue/Black/Red/Green/Colorless`, `castFromZone`.
 2. `chosenModes` / `modeTargetsOrdered` / `modeTargetRequirements` carry over by default (already handled today; fold into the clone).

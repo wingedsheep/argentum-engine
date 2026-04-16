@@ -328,8 +328,14 @@ class StackResolver(
         // name, types, colors, mana cost, and spellEffect (707.7c / 707.12).
         val copiedCardComp = sourceCard.copy(ownerId = copyController)
 
-        // Clone cast-time state; the copy inherits the original's decisions (xValue,
-        // sacrificed permanents, mana-spent colors, etc.) per 707.7c.
+        // Clone cast-time state; per 707.7c the copy inherits every decision made for
+        // the original. The data-class copy preserves: xValue, wasKicked, wasWarped,
+        // wasEvoked, sacrificedPermanents (+subtypes), damageDistribution,
+        // chosenCreatureType, exiledCardCount, castFromZone, beheldCards, and the
+        // manaSpent{White,Blue,Black,Red,Green,Colorless} colors. Only the caster
+        // (copy controller) and modal fields (which the caller may retarget) are
+        // overridden explicitly. Payment events (ManaSpentEvent, SpellCastEvent) are
+        // deliberately not re-emitted — a copy isn't cast (707.10).
         val copiedSpellComp = sourceSpell.copy(
             casterId = copyController,
             chosenModes = effectiveModes,
