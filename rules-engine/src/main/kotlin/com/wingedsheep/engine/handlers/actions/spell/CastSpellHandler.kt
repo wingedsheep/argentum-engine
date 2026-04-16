@@ -1599,7 +1599,10 @@ class CastSpellHandler(
                 sourceName = cardName,
                 phase = DecisionPhase.CASTING
             ),
-            options = optionLabels
+            options = optionLabels,
+            // Cast-time mode selection must be cancellable (rule 601.2b–c, K1 in plan):
+            // the pause happens before any cost is paid, so aborting is safe.
+            canCancel = true
         )
 
         val continuation = com.wingedsheep.engine.core.CastModalModeSelectionContinuation(
@@ -1699,7 +1702,9 @@ class CastSpellHandler(
                 ),
                 targetRequirements = requirementInfos,
                 legalTargets = legalTargetsMap,
-                canCancel = false
+                // Cast-time per-mode target selection must be cancellable (K2 in plan):
+                // the pause sits before cost payment, so aborting rolls back cleanly.
+                canCancel = true
             )
 
             val continuation = com.wingedsheep.engine.core.CastModalTargetSelectionContinuation(

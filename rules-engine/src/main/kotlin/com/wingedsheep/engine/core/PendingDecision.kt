@@ -285,7 +285,14 @@ data class ChooseOptionDecision(
     val options: List<String>,
     val defaultSearch: String? = null,
     /** Maps option index to entity IDs of cards associated with that option (for preview) */
-    val optionCardIds: Map<Int, List<EntityId>>? = null
+    val optionCardIds: Map<Int, List<EntityId>>? = null,
+    /**
+     * Whether the player may back out of this decision entirely via
+     * [CancelDecisionResponse]. Used for cast-time modal mode selection (rules
+     * 601.2b–c): cancelling before any cost is paid must roll back to the
+     * pre-cast state. Defaults to `false` to preserve existing behavior.
+     */
+    val canCancel: Boolean = false
 ) : PendingDecision
 
 /**

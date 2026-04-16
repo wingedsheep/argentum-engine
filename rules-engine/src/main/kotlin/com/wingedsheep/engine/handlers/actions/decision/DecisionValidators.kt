@@ -222,6 +222,9 @@ object DecisionValidators {
     }
 
     private fun validateOption(decision: ChooseOptionDecision, response: DecisionResponse): String? {
+        if (response is CancelDecisionResponse) {
+            return if (decision.canCancel) null else "This decision cannot be cancelled"
+        }
         if (response !is OptionChosenResponse) {
             return "Expected option choice response"
         }
