@@ -126,71 +126,74 @@ export function LifeDisplay({
             ? '0 0 16px rgba(255, 68, 68, 0.7), 0 0 32px rgba(255, 68, 68, 0.4)'
             : 'none'
 
+  const nameLabel = (
+    <span
+      style={{
+        maxWidth: 220,
+        fontSize: 12,
+        fontWeight: 700,
+        letterSpacing: '0.5px',
+        color: isPlayer ? '#4a9aea' : '#aa6aca',
+        whiteSpace: 'nowrap',
+        overflow: 'hidden',
+        textOverflow: 'ellipsis',
+        textShadow: '0 1px 2px rgba(0, 0, 0, 0.6)',
+      }}
+      title={playerName}
+    >
+      {playerName ? playerName.toUpperCase() : (isPlayer ? 'YOU' : 'OPPONENT')}
+    </span>
+  )
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: isDistributeTarget ? 4 : 0 }}>
-      <div
-        data-player-id={playerId}
-        data-life-id={playerId}
-        data-life-display={playerId}
-        onClick={handleClick}
-        style={{
-          ...styles.lifeDisplay,
-          width: size,
-          height: size,
-          fontSize: responsive.fontSize.large,
-          backgroundColor: bgColor,
-          borderColor: borderColor,
-          cursor,
-          boxShadow,
-          transition: 'all 0.2s ease-in-out',
-          position: 'relative',
-        }}
-      >
-        <span
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+        {/* Name on outer side: left of opponent's orb, right of player's orb */}
+        {!isPlayer && nameLabel}
+        <div
+          data-player-id={playerId}
+          data-life-id={playerId}
+          data-life-display={playerId}
+          onClick={handleClick}
           style={{
-            position: 'absolute',
-            top: -8,
-            left: '50%',
-            transform: 'translateX(-50%)',
-            maxWidth: size + 32,
-            fontSize: 9,
-            fontWeight: 'bold',
-            color: isPlayer ? '#4a9aea' : '#aa6aca',
-            backgroundColor: '#1a1a2e',
-            padding: '1px 6px',
-            borderRadius: 3,
-            whiteSpace: 'nowrap',
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
+            ...styles.lifeDisplay,
+            width: size,
+            height: size,
+            fontSize: responsive.fontSize.large,
+            backgroundColor: bgColor,
+            borderColor: borderColor,
+            cursor,
+            boxShadow,
+            transition: 'all 0.2s ease-in-out',
+            position: 'relative',
           }}
-          title={playerName}
         >
-          {playerName ? playerName.toUpperCase() : (isPlayer ? 'YOU' : 'OPPONENT')}
-        </span>
-        <span style={{ color: life <= 5 ? '#ff4444' : '#ffffff' }}>{life}</span>
+          <span style={{ color: life <= 5 ? '#ff4444' : '#ffffff' }}>{life}</span>
 
-        {/* Damage allocation badge */}
-        {isDistributeTarget && distributeAllocated > 0 && (
-          <div style={{
-            position: 'absolute',
-            top: -4,
-            right: -4,
-            backgroundColor: '#dc2626',
-            color: 'white',
-            width: 18,
-            height: 18,
-            borderRadius: '50%',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            fontWeight: 'bold',
-            fontSize: 11,
-            boxShadow: '0 2px 6px rgba(220, 38, 38, 0.6)',
-            zIndex: 5,
-          }}>
-            {distributeAllocated}
-          </div>
-        )}
+          {/* Damage allocation badge */}
+          {isDistributeTarget && distributeAllocated > 0 && (
+            <div style={{
+              position: 'absolute',
+              top: -4,
+              right: -4,
+              backgroundColor: '#dc2626',
+              color: 'white',
+              width: 18,
+              height: 18,
+              borderRadius: '50%',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontWeight: 'bold',
+              fontSize: 11,
+              boxShadow: '0 2px 6px rgba(220, 38, 38, 0.6)',
+              zIndex: 5,
+            }}>
+              {distributeAllocated}
+            </div>
+          )}
+        </div>
+        {isPlayer && nameLabel}
       </div>
 
       {/* Inline +/- controls for distribute mode */}

@@ -114,7 +114,7 @@ export const styles: Record<string, React.CSSProperties> = {
   playerRowWithZones: {
     display: 'flex',
     alignItems: 'center',
-    gap: 8,
+    gap: 32,
     width: '100%',
     justifyContent: 'center',
     minHeight: 0,

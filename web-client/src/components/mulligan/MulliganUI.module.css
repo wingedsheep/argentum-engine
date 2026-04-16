@@ -113,12 +113,51 @@
 /* =========================================================================
  * Play/Draw Indicator
  * ========================================================================= */
-.playDrawIndicator {
-  color: var(--text-secondary);
-  margin: 0;
+.playDrawBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-5);
+  border-radius: 999px;
+  border: 1px solid;
   font-size: var(--font-md);
-  text-align: center;
-  font-weight: var(--font-weight-medium);
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(4px);
+}
+
+.playDrawBadgePlay {
+  color: #ffd27a;
+  background: linear-gradient(135deg, rgba(255, 140, 0, 0.22), rgba(255, 90, 0, 0.12));
+  border-color: rgba(255, 180, 80, 0.55);
+  text-shadow: 0 0 12px rgba(255, 160, 60, 0.5);
+}
+
+.playDrawBadgeDraw {
+  color: #8ec7ff;
+  background: linear-gradient(135deg, rgba(79, 195, 247, 0.22), rgba(40, 120, 210, 0.12));
+  border-color: rgba(120, 180, 240, 0.55);
+  text-shadow: 0 0 12px rgba(100, 170, 240, 0.5);
+}
+
+.playDrawIcon {
+  font-size: 1.1em;
+  line-height: 1;
+  filter: drop-shadow(0 0 6px currentColor);
+}
+
+.playDrawLabel {
+  line-height: 1;
+}
+
+@media (max-width: 639px) {
+  .playDrawBadge {
+    padding: var(--space-1) var(--space-3);
+    font-size: var(--font-sm);
+    letter-spacing: 1px;
+  }
 }
 
 /* =========================================================================

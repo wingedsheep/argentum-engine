@@ -61,6 +61,35 @@ export function MulliganUI() {
 }
 
 /**
+ * Figure out how big each card should be so all cards fit horizontally
+ * without overflowing vertically. Scales up aggressively on big screens
+ * so cards stay readable, while preventing overflow on short viewports.
+ */
+function computeMulliganCardWidth(
+  cardCount: number,
+  responsive: ResponsiveSizes,
+  gap: number,
+): number {
+  const { viewportWidth, viewportHeight, containerPadding, isMobile, isTablet } = responsive
+
+  // Horizontal budget
+  const availableWidth = viewportWidth - containerPadding * 2 - 32
+
+  // Vertical budget: reserve space for title, subtitle, buttons, padding.
+  // Cards can take roughly 55% of the viewport height on mobile, 60% otherwise.
+  const cardVerticalBudget = viewportHeight * (isMobile ? 0.55 : 0.6)
+  const cardRatio = 1.4
+  const widthFromHeight = Math.floor(cardVerticalBudget / cardRatio)
+
+  // Target max card width scales by breakpoint
+  const breakpointMax = isMobile ? 110 : isTablet ? 170 : 240
+  const minCardWidth = isMobile ? 52 : isTablet ? 72 : 96
+
+  const maxCardWidth = Math.min(breakpointMax, widthFromHeight)
+  return calculateFittingCardWidth(cardCount, availableWidth, gap, maxCardWidth, minCardWidth)
+}
+
+/**
  * Mulligan decision phase - keep or mulligan.
  */
 function MulliganDecision({ state, responsive, onHoverCard }: { state: MulliganState; responsive: ResponsiveSizes; onHoverCard: (cardId: EntityId | null, e?: React.MouseEvent) => void }) {
@@ -70,10 +99,8 @@ function MulliganDecision({ state, responsive, onHoverCard }: { state: MulliganS
   const playerId = useGameStore((s) => s.playerId)
 
   // Calculate card size that fits all 7 cards
-  const availableWidth = responsive.viewportWidth - (responsive.containerPadding * 2) - 32 // extra padding
-  const gap = responsive.isMobile ? 4 : 8
-  const maxCardWidth = responsive.isMobile ? 90 : 130
-  const cardWidth = calculateFittingCardWidth(state.hand.length, availableWidth, gap, maxCardWidth, 45)
+  const gap = responsive.isMobile ? 4 : responsive.isTablet ? 6 : 10
+  const cardWidth = computeMulliganCardWidth(state.hand.length, responsive, gap)
 
   // Tournament info
   const tournamentInfo = (() => {
@@ -109,9 +136,16 @@ function MulliganDecision({ state, responsive, onHoverCard }: { state: MulliganS
           : `Mulligan ${state.mulliganCount}`}
       </h2>
 
-      <p className={styles.playDrawIndicator}>
-        {state.isOnThePlay ? 'You are on the play' : 'You are on the draw'}
-      </p>
+      <div
+        className={`${styles.playDrawBadge} ${state.isOnThePlay ? styles.playDrawBadgePlay : styles.playDrawBadgeDraw}`}
+      >
+        <span className={styles.playDrawIcon} aria-hidden>
+          {state.isOnThePlay ? '⚔' : '✦'}
+        </span>
+        <span className={styles.playDrawLabel}>
+          {state.isOnThePlay ? 'On the Play' : 'On the Draw'}
+        </span>
+      </div>
 
       <p className={styles.subtitle}>
         {state.mulliganCount > 0 &&
@@ -162,10 +196,8 @@ function ChooseBottomCards({ state, responsive, onHoverCard, onMinimize }: { sta
   const canConfirm = state.selectedCards.length === state.cardsToPutOnBottom
 
   // Calculate card size that fits all cards
-  const availableWidth = responsive.viewportWidth - (responsive.containerPadding * 2) - 32
-  const gap = responsive.isMobile ? 4 : 8
-  const maxCardWidth = responsive.isMobile ? 90 : 130
-  const cardWidth = calculateFittingCardWidth(state.hand.length, availableWidth, gap, maxCardWidth, 45)
+  const gap = responsive.isMobile ? 4 : responsive.isTablet ? 6 : 10
+  const cardWidth = computeMulliganCardWidth(state.hand.length, responsive, gap)
 
   return (
     <>

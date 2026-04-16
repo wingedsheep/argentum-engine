@@ -33,10 +33,10 @@
  * Content layout
  * ========================================================================= */
 .content {
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
   align-items: center;
-  justify-content: center;
-  gap: 48px;
+  column-gap: 48px;
   width: 100%;
   max-width: 900px;
   padding: 0 var(--space-6);
@@ -44,8 +44,8 @@
 
 @media (max-width: 639px) {
   .content {
-    gap: 24px;
-    flex-direction: column;
+    grid-template-columns: 1fr;
+    row-gap: 24px;
     padding: 0 var(--space-4);
   }
 }
@@ -54,7 +54,7 @@
  * Player panels
  * ========================================================================= */
 .playerPanel {
-  flex: 1;
+  min-width: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -97,16 +97,17 @@
   text-align: center;
   margin: 0;
   text-shadow: 0 2px 12px rgba(0, 0, 0, 0.6);
-  max-width: 300px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  max-width: 420px;
+  overflow-wrap: break-word;
+  word-break: break-word;
+  hyphens: auto;
+  line-height: 1.15;
 }
 
 @media (max-width: 639px) {
   .playerName {
     font-size: 24px;
-    max-width: 200px;
+    max-width: 280px;
   }
 }
 
