@@ -1,4 +1,4 @@
-package com.wingedsheep.engine.ai.evaluation
+package com.wingedsheep.ai.engine.evaluation
 
 import com.wingedsheep.engine.mechanics.layers.ProjectedState
 import com.wingedsheep.engine.state.GameState

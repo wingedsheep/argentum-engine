@@ -1,7 +1,7 @@
-package com.wingedsheep.engine.ai
+package com.wingedsheep.ai.engine
 
-import com.wingedsheep.engine.ai.evaluation.CompositeBoardEvaluator
-import com.wingedsheep.engine.ai.evaluation.BoardPresence
+import com.wingedsheep.ai.engine.evaluation.CompositeBoardEvaluator
+import com.wingedsheep.ai.engine.evaluation.BoardPresence
 import com.wingedsheep.engine.core.*
 import com.wingedsheep.engine.legalactions.LegalAction
 import com.wingedsheep.engine.registry.CardRegistry

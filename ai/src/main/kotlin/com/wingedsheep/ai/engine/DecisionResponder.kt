@@ -1,9 +1,9 @@
-package com.wingedsheep.engine.ai
+package com.wingedsheep.ai.engine
 
-import com.wingedsheep.engine.ai.advisor.AdvisorDecisionContext
-import com.wingedsheep.engine.ai.advisor.CardAdvisorRegistry
-import com.wingedsheep.engine.ai.evaluation.BoardEvaluator
-import com.wingedsheep.engine.ai.evaluation.BoardPresence
+import com.wingedsheep.ai.engine.advisor.AdvisorDecisionContext
+import com.wingedsheep.ai.engine.advisor.CardAdvisorRegistry
+import com.wingedsheep.ai.engine.evaluation.BoardEvaluator
+import com.wingedsheep.ai.engine.evaluation.BoardPresence
 import com.wingedsheep.engine.core.*
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent

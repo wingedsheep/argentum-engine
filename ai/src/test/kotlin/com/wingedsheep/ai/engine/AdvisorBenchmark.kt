@@ -1,6 +1,6 @@
-package com.wingedsheep.engine.ai
+package com.wingedsheep.ai.engine
 
-import com.wingedsheep.engine.ai.advisor.modules.BloomburrowAdvisorModule
+import com.wingedsheep.ai.engine.advisor.modules.BloomburrowAdvisorModule
 import com.wingedsheep.engine.core.*
 import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.GameState
@@ -227,9 +227,11 @@ private fun playAdvisorGame(
                 } } catch (_: Exception) { emptyList() }
                 println("  [STUCK] Legal actions for priority player: ${legalActions.map { la ->
                     val desc = la.actionType
+                    val validAtk = la.validAttackers
+                    val validBlk = la.validBlockers
                     val extra = when {
-                        la.validAttackers != null -> " validAtk=${la.validAttackers.size} mandatoryAtk=${la.mandatoryAttackers?.size ?: 0}"
-                        la.validBlockers != null -> " validBlk=${la.validBlockers.size} mandatoryBlk=${la.mandatoryBlockerAssignments?.size ?: 0}"
+                        validAtk != null -> " validAtk=${validAtk.size} mandatoryAtk=${la.mandatoryAttackers?.size ?: 0}"
+                        validBlk != null -> " validBlk=${validBlk.size} mandatoryBlk=${la.mandatoryBlockerAssignments?.size ?: 0}"
                         else -> ""
                     }
                     "$desc$extra"

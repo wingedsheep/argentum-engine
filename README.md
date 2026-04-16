@@ -57,9 +57,9 @@ The client runs at `http://localhost:5173` and connects to the server at `http:/
 | `just test` | Run all tests |
 | `just test-rules` | Run rules-engine tests only |
 | `just test-server` | Run game-server tests only |
-| `just test-gym` | Run engine-gym tests only |
-| `just test-gym-server` | Run engine-gym-server HTTP tests only |
-| `just test-gym-trainer` | Run engine-gym-trainer (MCTS + self-play) tests only |
+| `just test-gym` | Run gym tests only |
+| `just test-gym-server` | Run gym-server HTTP tests only |
+| `just test-gym-trainer` | Run gym-trainer (MCTS + self-play) tests only |
 | `just clean` | Clean build artifacts |
 
 **Development**
@@ -168,9 +168,9 @@ argentum-engine/
 ├── mtg-sdk/              # Shared contract — DSLs, data models, primitives
 ├── mtg-sets/             # Card definitions (Portal, Onslaught, Legions, Scourge, Khans, Dominaria)
 ├── rules-engine/         # Core MTG rules engine (no server dependencies)
-├── engine-gym/           # RL/MCTS environment wrapper (GameEnvironment, MultiEnvService)
-├── engine-gym-server/    # Spring Boot HTTP transport for engine-gym (Python trainers)
-├── engine-gym-trainer/   # JVM-side MCTS + self-play SPI for AlphaZero-style projects
+├── gym/           # RL/MCTS environment wrapper (GameEnvironment, MultiEnvService)
+├── gym-server/    # Spring Boot HTTP transport for gym (Python trainers)
+├── gym-trainer/   # JVM-side MCTS + self-play SPI for AlphaZero-style projects
 ├── game-server/          # Spring Boot game server & matchmaking
 ├── web-client/           # React/TypeScript browser UI
 └── e2e-scenarios/        # Playwright end-to-end tests
@@ -210,7 +210,7 @@ Cards are defined as pure data using a Kotlin DSL — no card-specific logic in 
 
 For agent research and reinforcement-learning training, the engine also ships as a Gymnasium-style environment. A trainer drives many games in parallel against a stable JSON contract, without touching the game server or the browser UI.
 
-### Library — `engine-gym`
+### Library — `gym`
 
 A transport-agnostic Kotlin library that wraps the rules engine in a stateful `reset / step / observe / legalActions` API with MCTS-friendly affordances:
 
@@ -221,7 +221,7 @@ A transport-agnostic Kotlin library that wraps the rules engine in a stateful `r
 - **Stable observation schema** — `TrainingObservation` has a `schemaHash` so Python clients fail fast on contract drift; every observation carries a `stateDigest` usable as an MCTS transposition-table key.
 - **Information hiding** — opponent hand and libraries are masked by default; `revealAll` is available for debug scripts.
 
-### HTTP transport — `engine-gym-server`
+### HTTP transport — `gym-server`
 
 A thin Spring Boot shell that exposes `MultiEnvService` over HTTP so a Python agent can drive the engine without a JVM embedding:
 
@@ -247,7 +247,7 @@ Start the server with `just gym-server` (port **8081**, so it doesn't collide wi
 
 **Deliberately out of scope for the current scaffold:** authentication, env-lifetime TTLs, byte-based snapshots, metrics. Bind to localhost until you add auth.
 
-### JVM-side trainer — `engine-gym-trainer`
+### JVM-side trainer — `gym-trainer`
 
 For AlphaZero-shaped projects that want tree search in the JVM and only use Python as a stateless NN inference server (MageZero-style): a small SPI + a PUCT MCTS + a self-play loop.
 
@@ -257,7 +257,7 @@ For AlphaZero-shaped projects that want tree search in the JVM and only use Pyth
 - **Batteries-included defaults** so a training loop runs end-to-end with zero NN setup: a heuristic evaluator wrapping the engine's `BoardEvaluator`, a structural featurizer, a hash-bucket action featurizer, a JSONL sink, and a random structured-decision resolver.
 - **Wire format kept minimal** — `RemoteHttpEvaluator` POSTs features + legal slots and parses `{priors, value}`. Swap codec by subclassing.
 
-See [`engine-gym-trainer/README.md`](engine-gym-trainer/README.md) for the full design write-up and a 30-line hello-world.
+See [`gym-trainer/README.md`](gym-trainer/README.md) for the full design write-up and a 30-line hello-world.
 
 ## Why "Argentum"?
 

@@ -1,8 +1,8 @@
-package com.wingedsheep.engine.ai
+package com.wingedsheep.ai.engine
 
-import com.wingedsheep.engine.ai.advisor.CardAdvisorModule
-import com.wingedsheep.engine.ai.advisor.CardAdvisorRegistry
-import com.wingedsheep.engine.ai.evaluation.*
+import com.wingedsheep.ai.engine.advisor.CardAdvisorModule
+import com.wingedsheep.ai.engine.advisor.CardAdvisorRegistry
+import com.wingedsheep.ai.engine.evaluation.*
 import com.wingedsheep.engine.core.*
 import com.wingedsheep.engine.legalactions.LegalAction
 import com.wingedsheep.engine.registry.CardRegistry
@@ -71,8 +71,8 @@ class AIPlayer(
 
         while (!current.gameOver && iterations < maxIterations) {
             // Handle pending decisions first
-            if (current.pendingDecision != null) {
-                val decision = current.pendingDecision
+            val decision = current.pendingDecision
+            if (decision != null) {
                 if (decision.playerId != playerId) break // not our decision
                 val response = respondToDecision(current, decision)
                 val result = processor.process(current, SubmitDecision(playerId, response)).result

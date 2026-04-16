@@ -25,15 +25,20 @@ test-rules:
 test-server:
     ./gradlew :game-server:test
 
-# Run tests for engine-gym only
+# Run tests for gym only
 [group: 'build']
 test-gym:
-    ./gradlew :engine-gym:test
+    ./gradlew :gym:test
 
 # Run a specific test class (e.g., just test-class CreatureStatsTest)
 [group: 'build']
 test-class CLASS:
     ./gradlew :rules-engine:test --tests "{{CLASS}}"
+
+# Run an engine benchmark (e.g., just benchmark, just benchmark AdvisorBenchmark 50)
+[group: 'build']
+benchmark CLASS="AdvisorBenchmark" GAMES="100":
+    ./gradlew :rules-engine:test --tests "*.{{CLASS}}" -Dbenchmark=true -DbenchmarkGames={{GAMES}}
 
 # Clean build artifacts
 [group: 'build']
@@ -58,17 +63,17 @@ server-ons:
 # Start the gym HTTP server on port 8081 (for RL / MCTS training loops)
 [group: 'dev']
 gym-server:
-    ./gradlew :engine-gym-server:bootRun
+    ./gradlew :gym-server:bootRun
 
-# Run engine-gym-server tests
+# Run gym-server tests
 [group: 'build']
 test-gym-server:
-    ./gradlew :engine-gym-server:test
+    ./gradlew :gym-server:test
 
-# Run engine-gym-trainer tests (MCTS + self-play)
+# Run gym-trainer tests (MCTS + self-play)
 [group: 'build']
 test-gym-trainer:
-    ./gradlew :engine-gym-trainer:test
+    ./gradlew :gym-trainer:test
 
 # Start the web client in dev mode
 [group: 'dev']

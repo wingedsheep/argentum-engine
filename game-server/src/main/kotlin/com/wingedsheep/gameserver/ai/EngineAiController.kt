@@ -1,8 +1,8 @@
 package com.wingedsheep.gameserver.ai
 
-import com.wingedsheep.engine.ai.AIPlayer
-import com.wingedsheep.engine.ai.advisor.modules.BloomburrowAdvisorModule
-import com.wingedsheep.engine.ai.advisor.modules.OnslaughtAdvisorModule
+import com.wingedsheep.ai.engine.AIPlayer
+import com.wingedsheep.ai.engine.advisor.modules.BloomburrowAdvisorModule
+import com.wingedsheep.ai.engine.advisor.modules.OnslaughtAdvisorModule
 import com.wingedsheep.engine.core.*
 import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.GameState

@@ -1,4 +1,4 @@
-package com.wingedsheep.engine.ai
+package com.wingedsheep.ai.engine
 
 import com.wingedsheep.engine.core.GameEvent
 import com.wingedsheep.engine.core.PendingDecision

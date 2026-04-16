@@ -1,7 +1,7 @@
-package com.wingedsheep.engine.ai
+package com.wingedsheep.ai.engine
 
-import com.wingedsheep.engine.ai.advisor.CardAdvisorRegistry
-import com.wingedsheep.engine.ai.evaluation.BoardEvaluator
+import com.wingedsheep.ai.engine.advisor.CardAdvisorRegistry
+import com.wingedsheep.ai.engine.evaluation.BoardEvaluator
 import com.wingedsheep.engine.core.DeclareAttackers
 import com.wingedsheep.engine.core.DeclareBlockers
 import com.wingedsheep.engine.core.GameAction

@@ -1,6 +1,6 @@
-package com.wingedsheep.engine.ai.advisor.modules
+package com.wingedsheep.ai.engine.advisor.modules
 
-import com.wingedsheep.engine.ai.advisor.*
+import com.wingedsheep.ai.engine.advisor.*
 import com.wingedsheep.engine.core.*
 import com.wingedsheep.engine.mechanics.layers.ProjectedState
 import com.wingedsheep.engine.state.GameState

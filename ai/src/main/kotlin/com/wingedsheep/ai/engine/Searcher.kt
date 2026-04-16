@@ -1,6 +1,6 @@
-package com.wingedsheep.engine.ai
+package com.wingedsheep.ai.engine
 
-import com.wingedsheep.engine.ai.evaluation.BoardEvaluator
+import com.wingedsheep.ai.engine.evaluation.BoardEvaluator
 import com.wingedsheep.engine.legalactions.LegalAction
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent

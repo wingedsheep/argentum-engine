@@ -1,4 +1,4 @@
-package com.wingedsheep.engine.ai
+package com.wingedsheep.ai.engine
 
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Zone

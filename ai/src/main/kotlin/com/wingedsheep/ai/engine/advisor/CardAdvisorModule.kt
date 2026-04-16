@@ -1,4 +1,4 @@
-package com.wingedsheep.engine.ai.advisor
+package com.wingedsheep.ai.engine.advisor
 
 /**
  * Groups [CardAdvisor] registrations by set or theme.

@@ -1,4 +1,4 @@
-package com.wingedsheep.engine.ai
+package com.wingedsheep.ai.engine
 
 import com.wingedsheep.engine.mechanics.layers.ProjectedState
 import com.wingedsheep.engine.registry.CardRegistry
@@ -678,7 +678,7 @@ object CombatMath {
 
     fun creatureValue(state: GameState, projected: ProjectedState, entityId: EntityId): Double {
         val card = state.getEntity(entityId)?.get<CardComponent>() ?: return 0.0
-        return com.wingedsheep.engine.ai.evaluation.BoardPresence.permanentValue(state, projected, entityId, card)
+        return com.wingedsheep.ai.engine.evaluation.BoardPresence.permanentValue(state, projected, entityId, card)
     }
 
     /**

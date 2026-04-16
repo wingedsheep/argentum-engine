@@ -1377,7 +1377,7 @@ class LobbyHandler(
      * Heuristic fallback: pick the best 2 colors, include on-color cards, add correct basics.
      */
     private fun buildHeuristicSealedDeck(pool: List<com.wingedsheep.sdk.model.CardDefinition>): Map<String, Int> {
-        val deck = com.wingedsheep.engine.ai.buildHeuristicSealedDeck(pool)
+        val deck = com.wingedsheep.ai.engine.buildHeuristicSealedDeck(pool)
         logger.info("AI heuristic deck ({} cards): {}", deck.values.sum(),
             deck.entries.sortedByDescending { it.value }.joinToString(", ") { "${it.value}x ${it.key}" })
         return deck

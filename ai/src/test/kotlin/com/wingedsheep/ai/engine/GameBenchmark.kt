@@ -1,4 +1,4 @@
-package com.wingedsheep.engine.ai
+package com.wingedsheep.ai.engine
 
 import com.wingedsheep.engine.core.*
 import com.wingedsheep.engine.registry.CardRegistry

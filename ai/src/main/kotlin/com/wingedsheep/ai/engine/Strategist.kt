@@ -1,9 +1,9 @@
-package com.wingedsheep.engine.ai
+package com.wingedsheep.ai.engine
 
-import com.wingedsheep.engine.ai.advisor.CardAdvisorRegistry
-import com.wingedsheep.engine.ai.advisor.CastContext
-import com.wingedsheep.engine.ai.evaluation.BoardEvaluator
-import com.wingedsheep.engine.ai.evaluation.BoardPresence
+import com.wingedsheep.ai.engine.advisor.CardAdvisorRegistry
+import com.wingedsheep.ai.engine.advisor.CastContext
+import com.wingedsheep.ai.engine.evaluation.BoardEvaluator
+import com.wingedsheep.ai.engine.evaluation.BoardPresence
 import com.wingedsheep.engine.core.ActivateAbility
 import com.wingedsheep.engine.core.CastSpell
 import com.wingedsheep.engine.legalactions.LegalAction

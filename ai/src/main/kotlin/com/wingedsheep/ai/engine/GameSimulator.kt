@@ -1,4 +1,4 @@
-package com.wingedsheep.engine.ai
+package com.wingedsheep.ai.engine
 
 import com.wingedsheep.engine.core.*
 import com.wingedsheep.engine.legalactions.EnumerationMode
@@ -94,8 +94,9 @@ class GameSimulator(
         val maxIterations = 100
 
         while (iterations < maxIterations) {
-            if (current.error != null) {
-                return SimulationResult.Illegal(current.state, allEvents, current.error)
+            val error = current.error
+            if (error != null) {
+                return SimulationResult.Illegal(current.state, allEvents, error)
             }
 
             // Auto-resolve trivial decisions; use decisionResolver for non-trivial ones
@@ -132,8 +133,9 @@ class GameSimulator(
             // to let spells resolve. This simulates both players choosing not
             // to respond, which is the most common outcome.
             val state = current.state
-            if (state.stack.isNotEmpty() && state.priorityPlayerId != null && !state.gameOver) {
-                val passAction = PassPriority(state.priorityPlayerId)
+            val priorityPlayerId = state.priorityPlayerId
+            if (state.stack.isNotEmpty() && priorityPlayerId != null && !state.gameOver) {
+                val passAction = PassPriority(priorityPlayerId)
                 current = processor.process(state, passAction).result
                 allEvents = allEvents + current.events
                 iterations++
@@ -144,9 +146,10 @@ class GameSimulator(
             break
         }
 
+        val finalError = current.error
         return when {
-            current.error != null ->
-                SimulationResult.Illegal(current.state, allEvents, current.error)
+            finalError != null ->
+                SimulationResult.Illegal(current.state, allEvents, finalError)
             current.isPaused ->
                 SimulationResult.NeedsDecision(current.state, current.pendingDecision!!, allEvents)
             else ->

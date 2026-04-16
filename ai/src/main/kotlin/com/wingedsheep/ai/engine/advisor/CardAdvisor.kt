@@ -1,7 +1,7 @@
-package com.wingedsheep.engine.ai.advisor
+package com.wingedsheep.ai.engine.advisor
 
-import com.wingedsheep.engine.ai.GameSimulator
-import com.wingedsheep.engine.ai.evaluation.BoardEvaluator
+import com.wingedsheep.ai.engine.GameSimulator
+import com.wingedsheep.ai.engine.evaluation.BoardEvaluator
 import com.wingedsheep.engine.core.DecisionResponse
 import com.wingedsheep.engine.core.PendingDecision
 import com.wingedsheep.engine.legalactions.LegalAction

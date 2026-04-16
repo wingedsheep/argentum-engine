@@ -14,7 +14,7 @@ import com.wingedsheep.sdk.model.EntityId
  *
  * Two implementations:
  * - [AiPlayerController] — LLM-based (sends game state to an LLM API)
- * - [EngineAiController] — Rules-engine based (uses the built-in [com.wingedsheep.engine.ai.AIPlayer])
+ * - [EngineAiController] — Rules-engine based (uses the built-in [com.wingedsheep.ai.engine.AIPlayer])
  */
 interface AiController {
     /**

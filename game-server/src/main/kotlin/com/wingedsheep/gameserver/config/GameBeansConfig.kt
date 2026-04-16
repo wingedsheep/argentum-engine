@@ -1,7 +1,7 @@
 package com.wingedsheep.gameserver.config
 
 import com.wingedsheep.gameserver.deck.RandomDeckGenerator
-import com.wingedsheep.engine.limited.SealedDeckGenerator
+import com.wingedsheep.ai.engine.SealedDeckGenerator
 import com.wingedsheep.engine.limited.BoosterGenerator
 import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.gameserver.sealed.SetConfigs

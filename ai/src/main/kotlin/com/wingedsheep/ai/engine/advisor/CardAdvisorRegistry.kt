@@ -1,4 +1,4 @@
-package com.wingedsheep.engine.ai.advisor
+package com.wingedsheep.ai.engine.advisor
 
 /**
  * Registry that maps card names to their [CardAdvisor] instances.

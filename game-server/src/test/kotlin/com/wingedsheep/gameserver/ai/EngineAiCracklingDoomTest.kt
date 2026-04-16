@@ -1,6 +1,6 @@
 package com.wingedsheep.gameserver.ai
 
-import com.wingedsheep.engine.ai.AIPlayer
+import com.wingedsheep.ai.engine.AIPlayer
 import com.wingedsheep.engine.core.CardsSelectedResponse
 import com.wingedsheep.engine.core.SelectCardsDecision
 import com.wingedsheep.engine.core.SubmitDecision

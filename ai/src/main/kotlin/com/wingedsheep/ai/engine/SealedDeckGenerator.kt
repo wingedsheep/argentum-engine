@@ -1,6 +1,6 @@
-package com.wingedsheep.engine.limited
+package com.wingedsheep.ai.engine
 
-import com.wingedsheep.engine.ai.buildHeuristicSealedDeck
+import com.wingedsheep.engine.limited.BoosterGenerator
 
 /**
  * Generates a 40-card sealed deck by opening 8 boosters from a set and

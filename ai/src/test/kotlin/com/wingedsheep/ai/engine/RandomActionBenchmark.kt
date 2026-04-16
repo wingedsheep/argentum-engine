@@ -1,4 +1,4 @@
-package com.wingedsheep.engine.ai
+package com.wingedsheep.ai.engine
 
 import com.wingedsheep.engine.core.*
 import com.wingedsheep.engine.legalactions.LegalActionEnumerator
@@ -143,12 +143,12 @@ private fun playRandomGame(
                 stuckCount = 0
             }
 
-            val action = if (state.pendingDecision != null) {
-                val d = state.pendingDecision
+            val pendingDecision = state.pendingDecision
+            val action = if (pendingDecision != null) {
                 val t0 = System.nanoTime()
-                val response = randomDecisionResponse(d, rng)
+                val response = randomDecisionResponse(pendingDecision, rng)
                 decisionNs += System.nanoTime() - t0
-                SubmitDecision(d.playerId, response)
+                SubmitDecision(pendingDecision.playerId, response)
             } else {
                 val priorityPlayer = state.priorityPlayerId ?: break
                 val t0 = System.nanoTime()
