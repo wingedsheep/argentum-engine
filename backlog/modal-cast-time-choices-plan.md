@@ -155,7 +155,7 @@ Files to change:
 - `Serialization.kt:183` — register new continuation subclasses.
 - `CastSpellEnumerator.kt:369` — if `chooseCount > 1` emit the single `CastSpellModal` legal action.
 
-### Phase 5 — `ModalEffectExecutor` update for choose-N
+### Phase 5 — `ModalEffectExecutor` update for choose-N [DONE]
 
 File: `rules-engine/.../handlers/effects/composite/ModalEffectExecutor.kt` (line 44 onward)
 

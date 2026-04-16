@@ -114,6 +114,26 @@ class CoreAutoResumerModule(
             mergeAndContinue(result.toExecutionResult(), events = emptyList(), checkForMore)
         },
 
+        autoResumer(ModalPreChosenContinuation::class, canResume = { it.remainingEntries.isNotEmpty() }) { state, continuation, events, checkForMore ->
+            val ctx = com.wingedsheep.engine.handlers.effects.composite.ModalPreChosenBaseContext(
+                controllerId = continuation.controllerId,
+                sourceId = continuation.sourceId,
+                sourceName = continuation.sourceName,
+                opponentId = continuation.opponentId,
+                xValue = continuation.xValue,
+                triggeringEntityId = continuation.triggeringEntityId
+            )
+            val result = com.wingedsheep.engine.handlers.effects.composite.processPreChosenModeQueue(
+                state = state,
+                entries = continuation.remainingEntries,
+                ctx = ctx,
+                effectExecutor = { s, e, c -> services.effectExecutorRegistry.execute(s, e, c) },
+                targetValidator = services.targetValidator,
+                accumulatedEvents = emptyList()
+            ).toExecutionResult()
+            mergeAndContinue(result, events, checkForMore)
+        },
+
         autoResumer(ReflexiveTriggerTargetContinuation::class) { state, continuation, events, checkForMore ->
             // After the action completes, present target selection for the reflexive effect
             val executor = com.wingedsheep.engine.handlers.effects.composite.ReflexiveTriggerEffectExecutor(

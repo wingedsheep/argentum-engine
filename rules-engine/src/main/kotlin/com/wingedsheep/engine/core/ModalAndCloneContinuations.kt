@@ -57,6 +57,45 @@ data class ModalContinuation(
 ) : ContinuationFrame
 
 /**
+ * One queued (effect, targets, requirements) triple for a choose-N modal spell's
+ * cast-time-resolved execution. See [ModalPreChosenContinuation].
+ */
+@Serializable
+data class ModalPreChosenEntry(
+    val effect: @Serializable Effect,
+    val targets: List<ChosenTarget>,
+    val targetRequirements: List<@Serializable TargetRequirement>
+)
+
+/**
+ * Auto-resumed continuation that drains the remaining modes of a choose-N modal
+ * spell whose modes and targets were picked at cast time (rules 700.2, 601.2b–c).
+ *
+ * [com.wingedsheep.engine.handlers.effects.composite.ModalEffectExecutor] iterates
+ * the pre-chosen modes synchronously, but when a mode's effect pauses for a nested
+ * decision (e.g., a reflexive trigger or ChooseAction inside the mode), it pushes
+ * this frame BELOW the nested decision's continuation so that once the inner chain
+ * resolves, the remaining mode queue resumes automatically via
+ * [com.wingedsheep.engine.handlers.continuations.CoreAutoResumerModule].
+ *
+ * Carrying [remainingEntries] in the frame keeps the queue independent of the
+ * spell's ModalEffect — remove-by-effect avoids any dependency on mode list
+ * ordering, which matters for `allowRepeat` where the same mode index can appear
+ * twice with different targets.
+ */
+@Serializable
+data class ModalPreChosenContinuation(
+    override val decisionId: String,
+    val controllerId: EntityId,
+    val sourceId: EntityId?,
+    val sourceName: String?,
+    val opponentId: EntityId? = null,
+    val xValue: Int? = null,
+    val triggeringEntityId: EntityId? = null,
+    val remainingEntries: List<ModalPreChosenEntry>
+) : ContinuationFrame
+
+/**
  * Resume after player selects targets for a chosen mode of a modal spell.
  *
  * After mode selection, if the chosen mode requires targets, this continuation

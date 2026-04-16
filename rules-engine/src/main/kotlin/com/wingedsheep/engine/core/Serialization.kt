@@ -174,6 +174,7 @@ val engineSerializersModule = SerializersModule {
         subclass(CounterUnlessPaysContinuation::class)
         subclass(ModalContinuation::class)
         subclass(ModalTargetContinuation::class)
+        subclass(ModalPreChosenContinuation::class)
         subclass(CloneEntersContinuation::class)
         subclass(EntersWithChoiceSpellContinuation::class)
         subclass(EntersWithChoiceLandContinuation::class)
