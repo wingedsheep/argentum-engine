@@ -585,8 +585,21 @@ class CombatAdvisor(
                         if (survivingPower < aToughness) continue
                     }
 
-                    val dyingBlocker = if ((projected.getToughness(b1) ?: 0) <= aPower) b1 else b2
-                    val dyingValue = CombatMath.combatTradeValue(projected, dyingBlocker)
+                    // Cost of the gang-block = sum of every blocker the attacker can kill
+                    // with its power (MTG rule 702.19c: attacker assigns lethal damage in order).
+                    // The attacker picks the order that kills as many blockers as possible, so
+                    // start from the lowest-toughness blocker.
+                    val blockersByToughness = listOf(b1, b2)
+                        .sortedBy { projected.getToughness(it) ?: 0 }
+                    var damageLeft = aPower
+                    var dyingValue = 0.0
+                    for (b in blockersByToughness) {
+                        val bToughness = projected.getToughness(b) ?: 0
+                        if (damageLeft >= bToughness) {
+                            dyingValue += CombatMath.combatTradeValue(projected, b)
+                            damageLeft -= bToughness
+                        }
+                    }
                     if (attackerValue > dyingValue * 1.2) {
                         blockerMap[b1] = listOf(attacker)
                         blockerMap[b2] = listOf(attacker)

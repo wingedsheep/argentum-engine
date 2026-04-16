@@ -577,6 +577,111 @@ class CombatAdvisorTest : FunSpec({
         result.blockers shouldContainKey blocker
     }
 
+    test("never blocks a 5/5 with the 4/4 alone when a 1/1 is available") {
+        // Regression for reported AI bug: opponent attacks with 5/5, defender has 4/4 + 1/1.
+        // Blocking with the 4/4 alone is strictly worse than chump-blocking with the 1/1
+        // (we lose a 4-power creature instead of a 1-power one, 5/5 survives either way
+        // since neither blocker has enough power or deathtouch).
+        // Acceptable outcomes: no block (eat 5 damage), chump with 1/1, or gang-block.
+        val bigAttacker = CardDefinition.creature(
+            name = "Pit Ogre",
+            manaCost = ManaCost.parse("{3}{R}{R}"),
+            subtypes = setOf(Subtype("Ogre")),
+            power = 5, toughness = 5
+        )
+        val midBlocker = CardDefinition.creature(
+            name = "Serra Angel Stand-in",
+            manaCost = ManaCost.parse("{2}{G}{G}"),
+            subtypes = setOf(Subtype("Beast")),
+            power = 4, toughness = 4
+        )
+        val cards = listOf(bigAttacker, midBlocker, smallCreature)
+        val (driver, _, advisor) = setup(cards)
+        val p1 = driver.player1
+        val p2 = driver.player2
+
+        driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
+
+        val attacker = driver.putCreatureOnBattlefield(p1, "Pit Ogre")
+        driver.removeSummoningSickness(attacker)
+
+        val fourFour = driver.putCreatureOnBattlefield(p2, "Serra Angel Stand-in")
+        val oneOne = driver.putCreatureOnBattlefield(p2, "Eager Cadet")
+        driver.removeSummoningSickness(fourFour)
+        driver.removeSummoningSickness(oneOne)
+
+        driver.passPriorityUntil(Step.DECLARE_ATTACKERS)
+        driver.submit(DeclareAttackers(p1, mapOf(attacker to p2)))
+        driver.passPriorityUntil(Step.DECLARE_BLOCKERS)
+
+        val legalAction = buildBlockAction(p2, listOf(fourFour, oneOne))
+        val result = advisor.chooseBlockers(
+            driver.state, legalAction, p2, useSimulation = true
+        ) as DeclareBlockers
+
+        // If we block, the 1/1 must be assigned — otherwise we're sacrificing the
+        // more valuable creature for no benefit (both die to a 5/5 either way).
+        val fourFourBlocks = result.blockers.containsKey(fourFour)
+        val oneOneBlocks = result.blockers.containsKey(oneOne)
+        if (fourFourBlocks) {
+            // Only acceptable if the 1/1 is also blocking (gang-block for the kill).
+            oneOneBlocks shouldBe true
+        }
+    }
+
+    test("chump-blocks 5/5 with 1/1 rather than sacrificing 4/4") {
+        // When only one creature can chump (non-gang-block), we must pick the
+        // cheaper 1/1. Use summoning-sick blockers so gang-blocking loses
+        // even more tempo and the heuristic clearly prefers chump.
+        val bigAttacker = CardDefinition.creature(
+            name = "Brawny Ogre",
+            manaCost = ManaCost.parse("{3}{R}{R}"),
+            subtypes = setOf(Subtype("Ogre")),
+            power = 5, toughness = 5
+        )
+        val midBlocker = CardDefinition.creature(
+            name = "Green Beast",
+            manaCost = ManaCost.parse("{2}{G}{G}"),
+            subtypes = setOf(Subtype("Beast")),
+            power = 4, toughness = 4
+        )
+        val cards = listOf(bigAttacker, midBlocker, smallCreature)
+        val (driver, _, advisor) = setup(cards)
+        val p1 = driver.player1
+        val p2 = driver.player2
+
+        driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
+
+        val attacker = driver.putCreatureOnBattlefield(p1, "Brawny Ogre")
+        driver.removeSummoningSickness(attacker)
+
+        val fourFour = driver.putCreatureOnBattlefield(p2, "Green Beast")
+        val oneOne = driver.putCreatureOnBattlefield(p2, "Eager Cadet")
+        driver.removeSummoningSickness(fourFour)
+        driver.removeSummoningSickness(oneOne)
+
+        // Put P2 at 6 life so 5 damage is uncomfortably close to lethal — this
+        // makes chump-blocking clearly preferable, but gang-blocking still available.
+        driver.replaceState(driver.state.withLifeTotal(p2, 6))
+
+        driver.passPriorityUntil(Step.DECLARE_ATTACKERS)
+        driver.submit(DeclareAttackers(p1, mapOf(attacker to p2)))
+        driver.passPriorityUntil(Step.DECLARE_BLOCKERS)
+
+        val legalAction = buildBlockAction(p2, listOf(fourFour, oneOne))
+        val result = advisor.chooseBlockers(
+            driver.state, legalAction, p2, useSimulation = true
+        ) as DeclareBlockers
+
+        // 1/1 must be blocking — it's the only correct chump. Blocking with the 4/4
+        // alone is strictly worse (trades 4-power for 1-power in attacker damage prevention).
+        result.blockers shouldContainKey oneOne
+        // If both block, that's a gang-block (acceptable). But the 4/4 must NOT block alone.
+        if (result.blockers.containsKey(fourFour)) {
+            result.blockers shouldContainKey oneOne
+        }
+    }
+
     // ═════════════════════════════════════════════════════════════════════
     // Attacking: basic scenarios
     // ═════════════════════════════════════════════════════════════════════
