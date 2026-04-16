@@ -2,7 +2,7 @@
 
 **Set Size:** 273 cards (main set, per Scryfall `set:ecl`)
 **Release Date:** January 23, 2026
-**Implemented:** 40 / 273
+**Implemented:** 41 / 273
 
 | Color      | Total | Done |
 |------------|-------|------|
@@ -11,7 +11,7 @@
 | Black      | 38    | 3    |
 | Red        | 39    | 2    |
 | Green      | 39    | 6    |
-| Multicolor | 49    | 8    |
+| Multicolor | 49    | 9    |
 | Colorless  | 18    | 3    |
 | Land       | 12    | 6    |
 
@@ -278,7 +278,7 @@
 - [ ] Vibrance
 - [ ] Voracious Tome-Skimmer
 - [ ] Wary Farmer
-- [ ] Wistfulness
+- [x] Wistfulness
 
 ## Colorless (18)
 
