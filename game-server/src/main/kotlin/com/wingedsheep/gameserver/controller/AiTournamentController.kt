@@ -26,7 +26,12 @@ class AiTournamentController(
 
     data class AiTournamentRequest(
         val setCodes: List<String>? = null,
-        val playerCount: Int? = null
+        val playerCount: Int? = null,
+        /** Optional per-player model overrides. Index 0 = player 1, index 1 = player 2, etc.
+         *  Falls back to the server's configured model for any unspecified slots. */
+        val models: List<String>? = null,
+        /** Skip LLM deck building and use the fast heuristic builder instead. */
+        val heuristicDeckbuilding: Boolean? = null
     )
 
     data class AiTournamentResponse(
@@ -44,7 +49,7 @@ class AiTournamentController(
         val playerCount = request?.playerCount?.coerceIn(2, 8) ?: 2
 
         return try {
-            val lobbyId = lobbyHandler.createAiTournament(setCodes, playerCount)
+            val lobbyId = lobbyHandler.createAiTournament(setCodes, playerCount, request?.models, request?.heuristicDeckbuilding)
 
             logger.info("AI tournament created via REST: lobbyId=$lobbyId, sets=$setCodes, players=$playerCount")
 

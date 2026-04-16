@@ -130,7 +130,7 @@ class LobbyHandler(
      * Programmatically create a sealed tournament with AI-only players.
      * Returns the lobby ID for spectating. Used by the dev AI tournament endpoint.
      */
-    fun createAiTournament(setCodes: List<String>, playerCount: Int = 2): String {
+    fun createAiTournament(setCodes: List<String>, playerCount: Int = 2, models: List<String>? = null, heuristicDeckbuilding: Boolean? = null): String {
         require(aiGameManager.isEnabled) { "AI opponent is not enabled on this server" }
         require(playerCount in 2..8) { "Player count must be between 2 and 8" }
 
@@ -152,8 +152,9 @@ class LobbyHandler(
         )
 
         // Add AI players
-        repeat(playerCount) {
-            val aiIdentity = aiGameManager.createAiIdentity()
+        repeat(playerCount) { index ->
+            val modelOverride = models?.getOrNull(index)
+            val aiIdentity = aiGameManager.createAiIdentity(modelOverride = modelOverride)
             lobby.addPlayer(aiIdentity)
         }
 
@@ -181,7 +182,7 @@ class LobbyHandler(
         }
 
         // Launch AI deck building in background (handles tournament activation + match start)
-        launchAiDeckBuilding(lobby)
+        launchAiDeckBuilding(lobby, heuristicDeckbuilding = heuristicDeckbuilding ?: false)
 
         lobbyRepository.saveLobby(lobby)
         return lobby.lobbyId
@@ -1090,7 +1091,7 @@ class LobbyHandler(
      * host's WebSocket handler thread. LLM deckbuilding can take 30+ seconds,
      * and blocking would prevent the human player from submitting their own deck.
      */
-    private fun launchAiDeckBuilding(lobby: TournamentLobby) {
+    private fun launchAiDeckBuilding(lobby: TournamentLobby, heuristicDeckbuilding: Boolean = false) {
         val aiPlayers = lobby.players.filter { (playerId, ps) ->
             aiGameManager.isAiPlayer(playerId) && !ps.hasSubmittedDeck && ps.cardPool.isNotEmpty()
         }
@@ -1099,7 +1100,7 @@ class LobbyHandler(
         ctx.draftScope.launch(Dispatchers.IO) {
             for ((playerId, playerState) in aiPlayers) {
                 try {
-                    val deck = buildAiSealedDeck(playerState.cardPool)
+                    val deck = buildAiSealedDeck(playerState.cardPool, heuristicDeckbuilding)
                     val result = lobby.submitDeck(playerId, deck)
                     when (result) {
                         is TournamentLobby.DeckSubmissionResult.Success -> {
@@ -1217,11 +1218,11 @@ class LobbyHandler(
      * Build a 40-card sealed deck from a card pool using the LLM.
      * Falls back to a color-based heuristic if the LLM fails.
      */
-    private fun buildAiSealedDeck(pool: List<com.wingedsheep.sdk.model.CardDefinition>): Map<String, Int> {
-        logger.info("AI building sealed deck from pool of {} cards", pool.size)
+    private fun buildAiSealedDeck(pool: List<com.wingedsheep.sdk.model.CardDefinition>, heuristic: Boolean = false): Map<String, Int> {
+        logger.info("AI building sealed deck from pool of {} cards (heuristic={})", pool.size, heuristic)
 
         val aiProperties = gameProperties.ai
-        if (aiProperties.enabled && aiProperties.effectiveApiKey.isNotBlank()) {
+        if (!heuristic && aiProperties.enabled && aiProperties.effectiveApiKey.isNotBlank()) {
             val llmDeck = tryLlmSealedDeck(pool, aiProperties)
             if (llmDeck != null) return llmDeck
             logger.info("AI LLM deckbuild failed, falling back to heuristic")

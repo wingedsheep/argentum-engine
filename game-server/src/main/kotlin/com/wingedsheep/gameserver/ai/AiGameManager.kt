@@ -83,16 +83,25 @@ class AiGameManager(
         return gameProperties.ai.effectiveApiKey.isNotBlank()
     }
 
+    /** Per-player model overrides set at identity-creation time, looked up when wiring games. */
+    private val aiModelOverrides = ConcurrentHashMap<EntityId, String>()
+
     /**
      * Create the appropriate AI controller based on configuration.
+     * @param modelOverride If non-null, overrides the server's configured model for LLM mode.
      */
     private fun createController(
         aiPlayerId: EntityId,
-        gameSession: GameSession? = null
+        gameSession: GameSession? = null,
+        modelOverride: String? = null
     ): AiPlayerController {
         val ai = gameProperties.ai
-        val aiConfig = ai.toAiConfig()
-        return if (ai.isEngineMode) {
+        // A model override implicitly requests LLM mode for this player,
+        // regardless of the server's global mode setting.
+        val aiConfig = ai.toAiConfig().let { cfg ->
+            if (modelOverride != null) cfg.copy(model = modelOverride, mode = "llm") else cfg
+        }
+        return if (aiConfig.isEngineMode) {
             EngineAiPlayerController(
                 cardRegistry = cardRegistry,
                 playerId = aiPlayerId,
@@ -193,16 +202,21 @@ class AiGameManager(
      * The AI session is created with no-op callbacks initially — they'll be wired
      * when a tournament match starts via [wireAiForGame].
      *
+     * @param modelOverride Optional LLM model override for this specific AI player.
      * @return The AI PlayerIdentity, registered in SessionRegistry.
      */
-    fun createAiIdentity(): PlayerIdentity {
+    fun createAiIdentity(modelOverride: String? = null): PlayerIdentity {
         require(isEnabled) { "AI is not enabled. Set game.ai.enabled=true." }
 
         val aiPlayerId = EntityId("ai-${UUID.randomUUID().toString().take(8)}")
         val aiProperties = gameProperties.ai
 
+        if (modelOverride != null) {
+            aiModelOverrides[aiPlayerId] = modelOverride
+        }
+
         // Use a placeholder controller — will be replaced when match starts
-        val controller = createController(aiPlayerId)
+        val controller = createController(aiPlayerId, modelOverride = modelOverride)
 
         val aiSession = AiWebSocketSession(
             aiPlayerId = aiPlayerId,
@@ -215,7 +229,9 @@ class AiGameManager(
             onBottomCards = { _, _ -> }
         )
 
-        val aiName = randomAiName()
+        val effectiveModel = modelOverride ?: if (gameProperties.ai.isLlmMode) gameProperties.ai.model else null
+        val modelSuffix = effectiveModel?.substringAfterLast('/')?.let { " ($it)" } ?: ""
+        val aiName = randomAiName() + modelSuffix
         val identity = PlayerIdentity(
             token = "ai-token-${UUID.randomUUID().toString().take(8)}",
             playerId = aiPlayerId,
@@ -234,7 +250,8 @@ class AiGameManager(
         // Track this AI identity so we know which players are AI
         aiPlayerIds.add(aiPlayerId)
 
-        logger.info("Created AI identity: {} ({}) [mode={}]", identity.playerName, aiPlayerId.value, aiProperties.mode)
+        val modelInfo = if (modelOverride != null) "model=$modelOverride" else "model=${aiProperties.model}"
+        logger.info("Created AI identity: {} ({}) [mode={}, {}]", identity.playerName, aiPlayerId.value, aiProperties.mode, modelInfo)
         return identity
     }
 
@@ -258,7 +275,8 @@ class AiGameManager(
         }
 
         val aiProperties = gameProperties.ai
-        val controller = createController(aiPlayerId, gameSession)
+        val modelOverride = aiModelOverrides[aiPlayerId]
+        val controller = createController(aiPlayerId, gameSession, modelOverride)
 
         // Give the AI knowledge of its deck composition
         if (deckList != null) {
