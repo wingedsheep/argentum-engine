@@ -688,6 +688,7 @@ function SetSynergiesOverlay({
               <ArchetypeCard
                 key={archetype.name}
                 archetype={archetype}
+                setCode={activeSynergy.setCode}
                 clickable={onSelectArchetype != null}
                 {...(cardPool != null ? { cardPool } : {})}
                 onClick={() => {
@@ -851,7 +852,14 @@ function RarityBadge({ label, count, color }: { label: string; count: number; co
   )
 }
 
-function ArchetypeCard({ archetype, clickable, onClick, cardPool }: { archetype: Archetype; clickable?: boolean; onClick?: () => void; cardPool?: readonly SealedCardInfo[] }) {
+function getArchetypeImagePath(setCode: string, archetypeName: string): string {
+  const normalized = archetypeName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
+  return `/images/archetypes/${setCode.toLowerCase()}-${normalized}.png`
+}
+
+function ArchetypeCard({ archetype, setCode, clickable, onClick, cardPool }: { archetype: Archetype; setCode: string; clickable?: boolean; onClick?: () => void; cardPool?: readonly SealedCardInfo[] }) {
+  const [imageLoaded, setImageLoaded] = useState(false)
+
   const rarities = useMemo(() => {
     if (!cardPool || cardPool.length === 0) return null
     return computeArchetypeRarities(cardPool, archetype)
@@ -872,91 +880,110 @@ function ArchetypeCard({ archetype, clickable, onClick, cardPool }: { archetype:
         border: `1px solid ${getArchetypeBorderColor(archetype.colors)}`,
         transition: 'background-color 0.15s',
         cursor: clickable ? 'pointer' : undefined,
+        display: 'flex',
+        gap: 14,
+        alignItems: 'flex-start',
       }}
     >
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: 8,
-          marginBottom: 6,
-        }}
-      >
-        <div style={{ display: 'flex', gap: 3 }}>
-          {archetype.colors.map((c) => (
-            <ManaSymbol key={c} symbol={c} size={16} />
-          ))}
-        </div>
-        <span
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div
           style={{
-            fontSize: 15,
-            fontWeight: 700,
-            color: '#fff',
-            textTransform: 'uppercase',
-            letterSpacing: '0.04em',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 8,
+            marginBottom: 6,
           }}
         >
-          {archetype.name}
-        </span>
-        {creatureTypeCounts && (
-          <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
-            {[...creatureTypeCounts.entries()].map(([type, count]) => (
-              <span
-                key={type}
-                style={{
-                  fontSize: 11,
-                  fontWeight: 600,
-                  color: 'rgba(255, 255, 255, 0.55)',
-                  backgroundColor: 'rgba(255, 255, 255, 0.06)',
-                  padding: '1px 6px',
-                  borderRadius: 4,
-                }}
-                title={`${count} ${type}${count !== 1 ? 's' : ''} in pool`}
-              >
-                {count} {type}{count !== 1 ? 's' : ''}
-              </span>
+          <div style={{ display: 'flex', gap: 3 }}>
+            {archetype.colors.map((c) => (
+              <ManaSymbol key={c} symbol={c} size={16} />
             ))}
           </div>
-        )}
-        {rarities && (
-          <div
+          <span
             style={{
-              marginLeft: 'auto',
-              display: 'flex',
-              gap: 8,
-              alignItems: 'center',
+              fontSize: 15,
+              fontWeight: 700,
+              color: '#fff',
+              textTransform: 'uppercase',
+              letterSpacing: '0.04em',
             }}
           >
-            <RarityBadge label="Mythic" count={rarities.onColor.mythic} color={RARITY_COLORS.mythic!} />
-            <RarityBadge label="Rare" count={rarities.onColor.rare} color={RARITY_COLORS.rare!} />
-            <RarityBadge label="Uncommon" count={rarities.onColor.uncommon} color={RARITY_COLORS.uncommon!} />
-            <RarityBadge label="Common" count={rarities.onColor.common} color={RARITY_COLORS.common!} />
-            {rarities.colorless > 0 && (
-              <span style={{ fontSize: 11, fontWeight: 600, color: 'rgba(255,255,255,0.5)' }} title="Colorless">
-                {rarities.colorless}A
+            {archetype.name}
+          </span>
+          {creatureTypeCounts && (
+            <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+              {[...creatureTypeCounts.entries()].map(([type, count]) => (
+                <span
+                  key={type}
+                  style={{
+                    fontSize: 11,
+                    fontWeight: 600,
+                    color: 'rgba(255, 255, 255, 0.55)',
+                    backgroundColor: 'rgba(255, 255, 255, 0.06)',
+                    padding: '1px 6px',
+                    borderRadius: 4,
+                  }}
+                  title={`${count} ${type}${count !== 1 ? 's' : ''} in pool`}
+                >
+                  {count} {type}{count !== 1 ? 's' : ''}
+                </span>
+              ))}
+            </div>
+          )}
+          {rarities && (
+            <div
+              style={{
+                marginLeft: 'auto',
+                display: 'flex',
+                gap: 8,
+                alignItems: 'center',
+              }}
+            >
+              <RarityBadge label="Mythic" count={rarities.onColor.mythic} color={RARITY_COLORS.mythic!} />
+              <RarityBadge label="Rare" count={rarities.onColor.rare} color={RARITY_COLORS.rare!} />
+              <RarityBadge label="Uncommon" count={rarities.onColor.uncommon} color={RARITY_COLORS.uncommon!} />
+              <RarityBadge label="Common" count={rarities.onColor.common} color={RARITY_COLORS.common!} />
+              {rarities.colorless > 0 && (
+                <span style={{ fontSize: 11, fontWeight: 600, color: 'rgba(255,255,255,0.5)' }} title="Colorless">
+                  {rarities.colorless}A
+                </span>
+              )}
+              {rarities.lands > 0 && (
+                <span style={{ fontSize: 11, fontWeight: 600, color: '#8d6e4a' }} title="Lands">
+                  {rarities.lands}L
+                </span>
+              )}
+              <span style={{ fontSize: 11, fontWeight: 500, color: 'rgba(255,255,255,0.35)', marginLeft: 2 }}>
+                ({rarities.onColor.total + rarities.colorless + rarities.lands})
               </span>
-            )}
-            {rarities.lands > 0 && (
-              <span style={{ fontSize: 11, fontWeight: 600, color: '#8d6e4a' }} title="Lands">
-                {rarities.lands}L
-              </span>
-            )}
-            <span style={{ fontSize: 11, fontWeight: 500, color: 'rgba(255,255,255,0.35)', marginLeft: 2 }}>
-              ({rarities.onColor.total + rarities.colorless + rarities.lands})
-            </span>
-          </div>
-        )}
+            </div>
+          )}
+        </div>
+        <p
+          style={{
+            margin: 0,
+            color: 'rgba(255, 255, 255, 0.6)',
+            fontSize: 13,
+            lineHeight: 1.5,
+          }}
+        >
+          {archetype.description}
+        </p>
       </div>
-      <p
+      <img
+        src={getArchetypeImagePath(setCode, archetype.name)}
+        alt={archetype.name}
+        onLoad={() => setImageLoaded(true)}
+        onError={() => setImageLoaded(false)}
         style={{
-          margin: 0,
-          color: 'rgba(255, 255, 255, 0.6)',
-          fontSize: 13,
-          lineHeight: 1.5,
+          width: 140,
+          height: 100,
+          objectFit: 'cover',
+          borderRadius: 6,
+          flexShrink: 0,
+          display: imageLoaded ? 'block' : 'none',
         }}
-      >
-        {archetype.description}
-      </p>
+      />
     </div>
   )
 }
