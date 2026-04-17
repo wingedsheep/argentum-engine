@@ -64,6 +64,7 @@ object LorwynEclipsedSet {
         SwatAway,
         SyggsCommand,
         ThoughtweftCharge,
+        VinebredBrawler,
         VirulentEmissary,
         WanderwineFarewell,
         WildUnraveling,
