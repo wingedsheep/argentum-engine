@@ -1341,38 +1341,44 @@ class CastSpellHandler(
             }
         }
 
-        // Handle Storm keyword: create a Storm triggered ability on the stack
-        // Check both the card's own keywords and any granted spell keywords (e.g., Ral's storm emblem)
-        val hasStormFromGrant = run {
+        // Handle Storm keyword: create one Storm triggered ability per instance on the stack.
+        // Per CR 702.40b each instance of Storm triggers separately. Sources of Storm:
+        //   1. The card's printed keyword (Keyword.STORM in keywords) — counts once.
+        //   2. Each matching grant in GrantedSpellKeywordsComponent (e.g., Ral's storm emblem) —
+        //      counts once per matching grant.
+        val stormGrantCount = run {
             val playerContainer = currentCastState.getEntity(action.playerId)
             val grants = playerContainer?.get<GrantedSpellKeywordsComponent>()?.grants ?: emptyList()
             val evalContext = PredicateContext(controllerId = action.playerId)
-            grants.any { grant ->
+            grants.count { grant ->
                 grant.keyword == Keyword.STORM &&
                     predicateEvaluator.matches(currentCastState, action.cardId, grant.spellFilter, evalContext)
             }
         }
-        if (!action.castFaceDown && stormCount > 0 && cardDef != null &&
-            (cardDef.hasKeyword(Keyword.STORM) || hasStormFromGrant)) {
+        val printedStormCount = if (cardDef != null && cardDef.hasKeyword(Keyword.STORM)) 1 else 0
+        val stormInstanceCount = printedStormCount + stormGrantCount
+        if (!action.castFaceDown && stormCount > 0 && cardDef != null && stormInstanceCount > 0) {
             val spellEffect = cardDef.script.spellEffect
             if (spellEffect != null) {
-                val stormEffect = StormCopyEffect(
-                    copyCount = stormCount,
-                    spellEffect = spellEffect,
-                    spellTargetRequirements = spellTargetRequirements,
-                    spellName = cardComponent.name
-                )
-                val stormAbility = TriggeredAbilityOnStackComponent(
-                    sourceId = action.cardId,
-                    sourceName = cardComponent.name,
-                    controllerId = action.playerId,
-                    effect = stormEffect,
-                    description = "Storm — copy ${cardComponent.name} $stormCount time(s)"
-                )
-                val stormResult = stackResolver.putTriggeredAbility(currentCastState, stormAbility)
-                if (!stormResult.isSuccess) return stormResult
-                currentCastState = stormResult.newState
-                allEvents = allEvents + stormResult.events
+                repeat(stormInstanceCount) {
+                    val stormEffect = StormCopyEffect(
+                        copyCount = stormCount,
+                        spellEffect = spellEffect,
+                        spellTargetRequirements = spellTargetRequirements,
+                        spellName = cardComponent.name
+                    )
+                    val stormAbility = TriggeredAbilityOnStackComponent(
+                        sourceId = action.cardId,
+                        sourceName = cardComponent.name,
+                        controllerId = action.playerId,
+                        effect = stormEffect,
+                        description = "Storm — copy ${cardComponent.name} $stormCount time(s)"
+                    )
+                    val stormResult = stackResolver.putTriggeredAbility(currentCastState, stormAbility)
+                    if (!stormResult.isSuccess) return stormResult
+                    currentCastState = stormResult.newState
+                    allEvents = allEvents + stormResult.events
+                }
             }
         }
 

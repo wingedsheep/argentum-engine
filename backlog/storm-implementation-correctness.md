@@ -100,7 +100,7 @@ Per 707.7b, a copy that has no legal replacement for an illegal target is *still
 - Players/opponents don't see the copy appear briefly (stack-based log).
 - A spell with multiple targets where only one is illegal still gets created today via the continuation flow, but if *all* legal targets are wiped out mid-cascade of copies, the remaining copies silently vanish instead of being created-then-fizzling.
 
-### 6. Multiple instances of Storm on the same spell trigger only once
+### 6. Multiple instances of Storm on the same spell trigger only once  [DONE]
 
 Per 702.40b, each instance of Storm triggers separately. `CastSpellHandler.kt:1340-1341` uses `cardDef.hasKeyword(Keyword.STORM)` (boolean) and emits exactly one `StormCopyEffect`. This is edge case (no printed card has two storm instances), but it's a real gap if a future "Storm + granted Storm via emblem" stack-up happens with Ral's emblem.
 
@@ -161,10 +161,12 @@ Landed as `StormCopyModalTargetContinuation` driving a `driveStormModalCopies` l
 
 Landed as a per-copy loop in `StormCopyEffectExecutor.promptForNextCopyTarget` and a mirror loop in `MiscContinuationResumer.resumeStormCopyTarget`: when no legal replacement exists, each remaining copy is still pushed via `StackResolver.putSpellCopy` without target overrides, so it inherits the source's (now-illegal) targets via the `putSpellCopy` fallback chain and fizzles on resolution per 608.2b / 112.3b (`fizzleSpell` already removes `CopyOfComponent` spells from existence and emits `SpellFizzledEvent`). The modal-source fallback at `driveStormModalCopies` already inherits per-mode source targets and matches this behavior; its comment was updated to reflect Phase 5. Coverage: `StormIllegalTargetFizzleTest` verifies the copy lands on the stack with the inherited targets for both single-copy and multi-copy cases. Bug #5 in the divergences list is resolved.
 
-### Phase 6 — Support multiple instances of Storm
+### Phase 6 — Support multiple instances of Storm [DONE]
 
 1. Replace the boolean `cardDef.hasKeyword(Keyword.STORM)` check with a count-based lookup (extend the keyword container or use `cardDef.keywordAbilities.count { it.keyword == Keyword.STORM }` plus `hasStormFromGrant` multiplicity).
 2. Emit N independent `StormCopyEffect` trigger abilities instead of one, each carrying the same copy count. They stack in APNAP order per standard triggered-ability rules.
+
+Landed in `CastSpellHandler.execute` as `stormInstanceCount = printedStormCount + stormGrantCount` (printed keyword counts once, each matching entry in `GrantedSpellKeywordsComponent.grants` counts once), with a `repeat(stormInstanceCount)` loop pushing independent `TriggeredAbilityOnStackComponent` instances via `StackResolver.putTriggeredAbility`. Coverage: `StormMultipleInstancesTest` verifies that printed Storm + a Ral-style `STORM` grant produces two Storm triggers on the stack, while printed Storm alone still produces one. APNAP ordering is inherited from the normal triggered-ability stacking path. Bug #6 in the divergences list is resolved.
 
 ### Phase 7 — Storm always triggers, even at count 0
 
