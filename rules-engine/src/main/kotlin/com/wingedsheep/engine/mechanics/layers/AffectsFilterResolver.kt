@@ -338,16 +338,8 @@ internal class AffectsFilterResolver {
         }
         is StatePredicate.HasCounter -> {
             val counters = container.get<CountersComponent>()
-            if (counters != null) {
-                try {
-                    val counterType = CounterType.valueOf(
-                        predicate.counterType.uppercase().replace(' ', '_')
-                    )
-                    (counters.getCount(counterType)) > 0
-                } catch (_: IllegalArgumentException) {
-                    false
-                }
-            } else false
+            val counterType = parseCounterType(predicate.counterType)
+            counters != null && counterType != null && counters.getCount(counterType) > 0
         }
         is StatePredicate.Or -> predicate.predicates.any {
             matchesStatePredicateForProjection(state, entityId, it, container, isFaceDown, projectedValues)
