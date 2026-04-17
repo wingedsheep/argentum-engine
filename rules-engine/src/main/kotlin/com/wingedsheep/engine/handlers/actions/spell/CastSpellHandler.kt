@@ -1281,6 +1281,21 @@ class CastSpellHandler(
         val castingFromGraveyardViaMuldrotha = action.cardId in currentState.getZone(ZoneKey(action.playerId, Zone.GRAVEYARD)) &&
             zoneResolver.hasMayPlayPermanentFromGraveyardPermission(currentState, action.playerId, action.cardId, cardComponent)
 
+        // Derive per-mode target groups from the flat target list when the action arrived
+        // with chosenModes but no modeTargetsOrdered (current web-client cast-time UI for
+        // choose-1 modal spells). Slice action.targets in mode order using each mode's
+        // total target slot count so modal resolution can read per-mode targets.
+        val effectiveModeTargetsOrdered = if (
+            action.modeTargetsOrdered.isEmpty() &&
+            action.chosenModes.isNotEmpty() &&
+            modalEffectForTargets != null &&
+            action.targets.isNotEmpty()
+        ) {
+            deriveModeTargetsFromFlat(modalEffectForTargets, action.chosenModes, action.targets)
+        } else {
+            action.modeTargetsOrdered
+        }
+
         // Cast the spell
         val castResult = stackResolver.castSpell(
             currentState,
@@ -1298,7 +1313,7 @@ class CastSpellHandler(
             wasWarped = wasWarped,
             wasEvoked = wasEvoked,
             chosenModes = action.chosenModes,
-            modeTargetsOrdered = action.modeTargetsOrdered,
+            modeTargetsOrdered = effectiveModeTargetsOrdered,
             modeTargetRequirements = perModeTargetRequirements,
             modeDamageDistribution = action.modeDamageDistribution,
             totalManaSpent = manaSpentThisCast,
@@ -1764,6 +1779,36 @@ class CastSpellHandler(
             targets = flatTargets
         )
         return execute(state, finalAction)
+    }
+
+    /**
+     * Slice a flat target list into per-mode groups using each chosen mode's total
+     * target slot count. Used when an action arrives with [CastSpell.chosenModes] and
+     * [CastSpell.targets] populated but [CastSpell.modeTargetsOrdered] empty (the
+     * web-client choose-1 modal cast path), so resolution can read targets per mode.
+     *
+     * If the flat target count doesn't line up with the modes' summed slot counts
+     * (truncated, missing optional slots, etc.), returns an empty list — the cast
+     * proceeds with the pre-existing flat-targets behavior rather than risking a
+     * mis-sliced binding.
+     */
+    private fun deriveModeTargetsFromFlat(
+        modalEffect: com.wingedsheep.sdk.scripting.effects.ModalEffect,
+        chosenModes: List<Int>,
+        flatTargets: List<ChosenTarget>
+    ): List<List<ChosenTarget>> {
+        val perModeSlotCounts = chosenModes.map { idx ->
+            modalEffect.modes.getOrNull(idx)?.targetRequirements?.sumOf { it.count } ?: 0
+        }
+        if (perModeSlotCounts.sum() != flatTargets.size) return emptyList()
+
+        val result = mutableListOf<List<ChosenTarget>>()
+        var cursor = 0
+        for (slotCount in perModeSlotCounts) {
+            result.add(flatTargets.subList(cursor, cursor + slotCount).toList())
+            cursor += slotCount
+        }
+        return result
     }
 
     companion object {
