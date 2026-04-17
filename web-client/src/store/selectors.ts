@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useMemo, useRef } from 'react'
 import { useGameStore, type GameStore } from './gameStore'
 import type {
   EntityId,
@@ -275,10 +275,12 @@ export function useHasLegalActions(cardId: EntityId | null): boolean {
   })
 }
 
-/**
- * Hook to get battlefield cards grouped by controller and type.
- */
-export function useBattlefieldCards(): {
+export interface BattlefieldAttachments {
+  readonly attachments: readonly ClientCard[]
+  readonly linkedExile: readonly ClientCard[]
+}
+
+export interface BattlefieldCards {
   playerLands: readonly ClientCard[]
   playerCreatures: readonly ClientCard[]
   playerPlaneswalkers: readonly ClientCard[]
@@ -287,27 +289,104 @@ export function useBattlefieldCards(): {
   opponentCreatures: readonly ClientCard[]
   opponentPlaneswalkers: readonly ClientCard[]
   opponentOther: readonly ClientCard[]
-} {
+  /** Resolved attachment + linked-exile cards, keyed by parent permanent id. */
+  attachmentsByCardId: ReadonlyMap<EntityId, BattlefieldAttachments>
+}
+
+const EMPTY_ATTACHMENTS: ReadonlyMap<EntityId, BattlefieldAttachments> = new Map()
+
+/**
+ * Structural equality for values the battlefield actually renders. Small, JSON-shaped objects —
+ * no dates, functions, or Maps, so a plain recursive walk is sufficient and fast.
+ */
+function deepEqual(a: unknown, b: unknown): boolean {
+  if (a === b) return true
+  if (a == null || b == null) return false
+  if (typeof a !== 'object' || typeof b !== 'object') return false
+  if (Array.isArray(a)) {
+    if (!Array.isArray(b) || a.length !== b.length) return false
+    for (let i = 0; i < a.length; i++) {
+      if (!deepEqual(a[i], b[i])) return false
+    }
+    return true
+  }
+  if (Array.isArray(b)) return false
+  const ka = Object.keys(a as Record<string, unknown>)
+  const kb = Object.keys(b as Record<string, unknown>)
+  if (ka.length !== kb.length) return false
+  for (const k of ka) {
+    if (!deepEqual((a as Record<string, unknown>)[k], (b as Record<string, unknown>)[k])) return false
+  }
+  return true
+}
+
+function battlefieldCardsEqual(a: BattlefieldCards, b: BattlefieldCards): boolean {
+  const keys = [
+    'playerLands', 'playerCreatures', 'playerPlaneswalkers', 'playerOther',
+    'opponentLands', 'opponentCreatures', 'opponentPlaneswalkers', 'opponentOther',
+  ] as const
+  for (const k of keys) {
+    const arrA = a[k], arrB = b[k]
+    if (arrA === arrB) continue
+    if (arrA.length !== arrB.length) return false
+    for (let i = 0; i < arrA.length; i++) {
+      if (!deepEqual(arrA[i], arrB[i])) return false
+    }
+  }
+  // Attachments map — same set of parent ids, each with equal attachment/linkedExile arrays.
+  if (a.attachmentsByCardId.size !== b.attachmentsByCardId.size) return false
+  for (const [id, valA] of a.attachmentsByCardId) {
+    const valB = b.attachmentsByCardId.get(id)
+    if (!valB) return false
+    if (!deepEqual(valA.attachments, valB.attachments)) return false
+    if (!deepEqual(valA.linkedExile, valB.linkedExile)) return false
+  }
+  return true
+}
+
+/**
+ * Hook to get battlefield cards grouped by controller and type, plus resolved attachments.
+ *
+ * Returned object has *content-based stability*: when consecutive game state updates don't
+ * change the visible battlefield (hand draws, phase changes, etc.), we return the previous
+ * object ref. That lets `Battlefield` and its downstream `useMemo`s bail out entirely —
+ * without this, every server message replaces every card ref and forces a re-render.
+ */
+export function useBattlefieldCards(): BattlefieldCards {
   const gameState = useGameStore(selectGameState)
   const playerId = useGameStore(selectViewingPlayerId)
+  const previousRef = useRef<BattlefieldCards | null>(null)
 
   return useMemo(() => {
-    const empty = {
-      playerLands: [] as readonly ClientCard[],
-      playerCreatures: [] as readonly ClientCard[],
-      playerPlaneswalkers: [] as readonly ClientCard[],
-      playerOther: [] as readonly ClientCard[],
-      opponentLands: [] as readonly ClientCard[],
-      opponentCreatures: [] as readonly ClientCard[],
-      opponentPlaneswalkers: [] as readonly ClientCard[],
-      opponentOther: [] as readonly ClientCard[],
+    const empty: BattlefieldCards = {
+      playerLands: [],
+      playerCreatures: [],
+      playerPlaneswalkers: [],
+      playerOther: [],
+      opponentLands: [],
+      opponentCreatures: [],
+      opponentPlaneswalkers: [],
+      opponentOther: [],
+      attachmentsByCardId: EMPTY_ATTACHMENTS,
     }
 
-    if (!gameState || !playerId) return empty
+    if (!gameState || !playerId) {
+      if (previousRef.current && battlefieldCardsEqual(previousRef.current, empty)) {
+        return previousRef.current
+      }
+      previousRef.current = empty
+      return empty
+    }
 
     // Find ALL battlefield zones (there's one per player)
     const battlefields = gameState.zones.filter((z) => z.zoneId.zoneType === ZoneType.BATTLEFIELD)
-    if (battlefields.length === 0) return empty
+    if (battlefields.length === 0) {
+      if (previousRef.current && battlefieldCardsEqual(previousRef.current, empty)) {
+        return previousRef.current
+      }
+      previousRef.current = empty
+      return empty
+    }
 
     // Aggregate all card IDs from all battlefield zones
     const allCardIds = battlefields.flatMap((z) => z.cardIds ?? [])
@@ -315,10 +394,7 @@ export function useBattlefieldCards(): {
       .map((id) => gameState.cards[id])
       .filter((card): card is ClientCard => card !== null && card !== undefined)
 
-    // Filter out cards attached to another permanent (auras, equipment) -
-    // they'll be rendered visually with the card they're attached to
     const isNotAttached = (c: ClientCard) => !c.attachedTo
-
     const playerCards = cards.filter((c) => c.controllerId === playerId)
     const opponentCards = cards.filter((c) => c.controllerId !== playerId)
 
@@ -327,19 +403,45 @@ export function useBattlefieldCards(): {
     const isPlaneswalker = (c: ClientCard) => c.cardTypes.includes('PLANESWALKER')
 
     // Animated lands (both creature + land) should appear in the creatures row
-    const isCreatureOrAnimatedLand = (c: ClientCard) => isCreature(c)
     const isNonCreatureLand = (c: ClientCard) => isLand(c) && !isCreature(c)
 
-    return {
+    // Build attachment / linked-exile resolution once so Battlefield doesn't have to
+    // subscribe to the full game state or re-resolve these per render.
+    const attachmentsByCardId = new Map<EntityId, BattlefieldAttachments>()
+    for (const c of cards) {
+      const hasAttachments = c.attachments.length > 0
+      const hasLinkedExile = c.linkedExile && c.linkedExile.length > 0
+      if (!hasAttachments && !hasLinkedExile) continue
+      const attachments = hasAttachments
+        ? c.attachments
+            .map((id) => gameState.cards[id])
+            .filter((x): x is ClientCard => x != null)
+        : []
+      const linkedExile = hasLinkedExile
+        ? c.linkedExile!
+            .map((id) => gameState.cards[id])
+            .filter((x): x is ClientCard => x != null)
+        : []
+      attachmentsByCardId.set(c.id, { attachments, linkedExile })
+    }
+
+    const result: BattlefieldCards = {
       playerLands: playerCards.filter((c) => isNonCreatureLand(c) && isNotAttached(c)),
-      playerCreatures: playerCards.filter((c) => isCreatureOrAnimatedLand(c) && isNotAttached(c)),
+      playerCreatures: playerCards.filter((c) => isCreature(c) && isNotAttached(c)),
       playerPlaneswalkers: playerCards.filter((c) => isPlaneswalker(c) && !isCreature(c) && !isLand(c) && isNotAttached(c)),
       playerOther: playerCards.filter((c) => !isCreature(c) && !isPlaneswalker(c) && !isLand(c) && isNotAttached(c)),
       opponentLands: opponentCards.filter((c) => isNonCreatureLand(c) && isNotAttached(c)),
-      opponentCreatures: opponentCards.filter((c) => isCreatureOrAnimatedLand(c) && isNotAttached(c)),
+      opponentCreatures: opponentCards.filter((c) => isCreature(c) && isNotAttached(c)),
       opponentPlaneswalkers: opponentCards.filter((c) => isPlaneswalker(c) && !isCreature(c) && !isLand(c) && isNotAttached(c)),
       opponentOther: opponentCards.filter((c) => !isCreature(c) && !isPlaneswalker(c) && !isLand(c) && isNotAttached(c)),
+      attachmentsByCardId,
     }
+
+    if (previousRef.current && battlefieldCardsEqual(previousRef.current, result)) {
+      return previousRef.current
+    }
+    previousRef.current = result
+    return result
   }, [gameState, playerId])
 }
 

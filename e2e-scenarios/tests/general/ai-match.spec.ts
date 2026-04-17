@@ -103,21 +103,50 @@ test('AI vs AI Bloomburrow match', async ({ page, request }) => {
   ).toBeVisible({ timeout: 30_000 })
   console.log('Spectating game board — watching match play out...')
 
-  // Watch until game over or timeout
-  await page.waitForSelector(
-    'text=Game Over, text=Victory, text=Defeat, text=wins, text=Match Complete',
-    { timeout: 18 * 60 * 1000 }
-  ).catch(() => {
-    console.log('Game did not complete within timeout — match is still running')
+  // When profiling, run for a bounded window and capture data periodically so we
+  // get usable numbers even if the game never ends or the browser is closed early.
+  // When not profiling, keep the old behavior: wait for game-over.
+  const captureProfile = async (label: string) => {
+    if (!profilingEnabled) return
+    try {
+      const rows = await page.evaluate(() => {
+        const w = window as unknown as { __profileReport?: () => unknown }
+        return w.__profileReport ? w.__profileReport() : []
+      })
+      console.log(`Render profiler report (${label}):`)
+      console.table(rows)
+    } catch (err) {
+      console.log(`Profile capture (${label}) failed: ${(err as Error).message}`)
+    }
+  }
+
+  // Abort-aware sleep so we stop polling immediately when the page/browser closes.
+  let closed = false
+  page.on('close', () => { closed = true })
+  const sleep = (ms: number) => new Promise<void>((resolve) => {
+    const t = setTimeout(resolve, ms)
+    page.once('close', () => { clearTimeout(t); resolve() })
   })
 
   if (profilingEnabled) {
-    const rows = await page.evaluate(() => {
-      const w = window as unknown as { __profileReport?: () => unknown }
-      return w.__profileReport ? w.__profileReport() : []
+    const PROFILE_WINDOW_MS = 5 * 60 * 1000  // 5 minutes of gameplay is plenty for render stats
+    const SNAPSHOT_EVERY_MS = 60 * 1000
+    const deadline = Date.now() + PROFILE_WINDOW_MS
+    let snapshot = 0
+    while (Date.now() < deadline && !closed) {
+      await sleep(Math.min(SNAPSHOT_EVERY_MS, deadline - Date.now()))
+      snapshot += 1
+      await captureProfile(`snapshot ${snapshot} @ ${Math.round((Date.now() - (deadline - PROFILE_WINDOW_MS)) / 1000)}s`)
+    }
+    await captureProfile('final')
+  } else {
+    // Watch until game over or timeout
+    await page.waitForSelector(
+      'text=Game Over, text=Victory, text=Defeat, text=wins, text=Match Complete',
+      { timeout: 18 * 60 * 1000 }
+    ).catch(() => {
+      console.log('Game did not complete within timeout — match is still running')
     })
-    console.log('Render profiler report:')
-    console.table(rows)
   }
 
   console.log('Done watching')

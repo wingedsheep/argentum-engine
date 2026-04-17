@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { useBattlefieldCards, groupCards, selectGameState, selectViewingPlayerId } from '@/store/selectors.ts'
+import { useBattlefieldCards, groupCards, selectViewingPlayerId } from '@/store/selectors.ts'
 import { useGameStore } from '@/store/gameStore.ts'
 import { useResponsiveContext } from './shared'
 import { styles } from './styles'
@@ -8,6 +8,8 @@ import { GameCard } from '../card'
 import { GroupedCard } from '@/store/selectors.ts'
 import type { ClientCard } from '@/types'
 import { RenderProfiler } from '@/utils/renderProfiler'
+
+const EMPTY_ATTACHMENTS: readonly ClientCard[] = []
 
 function toSinglesStable(cards: readonly ClientCard[]): GroupedCard[] {
   return cards.map((card) => ({
@@ -37,8 +39,8 @@ export function Battlefield({ isOpponent, spectatorMode = false }: { isOpponent:
     opponentCreatures,
     opponentPlaneswalkers,
     opponentOther,
+    attachmentsByCardId,
   } = useBattlefieldCards()
-  const gameState = useGameStore(selectGameState)
   const responsive = useResponsiveContext()
 
   const lands = isOpponent ? opponentLands : playerLands
@@ -54,22 +56,6 @@ export function Battlefield({ isOpponent, spectatorMode = false }: { isOpponent:
   const groupedCreatures = useMemo(() => toSinglesStable(creatures), [creatures])
   const groupedPlaneswalkers = useMemo(() => toSinglesStable(planeswalkers), [planeswalkers])
   const groupedOther = useMemo(() => toSinglesStable(other), [other])
-
-  // Resolve attachment cards for a permanent
-  const getAttachments = (card: ClientCard): ClientCard[] => {
-    if (!gameState || card.attachments.length === 0) return []
-    return card.attachments
-      .map((id) => gameState.cards[id])
-      .filter((c): c is ClientCard => c != null)
-  }
-
-  // Resolve linked exile cards for a permanent (e.g., Suspension Field exiling a creature)
-  const getLinkedExile = (card: ClientCard): ClientCard[] => {
-    if (!gameState || !card.linkedExile || card.linkedExile.length === 0) return []
-    return card.linkedExile
-      .map((id) => gameState.cards[id])
-      .filter((c): c is ClientCard => c != null)
-  }
 
   const hasCreatures = groupedCreatures.length > 0
   const hasPlaneswalkers = groupedPlaneswalkers.length > 0
@@ -94,7 +80,12 @@ export function Battlefield({ isOpponent, spectatorMode = false }: { isOpponent:
    * Tapped: attachments peek horizontally to the right of the parent card.
    */
   const renderWithAttachments = (group: GroupedCard) => {
-    const attachments = [...getAttachments(group.card), ...getLinkedExile(group.card)]
+    const resolved = attachmentsByCardId.get(group.card.id)
+    const attachmentCards = resolved?.attachments ?? EMPTY_ATTACHMENTS
+    const linkedExileCards = resolved?.linkedExile ?? EMPTY_ATTACHMENTS
+    const attachments = attachmentCards.length === 0 && linkedExileCards.length === 0
+      ? EMPTY_ATTACHMENTS
+      : [...attachmentCards, ...linkedExileCards]
     if (attachments.length === 0) {
       return (
         <CardStack
@@ -170,13 +161,13 @@ export function Battlefield({ isOpponent, spectatorMode = false }: { isOpponent:
   }
 
   /**
-   * Renders a 3-column grid row:
-   *   [balance spacer] | [center items] | [side items column]
-   *
-   * The left spacer uses `minmax(0, Xpx)` where X is roughly half the side
-   * column's intrinsic width. That column claims up to X pixels of *extra*
-   * space (counterbalancing the right-heavy side items), but collapses to 0
-   * when the row is tight — so cards never lose width they need.
+   * Renders a row as two centered flex sub-groups side-by-side:
+   *   [center items] [divider] [side items]
+   * Each sub-group wraps internally, so when the center column (lands /
+   * creatures) overflows, those items stack within their own column
+   * instead of pushing the side items (enchantments / planeswalkers)
+   * onto a new line below. The two sub-groups are centered as a whole,
+   * keeping the row's visual weight at the viewport center.
    */
   const renderGridRow = (
     centerItems: readonly GroupedCard[],
@@ -184,61 +175,47 @@ export function Battlefield({ isOpponent, spectatorMode = false }: { isOpponent:
     extra?: React.CSSProperties,
   ) => {
     const hasSide = sideItems.length > 0 && centerItems.length > 0
-    // Only start counterbalancing once there's more than one side item — a
-    // single enchantment doesn't meaningfully skew the board, so shifting
-    // for it causes a visible jump. Each additional side item nudges the
-    // row left by ~15% of a card width, so heavy boards drift back toward
-    // the viewport center without overshooting on light ones.
-    const sideOverhead = hasSide ? Math.max(0, sideItems.length - 1) : 0
-    const balanceShift = sideOverhead > 0
-      ? Math.round(sideOverhead * (responsive.battlefieldCardWidth + responsive.cardGap) * 0.15)
-      : 0
-    const leftTrack = balanceShift > 0 ? `minmax(0, ${balanceShift}px)` : 'minmax(0, 1fr)'
-
     return (
-    <div style={{
-      display: 'grid',
-      gridTemplateColumns: `${leftTrack} auto minmax(max-content, 1fr)`,
-      alignItems: 'end',
-      width: '100%',
-      ...extra,
-    }}>
-      {/* Left column: empty spacer to balance the grid */}
-      <div />
-
-      {/* Center column: main items */}
       <div style={{
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'flex-end',
-        flexWrap: 'wrap',
+        flexWrap: 'nowrap',
         gap: responsive.cardGap,
+        width: '100%',
+        ...extra,
       }}>
-        {centerItems.map((group) => renderWithAttachments(group))}
-      </div>
-
-      {/* Right column: side items (e.g. planeswalkers), left-aligned with separator */}
-      <div style={{
-        display: 'flex',
-        justifyContent: 'flex-start',
-        alignItems: 'flex-end',
-        flexWrap: 'wrap',
-        gap: responsive.cardGap,
-        paddingLeft: sideItems.length > 0 && centerItems.length > 0 ? responsive.cardGap : 0,
-      }}>
-        {sideItems.length > 0 && centerItems.length > 0 && (
+        <div style={{
+          display: 'flex',
+          flexWrap: 'wrap',
+          alignItems: 'flex-end',
+          justifyContent: 'center',
+          gap: responsive.cardGap,
+          minWidth: 0,
+        }}>
+          {centerItems.map((group) => renderWithAttachments(group))}
+        </div>
+        {hasSide && (
           <div style={{
             width: 24,
             alignSelf: 'stretch',
-            marginRight: responsive.cardGap,
             background: 'radial-gradient(ellipse at center, rgba(120, 140, 180, 0.12) 0%, rgba(120, 140, 180, 0.04) 45%, transparent 75%)',
             pointerEvents: 'none',
             flexShrink: 0,
           }} />
         )}
-        {sideItems.map((group) => renderWithAttachments(group))}
+        {hasSide && (
+          <div style={{
+            display: 'flex',
+            flexWrap: 'wrap',
+            alignItems: 'flex-end',
+            gap: responsive.cardGap,
+            minWidth: 0,
+          }}>
+            {sideItems.map((group) => renderWithAttachments(group))}
+          </div>
+        )}
       </div>
-    </div>
     )
   }
 
