@@ -1,15 +1,31 @@
-import { useMemo } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useBattlefieldCards, groupCards, selectViewingPlayerId } from '@/store/selectors.ts'
 import { useGameStore } from '@/store/gameStore.ts'
-import { useResponsiveContext } from './shared'
+import { useInteraction } from '@/hooks/useInteraction.ts'
+import { useResponsiveContext, handleImageError } from './shared'
 import { styles } from './styles'
 import { CardStack } from '../card'
 import { GameCard } from '../card'
 import { GroupedCard } from '@/store/selectors.ts'
-import type { ClientCard } from '@/types'
+import type { ClientCard, EntityId } from '@/types'
+import { getCardImageUrl } from '@/utils/cardImages.ts'
 import { RenderProfiler } from '@/utils/renderProfiler'
+import {
+  TARGET_COLOR,
+  TARGET_GLOW,
+  TARGET_SHADOW,
+  SELECTED_COLOR,
+  SELECTED_GLOW,
+} from '@/styles/targetingColors'
 
 const EMPTY_ATTACHMENTS: readonly ClientCard[] = []
+
+type AttachmentKind = 'attachment' | 'linkedExile'
+type TaggedAttachment = { card: ClientCard; kind: AttachmentKind }
+const EMPTY_TAGGED: readonly TaggedAttachment[] = []
+// At this many attachments, the peek stack gets too tall and starts clipping
+// other UI (turn bar, opposing row). Collapse to a badge + browser overlay instead.
+const ATTACHMENT_COLLAPSE_THRESHOLD = 3
 
 function toSinglesStable(cards: readonly ClientCard[]): GroupedCard[] {
   return cards.map((card) => ({
@@ -68,9 +84,36 @@ export function Battlefield({ isOpponent, spectatorMode = false }: { isOpponent:
   const viewingPlayerId = useGameStore(selectViewingPlayerId)
   const interactive = !spectatorMode && !isOpponent
 
+  // Parent card whose attachments the user is currently browsing in the overlay.
+  // Only one at a time per battlefield instance (player / opponent each have their own).
+  const [browsingAttachmentsOf, setBrowsingAttachmentsOf] = useState<ClientCard | null>(null)
+
+  // Used to highlight the folder tab when something inside the collapsed stack is actionable.
+  const legalActions = useGameStore((state) => state.legalActions)
+  const targetingState = useGameStore((state) => state.targetingState)
+  const decisionSelectionState = useGameStore((state) => state.decisionSelectionState)
+
   // How much of each attachment card peeks out from behind its parent
   const attachmentPeek = responsive.isMobile ? 12 : 16
   const cardHeight = Math.round(responsive.battlefieldCardWidth * 1.4)
+
+  const hasActionableAttachment = (attachmentList: readonly TaggedAttachment[]): boolean => {
+    const ids = new Set(attachmentList.map((a) => a.card.id))
+    if (targetingState && targetingState.validTargets.some((id) => ids.has(id))) return true
+    if (decisionSelectionState && decisionSelectionState.validOptions.some((id) => ids.has(id))) return true
+    return legalActions.some((info) => {
+      const a = info.action
+      switch (a.type) {
+        case 'ActivateAbility':
+        case 'TurnFaceUp':
+          return ids.has(a.sourceId)
+        case 'CrewVehicle':
+          return ids.has(a.vehicleId)
+        default:
+          return false
+      }
+    })
+  }
 
   /**
    * Renders a permanent with any attached cards (auras, equipment) stacked underneath.
@@ -83,9 +126,13 @@ export function Battlefield({ isOpponent, spectatorMode = false }: { isOpponent:
     const resolved = attachmentsByCardId.get(group.card.id)
     const attachmentCards = resolved?.attachments ?? EMPTY_ATTACHMENTS
     const linkedExileCards = resolved?.linkedExile ?? EMPTY_ATTACHMENTS
-    const attachments = attachmentCards.length === 0 && linkedExileCards.length === 0
-      ? EMPTY_ATTACHMENTS
-      : [...attachmentCards, ...linkedExileCards]
+    const attachments: readonly TaggedAttachment[] =
+      attachmentCards.length === 0 && linkedExileCards.length === 0
+        ? EMPTY_TAGGED
+        : [
+            ...attachmentCards.map((card) => ({ card, kind: 'attachment' as const })),
+            ...linkedExileCards.map((card) => ({ card, kind: 'linkedExile' as const })),
+          ]
     if (attachments.length === 0) {
       return (
         <CardStack
@@ -98,14 +145,19 @@ export function Battlefield({ isOpponent, spectatorMode = false }: { isOpponent:
     }
 
     const parentTapped = group.card.isTapped
-    const totalPeek = attachments.length * attachmentPeek
+    // When attachments exceed the threshold, only the first still peeks — the rest collapse
+    // into a "+N" badge that opens a browser overlay. Keeps the stack height bounded while
+    // still signalling that attachments exist.
+    const collapsed = attachments.length >= ATTACHMENT_COLLAPSE_THRESHOLD
+    const visibleAttachments = collapsed ? attachments.slice(0, 1) : attachments
+    const visiblePeek = visibleAttachments.length * attachmentPeek
     // When tapped, cards rotate 90deg so their visual width becomes the height
     const cardVisualWidth = parentTapped ? cardHeight + 8 : responsive.battlefieldCardWidth
 
     // Tapped: attachments peek horizontally (left offset) to avoid overlap with the rotation gap
     // Untapped: attachments peek vertically (top offset) from above the parent card
-    const containerWidth = parentTapped ? cardVisualWidth + totalPeek : cardVisualWidth
-    const containerHeight = parentTapped ? cardHeight : cardHeight + totalPeek
+    const containerWidth = parentTapped ? cardVisualWidth + visiblePeek : cardVisualWidth
+    const containerHeight = parentTapped ? cardHeight : cardHeight + visiblePeek
 
     return (
       <div
@@ -116,11 +168,14 @@ export function Battlefield({ isOpponent, spectatorMode = false }: { isOpponent:
           height: containerHeight,
         }}
       >
-        {/* Attachments peek from the parent card */}
-        {attachments.map((attachment, index) => {
+        {/* Attachments peek from the parent card.
+         * When collapsed, the visible peek is non-interactive — clicks go through the overlay
+         * catcher below so the attachments browser is the single selection path. */}
+        {visibleAttachments.map((tagged, index) => {
+          const { card: attachment, kind } = tagged
           // Attachments controlled by the player are interactive even on the opponent's battlefield
           // (e.g., aura cast on opponent's creature — caster can still activate abilities)
-          const attachmentInteractive = !spectatorMode && attachment.controllerId === viewingPlayerId
+          const attachmentInteractive = !collapsed && !spectatorMode && attachment.controllerId === viewingPlayerId
           return (
             <div
               key={attachment.id}
@@ -138,16 +193,36 @@ export function Battlefield({ isOpponent, spectatorMode = false }: { isOpponent:
                 battlefield
                 isOpponentCard={isOpponent}
                 forceTapped={parentTapped}
+                isGhost={kind === 'linkedExile'}
               />
             </div>
           )
         })}
+        {collapsed && (
+          <div
+            onClick={(e) => {
+              e.stopPropagation()
+              setBrowsingAttachmentsOf(group.card)
+            }}
+            title={`${attachments.length} attached — click to browse`}
+            style={{
+              position: 'absolute',
+              left: 0,
+              top: 0,
+              width: parentTapped ? attachmentPeek : cardVisualWidth,
+              height: parentTapped ? cardHeight : attachmentPeek + 6,
+              zIndex: visibleAttachments.length,
+              cursor: 'pointer',
+              pointerEvents: 'auto',
+            }}
+          />
+        )}
         {/* Main card, on top */}
         <div style={{
           position: 'absolute',
-          left: parentTapped ? totalPeek : 0,
-          top: parentTapped ? 0 : totalPeek,
-          zIndex: attachments.length + 1,
+          left: parentTapped ? visiblePeek : 0,
+          top: parentTapped ? 0 : visiblePeek,
+          zIndex: visibleAttachments.length + 1,
           pointerEvents: 'none',
         }}>
           <CardStack
@@ -156,6 +231,56 @@ export function Battlefield({ isOpponent, spectatorMode = false }: { isOpponent:
             isOpponentCard={isOpponent}
           />
         </div>
+        {collapsed && (() => {
+          const tabHeight = responsive.isMobile ? 14 : 16
+          const actionable = hasActionableAttachment(attachments)
+          return (
+            <button
+              onClick={(e) => {
+                e.stopPropagation()
+                setBrowsingAttachmentsOf(group.card)
+              }}
+              title={
+                actionable
+                  ? `${attachments.length} attached — action available`
+                  : `${attachments.length} attached — click to browse`
+              }
+              style={{
+                position: 'absolute',
+                // Sticks up above the first attachment like a folder tab, anchored to the left.
+                // Bottom edge flush with the attachment's top so it looks like it's attached.
+                top: -tabHeight + 1,
+                left: parentTapped ? 2 : 6,
+                height: tabHeight,
+                minWidth: tabHeight + 4,
+                background: 'rgba(124, 58, 237, 0.95)',
+                color: 'white',
+                fontWeight: 700,
+                fontSize: responsive.isMobile ? 10 : 11,
+                padding: '0 8px',
+                borderRadius: '6px 6px 0 0',
+                border: actionable
+                  ? `2px solid ${TARGET_COLOR}`
+                  : '1px solid rgba(255, 255, 255, 0.35)',
+                borderBottom: 'none',
+                cursor: 'pointer',
+                pointerEvents: 'auto',
+                zIndex: visibleAttachments.length + 2,
+                boxShadow: actionable
+                  ? `0 -1px 4px ${TARGET_GLOW}, 0 0 10px ${TARGET_SHADOW}`
+                  : '0 -1px 3px rgba(0, 0, 0, 0.45)',
+                userSelect: 'none',
+                lineHeight: 1,
+                whiteSpace: 'nowrap',
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              {attachments.length}
+            </button>
+          )
+        })()}
       </div>
     )
   }
@@ -265,7 +390,255 @@ export function Battlefield({ isOpponent, spectatorMode = false }: { isOpponent:
           {frontRow}
         </>
       )}
+      {browsingAttachmentsOf && (() => {
+        const resolved = attachmentsByCardId.get(browsingAttachmentsOf.id)
+        const attachments = resolved?.attachments ?? []
+        const linkedExile = resolved?.linkedExile ?? []
+        if (attachments.length === 0 && linkedExile.length === 0) {
+          // Attachments cleared out while the overlay was open — close it.
+          setBrowsingAttachmentsOf(null)
+          return null
+        }
+        return (
+          <AttachmentsBrowser
+            parentName={browsingAttachmentsOf.name}
+            attachments={attachments}
+            linkedExile={linkedExile}
+            onClose={() => setBrowsingAttachmentsOf(null)}
+          />
+        )
+      })()}
     </div>
     </RenderProfiler>
+  )
+}
+
+/**
+ * Full-screen overlay for browsing cards attached / linked-exiled to a battlefield permanent.
+ * Opened by clicking the "+N" badge that replaces the attachment peek-stack when it gets too tall.
+ */
+function AttachmentsBrowser({
+  parentName,
+  attachments,
+  linkedExile,
+  onClose,
+}: {
+  parentName: string
+  attachments: readonly ClientCard[]
+  linkedExile: readonly ClientCard[]
+  onClose: () => void
+}) {
+  const hoverCard = useGameStore((state) => state.hoverCard)
+  // Both targeting flows: spell-cast pipeline (targetingState + addTarget/removeTarget)
+  // and decision modal like ChooseTargetsDecision (decisionSelectionState + toggleDecisionSelection).
+  const targetingState = useGameStore((state) => state.targetingState)
+  const addTarget = useGameStore((state) => state.addTarget)
+  const removeTarget = useGameStore((state) => state.removeTarget)
+  const decisionSelectionState = useGameStore((state) => state.decisionSelectionState)
+  const toggleDecisionSelection = useGameStore((state) => state.toggleDecisionSelection)
+  // Normal battlefield interactions (activate abilities, cast from hand, etc.) route through
+  // useInteraction just like GameCard does — so clicking an aura in the overlay behaves
+  // exactly as if it were clickable on the battlefield directly.
+  const { handleCardClick } = useInteraction()
+  const legalActions = useGameStore((state) => state.legalActions)
+  const responsive = useResponsiveContext()
+
+  const hasInteractiveAction = (cardId: EntityId): boolean =>
+    legalActions.some((info) => {
+      const a = info.action
+      switch (a.type) {
+        case 'ActivateAbility':
+        case 'TurnFaceUp':
+          return a.sourceId === cardId
+        case 'CrewVehicle':
+          return a.vehicleId === cardId
+        default:
+          return false
+      }
+    })
+
+  const cardWidth = responsive.isMobile ? 120 : 160
+  const cardHeight = Math.round(cardWidth * 1.4)
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose()
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [onClose])
+
+  const onCardClick = (cardId: EntityId) => {
+    // Targeting / selection modes take precedence — same precedence GameCard uses.
+    if (decisionSelectionState?.validOptions.includes(cardId)) {
+      toggleDecisionSelection(cardId)
+      onClose()
+      return
+    }
+    if (targetingState?.validTargets.includes(cardId)) {
+      if (targetingState.selectedTargets.includes(cardId)) {
+        removeTarget(cardId)
+      } else {
+        addTarget(cardId)
+      }
+      onClose()
+      return
+    }
+    // Otherwise fall through to normal battlefield interaction (ability activation, etc.)
+    handleCardClick(cardId)
+    onClose()
+  }
+
+  const isValidTarget = (cardId: EntityId) =>
+    decisionSelectionState?.validOptions.includes(cardId) ||
+    targetingState?.validTargets.includes(cardId)
+
+  const isSelectedTarget = (cardId: EntityId) =>
+    decisionSelectionState?.selectedOptions.includes(cardId) ||
+    targetingState?.selectedTargets.includes(cardId)
+
+  const renderCard = (card: ClientCard, kind: AttachmentKind) => {
+    const valid = isValidTarget(card.id)
+    const selected = isSelectedTarget(card.id)
+    const hasAction = !valid && !selected && hasInteractiveAction(card.id)
+    const clickable = valid || selected || hasAction
+    // Match the standard on-battlefield card highlight: ice-blue border + soft cyan glow
+    // for actionable / valid-target cards, green for confirmed-selected.
+    const isExile = kind === 'linkedExile'
+    const ringColor = selected
+      ? SELECTED_COLOR
+      : valid || hasAction
+      ? TARGET_COLOR
+      : undefined
+    const ringGlow = selected
+      ? `0 0 12px ${SELECTED_GLOW}, 0 0 24px ${SELECTED_GLOW}`
+      : valid || hasAction
+      ? `0 0 12px ${TARGET_GLOW}, 0 0 24px ${TARGET_SHADOW}`
+      : undefined
+    const ghostBorder = isExile && !ringColor ? '2px solid #6644aa' : undefined
+    const ghostShadow = isExile && !ringColor ? '0 0 8px rgba(102, 68, 170, 0.4), 0 0 16px rgba(102, 68, 170, 0.2)' : undefined
+    return (
+      <div
+        key={card.id}
+        style={{
+          position: 'relative',
+          width: cardWidth,
+          height: cardHeight,
+          borderRadius: 6,
+          flexShrink: 0,
+          cursor: clickable ? 'pointer' : 'default',
+          border: ringColor ? `2px solid ${ringColor}` : ghostBorder,
+          boxShadow: ringGlow ?? ghostShadow,
+          transition: 'border-color 120ms ease, box-shadow 120ms ease',
+        }}
+        onClick={() => { if (clickable) onCardClick(card.id) }}
+        onMouseEnter={(e) => hoverCard(card.id, { x: e.clientX, y: e.clientY })}
+        onMouseLeave={() => hoverCard(null)}
+      >
+        <img
+          src={getCardImageUrl(card.name, card.imageUri, 'normal')}
+          alt={card.name}
+          style={{
+            width: '100%',
+            height: '100%',
+            objectFit: 'cover',
+            borderRadius: 4,
+            display: 'block',
+            opacity: isExile ? 0.55 : 1,
+          }}
+          onError={(e) => handleImageError(e, card.name, 'normal')}
+        />
+        {selected && (
+          <div
+            aria-hidden
+            style={{
+              position: 'absolute',
+              top: 6,
+              right: 6,
+              width: 22,
+              height: 22,
+              borderRadius: '50%',
+              background: SELECTED_COLOR,
+              color: '#0a2a1a',
+              fontSize: 14,
+              fontWeight: 800,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              boxShadow: '0 1px 3px rgba(0, 0, 0, 0.5)',
+            }}
+          >
+            ✓
+          </div>
+        )}
+      </div>
+    )
+  }
+
+  const renderSection = (kind: AttachmentKind, cards: readonly ClientCard[]) => {
+    if (cards.length === 0) return null
+    const isExile = kind === 'linkedExile'
+    const accent = isExile ? '#a855f7' : '#22d3ee'
+    const sectionBg = isExile ? 'rgba(88, 28, 135, 0.25)' : 'rgba(14, 116, 144, 0.20)'
+    const label = isExile ? 'Linked Exile' : 'Attachments'
+    return (
+      <div
+        key={kind}
+        style={{
+          borderRadius: 10,
+          border: `1px solid ${accent}55`,
+          background: sectionBg,
+          padding: '12px 14px 14px',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 10,
+        }}
+      >
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 10,
+            color: accent,
+            fontSize: 13,
+            fontWeight: 700,
+            letterSpacing: 0.5,
+            textTransform: 'uppercase',
+          }}
+        >
+          <span
+            aria-hidden
+            style={{
+              display: 'inline-block',
+              width: 10,
+              height: 10,
+              borderRadius: '50%',
+              background: accent,
+              boxShadow: `0 0 6px ${accent}`,
+            }}
+          />
+          {label}
+          <span style={{ color: '#e5e7eb', fontWeight: 600, opacity: 0.8 }}>({cards.length})</span>
+        </div>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, justifyContent: 'flex-start' }}>
+          {cards.map((card) => renderCard(card, kind))}
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div style={styles.exileOverlay} onClick={onClose}>
+      <div style={styles.exileBrowserContent} onClick={(e) => e.stopPropagation()}>
+        <div style={styles.exileBrowserHeader}>
+          <h2 style={styles.exileBrowserTitle}>Attached to {parentName}</h2>
+          <button style={styles.exileCloseButton} onClick={onClose}>✕</button>
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 14, overflowY: 'auto' }}>
+          {renderSection('attachment', attachments)}
+          {renderSection('linkedExile', linkedExile)}
+        </div>
+      </div>
+    </div>
   )
 }

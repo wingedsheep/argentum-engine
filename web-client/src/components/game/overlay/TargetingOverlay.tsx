@@ -567,6 +567,25 @@ export function TargetingOverlay() {
       <div style={{ color: '#aaa', fontSize: responsive.fontSize.small, marginTop: 4 }}>
         {hintText}
       </div>
+      {targetingState.warning && (
+        <div
+          role="alert"
+          style={{
+            marginTop: 8,
+            padding: '6px 10px',
+            borderRadius: 6,
+            background: 'rgba(251, 191, 36, 0.15)',
+            border: '1px solid rgba(251, 191, 36, 0.7)',
+            color: '#fde68a',
+            fontSize: responsive.fontSize.small,
+            fontWeight: 600,
+            lineHeight: 1.3,
+            pointerEvents: 'auto',
+          }}
+        >
+          {targetingState.warning}
+        </div>
+      )}
       <div style={{ display: 'flex', gap: 8, marginTop: 8, pointerEvents: 'auto' }}>
         {hasEnoughTargets && (
           <button onClick={confirmTargeting} style={{

@@ -92,6 +92,9 @@ export interface TargetingState {
   totalRequirements?: number
   /** Name of the card that initiated this targeting (shown in overlay header) */
   sourceCardName?: string
+  /** Transient warning shown when the user tries an illegal toggle (e.g. clicking past max
+   * on a multi-target step). Cleared on the next successful add/remove. */
+  warning?: string | null
 }
 
 /**
@@ -146,6 +149,9 @@ export interface DecisionSelectionState {
   maxSelections: number
   /** Prompt to display */
   prompt: string
+  /** Transient warning shown when the user tries an illegal toggle (e.g. clicking past max
+   * on a multi-select step). Cleared on the next successful toggle. */
+  warning?: string | null
 }
 
 /**

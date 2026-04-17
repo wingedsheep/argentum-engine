@@ -284,17 +284,40 @@ export const createSelectionSlice: SliceCreator<SelectionSlice> = (set, get) => 
           decisionSelectionState: {
             ...state.decisionSelectionState,
             selectedOptions: selectedOptions.filter((id) => id !== cardId),
+            warning: null,
           },
         }
-      } else if (selectedOptions.length < maxSelections) {
+      }
+      if (selectedOptions.length < maxSelections) {
         return {
           decisionSelectionState: {
             ...state.decisionSelectionState,
             selectedOptions: [...selectedOptions, cardId],
+            warning: null,
           },
         }
       }
-      return state
+      if (maxSelections === 1) {
+        // Single-select step: clicking a different card replaces the previous pick so the
+        // user doesn't have to deselect first. Without this, flows like Wear Down's gift
+        // silently reject the new click and the player is stuck on the wrong target.
+        return {
+          decisionSelectionState: {
+            ...state.decisionSelectionState,
+            selectedOptions: [cardId],
+            warning: null,
+          },
+        }
+      }
+      // Multi-select at cap: keep existing picks but flag a warning so the user knows
+      // the click was ignored on purpose (and their spell won't fizzle from picking too
+      // many). Cleared the moment the user makes a legal toggle.
+      return {
+        decisionSelectionState: {
+          ...state.decisionSelectionState,
+          warning: `You can select at most ${maxSelections} target${maxSelections === 1 ? '' : 's'} here — deselect one first to pick a different target.`,
+        },
+      }
     })
   },
 

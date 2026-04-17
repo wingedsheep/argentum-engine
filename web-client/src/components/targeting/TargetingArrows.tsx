@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useGameStore } from '@/store/gameStore.ts'
 import { useStackCards } from '@/store/selectors.ts'
-import type { EntityId, ClientChosenTarget } from '@/types'
+import type { EntityId, ClientChosenTarget, ClientGameState } from '@/types'
 
 interface Point {
   x: number
@@ -147,6 +147,35 @@ function getCardCenter(cardId: EntityId): Point | null {
 }
 
 /**
+ * Find the battlefield permanent that "owns" this card — either the creature the card
+ * is attached to (auras, equipment), or the permanent whose linked-exile list contains
+ * the card (e.g., Keen-Eyed Curator). Returns null if the card isn't parented.
+ */
+function findParentHost(cardId: EntityId, gameState: ClientGameState | null): EntityId | null {
+  if (!gameState) return null
+  const card = gameState.cards[cardId]
+  if (card?.attachedTo) return card.attachedTo
+  // Linked exile has no reverse pointer on the exiled card — scan the cards map.
+  for (const c of Object.values(gameState.cards)) {
+    if (c.linkedExile?.includes(cardId)) return c.id
+  }
+  return null
+}
+
+/**
+ * Resolve a card to an arrow anchor point. Falls back to the card's parent host when the
+ * attachment/linked-exile is collapsed and not rendered directly in the DOM — without the
+ * fallback, arrows silently drop for targets inside a collapsed stack.
+ */
+function resolveCardAnchor(cardId: EntityId, gameState: ClientGameState | null): Point | null {
+  const direct = getCardCenter(cardId)
+  if (direct) return direct
+  const parentId = findParentHost(cardId, gameState)
+  if (parentId) return getCardCenter(parentId)
+  return null
+}
+
+/**
  * Get the center position of a player's life display by their ID.
  */
 function getPlayerCenter(playerId: EntityId): Point | null {
@@ -181,17 +210,17 @@ function getTargetEntityId(target: ClientChosenTarget): EntityId | null {
 /**
  * Get the position for a target based on its type.
  */
-function getTargetPosition(target: ClientChosenTarget): Point | null {
+function getTargetPosition(target: ClientChosenTarget, gameState: ClientGameState | null): Point | null {
   switch (target.type) {
     case 'Player':
       return getPlayerCenter(target.playerId)
     case 'Permanent':
-      return getCardCenter(target.entityId)
+      return resolveCardAnchor(target.entityId, gameState)
     case 'Spell':
       return getCardCenter(target.spellEntityId)
     case 'Card':
       // Card in a zone (e.g., graveyard) - use the same card lookup
-      return getCardCenter(target.cardId)
+      return resolveCardAnchor(target.cardId, gameState)
     default:
       return null
   }
@@ -213,6 +242,7 @@ export function TargetingArrows() {
   const stackCards = useStackCards()
   const pendingDecision = useGameStore((state) => state.pendingDecision)
   const lastDamageDistribution = useGameStore((state) => state.lastDamageDistribution)
+  const gameState = useGameStore((state) => state.gameState)
   const [arrows, setArrows] = useState<TargetArrow[]>([])
 
   // Hide arrows during full-screen overlay decisions (e.g., ChooseColorDecision)
@@ -245,7 +275,7 @@ export function TargetingArrows() {
         for (let i = 0; i < card.targets.length; i++) {
           const target = card.targets[i]
           if (!target) continue
-          const targetPos = getTargetPosition(target)
+          const targetPos = getTargetPosition(target, gameState)
           if (!targetPos) continue
 
           // Look up damage distribution for this target:
@@ -289,7 +319,7 @@ export function TargetingArrows() {
     updateArrows()
     const interval = setInterval(updateArrows, 100)
     return () => clearInterval(interval)
-  }, [stackCards, lastDamageDistribution])
+  }, [stackCards, lastDamageDistribution, gameState])
 
   if (arrows.length === 0 || hasOverlayDecision) {
     return null

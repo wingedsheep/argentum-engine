@@ -135,6 +135,24 @@ export function BattlefieldTargetingUI({
           ? `${selectedCount} / ${maxTargets} selected`
           : 'Click a valid target'}
       </div>
+      {decisionSelectionState?.warning && (
+        <div
+          role="alert"
+          style={{
+            marginTop: 6,
+            padding: '6px 10px',
+            borderRadius: 6,
+            background: 'rgba(251, 191, 36, 0.15)',
+            border: '1px solid rgba(251, 191, 36, 0.7)',
+            color: '#fde68a',
+            fontSize: 13,
+            fontWeight: 600,
+            lineHeight: 1.3,
+          }}
+        >
+          {decisionSelectionState.warning}
+        </div>
+      )}
 
       <div className={styles.buttonContainerSmall}>
         {canDecline && selectedCount === 0 && (

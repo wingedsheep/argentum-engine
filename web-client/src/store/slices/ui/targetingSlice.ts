@@ -35,11 +35,32 @@ export const createTargetingSlice: SliceCreator<TargetingSlice> = (set, get) => 
   addTarget: (targetId) => {
     set((state) => {
       if (!state.targetingState) return state
-      const newTargets = [...state.targetingState.selectedTargets, targetId]
+      const { selectedTargets, maxTargets } = state.targetingState
+      if (selectedTargets.includes(targetId)) return state
+      if (selectedTargets.length < maxTargets) {
+        return {
+          targetingState: {
+            ...state.targetingState,
+            selectedTargets: [...selectedTargets, targetId],
+            warning: null,
+          },
+        }
+      }
+      if (maxTargets === 1) {
+        // Single-target step: clicking a new target replaces the previous pick.
+        return {
+          targetingState: {
+            ...state.targetingState,
+            selectedTargets: [targetId],
+            warning: null,
+          },
+        }
+      }
+      // Multi-target at cap: keep existing picks and flag a warning banner.
       return {
         targetingState: {
           ...state.targetingState,
-          selectedTargets: newTargets,
+          warning: `You can select at most ${maxTargets} target${maxTargets === 1 ? '' : 's'} here — deselect one first to pick a different target.`,
         },
       }
     })
@@ -53,6 +74,7 @@ export const createTargetingSlice: SliceCreator<TargetingSlice> = (set, get) => 
         targetingState: {
           ...state.targetingState,
           selectedTargets: newTargets,
+          warning: null,
         },
       }
     })
