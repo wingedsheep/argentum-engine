@@ -101,7 +101,7 @@ export function LifeDisplay({
   const size = responsive.isMobile ? 36 : responsive.isTablet ? 42 : 48
 
   // Dynamic styling based on targeting state
-  const bgColor = isPlayer ? '#1a3a5a' : '#3a1a4a'
+  const bgColor = isPlayer ? '#1a3a5a' : '#4a2812'
   const borderColor = isDistributeTarget && distributeAllocated > 0
     ? '#ff6b35' // Orange for distribute targets with allocation
     : isDistributeTarget
@@ -112,7 +112,7 @@ export function LifeDisplay({
           ? '#ff4444' // Red glow if valid target
           : isAttackDropTarget
             ? '#ff4444' // Red highlight when attacker being dragged
-            : isPlayer ? '#3a7aba' : '#7a3a9a'
+            : isPlayer ? '#3a7aba' : '#e08038'
 
   const cursor = isValidTarget || isDistributeTarget ? 'pointer' : 'default'
   const boxShadow = isDistributeTarget && distributeAllocated > 0
@@ -132,8 +132,8 @@ export function LifeDisplay({
   // (otherwise the name itself already carries the same information) and when
   // not spectating (there's no "you" in spectator mode).
   const showRoleTag = !spectatorMode && !!playerName
-  const roleColor = isPlayer ? 'rgba(74, 154, 234, 0.7)' : 'rgba(170, 106, 202, 0.7)'
-  const roleBorder = isPlayer ? 'rgba(74, 154, 234, 0.35)' : 'rgba(170, 106, 202, 0.35)'
+  const roleColor = isPlayer ? 'rgba(74, 154, 234, 0.7)' : 'rgba(255, 158, 70, 0.8)'
+  const roleBorder = isPlayer ? 'rgba(74, 154, 234, 0.35)' : 'rgba(255, 158, 70, 0.4)'
 
   const nameLabel = (
     <div
@@ -151,7 +151,7 @@ export function LifeDisplay({
           fontSize: 12,
           fontWeight: 700,
           letterSpacing: '0.5px',
-          color: isPlayer ? '#4a9aea' : '#aa6aca',
+          color: isPlayer ? '#4a9aea' : '#ff9e46',
           whiteSpace: 'nowrap',
           overflow: 'hidden',
           textOverflow: 'ellipsis',
@@ -204,7 +204,23 @@ export function LifeDisplay({
             position: 'relative',
           }}
         >
-          <span style={{ color: life <= 5 ? '#ff4444' : '#ffffff' }}>{life}</span>
+          <span
+            style={
+              life <= 5
+                ? { color: '#ff4444' }
+                : isPlayer
+                  ? {
+                      color: '#ffffff',
+                      textShadow: '0 0 6px rgba(80, 170, 240, 0.55), 0 1px 2px rgba(0, 0, 0, 0.75), 0 0 1px rgba(0, 0, 0, 0.9)',
+                    }
+                  : {
+                      color: '#ffffff',
+                      textShadow: '0 0 6px rgba(255, 130, 40, 0.55), 0 1px 2px rgba(0, 0, 0, 0.75), 0 0 1px rgba(0, 0, 0, 0.9)',
+                    }
+            }
+          >
+            {life}
+          </span>
 
           {/* Damage allocation badge */}
           {isDistributeTarget && distributeAllocated > 0 && (

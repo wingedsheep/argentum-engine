@@ -129,7 +129,10 @@ export function StepStrip({
   // Active-player chevron: a slim, full-width hint above (active=top) or below
   // (active=bottom) the strip, pointing toward the active player's side. Edges
   // fade to transparent so it reads as a subtle accent, not a loud banner.
-  const triangle = (
+  // We render two slots in normal flow (top + bottom), but only one carries the
+  // visible triangle. The empty slot reserves identical space, so the box stays
+  // vertically centered in the row regardless of which side is active.
+  const renderTriangle = (visible: boolean, side: 'top' | 'bottom') => (
     <svg
       aria-hidden
       width="100%"
@@ -138,24 +141,27 @@ export function StepStrip({
       preserveAspectRatio="none"
       style={{
         display: 'block',
-        filter: `drop-shadow(0 0 3px ${triangleColor})`,
-        transition: 'filter 0.2s',
-        opacity: 0.75,
+        filter: visible ? `drop-shadow(0 0 3px ${triangleColor})` : 'none',
+        transition: 'filter 0.2s, opacity 0.2s',
+        opacity: visible ? 0.75 : 0,
+        pointerEvents: 'none',
       }}
     >
-      <defs>
-        <linearGradient id={gradientId} x1="0" y1="0" x2="1" y2="0">
-          <stop offset="0%" stopColor={triangleColor} stopOpacity={0} />
-          <stop offset="50%" stopColor={triangleColor} stopOpacity={1} />
-          <stop offset="100%" stopColor={triangleColor} stopOpacity={0} />
-        </linearGradient>
-      </defs>
+      {visible && (
+        <defs>
+          <linearGradient id={`${gradientId}-${side}`} x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0%" stopColor={triangleColor} stopOpacity={0} />
+            <stop offset="50%" stopColor={triangleColor} stopOpacity={1} />
+            <stop offset="100%" stopColor={triangleColor} stopOpacity={0} />
+          </linearGradient>
+        </defs>
+      )}
       <polygon
-        points={activeSide === 'top'
+        points={side === 'top'
           ? `50,0 0,${triangleHeight} 100,${triangleHeight}`
           : `50,${triangleHeight} 0,0 100,0`
         }
-        fill={`url(#${gradientId})`}
+        fill={visible ? `url(#${gradientId}-${side})` : 'transparent'}
       />
     </svg>
   )
@@ -170,7 +176,7 @@ export function StepStrip({
         minWidth: 0,
       }}
     >
-      {activeSide === 'top' && triangle}
+      {renderTriangle(activeSide === 'top', 'top')}
       <div
         style={{
           backgroundColor: 'rgba(0, 0, 0, 0.85)',
@@ -280,8 +286,7 @@ export function StepStrip({
         })}
       </div>
       </div>
-
-      {activeSide === 'bottom' && triangle}
+      {renderTriangle(activeSide === 'bottom', 'bottom')}
     </div>
   )
 }
