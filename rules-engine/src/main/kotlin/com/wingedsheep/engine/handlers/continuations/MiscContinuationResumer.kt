@@ -207,15 +207,19 @@ class MiscContinuationResumer(
             )
         }
 
-        val totalCopies = continuation.remainingCopies
+        val totalCopies = continuation.totalCopies
         val copyNumber = totalCopies - remainingAfterThis + 1
+        val copyLabel = if (totalCopies > 1)
+            "copy $copyNumber of $totalCopies of ${continuation.spellName}"
+            else "copy of ${continuation.spellName}"
         val decision = ChooseTargetsDecision(
             id = decisionId,
             playerId = continuation.controllerId,
-            prompt = "Choose targets for Storm copy $copyNumber of ${continuation.spellName}",
+            prompt = "Choose new targets for $copyLabel",
             context = DecisionContext(
                 phase = DecisionPhase.CASTING,
-                sourceName = continuation.spellName
+                sourceName = continuation.spellName,
+                effectHint = "Copy of ${continuation.spellName}"
             ),
             targetRequirements = targetReqInfos,
             legalTargets = legalTargetsMap

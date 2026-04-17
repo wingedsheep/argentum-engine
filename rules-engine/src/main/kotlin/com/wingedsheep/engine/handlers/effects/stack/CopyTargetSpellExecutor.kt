@@ -55,24 +55,41 @@ class CopyTargetSpellExecutor(
         // may let the copy controller re-choose per-mode targets.
         val sourceSpell = container.get<SpellOnStackComponent>()
         val inheritedChosenModes = sourceSpell?.chosenModes ?: emptyList()
-        val inheritedModeTargets = sourceSpell?.modeTargetsOrdered ?: emptyList()
         val inheritedModeTargetRequirements = sourceSpell?.modeTargetRequirements ?: emptyMap()
 
-        // If the source was modal (per-mode targets), skip flat re-targeting and
-        // inherit modes/targets directly. Full per-mode retargeting is out of
-        // scope for this phase.
+        // Modal source (700.2g): modes are fixed for the copy, but per 706.10d the
+        // copy controller may pick new targets per mode. If no mode has target
+        // requirements, inherit verbatim; otherwise drive per-mode retargeting via
+        // StormCopyEffectExecutor.driveStormModalCopies with a single copy.
         if (inheritedChosenModes.isNotEmpty()) {
-            val copyAbility = TriggeredAbilityOnStackComponent(
-                sourceId = context.sourceId ?: EntityId.generate(),
-                sourceName = spellName,
+            val hasAnyTargetedMode = inheritedChosenModes.any { modeIdx ->
+                inheritedModeTargetRequirements[modeIdx]?.isNotEmpty() == true
+            }
+            if (!hasAnyTargetedMode) {
+                val copyResult = stackResolver.putSpellCopy(
+                    state = state,
+                    sourceSpellId = spellEntityId,
+                    copyIndex = 1,
+                    copyTotal = 1,
+                    controllerId = context.controllerId
+                )
+                return EffectResult.from(copyResult)
+            }
+            return EffectResult.from(StormCopyEffectExecutor.driveStormModalCopies(
+                state = state,
+                stackResolver = stackResolver,
+                targetFinder = targetFinder,
+                sourceId = spellEntityId,
                 controllerId = context.controllerId,
-                effect = spellEffect,
-                description = "Copy of $spellName",
+                spellName = spellName,
                 chosenModes = inheritedChosenModes,
-                modeTargetsOrdered = inheritedModeTargets,
-                modeTargetRequirements = inheritedModeTargetRequirements
-            )
-            return EffectResult.from(stackResolver.putTriggeredAbility(state, copyAbility))
+                modeTargetRequirements = inheritedModeTargetRequirements,
+                accumulatedOrdinalTargets = emptyList(),
+                currentOrdinal = 0,
+                remainingCopies = 1,
+                totalCopies = 1,
+                priorEvents = emptyList()
+            ))
         }
 
         // If the original spell has no targets, create the copy immediately
@@ -139,10 +156,11 @@ class CopyTargetSpellExecutor(
         val decision = ChooseTargetsDecision(
             id = decisionId,
             playerId = context.controllerId,
-            prompt = "Choose targets for copy of $spellName",
+            prompt = "Choose new targets for copy of $spellName",
             context = DecisionContext(
                 phase = DecisionPhase.CASTING,
-                sourceName = spellName
+                sourceName = spellName,
+                effectHint = "Copy of $spellName"
             ),
             targetRequirements = targetReqInfos,
             legalTargets = legalTargetsMap

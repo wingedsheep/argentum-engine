@@ -1,6 +1,7 @@
 package com.wingedsheep.engine.scenarios
 
 import com.wingedsheep.engine.core.CastSpell
+import com.wingedsheep.engine.core.ChooseTargetsDecision
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.TargetFinder
 import com.wingedsheep.engine.handlers.effects.stack.StormCopyEffectExecutor
@@ -13,7 +14,7 @@ import com.wingedsheep.engine.state.components.identity.CopyOfComponent
 import com.wingedsheep.engine.state.components.identity.OwnerComponent
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.engine.state.components.stack.SpellOnStackComponent
-import com.wingedsheep.engine.state.components.stack.TriggeredAbilityOnStackComponent
+import io.kotest.matchers.types.shouldBeInstanceOf
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
 import com.wingedsheep.mtg.sets.definitions.lorwyneclipsed.cards.BrigidsCommand
@@ -76,7 +77,7 @@ class ModalCopyPreservationTest : FunSpec({
     fun nameOf(d: GameTestDriver, id: EntityId): String? =
         d.state.getEntity(id)?.get<CardComponent>()?.name
 
-    test("G1 — CopyTargetSpell inherits chosenModes and modeTargetsOrdered onto the triggered ability copy") {
+    test("G1 — CopyTargetSpell on a modal source pauses for per-mode retargeting and lands the copy with new targets") {
         val d = driver()
         d.initMirrorMatch(deck = Deck.of("Forest" to 20, "Plains" to 20))
         val p1 = d.activePlayer!!
@@ -86,7 +87,7 @@ class ModalCopyPreservationTest : FunSpec({
         d.putCreatureOnBattlefield(p1, "Centaur Courser")
         d.putCreatureOnBattlefield(p2, "Goblin Guide")
 
-        // P1: cast Brigid's Command ({1}{G}{W}) with pre-chosen modes [2, 3].
+        // P1: cast Brigid's Command ({1}{G}{W}) with pre-chosen modes [2, 3] targeting P1's centaur.
         d.giveMana(p1, Color.WHITE, 1)
         d.giveMana(p1, Color.GREEN, 1)
         d.giveColorlessMana(p1, 1)
@@ -127,22 +128,37 @@ class ModalCopyPreservationTest : FunSpec({
             )
         ).isSuccess shouldBe true
 
-        // Priority passes to P1. Pass twice so Copy Spell resolves first (LIFO).
+        // Both pass so Copy Spell resolves first (LIFO).
         d.bothPass()
 
-        // After Copy Spell resolves, a TriggeredAbilityOnStackComponent is pushed onto
-        // the stack above Brigid's Command with the same chosenModes/modeTargetsOrdered.
-        val copyTriggerId = d.state.stack.last { id ->
-            d.state.getEntity(id)?.get<TriggeredAbilityOnStackComponent>() != null
+        // Per 706.10d, resolution pauses asking the copy's controller (P2) to pick new
+        // targets for each targeted mode. First prompt: mode index 2 ("target creature
+        // you control +3/+3") — P2's only creature is Goblin Guide.
+        val firstDecision = d.pendingDecision
+        firstDecision.shouldBeInstanceOf<ChooseTargetsDecision>()
+        firstDecision.playerId shouldBe p2
+        d.submitTargetSelection(p2, listOf(goblin))
+
+        // Second prompt: mode index 3 ("target creature you control fights target creature
+        // an opponent controls") — req 0 = P2's Goblin Guide, req 1 = P1's Centaur Courser.
+        val secondDecision = d.pendingDecision
+        secondDecision.shouldBeInstanceOf<ChooseTargetsDecision>()
+        secondDecision.playerId shouldBe p2
+        d.submitMultiTargetSelection(p2, mapOf(0 to listOf(goblin), 1 to listOf(centaur)))
+
+        // The copy is placed on the stack as a SpellOnStackComponent (CopyOfComponent marker)
+        // with the retargeted per-mode targets; modes stay locked to [2, 3].
+        val copyEntityId = d.state.stack.single { id ->
+            val c = d.state.getEntity(id)
+            c?.get<SpellOnStackComponent>() != null && c.has<CopyOfComponent>()
         }
-        val copyTrigger = d.state.getEntity(copyTriggerId)?.get<TriggeredAbilityOnStackComponent>()
-        copyTrigger.shouldNotBeNull()
-        copyTrigger.chosenModes shouldBe listOf(2, 3)
-        copyTrigger.modeTargetsOrdered shouldHaveSize 2
-        copyTrigger.modeTargetsOrdered[0] shouldBe listOf(ChosenTarget.Permanent(centaur))
-        copyTrigger.modeTargetsOrdered[1] shouldBe listOf(
-            ChosenTarget.Permanent(centaur),
-            ChosenTarget.Permanent(goblin)
+        val copy = d.state.getEntity(copyEntityId)!!.get<SpellOnStackComponent>()!!
+        copy.chosenModes shouldBe listOf(2, 3)
+        copy.modeTargetsOrdered shouldHaveSize 2
+        copy.modeTargetsOrdered[0] shouldBe listOf(ChosenTarget.Permanent(goblin))
+        copy.modeTargetsOrdered[1] shouldBe listOf(
+            ChosenTarget.Permanent(goblin),
+            ChosenTarget.Permanent(centaur)
         )
     }
 

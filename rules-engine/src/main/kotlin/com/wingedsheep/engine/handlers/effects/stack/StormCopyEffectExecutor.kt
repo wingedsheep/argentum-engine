@@ -173,13 +173,17 @@ class StormCopyEffectExecutor(
             }
 
             val copyNumber = effect.copyCount - copiesLeft + 1
+            val copyLabel = if (effect.copyCount > 1)
+                "copy $copyNumber of ${effect.copyCount} of ${effect.spellName}"
+                else "copy of ${effect.spellName}"
             val decision = ChooseTargetsDecision(
                 id = decisionId,
                 playerId = context.controllerId,
-                prompt = "Choose targets for Storm copy $copyNumber of ${effect.spellName}",
+                prompt = "Choose new targets for $copyLabel",
                 context = DecisionContext(
                     phase = DecisionPhase.CASTING,
-                    sourceName = effect.spellName
+                    sourceName = effect.spellName,
+                    effectHint = "Copy of ${effect.spellName}"
                 ),
                 targetRequirements = targetReqInfos,
                 legalTargets = legalTargetsMap
@@ -263,14 +267,18 @@ class StormCopyEffectExecutor(
 
                     val decisionId = "storm-copy-modal-target-${System.nanoTime()}"
                     val copyNumber = totalCopies - copiesLeft + 1
+                    val copyLabel = if (totalCopies > 1) "copy $copyNumber of $totalCopies of $spellName"
+                        else "copy of $spellName"
+                    val modeLabel = if (chosenModes.size > 1) " — mode ${ordinal + 1} of ${chosenModes.size}"
+                        else ""
                     val decision = ChooseTargetsDecision(
                         id = decisionId,
                         playerId = controllerId,
-                        prompt = "Choose targets for Storm copy $copyNumber of $spellName " +
-                            "(mode ${ordinal + 1} of ${chosenModes.size})",
+                        prompt = "Choose new targets for $copyLabel$modeLabel",
                         context = DecisionContext(
                             phase = DecisionPhase.CASTING,
-                            sourceName = spellName
+                            sourceName = spellName,
+                            effectHint = "Copy of $spellName$modeLabel"
                         ),
                         targetRequirements = reqs.mapIndexed { index, req ->
                             TargetRequirementInfo(
