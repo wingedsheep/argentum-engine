@@ -43,6 +43,7 @@ object LorwynEclipsedSet {
         GlenElendrasAnswer,
         GloomRipper,
         GoldmeadowNomad,
+        GristleGlutton,
         HarmonizedCrescendo,
         HeirloomAuntie,
         HovelHurler,

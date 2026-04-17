@@ -221,4 +221,10 @@ object Costs {
      * Forage: exile three cards from your graveyard or sacrifice a Food.
      */
     fun Forage(): AbilityCost = AbilityCost.Forage
+
+    /**
+     * Blight N: put N -1/-1 counters on a creature you control.
+     * Used as part of an activated ability cost (e.g., "{T}, Blight 1: ...").
+     */
+    fun Blight(amount: Int): AbilityCost = AbilityCost.Blight(amount)
 }

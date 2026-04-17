@@ -405,7 +405,8 @@ class ActivateAbilityHandler(
             tapChoices = action.costPayment?.tappedPermanents ?: emptyList(),
             bounceChoices = action.costPayment?.bouncedPermanents ?: emptyList(),
             xValue = xValue,
-            counterRemovalChoices = action.costPayment?.counterRemovals ?: emptyMap()
+            counterRemovalChoices = action.costPayment?.counterRemovals ?: emptyMap(),
+            blightChoices = action.costPayment?.blightTargets ?: emptyList()
         )
 
         // Snapshot projected subtypes of sacrifice targets before zone change

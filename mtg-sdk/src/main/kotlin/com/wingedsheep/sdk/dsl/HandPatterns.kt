@@ -277,6 +277,36 @@ object HandPatterns {
     )
 
     /**
+     * Rummage: "Discard a card. If you do, draw a card." — discard first, then draw
+     * only as many cards as were actually discarded. When the hand is empty the
+     * discard resolves to zero and no card is drawn.
+     */
+    fun rummage(count: Int = 1): CompositeEffect = CompositeEffect(
+        listOf(
+            GatherCardsEffect(
+                source = CardSource.FromZone(Zone.HAND, Player.You),
+                storeAs = "hand"
+            ),
+            SelectFromCollectionEffect(
+                from = "hand",
+                selection = SelectionMode.ChooseExactly(DynamicAmount.Fixed(count)),
+                chooser = Chooser.Controller,
+                storeSelected = "discarded",
+                prompt = "Choose a card to discard"
+            ),
+            MoveCollectionEffect(
+                from = "discarded",
+                destination = CardDestination.ToZone(Zone.GRAVEYARD),
+                moveType = MoveType.Discard
+            ),
+            DrawCardsEffect(
+                count = DynamicAmount.VariableReference("discarded_count"),
+                target = EffectTarget.Controller
+            )
+        )
+    )
+
+    /**
      * Target player exiles cards from their hand.
      * "Target opponent exiles a card from their hand."
      */

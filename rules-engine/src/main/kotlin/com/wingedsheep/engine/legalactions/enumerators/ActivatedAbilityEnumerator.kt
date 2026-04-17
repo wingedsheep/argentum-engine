@@ -130,6 +130,8 @@ class ActivatedAbilityEnumerator : ActionEnumerator {
                 var hasForageCost = false
                 var forageGraveyardCards: List<EntityId> = emptyList()
                 var forageFoodTargets: List<EntityId> = emptyList()
+                var blightCost: AbilityCost.Blight? = null
+                var blightCreatures: List<EntityId> = emptyList()
                 var costAffordable = true
 
                 when (effectiveCost) {
@@ -195,6 +197,12 @@ class ActivatedAbilityEnumerator : ActionEnumerator {
                     is AbilityCost.SacrificeSelf -> {
                         // Source must be on battlefield (always true when iterating battlefield)
                         sacrificeTargets = listOf(entityId)
+                    }
+                    is AbilityCost.Blight -> {
+                        blightCost = effectiveCost
+                        blightCreatures = projected.getBattlefieldControlledBy(playerId)
+                            .filter { projected.isCreature(it) }
+                        if (blightCreatures.isEmpty()) continue
                     }
                     is AbilityCost.Composite -> {
                         val compositeCost = effectiveCost
@@ -325,6 +333,15 @@ class ActivatedAbilityEnumerator : ActionEnumerator {
                                     forageGraveyardCards = graveyardCards
                                     forageFoodTargets = foods
                                 }
+                                is AbilityCost.Blight -> {
+                                    blightCost = subCost
+                                    blightCreatures = projected.getBattlefieldControlledBy(playerId)
+                                        .filter { projected.isCreature(it) }
+                                    if (blightCreatures.isEmpty()) {
+                                        costCanBePaid = false
+                                        break
+                                    }
+                                }
                                 is AbilityCost.ExileXFromGraveyard -> {
                                     // ExileXFromGraveyard: validated via maxAffordableX cap below
                                 }
@@ -402,7 +419,8 @@ class ActivatedAbilityEnumerator : ActionEnumerator {
                     ability, tapTargets, tapCost, hasTapXPermanentsCost,
                     sacrificeTargets, sacrificeCost, bounceTargets, bounceCost,
                     counterRemovalCreatures,
-                    hasForageCost, forageGraveyardCards, forageFoodTargets
+                    hasForageCost, forageGraveyardCards, forageFoodTargets,
+                    blightCost, blightCreatures
                 )
 
                 // Calculate X cost info for activated abilities with X in their mana cost
@@ -661,7 +679,9 @@ class ActivatedAbilityEnumerator : ActionEnumerator {
         counterRemovalCreatures: List<CounterRemovalCreatureData>,
         hasForageCost: Boolean = false,
         forageGraveyardCards: List<EntityId> = emptyList(),
-        forageFoodTargets: List<EntityId> = emptyList()
+        forageFoodTargets: List<EntityId> = emptyList(),
+        blightCost: AbilityCost.Blight? = null,
+        blightCreatures: List<EntityId> = emptyList()
     ): AdditionalCostData? {
         if (tapTargets != null && tapCost != null) {
             return AdditionalCostData(
@@ -695,6 +715,15 @@ class ActivatedAbilityEnumerator : ActionEnumerator {
                 costType = "SacrificePermanent",
                 validSacrificeTargets = sacrificeTargets,
                 sacrificeCount = sacrificeCost.count,
+                counterRemovalCreatures = counterRemovalCreatures
+            )
+        }
+        if (blightCost != null && blightCreatures.isNotEmpty()) {
+            return AdditionalCostData(
+                description = "creature to blight",
+                costType = "Blight",
+                validBlightTargets = blightCreatures,
+                blightAmount = blightCost.amount,
                 counterRemovalCreatures = counterRemovalCreatures
             )
         }

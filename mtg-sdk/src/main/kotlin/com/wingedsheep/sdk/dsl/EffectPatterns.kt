@@ -147,6 +147,9 @@ object EffectPatterns {
     fun loot(draw: Int = 1, discard: Int = 1): CompositeEffect =
         HandPatterns.loot(draw, discard)
 
+    fun rummage(count: Int = 1): CompositeEffect =
+        HandPatterns.rummage(count)
+
     fun headGames(target: EffectTarget = EffectTarget.ContextTarget(0)): CompositeEffect =
         HandPatterns.headGames(target)
 

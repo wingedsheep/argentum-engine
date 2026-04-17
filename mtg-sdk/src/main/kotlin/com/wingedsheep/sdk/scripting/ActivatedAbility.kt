@@ -408,4 +408,16 @@ sealed interface AbilityCost : TextReplaceable<AbilityCost> {
         override val description: String = "Forage"
         override fun applyTextReplacement(replacer: TextReplacer): AbilityCost = this
     }
+
+    /**
+     * Blight N: put N -1/-1 counters on a creature you control.
+     * Used as an activated ability cost (e.g., Gristle Glutton's "{T}, Blight 1:").
+     * Requires at least one creature you control to activate.
+     */
+    @SerialName("CostBlight")
+    @Serializable
+    data class Blight(val amount: Int) : AbilityCost {
+        override val description: String = "Blight $amount"
+        override fun applyTextReplacement(replacer: TextReplacer): AbilityCost = this
+    }
 }

@@ -3,6 +3,7 @@ package com.wingedsheep.engine.handlers
 import com.wingedsheep.engine.core.ExecutionResult
 import com.wingedsheep.engine.core.GameEvent
 import com.wingedsheep.engine.core.CardsDiscardedEvent
+import com.wingedsheep.engine.core.CountersAddedEvent
 import com.wingedsheep.engine.core.LifeChangedEvent
 import com.wingedsheep.engine.core.LifeChangeReason
 import com.wingedsheep.engine.core.PermanentsSacrificedEvent
@@ -22,6 +23,7 @@ import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.identity.LifeTotalComponent
 import com.wingedsheep.engine.state.components.identity.OwnerComponent
 import com.wingedsheep.sdk.core.CounterType
+import com.wingedsheep.sdk.core.Counters
 import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.Zone
@@ -167,6 +169,11 @@ class CostHandler(
                         projected.hasSubtype(permId, Subtype.FOOD.value)
                 }
                 graveyardSize >= 3 || hasFood
+            }
+            is AbilityCost.Blight -> {
+                // Blight requires at least one creature you control to place -1/-1 counters on
+                val projected = state.projectedState
+                projected.getBattlefieldControlledBy(controllerId).any { projected.isCreature(it) }
             }
             is AbilityCost.Composite -> {
                 cost.costs.all { canPayAbilityCost(state, it, sourceId, controllerId, manaPool) }
@@ -595,6 +602,30 @@ class CostHandler(
                     CostPaymentResult.failure("Cannot forage: need 3 cards in graveyard or a Food")
                 }
             }
+            is AbilityCost.Blight -> {
+                val targetId = choices.blightChoices.firstOrNull()
+                    ?: return CostPaymentResult.failure("No blight target chosen")
+                val targetContainer = state.getEntity(targetId)
+                    ?: return CostPaymentResult.failure("Blight target not found")
+                val projected = state.projectedState
+                if (projected.getController(targetId) != controllerId || !projected.isCreature(targetId)) {
+                    return CostPaymentResult.failure("Blight target must be a creature you control")
+                }
+                val counters = targetContainer.get<CountersComponent>() ?: CountersComponent()
+                val newState = state.updateEntity(targetId) { c ->
+                    c.with(counters.withAdded(CounterType.MINUS_ONE_MINUS_ONE, cost.amount))
+                }
+                val targetName = targetContainer.get<CardComponent>()?.name ?: "Creature"
+                val events = listOf<GameEvent>(
+                    CountersAddedEvent(
+                        entityId = targetId,
+                        counterType = Counters.MINUS_ONE_MINUS_ONE,
+                        amount = cost.amount,
+                        entityName = targetName
+                    )
+                )
+                CostPaymentResult.success(newState, manaPool, events)
+            }
             is AbilityCost.Composite -> {
                 var currentState = state
                 var currentPool = manaPool
@@ -916,5 +947,6 @@ data class CostPaymentChoices(
     val tapChoices: List<EntityId> = emptyList(),
     val bounceChoices: List<EntityId> = emptyList(),
     val xValue: Int = 0,
-    val counterRemovalChoices: Map<EntityId, Int> = emptyMap()
+    val counterRemovalChoices: Map<EntityId, Int> = emptyMap(),
+    val blightChoices: List<EntityId> = emptyList()
 )
