@@ -85,5 +85,25 @@ val VrenTheRelentless = card("Vren, the Relentless") {
         collectorNumber = "239"
         artist = "Kevin Sidharta"
         imageUri = "https://cards.scryfall.io/normal/front/6/5/6506277d-f031-4db5-9d16-bf2389094785.jpg?1721427225"
+        ruling(
+            "2024-07-26",
+            "While Vren is on the battlefield, creatures your opponents control are exiled instead of dying, " +
+                "and abilities that trigger when a creature dies won't trigger."
+        )
+        ruling(
+            "2024-07-26",
+            "If Vren would leave the battlefield at the same time as one or more creatures an opponent controls " +
+                "would die, those creatures will still be exiled."
+        )
+        ruling(
+            "2024-07-26",
+            "Cards that would go to your opponent's graveyard for reasons other than dying, such as being " +
+                "discarded or milled, will still go to the graveyard and will not be exiled instead."
+        )
+        ruling(
+            "2024-07-26",
+            "Vren's last ability counts any creatures your opponents controlled that were exiled this turn, " +
+                "including creature tokens."
+        )
     }
 }
