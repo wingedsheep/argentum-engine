@@ -26,12 +26,17 @@ export const styles: Record<string, React.CSSProperties> = {
     paddingBottom: 8,
   },
   centerArea: {
-    display: 'flex',
-    justifyContent: 'center',
+    // 3-column grid so the step strip stays anchored to the viewport center
+    // regardless of how wide each player's name label is. Without this, an
+    // asymmetric name (e.g. long opponent name, short own name) pushes the
+    // strip off-center because flex + justify-content: center centers the
+    // combined bounding box, not the middle item.
+    display: 'grid',
+    gridTemplateColumns: 'minmax(0, 1fr) auto minmax(0, 1fr)',
     alignItems: 'center',
     padding: '2px 8px',
     flex: '0 0 auto',
-    gap: 16,
+    columnGap: 16,
     width: '100%',
     overflow: 'hidden',
     transform: 'translateY(-50px)',
@@ -40,6 +45,13 @@ export const styles: Record<string, React.CSSProperties> = {
     display: 'flex',
     alignItems: 'center',
     gap: 6,
+    minWidth: 0,
+  },
+  centerLifeSectionLeft: {
+    justifyContent: 'flex-end',
+  },
+  centerLifeSectionRight: {
+    justifyContent: 'flex-start',
   },
   playerNameWithLabel: {
     display: 'flex',

@@ -11,6 +11,8 @@ interface StepStripProps {
   hasPriority: boolean
   priorityMode: PriorityMode
   activePlayerName?: string | undefined
+  /** Which side the active player sits on relative to the board: 'top' = opponent, 'bottom' = viewing player. */
+  activeSide: 'top' | 'bottom'
   stopOverrides: { myTurnStops: Step[]; opponentTurnStops: Step[] }
   onToggleStop: (step: Step, isMyTurn: boolean) => void
   isSpectator?: boolean
@@ -96,6 +98,7 @@ export function StepStrip({
   hasPriority,
   priorityMode,
   activePlayerName,
+  activeSide,
   stopOverrides,
   onToggleStop,
   isSpectator = false,
@@ -117,23 +120,74 @@ export function StepStrip({
     ? 'Your Turn'
     : "Opponent's Turn"
 
+  const triangleHeight = isMobile ? 4 : 6
+  const triangleColor = colors.highlight
+  const triangleGap = isMobile ? 2 : 3
+  // Unique id so multiple StepStrip instances don't collide on the gradient.
+  const gradientId = `stepStripChevronFade-${activeSide}`
+
+  // Active-player chevron: a slim, full-width hint above (active=top) or below
+  // (active=bottom) the strip, pointing toward the active player's side. Edges
+  // fade to transparent so it reads as a subtle accent, not a loud banner.
+  const triangle = (
+    <svg
+      aria-hidden
+      width="100%"
+      height={triangleHeight}
+      viewBox={`0 0 100 ${triangleHeight}`}
+      preserveAspectRatio="none"
+      style={{
+        display: 'block',
+        filter: `drop-shadow(0 0 3px ${triangleColor})`,
+        transition: 'filter 0.2s',
+        opacity: 0.75,
+      }}
+    >
+      <defs>
+        <linearGradient id={gradientId} x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0%" stopColor={triangleColor} stopOpacity={0} />
+          <stop offset="50%" stopColor={triangleColor} stopOpacity={1} />
+          <stop offset="100%" stopColor={triangleColor} stopOpacity={0} />
+        </linearGradient>
+      </defs>
+      <polygon
+        points={activeSide === 'top'
+          ? `50,0 0,${triangleHeight} 100,${triangleHeight}`
+          : `50,${triangleHeight} 0,0 100,0`
+        }
+        fill={`url(#${gradientId})`}
+      />
+    </svg>
+  )
+
   return (
     <div
       style={{
-        backgroundColor: 'rgba(0, 0, 0, 0.85)',
-        borderRadius: isMobile ? 6 : 8,
-        padding: isMobile ? '5px 8px' : '6px 12px',
         display: 'flex',
         flexDirection: 'column',
-        alignItems: 'center',
-        gap: isMobile ? 3 : 4,
-        pointerEvents: 'auto',
-        border: `1px solid ${colors.border}`,
-        boxShadow: colors.glow,
-        transition: 'border-color 0.2s, box-shadow 0.2s',
+        alignItems: 'stretch',
+        gap: triangleGap,
         minWidth: 0,
       }}
     >
+      {activeSide === 'top' && triangle}
+      <div
+        style={{
+          backgroundColor: 'rgba(0, 0, 0, 0.85)',
+          borderRadius: isMobile ? 6 : 8,
+          padding: isMobile ? '5px 8px' : '6px 12px',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          gap: isMobile ? 3 : 4,
+          pointerEvents: 'auto',
+          border: `1px solid ${colors.border}`,
+          boxShadow: colors.glow,
+          transition: 'border-color 0.2s, box-shadow 0.2s',
+          minWidth: 0,
+        }}
+      >
+
       {/* Status row */}
       <div style={{
         display: 'flex',
@@ -225,6 +279,9 @@ export function StepStrip({
           )
         })}
       </div>
+      </div>
+
+      {activeSide === 'bottom' && triangle}
     </div>
   )
 }

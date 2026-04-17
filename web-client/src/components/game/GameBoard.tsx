@@ -369,14 +369,27 @@ export function GameBoard({ spectatorMode = false, topOffset = 0 }: GameBoardPro
         </div>
       </div>
 
-      {/* Center - Life totals, phase indicator, and stack */}
+      {/* Center - Life totals, phase indicator, and stack.
+          Wrapped in a row that mirrors `playerRowWithZones` (main area + zone
+          pile spacer) so the step strip's center aligns with the battlefield
+          cards above and below, which are centered inside `playerMainArea`. */}
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: 32,
+        width: '100%',
+        ...(spectatorMode ? {} : { transform: 'translateY(-50px)' }),
+      }}>
       <div style={{
         ...styles.centerArea,
-        gap: responsive.isMobile ? 6 : 16,
-        ...(spectatorMode ? { transform: 'none' } : {}),
+        flex: 1,
+        minWidth: 0,
+        width: 'auto',
+        transform: 'none',
+        columnGap: responsive.isMobile ? 6 : 16,
       }}>
         {/* Opponent life (left side) */}
-        <div style={styles.centerLifeSection}>
+        <div style={{ ...styles.centerLifeSection, ...styles.centerLifeSectionLeft }}>
           {effectiveOpponent && (
             <>
               <LifeDisplay life={effectiveOpponent.life} playerId={effectiveOpponent.playerId} playerName={effectiveOpponent.name} spectatorMode={spectatorMode} />
@@ -398,13 +411,18 @@ export function GameBoard({ spectatorMode = false, topOffset = 0 }: GameBoardPro
             ? gameState.players.find(p => p.playerId === gameState.activePlayerId)?.name
             : undefined
           }
+          activeSide={
+            spectatorMode
+              ? (gameState.activePlayerId === effectiveViewingPlayer?.playerId ? 'bottom' : 'top')
+              : (isMyTurn ? 'bottom' : 'top')
+          }
           stopOverrides={stopOverrides}
           onToggleStop={toggleStopOverride}
           isSpectator={spectatorMode}
         />
 
         {/* Player life (right side) */}
-        <div style={styles.centerLifeSection}>
+        <div style={{ ...styles.centerLifeSection, ...styles.centerLifeSectionRight }}>
           {effectiveViewingPlayer && (
             <>
               <LifeDisplay life={effectiveViewingPlayer.life} isPlayer playerId={effectiveViewingPlayer.playerId} playerName={effectiveViewingPlayer.name} spectatorMode={spectatorMode} />
@@ -413,6 +431,10 @@ export function GameBoard({ spectatorMode = false, topOffset = 0 }: GameBoardPro
             </>
           )}
         </div>
+      </div>
+        {/* Spacer matching the battlefield's ZonePile column so the centered
+            content aligns with the cards above/below rather than the viewport. */}
+        <div style={{ width: responsive.pileWidth, flexShrink: 0 }} aria-hidden />
       </div>
 
       {/* Stack display - floating on the left side */}

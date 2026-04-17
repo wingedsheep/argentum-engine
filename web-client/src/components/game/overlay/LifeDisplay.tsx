@@ -12,6 +12,7 @@ export function LifeDisplay({
   isPlayer = false,
   playerId,
   playerName,
+  spectatorMode = false,
 }: {
   life: number
   isPlayer?: boolean
@@ -126,23 +127,58 @@ export function LifeDisplay({
             ? '0 0 16px rgba(255, 68, 68, 0.7), 0 0 32px rgba(255, 68, 68, 0.4)'
             : 'none'
 
+  const nameText = playerName ? playerName.toUpperCase() : (isPlayer ? 'YOU' : 'OPPONENT')
+  // Only show the "YOU" / "OPPONENT" role tag when a custom name is rendered
+  // (otherwise the name itself already carries the same information) and when
+  // not spectating (there's no "you" in spectator mode).
+  const showRoleTag = !spectatorMode && !!playerName
+  const roleColor = isPlayer ? 'rgba(74, 154, 234, 0.7)' : 'rgba(170, 106, 202, 0.7)'
+  const roleBorder = isPlayer ? 'rgba(74, 154, 234, 0.35)' : 'rgba(170, 106, 202, 0.35)'
+
   const nameLabel = (
-    <span
+    <div
       style={{
-        maxWidth: 220,
-        fontSize: 12,
-        fontWeight: 700,
-        letterSpacing: '0.5px',
-        color: isPlayer ? '#4a9aea' : '#aa6aca',
-        whiteSpace: 'nowrap',
-        overflow: 'hidden',
-        textOverflow: 'ellipsis',
-        textShadow: '0 1px 2px rgba(0, 0, 0, 0.6)',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: isPlayer ? 'flex-start' : 'flex-end',
+        gap: 2,
+        minWidth: 0,
       }}
-      title={playerName}
     >
-      {playerName ? playerName.toUpperCase() : (isPlayer ? 'YOU' : 'OPPONENT')}
-    </span>
+      <span
+        style={{
+          maxWidth: 220,
+          fontSize: 12,
+          fontWeight: 700,
+          letterSpacing: '0.5px',
+          color: isPlayer ? '#4a9aea' : '#aa6aca',
+          whiteSpace: 'nowrap',
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
+          textShadow: '0 1px 2px rgba(0, 0, 0, 0.6)',
+        }}
+        title={playerName}
+      >
+        {nameText}
+      </span>
+      {showRoleTag && (
+        <span
+          style={{
+            fontSize: 8,
+            fontWeight: 600,
+            letterSpacing: '1.2px',
+            color: roleColor,
+            border: `1px solid ${roleBorder}`,
+            padding: '0 4px',
+            borderRadius: 3,
+            textTransform: 'uppercase',
+            lineHeight: '12px',
+          }}
+        >
+          {isPlayer ? 'You' : 'Opponent'}
+        </span>
+      )}
+    </div>
   )
 
   return (
