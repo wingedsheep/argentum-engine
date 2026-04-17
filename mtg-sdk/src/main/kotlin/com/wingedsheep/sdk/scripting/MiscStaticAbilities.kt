@@ -51,13 +51,15 @@ data class ConditionalStaticAbility(
  * This is a triggered mana ability that resolves immediately (doesn't use the stack).
  * The engine checks for this ability after a mana ability on the enchanted land resolves.
  *
- * @property color The color of additional mana to produce
+ * @property color The color of additional mana to produce. When `null`, the color is
+ *   read from the aura's `ChosenColorComponent` at resolution (e.g., Shimmerwilds Growth).
+ *   If the source has no chosen color, no mana is added (per Oracle ruling).
  * @property amount How much additional mana to produce (evaluated dynamically)
  */
 @SerialName("AdditionalManaOnTap")
 @Serializable
 data class AdditionalManaOnTap(
-    val color: Color,
+    val color: Color? = null,
     val amount: DynamicAmount
 ) : StaticAbility {
     override val description: String = "Whenever enchanted land is tapped for mana, its controller adds additional mana"
@@ -65,6 +67,34 @@ data class AdditionalManaOnTap(
         val newAmount = amount.applyTextReplacement(replacer)
         return if (newAmount !== amount) copy(amount = newAmount) else this
     }
+}
+
+/**
+ * Replaces the mana produced by the enchanted land's own mana abilities with mana
+ * of a specific color. The land still taps normally, but whatever color(s) it would
+ * produce are swapped for [color] instead.
+ *
+ * When [color] is `null`, the replacement color is read from the aura's own
+ * `ChosenColorComponent` (set via `EntersWithChoice(ChoiceType.COLOR)`) at resolution
+ * time. If no color is chosen, no replacement happens and the land produces as normal.
+ *
+ * This is how Shimmerwilds Growth realises "Enchanted land is the chosen color":
+ * a Mountain enchanted with Shimmerwilds Growth (Blue chosen) produces `{U}` when
+ * tapped, not `{R}`. Combines naturally with [AdditionalManaOnTap] to stack bonuses
+ * in the same color (e.g., `{U}` base + `{U}` bonus = `{U}{U}`).
+ *
+ * Applies to the source's *own* intrinsic mana abilities only — not to mana produced
+ * by any other source.
+ */
+@SerialName("OverrideEnchantedLandManaColor")
+@Serializable
+data class OverrideEnchantedLandManaColor(
+    val color: Color? = null
+) : StaticAbility {
+    override val description: String =
+        if (color == null) "Enchanted land produces mana of the chosen color instead of its normal output"
+        else "Enchanted land produces ${color.name.lowercase()} mana instead of its normal output"
+    override fun applyTextReplacement(replacer: TextReplacer): StaticAbility = this
 }
 
 /**

@@ -409,8 +409,11 @@ class ActivateAbilityHandler(
             blightChoices = action.costPayment?.blightTargets ?: emptyList()
         )
 
-        // Snapshot projected subtypes of sacrifice targets before zone change
+        // Snapshot projected subtypes and P/T of sacrifice targets before zone change
+        // (Rule 112.7a / 608.2h — "as it last existed on the battlefield")
         val sacrificedPermanentSubtypes = mutableMapOf<EntityId, Set<String>>()
+        val sacrificedPermanentPowers = mutableMapOf<EntityId, Int>()
+        val sacrificedPermanentToughnesses = mutableMapOf<EntityId, Int>()
         val sacrificeTargetIds = action.costPayment?.sacrificedPermanents ?: emptyList()
         if (sacrificeTargetIds.isNotEmpty()) {
             val projectedBeforeSacrifice = currentState.projectedState
@@ -419,6 +422,8 @@ class ActivateAbilityHandler(
                 if (projectedSubtypes.isNotEmpty()) {
                     sacrificedPermanentSubtypes[permId] = projectedSubtypes
                 }
+                projectedBeforeSacrifice.getPower(permId)?.let { sacrificedPermanentPowers[permId] = it }
+                projectedBeforeSacrifice.getToughness(permId)?.let { sacrificedPermanentToughnesses[permId] = it }
             }
         }
 
@@ -548,7 +553,7 @@ class ActivateAbilityHandler(
         }
 
         // Apply text replacement if the source has a TextReplacementComponent
-        val finalEffect = if (textReplacement != null) {
+        var finalEffect = if (textReplacement != null) {
             ability.effect.applyTextReplacement(textReplacement)
         } else {
             ability.effect
@@ -556,6 +561,12 @@ class ActivateAbilityHandler(
 
         // Mana abilities don't use the stack
         if (ability.isManaAbility) {
+            // Check for an attached aura that overrides the produced mana color
+            // (e.g., Shimmerwilds Growth: "Enchanted land is the chosen color").
+            val overrideColor = findEnchantedLandManaColorOverride(currentState, action.sourceId)
+            if (overrideColor != null && finalEffect is AddManaEffect) {
+                finalEffect = finalEffect.copy(color = overrideColor)
+            }
             val opponentId = state.turnOrder.firstOrNull { it != action.playerId }
             val context = EffectContext(
                 sourceId = action.sourceId,
@@ -754,6 +765,8 @@ class ActivateAbilityHandler(
             effect = finalEffect,
             sacrificedPermanents = action.costPayment?.sacrificedPermanents ?: emptyList(),
             sacrificedPermanentSubtypes = sacrificedPermanentSubtypes,
+            sacrificedPermanentPowers = sacrificedPermanentPowers,
+            sacrificedPermanentToughnesses = sacrificedPermanentToughnesses,
             xValue = action.xValue,
             tappedPermanents = action.costPayment?.tappedPermanents ?: emptyList()
         )
@@ -1095,6 +1108,33 @@ class ActivateAbilityHandler(
         return false
     }
 
+    /**
+     * If any aura attached to [sourceId] has an [OverrideEnchantedLandManaColor]
+     * static ability, return the color the enchanted land's own mana abilities
+     * should produce instead. `null` means no override (mana ability produces
+     * normally). Multiple auras: last-wins (same aura only applies once).
+     */
+    private fun findEnchantedLandManaColorOverride(
+        state: GameState,
+        sourceId: com.wingedsheep.sdk.model.EntityId
+    ): Color? {
+        var override: Color? = null
+        for (entityId in state.getBattlefield()) {
+            val container = state.getEntity(entityId) ?: continue
+            val attachedTo = container.get<com.wingedsheep.engine.state.components.battlefield.AttachedToComponent>()
+            if (attachedTo?.targetId != sourceId) continue
+            val card = container.get<CardComponent>() ?: continue
+            val cardDef = cardRegistry.getCard(card.cardDefinitionId) ?: continue
+            for (staticAbility in cardDef.script.staticAbilities) {
+                val o = staticAbility as? com.wingedsheep.sdk.scripting.OverrideEnchantedLandManaColor ?: continue
+                override = o.color
+                    ?: container.get<com.wingedsheep.engine.state.components.identity.ChosenColorComponent>()?.color
+                    ?: continue
+            }
+        }
+        return override
+    }
+
     private fun resolveAdditionalManaOnTap(
         state: GameState,
         sourceId: com.wingedsheep.sdk.model.EntityId,
@@ -1133,21 +1173,27 @@ class ActivateAbilityHandler(
                 val amount = dynamicAmountEvaluator.evaluate(currentState, additionalMana.amount, context)
                 if (amount <= 0) continue
 
+                // Resolve the color: if the ability specifies null, read the aura's chosen color.
+                // If no color is chosen (e.g., somehow on battlefield without a choice), skip.
+                val manaColor = additionalMana.color
+                    ?: container.get<com.wingedsheep.engine.state.components.identity.ChosenColorComponent>()?.color
+                    ?: continue
+
                 // Add the mana to the land controller's pool
                 currentState = currentState.updateEntity(landController) { c ->
                     val pool = c.get<ManaPoolComponent>() ?: ManaPoolComponent()
-                    c.with(pool.add(additionalMana.color, amount))
+                    c.with(pool.add(manaColor, amount))
                 }
 
                 events.add(ManaAddedEvent(
                     playerId = landController,
                     sourceId = entityId,
                     sourceName = card.name,
-                    white = if (additionalMana.color == Color.WHITE) amount else 0,
-                    blue = if (additionalMana.color == Color.BLUE) amount else 0,
-                    black = if (additionalMana.color == Color.BLACK) amount else 0,
-                    red = if (additionalMana.color == Color.RED) amount else 0,
-                    green = if (additionalMana.color == Color.GREEN) amount else 0,
+                    white = if (manaColor == Color.WHITE) amount else 0,
+                    blue = if (manaColor == Color.BLUE) amount else 0,
+                    black = if (manaColor == Color.BLACK) amount else 0,
+                    red = if (manaColor == Color.RED) amount else 0,
+                    green = if (manaColor == Color.GREEN) amount else 0,
                     colorless = 0
                 ))
             }

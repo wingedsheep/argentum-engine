@@ -38,6 +38,7 @@ import com.wingedsheep.sdk.scripting.GrantProtectionFromChosenColorToGroup
 import com.wingedsheep.sdk.scripting.AnimateLandGroup
 import com.wingedsheep.sdk.scripting.GrantAdditionalTypesToGroup
 import com.wingedsheep.sdk.scripting.GrantColor
+import com.wingedsheep.sdk.scripting.GrantChosenColor
 import com.wingedsheep.sdk.scripting.LoseAllAbilities
 import com.wingedsheep.sdk.scripting.TransformPermanent
 import com.wingedsheep.sdk.scripting.SetBasePowerToughnessStatic
@@ -473,6 +474,12 @@ class StaticAbilityHandler(
             is GrantColor -> {
                 ContinuousEffectData(
                     modification = Modification.AddColor(setOf(ability.color.name)),
+                    affectsFilter = convertStaticTarget(ability.target)
+                )
+            }
+            is GrantChosenColor -> {
+                ContinuousEffectData(
+                    modification = Modification.AddChosenColor,
                     affectsFilter = convertStaticTarget(ability.target)
                 )
             }

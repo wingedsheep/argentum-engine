@@ -412,6 +412,16 @@ sealed interface Modification {
         override val layer get() = Layer.COLOR
     }
 
+    /**
+     * Adds the chosen color (resolved dynamically from source's ChosenColorComponent).
+     * Used for Shimmerwilds Growth: "Enchanted land is the chosen color."
+     * If the source has no chosen color, no modification is applied.
+     */
+    @Serializable
+    data object AddChosenColor : Modification {
+        override val layer get() = Layer.COLOR
+    }
+
     // --- Layer 6: Ability-adding/removing ---
 
     @Serializable

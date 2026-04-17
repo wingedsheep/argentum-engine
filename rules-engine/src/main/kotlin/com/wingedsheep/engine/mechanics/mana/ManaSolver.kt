@@ -496,10 +496,14 @@ class ManaSolver(
                 if (projectedSubtypes.contains("Forest")) subtypeColors.add(Color.GREEN)
 
                 if (subtypeColors.isNotEmpty()) {
+                    // An attached aura may override the produced mana color
+                    // (e.g., Shimmerwilds Growth on a Mountain with Blue chosen → produces {U}).
+                    val overrideColor = findEnchantedLandManaColorOverride(state, entityId)
+                    val effectiveColors = if (overrideColor != null) setOf(overrideColor) else subtypeColors
                     return@mapNotNull ManaSource(
                         entityId = entityId,
                         name = card.name,
-                        producesColors = subtypeColors,
+                        producesColors = effectiveColors,
                         producesColorless = false,
                         isBasicLand = isBasicLand,
                         isLand = true,
@@ -752,6 +756,33 @@ class ManaSolver(
     }
 
     /**
+     * Returns the color an attached aura's [OverrideEnchantedLandManaColor] ability
+     * forces the source land to produce, or `null` if no override applies.
+     * Mirrors [ActivateAbilityHandler]'s version — both must agree or mana solving
+     * desynchronises from mana ability resolution.
+     */
+    private fun findEnchantedLandManaColorOverride(
+        state: GameState,
+        sourceId: EntityId
+    ): Color? {
+        var override: Color? = null
+        for (entityId in state.getBattlefield()) {
+            val container = state.getEntity(entityId) ?: continue
+            val attachedTo = container.get<AttachedToComponent>()
+            if (attachedTo?.targetId != sourceId) continue
+            val card = container.get<CardComponent>() ?: continue
+            val cardDef = cardRegistry.getCard(card.cardDefinitionId) ?: continue
+            for (staticAbility in cardDef.script.staticAbilities) {
+                val o = staticAbility as? com.wingedsheep.sdk.scripting.OverrideEnchantedLandManaColor ?: continue
+                override = o.color
+                    ?: container.get<ChosenColorComponent>()?.color
+                    ?: continue
+            }
+        }
+        return override
+    }
+
+    /**
      * Checks if a mana source has auras attached with AdditionalManaOnTap
      * and augments the source with bonus mana information.
      */
@@ -788,8 +819,13 @@ class ManaSolver(
 
                 val amount = dynamicAmountEvaluator.evaluate(state, additionalMana.amount, context)
                 if (amount > 0) {
+                    // Resolve the color: null means "read the aura's chosen color".
+                    // If no color is chosen (shouldn't happen in practice), skip.
+                    val manaColor = additionalMana.color
+                        ?: container.get<ChosenColorComponent>()?.color
+                        ?: continue
                     totalBonus += amount
-                    bonusColor = additionalMana.color
+                    bonusColor = manaColor
                 }
             }
         }

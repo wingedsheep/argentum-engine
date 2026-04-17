@@ -2,7 +2,7 @@
 
 **Set Size:** 273 cards (main set, per Scryfall `set:ecl`)
 **Release Date:** January 23, 2026
-**Implemented:** 56 / 273
+**Implemented:** 57 / 273
 
 | Color      | Total | Done |
 |------------|-------|------|
@@ -10,7 +10,7 @@
 | Blue       | 39    | 13   |
 | Black      | 38    | 5    |
 | Red        | 39    | 3    |
-| Green      | 39    | 9    |
+| Green      | 39    | 10   |
 | Multicolor | 49    | 12   |
 | Colorless  | 18    | 3    |
 | Land       | 12    | 6    |
@@ -218,7 +218,7 @@
 - [ ] Safewright Cavalry
 - [x] Sapling Nursery
 - [ ] Selfless Safewright
-- [ ] Shimmerwilds Growth
+- [x] Shimmerwilds Growth
 - [ ] Spry and Mighty
 - [ ] Surly Farrier
 - [ ] Tend the Sprigs

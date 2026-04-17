@@ -19,7 +19,10 @@ import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.AbilityCost
 import com.wingedsheep.sdk.scripting.GameObjectFilter
+import com.wingedsheep.sdk.core.Color
+import com.wingedsheep.sdk.scripting.OverrideEnchantedLandManaColor
 import com.wingedsheep.sdk.scripting.effects.AddAnyColorManaEffect
+import com.wingedsheep.sdk.scripting.effects.AddManaEffect
 import com.wingedsheep.sdk.scripting.effects.AddManaOfColorAmongEffect
 import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.predicates.CardPredicate
@@ -227,7 +230,7 @@ class ManaAbilityEnumerator : ActionEnumerator {
                 }
 
                 // Compute runtime description for abilities with dynamic mana amounts
-                val description = runtimeDescription(ability, state, entityId, playerId)
+                val description = runtimeDescription(ability, state, entityId, playerId, context)
 
                 result.add(
                     LegalAction(
@@ -253,14 +256,28 @@ class ManaAbilityEnumerator : ActionEnumerator {
     /**
      * Computes a runtime description for mana abilities that produce a dynamic amount of mana,
      * replacing the generic text with the actual creature count and chosen type.
+     *
+     * Also overrides the description when an aura attached to the source forces the land
+     * to produce a different color (e.g., Shimmerwilds Growth → "{T}: Add {U}").
      */
     private fun runtimeDescription(
         ability: com.wingedsheep.sdk.scripting.ActivatedAbility,
         state: com.wingedsheep.engine.state.GameState,
         entityId: EntityId,
-        playerId: EntityId
+        playerId: EntityId,
+        context: EnumerationContext
     ): String {
         val effect = ability.effect
+
+        // Mana-color override from an attached aura (Shimmerwilds Growth etc.).
+        if (effect is AddManaEffect) {
+            val override = findEnchantedLandManaColorOverride(state, entityId, context)
+            if (override != null) {
+                val costDesc = ability.cost.description
+                return "$costDesc: Add {${override.symbol}}"
+            }
+        }
+
         val amount = when (effect) {
             is AddAnyColorManaEffect -> effect.amount
             else -> null
@@ -290,5 +307,33 @@ class ManaAbilityEnumerator : ActionEnumerator {
 
         val costDesc = ability.cost.description
         return "$costDesc: Add $count mana of any color ($count ${chosenType}s)"
+    }
+
+    /**
+     * Resolves the mana-color override contributed by auras attached to the source
+     * (via [OverrideEnchantedLandManaColor]). Returns `null` if none applies.
+     * Kept in sync with the identical helpers in `ActivateAbilityHandler` and
+     * `ManaSolver` — all three must agree or UI/label/solver/resolver drift apart.
+     */
+    private fun findEnchantedLandManaColorOverride(
+        state: com.wingedsheep.engine.state.GameState,
+        sourceId: EntityId,
+        context: EnumerationContext
+    ): Color? {
+        var override: Color? = null
+        for (id in state.getBattlefield()) {
+            val container = state.getEntity(id) ?: continue
+            val attachedTo = container.get<com.wingedsheep.engine.state.components.battlefield.AttachedToComponent>()
+            if (attachedTo?.targetId != sourceId) continue
+            val card = container.get<CardComponent>() ?: continue
+            val cardDef = context.cardRegistry.getCard(card.cardDefinitionId) ?: continue
+            for (staticAbility in cardDef.script.staticAbilities) {
+                val o = staticAbility as? OverrideEnchantedLandManaColor ?: continue
+                override = o.color
+                    ?: container.get<com.wingedsheep.engine.state.components.identity.ChosenColorComponent>()?.color
+                    ?: continue
+            }
+        }
+        return override
     }
 }

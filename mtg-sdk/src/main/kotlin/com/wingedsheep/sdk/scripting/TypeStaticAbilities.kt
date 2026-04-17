@@ -88,6 +88,26 @@ data class GrantColor(
 }
 
 /**
+ * Adds the chosen color (resolved from the source's `ChosenColorComponent`) to the target.
+ * Used for auras like Shimmerwilds Growth: "Enchanted land is the chosen color."
+ *
+ * This is a Layer 5 (color-changing) continuous effect. If the source has no chosen color
+ * (e.g., somehow on the battlefield without a choice), no color is added.
+ *
+ * @property target What this ability applies to (typically AttachedCreature for auras;
+ *   for enchant-land auras use `StaticTarget.AttachedCreature` — it resolves to whatever
+ *   permanent the aura is attached to via `AttachedToComponent`).
+ */
+@SerialName("GrantChosenColor")
+@Serializable
+data class GrantChosenColor(
+    val target: StaticTarget = StaticTarget.AttachedCreature
+) : StaticAbility {
+    override val description: String = "is the chosen color"
+    override fun applyTextReplacement(replacer: TextReplacer): StaticAbility = this
+}
+
+/**
  * Adds a creature type to all creatures that have a specific counter type.
  * Used for Aurification: "Each creature with a gold counter on it is a Wall."
  *

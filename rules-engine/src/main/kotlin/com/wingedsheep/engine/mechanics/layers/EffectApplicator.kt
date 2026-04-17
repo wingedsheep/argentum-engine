@@ -73,6 +73,13 @@ internal class EffectApplicator(
                 is Modification.AddColor -> {
                     values.colors.addAll(mod.colors)
                 }
+                is Modification.AddChosenColor -> {
+                    val chosenColor = state.getEntity(effect.sourceId)
+                        ?.get<ChosenColorComponent>()?.color
+                    if (chosenColor != null) {
+                        values.colors.add(chosenColor.name)
+                    }
+                }
                 is Modification.AddType -> {
                     values.types.add(mod.type)
                 }

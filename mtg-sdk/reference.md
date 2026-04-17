@@ -1056,6 +1056,7 @@ Set via `staticAbility { ability = ... }`:
 - `AddLandTypeByCounter(landType, counterType)` — add basic land type to all lands with counter (e.g., flood counters → Island)
 - `GrantSupertype(supertype, target)` — grant a supertype (e.g., "LEGENDARY") via Layer 4 continuous effect
 - `SetEnchantedLandType(landType)` — set enchanted land's type
+- `GrantChosenColor(target)` — add the chosen color (from source's `ChosenColorComponent`, set via `EntersWithChoice(ChoiceType.COLOR)`) to target, Layer 5 (Shimmerwilds Growth)
 
 ### Other
 
@@ -1069,7 +1070,7 @@ Set via `staticAbility { ability = ... }`:
 - `NoncombatDamageBonus(bonusAmount)` — if a source you control would deal noncombat damage to an opponent or a permanent an opponent controls, it deals that much damage plus bonusAmount instead (Artist's Talent Level 3)
 - `CantCastSpells(target, duration)` — prevent target player from casting spells
 - `SkipNextTurn(target)` — target player skips their next turn
-- `AdditionalManaOnTap(color, amount: DynamicAmount)` — produce additional mana
+- `AdditionalManaOnTap(color: Color?, amount: DynamicAmount)` — whenever enchanted land is tapped for mana, add `amount` mana of `color`. If `color` is `null`, the color is read from the aura's own `ChosenColorComponent` (set via `EntersWithChoice(ChoiceType.COLOR)`) at tap time — used by Shimmerwilds Growth.
 - `AdditionalManaOnLandTap(filter: GameObjectFilter, amount: DynamicAmount)` — global triggered mana ability: whenever any player taps a land matching the filter for mana, that player adds `amount` additional mana of the color the land produced (Lavaleaper, Heartbeat of Spring–style effects)
 - `PlayFromTopOfLibrary` — play cards from top of library (revealed to all)
 - `CastSpellTypesFromTopOfLibrary(filter: GameObjectFilter)` — cast matching spells from top of library (e.g., instants/sorceries only)
