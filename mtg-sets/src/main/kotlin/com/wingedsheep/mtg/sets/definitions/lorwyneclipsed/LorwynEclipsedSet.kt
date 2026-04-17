@@ -58,6 +58,7 @@ object LorwynEclipsedSet {
         SteamVents,
         StoicGroveGuide,
         SyggsCommand,
+        ThoughtweftCharge,
         VirulentEmissary,
         WanderwineFarewell,
         WildUnraveling,
