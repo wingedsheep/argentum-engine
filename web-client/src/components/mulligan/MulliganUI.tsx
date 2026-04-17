@@ -1,9 +1,8 @@
-import { useState, useCallback } from 'react'
+import { useState } from 'react'
 import { useGameStore, type MulliganState } from '@/store/gameStore.ts'
 import type { EntityId } from '@/types'
 import { useResponsive, calculateFittingCardWidth, type ResponsiveSizes } from '@/hooks/useResponsive.ts'
 import { getCardImageUrl } from '@/utils/cardImages.ts'
-import { HoverCardPreview } from '../ui/HoverCardPreview'
 import { StandaloneConcedeButton } from '../game/overlay'
 import styles from './MulliganUI.module.css'
 
@@ -13,22 +12,10 @@ import styles from './MulliganUI.module.css'
 export function MulliganUI() {
   const mulliganState = useGameStore((state) => state.mulliganState)
   const responsive = useResponsive()
-  const [hoveredCardId, setHoveredCardId] = useState<EntityId | null>(null)
-  const [hoverPos, setHoverPos] = useState<{ x: number; y: number } | null>(null)
   const [minimized, setMinimized] = useState(false)
-
-  const handleHover = useCallback((cardId: EntityId | null, e?: React.MouseEvent) => {
-    setHoveredCardId(cardId)
-    if (cardId && e) {
-      setHoverPos({ x: e.clientX, y: e.clientY })
-    } else {
-      setHoverPos(null)
-    }
-  }, [])
 
   if (!mulliganState) return null
 
-  const hoveredCardInfo = hoveredCardId ? mulliganState.cards[hoveredCardId] : null
   const isChoosingBottom = mulliganState.phase === 'choosingBottomCards'
 
   // When minimized (only during choosingBottom phase), show floating button to restore
@@ -47,14 +34,9 @@ export function MulliganUI() {
     <div className={styles.overlay}>
       <StandaloneConcedeButton />
       {mulliganState.phase === 'deciding' ? (
-        <MulliganDecision state={mulliganState} responsive={responsive} onHoverCard={handleHover} />
+        <MulliganDecision state={mulliganState} responsive={responsive} />
       ) : (
-        <ChooseBottomCards state={mulliganState} responsive={responsive} onHoverCard={handleHover} onMinimize={() => setMinimized(true)} />
-      )}
-
-      {/* Card preview on hover */}
-      {hoveredCardInfo && !responsive.isMobile && (
-        <HoverCardPreview name={hoveredCardInfo.name} imageUri={hoveredCardInfo.imageUri} pos={hoverPos} />
+        <ChooseBottomCards state={mulliganState} responsive={responsive} onMinimize={() => setMinimized(true)} />
       )}
     </div>
   )
@@ -92,7 +74,7 @@ function computeMulliganCardWidth(
 /**
  * Mulligan decision phase - keep or mulligan.
  */
-function MulliganDecision({ state, responsive, onHoverCard }: { state: MulliganState; responsive: ResponsiveSizes; onHoverCard: (cardId: EntityId | null, e?: React.MouseEvent) => void }) {
+function MulliganDecision({ state, responsive }: { state: MulliganState; responsive: ResponsiveSizes }) {
   const keepHand = useGameStore((s) => s.keepHand)
   const mulligan = useGameStore((s) => s.mulligan)
   const tournamentState = useGameStore((s) => s.tournamentState)
@@ -164,9 +146,6 @@ function MulliganDecision({ state, responsive, onHoverCard }: { state: MulliganS
               imageUri={cardInfo?.imageUri}
               selectable={false}
               cardWidth={cardWidth}
-              onMouseEnter={(e: React.MouseEvent) => onHoverCard(cardId, e)}
-              onMouseMove={(e: React.MouseEvent) => onHoverCard(cardId, e)}
-              onMouseLeave={() => onHoverCard(null)}
             />
           )
         })}
@@ -189,7 +168,7 @@ function MulliganDecision({ state, responsive, onHoverCard }: { state: MulliganS
 /**
  * Choose cards to put on bottom after keeping.
  */
-function ChooseBottomCards({ state, responsive, onHoverCard, onMinimize }: { state: MulliganState; responsive: ResponsiveSizes; onHoverCard: (cardId: EntityId | null, e?: React.MouseEvent) => void; onMinimize: () => void }) {
+function ChooseBottomCards({ state, responsive, onMinimize }: { state: MulliganState; responsive: ResponsiveSizes; onMinimize: () => void }) {
   const chooseBottomCards = useGameStore((s) => s.chooseBottomCards)
   const toggleMulliganCard = useGameStore((s) => s.toggleMulliganCard)
 
@@ -224,9 +203,6 @@ function ChooseBottomCards({ state, responsive, onHoverCard, onMinimize }: { sta
               isSelected={state.selectedCards.includes(cardId)}
               onClick={() => toggleMulliganCard(cardId)}
               cardWidth={cardWidth}
-              onMouseEnter={(e: React.MouseEvent) => onHoverCard(cardId, e)}
-              onMouseMove={(e: React.MouseEvent) => onHoverCard(cardId, e)}
-              onMouseLeave={() => onHoverCard(null)}
             />
           )
         })}
@@ -261,9 +237,6 @@ function MulliganCard({
   isSelected = false,
   onClick,
   cardWidth = 130,
-  onMouseEnter,
-  onMouseMove,
-  onMouseLeave,
 }: {
   cardId: EntityId
   cardName: string
@@ -272,9 +245,6 @@ function MulliganCard({
   isSelected?: boolean
   onClick?: () => void
   cardWidth?: number
-  onMouseEnter?: (e: React.MouseEvent) => void
-  onMouseMove?: (e: React.MouseEvent) => void
-  onMouseLeave?: () => void
 }) {
   // Use provided imageUri or fall back to Scryfall API
   const cardImageUrl = getCardImageUrl(cardName, imageUri)
@@ -293,9 +263,6 @@ function MulliganCard({
   return (
     <div
       onClick={selectable ? onClick : undefined}
-      onMouseEnter={onMouseEnter}
-      onMouseMove={onMouseMove}
-      onMouseLeave={onMouseLeave}
       className={cardClasses}
       style={{
         width: cardWidth,

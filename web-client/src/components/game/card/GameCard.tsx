@@ -270,15 +270,16 @@ export function GameCard({
   const cardRatio = 1.4
   const height = Math.round(width * cardRatio)
 
-  // Check if this card can be played/cast (for drag-to-play)
-  // Get all playable actions (including morph, cycling, etc.)
-  const playableActions = legalActions.filter((a) => {
+  // Check if this card can be played/cast (for drag-to-play).
+  // Memoized so the filter only runs when legalActions actually changes —
+  // otherwise re-runs on every unrelated GameCard re-render (hover, etc.).
+  const playableActions = useMemo(() => legalActions.filter((a) => {
     const action = a.action
     return (action.type === 'PlayLand' && action.cardId === card.id) ||
            (action.type === 'CastSpell' && action.cardId === card.id) ||
            (action.type === 'CycleCard' && action.cardId === card.id) ||
            (action.type === 'TypecycleCard' && action.cardId === card.id)
-  })
+  }), [legalActions, card.id])
   const playableAction = playableActions[0]
   // Show modal if multiple legal actions OR if card has multiple potential options (e.g., morph + normal cast)
   const hasMultiplePotentialOptions = hasMultipleCastingOptions(playableActions)

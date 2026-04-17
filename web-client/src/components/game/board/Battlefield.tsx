@@ -1,3 +1,4 @@
+import { useMemo } from 'react'
 import { useBattlefieldCards, groupCards, selectGameState, selectViewingPlayerId } from '@/store/selectors.ts'
 import { useGameStore } from '@/store/gameStore.ts'
 import { useResponsiveContext } from './shared'
@@ -7,6 +8,15 @@ import { GameCard } from '../card'
 import { GroupedCard } from '@/store/selectors.ts'
 import type { ClientCard } from '@/types'
 import { RenderProfiler } from '@/utils/renderProfiler'
+
+function toSinglesStable(cards: readonly ClientCard[]): GroupedCard[] {
+  return cards.map((card) => ({
+    card,
+    count: 1,
+    cardIds: [card.id],
+    cards: [card],
+  }))
+}
 
 /**
  * Battlefield area with two rows per player, each using a 3-column grid:
@@ -36,17 +46,14 @@ export function Battlefield({ isOpponent, spectatorMode = false }: { isOpponent:
   const planeswalkers = isOpponent ? opponentPlaneswalkers : playerPlaneswalkers
   const other = isOpponent ? opponentOther : playerOther
 
-  // Group identical lands, display creatures/planeswalkers/other individually
-  const groupedLands = groupCards(lands)
-  const toSingles = (cards: typeof creatures) => cards.map((card) => ({
-    card,
-    count: 1,
-    cardIds: [card.id] as const,
-    cards: [card] as const,
-  }))
-  const groupedCreatures = toSingles(creatures)
-  const groupedPlaneswalkers = toSingles(planeswalkers)
-  const groupedOther = toSingles(other)
+  // Group identical lands, display creatures/planeswalkers/other individually.
+  // Memoized so these arrays keep stable identity across unrelated store updates —
+  // otherwise every battlefield re-render allocates fresh arrays that cascade
+  // into child re-renders and invalidate downstream useMemos.
+  const groupedLands = useMemo(() => groupCards(lands), [lands])
+  const groupedCreatures = useMemo(() => toSinglesStable(creatures), [creatures])
+  const groupedPlaneswalkers = useMemo(() => toSinglesStable(planeswalkers), [planeswalkers])
+  const groupedOther = useMemo(() => toSinglesStable(other), [other])
 
   // Resolve attachment cards for a permanent
   const getAttachments = (card: ClientCard): ClientCard[] => {

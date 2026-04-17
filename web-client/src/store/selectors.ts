@@ -193,54 +193,86 @@ export function useOpponent(): ClientPlayer | null {
   }, [gameState, playerId])
 }
 
+const EMPTY_ACTIONS: readonly LegalActionInfo[] = Object.freeze([])
+
+/** Extract the card-id this legal action is anchored to, if any. */
+function cardIdForAction(info: LegalActionInfo): EntityId | undefined {
+  const a = info.action
+  switch (a.type) {
+    case 'PlayLand':
+    case 'CastSpell':
+    case 'CycleCard':
+    case 'TypecycleCard':
+      return a.cardId
+    case 'ActivateAbility':
+    case 'TurnFaceUp':
+      return a.sourceId
+    case 'CrewVehicle':
+      return a.vehicleId
+    default:
+      return undefined
+  }
+}
+
+function isHighlightable(a: LegalActionInfo): boolean {
+  return (!a.isManaAbility || a.additionalCostInfo != null || a.manaCostString != null) && a.isAffordable !== false
+}
+
+/**
+ * Module-level cache keyed on the legalActions array reference. Rebuilt once
+ * per new legalActions identity and reused across every card on the board.
+ * Without this, every card re-filters the full array on each state update —
+ * O(cards × actions) per render.
+ */
+let cachedLegalActionsRef: readonly LegalActionInfo[] | null = null
+let cachedByCard: Map<EntityId, LegalActionInfo[]> = new Map()
+let cachedHighlightable: Set<EntityId> = new Set()
+
+function getLegalActionsIndex(legalActions: readonly LegalActionInfo[]): {
+  byCard: Map<EntityId, LegalActionInfo[]>
+  highlightable: Set<EntityId>
+} {
+  if (cachedLegalActionsRef === legalActions) {
+    return { byCard: cachedByCard, highlightable: cachedHighlightable }
+  }
+  const byCard = new Map<EntityId, LegalActionInfo[]>()
+  const highlightable = new Set<EntityId>()
+  for (const info of legalActions) {
+    const id = cardIdForAction(info)
+    if (id === undefined) continue
+    const list = byCard.get(id)
+    if (list) list.push(info)
+    else byCard.set(id, [info])
+    if (isHighlightable(info)) highlightable.add(id)
+  }
+  cachedLegalActionsRef = legalActions
+  cachedByCard = byCard
+  cachedHighlightable = highlightable
+  return { byCard, highlightable }
+}
+
 /**
  * Hook to get legal actions for a specific card.
+ * Uses a shared index so we don't re-filter the full legalActions array per card.
  */
 export function useCardLegalActions(cardId: EntityId | null): readonly LegalActionInfo[] {
   const legalActions = useGameStore(selectLegalActions)
   return useMemo(() => {
-    if (!cardId) return []
-    return legalActions.filter((action) => {
-      // Check if this action involves the card
-      const a = action.action
-      switch (a.type) {
-        case 'PlayLand':
-          return a.cardId === cardId
-        case 'CastSpell':
-          return a.cardId === cardId
-        case 'CycleCard':
-          return a.cardId === cardId
-        case 'TypecycleCard':
-          return a.cardId === cardId
-        case 'ActivateAbility':
-          return a.sourceId === cardId
-        case 'TurnFaceUp':
-          return a.sourceId === cardId
-        case 'CrewVehicle':
-          return a.vehicleId === cardId
-        default:
-          return false
-      }
-    })
+    if (!cardId) return EMPTY_ACTIONS
+    return getLegalActionsIndex(legalActions).byCard.get(cardId) ?? EMPTY_ACTIONS
   }, [legalActions, cardId])
 }
 
 /**
  * Hook to check if a card has any legal actions (excluding simple mana abilities and unaffordable actions).
- * Simple mana abilities (tap-for-mana) are always available but shouldn't cause cards to be highlighted.
- * Mana abilities with additional costs (e.g., TapPermanents) or mana costs (e.g., {2}, {T})
- * DO cause highlighting since they need interaction.
- * Unaffordable actions (isAffordable = false) are shown in the modal but shouldn't cause highlighting.
+ * Returns a plain boolean so Zustand's default equality prevents re-renders when the value is unchanged —
+ * avoids re-rendering every battlefield card whenever legalActions is replaced.
  */
 export function useHasLegalActions(cardId: EntityId | null): boolean {
-  const actions = useCardLegalActions(cardId)
-  // Filter out simple mana abilities and unaffordable actions - they shouldn't cause highlighting
-  // Mana abilities with additional costs (TapPermanents, SacrificePermanent, SacrificeSelf)
-  // or mana costs (e.g., {2}, {T}: Add mana) still need highlighting
-  const affordableHighlightableActions = actions.filter(
-    (a) => (!a.isManaAbility || a.additionalCostInfo != null || a.manaCostString != null) && a.isAffordable !== false
-  )
-  return affordableHighlightableActions.length > 0
+  return useGameStore((state) => {
+    if (!cardId) return false
+    return getLegalActionsIndex(state.legalActions).highlightable.has(cardId)
+  })
 }
 
 /**
