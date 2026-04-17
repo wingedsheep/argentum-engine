@@ -112,7 +112,7 @@ Per 702.40b, each instance of Storm triggers separately. `CastSpellHandler.kt:13
 
 MTG rules default is "inherit the original targets; you *may* pick new ones." We always prompt. Selecting the same target is allowed, so this is correct but cumbersome — a "keep original targets" quick action would match real-table UX.
 
-### 9. Storm is special-cased in `CastSpellHandler`, not emitted via `TriggerDetector`
+### 9. Storm is special-cased in `CastSpellHandler`, not emitted via `TriggerDetector`  [DONE]
 
 Structurally, Storm is a triggered ability — it belongs alongside other "on cast" triggers. Today it's handwired in `CastSpellHandler` and bypasses `TriggerDetector` / `TriggerProcessor`. This works but means Storm doesn't benefit from APNAP ordering, trigger batching, or pending-triggers continuations. Lower priority — the fix plan keeps this as a refactor, not a correctness fix.
 
@@ -175,11 +175,13 @@ Landed in `CastSpellHandler.execute` as `stormInstanceCount = printedStormCount 
 
 Landed in `CastSpellHandler.execute`: the Storm push guard no longer checks `stormCount > 0`, so a `StormCopyEffect` triggered ability is pushed whenever the caster has at least one Storm instance, even when no other spells were cast this turn. `StormCopyEffectExecutor` already short-circuits at `copyCount <= 0` (line 36), so the trigger lands on the stack, resolves as a no-op, and is visible to "whenever an ability triggers / is put onto the stack" effects. Coverage: `StormMultipleInstancesTest` > "Storm trigger still lands on the stack when storm count is 0" verifies that casting Tendrils as the first spell of the turn produces a single Storm trigger with `copyCount = 0`. Bug #7 in the divergences list is resolved.
 
-### Phase 8 — Route Storm through TriggerDetector (refactor, not correctness)
+### Phase 8 — Route Storm through TriggerDetector (refactor, not correctness) [DONE]
 
 1. Add a real `Triggers.OnCastSelf` hook for the Storm trigger: let `TriggerDetector.detectSpellCastTriggers(...)` see Storm keyword on the casting card and queue a trigger with `TriggerProcessor`.
 2. Remove the hand-wired push in `CastSpellHandler`.
 3. Optional / lower priority — wait until Phases 1–7 land and are tested.
+
+Landed in `CastSpellHandler.execute`: each Storm instance is now built as a `PendingTrigger` carrying a synthetic `TriggeredAbility` (effect = `StormCopyEffect`, `activeZone = Zone.STACK`, `binding = SELF`, description override = "Storm — copy …") rather than being hand-pushed via `stackResolver.putTriggeredAbility(...)`. The Storm `PendingTrigger`s are prepended to the list returned by `triggerDetector.detectTriggers(allEvents)` so they flow through `triggerProcessor.processTriggers(...)` alongside other spell-cast triggers. Storm sits just above the spell on the stack (CR 603.3b — prepending puts it first in the AP segment, so it's placed on the stack before other AP spell-cast triggers), and other AP triggers + NAP triggers stack on top in standard APNAP order. All 12 Storm tests and the full 1578-test rules-engine suite pass. Bug #9 in the divergences list is resolved.
 
 ### Phase 9 — UX "keep original targets" affordance
 

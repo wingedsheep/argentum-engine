@@ -20,6 +20,8 @@ import com.wingedsheep.engine.core.PermanentsSacrificedEvent
 import com.wingedsheep.engine.core.TappedEvent
 import com.wingedsheep.engine.core.TurnManager
 import com.wingedsheep.engine.core.ZoneChangeEvent
+import com.wingedsheep.engine.event.PendingTrigger
+import com.wingedsheep.engine.event.TriggerContext
 import com.wingedsheep.engine.event.TriggerDetector
 import com.wingedsheep.engine.event.TriggerProcessor
 import com.wingedsheep.engine.handlers.ConditionEvaluator
@@ -56,7 +58,12 @@ import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.AdditionalCost
+import com.wingedsheep.sdk.scripting.AbilityId
 import com.wingedsheep.sdk.scripting.CastRestriction
+import com.wingedsheep.sdk.scripting.GameEvent as SdkGameEvent
+import com.wingedsheep.sdk.scripting.TriggerBinding
+import com.wingedsheep.sdk.scripting.TriggeredAbility
+import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.effects.DividedDamageEffect
 import com.wingedsheep.sdk.scripting.effects.ModalEffect
 import com.wingedsheep.sdk.scripting.effects.StormCopyEffect
@@ -1341,11 +1348,15 @@ class CastSpellHandler(
             }
         }
 
-        // Handle Storm keyword: create one Storm triggered ability per instance on the stack.
+        // Handle Storm keyword: build one PendingTrigger per instance of Storm.
         // Per CR 702.40b each instance of Storm triggers separately. Sources of Storm:
         //   1. The card's printed keyword (Keyword.STORM in keywords) — counts once.
         //   2. Each matching grant in GrantedSpellKeywordsComponent (e.g., Ral's storm emblem) —
         //      counts once per matching grant.
+        // Per CR 702.40a Storm triggers whenever the spell is cast; it copies zero times when
+        // no other spells have been cast this turn. The executor is a no-op at copyCount == 0
+        // but the trigger must still land on the stack so "whenever an ability triggers /
+        // is put onto the stack" effects see it.
         val stormGrantCount = run {
             val playerContainer = currentCastState.getEntity(action.playerId)
             val grants = playerContainer?.get<GrantedSpellKeywordsComponent>()?.grants ?: emptyList()
@@ -1357,34 +1368,38 @@ class CastSpellHandler(
         }
         val printedStormCount = if (cardDef != null && cardDef.hasKeyword(Keyword.STORM)) 1 else 0
         val stormInstanceCount = printedStormCount + stormGrantCount
-        // Per CR 702.40a Storm triggers whenever the spell is cast; it copies zero times when
-        // no other spells have been cast this turn. Don't short-circuit on stormCount — the
-        // executor is a no-op at copyCount == 0 but the trigger must still land on the stack
-        // so "whenever an ability triggers / is put onto the stack" effects see it.
-        if (!action.castFaceDown && cardDef != null && stormInstanceCount > 0) {
-            val spellEffect = cardDef.script.spellEffect
-            if (spellEffect != null) {
-                repeat(stormInstanceCount) {
-                    val stormEffect = StormCopyEffect(
-                        copyCount = stormCount,
-                        spellEffect = spellEffect,
-                        spellTargetRequirements = spellTargetRequirements,
-                        spellName = cardComponent.name
-                    )
-                    val stormAbility = TriggeredAbilityOnStackComponent(
-                        sourceId = action.cardId,
-                        sourceName = cardComponent.name,
-                        controllerId = action.playerId,
-                        effect = stormEffect,
-                        description = "Storm — copy ${cardComponent.name} $stormCount time(s)"
-                    )
-                    val stormResult = stackResolver.putTriggeredAbility(currentCastState, stormAbility)
-                    if (!stormResult.isSuccess) return stormResult
-                    currentCastState = stormResult.newState
-                    allEvents = allEvents + stormResult.events
-                }
-            }
-        }
+        val stormPendingTriggers: List<PendingTrigger> =
+            if (!action.castFaceDown && cardDef != null && stormInstanceCount > 0) {
+                val spellEffect = cardDef.script.spellEffect
+                if (spellEffect != null) {
+                    List(stormInstanceCount) {
+                        val stormEffect = StormCopyEffect(
+                            copyCount = stormCount,
+                            spellEffect = spellEffect,
+                            spellTargetRequirements = spellTargetRequirements,
+                            spellName = cardComponent.name
+                        )
+                        val ability = TriggeredAbility(
+                            id = AbilityId.generate(),
+                            trigger = SdkGameEvent.SpellCastEvent(player = Player.You),
+                            binding = TriggerBinding.SELF,
+                            effect = stormEffect,
+                            activeZone = Zone.STACK,
+                            descriptionOverride = "Storm — copy ${cardComponent.name} $stormCount time(s)"
+                        )
+                        PendingTrigger(
+                            ability = ability,
+                            sourceId = action.cardId,
+                            sourceName = cardComponent.name,
+                            controllerId = action.playerId,
+                            triggerContext = TriggerContext(
+                                triggeringEntityId = action.cardId,
+                                triggeringPlayerId = action.playerId
+                            )
+                        )
+                    }
+                } else emptyList()
+            } else emptyList()
 
         // Handle pending spell copies (e.g., Howl of the Horde) — copy next instant/sorcery
         if (!action.castFaceDown && cardComponent.typeLine.let { it.isInstant || it.isSorcery }) {
@@ -1426,8 +1441,13 @@ class CastSpellHandler(
             }
         }
 
-        // Detect and process triggers from casting (including additional cost events like sacrifice)
-        val triggers = triggerDetector.detectTriggers(currentCastState, allEvents)
+        // Detect and process triggers from casting (including additional cost events like sacrifice).
+        // Storm pending triggers (built above) are prepended so they go on the stack just above the
+        // spell itself — per CR 603.3b Storm goes on top of the spell that caused it to trigger.
+        // Other AP spell-cast triggers follow (placed higher on the stack), then NAP triggers on top,
+        // matching APNAP ordering within processTriggers.
+        val detectedTriggers = triggerDetector.detectTriggers(currentCastState, allEvents)
+        val triggers = stormPendingTriggers + detectedTriggers
         if (triggers.isNotEmpty()) {
             val triggerResult = triggerProcessor.processTriggers(currentCastState, triggers)
 
