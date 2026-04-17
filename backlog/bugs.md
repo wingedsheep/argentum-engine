@@ -4,3 +4,4 @@
 [x] Portent of Calamity skips the "4+ exiled → free cast" clause and doesn't enforce one-per-card-type
 [ ] Scrapshooter (and likely the whole Bloomburrow gift cycle) decides the gift at ETB instead of cast time (see `scrapshooter-gift-at-etb.md`)
 [x] Cannot choose offspring (or kicker) when casting from exile or graveyard — `CastFromZoneEnumerator` never generates kicked/offspring variants, only `CastSpellEnumerator.enumerateKicker()` does (hand only)
+[ ] Blocking validator doesn't implement CR 509.1c maximize-requirements — Taunting Elf + Vinebred Brawler overlap has no legal block (see `must-be-blocked-maximize-requirements.md`)
