@@ -2,13 +2,13 @@
 
 **Set Size:** 273 cards (main set, per Scryfall `set:ecl`)
 **Release Date:** January 23, 2026
-**Implemented:** 51 / 273
+**Implemented:** 52 / 273
 
 | Color      | Total | Done |
 |------------|-------|------|
 | White      | 39    | 5    |
 | Blue       | 39    | 11   |
-| Black      | 38    | 4    |
+| Black      | 38    | 5    |
 | Red        | 39    | 2    |
 | Green      | 39    | 8    |
 | Multicolor | 49    | 12   |
@@ -122,7 +122,7 @@
 - [x] Dawnhand Eulogist
 - [ ] Dose of Dawnglow
 - [ ] Dream Seizer
-- [ ] Gloom Ripper
+- [x] Gloom Ripper
 - [ ] Gnarlbark Elm
 - [ ] Graveshifter
 - [ ] Gutsplitter Gang

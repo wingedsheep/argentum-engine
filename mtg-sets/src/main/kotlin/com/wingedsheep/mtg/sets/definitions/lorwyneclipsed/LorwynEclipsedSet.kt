@@ -41,6 +41,7 @@ object LorwynEclipsedSet {
         FlaringCinder,
         GlamerGifter,
         GlenElendrasAnswer,
+        GloomRipper,
         GoldmeadowNomad,
         HarmonizedCrescendo,
         HeirloomAuntie,
