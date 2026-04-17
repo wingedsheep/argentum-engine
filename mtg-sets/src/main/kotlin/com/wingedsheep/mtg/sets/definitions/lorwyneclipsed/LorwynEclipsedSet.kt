@@ -28,6 +28,7 @@ object LorwynEclipsedSet {
         BrigidsCommand,
         Catharsis,
         ChampionsOfThePerfect,
+        ChampionsOfTheShoal,
         ChronicleOfVictory,
         ClachanFestival,
         DawnhandEulogist,

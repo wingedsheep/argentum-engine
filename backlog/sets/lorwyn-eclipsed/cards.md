@@ -2,12 +2,12 @@
 
 **Set Size:** 273 cards (main set, per Scryfall `set:ecl`)
 **Release Date:** January 23, 2026
-**Implemented:** 54 / 273
+**Implemented:** 55 / 273
 
 | Color      | Total | Done |
 |------------|-------|------|
 | White      | 39    | 5    |
-| Blue       | 39    | 12   |
+| Blue       | 39    | 13   |
 | Black      | 38    | 5    |
 | Red        | 39    | 3    |
 | Green      | 39    | 8    |
@@ -65,7 +65,7 @@
 
 - [x] Aquitect's Defenses
 - [x] Blossombind
-- [ ] Champions of the Shoal
+- [x] Champions of the Shoal
 - [ ] Disruptor of Currents
 - [ ] Flitterwing Nuisance
 - [x] Glamer Gifter
