@@ -46,6 +46,7 @@ object LorwynEclipsedSet {
         HeirloomAuntie,
         HovelHurler,
         Lavaleaper,
+        LiminalHold,
         MirrormindCrown,
         NamelessInversion,
         NoggleTheMind,
