@@ -65,6 +65,7 @@ class GameBeansConfig(
         }
         if (gameProperties.sets.lorwynEclipsedEnabled) {
             register(LorwynEclipsedSet.allCards)
+            register(LorwynEclipsedSet.basicLands)
         }
         if (gameProperties.sets.lostCavernsOfIxalanEnabled) {
             register(LostCavernsOfIxalanSet.allCards)

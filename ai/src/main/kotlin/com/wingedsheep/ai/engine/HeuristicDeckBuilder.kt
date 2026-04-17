@@ -45,10 +45,19 @@ fun buildHeuristicSealedDeck(pool: List<CardDefinition>): Map<String, Int> {
     val selected = mutableListOf<CardDefinition>()
     val remaining = candidates.toMutableList()
 
-    // First pass: grab the best cards by rating
-    val topPicks = remaining.take(23)
+    // First pass: grab the best cards by rating, capped at 4 copies per name (sealed rule)
+    val picksByName = mutableMapOf<String, Int>()
+    val topPicks = mutableListOf<CardDefinition>()
+    val iter = remaining.iterator()
+    while (iter.hasNext() && topPicks.size < 23) {
+        val card = iter.next()
+        val current = picksByName[card.name] ?: 0
+        if (current >= 4) continue
+        picksByName[card.name] = current + 1
+        topPicks.add(card)
+        iter.remove()
+    }
     selected.addAll(topPicks)
-    remaining.removeAll(topPicks.toSet())
 
     // Check curve: if too few cheap creatures, swap in some
     val cheapCreatures = selected.count { it.typeLine.isCreature && it.cmc <= 3 }
@@ -65,11 +74,22 @@ fun buildHeuristicSealedDeck(pool: List<CardDefinition>): Map<String, Int> {
         var neededCreatures = (13 - totalCreatures).coerceAtLeast(0)
         val swapCount = neededCheap.coerceAtLeast(neededCreatures).coerceAtMost(cheapReplacements.size)
 
-        for (i in 0 until swapCount) {
-            if (cuttable.size > i && cheapReplacements.size > i) {
-                selected.remove(cuttable[i])
-                selected.add(cheapReplacements[i])
+        var cutIdx = 0
+        var replaceIdx = 0
+        var swapsDone = 0
+        while (swapsDone < swapCount && cutIdx < cuttable.size && replaceIdx < cheapReplacements.size) {
+            val replacement = cheapReplacements[replaceIdx]
+            val current = picksByName[replacement.name] ?: 0
+            if (current >= 4) { replaceIdx++; continue }
+            val cut = cuttable[cutIdx]
+            if (selected.remove(cut)) {
+                picksByName[cut.name] = ((picksByName[cut.name] ?: 0) - 1).coerceAtLeast(0)
+                selected.add(replacement)
+                picksByName[replacement.name] = current + 1
+                swapsDone++
             }
+            cutIdx++
+            replaceIdx++
         }
     }
 
@@ -77,9 +97,11 @@ fun buildHeuristicSealedDeck(pool: List<CardDefinition>): Map<String, Int> {
         deck[card.name] = (deck[card.name] ?: 0) + 1
     }
 
-    // Add on-color non-basic lands
+    // Add on-color non-basic lands (capped at 4 per name)
     for (land in poolLands) {
-        deck[land.name] = (deck[land.name] ?: 0) + 1
+        val current = deck[land.name] ?: 0
+        if (current >= 4) continue
+        deck[land.name] = current + 1
     }
 
     // Fill to 40 with basic lands split by color
