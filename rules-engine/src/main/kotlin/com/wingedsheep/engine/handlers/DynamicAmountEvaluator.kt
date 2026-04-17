@@ -163,9 +163,20 @@ class DynamicAmountEvaluator(
             // Composable entity property — replaces SourcePower, TargetPower, CountersOnSelf, etc.
             is DynamicAmount.EntityProperty -> {
                 val entityId = resolveEntityId(amount.entity, context) ?: return 0
-                // Sacrificed entities already left battlefield — don't try projected state
-                val useProjected = amount.entity !is EntityReference.Sacrificed
-                resolveNumericProperty(state, entityId, amount.numericProperty, context, useProjected)
+                // Sacrificed entities already left battlefield — consult the P/T snapshot
+                // captured at sacrifice time (Rule 112.7a / 608.2h — "as it last existed
+                // on the battlefield") before falling through to base stats.
+                if (amount.entity is EntityReference.Sacrificed) {
+                    when (amount.numericProperty) {
+                        is EntityNumericProperty.Power ->
+                            context.sacrificedPermanentPowers[entityId]?.let { return it }
+                        is EntityNumericProperty.Toughness ->
+                            context.sacrificedPermanentToughnesses[entityId]?.let { return it }
+                        else -> { /* fall through */ }
+                    }
+                    return resolveNumericProperty(state, entityId, amount.numericProperty, context, useProjected = false)
+                }
+                resolveNumericProperty(state, entityId, amount.numericProperty, context, useProjected = true)
             }
 
             is DynamicAmount.Divide -> {

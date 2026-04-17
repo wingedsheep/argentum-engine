@@ -896,6 +896,8 @@ class CastSpellHandler(
         // Process additional costs (sacrifice, exile, etc.)
         val sacrificedPermanentIds = mutableListOf<EntityId>()
         val sacrificedPermanentSubtypes = mutableMapOf<EntityId, Set<String>>()
+        val sacrificedPermanentPowers = mutableMapOf<EntityId, Int>()
+        val sacrificedPermanentToughnesses = mutableMapOf<EntityId, Int>()
         var exiledCardCount = 0
         val beheldCards = mutableListOf<EntityId>()
         /** Pipeline storage populated by Behold, consumed by ExileFromStorage */
@@ -941,11 +943,14 @@ class CastSpellHandler(
                             val battlefieldZone = ZoneKey(controllerId, Zone.BATTLEFIELD)
                             val graveyardZone = ZoneKey(ownerId, Zone.GRAVEYARD)
 
-                            // Snapshot projected subtypes before zone change
+                            // Snapshot projected subtypes and P/T before zone change
+                            // (Rule 112.7a / 608.2h — "as it last existed on the battlefield")
                             val projectedSubtypes = projectedBeforeSacrifice.getSubtypes(permId)
                             if (projectedSubtypes.isNotEmpty()) {
                                 sacrificedPermanentSubtypes[permId] = projectedSubtypes
                             }
+                            projectedBeforeSacrifice.getPower(permId)?.let { sacrificedPermanentPowers[permId] = it }
+                            projectedBeforeSacrifice.getToughness(permId)?.let { sacrificedPermanentToughnesses[permId] = it }
 
                             currentState = currentState.removeFromZone(battlefieldZone, permId)
                             currentState = currentState.addToZone(graveyardZone, permId)
@@ -1044,6 +1049,8 @@ class CastSpellHandler(
                             if (projectedSubtypes.isNotEmpty()) {
                                 sacrificedPermanentSubtypes[permId] = projectedSubtypes
                             }
+                            projectedBeforeSacrifice.getPower(permId)?.let { sacrificedPermanentPowers[permId] = it }
+                            projectedBeforeSacrifice.getToughness(permId)?.let { sacrificedPermanentToughnesses[permId] = it }
 
                             currentState = currentState.removeFromZone(battlefieldZone, permId)
                             currentState = currentState.addToZone(graveyardZone, permId)
@@ -1312,9 +1319,11 @@ class CastSpellHandler(
             action.xValue,
             sacrificedPermanentIds,
             sacrificedPermanentSubtypes,
-            action.castFaceDown,
-            action.damageDistribution,
-            spellTargetRequirements,
+            sacrificedPermanentPowers = sacrificedPermanentPowers,
+            sacrificedPermanentToughnesses = sacrificedPermanentToughnesses,
+            castFaceDown = action.castFaceDown,
+            damageDistribution = action.damageDistribution,
+            targetRequirements = spellTargetRequirements,
             exiledCardCount = exiledCardCount,
             wasKicked = action.wasKicked,
             wasWarped = wasWarped,

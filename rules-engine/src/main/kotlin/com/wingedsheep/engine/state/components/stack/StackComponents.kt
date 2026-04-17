@@ -23,6 +23,8 @@ data class SpellOnStackComponent(
     val modeDamageDistribution: Map<Int, Map<EntityId, Int>> = emptyMap(),  // Per-mode DividedDamageEffect allocations (future)
     val sacrificedPermanents: List<EntityId> = emptyList(),  // For additional costs
     val sacrificedPermanentSubtypes: Map<EntityId, Set<String>> = emptyMap(),  // Projected subtypes at time of sacrifice
+    val sacrificedPermanentPowers: Map<EntityId, Int> = emptyMap(),  // Projected power at time of sacrifice (Rule 112.7a)
+    val sacrificedPermanentToughnesses: Map<EntityId, Int> = emptyMap(),  // Projected toughness at time of sacrifice (Rule 112.7a)
     val castFaceDown: Boolean = false,  // For morph - creature enters face-down
     val damageDistribution: Map<EntityId, Int>? = null,  // For DividedDamageEffect - pre-chosen damage allocation
     val chosenCreatureType: String? = null,  // For spells that choose a creature type during casting (e.g., Aphetto Dredging)
@@ -82,6 +84,8 @@ data class ActivatedAbilityOnStackComponent(
     val effect: Effect,
     val sacrificedPermanents: List<EntityId> = emptyList(),
     val sacrificedPermanentSubtypes: Map<EntityId, Set<String>> = emptyMap(),
+    val sacrificedPermanentPowers: Map<EntityId, Int> = emptyMap(),  // Projected power at time of sacrifice (Rule 112.7a)
+    val sacrificedPermanentToughnesses: Map<EntityId, Int> = emptyMap(),  // Projected toughness at time of sacrifice (Rule 112.7a)
     val xValue: Int? = null,
     val tappedPermanents: List<EntityId> = emptyList()
 ) : Component {
