@@ -254,7 +254,9 @@ export function mergeResult(
                 ? { bouncedPermanents: selectedTargets }
                 : costType === 'ExileFromGraveyard'
                   ? { exiledCards: selectedTargets }
-                  : { sacrificedPermanents: selectedTargets }
+                  : costType === 'Blight'
+                    ? { blightTargets: selectedTargets }
+                    : { sacrificedPermanents: selectedTargets }
         return { ...action, costPayment }
       }
       if (action.type === 'TurnFaceUp') {
