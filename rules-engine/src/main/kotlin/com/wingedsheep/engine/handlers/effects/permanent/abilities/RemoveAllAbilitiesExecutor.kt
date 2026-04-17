@@ -7,13 +7,15 @@ import com.wingedsheep.engine.mechanics.layers.Layer
 import com.wingedsheep.engine.mechanics.layers.SerializableModification
 import com.wingedsheep.engine.mechanics.layers.addFloatingEffect
 import com.wingedsheep.engine.state.GameState
-import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.sdk.scripting.effects.RemoveAllAbilitiesEffect
 import kotlin.reflect.KClass
 
 /**
  * Executor for RemoveAllAbilitiesEffect.
- * "Target creature loses all abilities until end of turn"
+ * "Target permanent loses all abilities until [duration]." Works for any permanent
+ * type — Azure Beastbinder, for example, can strip abilities from artifacts and
+ * planeswalkers, not just creatures. The card's target requirement enforces what
+ * is a legal target; the executor only applies the floating effect.
  */
 class RemoveAllAbilitiesExecutor : EffectExecutor<RemoveAllAbilitiesEffect> {
 
@@ -25,15 +27,10 @@ class RemoveAllAbilitiesExecutor : EffectExecutor<RemoveAllAbilitiesEffect> {
         context: EffectContext
     ): EffectResult {
         val targetId = context.resolveTarget(effect.target)
-            ?: return EffectResult.error(state, "No valid target for remove abilities")
+            ?: return EffectResult.success(state)
 
-        val targetContainer = state.getEntity(targetId)
-            ?: return EffectResult.error(state, "Target creature no longer exists")
-        val cardComponent = targetContainer.get<CardComponent>()
-            ?: return EffectResult.error(state, "Target is not a card")
-        val projected = state.projectedState
-        if (!projected.isCreature(targetId)) {
-            return EffectResult.error(state, "Target is not a creature")
+        if (targetId !in state.getBattlefield()) {
+            return EffectResult.success(state)
         }
 
         val newState = state.addFloatingEffect(

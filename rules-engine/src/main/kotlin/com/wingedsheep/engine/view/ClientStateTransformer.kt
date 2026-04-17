@@ -1613,6 +1613,16 @@ class ClientStateTransformer(
                         )
                     )
                 }
+                is SerializableModification.RemoveAllAbilities -> {
+                    effects.add(
+                        ClientCardEffect(
+                            effectId = "lost_all_abilities",
+                            name = "No Abilities",
+                            description = "This permanent has lost all abilities",
+                            icon = "lost-abilities"
+                        )
+                    )
+                }
                 // Other modifications don't need badges (stats/keywords/types are shown elsewhere)
                 else -> { /* No badge needed */ }
             }

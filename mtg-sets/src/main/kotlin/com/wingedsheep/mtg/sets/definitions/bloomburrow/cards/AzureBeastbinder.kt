@@ -1,6 +1,7 @@
 package com.wingedsheep.mtg.sets.definitions.bloomburrow.cards
 
 import com.wingedsheep.sdk.core.Keyword
+import com.wingedsheep.sdk.dsl.Conditions
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
@@ -8,10 +9,10 @@ import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.CantBeBlockedBy
 import com.wingedsheep.sdk.scripting.Duration
 import com.wingedsheep.sdk.scripting.GameObjectFilter
+import com.wingedsheep.sdk.scripting.effects.ConditionalEffect
 import com.wingedsheep.sdk.scripting.effects.RemoveAllAbilitiesEffect
 import com.wingedsheep.sdk.scripting.effects.SetBasePowerToughnessEffect
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
-import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.targets.TargetObject
 
 /**
@@ -26,9 +27,9 @@ import com.wingedsheep.sdk.scripting.targets.TargetObject
  * an opponent controls loses all abilities until your next turn. If it's a creature,
  * it also has base power and toughness 2/2 until your next turn.
  *
- * Note: The "if it's a creature" P/T setting always applies because the executor
- * checks if the target is on the battlefield, and the SetBasePowerToughness floating
- * effect only affects creatures via the layer system.
+ * The "if it's a creature" P/T branch is a resolution-time conditional, so a
+ * non-creature artifact or planeswalker target loses its abilities but does not
+ * become a 2/2.
  */
 val AzureBeastbinder = card("Azure Beastbinder") {
     manaCost = "{1}{U}"
@@ -58,7 +59,10 @@ val AzureBeastbinder = card("Azure Beastbinder") {
             )
         )
         effect = RemoveAllAbilitiesEffect(t, Duration.UntilYourNextTurn)
-            .then(SetBasePowerToughnessEffect(t, 2, 2, Duration.UntilYourNextTurn))
+            .then(ConditionalEffect(
+                condition = Conditions.TargetMatchesFilter(GameObjectFilter.Creature),
+                effect = SetBasePowerToughnessEffect(t, 2, 2, Duration.UntilYourNextTurn)
+            ))
     }
 
     metadata {

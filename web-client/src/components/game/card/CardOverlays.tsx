@@ -142,6 +142,11 @@ function getBadgeStyle(icon?: string): React.CSSProperties {
         backgroundColor: 'rgba(180, 130, 40, 0.9)',
         border: '1px solid rgba(255, 210, 100, 0.5)',
       }
+    case 'lost-abilities':
+      return {
+        backgroundColor: 'rgba(70, 70, 90, 0.9)',
+        border: '1px solid rgba(160, 160, 200, 0.5)',
+      }
     default:
       return {}
   }
@@ -167,6 +172,8 @@ function getTooltipBorderColor(icon?: string): string {
       return 'rgba(120, 60, 140, 0.5)'
     case 'redirect':
       return 'rgba(180, 130, 40, 0.5)'
+    case 'lost-abilities':
+      return 'rgba(160, 160, 200, 0.5)'
     default:
       return 'rgba(150, 50, 200, 0.5)'
   }
