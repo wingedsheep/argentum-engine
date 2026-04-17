@@ -136,7 +136,32 @@ class CostCalculator(
                 else if (anyTargetMatchesFilter(state, playerId, chosenTargets, source.filter)) source.amount
                 else 0
             }
+            is CostReductionSource.FixedIfCreatureAttackingYou -> {
+                if (isAnyCreatureAttacking(state, playerId)) source.amount else 0
+            }
         }
+    }
+
+    /**
+     * Returns true if any creature on the battlefield is currently attacking [playerId]
+     * or a planeswalker they control. Reads [AttackingComponent.defenderId] against the
+     * caster and their controlled planeswalkers.
+     */
+    private fun isAnyCreatureAttacking(state: GameState, playerId: EntityId): Boolean {
+        val projected = state.projectedState
+        val planeswalkersControlled = state.getBattlefield()
+            .filter { id ->
+                projected.isPlaneswalker(id) && projected.getController(id) == playerId
+            }.toSet()
+        for (entityId in state.getBattlefield()) {
+            val attacking = state.getEntity(entityId)
+                ?.get<com.wingedsheep.engine.state.components.combat.AttackingComponent>()
+                ?: continue
+            if (attacking.defenderId == playerId || attacking.defenderId in planeswalkersControlled) {
+                return true
+            }
+        }
+        return false
     }
 
     /**

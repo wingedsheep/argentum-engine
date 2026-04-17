@@ -248,6 +248,23 @@ sealed interface CostReductionSource {
     ) : CostReductionSource {
         override val description: String = "$amount if it targets ${filter.description}"
     }
+
+    /**
+     * Reduces cost by a fixed amount if a creature is currently attacking the caster.
+     * Used for cards like Swat Away ("This spell costs {2} less to cast if a creature
+     * is attacking you").
+     *
+     * Evaluated at cast time against the live combat state — any creature on the
+     * battlefield whose attack is declared against the casting player (directly or
+     * against one of their planeswalkers) satisfies the condition. During the
+     * declare-attackers step and combat damage step, this exposes the reduction
+     * defensively; outside combat, the reduction does not apply.
+     */
+    @SerialName("FixedIfCreatureAttackingYou")
+    @Serializable
+    data class FixedIfCreatureAttackingYou(val amount: Int) : CostReductionSource {
+        override val description: String = "$amount if a creature is attacking you"
+    }
 }
 
 /**

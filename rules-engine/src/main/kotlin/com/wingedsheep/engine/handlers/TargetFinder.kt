@@ -71,7 +71,7 @@ class TargetFinder(
             is TargetPlayerOrPlaneswalker -> findPlayerOrPlaneswalkerTargets(state, controllerId, sourceId, targetingSourceType)
             is TargetCreatureOrPlaneswalker -> findCreatureOrPlaneswalkerTargets(state, controllerId, sourceId, targetingSourceType)
             is TargetObject -> findObjectTargets(state, requirement, controllerId, sourceId, ignoreTargetingRestrictions, targetingSourceType, triggeringEntityId)
-            is TargetSpellOrPermanent -> findSpellOrPermanentTargets(state, controllerId, sourceId, targetingSourceType)
+            is TargetSpellOrPermanent -> findSpellOrPermanentTargets(state, requirement, controllerId, sourceId, targetingSourceType)
             is TargetOther -> {
                 // For TargetOther, find targets for the base requirement but exclude the source
                 val baseTargets = findLegalTargets(state, requirement.baseRequirement, controllerId, sourceId, ignoreTargetingRestrictions, targetingSourceType, triggeringEntityId)
@@ -411,14 +411,17 @@ class TargetFinder(
      */
     private fun findSpellOrPermanentTargets(
         state: GameState,
+        requirement: TargetSpellOrPermanent,
         controllerId: EntityId,
         sourceId: EntityId?,
         targetingSourceType: TargetingSourceType = TargetingSourceType.ANY
     ): List<EntityId> {
         val projected = state.projectedState
         val targets = mutableListOf<EntityId>()
+        val predicateContext = PredicateContext(controllerId = controllerId, sourceId = sourceId)
+        val permanentFilter = requirement.permanentFilter
 
-        // Add all permanents on the battlefield
+        // Add all permanents on the battlefield matching the optional filter
         for (entityId in state.getBattlefield()) {
             val container = state.getEntity(entityId) ?: continue
             container.get<CardComponent>() ?: continue
@@ -429,6 +432,10 @@ class TargetFinder(
             // Check hexproof from color
             if (hasHexproofFromSourceColors(state, projected, entityId, entityController, controllerId, sourceId)) continue
             if (hasCantBeTargetedRestriction(state, entityId, entityController, controllerId, targetingSourceType)) continue
+
+            if (permanentFilter != null &&
+                !predicateEvaluator.matchesWithProjection(state, projected, entityId, permanentFilter, predicateContext)
+            ) continue
 
             targets.add(entityId)
         }

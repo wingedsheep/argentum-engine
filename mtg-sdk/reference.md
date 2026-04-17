@@ -516,6 +516,10 @@ constructors.
 - `Targets.ActivatedOrTriggeredAbility`
 - `Targets.SpellOrAbilityWithSingleTarget` — target spell or ability (single-target check at resolution)
 
+### Spell or Permanent (combined)
+
+- `TargetSpellOrPermanent(permanentFilter = null)` — target spell on stack OR permanent on battlefield; pass a `GameObjectFilter` to restrict the permanent side (e.g., `permanentFilter = GameObjectFilter.Creature` for "target spell or creature" like Swat Away)
+
 ### Composable (Targets.Unified)
 
 - `Targets.Unified.creature` / `.creatureYouControl` / `.creatureOpponentControls` / `.otherCreature` /
@@ -1105,7 +1109,7 @@ Set via `staticAbility { ability = ... }`:
 
 ### CostReductionSource values
 
-`ColorsAmongPermanentsYouControl`, `Fixed(amount)`, `CreaturesYouControl`, `TotalPowerYouControl`, `ArtifactsYouControl`, `FixedIfControlFilter(amount, filter)` — fixed reduction if you control a permanent matching the GameObjectFilter (e.g., "costs {1} less if you control a Wizard"), `CardsInGraveyardMatchingFilter(filter, amountPerCard = 1)` — reduces by amountPerCard for each card in your graveyard matching the filter (e.g., "costs {1} less for each instant and sorcery card in your graveyard"), `CardsInGraveyardAndExileMatchingFilter(filter, amountPerCard = 1)` — reduces by amountPerCard for each card you own in exile and in your graveyard matching the filter (e.g., "costs {1} less for each creature card you own in exile and in your graveyard"), `PermanentsWithCounterYouControl(filter, counterType)` — reduces by number of permanents you control matching filter that have the specified counter (e.g., "for each land you control with a flood counter")
+`ColorsAmongPermanentsYouControl`, `Fixed(amount)`, `CreaturesYouControl`, `TotalPowerYouControl`, `ArtifactsYouControl`, `FixedIfControlFilter(amount, filter)` — fixed reduction if you control a permanent matching the GameObjectFilter (e.g., "costs {1} less if you control a Wizard"), `CardsInGraveyardMatchingFilter(filter, amountPerCard = 1)` — reduces by amountPerCard for each card in your graveyard matching the filter (e.g., "costs {1} less for each instant and sorcery card in your graveyard"), `CardsInGraveyardAndExileMatchingFilter(filter, amountPerCard = 1)` — reduces by amountPerCard for each card you own in exile and in your graveyard matching the filter (e.g., "costs {1} less for each creature card you own in exile and in your graveyard"), `PermanentsWithCounterYouControl(filter, counterType)` — reduces by number of permanents you control matching filter that have the specified counter (e.g., "for each land you control with a flood counter"), `FixedIfAnyTargetMatches(amount, filter)` — fixed reduction if any of the spell's chosen targets match the filter (e.g., Dire Downdraft: "costs {1} less if it targets an attacking or tapped creature"), `FixedIfCreatureAttackingYou(amount)` — fixed reduction if any creature on the battlefield is currently attacking the caster (or a planeswalker they control), e.g., Swat Away: "costs {2} less if a creature is attacking you"
 
 ---
 

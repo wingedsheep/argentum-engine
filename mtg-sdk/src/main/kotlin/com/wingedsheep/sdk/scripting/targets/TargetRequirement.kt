@@ -1,6 +1,7 @@
 package com.wingedsheep.sdk.scripting.targets
 
 import com.wingedsheep.sdk.model.EntityId
+import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import com.wingedsheep.sdk.scripting.text.TextReplaceable
 import com.wingedsheep.sdk.scripting.text.TextReplacer
@@ -185,17 +186,30 @@ data class TargetCreatureOrPlaneswalker(
  * "Target spell or permanent" - can target spells on the stack or permanents
  * on the battlefield.
  *
- * Used by text-changing effects like Artificial Evolution.
+ * Used by text-changing effects like Artificial Evolution and bounce-to-library
+ * effects like Swat Away ("target spell or creature").
+ *
+ * The [permanentFilter] restricts which permanents are valid. When null, any
+ * permanent may be targeted. For "target spell or creature", pass
+ * [GameObjectFilter.Creature].
  */
 @SerialName("TargetSpellOrPermanent")
 @Serializable
 data class TargetSpellOrPermanent(
     override val count: Int = 1,
     override val optional: Boolean = false,
-    override val id: String? = null
+    override val id: String? = null,
+    val permanentFilter: GameObjectFilter? = null
 ) : TargetRequirement {
-    override val description: String = if (count == 1) "target spell or permanent" else "$count target spells or permanents"
-    override fun applyTextReplacement(replacer: TextReplacer): TargetRequirement = this
+    override val description: String = run {
+        val permanentNoun = permanentFilter?.description ?: "permanent"
+        if (count == 1) "target spell or $permanentNoun"
+        else "$count target spells or ${permanentNoun}s"
+    }
+    override fun applyTextReplacement(replacer: TextReplacer): TargetRequirement {
+        val newFilter = permanentFilter?.applyTextReplacement(replacer)
+        return if (newFilter !== permanentFilter) copy(permanentFilter = newFilter) else this
+    }
 }
 
 // =============================================================================

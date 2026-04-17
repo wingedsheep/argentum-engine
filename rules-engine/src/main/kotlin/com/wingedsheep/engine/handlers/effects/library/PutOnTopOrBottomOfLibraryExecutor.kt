@@ -13,8 +13,11 @@ import kotlin.reflect.KClass
 /**
  * Executor for PutOnTopOrBottomOfLibraryEffect.
  *
- * Pauses for the target creature's owner to choose top or bottom of their library,
+ * Pauses for the target's owner to choose top or bottom of their library,
  * then delegates the actual zone move to the continuation resumer.
+ * Accepts both battlefield permanents (e.g., Dire Downdraft) and spells on the
+ * stack (e.g., Swat Away's "target spell or creature") — the resumer handles
+ * each case appropriately.
  */
 class PutOnTopOrBottomOfLibraryExecutor : EffectExecutor<PutOnTopOrBottomOfLibraryEffect> {
 

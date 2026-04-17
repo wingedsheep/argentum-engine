@@ -446,7 +446,9 @@ class LibraryAndZoneContinuationResumer(
 
     /**
      * Resume after a card's owner chose top or bottom of their library.
-     * Moves the card to the chosen position via ZoneTransitionService.
+     * Moves the card to the chosen position via ZoneTransitionService, or — if the
+     * target is a spell on the stack — counters the spell and places it directly
+     * onto the chosen end of the owner's library.
      */
     fun resumePutOnTopOrBottom(
         state: GameState,
@@ -469,7 +471,12 @@ class LibraryAndZoneContinuationResumer(
 
         val cardId = continuation.cardId
 
-        // Find what zone the card is currently in
+        // Case 1: target is a spell on the stack — remove from stack and place in library.
+        if (cardId in state.stack) {
+            return resumePutSpellOnTopOrBottom(state, cardId, continuation.ownerId, placement, checkForMore)
+        }
+
+        // Case 2: target is in a zone (battlefield or elsewhere) — use ZoneTransitionService.
         val currentZone = state.zones.entries.firstOrNull { (_, entities) -> cardId in entities }?.key
             ?: return checkForMore(state, emptyList()) // Card no longer exists in any zone
 
@@ -483,5 +490,53 @@ class LibraryAndZoneContinuationResumer(
         )
 
         return checkForMore(transitionResult.state, transitionResult.events)
+    }
+
+    /**
+     * Handle the stack case for [PutOnTopOrBottomContinuation]: counter the spell
+     * (remove from stack + strip stack components) and insert it into the owner's
+     * library at the chosen end. Can't-be-countered spells still follow the effect
+     * per the general MTG rules — putting a spell into its owner's library is not
+     * countering it in the technical sense, so we always move it.
+     */
+    private fun resumePutSpellOnTopOrBottom(
+        state: GameState,
+        spellId: EntityId,
+        ownerId: EntityId,
+        placement: com.wingedsheep.engine.handlers.effects.LibraryPlacement,
+        checkForMore: CheckForMore
+    ): ExecutionResult {
+        val spellContainer = state.getEntity(spellId)
+            ?: return checkForMore(state, emptyList())
+        val spellName = spellContainer.get<CardComponent>()?.name ?: "Unknown"
+
+        var newState = state.removeFromStack(spellId)
+        newState = newState.updateEntity(spellId) { c ->
+            c.without<com.wingedsheep.engine.state.components.stack.SpellOnStackComponent>()
+                .without<com.wingedsheep.engine.state.components.stack.TargetsComponent>()
+        }
+
+        val libZoneKey = ZoneKey(ownerId, Zone.LIBRARY)
+        val currentLibrary = newState.getZone(libZoneKey)
+        val newLibrary = when (placement) {
+            com.wingedsheep.engine.handlers.effects.LibraryPlacement.Top ->
+                listOf(spellId) + currentLibrary
+            com.wingedsheep.engine.handlers.effects.LibraryPlacement.Bottom ->
+                currentLibrary + spellId
+            else -> currentLibrary + spellId
+        }
+        newState = newState.copy(zones = newState.zones + (libZoneKey to newLibrary))
+
+        val events = listOf(
+            SpellCounteredEvent(spellId, spellName),
+            ZoneChangeEvent(
+                entityId = spellId,
+                entityName = spellName,
+                fromZone = Zone.STACK,
+                toZone = Zone.LIBRARY,
+                ownerId = ownerId
+            )
+        )
+        return checkForMore(newState, events)
     }
 }

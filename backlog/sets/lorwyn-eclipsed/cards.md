@@ -2,12 +2,12 @@
 
 **Set Size:** 273 cards (main set, per Scryfall `set:ecl`)
 **Release Date:** January 23, 2026
-**Implemented:** 50 / 273
+**Implemented:** 51 / 273
 
 | Color      | Total | Done |
 |------------|-------|------|
 | White      | 39    | 5    |
-| Blue       | 39    | 10   |
+| Blue       | 39    | 11   |
 | Black      | 38    | 4    |
 | Red        | 39    | 2    |
 | Green      | 39    | 8    |
@@ -93,7 +93,7 @@
 - [ ] Stratosoarer
 - [ ] Summit Sentinel
 - [ ] Sunderflock
-- [ ] Swat Away
+- [x] Swat Away
 - [ ] Tanufel Rimespeaker
 - [ ] Temporal Cleansing
 - [ ] Thirst for Identity

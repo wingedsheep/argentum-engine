@@ -102,7 +102,7 @@ class TargetValidator {
             is TargetOpponentOrPlaneswalker -> validateOpponentOrPlaneswalkerTarget(state, target, casterId)
             is TargetPlayerOrPlaneswalker -> validatePlayerOrPlaneswalkerTarget(state, target, casterId)
             is TargetCreatureOrPlaneswalker -> validateCreatureOrPlaneswalkerTarget(state, target)
-            is TargetSpellOrPermanent -> validateSpellOrPermanentTarget(state, target, casterId)
+            is TargetSpellOrPermanent -> validateSpellOrPermanentTarget(state, target, requirement, casterId, sourceId)
             is TargetObject -> validateObjectTarget(state, target, requirement.filter, casterId, sourceId)
             is TargetOther -> validateSingleTarget(state, target, requirement.baseRequirement, casterId, sourceColors, sourceSubtypes, sourceId)
         }
@@ -468,11 +468,15 @@ class TargetValidator {
     /**
      * Validate a target for TargetSpellOrPermanent.
      * Accepts either a spell on the stack or a permanent on the battlefield.
+     * If [requirement.permanentFilter] is set, permanent targets must also match it
+     * (e.g., "target spell or creature" restricts the permanent side to creatures).
      */
     private fun validateSpellOrPermanentTarget(
         state: GameState,
         target: ChosenTarget,
-        casterId: EntityId
+        requirement: TargetSpellOrPermanent,
+        casterId: EntityId,
+        sourceId: EntityId?
     ): String? {
         return when (target) {
             is ChosenTarget.Permanent -> {
@@ -480,6 +484,14 @@ class TargetValidator {
                     ?: return "Target not found"
                 if (target.entityId !in state.getBattlefield()) {
                     return "Target must be on the battlefield or on the stack"
+                }
+                val filter = requirement.permanentFilter
+                if (filter != null) {
+                    val projected = state.projectedState
+                    val context = PredicateContext(controllerId = casterId, sourceId = sourceId)
+                    if (!predicateEvaluator.matchesWithProjection(state, projected, target.entityId, filter, context)) {
+                        return "Target does not match ${filter.description}"
+                    }
                 }
                 null
             }

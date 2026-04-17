@@ -419,12 +419,14 @@ data class ForceExileMultiZoneEffect(
 }
 
 /**
- * The target creature's owner puts it on their choice of the top or bottom of their library.
+ * The target's owner puts it on their choice of the top or bottom of their library.
  *
  * Pauses for the owner to make a ChooseOptionDecision with "Top" and "Bottom" options,
- * then moves the card accordingly.
+ * then moves the card accordingly. The target may be either a permanent on the
+ * battlefield (e.g., Dire Downdraft) or a spell on the stack (e.g., Swat Away's
+ * "target spell or creature") — the executor handles each case.
  *
- * @property target The creature to put into its owner's library
+ * @property target The entity to put into its owner's library
  */
 @SerialName("PutOnTopOrBottomOfLibrary")
 @Serializable

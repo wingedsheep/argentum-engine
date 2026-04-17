@@ -57,6 +57,7 @@ object LorwynEclipsedSet {
         SilvergillPeddler,
         SteamVents,
         StoicGroveGuide,
+        SwatAway,
         SyggsCommand,
         ThoughtweftCharge,
         VirulentEmissary,

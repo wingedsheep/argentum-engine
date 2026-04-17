@@ -67,7 +67,22 @@ class TargetEnumerationUtils(
             }
             is TargetObject -> findValidObjectTargets(state, playerId, requirement.filter, sourceId)
             is TargetSpellOrPermanent -> {
-                val permanents = findValidPermanentTargets(state, playerId, TargetFilter.Permanent, sourceId)
+                val permanentFilter = requirement.permanentFilter
+                val permanents = if (permanentFilter == null) {
+                    findValidPermanentTargets(state, playerId, TargetFilter.Permanent, sourceId)
+                } else {
+                    val projected = state.projectedState
+                    val context = PredicateContext(controllerId = playerId, sourceId = sourceId)
+                    state.getBattlefield().filter { entityId ->
+                        val container = state.getEntity(entityId) ?: return@filter false
+                        val entityController = container.get<ControllerComponent>()?.playerId
+                        if (projected.hasKeyword(entityId, Keyword.HEXPROOF) &&
+                            entityController != playerId
+                        ) return@filter false
+                        if (projected.hasKeyword(entityId, Keyword.SHROUD)) return@filter false
+                        predicateEvaluator.matchesWithProjection(state, projected, entityId, permanentFilter, context)
+                    }
+                }
                 val spells = findValidSpellTargets(state, playerId, TargetFilter.SpellOnStack)
                 permanents + spells
             }
