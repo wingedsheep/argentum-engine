@@ -1055,7 +1055,7 @@ export function GameCard({
           title={`Graveyard threshold: ${card.thresholdInfo.current}/${card.thresholdInfo.required}${card.thresholdInfo.active ? ' (active)' : ''}`}
           style={{
             position: 'absolute',
-            top: 2,
+            bottom: 2,
             left: 2,
             display: 'flex',
             alignItems: 'center',
