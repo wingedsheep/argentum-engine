@@ -544,6 +544,7 @@ export function TargetingOverlay() {
       ...styles.targetingOverlay,
       padding: responsive.isMobile ? '12px 16px' : '16px 24px',
       borderColor: TARGET_COLOR,
+      pointerEvents: 'none',
     }}>
       {stepLabel && (
         <div style={{
@@ -566,7 +567,7 @@ export function TargetingOverlay() {
       <div style={{ color: '#aaa', fontSize: responsive.fontSize.small, marginTop: 4 }}>
         {hintText}
       </div>
-      <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
+      <div style={{ display: 'flex', gap: 8, marginTop: 8, pointerEvents: 'auto' }}>
         {hasEnoughTargets && (
           <button onClick={confirmTargeting} style={{
             ...styles.actionButton,

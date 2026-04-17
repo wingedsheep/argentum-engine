@@ -297,16 +297,22 @@ class CastSpellEnumerator : ActionEnumerator {
 
             // Compute auto-tap preview for UI highlighting (skipped in ACTIONS_ONLY mode).
             //
-            // The solver runs against the FULL effective cost (before alt payment reduction)
-            // so the preview covers the worst case — the complete set of sources needed if
-            // the player declines to use convoke/delve. The engine is authoritative: when
-            // the action is actually submitted with an Explicit payment strategy,
-            // `CastPaymentProcessor.explicitPay` re-solves with the non-chosen sources
-            // excluded and only taps the minimum subset required after any alt-payment
-            // reduction. The client derives the live preview (trimming this set down once
-            // convoke/delve is applied) from the same ordered source list.
+            // The solver runs against the worst-case *remaining* cost the player can be
+            // on the hook for after a legal delve choice — i.e. the full effective cost
+            // minus the minimum delve reduction that makes the spell affordable
+            // (`minDelveNeeded`, 0 when the spell is affordable without any delve at all).
+            // That gives an exact solve for the largest land set any legal cast might
+            // need; the client's `trimAutoTapPreview` prunes the list as the player
+            // delves past the minimum. The engine re-solves on submit anyway —
+            // `CastPaymentProcessor.explicitPay` taps only the minimum subset needed
+            // after the alt-payment reduction is actually applied.
             val autoTapPreview = if (context.skipAutoTapPreview) null else {
-                context.manaSolver.solve(state, playerId, effectiveCost, precomputedSources = cachedSources)
+                val costForPreview = if (hasDelve && minDelveNeeded != null && minDelveNeeded > 0) {
+                    effectiveCost.reduceGeneric(minDelveNeeded)
+                } else {
+                    effectiveCost
+                }
+                context.manaSolver.solve(state, playerId, costForPreview, precomputedSources = cachedSources)
                     ?.sources?.map { it.entityId }
             }
 
