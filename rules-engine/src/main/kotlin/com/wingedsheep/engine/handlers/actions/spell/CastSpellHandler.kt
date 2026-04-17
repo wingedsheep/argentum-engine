@@ -1357,7 +1357,11 @@ class CastSpellHandler(
         }
         val printedStormCount = if (cardDef != null && cardDef.hasKeyword(Keyword.STORM)) 1 else 0
         val stormInstanceCount = printedStormCount + stormGrantCount
-        if (!action.castFaceDown && stormCount > 0 && cardDef != null && stormInstanceCount > 0) {
+        // Per CR 702.40a Storm triggers whenever the spell is cast; it copies zero times when
+        // no other spells have been cast this turn. Don't short-circuit on stormCount — the
+        // executor is a no-op at copyCount == 0 but the trigger must still land on the stack
+        // so "whenever an ability triggers / is put onto the stack" effects see it.
+        if (!action.castFaceDown && cardDef != null && stormInstanceCount > 0) {
             val spellEffect = cardDef.script.spellEffect
             if (spellEffect != null) {
                 repeat(stormInstanceCount) {

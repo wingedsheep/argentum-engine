@@ -69,6 +69,30 @@ class StormMultipleInstancesTest : FunSpec({
         tendrilsOnStack shouldBe true
     }
 
+    test("Storm trigger still lands on the stack when storm count is 0 (Phase 7)") {
+        val driver = GameTestDriver()
+        driver.registerCards(TestCards.all + listOf(TendrilsOfAgony))
+        driver.initMirrorMatch(deck = Deck.of("Swamp" to 40))
+        driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
+
+        val caster = driver.activePlayer!!
+        val opponent = driver.getOpponent(caster)
+
+        repeat(4) { driver.putLandOnBattlefield(caster, "Swamp") }
+        // No prior spells cast this turn — spellsCastThisTurn is 0 at this point.
+
+        val tendrils = driver.putCardInHand(caster, "Tendrils of Agony")
+        val result = driver.castSpell(caster, tendrils, listOf(opponent))
+        result.isSuccess shouldBe true
+
+        // Per CR 702.40a the ability still triggers — with copyCount 0.
+        val stormTriggers = driver.state.stack.mapNotNull { id ->
+            driver.state.getEntity(id)?.get<TriggeredAbilityOnStackComponent>()
+        }.filter { it.effect is StormCopyEffect }
+        stormTriggers.size shouldBe 1
+        (stormTriggers.single().effect as StormCopyEffect).copyCount shouldBe 0
+    }
+
     test("printed Storm only (no grant) still produces a single Storm trigger") {
         val driver = GameTestDriver()
         driver.registerCards(TestCards.all + listOf(TendrilsOfAgony))

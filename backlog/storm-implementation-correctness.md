@@ -104,7 +104,7 @@ Per 707.7b, a copy that has no legal replacement for an illegal target is *still
 
 Per 702.40b, each instance of Storm triggers separately. `CastSpellHandler.kt:1340-1341` uses `cardDef.hasKeyword(Keyword.STORM)` (boolean) and emits exactly one `StormCopyEffect`. This is edge case (no printed card has two storm instances), but it's a real gap if a future "Storm + granted Storm via emblem" stack-up happens with Ral's emblem.
 
-### 7. Storm count 0 is short-circuited rather than triggering with a no-op copy count
+### 7. Storm count 0 is short-circuited rather than triggering with a no-op copy count  [DONE]
 
 `CastSpellHandler.kt:1340` requires `stormCount > 0` to create the Storm trigger. Per 702.40a the ability triggers whenever you cast the spell; it just copies zero times. Our optimization is invisible in most cases but breaks "whenever a triggered ability is put onto the stack" / "whenever you trigger an ability" effects on the first spell of a turn.
 
@@ -168,10 +168,12 @@ Landed as a per-copy loop in `StormCopyEffectExecutor.promptForNextCopyTarget` a
 
 Landed in `CastSpellHandler.execute` as `stormInstanceCount = printedStormCount + stormGrantCount` (printed keyword counts once, each matching entry in `GrantedSpellKeywordsComponent.grants` counts once), with a `repeat(stormInstanceCount)` loop pushing independent `TriggeredAbilityOnStackComponent` instances via `StackResolver.putTriggeredAbility`. Coverage: `StormMultipleInstancesTest` verifies that printed Storm + a Ral-style `STORM` grant produces two Storm triggers on the stack, while printed Storm alone still produces one. APNAP ordering is inherited from the normal triggered-ability stacking path. Bug #6 in the divergences list is resolved.
 
-### Phase 7 — Storm always triggers, even at count 0
+### Phase 7 — Storm always triggers, even at count 0 [DONE]
 
 1. Remove `stormCount > 0` from the guard at `CastSpellHandler.kt:1340`. Always push the Storm trigger; let `StormCopyEffectExecutor` no-op when `copyCount == 0` (it already does at line 37).
 2. This is a one-line fix; the reason to do it is to surface the trigger to "whenever an ability triggers" effects.
+
+Landed in `CastSpellHandler.execute`: the Storm push guard no longer checks `stormCount > 0`, so a `StormCopyEffect` triggered ability is pushed whenever the caster has at least one Storm instance, even when no other spells were cast this turn. `StormCopyEffectExecutor` already short-circuits at `copyCount <= 0` (line 36), so the trigger lands on the stack, resolves as a no-op, and is visible to "whenever an ability triggers / is put onto the stack" effects. Coverage: `StormMultipleInstancesTest` > "Storm trigger still lands on the stack when storm count is 0" verifies that casting Tendrils as the first spell of the turn produces a single Storm trigger with `copyCount = 0`. Bug #7 in the divergences list is resolved.
 
 ### Phase 8 — Route Storm through TriggerDetector (refactor, not correctness)
 
