@@ -55,6 +55,7 @@ object LorwynEclipsedSet {
         PrismaticUndercurrents,
         RimefireTorque,
         SaplingNursery,
+        Shinestriker,
         SilvergillPeddler,
         SteamVents,
         StoicGroveGuide,
