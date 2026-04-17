@@ -39,6 +39,7 @@ import {
 } from '@/styles/targetingColors.ts'
 import { KeywordIcons, ActiveEffectBadges } from './CardOverlays'
 import { counterManaClass } from '@/assets/icons/keywords'
+import { RenderProfiler } from '@/utils/renderProfiler'
 
 interface GameCardProps {
   card: ClientCard
@@ -1800,9 +1801,12 @@ export function GameCard({
     </div>
   )
 
+  const profilerId = battlefield ? 'GameCard(battlefield)' : inHand ? 'GameCard(hand)' : 'GameCard(other)'
+
   // Wrap in container for tapped battlefield cards to prevent overlap
   if (isTapped && battlefield) {
     return (
+      <RenderProfiler id={profilerId}>
       <div style={{
         width: containerWidth,
         height: containerHeight,
@@ -1814,8 +1818,9 @@ export function GameCard({
       }}>
         {cardElement}
       </div>
+      </RenderProfiler>
     )
   }
 
-  return cardElement
+  return <RenderProfiler id={profilerId}>{cardElement}</RenderProfiler>
 }

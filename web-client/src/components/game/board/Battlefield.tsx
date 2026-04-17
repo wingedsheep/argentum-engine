@@ -6,6 +6,7 @@ import { CardStack } from '../card'
 import { GameCard } from '../card'
 import { GroupedCard } from '@/store/selectors.ts'
 import type { ClientCard } from '@/types'
+import { RenderProfiler } from '@/utils/renderProfiler'
 
 /**
  * Battlefield area with two rows per player, each using a 3-column grid:
@@ -163,19 +164,34 @@ export function Battlefield({ isOpponent, spectatorMode = false }: { isOpponent:
 
   /**
    * Renders a 3-column grid row:
-   *   [side items (right-aligned)] | [center items (centered)] | [spacer]
-   * Used for both the creature row and the land row.
+   *   [balance spacer] | [center items] | [side items column]
+   *
+   * The left spacer uses `minmax(0, Xpx)` where X is roughly half the side
+   * column's intrinsic width. That column claims up to X pixels of *extra*
+   * space (counterbalancing the right-heavy side items), but collapses to 0
+   * when the row is tight — so cards never lose width they need.
    */
   const renderGridRow = (
     centerItems: readonly GroupedCard[],
     sideItems: readonly GroupedCard[],
     extra?: React.CSSProperties,
-  ) => (
+  ) => {
+    const hasSide = sideItems.length > 0 && centerItems.length > 0
+    // Only start counterbalancing once there's more than one side item — a
+    // single enchantment doesn't meaningfully skew the board, so shifting
+    // for it causes a visible jump. Each additional side item nudges the
+    // row left by ~15% of a card width, so heavy boards drift back toward
+    // the viewport center without overshooting on light ones.
+    const sideOverhead = hasSide ? Math.max(0, sideItems.length - 1) : 0
+    const balanceShift = sideOverhead > 0
+      ? Math.round(sideOverhead * (responsive.battlefieldCardWidth + responsive.cardGap) * 0.15)
+      : 0
+    const leftTrack = balanceShift > 0 ? `minmax(0, ${balanceShift}px)` : 'minmax(0, 1fr)'
+
+    return (
     <div style={{
       display: 'grid',
-      // Left spacer can shrink to 0; right column grows to fit side items without wrapping,
-      // which lets the center items shift left into the left-spacer space.
-      gridTemplateColumns: 'minmax(0, 1fr) auto minmax(max-content, 1fr)',
+      gridTemplateColumns: `${leftTrack} auto minmax(max-content, 1fr)`,
       alignItems: 'end',
       width: '100%',
       ...extra,
@@ -216,7 +232,8 @@ export function Battlefield({ isOpponent, spectatorMode = false }: { isOpponent:
         {sideItems.map((group) => renderWithAttachments(group))}
       </div>
     </div>
-  )
+    )
+  }
 
   const dividerMargin = Math.max(10, Math.round(responsive.battlefieldCardHeight * 0.1))
   const renderDivider = () => showDivider ? (
@@ -238,6 +255,7 @@ export function Battlefield({ isOpponent, spectatorMode = false }: { isOpponent:
   )
 
   return (
+    <RenderProfiler id={isOpponent ? 'Battlefield(opponent)' : 'Battlefield(player)'}>
     <div
       data-zone={isOpponent ? 'opponent-battlefield' : 'player-battlefield'}
       style={{
@@ -264,5 +282,6 @@ export function Battlefield({ isOpponent, spectatorMode = false }: { isOpponent:
         </>
       )}
     </div>
+    </RenderProfiler>
   )
 }

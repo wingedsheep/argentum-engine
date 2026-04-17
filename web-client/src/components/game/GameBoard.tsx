@@ -20,6 +20,7 @@ import { ManaSymbol } from '../ui/ManaSymbols'
 
 // Import extracted components
 import { Battlefield, CardRow, StackDisplay, ZonePile, ResponsiveContext } from './board'
+import { RenderProfiler } from '@/utils/renderProfiler'
 import { CardPreview } from './card'
 import { TargetingOverlay, ManaColorSelectionOverlay, LifeDisplay, ActiveEffectsBadges, ConcedeButton, FullscreenButton } from './overlay'
 import { styles } from './board/styles'
@@ -302,6 +303,7 @@ export function GameBoard({ spectatorMode = false, topOffset = 0 }: GameBoardPro
   }
 
   return (
+    <RenderProfiler id="GameBoard">
     <ResponsiveContext.Provider value={responsive}>
     <div style={{
       ...styles.container,
@@ -371,6 +373,7 @@ export function GameBoard({ spectatorMode = false, topOffset = 0 }: GameBoardPro
       <div style={{
         ...styles.centerArea,
         gap: responsive.isMobile ? 6 : 16,
+        ...(spectatorMode ? { transform: 'none' } : {}),
       }}>
         {/* Opponent life (left side) */}
         <div style={styles.centerLifeSection}>
@@ -943,5 +946,6 @@ export function GameBoard({ spectatorMode = false, topOffset = 0 }: GameBoardPro
       )}
     </div>
     </ResponsiveContext.Provider>
+    </RenderProfiler>
   )
 }

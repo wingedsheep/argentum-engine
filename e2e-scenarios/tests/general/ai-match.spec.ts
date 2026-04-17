@@ -40,9 +40,14 @@ test('AI vs AI Bloomburrow match', async ({ page, request }) => {
   const model1 = process.env.AI_MODEL_P1 ?? null
   const model2 = process.env.AI_MODEL_P2 ?? null
   const heuristicDeckbuilding = process.env.AI_HEURISTIC_DECK !== 'false'
+  // Comma-separated list of set codes (e.g., "BLB" or "ONS,LGN,SCG"). Defaults to BLB.
+  const setCodes = (process.env.AI_SET_CODES ?? 'BLB')
+    .split(',')
+    .map((s) => s.trim())
+    .filter((s) => s.length > 0)
 
   const body: Record<string, unknown> = {
-    setCodes: ['BLB'],
+    setCodes,
     playerCount: 2,
     heuristicDeckbuilding,
   }
@@ -57,6 +62,7 @@ test('AI vs AI Bloomburrow match', async ({ page, request }) => {
   const { lobbyId, spectateUrl, message } = await response.json()
   console.log(`Tournament created: ${lobbyId}`)
   console.log(message)
+  console.log(`Sets: ${setCodes.join(', ')}`)
   if (model1) console.log(`Player 1 model: ${model1}`)
   if (model2) console.log(`Player 2 model: ${model2}`)
   console.log(`Deck building: ${heuristicDeckbuilding ? 'heuristic (fast)' : 'LLM'}`)
@@ -66,6 +72,16 @@ test('AI vs AI Bloomburrow match', async ({ page, request }) => {
   await page.addInitScript(() => {
     localStorage.setItem('argentum-player-name', 'Spectator')
   })
+
+  // If PROFILE=true, activate the RenderProfiler wrappers before the app
+  // mounts. Persists across in-app navigations (Watch button, etc.).
+  const profilingEnabled = process.env.PROFILE === 'true'
+  if (profilingEnabled) {
+    await page.addInitScript(() => {
+      ;(window as unknown as { __profile?: boolean }).__profile = true
+    })
+    console.log('Render profiling enabled — report will print at the end')
+  }
 
   await page.goto(`${CLIENT_URL}${spectateUrl}`)
 
@@ -94,6 +110,15 @@ test('AI vs AI Bloomburrow match', async ({ page, request }) => {
   ).catch(() => {
     console.log('Game did not complete within timeout — match is still running')
   })
+
+  if (profilingEnabled) {
+    const rows = await page.evaluate(() => {
+      const w = window as unknown as { __profileReport?: () => unknown }
+      return w.__profileReport ? w.__profileReport() : []
+    })
+    console.log('Render profiler report:')
+    console.table(rows)
+  }
 
   console.log('Done watching')
 })

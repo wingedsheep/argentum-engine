@@ -199,9 +199,18 @@ e2e-report:
 e2e-install:
     cd e2e-scenarios && npm install
 
-# Watch an AI vs AI Bloomburrow match in a headed browser (requires server + client running)
-# Override models: just watch-ai-match "claude-opus-4-6" "gpt-4o"
-# Use LLM deck building: just watch-ai-match "z-ai/glm-5.1" "qwen/qwen3.6-plus" "false"
+# Watch an AI vs AI match in a headed browser. Params (all optional):
+#   MODEL1, MODEL2   — LLM model ids; pass "" "" for built-in engine AIs (no LLM calls)
+#   SETS             — set code or comma-separated list, e.g. "BLB" or "ONS,LGN,SCG"
+#   HEURISTIC        — "true" (fast heuristic deck build) or "false" (LLM deck build)
+#   PROFILE          — "true" enables React render profiler; report prints at the end
+# Examples:
+#   just watch-ai-match                                      # default BLB match with LLMs
+#   just watch-ai-match "" ""                                # engine-vs-engine BLB
+#   just watch-ai-match "" "" "KTK"                          # engine-vs-engine Khans
+#   just watch-ai-match "" "" "ONS,LGN,SCG"                  # engine-vs-engine Onslaught block
+#   just watch-ai-match "" "" "BLB" "true" "true"            # engine-vs-engine BLB with profiler
 [group: 'e2e']
-watch-ai-match MODEL1="z-ai/glm-5.1" MODEL2="qwen/qwen3.6-plus" HEURISTIC="true":
-    cd e2e-scenarios && AI_MATCH=true AI_MODEL_P1={{MODEL1}} AI_MODEL_P2={{MODEL2}} AI_HEURISTIC_DECK={{HEURISTIC}} SKIP_WEB_SERVER=true npx playwright test tests/general/ai-match --headed
+[doc("AI vs AI match in a headed browser — params: MODEL1 MODEL2 SETS HEURISTIC PROFILE (pass \"\" \"\" for engine-vs-engine)")]
+watch-ai-match MODEL1="z-ai/glm-5.1" MODEL2="qwen/qwen3.6-plus" SETS="BLB" HEURISTIC="true" PROFILE="false":
+    cd e2e-scenarios && AI_MATCH=true AI_MODEL_P1={{MODEL1}} AI_MODEL_P2={{MODEL2}} AI_HEURISTIC_DECK={{HEURISTIC}} AI_SET_CODES={{SETS}} PROFILE={{PROFILE}} SKIP_WEB_SERVER=true npx playwright test tests/general/ai-match --headed
