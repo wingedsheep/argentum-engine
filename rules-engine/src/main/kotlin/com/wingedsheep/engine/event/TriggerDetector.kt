@@ -7,6 +7,7 @@ import com.wingedsheep.engine.core.CardCycledEvent
 import com.wingedsheep.engine.core.ControlChangedEvent
 import com.wingedsheep.engine.core.DamageDealtEvent
 import com.wingedsheep.engine.core.PermanentsSacrificedEvent
+import com.wingedsheep.engine.core.SpellCastEvent
 import com.wingedsheep.engine.core.ZoneChangeEvent
 import com.wingedsheep.engine.core.GameEvent as EngineGameEvent
 import com.wingedsheep.engine.handlers.ConditionEvaluator
@@ -778,7 +779,51 @@ class TriggerDetector(
             detectControlChangeTriggers(state, event, triggers)
         }
 
+        // Handle NthSpellCast triggers on the spell currently being cast (e.g. Hearthborn
+        // Battler cast as the second spell of the turn). The spell is on the stack, not the
+        // battlefield, so the main index scan above skips it.
+        if (event is SpellCastEvent) {
+            detectSelfCastNthSpellTriggers(state, event, triggers)
+        }
+
         return triggers
+    }
+
+    /**
+     * Detect NthSpellCast triggers on the spell currently being cast.
+     *
+     * When a card like Hearthborn Battler is itself the Nth spell cast this turn, its
+     * trigger ("whenever a player casts their second spell each turn") should fire even
+     * though the card is on the stack rather than the battlefield. The trigger event is
+     * the cast itself, and the ability travels with the spell onto the stack.
+     */
+    private fun detectSelfCastNthSpellTriggers(
+        state: GameState,
+        event: SpellCastEvent,
+        triggers: MutableList<PendingTrigger>
+    ) {
+        val entityId = event.spellEntityId
+        val container = state.getEntity(entityId) ?: return
+        val cardComponent = container.get<CardComponent>() ?: return
+        if (container.has<FaceDownComponent>()) return
+
+        val abilities = abilityResolver.getTriggeredAbilities(entityId, cardComponent.cardDefinitionId, state)
+        val controllerId = event.casterId
+
+        for (ability in abilities) {
+            if (ability.trigger !is GameEvent.NthSpellCastEvent) continue
+            if (matcher.matchesTrigger(ability.trigger, ability.binding, event, entityId, controllerId, state)) {
+                triggers.add(
+                    PendingTrigger(
+                        ability = ability,
+                        sourceId = entityId,
+                        sourceName = cardComponent.name,
+                        controllerId = controllerId,
+                        triggerContext = TriggerContext.fromEvent(event)
+                    )
+                )
+            }
+        }
     }
 
     /**
