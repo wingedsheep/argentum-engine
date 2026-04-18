@@ -2,18 +2,18 @@
 
 **Set Size:** 273 cards (main set, per Scryfall `set:ecl`)
 **Release Date:** January 23, 2026
-**Implemented:** 61 / 273
+**Implemented:** 65 / 273
 
 | Color      | Total | Done |
 |------------|-------|------|
 | White      | 39    | 5    |
-| Blue       | 39    | 13   |
+| Blue       | 39    | 14   |
 | Black      | 38    | 6    |
 | Red        | 39    | 4    |
 | Green      | 39    | 12   |
-| Multicolor | 49    | 12   |
+| Multicolor | 49    | 14   |
 | Colorless  | 18    | 3    |
-| Land       | 12    | 6    |
+| Land       | 12    | 7    |
 
 > **Note:** Before implementing any card, check the `effects/` directory in this folder for any
 > new mechanic it relies on (Evoke, Blight, Vivid, mana-spent gating, Basic landcycling, Wither).
@@ -96,7 +96,7 @@
 - [x] Swat Away
 - [ ] Tanufel Rimespeaker
 - [ ] Temporal Cleansing
-- [ ] Thirst for Identity
+- [x] Thirst for Identity
 - [ ] Unexpected Assistance
 - [ ] Unwelcome Sprite
 - [ ] Wanderwine Distracter
@@ -260,7 +260,7 @@
 - [ ] Kirol, Attentive First-Year
 - [ ] Lluwen, Imperfect Naturalist
 - [ ] Maralen, Fae Ascendant
-- [ ] Merrow Skyswimmer
+- [x] Merrow Skyswimmer
 - [ ] Mischievous Sneakling
 - [ ] Morcant's Loyalist
 - [ ] Noggle Robber
@@ -273,7 +273,7 @@
 - [x] Sygg's Command
 - [ ] Tam, Mindful First-Year
 - [ ] Thoughtweft Lieutenant
-- [ ] Trystan's Command
+- [x] Trystan's Command
 - [ ] Twinflame Travelers
 - [ ] Vibrance
 - [ ] Voracious Tome-Skimmer
@@ -303,7 +303,7 @@
 
 ## Land (12)
 
-- [ ] Blood Crypt
+- [x] Blood Crypt
 - [ ] Eclipsed Realms
 - [ ] Evolving Wilds
 - [x] Forest
