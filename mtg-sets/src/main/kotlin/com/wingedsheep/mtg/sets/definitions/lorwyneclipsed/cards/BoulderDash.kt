@@ -1,9 +1,9 @@
 package com.wingedsheep.mtg.sets.definitions.lorwyneclipsed.cards
 
 import com.wingedsheep.sdk.dsl.Effects
-import com.wingedsheep.sdk.dsl.Targets
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
+import com.wingedsheep.sdk.scripting.targets.AnyTarget
 
 /**
  * Boulder Dash
@@ -18,8 +18,8 @@ val BoulderDash = card("Boulder Dash") {
     oracleText = "Boulder Dash deals 2 damage to any target and 1 damage to any other target."
 
     spell {
-        val first = target("any target", Targets.Any)
-        val second = target("any other target", Targets.Any)
+        val first = target("first target", AnyTarget(descriptionOverride = "any target (takes 2 damage)"))
+        val second = target("second target", AnyTarget(descriptionOverride = "any other target (takes 1 damage)"))
         effect = Effects.DealDamage(2, first)
             .then(Effects.DealDamage(1, second))
     }

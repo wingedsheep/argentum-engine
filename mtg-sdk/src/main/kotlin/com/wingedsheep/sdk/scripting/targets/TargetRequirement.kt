@@ -116,9 +116,11 @@ data class AnyTarget(
     override val count: Int = 1,
     override val minCount: Int = count,
     override val optional: Boolean = false,
-    override val id: String? = null
+    override val id: String? = null,
+    private val descriptionOverride: String? = null
 ) : TargetRequirement {
-    override val description: String = if (count == 1) "any target" else "$count targets"
+    override val description: String = descriptionOverride
+        ?: if (count == 1) "any target" else "$count targets"
     override fun applyTextReplacement(replacer: TextReplacer): TargetRequirement = this
 }
 
