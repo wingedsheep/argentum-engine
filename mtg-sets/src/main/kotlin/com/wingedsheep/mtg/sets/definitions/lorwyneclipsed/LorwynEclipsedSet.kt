@@ -50,6 +50,7 @@ object LorwynEclipsedSet {
         HovelHurler,
         Lavaleaper,
         LiminalHold,
+        Luminollusk,
         MirrormindCrown,
         NamelessInversion,
         NoggleTheMind,
