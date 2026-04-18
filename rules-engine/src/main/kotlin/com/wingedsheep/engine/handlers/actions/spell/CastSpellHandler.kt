@@ -1808,7 +1808,8 @@ class CastSpellHandler(
                 context = DecisionContext(
                     sourceId = cardId,
                     sourceName = cardName,
-                    phase = DecisionPhase.CASTING
+                    phase = DecisionPhase.CASTING,
+                    effectHint = mode.description
                 ),
                 targetRequirements = requirementInfos,
                 legalTargets = legalTargetsMap,
