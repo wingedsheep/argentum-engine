@@ -906,7 +906,7 @@ export function GameCard({
           <div style={{
             ...styles.tokenNameBar,
             color: getTokenFrameTextColor(card.colors),
-            fontSize: responsive.isMobile ? 7 : 9,
+            fontSize: responsive.badges.smallLabelFontSize,
           }}>
             {card.name}
           </div>
@@ -987,7 +987,7 @@ export function GameCard({
       {/* Summoning sickness indicator */}
       {battlefield && card.hasSummoningSickness && card.cardTypes.includes('CREATURE') && (
         <div style={styles.summoningSicknessOverlay}>
-          <div style={{ ...styles.summoningSicknessIcon, fontSize: responsive.isMobile ? 16 : 24 }}>💤</div>
+          <div style={{ ...styles.summoningSicknessIcon, fontSize: responsive.badges.sicknessIconSize }}>💤</div>
         </div>
       )}
 
@@ -1004,7 +1004,7 @@ export function GameCard({
           <span style={{
             color: faceDown ? 'white' : getPTColor(card.power, card.toughness, card.basePower, card.baseToughness),
             fontWeight: 700,
-            fontSize: responsive.isMobile ? 10 : 12,
+            fontSize: responsive.badges.ptFontSize,
           }}>
             {card.power}/
           </span>
@@ -1015,7 +1015,7 @@ export function GameCard({
                 ? '#ff4444'
                 : getPTColor(card.power, card.toughness, card.basePower, card.baseToughness),
             fontWeight: 700,
-            fontSize: responsive.isMobile ? 10 : 12,
+            fontSize: responsive.badges.ptFontSize,
           }}>
             {card.damage != null && card.damage > 0
               ? card.toughness - card.damage
@@ -1031,11 +1031,11 @@ export function GameCard({
           backgroundColor: 'rgba(60, 60, 60, 0.9)',
           border: '1px solid rgba(200, 160, 60, 0.6)',
         }}>
-          <i className={`ms ms-${counterManaClass.LOYALTY}`} style={{ fontSize: responsive.isMobile ? 8 : 10, color: '#e0c060', marginRight: 2 }} />
+          <i className={`ms ms-${counterManaClass.LOYALTY}`} style={{ fontSize: responsive.badges.counterIconFontSize, color: '#e0c060', marginRight: 2 }} />
           <span style={{
             color: '#e0c060',
             fontWeight: 700,
-            fontSize: responsive.isMobile ? 10 : 12,
+            fontSize: responsive.badges.ptFontSize,
           }}>
             {getLoyaltyCounters(card)}
           </span>
@@ -1050,7 +1050,7 @@ export function GameCard({
           border: '1px solid rgba(200, 160, 60, 0.6)',
           color: '#e0c060',
         }}>
-          <i className={`ms ms-${counterManaClass.LOYALTY}`} style={{ fontSize: responsive.isMobile ? 8 : 10 }} />
+          <i className={`ms ms-${counterManaClass.LOYALTY}`} style={{ fontSize: responsive.badges.counterIconFontSize }} />
           <span style={{ fontWeight: 700 }}>
             {getLoyaltyCounters(card)}
           </span>
@@ -1068,9 +1068,9 @@ export function GameCard({
             display: 'flex',
             alignItems: 'center',
             gap: 2,
-            padding: responsive.isMobile ? '1px 4px' : '2px 6px',
+            padding: responsive.badges.badgePadding,
             borderRadius: 8,
-            fontSize: responsive.isMobile ? 9 : 11,
+            fontSize: responsive.badges.counterTextFontSize,
             fontWeight: 700,
             background: card.thresholdInfo.active
               ? 'linear-gradient(135deg, #c9a227, #f5d76e)'
@@ -1086,7 +1086,7 @@ export function GameCard({
             zIndex: 3,
           }}
         >
-          <i className="ms ms-counter-graveyard" style={{ fontSize: responsive.isMobile ? 8 : 10 }} />
+          <i className="ms ms-counter-graveyard" style={{ fontSize: responsive.badges.counterIconFontSize }} />
           <span>
             {Math.min(card.thresholdInfo.current, card.thresholdInfo.required)}/{card.thresholdInfo.required}
           </span>
@@ -1097,10 +1097,10 @@ export function GameCard({
       {battlefield && hasStatCounters(card) && (
         <div style={{
           ...styles.counterBadge,
-          fontSize: responsive.isMobile ? 9 : 11,
-          padding: responsive.isMobile ? '1px 4px' : '2px 6px',
+          fontSize: responsive.badges.counterTextFontSize,
+          padding: responsive.badges.badgePadding,
         }}>
-          <i className={`ms ms-${getCounterStatModifier(card) >= 0 ? counterManaClass.PLUS_ONE_PLUS_ONE : counterManaClass.MINUS_ONE_MINUS_ONE}`} style={{ fontSize: responsive.isMobile ? 8 : 10 }} />
+          <i className={`ms ms-${getCounterStatModifier(card) >= 0 ? counterManaClass.PLUS_ONE_PLUS_ONE : counterManaClass.MINUS_ONE_MINUS_ONE}`} style={{ fontSize: responsive.badges.counterIconFontSize }} />
           <span style={styles.counterBadgeText}>
             {getCounterStatModifier(card) >= 0 ? '+' : ''}{getCounterStatModifier(card)}
           </span>
@@ -1111,10 +1111,10 @@ export function GameCard({
       {battlefield && getGoldCounters(card) > 0 && (
         <div style={{
           ...styles.goldCounterBadge,
-          fontSize: responsive.isMobile ? 9 : 11,
-          padding: responsive.isMobile ? '1px 4px' : '2px 6px',
+          fontSize: responsive.badges.counterTextFontSize,
+          padding: responsive.badges.badgePadding,
         }}>
-          <i className={`ms ms-${counterManaClass.GOLD}`} style={{ fontSize: responsive.isMobile ? 8 : 10 }} />
+          <i className={`ms ms-${counterManaClass.GOLD}`} style={{ fontSize: responsive.badges.counterIconFontSize }} />
           <span style={{ fontWeight: 700 }}>
             {getGoldCounters(card)}
           </span>
@@ -1125,10 +1125,10 @@ export function GameCard({
       {battlefield && getPlagueCounters(card) > 0 && (
         <div style={{
           ...styles.plagueCounterBadge,
-          fontSize: responsive.isMobile ? 9 : 11,
-          padding: responsive.isMobile ? '1px 4px' : '2px 6px',
+          fontSize: responsive.badges.counterTextFontSize,
+          padding: responsive.badges.badgePadding,
         }}>
-          <i className={`ms ms-${counterManaClass.PLAGUE}`} style={{ fontSize: responsive.isMobile ? 8 : 10 }} />
+          <i className={`ms ms-${counterManaClass.PLAGUE}`} style={{ fontSize: responsive.badges.counterIconFontSize }} />
           <span style={{ fontWeight: 700 }}>
             {getPlagueCounters(card)}
           </span>
@@ -1139,10 +1139,10 @@ export function GameCard({
       {battlefield && getChargeCounters(card) > 0 && (
         <div style={{
           ...styles.chargeCounterBadge,
-          fontSize: responsive.isMobile ? 9 : 11,
-          padding: responsive.isMobile ? '1px 4px' : '2px 6px',
+          fontSize: responsive.badges.counterTextFontSize,
+          padding: responsive.badges.badgePadding,
         }}>
-          <i className={`ms ms-${counterManaClass.CHARGE}`} style={{ fontSize: responsive.isMobile ? 8 : 10 }} />
+          <i className={`ms ms-${counterManaClass.CHARGE}`} style={{ fontSize: responsive.badges.counterIconFontSize }} />
           <span style={{ fontWeight: 700 }}>
             {getChargeCounters(card)}
           </span>
@@ -1153,10 +1153,10 @@ export function GameCard({
       {battlefield && getGemCounters(card) > 0 && (
         <div style={{
           ...styles.chargeCounterBadge,
-          fontSize: responsive.isMobile ? 9 : 11,
-          padding: responsive.isMobile ? '1px 4px' : '2px 6px',
+          fontSize: responsive.badges.counterTextFontSize,
+          padding: responsive.badges.badgePadding,
         }}>
-          <i className={`ms ms-${counterManaClass.GEM}`} style={{ fontSize: responsive.isMobile ? 8 : 10 }} />
+          <i className={`ms ms-${counterManaClass.GEM}`} style={{ fontSize: responsive.badges.counterIconFontSize }} />
           <span style={{ fontWeight: 700 }}>
             {getGemCounters(card)}
           </span>
@@ -1167,10 +1167,10 @@ export function GameCard({
       {battlefield && getDepletionCounters(card) > 0 && (
         <div style={{
           ...styles.depletionCounterBadge,
-          fontSize: responsive.isMobile ? 9 : 11,
-          padding: responsive.isMobile ? '1px 4px' : '2px 6px',
+          fontSize: responsive.badges.counterTextFontSize,
+          padding: responsive.badges.badgePadding,
         }}>
-          <i className={`ms ms-${counterManaClass.DEPLETION}`} style={{ fontSize: responsive.isMobile ? 8 : 10 }} />
+          <i className={`ms ms-${counterManaClass.DEPLETION}`} style={{ fontSize: responsive.badges.counterIconFontSize }} />
           <span style={{ fontWeight: 700 }}>
             {getDepletionCounters(card)}
           </span>
@@ -1181,10 +1181,10 @@ export function GameCard({
       {battlefield && getTrapCounters(card) > 0 && (
         <div style={{
           ...styles.trapCounterBadge,
-          fontSize: responsive.isMobile ? 9 : 11,
-          padding: responsive.isMobile ? '1px 4px' : '2px 6px',
+          fontSize: responsive.badges.counterTextFontSize,
+          padding: responsive.badges.badgePadding,
         }}>
-          <i className={`ms ms-${counterManaClass.TRAP}`} style={{ fontSize: responsive.isMobile ? 8 : 10 }} />
+          <i className={`ms ms-${counterManaClass.TRAP}`} style={{ fontSize: responsive.badges.counterIconFontSize }} />
           <span style={{ fontWeight: 700 }}>
             {getTrapCounters(card)}
           </span>
@@ -1195,10 +1195,10 @@ export function GameCard({
       {battlefield && getStunCounters(card) > 0 && (
         <div style={{
           ...styles.stunCounterBadge,
-          fontSize: responsive.isMobile ? 9 : 11,
-          padding: responsive.isMobile ? '1px 4px' : '2px 6px',
+          fontSize: responsive.badges.counterTextFontSize,
+          padding: responsive.badges.badgePadding,
         }}>
-          <i className={`ms ms-${counterManaClass.STUN}`} style={{ fontSize: responsive.isMobile ? 8 : 10 }} />
+          <i className={`ms ms-${counterManaClass.STUN}`} style={{ fontSize: responsive.badges.counterIconFontSize }} />
           <span style={{ fontWeight: 700 }}>
             {getStunCounters(card)}
           </span>
@@ -1209,10 +1209,10 @@ export function GameCard({
       {battlefield && getFinalityCounters(card) > 0 && (
         <div style={{
           ...styles.finalityCounterBadge,
-          fontSize: responsive.isMobile ? 9 : 11,
-          padding: responsive.isMobile ? '1px 4px' : '2px 6px',
+          fontSize: responsive.badges.counterTextFontSize,
+          padding: responsive.badges.badgePadding,
         }}>
-          <i className={`ms ms-${counterManaClass.FINALITY}`} style={{ fontSize: responsive.isMobile ? 8 : 10 }} />
+          <i className={`ms ms-${counterManaClass.FINALITY}`} style={{ fontSize: responsive.badges.counterIconFontSize }} />
           <span style={{ fontWeight: 700 }}>
             {getFinalityCounters(card)}
           </span>
@@ -1223,10 +1223,10 @@ export function GameCard({
       {battlefield && getSupplyCounters(card) > 0 && (
         <div style={{
           ...styles.supplyCounterBadge,
-          fontSize: responsive.isMobile ? 9 : 11,
-          padding: responsive.isMobile ? '1px 4px' : '2px 6px',
+          fontSize: responsive.badges.counterTextFontSize,
+          padding: responsive.badges.badgePadding,
         }}>
-          <i className={`ms ms-${counterManaClass.SUPPLY}`} style={{ fontSize: responsive.isMobile ? 8 : 10 }} />
+          <i className={`ms ms-${counterManaClass.SUPPLY}`} style={{ fontSize: responsive.badges.counterIconFontSize }} />
           <span style={{ fontWeight: 700 }}>
             {getSupplyCounters(card)}
           </span>
@@ -1237,10 +1237,10 @@ export function GameCard({
       {battlefield && getStashCounters(card) > 0 && (
         <div style={{
           ...styles.stashCounterBadge,
-          fontSize: responsive.isMobile ? 9 : 11,
-          padding: responsive.isMobile ? '1px 4px' : '2px 6px',
+          fontSize: responsive.badges.counterTextFontSize,
+          padding: responsive.badges.badgePadding,
         }}>
-          <i className={`ms ms-${counterManaClass.STASH}`} style={{ fontSize: responsive.isMobile ? 8 : 10 }} />
+          <i className={`ms ms-${counterManaClass.STASH}`} style={{ fontSize: responsive.badges.counterIconFontSize }} />
           <span style={{ fontWeight: 700 }}>
             {getStashCounters(card)}
           </span>
@@ -1251,10 +1251,10 @@ export function GameCard({
       {battlefield && getBlightCounters(card) > 0 && (
         <div style={{
           ...styles.blightCounterBadge,
-          fontSize: responsive.isMobile ? 9 : 11,
-          padding: responsive.isMobile ? '1px 4px' : '2px 6px',
+          fontSize: responsive.badges.counterTextFontSize,
+          padding: responsive.badges.badgePadding,
         }}>
-          <i className={`ms ms-${counterManaClass.BLIGHT}`} style={{ fontSize: responsive.isMobile ? 8 : 10 }} />
+          <i className={`ms ms-${counterManaClass.BLIGHT}`} style={{ fontSize: responsive.badges.counterIconFontSize }} />
           <span style={{ fontWeight: 700 }}>
             {getBlightCounters(card)}
           </span>
@@ -1265,10 +1265,10 @@ export function GameCard({
       {battlefield && getFloodCounters(card) > 0 && (
         <div style={{
           ...styles.floodCounterBadge,
-          fontSize: responsive.isMobile ? 9 : 11,
-          padding: responsive.isMobile ? '1px 4px' : '2px 6px',
+          fontSize: responsive.badges.counterTextFontSize,
+          padding: responsive.badges.badgePadding,
         }}>
-          <i className={`ms ms-${counterManaClass.FLOOD}`} style={{ fontSize: responsive.isMobile ? 8 : 10 }} />
+          <i className={`ms ms-${counterManaClass.FLOOD}`} style={{ fontSize: responsive.badges.counterIconFontSize }} />
           <span style={{ fontWeight: 700 }}>
             {getFloodCounters(card)}
           </span>
@@ -1279,10 +1279,10 @@ export function GameCard({
       {battlefield && getCoinCounters(card) > 0 && (
         <div style={{
           ...styles.coinCounterBadge,
-          fontSize: responsive.isMobile ? 9 : 11,
-          padding: responsive.isMobile ? '1px 4px' : '2px 6px',
+          fontSize: responsive.badges.counterTextFontSize,
+          padding: responsive.badges.badgePadding,
         }}>
-          <i className={`ms ms-${counterManaClass.COIN}`} style={{ fontSize: responsive.isMobile ? 8 : 10 }} />
+          <i className={`ms ms-${counterManaClass.COIN}`} style={{ fontSize: responsive.badges.counterIconFontSize }} />
           <span style={{ fontWeight: 700 }}>
             {getCoinCounters(card)}
           </span>
@@ -1293,10 +1293,10 @@ export function GameCard({
       {battlefield && getChorusCounters(card) > 0 && (
         <div style={{
           ...styles.chorusCounterBadge,
-          fontSize: responsive.isMobile ? 9 : 11,
-          padding: responsive.isMobile ? '1px 4px' : '2px 6px',
+          fontSize: responsive.badges.counterTextFontSize,
+          padding: responsive.badges.badgePadding,
         }}>
-          <i className={`ms ms-${counterManaClass.CHORUS}`} style={{ fontSize: responsive.isMobile ? 8 : 10 }} />
+          <i className={`ms ms-${counterManaClass.CHORUS}`} style={{ fontSize: responsive.badges.counterIconFontSize }} />
           <span style={{ fontWeight: 700 }}>
             {getChorusCounters(card)}
           </span>
@@ -1307,10 +1307,10 @@ export function GameCard({
       {battlefield && getFlyingCounters(card) > 0 && (
         <div style={{
           ...styles.flyingCounterBadge,
-          fontSize: responsive.isMobile ? 9 : 11,
-          padding: responsive.isMobile ? '1px 4px' : '2px 6px',
+          fontSize: responsive.badges.counterTextFontSize,
+          padding: responsive.badges.badgePadding,
         }}>
-          <i className={`ms ms-${counterManaClass.FLYING}`} style={{ fontSize: responsive.isMobile ? 8 : 10 }} />
+          <i className={`ms ms-${counterManaClass.FLYING}`} style={{ fontSize: responsive.badges.counterIconFontSize }} />
           <span style={{ fontWeight: 700 }}>
             {getFlyingCounters(card)}
           </span>
@@ -1337,9 +1337,9 @@ export function GameCard({
                     ...styles.sagaChapterMarker,
                     ...(isActive ? styles.sagaChapterActive : {}),
                     ...(isCompleted ? styles.sagaChapterCompleted : {}),
-                    width: responsive.isMobile ? 14 : 18,
-                    height: responsive.isMobile ? 14 : 18,
-                    fontSize: responsive.isMobile ? 7 : 9,
+                    width: responsive.badges.keywordIconSize,
+                    height: responsive.badges.keywordIconSize,
+                    fontSize: responsive.badges.smallLabelFontSize,
                   }}>
                     {toRoman(chapter)}
                   </div>
@@ -1350,8 +1350,8 @@ export function GameCard({
             {loreCount > 0 && (
               <div style={{
                 ...styles.sagaLoreBadge,
-                fontSize: responsive.isMobile ? 10 : 12,
-                padding: responsive.isMobile ? '1px 4px' : '2px 6px',
+                fontSize: responsive.badges.ptFontSize,
+                padding: responsive.badges.badgePadding,
               }}>
                 <span style={{ fontWeight: 700 }}>
                   {loreCount} / {totalChapters}
@@ -1381,9 +1381,9 @@ export function GameCard({
                     ...styles.classLevelMarker,
                     ...(isActive ? styles.classLevelActive : {}),
                     ...(isCompleted ? styles.classLevelCompleted : {}),
-                    width: responsive.isMobile ? 14 : 18,
-                    height: responsive.isMobile ? 14 : 18,
-                    fontSize: responsive.isMobile ? 7 : 9,
+                    width: responsive.badges.keywordIconSize,
+                    height: responsive.badges.keywordIconSize,
+                    fontSize: responsive.badges.smallLabelFontSize,
                   }}>
                     {level}
                   </div>
@@ -1393,8 +1393,8 @@ export function GameCard({
             {/* Level badge in P/T position */}
             <div style={{
               ...styles.classLevelBadge,
-              fontSize: responsive.isMobile ? 10 : 12,
-              padding: responsive.isMobile ? '1px 4px' : '2px 6px',
+              fontSize: responsive.badges.ptFontSize,
+              padding: responsive.badges.badgePadding,
             }}>
               <span style={{ fontWeight: 700 }}>
                 Lv.{currentLevel}
@@ -1406,19 +1406,19 @@ export function GameCard({
 
       {/* Keyword ability icons (shown for face-up cards, and for face-down cards with granted keywords) */}
       {battlefield && !hideKeywordIcons && (card.keywords.length > 0 || (card.abilityFlags && card.abilityFlags.length > 0) || (card.protections && card.protections.length > 0)) && (
-        <KeywordIcons keywords={card.keywords} abilityFlags={card.abilityFlags ?? []} protections={card.protections ?? []} size={responsive.isMobile ? 14 : 18} />
+        <KeywordIcons keywords={card.keywords} abilityFlags={card.abilityFlags ?? []} protections={card.protections ?? []} size={responsive.badges.keywordIconSize} />
       )}
 
       {/* Revealed face-down eye icon (e.g., peeked via Spy Network) */}
       {faceDown && card.revealedName && (
         <div style={{
           position: 'absolute',
-          top: responsive.isMobile ? 2 : 4,
-          right: responsive.isMobile ? 2 : 4,
+          top: responsive.badges.badgeInset,
+          right: responsive.badges.badgeInset,
           backgroundColor: 'rgba(0, 0, 0, 0.75)',
           color: '#66ccff',
-          fontSize: responsive.isMobile ? 10 : 13,
-          padding: responsive.isMobile ? '1px 3px' : '2px 5px',
+          fontSize: responsive.badges.manaCostFontSize,
+          padding: responsive.badges.badgePaddingTight,
           borderRadius: 4,
           border: '1px solid rgba(102, 204, 255, 0.5)',
           pointerEvents: 'none',
@@ -1437,7 +1437,7 @@ export function GameCard({
           left: 4,
           backgroundColor: 'rgba(80, 60, 30, 0.9)',
           color: '#f0d890',
-          fontSize: responsive.isMobile ? 8 : 10,
+          fontSize: responsive.badges.counterIconFontSize,
           padding: '1px 4px',
           borderRadius: 3,
           border: '1px solid rgba(200, 170, 80, 0.6)',
@@ -1457,8 +1457,8 @@ export function GameCard({
           left: 4,
           backgroundColor: 'rgba(20, 20, 40, 0.9)',
           color: card.currentFace === 'BACK' ? '#b0b8d0' : '#f0d060',
-          fontSize: responsive.isMobile ? 10 : 13,
-          padding: responsive.isMobile ? '1px 3px' : '2px 5px',
+          fontSize: responsive.badges.manaCostFontSize,
+          padding: responsive.badges.badgePaddingTight,
           borderRadius: 4,
           border: `1px solid ${card.currentFace === 'BACK' ? 'rgba(160, 170, 200, 0.5)' : 'rgba(240, 208, 96, 0.5)'}`,
           pointerEvents: 'none',
@@ -1477,7 +1477,7 @@ export function GameCard({
           left: 4,
           backgroundColor: 'rgba(40, 40, 80, 0.9)',
           color: '#a0b0e0',
-          fontSize: responsive.isMobile ? 7 : 9,
+          fontSize: responsive.badges.smallLabelFontSize,
           padding: '1px 4px',
           borderRadius: 3,
           border: '1px solid rgba(100, 120, 200, 0.6)',
@@ -1503,12 +1503,12 @@ export function GameCard({
       {handCostInfo && (
         <div style={{
           position: 'absolute',
-          top: responsive.isMobile ? 2 : 4,
-          right: responsive.isMobile ? 2 : 4,
+          top: responsive.badges.badgeInset,
+          right: responsive.badges.badgeInset,
           backgroundColor: handCostInfo.isReduced || handCostInfo.isIncreased
             ? 'rgba(0, 0, 0, 0.85)'
             : 'rgba(0, 0, 0, 0.7)',
-          padding: responsive.isMobile ? '1px 3px' : '2px 5px',
+          padding: responsive.badges.badgePaddingTight,
           borderRadius: 4,
           border: `1px solid ${
             handCostInfo.isReduced ? 'rgba(0, 200, 80, 0.5)'
@@ -1524,7 +1524,7 @@ export function GameCard({
           alignItems: 'center',
           gap: 1,
         }}>
-          <ManaCost cost={handCostInfo.cost} size={responsive.isMobile ? 10 : 13} gap={1} />
+          <ManaCost cost={handCostInfo.cost} size={responsive.badges.manaCostFontSize} gap={1} />
         </div>
       )}
 
@@ -1532,17 +1532,17 @@ export function GameCard({
       {count > 1 && !faceDown && (
         <div style={{
           position: 'absolute',
-          top: responsive.isMobile ? 2 : 4,
-          right: responsive.isMobile ? 2 : 4,
+          top: responsive.badges.badgeInset,
+          right: responsive.badges.badgeInset,
           backgroundColor: 'rgba(0, 0, 0, 0.85)',
           color: '#fff',
           borderRadius: '50%',
-          width: responsive.isMobile ? 18 : 22,
-          height: responsive.isMobile ? 18 : 22,
+          width: responsive.badges.countBadgeSize,
+          height: responsive.badges.countBadgeSize,
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          fontSize: responsive.isMobile ? 10 : 12,
+          fontSize: responsive.badges.ptFontSize,
           fontWeight: 700,
           border: '1px solid rgba(255, 255, 255, 0.3)',
           boxShadow: '0 2px 4px rgba(0,0,0,0.5)',
@@ -1556,18 +1556,18 @@ export function GameCard({
       {isDistributeTarget && distributeAllocated > 0 && (
         <div style={{
           position: 'absolute',
-          top: responsive.isMobile ? 2 : 4,
-          right: responsive.isMobile ? 2 : 4,
+          top: responsive.badges.badgeInset,
+          right: responsive.badges.badgeInset,
           backgroundColor: '#dc2626',
           color: 'white',
-          width: responsive.isMobile ? 20 : 26,
-          height: responsive.isMobile ? 20 : 26,
+          width: responsive.badges.distributeBadgeSize,
+          height: responsive.badges.distributeBadgeSize,
           borderRadius: '50%',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
           fontWeight: 'bold',
-          fontSize: responsive.isMobile ? 11 : 14,
+          fontSize: responsive.badges.distributeBadgeFontSize,
           boxShadow: '0 2px 8px rgba(220, 38, 38, 0.6)',
           zIndex: 15,
         }}>
@@ -1603,7 +1603,7 @@ export function GameCard({
               border: 'none',
               backgroundColor: '#16a34a',
               color: 'white',
-              fontSize: responsive.isMobile ? 10 : 12,
+              fontSize: responsive.badges.ptFontSize,
               fontWeight: 700,
               cursor: 'pointer',
               padding: 0,
@@ -1620,7 +1620,7 @@ export function GameCard({
               border: 'none',
               backgroundColor: '#555',
               color: 'white',
-              fontSize: responsive.isMobile ? 10 : 12,
+              fontSize: responsive.badges.ptFontSize,
               fontWeight: 700,
               cursor: 'pointer',
               padding: 0,
@@ -1654,8 +1654,8 @@ export function GameCard({
             onClick={(e) => { e.stopPropagation(); decrementDistribute(card.id) }}
             disabled={distributeAllocated <= (distributeState?.minPerTarget ?? 0)}
             style={{
-              width: responsive.isMobile ? 20 : 26,
-              height: responsive.isMobile ? 20 : 26,
+              width: responsive.badges.distributeBadgeSize,
+              height: responsive.badges.distributeBadgeSize,
               borderRadius: 4,
               border: 'none',
               backgroundColor: distributeAllocated <= (distributeState?.minPerTarget ?? 0) ? '#333' : '#dc2626',
@@ -1684,8 +1684,8 @@ export function GameCard({
             onClick={(e) => { e.stopPropagation(); incrementDistribute(card.id) }}
             disabled={distributeRemaining <= 0 || distributeAtMax}
             style={{
-              width: responsive.isMobile ? 20 : 26,
-              height: responsive.isMobile ? 20 : 26,
+              width: responsive.badges.distributeBadgeSize,
+              height: responsive.badges.distributeBadgeSize,
               borderRadius: 4,
               border: 'none',
               backgroundColor: (distributeRemaining <= 0 || distributeAtMax) ? '#333' : '#16a34a',
@@ -1723,7 +1723,7 @@ export function GameCard({
           <span style={{
             backgroundColor: 'rgba(212, 160, 23, 0.9)',
             color: '#fff',
-            fontSize: responsive.isMobile ? 10 : 13,
+            fontSize: responsive.badges.manaCostFontSize,
             fontWeight: 700,
             padding: responsive.isMobile ? '2px 6px' : '3px 10px',
             borderRadius: 4,
@@ -1758,8 +1758,8 @@ export function GameCard({
             onClick={(e) => { e.stopPropagation(); decrementCounterRemoval(card.id) }}
             disabled={counterAllocated <= 0}
             style={{
-              width: responsive.isMobile ? 20 : 26,
-              height: responsive.isMobile ? 20 : 26,
+              width: responsive.badges.distributeBadgeSize,
+              height: responsive.badges.distributeBadgeSize,
               borderRadius: 4,
               border: 'none',
               backgroundColor: counterAllocated <= 0 ? '#333' : '#dc2626',
@@ -1788,8 +1788,8 @@ export function GameCard({
             onClick={(e) => { e.stopPropagation(); incrementCounterRemoval(card.id) }}
             disabled={counterAtMax}
             style={{
-              width: responsive.isMobile ? 20 : 26,
-              height: responsive.isMobile ? 20 : 26,
+              width: responsive.badges.distributeBadgeSize,
+              height: responsive.badges.distributeBadgeSize,
               borderRadius: 4,
               border: 'none',
               backgroundColor: (counterAtMax) ? '#333' : '#16a34a',
