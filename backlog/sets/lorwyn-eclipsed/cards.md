@@ -2,13 +2,13 @@
 
 **Set Size:** 273 cards (main set, per Scryfall `set:ecl`)
 **Release Date:** January 23, 2026
-**Implemented:** 65 / 273
+**Implemented:** 67 / 273
 
 | Color      | Total | Done |
 |------------|-------|------|
 | White      | 39    | 5    |
 | Blue       | 39    | 14   |
-| Black      | 38    | 6    |
+| Black      | 38    | 8    |
 | Red        | 39    | 4    |
 | Green      | 39    | 12   |
 | Multicolor | 49    | 14   |
@@ -107,7 +107,7 @@
 
 - [ ] Auntie's Sentence
 - [x] Barbed Bloodletter
-- [ ] Bile-Vial Boggart
+- [x] Bile-Vial Boggart
 - [ ] Bitterbloom Bearer
 - [ ] Blight Rot
 - [ ] Blighted Blackthorn
@@ -118,7 +118,7 @@
 - [ ] Champion of the Weird
 - [ ] Creakwood Safewright
 - [ ] Darkness Descends
-- [ ] Dawnhand Dissident
+- [x] Dawnhand Dissident
 - [x] Dawnhand Eulogist
 - [ ] Dose of Dawnglow
 - [ ] Dream Seizer
