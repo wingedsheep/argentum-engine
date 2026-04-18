@@ -36,6 +36,7 @@ import com.wingedsheep.engine.state.components.identity.FaceDownComponent
 import com.wingedsheep.engine.state.components.identity.TextReplacementComponent
 import com.wingedsheep.engine.state.components.player.ManaPoolComponent
 import com.wingedsheep.engine.state.components.stack.ActivatedAbilityOnStackComponent
+import com.wingedsheep.engine.state.components.stack.capturePermanentSnapshots
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.Keyword
@@ -411,21 +412,8 @@ class ActivateAbilityHandler(
 
         // Snapshot projected subtypes and P/T of sacrifice targets before zone change
         // (Rule 112.7a / 608.2h — "as it last existed on the battlefield")
-        val sacrificedPermanentSubtypes = mutableMapOf<EntityId, Set<String>>()
-        val sacrificedPermanentPowers = mutableMapOf<EntityId, Int>()
-        val sacrificedPermanentToughnesses = mutableMapOf<EntityId, Int>()
         val sacrificeTargetIds = action.costPayment?.sacrificedPermanents ?: emptyList()
-        if (sacrificeTargetIds.isNotEmpty()) {
-            val projectedBeforeSacrifice = currentState.projectedState
-            for (permId in sacrificeTargetIds) {
-                val projectedSubtypes = projectedBeforeSacrifice.getSubtypes(permId)
-                if (projectedSubtypes.isNotEmpty()) {
-                    sacrificedPermanentSubtypes[permId] = projectedSubtypes
-                }
-                projectedBeforeSacrifice.getPower(permId)?.let { sacrificedPermanentPowers[permId] = it }
-                projectedBeforeSacrifice.getToughness(permId)?.let { sacrificedPermanentToughnesses[permId] = it }
-            }
-        }
+        val sacrificedSnapshots = capturePermanentSnapshots(sacrificeTargetIds, currentState.projectedState)
 
         // When using Explicit payment, mana sources were already tapped above —
         // strip the Mana portion so payAbilityCost doesn't try to deduct from the pool.
@@ -763,10 +751,7 @@ class ActivateAbilityHandler(
             sourceName = cardComponent.name,
             controllerId = action.playerId,
             effect = finalEffect,
-            sacrificedPermanents = action.costPayment?.sacrificedPermanents ?: emptyList(),
-            sacrificedPermanentSubtypes = sacrificedPermanentSubtypes,
-            sacrificedPermanentPowers = sacrificedPermanentPowers,
-            sacrificedPermanentToughnesses = sacrificedPermanentToughnesses,
+            sacrificedPermanents = sacrificedSnapshots,
             xValue = action.xValue,
             tappedPermanents = action.costPayment?.tappedPermanents ?: emptyList()
         )

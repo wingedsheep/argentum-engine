@@ -162,7 +162,7 @@ data class EachPlayerChoosesCreatureTypeContinuation(
  * @property casterId The player casting the spell
  * @property targets The chosen targets
  * @property xValue The X value if applicable
- * @property sacrificedPermanents Permanents sacrificed as additional costs
+ * @property sacrificedPermanents Snapshots of permanents sacrificed as additional costs
  * @property targetRequirements The target requirements for resolution-time re-validation
  * @property count Legacy field, unused by pipeline effects
  * @property creatureTypes The creature type options (indexed by OptionChosenResponse.optionIndex)
@@ -174,7 +174,7 @@ data class CastWithCreatureTypeContinuation(
     val casterId: EntityId,
     val targets: List<ChosenTarget> = emptyList(),
     val xValue: Int? = null,
-    val sacrificedPermanents: List<EntityId> = emptyList(),
+    val sacrificedPermanents: List<com.wingedsheep.engine.state.components.stack.PermanentSnapshot> = emptyList(),
     val targetRequirements: List<TargetRequirement> = emptyList(),
     val count: Int,
     val creatureTypes: List<String>

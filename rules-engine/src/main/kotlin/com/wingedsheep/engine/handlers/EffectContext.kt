@@ -3,6 +3,7 @@ package com.wingedsheep.engine.handlers
 import com.wingedsheep.engine.handlers.effects.TargetResolutionUtils
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
+import com.wingedsheep.engine.state.components.stack.PermanentSnapshot
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
@@ -28,13 +29,13 @@ data class EffectContext(
     val xValue: Int? = null,
     val wasKicked: Boolean = false,
     // --- Cast-time state ---
-    val sacrificedPermanents: List<EntityId> = emptyList(),
-    /** Projected subtypes of sacrificed permanents at time of sacrifice (before zone change) */
-    val sacrificedPermanentSubtypes: Map<EntityId, Set<String>> = emptyMap(),
-    /** Projected power of sacrificed permanents at time of sacrifice (Rule 112.7a / 608.2h — last known info) */
-    val sacrificedPermanentPowers: Map<EntityId, Int> = emptyMap(),
-    /** Projected toughness of sacrificed permanents at time of sacrifice (Rule 112.7a / 608.2h — last known info) */
-    val sacrificedPermanentToughnesses: Map<EntityId, Int> = emptyMap(),
+    /**
+     * Projected snapshots of permanents sacrificed as part of the cost (Rule 112.7a /
+     * 608.2h — "as it last existed on the battlefield"). Captured before the zone change
+     * so downstream effects can read power, toughness, and subtypes after the permanent
+     * has left the battlefield.
+     */
+    val sacrificedPermanents: List<PermanentSnapshot> = emptyList(),
     /** Pre-chosen damage distribution for DividedDamageEffect spells (target ID -> damage amount) */
     val damageDistribution: Map<EntityId, Int>? = null,
     /**

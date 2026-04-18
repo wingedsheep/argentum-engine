@@ -792,7 +792,7 @@ sealed interface CollectionFilter {
 
     /**
      * Keep only entities that share at least one subtype with the sacrificed creature.
-     * Reads subtypes from context.sacrificedPermanentSubtypes (snapshotted at sacrifice time).
+     * Reads subtypes from context.sacrificedPermanents[].subtypes (snapshotted at sacrifice time).
      */
     @SerialName("SharesSubtypeWithSacrificed")
     @Serializable

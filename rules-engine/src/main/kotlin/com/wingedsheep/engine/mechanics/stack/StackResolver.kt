@@ -93,10 +93,7 @@ class StackResolver(
         casterId: EntityId,
         targets: List<ChosenTarget> = emptyList(),
         xValue: Int? = null,
-        sacrificedPermanents: List<EntityId> = emptyList(),
-        sacrificedPermanentSubtypes: Map<EntityId, Set<String>> = emptyMap(),
-        sacrificedPermanentPowers: Map<EntityId, Int> = emptyMap(),
-        sacrificedPermanentToughnesses: Map<EntityId, Int> = emptyMap(),
+        sacrificedPermanents: List<PermanentSnapshot> = emptyList(),
         castFaceDown: Boolean = false,
         damageDistribution: Map<EntityId, Int>? = null,
         targetRequirements: List<TargetRequirement> = emptyList(),
@@ -155,9 +152,6 @@ class StackResolver(
                 modeTargetRequirements = modeTargetRequirements,
                 modeDamageDistribution = modeDamageDistribution,
                 sacrificedPermanents = sacrificedPermanents,
-                sacrificedPermanentSubtypes = sacrificedPermanentSubtypes,
-                sacrificedPermanentPowers = sacrificedPermanentPowers,
-                sacrificedPermanentToughnesses = sacrificedPermanentToughnesses,
                 castFaceDown = castFaceDown,
                 damageDistribution = damageDistribution,
                 chosenCreatureType = chosenCreatureType,
@@ -334,7 +328,7 @@ class StackResolver(
 
         // Clone cast-time state; per 707.7c the copy inherits every decision made for
         // the original. The data-class copy preserves: xValue, wasKicked, wasWarped,
-        // wasEvoked, sacrificedPermanents (+subtypes), damageDistribution,
+        // wasEvoked, sacrificedPermanents (snapshots of P/T + subtypes), damageDistribution,
         // chosenCreatureType, exiledCardCount, castFromZone, beheldCards, and the
         // manaSpent{White,Blue,Black,Red,Green,Colorless} colors. Only the caster
         // (copy controller) and modal fields (which the caller may retarget) are
@@ -970,9 +964,6 @@ class StackResolver(
                 xValue = spellComponent.xValue,
                 wasKicked = spellComponent.wasKicked,
                 sacrificedPermanents = spellComponent.sacrificedPermanents,
-                sacrificedPermanentSubtypes = spellComponent.sacrificedPermanentSubtypes,
-                sacrificedPermanentPowers = spellComponent.sacrificedPermanentPowers,
-                sacrificedPermanentToughnesses = spellComponent.sacrificedPermanentToughnesses,
                 damageDistribution = spellComponent.damageDistribution,
                 chosenModes = spellComponent.chosenModes,
                 modeTargetsOrdered = spellComponent.modeTargetsOrdered,
@@ -1265,9 +1256,6 @@ class StackResolver(
             opponentId = state.getOpponent(abilityComponent.controllerId),
             targets = activatedTargets,
             sacrificedPermanents = abilityComponent.sacrificedPermanents,
-            sacrificedPermanentSubtypes = abilityComponent.sacrificedPermanentSubtypes,
-            sacrificedPermanentPowers = abilityComponent.sacrificedPermanentPowers,
-            sacrificedPermanentToughnesses = abilityComponent.sacrificedPermanentToughnesses,
             xValue = abilityComponent.xValue,
             tappedPermanents = abilityComponent.tappedPermanents,
             pipeline = PipelineState(namedTargets = EffectContext.buildNamedTargets(activatedReqs, activatedTargets))

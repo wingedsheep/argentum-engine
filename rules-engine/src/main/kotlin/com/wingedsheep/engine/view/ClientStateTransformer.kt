@@ -785,8 +785,8 @@ class ClientStateTransformer(
         val chosenColor = container.get<ChosenColorComponent>()?.color?.displayName
 
         // Get sacrificed creature types for spells with sacrifice-as-cost (e.g., Endemic Plague)
-        val sacrificedCreatureTypes = spellOnStack?.sacrificedPermanentSubtypes
-            ?.values?.flatten()?.toSet()
+        val sacrificedCreatureTypes = spellOnStack?.sacrificedPermanents
+            ?.flatMap { it.subtypes }?.toSet()
             ?.takeIf { it.isNotEmpty() }
 
         // Build type line string from TypeLine, using projected types/subtypes if available
@@ -969,7 +969,6 @@ class ClientStateTransformer(
                 opponentId = state.getOpponent(spellOnStack.casterId),
                 xValue = spellOnStack.xValue,
                 sacrificedPermanents = spellOnStack.sacrificedPermanents,
-                sacrificedPermanentSubtypes = spellOnStack.sacrificedPermanentSubtypes,
                 exiledCardCount = spellOnStack.exiledCardCount
             )
             effect.runtimeDescription { amount -> evaluator.evaluate(state, amount, context) }
@@ -997,7 +996,6 @@ class ClientStateTransformer(
             opponentId = state.getOpponent(spellOnStack.casterId),
             xValue = spellOnStack.xValue,
             sacrificedPermanents = spellOnStack.sacrificedPermanents,
-            sacrificedPermanentSubtypes = spellOnStack.sacrificedPermanentSubtypes,
             exiledCardCount = spellOnStack.exiledCardCount
         )
         return spellOnStack.chosenModes.map { modeIndex ->

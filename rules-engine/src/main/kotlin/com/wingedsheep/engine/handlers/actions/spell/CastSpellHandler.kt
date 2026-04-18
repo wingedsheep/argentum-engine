@@ -83,7 +83,9 @@ import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.engine.handlers.effects.TargetResolutionUtils.toEntityId
 import com.wingedsheep.engine.state.components.player.GrantedSpellKeywordsComponent
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
+import com.wingedsheep.engine.state.components.stack.PermanentSnapshot
 import com.wingedsheep.engine.state.components.stack.TriggeredAbilityOnStackComponent
+import com.wingedsheep.engine.state.components.stack.capturePermanentSnapshots
 import kotlin.reflect.KClass
 
 /**
@@ -203,6 +205,14 @@ class CastSpellHandler(
             if (additionalCostError != null) {
                 return additionalCostError
             }
+        }
+
+        // Validate linked-exile granter's additional cost (e.g. Dawnhand Dissident)
+        val linkedExileGranter = zoneResolver.findLinkedExileGranter(state, action.playerId, action.cardId)
+        val linkedExileAdditionalCost = linkedExileGranter?.additionalCost
+        if (linkedExileAdditionalCost != null) {
+            val linkedCostError = validateAdditionalCosts(state, listOf(linkedExileAdditionalCost), action)
+            if (linkedCostError != null) return linkedCostError
         }
 
         // Validate runtime additional costs from PlayWithAdditionalCostComponent (e.g., The Infamous Cruelclaw)
@@ -567,6 +577,12 @@ class CastSpellHandler(
      * (rule 700.2h — per-mode additional costs stack). Modes with a null override fall through to
      * the card-level costs. If no chosen mode provides overrides, card-level costs are used.
      */
+    private fun counterTypeToCountersString(type: CounterType): String = when (type) {
+        CounterType.PLUS_ONE_PLUS_ONE -> Counters.PLUS_ONE_PLUS_ONE
+        CounterType.MINUS_ONE_MINUS_ONE -> Counters.MINUS_ONE_MINUS_ONE
+        else -> type.name.lowercase()
+    }
+
     private fun resolveAdditionalCostsForMode(
         cardDef: com.wingedsheep.sdk.model.CardDefinition,
         action: CastSpell
@@ -794,6 +810,46 @@ class CastSpellHandler(
                     }
                     // If blightTargets is empty, the player is paying extra mana instead
                 }
+                is AdditionalCost.RemoveCountersFromYourCreatures -> {
+                    val removals = action.additionalCostPayment?.distributedCounterRemovals
+                        ?: emptyList()
+                    val total = removals.sumOf { it.count }
+                    if (total < additionalCost.totalCount) {
+                        return "You must remove ${additionalCost.totalCount} counters from among creatures you control to cast this spell"
+                    }
+                    // Tally demanded removals per (entity, counterType) so we can validate
+                    // against actual counter counts.
+                    val demanded = mutableMapOf<Pair<EntityId, CounterType>, Int>()
+                    for (removal in removals) {
+                        if (removal.count <= 0) {
+                            return "Counter removal count must be positive"
+                        }
+                        val permContainer = state.getEntity(removal.entityId)
+                            ?: return "Counter removal target not found: ${removal.entityId}"
+                        permContainer.get<CardComponent>()
+                            ?: return "Counter removal target is not a card: ${removal.entityId}"
+                        if (projected.getController(removal.entityId) != action.playerId) {
+                            return "You can only remove counters from creatures you control"
+                        }
+                        if (removal.entityId !in state.getBattlefield()) {
+                            return "Counter removal target is not on the battlefield"
+                        }
+                        if (!projected.isCreature(removal.entityId)) {
+                            return "Counter removal target must be a creature"
+                        }
+                        val key = removal.entityId to removal.counterType
+                        demanded[key] = (demanded[key] ?: 0) + removal.count
+                    }
+                    for ((key, demandedCount) in demanded) {
+                        val (entityId, counterType) = key
+                        val actual = state.getEntity(entityId)
+                            ?.get<CountersComponent>()
+                            ?.getCount(counterType) ?: 0
+                        if (actual < demandedCount) {
+                            return "Creature does not have $demandedCount $counterType counters to remove"
+                        }
+                    }
+                }
                 else -> {}
             }
         }
@@ -903,10 +959,7 @@ class CastSpellHandler(
         }
 
         // Process additional costs (sacrifice, exile, etc.)
-        val sacrificedPermanentIds = mutableListOf<EntityId>()
-        val sacrificedPermanentSubtypes = mutableMapOf<EntityId, Set<String>>()
-        val sacrificedPermanentPowers = mutableMapOf<EntityId, Int>()
-        val sacrificedPermanentToughnesses = mutableMapOf<EntityId, Int>()
+        val sacrificedSnapshots = mutableListOf<PermanentSnapshot>()
         var exiledCardCount = 0
         val beheldCards = mutableListOf<EntityId>()
         /** Pipeline storage populated by Behold, consumed by ExileFromStorage */
@@ -933,6 +986,11 @@ class CastSpellHandler(
                 ?.get<PlayWithAdditionalCostComponent>()
                 ?.takeIf { it.controllerId == action.playerId }
             if (runtimeCostComp != null) addAll(runtimeCostComp.additionalCosts)
+
+            // Linked-exile granter additional cost (e.g., Dawnhand Dissident's
+            // "remove three counters from among creatures you control")
+            val linkedGranter = zoneResolver.findLinkedExileGranter(currentState, action.playerId, action.cardId)
+            linkedGranter?.additionalCost?.let { add(it) }
         }
 
         val flattenedAllCosts = allAdditionalCosts.flatMap {
@@ -942,8 +1000,12 @@ class CastSpellHandler(
             for (additionalCost in flattenedAllCosts) {
                 when (additionalCost) {
                     is AdditionalCost.SacrificePermanent -> {
-                        // Project state to capture text-changed subtypes before sacrifice
+                        // Snapshot projected subtypes and P/T before zone change
+                        // (Rule 112.7a / 608.2h — "as it last existed on the battlefield")
                         val projectedBeforeSacrifice = currentState.projectedState
+                        sacrificedSnapshots.addAll(
+                            capturePermanentSnapshots(action.additionalCostPayment.sacrificedPermanents, projectedBeforeSacrifice)
+                        )
                         for (permId in action.additionalCostPayment.sacrificedPermanents) {
                             val permContainer = currentState.getEntity(permId) ?: continue
                             val permCard = permContainer.get<CardComponent>() ?: continue
@@ -952,19 +1014,8 @@ class CastSpellHandler(
                             val battlefieldZone = ZoneKey(controllerId, Zone.BATTLEFIELD)
                             val graveyardZone = ZoneKey(ownerId, Zone.GRAVEYARD)
 
-                            // Snapshot projected subtypes and P/T before zone change
-                            // (Rule 112.7a / 608.2h — "as it last existed on the battlefield")
-                            val projectedSubtypes = projectedBeforeSacrifice.getSubtypes(permId)
-                            if (projectedSubtypes.isNotEmpty()) {
-                                sacrificedPermanentSubtypes[permId] = projectedSubtypes
-                            }
-                            projectedBeforeSacrifice.getPower(permId)?.let { sacrificedPermanentPowers[permId] = it }
-                            projectedBeforeSacrifice.getToughness(permId)?.let { sacrificedPermanentToughnesses[permId] = it }
-
                             currentState = currentState.removeFromZone(battlefieldZone, permId)
                             currentState = currentState.addToZone(graveyardZone, permId)
-
-                            sacrificedPermanentIds.add(permId)
 
                             events.add(PermanentsSacrificedEvent(action.playerId, listOf(permId), listOf(permCard.name)))
                             events.add(ZoneChangeEvent(
@@ -1046,6 +1097,9 @@ class CastSpellHandler(
                     is AdditionalCost.SacrificeCreaturesForCostReduction -> {
                         // Process sacrifices for cost reduction (e.g., Torgaar)
                         val projectedBeforeSacrifice = currentState.projectedState
+                        sacrificedSnapshots.addAll(
+                            capturePermanentSnapshots(action.additionalCostPayment.sacrificedPermanents, projectedBeforeSacrifice)
+                        )
                         for (permId in action.additionalCostPayment.sacrificedPermanents) {
                             val permContainer = currentState.getEntity(permId) ?: continue
                             val permCard = permContainer.get<CardComponent>() ?: continue
@@ -1054,17 +1108,8 @@ class CastSpellHandler(
                             val battlefieldZone = ZoneKey(controllerId, Zone.BATTLEFIELD)
                             val graveyardZone = ZoneKey(ownerId, Zone.GRAVEYARD)
 
-                            val projectedSubtypes = projectedBeforeSacrifice.getSubtypes(permId)
-                            if (projectedSubtypes.isNotEmpty()) {
-                                sacrificedPermanentSubtypes[permId] = projectedSubtypes
-                            }
-                            projectedBeforeSacrifice.getPower(permId)?.let { sacrificedPermanentPowers[permId] = it }
-                            projectedBeforeSacrifice.getToughness(permId)?.let { sacrificedPermanentToughnesses[permId] = it }
-
                             currentState = currentState.removeFromZone(battlefieldZone, permId)
                             currentState = currentState.addToZone(graveyardZone, permId)
-
-                            sacrificedPermanentIds.add(permId)
 
                             events.add(PermanentsSacrificedEvent(action.playerId, listOf(permId), listOf(permCard.name)))
                             events.add(ZoneChangeEvent(
@@ -1162,6 +1207,23 @@ class CastSpellHandler(
                             }
                         }
                         // If blightTargets is empty, "pay mana" path — extra mana already added to effectiveCost
+                    }
+                    is AdditionalCost.RemoveCountersFromYourCreatures -> {
+                        // Remove the chosen counters from the designated creatures
+                        for (removal in action.additionalCostPayment.distributedCounterRemovals) {
+                            val container = currentState.getEntity(removal.entityId) ?: continue
+                            val existing = container.get<CountersComponent>() ?: continue
+                            currentState = currentState.updateEntity(removal.entityId) { c ->
+                                c.with(existing.withRemoved(removal.counterType, removal.count))
+                            }
+                            val entityName = container.get<CardComponent>()?.name ?: "Creature"
+                            events.add(com.wingedsheep.engine.core.CountersRemovedEvent(
+                                entityId = removal.entityId,
+                                counterType = counterTypeToCountersString(removal.counterType),
+                                amount = removal.count,
+                                entityName = entityName
+                            ))
+                        }
                     }
                     else -> {}
                 }
@@ -1299,7 +1361,7 @@ class CastSpellHandler(
         val castTimeChoice = cardDef?.script?.castTimeCreatureTypeChoice
         if (castTimeChoice != null) {
             val pauseResult = pauseForCreatureTypeChoice(
-                currentState, action, castTimeChoice, sacrificedPermanentIds, spellTargetRequirements, events
+                currentState, action, castTimeChoice, sacrificedSnapshots, spellTargetRequirements, events
             )
             if (pauseResult != null) return pauseResult
         }
@@ -1368,10 +1430,7 @@ class CastSpellHandler(
             action.playerId,
             action.targets,
             action.xValue,
-            sacrificedPermanentIds,
-            sacrificedPermanentSubtypes,
-            sacrificedPermanentPowers = sacrificedPermanentPowers,
-            sacrificedPermanentToughnesses = sacrificedPermanentToughnesses,
+            sacrificedSnapshots,
             castFaceDown = action.castFaceDown,
             damageDistribution = action.damageDistribution,
             targetRequirements = spellTargetRequirements,
@@ -1541,7 +1600,7 @@ class CastSpellHandler(
         currentState: GameState,
         action: CastSpell,
         source: com.wingedsheep.sdk.model.CastTimeCreatureTypeSource,
-        sacrificedPermanentIds: List<EntityId>,
+        sacrificedSnapshots: List<PermanentSnapshot>,
         spellTargetRequirements: List<com.wingedsheep.sdk.scripting.targets.TargetRequirement>,
         priorEvents: List<GameEvent>
     ): ExecutionResult? {
@@ -1596,7 +1655,7 @@ class CastSpellHandler(
             casterId = action.playerId,
             targets = action.targets,
             xValue = action.xValue,
-            sacrificedPermanents = sacrificedPermanentIds,
+            sacrificedPermanents = sacrificedSnapshots,
             targetRequirements = spellTargetRequirements,
             count = 0,
             creatureTypes = sortedTypes

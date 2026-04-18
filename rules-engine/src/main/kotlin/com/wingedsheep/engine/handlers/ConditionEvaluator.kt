@@ -299,8 +299,8 @@ class ConditionEvaluator {
         condition: SacrificedPermanentHadSubtype,
         context: EffectContext
     ): Boolean {
-        return context.sacrificedPermanentSubtypes.values.any { subtypes ->
-            subtypes.contains(condition.subtype)
+        return context.sacrificedPermanents.any { snapshot ->
+            snapshot.subtypes.contains(condition.subtype)
         }
     }
 

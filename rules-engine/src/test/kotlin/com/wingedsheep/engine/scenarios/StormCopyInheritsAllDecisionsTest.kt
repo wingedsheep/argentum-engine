@@ -13,6 +13,7 @@ import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.identity.CopyOfComponent
 import com.wingedsheep.engine.state.components.identity.OwnerComponent
+import com.wingedsheep.engine.state.components.stack.PermanentSnapshot
 import com.wingedsheep.engine.state.components.stack.SpellOnStackComponent
 import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.TypeLine
@@ -104,8 +105,9 @@ class StormCopyInheritsAllDecisionsTest : FunSpec({
             wasKicked = true,
             wasWarped = true,
             wasEvoked = true,
-            sacrificedPermanents = listOf(sacrificedCreature),
-            sacrificedPermanentSubtypes = mapOf(sacrificedCreature to setOf("Goblin")),
+            sacrificedPermanents = listOf(
+                PermanentSnapshot(entityId = sacrificedCreature, subtypes = setOf("Goblin"))
+            ),
             damageDistribution = mapOf(damageTarget to 3),
             chosenCreatureType = "Elf",
             exiledCardCount = 2,
@@ -128,8 +130,9 @@ class StormCopyInheritsAllDecisionsTest : FunSpec({
         copy.wasKicked shouldBe true
         copy.wasWarped shouldBe true
         copy.wasEvoked shouldBe true
-        copy.sacrificedPermanents shouldBe listOf(sacrificedCreature)
-        copy.sacrificedPermanentSubtypes shouldBe mapOf(sacrificedCreature to setOf("Goblin"))
+        copy.sacrificedPermanents shouldBe listOf(
+            PermanentSnapshot(entityId = sacrificedCreature, subtypes = setOf("Goblin"))
+        )
         copy.damageDistribution shouldBe mapOf(damageTarget to 3)
         copy.chosenCreatureType shouldBe "Elf"
         copy.exiledCardCount shouldBe 2
@@ -166,7 +169,7 @@ class StormCopyInheritsAllDecisionsTest : FunSpec({
             casterId = p1,
             manaSpentRed = 2,
             manaSpentGreen = 1,
-            sacrificedPermanents = listOf(EntityId.generate())
+            sacrificedPermanents = listOf(PermanentSnapshot(entityId = EntityId.generate()))
         )
 
         val result = runStorm(buildState(p1, spellEntity, source), spellEntity, p1)

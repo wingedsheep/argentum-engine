@@ -167,11 +167,12 @@ class DynamicAmountEvaluator(
                 // captured at sacrifice time (Rule 112.7a / 608.2h — "as it last existed
                 // on the battlefield") before falling through to base stats.
                 if (amount.entity is EntityReference.Sacrificed) {
+                    val snapshot = context.sacrificedPermanents.firstOrNull { it.entityId == entityId }
                     when (amount.numericProperty) {
                         is EntityNumericProperty.Power ->
-                            context.sacrificedPermanentPowers[entityId]?.let { return it }
+                            snapshot?.power?.let { return it }
                         is EntityNumericProperty.Toughness ->
-                            context.sacrificedPermanentToughnesses[entityId]?.let { return it }
+                            snapshot?.toughness?.let { return it }
                         else -> { /* fall through */ }
                     }
                     return resolveNumericProperty(state, entityId, amount.numericProperty, context, useProjected = false)
@@ -510,7 +511,7 @@ class DynamicAmountEvaluator(
                     else -> null
                 }
             }
-            is EntityReference.Sacrificed -> context.sacrificedPermanents.getOrNull(ref.index)
+            is EntityReference.Sacrificed -> context.sacrificedPermanents.getOrNull(ref.index)?.entityId
             is EntityReference.TappedAsCost -> context.tappedPermanents.getOrNull(ref.index)
             is EntityReference.Triggering -> context.triggeringEntityId
             is EntityReference.AffectedEntity -> context.affectedEntityId

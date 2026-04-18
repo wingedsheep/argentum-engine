@@ -53,12 +53,12 @@ class FilterCollectionExecutor : EffectExecutor<FilterCollectionEffect> {
             }
 
             is CollectionFilter.SharesSubtypeWithSacrificed -> {
-                val sacrificedId = context.sacrificedPermanents.firstOrNull()
-                if (sacrificedId == null) {
+                val sacrificed = context.sacrificedPermanents.firstOrNull()
+                if (sacrificed == null) {
                     emptyList<EntityId>() to cards
                 } else {
-                    val sacrificedSubtypes = context.sacrificedPermanentSubtypes[sacrificedId]
-                        ?: state.getEntity(sacrificedId)?.get<CardComponent>()
+                    val sacrificedSubtypes = sacrificed.subtypes.takeIf { it.isNotEmpty() }
+                        ?: state.getEntity(sacrificed.entityId)?.get<CardComponent>()
                             ?.typeLine?.subtypes?.map { it.value }?.toSet()
                         ?: emptySet()
 
@@ -136,7 +136,7 @@ class FilterCollectionExecutor : EffectExecutor<FilterCollectionEffect> {
                     else -> null
                 }
             }
-            is EntityReference.Sacrificed -> context.sacrificedPermanents.getOrNull(ref.index)
+            is EntityReference.Sacrificed -> context.sacrificedPermanents.getOrNull(ref.index)?.entityId
             is EntityReference.TappedAsCost -> context.tappedPermanents.getOrNull(ref.index)
             is EntityReference.Triggering -> context.triggeringEntityId
             is EntityReference.AffectedEntity -> context.affectedEntityId
