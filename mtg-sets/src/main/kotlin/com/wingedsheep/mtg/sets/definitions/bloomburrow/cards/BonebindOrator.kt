@@ -3,9 +3,10 @@ package com.wingedsheep.mtg.sets.definitions.bloomburrow.cards
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.dsl.Costs
 import com.wingedsheep.sdk.dsl.Effects
-import com.wingedsheep.sdk.dsl.Targets
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
+import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
+import com.wingedsheep.sdk.scripting.targets.TargetObject
 
 /**
  * Bonebind Orator {1}{B}
@@ -25,7 +26,10 @@ val BonebindOrator = card("Bonebind Orator") {
     activatedAbility {
         cost = Costs.Composite(Costs.Mana("{3}{B}"), Costs.ExileSelf)
         activateFromZone = Zone.GRAVEYARD
-        val creature = target("another target creature card from your graveyard", Targets.CreatureCardInGraveyard)
+        val creature = target(
+            "another target creature card from your graveyard",
+            TargetObject(filter = TargetFilter.CreatureInYourGraveyard.other())
+        )
         effect = Effects.ReturnToHand(creature)
     }
 

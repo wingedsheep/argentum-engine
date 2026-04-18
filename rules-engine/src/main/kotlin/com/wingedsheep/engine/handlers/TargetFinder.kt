@@ -352,7 +352,8 @@ class TargetFinder(
     private fun findGraveyardTargets(
         state: GameState,
         filter: TargetFilter,
-        controllerId: EntityId
+        controllerId: EntityId,
+        sourceId: EntityId?
     ): List<EntityId> {
         val targets = mutableListOf<EntityId>()
 
@@ -362,6 +363,7 @@ class TargetFinder(
             val graveyard = state.getZone(graveyardKey)
 
             for (cardId in graveyard) {
+                if (filter.excludeSelf && cardId == sourceId) continue
                 val predicateContext = PredicateContext(controllerId = controllerId, ownerId = playerId)
                 if (predicateEvaluator.matches(state, cardId, filter.baseFilter, predicateContext)) {
                     targets.add(cardId)
@@ -399,7 +401,7 @@ class TargetFinder(
         val filter = requirement.filter
         return when (filter.zone) {
             Zone.BATTLEFIELD -> findPermanentTargets(state, requirement, controllerId, sourceId, ignoreTargetingRestrictions, targetingSourceType, triggeringEntityId)
-            Zone.GRAVEYARD -> findGraveyardTargets(state, filter, controllerId)
+            Zone.GRAVEYARD -> findGraveyardTargets(state, filter, controllerId, sourceId)
             Zone.STACK -> findSpellTargets(state, requirement, controllerId)
             else -> findCardTargetsInZone(state, filter, controllerId)
         }

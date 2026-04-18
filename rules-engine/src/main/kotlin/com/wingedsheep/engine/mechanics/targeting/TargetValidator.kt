@@ -402,7 +402,8 @@ class TargetValidator {
         state: GameState,
         target: ChosenTarget,
         filter: TargetFilter,
-        casterId: EntityId
+        casterId: EntityId,
+        sourceId: EntityId? = null
     ): String? {
         if (target !is ChosenTarget.Card) {
             return "Target must be a card in a graveyard"
@@ -414,6 +415,10 @@ class TargetValidator {
         val zoneKey = ZoneKey(target.ownerId, Zone.GRAVEYARD)
         if (target.cardId !in state.getZone(zoneKey)) {
             return "Target not found in graveyard"
+        }
+
+        if (filter.excludeSelf && sourceId != null && target.cardId == sourceId) {
+            return "Target must be another card"
         }
 
         // Use unified filter - OwnedByYou predicate handles "your graveyard" restriction
@@ -458,7 +463,7 @@ class TargetValidator {
         sourceId: EntityId? = null
     ): String? {
         return when (filter.zone) {
-            Zone.GRAVEYARD -> validateGraveyardTarget(state, target, filter, casterId)
+            Zone.GRAVEYARD -> validateGraveyardTarget(state, target, filter, casterId, sourceId)
             Zone.BATTLEFIELD -> validatePermanentTarget(state, target, filter, casterId, sourceId)
             Zone.STACK -> validateSpellTarget(state, target, filter, casterId)
             else -> validateCardInZoneTarget(state, target, filter, casterId)

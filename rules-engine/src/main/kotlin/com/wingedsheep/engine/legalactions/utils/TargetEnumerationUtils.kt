@@ -121,7 +121,8 @@ class TargetEnumerationUtils(
     fun findValidGraveyardTargets(
         state: GameState,
         playerId: EntityId,
-        filter: TargetFilter
+        filter: TargetFilter,
+        sourceId: EntityId? = null
     ): List<EntityId> {
         val playerIds = if (filter.baseFilter.controllerPredicate == ControllerPredicate.ControlledByYou) {
             listOf(playerId)
@@ -131,6 +132,7 @@ class TargetEnumerationUtils(
         val context = PredicateContext(controllerId = playerId)
         return playerIds.flatMap { pid ->
             state.getGraveyard(pid).filter { entityId ->
+                if (filter.excludeSelf && entityId == sourceId) return@filter false
                 predicateEvaluator.matches(state, entityId, filter.baseFilter, context)
             }
         }
@@ -144,7 +146,7 @@ class TargetEnumerationUtils(
     ): List<EntityId> {
         return when (filter.zone) {
             Zone.BATTLEFIELD -> findValidPermanentTargets(state, playerId, filter, sourceId)
-            Zone.GRAVEYARD -> findValidGraveyardTargets(state, playerId, filter)
+            Zone.GRAVEYARD -> findValidGraveyardTargets(state, playerId, filter, sourceId)
             Zone.STACK -> findValidSpellTargets(state, playerId, filter)
             else -> emptyList()
         }
