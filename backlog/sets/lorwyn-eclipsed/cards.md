@@ -2,7 +2,7 @@
 
 **Set Size:** 273 cards (main set, per Scryfall `set:ecl`)
 **Release Date:** January 23, 2026
-**Implemented:** 60 / 273
+**Implemented:** 61 / 273
 
 | Color      | Total | Done |
 |------------|-------|------|
@@ -10,7 +10,7 @@
 | Blue       | 39    | 13   |
 | Black      | 38    | 6    |
 | Red        | 39    | 4    |
-| Green      | 39    | 11   |
+| Green      | 39    | 12   |
 | Multicolor | 49    | 12   |
 | Colorless  | 18    | 3    |
 | Land       | 12    | 6    |
@@ -211,7 +211,7 @@
 - [ ] Moon-Vigil Adherents
 - [ ] Morcant's Eyes
 - [ ] Mutable Explorer
-- [ ] Pitiless Fists
+- [x] Pitiless Fists
 - [ ] Prismabasher
 - [x] Prismatic Undercurrents
 - [ ] Pummeler for Hire
