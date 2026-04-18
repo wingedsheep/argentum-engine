@@ -1,5 +1,6 @@
 package com.wingedsheep.gameserver.scenarios
 
+import com.wingedsheep.engine.core.YesNoDecision
 import com.wingedsheep.engine.state.components.battlefield.CountersComponent
 import com.wingedsheep.gameserver.ScenarioTestBase
 import com.wingedsheep.sdk.core.CounterType
@@ -73,6 +74,77 @@ class MistbreathElderTest : ScenarioTestBase() {
 
                 withClue("Mistbreath Elder should not be on battlefield") {
                     game.isOnBattlefield("Mistbreath Elder") shouldBe false
+                }
+            }
+
+            test("never offers may-bounce self when another creature is bounced (mandatory clause)") {
+                // Rules ruling (CR 605/722-style): you cannot intentionally fail
+                // the first sentence to reach the "Otherwise" clause. With another
+                // creature available, the bounce is forced and the engine must
+                // never present the self-bounce yes/no prompt.
+                val game = scenario()
+                    .withPlayers("Player", "Opponent")
+                    .withCardOnBattlefield(1, "Mistbreath Elder", summoningSickness = false)
+                    .withCardOnBattlefield(1, "Hired Claw", summoningSickness = false)
+                    .withCardInLibrary(1, "Forest")
+                    .withCardInLibrary(2, "Forest")
+                    .withActivePlayer(1)
+                    .inPhase(Phase.BEGINNING, Step.UNTAP)
+                    .build()
+
+                game.passUntilPhase(Phase.BEGINNING, Step.UPKEEP)
+                game.resolveStack()
+
+                withClue("After mandatory bounce resolved, no yes/no decision should be pending") {
+                    (game.getPendingDecision() is YesNoDecision) shouldBe false
+                }
+                withClue("The other creature was bounced (mandatory clause executed)") {
+                    game.isOnBattlefield("Hired Claw") shouldBe false
+                }
+                withClue("Mistbreath Elder must remain on the battlefield") {
+                    game.isOnBattlefield("Mistbreath Elder") shouldBe true
+                }
+            }
+
+            test("requires target selection when multiple other creatures exist; no may prompt before or after") {
+                val game = scenario()
+                    .withPlayers("Player", "Opponent")
+                    .withCardOnBattlefield(1, "Mistbreath Elder", summoningSickness = false)
+                    .withCardOnBattlefield(1, "Hired Claw", summoningSickness = false)
+                    .withCardOnBattlefield(1, "Glory Seeker", summoningSickness = false)
+                    .withCardInLibrary(1, "Forest")
+                    .withCardInLibrary(2, "Forest")
+                    .withActivePlayer(1)
+                    .inPhase(Phase.BEGINNING, Step.UNTAP)
+                    .build()
+
+                game.passUntilPhase(Phase.BEGINNING, Step.UPKEEP)
+                game.resolveStack()
+
+                // Engine must pause for selection — never a yes/no.
+                withClue("A selection decision (not yes/no) should be pending") {
+                    game.getPendingDecision() shouldNotBe null
+                    (game.getPendingDecision() is YesNoDecision) shouldBe false
+                }
+
+                val hiredClaw = game.findPermanent("Hired Claw")!!
+                game.selectCards(listOf(hiredClaw))
+                game.resolveStack()
+
+                withClue("Hired Claw should be returned to its owner's hand") {
+                    game.isOnBattlefield("Hired Claw") shouldBe false
+                }
+                withClue("Glory Seeker should remain on the battlefield") {
+                    game.isOnBattlefield("Glory Seeker") shouldBe true
+                }
+                withClue("No 'otherwise may bounce self' prompt may follow a successful mandatory bounce") {
+                    (game.getPendingDecision() is YesNoDecision) shouldBe false
+                }
+
+                val elderId = game.findPermanent("Mistbreath Elder")!!
+                val counters = game.state.getEntity(elderId)?.get<CountersComponent>()
+                withClue("Mistbreath Elder should have 1 +1/+1 counter from the mandatory bounce") {
+                    counters?.getCount(CounterType.PLUS_ONE_PLUS_ONE) shouldBe 1
                 }
             }
 
