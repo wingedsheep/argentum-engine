@@ -1,5 +1,6 @@
 package com.wingedsheep.sdk.scripting
 
+import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.text.TextReplaceable
 import com.wingedsheep.sdk.scripting.text.TextReplacer
@@ -304,6 +305,29 @@ sealed interface AdditionalCost : TextReplaceable<AdditionalCost> {
         }
     }
 
+    /**
+     * Remove a total of [totalCount] counters from among creatures you control.
+     * The controller chooses how to distribute the removals across their creatures
+     * (any counter types qualify — Dawnhand Dissident's cost is not restricted to +1/+1).
+     *
+     * The player must have at least [totalCount] counters total on their creatures
+     * for this cost to be payable.
+     *
+     * Used for Dawnhand Dissident: "...by removing three counters from among creatures
+     * you control in addition to paying their other costs."
+     *
+     * @property totalCount How many counters must be removed in total across creatures
+     */
+    @SerialName("RemoveCountersFromYourCreatures")
+    @Serializable
+    data class RemoveCountersFromYourCreatures(
+        val totalCount: Int
+    ) : AdditionalCost {
+        override val description: String =
+            "Remove $totalCount counters from among creatures you control"
+        override fun applyTextReplacement(replacer: TextReplacer): AdditionalCost = this
+    }
+
     @SerialName("TapPermanents")
     @Serializable
     data class TapPermanents(
@@ -371,7 +395,15 @@ data class AdditionalCostPayment(
     val counterRemovals: Map<EntityId, Int> = emptyMap(),
 
     /** Creature that received -1/-1 counters via Blight */
-    val blightTargets: List<EntityId> = emptyList()
+    val blightTargets: List<EntityId> = emptyList(),
+
+    /**
+     * Distributed counter removals for costs like
+     * [AdditionalCost.RemoveCountersFromYourCreatures] — each entry removes [count]
+     * counters of [counterType] from [entityId]. The engine validates that the sum
+     * matches the cost's totalCount and that each creature has enough of each type.
+     */
+    val distributedCounterRemovals: List<DistributedCounterRemoval> = emptyList()
 ) {
     /** Check if any costs were paid */
     val isEmpty: Boolean
@@ -383,9 +415,21 @@ data class AdditionalCostPayment(
                 tappedPermanents.isEmpty() &&
                 bouncedPermanents.isEmpty() &&
                 counterRemovals.isEmpty() &&
-                blightTargets.isEmpty()
+                blightTargets.isEmpty() &&
+                distributedCounterRemovals.isEmpty()
 
     companion object {
         val NONE = AdditionalCostPayment()
     }
 }
+
+/**
+ * A single removal entry for distributed counter-removal costs.
+ * Remove [count] counters of [counterType] from [entityId].
+ */
+@Serializable
+data class DistributedCounterRemoval(
+    val entityId: EntityId,
+    val counterType: CounterType,
+    val count: Int
+)

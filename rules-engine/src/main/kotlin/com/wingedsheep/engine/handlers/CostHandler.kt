@@ -721,6 +721,15 @@ class CostHandler(
                 // Always payable: player can always choose the "pay mana" path
                 true
             }
+            is AdditionalCost.RemoveCountersFromYourCreatures -> {
+                val projected = state.projectedState
+                val total = state.getBattlefield().sumOf { permId ->
+                    if (projected.getController(permId) != controllerId) return@sumOf 0
+                    if (!projected.isCreature(permId)) return@sumOf 0
+                    state.getEntity(permId)?.get<CountersComponent>()?.counters?.values?.sum() ?: 0
+                }
+                total >= cost.totalCount
+            }
             is AdditionalCost.Composite -> {
                 // All steps must be payable
                 cost.steps.all { canPayAdditionalCost(state, it, controllerId) }

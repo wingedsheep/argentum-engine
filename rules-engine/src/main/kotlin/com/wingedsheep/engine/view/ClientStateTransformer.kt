@@ -257,6 +257,44 @@ class ClientStateTransformer(
     /**
      * Check if a zone's contents should be visible to a player.
      */
+    /**
+     * True when [cardId] (in exile) is linked to a battlefield permanent controlled by
+     * [viewingPlayerId] that grants a cast-from-linked-exile permission, the card matches
+     * its filter, and (when applicable) ownership matches. Used to flag linked-exile
+     * cards as ghost cards in the viewer's hand so they know they can cast them later.
+     */
+    private fun isCastableFromLinkedExile(
+        state: GameState,
+        viewingPlayerId: EntityId,
+        cardId: EntityId,
+        cardContainer: com.wingedsheep.engine.state.ComponentContainer
+    ): Boolean {
+        val cardComp = cardContainer.get<CardComponent>() ?: return false
+        for (permId in state.getBattlefield()) {
+            val permContainer = state.getEntity(permId) ?: continue
+            if (permContainer.get<ControllerComponent>()?.playerId != viewingPlayerId) continue
+            val linked = permContainer.get<LinkedExileComponent>() ?: continue
+            if (cardId !in linked.exiledIds) continue
+            val permCard = permContainer.get<CardComponent>() ?: continue
+            val cardDef = cardRegistry.getCard(permCard.cardDefinitionId) ?: continue
+            val grant = cardDef.script.staticAbilities
+                .filterIsInstance<com.wingedsheep.sdk.scripting.GrantMayCastFromLinkedExile>()
+                .firstOrNull() ?: continue
+            if (grant.ownedByYou && cardComp.ownerId != viewingPlayerId) continue
+            // Filter check mirrors the enumerator's CardPredicate loop for parity.
+            val passesFilter = grant.filter.cardPredicates.all { pred ->
+                when (pred) {
+                    is com.wingedsheep.sdk.scripting.predicates.CardPredicate.IsNonland -> !cardComp.typeLine.isLand
+                    is com.wingedsheep.sdk.scripting.predicates.CardPredicate.IsCreature -> cardComp.typeLine.isCreature
+                    is com.wingedsheep.sdk.scripting.predicates.CardPredicate.IsArtifact -> cardComp.typeLine.isArtifact
+                    else -> true
+                }
+            }
+            if (passesFilter) return true
+        }
+        return false
+    }
+
     private fun isZoneVisibleTo(zoneKey: ZoneKey, viewingPlayerId: EntityId): Boolean {
         return when (zoneKey.zoneType) {
             Zone.LIBRARY -> false
@@ -813,9 +851,12 @@ class ClientStateTransformer(
         // Build active effects from floating effects
         val activeEffects = buildCardActiveEffects(state, entityId, projectedState)
 
-        // Check if this card is playable from exile (impulse draw like Mind's Desire)
-        val playableFromExile = zoneKey.zoneType == Zone.EXILE &&
-            container.get<MayPlayFromExileComponent>()?.controllerId == viewingPlayerId
+        // Check if this card is playable from exile (impulse draw like Mind's Desire,
+        // or cast-from-linked-exile like Rona / Dawnhand Dissident).
+        val playableFromExile = zoneKey.zoneType == Zone.EXILE && (
+            container.get<MayPlayFromExileComponent>()?.controllerId == viewingPlayerId ||
+                isCastableFromLinkedExile(state, viewingPlayerId, entityId, container)
+        )
 
         // Threshold-style progress badge: detect static abilities gated on
         // "controller's graveyard has at least N cards".

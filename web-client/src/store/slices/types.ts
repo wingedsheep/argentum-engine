@@ -235,8 +235,12 @@ export interface DistributeState {
 }
 
 /**
- * Counter distribution state for RemoveXPlusOnePlusOneCounters cost.
- * Shown after X selection to let the player choose which creatures to remove counters from.
+ * Counter distribution state for counter-removal costs.
+ *
+ * Two flavours:
+ * - X cost (e.g., `Remove X +1/+1 counters`): `requiredTotal` is null, any positive total confirms.
+ * - Fixed cost (e.g., Dawnhand Dissident's "remove three counters from among creatures you control"):
+ *   `requiredTotal` is set; confirm only enables at exactly that total.
  */
 export interface CounterDistributionState {
   actionInfo: LegalActionInfo
@@ -244,6 +248,10 @@ export interface CounterDistributionState {
   xValue: number
   creatures: readonly CounterRemovalCreatureInfo[]
   distribution: Record<EntityId, number>
+  /** When set, total allocated counters must equal this to confirm (fixed-cost mode). */
+  requiredTotal?: number
+  /** Label shown to the player (e.g., "Remove +1/+1 counters" vs. "Remove counters"). */
+  description?: string
 }
 
 /**

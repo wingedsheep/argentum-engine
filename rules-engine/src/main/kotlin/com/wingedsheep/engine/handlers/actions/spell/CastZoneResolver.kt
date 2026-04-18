@@ -345,9 +345,21 @@ class CastZoneResolver(
         state: GameState,
         playerId: EntityId,
         cardId: EntityId
-    ): Boolean {
-        val cardContainer = state.getEntity(cardId) ?: return false
-        val cardComponent = cardContainer.get<CardComponent>() ?: return false
+    ): Boolean = findLinkedExileGranter(state, playerId, cardId) != null
+
+    /**
+     * Locate the battlefield permanent (controlled by [playerId]) whose
+     * [GrantMayCastFromLinkedExile] ability currently permits casting [cardId] from exile,
+     * honoring the ability's timing restriction and card filter. Returns null if no such
+     * granter exists.
+     */
+    fun findLinkedExileGranter(
+        state: GameState,
+        playerId: EntityId,
+        cardId: EntityId
+    ): GrantMayCastFromLinkedExile? {
+        val cardContainer = state.getEntity(cardId) ?: return null
+        val cardComponent = cardContainer.get<CardComponent>() ?: return null
 
         for (entityId in state.getBattlefield()) {
             val container = state.getEntity(entityId) ?: continue
@@ -363,11 +375,15 @@ class CastZoneResolver(
                 .filterIsInstance<GrantMayCastFromLinkedExile>()
                 .firstOrNull() ?: continue
 
+            if (grantAbility.duringYourTurnOnly && state.activePlayerId != playerId) continue
+
+            if (grantAbility.ownedByYou && cardComponent.ownerId != playerId) continue
+
             if (matchesCardFilter(cardComponent, grantAbility.filter)) {
-                return true
+                return grantAbility
             }
         }
-        return false
+        return null
     }
 
     private fun findGraveyardPlayPermissionSource(

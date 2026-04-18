@@ -583,6 +583,46 @@ class CastSpellHandler(
         else -> type.name.lowercase()
     }
 
+    /**
+     * Resolve the distributed counter removals to apply for a
+     * [AdditionalCost.RemoveCountersFromYourCreatures] cost.
+     *
+     * Prefers the typed `distributedCounterRemovals` field. Falls back to the legacy
+     * `counterRemovals: Map<EntityId, Int>` payload (produced by the current web client
+     * for counter-distribution costs): for each (entity, amount) it picks counter types
+     * greedily from whatever the creature has, so `{creature -> 3}` on a bears with 5
+     * +1/+1 counters resolves to removing 3 +1/+1 counters.
+     */
+    private fun resolveDistributedCounterRemovalsForPayment(
+        state: GameState,
+        action: CastSpell
+    ): List<com.wingedsheep.sdk.scripting.DistributedCounterRemoval> {
+        val payment = action.additionalCostPayment ?: return emptyList()
+        if (payment.distributedCounterRemovals.isNotEmpty()) return payment.distributedCounterRemovals
+        if (payment.counterRemovals.isEmpty()) return emptyList()
+        val result = mutableListOf<com.wingedsheep.sdk.scripting.DistributedCounterRemoval>()
+        for ((entityId, amount) in payment.counterRemovals) {
+            if (amount <= 0) continue
+            val counters = state.getEntity(entityId)?.get<CountersComponent>()?.counters ?: continue
+            // Greedy fill: prefer +1/+1 first (most common for this flow), then any
+            // other type in deterministic order.
+            val ordered = counters.entries.sortedWith(
+                compareByDescending<Map.Entry<CounterType, Int>> { it.key == CounterType.PLUS_ONE_PLUS_ONE }
+                    .thenBy { it.key.name }
+            )
+            var remaining = amount
+            for ((type, available) in ordered) {
+                if (remaining <= 0) break
+                val take = minOf(remaining, available)
+                if (take > 0) {
+                    result.add(com.wingedsheep.sdk.scripting.DistributedCounterRemoval(entityId, type, take))
+                    remaining -= take
+                }
+            }
+        }
+        return result
+    }
+
     private fun resolveAdditionalCostsForMode(
         cardDef: com.wingedsheep.sdk.model.CardDefinition,
         action: CastSpell
@@ -811,8 +851,10 @@ class CastSpellHandler(
                     // If blightTargets is empty, the player is paying extra mana instead
                 }
                 is AdditionalCost.RemoveCountersFromYourCreatures -> {
-                    val removals = action.additionalCostPayment?.distributedCounterRemovals
-                        ?: emptyList()
+                    // Accept either typed distributedCounterRemovals or the legacy
+                    // counterRemovals: Map<EntityId, Int> payload the web client currently
+                    // produces for counter-distribution costs.
+                    val removals = resolveDistributedCounterRemovalsForPayment(state, action)
                     val total = removals.sumOf { it.count }
                     if (total < additionalCost.totalCount) {
                         return "You must remove ${additionalCost.totalCount} counters from among creatures you control to cast this spell"
@@ -1209,8 +1251,13 @@ class CastSpellHandler(
                         // If blightTargets is empty, "pay mana" path — extra mana already added to effectiveCost
                     }
                     is AdditionalCost.RemoveCountersFromYourCreatures -> {
-                        // Remove the chosen counters from the designated creatures
-                        for (removal in action.additionalCostPayment.distributedCounterRemovals) {
+                        // Remove the chosen counters from the designated creatures.
+                        // Accept either typed distributedCounterRemovals or the legacy
+                        // counterRemovals: Map<EntityId, Int> (picks any counter type).
+                        val resolvedRemovals = resolveDistributedCounterRemovalsForPayment(
+                            currentState, action
+                        )
+                        for (removal in resolvedRemovals) {
                             val container = currentState.getEntity(removal.entityId) ?: continue
                             val existing = container.get<CountersComponent>() ?: continue
                             currentState = currentState.updateEntity(removal.entityId) { c ->

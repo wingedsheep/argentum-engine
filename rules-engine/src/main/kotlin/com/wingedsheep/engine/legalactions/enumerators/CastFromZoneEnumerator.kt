@@ -374,11 +374,23 @@ class CastFromZoneEnumerator : ActionEnumerator {
                 .filterIsInstance<GrantMayCastFromLinkedExile>()
                 .firstOrNull() ?: continue
 
+            // Timing restriction — e.g. Dawnhand Dissident's "during your turn"
+            if (grantAbility.duringYourTurnOnly && state.activePlayerId != playerId) continue
+
+            // Pre-compute additional-cost affordability for the granter's optional
+            // additional cost (e.g. "remove three counters from your creatures").
+            val (linkedAdditionalCostInfo, canPayLinkedAdditionalCost) = buildLinkedExileAdditionalCostInfo(
+                state, playerId, grantAbility.additionalCost
+            )
+
             for (exiledId in linked.exiledIds) {
                 // Skip if already handled by MayPlayFromExileComponent
                 val exiledContainer = state.getEntity(exiledId) ?: continue
                 if (exiledContainer.get<MayPlayFromExileComponent>()?.controllerId == playerId) continue
                 val exiledCard = exiledContainer.get<CardComponent>() ?: continue
+
+                // Ownership restriction — "cards you own exiled with this creature"
+                if (grantAbility.ownedByYou && exiledCard.ownerId != playerId) continue
 
                 // Check filter (e.g., nonland)
                 val passesFilter = grantAbility.filter.cardPredicates.all { pred ->
@@ -434,7 +446,9 @@ class CastFromZoneEnumerator : ActionEnumerator {
                         context.manaSolver.canPay(state, playerId, effectiveCost, precomputedSources = context.availableManaSources)
                     }
 
-                    if (hasCorrectTiming && meetsRestrictions && canAfford) {
+                    val fullyAffordable = hasCorrectTiming && meetsRestrictions && canAfford &&
+                        canPayLinkedAdditionalCost
+                    if (fullyAffordable) {
                         val targetReqs = buildList {
                             addAll(exiledCardDef?.script?.targetRequirements ?: emptyList())
                             exiledCardDef?.script?.auraTarget?.let { add(it) }
@@ -457,7 +471,8 @@ class CastFromZoneEnumerator : ActionEnumerator {
                                         targetDescription = firstReq.description,
                                         targetRequirements = if (targetInfos.size > 1) targetInfos else null,
                                         manaCostString = costString,
-                                        sourceZone = "EXILE"
+                                        sourceZone = "EXILE",
+                                        additionalCostInfo = linkedAdditionalCostInfo
                                     )
                                 )
                             }
@@ -468,7 +483,8 @@ class CastFromZoneEnumerator : ActionEnumerator {
                                     description = "Cast ${exiledCard.name}",
                                     action = CastSpell(playerId, exiledId),
                                     manaCostString = costString,
-                                    sourceZone = "EXILE"
+                                    sourceZone = "EXILE",
+                                    additionalCostInfo = linkedAdditionalCostInfo
                                 )
                             )
                         }
@@ -480,13 +496,72 @@ class CastFromZoneEnumerator : ActionEnumerator {
                                 action = CastSpell(playerId, exiledId),
                                 affordable = false,
                                 manaCostString = costString,
-                                sourceZone = "EXILE"
+                                sourceZone = "EXILE",
+                                additionalCostInfo = linkedAdditionalCostInfo
                             )
                         )
                     }
                 }
             }
         }
+    }
+
+    private fun buildLinkedExileAdditionalCostInfo(
+        state: GameState,
+        playerId: EntityId,
+        additionalCost: AdditionalCost?
+    ): Pair<AdditionalCostData?, Boolean> {
+        if (additionalCost == null) return null to true
+        return when (additionalCost) {
+            is AdditionalCost.RemoveCountersFromYourCreatures -> {
+                val creatures = buildAnyCounterCreatures(state, playerId)
+                val totalAvailable = creatures.sumOf { it.availableCounters }
+                val canPay = totalAvailable >= additionalCost.totalCount
+                val info = AdditionalCostData(
+                    description = additionalCost.description,
+                    costType = "RemoveCountersFromYourCreatures",
+                    counterRemovalCreatures = creatures,
+                    distributedCounterRemovalTotal = additionalCost.totalCount
+                )
+                info to canPay
+            }
+            else -> AdditionalCostData(
+                description = additionalCost.description,
+                costType = "Other"
+            ) to true
+        }
+    }
+
+    /**
+     * List the player's creatures with at least one counter of any type, alongside a total
+     * counter count — used to populate [AdditionalCostData.counterRemovalCreatures] for
+     * distributed counter-removal costs like Dawnhand Dissident's.
+     */
+    private fun buildAnyCounterCreatures(
+        state: GameState,
+        playerId: EntityId
+    ): List<com.wingedsheep.engine.legalactions.CounterRemovalCreatureData> {
+        val projected = state.projectedState
+        val result = mutableListOf<com.wingedsheep.engine.legalactions.CounterRemovalCreatureData>()
+        for (permId in state.getBattlefield()) {
+            if (projected.getController(permId) != playerId) continue
+            if (!projected.isCreature(permId)) continue
+            val container = state.getEntity(permId) ?: continue
+            val counters = container.get<com.wingedsheep.engine.state.components.battlefield.CountersComponent>()
+                ?: continue
+            val total = counters.counters.values.sum()
+            if (total <= 0) continue
+            val card = container.get<CardComponent>() ?: continue
+            result.add(
+                com.wingedsheep.engine.legalactions.CounterRemovalCreatureData(
+                    entityId = permId,
+                    name = card.name,
+                    availableCounters = total,
+                    imageUri = card.imageUri
+                )
+            )
+        }
+        return result
     }
 
     // =========================================================================

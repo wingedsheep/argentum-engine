@@ -153,6 +153,11 @@ export const createDistributionSlice: SliceCreator<DistributionSlice> = (set, ge
       const current = dist.distribution[entityId] ?? 0
       const creature = dist.creatures.find((c) => c.entityId === entityId)
       if (!creature || current >= creature.availableCounters) return state
+      // Fixed-cost mode: prevent exceeding the requiredTotal.
+      if (dist.requiredTotal != null) {
+        const allocated = Object.values(dist.distribution).reduce<number>((s, v) => s + v, 0)
+        if (allocated >= dist.requiredTotal) return state
+      }
       return {
         counterDistributionState: {
           ...dist,
@@ -193,9 +198,14 @@ export const createDistributionSlice: SliceCreator<DistributionSlice> = (set, ge
     const { counterDistributionState, pipelineState } = get()
     if (!counterDistributionState || !pipelineState) return
 
-    const { distribution } = counterDistributionState
+    const { distribution, requiredTotal } = counterDistributionState
     const totalAllocated = Object.values(distribution).reduce<number>((sum, v) => sum + v, 0)
-    if (totalAllocated <= 0) return
+    // Fixed-cost mode: must match exactly. X cost mode: any positive total confirms.
+    if (requiredTotal != null) {
+      if (totalAllocated !== requiredTotal) return
+    } else if (totalAllocated <= 0) {
+      return
+    }
 
     const counterRemovals: Record<string, number> = {}
     for (const [eid, count] of Object.entries(distribution) as [string, number][]) {

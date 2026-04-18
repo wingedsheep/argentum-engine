@@ -501,7 +501,7 @@ export function GameBoard({ spectatorMode = false, topOffset = 0 }: GameBoardPro
       </div>
 
       {/* Floating pass/resolve button (bottom-right) - always present, disabled when unavailable */}
-      {!spectatorMode && viewingPlayer && !isInManaSelectionMode && (() => {
+      {!spectatorMode && viewingPlayer && !isInManaSelectionMode && !isInCounterDistMode && (() => {
         const passEnabled = canAct && !isInCombatMode && !isInDistributeMode && !isInCounterDistMode && !isInManaSelectionMode && !delveSelectionState && !crewSelectionState && !targetingState
         return (
           <div style={{
@@ -540,7 +540,7 @@ export function GameBoard({ spectatorMode = false, topOffset = 0 }: GameBoardPro
       })()}
 
       {/* Undo, priority mode icons (bottom-right, above pass button) */}
-      {!spectatorMode && viewingPlayer && !isInManaSelectionMode && (
+      {!spectatorMode && viewingPlayer && !isInManaSelectionMode && !isInCounterDistMode && (
         <div style={{
           position: 'fixed',
           bottom: responsive.isMobile ? 64 : 66,
@@ -781,73 +781,147 @@ export function GameBoard({ spectatorMode = false, topOffset = 0 }: GameBoardPro
         </div>
       )}
 
-      {/* Floating counter distribution bar (bottom-right) */}
-      {isInCounterDistMode && counterDistributionState && (
-        <div style={{
-          ...styles.combatButtonContainer,
-          flexDirection: 'column',
-          gap: 8,
-          alignItems: 'flex-end',
-        }}>
-          {(() => {
-            const canConfirm = counterTotalAllocated > 0
-            return (
-              <>
+      {/* Floating counter distribution panel (bottom-right) */}
+      {isInCounterDistMode && counterDistributionState && (() => {
+        const requiredTotal = counterDistributionState.requiredTotal
+        const canConfirm = requiredTotal != null
+          ? counterTotalAllocated === requiredTotal
+          : counterTotalAllocated > 0
+        const hasFixedTotal = requiredTotal != null
+        const progressPct = hasFixedTotal
+          ? Math.min(100, (counterTotalAllocated / requiredTotal) * 100)
+          : 0
+        const subtext = counterDistributionState.description
+          ?? 'Remove +1/+1 counters from your creatures'
+        const panelWidth = responsive.isMobile ? 220 : 240
+        return (
+          <div style={{
+            position: 'fixed',
+            bottom: 16,
+            right: 16,
+            width: panelWidth,
+            zIndex: 110,
+            display: 'flex',
+            flexDirection: 'column',
+            backgroundColor: 'rgba(17, 24, 39, 0.92)',
+            border: '1px solid rgba(255, 255, 255, 0.1)',
+            borderRadius: 8,
+            boxShadow: '0 6px 18px rgba(0, 0, 0, 0.35)',
+            overflow: 'hidden',
+            fontFamily: 'inherit',
+          }}>
+            {/* Body */}
+            <div style={{ padding: '10px 12px' }}>
+              <div style={{
+                color: '#cbd5e1',
+                fontSize: responsive.isMobile ? 11 : 12,
+                lineHeight: 1.35,
+                marginBottom: 8,
+              }}>
+                {subtext}
+              </div>
+
+              <div style={{
+                display: 'flex',
+                alignItems: 'baseline',
+                justifyContent: 'space-between',
+                marginBottom: hasFixedTotal ? 5 : 0,
+              }}>
+                <span style={{
+                  color: '#94a3b8',
+                  fontSize: 10,
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.05em',
+                  fontWeight: 600,
+                }}>
+                  {hasFixedTotal ? 'Allocated' : 'X'}
+                </span>
+                <span style={{
+                  color: canConfirm ? '#86efac' : '#fbbf24',
+                  fontSize: responsive.isMobile ? 13 : 14,
+                  fontWeight: 700,
+                  fontVariantNumeric: 'tabular-nums',
+                }}>
+                  {hasFixedTotal
+                    ? `${counterTotalAllocated} / ${requiredTotal}`
+                    : counterTotalAllocated}
+                </span>
+              </div>
+
+              {hasFixedTotal && (
                 <div style={{
-                  backgroundColor: canConfirm ? 'rgba(22, 163, 74, 0.9)' : 'rgba(234, 179, 8, 0.9)',
-                  padding: responsive.isMobile ? '6px 12px' : '8px 16px',
-                  borderRadius: 6,
-                  border: canConfirm ? '1px solid #4ade80' : '1px solid #fbbf24',
-                  textAlign: 'center',
+                  height: 3,
+                  backgroundColor: 'rgba(255, 255, 255, 0.06)',
+                  borderRadius: 2,
+                  overflow: 'hidden',
                 }}>
                   <div style={{
-                    color: 'white',
-                    fontSize: responsive.fontSize.small,
-                    fontWeight: 600,
-                  }}>
-                    {`X = ${counterTotalAllocated}`}
-                  </div>
-                  <div style={{
-                    color: 'rgba(255, 255, 255, 0.7)',
-                    fontSize: responsive.isMobile ? 10 : 11,
-                    marginTop: 2,
-                  }}>
-                    Remove +1/+1 counters from your creatures
-                  </div>
+                    width: `${progressPct}%`,
+                    height: '100%',
+                    backgroundColor: canConfirm ? '#22c55e' : '#f59e0b',
+                    transition: 'width 0.15s ease-out, background-color 0.15s',
+                  }} />
                 </div>
-                <div style={{ display: 'flex', gap: 8 }}>
-                  <button
-                    onClick={cancelCounterDistribution}
-                    style={{
-                      ...styles.combatButton,
-                      backgroundColor: '#4b5563',
-                      color: 'white',
-                      cursor: 'pointer',
-                      borderColor: '#6b7280',
-                    }}
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    onClick={confirmCounterDistribution}
-                    disabled={!canConfirm}
-                    style={{
-                      ...styles.combatButton,
-                      ...(canConfirm ? styles.combatButtonPrimary : {}),
-                      backgroundColor: canConfirm ? '#16a34a' : '#333',
-                      color: canConfirm ? 'white' : '#666',
-                      cursor: canConfirm ? 'pointer' : 'not-allowed',
-                      borderColor: canConfirm ? '#4ade80' : '#555',
-                    }}
-                  >
-                    Confirm
-                  </button>
-                </div>
-              </>
-            )
-          })()}
-        </div>
-      )}
+              )}
+            </div>
+
+            {/* Footer actions */}
+            <div style={{
+              display: 'flex',
+              gap: 6,
+              padding: '8px 12px',
+              borderTop: '1px solid rgba(255, 255, 255, 0.06)',
+              backgroundColor: 'rgba(0, 0, 0, 0.2)',
+            }}>
+              <button
+                onClick={cancelCounterDistribution}
+                style={{
+                  flex: 1,
+                  height: 30,
+                  padding: '0 10px',
+                  backgroundColor: 'transparent',
+                  color: '#94a3b8',
+                  border: '1px solid rgba(255, 255, 255, 0.12)',
+                  borderRadius: 5,
+                  fontWeight: 500,
+                  fontSize: responsive.isMobile ? 12 : 13,
+                  cursor: 'pointer',
+                  transition: 'background-color 0.15s, color 0.15s',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.04)'
+                  e.currentTarget.style.color = '#cbd5e1'
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = 'transparent'
+                  e.currentTarget.style.color = '#94a3b8'
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmCounterDistribution}
+                disabled={!canConfirm}
+                style={{
+                  flex: 1,
+                  height: 30,
+                  padding: '0 10px',
+                  backgroundColor: canConfirm ? 'rgba(22, 163, 74, 0.9)' : 'transparent',
+                  color: canConfirm ? 'white' : '#64748b',
+                  border: `1px solid ${canConfirm ? '#4ade80' : 'rgba(255, 255, 255, 0.08)'}`,
+                  borderRadius: 5,
+                  fontWeight: 600,
+                  fontSize: responsive.isMobile ? 12 : 13,
+                  cursor: canConfirm ? 'pointer' : 'not-allowed',
+                  transition: 'background-color 0.15s, border-color 0.15s',
+                }}
+              >
+                Confirm
+              </button>
+            </div>
+          </div>
+        )
+      })()}
 
       {/* Action menu for selected card - hidden in spectator mode */}
       {!spectatorMode && <ActionMenu />}

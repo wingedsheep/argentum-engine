@@ -45,13 +45,16 @@ export interface ComputePhasesOptions {
 export function computePhases(actionInfo: LegalActionInfo, options?: ComputePhasesOptions): PipelinePhase[] {
   const phases: PipelinePhase[] = []
 
-  // 1. Counter distribution (X cost with counter removal creatures)
-  //    OR X selection (plain X cost / repeatable ability)
-  if (
-    actionInfo.hasXCost &&
-    actionInfo.additionalCostInfo?.counterRemovalCreatures &&
-    actionInfo.additionalCostInfo.counterRemovalCreatures.length > 0
-  ) {
+  // 1. Counter distribution
+  //    - X cost with counter removal creatures (Remove X +1/+1 counters), OR
+  //    - Fixed distributed cost (RemoveCountersFromYourCreatures, e.g. Dawnhand Dissident)
+  const hasCounterCreatures =
+    (actionInfo.additionalCostInfo?.counterRemovalCreatures?.length ?? 0) > 0
+  const hasFixedCounterCost =
+    (actionInfo.additionalCostInfo?.distributedCounterRemovalTotal ?? 0) > 0
+  if (actionInfo.hasXCost && hasCounterCreatures) {
+    phases.push({ type: 'counterDistribution' })
+  } else if (hasFixedCounterCost && hasCounterCreatures) {
     phases.push({ type: 'counterDistribution' })
   } else if (actionInfo.hasXCost) {
     phases.push({ type: 'xSelection' })
@@ -163,6 +166,17 @@ export function mergeResult(
           xValue: result.xValue,
           costPayment: {
             ...action.costPayment,
+            counterRemovals: result.counterRemovals,
+          },
+        }
+      }
+      if (action.type === 'CastSpell') {
+        // Fixed distributed counter cost (Dawnhand Dissident's linked-exile cost) —
+        // no xValue to set; the server validates that the totals match.
+        return {
+          ...action,
+          additionalCostPayment: {
+            ...action.additionalCostPayment,
             counterRemovals: result.counterRemovals,
           },
         }
@@ -324,12 +338,16 @@ export function enterPhase(
       for (const creature of counterCreatures) {
         distribution[creature.entityId] = 0
       }
+      const fixedTotal = actionInfo.additionalCostInfo?.distributedCounterRemovalTotal
       store.startCounterDistribution({
         actionInfo,
         cardName: actionInfo.description,
         xValue: 0,
         creatures: counterCreatures,
         distribution,
+        ...(fixedTotal && fixedTotal > 0
+          ? { requiredTotal: fixedTotal, description: actionInfo.additionalCostInfo!.description }
+          : {}),
       })
       break
     }

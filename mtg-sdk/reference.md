@@ -1079,7 +1079,7 @@ Set via `staticAbility { ability = ... }`:
 - `MayCastSelfFromZones(zones: List<Zone>)` — intrinsic permission to cast this card from specified zones (e.g., graveyard, exile)
 - `MayCastFromGraveyardWithLifeCost(filter, lifeCost, duringYourTurnOnly)` — controller may cast matching spells from graveyard by paying life (e.g., Festival of Embers)
 - `MayPlayPermanentsFromGraveyard` — during each of your turns, play a land and cast a permanent spell of each type from your graveyard (Muldrotha). Tracks per-type usage via `GraveyardPlayPermissionUsedComponent` on the source permanent, cleared at end of turn.
-- `GrantMayCastFromLinkedExile(filter: GameObjectFilter)` — you may cast cards exiled with this permanent that match the filter (e.g., Rona, Disciple of Gix). Works with LinkedExileComponent.
+- `GrantMayCastFromLinkedExile(filter, duringYourTurnOnly = false, additionalCost = null)` — you may cast cards exiled with this permanent that match the filter (Rona, Disciple of Gix). `duringYourTurnOnly` restricts the permission to the controller's turn; `additionalCost` (any `AdditionalCost`) must be paid alongside the spell's normal costs (e.g., Dawnhand Dissident's `RemoveCountersFromYourCreatures(3)`). Works with `LinkedExileComponent`.
 - `LookAtFaceDownCreatures` — look at face-down creatures you don't control any time
 - `PreventCycling` — players can't cycle cards
 - `PreventManaPoolEmptying` — players don't lose unspent mana as steps and phases end
@@ -1178,6 +1178,7 @@ Used via `additionalCost(...)` in card DSL for spell additional costs:
 - `AdditionalCost.ExileVariableCards(minCount, filter, fromZone)` — Variable exile cost (Chill Haunting)
 - `AdditionalCost.TapPermanents(count, filter)` — Convoke-style
 - `AdditionalCost.BlightOrPay(blightAmount, alternativeManaCost)` — Blight N or pay extra mana (Wild Unraveling)
+- `AdditionalCost.RemoveCountersFromYourCreatures(totalCount)` — remove N counters distributed across creatures you control (any counter types qualify); payment supplied via `AdditionalCostPayment.distributedCounterRemovals` (Dawnhand Dissident's linked-exile cost)
 
 CostZone enum: `HAND`, `GRAVEYARD`, `LIBRARY`, `BATTLEFIELD`
 

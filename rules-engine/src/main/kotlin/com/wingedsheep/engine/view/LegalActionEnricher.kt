@@ -133,7 +133,8 @@ class LegalActionEnricher(
         beholdCount = beholdCount,
         counterRemovalCreatures = counterRemovalCreatures.map { it.toDto() },
         validBlightTargets = validBlightTargets,
-        blightAmount = blightAmount
+        blightAmount = blightAmount,
+        distributedCounterRemovalTotal = distributedCounterRemovalTotal
     )
 
     private fun ConvokeCreatureData.toDto() = ConvokeCreatureInfo(

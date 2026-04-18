@@ -193,7 +193,12 @@ data class AdditionalCostData(
     val beholdCount: Int = 0,
     val counterRemovalCreatures: List<CounterRemovalCreatureData> = emptyList(),
     val validBlightTargets: List<EntityId> = emptyList(),
-    val blightAmount: Int = 0
+    val blightAmount: Int = 0,
+    /**
+     * For [AdditionalCost.RemoveCountersFromYourCreatures]: total counters to remove
+     * across all creatures you control (any counter types qualify).
+     */
+    val distributedCounterRemovalTotal: Int = 0
 )
 
 /**

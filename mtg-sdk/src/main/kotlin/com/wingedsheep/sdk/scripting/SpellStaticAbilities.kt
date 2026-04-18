@@ -86,15 +86,43 @@ data class GrantAlternativeCastingCost(
  * When this permanent leaves the battlefield, the static ability naturally ceases to apply
  * and the exiled cards can no longer be cast. The cards remain in exile.
  *
- * Used by Rona, Disciple of Gix and similar cards.
+ * Used by Rona, Disciple of Gix and similar cards. Dawnhand Dissident uses the
+ * [duringYourTurnOnly] timing restriction and the [additionalCost] gate (a distributed
+ * counter-removal) to gate its reanimation ability.
+ *
+ * @property filter Which exiled cards can be cast
+ * @property duringYourTurnOnly If true, only legal during the controller's turn
+ * @property additionalCost Optional additional cost that must be paid alongside the spell's mana cost
  */
 @SerialName("GrantMayCastFromLinkedExile")
 @Serializable
 data class GrantMayCastFromLinkedExile(
-    val filter: GameObjectFilter = GameObjectFilter.Companion.Nonland
+    val filter: GameObjectFilter = GameObjectFilter.Companion.Nonland,
+    val duringYourTurnOnly: Boolean = false,
+    val additionalCost: AdditionalCost? = null,
+    /**
+     * When true, restricts the permission to cards owned by the granter's controller.
+     * Dawnhand Dissident's "cards you own exiled with this creature" — exiling an
+     * opponent's graveyard card is still permitted, but only the exiler can ever
+     * cast it, not the granter, so those stripped cards sit in exile permanently.
+     */
+    val ownedByYou: Boolean = false
 ) : StaticAbility {
-    override val description: String = "You may cast ${filter.description} cards exiled with this permanent."
-    override fun applyTextReplacement(replacer: TextReplacer): StaticAbility = this
+    override val description: String = buildString {
+        if (duringYourTurnOnly) append("During your turn, y") else append("Y")
+        append("ou may cast ${filter.description} ")
+        if (ownedByYou) append("cards you own ")
+        else append("cards ")
+        append("exiled with this permanent")
+        if (additionalCost != null) append(" by ${additionalCost.description.lowercase()} in addition to paying their other costs")
+        append(".")
+    }
+    override fun applyTextReplacement(replacer: TextReplacer): StaticAbility {
+        val newFilter = filter.applyTextReplacement(replacer)
+        val newAdditional = additionalCost?.applyTextReplacement(replacer)
+        if (newFilter === filter && newAdditional === additionalCost) return this
+        return copy(filter = newFilter, additionalCost = newAdditional)
+    }
 }
 
 /**

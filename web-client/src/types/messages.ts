@@ -639,6 +639,11 @@ export interface AdditionalCostInfo {
   readonly counterRemovalCreatures?: readonly CounterRemovalCreatureInfo[]
   readonly validBlightTargets?: readonly EntityId[]
   readonly blightAmount?: number
+  /**
+   * Fixed total counters to remove across creatures you control for
+   * `RemoveCountersFromYourCreatures` costs (e.g. Dawnhand Dissident's cast cost).
+   */
+  readonly distributedCounterRemovalTotal?: number
 }
 
 export interface CounterRemovalCreatureInfo {
