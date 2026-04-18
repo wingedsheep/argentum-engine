@@ -383,6 +383,208 @@ class ExtendedManaSystemTest : FunSpec({
             mountains.count { driver.isTapped(it) } shouldBe 2
             mountains.count { !driver.isTapped(it) } shouldBe 2
         }
+
+        // CR 107.4e: a hybrid mana symbol is a colored mana symbol — {W/U} is both white and blue.
+        // CR 702.51a: convoke says "For each colored mana in this spell's total cost, you may tap
+        // an untapped creature of that color you control rather than pay that mana." A white
+        // creature tapping for convoke therefore pays for one half of a {W/U} pip (choosing the
+        // white half), and a blue creature pays for the other (choosing the blue half).
+        test("convoke pays hybrid pip when creature matches one of the hybrid's colors") {
+            val driver = createDriver()
+            driver.initMirrorMatch(
+                deck = Deck.of(
+                    "Plains" to 10,
+                    "Island" to 10,
+                    "Merrow Skyswimmer" to 4,
+                    "Savannah Lions" to 4,
+                    "Phantom Warrior" to 4,
+                )
+            )
+
+            val activePlayer = driver.activePlayer!!
+            driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
+
+            // Put Merrow Skyswimmer (cost {3}{W/U}{W/U}, convoke) in hand.
+            val skyswimmer = driver.putCardInHand(activePlayer, "Merrow Skyswimmer")
+
+            // Give exactly 3 untapped lands — not enough to cover both hybrid pips without convoke.
+            val lands = listOf(
+                driver.putLandOnBattlefield(activePlayer, "Plains"),
+                driver.putLandOnBattlefield(activePlayer, "Plains"),
+                driver.putLandOnBattlefield(activePlayer, "Island"),
+            )
+
+            // A white creature and a blue creature, both ready to tap.
+            val whiteCreature = driver.putCreatureOnBattlefield(activePlayer, "Savannah Lions")
+            val blueCreature = driver.putCreatureOnBattlefield(activePlayer, "Phantom Warrior")
+            driver.removeSummoningSickness(whiteCreature)
+            driver.removeSummoningSickness(blueCreature)
+
+            // Convoke declaration: white creature pays one {W/U} as its white half, blue
+            // creature pays the other {W/U} as its blue half. The 3 lands cover the {3}.
+            val result = driver.submit(
+                CastSpell(
+                    playerId = activePlayer,
+                    cardId = skyswimmer,
+                    targets = emptyList(),
+                    paymentStrategy = PaymentStrategy.Explicit(lands),
+                    alternativePayment = AlternativePaymentChoice(
+                        convokedCreatures = mapOf(
+                            whiteCreature to ConvokePayment(Color.WHITE),
+                            blueCreature to ConvokePayment(Color.BLUE),
+                        )
+                    )
+                )
+            )
+
+            result.isSuccess shouldBe true
+            driver.stackSize shouldBe 1
+            driver.getTopOfStackName() shouldBe "Merrow Skyswimmer"
+            driver.isTapped(whiteCreature) shouldBe true
+            driver.isTapped(blueCreature) shouldBe true
+        }
+
+        test("convoke pays hybrid pips even when lands produce a non-matching color") {
+            // Regression check for the hybrid-convoke fix: the generic portion can be
+            // covered by any mana, so three green lands are enough to pay {3} while
+            // convoke handles both {W/U} hybrid pips via a white and a blue creature.
+            val driver = createDriver()
+            driver.initMirrorMatch(
+                deck = Deck.of(
+                    "Forest" to 10,
+                    "Merrow Skyswimmer" to 4,
+                    "Savannah Lions" to 4,
+                    "Phantom Warrior" to 4,
+                )
+            )
+
+            val activePlayer = driver.activePlayer!!
+            driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
+
+            val skyswimmer = driver.putCardInHand(activePlayer, "Merrow Skyswimmer")
+
+            val forests = (1..3).map { driver.putLandOnBattlefield(activePlayer, "Forest") }
+
+            val whiteCreature = driver.putCreatureOnBattlefield(activePlayer, "Savannah Lions")
+            val blueCreature = driver.putCreatureOnBattlefield(activePlayer, "Phantom Warrior")
+            driver.removeSummoningSickness(whiteCreature)
+            driver.removeSummoningSickness(blueCreature)
+
+            val result = driver.submit(
+                CastSpell(
+                    playerId = activePlayer,
+                    cardId = skyswimmer,
+                    targets = emptyList(),
+                    paymentStrategy = PaymentStrategy.Explicit(forests),
+                    alternativePayment = AlternativePaymentChoice(
+                        convokedCreatures = mapOf(
+                            whiteCreature to ConvokePayment(Color.WHITE),
+                            blueCreature to ConvokePayment(Color.BLUE),
+                        )
+                    )
+                )
+            )
+
+            result.isSuccess shouldBe true
+            driver.stackSize shouldBe 1
+            driver.getTopOfStackName() shouldBe "Merrow Skyswimmer"
+            forests.all { driver.isTapped(it) } shouldBe true
+            driver.isTapped(whiteCreature) shouldBe true
+            driver.isTapped(blueCreature) shouldBe true
+        }
+
+        test("convoke with green creatures cannot cover {W/U} hybrid pips (fails)") {
+            // Inverse of the green-mana test above: 3 Forests still cover the {3} generic
+            // portion, but the two convoke creatures are green. A {W/U} hybrid is a colored
+            // symbol of white and blue only (CR 107.4e), so a green creature can't pay it
+            // as colored. Green mana also can't pay {W/U} directly, so the cast must fail
+            // — demonstrating that the earlier success depends on the creatures' colors
+            // matching a half of the hybrid, not just on any convoke creature being tapped.
+            val driver = createDriver()
+            driver.initMirrorMatch(
+                deck = Deck.of(
+                    "Forest" to 10,
+                    "Merrow Skyswimmer" to 4,
+                    "Centaur Courser" to 4,
+                )
+            )
+
+            val activePlayer = driver.activePlayer!!
+            driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
+
+            val skyswimmer = driver.putCardInHand(activePlayer, "Merrow Skyswimmer")
+            val forests = (1..3).map { driver.putLandOnBattlefield(activePlayer, "Forest") }
+            val green1 = driver.putCreatureOnBattlefield(activePlayer, "Centaur Courser")
+            val green2 = driver.putCreatureOnBattlefield(activePlayer, "Centaur Courser")
+            driver.removeSummoningSickness(green1)
+            driver.removeSummoningSickness(green2)
+
+            val result = driver.submit(
+                CastSpell(
+                    playerId = activePlayer,
+                    cardId = skyswimmer,
+                    targets = emptyList(),
+                    paymentStrategy = PaymentStrategy.Explicit(forests),
+                    alternativePayment = AlternativePaymentChoice(
+                        convokedCreatures = mapOf(
+                            green1 to ConvokePayment(Color.GREEN),
+                            green2 to ConvokePayment(Color.GREEN),
+                        )
+                    )
+                )
+            )
+
+            result.isSuccess shouldBe false
+            driver.stackSize shouldBe 0
+            // Creatures and lands were never tapped because payment failed.
+            driver.isTapped(green1) shouldBe false
+            driver.isTapped(green2) shouldBe false
+            forests.all { !driver.isTapped(it) } shouldBe true
+        }
+
+        test("convoke pays both hybrid pips with two creatures of the same qualifying color") {
+            val driver = createDriver()
+            driver.initMirrorMatch(
+                deck = Deck.of(
+                    "Plains" to 10,
+                    "Merrow Skyswimmer" to 4,
+                    "Savannah Lions" to 4,
+                )
+            )
+
+            val activePlayer = driver.activePlayer!!
+            driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
+
+            val skyswimmer = driver.putCardInHand(activePlayer, "Merrow Skyswimmer")
+
+            val lands = (1..3).map { driver.putLandOnBattlefield(activePlayer, "Plains") }
+
+            val lion1 = driver.putCreatureOnBattlefield(activePlayer, "Savannah Lions")
+            val lion2 = driver.putCreatureOnBattlefield(activePlayer, "Savannah Lions")
+            driver.removeSummoningSickness(lion1)
+            driver.removeSummoningSickness(lion2)
+
+            // Both white creatures choose the white half of the two {W/U} pips.
+            val result = driver.submit(
+                CastSpell(
+                    playerId = activePlayer,
+                    cardId = skyswimmer,
+                    targets = emptyList(),
+                    paymentStrategy = PaymentStrategy.Explicit(lands),
+                    alternativePayment = AlternativePaymentChoice(
+                        convokedCreatures = mapOf(
+                            lion1 to ConvokePayment(Color.WHITE),
+                            lion2 to ConvokePayment(Color.WHITE),
+                        )
+                    )
+                )
+            )
+
+            result.isSuccess shouldBe true
+            driver.stackSize shouldBe 1
+            driver.isTapped(lion1) shouldBe true
+            driver.isTapped(lion2) shouldBe true
+        }
     }
 
     // =========================================================================

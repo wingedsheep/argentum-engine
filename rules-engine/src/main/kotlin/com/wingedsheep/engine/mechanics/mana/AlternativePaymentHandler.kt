@@ -207,16 +207,28 @@ class AlternativePaymentHandler(
 
     /**
      * Reduce colored mana cost by one of the specified color.
-     * If no matching colored symbol exists, does nothing.
+     *
+     * Under CR 107.4e a hybrid symbol like {W/U} is itself a colored mana symbol of both
+     * colors, and CR 702.51a lets convoke pay "colored mana" by tapping a creature of that
+     * color — so a white creature paying convoke can cover a {W/U} pip (choosing its white
+     * half). Prefer an exact colored match first so we don't waste a hybrid pip when a plain
+     * colored pip is available.
      */
     private fun reduceColoredCost(cost: ManaCost, color: Color): ManaCost {
-        val coloredSymbol = ManaSymbol.Colored(color)
         val mutableSymbols = cost.symbols.toMutableList()
+        val coloredSymbol = ManaSymbol.Colored(color)
 
-        // Remove the first matching colored symbol
-        val index = mutableSymbols.indexOfFirst { it == coloredSymbol }
-        if (index >= 0) {
-            mutableSymbols.removeAt(index)
+        val exactIndex = mutableSymbols.indexOfFirst { it == coloredSymbol }
+        if (exactIndex >= 0) {
+            mutableSymbols.removeAt(exactIndex)
+            return ManaCost(mutableSymbols)
+        }
+
+        val hybridIndex = mutableSymbols.indexOfFirst { symbol ->
+            symbol is ManaSymbol.Hybrid && (symbol.color1 == color || symbol.color2 == color)
+        }
+        if (hybridIndex >= 0) {
+            mutableSymbols.removeAt(hybridIndex)
         }
 
         return ManaCost(mutableSymbols)

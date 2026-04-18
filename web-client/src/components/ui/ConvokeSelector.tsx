@@ -1,12 +1,15 @@
 import { useMemo } from 'react'
 import { useGameStore, ConvokeCreatureSelection } from '@/store/gameStore.ts'
+import { Color, ColorSymbols } from '@/types/enums'
+import { ManaSymbol } from './ManaSymbols'
 
-const COLOR_CSS: Record<string, string> = {
-  W: '#f8f6d8',
-  U: '#0e68ab',
-  B: '#150b00',
-  R: '#d3202a',
-  G: '#00733e',
+/**
+ * Convert a backend Color enum name (e.g. "WHITE") to the matching mana-pip letter
+ * ("W") used inside parsed cost strings. Returns the input unchanged if it's already
+ * a letter or an unrecognised value.
+ */
+function toPipLetter(color: string): string {
+  return ColorSymbols[color as Color] ?? color
 }
 
 /**
@@ -24,7 +27,22 @@ function parseManaCost(manaCost: string): string[] {
 }
 
 /**
+ * True if [symbol] is a hybrid pip (e.g. "W/U") whose halves include [color].
+ * Per CR 107.4e a hybrid mana symbol is a colored mana symbol of both component colors.
+ */
+function hybridCoversColor(symbol: string, color: string): boolean {
+  if (!symbol.includes('/')) return false
+  const halves = symbol.split('/')
+  return halves.includes(color)
+}
+
+/**
  * Calculate remaining mana cost after applying convoke selections.
+ *
+ * Per CR 702.51a, convoke pays a colored mana pip by tapping a creature of that color.
+ * Hybrid symbols (CR 107.4e) are colored symbols of both component colors, so a creature
+ * paying with one of the hybrid's colors covers the pip. Prefer exact colored matches
+ * before hybrids so we don't waste a hybrid pip on a plain colored requirement.
  */
 function calculateRemainingCost(
   originalSymbols: string[],
@@ -34,9 +52,15 @@ function calculateRemainingCost(
 
   for (const creature of selectedCreatures) {
     if (creature.payingColor) {
-      const colorIndex = remaining.indexOf(creature.payingColor)
-      if (colorIndex >= 0) {
-        remaining.splice(colorIndex, 1)
+      const pip = toPipLetter(creature.payingColor)
+      const exactIndex = remaining.indexOf(pip)
+      if (exactIndex >= 0) {
+        remaining.splice(exactIndex, 1)
+        continue
+      }
+      const hybridIndex = remaining.findIndex(s => hybridCoversColor(s, pip))
+      if (hybridIndex >= 0) {
+        remaining.splice(hybridIndex, 1)
       }
     } else {
       const genericIndex = remaining.findIndex(s => /^\d+$/.test(s))
@@ -117,14 +141,14 @@ export function ConvokeSelector() {
       <span style={styles.costLabel}>Cost:</span>
       <div style={styles.manaSymbols}>
         {originalSymbols.map((symbol, i) => (
-          <ManaSymbol key={i} symbol={symbol} />
+          <ManaSymbol key={i} symbol={symbol} size={18} />
         ))}
       </div>
       <span style={styles.arrow}>→</span>
       <div style={styles.manaSymbols}>
         {remainingSymbols.length > 0 ? (
           remainingSymbols.map((symbol, i) => (
-            <ManaSymbol key={i} symbol={symbol} />
+            <ManaSymbol key={i} symbol={symbol} size={18} />
           ))
         ) : (
           <span style={styles.freeCast}>Free!</span>
@@ -144,22 +168,6 @@ export function ConvokeSelector() {
         {isAbility ? 'Activate' : 'Cast'}
       </button>
     </div>
-  )
-}
-
-function ManaSymbol({ symbol }: { symbol: string }) {
-  const isColor = symbol in COLOR_CSS
-
-  return (
-    <span
-      style={{
-        ...styles.manaSymbol,
-        backgroundColor: isColor ? COLOR_CSS[symbol] : '#888',
-        color: isColor && (symbol === 'W' || symbol === 'G') ? '#000' : '#fff',
-      }}
-    >
-      {symbol}
-    </span>
   )
 }
 
@@ -195,17 +203,8 @@ const styles: Record<string, React.CSSProperties> = {
   },
   manaSymbols: {
     display: 'flex',
-    gap: 3,
-  },
-  manaSymbol: {
-    width: 22,
-    height: 22,
-    borderRadius: 11,
-    display: 'flex',
     alignItems: 'center',
-    justifyContent: 'center',
-    fontSize: 11,
-    fontWeight: 'bold',
+    gap: 3,
   },
   arrow: {
     color: '#666',

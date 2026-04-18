@@ -38,8 +38,17 @@ export function getRemainingCostSymbols(originalSymbols: string[], delveCount: n
 
 /**
  * Build the remaining mana cost symbols after applying convoke creatures.
- * Each creature pays for one colored symbol (if its color matches) or one generic mana.
+ * Each creature pays for one colored symbol (exact or matching half of a hybrid,
+ * per CR 107.4e / 702.51a) or one generic mana.
+ *
+ * Convoke payment colors arrive as backend `Color` enum names ("WHITE", "BLUE"...)
+ * while cost symbols parse as pip letters ("W", "U"...), so both letter and
+ * enum-name inputs are accepted and normalised to a pip letter for matching.
  */
+const COLOR_NAME_TO_PIP: Record<string, string> = {
+  WHITE: 'W', BLUE: 'U', BLACK: 'B', RED: 'R', GREEN: 'G',
+}
+
 export function getRemainingCostAfterConvoke(
   originalSymbols: string[],
   convokedCreatures: Record<string, { color: string | null }>
@@ -48,9 +57,16 @@ export function getRemainingCostAfterConvoke(
 
   for (const { color } of Object.values(convokedCreatures)) {
     if (color) {
-      // Creature pays for a colored symbol
-      const idx = remaining.indexOf(color)
-      if (idx >= 0) remaining.splice(idx, 1)
+      const pip = COLOR_NAME_TO_PIP[color] ?? color
+      const exactIdx = remaining.indexOf(pip)
+      if (exactIdx >= 0) {
+        remaining.splice(exactIdx, 1)
+        continue
+      }
+      const hybridIdx = remaining.findIndex(
+        s => s.includes('/') && s.split('/').includes(pip)
+      )
+      if (hybridIdx >= 0) remaining.splice(hybridIdx, 1)
     } else {
       // Creature pays for generic mana
       const gIdx = remaining.findIndex(s => /^\d+$/.test(s))

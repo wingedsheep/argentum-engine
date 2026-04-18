@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useGameStore } from '@/store/gameStore.ts'
 import { useHasLegalActions } from '@/store/selectors.ts'
 import type { ClientCard, EntityId } from '@/types'
+import { Color, ColorSymbols } from '@/types/enums'
 import { getCardImageUrl, getScryfallFallbackUrl, MORPH_FACE_DOWN_IMAGE_URL } from '@/utils/cardImages.ts'
 import { useInteraction } from '@/hooks/useInteraction.ts'
 import { ManaCost } from '@/components/ui/ManaSymbols.tsx'
@@ -592,21 +593,33 @@ export function GameCard({
       if (isSelectedConvokeCreature) {
         toggleConvokeCreature(card.id, card.name, null)
       } else {
-        // Determine best color payment based on creature colors and remaining cost
+        // Determine best color payment based on creature colors and remaining cost.
+        // The backend sends creature colors as Color enum names ("WHITE", "BLUE"...)
+        // but mana costs parse as pip letters ("W", "U"...), so we normalise to pip
+        // letters for comparison. payingColor submitted back to the server stays as
+        // the Color enum name so kotlinx serialization can deserialize it.
         const creatureInfo = convokeSelectionState.validCreatures.find((c) => c.entityId === card.id)
-        const colors = creatureInfo?.colors ?? []
+        const colorNames = creatureInfo?.colors ?? []
+        const colorPips = colorNames.map(c => ColorSymbols[c as Color] ?? c)
         // Parse remaining cost to find colored symbols still needed
         const manaCost = convokeSelectionState.manaCost
         const symbols: string[] = []
         const regex = /\{([^}]+)\}/g
         let m
         while ((m = regex.exec(manaCost)) !== null) symbols.push(m[1]!)
-        // Remove symbols already covered by existing selections
+        // Remove symbols already covered by existing selections. Hybrid pips (CR 107.4e)
+        // are colored symbols of both halves, so a previous W selection can consume a
+        // {W/U} pip. Prefer exact colored matches before hybrids to avoid wasting pips.
+        const hybridCovers = (sym: string, pip: string): boolean =>
+          sym.includes('/') && sym.split('/').includes(pip)
         const remaining = [...symbols]
         for (const sel of convokeSelectionState.selectedCreatures) {
           if (sel.payingColor) {
-            const idx = remaining.indexOf(sel.payingColor)
-            if (idx >= 0) remaining.splice(idx, 1)
+            const pip = ColorSymbols[sel.payingColor as Color] ?? sel.payingColor
+            const idx = remaining.indexOf(pip)
+            if (idx >= 0) { remaining.splice(idx, 1); continue }
+            const hIdx = remaining.findIndex(s => hybridCovers(s, pip))
+            if (hIdx >= 0) remaining.splice(hIdx, 1)
           } else {
             const gIdx = remaining.findIndex(s => /^\d+$/.test(s))
             if (gIdx >= 0) {
@@ -616,10 +629,16 @@ export function GameCard({
             }
           }
         }
-        // Pick a color this creature can pay that's still needed
+        // Pick a color this creature can pay that's still needed. Exact colored pips
+        // first, then hybrid pips where one half matches.
         let payingColor: string | null = null
-        for (const color of colors) {
-          if (remaining.includes(color)) { payingColor = color; break }
+        for (let i = 0; i < colorPips.length; i++) {
+          if (remaining.includes(colorPips[i]!)) { payingColor = colorNames[i]!; break }
+        }
+        if (!payingColor) {
+          for (let i = 0; i < colorPips.length; i++) {
+            if (remaining.some(s => hybridCovers(s, colorPips[i]!))) { payingColor = colorNames[i]!; break }
+          }
         }
         toggleConvokeCreature(card.id, card.name, payingColor)
       }
