@@ -24,6 +24,7 @@ object LorwynEclipsedSet {
         AuroraAwakener,
         BarbedBloodletter,
         Blossombind,
+        BoulderDash,
         BramblebackBrute,
         BrigidsCommand,
         Catharsis,
