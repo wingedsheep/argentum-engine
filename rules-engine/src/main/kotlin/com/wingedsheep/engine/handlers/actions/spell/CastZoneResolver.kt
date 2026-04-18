@@ -14,6 +14,7 @@ import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.identity.MayPlayFromExileComponent
 import com.wingedsheep.engine.state.components.identity.PlayWithoutPayingCostComponent
 import com.wingedsheep.engine.state.components.identity.WarpExiledComponent
+import com.wingedsheep.engine.state.components.player.MayCastCreaturesFromGraveyardWithForageComponent
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.CastSpellTypesFromTopOfLibrary
@@ -196,6 +197,23 @@ class CastZoneResolver(
         if (!inAnyExile) return false
         val warpExiled = state.getEntity(cardId)?.get<WarpExiledComponent>() ?: return false
         return warpExiled.controllerId == playerId
+    }
+
+    /**
+     * Check if a creature card in the graveyard can be cast via the forage permission
+     * granted by `MayCastCreaturesFromGraveyardWithForageComponent` (e.g. Osteomancer Adept).
+     */
+    fun hasMayCastCreaturesFromGraveyardWithForage(
+        state: GameState,
+        playerId: EntityId,
+        cardId: EntityId,
+        cardComponent: CardComponent
+    ): Boolean {
+        val graveyardZone = ZoneKey(playerId, Zone.GRAVEYARD)
+        if (cardId !in state.getZone(graveyardZone)) return false
+        if (!cardComponent.typeLine.isCreature) return false
+        val playerEntity = state.getEntity(playerId) ?: return false
+        return playerEntity.has<MayCastCreaturesFromGraveyardWithForageComponent>()
     }
 
     /**

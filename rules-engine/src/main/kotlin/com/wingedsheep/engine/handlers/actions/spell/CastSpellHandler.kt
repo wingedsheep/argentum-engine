@@ -55,6 +55,7 @@ import com.wingedsheep.engine.state.components.player.ManaSpentOnSpellsThisTurnC
 import com.wingedsheep.sdk.core.CardType
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.ManaCost
+import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.AdditionalCost
@@ -140,8 +141,16 @@ class CastSpellHandler(
             zoneResolver.hasWarpFromExilePermission(state, action.playerId, action.cardId)
         val hasGraveyardLifeCost = !inHand && !onTopOfLibrary && !mayPlayFromExile && !mayCastFromZone && !mayCastFromGraveyard && !hasFlashback && !hasWarpFromExile &&
             action.graveyardLifeCost > 0 && action.cardId in state.getZone(ZoneKey(action.playerId, Zone.GRAVEYARD))
-        if (!inHand && !onTopOfLibrary && !mayPlayFromExile && !mayCastFromZone && !mayCastFromGraveyard && !hasFlashback && !hasWarpFromExile && !hasGraveyardLifeCost) {
+        val hasForageFromGraveyard = !inHand && !onTopOfLibrary && !mayPlayFromExile && !mayCastFromZone && !mayCastFromGraveyard && !hasFlashback && !hasWarpFromExile && !hasGraveyardLifeCost &&
+            zoneResolver.hasMayCastCreaturesFromGraveyardWithForage(state, action.playerId, action.cardId, cardComponent)
+        if (!inHand && !onTopOfLibrary && !mayPlayFromExile && !mayCastFromZone && !mayCastFromGraveyard && !hasFlashback && !hasWarpFromExile && !hasGraveyardLifeCost && !hasForageFromGraveyard) {
             return "Card is not in your hand"
+        }
+
+        if (hasForageFromGraveyard) {
+            if (!costHandler.canPayAdditionalCost(state, AdditionalCost.Forage, action.playerId)) {
+                return "Cannot forage: need 3 other cards in graveyard or a Food"
+            }
         }
 
         val cardDef = cardRegistry.getCard(cardComponent.cardDefinitionId)
@@ -1199,6 +1208,48 @@ class CastSpellHandler(
                 val existing = container.get<ManaSpentOnSpellsThisTurnComponent>()
                     ?: ManaSpentOnSpellsThisTurnComponent()
                 container.with(existing.copy(totalSpent = existing.totalSpent + manaSpentThisCast))
+            }
+        }
+
+        // Pay forage additional cost when casting a creature from graveyard via
+        // MayCastCreaturesFromGraveyardWithForageComponent (e.g., Osteomancer Adept).
+        // Auto-pay: prefer sacrificing a Food; otherwise exile 3 other graveyard cards.
+        val isForageCast = zoneResolver.hasMayCastCreaturesFromGraveyardWithForage(
+            currentState, action.playerId, action.cardId, cardComponent
+        ) && action.cardId in currentState.getZone(ZoneKey(action.playerId, Zone.GRAVEYARD))
+        if (isForageCast) {
+            val projected = currentState.projectedState
+            val foods = currentState.getBattlefield().filter { permId ->
+                currentState.getEntity(permId) != null &&
+                    projected.getController(permId) == action.playerId &&
+                    projected.hasSubtype(permId, Subtype.FOOD.value)
+            }
+            if (foods.isNotEmpty()) {
+                val foodId = foods.first()
+                val foodContainer = currentState.getEntity(foodId)
+                val foodName = foodContainer?.get<CardComponent>()?.name ?: "Food"
+                val foodController = foodContainer?.get<ControllerComponent>()?.playerId ?: action.playerId
+                currentState = com.wingedsheep.engine.handlers.effects.ZoneTransitionService
+                    .trackFoodSacrifice(currentState, listOf(foodId), foodController)
+                val transition = com.wingedsheep.engine.handlers.effects.ZoneTransitionService
+                    .moveToZone(currentState, foodId, Zone.GRAVEYARD)
+                currentState = transition.state
+                events.add(PermanentsSacrificedEvent(foodController, listOf(foodId), listOf(foodName)))
+                events.addAll(transition.events)
+            } else {
+                val graveyardZone = ZoneKey(action.playerId, Zone.GRAVEYARD)
+                val toExile = currentState.getZone(graveyardZone)
+                    .filter { it != action.cardId }
+                    .take(3)
+                if (toExile.size < 3) {
+                    return ExecutionResult.error(currentState, "Cannot forage: need 3 other cards in graveyard or a Food")
+                }
+                for (exileId in toExile) {
+                    val transition = com.wingedsheep.engine.handlers.effects.ZoneTransitionService
+                        .moveToZone(currentState, exileId, Zone.EXILE)
+                    currentState = transition.state
+                    events.addAll(transition.events)
+                }
             }
         }
 
