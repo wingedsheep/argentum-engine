@@ -53,6 +53,12 @@ interface GameCardProps {
   inHand?: boolean
   /** Force tapped visual (e.g. for attachments of tapped permanents) */
   forceTapped?: boolean
+  /** Suppress the built-in tap rotation even when the card is tapped. Used when an outer
+   * wrapper is rotating the entire attachment stack so this card doesn't double-rotate. */
+  suppressTapRotation?: boolean
+  /** Hide the keyword-ability icon overlay. Used for peeking attachments where only a
+   * sliver of the card is visible and the icons just clutter the parent underneath. */
+  hideKeywordIcons?: boolean
   /** Ghost card from graveyard (translucent, purple glow) */
   isGhost?: boolean
 }
@@ -71,6 +77,8 @@ export function GameCard({
   isOpponentCard = false,
   inHand = false,
   forceTapped = false,
+  suppressTapRotation = false,
+  hideKeywordIcons = false,
   isGhost = false,
 }: GameCardProps) {
   const selectCard = useGameStore((state) => state.selectCard)
@@ -172,7 +180,7 @@ export function GameCard({
   const hoveredCardId = useGameStore((state) => state.hoveredCardId)
   const autoTapPreview = useGameStore((state) => state.autoTapPreview)
 
-  const isTapped = card.isTapped || forceTapped
+  const isTapped = suppressTapRotation ? false : (card.isTapped || forceTapped)
   const isSelected = selectedCardId === card.id
   const isInAutoTapPreview = autoTapPreview?.includes(card.id) ?? false
   const isHovered = hoveredCardId === card.id
@@ -1397,7 +1405,7 @@ export function GameCard({
       })()}
 
       {/* Keyword ability icons (shown for face-up cards, and for face-down cards with granted keywords) */}
-      {battlefield && (card.keywords.length > 0 || (card.abilityFlags && card.abilityFlags.length > 0) || (card.protections && card.protections.length > 0)) && (
+      {battlefield && !hideKeywordIcons && (card.keywords.length > 0 || (card.abilityFlags && card.abilityFlags.length > 0) || (card.protections && card.protections.length > 0)) && (
         <KeywordIcons keywords={card.keywords} abilityFlags={card.abilityFlags ?? []} protections={card.protections ?? []} size={responsive.isMobile ? 14 : 18} />
       )}
 

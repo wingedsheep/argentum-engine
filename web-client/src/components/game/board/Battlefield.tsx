@@ -151,13 +151,21 @@ export function Battlefield({ isOpponent, spectatorMode = false }: { isOpponent:
     const collapsed = attachments.length >= ATTACHMENT_COLLAPSE_THRESHOLD
     const visibleAttachments = collapsed ? attachments.slice(0, 1) : attachments
     const visiblePeek = visibleAttachments.length * attachmentPeek
-    // When tapped, cards rotate 90deg so their visual width becomes the height
-    const cardVisualWidth = parentTapped ? cardHeight + 8 : responsive.battlefieldCardWidth
-
-    // Tapped: attachments peek horizontally (left offset) to avoid overlap with the rotation gap
-    // Untapped: attachments peek vertically (top offset) from above the parent card
-    const containerWidth = parentTapped ? cardVisualWidth + visiblePeek : cardVisualWidth
-    const containerHeight = parentTapped ? cardHeight : cardHeight + visiblePeek
+    const cardWidth = responsive.battlefieldCardWidth
+    // Lay out the whole stack (peeking attachments, main card, tab, click-catcher) in a
+    // portrait inner container. When the parent is tapped, rotate that inner container 90°
+    // so every element rotates together — no per-element offset math required. The outer
+    // container takes the rotated footprint so the flex row reserves landscape space.
+    const portraitWidth = cardWidth
+    const portraitHeight = cardHeight + visiblePeek
+    // A tapped (rotated) card is visually much wider than a portrait one, so the default
+    // row gap feels tight next to its upright neighbours. Reserve a bit of extra space
+    // inside the outer container so the rotated card doesn't sit flush against the next.
+    const tappedGutter = parentTapped ? (responsive.isMobile ? 18 : 28) : 0
+    const containerWidth = parentTapped ? portraitHeight + tappedGutter : portraitWidth
+    const containerHeight = parentTapped ? portraitWidth : portraitHeight
+    const tabHeight = responsive.isMobile ? 14 : 16
+    const actionable = collapsed ? hasActionableAttachment(attachments) : false
 
     return (
       <div
@@ -168,73 +176,89 @@ export function Battlefield({ isOpponent, spectatorMode = false }: { isOpponent:
           height: containerHeight,
         }}
       >
-        {/* Attachments peek from the parent card.
-         * When collapsed, the visible peek is non-interactive — clicks go through the overlay
-         * catcher below so the attachments browser is the single selection path. */}
-        {visibleAttachments.map((tagged, index) => {
-          const { card: attachment, kind } = tagged
-          // Attachments controlled by the player are interactive even on the opponent's battlefield
-          // (e.g., aura cast on opponent's creature — caster can still activate abilities)
-          const attachmentInteractive = !collapsed && !spectatorMode && attachment.controllerId === viewingPlayerId
-          return (
+        <div
+          style={{
+            position: 'absolute',
+            width: portraitWidth,
+            height: portraitHeight,
+            // Center the portrait inner inside the outer landscape box so rotation around
+            // the center keeps the visual centered in the reserved slot.
+            left: (containerWidth - portraitWidth) / 2,
+            top: (containerHeight - portraitHeight) / 2,
+            transform: parentTapped ? 'rotate(90deg)' : undefined,
+            transformOrigin: 'center center',
+          }}
+        >
+          {/* Attachments peek above the main card.
+           * When collapsed, the visible peek is non-interactive — clicks go through the overlay
+           * catcher below so the attachments browser is the single selection path. */}
+          {visibleAttachments.map((tagged, index) => {
+            const { card: attachment, kind } = tagged
+            // Attachments controlled by the player are interactive even on the opponent's battlefield
+            // (e.g., aura cast on opponent's creature — caster can still activate abilities)
+            const attachmentInteractive = !collapsed && !spectatorMode && attachment.controllerId === viewingPlayerId
+            return (
+              <div
+                key={attachment.id}
+                style={{
+                  position: 'absolute',
+                  left: 0,
+                  top: index * attachmentPeek,
+                  zIndex: index,
+                  pointerEvents: 'none',
+                }}
+              >
+                <GameCard
+                  card={attachment}
+                  interactive={attachmentInteractive}
+                  battlefield
+                  isOpponentCard={isOpponent}
+                  // Inner wrapper handles the tap rotation for the whole stack; individual
+                  // cards must stay unrotated so they don't double-rotate.
+                  suppressTapRotation
+                  hideKeywordIcons
+                  isGhost={kind === 'linkedExile'}
+                />
+              </div>
+            )
+          })}
+          {collapsed && (
             <div
-              key={attachment.id}
+              onClick={(e) => {
+                e.stopPropagation()
+                setBrowsingAttachmentsOf(group.card)
+              }}
+              title={`${attachments.length} attached — click to browse`}
               style={{
                 position: 'absolute',
-                left: parentTapped ? index * attachmentPeek : 0,
-                top: parentTapped ? 0 : index * attachmentPeek,
-                zIndex: index,
-                pointerEvents: 'none',
+                left: 0,
+                top: 0,
+                width: portraitWidth,
+                height: attachmentPeek + 6,
+                zIndex: visibleAttachments.length,
+                cursor: 'pointer',
+                pointerEvents: 'auto',
               }}
-            >
-              <GameCard
-                card={attachment}
-                interactive={attachmentInteractive}
-                battlefield
-                isOpponentCard={isOpponent}
-                forceTapped={parentTapped}
-                isGhost={kind === 'linkedExile'}
-              />
-            </div>
-          )
-        })}
-        {collapsed && (
-          <div
-            onClick={(e) => {
-              e.stopPropagation()
-              setBrowsingAttachmentsOf(group.card)
-            }}
-            title={`${attachments.length} attached — click to browse`}
-            style={{
-              position: 'absolute',
-              left: 0,
-              top: 0,
-              width: parentTapped ? attachmentPeek : cardVisualWidth,
-              height: parentTapped ? cardHeight : attachmentPeek + 6,
-              zIndex: visibleAttachments.length,
-              cursor: 'pointer',
-              pointerEvents: 'auto',
-            }}
-          />
-        )}
-        {/* Main card, on top */}
-        <div style={{
-          position: 'absolute',
-          left: parentTapped ? visiblePeek : 0,
-          top: parentTapped ? 0 : visiblePeek,
-          zIndex: visibleAttachments.length + 1,
-          pointerEvents: 'none',
-        }}>
-          <CardStack
-            group={group}
-            interactive={interactive}
-            isOpponentCard={isOpponent}
-          />
-        </div>
-        {collapsed && (() => {
-          const tabHeight = responsive.isMobile ? 14 : 16
-          const actionable = hasActionableAttachment(attachments)
-          return (
+            />
+          )}
+          {/* Main card, on top of the peeking attachments */}
+          <div style={{
+            position: 'absolute',
+            left: 0,
+            top: visiblePeek,
+            zIndex: visibleAttachments.length + 1,
+            pointerEvents: 'none',
+          }}>
+            <GameCard
+              card={group.card}
+              interactive={interactive}
+              battlefield
+              isOpponentCard={isOpponent}
+              // Suppress GameCard's own tap rotation — the outer wrapper rotates instead.
+              suppressTapRotation
+            />
+          </div>
+          {collapsed && (
             <button
               onClick={(e) => {
                 e.stopPropagation()
@@ -247,10 +271,10 @@ export function Battlefield({ isOpponent, spectatorMode = false }: { isOpponent:
               }
               style={{
                 position: 'absolute',
-                // Sticks up above the first attachment like a folder tab, anchored to the left.
-                // Bottom edge flush with the attachment's top so it looks like it's attached.
+                // Folder tab above the first peeking attachment. Rotates with the inner
+                // wrapper when the card is tapped, so it always follows the card.
                 top: -tabHeight + 1,
-                left: parentTapped ? 2 : 6,
+                left: 6,
                 height: tabHeight,
                 minWidth: tabHeight + 4,
                 background: 'rgba(124, 58, 237, 0.95)',
@@ -279,8 +303,8 @@ export function Battlefield({ isOpponent, spectatorMode = false }: { isOpponent:
             >
               {attachments.length}
             </button>
-          )
-        })()}
+          )}
+        </div>
       </div>
     )
   }
