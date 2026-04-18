@@ -375,14 +375,18 @@ class TriggerProcessor(
             )
         }
 
-        // Create the target selection decision
+        // Create the target selection decision. The effect description becomes the
+        // prominent hint banner so the player knows *what* they're targeting for
+        // (e.g., "Put 1 -1/-1 counter on target creature") rather than just
+        // seeing the generic "Choose target" label.
         val decisionResult = decisionHandler.createTargetDecision(
             state = state,
             playerId = trigger.controllerId,
             sourceId = trigger.sourceId,
             sourceName = trigger.sourceName,
             requirements = requirementInfos,
-            legalTargets = allLegalTargets
+            legalTargets = allLegalTargets,
+            effectHint = ability.effect.description
         )
 
         if (!decisionResult.isPaused || decisionResult.pendingDecision == null) {
