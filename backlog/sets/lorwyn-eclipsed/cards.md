@@ -2,7 +2,7 @@
 
 **Set Size:** 273 cards (main set, per Scryfall `set:ecl`)
 **Release Date:** January 23, 2026
-**Implemented:** 67 / 273
+**Implemented:** 68 / 273
 
 | Color      | Total | Done |
 |------------|-------|------|
@@ -11,7 +11,7 @@
 | Black      | 38    | 8    |
 | Red        | 39    | 4    |
 | Green      | 39    | 12   |
-| Multicolor | 49    | 14   |
+| Multicolor | 49    | 15   |
 | Colorless  | 18    | 3    |
 | Land       | 12    | 7    |
 
@@ -258,7 +258,7 @@
 - [ ] High Perfect Morcant
 - [x] Hovel Hurler
 - [ ] Kirol, Attentive First-Year
-- [ ] Lluwen, Imperfect Naturalist
+- [x] Lluwen, Imperfect Naturalist
 - [ ] Maralen, Fae Ascendant
 - [x] Merrow Skyswimmer
 - [ ] Mischievous Sneakling

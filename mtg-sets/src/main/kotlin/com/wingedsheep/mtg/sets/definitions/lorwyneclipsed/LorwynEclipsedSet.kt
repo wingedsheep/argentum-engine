@@ -55,6 +55,7 @@ object LorwynEclipsedSet {
         HovelHurler,
         Lavaleaper,
         LiminalHold,
+        LluwenImperfectNaturalist,
         Luminollusk,
         MerrowSkyswimmer,
         MirrormindCrown,
