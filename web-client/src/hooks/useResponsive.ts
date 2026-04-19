@@ -155,13 +155,19 @@ export function useResponsive(
     const isMobile = width < 640
     const isTablet = width >= 640 && width < 1024
     const isCompact = width < 1024 || height < 700
+    // Short-viewport desktops (e.g. MBP 14" at 1512×982). Still "desktop" by
+    // width, but the hand's fixed grid-row reservation at the desktop 150px
+    // baseline eats into the 1fr battlefield rows, which made hand cards feel
+    // disproportionately large relative to the cramped battlefield. We scale
+    // the hand down (closer to battlefield size) on these displays to rebalance.
+    const isShortDesktop = !isMobile && !isTablet && height < 1000
 
     // =========================================================================
     // Base Sizes (before height scaling)
     // =========================================================================
 
     // Card widths scale with viewport width
-    const baseCardWidth = isMobile ? 70 : isTablet ? 90 : 150
+    const baseCardWidth = isMobile ? 70 : isTablet ? 90 : isShortDesktop ? 125 : 150
     const baseSmallCardWidth = isMobile ? 30 : isCompact ? 40 : isTablet ? 50 : 75
     const baseBattlefieldCardWidth = isMobile ? 60 : isTablet ? 80 : 125
     const basePileWidth = isMobile ? 40 : isCompact ? 50 : isTablet ? 60 : 88
@@ -171,16 +177,16 @@ export function useResponsive(
     // =========================================================================
     // Spacing (scales with screen size)
     // =========================================================================
-    const cardGap = isMobile ? 2 : isCompact ? 4 : isTablet ? 6 : 8
-    const sectionGap = isMobile ? 2 : isCompact ? 4 : isTablet ? 6 : 8
-    const containerPadding = isMobile ? 4 : isCompact ? 8 : isTablet ? 12 : 16
+    const cardGap = isMobile ? 2 : isCompact ? 4 : isTablet ? 6 : isShortDesktop ? 6 : 8
+    const sectionGap = isMobile ? 2 : isCompact ? 4 : isTablet ? 6 : isShortDesktop ? 6 : 8
+    const containerPadding = isMobile ? 4 : isCompact ? 8 : isTablet ? 12 : isShortDesktop ? 10 : 16
 
     // =========================================================================
     // Fixed Element Heights
     // =========================================================================
 
     // Center area with life totals and phase indicator
-    const centerAreaHeight = isMobile ? 50 : isCompact ? 55 : 65
+    const centerAreaHeight = isMobile ? 50 : isCompact ? 55 : isShortDesktop ? 56 : 65
 
     // =========================================================================
     // Height Scale Calculation
@@ -302,7 +308,7 @@ export function useResponsive(
     // briefly — the hand container has z-index: 50 so a lifted card cleanly
     // floats above the bottom land row. Reserving the full hover lift would
     // burn ~40px of permanent dead space for a transient interaction.
-    const handBattlefieldGap = Math.round(Math.max(cardGap * 2, 20))
+    const handBattlefieldGap = Math.round(Math.max(cardGap * 2, isShortDesktop ? 12 : 20))
     const opponentHandBattlefieldGap = 0
 
     // Minimum padding inside battlefield rows (for visual breathing room)
