@@ -61,7 +61,7 @@ val CaretakersTalent = card("Caretaker's Talent") {
                 powerBonus = 2,
                 toughnessBonus = 2,
                 filter = GroupFilter(
-                    GameObjectFilter.Creature and GameObjectFilter.Token
+                    (GameObjectFilter.Creature and GameObjectFilter.Token).youControl()
                 )
             )
         }
