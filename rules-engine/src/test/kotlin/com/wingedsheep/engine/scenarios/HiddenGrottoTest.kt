@@ -9,6 +9,7 @@ import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.model.Deck
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
+import com.wingedsheep.engine.state.components.identity.CardComponent
 
 /**
  * Tests for Hidden Grotto.
@@ -73,6 +74,29 @@ class HiddenGrottoTest : FunSpec({
         // Bug: solver picks Grotto's own {T}: Add {C} to cover the {1}, leaving Mountain untapped.
         driver.isTapped(grotto) shouldBe true
         driver.isTapped(mountain) shouldBe true
+    }
+
+    test("auto-tap for {G}{G} with Swamp + Forest + Hidden Grotto taps the swamp to fund Grotto's {1}") {
+        val driver = GameTestDriver()
+        driver.registerCards(TestCards.all)
+        driver.initMirrorMatch(deck = Deck.of("Mountain" to 20, "Plains" to 20))
+
+        val activePlayer = driver.activePlayer!!
+        driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
+
+        val swamp = driver.putPermanentOnBattlefield(activePlayer, "Swamp")
+        val forest = driver.putPermanentOnBattlefield(activePlayer, "Forest")
+        val grotto = driver.putPermanentOnBattlefield(activePlayer, "Hidden Grotto")
+        val curator = driver.putCardInHand(activePlayer, "Keen-Eyed Curator")
+
+        val result = driver.castSpell(activePlayer, curator)
+
+        result.isSuccess shouldBe true
+        // Forest pays one {G}; Hidden Grotto's any-color ability pays the other {G}
+        // but requires {1} — which must come from tapping the Swamp.
+        driver.isTapped(forest) shouldBe true
+        driver.isTapped(grotto) shouldBe true
+        driver.isTapped(swamp) shouldBe true
     }
 
     test("cannot use its own mana ability to pay the {1} via explicit payment") {

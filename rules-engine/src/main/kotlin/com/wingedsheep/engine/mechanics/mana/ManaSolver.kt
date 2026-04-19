@@ -70,7 +70,15 @@ data class ManaSource(
     /** Mana spending restriction (e.g., "only for instant/sorcery"). Null = unrestricted. */
     val restriction: ManaRestriction? = null,
     /** Per-color mana restrictions. Colors not in this map are unrestricted. */
-    val colorRestrictions: Map<Color, ManaRestriction> = emptyMap()
+    val colorRestrictions: Map<Color, ManaRestriction> = emptyMap(),
+    /**
+     * Additional mana cost required (beyond tapping) to produce each color.
+     * Entries reflect the *cheapest* ability producing that color on this permanent.
+     * For filter lands like Hidden Grotto ({1}, {T}: Add one mana of any color),
+     * every color maps to 1 because the only ability producing colors costs {1}.
+     * Colors not present in this map can be produced for free (or not at all).
+     */
+    val colorActivationManaCost: Map<Color, Int> = emptyMap()
 ) {
     /**
      * Returns the set of colors this source can produce for a given spell context.
@@ -279,6 +287,34 @@ class ManaSolver(
                     // Handle in the generic pass below
                 }
             }
+        }
+
+        // 1b. Pay the internal mana cost of any ability we committed to activate above
+        //     (e.g., Hidden Grotto's "{1}, {T}: Add one mana of any color" — producing
+        //     the colored mana requires {1} from another source). These extra sources
+        //     are tapped but their production is NOT added to manaProduced — it is
+        //     consumed by the ability's activation cost rather than flowing into the
+        //     spell's payment pool. Excess mana from multi-mana sources does still
+        //     flow to the bonus pool and remains available for the generic pass.
+        var activationCostRemaining = 0
+        for (used in usedSources) {
+            val produced = manaProduced[used.entityId] ?: continue
+            val color = produced.color ?: continue
+            activationCostRemaining += used.colorActivationManaCost[color] ?: 0
+        }
+        while (activationCostRemaining > 0) {
+            if (spendAnyBonusMana()) {
+                activationCostRemaining--
+                continue
+            }
+            if (remainingSources.isEmpty()) return null
+            val source = remainingSources.minByOrNull {
+                calculateTapPriority(it, handRequirements, availableSourcesByColor)
+            } ?: return null
+            // Tap for activation cost; attribute any excess to bonus pool.
+            val excessColor = source.producesColors.firstOrNull()
+            useSource(source, excessColor)
+            activationCostRemaining--
         }
 
         // 2. Pay generic costs (and X), using bonus mana first
@@ -528,6 +564,8 @@ class ManaSolver(
             var firstRestrictionSeen = false
             // Track per-color restrictions (for sources with mixed restricted/unrestricted abilities)
             val perColorRestrictions = mutableMapOf<Color, ManaRestriction?>()
+            // Track the minimum mana-cost-to-activate per color (cheapest ability producing it)
+            val perColorActivationCost = mutableMapOf<Color, Int>()
 
             for (ability in manaAbilities) {
                 // Detect pain cost and mana activation cost in mana abilities
@@ -573,30 +611,31 @@ class ManaSolver(
                 if (!abilityHasPainCost) anyAbilityHasNoPainCost = true
                 if (abilityHasPainCost) minPainAmount = minOf(minPainAmount, abilityPainAmount)
 
-                // Accumulate production from effect (subtract activation mana cost for net output)
+                // Accumulate production from effect.
+                // Note: maxManaAmount tracks the GROSS mana produced per tap (not net of
+                // activation cost). The solver accounts for ability activation mana costs
+                // separately via colorActivationManaCost / colorlessActivationManaCost,
+                // tapping additional sources to cover them.
                 val effectColors = mutableSetOf<Color>()
                 val effectRestriction: ManaRestriction? = when (val effect = ability.effect) {
                     is AddManaEffect -> {
                         combinedColors.add(effect.color)
                         effectColors.add(effect.color)
                         val manaAmount = (effect.amount as? DynamicAmount.Fixed)?.amount ?: 1
-                        val netMana = maxOf(0, manaAmount - abilityActivationManaCost)
-                        maxManaAmount = maxOf(maxManaAmount, netMana)
+                        maxManaAmount = maxOf(maxManaAmount, manaAmount)
                         effect.restriction
                     }
                     is AddColorlessManaEffect -> {
                         producesColorless = true
                         val manaAmount = (effect.amount as? DynamicAmount.Fixed)?.amount ?: 1
-                        val netMana = maxOf(0, manaAmount - abilityActivationManaCost)
-                        maxManaAmount = maxOf(maxManaAmount, netMana)
+                        maxManaAmount = maxOf(maxManaAmount, manaAmount)
                         effect.restriction
                     }
                     is AddAnyColorManaEffect -> {
                         combinedColors.addAll(Color.entries)
                         effectColors.addAll(Color.entries)
                         val manaAmount = evaluateManaAmount(effect.amount, state, entityId, playerId)
-                        val netMana = maxOf(0, manaAmount - abilityActivationManaCost)
-                        maxManaAmount = maxOf(maxManaAmount, netMana)
+                        maxManaAmount = maxOf(maxManaAmount, manaAmount)
                         effect.restriction
                     }
                     is AddManaOfColorAmongEffect -> {
@@ -615,8 +654,7 @@ class ManaSolver(
                             }
                         }
                         if (combinedColors.isNotEmpty()) {
-                            val netMana = maxOf(0, 1 - abilityActivationManaCost)
-                            maxManaAmount = maxOf(maxManaAmount, netMana)
+                            maxManaAmount = maxOf(maxManaAmount, 1)
                         }
                         effect.restriction
                     }
@@ -627,8 +665,7 @@ class ManaSolver(
                             combinedColors.add(chosenColor)
                             effectColors.add(chosenColor)
                             val manaAmount = (effect.amount as? DynamicAmount.Fixed)?.amount ?: 1
-                            val netMana = maxOf(0, manaAmount - abilityActivationManaCost)
-                            maxManaAmount = maxOf(maxManaAmount, netMana)
+                            maxManaAmount = maxOf(maxManaAmount, manaAmount)
                         }
                         effect.restriction
                     }
@@ -636,11 +673,17 @@ class ManaSolver(
                         combinedColors.addAll(effect.allowedColors)
                         effectColors.addAll(effect.allowedColors)
                         val manaAmount = (effect.amountSource as? DynamicAmount.Fixed)?.amount ?: 1
-                        val netMana = maxOf(0, manaAmount - abilityActivationManaCost)
-                        maxManaAmount = maxOf(maxManaAmount, netMana)
+                        maxManaAmount = maxOf(maxManaAmount, manaAmount)
                         effect.restriction
                     }
                     else -> null
+                }
+
+                // Record the cheapest activation mana cost per color this ability produces.
+                for (color in effectColors) {
+                    val existing = perColorActivationCost[color]
+                    perColorActivationCost[color] = if (existing == null) abilityActivationManaCost
+                    else minOf(existing, abilityActivationManaCost)
                 }
 
                 // Track per-color restrictions: null means unrestricted
@@ -687,6 +730,10 @@ class ManaSolver(
                     .filter { (_, restriction) -> restriction != null }
                     .mapValues { (_, restriction) -> restriction!! }
 
+                // Only record activation costs > 0 (the default is "free to produce").
+                val colorActivationCosts = perColorActivationCost
+                    .filter { (_, cost) -> cost > 0 }
+
                 return@mapNotNull ManaSource(
                     entityId = entityId,
                     name = card.name,
@@ -701,7 +748,8 @@ class ManaSolver(
                     canAttack = canAttack,
                     manaAmount = maxManaAmount,
                     restriction = sourceRestriction,
-                    colorRestrictions = restrictedColors
+                    colorRestrictions = restrictedColors,
+                    colorActivationManaCost = colorActivationCosts
                 )
             }
 
