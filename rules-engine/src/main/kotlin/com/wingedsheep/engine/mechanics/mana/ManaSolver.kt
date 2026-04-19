@@ -500,7 +500,10 @@ class ManaSolver(
 
             // Check for explicit mana abilities via CardRegistry
             val cardDef = cardRegistry.getCard(card.cardDefinitionId)
-            val allAbilities = cardDef?.script?.activatedAbilities ?: emptyList()
+            // Suppress the card's own activated abilities when projection has stripped them
+            // (e.g., Noggle the Mind / Humility / Deep Freeze). Granted abilities are kept.
+            val allAbilities = if (cardDef == null || projected.hasLostAllAbilities(entityId)) emptyList()
+                else cardDef.script.activatedAbilities
 
             // Include mana abilities granted by static effects from other permanents
             // (e.g., Clement, the Worrywort granting {T}: Add {G} or {U} to Frogs)
@@ -1167,6 +1170,9 @@ class ManaSolver(
             val container = state.getEntity(entityId) ?: continue
             val card = container.get<CardComponent>() ?: continue
             val cardDef = cardRegistry.getCard(card.cardDefinitionId) ?: continue
+
+            // Skip own abilities that have been stripped by a continuous effect (Humility, Noggle the Mind, etc.)
+            if (projected.hasLostAllAbilities(entityId)) continue
 
             for (ability in cardDef.script.activatedAbilities) {
                 if (!ability.isManaAbility) continue
