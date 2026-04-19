@@ -392,6 +392,28 @@ data class RevealCollectionEffect(
 }
 
 /**
+ * Emit a [com.wingedsheep.engine.core.CardsRevealedEvent] for a single targeted
+ * entity. Does not move or change the card. Pair with a subsequent move (e.g.,
+ * `MoveToZoneEffect`) to reveal-then-move a targeted card.
+ *
+ * The event's `source` is populated automatically from the ability source's
+ * card name so the reveal overlay shows "Revealed — <SourceCardName>".
+ *
+ * If the target cannot be resolved (illegal target / fizzle), the executor
+ * emits no event.
+ *
+ * @property target The entity to reveal (typically a card in graveyard, hand, or library).
+ */
+@SerialName("RevealTarget")
+@Serializable
+data class RevealTargetEffect(
+    val target: com.wingedsheep.sdk.scripting.targets.EffectTarget
+) : Effect {
+    override val description: String = "Reveal ${target.description}"
+    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
+}
+
+/**
  * Select cards from a named collection, splitting into selected and remainder.
  *
  * This is the middle step in a pipeline: it presents a choice to the player

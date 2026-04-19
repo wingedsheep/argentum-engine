@@ -862,6 +862,7 @@ abilities from atomic primitives.
 | `GatherUntilMatchEffect(player, filter, storeMatch, storeRevealed, count)`                                                     | Walk library until `count` matches (default 1), store both |
 | `GatherSubtypesEffect(from, storeAs)`                                                                                          | Extract subtypes of entities into storedSubtypeGroups |
 | `RevealCollectionEffect(from)`                                                                                                  | Emit CardsRevealedEvent for a stored collection  |
+| `RevealTargetEffect(target)`                                                                                                    | Emit CardsRevealedEvent for a single targeted card; overlay labeled with source card name. Facade: `Effects.Reveal(target)` |
 | `ChooseCreatureTypeEffect`                                                                                                     | Choose a creature type (data object)             |
 | `FilterCollectionEffect(from, filter, storeMatching, storeNonMatching?)`                                                       | Filter collection into matching/non-matching     |
 | `SelectTargetEffect(requirement, storeAs)`                                                                                     | Select and store a target                        |

@@ -20,6 +20,7 @@ class LibraryExecutors(
         GrantFreeCastTargetFromExileExecutor(),
         GatherUntilMatchExecutor(),
         RevealCollectionExecutor(),
+        RevealTargetExecutor(),
         ExileFromTopRepeatingExecutor(),
         ExileLibraryUntilManaValueExecutor(),
         GatherSubtypesExecutor(),
