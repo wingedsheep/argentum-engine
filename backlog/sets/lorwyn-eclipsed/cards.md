@@ -2,16 +2,16 @@
 
 **Set Size:** 273 cards (main set, per Scryfall `set:ecl`)
 **Release Date:** January 23, 2026
-**Implemented:** 80 / 273
+**Implemented:** 83 / 273
 
 | Color      | Total | Done |
 |------------|-------|------|
 | White      | 39    | 8    |
 | Blue       | 39    | 16   |
 | Black      | 38    | 9    |
-| Red        | 39    | 7    |
-| Green      | 39    | 13   |
-| Multicolor | 49    | 17   |
+| Red        | 39    | 8    |
+| Green      | 39    | 14   |
+| Multicolor | 49    | 18   |
 | Colorless  | 18    | 3    |
 | Land       | 12    | 7    |
 
@@ -163,7 +163,7 @@
 - [ ] Flamebraider
 - [ ] Flamekin Gildweaver
 - [ ] Giantfall
-- [ ] Goatnap
+- [x] Goatnap
 - [ ] Goliath Daydreamer
 - [x] Gristle Glutton
 - [ ] Hexing Squelcher
@@ -219,7 +219,7 @@
 - [x] Sapling Nursery
 - [ ] Selfless Safewright
 - [x] Shimmerwilds Growth
-- [ ] Spry and Mighty
+- [x] Spry and Mighty
 - [ ] Surly Farrier
 - [ ] Tend the Sprigs
 - [x] Thoughtweft Charge
@@ -246,7 +246,7 @@
 - [ ] Eclipsed Boggart
 - [ ] Eclipsed Elf
 - [ ] Eclipsed Flamekin
-- [ ] Eclipsed Kithkin
+- [x] Eclipsed Kithkin
 - [x] Eclipsed Merrow
 - [x] Emptiness
 - [x] Feisty Spikeling
