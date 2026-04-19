@@ -545,9 +545,9 @@ class SealedTournamentReconnectionTest : FunSpec() {
                     player.client.send(ClientMessage.SubmitSealedDeck(deck))
                 }
 
-                // Wait for tournament to start
+                // Wait for tournament to start — wait for ALL players so players[0] is guaranteed to have it
                 eventually(10.seconds) {
-                    players.any { p ->
+                    players.all { p ->
                         p.client.messages.any { it is ServerMessage.TournamentStarted }
                     } shouldBe true
                 }
