@@ -8,22 +8,28 @@ export const styles: Record<string, React.CSSProperties> = {
     left: 0,
     right: 0,
     bottom: 0,
-    display: 'flex',
-    flexDirection: 'column',
+    // Five-row grid (template provided inline in GameBoard.tsx since rows 1
+    // and 5 are sized from responsive values):
+    //   1. opp-hand reservation     (px — keeps battlefield clear of fixed hand)
+    //   2. opp-board                (1fr — equal to row 4)
+    //   3. center HUD               (auto — uncrossable partition)
+    //   4. player-board             (1fr — equal to row 2)
+    //   5. player-hand reservation  (px — keeps battlefield clear of fixed hand)
+    // Equal 1fr battlefield rows mean both players get the same card size
+    // via useSlotSizedResponsive, regardless of asymmetric hand sizes.
+    display: 'grid',
+    gridTemplateColumns: '100%',
     backgroundColor: '#0a0a15',
     overflow: 'hidden',
   },
   opponentArea: {
+    gridRow: 2,
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
     justifyContent: 'flex-start',
-    flexShrink: 1,
-    flexGrow: 1,
     minHeight: 0,
-    maxHeight: '46vh',
-    marginBottom: 8,
-    paddingBottom: 8,
+    overflow: 'hidden',
   },
   centerArea: {
     // 3-column grid so the step strip stays anchored to the viewport center
@@ -35,11 +41,9 @@ export const styles: Record<string, React.CSSProperties> = {
     gridTemplateColumns: 'minmax(0, 1fr) auto minmax(0, 1fr)',
     alignItems: 'center',
     padding: '2px 8px',
-    flex: '0 0 auto',
     columnGap: 16,
     width: '100%',
     overflow: 'hidden',
-    transform: 'translateY(-50px)',
   },
   centerLifeSection: {
     display: 'flex',
@@ -112,16 +116,13 @@ export const styles: Record<string, React.CSSProperties> = {
   },
 
   playerArea: {
+    gridRow: 4,
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
     justifyContent: 'flex-end',
-    flexShrink: 1,
-    flexGrow: 1,
     minHeight: 0,
-    maxHeight: '46vh',
-    marginTop: 'auto',
-    paddingBottom: 0,
+    overflow: 'hidden',
   },
   playerRowWithZones: {
     display: 'flex',
@@ -130,6 +131,7 @@ export const styles: Record<string, React.CSSProperties> = {
     width: '100%',
     justifyContent: 'center',
     minHeight: 0,
+    flex: 1,
   },
   playerMainArea: {
     display: 'flex',
@@ -140,6 +142,7 @@ export const styles: Record<string, React.CSSProperties> = {
     flex: 1,
     minWidth: 0,
     minHeight: 0,
+    alignSelf: 'stretch',
   },
   zonePile: {
     display: 'flex',
@@ -350,7 +353,7 @@ export const styles: Record<string, React.CSSProperties> = {
     flexDirection: 'column',
     alignItems: 'center',
     width: '100%',
-    flexShrink: 1,
+    flex: 1,
     minHeight: 0,
   },
   battlefieldRow: {

@@ -1,8 +1,8 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useBattlefieldCards, groupCards, selectViewingPlayerId } from '@/store/selectors.ts'
 import { useGameStore } from '@/store/gameStore.ts'
 import { useInteraction } from '@/hooks/useInteraction.ts'
-import { useResponsiveContext, handleImageError } from './shared'
+import { ResponsiveContext, useResponsiveContext, useSlotSizedResponsive, handleImageError } from './shared'
 import { styles } from './styles'
 import { CardStack } from '../card'
 import { GameCard } from '../card'
@@ -44,8 +44,48 @@ function toSinglesStable(cards: readonly ClientCard[]): GroupedCard[] {
  *
  * For player: front row on top (toward center), back row on bottom (near hand).
  * For opponent: back row on top (near hand), front row on bottom (toward center).
+ *
+ * The outer wrapper measures its bounded slot (sized by the board grid in
+ * styles.ts) and overrides ResponsiveContext with slot-derived card sizes
+ * via useSlotSizedResponsive — so cards never overflow into the center HUD.
  */
 export function Battlefield({ isOpponent, spectatorMode = false }: { isOpponent: boolean; spectatorMode?: boolean }) {
+  const slotRef = useRef<HTMLDivElement>(null)
+  // Largest card count across the two rows for this side. Drives the
+  // horizontal-fit constraint in useSlotSizedResponsive — cards shrink so
+  // they all sit side-by-side without wrapping to a second physical line.
+  const cards = useBattlefieldCards()
+  const maxRowCount = isOpponent
+    ? Math.max(
+        cards.opponentLands.length + cards.opponentOther.length,
+        cards.opponentCreatures.length + cards.opponentPlaneswalkers.length,
+      )
+    : Math.max(
+        cards.playerLands.length + cards.playerOther.length,
+        cards.playerCreatures.length + cards.playerPlaneswalkers.length,
+      )
+  const slotResponsive = useSlotSizedResponsive(slotRef, maxRowCount)
+  return (
+    <div
+      ref={slotRef}
+      style={{
+        // Fill the playerMainArea slot so the ResizeObserver reads the
+        // grid-bounded available height, not the cards' natural height.
+        width: '100%',
+        height: '100%',
+        display: 'flex',
+        flexDirection: 'column',
+        minHeight: 0,
+      }}
+    >
+      <ResponsiveContext.Provider value={slotResponsive}>
+        <BattlefieldContent isOpponent={isOpponent} spectatorMode={spectatorMode} />
+      </ResponsiveContext.Provider>
+    </div>
+  )
+}
+
+function BattlefieldContent({ isOpponent, spectatorMode = false }: { isOpponent: boolean; spectatorMode?: boolean }) {
   const {
     playerLands,
     playerCreatures,
@@ -381,10 +421,21 @@ export function Battlefield({ isOpponent, spectatorMode = false }: { isOpponent:
     />
   ) : null
 
+  // Both rows must reserve at least one cardHeight + padding worth of vertical
+  // space. Without this, when one row wraps (its inner column grows to 2 ×
+  // cardHeight), flex shrinking lets the other row's container collapse to 0
+  // — but the cards inside don't shrink, so they visually overflow into the
+  // divider / wrapped row's territory. Equal floors keep the rows honest.
+  const rowMinHeight = responsive.battlefieldCardHeight + responsive.battlefieldRowPadding
   const frontRow = renderGridRow(
     groupedCreatures,
     groupedPlaneswalkers,
-    { minHeight: responsive.battlefieldCardHeight + responsive.battlefieldRowPadding },
+    { minHeight: rowMinHeight },
+  )
+  const backRow = renderGridRow(
+    groupedLands,
+    groupedOther,
+    { minHeight: rowMinHeight },
   )
 
   return (
@@ -402,14 +453,14 @@ export function Battlefield({ isOpponent, spectatorMode = false }: { isOpponent:
         <>
           {frontRow}
           {renderDivider()}
-          {renderGridRow(groupedLands, groupedOther)}
+          {backRow}
         </>
       )}
 
       {/* For opponent: back row (top, near hand), then front row (bottom, toward center) */}
       {isOpponent && (
         <>
-          {renderGridRow(groupedLands, groupedOther)}
+          {backRow}
           {renderDivider()}
           {frontRow}
         </>

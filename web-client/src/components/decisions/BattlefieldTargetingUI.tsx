@@ -123,7 +123,7 @@ export function BattlefieldTargetingUI({
         {requirementLabel}
       </div>
       {decision.context.effectHint && (
-        <div className={styles.hint} style={{ fontSize: '1.1em', fontWeight: 600, color: 'var(--color-highlight, #fbbf24)' }}>
+        <div className={styles.effectHint}>
           {decision.context.effectHint}
         </div>
       )}

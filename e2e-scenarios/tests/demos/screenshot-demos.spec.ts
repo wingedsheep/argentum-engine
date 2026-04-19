@@ -26,6 +26,7 @@ const VIEWPORTS: Viewport[] = [
   { label: '2560x1440@1x', width: 2560, height: 1440, scale: 1   },
   { label: 'mbp13-1440x900@2x',   width: 1440, height: 900,  scale: 2    },
   { label: 'mbp14-1512x982@2x',   width: 1512, height: 982,  scale: 2    },
+  { label: 'mbp-m1-1512x982@1x',  width: 1512, height: 982,  scale: 1    },
   { label: 'mbp16-1728x1117@2x',  width: 1728, height: 1117, scale: 2    },
   { label: 'win-1536x864@1.25x',  width: 1536, height: 864,  scale: 1.25 },
   { label: 'win-1707x960@1.5x',   width: 1707, height: 960,  scale: 1.5  },

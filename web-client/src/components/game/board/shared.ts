@@ -1,5 +1,5 @@
-import React, { createContext, useContext } from 'react'
-import type { ResponsiveSizes } from '../../../hooks/useResponsive'
+import React, { createContext, useContext, useLayoutEffect, useMemo, useState, type RefObject } from 'react'
+import type { ResponsiveSizes, BadgeSizes } from '../../../hooks/useResponsive'
 import { getScryfallFallbackUrl } from '../../../utils/cardImages'
 import type { ClientCard, LegalActionInfo } from '../../../types'
 import { CounterType } from '../../../types'
@@ -12,6 +12,139 @@ export function useResponsiveContext(): ResponsiveSizes {
   const ctx = useContext(ResponsiveContext)
   if (!ctx) throw new Error('ResponsiveContext not provided')
   return ctx
+}
+
+// Hard ceiling on slot-derived card growth. The window-derived `useResponsive`
+// caps base battlefieldCardWidth at 125 (desktop) — that estimate was tuned
+// for the legacy layout where hand reservations weren't explicit grid tracks.
+// With the explicit-track grid, slots are often substantially taller than that
+// budget anticipated, so we let cards grow up to ~1.6× before clamping.
+const SLOT_MAX_CARD_WIDTH = 200
+
+/**
+ * Measures the bounded slot a battlefield occupies (set up by the grid in
+ * board/styles.ts) and derives card sizes that fit inside it. Cards both
+ * shrink (when slot is too small) and grow (when slot has unused height,
+ * up to SLOT_MAX_CARD_WIDTH) so the slot is used as fully as possible
+ * without overflow.
+ *
+ * The `maxRowCount` argument is the largest card count across the two
+ * battlefield rows (front + back). It's used to enforce a horizontal-fit
+ * constraint so cards never wrap into a second physical row, which would
+ * otherwise overflow the slot vertically and clip into / overlap with
+ * the neighbouring row.
+ *
+ * Phase 2 of the no-overlap layout: makes overflow into the center HUD
+ * geometrically impossible by sizing cards from the actual slot rather
+ * than estimating from window dimensions.
+ */
+export function useSlotSizedResponsive(
+  slotRef: RefObject<HTMLElement | null>,
+  maxRowCount: number = 0,
+): ResponsiveSizes {
+  const base = useResponsiveContext()
+  const [slotSize, setSlotSize] = useState<{ width: number; height: number } | null>(null)
+
+  useLayoutEffect(() => {
+    const node = slotRef.current
+    if (!node) return
+    const rect = node.getBoundingClientRect()
+    setSlotSize({ width: rect.width, height: rect.height })
+    const obs = new ResizeObserver((entries) => {
+      const entry = entries[0]
+      if (entry) setSlotSize({ width: entry.contentRect.width, height: entry.contentRect.height })
+    })
+    obs.observe(node)
+    return () => obs.disconnect()
+  }, [slotRef])
+
+  return useMemo(() => {
+    if (slotSize === null || slotSize.height <= 0 || slotSize.width <= 0) return base
+
+    // Each battlefield holds two card rows separated by a divider strip
+    // (24px + 2 × dividerMargin, see Battlefield.tsx). The `breathing` value
+    // is leftover slot height that ends up between the cards and the slot's
+    // anchored end — which, for both opponent (justify flex-start) and player
+    // (justify flex-end), is the center-HUD side. So this is effectively the
+    // gap between battlefield cards and the center HUD.
+    //
+    // Sized to clear the StepStrip's active-player chevron (6px triangle +
+    // 3px gap = ~9px protruding from the HUD into our slot's bottom edge)
+    // with room to spare. Scaled with slot height so tight viewports stay
+    // tight and roomy ones get a comfortable gap.
+    const dividerMargin = Math.max(10, Math.round(base.battlefieldCardHeight * 0.1))
+    const dividerSpace = 24 + 2 * dividerMargin
+    const breathing = Math.max(12, Math.min(48, Math.round(slotSize.height * 0.10)))
+    const availablePerRow = (slotSize.height - dividerSpace - breathing) / 2
+
+    // Vertical-fit cap: largest card the slot can hold along the height axis.
+    const slotMaxHeight = Math.floor(availablePerRow)
+    const widthFromHeight = Math.round(slotMaxHeight / 1.4)
+
+    // Horizontal-fit cap: largest card width that lets `maxRowCount` cards sit
+    // side-by-side in the slot's width (accounting for inter-card gaps). When
+    // there's only 0–1 card, no horizontal constraint applies.
+    let widthFromWidth = SLOT_MAX_CARD_WIDTH
+    if (maxRowCount > 1) {
+      const totalGap = (maxRowCount - 1) * base.cardGap
+      widthFromWidth = Math.floor((slotSize.width - totalGap) / maxRowCount)
+    }
+
+    const slotCardWidth = Math.max(
+      60,
+      Math.min(SLOT_MAX_CARD_WIDTH, widthFromHeight, widthFromWidth),
+    )
+    const slotCardHeight = Math.round(slotCardWidth * 1.4)
+
+    // No-op if the resulting size matches what the base context already supplies
+    // (within rounding) — avoids creating a fresh ResponsiveSizes identity that
+    // would invalidate every downstream useMemo for no visual change.
+    if (
+      slotCardWidth === base.battlefieldCardWidth &&
+      slotCardHeight === base.battlefieldCardHeight
+    ) {
+      return base
+    }
+
+    // Recompute the same badge scale formula useResponsive uses so badges
+    // stay proportionate to the (resized) battlefield card.
+    const DESKTOP_BF_WIDTH = 125
+    const bfScale = Math.max(0.5, Math.min(1.6, slotCardWidth / DESKTOP_BF_WIDTH))
+    const scaled = (desktop: number, floor: number) =>
+      Math.max(floor, Math.round(desktop * bfScale))
+    const badgeInset = scaled(4, 2)
+    const badgePadH = scaled(6, 3)
+    const badgePadV = scaled(2, 1)
+    const tightPadH = scaled(5, 3)
+    const tightPadV = scaled(2, 1)
+    const badges: BadgeSizes = {
+      ptFontSize: scaled(12, 9),
+      counterTextFontSize: scaled(11, 8),
+      counterIconFontSize: scaled(10, 7),
+      keywordIconSize: scaled(18, 12),
+      sicknessIconSize: scaled(24, 14),
+      smallLabelFontSize: scaled(9, 7),
+      manaCostFontSize: scaled(13, 9),
+      classLevelMarkerSize: scaled(18, 12),
+      classLevelMarkerFontSize: scaled(9, 7),
+      countBadgeSize: scaled(22, 16),
+      countBadgeFontSize: scaled(12, 9),
+      distributeBadgeSize: scaled(26, 18),
+      distributeBadgeFontSize: scaled(14, 10),
+      indicatorFontSize: scaled(13, 9),
+      badgePadding: `${badgePadV}px ${badgePadH}px`,
+      badgePaddingTight: `${tightPadV}px ${tightPadH}px`,
+      badgeInset,
+    }
+
+    return {
+      ...base,
+      battlefieldCardWidth: slotCardWidth,
+      battlefieldCardHeight: slotCardHeight,
+      battlefieldRowPadding: Math.round(slotCardHeight * 0.08),
+      badges,
+    }
+  }, [base, slotSize, maxRowCount])
 }
 
 /**

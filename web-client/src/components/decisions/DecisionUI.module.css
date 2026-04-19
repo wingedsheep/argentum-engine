@@ -55,6 +55,9 @@
   align-items: center;
   gap: var(--space-2);
   min-width: 200px;
+  max-width: 260px;
+  overflow-wrap: break-word;
+  word-wrap: break-word;
 }
 
 @media (max-width: 639px) {
@@ -62,6 +65,7 @@
     right: var(--space-2);
     padding: var(--space-3) var(--space-4);
     min-width: 160px;
+    max-width: 220px;
   }
 }
 
@@ -156,6 +160,19 @@
 
 .hint {
   color: var(--text-muted);
+  font-size: var(--font-sm);
+  max-width: 100%;
+  white-space: normal;
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+  line-height: 1.35;
+}
+
+.effectHint {
+  composes: hint;
+  color: var(--color-highlight, #fbbf24);
+  font-weight: var(--font-weight-semibold);
+  font-style: italic;
   font-size: var(--font-sm);
 }
 

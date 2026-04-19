@@ -296,13 +296,13 @@ export function useResponsive(
     // Layout-Specific Spacing (scales with card sizes)
     // =========================================================================
 
-    // Gap between fixed hand and battlefield area
-    // The hand fan has extra height for:
-    //   - Fan arc effect (maxVerticalOffset: up to 15px)
-    //   - Hover lift space (40px in HandFan)
-    //   - Card rotation at edges
-    // We need enough gap to prevent overlap with battlefield lands
-    const handBattlefieldGap = Math.round(Math.max(cardGap * 4, cardHeight * 0.4))
+    // Gap between fixed hand and battlefield area.
+    // We reserve only the fan arc (≤15px) plus a small breathing buffer.
+    // The 40px hover-lift in HandFan is allowed to extend over the battlefield
+    // briefly — the hand container has z-index: 50 so a lifted card cleanly
+    // floats above the bottom land row. Reserving the full hover lift would
+    // burn ~40px of permanent dead space for a transient interaction.
+    const handBattlefieldGap = Math.round(Math.max(cardGap * 2, 20))
     const opponentHandBattlefieldGap = 0
 
     // Minimum padding inside battlefield rows (for visual breathing room)

@@ -308,7 +308,14 @@ export function GameBoard({ spectatorMode = false, topOffset = 0 }: GameBoardPro
     <div style={{
       ...styles.container,
       padding: `0 ${responsive.containerPadding}px`,
-      gap: responsive.sectionGap,
+      // Hand reservation rows (1 and 5) keep the battlefield rows from sliding
+      // under the position:fixed hand overlays. Both 1fr rows then receive
+      // identical heights → symmetric card sizes for player and opponent.
+      gridTemplateRows: `${
+        responsive.smallCardHeight + topOffset + responsive.opponentHandBattlefieldGap
+      }px minmax(0, 1fr) auto minmax(0, 1fr) ${
+        (spectatorMode ? responsive.smallCardHeight : responsive.cardHeight) + responsive.handBattlefieldGap
+      }px`,
     }}>
       {/* Fullscreen button (top-left) */}
       <FullscreenButton />
@@ -352,12 +359,9 @@ export function GameBoard({ spectatorMode = false, topOffset = 0 }: GameBoardPro
         </div>
       )}
 
-      {/* Opponent area (top) */}
-      <div style={{
-        ...styles.opponentArea,
-        marginTop: -responsive.containerPadding + responsive.sectionGap,
-        paddingTop: responsive.smallCardHeight + topOffset + responsive.opponentHandBattlefieldGap,
-      }}>
+      {/* Opponent area (grid row 2) — opp-hand reservation lives in row 1, so
+          no padding is needed here. Equal-height with row 4 → equal cards. */}
+      <div style={styles.opponentArea}>
         <div style={{ ...styles.playerRowWithZones, alignItems: 'flex-start' }}>
           <div style={styles.playerMainArea}>
             {/* Opponent battlefield - lands first (closer to opponent), then creatures */}
@@ -370,22 +374,22 @@ export function GameBoard({ spectatorMode = false, topOffset = 0 }: GameBoardPro
       </div>
 
       {/* Center - Life totals, phase indicator, and stack.
-          Wrapped in a row that mirrors `playerRowWithZones` (main area + zone
-          pile spacer) so the step strip's center aligns with the battlefield
-          cards above and below, which are centered inside `playerMainArea`. */}
+          Grid row 2 — a reserved partition that the opponent/player areas
+          can't cross. The outer flex row mirrors `playerRowWithZones` (main
+          area + zone pile spacer) so the step strip aligns with the cards
+          above/below rather than the viewport. */}
       <div style={{
+        gridRow: 3,
         display: 'flex',
         alignItems: 'center',
         gap: 32,
         width: '100%',
-        ...(spectatorMode ? {} : { transform: 'translateY(-50px)' }),
       }}>
       <div style={{
         ...styles.centerArea,
         flex: 1,
         minWidth: 0,
         width: 'auto',
-        transform: 'none',
         columnGap: responsive.isMobile ? 6 : 16,
       }}>
         {/* Opponent life (left side) */}
@@ -441,12 +445,9 @@ export function GameBoard({ spectatorMode = false, topOffset = 0 }: GameBoardPro
       <StackDisplay />
 
 
-      {/* Player area (bottom) */}
-      <div style={{
-        ...styles.playerArea,
-        marginBottom: -responsive.containerPadding + responsive.sectionGap,
-        paddingBottom: (spectatorMode ? responsive.smallCardHeight : responsive.cardHeight) + responsive.handBattlefieldGap,
-      }}>
+      {/* Player area (grid row 4) — player-hand reservation lives in row 5,
+          so no padding here. Equal-height with row 2 → symmetric cards. */}
+      <div style={styles.playerArea}>
         <div style={styles.playerRowWithZones}>
           <div style={styles.playerMainArea}>
             {/* Player battlefield - creatures first (closer to center), then lands */}
