@@ -188,6 +188,26 @@ class StackResolver(
         newState = newState.pushToStack(cardId)
             .copy(priorityPassedBy = emptySet())
 
+        // Consume one-shot free-cast permissions used to play this spell. If the
+        // spell is later countered or fizzles and ExileAfterResolveComponent sends
+        // it back to exile, the permission must already be gone — otherwise the
+        // controller could re-cast the same card repeatedly (e.g. Daring Waverider's
+        // free cast resurfacing every time the granted spell is countered).
+        // "Permanent" permissions (e.g. Kheru Spellsnatcher's "for as long as it
+        // remains exiled" grant) are left intact.
+        newState = newState.updateEntity(cardId) { c ->
+            var updated = c
+            val mayPlay = c.get<MayPlayFromExileComponent>()
+            if (mayPlay != null && !mayPlay.permanent) {
+                updated = updated.without<MayPlayFromExileComponent>()
+            }
+            val payCost = c.get<PlayWithoutPayingCostComponent>()
+            if (payCost != null && !payCost.permanent) {
+                updated = updated.without<PlayWithoutPayingCostComponent>()
+            }
+            updated
+        }
+
         // For face-down creatures, use a generic name in the event
         val eventName = if (castFaceDown) "Face-down creature" else cardComponent.name
 

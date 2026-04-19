@@ -4,6 +4,9 @@ import com.wingedsheep.gameserver.ScenarioTestBase
 import com.wingedsheep.sdk.core.Phase
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.engine.state.components.identity.CardComponent
+import com.wingedsheep.engine.state.components.identity.MayPlayFromExileComponent
+import com.wingedsheep.engine.state.components.identity.PlayWithoutPayingCostComponent
+import io.kotest.assertions.withClue
 import io.kotest.matchers.shouldBe
 
 /**
@@ -84,6 +87,62 @@ class DaringWaveriderScenarioTest : ScenarioTestBase() {
                 }
                 hammerInExile shouldBe true
                 game.isInGraveyard(1, "Volcanic Hammer") shouldBe false
+            }
+
+            test("free-cast permission is consumed when the granted spell is cast (cannot be re-cast if it returns to exile)") {
+                // Regression: previously, the MayPlay/PlayWithoutPayingCost components on the
+                // exiled card were only stripped when the spell resolved cleanly. If the spell
+                // was countered (or otherwise didn't resolve), it would land back in exile via
+                // ExileAfterResolveComponent with the free-cast permission still attached, and
+                // the controller could re-cast the same card again — and again — for free.
+                val game = scenario()
+                    .withPlayers("Player 1", "Player 2")
+                    .withCardInHand(1, "Daring Waverider")
+                    .withCardInGraveyard(1, "Volcanic Hammer")
+                    .withCardOnBattlefield(2, "Grizzly Bears")
+                    .withLandsOnBattlefield(1, "Island", 6)
+                    .withActivePlayer(1)
+                    .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                    .build()
+
+                game.castSpell(1, "Daring Waverider")
+                game.resolveStack()
+
+                val hammerIds = game.findCardsInGraveyard(1, "Volcanic Hammer")
+                game.selectTargets(hammerIds)
+                game.resolveStack()
+
+                val hammerId = game.state.getExile(game.player1Id).single { entityId ->
+                    game.state.getEntity(entityId)?.get<CardComponent>()?.name == "Volcanic Hammer"
+                }
+                withClue("Permission components should be granted while the card sits in exile") {
+                    game.state.getEntity(hammerId)?.get<MayPlayFromExileComponent>() shouldBe
+                        MayPlayFromExileComponent(controllerId = game.player1Id)
+                    game.state.getEntity(hammerId)?.get<PlayWithoutPayingCostComponent>() shouldBe
+                        PlayWithoutPayingCostComponent(controllerId = game.player1Id)
+                }
+
+                val bearsId = game.findPermanent("Grizzly Bears")!!
+                game.castSpellFromExile(1, "Volcanic Hammer", bearsId)
+
+                // Volcanic Hammer is now on the stack — the free-cast permission has been used.
+                // The components must be stripped immediately so that if the spell is countered
+                // and ExileAfterResolveComponent sends it back to exile, it cannot be cast again.
+                withClue("Free-cast permission must be consumed at cast time, not at resolve time") {
+                    game.state.getEntity(hammerId)?.get<MayPlayFromExileComponent>() shouldBe null
+                    game.state.getEntity(hammerId)?.get<PlayWithoutPayingCostComponent>() shouldBe null
+                }
+
+                game.resolveStack()
+
+                // After resolution the spell exiles itself (ExileAfterResolveComponent) and the
+                // permission components are still gone — the controller cannot re-cast it.
+                val hammerInExile = game.state.getExile(game.player1Id).any { entityId ->
+                    game.state.getEntity(entityId)?.get<CardComponent>()?.name == "Volcanic Hammer"
+                }
+                hammerInExile shouldBe true
+                game.state.getEntity(hammerId)?.get<MayPlayFromExileComponent>() shouldBe null
+                game.state.getEntity(hammerId)?.get<PlayWithoutPayingCostComponent>() shouldBe null
             }
         }
     }
