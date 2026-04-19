@@ -47,12 +47,15 @@ export function ZonePile({ player, isOpponent = false }: { player: ClientPlayer;
     borderRadius: responsive.isMobile ? 4 : 6,
   }
 
-  // Offset to avoid overlapping with buttons:
-  // - Player zones move up to avoid pass priority button (bottom-right)
-  // - Opponent zones move down to avoid concede button (top-right)
+  // Position piles at the far end of each player's battlefield row (opponent:
+  // top of row 2, below the Concede button; player: bottom of row 4, above
+  // row 5's hand reservation and the Pass button). This keeps them clear of
+  // the center HUD in row 3 — previously a margin offset pulled them toward
+  // the center "to clear the buttons", but that intruded into row 3 and the
+  // HUD visibly overlapped the deck/graveyard/exile.
   const verticalOffset = isOpponent
-    ? { marginTop: responsive.zonePileOffset }
-    : { marginBottom: responsive.zonePileOffset + responsive.sectionGap * 3 }
+    ? { alignSelf: 'flex-start' as const }
+    : { alignSelf: 'flex-end' as const, marginBottom: responsive.sectionGap * 2 }
 
   return (
     <div style={{ ...styles.zonePile, gap: responsive.cardGap, minWidth: responsive.pileWidth + 10, ...verticalOffset }}>

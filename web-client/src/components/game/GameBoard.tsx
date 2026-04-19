@@ -437,8 +437,12 @@ export function GameBoard({ spectatorMode = false, topOffset = 0 }: GameBoardPro
         </div>
       </div>
         {/* Spacer matching the battlefield's ZonePile column so the centered
-            content aligns with the cards above/below rather than the viewport. */}
-        <div style={{ width: responsive.pileWidth, flexShrink: 0 }} aria-hidden />
+            content aligns with the cards above/below rather than the viewport.
+            Matches ZonePile's `minWidth: pileWidth + 10` (see ZonePiles.tsx) so
+            the centerArea never slides under the pile column — otherwise the
+            step-strip glow / player life orb visibly overlap the deck/graveyard
+            /exile that intrude into this row via their vertical margin offsets. */}
+        <div style={{ width: responsive.pileWidth + 10, flexShrink: 0 }} aria-hidden />
       </div>
 
       {/* Stack display - floating on the left side */}
