@@ -86,6 +86,9 @@ export interface ResponsiveSizes {
   isCompact: boolean
   isMobile: boolean
   isTablet: boolean
+  /** Desktop-width viewport with limited height (e.g. MBP 14" ≈ 982px).
+   *  Triggers tighter center HUD sizing so the battlefield slots keep room. */
+  isShortDesktop: boolean
 }
 
 /**
@@ -186,7 +189,7 @@ export function useResponsive(
     // =========================================================================
 
     // Center area with life totals and phase indicator
-    const centerAreaHeight = isMobile ? 50 : isCompact ? 55 : isShortDesktop ? 56 : 65
+    const centerAreaHeight = isMobile ? 50 : isCompact ? 55 : isShortDesktop ? 50 : 65
 
     // =========================================================================
     // Height Scale Calculation
@@ -393,6 +396,7 @@ export function useResponsive(
       isCompact,
       isMobile,
       isTablet,
+      isShortDesktop,
     }
   }, [width, height, topOffset])
 }

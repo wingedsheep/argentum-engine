@@ -98,7 +98,7 @@ export function LifeDisplay({
     }
   }
 
-  const size = responsive.isMobile ? 36 : responsive.isTablet ? 42 : 48
+  const size = responsive.isMobile ? 36 : responsive.isTablet ? 42 : responsive.isShortDesktop ? 40 : 48
 
   // Dynamic styling based on targeting state
   const bgColor = isPlayer ? '#1a3a5a' : '#4a2812'

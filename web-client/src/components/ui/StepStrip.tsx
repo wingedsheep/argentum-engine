@@ -107,7 +107,10 @@ export function StepStrip({
   const colors = priorityMode === 'waiting' && isActivePlayer
     ? waitingMyTurn
     : modeColors[priorityMode]
-  const isMobile = responsive.isMobile
+  // Treat short-desktop viewports (e.g. MBP 14") like mobile for HUD density:
+  // smaller icons, tighter padding, compact text. Frees vertical room for the
+  // battlefield rows without changing the strip's information layout.
+  const isMobile = responsive.isMobile || responsive.isShortDesktop
   const currentStepIndex = STEP_ORDER.indexOf(step)
 
   const statusText = activePlayerName
