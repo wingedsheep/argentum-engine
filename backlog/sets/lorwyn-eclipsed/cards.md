@@ -2,16 +2,16 @@
 
 **Set Size:** 273 cards (main set, per Scryfall `set:ecl`)
 **Release Date:** January 23, 2026
-**Implemented:** 75 / 273
+**Implemented:** 77 / 273
 
 | Color      | Total | Done |
 |------------|-------|------|
 | White      | 39    | 7    |
-| Blue       | 39    | 15   |
+| Blue       | 39    | 16   |
 | Black      | 38    | 9    |
 | Red        | 39    | 6    |
 | Green      | 39    | 13   |
-| Multicolor | 49    | 15   |
+| Multicolor | 49    | 16   |
 | Colorless  | 18    | 3    |
 | Land       | 12    | 7    |
 
@@ -98,7 +98,7 @@
 - [ ] Temporal Cleansing
 - [x] Thirst for Identity
 - [ ] Unexpected Assistance
-- [ ] Unwelcome Sprite
+- [x] Unwelcome Sprite
 - [ ] Wanderwine Distracter
 - [x] Wanderwine Farewell
 - [x] Wild Unraveling
@@ -264,7 +264,7 @@
 - [ ] Mischievous Sneakling
 - [ ] Morcant's Loyalist
 - [ ] Noggle Robber
-- [ ] Prideful Feastling
+- [x] Prideful Feastling
 - [ ] Raiding Schemes
 - [ ] Reaping Willow
 - [ ] Sanar, Innovative First-Year
