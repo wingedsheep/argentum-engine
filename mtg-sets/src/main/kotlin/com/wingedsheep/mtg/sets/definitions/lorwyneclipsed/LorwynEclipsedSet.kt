@@ -65,6 +65,7 @@ object LorwynEclipsedSet {
         LysAlanaDignitary,
         MerrowSkyswimmer,
         MirrormindCrown,
+        MorcantsLoyalist,
         NamelessInversion,
         NoggleTheMind,
         Personify,

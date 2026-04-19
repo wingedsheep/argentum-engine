@@ -2,7 +2,7 @@
 
 **Set Size:** 273 cards (main set, per Scryfall `set:ecl`)
 **Release Date:** January 23, 2026
-**Implemented:** 78 / 273
+**Implemented:** 79 / 273
 
 | Color      | Total | Done |
 |------------|-------|------|
@@ -11,7 +11,7 @@
 | Black      | 38    | 9    |
 | Red        | 39    | 7    |
 | Green      | 39    | 13   |
-| Multicolor | 49    | 16   |
+| Multicolor | 49    | 17   |
 | Colorless  | 18    | 3    |
 | Land       | 12    | 7    |
 
@@ -262,7 +262,7 @@
 - [ ] Maralen, Fae Ascendant
 - [x] Merrow Skyswimmer
 - [ ] Mischievous Sneakling
-- [ ] Morcant's Loyalist
+- [x] Morcant's Loyalist
 - [ ] Noggle Robber
 - [x] Prideful Feastling
 - [ ] Raiding Schemes
