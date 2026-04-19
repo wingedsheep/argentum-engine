@@ -2,11 +2,11 @@
 
 **Set Size:** 273 cards (main set, per Scryfall `set:ecl`)
 **Release Date:** January 23, 2026
-**Implemented:** 84 / 273
+**Implemented:** 85 / 273
 
 | Color      | Total | Done |
 |------------|-------|------|
-| White      | 39    | 8    |
+| White      | 39    | 9    |
 | Blue       | 39    | 16   |
 | Black      | 38    | 10   |
 | Red        | 39    | 8    |
@@ -36,7 +36,7 @@
 - [ ] Gallant Fowlknight
 - [x] Goldmeadow Nomad
 - [ ] Keep Out
-- [ ] Kinbinding
+- [x] Kinbinding
 - [x] Kinsbaile Aspirant
 - [ ] Kinscaer Sentry
 - [ ] Kithkeeper

@@ -60,6 +60,7 @@ object LorwynEclipsedSet {
         HeirloomAuntie,
         HovelHurler,
         ImpoliteEntrance,
+        Kinbinding,
         KinsbaileAspirant,
         LastingTarfire,
         Lavaleaper,
