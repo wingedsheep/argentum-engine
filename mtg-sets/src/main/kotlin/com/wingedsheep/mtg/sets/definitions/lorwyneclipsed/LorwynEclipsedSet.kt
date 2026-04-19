@@ -73,6 +73,7 @@ object LorwynEclipsedSet {
         StoicGroveGuide,
         SwatAway,
         SyggsCommand,
+        TanufelRimespeaker,
         ThirstForIdentity,
         ThoughtweftCharge,
         TrystansCommand,
