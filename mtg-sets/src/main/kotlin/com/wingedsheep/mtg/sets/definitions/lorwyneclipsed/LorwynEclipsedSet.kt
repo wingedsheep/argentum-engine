@@ -27,6 +27,7 @@ object LorwynEclipsedSet {
         BloodCrypt,
         Blossombind,
         BoggartPrankster,
+        BoldwyrAggressor,
         BoulderDash,
         BramblebackBrute,
         BrigidsCommand,
