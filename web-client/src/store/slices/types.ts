@@ -728,8 +728,13 @@ export type GameStore = {
   revealAnimations: readonly RevealAnimation[]
   coinFlipAnimations: readonly CoinFlipAnimation[]
   targetReselectedAnimations: readonly TargetReselectedAnimation[]
-  /** Battlefield card ids currently pulsing after being beheld. */
-  beholdPulseIds: readonly EntityId[]
+  /**
+   * Battlefield card ids currently pulsing after being beheld, along with the
+   * name of the spell/ability that beheld them. A pulse persists until the
+   * stack no longer contains an item with that source name (i.e. the beholding
+   * spell has resolved, been countered, or otherwise left the stack).
+   */
+  beholdPulses: readonly { cardId: EntityId; sourceName: string }[]
   selectCard: (cardId: EntityId | null) => void
   hoverCard: (cardId: EntityId | null, position?: { x: number; y: number }) => void
   updateHoverPosition: (position: { x: number; y: number }) => void
@@ -810,7 +815,8 @@ export type GameStore = {
   removeCoinFlipAnimation: (id: string) => void
   addTargetReselectedAnimation: (animation: TargetReselectedAnimation) => void
   removeTargetReselectedAnimation: (id: string) => void
-  pulseBeholdCard: (cardId: EntityId) => void
+  addBeholdPulse: (cardId: EntityId, sourceName: string) => void
+  reconcileBeholdPulses: (stackItemNames: readonly string[]) => void
   setAutoTapPreview: (preview: readonly EntityId[] | null) => void
   matchIntro: MatchIntro | null
   setMatchIntro: (intro: MatchIntro) => void

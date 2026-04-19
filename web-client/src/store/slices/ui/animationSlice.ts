@@ -31,7 +31,7 @@ export interface AnimationSliceState {
   revealAnimations: readonly RevealAnimation[]
   coinFlipAnimations: readonly CoinFlipAnimation[]
   targetReselectedAnimations: readonly TargetReselectedAnimation[]
-  beholdPulseIds: readonly EntityId[]
+  beholdPulses: readonly { cardId: EntityId; sourceName: string }[]
   matchIntro: MatchIntro | null
 }
 
@@ -54,7 +54,8 @@ export interface AnimationSliceActions {
   removeCoinFlipAnimation: (id: string) => void
   addTargetReselectedAnimation: (animation: TargetReselectedAnimation) => void
   removeTargetReselectedAnimation: (id: string) => void
-  pulseBeholdCard: (cardId: EntityId) => void
+  addBeholdPulse: (cardId: EntityId, sourceName: string) => void
+  reconcileBeholdPulses: (stackItemNames: readonly string[]) => void
   setMatchIntro: (intro: MatchIntro) => void
   clearMatchIntro: () => void
 }
@@ -73,7 +74,7 @@ export const createAnimationSlice: SliceCreator<AnimationSlice> = (set, get) => 
   revealAnimations: [],
   coinFlipAnimations: [],
   targetReselectedAnimations: [],
-  beholdPulseIds: [],
+  beholdPulses: [],
   matchIntro: null,
 
   // Card selection actions
@@ -190,17 +191,21 @@ export const createAnimationSlice: SliceCreator<AnimationSlice> = (set, get) => 
     }))
   },
 
-  pulseBeholdCard: (cardId) => {
+  addBeholdPulse: (cardId, sourceName) => {
     set((state) => (
-      state.beholdPulseIds.includes(cardId)
+      state.beholdPulses.some((p) => p.cardId === cardId && p.sourceName === sourceName)
         ? state
-        : { beholdPulseIds: [...state.beholdPulseIds, cardId] }
+        : { beholdPulses: [...state.beholdPulses, { cardId, sourceName }] }
     ))
-    setTimeout(() => {
-      set((state) => ({
-        beholdPulseIds: state.beholdPulseIds.filter((id) => id !== cardId),
-      }))
-    }, 1400)
+  },
+
+  reconcileBeholdPulses: (stackItemNames) => {
+    set((state) => {
+      if (state.beholdPulses.length === 0) return state
+      const names = new Set(stackItemNames)
+      const kept = state.beholdPulses.filter((p) => names.has(p.sourceName))
+      return kept.length === state.beholdPulses.length ? state : { beholdPulses: kept }
+    })
   },
 
   setMatchIntro: (intro) => {

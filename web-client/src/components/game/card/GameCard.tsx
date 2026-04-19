@@ -118,7 +118,7 @@ export function GameCard({
   const toggleCrewCreature = useGameStore((state) => state.toggleCrewCreature)
   const toggleConvokeCreature = useGameStore((state) => state.toggleConvokeCreature)
   const submitYesNoDecision = useGameStore((state) => state.submitYesNoDecision)
-  const isBeheldPulsing = useGameStore((state) => state.beholdPulseIds.includes(card.id))
+  const isBeheldPulsing = useGameStore((state) => state.beholdPulses.some((p) => p.cardId === card.id))
   const responsive = useResponsiveContext()
   const { handleCardClick, handleDoubleClick, executeAction } = useInteraction()
   const dragStartPos = useRef<{ x: number; y: number } | null>(null)
@@ -915,7 +915,7 @@ export function GameCard({
         boxShadow,
         opacity: isBeingDragged ? 0.6 : isGhost ? 0.55 : (inHand && isInTargetingMode && !isValidTarget && !isBeingCast) ? 0.35 : 1,
         userSelect: 'none',
-        ...(isBeheldPulsing ? { animation: 'beholdPulse 1.4s ease-out' } : {}),
+        ...(isBeheldPulsing ? { animation: 'beholdPulse 1.1s ease-in-out infinite alternate' } : {}),
       }}
     >
       {/* Token with art_crop image — render a custom card frame */}
@@ -1848,7 +1848,7 @@ export function GameCard({
           boxShadow: '0 0 10px rgba(234, 179, 8, 0.6)',
           pointerEvents: 'none',
           zIndex: 5,
-          animation: 'beholdLabelFade 1.4s ease-out',
+          animation: 'beholdLabelFade 300ms ease-out forwards',
           whiteSpace: 'nowrap',
         }}>
           Beheld

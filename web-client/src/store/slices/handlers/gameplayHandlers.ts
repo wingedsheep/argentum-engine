@@ -89,7 +89,7 @@ function processStateUpdate(
   set: SetState,
   get: GetState
 ): void {
-  const { playerId, addDrawAnimation, addDamageAnimation, addRevealAnimation, addCoinFlipAnimation, addTargetReselectedAnimation, pulseBeholdCard } = get()
+  const { playerId, addDrawAnimation, addDamageAnimation, addRevealAnimation, addCoinFlipAnimation, addTargetReselectedAnimation, addBeholdPulse, reconcileBeholdPulses } = get()
 
   // Check for hand reveal events
   const handLookedAtEvent = msg.events.find(
@@ -129,9 +129,20 @@ function processStateUpdate(
       }
     : null
 
-  for (const id of beheldBattlefieldIds) {
-    pulseBeholdCard(id)
+  if (cardsRevealedEvent && beheldBattlefieldIds.length > 0 && cardsRevealedEvent.source) {
+    for (const id of beheldBattlefieldIds) {
+      addBeholdPulse(id, cardsRevealedEvent.source)
+    }
   }
+
+  // Clear any pulses whose beholding spell/ability has left the stack (resolved,
+  // countered, or otherwise gone). Runs on every state update so the pulse tracks
+  // the lifetime of the stack item that caused it.
+  const stackZone = resolvedState.zones.find((z) => z.zoneId.zoneType === 'Stack')
+  const stackItemNames = (stackZone?.cardIds ?? [])
+    .map((id) => resolvedState.cards[id]?.name)
+    .filter((n): n is string => typeof n === 'string')
+  reconcileBeholdPulses(stackItemNames)
 
   // Process card draw events for animations
   const cardDrawnEvents = msg.events.filter((e) => e.type === 'cardDrawn') as {
