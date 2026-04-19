@@ -79,8 +79,10 @@ class LluwenImperfectNaturalistTest : FunSpec({
         legendDecision.prompt shouldBe "Choose which Lluwen, Imperfect Naturalist to keep (legend rule)"
         driver.submitCardSelection(activePlayer, listOf(secondLluwen))
 
-        // ETB trigger — deferred under the legend-rule continuation — now fires and pauses
-        // for the put-back decision. No further priority passes needed.
+        // Legend rule has resolved, but the deferred ETB trigger only got *placed*
+        // on the stack. Pass priority again so it resolves, mills 4, and pauses
+        // for the put-back decision.
+        driver.bothPass()
         val graveyardAfter = driver.state.getZone(ZoneKey(activePlayer, Zone.GRAVEYARD))
         val lluwensOnBattlefield = driver.state.getZone(ZoneKey(activePlayer, Zone.BATTLEFIELD))
             .count { driver.state.getEntity(it)?.get<CardComponent>()?.name == "Lluwen, Imperfect Naturalist" }
