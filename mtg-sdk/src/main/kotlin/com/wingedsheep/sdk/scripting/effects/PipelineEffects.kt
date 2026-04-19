@@ -438,7 +438,15 @@ data class SelectFromCollectionEffect(
      * effective maximum using these and normalizes the player's response so invalid
      * combinations are rejected. Defaults to empty (no extra constraints).
      */
-    val restrictions: List<SelectionRestriction> = emptyList()
+    val restrictions: List<SelectionRestriction> = emptyList(),
+    /**
+     * When true, always present the selection decision to the chooser even if the
+     * eligible set has exactly [selection]'s requested count (i.e., the choice is
+     * forced). Used by reveal-then-discard flows where the caster is picking from
+     * another player's zone — auto-selecting the one eligible card feels abrupt
+     * and players want to see and confirm the pick.
+     */
+    val alwaysPrompt: Boolean = false
 ) : Effect {
     override val description: String = buildString {
         if (chooser == Chooser.Opponent) append("An opponent ")

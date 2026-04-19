@@ -109,7 +109,9 @@ export function RevealedCardsUI() {
 
   // Title and subtitle
   const isYourReveal = !isHandReveal && revealedCardsInfo!.isYourReveal
-  const transitionLabel = zoneTransitionLabel(revealedCardsInfo!.fromZone ?? null, revealedCardsInfo!.toZone ?? null)
+  const transitionLabel = isHandReveal
+    ? null
+    : zoneTransitionLabel(revealedCardsInfo!.fromZone ?? null, revealedCardsInfo!.toZone ?? null)
   const actionWord = transitionLabel ?? 'Revealed'
   const whoPrefix = isYourReveal ? '' : 'Opponent '
   const title = isHandReveal

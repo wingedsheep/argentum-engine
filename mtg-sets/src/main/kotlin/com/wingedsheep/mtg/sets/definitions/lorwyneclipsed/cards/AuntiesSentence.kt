@@ -54,7 +54,9 @@ val AuntiesSentence = card("Auntie's Sentence") {
                             chooser = Chooser.Controller,
                             filter = GameObjectFilter.NonlandPermanent,
                             storeSelected = "toDiscard",
-                            prompt = "Choose a nonland permanent card to discard"
+                            prompt = "Choose a nonland permanent card to discard",
+                            alwaysPrompt = true,
+                            showAllCards = true
                         ),
                         MoveCollectionEffect(
                             from = "toDiscard",

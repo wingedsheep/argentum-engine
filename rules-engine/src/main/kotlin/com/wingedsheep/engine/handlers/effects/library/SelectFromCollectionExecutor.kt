@@ -115,7 +115,7 @@ class SelectFromCollectionExecutor : EffectExecutor<SelectFromCollectionEffect> 
                     }
                     return EffectResult.success(state).copy(updatedCollections = collections)
                 }
-                if (count >= eligibleCards.size && effect.restrictions.isEmpty()) {
+                if (count >= eligibleCards.size && effect.restrictions.isEmpty() && !effect.alwaysPrompt) {
                     // Must select all eligible — no choice needed
                     val collections = mutableMapOf(effect.storeSelected to eligibleCards)
                     if (remainderName != null) {
@@ -124,7 +124,8 @@ class SelectFromCollectionExecutor : EffectExecutor<SelectFromCollectionEffect> 
                     EffectResult.success(state).copy(updatedCollections = collections)
                 } else {
                     val clamped = minOf(count, eligibleCards.size)
-                    createDecision(state, context, effect, eligibleCards, clamped, clamped, decidingPlayerId, allCards = cards)
+                    val nonSelectable = if (effect.showAllCards) cards.filter { it !in eligibleCards } else emptyList()
+                    createDecision(state, context, effect, eligibleCards, clamped, clamped, decidingPlayerId, allCards = cards, nonSelectableCards = nonSelectable)
                 }
             }
 

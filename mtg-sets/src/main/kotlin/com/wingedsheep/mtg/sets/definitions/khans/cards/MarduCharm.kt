@@ -71,7 +71,9 @@ val MarduCharm = card("Mardu Charm") {
                             chooser = Chooser.Controller,
                             filter = GameObjectFilter.Noncreature and GameObjectFilter.Nonland,
                             storeSelected = "toDiscard",
-                            prompt = "Choose a noncreature, nonland card to discard"
+                            prompt = "Choose a noncreature, nonland card to discard",
+                            alwaysPrompt = true,
+                            showAllCards = true
                         ),
                         MoveCollectionEffect(
                             from = "toDiscard",

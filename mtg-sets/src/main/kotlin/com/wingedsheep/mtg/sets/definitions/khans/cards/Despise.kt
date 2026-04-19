@@ -48,7 +48,9 @@ val Despise = card("Despise") {
                     chooser = Chooser.Controller,
                     filter = GameObjectFilter.Creature or GameObjectFilter.Planeswalker,
                     storeSelected = "toDiscard",
-                    prompt = "Choose a creature or planeswalker card to discard"
+                    prompt = "Choose a creature or planeswalker card to discard",
+                    alwaysPrompt = true,
+                    showAllCards = true
                 ),
                 // 4. Move chosen card to opponent's graveyard
                 MoveCollectionEffect(

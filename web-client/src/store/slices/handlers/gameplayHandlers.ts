@@ -305,7 +305,27 @@ function processStateUpdate(
       type: getEventLogType((e as { type: string }).type),
     })),
     waitingForOpponentMulligan: false,
-    revealedHandCardIds: handLookedAtEvent?.cardIds ?? handRevealedEvent?.cardIds ?? state.revealedHandCardIds,
+    revealedHandCardIds: (() => {
+      const newIds = handLookedAtEvent?.cardIds ?? handRevealedEvent?.cardIds
+      if (!newIds) return state.revealedHandCardIds
+      // Combined reveal+select UX: when the new hand reveal is paired with a
+      // SelectCards decision assigned to this player that already displays every
+      // revealed card, the decision modal IS the reveal for them — skip the
+      // overlay so they don't have to dismiss a redundant view. (Used by
+      // Auntie's Sentence / Despise / Mardu Charm's reveal-and-discard flow.)
+      if (
+        msg.pendingDecision?.type === 'SelectCardsDecision' &&
+        msg.pendingDecision.playerId === playerId &&
+        isRevealCoveredBySelectDecision(
+          newIds,
+          msg.pendingDecision.options,
+          msg.pendingDecision.nonSelectableOptions ?? []
+        )
+      ) {
+        return null
+      }
+      return newIds
+    })(),
     // Combined reveal+select UX (e.g., Aurora Awakener's Vivid ETB): if this update
     // carries both a reveal to the caster AND a SelectCards decision covering every
     // revealed card, the selection modal is the reveal for them — suppress the
