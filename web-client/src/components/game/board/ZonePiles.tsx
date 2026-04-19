@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useLayoutEffect, useRef } from 'react'
 import { useGameStore } from '@/store/gameStore.ts'
 import { useZoneCards, useStackCards } from '@/store/selectors.ts'
 import { graveyard, exile } from '@/types'
@@ -7,6 +7,14 @@ import { CARD_BACK_IMAGE_URL } from '@/utils/cardImages.ts'
 import { getCardImageUrl } from '@/utils/cardImages.ts'
 import { useResponsiveContext, handleImageError } from './shared'
 import { styles } from './styles'
+
+const CARD_RATIO = 1.4
+const LABEL_HEIGHT = 14
+const PILE_COUNT = 3
+// Reserve room above the opponent's pile column for the absolutely-positioned
+// Concede button so the top pile doesn't render under it.
+const OPPONENT_TOP_RESERVED = 52
+const MIN_PILE_WIDTH = 28
 
 /**
  * Deck, graveyard, and exile pile display.
@@ -21,6 +29,45 @@ export function ZonePile({ player, isOpponent = false }: { player: ClientPlayer;
   const [browsingGraveyard, setBrowsingGraveyard] = useState(false)
   const [browsingExile, setBrowsingExile] = useState(false)
   const stackCards = useStackCards()
+
+  // Shrink piles to fit the column's actual height. The viewport-derived
+  // pileWidth doesn't know about (a) the opponent's Concede button, which
+  // overlays the top of grid row 2, or (b) tighter row heights from short
+  // viewports. Without this, the third pile (Exile) overflows and is clipped
+  // by the opponentArea/playerArea overflow:hidden.
+  const containerRef = useRef<HTMLDivElement | null>(null)
+  const [fittedPileWidth, setFittedPileWidth] = useState(responsive.pileWidth)
+
+  useLayoutEffect(() => {
+    const el = containerRef.current
+    const parent = el?.parentElement
+    if (!parent) return
+
+    const reservedTop = isOpponent ? OPPONENT_TOP_RESERVED : 0
+    const reservedBottom = isOpponent ? 0 : responsive.sectionGap * 2
+    const totalGap = responsive.cardGap * (PILE_COUNT - 1)
+    const totalLabel = LABEL_HEIGHT * PILE_COUNT
+    const fixedOverhead = reservedTop + reservedBottom + totalGap + totalLabel
+
+    const compute = (availableHeight: number) => {
+      const heightForPiles = Math.max(0, availableHeight - fixedOverhead)
+      const maxPileHeight = heightForPiles / PILE_COUNT
+      const widthFromHeight = Math.floor(maxPileHeight / CARD_RATIO)
+      const next = Math.max(MIN_PILE_WIDTH, Math.min(responsive.pileWidth, widthFromHeight))
+      setFittedPileWidth(next)
+    }
+
+    compute(parent.clientHeight)
+    const obs = new ResizeObserver((entries) => {
+      const entry = entries[0]
+      if (entry) compute(entry.contentRect.height)
+    })
+    obs.observe(parent)
+    return () => obs.disconnect()
+  }, [isOpponent, responsive.pileWidth, responsive.cardGap, responsive.sectionGap])
+
+  const effectivePileWidth = fittedPileWidth
+  const effectivePileHeight = Math.round(effectivePileWidth * CARD_RATIO)
 
   // Find any graveyard cards that are being targeted by spells on the stack
   const targetedGraveyardCards = React.useMemo(() => {
@@ -42,8 +89,8 @@ export function ZonePile({ player, isOpponent = false }: { player: ClientPlayer;
   }, [stackCards, graveyardCards])
 
   const pileStyle = {
-    width: responsive.pileWidth,
-    height: responsive.pileHeight,
+    width: effectivePileWidth,
+    height: effectivePileHeight,
     borderRadius: responsive.isMobile ? 4 : 6,
   }
 
@@ -58,7 +105,7 @@ export function ZonePile({ player, isOpponent = false }: { player: ClientPlayer;
     : { alignSelf: 'flex-end' as const, marginBottom: responsive.sectionGap * 2 }
 
   return (
-    <div style={{ ...styles.zonePile, gap: responsive.cardGap, minWidth: responsive.pileWidth + 10, ...verticalOffset }}>
+    <div ref={containerRef} style={{ ...styles.zonePile, gap: responsive.cardGap, minWidth: effectivePileWidth + 10, ...verticalOffset }}>
       {/* Library/Deck */}
       <div style={styles.zoneStack}>
         <div data-zone={isOpponent ? 'opponent-library' : 'player-library'} style={{ ...styles.deckPile, ...pileStyle }}>
