@@ -34,6 +34,9 @@ class CyclingEnumerator : ActionEnumerator {
             val typecyclingAbility = cardDef.keywordAbilities
                 .filterIsInstance<KeywordAbility.Typecycling>()
                 .firstOrNull()
+            val basicLandcyclingAbility = cardDef.keywordAbilities
+                .filterIsInstance<KeywordAbility.BasicLandcycling>()
+                .firstOrNull()
 
             if (cyclingAbility != null) {
                 val canAfford = context.manaSolver.canPay(state, playerId, cyclingAbility.cost, precomputedSources = context.availableManaSources)
@@ -53,19 +56,26 @@ class CyclingEnumerator : ActionEnumerator {
                 )
             }
 
-            if (typecyclingAbility != null) {
-                val canAfford = context.manaSolver.canPay(state, playerId, typecyclingAbility.cost, precomputedSources = context.availableManaSources)
+            val typecycleVariantCostAndLabel: Pair<com.wingedsheep.sdk.core.ManaCost, String>? = when {
+                typecyclingAbility != null -> typecyclingAbility.cost to "${typecyclingAbility.type}cycling ${cardComponent.name}"
+                basicLandcyclingAbility != null -> basicLandcyclingAbility.cost to "Basic landcycling ${cardComponent.name}"
+                else -> null
+            }
+
+            if (typecycleVariantCostAndLabel != null) {
+                val (cost, description) = typecycleVariantCostAndLabel
+                val canAfford = context.manaSolver.canPay(state, playerId, cost, precomputedSources = context.availableManaSources)
                 val autoTapPreview = if (context.skipAutoTapPreview) null else {
-                    context.manaSolver.solve(state, playerId, typecyclingAbility.cost, precomputedSources = context.availableManaSources)
+                    context.manaSolver.solve(state, playerId, cost, precomputedSources = context.availableManaSources)
                         ?.sources?.map { it.entityId }
                 }
                 result.add(
                     LegalAction(
                         actionType = "TypecycleCard",
-                        description = "${typecyclingAbility.type}cycling ${cardComponent.name}",
+                        description = description,
                         action = TypecycleCard(playerId, cardId),
                         affordable = canAfford,
-                        manaCostString = typecyclingAbility.cost.toString(),
+                        manaCostString = cost.toString(),
                         autoTapPreview = autoTapPreview
                     )
                 )

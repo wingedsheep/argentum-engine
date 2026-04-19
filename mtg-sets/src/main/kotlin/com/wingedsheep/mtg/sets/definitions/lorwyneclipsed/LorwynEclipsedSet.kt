@@ -92,6 +92,7 @@ object LorwynEclipsedSet {
         SpryAndMighty,
         SteamVents,
         StoicGroveGuide,
+        Stratosoarer,
         SwatAway,
         SyggsCommand,
         TanufelRimespeaker,

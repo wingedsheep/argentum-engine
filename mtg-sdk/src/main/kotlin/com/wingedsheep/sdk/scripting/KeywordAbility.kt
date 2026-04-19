@@ -375,6 +375,20 @@ sealed interface KeywordAbility {
         override val description: String = "${type}cycling $cost"
     }
 
+    /**
+     * Basic landcycling.
+     * "Basic landcycling {1}{U}" - {1}{U}, Discard this card: Search your library for a basic land
+     * card, reveal it, put it into your hand, then shuffle.
+     *
+     * Shares the typecycling infrastructure — only the search filter differs (any basic land card
+     * rather than cards of a specific subtype).
+     */
+    @SerialName("BasicLandcycling")
+    @Serializable
+    data class BasicLandcycling(val cost: ManaCost) : KeywordAbility {
+        override val description: String = "Basic landcycling $cost"
+    }
+
     // =========================================================================
     // Kicker Variants
     // =========================================================================
@@ -555,6 +569,11 @@ sealed interface KeywordAbility {
          * Create Cycling with mana cost from string.
          */
         fun cycling(cost: String): KeywordAbility = Cycling(ManaCost.parse(cost))
+
+        /**
+         * Create Basic landcycling with mana cost from string.
+         */
+        fun basicLandcycling(cost: String): KeywordAbility = BasicLandcycling(ManaCost.parse(cost))
 
         /**
          * Create Morph with mana cost from string.

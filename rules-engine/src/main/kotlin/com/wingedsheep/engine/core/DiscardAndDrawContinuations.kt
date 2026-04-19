@@ -1,6 +1,7 @@
 package com.wingedsheep.engine.core
 
 import com.wingedsheep.sdk.model.EntityId
+import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.Effect
 import com.wingedsheep.sdk.scripting.targets.TargetRequirement
 import kotlinx.serialization.Serializable
@@ -182,14 +183,18 @@ data class CycleDrawContinuation(
  *
  * @property playerId The player who typecycled
  * @property cardId The card that was typecycled (source for search effect)
- * @property subtypeFilter The creature subtype to search for
+ * @property searchFilter The filter describing which library cards are valid search targets
+ *                       (e.g., cards with subtype "Forest", or any basic land card)
+ * @property abilityDescription Human-readable name of the cycling variant (e.g., "Forestcycling",
+ *                              "Basic landcycling") used in decision prompts and logs
  */
 @Serializable
 data class TypecycleSearchContinuation(
     override val decisionId: String = "typecycle-search",
     val playerId: EntityId,
     val cardId: EntityId,
-    val subtypeFilter: String
+    val searchFilter: GameObjectFilter,
+    val abilityDescription: String
 ) : ContinuationFrame
 
 /**

@@ -77,9 +77,8 @@ class CoreAutoResumerModule(
         },
 
         autoResumer(TypecycleSearchContinuation::class) { state, continuation, events, checkForMore ->
-            val searchFilter = com.wingedsheep.sdk.scripting.GameObjectFilter.Any.withSubtype(continuation.subtypeFilter)
             val searchEffect = com.wingedsheep.sdk.dsl.EffectPatterns.searchLibrary(
-                filter = searchFilter,
+                filter = continuation.searchFilter,
                 count = 1,
                 reveal = true
             )

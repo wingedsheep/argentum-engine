@@ -71,8 +71,7 @@ class TypecycleCardHandler(
         val cardDef = cardRegistry.getCard(cardComponent.cardDefinitionId)
             ?: return "Card definition not found"
 
-        val typecyclingAbility = cardDef.keywordAbilities.filterIsInstance<KeywordAbility.Typecycling>()
-            .firstOrNull()
+        val variant = findTypecyclingVariant(cardDef)
             ?: return "This card doesn't have typecycling"
 
         if (action.paymentStrategy is PaymentStrategy.Explicit) {
@@ -83,7 +82,7 @@ class TypecycleCardHandler(
                     return "Mana source is already tapped: $sourceId"
                 }
             }
-        } else if (!manaSolver.canPay(state, action.playerId, typecyclingAbility.cost)) {
+        } else if (!manaSolver.canPay(state, action.playerId, variant.cost)) {
             return "Not enough mana to typecycle this card"
         }
 
@@ -100,8 +99,7 @@ class TypecycleCardHandler(
         val cardDef = cardRegistry.getCard(cardComponent.cardDefinitionId)
             ?: return ExecutionResult.error(state, "Card definition not found")
 
-        val typecyclingAbility = cardDef.keywordAbilities.filterIsInstance<KeywordAbility.Typecycling>()
-            .firstOrNull()
+        val variant = findTypecyclingVariant(cardDef)
             ?: return ExecutionResult.error(state, "This card doesn't have typecycling")
 
         var currentState = state
@@ -120,7 +118,7 @@ class TypecycleCardHandler(
             colorless = poolComponent.colorless
         )
 
-        val partialResult = pool.payPartial(typecyclingAbility.cost)
+        val partialResult = pool.payPartial(variant.cost)
         val poolAfterPayment = partialResult.newPool
         val remainingCost = partialResult.remainingCost
         val manaSpentFromPool = partialResult.manaSpent
@@ -183,7 +181,7 @@ class TypecycleCardHandler(
         events.add(
             ManaSpentEvent(
                 playerId = action.playerId,
-                reason = "${typecyclingAbility.type}cycling ${cardComponent.name}",
+                reason = "${variant.description} ${cardComponent.name}",
                 white = whiteSpent,
                 blue = blueSpent,
                 black = blackSpent,
@@ -224,7 +222,8 @@ class TypecycleCardHandler(
                 TypecycleSearchContinuation(
                     playerId = action.playerId,
                     cardId = action.cardId,
-                    subtypeFilter = typecyclingAbility.type
+                    searchFilter = variant.searchFilter,
+                    abilityDescription = variant.description
                 )
             )
             val triggerResult = triggerProcessor.processTriggers(stateWithSearchContinuation, preTriggers)
@@ -243,10 +242,9 @@ class TypecycleCardHandler(
             events.addAll(triggerResult.events)
         }
 
-        // Search library for a card of the specified type
-        val searchFilter = GameObjectFilter.Any.withSubtype(typecyclingAbility.type)
+        // Search library for a card matching the typecycling variant's filter
         val searchEffect = EffectPatterns.searchLibrary(
-            filter = searchFilter,
+            filter = variant.searchFilter,
             count = 1,
             reveal = true
         )
@@ -270,6 +268,35 @@ class TypecycleCardHandler(
 
         // Typecycling doesn't change priority
         return ExecutionResult.success(currentState, events)
+    }
+
+    /**
+     * Unified view of the two typecycling-family keywords (classic `Typecycling` and
+     * `BasicLandcycling`). Both share the same cost-pay/discard/search pipeline; only the
+     * search filter and display name differ.
+     */
+    private data class TypecyclingVariant(
+        val cost: com.wingedsheep.sdk.core.ManaCost,
+        val searchFilter: GameObjectFilter,
+        val description: String
+    )
+
+    private fun findTypecyclingVariant(cardDef: com.wingedsheep.sdk.model.CardDefinition): TypecyclingVariant? {
+        cardDef.keywordAbilities.filterIsInstance<KeywordAbility.Typecycling>().firstOrNull()?.let {
+            return TypecyclingVariant(
+                cost = it.cost,
+                searchFilter = GameObjectFilter.Any.withSubtype(it.type),
+                description = "${it.type}cycling"
+            )
+        }
+        cardDef.keywordAbilities.filterIsInstance<KeywordAbility.BasicLandcycling>().firstOrNull()?.let {
+            return TypecyclingVariant(
+                cost = it.cost,
+                searchFilter = GameObjectFilter.BasicLand,
+                description = "Basic landcycling"
+            )
+        }
+        return null
     }
 
     private fun isCyclingPrevented(state: GameState): Boolean {
