@@ -63,6 +63,7 @@ object LorwynEclipsedSet {
         NoggleTheMind,
         Personify,
         PitilessFists,
+        ProtectiveResponse,
         PrismaticUndercurrents,
         RimefireTorque,
         SaplingNursery,
