@@ -492,6 +492,13 @@ data class MoveCollectionEffect(
     val destination: CardDestination,
     val order: CardOrder = CardOrder.Preserve,
     val revealed: Boolean = false,
+    /**
+     * Whether the reveal overlay is shown to the player who performed the move.
+     * Defaults to true. Set to false when the controller chose the cards themselves
+     * (they already know what's being "revealed") — only opponents see the overlay.
+     * Ignored when [revealed] is false.
+     */
+    val revealToSelf: Boolean = true,
     val moveType: MoveType = MoveType.Default,
     val linkToSource: Boolean = false,
     val unlinkFromSource: Boolean = false,

@@ -70,7 +70,7 @@ class MoveCollectionExecutor(
 
         return when (destination) {
             is CardDestination.ToZone -> {
-                var result = moveToZone(state, context, cards, destination, effect.order, effect.revealed, effect.moveType, effect.faceDown, effect.noRegenerate, effect.storeMovedAs, effect.underOwnersControl)
+                var result = moveToZone(state, context, cards, destination, effect.order, effect.revealed, effect.moveType, effect.faceDown, effect.noRegenerate, effect.storeMovedAs, effect.underOwnersControl, effect.revealToSelf)
                 if (effect.linkToSource && result.isSuccess) {
                     result = linkCardsToSource(result, context, cards)
                 }
@@ -145,7 +145,8 @@ class MoveCollectionExecutor(
         faceDown: Boolean = false,
         noRegenerate: Boolean = false,
         storeMovedAs: String? = null,
-        underOwnersControl: Boolean = false
+        underOwnersControl: Boolean = false,
+        revealToSelf: Boolean = true
     ): EffectResult {
         val destPlayerId = resolvePlayer(destination.player, context, state)
             ?: return EffectResult.error(state, "Could not resolve destination player for MoveCollection")
@@ -162,7 +163,7 @@ class MoveCollectionExecutor(
             }
         }
 
-        return moveCardsToZone(state, context, cards, destination, destPlayerId, revealed, moveType, faceDown, noRegenerate, storeMovedAs, underOwnersControl)
+        return moveCardsToZone(state, context, cards, destination, destPlayerId, revealed, moveType, faceDown, noRegenerate, storeMovedAs, underOwnersControl, revealToSelf)
     }
 
     /**
@@ -260,7 +261,8 @@ class MoveCollectionExecutor(
         faceDown: Boolean = false,
         noRegenerate: Boolean = false,
         storeMovedAs: String? = null,
-        underOwnersControl: Boolean = false
+        underOwnersControl: Boolean = false,
+        revealToSelf: Boolean = true
     ): EffectResult {
         val destZone = destination.zone
 
@@ -286,7 +288,7 @@ class MoveCollectionExecutor(
 
                 if (nonAuraCards.isNotEmpty()) {
                     val nonAuraResult = moveCardsToZoneInternal(
-                        newState, context, nonAuraCards, destination, destPlayerId, revealed, moveType, faceDown, noRegenerate, storeMovedAs, underOwnersControl
+                        newState, context, nonAuraCards, destination, destPlayerId, revealed, moveType, faceDown, noRegenerate, storeMovedAs, underOwnersControl, revealToSelf
                     )
                     newState = nonAuraResult.state
                     events.addAll(nonAuraResult.events)
@@ -305,7 +307,7 @@ class MoveCollectionExecutor(
             }
         }
 
-        return moveCardsToZoneInternal(state, context, cards, destination, destPlayerId, revealed, moveType, faceDown, noRegenerate, storeMovedAs, underOwnersControl)
+        return moveCardsToZoneInternal(state, context, cards, destination, destPlayerId, revealed, moveType, faceDown, noRegenerate, storeMovedAs, underOwnersControl, revealToSelf)
     }
 
     /**
@@ -478,7 +480,8 @@ class MoveCollectionExecutor(
         faceDown: Boolean = false,
         noRegenerate: Boolean = false,
         storeMovedAs: String? = null,
-        underOwnersControl: Boolean = false
+        underOwnersControl: Boolean = false,
+        revealToSelf: Boolean = true
     ): EffectResult {
         val destZone = destination.zone
         val events = mutableListOf<GameEvent>()
@@ -581,7 +584,8 @@ class MoveCollectionExecutor(
                     cardIds = cards,
                     cardNames = cardNames,
                     imageUris = imageUris,
-                    source = sourceName
+                    source = sourceName,
+                    revealToSelf = revealToSelf
                 )
             )
         }

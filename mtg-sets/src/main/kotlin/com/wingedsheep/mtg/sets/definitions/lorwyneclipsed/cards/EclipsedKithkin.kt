@@ -57,12 +57,14 @@ val EclipsedKithkin = card("Eclipsed Kithkin") {
                     storeSelected = "kept",
                     storeRemainder = "rest",
                     selectedLabel = "Put in hand",
-                    remainderLabel = "Put on bottom"
+                    remainderLabel = "Put on bottom",
+                    showAllCards = true
                 ),
                 MoveCollectionEffect(
                     from = "kept",
                     destination = CardDestination.ToZone(Zone.HAND),
-                    revealed = true
+                    revealed = true,
+                    revealToSelf = false
                 ),
                 MoveCollectionEffect(
                     from = "rest",
