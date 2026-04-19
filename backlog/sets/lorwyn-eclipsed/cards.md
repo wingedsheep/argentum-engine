@@ -2,13 +2,13 @@
 
 **Set Size:** 273 cards (main set, per Scryfall `set:ecl`)
 **Release Date:** January 23, 2026
-**Implemented:** 83 / 273
+**Implemented:** 84 / 273
 
 | Color      | Total | Done |
 |------------|-------|------|
 | White      | 39    | 8    |
 | Blue       | 39    | 16   |
-| Black      | 38    | 9    |
+| Black      | 38    | 10   |
 | Red        | 39    | 8    |
 | Green      | 39    | 14   |
 | Multicolor | 49    | 18   |
@@ -105,7 +105,7 @@
 
 ## Black (38)
 
-- [ ] Auntie's Sentence
+- [x] Auntie's Sentence
 - [x] Barbed Bloodletter
 - [x] Bile-Vial Boggart
 - [ ] Bitterbloom Bearer

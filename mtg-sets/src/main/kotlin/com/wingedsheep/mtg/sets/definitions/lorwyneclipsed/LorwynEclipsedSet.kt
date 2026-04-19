@@ -22,6 +22,7 @@ object LorwynEclipsedSet {
         AdeptWatershaper,
         AppealToEirdu,
         AquitectsDefenses,
+        AuntiesSentence,
         AuroraAwakener,
         BarbedBloodletter,
         BileVialBoggart,
