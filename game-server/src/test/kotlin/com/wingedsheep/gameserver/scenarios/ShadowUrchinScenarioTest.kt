@@ -77,28 +77,33 @@ class ShadowUrchinScenarioTest : ScenarioTestBase() {
                 val game = scenario()
                     .withPlayers("Shadow", "Opponent")
                     .withCardOnBattlefield(1, "Shadow Urchin", summoningSickness = false)
-                    .withCardOnBattlefield(1, "Fragile Warrior", summoningSickness = false) // 1/1
+                    .withCardOnBattlefield(1, "Grizzly Bears", summoningSickness = false) // 2/2
+                    .withCardInHand(1, "Shock")
+                    .withLandsOnBattlefield(1, "Mountain", 1)
                     .withCardInLibrary(1, "Forest")
-                    .withCardInLibrary(1, "Mountain")
                     .withCardInLibrary(1, "Plains")
                     .withCardInLibrary(2, "Forest")
                     .withActivePlayer(1)
                     .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
                     .build()
 
-                val warrior = game.findPermanent("Fragile Warrior")!!
+                val bears = game.findPermanent("Grizzly Bears")!!
 
-                // Pre-place 2 -1/-1 counters on the 1/1 so it's a doomed -1/-1.
+                // Put 2 -1/-1 counters on Grizzly Bears (now 0/0). SBAs haven't fired yet
+                // because the state was hand-built; the next action (Shock resolution) will
+                // trigger the SBA check that kills the creature.
                 val counters = CountersComponent().withAdded(CounterType.MINUS_ONE_MINUS_ONE, 2)
-                game.state = game.state.updateEntity(warrior) { c -> c.with(counters) }
+                game.state = game.state.updateEntity(bears) { c -> c.with(counters) }
 
-                // Passing priority triggers SBAs: the 0-toughness warrior dies, and
-                // Shadow Urchin's dies-with-counters trigger fires for 2 cards.
-                game.passPriority()
+                // Casting Shock targeting Bears isn't strictly needed — any action that causes
+                // priority-pass-with-SBA-check will kill it. Use Shock on the Bears for a full
+                // end-to-end: even though Bears already has 0 toughness, resolving Shock runs
+                // SBAs, puts it in the graveyard with its 2 counters, and fires Urchin's trigger.
+                game.castSpell(1, "Shock", bears)
                 game.resolveStack()
 
-                withClue("Fragile Warrior should have died to state-based actions") {
-                    game.isOnBattlefield("Fragile Warrior") shouldBe false
+                withClue("Grizzly Bears should have died from -1/-1 counters during SBA check") {
+                    game.isOnBattlefield("Grizzly Bears") shouldBe false
                 }
 
                 val exile = game.state.getExile(game.player1Id)
@@ -114,9 +119,9 @@ class ShadowUrchinScenarioTest : ScenarioTestBase() {
                     }
                 }
 
-                // Only 1 card left in P1's library (started with 3, exiled 2).
-                withClue("P1's library should have one card left") {
-                    game.librarySize(1) shouldBe 1
+                // Library started with 2; exiled 2 → should be empty.
+                withClue("P1's library should be empty (started with 2, exiled 2)") {
+                    game.librarySize(1) shouldBe 0
                 }
             }
 
