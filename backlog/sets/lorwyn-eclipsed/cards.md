@@ -2,11 +2,11 @@
 
 **Set Size:** 273 cards (main set, per Scryfall `set:ecl`)
 **Release Date:** January 23, 2026
-**Implemented:** 72 / 273
+**Implemented:** 73 / 273
 
 | Color      | Total | Done |
 |------------|-------|------|
-| White      | 39    | 6    |
+| White      | 39    | 7    |
 | Blue       | 39    | 15   |
 | Black      | 38    | 9    |
 | Red        | 39    | 4    |
@@ -37,7 +37,7 @@
 - [x] Goldmeadow Nomad
 - [ ] Keep Out
 - [ ] Kinbinding
-- [ ] Kinsbaile Aspirant
+- [x] Kinsbaile Aspirant
 - [ ] Kinscaer Sentry
 - [ ] Kithkeeper
 - [x] Liminal Hold

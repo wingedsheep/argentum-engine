@@ -54,6 +54,7 @@ object LorwynEclipsedSet {
         HarmonizedCrescendo,
         HeirloomAuntie,
         HovelHurler,
+        KinsbaileAspirant,
         Lavaleaper,
         LiminalHold,
         LluwenImperfectNaturalist,
