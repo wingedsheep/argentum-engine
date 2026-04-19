@@ -1238,13 +1238,19 @@ class CastSpellHandler(
                                 val defId = currentState.getEntity(id)?.get<CardComponent>()?.cardDefinitionId
                                 defId?.let { cardRegistry.getCard(it)?.metadata?.imageUri }
                             }
+                            val battlefield = currentState.getBattlefield()
+                            val anyOnBattlefield = chosen.any { it in battlefield }
                             events.add(CardsRevealedEvent(
                                 revealingPlayerId = action.playerId,
                                 cardIds = chosen,
                                 cardNames = cardNames,
                                 imageUris = imageUris,
                                 source = cardComponent.name,
-                                revealToSelf = false
+                                // Deliver to the revealing player when the beheld card is on the
+                                // battlefield (public info) so their client can show the behold
+                                // pulse. Suppress when revealing from hand — the caster already
+                                // knows and the reveal overlay would be redundant.
+                                revealToSelf = anyOnBattlefield
                             ))
                         }
                     }
@@ -1319,13 +1325,15 @@ class CastSpellHandler(
                                 val defId = currentState.getEntity(id)?.get<CardComponent>()?.cardDefinitionId
                                 defId?.let { cardRegistry.getCard(it)?.metadata?.imageUri }
                             }
+                            val battlefield = currentState.getBattlefield()
+                            val anyOnBattlefield = chosen.any { it in battlefield }
                             events.add(CardsRevealedEvent(
                                 revealingPlayerId = action.playerId,
                                 cardIds = chosen,
                                 cardNames = cardNames,
                                 imageUris = imageUris,
                                 source = cardComponent.name,
-                                revealToSelf = false
+                                revealToSelf = anyOnBattlefield
                             ))
                         }
                         // If beheldCards is empty, "pay mana" path — extra mana already added to effectiveCost
