@@ -407,6 +407,13 @@ object Conditions {
         com.wingedsheep.sdk.scripting.conditions.SacrificedFoodThisTurn
 
     /**
+     * If you put a counter on a creature this turn.
+     * Used for Lasting Tarfire.
+     */
+    val PutCounterOnCreatureThisTurn: ConditionInterface =
+        com.wingedsheep.sdk.scripting.conditions.PutCounterOnCreatureThisTurn
+
+    /**
      * If this is the Nth time this ability has resolved this turn.
      * Used for cards like Harvestrite Host.
      */

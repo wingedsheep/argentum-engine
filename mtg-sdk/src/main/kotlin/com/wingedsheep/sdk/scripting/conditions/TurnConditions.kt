@@ -184,6 +184,23 @@ data object SacrificedFoodThisTurn : Condition {
 }
 
 // =============================================================================
+// Counter Tracking Conditions
+// =============================================================================
+
+/**
+ * Condition: "if you put a counter on a creature this turn"
+ * Checks whether the controller has placed one or more counters on any creature
+ * during the current turn.
+ * Used for Lasting Tarfire.
+ */
+@SerialName("PutCounterOnCreatureThisTurn")
+@Serializable
+data object PutCounterOnCreatureThisTurn : Condition {
+    override val description: String = "if you put a counter on a creature this turn"
+    override fun applyTextReplacement(replacer: TextReplacer): Condition = this
+}
+
+// =============================================================================
 // Ability Resolution Conditions
 // =============================================================================
 

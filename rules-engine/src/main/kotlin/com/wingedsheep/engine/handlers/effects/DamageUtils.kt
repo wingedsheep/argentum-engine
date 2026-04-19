@@ -269,6 +269,19 @@ object DamageUtils {
     }
 
     /**
+     * Mark that [placerId] put one or more counters on the creature [targetId] this turn.
+     * Only marks when [targetId] is a creature in the projected state.
+     * Sets the PutCounterOnCreatureThisTurnComponent on the placing player's entity.
+     * Used for conditions like "if you put a counter on a creature this turn" (Lasting Tarfire).
+     */
+    fun markCounterPlacedOnCreature(state: GameState, placerId: EntityId, targetId: EntityId): GameState {
+        if (!state.projectedState.isCreature(targetId)) return state
+        return state.updateEntity(placerId) { container ->
+            container.with(com.wingedsheep.engine.state.components.player.PutCounterOnCreatureThisTurnComponent)
+        }
+    }
+
+    /**
      * Track that [sourceId] dealt damage to [targetCreatureId] this turn.
      * Updates the DamageDealtToCreaturesThisTurnComponent on the source entity.
      * Used for triggers like Soul Collector's "whenever a creature dealt damage by this creature this turn dies".

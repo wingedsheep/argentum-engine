@@ -4,6 +4,7 @@ import com.wingedsheep.engine.core.CountersAddedEvent
 import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.core.GameEvent
 import com.wingedsheep.engine.handlers.EffectContext
+import com.wingedsheep.engine.handlers.effects.DamageUtils
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.handlers.effects.ReplacementEffectUtils
 import com.wingedsheep.engine.handlers.effects.TargetResolutionUtils.toEntityId
@@ -61,6 +62,7 @@ class DistributeCountersAmongTargetsExecutor : EffectExecutor<DistributeCounters
             currentState = currentState.updateEntity(targetId) { container ->
                 container.with(current.withAdded(counterType, modifiedCount))
             }
+            currentState = DamageUtils.markCounterPlacedOnCreature(currentState, context.controllerId, targetId)
 
             val entityName = state.getEntity(targetId)?.get<CardComponent>()?.name ?: ""
             events.add(CountersAddedEvent(targetId, effect.counterType, modifiedCount, entityName))

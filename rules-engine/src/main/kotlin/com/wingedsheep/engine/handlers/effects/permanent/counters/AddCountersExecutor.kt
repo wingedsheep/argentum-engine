@@ -3,6 +3,7 @@ package com.wingedsheep.engine.handlers.effects.permanent.counters
 import com.wingedsheep.engine.core.CountersAddedEvent
 import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.handlers.EffectContext
+import com.wingedsheep.engine.handlers.effects.DamageUtils
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.handlers.effects.ReplacementEffectUtils
 import com.wingedsheep.engine.state.GameState
@@ -44,7 +45,7 @@ class AddCountersExecutor : EffectExecutor<AddCountersEffect> {
 
         val newState = state.updateEntity(targetId) { container ->
             container.with(current.withAdded(counterType, modifiedCount))
-        }
+        }.let { DamageUtils.markCounterPlacedOnCreature(it, context.controllerId, targetId) }
 
         val entityName = state.getEntity(targetId)?.get<CardComponent>()?.name ?: ""
 

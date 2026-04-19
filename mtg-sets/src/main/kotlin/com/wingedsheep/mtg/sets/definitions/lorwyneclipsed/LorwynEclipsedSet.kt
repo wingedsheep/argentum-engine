@@ -57,6 +57,7 @@ object LorwynEclipsedSet {
         HovelHurler,
         ImpoliteEntrance,
         KinsbaileAspirant,
+        LastingTarfire,
         Lavaleaper,
         LiminalHold,
         LluwenImperfectNaturalist,

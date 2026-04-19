@@ -434,6 +434,15 @@ data class CardsLeftGraveyardThisTurnComponent(val count: Int = 0) : Component
 data object SacrificedFoodThisTurnComponent : Component
 
 /**
+ * Marker component indicating that this player has put a counter on a creature this turn.
+ * Cleared at end of turn by CleanupPhaseManager.
+ *
+ * Used for conditions like "if you put a counter on a creature this turn" (Lasting Tarfire).
+ */
+@Serializable
+data object PutCounterOnCreatureThisTurnComponent : Component
+
+/**
  * Marks a player as having been dealt combat damage this turn.
  * Cleared at end of turn by CleanupPhaseManager.
  * Used for YouWereDealtCombatDamageThisTurn condition.
