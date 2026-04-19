@@ -886,6 +886,7 @@ MoveType: `MoveType.Default`, `.Discard`, `.Sacrifice`
 
 - `EffectPatterns.mayPay(cost, effect)` — "You may [cost]. If you do, [effect]"
 - `EffectPatterns.mayPayOrElse(cost, ifPaid, ifNotPaid)` — with fallback
+- `EffectPatterns.blight(amount)` — "Blight N" (ECL): Gather → Select → AddCounters pipeline that puts N -1/-1 counters on a chosen creature you control (non-targeting; silent no-op if the player controls no creatures)
 - `EffectPatterns.sacrifice(filter, count, then)` — sacrifice + effect
 - `EffectPatterns.sacrificeFor(filter, countName, thenEffect)` — sacrifice, store count
 - `EffectPatterns.reflexiveTrigger(action, whenYouDo, optional)` — "When you do, [effect]"

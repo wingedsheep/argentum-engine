@@ -711,7 +711,12 @@ class TriggerMatcher(
                 sourceId = trigger.sourceId,
                 controllerId = trigger.controllerId,
                 opponentId = state.turnOrder.firstOrNull { it != trigger.controllerId },
-                triggeringEntityId = trigger.triggerContext.triggeringEntityId
+                triggeringEntityId = trigger.triggerContext.triggeringEntityId,
+                triggerDamageAmount = trigger.triggerContext.damageAmount,
+                triggerCounterCount = trigger.triggerContext.counterCount,
+                triggerTotalCounterCount = trigger.triggerContext.totalCounterCount,
+                triggerLastKnownPower = trigger.triggerContext.lastKnownPower,
+                triggerLastKnownToughness = trigger.triggerContext.lastKnownToughness
             )
             conditionEvaluator.evaluate(state, condition, context)
         }

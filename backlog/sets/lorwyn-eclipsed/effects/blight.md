@@ -1,6 +1,11 @@
 # Blight N (-1/-1 Counter Self-Distribution)
 
-**Status:** Not implemented
+**Status:** Implemented
+- **Effect form**: `EffectPatterns.blight(amount)` — composed from
+  `GatherCardsEffect(ControlledPermanents) → SelectFromCollectionEffect → AddCountersToCollectionEffect`.
+  First card to use it: Chaos Spewer (ETB's "if you don't, blight 2" path via `PayOrSufferEffect`).
+- **Additional cost**: `AdditionalCost.BlightOrPay(amount, alternativeManaCost)` — used by Wild Unraveling.
+- **Activation cost**: `Costs.Blight(amount)` / `AbilityCost.Blight` — used by Dawnhand Dissident, Gristle Glutton.
 **Cards affected in Lorwyn Eclipsed:** 23 mention Blight; 14 cards ship the reminder text (so ~14
 distinct printings actually have it as a keyword action, the rest interact with -1/-1 counters
 placed by it).

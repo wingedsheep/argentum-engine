@@ -414,6 +414,20 @@ sealed interface DynamicAmount : TextReplaceable<DynamicAmount> {
     }
 
     /**
+     * The total number of counters of any type on the source when it last existed on the
+     * battlefield. Used for dies/leaves triggers that reference "one or more counters" or
+     * "that many" across all counter types (e.g., Shadow Urchin).
+     * Reads from the triggerTotalCounterCount field in EffectContext, populated from
+     * last-known information captured in the ZoneChangeEvent.
+     */
+    @SerialName("LastKnownTotalCounterCount")
+    @Serializable
+    data object LastKnownTotalCounterCount : DynamicAmount {
+        override val description: String = "the number of counters on it"
+        override fun applyTextReplacement(replacer: TextReplacer): DynamicAmount = this
+    }
+
+    /**
      * Generic battlefield aggregation primitive.
      * Queries permanents on the battlefield, filters them, optionally maps to a numeric
      * property, and applies an aggregation function.

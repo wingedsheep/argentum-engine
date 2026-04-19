@@ -103,25 +103,31 @@ class CompositeEffectExecutor(
             }
             allEvents.addAll(result.events)
 
-            // Merge any updated collections / subtype groups from the sub-effect into the context
-            if (result.updatedCollections.isNotEmpty() || result.updatedSubtypeGroups.isNotEmpty()) {
+            // Merge any updated collections / subtype groups / stored numbers from the sub-effect into the context
+            if (result.updatedCollections.isNotEmpty() ||
+                result.updatedSubtypeGroups.isNotEmpty() ||
+                result.updatedStoredNumbers.isNotEmpty()
+            ) {
                 currentContext = currentContext.copy(
                     pipeline = currentContext.pipeline.copy(
                         storedCollections = currentContext.pipeline.storedCollections + result.updatedCollections,
-                        storedSubtypeGroups = currentContext.pipeline.storedSubtypeGroups + result.updatedSubtypeGroups
+                        storedSubtypeGroups = currentContext.pipeline.storedSubtypeGroups + result.updatedSubtypeGroups,
+                        storedNumbers = currentContext.pipeline.storedNumbers + result.updatedStoredNumbers
                     )
                 )
             }
         }
 
-        // Return accumulated collections / subtype groups so parent composites can see them
+        // Return accumulated collections / subtype groups / stored numbers so parent composites can see them
         val accumulatedCollections = currentContext.pipeline.storedCollections - context.pipeline.storedCollections.keys
         val accumulatedSubtypeGroups = currentContext.pipeline.storedSubtypeGroups - context.pipeline.storedSubtypeGroups.keys
+        val accumulatedStoredNumbers = currentContext.pipeline.storedNumbers - context.pipeline.storedNumbers.keys
         return EffectResult(
             currentState,
             allEvents,
             updatedCollections = accumulatedCollections,
-            updatedSubtypeGroups = accumulatedSubtypeGroups
+            updatedSubtypeGroups = accumulatedSubtypeGroups,
+            updatedStoredNumbers = accumulatedStoredNumbers
         )
     }
 }

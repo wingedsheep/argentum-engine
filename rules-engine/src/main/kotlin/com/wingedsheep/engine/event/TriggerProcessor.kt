@@ -407,6 +407,7 @@ class TriggerProcessor(
             elseEffect = ability.elseEffect,
             targetRequirements = allRequirements,
             triggerCounterCount = trigger.triggerContext.counterCount,
+            triggerTotalCounterCount = trigger.triggerContext.totalCounterCount,
             lastKnownPower = trigger.triggerContext.lastKnownPower,
             lastKnownToughness = trigger.triggerContext.lastKnownToughness
         )
@@ -447,6 +448,7 @@ class TriggerProcessor(
             triggeringPlayerId = trigger.triggerContext.triggeringPlayerId,
             xValue = trigger.triggerContext.xValue ?: computeXForDisplay(state, trigger),
             triggerCounterCount = trigger.triggerContext.counterCount,
+            triggerTotalCounterCount = trigger.triggerContext.totalCounterCount,
             targetingSourceEntityId = trigger.triggerContext.targetingSourceEntityId,
             lastKnownPower = trigger.triggerContext.lastKnownPower,
             lastKnownToughness = trigger.triggerContext.lastKnownToughness

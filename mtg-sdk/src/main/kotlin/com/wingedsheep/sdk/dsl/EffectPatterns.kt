@@ -51,6 +51,13 @@ object EffectPatterns {
     fun mayPayOrElse(cost: Effect, ifPaid: Effect, ifNotPaid: Effect): OptionalCostEffect =
         MiscPatterns.mayPayOrElse(cost, ifPaid, ifNotPaid)
 
+    /**
+     * Blight N — put N -1/-1 counters on a creature you control.
+     * Non-targeting choice; does nothing if the controller has no creatures.
+     */
+    fun blight(amount: Int): CompositeEffect =
+        MiscPatterns.blight(amount)
+
     // =========================================================================
     // Forage Patterns (MiscPatterns)
     // =========================================================================

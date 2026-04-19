@@ -34,6 +34,8 @@ data class ZoneChangeEvent(
     val lastKnownCounterCount: Int = 0,
     /** Last known -1/-1 counter count when leaving battlefield (used by the persist keyword's "had no -1/-1 counters" check) */
     val lastKnownMinusOneMinusOneCounterCount: Int = 0,
+    /** Last known total counter count (all counter types) when leaving battlefield. Used by triggers that care about any counter (e.g., Shadow Urchin). */
+    val lastKnownTotalCounterCount: Int = 0,
     /** True if the leaving entity was a token. Used to suppress persist-style return triggers on tokens (Rule 702.79b). */
     val lastKnownWasToken: Boolean = false,
     /** Last known projected power when leaving battlefield (for trigger filters needing last known info) */

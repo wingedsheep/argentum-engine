@@ -1,9 +1,12 @@
 package com.wingedsheep.sdk.dsl
 
+import com.wingedsheep.sdk.core.Counters
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.scripting.GameObjectFilter
+import com.wingedsheep.sdk.scripting.effects.AddCountersToCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.CardSource
 import com.wingedsheep.sdk.scripting.effects.CardDestination
+import com.wingedsheep.sdk.scripting.effects.Chooser
 import com.wingedsheep.sdk.scripting.effects.ChooseActionEffect
 import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.DealDamageEffect
@@ -39,6 +42,33 @@ object MiscPatterns {
 
     fun mayPayOrElse(cost: Effect, ifPaid: Effect, ifNotPaid: Effect): OptionalCostEffect =
         OptionalCostEffect(cost, ifPaid, ifNotPaid)
+
+    /**
+     * Blight N — put N -1/-1 counters on a creature you control.
+     *
+     * Non-targeting keyword action (the word "target" does not appear in the
+     * reminder text, so shroud/hexproof do not interact). If the controller has
+     * no creatures, the effect silently does nothing — `ChooseExactly(1)` on an
+     * empty collection auto-selects nothing and the subsequent counter placement
+     * is a no-op.
+     */
+    fun blight(amount: Int): CompositeEffect = CompositeEffect(
+        listOf(
+            GatherCardsEffect(
+                source = CardSource.ControlledPermanents(Player.You, GameObjectFilter.Creature),
+                storeAs = "blightTargets"
+            ),
+            SelectFromCollectionEffect(
+                from = "blightTargets",
+                selection = SelectionMode.ChooseExactly(DynamicAmount.Fixed(1)),
+                chooser = Chooser.Controller,
+                storeSelected = "blighted",
+                prompt = "Blight $amount — choose a creature you control",
+                useTargetingUI = true
+            ),
+            AddCountersToCollectionEffect("blighted", Counters.MINUS_ONE_MINUS_ONE, amount)
+        )
+    )
 
     fun sacrificeFor(
         filter: GameObjectFilter,

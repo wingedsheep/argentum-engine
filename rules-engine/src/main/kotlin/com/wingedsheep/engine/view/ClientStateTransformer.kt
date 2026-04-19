@@ -1004,13 +1004,18 @@ class ClientStateTransformer(
 
         return try {
             val evaluator = DynamicAmountEvaluator()
+            val chosenTargets = state.getEntity(spellEntityId)
+                ?.get<com.wingedsheep.engine.state.components.stack.TargetsComponent>()
+                ?.targets
+                ?: emptyList()
             val context = EffectContext(
                 sourceId = spellEntityId,
                 controllerId = spellOnStack.casterId,
                 opponentId = state.getOpponent(spellOnStack.casterId),
                 xValue = spellOnStack.xValue,
                 sacrificedPermanents = spellOnStack.sacrificedPermanents,
-                exiledCardCount = spellOnStack.exiledCardCount
+                exiledCardCount = spellOnStack.exiledCardCount,
+                targets = chosenTargets
             )
             effect.runtimeDescription { amount -> evaluator.evaluate(state, amount, context) }
         } catch (_: Exception) {

@@ -2,7 +2,7 @@
 
 **Set Size:** 273 cards (main set, per Scryfall `set:ecl`)
 **Release Date:** January 23, 2026
-**Implemented:** 86 / 273
+**Implemented:** 88 / 273
 
 | Color      | Total | Done |
 |------------|-------|------|
@@ -10,8 +10,8 @@
 | Blue       | 39    | 16   |
 | Black      | 38    | 10   |
 | Red        | 39    | 8    |
-| Green      | 39    | 14   |
-| Multicolor | 49    | 18   |
+| Green      | 39    | 15   |
+| Multicolor | 49    | 19   |
 | Colorless  | 18    | 3    |
 | Land       | 12    | 8    |
 
@@ -209,7 +209,7 @@
 - [ ] Midnight Tilling
 - [ ] Mistmeadow Council
 - [ ] Moon-Vigil Adherents
-- [ ] Morcant's Eyes
+- [x] Morcant's Eyes
 - [ ] Mutable Explorer
 - [x] Pitiless Fists
 - [ ] Prismabasher
@@ -236,7 +236,7 @@
 - [ ] Bre of Clan Stoutarm
 - [x] Brigid's Command
 - [x] Catharsis
-- [ ] Chaos Spewer
+- [x] Chaos Spewer
 - [ ] Chitinous Graspling
 - [ ] Deceit
 - [x] Deepchannel Duelist

@@ -124,6 +124,7 @@ object ZoneTransitionService {
         // 2. Capture last-known info if leaving battlefield
         var lastKnownCounterCount = 0
         var lastKnownMinusOneMinusOneCounterCount = 0
+        var lastKnownTotalCounterCount = 0
         var lastKnownPower: Int? = null
         var lastKnownToughness: Int? = null
         var lastKnownTypeLine: TypeLine? = null
@@ -136,6 +137,7 @@ object ZoneTransitionService {
             lastKnownCounterCount = countersComponent?.getCount(CounterType.PLUS_ONE_PLUS_ONE) ?: 0
             lastKnownMinusOneMinusOneCounterCount =
                 countersComponent?.getCount(CounterType.MINUS_ONE_MINUS_ONE) ?: 0
+            lastKnownTotalCounterCount = countersComponent?.counters?.values?.sum() ?: 0
             val projected = state.projectedState
             lastKnownPower = projected.getPower(entityId)
             lastKnownToughness = projected.getToughness(entityId)
@@ -243,6 +245,7 @@ object ZoneTransitionService {
                 ownerId = ownerId,
                 lastKnownCounterCount = lastKnownCounterCount,
                 lastKnownMinusOneMinusOneCounterCount = lastKnownMinusOneMinusOneCounterCount,
+                lastKnownTotalCounterCount = lastKnownTotalCounterCount,
                 lastKnownWasToken = lastKnownWasToken,
                 lastKnownPower = lastKnownPower,
                 lastKnownToughness = lastKnownToughness,

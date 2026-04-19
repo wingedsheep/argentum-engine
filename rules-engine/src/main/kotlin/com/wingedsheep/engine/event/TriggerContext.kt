@@ -31,6 +31,8 @@ data class TriggerContext(
     val xValue: Int? = null,
     /** Last known +1/+1 counter count when the source left the battlefield */
     val counterCount: Int? = null,
+    /** Last known total counter count (all types) when the source left the battlefield */
+    val totalCounterCount: Int? = null,
     /** The spell or ability entity that targeted a permanent (for ward triggers) */
     val targetingSourceEntityId: EntityId? = null,
     /** Last known power when the triggering entity left the battlefield (for dies/leaves triggers) */
@@ -44,6 +46,7 @@ data class TriggerContext(
                 is ZoneChangeEvent -> TriggerContext(
                     triggeringEntityId = event.entityId,
                     counterCount = if (event.lastKnownCounterCount > 0) event.lastKnownCounterCount else null,
+                    totalCounterCount = if (event.lastKnownTotalCounterCount > 0) event.lastKnownTotalCounterCount else null,
                     xValue = event.xValue,
                     lastKnownPower = event.lastKnownPower,
                     lastKnownToughness = event.lastKnownToughness

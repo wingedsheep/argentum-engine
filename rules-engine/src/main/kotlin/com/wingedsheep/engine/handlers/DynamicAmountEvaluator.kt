@@ -115,6 +115,7 @@ class DynamicAmountEvaluator(
             is DynamicAmount.TriggerLifeGainAmount -> context.triggerDamageAmount ?: 0
             is DynamicAmount.TriggerLifeLossAmount -> context.triggerDamageAmount ?: 0
             is DynamicAmount.LastKnownCounterCount -> context.triggerCounterCount ?: 0
+            is DynamicAmount.LastKnownTotalCounterCount -> context.triggerTotalCounterCount ?: 0
 
             is DynamicAmount.CardTypesInLinkedExile -> {
                 val sourceId = context.sourceId ?: return 0

@@ -25,22 +25,40 @@ import kotlinx.serialization.Serializable
 
 /**
  * Multiple effects that happen together.
+ *
+ * By default, [description] and [runtimeDescription] concatenate each sub-effect's
+ * own text with ". ". For cards whose pipeline produces a verbose or implementation-leaking
+ * join (e.g., intermediate `StoreNumber` steps), supply [descriptionOverride] to render
+ * a single hand-written sentence instead. Use `{0}`, `{1}`, ... placeholders paired with
+ * [descriptionAmounts] to interpolate evaluated dynamic values at runtime — the static
+ * [description] leaves placeholders literal.
  */
 @SerialName("Composite")
 @Serializable
 data class CompositeEffect(
     val effects: List<Effect>,
-    val stopOnError: Boolean = false
+    val stopOnError: Boolean = false,
+    val descriptionOverride: String? = null,
+    val descriptionAmounts: List<DynamicAmount> = emptyList()
 ) : Effect {
-    override val description: String = effects.joinToString(". ") { it.description }
+    override val description: String =
+        descriptionOverride ?: effects.joinToString(". ") { it.description }
 
-    override fun runtimeDescription(resolver: (DynamicAmount) -> Int): String =
-        effects.joinToString(". ") { it.runtimeDescription(resolver) }
+    override fun runtimeDescription(resolver: (DynamicAmount) -> Int): String {
+        val template = descriptionOverride
+            ?: return effects.joinToString(". ") { it.runtimeDescription(resolver) }
+        var rendered = template
+        descriptionAmounts.forEachIndexed { index, amount ->
+            rendered = rendered.replace("{$index}", resolver(amount).toString())
+        }
+        return rendered
+    }
 
     override fun applyTextReplacement(replacer: TextReplacer): Effect {
         var changed = false
         val newEffects = effects.map { val n = it.applyTextReplacement(replacer); if (n !== it) changed = true; n }
-        return if (changed) CompositeEffect(newEffects, stopOnError) else this
+        val newAmounts = descriptionAmounts.map { val n = it.applyTextReplacement(replacer); if (n !== it) changed = true; n }
+        return if (changed) copy(effects = newEffects, descriptionAmounts = newAmounts) else this
     }
 }
 
