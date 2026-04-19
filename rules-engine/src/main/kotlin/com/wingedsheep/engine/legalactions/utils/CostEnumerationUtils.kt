@@ -140,14 +140,21 @@ class CostEnumerationUtils(
         }
     }
 
-    // --- Morph cost targets ---
-
-    fun findMorphDiscardTargets(state: GameState, playerId: EntityId, filter: GameObjectFilter): List<EntityId> {
+    /**
+     * Find cards in the player's hand matching the filter — used for discard costs on
+     * activated abilities (e.g., "Discard a land card: ...").
+     */
+    fun findDiscardTargets(state: GameState, playerId: EntityId, filter: GameObjectFilter): List<EntityId> {
         val handZone = ZoneKey(playerId, Zone.HAND)
         val hand = state.getZone(handZone)
         val predicateContext = PredicateContext(controllerId = playerId)
         return hand.filter { predicateEvaluator.matches(state, it, filter, predicateContext) }
     }
+
+    // --- Morph cost targets ---
+
+    fun findMorphDiscardTargets(state: GameState, playerId: EntityId, filter: GameObjectFilter): List<EntityId> =
+        findDiscardTargets(state, playerId, filter)
 
     fun findMorphRevealTargets(state: GameState, playerId: EntityId, filter: GameObjectFilter): List<EntityId> {
         return findMorphDiscardTargets(state, playerId, filter) // Same logic

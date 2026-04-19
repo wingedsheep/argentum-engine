@@ -132,6 +132,8 @@ class ActivatedAbilityEnumerator : ActionEnumerator {
                 var forageFoodTargets: List<EntityId> = emptyList()
                 var blightCost: AbilityCost.Blight? = null
                 var blightCreatures: List<EntityId> = emptyList()
+                var discardCost: AbilityCost.Discard? = null
+                var discardTargets: List<EntityId>? = null
                 var costAffordable = true
 
                 when (effectiveCost) {
@@ -203,6 +205,11 @@ class ActivatedAbilityEnumerator : ActionEnumerator {
                         blightCreatures = projected.getBattlefieldControlledBy(playerId)
                             .filter { projected.isCreature(it) }
                         if (blightCreatures.isEmpty()) continue
+                    }
+                    is AbilityCost.Discard -> {
+                        discardCost = effectiveCost
+                        discardTargets = context.costUtils.findDiscardTargets(state, playerId, effectiveCost.filter)
+                        if (discardTargets.isEmpty()) continue
                     }
                     is AbilityCost.Composite -> {
                         val compositeCost = effectiveCost
@@ -342,6 +349,14 @@ class ActivatedAbilityEnumerator : ActionEnumerator {
                                         break
                                     }
                                 }
+                                is AbilityCost.Discard -> {
+                                    discardCost = subCost
+                                    discardTargets = context.costUtils.findDiscardTargets(state, playerId, subCost.filter)
+                                    if (discardTargets.isEmpty()) {
+                                        costCanBePaid = false
+                                        break
+                                    }
+                                }
                                 is AbilityCost.ExileXFromGraveyard -> {
                                     // ExileXFromGraveyard: validated via maxAffordableX cap below
                                 }
@@ -420,7 +435,8 @@ class ActivatedAbilityEnumerator : ActionEnumerator {
                     sacrificeTargets, sacrificeCost, bounceTargets, bounceCost,
                     counterRemovalCreatures,
                     hasForageCost, forageGraveyardCards, forageFoodTargets,
-                    blightCost, blightCreatures
+                    blightCost, blightCreatures,
+                    discardCost, discardTargets
                 )
 
                 // Calculate X cost info for activated abilities with X in their mana cost
@@ -681,7 +697,9 @@ class ActivatedAbilityEnumerator : ActionEnumerator {
         forageGraveyardCards: List<EntityId> = emptyList(),
         forageFoodTargets: List<EntityId> = emptyList(),
         blightCost: AbilityCost.Blight? = null,
-        blightCreatures: List<EntityId> = emptyList()
+        blightCreatures: List<EntityId> = emptyList(),
+        discardCost: AbilityCost.Discard? = null,
+        discardTargets: List<EntityId>? = null
     ): AdditionalCostData? {
         if (tapTargets != null && tapCost != null) {
             return AdditionalCostData(
@@ -724,6 +742,15 @@ class ActivatedAbilityEnumerator : ActionEnumerator {
                 costType = "Blight",
                 validBlightTargets = blightCreatures,
                 blightAmount = blightCost.amount,
+                counterRemovalCreatures = counterRemovalCreatures
+            )
+        }
+        if (discardCost != null && discardTargets != null && discardTargets.isNotEmpty()) {
+            return AdditionalCostData(
+                description = discardCost.description,
+                costType = "DiscardCard",
+                validDiscardTargets = discardTargets,
+                discardCount = 1,
                 counterRemovalCreatures = counterRemovalCreatures
             )
         }
