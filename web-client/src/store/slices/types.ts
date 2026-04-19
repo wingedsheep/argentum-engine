@@ -728,6 +728,8 @@ export type GameStore = {
   revealAnimations: readonly RevealAnimation[]
   coinFlipAnimations: readonly CoinFlipAnimation[]
   targetReselectedAnimations: readonly TargetReselectedAnimation[]
+  /** Battlefield card ids currently pulsing after being beheld. */
+  beholdPulseIds: readonly EntityId[]
   selectCard: (cardId: EntityId | null) => void
   hoverCard: (cardId: EntityId | null, position?: { x: number; y: number }) => void
   updateHoverPosition: (position: { x: number; y: number }) => void
@@ -808,6 +810,7 @@ export type GameStore = {
   removeCoinFlipAnimation: (id: string) => void
   addTargetReselectedAnimation: (animation: TargetReselectedAnimation) => void
   removeTargetReselectedAnimation: (id: string) => void
+  pulseBeholdCard: (cardId: EntityId) => void
   setAutoTapPreview: (preview: readonly EntityId[] | null) => void
   matchIntro: MatchIntro | null
   setMatchIntro: (intro: MatchIntro) => void

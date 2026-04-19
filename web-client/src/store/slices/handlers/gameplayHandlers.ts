@@ -89,7 +89,7 @@ function processStateUpdate(
   set: SetState,
   get: GetState
 ): void {
-  const { playerId, addDrawAnimation, addDamageAnimation, addRevealAnimation, addCoinFlipAnimation, addTargetReselectedAnimation } = get()
+  const { playerId, addDrawAnimation, addDamageAnimation, addRevealAnimation, addCoinFlipAnimation, addTargetReselectedAnimation, pulseBeholdCard } = get()
 
   // Check for hand reveal events
   const handLookedAtEvent = msg.events.find(
@@ -103,6 +103,35 @@ function processStateUpdate(
   const cardsRevealedEvent = msg.events.find(
     (e) => e.type === 'cardsRevealed'
   ) as { type: 'cardsRevealed'; revealingPlayerId: EntityId; cardIds: readonly EntityId[]; cardNames: readonly string[]; imageUris: readonly (string | null)[]; source: string | null } | undefined
+
+  // Partition revealed cards into battlefield vs. other zones. Battlefield cards are already
+  // public info, so instead of the reveal overlay (which misrepresents them as hidden→shown)
+  // we pulse the permanent in place. Cards still hidden (hand) use the existing overlay.
+  const battlefieldCardIds = new Set<EntityId>(
+    resolvedState.zones
+      .filter((z) => z.zoneId.zoneType === 'Battlefield')
+      .flatMap((z) => z.cardIds)
+  )
+  const beheldBattlefieldIds = cardsRevealedEvent
+    ? cardsRevealedEvent.cardIds.filter((id) => battlefieldCardIds.has(id))
+    : []
+  const revealOverlayIndices = cardsRevealedEvent
+    ? cardsRevealedEvent.cardIds
+        .map((id, i) => (battlefieldCardIds.has(id) ? -1 : i))
+        .filter((i) => i >= 0)
+    : []
+  const filteredReveal = cardsRevealedEvent && revealOverlayIndices.length > 0
+    ? {
+        ...cardsRevealedEvent,
+        cardIds: revealOverlayIndices.map((i) => cardsRevealedEvent.cardIds[i]!),
+        cardNames: revealOverlayIndices.map((i) => cardsRevealedEvent.cardNames[i]!),
+        imageUris: revealOverlayIndices.map((i) => cardsRevealedEvent.imageUris[i]!),
+      }
+    : null
+
+  for (const id of beheldBattlefieldIds) {
+    pulseBeholdCard(id)
+  }
 
   // Process card draw events for animations
   const cardDrawnEvents = msg.events.filter((e) => e.type === 'cardDrawn') as {
@@ -264,17 +293,17 @@ function processStateUpdate(
     // carries both a reveal to the caster AND a SelectCards decision covering every
     // revealed card, the selection modal is the reveal for them — suppress the
     // overlay entirely so it doesn't appear before or after the selection resolves.
-    revealedCardsInfo: cardsRevealedEvent
-      ? (cardsRevealedEvent.revealingPlayerId === playerId &&
+    revealedCardsInfo: filteredReveal
+      ? (filteredReveal.revealingPlayerId === playerId &&
          msg.pendingDecision?.type === 'SelectCardsDecision' &&
          isRevealCoveredBySelectDecision(
-           cardsRevealedEvent.cardIds,
+           filteredReveal.cardIds,
            msg.pendingDecision.options,
            msg.pendingDecision.nonSelectableOptions ?? []
          )
           ? null
-          : { cardIds: cardsRevealedEvent.cardIds, cardNames: cardsRevealedEvent.cardNames, imageUris: cardsRevealedEvent.imageUris, source: cardsRevealedEvent.source, isYourReveal: cardsRevealedEvent.revealingPlayerId === playerId })
-      : state.revealedCardsInfo,
+          : { cardIds: filteredReveal.cardIds, cardNames: filteredReveal.cardNames, imageUris: filteredReveal.imageUris, source: filteredReveal.source, isYourReveal: filteredReveal.revealingPlayerId === playerId })
+      : cardsRevealedEvent ? null : state.revealedCardsInfo,
     opponentAttackerTargets: resolvedState.combat ? null : state.opponentAttackerTargets,
     opponentBlockerAssignments: (resolvedState.combat?.blockers?.length || !resolvedState.combat) ? null : state.opponentBlockerAssignments,
   }))

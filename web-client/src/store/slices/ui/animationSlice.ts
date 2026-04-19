@@ -31,6 +31,7 @@ export interface AnimationSliceState {
   revealAnimations: readonly RevealAnimation[]
   coinFlipAnimations: readonly CoinFlipAnimation[]
   targetReselectedAnimations: readonly TargetReselectedAnimation[]
+  beholdPulseIds: readonly EntityId[]
   matchIntro: MatchIntro | null
 }
 
@@ -53,6 +54,7 @@ export interface AnimationSliceActions {
   removeCoinFlipAnimation: (id: string) => void
   addTargetReselectedAnimation: (animation: TargetReselectedAnimation) => void
   removeTargetReselectedAnimation: (id: string) => void
+  pulseBeholdCard: (cardId: EntityId) => void
   setMatchIntro: (intro: MatchIntro) => void
   clearMatchIntro: () => void
 }
@@ -71,6 +73,7 @@ export const createAnimationSlice: SliceCreator<AnimationSlice> = (set, get) => 
   revealAnimations: [],
   coinFlipAnimations: [],
   targetReselectedAnimations: [],
+  beholdPulseIds: [],
   matchIntro: null,
 
   // Card selection actions
@@ -185,6 +188,19 @@ export const createAnimationSlice: SliceCreator<AnimationSlice> = (set, get) => 
     set((state) => ({
       targetReselectedAnimations: state.targetReselectedAnimations.filter((a) => a.id !== id),
     }))
+  },
+
+  pulseBeholdCard: (cardId) => {
+    set((state) => (
+      state.beholdPulseIds.includes(cardId)
+        ? state
+        : { beholdPulseIds: [...state.beholdPulseIds, cardId] }
+    ))
+    setTimeout(() => {
+      set((state) => ({
+        beholdPulseIds: state.beholdPulseIds.filter((id) => id !== cardId),
+      }))
+    }, 1400)
   },
 
   setMatchIntro: (intro) => {

@@ -118,6 +118,7 @@ export function GameCard({
   const toggleCrewCreature = useGameStore((state) => state.toggleCrewCreature)
   const toggleConvokeCreature = useGameStore((state) => state.toggleConvokeCreature)
   const submitYesNoDecision = useGameStore((state) => state.submitYesNoDecision)
+  const isBeheldPulsing = useGameStore((state) => state.beholdPulseIds.includes(card.id))
   const responsive = useResponsiveContext()
   const { handleCardClick, handleDoubleClick, executeAction } = useInteraction()
   const dragStartPos = useRef<{ x: number; y: number } | null>(null)
@@ -907,13 +908,14 @@ export function GameCard({
         height,
         borderRadius: responsive.isMobile ? 4 : 8,
         cursor,
-        border: borderStyle,
+        border: isBeheldPulsing ? '3px solid #eab308' : borderStyle,
         pointerEvents: 'auto',
         transform: `${isTapped ? 'rotate(90deg)' : ''} ${isSelected && (!isInCombatMode || !isCombatRoleCard) ? 'translateY(-8px)' : ''}`,
         transformOrigin: 'center',
         boxShadow,
         opacity: isBeingDragged ? 0.6 : isGhost ? 0.55 : (inHand && isInTargetingMode && !isValidTarget && !isBeingCast) ? 0.35 : 1,
         userSelect: 'none',
+        ...(isBeheldPulsing ? { animation: 'beholdPulse 1.4s ease-out' } : {}),
       }}
     >
       {/* Token with art_crop image — render a custom card frame */}
@@ -1824,6 +1826,32 @@ export function GameCard({
           >
             +
           </button>
+        </div>
+      )}
+
+      {/* Behold label — gold ribbon fading in/out while this permanent is pulsing */}
+      {isBeheldPulsing && (
+        <div style={{
+          position: 'absolute',
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, -50%)',
+          padding: '4px 10px',
+          borderRadius: 4,
+          backgroundColor: 'rgba(0, 0, 0, 0.78)',
+          color: '#eab308',
+          fontWeight: 800,
+          fontSize: responsive.isMobile ? 10 : 12,
+          letterSpacing: '0.12em',
+          textTransform: 'uppercase',
+          border: '1px solid rgba(234, 179, 8, 0.7)',
+          boxShadow: '0 0 10px rgba(234, 179, 8, 0.6)',
+          pointerEvents: 'none',
+          zIndex: 5,
+          animation: 'beholdLabelFade 1.4s ease-out',
+          whiteSpace: 'nowrap',
+        }}>
+          Beheld
         </div>
       )}
     </div>
