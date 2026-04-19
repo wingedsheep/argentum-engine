@@ -78,6 +78,8 @@ class CastSpellEnumerator : ActionEnumerator {
             var beholdCount = 0
             var blightOrPayCost: AdditionalCost.BlightOrPay? = null
             var blightCreatures = emptyList<EntityId>()
+            var beholdOrPayCost: AdditionalCost.BeholdOrPay? = null
+            var beholdOrPayTargets = emptyList<EntityId>()
             var canPayAdditionalCosts = true
             val flattenedCosts = additionalCosts.flatMap {
                 if (it is AdditionalCost.Composite) it.steps else listOf(it)
@@ -158,6 +160,21 @@ class CastSpellEnumerator : ActionEnumerator {
                         blightCreatures = projected.getBattlefieldControlledBy(playerId)
                             .filter { projected.isCreature(it) }
                     }
+                    is AdditionalCost.BeholdOrPay -> {
+                        // Always payable: player can always choose the "pay mana" path
+                        // Find valid behold targets (battlefield permanents + hand cards matching filter)
+                        beholdOrPayCost = cost
+                        val projected = state.projectedState
+                        val predicateContext = PredicateContext(controllerId = playerId)
+                        val battlefieldMatches = projected.getBattlefieldControlledBy(playerId).filter { permId ->
+                            context.predicateEvaluator.matchesWithProjection(state, projected, permId, cost.filter, predicateContext)
+                        }
+                        val handZone = ZoneKey(playerId, Zone.HAND)
+                        val handMatches = state.getZone(handZone)
+                            .filter { it != cardId } // Exclude the card being cast
+                            .filter { context.predicateEvaluator.matches(state, it, cost.filter, predicateContext) }
+                        beholdOrPayTargets = battlefieldMatches + handMatches
+                    }
                     else -> {}
                 }
             }
@@ -178,6 +195,12 @@ class CastSpellEnumerator : ActionEnumerator {
             val blightBaseCost = effectiveCost
             if (blightOrPayCost != null) {
                 effectiveCost = effectiveCost + ManaCost.parse(blightOrPayCost.alternativeManaCost)
+            }
+
+            // Save base cost for behold path, then add extra mana for the "pay" path
+            val beholdBaseCost = effectiveCost
+            if (beholdOrPayCost != null) {
+                effectiveCost = effectiveCost + ManaCost.parse(beholdOrPayCost.alternativeManaCost)
             }
 
             // Check mana affordability (including Convoke/Delve if available).
@@ -253,7 +276,12 @@ class CastSpellEnumerator : ActionEnumerator {
                 context.manaSolver.canPay(state, playerId, blightBaseCost, spellContext = spellContext, precomputedSources = cachedSources)
             } else false
 
-            if (!canAfford && !canAffordAlternative && !canAffordSelfAlternative && !canAffordEvoke && !canAffordBlightPath) continue
+            // Check behold path affordability (base cost without the extra mana, but needs a beholdable target)
+            val canAffordBeholdPath = if (beholdOrPayCost != null && beholdOrPayTargets.isNotEmpty()) {
+                context.manaSolver.canPay(state, playerId, beholdBaseCost, spellContext = spellContext, precomputedSources = cachedSources)
+            } else false
+
+            if (!canAfford && !canAffordAlternative && !canAffordSelfAlternative && !canAffordEvoke && !canAffordBlightPath && !canAffordBeholdPath) continue
 
             val targetReqs = buildList {
                 addAll(cardDef.script.targetRequirements)
@@ -281,6 +309,22 @@ class CastSpellEnumerator : ActionEnumerator {
                     blightAmount = blightOrPayCost.blightAmount
                 )
                 Triple(blightManaCostString, blightAutoTapPreview, blightCostInfo)
+            } else null
+
+            // Compute behold path info (separate legal action with lower mana cost + behold target selection)
+            val beholdPathInfo = if (canAffordBeholdPath && beholdOrPayCost != null) {
+                val beholdManaCostString = beholdBaseCost.toString()
+                val beholdAutoTapPreview = if (context.skipAutoTapPreview) null else {
+                    context.manaSolver.solve(state, playerId, beholdBaseCost, precomputedSources = cachedSources)
+                        ?.sources?.map { it.entityId }
+                }
+                val beholdCostInfo = AdditionalCostData(
+                    description = beholdOrPayCost.description,
+                    costType = "Behold",
+                    validBeholdTargets = beholdOrPayTargets,
+                    beholdCount = 1
+                )
+                Triple(beholdManaCostString, beholdAutoTapPreview, beholdCostInfo)
             } else null
 
             // Calculate X cost info if the spell has X in its cost
@@ -610,6 +654,19 @@ class CastSpellEnumerator : ActionEnumerator {
                                 autoTapPreview = blightPathInfo.second
                             ))
                         }
+                        if (beholdPathInfo != null) {
+                            result.add(LegalAction(
+                                actionType = "CastSpell",
+                                description = "Cast ${cardComponent.name} (Behold)",
+                                action = CastSpell(playerId, cardId, targets = listOf(autoSelectedTarget)),
+                                additionalCostInfo = beholdPathInfo.third,
+                                manaCostString = beholdPathInfo.first,
+                                requiresDamageDistribution = requiresDamageDistribution,
+                                totalDamageToDistribute = totalDamageToDistribute,
+                                minDamagePerTarget = minDamagePerTarget,
+                                autoTapPreview = beholdPathInfo.second
+                            ))
+                        }
                     } else {
                         if (canAfford) {
                             result.add(LegalAction(
@@ -708,6 +765,25 @@ class CastSpellEnumerator : ActionEnumerator {
                                 autoTapPreview = blightPathInfo.second
                             ))
                         }
+                        if (beholdPathInfo != null) {
+                            result.add(LegalAction(
+                                actionType = "CastSpell",
+                                description = "Cast ${cardComponent.name} (Behold)",
+                                action = CastSpell(playerId, cardId),
+                                validTargets = firstReqInfo.validTargets,
+                                requiresTargets = true,
+                                targetCount = firstReq.count,
+                                minTargets = firstReq.effectiveMinCount,
+                                targetDescription = firstReq.description,
+                                targetRequirements = if (targetReqInfos.size > 1) targetReqInfos else null,
+                                additionalCostInfo = beholdPathInfo.third,
+                                manaCostString = beholdPathInfo.first,
+                                requiresDamageDistribution = requiresDamageDistribution,
+                                totalDamageToDistribute = totalDamageToDistribute,
+                                minDamagePerTarget = minDamagePerTarget,
+                                autoTapPreview = beholdPathInfo.second
+                            ))
+                        }
                     }
                 }
             } else {
@@ -765,6 +841,16 @@ class CastSpellEnumerator : ActionEnumerator {
                         additionalCostInfo = blightPathInfo.third,
                         manaCostString = blightPathInfo.first,
                         autoTapPreview = blightPathInfo.second
+                    ))
+                }
+                if (beholdPathInfo != null) {
+                    result.add(LegalAction(
+                        actionType = "CastSpell",
+                        description = "Cast ${cardComponent.name} (Behold)",
+                        action = CastSpell(playerId, cardId),
+                        additionalCostInfo = beholdPathInfo.third,
+                        manaCostString = beholdPathInfo.first,
+                        autoTapPreview = beholdPathInfo.second
                     ))
                 }
             }

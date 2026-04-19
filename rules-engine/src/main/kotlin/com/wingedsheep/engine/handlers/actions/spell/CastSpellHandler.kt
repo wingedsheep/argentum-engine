@@ -318,6 +318,19 @@ class CastSpellHandler(
             }
         }
 
+        // Apply BeholdOrPay "pay mana" adjustment in validation
+        if (cardDef != null && !playForFree) {
+            val beholdOrPay = cardDef.script.additionalCosts
+                .filterIsInstance<AdditionalCost.BeholdOrPay>()
+                .firstOrNull()
+            if (beholdOrPay != null) {
+                val choseBehold = action.additionalCostPayment?.beheldCards?.isNotEmpty() == true
+                if (!choseBehold) {
+                    effectiveCost = effectiveCost + ManaCost.parse(beholdOrPay.alternativeManaCost)
+                }
+            }
+        }
+
         // Apply sacrifice-for-cost-reduction before validating payment
         if (cardDef != null && action.additionalCostPayment != null) {
             for (cost in cardDef.script.additionalCosts) {
@@ -850,6 +863,37 @@ class CastSpellHandler(
                     }
                     // If blightTargets is empty, the player is paying extra mana instead
                 }
+                is AdditionalCost.BeholdOrPay -> {
+                    // BeholdOrPay: player chose behold if beheldCards is non-empty,
+                    // otherwise chose to pay extra mana (validated via mana payment)
+                    val beheld = action.additionalCostPayment?.beheldCards ?: emptyList()
+                    if (beheld.isNotEmpty()) {
+                        val handZone = ZoneKey(action.playerId, Zone.HAND)
+                        val handCards = state.getZone(handZone)
+                        val battlefieldCards = state.getBattlefield()
+                        val context = PredicateContext(controllerId = action.playerId)
+                        for (cardId in beheld) {
+                            val inHand = cardId in handCards && cardId != action.cardId
+                            val onBattlefield = cardId in battlefieldCards &&
+                                projected.getController(cardId) == action.playerId
+                            if (!inHand && !onBattlefield) {
+                                return "Beheld card must be a card in your hand or a permanent you control"
+                            }
+                            if (onBattlefield) {
+                                if (!predicateEvaluator.matchesWithProjection(state, projected, cardId, additionalCost.filter, context)) {
+                                    val cardName = state.getEntity(cardId)?.get<CardComponent>()?.name ?: "Card"
+                                    return "$cardName doesn't match the required filter: ${additionalCost.filter.description}"
+                                }
+                            } else {
+                                if (!predicateEvaluator.matches(state, cardId, additionalCost.filter, context)) {
+                                    val cardName = state.getEntity(cardId)?.get<CardComponent>()?.name ?: "Card"
+                                    return "$cardName doesn't match the required filter: ${additionalCost.filter.description}"
+                                }
+                            }
+                        }
+                    }
+                    // If beheldCards is empty, the player is paying extra mana instead
+                }
                 is AdditionalCost.RemoveCountersFromYourCreatures -> {
                     // Accept either typed distributedCounterRemovals or the legacy
                     // counterRemovals: Map<EntityId, Int> payload the web client currently
@@ -996,6 +1040,19 @@ class CastSpellHandler(
                 val choseBlight = action.additionalCostPayment?.blightTargets?.isNotEmpty() == true
                 if (!choseBlight) {
                     effectiveCost = effectiveCost + ManaCost.parse(blightOrPay.alternativeManaCost)
+                }
+            }
+        }
+
+        // Apply BeholdOrPay: if player chose "pay mana" path (no beheld cards), add extra mana
+        if (cardDef != null && !playForFreeInExecute) {
+            val beholdOrPay = cardDef.script.additionalCosts
+                .filterIsInstance<AdditionalCost.BeholdOrPay>()
+                .firstOrNull()
+            if (beholdOrPay != null) {
+                val choseBehold = action.additionalCostPayment?.beheldCards?.isNotEmpty() == true
+                if (!choseBehold) {
+                    effectiveCost = effectiveCost + ManaCost.parse(beholdOrPay.alternativeManaCost)
                 }
             }
         }
@@ -1249,6 +1306,29 @@ class CastSpellHandler(
                             }
                         }
                         // If blightTargets is empty, "pay mana" path — extra mana already added to effectiveCost
+                    }
+                    is AdditionalCost.BeholdOrPay -> {
+                        // Store beheld card IDs in pipeline and reveal them, if behold path chosen
+                        val chosen = action.additionalCostPayment.beheldCards
+                        if (chosen.isNotEmpty()) {
+                            beheldCards.addAll(chosen)
+                            costPipelineCollections[additionalCost.storeAs] = chosen
+
+                            val cardNames = chosen.mapNotNull { currentState.getEntity(it)?.get<CardComponent>()?.name }
+                            val imageUris = chosen.map { id ->
+                                val defId = currentState.getEntity(id)?.get<CardComponent>()?.cardDefinitionId
+                                defId?.let { cardRegistry.getCard(it)?.metadata?.imageUri }
+                            }
+                            events.add(CardsRevealedEvent(
+                                revealingPlayerId = action.playerId,
+                                cardIds = chosen,
+                                cardNames = cardNames,
+                                imageUris = imageUris,
+                                source = cardComponent.name,
+                                revealToSelf = false
+                            ))
+                        }
+                        // If beheldCards is empty, "pay mana" path — extra mana already added to effectiveCost
                     }
                     is AdditionalCost.RemoveCountersFromYourCreatures -> {
                         // Remove the chosen counters from the designated creatures.

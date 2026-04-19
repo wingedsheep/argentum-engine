@@ -267,6 +267,44 @@ sealed interface AdditionalCost : TextReplaceable<AdditionalCost> {
     }
 
     /**
+     * Behold a matching card or pay additional mana: the caster must either behold
+     * (choose a matching permanent they control or reveal a matching card from their hand)
+     * or pay extra mana on top of the spell's base mana cost. Unlike [BeholdAndExile],
+     * this does not exile the beheld card.
+     * Used by Lorwyn Eclipsed cards (e.g., Lys Alana Dignitary).
+     *
+     * The enumerator produces two legal actions: one for the behold path (base cost +
+     * card selection) and one for the pay path (base cost + [alternativeManaCost]).
+     *
+     * @property filter Which cards/permanents can be beheld
+     * @property alternativeManaCost Extra mana to pay instead of beholding (e.g., "{2}")
+     * @property storeAs Pipeline storage key for the chosen cards (unused by cost itself,
+     *   reserved for downstream composition)
+     */
+    @SerialName("BeholdOrPay")
+    @Serializable
+    data class BeholdOrPay(
+        val filter: GameObjectFilter = GameObjectFilter.Any,
+        val alternativeManaCost: String,
+        val storeAs: String = "beheld"
+    ) : AdditionalCost {
+        override val description: String = buildString {
+            append("Behold ")
+            val filterDesc = filter.description
+            val article = if (filterDesc.firstOrNull()?.lowercase() in listOf("a", "e", "i", "o", "u")) "an" else "a"
+            append("$article ")
+            append(filterDesc)
+            append(" or pay ")
+            append(alternativeManaCost)
+        }
+
+        override fun applyTextReplacement(replacer: TextReplacer): AdditionalCost {
+            val newFilter = filter.applyTextReplacement(replacer)
+            return if (newFilter !== filter) copy(filter = newFilter) else this
+        }
+    }
+
+    /**
      * Exile cards from a named pipeline collection and optionally link them to the
      * source spell/permanent via LinkedExileComponent.
      *

@@ -721,6 +721,10 @@ class CostHandler(
                 // Always payable: player can always choose the "pay mana" path
                 true
             }
+            is AdditionalCost.BeholdOrPay -> {
+                // Always payable: player can always choose the "pay mana" path
+                true
+            }
             is AdditionalCost.RemoveCountersFromYourCreatures -> {
                 val projected = state.projectedState
                 val total = state.getBattlefield().sumOf { permId ->

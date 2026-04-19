@@ -58,6 +58,7 @@ object LorwynEclipsedSet {
         LiminalHold,
         LluwenImperfectNaturalist,
         Luminollusk,
+        LysAlanaDignitary,
         MerrowSkyswimmer,
         MirrormindCrown,
         NamelessInversion,

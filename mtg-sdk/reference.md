@@ -1178,6 +1178,7 @@ Used via `additionalCost(...)` in card DSL for spell additional costs:
 - `AdditionalCost.ExileVariableCards(minCount, filter, fromZone)` — Variable exile cost (Chill Haunting)
 - `AdditionalCost.TapPermanents(count, filter)` — Convoke-style
 - `AdditionalCost.BlightOrPay(blightAmount, alternativeManaCost)` — Blight N or pay extra mana (Wild Unraveling)
+- `AdditionalCost.BeholdOrPay(filter, alternativeManaCost, storeAs)` — Behold a matching card or pay extra mana; behold reveals but does not exile (Lys Alana Dignitary)
 - `AdditionalCost.RemoveCountersFromYourCreatures(totalCount)` — remove N counters distributed across creatures you control (any counter types qualify); payment supplied via `AdditionalCostPayment.distributedCounterRemovals` (Dawnhand Dissident's linked-exile cost)
 
 CostZone enum: `HAND`, `GRAVEYARD`, `LIBRARY`, `BATTLEFIELD`

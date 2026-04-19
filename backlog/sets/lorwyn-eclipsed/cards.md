@@ -2,7 +2,7 @@
 
 **Set Size:** 273 cards (main set, per Scryfall `set:ecl`)
 **Release Date:** January 23, 2026
-**Implemented:** 71 / 273
+**Implemented:** 72 / 273
 
 | Color      | Total | Done |
 |------------|-------|------|
@@ -10,7 +10,7 @@
 | Blue       | 39    | 15   |
 | Black      | 38    | 9    |
 | Red        | 39    | 4    |
-| Green      | 39    | 12   |
+| Green      | 39    | 13   |
 | Multicolor | 49    | 15   |
 | Colorless  | 18    | 3    |
 | Land       | 12    | 7    |
@@ -204,7 +204,7 @@
 - [ ] Gilt-Leaf's Embrace
 - [ ] Great Forest Druid
 - [x] Luminollusk
-- [ ] Lys Alana Dignitary
+- [x] Lys Alana Dignitary
 - [ ] Lys Alana Informant
 - [ ] Midnight Tilling
 - [ ] Mistmeadow Council
