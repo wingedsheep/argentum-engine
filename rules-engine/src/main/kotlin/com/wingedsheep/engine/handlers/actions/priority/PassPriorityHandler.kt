@@ -189,12 +189,28 @@ class PassPriorityHandler(
         val preSbaTriggers = triggerDetector.detectTriggers(trackedState, result.events)
 
         // Check state-based actions after resolution
+        val preSbaStackSize = trackedState.continuationStack.size
         val sbaResult = sbaChecker.checkAndApply(trackedState)
 
-        // If SBA needs player input (e.g., legend rule), return paused
+        // If SBA needs player input (e.g., legend rule for two copies of a legendary
+        // creature entering at once), return paused. Queue preSbaTriggers beneath the
+        // SBA's continuation so they fire after the SBA decision resolves — otherwise
+        // ETB triggers on the entering permanent would be silently dropped.
         if (sbaResult.isPaused) {
+            var pausedState = sbaResult.state
+            if (preSbaTriggers.isNotEmpty()) {
+                val pendingTriggers = PendingTriggersContinuation(
+                    decisionId = "sba-deferred-triggers-${java.util.UUID.randomUUID()}",
+                    remainingTriggers = preSbaTriggers
+                )
+                val stack = pausedState.continuationStack
+                val newStack = stack.subList(0, preSbaStackSize) +
+                    pendingTriggers +
+                    stack.subList(preSbaStackSize, stack.size)
+                pausedState = pausedState.copy(continuationStack = newStack)
+            }
             return ExecutionResult.paused(
-                sbaResult.state,
+                pausedState,
                 sbaResult.pendingDecision!!,
                 result.events + sbaResult.events
             )
