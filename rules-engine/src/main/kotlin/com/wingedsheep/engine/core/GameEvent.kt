@@ -703,7 +703,15 @@ data class CardsRevealedEvent(
     val imageUris: List<String?> = emptyList(),
     val source: String? = null,
     /** If false, the revealing player does not see the reveal overlay (e.g., behold from hand) */
-    val revealToSelf: Boolean = true
+    val revealToSelf: Boolean = true,
+    /**
+     * Optional zone transition context. When the reveal represents a card moving
+     * between zones (e.g., graveyard → hand via Morcant's Loyalist), the UI can
+     * use these to render an explanatory message like
+     * "Returned from graveyard to hand — <source>" instead of the generic "Revealed".
+     */
+    val fromZone: com.wingedsheep.sdk.core.Zone? = null,
+    val toZone: com.wingedsheep.sdk.core.Zone? = null
 ) : GameEvent
 
 /**

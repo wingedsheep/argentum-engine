@@ -51,7 +51,7 @@ val MorcantsLoyalist = card("Morcant's Loyalist") {
                 )
             )
         )
-        effect = Effects.Reveal(elfCard) then Effects.ReturnToHand(elfCard)
+        effect = Effects.ReturnToHand(elfCard)
     }
 
     metadata {

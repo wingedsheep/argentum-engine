@@ -4,6 +4,7 @@ import com.wingedsheep.engine.core.CardsRevealedEvent
 import com.wingedsheep.gameserver.ScenarioTestBase
 import com.wingedsheep.sdk.core.Phase
 import com.wingedsheep.sdk.core.Step
+import com.wingedsheep.sdk.core.Zone
 import io.kotest.assertions.withClue
 import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.nulls.shouldNotBeNull
@@ -17,8 +18,9 @@ import io.kotest.matchers.shouldBe
  *     Other Elves you control get +1/+1.
  *     When this creature dies, return another target Elf card from your graveyard to your hand.
  *
- * The returned Elf is revealed to the opponent via a `CardsRevealedEvent` whose `source`
- * is the Loyalist's name — so the reveal overlay shows "Opponent Revealed — Morcant's Loyalist".
+ * The returned Elf is auto-revealed via a `CardsRevealedEvent` carrying `fromZone`/`toZone`
+ * context — the UI can then label the overlay with the zone transition (e.g.,
+ * "Opponent Returned to hand from graveyard — Morcant's Loyalist").
  */
 class MorcantsLoyalistScenarioTest : ScenarioTestBase() {
 
@@ -86,6 +88,10 @@ class MorcantsLoyalistScenarioTest : ScenarioTestBase() {
                 }
                 withClue("Reveal should be broadcast by the Loyalist's controller (Alice)") {
                     revealEvent!!.revealingPlayerId shouldBe game.player1Id
+                }
+                withClue("Reveal should carry graveyard → hand zone context for the UI label") {
+                    revealEvent!!.fromZone shouldBe Zone.GRAVEYARD
+                    revealEvent!!.toZone shouldBe Zone.HAND
                 }
 
                 withClue("Wirewood Herald should now be in hand") {

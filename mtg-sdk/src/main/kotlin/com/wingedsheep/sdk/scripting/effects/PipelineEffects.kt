@@ -392,28 +392,6 @@ data class RevealCollectionEffect(
 }
 
 /**
- * Emit a [com.wingedsheep.engine.core.CardsRevealedEvent] for a single targeted
- * entity. Does not move or change the card. Pair with a subsequent move (e.g.,
- * `MoveToZoneEffect`) to reveal-then-move a targeted card.
- *
- * The event's `source` is populated automatically from the ability source's
- * card name so the reveal overlay shows "Revealed — <SourceCardName>".
- *
- * If the target cannot be resolved (illegal target / fizzle), the executor
- * emits no event.
- *
- * @property target The entity to reveal (typically a card in graveyard, hand, or library).
- */
-@SerialName("RevealTarget")
-@Serializable
-data class RevealTargetEffect(
-    val target: com.wingedsheep.sdk.scripting.targets.EffectTarget
-) : Effect {
-    override val description: String = "Reveal ${target.description}"
-    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
-}
-
-/**
  * Select cards from a named collection, splitting into selected and remainder.
  *
  * This is the middle step in a pipeline: it presents a choice to the player
@@ -909,4 +887,27 @@ data class FilterCollectionEffect(
 ) : Effect {
     override val description: String = "Filter $from collection"
     override fun applyTextReplacement(replacer: TextReplacer): Effect = this
+}
+
+/**
+ * Evaluate a [DynamicAmount] once and store it in pipeline `storedNumbers` under [name].
+ * Subsequent effects in the same composite can read it via
+ * [DynamicAmount.VariableReference] so the value does not drift when earlier sub-effects
+ * mutate projected state.
+ *
+ * Used when an X-value must be computed from the current state once and then reused
+ * across multiple sub-effects (draw, pump, etc.) that would otherwise see a re-projected
+ * state with their own prior modifications already applied.
+ */
+@SerialName("StoreNumber")
+@Serializable
+data class StoreNumberEffect(
+    val name: String,
+    val amount: DynamicAmount
+) : Effect {
+    override val description: String = "Store ${amount.description} as $name"
+    override fun applyTextReplacement(replacer: TextReplacer): Effect {
+        val newAmount = amount.applyTextReplacement(replacer)
+        return if (newAmount !== amount) copy(amount = newAmount) else this
+    }
 }

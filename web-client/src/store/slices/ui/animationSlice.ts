@@ -25,6 +25,8 @@ export interface AnimationSliceState {
     imageUris: readonly (string | null)[]
     source: string | null
     isYourReveal: boolean
+    fromZone?: string | null
+    toZone?: string | null
   } | null
   drawAnimations: readonly DrawAnimation[]
   damageAnimations: readonly DamageAnimation[]
@@ -42,7 +44,7 @@ export interface AnimationSliceActions {
   setAutoTapPreview: (preview: readonly EntityId[] | null) => void
   showRevealedHand: (cardIds: readonly EntityId[]) => void
   dismissRevealedHand: () => void
-  showRevealedCards: (cardIds: readonly EntityId[], cardNames: readonly string[], imageUris: readonly (string | null)[], source: string | null, isYourReveal: boolean) => void
+  showRevealedCards: (cardIds: readonly EntityId[], cardNames: readonly string[], imageUris: readonly (string | null)[], source: string | null, isYourReveal: boolean, fromZone?: string | null, toZone?: string | null) => void
   dismissRevealedCards: () => void
   addDrawAnimation: (animation: DrawAnimation) => void
   removeDrawAnimation: (id: string) => void
@@ -122,8 +124,18 @@ export const createAnimationSlice: SliceCreator<AnimationSlice> = (set, get) => 
     set({ revealedHandCardIds: null })
   },
 
-  showRevealedCards: (cardIds, cardNames, imageUris, source, isYourReveal) => {
-    set({ revealedCardsInfo: { cardIds, cardNames, imageUris, source, isYourReveal } })
+  showRevealedCards: (cardIds, cardNames, imageUris, source, isYourReveal, fromZone, toZone) => {
+    set({
+      revealedCardsInfo: {
+        cardIds,
+        cardNames,
+        imageUris,
+        source,
+        isYourReveal,
+        ...(fromZone !== undefined ? { fromZone } : {}),
+        ...(toZone !== undefined ? { toZone } : {}),
+      },
+    })
   },
 
   dismissRevealedCards: () => {

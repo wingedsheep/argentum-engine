@@ -102,23 +102,29 @@ function processStateUpdate(
 
   const cardsRevealedEvent = msg.events.find(
     (e) => e.type === 'cardsRevealed'
-  ) as { type: 'cardsRevealed'; revealingPlayerId: EntityId; cardIds: readonly EntityId[]; cardNames: readonly string[]; imageUris: readonly (string | null)[]; source: string | null } | undefined
+  ) as { type: 'cardsRevealed'; revealingPlayerId: EntityId; cardIds: readonly EntityId[]; cardNames: readonly string[]; imageUris: readonly (string | null)[]; source: string | null; fromZone?: string | null; toZone?: string | null } | undefined
 
   // Partition revealed cards into battlefield vs. other zones. Battlefield cards are already
   // public info, so instead of the reveal overlay (which misrepresents them as hidden→shown)
   // we pulse the permanent in place. Cards still hidden (hand) use the existing overlay.
+  //
+  // Exception: zone-transition reveals (fromZone/toZone set — e.g., graveyard → battlefield
+  // via reanimation) always use the overlay so the opponent sees *what* came back and *why*.
   const battlefieldCardIds = new Set<EntityId>(
     resolvedState.zones
       .filter((z) => z.zoneId.zoneType === 'Battlefield')
       .flatMap((z) => z.cardIds)
   )
-  const beheldBattlefieldIds = cardsRevealedEvent
+  const isZoneTransitionReveal = !!(cardsRevealedEvent?.fromZone && cardsRevealedEvent?.toZone)
+  const beheldBattlefieldIds = cardsRevealedEvent && !isZoneTransitionReveal
     ? cardsRevealedEvent.cardIds.filter((id) => battlefieldCardIds.has(id))
     : []
   const revealOverlayIndices = cardsRevealedEvent
-    ? cardsRevealedEvent.cardIds
-        .map((id, i) => (battlefieldCardIds.has(id) ? -1 : i))
-        .filter((i) => i >= 0)
+    ? isZoneTransitionReveal
+      ? cardsRevealedEvent.cardIds.map((_, i) => i)
+      : cardsRevealedEvent.cardIds
+          .map((id, i) => (battlefieldCardIds.has(id) ? -1 : i))
+          .filter((i) => i >= 0)
     : []
   const filteredReveal = cardsRevealedEvent && revealOverlayIndices.length > 0
     ? {
@@ -313,7 +319,7 @@ function processStateUpdate(
            msg.pendingDecision.nonSelectableOptions ?? []
          )
           ? null
-          : { cardIds: filteredReveal.cardIds, cardNames: filteredReveal.cardNames, imageUris: filteredReveal.imageUris, source: filteredReveal.source, isYourReveal: filteredReveal.revealingPlayerId === playerId })
+          : { cardIds: filteredReveal.cardIds, cardNames: filteredReveal.cardNames, imageUris: filteredReveal.imageUris, source: filteredReveal.source, isYourReveal: filteredReveal.revealingPlayerId === playerId, fromZone: filteredReveal.fromZone ?? null, toZone: filteredReveal.toZone ?? null })
       : cardsRevealedEvent ? null : state.revealedCardsInfo,
     opponentAttackerTargets: resolvedState.combat ? null : state.opponentAttackerTargets,
     opponentBlockerAssignments: (resolvedState.combat?.blockers?.length || !resolvedState.combat) ? null : state.opponentBlockerAssignments,

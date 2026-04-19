@@ -342,6 +342,10 @@ sealed interface ClientEvent {
         val cardNames: List<String>,
         val imageUris: List<String?> = emptyList(),
         val source: String? = null,
+        /** Zone the card came from, when the reveal represents a zone transition. */
+        val fromZone: com.wingedsheep.sdk.core.Zone? = null,
+        /** Zone the card moved to, when the reveal represents a zone transition. */
+        val toZone: com.wingedsheep.sdk.core.Zone? = null,
         override val description: String = "Revealed ${cardNames.joinToString(", ")}${source?.let { " ($it)" } ?: ""}"
     ) : ClientEvent
 
@@ -901,7 +905,9 @@ object ClientEventTransformer {
                     cardIds = event.cardIds,
                     cardNames = event.cardNames,
                     imageUris = event.imageUris,
-                    source = event.source
+                    source = event.source,
+                    fromZone = event.fromZone,
+                    toZone = event.toZone
                 )
             }
 

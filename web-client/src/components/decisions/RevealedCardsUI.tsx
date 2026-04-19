@@ -27,6 +27,28 @@ function isRevealCoveredByDecision(
 }
 
 /**
+ * Build a human-readable action label for zone-transition reveals. When a card
+ * moves from a publicly visible zone back to a hidden one (e.g., graveyard →
+ * hand via Morcant's Loyalist), we surface the transition instead of a bare
+ * "Revealed".
+ */
+function zoneTransitionLabel(
+  fromZone: string | null | undefined,
+  toZone: string | null | undefined
+): string | null {
+  if (!fromZone || !toZone) return null
+  const from = fromZone.toLowerCase()
+  const to = toZone.toLowerCase()
+  if (from === 'graveyard' && to === 'hand') return 'Returned to hand from graveyard'
+  if (from === 'exile' && to === 'hand') return 'Returned to hand from exile'
+  if (from === 'graveyard' && to === 'library') return 'Shuffled into library from graveyard'
+  if (from === 'exile' && to === 'library') return 'Put into library from exile'
+  if (from === 'graveyard' && to === 'battlefield') return 'Returned to battlefield from graveyard'
+  if (from === 'exile' && to === 'battlefield') return 'Returned to battlefield from exile'
+  return null
+}
+
+/**
  * Overlay that shows revealed cards - either from a "look at hand" / "reveal hand"
  * effect or from a library reveal effect (e.g., Animal Magnetism, Sylvan Tutor).
  *
@@ -87,11 +109,12 @@ export function RevealedCardsUI() {
 
   // Title and subtitle
   const isYourReveal = !isHandReveal && revealedCardsInfo!.isYourReveal
+  const transitionLabel = zoneTransitionLabel(revealedCardsInfo!.fromZone ?? null, revealedCardsInfo!.toZone ?? null)
+  const actionWord = transitionLabel ?? 'Revealed'
+  const whoPrefix = isYourReveal ? '' : 'Opponent '
   const title = isHandReveal
     ? "Opponent's Hand"
-    : isYourReveal
-      ? `Revealed${revealedCardsInfo!.source ? ` — ${revealedCardsInfo!.source}` : ''}`
-      : `Opponent Revealed${revealedCardsInfo!.source ? ` — ${revealedCardsInfo!.source}` : ''}`
+    : `${whoPrefix}${actionWord}${revealedCardsInfo!.source ? ` — ${revealedCardsInfo!.source}` : ''}`
 
   const subtitle = isHandReveal
     ? cards.length === 0

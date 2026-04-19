@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.handlers.effects.zones
 
+import com.wingedsheep.engine.core.CardsRevealedEvent
 import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
@@ -93,7 +94,55 @@ class MoveToZoneEffectExecutor(
             }
         }
 
-        return EffectResult.success(resultState, transitionResult.events)
+        // Auto-reveal: when a card moves from a publicly visible zone (graveyard/exile)
+        // back into a hidden zone (hand/library), emit a CardsRevealedEvent so the UI
+        // can show the opponent what card was returned and why. The card was already
+        // public info, so this just surfaces the move in the reveal overlay.
+        val revealEvents = autoRevealForReturn(
+            fromZone = currentZone.zoneType,
+            toZone = effect.destination,
+            targetId = targetId,
+            cardName = cardComponent.name,
+            imageUri = cardComponent.imageUri,
+            ownerId = ownerId,
+            sourceId = context.sourceId,
+            state = resultState
+        )
+
+        return EffectResult.success(resultState, transitionResult.events + revealEvents)
+    }
+
+    private fun autoRevealForReturn(
+        fromZone: Zone,
+        toZone: Zone,
+        targetId: com.wingedsheep.sdk.model.EntityId,
+        cardName: String,
+        imageUri: String?,
+        ownerId: com.wingedsheep.sdk.model.EntityId,
+        sourceId: com.wingedsheep.sdk.model.EntityId?,
+        state: GameState
+    ): List<com.wingedsheep.engine.core.GameEvent> {
+        val isFromPublic = fromZone == Zone.GRAVEYARD || fromZone == Zone.EXILE
+        val isToReturnDestination =
+            toZone == Zone.HAND || toZone == Zone.LIBRARY || toZone == Zone.BATTLEFIELD
+        if (!isFromPublic || !isToReturnDestination) return emptyList()
+
+        val sourceName = sourceId?.let { state.getEntity(it)?.get<CardComponent>()?.name }
+
+        return listOf(
+            CardsRevealedEvent(
+                revealingPlayerId = ownerId,
+                cardIds = listOf(targetId),
+                cardNames = listOf(cardName),
+                imageUris = listOf(imageUri),
+                source = sourceName,
+                // The owner moved the card themselves — they already know what/where it is.
+                // Only the opponent needs the reveal overlay to surface the transition.
+                revealToSelf = false,
+                fromZone = fromZone,
+                toZone = toZone
+            )
+        )
     }
 
     /**

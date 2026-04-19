@@ -279,6 +279,9 @@ export interface CardsRevealedEvent {
   readonly cardNames: readonly string[]
   readonly imageUris: readonly (string | null)[]
   readonly source: string | null
+  /** Set when the reveal represents a zone transition (e.g., GRAVEYARD → HAND). */
+  readonly fromZone?: string | null
+  readonly toZone?: string | null
   readonly description: string
 }
 

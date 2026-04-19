@@ -20,7 +20,6 @@ class LibraryExecutors(
         GrantFreeCastTargetFromExileExecutor(),
         GatherUntilMatchExecutor(),
         RevealCollectionExecutor(),
-        RevealTargetExecutor(),
         ExileFromTopRepeatingExecutor(),
         ExileLibraryUntilManaValueExecutor(),
         GatherSubtypesExecutor(),
@@ -31,6 +30,7 @@ class LibraryExecutors(
         SelectTargetPipelineExecutor(targetFinder = targetFinder ?: TargetFinder()),
         MoveCollectionExecutor(cardRegistry = cardRegistry, targetFinder = targetFinder),
         FilterCollectionExecutor(),
-        PutOnTopOrBottomOfLibraryExecutor()
+        PutOnTopOrBottomOfLibraryExecutor(),
+        StoreNumberExecutor()
     )
 }

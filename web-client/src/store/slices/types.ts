@@ -720,6 +720,10 @@ export type GameStore = {
     imageUris: readonly (string | null)[]
     source: string | null
     isYourReveal: boolean
+    /** Zone the card came from (e.g., 'Graveyard', 'Exile') when this reveal is a zone transition. */
+    fromZone?: string | null
+    /** Zone the card moved to (e.g., 'Hand', 'Library') when this reveal is a zone transition. */
+    toZone?: string | null
   } | null
   opponentAttackerTargets: { selectedAttackers: readonly EntityId[]; attackerTargets: Record<EntityId, EntityId> } | null
   opponentBlockerAssignments: Record<EntityId, EntityId[]> | null

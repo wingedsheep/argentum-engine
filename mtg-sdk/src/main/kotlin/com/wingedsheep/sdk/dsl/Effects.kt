@@ -71,7 +71,6 @@ import com.wingedsheep.sdk.scripting.effects.CreateGlobalTriggeredAbilityWithDur
 import com.wingedsheep.sdk.scripting.effects.CreatePermanentGlobalTriggeredAbilityEffect
 import com.wingedsheep.sdk.scripting.effects.ReturnCreaturesPutInGraveyardThisTurnEffect
 import com.wingedsheep.sdk.scripting.effects.ReturnOneFromLinkedExileEffect
-import com.wingedsheep.sdk.scripting.effects.RevealTargetEffect
 import com.wingedsheep.sdk.scripting.effects.ReturnSelfToBattlefieldAttachedEffect
 import com.wingedsheep.sdk.scripting.effects.DrawUpToEffect
 import com.wingedsheep.sdk.scripting.effects.ReadTheRunesEffect
@@ -424,15 +423,6 @@ object Effects {
      */
     fun ReturnToHand(target: EffectTarget): Effect =
         MoveToZoneEffect(target, Zone.HAND)
-
-    /**
-     * Reveal a targeted card. Emits a [com.wingedsheep.engine.core.CardsRevealedEvent]
-     * labeled with the source card's name ("Revealed — <SourceName>"). Does not move
-     * the card; chain with a subsequent move (e.g., `Effects.ReturnToHand(...)`) to
-     * reveal-then-move.
-     */
-    fun Reveal(target: EffectTarget): Effect =
-        RevealTargetEffect(target)
 
     /**
      * Put on top of library.
@@ -1379,6 +1369,15 @@ object Effects {
      */
     fun SelectTarget(requirement: TargetRequirement, storeAs: String = "pipelineTarget"): Effect =
         SelectTargetEffect(requirement, storeAs)
+
+    /**
+     * Evaluate a dynamic amount once and store it under [name] in pipeline `storedNumbers`.
+     * Later effects in the same composite can read it via
+     * [DynamicAmount.VariableReference] — useful when a value (e.g., an X derived from
+     * creature powers) must be frozen before sub-effects alter projected state.
+     */
+    fun StoreNumber(name: String, amount: DynamicAmount): Effect =
+        com.wingedsheep.sdk.scripting.effects.StoreNumberEffect(name, amount)
 
     /**
      * Generic pipeline step: choose an option from a set (creature type, color, etc.)
