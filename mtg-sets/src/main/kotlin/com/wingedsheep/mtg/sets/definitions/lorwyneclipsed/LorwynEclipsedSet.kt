@@ -35,6 +35,7 @@ object LorwynEclipsedSet {
         ChampionsOfTheShoal,
         ChronicleOfVictory,
         ClachanFestival,
+        DarknessDescends,
         DawnhandDissident,
         DawnhandEulogist,
         DawnsLightArcher,

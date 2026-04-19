@@ -2,13 +2,13 @@
 
 **Set Size:** 273 cards (main set, per Scryfall `set:ecl`)
 **Release Date:** January 23, 2026
-**Implemented:** 70 / 273
+**Implemented:** 71 / 273
 
 | Color      | Total | Done |
 |------------|-------|------|
 | White      | 39    | 6    |
 | Blue       | 39    | 15   |
-| Black      | 38    | 8    |
+| Black      | 38    | 9    |
 | Red        | 39    | 4    |
 | Green      | 39    | 12   |
 | Multicolor | 49    | 15   |
@@ -117,7 +117,7 @@
 - [ ] Bogslither's Embrace
 - [ ] Champion of the Weird
 - [ ] Creakwood Safewright
-- [ ] Darkness Descends
+- [x] Darkness Descends
 - [x] Dawnhand Dissident
 - [x] Dawnhand Eulogist
 - [ ] Dose of Dawnglow
