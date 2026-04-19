@@ -736,9 +736,11 @@ export type GameStore = {
    * Battlefield card ids currently pulsing after being beheld, along with the
    * name of the spell/ability that beheld them. A pulse persists until the
    * stack no longer contains an item with that source name (i.e. the beholding
-   * spell has resolved, been countered, or otherwise left the stack).
+   * spell has resolved, been countered, or otherwise left the stack). Each
+   * pulse also has a minimum floor duration so it stays visible briefly even
+   * when the beholding spell auto-resolves without any response.
    */
-  beholdPulses: readonly { cardId: EntityId; sourceName: string }[]
+  beholdPulses: readonly { cardId: EntityId; sourceName: string; floorUntil: number }[]
   selectCard: (cardId: EntityId | null) => void
   hoverCard: (cardId: EntityId | null, position?: { x: number; y: number }) => void
   updateHoverPosition: (position: { x: number; y: number }) => void

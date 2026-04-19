@@ -13,6 +13,8 @@ import type {
   MatchIntro,
 } from '../types'
 
+const BEHOLD_PULSE_FLOOR_MS = 2000
+
 export interface AnimationSliceState {
   selectedCardId: EntityId | null
   hoveredCardId: EntityId | null
@@ -33,7 +35,7 @@ export interface AnimationSliceState {
   revealAnimations: readonly RevealAnimation[]
   coinFlipAnimations: readonly CoinFlipAnimation[]
   targetReselectedAnimations: readonly TargetReselectedAnimation[]
-  beholdPulses: readonly { cardId: EntityId; sourceName: string }[]
+  beholdPulses: readonly { cardId: EntityId; sourceName: string; floorUntil: number }[]
   matchIntro: MatchIntro | null
 }
 
@@ -204,18 +206,35 @@ export const createAnimationSlice: SliceCreator<AnimationSlice> = (set, get) => 
   },
 
   addBeholdPulse: (cardId, sourceName) => {
+    const floorUntil = Date.now() + BEHOLD_PULSE_FLOOR_MS
     set((state) => (
       state.beholdPulses.some((p) => p.cardId === cardId && p.sourceName === sourceName)
         ? state
-        : { beholdPulses: [...state.beholdPulses, { cardId, sourceName }] }
+        : { beholdPulses: [...state.beholdPulses, { cardId, sourceName, floorUntil }] }
     ))
+    // If the beholding spell auto-resolves before the next state update, the stack
+    // will no longer contain the source when reconcile runs. Reschedule a reconcile
+    // after the floor elapses so the pulse stays visible for at least BEHOLD_PULSE_FLOOR_MS.
+    setTimeout(() => {
+      const gameState = get().gameState
+      if (!gameState) {
+        get().reconcileBeholdPulses([])
+        return
+      }
+      const stackZone = gameState.zones.find((z) => z.zoneId.zoneType === 'Stack')
+      const stackItemNames = (stackZone?.cardIds ?? [])
+        .map((id) => gameState.cards[id]?.name)
+        .filter((n): n is string => typeof n === 'string')
+      get().reconcileBeholdPulses(stackItemNames)
+    }, BEHOLD_PULSE_FLOOR_MS + 50)
   },
 
   reconcileBeholdPulses: (stackItemNames) => {
     set((state) => {
       if (state.beholdPulses.length === 0) return state
       const names = new Set(stackItemNames)
-      const kept = state.beholdPulses.filter((p) => names.has(p.sourceName))
+      const now = Date.now()
+      const kept = state.beholdPulses.filter((p) => names.has(p.sourceName) || p.floorUntil > now)
       return kept.length === state.beholdPulses.length ? state : { beholdPulses: kept }
     })
   },
