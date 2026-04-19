@@ -2,7 +2,7 @@
 
 **Set Size:** 273 cards (main set, per Scryfall `set:ecl`)
 **Release Date:** January 23, 2026
-**Implemented:** 88 / 273
+**Implemented:** 89 / 273
 
 | Color      | Total | Done |
 |------------|-------|------|
@@ -11,7 +11,7 @@
 | Black      | 38    | 10   |
 | Red        | 39    | 8    |
 | Green      | 39    | 15   |
-| Multicolor | 49    | 19   |
+| Multicolor | 49    | 20   |
 | Colorless  | 18    | 3    |
 | Land       | 12    | 8    |
 
@@ -268,7 +268,7 @@
 - [ ] Raiding Schemes
 - [ ] Reaping Willow
 - [ ] Sanar, Innovative First-Year
-- [ ] Shadow Urchin
+- [x] Shadow Urchin
 - [x] Stoic Grove-Guide
 - [x] Sygg's Command
 - [ ] Tam, Mindful First-Year
