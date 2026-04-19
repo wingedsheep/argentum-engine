@@ -26,6 +26,7 @@ object LorwynEclipsedSet {
         AuroraAwakener,
         BarbedBloodletter,
         BileVialBoggart,
+        BlightRot,
         BloodCrypt,
         Blossombind,
         BoggartPrankster,
