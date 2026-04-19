@@ -2,14 +2,14 @@
 
 **Set Size:** 273 cards (main set, per Scryfall `set:ecl`)
 **Release Date:** January 23, 2026
-**Implemented:** 74 / 273
+**Implemented:** 75 / 273
 
 | Color      | Total | Done |
 |------------|-------|------|
 | White      | 39    | 7    |
 | Blue       | 39    | 15   |
 | Black      | 38    | 9    |
-| Red        | 39    | 5    |
+| Red        | 39    | 6    |
 | Green      | 39    | 13   |
 | Multicolor | 49    | 15   |
 | Colorless  | 18    | 3    |
@@ -167,7 +167,7 @@
 - [ ] Goliath Daydreamer
 - [x] Gristle Glutton
 - [ ] Hexing Squelcher
-- [ ] Impolite Entrance
+- [x] Impolite Entrance
 - [ ] Kindle the Inner Flame
 - [ ] Kulrath Zealot
 - [ ] Lasting Tarfire
