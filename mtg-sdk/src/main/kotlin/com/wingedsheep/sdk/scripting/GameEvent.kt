@@ -901,6 +901,41 @@ sealed interface GameEvent : TextReplaceable<GameEvent> {
         }
     }
 
+    /**
+     * Whenever one or more cards matching [filter] are put into your graveyard from anywhere.
+     *
+     * This is a **batching trigger** — it fires at most once per event batch, regardless of
+     * how many matching cards entered the graveyard, and regardless of which zone they came
+     * from. Used by Moonshadow and similar cards.
+     *
+     * Detection is handled specially by TriggerDetector: after processing individual events,
+     * it groups all to-graveyard ZoneChangeEvents by owner, checks if any match the filter,
+     * and fires the trigger once per qualifying controller.
+     *
+     * Examples:
+     * - "Whenever one or more permanent cards are put into your graveyard from anywhere"
+     *   → CardsPutIntoYourGraveyardEvent(filter = GameObjectFilter.Permanent)
+     */
+    @SerialName("CardsPutIntoYourGraveyardEvent")
+    @Serializable
+    data class CardsPutIntoYourGraveyardEvent(
+        val filter: GameObjectFilter = GameObjectFilter.Any
+    ) : GameEvent {
+        override val description: String = buildString {
+            append("one or more ")
+            if (filter != GameObjectFilter.Any) {
+                append(filter.cardPredicates.joinToString(" ") { it.description })
+                append(" ")
+            }
+            append("cards are put into your graveyard from anywhere")
+        }
+
+        override fun applyTextReplacement(replacer: TextReplacer): GameEvent {
+            val newFilter = filter.applyTextReplacement(replacer)
+            return if (newFilter !== filter) copy(filter = newFilter) else this
+        }
+    }
+
     // =========================================================================
     // Sacrifice Triggers
     // =========================================================================

@@ -196,6 +196,11 @@ class TriggerDetector(
         // and fires the trigger at most once per controller.
         detectLibraryToGraveyardBatchTriggers(state, events, triggers, index)
 
+        // Detect "whenever one or more [filtered] cards are put into your graveyard from anywhere"
+        // batching triggers (e.g., Moonshadow). Groups all to-graveyard zone changes by owner
+        // and fires the trigger at most once per controller.
+        detectAnyToGraveyardBatchTriggers(state, events, triggers, index)
+
         // Detect "whenever you sacrifice one or more [permanents]" batching triggers
         // (e.g., Camellia, the Seedmiser). Groups sacrifice events per controller
         // and fires the trigger at most once per controller.
@@ -926,6 +931,82 @@ class TriggerDetector(
                             when (predicate) {
                                 is com.wingedsheep.sdk.scripting.predicates.CardPredicate.IsCreature ->
                                     cardComponent.typeLine.isCreature
+                                is com.wingedsheep.sdk.scripting.predicates.CardPredicate.HasSubtype ->
+                                    cardComponent.typeLine.hasSubtype(predicate.subtype)
+                                else -> true
+                            }
+                        }
+                    } else false
+                }
+
+                if (hasMatch) {
+                    triggers.add(
+                        PendingTrigger(
+                            ability = ability,
+                            sourceId = entry.entityId,
+                            sourceName = entry.cardComponent.name,
+                            controllerId = controllerId,
+                            triggerContext = TriggerContext()
+                        )
+                    )
+                }
+            }
+        }
+    }
+
+    /**
+     * Detect "whenever one or more [filter] cards are put into your graveyard from anywhere"
+     * batching triggers. Groups all to-graveyard zone changes by the owner of the moved card
+     * and fires matching triggers at most once per controller, regardless of how many cards
+     * were moved or from which source zones.
+     */
+    private fun detectAnyToGraveyardBatchTriggers(
+        state: GameState,
+        events: List<EngineGameEvent>,
+        triggers: MutableList<PendingTrigger>,
+        index: TriggerIndex
+    ) {
+        // Collect all zone change events targeting graveyard, grouped by owner
+        val toGravByOwner = mutableMapOf<EntityId, MutableList<ZoneChangeEvent>>()
+        for (event in events) {
+            if (event is ZoneChangeEvent && event.toZone == Zone.GRAVEYARD && event.fromZone != Zone.GRAVEYARD) {
+                toGravByOwner.getOrPut(event.ownerId) { mutableListOf() }.add(event)
+            }
+        }
+        if (toGravByOwner.isEmpty()) return
+
+        for (entry in index.getEntitiesForCategory(TriggerCategory.ANY_TO_GRAVEYARD)) {
+            for (ability in entry.abilities) {
+                val trigger = ability.trigger
+                if (trigger !is GameEvent.CardsPutIntoYourGraveyardEvent) continue
+
+                val controllerId = entry.controllerId
+                val ownerEvents = toGravByOwner[controllerId] ?: continue
+
+                // Check if any of the moved cards match the filter
+                val hasMatch = ownerEvents.any { event ->
+                    if (trigger.filter == GameObjectFilter.Any) return@any true
+                    val entity = state.getEntity(event.entityId)
+                    val cardComponent = entity?.get<CardComponent>()
+                    if (cardComponent != null) {
+                        trigger.filter.cardPredicates.all { predicate ->
+                            when (predicate) {
+                                is com.wingedsheep.sdk.scripting.predicates.CardPredicate.IsCreature ->
+                                    cardComponent.typeLine.isCreature
+                                is com.wingedsheep.sdk.scripting.predicates.CardPredicate.IsArtifact ->
+                                    cardComponent.typeLine.isArtifact
+                                is com.wingedsheep.sdk.scripting.predicates.CardPredicate.IsEnchantment ->
+                                    cardComponent.typeLine.isEnchantment
+                                is com.wingedsheep.sdk.scripting.predicates.CardPredicate.IsLand ->
+                                    cardComponent.typeLine.isLand
+                                is com.wingedsheep.sdk.scripting.predicates.CardPredicate.IsPlaneswalker ->
+                                    com.wingedsheep.sdk.core.CardType.PLANESWALKER in cardComponent.typeLine.cardTypes
+                                is com.wingedsheep.sdk.scripting.predicates.CardPredicate.IsPermanent ->
+                                    cardComponent.typeLine.isPermanent
+                                is com.wingedsheep.sdk.scripting.predicates.CardPredicate.IsNonland ->
+                                    !cardComponent.typeLine.isLand
+                                is com.wingedsheep.sdk.scripting.predicates.CardPredicate.IsNoncreature ->
+                                    !cardComponent.typeLine.isCreature
                                 is com.wingedsheep.sdk.scripting.predicates.CardPredicate.HasSubtype ->
                                     cardComponent.typeLine.hasSubtype(predicate.subtype)
                                 else -> true

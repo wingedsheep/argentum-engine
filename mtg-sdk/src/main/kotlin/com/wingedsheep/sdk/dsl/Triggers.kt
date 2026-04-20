@@ -481,6 +481,28 @@ object Triggers {
         binding = TriggerBinding.ANY
     )
 
+    /**
+     * Whenever one or more cards matching [filter] are put into your graveyard from anywhere.
+     * Batching trigger — fires at most once per event batch regardless of how many cards entered,
+     * and regardless of which source zone they came from.
+     *
+     * Example: "Whenever one or more permanent cards are put into your graveyard from anywhere"
+     *   → CardsPutIntoYourGraveyard(GameObjectFilter.Permanent)
+     */
+    fun CardsPutIntoYourGraveyard(filter: GameObjectFilter = GameObjectFilter.Any): TriggerSpec = TriggerSpec(
+        event = CardsPutIntoYourGraveyardEvent(filter = filter),
+        binding = TriggerBinding.ANY
+    )
+
+    /**
+     * Whenever one or more permanent cards are put into your graveyard from anywhere.
+     * Batching trigger.
+     */
+    val PermanentCardsPutIntoYourGraveyard: TriggerSpec = TriggerSpec(
+        event = CardsPutIntoYourGraveyardEvent(filter = GameObjectFilter.Permanent),
+        binding = TriggerBinding.ANY
+    )
+
     // =========================================================================
     // Card Drawing Triggers
     // =========================================================================

@@ -5,6 +5,7 @@ import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.battlefield.AttachedToComponent
 import com.wingedsheep.engine.state.components.battlefield.CastFromHandComponent
+import com.wingedsheep.engine.state.components.battlefield.CountersComponent
 import com.wingedsheep.engine.state.components.battlefield.EnteredThisTurnComponent
 import com.wingedsheep.engine.state.components.battlefield.HasDealtCombatDamageToPlayerComponent
 import com.wingedsheep.engine.state.components.battlefield.HasDealtDamageComponent
@@ -19,10 +20,12 @@ import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.identity.LifeTotalComponent
 import com.wingedsheep.engine.state.components.player.LandDropsComponent
 import com.wingedsheep.engine.state.components.player.WasDealtCombatDamageThisTurnComponent
+import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.scripting.*
+import com.wingedsheep.sdk.scripting.events.CounterTypeFilter
 import com.wingedsheep.sdk.scripting.conditions.APlayerControlsMostOfSubtype
 import com.wingedsheep.sdk.scripting.conditions.YouControlMostOfChosenType
 import com.wingedsheep.sdk.scripting.conditions.AllConditions
@@ -40,6 +43,7 @@ import com.wingedsheep.sdk.scripting.conditions.PlayedLandThisTurn
 import com.wingedsheep.sdk.scripting.conditions.SourceEnteredThisTurn
 import com.wingedsheep.sdk.scripting.conditions.SourceHasDealtCombatDamageToPlayer
 import com.wingedsheep.sdk.scripting.conditions.SourceHasDealtDamage
+import com.wingedsheep.sdk.scripting.conditions.SourceHasCounter
 import com.wingedsheep.sdk.scripting.conditions.SourceHasKeyword
 import com.wingedsheep.sdk.scripting.conditions.SourceHasSubtype
 import com.wingedsheep.sdk.scripting.conditions.SourceIsAttacking
@@ -109,6 +113,7 @@ class ConditionEvaluator {
             is SourceHasDealtCombatDamageToPlayer -> evaluateSourceHasDealtCombatDamageToPlayer(state, context)
             is SourceHasSubtype -> evaluateSourceHasSubtype(state, condition, context)
             is SourceHasKeyword -> evaluateSourceHasKeyword(state, condition, context)
+            is SourceHasCounter -> evaluateSourceHasCounter(state, condition, context)
             is SacrificedPermanentHadSubtype -> evaluateSacrificedPermanentHadSubtype(condition, context)
             is TriggeringEntityWasHistoric -> evaluateTriggeringEntityWasHistoric(state, context)
             is TargetMatchesFilter -> evaluateTargetMatchesFilter(state, condition, context)
@@ -295,6 +300,23 @@ class ConditionEvaluator {
         val sourceId = context.sourceId ?: return false
         val projected = state.projectedState
         return projected.hasKeyword(sourceId, condition.keyword)
+    }
+
+    private fun evaluateSourceHasCounter(state: GameState, condition: SourceHasCounter, context: EffectContext): Boolean {
+        val sourceId = context.sourceId ?: return false
+        val counters = state.getEntity(sourceId)?.get<CountersComponent>() ?: return false
+        val counterType = resolveCounterType(condition.counterType) ?: return counters.counters.isNotEmpty()
+        return counters.getCount(counterType) > 0
+    }
+
+    private fun resolveCounterType(filter: CounterTypeFilter): CounterType? = when (filter) {
+        is CounterTypeFilter.Any -> null
+        is CounterTypeFilter.PlusOnePlusOne -> CounterType.PLUS_ONE_PLUS_ONE
+        is CounterTypeFilter.MinusOneMinusOne -> CounterType.MINUS_ONE_MINUS_ONE
+        is CounterTypeFilter.Loyalty -> CounterType.LOYALTY
+        is CounterTypeFilter.Named -> runCatching {
+            CounterType.valueOf(filter.name.uppercase().replace(' ', '_'))
+        }.getOrNull()
     }
 
     private fun evaluateSacrificedPermanentHadSubtype(

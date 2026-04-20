@@ -2,13 +2,13 @@
 
 **Set Size:** 273 cards (main set, per Scryfall `set:ecl`)
 **Release Date:** January 23, 2026
-**Implemented:** 92 / 273
+**Implemented:** 93 / 273
 
 | Color      | Total | Done |
 |------------|-------|------|
 | White      | 39    | 9    |
 | Blue       | 39    | 17   |
-| Black      | 38    | 11   |
+| Black      | 38    | 12   |
 | Red        | 39    | 8    |
 | Green      | 39    | 16   |
 | Multicolor | 49    | 20   |
@@ -129,7 +129,7 @@
 - [x] Heirloom Auntie
 - [ ] Iron-Shield Elf
 - [ ] Moonglove Extractor
-- [ ] Moonshadow
+- [x] Moonshadow
 - [ ] Mornsong Aria
 - [ ] Mudbutton Cursetosser
 - [x] Nameless Inversion

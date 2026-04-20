@@ -349,6 +349,13 @@ object Conditions {
         com.wingedsheep.sdk.scripting.conditions.SourceHasKeyword(keyword)
 
     /**
+     * While this creature has a counter of the given type on it.
+     * Used for intervening-if triggers like Moonshadow.
+     */
+    fun SourceHasCounter(counterType: CounterTypeFilter): ConditionInterface =
+        com.wingedsheep.sdk.scripting.conditions.SourceHasCounter(counterType)
+
+    /**
      * If a permanent with the given subtype was sacrificed as part of the cost.
      * Used for cards like Thallid Omnivore: "If a Saproling was sacrificed this way, you gain 2 life."
      */

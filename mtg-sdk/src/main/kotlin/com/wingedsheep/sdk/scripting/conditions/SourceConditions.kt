@@ -3,6 +3,7 @@ package com.wingedsheep.sdk.scripting.conditions
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.core.Zone
+import com.wingedsheep.sdk.scripting.events.CounterTypeFilter
 import com.wingedsheep.sdk.scripting.text.TextReplacer
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -196,6 +197,18 @@ data class SourceHasSubtype(val subtype: Subtype) : Condition {
 @Serializable
 data class SourceHasKeyword(val keyword: Keyword) : Condition {
     override val description: String = "as long as this creature has ${keyword.name.lowercase()}"
+    override fun applyTextReplacement(replacer: TextReplacer): Condition = this
+}
+
+/**
+ * Condition: "While this creature has a [counter type] counter on it"
+ * Used for intervening-if triggers like Moonshadow that only fire while a specific
+ * counter is present on the source permanent.
+ */
+@SerialName("SourceHasCounter")
+@Serializable
+data class SourceHasCounter(val counterType: CounterTypeFilter) : Condition {
+    override val description: String = "while this creature has a ${counterType.description} counter on it"
     override fun applyTextReplacement(replacer: TextReplacer): Condition = this
 }
 

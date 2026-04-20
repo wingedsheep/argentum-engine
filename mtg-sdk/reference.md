@@ -625,6 +625,11 @@ constructors.
 
 - `Triggers.CreaturesPutIntoGraveyardFromLibrary` — whenever one or more creature cards are put into your graveyard from your library (batching trigger, fires at most once per event batch)
 
+### Graveyard from Anywhere (Batching)
+
+- `Triggers.CardsPutIntoYourGraveyard(filter)` — whenever one or more cards matching the filter are put into your graveyard from anywhere (batching; source zone is not constrained). Example: `Triggers.CardsPutIntoYourGraveyard(GameObjectFilter.Permanent)`
+- `Triggers.PermanentCardsPutIntoYourGraveyard` — shorthand for the permanent-card variant (Moonshadow).
+
 ### Enter Battlefield (Batching)
 
 - `Triggers.OneOrMorePermanentsEnter(filter)` — whenever one or more permanents matching filter you control enter the battlefield (batching trigger, fires at most once per event batch). Example: `Triggers.OneOrMorePermanentsEnter(GameObjectFilter.Noncreature and GameObjectFilter.Nonland)`
@@ -736,6 +741,7 @@ constructors.
 - `Conditions.SourceIsAttacking` / `.SourceIsBlocking`
 - `Conditions.SourceIsTapped` / `.SourceIsUntapped`
 - `Conditions.SourceHasSubtype(subtype)` — source has specific subtype
+- `Conditions.SourceHasCounter(counterType)` — source has ≥1 counter of the given type (intervening-if, e.g., Moonshadow)
 - `Conditions.SacrificedHadSubtype(subtype)` — a permanent sacrificed as cost had specific subtype
 - `Conditions.TriggeringEntityWasHistoric` — the triggering entity was historic (legendary, artifact, or Saga)
 

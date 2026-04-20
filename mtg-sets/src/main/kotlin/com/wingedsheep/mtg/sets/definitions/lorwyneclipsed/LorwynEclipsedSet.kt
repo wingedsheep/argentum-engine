@@ -76,6 +76,7 @@ object LorwynEclipsedSet {
         MirrormindCrown,
         MorcantsEyes,
         MorcantsLoyalist,
+        Moonshadow,
         NamelessInversion,
         NoggleTheMind,
         Personify,
