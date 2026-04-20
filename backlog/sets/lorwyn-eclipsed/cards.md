@@ -2,15 +2,15 @@
 
 **Set Size:** 273 cards (main set, per Scryfall `set:ecl`)
 **Release Date:** January 23, 2026
-**Implemented:** 99 / 273
+**Implemented:** 102 / 273
 
 | Color      | Total | Done |
 |------------|-------|------|
 | White      | 39    | 12   |
 | Blue       | 39    | 18   |
-| Black      | 38    | 12   |
+| Black      | 38    | 14   |
 | Red        | 39    | 9    |
-| Green      | 39    | 16   |
+| Green      | 39    | 17   |
 | Multicolor | 49    | 21   |
 | Colorless  | 18    | 3    |
 | Land       | 12    | 8    |
@@ -111,7 +111,7 @@
 - [ ] Bitterbloom Bearer
 - [x] Blight Rot
 - [ ] Blighted Blackthorn
-- [ ] Bloodline Bidding
+- [x] Bloodline Bidding
 - [ ] Boggart Mischief
 - [x] Boggart Prankster
 - [ ] Bogslither's Embrace
@@ -121,7 +121,7 @@
 - [x] Dawnhand Dissident
 - [x] Dawnhand Eulogist
 - [ ] Dose of Dawnglow
-- [ ] Dream Seizer
+- [x] Dream Seizer
 - [x] Gloom Ripper
 - [ ] Gnarlbark Elm
 - [ ] Graveshifter
@@ -196,7 +196,7 @@
 - [ ] Bristlebane Outrider
 - [ ] Celestial Reunion
 - [x] Champions of the Perfect
-- [ ] Chomping Changeling
+- [x] Chomping Changeling
 - [ ] Crossroads Watcher
 - [x] Dawn's Light Archer
 - [ ] Dundoolin Weaver
