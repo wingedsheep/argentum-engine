@@ -71,6 +71,7 @@ object LorwynEclipsedSet {
         Lavaleaper,
         LiminalHold,
         LluwenImperfectNaturalist,
+        LochMare,
         Luminollusk,
         LysAlanaDignitary,
         MerrowSkyswimmer,

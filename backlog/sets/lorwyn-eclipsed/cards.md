@@ -2,12 +2,12 @@
 
 **Set Size:** 273 cards (main set, per Scryfall `set:ecl`)
 **Release Date:** January 23, 2026
-**Implemented:** 97 / 273
+**Implemented:** 98 / 273
 
 | Color      | Total | Done |
 |------------|-------|------|
 | White      | 39    | 11   |
-| Blue       | 39    | 17   |
+| Blue       | 39    | 18   |
 | Black      | 38    | 12   |
 | Red        | 39    | 9    |
 | Green      | 39    | 16   |
@@ -76,7 +76,7 @@
 - [x] Harmonized Crescendo
 - [ ] Illusion Spinners
 - [ ] Kulrath Mystic
-- [ ] Loch Mare
+- [x] Loch Mare
 - [ ] Lofty Dreams
 - [ ] Mirrorform
 - [x] Noggle the Mind
