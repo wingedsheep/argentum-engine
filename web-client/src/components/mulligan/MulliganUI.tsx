@@ -52,10 +52,18 @@ function computeMulliganCardWidth(
   responsive: ResponsiveSizes,
   gap: number,
 ): number {
-  const { viewportWidth, viewportHeight, containerPadding, isMobile, isTablet } = responsive
+  const { viewportWidth, viewportHeight, isMobile, isTablet } = responsive
 
-  // Horizontal budget
-  const availableWidth = viewportWidth - containerPadding * 2 - 32
+  // Horizontal chrome must match the CSS: overlay padding + cardContainer padding,
+  // both sides. The overlay's mobile media query is <640px, so tablet uses the
+  // desktop values even though responsive.isTablet is true.
+  const overlayPadding = isMobile ? 4 : 16       // --space-1 : --space-4
+  const cardContainerPadding = isMobile ? 8 : 16 // --space-2 : --space-4
+  const horizontalChrome = (overlayPadding + cardContainerPadding) * 2
+
+  // Small safety buffer for sub-pixel rounding / scrollbars so a flex row never
+  // spills to a second line by a fraction of a pixel.
+  const availableWidth = Math.max(0, viewportWidth - horizontalChrome - 4)
 
   // Vertical budget: reserve space for title, subtitle, buttons, padding.
   // Cards can take roughly 55% of the viewport height on mobile, 60% otherwise.
@@ -65,7 +73,12 @@ function computeMulliganCardWidth(
 
   // Target max card width scales by breakpoint
   const breakpointMax = isMobile ? 110 : isTablet ? 170 : 240
-  const minCardWidth = isMobile ? 52 : isTablet ? 72 : 96
+
+  // Absolute minimum so cards stay tappable, but never larger than what fits.
+  // The fit width is the ceiling — clamping up to a larger "min" would force wrap.
+  const fitCeiling = calculateFittingCardWidth(cardCount, availableWidth, gap, breakpointMax, 1)
+  const preferredMin = isMobile ? 52 : isTablet ? 72 : 96
+  const minCardWidth = Math.min(preferredMin, fitCeiling)
 
   const maxCardWidth = Math.min(breakpointMax, widthFromHeight)
   return calculateFittingCardWidth(cardCount, availableWidth, gap, maxCardWidth, minCardWidth)
