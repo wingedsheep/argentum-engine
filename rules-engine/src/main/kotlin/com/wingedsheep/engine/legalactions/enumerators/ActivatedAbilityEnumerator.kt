@@ -31,6 +31,7 @@ import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.TimingRule
 import com.wingedsheep.sdk.scripting.effects.LevelUpClassEffect
 import com.wingedsheep.engine.legalactions.ConvokeCreatureData
+import com.wingedsheep.engine.handlers.effects.permanent.counters.resolveCounterType
 
 /**
  * Enumerates non-mana activated abilities on battlefield permanents.
@@ -211,6 +212,11 @@ class ActivatedAbilityEnumerator : ActionEnumerator {
                         discardTargets = context.costUtils.findDiscardTargets(state, playerId, effectiveCost.filter)
                         if (discardTargets.isEmpty()) continue
                     }
+                    is AbilityCost.RemoveCounterFromSelf -> {
+                        val counters = container.get<CountersComponent>()
+                        val counterType = resolveCounterType(effectiveCost.counterType)
+                        if ((counters?.getCount(counterType) ?: 0) < effectiveCost.count) continue
+                    }
                     is AbilityCost.Composite -> {
                         val compositeCost = effectiveCost
                         var costCanBePaid = true
@@ -367,6 +373,14 @@ class ActivatedAbilityEnumerator : ActionEnumerator {
                                     // TapXPermanents: validated via maxAffordableX cap below
                                     // Also provide tap targets for the UI
                                     tapTargets = context.costUtils.findAbilityTapTargets(state, playerId, subCost.filter)
+                                }
+                                is AbilityCost.RemoveCounterFromSelf -> {
+                                    val counters = container.get<CountersComponent>()
+                                    val counterType = resolveCounterType(subCost.counterType)
+                                    if ((counters?.getCount(counterType) ?: 0) < subCost.count) {
+                                        costCanBePaid = false
+                                        break
+                                    }
                                 }
                                 else -> {}
                             }
