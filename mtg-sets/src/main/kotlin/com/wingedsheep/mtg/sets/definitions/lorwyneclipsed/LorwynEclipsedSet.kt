@@ -51,6 +51,7 @@ object LorwynEclipsedSet {
         EclipsedMerrow,
         EirduCarrierOfDawn,
         Emptiness,
+        EvershrikesGift,
         FeistySpikeling,
         FlaringCinder,
         GlamerGifter,
