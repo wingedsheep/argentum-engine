@@ -3,6 +3,7 @@ package com.wingedsheep.engine.mechanics.combat
 import com.wingedsheep.engine.handlers.PredicateContext
 import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.mechanics.layers.ProjectedState
+import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.battlefield.AttachedToComponent
 import com.wingedsheep.engine.state.components.battlefield.DamageComponent
@@ -29,7 +30,9 @@ import com.wingedsheep.sdk.scripting.events.RecipientFilter
  * - CR 702.2b: Deathtouch - any amount of damage is considered lethal.
  * - CR 702.19: Trample - excess damage can be assigned to defending player.
  */
-class DamageCalculator {
+class DamageCalculator(
+    private val cardRegistry: CardRegistry? = null,
+) {
 
     private val predicateEvaluator = PredicateEvaluator()
 
@@ -120,7 +123,7 @@ class DamageCalculator {
 
         // Use projected values for power and keywords (includes floating effects like +4/+4)
         val projected = state.projectedState
-        val attackerPower = projected.getPower(attackerId) ?: 0
+        val attackerPower = CombatDamageUtils.getAssignedCombatDamage(state, projected, attackerId, cardRegistry)
         if (attackerPower <= 0) {
             return DamageDistribution(emptyMap(), 0, 0)
         }
@@ -211,7 +214,7 @@ class DamageCalculator {
 
         // Use projected values for power and keywords (includes floating effects like +4/+4)
         val projected = state.projectedState
-        val attackerPower = projected.getPower(attackerId) ?: 0
+        val attackerPower = CombatDamageUtils.getAssignedCombatDamage(state, projected, attackerId, cardRegistry)
         val hasTrample = projected.hasKeyword(attackerId, Keyword.TRAMPLE)
 
         // Get blockers in damage assignment order, filtering out dead blockers
@@ -304,7 +307,7 @@ class DamageCalculator {
         }
 
         // Multiple blockers - check if there's excess damage to distribute
-        val attackerPower = projected.getPower(attackerId) ?: 0
+        val attackerPower = CombatDamageUtils.getAssignedCombatDamage(state, projected, attackerId, cardRegistry)
         var totalLethalNeeded = 0
 
         for (blockerId in blockerIds) {
@@ -348,7 +351,7 @@ class DamageCalculator {
             ?: return DamageDistribution(emptyMap(), 0, 0)
 
         val projected = state.projectedState
-        val blockerPower = projected.getPower(blockerId) ?: 0
+        val blockerPower = CombatDamageUtils.getAssignedCombatDamage(state, projected, blockerId, cardRegistry)
         if (blockerPower <= 0) {
             return DamageDistribution(emptyMap(), 0, 0)
         }

@@ -2,11 +2,11 @@
 
 **Set Size:** 273 cards (main set, per Scryfall `set:ecl`)
 **Release Date:** January 23, 2026
-**Implemented:** 93 / 273
+**Implemented:** 94 / 273
 
 | Color      | Total | Done |
 |------------|-------|------|
-| White      | 39    | 9    |
+| White      | 39    | 10   |
 | Blue       | 39    | 17   |
 | Black      | 38    | 12   |
 | Red        | 39    | 8    |
@@ -24,7 +24,7 @@
 - [x] Adept Watershaper
 - [ ] Ajani, Outland Chaperone
 - [x] Appeal to Eirdu
-- [ ] Bark of Doran
+- [x] Bark of Doran
 - [ ] Burdened Stoneback
 - [ ] Champion of the Clachan
 - [x] Clachan Festival

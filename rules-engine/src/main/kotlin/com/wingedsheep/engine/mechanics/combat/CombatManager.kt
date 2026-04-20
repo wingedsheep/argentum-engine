@@ -29,7 +29,7 @@ import com.wingedsheep.engine.mechanics.combat.rules.defaultBlockEvasionRules
  */
 class CombatManager(
     private val cardRegistry: CardRegistry,
-    private val damageCalculator: DamageCalculator = DamageCalculator(),
+    private val damageCalculator: DamageCalculator = DamageCalculator(cardRegistry),
     private val blockEvasionRules: List<BlockEvasionRule> = defaultBlockEvasionRules(),
     private val attackRestrictionRules: List<AttackRestrictionRule> = defaultAttackRestrictionRules(),
     private val attackDefenderRules: List<AttackDefenderRule> = defaultAttackDefenderRules(),

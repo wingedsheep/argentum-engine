@@ -92,7 +92,7 @@ internal class CombatDamageManager(
 
             if (!dealsDamageThisStep(projected, attackerId, firstStrike)) continue
 
-            val attackerPower = projected.getPower(attackerId) ?: 0
+            val attackerPower = CombatDamageUtils.getAssignedCombatDamage(state, projected, attackerId, cardRegistry)
             if (attackerPower <= 0) continue
 
             val attackingPlayer = projected.getController(attackerId) ?: continue
@@ -148,7 +148,7 @@ internal class CombatDamageManager(
             val toAndByPrevented = isCombatDamageToAndByPrevented(state, attackerId)
             if (allDamagePrevented || groupPrevented || toAndByPrevented) continue
 
-            val attackerPower = projected.getPower(attackerId) ?: 0
+            val attackerPower = CombatDamageUtils.getAssignedCombatDamage(state, projected, attackerId, cardRegistry)
             if (attackerPower <= 0) continue
 
             if (attackerContainer.get<DamageAssignmentComponent>() != null) continue
@@ -234,7 +234,7 @@ internal class CombatDamageManager(
 
             if (!damageCalculator.requiresManualAssignment(state, attackerId)) continue
 
-            val attackerPower = projected.getPower(attackerId) ?: 0
+            val attackerPower = CombatDamageUtils.getAssignedCombatDamage(state, projected, attackerId, cardRegistry)
             if (attackerPower <= 0) continue
 
             val orderedBlockers = attackerContainer.get<DamageAssignmentOrderComponent>()?.orderedBlockers
@@ -350,7 +350,7 @@ internal class CombatDamageManager(
 
             // Attacker damage
             if (dealsDamageThisStep(projected, attackerId, firstStrike)) {
-                val power = projected.getPower(attackerId) ?: 0
+                val power = CombatDamageUtils.getAssignedCombatDamage(state, projected, attackerId, cardRegistry)
                 if (power > 0) {
                     val manualAssignment = attackerContainer.get<DamageAssignmentComponent>()
                     when {
@@ -403,7 +403,7 @@ internal class CombatDamageManager(
                 val blockerContainer = state.getEntity(blockerId) ?: continue
                 blockerContainer.get<CardComponent>() ?: continue
                 if (!dealsDamageThisStep(projected, blockerId, firstStrike)) continue
-                val blockerPower = projected.getPower(blockerId) ?: 0
+                val blockerPower = CombatDamageUtils.getAssignedCombatDamage(state, projected, blockerId, cardRegistry)
                 if (blockerPower <= 0) continue
 
                 processedBlockers.add(blockerId)
@@ -811,7 +811,7 @@ internal class CombatDamageManager(
             }
             if (!dealsDamageThisStep) continue
 
-            val attackerPower = projected.getPower(attackerId) ?: 0
+            val attackerPower = CombatDamageUtils.getAssignedCombatDamage(state, projected, attackerId, cardRegistry)
             if (attackerPower <= 0) continue
 
             val blockedBy = attackerContainer.get<BlockedComponent>()

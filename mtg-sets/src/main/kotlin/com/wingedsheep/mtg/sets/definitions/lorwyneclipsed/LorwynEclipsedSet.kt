@@ -25,6 +25,7 @@ object LorwynEclipsedSet {
         AuntiesSentence,
         AuroraAwakener,
         BarbedBloodletter,
+        BarkOfDoran,
         BileVialBoggart,
         BlightRot,
         BloodCrypt,
