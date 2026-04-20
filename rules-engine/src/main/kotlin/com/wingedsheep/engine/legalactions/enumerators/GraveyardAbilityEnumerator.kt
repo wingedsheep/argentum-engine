@@ -56,6 +56,8 @@ class GraveyardAbilityEnumerator : ActionEnumerator {
                 var costCanBePaid = true
                 val handCards = state.getZone(playerId, Zone.HAND)
                 var hasDiscardCost = false
+                var blightCost: AbilityCost.Blight? = null
+                var blightCreatures: List<EntityId> = emptyList()
 
                 when (effectiveCost) {
                     is AbilityCost.Mana -> {
@@ -64,6 +66,12 @@ class GraveyardAbilityEnumerator : ActionEnumerator {
                     is AbilityCost.Discard -> {
                         hasDiscardCost = true
                         if (handCards.isEmpty()) costCanBePaid = false
+                    }
+                    is AbilityCost.Blight -> {
+                        blightCost = effectiveCost
+                        blightCreatures = context.projected.getBattlefieldControlledBy(playerId)
+                            .filter { context.projected.isCreature(it) }
+                        if (blightCreatures.isEmpty()) costCanBePaid = false
                     }
                     is AbilityCost.Composite -> {
                         for (subCost in effectiveCost.costs) {
@@ -87,6 +95,14 @@ class GraveyardAbilityEnumerator : ActionEnumerator {
                                 }
                                 is AbilityCost.ExileSelf -> {
                                     // Always payable — the card is in the graveyard
+                                }
+                                is AbilityCost.Blight -> {
+                                    blightCost = subCost
+                                    blightCreatures = context.projected.getBattlefieldControlledBy(playerId)
+                                        .filter { context.projected.isCreature(it) }
+                                    if (blightCreatures.isEmpty()) {
+                                        costCanBePaid = false; break
+                                    }
                                 }
                                 else -> {}
                             }
@@ -112,6 +128,13 @@ class GraveyardAbilityEnumerator : ActionEnumerator {
                         costType = "BouncePermanent",
                         validBounceTargets = bounceTargets,
                         bounceCount = bounceCostFromGraveyard.count
+                    )
+                } else if (blightCost != null) {
+                    AdditionalCostData(
+                        description = "creature to blight",
+                        costType = "Blight",
+                        validBlightTargets = blightCreatures,
+                        blightAmount = blightCost.amount
                     )
                 } else if (hasDiscardCost) {
                     AdditionalCostData(
