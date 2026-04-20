@@ -204,6 +204,142 @@ class MoonshadowTest : FunSpec({
         getMinusOneMinusOne(driver, moon) shouldBe 6
     }
 
+    test("permanent card milled from library to your graveyard triggers Moonshadow") {
+        val driver = createDriver()
+        driver.initMirrorMatch(
+            deck = Deck.of("Swamp" to 20, "Mountain" to 20),
+            startingLife = 20
+        )
+        driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
+
+        val activePlayer = driver.activePlayer!!
+
+        val moon = driver.putCreatureOnBattlefield(activePlayer, "Moonshadow")
+        addMinusOneMinusOne(driver, moon, 6)
+
+        val milled = driver.putCardOnTopOfLibrary(activePlayer, "Grizzly Bears")
+
+        val libraryZone = com.wingedsheep.engine.state.ZoneKey(activePlayer, com.wingedsheep.sdk.core.Zone.LIBRARY)
+        val graveyardZone = com.wingedsheep.engine.state.ZoneKey(activePlayer, com.wingedsheep.sdk.core.Zone.GRAVEYARD)
+        driver.replaceState(
+            driver.state.removeFromZone(libraryZone, milled).addToZone(graveyardZone, milled)
+        )
+
+        val events = listOf(
+            com.wingedsheep.engine.core.ZoneChangeEvent(
+                entityId = milled,
+                entityName = "Grizzly Bears",
+                fromZone = com.wingedsheep.sdk.core.Zone.LIBRARY,
+                toZone = com.wingedsheep.sdk.core.Zone.GRAVEYARD,
+                ownerId = activePlayer
+            )
+        )
+
+        val detector = com.wingedsheep.engine.event.TriggerDetector(driver.cardRegistry)
+        val triggers = detector.detectTriggers(driver.state, events)
+
+        triggers.count { it.sourceId == moon } shouldBe 1
+    }
+
+    test("permanent card discarded from hand to your graveyard triggers Moonshadow") {
+        val driver = createDriver()
+        driver.initMirrorMatch(
+            deck = Deck.of("Swamp" to 20, "Mountain" to 20),
+            startingLife = 20
+        )
+        driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
+
+        val activePlayer = driver.activePlayer!!
+
+        val moon = driver.putCreatureOnBattlefield(activePlayer, "Moonshadow")
+        addMinusOneMinusOne(driver, moon, 6)
+
+        val discarded = driver.putCardInHand(activePlayer, "Grizzly Bears")
+
+        val handZone = com.wingedsheep.engine.state.ZoneKey(activePlayer, com.wingedsheep.sdk.core.Zone.HAND)
+        val graveyardZone = com.wingedsheep.engine.state.ZoneKey(activePlayer, com.wingedsheep.sdk.core.Zone.GRAVEYARD)
+        driver.replaceState(
+            driver.state.removeFromZone(handZone, discarded).addToZone(graveyardZone, discarded)
+        )
+
+        val events = listOf(
+            com.wingedsheep.engine.core.ZoneChangeEvent(
+                entityId = discarded,
+                entityName = "Grizzly Bears",
+                fromZone = com.wingedsheep.sdk.core.Zone.HAND,
+                toZone = com.wingedsheep.sdk.core.Zone.GRAVEYARD,
+                ownerId = activePlayer
+            )
+        )
+
+        val detector = com.wingedsheep.engine.event.TriggerDetector(driver.cardRegistry)
+        val triggers = detector.detectTriggers(driver.state, events)
+
+        triggers.count { it.sourceId == moon } shouldBe 1
+    }
+
+    test("permanents entering graveyard from library, hand, and battlefield in one batch trigger Moonshadow only once") {
+        val driver = createDriver()
+        driver.initMirrorMatch(
+            deck = Deck.of("Swamp" to 20, "Mountain" to 20),
+            startingLife = 20
+        )
+        driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
+
+        val activePlayer = driver.activePlayer!!
+
+        val moon = driver.putCreatureOnBattlefield(activePlayer, "Moonshadow")
+        addMinusOneMinusOne(driver, moon, 6)
+
+        val fromLibrary = driver.putCardOnTopOfLibrary(activePlayer, "Grizzly Bears")
+        val fromHand = driver.putCardInHand(activePlayer, "Savannah Lions")
+        val fromBattlefield = driver.putCreatureOnBattlefield(activePlayer, "Storm Crow")
+
+        val libraryZone = com.wingedsheep.engine.state.ZoneKey(activePlayer, com.wingedsheep.sdk.core.Zone.LIBRARY)
+        val handZone = com.wingedsheep.engine.state.ZoneKey(activePlayer, com.wingedsheep.sdk.core.Zone.HAND)
+        val battlefieldZone = com.wingedsheep.engine.state.ZoneKey(activePlayer, com.wingedsheep.sdk.core.Zone.BATTLEFIELD)
+        val graveyardZone = com.wingedsheep.engine.state.ZoneKey(activePlayer, com.wingedsheep.sdk.core.Zone.GRAVEYARD)
+
+        var state = driver.state
+            .removeFromZone(libraryZone, fromLibrary)
+            .removeFromZone(handZone, fromHand)
+            .removeFromZone(battlefieldZone, fromBattlefield)
+        state = state
+            .addToZone(graveyardZone, fromLibrary)
+            .addToZone(graveyardZone, fromHand)
+            .addToZone(graveyardZone, fromBattlefield)
+        driver.replaceState(state)
+
+        val events = listOf(
+            com.wingedsheep.engine.core.ZoneChangeEvent(
+                entityId = fromLibrary,
+                entityName = "Grizzly Bears",
+                fromZone = com.wingedsheep.sdk.core.Zone.LIBRARY,
+                toZone = com.wingedsheep.sdk.core.Zone.GRAVEYARD,
+                ownerId = activePlayer
+            ),
+            com.wingedsheep.engine.core.ZoneChangeEvent(
+                entityId = fromHand,
+                entityName = "Savannah Lions",
+                fromZone = com.wingedsheep.sdk.core.Zone.HAND,
+                toZone = com.wingedsheep.sdk.core.Zone.GRAVEYARD,
+                ownerId = activePlayer
+            ),
+            com.wingedsheep.engine.core.ZoneChangeEvent(
+                entityId = fromBattlefield,
+                entityName = "Storm Crow",
+                fromZone = com.wingedsheep.sdk.core.Zone.BATTLEFIELD,
+                toZone = com.wingedsheep.sdk.core.Zone.GRAVEYARD,
+                ownerId = activePlayer
+            ),
+        )
+
+        val detector = com.wingedsheep.engine.event.TriggerDetector(driver.cardRegistry)
+        val triggers = detector.detectTriggers(driver.state, events)
+
+        triggers.count { it.sourceId == moon } shouldBe 1
+    }
+
     test("opponent's creature dying to their graveyard does not trigger your Moonshadow") {
         val driver = createDriver()
         driver.initMirrorMatch(
