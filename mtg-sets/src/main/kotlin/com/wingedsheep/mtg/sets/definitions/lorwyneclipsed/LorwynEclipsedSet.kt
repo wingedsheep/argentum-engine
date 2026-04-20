@@ -96,6 +96,7 @@ object LorwynEclipsedSet {
         SteamVents,
         StoicGroveGuide,
         Stratosoarer,
+        SunDappledCelebrant,
         SwatAway,
         SyggsCommand,
         TanufelRimespeaker,
