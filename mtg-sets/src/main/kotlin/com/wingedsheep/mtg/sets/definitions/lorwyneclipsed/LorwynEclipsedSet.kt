@@ -106,6 +106,7 @@ object LorwynEclipsedSet {
         UnwelcomeSprite,
         VinebredBrawler,
         VirulentEmissary,
+        VoraciousTomeSkimmer,
         WanderwineFarewell,
         WildUnraveling,
         WildvinePummeler,

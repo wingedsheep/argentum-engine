@@ -2,7 +2,7 @@
 
 **Set Size:** 273 cards (main set, per Scryfall `set:ecl`)
 **Release Date:** January 23, 2026
-**Implemented:** 96 / 273
+**Implemented:** 97 / 273
 
 | Color      | Total | Done |
 |------------|-------|------|
@@ -11,7 +11,7 @@
 | Black      | 38    | 12   |
 | Red        | 39    | 9    |
 | Green      | 39    | 16   |
-| Multicolor | 49    | 20   |
+| Multicolor | 49    | 21   |
 | Colorless  | 18    | 3    |
 | Land       | 12    | 8    |
 
@@ -276,7 +276,7 @@
 - [x] Trystan's Command
 - [ ] Twinflame Travelers
 - [ ] Vibrance
-- [ ] Voracious Tome-Skimmer
+- [x] Voracious Tome-Skimmer
 - [ ] Wary Farmer
 - [x] Wistfulness
 
