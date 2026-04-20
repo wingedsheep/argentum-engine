@@ -1022,7 +1022,13 @@ class StackResolver(
                 val pausedFlashbackExile = spellComponent.castFromZone == Zone.GRAVEYARD &&
                     pausedCardDef?.keywordAbilities?.any { it is KeywordAbility.Flashback } == true
                 val pausedExileAfterResolve = effectResult.state.getEntity(spellId)?.has<ExileAfterResolveComponent>() == true
-                val pausedDestZone = if (pausedSelfExile || pausedFlashbackExile || pausedExileAfterResolve) Zone.EXILE else Zone.GRAVEYARD
+                val pausedIntended = if (pausedSelfExile || pausedFlashbackExile || pausedExileAfterResolve) Zone.EXILE else Zone.GRAVEYARD
+
+                // Apply RedirectZoneChange replacement effects (e.g., Festival of Embers).
+                val pausedRedirect = com.wingedsheep.engine.handlers.effects.ZoneMovementUtils.checkZoneChangeRedirect(
+                    effectResult.state, spellId, Zone.STACK, pausedIntended
+                )
+                val pausedDestZone = pausedRedirect.destinationZone
                 val pausedDestZoneKey = ZoneKey(ownerId, pausedDestZone)
 
                 // Move spell to graveyard/exile even though effect is paused
@@ -1030,6 +1036,12 @@ class StackResolver(
                     c.without<SpellOnStackComponent>().without<TargetsComponent>()
                 }
                 pausedState = pausedState.addToZone(pausedDestZoneKey, spellId)
+
+                pausedRedirect.additionalEffect?.let { extra ->
+                    pausedState = com.wingedsheep.engine.handlers.effects.ZoneMovementUtils.applyReplacementAdditionalEffect(
+                        pausedState, extra, pausedRedirect.effectControllerId, spellId
+                    )
+                }
 
                 // Include the zone change event along with effect events
                 val allEvents = events + effectResult.events + ZoneChangeEvent(
@@ -1070,7 +1082,14 @@ class StackResolver(
         val flashbackExile = spellComponent.castFromZone == Zone.GRAVEYARD &&
             cardDef?.keywordAbilities?.any { it is KeywordAbility.Flashback } == true
         val exileAfterResolve = newState.getEntity(spellId)?.has<ExileAfterResolveComponent>() == true
-        val destinationZone = if (selfExile || flashbackExile || exileAfterResolve) Zone.EXILE else Zone.GRAVEYARD
+        val intendedDestination = if (selfExile || flashbackExile || exileAfterResolve) Zone.EXILE else Zone.GRAVEYARD
+
+        // Apply RedirectZoneChange replacement effects (e.g., Festival of Embers
+        // exiles cards that would go to your graveyard from anywhere).
+        val redirect = com.wingedsheep.engine.handlers.effects.ZoneMovementUtils.checkZoneChangeRedirect(
+            newState, spellId, Zone.STACK, intendedDestination
+        )
+        val destinationZone = redirect.destinationZone
         val destZoneKey = ZoneKey(ownerId, destinationZone)
 
         newState = newState.updateEntity(spellId) { c ->
@@ -1081,6 +1100,12 @@ class StackResolver(
                 .without<ExileAfterResolveComponent>()
         }
         newState = newState.addToZone(destZoneKey, spellId)
+
+        redirect.additionalEffect?.let { extra ->
+            newState = com.wingedsheep.engine.handlers.effects.ZoneMovementUtils.applyReplacementAdditionalEffect(
+                newState, extra, redirect.effectControllerId, spellId
+            )
+        }
 
         events.add(
             ZoneChangeEvent(
