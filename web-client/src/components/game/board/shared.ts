@@ -34,6 +34,14 @@ const SLOT_MAX_CARD_WIDTH = 200
  * otherwise overflow the slot vertically and clip into / overlap with
  * the neighbouring row.
  *
+ * The `maxRowTappedCount` argument is the largest tapped-card count across
+ * the two rows. Tapped cards are rotated 90°, so their horizontal footprint
+ * is the portrait card *height* (≈1.4× card width) rather than the width.
+ * Without accounting for that, a row of many tapped creatures on a narrow
+ * viewport overflows the slot horizontally, then flex-wraps to a second
+ * physical line — which pushes the row's total height past the allotted
+ * 1fr and spills into the adjacent center HUD.
+ *
  * Phase 2 of the no-overlap layout: makes overflow into the center HUD
  * geometrically impossible by sizing cards from the actual slot rather
  * than estimating from window dimensions.
@@ -41,6 +49,7 @@ const SLOT_MAX_CARD_WIDTH = 200
 export function useSlotSizedResponsive(
   slotRef: RefObject<HTMLElement | null>,
   maxRowCount: number = 0,
+  maxRowTappedCount: number = 0,
 ): ResponsiveSizes {
   const base = useResponsiveContext()
   const [slotSize, setSlotSize] = useState<{ width: number; height: number } | null>(null)
@@ -84,10 +93,17 @@ export function useSlotSizedResponsive(
     // Horizontal-fit cap: largest card width that lets `maxRowCount` cards sit
     // side-by-side in the slot's width (accounting for inter-card gaps). When
     // there's only 0–1 card, no horizontal constraint applies.
+    //
+    // Each tapped card's rotated container is ≈cardHeight (= 1.4 × cardWidth)
+    // wide rather than cardWidth. Solving for cardWidth with t tapped out of n:
+    //   slotWidth ≥ cw × (n + 0.4·t) + (n − 1) × gap
+    //   cw ≤ (slotWidth − (n − 1) × gap) / (n + 0.4·t)
     let widthFromWidth = SLOT_MAX_CARD_WIDTH
     if (maxRowCount > 1) {
       const totalGap = (maxRowCount - 1) * base.cardGap
-      widthFromWidth = Math.floor((slotSize.width - totalGap) / maxRowCount)
+      const clampedTapped = Math.max(0, Math.min(maxRowTappedCount, maxRowCount))
+      const widthDivisor = maxRowCount + 0.4 * clampedTapped
+      widthFromWidth = Math.floor((slotSize.width - totalGap) / widthDivisor)
     }
 
     const slotCardWidth = Math.max(
@@ -144,7 +160,7 @@ export function useSlotSizedResponsive(
       battlefieldRowPadding: Math.round(slotCardHeight * 0.08),
       badges,
     }
-  }, [base, slotSize, maxRowCount])
+  }, [base, slotSize, maxRowCount, maxRowTappedCount])
 }
 
 /**

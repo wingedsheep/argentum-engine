@@ -55,6 +55,13 @@ export function Battlefield({ isOpponent, spectatorMode = false }: { isOpponent:
   // horizontal-fit constraint in useSlotSizedResponsive — cards shrink so
   // they all sit side-by-side without wrapping to a second physical line.
   const cards = useBattlefieldCards()
+  // Tapped cards are rotated 90° on the battlefield — their horizontal footprint
+  // is cardHeight (≈1.4×cardWidth) rather than cardWidth. Count per row so the
+  // horizontal-fit constraint in useSlotSizedResponsive reserves the rotated
+  // width; otherwise many tapped creatures on a narrow viewport overflow and
+  // wrap to a second physical row, which pushes the row up into the center HUD.
+  const countTapped = (groups: readonly { isTapped: boolean }[]) =>
+    groups.reduce((sum, c) => sum + (c.isTapped ? 1 : 0), 0)
   const maxRowCount = isOpponent
     ? Math.max(
         cards.opponentLands.length + cards.opponentOther.length,
@@ -64,7 +71,16 @@ export function Battlefield({ isOpponent, spectatorMode = false }: { isOpponent:
         cards.playerLands.length + cards.playerOther.length,
         cards.playerCreatures.length + cards.playerPlaneswalkers.length,
       )
-  const slotResponsive = useSlotSizedResponsive(slotRef, maxRowCount)
+  const maxRowTappedCount = isOpponent
+    ? Math.max(
+        countTapped(cards.opponentLands) + countTapped(cards.opponentOther),
+        countTapped(cards.opponentCreatures) + countTapped(cards.opponentPlaneswalkers),
+      )
+    : Math.max(
+        countTapped(cards.playerLands) + countTapped(cards.playerOther),
+        countTapped(cards.playerCreatures) + countTapped(cards.playerPlaneswalkers),
+      )
+  const slotResponsive = useSlotSizedResponsive(slotRef, maxRowCount, maxRowTappedCount)
   return (
     <div
       ref={slotRef}
