@@ -6,6 +6,7 @@ import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.PredicateContext
 import com.wingedsheep.engine.handlers.effects.BattlefieldFilterUtils
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
+import com.wingedsheep.engine.handlers.effects.EntersWithCountersHelper
 import com.wingedsheep.engine.mechanics.layers.StaticAbilityHandler
 import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.ComponentContainer
@@ -137,7 +138,13 @@ class CreateTokenCopyOfChosenPermanentExecutor(
                 ownerId = controllerId
             )
 
-            return EffectResult.success(newState, listOf(event))
+            // Apply "enters with counters" replacement effects from other battlefield permanents
+            // (e.g., Gev, Scaled Scorch granting +1/+1 counters to token copies).
+            val (stateWithCounters, counterEvents) = EntersWithCountersHelper.applyGlobalEntersWithCounters(
+                newState, tokenId, controllerId
+            )
+
+            return EffectResult.success(stateWithCounters, listOf(event) + counterEvents)
         }
     }
 }

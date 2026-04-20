@@ -42,6 +42,7 @@ import com.wingedsheep.sdk.scripting.effects.WarpExileEffect
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.events.CounterTypeFilter
 import com.wingedsheep.sdk.scripting.EntersAsCopy
+import com.wingedsheep.engine.handlers.effects.EntersWithCountersHelper
 import com.wingedsheep.engine.handlers.effects.ReplacementEffectUtils
 import com.wingedsheep.sdk.scripting.EntersTapped
 import com.wingedsheep.sdk.scripting.EntersWithChoice
@@ -1373,113 +1374,17 @@ class StackResolver(
 
         // Apply "enters with counters" replacement effects from other battlefield permanents
         // (e.g., Gev: "Other creatures you control enter with additional +1/+1 counters")
-        val (globalState, globalEvents) = applyGlobalEntersWithCounters(newState, entityId, controllerId)
+        val (globalState, globalEvents) = EntersWithCountersHelper.applyGlobalEntersWithCounters(
+            newState, entityId, controllerId
+        )
         newState = globalState
         events.addAll(globalEvents)
 
         return newState to events
     }
 
-    /**
-     * Check other battlefield permanents for EntersWithCounters/EntersWithDynamicCounters
-     * replacement effects that apply to the entering creature.
-     */
-    private fun applyGlobalEntersWithCounters(
-        state: GameState,
-        enteringEntityId: EntityId,
-        enteringControllerId: EntityId
-    ): Pair<GameState, List<GameEvent>> {
-        var newState = state
-        val events = mutableListOf<GameEvent>()
-        val predicateEvaluator = PredicateEvaluator()
-        val entityName = newState.getEntity(enteringEntityId)?.get<CardComponent>()?.name ?: ""
-
-        for (sourceId in newState.getBattlefield()) {
-            if (sourceId == enteringEntityId) continue // Skip the entering creature itself
-            val container = newState.getEntity(sourceId) ?: continue
-            val replacementComponent = container.get<ReplacementEffectSourceComponent>() ?: continue
-            val sourceControllerId = container.get<ControllerComponent>()?.playerId ?: continue
-
-            for (effect in replacementComponent.replacementEffects) {
-                when (effect) {
-                    is EntersWithCounters -> {
-                        if (effect.selfOnly) continue
-                        if (!matchesEnterFilter(effect.appliesTo, enteringEntityId, enteringControllerId, sourceControllerId, newState, predicateEvaluator)) continue
-                        val counterType = resolveCounterType(effect.counterType)
-                        val modifiedCount = ReplacementEffectUtils.applyCounterPlacementModifiers(
-                            newState, enteringEntityId, counterType, effect.count
-                        )
-                        val current = newState.getEntity(enteringEntityId)?.get<CountersComponent>() ?: CountersComponent()
-                        newState = newState.updateEntity(enteringEntityId) { c ->
-                            c.with(current.withAdded(counterType, modifiedCount))
-                        }
-                        events.add(CountersAddedEvent(enteringEntityId, effect.counterType.description, modifiedCount, entityName))
-                    }
-                    is EntersWithDynamicCounters -> {
-                        if (!effect.otherOnly) continue
-                        if (!matchesEnterFilter(effect.appliesTo, enteringEntityId, enteringControllerId, sourceControllerId, newState, predicateEvaluator)) continue
-                        val counterType = resolveCounterType(effect.counterType)
-                        val context = EffectContext(
-                            sourceId = sourceId,
-                            controllerId = sourceControllerId,
-                            opponentId = newState.turnOrder.firstOrNull { it != sourceControllerId }
-                        )
-                        val count = dynamicAmountEvaluator.evaluate(newState, effect.count, context)
-                        if (count > 0) {
-                            val modifiedCount = ReplacementEffectUtils.applyCounterPlacementModifiers(
-                                newState, enteringEntityId, counterType, count
-                            )
-                            val current = newState.getEntity(enteringEntityId)?.get<CountersComponent>() ?: CountersComponent()
-                            newState = newState.updateEntity(enteringEntityId) { c ->
-                                c.with(current.withAdded(counterType, modifiedCount))
-                            }
-                            events.add(CountersAddedEvent(enteringEntityId, effect.counterType.description, modifiedCount, entityName))
-                        }
-                    }
-                    else -> { /* Other replacement effects not relevant here */ }
-                }
-            }
-        }
-        return newState to events
-    }
-
-    /**
-     * Check if a ZoneChangeEvent filter matches the entering creature.
-     */
-    private fun matchesEnterFilter(
-        event: com.wingedsheep.sdk.scripting.GameEvent,
-        enteringEntityId: EntityId,
-        enteringControllerId: EntityId,
-        sourceControllerId: EntityId,
-        state: GameState,
-        predicateEvaluator: PredicateEvaluator
-    ): Boolean {
-        if (event !is com.wingedsheep.sdk.scripting.GameEvent.ZoneChangeEvent) return false
-        if (event.to != com.wingedsheep.sdk.core.Zone.BATTLEFIELD) return false
-        val filter = event.filter
-
-        val predicateContext = PredicateContext(
-            sourceId = enteringEntityId,
-            controllerId = sourceControllerId
-        )
-        return predicateEvaluator.matches(state, enteringEntityId, filter, predicateContext)
-    }
-
-    private fun resolveCounterType(filter: CounterTypeFilter): CounterType {
-        return when (filter) {
-            is CounterTypeFilter.Any -> CounterType.PLUS_ONE_PLUS_ONE
-            is CounterTypeFilter.PlusOnePlusOne -> CounterType.PLUS_ONE_PLUS_ONE
-            is CounterTypeFilter.MinusOneMinusOne -> CounterType.MINUS_ONE_MINUS_ONE
-            is CounterTypeFilter.Loyalty -> CounterType.LOYALTY
-            is CounterTypeFilter.Named -> {
-                try {
-                    CounterType.valueOf(filter.name.uppercase().replace(' ', '_'))
-                } catch (_: IllegalArgumentException) {
-                    CounterType.PLUS_ONE_PLUS_ONE
-                }
-            }
-        }
-    }
+    private fun resolveCounterType(filter: CounterTypeFilter): CounterType =
+        EntersWithCountersHelper.resolveCounterType(filter)
 
     // =========================================================================
     // Countering

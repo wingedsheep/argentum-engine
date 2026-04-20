@@ -5,6 +5,7 @@ import com.wingedsheep.engine.core.ZoneChangeEvent
 import com.wingedsheep.engine.event.DelayedTriggeredAbility
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
+import com.wingedsheep.engine.handlers.effects.EntersWithCountersHelper
 import com.wingedsheep.engine.mechanics.layers.StaticAbilityHandler
 import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.Component
@@ -95,6 +96,17 @@ class CreateTokenCopyOfSourceExecutor(
             newState = newState.addToZone(battlefieldZone, tokenId)
         }
 
+        // Apply "enters with counters" replacement effects from other battlefield permanents
+        // (e.g., Gev, Scaled Scorch granting +1/+1 counters to Offspring token copies).
+        val counterEvents = mutableListOf<com.wingedsheep.engine.core.GameEvent>()
+        for (tokenId in createdTokens) {
+            val (nextState, events) = EntersWithCountersHelper.applyGlobalEntersWithCounters(
+                newState, tokenId, controllerId
+            )
+            newState = nextState
+            counterEvents.addAll(events)
+        }
+
         // If exileAtStep is set, create delayed triggers to exile each created token
         val exileStep = effect.exileAtStep
         if (exileStep != null) {
@@ -124,6 +136,6 @@ class CreateTokenCopyOfSourceExecutor(
             )
         }
 
-        return EffectResult.success(newState, events)
+        return EffectResult.success(newState, events + counterEvents)
     }
 }
