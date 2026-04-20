@@ -85,6 +85,7 @@ object LorwynEclipsedSet {
         PridefulFeastling,
         ProtectiveResponse,
         PrismaticUndercurrents,
+        RecklessRansacking,
         RimefireTorque,
         SaplingNursery,
         ShadowUrchin,
