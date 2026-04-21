@@ -584,6 +584,7 @@ class ManaSolver(
                     }
                     is AbilityCost.Composite -> {
                         var hasTap = false
+                        var hasUnsupportedSubCost = false
                         for (subCost in cost.costs) {
                             when (subCost) {
                                 is AbilityCost.Tap -> hasTap = true
@@ -594,10 +595,13 @@ class ManaSolver(
                                 is AbilityCost.Mana -> {
                                     abilityActivationManaCost += subCost.cost.cmc
                                 }
-                                else -> {}
+                                // Choice costs (Forage, Sacrifice, etc.) require explicit player opt-in.
+                                // Treat such abilities as non-auto-tappable; the player must activate
+                                // them directly via ActivateAbility so the cost is properly paid.
+                                else -> hasUnsupportedSubCost = true
                             }
                         }
-                        hasTap // Only auto-pay tap-based abilities
+                        hasTap && !hasUnsupportedSubCost
                     }
                     else -> false // Skip non-tap mana abilities
                 }
