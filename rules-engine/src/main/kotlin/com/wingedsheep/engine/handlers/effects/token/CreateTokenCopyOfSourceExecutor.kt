@@ -12,6 +12,7 @@ import com.wingedsheep.engine.state.Component
 import com.wingedsheep.engine.state.ComponentContainer
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
+import com.wingedsheep.engine.state.components.battlefield.EnteredThisTurnComponent
 import com.wingedsheep.engine.state.components.battlefield.SummoningSicknessComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
@@ -78,7 +79,8 @@ class CreateTokenCopyOfSourceExecutor(
                 tokenCard,
                 TokenComponent,
                 ControllerComponent(controllerId),
-                SummoningSicknessComponent
+                SummoningSicknessComponent,
+                EnteredThisTurnComponent
             )
 
             var container = ComponentContainer.of(*components.toTypedArray())
