@@ -93,6 +93,7 @@ object LorwynEclipsedSet {
         RaidingSchemes,
         RecklessRansacking,
         RimefireTorque,
+        RiverguardsReflexes,
         SaplingNursery,
         ShadowUrchin,
         ShimmerwildsGrowth,
