@@ -117,6 +117,7 @@ export function computePhases(actionInfo: LegalActionInfo, options?: ComputePhas
       'RevealCard',
       'Behold',
       'Blight',
+      'Conspire',
     ]
 
     if (costTypesNeedingSelection.includes(costType)) {
@@ -246,6 +247,10 @@ export function mergeResult(
     case 'costPayment': {
       const { costType, selectedTargets } = result
       if (action.type === 'CastSpell') {
+        // Conspire populates a dedicated field on CastSpell, not additionalCostPayment.
+        if (costType === 'Conspire') {
+          return { ...action, conspiredCreatures: selectedTargets }
+        }
         const additionalCostPayment =
           costType === 'DiscardCard'
             ? { discardedCards: selectedTargets }
@@ -446,6 +451,14 @@ export function enterPhase(
           maxTargets = costInfo.tapCount ?? 1
           flags.isSacrificeSelection = true
           flags.isTapPermanentSelection = true
+          break
+        case 'Conspire':
+          validTargets = [...(costInfo.validTapTargets ?? [])]
+          minTargets = costInfo.tapCount ?? 2
+          maxTargets = costInfo.tapCount ?? 2
+          flags.isSacrificeSelection = true
+          flags.isTapPermanentSelection = true
+          flags.targetDescription = costInfo.description
           break
         case 'BouncePermanent':
           validTargets = [...(costInfo.validBounceTargets ?? [])]

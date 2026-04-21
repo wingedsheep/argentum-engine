@@ -95,6 +95,8 @@ export interface CastSpellAction {
   readonly modeTargetsOrdered?: readonly (readonly ChosenTarget[])[]
   /** Per-mode DividedDamageEffect allocations (future). */
   readonly modeDamageDistribution?: Record<number, Record<EntityId, number>>
+  /** Creatures tapped to pay Conspire's optional additional cost (two distinct IDs) */
+  readonly conspiredCreatures?: readonly EntityId[]
 }
 
 export type PaymentStrategy =

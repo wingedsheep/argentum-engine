@@ -71,7 +71,13 @@ data class CastSpell(
     val chosenModes: List<Int> = emptyList(),
     val modeTargetsOrdered: List<List<ChosenTarget>> = emptyList(),
     val modeDamageDistribution: Map<Int, Map<EntityId, Int>> = emptyMap(),
-    val graveyardLifeCost: Int = 0
+    val graveyardLifeCost: Int = 0,
+    /**
+     * Creatures tapped to pay Conspire's optional additional cost. When non-empty, must contain
+     * exactly two distinct untapped creatures the caster controls that each share a color with
+     * the spell being cast (CR 702.78). When empty, Conspire was not invoked.
+     */
+    val conspiredCreatures: List<EntityId> = emptyList()
 ) : GameAction
 
 /**

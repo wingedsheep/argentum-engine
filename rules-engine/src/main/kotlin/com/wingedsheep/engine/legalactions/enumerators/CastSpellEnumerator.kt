@@ -859,7 +859,121 @@ class CastSpellEnumerator : ActionEnumerator {
         // --- Kicker ---
         enumerateKicker(context, hand, result)
 
+        // --- Conspire ---
+        enumerateConspire(context, hand, result)
+
         return result
+    }
+
+    /**
+     * Enumerates a "Cast with Conspire" variant for each spell in hand that has Conspire
+     * (printed or granted by a permanent in play via [GrantKeywordToOwnSpells]) and for which
+     * the caster controls at least two untapped creatures whose projected colors overlap with
+     * the spell's. The two-creature selection is submitted as [CastSpell.conspiredCreatures].
+     *
+     * Skip colorless spells — a color-sharing creature cannot exist for them (CR 702.78).
+     */
+    private fun enumerateConspire(
+        context: EnumerationContext,
+        hand: List<EntityId>,
+        result: MutableList<LegalAction>
+    ) {
+        val state = context.state
+        val playerId = context.playerId
+        if (context.cantCastSpells) return
+
+        val projected = state.projectedState
+
+        for (cardId in hand) {
+            val cardComponent = state.getEntity(cardId)?.get<CardComponent>() ?: continue
+            if (cardComponent.typeLine.isLand) continue
+
+            val cardDef = context.cardRegistry.getCard(cardComponent.name) ?: continue
+            if (!context.grantedKeywordResolver.hasKeyword(state, playerId, cardDef, Keyword.CONSPIRE)) continue
+
+            val spellColors = cardDef.colors
+            if (spellColors.isEmpty()) continue
+
+            // Check timing (same rules as normal cast)
+            val isInstant = cardComponent.typeLine.isInstant
+            val hasFlash = cardDef.keywords.contains(Keyword.FLASH)
+            val grantedFlash = hasFlash || context.castPermissionUtils.hasGrantedFlash(state, cardId)
+            if (!isInstant && !grantedFlash && !context.canPlaySorcerySpeed) continue
+
+            val castRestrictions = cardDef.script.castRestrictions
+            if (castRestrictions.isNotEmpty() && !context.castPermissionUtils.checkCastRestrictions(state, playerId, castRestrictions)) continue
+
+            // Gather controlled, untapped creatures that share at least one color with the spell.
+            val eligibleTapTargets = mutableListOf<EntityId>()
+            for (permId in state.getBattlefield()) {
+                val permContainer = state.getEntity(permId) ?: continue
+                if (projected.getController(permId) != playerId) continue
+                if (!projected.isCreature(permId)) continue
+                if (permContainer.has<com.wingedsheep.engine.state.components.battlefield.TappedComponent>()) continue
+                if (spellColors.none { projected.hasColor(permId, it) }) continue
+                eligibleTapTargets.add(permId)
+            }
+            if (eligibleTapTargets.size < 2) continue
+
+            val baseCost = context.costCalculator.calculateEffectiveCost(state, cardDef, playerId)
+            val spellContext = SpellPaymentContext(
+                isInstantOrSorcery = cardComponent.typeLine.isInstant || cardComponent.typeLine.isSorcery,
+                isKicked = false,
+                isCreature = cardComponent.typeLine.isCreature,
+                manaValue = cardComponent.manaCost.cmc,
+                hasXInCost = cardComponent.manaCost.hasX
+            )
+            val canAfford = context.manaSolver.canPay(state, playerId, baseCost, spellContext = spellContext, precomputedSources = context.availableManaSources)
+            val autoTapPreview = if (context.skipAutoTapPreview) null else {
+                context.manaSolver.solve(state, playerId, baseCost, spellContext = spellContext, precomputedSources = context.availableManaSources)
+                    ?.sources?.map { it.entityId }
+            }
+
+            val targetReqs = buildList {
+                addAll(cardDef.script.targetRequirements)
+                cardDef.script.auraTarget?.let { add(it) }
+            }
+
+            val conspireCostInfo = AdditionalCostData(
+                description = "Tap two untapped creatures you control that share a color with this spell",
+                costType = "Conspire",
+                validTapTargets = eligibleTapTargets,
+                tapCount = 2
+            )
+
+            if (targetReqs.isNotEmpty()) {
+                val targetReqInfos = context.targetUtils.buildTargetInfos(state, playerId, targetReqs)
+                val allRequirementsSatisfied = context.targetUtils.allRequirementsSatisfied(targetReqInfos)
+                if (!allRequirementsSatisfied) continue
+                val firstReq = targetReqs.first()
+                val firstReqInfo = targetReqInfos.first()
+                result.add(LegalAction(
+                    actionType = "CastWithConspire",
+                    description = "Cast ${cardComponent.name} (Conspire)",
+                    action = CastSpell(playerId, cardId),
+                    validTargets = firstReqInfo.validTargets,
+                    requiresTargets = true,
+                    targetCount = firstReq.count,
+                    minTargets = firstReq.effectiveMinCount,
+                    targetDescription = firstReq.description,
+                    targetRequirements = if (targetReqInfos.size > 1) targetReqInfos else null,
+                    affordable = canAfford,
+                    manaCostString = baseCost.toString(),
+                    autoTapPreview = autoTapPreview,
+                    additionalCostInfo = conspireCostInfo
+                ))
+            } else {
+                result.add(LegalAction(
+                    actionType = "CastWithConspire",
+                    description = "Cast ${cardComponent.name} (Conspire)",
+                    action = CastSpell(playerId, cardId),
+                    affordable = canAfford,
+                    manaCostString = baseCost.toString(),
+                    autoTapPreview = autoTapPreview,
+                    additionalCostInfo = conspireCostInfo
+                ))
+            }
+        }
     }
 
     /**

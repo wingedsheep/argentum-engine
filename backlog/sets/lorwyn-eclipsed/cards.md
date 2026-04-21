@@ -2,7 +2,7 @@
 
 **Set Size:** 273 cards (main set, per Scryfall `set:ecl`)
 **Release Date:** January 23, 2026
-**Implemented:** 102 / 273
+**Implemented:** 103 / 273
 
 | Color      | Total | Done |
 |------------|-------|------|
@@ -11,13 +11,13 @@
 | Black      | 38    | 14   |
 | Red        | 39    | 9    |
 | Green      | 39    | 17   |
-| Multicolor | 49    | 21   |
+| Multicolor | 49    | 22   |
 | Colorless  | 18    | 3    |
 | Land       | 12    | 8    |
 
 > **Note:** Before implementing any card, check the `effects/` directory in this folder for any
-> new mechanic it relies on (Evoke, Blight, Vivid, mana-spent gating, Basic landcycling, Wither).
-> Cards should not be implemented until the mechanics they depend on have executors.
+> new mechanic it relies on (Evoke, Blight, Vivid, mana-spent gating, Basic landcycling, Wither,
+> Conspire). Cards should not be implemented until the mechanics they depend on have executors.
 
 ## White (39)
 
@@ -265,7 +265,7 @@
 - [x] Morcant's Loyalist
 - [ ] Noggle Robber
 - [x] Prideful Feastling
-- [ ] Raiding Schemes
+- [x] Raiding Schemes
 - [ ] Reaping Willow
 - [ ] Sanar, Innovative First-Year
 - [x] Shadow Urchin

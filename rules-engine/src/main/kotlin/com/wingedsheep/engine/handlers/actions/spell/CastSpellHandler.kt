@@ -117,6 +117,7 @@ class CastSpellHandler(
     private val predicateEvaluator = PredicateEvaluator()
     private val zoneResolver = CastZoneResolver(cardRegistry, conditionEvaluator)
     private val paymentProcessor = CastPaymentProcessor(manaSolver, costHandler)
+    private val grantedKeywordResolver = com.wingedsheep.engine.mechanics.mana.GrantedKeywordResolver(cardRegistry)
 
     override fun validate(state: GameState, action: CastSpell): String? {
         if (state.priorityPlayerId != action.playerId) {
@@ -246,6 +247,16 @@ class CastSpellHandler(
                 val selfAltCostError = validateAdditionalCosts(state, selfAltCost.additionalCosts, action)
                 if (selfAltCostError != null) return selfAltCostError
             }
+        }
+
+        // Validate Conspire optional additional cost (CR 702.78). Two untapped creatures the
+        // caster controls, each sharing a color with the spell. The spell must have Conspire
+        // either printed or granted (e.g., Raiding Schemes: "Each noncreature spell you cast
+        // has conspire").
+        if (action.conspiredCreatures.isNotEmpty()) {
+            if (cardDef == null) return "Conspire requires a card definition"
+            val conspireError = validateConspire(state, action, cardDef)
+            if (conspireError != null) return conspireError
         }
 
         // Calculate effective cost (free if PlayWithoutPayingCostComponent is present)
@@ -499,6 +510,36 @@ class CastSpellHandler(
                 } else null
             }
         }
+    }
+
+    private fun validateConspire(
+        state: GameState,
+        action: CastSpell,
+        cardDef: com.wingedsheep.sdk.model.CardDefinition
+    ): String? {
+        if (!grantedKeywordResolver.hasKeyword(state, action.playerId, cardDef, Keyword.CONSPIRE)) {
+            return "This spell does not have conspire"
+        }
+        val chosen = action.conspiredCreatures
+        if (chosen.size != 2) return "Conspire requires tapping exactly two creatures"
+        if (chosen[0] == chosen[1]) return "Conspire requires two distinct creatures"
+        val spellColors = cardDef.colors
+        if (spellColors.isEmpty()) return "Cannot conspire: a colorless spell has no color to share"
+        val projected = state.projectedState
+        val battlefield = state.getBattlefield()
+        for (creatureId in chosen) {
+            if (creatureId !in battlefield) return "Conspire creature is not on the battlefield"
+            val container = state.getEntity(creatureId)
+                ?: return "Conspire creature not found: $creatureId"
+            if (projected.getController(creatureId) != action.playerId) {
+                return "Conspire creature is not controlled by you"
+            }
+            if (!projected.isCreature(creatureId)) return "Conspire requires creatures"
+            if (container.has<TappedComponent>()) return "Conspire creature is already tapped"
+            val sharesColor = spellColors.any { projected.hasColor(creatureId, it) }
+            if (!sharesColor) return "Conspire creature shares no color with this spell"
+        }
+        return null
     }
 
     private fun validateCastRestrictions(
@@ -1365,6 +1406,22 @@ class CastSpellHandler(
             }
         }
 
+        // Pay Conspire's optional additional cost: tap the two chosen creatures (CR 702.78).
+        // Validated in validate(); we just apply the tap and emit TappedEvent so "becomes
+        // tapped" self-triggers fire (mirrors the attack-declare TappedEvent fix).
+        if (action.conspiredCreatures.isNotEmpty()) {
+            for (creatureId in action.conspiredCreatures) {
+                val creatureContainer = currentState.getEntity(creatureId) ?: continue
+                if (!creatureContainer.has<TappedComponent>()) {
+                    currentState = currentState.updateEntity(creatureId) { c ->
+                        c.with(TappedComponent)
+                    }
+                    val creatureName = creatureContainer.get<CardComponent>()?.name ?: "Creature"
+                    events.add(TappedEvent(creatureId, creatureName))
+                }
+            }
+        }
+
         // Apply alternative payment (Delve/Convoke)
         if (action.alternativePayment != null && !action.alternativePayment.isEmpty && cardDef != null) {
             val altPaymentResult = alternativePaymentHandler.apply(
@@ -1655,6 +1712,43 @@ class CastSpellHandler(
                 } else emptyList()
             } else emptyList()
 
+        // Handle Conspire (CR 702.78): when the optional additional cost was paid, a reflexive
+        // trigger goes on the stack above the spell: "When you do, copy it and you may choose
+        // new targets for the copy." Reuses StormCopyEffect with copyCount=1 so the existing
+        // retargeting, modal-copy, and SpellOnStackComponent-clone plumbing applies unchanged.
+        val conspirePendingTriggers: List<PendingTrigger> =
+            if (!action.castFaceDown && cardDef != null && action.conspiredCreatures.isNotEmpty()) {
+                val spellEffect = cardDef.script.spellEffect
+                if (spellEffect != null) {
+                    val copyEffect = StormCopyEffect(
+                        copyCount = 1,
+                        spellEffect = spellEffect,
+                        spellTargetRequirements = spellTargetRequirements,
+                        spellName = cardComponent.name
+                    )
+                    val ability = TriggeredAbility(
+                        id = AbilityId.generate(),
+                        trigger = SdkGameEvent.SpellCastEvent(player = Player.You),
+                        binding = TriggerBinding.SELF,
+                        effect = copyEffect,
+                        activeZone = Zone.STACK,
+                        descriptionOverride = "Conspire — copy ${cardComponent.name}"
+                    )
+                    listOf(
+                        PendingTrigger(
+                            ability = ability,
+                            sourceId = action.cardId,
+                            sourceName = cardComponent.name,
+                            controllerId = action.playerId,
+                            triggerContext = TriggerContext(
+                                triggeringEntityId = action.cardId,
+                                triggeringPlayerId = action.playerId
+                            )
+                        )
+                    )
+                } else emptyList()
+            } else emptyList()
+
         // Handle pending spell copies (e.g., Howl of the Horde) — copy next instant/sorcery
         if (!action.castFaceDown && cardComponent.typeLine.let { it.isInstant || it.isSorcery }) {
             val matchingCopies = currentCastState.pendingSpellCopies.filter { it.controllerId == action.playerId }
@@ -1701,7 +1795,7 @@ class CastSpellHandler(
         // Other AP spell-cast triggers follow (placed higher on the stack), then NAP triggers on top,
         // matching APNAP ordering within processTriggers.
         val detectedTriggers = triggerDetector.detectTriggers(currentCastState, allEvents)
-        val triggers = stormPendingTriggers + detectedTriggers
+        val triggers = conspirePendingTriggers + stormPendingTriggers + detectedTriggers
         if (triggers.isNotEmpty()) {
             val triggerResult = triggerProcessor.processTriggers(currentCastState, triggers)
 

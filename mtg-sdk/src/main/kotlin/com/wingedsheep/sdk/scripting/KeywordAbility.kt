@@ -498,6 +498,29 @@ sealed interface KeywordAbility {
     }
 
     // =========================================================================
+    // Conspire
+    // =========================================================================
+
+    /**
+     * Conspire.
+     * "Conspire" - As you cast this spell, you may tap two untapped creatures you control
+     * that share a color with it. When you do, copy it and you may choose new targets for
+     * the copy.
+     *
+     * Conspire is an optional additional cost combined with a reflexive triggered copy.
+     * The "share a color with it" predicate is evaluated at cost-payment time against the
+     * spell's colors, so Conspire is intrinsically bound to a specific spell — the tap-two
+     * payment is handled as a Conspire-specific branch of the cast flow rather than a
+     * generic AdditionalCost subtype.
+     */
+    @SerialName("Conspire")
+    @Serializable
+    data object Conspire : KeywordAbility {
+        override val keyword: Keyword = Keyword.CONSPIRE
+        override val description: String = "Conspire"
+    }
+
+    // =========================================================================
     // Evoke
     // =========================================================================
 
@@ -604,5 +627,10 @@ sealed interface KeywordAbility {
          * Create Evoke with mana cost from string.
          */
         fun evoke(cost: String): KeywordAbility = Evoke(ManaCost.parse(cost))
+
+        /**
+         * Create Conspire keyword ability.
+         */
+        fun conspire(): KeywordAbility = Conspire
     }
 }
