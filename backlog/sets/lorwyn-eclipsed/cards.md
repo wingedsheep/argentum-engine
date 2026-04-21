@@ -2,12 +2,12 @@
 
 **Set Size:** 273 cards (main set, per Scryfall `set:ecl`)
 **Release Date:** January 23, 2026
-**Implemented:** 105 / 273
+**Implemented:** 106 / 273
 
 | Color      | Total | Done |
 |------------|-------|------|
 | White      | 39    | 14   |
-| Blue       | 39    | 18   |
+| Blue       | 39    | 19   |
 | Black      | 38    | 14   |
 | Red        | 39    | 9    |
 | Green      | 39    | 17   |
@@ -70,7 +70,7 @@
 - [ ] Flitterwing Nuisance
 - [x] Glamer Gifter
 - [ ] Glamermite
-- [ ] Glen Elendra Guardian
+- [x] Glen Elendra Guardian
 - [x] Glen Elendra's Answer
 - [ ] Gravelgill Scoundrel
 - [x] Harmonized Crescendo

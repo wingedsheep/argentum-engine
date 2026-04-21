@@ -59,6 +59,7 @@ object LorwynEclipsedSet {
         FeistySpikeling,
         FlaringCinder,
         GlamerGifter,
+        GlenElendraGuardian,
         GlenElendrasAnswer,
         GloomRipper,
         Goatnap,
