@@ -2,11 +2,11 @@
 
 **Set Size:** 273 cards (main set, per Scryfall `set:ecl`)
 **Release Date:** January 23, 2026
-**Implemented:** 104 / 273
+**Implemented:** 105 / 273
 
 | Color      | Total | Done |
 |------------|-------|------|
-| White      | 39    | 13   |
+| White      | 39    | 14   |
 | Blue       | 39    | 18   |
 | Black      | 38    | 14   |
 | Red        | 39    | 9    |
@@ -25,7 +25,7 @@
 - [ ] Ajani, Outland Chaperone
 - [x] Appeal to Eirdu
 - [x] Bark of Doran
-- [ ] Burdened Stoneback
+- [x] Burdened Stoneback
 - [ ] Champion of the Clachan
 - [x] Clachan Festival
 - [ ] Crib Swap

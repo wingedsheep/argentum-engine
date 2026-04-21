@@ -36,6 +36,7 @@ object LorwynEclipsedSet {
         BoulderDash,
         BramblebackBrute,
         BrigidsCommand,
+        BurdenedStoneback,
         Catharsis,
         ChampionsOfThePerfect,
         ChampionsOfTheShoal,
