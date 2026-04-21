@@ -68,7 +68,10 @@ class LilypadVillageManualTapTest : FunSpec({
         val forest2 = driver.putLandOnBattlefield(activePlayer, "Forest")
         val lilypad = driver.putPermanentOnBattlefield(activePlayer, "Lilypad Village")
 
-        val forestAbility = TestCards.all.first { it.name == "Forest" }.activatedAbilities[0].id
+        // Ability IDs are generated per CardDefinition instance. Each basicLand("Forest") printing
+        // has its own AbilityId, and CardRegistry keeps only the last one registered under "Forest".
+        // Look up the ability from the registry the driver actually uses, not from TestCards.all.
+        val forestAbility = driver.cardRegistry.requireCard("Forest").activatedAbilities[0].id
         val lilypadCreatureOnlyAbility = LilypadVillage.activatedAbilities[1].id
 
         driver.submit(ActivateAbility(activePlayer, forest1, forestAbility)).isSuccess shouldBe true
