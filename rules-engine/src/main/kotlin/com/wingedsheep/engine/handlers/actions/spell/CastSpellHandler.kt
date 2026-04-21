@@ -2176,6 +2176,13 @@ class CastSpellHandler(
         chosenModes: List<Int>,
         flatTargets: List<ChosenTarget>
     ): List<List<ChosenTarget>> {
+        // Choose-1: all flat targets belong to the single chosen mode. Using the mode's
+        // max `count` here would mis-slice "up to N target" modes when the player picks
+        // fewer than the maximum (e.g. Dewdrop Cure's "return up to two/three").
+        if (chosenModes.size == 1) {
+            return listOf(flatTargets.toList())
+        }
+
         val perModeSlotCounts = chosenModes.map { idx ->
             modalEffect.modes.getOrNull(idx)?.targetRequirements?.sumOf { it.count } ?: 0
         }
