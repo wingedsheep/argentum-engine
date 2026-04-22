@@ -95,6 +95,7 @@ object LorwynEclipsedSet {
         PridefulFeastling,
         ProtectiveResponse,
         PrismaticUndercurrents,
+        PummelerForHire,
         RaidingSchemes,
         ReapingWillow,
         RecklessRansacking,
