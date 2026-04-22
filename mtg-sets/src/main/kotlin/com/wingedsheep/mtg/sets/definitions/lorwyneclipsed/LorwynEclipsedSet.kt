@@ -64,6 +64,7 @@ object LorwynEclipsedSet {
         GloomRipper,
         Goatnap,
         GoldmeadowNomad,
+        Graveshifter,
         GreatForestDruid,
         GristleGlutton,
         HallowedFountain,
