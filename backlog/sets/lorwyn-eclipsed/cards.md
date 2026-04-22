@@ -2,16 +2,16 @@
 
 **Set Size:** 273 cards (main set, per Scryfall `set:ecl`)
 **Release Date:** January 23, 2026
-**Implemented:** 108 / 273
+**Implemented:** 110 / 273
 
 | Color      | Total | Done |
 |------------|-------|------|
 | White      | 39    | 14   |
 | Blue       | 39    | 20   |
 | Black      | 38    | 15   |
-| Red        | 39    | 9    |
+| Red        | 39    | 10   |
 | Green      | 39    | 17   |
-| Multicolor | 49    | 22   |
+| Multicolor | 49    | 23   |
 | Colorless  | 18    | 3    |
 | Land       | 12    | 8    |
 
@@ -161,7 +161,7 @@
 - [ ] Feed the Flames
 - [ ] Flame-Chain Mauler
 - [ ] Flamebraider
-- [ ] Flamekin Gildweaver
+- [x] Flamekin Gildweaver
 - [ ] Giantfall
 - [x] Goatnap
 - [ ] Goliath Daydreamer
@@ -266,7 +266,7 @@
 - [ ] Noggle Robber
 - [x] Prideful Feastling
 - [x] Raiding Schemes
-- [ ] Reaping Willow
+- [x] Reaping Willow
 - [ ] Sanar, Innovative First-Year
 - [x] Shadow Urchin
 - [x] Stoic Grove-Guide
