@@ -13,6 +13,7 @@ import com.wingedsheep.sdk.scripting.effects.AddColorlessManaEffect
 import com.wingedsheep.sdk.scripting.effects.AddDynamicManaEffect
 import com.wingedsheep.sdk.scripting.effects.AddManaOfChosenColorEffect
 import com.wingedsheep.sdk.scripting.effects.AddManaOfColorAmongEffect
+import com.wingedsheep.sdk.scripting.effects.AddOneManaOfEachColorAmongEffect
 import com.wingedsheep.sdk.scripting.effects.ManaRestriction
 import com.wingedsheep.sdk.scripting.effects.AddCardTypeEffect
 import com.wingedsheep.sdk.scripting.effects.AddCountersEffect
@@ -771,6 +772,13 @@ object Effects {
      */
     fun AddManaOfColorAmong(filter: GameObjectFilter, restriction: ManaRestriction? = null): Effect =
         AddManaOfColorAmongEffect(filter, restriction)
+
+    /**
+     * For each color among permanents matching a filter, add one mana of that color.
+     * Used for cards like Bloom Tender — produces one mana of every color present (0–5 total).
+     */
+    fun AddOneManaOfEachColorAmong(filter: GameObjectFilter, restriction: ManaRestriction? = null): Effect =
+        AddOneManaOfEachColorAmongEffect(filter, restriction)
 
     // =========================================================================
     // Token Effects

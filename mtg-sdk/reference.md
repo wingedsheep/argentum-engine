@@ -126,6 +126,7 @@ constructors.
 - `Effects.AddColorlessMana(amount)` — also accepts `DynamicAmount`
 - `Effects.AddAnyColorMana(amount = 1)`
 - `Effects.AddManaOfColorAmong(filter)` — add one mana of any color among matching permanents (Mox Amber)
+- `Effects.AddOneManaOfEachColorAmong(filter)` — add one mana of EACH color among matching permanents (Bloom Tender / Vivid mana ability)
 
 ### Tokens
 
@@ -348,6 +349,7 @@ constructors.
 | `AddAnyColorManaEffect`  | `amount: DynamicAmount`                      | Add any color mana |
 | `AddDynamicManaEffect`   | `amountSource: DynamicAmount, allowedColors` | Dynamic mana       |
 | `AddManaOfColorAmongEffect` | `filter: GameObjectFilter`                | Add mana of color among matching permanents (Mox Amber) |
+| `AddOneManaOfEachColorAmongEffect` | `filter: GameObjectFilter`         | Add one mana of EACH color found among matching permanents (Bloom Tender) |
 
 ### Tokens
 

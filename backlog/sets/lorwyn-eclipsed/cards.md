@@ -2,7 +2,7 @@
 
 **Set Size:** 273 cards (main set, per Scryfall `set:ecl`)
 **Release Date:** January 23, 2026
-**Implemented:** 111 / 273
+**Implemented:** 112 / 273
 
 | Color      | Total | Done |
 |------------|-------|------|
@@ -10,7 +10,7 @@
 | Blue       | 39    | 20   |
 | Black      | 38    | 15   |
 | Red        | 39    | 10   |
-| Green      | 39    | 18   |
+| Green      | 39    | 19   |
 | Multicolor | 49    | 23   |
 | Colorless  | 18    | 3    |
 | Land       | 12    | 8    |
@@ -190,7 +190,7 @@
 
 - [ ] Assert Perfection
 - [x] Aurora Awakener
-- [ ] Bloom Tender
+- [x] Bloom Tender
 - [ ] Blossoming Defense
 - [ ] Bristlebane Battler
 - [ ] Bristlebane Outrider

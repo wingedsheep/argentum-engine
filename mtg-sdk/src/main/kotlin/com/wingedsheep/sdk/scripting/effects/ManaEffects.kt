@@ -185,3 +185,27 @@ data class AddManaOfColorAmongEffect(
 
     override fun applyTextReplacement(replacer: TextReplacer): Effect = this
 }
+
+/**
+ * Add one mana of each color found among permanents matching a filter.
+ * "{T}: For each color among permanents you control, add one mana of that color."
+ *
+ * At resolution, the executor examines the matching permanents, takes the union of their
+ * colors (using projected state), and adds one mana of each color in that set (0–5 mana
+ * total). No player choice — all colors present produce one mana each simultaneously.
+ *
+ * @property filter The filter to match permanents whose colors determine which manas are produced
+ */
+@SerialName("AddOneManaOfEachColorAmong")
+@Serializable
+data class AddOneManaOfEachColorAmongEffect(
+    val filter: GameObjectFilter,
+    val restriction: ManaRestriction? = null
+) : Effect {
+    override val description: String = buildString {
+        append("For each color among matching permanents, add one mana of that color")
+        if (restriction != null) append(". ${restriction.description}")
+    }
+
+    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
+}

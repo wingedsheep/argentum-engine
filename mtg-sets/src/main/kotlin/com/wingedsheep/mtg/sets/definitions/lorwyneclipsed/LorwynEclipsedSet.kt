@@ -30,6 +30,7 @@ object LorwynEclipsedSet {
         BlightRot,
         BloodCrypt,
         BloodlineBidding,
+        BloomTender,
         Blossombind,
         BoggartPrankster,
         BoldwyrAggressor,
