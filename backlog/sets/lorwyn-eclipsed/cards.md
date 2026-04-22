@@ -2,12 +2,12 @@
 
 **Set Size:** 273 cards (main set, per Scryfall `set:ecl`)
 **Release Date:** January 23, 2026
-**Implemented:** 107 / 273
+**Implemented:** 108 / 273
 
 | Color      | Total | Done |
 |------------|-------|------|
 | White      | 39    | 14   |
-| Blue       | 39    | 19   |
+| Blue       | 39    | 20   |
 | Black      | 38    | 15   |
 | Red        | 39    | 9    |
 | Green      | 39    | 17   |
@@ -78,7 +78,7 @@
 - [ ] Kulrath Mystic
 - [x] Loch Mare
 - [ ] Lofty Dreams
-- [ ] Mirrorform
+- [x] Mirrorform
 - [x] Noggle the Mind
 - [ ] Omni-Changeling
 - [ ] Pestered Wellguard

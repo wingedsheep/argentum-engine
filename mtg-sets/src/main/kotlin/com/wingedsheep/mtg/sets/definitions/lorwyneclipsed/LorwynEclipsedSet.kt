@@ -82,6 +82,7 @@ object LorwynEclipsedSet {
         Luminollusk,
         LysAlanaDignitary,
         MerrowSkyswimmer,
+        Mirrorform,
         MirrormindCrown,
         MorcantsEyes,
         MorcantsLoyalist,

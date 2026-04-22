@@ -22,6 +22,7 @@ import com.wingedsheep.sdk.scripting.effects.AddCountersToCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.AddManaEffect
 import com.wingedsheep.sdk.scripting.effects.AnimateLandEffect
 import com.wingedsheep.sdk.scripting.effects.BecomeCreatureEffect
+import com.wingedsheep.sdk.scripting.effects.EachPermanentBecomesCopyOfTargetEffect
 import com.wingedsheep.sdk.scripting.effects.SetBasePowerEffect
 
 import com.wingedsheep.sdk.scripting.effects.ChooseColorAndGrantProtectionToGroupEffect
@@ -1357,6 +1358,20 @@ object Effects {
         colors: Set<String>? = null,
         duration: Duration = Duration.EndOfTurn
     ): Effect = BecomeCreatureEffect(target, power, toughness, keywords, creatureTypes, removeTypes, colors, duration)
+
+    /**
+     * Each permanent matching [filter] becomes a copy of [target].
+     *
+     * Used by Mirrorform ("Each nonland permanent you control becomes a copy of
+     * target non-Aura permanent"). Copies printable/copiable characteristics only
+     * (Rule 707) — counters, tapped state, and attached auras/equipment stay put.
+     */
+    fun EachPermanentBecomesCopyOfTarget(
+        target: EffectTarget = EffectTarget.ContextTarget(0),
+        filter: GroupFilter = GroupFilter(
+            com.wingedsheep.sdk.scripting.GameObjectFilter.NonlandPermanent.youControl()
+        )
+    ): Effect = EachPermanentBecomesCopyOfTargetEffect(target, filter)
 
     // =========================================================================
     // Pipeline Targeting
