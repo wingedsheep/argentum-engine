@@ -112,6 +112,7 @@ object LorwynEclipsedSet {
         StoicGroveGuide,
         Stratosoarer,
         SunDappledCelebrant,
+        SurlyFarrier,
         SwatAway,
         SyggsCommand,
         TanufelRimespeaker,
