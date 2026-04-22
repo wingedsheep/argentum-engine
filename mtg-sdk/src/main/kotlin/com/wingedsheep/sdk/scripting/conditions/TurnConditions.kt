@@ -1,5 +1,6 @@
 package com.wingedsheep.sdk.scripting.conditions
 
+import com.wingedsheep.sdk.core.Phase
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.text.TextReplacer
 import kotlinx.serialization.SerialName
@@ -26,6 +27,27 @@ data object IsYourTurn : Condition {
 @Serializable
 data object IsNotYourTurn : Condition {
     override val description: String = "if it's not your turn"
+    override fun applyTextReplacement(replacer: TextReplacer): Condition = this
+}
+
+/**
+ * Condition: "If the current phase matches any of the listed phases"
+ * When `yoursOnly = true` (default), also requires that it's the controller's turn —
+ * i.e. "your main phase" means it's both your turn AND the main phase.
+ * Used for cards like Dose of Dawnglow ("if it isn't your main phase").
+ */
+@SerialName("IsInPhase")
+@Serializable
+data class IsInPhase(
+    val phases: List<Phase>,
+    val yoursOnly: Boolean = true
+) : Condition {
+    override val description: String = buildString {
+        append("if it's ")
+        if (yoursOnly) append("your ")
+        append(phases.joinToString(" or ") { it.displayName.removeSuffix(" Phase").lowercase() })
+        if (phases.any { !it.isMainPhase } || phases.size > 1) append(" phase")
+    }
     override fun applyTextReplacement(replacer: TextReplacer): Condition = this
 }
 

@@ -35,6 +35,7 @@ import com.wingedsheep.sdk.scripting.conditions.ComparisonOperator
 import com.wingedsheep.sdk.scripting.conditions.Condition
 import com.wingedsheep.sdk.scripting.conditions.EnchantedCreatureHasSubtype
 import com.wingedsheep.sdk.scripting.conditions.Exists
+import com.wingedsheep.sdk.scripting.conditions.IsInPhase
 import com.wingedsheep.sdk.scripting.conditions.IsNotYourTurn
 import com.wingedsheep.sdk.scripting.conditions.IsYourTurn
 import com.wingedsheep.sdk.scripting.conditions.NotCondition
@@ -121,6 +122,7 @@ class ConditionEvaluator {
             // Turn conditions
             is IsYourTurn -> evaluateIsYourTurn(state, context)
             is IsNotYourTurn -> !evaluateIsYourTurn(state, context)
+            is IsInPhase -> evaluateIsInPhase(state, condition, context)
             is PlayedLandThisTurn -> evaluatePlayedLandThisTurn(state, context)
             is YouAttackedThisTurn -> evaluateYouAttackedThisTurn(state, context)
             is YouGainedLifeThisTurn -> evaluateYouGainedLifeThisTurn(state, context)
@@ -270,6 +272,11 @@ class ConditionEvaluator {
 
     private fun evaluateIsYourTurn(state: GameState, context: EffectContext): Boolean {
         return state.activePlayerId == context.controllerId
+    }
+
+    private fun evaluateIsInPhase(state: GameState, condition: IsInPhase, context: EffectContext): Boolean {
+        if (condition.yoursOnly && state.activePlayerId != context.controllerId) return false
+        return state.phase in condition.phases
     }
 
     private fun evaluatePlayedLandThisTurn(state: GameState, context: EffectContext): Boolean {

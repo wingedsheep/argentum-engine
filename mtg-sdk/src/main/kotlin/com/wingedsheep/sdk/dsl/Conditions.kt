@@ -1,6 +1,7 @@
 package com.wingedsheep.sdk.dsl
 
 import com.wingedsheep.sdk.core.Keyword
+import com.wingedsheep.sdk.core.Phase
 import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.scripting.GameObjectFilter
@@ -20,6 +21,7 @@ import com.wingedsheep.sdk.scripting.conditions.SourceIsTapped as SourceIsTapped
 import com.wingedsheep.sdk.scripting.conditions.SourceIsUntapped as SourceIsUntappedCondition
 import com.wingedsheep.sdk.scripting.conditions.IsYourTurn as IsYourTurnCondition
 import com.wingedsheep.sdk.scripting.conditions.IsNotYourTurn as IsNotYourTurnCondition
+import com.wingedsheep.sdk.scripting.conditions.IsInPhase as IsInPhaseCondition
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
 import com.wingedsheep.sdk.scripting.values.EntityNumericProperty
@@ -438,6 +440,20 @@ object Conditions {
      */
     val IsNotYourTurn: ConditionInterface =
         IsNotYourTurnCondition
+
+    /**
+     * If the current phase matches any of the listed phases.
+     * When `yoursOnly = true` (default), also requires that it's the controller's turn.
+     */
+    fun IsInPhase(vararg phases: Phase, yoursOnly: Boolean = true): ConditionInterface =
+        IsInPhaseCondition(phases.toList(), yoursOnly)
+
+    /**
+     * If it's your main phase (either precombat or postcombat main, on your turn).
+     * Used for cards like Dose of Dawnglow.
+     */
+    val IsYourMainPhase: ConditionInterface =
+        IsInPhaseCondition(listOf(Phase.PRECOMBAT_MAIN, Phase.POSTCOMBAT_MAIN), yoursOnly = true)
 
     // =========================================================================
     // Trigger Entity Conditions

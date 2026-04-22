@@ -50,6 +50,7 @@ object LorwynEclipsedSet {
         DawnhandEulogist,
         DawnsLightArcher,
         DeepchannelDuelist,
+        DoseOfDawnglow,
         DreamHarvest,
         DreamSeizer,
         EclipsedKithkin,

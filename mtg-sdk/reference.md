@@ -750,6 +750,8 @@ constructors.
 ### Turn
 
 - `Conditions.IsYourTurn` / `.IsNotYourTurn`
+- `Conditions.IsInPhase(vararg phases, yoursOnly = true)` — true if the current phase is one of the listed phases; with `yoursOnly` also requires the controller's turn (Dose of Dawnglow)
+- `Conditions.IsYourMainPhase` — convenience for `IsInPhase(PRECOMBAT_MAIN, POSTCOMBAT_MAIN, yoursOnly = true)`
 - `Conditions.YouGainedLifeThisTurn` — true if you gained life this turn
 - `Conditions.YouGainedOrLostLifeThisTurn` — true if you gained or lost life this turn
 - `Conditions.YouLostLifeThisTurn` — true if you lost life this turn (for conditional static abilities)
