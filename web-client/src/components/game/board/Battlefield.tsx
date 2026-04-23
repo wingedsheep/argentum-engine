@@ -379,7 +379,9 @@ function BattlefieldContent({ isOpponent, spectatorMode = false }: { isOpponent:
     sideItems: readonly GroupedCard[],
     extra?: React.CSSProperties,
   ) => {
-    const hasSide = sideItems.length > 0 && centerItems.length > 0
+    const hasCenter = centerItems.length > 0
+    const hasSide = sideItems.length > 0
+    const showDividerBetween = hasCenter && hasSide
     return (
       <div style={{
         display: 'flex',
@@ -390,17 +392,19 @@ function BattlefieldContent({ isOpponent, spectatorMode = false }: { isOpponent:
         width: '100%',
         ...extra,
       }}>
-        <div style={{
-          display: 'flex',
-          flexWrap: 'wrap',
-          alignItems: 'flex-end',
-          justifyContent: 'center',
-          gap: responsive.cardGap,
-          minWidth: 0,
-        }}>
-          {centerItems.map((group) => renderWithAttachments(group))}
-        </div>
-        {hasSide && (
+        {hasCenter && (
+          <div style={{
+            display: 'flex',
+            flexWrap: 'wrap',
+            alignItems: 'flex-end',
+            justifyContent: 'center',
+            gap: responsive.cardGap,
+            minWidth: 0,
+          }}>
+            {centerItems.map((group) => renderWithAttachments(group))}
+          </div>
+        )}
+        {showDividerBetween && (
           <div style={{
             width: 24,
             alignSelf: 'stretch',
