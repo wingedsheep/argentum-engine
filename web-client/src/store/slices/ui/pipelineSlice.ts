@@ -22,7 +22,10 @@ export interface PipelineSliceState {
 }
 
 export interface PipelineSliceActions {
-  startPipeline: (actionInfo: LegalActionInfo) => void
+  startPipeline: (
+    actionInfo: LegalActionInfo,
+    options?: { forceManualTap?: boolean },
+  ) => void
   advancePipeline: (result: PhaseResult) => void
   cancelPipeline: () => void
 }
@@ -32,8 +35,8 @@ export type PipelineSlice = PipelineSliceState & PipelineSliceActions
 export const createPipelineSlice: SliceCreator<PipelineSlice> = (set, get) => ({
   pipelineState: null,
 
-  startPipeline: (actionInfo) => {
-    const { autoTapEnabled } = get()
+  startPipeline: (actionInfo, options) => {
+    const autoTapEnabled = options?.forceManualTap ? false : get().autoTapEnabled
     const phases = computePhases(actionInfo, { autoTapEnabled })
 
     if (phases.length === 0) {

@@ -390,6 +390,7 @@ function ActionOptionButton({
 }) {
   const setAutoTapPreview = useGameStore((state) => state.setAutoTapPreview)
   const startManaSelection = useGameStore((state) => state.startManaSelection)
+  const startPipeline = useGameStore((state) => state.startPipeline)
   const viewingPlayer = useViewingPlayer()
   const manaPool = viewingPlayer?.manaPool
   const hasFloatingMana = manaPool != null && !isManaPoolEmpty(manaPool)
@@ -429,7 +430,15 @@ function ActionOptionButton({
         <button
           onClick={(e) => {
             e.stopPropagation()
-            startManaSelection(option.action!)
+            // X-cost spells must pick X before land selection so the mana phase
+            // can pre-select enough sources for the total cost. Route through the
+            // pipeline (xSelection → manaSource) rather than opening mana selection
+            // directly with xValue=0.
+            if (option.action!.hasXCost) {
+              startPipeline(option.action!, { forceManualTap: true })
+            } else {
+              startManaSelection(option.action!)
+            }
           }}
           className={styles.manaSelectionButton}
           title="Choose which lands to tap"

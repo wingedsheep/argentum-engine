@@ -688,7 +688,10 @@ export type GameStore = {
 
   // Pipeline slice
   pipelineState: ActionPipelineState | null
-  startPipeline: (actionInfo: import('../../types').LegalActionInfo) => void
+  startPipeline: (
+    actionInfo: import('../../types').LegalActionInfo,
+    options?: { forceManualTap?: boolean },
+  ) => void
   advancePipeline: (result: PhaseResult) => void
   cancelPipeline: () => void
 
