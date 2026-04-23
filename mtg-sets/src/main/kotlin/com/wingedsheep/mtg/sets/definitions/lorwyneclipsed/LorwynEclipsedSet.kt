@@ -20,6 +20,7 @@ object LorwynEclipsedSet {
 
     val allCards = listOf(
         AdeptWatershaper,
+        AjaniOutlandChaperone,
         AppealToEirdu,
         AquitectsDefenses,
         AuntiesSentence,
