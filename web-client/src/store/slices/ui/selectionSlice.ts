@@ -355,17 +355,45 @@ export const createSelectionSlice: SliceCreator<SelectionSlice> = (set, get) => 
       sourceColors[source.entityId] = colors
       sourceManaAmounts[source.entityId] = source.manaAmount ?? 1
     }
-    // Pre-select the autoTapPreview sources as the default
-    const preSelected = actionInfo.autoTapPreview ?? []
+    // The accumulated action carries xValue from the prior xSelection phase.
+    // The server's autoTapPreview only covers the fixed cost (X is unknown
+    // server-side), so we extend the pre-selection with enough additional
+    // sources to also cover xValue * (number of {X} symbols).
+    const action = actionInfo.action as { xValue?: number }
+    const xValue = action.xValue ?? 0
+    const manaCost = actionInfo.manaCostString ?? ''
+    const xSymbolCount = Math.max(1, (manaCost.match(/\{X\}/g)?.length ?? 0))
+    const xManaNeeded = xValue * xSymbolCount
+
+    const preSelectedIds = [...(actionInfo.autoTapPreview ?? [])]
+    if (xManaNeeded > 0) {
+      const alreadySelected = new Set(preSelectedIds)
+      const manaProvided = (id: string) => sourceManaAmounts[id] ?? 1
+      // Extend with sources not yet picked, preferring least-flexible
+      // (colorless / fewest colors) first since X is generic mana and we
+      // want to keep multi-color sources available for future plays. Server
+      // re-solves on submit (CastPaymentProcessor.explicitPay), so the exact
+      // ordering only affects the default — over-selection is safe.
+      const candidates = sources
+        .filter(s => !alreadySelected.has(s.entityId))
+        .map(s => ({ id: s.entityId, flexibility: (sourceColors[s.entityId]?.length ?? 0) }))
+        .sort((a, b) => a.flexibility - b.flexibility)
+      let remaining = xManaNeeded
+      for (const c of candidates) {
+        if (remaining <= 0) break
+        preSelectedIds.push(c.id)
+        remaining -= manaProvided(c.id)
+      }
+    }
     set({
       selectedCardId: null,
       manaSelectionState: {
         action: actionInfo.action,
         actionInfo,
         validSources: sources.map(s => s.entityId),
-        selectedSources: [...preSelected],
-        manaCost: actionInfo.manaCostString ?? '',
-        xValue: 0,
+        selectedSources: preSelectedIds,
+        manaCost,
+        xValue,
         sourceColors,
         sourceManaAmounts,
       },
