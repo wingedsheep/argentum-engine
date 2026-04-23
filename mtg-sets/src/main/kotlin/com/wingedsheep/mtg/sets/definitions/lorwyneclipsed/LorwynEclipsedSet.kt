@@ -90,6 +90,7 @@ object LorwynEclipsedSet {
         MorcantsEyes,
         MorcantsLoyalist,
         Moonshadow,
+        MutableExplorer,
         NamelessInversion,
         NoggleTheMind,
         Personify,

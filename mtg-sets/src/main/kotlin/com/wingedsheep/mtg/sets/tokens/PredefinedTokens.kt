@@ -7,8 +7,11 @@ import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Filters
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.CardDefinition
+import com.wingedsheep.sdk.scripting.TimingRule
+import com.wingedsheep.sdk.scripting.effects.BecomeCreatureEffect
 import com.wingedsheep.sdk.scripting.effects.SearchDestination
 import com.wingedsheep.sdk.scripting.GameObjectFilter
+import com.wingedsheep.sdk.scripting.targets.EffectTarget
 
 /**
  * Predefined token CardDefinitions.
@@ -171,6 +174,38 @@ object PredefinedTokens {
     }
 
     /**
+     * Mutavault — a Land token with:
+     * "{T}: Add {C}."
+     * "{1}: This token becomes a 2/2 creature with all creature types until end of turn.
+     *  It's still a land."
+     * Created by Mutable Explorer.
+     */
+    val Mutavault = card("Mutavault") {
+        typeLine = "Land — Mutavault"
+
+        activatedAbility {
+            cost = Costs.Tap
+            effect = Effects.AddColorlessMana(1)
+            manaAbility = true
+            timing = TimingRule.ManaAbility
+        }
+
+        activatedAbility {
+            cost = Costs.Mana("{1}")
+            effect = BecomeCreatureEffect(
+                target = EffectTarget.Self,
+                power = 2,
+                toughness = 2,
+                keywords = setOf(Keyword.CHANGELING)
+            )
+        }
+
+        metadata {
+            imageUri = "https://cards.scryfall.io/normal/front/3/d/3d2f5d31-a1c6-465f-b518-b40acdfab8aa.jpg?1767955820"
+        }
+    }
+
+    /**
      * All predefined token definitions.
      * Register these in the CardRegistry so token abilities are resolved.
      */
@@ -180,6 +215,7 @@ object PredefinedTokens {
         Lander,
         JustOneGlass,
         Sword,
-        Cragflame
+        Cragflame,
+        Mutavault
     )
 }

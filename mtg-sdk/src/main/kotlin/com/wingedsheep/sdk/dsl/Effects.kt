@@ -883,6 +883,19 @@ object Effects {
     fun CreateLander(count: Int = 1, controller: EffectTarget? = null): Effect =
         CreatePredefinedTokenEffect("Lander", count, controller)
 
+    /**
+     * Create Mutavault land tokens.
+     * "{T}: Add {C}."
+     * "{1}: This token becomes a 2/2 creature with all creature types until end of turn.
+     *  It's still a land."
+     *
+     * @param count Number of tokens to create
+     * @param tapped Whether the tokens enter the battlefield tapped
+     * @param controller Who controls the tokens (null = spell controller)
+     */
+    fun CreateMutavault(count: Int = 1, tapped: Boolean = false, controller: EffectTarget? = null): Effect =
+        CreatePredefinedTokenEffect("Mutavault", count, controller, tapped)
+
     // =========================================================================
     // Protection Effects
     // =========================================================================
