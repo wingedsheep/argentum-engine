@@ -19,6 +19,7 @@ import com.wingedsheep.sdk.scripting.effects.MayPayManaEffect
 import com.wingedsheep.sdk.scripting.effects.SelectFromCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.SelectionMode
 import com.wingedsheep.engine.registry.CardRegistry
+import com.wingedsheep.engine.state.components.player.PlayerLostComponent
 import com.wingedsheep.sdk.scripting.targets.TargetRequirement
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
 
@@ -51,14 +52,25 @@ class TriggerProcessor(
      * @return ExecutionResult - may be paused if a trigger requires targets
      */
     fun processTriggers(state: GameState, triggers: List<PendingTrigger>): ExecutionResult {
-        if (triggers.isEmpty()) {
+        // Rule 704.6 / 800.4a: once the game has ended (or a player has left), triggered
+        // abilities don't resolve. In particular, dies/leaves-battlefield triggers from a
+        // creature whose controller just lost must not pause the game asking that player
+        // to choose targets — the ActionProcessor would refuse the resulting decision
+        // (state.gameOver is true) and the session would deadlock.
+        if (state.gameOver) {
+            return ExecutionResult.success(state)
+        }
+        val liveTriggers = triggers.filterNot { trigger ->
+            state.getEntity(trigger.controllerId)?.has<PlayerLostComponent>() == true
+        }
+        if (liveTriggers.isEmpty()) {
             return ExecutionResult.success(state)
         }
 
         var currentState = state
         val allEvents = mutableListOf<GameEvent>()
 
-        for ((index, trigger) in triggers.withIndex()) {
+        for ((index, trigger) in liveTriggers.withIndex()) {
             val result = processSingleTrigger(currentState, trigger)
 
             if (!result.isSuccess && !result.isPaused) {
@@ -73,7 +85,7 @@ class TriggerProcessor(
             if (result.isPaused) {
                 // This trigger requires target selection
                 // Store the remaining triggers to process after the decision
-                val remainingTriggers = triggers.drop(index + 1)
+                val remainingTriggers = liveTriggers.drop(index + 1)
 
                 // Push remaining triggers as a continuation so they are processed
                 // after this trigger's target selection is resolved

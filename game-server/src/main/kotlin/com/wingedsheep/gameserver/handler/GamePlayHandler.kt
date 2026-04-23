@@ -430,6 +430,15 @@ class GamePlayHandler(
             is GameSession.ActionResult.PausedForDecision -> {
                 logger.debug("Action paused for decision: ${result.decision}")
                 broadcastStateUpdate(gameSession, result.events)
+                // Safety net: if the engine paused for a decision but the game is already
+                // over, no one can answer that decision (ActionProcessor rejects actions
+                // when gameOver is true). Finalize the match instead of leaving the
+                // session hung. The engine should never reach this state, but if it does,
+                // this prevents a tournament-blocking deadlock.
+                if (gameSession.isGameOver()) {
+                    logger.warn("Action paused for decision despite gameOver=true; finalizing match")
+                    handleGameOver(gameSession, events = result.events)
+                }
             }
             is GameSession.ActionResult.Failure -> {
                 sender.sendError(session, ErrorCode.INVALID_ACTION, result.reason)
