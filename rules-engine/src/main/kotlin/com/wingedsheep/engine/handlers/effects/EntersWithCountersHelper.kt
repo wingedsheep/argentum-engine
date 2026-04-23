@@ -62,7 +62,7 @@ object EntersWithCountersHelper {
                         if (!matchesEnterFilter(effect.appliesTo, enteringEntityId, sourceControllerId, newState)) continue
                         val counterType = resolveCounterType(effect.counterType)
                         val modifiedCount = ReplacementEffectUtils.applyCounterPlacementModifiers(
-                            newState, enteringEntityId, counterType, effect.count
+                            newState, enteringEntityId, counterType, effect.count, placerId = enteringControllerId
                         )
                         val current = newState.getEntity(enteringEntityId)?.get<CountersComponent>() ?: CountersComponent()
                         newState = newState.updateEntity(enteringEntityId) { c ->
@@ -82,7 +82,7 @@ object EntersWithCountersHelper {
                         val count = dynamicAmountEvaluator.evaluate(newState, effect.count, context)
                         if (count > 0) {
                             val modifiedCount = ReplacementEffectUtils.applyCounterPlacementModifiers(
-                                newState, enteringEntityId, counterType, count
+                                newState, enteringEntityId, counterType, count, placerId = enteringControllerId
                             )
                             val current = newState.getEntity(enteringEntityId)?.get<CountersComponent>() ?: CountersComponent()
                             newState = newState.updateEntity(enteringEntityId) { c ->

@@ -45,13 +45,17 @@ object ReplacementEffectUtils {
      * @param targetId The entity receiving counters
      * @param counterType The type of counter being placed (as CounterType enum)
      * @param count The original number of counters
+     * @param placerId The player placing the counters — used to gate effects that only
+     *                 apply when "you" are the one placing them (e.g., Innkeeper's Talent
+     *                 Level 3). When null, placer-gated effects do not apply.
      * @return The modified counter count
      */
     fun applyCounterPlacementModifiers(
         state: GameState,
         targetId: EntityId,
         counterType: CounterType,
-        count: Int
+        count: Int,
+        placerId: EntityId? = null
     ): Int {
         if (count <= 0) return count
 
@@ -69,6 +73,9 @@ object ReplacementEffectUtils {
                     else -> continue
                 }
                 if (counterEvent !is com.wingedsheep.sdk.scripting.GameEvent.CounterPlacementEvent) continue
+
+                // Gate on "If YOU would put..." — skip when an opponent is the placer.
+                if (effect is DoubleCounterPlacement && effect.placedByYou && placerId != sourceControllerId) continue
 
                 // Check counter type filter
                 val counterTypeMatches = when (counterEvent.counterType) {

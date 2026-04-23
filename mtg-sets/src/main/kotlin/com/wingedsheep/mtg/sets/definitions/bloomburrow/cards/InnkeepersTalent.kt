@@ -59,6 +59,7 @@ val InnkeepersTalent = card("Innkeeper's Talent") {
     classLevel(3, "{3}{G}") {
         replacementEffect(
             DoubleCounterPlacement(
+                placedByYou = true,
                 appliesTo = GameEvent.CounterPlacementEvent(
                     counterType = CounterTypeFilter.Any,
                     recipient = RecipientFilter.Any

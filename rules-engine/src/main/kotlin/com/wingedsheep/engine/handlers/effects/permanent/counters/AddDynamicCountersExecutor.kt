@@ -41,7 +41,7 @@ class AddDynamicCountersExecutor : EffectExecutor<AddDynamicCountersEffect> {
         val current = state.getEntity(targetId)?.get<CountersComponent>() ?: CountersComponent()
 
         val modifiedCount = ReplacementEffectUtils.applyCounterPlacementModifiers(
-            state, targetId, counterType, count
+            state, targetId, counterType, count, placerId = context.controllerId
         )
 
         val newState = state.updateEntity(targetId) { container ->

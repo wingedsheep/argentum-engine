@@ -55,7 +55,7 @@ class DistributeCountersAmongTargetsExecutor : EffectExecutor<DistributeCounters
             if (countersForTarget <= 0) continue
 
             val modifiedCount = ReplacementEffectUtils.applyCounterPlacementModifiers(
-                currentState, targetId, counterType, countersForTarget
+                currentState, targetId, counterType, countersForTarget, placerId = context.controllerId
             )
 
             val current = currentState.getEntity(targetId)?.get<CountersComponent>() ?: CountersComponent()

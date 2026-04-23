@@ -116,11 +116,19 @@ data class ModifyTokenCount(
 
 /**
  * Double the number of counters placed.
- * Example: Doubling Season (counters), Corpsejack Menace
+ * Example: Doubling Season (counters), Corpsejack Menace, Innkeeper's Talent Level 3
+ *
+ * @param placedByYou When true, only applies when the controller of this effect is the
+ *                    player putting the counters (e.g., Innkeeper's Talent: "If YOU would
+ *                    put one or more counters..."). When false, applies regardless of who
+ *                    is placing the counters — the recipient filter on [appliesTo] is the
+ *                    sole "you control" gate (e.g., Doubling Season: "on a permanent you
+ *                    control").
  */
 @SerialName("DoubleCounterPlacement")
 @Serializable
 data class DoubleCounterPlacement(
+    val placedByYou: Boolean = false,
     override val appliesTo: GameEvent = GameEvent.CounterPlacementEvent(
         counterType = CounterTypeFilter.PlusOnePlusOne,
         recipient = RecipientFilter.CreatureYouControl

@@ -883,7 +883,7 @@ class StackResolver(
         if (cardDef != null && !spellComponent.castFaceDown && cardDef.startingLoyalty != null) {
             val loyaltyCount = cardDef.startingLoyalty!!
             val modifiedCount = ReplacementEffectUtils.applyCounterPlacementModifiers(
-                newState, spellId, CounterType.LOYALTY, loyaltyCount
+                newState, spellId, CounterType.LOYALTY, loyaltyCount, placerId = controllerId
             )
             val current = newState.getEntity(spellId)?.get<CountersComponent>() ?: CountersComponent()
             newState = newState.updateEntity(spellId) { c ->
@@ -1363,7 +1363,7 @@ class StackResolver(
                 is EntersWithCounters -> {
                     val counterType = resolveCounterType(effect.counterType)
                     val modifiedCount = ReplacementEffectUtils.applyCounterPlacementModifiers(
-                        newState, entityId, counterType, effect.count
+                        newState, entityId, counterType, effect.count, placerId = controllerId
                     )
                     val current = newState.getEntity(entityId)?.get<CountersComponent>() ?: CountersComponent()
                     newState = newState.updateEntity(entityId) { c ->
@@ -1384,7 +1384,7 @@ class StackResolver(
                     val count = dynamicAmountEvaluator.evaluate(newState, effect.count, context)
                     if (count > 0) {
                         val modifiedCount = ReplacementEffectUtils.applyCounterPlacementModifiers(
-                            newState, entityId, counterType, count
+                            newState, entityId, counterType, count, placerId = controllerId
                         )
                         val current = newState.getEntity(entityId)?.get<CountersComponent>() ?: CountersComponent()
                         newState = newState.updateEntity(entityId) { c ->

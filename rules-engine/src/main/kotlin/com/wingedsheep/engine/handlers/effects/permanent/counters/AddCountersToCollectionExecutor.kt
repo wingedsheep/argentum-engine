@@ -40,7 +40,7 @@ class AddCountersToCollectionExecutor : EffectExecutor<AddCountersToCollectionEf
 
             val current = currentState.getEntity(entityId)?.get<CountersComponent>() ?: CountersComponent()
             val modifiedCount = ReplacementEffectUtils.applyCounterPlacementModifiers(
-                currentState, entityId, counterType, effect.count
+                currentState, entityId, counterType, effect.count, placerId = context.controllerId
             )
 
             currentState = currentState.updateEntity(entityId) { container ->

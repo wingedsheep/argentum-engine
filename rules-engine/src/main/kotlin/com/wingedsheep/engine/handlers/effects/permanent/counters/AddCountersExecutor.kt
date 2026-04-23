@@ -40,7 +40,7 @@ class AddCountersExecutor : EffectExecutor<AddCountersEffect> {
 
         // Apply counter placement replacement effects (e.g., Hardened Scales)
         val modifiedCount = ReplacementEffectUtils.applyCounterPlacementModifiers(
-            state, targetId, counterType, effect.count
+            state, targetId, counterType, effect.count, placerId = context.controllerId
         )
 
         val newState = state.updateEntity(targetId) { container ->

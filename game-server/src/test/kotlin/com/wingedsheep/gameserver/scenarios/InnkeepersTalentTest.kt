@@ -233,6 +233,39 @@ class InnkeepersTalentTest : ScenarioTestBase() {
             }
         }
 
+        context("Innkeeper's Talent Level 3 — only doubles counters YOU place") {
+            test("does not double counters an opponent places on their own creature") {
+                val game = scenario()
+                    .withPlayers("Player", "Opponent")
+                    .withCardOnBattlefield(1, "Innkeeper's Talent", classLevel = 3)
+                    .withCardOnBattlefield(2, "Hired Claw", summoningSickness = false)
+                    .withCardInHand(2, "Dragonscale Boon")
+                    .withLandsOnBattlefield(2, "Forest", 4)
+                    .withCardInLibrary(1, "Forest")
+                    .withCardInLibrary(2, "Forest")
+                    .withActivePlayer(2)
+                    .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                    .build()
+
+                val hiredClawId = game.findPermanent("Hired Claw")!!
+
+                // Opponent casts Dragonscale Boon on their own Hired Claw —
+                // puts two +1/+1 counters, should NOT be doubled by our Innkeeper's Talent.
+                val castResult = game.castSpell(2, "Dragonscale Boon", hiredClawId)
+                withClue("Should cast Dragonscale Boon: ${castResult.error}") {
+                    castResult.error shouldBe null
+                }
+
+                game.resolveStack()
+
+                val counters = game.state.getEntity(hiredClawId)?.get<CountersComponent>()
+                withClue("Opponent's Dragonscale Boon should place exactly 2 counters — not doubled by our Innkeeper's Talent Level 3") {
+                    counters shouldNotBe null
+                    counters?.getCount(CounterType.PLUS_ONE_PLUS_ONE) shouldBe 2
+                }
+            }
+        }
+
         context("Innkeeper's Talent Level 3 — double counter placement") {
             test("doubling counter placement at level 3") {
                 val game = scenario()
