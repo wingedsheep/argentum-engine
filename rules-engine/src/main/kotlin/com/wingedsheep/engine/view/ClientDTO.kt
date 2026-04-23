@@ -269,7 +269,29 @@ data class ClientCard(
     val backFaceOracleText: String? = null,
 
     /** Back face's image URI for DFCs. */
-    val backFaceImageUri: String? = null
+    val backFaceImageUri: String? = null,
+
+    /**
+     * For planeswalkers on the battlefield: every loyalty ability on the card, in declaration
+     * order. Lets the client show the full menu with unavailable abilities grayed out instead of
+     * hiding them. Null for non-planeswalkers and for planeswalkers outside the battlefield.
+     */
+    val planeswalkerAbilities: List<ClientPlaneswalkerAbility>? = null
+)
+
+/**
+ * One loyalty ability on a planeswalker, for rendering the full ability menu (including
+ * abilities the controller can't currently pay for, rendered grayed out). The client matches
+ * by [abilityId] against the `action.abilityId` in `legalActions` to decide availability.
+ */
+@Serializable
+data class ClientPlaneswalkerAbility(
+    /** Stable id — matches `ActivateAbility.abilityId` in legal actions. */
+    val abilityId: String,
+    /** Signed loyalty change (e.g., +1, -2, -8). */
+    val loyaltyChange: Int,
+    /** Ability text (e.g., "Create a 1/1 green and white Kithkin creature token"). */
+    val description: String
 )
 
 /**

@@ -123,6 +123,7 @@
 .actionButton {
   flex: 1;
   min-width: 0;
+  min-height: 44px;
   padding: var(--space-2) var(--space-3);
   border-radius: var(--radius-md);
   cursor: pointer;
@@ -134,6 +135,14 @@
   gap: var(--space-2);
   border: 1px solid var(--border-strong);
   color: var(--text-primary);
+}
+
+.actionButtonLeading {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 0;
+  flex: 1;
 }
 
 .actionButton:hover:not(:disabled) {

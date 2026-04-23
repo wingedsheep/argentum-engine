@@ -26,6 +26,11 @@ interface ActionOption {
   action: LegalActionInfo | null
   /** Action type for coloring */
   actionType: 'cast' | 'castFaceDown' | 'castWithKicker' | 'cycle' | 'playLand' | 'activate' | 'turnFaceUp'
+  /**
+   * Signed loyalty change for planeswalker loyalty abilities (+1, -2, -8, 0).
+   * When present, the button renders a mana-font loyalty icon instead of a text prefix.
+   */
+  loyaltyChange?: number
 }
 
 /**
@@ -190,7 +195,35 @@ function buildActionOptions(
 
   // 5. Activated abilities (for permanents on battlefield)
   const activateActions = legalActions.filter((a) => a.action.type === 'ActivateAbility')
+
+  // 5a. Planeswalker: show the full loyalty ability menu, with unavailable abilities grayed
+  // out (not enough loyalty, sorcery-speed restriction, already activated this turn, etc.).
+  // This overrides the default "only show legal activate actions" rendering so the player
+  // sees all three abilities on the card every time they click it.
+  const pwAbilities = cardInfo.planeswalkerAbilities
+  const renderedActivateActions = new Set<LegalActionInfo>()
+  if (pwAbilities && pwAbilities.length > 0) {
+    pwAbilities.forEach((pw, index) => {
+      const match = activateActions.find(
+        (a) => (a.action as { abilityId?: string }).abilityId === pw.abilityId
+      )
+      if (match) renderedActivateActions.add(match)
+      options.push({
+        key: `pw-${pw.abilityId}-${index}`,
+        label: pw.description,
+        manaCost: null,
+        isAvailable: match !== undefined && match.isAffordable !== false,
+        action: match ?? null,
+        actionType: 'activate',
+        loyaltyChange: pw.loyaltyChange,
+      })
+    })
+  }
+
+  // 5b. Remaining (non-planeswalker) activated abilities — activated abilities on non-
+  // planeswalker permanents, or anything not already rendered above.
   activateActions.forEach((activateAction, index) => {
+    if (renderedActivateActions.has(activateAction)) return
     options.push({
       key: `activate-${index}`,
       label: activateAction.description,
@@ -351,6 +384,30 @@ export function ActionMenu() {
 }
 
 /**
+ * Mana-font loyalty icon for planeswalker abilities.
+ *   +N → `ms-loyalty-up ms-loyalty-N`  (green upward chevron with "+N")
+ *   -N → `ms-loyalty-down ms-loyalty-N` (red downward chevron with "-N")
+ *    0 → `ms-loyalty-zero` (neutral)
+ *
+ * Magnitude > 20 falls back to the plain chevron (mana-font ships variants up to 20).
+ */
+function LoyaltyIcon({ change }: { change: number }) {
+  const magnitude = Math.abs(change)
+  const direction = change > 0 ? 'up' : change < 0 ? 'down' : 'zero'
+  const hasNumberVariant = direction !== 'zero' && magnitude >= 1 && magnitude <= 20
+  const className = hasNumberVariant
+    ? `ms ms-loyalty-${direction} ms-loyalty-${magnitude}`
+    : `ms ms-loyalty-${direction}`
+  return (
+    <span
+      aria-hidden
+      className={className}
+      style={{ fontSize: 22, marginRight: 6, flexShrink: 0 }}
+    />
+  )
+}
+
+/**
  * Get the style class for an action type.
  */
 function getActionStyleClass(actionType: ActionOption['actionType'], isAvailable: boolean): string {
@@ -417,8 +474,13 @@ function ActionOptionButton({
           setAutoTapPreview(null)
         }}
       >
-        <span className={styles.actionButtonLabel}>
-          <AbilityText text={option.label} size={14} />
+        <span className={styles.actionButtonLeading}>
+          {option.loyaltyChange !== undefined && (
+            <LoyaltyIcon change={option.loyaltyChange} />
+          )}
+          <span className={styles.actionButtonLabel}>
+            <AbilityText text={option.label} size={14} />
+          </span>
         </span>
         {showSeparateCost && (
           hasFloatingMana && manaPool

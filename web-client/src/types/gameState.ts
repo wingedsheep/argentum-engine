@@ -247,6 +247,23 @@ export interface ClientCard {
     readonly required: number
     readonly active: boolean
   } | null
+
+  /**
+   * For planeswalkers on the battlefield: the complete set of loyalty abilities,
+   * in declaration order. The UI renders the full list and grays out any ability
+   * whose `abilityId` isn't present in the legal actions for this card.
+   */
+  readonly planeswalkerAbilities?: readonly ClientPlaneswalkerAbility[] | null
+}
+
+/** One loyalty ability on a planeswalker (always-visible menu rendering). */
+export interface ClientPlaneswalkerAbility {
+  /** Matches `ActivateAbility.abilityId` in legal actions. */
+  readonly abilityId: string
+  /** Signed loyalty change (+1, -2, -8, etc.). */
+  readonly loyaltyChange: number
+  /** Ability text. */
+  readonly description: string
 }
 
 /**

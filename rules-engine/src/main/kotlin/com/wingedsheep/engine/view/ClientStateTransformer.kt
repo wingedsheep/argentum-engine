@@ -948,8 +948,55 @@ class ClientStateTransformer(
             backFaceName = dfcBackFace(container, cardDef)?.name,
             backFaceTypeLine = dfcBackFace(container, cardDef)?.typeLine?.toString(),
             backFaceOracleText = dfcBackFace(container, cardDef)?.oracleText,
-            backFaceImageUri = dfcBackFace(container, cardDef)?.metadata?.imageUri
+            backFaceImageUri = dfcBackFace(container, cardDef)?.metadata?.imageUri,
+            planeswalkerAbilities = buildPlaneswalkerAbilities(cardDef, zoneKey)
         )
+    }
+
+    private fun buildPlaneswalkerAbilities(
+        cardDef: com.wingedsheep.sdk.model.CardDefinition?,
+        zoneKey: ZoneKey
+    ): List<ClientPlaneswalkerAbility>? {
+        if (cardDef == null) return null
+        if (zoneKey.zoneType != Zone.BATTLEFIELD) return null
+        if (!cardDef.typeLine.cardTypes.contains(CardType.PLANESWALKER)) return null
+        val abilities = cardDef.script.activatedAbilities.filter { it.isPlaneswalkerAbility }
+        if (abilities.isEmpty()) return null
+        val oracleDescriptions = parseOracleLoyaltyLines(cardDef.oracleText)
+        return abilities.mapNotNull { ability ->
+            val loyalty = (ability.cost as? com.wingedsheep.sdk.scripting.AbilityCost.Loyalty)?.change
+                ?: return@mapNotNull null
+            val description = oracleDescriptions[loyalty]
+                ?: ability.descriptionOverride
+                ?: ability.effect.description
+            ClientPlaneswalkerAbility(
+                abilityId = ability.id.value,
+                loyaltyChange = loyalty,
+                description = description
+            )
+        }
+    }
+
+    /**
+     * Parse a planeswalker's oracle text into a map of loyalty change → ability text.
+     * Example line: "−2: Ajani deals 4 damage to target tapped creature."
+     * Handles the Unicode minus (U+2212), the ASCII hyphen, and a leading "+".
+     * If a planeswalker has two abilities with the same loyalty cost (rare — Vivien, Monsters'
+     * Advocate), only the first is kept here; the fallback to `effect.description` covers the rest.
+     */
+    private fun parseOracleLoyaltyLines(oracleText: String): Map<Int, String> {
+        if (oracleText.isBlank()) return emptyMap()
+        val pattern = Regex("""^\s*([+−\-]?)(\d+):\s*(.+?)\s*$""")
+        val result = mutableMapOf<Int, String>()
+        for (raw in oracleText.lines()) {
+            val match = pattern.matchEntire(raw) ?: continue
+            val sign = match.groupValues[1]
+            val magnitude = match.groupValues[2].toIntOrNull() ?: continue
+            val loyalty = if (sign == "−" || sign == "-") -magnitude else magnitude
+            val text = match.groupValues[3].trimEnd('.', ' ')
+            result.putIfAbsent(loyalty, text)
+        }
+        return result
     }
 
     /**
