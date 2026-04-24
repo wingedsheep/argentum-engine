@@ -2,12 +2,12 @@
 
 **Set Size:** 273 cards (main set, per Scryfall `set:ecl`)
 **Release Date:** January 23, 2026
-**Implemented:** 117 / 273
+**Implemented:** 118 / 273
 
 | Color      | Total | Done |
 |------------|-------|------|
 | White      | 39    | 16   |
-| Blue       | 39    | 20   |
+| Blue       | 39    | 21   |
 | Black      | 38    | 16   |
 | Red        | 39    | 10   |
 | Green      | 39    | 21   |
@@ -80,7 +80,7 @@
 - [ ] Lofty Dreams
 - [x] Mirrorform
 - [x] Noggle the Mind
-- [ ] Omni-Changeling
+- [x] Omni-Changeling
 - [ ] Pestered Wellguard
 - [ ] Rime Chill
 - [x] Rimefire Torque

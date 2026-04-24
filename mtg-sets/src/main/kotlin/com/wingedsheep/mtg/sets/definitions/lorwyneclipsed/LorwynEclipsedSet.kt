@@ -94,6 +94,7 @@ object LorwynEclipsedSet {
         MutableExplorer,
         NamelessInversion,
         NoggleTheMind,
+        OmniChangeling,
         Personify,
         PitilessFists,
         PridefulFeastling,
