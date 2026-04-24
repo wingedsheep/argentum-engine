@@ -2,14 +2,14 @@
 
 **Set Size:** 273 cards (main set, per Scryfall `set:ecl`)
 **Release Date:** January 23, 2026
-**Implemented:** 129 / 273
+**Implemented:** 130 / 273
 
 | Color      | Total | Done |
 |------------|-------|------|
 | White      | 39    | 17   |
 | Blue       | 39    | 22   |
 | Black      | 38    | 17   |
-| Red        | 39    | 11   |
+| Red        | 39    | 12   |
 | Green      | 39    | 21   |
 | Multicolor | 49    | 27   |
 | Colorless  | 18    | 4    |
@@ -156,7 +156,7 @@
 - [ ] Collective Inferno
 - [ ] Elder Auntie
 - [ ] End-Blaze Epiphany
-- [ ] Enraged Flamecaster
+- [x] Enraged Flamecaster
 - [ ] Explosive Prodigy
 - [ ] Feed the Flames
 - [ ] Flame-Chain Mauler
