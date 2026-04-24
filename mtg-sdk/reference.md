@@ -125,6 +125,7 @@ constructors.
 - `Effects.AddMana(color, amount = 1)` — also accepts `DynamicAmount`
 - `Effects.AddColorlessMana(amount)` — also accepts `DynamicAmount`
 - `Effects.AddAnyColorMana(amount = 1)`
+- `Effects.AddAnyColorManaSpendOnChosenType(amount = 1)` — produces one mana of any color restricted to casting/activating sources of the source's chosen creature type (Eclipsed Realms)
 - `Effects.AddManaOfColorAmong(filter)` — add one mana of any color among matching permanents (Mox Amber)
 - `Effects.AddOneManaOfEachColorAmong(filter)` — add one mana of EACH color among matching permanents (Bloom Tender / Vivid mana ability)
 
@@ -347,6 +348,7 @@ constructors.
 | `AddManaEffect`          | `color, amount: DynamicAmount`               | Add colored mana   |
 | `AddColorlessManaEffect` | `amount: DynamicAmount`                      | Add colorless mana |
 | `AddAnyColorManaEffect`  | `amount: DynamicAmount`                      | Add any color mana |
+| `AddAnyColorManaSpendOnChosenTypeEffect` | `amount: DynamicAmount`          | Add one mana of any color restricted to spells/abilities of the source's chosen creature subtype (Eclipsed Realms) |
 | `AddDynamicManaEffect`   | `amountSource: DynamicAmount, allowedColors` | Dynamic mana       |
 | `AddManaOfColorAmongEffect` | `filter: GameObjectFilter`                | Add mana of color among matching permanents (Mox Amber) |
 | `AddOneManaOfEachColorAmongEffect` | `filter: GameObjectFilter`         | Add one mana of EACH color found among matching permanents (Bloom Tender) |

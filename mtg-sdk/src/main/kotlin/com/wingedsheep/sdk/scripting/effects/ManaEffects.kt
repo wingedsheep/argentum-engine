@@ -132,6 +132,34 @@ data class AddDynamicManaEffect(
 }
 
 /**
+ * Add one mana of any color, restricted to spells/abilities of the source's chosen subtype.
+ * "{T}: Add one mana of any color. Spend this mana only to cast a spell of the chosen
+ * type or activate an ability of a source of the chosen type."
+ *
+ * At resolution, the executor reads the source's ChosenCreatureTypeComponent,
+ * prompts the player to choose a color, and adds restricted mana whose
+ * [ManaRestriction] is a freshly-minted [ManaRestriction.SubtypeSpellsOrAbilitiesOnly]
+ * carrying that subtype. If no creature type has been chosen, no mana is produced.
+ */
+@SerialName("AddAnyColorManaSpendOnChosenType")
+@Serializable
+data class AddAnyColorManaSpendOnChosenTypeEffect(
+    val amount: DynamicAmount = DynamicAmount.Fixed(1)
+) : Effect {
+    constructor(amount: Int) : this(DynamicAmount.Fixed(amount))
+
+    override val description: String = buildString {
+        append(when (val a = amount) {
+            is DynamicAmount.Fixed -> if (a.amount == 1) "Add one mana of any color" else "Add ${a.amount} mana of any color"
+            else -> "Add ${a.description} mana of any color"
+        })
+        append(". Spend this mana only to cast a spell of the chosen type or activate an ability of a source of the chosen type")
+    }
+
+    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
+}
+
+/**
  * Add one mana of the color chosen as the permanent entered the battlefield.
  * "{T}: Add one mana of the chosen color."
  *

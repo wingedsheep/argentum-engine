@@ -22,6 +22,7 @@ import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.scripting.OverrideEnchantedLandManaColor
 import com.wingedsheep.sdk.scripting.effects.AddAnyColorManaEffect
+import com.wingedsheep.sdk.scripting.effects.AddAnyColorManaSpendOnChosenTypeEffect
 import com.wingedsheep.sdk.scripting.effects.AddManaEffect
 import com.wingedsheep.sdk.scripting.effects.AddManaOfColorAmongEffect
 import com.wingedsheep.sdk.scripting.effects.CompositeEffect
@@ -241,9 +242,12 @@ class ManaAbilityEnumerator : ActionEnumerator {
                         isManaAbility = true,
                         additionalCostInfo = costInfo,
                         requiresManaColorChoice = ability.effect is AddAnyColorManaEffect ||
+                            ability.effect is AddAnyColorManaSpendOnChosenTypeEffect ||
                             ability.effect is AddManaOfColorAmongEffect ||
                             (ability.effect is CompositeEffect &&
-                                (ability.effect as CompositeEffect).effects.any { it is AddAnyColorManaEffect }),
+                                (ability.effect as CompositeEffect).effects.any {
+                                    it is AddAnyColorManaEffect || it is AddAnyColorManaSpendOnChosenTypeEffect
+                                }),
                         manaCostString = manaAbilityManaCostString
                     )
                 )

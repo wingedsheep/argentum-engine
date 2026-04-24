@@ -225,7 +225,8 @@ class CastSpellEnumerator : ActionEnumerator {
                 isKicked = false,
                 isCreature = cardComponent.typeLine.isCreature,
                 manaValue = cardComponent.manaCost.cmc,
-                hasXInCost = cardComponent.manaCost.hasX
+                hasXInCost = cardComponent.manaCost.hasX,
+                subtypes = cardComponent.typeLine.subtypes.map { it.value }.toSet()
             )
 
             // For Convoke/Delve spells, check if affordable with alternative payment help
@@ -921,7 +922,8 @@ class CastSpellEnumerator : ActionEnumerator {
                 isKicked = false,
                 isCreature = cardComponent.typeLine.isCreature,
                 manaValue = cardComponent.manaCost.cmc,
-                hasXInCost = cardComponent.manaCost.hasX
+                hasXInCost = cardComponent.manaCost.hasX,
+                subtypes = cardComponent.typeLine.subtypes.map { it.value }.toSet()
             )
             val canAfford = context.manaSolver.canPay(state, playerId, baseCost, spellContext = spellContext, precomputedSources = context.availableManaSources)
             val autoTapPreview = if (context.skipAutoTapPreview) null else {
@@ -1028,7 +1030,8 @@ class CastSpellEnumerator : ActionEnumerator {
                 isKicked = true,
                 isCreature = cardComponent.typeLine.isCreature,
                 manaValue = cardComponent.manaCost.cmc,
-                hasXInCost = cardComponent.manaCost.hasX
+                hasXInCost = cardComponent.manaCost.hasX,
+                subtypes = cardComponent.typeLine.subtypes.map { it.value }.toSet()
             )
             val canAffordKickedMana = context.manaSolver.canPay(state, playerId, kickedCost, spellContext = kickedSpellContext, precomputedSources = context.availableManaSources)
             val kickedCostString = kickedCost.toString()

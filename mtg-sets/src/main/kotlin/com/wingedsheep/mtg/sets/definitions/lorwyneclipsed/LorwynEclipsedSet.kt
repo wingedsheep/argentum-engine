@@ -57,6 +57,7 @@ object LorwynEclipsedSet {
         DreamSeizer,
         EclipsedKithkin,
         EclipsedMerrow,
+        EclipsedRealms,
         EirduCarrierOfDawn,
         Emptiness,
         EvershrikesGift,

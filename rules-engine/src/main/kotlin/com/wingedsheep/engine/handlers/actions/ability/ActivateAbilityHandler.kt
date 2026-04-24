@@ -52,6 +52,7 @@ import com.wingedsheep.sdk.scripting.GrantActivatedAbilityToCreatureGroup
 import com.wingedsheep.sdk.scripting.TimingRule
 import com.wingedsheep.sdk.scripting.effects.LevelUpClassEffect
 import com.wingedsheep.sdk.scripting.effects.AddAnyColorManaEffect
+import com.wingedsheep.sdk.scripting.effects.AddAnyColorManaSpendOnChosenTypeEffect
 import com.wingedsheep.sdk.scripting.effects.AddManaOfChosenColorEffect
 import com.wingedsheep.sdk.scripting.effects.AddColorlessManaEffect
 import com.wingedsheep.sdk.scripting.effects.AddManaEffect
@@ -634,6 +635,21 @@ class ActivateAbilityHandler(
                     )
                 }
                 is AddAnyColorManaEffect -> {
+                    val chosenColor = action.manaColorChoice ?: Color.GREEN
+                    val amount = dynamicAmountEvaluator.evaluate(state, effect.amount, context)
+                    ManaAddedEvent(
+                        playerId = action.playerId,
+                        sourceId = action.sourceId,
+                        sourceName = cardComponent.name,
+                        white = if (chosenColor == Color.WHITE) amount else 0,
+                        blue = if (chosenColor == Color.BLUE) amount else 0,
+                        black = if (chosenColor == Color.BLACK) amount else 0,
+                        red = if (chosenColor == Color.RED) amount else 0,
+                        green = if (chosenColor == Color.GREEN) amount else 0,
+                        colorless = 0
+                    )
+                }
+                is AddAnyColorManaSpendOnChosenTypeEffect -> {
                     val chosenColor = action.manaColorChoice ?: Color.GREEN
                     val amount = dynamicAmountEvaluator.evaluate(state, effect.amount, context)
                     ManaAddedEvent(

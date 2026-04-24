@@ -21,6 +21,7 @@ import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.AbilityCost
 import com.wingedsheep.sdk.scripting.effects.AddAnyColorManaEffect
+import com.wingedsheep.sdk.scripting.effects.AddAnyColorManaSpendOnChosenTypeEffect
 import com.wingedsheep.sdk.scripting.effects.AddColorlessManaEffect
 import com.wingedsheep.sdk.scripting.effects.AddDynamicManaEffect
 import com.wingedsheep.sdk.scripting.effects.AddManaEffect
@@ -34,6 +35,7 @@ import com.wingedsheep.sdk.scripting.DampLandManaProduction
 import com.wingedsheep.sdk.scripting.GrantActivatedAbilityToCreatureGroup
 import com.wingedsheep.sdk.scripting.predicates.CardPredicate
 import com.wingedsheep.engine.state.components.identity.ChosenColorComponent
+import com.wingedsheep.engine.state.components.identity.ChosenCreatureTypeComponent
 import com.wingedsheep.engine.state.components.identity.FaceDownComponent
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
 
@@ -645,6 +647,17 @@ class ManaSolver(
                         maxManaAmount = maxOf(maxManaAmount, manaAmount)
                         effect.restriction
                     }
+                    is AddAnyColorManaSpendOnChosenTypeEffect -> {
+                        val chosenType = state.getEntity(entityId)
+                            ?.get<ChosenCreatureTypeComponent>()?.creatureType
+                        if (chosenType != null) {
+                            combinedColors.addAll(Color.entries)
+                            effectColors.addAll(Color.entries)
+                            val manaAmount = evaluateManaAmount(effect.amount, state, entityId, playerId)
+                            maxManaAmount = maxOf(maxManaAmount, manaAmount)
+                            com.wingedsheep.sdk.scripting.effects.ManaRestriction.SubtypeSpellsOrAbilitiesOnly(chosenType)
+                        } else null
+                    }
                     is AddManaOfColorAmongEffect -> {
                         // Determine available colors from matching permanents
                         val projected = state.projectedState
@@ -1203,6 +1216,10 @@ class ManaSolver(
                 // Accumulate mana production
                 when (val effect = ability.effect) {
                     is AddAnyColorManaEffect -> {
+                        val amount = (effect.amount as? DynamicAmount.Fixed)?.amount ?: 1
+                        anyColorTotal += activationCount * amount
+                    }
+                    is AddAnyColorManaSpendOnChosenTypeEffect -> {
                         val amount = (effect.amount as? DynamicAmount.Fixed)?.amount ?: 1
                         anyColorTotal += activationCount * amount
                     }

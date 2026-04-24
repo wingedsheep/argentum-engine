@@ -9,6 +9,7 @@ import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.scripting.*
 import com.wingedsheep.sdk.scripting.effects.AddAnyColorManaEffect
+import com.wingedsheep.sdk.scripting.effects.AddAnyColorManaSpendOnChosenTypeEffect
 import com.wingedsheep.sdk.scripting.effects.AddColorlessManaEffect
 import com.wingedsheep.sdk.scripting.effects.AddDynamicManaEffect
 import com.wingedsheep.sdk.scripting.effects.AddManaOfChosenColorEffect
@@ -752,6 +753,15 @@ object Effects {
      */
     fun AddAnyColorMana(amount: DynamicAmount, restriction: ManaRestriction? = null): Effect =
         AddAnyColorManaEffect(amount, restriction)
+
+    /**
+     * Add one mana of any color, restricted to spells/abilities of the source's chosen subtype.
+     * Used for cards like Eclipsed Realms — the executor reads the source's
+     * `ChosenCreatureTypeComponent` and bakes that subtype into the restriction
+     * at the moment mana is added to the pool.
+     */
+    fun AddAnyColorManaSpendOnChosenType(amount: Int = 1): Effect =
+        AddAnyColorManaSpendOnChosenTypeEffect(amount)
 
     /**
      * Add X mana in any combination of the allowed colors.

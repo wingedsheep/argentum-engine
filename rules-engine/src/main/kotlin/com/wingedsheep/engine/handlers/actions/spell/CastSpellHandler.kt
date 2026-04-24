@@ -464,7 +464,8 @@ class CastSpellHandler(
                 isKicked = action.wasKicked,
                 isCreature = cardComponent.typeLine.isCreature,
                 manaValue = cardComponent.manaCost.cmc,
-                hasXInCost = cardComponent.manaCost.hasX
+                hasXInCost = cardComponent.manaCost.hasX,
+                subtypes = cardComponent.typeLine.subtypes.map { it.value }.toSet()
             )
         } else null
 
@@ -1448,7 +1449,8 @@ class CastSpellHandler(
             isKicked = action.wasKicked,
             isCreature = cardComponent.typeLine.isCreature,
             manaValue = cardComponent.manaCost.cmc,
-            hasXInCost = cardComponent.manaCost.hasX
+            hasXInCost = cardComponent.manaCost.hasX,
+            subtypes = cardComponent.typeLine.subtypes.map { it.value }.toSet()
         )
 
         // Handle mana payment via dedicated processor
