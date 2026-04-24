@@ -219,7 +219,11 @@ function BattlefieldContent({ isOpponent, spectatorMode = false }: { isOpponent:
     // inside the outer container so the rotated card doesn't sit flush against the next.
     const tappedGutter = parentTapped ? (responsive.isMobile ? 18 : 28) : 0
     const containerWidth = parentTapped ? portraitHeight + tappedGutter : portraitWidth
-    const containerHeight = parentTapped ? portraitWidth : portraitHeight
+    // Match the non-attachment tapped container height (cardHeight) so the main card's
+    // vertical center sits at the same row-bottom offset in both tapped and untapped
+    // states. Using portraitWidth here would shrink the container and pull the card
+    // downward by (cardHeight - cardWidth) / 2 on tap.
+    const containerHeight = parentTapped ? cardHeight : portraitHeight
     const tabHeight = responsive.isMobile ? 14 : 16
     const actionable = collapsed ? hasActionableAttachment(attachments) : false
 
