@@ -127,6 +127,7 @@ object LorwynEclipsedSet {
         ThoughtweftCharge,
         TrystansCommand,
         TwilightDiviner,
+        Tweeze,
         UnwelcomeSprite,
         VinebredBrawler,
         VirulentEmissary,
