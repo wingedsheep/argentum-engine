@@ -256,7 +256,8 @@ class PlayLandHandler(
                     }
 
                     ChoiceType.CREATURE_TYPE -> {
-                        val allCreatureTypes = com.wingedsheep.sdk.core.Subtype.ALL_CREATURE_TYPES
+                        val creatureTypeOptions = firstChoice.allowedCreatureTypes
+                            ?: com.wingedsheep.sdk.core.Subtype.ALL_CREATURE_TYPES
                         val decisionId = "choose-creature-type-land-enters-${action.cardId.value}"
                         val decision = com.wingedsheep.engine.core.ChooseOptionDecision(
                             id = decisionId,
@@ -267,7 +268,7 @@ class PlayLandHandler(
                                 sourceName = cardComponent.name,
                                 phase = com.wingedsheep.engine.core.DecisionPhase.RESOLUTION
                             ),
-                            options = allCreatureTypes,
+                            options = creatureTypeOptions,
                             defaultSearch = ""
                         )
                         val continuation = com.wingedsheep.engine.core.EntersWithChoiceLandContinuation(
@@ -275,7 +276,7 @@ class PlayLandHandler(
                             landId = action.cardId,
                             controllerId = action.playerId,
                             choiceType = ChoiceType.CREATURE_TYPE,
-                            creatureTypes = allCreatureTypes
+                            creatureTypes = creatureTypeOptions
                         )
                         val pausedState = newState
                             .pushContinuation(continuation)

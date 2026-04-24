@@ -71,6 +71,24 @@ class EclipsedRealmsScenarioTest : ScenarioTestBase() {
                 chosen.shouldNotBeNull()
                 chosen.creatureType shouldBe "Elf"
             }
+
+            test("creature type choice is restricted to the eight listed tribes") {
+                val game = scenario()
+                    .withPlayers("Player1", "Player2")
+                    .withCardInHand(1, "Eclipsed Realms")
+                    .withActivePlayer(1)
+                    .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                    .build()
+
+                game.playLandByName(1, "Eclipsed Realms")
+                val decision = game.getPendingDecision()
+                decision.shouldNotBeNull()
+                decision.shouldBeInstanceOf<ChooseOptionDecision>()
+                decision.options shouldBe listOf(
+                    "Elemental", "Elf", "Faerie", "Giant",
+                    "Goblin", "Kithkin", "Merfolk", "Treefolk"
+                )
+            }
         }
 
         context("Eclipsed Realms - mana abilities") {

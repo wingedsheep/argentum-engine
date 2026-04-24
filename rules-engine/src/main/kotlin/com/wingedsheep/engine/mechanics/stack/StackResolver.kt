@@ -1857,7 +1857,8 @@ class StackResolver(
             }
 
             ChoiceType.CREATURE_TYPE -> {
-                val allCreatureTypes = com.wingedsheep.sdk.core.Subtype.ALL_CREATURE_TYPES
+                val creatureTypeOptions = choice.allowedCreatureTypes
+                    ?: com.wingedsheep.sdk.core.Subtype.ALL_CREATURE_TYPES
                 val decisionId = "choose-creature-type-enters-${spellId.value}"
                 val decision = ChooseOptionDecision(
                     id = decisionId,
@@ -1868,7 +1869,7 @@ class StackResolver(
                         sourceName = cardComponent.name,
                         phase = DecisionPhase.RESOLUTION
                     ),
-                    options = allCreatureTypes,
+                    options = creatureTypeOptions,
                     defaultSearch = ""
                 )
                 val continuation = EntersWithChoiceSpellContinuation(
@@ -1877,7 +1878,7 @@ class StackResolver(
                     controllerId = controllerId,
                     ownerId = ownerId,
                     choiceType = ChoiceType.CREATURE_TYPE,
-                    creatureTypes = allCreatureTypes
+                    creatureTypes = creatureTypeOptions
                 )
                 val pausedState = state
                     .pushContinuation(continuation)

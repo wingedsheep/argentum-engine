@@ -20,9 +20,6 @@ import com.wingedsheep.sdk.scripting.TimingRule
  * Ruling: Sources of the chosen creature type include any objects with the chosen subtype.
  * For example, if you chose Kithkin, you could spend the mana to activate the ability of a
  * Kithkin permanent you control or a Kithkin card in your hand or graveyard.
- *
- * Implementation note: The engine's `EntersWithChoice(ChoiceType.CREATURE_TYPE)` allows any
- * creature type; the card's flavor restriction to the eight listed tribes is not enforced.
  */
 val EclipsedRealms = card("Eclipsed Realms") {
     typeLine = "Land"
@@ -32,7 +29,15 @@ val EclipsedRealms = card("Eclipsed Realms") {
         "{T}: Add one mana of any color. Spend this mana only to cast a spell of the chosen type " +
         "or activate an ability of a source of the chosen type."
 
-    replacementEffect(EntersWithChoice(ChoiceType.CREATURE_TYPE))
+    replacementEffect(
+        EntersWithChoice(
+            choiceType = ChoiceType.CREATURE_TYPE,
+            allowedCreatureTypes = listOf(
+                "Elemental", "Elf", "Faerie", "Giant",
+                "Goblin", "Kithkin", "Merfolk", "Treefolk"
+            )
+        )
+    )
 
     activatedAbility {
         cost = AbilityCost.Tap

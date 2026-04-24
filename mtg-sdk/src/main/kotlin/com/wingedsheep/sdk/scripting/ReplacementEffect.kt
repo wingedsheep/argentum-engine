@@ -631,6 +631,13 @@ enum class ChoiceType {
 data class EntersWithChoice(
     val choiceType: ChoiceType,
     val chooser: Player = Player.You,
+    /**
+     * When [choiceType] is [ChoiceType.CREATURE_TYPE], restrict the choosable
+     * subtypes to this list. `null` means any creature type is allowed (the
+     * default, matching cards like Three Tree City). Used by cards that
+     * enumerate a specific tribal shortlist such as Eclipsed Realms.
+     */
+    val allowedCreatureTypes: List<String>? = null,
     override val appliesTo: GameEvent = GameEvent.ZoneChangeEvent(
         filter = GameObjectFilter.Any,
         to = Zone.BATTLEFIELD
