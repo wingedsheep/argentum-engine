@@ -794,6 +794,12 @@ class StackResolver(
                 updated = updated.with(CastFromHandComponent)
             }
 
+            // Track if this permanent was cast from a graveyard (for triggers that care about
+            // creatures cast from graveyard — e.g., Twilight Diviner).
+            if (spellComponent.castFromZone == Zone.GRAVEYARD) {
+                updated = updated.with(com.wingedsheep.engine.state.components.battlefield.CastFromGraveyardComponent)
+            }
+
             // Track if this permanent was kicked (for cards like Skizzik)
             if (spellComponent.wasKicked) {
                 updated = updated.with(WasKickedComponent)

@@ -466,6 +466,13 @@ object Conditions {
     val TriggeringEntityWasHistoric: ConditionInterface =
         com.wingedsheep.sdk.scripting.conditions.TriggeringEntityWasHistoric
 
+    /**
+     * If the triggering entity entered or was cast from a graveyard.
+     * Used by Twilight Diviner: "if they entered or were cast from a graveyard".
+     */
+    val TriggeringEntityEnteredOrWasCastFromGraveyard: ConditionInterface =
+        com.wingedsheep.sdk.scripting.conditions.TriggeringEntityEnteredOrWasCastFromGraveyard
+
     // =========================================================================
     // Collection Conditions (pipeline-based)
     // =========================================================================

@@ -29,6 +29,24 @@ data object SummoningSicknessComponent : Component
 data object CastFromHandComponent : Component
 
 /**
+ * Marks a permanent as having been cast from a graveyard (e.g., flashback, encore,
+ * or ongoing permission to cast from graveyard). Added when a spell resolves with
+ * castFromZone == GRAVEYARD. Used by triggers that care whether an entering creature
+ * was cast from a graveyard (e.g., Twilight Diviner).
+ */
+@Serializable
+data object CastFromGraveyardComponent : Component
+
+/**
+ * Marks a permanent that entered the battlefield directly from a graveyard via a
+ * reanimation effect (not via casting). Added in the battlefield-entry path when
+ * the zone transition's fromZone is GRAVEYARD. Used by triggers that care whether
+ * an entering creature was reanimated (e.g., Twilight Diviner).
+ */
+@Serializable
+data object EnteredFromGraveyardComponent : Component
+
+/**
  * Marks a permanent as having been kicked when cast.
  * Added when a kicked spell resolves from the stack.
  * Used by cards like Skizzik to check if the kicker cost was paid.

@@ -67,6 +67,19 @@ data object TriggeringEntityWasHistoric : Condition {
 }
 
 /**
+ * Condition: "if it entered or was cast from a graveyard".
+ * True when the triggering entity has either EnteredFromGraveyardComponent (reanimated
+ * directly from graveyard → battlefield) or CastFromGraveyardComponent (spell was cast
+ * from graveyard). Used by Twilight Diviner.
+ */
+@SerialName("TriggeringEntityEnteredOrWasCastFromGraveyard")
+@Serializable
+data object TriggeringEntityEnteredOrWasCastFromGraveyard : Condition {
+    override val description: String = "if it entered or was cast from a graveyard"
+    override fun applyTextReplacement(replacer: TextReplacer): Condition = this
+}
+
+/**
  * Condition: "if [target] is [filter]"
  * Checks whether a context target matches a GameObjectFilter.
  * Used for cards like Blessing of Belzenlok: "If it's legendary, it also gains lifelink."

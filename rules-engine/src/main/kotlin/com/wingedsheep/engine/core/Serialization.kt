@@ -270,6 +270,8 @@ val engineSerializersModule = SerializersModule {
         subclass(TappedComponent::class)
         subclass(SummoningSicknessComponent::class)
         subclass(CastFromHandComponent::class)
+        subclass(com.wingedsheep.engine.state.components.battlefield.CastFromGraveyardComponent::class)
+        subclass(com.wingedsheep.engine.state.components.battlefield.EnteredFromGraveyardComponent::class)
         subclass(CountersComponent::class)
         subclass(DamageComponent::class)
         subclass(AttachedToComponent::class)

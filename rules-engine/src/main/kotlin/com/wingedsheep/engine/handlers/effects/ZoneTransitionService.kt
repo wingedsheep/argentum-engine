@@ -210,7 +210,7 @@ object ZoneTransitionService {
             Zone.BATTLEFIELD -> {
                 newState = newState.addToZone(destZoneKey, entityId)
                 newState = applyBattlefieldEntry(
-                    newState, entityId, cardComponent, destControllerId, options
+                    newState, entityId, cardComponent, destControllerId, options, fromZone
                 )
                 // Handle Saga entering the battlefield (Rule 714.3a)
                 val (sagaState, sagaEvents) = applySagaEntryIfNeeded(newState, entityId)
@@ -390,7 +390,8 @@ object ZoneTransitionService {
         entityId: EntityId,
         cardComponent: CardComponent,
         controllerId: EntityId,
-        options: ZoneEntryOptions
+        options: ZoneEntryOptions,
+        fromZone: Zone? = null
     ): GameState {
         return state.updateEntity(entityId) { c ->
             var updated = c.with(ControllerComponent(controllerId))
@@ -402,6 +403,13 @@ object ZoneTransitionService {
 
             // Track that this permanent entered the battlefield this turn
             updated = updated.with(EnteredThisTurnComponent)
+
+            // Track reanimation (direct graveyard → battlefield) for triggers that care.
+            if (fromZone == Zone.GRAVEYARD) {
+                updated = updated.with(
+                    com.wingedsheep.engine.state.components.battlefield.EnteredFromGraveyardComponent
+                )
+            }
 
             // Creatures enter with summoning sickness
             if (cardComponent.typeLine.isCreature) {

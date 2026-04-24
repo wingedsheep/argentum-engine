@@ -55,6 +55,7 @@ import com.wingedsheep.sdk.scripting.conditions.WasCastFromHand
 import com.wingedsheep.sdk.scripting.conditions.WasCastFromZone
 import com.wingedsheep.sdk.scripting.conditions.SacrificedPermanentHadSubtype
 import com.wingedsheep.sdk.scripting.conditions.TargetMatchesFilter
+import com.wingedsheep.sdk.scripting.conditions.TriggeringEntityEnteredOrWasCastFromGraveyard
 import com.wingedsheep.sdk.scripting.conditions.TriggeringEntityWasHistoric
 import com.wingedsheep.sdk.scripting.conditions.CardsLeftGraveyardThisTurn
 import com.wingedsheep.sdk.scripting.conditions.CollectionContainsMatch
@@ -117,6 +118,8 @@ class ConditionEvaluator {
             is SourceHasCounter -> evaluateSourceHasCounter(state, condition, context)
             is SacrificedPermanentHadSubtype -> evaluateSacrificedPermanentHadSubtype(condition, context)
             is TriggeringEntityWasHistoric -> evaluateTriggeringEntityWasHistoric(state, context)
+            is TriggeringEntityEnteredOrWasCastFromGraveyard ->
+                evaluateTriggeringEntityEnteredOrWasCastFromGraveyard(state, context)
             is TargetMatchesFilter -> evaluateTargetMatchesFilter(state, condition, context)
 
             // Turn conditions
@@ -464,6 +467,16 @@ class ConditionEvaluator {
         val entityId = context.triggeringEntityId ?: return false
         val card = state.getEntity(entityId)?.get<CardComponent>() ?: return false
         return card.typeLine.isHistoric
+    }
+
+    private fun evaluateTriggeringEntityEnteredOrWasCastFromGraveyard(
+        state: GameState,
+        context: EffectContext
+    ): Boolean {
+        val entityId = context.triggeringEntityId ?: return false
+        val entity = state.getEntity(entityId) ?: return false
+        return entity.has<com.wingedsheep.engine.state.components.battlefield.CastFromGraveyardComponent>() ||
+            entity.has<com.wingedsheep.engine.state.components.battlefield.EnteredFromGraveyardComponent>()
     }
 
     private fun evaluateTargetMatchesFilter(
