@@ -130,6 +130,7 @@ object LorwynEclipsedSet {
         TwilightDiviner,
         Tweeze,
         UnwelcomeSprite,
+        Vibrance,
         VinebredBrawler,
         VirulentEmissary,
         VoraciousTomeSkimmer,
