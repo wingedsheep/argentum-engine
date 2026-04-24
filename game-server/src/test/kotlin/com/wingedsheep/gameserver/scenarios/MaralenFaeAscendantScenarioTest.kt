@@ -5,6 +5,8 @@ import com.wingedsheep.engine.state.components.battlefield.LinkedExileComponent
 import com.wingedsheep.engine.state.components.battlefield.MayCastFromLinkedExileUsedThisTurnComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.gameserver.ScenarioTestBase
+import com.wingedsheep.gameserver.session.GameSession
+import com.wingedsheep.gameserver.session.PlayerSession
 import com.wingedsheep.sdk.core.Phase
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.core.ManaCost
@@ -13,6 +15,9 @@ import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.EntityId
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
+import io.mockk.every
+import io.mockk.mockk
+import org.springframework.web.socket.WebSocketSession
 
 class MaralenFaeAscendantScenarioTest : ScenarioTestBase() {
 
@@ -163,6 +168,94 @@ class MaralenFaeAscendantScenarioTest : ScenarioTestBase() {
                 val beefyId = findCardInExile(game, 2, "Beefy Filler")!!
                 val result = game.execute(CastSpell(game.player1Id, beefyId))
                 result.error shouldNotBe null
+            }
+
+            test("free-cast option appears in legal actions with mana cost 0") {
+                val game = scenario()
+                    .withPlayers("Player1", "Player2")
+                    .withCardInHand(1, "Maralen, Fae Ascendant")
+                    .withLandsOnBattlefield(1, "Swamp", 2)
+                    .withLandsOnBattlefield(1, "Forest", 1)
+                    .withLandsOnBattlefield(1, "Island", 2)
+                    .withCardInLibrary(1, "Forest")
+                    .withCardInLibrary(2, "Cheap Filler")
+                    .withCardInLibrary(2, "Beefy Filler")
+                    .withCardInLibrary(2, "Forest")
+                    .withActivePlayer(1)
+                    .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                    .build()
+
+                game.castSpell(1, "Maralen, Fae Ascendant")
+                game.resolveStack()
+                game.resolveStack()
+
+                // Recreate the legal-actions surface the web client sees.
+                val session = GameSession(cardRegistry = cardRegistry)
+                val mockWs1 = mockk<WebSocketSession>(relaxed = true) { every { id } returns "ws1" }
+                val mockWs2 = mockk<WebSocketSession>(relaxed = true) { every { id } returns "ws2" }
+                session.injectStateForTesting(
+                    game.state,
+                    mapOf(
+                        game.player1Id to PlayerSession(mockWs1, game.player1Id, "Player1"),
+                        game.player2Id to PlayerSession(mockWs2, game.player2Id, "Player2")
+                    )
+                )
+
+                val legalActions = session.getLegalActions(game.player1Id)
+                val cheapCast = legalActions.find { it.description == "Cast Cheap Filler" }
+                cheapCast shouldNotBe null
+                cheapCast!!.isAffordable shouldBe true
+                cheapCast.manaCostString shouldBe "0"
+                cheapCast.sourceZone shouldBe "EXILE"
+
+                // Beefy Filler ({4}) exceeds the dynamic cap (1 Elf/Faerie on board) — must
+                // not appear as an affordable action even though it sits in linked exile.
+                val beefyCast = legalActions.find { it.description == "Cast Beefy Filler" }
+                if (beefyCast != null) beefyCast.isAffordable shouldBe false
+            }
+
+            test("scaling the Elf/Faerie count raises the mana-value cap so larger spells become free") {
+                // Maralen + Virulent Emissary on the battlefield → cap starts at 2.
+                // P1 casts a vanilla Sample Faerie → Maralen's ETB exiles top 2 of P2's library.
+                // Now 3 Elves/Faeries are on board → mv-2 exiled cards are eligible.
+                val game = scenario()
+                    .withPlayers("Player1", "Player2")
+                    .withCardOnBattlefield(1, "Maralen, Fae Ascendant")
+                    .withCardOnBattlefield(1, "Virulent Emissary")
+                    .withCardInHand(1, "Sample Faerie")
+                    .withLandsOnBattlefield(1, "Island", 2)
+                    .withCardInLibrary(1, "Forest")
+                    .withCardInLibrary(2, "Beefy Filler")    // mv 4 — top, will be exiled
+                    .withCardInLibrary(2, "Cheap Filler")    // mv 1 — also exiled
+                    .withCardInLibrary(2, "Forest")
+                    .withActivePlayer(1)
+                    .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                    .build()
+
+                game.castSpell(1, "Sample Faerie")
+                game.resolveStack()  // Sample Faerie resolves and enters
+                game.resolveStack()  // Maralen ETB exiles top 2
+
+                game.isInExile(2, "Beefy Filler") shouldBe true
+
+                // 3 Elves/Faeries on board (Maralen, Virulent Emissary, Sample Faerie) → cap = 3.
+                // Beefy Filler (mv 4) is still over the cap and stays unaffordable;
+                // verify by enumerating legal actions.
+                val session = GameSession(cardRegistry = cardRegistry)
+                val mockWs1 = mockk<WebSocketSession>(relaxed = true) { every { id } returns "ws1" }
+                val mockWs2 = mockk<WebSocketSession>(relaxed = true) { every { id } returns "ws2" }
+                session.injectStateForTesting(
+                    game.state,
+                    mapOf(
+                        game.player1Id to PlayerSession(mockWs1, game.player1Id, "Player1"),
+                        game.player2Id to PlayerSession(mockWs2, game.player2Id, "Player2")
+                    )
+                )
+                val legalActions = session.getLegalActions(game.player1Id)
+                val cheapCast = legalActions.find { it.description == "Cast Cheap Filler" }
+                cheapCast shouldNotBe null
+                cheapCast!!.isAffordable shouldBe true
+                cheapCast.manaCostString shouldBe "0"
             }
 
             test("once per turn — second cast attempt is rejected") {
