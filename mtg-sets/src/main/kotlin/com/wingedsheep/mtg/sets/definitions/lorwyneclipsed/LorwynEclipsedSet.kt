@@ -121,6 +121,7 @@ object LorwynEclipsedSet {
         SwatAway,
         SyggsCommand,
         TanufelRimespeaker,
+        TempleGarden,
         ThirstForIdentity,
         ThoughtweftCharge,
         TrystansCommand,
