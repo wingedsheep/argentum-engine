@@ -150,6 +150,9 @@ class PredicateEvaluator {
             return container.has<ActivatedAbilityOnStackComponent>() ||
                 container.has<TriggeredAbilityOnStackComponent>()
         }
+        if (predicate is CardPredicate.IsTriggeredAbility) {
+            return container.has<TriggeredAbilityOnStackComponent>()
+        }
 
         val card = container.get<CardComponent>() ?: return false
         val projectedValues = projected.getProjectedValues(entityId)
@@ -383,6 +386,7 @@ class PredicateEvaluator {
 
             // Handled before CardComponent check above — unreachable here
             CardPredicate.IsActivatedOrTriggeredAbility -> false
+            CardPredicate.IsTriggeredAbility -> false
         }
     }
 
@@ -396,9 +400,15 @@ class PredicateEvaluator {
         predicate: ControllerPredicate,
         context: PredicateContext
     ): Boolean {
-        // Use projected controller if available
+        val container = state.getEntity(entityId)
+        // Use projected controller if available; otherwise fall back to the base
+        // ControllerComponent or, for stack objects (spells and abilities), the
+        // controllerId stored on their stack components.
         val controllerId = projected.getController(entityId)
-            ?: state.getEntity(entityId)?.get<ControllerComponent>()?.playerId
+            ?: container?.get<ControllerComponent>()?.playerId
+            ?: container?.get<SpellOnStackComponent>()?.casterId
+            ?: container?.get<TriggeredAbilityOnStackComponent>()?.controllerId
+            ?: container?.get<ActivatedAbilityOnStackComponent>()?.controllerId
             ?: return false
 
         return when (predicate) {
@@ -441,6 +451,9 @@ class PredicateEvaluator {
         if (predicate is CardPredicate.IsActivatedOrTriggeredAbility) {
             return container.has<ActivatedAbilityOnStackComponent>() ||
                 container.has<TriggeredAbilityOnStackComponent>()
+        }
+        if (predicate is CardPredicate.IsTriggeredAbility) {
+            return container.has<TriggeredAbilityOnStackComponent>()
         }
 
         val card = container.get<CardComponent>() ?: return false
@@ -634,6 +647,7 @@ class PredicateEvaluator {
 
             // Handled before CardComponent check above — unreachable here
             CardPredicate.IsActivatedOrTriggeredAbility -> false
+            CardPredicate.IsTriggeredAbility -> false
         }
     }
 
@@ -900,6 +914,7 @@ class PredicateEvaluator {
 
             // Stack ability check — cast spells are not abilities
             CardPredicate.IsActivatedOrTriggeredAbility -> false
+            CardPredicate.IsTriggeredAbility -> false
 
             // Composite predicates
             is CardPredicate.And -> predicate.predicates.all { matchesRecordPredicate(record, it) }

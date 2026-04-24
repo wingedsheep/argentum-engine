@@ -343,6 +343,26 @@ data class CopyTargetSpellEffect(
 }
 
 /**
+ * Copy target triggered ability on the stack.
+ * "Copy target triggered ability. You may choose new targets for the copy."
+ *
+ * When resolved, reads the targeted triggered ability's effect and targets from the stack,
+ * clones its TriggeredAbilityOnStackComponent onto a new entity, and pushes it onto the stack.
+ * If the original ability has targets, the controller may choose new targets for the copy.
+ *
+ * @property target The effect target referencing the triggered ability to copy (typically ContextTarget(0))
+ */
+@SerialName("CopyTargetTriggeredAbility")
+@Serializable
+data class CopyTargetTriggeredAbilityEffect(
+    val target: EffectTarget = EffectTarget.ContextTarget(0)
+) : Effect {
+    override val description: String = "Copy target triggered ability"
+
+    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
+}
+
+/**
  * When you next cast an instant or sorcery spell this turn, copy that spell.
  * You may choose new targets for the copies.
  *

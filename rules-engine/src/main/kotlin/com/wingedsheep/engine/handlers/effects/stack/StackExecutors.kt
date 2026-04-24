@@ -20,6 +20,7 @@ class StackExecutors(
         ChangeTargetExecutor(),
         StormCopyEffectExecutor(cardRegistry),
         CopyTargetSpellExecutor(cardRegistry),
+        CopyTargetTriggeredAbilityExecutor(cardRegistry),
         CopyNextSpellCastExecutor(),
         CopyEachSpellCastExecutor(),
         ReselectTargetRandomlyExecutor()

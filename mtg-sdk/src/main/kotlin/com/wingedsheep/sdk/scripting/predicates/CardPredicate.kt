@@ -441,6 +441,17 @@ sealed interface CardPredicate : TextReplaceable<CardPredicate> {
         override fun applyTextReplacement(replacer: TextReplacer): CardPredicate = this
     }
 
+    /**
+     * Matches only triggered abilities on the stack (not activated abilities or spells).
+     * Used by cards like Kirol, Attentive First-Year: "Copy target triggered ability you control."
+     */
+    @SerialName("IsTriggeredAbility")
+    @Serializable
+    data object IsTriggeredAbility : CardPredicate {
+        override val description: String = "triggered ability"
+        override fun applyTextReplacement(replacer: TextReplacer): CardPredicate = this
+    }
+
     // =============================================================================
     // Composite Predicates
     // =============================================================================

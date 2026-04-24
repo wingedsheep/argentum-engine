@@ -25,12 +25,47 @@ class MiscContinuationResumer(
         resumer(RepeatWhileContinuation::class, ::resumeRepeatWhile),
         resumer(StormCopyTargetContinuation::class, ::resumeStormCopyTarget),
         resumer(StormCopyModalTargetContinuation::class, ::resumeStormCopyModalTarget),
+        resumer(CopyTriggeredAbilityTargetContinuation::class, ::resumeCopyTriggeredAbilityTarget),
         resumer(DistributeCountersContinuation::class, ::resumeDistributeCounters),
         resumer(AddDynamicManaContinuation::class, ::resumeAddDynamicMana),
         resumer(ReturnFromLinkedExileContinuation::class) { state, continuation, response, checkForMore ->
             resumeReturnFromLinkedExile(state, continuation, response, checkForMore)
         }
     )
+
+    private fun resumeCopyTriggeredAbilityTarget(
+        state: GameState,
+        continuation: CopyTriggeredAbilityTargetContinuation,
+        response: DecisionResponse,
+        checkForMore: CheckForMore
+    ): ExecutionResult {
+        if (response !is TargetsResponse) {
+            return ExecutionResult.error(state, "Expected target selection response for triggered ability copy")
+        }
+
+        val selectedTargets = response.selectedTargets.entries
+            .sortedBy { it.key }
+            .flatMap { (_, targetIds) ->
+                targetIds.map { entityId -> entityIdToChosenTarget(state, entityId) }
+            }
+
+        val sourceAbility = state.getEntity(continuation.abilityEntityId)
+            ?.get<com.wingedsheep.engine.state.components.stack.TriggeredAbilityOnStackComponent>()
+            ?: return ExecutionResult.error(state, "Source triggered ability no longer on stack")
+
+        val copy = com.wingedsheep.engine.handlers.effects.stack.CopyTargetTriggeredAbilityExecutor
+            .cloneAbility(sourceAbility, continuation.controllerId)
+
+        val stackResult = services.stackResolver.putTriggeredAbility(
+            state = state,
+            ability = copy,
+            targets = selectedTargets,
+            targetRequirements = continuation.targetRequirements
+        )
+        if (!stackResult.isSuccess) return stackResult
+
+        return checkForMore(stackResult.newState, stackResult.events)
+    }
 
     private fun resumeDrawUpTo(
         state: GameState,

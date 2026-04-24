@@ -719,6 +719,7 @@ class CostCalculator(
 
             // Not applicable in cost calculation — abilities aren't cards
             CardPredicate.IsActivatedOrTriggeredAbility -> false
+            CardPredicate.IsTriggeredAbility -> false
         }
     }
 

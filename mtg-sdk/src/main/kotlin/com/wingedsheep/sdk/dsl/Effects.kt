@@ -103,6 +103,7 @@ import com.wingedsheep.sdk.scripting.effects.ReselectTargetRandomlyEffect
 import com.wingedsheep.sdk.scripting.effects.CopyEachSpellCastEffect
 import com.wingedsheep.sdk.scripting.effects.CopyNextSpellCastEffect
 import com.wingedsheep.sdk.scripting.effects.CopyTargetSpellEffect
+import com.wingedsheep.sdk.scripting.effects.CopyTargetTriggeredAbilityEffect
 import com.wingedsheep.sdk.scripting.effects.AddCreatureTypeEffect
 import com.wingedsheep.sdk.scripting.effects.LoseAllCreatureTypesEffect
 import com.wingedsheep.sdk.scripting.effects.SetCreatureSubtypesEffect
@@ -1075,6 +1076,12 @@ object Effects {
      */
     fun CopyTargetSpell(target: EffectTarget = EffectTarget.ContextTarget(0)): Effect =
         CopyTargetSpellEffect(target)
+
+    /**
+     * Copy target triggered ability. You may choose new targets for the copy.
+     */
+    fun CopyTargetTriggeredAbility(target: EffectTarget = EffectTarget.ContextTarget(0)): Effect =
+        CopyTargetTriggeredAbilityEffect(target)
 
     /**
      * When you next cast an instant or sorcery spell this turn, copy that spell.

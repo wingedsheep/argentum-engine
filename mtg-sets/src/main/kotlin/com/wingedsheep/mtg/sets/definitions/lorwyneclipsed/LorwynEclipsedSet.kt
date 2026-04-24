@@ -79,6 +79,7 @@ object LorwynEclipsedSet {
         ImpoliteEntrance,
         Kinbinding,
         KinsbaileAspirant,
+        KirolAttentiveFirstYear,
         LastingTarfire,
         Lavaleaper,
         LiminalHold,

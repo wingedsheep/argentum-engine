@@ -268,6 +268,13 @@ object Targets {
     )
 
     /**
+     * Target triggered ability you control on the stack.
+     */
+    val TriggeredAbilityYouControl: TargetRequirement = TargetObject(
+        filter = TargetFilter.TriggeredAbilityOnStack.youControl()
+    )
+
+    /**
      * Target spell or ability with a single target.
      * The single-target restriction is enforced at resolution time by the executor.
      */

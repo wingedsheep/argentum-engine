@@ -72,6 +72,25 @@ data class DistributeCountersContinuation(
 ) : ContinuationFrame
 
 /**
+ * Resume creating a copy of a triggered ability after the player selects new targets.
+ *
+ * Used by Kirol-style effects ("Copy target triggered ability you control. You may choose
+ * new targets for the copy."). The controller re-chooses targets, then the copy is cloned
+ * from the source ability's TriggeredAbilityOnStackComponent and pushed onto the stack.
+ *
+ * @property abilityEntityId The triggered ability being copied (on the stack)
+ * @property controllerId The player controlling the copy (also the target-chooser)
+ * @property targetRequirements Target requirements inherited from the source ability
+ */
+@Serializable
+data class CopyTriggeredAbilityTargetContinuation(
+    override val decisionId: String,
+    val abilityEntityId: EntityId,
+    val controllerId: EntityId,
+    val targetRequirements: List<TargetRequirement>
+) : ContinuationFrame
+
+/**
  * Resume creating Storm copies after the player selects targets for a copy.
  *
  * When a Storm spell has targets, we pause to ask for target selection for each copy.
