@@ -418,11 +418,13 @@ class CleanupPhaseManager(
                 else -> true // default: expire at end of this turn
             }
             val removePlayFree = playFree != null && !playFree.permanent
-            if (removeMayPlay || removePlayFree) {
+            val removeLinkedExileUsed = container.get<com.wingedsheep.engine.state.components.battlefield.MayCastFromLinkedExileUsedThisTurnComponent>() != null
+            if (removeMayPlay || removePlayFree || removeLinkedExileUsed) {
                 newState = newState.updateEntity(entityId) { c ->
                     var updated = c
                     if (removeMayPlay) updated = updated.without<MayPlayFromExileComponent>()
                     if (removePlayFree) updated = updated.without<PlayWithoutPayingCostComponent>()
+                    if (removeLinkedExileUsed) updated = updated.without<com.wingedsheep.engine.state.components.battlefield.MayCastFromLinkedExileUsedThisTurnComponent>()
                     updated
                 }
             }

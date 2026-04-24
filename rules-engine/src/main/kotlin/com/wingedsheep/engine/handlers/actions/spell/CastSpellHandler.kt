@@ -1000,6 +1000,12 @@ class CastSpellHandler(
             return pauseForCastTimeModeSelection(currentState, action, cardComponent, modalEffect)
         }
 
+        // Capture the linked-exile granter (if any) before the cast removes the card from
+        // exile — once the spell moves to the stack the LinkedExileComponent lookup would
+        // fail, but we still need the entry to enforce once-per-turn marking after a
+        // successful cast.
+        val linkedExileGranterEntry = zoneResolver.findLinkedExileGranterEntry(currentState, action.playerId, action.cardId)
+
         // Calculate effective cost (free if PlayWithoutPayingCostComponent is present)
         val playForFreeInExecute = zoneResolver.hasPlayWithoutPayingCost(currentState, action.playerId, action.cardId)
         var effectiveCost = if (playForFreeInExecute) {
@@ -1656,6 +1662,15 @@ class CastSpellHandler(
             val typeName = zoneResolver.choosePermanentTypeForGraveyardPermission(currentCastState, action.playerId, cardComponent)
             if (typeName != null) {
                 currentCastState = zoneResolver.recordGraveyardPlayPermissionUsage(currentCastState, action.playerId, typeName)
+            }
+        }
+
+        // Record once-per-turn linked-exile permission usage (e.g., Maralen, Fae Ascendant).
+        // Captured against the pre-cast state since the card has now left exile and the granter
+        // would no longer be located via its LinkedExileComponent.
+        if (linkedExileGranterEntry?.ability?.oncePerTurn == true) {
+            currentCastState = currentCastState.updateEntity(linkedExileGranterEntry.granterId) { c ->
+                c.with(com.wingedsheep.engine.state.components.battlefield.MayCastFromLinkedExileUsedThisTurnComponent)
             }
         }
 

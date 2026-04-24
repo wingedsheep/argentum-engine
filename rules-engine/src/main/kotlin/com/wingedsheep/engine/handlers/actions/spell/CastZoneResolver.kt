@@ -1,14 +1,17 @@
 package com.wingedsheep.engine.handlers.actions.spell
 
 import com.wingedsheep.engine.handlers.ConditionEvaluator
+import com.wingedsheep.engine.handlers.DynamicAmountEvaluator
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.PredicateContext
 import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
+import com.wingedsheep.engine.state.components.battlefield.ExileEntryTurnComponent
 import com.wingedsheep.engine.state.components.battlefield.GraveyardPlayPermissionUsedComponent
 import com.wingedsheep.engine.state.components.battlefield.LinkedExileComponent
+import com.wingedsheep.engine.state.components.battlefield.MayCastFromLinkedExileUsedThisTurnComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.identity.MayPlayFromExileComponent
@@ -219,6 +222,11 @@ class CastZoneResolver(
     /**
      * Check if a card has PlayWithoutPayingCostComponent granting
      * the player permission to play it without paying its mana cost.
+     *
+     * Also returns true when the cast is permitted by a linked-exile granter
+     * whose [GrantMayCastFromLinkedExile.withoutPayingManaCost] is set
+     * (e.g., Maralen, Fae Ascendant) — the granter waives the mana cost without
+     * needing a per-card component.
      */
     fun hasPlayWithoutPayingCost(
         state: GameState,
@@ -226,7 +234,9 @@ class CastZoneResolver(
         cardId: EntityId
     ): Boolean {
         val component = state.getEntity(cardId)?.get<PlayWithoutPayingCostComponent>()
-        return component?.controllerId == playerId
+        if (component?.controllerId == playerId) return true
+        val granter = findLinkedExileGranter(state, playerId, cardId)
+        return granter?.withoutPayingManaCost == true
     }
 
     /**
@@ -357,7 +367,18 @@ class CastZoneResolver(
         state: GameState,
         playerId: EntityId,
         cardId: EntityId
-    ): GrantMayCastFromLinkedExile? {
+    ): GrantMayCastFromLinkedExile? = findLinkedExileGranterEntry(state, playerId, cardId)?.ability
+
+    /**
+     * Like [findLinkedExileGranter] but also returns the granter permanent's [EntityId].
+     * Callers that need to mark the granter (e.g. for once-per-turn tracking on a
+     * successful cast) use this overload.
+     */
+    fun findLinkedExileGranterEntry(
+        state: GameState,
+        playerId: EntityId,
+        cardId: EntityId
+    ): LinkedExileGranter? {
         val cardContainer = state.getEntity(cardId) ?: return null
         val cardComponent = cardContainer.get<CardComponent>() ?: return null
 
@@ -379,12 +400,48 @@ class CastZoneResolver(
 
             if (grantAbility.ownedByYou && cardComponent.ownerId != playerId) continue
 
+            if (grantAbility.oncePerTurn &&
+                container.get<MayCastFromLinkedExileUsedThisTurnComponent>() != null
+            ) continue
+
+            if (grantAbility.exiledThisTurnOnly) {
+                val turn = cardContainer.get<ExileEntryTurnComponent>()?.turnNumber
+                if (turn == null || turn != state.turnNumber) continue
+            }
+
+            val maxManaValue = grantAbility.maxManaValue
+            if (maxManaValue != null) {
+                val cap = evaluateMaxManaValue(state, entityId, playerId, maxManaValue)
+                if (cardComponent.manaCost.cmc > cap) continue
+            }
+
             if (matchesCardFilter(cardComponent, grantAbility.filter)) {
-                return grantAbility
+                return LinkedExileGranter(entityId, grantAbility)
             }
         }
         return null
     }
+
+    private fun evaluateMaxManaValue(
+        state: GameState,
+        granterId: EntityId,
+        controllerId: EntityId,
+        amount: com.wingedsheep.sdk.scripting.values.DynamicAmount
+    ): Int {
+        val opponentId = state.turnOrder.firstOrNull { it != controllerId }
+        val context = EffectContext(
+            sourceId = granterId,
+            controllerId = controllerId,
+            opponentId = opponentId
+        )
+        return DynamicAmountEvaluator().evaluate(state, amount, context)
+    }
+
+    /** Pair returned by [findLinkedExileGranterEntry] — the granter permanent and its ability. */
+    data class LinkedExileGranter(
+        val granterId: EntityId,
+        val ability: GrantMayCastFromLinkedExile
+    )
 
     private fun findGraveyardPlayPermissionSource(
         state: GameState,

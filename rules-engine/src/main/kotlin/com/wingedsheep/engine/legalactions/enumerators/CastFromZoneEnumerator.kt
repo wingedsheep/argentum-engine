@@ -377,6 +377,24 @@ class CastFromZoneEnumerator : ActionEnumerator {
             // Timing restriction — e.g. Dawnhand Dissident's "during your turn"
             if (grantAbility.duringYourTurnOnly && state.activePlayerId != playerId) continue
 
+            // Once-per-turn restriction (Maralen, Fae Ascendant) — skip the granter entirely
+            // once it's already been used this turn.
+            if (grantAbility.oncePerTurn &&
+                container.get<com.wingedsheep.engine.state.components.battlefield.MayCastFromLinkedExileUsedThisTurnComponent>() != null
+            ) continue
+
+            // Resolve dynamic mana-value cap (e.g. "spell with mana value ≤ number of Elves
+            // and Faeries you control"). Computed once per granter.
+            val maxManaValueCap: Int? = grantAbility.maxManaValue?.let { amount ->
+                val opponentId = state.turnOrder.firstOrNull { it != playerId }
+                val effectContext = com.wingedsheep.engine.handlers.EffectContext(
+                    sourceId = entityId,
+                    controllerId = playerId,
+                    opponentId = opponentId
+                )
+                com.wingedsheep.engine.handlers.DynamicAmountEvaluator().evaluate(state, amount, effectContext)
+            }
+
             // Pre-compute additional-cost affordability for the granter's optional
             // additional cost (e.g. "remove three counters from your creatures").
             val (linkedAdditionalCostInfo, canPayLinkedAdditionalCost) = buildLinkedExileAdditionalCostInfo(
@@ -391,6 +409,15 @@ class CastFromZoneEnumerator : ActionEnumerator {
 
                 // Ownership restriction — "cards you own exiled with this creature"
                 if (grantAbility.ownedByYou && exiledCard.ownerId != playerId) continue
+
+                // "exiled with this permanent this turn" gating (Maralen, Fae Ascendant)
+                if (grantAbility.exiledThisTurnOnly) {
+                    val turn = exiledContainer.get<com.wingedsheep.engine.state.components.battlefield.ExileEntryTurnComponent>()?.turnNumber
+                    if (turn == null || turn != state.turnNumber) continue
+                }
+
+                // Mana-value cap (Maralen)
+                if (maxManaValueCap != null && exiledCard.manaCost.cmc > maxManaValueCap) continue
 
                 // Check filter (e.g., nonland)
                 val passesFilter = grantAbility.filter.cardPredicates.all { pred ->
@@ -429,7 +456,8 @@ class CastFromZoneEnumerator : ActionEnumerator {
                     val hasCorrectTiming = isInstant || context.canPlaySorcerySpeed
                     val castRestrictions = exiledCardDef?.script?.castRestrictions ?: emptyList()
                     val meetsRestrictions = context.castPermissionUtils.checkCastRestrictions(state, playerId, castRestrictions)
-                    val costString = run {
+                    val freeCastFromGranter = grantAbility.withoutPayingManaCost
+                    val costString = if (freeCastFromGranter) "0" else run {
                         val effectiveCost = if (exiledCardDef != null) {
                             context.costCalculator.calculateEffectiveCost(state, exiledCardDef, playerId)
                         } else {
@@ -437,7 +465,7 @@ class CastFromZoneEnumerator : ActionEnumerator {
                         }
                         effectiveCost.toString()
                     }
-                    val canAfford = run {
+                    val canAfford = if (freeCastFromGranter) true else run {
                         val effectiveCost = if (exiledCardDef != null) {
                             context.costCalculator.calculateEffectiveCost(state, exiledCardDef, playerId)
                         } else {

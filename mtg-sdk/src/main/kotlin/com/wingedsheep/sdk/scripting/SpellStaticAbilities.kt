@@ -2,6 +2,7 @@ package com.wingedsheep.sdk.scripting
 
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.scripting.text.TextReplacer
+import com.wingedsheep.sdk.scripting.values.DynamicAmount
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -106,22 +107,52 @@ data class GrantMayCastFromLinkedExile(
      * opponent's graveyard card is still permitted, but only the exiler can ever
      * cast it, not the granter, so those stripped cards sit in exile permanently.
      */
-    val ownedByYou: Boolean = false
+    val ownedByYou: Boolean = false,
+    /**
+     * When true, the spell may be cast without paying its mana cost
+     * (Maralen, Fae Ascendant). The spell still pays any other mandatory
+     * additional costs.
+     */
+    val withoutPayingManaCost: Boolean = false,
+    /**
+     * When true, this permission may be used at most once per turn. A successful
+     * cast marks the granter with [com.wingedsheep.engine.state.components.battlefield.MayCastFromLinkedExileUsedThisTurnComponent]
+     * (cleared at end of turn).
+     */
+    val oncePerTurn: Boolean = false,
+    /**
+     * Optional cap on the cast spell's mana value. The amount is evaluated each
+     * time legality is checked, so dynamic counts (e.g. "the number of Elves and
+     * Faeries you control") update live as the battlefield changes.
+     */
+    val maxManaValue: DynamicAmount? = null,
+    /**
+     * When true, only cards exiled this turn are eligible (Maralen). Checked via
+     * [com.wingedsheep.engine.state.components.battlefield.ExileEntryTurnComponent].
+     */
+    val exiledThisTurnOnly: Boolean = false
 ) : StaticAbility {
     override val description: String = buildString {
         if (duringYourTurnOnly) append("During your turn, y") else append("Y")
-        append("ou may cast ${filter.description} ")
+        if (oncePerTurn) append("ou may cast a ${filter.description} ")
+        else append("ou may cast ${filter.description} ")
+        if (maxManaValue != null) append("with mana value less than or equal to ${maxManaValue.description} ")
         if (ownedByYou) append("cards you own ")
+        else if (oncePerTurn) append("card ")
         else append("cards ")
         append("exiled with this permanent")
+        if (exiledThisTurnOnly) append(" this turn")
+        if (withoutPayingManaCost) append(" without paying its mana cost")
         if (additionalCost != null) append(" by ${additionalCost.description.lowercase()} in addition to paying their other costs")
+        if (oncePerTurn) append(". This ability may be used only once each turn")
         append(".")
     }
     override fun applyTextReplacement(replacer: TextReplacer): StaticAbility {
         val newFilter = filter.applyTextReplacement(replacer)
         val newAdditional = additionalCost?.applyTextReplacement(replacer)
-        if (newFilter === filter && newAdditional === additionalCost) return this
-        return copy(filter = newFilter, additionalCost = newAdditional)
+        val newMaxManaValue = maxManaValue?.applyTextReplacement(replacer)
+        if (newFilter === filter && newAdditional === additionalCost && newMaxManaValue === maxManaValue) return this
+        return copy(filter = newFilter, additionalCost = newAdditional, maxManaValue = newMaxManaValue)
     }
 }
 

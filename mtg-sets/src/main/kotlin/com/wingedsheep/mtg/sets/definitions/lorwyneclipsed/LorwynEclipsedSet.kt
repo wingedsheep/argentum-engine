@@ -86,6 +86,7 @@ object LorwynEclipsedSet {
         LochMare,
         Luminollusk,
         LysAlanaDignitary,
+        MaralenFaeAscendant,
         MerrowSkyswimmer,
         Mirrorform,
         MirrormindCrown,

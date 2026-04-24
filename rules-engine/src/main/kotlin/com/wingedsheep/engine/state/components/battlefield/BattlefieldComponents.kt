@@ -412,3 +412,22 @@ data object HasDealtCombatDamageToPlayerComponent : Component
 data class GraveyardEntryTurnComponent(
     val turnNumber: Int
 ) : Component
+
+/**
+ * Tracks the turn number when a card was put into exile.
+ * Used by effects like Maralen, Fae Ascendant whose static ability is gated to
+ * "cards exiled with this permanent this turn". Set automatically by
+ * GameState.addToZone when zone is EXILE.
+ */
+@Serializable
+data class ExileEntryTurnComponent(
+    val turnNumber: Int
+) : Component
+
+/**
+ * Marks a permanent as having had its [com.wingedsheep.sdk.scripting.GrantMayCastFromLinkedExile]
+ * permission used this turn. Used to enforce the `oncePerTurn` flag on that static ability
+ * (e.g., Maralen, Fae Ascendant). Cleared at end of turn by CleanupPhaseManager.
+ */
+@Serializable
+data object MayCastFromLinkedExileUsedThisTurnComponent : Component

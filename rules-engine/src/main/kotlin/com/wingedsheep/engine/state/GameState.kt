@@ -184,6 +184,11 @@ data class GameState(
                 c.with(GraveyardEntryTurnComponent(turnNumber))
             }
         }
+        if (key.zoneType == Zone.EXILE) {
+            newState = newState.updateEntity(entityId) { c ->
+                c.with(com.wingedsheep.engine.state.components.battlefield.ExileEntryTurnComponent(turnNumber))
+            }
+        }
         return newState
     }
 
