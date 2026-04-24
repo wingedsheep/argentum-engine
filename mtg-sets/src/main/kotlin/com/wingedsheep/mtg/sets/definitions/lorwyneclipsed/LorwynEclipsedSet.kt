@@ -118,6 +118,7 @@ object LorwynEclipsedSet {
         ShimmerwildsGrowth,
         Shinestriker,
         SilvergillPeddler,
+        SoulbrightSeeker,
         SpringleafDrum,
         SpryAndMighty,
         SteamVents,
