@@ -506,7 +506,8 @@ class TriggerDetector(
 
     /**
      * Match an event against a delayed-trigger TriggerSpec, scoped to a watched entity.
-     * Currently supports DealsDamageEvent (the only category that needs this today).
+     * Supports DealsDamageEvent (scoped on damage source) and ZoneChangeEvent
+     * (scoped on the moving entity — used for "when that creature dies this turn").
      */
     private fun matchesEventForWatchedEntity(
         spec: com.wingedsheep.sdk.scripting.TriggerSpec,
@@ -521,6 +522,14 @@ class TriggerDetector(
                 if (event !is com.wingedsheep.engine.core.DamageDealtEvent) return false
                 if (watchedEntityId != null && event.sourceId != watchedEntityId) return false
                 matcher.matchesDealsDamageTrigger(specEvent, event, state, controllerId)
+            }
+            is com.wingedsheep.sdk.scripting.GameEvent.ZoneChangeEvent -> {
+                if (event !is ZoneChangeEvent) return false
+                if (watchedEntityId != null && event.entityId != watchedEntityId) return false
+                if (specEvent.from != null && event.fromZone != specEvent.from) return false
+                if (specEvent.to != null && event.toZone != specEvent.to) return false
+                if (specEvent.excludeTo != null && event.toZone == specEvent.excludeTo) return false
+                true
             }
             else -> false
         }
