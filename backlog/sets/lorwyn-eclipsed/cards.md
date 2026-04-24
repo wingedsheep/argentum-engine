@@ -2,12 +2,12 @@
 
 **Set Size:** 273 cards (main set, per Scryfall `set:ecl`)
 **Release Date:** January 23, 2026
-**Implemented:** 127 / 273
+**Implemented:** 128 / 273
 
 | Color      | Total | Done |
 |------------|-------|------|
 | White      | 39    | 17   |
-| Blue       | 39    | 21   |
+| Blue       | 39    | 22   |
 | Black      | 38    | 17   |
 | Red        | 39    | 11   |
 | Green      | 39    | 21   |
@@ -97,7 +97,7 @@
 - [x] Tanufel Rimespeaker
 - [ ] Temporal Cleansing
 - [x] Thirst for Identity
-- [ ] Unexpected Assistance
+- [x] Unexpected Assistance
 - [x] Unwelcome Sprite
 - [ ] Wanderwine Distracter
 - [x] Wanderwine Farewell

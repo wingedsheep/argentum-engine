@@ -131,6 +131,7 @@ object LorwynEclipsedSet {
         TrystansCommand,
         TwilightDiviner,
         Tweeze,
+        UnexpectedAssistance,
         UnwelcomeSprite,
         Vibrance,
         VinebredBrawler,
