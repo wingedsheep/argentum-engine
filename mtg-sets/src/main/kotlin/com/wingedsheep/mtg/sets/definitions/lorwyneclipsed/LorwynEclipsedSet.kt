@@ -133,6 +133,7 @@ object LorwynEclipsedSet {
         TempleGarden,
         ThirstForIdentity,
         ThoughtweftCharge,
+        TributaryVaulter,
         TrystansCommand,
         TwilightDiviner,
         Tweeze,

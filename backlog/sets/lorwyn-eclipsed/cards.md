@@ -2,11 +2,11 @@
 
 **Set Size:** 273 cards (main set, per Scryfall `set:ecl`)
 **Release Date:** January 23, 2026
-**Implemented:** 133 / 273
+**Implemented:** 134 / 273
 
 | Color      | Total | Done |
 |------------|-------|------|
-| White      | 39    | 18   |
+| White      | 39    | 19   |
 | Blue       | 39    | 22   |
 | Black      | 38    | 17   |
 | Red        | 39    | 14   |
@@ -56,7 +56,7 @@
 - [x] Sun-Dappled Celebrant
 - [ ] Thoughtweft Imbuer
 - [ ] Timid Shieldbearer
-- [ ] Tributary Vaulter
+- [x] Tributary Vaulter
 - [x] Wanderbrine Preacher
 - [ ] Wanderbrine Trapper
 - [ ] Winnowing
