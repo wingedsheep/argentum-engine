@@ -2,7 +2,7 @@
 
 **Set Size:** 273 cards (main set, per Scryfall `set:ecl`)
 **Release Date:** January 23, 2026
-**Implemented:** 128 / 273
+**Implemented:** 129 / 273
 
 | Color      | Total | Done |
 |------------|-------|------|
@@ -11,7 +11,7 @@
 | Black      | 38    | 17   |
 | Red        | 39    | 11   |
 | Green      | 39    | 21   |
-| Multicolor | 49    | 26   |
+| Multicolor | 49    | 27   |
 | Colorless  | 18    | 4    |
 | Land       | 12    | 10   |
 
@@ -263,7 +263,7 @@
 - [x] Merrow Skyswimmer
 - [ ] Mischievous Sneakling
 - [x] Morcant's Loyalist
-- [ ] Noggle Robber
+- [x] Noggle Robber
 - [x] Prideful Feastling
 - [x] Raiding Schemes
 - [x] Reaping Willow

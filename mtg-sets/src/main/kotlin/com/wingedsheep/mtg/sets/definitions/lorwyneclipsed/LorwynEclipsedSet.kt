@@ -97,6 +97,7 @@ object LorwynEclipsedSet {
         Moonshadow,
         MutableExplorer,
         NamelessInversion,
+        NoggleRobber,
         NoggleTheMind,
         OmniChangeling,
         Personify,
