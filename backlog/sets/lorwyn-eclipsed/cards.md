@@ -2,11 +2,11 @@
 
 **Set Size:** 273 cards (main set, per Scryfall `set:ecl`)
 **Release Date:** January 23, 2026
-**Implemented:** 132 / 273
+**Implemented:** 133 / 273
 
 | Color      | Total | Done |
 |------------|-------|------|
-| White      | 39    | 17   |
+| White      | 39    | 18   |
 | Blue       | 39    | 22   |
 | Black      | 38    | 17   |
 | Red        | 39    | 14   |
@@ -33,7 +33,7 @@
 - [ ] Encumbered Reejerey
 - [x] Evershrike's Gift
 - [ ] Flock Impostor
-- [ ] Gallant Fowlknight
+- [x] Gallant Fowlknight
 - [x] Goldmeadow Nomad
 - [ ] Keep Out
 - [x] Kinbinding
