@@ -218,6 +218,11 @@ object ZoneTransitionService {
                 events.addAll(sagaEvents)
             }
             Zone.LIBRARY -> {
+                if (options.libraryPlacement is LibraryPlacement.Shuffled) {
+                    // Drop reveals on every other library card before mixing the new one in
+                    newState = com.wingedsheep.engine.handlers.effects.library.LibraryRevealUtils
+                        .clearLibraryReveals(newState, ownerId)
+                }
                 newState = placeInLibrary(newState, entityId, destZoneKey, options.libraryPlacement)
                 if (options.libraryPlacement is LibraryPlacement.Shuffled) {
                     events.add(com.wingedsheep.engine.core.LibraryShuffledEvent(ownerId))
@@ -351,6 +356,8 @@ object ZoneTransitionService {
                 state.getEntity(it)?.get<CardComponent>()?.ownerId
             }
             if (ownerId != null) {
+                currentState = com.wingedsheep.engine.handlers.effects.library.LibraryRevealUtils
+                    .clearLibraryReveals(currentState, ownerId)
                 val libraryZone = ZoneKey(ownerId, Zone.LIBRARY)
                 val library = currentState.getZone(libraryZone).shuffled()
                 currentState = currentState.copy(zones = currentState.zones + (libraryZone to library))

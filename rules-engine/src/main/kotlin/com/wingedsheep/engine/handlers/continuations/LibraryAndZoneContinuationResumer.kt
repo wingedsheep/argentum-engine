@@ -505,7 +505,13 @@ class LibraryAndZoneContinuationResumer(
             currentZone
         )
 
-        return checkForMore(transitionResult.state, transitionResult.events)
+        // The card was visible to everyone before the move (battlefield or stack) and the owner's
+        // choice of position was public, so all players know where it ended up. Mark it revealed
+        // to every player so each library viewer shows the card face-up at its new slot.
+        val finalState = com.wingedsheep.engine.handlers.effects.library.LibraryRevealUtils
+            .markRevealed(transitionResult.state, listOf(cardId), transitionResult.state.turnOrder.toSet())
+
+        return checkForMore(finalState, transitionResult.events)
     }
 
     /**
@@ -546,6 +552,11 @@ class LibraryAndZoneContinuationResumer(
             else -> currentLibrary + spellId
         }
         newState = newState.copy(zones = newState.zones + (libZoneKey to newLibrary))
+
+        // Both players watched the spell get placed at this position — mark it revealed to all
+        // so each side's library viewer shows it face-up at the new slot.
+        newState = com.wingedsheep.engine.handlers.effects.library.LibraryRevealUtils
+            .markRevealed(newState, listOf(spellId), newState.turnOrder.toSet())
 
         val events = listOf(
             SpellCounteredEvent(spellId, spellName),

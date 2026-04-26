@@ -100,7 +100,9 @@ class MulliganHandler {
             newState = newState.copy(zones = newState.zones + (libraryKey to library + listOf(cardId)))
         }
 
-        // 2. Shuffle library
+        // 2. Shuffle library (clearing any per-card reveals first)
+        newState = com.wingedsheep.engine.handlers.effects.library.LibraryRevealUtils
+            .clearLibraryReveals(newState, playerId)
         val shuffledLibrary = newState.getZone(libraryKey).shuffled()
         newState = newState.copy(zones = newState.zones + (libraryKey to shuffledLibrary))
         events.add(LibraryShuffledEvent(playerId))

@@ -14,6 +14,7 @@ import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.OwnerComponent
 import com.wingedsheep.sdk.core.Zone
+import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.effects.CardSource
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
@@ -186,9 +187,33 @@ class GatherCardsExecutor : EffectExecutor<GatherCardsEffect> {
             emptyList()
         }
 
-        return EffectResult.success(state, events).copy(
+        // Persist reveals for cards that came from a hidden zone (library/hand).
+        // - Public reveal (`revealed = true`) → revealed to every player.
+        // - Private look (Scry / Surveil / look-at-top-N) → revealed to the looking player only.
+        // Cards that move out of the library (e.g., to graveyard via Surveil) keep the component
+        // but it's harmless in public zones; if they re-enter the library the existing flag is
+        // still meaningful, and shuffles strip it.
+        val revealAudience: Set<EntityId> = when {
+            effect.revealed -> state.turnOrder.toSet()
+            isHiddenZoneSource(effect.source) -> setOf(context.controllerId)
+            else -> emptySet()
+        }
+        val newState = if (revealAudience.isNotEmpty()) {
+            LibraryRevealUtils.markRevealed(state, cards, revealAudience)
+        } else {
+            state
+        }
+
+        return EffectResult.success(newState, events).copy(
             updatedCollections = mapOf(effect.storeAs to cards)
         )
+    }
+
+    private fun isHiddenZoneSource(source: CardSource): Boolean = when (source) {
+        is CardSource.TopOfLibrary -> true
+        is CardSource.FromZone -> source.zone == Zone.LIBRARY || source.zone == Zone.HAND
+        is CardSource.FromMultipleZones -> source.zones.any { it == Zone.LIBRARY || it == Zone.HAND }
+        else -> false
     }
 
     private fun resolvePlayer(player: Player, context: EffectContext, state: GameState): com.wingedsheep.sdk.model.EntityId? {

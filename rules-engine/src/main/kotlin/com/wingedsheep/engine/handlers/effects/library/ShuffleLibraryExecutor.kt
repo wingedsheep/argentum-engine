@@ -27,11 +27,14 @@ class ShuffleLibraryExecutor : EffectExecutor<ShuffleLibraryEffect> {
             ?: return EffectResult.error(state, "No valid player for shuffle")
 
         val libraryZone = ZoneKey(targetId, Zone.LIBRARY)
-        val library = state.getZone(libraryZone).shuffled()
+        // Strip reveals before shuffling — once shuffled, no player can claim
+        // to know positions any more, even cards previously revealed via Scry/Surveil.
+        val cleared = LibraryRevealUtils.clearLibraryReveals(state, targetId)
+        val library = cleared.getZone(libraryZone).shuffled()
 
-        val newZones = state.zones + (libraryZone to library)
+        val newZones = cleared.zones + (libraryZone to library)
         return EffectResult.success(
-            state.copy(zones = newZones),
+            cleared.copy(zones = newZones),
             listOf(LibraryShuffledEvent(targetId))
         )
     }

@@ -548,9 +548,23 @@ class MoveCollectionExecutor(
         // Handle shuffled placement — shuffle once after all cards are placed
         if (destination.placement == ZonePlacement.Shuffled && destZone == Zone.LIBRARY) {
             val destZoneKey = ZoneKey(destPlayerId, Zone.LIBRARY)
+            // Strip reveals before shuffling — once shuffled, no one knows positions any more
+            newState = LibraryRevealUtils.clearLibraryReveals(newState, destPlayerId)
             val library = newState.getZone(destZoneKey)
             newState = newState.copy(zones = newState.zones + (destZoneKey to library.shuffled()))
             events.add(LibraryShuffledEvent(destPlayerId))
+        }
+
+        // Persist reveals when cards are moved into a library at a known position.
+        // The mover knows where each card landed; if revealed=true, everyone knows.
+        // (Shuffled placement is handled above and intentionally does NOT mark.)
+        if (destZone == Zone.LIBRARY && destination.placement != ZonePlacement.Shuffled && movedIds.isNotEmpty()) {
+            val audience: Set<EntityId> = if (revealed) {
+                newState.turnOrder.toSet()
+            } else {
+                setOf(context.controllerId)
+            }
+            newState = LibraryRevealUtils.markRevealed(newState, movedIds, audience)
         }
 
         // Emit discard event if configured

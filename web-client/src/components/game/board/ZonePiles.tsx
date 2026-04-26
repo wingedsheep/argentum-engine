@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useLayoutEffect, useRef } from 'react'
 import { useGameStore } from '@/store/gameStore.ts'
-import { useZoneCards, useStackCards } from '@/store/selectors.ts'
-import { graveyard, exile } from '@/types'
-import type { ClientCard, ClientPlayer } from '@/types'
+import { useZoneCards, useStackCards, useZone, selectGameState } from '@/store/selectors.ts'
+import { graveyard, exile, library } from '@/types'
+import type { ClientCard, ClientPlayer, EntityId } from '@/types'
 import { CARD_BACK_IMAGE_URL } from '@/utils/cardImages.ts'
 import { getCardImageUrl } from '@/utils/cardImages.ts'
 import { useResponsiveContext, handleImageError } from './shared'
@@ -24,10 +24,13 @@ export function ZonePile({ player, isOpponent = false }: { player: ClientPlayer;
   const topGraveyardCard = graveyardCards[graveyardCards.length - 1]
   const exileCards = useZoneCards(exile(player.playerId))
   const topExileCard = exileCards[exileCards.length - 1]
+  const libraryZone = useZone(library(player.playerId))
+  const libraryEntityIds = libraryZone?.cardIds ?? []
   const hoverCard = useGameStore((state) => state.hoverCard)
   const responsive = useResponsiveContext()
   const [browsingGraveyard, setBrowsingGraveyard] = useState(false)
   const [browsingExile, setBrowsingExile] = useState(false)
+  const [browsingLibrary, setBrowsingLibrary] = useState(false)
   const stackCards = useStackCards()
 
   // Shrink piles to fit the column's actual height. The viewport-derived
@@ -108,7 +111,11 @@ export function ZonePile({ player, isOpponent = false }: { player: ClientPlayer;
     <div ref={containerRef} style={{ ...styles.zonePile, gap: responsive.cardGap, minWidth: effectivePileWidth + 10, ...verticalOffset }}>
       {/* Library/Deck */}
       <div style={styles.zoneStack}>
-        <div data-zone={isOpponent ? 'opponent-library' : 'player-library'} style={{ ...styles.deckPile, ...pileStyle }}>
+        <div
+          data-zone={isOpponent ? 'opponent-library' : 'player-library'}
+          style={{ ...styles.deckPile, ...pileStyle, cursor: player.librarySize > 0 ? 'pointer' : 'default' }}
+          onClick={() => { if (player.librarySize > 0) setBrowsingLibrary(true) }}
+        >
           {player.librarySize > 0 ? (
             <img
               src={CARD_BACK_IMAGE_URL}
@@ -210,6 +217,13 @@ export function ZonePile({ player, isOpponent = false }: { player: ClientPlayer;
       )}
       {browsingExile && (
         <ExileBrowser cards={exileCards} onClose={() => setBrowsingExile(false)} />
+      )}
+      {browsingLibrary && (
+        <LibraryBrowser
+          ownerLabel={isOpponent ? "Opponent's Library" : 'Your Library'}
+          entityIds={libraryEntityIds}
+          onClose={() => setBrowsingLibrary(false)}
+        />
       )}
     </div>
   )
@@ -417,6 +431,204 @@ function ExileBrowser({ cards, onClose }: { cards: readonly ClientCard[], onClos
               padding: responsive.isMobile ? '10px 20px' : '12px 28px',
               fontSize: responsive.fontSize.normal,
               backgroundColor: '#7c3aed',
+              color: 'white',
+              border: 'none',
+              borderRadius: 8,
+              cursor: 'pointer',
+            }}
+          >
+            View Battlefield
+          </button>
+          <button
+            onClick={onClose}
+            style={{
+              padding: responsive.isMobile ? '10px 20px' : '12px 28px',
+              fontSize: responsive.fontSize.normal,
+              backgroundColor: '#333',
+              color: '#aaa',
+              border: '1px solid #555',
+              borderRadius: 8,
+              cursor: 'pointer',
+            }}
+          >
+            Close
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+/**
+ * Full-screen overlay for browsing a library.
+ *
+ * Cards that have been revealed to the viewer (Scry, Surveil, look-at-top-N, etc.)
+ * appear face-up in their library positions. All other slots render as card backs.
+ * The order matches the actual library order — top of deck first. A shuffle on the
+ * server clears all reveals, so a freshly shuffled library shows entirely face-down.
+ */
+function LibraryBrowser({
+  ownerLabel,
+  entityIds,
+  onClose,
+}: {
+  ownerLabel: string
+  entityIds: readonly EntityId[]
+  onClose: () => void
+}) {
+  const hoverCard = useGameStore((state) => state.hoverCard)
+  const cardsMap = useGameStore((state) => selectGameState(state)?.cards)
+  const responsive = useResponsiveContext()
+  const [minimized, setMinimized] = useState(false)
+
+  const cardWidth = responsive.isMobile ? 120 : 160
+  const cardHeight = Math.round(cardWidth * 1.4)
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        if (minimized) {
+          setMinimized(false)
+        } else {
+          onClose()
+        }
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [onClose, minimized])
+
+  if (minimized) {
+    return (
+      <button
+        onClick={() => setMinimized(false)}
+        style={{
+          position: 'fixed',
+          bottom: 70,
+          left: '50%',
+          transform: 'translateX(-50%)',
+          padding: responsive.isMobile ? '10px 16px' : '12px 24px',
+          fontSize: responsive.fontSize.normal,
+          backgroundColor: '#1e3a8a',
+          color: 'white',
+          border: 'none',
+          borderRadius: 8,
+          cursor: 'pointer',
+          fontWeight: 600,
+          boxShadow: '0 4px 12px rgba(0,0,0,0.4)',
+          zIndex: 100,
+          display: 'flex',
+          alignItems: 'center',
+          gap: 8,
+        }}
+      >
+        ↑ Return to Library
+      </button>
+    )
+  }
+
+  const revealedCount = entityIds.reduce((acc, id) => acc + (cardsMap?.[id] ? 1 : 0), 0)
+
+  return (
+    <div style={styles.libraryOverlay} onClick={onClose}>
+      <div style={styles.libraryBrowserContent} onClick={(e) => e.stopPropagation()}>
+        <div style={styles.libraryBrowserHeader}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+            <h2 style={styles.libraryBrowserTitle}>
+              {ownerLabel} ({entityIds.length}
+              {revealedCount > 0 ? ` · ${revealedCount} known` : ''})
+            </h2>
+            <span style={{ color: '#64748b', fontSize: 11, letterSpacing: 0.5 }}>
+              Reading order: top → bottom, left to right
+            </span>
+          </div>
+          <button style={styles.libraryCloseButton} onClick={onClose}>✕</button>
+        </div>
+        <div style={styles.libraryCardGrid}>
+          {entityIds.map((id, index) => {
+            const card = cardsMap?.[id]
+            const isTop = index === 0
+            const isBottom = index === entityIds.length - 1 && entityIds.length > 1
+            const accent = isTop ? '#fde68a' : isBottom ? '#fb923c' : null
+            return (
+              <div
+                key={id}
+                style={{
+                  width: cardWidth,
+                  height: cardHeight,
+                  borderRadius: 6,
+                  overflow: 'hidden',
+                  flexShrink: 0,
+                  position: 'relative',
+                  boxShadow: accent ? `0 0 0 2px ${accent}, 0 0 14px ${accent}66` : 'none',
+                }}
+                onMouseEnter={(e) => { if (card) hoverCard(card.id, { x: e.clientX, y: e.clientY }) }}
+                onMouseLeave={() => hoverCard(null)}
+              >
+                {card ? (
+                  <img
+                    src={getCardImageUrl(card.name, card.imageUri, 'normal')}
+                    alt={card.name}
+                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                    onError={(e) => handleImageError(e, card.name, 'normal')}
+                  />
+                ) : (
+                  <img
+                    src={CARD_BACK_IMAGE_URL}
+                    alt="Card back"
+                    style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: 0.85 }}
+                  />
+                )}
+                {/* Position badge — shown on every card */}
+                <div
+                  style={{
+                    position: 'absolute',
+                    top: 4,
+                    left: 4,
+                    fontSize: 10,
+                    color: '#bfdbfe',
+                    backgroundColor: 'rgba(0,0,0,0.65)',
+                    padding: '2px 6px',
+                    borderRadius: 3,
+                    pointerEvents: 'none',
+                  }}
+                >
+                  #{index + 1}
+                </div>
+                {/* Anchor banner across the bottom of the first/last card so orientation
+                    is unambiguous regardless of how the grid wraps */}
+                {accent && (
+                  <div
+                    style={{
+                      position: 'absolute',
+                      bottom: 0,
+                      left: 0,
+                      right: 0,
+                      backgroundColor: accent,
+                      color: '#1c1917',
+                      fontSize: 11,
+                      fontWeight: 700,
+                      letterSpacing: 1,
+                      textAlign: 'center',
+                      padding: '4px 0',
+                      textTransform: 'uppercase',
+                      pointerEvents: 'none',
+                    }}
+                  >
+                    {isTop ? 'Top · Next draw' : 'Bottom'}
+                  </div>
+                )}
+              </div>
+            )
+          })}
+        </div>
+        <div style={{ display: 'flex', gap: 16, marginTop: 16 }}>
+          <button
+            onClick={() => setMinimized(true)}
+            style={{
+              padding: responsive.isMobile ? '10px 20px' : '12px 28px',
+              fontSize: responsive.fontSize.normal,
+              backgroundColor: '#1e3a8a',
               color: 'white',
               border: 'none',
               borderRadius: 8,

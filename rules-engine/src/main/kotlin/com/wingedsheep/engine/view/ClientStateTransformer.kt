@@ -83,26 +83,31 @@ class ClientStateTransformer(
         for ((zoneKey, entityIds) in state.zones) {
             val isZoneVisible = isZoneVisibleTo(zoneKey, viewingPlayerId)
 
-            // For hidden zones (like opponent's hand), check which individual cards are revealed
-            val visibleCardIds = if (isZoneVisible) {
+            // For libraries we always send the full ordered list of entity IDs so the client can
+            // render a correctly sized stack. Individual card *details* are only populated for cards
+            // that have been revealed to the viewing player (Scry, Surveil, look-at-top-N, etc.).
+            // Unrevealed slots end up as opaque IDs the client renders as card backs.
+            val isLibrary = zoneKey.zoneType == Zone.LIBRARY
+            val cardsWithDetails = if (isZoneVisible) {
                 entityIds
             } else {
                 entityIds.filter { entityId ->
                     isCardRevealedTo(state, entityId, viewingPlayerId)
                 }
             }
+            val zoneCardIds = if (isLibrary) entityIds else cardsWithDetails
 
             zones.add(
                 ClientZone(
                     zoneId = zoneKey,
-                    cardIds = visibleCardIds,
+                    cardIds = zoneCardIds,
                     size = entityIds.size,
-                    isVisible = isZoneVisible || visibleCardIds.isNotEmpty()
+                    isVisible = isZoneVisible || cardsWithDetails.isNotEmpty() || isLibrary
                 )
             )
 
             // Include card details for visible cards (either whole zone visible, or individually revealed)
-            for (entityId in visibleCardIds) {
+            for (entityId in cardsWithDetails) {
                 val clientCard = transformCard(state, entityId, zoneKey, projectedState, viewingPlayerId, isSpectator)
                 if (clientCard != null) {
                     cards[entityId] = clientCard
