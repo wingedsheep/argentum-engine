@@ -117,6 +117,7 @@ object LorwynEclipsedSet {
         RiverguardsReflexes,
         SaplingNursery,
         ShadowUrchin,
+        Shimmercreep,
         ShimmerwildsGrowth,
         Shinestriker,
         SilvergillPeddler,
