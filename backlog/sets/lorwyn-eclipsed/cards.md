@@ -2,12 +2,12 @@
 
 **Set Size:** 273 cards (main set, per Scryfall `set:ecl`)
 **Release Date:** January 23, 2026
-**Implemented:** 168 / 273
+**Implemented:** 169 / 273
 
 | Color      | Total | Done |
 |------------|-------|------|
 | White      | 39    | 23   |
-| Blue       | 39    | 26   |
+| Blue       | 39    | 27   |
 | Black      | 38    | 25   |
 | Red        | 39    | 21   |
 | Green      | 39    | 24   |
@@ -81,7 +81,7 @@
 - [x] Mirrorform
 - [x] Noggle the Mind
 - [x] Omni-Changeling
-- [ ] Pestered Wellguard
+- [x] Pestered Wellguard
 - [x] Rime Chill
 - [x] Rimefire Torque
 - [ ] Rimekin Recluse

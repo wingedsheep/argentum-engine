@@ -128,6 +128,7 @@ object LorwynEclipsedSet {
         NoggleTheMind,
         OmniChangeling,
         Personify,
+        PesteredWellguard,
         PitilessFists,
         PridefulFeastling,
         ProtectiveResponse,
