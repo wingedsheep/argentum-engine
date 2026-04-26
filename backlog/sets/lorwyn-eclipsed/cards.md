@@ -2,14 +2,14 @@
 
 **Set Size:** 273 cards (main set, per Scryfall `set:ecl`)
 **Release Date:** January 23, 2026
-**Implemented:** 167 / 273
+**Implemented:** 168 / 273
 
 | Color      | Total | Done |
 |------------|-------|------|
 | White      | 39    | 23   |
 | Blue       | 39    | 26   |
 | Black      | 38    | 25   |
-| Red        | 39    | 20   |
+| Red        | 39    | 21   |
 | Green      | 39    | 24   |
 | Multicolor | 49    | 32   |
 | Colorless  | 18    | 7    |
@@ -150,7 +150,7 @@
 - [ ] Boneclub Berserker
 - [x] Boulder Dash
 - [x] Brambleback Brute
-- [ ] Burning Curiosity
+- [x] Burning Curiosity
 - [ ] Champion of the Path
 - [x] Cinder Strike
 - [ ] Collective Inferno

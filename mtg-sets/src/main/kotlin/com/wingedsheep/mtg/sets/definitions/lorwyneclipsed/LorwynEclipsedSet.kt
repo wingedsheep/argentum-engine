@@ -43,6 +43,7 @@ object LorwynEclipsedSet {
         BrigidClachansHeart,
         BrigidsCommand,
         BurdenedStoneback,
+        BurningCuriosity,
         Catharsis,
         ChampionOfTheWeird,
         ChampionsOfThePerfect,
