@@ -2,7 +2,7 @@
 
 **Set Size:** 273 cards (main set, per Scryfall `set:ecl`)
 **Release Date:** January 23, 2026
-**Implemented:** 170 / 273
+**Implemented:** 171 / 273
 
 | Color      | Total | Done |
 |------------|-------|------|
@@ -10,7 +10,7 @@
 | Blue       | 39    | 28   |
 | Black      | 38    | 25   |
 | Red        | 39    | 21   |
-| Green      | 39    | 24   |
+| Green      | 39    | 25   |
 | Multicolor | 49    | 32   |
 | Colorless  | 18    | 7    |
 | Land       | 12    | 10   |
@@ -205,7 +205,7 @@
 - [x] Great Forest Druid
 - [x] Luminollusk
 - [x] Lys Alana Dignitary
-- [ ] Lys Alana Informant
+- [x] Lys Alana Informant
 - [ ] Midnight Tilling
 - [ ] Mistmeadow Council
 - [ ] Moon-Vigil Adherents
