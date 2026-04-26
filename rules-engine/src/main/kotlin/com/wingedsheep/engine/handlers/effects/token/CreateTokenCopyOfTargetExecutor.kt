@@ -6,16 +6,22 @@ import com.wingedsheep.engine.handlers.DynamicAmountEvaluator
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.mechanics.layers.StaticAbilityHandler
+import com.wingedsheep.engine.event.GrantedTriggeredAbility
+import com.wingedsheep.engine.state.Component
 import com.wingedsheep.engine.state.ComponentContainer
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
+import com.wingedsheep.engine.state.components.battlefield.EnteredThisTurnComponent
 import com.wingedsheep.engine.state.components.battlefield.SummoningSicknessComponent
+import com.wingedsheep.engine.state.components.battlefield.TappedComponent
+import com.wingedsheep.engine.state.components.combat.AttackingComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.identity.TokenComponent
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.CreatureStats
 import com.wingedsheep.sdk.model.EntityId
+import com.wingedsheep.sdk.scripting.Duration
 import com.wingedsheep.sdk.scripting.effects.CreateTokenCopyOfTargetEffect
 import kotlin.reflect.KClass
 
@@ -65,12 +71,24 @@ class CreateTokenCopyOfTargetExecutor(
                 baseStats = overrideStats ?: targetCard.baseStats
             )
 
-            var container = ComponentContainer.of(
+            val components = mutableListOf<Component>(
                 tokenCard,
                 TokenComponent,
                 ControllerComponent(controllerId),
-                SummoningSicknessComponent
+                SummoningSicknessComponent,
+                EnteredThisTurnComponent
             )
+            if (effect.tapped) {
+                components.add(TappedComponent)
+            }
+            if (effect.attacking) {
+                val defenderId = newState.getOpponent(controllerId)
+                if (defenderId != null) {
+                    components.add(AttackingComponent(defenderId))
+                }
+            }
+
+            var container = ComponentContainer.of(*components.toTypedArray())
 
             if (staticAbilityHandler != null) {
                 container = staticAbilityHandler.addContinuousEffectComponent(container)
@@ -80,6 +98,17 @@ class CreateTokenCopyOfTargetExecutor(
             newState = newState.withEntity(tokenId, container)
             val battlefieldZone = ZoneKey(controllerId, Zone.BATTLEFIELD)
             newState = newState.addToZone(battlefieldZone, tokenId)
+
+            for (ability in effect.triggeredAbilities) {
+                val grant = GrantedTriggeredAbility(
+                    entityId = tokenId,
+                    ability = ability,
+                    duration = Duration.Permanent
+                )
+                newState = newState.copy(
+                    grantedTriggeredAbilities = newState.grantedTriggeredAbilities + grant
+                )
+            }
 
             events.add(
                 ZoneChangeEvent(

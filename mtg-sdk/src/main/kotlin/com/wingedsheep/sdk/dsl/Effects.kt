@@ -872,8 +872,19 @@ object Effects {
         target: EffectTarget,
         count: Int = 1,
         overridePower: Int? = null,
-        overrideToughness: Int? = null
-    ): Effect = CreateTokenCopyOfTargetEffect(target, DynamicAmount.Fixed(count), overridePower, overrideToughness)
+        overrideToughness: Int? = null,
+        tapped: Boolean = false,
+        attacking: Boolean = false,
+        triggeredAbilities: List<TriggeredAbility> = emptyList()
+    ): Effect = CreateTokenCopyOfTargetEffect(
+        target,
+        DynamicAmount.Fixed(count),
+        overridePower,
+        overrideToughness,
+        tapped,
+        attacking,
+        triggeredAbilities
+    )
 
     /**
      * Create a token that's a copy of the equipped creature.

@@ -84,6 +84,7 @@ object LorwynEclipsedSet {
         Graveshifter,
         GreatForestDruid,
         GristleGlutton,
+        GrubStoriedMatriarch,
         HallowedFountain,
         HarmonizedCrescendo,
         HeirloomAuntie,

@@ -136,7 +136,7 @@ constructors.
 - `Effects.CreateDynamicToken(dynamicPower, dynamicToughness, colors, creatureTypes, keywords, count = 1)` — token with P/T evaluated at resolution time
 - `Effects.CreateTokenCopyOfSelf(count = 1, overridePower = null, overrideToughness = null)` — create a token that's a copy of the source permanent (copies CardComponent + abilities via cardDefinitionId). For Offspring, use `overridePower = 1, overrideToughness = 1` to create a 1/1 copy.
 - `CreateTokenCopyOfChosenPermanentEffect(filter)` — choose a permanent you control matching filter during resolution, create a token copy. Used for "Choose an artifact or creature you control. Create a token that's a copy of it."
-- `Effects.CreateTokenCopyOfTarget(target, count = 1, overridePower = null, overrideToughness = null)` — create N token copies of a targeted permanent (target chosen at cast time). Use `overridePower`/`overrideToughness` for "except it's 1/1" effects.
+- `Effects.CreateTokenCopyOfTarget(target, count = 1, overridePower = null, overrideToughness = null, tapped = false, attacking = false, triggeredAbilities = emptyList())` — create N token copies of a targeted permanent or pipeline-selected permanent. Use `overridePower`/`overrideToughness` for "except it's 1/1" effects, `tapped`/`attacking` for combat token copies, and `triggeredAbilities` for extra copied-token text.
 - `Effects.CreateTreasure(count = 1)`
 - `Effects.CreateFood(count = 1, controller: EffectTarget? = null)` — create Food artifact tokens; `controller` overrides who gets the tokens (e.g., `PlayerRef(Player.EachOpponent)` for Gift a Food)
 

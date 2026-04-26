@@ -295,6 +295,9 @@ data class CreateTokenCopyOfChosenPermanentEffect(
  * @property count Number of copies to create (supports DynamicAmount for X spells)
  * @property overridePower Override the token's base power (null = copy source's power)
  * @property overrideToughness Override the token's base toughness (null = copy source's toughness)
+ * @property tapped Whether the copies enter tapped
+ * @property attacking Whether the copies enter attacking
+ * @property triggeredAbilities Additional triggered abilities granted to the copies
  */
 @SerialName("CreateTokenCopyOfTarget")
 @Serializable
@@ -302,13 +305,18 @@ data class CreateTokenCopyOfTargetEffect(
     val target: EffectTarget,
     val count: DynamicAmount = DynamicAmount.Fixed(1),
     val overridePower: Int? = null,
-    val overrideToughness: Int? = null
+    val overrideToughness: Int? = null,
+    val tapped: Boolean = false,
+    val attacking: Boolean = false,
+    val triggeredAbilities: List<TriggeredAbility> = emptyList()
 ) : Effect {
     override val description: String = buildString {
         append("Create ${count.description} token copies of target permanent")
         if (overridePower != null && overrideToughness != null) {
             append(", except they're $overridePower/$overrideToughness")
         }
+        if (tapped) append(" tapped")
+        if (attacking) append(" and attacking")
     }
 
     override fun applyTextReplacement(replacer: TextReplacer): Effect = this

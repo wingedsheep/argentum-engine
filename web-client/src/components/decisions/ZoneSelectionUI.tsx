@@ -20,6 +20,8 @@ interface ZoneSelectionUIProps {
   title: string
   /** Prompt describing what to select */
   prompt: string
+  /** Optional helper text explaining what the selected cards do */
+  helperText?: string
   /** Cards available for selection */
   cards: ZoneCardInfo[]
   /** Minimum number of cards to select */
@@ -38,6 +40,8 @@ interface ZoneSelectionUIProps {
   confirmText?: string
   /** Text for the fail to find button */
   failToFindText?: string
+  /** If true, the confirm button stays disabled until at least one card is selected */
+  confirmRequiresSelection?: boolean
   /** Whether to sort cards by type */
   sortByType?: boolean
   /** Use global hover preview (for cards that exist in gameState) */
@@ -63,6 +67,7 @@ interface ZoneSelectionUIProps {
 export function ZoneSelectionUI({
   title,
   prompt,
+  helperText,
   cards,
   minSelections,
   maxSelections,
@@ -72,6 +77,7 @@ export function ZoneSelectionUI({
   showFailToFind = false,
   confirmText = 'Confirm Selection',
   failToFindText = 'Fail to Find',
+  confirmRequiresSelection = false,
   sortByType = true,
   useGlobalHover = false,
   onCancel,
@@ -120,7 +126,9 @@ export function ZoneSelectionUI({
   }, [cards, sortByType])
 
   // Check if selection is valid
-  const canConfirm = selectedCards.length >= minSelections && selectedCards.length <= maxSelections
+  const canConfirm = selectedCards.length >= minSelections &&
+    selectedCards.length <= maxSelections &&
+    (!confirmRequiresSelection || selectedCards.length > 0)
 
   // Get hovered card info
   const hoveredCard = hoveredCardId ? cards.find((c) => c.id === hoveredCardId) : null
@@ -230,6 +238,20 @@ export function ZoneSelectionUI({
         >
           {prompt}
         </p>
+        {helperText && (
+          <p
+            style={{
+              color: '#fbbf24',
+              margin: '8px 0 0',
+              fontSize: responsive.fontSize.small,
+              fontWeight: 600,
+              maxWidth: 560,
+              lineHeight: 1.35,
+            }}
+          >
+            {helperText}
+          </p>
+        )}
       </div>
 
       {/* Selection counter */}
@@ -367,7 +389,7 @@ export function ZoneSelectionUI({
             transition: 'all 0.15s',
           }}
         >
-          {selectedCards.length === 0 && minSelections === 0 ? 'Decline' : confirmText}
+          {selectedCards.length === 0 && minSelections === 0 && !confirmRequiresSelection ? 'Decline' : confirmText}
         </button>
 
         {onCancel && (

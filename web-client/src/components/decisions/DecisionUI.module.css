@@ -664,6 +664,15 @@
   font-size: var(--font-md);
 }
 
+.decisionHelperText {
+  color: var(--color-highlight);
+  margin: var(--space-2) auto 0;
+  max-width: 560px;
+  font-size: var(--font-sm);
+  font-weight: var(--font-weight-semibold);
+  line-height: 1.35;
+}
+
 /* =========================================================================
  * Choose Option Decision (searchable list)
  * ========================================================================= */
@@ -895,4 +904,3 @@
 .zoneSectionSelected {
   color: var(--color-selected, #4ade80);
 }
-

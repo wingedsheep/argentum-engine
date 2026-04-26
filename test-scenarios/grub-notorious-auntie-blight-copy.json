@@ -1,0 +1,66 @@
+{
+  "player1Name": "Alice",
+  "player2Name": "Bob",
+  "player1": {
+    "lifeTotal": 20,
+    "hand": [
+      "Grub, Storied Matriarch"
+    ],
+    "battlefield": [
+      {
+        "name": "Grizzly Bears",
+        "summoningSickness": false
+      },
+      {
+        "name": "Swamp"
+      },
+      {
+        "name": "Swamp"
+      },
+      {
+        "name": "Swamp"
+      },
+      {
+        "name": "Mountain"
+      }
+    ],
+    "graveyard": [
+      "Goblin Sledder"
+    ],
+    "library": [
+      "Forest",
+      "Mountain",
+      "Swamp"
+    ]
+  },
+  "player2": {
+    "lifeTotal": 20,
+    "hand": [],
+    "battlefield": [
+      {
+        "name": "Hill Giant",
+        "summoningSickness": false
+      }
+    ],
+    "graveyard": [],
+    "library": [
+      "Forest",
+      "Mountain",
+      "Swamp"
+    ]
+  },
+  "phase": "PRECOMBAT_MAIN",
+  "step": "PRECOMBAT_MAIN",
+  "activePlayer": 1,
+  "priorityPlayer": 1,
+  "player1StopAtSteps": [
+    "PRECOMBAT_MAIN",
+    "DECLARE_ATTACKERS",
+    "END"
+  ],
+  "player2StopAtSteps": [
+    "DECLARE_BLOCKERS"
+  ],
+  "player1OpponentStopAtSteps": [],
+  "player2OpponentStopAtSteps": []
+}

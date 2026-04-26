@@ -2,7 +2,7 @@
 
 **Set Size:** 273 cards (main set, per Scryfall `set:ecl`)
 **Release Date:** January 23, 2026
-**Implemented:** 149 / 273
+**Implemented:** 150 / 273
 
 | Color      | Total | Done |
 |------------|-------|------|
@@ -12,7 +12,7 @@
 | Red        | 39    | 16   |
 | Green      | 39    | 23   |
 | Multicolor | 49    | 30   |
-| Colorless  | 18    | 4    |
+| Colorless  | 18    | 5    |
 | Land       | 12    | 10   |
 
 > **Note:** Before implementing any card, check the `effects/` directory in this folder for any
@@ -291,7 +291,7 @@
 - [ ] Firdoch Core
 - [ ] Foraging Wickermaw
 - [ ] Gathering Stone
-- [ ] Grub, Storied Matriarch // Grub, Notorious Auntie
+- [x] Grub, Storied Matriarch // Grub, Notorious Auntie
 - [x] Mirrormind Crown
 - [ ] Oko, Lorwyn Liege // Oko, Shadowmoor Scion
 - [ ] Puca's Eye

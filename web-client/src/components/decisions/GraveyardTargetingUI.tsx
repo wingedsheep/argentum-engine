@@ -85,6 +85,13 @@ export function GraveyardTargetingUI({
   const targetReq = decision.targetRequirements[0]
   const minTargets = targetReq?.minTargets ?? 1
   const maxTargets = targetReq?.maxTargets ?? 1
+  const isOptionalTarget = minTargets === 0
+  const sourceName = decision.context.sourceName ?? 'this ability'
+  const targetDescription = targetReq?.description ?? 'card from a graveyard'
+  const title = isOptionalTarget ? `Resolve ${sourceName}` : 'Choose from Graveyard'
+  const helperText = isOptionalTarget
+    ? `Optional: choose ${targetDescription} to return it to your hand, or decline to leave it in the graveyard.`
+    : `Choose ${targetDescription}.`
 
   // Lift selection state to persist across tab switches
   const [selectedCards, setSelectedCards] = useState<EntityId[]>([])
@@ -94,14 +101,18 @@ export function GraveyardTargetingUI({
   if (ownerIds.length <= 1) {
     return (
       <ZoneSelectionUI
-        title="Choose from Graveyard"
+        title={title}
         prompt={decision.prompt}
+        helperText={helperText}
         cards={cards}
         minSelections={minTargets}
         maxSelections={maxTargets}
         responsive={responsive}
         onConfirm={handleConfirm}
-        confirmText="Confirm Target"
+        confirmText={isOptionalTarget ? 'Return to Hand' : 'Confirm Target'}
+        showFailToFind={isOptionalTarget}
+        failToFindText="Decline Trigger"
+        confirmRequiresSelection={isOptionalTarget}
         sortByType={true}
         useGlobalHover={true}
         onCancel={decision.canCancel ? () => submitCancelDecision() : undefined}
@@ -127,10 +138,13 @@ export function GraveyardTargetingUI({
       {/* Header */}
       <div className={styles.header}>
         <h2 className={styles.title}>
-          Choose from Graveyard
+          {title}
         </h2>
         <p className={styles.headerSubtitle}>
           {decision.prompt}
+        </p>
+        <p className={styles.decisionHelperText}>
+          {helperText}
         </p>
       </div>
 
@@ -178,6 +192,9 @@ export function GraveyardTargetingUI({
         responsive={responsive}
         onConfirm={handleConfirm}
         onMinimize={() => setMinimized(true)}
+        confirmText={isOptionalTarget ? 'Return to Hand' : 'Confirm Target'}
+        declineText={isOptionalTarget ? 'Decline Trigger' : undefined}
+        confirmRequiresSelection={isOptionalTarget}
       />
     </div>
   )
@@ -196,6 +213,9 @@ function GraveyardCardSelection({
   responsive,
   onConfirm,
   onMinimize,
+  confirmText,
+  declineText,
+  confirmRequiresSelection,
 }: {
   cards: ZoneCardInfo[]
   selectedCards: EntityId[]
@@ -205,6 +225,9 @@ function GraveyardCardSelection({
   responsive: ResponsiveSizes
   onConfirm: (selectedCards: EntityId[]) => void
   onMinimize: () => void
+  confirmText: string
+  declineText?: string | undefined
+  confirmRequiresSelection: boolean
 }) {
   const [hoveredCardId, setHoveredCardId] = useState<EntityId | null>(null)
   const hoverCard = useGameStore((s) => s.hoverCard)
@@ -227,7 +250,9 @@ function GraveyardCardSelection({
     })
   }, [cards])
 
-  const canConfirm = selectedCards.length >= minSelections && selectedCards.length <= maxSelections
+  const canConfirm = selectedCards.length >= minSelections &&
+    selectedCards.length <= maxSelections &&
+    (!confirmRequiresSelection || selectedCards.length > 0)
 
   const availableWidth = responsive.viewportWidth - responsive.containerPadding * 2 - 64
   const gap = responsive.isMobile ? 8 : 12
@@ -326,8 +351,16 @@ function GraveyardCardSelection({
           disabled={!canConfirm}
           className={styles.confirmButton}
         >
-          {selectedCards.length === 0 && minSelections === 0 ? 'Decline' : 'Confirm Target'}
+          {selectedCards.length === 0 && minSelections === 0 && !confirmRequiresSelection ? 'Decline' : confirmText}
         </button>
+        {declineText && (
+          <button
+            onClick={() => onConfirm([])}
+            className={styles.noButton}
+          >
+            {declineText}
+          </button>
+        )}
       </div>
       {/* Card preview is handled by the global CardPreview component in GameBoard */}
     </>
