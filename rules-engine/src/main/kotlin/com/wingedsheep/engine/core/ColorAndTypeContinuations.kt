@@ -52,6 +52,18 @@ data class ChooseColorProtectionTargetContinuation(
 ) : ContinuationFrame
 
 /**
+ * Resume after a player chooses a color to store on a permanent.
+ */
+@Serializable
+data class ChooseColorForTargetContinuation(
+    override val decisionId: String,
+    val controllerId: EntityId,
+    val sourceId: EntityId?,
+    val sourceName: String?,
+    val targetEntityId: EntityId
+) : ContinuationFrame
+
+/**
  * Resume after player chooses the FROM creature type for text replacement.
  *
  * Used for Artificial Evolution: "Change the text of target spell or permanent

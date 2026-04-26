@@ -121,6 +121,7 @@ object LorwynEclipsedSet {
         PridefulFeastling,
         ProtectiveResponse,
         PrismaticUndercurrents,
+        PucasEye,
         PummelerForHire,
         RaidingSchemes,
         ReapingWillow,

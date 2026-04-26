@@ -91,6 +91,7 @@ constructors.
 - `Effects.Proliferate()` — choose any number of permanents and/or players that have a counter, then give each another counter of each kind already there
 
 - `Effects.AddSubtype(subtype, target, duration = EndOfTurn)` — add a subtype to any permanent (creature, land, etc.) in addition to its other types; supports `fromChosenValueKey` for pipeline composition with `ChooseOptionEffect(BASIC_LAND_TYPE)`
+- `Effects.ChooseColorForTarget(target = Self, prompt = "Choose a color")` — choose a color during resolution and store it on a target permanent for chosen-color static abilities
 
 ### Mass Effects (group)
 
@@ -301,6 +302,7 @@ constructors.
 | `SetCreatureSubtypesEffect`                 | `subtypes, target, duration`                                                | Set single target subtypes               |
 | `SetGroupCreatureSubtypesEffect`            | `subtypes, filter, duration`                                                | Set group subtypes                       |
 | `ChangeGroupColorEffect`                    | `colors, filter, duration`                                                  | Change group color                       |
+| `ChooseColorForTargetEffect`                | `target, prompt`                                                            | Choose and store color on a permanent    |
 | `ChooseCreatureTypeModifyStatsEffect`       | `power: DynamicAmount, toughness: DynamicAmount, duration, grantKeyword?`   | Choose type, modify stats (+ keyword)    |
 | `Effects.ChooseCreatureTypeUntap()`         | (pipeline pattern)                                                          | Choose type, untap all of that type      |
 | `GainControlEffect`                         | `target, duration`                                                          | Gain control                             |

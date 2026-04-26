@@ -9,6 +9,7 @@ import com.wingedsheep.engine.mechanics.layers.SerializableModification
 import com.wingedsheep.engine.mechanics.layers.addFloatingEffect
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.identity.CardComponent
+import com.wingedsheep.engine.state.components.identity.ChosenColorComponent
 import com.wingedsheep.engine.state.components.identity.FaceDownComponent
 import com.wingedsheep.sdk.model.EntityId
 
@@ -18,7 +19,8 @@ class ColorChoiceContinuationResumer(
 
     override fun resumers(): List<ContinuationResumer<*>> = listOf(
         resumer(ChooseColorProtectionContinuation::class, ::resumeChooseColorProtection),
-        resumer(ChooseColorProtectionTargetContinuation::class, ::resumeChooseColorProtectionTarget)
+        resumer(ChooseColorProtectionTargetContinuation::class, ::resumeChooseColorProtectionTarget),
+        resumer(ChooseColorForTargetContinuation::class, ::resumeChooseColorForTarget)
     )
 
     fun resumeChooseColorProtection(
@@ -130,5 +132,27 @@ class ColorChoiceContinuationResumer(
         )
 
         return checkForMore(newState, events)
+    }
+
+    fun resumeChooseColorForTarget(
+        state: GameState,
+        continuation: ChooseColorForTargetContinuation,
+        response: DecisionResponse,
+        checkForMore: CheckForMore
+    ): ExecutionResult {
+        if (response !is ColorChosenResponse) {
+            return ExecutionResult.error(state, "Expected color choice response")
+        }
+
+        val targetId = continuation.targetEntityId
+        if (!state.getBattlefield().contains(targetId) || state.getEntity(targetId) == null) {
+            return checkForMore(state, emptyList())
+        }
+
+        val newState = state.updateEntity(targetId) { container ->
+            container.with(ChosenColorComponent(response.color))
+        }
+
+        return checkForMore(newState, emptyList())
     }
 }

@@ -83,6 +83,7 @@ import com.wingedsheep.sdk.scripting.effects.RepeatCondition
 import com.wingedsheep.sdk.scripting.effects.RepeatWhileEffect
 import com.wingedsheep.sdk.scripting.effects.ReplaceNextDrawWithEffect
 import com.wingedsheep.sdk.scripting.effects.ChooseOptionEffect
+import com.wingedsheep.sdk.scripting.effects.ChooseColorForTargetEffect
 import com.wingedsheep.sdk.scripting.effects.OptionType
 import com.wingedsheep.sdk.scripting.effects.SelectTargetEffect
 import com.wingedsheep.sdk.scripting.effects.SeparatePermanentsIntoPilesEffect
@@ -722,6 +723,12 @@ object Effects {
      */
     fun AddSubtype(subtype: String, target: EffectTarget, duration: Duration = Duration.EndOfTurn): Effect =
         AddSubtypeEffect(subtype, target, duration)
+
+    /** Choose a color and store it on a target permanent. */
+    fun ChooseColorForTarget(
+        target: EffectTarget = EffectTarget.Self,
+        prompt: String = "Choose a color"
+    ): Effect = ChooseColorForTargetEffect(target, prompt)
 
     /**
      * Set a creature's base power to a dynamic value.

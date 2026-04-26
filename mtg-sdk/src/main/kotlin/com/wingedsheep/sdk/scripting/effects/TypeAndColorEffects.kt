@@ -238,6 +238,23 @@ data class ChangeGroupColorEffect(
 }
 
 /**
+ * Choose a color and store that choice on a target permanent.
+ *
+ * Used by permanents that make a color choice during resolution, rather than as
+ * they enter, and then have static abilities reading the chosen color.
+ */
+@SerialName("ChooseColorForTarget")
+@Serializable
+data class ChooseColorForTargetEffect(
+    val target: EffectTarget = EffectTarget.Self,
+    val prompt: String = "Choose a color"
+) : Effect {
+    override val description: String = prompt
+
+    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
+}
+
+/**
  * Change the text of target spell or permanent by replacing all instances of one
  * creature type with another.
  * (This effect lasts indefinitely.)
