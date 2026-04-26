@@ -57,7 +57,8 @@ val EclipsedMerrow = card("Eclipsed Merrow") {
                     storeSelected = "kept",
                     storeRemainder = "rest",
                     selectedLabel = "Put in hand",
-                    remainderLabel = "Put on bottom"
+                    remainderLabel = "Put on bottom",
+                    showAllCards = true
                 ),
                 MoveCollectionEffect(
                     from = "kept",
