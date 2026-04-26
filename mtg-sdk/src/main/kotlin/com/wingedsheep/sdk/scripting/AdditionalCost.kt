@@ -223,7 +223,9 @@ sealed interface AdditionalCost : TextReplaceable<AdditionalCost> {
         val blightAmount: Int,
         val alternativeManaCost: String
     ) : AdditionalCost {
-        override val description: String = "Blight $blightAmount or pay $alternativeManaCost"
+        override val description: String =
+            if (alternativeManaCost.isBlank()) "you may blight $blightAmount"
+            else "Blight $blightAmount or pay $alternativeManaCost"
         override fun applyTextReplacement(replacer: TextReplacer): AdditionalCost = this
     }
 

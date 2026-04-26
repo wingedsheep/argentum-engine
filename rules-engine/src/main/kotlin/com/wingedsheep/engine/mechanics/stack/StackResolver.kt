@@ -101,6 +101,7 @@ class StackResolver(
         chosenCreatureType: String? = null,
         exiledCardCount: Int = 0,
         wasKicked: Boolean = false,
+        wasBlightPaid: Boolean = false,
         wasWarped: Boolean = false,
         wasEvoked: Boolean = false,
         chosenModes: List<Int> = emptyList(),
@@ -148,6 +149,7 @@ class StackResolver(
                 casterId = casterId,
                 xValue = xValue,
                 wasKicked = wasKicked,
+                wasBlightPaid = wasBlightPaid,
                 chosenModes = chosenModes,
                 modeTargetsOrdered = modeTargetsOrdered,
                 modeTargetRequirements = modeTargetRequirements,
@@ -348,8 +350,8 @@ class StackResolver(
         val copiedCardComp = sourceCard.copy(ownerId = copyController)
 
         // Clone cast-time state; per 707.7c the copy inherits every decision made for
-        // the original. The data-class copy preserves: xValue, wasKicked, wasWarped,
-        // wasEvoked, sacrificedPermanents (snapshots of P/T + subtypes), damageDistribution,
+        // the original. The data-class copy preserves: xValue, wasKicked, wasBlightPaid,
+        // wasWarped, wasEvoked, sacrificedPermanents (snapshots of P/T + subtypes), damageDistribution,
         // chosenCreatureType, exiledCardCount, castFromZone, beheldCards, and the
         // manaSpent{White,Blue,Black,Red,Green,Colorless} colors. Only the caster
         // (copy controller) and modal fields (which the caller may retarget) are
@@ -990,6 +992,7 @@ class StackResolver(
                 targets = targets,
                 xValue = spellComponent.xValue,
                 wasKicked = spellComponent.wasKicked,
+                wasBlightPaid = spellComponent.wasBlightPaid,
                 sacrificedPermanents = spellComponent.sacrificedPermanents,
                 damageDistribution = spellComponent.damageDistribution,
                 chosenModes = spellComponent.chosenModes,

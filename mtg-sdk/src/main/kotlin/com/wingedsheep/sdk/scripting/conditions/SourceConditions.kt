@@ -138,6 +138,23 @@ data object WasKicked : Condition {
 }
 
 /**
+ * Condition: "If this spell's blight additional cost was paid"
+ * Used for Lorwyn Eclipsed cards (e.g., Cinder Strike) where the effect changes
+ * based on whether the optional Blight additional cost was actually paid.
+ *
+ * Pairs with [com.wingedsheep.sdk.scripting.AdditionalCost.BlightOrPay] — true when
+ * the blight path was chosen during casting (a creature was selected and given
+ * -1/-1 counters as part of the cost), false when the spell was cast without
+ * paying blight.
+ */
+@SerialName("BlightWasPaid")
+@Serializable
+data object BlightWasPaid : Condition {
+    override val description: String = "this spell's additional cost was paid"
+    override fun applyTextReplacement(replacer: TextReplacer): Condition = this
+}
+
+/**
  * Condition: "If {W}{W} was spent to cast it" (mana-spent gating)
  * Used for Lorwyn Incarnation cycle (Catharsis, Deceit, Emptiness, etc.)
  * where ETB triggers are gated on specific mana colors spent to cast.

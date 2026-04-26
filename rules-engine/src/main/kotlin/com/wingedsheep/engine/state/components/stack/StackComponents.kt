@@ -17,6 +17,7 @@ data class SpellOnStackComponent(
     val casterId: EntityId,
     val xValue: Int? = null,  // For X spells
     val wasKicked: Boolean = false,  // For kicker costs
+    val wasBlightPaid: Boolean = false,  // For BlightOrPay additional cost — true if blight path was taken
     val chosenModes: List<Int> = emptyList(),  // For modal spells (700.2). Ordered; same index may repeat when allowRepeat.
     val modeTargetsOrdered: List<List<ChosenTarget>> = emptyList(),  // Per-mode chosen targets, aligned 1:1 with chosenModes
     val modeTargetRequirements: Map<Int, List<TargetRequirement>> = emptyMap(),  // Per-mode TargetRequirements for 608.2b re-validation at resolution

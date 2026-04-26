@@ -70,6 +70,7 @@ import com.wingedsheep.sdk.scripting.conditions.IsFirstSpellOfTypeCastThisTurn
 import com.wingedsheep.sdk.scripting.conditions.SourceAbilityResolvedNTimesThisTurn
 import com.wingedsheep.sdk.scripting.conditions.ManaSpentToCastIncludes
 import com.wingedsheep.sdk.scripting.conditions.WasKicked
+import com.wingedsheep.sdk.scripting.conditions.BlightWasPaid
 import com.wingedsheep.sdk.scripting.conditions.YouControlSource
 import com.wingedsheep.sdk.scripting.conditions.YouAttackedThisTurn
 import com.wingedsheep.sdk.scripting.conditions.YouWereAttackedThisStep
@@ -105,6 +106,7 @@ class ConditionEvaluator {
             is WasCastFromHand -> evaluateWasCastFromHand(state, context)
             is WasCastFromZone -> evaluateWasCastFromZone(state, condition, context)
             is WasKicked -> evaluateWasKicked(state, context)
+            is BlightWasPaid -> context.wasBlightPaid
             is ManaSpentToCastIncludes -> evaluateManaSpentToCastIncludes(state, condition, context)
             is SourceIsAttacking -> evaluateSourceAttacking(state, context)
             is SourceIsBlocking -> evaluateSourceBlocking(state, context)

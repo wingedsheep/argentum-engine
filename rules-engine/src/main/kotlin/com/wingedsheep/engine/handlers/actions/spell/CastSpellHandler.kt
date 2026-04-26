@@ -1636,6 +1636,7 @@ class CastSpellHandler(
             targetRequirements = spellTargetRequirements,
             exiledCardCount = exiledCardCount,
             wasKicked = action.wasKicked,
+            wasBlightPaid = (action.additionalCostPayment?.blightTargets?.isNotEmpty() == true),
             wasWarped = wasWarped,
             wasEvoked = wasEvoked,
             chosenModes = action.chosenModes,

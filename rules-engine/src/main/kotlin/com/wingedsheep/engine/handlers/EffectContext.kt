@@ -28,6 +28,8 @@ data class EffectContext(
     val targets: List<ChosenTarget> = emptyList(),
     val xValue: Int? = null,
     val wasKicked: Boolean = false,
+    /** True if the spell's optional Blight additional cost was paid (BlightOrPay path chosen). */
+    val wasBlightPaid: Boolean = false,
     // --- Cast-time state ---
     /**
      * Projected snapshots of permanents sacrificed as part of the cost (Rule 112.7a /

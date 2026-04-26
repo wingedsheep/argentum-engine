@@ -50,6 +50,7 @@ object LorwynEclipsedSet {
         ChitinousGraspling,
         ChompingChangeling,
         ChronicleOfVictory,
+        CinderStrike,
         ClachanFestival,
         CreakwoodSafewright,
         CribSwap,

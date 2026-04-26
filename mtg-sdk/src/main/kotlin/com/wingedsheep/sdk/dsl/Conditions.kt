@@ -15,6 +15,7 @@ import com.wingedsheep.sdk.scripting.conditions.NotCondition
 import com.wingedsheep.sdk.scripting.conditions.WasCastFromHand as WasCastFromHandCondition
 import com.wingedsheep.sdk.scripting.conditions.WasCastFromZone as WasCastFromZoneCondition
 import com.wingedsheep.sdk.scripting.conditions.WasKicked as WasKickedCondition
+import com.wingedsheep.sdk.scripting.conditions.BlightWasPaid as BlightWasPaidCondition
 import com.wingedsheep.sdk.scripting.conditions.SourceIsAttacking as SourceIsAttackingCondition
 import com.wingedsheep.sdk.scripting.conditions.SourceIsBlocking as SourceIsBlockingCondition
 import com.wingedsheep.sdk.scripting.conditions.SourceIsTapped as SourceIsTappedCondition
@@ -292,6 +293,14 @@ object Conditions {
      */
     val WasKicked: ConditionInterface =
         WasKickedCondition
+
+    /**
+     * If this spell's blight additional cost was paid (`AdditionalCost.BlightOrPay`).
+     * Used for cards like Cinder Strike whose effect changes when the optional
+     * Blight path was chosen during casting.
+     */
+    val BlightWasPaid: ConditionInterface =
+        BlightWasPaidCondition
 
     /**
      * If specific colored mana was spent to cast this spell.
