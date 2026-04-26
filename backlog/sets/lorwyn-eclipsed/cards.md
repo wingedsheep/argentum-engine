@@ -2,13 +2,13 @@
 
 **Set Size:** 273 cards (main set, per Scryfall `set:ecl`)
 **Release Date:** January 23, 2026
-**Implemented:** 141 / 273
+**Implemented:** 142 / 273
 
 | Color      | Total | Done |
 |------------|-------|------|
 | White      | 39    | 19   |
 | Blue       | 39    | 22   |
-| Black      | 38    | 22   |
+| Black      | 38    | 23   |
 | Red        | 39    | 14   |
 | Green      | 39    | 21   |
 | Multicolor | 49    | 29   |
@@ -112,7 +112,7 @@
 - [x] Blight Rot
 - [ ] Blighted Blackthorn
 - [x] Bloodline Bidding
-- [ ] Boggart Mischief
+- [x] Boggart Mischief
 - [x] Boggart Prankster
 - [x] Bogslither's Embrace
 - [x] Champion of the Weird
