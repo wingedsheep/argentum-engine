@@ -27,6 +27,7 @@ class MiscContinuationResumer(
         resumer(StormCopyModalTargetContinuation::class, ::resumeStormCopyModalTarget),
         resumer(CopyTriggeredAbilityTargetContinuation::class, ::resumeCopyTriggeredAbilityTarget),
         resumer(DistributeCountersContinuation::class, ::resumeDistributeCounters),
+        resumer(ProliferateContinuation::class, ::resumeProliferate),
         resumer(AddDynamicManaContinuation::class, ::resumeAddDynamicMana),
         resumer(ReturnFromLinkedExileContinuation::class) { state, continuation, response, checkForMore ->
             resumeReturnFromLinkedExile(state, continuation, response, checkForMore)
@@ -396,6 +397,61 @@ class MiscContinuationResumer(
             .returnCardToBattlefield(state, selectedCard, continuation.sourceId)
 
         return checkForMore(result.state, result.events)
+    }
+
+    private fun resumeProliferate(
+        state: GameState,
+        continuation: ProliferateContinuation,
+        response: DecisionResponse,
+        checkForMore: CheckForMore
+    ): ExecutionResult {
+        if (response !is CardsSelectedResponse) {
+            return ExecutionResult.error(state, "Expected cards-selected response for Proliferate")
+        }
+
+        val chosen = response.selectedCards.filter { it in continuation.eligibleEntities }
+        if (chosen.isEmpty()) {
+            return checkForMore(state, emptyList())
+        }
+
+        var newState = state
+        val events = mutableListOf<GameEvent>()
+
+        for (entityId in chosen) {
+            val current = newState.getEntity(entityId)
+                ?.get<com.wingedsheep.engine.state.components.battlefield.CountersComponent>()
+                ?: continue
+            // Snapshot the kinds present at decision time per the entity's current state.
+            val kinds = current.counters.filterValues { it > 0 }.keys.toList()
+            if (kinds.isEmpty()) continue
+
+            val entityName = newState.getEntity(entityId)
+                ?.get<com.wingedsheep.engine.state.components.identity.CardComponent>()?.name ?: ""
+
+            for (counterType in kinds) {
+                val modifiedAmount = ReplacementEffectUtils.applyCounterPlacementModifiers(
+                    newState, entityId, counterType, 1, placerId = continuation.controllerId
+                )
+                if (modifiedAmount <= 0) continue
+
+                val before = newState.getEntity(entityId)
+                    ?.get<com.wingedsheep.engine.state.components.battlefield.CountersComponent>()
+                    ?: com.wingedsheep.engine.state.components.battlefield.CountersComponent()
+                newState = newState.updateEntity(entityId) { container ->
+                    container.with(before.withAdded(counterType, modifiedAmount))
+                }
+                events.add(
+                    CountersAddedEvent(
+                        entityId,
+                        com.wingedsheep.engine.handlers.effects.permanent.counters.counterTypeToString(counterType),
+                        modifiedAmount,
+                        entityName
+                    )
+                )
+            }
+        }
+
+        return checkForMore(newState, events)
     }
 
     private fun resumeAddDynamicMana(

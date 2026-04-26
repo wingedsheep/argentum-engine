@@ -85,6 +85,7 @@ object LorwynEclipsedSet {
         HallowedFountain,
         HarmonizedCrescendo,
         HeirloomAuntie,
+        HighPerfectMorcant,
         HovelHurler,
         ImpoliteEntrance,
         Kinbinding,

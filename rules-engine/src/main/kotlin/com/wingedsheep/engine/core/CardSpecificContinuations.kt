@@ -72,6 +72,23 @@ data class DistributeCountersContinuation(
 ) : ContinuationFrame
 
 /**
+ * Resume after the controller picks the permanents and/or players that should
+ * each receive another counter of each kind already on them (Proliferate).
+ *
+ * @property controllerId The player resolving the proliferate
+ * @property eligibleEntities The permanents/players that had at least one counter
+ *                            when the decision was offered. Used to discard stale
+ *                            selections and to defend against the response naming
+ *                            an entity that had no counters at decision time.
+ */
+@Serializable
+data class ProliferateContinuation(
+    override val decisionId: String,
+    val controllerId: EntityId,
+    val eligibleEntities: List<EntityId>
+) : ContinuationFrame
+
+/**
  * Resume creating a copy of a triggered ability after the player selects new targets.
  *
  * Used by Kirol-style effects ("Copy target triggered ability you control. You may choose

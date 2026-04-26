@@ -689,6 +689,13 @@ object Effects {
         com.wingedsheep.sdk.scripting.effects.DistributeCountersAmongTargetsEffect(totalCounters, counterType, minPerTarget)
 
     /**
+     * Proliferate — choose any number of permanents and/or players with counters,
+     * then give each another counter of each kind already there.
+     */
+    fun Proliferate(): Effect =
+        com.wingedsheep.sdk.scripting.effects.ProliferateEffect
+
+    /**
      * Add a card type to a target permanent.
      * "That creature becomes an artifact in addition to its other types."
      */

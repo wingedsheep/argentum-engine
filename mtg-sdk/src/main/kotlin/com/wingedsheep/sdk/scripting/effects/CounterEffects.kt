@@ -127,6 +127,25 @@ data class DistributeCountersFromSelfEffect(
 }
 
 /**
+ * Proliferate — choose any number of permanents and/or players that have a counter.
+ * For each, give it another counter of each kind already there.
+ *
+ * Pure data; the engine resolves at execution time by:
+ * 1. Gathering all permanents on the battlefield AND all players that have at least
+ *    one counter of any kind.
+ * 2. Asking the controller to pick a subset (any number, including zero).
+ * 3. For each chosen entity, adding one counter of every kind it already has.
+ */
+@SerialName("Proliferate")
+@Serializable
+data object ProliferateEffect : Effect {
+    override val description: String =
+        "Proliferate. (Choose any number of permanents and/or players, then give each another counter of each kind already there.)"
+
+    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
+}
+
+/**
  * Distribute a fixed number of counters among the targets from context.
  * "Distribute N counters among one or more target creatures you control."
  *

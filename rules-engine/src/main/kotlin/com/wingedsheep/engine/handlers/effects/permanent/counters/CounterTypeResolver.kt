@@ -26,3 +26,13 @@ internal fun resolveCounterType(counterType: String): CounterType = when (counte
         CounterType.PLUS_ONE_PLUS_ONE
     }
 }
+
+/**
+ * Convert a [CounterType] enum back to the wire-format string used on counter
+ * events and effect data classes (e.g., `PLUS_ONE_PLUS_ONE` → `"+1/+1"`).
+ */
+internal fun counterTypeToString(counterType: CounterType): String = when (counterType) {
+    CounterType.PLUS_ONE_PLUS_ONE -> "+1/+1"
+    CounterType.MINUS_ONE_MINUS_ONE -> "-1/-1"
+    else -> counterType.name.lowercase()
+}

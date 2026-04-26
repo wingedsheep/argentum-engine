@@ -88,6 +88,7 @@ constructors.
 - `Effects.AnimateLand(target, power, toughness, duration)` — turn land into creature
 - `Effects.DistributeCountersFromSelf(counterType)` — move counters from self to other creatures (player chooses)
 - `Effects.DistributeCountersAmongTargets(totalCounters, counterType, minPerTarget)` — distribute N counters among targets from context (deterministic distribution)
+- `Effects.Proliferate()` — choose any number of permanents and/or players that have a counter, then give each another counter of each kind already there
 
 - `Effects.AddSubtype(subtype, target, duration = EndOfTurn)` — add a subtype to any permanent (creature, land, etc.) in addition to its other types; supports `fromChosenValueKey` for pipeline composition with `ChooseOptionEffect(BASIC_LAND_TYPE)`
 
@@ -313,6 +314,7 @@ constructors.
 | `AnimateLandEffect`                         | `target, power, toughness, duration`                                        | Animate land                             |
 | `DistributeCountersFromSelfEffect`          | `counterType`                                                               | Move counters from self to other creatures |
 | `DistributeCountersAmongTargetsEffect`      | `totalCounters, counterType, minPerTarget`                                  | Distribute N counters among targets        |
+| `ProliferateEffect`                         | (data object)                                                               | Add one of each existing counter kind to any number of chosen permanents/players |
 | `TurnFaceDownEffect`                        | `target`                                                                    | Turn face down                           |
 | `TurnFaceUpEffect`                          | `target`                                                                    | Turn face up                             |
 | `TransformEffect`                           | `target`                                                                    | Transform DFC                            |
