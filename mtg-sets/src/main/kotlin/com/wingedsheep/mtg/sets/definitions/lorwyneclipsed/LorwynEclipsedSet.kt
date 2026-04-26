@@ -113,6 +113,7 @@ object LorwynEclipsedSet {
         MerrowSkyswimmer,
         Mirrorform,
         MirrormindCrown,
+        MischievousSneakling,
         MoongloveExtractor,
         MorcantsEyes,
         MorcantsLoyalist,

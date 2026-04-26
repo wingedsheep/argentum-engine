@@ -2,7 +2,7 @@
 
 **Set Size:** 273 cards (main set, per Scryfall `set:ecl`)
 **Release Date:** January 23, 2026
-**Implemented:** 164 / 273
+**Implemented:** 165 / 273
 
 | Color      | Total | Done |
 |------------|-------|------|
@@ -11,7 +11,7 @@
 | Black      | 38    | 25   |
 | Red        | 39    | 20   |
 | Green      | 39    | 24   |
-| Multicolor | 49    | 31   |
+| Multicolor | 49    | 32   |
 | Colorless  | 18    | 6    |
 | Land       | 12    | 10   |
 
@@ -261,7 +261,7 @@
 - [x] Lluwen, Imperfect Naturalist
 - [x] Maralen, Fae Ascendant
 - [x] Merrow Skyswimmer
-- [ ] Mischievous Sneakling
+- [x] Mischievous Sneakling
 - [x] Morcant's Loyalist
 - [x] Noggle Robber
 - [x] Prideful Feastling
