@@ -2,14 +2,14 @@
 
 **Set Size:** 273 cards (main set, per Scryfall `set:ecl`)
 **Release Date:** January 23, 2026
-**Implemented:** 157 / 273
+**Implemented:** 158 / 273
 
 | Color      | Total | Done |
 |------------|-------|------|
 | White      | 39    | 21   |
 | Blue       | 39    | 24   |
 | Black      | 38    | 25   |
-| Red        | 39    | 17   |
+| Red        | 39    | 18   |
 | Green      | 39    | 24   |
 | Multicolor | 49    | 30   |
 | Colorless  | 18    | 6    |
@@ -162,7 +162,7 @@
 - [x] Flame-Chain Mauler
 - [ ] Flamebraider
 - [x] Flamekin Gildweaver
-- [ ] Giantfall
+- [x] Giantfall
 - [x] Goatnap
 - [ ] Goliath Daydreamer
 - [x] Gristle Glutton

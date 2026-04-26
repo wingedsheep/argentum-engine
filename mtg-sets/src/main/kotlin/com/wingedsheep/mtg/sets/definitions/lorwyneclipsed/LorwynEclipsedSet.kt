@@ -76,6 +76,7 @@ object LorwynEclipsedSet {
         FlaringCinder,
         GallantFowlknight,
         GanglyStompling,
+        Giantfall,
         GiltLeafsEmbrace,
         GlamerGifter,
         GlenElendraGuardian,
