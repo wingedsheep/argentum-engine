@@ -219,7 +219,14 @@ class CostEnumerationUtils(
         convokeCreatures: List<ConvokeCreatureData>,
         precomputedSources: List<ManaSource>? = null
     ): Boolean {
-        val availableMana = manaSolver.getAvailableManaCount(state, playerId, precomputedSources)
+        // Convoke creatures with their own mana abilities (e.g. Llanowar Elves) appear in
+        // both lists — but tapping the creature can pay either a convoke pip or a mana
+        // ability, never both. Exclude them from the mana-source count so the totals
+        // don't double-up.
+        val convokeIds = convokeCreatures.mapTo(mutableSetOf()) { it.entityId }
+        val sourcesForMana = (precomputedSources ?: manaSolver.findAvailableManaSources(state, playerId))
+            .filter { it.entityId !in convokeIds }
+        val availableMana = manaSolver.getAvailableManaCount(state, playerId, sourcesForMana)
         val totalResources = availableMana + convokeCreatures.size
         if (totalResources < manaCost.cmc) return false
 

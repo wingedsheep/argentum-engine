@@ -146,12 +146,19 @@ function totalManaNeeded(symbols: string[]): number {
 }
 
 /**
- * Calculate the total mana available from mana sources.
+ * Calculate the total mana available from mana sources, excluding entities the
+ * player has already chosen to tap for convoke (a creature with its own mana
+ * ability, e.g. Llanowar Elves, can pay either a convoke pip or a mana ability —
+ * not both).
  */
-function totalManaAvailable(sources: readonly { manaAmount?: number }[] | undefined | null): number {
+function totalManaAvailable(
+  sources: readonly { entityId?: string; manaAmount?: number }[] | undefined | null,
+  excludedIds: ReadonlySet<string> = new Set()
+): number {
   if (!sources) return 0
   let total = 0
   for (const s of sources) {
+    if (s.entityId && excludedIds.has(s.entityId)) continue
     total += s.manaAmount ?? 1
   }
   return total
@@ -189,8 +196,13 @@ export function ConvokeSelector() {
   const { cardName, selectedCreatures, actionInfo } = convokeSelectionState
   const isAbility = actionInfo.action.type === 'ActivateAbility'
 
+  const convokedIds = useMemo(
+    () => new Set(selectedCreatures.map(c => c.entityId)),
+    [selectedCreatures]
+  )
+
   const manaNeeded = totalManaNeeded(symbolsAfterPool)
-  const manaFromSources = totalManaAvailable(actionInfo.availableManaSources)
+  const manaFromSources = totalManaAvailable(actionInfo.availableManaSources, convokedIds)
   const canAfford = manaNeeded <= manaFromSources
 
   return (
