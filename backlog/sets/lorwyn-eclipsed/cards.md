@@ -2,7 +2,7 @@
 
 **Set Size:** 273 cards (main set, per Scryfall `set:ecl`)
 **Release Date:** January 23, 2026
-**Implemented:** 136 / 273
+**Implemented:** 137 / 273
 
 | Color      | Total | Done |
 |------------|-------|------|
@@ -11,7 +11,7 @@
 | Black      | 38    | 19   |
 | Red        | 39    | 14   |
 | Green      | 39    | 21   |
-| Multicolor | 49    | 27   |
+| Multicolor | 49    | 28   |
 | Colorless  | 18    | 4    |
 | Land       | 12    | 10   |
 
@@ -252,7 +252,7 @@
 - [x] Feisty Spikeling
 - [ ] Figure of Fable
 - [x] Flaring Cinder
-- [ ] Gangly Stompling
+- [x] Gangly Stompling
 - [ ] Glister Bairn
 - [ ] Grub's Command
 - [ ] High Perfect Morcant
