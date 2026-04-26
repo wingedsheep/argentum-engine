@@ -2,7 +2,7 @@
 
 **Set Size:** 273 cards (main set, per Scryfall `set:ecl`)
 **Release Date:** January 23, 2026
-**Implemented:** 175 / 273
+**Implemented:** 176 / 273
 
 | Color      | Total | Done |
 |------------|-------|------|
@@ -11,7 +11,7 @@
 | Black      | 38    | 26   |
 | Red        | 39    | 22   |
 | Green      | 39    | 25   |
-| Multicolor | 49    | 32   |
+| Multicolor | 49    | 33   |
 | Colorless  | 18    | 8    |
 | Land       | 12    | 10   |
 
@@ -272,7 +272,7 @@
 - [x] Stoic Grove-Guide
 - [x] Sygg's Command
 - [ ] Tam, Mindful First-Year
-- [ ] Thoughtweft Lieutenant
+- [x] Thoughtweft Lieutenant
 - [x] Trystan's Command
 - [ ] Twinflame Travelers
 - [x] Vibrance

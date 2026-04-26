@@ -171,6 +171,7 @@ object LorwynEclipsedSet {
         TemporalCleansing,
         ThirstForIdentity,
         ThoughtweftCharge,
+        ThoughtweftLieutenant,
         TimidShieldbearer,
         TributaryVaulter,
         TrystansCommand,
