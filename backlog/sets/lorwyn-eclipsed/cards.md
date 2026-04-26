@@ -2,13 +2,13 @@
 
 **Set Size:** 273 cards (main set, per Scryfall `set:ecl`)
 **Release Date:** January 23, 2026
-**Implemented:** 154 / 273
+**Implemented:** 155 / 273
 
 | Color      | Total | Done |
 |------------|-------|------|
 | White      | 39    | 19   |
 | Blue       | 39    | 24   |
-| Black      | 38    | 24   |
+| Black      | 38    | 25   |
 | Red        | 39    | 17   |
 | Green      | 39    | 24   |
 | Multicolor | 49    | 30   |
@@ -127,7 +127,7 @@
 - [x] Graveshifter
 - [ ] Gutsplitter Gang
 - [x] Heirloom Auntie
-- [ ] Iron-Shield Elf
+- [x] Iron-Shield Elf
 - [x] Moonglove Extractor
 - [x] Moonshadow
 - [ ] Mornsong Aria
