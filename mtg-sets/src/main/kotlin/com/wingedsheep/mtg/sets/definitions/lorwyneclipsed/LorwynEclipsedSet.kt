@@ -158,6 +158,7 @@ object LorwynEclipsedSet {
         VirulentEmissary,
         VoraciousTomeSkimmer,
         WanderbrinePreacher,
+        WanderwineDistracter,
         WanderwineFarewell,
         WildUnraveling,
         WildvinePummeler,
