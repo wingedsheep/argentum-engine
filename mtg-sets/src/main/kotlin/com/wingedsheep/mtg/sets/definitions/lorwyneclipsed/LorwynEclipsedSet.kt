@@ -96,6 +96,7 @@ object LorwynEclipsedSet {
         HovelHurler,
         ImpoliteEntrance,
         IronShieldElf,
+        KeepOut,
         Kinbinding,
         KinsbaileAspirant,
         KirolAttentiveFirstYear,
