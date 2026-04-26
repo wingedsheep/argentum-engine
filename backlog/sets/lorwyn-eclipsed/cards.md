@@ -2,7 +2,7 @@
 
 **Set Size:** 273 cards (main set, per Scryfall `set:ecl`)
 **Release Date:** January 23, 2026
-**Implemented:** 176 / 273
+**Implemented:** 177 / 273
 
 | Color      | Total | Done |
 |------------|-------|------|
@@ -11,7 +11,7 @@
 | Black      | 38    | 26   |
 | Red        | 39    | 22   |
 | Green      | 39    | 25   |
-| Multicolor | 49    | 33   |
+| Multicolor | 49    | 34   |
 | Colorless  | 18    | 8    |
 | Land       | 12    | 10   |
 
@@ -245,7 +245,7 @@
 - [x] Dream Harvest
 - [ ] Eclipsed Boggart
 - [ ] Eclipsed Elf
-- [ ] Eclipsed Flamekin
+- [x] Eclipsed Flamekin
 - [x] Eclipsed Kithkin
 - [x] Eclipsed Merrow
 - [x] Emptiness
