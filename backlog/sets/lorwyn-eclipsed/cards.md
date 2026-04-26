@@ -2,14 +2,14 @@
 
 **Set Size:** 273 cards (main set, per Scryfall `set:ecl`)
 **Release Date:** January 23, 2026
-**Implemented:** 163 / 273
+**Implemented:** 164 / 273
 
 | Color      | Total | Done |
 |------------|-------|------|
 | White      | 39    | 23   |
 | Blue       | 39    | 25   |
 | Black      | 38    | 25   |
-| Red        | 39    | 19   |
+| Red        | 39    | 20   |
 | Green      | 39    | 24   |
 | Multicolor | 49    | 31   |
 | Colorless  | 18    | 6    |
@@ -179,7 +179,7 @@
 - [ ] Sizzling Changeling
 - [ ] Soul Immolation
 - [x] Soulbright Seeker
-- [ ] Sourbread Auntie
+- [x] Sourbread Auntie
 - [ ] Spinerock Tyrant
 - [x] Squawkroaster
 - [ ] Sting-Slinger

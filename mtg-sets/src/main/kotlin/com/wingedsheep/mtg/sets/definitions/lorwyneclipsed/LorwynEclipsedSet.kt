@@ -144,6 +144,7 @@ object LorwynEclipsedSet {
         Shinestriker,
         SilvergillPeddler,
         SoulbrightSeeker,
+        SourbreadAuntie,
         SpringleafDrum,
         SpryAndMighty,
         Squawkroaster,
