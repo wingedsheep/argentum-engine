@@ -98,6 +98,7 @@ object LorwynEclipsedSet {
         Kinbinding,
         KinsbaileAspirant,
         KirolAttentiveFirstYear,
+        Kithkeeper,
         LastingTarfire,
         Lavaleaper,
         LiminalHold,
