@@ -742,6 +742,11 @@ export interface SealedCardInfo {
   readonly toughness?: number | null
   readonly oracleText?: string | null
   readonly rulings?: readonly SealedRuling[]
+  readonly isDoubleFaced?: boolean
+  readonly backFaceName?: string | null
+  readonly backFaceTypeLine?: string | null
+  readonly backFaceOracleText?: string | null
+  readonly backFaceImageUri?: string | null
 }
 
 /**

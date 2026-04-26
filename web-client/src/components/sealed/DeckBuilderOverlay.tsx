@@ -124,6 +124,7 @@ function DeckBuilder({ state }: { state: DeckBuildingState }) {
 
   const [hoveredCard, setHoveredCard] = useState<SealedCardInfo | null>(null)
   const [hoverPos, setHoverPos] = useState<{ x: number; y: number } | null>(null)
+  const [dfcFlipped, setDfcFlipped] = useState(false)
   const [sortBy, setSortBy] = useState<'color' | 'cmc' | 'rarity'>('rarity')
   const [colorFilter, setColorFilter] = useState<Set<string>>(new Set())
   const [typeFilter, setTypeFilter] = useState<string | null>(null)
@@ -132,13 +133,26 @@ function DeckBuilder({ state }: { state: DeckBuildingState }) {
   const [archetypeFilter, setArchetypeFilter] = useState<Archetype | null>(null)
 
   const handleHover = useCallback((card: SealedCardInfo | null, e?: React.MouseEvent) => {
-    setHoveredCard(card)
+    setHoveredCard((prev) => {
+      if (prev?.name !== card?.name) setDfcFlipped(false)
+      return card
+    })
     if (card && e) {
       setHoverPos({ x: e.clientX, y: e.clientY })
     } else {
       setHoverPos(null)
     }
   }, [])
+
+  const isHoveredDfc = hoveredCard?.isDoubleFaced === true && !!hoveredCard.backFaceImageUri
+  useEffect(() => {
+    if (!isHoveredDfc) return
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'f' || e.key === 'F') setDfcFlipped((prev) => !prev)
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [isHoveredDfc])
 
   // Count cards in deck — separate non-basic lands from spells
   const basicLandCount = Object.values(state.landCounts).reduce((a, b) => a + b, 0)
@@ -1122,7 +1136,13 @@ function DeckBuilder({ state }: { state: DeckBuildingState }) {
 
       {/* Card preview on hover - positioned near cursor */}
       {hoveredCard && !responsive.isMobile && (
-        <HoverCardPreview name={hoveredCard.name} imageUri={hoveredCard.imageUri} pos={hoverPos} rulings={hoveredCard.rulings} />
+        <HoverCardPreview
+          name={isHoveredDfc && dfcFlipped && hoveredCard.backFaceName ? hoveredCard.backFaceName : hoveredCard.name}
+          imageUri={isHoveredDfc && dfcFlipped ? (hoveredCard.backFaceImageUri ?? null) : hoveredCard.imageUri}
+          pos={hoverPos}
+          rulings={hoveredCard.rulings}
+          overlay={isHoveredDfc ? <DfcFlipHint flipped={dfcFlipped} /> : undefined}
+        />
       )}
 
       {/* Submitted overlay */}
@@ -1172,6 +1192,44 @@ function AnimatedDots() {
   }, [])
 
   return <span style={{ display: 'inline-block', width: '1.5em', textAlign: 'left' }}>{'.'.repeat(dotCount)}</span>
+}
+
+/**
+ * "Press F to flip" hint shown over the hover preview for DFC cards.
+ */
+function DfcFlipHint({ flipped }: { flipped: boolean }) {
+  return (
+    <div style={{
+      position: 'absolute',
+      bottom: 10,
+      left: '50%',
+      transform: 'translateX(-50%)',
+      backgroundColor: 'rgba(0, 0, 0, 0.88)',
+      color: '#d0d4e0',
+      fontSize: 13,
+      fontWeight: 600,
+      padding: '5px 12px',
+      borderRadius: 6,
+      border: '1px solid rgba(180, 190, 220, 0.5)',
+      boxShadow: '0 2px 8px rgba(0, 0, 0, 0.5)',
+      whiteSpace: 'nowrap',
+      zIndex: 5,
+      display: 'flex',
+      alignItems: 'center',
+      gap: 6,
+    }}>
+      <i className={`ms ms-dfc-${flipped ? 'night' : 'day'}`} style={{ fontSize: 14 }} />
+      <span style={{
+        backgroundColor: 'rgba(255, 255, 255, 0.15)',
+        padding: '1px 6px',
+        borderRadius: 3,
+        fontSize: 12,
+        fontWeight: 700,
+        letterSpacing: 0.5,
+      }}>F</span>
+      <span>to flip</span>
+    </div>
+  )
 }
 
 /**

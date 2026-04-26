@@ -570,6 +570,7 @@ class ConnectionHandler(
         const val KICK_MINIMUM_DISCONNECT_SECONDS = 120
 
         fun cardToSealedCardInfo(card: com.wingedsheep.sdk.model.CardDefinition): ServerMessage.SealedCardInfo {
+            val backFace = card.backFace
             return ServerMessage.SealedCardInfo(
                 name = card.name,
                 manaCost = if (card.manaCost.symbols.isEmpty()) null else card.manaCost.toString(),
@@ -579,7 +580,12 @@ class ConnectionHandler(
                 power = card.creatureStats?.basePower,
                 toughness = card.creatureStats?.baseToughness,
                 oracleText = if (card.oracleText.isBlank()) null else card.oracleText,
-                rulings = card.metadata.rulings.map { ServerMessage.SealedRuling(it.date, it.text) }
+                rulings = card.metadata.rulings.map { ServerMessage.SealedRuling(it.date, it.text) },
+                isDoubleFaced = backFace != null,
+                backFaceName = backFace?.name,
+                backFaceTypeLine = backFace?.typeLine?.toString(),
+                backFaceOracleText = backFace?.oracleText?.takeIf { it.isNotBlank() },
+                backFaceImageUri = backFace?.metadata?.imageUri
             )
         }
     }

@@ -288,7 +288,12 @@ sealed interface ServerMessage {
         val power: Int? = null,
         val toughness: Int? = null,
         val oracleText: String? = null,
-        val rulings: List<SealedRuling> = emptyList()
+        val rulings: List<SealedRuling> = emptyList(),
+        val isDoubleFaced: Boolean = false,
+        val backFaceName: String? = null,
+        val backFaceTypeLine: String? = null,
+        val backFaceOracleText: String? = null,
+        val backFaceImageUri: String? = null
     )
 
     /**
