@@ -6,26 +6,27 @@ import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.OwnerComponent
-import com.wingedsheep.sdk.scripting.effects.PutOnTopOrBottomOfLibraryEffect
+import com.wingedsheep.sdk.scripting.effects.PutOnLibraryPositionOfChoiceEffect
 import java.util.UUID
 import kotlin.reflect.KClass
 
 /**
- * Executor for PutOnTopOrBottomOfLibraryEffect.
+ * Executor for PutOnLibraryPositionOfChoiceEffect.
  *
- * Pauses for the target's owner to choose top or bottom of their library,
- * then delegates the actual zone move to the continuation resumer.
- * Accepts both battlefield permanents (e.g., Dire Downdraft) and spells on the
- * stack (e.g., Swat Away's "target spell or creature") — the resumer handles
- * each case appropriately.
+ * Pauses for the target's owner to choose between the offered library positions
+ * (e.g., top/bottom for Hinder, second-from-top/bottom for Temporal Cleansing),
+ * then delegates the actual zone move to the continuation resumer. Accepts both
+ * battlefield permanents (e.g., Dire Downdraft) and spells on the stack
+ * (e.g., Swat Away's "target spell or creature") — the resumer handles each
+ * case appropriately.
  */
-class PutOnTopOrBottomOfLibraryExecutor : EffectExecutor<PutOnTopOrBottomOfLibraryEffect> {
+class PutOnTopOrBottomOfLibraryExecutor : EffectExecutor<PutOnLibraryPositionOfChoiceEffect> {
 
-    override val effectType: KClass<PutOnTopOrBottomOfLibraryEffect> = PutOnTopOrBottomOfLibraryEffect::class
+    override val effectType: KClass<PutOnLibraryPositionOfChoiceEffect> = PutOnLibraryPositionOfChoiceEffect::class
 
     override fun execute(
         state: GameState,
-        effect: PutOnTopOrBottomOfLibraryEffect,
+        effect: PutOnLibraryPositionOfChoiceEffect,
         context: EffectContext
     ): EffectResult {
         val targetId = context.resolveTarget(effect.target, state)
@@ -43,12 +44,18 @@ class PutOnTopOrBottomOfLibraryExecutor : EffectExecutor<PutOnTopOrBottomOfLibra
 
         val sourceName = context.sourceId?.let { state.getEntity(it)?.get<CardComponent>()?.name }
 
-        val options = listOf("Top of library", "Bottom of library")
+        val positions = effect.positions.ifEmpty {
+            return EffectResult.error(state, "PutOnLibraryPositionOfChoiceEffect requires at least one position")
+        }
+        val options = positions.map { it.label }
+        val promptPhrase = positions.joinToString(" or ") {
+            it.label.replaceFirstChar { c -> c.lowercase() }
+        }
         val decisionId = UUID.randomUUID().toString()
         val decision = ChooseOptionDecision(
             id = decisionId,
             playerId = ownerId,
-            prompt = "Put ${cardComponent.name} on top or bottom of your library",
+            prompt = "Put ${cardComponent.name} on $promptPhrase",
             context = DecisionContext(
                 sourceId = context.sourceId,
                 sourceName = sourceName,
@@ -63,7 +70,8 @@ class PutOnTopOrBottomOfLibraryExecutor : EffectExecutor<PutOnTopOrBottomOfLibra
             cardId = targetId,
             sourceId = context.sourceId,
             sourceName = sourceName,
-            options = options
+            options = options,
+            positions = positions
         )
 
         val stateWithDecision = state.withPendingDecision(decision)

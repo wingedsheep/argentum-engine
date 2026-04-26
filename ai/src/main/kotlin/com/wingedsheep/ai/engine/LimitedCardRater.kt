@@ -236,7 +236,7 @@ object LimitedCardRater {
             }
             is ExileUntilLeavesEffect -> 1.4               // O-Ring removal
             is ForceSacrificeEffect -> 1.2                  // edict
-            is PutOnTopOrBottomOfLibraryEffect -> 1.0       // tuck
+            is PutOnLibraryPositionOfChoiceEffect -> 1.0    // tuck
 
             // Damage — removal or reach
             is DealDamageEffect -> {

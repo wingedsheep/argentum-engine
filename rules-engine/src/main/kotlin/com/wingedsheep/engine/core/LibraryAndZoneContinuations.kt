@@ -155,16 +155,19 @@ data class PutOnBottomOfLibraryContinuation(
 ) : ContinuationFrame
 
 /**
- * Resume after a card's owner chooses top or bottom of their library.
+ * Resume after a card's owner chooses one of the offered library positions.
  *
- * Used by PutOnTopOrBottomOfLibraryEffect: the owner has chosen where to put
- * the card. The continuation moves the card to the chosen position.
+ * Used by PutOnLibraryPositionOfChoiceEffect: the owner has chosen where to put
+ * the card. The continuation moves the card to the chosen position. The
+ * [positions] list mirrors [options] one-to-one and is the canonical source for
+ * mapping a chosen index to its [LibraryChoicePosition].
  *
  * @property ownerId The owner making the choice
  * @property cardId The card being put into the library
  * @property sourceId The spell/ability that caused this effect
  * @property sourceName Name of the source for event messages
- * @property options The option strings ("Top of library", "Bottom of library")
+ * @property options The option strings shown to the player
+ * @property positions The library positions corresponding to each option, by index
  */
 @Serializable
 data class PutOnTopOrBottomContinuation(
@@ -173,7 +176,8 @@ data class PutOnTopOrBottomContinuation(
     val cardId: EntityId,
     val sourceId: EntityId?,
     val sourceName: String?,
-    val options: List<String>
+    val options: List<String>,
+    val positions: List<com.wingedsheep.sdk.scripting.effects.LibraryChoicePosition> = emptyList()
 ) : ContinuationFrame
 
 /**

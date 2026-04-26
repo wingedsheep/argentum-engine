@@ -419,22 +419,61 @@ data class ForceExileMultiZoneEffect(
 }
 
 /**
- * The target's owner puts it on their choice of the top or bottom of their library.
+ * Library positions a target's owner can choose between when an effect lets them
+ * place the card into their library at one of several positions.
+ */
+@Serializable
+enum class LibraryChoicePosition {
+    /** Top of library. */
+    Top,
+
+    /** Second from top — beneath the topmost card. */
+    SecondFromTop,
+
+    /** Bottom of library. */
+    Bottom;
+
+    /** Human-readable label for the option list shown to the choosing player. */
+    val label: String
+        get() = when (this) {
+            Top -> "Top of library"
+            SecondFromTop -> "Second from top of library"
+            Bottom -> "Bottom of library"
+        }
+}
+
+/**
+ * The target's owner puts it into their library at one of the offered positions.
  *
- * Pauses for the owner to make a ChooseOptionDecision with "Top" and "Bottom" options,
- * then moves the card accordingly. The target may be either a permanent on the
- * battlefield (e.g., Dire Downdraft) or a spell on the stack (e.g., Swat Away's
- * "target spell or creature") — the executor handles each case.
+ * Pauses for the owner to make a ChooseOptionDecision over [positions], then moves
+ * the card accordingly. The target may be either a permanent on the battlefield
+ * (e.g., Dire Downdraft) or a spell on the stack (e.g., Swat Away's "target spell
+ * or creature") — the executor handles each case.
+ *
+ * Common configurations:
+ * - `[Top, Bottom]` (default) — Hinder/Spell Crumple style
+ * - `[SecondFromTop, Bottom]` — Temporal Cleansing style
  *
  * @property target The entity to put into its owner's library
+ * @property positions The library positions the owner may choose between
  */
-@SerialName("PutOnTopOrBottomOfLibrary")
+@SerialName("PutOnLibraryPositionOfChoice")
 @Serializable
-data class PutOnTopOrBottomOfLibraryEffect(
-    val target: EffectTarget
+data class PutOnLibraryPositionOfChoiceEffect(
+    val target: EffectTarget,
+    val positions: List<LibraryChoicePosition> = listOf(LibraryChoicePosition.Top, LibraryChoicePosition.Bottom)
 ) : Effect {
-    override val description: String =
-        "${target.description}'s owner puts it on the top or bottom of their library"
+    override val description: String
+        get() {
+            val phrase = when (positions) {
+                listOf(LibraryChoicePosition.Top, LibraryChoicePosition.Bottom) ->
+                    "the top or bottom of their library"
+                listOf(LibraryChoicePosition.SecondFromTop, LibraryChoicePosition.Bottom) ->
+                    "their library second from the top or on the bottom"
+                else -> positions.joinToString(" or ") { it.label.replaceFirstChar { c -> c.lowercase() } }
+            }
+            return "${target.description}'s owner puts it on $phrase"
+        }
     override fun applyTextReplacement(replacer: TextReplacer): Effect = this
 }
 

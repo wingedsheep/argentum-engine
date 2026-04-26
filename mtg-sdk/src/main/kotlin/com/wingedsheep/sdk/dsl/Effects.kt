@@ -65,7 +65,8 @@ import com.wingedsheep.sdk.scripting.effects.LoseLifeEffect
 import com.wingedsheep.sdk.scripting.effects.SetLifeTotalEffect
 import com.wingedsheep.sdk.scripting.effects.ModifyStatsEffect
 import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
-import com.wingedsheep.sdk.scripting.effects.PutOnTopOrBottomOfLibraryEffect
+import com.wingedsheep.sdk.scripting.effects.LibraryChoicePosition
+import com.wingedsheep.sdk.scripting.effects.PutOnLibraryPositionOfChoiceEffect
 import com.wingedsheep.sdk.scripting.effects.ExileFromTopRepeatingEffect
 import com.wingedsheep.sdk.scripting.effects.ExileLibraryUntilManaValueEffect
 import com.wingedsheep.sdk.scripting.effects.ExileOpponentsGraveyardsEffect
@@ -438,7 +439,20 @@ object Effects {
      * Owner chooses to put target on top or bottom of their library.
      */
     fun PutOnTopOrBottomOfLibrary(target: EffectTarget): Effect =
-        PutOnTopOrBottomOfLibraryEffect(target)
+        PutOnLibraryPositionOfChoiceEffect(
+            target,
+            listOf(LibraryChoicePosition.Top, LibraryChoicePosition.Bottom)
+        )
+
+    /**
+     * Owner chooses to put target second from the top or on the bottom of their library.
+     * Used by Hinder/Spell Crumple-style effects (e.g., Temporal Cleansing).
+     */
+    fun PutSecondFromTopOrBottomOfLibrary(target: EffectTarget): Effect =
+        PutOnLibraryPositionOfChoiceEffect(
+            target,
+            listOf(LibraryChoicePosition.SecondFromTop, LibraryChoicePosition.Bottom)
+        )
 
     /**
      * Shuffle into library.

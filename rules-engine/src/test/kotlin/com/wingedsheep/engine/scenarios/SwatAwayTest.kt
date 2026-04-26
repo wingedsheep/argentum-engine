@@ -31,7 +31,7 @@ import io.kotest.matchers.shouldBe
  * Exercises:
  *  - the [com.wingedsheep.sdk.scripting.CostReductionSource.FixedIfCreatureAttackingYou]
  *    cost source (new).
- *  - the spell-on-stack branch of [com.wingedsheep.sdk.scripting.effects.PutOnTopOrBottomOfLibraryEffect]
+ *  - the spell-on-stack branch of [com.wingedsheep.sdk.scripting.effects.PutOnLibraryPositionOfChoiceEffect]
  *    (extended).
  *  - the permanent-filter branch of [com.wingedsheep.sdk.scripting.targets.TargetSpellOrPermanent]
  *    (creature only).

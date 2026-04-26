@@ -460,13 +460,29 @@ class LibraryAndZoneContinuationResumer(
             return ExecutionResult.error(state, "Expected option choice response for top/bottom of library")
         }
 
-        val chosenOption = continuation.options.getOrNull(response.optionIndex)
-            ?: return ExecutionResult.error(state, "Invalid option index: ${response.optionIndex}")
+        if (response.optionIndex !in continuation.options.indices) {
+            return ExecutionResult.error(state, "Invalid option index: ${response.optionIndex}")
+        }
 
-        val placement = if (chosenOption == "Top of library") {
-            com.wingedsheep.engine.handlers.effects.LibraryPlacement.Top
-        } else {
-            com.wingedsheep.engine.handlers.effects.LibraryPlacement.Bottom
+        val chosenPosition = continuation.positions.getOrNull(response.optionIndex)
+            ?: run {
+                // Backwards-compatible fallback: continuations serialised before
+                // `positions` was added carry only option strings.
+                when (continuation.options[response.optionIndex]) {
+                    "Top of library" -> com.wingedsheep.sdk.scripting.effects.LibraryChoicePosition.Top
+                    "Second from top of library" -> com.wingedsheep.sdk.scripting.effects.LibraryChoicePosition.SecondFromTop
+                    "Bottom of library" -> com.wingedsheep.sdk.scripting.effects.LibraryChoicePosition.Bottom
+                    else -> return ExecutionResult.error(state, "Unknown library position option")
+                }
+            }
+
+        val placement = when (chosenPosition) {
+            com.wingedsheep.sdk.scripting.effects.LibraryChoicePosition.Top ->
+                com.wingedsheep.engine.handlers.effects.LibraryPlacement.Top
+            com.wingedsheep.sdk.scripting.effects.LibraryChoicePosition.SecondFromTop ->
+                com.wingedsheep.engine.handlers.effects.LibraryPlacement.NthFromTop(1)
+            com.wingedsheep.sdk.scripting.effects.LibraryChoicePosition.Bottom ->
+                com.wingedsheep.engine.handlers.effects.LibraryPlacement.Bottom
         }
 
         val cardId = continuation.cardId
@@ -523,6 +539,10 @@ class LibraryAndZoneContinuationResumer(
                 listOf(spellId) + currentLibrary
             com.wingedsheep.engine.handlers.effects.LibraryPlacement.Bottom ->
                 currentLibrary + spellId
+            is com.wingedsheep.engine.handlers.effects.LibraryPlacement.NthFromTop -> {
+                val insertIndex = placement.position.coerceAtMost(currentLibrary.size)
+                currentLibrary.toMutableList().apply { add(insertIndex, spellId) }
+            }
             else -> currentLibrary + spellId
         }
         newState = newState.copy(zones = newState.zones + (libZoneKey to newLibrary))

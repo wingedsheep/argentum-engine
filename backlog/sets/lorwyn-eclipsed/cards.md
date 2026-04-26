@@ -2,14 +2,14 @@
 
 **Set Size:** 273 cards (main set, per Scryfall `set:ecl`)
 **Release Date:** January 23, 2026
-**Implemented:** 145 / 273
+**Implemented:** 147 / 273
 
 | Color      | Total | Done |
 |------------|-------|------|
 | White      | 39    | 19   |
-| Blue       | 39    | 22   |
+| Blue       | 39    | 23   |
 | Black      | 38    | 23   |
-| Red        | 39    | 14   |
+| Red        | 39    | 15   |
 | Green      | 39    | 23   |
 | Multicolor | 49    | 30   |
 | Colorless  | 18    | 4    |
@@ -95,7 +95,7 @@
 - [ ] Sunderflock
 - [x] Swat Away
 - [x] Tanufel Rimespeaker
-- [ ] Temporal Cleansing
+- [x] Temporal Cleansing
 - [x] Thirst for Identity
 - [x] Unexpected Assistance
 - [x] Unwelcome Sprite
@@ -166,7 +166,7 @@
 - [x] Goatnap
 - [ ] Goliath Daydreamer
 - [x] Gristle Glutton
-- [ ] Hexing Squelcher
+- [x] Hexing Squelcher
 - [x] Impolite Entrance
 - [ ] Kindle the Inner Flame
 - [ ] Kulrath Zealot
