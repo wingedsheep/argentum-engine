@@ -391,6 +391,27 @@ class TriggerProcessor(
         // prominent hint banner so the player knows *what* they're targeting for
         // (e.g., "Put 1 -1/-1 counter on target creature") rather than just
         // seeing the generic "Choose target" label.
+        // Resolve dynamic amounts so the player sees concrete values
+        // (e.g., Gloom Ripper showing "+3/+0" instead of "+X/+0").
+        val effectHint = try {
+            val evaluator = DynamicAmountEvaluator()
+            val context = EffectContext(
+                sourceId = trigger.sourceId,
+                controllerId = trigger.controllerId,
+                opponentId = state.getOpponent(trigger.controllerId),
+                triggeringEntityId = trigger.triggerContext.triggeringEntityId,
+                triggeringPlayerId = trigger.triggerContext.triggeringPlayerId,
+                triggerDamageAmount = trigger.triggerContext.damageAmount,
+                triggerCounterCount = trigger.triggerContext.counterCount,
+                triggerTotalCounterCount = trigger.triggerContext.totalCounterCount,
+                triggerLastKnownPower = trigger.triggerContext.lastKnownPower,
+                triggerLastKnownToughness = trigger.triggerContext.lastKnownToughness
+            )
+            ability.effect.runtimeDescription { amount -> evaluator.evaluate(state, amount, context) }
+        } catch (_: Exception) {
+            ability.effect.description
+        }
+
         val decisionResult = decisionHandler.createTargetDecision(
             state = state,
             playerId = trigger.controllerId,
@@ -398,7 +419,7 @@ class TriggerProcessor(
             sourceName = trigger.sourceName,
             requirements = requirementInfos,
             legalTargets = allLegalTargets,
-            effectHint = ability.effect.description
+            effectHint = effectHint
         )
 
         if (!decisionResult.isPaused || decisionResult.pendingDecision == null) {
