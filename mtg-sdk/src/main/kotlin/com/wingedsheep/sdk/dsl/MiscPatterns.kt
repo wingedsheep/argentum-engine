@@ -44,31 +44,43 @@ object MiscPatterns {
         OptionalCostEffect(cost, ifPaid, ifNotPaid)
 
     /**
-     * Blight N — put N -1/-1 counters on a creature you control.
+     * Blight N — the given player puts N -1/-1 counters on a creature they control.
      *
      * Non-targeting keyword action (the word "target" does not appear in the
-     * reminder text, so shroud/hexproof do not interact). If the controller has
+     * reminder text, so shroud/hexproof do not interact). If the chooser has
      * no creatures, the effect silently does nothing — `ChooseExactly(1)` on an
      * empty collection auto-selects nothing and the subsequent counter placement
      * is a no-op.
+     *
+     * @param amount Number of -1/-1 counters to place
+     * @param player The player who blights. Defaults to [Player.You] (the controller).
+     *               Use [Player.TargetOpponent] / [Player.TargetPlayer] for "target opponent blights N";
+     *               the chooser is derived from this reference so the targeted player makes the choice.
      */
-    fun blight(amount: Int): CompositeEffect = CompositeEffect(
-        listOf(
-            GatherCardsEffect(
-                source = CardSource.ControlledPermanents(Player.You, GameObjectFilter.Creature),
-                storeAs = "blightTargets"
-            ),
-            SelectFromCollectionEffect(
-                from = "blightTargets",
-                selection = SelectionMode.ChooseExactly(DynamicAmount.Fixed(1)),
-                chooser = Chooser.Controller,
-                storeSelected = "blighted",
-                prompt = "Blight $amount — choose a creature you control",
-                useTargetingUI = true
-            ),
-            AddCountersToCollectionEffect("blighted", Counters.MINUS_ONE_MINUS_ONE, amount)
+    fun blight(amount: Int, player: Player = Player.You): CompositeEffect {
+        val chooser = when (player) {
+            Player.TargetOpponent, Player.TargetPlayer -> Chooser.TargetPlayer
+            else -> Chooser.Controller
+        }
+        val possessive = if (player == Player.You) "you control" else "they control"
+        return CompositeEffect(
+            listOf(
+                GatherCardsEffect(
+                    source = CardSource.ControlledPermanents(player, GameObjectFilter.Creature),
+                    storeAs = "blightTargets"
+                ),
+                SelectFromCollectionEffect(
+                    from = "blightTargets",
+                    selection = SelectionMode.ChooseExactly(DynamicAmount.Fixed(1)),
+                    chooser = chooser,
+                    storeSelected = "blighted",
+                    prompt = "Blight $amount — choose a creature $possessive",
+                    useTargetingUI = true
+                ),
+                AddCountersToCollectionEffect("blighted", Counters.MINUS_ONE_MINUS_ONE, amount)
+            )
         )
-    )
+    }
 
     fun sacrificeFor(
         filter: GameObjectFilter,

@@ -52,11 +52,13 @@ object EffectPatterns {
         MiscPatterns.mayPayOrElse(cost, ifPaid, ifNotPaid)
 
     /**
-     * Blight N — put N -1/-1 counters on a creature you control.
-     * Non-targeting choice; does nothing if the controller has no creatures.
+     * Blight N — the given player puts N -1/-1 counters on a creature they control.
+     * Non-targeting choice; does nothing if the chooser has no creatures.
+     * Defaults to the effect's controller; pass [Player.TargetOpponent] for
+     * "target opponent blights N".
      */
-    fun blight(amount: Int): CompositeEffect =
-        MiscPatterns.blight(amount)
+    fun blight(amount: Int, player: Player = Player.You): CompositeEffect =
+        MiscPatterns.blight(amount, player)
 
     // =========================================================================
     // Forage Patterns (MiscPatterns)

@@ -41,6 +41,7 @@ object LorwynEclipsedSet {
         BrigidsCommand,
         BurdenedStoneback,
         Catharsis,
+        ChampionOfTheWeird,
         ChampionsOfThePerfect,
         ChampionsOfTheShoal,
         ChaosSpewer,
