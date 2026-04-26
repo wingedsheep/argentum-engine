@@ -239,9 +239,10 @@ data class ModalEffect(
 data class OptionalCostEffect(
     val cost: Effect,
     val ifPaid: Effect,
-    val ifNotPaid: Effect? = null
+    val ifNotPaid: Effect? = null,
+    val descriptionOverride: String? = null
 ) : Effect {
-    override val description: String = buildString {
+    override val description: String = descriptionOverride ?: buildString {
         append("You may ${cost.description.replaceFirstChar { it.lowercase() }}. ")
         append("If you do, ${ifPaid.description.replaceFirstChar { it.lowercase() }}")
         if (ifNotPaid != null) {

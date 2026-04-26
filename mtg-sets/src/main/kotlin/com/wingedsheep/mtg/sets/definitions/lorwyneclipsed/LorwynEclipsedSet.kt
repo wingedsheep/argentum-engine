@@ -93,6 +93,7 @@ object LorwynEclipsedSet {
         GrubStoriedMatriarch,
         GrubsCommand,
         GristleGlutton,
+        GutsplitterGang,
         HallowedFountain,
         HarmonizedCrescendo,
         HeirloomAuntie,
