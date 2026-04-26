@@ -58,6 +58,8 @@ class ClientStateTransformer(
     private val debugMode: Boolean = false
 ) {
 
+    private val conditionEvaluator = com.wingedsheep.engine.handlers.ConditionEvaluator()
+
 
     /**
      * Transform the game state for a specific player's view.
@@ -1070,14 +1072,46 @@ class ClientStateTransformer(
                 controllerId = spellOnStack.casterId,
                 opponentId = state.getOpponent(spellOnStack.casterId),
                 xValue = spellOnStack.xValue,
+                wasKicked = spellOnStack.wasKicked,
+                wasBlightPaid = spellOnStack.wasBlightPaid,
                 sacrificedPermanents = spellOnStack.sacrificedPermanents,
                 exiledCardCount = spellOnStack.exiledCardCount,
                 targets = chosenTargets
             )
-            effect.runtimeDescription { amount -> evaluator.evaluate(state, amount, context) }
+            // Resolve ConditionalEffect at stack-time: opponents see only the branch that
+            // will fire (e.g., Cinder Strike shows "deals 4 damage" vs "deals 2 damage"
+            // depending on whether the optional Blight cost was paid) instead of the full
+            // "if X, do Y. Otherwise, do Z." description.
+            val resolvedEffect = resolveConditionalForStack(state, effect, context)
+            resolvedEffect.runtimeDescription { amount -> evaluator.evaluate(state, amount, context) }
         } catch (_: Exception) {
             effect.description
         }
+    }
+
+    /**
+     * Recursively replace [ConditionalEffect]s in [effect] with the branch the spell will
+     * actually take, using [context] to evaluate each condition. Composite branches are
+     * resolved one level deep so nested conditions also collapse. Conditions that depend
+     * on state not yet captured at cast time fall through to the original effect.
+     */
+    private fun resolveConditionalForStack(
+        state: GameState,
+        effect: com.wingedsheep.sdk.scripting.effects.Effect,
+        context: EffectContext
+    ): com.wingedsheep.sdk.scripting.effects.Effect = when (effect) {
+        is com.wingedsheep.sdk.scripting.effects.ConditionalEffect -> {
+            val taken = if (conditionEvaluator.evaluate(state, effect.condition, context)) {
+                effect.effect
+            } else {
+                effect.elseEffect
+            }
+            taken?.let { resolveConditionalForStack(state, it, context) }
+                ?: com.wingedsheep.sdk.scripting.effects.CompositeEffect(emptyList())
+        }
+        is com.wingedsheep.sdk.scripting.effects.CompositeEffect ->
+            effect.copy(effects = effect.effects.map { resolveConditionalForStack(state, it, context) })
+        else -> effect
     }
 
     /**
