@@ -769,7 +769,8 @@ class ActivateAbilityHandler(
             effect = finalEffect,
             sacrificedPermanents = sacrificedSnapshots,
             xValue = action.xValue,
-            tappedPermanents = action.costPayment?.tappedPermanents ?: emptyList()
+            tappedPermanents = action.costPayment?.tappedPermanents ?: emptyList(),
+            descriptionOverride = ability.descriptionOverride
         )
 
         // Apply text-changing effects to the target requirements for resolution-time re-validation
@@ -840,7 +841,8 @@ class ActivateAbilityHandler(
                     effect = finalEffect,
                     sacrificedPermanents = emptyList(),
                     xValue = action.xValue,
-                    tappedPermanents = emptyList()
+                    tappedPermanents = emptyList(),
+                    descriptionOverride = ability.descriptionOverride
                 )
                 val repeatStackResult = stackResolver.putActivatedAbility(
                     currentState, repeatAbilityOnStack, action.targets,

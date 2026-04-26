@@ -85,7 +85,10 @@ data class ActivatedAbilityOnStackComponent(
     /** Snapshots of permanents sacrificed as additional cost (Rule 112.7a — last known info). */
     val sacrificedPermanents: List<PermanentSnapshot> = emptyList(),
     val xValue: Int? = null,
-    val tappedPermanents: List<EntityId> = emptyList()
+    val tappedPermanents: List<EntityId> = emptyList(),
+    /** Optional human-readable description from `ActivatedAbility.descriptionOverride`,
+     *  used when displaying the ability on the stack instead of the auto-generated effect text. */
+    val descriptionOverride: String? = null
 ) : Component {
     val hasTargets: Boolean = false  // Will be updated based on effect
 }
