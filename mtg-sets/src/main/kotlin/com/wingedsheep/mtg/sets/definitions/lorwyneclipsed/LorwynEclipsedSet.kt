@@ -130,6 +130,7 @@ object LorwynEclipsedSet {
         RaidingSchemes,
         ReapingWillow,
         RecklessRansacking,
+        RimeChill,
         RimefireTorque,
         RiverguardsReflexes,
         SaplingNursery,
