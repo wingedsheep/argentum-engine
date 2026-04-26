@@ -45,6 +45,7 @@ object LorwynEclipsedSet {
         ChampionsOfThePerfect,
         ChampionsOfTheShoal,
         ChaosSpewer,
+        ChitinousGraspling,
         ChompingChangeling,
         ChronicleOfVictory,
         ClachanFestival,

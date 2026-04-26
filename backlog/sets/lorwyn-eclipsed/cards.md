@@ -2,7 +2,7 @@
 
 **Set Size:** 273 cards (main set, per Scryfall `set:ecl`)
 **Release Date:** January 23, 2026
-**Implemented:** 139 / 273
+**Implemented:** 140 / 273
 
 | Color      | Total | Done |
 |------------|-------|------|
@@ -11,7 +11,7 @@
 | Black      | 38    | 21   |
 | Red        | 39    | 14   |
 | Green      | 39    | 21   |
-| Multicolor | 49    | 28   |
+| Multicolor | 49    | 29   |
 | Colorless  | 18    | 4    |
 | Land       | 12    | 10   |
 
@@ -237,7 +237,7 @@
 - [x] Brigid's Command
 - [x] Catharsis
 - [x] Chaos Spewer
-- [ ] Chitinous Graspling
+- [x] Chitinous Graspling
 - [ ] Deceit
 - [x] Deepchannel Duelist
 - [ ] Deepway Navigator
