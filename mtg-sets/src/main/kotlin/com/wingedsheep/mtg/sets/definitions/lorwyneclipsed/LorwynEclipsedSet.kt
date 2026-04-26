@@ -40,6 +40,7 @@ object LorwynEclipsedSet {
         BoldwyrAggressor,
         BoulderDash,
         BramblebackBrute,
+        BrigidClachansHeart,
         BrigidsCommand,
         BurdenedStoneback,
         Catharsis,
