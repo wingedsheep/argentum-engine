@@ -103,6 +103,7 @@ object LorwynEclipsedSet {
         KinsbaileAspirant,
         KirolAttentiveFirstYear,
         Kithkeeper,
+        KulrathMystic,
         LastingTarfire,
         Lavaleaper,
         LiminalHold,
