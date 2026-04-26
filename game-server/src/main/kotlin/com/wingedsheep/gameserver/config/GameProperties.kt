@@ -24,7 +24,7 @@ data class SetsProperties(
     val dominariaEnabled: Boolean = false,
     val bloomburrowEnabled: Boolean = true,
     val edgeOfEternitiesEnabled: Boolean = false,
-    val lorwynEclipsedEnabled: Boolean = false,
+    val lorwynEclipsedEnabled: Boolean = true,
     val lostCavernsOfIxalanEnabled: Boolean = true,
     val foundationsEnabled: Boolean = true
 )
