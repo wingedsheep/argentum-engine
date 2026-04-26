@@ -2,7 +2,7 @@
 
 **Set Size:** 273 cards (main set, per Scryfall `set:ecl`)
 **Release Date:** January 23, 2026
-**Implemented:** 142 / 273
+**Implemented:** 143 / 273
 
 | Color      | Total | Done |
 |------------|-------|------|
@@ -10,7 +10,7 @@
 | Blue       | 39    | 22   |
 | Black      | 38    | 23   |
 | Red        | 39    | 14   |
-| Green      | 39    | 21   |
+| Green      | 39    | 22   |
 | Multicolor | 49    | 29   |
 | Colorless  | 18    | 4    |
 | Land       | 12    | 10   |
@@ -223,7 +223,7 @@
 - [x] Surly Farrier
 - [ ] Tend the Sprigs
 - [x] Thoughtweft Charge
-- [ ] Unforgiving Aim
+- [x] Unforgiving Aim
 - [x] Vinebred Brawler
 - [x] Virulent Emissary
 - [x] Wildvine Pummeler

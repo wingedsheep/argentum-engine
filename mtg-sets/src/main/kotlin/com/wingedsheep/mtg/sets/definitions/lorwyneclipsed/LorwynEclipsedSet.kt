@@ -146,6 +146,7 @@ object LorwynEclipsedSet {
         TwilightDiviner,
         Tweeze,
         UnexpectedAssistance,
+        UnforgivingAim,
         UnwelcomeSprite,
         Vibrance,
         VinebredBrawler,
