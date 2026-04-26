@@ -104,13 +104,13 @@ Copy `.env.example` to `.env` to configure:
 
 ### Drafting
 
-<img src="assets/drafting.png" alt="Drafting" width="900px">
+<img src="assets/drafting.jpeg" alt="Drafting" width="900px">
 
 Host booster drafts with up to 8 players. Create a draft lobby, invite friends, and build your deck from freshly opened packs.
 
 ### Play
 
-<img src="assets/play.png" alt="Play" width="900px">
+<img src="assets/play.jpeg" alt="Play" width="900px">
 
 Play Magic against friends with fully implemented MTG rules. The engine automatically handles the stack, priority, combat, triggers, and state-based actions—so you can focus on the game.
 
