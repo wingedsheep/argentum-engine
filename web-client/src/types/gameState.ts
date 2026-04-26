@@ -173,6 +173,9 @@ export interface ClientCard {
   /** Whether this spell promised a gift (Bloomburrow gift mechanic — only present on stack) */
   readonly giftPromised?: boolean
 
+  /** Whether this spell's optional Blight additional cost was paid (Lorwyn Eclipsed — only present on stack) */
+  readonly wasBlightPaid?: boolean
+
   /** Chosen X value for spells with X in their cost (only present on stack) */
   readonly chosenX?: number | null
 

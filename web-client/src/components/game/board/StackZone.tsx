@@ -174,6 +174,19 @@ export function StackDisplay() {
                       <span>Gift</span>
                     </div>
                   )}
+                  {/* Show blight-paid badge when the optional Blight additional cost was paid (Lorwyn Eclipsed) */}
+                  {card.wasBlightPaid && (
+                    <div
+                      style={{
+                        ...styles.stackBlightPaidBadge,
+                        top: 4 + (card.wasKicked ? 22 : 0) + (card.giftPromised ? 22 : 0),
+                      }}
+                      title="Blight cost paid"
+                    >
+                      <i className="ms ms-counter-minus" style={{ fontSize: 12 }} />
+                      <span>Blight</span>
+                    </div>
+                  )}
                   {/* Show copy badge for storm/copy effects */}
                   {card.copyIndex != null && card.copyTotal != null && (
                     <div style={styles.stackCopyBadge}>

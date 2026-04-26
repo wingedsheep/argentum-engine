@@ -797,6 +797,10 @@ class ClientStateTransformer(
         // Get kicker status for spells on the stack
         val wasKicked = spellOnStack?.wasKicked ?: false
 
+        // Surface whether the optional Blight additional cost was paid (Lorwyn Eclipsed)
+        // so opponents can see at a glance that a stronger effect is incoming on resolution.
+        val wasBlightPaid = spellOnStack?.wasBlightPaid ?: false
+
         // Detect whether this spell promised a gift (Bloomburrow gift mechanic).
         // Gift is modeled as a modal choice: the "promise" mode's effect tree contains
         // GiftGivenEffect. Surface this to opponents so they can see at a glance that
@@ -919,6 +923,7 @@ class ClientStateTransformer(
             } ?: emptyList(),
             wasKicked = wasKicked,
             giftPromised = giftPromised,
+            wasBlightPaid = wasBlightPaid,
             chosenX = chosenX,
             chosenCreatureType = chosenCreatureType,
             chosenColor = chosenColor,

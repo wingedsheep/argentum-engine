@@ -181,6 +181,9 @@ data class ClientCard(
     /** Whether this spell promised a gift (Bloomburrow gift mechanic — only present on stack) */
     val giftPromised: Boolean = false,
 
+    /** Whether this spell's optional Blight additional cost was paid (Lorwyn Eclipsed — only present on stack) */
+    val wasBlightPaid: Boolean = false,
+
     /** Chosen X value for spells with X in their cost (only present on stack) */
     val chosenX: Int? = null,
 
