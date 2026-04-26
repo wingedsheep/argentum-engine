@@ -23,6 +23,7 @@ object LorwynEclipsedSet {
         AjaniOutlandChaperone,
         AppealToEirdu,
         AquitectsDefenses,
+        AssertPerfection,
         AuntiesSentence,
         AuroraAwakener,
         BarbedBloodletter,
