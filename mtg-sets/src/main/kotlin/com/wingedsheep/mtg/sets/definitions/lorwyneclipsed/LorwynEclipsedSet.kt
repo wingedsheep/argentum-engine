@@ -34,6 +34,7 @@ object LorwynEclipsedSet {
         BloomTender,
         Blossombind,
         BoggartPrankster,
+        BogslithersEmbrace,
         BoldwyrAggressor,
         BoulderDash,
         BramblebackBrute,
