@@ -126,6 +126,9 @@ data class TargetFilter(
         /** Target artifact or enchantment */
         val ArtifactOrEnchantment = TargetFilter(GameObjectFilter.Companion.ArtifactOrEnchantment)
 
+        /** Target creature or artifact */
+        val CreatureOrArtifact = TargetFilter(GameObjectFilter.Companion.CreatureOrArtifact)
+
         /** Target land */
         val Land = TargetFilter(GameObjectFilter.Companion.Land)
 
