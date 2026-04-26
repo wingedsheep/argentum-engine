@@ -2,11 +2,11 @@
 
 **Set Size:** 273 cards (main set, per Scryfall `set:ecl`)
 **Release Date:** January 23, 2026
-**Implemented:** 162 / 273
+**Implemented:** 163 / 273
 
 | Color      | Total | Done |
 |------------|-------|------|
-| White      | 39    | 22   |
+| White      | 39    | 23   |
 | Blue       | 39    | 25   |
 | Black      | 38    | 25   |
 | Red        | 39    | 19   |
@@ -43,7 +43,7 @@
 - [x] Liminal Hold
 - [ ] Meanders Guide
 - [ ] Moonlit Lamenter
-- [ ] Morningtide's Light
+- [x] Morningtide's Light
 - [x] Personify
 - [x] Protective Response
 - [ ] Pyrrhic Strike
