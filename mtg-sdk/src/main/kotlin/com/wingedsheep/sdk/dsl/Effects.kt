@@ -84,6 +84,7 @@ import com.wingedsheep.sdk.scripting.effects.RepeatWhileEffect
 import com.wingedsheep.sdk.scripting.effects.ReplaceNextDrawWithEffect
 import com.wingedsheep.sdk.scripting.effects.ChooseOptionEffect
 import com.wingedsheep.sdk.scripting.effects.ChooseColorForTargetEffect
+import com.wingedsheep.sdk.scripting.effects.BecomeChosenManaColorEffect
 import com.wingedsheep.sdk.scripting.effects.OptionType
 import com.wingedsheep.sdk.scripting.effects.SelectTargetEffect
 import com.wingedsheep.sdk.scripting.effects.SeparatePermanentsIntoPilesEffect
@@ -729,6 +730,16 @@ object Effects {
         target: EffectTarget = EffectTarget.Self,
         prompt: String = "Choose a color"
     ): Effect = ChooseColorForTargetEffect(target, prompt)
+
+    /**
+     * Make the target become the color the controller chose when activating an
+     * "Add one mana of any color" mana ability. Pair inside a [Composite]
+     * alongside [AddAnyColorMana] so both share the player's pick.
+     */
+    fun BecomeChosenManaColor(
+        target: EffectTarget = EffectTarget.Self,
+        duration: Duration = Duration.EndOfTurn
+    ): Effect = BecomeChosenManaColorEffect(target, duration)
 
     /**
      * Set a creature's base power to a dynamic value.

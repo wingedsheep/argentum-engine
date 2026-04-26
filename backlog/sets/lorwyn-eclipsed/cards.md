@@ -2,17 +2,17 @@
 
 **Set Size:** 273 cards (main set, per Scryfall `set:ecl`)
 **Release Date:** January 23, 2026
-**Implemented:** 171 / 273
+**Implemented:** 172 / 273
 
 | Color      | Total | Done |
 |------------|-------|------|
 | White      | 39    | 23   |
 | Blue       | 39    | 28   |
 | Black      | 38    | 25   |
-| Red        | 39    | 21   |
+| Red        | 39    | 21   |/cler
 | Green      | 39    | 25   |
 | Multicolor | 49    | 32   |
-| Colorless  | 18    | 7    |
+| Colorless  | 18    | 8    |
 | Land       | 12    | 10   |
 
 > **Note:** Before implementing any card, check the `effects/` directory in this folder for any
@@ -289,7 +289,7 @@
 - [ ] Dawn-Blessed Pennant
 - [x] Eirdu, Carrier of Dawn // Isilu, Carrier of Twilight
 - [ ] Firdoch Core
-- [ ] Foraging Wickermaw
+- [x] Foraging Wickermaw
 - [ ] Gathering Stone
 - [x] Grub, Storied Matriarch // Grub, Notorious Auntie
 - [x] Mirrormind Crown

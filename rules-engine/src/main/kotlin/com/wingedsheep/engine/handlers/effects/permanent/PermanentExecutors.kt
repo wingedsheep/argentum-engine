@@ -40,6 +40,7 @@ import com.wingedsheep.engine.handlers.effects.permanent.types.AddCardTypeExecut
 import com.wingedsheep.engine.handlers.effects.permanent.types.AddCreatureTypeExecutor
 import com.wingedsheep.engine.handlers.effects.permanent.types.AddSubtypeExecutor
 import com.wingedsheep.engine.handlers.effects.permanent.types.AnimateLandExecutor
+import com.wingedsheep.engine.handlers.effects.permanent.types.BecomeChosenManaColorExecutor
 import com.wingedsheep.engine.handlers.effects.permanent.types.BecomeCreatureExecutor
 import com.wingedsheep.engine.handlers.effects.permanent.types.BecomeCreatureTypeExecutor
 import com.wingedsheep.engine.handlers.effects.permanent.types.ChangeCreatureTypeTextExecutor
@@ -95,6 +96,7 @@ class PermanentExecutors(
         AddCreatureTypeExecutor(),
         AddSubtypeExecutor(),
         AnimateLandExecutor(),
+        BecomeChosenManaColorExecutor(),
         BecomeCreatureExecutor(),
         BecomeCreatureTypeExecutor(),
         ChangeCreatureTypeTextExecutor(decisionHandler),

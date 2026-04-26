@@ -92,6 +92,7 @@ constructors.
 
 - `Effects.AddSubtype(subtype, target, duration = EndOfTurn)` — add a subtype to any permanent (creature, land, etc.) in addition to its other types; supports `fromChosenValueKey` for pipeline composition with `ChooseOptionEffect(BASIC_LAND_TYPE)`
 - `Effects.ChooseColorForTarget(target = Self, prompt = "Choose a color")` — choose a color during resolution and store it on a target permanent for chosen-color static abilities
+- `Effects.BecomeChosenManaColor(target = Self, duration = EndOfTurn)` — pair inside a mana ability `Composite` with `Effects.AddAnyColorMana(1)`; the target becomes the same color the controller picked when activating, for `duration` (uses `EffectContext.manaColorChoice`)
 
 ### Mass Effects (group)
 
@@ -303,6 +304,7 @@ constructors.
 | `SetGroupCreatureSubtypesEffect`            | `subtypes, filter, duration`                                                | Set group subtypes                       |
 | `ChangeGroupColorEffect`                    | `colors, filter, duration`                                                  | Change group color                       |
 | `ChooseColorForTargetEffect`                | `target, prompt`                                                            | Choose and store color on a permanent    |
+| `BecomeChosenManaColorEffect`               | `target, duration`                                                          | Target becomes the mana-ability color    |
 | `ChooseCreatureTypeModifyStatsEffect`       | `power: DynamicAmount, toughness: DynamicAmount, duration, grantKeyword?`   | Choose type, modify stats (+ keyword)    |
 | `Effects.ChooseCreatureTypeUntap()`         | (pipeline pattern)                                                          | Choose type, untap all of that type      |
 | `GainControlEffect`                         | `target, duration`                                                          | Gain control                             |

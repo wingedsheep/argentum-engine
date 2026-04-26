@@ -255,6 +255,32 @@ data class ChooseColorForTargetEffect(
 }
 
 /**
+ * Make the target become the color the controller picked when activating a
+ * mana ability that produces one mana of any color (i.e. the value supplied via
+ * [com.wingedsheep.engine.handlers.EffectContext.manaColorChoice]).
+ *
+ * Pairs with [AddAnyColorManaEffect] inside a [CompositeEffect] so that the
+ * same color choice powers both the mana produced and the temporary color
+ * change. If no color was chosen at activation, no effect is created.
+ *
+ * Creates a floating Layer 5 effect that replaces the target's colors for
+ * [duration].
+ */
+@SerialName("BecomeChosenManaColor")
+@Serializable
+data class BecomeChosenManaColorEffect(
+    val target: EffectTarget = EffectTarget.Self,
+    val duration: Duration = Duration.EndOfTurn
+) : Effect {
+    override val description: String = buildString {
+        append("${target.description} becomes that color")
+        if (duration.description.isNotEmpty()) append(" ${duration.description}")
+    }
+
+    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
+}
+
+/**
  * Change the text of target spell or permanent by replacing all instances of one
  * creature type with another.
  * (This effect lasts indefinitely.)
