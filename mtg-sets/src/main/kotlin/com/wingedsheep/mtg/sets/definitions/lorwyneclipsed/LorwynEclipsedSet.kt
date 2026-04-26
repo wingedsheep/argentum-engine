@@ -81,6 +81,7 @@ object LorwynEclipsedSet {
         Giantfall,
         GiltLeafsEmbrace,
         GlamerGifter,
+        Glamermite,
         GlenElendraGuardian,
         GlenElendrasAnswer,
         GloomRipper,
