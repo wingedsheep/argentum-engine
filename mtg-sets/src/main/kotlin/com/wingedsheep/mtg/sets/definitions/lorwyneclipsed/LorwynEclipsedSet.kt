@@ -129,6 +129,7 @@ object LorwynEclipsedSet {
         RimefireTorque,
         RiverguardsReflexes,
         SaplingNursery,
+        ScarbladesMalice,
         ShadowUrchin,
         Shimmercreep,
         ShimmerwildsGrowth,
