@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.mechanics.mana
 
+import com.wingedsheep.engine.handlers.ConditionEvaluator
 import com.wingedsheep.engine.handlers.DynamicAmountEvaluator
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.PredicateContext
@@ -7,6 +8,8 @@ import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
+import com.wingedsheep.engine.state.components.battlefield.AbilityActivatedEverComponent
+import com.wingedsheep.engine.state.components.battlefield.AbilityActivatedThisTurnComponent
 import com.wingedsheep.engine.state.components.battlefield.AttachedToComponent
 import com.wingedsheep.engine.state.components.battlefield.SummoningSicknessComponent
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
@@ -20,6 +23,7 @@ import com.wingedsheep.sdk.core.ManaSymbol
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.AbilityCost
+import com.wingedsheep.sdk.scripting.ActivationRestriction
 import com.wingedsheep.sdk.scripting.effects.AddAnyColorManaEffect
 import com.wingedsheep.sdk.scripting.effects.AddAnyColorManaSpendOnChosenTypeEffect
 import com.wingedsheep.sdk.scripting.effects.AddColorlessManaEffect
@@ -136,6 +140,7 @@ class ManaSolver(
 ) {
 
     private val predicateEvaluator = PredicateEvaluator()
+    private val conditionEvaluator = ConditionEvaluator()
 
     /**
      * Finds a valid set of mana sources to pay the cost.
@@ -573,6 +578,12 @@ class ManaSolver(
             val perColorActivationCost = mutableMapOf<Color, Int>()
 
             for (ability in manaAbilities) {
+                // Skip abilities whose activation restrictions aren't satisfied
+                // (e.g., Lys Alana Dignitary's "only if there is an Elf card in your graveyard").
+                if (!activationRestrictionsSatisfied(state, playerId, entityId, ability)) {
+                    continue
+                }
+
                 // Detect pain cost and mana activation cost in mana abilities
                 var abilityHasPainCost = false
                 var abilityPainAmount = 0
@@ -799,6 +810,59 @@ class ManaSolver(
             .let { sources ->
                 if (hasDampLandManaProduction(state)) applyLandManaDampening(sources) else sources
             }
+    }
+
+    /**
+     * Returns true when every [ActivationRestriction] on the given mana ability is currently
+     * satisfied for the controller. Mirrors `CastPermissionUtils.checkActivationRestriction` but
+     * is inlined here so the auto-tap solver doesn't need to depend on the legalactions module.
+     */
+    private fun activationRestrictionsSatisfied(
+        state: GameState,
+        playerId: EntityId,
+        sourceId: EntityId,
+        ability: ActivatedAbility
+    ): Boolean {
+        if (ability.restrictions.isEmpty()) return true
+        return ability.restrictions.all {
+            checkActivationRestriction(state, playerId, sourceId, ability, it)
+        }
+    }
+
+    private fun checkActivationRestriction(
+        state: GameState,
+        playerId: EntityId,
+        sourceId: EntityId,
+        ability: ActivatedAbility,
+        restriction: ActivationRestriction
+    ): Boolean = when (restriction) {
+        is ActivationRestriction.AnyPlayerMay -> true
+        is ActivationRestriction.OnlyDuringYourTurn -> state.activePlayerId == playerId
+        is ActivationRestriction.BeforeStep -> state.step.ordinal < restriction.step.ordinal
+        is ActivationRestriction.DuringPhase -> state.phase == restriction.phase
+        is ActivationRestriction.DuringStep -> state.step == restriction.step
+        is ActivationRestriction.OnlyIfCondition -> {
+            val opponentId = state.turnOrder.firstOrNull { it != playerId }
+            val context = EffectContext(
+                sourceId = sourceId,
+                controllerId = playerId,
+                opponentId = opponentId,
+                targets = emptyList(),
+                xValue = 0
+            )
+            conditionEvaluator.evaluate(state, restriction.condition, context)
+        }
+        is ActivationRestriction.OncePerTurn -> {
+            val tracker = state.getEntity(sourceId)?.get<AbilityActivatedThisTurnComponent>()
+            tracker == null || !tracker.hasActivated(ability.id)
+        }
+        is ActivationRestriction.Once -> {
+            val tracker = state.getEntity(sourceId)?.get<AbilityActivatedEverComponent>()
+            tracker == null || !tracker.hasActivated(ability.id)
+        }
+        is ActivationRestriction.All -> restriction.restrictions.all {
+            checkActivationRestriction(state, playerId, sourceId, ability, it)
+        }
     }
 
     /**

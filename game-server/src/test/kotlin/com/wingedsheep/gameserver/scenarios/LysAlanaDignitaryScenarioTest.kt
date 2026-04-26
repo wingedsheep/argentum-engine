@@ -138,6 +138,54 @@ class LysAlanaDignitaryScenarioTest : ScenarioTestBase() {
                 }
             }
 
+            test("tap ability cannot be activated when an Elf is only in opponent's graveyard") {
+                val game = scenario()
+                    .withPlayers("Player1", "Player2")
+                    .withCardOnBattlefield(1, "Lys Alana Dignitary")
+                    .withCardInGraveyard(2, "Elvish Pioneer")
+                    .withCardInLibrary(1, "Forest")
+                    .withCardInLibrary(2, "Forest")
+                    .withActivePlayer(1)
+                    .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                    .build()
+
+                val dignitary = game.findPermanent("Lys Alana Dignitary")!!
+                val dignitaryDef = cardRegistry.getCard("Lys Alana Dignitary")!!
+                val abilityId = dignitaryDef.activatedAbilities.first().id
+
+                val result = game.execute(
+                    ActivateAbility(
+                        playerId = game.player1Id,
+                        sourceId = dignitary,
+                        abilityId = abilityId
+                    )
+                )
+                withClue("Mana ability should fail when Elf is only in opponent's graveyard") {
+                    result.error.shouldNotBeNull()
+                }
+            }
+
+            test("auto-tap for spell cost ignores Lys Alana Dignitary when Elf is only in opponent's graveyard") {
+                val game = scenario()
+                    .withPlayers("Player1", "Player2")
+                    .withCardOnBattlefield(1, "Lys Alana Dignitary")
+                    .withCardInHand(1, "Llanowar Elves")
+                    .withCardInGraveyard(2, "Elvish Pioneer")
+                    .withCardInLibrary(1, "Forest")
+                    .withCardInLibrary(2, "Forest")
+                    .withActivePlayer(1)
+                    .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                    .build()
+
+                // Player 1's only available green source is Lys Alana Dignitary's mana ability,
+                // but its activation restriction is not met (no Elf in player 1's own graveyard).
+                // The auto-tap solver must therefore refuse to use it.
+                val result = game.castSpell(1, "Llanowar Elves")
+                withClue("Casting should fail because no legal green mana source is available") {
+                    result.error.shouldNotBeNull()
+                }
+            }
+
             test("tap ability cannot be activated when no Elf card is in your graveyard") {
                 val game = scenario()
                     .withPlayers("Player1", "Player2")
