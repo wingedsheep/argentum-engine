@@ -159,6 +159,7 @@ class LegalActionEnricher(
         entityId = entityId,
         name = name,
         availableCounters = availableCounters,
+        availableCountersByType = availableCountersByType,
         imageUri = imageUri
     )
 }

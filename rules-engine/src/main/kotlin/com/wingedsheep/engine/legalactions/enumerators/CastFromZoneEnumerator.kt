@@ -587,11 +587,17 @@ class CastFromZoneEnumerator : ActionEnumerator {
             val total = counters.counters.values.sum()
             if (total <= 0) continue
             val card = container.get<CardComponent>() ?: continue
+            val byType = counters.counters
+                .filterValues { it > 0 }
+                .mapKeys { (type, _) ->
+                    com.wingedsheep.engine.handlers.effects.permanent.counters.counterTypeToString(type)
+                }
             result.add(
                 com.wingedsheep.engine.legalactions.CounterRemovalCreatureData(
                     entityId = permId,
                     name = card.name,
                     availableCounters = total,
+                    availableCountersByType = byType,
                     imageUri = card.imageUri
                 )
             )

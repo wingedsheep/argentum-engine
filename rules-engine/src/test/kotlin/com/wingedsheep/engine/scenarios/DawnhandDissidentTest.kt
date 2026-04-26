@@ -119,7 +119,7 @@ class DawnhandDissidentTest : FunSpec({
                 paymentStrategy = PaymentStrategy.AutoPay,
                 additionalCostPayment = AdditionalCostPayment(
                     distributedCounterRemovals = listOf(
-                        DistributedCounterRemoval(piggy, CounterType.PLUS_ONE_PLUS_ONE, 3)
+                        DistributedCounterRemoval(piggy, "+1/+1", 3)
                     )
                 )
             )
@@ -146,7 +146,7 @@ class DawnhandDissidentTest : FunSpec({
                 paymentStrategy = PaymentStrategy.AutoPay,
                 additionalCostPayment = AdditionalCostPayment(
                     distributedCounterRemovals = listOf(
-                        DistributedCounterRemoval(piggy, CounterType.PLUS_ONE_PLUS_ONE, 2)
+                        DistributedCounterRemoval(piggy, "+1/+1", 2)
                     )
                 )
             )
@@ -173,6 +173,169 @@ class DawnhandDissidentTest : FunSpec({
         val actions = driver.enumerateFor(driver.player1)
         val exileCasts = actions.castActions().filter { (it.action as CastSpell).cardId == exiledCreature }
         exileCasts.shouldBeEmpty()
+    }
+
+    test("linked-exile cast pays counters distributed across two creatures (-1/-1)") {
+        // User-reported bug: two creatures each carrying two -1/-1 counters
+        // (4 total). Removing 3 counters split across the pair should pay the
+        // additional cost. Hill Giants (3/3) survive the counters as 1/1s.
+        val driver = setupP1(
+            battlefield = listOf("Dawnhand Dissident", "Hill Giant", "Hill Giant", "Forest", "Forest", "Forest"),
+            exile = listOf("Grizzly Bears"),
+            extraSetCards = listOf(DawnhandDissident),
+        )
+        val state0 = driver.game.state
+        val p1 = driver.player1
+
+        val dissident = state0.getZone(ZoneKey(p1, Zone.BATTLEFIELD))
+            .first { state0.getEntity(it)?.get<CardComponent>()?.name == "Dawnhand Dissident" }
+        val bears = state0.getZone(ZoneKey(p1, Zone.BATTLEFIELD))
+            .filter { state0.getEntity(it)?.get<CardComponent>()?.name == "Hill Giant" }
+        bears.size shouldBe 2
+        val bear1 = bears[0]
+        val bear2 = bears[1]
+        val exiledCreature = state0.getZone(ZoneKey(p1, Zone.EXILE))
+            .first { state0.getEntity(it)?.get<CardComponent>()?.name == "Grizzly Bears" }
+
+        var newState = state0.updateEntity(dissident) { c ->
+            c.with(LinkedExileComponent(listOf(exiledCreature)))
+        }
+        newState = newState.updateEntity(bear1) { c ->
+            c.with(CountersComponent(mapOf(CounterType.MINUS_ONE_MINUS_ONE to 2)))
+        }
+        newState = newState.updateEntity(bear2) { c ->
+            c.with(CountersComponent(mapOf(CounterType.MINUS_ONE_MINUS_ONE to 2)))
+        }
+        driver.game.replaceState(newState)
+
+        // 1) Engine surfaces the cast as affordable with 4 counters available.
+        val actions = driver.enumerateFor(p1)
+        val cast = actions.castActions().single { (it.action as CastSpell).cardId == exiledCreature }
+        cast.affordable shouldBe true
+        cast.additionalCostInfo!!.counterRemovalCreatures shouldHaveSize 2
+
+        // 2) Casting succeeds with the typed distribution payload.
+        val typedResult = driver.game.submit(
+            CastSpell(
+                playerId = p1,
+                cardId = exiledCreature,
+                paymentStrategy = PaymentStrategy.AutoPay,
+                additionalCostPayment = AdditionalCostPayment(
+                    distributedCounterRemovals = listOf(
+                        DistributedCounterRemoval(bear1, "-1/-1", 2),
+                        DistributedCounterRemoval(bear2, "-1/-1", 1),
+                    )
+                )
+            )
+        )
+        typedResult.isSuccess shouldBe true
+        driver.game.state.getEntity(bear1)?.get<CountersComponent>()
+            ?.getCount(CounterType.MINUS_ONE_MINUS_ONE) shouldBe 0
+        driver.game.state.getEntity(bear2)?.get<CountersComponent>()
+            ?.getCount(CounterType.MINUS_ONE_MINUS_ONE) shouldBe 1
+    }
+
+    test("linked-exile cast picks counter type when a creature has multiple types") {
+        // Multi-type pay: a 4/4 with both +1/+1 and stun counters lets the
+        // player decide which to remove (Scryfall ruling on
+        // RemoveCountersFromYourCreatures — controller chooses). Engine must
+        // honour the typed entries verbatim, not auto-pick.
+        val driver = setupP1(
+            battlefield = listOf("Dawnhand Dissident", "Hill Giant", "Forest", "Forest", "Forest"),
+            exile = listOf("Grizzly Bears"),
+            extraSetCards = listOf(DawnhandDissident),
+        )
+        val state0 = driver.game.state
+        val p1 = driver.player1
+
+        val dissident = state0.getZone(ZoneKey(p1, Zone.BATTLEFIELD))
+            .first { state0.getEntity(it)?.get<CardComponent>()?.name == "Dawnhand Dissident" }
+        val giant = state0.getZone(ZoneKey(p1, Zone.BATTLEFIELD))
+            .first { state0.getEntity(it)?.get<CardComponent>()?.name == "Hill Giant" }
+        val exiledCreature = state0.getZone(ZoneKey(p1, Zone.EXILE))
+            .first { state0.getEntity(it)?.get<CardComponent>()?.name == "Grizzly Bears" }
+
+        var newState = state0.updateEntity(dissident) { c ->
+            c.with(LinkedExileComponent(listOf(exiledCreature)))
+        }
+        newState = newState.updateEntity(giant) { c ->
+            c.with(CountersComponent(mapOf(
+                CounterType.PLUS_ONE_PLUS_ONE to 2,
+                CounterType.STUN to 2,
+            )))
+        }
+        driver.game.replaceState(newState)
+
+        // Engine surfaces a per-type breakdown so the UI can offer +/- per type.
+        val actions = driver.enumerateFor(p1)
+        val cast = actions.castActions().single { (it.action as CastSpell).cardId == exiledCreature }
+        val info = cast.additionalCostInfo!!.counterRemovalCreatures.single()
+        info.availableCounters shouldBe 4
+        info.availableCountersByType.keys shouldBe setOf("+1/+1", "stun")
+        info.availableCountersByType["+1/+1"] shouldBe 2
+        info.availableCountersByType["stun"] shouldBe 2
+
+        // Player chooses to remove 1 +1/+1 and 2 stun (preserves the +1/+1 buff
+        // they care about). Engine honours the typed entries.
+        val result = driver.game.submit(
+            CastSpell(
+                playerId = p1,
+                cardId = exiledCreature,
+                paymentStrategy = PaymentStrategy.AutoPay,
+                additionalCostPayment = AdditionalCostPayment(
+                    distributedCounterRemovals = listOf(
+                        DistributedCounterRemoval(giant, "+1/+1", 1),
+                        DistributedCounterRemoval(giant, "stun", 2),
+                    )
+                )
+            )
+        )
+        result.isSuccess shouldBe true
+        val countersAfter = driver.game.state.getEntity(giant)?.get<CountersComponent>()
+        countersAfter?.getCount(CounterType.PLUS_ONE_PLUS_ONE) shouldBe 1
+        countersAfter?.getCount(CounterType.STUN) shouldBe 0
+    }
+
+    test("linked-exile cast rejects legacy counterRemovals payload (typed-only)") {
+        // CastSpell flow no longer honours the legacy `counterRemovals: Map<EntityId, Int>`
+        // payload — clients must send the typed `distributedCounterRemovals`. This guards
+        // the engine against silently auto-picking counter types on the player's behalf.
+        val driver = setupP1(
+            battlefield = listOf("Dawnhand Dissident", "Hill Giant", "Hill Giant", "Forest", "Forest", "Forest"),
+            exile = listOf("Grizzly Bears"),
+            extraSetCards = listOf(DawnhandDissident),
+        )
+        val state0 = driver.game.state
+        val p1 = driver.player1
+
+        val dissident = state0.getZone(ZoneKey(p1, Zone.BATTLEFIELD))
+            .first { state0.getEntity(it)?.get<CardComponent>()?.name == "Dawnhand Dissident" }
+        val giants = state0.getZone(ZoneKey(p1, Zone.BATTLEFIELD))
+            .filter { state0.getEntity(it)?.get<CardComponent>()?.name == "Hill Giant" }
+        val exiledCreature = state0.getZone(ZoneKey(p1, Zone.EXILE))
+            .first { state0.getEntity(it)?.get<CardComponent>()?.name == "Grizzly Bears" }
+
+        var newState = state0.updateEntity(dissident) { c ->
+            c.with(LinkedExileComponent(listOf(exiledCreature)))
+        }
+        for (g in giants) {
+            newState = newState.updateEntity(g) { c ->
+                c.with(CountersComponent(mapOf(CounterType.MINUS_ONE_MINUS_ONE to 2)))
+            }
+        }
+        driver.game.replaceState(newState)
+
+        val result = driver.game.submit(
+            CastSpell(
+                playerId = p1,
+                cardId = exiledCreature,
+                paymentStrategy = PaymentStrategy.AutoPay,
+                additionalCostPayment = AdditionalCostPayment(
+                    counterRemovals = mapOf(giants[0] to 2, giants[1] to 1)
+                )
+            )
+        )
+        result.isSuccess shouldBe false
     }
 
     test("linked-exile cast is unavailable on opponent's turn") {

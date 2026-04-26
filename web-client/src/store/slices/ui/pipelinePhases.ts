@@ -162,23 +162,32 @@ export function mergeResult(
   switch (result.type) {
     case 'counterDistribution': {
       if (action.type === 'ActivateAbility') {
+        // Activated abilities only use this for `RemoveXPlusOnePlusOneCounters`,
+        // which is single-type. Sum the typed entries per creature back into the
+        // legacy `counterRemovals: Map<EntityId, Int>` shape the engine still
+        // consumes for that path.
+        const counterRemovals: Record<string, number> = {}
+        for (const r of result.distributedCounterRemovals) {
+          counterRemovals[r.entityId] = (counterRemovals[r.entityId] ?? 0) + r.count
+        }
         return {
           ...action,
           xValue: result.xValue,
           costPayment: {
             ...action.costPayment,
-            counterRemovals: result.counterRemovals,
+            counterRemovals,
           },
         }
       }
       if (action.type === 'CastSpell') {
         // Fixed distributed counter cost (Dawnhand Dissident's linked-exile cost) —
-        // no xValue to set; the server validates that the totals match.
+        // send the typed payload so the engine knows exactly which counter type
+        // came off each creature.
         return {
           ...action,
           additionalCostPayment: {
             ...action.additionalCostPayment,
-            counterRemovals: result.counterRemovals,
+            distributedCounterRemovals: [...result.distributedCounterRemovals],
           },
         }
       }
@@ -339,9 +348,20 @@ export function enterPhase(
   switch (phase.type) {
     case 'counterDistribution': {
       const counterCreatures = actionInfo.additionalCostInfo!.counterRemovalCreatures!
-      const distribution: Record<string, number> = {}
+      // Seed a zero allocation per (creature, counterType). When a creature
+      // exposes multiple types via `availableCountersByType`, each type gets its
+      // own slot; older payloads (pre-engine-fix) without the map fall back to
+      // a single-type `+1/+1` slot keyed by total.
+      const distribution: Record<string, Record<string, number>> = {}
       for (const creature of counterCreatures) {
-        distribution[creature.entityId] = 0
+        const byType = creature.availableCountersByType
+        if (byType && Object.keys(byType).length > 0) {
+          const inner: Record<string, number> = {}
+          for (const counterType of Object.keys(byType)) inner[counterType] = 0
+          distribution[creature.entityId] = inner
+        } else {
+          distribution[creature.entityId] = { '+1/+1': 0 }
+        }
       }
       const fixedTotal = actionInfo.additionalCostInfo?.distributedCounterRemovalTotal
       store.startCounterDistribution({

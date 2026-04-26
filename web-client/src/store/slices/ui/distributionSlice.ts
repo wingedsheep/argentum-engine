@@ -31,8 +31,8 @@ export interface DistributionSliceActions {
   confirmDistribute: () => void
   clearDistribute: () => void
   startCounterDistribution: (state: CounterDistributionState) => void
-  incrementCounterRemoval: (entityId: EntityId) => void
-  decrementCounterRemoval: (entityId: EntityId) => void
+  incrementCounterRemoval: (entityId: EntityId, counterType: string) => void
+  decrementCounterRemoval: (entityId: EntityId, counterType: string) => void
   cancelCounterDistribution: () => void
   confirmCounterDistribution: () => void
 }
@@ -146,16 +146,22 @@ export const createDistributionSlice: SliceCreator<DistributionSlice> = (set, ge
     set({ counterDistributionState })
   },
 
-  incrementCounterRemoval: (entityId) => {
+  incrementCounterRemoval: (entityId, counterType) => {
     set((state) => {
       if (!state.counterDistributionState) return state
       const dist = state.counterDistributionState
-      const current = dist.distribution[entityId] ?? 0
+      const inner = dist.distribution[entityId] ?? {}
+      const current = inner[counterType] ?? 0
       const creature = dist.creatures.find((c) => c.entityId === entityId)
-      if (!creature || current >= creature.availableCounters) return state
+      if (!creature) return state
+      // Cap per-type by what the creature actually has of that type. Falls
+      // back to total `availableCounters` for legacy payloads that didn't
+      // include the per-type breakdown.
+      const perTypeCap = creature.availableCountersByType?.[counterType] ?? creature.availableCounters
+      if (current >= perTypeCap) return state
       // Fixed-cost mode: prevent exceeding the requiredTotal.
       if (dist.requiredTotal != null) {
-        const allocated = Object.values(dist.distribution).reduce<number>((s, v) => s + v, 0)
+        const allocated = totalAllocated(dist.distribution)
         if (allocated >= dist.requiredTotal) return state
       }
       return {
@@ -163,25 +169,26 @@ export const createDistributionSlice: SliceCreator<DistributionSlice> = (set, ge
           ...dist,
           distribution: {
             ...dist.distribution,
-            [entityId]: current + 1,
+            [entityId]: { ...inner, [counterType]: current + 1 },
           },
         },
       }
     })
   },
 
-  decrementCounterRemoval: (entityId) => {
+  decrementCounterRemoval: (entityId, counterType) => {
     set((state) => {
       if (!state.counterDistributionState) return state
       const dist = state.counterDistributionState
-      const current = dist.distribution[entityId] ?? 0
+      const inner = dist.distribution[entityId] ?? {}
+      const current = inner[counterType] ?? 0
       if (current <= 0) return state
       return {
         counterDistributionState: {
           ...dist,
           distribution: {
             ...dist.distribution,
-            [entityId]: current - 1,
+            [entityId]: { ...inner, [counterType]: current - 1 },
           },
         },
       }
@@ -199,26 +206,36 @@ export const createDistributionSlice: SliceCreator<DistributionSlice> = (set, ge
     if (!counterDistributionState || !pipelineState) return
 
     const { distribution, requiredTotal } = counterDistributionState
-    const totalAllocated = Object.values(distribution).reduce<number>((sum, v) => sum + v, 0)
+    const allocated = totalAllocated(distribution)
     // Fixed-cost mode: must match exactly. X cost mode: any positive total confirms.
     if (requiredTotal != null) {
-      if (totalAllocated !== requiredTotal) return
-    } else if (totalAllocated <= 0) {
+      if (allocated !== requiredTotal) return
+    } else if (allocated <= 0) {
       return
     }
 
-    const counterRemovals: Record<string, number> = {}
-    for (const [eid, count] of Object.entries(distribution) as [string, number][]) {
-      if (count > 0) {
-        counterRemovals[eid] = count
+    const distributedCounterRemovals: { entityId: EntityId; counterType: string; count: number }[] = []
+    for (const [entityId, byType] of Object.entries(distribution)) {
+      for (const [counterType, count] of Object.entries(byType)) {
+        if (count > 0) {
+          distributedCounterRemovals.push({ entityId: entityId as EntityId, counterType, count })
+        }
       }
     }
 
     set({ counterDistributionState: null })
     get().advancePipeline({
       type: 'counterDistribution',
-      xValue: totalAllocated,
-      counterRemovals,
+      xValue: allocated,
+      distributedCounterRemovals,
     })
   },
 })
+
+function totalAllocated(distribution: Record<string, Record<string, number>>): number {
+  let sum = 0
+  for (const byType of Object.values(distribution)) {
+    for (const v of Object.values(byType)) sum += v
+  }
+  return sum
+}

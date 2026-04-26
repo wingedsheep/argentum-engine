@@ -642,40 +642,18 @@ class CastSpellHandler(
      * Resolve the distributed counter removals to apply for a
      * [AdditionalCost.RemoveCountersFromYourCreatures] cost.
      *
-     * Prefers the typed `distributedCounterRemovals` field. Falls back to the legacy
-     * `counterRemovals: Map<EntityId, Int>` payload (produced by the current web client
-     * for counter-distribution costs): for each (entity, amount) it picks counter types
-     * greedily from whatever the creature has, so `{creature -> 3}` on a bears with 5
-     * +1/+1 counters resolves to removing 3 +1/+1 counters.
+     * Web clients send the typed [AdditionalCostPayment.distributedCounterRemovals] —
+     * one entry per (entity, counterType, count) — so the player explicitly picks
+     * which counter types come off each creature. The CastSpell flow does not honour
+     * the legacy `counterRemovals: Map<EntityId, Int>` payload; that field remains
+     * only for activated-ability X-cost (`RemoveXPlusOnePlusOneCounters`), which is
+     * single-type by definition and routes through [CostHandler] instead.
      */
     private fun resolveDistributedCounterRemovalsForPayment(
-        state: GameState,
         action: CastSpell
     ): List<com.wingedsheep.sdk.scripting.DistributedCounterRemoval> {
         val payment = action.additionalCostPayment ?: return emptyList()
-        if (payment.distributedCounterRemovals.isNotEmpty()) return payment.distributedCounterRemovals
-        if (payment.counterRemovals.isEmpty()) return emptyList()
-        val result = mutableListOf<com.wingedsheep.sdk.scripting.DistributedCounterRemoval>()
-        for ((entityId, amount) in payment.counterRemovals) {
-            if (amount <= 0) continue
-            val counters = state.getEntity(entityId)?.get<CountersComponent>()?.counters ?: continue
-            // Greedy fill: prefer +1/+1 first (most common for this flow), then any
-            // other type in deterministic order.
-            val ordered = counters.entries.sortedWith(
-                compareByDescending<Map.Entry<CounterType, Int>> { it.key == CounterType.PLUS_ONE_PLUS_ONE }
-                    .thenBy { it.key.name }
-            )
-            var remaining = amount
-            for ((type, available) in ordered) {
-                if (remaining <= 0) break
-                val take = minOf(remaining, available)
-                if (take > 0) {
-                    result.add(com.wingedsheep.sdk.scripting.DistributedCounterRemoval(entityId, type, take))
-                    remaining -= take
-                }
-            }
-        }
-        return result
+        return payment.distributedCounterRemovals
     }
 
     private fun resolveAdditionalCostsForMode(
@@ -937,10 +915,10 @@ class CastSpellHandler(
                     // If beheldCards is empty, the player is paying extra mana instead
                 }
                 is AdditionalCost.RemoveCountersFromYourCreatures -> {
-                    // Accept either typed distributedCounterRemovals or the legacy
-                    // counterRemovals: Map<EntityId, Int> payload the web client currently
-                    // produces for counter-distribution costs.
-                    val removals = resolveDistributedCounterRemovalsForPayment(state, action)
+                    // Web client sends a typed list of (entity, counterType, count)
+                    // entries so the player picks which counter type comes off each
+                    // creature; the engine validates totals and per-type availability.
+                    val removals = resolveDistributedCounterRemovalsForPayment(action)
                     val total = removals.sumOf { it.count }
                     if (total < additionalCost.totalCount) {
                         return "You must remove ${additionalCost.totalCount} counters from among creatures you control to cast this spell"
@@ -965,7 +943,9 @@ class CastSpellHandler(
                         if (!projected.isCreature(removal.entityId)) {
                             return "Counter removal target must be a creature"
                         }
-                        val key = removal.entityId to removal.counterType
+                        val resolvedType =
+                            com.wingedsheep.engine.handlers.effects.permanent.counters.resolveCounterType(removal.counterType)
+                        val key = removal.entityId to resolvedType
                         demanded[key] = (demanded[key] ?: 0) + removal.count
                     }
                     for ((key, demandedCount) in demanded) {
@@ -1388,21 +1368,21 @@ class CastSpellHandler(
                     }
                     is AdditionalCost.RemoveCountersFromYourCreatures -> {
                         // Remove the chosen counters from the designated creatures.
-                        // Accept either typed distributedCounterRemovals or the legacy
-                        // counterRemovals: Map<EntityId, Int> (picks any counter type).
-                        val resolvedRemovals = resolveDistributedCounterRemovalsForPayment(
-                            currentState, action
-                        )
+                        // The typed `distributedCounterRemovals` payload tells us
+                        // exactly which counter type to take off each creature.
+                        val resolvedRemovals = resolveDistributedCounterRemovalsForPayment(action)
                         for (removal in resolvedRemovals) {
                             val container = currentState.getEntity(removal.entityId) ?: continue
                             val existing = container.get<CountersComponent>() ?: continue
+                            val resolvedType =
+                                com.wingedsheep.engine.handlers.effects.permanent.counters.resolveCounterType(removal.counterType)
                             currentState = currentState.updateEntity(removal.entityId) { c ->
-                                c.with(existing.withRemoved(removal.counterType, removal.count))
+                                c.with(existing.withRemoved(resolvedType, removal.count))
                             }
                             val entityName = container.get<CardComponent>()?.name ?: "Creature"
                             events.add(com.wingedsheep.engine.core.CountersRemovedEvent(
                                 entityId = removal.entityId,
-                                counterType = counterTypeToCountersString(removal.counterType),
+                                counterType = removal.counterType,
                                 amount = removal.count,
                                 entityName = entityName
                             ))

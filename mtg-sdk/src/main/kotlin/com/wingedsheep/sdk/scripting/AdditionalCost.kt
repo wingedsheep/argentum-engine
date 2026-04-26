@@ -466,10 +466,16 @@ data class AdditionalCostPayment(
 /**
  * A single removal entry for distributed counter-removal costs.
  * Remove [count] counters of [counterType] from [entityId].
+ *
+ * `counterType` is the canonical symbol (e.g. `"+1/+1"`, `"-1/-1"`, `"stun"`)
+ * — the same string keys used in [CounterRemovalCreatureInfo.availableCountersByType]
+ * — not the [CounterType] enum name. Stored as a string so the wire format
+ * stays human-friendly and matches what the engine emits in those DTOs; the
+ * engine resolves it back to a [CounterType] when paying the cost.
  */
 @Serializable
 data class DistributedCounterRemoval(
     val entityId: EntityId,
-    val counterType: CounterType,
+    val counterType: String,
     val count: Int
 )

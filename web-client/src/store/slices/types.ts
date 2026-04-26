@@ -247,7 +247,12 @@ export interface CounterDistributionState {
   cardName: string
   xValue: number
   creatures: readonly CounterRemovalCreatureInfo[]
-  distribution: Record<EntityId, number>
+  /**
+   * Per-creature, per-type allocation. Outer key is entity id; inner key is the
+   * counter-type symbol (e.g. "+1/+1", "stun"). For creatures that carry only one
+   * type, the inner record has a single entry.
+   */
+  distribution: Record<EntityId, Record<string, number>>
   /** When set, total allocated counters must equal this to confirm (fixed-cost mode). */
   requiredTotal?: number
   /** Label shown to the player (e.g., "Remove +1/+1 counters" vs. "Remove counters"). */
@@ -555,7 +560,12 @@ export type PipelinePhase =
  * Result reported by a phase's confirm handler.
  */
 export type PhaseResult =
-  | { type: 'counterDistribution'; xValue: number; counterRemovals: Record<string, number> }
+  | {
+      type: 'counterDistribution'
+      xValue: number
+      /** Typed distribution: each entry removes `count` counters of `counterType` from `entityId`. */
+      distributedCounterRemovals: ReadonlyArray<{ entityId: EntityId; counterType: string; count: number }>
+    }
   | { type: 'xSelection'; xValue: number; isRepeatCount?: boolean }
   | { type: 'delve'; delvedCards: EntityId[]; modifiedManaCost: string }
   | { type: 'convoke'; convokedCreatures: Record<string, { color: string | null }> }
@@ -802,8 +812,8 @@ export type GameStore = {
   confirmDistribute: () => void
   clearDistribute: () => void
   startCounterDistribution: (state: CounterDistributionState) => void
-  incrementCounterRemoval: (entityId: EntityId) => void
-  decrementCounterRemoval: (entityId: EntityId) => void
+  incrementCounterRemoval: (entityId: EntityId, counterType: string) => void
+  decrementCounterRemoval: (entityId: EntityId, counterType: string) => void
   cancelCounterDistribution: () => void
   confirmCounterDistribution: () => void
   startManaSelection: (actionInfo: LegalActionInfo) => void

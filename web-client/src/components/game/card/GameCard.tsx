@@ -202,11 +202,32 @@ export function GameCard({
   const isValidDecisionSelection = decisionSelectionState?.validOptions.includes(card.id) ?? false
   const isSelectedDecisionOption = decisionSelectionState?.selectedOptions.includes(card.id) ?? false
 
-  // Inline counter distribution checks (for RemoveXPlusOnePlusOneCounters cost)
+  // Inline counter distribution checks (for RemoveXPlusOnePlusOneCounters cost
+  // and Dawnhand Dissident's `RemoveCountersFromYourCreatures` cost). The slice
+  // tracks allocation per (entityId, counterType); we render one +/- row per
+  // type, so build the row list here from `availableCountersByType`. Single-type
+  // creatures get one row; multi-type creatures (e.g. +1/+1 + stun) get one row
+  // per type with independent caps.
   const counterCreature = counterDistributionState?.creatures.find((c) => c.entityId === card.id)
   const isCounterDistTarget = counterCreature != null
-  const counterAllocated = isCounterDistTarget ? (counterDistributionState?.distribution[card.id] ?? 0) : 0
-  const counterAtMax = counterCreature != null && counterAllocated >= counterCreature.availableCounters
+  const counterDistInner: Record<string, number> | undefined = isCounterDistTarget
+    ? counterDistributionState?.distribution[card.id]
+    : undefined
+  const counterRows: ReadonlyArray<{ counterType: string; available: number; allocated: number }> =
+    isCounterDistTarget && counterCreature
+      ? (() => {
+          const byType = counterCreature.availableCountersByType
+          const types =
+            byType && Object.keys(byType).length > 0 ? Object.keys(byType) : ['+1/+1']
+          return types
+            .map((t) => ({
+              counterType: t,
+              available: byType?.[t] ?? counterCreature.availableCounters,
+              allocated: counterDistInner?.[t] ?? 0,
+            }))
+            .filter((r) => r.available > 0)
+        })()
+      : []
 
   // Inline damage distribution checks
   const isDistributeTarget = distributeState?.targets.includes(card.id) ?? false
@@ -1756,7 +1777,10 @@ export function GameCard({
         </div>
       )}
 
-      {/* Inline +/- control strip for counter removal (top, so counter badges stay visible) */}
+      {/* Inline +/- control strip for counter removal (top, so counter badges stay visible).
+       * One row per counter type: single-type creatures get one row; multi-type
+       * creatures (e.g. +1/+1 + stun) get a row per type so the player can pick
+       * exactly which to remove. */}
       {isCounterDistTarget && (
         <div
           onClick={(e) => e.stopPropagation()}
@@ -1766,66 +1790,99 @@ export function GameCard({
             left: 0,
             right: 0,
             display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: 2,
+            flexDirection: 'column',
+            alignItems: 'stretch',
+            gap: 1,
             padding: responsive.isMobile ? '2px 1px' : '3px 2px',
             backgroundColor: 'rgba(0, 0, 0, 0.85)',
             borderBottom: '1px solid rgba(234, 179, 8, 0.5)',
             zIndex: 15,
           }}
         >
-          <button
-            onClick={(e) => { e.stopPropagation(); decrementCounterRemoval(card.id) }}
-            disabled={counterAllocated <= 0}
-            style={{
-              width: responsive.badges.distributeBadgeSize,
-              height: responsive.badges.distributeBadgeSize,
-              borderRadius: 4,
-              border: 'none',
-              backgroundColor: counterAllocated <= 0 ? '#333' : '#dc2626',
-              color: counterAllocated <= 0 ? '#666' : 'white',
-              fontSize: responsive.isMobile ? 14 : 16,
-              fontWeight: 'bold',
-              cursor: counterAllocated <= 0 ? 'not-allowed' : 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              padding: 0,
-            }}
-          >
-            -
-          </button>
-          <span style={{
-            color: '#eab308',
-            fontSize: responsive.isMobile ? 12 : 14,
-            fontWeight: 700,
-            minWidth: responsive.isMobile ? 18 : 24,
-            textAlign: 'center',
-          }}>
-            {counterAllocated}
-          </span>
-          <button
-            onClick={(e) => { e.stopPropagation(); incrementCounterRemoval(card.id) }}
-            disabled={counterAtMax}
-            style={{
-              width: responsive.badges.distributeBadgeSize,
-              height: responsive.badges.distributeBadgeSize,
-              borderRadius: 4,
-              border: 'none',
-              backgroundColor: (counterAtMax) ? '#333' : '#16a34a',
-              color: (counterAtMax) ? '#666' : 'white',
-              fontSize: responsive.isMobile ? 14 : 16,
-              fontWeight: 'bold',
-              cursor: (counterAtMax) ? 'not-allowed' : 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              padding: 0,
-            }}
-          >
-            +
-          </button>
+          {counterRows.map((row) => {
+            const atMax = row.allocated >= row.available
+            const showLabel = counterRows.length > 1
+            return (
+              <div
+                key={row.counterType}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: 2,
+                }}
+              >
+                {showLabel && (
+                  <span
+                    style={{
+                      color: '#94a3b8',
+                      fontSize: responsive.isMobile ? 9 : 10,
+                      fontWeight: 700,
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.04em',
+                      marginRight: 2,
+                      minWidth: responsive.isMobile ? 22 : 28,
+                      textAlign: 'right',
+                      whiteSpace: 'nowrap',
+                    }}
+                  >
+                    {row.counterType}
+                  </span>
+                )}
+                <button
+                  onClick={(e) => { e.stopPropagation(); decrementCounterRemoval(card.id, row.counterType) }}
+                  disabled={row.allocated <= 0}
+                  style={{
+                    width: responsive.badges.distributeBadgeSize,
+                    height: responsive.badges.distributeBadgeSize,
+                    borderRadius: 4,
+                    border: 'none',
+                    backgroundColor: row.allocated <= 0 ? '#333' : '#dc2626',
+                    color: row.allocated <= 0 ? '#666' : 'white',
+                    fontSize: responsive.isMobile ? 14 : 16,
+                    fontWeight: 'bold',
+                    cursor: row.allocated <= 0 ? 'not-allowed' : 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    padding: 0,
+                  }}
+                >
+                  -
+                </button>
+                <span style={{
+                  color: '#eab308',
+                  fontSize: responsive.isMobile ? 12 : 14,
+                  fontWeight: 700,
+                  minWidth: responsive.isMobile ? 18 : 24,
+                  textAlign: 'center',
+                }}>
+                  {row.allocated}
+                </span>
+                <button
+                  onClick={(e) => { e.stopPropagation(); incrementCounterRemoval(card.id, row.counterType) }}
+                  disabled={atMax}
+                  style={{
+                    width: responsive.badges.distributeBadgeSize,
+                    height: responsive.badges.distributeBadgeSize,
+                    borderRadius: 4,
+                    border: 'none',
+                    backgroundColor: atMax ? '#333' : '#16a34a',
+                    color: atMax ? '#666' : 'white',
+                    fontSize: responsive.isMobile ? 14 : 16,
+                    fontWeight: 'bold',
+                    cursor: atMax ? 'not-allowed' : 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    padding: 0,
+                  }}
+                >
+                  +
+                </button>
+              </div>
+            )
+          })}
         </div>
       )}
 

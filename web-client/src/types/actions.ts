@@ -58,6 +58,16 @@ export interface AdditionalCostPayment {
   readonly tappedPermanents?: readonly EntityId[]
   readonly bouncedPermanents?: readonly EntityId[]
   readonly counterRemovals?: Readonly<Record<EntityId, number>>
+  /**
+   * Typed counter-removal entries — each entry removes `count` counters of
+   * `counterType` from `entityId`. Preferred over the legacy `counterRemovals`
+   * map (engine still accepts that as a fallback for older clients).
+   */
+  readonly distributedCounterRemovals?: ReadonlyArray<{
+    entityId: EntityId
+    counterType: string
+    count: number
+  }>
   readonly blightTargets?: readonly EntityId[]
 }
 

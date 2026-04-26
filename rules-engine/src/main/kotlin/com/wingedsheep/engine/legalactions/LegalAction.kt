@@ -208,5 +208,11 @@ data class CounterRemovalCreatureData(
     val entityId: EntityId,
     val name: String,
     val availableCounters: Int,
+    /**
+     * Counter-type breakdown so the UI can offer a per-type +/- when a creature
+     * carries more than one type. Keyed by the canonical counter-type name
+     * (e.g. "+1/+1", "-1/-1", "stun"). Sum of values equals [availableCounters].
+     */
+    val availableCountersByType: Map<String, Int> = emptyMap(),
     val imageUri: String? = null
 )

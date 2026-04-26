@@ -336,7 +336,13 @@ class CostEnumerationUtils(
                     ?.getCount(CounterType.PLUS_ONE_PLUS_ONE) ?: 0
                 if (counters > 0) {
                     val card = c.get<CardComponent>()!!
-                    CounterRemovalCreatureData(eid, card.name, counters, card.imageUri)
+                    CounterRemovalCreatureData(
+                        entityId = eid,
+                        name = card.name,
+                        availableCounters = counters,
+                        availableCountersByType = mapOf(com.wingedsheep.sdk.core.Counters.PLUS_ONE_PLUS_ONE to counters),
+                        imageUri = card.imageUri
+                    )
                 } else null
             } else null
         }

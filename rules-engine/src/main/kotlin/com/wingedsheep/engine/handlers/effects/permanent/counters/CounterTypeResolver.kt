@@ -11,7 +11,7 @@ import com.wingedsheep.sdk.core.CounterType
  * Unknown strings default to [CounterType.PLUS_ONE_PLUS_ONE] to preserve the pre-existing
  * behavior of the executors.
  */
-internal fun resolveCounterType(counterType: String): CounterType = when (counterType) {
+fun resolveCounterType(counterType: String): CounterType = when (counterType) {
     "+1/+1" -> CounterType.PLUS_ONE_PLUS_ONE
     "-1/-1" -> CounterType.MINUS_ONE_MINUS_ONE
     else -> try {
@@ -31,7 +31,7 @@ internal fun resolveCounterType(counterType: String): CounterType = when (counte
  * Convert a [CounterType] enum back to the wire-format string used on counter
  * events and effect data classes (e.g., `PLUS_ONE_PLUS_ONE` → `"+1/+1"`).
  */
-internal fun counterTypeToString(counterType: CounterType): String = when (counterType) {
+fun counterTypeToString(counterType: CounterType): String = when (counterType) {
     CounterType.PLUS_ONE_PLUS_ONE -> "+1/+1"
     CounterType.MINUS_ONE_MINUS_ONE -> "-1/-1"
     else -> counterType.name.lowercase()

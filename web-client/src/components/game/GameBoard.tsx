@@ -251,7 +251,10 @@ export function GameBoard({ spectatorMode = false, topOffset = 0 }: GameBoardPro
   }, [manaSelectionState])
 
   const counterTotalAllocated = counterDistributionState
-    ? Object.values(counterDistributionState.distribution).reduce<number>((sum, v) => sum + v, 0)
+    ? Object.values(counterDistributionState.distribution).reduce<number>(
+        (sum, byType) => sum + Object.values(byType).reduce<number>((s, v) => s + v, 0),
+        0,
+      )
     : 0
   // No "remaining" concept — X is determined by total allocated
 

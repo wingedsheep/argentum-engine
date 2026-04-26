@@ -165,6 +165,8 @@ function BattlefieldContent({ isOpponent, spectatorMode = false }: { isOpponent:
           return ids.has(a.sourceId)
         case 'CrewVehicle':
           return ids.has(a.vehicleId)
+        case 'CastSpell':
+          return ids.has(a.cardId)
         default:
           return false
       }
@@ -225,7 +227,13 @@ function BattlefieldContent({ isOpponent, spectatorMode = false }: { isOpponent:
     // downward by (cardHeight - cardWidth) / 2 on tap.
     const containerHeight = parentTapped ? cardHeight : portraitHeight
     const tabHeight = responsive.isMobile ? 14 : 16
-    const actionable = collapsed ? hasActionableAttachment(attachments) : false
+    const actionable = hasActionableAttachment(attachments)
+    // Show the tab (and click-catcher) whenever browsing is the right path:
+    // either too many attachments to peek individually, or a linked-exile card
+    // is present (those need the browser to be cast — the peek itself is an
+    // unclickable ghost).
+    const hasLinkedExile = linkedExileCards.length > 0
+    const showBrowserAffordance = collapsed || hasLinkedExile
 
     return (
       <div
@@ -282,7 +290,7 @@ function BattlefieldContent({ isOpponent, spectatorMode = false }: { isOpponent:
               </div>
             )
           })}
-          {collapsed && (
+          {showBrowserAffordance && (
             <div
               onClick={(e) => {
                 e.stopPropagation()
@@ -318,7 +326,7 @@ function BattlefieldContent({ isOpponent, spectatorMode = false }: { isOpponent:
               suppressTapRotation
             />
           </div>
-          {collapsed && (
+          {showBrowserAffordance && (
             <button
               onClick={(e) => {
                 e.stopPropagation()
@@ -551,6 +559,8 @@ function AttachmentsBrowser({
           return a.sourceId === cardId
         case 'CrewVehicle':
           return a.vehicleId === cardId
+        case 'CastSpell':
+          return a.cardId === cardId
         default:
           return false
       }
