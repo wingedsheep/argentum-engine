@@ -266,22 +266,23 @@ class CastFromZoneEnumerator : ActionEnumerator {
                     val cardDef = context.cardRegistry.getCard(cardComponent.name)
                     val castRestrictions = cardDef?.script?.castRestrictions ?: emptyList()
                     val meetsRestrictions = context.castPermissionUtils.checkCastRestrictions(state, playerId, castRestrictions)
-                    val costString = if (playForFree) "{0}" else {
-                        val effectiveCost = if (cardDef != null) {
-                            context.costCalculator.calculateEffectiveCost(state, cardDef, playerId)
-                        } else {
-                            cardComponent.manaCost
-                        }
-                        effectiveCost.toString()
+                    val effectiveCost = if (cardDef != null) {
+                        context.costCalculator.calculateEffectiveCost(state, cardDef, playerId)
+                    } else {
+                        cardComponent.manaCost
                     }
-                    val canAfford = playForFree || run {
-                        val effectiveCost = if (cardDef != null) {
-                            context.costCalculator.calculateEffectiveCost(state, cardDef, playerId)
-                        } else {
-                            cardComponent.manaCost
-                        }
+                    val costString = if (playForFree) "{0}" else effectiveCost.toString()
+                    val canAfford = playForFree ||
                         context.manaSolver.canPay(state, playerId, effectiveCost, precomputedSources = context.availableManaSources)
-                    }
+
+                    // Calculate X cost info if the spell has X in its cost (cost still paid even with may-play)
+                    val hasXCost = !playForFree && effectiveCost.hasX
+                    val maxAffordableX: Int? = if (hasXCost) {
+                        val availableSources = context.manaSolver.getAvailableManaCount(state, playerId, precomputedSources = context.availableManaSources)
+                        val fixedCost = effectiveCost.cmc  // X contributes 0 to CMC
+                        val xSymbolCount = effectiveCost.xCount.coerceAtLeast(1)
+                        ((availableSources - fixedCost) / xSymbolCount).coerceAtLeast(0)
+                    } else null
 
                     // Build additional cost info from runtime component
                     val exileAdditionalCostInfo = runtimeAdditionalCost?.let { comp ->
@@ -314,6 +315,8 @@ class CastFromZoneEnumerator : ActionEnumerator {
                                         targetDescription = firstReq.description,
                                         targetRequirements = if (targetInfos.size > 1) targetInfos else null,
                                         manaCostString = costString,
+                                        hasXCost = hasXCost,
+                                        maxAffordableX = maxAffordableX,
                                         sourceZone = sourceZoneLabel,
                                         additionalCostInfo = exileAdditionalCostInfo
                                     )
@@ -326,6 +329,8 @@ class CastFromZoneEnumerator : ActionEnumerator {
                                     description = "Cast ${cardComponent.name}",
                                     action = CastSpell(playerId, cardId),
                                     manaCostString = costString,
+                                    hasXCost = hasXCost,
+                                    maxAffordableX = maxAffordableX,
                                     sourceZone = sourceZoneLabel,
                                     additionalCostInfo = exileAdditionalCostInfo
                                 )
@@ -340,6 +345,8 @@ class CastFromZoneEnumerator : ActionEnumerator {
                                 action = CastSpell(playerId, cardId),
                                 affordable = false,
                                 manaCostString = costString,
+                                hasXCost = hasXCost,
+                                maxAffordableX = maxAffordableX,
                                 sourceZone = sourceZoneLabel
                             )
                         )
