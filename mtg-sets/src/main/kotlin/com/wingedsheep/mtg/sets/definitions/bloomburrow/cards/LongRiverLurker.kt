@@ -11,6 +11,7 @@ import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.GrantWardToGroup
 import com.wingedsheep.sdk.scripting.KeywordAbility
 import com.wingedsheep.sdk.scripting.effects.CompositeEffect
+import com.wingedsheep.sdk.scripting.effects.WardCost
 import com.wingedsheep.sdk.scripting.effects.CreateDelayedTriggerEffect
 import com.wingedsheep.sdk.scripting.effects.DelayedTriggerExpiry
 import com.wingedsheep.sdk.scripting.effects.MayEffect
@@ -46,7 +47,7 @@ val LongRiverLurker = card("Long River Lurker") {
     // Other Frogs you control have ward {1}
     staticAbility {
         ability = GrantWardToGroup(
-            manaCost = "{1}",
+            cost = WardCost.Mana("{1}"),
             filter = GroupFilter(GameObjectFilter.Creature.withSubtype("Frog").youControl()).other()
         )
     }

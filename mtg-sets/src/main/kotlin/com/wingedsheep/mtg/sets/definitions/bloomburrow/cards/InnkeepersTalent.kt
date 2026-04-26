@@ -10,6 +10,7 @@ import com.wingedsheep.sdk.scripting.DoubleCounterPlacement
 import com.wingedsheep.sdk.scripting.GameEvent
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.GrantWardToGroup
+import com.wingedsheep.sdk.scripting.effects.WardCost
 import com.wingedsheep.sdk.scripting.events.CounterTypeFilter
 import com.wingedsheep.sdk.scripting.events.RecipientFilter
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
@@ -49,7 +50,7 @@ val InnkeepersTalent = card("Innkeeper's Talent") {
     classLevel(2, "{G}") {
         staticAbility {
             ability = GrantWardToGroup(
-                manaCost = "{1}",
+                cost = WardCost.Mana("{1}"),
                 filter = GroupFilter(GameObjectFilter.Permanent.youControl().withAnyCounter())
             )
         }

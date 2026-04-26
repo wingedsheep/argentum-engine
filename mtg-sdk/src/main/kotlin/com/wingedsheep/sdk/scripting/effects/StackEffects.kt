@@ -211,18 +211,47 @@ data class CounterAllOnStackEffect(
 // =============================================================================
 
 /**
- * Counter the spell or ability that targeted this permanent unless its controller pays a mana cost.
- * Used by ward triggered abilities. The targeting source is identified via
- * context.targetingSourceEntityId (set by BecomesTargetEvent).
+ * The cost a controller must pay to prevent a ward-triggered counter.
+ * Mirrors the structure of [com.wingedsheep.sdk.scripting.KeywordAbility] ward
+ * variants so static-granted ward and intrinsic ward share a single cost shape.
+ */
+@Serializable
+sealed interface WardCost {
+    /** Display string for prompts and oracle text generation. */
+    val description: String
+
+    /** Ward with a mana cost — e.g. Ward {1}. */
+    @SerialName("WardCost.Mana")
+    @Serializable
+    data class Mana(val manaCost: String) : WardCost {
+        override val description: String = manaCost
+    }
+
+    /** Ward with a life cost — e.g. Ward—Pay 2 life. */
+    @SerialName("WardCost.Life")
+    @Serializable
+    data class Life(val amount: Int) : WardCost {
+        override val description: String = "pay $amount life"
+    }
+}
+
+/**
+ * Counter the spell or ability that targeted this permanent unless its controller pays
+ * the ward cost. Used by ward triggered abilities. The targeting source is identified
+ * via context.targetingSourceEntityId (set by BecomesTargetEvent).
  *
- * Ward {1} → WardCounterEffect("{1}")
+ * Ward {1}        → WardCounterEffect(WardCost.Mana("{1}"))
+ * Ward—Pay 2 life → WardCounterEffect(WardCost.Life(2))
  */
 @SerialName("WardCounter")
 @Serializable
 data class WardCounterEffect(
-    val manaCost: String
+    val cost: WardCost
 ) : Effect {
-    override val description: String = "Counter it unless its controller pays $manaCost"
+    override val description: String = when (cost) {
+        is WardCost.Mana -> "Counter it unless its controller pays ${cost.manaCost}"
+        is WardCost.Life -> "Counter it unless its controller pays ${cost.amount} life"
+    }
 
     override fun applyTextReplacement(replacer: TextReplacer): Effect = this
 }

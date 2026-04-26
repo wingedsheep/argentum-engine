@@ -62,19 +62,28 @@ data class GrantKeywordToCreatureGroup(
 }
 
 /**
- * Grants ward with a mana cost to permanents matching a filter.
+ * Grants ward (with a configurable cost) to permanents matching a filter.
  * Unlike GrantKeywordToCreatureGroup (which only grants the keyword flag), this also
  * generates a ward triggered ability so ward is mechanically enforced.
  *
- * Example: Innkeeper's Talent Level 2 — "Permanents you control with counters on them have ward {1}."
+ * Examples:
+ *   Innkeeper's Talent L2 — "Permanents you control with counters have ward {1}."
+ *     → GrantWardToGroup(WardCost.Mana("{1}"), …)
+ *   Hexing Squelcher — "Other creatures you control have 'Ward—Pay 2 life.'"
+ *     → GrantWardToGroup(WardCost.Life(2), …)
  */
 @SerialName("GrantWardToGroup")
 @Serializable
 data class GrantWardToGroup(
-    val manaCost: String,
+    val cost: com.wingedsheep.sdk.scripting.effects.WardCost,
     val filter: GroupFilter
 ) : StaticAbility {
-    override val description: String = "${filter.description} have ward $manaCost"
+    override val description: String = when (cost) {
+        is com.wingedsheep.sdk.scripting.effects.WardCost.Mana ->
+            "${filter.description} have ward ${cost.manaCost}"
+        is com.wingedsheep.sdk.scripting.effects.WardCost.Life ->
+            "${filter.description} have \"Ward—Pay ${cost.amount} life.\""
+    }
     override fun applyTextReplacement(replacer: TextReplacer): StaticAbility {
         val newFilter = filter.applyTextReplacement(replacer)
         return if (newFilter !== filter) copy(filter = newFilter) else this

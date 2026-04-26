@@ -16,6 +16,7 @@ class ManaPaymentContinuationResumer(
 
     override fun resumers(): List<ContinuationResumer<*>> = listOf(
         resumer(CounterUnlessPaysContinuation::class, ::resumeCounterUnlessPays),
+        resumer(CounterUnlessPaysLifeContinuation::class, ::resumeCounterUnlessPaysLife),
         resumer(CounterUnlessPaysManaSelectionContinuation::class, ::resumeCounterUnlessPaysManaSelection),
         resumer(ChangeSpellTargetContinuation::class, ::resumeChangeSpellTarget),
         resumer(MayPayManaContinuation::class, ::resumeMayPayMana),
@@ -121,6 +122,73 @@ class ManaPaymentContinuationResumer(
             )
         } else {
             // Player chose not to pay — counter the spell
+            val counterResult = if (continuation.exileOnCounter) {
+                services.stackResolver.counterSpellToExile(
+                    state, continuation.spellEntityId,
+                    grantFreeCast = false,
+                    controllerId = continuation.controllerId ?: continuation.payingPlayerId
+                )
+            } else {
+                services.stackResolver.counterSpell(state, continuation.spellEntityId)
+            }
+            return checkForMore(counterResult.newState, counterResult.events)
+        }
+    }
+
+    /**
+     * Resume after the controller decides whether to pay a life cost
+     * for a ward—pay-life trigger.
+     *
+     * Yes → deduct life (LifeChangedEvent / markLifeLostThisTurn) and let the spell resolve.
+     * No  → counter the spell (or counter-to-exile if exileOnCounter).
+     */
+    fun resumeCounterUnlessPaysLife(
+        state: GameState,
+        continuation: CounterUnlessPaysLifeContinuation,
+        response: DecisionResponse,
+        checkForMore: CheckForMore
+    ): ExecutionResult {
+        if (response !is YesNoResponse) {
+            return ExecutionResult.error(state, "Expected yes/no response for counter unless pays life")
+        }
+
+        if (response.choice) {
+            val playerId = continuation.payingPlayerId
+            val currentLife = state.getEntity(playerId)
+                ?.get<com.wingedsheep.engine.state.components.identity.LifeTotalComponent>()?.life
+                ?: return ExecutionResult.error(state, "Paying player has no life total")
+
+            // If the player can't actually pay (e.g., life dropped between trigger and decision),
+            // counter the spell. Players can pay life that takes them below 0.
+            // (CR 119.4 — paying life is a cost, not damage; players can pay life they have.)
+            // Here we require the player has at least lifeCost life remaining.
+            if (currentLife < continuation.lifeCost) {
+                val counterResult = if (continuation.exileOnCounter) {
+                    services.stackResolver.counterSpellToExile(
+                        state, continuation.spellEntityId,
+                        grantFreeCast = false,
+                        controllerId = continuation.controllerId ?: continuation.payingPlayerId
+                    )
+                } else {
+                    services.stackResolver.counterSpell(state, continuation.spellEntityId)
+                }
+                return checkForMore(counterResult.newState, counterResult.events)
+            }
+
+            val newLife = currentLife - continuation.lifeCost
+            var newState = state.updateEntity(playerId) { container ->
+                container.with(
+                    com.wingedsheep.engine.state.components.identity.LifeTotalComponent(newLife)
+                )
+            }
+            newState = com.wingedsheep.engine.handlers.effects.DamageUtils
+                .markLifeLostThisTurn(newState, playerId)
+
+            val events = listOf<GameEvent>(
+                LifeChangedEvent(playerId, currentLife, newLife, LifeChangeReason.PAYMENT)
+            )
+            return checkForMore(newState, events)
+        } else {
             val counterResult = if (continuation.exileOnCounter) {
                 services.stackResolver.counterSpellToExile(
                     state, continuation.spellEntityId,

@@ -15,6 +15,7 @@ import com.wingedsheep.sdk.scripting.GrantWardToGroup
 import com.wingedsheep.sdk.scripting.KeywordAbility
 import com.wingedsheep.sdk.scripting.TriggerBinding
 import com.wingedsheep.sdk.scripting.TriggeredAbility
+import com.wingedsheep.sdk.scripting.effects.WardCost
 import com.wingedsheep.sdk.scripting.effects.WardCounterEffect
 import com.wingedsheep.sdk.scripting.predicates.ControllerPredicate
 
@@ -240,12 +241,13 @@ class TriggerAbilityResolver(
         val cardDef = cardRegistry.getCard(cardDefinitionId)
         if (cardDef != null) {
             for (ka in cardDef.keywordAbilities) {
-                val manaCost = when (ka) {
-                    is KeywordAbility.WardMana -> ka.cost.toString()
+                val cost: WardCost? = when (ka) {
+                    is KeywordAbility.WardMana -> WardCost.Mana(ka.cost.toString())
+                    is KeywordAbility.WardLife -> WardCost.Life(ka.amount)
                     else -> null
                 }
-                if (manaCost != null) {
-                    result.add(createWardTriggeredAbility(manaCost, "intrinsic"))
+                if (cost != null) {
+                    result.add(createWardTriggeredAbility(cost, "intrinsic"))
                 }
             }
         }
@@ -309,19 +311,19 @@ class TriggerAbilityResolver(
                 // Check excludeSelf
                 if (ability.filter.excludeSelf && entityId == permanentId) continue
 
-                result.add(createWardTriggeredAbility(ability.manaCost, "granted_${permanentId.value}"))
+                result.add(createWardTriggeredAbility(ability.cost, "granted_${permanentId.value}"))
             }
         }
 
         return result
     }
 
-    private fun createWardTriggeredAbility(manaCost: String, source: String): TriggeredAbility {
+    private fun createWardTriggeredAbility(cost: WardCost, source: String): TriggeredAbility {
         return TriggeredAbility(
             id = AbilityId("ward_$source"),
             trigger = GameEvent.BecomesTargetEvent(byOpponent = true),
             binding = TriggerBinding.SELF,
-            effect = WardCounterEffect(manaCost)
+            effect = WardCounterEffect(cost)
         )
     }
 }

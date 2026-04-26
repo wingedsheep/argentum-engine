@@ -169,6 +169,31 @@ data class ManaSourceSelectionContinuation(
 ) : ContinuationFrame
 
 /**
+ * Resume after the controller decides whether to pay a life cost
+ * to prevent their spell from being countered (e.g. Ward—Pay 2 life).
+ *
+ * "Counter target spell unless its controller pays N life."
+ *
+ * Yes → deduct life and let the spell resolve.
+ * No  → counter the spell.
+ *
+ * @property payingPlayerId The spell's controller who must decide whether to pay
+ * @property spellEntityId The spell that will be countered if they don't pay
+ * @property lifeCost The life cost to pay
+ * @property exileOnCounter If true, counter to exile rather than graveyard
+ * @property controllerId Source controller, for counter-to-exile bookkeeping
+ */
+@Serializable
+data class CounterUnlessPaysLifeContinuation(
+    override val decisionId: String,
+    val payingPlayerId: EntityId,
+    val spellEntityId: EntityId,
+    val lifeCost: Int,
+    val exileOnCounter: Boolean = false,
+    val controllerId: EntityId? = null
+) : ContinuationFrame
+
+/**
  * Information about a mana source available for manual selection.
  */
 @Serializable

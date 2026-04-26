@@ -1768,15 +1768,20 @@ class StackResolver(
     /**
      * Check if a spell on the stack is granted "can't be countered" by any permanent
      * on the battlefield with a GrantCantBeCountered static ability.
+     *
+     * The predicate context's `controllerId` is set to the source permanent's controller
+     * so filters using `youControl()` correctly mean "the granter's controller controls X"
+     * (e.g., Hexing Squelcher's "Spells you control can't be countered" should only protect
+     * its own controller's spells, not every player's spells).
      */
     private fun isGrantedCantBeCountered(state: GameState, spellId: EntityId): Boolean {
-        val spellOwner = state.getEntity(spellId)?.get<ControllerComponent>()?.playerId
-            ?: return false
-        val context = PredicateContext(controllerId = spellOwner)
         for (playerId in state.turnOrder) {
             for (entityId in state.getBattlefield(playerId)) {
                 val card = state.getEntity(entityId)?.get<CardComponent>() ?: continue
                 val def = cardRegistry.getCard(card.cardDefinitionId) ?: continue
+                val sourceControllerId =
+                    state.getEntity(entityId)?.get<ControllerComponent>()?.playerId ?: playerId
+                val context = PredicateContext(controllerId = sourceControllerId, sourceId = entityId)
                 for (ability in def.staticAbilities) {
                     if (ability is GrantCantBeCountered) {
                         if (predicateEvaluator.matches(state, spellId, ability.filter, context)) {
