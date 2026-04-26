@@ -100,6 +100,7 @@ object LorwynEclipsedSet {
         MerrowSkyswimmer,
         Mirrorform,
         MirrormindCrown,
+        MoongloveExtractor,
         MorcantsEyes,
         MorcantsLoyalist,
         Moonshadow,
