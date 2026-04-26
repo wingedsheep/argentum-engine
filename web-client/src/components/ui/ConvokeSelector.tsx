@@ -191,15 +191,15 @@ export function ConvokeSelector() {
     [remainingSymbols, manaPool]
   )
 
+  const convokedIds = useMemo(
+    () => new Set(convokeSelectionState?.selectedCreatures.map(c => c.entityId) ?? []),
+    [convokeSelectionState?.selectedCreatures]
+  )
+
   if (!convokeSelectionState) return null
 
   const { cardName, selectedCreatures, actionInfo } = convokeSelectionState
   const isAbility = actionInfo.action.type === 'ActivateAbility'
-
-  const convokedIds = useMemo(
-    () => new Set(selectedCreatures.map(c => c.entityId)),
-    [selectedCreatures]
-  )
 
   const manaNeeded = totalManaNeeded(symbolsAfterPool)
   const manaFromSources = totalManaAvailable(actionInfo.availableManaSources, convokedIds)
