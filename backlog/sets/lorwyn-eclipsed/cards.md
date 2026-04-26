@@ -2,14 +2,14 @@
 
 **Set Size:** 273 cards (main set, per Scryfall `set:ecl`)
 **Release Date:** January 23, 2026
-**Implemented:** 153 / 273
+**Implemented:** 154 / 273
 
 | Color      | Total | Done |
 |------------|-------|------|
 | White      | 39    | 19   |
 | Blue       | 39    | 24   |
 | Black      | 38    | 24   |
-| Red        | 39    | 16   |
+| Red        | 39    | 17   |
 | Green      | 39    | 24   |
 | Multicolor | 49    | 30   |
 | Colorless  | 18    | 6    |
@@ -159,7 +159,7 @@
 - [x] Enraged Flamecaster
 - [ ] Explosive Prodigy
 - [ ] Feed the Flames
-- [ ] Flame-Chain Mauler
+- [x] Flame-Chain Mauler
 - [ ] Flamebraider
 - [x] Flamekin Gildweaver
 - [ ] Giantfall
