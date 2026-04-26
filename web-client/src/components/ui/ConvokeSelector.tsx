@@ -1,6 +1,8 @@
 import { useMemo } from 'react'
 import { useGameStore, ConvokeCreatureSelection } from '@/store/gameStore.ts'
 import { Color, ColorSymbols } from '@/types/enums'
+import { useViewingPlayer } from '@/store/selectors'
+import type { ClientManaPool } from '@/types/gameState'
 import { ManaSymbol } from './ManaSymbols'
 
 /**
@@ -79,6 +81,58 @@ function calculateRemainingCost(
 }
 
 /**
+ * Subtract the player's floating mana from [symbols], paying exact-color pips first,
+ * then hybrid pips, then generic. Returns the symbols still owed after the pool is
+ * applied. Mirrors the order the server's autoPay uses so the affordability check
+ * matches the actual payment.
+ */
+function applyManaPool(symbols: string[], pool: ClientManaPool | undefined): string[] {
+  if (!pool) return symbols
+  const remaining = [...symbols]
+  const available: Record<string, number> = {
+    W: pool.white,
+    U: pool.blue,
+    B: pool.black,
+    R: pool.red,
+    G: pool.green,
+    C: pool.colorless,
+  }
+
+  for (const pip of ['W', 'U', 'B', 'R', 'G', 'C']) {
+    while (available[pip]! > 0) {
+      const idx = remaining.indexOf(pip)
+      if (idx < 0) break
+      remaining.splice(idx, 1)
+      available[pip]!--
+    }
+  }
+
+  for (const pip of ['W', 'U', 'B', 'R', 'G']) {
+    while (available[pip]! > 0) {
+      const idx = remaining.findIndex(s => hybridCoversColor(s, pip))
+      if (idx < 0) break
+      remaining.splice(idx, 1)
+      available[pip]!--
+    }
+  }
+
+  let generic = available.W! + available.U! + available.B! + available.R! + available.G! + available.C!
+  while (generic > 0) {
+    const idx = remaining.findIndex(s => /^\d+$/.test(s))
+    if (idx < 0) break
+    const value = parseInt(remaining[idx]!, 10)
+    if (value > 1) {
+      remaining[idx] = String(value - 1)
+    } else {
+      remaining.splice(idx, 1)
+    }
+    generic--
+  }
+
+  return remaining
+}
+
+/**
  * Calculate the total mana value of remaining cost symbols.
  * Generic symbols count as their numeric value, colored symbols count as 1 each.
  */
@@ -112,6 +166,8 @@ export function ConvokeSelector() {
   const convokeSelectionState = useGameStore((state) => state.convokeSelectionState)
   const cancelConvokeSelection = useGameStore((state) => state.cancelConvokeSelection)
   const confirmConvokeSelection = useGameStore((state) => state.confirmConvokeSelection)
+  const viewingPlayer = useViewingPlayer()
+  const manaPool = viewingPlayer?.manaPool
 
   const originalSymbols = useMemo(() => {
     if (!convokeSelectionState) return []
@@ -123,12 +179,17 @@ export function ConvokeSelector() {
     return calculateRemainingCost(originalSymbols, convokeSelectionState.selectedCreatures)
   }, [originalSymbols, convokeSelectionState?.selectedCreatures])
 
+  const symbolsAfterPool = useMemo(
+    () => applyManaPool(remainingSymbols, manaPool),
+    [remainingSymbols, manaPool]
+  )
+
   if (!convokeSelectionState) return null
 
   const { cardName, selectedCreatures, actionInfo } = convokeSelectionState
   const isAbility = actionInfo.action.type === 'ActivateAbility'
 
-  const manaNeeded = totalManaNeeded(remainingSymbols)
+  const manaNeeded = totalManaNeeded(symbolsAfterPool)
   const manaFromSources = totalManaAvailable(actionInfo.availableManaSources)
   const canAfford = manaNeeded <= manaFromSources
 
