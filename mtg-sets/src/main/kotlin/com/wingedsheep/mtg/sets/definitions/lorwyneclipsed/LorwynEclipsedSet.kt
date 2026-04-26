@@ -141,6 +141,7 @@ object LorwynEclipsedSet {
         SpringleafDrum,
         SpryAndMighty,
         SteamVents,
+        SpiralIntoSolitude,
         StoicGroveGuide,
         Stratosoarer,
         SunDappledCelebrant,

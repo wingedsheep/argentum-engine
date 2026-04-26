@@ -2,11 +2,11 @@
 
 **Set Size:** 273 cards (main set, per Scryfall `set:ecl`)
 **Release Date:** January 23, 2026
-**Implemented:** 155 / 273
+**Implemented:** 156 / 273
 
 | Color      | Total | Done |
 |------------|-------|------|
-| White      | 39    | 19   |
+| White      | 39    | 20   |
 | Blue       | 39    | 24   |
 | Black      | 38    | 25   |
 | Red        | 39    | 17   |
@@ -52,7 +52,7 @@
 - [x] Riverguard's Reflexes
 - [ ] Shore Lurker
 - [ ] Slumbering Walker
-- [ ] Spiral into Solitude
+- [x] Spiral into Solitude
 - [x] Sun-Dappled Celebrant
 - [ ] Thoughtweft Imbuer
 - [ ] Timid Shieldbearer
