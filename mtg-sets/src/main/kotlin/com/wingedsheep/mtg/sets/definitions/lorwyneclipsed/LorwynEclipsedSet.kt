@@ -47,6 +47,7 @@ object LorwynEclipsedSet {
         ChompingChangeling,
         ChronicleOfVictory,
         ClachanFestival,
+        CreakwoodSafewright,
         CribSwap,
         DarknessDescends,
         DawnhandDissident,
