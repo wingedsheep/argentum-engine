@@ -1,0 +1,47 @@
+{
+  "player1Name": "Enchantment Pilot",
+  "player2Name": "Attachment Viewer",
+  "player1": {
+    "lifeTotal": 20,
+    "hand": [
+      "Molting Snakeskin",
+      "Suspension Field",
+      "Kill Shot"
+    ],
+    "battlefield": [
+      { "name": "Grizzly Bears", "tapped": true, "summoningSickness": false },
+      { "name": "Molting Snakeskin", "attachedTo": "Grizzly Bears" },
+      { "name": "Jeskai Student", "tapped": false, "summoningSickness": false },
+      { "name": "Pacifism", "attachedTo": "Jeskai Student" },
+      { "name": "Sultai Ascendancy", "tapped": false },
+      { "name": "Swamp", "tapped": true },
+      { "name": "Swamp", "tapped": false },
+      { "name": "Plains", "tapped": false }
+    ],
+    "graveyard": ["Despise"],
+    "library": ["Swamp", "Plains", "Molting Snakeskin"]
+  },
+  "player2": {
+    "lifeTotal": 16,
+    "hand": [
+      "Naturalize",
+      "Act of Treason",
+      "Cancel"
+    ],
+    "battlefield": [
+      { "name": "Hill Giant", "tapped": false, "summoningSickness": false },
+      { "name": "Singing Bell Strike", "attachedTo": "Hill Giant" },
+      { "name": "Glory Seeker", "tapped": true, "summoningSickness": false },
+      { "name": "Pacifism", "attachedTo": "Glory Seeker" },
+      { "name": "Jeskai Ascendancy", "tapped": false },
+      { "name": "Island", "tapped": false },
+      { "name": "Island", "tapped": true },
+      { "name": "Mountain", "tapped": false }
+    ],
+    "graveyard": ["Erase", "Taigam's Scheming"],
+    "library": ["Island", "Mountain", "Cancel"]
+  },
+  "phase": "PRECOMBAT_MAIN",
+  "activePlayer": 1,
+  "priorityPlayer": 1
+}

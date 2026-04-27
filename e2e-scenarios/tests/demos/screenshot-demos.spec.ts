@@ -4,7 +4,7 @@ import * as path from 'node:path'
 import { createScenario, type ScenarioRequest } from '../../helpers/scenarioApi'
 import { HAND } from '../../helpers/selectors'
 
-const SCENARIOS_DIR = path.resolve(__dirname, '../../../test-scenarios')
+const SCENARIOS_DIR = path.resolve(__dirname, 'scenarios')
 const OUTPUT_DIR = path.resolve(__dirname, '../../screenshots')
 
 const SCENARIOS = [

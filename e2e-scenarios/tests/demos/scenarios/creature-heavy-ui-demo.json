@@ -1,0 +1,50 @@
+{
+  "player1Name": "Creature Pilot",
+  "player2Name": "Board Builder",
+  "player1": {
+    "lifeTotal": 18,
+    "hand": [
+      "Monstrous Growth",
+      "Lava Axe",
+      "Path of Peace"
+    ],
+    "battlefield": [
+      { "name": "Grizzly Bears", "tapped": true, "summoningSickness": false },
+      { "name": "Hill Giant", "tapped": false, "summoningSickness": false },
+      { "name": "Giant Spider", "tapped": false, "summoningSickness": false },
+      { "name": "Raging Goblin", "tapped": true, "summoningSickness": false },
+      { "name": "Forest", "tapped": false },
+      { "name": "Forest", "tapped": true },
+      { "name": "Mountain", "tapped": false },
+      { "name": "Mountain", "tapped": false }
+    ],
+    "graveyard": ["Monstrous Growth"],
+    "library": ["Forest", "Mountain", "Grizzly Bears"]
+  },
+  "player2": {
+    "lifeTotal": 13,
+    "hand": [
+      "Pyroclasm",
+      "Vengeance",
+      "Spined Wurm"
+    ],
+    "battlefield": [
+      { "name": "Glory Seeker", "tapped": false, "summoningSickness": false },
+      { "name": "Sparksmith", "tapped": true, "summoningSickness": false },
+      { "name": "Wall of Swords", "tapped": false, "summoningSickness": false },
+      { "name": "Spined Wurm", "tapped": false, "summoningSickness": false },
+      { "name": "Plains", "tapped": false },
+      { "name": "Plains", "tapped": true },
+      { "name": "Mountain", "tapped": false },
+      { "name": "Mountain", "tapped": true }
+    ],
+    "graveyard": ["Raging Goblin", "Lava Axe"],
+    "library": ["Plains", "Mountain", "Glory Seeker"]
+  },
+  "phase": "COMBAT",
+  "step": "DECLARE_ATTACKERS",
+  "activePlayer": 1,
+  "priorityPlayer": 1,
+  "player1StopAtSteps": ["DECLARE_ATTACKERS"],
+  "player2OpponentStopAtSteps": ["DECLARE_ATTACKERS"]
+}

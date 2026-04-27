@@ -370,9 +370,16 @@ export class GamePage {
   /** Assert a card on the battlefield is tapped (rotated 90 degrees). */
   async expectTapped(name: string) {
     const card = this.page.locator(BATTLEFIELD).locator(cardByName(name)).first()
-    // Tapped cards are inside a container with rotate(90deg) style
-    const container = card.locator('..')
-    await expect(container).toHaveCSS('transform', /matrix.*/, { timeout: 10_000 })
+    await expect(card).toBeVisible({ timeout: 10_000 })
+    await expect.poll(async () => card.evaluate((node) => {
+      const battlefield = node.closest('[data-zone="player-battlefield"], [data-zone="opponent-battlefield"]')
+      let current: Element | null = node
+      while (current && current !== battlefield) {
+        if (getComputedStyle(current).transform !== 'none') return true
+        current = current.parentElement
+      }
+      return false
+    }), { timeout: 10_000 }).toBe(true)
   }
 
   /** Assert a card on the battlefield is untapped (not rotated). */
