@@ -144,11 +144,11 @@ export class GamePage {
     await this.screenshot('Targeting decision ready')
   }
 
-  /** Confirm target selection (clicks "Confirm Target" or "Confirm (N)" button). */
+  /** Confirm target selection (clicks "Confirm Target", "Confirm (N)", or a zone-specific confirmation). */
   async confirmTargets() {
     await this.page
       .getByRole('button')
-      .filter({ hasText: /^Confirm/ })
+      .filter({ hasText: /^(Confirm|Return to Hand)/ })
       .first()
       .click()
     await this.screenshot('Confirm targets')
@@ -193,11 +193,11 @@ export class GamePage {
 
   /** Wait for a decision prompt to appear (yes/no, targeting, zone selection, etc.). */
   async waitForDecision(timeout = 10_000) {
-    // Decision UIs render buttons like Yes/No, Confirm, Decline, or zone selection overlays.
+    // Decision UIs render buttons like Yes/No, Confirm, Decline, or zone-specific confirmation labels.
     // Wait for any decision-related button to appear.
     await this.page
       .locator('button')
-      .filter({ hasText: /^(Yes|No|Confirm|Decline|Select None)/ })
+      .filter({ hasText: /^(Yes|No|Confirm|Decline|Select None|Return to Hand)/ })
       .first()
       .waitFor({ state: 'visible', timeout })
   }
