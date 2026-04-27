@@ -872,7 +872,29 @@ class CastFromZoneEnumerator : ActionEnumerator {
             val costString = effectiveCost.toString()
             val canAfford = context.manaSolver.canPay(state, playerId, effectiveCost, precomputedSources = context.availableManaSources)
 
-            if (!canAfford) {
+            // Resolve flashback's bundled additional cost (e.g., Behold three Elementals)
+            val flashbackBeholdInfo = (flashback.additionalCost as? AdditionalCost.Behold)?.let { beholdCost ->
+                val projected = state.projectedState
+                val predicateContext = PredicateContext(controllerId = playerId)
+                val battlefieldMatches = projected.getBattlefieldControlledBy(playerId).filter { permId ->
+                    context.predicateEvaluator.matchesWithProjection(state, projected, permId, beholdCost.filter, predicateContext)
+                }
+                val handMatches = state.getZone(ZoneKey(playerId, Zone.HAND)).filter { id ->
+                    context.predicateEvaluator.matches(state, id, beholdCost.filter, predicateContext)
+                }
+                val validTargets = battlefieldMatches + handMatches
+                val description = beholdCost.description
+                AdditionalCostData(
+                    description = description,
+                    costType = "Behold",
+                    validBeholdTargets = validTargets,
+                    beholdCount = beholdCost.count
+                )
+            }
+            val canPayBehold = flashbackBeholdInfo == null ||
+                flashbackBeholdInfo.validBeholdTargets.size >= flashbackBeholdInfo.beholdCount
+
+            if (!canAfford || !canPayBehold) {
                 result.add(
                     LegalAction(
                         actionType = "CastWithFlashback",
@@ -880,6 +902,7 @@ class CastFromZoneEnumerator : ActionEnumerator {
                         action = CastSpell(playerId, cardId, useAlternativeCost = true),
                         affordable = false,
                         manaCostString = costString,
+                        additionalCostInfo = flashbackBeholdInfo,
                         sourceZone = "GRAVEYARD"
                     )
                 )
@@ -914,6 +937,7 @@ class CastFromZoneEnumerator : ActionEnumerator {
                             targetDescription = firstReq.description,
                             targetRequirements = if (targetInfos.size > 1) targetInfos else null,
                             manaCostString = costString,
+                            additionalCostInfo = flashbackBeholdInfo,
                             autoTapPreview = autoTapPreview,
                             sourceZone = "GRAVEYARD"
                         )
@@ -926,6 +950,7 @@ class CastFromZoneEnumerator : ActionEnumerator {
                         description = "Cast ${cardComponent.name} (Flashback)",
                         action = CastSpell(playerId, cardId, useAlternativeCost = true),
                         manaCostString = costString,
+                        additionalCostInfo = flashbackBeholdInfo,
                         autoTapPreview = autoTapPreview,
                         sourceZone = "GRAVEYARD"
                     )

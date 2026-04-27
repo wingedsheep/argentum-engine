@@ -893,7 +893,8 @@ object Effects {
         overrideToughness: Int? = null,
         tapped: Boolean = false,
         attacking: Boolean = false,
-        triggeredAbilities: List<TriggeredAbility> = emptyList()
+        triggeredAbilities: List<TriggeredAbility> = emptyList(),
+        addedKeywords: Set<com.wingedsheep.sdk.core.Keyword> = emptySet()
     ): Effect = CreateTokenCopyOfTargetEffect(
         target,
         DynamicAmount.Fixed(count),
@@ -901,7 +902,8 @@ object Effects {
         overrideToughness,
         tapped,
         attacking,
-        triggeredAbilities
+        triggeredAbilities,
+        addedKeywords
     )
 
     /**

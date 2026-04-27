@@ -451,15 +451,24 @@ sealed interface KeywordAbility {
     // =========================================================================
 
     /**
-     * Flashback with a mana cost.
+     * Flashback with a mana cost and an optional additional cost.
      * "Flashback {4}{B}" - You may cast this card from your graveyard for its
      * flashback cost. Then exile it.
+     *
+     * The optional [additionalCost] models flashback variants that bundle a
+     * non-mana cost (e.g., "Flashback—{1}{R}, Behold three Elementals.").
+     * It is paid only on the flashback cast path; hand casts ignore it.
      */
     @SerialName("Flashback")
     @Serializable
-    data class Flashback(val cost: ManaCost) : KeywordAbility {
+    data class Flashback(
+        val cost: ManaCost,
+        val additionalCost: AdditionalCost? = null
+    ) : KeywordAbility {
         override val keyword: Keyword = Keyword.FLASHBACK
-        override val description: String = "Flashback $cost"
+        override val description: String =
+            if (additionalCost == null) "Flashback $cost"
+            else "Flashback—$cost, ${additionalCost.description}"
     }
 
     // =========================================================================
@@ -612,6 +621,12 @@ sealed interface KeywordAbility {
          * Create Flashback with mana cost from string.
          */
         fun flashback(cost: String): KeywordAbility = Flashback(ManaCost.parse(cost))
+
+        /**
+         * Create Flashback with a mana cost and an additional cost (e.g., "Flashback—{1}{R}, Behold three Elementals").
+         */
+        fun flashback(cost: String, additionalCost: AdditionalCost): KeywordAbility =
+            Flashback(ManaCost.parse(cost), additionalCost)
 
         /**
          * Create Offspring with mana cost from string.

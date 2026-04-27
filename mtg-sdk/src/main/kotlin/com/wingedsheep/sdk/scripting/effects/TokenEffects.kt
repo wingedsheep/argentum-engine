@@ -308,7 +308,9 @@ data class CreateTokenCopyOfTargetEffect(
     val overrideToughness: Int? = null,
     val tapped: Boolean = false,
     val attacking: Boolean = false,
-    val triggeredAbilities: List<TriggeredAbility> = emptyList()
+    val triggeredAbilities: List<TriggeredAbility> = emptyList(),
+    /** Keywords granted to the token copy in addition to those copied from the source. */
+    val addedKeywords: Set<Keyword> = emptySet()
 ) : Effect {
     override val description: String = buildString {
         append("Create ${count.description} token copies of target permanent")
@@ -317,6 +319,9 @@ data class CreateTokenCopyOfTargetEffect(
         }
         if (tapped) append(" tapped")
         if (attacking) append(" and attacking")
+        if (addedKeywords.isNotEmpty()) {
+            append(" with ${addedKeywords.joinToString(", ") { it.displayName.lowercase() }}")
+        }
     }
 
     override fun applyTextReplacement(replacer: TextReplacer): Effect = this

@@ -68,7 +68,8 @@ class CreateTokenCopyOfTargetExecutor(
             } else null
             val tokenCard = targetCard.copy(
                 ownerId = controllerId,
-                baseStats = overrideStats ?: targetCard.baseStats
+                baseStats = overrideStats ?: targetCard.baseStats,
+                baseKeywords = targetCard.baseKeywords + effect.addedKeywords
             )
 
             val components = mutableListOf<Component>(

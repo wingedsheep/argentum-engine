@@ -249,6 +249,18 @@ class CastSpellHandler(
             }
         }
 
+        // Validate flashback's bundled additional cost (e.g., "Flashback—{1}{R}, Behold three Elementals")
+        if (action.useAlternativeCost && cardDef != null && hasFlashback) {
+            val flashbackAdditional = cardDef.keywordAbilities
+                .filterIsInstance<KeywordAbility.Flashback>()
+                .firstOrNull()
+                ?.additionalCost
+            if (flashbackAdditional != null) {
+                val flashbackCostError = validateAdditionalCosts(state, listOf(flashbackAdditional), action)
+                if (flashbackCostError != null) return flashbackCostError
+            }
+        }
+
         // Validate Conspire optional additional cost (CR 702.78). Two untapped creatures the
         // caster controls, each sharing a color with the spell. The spell must have Conspire
         // either printed or granted (e.g., Raiding Schemes: "Each noncreature spell you cast
@@ -1126,6 +1138,14 @@ class CastSpellHandler(
             if (action.useAlternativeCost && cardDef != null) {
                 val selfAltCost = cardDef.script.selfAlternativeCost
                 if (selfAltCost != null) addAll(selfAltCost.additionalCosts)
+                // Flashback's bundled additional cost (e.g., Behold three Elementals)
+                if (zoneResolver.hasFlashbackPermission(currentState, action.playerId, action.cardId)) {
+                    val flashbackAdditional = cardDef.keywordAbilities
+                        .filterIsInstance<KeywordAbility.Flashback>()
+                        .firstOrNull()
+                        ?.additionalCost
+                    if (flashbackAdditional != null) add(flashbackAdditional)
+                }
             }
             // Runtime additional costs from entity component (e.g., The Infamous Cruelclaw)
             val runtimeCostComp = currentState.getEntity(action.cardId)
