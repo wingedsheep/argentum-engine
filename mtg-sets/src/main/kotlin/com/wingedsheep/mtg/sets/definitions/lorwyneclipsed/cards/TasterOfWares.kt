@@ -40,8 +40,8 @@ import com.wingedsheep.sdk.scripting.values.DynamicAmount
  *   keeps it active as long as the card stays in exile. The "as long as you
  *   control this creature" clause is a small simplification (matches the typical
  *   case where the player casts the exiled spell while Taster is still alive).
- * - The "mana of any type can be spent" clause is not modeled; the player must
- *   pay the spell's normal mana cost when casting from exile.
+ * - "Mana of any type can be spent" is plumbed via `withAnyManaType = true` on
+ *   the granted permission, which relaxes colored cost requirements at cast time.
  */
 val TasterOfWares = card("Taster of Wares") {
     manaCost = "{2}{B}"
@@ -53,6 +53,10 @@ val TasterOfWares = card("Taster of Wares") {
     triggeredAbility {
         trigger = Triggers.EntersBattlefield
         val opponent = target("opponent", TargetOpponent())
+        description = "When this creature enters, target opponent reveals X cards from their hand, " +
+            "where X is the number of Goblins you control. You choose one of those cards. " +
+            "That player exiles it. If an instant or sorcery card is exiled this way, you may cast it " +
+            "for as long as you control this creature, and mana of any type can be spent to cast that spell."
         effect = CompositeEffect(
             listOf(
                 // Snapshot the number of Goblins you control as X
@@ -98,7 +102,11 @@ val TasterOfWares = card("Taster of Wares") {
                     filter = CollectionFilter.MatchesFilter(GameObjectFilter.InstantOrSorcery),
                     storeMatching = "instantOrSorcery"
                 ),
-                GrantMayPlayFromExileEffect(from = "instantOrSorcery", permanent = true)
+                GrantMayPlayFromExileEffect(
+                    from = "instantOrSorcery",
+                    permanent = true,
+                    withAnyManaType = true
+                )
             )
         )
     }

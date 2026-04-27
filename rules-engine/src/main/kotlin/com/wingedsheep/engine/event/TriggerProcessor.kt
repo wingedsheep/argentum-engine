@@ -18,6 +18,7 @@ import com.wingedsheep.sdk.scripting.effects.MayEffect
 import com.wingedsheep.sdk.scripting.effects.MayPayManaEffect
 import com.wingedsheep.sdk.scripting.effects.SelectFromCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.SelectionMode
+import com.wingedsheep.sdk.scripting.effects.StoreNumberEffect
 import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.components.player.PlayerLostComponent
 import com.wingedsheep.sdk.scripting.targets.TargetRequirement
@@ -476,6 +477,7 @@ class TriggerProcessor(
             controllerId = trigger.controllerId,
             effect = effectOverride ?: ability.effect,
             description = ability.description,
+            descriptionOverride = ability.descriptionOverride,
             triggerDamageAmount = trigger.triggerContext.damageAmount,
             triggeringEntityId = trigger.triggerContext.triggeringEntityId,
             triggeringPlayerId = trigger.triggerContext.triggeringPlayerId,
@@ -562,28 +564,46 @@ class TriggerProcessor(
 
     /**
      * Compute the X value for display on the stack for triggered abilities that use a variable
-     * ChooseUpTo DynamicAmount (e.g., Prismatic Undercurrents searching for up to X basic lands).
-     *
-     * Returns null if the ability's effect doesn't contain a non-Fixed ChooseUpTo selection.
+     * selection count. Handles both `ChooseUpTo` (e.g., Prismatic Undercurrents — up to X basic
+     * lands) and `ChooseExactly` (e.g., Taster of Wares — reveal X cards from hand). When the
+     * count is a [DynamicAmount.VariableReference], looks up the matching [StoreNumberEffect]
+     * in the same effect tree to obtain the actual amount.
      */
     private fun computeXForDisplay(state: GameState, trigger: PendingTrigger): Int? {
-        val amount = findChooseUpToAmount(trigger.ability.effect) ?: return null
-        if (amount is DynamicAmount.Fixed) return null
+        val rawAmount = findSelectionAmount(trigger.ability.effect) ?: return null
+        if (rawAmount is DynamicAmount.Fixed) return null
+        val resolvedAmount = if (rawAmount is DynamicAmount.VariableReference) {
+            findStoreNumberAmount(trigger.ability.effect, rawAmount.variableName) ?: return null
+        } else rawAmount
         val context = EffectContext(
             sourceId = trigger.sourceId,
             controllerId = trigger.controllerId,
             opponentId = state.getOpponent(trigger.controllerId)
         )
-        return DynamicAmountEvaluator().evaluate(state, amount, context)
+        return DynamicAmountEvaluator().evaluate(state, resolvedAmount, context)
     }
 
     /**
-     * Recursively walk an effect tree looking for the first SelectFromCollectionEffect
-     * with a ChooseUpTo selection mode.
+     * Recursively walk an effect tree looking for the first SelectFromCollectionEffect's
+     * selection count (either `ChooseUpTo` or `ChooseExactly`).
      */
-    private fun findChooseUpToAmount(effect: Effect): DynamicAmount? = when (effect) {
-        is SelectFromCollectionEffect -> (effect.selection as? SelectionMode.ChooseUpTo)?.count
-        is CompositeEffect -> effect.effects.firstNotNullOfOrNull { findChooseUpToAmount(it) }
+    private fun findSelectionAmount(effect: Effect): DynamicAmount? = when (effect) {
+        is SelectFromCollectionEffect -> when (val sel = effect.selection) {
+            is SelectionMode.ChooseUpTo -> sel.count
+            is SelectionMode.ChooseExactly -> sel.count
+            else -> null
+        }
+        is CompositeEffect -> effect.effects.firstNotNullOfOrNull { findSelectionAmount(it) }
+        else -> null
+    }
+
+    /**
+     * Find the [StoreNumberEffect] in the effect tree with the given [name] and return its
+     * amount, or null if no match.
+     */
+    private fun findStoreNumberAmount(effect: Effect, name: String): DynamicAmount? = when (effect) {
+        is StoreNumberEffect -> if (effect.name == name) effect.amount else null
+        is CompositeEffect -> effect.effects.firstNotNullOfOrNull { findStoreNumberAmount(it, name) }
         else -> null
     }
 

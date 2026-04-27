@@ -481,9 +481,13 @@ class CastSpellHandler(
             )
         } else null
 
+        // "Mana of any type can be spent" — relax colored requirements when the cast
+        // permission carries that flag (e.g. Taster of Wares, Cruelclaw's Heist).
+        val effectiveCost = if (isCastWithAnyManaType(state, action)) cost.relaxColors() else cost
+
         return when (action.paymentStrategy) {
             is PaymentStrategy.AutoPay -> {
-                if (!manaSolver.canPay(state, action.playerId, cost, xValue, spellContext = spellCtx)) {
+                if (!manaSolver.canPay(state, action.playerId, effectiveCost, xValue, spellContext = spellCtx)) {
                     "Not enough mana to cast this spell"
                 } else null
             }
@@ -499,7 +503,7 @@ class CastSpellHandler(
                     colorless = poolComponent.colorless,
                     restrictedMana = poolComponent.restrictedMana
                 )
-                if (!pool.canPay(cost, spellCtx)) {
+                if (!pool.canPay(effectiveCost, spellCtx)) {
                     "Insufficient mana in pool to cast this spell"
                 } else null
             }
@@ -518,11 +522,25 @@ class CastSpellHandler(
                     .map { it.entityId }
                     .filter { it !in chosen }
                     .toSet()
-                if (manaSolver.solve(state, action.playerId, cost, xValue, excludeSources = excluded, spellContext = spellCtx) == null) {
+                if (manaSolver.solve(state, action.playerId, effectiveCost, xValue, excludeSources = excluded, spellContext = spellCtx) == null) {
                     "Selected mana sources cannot pay this spell's cost"
                 } else null
             }
         }
+    }
+
+    /**
+     * True if the spell is being cast from exile via a [MayPlayFromExileComponent]
+     * that allows mana of any type to be spent. The card must currently be in some
+     * exile zone (the card's owner's, which may be an opponent — e.g. Taster of Wares
+     * leaves the exiled card in the revealing player's exile), the permission must
+     * be granted to the casting player, and the flag must be set.
+     */
+    private fun isCastWithAnyManaType(state: GameState, action: CastSpell): Boolean {
+        val container = state.getEntity(action.cardId) ?: return false
+        val mayPlay = container.get<MayPlayFromExileComponent>() ?: return false
+        if (mayPlay.controllerId != action.playerId || !mayPlay.withAnyManaType) return false
+        return state.turnOrder.any { ownerId -> action.cardId in state.getZone(ZoneKey(ownerId, Zone.EXILE)) }
     }
 
     private fun validateConspire(
@@ -1471,6 +1489,12 @@ class CastSpellHandler(
             hasXInCost = cardComponent.manaCost.hasX,
             subtypes = cardComponent.typeLine.subtypes.map { it.value }.toSet()
         )
+
+        // "Mana of any type can be spent" — relax colored requirements for cast-from-exile
+        // permissions that carry the flag (Taster of Wares, Cruelclaw's Heist).
+        if (isCastWithAnyManaType(currentState, action)) {
+            effectiveCost = effectiveCost.relaxColors()
+        }
 
         // Handle mana payment via dedicated processor
         val paymentResult = paymentProcessor.processPayment(currentState, action, effectiveCost, cardComponent.name, xValue, spellContext)

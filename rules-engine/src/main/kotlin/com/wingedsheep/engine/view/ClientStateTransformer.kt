@@ -500,7 +500,8 @@ class ClientStateTransformer(
                 cardTypes = setOf("Ability"),
                 subtypes = emptySet(),
                 colors = sourceCard?.colors ?: emptySet(),
-                oracleText = runtimeAbilityText(state, entityId, triggeredAbility.controllerId, triggeredAbility.effect, triggeredAbility.xValue)
+                oracleText = triggeredAbility.descriptionOverride
+                    ?: runtimeAbilityText(state, entityId, triggeredAbility.controllerId, triggeredAbility.effect, triggeredAbility.xValue)
                     ?: triggeredAbility.description,
                 power = null,
                 toughness = null,

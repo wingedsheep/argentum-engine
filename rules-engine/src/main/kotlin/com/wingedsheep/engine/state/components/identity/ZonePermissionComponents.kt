@@ -35,12 +35,16 @@ data class RevealedToComponent(
  *   Used for "for as long as it remains exiled" effects like Kheru Spellsnatcher / Spelljack.
  * @param expiresAfterTurn If set, the permission persists until the end of the specified turn number
  *   (inclusive). Used for "until the end of your next turn" effects like Muerra, Trash Tactician.
+ * @param withAnyManaType If true, mana of any type can be spent to cast this card. Used by effects
+ *   like Taster of Wares ("...mana of any type can be spent to cast that spell"). Treats every
+ *   colored cost symbol as generic for the purposes of payment when casting from exile.
  */
 @Serializable
 data class MayPlayFromExileComponent(
     val controllerId: EntityId,
     val permanent: Boolean = false,
-    val expiresAfterTurn: Int? = null
+    val expiresAfterTurn: Int? = null,
+    val withAnyManaType: Boolean = false
 ) : Component
 
 /**

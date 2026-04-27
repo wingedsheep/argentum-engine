@@ -266,10 +266,15 @@ class CastFromZoneEnumerator : ActionEnumerator {
                     val cardDef = context.cardRegistry.getCard(cardComponent.name)
                     val castRestrictions = cardDef?.script?.castRestrictions ?: emptyList()
                     val meetsRestrictions = context.castPermissionUtils.checkCastRestrictions(state, playerId, castRestrictions)
-                    val effectiveCost = if (cardDef != null) {
+                    val baseEffectiveCost = if (cardDef != null) {
                         context.costCalculator.calculateEffectiveCost(state, cardDef, playerId)
                     } else {
                         cardComponent.manaCost
+                    }
+                    val effectiveCost = if (exileComponent.withAnyManaType) {
+                        baseEffectiveCost.relaxColors()
+                    } else {
+                        baseEffectiveCost
                     }
                     val costString = if (playForFree) "{0}" else effectiveCost.toString()
                     val canAfford = playForFree ||

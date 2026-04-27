@@ -85,6 +85,33 @@ data class ManaCost(val symbols: List<ManaSymbol>) {
         return ManaCost(genericSymbols + remainingColored + otherSymbols)
     }
 
+    /**
+     * Return a relaxed cost where every colored, hybrid, phyrexian, and colorless requirement
+     * is converted into generic mana — suitable for "mana of any type can be spent" effects
+     * (e.g. Taster of Wares, Cruelclaw's Heist).
+     *
+     * Generic, X, and existing generic-equivalent symbols are preserved; only color/type
+     * requirements are dropped.
+     */
+    fun relaxColors(): ManaCost {
+        if (symbols.none { it is ManaSymbol.Colored || it is ManaSymbol.Hybrid ||
+                it is ManaSymbol.Phyrexian || it is ManaSymbol.Colorless }) return this
+        var addedGeneric = 0
+        val keptSymbols = mutableListOf<ManaSymbol>()
+        for (symbol in symbols) {
+            when (symbol) {
+                is ManaSymbol.Colored, is ManaSymbol.Hybrid,
+                is ManaSymbol.Phyrexian, is ManaSymbol.Colorless -> addedGeneric++
+                is ManaSymbol.Generic, is ManaSymbol.X -> keptSymbols.add(symbol)
+            }
+        }
+        val existingGeneric = keptSymbols.filterIsInstance<ManaSymbol.Generic>().sumOf { it.amount }
+        val nonGenericKept = keptSymbols.filterNot { it is ManaSymbol.Generic }
+        val totalGeneric = existingGeneric + addedGeneric
+        val genericList = if (totalGeneric > 0) listOf(ManaSymbol.Generic(totalGeneric)) else emptyList()
+        return ManaCost(genericList + nonGenericKept)
+    }
+
     operator fun plus(other: ManaCost): ManaCost {
         val mergedGeneric = this.genericAmount + other.genericAmount
         val nonGeneric = this.symbols.filterNot { it is ManaSymbol.Generic } +

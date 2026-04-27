@@ -50,6 +50,9 @@ data class TriggeredAbilityOnStackComponent(
     val controllerId: EntityId,
     val effect: Effect,
     val description: String,
+    /** Optional human-readable description from `TriggeredAbility.descriptionOverride`,
+     *  used when displaying the ability on the stack instead of the auto-generated effect text. */
+    val descriptionOverride: String? = null,
     val triggerDamageAmount: Int? = null,
     val triggeringEntityId: EntityId? = null,
     val triggeringPlayerId: EntityId? = null,

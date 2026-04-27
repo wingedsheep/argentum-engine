@@ -671,12 +671,23 @@ data class SelectTargetEffect(
 data class GrantMayPlayFromExileEffect(
     val from: String,
     val untilEndOfNextTurn: Boolean = false,
-    val permanent: Boolean = false
+    val permanent: Boolean = false,
+    /**
+     * When true, mana of any type may be spent to cast the granted cards. Used by
+     * "and mana of any type can be spent to cast that spell" clauses (Taster of Wares,
+     * Cruelclaw's Heist).
+     */
+    val withAnyManaType: Boolean = false
 ) : Effect {
-    override val description: String = when {
-        permanent -> "For as long as they remain exiled, you may play the $from cards from exile"
-        untilEndOfNextTurn -> "Until the end of your next turn, you may play the $from cards from exile"
-        else -> "Until end of turn, you may play the $from cards from exile"
+    override val description: String = buildString {
+        append(
+            when {
+                permanent -> "For as long as they remain exiled, you may play the $from cards from exile"
+                untilEndOfNextTurn -> "Until the end of your next turn, you may play the $from cards from exile"
+                else -> "Until end of turn, you may play the $from cards from exile"
+            }
+        )
+        if (withAnyManaType) append(", and mana of any type can be spent to cast them")
     }
 
     override fun applyTextReplacement(replacer: TextReplacer): Effect = this
