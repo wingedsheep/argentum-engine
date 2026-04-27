@@ -23,7 +23,8 @@ import com.wingedsheep.sdk.scripting.targets.EffectTarget
  *
  * Per Scryfall ruling (2025-11-17): each ability checks Figure of Fable's creature
  * types when it resolves, so the conditional gate lives inside the effect rather
- * than as an activation restriction.
+ * than as an activation restriction. The ability is always legal to activate; it
+ * does nothing on resolution if the source isn't currently the prerequisite form.
  */
 val FigureOfFable = card("Figure of Fable") {
     manaCost = "{G/W}"

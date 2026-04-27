@@ -1782,6 +1782,17 @@ class ClientStateTransformer(
                         )
                     )
                 }
+                is SerializableModification.SetCreatureSubtypes -> {
+                    val joined = modification.subtypes.joinToString(" ")
+                    effects.add(
+                        ClientCardEffect(
+                            effectId = "type_changed_${modification.subtypes.joinToString("_").lowercase()}",
+                            name = joined.ifEmpty { "Type Changed" },
+                            description = "Creature types are now $joined",
+                            icon = "type-change"
+                        )
+                    )
+                }
                 // Other modifications don't need badges (stats/keywords/types are shown elsewhere)
                 else -> { /* No badge needed */ }
             }

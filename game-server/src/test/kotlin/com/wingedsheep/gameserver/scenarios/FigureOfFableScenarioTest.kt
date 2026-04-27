@@ -7,6 +7,7 @@ import com.wingedsheep.sdk.core.Phase
 import com.wingedsheep.sdk.core.Step
 import io.kotest.assertions.withClue
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.shouldNotBe
 
 /**
  * Scenario tests for Figure of Fable.
@@ -143,6 +144,241 @@ class FigureOfFableScenarioTest : ScenarioTestBase() {
                 withClue("Should have protection from each opponent") {
                     projected.hasKeyword(sourceId, "PROTECTION_FROM_EACH_OPPONENT") shouldBe true
                 }
+            }
+        }
+
+        context("Figure of Fable client-visible state") {
+
+            test("ClientCard typeLine and subtypes reflect each transformation step") {
+                val game = scenario()
+                    .withPlayers("Player1", "Player2")
+                    .withCardOnBattlefield(1, "Figure of Fable")
+                    .withActivePlayer(1)
+                    .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                    .build()
+
+                fun clientCard() = game.getClientState(1).cards.values
+                    .first { it.name == "Figure of Fable" }
+
+                withClue("Base form should display Kithkin only") {
+                    val card = clientCard()
+                    card.subtypes shouldBe setOf("Kithkin")
+                    card.typeLine shouldBe "Creature — Kithkin"
+                }
+
+                setMana(game, green = 1)
+                activateAbility(game, 0)
+                game.resolveStack()
+
+                withClue("After Scout transformation, subtypes are exactly Kithkin + Scout") {
+                    val card = clientCard()
+                    card.subtypes shouldBe setOf("Kithkin", "Scout")
+                    card.typeLine shouldBe "Creature — Kithkin Scout"
+                }
+
+                setMana(game, green = 2, colorless = 1)
+                activateAbility(game, 1)
+                game.resolveStack()
+
+                withClue("After Soldier transformation, subtypes are exactly Kithkin + Soldier (Scout replaced)") {
+                    val card = clientCard()
+                    card.subtypes shouldBe setOf("Kithkin", "Soldier")
+                    card.typeLine shouldBe "Creature — Kithkin Soldier"
+                }
+
+                setMana(game, green = 3, colorless = 3)
+                activateAbility(game, 2)
+                game.resolveStack()
+
+                withClue("After Avatar transformation, subtypes are exactly Kithkin + Avatar (Soldier replaced)") {
+                    val card = clientCard()
+                    card.subtypes shouldBe setOf("Kithkin", "Avatar")
+                    card.typeLine shouldBe "Creature — Kithkin Avatar"
+                }
+            }
+
+            test("active-effect badge surfaces the new creature types for the frontend") {
+                val game = scenario()
+                    .withPlayers("Player1", "Player2")
+                    .withCardOnBattlefield(1, "Figure of Fable")
+                    .withActivePlayer(1)
+                    .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                    .build()
+
+                fun clientCard() = game.getClientState(1).cards.values
+                    .first { it.name == "Figure of Fable" }
+
+                setMana(game, green = 1)
+                activateAbility(game, 0)
+                game.resolveStack()
+
+                withClue("Scout transformation surfaces a type-change active effect") {
+                    val effects = clientCard().activeEffects
+                    val typeChange = effects.firstOrNull { it.icon == "type-change" }
+                    typeChange shouldNotBe null
+                    typeChange!!.name shouldBe "Kithkin Scout"
+                }
+
+                setMana(game, green = 3, colorless = 3)
+                activateAbility(game, 2)  // fizzles, source isn't a Soldier
+                game.resolveStack()
+
+                withClue("A fizzled activation does not produce a type-change badge") {
+                    val effects = clientCard().activeEffects
+                    val typeChange = effects.firstOrNull { it.icon == "type-change" }
+                    typeChange!!.name shouldBe "Kithkin Scout"
+                }
+            }
+        }
+
+        context("Figure of Fable evolution gating (cannot skip steps or evolve backwards)") {
+
+            test("third ability fizzles from base form (skipping Scout and Soldier)") {
+                val game = scenario()
+                    .withPlayers("Player1", "Player2")
+                    .withCardOnBattlefield(1, "Figure of Fable")
+                    .withActivePlayer(1)
+                    .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                    .build()
+
+                setMana(game, green = 3, colorless = 3)
+                activateAbility(game, 2)
+                game.resolveStack()
+
+                val sourceId = game.findPermanent("Figure of Fable")!!
+                val projected = game.state.projectedState
+                withClue("Base 1/1 — third ability requires Soldier, condition fails") {
+                    projected.getPower(sourceId) shouldBe 1
+                    projected.getToughness(sourceId) shouldBe 1
+                }
+                ("Avatar" in projected.getSubtypes(sourceId)) shouldBe false
+                projected.hasKeyword(sourceId, "PROTECTION_FROM_EACH_OPPONENT") shouldBe false
+            }
+
+            test("third ability fizzles from Scout form (skipping Soldier)") {
+                val game = scenario()
+                    .withPlayers("Player1", "Player2")
+                    .withCardOnBattlefield(1, "Figure of Fable")
+                    .withActivePlayer(1)
+                    .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                    .build()
+
+                setMana(game, green = 1)
+                activateAbility(game, 0)
+                game.resolveStack()
+
+                setMana(game, green = 3, colorless = 3)
+                activateAbility(game, 2)
+                game.resolveStack()
+
+                val sourceId = game.findPermanent("Figure of Fable")!!
+                val projected = game.state.projectedState
+                withClue("Should still be a 2/3 Scout, not an Avatar") {
+                    projected.getPower(sourceId) shouldBe 2
+                    projected.getToughness(sourceId) shouldBe 3
+                }
+                ("Scout" in projected.getSubtypes(sourceId)) shouldBe true
+                ("Avatar" in projected.getSubtypes(sourceId)) shouldBe false
+                projected.hasKeyword(sourceId, "PROTECTION_FROM_EACH_OPPONENT") shouldBe false
+            }
+
+            test("second ability fizzles from Soldier form (cannot re-trigger forward step)") {
+                val game = scenario()
+                    .withPlayers("Player1", "Player2")
+                    .withCardOnBattlefield(1, "Figure of Fable")
+                    .withActivePlayer(1)
+                    .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                    .build()
+
+                setMana(game, green = 1)
+                activateAbility(game, 0)
+                game.resolveStack()
+
+                setMana(game, green = 2, colorless = 1)
+                activateAbility(game, 1)
+                game.resolveStack()
+
+                // Now a Soldier — re-activating ability 2 should fizzle (Soldier is not a Scout)
+                setMana(game, green = 2, colorless = 1)
+                activateAbility(game, 1)
+                game.resolveStack()
+
+                val sourceId = game.findPermanent("Figure of Fable")!!
+                val projected = game.state.projectedState
+                withClue("Should still be a 4/5 Soldier — second ability is a no-op when not a Scout") {
+                    projected.getPower(sourceId) shouldBe 4
+                    projected.getToughness(sourceId) shouldBe 5
+                }
+                ("Soldier" in projected.getSubtypes(sourceId)) shouldBe true
+                ("Scout" in projected.getSubtypes(sourceId)) shouldBe false
+            }
+
+            test("second ability fizzles from Avatar form (cannot evolve backwards to Soldier)") {
+                val game = scenario()
+                    .withPlayers("Player1", "Player2")
+                    .withCardOnBattlefield(1, "Figure of Fable")
+                    .withActivePlayer(1)
+                    .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                    .build()
+
+                setMana(game, green = 1)
+                activateAbility(game, 0)
+                game.resolveStack()
+                setMana(game, green = 2, colorless = 1)
+                activateAbility(game, 1)
+                game.resolveStack()
+                setMana(game, green = 3, colorless = 3)
+                activateAbility(game, 2)
+                game.resolveStack()
+
+                // Avatar — second ability requires Scout; should fizzle
+                setMana(game, green = 2, colorless = 1)
+                activateAbility(game, 1)
+                game.resolveStack()
+
+                val sourceId = game.findPermanent("Figure of Fable")!!
+                val projected = game.state.projectedState
+                withClue("Should still be a 7/8 Avatar — second ability fizzles when not a Scout") {
+                    projected.getPower(sourceId) shouldBe 7
+                    projected.getToughness(sourceId) shouldBe 8
+                }
+                ("Avatar" in projected.getSubtypes(sourceId)) shouldBe true
+                ("Soldier" in projected.getSubtypes(sourceId)) shouldBe false
+                withClue("Avatar still has protection from each opponent") {
+                    projected.hasKeyword(sourceId, "PROTECTION_FROM_EACH_OPPONENT") shouldBe true
+                }
+            }
+
+            test("third ability fizzles from Avatar form (cannot re-trigger forward step)") {
+                val game = scenario()
+                    .withPlayers("Player1", "Player2")
+                    .withCardOnBattlefield(1, "Figure of Fable")
+                    .withActivePlayer(1)
+                    .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                    .build()
+
+                setMana(game, green = 1)
+                activateAbility(game, 0)
+                game.resolveStack()
+                setMana(game, green = 2, colorless = 1)
+                activateAbility(game, 1)
+                game.resolveStack()
+                setMana(game, green = 3, colorless = 3)
+                activateAbility(game, 2)
+                game.resolveStack()
+
+                // Avatar — third ability requires Soldier; should fizzle
+                setMana(game, green = 3, colorless = 3)
+                activateAbility(game, 2)
+                game.resolveStack()
+
+                val sourceId = game.findPermanent("Figure of Fable")!!
+                val projected = game.state.projectedState
+                withClue("Should still be a 7/8 Avatar") {
+                    projected.getPower(sourceId) shouldBe 7
+                    projected.getToughness(sourceId) shouldBe 8
+                }
+                ("Avatar" in projected.getSubtypes(sourceId)) shouldBe true
             }
         }
     }
