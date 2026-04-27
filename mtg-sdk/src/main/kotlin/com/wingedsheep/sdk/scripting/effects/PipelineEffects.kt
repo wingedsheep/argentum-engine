@@ -389,11 +389,16 @@ data class GatherUntilMatchEffect(
  * named stored collection. Does not move or change any cards.
  *
  * @property from Name of the stored collection to reveal
+ * @property revealToSelf When false, the revealing player does not see the reveal
+ *   overlay (they already know — e.g., they just chose the card themselves while
+ *   searching their library). Defaults to true so opponents and bystanders still
+ *   get the reveal.
  */
 @SerialName("RevealCollection")
 @Serializable
 data class RevealCollectionEffect(
-    val from: String
+    val from: String,
+    val revealToSelf: Boolean = true
 ) : Effect {
     override val description: String = "Reveal the $from cards"
     override fun applyTextReplacement(replacer: TextReplacer): Effect = this

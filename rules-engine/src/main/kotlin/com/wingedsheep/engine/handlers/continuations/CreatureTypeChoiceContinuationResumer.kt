@@ -140,13 +140,16 @@ class CreatureTypeChoiceContinuationResumer(
     /**
      * Resume after player chose a generic option in a pipeline context.
      *
-     * Stores the chosen value into the EffectContinuation below on the stack
-     * (via chosenValues map) so subsequent pipeline effects can access it
-     * via EffectContext.chosenValues[storeAs].
+     * Injects the chosen value into every EffectContinuation on the stack
+     * (via chosenValues map) so any downstream pipeline effect — including
+     * ones in outer composites that wrap the choice (e.g., a ChooseOption
+     * nested inside a MayEffect inside an outer CompositeEffect) — can
+     * read it via EffectContext.chosenValues[storeAs].
      *
-     * Special case: when storeAs == "chosenCreatureType", additionally injects
-     * into the dedicated chosenCreatureType field for backward compatibility
-     * with SelectFromCollectionExecutor and HasSubtypeFromVariable predicate.
+     * Special case: when storeAs == "chosenCreatureType", additionally
+     * injects into the dedicated chosenCreatureType field for backward
+     * compatibility with SelectFromCollectionExecutor and the
+     * HasSubtypeFromVariable predicate.
      */
     fun resumeChooseOptionPipeline(
         state: GameState,
@@ -161,26 +164,34 @@ class CreatureTypeChoiceContinuationResumer(
         val chosenValue = continuation.options.getOrNull(response.optionIndex)
             ?: return ExecutionResult.error(state, "Invalid option index: ${response.optionIndex}")
 
-        // Inject the chosen value into the next EffectContinuation on the stack
-        val nextFrame = state.peekContinuation()
-        val newState = if (nextFrame is EffectContinuation) {
-            val (_, stateAfterPop) = state.popContinuation()
-            val updatedFrame = if (continuation.storeAs == ChooseCreatureTypePipelineExecutor.CHOSEN_CREATURE_TYPE_KEY) {
-                // Store into dedicated field for downstream executors that read context.chosenCreatureType,
-                // and also into chosenValues so pipeline effects (e.g., GroupFilter.chosenSubtypeKey) can read it
-                nextFrame.copy(effectContext = nextFrame.effectContext.copy(
-                    chosenCreatureType = chosenValue,
-                    pipeline = nextFrame.effectContext.pipeline.copy(chosenValues = nextFrame.effectContext.pipeline.chosenValues + (continuation.storeAs to chosenValue))
-                ))
+        val isChosenCreatureType = continuation.storeAs ==
+            ChooseCreatureTypePipelineExecutor.CHOSEN_CREATURE_TYPE_KEY
+
+        val updatedStack = state.continuationStack.map { frame ->
+            if (frame is EffectContinuation) {
+                val newContext = if (isChosenCreatureType) {
+                    frame.effectContext.copy(
+                        chosenCreatureType = chosenValue,
+                        pipeline = frame.effectContext.pipeline.copy(
+                            chosenValues = frame.effectContext.pipeline.chosenValues +
+                                (continuation.storeAs to chosenValue)
+                        )
+                    )
+                } else {
+                    frame.effectContext.copy(
+                        pipeline = frame.effectContext.pipeline.copy(
+                            chosenValues = frame.effectContext.pipeline.chosenValues +
+                                (continuation.storeAs to chosenValue)
+                        )
+                    )
+                }
+                frame.copy(effectContext = newContext)
             } else {
-                nextFrame.copy(effectContext = nextFrame.effectContext.copy(
-                    pipeline = nextFrame.effectContext.pipeline.copy(chosenValues = nextFrame.effectContext.pipeline.chosenValues + (continuation.storeAs to chosenValue))
-                ))
+                frame
             }
-            stateAfterPop.pushContinuation(updatedFrame)
-        } else {
-            state
         }
+
+        val newState = state.copy(continuationStack = updatedStack)
 
         return checkForMore(newState, emptyList())
     }

@@ -100,7 +100,8 @@ val CelestialReunion = card("Celestial Reunion") {
                     storeSelected = "found",
                     prompt = "Search your library for a creature card with mana value X or less"
                 ),
-                RevealCollectionEffect(from = "found"),
+                // Searcher just picked the card — reveal it to opponents only.
+                RevealCollectionEffect(from = "found", revealToSelf = false),
                 // If beheld and revealed card matches the chosen type → battlefield, else → hand.
                 ConditionalEffect(
                     condition = CollectionContainsMatch(
