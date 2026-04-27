@@ -2,14 +2,14 @@
 
 **Set Size:** 273 cards (main set, per Scryfall `set:ecl`)
 **Release Date:** January 23, 2026
-**Implemented:** 182 / 273
+**Implemented:** 183 / 273
 
 | Color      | Total | Done |
 |------------|-------|------|
 | White      | 39    | 26   |
 | Blue       | 39    | 28   |
 | Black      | 38    | 26   |
-| Red        | 39    | 22   |
+| Red        | 39    | 23   |
 | Green      | 39    | 27   |
 | Multicolor | 49    | 34   |
 | Colorless  | 18    | 8    |
@@ -175,7 +175,7 @@
 - [ ] Meek Attack
 - [x] Reckless Ransacking
 - [ ] Scuzzback Scrounger
-- [ ] Sear
+- [x] Sear
 - [ ] Sizzling Changeling
 - [ ] Soul Immolation
 - [x] Soulbright Seeker

@@ -153,6 +153,7 @@ object LorwynEclipsedSet {
         RiverguardsReflexes,
         SaplingNursery,
         ScarbladesMalice,
+        Sear,
         ShadowUrchin,
         Shimmercreep,
         ShimmerwildsGrowth,
