@@ -439,7 +439,8 @@ class LobbyHandler(
             boosterCount = boosterCount,
             boosterDistribution = TournamentLobby.calculateDefaultDistribution(codes, boosterCount),
             maxPlayers = maxPlayers,
-            pickTimeSeconds = message.pickTimeSeconds.coerceIn(15, 120)
+            pickTimeSeconds = message.pickTimeSeconds.coerceIn(15, 120),
+            isPublic = message.isPublic
         )
         lobby.addPlayer(identity)
         lobbyRepository.saveLobby(lobby)
@@ -1689,6 +1690,7 @@ class LobbyHandler(
         message.gamesPerMatch?.let { lobby.gamesPerMatch = it.coerceIn(1, 5) }
         message.pickTimeSeconds?.let { lobby.pickTimeSeconds = it.coerceIn(15, 180) }
         message.picksPerRound?.let { lobby.picksPerRound = it.coerceIn(1, 2) }
+        message.isPublic?.let { lobby.isPublic = it }
 
         ctx.broadcastLobbyUpdate(lobby)
         lobbyRepository.saveLobby(lobby)

@@ -662,14 +662,14 @@ export type GameStore = {
   lobbyState: LobbyState | null
   tournamentState: TournamentState | null
   spectatingState: SpectatingState | null
-  createTournamentLobby: (setCodes: string[], format?: 'SEALED' | 'DRAFT' | 'WINSTON_DRAFT' | 'GRID_DRAFT', boosterCount?: number, maxPlayers?: number, pickTimeSeconds?: number) => void
+  createTournamentLobby: (setCodes: string[], format?: 'SEALED' | 'DRAFT' | 'WINSTON_DRAFT' | 'GRID_DRAFT', boosterCount?: number, maxPlayers?: number, pickTimeSeconds?: number, isPublic?: boolean) => void
   joinLobby: (lobbyId: string) => void
   startLobby: () => void
   leaveLobby: () => void
   addAiToLobby: () => void
   removeAiFromLobby: (playerId: string) => void
   stopLobby: () => void
-  updateLobbySettings: (settings: { setCodes?: string[]; format?: 'SEALED' | 'DRAFT' | 'WINSTON_DRAFT' | 'GRID_DRAFT'; boosterCount?: number; boosterDistribution?: Record<string, number>; maxPlayers?: number; gamesPerMatch?: number; pickTimeSeconds?: number; picksPerRound?: number }) => void
+  updateLobbySettings: (settings: { setCodes?: string[]; format?: 'SEALED' | 'DRAFT' | 'WINSTON_DRAFT' | 'GRID_DRAFT'; boosterCount?: number; boosterDistribution?: Record<string, number>; maxPlayers?: number; gamesPerMatch?: number; pickTimeSeconds?: number; picksPerRound?: number; isPublic?: boolean }) => void
   /** Disconnected tournament players: playerId -> info */
   disconnectedPlayers: Record<string, { playerName: string; secondsRemaining: number; disconnectedAt: number }>
   readyForNextRound: () => void

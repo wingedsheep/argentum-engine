@@ -389,7 +389,8 @@ sealed interface ServerMessage {
         val maxPlayers: Int,
         val pickTimeSeconds: Int = 45,      // Draft only
         val picksPerRound: Int = 1,         // Draft only: 1 or 2 (Pick 2 mode)
-        val gamesPerMatch: Int = 1
+        val gamesPerMatch: Int = 1,
+        val isPublic: Boolean = false
     )
 
     /**

@@ -21,7 +21,7 @@ export function createLobbyHandlers(set: SetState, get: GetState): Pick<MessageH
           lobbyId: msg.lobbyId,
           state: 'WAITING_FOR_PLAYERS',
           players: [],
-          settings: { setCodes: [], setNames: [], availableSets: [], format: 'SEALED', boosterCount: 6, boosterDistribution: {}, maxPlayers: 8, pickTimeSeconds: 45, picksPerRound: 1, gamesPerMatch: 1 },
+          settings: { setCodes: [], setNames: [], availableSets: [], format: 'SEALED', boosterCount: 6, boosterDistribution: {}, maxPlayers: 8, pickTimeSeconds: 45, picksPerRound: 1, gamesPerMatch: 1, isPublic: false },
           isHost: true,
           draftState: null,
           winstonDraftState: null,

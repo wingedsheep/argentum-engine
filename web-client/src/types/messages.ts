@@ -831,6 +831,7 @@ export interface LobbySettings {
   readonly pickTimeSeconds: number
   readonly picksPerRound: number  // Draft only: 1 or 2 (Pick 2 mode)
   readonly gamesPerMatch: number
+  readonly isPublic: boolean
 }
 
 export interface LobbyCreatedMessage {
@@ -1531,6 +1532,7 @@ export interface CreateTournamentLobbyMessage {
   readonly boosterCount: number
   readonly maxPlayers: number
   readonly pickTimeSeconds: number
+  readonly isPublic: boolean
 }
 
 export interface JoinLobbyMessage {
@@ -1591,6 +1593,7 @@ export interface UpdateLobbySettingsMessage {
   readonly gamesPerMatch?: number
   readonly pickTimeSeconds?: number
   readonly picksPerRound?: number
+  readonly isPublic?: boolean
 }
 
 // Tournament Client Messages
@@ -1697,9 +1700,10 @@ export function createCreateTournamentLobbyMessage(
   format: 'SEALED' | 'DRAFT' | 'WINSTON_DRAFT' | 'GRID_DRAFT' = 'SEALED',
   boosterCount: number = 6,
   maxPlayers: number = 8,
-  pickTimeSeconds: number = 45
+  pickTimeSeconds: number = 45,
+  isPublic: boolean = false
 ): CreateTournamentLobbyMessage {
-  return { type: 'createTournamentLobby', setCodes, format, boosterCount, maxPlayers, pickTimeSeconds }
+  return { type: 'createTournamentLobby', setCodes, format, boosterCount, maxPlayers, pickTimeSeconds, isPublic }
 }
 
 // Backwards compatibility alias

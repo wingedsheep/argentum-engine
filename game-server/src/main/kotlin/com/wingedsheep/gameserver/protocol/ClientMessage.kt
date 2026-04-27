@@ -120,7 +120,8 @@ sealed interface ClientMessage {
         val format: String = "SEALED",     // "SEALED" or "DRAFT"
         val boosterCount: Int = 6,         // Sealed: boosters in pool, Draft: packs per player
         val maxPlayers: Int = 8,
-        val pickTimeSeconds: Int = 45      // Draft only
+        val pickTimeSeconds: Int = 45,     // Draft only
+        val isPublic: Boolean = false
     ) : ClientMessage
 
     /**
@@ -210,7 +211,8 @@ sealed interface ClientMessage {
         val maxPlayers: Int? = null,
         val gamesPerMatch: Int? = null,
         val pickTimeSeconds: Int? = null,     // Draft only
-        val picksPerRound: Int? = null        // Draft only: 1 or 2
+        val picksPerRound: Int? = null,       // Draft only: 1 or 2
+        val isPublic: Boolean? = null
     ) : ClientMessage
 
     /**

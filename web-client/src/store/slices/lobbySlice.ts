@@ -29,12 +29,12 @@ export interface LobbySliceState {
 }
 
 export interface LobbySliceActions {
-  createTournamentLobby: (setCodes: string[], format?: 'SEALED' | 'DRAFT' | 'WINSTON_DRAFT' | 'GRID_DRAFT', boosterCount?: number, maxPlayers?: number, pickTimeSeconds?: number) => void
+  createTournamentLobby: (setCodes: string[], format?: 'SEALED' | 'DRAFT' | 'WINSTON_DRAFT' | 'GRID_DRAFT', boosterCount?: number, maxPlayers?: number, pickTimeSeconds?: number, isPublic?: boolean) => void
   joinLobby: (lobbyId: string) => void
   startLobby: () => void
   leaveLobby: () => void
   stopLobby: () => void
-  updateLobbySettings: (settings: { setCodes?: string[]; format?: 'SEALED' | 'DRAFT' | 'WINSTON_DRAFT' | 'GRID_DRAFT'; boosterCount?: number; boosterDistribution?: Record<string, number>; maxPlayers?: number; gamesPerMatch?: number; pickTimeSeconds?: number; picksPerRound?: number }) => void
+  updateLobbySettings: (settings: { setCodes?: string[]; format?: 'SEALED' | 'DRAFT' | 'WINSTON_DRAFT' | 'GRID_DRAFT'; boosterCount?: number; boosterDistribution?: Record<string, number>; maxPlayers?: number; gamesPerMatch?: number; pickTimeSeconds?: number; picksPerRound?: number; isPublic?: boolean }) => void
   addAiToLobby: () => void
   removeAiFromLobby: (playerId: string) => void
   readyForNextRound: () => void
@@ -57,11 +57,11 @@ export const createLobbySlice: SliceCreator<LobbySlice> = (set, get) => ({
   disconnectedPlayers: {},
 
   // Actions
-  createTournamentLobby: (setCodes, format = 'SEALED', boosterCount = 6, maxPlayers = 8, pickTimeSeconds = 45) => {
+  createTournamentLobby: (setCodes, format = 'SEALED', boosterCount = 6, maxPlayers = 8, pickTimeSeconds = 45, isPublic = false) => {
     clearDeckState()
     set({ deckBuildingState: null })
-    trackEvent('tournament_lobby_created', { set_codes: setCodes, format, booster_count: boosterCount, max_players: maxPlayers })
-    getWebSocket()?.send(createCreateTournamentLobbyMessage(setCodes, format, boosterCount, maxPlayers, pickTimeSeconds))
+    trackEvent('tournament_lobby_created', { set_codes: setCodes, format, booster_count: boosterCount, max_players: maxPlayers, is_public: isPublic })
+    getWebSocket()?.send(createCreateTournamentLobbyMessage(setCodes, format, boosterCount, maxPlayers, pickTimeSeconds, isPublic))
   },
 
   joinLobby: (lobbyId) => {

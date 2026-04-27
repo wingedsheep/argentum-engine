@@ -169,7 +169,8 @@ class TournamentLobby(
     var maxPlayers: Int = 8,
     var pickTimeSeconds: Int = 45,    // Draft only
     var picksPerRound: Int = 1,       // Draft only: cards to pick each round (1 or 2)
-    var gamesPerMatch: Int = 1
+    var gamesPerMatch: Int = 1,
+    var isPublic: Boolean = false
 ) {
 
     /**
@@ -1277,7 +1278,8 @@ class TournamentLobby(
                 maxPlayers = maxPlayers,
                 pickTimeSeconds = pickTimeSeconds,
                 picksPerRound = picksPerRound,
-                gamesPerMatch = gamesPerMatch
+                gamesPerMatch = gamesPerMatch,
+                isPublic = isPublic
             ),
             isHost = isHost(forPlayerId)
         )

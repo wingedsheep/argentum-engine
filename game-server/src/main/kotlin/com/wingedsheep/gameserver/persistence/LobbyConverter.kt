@@ -57,7 +57,8 @@ fun TournamentLobby.toPersistent(): PersistentTournamentLobby {
         winstonActivePlayerIndex = winstonActivePlayerIndex,
         winstonCurrentPileIndex = winstonCurrentPileIndex,
         winstonSeenCardNames = winstonSeenCards.mapKeys { it.key.value }.mapValues { it.value.toList() },
-        completedAt = completedAt
+        completedAt = completedAt,
+        isPublic = isPublic
     )
 }
 
@@ -90,7 +91,8 @@ fun restoreTournamentLobby(
         boosterCount = persistent.boosterCount,
         maxPlayers = persistent.maxPlayers,
         pickTimeSeconds = persistent.pickTimeSeconds,
-        gamesPerMatch = persistent.gamesPerMatch
+        gamesPerMatch = persistent.gamesPerMatch,
+        isPublic = persistent.isPublic
     )
 
     val playerIdentities = mutableListOf<PlayerIdentity>()

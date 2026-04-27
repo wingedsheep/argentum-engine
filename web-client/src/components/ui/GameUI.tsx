@@ -10,6 +10,17 @@ import styles from './GameUI.module.css'
 
 type GameMode = 'normal' | 'tournament'
 
+interface PublicTournamentSummary {
+  lobbyId: string
+  state: string
+  playerCount: number
+  maxPlayers: number
+  format: 'SEALED' | 'DRAFT' | 'WINSTON_DRAFT' | 'GRID_DRAFT'
+  setNames: string[]
+  boosterCount: number
+  gamesPerMatch: number
+}
+
 /**
  * Connection/lobby UI - shown when not in a game.
  * Combat mode and game UI are handled in App.tsx and GameBoard.tsx.
@@ -54,6 +65,7 @@ function ConnectionOverlay({
   const joinGame = useGameStore((state) => state.joinGame)
   const createTournamentLobby = useGameStore((state) => state.createTournamentLobby)
   const joinLobby = useGameStore((state) => state.joinLobby)
+  const setPendingTournamentId = useGameStore((state) => state.setPendingTournamentId)
   const lobbyState = useGameStore((state) => state.lobbyState)
   const [joinSessionId, setJoinSessionId] = useState('')
   const [gameMode, setGameMode] = useState<GameMode>('normal')
@@ -62,11 +74,16 @@ function ConnectionOverlay({
 
   const [nameConfirmed, setNameConfirmed] = useState(() => !!localStorage.getItem('argentum-player-name'))
   const [showReplays, setShowReplays] = useState(false)
+  const [publicTournaments, setPublicTournaments] = useState<PublicTournamentSummary[]>([])
+  const [publicTournamentsError, setPublicTournamentsError] = useState<string | null>(null)
 
   const confirmName = () => {
     if (playerName.trim()) {
       localStorage.setItem('argentum-player-name', playerName.trim())
       setNameConfirmed(true)
+      if (gameMode === 'tournament' && joinSessionId.trim()) {
+        setPendingTournamentId(joinSessionId.trim())
+      }
       connect(playerName.trim())
     }
   }
@@ -94,6 +111,38 @@ function ConnectionOverlay({
       }
     }
   }
+
+  useEffect(() => {
+    if (sessionId || lobbyState) {
+      setPublicTournaments([])
+      return
+    }
+
+    let cancelled = false
+    const loadPublicTournaments = async () => {
+      try {
+        const res = await fetch('/api/tournaments/public')
+        if (!res.ok) throw new Error(`Server error: ${res.status}`)
+        const data = await res.json() as PublicTournamentSummary[]
+        if (!cancelled) {
+          setPublicTournaments(data)
+          setPublicTournamentsError(null)
+        }
+      } catch {
+        if (!cancelled) {
+          setPublicTournaments([])
+          setPublicTournamentsError('Could not load public tournaments.')
+        }
+      }
+    }
+
+    void loadPublicTournaments()
+    const interval = window.setInterval(loadPublicTournaments, 10_000)
+    return () => {
+      cancelled = true
+      window.clearInterval(interval)
+    }
+  }, [sessionId, lobbyState])
 
   const fetchPlayerGames = useCallback(async (): Promise<GameSummary[]> => {
     const token = localStorage.getItem('argentum-token')
@@ -137,138 +186,161 @@ function ConnectionOverlay({
     )
   }
 
+  const showPublicTournaments = !sessionId && !lobbyState && (publicTournaments.length > 0 || publicTournamentsError)
+
   return (
     <div className={styles.connectionOverlay} style={{ backgroundImage: `url(${randomBackground})` }}>
       <FullscreenButton />
-      <div className={styles.contentBackdrop}>
-        <h1 className={styles.title}>Argentum Engine</h1>
-        <span className={styles.commitHash}>{__COMMIT_HASH__}</span>
+      <div className={styles.landingLayout}>
+        <div className={styles.contentBackdrop}>
+          <h1 className={styles.title}>Argentum Engine</h1>
+          <span className={styles.commitHash}>{__COMMIT_HASH__}</span>
 
-        {error && (
-          <p className={styles.errorMessage}>Error: {error}</p>
-        )}
+          {error && (
+            <p className={styles.errorMessage}>Error: {error}</p>
+          )}
 
-        {!nameConfirmed && (
-          <div className={styles.inputGroup}>
-            <label className={styles.inputLabel}>Enter your name</label>
-            <input
-              type="text"
-              value={playerName}
-              onChange={(e) => setPlayerName(e.target.value)}
-              onKeyDown={(e) => { if (e.key === 'Enter') confirmName() }}
-              placeholder="Your name"
-              autoFocus
-              maxLength={20}
-              className={styles.textInput}
-            />
-            <button
-              onClick={confirmName}
-              disabled={!playerName.trim()}
-              className={styles.primaryButton}
-            >
-              Continue
-            </button>
-          </div>
-        )}
-
-        {status === 'connected' && !sessionId && (
-          <div className={styles.inputGroup}>
-            {/* Game Mode Toggle */}
-            <div className={styles.modeToggle}>
-              <ModeButton
-                label="Quick Game"
-                active={gameMode === 'normal'}
-                onClick={() => setGameMode('normal')}
-                title="Play with a random deck"
-              />
-              <ModeButton
-                label="Tournament"
-                active={gameMode === 'tournament'}
-                onClick={() => setGameMode('tournament')}
-                title="Sealed or Draft with up to 8 players"
-              />
-            </div>
-
-            {/* Game mode description */}
-            {gameMode === 'normal' && (
-              <p className={styles.modeDescription}>
-                Play with a randomly generated deck for quick 1v1 matches.
-              </p>
-            )}
-            {gameMode === 'tournament' && (
-              <p className={styles.modeDescription}>
-                Create a lobby for Sealed or Draft. Configure format and set after creating.
-              </p>
-            )}
-
-            {gameMode === 'normal' && availableSets.length > 0 && (
-              <select
-                value={selectedSetCode}
-                onChange={(e) => setSelectedSetCode(e.target.value)}
-                className={styles.setSelect}
-              >
-                <option value="random">Random Set</option>
-                {[...availableSets]
-                  .sort((a, b) => a.name.localeCompare(b.name))
-                  .map((set) => (
-                    <option key={set.code} value={set.code}>
-                      {set.name}
-                    </option>
-                  ))}
-              </select>
-            )}
-
-            <button
-              onClick={handleCreate}
-              className={gameMode === 'tournament' ? styles.tournamentButton : styles.primaryButton}
-            >
-              {gameMode === 'tournament' ? 'Create Lobby' : 'Create Game'}
-            </button>
-
-            {gameMode === 'normal' && aiEnabled && (
-              <button
-                onClick={() => createAiGame(randomDeck, quickGameSetCode)}
-                className={styles.aiButton}
-              >
-                Play vs AI
-              </button>
-            )}
-
-            <div className={styles.divider}>
-              <div className={styles.dividerLine} />
-              <span className={styles.dividerText}>or join existing</span>
-              <div className={styles.dividerLine} />
-            </div>
-
-            <div className={styles.joinRow}>
+          {!nameConfirmed && (
+            <div className={styles.inputGroup}>
+              <label className={styles.inputLabel}>{gameMode === 'tournament' && joinSessionId ? 'Enter your name to join' : 'Enter your name'}</label>
               <input
                 type="text"
-                value={joinSessionId}
-                onChange={(e) => setJoinSessionId(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && handleJoin()}
-                placeholder={gameMode === 'tournament' ? 'Enter Lobby ID' : 'Enter Session ID'}
-                className={styles.sessionInput}
+                value={playerName}
+                onChange={(e) => setPlayerName(e.target.value)}
+                onKeyDown={(e) => { if (e.key === 'Enter') confirmName() }}
+                placeholder="Your name"
+                autoFocus
+                maxLength={20}
+                className={styles.textInput}
               />
               <button
-                onClick={handleJoin}
-                disabled={!joinSessionId.trim()}
-                className={styles.joinButton}
+                onClick={confirmName}
+                disabled={!playerName.trim()}
+                className={styles.primaryButton}
               >
-                Join
+                Continue
               </button>
             </div>
+          )}
 
-            <button
-              onClick={() => setShowReplays(true)}
-              className={styles.replayLinkButton}
-            >
-              Game Replays
-            </button>
-          </div>
-        )}
+          {status === 'connected' && !sessionId && (
+            <div className={styles.inputGroup}>
+              {/* Game Mode Toggle */}
+              <div className={styles.modeToggle}>
+                <ModeButton
+                  label="Quick Game"
+                  active={gameMode === 'normal'}
+                  onClick={() => setGameMode('normal')}
+                  title="Play with a random deck"
+                />
+                <ModeButton
+                  label="Tournament"
+                  active={gameMode === 'tournament'}
+                  onClick={() => setGameMode('tournament')}
+                  title="Sealed or Draft with up to 8 players"
+                />
+              </div>
 
-        {sessionId && (
-          <WaitingForOpponent sessionId={sessionId} />
+              {/* Game mode description */}
+              {gameMode === 'normal' && (
+                <p className={styles.modeDescription}>
+                  Play with a randomly generated deck for quick 1v1 matches.
+                </p>
+              )}
+              {gameMode === 'tournament' && (
+                <p className={styles.modeDescription}>
+                  Create a lobby for Sealed or Draft. Configure format and set after creating.
+                </p>
+              )}
+
+              {gameMode === 'normal' && availableSets.length > 0 && (
+                <select
+                  value={selectedSetCode}
+                  onChange={(e) => setSelectedSetCode(e.target.value)}
+                  className={styles.setSelect}
+                >
+                  <option value="random">Random Set</option>
+                  {[...availableSets]
+                    .sort((a, b) => a.name.localeCompare(b.name))
+                    .map((set) => (
+                      <option key={set.code} value={set.code}>
+                        {set.name}
+                      </option>
+                    ))}
+                </select>
+              )}
+
+              <button
+                onClick={handleCreate}
+                className={gameMode === 'tournament' ? styles.tournamentButton : styles.primaryButton}
+              >
+                {gameMode === 'tournament' ? 'Create Lobby' : 'Create Game'}
+              </button>
+
+              {gameMode === 'normal' && aiEnabled && (
+                <button
+                  onClick={() => createAiGame(randomDeck, quickGameSetCode)}
+                  className={styles.aiButton}
+                >
+                  Play vs AI
+                </button>
+              )}
+
+              <div className={styles.divider}>
+                <div className={styles.dividerLine} />
+                <span className={styles.dividerText}>or join existing</span>
+                <div className={styles.dividerLine} />
+              </div>
+
+              <div className={styles.joinRow}>
+                <input
+                  type="text"
+                  value={joinSessionId}
+                  onChange={(e) => setJoinSessionId(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && handleJoin()}
+                  placeholder={gameMode === 'tournament' ? 'Enter Lobby ID' : 'Enter Session ID'}
+                  className={styles.sessionInput}
+                />
+                <button
+                  onClick={handleJoin}
+                  disabled={!joinSessionId.trim()}
+                  className={styles.joinButton}
+                >
+                  Join
+                </button>
+              </div>
+
+              <button
+                onClick={() => setShowReplays(true)}
+                className={styles.replayLinkButton}
+              >
+                Game Replays
+              </button>
+            </div>
+          )}
+
+          {sessionId && (
+            <WaitingForOpponent sessionId={sessionId} />
+          )}
+        </div>
+
+        {showPublicTournaments && (
+          <PublicTournamentList
+            tournaments={publicTournaments}
+            error={publicTournamentsError}
+            onJoin={(lobbyId) => {
+              setGameMode('tournament')
+              setJoinSessionId(lobbyId)
+              if (status === 'connected') {
+                joinLobby(lobbyId)
+              } else if (playerName.trim()) {
+                localStorage.setItem('argentum-player-name', playerName.trim())
+                setPendingTournamentId(lobbyId)
+                setNameConfirmed(true)
+                connect(playerName.trim())
+              }
+            }}
+          />
         )}
       </div>
       <span className={styles.attribution}>
@@ -276,6 +348,60 @@ function ConnectionOverlay({
       </span>
     </div>
   )
+}
+
+function PublicTournamentList({
+  tournaments,
+  error,
+  onJoin,
+}: {
+  tournaments: PublicTournamentSummary[]
+  error: string | null
+  onJoin: (lobbyId: string) => void
+}) {
+  if (tournaments.length === 0 && !error) return null
+
+  return (
+    <div className={styles.publicTournamentPanel}>
+      <div className={styles.publicTournamentHeader}>
+        <span className={styles.publicTournamentTitle}>Public Tournaments</span>
+        {tournaments.length > 0 && (
+          <span className={styles.publicTournamentCount}>{tournaments.length}</span>
+        )}
+      </div>
+      {error && tournaments.length === 0 ? (
+        <p className={styles.publicTournamentEmpty}>{error}</p>
+      ) : (
+        tournaments.map((tournament) => (
+          <div key={tournament.lobbyId} className={styles.publicTournamentRow}>
+            <div className={styles.publicTournamentInfo}>
+              <span className={styles.publicTournamentName}>{tournament.setNames.join(' + ') || 'Tournament'}</span>
+              <span className={styles.publicTournamentMeta}>
+                {formatTournamentFormat(tournament.format)} · {tournament.boosterCount} {tournament.format === 'DRAFT' ? 'packs' : 'boosters'} · {tournament.playerCount}/{tournament.maxPlayers} players
+                {tournament.gamesPerMatch > 1 && ` · ${tournament.gamesPerMatch} games per matchup`}
+              </span>
+            </div>
+            <button onClick={() => onJoin(tournament.lobbyId)} className={styles.publicTournamentJoinButton}>
+              Join
+            </button>
+          </div>
+        ))
+      )}
+    </div>
+  )
+}
+
+function formatTournamentFormat(format: PublicTournamentSummary['format']): string {
+  switch (format) {
+    case 'WINSTON_DRAFT':
+      return 'Winston Draft'
+    case 'GRID_DRAFT':
+      return 'Grid Draft'
+    case 'DRAFT':
+      return 'Draft'
+    case 'SEALED':
+      return 'Sealed'
+  }
 }
 
 /**
@@ -733,6 +859,23 @@ function LobbyOverlay({
                   <option key={n} value={n}>{n}</option>
                 ))}
               </select>
+            </div>
+            <div className={styles.settingsRow}>
+              <span className={styles.settingsLabel}>Visibility</span>
+              <div className={styles.settingsButtons}>
+                <button
+                  onClick={() => updateLobbySettings({ isPublic: false })}
+                  className={`${styles.settingsButton} ${!lobbyState.settings.isPublic ? styles.settingsButtonActive : ''}`}
+                >
+                  Private
+                </button>
+                <button
+                  onClick={() => updateLobbySettings({ isPublic: true })}
+                  className={`${styles.settingsButton} ${lobbyState.settings.isPublic ? styles.settingsButtonActive : ''}`}
+                >
+                  Public
+                </button>
+              </div>
             </div>
           </div>
         )}
