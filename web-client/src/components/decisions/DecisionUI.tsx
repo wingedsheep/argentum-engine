@@ -163,26 +163,29 @@ export function DecisionUI() {
 
   // Handle SelectCardsDecision
   if (pendingDecision.type === 'SelectCardsDecision') {
-    // If useTargetingUI is true, check if options span multiple zones
+    // Multi-zone selections always need zone grouping so the player can tell
+    // which cards are in hand vs on the battlefield (e.g., Celestial Reunion
+    // beholding from BATTLEFIELD + HAND). This applies whether or not the card
+    // opted into useTargetingUI.
+    const zones = new Set<string>()
+    for (const cardId of pendingDecision.options) {
+      const card = gameState?.cards[cardId]
+      if (card?.zone?.zoneType) {
+        zones.add(card.zone.zoneType)
+      }
+    }
+    if (zones.size > 1) {
+      return (
+        <MultiZoneSelectionUI
+          key={pendingDecision.id}
+          decision={pendingDecision}
+          responsive={responsive}
+        />
+      )
+    }
+
+    // Single-zone, click-on-board targeting style (e.g., Lich's Mastery)
     if (pendingDecision.useTargetingUI) {
-      const zones = new Set<string>()
-      for (const cardId of pendingDecision.options) {
-        const card = gameState?.cards[cardId]
-        if (card?.zone?.zoneType) {
-          zones.add(card.zone.zoneType)
-        }
-      }
-      // Multi-zone: show dedicated UI with zone grouping (e.g., Lich's Mastery)
-      if (zones.size > 1) {
-        return (
-          <MultiZoneSelectionUI
-            key={pendingDecision.id}
-            decision={pendingDecision}
-            responsive={responsive}
-          />
-        )
-      }
-      // Single-zone: use click-on-board targeting style
       return (
         <BattlefieldSelectionUI
           decision={pendingDecision}
