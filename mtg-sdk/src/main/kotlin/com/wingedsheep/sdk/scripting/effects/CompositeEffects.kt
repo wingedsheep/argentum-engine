@@ -161,7 +161,15 @@ data class ModalEffect(
     val modes: List<Mode>,
     val chooseCount: Int = 1,
     val minChooseCount: Int = chooseCount,
-    val allowRepeat: Boolean = false
+    val allowRepeat: Boolean = false,
+    /**
+     * If true, when this spell's `AdditionalCost.BlightOrPay` cost was paid via the
+     * blight path, the effective number of modes the player must choose becomes
+     * `modes.size` (i.e. all modes). When the blight path was not paid, the regular
+     * [chooseCount]/[minChooseCount] apply. Models the "Choose one. If this spell's
+     * additional cost was paid, choose both instead." pattern (e.g., Pyrrhic Strike).
+     */
+    val chooseAllIfBlightPaid: Boolean = false
 ) : Effect {
     override val description: String = buildString {
         append("Choose ")
@@ -183,6 +191,9 @@ data class ModalEffect(
         }
         if (allowRepeat) {
             append("\nYou may choose the same mode more than once.")
+        }
+        if (chooseAllIfBlightPaid) {
+            append("\nIf this spell's additional cost was paid, choose all instead.")
         }
     }
 

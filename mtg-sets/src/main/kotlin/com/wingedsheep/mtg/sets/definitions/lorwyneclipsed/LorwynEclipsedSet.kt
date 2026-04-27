@@ -142,6 +142,7 @@ object LorwynEclipsedSet {
         PrismaticUndercurrents,
         PucasEye,
         PummelerForHire,
+        PyrrhicStrike,
         RaidingSchemes,
         ReapingWillow,
         RecklessRansacking,

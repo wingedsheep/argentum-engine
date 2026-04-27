@@ -784,9 +784,10 @@ class SpellBuilder {
         chooseCount: Int = 1,
         minChooseCount: Int = chooseCount,
         allowRepeat: Boolean = false,
+        chooseAllIfBlightPaid: Boolean = false,
         init: ModalBuilder.() -> Unit
     ) {
-        val builder = ModalBuilder(chooseCount, minChooseCount, allowRepeat)
+        val builder = ModalBuilder(chooseCount, minChooseCount, allowRepeat, chooseAllIfBlightPaid)
         builder.init()
         effect = builder.build()
     }
@@ -803,7 +804,8 @@ class SpellBuilder {
 class ModalBuilder(
     private val chooseCount: Int,
     private val minChooseCount: Int = chooseCount,
-    private val allowRepeat: Boolean = false
+    private val allowRepeat: Boolean = false,
+    private val chooseAllIfBlightPaid: Boolean = false
 ) {
     private val modes: MutableList<Mode> = mutableListOf()
 
@@ -824,7 +826,7 @@ class ModalBuilder(
     }
 
     internal fun build(): ModalEffect =
-        ModalEffect(modes.toList(), chooseCount, minChooseCount, allowRepeat)
+        ModalEffect(modes.toList(), chooseCount, minChooseCount, allowRepeat, chooseAllIfBlightPaid)
 }
 
 /**

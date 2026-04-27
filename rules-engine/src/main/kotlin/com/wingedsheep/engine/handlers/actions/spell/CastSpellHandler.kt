@@ -610,11 +610,12 @@ class CastSpellHandler(
                 return "Invalid mode index: $idx"
             }
         }
-        if (chosen.size < modalEffect.minChooseCount) {
-            return "Too few modes chosen: ${chosen.size} (minimum ${modalEffect.minChooseCount})"
+        val (effectiveMin, effectiveMax) = effectiveModalChooseCounts(modalEffect, action)
+        if (chosen.size < effectiveMin) {
+            return "Too few modes chosen: ${chosen.size} (minimum $effectiveMin)"
         }
-        if (chosen.size > modalEffect.chooseCount) {
-            return "Too many modes chosen: ${chosen.size} (maximum ${modalEffect.chooseCount})"
+        if (chosen.size > effectiveMax) {
+            return "Too many modes chosen: ${chosen.size} (maximum $effectiveMax)"
         }
         if (!modalEffect.allowRepeat && chosen.distinct().size != chosen.size) {
             return "Modes cannot be chosen more than once for this spell"
@@ -623,6 +624,24 @@ class CastSpellHandler(
             return "modeTargetsOrdered size (${action.modeTargetsOrdered.size}) must match chosenModes size (${chosen.size})"
         }
         return null
+    }
+
+    /**
+     * Compute the effective `[minChooseCount, chooseCount]` range for a modal spell,
+     * accounting for `ModalEffect.chooseAllIfBlightPaid`. When the flag is set and
+     * the player paid the spell's optional `BlightOrPay` cost via blight, the player
+     * must choose all modes; otherwise the regular range applies.
+     */
+    private fun effectiveModalChooseCounts(modalEffect: ModalEffect, action: CastSpell): Pair<Int, Int> {
+        if (!modalEffect.chooseAllIfBlightPaid) {
+            return modalEffect.minChooseCount to modalEffect.chooseCount
+        }
+        val blightPaid = action.additionalCostPayment?.blightTargets?.isNotEmpty() == true
+        return if (blightPaid) {
+            modalEffect.modes.size to modalEffect.modes.size
+        } else {
+            modalEffect.minChooseCount to modalEffect.minChooseCount
+        }
     }
 
     /**
@@ -1919,11 +1938,21 @@ class CastSpellHandler(
         cardComponent: CardComponent,
         modalEffect: ModalEffect
     ): ExecutionResult {
-        val available = modalEffect.modes.withIndex()
+        // Apply chooseAllIfBlightPaid: if the player paid blight, force choosing all
+        // modes; otherwise the regular [minChooseCount, chooseCount] range applies.
+        val (effectiveMin, effectiveMax) = effectiveModalChooseCounts(modalEffect, action)
+        val effectiveModalEffect = if (effectiveMin == modalEffect.minChooseCount &&
+            effectiveMax == modalEffect.chooseCount) {
+            modalEffect
+        } else {
+            modalEffect.copy(chooseCount = effectiveMax, minChooseCount = effectiveMin)
+        }
+
+        val available = effectiveModalEffect.modes.withIndex()
             .filter { (_, mode) -> modeHasSatisfiableTargets(currentState, action.playerId, action.cardId, mode) }
             .map { it.index }
 
-        if (available.size < modalEffect.minChooseCount) {
+        if (available.size < effectiveModalEffect.minChooseCount) {
             return ExecutionResult.error(currentState, "No legal mode selection available for ${cardComponent.name}")
         }
 
@@ -1933,10 +1962,10 @@ class CastSpellHandler(
             casterId = action.playerId,
             cardName = cardComponent.name,
             baseCastAction = action,
-            modalEffect = modalEffect,
+            modalEffect = effectiveModalEffect,
             selectedModeIndices = emptyList(),
-            availableIndices = if (modalEffect.allowRepeat) null else available,
-            repeatAvailableIndices = if (modalEffect.allowRepeat) available else null
+            availableIndices = if (effectiveModalEffect.allowRepeat) null else available,
+            repeatAvailableIndices = if (effectiveModalEffect.allowRepeat) available else null
         )
     }
 

@@ -2,11 +2,11 @@
 
 **Set Size:** 273 cards (main set, per Scryfall `set:ecl`)
 **Release Date:** January 23, 2026
-**Implemented:** 178 / 273
+**Implemented:** 179 / 273
 
 | Color      | Total | Done |
 |------------|-------|------|
-| White      | 39    | 24   |
+| White      | 39    | 25   |
 | Blue       | 39    | 28   |
 | Black      | 38    | 26   |
 | Red        | 39    | 22   |
@@ -46,7 +46,7 @@
 - [x] Morningtide's Light
 - [x] Personify
 - [x] Protective Response
-- [ ] Pyrrhic Strike
+- [x] Pyrrhic Strike
 - [ ] Reluctant Dounguard
 - [ ] Rhys, the Evermore
 - [x] Riverguard's Reflexes
