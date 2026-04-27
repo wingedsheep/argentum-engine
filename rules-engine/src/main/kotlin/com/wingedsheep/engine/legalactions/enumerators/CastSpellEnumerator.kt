@@ -425,23 +425,74 @@ class CastSpellEnumerator : ActionEnumerator {
             // 700.2a). Choose-N cartesian enumeration would blow up for allowRepeat
             // (Escalate/Spree) and for wide target pools.
             val modalEffect = spellEffect as? ModalEffect
-            if (modalEffect != null && canAfford) {
-                val modeEnumerations = modalEffect.modes.mapIndexed { modeIndex, mode ->
+            // Build the cast variants we'll emit. For modal spells with
+            // `chooseAllIfBlightPaid` + `BlightOrPay`, the pay path locks in the
+            // printed `minChooseCount` (typically "choose one") while the blight
+            // path forces choosing every mode — so the two paths surface as
+            // separate legal actions with different mana cost / cost info.
+            val modalVariants = if (modalEffect != null) {
+                buildList {
+                    if (canAfford) {
+                        val payChooseCount = if (modalEffect.chooseAllIfBlightPaid) {
+                            modalEffect.minChooseCount
+                        } else {
+                            modalEffect.chooseCount
+                        }
+                        add(
+                            ModalCastVariant(
+                                effect = modalEffect.copy(
+                                    chooseCount = payChooseCount,
+                                    minChooseCount = modalEffect.minChooseCount
+                                ),
+                                baseEffectiveCost = effectiveCost,
+                                additionalCostInfo = costInfo,
+                                manaCostString = manaCostString,
+                                autoTapPreview = autoTapPreview,
+                                descriptionSuffix = ""
+                            )
+                        )
+                    }
+                    if (modalEffect.chooseAllIfBlightPaid &&
+                        blightOrPayCost != null &&
+                        blightPathInfo != null
+                    ) {
+                        val all = modalEffect.modes.size
+                        add(
+                            ModalCastVariant(
+                                effect = modalEffect.copy(
+                                    chooseCount = all,
+                                    minChooseCount = all
+                                ),
+                                baseEffectiveCost = blightBaseCost,
+                                additionalCostInfo = blightPathInfo.third,
+                                manaCostString = blightPathInfo.first,
+                                autoTapPreview = blightPathInfo.second,
+                                descriptionSuffix = " (Blight ${blightOrPayCost.blightAmount})"
+                            )
+                        )
+                    }
+                }
+            } else emptyList()
+
+            if (modalEffect != null) {
+                for (variant in modalVariants) {
+                val variantEffect = variant.effect
+                val modeEnumerations = variantEffect.modes.mapIndexed { modeIndex, mode ->
                     computeModeEnumeration(
                         context = context,
                         cardId = cardId,
                         playerId = playerId,
                         modeIndex = modeIndex,
                         mode = mode,
-                        baseEffectiveCost = effectiveCost,
-                        cardLevelAdditionalCostInfo = costInfo,
-                        baseAutoTapPreview = autoTapPreview,
+                        baseEffectiveCost = variant.baseEffectiveCost,
+                        cardLevelAdditionalCostInfo = variant.additionalCostInfo,
+                        baseAutoTapPreview = variant.autoTapPreview,
                         spellContext = spellContext,
                         cachedSources = cachedSources
                     )
                 }
 
-                if (modalEffect.chooseCount == 1) {
+                if (variantEffect.chooseCount == 1) {
                     for (modeEnum in modeEnumerations) {
                         if (!modeEnum.available) continue
 
@@ -462,7 +513,7 @@ class CastSpellEnumerator : ActionEnumerator {
                                 val autoTarget = ChosenTarget.Player(firstInfo.validTargets.first())
                                 result.add(LegalAction(
                                     actionType = "CastSpellMode",
-                                    description = mode.description,
+                                    description = mode.description + variant.descriptionSuffix,
                                     action = CastSpell(
                                         playerId,
                                         cardId,
@@ -484,7 +535,7 @@ class CastSpellEnumerator : ActionEnumerator {
                             } else {
                                 result.add(LegalAction(
                                     actionType = "CastSpellMode",
-                                    description = mode.description,
+                                    description = mode.description + variant.descriptionSuffix,
                                     action = CastSpell(playerId, cardId, chosenModes = listOf(modeIndex)),
                                     validTargets = firstInfo.validTargets,
                                     requiresTargets = true,
@@ -508,7 +559,7 @@ class CastSpellEnumerator : ActionEnumerator {
                             // Mode has no targets
                             result.add(LegalAction(
                                 actionType = "CastSpellMode",
-                                description = mode.description,
+                                description = mode.description + variant.descriptionSuffix,
                                 action = CastSpell(playerId, cardId, chosenModes = listOf(modeIndex)),
                                 hasXCost = hasXCost,
                                 maxAffordableX = maxAffordableX,
@@ -546,27 +597,28 @@ class CastSpellEnumerator : ActionEnumerator {
                     if (hasAnyAvailable) {
                         result.add(LegalAction(
                             actionType = "CastSpellModal",
-                            description = "Cast ${cardComponent.name}",
+                            description = "Cast ${cardComponent.name}${variant.descriptionSuffix}",
                             action = CastSpell(playerId, cardId),
                             hasXCost = hasXCost,
                             maxAffordableX = maxAffordableX,
-                            additionalCostInfo = costInfo,
+                            additionalCostInfo = variant.additionalCostInfo,
                             hasConvoke = hasConvoke,
                             convokeCreatures = convokeCreatures,
                             hasDelve = hasDelve,
                             delveCards = delveCards,
                             minDelveNeeded = minDelveNeeded,
-                            manaCostString = manaCostString,
-                            autoTapPreview = autoTapPreview,
+                            manaCostString = variant.manaCostString,
+                            autoTapPreview = variant.autoTapPreview,
                             modalEnumeration = ModalLegalEnumeration(
-                                chooseCount = modalEffect.chooseCount,
-                                minChooseCount = modalEffect.minChooseCount,
-                                allowRepeat = modalEffect.allowRepeat,
+                                chooseCount = variantEffect.chooseCount,
+                                minChooseCount = variantEffect.minChooseCount,
+                                allowRepeat = variantEffect.allowRepeat,
                                 modes = enumerationModes,
                                 unavailableIndices = unavailableIndices
                             )
                         ))
                     }
+                }
                 }
                 // Skip the normal targeting logic for modal spells
             } else if (targetReqs.isNotEmpty()) {
@@ -1235,6 +1287,23 @@ class CastSpellEnumerator : ActionEnumerator {
      * rendering fields for a single printed mode. Shared between the choose-1
      * and choose-N emission paths.
      */
+    /**
+     * One emit-variant of a modal cast (rule 601.2b). Modal spells whose
+     * additional-cost choice changes the number of modes the player must pick
+     * (e.g., Pyrrhic Strike: blight path forces choosing every mode) surface as
+     * separate `LegalAction`s — one per cost path — each with its own effective
+     * `chooseCount`/`minChooseCount`, mana cost, additional-cost info, and
+     * description suffix.
+     */
+    private data class ModalCastVariant(
+        val effect: ModalEffect,
+        val baseEffectiveCost: ManaCost,
+        val additionalCostInfo: AdditionalCostData?,
+        val manaCostString: String,
+        val autoTapPreview: List<EntityId>?,
+        val descriptionSuffix: String
+    )
+
     private data class ModeEnumeration(
         val modeIndex: Int,
         val mode: Mode,
