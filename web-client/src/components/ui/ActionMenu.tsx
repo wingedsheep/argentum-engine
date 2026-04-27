@@ -76,6 +76,10 @@ function buildActionOptions(
 
   // 1. Modal spell modes — show one button per mode instead of a single "Cast" button
   const modeActions = legalActions.filter((a) => a.actionType === 'CastSpellMode')
+  // Sibling CastSpellModal actions (e.g., Pyrrhic Strike's blight path forces every mode)
+  // need to render alongside the per-mode buttons so the player can pick the
+  // alternative cost variant.
+  const modalCastActions = legalActions.filter((a) => a.actionType === 'CastSpellModal')
   if (modeActions.length > 0) {
     modeActions.forEach((modeAction, index) => {
       options.push({
@@ -84,6 +88,16 @@ function buildActionOptions(
         manaCost: modeAction.manaCostString || cardInfo.manaCost || null,
         isAvailable: modeAction.isAffordable !== false,
         action: modeAction,
+        actionType: 'cast',
+      })
+    })
+    modalCastActions.forEach((modalAction, index) => {
+      options.push({
+        key: `modal-${index}`,
+        label: modalAction.description,
+        manaCost: modalAction.manaCostString || cardInfo.manaCost || null,
+        isAvailable: modalAction.isAffordable !== false,
+        action: modalAction,
         actionType: 'cast',
       })
     })
