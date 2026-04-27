@@ -123,6 +123,7 @@ object LorwynEclipsedSet {
         LysAlanaDignitary,
         LysAlanaInformant,
         MaralenFaeAscendant,
+        MeandersGuide,
         MerrowSkyswimmer,
         Mirrorform,
         MirrormindCrown,
