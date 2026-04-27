@@ -29,7 +29,17 @@ import com.wingedsheep.sdk.scripting.ActivatedAbility
 import com.wingedsheep.sdk.scripting.ActivationRestriction
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.TimingRule
+import com.wingedsheep.sdk.scripting.effects.AnimateLandEffect
+import com.wingedsheep.sdk.scripting.effects.BecomeCreatureEffect
+import com.wingedsheep.sdk.scripting.effects.BecomeCreatureTypeEffect
+import com.wingedsheep.sdk.scripting.effects.CompositeEffect
+import com.wingedsheep.sdk.scripting.effects.ConditionalEffect
+import com.wingedsheep.sdk.scripting.effects.Effect
 import com.wingedsheep.sdk.scripting.effects.LevelUpClassEffect
+import com.wingedsheep.sdk.scripting.effects.ModalEffect
+import com.wingedsheep.sdk.scripting.effects.SetBasePowerEffect
+import com.wingedsheep.sdk.scripting.effects.SetBasePowerToughnessEffect
+import com.wingedsheep.sdk.scripting.effects.SetCreatureSubtypesEffect
 import com.wingedsheep.engine.legalactions.ConvokeCreatureData
 import com.wingedsheep.engine.handlers.effects.permanent.counters.resolveCounterType
 
@@ -479,11 +489,15 @@ class ActivatedAbilityEnumerator : ActionEnumerator {
                 val abilityAutoTapPreview = if (context.skipAutoTapPreview || abilityManaCost == null || abilityHasXCost) null
                 else context.manaSolver.solve(state, playerId, abilityManaCost, precomputedSources = context.availableManaSources)?.sources?.map { it.entityId }
 
-                // Compute maxRepeatableActivations for eligible self-targeting abilities
-                // Eligible: pure mana cost, no X, no once-per-turn restriction, not a class level-up
+                // Compute maxRepeatableActivations for eligible self-targeting abilities.
+                // Eligible: pure mana cost, no X, no once-per-turn restriction, not a class level-up,
+                // and the effect must "stack" when activated multiple times (e.g., +1/+0 modifiers).
+                // Effects that REPLACE base characteristics (BecomeCreature, SetBasePowerToughness, etc.)
+                // are excluded — repeating them only re-applies the same end state, so the prompt is meaningless.
                 val isRepeatEligible = ability.cost is AbilityCost.Mana
                     && !abilityHasXCost
                     && ability.effect !is LevelUpClassEffect
+                    && effectStacksOnRepeat(ability.effect)
                     && !ability.restrictions.any {
                     it is ActivationRestriction.OncePerTurn || it is ActivationRestriction.Once ||
                         (it is ActivationRestriction.All && it.restrictions.any { r -> r is ActivationRestriction.OncePerTurn || r is ActivationRestriction.Once })
@@ -816,5 +830,31 @@ class ActivatedAbilityEnumerator : ActionEnumerator {
             }
         }
         return null
+    }
+
+    /**
+     * True when activating this effect N times produces a different result than activating it once.
+     *
+     * Repeat-mode is only meaningful for additive abilities (e.g., +1/+0 pump, add a counter, draw a card).
+     * Effects that REPLACE base characteristics — BecomeCreature, SetBasePowerToughness, SetCreatureSubtypes,
+     * AnimateLand, BecomeCreatureType — produce the same end state regardless of how many times you activate
+     * them, so offering "Activate How Many Times?" for those is just clutter.
+     *
+     * Walks through CompositeEffect / ConditionalEffect / ModalEffect wrappers so an ability whose
+     * "real" effect is hidden inside (e.g., Figure of Fable's `ConditionalEffect(... BecomeCreature)`) is
+     * also excluded.
+     */
+    private fun effectStacksOnRepeat(effect: Effect): Boolean = when (effect) {
+        is BecomeCreatureEffect,
+        is BecomeCreatureTypeEffect,
+        is SetBasePowerEffect,
+        is SetBasePowerToughnessEffect,
+        is SetCreatureSubtypesEffect,
+        is AnimateLandEffect -> false
+        is CompositeEffect -> effect.effects.all { effectStacksOnRepeat(it) }
+        is ConditionalEffect -> effectStacksOnRepeat(effect.effect) &&
+            (effect.elseEffect?.let { effectStacksOnRepeat(it) } ?: true)
+        is ModalEffect -> effect.modes.all { effectStacksOnRepeat(it.effect) }
+        else -> true
     }
 }

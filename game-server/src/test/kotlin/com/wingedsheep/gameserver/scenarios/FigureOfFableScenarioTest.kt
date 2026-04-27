@@ -1,6 +1,7 @@
 package com.wingedsheep.gameserver.scenarios
 
 import com.wingedsheep.engine.core.ActivateAbility
+import com.wingedsheep.engine.legalactions.LegalActionEnumerator
 import com.wingedsheep.engine.state.components.player.ManaPoolComponent
 import com.wingedsheep.gameserver.ScenarioTestBase
 import com.wingedsheep.sdk.core.Phase
@@ -253,6 +254,57 @@ class FigureOfFableScenarioTest : ScenarioTestBase() {
                     val badges = typeChangeBadges()
                     badges.size shouldBe 1
                     badges[0].name shouldBe "Kithkin Avatar"
+                }
+            }
+
+            test("activated abilities do not offer the repeat-activation prompt") {
+                val game = scenario()
+                    .withPlayers("Player1", "Player2")
+                    .withCardOnBattlefield(1, "Figure of Fable")
+                    .withCardOnBattlefield(1, "Forest")
+                    .withCardOnBattlefield(1, "Forest")
+                    .withCardOnBattlefield(1, "Forest")
+                    .withCardOnBattlefield(1, "Forest")
+                    .withCardOnBattlefield(1, "Plains")
+                    .withCardOnBattlefield(1, "Plains")
+                    .withCardOnBattlefield(1, "Plains")
+                    .withActivePlayer(1)
+                    .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                    .build()
+
+                // Get Scout state so all three abilities are mana-affordable in their normal form
+                setMana(game, green = 1)
+                activateAbility(game, 0)
+                game.resolveStack()
+
+                // Untap lands so legal-action enumeration sees full mana availability
+                game.state = game.state.getBattlefield()
+                    .filter { id ->
+                        val name = game.state.getEntity(id)
+                            ?.get<com.wingedsheep.engine.state.components.identity.CardComponent>()?.name
+                        name == "Forest" || name == "Plains"
+                    }
+                    .fold(game.state) { acc, id ->
+                        acc.updateEntity(id) { container ->
+                            container.without<com.wingedsheep.engine.state.components.battlefield.TappedComponent>()
+                        }
+                    }
+
+                val enumerator = LegalActionEnumerator.create(cardRegistry)
+                val legalActions = enumerator.enumerate(game.state, game.player1Id)
+
+                val activations = legalActions.filter {
+                    it.action is ActivateAbility &&
+                        (it.action as ActivateAbility).sourceId == game.findPermanent("Figure of Fable")
+                }
+
+                withClue("Found ${activations.size} Figure of Fable activations") {
+                    activations.isNotEmpty() shouldBe true
+                }
+                activations.forEach { la ->
+                    withClue("Activation ${la.description} should not offer repeat-activation prompt") {
+                        la.maxRepeatableActivations shouldBe null
+                    }
                 }
             }
 
