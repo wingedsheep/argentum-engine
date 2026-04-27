@@ -2,11 +2,11 @@
 
 **Set Size:** 273 cards (main set, per Scryfall `set:ecl`)
 **Release Date:** January 23, 2026
-**Implemented:** 191 / 273
+**Implemented:** 192 / 273
 
 | Color      | Total | Done |
 |------------|-------|------|
-| White      | 39    | 27   |
+| White      | 39    | 28   |
 | Blue       | 39    | 29   |
 | Black      | 38    | 27   |
 | Red        | 39    | 26   |
@@ -50,7 +50,7 @@
 - [ ] Reluctant Dounguard
 - [ ] Rhys, the Evermore
 - [x] Riverguard's Reflexes
-- [ ] Shore Lurker
+- [x] Shore Lurker
 - [ ] Slumbering Walker
 - [x] Spiral into Solitude
 - [x] Sun-Dappled Celebrant

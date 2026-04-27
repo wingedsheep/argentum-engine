@@ -166,6 +166,7 @@ object LorwynEclipsedSet {
         Shimmercreep,
         ShimmerwildsGrowth,
         Shinestriker,
+        ShoreLurker,
         SilvergillPeddler,
         SoulbrightSeeker,
         SourbreadAuntie,
