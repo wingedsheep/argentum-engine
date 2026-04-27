@@ -2,7 +2,7 @@
 
 **Set Size:** 273 cards (main set, per Scryfall `set:ecl`)
 **Release Date:** January 23, 2026
-**Implemented:** 183 / 273
+**Implemented:** 184 / 273
 
 | Color      | Total | Done |
 |------------|-------|------|
@@ -11,7 +11,7 @@
 | Black      | 38    | 26   |
 | Red        | 39    | 23   |
 | Green      | 39    | 27   |
-| Multicolor | 49    | 34   |
+| Multicolor | 49    | 35   |
 | Colorless  | 18    | 8    |
 | Land       | 12    | 11   |
 
@@ -244,7 +244,7 @@
 - [ ] Doran, Besieged by Time
 - [x] Dream Harvest
 - [ ] Eclipsed Boggart
-- [ ] Eclipsed Elf
+- [x] Eclipsed Elf
 - [x] Eclipsed Flamekin
 - [x] Eclipsed Kithkin
 - [x] Eclipsed Merrow
