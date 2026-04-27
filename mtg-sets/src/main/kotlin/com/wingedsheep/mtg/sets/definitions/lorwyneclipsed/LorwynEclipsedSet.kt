@@ -183,6 +183,7 @@ object LorwynEclipsedSet {
         SwatAway,
         SyggsCommand,
         TanufelRimespeaker,
+        TasterOfWares,
         TempleGarden,
         TemporalCleansing,
         ThirstForIdentity,
