@@ -285,6 +285,11 @@ class PredicateEvaluator {
                 val toughness = projectedValues?.toughness ?: card.baseStats?.baseToughness ?: 0
                 power >= predicate.min || toughness >= predicate.min
             }
+            is CardPredicate.TotalPowerAndToughnessAtMost -> {
+                val power = projectedValues?.power ?: card.baseStats?.basePower ?: 0
+                val toughness = projectedValues?.toughness ?: card.baseStats?.baseToughness ?: 0
+                (power + toughness) <= predicate.max
+            }
 
             // Source-relative predicates
             CardPredicate.NotOfSourceChosenType -> {
@@ -554,6 +559,13 @@ class PredicateEvaluator {
                 val toughness = card.baseStats?.toughness
                 (power is com.wingedsheep.sdk.model.CharacteristicValue.Fixed && power.value >= predicate.min) ||
                     (toughness is com.wingedsheep.sdk.model.CharacteristicValue.Fixed && toughness.value >= predicate.min)
+            }
+            is CardPredicate.TotalPowerAndToughnessAtMost -> {
+                val power = card.baseStats?.power
+                val toughness = card.baseStats?.toughness
+                power is com.wingedsheep.sdk.model.CharacteristicValue.Fixed &&
+                    toughness is com.wingedsheep.sdk.model.CharacteristicValue.Fixed &&
+                    (power.value + toughness.value) <= predicate.max
             }
 
             // Source-relative predicates
@@ -897,7 +909,8 @@ class PredicateEvaluator {
             // Power/toughness — not meaningful for cast records
             is CardPredicate.PowerEquals, is CardPredicate.PowerAtMost, is CardPredicate.PowerAtLeast,
             is CardPredicate.ToughnessEquals, is CardPredicate.ToughnessAtMost, is CardPredicate.ToughnessAtLeast,
-            is CardPredicate.PowerOrToughnessAtLeast -> false
+            is CardPredicate.PowerOrToughnessAtLeast,
+            is CardPredicate.TotalPowerAndToughnessAtMost -> false
 
             // Name predicates — not stored in record
             is CardPredicate.NameEquals -> false

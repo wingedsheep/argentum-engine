@@ -596,16 +596,24 @@ object Effects {
         GrantHexproofEffect(target, duration)
 
     /**
-     * Grant a keyword until end of turn.
+     * Grant a keyword to a target.
      */
-    fun GrantKeyword(keyword: Keyword, target: EffectTarget = EffectTarget.ContextTarget(0)): Effect =
-        GrantKeywordEffect(keyword.name, target)
+    fun GrantKeyword(
+        keyword: Keyword,
+        target: EffectTarget = EffectTarget.ContextTarget(0),
+        duration: Duration = Duration.EndOfTurn
+    ): Effect =
+        GrantKeywordEffect(keyword.name, target, duration)
 
     /**
-     * Grant an ability flag until end of turn.
+     * Grant an ability flag to a target.
      */
-    fun GrantKeyword(flag: AbilityFlag, target: EffectTarget = EffectTarget.ContextTarget(0)): Effect =
-        GrantKeywordEffect(flag.name, target)
+    fun GrantKeyword(
+        flag: AbilityFlag,
+        target: EffectTarget = EffectTarget.ContextTarget(0),
+        duration: Duration = Duration.EndOfTurn
+    ): Effect =
+        GrantKeywordEffect(flag.name, target, duration)
 
     /**
      * Mark a permanent so that if it would leave the battlefield, it is exiled instead.

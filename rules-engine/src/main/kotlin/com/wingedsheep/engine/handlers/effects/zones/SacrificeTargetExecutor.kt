@@ -50,7 +50,14 @@ class SacrificeTargetExecutor : EffectExecutor<SacrificeTargetEffect> {
         val cardComponent = container.get<CardComponent>()
             ?: return EffectResult.success(state)
 
-        val controllerId = container.get<ControllerComponent>()?.playerId ?: context.controllerId
+        val controllerId = state.projectedState.getController(targetId)
+            ?: container.get<ControllerComponent>()?.playerId
+            ?: context.controllerId
+
+        if (controllerId != context.controllerId) {
+            return EffectResult.success(state)
+        }
+
         val ownerId = container.get<OwnerComponent>()?.playerId
             ?: cardComponent.ownerId
             ?: controllerId

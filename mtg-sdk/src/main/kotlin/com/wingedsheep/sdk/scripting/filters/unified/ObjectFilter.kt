@@ -235,6 +235,11 @@ data class GameObjectFilter(
         cardPredicates = cardPredicates + CardPredicate.PowerOrToughnessAtLeast(min)
     )
 
+    /** Total power and toughness (sum) at most */
+    fun totalPowerAndToughnessAtMost(max: Int) = copy(
+        cardPredicates = cardPredicates + CardPredicate.TotalPowerAndToughnessAtMost(max)
+    )
+
     /** Must be legendary */
     fun legendary() = copy(
         cardPredicates = cardPredicates + CardPredicate.IsLegendary

@@ -333,6 +333,14 @@ sealed interface CardPredicate : TextReplaceable<CardPredicate> {
         override fun applyTextReplacement(replacer: TextReplacer): CardPredicate = this
     }
 
+    /** Total power and toughness (sum) is at most the given value */
+    @SerialName("TotalPowerAndToughnessAtMost")
+    @Serializable
+    data class TotalPowerAndToughnessAtMost(val max: Int) : CardPredicate {
+        override val description: String = "with total power and toughness $max or less"
+        override fun applyTextReplacement(replacer: TextReplacer): CardPredicate = this
+    }
+
     // =============================================================================
     // Context-relative Predicates (Pipeline Variable References)
     // =============================================================================

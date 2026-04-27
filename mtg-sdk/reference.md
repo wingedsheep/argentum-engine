@@ -78,7 +78,7 @@ constructors.
 - `Effects.ModifyStats(power, toughness, target = ContextTarget(0))` — until end of turn
 - `Effects.ModifyStats(power: DynamicAmount, toughness: DynamicAmount, target)` — dynamic P/T
 - `Effects.GrantHexproof(target = Controller, duration = EndOfTurn)` — grant hexproof to player or permanent
-- `Effects.GrantKeyword(keyword, target = ContextTarget(0))` — until end of turn
+- `Effects.GrantKeyword(keyword, target = ContextTarget(0), duration = EndOfTurn)` — grant a keyword for a duration
 - `Effects.GrantKeywordToAttackersBlockedBy(keyword, target, duration)` — grant keyword to attackers blocked by target
 - `Effects.GrantExileOnLeave(target)` — exile instead of leaving battlefield (Kheru Lich Lord, Whip of Erebos)
 - `Effects.AddCounters(counterType, count, target)`
@@ -694,6 +694,7 @@ constructors.
 - `Filters.Unified.instant` / `.sorcery` / `.permanent` / `.nonlandPermanent` / `.instantOrSorcery`
 - `Filters.Unified.withColor(color)` / `.withSubtype(subtype)` / `.withAnyOfSubtypes(listOf(Subtype("A"), Subtype("B")))` / `.withKeyword(keyword)`
 - `Filters.Unified.manaValueAtMost(max)` / `.manaValueAtLeast(min)`
+- `GameObjectFilter.Creature.totalPowerAndToughnessAtMost(max)` — creature cards/permanents with combined P/T at most `max`
 
 ---
 

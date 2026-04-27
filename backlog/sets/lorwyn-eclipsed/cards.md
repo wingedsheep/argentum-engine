@@ -2,14 +2,14 @@
 
 **Set Size:** 273 cards (main set, per Scryfall `set:ecl`)
 **Release Date:** January 23, 2026
-**Implemented:** 189 / 273
+**Implemented:** 190 / 273
 
 | Color      | Total | Done |
 |------------|-------|------|
 | White      | 39    | 27   |
 | Blue       | 39    | 29   |
 | Black      | 38    | 27   |
-| Red        | 39    | 24   |
+| Red        | 39    | 25   |
 | Green      | 39    | 27   |
 | Multicolor | 49    | 35   |
 | Colorless  | 18    | 9    |
@@ -172,7 +172,7 @@
 - [x] Kulrath Zealot
 - [x] Lasting Tarfire
 - [x] Lavaleaper
-- [ ] Meek Attack
+- [x] Meek Attack
 - [x] Reckless Ransacking
 - [ ] Scuzzback Scrounger
 - [x] Sear

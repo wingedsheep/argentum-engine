@@ -127,6 +127,7 @@ object LorwynEclipsedSet {
         LysAlanaInformant,
         MaralenFaeAscendant,
         MeandersGuide,
+        MeekAttack,
         MerrowSkyswimmer,
         Mirrorform,
         MirrormindCrown,
