@@ -2,12 +2,12 @@
 
 **Set Size:** 273 cards (main set, per Scryfall `set:ecl`)
 **Release Date:** January 23, 2026
-**Implemented:** 188 / 273
+**Implemented:** 189 / 273
 
 | Color      | Total | Done |
 |------------|-------|------|
 | White      | 39    | 27   |
-| Blue       | 39    | 28   |
+| Blue       | 39    | 29   |
 | Black      | 38    | 27   |
 | Red        | 39    | 24   |
 | Green      | 39    | 27   |
@@ -67,7 +67,7 @@
 - [x] Blossombind
 - [x] Champions of the Shoal
 - [ ] Disruptor of Currents
-- [ ] Flitterwing Nuisance
+- [x] Flitterwing Nuisance
 - [x] Glamer Gifter
 - [x] Glamermite
 - [x] Glen Elendra Guardian

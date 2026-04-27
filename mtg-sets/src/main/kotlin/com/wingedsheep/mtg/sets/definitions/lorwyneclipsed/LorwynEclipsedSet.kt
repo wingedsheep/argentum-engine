@@ -82,6 +82,7 @@ object LorwynEclipsedSet {
         FlameChainMauler,
         FlamekinGildweaver,
         FlaringCinder,
+        FlitterwingNuisance,
         ForagingWickermaw,
         GallantFowlknight,
         GanglyStompling,

@@ -1505,6 +1505,29 @@ class ClientStateTransformer(
             )
         }
 
+        // Check for event-based delayed triggers controlled by this player
+        // (e.g., Flitterwing Nuisance's "whenever a creature you control deals combat
+        //  damage to a player this turn, draw a card" floating ability).
+        // Step-based delayed triggers are scheduled actions, not ongoing effects, so skip them.
+        val delayedBySource = state.delayedTriggers
+            .filter { it.controllerId == playerId && it.trigger != null }
+            .groupBy { it.sourceName }
+
+        for ((sourceName, triggers) in delayedBySource) {
+            val first = triggers.first()
+            val triggerDesc = first.trigger?.event?.description ?: "the triggered event"
+            val effectDesc = first.effect.description.replaceFirstChar { it.lowercase() }
+            val countSuffix = if (triggers.size > 1) " (×${triggers.size})" else ""
+            effects.add(
+                ClientPlayerEffect(
+                    effectId = "delayed_trigger_${sourceName.lowercase().replace(" ", "_").replace(",", "")}",
+                    name = "$sourceName$countSuffix",
+                    description = "Whenever $triggerDesc, $effectDesc. (Until end of turn)",
+                    icon = "triggered-ability"
+                )
+            )
+        }
+
         // Check for granted spell keywords (emblems like "spells you cast have storm")
         val playerContainer = state.getEntity(playerId)
         val grantedKeywords = playerContainer?.get<GrantedSpellKeywordsComponent>()

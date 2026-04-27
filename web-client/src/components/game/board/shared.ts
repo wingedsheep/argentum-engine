@@ -407,6 +407,8 @@ export function getEffectIcon(icon: string): string {
       return '👑'
     case 'copy-spell':
       return '📋'
+    case 'triggered-ability':
+      return '✨'
     default:
       return '⚡'
   }
