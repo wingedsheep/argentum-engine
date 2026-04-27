@@ -2,6 +2,7 @@
  * Handlers for gameplay messages: state updates, mulligan, game lifecycle, and errors.
  */
 import type { MessageHandlers } from '@/network/messageHandlers.ts'
+import { ZoneType } from '@/types'
 import type { EntityId } from '@/types'
 import type { ClientGameState, ClientEvent, LegalActionInfo, PendingDecision, OpponentDecisionStatus, PriorityModeValue, Step } from '@/types'
 import { trackEvent, setInGame } from '@/utils/analytics.ts'
@@ -104,6 +105,12 @@ function processStateUpdate(
     (e) => e.type === 'cardsRevealed'
   ) as { type: 'cardsRevealed'; revealingPlayerId: EntityId; cardIds: readonly EntityId[]; cardNames: readonly string[]; imageUris: readonly (string | null)[]; source: string | null; fromZone?: string | null; toZone?: string | null } | undefined
 
+  const faceDownCastByOpponent = msg.events.some(
+    (e) => e.type === 'spellCast' &&
+      (e as { casterId?: EntityId; spellName?: string }).casterId !== playerId &&
+      (e as { spellName?: string }).spellName === 'Face-down creature'
+  )
+
   // Partition revealed cards into battlefield vs. other zones. Battlefield cards are already
   // public info, so instead of the reveal overlay (which misrepresents them as hidden→shown)
   // we pulse the permanent in place. Cards still hidden (hand) use the existing overlay.
@@ -134,6 +141,16 @@ function processStateUpdate(
         imageUris: revealOverlayIndices.map((i) => cardsRevealedEvent.imageUris[i]!),
       }
     : null
+
+  const currentVisibleHandCardIds = new Set<EntityId>(
+    resolvedState.zones
+      .filter((z) => z.zoneId.zoneType === ZoneType.HAND)
+      .flatMap((z) => z.cardIds)
+      .filter((id) => resolvedState.cards[id] != null)
+  )
+
+  const filterCurrentVisibleHandIds = (cardIds: readonly EntityId[]): readonly EntityId[] =>
+    cardIds.filter((id) => currentVisibleHandCardIds.has(id))
 
   if (cardsRevealedEvent && beheldBattlefieldIds.length > 0 && cardsRevealedEvent.source) {
     for (const id of beheldBattlefieldIds) {
@@ -306,8 +323,13 @@ function processStateUpdate(
     })),
     waitingForOpponentMulligan: false,
     revealedHandCardIds: (() => {
+      if (faceDownCastByOpponent) return null
       const newIds = handLookedAtEvent?.cardIds ?? handRevealedEvent?.cardIds
-      if (!newIds) return state.revealedHandCardIds
+      if (!newIds) {
+        if (!state.revealedHandCardIds) return null
+        const currentIds = filterCurrentVisibleHandIds(state.revealedHandCardIds)
+        return currentIds.length > 0 ? currentIds : null
+      }
       // Combined reveal+select UX: when the new hand reveal is paired with a
       // SelectCards decision assigned to this player that already displays every
       // revealed card, the decision modal IS the reveal for them — skip the

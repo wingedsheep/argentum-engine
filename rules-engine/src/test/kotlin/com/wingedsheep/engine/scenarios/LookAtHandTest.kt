@@ -1,6 +1,8 @@
 package com.wingedsheep.engine.scenarios
 
+import com.wingedsheep.engine.core.CastSpell
 import com.wingedsheep.engine.core.HandLookedAtEvent
+import com.wingedsheep.engine.core.PaymentStrategy
 import com.wingedsheep.engine.state.components.identity.RevealedToComponent
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
@@ -16,6 +18,7 @@ import com.wingedsheep.sdk.model.Deck
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.effects.LookAtTargetHandEffect
 import com.wingedsheep.sdk.scripting.GameEvent
+import com.wingedsheep.sdk.scripting.KeywordAbility
 import com.wingedsheep.sdk.scripting.TriggerBinding
 import com.wingedsheep.sdk.scripting.TriggeredAbility
 import com.wingedsheep.sdk.scripting.targets.TargetPlayer
@@ -52,10 +55,21 @@ class LookAtHandTest : FunSpec({
         )
     )
 
+    val TestMorph = CardDefinition(
+        name = "Test Morph",
+        manaCost = ManaCost.parse("{2}{G}"),
+        typeLine = com.wingedsheep.sdk.core.TypeLine.creature(setOf(Subtype("Wizard"))),
+        oracleText = "Morph {G}",
+        creatureStats = com.wingedsheep.sdk.model.CreatureStats(2, 2),
+        keywordAbilities = listOf(KeywordAbility.Morph(ManaCost.parse("{G}"))),
+        script = CardScript.creature()
+    )
+
     fun createDriver(): GameTestDriver {
         val driver = GameTestDriver()
         driver.registerCards(TestCards.all)
         driver.registerCard(IngeniousThief)
+        driver.registerCard(TestMorph)
         return driver
     }
 
@@ -283,5 +297,46 @@ class LookAtHandTest : FunSpec({
         // Should still have just one player in the set (sets don't have duplicates)
         revealedComponent!!.playerIds shouldHaveSize 1
         revealedComponent.isRevealedTo(activePlayer) shouldBe true
+    }
+
+    test("casting a face-down morph hides all previously revealed morph cards in that hand") {
+        val driver = createDriver()
+        driver.initMirrorMatch(
+            deck = Deck.of("Forest" to 20),
+            startingLife = 20
+        )
+
+        val caster = driver.activePlayer!!
+        val viewer = driver.getOpponent(caster)
+
+        driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
+
+        val castMorph = driver.putCardInHand(caster, "Test Morph")
+        val otherMorph = driver.putCardInHand(caster, "Test Morph")
+        val nonMorph = driver.putCardInHand(caster, "Forest")
+
+        for (cardId in listOf(castMorph, otherMorph, nonMorph)) {
+            driver.replaceState(driver.state.updateEntity(cardId) { container ->
+                container.with(RevealedToComponent.to(viewer))
+            })
+        }
+
+        driver.giveColorlessMana(caster, 3)
+        val result = driver.submit(
+            CastSpell(
+                playerId = caster,
+                cardId = castMorph,
+                castFaceDown = true,
+                paymentStrategy = PaymentStrategy.FromPool
+            )
+        )
+
+        result.isSuccess shouldBe true
+        driver.state.getEntity(castMorph)?.get<RevealedToComponent>() shouldBe null
+        driver.state.getEntity(otherMorph)?.get<RevealedToComponent>() shouldBe null
+
+        val nonMorphReveal = driver.state.getEntity(nonMorph)?.get<RevealedToComponent>()
+        nonMorphReveal shouldNotBe null
+        nonMorphReveal!!.isRevealedTo(viewer) shouldBe true
     }
 })

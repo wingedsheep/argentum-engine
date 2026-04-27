@@ -781,6 +781,10 @@ class DevScenarioController(
                 container = container.with(CantBeCounteredComponent)
             }
 
+            if (cardDef.keywordAbilities.any { it is KeywordAbility.Morph }) {
+                container = container.with(HasMorphAbilityComponent)
+            }
+
             // Add ProtectionComponent for cards with protection from color/subtype
             val protectionColors = cardDef.keywordAbilities
                 .filterIsInstance<KeywordAbility.ProtectionFromColor>()

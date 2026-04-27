@@ -24,6 +24,7 @@ import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.identity.CopyOfComponent
 import com.wingedsheep.engine.state.components.identity.FaceDownComponent
+import com.wingedsheep.engine.state.components.identity.HasMorphAbilityComponent
 import com.wingedsheep.engine.state.components.identity.MorphDataComponent
 import com.wingedsheep.engine.state.components.identity.MayPlayFromExileComponent
 import com.wingedsheep.engine.state.components.identity.ExileAfterResolveComponent
@@ -128,6 +129,9 @@ class StackResolver(
 
         // Remove from current zone (typically hand)
         var newState = removeFromCurrentZone(state, cardId, casterId)
+        if (castFaceDown) {
+            newState = clearRevealedMorphsInHand(newState, casterId)
+        }
 
         // Build the flat target union for choose-N modal spells (Rule 700.2 / 601.2c).
         // TargetsComponent holds the union so existing target-arrow rendering and resolution-time
@@ -183,6 +187,9 @@ class StackResolver(
                     originalCardDefinitionId = cardComponent.cardDefinitionId,
                     faceUpEffect = morphAbility.faceUpEffect
                 ))
+            }
+            if (castFaceDown) {
+                updated = updated.without<RevealedToComponent>()
             }
             updated
         }
@@ -1766,6 +1773,24 @@ class StackResolver(
         }
 
         return state
+    }
+
+    /**
+     * Once a player casts a face-down morph, opponents can no longer know whether
+     * any previously revealed morph card is still in that player's hand.
+     */
+    private fun clearRevealedMorphsInHand(state: GameState, playerId: EntityId): GameState {
+        var newState = state
+        for (handCardId in state.getZone(ZoneKey(playerId, Zone.HAND))) {
+            val container = newState.getEntity(handCardId) ?: continue
+            if (!container.has<HasMorphAbilityComponent>()) continue
+            if (container.get<RevealedToComponent>() == null) continue
+
+            newState = newState.updateEntity(handCardId) { c ->
+                c.without<RevealedToComponent>()
+            }
+        }
+        return newState
     }
 
     /**
