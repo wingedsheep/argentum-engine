@@ -2,6 +2,7 @@ package com.wingedsheep.engine.scenarios
 
 import com.wingedsheep.engine.mechanics.layers.StateProjector
 import com.wingedsheep.engine.mechanics.mana.ManaSolver
+import com.wingedsheep.engine.state.components.battlefield.AttachedToComponent
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
 import com.wingedsheep.mtg.sets.definitions.lorwyneclipsed.cards.GreatForestDruid
@@ -9,6 +10,7 @@ import com.wingedsheep.mtg.sets.definitions.lorwyneclipsed.cards.NoggleTheMind
 import com.wingedsheep.sdk.core.*
 import com.wingedsheep.sdk.model.*
 import io.kotest.core.spec.style.FunSpec
+import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
@@ -56,6 +58,9 @@ class NoggleTheMindTest : FunSpec({
         driver.castSpell(activePlayer, aura, listOf(creature))
         driver.bothPass()
 
+        driver.state.getBattlefield() shouldContain creature
+        driver.state.getBattlefield() shouldContain aura
+        driver.state.getEntity(aura)!!.get<AttachedToComponent>()!!.targetId shouldBe creature
         projector.getProjectedPower(driver.state, creature) shouldBe 1
         projector.getProjectedToughness(driver.state, creature) shouldBe 1
     }

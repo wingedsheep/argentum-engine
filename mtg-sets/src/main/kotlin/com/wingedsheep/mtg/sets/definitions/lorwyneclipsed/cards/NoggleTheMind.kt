@@ -6,6 +6,7 @@ import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.LoseAllAbilities
 import com.wingedsheep.sdk.scripting.SetBasePowerToughnessStatic
+import com.wingedsheep.sdk.scripting.StaticTarget
 import com.wingedsheep.sdk.scripting.TransformPermanent
 
 /**
@@ -31,16 +32,17 @@ val NoggleTheMind = card("Noggle the Mind") {
         ability = TransformPermanent(
             setCardTypes = setOf("CREATURE"),
             setSubtypes = setOf("Noggle"),
-            setColors = emptySet()
+            setColors = emptySet(),
+            target = StaticTarget.AttachedCreature
         )
     }
 
     staticAbility {
-        ability = LoseAllAbilities()
+        ability = LoseAllAbilities(target = StaticTarget.AttachedCreature)
     }
 
     staticAbility {
-        ability = SetBasePowerToughnessStatic(1, 1)
+        ability = SetBasePowerToughnessStatic(1, 1, target = StaticTarget.AttachedCreature)
     }
 
     metadata {
