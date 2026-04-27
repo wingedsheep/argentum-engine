@@ -1782,17 +1782,9 @@ class ClientStateTransformer(
                         )
                     )
                 }
-                is SerializableModification.SetCreatureSubtypes -> {
-                    val joined = modification.subtypes.joinToString(" ")
-                    effects.add(
-                        ClientCardEffect(
-                            effectId = "type_changed_${modification.subtypes.joinToString("_").lowercase()}",
-                            name = joined.ifEmpty { "Type Changed" },
-                            description = "Creature types are now $joined",
-                            icon = "type-change"
-                        )
-                    )
-                }
+                // SetCreatureSubtypes is surfaced once below, using the projected state,
+                // so superseded floating effects (e.g., an earlier Scout transform that
+                // a later Soldier transform overrode) don't produce duplicate badges.
                 // Other modifications don't need badges (stats/keywords/types are shown elsewhere)
                 else -> { /* No badge needed */ }
             }
@@ -1839,6 +1831,31 @@ class ClientStateTransformer(
 
         // Check for triggered ability condition indicators (intervening-if progress)
         effects.addAll(buildTriggerConditionBadges(state, entityId))
+
+        // Surface a single "type-change" badge when projected creature subtypes diverge
+        // from what the printed card art shows. We compute this from projected state
+        // (rather than per floating effect) so superseded transformations don't produce
+        // duplicate badges (e.g., Figure of Fable Scout → Soldier).
+        if (projectedState != null) {
+            val baseCardComponent = state.getEntity(entityId)?.get<CardComponent>()
+            val baseSubtypes = baseCardComponent?.typeLine?.subtypes?.map { it.value }?.toSet() ?: emptySet()
+            val projectedSubtypes = projectedState.getSubtypes(entityId)
+            val hasSetCreatureSubtypes = state.floatingEffects.any {
+                entityId in it.effect.affectedEntities &&
+                    it.effect.modification is SerializableModification.SetCreatureSubtypes
+            }
+            if (hasSetCreatureSubtypes && projectedSubtypes.isNotEmpty() && projectedSubtypes != baseSubtypes) {
+                val joined = projectedSubtypes.joinToString(" ")
+                effects.add(
+                    ClientCardEffect(
+                        effectId = "type_changed",
+                        name = joined,
+                        description = "Creature types are now $joined",
+                        icon = "type-change"
+                    )
+                )
+            }
+        }
 
         // Check if this creature's damage is prevented by a PreventNextDamageFromCreatureType shield
         if (projectedState != null && projectedState.isCreature(entityId)) {

@@ -197,7 +197,7 @@ class FigureOfFableScenarioTest : ScenarioTestBase() {
                 }
             }
 
-            test("active-effect badge surfaces the new creature types for the frontend") {
+            test("active-effect badge surfaces the current creature types and never duplicates") {
                 val game = scenario()
                     .withPlayers("Player1", "Player2")
                     .withCardOnBattlefield(1, "Figure of Fable")
@@ -205,28 +205,54 @@ class FigureOfFableScenarioTest : ScenarioTestBase() {
                     .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
                     .build()
 
-                fun clientCard() = game.getClientState(1).cards.values
+                fun typeChangeBadges() = game.getClientState(1).cards.values
                     .first { it.name == "Figure of Fable" }
+                    .activeEffects
+                    .filter { it.icon == "type-change" }
+
+                withClue("Base form has no type-change badge") {
+                    typeChangeBadges() shouldBe emptyList()
+                }
 
                 setMana(game, green = 1)
                 activateAbility(game, 0)
                 game.resolveStack()
 
-                withClue("Scout transformation surfaces a type-change active effect") {
-                    val effects = clientCard().activeEffects
-                    val typeChange = effects.firstOrNull { it.icon == "type-change" }
-                    typeChange shouldNotBe null
-                    typeChange!!.name shouldBe "Kithkin Scout"
+                withClue("Scout transformation surfaces exactly one type-change badge") {
+                    val badges = typeChangeBadges()
+                    badges.size shouldBe 1
+                    badges[0].name shouldBe "Kithkin Scout"
+                }
+
+                setMana(game, green = 2, colorless = 1)
+                activateAbility(game, 1)
+                game.resolveStack()
+
+                withClue("Soldier transformation replaces the Scout badge — no duplicates") {
+                    val badges = typeChangeBadges()
+                    badges.size shouldBe 1
+                    badges[0].name shouldBe "Kithkin Soldier"
                 }
 
                 setMana(game, green = 3, colorless = 3)
-                activateAbility(game, 2)  // fizzles, source isn't a Soldier
+                activateAbility(game, 2)
                 game.resolveStack()
 
-                withClue("A fizzled activation does not produce a type-change badge") {
-                    val effects = clientCard().activeEffects
-                    val typeChange = effects.firstOrNull { it.icon == "type-change" }
-                    typeChange!!.name shouldBe "Kithkin Scout"
+                withClue("Avatar transformation again shows only one badge") {
+                    val badges = typeChangeBadges()
+                    badges.size shouldBe 1
+                    badges[0].name shouldBe "Kithkin Avatar"
+                }
+
+                // Activating ability 2 from Avatar fizzles — badge should still show Avatar
+                setMana(game, green = 2, colorless = 1)
+                activateAbility(game, 1)
+                game.resolveStack()
+
+                withClue("A fizzled activation does not change or duplicate the badge") {
+                    val badges = typeChangeBadges()
+                    badges.size shouldBe 1
+                    badges[0].name shouldBe "Kithkin Avatar"
                 }
             }
         }
