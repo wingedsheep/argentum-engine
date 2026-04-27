@@ -6,6 +6,7 @@ import { useResponsive } from '@/hooks/useResponsive.ts'
 import { getCardImageUrl } from '@/utils/cardImages.ts'
 import { ManaCost } from '../ui/ManaSymbols'
 import { HoverCardPreview } from '../ui/HoverCardPreview'
+import { useDfcHoverFlip } from '../ui/useDfcHoverFlip'
 import { SetSynergiesButton } from './SetSynergiesOverlay'
 
 /**
@@ -79,14 +80,20 @@ function GridDrafter({ gridState, settings }: { gridState: GridDraftState; setti
   const [showPickedCards, setShowPickedCards] = useState(!responsive.isMobile)
   const [viewingOpponent, setViewingOpponent] = useState<string | null>(null)
 
+  const dfc = useDfcHoverFlip(hoveredCard)
+  const resetDfcFlip = dfc.resetFlip
+
   const handleHover = useCallback((card: SealedCardInfo | null, e?: React.MouseEvent) => {
-    setHoveredCard(card)
+    setHoveredCard((prev) => {
+      if (prev?.name !== card?.name) resetDfcFlip()
+      return card
+    })
     if (card && e) {
       setHoverPos({ x: e.clientX, y: e.clientY })
     } else {
       setHoverPos(null)
     }
-  }, [])
+  }, [resetDfcFlip])
 
   // Buffered grid: decoupled from server state so we can hold the old grid
   // while playing the pick animation before transitioning to a new grid.
@@ -823,7 +830,13 @@ function GridDrafter({ gridState, settings }: { gridState: GridDraftState; setti
 
       {/* Card preview on hover */}
       {hoveredCard && hoverPos && (
-        <HoverCardPreview name={hoveredCard.name} imageUri={hoveredCard.imageUri} pos={hoverPos} rulings={hoveredCard.rulings} />
+        <HoverCardPreview
+          name={dfc.displayName ?? hoveredCard.name}
+          imageUri={dfc.displayImageUri ?? hoveredCard.imageUri}
+          pos={hoverPos}
+          rulings={hoveredCard.rulings}
+          overlay={dfc.hint}
+        />
       )}
 
       <style>{`
