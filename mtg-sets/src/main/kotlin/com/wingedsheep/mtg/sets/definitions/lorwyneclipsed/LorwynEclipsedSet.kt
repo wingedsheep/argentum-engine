@@ -29,6 +29,7 @@ object LorwynEclipsedSet {
         BarbedBloodletter,
         BarkOfDoran,
         BileVialBoggart,
+        BitterbloomBearer,
         BlightRot,
         BloodCrypt,
         BloodlineBidding,
