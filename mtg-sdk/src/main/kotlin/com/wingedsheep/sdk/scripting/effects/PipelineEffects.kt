@@ -270,7 +270,15 @@ enum class Chooser {
     /** The target player decides (resolved from context.targets[0]) */
     TargetPlayer,
     /** The triggering player decides (resolved from trigger context) */
-    TriggeringPlayer
+    TriggeringPlayer,
+    /**
+     * The controller of the source spell/ability decides, regardless of any per-iteration
+     * controller swap (e.g., inside [ForEachPlayerEffect] which sets the iterated player as
+     * the current controller). Resolves through `context.sourceId` -> projected controller.
+     * Use this for cards like Winnowing where the spell's caster makes a choice for each
+     * player during a per-player iteration.
+     */
+    SourceController
 }
 
 /**

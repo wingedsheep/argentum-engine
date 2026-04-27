@@ -896,7 +896,7 @@ Sources: `CardSource.TopOfLibrary(count, player)`, `CardSource.FromZone(zone, pl
 Destinations: `CardDestination.ToZone(zone, player, placement)`
 Placements: `ZonePlacement.Top`, `.Bottom`, `.Shuffled`, `.Default`, `.Tapped`
 Selection: `SelectionMode.ChooseExactly(count)`, `.ChooseUpTo(count)`, `.All`, `.Random(count)`, `.ChooseAnyNumber`
-Chooser: `Chooser.Controller`, `.Opponent`, `.TargetPlayer`, `.TriggeringPlayer`
+Chooser: `Chooser.Controller`, `.Opponent`, `.TargetPlayer`, `.TriggeringPlayer`, `.SourceController` (resolves through `sourceId` -> projected controller, ignoring per-iteration controller swaps inside `ForEachPlayerEffect`)
 Ordering: `CardOrder.ControllerChooses`, `.Random`, `.Preserve`
 MoveType: `MoveType.Default`, `.Discard`, `.Sacrifice`
 

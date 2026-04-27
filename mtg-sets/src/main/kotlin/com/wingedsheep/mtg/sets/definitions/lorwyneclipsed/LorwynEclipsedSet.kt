@@ -192,6 +192,7 @@ object LorwynEclipsedSet {
         WanderwineFarewell,
         WildUnraveling,
         WildvinePummeler,
+        Winnowing,
         Wistfulness,
 
         // Basic lands

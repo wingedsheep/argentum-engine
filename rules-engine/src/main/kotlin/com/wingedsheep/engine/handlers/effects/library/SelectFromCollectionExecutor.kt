@@ -9,6 +9,7 @@ import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.handlers.effects.TargetResolutionUtils
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.identity.CardComponent
+import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.scripting.effects.Chooser
@@ -87,6 +88,12 @@ class SelectFromCollectionExecutor : EffectExecutor<SelectFromCollectionEffect> 
             } ?: return EffectResult.error(state, "No target player for TargetPlayer chooser")
             Chooser.TriggeringPlayer -> context.triggeringEntityId
                 ?: return EffectResult.error(state, "No triggering player for TriggeringPlayer chooser")
+            Chooser.SourceController -> {
+                val sourceId = context.sourceId
+                    ?: return EffectResult.error(state, "No source entity for SourceController chooser")
+                state.getEntity(sourceId)?.get<ControllerComponent>()?.playerId
+                    ?: return EffectResult.error(state, "Source entity has no ControllerComponent for SourceController chooser")
+            }
         }
 
         // Restrictions can tighten the maximum number of selectable cards (e.g.,

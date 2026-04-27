@@ -2,11 +2,11 @@
 
 **Set Size:** 273 cards (main set, per Scryfall `set:ecl`)
 **Release Date:** January 23, 2026
-**Implemented:** 179 / 273
+**Implemented:** 180 / 273
 
 | Color      | Total | Done |
 |------------|-------|------|
-| White      | 39    | 25   |
+| White      | 39    | 26   |
 | Blue       | 39    | 28   |
 | Black      | 38    | 26   |
 | Red        | 39    | 22   |
@@ -59,7 +59,7 @@
 - [x] Tributary Vaulter
 - [x] Wanderbrine Preacher
 - [ ] Wanderbrine Trapper
-- [ ] Winnowing
+- [x] Winnowing
 
 ## Blue (39)
 
