@@ -845,11 +845,18 @@ internal class CombatDamageManager(
                         val damageCantBePrevented = DamageUtils.isDamagePreventionDisabled(state)
                         val attackerColors = projected.getColors(attackerId)
                         val attackerSubtypes = projected.getSubtypes(attackerId)
+                        val protectedFromOpponent = !damageCantBePrevented &&
+                            projected.hasKeyword(targetId, "PROTECTION_FROM_EACH_OPPONENT") &&
+                            run {
+                                val srcController = projected.getController(attackerId)
+                                val tgtController = projected.getController(targetId)
+                                srcController != null && tgtController != null && srcController != tgtController
+                            }
                         val blockerProtected = !damageCantBePrevented && (attackerColors.any {
                             projected.hasKeyword(targetId, "PROTECTION_FROM_$it")
                         } || attackerSubtypes.any {
                             projected.hasKeyword(targetId, "PROTECTION_FROM_SUBTYPE_${it.uppercase()}")
-                        })
+                        }) || protectedFromOpponent
                         if (!blockerProtected) {
                             incomingDamage.getOrPut(targetId) { mutableMapOf() }
                                 .merge(attackerId, amplified) { a, b -> a + b }

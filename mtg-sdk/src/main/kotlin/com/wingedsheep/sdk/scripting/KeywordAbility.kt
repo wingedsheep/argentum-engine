@@ -174,6 +174,20 @@ sealed interface KeywordAbility {
         override val description: String = "Protection from everything"
     }
 
+    /**
+     * Protection from each of the controller's opponents (Rule 702.16e).
+     * Damage from sources controlled by an opponent is prevented; the permanent
+     * can't be targeted by an opponent's spells/abilities, can't be blocked by
+     * creatures controlled by an opponent, and can't be enchanted/equipped by
+     * Auras or Equipment controlled by an opponent.
+     */
+    @SerialName("ProtectionFromEachOpponent")
+    @Serializable
+    data object ProtectionFromEachOpponent : KeywordAbility {
+        override val keyword: Keyword = Keyword.PROTECTION_FROM_EACH_OPPONENT
+        override val description: String = "Protection from each opponent"
+    }
+
     // =========================================================================
     // Numeric Keywords
     // =========================================================================

@@ -303,9 +303,18 @@ class ConditionEvaluator {
     private fun evaluateSourceHasSubtype(state: GameState, condition: SourceHasSubtype, context: EffectContext): Boolean {
         val sourceId = context.sourceId ?: return false
         val card = state.getEntity(sourceId)?.get<CardComponent>() ?: return false
-        return card.typeLine.hasSubtype(condition.subtype) ||
-            // Changeling: has all creature types in all zones
-            (Keyword.CHANGELING in card.baseKeywords && condition.subtype.value in Subtype.ALL_CREATURE_TYPES)
+
+        // For battlefield permanents, check projected subtypes so continuous effects
+        // (e.g., Figure of Fable becoming a Scout) are honored.
+        if (sourceId in state.getBattlefield()) {
+            val projectedSubtypes = state.projectedState.getSubtypes(sourceId)
+            if (condition.subtype.value in projectedSubtypes) return true
+        } else if (card.typeLine.hasSubtype(condition.subtype)) {
+            return true
+        }
+
+        // Changeling: has all creature types in all zones
+        return Keyword.CHANGELING in card.baseKeywords && condition.subtype.value in Subtype.ALL_CREATURE_TYPES
     }
 
     private fun evaluateSourceHasKeyword(state: GameState, condition: SourceHasKeyword, context: EffectContext): Boolean {

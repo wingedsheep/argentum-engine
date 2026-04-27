@@ -116,6 +116,10 @@ class TargetValidator {
         val hexproofError = checkHexproofFromColor(state, target, casterId, sourceColors)
         if (hexproofError != null) return hexproofError
 
+        // Check protection from each opponent (Rule 702.16e)
+        val protectionFromOpponentError = checkProtectionFromEachOpponent(state, target, casterId)
+        if (protectionFromOpponentError != null) return protectionFromOpponentError
+
         // Check protection from color and creature subtype (Rule 702.16)
         return checkProtection(state, target, sourceColors, sourceSubtypes)
     }
@@ -183,6 +187,32 @@ class TargetValidator {
             }
         }
         return null
+    }
+
+    /**
+     * Check if a target has protection from each of the controller's opponents (Rule 702.16e).
+     * Prevents being targeted by any spell or ability controlled by an opponent of the target's controller.
+     */
+    private fun checkProtectionFromEachOpponent(
+        state: GameState,
+        target: ChosenTarget,
+        casterId: EntityId
+    ): String? {
+        val entityId = when (target) {
+            is ChosenTarget.Permanent -> target.entityId
+            else -> return null
+        }
+        if (entityId !in state.getBattlefield()) return null
+
+        val projected = state.projectedState
+        if (!projected.hasKeyword(entityId, "PROTECTION_FROM_EACH_OPPONENT")) return null
+
+        val entityController = projected.getController(entityId)
+            ?: state.getEntity(entityId)?.get<ControllerComponent>()?.playerId
+        if (entityController == null || entityController == casterId) return null
+
+        val cardName = state.getEntity(entityId)?.get<CardComponent>()?.name ?: "target"
+        return "$cardName has protection from each of your opponents"
     }
 
     /**

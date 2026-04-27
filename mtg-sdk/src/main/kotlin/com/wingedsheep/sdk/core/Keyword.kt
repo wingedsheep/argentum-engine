@@ -36,6 +36,7 @@ enum class Keyword(val displayName: String) {
     SHROUD("Shroud"),
     WARD("Ward"),
     PROTECTION("Protection"),
+    PROTECTION_FROM_EACH_OPPONENT("Protection from each opponent"),
 
     // ── Speed ────────────────────────────────────────────────
     HASTE("Haste"),

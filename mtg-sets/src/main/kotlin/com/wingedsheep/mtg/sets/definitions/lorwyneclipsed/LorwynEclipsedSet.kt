@@ -79,6 +79,7 @@ object LorwynEclipsedSet {
         EvolvingWilds,
         FeedTheFlames,
         FeistySpikeling,
+        FigureOfFable,
         FirdochCore,
         FlameChainMauler,
         FlamekinGildweaver,

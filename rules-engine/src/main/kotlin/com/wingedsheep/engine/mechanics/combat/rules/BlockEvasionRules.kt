@@ -298,6 +298,24 @@ class ProtectionFromColorRule : BlockEvasionRule {
 }
 
 /**
+ * Protection from each opponent: Attacker can't be blocked by creatures controlled by
+ * any of its controller's opponents (Rule 702.16e).
+ */
+class ProtectionFromEachOpponentRule : BlockEvasionRule {
+    override fun check(ctx: BlockCheckContext): String? {
+        if (!ctx.projected.hasKeyword(ctx.attackerId, "PROTECTION_FROM_EACH_OPPONENT")) return null
+
+        val attackerController = ctx.projected.getController(ctx.attackerId) ?: return null
+        val blockerController = ctx.projected.getController(ctx.blockerId) ?: return null
+        if (blockerController == attackerController) return null
+
+        val attackerName = ctx.state.getEntity(ctx.attackerId)?.get<CardComponent>()?.name ?: "Creature"
+        val blockerName = ctx.state.getEntity(ctx.blockerId)?.get<CardComponent>()?.name ?: "Creature"
+        return "$attackerName has protection from each of its controller's opponents and can't be blocked by $blockerName"
+    }
+}
+
+/**
  * Protection from subtype: Attacker can't be blocked by creatures of a subtype it has protection from.
  */
 class ProtectionFromSubtypeRule : BlockEvasionRule {
@@ -437,6 +455,7 @@ fun defaultBlockEvasionRules(
     CantBeBlockedIfCastSpellTypeRule(predicateEvaluator),
     ProtectionFromColorRule(),
     ProtectionFromSubtypeRule(),
+    ProtectionFromEachOpponentRule(),
     CanOnlyBlockCreaturesWithKeywordRule(),
     CantBlockCreaturesWithGreaterPowerRule()
 )

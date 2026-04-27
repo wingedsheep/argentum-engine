@@ -112,6 +112,16 @@ object DamageUtils {
                     return EffectResult.success(state)
                 }
             }
+
+            // Protection from each opponent (Rule 702.16e)
+            if (projected.hasKeyword(targetId, "PROTECTION_FROM_EACH_OPPONENT")) {
+                val sourceController = projected.getController(sourceId)
+                val targetController = projected.getController(targetId)
+                    ?: state.getEntity(targetId)?.get<com.wingedsheep.engine.state.components.identity.ControllerComponent>()?.playerId
+                if (sourceController != null && targetController != null && sourceController != targetController) {
+                    return EffectResult.success(state)
+                }
+            }
         }
 
         // Apply damage amplification (e.g., Gratuitous Violence - DoubleDamage)

@@ -1652,6 +1652,12 @@ class StackResolver(
                         }
                     }
 
+                    // Check protection from each opponent (Rule 702.16e)
+                    if (projected.hasKeyword(target.entityId, "PROTECTION_FROM_EACH_OPPONENT") &&
+                        entityController != null && entityController != controllerId) {
+                        return@filterIndexed false
+                    }
+
                     // Re-validate target filter (Rule 608.2b)
                     val requirement = getRequirementForTargetIndex(index, targetRequirements)
                     val filter = extractTargetFilter(requirement)
