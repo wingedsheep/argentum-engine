@@ -2,7 +2,7 @@
 
 **Set Size:** 273 cards (main set, per Scryfall `set:ecl`)
 **Release Date:** January 23, 2026
-**Implemented:** 181 / 273
+**Implemented:** 182 / 273
 
 | Color      | Total | Done |
 |------------|-------|------|
@@ -13,7 +13,7 @@
 | Green      | 39    | 27   |
 | Multicolor | 49    | 34   |
 | Colorless  | 18    | 8    |
-| Land       | 12    | 10   |
+| Land       | 12    | 11   |
 
 > **Note:** Before implementing any card, check the `effects/` directory in this folder for any
 > new mechanic it relies on (Evoke, Blight, Vivid, mana-spent gating, Basic landcycling, Wither,
@@ -305,7 +305,7 @@
 
 - [x] Blood Crypt
 - [x] Eclipsed Realms
-- [ ] Evolving Wilds
+- [x] Evolving Wilds
 - [x] Forest
 - [x] Hallowed Fountain
 - [x] Island

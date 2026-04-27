@@ -74,6 +74,7 @@ object LorwynEclipsedSet {
         EndBlazeEpiphany,
         EnragedFlamecaster,
         EvershrikesGift,
+        EvolvingWilds,
         FeistySpikeling,
         FlameChainMauler,
         FlamekinGildweaver,
