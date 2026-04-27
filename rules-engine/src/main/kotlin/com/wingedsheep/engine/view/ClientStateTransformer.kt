@@ -822,14 +822,11 @@ class ClientStateTransformer(
         // Get chosen X value for spells on the stack
         val chosenX = spellOnStack?.xValue
 
-        // Get chosen creature type for "as enters" permanents (e.g., Doom Cannon) or spells on stack (e.g., Aphetto Dredging)
-        // Also check floating effects for temporary type changes (e.g., Mistform Wall)
+        // Get chosen creature type for "as enters" permanents (e.g., Doom Cannon) or spells on stack (e.g., Aphetto Dredging).
+        // Note: temporary type changes from floating SetCreatureSubtypes effects (e.g., Mistform Wall, Figure of Fable)
+        // are surfaced via the "type-change" active-effect badge in buildCardActiveEffects, not as a chosen-type label.
         val chosenCreatureType = container.get<ChosenCreatureTypeComponent>()?.creatureType
             ?: spellOnStack?.chosenCreatureType
-            ?: state.floatingEffects
-                .filter { it.effect.affectedEntities.contains(entityId) }
-                .mapNotNull { (it.effect.modification as? SerializableModification.SetCreatureSubtypes)?.subtypes?.firstOrNull() }
-                .lastOrNull()
 
         // Get chosen color for "as enters, choose a color" permanents (e.g., Riptide Replicator)
         val chosenColor = container.get<ChosenColorComponent>()?.color?.displayName

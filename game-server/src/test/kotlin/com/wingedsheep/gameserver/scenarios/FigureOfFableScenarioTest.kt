@@ -255,6 +255,36 @@ class FigureOfFableScenarioTest : ScenarioTestBase() {
                     badges[0].name shouldBe "Kithkin Avatar"
                 }
             }
+
+            test("chosenCreatureType is not populated for Figure of Fable transformations") {
+                val game = scenario()
+                    .withPlayers("Player1", "Player2")
+                    .withCardOnBattlefield(1, "Figure of Fable")
+                    .withActivePlayer(1)
+                    .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                    .build()
+
+                fun clientCard() = game.getClientState(1).cards.values
+                    .first { it.name == "Figure of Fable" }
+
+                clientCard().chosenCreatureType shouldBe null
+
+                setMana(game, green = 1)
+                activateAbility(game, 0)
+                game.resolveStack()
+
+                withClue("Scout transform must not produce a stray chosen-creature-type label") {
+                    clientCard().chosenCreatureType shouldBe null
+                }
+
+                setMana(game, green = 2, colorless = 1)
+                activateAbility(game, 1)
+                game.resolveStack()
+
+                withClue("Soldier transform must not produce a stray chosen-creature-type label") {
+                    clientCard().chosenCreatureType shouldBe null
+                }
+            }
         }
 
         context("Figure of Fable evolution gating (cannot skip steps or evolve backwards)") {
