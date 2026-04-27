@@ -78,6 +78,7 @@ object LorwynEclipsedSet {
         EvershrikesGift,
         EvolvingWilds,
         FeistySpikeling,
+        FirdochCore,
         FlameChainMauler,
         FlamekinGildweaver,
         FlaringCinder,
