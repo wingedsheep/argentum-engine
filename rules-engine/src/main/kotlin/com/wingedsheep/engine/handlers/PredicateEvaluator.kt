@@ -493,11 +493,16 @@ class PredicateEvaluator {
             // Subtype predicates - face-down creatures have no subtypes (Rule 707.2)
             is CardPredicate.HasSubtype -> {
                 if (container.has<FaceDownComponent>()) false
-                else typeLine.hasSubtype(predicate.subtype)
+                else typeLine.hasSubtype(predicate.subtype) ||
+                    // Changeling: has all creature types in all zones
+                    (Keyword.CHANGELING in card.baseKeywords &&
+                        predicate.subtype.value in Subtype.ALL_CREATURE_TYPES)
             }
             is CardPredicate.NotSubtype -> {
                 if (container.has<FaceDownComponent>()) true
-                else !typeLine.hasSubtype(predicate.subtype)
+                else !(typeLine.hasSubtype(predicate.subtype) ||
+                    (Keyword.CHANGELING in card.baseKeywords &&
+                        predicate.subtype.value in Subtype.ALL_CREATURE_TYPES))
             }
             is CardPredicate.HasAnyOfSubtypes -> {
                 if (container.has<FaceDownComponent>()) false
