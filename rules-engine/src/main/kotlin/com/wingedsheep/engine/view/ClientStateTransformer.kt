@@ -601,6 +601,16 @@ class ClientStateTransformer(
             ?: emptyList()
         val protections = (projectedProtections.ifEmpty { staticProtections }).distinct()
 
+        // Extract hexproof-from-color colors from projected keywords (HEXPROOF_FROM_*).
+        // Both intrinsic per-color hexproof (HexproofFromColorComponent) and dynamically granted
+        // hexproof (Tam, Mindful First-Year) flow through the same projection keywords.
+        val hexproofFromPrefix = "HEXPROOF_FROM_"
+        val hexproofFromColors = projectedValues?.keywords
+            ?.filter { it.startsWith(hexproofFromPrefix) }
+            ?.mapNotNull { try { Color.valueOf(it.removePrefix(hexproofFromPrefix)) } catch (_: Exception) { null } }
+            ?.distinct()
+            ?: emptyList()
+
         // Add PROTECTION keyword when protections are present
         val keywords = if (protections.isNotEmpty()) rawKeywords + Keyword.PROTECTION else rawKeywords
 
@@ -686,6 +696,11 @@ class ClientStateTransformer(
                 ?.filter { it.startsWith(protectionPrefix) }
                 ?.mapNotNull { try { Color.valueOf(it.removePrefix(protectionPrefix)) } catch (_: Exception) { null } }
                 ?: emptyList()
+            val faceDownHexproofFromColors = projectedValues?.keywords
+                ?.filter { it.startsWith(hexproofFromPrefix) }
+                ?.mapNotNull { try { Color.valueOf(it.removePrefix(hexproofFromPrefix)) } catch (_: Exception) { null } }
+                ?.distinct()
+                ?: emptyList()
             val faceDownKeywordsWithProtection = if (faceDownProtections.isNotEmpty()) faceDownKeywords + Keyword.PROTECTION else faceDownKeywords
             return ClientCard(
                 id = entityId,
@@ -705,6 +720,7 @@ class ClientStateTransformer(
                 keywords = faceDownKeywordsWithProtection,
                 abilityFlags = faceDownAbilityFlags,
                 protections = faceDownProtections,
+                hexproofFromColors = faceDownHexproofFromColors,
                 counters = container.get<CountersComponent>()?.counters ?: emptyMap(),
                 isTapped = isTapped,
                 hasSummoningSickness = hasSummoningSickness,
@@ -909,6 +925,7 @@ class ClientStateTransformer(
             keywords = keywords,
             abilityFlags = abilityFlags,
             protections = protections,
+            hexproofFromColors = hexproofFromColors,
             counters = counters,
             isTapped = isTapped,
             hasSummoningSickness = hasSummoningSickness,
@@ -1825,6 +1842,7 @@ class ClientStateTransformer(
                 // SetCreatureSubtypes is surfaced once below, using the projected state,
                 // so superseded floating effects (e.g., an earlier Scout transform that
                 // a later Soldier transform overrode) don't produce duplicate badges.
+                // ChangeColor is surfaced once below from projected state (same reasoning).
                 // Other modifications don't need badges (stats/keywords/types are shown elsewhere)
                 else -> { /* No badge needed */ }
             }
@@ -1894,6 +1912,36 @@ class ClientStateTransformer(
                         icon = "type-change"
                     )
                 )
+            }
+
+            // Surface a single "color-change" badge when a ChangeColor floating effect
+            // is replacing this entity's colors. Driven from projected state so
+            // superseded transformations don't stack (Tam re-targeting same creature).
+            val hasChangeColor = state.floatingEffects.any {
+                entityId in it.effect.affectedEntities &&
+                    it.effect.modification is SerializableModification.ChangeColor
+            }
+            if (hasChangeColor) {
+                val baseColors = baseCardComponent?.colors?.map { it.name }?.toSet() ?: emptySet()
+                val projectedColors = projectedState.getColors(entityId)
+                if (projectedColors != baseColors) {
+                    val name = when {
+                        projectedColors.isEmpty() -> "Colorless"
+                        projectedColors.size == 5 -> "All Colors"
+                        else -> projectedColors.joinToString(" ") {
+                            it.lowercase().replaceFirstChar { c -> c.uppercase() }
+                        }
+                    }
+                    val description = "Colors are now $name"
+                    effects.add(
+                        ClientCardEffect(
+                            effectId = "color_changed",
+                            name = name,
+                            description = description,
+                            icon = "color-change"
+                        )
+                    )
+                }
             }
         }
 

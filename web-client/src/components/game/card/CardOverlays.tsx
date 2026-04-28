@@ -12,8 +12,8 @@ const PROTECTION_CLASSES: Record<string, string> = {
   GREEN: 'ability-protection-green',
 }
 
-/** MTG color to CSS color for protection icon tinting */
-const PROTECTION_COLORS: Record<string, string> = {
+/** MTG color to CSS color for protection / hexproof icon tinting */
+const COLOR_TINTS: Record<string, string> = {
   WHITE: '#f5f0e0',
   BLUE: '#4a90d9',
   BLACK: '#888888',
@@ -29,21 +29,33 @@ export function KeywordIcons({
   keywords,
   abilityFlags,
   protections,
+  hexproofFromColors,
   size,
 }: {
   keywords: readonly Keyword[]
   abilityFlags?: readonly AbilityFlag[]
   protections: readonly Color[]
+  hexproofFromColors?: readonly Color[]
   size: number
 }) {
-  // Filter out PROTECTION (rendered via protections array) and FIRST_STRIKE when DOUBLE_STRIKE is present
+  // Filter out PROTECTION (rendered via protections array) and FIRST_STRIKE when DOUBLE_STRIKE is present.
+  // Also drop generic HEXPROOF when the creature only has per-color hexproof — the colored shields below
+  // already convey the protection set, and showing an uncolored shield alongside misleads the player.
+  const hexproofFromList = hexproofFromColors ?? []
+  const hasFullHexproof = keywords.includes('HEXPROOF' as Keyword)
   const hasDoubleStrike = keywords.includes('DOUBLE_STRIKE' as Keyword)
-  const filteredKeywords = keywords.filter(k => displayableKeywords.has(k) && k !== 'PROTECTION' && !(k === 'FIRST_STRIKE' && hasDoubleStrike))
+  const filteredKeywords = keywords.filter(k =>
+    displayableKeywords.has(k)
+    && k !== 'PROTECTION'
+    && !(k === 'FIRST_STRIKE' && hasDoubleStrike)
+    && !(k === 'HEXPROOF' && !hasFullHexproof && hexproofFromList.length > 0)
+  )
   const displayableFlags = (abilityFlags ?? []).filter(f => displayableKeywords.has(f))
   const hasProtections = protections.length > 0
+  const hasHexproofFrom = hexproofFromList.length > 0
   const hasKeywords = filteredKeywords.length > 0 || displayableFlags.length > 0
 
-  if (!hasKeywords && !hasProtections) return null
+  if (!hasKeywords && !hasProtections && !hasHexproofFrom) return null
 
   return (
     <div style={styles.keywordIconsContainer}>
@@ -83,7 +95,29 @@ export function KeywordIcons({
             className={`ms ms-${PROTECTION_CLASSES[color] ?? 'ability-protection'}`}
             style={{
               fontSize: size,
-              color: PROTECTION_COLORS[color] ?? '#aaa',
+              color: COLOR_TINTS[color] ?? '#aaa',
+              display: 'block',
+              lineHeight: 1,
+            }}
+          />
+        </div>
+      ))}
+      {hexproofFromList.map((color) => (
+        <div
+          key={`hexproof-${color}`}
+          style={{
+            ...styles.keywordIconWrapper,
+            // Tinted ring + tinted icon make the per-color shield read at a glance.
+            border: `1px solid ${COLOR_TINTS[color] ?? '#aaa'}`,
+            boxShadow: `0 0 4px ${COLOR_TINTS[color] ?? '#aaa'}`,
+          }}
+          title={`Hexproof from ${color.toLowerCase()}`}
+        >
+          <i
+            className="ms ms-ability-hexproof"
+            style={{
+              fontSize: size,
+              color: COLOR_TINTS[color] ?? '#aaa',
               display: 'block',
               lineHeight: 1,
             }}
@@ -152,6 +186,18 @@ function getBadgeStyle(icon?: string): React.CSSProperties {
         backgroundColor: 'rgba(80, 110, 160, 0.9)',
         border: '1px solid rgba(160, 200, 255, 0.5)',
       }
+    case 'color-change':
+      // Dark badge with a five-color rainbow border — text stays legible while the
+      // rainbow ring instantly tells the player "colors changed / all colors".
+      return {
+        backgroundColor: 'rgba(20, 20, 30, 0.92)',
+        border: '2px solid transparent',
+        backgroundImage:
+          'linear-gradient(rgba(20, 20, 30, 0.92), rgba(20, 20, 30, 0.92)),' +
+          'linear-gradient(90deg, #f5f0e0 0%, #4a90d9 25%, #888888 50%, #d04040 75%, #40a050 100%)',
+        backgroundOrigin: 'border-box',
+        backgroundClip: 'padding-box, border-box',
+      }
     default:
       return {}
   }
@@ -181,6 +227,8 @@ function getTooltipBorderColor(icon?: string): string {
       return 'rgba(160, 160, 200, 0.5)'
     case 'type-change':
       return 'rgba(160, 200, 255, 0.5)'
+    case 'color-change':
+      return 'rgba(255, 255, 255, 0.7)'
     default:
       return 'rgba(150, 50, 200, 0.5)'
   }

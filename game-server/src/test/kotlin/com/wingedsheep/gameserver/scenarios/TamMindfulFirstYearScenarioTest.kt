@@ -155,6 +155,42 @@ class TamMindfulFirstYearScenarioTest : ScenarioTestBase() {
                     projected.hasKeyword(bearsId, "HEXPROOF_FROM_RED") shouldBe true
                     projected.hasKeyword(bearsId, "HEXPROOF_FROM_GREEN") shouldBe true
                 }
+
+                val clientBears = game.getClientState(1).cards.values.first { it.id == bearsId }
+                withClue("Client DTO should expose all five hexproof colors so the UI can render colored shields") {
+                    clientBears.hexproofFromColors.toSet() shouldBe setOf(
+                        com.wingedsheep.sdk.core.Color.WHITE,
+                        com.wingedsheep.sdk.core.Color.BLUE,
+                        com.wingedsheep.sdk.core.Color.BLACK,
+                        com.wingedsheep.sdk.core.Color.RED,
+                        com.wingedsheep.sdk.core.Color.GREEN
+                    )
+                }
+                val colorChangeBadge = clientBears.activeEffects.firstOrNull { it.icon == "color-change" }
+                withClue("Color-change badge should surface 'All Colors' so the UI can show the rainbow indicator") {
+                    colorChangeBadge?.name shouldBe "All Colors"
+                }
+            }
+        }
+
+        context("Client DTO — visualization fields") {
+
+            test("static-only green creature exposes hexproofFromColors = [GREEN] and no color-change badge") {
+                val game = scenario()
+                    .withPlayers("Player1", "Player2")
+                    .withCardOnBattlefield(1, "Tam, Mindful First-Year")
+                    .withCardOnBattlefield(1, "Grizzly Bears")
+                    .withActivePlayer(1)
+                    .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                    .build()
+
+                val bearsId = game.findPermanent("Grizzly Bears")!!
+                val clientBears = game.getClientState(1).cards.values.first { it.id == bearsId }
+
+                clientBears.hexproofFromColors.toSet() shouldBe setOf(com.wingedsheep.sdk.core.Color.GREEN)
+                withClue("No ChangeColor floating effect → no color-change badge") {
+                    clientBears.activeEffects.any { it.icon == "color-change" } shouldBe false
+                }
             }
         }
     }

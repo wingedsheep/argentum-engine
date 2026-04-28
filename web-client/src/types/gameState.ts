@@ -101,6 +101,9 @@ export interface ClientCard {
   /** Protection colors (for colored protection shield icons) */
   readonly protections?: readonly Color[]
 
+  /** Hexproof-from-color colors (for colored hexproof shield icons) */
+  readonly hexproofFromColors?: readonly Color[]
+
   /** Counters on the card */
   readonly counters: Partial<Record<CounterType, number>>
 

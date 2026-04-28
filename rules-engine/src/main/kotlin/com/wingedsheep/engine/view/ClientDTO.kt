@@ -122,6 +122,9 @@ data class ClientCard(
     /** Protection colors (for colored protection shield icons) */
     val protections: List<Color> = emptyList(),
 
+    /** Hexproof-from-color colors (for colored hexproof shield icons) */
+    val hexproofFromColors: List<Color> = emptyList(),
+
     /** Counters on the card */
     val counters: Map<CounterType, Int>,
 
