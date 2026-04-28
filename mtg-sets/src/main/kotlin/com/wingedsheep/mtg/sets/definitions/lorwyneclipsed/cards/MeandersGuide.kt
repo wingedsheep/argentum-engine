@@ -6,8 +6,10 @@ import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
+import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
 import com.wingedsheep.sdk.scripting.effects.ReflexiveTriggerEffect
+import com.wingedsheep.sdk.scripting.effects.SelectTargetEffect
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.targets.TargetObject
@@ -22,12 +24,21 @@ val MeandersGuide = card("Meanders Guide") {
 
     triggeredAbility {
         trigger = Triggers.Attacks
-        val merfolk = target(
-            "merfolk",
-            TargetObject(filter = TargetFilter.OtherCreatureYouControl.withSubtype("Merfolk").untapped())
-        )
+        // The "may tap another untapped Merfolk" is not a target — it's a resolution-time
+        // choice. Selecting the Merfolk happens via SelectTargetEffect after the player
+        // accepts the optional, so declining the may does not force them to commit to one.
         effect = ReflexiveTriggerEffect(
-            action = Effects.Tap(merfolk),
+            action = CompositeEffect(listOf(
+                SelectTargetEffect(
+                    requirement = TargetObject(
+                        filter = TargetFilter.OtherCreatureYouControl
+                            .withSubtype("Merfolk")
+                            .untapped()
+                    ),
+                    storeAs = "merfolkToTap"
+                ),
+                Effects.Tap(EffectTarget.PipelineTarget("merfolkToTap"))
+            )),
             optional = true,
             reflexiveEffect = MoveToZoneEffect(
                 target = EffectTarget.ContextTarget(0),
