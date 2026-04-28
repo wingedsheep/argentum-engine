@@ -9,8 +9,10 @@ import com.wingedsheep.engine.mechanics.layers.Sublayer
 import com.wingedsheep.engine.mechanics.layers.addFloatingEffect
 import com.wingedsheep.engine.state.ComponentContainer
 import com.wingedsheep.engine.state.GameState
+import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.ChosenCreatureTypeComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
+import com.wingedsheep.engine.state.components.identity.EmblemSourceComponent
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.Duration
 import com.wingedsheep.sdk.scripting.effects.CreatePermanentEmblemEffect
@@ -38,18 +40,32 @@ class CreatePermanentEmblemExecutor : EffectExecutor<CreatePermanentEmblemEffect
     ): EffectResult {
         val controllerId = context.controllerId
 
-        // Build the synthetic emblem source entity. It carries the controller (so "you control"
-        // filters resolve correctly) and the chosen creature type (so chosenSubtypeKey filters
-        // find a ChosenCreatureTypeComponent).
-        val emblemId = EntityId.generate()
-        var emblemContainer: ComponentContainer = ComponentContainer.EMPTY
-            .with(ControllerComponent(controllerId))
-        if (effect.groupFilter.chosenSubtypeKey != null) {
-            val chosenType = context.chosenCreatureType
+        // Resolve the chosen creature type (if the filter references one) so we can both
+        // attach it to the synthetic source and weave it into the badge description.
+        val chosenType = if (effect.groupFilter.chosenSubtypeKey != null) {
+            context.chosenCreatureType
                 ?: return EffectResult.error(
                     state,
                     "Emblem references chosenSubtypeKey but no creature type was chosen"
                 )
+        } else null
+
+        val sourceName = context.sourceId
+            ?.let { state.getEntity(it)?.get<CardComponent>()?.name }
+            ?: "Emblem"
+        val resolvedDescription = chosenType
+            ?.let { effect.emblemDescription.replace("the chosen type", it) }
+            ?: effect.emblemDescription
+
+        // Build the synthetic emblem source entity. It carries the controller (so "you control"
+        // filters resolve correctly), the chosen creature type (so chosenSubtypeKey filters
+        // find a ChosenCreatureTypeComponent), and an EmblemSourceComponent that lets the
+        // client transformer surface a badge on the controller's player effects panel.
+        val emblemId = EntityId.generate()
+        var emblemContainer: ComponentContainer = ComponentContainer.EMPTY
+            .with(ControllerComponent(controllerId))
+            .with(EmblemSourceComponent(sourceName = sourceName, description = resolvedDescription))
+        if (chosenType != null) {
             emblemContainer = emblemContainer.with(ChosenCreatureTypeComponent(chosenType))
         }
 

@@ -841,6 +841,16 @@ class ClientStateTransformer(
         val typeLine = cardComponent.typeLine
         val projectedSubtypes = projectedValues?.subtypes?.toList()
         val displaySubtypes = projectedSubtypes ?: typeLine.subtypes.map { it.value }
+        // When CHANGELING is granted (natively or via floating effect), the projected
+        // subtypes contain every creature type — listing them all in the type line bloats
+        // it to ~150 entries. Render the base subtypes instead and let the CHANGELING
+        // keyword badge convey "every creature type". The DTO `subtypes` field still
+        // carries the full projected set for any client-side filtering.
+        val typeLineSubtypes = if (rawKeywords.contains(Keyword.CHANGELING)) {
+            typeLine.subtypes.map { it.value }
+        } else {
+            displaySubtypes
+        }
         val projectedTypes = projectedValues?.types
         val displayCardTypes = if (projectedTypes != null) {
             projectedTypes.mapNotNull { try { CardType.valueOf(it) } catch (_: Exception) { null } }
@@ -852,8 +862,8 @@ class ClientStateTransformer(
             typeLineParts.add(typeLine.supertypes.joinToString(" ") { it.displayName })
         }
         typeLineParts.add(displayCardTypes.joinToString(" ") { it.displayName })
-        val typeLineString = if (displaySubtypes.isNotEmpty()) {
-            "${typeLineParts.joinToString(" ")} — ${displaySubtypes.joinToString(" ")}"
+        val typeLineString = if (typeLineSubtypes.isNotEmpty()) {
+            "${typeLineParts.joinToString(" ")} — ${typeLineSubtypes.joinToString(" ")}"
         } else {
             typeLineParts.joinToString(" ")
         }
@@ -1536,6 +1546,24 @@ class ClientStateTransformer(
                     name = "$sourceName$countSuffix",
                     description = "Whenever $triggerDesc, $effectDesc. (Until end of turn)",
                     icon = "triggered-ability"
+                )
+            )
+        }
+
+        // Check for static-ability emblems controlled by this player. These are synthetic
+        // "emblem source" entities created by CreatePermanentEmblemExecutor; they live in
+        // GameState.entities but never enter a zone.
+        for ((emblemId, emblemContainer) in state.entities) {
+            val emblem = emblemContainer.get<com.wingedsheep.engine.state.components.identity.EmblemSourceComponent>()
+                ?: continue
+            val emblemController = emblemContainer.get<ControllerComponent>()?.playerId
+            if (emblemController != playerId) continue
+            effects.add(
+                ClientPlayerEffect(
+                    effectId = "emblem_static_${emblemId.value}",
+                    name = "${emblem.sourceName} Emblem",
+                    description = emblem.description,
+                    icon = "emblem"
                 )
             )
         }
