@@ -2,12 +2,14 @@ package com.wingedsheep.gameserver.scenarios
 
 import com.wingedsheep.engine.core.ActivateAbility
 import com.wingedsheep.engine.state.components.battlefield.CountersComponent
+import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.gameserver.ScenarioTestBase
 import com.wingedsheep.gameserver.session.GameSession
 import com.wingedsheep.gameserver.session.PlayerSession
 import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.core.Phase
 import com.wingedsheep.sdk.core.Step
+import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
 import io.kotest.assertions.withClue
 import io.kotest.matchers.shouldBe
@@ -112,6 +114,52 @@ class LochMareScenarioTest : ScenarioTestBase() {
                 }
                 withClue("The offered ability should be the draw ability") {
                     mareAbilities.single().description.contains("Draw") shouldBe true
+                }
+            }
+
+            test("entering from graveyard via reanimation enters with three -1/-1 counters") {
+                val game = scenario()
+                    .withPlayers("Player", "Opponent")
+                    .withCardOnBattlefield(1, "Doomed Necromancer", summoningSickness = false)
+                    .withCardInGraveyard(1, "Loch Mare")
+                    .withLandsOnBattlefield(1, "Swamp", 1) // {B} for activation cost
+                    .withCardInLibrary(1, "Island")
+                    .withCardInLibrary(2, "Forest")
+                    .withActivePlayer(1)
+                    .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                    .build()
+
+                val necromancerId = game.findPermanent("Doomed Necromancer")!!
+                val mareInGraveyard = game.findCardsInGraveyard(1, "Loch Mare").first()
+
+                val cardDef = cardRegistry.getCard("Doomed Necromancer")!!
+                val ability = cardDef.script.activatedAbilities.first()
+
+                val result = game.execute(
+                    ActivateAbility(
+                        playerId = game.player1Id,
+                        sourceId = necromancerId,
+                        abilityId = ability.id,
+                        targets = listOf(ChosenTarget.Card(mareInGraveyard, game.player1Id, Zone.GRAVEYARD))
+                    )
+                )
+
+                withClue("Reanimation ability should activate successfully: ${result.error}") {
+                    result.error shouldBe null
+                }
+
+                game.resolveStack()
+
+                withClue("Loch Mare should be back on the battlefield after reanimation") {
+                    game.isOnBattlefield("Loch Mare") shouldBe true
+                }
+
+                val mareOnBattlefield = game.findPermanent("Loch Mare")!!
+                val counters = game.state.getEntity(mareOnBattlefield)?.get<CountersComponent>()
+                val minusOneCount = counters?.getCount(CounterType.MINUS_ONE_MINUS_ONE) ?: 0
+
+                withClue("Loch Mare should enter with three -1/-1 counters even when reanimated from graveyard, but had $minusOneCount") {
+                    minusOneCount shouldBe 3
                 }
             }
 

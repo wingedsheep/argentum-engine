@@ -4,6 +4,7 @@ import com.wingedsheep.engine.core.CardsRevealedEvent
 import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
+import com.wingedsheep.engine.handlers.effects.EntersWithCountersHelper
 import com.wingedsheep.engine.handlers.effects.LibraryPlacement
 import com.wingedsheep.engine.handlers.effects.ZoneEntryOptions
 import com.wingedsheep.engine.handlers.effects.ZoneMovementUtils
@@ -81,12 +82,28 @@ class MoveToZoneEffectExecutor(
         )
 
         var resultState = transitionResult.state
+        val extraEvents = mutableListOf<com.wingedsheep.engine.core.GameEvent>()
+
+        // Apply "enters with counters" replacement effects when a permanent enters the
+        // battlefield from a non-stack zone (e.g., reanimation from graveyard, return from
+        // exile). Spell resolution applies these in StackResolver, so this path covers
+        // everything else. Skip face-down entries: morph creatures enter as 2/2 nameless
+        // creatures with no replacement effects from their face-up identity.
+        val actualDestZone = transitionResult.actualDestination
+        if (actualDestZone == Zone.BATTLEFIELD && !effect.faceDown) {
+            val (counterState, counterEvents) = EntersWithCountersHelper.applyEntersWithCounters(
+                resultState, targetId, controllerId, cardRegistry
+            )
+            resultState = counterState
+            extraEvents.addAll(counterEvents)
+        }
 
         // Link exiled card to source permanent via LinkedExileComponent
         if (effect.linkToSource && effect.destination == Zone.EXILE) {
-            val sourceId = context.sourceId ?: return EffectResult.success(resultState, transitionResult.events)
+            val sourceId = context.sourceId
+                ?: return EffectResult.success(resultState, transitionResult.events + extraEvents)
             val sourceContainer = resultState.getEntity(sourceId)
-                ?: return EffectResult.success(resultState, transitionResult.events)
+                ?: return EffectResult.success(resultState, transitionResult.events + extraEvents)
             val existingLinked = sourceContainer.get<LinkedExileComponent>()
             val allExiled = (existingLinked?.exiledIds ?: emptyList()) + listOf(targetId)
             resultState = resultState.updateEntity(sourceId) { c ->
@@ -109,7 +126,7 @@ class MoveToZoneEffectExecutor(
             state = resultState
         )
 
-        return EffectResult.success(resultState, transitionResult.events + revealEvents)
+        return EffectResult.success(resultState, transitionResult.events + extraEvents + revealEvents)
     }
 
     private fun autoRevealForReturn(
