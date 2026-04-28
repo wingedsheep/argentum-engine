@@ -30,6 +30,7 @@ import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.PredicateContext
 import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.handlers.actions.ActionHandler
+import com.wingedsheep.engine.handlers.effects.DamageUtils
 import com.wingedsheep.engine.mechanics.mana.AlternativePaymentHandler
 import com.wingedsheep.engine.mechanics.mana.CostCalculator
 import com.wingedsheep.engine.mechanics.mana.ManaPool
@@ -1387,6 +1388,11 @@ class CastSpellHandler(
                                 currentState = currentState.updateEntity(targetId) { c ->
                                     c.with(counters.withAdded(CounterType.MINUS_ONE_MINUS_ONE, additionalCost.blightAmount))
                                 }
+                                currentState = DamageUtils.markCounterPlacedOnCreature(
+                                    currentState,
+                                    action.playerId,
+                                    targetId
+                                )
                                 val targetName = targetContainer.get<CardComponent>()?.name ?: "Creature"
                                 events.add(CountersAddedEvent(
                                     entityId = targetId,
