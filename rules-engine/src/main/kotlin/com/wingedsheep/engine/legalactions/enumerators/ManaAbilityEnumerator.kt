@@ -5,6 +5,7 @@ import com.wingedsheep.engine.legalactions.ActionEnumerator
 import com.wingedsheep.engine.legalactions.AdditionalCostData
 import com.wingedsheep.engine.legalactions.EnumerationContext
 import com.wingedsheep.engine.legalactions.LegalAction
+import com.wingedsheep.engine.mechanics.mana.IntrinsicManaAbilities
 import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.battlefield.SummoningSicknessComponent
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
@@ -64,13 +65,23 @@ class ManaAbilityEnumerator : ActionEnumerator {
                 .getStaticGrantedActivatedAbilities(entityId, state)
                 .filter { it.isManaAbility }
 
-            // If no card definition (e.g., tokens) and no granted/static mana abilities, skip
-            if (cardDef == null && grantedManaAbilities.isEmpty() && staticManaAbilities.isEmpty()) continue
+            // Intrinsic mana abilities from projected basic-land subtypes (CR 305.7).
+            // When present, they replace the card definition's own mana abilities so
+            // type-changing effects (Sea's Claim, Spreading Seas) and shock lands
+            // — whose printed mana ability is only ever the basic-land-derived one —
+            // produce the correct colors via the projected type line.
+            val intrinsicManaAbilities = IntrinsicManaAbilities.forEntity(state, projected, entityId)
+
+            // If no card definition (e.g., tokens) and no granted/static/intrinsic mana abilities, skip
+            if (cardDef == null && grantedManaAbilities.isEmpty() && staticManaAbilities.isEmpty() && intrinsicManaAbilities.isEmpty()) continue
 
             // If entity lost all abilities, only granted/static abilities remain (own abilities suppressed)
             val classLevel = container.get<com.wingedsheep.engine.state.components.battlefield.ClassLevelComponent>()?.currentLevel
-            val ownManaAbilities = if (cardDef == null || entityLostAllAbilities) emptyList()
-            else cardDef.script.effectiveActivatedAbilities(classLevel).filter { it.isManaAbility }
+            val ownManaAbilities = when {
+                intrinsicManaAbilities.isNotEmpty() -> intrinsicManaAbilities
+                cardDef == null || entityLostAllAbilities -> emptyList()
+                else -> cardDef.script.effectiveActivatedAbilities(classLevel).filter { it.isManaAbility }
+            }
             val manaAbilities = ownManaAbilities + grantedManaAbilities + staticManaAbilities
 
             // Apply text-changing effects to mana ability costs

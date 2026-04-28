@@ -18,6 +18,7 @@ import com.wingedsheep.engine.core.EngineServices
 import com.wingedsheep.engine.handlers.actions.ActionHandler
 import com.wingedsheep.engine.handlers.effects.EffectExecutorRegistry
 import com.wingedsheep.engine.mechanics.mana.AlternativePaymentHandler
+import com.wingedsheep.engine.mechanics.mana.IntrinsicManaAbilities
 import com.wingedsheep.engine.mechanics.mana.ManaPool
 import com.wingedsheep.engine.mechanics.mana.ManaSolver
 import com.wingedsheep.engine.mechanics.stack.StackResolver
@@ -114,6 +115,7 @@ class ActivateAbilityHandler(
                 .find { it.id == action.abilityId }
             ?: getStaticGrantedActivatedAbilities(action.sourceId, state)
                 .find { it.id == action.abilityId }
+            ?: resolveIntrinsicManaAbility(state, action.sourceId, action.abilityId)
             ?: return "Ability not found on this card"
 
         // Check that the card is in the correct zone for this ability
@@ -317,6 +319,7 @@ class ActivateAbilityHandler(
                 .find { it.id == action.abilityId }
             ?: getStaticGrantedActivatedAbilities(action.sourceId, state)
                 .find { it.id == action.abilityId }
+            ?: resolveIntrinsicManaAbility(state, action.sourceId, action.abilityId)
             ?: return ExecutionResult.error(state, "Ability not found")
 
         // Apply text-changing effects to cost
@@ -1310,6 +1313,31 @@ class ActivateAbilityHandler(
             }
         }
         return 1
+    }
+
+    /**
+     * Resolve an intrinsic mana ability granted by a basic-land subtype (CR 305.7).
+     * Returns the synthesized ability only if the entity currently projects the
+     * matching basic-land subtype, so an `intrinsic_mana_R` request on a land that
+     * isn't a Mountain in the projected state is rejected.
+     */
+    private fun resolveIntrinsicManaAbility(
+        state: GameState,
+        sourceId: EntityId,
+        abilityId: AbilityId,
+    ): ActivatedAbility? {
+        val ability = IntrinsicManaAbilities.lookup(abilityId) ?: return null
+        val color = (ability.effect as? AddManaEffect)?.color ?: return null
+        val expectedSubtype = when (color) {
+            Color.WHITE -> "Plains"
+            Color.BLUE -> "Island"
+            Color.BLACK -> "Swamp"
+            Color.RED -> "Mountain"
+            Color.GREEN -> "Forest"
+        }
+        val subtypes = state.projectedState.getSubtypes(sourceId)
+        if (expectedSubtype !in subtypes) return null
+        return ability
     }
 
     /**

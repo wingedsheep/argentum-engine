@@ -1,11 +1,15 @@
 package com.wingedsheep.gameserver.scenarios
 
 import com.wingedsheep.gameserver.ScenarioTestBase
+import com.wingedsheep.engine.core.ActivateAbility
 import com.wingedsheep.engine.core.PlayLand
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
+import com.wingedsheep.engine.state.components.player.ManaPoolComponent
+import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.Phase
 import com.wingedsheep.sdk.core.Step
+import com.wingedsheep.sdk.scripting.AbilityId
 import io.kotest.assertions.withClue
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
@@ -98,6 +102,68 @@ class SteamVentsScenarioTest : ScenarioTestBase() {
                 }
                 withClue("Steam Vents should have Mountain subtype") {
                     cardComponent.typeLine.subtypes.any { it.value == "Mountain" } shouldBe true
+                }
+            }
+
+            test("can be tapped manually for {U}") {
+                val game = scenario()
+                    .withPlayers("Player1", "Opponent")
+                    .withCardOnBattlefield(1, "Steam Vents", tapped = false)
+                    .withActivePlayer(1)
+                    .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                    .build()
+
+                val landId = game.findPermanent("Steam Vents")!!
+                val result = game.execute(
+                    ActivateAbility(game.player1Id, landId, AbilityId.intrinsicMana(Color.BLUE.symbol))
+                )
+                withClue("Activating Steam Vents for {U} should succeed: ${result.error}") {
+                    result.error shouldBe null
+                }
+
+                val pool = game.state.getEntity(game.player1Id)?.get<ManaPoolComponent>() ?: ManaPoolComponent()
+                withClue("One blue mana should have been added") { pool.blue shouldBe 1 }
+                withClue("No red mana should have been added") { pool.red shouldBe 0 }
+                withClue("Steam Vents should be tapped after activation") {
+                    (game.state.getEntity(landId)?.get<TappedComponent>() != null) shouldBe true
+                }
+            }
+
+            test("can be tapped manually for {R}") {
+                val game = scenario()
+                    .withPlayers("Player1", "Opponent")
+                    .withCardOnBattlefield(1, "Steam Vents", tapped = false)
+                    .withActivePlayer(1)
+                    .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                    .build()
+
+                val landId = game.findPermanent("Steam Vents")!!
+                val result = game.execute(
+                    ActivateAbility(game.player1Id, landId, AbilityId.intrinsicMana(Color.RED.symbol))
+                )
+                withClue("Activating Steam Vents for {R} should succeed: ${result.error}") {
+                    result.error shouldBe null
+                }
+
+                val pool = game.state.getEntity(game.player1Id)?.get<ManaPoolComponent>() ?: ManaPoolComponent()
+                withClue("One red mana should have been added") { pool.red shouldBe 1 }
+                withClue("No blue mana should have been added") { pool.blue shouldBe 0 }
+            }
+
+            test("rejects intrinsic colors not granted by its subtypes") {
+                val game = scenario()
+                    .withPlayers("Player1", "Opponent")
+                    .withCardOnBattlefield(1, "Steam Vents", tapped = false)
+                    .withActivePlayer(1)
+                    .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                    .build()
+
+                val landId = game.findPermanent("Steam Vents")!!
+                val result = game.execute(
+                    ActivateAbility(game.player1Id, landId, AbilityId.intrinsicMana(Color.WHITE.symbol))
+                )
+                withClue("Steam Vents has no Plains subtype, so {W} should be rejected") {
+                    result.error shouldNotBe null
                 }
             }
 
