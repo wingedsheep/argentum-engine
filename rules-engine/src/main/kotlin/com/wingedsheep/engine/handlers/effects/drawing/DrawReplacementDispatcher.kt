@@ -17,10 +17,13 @@ import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.battlefield.LinkedExileComponent
 import com.wingedsheep.engine.state.components.battlefield.ReplacementEffectSourceComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
+import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.AbilityCost
+import com.wingedsheep.sdk.scripting.PreventDraw
 import com.wingedsheep.sdk.scripting.ReplaceDrawWithEffect
 import com.wingedsheep.sdk.scripting.effects.Effect
+import com.wingedsheep.sdk.scripting.references.Player
 import java.util.UUID
 
 /**
@@ -31,9 +34,10 @@ import java.util.UUID
  *     ([com.wingedsheep.engine.mechanics.layers.SerializableModification.ReplaceDrawWithEffect])
  *     — Words of Worship / Wind / War / Waste / Wilding and friends, dispatched
  *     via [DrawReplacementShieldConsumer].
- *  2. Static draw replacement effect — Parallel Thoughts-style optional
+ *  2. Static draw prevention effects — Mornsong Aria / Narset-style effects.
+ *  3. Static draw replacement effect — Parallel Thoughts-style optional
  *     yes/no prompt that replaces the draw with an alternative effect.
- *  3. Prompt-on-draw activated ability — `activatedAbilities` with
+ *  4. Prompt-on-draw activated ability — `activatedAbilities` with
  *     `promptOnDraw = true`, e.g. Words of Wind cycling.
  *
  * The dispatcher is the single place both [DrawCardsExecutor] (spell/ability
@@ -117,7 +121,12 @@ class DrawReplacementDispatcher(
             }
         }
 
-        // 2. Static draw replacement (Parallel Thoughts).
+        // 2. Mandatory static draw prevention.
+        if (isDrawPrevented(state, playerId)) {
+            return DispatchResult.Replaced(state, emptyList())
+        }
+
+        // 3. Static draw replacement (Parallel Thoughts).
         if (!skipStaticReplacement) {
             val staticResult = checkStaticDrawReplacement(
                 state, playerId, drawsLeftIncludingThis, drawnCardsSoFar, isDrawStep
@@ -127,7 +136,7 @@ class DrawReplacementDispatcher(
             }
         }
 
-        // 3. Prompt-on-draw activated ability (Words of Wind).
+        // 4. Prompt-on-draw activated ability (Words of Wind).
         if (!skipPromptOnDraw) {
             val promptResult = checkPromptOnDraw(
                 state, playerId, drawsLeftIncludingThis, drawnCardsSoFar, isDrawStep, declinedSourceIds
@@ -138,6 +147,29 @@ class DrawReplacementDispatcher(
         }
 
         return DispatchResult.None
+    }
+
+    private fun isDrawPrevented(state: GameState, playerId: EntityId): Boolean {
+        for (entityId in state.getBattlefield()) {
+            val container = state.getEntity(entityId) ?: continue
+            val replacementSource = container.get<ReplacementEffectSourceComponent>() ?: continue
+
+            for (effect in replacementSource.replacementEffects) {
+                if (effect !is PreventDraw) continue
+
+                val drawEvent = effect.appliesTo
+                if (drawEvent !is com.wingedsheep.sdk.scripting.GameEvent.DrawEvent) continue
+
+                val sourceControllerId = container.get<ControllerComponent>()?.playerId
+                when (drawEvent.player) {
+                    Player.Each -> return true
+                    Player.You -> if (playerId == sourceControllerId) return true
+                    Player.Opponent, Player.EachOpponent -> if (sourceControllerId != null && playerId != sourceControllerId) return true
+                    else -> {}
+                }
+            }
+        }
+        return false
     }
 
     /**
