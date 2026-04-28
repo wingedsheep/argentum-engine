@@ -11,6 +11,7 @@ import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.sdk.model.EntityId
+import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.scripting.effects.Chooser
 import com.wingedsheep.sdk.scripting.GameObjectFilter
@@ -67,13 +68,16 @@ class SelectFromCollectionExecutor : EffectExecutor<SelectFromCollectionEffect> 
             cards
         }
 
-        // Additionally filter by chosen creature type if requested
+        // Additionally filter by chosen creature type if requested.
+        // Cards with the Changeling keyword (Rule 702.73) have every creature type and
+        // therefore match regardless of the chosen type — even outside the battlefield.
         if (effect.matchChosenCreatureType) {
             val chosenType = context.chosenCreatureType
             if (chosenType != null) {
                 eligibleCards = eligibleCards.filter { cardId ->
-                    val typeLine = state.getEntity(cardId)?.get<CardComponent>()?.typeLine
-                    typeLine != null && typeLine.hasSubtype(Subtype(chosenType))
+                    val cardComponent = state.getEntity(cardId)?.get<CardComponent>() ?: return@filter false
+                    Keyword.CHANGELING in cardComponent.baseKeywords ||
+                        cardComponent.typeLine.hasSubtype(Subtype(chosenType))
                 }
             }
         }
