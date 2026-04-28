@@ -46,7 +46,9 @@ fun TournamentLobby.toPersistent(): PersistentTournamentLobby {
                 currentPackNames = playerState.currentPack?.map { it.name },
                 packQueueNames = playerState.packQueue.map { pack -> pack.map { it.name } },
                 submittedDeck = playerState.submittedDeck,
-                currentSpectatingGameId = playerState.identity.currentSpectatingGameId
+                currentSpectatingGameId = playerState.identity.currentSpectatingGameId,
+                isAi = playerState.identity.isAi,
+                aiModelOverride = playerState.identity.aiModelOverride
             )
         },
         currentPackNumber = currentPackNumber,
@@ -103,7 +105,9 @@ fun restoreTournamentLobby(
         val identity = PlayerIdentity(
             token = persistentPlayer.token,
             playerId = playerId,
-            playerName = persistentPlayer.playerName
+            playerName = persistentPlayer.playerName,
+            isAi = persistentPlayer.isAi,
+            aiModelOverride = persistentPlayer.aiModelOverride
         ).also {
             it.currentLobbyId = persistent.lobbyId
             it.currentSpectatingGameId = persistentPlayer.currentSpectatingGameId

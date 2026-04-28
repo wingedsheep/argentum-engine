@@ -83,8 +83,15 @@ class AiGameManager(
         return gameProperties.ai.effectiveApiKey.isNotBlank()
     }
 
-    /** Per-player model overrides set at identity-creation time, looked up when wiring games. */
-    private val aiModelOverrides = ConcurrentHashMap<EntityId, String>()
+    /**
+     * Look up the LLM model override for an AI player by querying its identity in the SessionRegistry.
+     * The override is stored on `PlayerIdentity.aiModelOverride` so it survives server restart.
+     */
+    private fun lookupModelOverride(aiPlayerId: EntityId): String? {
+        return sessionRegistry.getAllIdentities()
+            .firstOrNull { it.playerId == aiPlayerId }
+            ?.aiModelOverride
+    }
 
     /**
      * Create the appropriate AI controller based on configuration.
@@ -187,7 +194,7 @@ class AiGameManager(
         controller.setDeckList(aiDeck)
 
         // Store persistence info
-        gameSession.setPlayerPersistenceInfo(aiPlayerId, aiName, identity.token)
+        gameSession.setPlayerPersistenceInfo(aiPlayerId, aiName, identity.token, isAi = true)
         identity.currentGameSessionId = gameSession.sessionId
 
         activeSessions[gameSession.sessionId] = aiSession
@@ -211,10 +218,6 @@ class AiGameManager(
         val aiPlayerId = EntityId("ai-${UUID.randomUUID().toString().take(8)}")
         val aiProperties = gameProperties.ai
 
-        if (modelOverride != null) {
-            aiModelOverrides[aiPlayerId] = modelOverride
-        }
-
         // Use a placeholder controller — will be replaced when match starts
         val controller = createController(aiPlayerId, modelOverride = modelOverride)
 
@@ -236,7 +239,8 @@ class AiGameManager(
             token = "ai-token-${UUID.randomUUID().toString().take(8)}",
             playerId = aiPlayerId,
             playerName = aiName,
-            isAi = true
+            isAi = true,
+            aiModelOverride = modelOverride
         )
         identity.webSocketSession = aiSession
 
@@ -253,6 +257,53 @@ class AiGameManager(
         val modelInfo = if (modelOverride != null) "model=$modelOverride" else "model=${aiProperties.model}"
         logger.info("Created AI identity: {} ({}) [mode={}, {}]", identity.playerName, aiPlayerId.value, aiProperties.mode, modelInfo)
         return identity
+    }
+
+    /**
+     * Re-establish in-memory AI tracking for a [PlayerIdentity] that was loaded from
+     * Redis on server startup. The persisted identity has `isAi = true` and (optionally)
+     * an `aiModelOverride`, but no live [AiWebSocketSession] (those aren't persisted).
+     *
+     * This adds the player back to [aiPlayerIds], creates a fresh placeholder
+     * [AiWebSocketSession] with no-op callbacks (real ones get wired by `wireAiForGame`
+     * when a match starts), and re-registers it in [SessionRegistry] so message routing
+     * and `identity.isConnected` work again.
+     */
+    fun rehydrateAiIdentity(identity: PlayerIdentity) {
+        require(identity.isAi) { "rehydrateAiIdentity called on non-AI identity ${identity.playerName}" }
+        if (!isEnabled) {
+            logger.warn("AI is disabled but recovered AI identity {}; AI players will not act.",
+                identity.playerName)
+            return
+        }
+
+        val aiPlayerId = identity.playerId
+        val aiProperties = gameProperties.ai
+
+        val controller = createController(aiPlayerId, modelOverride = identity.aiModelOverride)
+        val aiSession = AiWebSocketSession(
+            aiPlayerId = aiPlayerId,
+            controller = controller,
+            thinkingDelayMs = aiProperties.thinkingDelayMs,
+            // No-op callbacks — replaced when a match (or draft) wires this AI.
+            onActionReady = { _, _ -> },
+            onMulliganKeep = { _ -> },
+            onMulliganTake = { _ -> },
+            onBottomCards = { _, _ -> }
+        )
+
+        identity.webSocketSession = aiSession
+        val playerSession = PlayerSession(
+            webSocketSession = aiSession,
+            playerId = aiPlayerId,
+            playerName = identity.playerName
+        )
+        sessionRegistry.register(identity, aiSession, playerSession)
+
+        aiPlayerIds.add(aiPlayerId)
+
+        logger.info("Rehydrated AI identity: {} ({}) [model={}]",
+            identity.playerName, aiPlayerId.value, identity.aiModelOverride ?: aiProperties.model)
     }
 
     /**
@@ -275,7 +326,7 @@ class AiGameManager(
         }
 
         val aiProperties = gameProperties.ai
-        val modelOverride = aiModelOverrides[aiPlayerId]
+        val modelOverride = lookupModelOverride(aiPlayerId)
         val controller = createController(aiPlayerId, gameSession, modelOverride)
 
         // Give the AI knowledge of its deck composition

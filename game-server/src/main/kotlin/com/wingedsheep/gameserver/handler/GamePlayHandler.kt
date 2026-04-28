@@ -21,6 +21,8 @@ import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.components.identity.LifeTotalComponent
 import com.wingedsheep.sdk.model.EntityId
 import org.slf4j.LoggerFactory
+import org.springframework.boot.context.event.ApplicationReadyEvent
+import org.springframework.context.event.EventListener
 import org.springframework.stereotype.Component
 import org.springframework.web.socket.WebSocketSession
 import java.time.Instant
@@ -835,6 +837,104 @@ class GamePlayHandler(
         if (update != null) {
             sender.send(session, update)
         }
+    }
+
+    // =========================================================================
+    // AI recovery (rewire AI into GameSessions restored from Redis on startup)
+    // =========================================================================
+
+    /**
+     * Re-attach AI players to a [GameSession] that was restored from Redis.
+     *
+     * The restored session has its [GameState] but no live [PlayerSession]s and
+     * no live [AiWebSocketSession]. For each AI player recorded in the session's
+     * persistence info, this creates a fresh wired-up [AiWebSocketSession] (via
+     * [AiGameManager.wireAiForGame]) and associates a [PlayerSession] back into
+     * the session so that messages addressed to the AI flow through and so that
+     * the engine's broadcast logic finds the AI in `players`.
+     *
+     * If no human player has reconnected yet, the AI sits idle until they do —
+     * because `broadcastStateUpdate` only sends state to players present in the
+     * session. Once the human reconnects via [associatePlayer] / `handleReconnect`,
+     * the next broadcast lands at the AI's virtual session and play resumes.
+     */
+    fun rewireAiForRecoveredGame(gameSession: GameSession) {
+        if (!aiGameManager.isEnabled) return
+        val info = gameSession.getPlayerPersistenceInfo()
+        val aiPlayers = info.filter { (_, pi) -> pi.isAi }
+        if (aiPlayers.isEmpty()) return
+
+        for ((aiPlayerId, pi) in aiPlayers) {
+            val deckList = gameSession.getDeckList(aiPlayerId)
+                ?.groupingBy { it }?.eachCount()
+            aiGameManager.wireAiForGame(
+                gameSession = gameSession,
+                aiPlayerId = aiPlayerId,
+                deckList = deckList,
+                onActionReady = { id, action -> handleAiAction(gameSession, id, action) },
+                onMulliganKeep = { id -> handleAiMulliganKeep(gameSession, id) },
+                onMulliganTake = { id -> handleAiMulliganTake(gameSession, id) },
+                onBottomCards = { id, cardIds -> handleAiBottomCards(gameSession, id, cardIds) }
+            )
+
+            val aiIdentity = sessionRegistry.getAllIdentities().firstOrNull { it.playerId == aiPlayerId }
+            val newWs = aiIdentity?.webSocketSession
+            if (newWs != null) {
+                gameSession.associatePlayer(PlayerSession(
+                    webSocketSession = newWs,
+                    playerId = aiPlayerId,
+                    playerName = pi.playerName,
+                    currentGameSessionId = gameSession.sessionId
+                ))
+
+                // Nudge the AI with the message it would have received before the crash,
+                // so it doesn't sit idle waiting for its next prompt.
+                if (gameSession.isStarted) {
+                    when {
+                        gameSession.isAwaitingBottomCards(aiPlayerId) -> {
+                            gameSession.getChooseBottomCardsMessage(aiPlayerId)?.let {
+                                sender.send(newWs, it)
+                            }
+                        }
+                        gameSession.isMulliganPhase && !gameSession.hasMulliganComplete(aiPlayerId) -> {
+                            sender.send(newWs, gameSession.getMulliganDecision(aiPlayerId))
+                        }
+                    }
+                }
+            }
+            logger.info("Re-attached AI {} to recovered game {}", aiPlayerId.value, gameSession.sessionId)
+        }
+
+        // After wiring all AI players, if the game is past mulligan, broadcast current
+        // state so an AI with priority can act without waiting for a human to reconnect.
+        if (gameSession.isStarted && !gameSession.isMulliganPhase) {
+            broadcastStateUpdate(gameSession, emptyList())
+        }
+    }
+
+    /**
+     * On startup, after [SessionRecoveryService] has rehydrated AI identities and
+     * loaded all GameSessions from Redis, walk every restored game and re-wire any
+     * AI players. Without this, an AI mid-match before the crash would never act
+     * again because its virtual WebSocket and game callbacks weren't persisted.
+     */
+    @EventListener(ApplicationReadyEvent::class)
+    fun resumeAiGamesOnStartup() {
+        val games = gameRepository.findAll()
+        if (games.isEmpty()) return
+
+        var rewired = 0
+        for (game in games) {
+            try {
+                val before = game.getPlayerPersistenceInfo().count { (_, pi) -> pi.isAi }
+                if (before == 0) continue
+                rewireAiForRecoveredGame(game)
+                rewired++
+            } catch (e: Exception) {
+                logger.error("Failed to re-wire AI for recovered game ${game.sessionId}", e)
+            }
+        }
+        if (rewired > 0) logger.info("Re-wired AI for {} recovered game session(s)", rewired)
     }
 
     // =========================================================================

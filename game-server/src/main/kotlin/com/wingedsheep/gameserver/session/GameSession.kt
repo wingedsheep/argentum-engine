@@ -84,7 +84,12 @@ class GameSession(
     /** Player info for persistence (playerId -> (playerName, token)) */
     private val playerPersistenceInfo = mutableMapOf<EntityId, PlayerPersistenceInfo>()
 
-    data class PlayerPersistenceInfo(val playerName: String, val token: String)
+    data class PlayerPersistenceInfo(
+        val playerName: String,
+        val token: String,
+        val isAi: Boolean = false,
+        val aiModelOverride: String? = null
+    )
 
     private val actionProcessor = ActionProcessor(services)
     private val gameInitializer = GameInitializer(cardRegistry)
@@ -1095,8 +1100,14 @@ class GameSession(
      * Store a player's info for persistence.
      * Should be called when a player joins the game.
      */
-    fun setPlayerPersistenceInfo(playerId: EntityId, playerName: String, token: String) {
-        playerPersistenceInfo[playerId] = PlayerPersistenceInfo(playerName, token)
+    fun setPlayerPersistenceInfo(
+        playerId: EntityId,
+        playerName: String,
+        token: String,
+        isAi: Boolean = false,
+        aiModelOverride: String? = null
+    ) {
+        playerPersistenceInfo[playerId] = PlayerPersistenceInfo(playerName, token, isAi, aiModelOverride)
     }
 
     /**

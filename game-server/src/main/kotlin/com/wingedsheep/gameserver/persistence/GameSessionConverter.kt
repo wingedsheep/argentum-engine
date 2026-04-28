@@ -28,7 +28,9 @@ fun GameSession.toPersistent(
             PersistentPlayerInfo(
                 playerId = playerId.value,
                 playerName = info.playerName,
-                token = info.token
+                token = info.token,
+                isAi = info.isAi,
+                aiModelOverride = info.aiModelOverride
             )
         },
         lobbyId = lobbyId
@@ -74,7 +76,12 @@ fun restoreGameSession(
 
     // Restore player persistence info
     val playerInfo = persistent.playerInfos.associate { info ->
-        EntityId(info.playerId) to GameSession.PlayerPersistenceInfo(info.playerName, info.token)
+        EntityId(info.playerId) to GameSession.PlayerPersistenceInfo(
+            playerName = info.playerName,
+            token = info.token,
+            isAi = info.isAi,
+            aiModelOverride = info.aiModelOverride
+        )
     }
     session.restorePlayerPersistenceInfo(playerInfo)
 
@@ -83,7 +90,9 @@ fun restoreGameSession(
         PlayerIdentity(
             token = info.token,
             playerId = EntityId(info.playerId),
-            playerName = info.playerName
+            playerName = info.playerName,
+            isAi = info.isAi,
+            aiModelOverride = info.aiModelOverride
         ).also {
             it.currentGameSessionId = persistent.sessionId
             it.currentLobbyId = persistent.lobbyId

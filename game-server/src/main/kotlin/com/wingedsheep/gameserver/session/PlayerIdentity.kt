@@ -15,7 +15,9 @@ class PlayerIdentity(
     val token: String = UUID.randomUUID().toString(),
     val playerId: EntityId,
     val playerName: String,
-    val isAi: Boolean = false
+    val isAi: Boolean = false,
+    /** LLM model override for AI players, null otherwise. Persisted alongside the lobby. */
+    val aiModelOverride: String? = null
 ) {
     /** Current WebSocket session — swapped on reconnect */
     @Volatile

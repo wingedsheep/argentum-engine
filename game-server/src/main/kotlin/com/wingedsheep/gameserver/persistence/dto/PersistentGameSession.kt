@@ -26,5 +26,7 @@ data class PersistentGameSession(
 data class PersistentPlayerInfo(
     val playerId: String,
     val playerName: String,
-    val token: String
+    val token: String,
+    val isAi: Boolean = false,
+    val aiModelOverride: String? = null
 )

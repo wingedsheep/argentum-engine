@@ -47,7 +47,9 @@ data class PersistentLobbyPlayer(
     val currentPackNames: List<String>? = null,  // Draft only: current pack cards
     val packQueueNames: List<List<String>> = emptyList(),  // Draft only: queued packs (async passing)
     val submittedDeck: Map<String, Int>?,  // cardName -> count
-    val currentSpectatingGameId: String? = null  // Game being spectated (for bye players)
+    val currentSpectatingGameId: String? = null,  // Game being spectated (for bye players)
+    val isAi: Boolean = false,
+    val aiModelOverride: String? = null
 )
 
 /**

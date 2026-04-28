@@ -1,5 +1,6 @@
 package com.wingedsheep.gameserver.persistence
 
+import com.wingedsheep.gameserver.ai.AiGameManager
 import com.wingedsheep.gameserver.repository.RedisGameRepository
 import com.wingedsheep.gameserver.repository.RedisLobbyRepository
 import com.wingedsheep.gameserver.session.PlayerIdentity
@@ -21,7 +22,8 @@ import org.springframework.stereotype.Service
 class SessionRecoveryService(
     private val redisGameRepository: RedisGameRepository,
     private val redisLobbyRepository: RedisLobbyRepository,
-    private val sessionRegistry: SessionRegistry
+    private val sessionRegistry: SessionRegistry,
+    private val aiGameManager: AiGameManager
 ) {
     private val logger = LoggerFactory.getLogger(SessionRecoveryService::class.java)
 
@@ -58,12 +60,20 @@ class SessionRecoveryService(
         val tournaments = redisLobbyRepository.loadAllTournamentsFromRedis()
         tournamentsRecovered = tournaments.size
 
+        // Rehydrate AI identities — recreates their virtual WebSocket session and
+        // re-registers them with AiGameManager so isConnected, isAiPlayer, etc. work.
+        val aiCount = sessionRegistry.getAllIdentities().count { it.isAi }
+        sessionRegistry.getAllIdentities().filter { it.isAi }.forEach { identity ->
+            aiGameManager.rehydrateAiIdentity(identity)
+        }
+
         logger.info(
             "Session recovery complete: " +
                 "$gamesRecovered games, " +
                 "$lobbiesRecovered lobbies, " +
                 "$tournamentsRecovered tournaments, " +
-                "$playersRecovered player identities"
+                "$playersRecovered player identities, " +
+                "$aiCount AI players rehydrated"
         )
     }
 

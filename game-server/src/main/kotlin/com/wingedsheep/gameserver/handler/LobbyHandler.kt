@@ -25,6 +25,8 @@ import jakarta.annotation.PostConstruct
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.slf4j.LoggerFactory
+import org.springframework.boot.context.event.ApplicationReadyEvent
+import org.springframework.context.event.EventListener
 import org.springframework.stereotype.Component
 import org.springframework.web.socket.WebSocketSession
 
@@ -53,6 +55,62 @@ class LobbyHandler(
         boosterDraftHandler.onDraftComplete = { lobby -> launchAiDeckBuilding(lobby) }
         winstonDraftHandler.onDraftComplete = { lobby -> launchAiDeckBuilding(lobby) }
         gridDraftHandler.onDraftComplete = { lobby -> launchAiDeckBuilding(lobby) }
+    }
+
+    /**
+     * Resume in-flight AI tournament work for lobbies recovered from Redis.
+     *
+     * On server restart, [SessionRecoveryService] rebuilds player identities and
+     * [AiGameManager.rehydrateAiIdentity] re-creates each AI's virtual WebSocket session.
+     * This hook then reactivates the tournament-level flow that would otherwise be stuck:
+     *   - DECK_BUILDING with AI players that haven't submitted → resume deckbuilding
+     *   - TOURNAMENT_ACTIVE between matches → re-run auto-ready so the next match starts
+     *
+     * Runs on [ApplicationReadyEvent] so all beans (and websocket plumbing) are wired.
+     */
+    @EventListener(ApplicationReadyEvent::class)
+    fun resumeAiTournamentsOnStartup() {
+        val lobbies = lobbyRepository.findAllLobbies()
+        if (lobbies.isEmpty()) return
+
+        var resumedDeckBuilding = 0
+        var resumedAutoReady = 0
+        for (lobby in lobbies) {
+            val hasAi = lobby.players.any { (playerId, _) -> aiGameManager.isAiPlayer(playerId) }
+            if (!hasAi) continue
+
+            try {
+                when (lobby.state) {
+                    LobbyState.DECK_BUILDING -> {
+                        val anyAiNeedsDeck = lobby.players.any { (playerId, ps) ->
+                            aiGameManager.isAiPlayer(playerId) && !ps.hasSubmittedDeck && ps.cardPool.isNotEmpty()
+                        }
+                        if (anyAiNeedsDeck) {
+                            launchAiDeckBuilding(lobby)
+                            resumedDeckBuilding++
+                        } else {
+                            // All AI decks already submitted — make sure the tournament progresses.
+                            val tournament = tournamentMatchHandler.ensureTournamentCreated(lobby)
+                            tournamentMatchHandler.autoReadyAiPlayers(lobby, tournament)
+                            resumedAutoReady++
+                        }
+                    }
+                    LobbyState.TOURNAMENT_ACTIVE -> {
+                        val tournament = tournamentMatchHandler.ensureTournamentCreated(lobby)
+                        tournamentMatchHandler.autoReadyAiPlayers(lobby, tournament)
+                        resumedAutoReady++
+                    }
+                    else -> { /* nothing to resume in WAITING_FOR_PLAYERS / DRAFTING / TOURNAMENT_COMPLETE */ }
+                }
+            } catch (e: Exception) {
+                logger.error("Failed to resume AI tournament work for lobby ${lobby.lobbyId}", e)
+            }
+        }
+
+        if (resumedDeckBuilding > 0 || resumedAutoReady > 0) {
+            logger.info("Resumed AI tournament work: {} deckbuilding, {} auto-ready",
+                resumedDeckBuilding, resumedAutoReady)
+        }
     }
 
     @Volatile
