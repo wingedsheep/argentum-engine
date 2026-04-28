@@ -44,6 +44,31 @@ data class GrantProtectionFromChosenColorToGroup(
 }
 
 /**
+ * Grants each affected creature "hexproof from each of its colors" — i.e., for every color
+ * the creature currently has (after Layer 5), it also has hexproof from that color.
+ *
+ * Used by Tam, Mindful First-Year ("Each other creature you control has hexproof from each of
+ * its colors.") — the protection set varies per creature and changes if a creature's colors
+ * change. Colorless is not a color, so a colorless creature gains no hexproof.
+ *
+ * The grant is applied in Layer 6 (ABILITY) after colors are finalized in Layer 5, so the
+ * keyword set reflects the projected colors of each affected creature.
+ *
+ * @property filter The group of creatures that gain the dynamic hexproof
+ */
+@SerialName("GrantHexproofFromOwnColorsToGroup")
+@Serializable
+data class GrantHexproofFromOwnColorsToGroup(
+    val filter: GroupFilter = GroupFilter(GameObjectFilter.Companion.Creature.youControl(), excludeSelf = true)
+) : StaticAbility {
+    override val description: String = "${filter.description} have hexproof from each of their colors"
+    override fun applyTextReplacement(replacer: TextReplacer): StaticAbility {
+        val newFilter = filter.applyTextReplacement(replacer)
+        return if (newFilter !== filter) copy(filter = newFilter) else this
+    }
+}
+
+/**
  * Prevents a permanent from having counters put on it.
  * Used for Auras like Blossombind.
  */

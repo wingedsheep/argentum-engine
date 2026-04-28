@@ -85,6 +85,7 @@ import com.wingedsheep.sdk.scripting.effects.ReplaceNextDrawWithEffect
 import com.wingedsheep.sdk.scripting.effects.ChooseOptionEffect
 import com.wingedsheep.sdk.scripting.effects.ChooseColorForTargetEffect
 import com.wingedsheep.sdk.scripting.effects.BecomeChosenManaColorEffect
+import com.wingedsheep.sdk.scripting.effects.ChangeColorEffect
 import com.wingedsheep.sdk.scripting.effects.OptionType
 import com.wingedsheep.sdk.scripting.effects.SelectTargetEffect
 import com.wingedsheep.sdk.scripting.effects.SeparatePermanentsIntoPilesEffect
@@ -770,6 +771,25 @@ object Effects {
         target: EffectTarget = EffectTarget.Self,
         duration: Duration = Duration.EndOfTurn
     ): Effect = BecomeChosenManaColorEffect(target, duration)
+
+    /**
+     * Replace the colors of a single target with [colors] until [duration] expires.
+     * Pass an empty set to make the target colorless.
+     */
+    fun ChangeColor(
+        target: EffectTarget = EffectTarget.ContextTarget(0),
+        colors: Set<Color>,
+        duration: Duration = Duration.EndOfTurn
+    ): Effect = ChangeColorEffect(target, colors.map { it.name }.toSet(), duration)
+
+    /**
+     * Make a single target become all five colors until [duration] expires.
+     * Used by Tam, Mindful First-Year: "Target creature you control becomes all colors until end of turn."
+     */
+    fun BecomeAllColors(
+        target: EffectTarget = EffectTarget.ContextTarget(0),
+        duration: Duration = Duration.EndOfTurn
+    ): Effect = ChangeColorEffect(target, Color.entries.map { it.name }.toSet(), duration)
 
     /**
      * Set a creature's base power to a dynamic value.

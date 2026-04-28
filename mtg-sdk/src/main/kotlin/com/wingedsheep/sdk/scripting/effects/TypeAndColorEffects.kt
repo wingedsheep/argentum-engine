@@ -238,6 +238,36 @@ data class ChangeGroupColorEffect(
 }
 
 /**
+ * Replace the colors of a single target with the specified set until the duration expires.
+ * "Target creature you control becomes all colors until end of turn."
+ *
+ * Creates a Layer-5 floating effect on the resolved target. An empty [colors] set turns the
+ * target colorless. Use [com.wingedsheep.sdk.core.Color] entries (".name") to populate the set.
+ *
+ * @property target Which entity to recolor
+ * @property colors The colors to replace existing colors with
+ * @property duration How long the color change lasts
+ */
+@SerialName("ChangeColor")
+@Serializable
+data class ChangeColorEffect(
+    val target: EffectTarget = EffectTarget.ContextTarget(0),
+    val colors: Set<String>,
+    val duration: Duration = Duration.EndOfTurn
+) : Effect {
+    override val description: String = buildString {
+        append(target.description)
+        append(" becomes ")
+        if (colors.isEmpty()) append("colorless")
+        else if (colors.size == 5) append("all colors")
+        else append(colors.joinToString(", ") { it.lowercase() })
+        if (duration.description.isNotEmpty()) append(" ${duration.description}")
+    }
+
+    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
+}
+
+/**
  * Choose a color and store that choice on a target permanent.
  *
  * Used by permanents that make a color choice during resolution, rather than as

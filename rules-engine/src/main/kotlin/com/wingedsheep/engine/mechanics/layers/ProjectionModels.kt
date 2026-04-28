@@ -458,6 +458,17 @@ sealed interface Modification {
         override val layer get() = Layer.ABILITY
     }
 
+    /**
+     * Grants "hexproof from each of its colors" to each affected entity. Read at apply-time:
+     * for every color the entity currently has (post-Layer 5), adds the keyword
+     * `HEXPROOF_FROM_<COLOR>` to its keyword set. A colorless entity gains nothing.
+     * Used for Tam, Mindful First-Year.
+     */
+    @Serializable
+    data object GrantHexproofFromOwnColors : Modification {
+        override val layer get() = Layer.ABILITY
+    }
+
     @Serializable
     data object SetCantAttack : Modification {
         override val layer get() = Layer.ABILITY

@@ -133,6 +133,11 @@ internal class EffectApplicator(
                         values.keywords.add("PROTECTION_FROM_${chosenColor.name}")
                     }
                 }
+                is Modification.GrantHexproofFromOwnColors -> {
+                    for (colorName in values.colors) {
+                        values.keywords.add("HEXPROOF_FROM_$colorName")
+                    }
+                }
                 is Modification.SetCantAttack -> {
                     values.cantAttack = true
                 }

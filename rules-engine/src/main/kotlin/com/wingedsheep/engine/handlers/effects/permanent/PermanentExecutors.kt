@@ -46,6 +46,7 @@ import com.wingedsheep.engine.handlers.effects.permanent.types.BecomeCreatureTyp
 import com.wingedsheep.engine.handlers.effects.permanent.types.ChangeCreatureTypeTextExecutor
 import com.wingedsheep.engine.handlers.effects.permanent.types.ChooseColorForTargetExecutor
 import com.wingedsheep.engine.handlers.effects.permanent.types.LoseAllCreatureTypesExecutor
+import com.wingedsheep.engine.handlers.effects.permanent.types.ChangeColorExecutor
 import com.wingedsheep.engine.handlers.effects.permanent.types.ChangeGroupColorExecutor
 import com.wingedsheep.engine.handlers.effects.permanent.types.EachPermanentBecomesCopyOfTargetExecutor
 import com.wingedsheep.engine.handlers.effects.permanent.types.SetCreatureSubtypesExecutor
@@ -101,6 +102,7 @@ class PermanentExecutors(
         BecomeCreatureTypeExecutor(),
         ChangeCreatureTypeTextExecutor(decisionHandler),
         ChooseColorForTargetExecutor(decisionHandler),
+        ChangeColorExecutor(),
         ChangeGroupColorExecutor(),
         EachPermanentBecomesCopyOfTargetExecutor(),
         LoseAllCreatureTypesExecutor(),

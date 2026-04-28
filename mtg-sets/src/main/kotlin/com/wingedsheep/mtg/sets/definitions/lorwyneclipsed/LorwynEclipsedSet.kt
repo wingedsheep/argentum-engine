@@ -188,6 +188,7 @@ object LorwynEclipsedSet {
         SurlyFarrier,
         SwatAway,
         SyggsCommand,
+        TamMindfulFirstYear,
         TanufelRimespeaker,
         TasterOfWares,
         TempleGarden,

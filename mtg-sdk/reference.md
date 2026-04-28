@@ -93,6 +93,8 @@ constructors.
 - `Effects.AddSubtype(subtype, target, duration = EndOfTurn)` — add a subtype to any permanent (creature, land, etc.) in addition to its other types; supports `fromChosenValueKey` for pipeline composition with `ChooseOptionEffect(BASIC_LAND_TYPE)`
 - `Effects.ChooseColorForTarget(target = Self, prompt = "Choose a color")` — choose a color during resolution and store it on a target permanent for chosen-color static abilities
 - `Effects.BecomeChosenManaColor(target = Self, duration = EndOfTurn)` — pair inside a mana ability `Composite` with `Effects.AddAnyColorMana(1)`; the target becomes the same color the controller picked when activating, for `duration` (uses `EffectContext.manaColorChoice`)
+- `Effects.ChangeColor(target = ContextTarget(0), colors: Set<Color>, duration = EndOfTurn)` — replace the colors of a single target with `colors` for `duration`; pass `emptySet()` for colorless
+- `Effects.BecomeAllColors(target = ContextTarget(0), duration = EndOfTurn)` — convenience wrapper that sets the target to all five colors (Tam, Mindful First-Year)
 
 ### Mass Effects (group)
 
@@ -303,6 +305,7 @@ constructors.
 | `SetCreatureSubtypesEffect`                 | `subtypes, target, duration`                                                | Set single target subtypes               |
 | `SetGroupCreatureSubtypesEffect`            | `subtypes, filter, duration`                                                | Set group subtypes                       |
 | `ChangeGroupColorEffect`                    | `colors, filter, duration`                                                  | Change group color                       |
+| `ChangeColorEffect`                         | `target, colors, duration`                                                  | Change a single target's colors          |
 | `ChooseColorForTargetEffect`                | `target, prompt`                                                            | Choose and store color on a permanent    |
 | `BecomeChosenManaColorEffect`               | `target, duration`                                                          | Target becomes the mana-ability color    |
 | `ChooseCreatureTypeModifyStatsEffect`       | `power: DynamicAmount, toughness: DynamicAmount, duration, grantKeyword?`   | Choose type, modify stats (+ keyword)    |
@@ -1038,6 +1041,7 @@ Set via `staticAbility { ability = ... }`:
 - `GrantDynamicStatsEffect(target, powerBonus: DynamicAmount, toughnessBonus: DynamicAmount)` — dynamic P/T (use `EntityProperty(Source, CounterCount(...))` for counter-based, `CreaturesSharingTypeWithEntity(AffectedEntity)` for shared-type)
 - `GrantProtection(color, target)` — grant protection from color
 - `GrantProtectionFromChosenColorToGroup(filter: GroupFilter)` — grant protection from chosen color (via `EntersWithChoice(ChoiceType.COLOR)`) to a group
+- `GrantHexproofFromOwnColorsToGroup(filter: GroupFilter)` — for each affected creature, grant `HEXPROOF_FROM_<color>` for every color the creature itself has after Layer 5; colorless creatures gain nothing (Tam, Mindful First-Year)
 
 ### Land Animation
 
