@@ -217,6 +217,17 @@ class PreventDamageExecutor(
                 modification = SerializableModification.PreventNextDamage(amount)
             }
 
+            // Prevent all damage TO target.
+            effect.direction == PreventionDirection.ToTarget &&
+            effect.scope == PreventionScope.AllDamage &&
+            effect.sourceFilter is PreventionSourceFilter.AnySource -> {
+                val targetId = context.resolveTarget(effect.target)
+                    ?: return EffectResult.error(state, "Could not resolve target for PreventDamageEffect")
+                state.getEntity(targetId) ?: return EffectResult.success(state)
+                affectedEntities = setOf(targetId)
+                modification = SerializableModification.PreventAllDamageTo
+            }
+
             else -> {
                 return EffectResult.error(state, "Unsupported PreventDamageEffect configuration")
             }

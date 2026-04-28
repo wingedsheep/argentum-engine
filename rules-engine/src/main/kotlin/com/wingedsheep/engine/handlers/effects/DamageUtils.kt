@@ -376,6 +376,13 @@ object DamageUtils {
         val updatedEffects = state.floatingEffects.toMutableList()
         val toRemove = mutableListOf<Int>()
 
+        if (updatedEffects.any {
+                it.effect.modification is SerializableModification.PreventAllDamageTo &&
+                    targetId in it.effect.affectedEntities
+            }) {
+            return state to 0
+        }
+
         for (i in updatedEffects.indices) {
             if (remainingDamage <= 0) break
             val effect = updatedEffects[i]

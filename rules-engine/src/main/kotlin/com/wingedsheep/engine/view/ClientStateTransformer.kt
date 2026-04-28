@@ -1310,10 +1310,14 @@ class ClientStateTransformer(
 
         // Check floating effects for damage prevention shields on this player
         var preventDamageTotal = 0
+        var preventsAllDamage = false
         val preventedCreatureTypes = mutableSetOf<String>()
         for (floatingEffect in state.floatingEffects) {
             if (playerId !in floatingEffect.effect.affectedEntities) continue
             when (val modification = floatingEffect.effect.modification) {
+                is SerializableModification.PreventAllDamageTo -> {
+                    preventsAllDamage = true
+                }
                 is SerializableModification.PreventNextDamage -> {
                     preventDamageTotal += modification.remainingAmount
                 }
@@ -1322,6 +1326,16 @@ class ClientStateTransformer(
                 }
                 else -> {}
             }
+        }
+        if (preventsAllDamage) {
+            effects.add(
+                ClientPlayerEffect(
+                    effectId = "prevent_all_damage",
+                    name = "Prevent All Damage",
+                    description = "All damage that would be dealt to you is prevented",
+                    icon = "prevent-damage"
+                )
+            )
         }
         if (preventDamageTotal > 0) {
             effects.add(

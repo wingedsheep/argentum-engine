@@ -206,6 +206,12 @@ sealed interface SerializableModification {
     ) : SerializableModification
 
     /**
+     * Damage prevention: prevent all damage that would be dealt to the affected entities.
+     */
+    @Serializable
+    data object PreventAllDamageTo : SerializableModification
+
+    /**
      * Regeneration shield: the next time the target permanent would be destroyed this turn,
      * instead tap it, remove all damage, and remove it from combat.
      * Used by Boneknitter and similar effects.
@@ -396,6 +402,8 @@ fun SerializableModification.toModification(): Modification = when (this) {
     is SerializableModification.GrantProtectionFromColor -> Modification.GrantProtectionFromColor(color)
     // PreventNextDamage doesn't map to a layer modification - it's checked during damage resolution directly
     is SerializableModification.PreventNextDamage -> Modification.NoOp
+    // PreventAllDamageTo doesn't map to a layer modification - it's checked during damage resolution directly
+    is SerializableModification.PreventAllDamageTo -> Modification.NoOp
     // RegenerationShield doesn't map to a layer modification - it's checked during destruction
     is SerializableModification.RegenerationShield -> Modification.NoOp
     // CantBeRegenerated doesn't map to a layer modification - it's checked during destruction
