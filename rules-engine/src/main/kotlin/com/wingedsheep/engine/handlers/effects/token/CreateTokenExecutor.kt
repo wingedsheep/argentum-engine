@@ -28,6 +28,7 @@ import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.engine.core.ZoneChangeEvent
 import com.wingedsheep.engine.event.GrantedTriggeredAbility
 import com.wingedsheep.engine.mechanics.layers.StaticAbilityHandler
+import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.scripting.Duration
 import com.wingedsheep.sdk.scripting.TriggeredAbility
@@ -46,7 +47,8 @@ import kotlin.reflect.KClass
  */
 class CreateTokenExecutor(
     private val amountEvaluator: DynamicAmountEvaluator = DynamicAmountEvaluator(),
-    private val staticAbilityHandler: StaticAbilityHandler? = null
+    private val staticAbilityHandler: StaticAbilityHandler? = null,
+    private val cardRegistry: CardRegistry? = null
 ) : EffectExecutor<CreateTokenEffect> {
 
     override val effectType: KClass<CreateTokenEffect> = CreateTokenEffect::class
@@ -59,10 +61,6 @@ class CreateTokenExecutor(
         val count = amountEvaluator.evaluate(state, effect.count, context)
         if (count <= 0) return EffectResult.success(state)
 
-        // Check for token creation replacement effects (e.g., Mirrormind Crown)
-        val replacementResult = TokenCreationReplacementHelper.checkReplacement(state, effect, context, count)
-        if (replacementResult != null) return replacementResult
-
         // Resolve who receives the token — defaults to spell/ability controller
         val controller = effect.controller
         val tokenControllerId = if (controller != null) {
@@ -71,6 +69,12 @@ class CreateTokenExecutor(
         } else {
             context.controllerId
         }
+
+        // Check for token creation replacement effects (e.g., Mirrormind Crown)
+        val replacementResult = TokenCreationReplacementHelper.checkReplacement(
+            state, effect, context, count, tokenControllerId, cardRegistry, staticAbilityHandler
+        )
+        if (replacementResult != null) return replacementResult
 
         var newState = state
         val createdTokens = mutableListOf<EntityId>()

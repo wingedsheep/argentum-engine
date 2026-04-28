@@ -15,12 +15,12 @@ class TokenExecutors(
     private val cardRegistry: CardRegistry
 ) : ExecutorModule {
     override fun executors(): List<EffectExecutor<*>> = listOf(
-        CreateTokenExecutor(amountEvaluator, staticAbilityHandler),
+        CreateTokenExecutor(amountEvaluator, staticAbilityHandler, cardRegistry),
         CreatePredefinedTokenExecutor(cardRegistry, staticAbilityHandler),
         CreateChosenTokenExecutor(amountEvaluator),
         CreateTokenCopyOfSourceExecutor(cardRegistry, staticAbilityHandler),
         CreateTokenCopyOfEquippedCreatureExecutor(cardRegistry, staticAbilityHandler),
         CreateTokenCopyOfChosenPermanentExecutor(cardRegistry, staticAbilityHandler),
-        CreateTokenCopyOfTargetExecutor(amountEvaluator, staticAbilityHandler)
+        CreateTokenCopyOfTargetExecutor(amountEvaluator, staticAbilityHandler, cardRegistry)
     )
 }

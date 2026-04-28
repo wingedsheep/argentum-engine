@@ -8,6 +8,8 @@ import com.wingedsheep.engine.core.TokenCreationReplacementContinuation
 import com.wingedsheep.engine.core.YesNoDecision
 import com.wingedsheep.engine.core.ZoneChangeEvent
 import com.wingedsheep.engine.handlers.EffectContext
+import com.wingedsheep.engine.handlers.effects.EntersWithCountersHelper
+import com.wingedsheep.engine.mechanics.layers.StaticAbilityHandler
 import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.Component
 import com.wingedsheep.engine.state.ComponentContainer
@@ -24,7 +26,7 @@ import com.wingedsheep.engine.state.components.identity.TokenComponent
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.ReplaceTokenCreationWithEquippedCopy
-import com.wingedsheep.sdk.scripting.effects.CreateTokenEffect
+import com.wingedsheep.sdk.scripting.effects.Effect
 import java.util.UUID
 
 /**
@@ -42,14 +44,16 @@ object TokenCreationReplacementHelper {
      */
     fun checkReplacement(
         state: GameState,
-        effect: CreateTokenEffect,
+        effect: Effect,
         context: EffectContext,
-        tokenCount: Int
+        tokenCount: Int,
+        tokenControllerId: EntityId,
+        cardRegistry: CardRegistry? = null,
+        staticAbilityHandler: StaticAbilityHandler? = null
     ): EffectResult? {
         if (tokenCount <= 0) return null
 
-        val controllerId = effect.controller?.let { context.resolvePlayerTarget(it, state) }
-            ?: context.controllerId
+        val controllerId = tokenControllerId
 
         for (entityId in state.getBattlefield()) {
             val container = state.getEntity(entityId) ?: continue
@@ -117,7 +121,8 @@ object TokenCreationReplacementHelper {
                 } else {
                     // Mandatory replacement — create copies directly
                     return createEquippedCreatureCopies(
-                        newState, attachedTo.targetId, controllerId, tokenCount
+                        newState, attachedTo.targetId, controllerId, tokenCount,
+                        cardRegistry, staticAbilityHandler
                     )
                 }
             }
@@ -127,12 +132,19 @@ object TokenCreationReplacementHelper {
 
     /**
      * Create N token copies of the equipped creature.
+     *
+     * Per the printed rulings, Mirrormind Crown's tokens copy exactly what was printed
+     * on the equipped creature. That includes printed "enters with N counters" replacement
+     * effects (e.g., Burdened Stoneback's "this creature enters with two -1/-1 counters"),
+     * which apply to the token via [EntersWithCountersHelper.applyEntersWithCounters].
      */
     fun createEquippedCreatureCopies(
         state: GameState,
         equippedCreatureId: EntityId,
         controllerId: EntityId,
-        count: Int
+        count: Int,
+        cardRegistry: CardRegistry? = null,
+        staticAbilityHandler: StaticAbilityHandler? = null
     ): EffectResult {
         val equippedContainer = state.getEntity(equippedCreatureId)
             ?: return EffectResult.success(state)
@@ -155,11 +167,25 @@ object TokenCreationReplacementHelper {
                 EnteredThisTurnComponent
             )
 
-            val container = ComponentContainer.of(*components.toTypedArray())
+            var container = ComponentContainer.of(*components.toTypedArray())
+            if (staticAbilityHandler != null) {
+                container = staticAbilityHandler.addContinuousEffectComponent(container)
+                container = staticAbilityHandler.addReplacementEffectComponent(container)
+            }
             newState = newState.withEntity(tokenId, container)
 
             val battlefieldZone = ZoneKey(controllerId, Zone.BATTLEFIELD)
             newState = newState.addToZone(battlefieldZone, tokenId)
+
+            // Apply the equipped creature's printed enters-with-counters replacement effects
+            // (and any global ones from other permanents).
+            if (cardRegistry != null) {
+                val (afterCounters, counterEvents) = EntersWithCountersHelper.applyEntersWithCounters(
+                    newState, tokenId, controllerId, cardRegistry
+                )
+                newState = afterCounters
+                events.addAll(counterEvents)
+            }
 
             events.add(
                 ZoneChangeEvent(

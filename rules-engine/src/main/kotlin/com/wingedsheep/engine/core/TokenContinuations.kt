@@ -2,7 +2,7 @@ package com.wingedsheep.engine.core
 
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.sdk.model.EntityId
-import com.wingedsheep.sdk.scripting.effects.CreateTokenEffect
+import com.wingedsheep.sdk.scripting.effects.Effect
 import kotlinx.serialization.Serializable
 
 /**
@@ -10,7 +10,8 @@ import kotlinx.serialization.Serializable
  * ReplaceTokenCreationWithEquippedCopy (Mirrormind Crown).
  *
  * If yes: create [tokenCount] token copies of the equipped creature.
- * If no: execute the original [originalEffect] normally.
+ * If no: execute the original [originalEffect] normally — this can be any
+ * token-creating effect (e.g. CreateTokenEffect, CreateTokenCopyOfTargetEffect).
  *
  * @property equipmentId The equipment with the replacement effect
  * @property equippedCreatureId The creature equipped at the time the decision was posed
@@ -23,7 +24,7 @@ data class TokenCreationReplacementContinuation(
     override val decisionId: String,
     val equipmentId: EntityId,
     val equippedCreatureId: EntityId,
-    val originalEffect: CreateTokenEffect,
+    val originalEffect: Effect,
     val tokenCount: Int,
     val effectContext: EffectContext
 ) : ContinuationFrame

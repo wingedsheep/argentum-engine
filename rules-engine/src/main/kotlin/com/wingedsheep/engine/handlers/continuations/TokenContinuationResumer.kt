@@ -6,6 +6,7 @@ import com.wingedsheep.engine.core.ExecutionResult
 import com.wingedsheep.engine.core.TokenCreationReplacementContinuation
 import com.wingedsheep.engine.core.YesNoResponse
 import com.wingedsheep.engine.handlers.effects.token.TokenCreationReplacementHelper
+import com.wingedsheep.engine.mechanics.layers.StaticAbilityHandler
 import com.wingedsheep.engine.state.GameState
 
 /**
@@ -33,12 +34,16 @@ class TokenContinuationResumer(
         val context = continuation.effectContext
 
         if (response.choice) {
-            // Player chose to replace: create copies of equipped creature
+            // Player chose to replace: create copies of equipped creature.
+            // Pass cardRegistry so the token applies the equipped creature's printed
+            // "enters with N counters" replacement effects (per Mirrormind Crown rulings).
             val result = TokenCreationReplacementHelper.createEquippedCreatureCopies(
                 state,
                 continuation.equippedCreatureId,
                 context.controllerId,
-                continuation.tokenCount
+                continuation.tokenCount,
+                cardRegistry = services.cardRegistry,
+                staticAbilityHandler = StaticAbilityHandler(services.cardRegistry)
             )
             if (result.isPaused) return result.toExecutionResult()
             return checkForMore(result.state, result.events)

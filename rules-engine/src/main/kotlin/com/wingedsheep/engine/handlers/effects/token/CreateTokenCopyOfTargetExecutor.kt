@@ -6,6 +6,7 @@ import com.wingedsheep.engine.handlers.DynamicAmountEvaluator
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.mechanics.layers.StaticAbilityHandler
+import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.event.GrantedTriggeredAbility
 import com.wingedsheep.engine.state.Component
 import com.wingedsheep.engine.state.ComponentContainer
@@ -33,7 +34,8 @@ import kotlin.reflect.KClass
  */
 class CreateTokenCopyOfTargetExecutor(
     private val amountEvaluator: DynamicAmountEvaluator = DynamicAmountEvaluator(),
-    private val staticAbilityHandler: StaticAbilityHandler? = null
+    private val staticAbilityHandler: StaticAbilityHandler? = null,
+    private val cardRegistry: CardRegistry? = null
 ) : EffectExecutor<CreateTokenCopyOfTargetEffect> {
 
     override val effectType: KClass<CreateTokenCopyOfTargetEffect> = CreateTokenCopyOfTargetEffect::class
@@ -56,6 +58,15 @@ class CreateTokenCopyOfTargetExecutor(
         if (count <= 0) return EffectResult.success(state)
 
         val controllerId = context.controllerId
+
+        // Check for token creation replacement effects (e.g., Mirrormind Crown).
+        // Mirrormind's replacement copies the equipped creature instead of this
+        // effect's intended copy, dropping any added keywords / triggered abilities.
+        val replacementResult = TokenCreationReplacementHelper.checkReplacement(
+            state, effect, context, count, controllerId, cardRegistry, staticAbilityHandler
+        )
+        if (replacementResult != null) return replacementResult
+
         var newState = state
         val events = mutableListOf<com.wingedsheep.engine.core.GameEvent>()
 
