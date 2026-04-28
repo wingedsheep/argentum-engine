@@ -2,17 +2,17 @@
 
 **Set Size:** 273 cards (main set, per Scryfall `set:ecl`)
 **Release Date:** January 23, 2026
-**Implemented:** 194 / 273
+**Implemented:** 198 / 273
 
 | Color      | Total | Done |
 |------------|-------|------|
 | White      | 39    | 28   |
-| Blue       | 39    | 29   |
-| Black      | 38    | 28   |
+| Blue       | 39    | 30   |
+| Black      | 38    | 30   |
 | Red        | 39    | 26   |
 | Green      | 39    | 27   |
 | Multicolor | 49    | 36   |
-| Colorless  | 18    | 9    |
+| Colorless  | 18    | 10   |
 | Land       | 12    | 11   |
 
 > **Note:** Before implementing any card, check the `effects/` directory in this folder for any
@@ -85,7 +85,7 @@
 - [x] Rime Chill
 - [x] Rimefire Torque
 - [ ] Rimekin Recluse
-- [ ] Run Away Together
+- [x] Run Away Together
 - [x] Shinestriker
 - [ ] Silvergill Mentor
 - [x] Silvergill Peddler
@@ -130,8 +130,8 @@
 - [x] Iron-Shield Elf
 - [x] Moonglove Extractor
 - [x] Moonshadow
-- [ ] Mornsong Aria
-- [ ] Mudbutton Cursetosser
+- [x] Mornsong Aria
+- [x] Mudbutton Cursetosser
 - [x] Nameless Inversion
 - [ ] Nightmare Sower
 - [ ] Perfect Intimidation
@@ -297,7 +297,7 @@
 - [x] Puca's Eye
 - [ ] Rooftop Percher
 - [x] Springleaf Drum
-- [ ] Stalactite Dagger
+- [x] Stalactite Dagger
 - [ ] Sygg, Wanderwine Wisdom // Sygg, Wanderbrine Shield
 - [ ] Trystan, Callous Cultivator // Trystan, Penitent Culler
 
