@@ -15,6 +15,7 @@ import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.DealDamageEffect
 import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
 import com.wingedsheep.sdk.scripting.effects.GrantMayPlayFromExileEffect
+import com.wingedsheep.sdk.scripting.effects.MayPlayExpiry
 import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.targets.TargetCreature
@@ -64,7 +65,7 @@ val SeasonOfTheBold = card("Season of the Bold") {
                             from = "exiledCards",
                             destination = CardDestination.ToZone(Zone.EXILE)
                         ),
-                        GrantMayPlayFromExileEffect("exiledCards", untilEndOfNextTurn = true)
+                        GrantMayPlayFromExileEffect("exiledCards", MayPlayExpiry.UntilEndOfNextTurn)
                     )),
                     description = "Exile the top two cards of your library. Until the end of your next turn, you may play them"
                 ),

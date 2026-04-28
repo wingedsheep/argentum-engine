@@ -13,6 +13,7 @@ import com.wingedsheep.sdk.scripting.effects.CardSource
 import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
 import com.wingedsheep.sdk.scripting.effects.GrantMayPlayFromExileEffect
+import com.wingedsheep.sdk.scripting.effects.MayPlayExpiry
 import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
@@ -73,7 +74,7 @@ val MuerraTrashTactician = card("Muerra, Trash Tactician") {
                     from = "exiledCards",
                     destination = CardDestination.ToZone(Zone.EXILE)
                 ),
-                GrantMayPlayFromExileEffect(from = "exiledCards", untilEndOfNextTurn = true)
+                GrantMayPlayFromExileEffect(from = "exiledCards", expiry = MayPlayExpiry.UntilEndOfNextTurn)
             )
         )
     }

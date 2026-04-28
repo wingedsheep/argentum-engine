@@ -12,6 +12,7 @@ import com.wingedsheep.sdk.scripting.effects.CardSource
 import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
 import com.wingedsheep.sdk.scripting.effects.GrantMayPlayFromExileEffect
+import com.wingedsheep.sdk.scripting.effects.MayPlayExpiry
 import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
 
@@ -56,7 +57,7 @@ val ShadowUrchin = card("Shadow Urchin") {
                 from = "exiledCards",
                 destination = CardDestination.ToZone(Zone.EXILE)
             ),
-            GrantMayPlayFromExileEffect("exiledCards", untilEndOfNextTurn = true)
+            GrantMayPlayFromExileEffect("exiledCards", MayPlayExpiry.UntilNextEndStep)
         ))
     }
 

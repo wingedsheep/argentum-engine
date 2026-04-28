@@ -491,8 +491,12 @@ object Effects {
      * Grant "may play from exile" permission to all cards in a named collection.
      * Does NOT waive mana cost — pair with [GrantPlayWithoutPayingCost] for free play.
      */
-    fun GrantMayPlayFromExile(from: String, untilEndOfNextTurn: Boolean = false): Effect =
-        GrantMayPlayFromExileEffect(from, untilEndOfNextTurn)
+    fun GrantMayPlayFromExile(
+        from: String,
+        expiry: com.wingedsheep.sdk.scripting.effects.MayPlayExpiry =
+            com.wingedsheep.sdk.scripting.effects.MayPlayExpiry.EndOfTurn,
+        withAnyManaType: Boolean = false
+    ): Effect = GrantMayPlayFromExileEffect(from, expiry, withAnyManaType)
 
     /**
      * Grant "play without paying mana cost" permission to all cards in a named collection.

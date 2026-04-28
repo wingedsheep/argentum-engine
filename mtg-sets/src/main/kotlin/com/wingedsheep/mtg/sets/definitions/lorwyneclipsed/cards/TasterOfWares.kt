@@ -15,6 +15,7 @@ import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.FilterCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
 import com.wingedsheep.sdk.scripting.effects.GrantMayPlayFromExileEffect
+import com.wingedsheep.sdk.scripting.effects.MayPlayExpiry
 import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.SelectFromCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.SelectionMode
@@ -104,7 +105,7 @@ val TasterOfWares = card("Taster of Wares") {
                 ),
                 GrantMayPlayFromExileEffect(
                     from = "instantOrSorcery",
-                    permanent = true,
+                    expiry = MayPlayExpiry.Permanent,
                     withAnyManaType = true
                 )
             )

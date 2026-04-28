@@ -10,6 +10,7 @@ import com.wingedsheep.sdk.scripting.effects.CardSource
 import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
 import com.wingedsheep.sdk.scripting.effects.GrantMayPlayFromExileEffect
+import com.wingedsheep.sdk.scripting.effects.MayPlayExpiry
 import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
 import com.wingedsheep.sdk.scripting.GrantAdditionalLandDrop
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
@@ -55,7 +56,7 @@ val HugsGrislyGuardian = card("Hugs, Grisly Guardian") {
                     from = "exiledCards",
                     destination = CardDestination.ToZone(Zone.EXILE)
                 ),
-                GrantMayPlayFromExileEffect(from = "exiledCards", untilEndOfNextTurn = true)
+                GrantMayPlayFromExileEffect(from = "exiledCards", expiry = MayPlayExpiry.UntilEndOfNextTurn)
             )
         )
     }

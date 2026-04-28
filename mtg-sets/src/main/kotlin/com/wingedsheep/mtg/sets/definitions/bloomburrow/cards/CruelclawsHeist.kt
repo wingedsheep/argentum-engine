@@ -13,6 +13,7 @@ import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.DrawCardsEffect
 import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
 import com.wingedsheep.sdk.scripting.effects.GrantMayPlayFromExileEffect
+import com.wingedsheep.sdk.scripting.effects.MayPlayExpiry
 import com.wingedsheep.sdk.scripting.effects.ModalEffect
 import com.wingedsheep.sdk.scripting.effects.Mode
 import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
@@ -78,7 +79,7 @@ val CruelclawsHeist = card("Cruelclaw's Heist") {
                 CompositeEffect(
                     listOf(DrawCardsEffect(1, EffectTarget.ContextTarget(0))) +
                     revealChooseExile +
-                    listOf(GrantMayPlayFromExileEffect(from = "chosenCard", permanent = true)) +
+                    listOf(GrantMayPlayFromExileEffect(from = "chosenCard", expiry = MayPlayExpiry.Permanent)) +
                     listOf(Effects.GiftGiven())
                 ),
                 Targets.Opponent,

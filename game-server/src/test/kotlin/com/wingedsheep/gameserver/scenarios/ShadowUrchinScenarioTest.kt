@@ -11,6 +11,7 @@ import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.model.CardDefinition
 import io.kotest.assertions.withClue
+import io.kotest.matchers.nulls.shouldBeNull
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
 
@@ -122,6 +123,51 @@ class ShadowUrchinScenarioTest : ScenarioTestBase() {
                 // Library started with 2; exiled 2 → should be empty.
                 withClue("P1's library should be empty (started with 2, exiled 2)") {
                     game.librarySize(1) shouldBe 0
+                }
+            }
+
+            test("may-play permission expires at controller's end step when trigger fires on their own turn") {
+                val game = scenario()
+                    .withPlayers("Shadow", "Opponent")
+                    .withCardOnBattlefield(1, "Shadow Urchin", summoningSickness = false)
+                    .withCardOnBattlefield(1, "Grizzly Bears", summoningSickness = false)
+                    .withCardInHand(1, "Shock")
+                    .withLandsOnBattlefield(1, "Mountain", 1)
+                    .withCardInLibrary(1, "Forest")
+                    .withCardInLibrary(1, "Plains")
+                    .withCardInLibrary(2, "Forest")
+                    .withActivePlayer(1)
+                    .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                    .build()
+
+                val bears = game.findPermanent("Grizzly Bears")!!
+                val counters = CountersComponent().withAdded(CounterType.MINUS_ONE_MINUS_ONE, 2)
+                game.state = game.state.updateEntity(bears) { c -> c.with(counters) }
+
+                game.castSpell(1, "Shock", bears)
+                game.resolveStack()
+
+                val exile = game.state.getExile(game.player1Id)
+                withClue("Two cards should be exiled with may-play permission") {
+                    exile.size shouldBe 2
+                    exile.forEach { cardId ->
+                        game.state.getEntity(cardId)?.get<MayPlayFromExileComponent>().shouldNotBeNull()
+                    }
+                }
+
+                // Pass through the rest of P1's turn (end step + cleanup) into P2's turn.
+                // "Until your next end step" should expire at THIS turn's cleanup, not two turns later.
+                game.passUntilPhase(Phase.BEGINNING, Step.UPKEEP)
+
+                withClue("Should now be P2's turn") {
+                    game.state.activePlayerId shouldBe game.player2Id
+                }
+
+                for (cardId in exile) {
+                    val cardName = game.state.getEntity(cardId)?.get<CardComponent>()?.name
+                    withClue("Exiled card $cardName should no longer have may-play permission after P1's end step") {
+                        game.state.getEntity(cardId)?.get<MayPlayFromExileComponent>().shouldBeNull()
+                    }
                 }
             }
 

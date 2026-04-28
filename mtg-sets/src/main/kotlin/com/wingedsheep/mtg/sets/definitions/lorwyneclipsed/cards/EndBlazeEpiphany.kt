@@ -13,6 +13,7 @@ import com.wingedsheep.sdk.scripting.effects.CreateDelayedTriggerEffect
 import com.wingedsheep.sdk.scripting.effects.DelayedTriggerExpiry
 import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
 import com.wingedsheep.sdk.scripting.effects.GrantMayPlayFromExileEffect
+import com.wingedsheep.sdk.scripting.effects.MayPlayExpiry
 import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.SelectFromCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.SelectionMode
@@ -67,7 +68,7 @@ val EndBlazeEpiphany = card("End-Blaze Epiphany") {
                             ),
                             GrantMayPlayFromExileEffect(
                                 from = "chosen",
-                                untilEndOfNextTurn = true
+                                expiry = MayPlayExpiry.UntilEndOfNextTurn
                             )
                         )
                     )

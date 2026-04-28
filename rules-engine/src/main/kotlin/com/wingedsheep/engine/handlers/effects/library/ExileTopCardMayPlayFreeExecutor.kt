@@ -6,8 +6,11 @@ import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.identity.MayPlayFromExileComponent
 import com.wingedsheep.engine.state.components.identity.PlayWithoutPayingCostComponent
+import com.wingedsheep.sdk.core.Step
+import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.effects.GrantMayPlayFromExileEffect
 import com.wingedsheep.sdk.scripting.effects.GrantPlayWithoutPayingCostEffect
+import com.wingedsheep.sdk.scripting.effects.MayPlayExpiry
 import kotlin.reflect.KClass
 
 /**
@@ -28,11 +31,8 @@ class GrantMayPlayFromExileExecutor : EffectExecutor<GrantMayPlayFromExileEffect
         val controllerId = context.controllerId
         val collection = context.pipeline.storedCollections[effect.from] ?: emptyList()
 
-        val expiresAfterTurn = if (effect.untilEndOfNextTurn) {
-            calculateNextTurnOfPlayer(state, controllerId)
-        } else {
-            null
-        }
+        val isPermanent = effect.expiry is MayPlayExpiry.Permanent
+        val expiresAfterTurn = expiresAfterTurnFor(state, controllerId, effect.expiry)
 
         var newState = state
         for (cardId in collection) {
@@ -40,7 +40,7 @@ class GrantMayPlayFromExileExecutor : EffectExecutor<GrantMayPlayFromExileEffect
                 container.with(
                     MayPlayFromExileComponent(
                         controllerId = controllerId,
-                        permanent = effect.permanent,
+                        permanent = isPermanent,
                         expiresAfterTurn = expiresAfterTurn,
                         withAnyManaType = effect.withAnyManaType
                     )
@@ -52,25 +52,49 @@ class GrantMayPlayFromExileExecutor : EffectExecutor<GrantMayPlayFromExileEffect
     }
 
     /**
-     * Calculate the turn number of the player's next turn.
-     * If it's currently the player's turn, "next turn" means their following turn.
+     * Translate a [MayPlayExpiry] into the turn whose cleanup will remove the permission.
+     * Returns `null` for [MayPlayExpiry.EndOfTurn] (default handling: cleared this cleanup)
+     * and for [MayPlayExpiry.Permanent] (component is flagged permanent and skipped).
      */
-    private fun calculateNextTurnOfPlayer(state: GameState, playerId: com.wingedsheep.sdk.model.EntityId): Int {
+    private fun expiresAfterTurnFor(
+        state: GameState,
+        controllerId: EntityId,
+        expiry: MayPlayExpiry
+    ): Int? = when (expiry) {
+        MayPlayExpiry.EndOfTurn, MayPlayExpiry.Permanent -> null
+        is MayPlayExpiry.UntilControllerStep -> resolveStepTurn(state, controllerId, expiry)
+    }
+
+    /**
+     * Resolve which turn's cleanup will mark "the controller's next [step]" given the
+     * current step and active player. The cleanup-driven removal is coarse — it runs once
+     * per turn at cleanup — so we map any step in the turn to that turn's cleanup.
+     */
+    private fun resolveStepTurn(
+        state: GameState,
+        controllerId: EntityId,
+        expiry: MayPlayExpiry.UntilControllerStep
+    ): Int {
         val turnOrder = state.turnOrder
-        val playerIndex = turnOrder.indexOf(playerId)
+        val playerIndex = turnOrder.indexOf(controllerId)
         val activeIndex = turnOrder.indexOf(state.activePlayerId)
         val playerCount = turnOrder.size
 
-        // How many turns until it's this player's turn again
-        val turnsUntilNext = if (playerIndex == activeIndex) {
-            // It's currently their turn — "next turn" is playerCount turns away
-            playerCount
-        } else {
-            // Calculate distance forward in turn order
-            (playerIndex - activeIndex + playerCount) % playerCount
-        }
+        val onControllerTurn = playerIndex == activeIndex
+        val targetStep = expiry.step
+        val targetReachedThisTurn = state.step.ordinal >= targetStep.ordinal
+        val thisTurnStillCounts = onControllerTurn && expiry.includeCurrentTurn && !targetReachedThisTurn
 
-        return state.turnNumber + turnsUntilNext
+        return if (thisTurnStillCounts) {
+            state.turnNumber
+        } else {
+            val turnsUntilNext = if (onControllerTurn) {
+                playerCount
+            } else {
+                (playerIndex - activeIndex + playerCount) % playerCount
+            }
+            state.turnNumber + turnsUntilNext
+        }
     }
 }
 

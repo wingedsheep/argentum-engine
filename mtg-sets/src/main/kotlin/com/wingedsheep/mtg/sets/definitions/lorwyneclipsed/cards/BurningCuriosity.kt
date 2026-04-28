@@ -12,6 +12,7 @@ import com.wingedsheep.sdk.scripting.effects.ConditionalEffect
 import com.wingedsheep.sdk.scripting.effects.Effect
 import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
 import com.wingedsheep.sdk.scripting.effects.GrantMayPlayFromExileEffect
+import com.wingedsheep.sdk.scripting.effects.MayPlayExpiry
 import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
 
@@ -69,7 +70,7 @@ private fun exileTopAndMayPlay(count: Int): Effect = CompositeEffect(
         ),
         GrantMayPlayFromExileEffect(
             from = "exiled",
-            untilEndOfNextTurn = true
+            expiry = MayPlayExpiry.UntilEndOfNextTurn
         )
     )
 )
