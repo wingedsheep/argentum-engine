@@ -39,6 +39,7 @@ class PlayerExecutors(
         CantCastSpellsExecutor(),
         CreateGlobalTriggeredAbilityUntilEndOfTurnExecutor(),
         CreateGlobalTriggeredAbilityWithDurationExecutor(),
+        CreatePermanentEmblemExecutor(),
         CreatePermanentGlobalTriggeredAbilityExecutor(),
         EachPlayerChoosesCreatureTypeExecutor(),
         GiftGivenExecutor(),

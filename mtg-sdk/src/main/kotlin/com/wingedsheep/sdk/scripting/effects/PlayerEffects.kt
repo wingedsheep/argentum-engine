@@ -5,6 +5,7 @@ import com.wingedsheep.sdk.scripting.Duration
 import com.wingedsheep.sdk.scripting.TriggeredAbility
 import com.wingedsheep.sdk.scripting.events.SourceFilter
 import com.wingedsheep.sdk.scripting.GameObjectFilter
+import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.text.TextReplacer
@@ -363,6 +364,37 @@ data class GrantSpellKeywordEffect(
 ) : Effect {
     override val description: String =
         "${spellFilter.description} spells you cast have ${keyword.displayName.lowercase()}"
+
+    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
+}
+
+/**
+ * Create a permanent emblem that grants a static modification to all permanents matching a filter.
+ * Used for planeswalker -X abilities that produce a static-ability emblem
+ * (e.g., Oko's "Creatures you control of the chosen type get +3/+3 and have vigilance and hexproof").
+ *
+ * The filter may use [GroupFilter.chosenSubtypeKey] to bind the affected creatures to a creature type
+ * chosen earlier in a pipeline (via [ChooseCreatureTypeEffect]). When the executor resolves, it
+ * captures the chosen type so the emblem can re-evaluate the filter against future battlefield state.
+ *
+ * Composes with `Effects.Composite(ChooseCreatureTypeEffect, CreatePermanentEmblem(...))`.
+ *
+ * @property groupFilter Which permanents the emblem affects.
+ * @property powerBonus Power modification applied to each affected creature.
+ * @property toughnessBonus Toughness modification applied to each affected creature.
+ * @property grantedKeywords Keywords granted to each affected creature.
+ * @property emblemDescription Human-readable description of the emblem (without the "You get an emblem with" prefix).
+ */
+@SerialName("CreatePermanentEmblem")
+@Serializable
+data class CreatePermanentEmblemEffect(
+    val groupFilter: GroupFilter,
+    val powerBonus: Int = 0,
+    val toughnessBonus: Int = 0,
+    val grantedKeywords: List<String> = emptyList(),
+    val emblemDescription: String
+) : Effect {
+    override val description: String = "You get an emblem with \"$emblemDescription\""
 
     override fun applyTextReplacement(replacer: TextReplacer): Effect = this
 }

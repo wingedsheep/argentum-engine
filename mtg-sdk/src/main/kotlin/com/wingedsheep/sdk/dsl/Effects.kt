@@ -426,6 +426,24 @@ object Effects {
         CreateGlobalTriggeredAbilityWithDurationEffect(ability, duration)
 
     /**
+     * Create a permanent emblem that grants a static modification to permanents matching a filter.
+     * Used for planeswalker -X abilities that produce static-ability emblems.
+     */
+    fun CreatePermanentEmblem(
+        groupFilter: com.wingedsheep.sdk.scripting.filters.unified.GroupFilter,
+        powerBonus: Int = 0,
+        toughnessBonus: Int = 0,
+        grantedKeywords: List<String> = emptyList(),
+        emblemDescription: String
+    ): Effect = com.wingedsheep.sdk.scripting.effects.CreatePermanentEmblemEffect(
+        groupFilter = groupFilter,
+        powerBonus = powerBonus,
+        toughnessBonus = toughnessBonus,
+        grantedKeywords = grantedKeywords,
+        emblemDescription = emblemDescription
+    )
+
+    /**
      * Return to hand.
      */
     fun ReturnToHand(target: EffectTarget): Effect =

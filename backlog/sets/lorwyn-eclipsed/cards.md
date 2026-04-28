@@ -2,7 +2,7 @@
 
 **Set Size:** 273 cards (main set, per Scryfall `set:ecl`)
 **Release Date:** January 23, 2026
-**Implemented:** 198 / 273
+**Implemented:** 199 / 273
 
 | Color      | Total | Done |
 |------------|-------|------|
@@ -12,7 +12,7 @@
 | Red        | 39    | 26   |
 | Green      | 39    | 27   |
 | Multicolor | 49    | 36   |
-| Colorless  | 18    | 10   |
+| Colorless  | 18    | 11   |
 | Land       | 12    | 11   |
 
 > **Note:** Before implementing any card, check the `effects/` directory in this folder for any
@@ -293,7 +293,7 @@
 - [ ] Gathering Stone
 - [x] Grub, Storied Matriarch // Grub, Notorious Auntie
 - [x] Mirrormind Crown
-- [ ] Oko, Lorwyn Liege // Oko, Shadowmoor Scion
+- [x] Oko, Lorwyn Liege // Oko, Shadowmoor Scion
 - [x] Puca's Eye
 - [ ] Rooftop Percher
 - [x] Springleaf Drum

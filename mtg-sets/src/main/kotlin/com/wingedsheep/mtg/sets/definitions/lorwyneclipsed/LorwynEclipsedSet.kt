@@ -146,6 +146,7 @@ object LorwynEclipsedSet {
         NamelessInversion,
         NoggleRobber,
         NoggleTheMind,
+        OkoLorwynLiege,
         OmniChangeling,
         Personify,
         PesteredWellguard,
