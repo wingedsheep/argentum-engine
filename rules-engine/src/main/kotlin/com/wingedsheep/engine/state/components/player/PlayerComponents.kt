@@ -405,6 +405,16 @@ data class OpponentCreaturesExiledThisTurnComponent(
 data object LifeGainedThisTurnComponent : Component
 
 /**
+ * Tracks the total amount of life this player has gained during the current turn.
+ * Accumulates across all life-gain events. Cleared at end of turn by CleanupPhaseManager.
+ *
+ * Used for `DynamicAmount.TurnTracking(player, TurnTracker.LIFE_GAINED)` — e.g.
+ * Bre of Clan Stoutarm's "less than or equal to the amount of life you gained this turn".
+ */
+@Serializable
+data class LifeGainedAmountThisTurnComponent(val amount: Int = 0) : Component
+
+/**
  * Tracks whether this player has lost life during the current turn.
  * Set whenever a LifeChangedEvent with a non-gain reason is emitted for this player.
  * Cleared at end of turn by CleanupPhaseManager.

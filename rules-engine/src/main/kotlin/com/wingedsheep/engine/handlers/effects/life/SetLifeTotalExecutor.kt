@@ -60,7 +60,7 @@ class SetLifeTotalExecutor(
                 val reason = if (newLife > currentLife) LifeChangeReason.LIFE_GAIN else LifeChangeReason.LIFE_LOSS
                 events.add(LifeChangedEvent(playerId, currentLife, newLife, reason))
                 if (newLife > currentLife) {
-                    newState = DamageUtils.markLifeGainedThisTurn(newState, playerId)
+                    newState = DamageUtils.markLifeGainedThisTurn(newState, playerId, newLife - currentLife)
                 }
                 if (newLife < currentLife) {
                     newState = DamageUtils.markLifeLostThisTurn(newState, playerId)

@@ -28,7 +28,9 @@ enum class TurnTracker {
     /** Count of opponents who lost life this turn. */
     OPPONENTS_WHO_LOST_LIFE,
     /** Total damage received by the player this turn. */
-    DAMAGE_RECEIVED;
+    DAMAGE_RECEIVED,
+    /** Total amount of life the player has gained this turn. */
+    LIFE_GAINED;
 
     fun descriptionFor(player: Player): String = when (this) {
         CREATURES_DIED -> "the number of creatures that died under ${player.possessive} control this turn"
@@ -36,6 +38,7 @@ enum class TurnTracker {
         OPPONENT_CREATURES_EXILED -> "the number of creatures that were exiled under your opponents' control this turn"
         OPPONENTS_WHO_LOST_LIFE -> "the number of opponents who lost life this turn"
         DAMAGE_RECEIVED -> "the damage already dealt to that player this turn"
+        LIFE_GAINED -> "the amount of life ${player.possessive} gained this turn"
     }
 }
 

@@ -258,12 +258,20 @@ object DamageUtils {
 
     /**
      * Mark that [playerId] gained life this turn.
-     * Sets the LifeGainedThisTurnComponent on the player entity.
-     * Used for conditions like "if you gained life this turn" (Lunar Convocation).
+     * Sets the LifeGainedThisTurnComponent (existence flag) and accumulates the amount on
+     * the LifeGainedAmountThisTurnComponent. The amount is used by
+     * `DynamicAmount.TurnTracking(player, TurnTracker.LIFE_GAINED)`.
+     * Used for conditions like "if you gained life this turn" (Lunar Convocation) and for
+     * "amount of life you gained this turn" comparisons (Bre of Clan Stoutarm).
      */
-    fun markLifeGainedThisTurn(state: GameState, playerId: EntityId): GameState {
+    fun markLifeGainedThisTurn(state: GameState, playerId: EntityId, amount: Int = 0): GameState {
+        if (amount < 0) return state
         return state.updateEntity(playerId) { container ->
-            container.with(com.wingedsheep.engine.state.components.player.LifeGainedThisTurnComponent)
+            val existing = container.get<com.wingedsheep.engine.state.components.player.LifeGainedAmountThisTurnComponent>()
+                ?: com.wingedsheep.engine.state.components.player.LifeGainedAmountThisTurnComponent()
+            container
+                .with(com.wingedsheep.engine.state.components.player.LifeGainedThisTurnComponent)
+                .with(com.wingedsheep.engine.state.components.player.LifeGainedAmountThisTurnComponent(existing.amount + amount))
         }
     }
 

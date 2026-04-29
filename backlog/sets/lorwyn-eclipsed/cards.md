@@ -2,7 +2,7 @@
 
 **Set Size:** 273 cards (main set, per Scryfall `set:ecl`)
 **Release Date:** January 23, 2026
-**Implemented:** 212 / 273
+**Implemented:** 213 / 273
 
 | Color      | Total | Done |
 |------------|-------|------|
@@ -11,7 +11,7 @@
 | Black      | 38    | 31   |
 | Red        | 39    | 28   |
 | Green      | 39    | 30   |
-| Multicolor | 49    | 38   |
+| Multicolor | 49    | 39   |
 | Colorless  | 18    | 12   |
 | Land       | 12    | 11   |
 
@@ -233,7 +233,7 @@
 - [ ] Abigale, Eloquent First-Year
 - [x] Ashling's Command
 - [ ] Boggart Cursecrafter
-- [ ] Bre of Clan Stoutarm
+- [x] Bre of Clan Stoutarm
 - [x] Brigid's Command
 - [x] Catharsis
 - [x] Chaos Spewer

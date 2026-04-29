@@ -55,7 +55,7 @@ class OwnerGainsLifeExecutor : EffectExecutor<OwnerGainsLifeEffect> {
         var newState = state.updateEntity(ownerId) { container ->
             container.with(LifeTotalComponent(newLife))
         }
-        newState = DamageUtils.markLifeGainedThisTurn(newState, ownerId)
+        newState = DamageUtils.markLifeGainedThisTurn(newState, ownerId, effect.amount)
 
         return EffectResult.success(
             newState,

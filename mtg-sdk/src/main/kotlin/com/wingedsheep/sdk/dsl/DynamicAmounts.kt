@@ -218,6 +218,9 @@ object DynamicAmounts {
     fun opponentCreaturesExiledThisTurn(): DynamicAmount =
         DynamicAmount.TurnTracking(Player.You, TurnTracker.OPPONENT_CREATURES_EXILED)
 
+    fun lifeGainedThisTurn(player: Player = Player.You): DynamicAmount =
+        DynamicAmount.TurnTracking(player, TurnTracker.LIFE_GAINED)
+
     // =========================================================================
     // Entity property shortcuts (composable entity + property)
     // =========================================================================

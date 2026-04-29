@@ -344,6 +344,7 @@ val engineSerializersModule = SerializersModule {
         subclass(DamageBonusComponent::class)
         subclass(DamageReceivedThisTurnComponent::class)
         subclass(GrantedSpellKeywordsComponent::class)
+        subclass(LifeGainedAmountThisTurnComponent::class)
         subclass(LifeGainedThisTurnComponent::class)
         subclass(LifeLostThisTurnComponent::class)
         subclass(ManaSpentOnSpellsThisTurnComponent::class)

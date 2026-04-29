@@ -224,6 +224,11 @@ class DynamicAmountEvaluator(
                             ?.get<com.wingedsheep.engine.state.components.player.DamageReceivedThisTurnComponent>()
                             ?.amount ?: 0
                     }
+                    TurnTracker.LIFE_GAINED -> playerIds.sumOf { playerId ->
+                        state.getEntity(playerId)
+                            ?.get<com.wingedsheep.engine.state.components.player.LifeGainedAmountThisTurnComponent>()
+                            ?.amount ?: 0
+                    }
                 }
             }
 

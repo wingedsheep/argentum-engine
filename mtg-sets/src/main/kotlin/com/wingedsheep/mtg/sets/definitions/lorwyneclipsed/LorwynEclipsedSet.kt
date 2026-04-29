@@ -43,6 +43,7 @@ object LorwynEclipsedSet {
         BoneclubBerserker,
         BoulderDash,
         BramblebackBrute,
+        BreOfClanStoutarm,
         BrigidClachansHeart,
         BrigidsCommand,
         BristlebaneBattler,

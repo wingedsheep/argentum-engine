@@ -50,7 +50,7 @@ class GainLifeExecutor(
             newState = newState.updateEntity(playerId) { container ->
                 container.with(LifeTotalComponent(newLife))
             }
-            newState = DamageUtils.markLifeGainedThisTurn(newState, playerId)
+            newState = DamageUtils.markLifeGainedThisTurn(newState, playerId, amount)
             events.add(LifeChangedEvent(playerId, currentLife, newLife, LifeChangeReason.LIFE_GAIN))
         }
 
