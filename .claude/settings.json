@@ -1,5 +1,11 @@
 {
   "enabledPlugins": {
     "kotlin-lsp@claude-plugins-official": true
+  },
+  "permissions": {
+    "allow": [
+      "Bash(curl *)",
+      "Bash(jot *)"
+    ]
   }
 }
