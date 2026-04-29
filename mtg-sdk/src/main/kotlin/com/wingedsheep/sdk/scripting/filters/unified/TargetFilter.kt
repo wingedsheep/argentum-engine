@@ -231,6 +231,9 @@ data class TargetFilter(
     /** Exclude keyword */
     fun withoutKeyword(keyword: Keyword) = copy(baseFilter = baseFilter.withoutKeyword(keyword))
 
+    /** Mana value equals */
+    fun manaValue(value: Int) = copy(baseFilter = baseFilter.manaValue(value))
+
     /** Mana value at most */
     fun manaValueAtMost(max: Int) = copy(baseFilter = baseFilter.manaValueAtMost(max))
 

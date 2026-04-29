@@ -254,6 +254,12 @@ object Targets {
     val InstantOrSorcerySpellYouControl: TargetRequirement = TargetSpell(filter = TargetFilter.InstantOrSorcerySpellOnStack.youControl())
 
     /**
+     * Target spell with mana value exactly N.
+     */
+    fun SpellWithManaValue(manaValue: Int): TargetRequirement =
+        TargetSpell(filter = TargetFilter.SpellOnStack.manaValue(manaValue))
+
+    /**
      * Target spell with mana value N or less.
      */
     fun SpellWithManaValueAtMost(manaValue: Int): TargetRequirement =

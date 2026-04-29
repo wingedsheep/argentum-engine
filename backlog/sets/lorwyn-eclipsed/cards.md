@@ -2,15 +2,15 @@
 
 **Set Size:** 273 cards (main set, per Scryfall `set:ecl`)
 **Release Date:** January 23, 2026
-**Implemented:** 206 / 273
+**Implemented:** 209 / 273
 
 | Color      | Total | Done |
 |------------|-------|------|
-| White      | 39    | 29   |
-| Blue       | 39    | 30   |
+| White      | 39    | 30   |
+| Blue       | 39    | 31   |
 | Black      | 38    | 31   |
 | Red        | 39    | 27   |
-| Green      | 39    | 28   |
+| Green      | 39    | 29   |
 | Multicolor | 49    | 38   |
 | Colorless  | 18    | 12   |
 | Land       | 12    | 11   |
@@ -42,7 +42,7 @@
 - [x] Kithkeeper
 - [x] Liminal Hold
 - [x] Meanders Guide
-- [ ] Moonlit Lamenter
+- [x] Moonlit Lamenter
 - [x] Morningtide's Light
 - [x] Personify
 - [x] Protective Response
@@ -89,7 +89,7 @@
 - [x] Shinestriker
 - [ ] Silvergill Mentor
 - [x] Silvergill Peddler
-- [ ] Spell Snare
+- [x] Spell Snare
 - [x] Stratosoarer
 - [ ] Summit Sentinel
 - [ ] Sunderflock
@@ -192,7 +192,7 @@
 - [x] Aurora Awakener
 - [x] Bloom Tender
 - [ ] Blossoming Defense
-- [ ] Bristlebane Battler
+- [x] Bristlebane Battler
 - [ ] Bristlebane Outrider
 - [x] Celestial Reunion
 - [x] Champions of the Perfect
