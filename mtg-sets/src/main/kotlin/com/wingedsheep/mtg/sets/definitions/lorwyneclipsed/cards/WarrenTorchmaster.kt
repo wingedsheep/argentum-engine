@@ -41,8 +41,12 @@ val WarrenTorchmaster = card("Warren Torchmaster") {
                 target = EffectTarget.ContextTarget(0)
             ),
             reflexiveTargetRequirements = listOf(
-                TargetObject(filter = TargetFilter.Creature)
-            )
+                TargetObject(
+                    filter = TargetFilter.Creature,
+                    id = "target creature to gain haste"
+                )
+            ),
+            descriptionOverride = "You may blight 1. When you do, target creature gains haste until end of turn"
         )
     }
 

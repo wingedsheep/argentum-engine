@@ -292,9 +292,15 @@ data class ReflexiveTriggerEffect(
     val reflexiveEffect: Effect,
     val reflexiveTargetRequirements: List<TargetRequirement> = emptyList(),
     /** Optional hint text shown on the yes/no decision (e.g., keyword reminder text) */
-    val hint: String? = null
+    val hint: String? = null,
+    /**
+     * Optional override for the auto-generated description. Useful when the action or
+     * reflexive effect is a pipeline whose composed description reads poorly (e.g.
+     * blight expanded to its Gather/Select/AddCounters internals).
+     */
+    val descriptionOverride: String? = null
 ) : Effect {
-    override val description: String = buildString {
+    override val description: String = descriptionOverride ?: buildString {
         if (optional) append("You may ")
         append(action.description.replaceFirstChar { it.lowercase() })
         append(". When you do, ")
