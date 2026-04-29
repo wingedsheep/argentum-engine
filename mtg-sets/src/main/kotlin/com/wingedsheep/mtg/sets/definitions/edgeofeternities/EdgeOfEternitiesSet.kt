@@ -21,6 +21,7 @@ object EdgeOfEternitiesSet {
      */
     val allCards = listOf(
         Cryoshatter,
+        SeamRip,
         SledgeClassSeedship,
 
         // Basic lands
