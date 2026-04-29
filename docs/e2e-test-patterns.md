@@ -8,10 +8,40 @@ page object.
 
 ## Running
 
+Prefer the `just` recipes — they wrap the CLI flags an agent typically wants and stay out of MCP territory (CLI is
+markedly more token-efficient for browser automation than the Playwright MCP).
+
+| Recipe | When to use |
+|--------|-------------|
+| `just e2e` | Run the full suite |
+| `just e2e-test <pattern>` | Run a specific test by path or `--grep` substring (e.g. `just e2e-test sparksmith`) |
+| `just e2e-headed` | Watch the run in a visible browser |
+| `just e2e-ui` | Playwright UI mode — best for triaging failures interactively |
+| `just e2e-debug <pattern>` | Step through a single test under the Playwright Inspector |
+| `just e2e-codegen [URL]` | Record interactions against the running client to discover selectors / generate scaffolding |
+| `just e2e-trace <path>` | Open a trace zip after a failed CI / report run |
+| `just e2e-report` | Run + open the HTML report (screenshots, videos, traces) |
+| `just e2e-install-browsers` | One-time `playwright install chromium` (after `just e2e-install`) |
+
+Direct CLI for anything not covered:
+
 ```bash
-cd e2e-scenarios && npx playwright test                              # All E2E tests
-cd e2e-scenarios && npx playwright test tests/onslaught/sparksmith   # Specific test
+cd e2e-scenarios && npx playwright test tests/onslaught/sparksmith   # specific path
+cd e2e-scenarios && npx playwright test --grep "Lightning Bolt"      # grep test names
+SKIP_WEB_SERVER=true npx playwright test ...                         # skip auto-starting server/client (when already running)
 ```
+
+## CLI-first iteration loop (for agents)
+
+1. **Write the test** based on a similar existing test in `tests/{set}/`.
+2. **Run only that test** via `just e2e-test <name>` — fast feedback, no full-suite cost.
+3. **If selectors are unclear**, `just e2e-codegen` against `http://localhost:5173` while the server + a manually
+   created game session are running. Copy the generated locators back into the test.
+4. **If a test fails mysteriously**, rerun under `just e2e-debug <pattern>` to step through, or `just e2e-report` to
+   inspect screenshots/videos/traces.
+5. **If a CI trace is provided**, `just e2e-trace <path>` opens it locally.
+
+Avoid `just e2e` (full suite) during iteration — it's slow and most failures are unrelated to the test under work.
 
 ## Key Files
 

@@ -199,6 +199,31 @@ e2e-report:
 e2e-install:
     cd e2e-scenarios && npm install
 
+# Install Playwright browser binaries (one-time, after e2e-install)
+[group: 'e2e']
+e2e-install-browsers:
+    cd e2e-scenarios && npx playwright install chromium
+
+# Run a specific E2E test by path or grep pattern (e.g., just e2e-test sparksmith)
+[group: 'e2e']
+e2e-test PATTERN:
+    cd e2e-scenarios && npx playwright test {{PATTERN}}
+
+# Run E2E tests under the Playwright Inspector (step through, inspect selectors)
+[group: 'e2e']
+e2e-debug PATTERN="":
+    cd e2e-scenarios && npx playwright test {{PATTERN}} --debug
+
+# Open Playwright codegen against the local client to record selectors and actions
+[group: 'e2e']
+e2e-codegen URL="http://localhost:5173":
+    cd e2e-scenarios && npx playwright codegen {{URL}}
+
+# Open a trace file produced by a failed run (e.g., just e2e-trace test-results/.../trace.zip)
+[group: 'e2e']
+e2e-trace TRACE:
+    cd e2e-scenarios && npx playwright show-trace {{TRACE}}
+
 # Watch an AI vs AI match in a headed browser. Params (all optional):
 #   MODEL1, MODEL2   — LLM model ids; pass "" "" for built-in engine AIs (no LLM calls)
 #   SETS             — set code or comma-separated list, e.g. "BLB" or "ONS,LGN,SCG"
