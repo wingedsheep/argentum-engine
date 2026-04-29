@@ -61,6 +61,7 @@ import com.wingedsheep.sdk.scripting.effects.AddManaOfColorAmongEffect
 import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.AdditionalManaOnLandTap
 import com.wingedsheep.sdk.scripting.AdditionalManaOnTap
+import com.wingedsheep.sdk.scripting.AdditionalSourceTriggers
 import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.handlers.PredicateContext
 import com.wingedsheep.engine.handlers.CostPaymentChoices
@@ -1099,6 +1100,46 @@ class ActivateAbilityHandler(
     private val predicateEvaluator = PredicateEvaluator()
 
     /**
+     * Count how many [AdditionalSourceTriggers] doublers on the battlefield apply to a
+     * triggered ability with source [triggerSourceId] controlled by [triggerControllerId].
+     *
+     * Triggered mana abilities ([AdditionalManaOnTap], [AdditionalManaOnLandTap]) bypass
+     * the stack and are resolved synchronously, so they never flow through the normal
+     * `TriggerDetector` doubling pass. This helper lets the inline mana resolution paths
+     * apply the same doubling logic as the trigger pipeline.
+     *
+     * Returns N — N additional firings on top of the natural one (so total firings = N + 1).
+     */
+    private fun countAdditionalSourceTriggerDoublers(
+        state: GameState,
+        triggerSourceId: EntityId,
+        triggerControllerId: EntityId
+    ): Int {
+        val projected = state.projectedState
+        var count = 0
+        for (permanentId in state.getBattlefield()) {
+            val container = state.getEntity(permanentId) ?: continue
+            val card = container.get<CardComponent>() ?: continue
+            if (container.has<FaceDownComponent>()) continue
+            val controllerId = projected.getController(permanentId) ?: continue
+            if (controllerId != triggerControllerId) continue
+            val cardDef = cardRegistry.getCard(card.cardDefinitionId) ?: continue
+            val classLevel = container.get<ClassLevelComponent>()?.currentLevel
+            for (ability in cardDef.script.effectiveStaticAbilities(classLevel)) {
+                if (ability !is AdditionalSourceTriggers) continue
+                if (ability.excludeSelf && permanentId == triggerSourceId) continue
+                if (!predicateEvaluator.matchesWithProjection(
+                        state, projected, triggerSourceId, ability.sourceFilter,
+                        PredicateContext(controllerId = controllerId, sourceId = permanentId)
+                    )
+                ) continue
+                count++
+            }
+        }
+        return count
+    }
+
+    /**
      * Check if any permanent on the battlefield has DampLandManaProduction static ability.
      */
     private fun hasDampLandManaProduction(state: GameState): Boolean {
@@ -1185,23 +1226,29 @@ class ActivateAbilityHandler(
                     ?: container.get<com.wingedsheep.engine.state.components.identity.ChosenColorComponent>()?.color
                     ?: continue
 
-                // Add the mana to the land controller's pool
-                currentState = currentState.updateEntity(landController) { c ->
-                    val pool = c.get<ManaPoolComponent>() ?: ManaPoolComponent()
-                    c.with(pool.add(manaColor, amount))
-                }
+                // Triggered mana ability — apply AdditionalSourceTriggers doublers
+                // (e.g., Twinflame Travelers) so the bonus fires N+1 times.
+                val auraController = container.get<ControllerComponent>()?.playerId ?: landController
+                val extraFirings = countAdditionalSourceTriggerDoublers(currentState, entityId, auraController)
+                val firings = 1 + extraFirings
+                repeat(firings) {
+                    currentState = currentState.updateEntity(landController) { c ->
+                        val pool = c.get<ManaPoolComponent>() ?: ManaPoolComponent()
+                        c.with(pool.add(manaColor, amount))
+                    }
 
-                events.add(ManaAddedEvent(
-                    playerId = landController,
-                    sourceId = entityId,
-                    sourceName = card.name,
-                    white = if (manaColor == Color.WHITE) amount else 0,
-                    blue = if (manaColor == Color.BLUE) amount else 0,
-                    black = if (manaColor == Color.BLACK) amount else 0,
-                    red = if (manaColor == Color.RED) amount else 0,
-                    green = if (manaColor == Color.GREEN) amount else 0,
-                    colorless = 0
-                ))
+                    events.add(ManaAddedEvent(
+                        playerId = landController,
+                        sourceId = entityId,
+                        sourceName = card.name,
+                        white = if (manaColor == Color.WHITE) amount else 0,
+                        blue = if (manaColor == Color.BLUE) amount else 0,
+                        black = if (manaColor == Color.BLACK) amount else 0,
+                        red = if (manaColor == Color.RED) amount else 0,
+                        green = if (manaColor == Color.GREEN) amount else 0,
+                        colorless = 0
+                    ))
+                }
             }
         }
 
@@ -1272,24 +1319,33 @@ class ActivateAbilityHandler(
                 val bonusColorless = bonusColor == null && manaEvent.colorless > 0
                 if (bonusColor == null && !bonusColorless) continue
 
-                currentState = currentState.updateEntity(controllerId) { c ->
-                    val pool = c.get<ManaPoolComponent>() ?: ManaPoolComponent()
-                    val newPool = if (bonusColor != null) pool.add(bonusColor, bonusAmount)
-                                  else pool.addColorless(bonusAmount)
-                    c.with(newPool)
-                }
+                // Triggered mana abilities bypass the stack but are still triggered
+                // abilities — so AdditionalSourceTriggers (Twinflame Travelers) doubles
+                // them just like any other trigger. firingCount = 1 (natural) + N (doublers).
+                val controllerOfTrigger = currentState.getEntity(entityId)
+                    ?.get<ControllerComponent>()?.playerId ?: controllerId
+                val extraFirings = countAdditionalSourceTriggerDoublers(currentState, entityId, controllerOfTrigger)
+                val firings = 1 + extraFirings
+                repeat(firings) {
+                    currentState = currentState.updateEntity(controllerId) { c ->
+                        val pool = c.get<ManaPoolComponent>() ?: ManaPoolComponent()
+                        val newPool = if (bonusColor != null) pool.add(bonusColor, bonusAmount)
+                                      else pool.addColorless(bonusAmount)
+                        c.with(newPool)
+                    }
 
-                events.add(ManaAddedEvent(
-                    playerId = controllerId,
-                    sourceId = entityId,
-                    sourceName = card.name,
-                    white = if (bonusColor == Color.WHITE) bonusAmount else 0,
-                    blue = if (bonusColor == Color.BLUE) bonusAmount else 0,
-                    black = if (bonusColor == Color.BLACK) bonusAmount else 0,
-                    red = if (bonusColor == Color.RED) bonusAmount else 0,
-                    green = if (bonusColor == Color.GREEN) bonusAmount else 0,
-                    colorless = if (bonusColorless) bonusAmount else 0
-                ))
+                    events.add(ManaAddedEvent(
+                        playerId = controllerId,
+                        sourceId = entityId,
+                        sourceName = card.name,
+                        white = if (bonusColor == Color.WHITE) bonusAmount else 0,
+                        blue = if (bonusColor == Color.BLUE) bonusAmount else 0,
+                        black = if (bonusColor == Color.BLACK) bonusAmount else 0,
+                        red = if (bonusColor == Color.RED) bonusAmount else 0,
+                        green = if (bonusColor == Color.GREEN) bonusAmount else 0,
+                        colorless = if (bonusColorless) bonusAmount else 0
+                    ))
+                }
             }
         }
 
