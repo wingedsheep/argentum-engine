@@ -394,12 +394,19 @@ sealed interface GameEvent : TextReplaceable<GameEvent> {
     /**
      * When a creature blocks.
      * Binding SELF = "when this creature blocks".
+     * Binding ANY + filter = "whenever a [filter] blocks" — fires once per matching blocker.
      */
     @SerialName("BlockEvent")
     @Serializable
-    data object BlockEvent : GameEvent {
-        override val description: String = "a creature blocks"
-        override fun applyTextReplacement(replacer: TextReplacer): GameEvent = this
+    data class BlockEvent(
+        val filter: GameObjectFilter? = null
+    ) : GameEvent {
+        override val description: String = if (filter != null) "a ${filter.description} blocks" else "a creature blocks"
+        override fun applyTextReplacement(replacer: TextReplacer): GameEvent {
+            val f = filter ?: return this
+            val newFilter = f.applyTextReplacement(replacer)
+            return if (newFilter !== f) copy(filter = newFilter) else this
+        }
     }
 
     /**

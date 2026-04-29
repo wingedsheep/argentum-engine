@@ -341,6 +341,14 @@ sealed interface CardPredicate : TextReplaceable<CardPredicate> {
         override fun applyTextReplacement(replacer: TextReplacer): CardPredicate = this
     }
 
+    /** Toughness is strictly greater than power */
+    @SerialName("ToughnessGreaterThanPower")
+    @Serializable
+    data object ToughnessGreaterThanPower : CardPredicate {
+        override val description: String = "with toughness greater than its power"
+        override fun applyTextReplacement(replacer: TextReplacer): CardPredicate = this
+    }
+
     // =============================================================================
     // Context-relative Predicates (Pipeline Variable References)
     // =============================================================================

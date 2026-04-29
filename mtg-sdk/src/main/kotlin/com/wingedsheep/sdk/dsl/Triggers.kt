@@ -254,8 +254,22 @@ object Triggers {
      * When this creature blocks.
      */
     val Blocks: TriggerSpec = TriggerSpec(
-        event = BlockEvent,
+        event = BlockEvent(),
         binding = TriggerBinding.SELF
+    )
+
+    /**
+     * When a creature you control blocks.
+     * Creates one trigger per matching blocker controlled by the ability's controller.
+     */
+    val CreatureYouControlBlocks: TriggerSpec = TriggerSpec(
+        event = BlockEvent(
+            filter = GameObjectFilter(
+                cardPredicates = listOf(CardPredicate.IsCreature),
+                controllerPredicate = ControllerPredicate.ControlledByYou
+            )
+        ),
+        binding = TriggerBinding.ANY
     )
 
     /**

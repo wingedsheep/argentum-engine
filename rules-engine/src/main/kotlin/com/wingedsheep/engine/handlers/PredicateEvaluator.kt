@@ -290,6 +290,11 @@ class PredicateEvaluator {
                 val toughness = projectedValues?.toughness ?: card.baseStats?.baseToughness ?: 0
                 (power + toughness) <= predicate.max
             }
+            CardPredicate.ToughnessGreaterThanPower -> {
+                val power = projectedValues?.power ?: card.baseStats?.basePower ?: 0
+                val toughness = projectedValues?.toughness ?: card.baseStats?.baseToughness ?: 0
+                toughness > power
+            }
 
             // Source-relative predicates
             CardPredicate.NotOfSourceChosenType -> {
@@ -571,6 +576,13 @@ class PredicateEvaluator {
                 power is com.wingedsheep.sdk.model.CharacteristicValue.Fixed &&
                     toughness is com.wingedsheep.sdk.model.CharacteristicValue.Fixed &&
                     (power.value + toughness.value) <= predicate.max
+            }
+            CardPredicate.ToughnessGreaterThanPower -> {
+                val power = card.baseStats?.power
+                val toughness = card.baseStats?.toughness
+                power is com.wingedsheep.sdk.model.CharacteristicValue.Fixed &&
+                    toughness is com.wingedsheep.sdk.model.CharacteristicValue.Fixed &&
+                    toughness.value > power.value
             }
 
             // Source-relative predicates
@@ -915,7 +927,8 @@ class PredicateEvaluator {
             is CardPredicate.PowerEquals, is CardPredicate.PowerAtMost, is CardPredicate.PowerAtLeast,
             is CardPredicate.ToughnessEquals, is CardPredicate.ToughnessAtMost, is CardPredicate.ToughnessAtLeast,
             is CardPredicate.PowerOrToughnessAtLeast,
-            is CardPredicate.TotalPowerAndToughnessAtMost -> false
+            is CardPredicate.TotalPowerAndToughnessAtMost,
+            CardPredicate.ToughnessGreaterThanPower -> false
 
             // Name predicates — not stored in record
             is CardPredicate.NameEquals -> false

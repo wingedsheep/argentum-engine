@@ -71,6 +71,7 @@ object LorwynEclipsedSet {
         DawnsLightArcher,
         DeepchannelDuelist,
         DisruptorOfCurrents,
+        DoranBesiegedByTime,
         DoseOfDawnglow,
         DreamHarvest,
         DreamSeizer,

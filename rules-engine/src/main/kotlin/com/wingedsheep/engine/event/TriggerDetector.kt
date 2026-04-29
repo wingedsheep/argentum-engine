@@ -637,6 +637,40 @@ class TriggerDetector(
                             }
                         }
                     }
+                    // For "whenever a creature [you control] blocks" (BlockEvent with ANY binding),
+                    // create one trigger per matching blocker.
+                    else if (ability.trigger is GameEvent.BlockEvent && ability.binding == TriggerBinding.ANY &&
+                        event is com.wingedsheep.engine.core.BlockersDeclaredEvent) {
+                        val blockFilter = (ability.trigger as GameEvent.BlockEvent).filter
+                        for (blockerId in event.blockers.keys) {
+                            if (blockFilter != null) {
+                                if (predicateEvaluator.matchesWithProjection(
+                                        state, projected, blockerId, blockFilter,
+                                        PredicateContext(controllerId = controllerId, sourceId = entityId)
+                                    )) {
+                                    triggers.add(
+                                        PendingTrigger(
+                                            ability = ability,
+                                            sourceId = entityId,
+                                            sourceName = cardComponent.name,
+                                            controllerId = controllerId,
+                                            triggerContext = TriggerContext(triggeringEntityId = blockerId)
+                                        )
+                                    )
+                                }
+                            } else {
+                                triggers.add(
+                                    PendingTrigger(
+                                        ability = ability,
+                                        sourceId = entityId,
+                                        sourceName = cardComponent.name,
+                                        controllerId = controllerId,
+                                        triggerContext = TriggerContext(triggeringEntityId = blockerId)
+                                    )
+                                )
+                            }
+                        }
+                    }
                     // For "blocks or becomes blocked by [filter]" (BlocksOrBecomesBlockedByEvent with SELF binding),
                     // check both blocking and being-blocked relationships and create one trigger per matching partner.
                     else if (ability.trigger is GameEvent.BlocksOrBecomesBlockedByEvent &&
