@@ -135,6 +135,7 @@ object LorwynEclipsedSet {
         Mirrorform,
         MirrormindCrown,
         MischievousSneakling,
+        MistmeadowCouncil,
         MoongloveExtractor,
         MoonVigilAdherents,
         MorcantsEyes,

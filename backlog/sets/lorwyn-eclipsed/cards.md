@@ -2,7 +2,7 @@
 
 **Set Size:** 273 cards (main set, per Scryfall `set:ecl`)
 **Release Date:** January 23, 2026
-**Implemented:** 201 / 273
+**Implemented:** 202 / 273
 
 | Color      | Total | Done |
 |------------|-------|------|
@@ -10,7 +10,7 @@
 | Blue       | 39    | 30   |
 | Black      | 38    | 30   |
 | Red        | 39    | 26   |
-| Green      | 39    | 27   |
+| Green      | 39    | 28   |
 | Multicolor | 49    | 38   |
 | Colorless  | 18    | 11   |
 | Land       | 12    | 11   |
@@ -207,7 +207,7 @@
 - [x] Lys Alana Dignitary
 - [x] Lys Alana Informant
 - [ ] Midnight Tilling
-- [ ] Mistmeadow Council
+- [x] Mistmeadow Council
 - [x] Moon-Vigil Adherents
 - [x] Morcant's Eyes
 - [x] Mutable Explorer
