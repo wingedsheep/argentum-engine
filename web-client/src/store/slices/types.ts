@@ -337,6 +337,11 @@ export interface DeckBuildingState {
   /** Basic land counts by land name */
   landCounts: Record<string, number>
   opponentReady: boolean
+  /**
+   * Card names highlighted by the LLM deckbuilding assistant. When non-null,
+   * these replace any archetype-driven highlights in the pool view.
+   */
+  llmHighlightedCards: readonly string[] | null
 }
 
 /**
@@ -689,6 +694,10 @@ export type GameStore = {
   removeCardFromDeck: (cardName: string) => void
   clearDeck: () => void
   setLandCount: (landType: string, count: number) => void
+  /** Replace the entire deck (non-basic cards as a flat list) and basic land counts. */
+  setDeck: (deck: readonly string[], landCounts: Record<string, number>) => void
+  /** Set the LLM-driven highlight set. Pass null to clear. */
+  setLlmHighlights: (cardNames: readonly string[] | null) => void
   submitSealedDeck: () => void
   unsubmitDeck: () => void
   makePick: (cardNames: string[]) => void

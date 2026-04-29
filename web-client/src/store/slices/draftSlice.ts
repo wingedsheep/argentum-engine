@@ -26,6 +26,8 @@ export interface DraftSliceActions {
   removeCardFromDeck: (cardName: string) => void
   clearDeck: () => void
   setLandCount: (landType: string, count: number) => void
+  setDeck: (deck: readonly string[], landCounts: Record<string, number>) => void
+  setLlmHighlights: (cardNames: readonly string[] | null) => void
   submitSealedDeck: () => void
   unsubmitDeck: () => void
   makePick: (cardNames: string[]) => void
@@ -123,6 +125,66 @@ export const createDraftSlice: SliceCreator<DraftSlice> = (set, get) => ({
         deckBuildingState: {
           ...state.deckBuildingState,
           landCounts: newLandCounts,
+        },
+      }
+    })
+  },
+
+  setDeck: (deck, landCounts) => {
+    set((state) => {
+      if (!state.deckBuildingState) return state
+
+      // Cap each non-basic card at the available pool count and at 4 copies.
+      const poolCounts: Record<string, number> = {}
+      for (const card of state.deckBuildingState.cardPool) {
+        poolCounts[card.name] = (poolCounts[card.name] ?? 0) + 1
+      }
+
+      const requested: Record<string, number> = {}
+      for (const name of deck) {
+        requested[name] = (requested[name] ?? 0) + 1
+      }
+
+      const newDeck: string[] = []
+      for (const [name, requestedCount] of Object.entries(requested)) {
+        const cap = Math.min(poolCounts[name] ?? 0, 4)
+        const final = Math.min(requestedCount, cap)
+        for (let i = 0; i < final; i++) newDeck.push(name)
+      }
+
+      // Sanitize land counts: only keep known basic land keys, clamp to >= 0.
+      const baseLandKeys = Object.keys(state.deckBuildingState.landCounts)
+      const newLandCounts: Record<string, number> = {}
+      for (const key of baseLandKeys) {
+        newLandCounts[key] = Math.max(0, landCounts[key] ?? 0)
+      }
+      // Allow extra basic land names that the server's basicLands set knows about.
+      for (const card of state.deckBuildingState.basicLands) {
+        if (!(card.name in newLandCounts)) {
+          newLandCounts[card.name] = Math.max(0, landCounts[card.name] ?? 0)
+        }
+      }
+
+      saveDeckState(newDeck, newLandCounts)
+
+      return {
+        deckBuildingState: {
+          ...state.deckBuildingState,
+          deck: newDeck,
+          landCounts: newLandCounts,
+        },
+      }
+    })
+  },
+
+  setLlmHighlights: (cardNames) => {
+    set((state) => {
+      if (!state.deckBuildingState) return state
+      const next = cardNames && cardNames.length > 0 ? Array.from(new Set(cardNames)) : null
+      return {
+        deckBuildingState: {
+          ...state.deckBuildingState,
+          llmHighlightedCards: next,
         },
       }
     })

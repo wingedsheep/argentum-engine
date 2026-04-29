@@ -7,6 +7,7 @@ import { ManaSymbol, ManaCost } from '../ui/ManaSymbols'
 import { HoverCardPreview } from '../ui/HoverCardPreview'
 import { useDfcHoverFlip } from '../ui/useDfcHoverFlip'
 import { SetSynergiesButton, type Archetype } from '../draft/SetSynergiesOverlay'
+import { DeckbuilderChatPanel } from './DeckbuilderChatPanel'
 
 /**
  * Deck Builder overlay for sealed draft mode.
@@ -114,6 +115,7 @@ function DeckBuilder({ state }: { state: DeckBuildingState }) {
   const removeCardFromDeck = useGameStore((s) => s.removeCardFromDeck)
   const clearDeck = useGameStore((s) => s.clearDeck)
   const setLandCount = useGameStore((s) => s.setLandCount)
+  const setLlmHighlights = useGameStore((s) => s.setLlmHighlights)
   const submitSealedDeck = useGameStore((s) => s.submitSealedDeck)
   const unsubmitDeck = useGameStore((s) => s.unsubmitDeck)
   const leaveLobby = useGameStore((s) => s.leaveLobby)
@@ -344,8 +346,12 @@ function DeckBuilder({ state }: { state: DeckBuildingState }) {
     return { MYTHIC: mythic, RARE: rare, UNCOMMON: uncommon, COMMON: common }
   }, [poolCardGroups, sortBy])
 
-  // Cards highlighted by archetype creature types
+  // Cards highlighted by archetype creature types OR by the LLM advisor.
+  // LLM highlights replace archetype highlights when present.
   const highlightedCards = useMemo(() => {
+    if (state.llmHighlightedCards && state.llmHighlightedCards.length > 0) {
+      return new Set(state.llmHighlightedCards)
+    }
     if (!archetypeFilter?.creatureTypes || archetypeFilter.creatureTypes.length === 0) return null
     const types = archetypeFilter.creatureTypes
     const names = new Set<string>()
@@ -361,7 +367,7 @@ function DeckBuilder({ state }: { state: DeckBuildingState }) {
       }
     }
     return names
-  }, [state.cardPool, archetypeFilter])
+  }, [state.cardPool, archetypeFilter, state.llmHighlightedCards])
 
   // Group deck cards by name for vertical list
   const deckCardGroups = useMemo(() => {
@@ -422,6 +428,8 @@ function DeckBuilder({ state }: { state: DeckBuildingState }) {
             setCodes={state.setCodes}
             cardPool={state.cardPool}
             onSelectArchetype={(archetype) => {
+              // Picking an archetype takes over the highlight slot from the LLM advisor.
+              setLlmHighlights(null)
               setArchetypeFilter((prev) => prev?.name === archetype.name ? null : archetype)
             }}
           />
@@ -1167,6 +1175,8 @@ function DeckBuilder({ state }: { state: DeckBuildingState }) {
           )}
         </div>
       )}
+
+      <DeckbuilderChatPanel state={state} />
     </div>
   )
 }
