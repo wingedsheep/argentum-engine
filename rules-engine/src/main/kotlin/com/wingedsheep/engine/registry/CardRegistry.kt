@@ -19,6 +19,8 @@ class CardRegistry {
     private val cardsByName = mutableMapOf<String, CardDefinition>()
     // Secondary index: "CardName#CollectorNumber" -> CardDefinition (for variants like basic lands)
     private val cardsByNameAndNumber = mutableMapOf<String, CardDefinition>()
+    // Reverse DFC index: back face name -> front face name
+    private val backFaceToFrontFace = mutableMapOf<String, String>()
 
     /**
      * Register a single card definition.
@@ -49,6 +51,8 @@ class CardRegistry {
             if (!cardsByName.containsKey(backFace.name)) {
                 cardsByName[backFace.name] = backFace
             }
+            // Track the reverse mapping so scenario builders can find the front face.
+            backFaceToFrontFace[backFace.name] = card.name
         }
     }
 
@@ -117,10 +121,19 @@ class CardRegistry {
     val size: Int get() = cardsByName.size
 
     /**
+     * Look up the front face of a DFC given its back face name.
+     * Returns null if the name is not a registered back face.
+     */
+    fun getFrontFace(backFaceName: String): CardDefinition? {
+        return backFaceToFrontFace[backFaceName]?.let { cardsByName[it] }
+    }
+
+    /**
      * Clear all registered cards.
      */
     fun clear() {
         cardsByName.clear()
         cardsByNameAndNumber.clear()
+        backFaceToFrontFace.clear()
     }
 }
