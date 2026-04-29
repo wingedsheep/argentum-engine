@@ -249,6 +249,7 @@ internal class EffectApplicator(
                 val predicateEvaluator = PredicateEvaluator()
                 val intermediateProjected = buildIntermediateProjectedState(state, projectedValues)
                 state.getBattlefield(controllerId).any { entityId ->
+                    if (condition.excludeSelf && entityId == effect.sourceId) return@any false
                     predicateEvaluator.matchesWithProjection(state, intermediateProjected, entityId, condition.filter, PredicateContext(controllerId = controllerId))
                 }
             } else false

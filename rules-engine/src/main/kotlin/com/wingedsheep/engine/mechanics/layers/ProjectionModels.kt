@@ -272,10 +272,15 @@ sealed interface SourceProjectionCondition {
     /**
      * The source permanent's controller controls a permanent matching the given filter.
      * Used for "as long as you control a [filter]" conditions.
+     *
+     * When [excludeSelf] is true, the source permanent itself is not counted, supporting
+     * "another" wording (e.g., "as long as another creature entered the battlefield under your
+     * control this turn").
      */
     @Serializable
     data class ControllerControlsPermanentMatchingFilter(
-        val filter: GameObjectFilter
+        val filter: GameObjectFilter,
+        val excludeSelf: Boolean = false
     ) : SourceProjectionCondition
 
     /**

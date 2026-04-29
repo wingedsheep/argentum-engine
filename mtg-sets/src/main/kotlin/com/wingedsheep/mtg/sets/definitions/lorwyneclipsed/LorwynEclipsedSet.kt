@@ -46,6 +46,7 @@ object LorwynEclipsedSet {
         BrigidClachansHeart,
         BrigidsCommand,
         BristlebaneBattler,
+        BristlebaneOutrider,
         BurdenedStoneback,
         BurningCuriosity,
         Catharsis,

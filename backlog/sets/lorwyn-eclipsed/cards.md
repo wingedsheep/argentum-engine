@@ -2,7 +2,7 @@
 
 **Set Size:** 273 cards (main set, per Scryfall `set:ecl`)
 **Release Date:** January 23, 2026
-**Implemented:** 211 / 273
+**Implemented:** 212 / 273
 
 | Color      | Total | Done |
 |------------|-------|------|
@@ -10,7 +10,7 @@
 | Blue       | 39    | 32   |
 | Black      | 38    | 31   |
 | Red        | 39    | 28   |
-| Green      | 39    | 29   |
+| Green      | 39    | 30   |
 | Multicolor | 49    | 38   |
 | Colorless  | 18    | 12   |
 | Land       | 12    | 11   |
@@ -193,7 +193,7 @@
 - [x] Bloom Tender
 - [ ] Blossoming Defense
 - [x] Bristlebane Battler
-- [ ] Bristlebane Outrider
+- [x] Bristlebane Outrider
 - [x] Celestial Reunion
 - [x] Champions of the Perfect
 - [x] Chomping Changeling

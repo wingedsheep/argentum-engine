@@ -575,14 +575,15 @@ class StaticAbilityHandler(
 
         if (condition.player !is com.wingedsheep.sdk.scripting.references.Player.You) return null
         // Extract subtype from filter: Creature.withSubtype(X) has IsCreature + HasSubtype predicates
+        // (excludeSelf is not supported by the subtype-specialized projection condition; fall through.)
         val subtypePredicate = condition.filter.cardPredicates
             .filterIsInstance<CardPredicate.HasSubtype>()
             .singleOrNull()
-        if (subtypePredicate != null) {
+        if (subtypePredicate != null && !condition.excludeSelf) {
             return SourceProjectionCondition.ControllerControlsCreatureOfType(subtypePredicate.subtype.value)
         }
         // General case: "as long as you control a [filter]" (e.g., token, enchantment)
-        return SourceProjectionCondition.ControllerControlsPermanentMatchingFilter(condition.filter)
+        return SourceProjectionCondition.ControllerControlsPermanentMatchingFilter(condition.filter, condition.excludeSelf)
     }
 
     /**
