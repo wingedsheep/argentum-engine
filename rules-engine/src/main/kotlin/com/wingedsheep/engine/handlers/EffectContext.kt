@@ -60,6 +60,8 @@ data class EffectContext(
     val triggerCounterCount: Int? = null,
     /** Last known total counter count (all types) from a death trigger context (e.g., Shadow Urchin) */
     val triggerTotalCounterCount: Int? = null,
+    /** Last known -1/-1 counter count from a death trigger context (e.g., Retched Wretch) */
+    val triggerMinusOneMinusOneCounterCount: Int? = null,
     /** The entity that caused the trigger to fire (e.g., creature that dealt damage for Aurification) */
     val triggeringEntityId: EntityId? = null,
     /** The player associated with the trigger event (e.g., the player who cast a spell for SpellCastEvent) */

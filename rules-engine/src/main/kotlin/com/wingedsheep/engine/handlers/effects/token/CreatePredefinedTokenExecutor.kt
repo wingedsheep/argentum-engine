@@ -51,6 +51,12 @@ class CreatePredefinedTokenExecutor(
             context.controllerId
         }
 
+        // Check for token creation replacement effects (e.g., Mirrormind Crown)
+        val replacementResult = TokenCreationReplacementHelper.checkReplacement(
+            state, effect, context, effect.count, tokenControllerId, cardRegistry, staticAbilityHandler
+        )
+        if (replacementResult != null) return replacementResult
+
         var newState = state
         val createdTokenIds = mutableListOf<EntityId>()
 

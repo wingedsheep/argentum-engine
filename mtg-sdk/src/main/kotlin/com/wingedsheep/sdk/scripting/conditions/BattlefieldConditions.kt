@@ -80,6 +80,19 @@ data object TriggeringEntityEnteredOrWasCastFromGraveyard : Condition {
 }
 
 /**
+ * Condition: "if it had a -1/-1 counter on it" (intervening-if for dies/leaves triggers).
+ * Reads the last-known -1/-1 counter count captured on the dying entity at the moment
+ * it left the battlefield (Rule 603.10 / 603.6c). Used by cards like Retched Wretch
+ * whose dies trigger only fires when the creature died with -1/-1 counters on it.
+ */
+@SerialName("TriggeringEntityHadMinusOneMinusOneCounter")
+@Serializable
+data object TriggeringEntityHadMinusOneMinusOneCounter : Condition {
+    override val description: String = "if it had a -1/-1 counter on it"
+    override fun applyTextReplacement(replacer: TextReplacer): Condition = this
+}
+
+/**
  * Condition: "if [target] is [filter]"
  * Checks whether a context target matches a GameObjectFilter.
  * Used for cards like Blessing of Belzenlok: "If it's legendary, it also gains lifelink."

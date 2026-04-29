@@ -33,6 +33,8 @@ data class TriggerContext(
     val counterCount: Int? = null,
     /** Last known total counter count (all types) when the source left the battlefield */
     val totalCounterCount: Int? = null,
+    /** Last known -1/-1 counter count when the source left the battlefield */
+    val minusOneMinusOneCounterCount: Int? = null,
     /** The spell or ability entity that targeted a permanent (for ward triggers) */
     val targetingSourceEntityId: EntityId? = null,
     /** Last known power when the triggering entity left the battlefield (for dies/leaves triggers) */
@@ -47,6 +49,8 @@ data class TriggerContext(
                     triggeringEntityId = event.entityId,
                     counterCount = if (event.lastKnownCounterCount > 0) event.lastKnownCounterCount else null,
                     totalCounterCount = if (event.lastKnownTotalCounterCount > 0) event.lastKnownTotalCounterCount else null,
+                    minusOneMinusOneCounterCount = if (event.lastKnownMinusOneMinusOneCounterCount > 0)
+                        event.lastKnownMinusOneMinusOneCounterCount else null,
                     xValue = event.xValue,
                     lastKnownPower = event.lastKnownPower,
                     lastKnownToughness = event.lastKnownToughness

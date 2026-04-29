@@ -56,6 +56,7 @@ import com.wingedsheep.sdk.scripting.conditions.WasCastFromZone
 import com.wingedsheep.sdk.scripting.conditions.SacrificedPermanentHadSubtype
 import com.wingedsheep.sdk.scripting.conditions.TargetMatchesFilter
 import com.wingedsheep.sdk.scripting.conditions.TriggeringEntityEnteredOrWasCastFromGraveyard
+import com.wingedsheep.sdk.scripting.conditions.TriggeringEntityHadMinusOneMinusOneCounter
 import com.wingedsheep.sdk.scripting.conditions.TriggeringEntityWasHistoric
 import com.wingedsheep.sdk.scripting.conditions.CardsLeftGraveyardThisTurn
 import com.wingedsheep.sdk.scripting.conditions.CollectionContainsMatch
@@ -122,6 +123,8 @@ class ConditionEvaluator {
             is TriggeringEntityWasHistoric -> evaluateTriggeringEntityWasHistoric(state, context)
             is TriggeringEntityEnteredOrWasCastFromGraveyard ->
                 evaluateTriggeringEntityEnteredOrWasCastFromGraveyard(state, context)
+            is TriggeringEntityHadMinusOneMinusOneCounter ->
+                (context.triggerMinusOneMinusOneCounterCount ?: 0) > 0
             is TargetMatchesFilter -> evaluateTargetMatchesFilter(state, condition, context)
 
             // Turn conditions
