@@ -51,6 +51,7 @@ object LorwynEclipsedSet {
         ChampionOfTheWeird,
         ChampionsOfThePerfect,
         ChampionsOfTheShoal,
+        ChangelingWayfinder,
         ChaosSpewer,
         ChitinousGraspling,
         ChompingChangeling,
