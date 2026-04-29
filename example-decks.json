@@ -1,0 +1,46 @@
+{
+  "red_aggro": {
+    "name": "Red Aggro",
+    "cards": {
+      "Lightning Bolt": 4,
+      "Goblin Guide": 4,
+      "Ragavan, Nimble Pilferer": 4,
+      "Lava Dart": 2,
+      "Skullcrack": 2,
+      "Play with Fire": 2,
+      "Light Helix": 2,
+      "Mountain": 12,
+      "Sacred Foundry": 4,
+      "Wooded Foothills": 4
+    }
+  },
+  "white_weenie": {
+    "name": "White Weenie",
+    "cards": {
+      "Soldier of the Pantheon": 4,
+      "Thalia, Guardian of Thraben": 4,
+      "Kytheon, Hero of Akros": 4,
+      "Brave the Elements": 4,
+      "Gideon's Battlecry": 2,
+      "Make a Stand": 2,
+      "Plains": 16,
+      "Warrior's Honor": 2,
+      "Glorious Anthem": 2
+    }
+  },
+  "blue_flyers": {
+    "name": "Blue Flyers",
+    "cards": {
+      "Spectral Sailor": 4,
+      "Cloudkin Seer": 4,
+      "Faerie Miscreant": 4,
+      "Peregrine Drake": 4,
+      "Cloud of Faeries": 4,
+      "Counterspell": 4,
+      "Brainstorm": 4,
+      "Island": 16,
+      "Ponder": 2,
+      "Preordain": 2
+    }
+  }
+}
