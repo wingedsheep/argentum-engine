@@ -26,7 +26,8 @@ data class SetsProperties(
     val edgeOfEternitiesEnabled: Boolean = false,
     val lorwynEclipsedEnabled: Boolean = true,
     val lostCavernsOfIxalanEnabled: Boolean = true,
-    val foundationsEnabled: Boolean = true
+    val foundationsEnabled: Boolean = true,
+    val duskmournEnabled: Boolean = true
 )
 
 data class AdminProperties(

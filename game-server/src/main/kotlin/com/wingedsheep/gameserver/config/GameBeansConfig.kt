@@ -14,6 +14,7 @@ import com.wingedsheep.mtg.sets.definitions.onslaught.OnslaughtSet
 import com.wingedsheep.mtg.sets.definitions.portal.PortalSet
 import com.wingedsheep.mtg.sets.definitions.lorwyneclipsed.LorwynEclipsedSet
 import com.wingedsheep.mtg.sets.definitions.lostcavernsofixalan.LostCavernsOfIxalanSet
+import com.wingedsheep.mtg.sets.definitions.duskmourn.DuskmournSet
 import com.wingedsheep.mtg.sets.definitions.foundations.FoundationsSet
 import com.wingedsheep.mtg.sets.definitions.scourge.ScourgeSet
 import com.wingedsheep.mtg.sets.definitions.custom.JustOneGlassToken
@@ -72,6 +73,9 @@ class GameBeansConfig(
         }
         if (gameProperties.sets.foundationsEnabled) {
             register(FoundationsSet.allCards)
+        }
+        if (gameProperties.sets.duskmournEnabled) {
+            register(DuskmournSet.allCards)
         }
         // Easter egg card — injected into Rick's deck at game start
         register(SekshaasEarlySleeper)

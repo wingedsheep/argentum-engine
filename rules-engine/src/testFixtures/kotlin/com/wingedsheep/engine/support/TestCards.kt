@@ -7,6 +7,7 @@ import com.wingedsheep.mtg.sets.definitions.khans.KhansOfTarkirSet
 import com.wingedsheep.mtg.sets.definitions.legions.LegionsSet
 import com.wingedsheep.mtg.sets.definitions.lorwyneclipsed.LorwynEclipsedSet
 import com.wingedsheep.mtg.sets.definitions.lostcavernsofixalan.LostCavernsOfIxalanSet
+import com.wingedsheep.mtg.sets.definitions.duskmourn.DuskmournSet
 import com.wingedsheep.mtg.sets.definitions.foundations.FoundationsSet
 import com.wingedsheep.mtg.sets.definitions.onslaught.OnslaughtSet
 import com.wingedsheep.mtg.sets.definitions.portal.PortalSet
@@ -707,5 +708,6 @@ object TestCards {
             EdgeOfEternitiesSet.allCards +
             LostCavernsOfIxalanSet.allCards +
             FoundationsSet.allCards +
+            DuskmournSet.allCards +
             testOnlyCards
 }
