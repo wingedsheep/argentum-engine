@@ -107,13 +107,7 @@ class GrubStoriedMatriarchScenarioTest : ScenarioTestBase() {
                     val card = game.state.getEntity(entityId)?.get<CardComponent>()
                     card?.name ?: "Unknown"
                 }
-                println("Cards in hand: $handCardNames")
-                println("Number of cards in hand: ${handCards.size}")
-                handCards.forEach { entityId ->
-                    val card = game.state.getEntity(entityId)?.get<CardComponent>()
-                    println("Card entity $entityId: $card")
-                }
-                
+
                 val grubInHand = handCards.find { entityId ->
                     val card = game.state.getEntity(entityId)?.get<CardComponent>()
                     card?.name == "Grub, Storied Matriarch"
