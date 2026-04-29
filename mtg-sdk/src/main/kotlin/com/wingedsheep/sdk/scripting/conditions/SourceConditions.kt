@@ -79,6 +79,19 @@ data object SourceHasDealtDamage : Condition {
 }
 
 /**
+ * Condition: "As long as this permanent is modified"
+ * A permanent is modified if it has one or more counters on it, has one or more
+ * Equipment attached to it, or is enchanted by one or more Auras its controller controls.
+ * Used for Neon Dynasty-style cards like Skyward Spider.
+ */
+@SerialName("SourceIsModified")
+@Serializable
+data object SourceIsModified : Condition {
+    override val description: String = "this permanent is modified"
+    override fun applyTextReplacement(replacer: TextReplacer): Condition = this
+}
+
+/**
  * Condition: "If this creature has dealt combat damage to a player"
  * Used for Saboteur abilities and similar effects.
  */

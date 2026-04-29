@@ -15,5 +15,6 @@ object SpiderManSet {
 
     val allCards = listOf(
         OriginOfSpiderMan,
+        SkywardSpider,
     )
 }

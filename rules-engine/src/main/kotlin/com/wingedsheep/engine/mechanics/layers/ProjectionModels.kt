@@ -298,6 +298,13 @@ sealed interface SourceProjectionCondition {
     data object SourceEnteredThisTurn : SourceProjectionCondition
 
     /**
+     * The source permanent is modified (has counters, Equipment, or Auras its controller controls).
+     * Used for "has [keyword] as long as it's modified" conditions.
+     */
+    @Serializable
+    data object SourceIsModified : SourceProjectionCondition
+
+    /**
      * Compare two DynamicAmount values using a comparison operator.
      * Used for "as long as there are two or more instant and/or sorcery cards in your graveyard."
      */

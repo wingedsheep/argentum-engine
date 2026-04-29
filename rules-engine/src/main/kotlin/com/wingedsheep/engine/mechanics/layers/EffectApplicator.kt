@@ -265,6 +265,38 @@ internal class EffectApplicator(
         is SourceProjectionCondition.SourceEnteredThisTurn ->
             state.getEntity(effect.sourceId)
                 ?.has<com.wingedsheep.engine.state.components.battlefield.EnteredThisTurnComponent>() == true
+
+        is SourceProjectionCondition.SourceIsModified -> {
+            val sourceId = effect.sourceId
+            val entity = state.getEntity(sourceId) ?: return false
+            val sourceControllerId = sourceValues?.controllerId
+
+            // Check counters
+            val counters = entity.get<CountersComponent>()
+            if (counters != null && counters.counters.values.any { it > 0 }) return true
+
+            // Check attached Equipment or Auras controlled by sourceController
+            for (permanentId in state.getBattlefield()) {
+                if (permanentId == sourceId) continue
+                val container = state.getEntity(permanentId) ?: continue
+                val attachedTo = container.get<com.wingedsheep.engine.state.components.battlefield.AttachedToComponent>()
+                    ?.targetId ?: continue
+                if (attachedTo != sourceId) continue
+                val card = container.get<com.wingedsheep.engine.state.components.identity.CardComponent>()
+                    ?: continue
+
+                // Equipment attached counts regardless of controller
+                if (card.typeLine.hasSubtype(com.wingedsheep.sdk.core.Subtype.EQUIPMENT)) return true
+
+                // Aura you control
+                if (card.typeLine.hasSubtype(com.wingedsheep.sdk.core.Subtype.AURA)) {
+                    val auraController = projectedValues[permanentId]?.controllerId
+                        ?: container.get<com.wingedsheep.engine.state.components.identity.ControllerComponent>()?.playerId
+                    if (auraController == sourceControllerId) return true
+                }
+            }
+            false
+        }
         is SourceProjectionCondition.Not -> !evaluateSourceCondition(condition.condition, effect, state, projectedValues, sourceValues)
         is SourceProjectionCondition.Compare -> {
             val controllerId = sourceValues?.controllerId ?: effect.sourceId

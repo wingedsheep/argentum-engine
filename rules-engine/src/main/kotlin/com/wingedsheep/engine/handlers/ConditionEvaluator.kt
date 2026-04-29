@@ -42,6 +42,7 @@ import com.wingedsheep.sdk.scripting.conditions.NotCondition
 import com.wingedsheep.sdk.scripting.conditions.OpponentSpellOnStack
 import com.wingedsheep.sdk.scripting.conditions.PlayedLandThisTurn
 import com.wingedsheep.sdk.scripting.conditions.SourceEnteredThisTurn
+import com.wingedsheep.sdk.scripting.conditions.SourceIsModified
 import com.wingedsheep.sdk.scripting.conditions.SourceHasDealtCombatDamageToPlayer
 import com.wingedsheep.sdk.scripting.conditions.SourceHasDealtDamage
 import com.wingedsheep.sdk.scripting.conditions.SourceHasCounter
@@ -114,6 +115,7 @@ class ConditionEvaluator {
             is SourceIsTapped -> evaluateSourceTapped(state, context)
             is SourceIsUntapped -> evaluateSourceUntapped(state, context)
             is SourceEnteredThisTurn -> evaluateSourceEnteredThisTurn(state, context)
+            is SourceIsModified -> evaluateSourceIsModified(state, context)
             is SourceHasDealtDamage -> evaluateSourceHasDealtDamage(state, context)
             is SourceHasDealtCombatDamageToPlayer -> evaluateSourceHasDealtCombatDamageToPlayer(state, context)
             is SourceHasSubtype -> evaluateSourceHasSubtype(state, condition, context)
@@ -296,6 +298,34 @@ class ConditionEvaluator {
     private fun evaluateSourceEnteredThisTurn(state: GameState, context: EffectContext): Boolean {
         val sourceId = context.sourceId ?: return false
         return state.getEntity(sourceId)?.has<EnteredThisTurnComponent>() == true
+    }
+
+    private fun evaluateSourceIsModified(state: GameState, context: EffectContext): Boolean {
+        val sourceId = context.sourceId ?: return false
+        val entity = state.getEntity(sourceId) ?: return false
+        val controllerId = context.controllerId
+
+        // Has any counter
+        val counters = entity.get<com.wingedsheep.engine.state.components.battlefield.CountersComponent>()
+        if (counters != null && counters.counters.values.any { it > 0 }) return true
+
+        // Has attached Equipment or Auras controlled by this permanent's controller
+        for (permanentId in state.getBattlefield()) {
+            if (permanentId == sourceId) continue
+            val container = state.getEntity(permanentId) ?: continue
+            val attachedTo = container.get<com.wingedsheep.engine.state.components.battlefield.AttachedToComponent>()
+                ?.targetId ?: continue
+            if (attachedTo != sourceId) continue
+            val card = container.get<com.wingedsheep.engine.state.components.identity.CardComponent>() ?: continue
+
+            if (card.typeLine.hasSubtype(com.wingedsheep.sdk.core.Subtype.EQUIPMENT)) return true
+
+            if (card.typeLine.hasSubtype(com.wingedsheep.sdk.core.Subtype.AURA)) {
+                val auraController = container.get<com.wingedsheep.engine.state.components.identity.ControllerComponent>()?.playerId
+                if (auraController == controllerId) return true
+            }
+        }
+        return false
     }
 
     private fun evaluateSourceHasDealtDamage(state: GameState, context: EffectContext): Boolean {
