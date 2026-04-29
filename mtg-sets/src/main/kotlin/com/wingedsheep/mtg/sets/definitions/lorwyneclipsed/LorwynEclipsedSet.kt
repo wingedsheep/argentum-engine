@@ -83,6 +83,7 @@ object LorwynEclipsedSet {
         EclipsedRealms,
         EirduCarrierOfDawn,
         Emptiness,
+        EncumberedReejerey,
         EndBlazeEpiphany,
         EnragedFlamecaster,
         EvershrikesGift,
