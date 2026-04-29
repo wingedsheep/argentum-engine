@@ -24,6 +24,7 @@ import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.state.components.identity.CantBeCounteredComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
+import com.wingedsheep.engine.state.components.identity.DoubleFacedComponent
 import com.wingedsheep.engine.state.components.identity.LifeTotalComponent
 import com.wingedsheep.engine.state.components.identity.OwnerComponent
 import com.wingedsheep.engine.state.components.identity.PlayerComponent
@@ -188,6 +189,39 @@ abstract class ScenarioTestBase : FunSpec() {
                 val staticHandler = StaticAbilityHandler(cardRegistry)
                 container = staticHandler.addContinuousEffectComponent(container, cardDef)
                 container = staticHandler.addReplacementEffectComponent(container, cardDef)
+
+                // Rule 712.8a: if placing a DFC back face directly on the battlefield, add
+                // DoubleFacedComponent with the saved front-face card so ZoneTransitionService
+                // can restore it when the entity leaves.
+                val frontFaceDef = cardRegistry.getFrontFace(cardName)
+                if (frontFaceDef != null) {
+                    val frontFaceCard = state.getEntity(cardId)?.get<CardComponent>()?.let {
+                        CardComponent(
+                            cardDefinitionId = frontFaceDef.name,
+                            name = frontFaceDef.name,
+                            manaCost = frontFaceDef.manaCost,
+                            typeLine = frontFaceDef.typeLine,
+                            oracleText = frontFaceDef.oracleText,
+                            colors = frontFaceDef.colors,
+                            baseKeywords = frontFaceDef.keywords,
+                            baseFlags = frontFaceDef.flags,
+                            baseStats = frontFaceDef.creatureStats,
+                            ownerId = it.ownerId,
+                            spellEffect = frontFaceDef.spellEffect,
+                            imageUri = frontFaceDef.metadata.imageUri,
+                        )
+                    }
+                    if (frontFaceCard != null) {
+                        container = container.with(
+                            DoubleFacedComponent(
+                                frontCardDefinitionId = frontFaceDef.name,
+                                backCardDefinitionId = cardName,
+                                currentFace = DoubleFacedComponent.Face.BACK,
+                                frontFaceCard = frontFaceCard
+                            )
+                        )
+                    }
+                }
             }
 
             state = state.withEntity(cardId, container)

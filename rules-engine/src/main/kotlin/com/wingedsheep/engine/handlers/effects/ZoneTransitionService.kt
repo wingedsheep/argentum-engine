@@ -11,6 +11,7 @@ import com.wingedsheep.engine.state.components.battlefield.*
 import com.wingedsheep.engine.state.components.combat.*
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
+import com.wingedsheep.engine.state.components.identity.DoubleFacedComponent
 import com.wingedsheep.engine.state.components.identity.FaceDownComponent
 import com.wingedsheep.engine.state.components.identity.MorphDataComponent
 import com.wingedsheep.engine.state.components.identity.RevealedToComponent
@@ -237,6 +238,21 @@ object ZoneTransitionService {
             else -> {
                 // HAND, GRAVEYARD, STACK — simple addToZone
                 newState = newState.addToZone(destZoneKey, entityId)
+            }
+        }
+
+        // 7b. Rule 712.8a: while a DFC is in a zone other than the battlefield or stack, it has
+        // only the characteristics of its front face. Restore the saved front-face CardComponent.
+        if (actualDestZone != Zone.BATTLEFIELD && actualDestZone != Zone.STACK) {
+            val entityContainer = newState.getEntity(entityId)
+            if (entityContainer != null) {
+                val dfc = entityContainer.get<DoubleFacedComponent>()
+                if (dfc != null && dfc.isBack && dfc.frontFaceCard != null) {
+                    newState = newState.updateEntity(entityId) { c ->
+                        c.with(dfc.frontFaceCard)
+                            .with(dfc.copy(currentFace = DoubleFacedComponent.Face.FRONT, frontFaceCard = null))
+                    }
+                }
             }
         }
 

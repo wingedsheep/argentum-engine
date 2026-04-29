@@ -74,10 +74,18 @@ class TransformEffectExecutor(
 
         val controllerId = container.get<ControllerComponent>()?.playerId ?: context.controllerId
 
+        // Rule 712.8a: save the front face card so ZoneTransitionService can restore it
+        // without a registry lookup when the DFC leaves the battlefield on its back face.
+        val updatedDfc = if (intoBackFace) {
+            dfc.copy(currentFace = nextFace, frontFaceCard = currentCard)
+        } else {
+            dfc.copy(currentFace = nextFace, frontFaceCard = null)
+        }
+
         val newState = state.updateEntity(targetId) { c ->
             var updated = c
                 .with(swappedCard)
-                .with(dfc.copy(currentFace = nextFace))
+                .with(updatedDfc)
                 // Strip stale static-ability effect components so the layer projector stops
                 // applying the old face's static abilities on the very next projection.
                 .without<ContinuousEffectSourceComponent>()
