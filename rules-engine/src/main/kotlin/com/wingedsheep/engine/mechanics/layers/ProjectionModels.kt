@@ -240,6 +240,20 @@ sealed interface SourceProjectionCondition {
     data object IsYourTurn : SourceProjectionCondition
 
     /**
+     * The source permanent is tapped.
+     * Used for "has [keyword] as long as it's tapped."
+     */
+    @Serializable
+    data object SourceIsTapped : SourceProjectionCondition
+
+    /**
+     * The source permanent is untapped.
+     * Used for "has [keyword] as long as it's untapped" (e.g., Illusion Spinners).
+     */
+    @Serializable
+    data object SourceIsUntapped : SourceProjectionCondition
+
+    /**
      * The source permanent's controller has lost life this turn.
      * Used for "has [keyword] as long as you've lost life this turn."
      */

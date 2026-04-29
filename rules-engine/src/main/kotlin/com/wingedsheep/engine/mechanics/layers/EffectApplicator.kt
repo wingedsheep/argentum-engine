@@ -230,6 +230,14 @@ internal class EffectApplicator(
             val controllerId = sourceValues?.controllerId
             controllerId != null && state.activePlayerId == controllerId
         }
+        is SourceProjectionCondition.SourceIsTapped -> {
+            state.getEntity(effect.sourceId)
+                ?.has<com.wingedsheep.engine.state.components.battlefield.TappedComponent>() == true
+        }
+        is SourceProjectionCondition.SourceIsUntapped -> {
+            state.getEntity(effect.sourceId)
+                ?.has<com.wingedsheep.engine.state.components.battlefield.TappedComponent>() == false
+        }
         is SourceProjectionCondition.ControllerLostLifeThisTurn -> {
             val controllerId = sourceValues?.controllerId
             controllerId != null && state.getEntity(controllerId)

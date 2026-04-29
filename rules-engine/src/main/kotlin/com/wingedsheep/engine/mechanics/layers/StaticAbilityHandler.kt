@@ -54,6 +54,8 @@ import com.wingedsheep.sdk.scripting.conditions.IsYourTurn
 import com.wingedsheep.sdk.scripting.conditions.NotCondition
 import com.wingedsheep.sdk.scripting.conditions.SourceHasKeyword
 import com.wingedsheep.sdk.scripting.conditions.SourceHasSubtype
+import com.wingedsheep.sdk.scripting.conditions.SourceIsTapped
+import com.wingedsheep.sdk.scripting.conditions.SourceIsUntapped
 import com.wingedsheep.sdk.scripting.CantAttackForCreatureGroup
 import com.wingedsheep.sdk.scripting.MustAttackForCreatureGroup
 import com.wingedsheep.sdk.scripting.MustBlockForCreatureGroup
@@ -538,6 +540,8 @@ class StaticAbilityHandler(
             }
             is Exists -> mapExistsToSourceProjectionCondition(condition)
             is IsYourTurn -> SourceProjectionCondition.IsYourTurn
+            is SourceIsTapped -> SourceProjectionCondition.SourceIsTapped
+            is SourceIsUntapped -> SourceProjectionCondition.SourceIsUntapped
             is com.wingedsheep.sdk.scripting.conditions.YouLostLifeThisTurn -> SourceProjectionCondition.ControllerLostLifeThisTurn
             is Compare -> SourceProjectionCondition.Compare(condition.left, condition.operator, condition.right)
             else -> null

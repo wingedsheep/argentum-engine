@@ -1127,7 +1127,7 @@ Set via `staticAbility { ability = ... }`:
 - `ReduceSpellCostByFilter(filter, amount)` — reduce spell cost for spells matching a GameObjectFilter
 - `ReduceFaceDownCastingCost(amount)` — reduce face-down casting cost
 - `GrantAlternativeCastingCost(cost: String)` — grants an alternative mana cost for all spells cast by this permanent's controller (e.g., Jodah: `"{W}{U}{B}{R}{G}"`)
-- `ConditionalStaticAbility(ability, condition)` — conditional static
+- `ConditionalStaticAbility(ability, condition)` — conditional static. Supported conditions during projection: `SourceHasSubtype`, `SourceHasKeyword`, `SourceIsTapped`, `SourceIsUntapped` (Illusion Spinners), `EnchantedCreatureHasSubtype`, `IsYourTurn`, `YouLostLifeThisTurn`, `Compare`, `Exists` (subset: you/each/opponent control of creatures or filtered permanents), and `Not` of any supported condition.
 
 ### StaticTarget values
 

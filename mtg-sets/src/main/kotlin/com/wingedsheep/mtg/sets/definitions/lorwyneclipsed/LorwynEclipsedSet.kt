@@ -113,6 +113,7 @@ object LorwynEclipsedSet {
         HexingSquelcher,
         HighPerfectMorcant,
         HovelHurler,
+        IllusionSpinners,
         ImpoliteEntrance,
         IronShieldElf,
         KeepOut,
