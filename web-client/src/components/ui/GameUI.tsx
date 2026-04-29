@@ -6,6 +6,7 @@ import { ManaCost } from './ManaSymbols'
 import { randomBackground } from '@/utils/background.ts'
 import { ReplayViewer, type GameSummary } from '../admin/ReplayViewer'
 import type { ReplayData } from '@/replay/reconstructSnapshots.ts'
+import { DeckInput } from './DeckInput'
 import styles from './GameUI.module.css'
 
 type GameMode = 'normal' | 'tournament'
@@ -76,6 +77,7 @@ function ConnectionOverlay({
   const [showReplays, setShowReplays] = useState(false)
   const [publicTournaments, setPublicTournaments] = useState<PublicTournamentSummary[]>([])
   const [publicTournamentsError, setPublicTournamentsError] = useState<string | null>(null)
+  const [customDeck, setCustomDeck] = useState<Record<string, number>>({})
 
   const confirmName = () => {
     if (playerName.trim()) {
@@ -98,7 +100,9 @@ function ConnectionOverlay({
       // Create lobby with default settings - host can change in lobby
       createTournamentLobby(['KTK'], 'SEALED')
     } else {
-      createGame(randomDeck, quickGameSetCode)
+      // Use custom deck if provided, otherwise use random deck
+      const deckToUse = Object.keys(customDeck).length > 0 ? customDeck : randomDeck
+      createGame(deckToUse, quickGameSetCode)
     }
   }
 
@@ -107,7 +111,9 @@ function ConnectionOverlay({
       if (gameMode === 'tournament') {
         joinLobby(joinSessionId.trim())
       } else {
-        joinGame(joinSessionId.trim(), randomDeck)
+        // Use custom deck if provided, otherwise use random deck
+        const deckToUse = Object.keys(customDeck).length > 0 ? customDeck : randomDeck
+        joinGame(joinSessionId.trim(), deckToUse)
       }
     }
   }
@@ -270,6 +276,13 @@ function ConnectionOverlay({
                 </select>
               )}
 
+              {gameMode === 'normal' && (
+                <DeckInput
+                  onDeckChange={setCustomDeck}
+                  disabled={!nameConfirmed}
+                />
+              )}
+
               <button
                 onClick={handleCreate}
                 className={gameMode === 'tournament' ? styles.tournamentButton : styles.primaryButton}
@@ -279,7 +292,10 @@ function ConnectionOverlay({
 
               {gameMode === 'normal' && aiEnabled && (
                 <button
-                  onClick={() => createAiGame(randomDeck, quickGameSetCode)}
+                  onClick={() => {
+                    const deckToUse = Object.keys(customDeck).length > 0 ? customDeck : randomDeck
+                    createAiGame(deckToUse, quickGameSetCode)
+                  }}
                   className={styles.aiButton}
                 >
                   Play vs AI
@@ -510,7 +526,7 @@ function LobbyOverlay({
   const canSwitchToGrid = playerCount <= 4
   const playerCheck = isWinston ? playerCount === 2
     : isGridDraft ? playerCount >= 2 && playerCount <= 4
-    : playerCount >= 2
+      : playerCount >= 2
   const canStart = playerCheck && hasSelectedSets
 
   const copyLobbyId = () => {
@@ -535,10 +551,10 @@ function LobbyOverlay({
             {(() => {
               const distText = lobbyState.settings.setCodes.length > 1 && Object.keys(lobbyState.settings.boosterDistribution).length > 0
                 ? Object.entries(lobbyState.settings.boosterDistribution).map(([code, count]) => {
-                    const idx = lobbyState.settings.setCodes.indexOf(code)
-                    const name = idx >= 0 ? (lobbyState.settings.setNames[idx] ?? code) : code
-                    return `${count} ${name}`
-                  }).join(' + ')
+                  const idx = lobbyState.settings.setCodes.indexOf(code)
+                  const name = idx >= 0 ? (lobbyState.settings.setNames[idx] ?? code) : code
+                  return `${count} ${name}`
+                }).join(' + ')
                 : null
               if (isGridDraft) return `Grid Draft · ${lobbyState.settings.boosterCount} boosters · ${lobbyState.settings.pickTimeSeconds}s per pick`
               if (isWinston) return `Winston Draft · ${distText ?? `${lobbyState.settings.boosterCount} boosters`} · ${lobbyState.settings.pickTimeSeconds}s per turn`
@@ -904,13 +920,12 @@ function LobbyOverlay({
                 )}
               </div>
               <div className={styles.playerActions}>
-                <span className={`${styles.playerStatus} ${
-                  !player.isConnected
-                    ? styles.playerStatusDisconnected
-                    : player.deckSubmitted
-                      ? styles.playerStatusReady
-                      : styles.playerStatusJoined
-                }`}>
+                <span className={`${styles.playerStatus} ${!player.isConnected
+                  ? styles.playerStatusDisconnected
+                  : player.deckSubmitted
+                    ? styles.playerStatusReady
+                    : styles.playerStatusJoined
+                  }`}>
                   {!player.isConnected
                     ? 'Disconnected'
                     : player.deckSubmitted
@@ -1249,11 +1264,10 @@ function TournamentOverlay({
                   onMouseEnter={handleMouseEnter}
                   onMouseLeave={() => setHoveredStanding(null)}
                 >
-                  <td className={`${styles.standingsTd} ${styles.standingsRank} ${
-                    displayRank === 1 ? styles.standingsRankFirst :
+                  <td className={`${styles.standingsTd} ${styles.standingsRank} ${displayRank === 1 ? styles.standingsRankFirst :
                     displayRank === 2 ? styles.standingsRankSecond :
-                    displayRank === 3 ? styles.standingsRankThird : ''
-                  }`}>
+                      displayRank === 3 ? styles.standingsRankThird : ''
+                    }`}>
                     {displayRank}
                     {standing.tiebreakerReason === 'TIED' && (
                       <span className={styles.tiedIndicator}>*</span>
