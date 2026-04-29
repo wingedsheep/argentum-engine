@@ -2,13 +2,13 @@
 
 **Set Size:** 273 cards (main set, per Scryfall `set:ecl`)
 **Release Date:** January 23, 2026
-**Implemented:** 204 / 273
+**Implemented:** 205 / 273
 
 | Color      | Total | Done |
 |------------|-------|------|
 | White      | 39    | 29   |
 | Blue       | 39    | 30   |
-| Black      | 38    | 30   |
+| Black      | 38    | 31   |
 | Red        | 39    | 27   |
 | Green      | 39    | 28   |
 | Multicolor | 49    | 38   |
@@ -123,7 +123,7 @@
 - [x] Dose of Dawnglow
 - [x] Dream Seizer
 - [x] Gloom Ripper
-- [ ] Gnarlbark Elm
+- [x] Gnarlbark Elm
 - [x] Graveshifter
 - [x] Gutsplitter Gang
 - [x] Heirloom Auntie

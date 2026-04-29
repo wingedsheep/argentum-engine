@@ -96,6 +96,7 @@ object LorwynEclipsedSet {
         GlenElendraGuardian,
         GlenElendrasAnswer,
         GloomRipper,
+        GnarlbarkElm,
         Goatnap,
         GoldmeadowNomad,
         Graveshifter,
