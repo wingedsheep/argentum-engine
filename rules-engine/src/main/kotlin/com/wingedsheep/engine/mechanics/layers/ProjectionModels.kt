@@ -291,6 +291,13 @@ sealed interface SourceProjectionCondition {
     data class Not(val condition: SourceProjectionCondition) : SourceProjectionCondition
 
     /**
+     * The source permanent entered the battlefield this turn.
+     * Used for "as long as this Aura entered this turn" conditions.
+     */
+    @Serializable
+    data object SourceEnteredThisTurn : SourceProjectionCondition
+
+    /**
      * Compare two DynamicAmount values using a comparison operator.
      * Used for "as long as there are two or more instant and/or sorcery cards in your graveyard."
      */

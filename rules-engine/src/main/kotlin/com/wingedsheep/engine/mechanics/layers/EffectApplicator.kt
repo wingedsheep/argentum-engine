@@ -262,6 +262,9 @@ internal class EffectApplicator(
                 predicateEvaluator.matchesWithProjection(state, intermediateProjected, entityId, condition.filter, PredicateContext(controllerId = controllerId))
             }
         }
+        is SourceProjectionCondition.SourceEnteredThisTurn ->
+            state.getEntity(effect.sourceId)
+                ?.has<com.wingedsheep.engine.state.components.battlefield.EnteredThisTurnComponent>() == true
         is SourceProjectionCondition.Not -> !evaluateSourceCondition(condition.condition, effect, state, projectedValues, sourceValues)
         is SourceProjectionCondition.Compare -> {
             val controllerId = sourceValues?.controllerId ?: effect.sourceId

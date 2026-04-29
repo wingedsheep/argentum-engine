@@ -543,6 +543,7 @@ class StaticAbilityHandler(
             is SourceIsTapped -> SourceProjectionCondition.SourceIsTapped
             is SourceIsUntapped -> SourceProjectionCondition.SourceIsUntapped
             is com.wingedsheep.sdk.scripting.conditions.YouLostLifeThisTurn -> SourceProjectionCondition.ControllerLostLifeThisTurn
+            is com.wingedsheep.sdk.scripting.conditions.SourceEnteredThisTurn -> SourceProjectionCondition.SourceEnteredThisTurn
             is Compare -> SourceProjectionCondition.Compare(condition.left, condition.operator, condition.right)
             else -> null
         }
