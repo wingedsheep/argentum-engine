@@ -2,11 +2,11 @@
 
 **Set Size:** 273 cards (main set, per Scryfall `set:ecl`)
 **Release Date:** January 23, 2026
-**Implemented:** 203 / 273
+**Implemented:** 204 / 273
 
 | Color      | Total | Done |
 |------------|-------|------|
-| White      | 39    | 28   |
+| White      | 39    | 29   |
 | Blue       | 39    | 30   |
 | Black      | 38    | 30   |
 | Red        | 39    | 27   |
@@ -38,7 +38,7 @@
 - [x] Keep Out
 - [x] Kinbinding
 - [x] Kinsbaile Aspirant
-- [ ] Kinscaer Sentry
+- [x] Kinscaer Sentry
 - [x] Kithkeeper
 - [x] Liminal Hold
 - [x] Meanders Guide

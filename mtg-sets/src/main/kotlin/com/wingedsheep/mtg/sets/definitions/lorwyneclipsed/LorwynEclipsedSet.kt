@@ -115,6 +115,7 @@ object LorwynEclipsedSet {
         KeepOut,
         Kinbinding,
         KinsbaileAspirant,
+        KinscaerSentry,
         KirolAttentiveFirstYear,
         KindleTheInnerFlame,
         Kithkeeper,
