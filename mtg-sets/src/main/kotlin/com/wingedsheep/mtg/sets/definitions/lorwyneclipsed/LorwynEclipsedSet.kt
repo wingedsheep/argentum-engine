@@ -40,6 +40,7 @@ object LorwynEclipsedSet {
         BoggartPrankster,
         BogslithersEmbrace,
         BoldwyrAggressor,
+        BoneclubBerserker,
         BoulderDash,
         BramblebackBrute,
         BrigidClachansHeart,

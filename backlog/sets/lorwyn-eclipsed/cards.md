@@ -2,14 +2,14 @@
 
 **Set Size:** 273 cards (main set, per Scryfall `set:ecl`)
 **Release Date:** January 23, 2026
-**Implemented:** 210 / 273
+**Implemented:** 211 / 273
 
 | Color      | Total | Done |
 |------------|-------|------|
 | White      | 39    | 30   |
 | Blue       | 39    | 32   |
 | Black      | 38    | 31   |
-| Red        | 39    | 27   |
+| Red        | 39    | 28   |
 | Green      | 39    | 29   |
 | Multicolor | 49    | 38   |
 | Colorless  | 18    | 12   |
@@ -147,7 +147,7 @@
 ## Red (39)
 
 - [x] Boldwyr Aggressor
-- [ ] Boneclub Berserker
+- [x] Boneclub Berserker
 - [x] Boulder Dash
 - [x] Brambleback Brute
 - [x] Burning Curiosity
