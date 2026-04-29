@@ -11,6 +11,8 @@ import com.wingedsheep.sdk.scripting.AbilityId
 import com.wingedsheep.sdk.scripting.GameEvent
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.GrantTriggeredAbilityToCreatureGroup
+import com.wingedsheep.engine.state.components.battlefield.AttachedToComponent
+import com.wingedsheep.sdk.scripting.GrantWard
 import com.wingedsheep.sdk.scripting.GrantWardToGroup
 import com.wingedsheep.sdk.scripting.KeywordAbility
 import com.wingedsheep.sdk.scripting.TriggerBinding
@@ -312,6 +314,25 @@ class TriggerAbilityResolver(
                 if (ability.filter.excludeSelf && entityId == permanentId) continue
 
                 result.add(createWardTriggeredAbility(ability.cost, "granted_${permanentId.value}"))
+            }
+        }
+
+        // 3. Ward granted by GrantWard static abilities on permanents attached to this entity (Auras/Equipment)
+        for (permanentId in state.getBattlefield()) {
+            val container = state.getEntity(permanentId) ?: continue
+            val attachedTo = container.get<AttachedToComponent>()?.targetId ?: continue
+            if (attachedTo != entityId) continue
+
+            val card = container.get<CardComponent>() ?: continue
+            if (container.has<FaceDownComponent>()) continue
+
+            val sourceDef = cardRegistry.getCard(card.cardDefinitionId) ?: continue
+            val classLevel = container.get<ClassLevelComponent>()?.currentLevel
+            val allStaticAbilities = sourceDef.script.effectiveStaticAbilities(classLevel)
+
+            for (ability in allStaticAbilities) {
+                if (ability !is GrantWard) continue
+                result.add(createWardTriggeredAbility(ability.cost, "attached_${permanentId.value}"))
             }
         }
 
