@@ -53,6 +53,7 @@ export type {
   ClientCardEffect,
   ClientRuling,
   ClientManaPool,
+  ClientRestrictedManaEntry,
   ClientCombatState,
   ClientAttacker,
   ClientCombatTarget,

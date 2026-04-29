@@ -404,11 +404,24 @@ data class ClientManaPool(
     val black: Int,
     val red: Int,
     val green: Int,
-    val colorless: Int
+    val colorless: Int,
+    val restrictedMana: List<ClientRestrictedManaEntry> = emptyList()
 ) {
-    val total: Int get() = white + blue + black + red + green + colorless
+    val total: Int get() = white + blue + black + red + green + colorless + restrictedMana.size
     val isEmpty: Boolean get() = total == 0
 }
+
+/**
+ * A single unit of restricted mana for client display.
+ *
+ * @property color Mana color symbol ("W", "U", "B", "R", "G") or null for colorless.
+ * @property restrictionDescription Human-readable restriction (e.g., "Spend this mana only to cast spells with mana value 4 or greater").
+ */
+@Serializable
+data class ClientRestrictedManaEntry(
+    val color: String?,
+    val restrictionDescription: String
+)
 
 /**
  * Combat state for client display.

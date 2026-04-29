@@ -1298,7 +1298,13 @@ class ClientStateTransformer(
                 black = manaPoolComponent.black,
                 red = manaPoolComponent.red,
                 green = manaPoolComponent.green,
-                colorless = manaPoolComponent.colorless
+                colorless = manaPoolComponent.colorless,
+                restrictedMana = manaPoolComponent.restrictedMana.map { entry ->
+                    ClientRestrictedManaEntry(
+                        color = entry.color?.symbol?.toString(),
+                        restrictionDescription = entry.restriction.description
+                    )
+                }
             )
         } else {
             null

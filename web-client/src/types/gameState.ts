@@ -361,13 +361,26 @@ export interface ClientManaPool {
   readonly red: number
   readonly green: number
   readonly colorless: number
+  readonly restrictedMana: ReadonlyArray<ClientRestrictedManaEntry>
+}
+
+/**
+ * A single unit of restricted mana for client display.
+ * Matches backend ClientRestrictedManaEntry.kt.
+ */
+export interface ClientRestrictedManaEntry {
+  /** Mana color symbol ("W"/"U"/"B"/"R"/"G") or null for colorless. */
+  readonly color: string | null
+  /** Human-readable restriction (e.g., "Spend this mana only to cast spells with mana value 4 or greater"). */
+  readonly restrictionDescription: string
 }
 
 /**
  * Calculate total mana in pool.
  */
 export function totalMana(pool: ClientManaPool): number {
-  return pool.white + pool.blue + pool.black + pool.red + pool.green + pool.colorless
+  return pool.white + pool.blue + pool.black + pool.red + pool.green + pool.colorless +
+    (pool.restrictedMana?.length ?? 0)
 }
 
 /**

@@ -17,8 +17,11 @@ interface ManaCostProgressProps {
   gap?: number
 }
 
+/** Numeric mana pool keys (excludes the restrictedMana list field). */
+type NumericPoolKey = 'white' | 'blue' | 'black' | 'red' | 'green' | 'colorless'
+
 /** Mana color codes mapped to pool keys */
-const COLOR_TO_POOL_KEY: Record<string, keyof ClientManaPool> = {
+const COLOR_TO_POOL_KEY: Record<string, NumericPoolKey> = {
   W: 'white',
   U: 'blue',
   B: 'black',
