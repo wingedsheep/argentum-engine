@@ -132,6 +132,13 @@ class DynamicAmountEvaluator(
                 cardTypes.size
             }
 
+            is DynamicAmount.CardsInLinkedExile -> {
+                val sourceId = context.sourceId ?: return 0
+                state.getEntity(sourceId)
+                    ?.get<com.wingedsheep.engine.state.components.battlefield.LinkedExileComponent>()
+                    ?.exiledIds?.size ?: 0
+            }
+
             // Unified counting
             is DynamicAmount.Count -> {
                 evaluateUnifiedCount(state, amount.player, amount.zone, amount.filter, context, projectedState)

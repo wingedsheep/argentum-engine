@@ -17,5 +17,6 @@ object DuskmournSet {
         EtherealArmor,
         ShardmagesRescue,
         ShelteredByGhosts,
+        VeteranSurvivor,
     )
 }
