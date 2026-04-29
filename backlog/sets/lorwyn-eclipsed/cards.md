@@ -2,14 +2,14 @@
 
 **Set Size:** 273 cards (main set, per Scryfall `set:ecl`)
 **Release Date:** January 23, 2026
-**Implemented:** 202 / 273
+**Implemented:** 203 / 273
 
 | Color      | Total | Done |
 |------------|-------|------|
 | White      | 39    | 28   |
 | Blue       | 39    | 30   |
 | Black      | 38    | 30   |
-| Red        | 39    | 26   |
+| Red        | 39    | 27   |
 | Green      | 39    | 28   |
 | Multicolor | 49    | 38   |
 | Colorless  | 18    | 11   |
@@ -184,7 +184,7 @@
 - [x] Squawkroaster
 - [ ] Sting-Slinger
 - [x] Tweeze
-- [ ] Warren Torchmaster
+- [x] Warren Torchmaster
 
 ## Green (39)
 
