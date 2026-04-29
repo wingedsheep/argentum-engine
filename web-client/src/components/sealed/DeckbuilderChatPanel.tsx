@@ -453,9 +453,7 @@ function pickExamples(): string {
 }
 
 const HOW_IT_WORKS =
-  "Here's the deal: I can see your full pool, your current deck, and this set's archetypes. " +
-  "I can highlight cards in the pool view (great for \"show me all the removal\") or rebuild your whole deck in one shot — and yes, a sealed deck needs at least 40 cards, lands included. " +
-  "Just talk to me normally; typos welcome."
+  "I can see your pool, deck, and the set's archetypes — and I can highlight cards or rebuild your deck (40+ cards, lands included). Try:"
 
 const WELCOME_INTROS: readonly string[] = [
   "Hey planeswalker. Before you ask — yes, I've already looked at your pool. Some of it is great, some of it is a 2/1 for three. We'll work with what we have.",
@@ -470,18 +468,7 @@ const WELCOME_INTROS: readonly string[] = [
   "Welcome back to the drafting hall. Your pool awaits, and so do I.",
 ]
 
-const WELCOME_CLOSERS: readonly string[] = [
-  'What\'s the plan?',
-  'What shall we forge?',
-  'Where would you like to start?',
-  'Lead on.',
-  'What would you like to explore?',
-  'Where shall we begin?',
-  'What\'s our opening move?',
-]
-
 function pickWelcomeMessage(): string {
   const intro = pickRandom(WELCOME_INTROS)
-  const closer = pickRandom(WELCOME_CLOSERS)
-  return `${intro}\n\n${HOW_IT_WORKS}\n\nA few ways to get started:\n${pickExamples()}\n\n${closer}`
+  return `${intro}\n\n${HOW_IT_WORKS}\n${pickExamples()}`
 }
