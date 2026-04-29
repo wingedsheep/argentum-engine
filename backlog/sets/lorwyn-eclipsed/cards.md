@@ -2,7 +2,7 @@
 
 **Set Size:** 273 cards (main set, per Scryfall `set:ecl`)
 **Release Date:** January 23, 2026
-**Implemented:** 216 / 273
+**Implemented:** 217 / 273
 
 | Color      | Total | Done |
 |------------|-------|------|
@@ -12,7 +12,7 @@
 | Red        | 39    | 28   |
 | Green      | 39    | 30   |
 | Multicolor | 49    | 40   |
-| Colorless  | 18    | 12   |
+| Colorless  | 18    | 13   |
 | Land       | 12    | 11   |
 
 > **Note:** Before implementing any card, check the `effects/` directory in this folder for any
@@ -282,7 +282,7 @@
 
 ## Colorless (18)
 
-- [ ] Ashling, Rekindled // Ashling, Rimebound
+- [x] Ashling, Rekindled // Ashling, Rimebound
 - [x] Brigid, Clachan's Heart // Brigid, Doun's Mind
 - [x] Changeling Wayfinder
 - [x] Chronicle of Victory

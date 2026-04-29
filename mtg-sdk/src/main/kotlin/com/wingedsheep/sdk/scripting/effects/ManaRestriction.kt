@@ -51,6 +51,16 @@ sealed interface ManaRestriction {
     }
 
     /**
+     * "Spend this mana only to cast spells with mana value 4 or greater."
+     */
+    @SerialName("SpellsMV4OrGreater")
+    @Serializable
+    data object SpellsMV4OrGreater : ManaRestriction {
+        override val description: String =
+            "Spend this mana only to cast spells with mana value 4 or greater"
+    }
+
+    /**
      * "Spend this mana only to cast a spell of the specified subtype
      * or to activate an ability of a source of that subtype."
      *

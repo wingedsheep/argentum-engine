@@ -30,6 +30,7 @@ fun ManaRestriction.isSatisfiedBy(context: SpellPaymentContext): Boolean = when 
     is ManaRestriction.InstantOrSorceryOnly -> context.isInstantOrSorcery
     is ManaRestriction.KickedSpellsOnly -> context.isKicked
     is ManaRestriction.CreatureMV4OrXCost -> context.isCreature && (context.manaValue >= 4 || context.hasXInCost)
+    is ManaRestriction.SpellsMV4OrGreater -> context.manaValue >= 4
     is ManaRestriction.CreatureSpellsOnly -> context.isCreature
     is ManaRestriction.SubtypeSpellsOrAbilitiesOnly ->
         context.subtypes.any { it.equals(subtype, ignoreCase = true) }
