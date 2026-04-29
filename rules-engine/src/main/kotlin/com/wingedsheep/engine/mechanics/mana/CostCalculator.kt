@@ -715,7 +715,17 @@ class CostCalculator(
             }
 
             CardPredicate.SharesCreatureTypeWithTriggeringEntity -> true // Not applicable in cost calculation
-            CardPredicate.HasChosenSubtype -> true // Not applicable in cost calculation
+            CardPredicate.HasChosenSubtype -> {
+                if (sourceEntityId == null || state == null) return false
+                val chosenType = state.getEntity(sourceEntityId)
+                    ?.get<com.wingedsheep.engine.state.components.identity.ChosenCreatureTypeComponent>()
+                    ?.creatureType
+                    ?: return false
+                val spellSubtypes = cardDef.typeLine.subtypes.map { it.value }
+                spellSubtypes.any { it.equals(chosenType, ignoreCase = true) } ||
+                    (com.wingedsheep.sdk.core.Keyword.CHANGELING in cardDef.keywords &&
+                        chosenType in Subtype.ALL_CREATURE_TYPES)
+            }
             is CardPredicate.SharesCreatureTypeWith -> true // Not applicable in cost calculation
 
             // Context-relative predicates — not applicable in cost calculation (no pipeline context)

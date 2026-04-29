@@ -99,6 +99,7 @@ object LorwynEclipsedSet {
         ForagingWickermaw,
         GallantFowlknight,
         GanglyStompling,
+        GatheringStone,
         Giantfall,
         GiltLeafsEmbrace,
         GlamerGifter,
