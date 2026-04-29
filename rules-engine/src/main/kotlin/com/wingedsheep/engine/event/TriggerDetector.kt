@@ -233,6 +233,11 @@ class TriggerDetector(
         // permanents that fired from that event trigger an additional time per copy.
         duplicateETBTriggers(state, events, triggers)
 
+        // Duplicate triggers for "all triggers from a filtered source trigger again" static
+        // abilities (e.g., Twinflame Travelers). For each pending trigger whose source matches
+        // a doubler's filter, add a copy.
+        duplicateSourceTriggers(state, triggers)
+
         // Detect event-based delayed triggers (e.g. Long River Lurker's
         // "whenever that creature deals combat damage this turn, you may exile it").
         detectEventBasedDelayedTriggers(state, events, triggers)
@@ -413,6 +418,10 @@ class TriggerDetector(
                 )
             }
         }
+
+        // Duplicate triggers for "all triggers from a filtered source trigger again" static
+        // abilities (e.g., Twinflame Travelers) — also applies to phase/step triggers.
+        duplicateSourceTriggers(state, triggers)
 
         // Filter out once-per-turn triggers that have already fired this turn
         val filteredTriggers = triggers.filter { trigger ->
@@ -1498,6 +1507,75 @@ class TriggerDetector(
 
                     duplicates.add(trigger)
                 }
+            }
+        }
+
+        triggers.addAll(duplicates)
+    }
+
+    /**
+     * Duplicate triggers for [AdditionalSourceTriggers] static abilities (e.g., Twinflame Travelers).
+     *
+     * For each pending trigger whose source permanent matches a doubler's filter and is
+     * controlled by the doubler's controller, add an extra copy. Self-exclusion (the doubler's
+     * own source) is honoured per [AdditionalSourceTriggers.excludeSelf].
+     *
+     * Multiple copies are additive: N doublers each cause one extra firing per matching trigger,
+     * yielding N+1 total firings.
+     */
+    private fun duplicateSourceTriggers(
+        state: GameState,
+        triggers: MutableList<PendingTrigger>
+    ) {
+        if (triggers.isEmpty()) return
+        val registry = cardRegistry
+        val projected = state.projectedState
+
+        data class SourceDoubler(
+            val doublerSourceId: EntityId,
+            val controllerId: EntityId,
+            val filter: GameObjectFilter,
+            val excludeSelf: Boolean
+        )
+        val doublers = mutableListOf<SourceDoubler>()
+
+        for (permanentId in state.getBattlefield()) {
+            val container = state.getEntity(permanentId) ?: continue
+            val card = container.get<CardComponent>() ?: continue
+            if (container.has<FaceDownComponent>()) continue
+            val controllerId = projected.getController(permanentId) ?: continue
+            val cardDef = registry.getCard(card.cardDefinitionId) ?: continue
+            val classLevel = container.get<ClassLevelComponent>()?.currentLevel
+            for (ability in cardDef.script.effectiveStaticAbilities(classLevel)) {
+                if (ability is AdditionalSourceTriggers) {
+                    doublers.add(
+                        SourceDoubler(
+                            doublerSourceId = permanentId,
+                            controllerId = controllerId,
+                            filter = ability.sourceFilter,
+                            excludeSelf = ability.excludeSelf
+                        )
+                    )
+                }
+            }
+        }
+
+        if (doublers.isEmpty()) return
+
+        val duplicates = mutableListOf<PendingTrigger>()
+        // Iterate over a snapshot so duplicates added by earlier doublers don't re-multiply.
+        val originals = triggers.toList()
+        for (doubler in doublers) {
+            for (trigger in originals) {
+                if (trigger.controllerId != doubler.controllerId) continue
+                val triggerSourceId = trigger.sourceId
+                if (doubler.excludeSelf && triggerSourceId == doubler.doublerSourceId) continue
+                if (!predicateEvaluator.matchesWithProjection(
+                        state, projected, triggerSourceId, doubler.filter,
+                        PredicateContext(controllerId = doubler.controllerId, sourceId = doubler.doublerSourceId)
+                    )
+                ) continue
+                duplicates.add(trigger)
             }
         }
 

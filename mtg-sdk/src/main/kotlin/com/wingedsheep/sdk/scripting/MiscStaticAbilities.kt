@@ -368,6 +368,37 @@ data class AdditionalETBTriggers(
 }
 
 /**
+ * If a triggered ability of a permanent matching [sourceFilter] you control triggers,
+ * it triggers an additional time.
+ *
+ * Models Twinflame Travelers ("If a triggered ability of another Elemental you control
+ * triggers, it triggers an additional time") and similar effects that double *all* triggers
+ * (not just ETB) for a filtered group of permanents.
+ *
+ * The duplicated trigger inherits the original's source, controller, and trigger context,
+ * so it resolves identically to the original — players choose new targets independently
+ * for each copy.
+ *
+ * Multiple copies are additive: N copies cause N+1 total firings.
+ *
+ * @property sourceFilter Which permanents' triggers get doubled (matched via projected state).
+ * @property excludeSelf When true, the static ability's own source is excluded from the filter
+ *   (matches the "another" wording in oracle text). Defaults to true.
+ */
+@SerialName("AdditionalSourceTriggers")
+@Serializable
+data class AdditionalSourceTriggers(
+    val sourceFilter: GameObjectFilter,
+    val excludeSelf: Boolean = true,
+    override val description: String = "If a triggered ability of another permanent matching the filter you control triggers, it triggers an additional time"
+) : StaticAbility {
+    override fun applyTextReplacement(replacer: TextReplacer): StaticAbility {
+        val newFilter = sourceFilter.applyTextReplacement(replacer)
+        return if (newFilter !== sourceFilter) copy(sourceFilter = newFilter) else this
+    }
+}
+
+/**
  * You may play additional lands on each of your turns.
  * Used for permanents like Hugs, Grisly Guardian and Oracle of Mul Daya.
  *

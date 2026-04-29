@@ -2,7 +2,7 @@
 
 **Set Size:** 273 cards (main set, per Scryfall `set:ecl`)
 **Release Date:** January 23, 2026
-**Implemented:** 215 / 273
+**Implemented:** 216 / 273
 
 | Color      | Total | Done |
 |------------|-------|------|
@@ -11,7 +11,7 @@
 | Black      | 38    | 32   |
 | Red        | 39    | 28   |
 | Green      | 39    | 30   |
-| Multicolor | 49    | 39   |
+| Multicolor | 49    | 40   |
 | Colorless  | 18    | 12   |
 | Land       | 12    | 11   |
 
@@ -274,7 +274,7 @@
 - [x] Tam, Mindful First-Year
 - [x] Thoughtweft Lieutenant
 - [x] Trystan's Command
-- [ ] Twinflame Travelers
+- [x] Twinflame Travelers
 - [x] Vibrance
 - [x] Voracious Tome-Skimmer
 - [ ] Wary Farmer

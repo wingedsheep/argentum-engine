@@ -213,6 +213,7 @@ object LorwynEclipsedSet {
         TributaryVaulter,
         TrystansCommand,
         TwilightDiviner,
+        TwinflameTravelers,
         Tweeze,
         UnexpectedAssistance,
         UnforgivingAim,

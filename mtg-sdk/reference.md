@@ -758,6 +758,7 @@ constructors.
 - `Conditions.SourceHasCounter(counterType)` — source has ≥1 counter of the given type (intervening-if, e.g., Moonshadow)
 - `Conditions.SacrificedHadSubtype(subtype)` — a permanent sacrificed as cost had specific subtype
 - `Conditions.TriggeringEntityWasHistoric` — the triggering entity was historic (legendary, artifact, or Saga)
+- `Conditions.TriggeringEntityHadMinusOneMinusOneCounter` — the triggering entity had a -1/-1 counter on it when it left the battlefield (intervening-if for dies/leaves triggers, e.g., Retched Wretch)
 
 ### Turn
 
@@ -1092,6 +1093,7 @@ Set via `staticAbility { ability = ... }`:
 - `GrantCantLoseGame` — controller can't lose the game (Lich's Mastery, Platinum Angel)
 - `ExtraLoyaltyActivation` — activate loyalty abilities of planeswalkers you control twice each turn (Oath of Teferi)
 - `AdditionalETBTriggers(creatureFilter)` — when a creature matching the filter ETBs under your control, triggered abilities of your permanents that fired from that event trigger an additional time (Naban, Dean of Iteration)
+- `AdditionalSourceTriggers(sourceFilter, excludeSelf = true)` — if a triggered ability of a permanent matching the filter you control triggers, it triggers an additional time (Twinflame Travelers — "another Elemental"). Works for *all* triggers (not just ETB). `excludeSelf` skips the doubler's own source to honour "another" wording.
 - `NoncombatDamageBonus(bonusAmount)` — if a source you control would deal noncombat damage to an opponent or a permanent an opponent controls, it deals that much damage plus bonusAmount instead (Artist's Talent Level 3)
 - `CantCastSpells(target, duration)` — prevent target player from casting spells
 - `SkipNextTurn(target)` — target player skips their next turn
