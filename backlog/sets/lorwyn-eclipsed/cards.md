@@ -2,7 +2,7 @@
 
 **Set Size:** 273 cards (main set, per Scryfall `set:ecl`)
 **Release Date:** January 23, 2026
-**Implemented:** 217 / 273
+**Implemented:** 218 / 273
 
 | Color      | Total | Done |
 |------------|-------|------|
@@ -11,7 +11,7 @@
 | Black      | 38    | 32   |
 | Red        | 39    | 28   |
 | Green      | 39    | 30   |
-| Multicolor | 49    | 40   |
+| Multicolor | 49    | 41   |
 | Colorless  | 18    | 13   |
 | Land       | 12    | 11   |
 
@@ -243,7 +243,7 @@
 - [ ] Deepway Navigator
 - [ ] Doran, Besieged by Time
 - [x] Dream Harvest
-- [ ] Eclipsed Boggart
+- [x] Eclipsed Boggart
 - [x] Eclipsed Elf
 - [x] Eclipsed Flamekin
 - [x] Eclipsed Kithkin

@@ -74,6 +74,7 @@ object LorwynEclipsedSet {
         DoseOfDawnglow,
         DreamHarvest,
         DreamSeizer,
+        EclipsedBoggart,
         EclipsedElf,
         EclipsedFlamekin,
         EclipsedKithkin,
