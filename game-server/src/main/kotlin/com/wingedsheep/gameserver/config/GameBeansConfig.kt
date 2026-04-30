@@ -8,9 +8,11 @@ import com.wingedsheep.gameserver.sealed.SetConfigs
 import com.wingedsheep.mtg.sets.definitions.bloomburrow.BloomburrowSet
 import com.wingedsheep.mtg.sets.definitions.edgeofeternities.EdgeOfEternitiesSet
 import com.wingedsheep.mtg.sets.definitions.dominaria.DominariaSet
+import com.wingedsheep.mtg.sets.definitions.dominariaunited.DominariaUnitedSet
 import com.wingedsheep.mtg.sets.definitions.khans.KhansOfTarkirSet
 import com.wingedsheep.mtg.sets.definitions.legions.LegionsSet
 import com.wingedsheep.mtg.sets.definitions.onslaught.OnslaughtSet
+import com.wingedsheep.mtg.sets.definitions.one.PhyrexiaAllWillBeOneSet
 import com.wingedsheep.mtg.sets.definitions.portal.PortalSet
 import com.wingedsheep.mtg.sets.definitions.lorwyneclipsed.LorwynEclipsedSet
 import com.wingedsheep.mtg.sets.definitions.lostcavernsofixalan.LostCavernsOfIxalanSet
@@ -55,9 +57,15 @@ class GameBeansConfig(
             register(KhansOfTarkirSet.allCards)
             register(KhansOfTarkirSet.basicLands)
         }
+        if (gameProperties.sets.phyrexiaAllWillBeOneEnabled) {
+            register(PhyrexiaAllWillBeOneSet.allCards)
+        }
         if (gameProperties.sets.dominariaEnabled) {
             register(DominariaSet.allCards)
             register(DominariaSet.basicLands)
+        }
+        if (gameProperties.sets.dominariaUnitedEnabled) {
+            register(DominariaUnitedSet.allCards)
         }
         if (gameProperties.sets.bloomburrowEnabled) {
             register(BloomburrowSet.allCards)
@@ -137,7 +145,9 @@ class GameBeansConfig(
             if (gameProperties.sets.scourgeEnabled) addAll(ScourgeSet.allCards)
             if (gameProperties.sets.legionsEnabled) addAll(LegionsSet.allCards)
             if (gameProperties.sets.khansEnabled) addAll(KhansOfTarkirSet.allCards)
+            if (gameProperties.sets.phyrexiaAllWillBeOneEnabled) addAll(PhyrexiaAllWillBeOneSet.allCards)
             if (gameProperties.sets.dominariaEnabled) addAll(DominariaSet.allCards)
+            if (gameProperties.sets.dominariaUnitedEnabled) addAll(DominariaUnitedSet.allCards)
             if (gameProperties.sets.bloomburrowEnabled) addAll(BloomburrowSet.allCards)
             if (gameProperties.sets.edgeOfEternitiesEnabled) addAll(EdgeOfEternitiesSet.allCards)
             if (gameProperties.sets.lorwynEclipsedEnabled) addAll(LorwynEclipsedSet.allCards)
@@ -149,7 +159,9 @@ class GameBeansConfig(
             if (gameProperties.sets.scourgeEnabled) add("SCG")
             if (gameProperties.sets.legionsEnabled) add("LGN")
             if (gameProperties.sets.khansEnabled) add("KTK")
+            if (gameProperties.sets.phyrexiaAllWillBeOneEnabled) add("ONE")
             if (gameProperties.sets.dominariaEnabled) add("DOM")
+            if (gameProperties.sets.dominariaUnitedEnabled) add("DMU")
             if (gameProperties.sets.bloomburrowEnabled) add("BLB")
             if (gameProperties.sets.edgeOfEternitiesEnabled) add("EOE")
             if (gameProperties.sets.murdersAtKarlovManorEnabled) add("MKM")
