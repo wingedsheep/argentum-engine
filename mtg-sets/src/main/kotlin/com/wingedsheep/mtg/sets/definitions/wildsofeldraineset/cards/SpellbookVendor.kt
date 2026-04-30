@@ -34,6 +34,6 @@ val SpellbookVendor = card("Spellbook Vendor") {
         collectorNumber = "31"
         artist = "Paolo Parente"
         flavorText = "\"Don't let the size of the shop fool you. I stock everything.\""
-        imageUri = "https://cards.scryfall.io/normal/front/3/3/33a34446-dd04-4e32-b4de-c1c5c0a9408f.jpg?1696288191"
+        imageUri = "https://cards.scryfall.io/normal/front/4/c/4ceac5b5-05eb-4f00-9477-3db490be24dd.jpg?1692936729"
     }
 }
