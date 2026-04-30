@@ -254,6 +254,17 @@ sealed interface KeywordAbility {
         override val description: String = "Afflict $count"
     }
 
+    /**
+     * Toxic N.
+     * "Toxic 1" - Players dealt combat damage by this creature also get N poison counters.
+     */
+    @SerialName("Toxic")
+    @Serializable
+    data class Toxic(val count: Int) : KeywordAbility {
+        override val keyword: Keyword = Keyword.TOXIC
+        override val description: String = "Toxic $count"
+    }
+
     // =========================================================================
     // Vehicle/Artifact Keywords
     // =========================================================================
@@ -661,5 +672,10 @@ sealed interface KeywordAbility {
          * Create Conspire keyword ability.
          */
         fun conspire(): KeywordAbility = Conspire
+
+        /**
+         * Create Toxic with a numeric value.
+         */
+        fun toxic(count: Int): KeywordAbility = Toxic(count)
     }
 }

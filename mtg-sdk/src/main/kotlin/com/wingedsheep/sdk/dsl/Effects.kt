@@ -29,6 +29,7 @@ import com.wingedsheep.sdk.scripting.effects.SetBasePowerEffect
 
 import com.wingedsheep.sdk.scripting.effects.ChooseColorAndGrantProtectionToGroupEffect
 import com.wingedsheep.sdk.scripting.effects.ChooseColorAndGrantProtectionToTargetEffect
+import com.wingedsheep.sdk.scripting.effects.ChooseColorGrantToxicHexproofAndCantBeBlockedByColorEffect
 import com.wingedsheep.sdk.scripting.effects.CantAttackGroupEffect
 import com.wingedsheep.sdk.scripting.effects.CantAttackEffect
 import com.wingedsheep.sdk.scripting.effects.CantBlockEffect
@@ -1052,6 +1053,16 @@ object Effects {
         target: EffectTarget = EffectTarget.Self,
         duration: Duration = Duration.EndOfTurn
     ): Effect = ChooseColorAndGrantProtectionToTargetEffect(target, duration)
+
+    /**
+     * Choose a color, then grant toxic N, hexproof from that color, and evasion against
+     * creatures of that color to a single target until end of turn.
+     */
+    fun ChooseColorGrantToxicHexproofAndCantBeBlockedByColor(
+        target: EffectTarget = EffectTarget.ContextTarget(0),
+        toxicAmount: Int = 1,
+        duration: Duration = Duration.EndOfTurn
+    ): Effect = ChooseColorGrantToxicHexproofAndCantBeBlockedByColorEffect(target, toxicAmount, duration)
 
     // =========================================================================
     // Control Effects

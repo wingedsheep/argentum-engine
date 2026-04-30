@@ -30,6 +30,7 @@ import com.wingedsheep.engine.handlers.effects.permanent.counters.ProliferateExe
 import com.wingedsheep.engine.handlers.effects.permanent.counters.RemoveCountersExecutor
 import com.wingedsheep.engine.handlers.effects.permanent.protection.ChooseColorProtectionExecutor
 import com.wingedsheep.engine.handlers.effects.permanent.protection.ChooseColorProtectionTargetExecutor
+import com.wingedsheep.engine.handlers.effects.permanent.protection.ChooseColorToxicHexproofEvasionExecutor
 import com.wingedsheep.engine.handlers.effects.permanent.stats.ModifyStatsExecutor
 import com.wingedsheep.engine.handlers.effects.permanent.stats.SetBasePowerExecutor
 import com.wingedsheep.engine.handlers.effects.permanent.stats.SetBasePowerToughnessExecutor
@@ -135,6 +136,7 @@ class PermanentExecutors(
         TapUntapCollectionExecutor(),
         // protection
         ChooseColorProtectionExecutor(decisionHandler),
-        ChooseColorProtectionTargetExecutor(decisionHandler)
+        ChooseColorProtectionTargetExecutor(decisionHandler),
+        ChooseColorToxicHexproofEvasionExecutor(decisionHandler)
     )
 }

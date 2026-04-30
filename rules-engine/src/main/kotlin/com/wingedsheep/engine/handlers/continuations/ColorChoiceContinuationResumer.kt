@@ -20,6 +20,7 @@ class ColorChoiceContinuationResumer(
     override fun resumers(): List<ContinuationResumer<*>> = listOf(
         resumer(ChooseColorProtectionContinuation::class, ::resumeChooseColorProtection),
         resumer(ChooseColorProtectionTargetContinuation::class, ::resumeChooseColorProtectionTarget),
+        resumer(ChooseColorToxicHexproofEvasionContinuation::class, ::resumeChooseColorToxicHexproofEvasion),
         resumer(ChooseColorForTargetContinuation::class, ::resumeChooseColorForTarget)
     )
 
@@ -129,6 +130,72 @@ class ColorChoiceContinuationResumer(
             affectedEntities = setOf(targetEntityId),
             duration = continuation.duration,
             context = context
+        )
+
+        return checkForMore(newState, events)
+    }
+
+    fun resumeChooseColorToxicHexproofEvasion(
+        state: GameState,
+        continuation: ChooseColorToxicHexproofEvasionContinuation,
+        response: DecisionResponse,
+        checkForMore: CheckForMore
+    ): ExecutionResult {
+        if (response !is ColorChosenResponse) {
+            return ExecutionResult.error(state, "Expected color choice response for toxic hexproof evasion effect")
+        }
+
+        val targetEntityId = continuation.targetEntityId
+        val container = state.getEntity(targetEntityId)
+        val cardComponent = container?.get<CardComponent>()
+        if (container == null || cardComponent == null || !state.getBattlefield().contains(targetEntityId)) {
+            return checkForMore(state, emptyList())
+        }
+
+        val chosenColor = response.color
+        val displayName = if (container.has<FaceDownComponent>()) "Face-down creature" else cardComponent.name
+        val sourceName = continuation.sourceName ?: "Unknown"
+        val context = EffectContext(
+            sourceId = continuation.sourceId,
+            controllerId = continuation.controllerId,
+            opponentId = null
+        )
+
+        var newState = state.addFloatingEffect(
+            layer = Layer.ABILITY,
+            modification = SerializableModification.GrantKeyword("TOXIC_${continuation.toxicAmount}"),
+            affectedEntities = setOf(targetEntityId),
+            duration = continuation.duration,
+            context = context
+        )
+        newState = newState.addFloatingEffect(
+            layer = Layer.ABILITY,
+            modification = SerializableModification.GrantKeyword("HEXPROOF_FROM_${chosenColor.name}"),
+            affectedEntities = setOf(targetEntityId),
+            duration = continuation.duration,
+            context = context
+        )
+        newState = newState.addFloatingEffect(
+            layer = Layer.ABILITY,
+            modification = SerializableModification.CantBeBlockedByColor(chosenColor.name),
+            affectedEntities = setOf(targetEntityId),
+            duration = continuation.duration,
+            context = context
+        )
+
+        val events = listOf(
+            KeywordGrantedEvent(
+                targetId = targetEntityId,
+                targetName = displayName,
+                keyword = "Toxic ${continuation.toxicAmount}",
+                sourceName = sourceName
+            ),
+            KeywordGrantedEvent(
+                targetId = targetEntityId,
+                targetName = displayName,
+                keyword = "Hexproof from ${chosenColor.displayName.lowercase()}",
+                sourceName = sourceName
+            )
         )
 
         return checkForMore(newState, events)

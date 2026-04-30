@@ -189,6 +189,30 @@ class CantBeBlockedExceptByColorRule : BlockEvasionRule {
 }
 
 /**
+ * CantBeBlockedByColor: Cannot be blocked by creatures of the specified color (floating effect).
+ */
+class CantBeBlockedByColorRule : BlockEvasionRule {
+    override fun check(ctx: BlockCheckContext): String? {
+        val colorRestriction = ctx.state.floatingEffects
+            .filter { floatingEffect ->
+                floatingEffect.effect.modification is SerializableModification.CantBeBlockedByColor &&
+                    ctx.attackerId in floatingEffect.effect.affectedEntities
+            }
+            .map { it.effect.modification as SerializableModification.CantBeBlockedByColor }
+            .firstOrNull()
+            ?: return null
+
+        val blockerCard = ctx.state.getEntity(ctx.blockerId)?.get<CardComponent>() ?: return null
+        val forbiddenColor = Color.valueOf(colorRestriction.color)
+        if (blockerCard.colors.contains(forbiddenColor)) {
+            val attackerName = ctx.state.getEntity(ctx.attackerId)?.get<CardComponent>()?.name ?: "Creature"
+            return "${blockerCard.name} cannot block $attackerName (can't be blocked by ${forbiddenColor.displayName.lowercase()} creatures)"
+        }
+        return null
+    }
+}
+
+/**
  * CantBeBlockedExceptBy: Can only be blocked by creatures matching a GameObjectFilter.
  * Unified rule replacing CantBeBlockedExceptByKeywordRule.
  */
@@ -448,6 +472,7 @@ fun defaultBlockEvasionRules(
     LandwalkRule(),
     CantBeBlockedByRule(predicateEvaluator),
     CantBeBlockedExceptByColorRule(),
+    CantBeBlockedByColorRule(),
     CantBeBlockedExceptByRule(predicateEvaluator),
     CantBeBlockedExceptBySubtypeRule(),
     CantBeBlockedUnlessDefenderSharesCreatureTypeRule(),

@@ -52,6 +52,21 @@ data class ChooseColorProtectionTargetContinuation(
 ) : ContinuationFrame
 
 /**
+ * Resume after player chooses a color for effects that grant toxic, hexproof
+ * from that color, and unblockability against creatures of that color.
+ */
+@Serializable
+data class ChooseColorToxicHexproofEvasionContinuation(
+    override val decisionId: String,
+    val controllerId: EntityId,
+    val sourceId: EntityId?,
+    val sourceName: String?,
+    val targetEntityId: EntityId,
+    val toxicAmount: Int,
+    val duration: Duration
+) : ContinuationFrame
+
+/**
  * Resume after a player chooses a color to store on a permanent.
  */
 @Serializable

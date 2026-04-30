@@ -60,3 +60,25 @@ data class ChooseColorAndGrantProtectionToTargetEffect(
 
     override fun applyTextReplacement(replacer: TextReplacer): Effect = this
 }
+
+/**
+ * Choose a color, then grant Skrelv-style evasion/protection to a target creature.
+ *
+ * The target gains toxic N and hexproof from the chosen color until end of turn,
+ * and can't be blocked by creatures of the chosen color this turn.
+ */
+@SerialName("ChooseColorGrantToxicHexproofAndCantBeBlockedByColor")
+@Serializable
+data class ChooseColorGrantToxicHexproofAndCantBeBlockedByColorEffect(
+    val target: EffectTarget,
+    val toxicAmount: Int,
+    val duration: Duration = Duration.EndOfTurn
+) : Effect {
+    override val description: String = buildString {
+        append("Choose a color. ${target.description} gains toxic $toxicAmount and hexproof from that color")
+        if (duration.description.isNotEmpty()) append(" ${duration.description}")
+        append(". It can't be blocked by creatures of that color this turn")
+    }
+
+    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
+}
