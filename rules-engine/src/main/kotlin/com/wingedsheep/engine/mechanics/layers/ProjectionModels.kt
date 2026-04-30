@@ -226,6 +226,13 @@ sealed interface SourceProjectionCondition {
     data class EnchantedCreatureHasSubtype(val subtype: String) : SourceProjectionCondition
 
     /**
+     * The creature enchanted by the source aura must be legendary.
+     * Used for "Enchanted creature gets X as long as it's legendary."
+     */
+    @Serializable
+    data object EnchantedCreatureIsLegendary : SourceProjectionCondition
+
+    /**
      * An opponent of the source permanent's controller controls a creature.
      * Used for "as long as no opponent controls a creature" (via Not wrapper).
      */

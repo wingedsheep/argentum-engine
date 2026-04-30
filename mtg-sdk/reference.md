@@ -734,6 +734,7 @@ constructors.
 - `Conditions.TargetSpellManaValueAtMost(amount, targetIndex = 0)` — target spell's MV at most N
 - `Conditions.TargetHasCounter(counterType, targetIndex = 0)` — target has at least one counter of type
 - `Conditions.TargetMatchesFilter(filter: GameObjectFilter, targetIndex = 0)` — target matches a GameObjectFilter (e.g., legendary, creature type)
+- `Conditions.EnchantedCreatureIsLegendary()` — enchanted creature has the legendary supertype
 
 ### Life Total
 
@@ -1032,6 +1033,7 @@ Set via `staticAbility { ability = ... }`:
 - `RemoveKeywordStatic(keyword, target: StaticTarget)` — permanent keyword removal (e.g., "equipped creature loses flying")
 - `GrantKeywordToCreatureGroup(keyword, filter: AffectsFilter)` — keyword to group
 - `GrantTriggeredAbilityToCreatureGroup(ability: TriggeredAbility, filter: GroupFilter)` — triggered ability to group (e.g., Hunter Sliver granting provoke to all Slivers)
+- `GrantTriggeredAbilityToAttachedCreature(ability: TriggeredAbility)` — triggered ability to attached creature (e.g., Combat Research granting a combat-damage draw trigger)
 - `GrantActivatedAbilityToCreatureGroup(ability: ActivatedAbility, filter: GroupFilter)` — activated ability to group (e.g., Spectral Sliver granting pump to all Slivers)
 - `GrantActivatedAbilityToAttachedCreature(ability: ActivatedAbility)` — activated ability to attached creature (e.g., Singing Bell Strike granting "{6}: Untap this creature")
 - `GrantCantBeBlockedExceptBySubtype(filter: GroupFilter, requiredSubtype: String)` — "can't be blocked except by [subtype]" to group (e.g., Shifting Sliver)
@@ -1129,7 +1131,7 @@ Set via `staticAbility { ability = ... }`:
 - `ReduceSpellCostByFilter(filter, amount)` — reduce spell cost for spells matching a GameObjectFilter
 - `ReduceFaceDownCastingCost(amount)` — reduce face-down casting cost
 - `GrantAlternativeCastingCost(cost: String)` — grants an alternative mana cost for all spells cast by this permanent's controller (e.g., Jodah: `"{W}{U}{B}{R}{G}"`)
-- `ConditionalStaticAbility(ability, condition)` — conditional static. Supported conditions during projection: `SourceHasSubtype`, `SourceHasKeyword`, `SourceIsTapped`, `SourceIsUntapped` (Illusion Spinners), `EnchantedCreatureHasSubtype`, `IsYourTurn`, `YouLostLifeThisTurn`, `Compare`, `Exists` (subset: you/each/opponent control of creatures or filtered permanents), and `Not` of any supported condition.
+- `ConditionalStaticAbility(ability, condition)` — conditional static. Supported conditions during projection: `SourceHasSubtype`, `SourceHasKeyword`, `SourceIsTapped`, `SourceIsUntapped` (Illusion Spinners), `EnchantedCreatureHasSubtype`, `EnchantedCreatureIsLegendary`, `IsYourTurn`, `YouLostLifeThisTurn`, `Compare`, `Exists` (subset: you/each/opponent control of creatures or filtered permanents), and `Not` of any supported condition.
 
 ### StaticTarget values
 

@@ -215,6 +215,13 @@ internal class EffectApplicator(
                 } == true
             } else false
         }
+        is SourceProjectionCondition.EnchantedCreatureIsLegendary -> {
+            val attachedTo = state.getEntity(effect.sourceId)
+                ?.get<com.wingedsheep.engine.state.components.battlefield.AttachedToComponent>()
+            if (attachedTo != null) {
+                projectedValues[attachedTo.targetId]?.types?.contains("LEGENDARY") == true
+            } else false
+        }
         is SourceProjectionCondition.OpponentControlsCreature -> {
             val controllerId = sourceValues?.controllerId
             if (controllerId != null) {

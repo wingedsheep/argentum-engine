@@ -1,6 +1,8 @@
 package com.wingedsheep.engine.event
 
 import com.wingedsheep.engine.registry.CardRegistry
+import com.wingedsheep.engine.handlers.ConditionEvaluator
+import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.FaceDownComponent
@@ -8,8 +10,10 @@ import com.wingedsheep.engine.state.components.battlefield.ClassLevelComponent
 import com.wingedsheep.engine.state.components.identity.TextReplacementComponent
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.AbilityId
+import com.wingedsheep.sdk.scripting.ConditionalStaticAbility
 import com.wingedsheep.sdk.scripting.GameEvent
 import com.wingedsheep.sdk.scripting.GameObjectFilter
+import com.wingedsheep.sdk.scripting.GrantTriggeredAbilityToAttachedCreature
 import com.wingedsheep.sdk.scripting.GrantTriggeredAbilityToCreatureGroup
 import com.wingedsheep.engine.state.components.battlefield.AttachedToComponent
 import com.wingedsheep.sdk.scripting.GrantWard
@@ -57,11 +61,12 @@ class TriggerAbilityResolver(
         // Merge in triggered abilities granted by static abilities on other permanents
         // (e.g., Hunter Sliver granting provoke to all Slivers)
         val staticGrantedAbilities = getStaticGrantedTriggeredAbilities(entityId, state)
+        val attachedGrantedAbilities = getAttachedGrantedTriggeredAbilities(entityId, state)
 
         // Generate ward triggered abilities from intrinsic keyword abilities and GrantWardToGroup
         val wardAbilities = getWardTriggeredAbilities(entityId, cardDefinitionId, state)
 
-        val allGranted = grantedAbilities + staticGrantedAbilities + wardAbilities
+        val allGranted = grantedAbilities + staticGrantedAbilities + attachedGrantedAbilities + wardAbilities
         val combined = if (allGranted.isNotEmpty()) base + allGranted else base
 
         // Apply text replacement if the entity has one
@@ -167,12 +172,13 @@ class TriggerAbilityResolver(
         } else {
             emptyList()
         }
+        val attachedGrantedAbilities = getAttachedGrantedTriggeredAbilities(entityId, state)
 
         // Generate ward triggered abilities from intrinsic keyword abilities and GrantWardToGroup
         val wardAbilities = if (hasLostAbilities) emptyList()
             else getWardTriggeredAbilities(entityId, cardDefinitionId, state)
 
-        val allGranted = grantedAbilities + staticGrantedAbilities + wardAbilities
+        val allGranted = grantedAbilities + staticGrantedAbilities + attachedGrantedAbilities + wardAbilities
         val combined = if (allGranted.isNotEmpty()) base + allGranted else base
 
         val textReplacement = state.getEntity(entityId)?.get<TextReplacementComponent>()
@@ -220,6 +226,34 @@ class TriggerAbilityResolver(
                 if (controllerMatch) add(entry.grant.ability)
             }
         }
+    }
+
+    /**
+     * Triggered abilities granted by Auras/Equipment attached to this entity.
+     */
+    private fun getAttachedGrantedTriggeredAbilities(entityId: EntityId, state: GameState): List<TriggeredAbility> {
+        val result = mutableListOf<TriggeredAbility>()
+
+        for (permanentId in state.getBattlefield()) {
+            val container = state.getEntity(permanentId) ?: continue
+            val attachedTo = container.get<AttachedToComponent>()?.targetId ?: continue
+            if (attachedTo != entityId) continue
+
+            val card = container.get<CardComponent>() ?: continue
+            if (container.has<FaceDownComponent>()) continue
+
+            val sourceDef = cardRegistry.getCard(card.cardDefinitionId) ?: continue
+            val classLevel = container.get<ClassLevelComponent>()?.currentLevel
+            val allStaticAbilities = sourceDef.script.effectiveStaticAbilities(classLevel)
+
+            for (ability in allStaticAbilities) {
+                if (ability is GrantTriggeredAbilityToAttachedCreature) {
+                    result.add(ability.ability)
+                }
+            }
+        }
+
+        return result
     }
 
     /**
@@ -331,8 +365,21 @@ class TriggerAbilityResolver(
             val allStaticAbilities = sourceDef.script.effectiveStaticAbilities(classLevel)
 
             for (ability in allStaticAbilities) {
-                if (ability !is GrantWard) continue
-                result.add(createWardTriggeredAbility(ability.cost, "attached_${permanentId.value}"))
+                val ward = when (ability) {
+                    is GrantWard -> ability
+                    is ConditionalStaticAbility -> {
+                        val conditionalWard = ability.ability as? GrantWard ?: continue
+                        val controllerId = state.projectedState.getController(permanentId) ?: continue
+                        val context = EffectContext(
+                            sourceId = permanentId,
+                            controllerId = controllerId,
+                            opponentId = null
+                        )
+                        if (ConditionEvaluator().evaluate(state, ability.condition, context)) conditionalWard else continue
+                    }
+                    else -> continue
+                }
+                result.add(createWardTriggeredAbility(ward.cost, "attached_${permanentId.value}"))
             }
         }
 

@@ -34,6 +34,7 @@ import com.wingedsheep.sdk.scripting.conditions.Compare
 import com.wingedsheep.sdk.scripting.conditions.ComparisonOperator
 import com.wingedsheep.sdk.scripting.conditions.Condition
 import com.wingedsheep.sdk.scripting.conditions.EnchantedCreatureHasSubtype
+import com.wingedsheep.sdk.scripting.conditions.EnchantedCreatureIsLegendary
 import com.wingedsheep.sdk.scripting.conditions.Exists
 import com.wingedsheep.sdk.scripting.conditions.IsInPhase
 import com.wingedsheep.sdk.scripting.conditions.IsNotYourTurn
@@ -102,6 +103,7 @@ class ConditionEvaluator {
             is APlayerControlsMostOfSubtype -> evaluateAPlayerControlsMostOfSubtype(state, condition)
             is YouControlMostOfChosenType -> evaluateYouControlMostOfChosenType(state, condition, context)
             is EnchantedCreatureHasSubtype -> evaluateEnchantedCreatureHasSubtype(state, condition, context)
+            is EnchantedCreatureIsLegendary -> evaluateEnchantedCreatureIsLegendary(state, context)
 
             // Source conditions
             is YouControlSource -> evaluateYouControlSource(state, context)
@@ -505,6 +507,15 @@ class ConditionEvaluator {
         val creatureId = state.getEntity(sourceId)?.get<AttachedToComponent>()?.targetId ?: sourceId
         val projected = state.projectedState
         return projected.hasSubtype(creatureId, condition.subtype.value)
+    }
+
+    private fun evaluateEnchantedCreatureIsLegendary(
+        state: GameState,
+        context: EffectContext
+    ): Boolean {
+        val sourceId = context.sourceId ?: return false
+        val creatureId = state.getEntity(sourceId)?.get<AttachedToComponent>()?.targetId ?: sourceId
+        return "LEGENDARY" in state.projectedState.getTypes(creatureId)
     }
 
     private fun evaluateTriggeringEntityWasHistoric(state: GameState, context: EffectContext): Boolean {

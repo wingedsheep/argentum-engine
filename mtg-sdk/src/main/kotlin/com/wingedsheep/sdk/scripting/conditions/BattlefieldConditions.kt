@@ -55,6 +55,18 @@ data class EnchantedCreatureHasSubtype(val subtype: Subtype) : Condition {
 }
 
 /**
+ * Condition: "If enchanted creature is legendary"
+ * Used by auras whose continuous effects apply only while the enchanted creature
+ * has the legendary supertype.
+ */
+@SerialName("EnchantedCreatureIsLegendary")
+@Serializable
+data object EnchantedCreatureIsLegendary : Condition {
+    override val description: String = "if enchanted creature is legendary"
+    override fun applyTextReplacement(replacer: TextReplacer): Condition = this
+}
+
+/**
  * Condition: "if it was historic" (legendary, artifact, or Saga).
  * Checks the triggering entity's card definition for the historic quality.
  * Used for Curator's Ward's "if it was historic" intervening-if condition.

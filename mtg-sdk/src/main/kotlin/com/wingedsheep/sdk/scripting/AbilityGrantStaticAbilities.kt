@@ -32,6 +32,28 @@ data class GrantTriggeredAbilityToCreatureGroup(
 }
 
 /**
+ * Grants a triggered ability to the creature this aura/equipment is attached to.
+ * E.g., Combat Research granting "Whenever this creature deals combat damage to
+ * a player, draw a card" to the enchanted creature.
+ *
+ * The TriggerAbilityResolver scans for this static ability when computing
+ * triggered abilities for the attached creature.
+ *
+ * @property ability The triggered ability to grant to the attached creature
+ */
+@SerialName("GrantTriggeredAbilityToAttachedCreature")
+@Serializable
+data class GrantTriggeredAbilityToAttachedCreature(
+    val ability: TriggeredAbility
+) : StaticAbility {
+    override val description: String = "Enchanted creature has ${ability.trigger}"
+    override fun applyTextReplacement(replacer: TextReplacer): StaticAbility {
+        val newAbility = ability.applyTextReplacement(replacer)
+        return if (newAbility !== ability) copy(ability = newAbility) else this
+    }
+}
+
+/**
  * Grants an activated ability to a group of creatures (continuous static ability).
  * Used for Slivers and other creatures that share activated abilities with a group.
  * Example: Spectral Sliver — "All Sliver creatures have '{2}: This creature gets +1/+1 until end of turn.'"

@@ -49,6 +49,7 @@ import com.wingedsheep.sdk.scripting.CantReceiveCounters
 import com.wingedsheep.sdk.scripting.GrantHexproofToController
 import com.wingedsheep.sdk.scripting.GrantShroudToController
 import com.wingedsheep.sdk.scripting.conditions.EnchantedCreatureHasSubtype
+import com.wingedsheep.sdk.scripting.conditions.EnchantedCreatureIsLegendary
 import com.wingedsheep.sdk.scripting.conditions.Exists
 import com.wingedsheep.sdk.scripting.conditions.IsYourTurn
 import com.wingedsheep.sdk.scripting.conditions.NotCondition
@@ -543,6 +544,7 @@ class StaticAbilityHandler(
             is SourceHasSubtype -> SourceProjectionCondition.HasSubtype(condition.subtype.value)
             is SourceHasKeyword -> SourceProjectionCondition.HasKeyword(condition.keyword.name)
             is EnchantedCreatureHasSubtype -> SourceProjectionCondition.EnchantedCreatureHasSubtype(condition.subtype.value)
+            is EnchantedCreatureIsLegendary -> SourceProjectionCondition.EnchantedCreatureIsLegendary
             is NotCondition -> {
                 val inner = mapToSourceProjectionCondition(condition.condition) ?: return null
                 SourceProjectionCondition.Not(inner)

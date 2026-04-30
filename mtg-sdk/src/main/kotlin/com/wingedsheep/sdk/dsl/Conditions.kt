@@ -180,6 +180,12 @@ object Conditions {
     fun TargetMatchesFilter(filter: GameObjectFilter, targetIndex: Int = 0): ConditionInterface =
         com.wingedsheep.sdk.scripting.conditions.TargetMatchesFilter(filter, targetIndex)
 
+    /**
+     * If the creature enchanted by the source Aura is legendary.
+     */
+    fun EnchantedCreatureIsLegendary(): ConditionInterface =
+        com.wingedsheep.sdk.scripting.conditions.EnchantedCreatureIsLegendary
+
     // =========================================================================
     // Life Total Conditions (via Compare)
     // =========================================================================
