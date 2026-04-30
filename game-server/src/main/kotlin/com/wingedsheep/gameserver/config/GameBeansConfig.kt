@@ -7,6 +7,7 @@ import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.gameserver.sealed.SetConfigs
 import com.wingedsheep.mtg.sets.definitions.bloomburrow.BloomburrowSet
 import com.wingedsheep.mtg.sets.definitions.brotherswar.TheBrothersWarSet
+import com.wingedsheep.mtg.sets.definitions.dft.AetherdriftSet
 import com.wingedsheep.mtg.sets.definitions.edgeofeternities.EdgeOfEternitiesSet
 import com.wingedsheep.mtg.sets.definitions.dominaria.DominariaSet
 import com.wingedsheep.mtg.sets.definitions.dominariaunited.DominariaUnitedSet
@@ -74,6 +75,9 @@ class GameBeansConfig(
         }
         if (gameProperties.sets.brothersWarEnabled) {
             register(TheBrothersWarSet.allCards)
+        }
+        if (gameProperties.sets.aetherdriftEnabled) {
+            register(AetherdriftSet.allCards)
         }
         if (gameProperties.sets.edgeOfEternitiesEnabled) {
             register(EdgeOfEternitiesSet.allCards)
