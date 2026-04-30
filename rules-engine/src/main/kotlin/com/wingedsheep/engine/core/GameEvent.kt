@@ -872,3 +872,20 @@ data class CoinFlipEvent(
     val sourceId: EntityId,
     val sourceName: String
 ) : GameEvent
+
+// =============================================================================
+// Room Events (DSK)
+// =============================================================================
+
+/**
+ * A player fully unlocked a Room (Duskmourn mechanic).
+ * Emitted when both doors of a Room permanent have been unlocked.
+ * Used to trigger Eerie abilities.
+ */
+@Serializable
+@SerialName("RoomFullyUnlockedEvent")
+data class RoomFullyUnlockedEvent(
+    val roomId: EntityId,
+    val roomName: String,
+    val controllerId: EntityId
+) : GameEvent

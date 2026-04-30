@@ -107,6 +107,27 @@ object Triggers {
     )
 
     /**
+     * Eerie (part 1) — Whenever an enchantment you control enters the battlefield.
+     * Fires for any enchantment you control, including the source if it's an enchantment.
+     */
+    val AnyEnchantmentYouControlEnters: TriggerSpec = TriggerSpec(
+        event = ZoneChangeEvent(
+            filter = GameObjectFilter.Enchantment.youControl(),
+            to = Zone.BATTLEFIELD
+        ),
+        binding = TriggerBinding.ANY
+    )
+
+    /**
+     * Eerie (part 2) — Whenever you fully unlock a Room (DSK).
+     * Fires when both doors of a Room permanent you control have been unlocked.
+     */
+    val RoomFullyUnlocked: TriggerSpec = TriggerSpec(
+        event = RoomFullyUnlockedEvent(Player.You),
+        binding = TriggerBinding.ANY
+    )
+
+    /**
      * When this permanent leaves the battlefield.
      */
     val LeavesBattlefield: TriggerSpec = TriggerSpec(

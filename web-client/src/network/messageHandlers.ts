@@ -45,6 +45,8 @@ import type {
   OpponentReconnectedMessage,
   TournamentPlayerDisconnectedMessage,
   TournamentPlayerReconnectedMessage,
+  QuickGameLobbyStateMessage,
+  QuickGameLobbyClosedMessage,
 } from '@/types'
 
 /**
@@ -106,6 +108,9 @@ export interface MessageHandlers {
   onOpponentReconnected: (message: OpponentReconnectedMessage) => void
   onTournamentPlayerDisconnected: (message: TournamentPlayerDisconnectedMessage) => void
   onTournamentPlayerReconnected: (message: TournamentPlayerReconnectedMessage) => void
+  // Quick Game Lobby handlers
+  onQuickGameLobbyState: (message: QuickGameLobbyStateMessage) => void
+  onQuickGameLobbyClosed: (message: QuickGameLobbyClosedMessage) => void
 }
 
 /**
@@ -258,6 +263,12 @@ export function handleServerMessage(message: ServerMessage, handlers: MessageHan
       break
     case 'tournamentPlayerReconnected':
       handlers.onTournamentPlayerReconnected(message)
+      break
+    case 'quickGameLobbyState':
+      handlers.onQuickGameLobbyState(message)
+      break
+    case 'quickGameLobbyClosed':
+      handlers.onQuickGameLobbyClosed(message)
       break
     default: {
       // TypeScript exhaustiveness check

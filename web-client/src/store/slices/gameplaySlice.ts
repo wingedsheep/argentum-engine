@@ -444,7 +444,10 @@ export const createGameplaySlice: SliceCreator<GameplaySlice> = (set, get) => ({
       eventLog: [],
       gameOverState: null,
       lastError: null,
-      deckBuildingState: null,
+      // Preserve the drafted deck in tournament mode — the user may still want to
+      // view it or save it to My Decks from the standings screen, including after
+      // the final round has ended.
+      deckBuildingState: isInTournament ? state.deckBuildingState : null,
       lobbyState: isInTournament ? state.lobbyState : null,
       tournamentState: isInTournament ? state.tournamentState : null,
     })

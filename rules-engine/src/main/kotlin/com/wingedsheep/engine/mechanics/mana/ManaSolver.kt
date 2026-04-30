@@ -31,6 +31,7 @@ import com.wingedsheep.sdk.scripting.effects.AddDynamicManaEffect
 import com.wingedsheep.sdk.scripting.effects.AddManaEffect
 import com.wingedsheep.sdk.scripting.effects.AddManaOfChosenColorEffect
 import com.wingedsheep.sdk.scripting.effects.AddManaOfColorAmongEffect
+import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.ManaRestriction
 import com.wingedsheep.sdk.scripting.ActivatedAbility
 import com.wingedsheep.sdk.scripting.AdditionalManaOnLandTap
@@ -637,7 +638,19 @@ class ManaSolver(
                 // separately via colorActivationManaCost / colorlessActivationManaCost,
                 // tapping additional sources to cover them.
                 val effectColors = mutableSetOf<Color>()
-                val effectRestriction: ManaRestriction? = when (val effect = ability.effect) {
+                val manaEffect = when (val effect = ability.effect) {
+                    is CompositeEffect -> effect.effects.firstOrNull {
+                        it is AddManaEffect ||
+                            it is AddColorlessManaEffect ||
+                            it is AddAnyColorManaEffect ||
+                            it is AddAnyColorManaSpendOnChosenTypeEffect ||
+                            it is AddManaOfColorAmongEffect ||
+                            it is AddManaOfChosenColorEffect ||
+                            it is AddDynamicManaEffect
+                    } ?: effect
+                    else -> effect
+                }
+                val effectRestriction: ManaRestriction? = when (val effect = manaEffect) {
                     is AddManaEffect -> {
                         combinedColors.add(effect.color)
                         effectColors.add(effect.color)

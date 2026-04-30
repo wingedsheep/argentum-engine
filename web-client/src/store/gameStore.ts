@@ -15,6 +15,7 @@ import { createConnectionSlice } from '@/store/slices'
 import { createGameplaySlice } from '@/store/slices'
 import { createLobbySlice } from '@/store/slices'
 import { createDraftSlice } from '@/store/slices'
+import { createQuickGameLobbySlice } from '@/store/slices'
 import { createUISlice } from './slices/ui'
 import type { GameStore } from './slices/types'
 
@@ -59,6 +60,7 @@ export const useGameStore = create<GameStore>()(
     ...createGameplaySlice(...args),
     ...createLobbySlice(...args),
     ...createDraftSlice(...args),
+    ...createQuickGameLobbySlice(...args),
     ...createUISlice(...args),
   }))
 )

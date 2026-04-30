@@ -94,6 +94,20 @@ data class PlayWithAdditionalCostComponent(
 ) : Component
 
 /**
+ * Marks a card in exile as costing more to cast for the specified player.
+ * Used by effects like Soul Partition that let a card's owner play it from exile
+ * but tax opponents of the effect's controller.
+ *
+ * @param controllerId The player who has this cost increase when casting.
+ * @param amount Generic mana added to the spell's cost.
+ */
+@Serializable
+data class PlayWithCostIncreaseComponent(
+    val controllerId: EntityId,
+    val amount: Int
+) : Component
+
+/**
  * Marks a spell so that if it would be put into a graveyard after resolving or being
  * countered, it is exiled instead. Used by effects like Daring Waverider that grant
  * one-shot free casts from exile with "exile it instead" clauses.

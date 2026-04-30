@@ -19,6 +19,7 @@ data class TypeLine(
 
     val isAura: Boolean get() = isEnchantment && hasSubtype(Subtype.AURA)
     val isClass: Boolean get() = isEnchantment && hasSubtype(Subtype.CLASS)
+    val isRole: Boolean get() = isEnchantment && hasSubtype(Subtype.ROLE)
     val isSaga: Boolean get() = isEnchantment && hasSubtype(Subtype.SAGA)
     val isEquipment: Boolean get() = isArtifact && hasSubtype(Subtype.EQUIPMENT)
     val isVehicle: Boolean get() = isArtifact && hasSubtype(Subtype.VEHICLE)

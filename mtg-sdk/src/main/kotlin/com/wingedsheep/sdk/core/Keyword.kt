@@ -69,6 +69,13 @@ enum class Keyword(val displayName: String) {
 
     // ── Ability words (display prefix, no uniform mechanic) ──
     /**
+     * Eerie (Duskmourn: House of Horror).
+     * Ability word — flavor prefix for effects that trigger whenever an enchantment
+     * you control enters or whenever you fully unlock a Room.
+     */
+    EERIE("Eerie"),
+
+    /**
      * Vivid (Lorwyn Eclipsed).
      * Ability word — flavor prefix for effects whose magnitude scales with the
      * number of distinct colors among permanents you control. No mechanical

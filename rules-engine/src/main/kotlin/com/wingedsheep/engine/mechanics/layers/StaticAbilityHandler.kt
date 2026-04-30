@@ -49,6 +49,7 @@ import com.wingedsheep.sdk.scripting.CantReceiveCounters
 import com.wingedsheep.sdk.scripting.GrantHexproofToController
 import com.wingedsheep.sdk.scripting.GrantShroudToController
 import com.wingedsheep.sdk.scripting.conditions.EnchantedCreatureHasSubtype
+import com.wingedsheep.sdk.scripting.conditions.EnchantedCreatureIsLegendary
 import com.wingedsheep.sdk.scripting.conditions.Exists
 import com.wingedsheep.sdk.scripting.conditions.IsYourTurn
 import com.wingedsheep.sdk.scripting.conditions.NotCondition
@@ -65,6 +66,7 @@ import com.wingedsheep.sdk.scripting.GrantCantBeBlockedExceptBySubtype
 import com.wingedsheep.sdk.scripting.GrantCantBeBlockedToSmallCreatures
 import com.wingedsheep.sdk.scripting.GrantDynamicStatsEffect
 import com.wingedsheep.sdk.scripting.GrantKeywordToCreatureGroup
+import com.wingedsheep.sdk.scripting.GrantWard
 import com.wingedsheep.sdk.scripting.GrantWardToGroup
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.scripting.predicates.CardPredicate
@@ -310,6 +312,14 @@ class StaticAbilityHandler(
                     affectsFilter = convertGroupFilter(ability.filter)
                 )
             }
+            is GrantWard -> {
+                // Grant the WARD keyword for display; the triggered ability is generated
+                // by TriggerAbilityResolver.getWardTriggeredAbilities()
+                ContinuousEffectData(
+                    modification = Modification.GrantKeyword("WARD"),
+                    affectsFilter = convertStaticTarget(ability.target)
+                )
+            }
             is ModifyStatsForCreatureGroup -> {
                 ContinuousEffectData(
                     modification = Modification.ModifyPowerToughness(ability.powerBonus, ability.toughnessBonus),
@@ -534,6 +544,7 @@ class StaticAbilityHandler(
             is SourceHasSubtype -> SourceProjectionCondition.HasSubtype(condition.subtype.value)
             is SourceHasKeyword -> SourceProjectionCondition.HasKeyword(condition.keyword.name)
             is EnchantedCreatureHasSubtype -> SourceProjectionCondition.EnchantedCreatureHasSubtype(condition.subtype.value)
+            is EnchantedCreatureIsLegendary -> SourceProjectionCondition.EnchantedCreatureIsLegendary
             is NotCondition -> {
                 val inner = mapToSourceProjectionCondition(condition.condition) ?: return null
                 SourceProjectionCondition.Not(inner)
@@ -543,6 +554,8 @@ class StaticAbilityHandler(
             is SourceIsTapped -> SourceProjectionCondition.SourceIsTapped
             is SourceIsUntapped -> SourceProjectionCondition.SourceIsUntapped
             is com.wingedsheep.sdk.scripting.conditions.YouLostLifeThisTurn -> SourceProjectionCondition.ControllerLostLifeThisTurn
+            is com.wingedsheep.sdk.scripting.conditions.SourceEnteredThisTurn -> SourceProjectionCondition.SourceEnteredThisTurn
+            is com.wingedsheep.sdk.scripting.conditions.SourceIsModified -> SourceProjectionCondition.SourceIsModified
             is Compare -> SourceProjectionCondition.Compare(condition.left, condition.operator, condition.right)
             else -> null
         }

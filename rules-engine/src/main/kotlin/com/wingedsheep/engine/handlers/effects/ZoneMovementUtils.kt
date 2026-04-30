@@ -27,6 +27,8 @@ import com.wingedsheep.engine.state.components.battlefield.WarpedComponent
 import com.wingedsheep.engine.state.components.battlefield.EvokedComponent
 import com.wingedsheep.engine.state.components.battlefield.CastRecordComponent
 import com.wingedsheep.engine.state.components.battlefield.WasKickedComponent
+import com.wingedsheep.engine.state.components.battlefield.LinkedExileComponent
+import com.wingedsheep.engine.state.components.battlefield.MayCastFromLinkedExileUsedThisTurnComponent
 import com.wingedsheep.engine.state.components.battlefield.SummoningSicknessComponent
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.state.components.battlefield.TimestampComponent
@@ -255,6 +257,10 @@ object ZoneMovementUtils {
             .without<SagaComponent>()
             .without<ReplacementEffectSourceComponent>()
             .without<TimestampComponent>()
+            // Rule 400.7: zone changes create a new object with no memory of prior existence.
+            // Strip linked exile tracking so the new instance starts with no exiled cards.
+            .without<LinkedExileComponent>()
+            .without<MayCastFromLinkedExileUsedThisTurnComponent>()
             // Combat
             .without<AttackingComponent>()
             .without<BlockingComponent>()

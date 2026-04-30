@@ -89,8 +89,17 @@ export function GraveyardTargetingUI({
   const sourceName = decision.context.sourceName ?? 'this ability'
   const targetDescription = targetReq?.description ?? 'card from a graveyard'
   const title = isOptionalTarget ? `Resolve ${sourceName}` : 'Choose from Graveyard'
+
+  // Derive the action verb from effectHint so the button/text matches the actual effect
+  // (e.g., "Exile card in a graveyard" → "Exile"; "Return … to its owner's hand" → "Return to Hand")
+  const effectHint = decision.context.effectHint?.toLowerCase() ?? ''
+  const optionalConfirmText = effectHint.startsWith('exile') ? 'Exile' : 'Return to Hand'
+  const optionalActionPhrase = effectHint.startsWith('exile')
+    ? `exile it`
+    : `return it to your hand`
+
   const helperText = isOptionalTarget
-    ? `Optional: choose ${targetDescription} to return it to your hand, or decline to leave it in the graveyard.`
+    ? `Optional: choose ${targetDescription} to ${optionalActionPhrase}, or decline to leave it in the graveyard.`
     : `Choose ${targetDescription}.`
 
   // Lift selection state to persist across tab switches
@@ -109,7 +118,7 @@ export function GraveyardTargetingUI({
         maxSelections={maxTargets}
         responsive={responsive}
         onConfirm={handleConfirm}
-        confirmText={isOptionalTarget ? 'Return to Hand' : 'Confirm Target'}
+        confirmText={isOptionalTarget ? optionalConfirmText : 'Confirm Target'}
         showFailToFind={isOptionalTarget}
         failToFindText="Decline Trigger"
         confirmRequiresSelection={isOptionalTarget}
@@ -192,7 +201,7 @@ export function GraveyardTargetingUI({
         responsive={responsive}
         onConfirm={handleConfirm}
         onMinimize={() => setMinimized(true)}
-        confirmText={isOptionalTarget ? 'Return to Hand' : 'Confirm Target'}
+        confirmText={isOptionalTarget ? optionalConfirmText : 'Confirm Target'}
         declineText={isOptionalTarget ? 'Decline Trigger' : undefined}
         confirmRequiresSelection={isOptionalTarget}
       />

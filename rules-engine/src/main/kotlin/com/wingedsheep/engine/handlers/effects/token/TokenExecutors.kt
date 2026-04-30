@@ -17,6 +17,7 @@ class TokenExecutors(
     override fun executors(): List<EffectExecutor<*>> = listOf(
         CreateTokenExecutor(amountEvaluator, staticAbilityHandler, cardRegistry),
         CreatePredefinedTokenExecutor(cardRegistry, staticAbilityHandler),
+        CreateRoleTokenExecutor(cardRegistry, staticAbilityHandler),
         CreateChosenTokenExecutor(amountEvaluator),
         CreateTokenCopyOfSourceExecutor(cardRegistry, staticAbilityHandler),
         CreateTokenCopyOfEquippedCreatureExecutor(cardRegistry, staticAbilityHandler),

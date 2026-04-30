@@ -71,6 +71,7 @@ import com.wingedsheep.sdk.scripting.effects.ExileFromTopRepeatingEffect
 import com.wingedsheep.sdk.scripting.effects.ExileLibraryUntilManaValueEffect
 import com.wingedsheep.sdk.scripting.effects.ExileOpponentsGraveyardsEffect
 import com.wingedsheep.sdk.scripting.effects.ExileUntilLeavesEffect
+import com.wingedsheep.sdk.scripting.effects.ExileAndGrantOwnerPlayPermissionEffect
 import com.wingedsheep.sdk.scripting.effects.CreateGlobalTriggeredAbilityWithDurationEffect
 import com.wingedsheep.sdk.scripting.effects.CreatePermanentGlobalTriggeredAbilityEffect
 import com.wingedsheep.sdk.scripting.effects.ReturnCreaturesPutInGraveyardThisTurnEffect
@@ -96,6 +97,7 @@ import com.wingedsheep.sdk.scripting.effects.CreateTokenCopyOfSourceEffect
 import com.wingedsheep.sdk.scripting.effects.CreateTokenCopyOfTargetEffect
 import com.wingedsheep.sdk.scripting.effects.CreateTokenEffect
 import com.wingedsheep.sdk.scripting.effects.CreatePredefinedTokenEffect
+import com.wingedsheep.sdk.scripting.effects.CreateRoleTokenEffect
 import com.wingedsheep.sdk.scripting.effects.CounterAllOnStackEffect
 import com.wingedsheep.sdk.scripting.effects.CounterCondition
 import com.wingedsheep.sdk.scripting.effects.CounterDestination
@@ -359,6 +361,15 @@ object Effects {
      */
     fun Exile(target: EffectTarget): Effect =
         MoveToZoneEffect(target, Zone.EXILE)
+
+    /**
+     * Exile a target and let its owner play it while it remains exiled.
+     * Optionally taxes opponents who cast it this way.
+     */
+    fun ExileAndGrantOwnerPlayPermission(
+        target: EffectTarget,
+        opponentCostIncrease: Int = 0
+    ): Effect = ExileAndGrantOwnerPlayPermissionEffect(target, opponentCostIncrease)
 
     /**
      * Exile all cards in each opponent's graveyard.
@@ -1008,6 +1019,17 @@ object Effects {
      */
     fun CreateMutavault(count: Int = 1, tapped: Boolean = false, controller: EffectTarget? = null): Effect =
         CreatePredefinedTokenEffect("Mutavault", count, controller, tapped)
+
+    /**
+     * Create a Role token attached to a target creature.
+     * Role tokens are Enchantment — Aura Role tokens. If the target already has a Role
+     * the same player controls, that Role is put into the graveyard first.
+     *
+     * @param roleName The Role type (e.g., "Sorcerer Role")
+     * @param target The creature to attach the Role to
+     */
+    fun CreateRoleToken(roleName: String, target: EffectTarget = EffectTarget.ContextTarget(0)): Effect =
+        CreateRoleTokenEffect(roleName, target)
 
     // =========================================================================
     // Protection Effects

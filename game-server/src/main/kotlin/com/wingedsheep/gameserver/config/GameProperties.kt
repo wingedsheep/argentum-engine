@@ -21,12 +21,19 @@ data class SetsProperties(
     val scourgeEnabled: Boolean = true,
     val legionsEnabled: Boolean = true,
     val khansEnabled: Boolean = true,
+    val phyrexiaAllWillBeOneEnabled: Boolean = true,
     val dominariaEnabled: Boolean = false,
+    val dominariaUnitedEnabled: Boolean = true,
     val bloomburrowEnabled: Boolean = true,
+    val brothersWarEnabled: Boolean = true,
     val edgeOfEternitiesEnabled: Boolean = false,
     val lorwynEclipsedEnabled: Boolean = true,
     val lostCavernsOfIxalanEnabled: Boolean = true,
-    val foundationsEnabled: Boolean = true
+    val murdersAtKarlovManorEnabled: Boolean = true,
+    val foundationsEnabled: Boolean = true,
+    val duskmournEnabled: Boolean = true,
+    val spiderManEnabled: Boolean = true,
+    val wildsOfEldrainEnabled: Boolean = true
 )
 
 data class AdminProperties(

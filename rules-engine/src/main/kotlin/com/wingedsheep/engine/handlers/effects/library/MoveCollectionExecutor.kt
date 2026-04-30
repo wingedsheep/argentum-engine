@@ -10,6 +10,7 @@ import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.battlefield.AttachedToComponent
+import com.wingedsheep.engine.state.components.battlefield.AttachmentsComponent
 import com.wingedsheep.engine.state.components.battlefield.CountersComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
@@ -294,15 +295,24 @@ class MoveCollectionExecutor(
                     events.addAll(nonAuraResult.events)
                 }
 
+                // Rule 303.4f: the player putting the Aura onto the battlefield chooses its enchant target.
+                // When underOwnersControl=true the Aura returns to its owner, so the owner picks the target.
+                val firstAuraId = auraCards.first()
+                val actualControllerId = if (underOwnersControl) {
+                    val e = newState.getEntity(firstAuraId)
+                    e?.get<OwnerComponent>()?.playerId ?: e?.get<CardComponent>()?.ownerId ?: destPlayerId
+                } else destPlayerId
+
                 return askAuraTargetForMoveCollection(
                     state = newState,
                     events = events,
-                    auraId = auraCards.first(),
-                    controllerId = destPlayerId,
-                    destPlayerId = destPlayerId,
+                    auraId = firstAuraId,
+                    controllerId = actualControllerId,
+                    destPlayerId = actualControllerId,
                     remainingAuras = auraCards.drop(1),
                     sourceId = context.sourceId,
-                    sourceName = context.sourceId?.let { newState.getEntity(it)?.get<CardComponent>()?.name }
+                    sourceName = context.sourceId?.let { newState.getEntity(it)?.get<CardComponent>()?.name },
+                    underOwnersControl = underOwnersControl
                 )
             }
         }
@@ -314,6 +324,9 @@ class MoveCollectionExecutor(
      * Ask the player to choose a target for an Aura entering the battlefield via MoveCollectionEffect.
      * Per Rule 303.4f, targeting restrictions (hexproof, shroud) do not apply.
      * If no legal target exists, the Aura stays in its current zone (Rule 303.4g).
+     *
+     * [underOwnersControl] — when true the aura returns under its owner's control; the owner
+     * is the one choosing the enchant target and controlling the battlefield zone.
      */
     private fun askAuraTargetForMoveCollection(
         state: GameState,
@@ -323,7 +336,8 @@ class MoveCollectionExecutor(
         destPlayerId: EntityId,
         remainingAuras: List<EntityId>,
         sourceId: EntityId?,
-        sourceName: String?
+        sourceName: String?,
+        underOwnersControl: Boolean = false
     ): EffectResult {
         val cardComponent = state.getEntity(auraId)?.get<CardComponent>()
         val cardDef = cardComponent?.let { cardRegistry.getCard(it.cardDefinitionId) }
@@ -347,7 +361,7 @@ class MoveCollectionExecutor(
         if (legalTargets.isEmpty()) {
             // No legal targets — Aura stays in current zone per Rule 303.4g
             return continueAuraProcessingOrFinish(
-                state, events, remainingAuras, controllerId, destPlayerId, sourceId, sourceName
+                state, events, remainingAuras, controllerId, destPlayerId, sourceId, sourceName, underOwnersControl
             )
         }
 
@@ -379,7 +393,8 @@ class MoveCollectionExecutor(
             destPlayerId = destPlayerId,
             remainingAuras = remainingAuras,
             sourceId = sourceId,
-            sourceName = sourceName
+            sourceName = sourceName,
+            underOwnersControl = underOwnersControl
         )
 
         val stateWithDecision = state.withPendingDecision(decision)
@@ -402,18 +417,25 @@ class MoveCollectionExecutor(
         controllerId: EntityId,
         destPlayerId: EntityId,
         sourceId: EntityId?,
-        sourceName: String?
+        sourceName: String?,
+        underOwnersControl: Boolean = false
     ): EffectResult {
         if (remainingAuras.isNotEmpty()) {
+            val nextAuraId = remainingAuras.first()
+            val actualControllerId = if (underOwnersControl) {
+                val e = state.getEntity(nextAuraId)
+                e?.get<OwnerComponent>()?.playerId ?: e?.get<CardComponent>()?.ownerId ?: controllerId
+            } else controllerId
             return askAuraTargetForMoveCollection(
                 state = state,
                 events = events,
-                auraId = remainingAuras.first(),
-                controllerId = controllerId,
-                destPlayerId = destPlayerId,
+                auraId = nextAuraId,
+                controllerId = actualControllerId,
+                destPlayerId = actualControllerId,
                 remainingAuras = remainingAuras.drop(1),
                 sourceId = sourceId,
-                sourceName = sourceName
+                sourceName = sourceName,
+                underOwnersControl = underOwnersControl
             )
         }
         return EffectResult.success(state, events)
@@ -444,14 +466,28 @@ class MoveCollectionExecutor(
         val battlefieldZone = ZoneKey(destPlayerId, Zone.BATTLEFIELD)
         newState = newState.addToZone(battlefieldZone, auraId)
 
-        // Apply battlefield components + AttachedToComponent
+        // Apply battlefield components + AttachedToComponent on aura
         val container = newState.getEntity(auraId)
         if (container != null) {
-            val newContainer = container
+            val cardDef = container.get<CardComponent>()
+                ?.let { cardRegistry.getCard(it.cardDefinitionId) }
+            var newContainer = container
                 .with(ControllerComponent(destPlayerId))
                 .with(AttachedToComponent(targetId))
-
+            // Wire up static/replacement abilities from the card definition
+            if (cardDef != null) {
+                val staticHandler = com.wingedsheep.engine.mechanics.layers.StaticAbilityHandler(cardRegistry)
+                newContainer = staticHandler.addContinuousEffectComponent(newContainer, cardDef)
+                newContainer = staticHandler.addReplacementEffectComponent(newContainer, cardDef)
+            }
             newState = newState.copy(entities = newState.entities + (auraId to newContainer))
+        }
+
+        // Update target's AttachmentsComponent to include this aura
+        newState = newState.updateEntity(targetId) { targetContainer ->
+            val existing = targetContainer.get<AttachmentsComponent>()
+            val updatedIds = (existing?.attachedIds ?: emptyList()) + auraId
+            targetContainer.with(AttachmentsComponent(updatedIds))
         }
 
         if (fromZone != null) {

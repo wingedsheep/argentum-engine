@@ -31,6 +31,10 @@ class PlayerIdentity(
     @Volatile
     var currentLobbyId: String? = null
 
+    /** Current quick-game lobby ID the player is in (separate from tournament lobbies). */
+    @Volatile
+    var currentQuickGameLobbyId: String? = null
+
     /** Current game session ID being spectated (if any) */
     @Volatile
     var currentSpectatingGameId: String? = null
