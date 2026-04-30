@@ -34,6 +34,7 @@ import com.wingedsheep.sdk.scripting.conditions.Compare
 import com.wingedsheep.sdk.scripting.conditions.ComparisonOperator
 import com.wingedsheep.sdk.scripting.conditions.Condition
 import com.wingedsheep.sdk.scripting.conditions.EnchantedCreatureHasSubtype
+import com.wingedsheep.sdk.scripting.conditions.EnchantedCreatureIsLegendary
 import com.wingedsheep.sdk.scripting.conditions.Exists
 import com.wingedsheep.sdk.scripting.conditions.IsInPhase
 import com.wingedsheep.sdk.scripting.conditions.IsNotYourTurn
@@ -42,6 +43,7 @@ import com.wingedsheep.sdk.scripting.conditions.NotCondition
 import com.wingedsheep.sdk.scripting.conditions.OpponentSpellOnStack
 import com.wingedsheep.sdk.scripting.conditions.PlayedLandThisTurn
 import com.wingedsheep.sdk.scripting.conditions.SourceEnteredThisTurn
+import com.wingedsheep.sdk.scripting.conditions.SourceIsModified
 import com.wingedsheep.sdk.scripting.conditions.SourceHasDealtCombatDamageToPlayer
 import com.wingedsheep.sdk.scripting.conditions.SourceHasDealtDamage
 import com.wingedsheep.sdk.scripting.conditions.SourceHasCounter
@@ -101,6 +103,7 @@ class ConditionEvaluator {
             is APlayerControlsMostOfSubtype -> evaluateAPlayerControlsMostOfSubtype(state, condition)
             is YouControlMostOfChosenType -> evaluateYouControlMostOfChosenType(state, condition, context)
             is EnchantedCreatureHasSubtype -> evaluateEnchantedCreatureHasSubtype(state, condition, context)
+            is EnchantedCreatureIsLegendary -> evaluateEnchantedCreatureIsLegendary(state, context)
 
             // Source conditions
             is YouControlSource -> evaluateYouControlSource(state, context)
@@ -114,6 +117,7 @@ class ConditionEvaluator {
             is SourceIsTapped -> evaluateSourceTapped(state, context)
             is SourceIsUntapped -> evaluateSourceUntapped(state, context)
             is SourceEnteredThisTurn -> evaluateSourceEnteredThisTurn(state, context)
+            is SourceIsModified -> evaluateSourceIsModified(state, context)
             is SourceHasDealtDamage -> evaluateSourceHasDealtDamage(state, context)
             is SourceHasDealtCombatDamageToPlayer -> evaluateSourceHasDealtCombatDamageToPlayer(state, context)
             is SourceHasSubtype -> evaluateSourceHasSubtype(state, condition, context)
@@ -298,6 +302,34 @@ class ConditionEvaluator {
         return state.getEntity(sourceId)?.has<EnteredThisTurnComponent>() == true
     }
 
+    private fun evaluateSourceIsModified(state: GameState, context: EffectContext): Boolean {
+        val sourceId = context.sourceId ?: return false
+        val entity = state.getEntity(sourceId) ?: return false
+        val controllerId = context.controllerId
+
+        // Has any counter
+        val counters = entity.get<com.wingedsheep.engine.state.components.battlefield.CountersComponent>()
+        if (counters != null && counters.counters.values.any { it > 0 }) return true
+
+        // Has attached Equipment or Auras controlled by this permanent's controller
+        for (permanentId in state.getBattlefield()) {
+            if (permanentId == sourceId) continue
+            val container = state.getEntity(permanentId) ?: continue
+            val attachedTo = container.get<com.wingedsheep.engine.state.components.battlefield.AttachedToComponent>()
+                ?.targetId ?: continue
+            if (attachedTo != sourceId) continue
+            val card = container.get<com.wingedsheep.engine.state.components.identity.CardComponent>() ?: continue
+
+            if (card.typeLine.hasSubtype(com.wingedsheep.sdk.core.Subtype.EQUIPMENT)) return true
+
+            if (card.typeLine.hasSubtype(com.wingedsheep.sdk.core.Subtype.AURA)) {
+                val auraController = container.get<com.wingedsheep.engine.state.components.identity.ControllerComponent>()?.playerId
+                if (auraController == controllerId) return true
+            }
+        }
+        return false
+    }
+
     private fun evaluateSourceHasDealtDamage(state: GameState, context: EffectContext): Boolean {
         val sourceId = context.sourceId ?: return false
         return state.getEntity(sourceId)?.has<HasDealtDamageComponent>() == true
@@ -475,6 +507,15 @@ class ConditionEvaluator {
         val creatureId = state.getEntity(sourceId)?.get<AttachedToComponent>()?.targetId ?: sourceId
         val projected = state.projectedState
         return projected.hasSubtype(creatureId, condition.subtype.value)
+    }
+
+    private fun evaluateEnchantedCreatureIsLegendary(
+        state: GameState,
+        context: EffectContext
+    ): Boolean {
+        val sourceId = context.sourceId ?: return false
+        val creatureId = state.getEntity(sourceId)?.get<AttachedToComponent>()?.targetId ?: sourceId
+        return "LEGENDARY" in state.projectedState.getTypes(creatureId)
     }
 
     private fun evaluateTriggeringEntityWasHistoric(state: GameState, context: EffectContext): Boolean {

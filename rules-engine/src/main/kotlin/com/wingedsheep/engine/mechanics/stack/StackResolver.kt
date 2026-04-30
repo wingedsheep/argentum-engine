@@ -215,6 +215,7 @@ class StackResolver(
             if (payCost != null && !payCost.permanent) {
                 updated = updated.without<PlayWithoutPayingCostComponent>()
             }
+            updated = updated.without<com.wingedsheep.engine.state.components.identity.PlayWithCostIncreaseComponent>()
             updated
         }
 
@@ -1113,6 +1114,7 @@ class StackResolver(
                 .without<TargetsComponent>()
                 .without<com.wingedsheep.engine.state.components.identity.MayPlayFromExileComponent>()
                 .without<com.wingedsheep.engine.state.components.identity.PlayWithoutPayingCostComponent>()
+                .without<com.wingedsheep.engine.state.components.identity.PlayWithCostIncreaseComponent>()
                 .without<ExileAfterResolveComponent>()
         }
         newState = newState.addToZone(destZoneKey, spellId)

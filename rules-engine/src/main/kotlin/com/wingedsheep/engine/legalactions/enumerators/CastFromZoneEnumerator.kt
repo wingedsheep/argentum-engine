@@ -15,6 +15,7 @@ import com.wingedsheep.engine.state.components.identity.MayPlayFromExileComponen
 import com.wingedsheep.engine.state.components.identity.WarpExiledComponent
 import com.wingedsheep.engine.state.components.player.MayCastCreaturesFromGraveyardWithForageComponent
 import com.wingedsheep.engine.state.components.identity.PlayWithAdditionalCostComponent
+import com.wingedsheep.engine.state.components.identity.PlayWithCostIncreaseComponent
 import com.wingedsheep.engine.state.components.identity.PlayWithoutPayingCostComponent
 import com.wingedsheep.engine.handlers.PredicateContext
 import com.wingedsheep.sdk.core.Subtype
@@ -231,6 +232,8 @@ class CastFromZoneEnumerator : ActionEnumerator {
             val playForFree = container.get<PlayWithoutPayingCostComponent>()?.controllerId == playerId
             val runtimeAdditionalCost = container.get<PlayWithAdditionalCostComponent>()
                 ?.takeIf { it.controllerId == playerId }
+            val runtimeCostIncrease = container.get<PlayWithCostIncreaseComponent>()
+                ?.takeIf { it.controllerId == playerId }
             val cardComponent = container.get<CardComponent>() ?: continue
 
             // Land with play permission
@@ -271,10 +274,13 @@ class CastFromZoneEnumerator : ActionEnumerator {
                     } else {
                         cardComponent.manaCost
                     }
-                    val effectiveCost = if (exileComponent.withAnyManaType) {
+                    var effectiveCost = if (exileComponent.withAnyManaType) {
                         baseEffectiveCost.relaxColors()
                     } else {
                         baseEffectiveCost
+                    }
+                    if (!playForFree && runtimeCostIncrease != null) {
+                        effectiveCost = effectiveCost + ManaCost.parse("{${runtimeCostIncrease.amount}}")
                     }
                     val costString = if (playForFree) "{0}" else effectiveCost.toString()
                     val canAfford = playForFree ||

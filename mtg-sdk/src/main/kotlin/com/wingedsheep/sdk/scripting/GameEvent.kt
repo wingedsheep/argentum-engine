@@ -673,6 +673,27 @@ sealed interface GameEvent : TextReplaceable<GameEvent> {
         override fun applyTextReplacement(replacer: TextReplacer): GameEvent = this
     }
 
+    // ---- Room Triggers (DSK) ----
+
+    /**
+     * Whenever a player fully unlocks a Room (Duskmourn mechanic).
+     * A Room is fully unlocked when both of its doors have been unlocked.
+     *
+     * Used by Eerie abilities: "Whenever an enchantment you control enters and
+     * whenever you fully unlock a Room, [effect]."
+     *
+     * [player] filters whose Room is unlocked (default: you).
+     */
+    @SerialName("RoomFullyUnlockedEvent")
+    @Serializable
+    data class RoomFullyUnlockedEvent(
+        val player: Player = Player.You
+    ) : GameEvent {
+        override val description: String = "${player.description} fully unlock a Room"
+
+        override fun applyTextReplacement(replacer: TextReplacer): GameEvent = this
+    }
+
     // ---- Targeting Triggers ----
 
     /**

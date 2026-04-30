@@ -122,6 +122,17 @@ sealed interface DynamicAmount : TextReplaceable<DynamicAmount> {
         override fun applyTextReplacement(replacer: TextReplacer): DynamicAmount = this
     }
 
+    /**
+     * Total count of cards exiled and linked to the source permanent.
+     * Used for Veteran Survivor: "three or more cards exiled with this creature"
+     */
+    @SerialName("CardsInLinkedExile")
+    @Serializable
+    data object CardsInLinkedExile : DynamicAmount {
+        override val description: String = "the number of cards exiled with this creature"
+        override fun applyTextReplacement(replacer: TextReplacer): DynamicAmount = this
+    }
+
     // =========================================================================
     // X Value and Variable References
     // =========================================================================

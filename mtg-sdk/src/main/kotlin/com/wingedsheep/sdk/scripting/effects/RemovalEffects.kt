@@ -316,6 +316,32 @@ data class MoveToZoneEffect(
 }
 
 /**
+ * Exile a target and let its owner play it for as long as it remains exiled.
+ * If the owner is an opponent of the effect controller, spells cast this way
+ * can have an additional generic mana tax.
+ *
+ * Used for Soul Partition-style effects.
+ *
+ * @property target The permanent/card to exile
+ * @property opponentCostIncrease Generic mana added when an opponent casts the exiled card
+ */
+@SerialName("ExileAndGrantOwnerPlayPermission")
+@Serializable
+data class ExileAndGrantOwnerPlayPermissionEffect(
+    val target: EffectTarget,
+    val opponentCostIncrease: Int = 0
+) : Effect {
+    override val description: String = buildString {
+        append("Exile ${target.description}. For as long as that card remains exiled, its owner may play it")
+        if (opponentCostIncrease > 0) {
+            append(". A spell cast by an opponent this way costs {$opponentCostIncrease} more to cast")
+        }
+    }
+
+    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
+}
+
+/**
  * Returns the source permanent (typically an Aura) from its current zone to the battlefield
  * attached to the specified target. Used by the Dragon aura cycle (Dragon Shadow, Dragon Breath, etc.)
  * which return from the graveyard when a creature with high mana value enters the battlefield.

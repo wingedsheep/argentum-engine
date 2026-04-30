@@ -551,6 +551,11 @@ export function createGameplayHandlers(set: SetState, get: GetState): Pick<Messa
       if (msg.code === 'GAME_NOT_FOUND' || msg.message?.toLowerCase().includes('lobby')) {
         clearLobbyId()
       }
+      // Suppress the error toast for "Not in a game" — this is a benign race condition
+      // where an in-flight action (e.g. PassPriority) arrives after the game session has
+      // already been torn down. The GameOver message handles the real cleanup; no user
+      // action is required and showing a toast here is confusing.
+      if (msg.code === 'GAME_NOT_FOUND' && msg.message === 'Not in a game') return
       set({
         lastError: {
           code: msg.code,
