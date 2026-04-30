@@ -15,5 +15,6 @@ object MurdersAtKarlovManorSet {
 
     val allCards = listOf(
         MeticulousArchive,
+        NoMoreLies,
     )
 }
