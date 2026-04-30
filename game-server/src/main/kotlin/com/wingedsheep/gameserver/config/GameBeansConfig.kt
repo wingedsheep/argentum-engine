@@ -14,6 +14,7 @@ import com.wingedsheep.mtg.sets.definitions.onslaught.OnslaughtSet
 import com.wingedsheep.mtg.sets.definitions.portal.PortalSet
 import com.wingedsheep.mtg.sets.definitions.lorwyneclipsed.LorwynEclipsedSet
 import com.wingedsheep.mtg.sets.definitions.lostcavernsofixalan.LostCavernsOfIxalanSet
+import com.wingedsheep.mtg.sets.definitions.mkm.MurdersAtKarlovManorSet
 import com.wingedsheep.mtg.sets.definitions.duskmourn.DuskmournSet
 import com.wingedsheep.mtg.sets.definitions.spiderman.SpiderManSet
 import com.wingedsheep.mtg.sets.definitions.wildsofeldraineset.WildsOfEldrainSet
@@ -72,6 +73,9 @@ class GameBeansConfig(
         }
         if (gameProperties.sets.lostCavernsOfIxalanEnabled) {
             register(LostCavernsOfIxalanSet.allCards)
+        }
+        if (gameProperties.sets.murdersAtKarlovManorEnabled) {
+            register(MurdersAtKarlovManorSet.allCards)
         }
         if (gameProperties.sets.foundationsEnabled) {
             register(FoundationsSet.allCards)
@@ -137,6 +141,7 @@ class GameBeansConfig(
             if (gameProperties.sets.bloomburrowEnabled) addAll(BloomburrowSet.allCards)
             if (gameProperties.sets.edgeOfEternitiesEnabled) addAll(EdgeOfEternitiesSet.allCards)
             if (gameProperties.sets.lorwynEclipsedEnabled) addAll(LorwynEclipsedSet.allCards)
+            if (gameProperties.sets.murdersAtKarlovManorEnabled) addAll(MurdersAtKarlovManorSet.allCards)
         },
         basicLandVariants = PortalSet.basicLands,
         setCodes = buildList {
@@ -147,6 +152,7 @@ class GameBeansConfig(
             if (gameProperties.sets.dominariaEnabled) add("DOM")
             if (gameProperties.sets.bloomburrowEnabled) add("BLB")
             if (gameProperties.sets.edgeOfEternitiesEnabled) add("EOE")
+            if (gameProperties.sets.murdersAtKarlovManorEnabled) add("MKM")
         }
     )
 }

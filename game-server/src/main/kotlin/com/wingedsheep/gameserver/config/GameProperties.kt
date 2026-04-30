@@ -26,6 +26,7 @@ data class SetsProperties(
     val edgeOfEternitiesEnabled: Boolean = false,
     val lorwynEclipsedEnabled: Boolean = true,
     val lostCavernsOfIxalanEnabled: Boolean = true,
+    val murdersAtKarlovManorEnabled: Boolean = true,
     val foundationsEnabled: Boolean = true,
     val duskmournEnabled: Boolean = true,
     val spiderManEnabled: Boolean = true,
