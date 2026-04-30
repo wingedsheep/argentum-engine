@@ -249,6 +249,14 @@ class LibraryAndZoneContinuationResumer(
             val nextAuraId = remainingAuras.first()
             val nextRemaining = remainingAuras.drop(1)
 
+            // When underOwnersControl, use the next aura's owner as its controller
+            val nextControllerId = if (continuation.underOwnersControl) {
+                val e = newState.getEntity(nextAuraId)
+                e?.get<com.wingedsheep.engine.state.components.identity.OwnerComponent>()?.playerId
+                    ?: e?.get<CardComponent>()?.ownerId
+                    ?: continuation.controllerId
+            } else continuation.controllerId
+
             val nextCardComponent = newState.getEntity(nextAuraId)?.get<CardComponent>()
             val nextCardDef = nextCardComponent?.let { services.cardRegistry.getCard(it.cardDefinitionId) }
             val nextAuraTarget = nextCardDef?.script?.auraTarget
@@ -259,6 +267,8 @@ class LibraryAndZoneContinuationResumer(
                     newState,
                     continuation.copy(
                         auraId = nextAuraId,
+                        controllerId = nextControllerId,
+                        destPlayerId = nextControllerId,
                         remainingAuras = nextRemaining,
                         decisionId = "skip"
                     ),
@@ -270,18 +280,20 @@ class LibraryAndZoneContinuationResumer(
             val legalTargets = services.targetFinder.findLegalTargets(
                 state = newState,
                 requirement = nextAuraTarget,
-                controllerId = continuation.controllerId,
+                controllerId = nextControllerId,
                 sourceId = nextAuraId,
                 ignoreTargetingRestrictions = true
             )
 
             if (legalTargets.isEmpty()) {
-                // No targets - skip and continue
+                // No targets — Aura stays in current zone (Rule 303.4g), continue to next
                 if (nextRemaining.isNotEmpty()) {
                     return resumeMoveCollectionAuraTarget(
                         newState,
                         continuation.copy(
                             auraId = nextRemaining.first(),
+                            controllerId = nextControllerId,
+                            destPlayerId = nextControllerId,
                             remainingAuras = nextRemaining.drop(1),
                             decisionId = "skip"
                         ),
@@ -303,7 +315,7 @@ class LibraryAndZoneContinuationResumer(
             )
             val decision = ChooseTargetsDecision(
                 id = decisionId,
-                playerId = continuation.controllerId,
+                playerId = nextControllerId,
                 prompt = "Choose what $auraName enchants",
                 context = DecisionContext(
                     sourceId = nextAuraId,
@@ -317,11 +329,12 @@ class LibraryAndZoneContinuationResumer(
             val nextContinuation = MoveCollectionAuraTargetContinuation(
                 decisionId = decisionId,
                 auraId = nextAuraId,
-                controllerId = continuation.controllerId,
-                destPlayerId = destPlayerId,
+                controllerId = nextControllerId,
+                destPlayerId = nextControllerId,
                 remainingAuras = nextRemaining,
                 sourceId = continuation.sourceId,
-                sourceName = continuation.sourceName
+                sourceName = continuation.sourceName,
+                underOwnersControl = continuation.underOwnersControl
             )
 
             val stateWithDecision = newState.withPendingDecision(decision)

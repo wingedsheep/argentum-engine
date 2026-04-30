@@ -202,8 +202,27 @@ object ZoneTransitionService {
 
         // Strip battlefield components and remove floating effects AFTER removal
         if (leavingBattlefield) {
+            // Capture LinkedExileComponent BEFORE stripping so LTB triggers (e.g. Seam Rip's
+            // "return linked exile" on LeavesBattlefield) can still read it.
+            // Rule 400.7 only applies once the card re-enters the battlefield as a new object;
+            // until then, graveyard/exile instances need the component for last-known-info triggers.
+            val preStripLinkedExile = newState.getEntity(entityId)
+                ?.get<com.wingedsheep.engine.state.components.battlefield.LinkedExileComponent>()
+
             newState = newState.updateEntity(entityId) { c -> stripBattlefieldComponents(c) }
             newState = removeFloatingEffectsTargeting(newState, entityId)
+
+            // Re-attach LinkedExileComponent on graveyard/exile destinations so LTB triggers
+            // that reference it (like Seam Rip's return effect) still have access to it.
+            // The component will be absent on any new battlefield entry (cards in hand/library
+            // never carry it to a new casting, and stripBattlefieldComponents removes it on
+            // re-entry from exile/graveyard — so Rule 400.7 is satisfied at the correct time).
+            if (preStripLinkedExile != null &&
+                (actualDestZone == Zone.GRAVEYARD || actualDestZone == Zone.EXILE)) {
+                newState = newState.updateEntity(entityId) { c ->
+                    c.with(preStripLinkedExile)
+                }
+            }
         }
 
         // 7. ENTRY SETUP based on destination

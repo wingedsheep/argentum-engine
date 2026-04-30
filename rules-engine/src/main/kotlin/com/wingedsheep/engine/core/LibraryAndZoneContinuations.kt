@@ -133,7 +133,9 @@ data class MoveCollectionAuraTargetContinuation(
     val destPlayerId: EntityId,
     val remainingAuras: List<EntityId>,
     val sourceId: EntityId?,
-    val sourceName: String?
+    val sourceName: String?,
+    /** True when the auras are returning under their owner's control (e.g. Seam Rip's LTB trigger). */
+    val underOwnersControl: Boolean = false
 ) : ContinuationFrame
 
 /**
