@@ -165,7 +165,7 @@ export function DeckbuilderChatPanel({ state }: { state: DeckBuildingState }) {
         title="Open deckbuilder assistant"
         style={{
           position: 'fixed',
-          right: 12,
+          left: 12,
           bottom: 12,
           zIndex: 1100,
           padding: '8px 14px',
