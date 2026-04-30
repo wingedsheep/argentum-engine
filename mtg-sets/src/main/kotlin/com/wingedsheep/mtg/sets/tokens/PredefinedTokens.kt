@@ -5,6 +5,7 @@ import com.wingedsheep.sdk.dsl.Costs
 import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Filters
+import com.wingedsheep.sdk.dsl.Targets
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.CardDefinition
@@ -212,6 +213,9 @@ object PredefinedTokens {
      */
     val SorcererRole = card("Sorcerer Role") {
         typeLine = "Enchantment — Aura Role"
+        oracleText = "Enchant creature\nEnchanted creature gets +1/+1 and has \"Whenever this creature attacks, scry 1.\""
+
+        auraTarget = Targets.Creature
 
         staticAbility {
             effect = Effects.ModifyStats(+1, +1)
@@ -224,7 +228,7 @@ object PredefinedTokens {
         }
 
         metadata {
-            imageUri = "https://cards.scryfall.io/normal/front/a/b/ab3d0e90-b82c-4bea-a1e8-5cc4b891cd2c.jpg?1696288174"
+            imageUri = "https://product-images.s3.cardmarket.com/1/TOK26/749289/749289.png"
         }
     }
 
