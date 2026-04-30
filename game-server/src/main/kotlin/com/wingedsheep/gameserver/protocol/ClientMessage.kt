@@ -341,4 +341,48 @@ sealed interface ClientMessage {
     @Serializable
     @SerialName("requestResync")
     data object RequestResync : ClientMessage
+
+    // =========================================================================
+    // Quick Game Lobby Messages
+    // =========================================================================
+
+    /** Create a new quick-game lobby. If [vsAi] is true the server adds an AI opponent immediately. */
+    @Serializable
+    @SerialName("createQuickGameLobby")
+    data class CreateQuickGameLobby(
+        val vsAi: Boolean = false,
+        val setCode: String? = null
+    ) : ClientMessage
+
+    /** Join an existing quick-game lobby by its short code. */
+    @Serializable
+    @SerialName("joinQuickGameLobby")
+    data class JoinQuickGameLobby(val lobbyId: String) : ClientMessage
+
+    /** Leave the lobby; the host leaving closes it for everyone. */
+    @Serializable
+    @SerialName("leaveQuickGameLobby")
+    data object LeaveQuickGameLobby : ClientMessage
+
+    /**
+     * Submit / replace this player's deck for the current lobby. An empty [deckList] means
+     * "let the server pick a random sealed pool" (matches the current Quick Game default).
+     */
+    @Serializable
+    @SerialName("submitQuickGameLobbyDeck")
+    data class SubmitQuickGameLobbyDeck(val deckList: Map<String, Int>) : ClientMessage
+
+    /** Toggle this player's ready flag. The server starts the game when both players are ready. */
+    @Serializable
+    @SerialName("setQuickGameLobbyReady")
+    data class SetQuickGameLobbyReady(val ready: Boolean) : ClientMessage
+
+    /**
+     * Update the quick-game lobby's set code (used when a player has chosen the "Random" deck
+     * tab — picks a sealed pool from this set). Pass null to mean "any set, server picks one".
+     * Only the host (first non-AI player) is allowed to change this.
+     */
+    @Serializable
+    @SerialName("setQuickGameLobbySetCode")
+    data class SetQuickGameLobbySetCode(val setCode: String?) : ClientMessage
 }

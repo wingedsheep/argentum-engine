@@ -7,6 +7,7 @@ import { createGameplayHandlers } from './gameplayHandlers'
 import { createDraftHandlers } from './draftHandlers'
 import { createLobbyHandlers } from './lobbyHandlers'
 import { createSpectatingHandlers } from './spectatingHandlers'
+import { createQuickGameLobbyHandlers } from './quickGameLobbyHandlers'
 import type { SetState, GetState } from './types'
 
 export function createMessageHandlers(set: SetState, get: GetState): MessageHandlers {
@@ -16,5 +17,6 @@ export function createMessageHandlers(set: SetState, get: GetState): MessageHand
     ...createDraftHandlers(set, get),
     ...createLobbyHandlers(set, get),
     ...createSpectatingHandlers(set, get),
+    ...createQuickGameLobbyHandlers(set, get),
   }
 }

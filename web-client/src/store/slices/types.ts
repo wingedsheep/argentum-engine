@@ -25,6 +25,7 @@ import type {
   SealedCardInfo,
   Step,
   AvailableSet,
+  QuickGameLobbyStateMessage,
 } from '@/types'
 import type { ConnectionStatus } from '@/network/websocket.ts'
 import type { CounterRemovalCreatureInfo, SpectatorCombatState, SpectatorDecisionStatus } from '@/types/messages.ts'
@@ -685,6 +686,15 @@ export type GameStore = {
   addDisconnectTime: (playerId: string) => void
   kickPlayer: (playerId: string) => void
   leaveTournament: () => void
+
+  // Quick Game Lobby slice
+  quickGameLobbyState: QuickGameLobbyStateMessage | null
+  createQuickGameLobby: (vsAi?: boolean, setCode?: string) => void
+  joinQuickGameLobby: (lobbyId: string) => void
+  leaveQuickGameLobby: () => void
+  submitQuickGameLobbyDeck: (deckList: Record<string, number>) => void
+  setQuickGameLobbyReady: (ready: boolean) => void
+  setQuickGameLobbySetCode: (setCode: string | null) => void
 
   // Draft slice
   deckBuildingState: DeckBuildingState | null

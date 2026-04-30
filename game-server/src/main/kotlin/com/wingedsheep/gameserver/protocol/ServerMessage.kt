@@ -884,6 +884,50 @@ sealed interface ServerMessage {
         /** Map of blocker creature ID to attacker creature IDs */
         val assignments: Map<EntityId, List<EntityId>>
     ) : ServerMessage
+
+    // =========================================================================
+    // Quick Game Lobby Messages
+    // =========================================================================
+
+    /**
+     * Snapshot of a quick-game lobby. Sent on every state change (player joined, deck submitted,
+     * ready toggled). The opponent's actual deck list is NEVER included here — only a
+     * "deck-selected" boolean — so neither player learns the other's list before the game starts.
+     */
+    @Serializable
+    @SerialName("quickGameLobbyState")
+    data class QuickGameLobbyState(
+        val lobbyId: String,
+        val vsAi: Boolean,
+        val setCode: String?,
+        val players: List<QuickGameLobbyPlayerView>,
+        val youPlayerId: EntityId,
+        val canStart: Boolean
+    ) : ServerMessage
+
+    /**
+     * Per-player view of a lobby member. The opponent only sees aggregate info ([deckSelected],
+     * [deckCardCount]); the recipient sees the same fields about themselves but can derive their
+     * own deck from local state.
+     */
+    @Serializable
+    data class QuickGameLobbyPlayerView(
+        val playerId: EntityId,
+        val playerName: String,
+        val isAi: Boolean,
+        val ready: Boolean,
+        val deckSelected: Boolean,
+        val deckCardCount: Int,
+        /** "random" if the player chose to defer to the server's random sealed pool. */
+        val deckLabel: String,
+        /** Per-player set choice for Random pools; null = "any set". */
+        val setCode: String? = null
+    )
+
+    /** The lobby has been closed (host left, AI failed to spin up, etc.). */
+    @Serializable
+    @SerialName("quickGameLobbyClosed")
+    data class QuickGameLobbyClosed(val reason: String) : ServerMessage
 }
 
 @Serializable

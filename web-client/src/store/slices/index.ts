@@ -9,3 +9,4 @@ export { createGameplaySlice, type GameplaySlice, type GameplaySliceState, type 
 export { createLobbySlice, type LobbySlice, type LobbySliceState, type LobbySliceActions } from './lobbySlice'
 export { createDraftSlice, type DraftSlice, type DraftSliceState, type DraftSliceActions } from './draftSlice'
 export { createUISlice, type UISlice, type UISliceState, type UISliceActions } from './ui'
+export { createQuickGameLobbySlice, type QuickGameLobbySlice, type QuickGameLobbySliceState, type QuickGameLobbySliceActions } from './quickGameLobbySlice'

@@ -68,6 +68,9 @@ export type ServerMessage =
   | OpponentReconnectedMessage
   | TournamentPlayerDisconnectedMessage
   | TournamentPlayerReconnectedMessage
+  // Quick Game Lobby Messages
+  | QuickGameLobbyStateMessage
+  | QuickGameLobbyClosedMessage
 
 /**
  * Connection confirmed with assigned player ID.
@@ -1293,6 +1296,13 @@ export type ClientMessage =
   | RequestUndoMessage
   // Resync
   | RequestResyncMessage
+  // Quick Game Lobby Messages
+  | CreateQuickGameLobbyMessage
+  | JoinQuickGameLobbyMessage
+  | LeaveQuickGameLobbyMessage
+  | SubmitQuickGameLobbyDeckMessage
+  | SetQuickGameLobbyReadyMessage
+  | SetQuickGameLobbySetCodeMessage
 
 /**
  * Connect to the server with a player name.
@@ -1929,4 +1939,96 @@ export function isSpectatingStartedMessage(msg: ServerMessage): msg is Spectatin
 
 export function isSpectatingStoppedMessage(msg: ServerMessage): msg is SpectatingStoppedMessage {
   return msg.type === 'spectatingStopped'
+}
+
+// ============================================================================
+// Quick Game Lobby
+// ============================================================================
+
+export interface QuickGameLobbyPlayerView {
+  readonly playerId: string
+  readonly playerName: string
+  readonly isAi: boolean
+  readonly ready: boolean
+  readonly deckSelected: boolean
+  readonly deckCardCount: number
+  /** Display label only — opponent's actual deck list is never sent. */
+  readonly deckLabel: string
+  /** Per-player set choice for Random pools; null = "any set". */
+  readonly setCode: string | null
+}
+
+export interface QuickGameLobbyStateMessage {
+  readonly type: 'quickGameLobbyState'
+  readonly lobbyId: string
+  readonly vsAi: boolean
+  readonly setCode: string | null
+  readonly players: readonly QuickGameLobbyPlayerView[]
+  readonly youPlayerId: string
+  readonly canStart: boolean
+}
+
+export interface QuickGameLobbyClosedMessage {
+  readonly type: 'quickGameLobbyClosed'
+  readonly reason: string
+}
+
+export interface CreateQuickGameLobbyMessage {
+  readonly type: 'createQuickGameLobby'
+  readonly vsAi?: boolean
+  readonly setCode?: string
+}
+
+export interface JoinQuickGameLobbyMessage {
+  readonly type: 'joinQuickGameLobby'
+  readonly lobbyId: string
+}
+
+export interface LeaveQuickGameLobbyMessage {
+  readonly type: 'leaveQuickGameLobby'
+}
+
+export interface SubmitQuickGameLobbyDeckMessage {
+  readonly type: 'submitQuickGameLobbyDeck'
+  readonly deckList: Record<string, number>
+}
+
+export interface SetQuickGameLobbyReadyMessage {
+  readonly type: 'setQuickGameLobbyReady'
+  readonly ready: boolean
+}
+
+export interface SetQuickGameLobbySetCodeMessage {
+  readonly type: 'setQuickGameLobbySetCode'
+  readonly setCode: string | null
+}
+
+export function createCreateQuickGameLobbyMessage(vsAi?: boolean, setCode?: string): CreateQuickGameLobbyMessage {
+  return {
+    type: 'createQuickGameLobby',
+    ...(vsAi ? { vsAi } : {}),
+    ...(setCode ? { setCode } : {}),
+  }
+}
+export function createJoinQuickGameLobbyMessage(lobbyId: string): JoinQuickGameLobbyMessage {
+  return { type: 'joinQuickGameLobby', lobbyId }
+}
+export function createLeaveQuickGameLobbyMessage(): LeaveQuickGameLobbyMessage {
+  return { type: 'leaveQuickGameLobby' }
+}
+export function createSubmitQuickGameLobbyDeckMessage(deckList: Record<string, number>): SubmitQuickGameLobbyDeckMessage {
+  return { type: 'submitQuickGameLobbyDeck', deckList }
+}
+export function createSetQuickGameLobbyReadyMessage(ready: boolean): SetQuickGameLobbyReadyMessage {
+  return { type: 'setQuickGameLobbyReady', ready }
+}
+export function createSetQuickGameLobbySetCodeMessage(setCode: string | null): SetQuickGameLobbySetCodeMessage {
+  return { type: 'setQuickGameLobbySetCode', setCode }
+}
+
+export function isQuickGameLobbyStateMessage(msg: ServerMessage): msg is QuickGameLobbyStateMessage {
+  return msg.type === 'quickGameLobbyState'
+}
+export function isQuickGameLobbyClosedMessage(msg: ServerMessage): msg is QuickGameLobbyClosedMessage {
+  return msg.type === 'quickGameLobbyClosed'
 }

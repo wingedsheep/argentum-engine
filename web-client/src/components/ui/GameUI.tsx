@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { useGameStore, type LobbyState, type TournamentState } from '@/store/gameStore.ts'
 import type { SealedCardInfo } from '@/types'
 import { getCardImageUrl } from '@/utils/cardImages.ts'
@@ -6,7 +6,8 @@ import { ManaCost } from './ManaSymbols'
 import { randomBackground } from '@/utils/background.ts'
 import { ReplayViewer, type GameSummary } from '../admin/ReplayViewer'
 import type { ReplayData } from '@/replay/reconstructSnapshots.ts'
-import { DeckInput } from './DeckInput'
+import { QuickGameLobbyOverlay } from './QuickGameLobbyOverlay'
+import { useDeckLibrary } from '@/store/deckLibrary'
 import styles from './GameUI.module.css'
 
 type GameMode = 'normal' | 'tournament'
@@ -32,10 +33,14 @@ export function GameUI() {
   const lastError = useGameStore((state) => state.lastError)
   const deckBuildingState = useGameStore((state) => state.deckBuildingState)
   const tournamentState = useGameStore((state) => state.tournamentState)
+  const quickGameLobbyState = useGameStore((state) => state.quickGameLobbyState)
 
   // Don't show connection overlay if actively building deck (but show during 'waiting' phase)
   // Exception: always show if tournamentState exists (for TournamentOverlay)
   if (deckBuildingState && deckBuildingState.phase !== 'waiting' && !tournamentState) return null
+
+  // Quick-game lobby is its own dedicated overlay (deck picker lives inside it).
+  if (quickGameLobbyState && !sessionId) return <QuickGameLobbyOverlay />
 
   return (
     <ConnectionOverlay
@@ -59,25 +64,21 @@ function ConnectionOverlay({
   error: string | undefined
 }) {
   const connect = useGameStore((state) => state.connect)
-  const createGame = useGameStore((state) => state.createGame)
-  const createAiGame = useGameStore((state) => state.createAiGame)
   const aiEnabled = useGameStore((state) => state.aiEnabled)
-  const availableSets = useGameStore((state) => state.availableSets)
-  const joinGame = useGameStore((state) => state.joinGame)
-  const createTournamentLobby = useGameStore((state) => state.createTournamentLobby)
   const joinLobby = useGameStore((state) => state.joinLobby)
+  const createTournamentLobby = useGameStore((state) => state.createTournamentLobby)
+  const createQuickGameLobby = useGameStore((state) => state.createQuickGameLobby)
+  const joinQuickGameLobby = useGameStore((state) => state.joinQuickGameLobby)
   const setPendingTournamentId = useGameStore((state) => state.setPendingTournamentId)
   const lobbyState = useGameStore((state) => state.lobbyState)
   const [joinSessionId, setJoinSessionId] = useState('')
   const [gameMode, setGameMode] = useState<GameMode>('normal')
-  const [selectedSetCode, setSelectedSetCode] = useState<string>('random')
   const [playerName, setPlayerName] = useState(() => localStorage.getItem('argentum-player-name') || '')
 
   const [nameConfirmed, setNameConfirmed] = useState(() => !!localStorage.getItem('argentum-player-name'))
   const [showReplays, setShowReplays] = useState(false)
   const [publicTournaments, setPublicTournaments] = useState<PublicTournamentSummary[]>([])
   const [publicTournamentsError, setPublicTournamentsError] = useState<string | null>(null)
-  const [customDeck, setCustomDeck] = useState<Record<string, number>>({})
 
   const confirmName = () => {
     if (playerName.trim()) {
@@ -90,31 +91,26 @@ function ConnectionOverlay({
     }
   }
 
-  // Empty deck triggers server-side random deck generation from Portal set
-  const randomDeck = {}
-
-  const quickGameSetCode = selectedSetCode === 'random' ? undefined : selectedSetCode
-
   const handleCreate = () => {
     if (gameMode === 'tournament') {
       // Create lobby with default settings - host can change in lobby
       createTournamentLobby(['KTK'], 'SEALED')
     } else {
-      // Use custom deck if provided, otherwise use random deck
-      const deckToUse = Object.keys(customDeck).length > 0 ? customDeck : randomDeck
-      createGame(deckToUse, quickGameSetCode)
+      // Quick games go through a real lobby; deck *and* set selection live inside it.
+      createQuickGameLobby(false)
     }
+  }
+
+  const handlePlayVsAi = () => {
+    createQuickGameLobby(true)
   }
 
   const handleJoin = () => {
     if (joinSessionId.trim()) {
-      if (gameMode === 'tournament') {
-        joinLobby(joinSessionId.trim())
-      } else {
-        // Use custom deck if provided, otherwise use random deck
-        const deckToUse = Object.keys(customDeck).length > 0 ? customDeck : randomDeck
-        joinGame(joinSessionId.trim(), deckToUse)
-      }
+      // Unified join: send to QuickGameLobbyHandler, which delegates to the tournament
+      // handler if the code happens to be a tournament lobby. The home-screen Join field
+      // doesn't care which kind of lobby is behind a code.
+      joinQuickGameLobby(joinSessionId.trim())
     }
   }
 
@@ -250,7 +246,7 @@ function ConnectionOverlay({
               {/* Game mode description */}
               {gameMode === 'normal' && (
                 <p className={styles.modeDescription}>
-                  Play with a randomly generated deck for quick 1v1 matches.
+                  Pick a deck inside the lobby, then play 1v1 with a friend or against the AI.
                 </p>
               )}
               {gameMode === 'tournament' && (
@@ -259,43 +255,16 @@ function ConnectionOverlay({
                 </p>
               )}
 
-              {gameMode === 'normal' && availableSets.length > 0 && (
-                <select
-                  value={selectedSetCode}
-                  onChange={(e) => setSelectedSetCode(e.target.value)}
-                  className={styles.setSelect}
-                >
-                  <option value="random">Random Set</option>
-                  {[...availableSets]
-                    .sort((a, b) => a.name.localeCompare(b.name))
-                    .map((set) => (
-                      <option key={set.code} value={set.code}>
-                        {set.name}
-                      </option>
-                    ))}
-                </select>
-              )}
-
-              {gameMode === 'normal' && (
-                <DeckInput
-                  onDeckChange={setCustomDeck}
-                  disabled={!nameConfirmed}
-                />
-              )}
-
               <button
                 onClick={handleCreate}
                 className={gameMode === 'tournament' ? styles.tournamentButton : styles.primaryButton}
               >
-                {gameMode === 'tournament' ? 'Create Lobby' : 'Create Game'}
+                {gameMode === 'tournament' ? 'Create Lobby' : 'Create Quick Game'}
               </button>
 
               {gameMode === 'normal' && aiEnabled && (
                 <button
-                  onClick={() => {
-                    const deckToUse = Object.keys(customDeck).length > 0 ? customDeck : randomDeck
-                    createAiGame(deckToUse, quickGameSetCode)
-                  }}
+                  onClick={handlePlayVsAi}
                   className={styles.aiButton}
                 >
                   Play vs AI
@@ -314,7 +283,7 @@ function ConnectionOverlay({
                   value={joinSessionId}
                   onChange={(e) => setJoinSessionId(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && handleJoin()}
-                  placeholder={gameMode === 'tournament' ? 'Enter Lobby ID' : 'Enter Session ID'}
+                  placeholder="Enter Lobby Code"
                   className={styles.sessionInput}
                 />
                 <button
@@ -1029,6 +998,42 @@ function TournamentOverlay({
   const [showDeckViewer, setShowDeckViewer] = useState(false)
   const [confirmLeave, setConfirmLeave] = useState(false)
   const [showReplays, setShowReplays] = useState(false)
+  const [deckSavedAt, setDeckSavedAt] = useState<number | null>(null)
+  const [saveDeckDialog, setSaveDeckDialog] = useState<{ name: string } | null>(null)
+  const hydrateDeckLibrary = useDeckLibrary((s) => s.hydrate)
+  const saveDeckToLibrary = useDeckLibrary((s) => s.saveDeck)
+  useEffect(() => { hydrateDeckLibrary() }, [hydrateDeckLibrary])
+
+  const buildCardsFromDraftedDeck = (): Record<string, number> | null => {
+    if (!deckBuildingState) return null
+    const cards: Record<string, number> = {}
+    for (const name of deckBuildingState.deck) {
+      cards[name] = (cards[name] ?? 0) + 1
+    }
+    for (const [name, count] of Object.entries(deckBuildingState.landCounts)) {
+      if (count > 0) cards[name] = (cards[name] ?? 0) + count
+    }
+    return Object.keys(cards).length === 0 ? null : cards
+  }
+
+  const openSaveDeckDialog = () => {
+    if (!deckBuildingState) return
+    const setNames = lobbyState?.settings.setNames?.join(' + ')
+    const stamp = new Date().toLocaleDateString()
+    const defaultName = setNames ? `${setNames} draft – ${stamp}` : `Drafted deck – ${stamp}`
+    setSaveDeckDialog({ name: defaultName })
+  }
+
+  const confirmSaveDeck = () => {
+    if (!saveDeckDialog) return
+    const cards = buildCardsFromDraftedDeck()
+    if (!cards) return
+    const name = saveDeckDialog.name.trim() || `Drafted deck – ${new Date().toLocaleDateString()}`
+    saveDeckToLibrary({ name, cards })
+    setSaveDeckDialog(null)
+    setDeckSavedAt(Date.now())
+    setTimeout(() => setDeckSavedAt(null), 2000)
+  }
   // Tick every second to update disconnect countdown timers
   const [, setTick] = useState(0)
   const hasDisconnected = Object.keys(disconnectedPlayers).length > 0
@@ -1124,10 +1129,25 @@ function TournamentOverlay({
               Replays
             </button>
           )}
-          {!isSpectator && deckBuildingState && (tournamentState.currentRound > 0 || isPlayerReady) && (
-            <button onClick={() => setShowDeckViewer(true)} className={styles.trnToolbarBtn}>
-              View Deck
-            </button>
+          {!isSpectator && deckBuildingState && (
+            <>
+              <button
+                onClick={openSaveDeckDialog}
+                className={styles.trnToolbarBtn}
+                style={{
+                  background: deckSavedAt ? 'rgba(108, 192, 74, 0.2)' : 'var(--accent-primary, #6aa3ff)',
+                  borderColor: deckSavedAt ? 'rgba(108, 192, 74, 0.5)' : 'var(--accent-primary, #6aa3ff)',
+                  color: '#fff',
+                  fontWeight: 600,
+                }}
+                title="Save this drafted deck to your local My Decks library"
+              >
+                {deckSavedAt ? 'Saved ✓' : 'Save Deck'}
+              </button>
+              <button onClick={() => setShowDeckViewer(true)} className={styles.trnToolbarBtn}>
+                View Deck
+              </button>
+            </>
           )}
         </div>
       </div>
@@ -1453,6 +1473,92 @@ function TournamentOverlay({
           onClose={() => setShowDeckViewer(false)}
         />
       )}
+
+      {/* Save Deck dialog */}
+      {saveDeckDialog && (
+        <SaveDeckDialog
+          name={saveDeckDialog.name}
+          onNameChange={(name) => setSaveDeckDialog({ name })}
+          onCancel={() => setSaveDeckDialog(null)}
+          onConfirm={confirmSaveDeck}
+        />
+      )}
+    </div>
+  )
+}
+
+function SaveDeckDialog({
+  name,
+  onNameChange,
+  onConfirm,
+  onCancel,
+}: {
+  name: string
+  onNameChange: (name: string) => void
+  onConfirm: () => void
+  onCancel: () => void
+}) {
+  const inputRef = useRef<HTMLInputElement>(null)
+  useEffect(() => {
+    // Focus + select on mount so the user can immediately overtype the suggested name.
+    inputRef.current?.focus()
+    inputRef.current?.select()
+  }, [])
+  return (
+    <div className={styles.deckViewerBackdrop} onClick={onCancel}>
+      <div
+        className={styles.deckViewerPanel}
+        onClick={(e) => e.stopPropagation()}
+        style={{ maxWidth: 480 }}
+      >
+        <div className={styles.deckViewerHeader}>
+          <h3 className={styles.deckViewerTitle}>Save Deck</h3>
+          <button className={styles.deckViewerClose} onClick={onCancel}>
+            &#x2715;
+          </button>
+        </div>
+        <div style={{ padding: 'var(--space-4) var(--space-5)', display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
+          <label style={{ fontSize: 'var(--font-sm)', color: 'var(--text-faint)' }}>
+            Deck name
+          </label>
+          <input
+            ref={inputRef}
+            type="text"
+            value={name}
+            onChange={(e) => onNameChange(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') onConfirm()
+              if (e.key === 'Escape') onCancel()
+            }}
+            placeholder="Deck name"
+            style={{
+              background: 'rgba(0, 0, 0, 0.3)',
+              border: '1px solid rgba(255, 255, 255, 0.12)',
+              borderRadius: 'var(--radius-sm)',
+              padding: 'var(--space-2) var(--space-3)',
+              color: 'var(--text-primary)',
+              fontSize: '0.95rem',
+            }}
+          />
+          <div style={{ display: 'flex', gap: 'var(--space-2)', justifyContent: 'flex-end' }}>
+            <button
+              type="button"
+              onClick={onCancel}
+              className={styles.leaveButton}
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              onClick={onConfirm}
+              disabled={!name.trim()}
+              className={styles.startButton}
+            >
+              Save to My Decks
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
   )
 }
@@ -1469,6 +1575,12 @@ function DeckViewerModal({
 }) {
   const [hoveredCard, setHoveredCard] = useState<SealedCardInfo | null>(null)
   const [hoverPos, setHoverPos] = useState<{ x: number; y: number } | null>(null)
+  const hydrateDeckLibrary = useDeckLibrary((s) => s.hydrate)
+  const saveDeck = useDeckLibrary((s) => s.saveDeck)
+  useEffect(() => { hydrateDeckLibrary() }, [hydrateDeckLibrary])
+  const defaultDeckName = `Drafted ${new Date().toLocaleDateString()} ${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`
+  const [saveName, setSaveName] = useState(defaultDeckName)
+  const [savedAt, setSavedAt] = useState<number | null>(null)
 
   const handleHover = (card: SealedCardInfo | null, e?: React.MouseEvent) => {
     setHoveredCard(card)
@@ -1611,6 +1723,52 @@ function DeckViewerModal({
                 })}
             </div>
           )}
+        </div>
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 8,
+            padding: 'var(--space-3) var(--space-5)',
+            borderTop: '1px solid rgba(255, 255, 255, 0.08)',
+          }}
+        >
+          <input
+            type="text"
+            value={saveName}
+            onChange={(e) => setSaveName(e.target.value)}
+            placeholder="Deck name"
+            style={{
+              flex: 1,
+              background: 'rgba(0, 0, 0, 0.3)',
+              border: '1px solid rgba(255, 255, 255, 0.1)',
+              borderRadius: 'var(--radius-sm)',
+              padding: 'var(--space-1) var(--space-2)',
+              color: 'var(--text-primary)',
+              fontSize: '0.85rem',
+            }}
+          />
+          <button
+            type="button"
+            onClick={() => {
+              // Combine non-basic deck cards with basic-land counts. The picker accepts the same shape.
+              const cards: Record<string, number> = {}
+              for (const name of deckBuildingState.deck) {
+                cards[name] = (cards[name] ?? 0) + 1
+              }
+              for (const [name, count] of Object.entries(deckBuildingState.landCounts)) {
+                if (count > 0) cards[name] = (cards[name] ?? 0) + count
+              }
+              saveDeck({ name: saveName.trim() || defaultDeckName, cards })
+              setSavedAt(Date.now())
+              setTimeout(() => setSavedAt(null), 2000)
+            }}
+            disabled={totalCards === 0}
+            className={styles.startButton}
+            style={{ flexShrink: 0 }}
+          >
+            {savedAt ? 'Saved ✓' : 'Save to My Decks'}
+          </button>
         </div>
       </div>
 

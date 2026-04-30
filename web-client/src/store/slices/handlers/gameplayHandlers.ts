@@ -399,7 +399,8 @@ type GameplayHandlerKeys =
 export function createGameplayHandlers(set: SetState, get: GetState): Pick<MessageHandlers, GameplayHandlerKeys> {
   return {
     onGameCreated: (msg) => {
-      set({ sessionId: msg.sessionId })
+      // Clear any quick-game lobby state — the lobby has done its job (server already removed it).
+      set({ sessionId: msg.sessionId, quickGameLobbyState: null })
     },
 
     onGameStarted: (msg) => {

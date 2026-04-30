@@ -4,6 +4,7 @@ import com.wingedsheep.gameserver.handler.ConnectionHandler
 import com.wingedsheep.gameserver.handler.GamePlayHandler
 import com.wingedsheep.gameserver.handler.LobbyHandler
 import com.wingedsheep.gameserver.handler.MessageSender
+import com.wingedsheep.gameserver.handler.QuickGameLobbyHandler
 import com.wingedsheep.gameserver.protocol.ClientMessage
 import com.wingedsheep.gameserver.protocol.ErrorCode
 import jakarta.annotation.PostConstruct
@@ -19,6 +20,7 @@ class GameWebSocketHandler(
     private val connectionHandler: ConnectionHandler,
     private val gamePlayHandler: GamePlayHandler,
     private val lobbyHandler: LobbyHandler,
+    private val quickGameLobbyHandler: QuickGameLobbyHandler,
     private val sender: MessageSender
 ) : TextWebSocketHandler() {
 
@@ -39,6 +41,12 @@ class GameWebSocketHandler(
         connectionHandler.sendActiveMatchesToPlayerCallback = { identity, wsSession -> lobbyHandler.sendActiveMatchesToPlayer(identity, wsSession) }
         connectionHandler.restoreSpectatingCallback = { identity, playerSession, wsSession, gameSessionId ->
             lobbyHandler.restoreSpectating(identity, playerSession, wsSession, gameSessionId)
+        }
+        quickGameLobbyHandler.joinTournamentLobbyCallback = { wsSession, msg ->
+            lobbyHandler.handleJoinLobby(wsSession, msg)
+        }
+        connectionHandler.quickGameLobbyReconnectCallback = { wsSession, playerId, lobbyId ->
+            quickGameLobbyHandler.handleReconnect(wsSession, playerId, lobbyId)
         }
         connectionHandler.lobbyReconnectCallback = { wsSession, identity, playerSession, lobbyId ->
             val lobby = lobbyHandler.findLobbyForReconnect(lobbyId)
@@ -110,6 +118,13 @@ class GameWebSocketHandler(
 
                 is ClientMessage.SpectateGame,
                 is ClientMessage.StopSpectating -> lobbyHandler.handle(session, clientMessage)
+
+                is ClientMessage.CreateQuickGameLobby,
+                is ClientMessage.JoinQuickGameLobby,
+                is ClientMessage.LeaveQuickGameLobby,
+                is ClientMessage.SubmitQuickGameLobbyDeck,
+                is ClientMessage.SetQuickGameLobbyReady,
+                is ClientMessage.SetQuickGameLobbySetCode -> quickGameLobbyHandler.handle(session, clientMessage)
             }
         } catch (e: Exception) {
             logger.error("Error handling message from ${session.id}", e)

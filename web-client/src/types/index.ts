@@ -277,6 +277,16 @@ export type {
   SetStopOverridesMessage,
   StopOverrideInfo,
   PriorityModeValue,
+  // Quick Game Lobby types
+  QuickGameLobbyPlayerView,
+  QuickGameLobbyStateMessage,
+  QuickGameLobbyClosedMessage,
+  CreateQuickGameLobbyMessage,
+  JoinQuickGameLobbyMessage,
+  LeaveQuickGameLobbyMessage,
+  SubmitQuickGameLobbyDeckMessage,
+  SetQuickGameLobbyReadyMessage,
+  SetQuickGameLobbySetCodeMessage,
 } from './messages'
 export {
   isConnectedMessage,
@@ -368,4 +378,13 @@ export {
   createSetStopOverridesMessage,
   createRequestUndoMessage,
   createRequestResyncMessage,
+  // Quick Game Lobby factories & guards
+  createCreateQuickGameLobbyMessage,
+  createJoinQuickGameLobbyMessage,
+  createLeaveQuickGameLobbyMessage,
+  createSubmitQuickGameLobbyDeckMessage,
+  createSetQuickGameLobbyReadyMessage,
+  createSetQuickGameLobbySetCodeMessage,
+  isQuickGameLobbyStateMessage,
+  isQuickGameLobbyClosedMessage,
 } from './messages'

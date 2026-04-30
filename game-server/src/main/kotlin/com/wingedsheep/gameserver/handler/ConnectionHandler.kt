@@ -145,6 +145,7 @@ class ConnectionHandler(
         val contextId: String?
         val lobbyId = identity.currentLobbyId
         val gameSessionId = identity.currentGameSessionId
+        val quickLobbyId = identity.currentQuickGameLobbyId
 
         when {
             lobbyId != null -> {
@@ -174,6 +175,13 @@ class ConnectionHandler(
             aiEnabled = aiGameManager.isEnabled,
             availableSets = buildAvailableSetsList()
         ))
+
+        // Quick-game lobby reconnect is independent of the main context: even if the player has
+        // a stale `currentGameSessionId` or no other context, we still want to put them back in
+        // their lobby. The callback short-circuits with QuickGameLobbyClosed if the lobby is gone.
+        if (quickLobbyId != null && context == null) {
+            quickGameLobbyReconnectCallback?.invoke(session, identity.playerId, quickLobbyId)
+        }
 
         when (context) {
             "lobby", "drafting", "deckBuilding", "tournament" -> {
@@ -558,6 +566,7 @@ class ConnectionHandler(
     var handleAbandonCallback: ((String, EntityId) -> Unit)? = null
     var restoreSpectatingCallback: ((PlayerIdentity, PlayerSession, WebSocketSession, String) -> Unit)? = null
     var lobbyReconnectCallback: ((WebSocketSession, PlayerIdentity, PlayerSession, String) -> Unit)? = null
+    var quickGameLobbyReconnectCallback: ((WebSocketSession, EntityId, String) -> Unit)? = null
 
     companion object {
         /** Time in seconds before a disconnected player auto-concedes their game */
