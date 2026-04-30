@@ -15,5 +15,6 @@ object AetherdriftSet {
 
     val allCards = listOf(
         BounceOff,
+        SpellPierce,
     )
 }
