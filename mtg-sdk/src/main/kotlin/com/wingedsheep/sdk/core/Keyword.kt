@@ -66,6 +66,7 @@ enum class Keyword(val displayName: String) {
 
     // ── Damage modification ──────────────────────────────
     WITHER("Wither"),
+    TOXIC("Toxic"),
 
     // ── Ability words (display prefix, no uniform mechanic) ──
     /**

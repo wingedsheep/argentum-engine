@@ -189,6 +189,7 @@ export enum Keyword {
   OFFSPRING = 'OFFSPRING',
   // Damage modification
   WITHER = 'WITHER',
+  TOXIC = 'TOXIC',
   // Ability words
   EERIE = 'EERIE',
 }
@@ -233,6 +234,7 @@ export const KeywordDisplayNames: Record<Keyword, string> = {
   [Keyword.CONSPIRE]: 'Conspire',
   [Keyword.OFFSPRING]: 'Offspring',
   [Keyword.WITHER]: 'Wither',
+  [Keyword.TOXIC]: 'Toxic',
   [Keyword.EERIE]: 'Eerie',
 }
 

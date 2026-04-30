@@ -18,6 +18,7 @@ object PhyrexiaAllWillBeOneSet {
         CopperlineGorge,
         DarkslickShores,
         RazorvergeThicket,
+        SkrelvDefectorMite,
         SeachromeCoast,
     )
 }
