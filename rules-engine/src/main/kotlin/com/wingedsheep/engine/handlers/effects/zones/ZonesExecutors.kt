@@ -14,6 +14,7 @@ class ZonesExecutors(
 ) : ExecutorModule {
     override fun executors(): List<EffectExecutor<*>> = listOf(
         MoveToZoneEffectExecutor(cardRegistry),
+        ExileAndGrantOwnerPlayPermissionExecutor(),
         WarpExileExecutor(),
         ForceExileMultiZoneExecutor(),
         ForceReturnOwnPermanentExecutor(),

@@ -49,6 +49,7 @@ import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.identity.MayPlayFromExileComponent
 import com.wingedsheep.engine.state.components.identity.PlayWithAdditionalCostComponent
+import com.wingedsheep.engine.state.components.identity.PlayWithCostIncreaseComponent
 import com.wingedsheep.engine.state.components.identity.PlayWithoutPayingCostComponent
 import com.wingedsheep.engine.state.components.player.ManaPoolComponent
 import com.wingedsheep.engine.state.components.identity.LifeTotalComponent
@@ -352,6 +353,16 @@ class CastSpellHandler(
                 if (!choseBehold) {
                     effectiveCost = effectiveCost + ManaCost.parse(beholdOrPay.alternativeManaCost)
                 }
+            }
+        }
+
+        // Apply runtime mana tax from exile permissions (e.g., Soul Partition).
+        if (!playForFree) {
+            val runtimeCostIncrease = state.getEntity(action.cardId)
+                ?.get<PlayWithCostIncreaseComponent>()
+                ?.takeIf { it.controllerId == action.playerId }
+            if (runtimeCostIncrease != null) {
+                effectiveCost = effectiveCost + ManaCost.parse("{${runtimeCostIncrease.amount}}")
             }
         }
 
@@ -1132,6 +1143,16 @@ class CastSpellHandler(
                 if (!choseBehold) {
                     effectiveCost = effectiveCost + ManaCost.parse(beholdOrPay.alternativeManaCost)
                 }
+            }
+        }
+
+        // Apply runtime mana tax from exile permissions (e.g., Soul Partition).
+        if (!playForFreeInExecute) {
+            val runtimeCostIncrease = currentState.getEntity(action.cardId)
+                ?.get<PlayWithCostIncreaseComponent>()
+                ?.takeIf { it.controllerId == action.playerId }
+            if (runtimeCostIncrease != null) {
+                effectiveCost = effectiveCost + ManaCost.parse("{${runtimeCostIncrease.amount}}")
             }
         }
 

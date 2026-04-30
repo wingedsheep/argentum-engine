@@ -269,6 +269,7 @@ val engineSerializersModule = SerializersModule {
         subclass(HasMorphAbilityComponent::class)
         subclass(MayPlayFromExileComponent::class)
         subclass(PlayWithAdditionalCostComponent::class)
+        subclass(PlayWithCostIncreaseComponent::class)
         subclass(PlayWithoutPayingCostComponent::class)
         subclass(WarpExiledComponent::class)
 

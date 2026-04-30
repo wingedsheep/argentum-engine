@@ -6,6 +6,7 @@ import com.wingedsheep.engine.limited.BoosterGenerator
 import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.gameserver.sealed.SetConfigs
 import com.wingedsheep.mtg.sets.definitions.bloomburrow.BloomburrowSet
+import com.wingedsheep.mtg.sets.definitions.brotherswar.TheBrothersWarSet
 import com.wingedsheep.mtg.sets.definitions.edgeofeternities.EdgeOfEternitiesSet
 import com.wingedsheep.mtg.sets.definitions.dominaria.DominariaSet
 import com.wingedsheep.mtg.sets.definitions.dominariaunited.DominariaUnitedSet
@@ -70,6 +71,9 @@ class GameBeansConfig(
         if (gameProperties.sets.bloomburrowEnabled) {
             register(BloomburrowSet.allCards)
             register(BloomburrowSet.basicLands)
+        }
+        if (gameProperties.sets.brothersWarEnabled) {
+            register(TheBrothersWarSet.allCards)
         }
         if (gameProperties.sets.edgeOfEternitiesEnabled) {
             register(EdgeOfEternitiesSet.allCards)
@@ -149,6 +153,7 @@ class GameBeansConfig(
             if (gameProperties.sets.dominariaEnabled) addAll(DominariaSet.allCards)
             if (gameProperties.sets.dominariaUnitedEnabled) addAll(DominariaUnitedSet.allCards)
             if (gameProperties.sets.bloomburrowEnabled) addAll(BloomburrowSet.allCards)
+            if (gameProperties.sets.brothersWarEnabled) addAll(TheBrothersWarSet.allCards)
             if (gameProperties.sets.edgeOfEternitiesEnabled) addAll(EdgeOfEternitiesSet.allCards)
             if (gameProperties.sets.lorwynEclipsedEnabled) addAll(LorwynEclipsedSet.allCards)
             if (gameProperties.sets.murdersAtKarlovManorEnabled) addAll(MurdersAtKarlovManorSet.allCards)
@@ -163,6 +168,7 @@ class GameBeansConfig(
             if (gameProperties.sets.dominariaEnabled) add("DOM")
             if (gameProperties.sets.dominariaUnitedEnabled) add("DMU")
             if (gameProperties.sets.bloomburrowEnabled) add("BLB")
+            if (gameProperties.sets.brothersWarEnabled) add("BRO")
             if (gameProperties.sets.edgeOfEternitiesEnabled) add("EOE")
             if (gameProperties.sets.murdersAtKarlovManorEnabled) add("MKM")
         }

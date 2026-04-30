@@ -55,6 +55,7 @@ constructors.
 
 - `Effects.Destroy(target)`
 - `Effects.Exile(target)`
+- `Effects.ExileAndGrantOwnerPlayPermission(target, opponentCostIncrease = 0)` — exile target and let its owner play it while it remains exiled, optionally taxing opponents
 - `Effects.ExileUntilEndStep(target)` — exile, return at end step
 - `Effects.ReturnToHand(target)`
 - `Effects.PutOnTopOfLibrary(target)`

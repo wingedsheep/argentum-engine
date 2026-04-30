@@ -71,6 +71,7 @@ import com.wingedsheep.sdk.scripting.effects.ExileFromTopRepeatingEffect
 import com.wingedsheep.sdk.scripting.effects.ExileLibraryUntilManaValueEffect
 import com.wingedsheep.sdk.scripting.effects.ExileOpponentsGraveyardsEffect
 import com.wingedsheep.sdk.scripting.effects.ExileUntilLeavesEffect
+import com.wingedsheep.sdk.scripting.effects.ExileAndGrantOwnerPlayPermissionEffect
 import com.wingedsheep.sdk.scripting.effects.CreateGlobalTriggeredAbilityWithDurationEffect
 import com.wingedsheep.sdk.scripting.effects.CreatePermanentGlobalTriggeredAbilityEffect
 import com.wingedsheep.sdk.scripting.effects.ReturnCreaturesPutInGraveyardThisTurnEffect
@@ -360,6 +361,15 @@ object Effects {
      */
     fun Exile(target: EffectTarget): Effect =
         MoveToZoneEffect(target, Zone.EXILE)
+
+    /**
+     * Exile a target and let its owner play it while it remains exiled.
+     * Optionally taxes opponents who cast it this way.
+     */
+    fun ExileAndGrantOwnerPlayPermission(
+        target: EffectTarget,
+        opponentCostIncrease: Int = 0
+    ): Effect = ExileAndGrantOwnerPlayPermissionEffect(target, opponentCostIncrease)
 
     /**
      * Exile all cards in each opponent's graveyard.
