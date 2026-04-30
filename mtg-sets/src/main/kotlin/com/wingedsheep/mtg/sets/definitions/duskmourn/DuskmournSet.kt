@@ -15,6 +15,7 @@ object DuskmournSet {
 
     val allCards = listOf(
         EtherealArmor,
+        OptimisticScavenger,
         ShardmagesRescue,
         ShelteredByGhosts,
         VeteranSurvivor,

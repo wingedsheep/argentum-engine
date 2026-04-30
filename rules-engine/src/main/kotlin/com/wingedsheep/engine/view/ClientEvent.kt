@@ -1051,7 +1051,8 @@ is PermanentsSacrificedEvent -> {
             is CreatureTypeChangedEvent,
             is BecomesTargetEvent,
             is SpellCopiedEvent,
-            is ClassLevelChangedEvent -> null
+            is ClassLevelChangedEvent,
+            is RoomFullyUnlockedEvent -> null
         }
     }
 }

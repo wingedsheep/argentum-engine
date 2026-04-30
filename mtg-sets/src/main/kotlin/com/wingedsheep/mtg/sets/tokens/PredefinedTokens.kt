@@ -5,6 +5,7 @@ import com.wingedsheep.sdk.dsl.Costs
 import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Filters
+import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.scripting.TimingRule
@@ -206,6 +207,28 @@ object PredefinedTokens {
     }
 
     /**
+     * Sorcerer Role — Enchantment — Aura Role token created by Spellbook Vendor and others.
+     * "Enchanted creature gets +1/+1. Whenever enchanted creature attacks, scry 1."
+     */
+    val SorcererRole = card("Sorcerer Role") {
+        typeLine = "Enchantment — Aura Role"
+
+        staticAbility {
+            effect = Effects.ModifyStats(+1, +1)
+            filter = Filters.EnchantedCreature
+        }
+
+        triggeredAbility {
+            trigger = Triggers.EnchantedCreatureAttacks
+            effect = EffectPatterns.scry(1)
+        }
+
+        metadata {
+            imageUri = "https://cards.scryfall.io/normal/front/a/b/ab3d0e90-b82c-4bea-a1e8-5cc4b891cd2c.jpg?1696288174"
+        }
+    }
+
+    /**
      * All predefined token definitions.
      * Register these in the CardRegistry so token abilities are resolved.
      */
@@ -216,6 +239,7 @@ object PredefinedTokens {
         JustOneGlass,
         Sword,
         Cragflame,
-        Mutavault
+        Mutavault,
+        SorcererRole
     )
 }

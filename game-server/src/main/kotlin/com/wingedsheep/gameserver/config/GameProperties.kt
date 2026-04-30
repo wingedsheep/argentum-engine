@@ -28,7 +28,8 @@ data class SetsProperties(
     val lostCavernsOfIxalanEnabled: Boolean = true,
     val foundationsEnabled: Boolean = true,
     val duskmournEnabled: Boolean = true,
-    val spiderManEnabled: Boolean = true
+    val spiderManEnabled: Boolean = true,
+    val wildsOfEldrainEnabled: Boolean = true
 )
 
 data class AdminProperties(

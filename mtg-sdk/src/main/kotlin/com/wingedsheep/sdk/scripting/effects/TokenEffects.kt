@@ -172,6 +172,26 @@ data class CreatePredefinedTokenEffect(
 }
 
 /**
+ * Create an Aura Role token of the specified type attached to a target creature.
+ *
+ * Role tokens are Enchantment — Aura Role tokens defined in PredefinedTokens.
+ * Role replacement rule: if the target already has a Role controlled by the same
+ * player, the old Role is put into the graveyard before the new one enters.
+ *
+ * @property roleName The name of the Role token (e.g., "Sorcerer Role")
+ * @property target The creature to attach the Role to
+ */
+@SerialName("CreateRoleToken")
+@Serializable
+data class CreateRoleTokenEffect(
+    val roleName: String,
+    val target: EffectTarget = EffectTarget.ContextTarget(0)
+) : Effect {
+    override val description: String = "Create a $roleName token attached to ${target.description}"
+    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
+}
+
+/**
  * Create a token that's a copy of the source permanent.
  * "Create a token that's a copy of Mishra's Self-Replicator."
  *
