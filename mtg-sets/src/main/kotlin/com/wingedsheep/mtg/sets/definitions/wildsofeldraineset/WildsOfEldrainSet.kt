@@ -15,5 +15,6 @@ object WildsOfEldrainSet {
 
     val allCards = listOf(
         SpellbookVendor,
+        SleepCursedFaerie,
     )
 }

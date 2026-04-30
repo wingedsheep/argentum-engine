@@ -6,8 +6,10 @@ import com.wingedsheep.engine.core.UntappedEvent
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.state.GameState
+import com.wingedsheep.engine.state.components.battlefield.CountersComponent
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
+import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.scripting.effects.TapUntapEffect
 import kotlin.reflect.KClass
 
@@ -28,6 +30,15 @@ class TapUntapExecutor : EffectExecutor<TapUntapEffect> {
             ?: return EffectResult.error(state, "No valid target for tap/untap")
 
         val cardName = state.getEntity(targetId)?.get<CardComponent>()?.name ?: "Permanent"
+        val stunCounters = state.getEntity(targetId)?.get<CountersComponent>()?.getCount(CounterType.STUN) ?: 0
+
+        if (!effect.tap && stunCounters > 0) {
+            val newState = state.updateEntity(targetId) { container ->
+                val counters = container.get<CountersComponent>() ?: CountersComponent()
+                container.with(counters.withRemoved(CounterType.STUN, 1))
+            }
+            return EffectResult.success(newState)
+        }
 
         val newState = state.updateEntity(targetId) { container ->
             if (effect.tap) {
