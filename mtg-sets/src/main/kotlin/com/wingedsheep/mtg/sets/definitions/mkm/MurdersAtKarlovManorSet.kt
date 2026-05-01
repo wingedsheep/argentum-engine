@@ -20,5 +20,6 @@ object MurdersAtKarlovManorSet {
         NoMoreLies,
         RaucousTheater,
         ShadowyBackstreet,
+        ThunderingFalls,
     )
 }
