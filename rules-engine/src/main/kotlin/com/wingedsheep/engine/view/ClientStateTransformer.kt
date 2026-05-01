@@ -5,6 +5,7 @@ import com.wingedsheep.sdk.core.CardType
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Phase
+import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.Duration
@@ -1317,7 +1318,7 @@ class ClientStateTransformer(
             playerId = playerId,
             name = playerComponent?.name ?: "Unknown",
             life = lifeTotalComponent?.life ?: 20,
-            poisonCounters = 0, // TODO: Add poison counter component support
+            poisonCounters = container?.get<CountersComponent>()?.getCount(CounterType.POISON) ?: 0,
             handSize = handSize,
             librarySize = librarySize,
             graveyardSize = graveyardSize,

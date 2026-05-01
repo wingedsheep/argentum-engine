@@ -1127,6 +1127,7 @@ export interface SpectatorPlayerState {
   readonly playerId: string
   readonly playerName: string
   readonly life: number
+  readonly poisonCounters: number
   readonly handSize: number
   readonly librarySize: number
   readonly battlefield: readonly SpectatorCardInfo[]

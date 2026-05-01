@@ -13,12 +13,14 @@ export function LifeDisplay({
   playerId,
   playerName,
   spectatorMode = false,
+  poisonCounters = 0,
 }: {
   life: number
   isPlayer?: boolean
   playerId: EntityId
   playerName?: string
   spectatorMode?: boolean
+  poisonCounters?: number
 }) {
   const responsive = useResponsiveContext()
   const targetingState = useGameStore((state) => state.targetingState)
@@ -306,6 +308,28 @@ export function LifeDisplay({
           >
             +
           </button>
+        </div>
+      )}
+
+      {poisonCounters > 0 && (
+        <div
+          title={`${poisonCounters} poison counter${poisonCounters === 1 ? '' : 's'}`}
+          style={{
+            marginTop: 4,
+            minHeight: 18,
+            padding: '2px 7px',
+            borderRadius: 4,
+            border: '1px solid rgba(55, 220, 125, 0.55)',
+            backgroundColor: 'rgba(8, 35, 22, 0.92)',
+            color: '#71f5a7',
+            fontSize: 11,
+            fontWeight: 800,
+            lineHeight: '14px',
+            fontVariantNumeric: 'tabular-nums',
+            boxShadow: '0 0 10px rgba(40, 210, 110, 0.25)',
+          }}
+        >
+          POISON {poisonCounters}/10
         </div>
       )}
     </div>

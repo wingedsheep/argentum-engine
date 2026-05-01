@@ -207,6 +207,7 @@ export function SpectatorView() {
           <LifeDisplay
             playerId={player1.playerId}
             life={player1.life}
+            poisonCounters={player1.poisonCounters}
             playerName={player1.playerName}
             isLeft
           />
@@ -216,6 +217,7 @@ export function SpectatorView() {
           <LifeDisplay
             playerId={player2.playerId}
             life={player2.life}
+            poisonCounters={player2.poisonCounters}
             playerName={player2.playerName}
           />
         </div>
@@ -341,10 +343,12 @@ function LifeDisplay({
   playerId,
   life,
   playerName,
+  poisonCounters = 0,
   isLeft = false,
 }: {
   playerId: string
   life: number
+  poisonCounters?: number
   playerName: string
   isLeft?: boolean
 }) {
@@ -378,6 +382,11 @@ function LifeDisplay({
       </div>
       <div style={{ textAlign: isLeft ? 'left' : 'right' }}>
         <div style={{ fontSize: 16, fontWeight: 600, color: '#fff' }}>{playerName}</div>
+        {poisonCounters > 0 && (
+          <div style={{ marginTop: 4, fontSize: 12, fontWeight: 700, color: '#71f5a7' }}>
+            POISON {poisonCounters}/10
+          </div>
+        )}
       </div>
     </div>
   )

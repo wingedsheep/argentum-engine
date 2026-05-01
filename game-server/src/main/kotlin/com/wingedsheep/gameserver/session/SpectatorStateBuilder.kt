@@ -3,6 +3,7 @@ package com.wingedsheep.gameserver.session
 import com.wingedsheep.engine.core.*
 import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.GameState
+import com.wingedsheep.engine.state.components.battlefield.CountersComponent
 import com.wingedsheep.engine.state.components.battlefield.DamageComponent
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.state.components.combat.AttackingComponent
@@ -17,6 +18,7 @@ import com.wingedsheep.engine.view.ClientGameState
 import com.wingedsheep.engine.view.ClientStateTransformer
 import com.wingedsheep.gameserver.protocol.ServerMessage
 import com.wingedsheep.sdk.core.Phase
+import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
 
@@ -165,6 +167,7 @@ class SpectatorStateBuilder(
         val playerEntity = state.getEntity(playerId)
 
         val life = playerEntity?.get<LifeTotalComponent>()?.life ?: 20
+        val poisonCounters = playerEntity?.get<CountersComponent>()?.getCount(CounterType.POISON) ?: 0
         val hand = state.getZone(playerId, Zone.HAND)
         val library = state.getZone(playerId, Zone.LIBRARY)
         val battlefield = state.getZone(playerId, Zone.BATTLEFIELD)
@@ -177,6 +180,7 @@ class SpectatorStateBuilder(
             playerId = playerId.value,
             playerName = playerSession.playerName,
             life = life,
+            poisonCounters = poisonCounters,
             handSize = hand.size,
             librarySize = library.size,
             battlefield = battlefield.mapNotNull { cardId -> buildCardInfo(state, cardId) },
