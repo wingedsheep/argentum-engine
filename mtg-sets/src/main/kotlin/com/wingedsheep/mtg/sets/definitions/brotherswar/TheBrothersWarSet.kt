@@ -15,6 +15,7 @@ object TheBrothersWarSet {
 
     val allCards = listOf(
         BattlefieldForge,
+        Brushland,
         SoulPartition,
     )
 }
