@@ -14,6 +14,7 @@ object PhyrexiaAllWillBeOneSet {
     const val SET_NAME = "Phyrexia: All Will Be One"
 
     val allCards = listOf(
+        DarkslickShores,
         SeachromeCoast,
     )
 }
