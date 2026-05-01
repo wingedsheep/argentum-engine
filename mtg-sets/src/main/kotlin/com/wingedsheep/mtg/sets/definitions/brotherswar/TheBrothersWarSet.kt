@@ -18,5 +18,6 @@ object TheBrothersWarSet {
         Brushland,
         LlanowarWastes,
         SoulPartition,
+        UndergroundRiver,
     )
 }
