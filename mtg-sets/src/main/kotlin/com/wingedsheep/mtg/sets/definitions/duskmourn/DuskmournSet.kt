@@ -14,6 +14,7 @@ object DuskmournSet {
     const val SET_NAME = "Duskmourn: House of Horror"
 
     val allCards = listOf(
+        BlazemireVerge,
         EtherealArmor,
         FloodfarmVerge,
         GloomlakeVerge,
