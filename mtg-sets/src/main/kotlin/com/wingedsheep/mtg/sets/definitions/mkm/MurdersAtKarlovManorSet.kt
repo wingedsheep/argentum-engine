@@ -22,5 +22,6 @@ object MurdersAtKarlovManorSet {
         ShadowyBackstreet,
         ThunderingFalls,
         UndercitySewers,
+        UndergroundMortuary,
     )
 }
