@@ -355,6 +355,20 @@ export function getFlyingCounters(card: ClientCard): number {
 }
 
 /**
+ * Get the number of first strike counters on a card.
+ */
+export function getFirstStrikeCounters(card: ClientCard): number {
+  return card.counters[CounterType.FIRST_STRIKE] ?? 0
+}
+
+/**
+ * Get the number of lifelink counters on a card.
+ */
+export function getLifelinkCounters(card: ClientCard): number {
+  return card.counters[CounterType.LIFELINK] ?? 0
+}
+
+/**
  * Get the number of blight counters on a card.
  */
 export function getBlightCounters(card: ClientCard): number {

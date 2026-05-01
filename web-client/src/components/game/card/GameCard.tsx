@@ -28,6 +28,8 @@ import {
   getSupplyCounters,
   getStashCounters,
   getFlyingCounters,
+  getFirstStrikeCounters,
+  getLifelinkCounters,
   getBlightCounters,
   getFloodCounters,
   getCoinCounters,
@@ -1355,6 +1357,34 @@ export function GameCard({
           <i className={`ms ms-${counterManaClass.FLYING}`} style={{ fontSize: responsive.badges.counterIconFontSize }} />
           <span style={{ fontWeight: 700 }}>
             {getFlyingCounters(card)}
+          </span>
+        </div>
+      )}
+
+      {/* First strike counter badge */}
+      {battlefield && getFirstStrikeCounters(card) > 0 && (
+        <div style={{
+          ...styles.firstStrikeCounterBadge,
+          fontSize: responsive.badges.counterTextFontSize,
+          padding: responsive.badges.badgePadding,
+        }}>
+          <i className={`ms ms-${counterManaClass.FIRST_STRIKE}`} style={{ fontSize: responsive.badges.counterIconFontSize }} />
+          <span style={{ fontWeight: 700 }}>
+            {getFirstStrikeCounters(card)}
+          </span>
+        </div>
+      )}
+
+      {/* Lifelink counter badge */}
+      {battlefield && getLifelinkCounters(card) > 0 && (
+        <div style={{
+          ...styles.lifelinkCounterBadge,
+          fontSize: responsive.badges.counterTextFontSize,
+          padding: responsive.badges.badgePadding,
+        }}>
+          <i className={`ms ms-${counterManaClass.LIFELINK}`} style={{ fontSize: responsive.badges.counterIconFontSize }} />
+          <span style={{ fontWeight: 700 }}>
+            {getLifelinkCounters(card)}
           </span>
         </div>
       )}

@@ -46,6 +46,8 @@ import com.wingedsheep.sdk.scripting.values.DynamicAmount
  */
 private val KEYWORD_COUNTER_MAP = mapOf(
     CounterType.FLYING to Keyword.FLYING.name,
+    CounterType.FIRST_STRIKE to Keyword.FIRST_STRIKE.name,
+    CounterType.LIFELINK to Keyword.LIFELINK.name,
     CounterType.INDESTRUCTIBLE to Keyword.INDESTRUCTIBLE.name
 )
 
@@ -162,6 +164,22 @@ class StateProjector(
         // === Layers 5-6 (Color + Ability) ===
         for (effect in postTypeEffects) {
             effectApplicator.applyEffect(effect, state, projectedValues)
+        }
+
+        // Rule 122.1b: re-apply keyword counters after Layer 6.
+        // Counters that grant a keyword are themselves abilities of the object. When a "loses
+        // all abilities" effect (Layer 6) was applied above, those counter-granted keywords
+        // were wiped. Counter placement is generally later than (or part of the same effect as)
+        // the lose-all-abilities effect (e.g., Abigale, Eloquent First-Year), so the counter
+        // grant must win. Re-applying here is a pragmatic stand-in for proper Layer 6
+        // timestamp ordering of counter-granted keywords.
+        for ((entityId, values) in projectedValues) {
+            val countersComponent = state.getEntity(entityId)?.get<CountersComponent>() ?: continue
+            KEYWORD_COUNTER_MAP.forEach { (counterType, keywordName) ->
+                if (countersComponent.getCount(counterType) > 0) {
+                    values.keywords.add(keywordName)
+                }
+            }
         }
 
         // Resolve CDAs (Layer 7a) - evaluate dynamic power/toughness

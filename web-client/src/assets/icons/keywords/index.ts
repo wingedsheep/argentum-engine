@@ -58,6 +58,8 @@ export const counterManaClass: Record<string, string> = {
   FINALITY: 'counter-finality',
   SUPPLY: 'counter-brick',
   FLYING: 'ability-flying',
+  FIRST_STRIKE: 'ability-first-strike',
+  LIFELINK: 'ability-lifelink',
   INDESTRUCTIBLE: 'ability-indestructible',
   STASH: 'counter-charge',
   BLIGHT: 'counter-skull',

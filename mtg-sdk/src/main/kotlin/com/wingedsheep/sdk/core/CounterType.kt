@@ -25,6 +25,8 @@ enum class CounterType {
     FINALITY,
     SUPPLY,
     FLYING,
+    FIRST_STRIKE,
+    LIFELINK,
     INDESTRUCTIBLE,
     STASH,
     BLIGHT,
@@ -56,6 +58,8 @@ object Counters {
     const val FINALITY = "finality"
     const val SUPPLY = "supply"
     const val FLYING = "flying"
+    const val FIRST_STRIKE = "first strike"
+    const val LIFELINK = "lifelink"
     const val INDESTRUCTIBLE = "indestructible"
     const val STASH = "stash"
     const val BLIGHT = "blight"
