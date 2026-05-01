@@ -18,5 +18,7 @@ object MurdersAtKarlovManorSet {
         LushPortico,
         MeticulousArchive,
         NoMoreLies,
+        RaucousTheater,
+        ShadowyBackstreet,
     )
 }
