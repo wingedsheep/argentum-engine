@@ -8,6 +8,7 @@ import App from './App'
 import { TournamentEntryPage } from './components/tournament/TournamentEntryPage'
 import { AdminPage } from './components/admin/AdminPage'
 import { ReplayPage } from './components/replay/ReplayPage'
+import { DeckbuilderPage } from './components/deckbuilder/DeckbuilderPage'
 import { initAnalytics } from './utils/analytics'
 
 initAnalytics()
@@ -24,6 +25,8 @@ createRoot(rootElement).render(
         <Route path="/tournament/:lobbyId" element={<TournamentEntryPage />} />
         <Route path="/replay/:gameId" element={<ReplayPage />} />
         <Route path="/admin" element={<AdminPage />} />
+        <Route path="/deckbuilder" element={<DeckbuilderPage />} />
+        <Route path="/deckbuilder/:deckId" element={<DeckbuilderPage />} />
         <Route path="*" element={<App />} />
       </Routes>
     </BrowserRouter>
