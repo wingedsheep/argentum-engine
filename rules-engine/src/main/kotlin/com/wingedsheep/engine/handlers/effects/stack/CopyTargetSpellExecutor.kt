@@ -73,7 +73,7 @@ class CopyTargetSpellExecutor(
                     copyTotal = 1,
                     controllerId = context.controllerId
                 )
-                return EffectResult.from(copyResult)
+                return EffectResult.from(applyKeywordsToCopy(copyResult, effect.keywordsForCopy))
             }
             return EffectResult.from(StormCopyEffectExecutor.driveStormModalCopies(
                 state = state,
@@ -101,11 +101,40 @@ class CopyTargetSpellExecutor(
                 effect = spellEffect,
                 description = "Copy of $spellName"
             )
-            return EffectResult.from(stackResolver.putTriggeredAbility(state, copyAbility))
+            return EffectResult.from(applyKeywordsToCopy(
+                stackResolver.putTriggeredAbility(state, copyAbility),
+                effect.keywordsForCopy
+            ))
         }
 
         // Spell has targets — prompt for new target selection
-        return promptForCopyTargets(state, context, spellEntityId, spellEffect, targetRequirements, spellName)
+        return promptForCopyTargets(
+            state, context, spellEntityId, spellEffect, targetRequirements, spellName,
+            effect.keywordsForCopy.toSet()
+        )
+    }
+
+    private fun applyKeywordsToCopy(
+        result: com.wingedsheep.engine.core.ExecutionResult,
+        keywords: List<String>
+    ): com.wingedsheep.engine.core.ExecutionResult {
+        if (keywords.isEmpty() || !result.isSuccess) return result
+        val copyId = result.events.asReversed().firstNotNullOfOrNull { event ->
+            when (event) {
+                is com.wingedsheep.engine.core.SpellCopiedEvent -> event.copyEntityId
+                is com.wingedsheep.engine.core.AbilityActivatedEvent -> event.abilityEntityId
+                else -> null
+            }
+        } ?: return result
+        val updated = result.newState.updateEntity(copyId) { container ->
+            val existing = container.get<com.wingedsheep.engine.state.components.stack.SpellGrantedKeywordsComponent>()
+            container.with(
+                com.wingedsheep.engine.state.components.stack.SpellGrantedKeywordsComponent(
+                    (existing?.keywords ?: emptySet()) + keywords
+                )
+            )
+        }
+        return com.wingedsheep.engine.core.ExecutionResult.success(updated, result.events)
     }
 
     private fun promptForCopyTargets(
@@ -114,7 +143,8 @@ class CopyTargetSpellExecutor(
         spellEntityId: EntityId,
         spellEffect: com.wingedsheep.sdk.scripting.effects.Effect,
         targetRequirements: List<com.wingedsheep.sdk.scripting.targets.TargetRequirement>,
-        spellName: String
+        spellName: String,
+        keywordsForCopy: Set<String> = emptySet()
     ): EffectResult {
         val decisionId = "copy-spell-target-${System.nanoTime()}"
 
@@ -144,7 +174,8 @@ class CopyTargetSpellExecutor(
             spellTargetRequirements = targetRequirements,
             spellName = spellName,
             controllerId = context.controllerId,
-            sourceId = spellEntityId
+            sourceId = spellEntityId,
+            keywordsForCopy = keywordsForCopy
         )
         val targetReqInfos = targetRequirements.mapIndexed { index, req ->
             TargetRequirementInfo(

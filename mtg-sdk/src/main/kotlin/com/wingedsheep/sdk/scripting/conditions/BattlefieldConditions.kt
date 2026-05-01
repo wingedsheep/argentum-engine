@@ -105,6 +105,19 @@ data object TriggeringEntityHadMinusOneMinusOneCounter : Condition {
 }
 
 /**
+ * Condition: "with a single target" — true iff the triggering spell or ability
+ * has exactly one target chosen. Reads the triggering entity's TargetsComponent.
+ * Used by cards like Spinerock Tyrant whose trigger fires only when you cast an
+ * instant or sorcery spell with a single target.
+ */
+@SerialName("TriggeringSpellHasSingleTarget")
+@Serializable
+data object TriggeringSpellHasSingleTarget : Condition {
+    override val description: String = "with a single target"
+    override fun applyTextReplacement(replacer: TextReplacer): Condition = this
+}
+
+/**
  * Condition: "if [target] is [filter]"
  * Checks whether a context target matches a GameObjectFilter.
  * Used for cards like Blessing of Belzenlok: "If it's legendary, it also gains lifelink."

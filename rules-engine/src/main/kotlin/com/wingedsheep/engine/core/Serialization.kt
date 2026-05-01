@@ -366,6 +366,7 @@ val engineSerializersModule = SerializersModule {
         subclass(AbilityOnStackComponent::class)
         subclass(TargetsComponent::class)
         subclass(SpellContextComponent::class)
+        subclass(SpellGrantedKeywordsComponent::class)
 
         // Continuous effects
         subclass(ContinuousEffectSourceComponent::class)

@@ -1,5 +1,6 @@
 package com.wingedsheep.sdk.scripting.effects
 
+import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
@@ -361,10 +362,40 @@ data class StormCopyEffect(
  *
  * @property target The effect target referencing the spell to copy (typically ContextTarget(0))
  */
+/**
+ * Grant a keyword to a spell or ability on the stack until it leaves the stack.
+ * Used for cards like Spinerock Tyrant: "those spells gain wither" — the granted
+ * keyword applies for damage/source checks while the spell resolves, then
+ * disappears with the spell.
+ *
+ * @property keyword The keyword to grant (enum name)
+ * @property target The effect target referencing the spell on the stack
+ *                  (typically [EffectTarget.TriggeringEntity] or [EffectTarget.ContextTarget])
+ */
+@SerialName("GrantKeywordToSpell")
+@Serializable
+data class GrantKeywordToSpellEffect(
+    val keyword: String,
+    val target: EffectTarget = EffectTarget.TriggeringEntity
+) : Effect {
+    constructor(keyword: Keyword, target: EffectTarget = EffectTarget.TriggeringEntity) :
+        this(keyword.name, target)
+
+    override val description: String = "${target.description} gains ${keyword.lowercase().replace('_', ' ')}"
+
+    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
+}
+
 @SerialName("CopyTargetSpell")
 @Serializable
 data class CopyTargetSpellEffect(
-    val target: EffectTarget = EffectTarget.ContextTarget(0)
+    val target: EffectTarget = EffectTarget.ContextTarget(0),
+    /**
+     * Keywords (by enum name) granted to the copy on the stack while it remains a spell.
+     * Each granted keyword is treated as if the spell itself had it for damage and
+     * source-keyword checks (e.g., wither, lifelink). Empty by default.
+     */
+    val keywordsForCopy: List<String> = emptyList()
 ) : Effect {
     override val description: String = "Copy target instant or sorcery spell"
 

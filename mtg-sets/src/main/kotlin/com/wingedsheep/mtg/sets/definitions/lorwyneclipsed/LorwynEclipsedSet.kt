@@ -199,6 +199,7 @@ object LorwynEclipsedSet {
         Squawkroaster,
         StalactiteDagger,
         SteamVents,
+        SpinerockTyrant,
         SpiralIntoSolitude,
         StoicGroveGuide,
         Stratosoarer,

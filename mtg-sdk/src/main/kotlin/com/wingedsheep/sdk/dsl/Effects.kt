@@ -1207,9 +1207,26 @@ object Effects {
 
     /**
      * Copy target instant or sorcery spell. You may choose new targets for the copy.
+     *
+     * If [keywordsForCopy] is non-empty, the copy will also be treated as having those
+     * keywords for the duration of its time on the stack (e.g., wither, lifelink).
      */
-    fun CopyTargetSpell(target: EffectTarget = EffectTarget.ContextTarget(0)): Effect =
-        CopyTargetSpellEffect(target)
+    fun CopyTargetSpell(
+        target: EffectTarget = EffectTarget.ContextTarget(0),
+        keywordsForCopy: List<com.wingedsheep.sdk.core.Keyword> = emptyList()
+    ): Effect =
+        CopyTargetSpellEffect(target, keywordsForCopy.map { it.name })
+
+    /**
+     * Grant a keyword to a spell or ability on the stack (e.g., wither, lifelink).
+     * Lasts while the spell remains on the stack. Used for "that spell gains X"
+     * effects on triggered abilities like Spinerock Tyrant.
+     */
+    fun GrantKeywordToSpell(
+        keyword: com.wingedsheep.sdk.core.Keyword,
+        target: EffectTarget = EffectTarget.TriggeringEntity
+    ): Effect =
+        com.wingedsheep.sdk.scripting.effects.GrantKeywordToSpellEffect(keyword.name, target)
 
     /**
      * Copy target triggered ability. You may choose new targets for the copy.

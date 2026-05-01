@@ -130,7 +130,9 @@ data class StormCopyTargetContinuation(
     val spellName: String,
     val controllerId: EntityId,
     val sourceId: EntityId,
-    val totalCopies: Int = remainingCopies  // Original total copies (defaults to remainingCopies for backward compat)
+    val totalCopies: Int = remainingCopies,  // Original total copies (defaults to remainingCopies for backward compat)
+    /** Keyword enum names (e.g., "WITHER") to grant to each copy while it's on the stack. */
+    val keywordsForCopy: Set<String> = emptySet()
 ) : ContinuationFrame
 
 /**
