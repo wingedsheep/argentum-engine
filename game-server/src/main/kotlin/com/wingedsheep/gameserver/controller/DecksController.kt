@@ -11,14 +11,16 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 
 /**
- * REST endpoints supporting the deck picker UI:
+ * REST endpoints supporting the deck picker UI and the standalone deckbuilder:
  *
- * - `GET  /api/decks/cards`     — slim metadata for every card in the registry (for picker stats + autocomplete).
+ * - `GET  /api/decks/cards`     — metadata for every card in the registry (picker stats + deckbuilder grid/search).
  * - `GET  /api/decks/examples`  — built-in example decks the picker offers as starting points.
  * - `POST /api/decks/validate`  — server-authoritative deck validation (count rules, unknown cards, ≥60).
  *
- * The cards endpoint is intentionally minimal — clients build the deck picker UI from this without
- * needing oracle text, abilities, or images. Image lookup happens via the existing card-image flow.
+ * The cards endpoint covers both the lightweight picker (which only reads name/cost/types/colors/cmc
+ * for stats and validation) and the standalone deckbuilder (which additionally needs oracle text,
+ * power/toughness, keywords, and an image URI for the card grid). Optional fields default to null/empty
+ * so existing picker callers ignore them transparently.
  */
 @RestController
 @RequestMapping("/api/decks")
@@ -38,7 +40,12 @@ class DecksController(
         val basicLand: Boolean,
         val rarity: String,
         val setCode: String?,
-        val collectorNumber: String?
+        val collectorNumber: String?,
+        val oracleText: String? = null,
+        val power: String? = null,
+        val toughness: String? = null,
+        val imageUri: String? = null,
+        val keywords: List<String> = emptyList()
     )
 
     data class ExampleDeckDTO(
@@ -77,7 +84,12 @@ class DecksController(
         basicLand = typeLine.isBasicLand,
         rarity = metadata.rarity.name,
         setCode = setCode,
-        collectorNumber = metadata.collectorNumber
+        collectorNumber = metadata.collectorNumber,
+        oracleText = oracleText.takeIf { it.isNotBlank() },
+        power = creatureStats?.power?.toString(),
+        toughness = creatureStats?.toughness?.toString(),
+        imageUri = metadata.imageUri,
+        keywords = keywords.map { it.name }.sorted()
     )
 
     companion object {
