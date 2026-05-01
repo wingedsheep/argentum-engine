@@ -17,6 +17,7 @@ object DominariaUnitedSet {
         AdarkarWastes,
         CombatResearch,
         KarplusanForest,
+        ShivanReef,
         SulfurousSprings,
     )
 }
