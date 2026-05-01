@@ -15,6 +15,7 @@ object PhyrexiaAllWillBeOneSet {
 
     val allCards = listOf(
         BlackcleaveCliffs,
+        CopperlineGorge,
         DarkslickShores,
         SeachromeCoast,
     )
