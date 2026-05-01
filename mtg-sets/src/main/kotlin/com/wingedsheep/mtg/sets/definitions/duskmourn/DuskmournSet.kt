@@ -18,6 +18,7 @@ object DuskmournSet {
         EtherealArmor,
         FloodfarmVerge,
         GloomlakeVerge,
+        HushwoodVerge,
         OptimisticScavenger,
         ShardmagesRescue,
         ShelteredByGhosts,
