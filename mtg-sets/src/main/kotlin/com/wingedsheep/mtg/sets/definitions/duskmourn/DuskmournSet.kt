@@ -21,6 +21,7 @@ object DuskmournSet {
         OptimisticScavenger,
         ShardmagesRescue,
         ShelteredByGhosts,
+        ThornspireVerge,
         VeteranSurvivor,
     )
 }
