@@ -87,7 +87,10 @@ class LegalActionEnumerator(
             predicateEvaluator: PredicateEvaluator = PredicateEvaluator(),
             conditionEvaluator: ConditionEvaluator = ConditionEvaluator(),
             turnManager: TurnManager = TurnManager(
-                combatManager = com.wingedsheep.engine.mechanics.combat.CombatManager(cardRegistry),
+                combatManager = com.wingedsheep.engine.mechanics.combat.CombatManager(
+                    cardRegistry,
+                    com.wingedsheep.engine.mechanics.mana.ManaAbilitySideEffectExecutor.noOp(cardRegistry)
+                ),
                 cardRegistry = cardRegistry
             )
         ): LegalActionEnumerator {

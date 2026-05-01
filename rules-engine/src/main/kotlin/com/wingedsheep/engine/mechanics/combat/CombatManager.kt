@@ -29,13 +29,14 @@ import com.wingedsheep.engine.mechanics.combat.rules.defaultBlockEvasionRules
  */
 class CombatManager(
     private val cardRegistry: CardRegistry,
+    private val manaAbilitySideEffectExecutor: com.wingedsheep.engine.mechanics.mana.ManaAbilitySideEffectExecutor,
     private val damageCalculator: DamageCalculator = DamageCalculator(cardRegistry),
     private val blockEvasionRules: List<BlockEvasionRule> = defaultBlockEvasionRules(),
     private val attackRestrictionRules: List<AttackRestrictionRule> = defaultAttackRestrictionRules(),
     private val attackDefenderRules: List<AttackDefenderRule> = defaultAttackDefenderRules(),
 ) {
-    private val attackPhase = AttackPhaseManager(cardRegistry, attackRestrictionRules, attackDefenderRules)
-    private val blockPhase = BlockPhaseManager(cardRegistry, blockEvasionRules)
+    private val attackPhase = AttackPhaseManager(cardRegistry, attackRestrictionRules, attackDefenderRules, manaAbilitySideEffectExecutor)
+    private val blockPhase = BlockPhaseManager(cardRegistry, blockEvasionRules, manaAbilitySideEffectExecutor)
     private val damagePhase = CombatDamageManager(cardRegistry, damageCalculator)
 
     // =========================================================================

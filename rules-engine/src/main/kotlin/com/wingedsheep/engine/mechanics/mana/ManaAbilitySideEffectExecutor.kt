@@ -2,9 +2,11 @@ package com.wingedsheep.engine.mechanics.mana
 
 import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.core.GameEvent
+import com.wingedsheep.engine.core.TappedEvent
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.GameState
+import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.model.EntityId
@@ -49,6 +51,41 @@ class ManaAbilitySideEffectExecutor(
      * @param controllerId Player who controls the source / paid the cost.
      * @param opponentId The opposing player (for `Player.Opponent`-shaped targets).
      */
+    /**
+     * Tap every source in [solution] (emitting [TappedEvent]) and run any
+     * non-mana side effects of the matching mana ability. This is the
+     * one-shot form for callers that already have a [ManaSolution] from
+     * [ManaSolver]; the produced mana itself is still consumed separately
+     * via [ManaSolution.manaProduced].
+     */
+    fun tapSourcesWithSideEffects(
+        state: GameState,
+        solution: ManaSolution,
+        controllerId: EntityId
+    ): Pair<GameState, List<GameEvent>> {
+        var currentState = state
+        val events = mutableListOf<GameEvent>()
+        val opponentId = currentState.turnOrder.firstOrNull { it != controllerId }
+        for (source in solution.sources) {
+            currentState = currentState.updateEntity(source.entityId) { c ->
+                c.with(TappedComponent)
+            }
+            events.add(TappedEvent(source.entityId, source.name))
+
+            val production = solution.manaProduced[source.entityId]
+            val (after, sideEvents) = runSideEffects(
+                state = currentState,
+                sourceId = source.entityId,
+                producedColor = production?.color,
+                controllerId = controllerId,
+                opponentId = opponentId
+            )
+            currentState = after
+            events.addAll(sideEvents)
+        }
+        return currentState to events
+    }
+
     fun runSideEffects(
         state: GameState,
         sourceId: EntityId,
@@ -119,4 +156,16 @@ class ManaAbilitySideEffectExecutor(
         effect is AddManaOfColorAmongEffect ||
         effect is AddManaOfChosenColorEffect ||
         effect is AddDynamicManaEffect
+
+    companion object {
+        /**
+         * Stand-in instance for default-constructed contexts (e.g. a [CombatManager]
+         * built without an [EngineServices] wiring). Side effects are dropped on the
+         * floor — production code must use the executor wired by [EngineServices].
+         */
+        fun noOp(cardRegistry: CardRegistry): ManaAbilitySideEffectExecutor =
+            ManaAbilitySideEffectExecutor(cardRegistry) { state, _, _ ->
+                EffectResult.success(state)
+            }
+    }
 }

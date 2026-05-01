@@ -451,12 +451,10 @@ class SacrificeAndPayContinuationResumer(
             val solution = manaSolver.solve(currentState, playerId, remainingCost)
                 ?: return executePayOrSufferConsequence(state, continuation, checkForMore)
 
-            for (source in solution.sources) {
-                currentState = currentState.updateEntity(source.entityId) { c ->
-                    c.with(TappedComponent)
-                }
-                events.add(TappedEvent(source.entityId, source.name))
-            }
+            val (stateAfterTaps, tapEvents) = services.manaAbilitySideEffectExecutor
+                .tapSourcesWithSideEffects(currentState, solution, playerId)
+            currentState = stateAfterTaps
+            events.addAll(tapEvents)
 
             for ((_, production) in solution.manaProduced) {
                 currentPool = if (production.color != null) {

@@ -3,12 +3,10 @@ package com.wingedsheep.engine.handlers.actions.spell
 import com.wingedsheep.engine.core.GameEvent
 import com.wingedsheep.engine.core.ManaSpentEvent
 import com.wingedsheep.engine.core.PaymentStrategy
-import com.wingedsheep.engine.core.TappedEvent
 import com.wingedsheep.engine.handlers.CostHandler
 import com.wingedsheep.engine.mechanics.mana.ManaAbilitySideEffectExecutor
 import com.wingedsheep.engine.mechanics.mana.ManaSolver
 import com.wingedsheep.engine.state.GameState
-import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.state.components.player.ManaPoolComponent
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.ManaCost
@@ -275,27 +273,14 @@ class CastPaymentProcessor(
             val solution = manaSolver.solve(currentState, playerId, remainingCost, xRemainingToPay, excludeSources = excludeSources, spellContext = spellContext)
                 ?: return PaymentResult(currentState, events, "Not enough mana to auto-pay")
 
-            val opponentId = currentState.turnOrder.firstOrNull { it != playerId }
-            for (source in solution.sources) {
-                currentState = currentState.updateEntity(source.entityId) { container ->
-                    container.with(TappedComponent)
-                }
-                events.add(TappedEvent(source.entityId, source.name))
-
-                // Run any non-mana side effects of the matching activated mana ability
-                // (e.g. Adarkar Wastes' "this land deals 1 damage to you"). The mana
-                // itself is accounted for via `solution.manaProduced` below.
-                val production = solution.manaProduced[source.entityId]
-                val (stateAfter, sideEvents) = manaAbilitySideEffectExecutor.runSideEffects(
-                    state = currentState,
-                    sourceId = source.entityId,
-                    producedColor = production?.color,
-                    controllerId = playerId,
-                    opponentId = opponentId
-                )
-                currentState = stateAfter
-                events.addAll(sideEvents)
-            }
+            // Tap each source AND run any non-mana side effects of the matching
+            // activated mana ability (e.g. Adarkar Wastes' "this land deals 1
+            // damage to you"). The mana itself is consumed via
+            // `solution.manaProduced` below.
+            val (stateAfterTaps, tapEvents) = manaAbilitySideEffectExecutor
+                .tapSourcesWithSideEffects(currentState, solution, playerId)
+            currentState = stateAfterTaps
+            events.addAll(tapEvents)
 
             for ((_, production) in solution.manaProduced) {
                 when (production.color) {

@@ -43,7 +43,8 @@ class TypecycleCardHandler(
     private val manaSolver: ManaSolver,
     private val triggerDetector: TriggerDetector,
     private val triggerProcessor: TriggerProcessor,
-    private val effectExecutorRegistry: EffectExecutorRegistry
+    private val effectExecutorRegistry: EffectExecutorRegistry,
+    private val manaAbilitySideEffectExecutor: com.wingedsheep.engine.mechanics.mana.ManaAbilitySideEffectExecutor
 ) : ActionHandler<TypecycleCard> {
     override val actionType: KClass<TypecycleCard> = TypecycleCard::class
 
@@ -158,12 +159,10 @@ class TypecycleCardHandler(
                 val solution = manaSolver.solve(currentState, action.playerId, remainingCost, 0)
                     ?: return ExecutionResult.error(state, "Not enough mana to typecycle")
 
-                for (source in solution.sources) {
-                    currentState = currentState.updateEntity(source.entityId) { c ->
-                        c.with(TappedComponent)
-                    }
-                    events.add(TappedEvent(source.entityId, source.name))
-                }
+                val (stateAfterTaps, tapEvents) = manaAbilitySideEffectExecutor
+                    .tapSourcesWithSideEffects(currentState, solution, action.playerId)
+                currentState = stateAfterTaps
+                events.addAll(tapEvents)
 
                 for ((_, production) in solution.manaProduced) {
                     when (production.color) {
@@ -317,7 +316,8 @@ class TypecycleCardHandler(
                 services.manaSolver,
                 services.triggerDetector,
                 services.triggerProcessor,
-                services.effectExecutorRegistry
+                services.effectExecutorRegistry,
+                services.manaAbilitySideEffectExecutor
             )
         }
     }

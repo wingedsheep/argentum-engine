@@ -45,6 +45,7 @@ import java.util.UUID
 internal class BlockPhaseManager(
     private val cardRegistry: CardRegistry,
     private val blockEvasionRules: List<BlockEvasionRule>,
+    private val manaAbilitySideEffectExecutor: com.wingedsheep.engine.mechanics.mana.ManaAbilitySideEffectExecutor,
 ) {
     private val conditionEvaluator = ConditionEvaluator()
 
@@ -901,7 +902,7 @@ internal class BlockPhaseManager(
 
         if (totalGenericTax <= 0) return ExecutionResult.success(state)
 
-        return payManaTax(state, blockingPlayer, totalGenericTax, "block", cardRegistry)
+        return payManaTax(state, blockingPlayer, totalGenericTax, "block", cardRegistry, manaAbilitySideEffectExecutor)
     }
 
     /**

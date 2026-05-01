@@ -1,10 +1,12 @@
 package com.wingedsheep.engine.scenarios
 
 import com.wingedsheep.engine.core.ActivateAbility
+import com.wingedsheep.engine.core.CycleCard
 import com.wingedsheep.engine.state.components.player.ManaPoolComponent
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
 import com.wingedsheep.mtg.sets.definitions.dominariaunited.cards.AdarkarWastes
+import com.wingedsheep.mtg.sets.definitions.onslaught.cards.EssenceFracture
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.model.Deck
@@ -33,6 +35,7 @@ class AdarkarWastesTest : FunSpec({
         val driver = GameTestDriver()
         driver.registerCards(TestCards.all)
         driver.registerCard(AdarkarWastes)
+        driver.registerCard(EssenceFracture)
         return driver
     }
 
@@ -124,6 +127,30 @@ class AdarkarWastesTest : FunSpec({
 
         // No pain — colorless ability has no damage effect
         driver.getLifeTotal(activePlayer) shouldBe before
+    }
+
+    test("auto-paying a cycling cost containing {U} with Adarkar Wastes deals 1 damage") {
+        val driver = createDriver()
+        driver.initMirrorMatch(
+            deck = Deck.of("Plains" to 20, "Mountain" to 20),
+            startingLife = 20
+        )
+        driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
+
+        val activePlayer = driver.activePlayer!!
+        // Adarkar is the only source of {U}, so the auto-tap solver must use it
+        // for the {U} component of cycling cost {2}{U}.
+        driver.putPermanentOnBattlefield(activePlayer, "Adarkar Wastes")
+        driver.putPermanentOnBattlefield(activePlayer, "Plains")
+        driver.putPermanentOnBattlefield(activePlayer, "Plains")
+        val essenceFracture = driver.putCardInHand(activePlayer, "Essence Fracture")
+
+        val before = driver.getLifeTotal(activePlayer)
+
+        val result = driver.submit(CycleCard(activePlayer, essenceFracture))
+        result.isSuccess shouldBe true
+
+        driver.getLifeTotal(activePlayer) shouldBe (before - 1)
     }
 
     test("auto-paying a {W} spell with Adarkar Wastes deals 1 damage to controller") {

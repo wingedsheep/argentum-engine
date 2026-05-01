@@ -55,6 +55,7 @@ class TurnFaceUpHandler(
     private val triggerDetector: TriggerDetector,
     private val triggerProcessor: TriggerProcessor,
     private val effectExecutorRegistry: com.wingedsheep.engine.handlers.effects.EffectExecutorRegistry,
+    private val manaAbilitySideEffectExecutor: com.wingedsheep.engine.mechanics.mana.ManaAbilitySideEffectExecutor,
     private val staticAbilityHandler: StaticAbilityHandler = StaticAbilityHandler(cardRegistry)
 ) : ActionHandler<TurnFaceUp> {
     override val actionType: KClass<TurnFaceUp> = TurnFaceUp::class
@@ -366,12 +367,10 @@ class TurnFaceUpHandler(
                             val solution = manaSolver.solve(currentState, action.playerId, remainingCost, xRemainingToPay)
                                 ?: return ExecutionResult.error(currentState, "Not enough mana to turn face up")
 
-                            for (source in solution.sources) {
-                                currentState = currentState.updateEntity(source.entityId) { c ->
-                                    c.with(TappedComponent)
-                                }
-                                events.add(TappedEvent(source.entityId, source.name))
-                            }
+                            val (stateAfterTaps, tapEvents) = manaAbilitySideEffectExecutor
+                                .tapSourcesWithSideEffects(currentState, solution, action.playerId)
+                            currentState = stateAfterTaps
+                            events.addAll(tapEvents)
 
                             for ((_, production) in solution.manaProduced) {
                                 when (production.color) {
@@ -641,7 +640,8 @@ class TurnFaceUpHandler(
                 services.costCalculator,
                 services.triggerDetector,
                 services.triggerProcessor,
-                services.effectExecutorRegistry
+                services.effectExecutorRegistry,
+                services.manaAbilitySideEffectExecutor
             )
         }
     }

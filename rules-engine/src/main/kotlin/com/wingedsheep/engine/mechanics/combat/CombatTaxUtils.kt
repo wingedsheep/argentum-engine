@@ -1,11 +1,10 @@
 package com.wingedsheep.engine.mechanics.combat
 
 import com.wingedsheep.engine.core.ExecutionResult
-import com.wingedsheep.engine.core.TappedEvent
+import com.wingedsheep.engine.mechanics.mana.ManaAbilitySideEffectExecutor
 import com.wingedsheep.engine.mechanics.mana.ManaPool
 import com.wingedsheep.engine.mechanics.mana.ManaSolver
 import com.wingedsheep.engine.state.GameState
-import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.state.components.player.ManaPoolComponent
 import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.ManaSymbol
@@ -22,7 +21,8 @@ internal fun payManaTax(
     playerId: EntityId,
     totalGenericTax: Int,
     taxType: String,
-    cardRegistry: com.wingedsheep.engine.registry.CardRegistry
+    cardRegistry: com.wingedsheep.engine.registry.CardRegistry,
+    manaAbilitySideEffectExecutor: ManaAbilitySideEffectExecutor
 ): ExecutionResult {
     val totalCost = ManaCost(List(totalGenericTax) { ManaSymbol.generic(1) })
 
@@ -54,12 +54,10 @@ internal fun payManaTax(
                 "Cannot pay $taxType tax of {$totalGenericTax} (not enough mana available)"
             )
 
-        for (source in solution.sources) {
-            currentState = currentState.updateEntity(source.entityId) { c ->
-                c.with(TappedComponent)
-            }
-            events.add(TappedEvent(source.entityId, source.name))
-        }
+        val (stateAfterTaps, tapEvents) = manaAbilitySideEffectExecutor
+            .tapSourcesWithSideEffects(currentState, solution, playerId)
+        currentState = stateAfterTaps
+        events.addAll(tapEvents)
 
         for ((_, production) in solution.manaProduced) {
             currentPool = if (production.color != null) {

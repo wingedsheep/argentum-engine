@@ -38,7 +38,8 @@ class CycleCardHandler(
     private val cardRegistry: CardRegistry,
     private val manaSolver: ManaSolver,
     private val triggerDetector: TriggerDetector,
-    private val triggerProcessor: TriggerProcessor
+    private val triggerProcessor: TriggerProcessor,
+    private val manaAbilitySideEffectExecutor: com.wingedsheep.engine.mechanics.mana.ManaAbilitySideEffectExecutor
 ) : ActionHandler<CycleCard> {
     override val actionType: KClass<CycleCard> = CycleCard::class
 
@@ -156,12 +157,10 @@ class CycleCardHandler(
                 val solution = manaSolver.solve(currentState, action.playerId, remainingCost, 0)
                     ?: return ExecutionResult.error(state, "Not enough mana to cycle")
 
-                for (source in solution.sources) {
-                    currentState = currentState.updateEntity(source.entityId) { c ->
-                        c.with(TappedComponent)
-                    }
-                    events.add(TappedEvent(source.entityId, source.name))
-                }
+                val (stateAfterTaps, tapEvents) = manaAbilitySideEffectExecutor
+                    .tapSourcesWithSideEffects(currentState, solution, action.playerId)
+                currentState = stateAfterTaps
+                events.addAll(tapEvents)
 
                 for ((_, production) in solution.manaProduced) {
                     when (production.color) {
@@ -270,7 +269,8 @@ class CycleCardHandler(
                 services.cardRegistry,
                 services.manaSolver,
                 services.triggerDetector,
-                services.triggerProcessor
+                services.triggerProcessor,
+                services.manaAbilitySideEffectExecutor
             )
         }
     }

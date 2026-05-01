@@ -35,8 +35,12 @@ class EngineServices(
     init {
         DamageUtils.cardRegistry = cardRegistry
     }
-    val combatManager = CombatManager(cardRegistry)
     val effectExecutorRegistry = EffectExecutorRegistry(cardRegistry = cardRegistry)
+    val manaAbilitySideEffectExecutor = ManaAbilitySideEffectExecutor(
+        cardRegistry = cardRegistry,
+        effectExecutor = effectExecutorRegistry::execute
+    )
+    val combatManager = CombatManager(cardRegistry, manaAbilitySideEffectExecutor)
     val triggerDetector = TriggerDetector(cardRegistry)
     val stackResolver = StackResolver(
         effectHandler = EffectHandler(cardRegistry = cardRegistry),
@@ -44,10 +48,6 @@ class EngineServices(
     )
     val triggerProcessor = TriggerProcessor(cardRegistry = cardRegistry, stackResolver = stackResolver)
     val manaSolver = ManaSolver(cardRegistry)
-    val manaAbilitySideEffectExecutor = ManaAbilitySideEffectExecutor(
-        cardRegistry = cardRegistry,
-        effectExecutor = effectExecutorRegistry::execute
-    )
     val costCalculator = CostCalculator(cardRegistry)
     val grantedKeywordResolver = GrantedKeywordResolver(cardRegistry)
     val alternativePaymentHandler = AlternativePaymentHandler(grantedKeywordResolver)

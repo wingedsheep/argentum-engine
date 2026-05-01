@@ -75,12 +75,10 @@ class DrawReplacementContinuationResumer(
                     val solution = manaSolver.solve(newState, playerId, remainingCost)
                         ?: return ExecutionResult.error(newState, "Cannot pay mana cost for draw replacement activation")
 
-                    for (source in solution.sources) {
-                        newState = newState.updateEntity(source.entityId) { c ->
-                            c.with(TappedComponent)
-                        }
-                        events.add(TappedEvent(source.entityId, source.name))
-                    }
+                    val (stateAfterTaps, tapEvents) = services.manaAbilitySideEffectExecutor
+                        .tapSourcesWithSideEffects(newState, solution, playerId)
+                    newState = stateAfterTaps
+                    events.addAll(tapEvents)
 
                     for ((_, production) in solution.manaProduced) {
                         currentPool = if (production.color != null) {

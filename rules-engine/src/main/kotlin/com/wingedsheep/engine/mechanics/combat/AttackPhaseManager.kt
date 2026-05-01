@@ -37,6 +37,7 @@ internal class AttackPhaseManager(
     private val cardRegistry: CardRegistry,
     private val attackRestrictionRules: List<AttackRestrictionRule>,
     private val attackDefenderRules: List<AttackDefenderRule>,
+    private val manaAbilitySideEffectExecutor: com.wingedsheep.engine.mechanics.mana.ManaAbilitySideEffectExecutor,
 ) {
 
     /**
@@ -374,7 +375,7 @@ internal class AttackPhaseManager(
 
         if (totalGenericTax <= 0) return ExecutionResult.success(state)
 
-        return payManaTax(state, attackingPlayer, totalGenericTax, "attack", cardRegistry)
+        return payManaTax(state, attackingPlayer, totalGenericTax, "attack", cardRegistry, manaAbilitySideEffectExecutor)
     }
 
     /**
