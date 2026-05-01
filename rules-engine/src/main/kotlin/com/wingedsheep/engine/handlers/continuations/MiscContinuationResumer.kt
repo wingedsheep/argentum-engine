@@ -185,6 +185,24 @@ class MiscContinuationResumer(
         currentState = stackResult.newState
         allEvents.addAll(stackResult.events)
 
+        // Apply any keywords granted to this copy (e.g., wither from Spinerock Tyrant).
+        if (continuation.keywordsForCopy.isNotEmpty()) {
+            val newCopyId = stackResult.events.asReversed()
+                .firstNotNullOfOrNull { e ->
+                    if (e is com.wingedsheep.engine.core.SpellCopiedEvent) e.copyEntityId else null
+                }
+            if (newCopyId != null) {
+                currentState = currentState.updateEntity(newCopyId) { container ->
+                    val existing = container.get<com.wingedsheep.engine.state.components.stack.SpellGrantedKeywordsComponent>()
+                    container.with(
+                        com.wingedsheep.engine.state.components.stack.SpellGrantedKeywordsComponent(
+                            (existing?.keywords ?: emptySet()) + continuation.keywordsForCopy
+                        )
+                    )
+                }
+            }
+        }
+
         val remainingAfterThis = continuation.remainingCopies - 1
         if (remainingAfterThis <= 0) {
             return checkForMore(currentState, allEvents)
@@ -221,6 +239,22 @@ class MiscContinuationResumer(
                 if (!res.isSuccess) return res
                 loopState = res.newState
                 loopEvents.addAll(res.events)
+                if (continuation.keywordsForCopy.isNotEmpty()) {
+                    val newCopyId = res.events.asReversed()
+                        .firstNotNullOfOrNull { e ->
+                            if (e is com.wingedsheep.engine.core.SpellCopiedEvent) e.copyEntityId else null
+                        }
+                    if (newCopyId != null) {
+                        loopState = loopState.updateEntity(newCopyId) { container ->
+                            val existing = container.get<com.wingedsheep.engine.state.components.stack.SpellGrantedKeywordsComponent>()
+                            container.with(
+                                com.wingedsheep.engine.state.components.stack.SpellGrantedKeywordsComponent(
+                                    (existing?.keywords ?: emptySet()) + continuation.keywordsForCopy
+                                )
+                            )
+                        }
+                    }
+                }
                 copiesLeft--
             }
             return checkForMore(loopState, loopEvents)
@@ -234,7 +268,8 @@ class MiscContinuationResumer(
             spellName = continuation.spellName,
             controllerId = continuation.controllerId,
             sourceId = continuation.sourceId,
-            totalCopies = continuation.totalCopies
+            totalCopies = continuation.totalCopies,
+            keywordsForCopy = continuation.keywordsForCopy
         )
         val targetReqInfos = continuation.spellTargetRequirements.mapIndexed { index, req ->
             TargetRequirementInfo(

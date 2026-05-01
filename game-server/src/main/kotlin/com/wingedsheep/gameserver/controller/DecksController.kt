@@ -81,8 +81,10 @@ class DecksController(
     )
 
     companion object {
-        // Four 60-card Bloomburrow starter decks. Each list respects the 4-of-non-basic rule
-        // and is sized to a friendly 60 cards exactly.
+        // Bloomburrow-only tribal decks. Selesnya Rabbits, Rakdos Lizards, Golgari Squirrels,
+        // and Simic Frogs are taken from the Bloomburrow Constructed Midweek Magic decklists
+        // (https://mtgazone.com/midweek-magic-bloomburrow-constructed/). Boros Mice and Orzhov
+        // Bats are hand-built tribal lists restricted to Bloomburrow cards in the registry.
         private val EXAMPLE_DECKS = listOf(
             ExampleDeckDTO(
                 id = "boros_mice",
@@ -105,23 +107,42 @@ class DecksController(
                 )
             ),
             ExampleDeckDTO(
+                id = "selesnya_rabbits",
+                name = "Selesnya Rabbits",
+                description = "GW Rabbits from Bloomburrow.",
+                cards = mapOf(
+                    "Pawpatch Recruit" to 4,
+                    "Warren Elder" to 4,
+                    "Burrowguard Mentor" to 4,
+                    "Valley Questcaller" to 4,
+                    "Finneas, Ace Archer" to 4,
+                    "Harvestrite Host" to 4,
+                    "Warren Warleader" to 4,
+                    "Hop to It" to 4,
+                    "Carrot Cake" to 4,
+                    "Fabled Passage" to 4,
+                    "Forest" to 7,
+                    "Plains" to 13
+                )
+            ),
+            ExampleDeckDTO(
                 id = "rakdos_lizards",
                 name = "Rakdos Lizards",
                 description = "BR Lizards from Bloomburrow.",
                 cards = mapOf(
+                    "Iridescent Vinelasher" to 4,
                     "Hired Claw" to 4,
                     "Fireglass Mentor" to 4,
                     "Flamecache Gecko" to 4,
-                    "Iridescent Vinelasher" to 4,
-                    "Thought-Stalker Warlock" to 4,
                     "Gev, Scaled Scorch" to 4,
+                    "Thought-Stalker Warlock" to 4,
                     "Valley Flamecaller" to 4,
-                    "Scales of Shale" to 4,
-                    "Savor" to 4,
-                    "Mudflat Village" to 4,
-                    "Rockface Village" to 4,
-                    "Swamp" to 8,
-                    "Mountain" to 8
+                    "Take Out the Trash" to 4,
+                    "Fell" to 4,
+                    "Fabled Passage" to 4,
+                    "Rockface Village" to 2,
+                    "Mountain" to 8,
+                    "Swamp" to 10
                 )
             ),
             ExampleDeckDTO(
@@ -129,19 +150,19 @@ class DecksController(
                 name = "Golgari Squirrels",
                 description = "BG Squirrels from Bloomburrow.",
                 cards = mapOf(
-                    "Valley Rotcaller" to 4,
-                    "Honored Dreyleader" to 4,
-                    "Bonecache Necromancer" to 4,
+                    "Bonecache Overseer" to 4,
                     "Vinereap Mentor" to 4,
+                    "Bakersbane Duo" to 2,
+                    "Thornvault Forager" to 4,
+                    "Osteomancer Adept" to 4,
+                    "Valley Rotcaller" to 4,
+                    "Bushy Bodyguard" to 2,
+                    "Curious Forager" to 4,
                     "Camellia, the Seedmiser" to 4,
-                    "Hazel's Nocturne" to 4,
-                    "For the Common Good" to 4,
-                    "Cache Grab" to 4,
-                    "Feed the Cycle" to 4,
-                    "Mudflat Village" to 4,
-                    "Oakhollow Village" to 4,
-                    "Swamp" to 8,
-                    "Forest" to 8
+                    "Fell" to 4,
+                    "Fabled Passage" to 4,
+                    "Forest" to 10,
+                    "Swamp" to 10
                 )
             ),
             ExampleDeckDTO(
@@ -149,19 +170,40 @@ class DecksController(
                 name = "Simic Frogs",
                 description = "GU Frogs from Bloomburrow.",
                 cards = mapOf(
-                    "Valley Mightcaller" to 4,
                     "Sunshower Druid" to 4,
+                    "Valley Mightcaller" to 4,
                     "Pond Prophet" to 4,
-                    "Stickytongue Sentinel" to 4,
-                    "Diresight Angler" to 4,
-                    "Clement, the Worrywort" to 4,
+                    "Three Tree Scribe" to 4,
+                    "Dour Port-Mage" to 3,
+                    "Long River Lurker" to 4,
+                    "Clement, the Worrywort" to 3,
+                    "Splash Lasher" to 2,
                     "Polliwallop" to 4,
-                    "Into the Flood Maw" to 4,
-                    "Run Away Together" to 4,
-                    "Lilypad Village" to 4,
-                    "Oakhollow Village" to 4,
-                    "Forest" to 8,
-                    "Island" to 8
+                    "Splash Portal" to 4,
+                    "Fabled Passage" to 4,
+                    "Forest" to 11,
+                    "Island" to 9
+                )
+            ),
+            ExampleDeckDTO(
+                id = "orzhov_bats",
+                name = "Orzhov Bats",
+                description = "WB Bats from Bloomburrow.",
+                cards = mapOf(
+                    "Essence Channeler" to 4,
+                    "Starscape Cleric" to 4,
+                    "Lifecreed Duo" to 4,
+                    "Moonstone Harbinger" to 4,
+                    "Starlit Soothsayer" to 4,
+                    "Moonrise Cleric" to 4,
+                    "Wax-Wane Witness" to 4,
+                    "Zoraline, Cosmos Caller" to 3,
+                    "Lunar Convocation" to 4,
+                    "Sonar Strike" to 4,
+                    "Fabled Passage" to 4,
+                    "Uncharted Haven" to 3,
+                    "Plains" to 7,
+                    "Swamp" to 7
                 )
             )
         )

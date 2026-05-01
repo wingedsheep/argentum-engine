@@ -20,6 +20,7 @@ import com.wingedsheep.engine.state.components.battlefield.DamageDealtToCreature
 import com.wingedsheep.engine.state.components.battlefield.HasDealtDamageComponent
 import com.wingedsheep.engine.state.components.battlefield.WasDealtDamageThisTurnComponent
 import com.wingedsheep.engine.state.components.battlefield.ReplacementEffectSourceComponent
+import com.wingedsheep.engine.state.components.stack.SpellGrantedKeywordsComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.identity.FaceDownComponent
@@ -173,7 +174,10 @@ object DamageUtils {
             events.add(LoyaltyChangedEvent(targetId, targetName, -(effectiveAmount.coerceAtMost(currentLoyalty))))
         } else {
             // It's a creature - mark damage (or place -1/-1 counters if source has wither)
-            val hasWither = sourceId != null && projected.hasKeyword(sourceId, Keyword.WITHER)
+            val hasWither = sourceId != null && (
+                projected.hasKeyword(sourceId, Keyword.WITHER) ||
+                state.getEntity(sourceId)?.get<SpellGrantedKeywordsComponent>()?.keywords?.contains(Keyword.WITHER.name) == true
+            )
             if (hasWither) {
                 // Wither (CR 702.79): damage to creatures is dealt in the form of -1/-1 counters
                 val counters = newState.getEntity(targetId)?.get<CountersComponent>() ?: CountersComponent()

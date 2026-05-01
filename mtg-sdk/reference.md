@@ -171,7 +171,8 @@ constructors.
 - `Effects.ChangeSpellTarget(targetMustBeSource = false)` — redirect a spell's creature target to another creature
 - `Effects.ChangeTarget()` — change the target of a spell or ability with a single target
 - `Effects.ReselectTargetRandomly()` — reselect the target of the triggering spell/ability at random (Grip of Chaos)
-- `Effects.CopyTargetSpell(target)` — copy target instant or sorcery spell on stack, may choose new targets
+- `Effects.CopyTargetSpell(target, keywordsForCopy = emptyList())` — copy target instant or sorcery spell on stack, may choose new targets; `keywordsForCopy` grants the listed keywords (e.g., `Keyword.WITHER`) to the copy while it remains on the stack (Spinerock Tyrant)
+- `Effects.GrantKeywordToSpell(keyword, target = TriggeringEntity)` — grant a keyword (e.g., wither, lifelink) to a spell on the stack for the rest of its time on the stack
 - `Effects.CopyNextSpellCast(copies)` — when you next cast an instant or sorcery spell this turn, copy it (Howl of the Horde)
 
 ### Sacrifice
@@ -464,7 +465,8 @@ constructors.
 | `ChangeTargetEffect`             | (object)                      | Change target of spell/ability with single target |
 | `ReselectTargetRandomlyEffect`   | (object)                      | Randomly reselect triggering spell/ability's target |
 | `StormCopyEffect`                | `copyCount, spellEffect, spellTargetRequirements, spellName` | Create Storm copies of a spell |
-| `CopyTargetSpellEffect`          | `target: EffectTarget` | Copy target instant or sorcery spell on stack |
+| `CopyTargetSpellEffect`          | `target: EffectTarget, keywordsForCopy: List<String>` | Copy target instant/sorcery on stack; `keywordsForCopy` grants those keywords to the copy while on the stack |
+| `GrantKeywordToSpellEffect`      | `keyword: String, target: EffectTarget` | Grant a keyword (e.g., wither) to a spell or ability on the stack until it leaves the stack |
 | `CopyNextSpellCastEffect`        | `copies: Int` | Copy next instant/sorcery cast this turn |
 
 ### Group
@@ -761,6 +763,7 @@ constructors.
 - `Conditions.SacrificedHadSubtype(subtype)` — a permanent sacrificed as cost had specific subtype
 - `Conditions.TriggeringEntityWasHistoric` — the triggering entity was historic (legendary, artifact, or Saga)
 - `Conditions.TriggeringEntityHadMinusOneMinusOneCounter` — the triggering entity had a -1/-1 counter on it when it left the battlefield (intervening-if for dies/leaves triggers, e.g., Retched Wretch)
+- `Conditions.TriggeringSpellHasSingleTarget` — the triggering spell or ability has exactly one target chosen (Spinerock Tyrant)
 
 ### Turn
 

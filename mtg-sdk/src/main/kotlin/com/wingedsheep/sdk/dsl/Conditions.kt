@@ -495,6 +495,14 @@ object Conditions {
     val TriggeringEntityHadMinusOneMinusOneCounter: ConditionInterface =
         com.wingedsheep.sdk.scripting.conditions.TriggeringEntityHadMinusOneMinusOneCounter
 
+    /**
+     * If the triggering spell or ability has exactly one target.
+     * Reads the triggering entity's TargetsComponent (counts unique chosen targets).
+     * Used by cards like Spinerock Tyrant.
+     */
+    val TriggeringSpellHasSingleTarget: ConditionInterface =
+        com.wingedsheep.sdk.scripting.conditions.TriggeringSpellHasSingleTarget
+
     // =========================================================================
     // Collection Conditions (pipeline-based)
     // =========================================================================

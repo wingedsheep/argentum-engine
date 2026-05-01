@@ -153,3 +153,14 @@ sealed interface ChosenTarget {
 data class SpellContextComponent(
     val additionalData: Map<String, String> = emptyMap()
 ) : Component
+
+/**
+ * Marks a spell or ability on the stack as having been granted extra keywords (by enum name)
+ * while it remains on the stack. Used by effects like Spinerock Tyrant that grant wither to
+ * a copied or original spell. The component disappears with the spell entity when it leaves
+ * the stack.
+ */
+@Serializable
+data class SpellGrantedKeywordsComponent(
+    val keywords: Set<String> = emptySet()
+) : Component

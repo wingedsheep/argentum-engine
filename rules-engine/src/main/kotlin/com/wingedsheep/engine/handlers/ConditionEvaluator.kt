@@ -60,6 +60,7 @@ import com.wingedsheep.sdk.scripting.conditions.TargetMatchesFilter
 import com.wingedsheep.sdk.scripting.conditions.TriggeringEntityEnteredOrWasCastFromGraveyard
 import com.wingedsheep.sdk.scripting.conditions.TriggeringEntityHadMinusOneMinusOneCounter
 import com.wingedsheep.sdk.scripting.conditions.TriggeringEntityWasHistoric
+import com.wingedsheep.sdk.scripting.conditions.TriggeringSpellHasSingleTarget
 import com.wingedsheep.sdk.scripting.conditions.CardsLeftGraveyardThisTurn
 import com.wingedsheep.sdk.scripting.conditions.CollectionContainsMatch
 import com.wingedsheep.sdk.scripting.conditions.OpponentLostLifeThisTurn
@@ -129,6 +130,7 @@ class ConditionEvaluator {
                 evaluateTriggeringEntityEnteredOrWasCastFromGraveyard(state, context)
             is TriggeringEntityHadMinusOneMinusOneCounter ->
                 (context.triggerMinusOneMinusOneCounterCount ?: 0) > 0
+            is TriggeringSpellHasSingleTarget -> evaluateTriggeringSpellHasSingleTarget(state, context)
             is TargetMatchesFilter -> evaluateTargetMatchesFilter(state, condition, context)
 
             // Turn conditions
@@ -532,6 +534,18 @@ class ConditionEvaluator {
         val entity = state.getEntity(entityId) ?: return false
         return entity.has<com.wingedsheep.engine.state.components.battlefield.CastFromGraveyardComponent>() ||
             entity.has<com.wingedsheep.engine.state.components.battlefield.EnteredFromGraveyardComponent>()
+    }
+
+    private fun evaluateTriggeringSpellHasSingleTarget(
+        state: GameState,
+        context: EffectContext
+    ): Boolean {
+        val entityId = context.triggeringEntityId ?: return false
+        val targets = state.getEntity(entityId)
+            ?.get<com.wingedsheep.engine.state.components.stack.TargetsComponent>()
+            ?.targets
+            ?: return false
+        return targets.size == 1
     }
 
     private fun evaluateTargetMatchesFilter(
