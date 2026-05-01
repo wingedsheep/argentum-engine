@@ -241,14 +241,26 @@
   font-size: 0.8rem;
 }
 
-.grid {
+.gridScroll {
   flex: 1;
   overflow-y: auto;
   padding: var(--space-3);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
   gap: var(--space-2);
   align-content: start;
+}
+
+.showMoreRow {
+  display: flex;
+  justify-content: center;
+  padding: var(--space-2) 0 var(--space-4);
 }
 
 .cardTile {
@@ -260,6 +272,10 @@
   border: 1px solid rgba(255, 255, 255, 0.08);
   aspect-ratio: 5 / 7;
   user-select: none;
+  /* Let the browser skip layout/paint for offscreen tiles. The fixed size
+     keeps scrollbar / scroll position stable while tiles are skipped. */
+  content-visibility: auto;
+  contain-intrinsic-size: 210px 294px;
 }
 
 .cardTile:hover {

@@ -57,6 +57,8 @@ const RARITY_TOKENS = ['common', 'uncommon', 'rare', 'mythic']
 
 type SortMode = 'name' | 'cmc' | 'color' | 'rarity'
 
+const PAGE_SIZE = 120
+
 interface ValidationIssue {
   code: string
   message: string
@@ -137,6 +139,15 @@ export function DeckbuilderPage() {
     const result = catalog.filter(predicate)
     return sortCards(result, sortMode)
   }, [catalog, predicate, sortMode])
+
+  // Pager: cap rendered tiles so a 1000+ card catalogue doesn't melt the browser.
+  // Reset whenever the result set changes (new query / filter / sort).
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE)
+  useEffect(() => {
+    setVisibleCount(PAGE_SIZE)
+  }, [query, sortMode])
+
+  const displayed = useMemo(() => filtered.slice(0, visibleCount), [filtered, visibleCount])
 
   // Server-side validation (debounced via abort controllers, like DeckPicker).
   const [validation, setValidation] = useState<ValidationResult | null>(null)
@@ -293,14 +304,20 @@ export function DeckbuilderPage() {
             <option value="rarity">Rarity</option>
           </select>
           <span className={styles.resultCount}>
-            {catalog.length === 0 ? 'Loading…' : `${filtered.length} / ${catalog.length}`}
+            {catalog.length === 0
+              ? 'Loading…'
+              : displayed.length === filtered.length
+              ? `${filtered.length} / ${catalog.length}`
+              : `Showing ${displayed.length} of ${filtered.length}`}
           </span>
         </div>
         <CardGrid
-          cards={filtered}
+          cards={displayed}
           deckCards={deckCards}
           onAdd={addCard}
           onRemove={removeCard}
+          hasMore={displayed.length < filtered.length}
+          onShowMore={() => setVisibleCount((c) => c + PAGE_SIZE)}
         />
       </main>
 
@@ -577,43 +594,58 @@ function CardGrid({
   deckCards,
   onAdd,
   onRemove,
+  hasMore,
+  onShowMore,
 }: {
   cards: CardSummary[]
   deckCards: Record<string, number>
   onAdd: (c: CardSummary) => void
   onRemove: (name: string) => void
+  hasMore: boolean
+  onShowMore: () => void
 }) {
   const [hoverCard, setHoverCard] = useState<CardSummary | null>(null)
   const [hoverPos, setHoverPos] = useState<{ x: number; y: number } | null>(null)
 
   if (cards.length === 0) {
     return (
-      <div className={styles.grid}>
-        <div className={styles.emptyState}>No cards match the current filters.</div>
+      <div className={styles.gridScroll}>
+        <div className={styles.grid}>
+          <div className={styles.emptyState}>No cards match the current filters.</div>
+        </div>
       </div>
     )
   }
 
   return (
     <>
-      <div className={styles.grid}>
-        {cards.map((card) => (
-          <CardTile
-            key={card.name}
-            card={card}
-            count={deckCards[card.name] ?? 0}
-            onAdd={onAdd}
-            onRemove={onRemove}
-            onHover={(c, e) => {
-              setHoverCard(c)
-              if (e) setHoverPos({ x: e.clientX, y: e.clientY })
-            }}
-            onLeave={() => {
-              setHoverCard(null)
-              setHoverPos(null)
-            }}
-          />
-        ))}
+      <div className={styles.gridScroll}>
+        <div className={styles.grid}>
+          {cards.map((card) => (
+            <CardTile
+              key={card.name}
+              card={card}
+              count={deckCards[card.name] ?? 0}
+              onAdd={onAdd}
+              onRemove={onRemove}
+              onHover={(c, e) => {
+                setHoverCard(c)
+                if (e) setHoverPos({ x: e.clientX, y: e.clientY })
+              }}
+              onLeave={() => {
+                setHoverCard(null)
+                setHoverPos(null)
+              }}
+            />
+          ))}
+        </div>
+        {hasMore && (
+          <div className={styles.showMoreRow}>
+            <button className={styles.secondaryButton} onClick={onShowMore} type="button">
+              Show more
+            </button>
+          </div>
+        )}
       </div>
       {hoverCard && (
         <HoverCardPreview
