@@ -15,6 +15,7 @@ object MurdersAtKarlovManorSet {
 
     val allCards = listOf(
         HedgeMaze,
+        LushPortico,
         MeticulousArchive,
         NoMoreLies,
     )
