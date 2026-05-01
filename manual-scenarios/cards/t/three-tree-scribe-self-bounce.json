@@ -1,0 +1,30 @@
+{
+  "player1Name": "Player1",
+  "player2Name": "Opponent",
+  "player1": {
+    "lifeTotal": 20,
+    "hand": ["Run Away Together"],
+    "battlefield": [
+      {"name": "Three Tree Scribe"},
+      {"name": "Glory Seeker"},
+      {"name": "Forest"},
+      {"name": "Island"}
+    ],
+    "graveyard": [],
+    "library": ["Forest", "Island", "Forest"]
+  },
+  "player2": {
+    "lifeTotal": 20,
+    "hand": [],
+    "battlefield": [
+      {"name": "Grizzly Bears"}
+    ],
+    "graveyard": [],
+    "library": ["Forest", "Forest"]
+  },
+  "phase": "PRECOMBAT_MAIN",
+  "activePlayer": 1,
+  "priorityPlayer": 1,
+  "player1StopAtSteps": [],
+  "player2StopAtSteps": []
+}

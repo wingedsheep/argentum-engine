@@ -1,0 +1,40 @@
+{
+  "player1Name": "Alice",
+  "player2Name": "Bob",
+  "player1": {
+    "lifeTotal": 20,
+    "hand": ["Thornplate Intimidator"],
+    "battlefield": [
+      {"name": "Swamp"},
+      {"name": "Swamp"},
+      {"name": "Swamp"},
+      {"name": "Swamp"},
+      {"name": "Swamp"},
+      {"name": "Swamp"},
+      {"name": "Swamp"}
+    ],
+    "graveyard": [],
+    "library": ["Swamp", "Swamp", "Swamp"]
+  },
+  "player2": {
+    "lifeTotal": 10,
+    "hand": ["Glory Seeker", "Elvish Warrior"],
+    "battlefield": [
+      {"name": "Glory Seeker"},
+      {"name": "Grizzly Bears"},
+      {"name": "Plains"},
+      {"name": "Plains"},
+      {"name": "Forest"},
+      {"name": "Forest"}
+    ],
+    "graveyard": [],
+    "library": ["Plains", "Plains", "Forest"]
+  },
+  "phase": "PRECOMBAT_MAIN",
+  "activePlayer": 1,
+  "priorityPlayer": 1,
+  "player1StopAtSteps": [],
+  "player2StopAtSteps": [],
+  "player1OpponentStopAtSteps": [],
+  "player2OpponentStopAtSteps": []
+}

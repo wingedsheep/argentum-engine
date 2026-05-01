@@ -1,0 +1,31 @@
+{
+  "player1Name": "Alice",
+  "player2Name": "Bob",
+  "player1": {
+    "lifeTotal": 20,
+    "hand": ["Merrow Skyswimmer"],
+    "battlefield": [
+      {"name": "Plains"},
+      {"name": "Plains"},
+      {"name": "Island"},
+      {"name": "Island"},
+      {"name": "Island"},
+      {"name": "Goldmeadow Nomad"},
+      {"name": "Coral Eel"}
+    ],
+    "graveyard": [],
+    "library": ["Plains", "Island", "Armored Pegasus"]
+  },
+  "player2": {
+    "lifeTotal": 20,
+    "hand": [],
+    "battlefield": [
+      {"name": "Bog Raiders"}
+    ],
+    "graveyard": [],
+    "library": ["Swamp", "Swamp", "Bog Imp"]
+  },
+  "phase": "PRECOMBAT_MAIN",
+  "activePlayer": 1,
+  "priorityPlayer": 1
+}

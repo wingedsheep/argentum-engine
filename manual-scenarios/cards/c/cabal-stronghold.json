@@ -1,0 +1,33 @@
+{
+  "player1Name": "Cabal",
+  "player2Name": "Opponent",
+  "player1": {
+    "lifeTotal": 20,
+    "hand": ["Dread Shade"],
+    "battlefield": [
+      {"name": "Cabal Stronghold", "tapped": false},
+      {"name": "Swamp", "tapped": false},
+      {"name": "Swamp", "tapped": false},
+      {"name": "Swamp", "tapped": false},
+      {"name": "Swamp", "tapped": false},
+      {"name": "Swamp", "tapped": false}
+    ],
+    "graveyard": [],
+    "library": ["Swamp", "Swamp", "Swamp"]
+  },
+  "player2": {
+    "lifeTotal": 20,
+    "hand": [],
+    "battlefield": [
+      {"name": "Knight of New Benalia"},
+      {"name": "Plains", "tapped": false}
+    ],
+    "graveyard": [],
+    "library": ["Plains", "Plains", "Plains"]
+  },
+  "phase": "PRECOMBAT_MAIN",
+  "activePlayer": 1,
+  "priorityPlayer": 1,
+  "player1StopAtSteps": [],
+  "player2StopAtSteps": []
+}

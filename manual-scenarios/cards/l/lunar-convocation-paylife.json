@@ -1,0 +1,31 @@
+{
+  "player1Name": "Alice",
+  "player2Name": "Bob",
+  "player1": {
+    "lifeTotal": 20,
+    "hand": ["Seasoned Warrenguard"],
+    "battlefield": [
+      {"name": "Lunar Convocation"},
+      {"name": "Lifecreed Duo"},
+      {"name": "Plains", "tapped": false},
+      {"name": "Swamp", "tapped": false},
+      {"name": "Swamp", "tapped": false}
+    ],
+    "graveyard": [],
+    "library": ["Plains", "Swamp"]
+  },
+  "player2": {
+    "lifeTotal": 20,
+    "hand": [],
+    "battlefield": [],
+    "graveyard": [],
+    "library": ["Plains", "Swamp"]
+  },
+  "phase": "PRECOMBAT_MAIN",
+  "activePlayer": 1,
+  "priorityPlayer": 1,
+  "player1StopAtSteps": ["END"],
+  "player2StopAtSteps": [],
+  "player1OpponentStopAtSteps": [],
+  "player2OpponentStopAtSteps": []
+}

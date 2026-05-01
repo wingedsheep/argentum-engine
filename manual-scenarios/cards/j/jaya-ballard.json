@@ -1,0 +1,32 @@
+{
+  "player1Name": "Jaya",
+  "player2Name": "Opponent",
+  "player1": {
+    "lifeTotal": 20,
+    "hand": ["Jaya Ballard", "Shivan Fire", "Fight with Fire"],
+    "battlefield": [
+      {"name": "Mountain", "tapped": false},
+      {"name": "Mountain", "tapped": false},
+      {"name": "Mountain", "tapped": false},
+      {"name": "Mountain", "tapped": false},
+      {"name": "Mountain", "tapped": false}
+    ],
+    "graveyard": [],
+    "library": ["Mountain", "Mountain", "Mountain"]
+  },
+  "player2": {
+    "lifeTotal": 20,
+    "hand": [],
+    "battlefield": [
+      {"name": "Fire Elemental"},
+      {"name": "Mountain", "tapped": false}
+    ],
+    "graveyard": [],
+    "library": ["Mountain", "Mountain", "Mountain"]
+  },
+  "phase": "PRECOMBAT_MAIN",
+  "activePlayer": 1,
+  "priorityPlayer": 1,
+  "player1StopAtSteps": [],
+  "player2StopAtSteps": []
+}

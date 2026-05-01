@@ -1,0 +1,32 @@
+{
+  "player1Name": "Karn",
+  "player2Name": "Opponent",
+  "player1": {
+    "lifeTotal": 20,
+    "hand": ["Karn, Scion of Urza"],
+    "battlefield": [
+      {"name": "Island", "tapped": false},
+      {"name": "Island", "tapped": false},
+      {"name": "Plains", "tapped": false},
+      {"name": "Plains", "tapped": false},
+      {"name": "Short Sword"},
+      {"name": "Sparring Construct"}
+    ],
+    "graveyard": [],
+    "library": ["Gilded Lotus", "Serra Angel", "Island", "Plains", "Opt"]
+  },
+  "player2": {
+    "lifeTotal": 20,
+    "hand": [],
+    "battlefield": [
+      {"name": "Mountain", "tapped": false}
+    ],
+    "graveyard": [],
+    "library": ["Mountain", "Mountain", "Mountain"]
+  },
+  "phase": "PRECOMBAT_MAIN",
+  "activePlayer": 1,
+  "priorityPlayer": 1,
+  "player1StopAtSteps": [],
+  "player2StopAtSteps": []
+}

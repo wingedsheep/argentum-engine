@@ -1,0 +1,29 @@
+{
+  "player1Name": "Alice",
+  "player2Name": "Bob",
+  "player1": {
+    "lifeTotal": 20,
+    "hand": ["Dire Downdraft"],
+    "battlefield": [
+      {"name": "Island"},
+      {"name": "Island"},
+      {"name": "Island"},
+      {"name": "Island"}
+    ],
+    "graveyard": [],
+    "library": ["Island", "Island"]
+  },
+  "player2": {
+    "lifeTotal": 20,
+    "hand": [],
+    "battlefield": [
+      {"name": "Glory Seeker"},
+      {"name": "Grizzly Bears"}
+    ],
+    "graveyard": [],
+    "library": ["Mountain", "Mountain"]
+  },
+  "phase": "PRECOMBAT_MAIN",
+  "activePlayer": 1,
+  "priorityPlayer": 1
+}

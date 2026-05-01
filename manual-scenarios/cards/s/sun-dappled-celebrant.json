@@ -1,0 +1,32 @@
+{
+  "player1Name": "Alice",
+  "player2Name": "Bob",
+  "player1": {
+    "lifeTotal": 20,
+    "hand": ["Sun-Dappled Celebrant"],
+    "battlefield": [
+      {"name": "Plains"},
+      {"name": "Plains"},
+      {"name": "Plains"},
+      {"name": "Plains"},
+      {"name": "Goldmeadow Nomad"},
+      {"name": "Kinsbaile Aspirant"},
+      {"name": "Glory Seeker"},
+      {"name": "Armored Pegasus"}
+    ],
+    "graveyard": [],
+    "library": ["Plains", "Plains", "Plains"]
+  },
+  "player2": {
+    "lifeTotal": 20,
+    "hand": [],
+    "battlefield": [
+      {"name": "Bog Raiders"}
+    ],
+    "graveyard": [],
+    "library": ["Swamp", "Swamp", "Swamp"]
+  },
+  "phase": "PRECOMBAT_MAIN",
+  "activePlayer": 1,
+  "priorityPlayer": 1
+}

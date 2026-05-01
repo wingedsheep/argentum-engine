@@ -1,0 +1,36 @@
+{
+  "player1Name": "Alice",
+  "player2Name": "Bob",
+  "player1": {
+    "lifeTotal": 20,
+    "hand": ["See the Unwritten"],
+    "battlefield": [
+      {"name": "Enormous Baloth"},
+      {"name": "Forest", "tapped": false},
+      {"name": "Forest", "tapped": false},
+      {"name": "Forest", "tapped": false},
+      {"name": "Forest", "tapped": false},
+      {"name": "Forest", "tapped": false},
+      {"name": "Forest", "tapped": false}
+    ],
+    "graveyard": [],
+    "library": ["Hill Giant", "Forest", "Grizzly Bears", "Forest", "Enormous Baloth", "Forest", "Glory Seeker", "Forest", "Forest", "Forest"]
+  },
+  "player2": {
+    "lifeTotal": 20,
+    "hand": [],
+    "battlefield": [
+      {"name": "Hill Giant"},
+      {"name": "Mountain", "tapped": false}
+    ],
+    "graveyard": [],
+    "library": ["Mountain", "Mountain"]
+  },
+  "phase": "PRECOMBAT_MAIN",
+  "activePlayer": 1,
+  "priorityPlayer": 1,
+  "player1StopAtSteps": [],
+  "player2StopAtSteps": [],
+  "player1OpponentStopAtSteps": [],
+  "player2OpponentStopAtSteps": []
+}

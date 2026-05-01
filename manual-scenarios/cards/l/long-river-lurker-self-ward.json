@@ -1,0 +1,32 @@
+{
+  "player1Name": "Alice",
+  "player2Name": "Bob",
+  "player1": {
+    "lifeTotal": 20,
+    "hand": [],
+    "battlefield": [
+      {"name": "Long River Lurker"},
+      {"name": "Stickytongue Sentinel"},
+      {"name": "Island"},
+      {"name": "Island"}
+    ],
+    "graveyard": [],
+    "library": ["Island", "Island"]
+  },
+  "player2": {
+    "lifeTotal": 20,
+    "hand": ["Fell"],
+    "battlefield": [
+      {"name": "Swamp"},
+      {"name": "Swamp"},
+      {"name": "Swamp"}
+    ],
+    "graveyard": [],
+    "library": ["Swamp", "Swamp"]
+  },
+  "phase": "PRECOMBAT_MAIN",
+  "activePlayer": 2,
+  "priorityPlayer": 2,
+  "player1StopAtSteps": [],
+  "player2StopAtSteps": []
+}

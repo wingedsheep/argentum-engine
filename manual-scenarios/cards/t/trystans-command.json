@@ -1,0 +1,37 @@
+{
+  "player1Name": "Alice",
+  "player2Name": "Bob",
+  "player1": {
+    "lifeTotal": 20,
+    "hand": ["Trystan's Command"],
+    "battlefield": [
+      {"name": "Forest"},
+      {"name": "Forest"},
+      {"name": "Forest"},
+      {"name": "Forest"},
+      {"name": "Swamp"},
+      {"name": "Swamp"},
+      {"name": "Llanowar Elves"}
+    ],
+    "graveyard": ["Hill Giant", "Grizzly Bears"],
+    "library": ["Forest", "Swamp", "Mountain"]
+  },
+  "player2": {
+    "lifeTotal": 20,
+    "hand": [],
+    "battlefield": [
+      {"name": "Hill Giant"},
+      {"name": "Grizzly Bears", "tapped": true},
+      {"name": "Elvish Ranger", "tapped": true}
+    ],
+    "graveyard": [],
+    "library": ["Plains", "Forest", "Mountain"]
+  },
+  "phase": "PRECOMBAT_MAIN",
+  "activePlayer": 1,
+  "priorityPlayer": 1,
+  "player1StopAtSteps": [],
+  "player2StopAtSteps": [],
+  "player1OpponentStopAtSteps": [],
+  "player2OpponentStopAtSteps": []
+}

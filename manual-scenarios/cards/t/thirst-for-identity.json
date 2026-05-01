@@ -1,0 +1,40 @@
+{
+  "player1Name": "Alice",
+  "player2Name": "Bob",
+  "player1": {
+    "lifeTotal": 20,
+    "hand": [
+      "Thirst for Identity",
+      "Goldmeadow Nomad"
+    ],
+    "battlefield": [
+      {"name": "Island"},
+      {"name": "Island"},
+      {"name": "Island"}
+    ],
+    "graveyard": [],
+    "library": [
+      "Gloom Ripper",
+      "Swat Away",
+      "Shinestriker",
+      "Island"
+    ]
+  },
+  "player2": {
+    "lifeTotal": 20,
+    "hand": [],
+    "battlefield": [
+      {"name": "Barbed Bloodletter"},
+      {"name": "Swamp"},
+      {"name": "Swamp"}
+    ],
+    "graveyard": [],
+    "library": [
+      "Swamp",
+      "Swamp"
+    ]
+  },
+  "phase": "PRECOMBAT_MAIN",
+  "activePlayer": 1,
+  "priorityPlayer": 1
+}

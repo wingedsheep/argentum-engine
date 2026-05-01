@@ -1,0 +1,33 @@
+{
+  "player1Name": "Lotus",
+  "player2Name": "Opponent",
+  "player1": {
+    "lifeTotal": 20,
+    "hand": ["Verdant Force"],
+    "battlefield": [
+      {"name": "Gilded Lotus"},
+      {"name": "Forest", "tapped": false},
+      {"name": "Forest", "tapped": false},
+      {"name": "Forest", "tapped": false},
+      {"name": "Forest", "tapped": false},
+      {"name": "Forest", "tapped": false}
+    ],
+    "graveyard": [],
+    "library": ["Forest", "Forest", "Forest"]
+  },
+  "player2": {
+    "lifeTotal": 20,
+    "hand": [],
+    "battlefield": [
+      {"name": "Grizzly Bears"},
+      {"name": "Island", "tapped": false}
+    ],
+    "graveyard": [],
+    "library": ["Island", "Island", "Island"]
+  },
+  "phase": "PRECOMBAT_MAIN",
+  "activePlayer": 1,
+  "priorityPlayer": 1,
+  "player1StopAtSteps": [],
+  "player2StopAtSteps": []
+}

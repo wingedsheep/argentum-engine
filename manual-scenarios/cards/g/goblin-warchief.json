@@ -1,0 +1,35 @@
+{
+  "player1Name": "Warchief",
+  "player2Name": "Opponent",
+  "player1": {
+    "lifeTotal": 20,
+    "hand": ["Siege-Gang Commander", "Goblin Chainwhirler"],
+    "battlefield": [
+      {"name": "Goblin Warchief"},
+      {"name": "Skirk Prospector"},
+      {"name": "Mountain", "tapped": false},
+      {"name": "Mountain", "tapped": false},
+      {"name": "Mountain", "tapped": false},
+      {"name": "Mountain", "tapped": false},
+      {"name": "Mountain", "tapped": false}
+    ],
+    "graveyard": [],
+    "library": ["Mountain", "Mountain", "Mountain"]
+  },
+  "player2": {
+    "lifeTotal": 20,
+    "hand": [],
+    "battlefield": [
+      {"name": "Grizzly Bears"},
+      {"name": "Storm Crow"},
+      {"name": "Forest", "tapped": false}
+    ],
+    "graveyard": [],
+    "library": ["Forest", "Forest", "Forest"]
+  },
+  "phase": "PRECOMBAT_MAIN",
+  "activePlayer": 1,
+  "priorityPlayer": 1,
+  "player1StopAtSteps": [],
+  "player2StopAtSteps": []
+}

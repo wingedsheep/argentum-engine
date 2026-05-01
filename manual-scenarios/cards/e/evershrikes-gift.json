@@ -1,0 +1,30 @@
+{
+  "player1Name": "Alice",
+  "player2Name": "Bob",
+  "player1": {
+    "lifeTotal": 20,
+    "hand": ["Evershrike's Gift"],
+    "battlefield": [
+      {"name": "Plains"},
+      {"name": "Plains"},
+      {"name": "Plains"},
+      {"name": "Kinsbaile Aspirant"},
+      {"name": "Great Forest Druid"}
+    ],
+    "graveyard": ["Evershrike's Gift"],
+    "library": ["Plains", "Plains", "Plains"]
+  },
+  "player2": {
+    "lifeTotal": 20,
+    "hand": [],
+    "battlefield": [
+      {"name": "Plains"},
+      {"name": "Goldmeadow Nomad"}
+    ],
+    "graveyard": [],
+    "library": ["Plains", "Plains"]
+  },
+  "phase": "PRECOMBAT_MAIN",
+  "activePlayer": 1,
+  "priorityPlayer": 1
+}

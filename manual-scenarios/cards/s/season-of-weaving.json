@@ -1,0 +1,39 @@
+{
+  "player1Name": "Alice",
+  "player2Name": "Bob",
+  "player1": {
+    "lifeTotal": 20,
+    "hand": ["Season of Weaving"],
+    "battlefield": [
+      {"name": "Island"},
+      {"name": "Island"},
+      {"name": "Island"},
+      {"name": "Island"},
+      {"name": "Island"},
+      {"name": "Island"},
+      {"name": "Stormcatch Mentor"},
+      {"name": "Sinister Monolith"}
+    ],
+    "graveyard": [],
+    "library": ["Island", "Island", "Island"]
+  },
+  "player2": {
+    "lifeTotal": 20,
+    "hand": [],
+    "battlefield": [
+      {"name": "Glory Seeker"},
+      {"name": "Elvish Warrior"},
+      {"name": "Plains"},
+      {"name": "Forest"}
+    ],
+    "graveyard": [],
+    "library": ["Plains", "Plains", "Plains"]
+  },
+  "phase": "PRECOMBAT_MAIN",
+  "activePlayer": 1,
+  "priorityPlayer": 1,
+  "player1StopAtSteps": [],
+  "player2StopAtSteps": [],
+  "player1OpponentStopAtSteps": [],
+  "player2OpponentStopAtSteps": []
+}

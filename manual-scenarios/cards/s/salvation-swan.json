@@ -1,0 +1,33 @@
+{
+  "player1Name": "Alice",
+  "player2Name": "Bob",
+  "player1": {
+    "lifeTotal": 20,
+    "hand": ["Salvation Swan"],
+    "battlefield": [
+      {"name": "Glory Seeker"},
+      {"name": "Elvish Warrior"},
+      {"name": "Plains", "tapped": false},
+      {"name": "Plains", "tapped": false},
+      {"name": "Plains", "tapped": false},
+      {"name": "Plains", "tapped": false}
+    ],
+    "graveyard": [],
+    "library": ["Plains", "Plains"]
+  },
+  "player2": {
+    "lifeTotal": 20,
+    "hand": [],
+    "battlefield": [
+      {"name": "Glory Seeker"},
+      {"name": "Plains"}
+    ],
+    "graveyard": [],
+    "library": ["Plains", "Plains"]
+  },
+  "phase": "PRECOMBAT_MAIN",
+  "activePlayer": 1,
+  "priorityPlayer": 1,
+  "player1StopAtSteps": ["END"],
+  "player2StopAtSteps": ["END"]
+}

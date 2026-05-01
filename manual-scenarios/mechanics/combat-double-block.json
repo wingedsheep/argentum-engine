@@ -1,0 +1,34 @@
+{
+  "player1Name": "Attacker",
+  "player2Name": "Defender",
+  "player1": {
+    "lifeTotal": 20,
+    "hand": [],
+    "battlefield": [
+      {"name": "Glory Seeker"},
+      {"name": "Elvish Warrior"},
+      {"name": "Plains", "tapped": false},
+      {"name": "Forest", "tapped": false}
+    ],
+    "graveyard": [],
+    "library": ["Plains", "Forest"]
+  },
+  "player2": {
+    "lifeTotal": 20,
+    "hand": [],
+    "battlefield": [
+      {"name": "Grizzly Bears"},
+      {"name": "Muck Rats"},
+      {"name": "Hill Giant"},
+      {"name": "Horned Turtle"},
+      {"name": "Mountain", "tapped": false},
+      {"name": "Swamp", "tapped": false}
+    ],
+    "graveyard": [],
+    "library": ["Mountain", "Swamp"]
+  },
+  "phase": "COMBAT",
+  "step": "DECLARE_ATTACKERS",
+  "activePlayer": 1,
+  "priorityPlayer": 1
+}

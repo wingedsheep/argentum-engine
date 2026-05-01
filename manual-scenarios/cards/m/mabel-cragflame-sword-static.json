@@ -1,0 +1,24 @@
+{
+  "player1Name": "Alice",
+  "player2Name": "Bob",
+  "player1": {
+    "lifeTotal": 20,
+    "hand": ["Mabel, Heir to Cragflame"],
+    "battlefield": [
+      {"name": "Grizzly Bears"},
+      {"name": "Plains"},
+      {"name": "Mountain"},
+      {"name": "Mountain"}
+    ],
+    "library": ["Plains", "Plains"]
+  },
+  "player2": {
+    "lifeTotal": 20,
+    "hand": [],
+    "battlefield": [],
+    "library": ["Forest", "Forest"]
+  },
+  "phase": "PRECOMBAT_MAIN",
+  "activePlayer": 1,
+  "priorityPlayer": 1
+}

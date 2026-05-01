@@ -1,0 +1,37 @@
+{
+  "player1Name": "Alice",
+  "player2Name": "Bob",
+  "player1": {
+    "lifeTotal": 20,
+    "hand": ["Catharsis"],
+    "battlefield": [
+      {"name": "Mountain"},
+      {"name": "Mountain"},
+      {"name": "Plains"},
+      {"name": "Plains"},
+      {"name": "Plains"},
+      {"name": "Mountain"},
+      {"name": "Goldmeadow Nomad"},
+      {"name": "Craven Giant"}
+    ],
+    "graveyard": [],
+    "library": ["Mountain", "Plains"]
+  },
+  "player2": {
+    "lifeTotal": 20,
+    "hand": [],
+    "battlefield": [
+      {"name": "Stalking Tiger"},
+      {"name": "Forest"}
+    ],
+    "graveyard": [],
+    "library": ["Forest", "Forest"]
+  },
+  "phase": "PRECOMBAT_MAIN",
+  "activePlayer": 1,
+  "priorityPlayer": 1,
+  "player1StopAtSteps": [],
+  "player2StopAtSteps": [],
+  "player1OpponentStopAtSteps": [],
+  "player2OpponentStopAtSteps": []
+}

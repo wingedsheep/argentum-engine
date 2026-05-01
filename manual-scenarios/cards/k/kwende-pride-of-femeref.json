@@ -1,0 +1,35 @@
+{
+  "player1Name": "Kwende",
+  "player2Name": "Opponent",
+  "player1": {
+    "lifeTotal": 20,
+    "hand": [],
+    "battlefield": [
+      {"name": "Kwende, Pride of Femeref"},
+      {"name": "Goblin Chainwhirler"},
+      {"name": "Plains", "tapped": false},
+      {"name": "Plains", "tapped": false},
+      {"name": "Plains", "tapped": false},
+      {"name": "Mountain", "tapped": false}
+    ],
+    "graveyard": [],
+    "library": ["Plains", "Mountain", "Plains"]
+  },
+  "player2": {
+    "lifeTotal": 20,
+    "hand": [],
+    "battlefield": [
+      {"name": "Hill Giant"},
+      {"name": "Grizzly Bears"},
+      {"name": "Forest", "tapped": false},
+      {"name": "Forest", "tapped": false}
+    ],
+    "graveyard": [],
+    "library": ["Forest", "Forest", "Forest"]
+  },
+  "phase": "PRECOMBAT_MAIN",
+  "activePlayer": 1,
+  "priorityPlayer": 1,
+  "player1StopAtSteps": [],
+  "player2StopAtSteps": []
+}

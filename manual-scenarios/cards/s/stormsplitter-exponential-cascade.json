@@ -1,0 +1,36 @@
+{
+  "_description": "Engine torture test: 3 Stormsplitters already on board. Casting one instant should trigger 3 separate copies (same event, multiple sources), creating 3 new Stormsplitter tokens for 6 total. Casting a second instant then triggers 6 times for 12 total. Common engine bugs: (1) only firing one trigger per event, (2) new tokens not picking up the triggered ability, (3) mishandling the 'exile at next end step' delayed trigger attached to each token copy. Classic exponential cascade.",
+  "player1Name": "Alice",
+  "player2Name": "Bob",
+  "player1": {
+    "lifeTotal": 20,
+    "hand": ["Shore Up", "Might of the Meek"],
+    "battlefield": [
+      {"name": "Mountain"},
+      {"name": "Mountain"},
+      {"name": "Mountain"},
+      {"name": "Island"},
+      {"name": "Stormsplitter", "summoningSickness": false},
+      {"name": "Stormsplitter", "summoningSickness": false},
+      {"name": "Stormsplitter", "summoningSickness": false}
+    ],
+    "graveyard": [],
+    "library": ["Mountain", "Mountain", "Island"]
+  },
+  "player2": {
+    "lifeTotal": 40,
+    "hand": [],
+    "battlefield": [
+      {"name": "Glory Seeker"},
+      {"name": "Plains"},
+      {"name": "Plains"}
+    ],
+    "graveyard": [],
+    "library": ["Plains", "Plains", "Plains"]
+  },
+  "phase": "PRECOMBAT_MAIN",
+  "activePlayer": 1,
+  "priorityPlayer": 1,
+  "player1StopAtSteps": [],
+  "player2StopAtSteps": []
+}

@@ -1,0 +1,35 @@
+{
+  "player1Name": "Angel",
+  "player2Name": "Opponent",
+  "player1": {
+    "lifeTotal": 20,
+    "hand": [],
+    "battlefield": [
+      {"name": "Serra Angel"},
+      {"name": "Knight of New Benalia"},
+      {"name": "Plains", "tapped": false},
+      {"name": "Plains", "tapped": false},
+      {"name": "Plains", "tapped": false}
+    ],
+    "graveyard": [],
+    "library": ["Plains", "Plains", "Plains"]
+  },
+  "player2": {
+    "lifeTotal": 20,
+    "hand": [],
+    "battlefield": [
+      {"name": "Wind Drake"},
+      {"name": "Hill Giant"},
+      {"name": "Grizzly Bears"},
+      {"name": "Island", "tapped": false},
+      {"name": "Forest", "tapped": false}
+    ],
+    "graveyard": [],
+    "library": ["Island", "Forest", "Island"]
+  },
+  "phase": "PRECOMBAT_MAIN",
+  "activePlayer": 1,
+  "priorityPlayer": 1,
+  "player1StopAtSteps": [],
+  "player2StopAtSteps": []
+}

@@ -1,0 +1,29 @@
+{
+  "player1Name": "Alice",
+  "player2Name": "Bob",
+  "player1": {
+    "lifeTotal": 20,
+    "hand": ["Changeling Wayfinder"],
+    "battlefield": [
+      {"name": "Plains"},
+      {"name": "Plains"},
+      {"name": "Plains"}
+    ],
+    "graveyard": [],
+    "library": ["Forest", "Island", "Mountain", "Swamp", "Plains"]
+  },
+  "player2": {
+    "lifeTotal": 20,
+    "hand": [],
+    "battlefield": [],
+    "graveyard": [],
+    "library": ["Plains", "Plains"]
+  },
+  "phase": "PRECOMBAT_MAIN",
+  "activePlayer": 1,
+  "priorityPlayer": 1,
+  "player1StopAtSteps": [],
+  "player2StopAtSteps": [],
+  "player1OpponentStopAtSteps": [],
+  "player2OpponentStopAtSteps": []
+}

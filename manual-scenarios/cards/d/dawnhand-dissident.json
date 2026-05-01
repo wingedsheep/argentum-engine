@@ -1,0 +1,35 @@
+{
+  "player1Name": "Alice",
+  "player2Name": "Bob",
+  "player1": {
+    "lifeTotal": 20,
+    "hand": [],
+    "battlefield": [
+      {"name": "Dawnhand Dissident"},
+      {"name": "Grizzly Bears", "counters": {"PLUS_ONE_PLUS_ONE": 5}},
+      {"name": "Armored Pegasus"},
+      {"name": "Swamp"},
+      {"name": "Swamp"},
+      {"name": "Forest"},
+      {"name": "Forest"}
+    ],
+    "graveyard": ["Grizzly Bears", "Bog Imp"],
+    "library": ["Forest", "Swamp"]
+  },
+  "player2": {
+    "lifeTotal": 20,
+    "hand": [],
+    "battlefield": [
+      {"name": "Bog Wraith"}
+    ],
+    "graveyard": ["Charging Paladin"],
+    "library": ["Forest", "Swamp"]
+  },
+  "phase": "PRECOMBAT_MAIN",
+  "activePlayer": 1,
+  "priorityPlayer": 1,
+  "player1StopAtSteps": [],
+  "player2StopAtSteps": [],
+  "player1OpponentStopAtSteps": [],
+  "player2OpponentStopAtSteps": []
+}

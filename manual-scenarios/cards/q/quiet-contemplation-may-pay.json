@@ -1,0 +1,36 @@
+{
+  "player1Name": "Player",
+  "player2Name": "Opponent",
+  "player1": {
+    "lifeTotal": 20,
+    "hand": ["Defiant Strike", "Feat of Resistance"],
+    "battlefield": [
+      {"name": "Quiet Contemplation"},
+      {"name": "Plains", "tapped": false},
+      {"name": "Plains", "tapped": false},
+      {"name": "Plains", "tapped": false},
+      {"name": "Plains", "tapped": false},
+      {"name": "Glory Seeker", "summoningSickness": false}
+    ],
+    "graveyard": [],
+    "library": ["Plains", "Plains"]
+  },
+  "player2": {
+    "lifeTotal": 20,
+    "hand": [],
+    "battlefield": [
+      {"name": "Glory Seeker", "summoningSickness": false},
+      {"name": "Glory Seeker", "summoningSickness": false},
+      {"name": "Goblin Grappler", "summoningSickness": false}
+    ],
+    "graveyard": [],
+    "library": ["Mountain", "Mountain"]
+  },
+  "phase": "PRECOMBAT_MAIN",
+  "activePlayer": 1,
+  "priorityPlayer": 1,
+  "player1StopAtSteps": [],
+  "player2StopAtSteps": [],
+  "player1OpponentStopAtSteps": [],
+  "player2OpponentStopAtSteps": []
+}

@@ -1,0 +1,51 @@
+{
+  "player1Name": "Alice",
+  "player2Name": "Bob",
+  "player1": {
+    "lifeTotal": 20,
+    "hand": [],
+    "battlefield": [
+      {"name": "Grizzly Bears"},
+      {"name": "Crown of Vigor", "attachedTo": "Grizzly Bears"},
+      {"name": "Dragon Grip", "attachedTo": "Grizzly Bears"},
+      {"name": "Dragon Fangs", "attachedTo": "Grizzly Bears"},
+      {"name": "Arcane Flight", "attachedTo": "Grizzly Bears"},
+      {"name": "Keen-Eyed Curator"},
+      {"name": "Feather of Flight", "attachedTo": "Keen-Eyed Curator"},
+      {"name": "Forest"},
+      {"name": "Forest"},
+      {"name": "Forest"},
+      {"name": "Forest"},
+      {"name": "Forest"},
+      {"name": "Forest"},
+      {"name": "Plains"},
+      {"name": "Island"}
+    ],
+    "graveyard": [],
+    "library": ["Mountain", "Swamp", "Forest"]
+  },
+  "player2": {
+    "lifeTotal": 20,
+    "hand": ["Wear Down"],
+    "battlefield": [
+      {"name": "Forest"},
+      {"name": "Forest"}
+    ],
+    "graveyard": [
+      "Shivan Fire",
+      "Saproling Migration",
+      "Hill Giant",
+      "Fungal Plots",
+      "Urza's Tome",
+      "Mountain"
+    ],
+    "library": ["Forest", "Plains", "Island"]
+  },
+  "phase": "PRECOMBAT_MAIN",
+  "activePlayer": 2,
+  "priorityPlayer": 2,
+  "player1StopAtSteps": [],
+  "player2StopAtSteps": [],
+  "player1OpponentStopAtSteps": [],
+  "player2OpponentStopAtSteps": []
+}

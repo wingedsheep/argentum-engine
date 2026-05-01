@@ -1,0 +1,37 @@
+{
+  "player1Name": "Alice",
+  "player2Name": "Bob",
+  "player1": {
+    "lifeTotal": 20,
+    "hand": ["Treasure Cruise", "Dig Through Time"],
+    "battlefield": [
+      {"name": "Island", "tapped": false},
+      {"name": "Island", "tapped": false},
+      {"name": "Swamp", "tapped": false}
+    ],
+    "graveyard": [
+      "Alpine Grizzly",
+      "Bloodfire Expert",
+      "Leaping Master",
+      "Ainok Bond-Kin",
+      "Murderous Cut",
+      "Island",
+      "Swamp"
+    ],
+    "library": ["Island", "Island", "Swamp"]
+  },
+  "player2": {
+    "lifeTotal": 20,
+    "hand": [],
+    "battlefield": [
+      {"name": "Alpine Grizzly", "summoningSickness": false},
+      {"name": "Bloodfire Expert", "summoningSickness": false},
+      {"name": "Mountain", "tapped": false}
+    ],
+    "graveyard": [],
+    "library": ["Mountain", "Mountain"]
+  },
+  "phase": "PRECOMBAT_MAIN",
+  "activePlayer": 1,
+  "priorityPlayer": 1
+}

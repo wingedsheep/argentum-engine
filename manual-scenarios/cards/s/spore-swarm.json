@@ -1,0 +1,33 @@
+{
+  "player1Name": "Spores",
+  "player2Name": "Opponent",
+  "player1": {
+    "lifeTotal": 20,
+    "hand": ["Spore Swarm"],
+    "battlefield": [
+      {"name": "Sporecrown Thallid"},
+      {"name": "Slimefoot, the Stowaway"},
+      {"name": "Forest", "tapped": false},
+      {"name": "Forest", "tapped": false},
+      {"name": "Forest", "tapped": false},
+      {"name": "Forest", "tapped": false}
+    ],
+    "graveyard": [],
+    "library": ["Forest", "Forest", "Forest"]
+  },
+  "player2": {
+    "lifeTotal": 20,
+    "hand": [],
+    "battlefield": [
+      {"name": "Hill Giant"},
+      {"name": "Mountain", "tapped": false}
+    ],
+    "graveyard": [],
+    "library": ["Mountain", "Mountain", "Mountain"]
+  },
+  "phase": "PRECOMBAT_MAIN",
+  "activePlayer": 2,
+  "priorityPlayer": 2,
+  "player1StopAtSteps": [],
+  "player2StopAtSteps": []
+}

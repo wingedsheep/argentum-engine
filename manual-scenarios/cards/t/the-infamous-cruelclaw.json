@@ -1,0 +1,29 @@
+{
+  "player1Name": "Alice",
+  "player2Name": "Bob",
+  "player1": {
+    "lifeTotal": 20,
+    "hand": ["The Infamous Cruelclaw", "Mountain"],
+    "battlefield": [
+      {"name": "Swamp", "tapped": false},
+      {"name": "Mountain", "tapped": false},
+      {"name": "Swamp", "tapped": false}
+    ],
+    "graveyard": [],
+    "library": ["Mountain", "Forest", "Wildfire Howl", "Swamp", "Swamp"]
+  },
+  "player2": {
+    "lifeTotal": 20,
+    "hand": [],
+    "battlefield": [
+      {"name": "Plains", "tapped": false}
+    ],
+    "graveyard": [],
+    "library": ["Plains", "Plains"]
+  },
+  "phase": "PRECOMBAT_MAIN",
+  "activePlayer": 1,
+  "priorityPlayer": 1,
+  "player1StopAtSteps": [],
+  "player2StopAtSteps": []
+}

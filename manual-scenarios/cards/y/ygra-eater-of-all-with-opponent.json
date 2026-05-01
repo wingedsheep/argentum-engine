@@ -1,0 +1,36 @@
+{
+  "player1Name": "Alice",
+  "player2Name": "Bob",
+  "player1": {
+    "lifeTotal": 20,
+    "hand": [],
+    "battlefield": [
+      {"name": "Ygra, Eater of All", "summoningSickness": false},
+      {"name": "Three Tree Scribe", "summoningSickness": false},
+      {"name": "Head of the Homestead", "summoningSickness": false},
+      {"name": "Forest"},
+      {"name": "Forest"},
+      {"name": "Swamp"},
+      {"name": "Swamp"}
+    ],
+    "graveyard": [],
+    "library": ["Forest", "Forest", "Forest"]
+  },
+  "player2": {
+    "lifeTotal": 20,
+    "hand": [],
+    "battlefield": [
+      {"name": "Glory Seeker", "summoningSickness": false},
+      {"name": "Battering Craghorn", "summoningSickness": false},
+      {"name": "Forest"},
+      {"name": "Forest"},
+      {"name": "Plains"},
+      {"name": "Plains"}
+    ],
+    "graveyard": [],
+    "library": ["Forest", "Forest", "Forest"]
+  },
+  "phase": "PRECOMBAT_MAIN",
+  "activePlayer": 1,
+  "priorityPlayer": 1
+}

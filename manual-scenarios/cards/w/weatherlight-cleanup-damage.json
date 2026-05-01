@@ -1,0 +1,26 @@
+{
+  "player1Name": "Alice",
+  "player2Name": "Bob",
+  "player1": {
+    "lifeTotal": 20,
+    "hand": ["Volcanic Hammer"],
+    "battlefield": [
+      {"name": "Mountain"},
+      {"name": "Weatherlight"},
+      {"name": "Grizzly Bears", "summoningSickness": false},
+      {"name": "Grizzly Bears", "summoningSickness": false}
+    ],
+    "graveyard": [],
+    "library": ["Mountain", "Mountain"]
+  },
+  "player2": {
+    "lifeTotal": 20,
+    "hand": [],
+    "battlefield": [],
+    "graveyard": [],
+    "library": ["Forest", "Forest"]
+  },
+  "phase": "PRECOMBAT_MAIN",
+  "activePlayer": 1,
+  "priorityPlayer": 1
+}

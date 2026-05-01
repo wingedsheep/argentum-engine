@@ -1,0 +1,33 @@
+{
+  "player1Name": "Player",
+  "player2Name": "Opponent",
+  "player1": {
+    "lifeTotal": 20,
+    "hand": [],
+    "battlefield": [
+      {"name": "Heirloom Auntie", "summoningSickness": false, "counters": {"MINUS_ONE_MINUS_ONE": 2}},
+      {"name": "Grizzly Bears", "summoningSickness": false},
+      {"name": "Grizzly Bears", "summoningSickness": false},
+      {"name": "Swamp", "tapped": false},
+      {"name": "Swamp", "tapped": false},
+      {"name": "Swamp", "tapped": false}
+    ],
+    "graveyard": [],
+    "library": ["Swamp", "Swamp", "Swamp", "Grizzly Bears"]
+  },
+  "player2": {
+    "lifeTotal": 20,
+    "hand": ["Shock", "Shock"],
+    "battlefield": [
+      {"name": "Mountain", "tapped": false},
+      {"name": "Mountain", "tapped": false}
+    ],
+    "graveyard": [],
+    "library": ["Mountain", "Mountain", "Mountain", "Glory Seeker"]
+  },
+  "phase": "PRECOMBAT_MAIN",
+  "activePlayer": 1,
+  "priorityPlayer": 1,
+  "player1StopAtSteps": [],
+  "player2StopAtSteps": []
+}

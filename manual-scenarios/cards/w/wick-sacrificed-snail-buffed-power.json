@@ -1,0 +1,35 @@
+{
+  "player1Name": "Alice",
+  "player2Name": "Bob",
+  "player1": {
+    "lifeTotal": 20,
+    "hand": ["Rat Colony", "Scales of Shale"],
+    "battlefield": [
+      {"name": "Wick, the Whorled Mind"},
+      {"name": "Swamp"},
+      {"name": "Swamp"},
+      {"name": "Swamp"},
+      {"name": "Swamp"},
+      {"name": "Island"},
+      {"name": "Mountain"},
+      {"name": "Forest"},
+      {"name": "Forest"}
+    ],
+    "graveyard": [],
+    "library": ["Swamp", "Swamp", "Island"]
+  },
+  "player2": {
+    "lifeTotal": 20,
+    "hand": [],
+    "battlefield": [],
+    "graveyard": [],
+    "library": ["Mountain", "Mountain", "Forest"]
+  },
+  "phase": "PRECOMBAT_MAIN",
+  "activePlayer": 1,
+  "priorityPlayer": 1,
+  "player1StopAtSteps": [],
+  "player2StopAtSteps": [],
+  "player1OpponentStopAtSteps": [],
+  "player2OpponentStopAtSteps": []
+}

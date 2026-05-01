@@ -1,0 +1,32 @@
+{
+  "player1Name": "Alice",
+  "player2Name": "Bob",
+  "player1": {
+    "lifeTotal": 20,
+    "hand": ["Chief of the Edge"],
+    "battlefield": [
+      {"name": "Plains", "tapped": false},
+      {"name": "Swamp", "tapped": false},
+      {"name": "Mardu Hateblade"},
+      {"name": "War-Name Aspirant"},
+      {"name": "Alpine Grizzly"}
+    ],
+    "graveyard": [],
+    "library": ["Plains", "Swamp", "Plains"]
+  },
+  "player2": {
+    "lifeTotal": 20,
+    "hand": [],
+    "battlefield": [
+      {"name": "Glory Seeker"},
+      {"name": "Mountain", "tapped": true}
+    ],
+    "graveyard": [],
+    "library": ["Mountain", "Mountain", "Mountain"]
+  },
+  "phase": "PRECOMBAT_MAIN",
+  "activePlayer": 1,
+  "priorityPlayer": 1,
+  "player1StopAtSteps": [],
+  "player2StopAtSteps": []
+}

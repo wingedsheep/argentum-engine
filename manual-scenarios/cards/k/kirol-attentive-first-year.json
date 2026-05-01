@@ -1,0 +1,31 @@
+{
+  "player1Name": "Alice",
+  "player2Name": "Bob",
+  "player1": {
+    "lifeTotal": 20,
+    "hand": ["Chomping Changeling"],
+    "battlefield": [
+      {"name": "Kirol, Attentive First-Year"},
+      {"name": "Goldmeadow Nomad"},
+      {"name": "Goldmeadow Nomad"},
+      {"name": "Forest"},
+      {"name": "Forest"},
+      {"name": "Forest"}
+    ],
+    "graveyard": [],
+    "library": ["Plains", "Plains"]
+  },
+  "player2": {
+    "lifeTotal": 20,
+    "hand": [],
+    "battlefield": [
+      {"name": "Mirrormind Crown"},
+      {"name": "Rimefire Torque"}
+    ],
+    "graveyard": [],
+    "library": ["Island", "Island"]
+  },
+  "phase": "PRECOMBAT_MAIN",
+  "activePlayer": 1,
+  "priorityPlayer": 1
+}

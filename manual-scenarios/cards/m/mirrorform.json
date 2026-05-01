@@ -1,0 +1,39 @@
+{
+  "player1Name": "Alice",
+  "player2Name": "Bob",
+  "player1": {
+    "lifeTotal": 20,
+    "hand": ["Mirrorform"],
+    "battlefield": [
+      {"name": "Grizzly Bears"},
+      {"name": "Grizzly Bears"},
+      {"name": "Icy Manipulator"},
+      {"name": "Island"},
+      {"name": "Island"},
+      {"name": "Island"},
+      {"name": "Island"},
+      {"name": "Island"},
+      {"name": "Island"}
+    ],
+    "graveyard": [],
+    "library": ["Island", "Island", "Island"]
+  },
+  "player2": {
+    "lifeTotal": 20,
+    "hand": [],
+    "battlefield": [
+      {"name": "Rorix Bladewing"},
+      {"name": "Glory Seeker"},
+      {"name": "Mountain"},
+      {"name": "Mountain"},
+      {"name": "Mountain"}
+    ],
+    "graveyard": [],
+    "library": ["Mountain", "Mountain", "Mountain"]
+  },
+  "phase": "PRECOMBAT_MAIN",
+  "activePlayer": 1,
+  "priorityPlayer": 1,
+  "player1StopAtSteps": [],
+  "player2StopAtSteps": []
+}

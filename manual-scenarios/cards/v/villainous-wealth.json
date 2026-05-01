@@ -1,0 +1,46 @@
+{
+  "player1Name": "Sultai Mage",
+  "player2Name": "Opponent",
+  "player1": {
+    "lifeTotal": 20,
+    "hand": ["Villainous Wealth"],
+    "battlefield": [
+      {"name": "Swamp", "tapped": false},
+      {"name": "Swamp", "tapped": false},
+      {"name": "Island", "tapped": false},
+      {"name": "Forest", "tapped": false},
+      {"name": "Forest", "tapped": false},
+      {"name": "Forest", "tapped": false},
+      {"name": "Swamp", "tapped": false}
+    ],
+    "graveyard": [],
+    "library": ["Swamp", "Island", "Forest"]
+  },
+  "player2": {
+    "lifeTotal": 20,
+    "hand": [],
+    "battlefield": [
+      {"name": "Mountain", "tapped": false},
+      {"name": "Mountain", "tapped": false},
+      {"name": "Plains", "tapped": false}
+    ],
+    "graveyard": [],
+    "library": [
+      "Siege Rhino",
+      "Defiant Strike",
+      "Heir of the Wilds",
+      "Arc Lightning",
+      "Mantis Rider",
+      "Alpine Grizzly",
+      "Kill Shot",
+      "Seeker of the Way",
+      "Mountain",
+      "Plains"
+    ]
+  },
+  "phase": "PRECOMBAT_MAIN",
+  "activePlayer": 1,
+  "priorityPlayer": 1,
+  "player1StopAtSteps": [],
+  "player2StopAtSteps": []
+}

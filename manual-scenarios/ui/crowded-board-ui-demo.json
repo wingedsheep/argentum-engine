@@ -1,0 +1,73 @@
+{
+  "player1Name": "Alice",
+  "player2Name": "Bob",
+  "player1": {
+    "lifeTotal": 18,
+    "hand": [
+      "Gideon's Reproach",
+      "Fungal Infection",
+      "Board the Weatherlight",
+      "Fire Elemental"
+    ],
+    "battlefield": [
+      {"name": "Teferi, Hero of Dominaria", "counters": {"LOYALTY": 5}},
+      {"name": "Precognition Field"},
+      {"name": "Voltaic Servant"},
+      {"name": "Lyra Dawnbringer"},
+      {"name": "Goblin Chainwhirler"},
+      {"name": "Teshar, Ancestor's Apostle"},
+      {"name": "Plains"},
+      {"name": "Plains"},
+      {"name": "Island"},
+      {"name": "Island", "tapped": true},
+      {"name": "Mountain"},
+      {"name": "Mountain"},
+      {"name": "Swamp", "tapped": true}
+    ],
+    "graveyard": [
+      "Fire Elemental",
+      "Gideon's Reproach"
+    ],
+    "library": [
+      "Plains",
+      "Island",
+      "Mountain",
+      "Lyra Dawnbringer",
+      "Board the Weatherlight"
+    ]
+  },
+  "player2": {
+    "lifeTotal": 15,
+    "hand": [
+      "Goblin Chainwhirler",
+      "Fungal Infection",
+      "Board the Weatherlight"
+    ],
+    "battlefield": [
+      {"name": "Precognition Field"},
+      {"name": "Voltaic Servant", "tapped": true},
+      {"name": "Fire Elemental", "summoningSickness": true},
+      {"name": "Teshar, Ancestor's Apostle"},
+      {"name": "Forest"},
+      {"name": "Forest"},
+      {"name": "Swamp"},
+      {"name": "Swamp"},
+      {"name": "Mountain", "tapped": true},
+      {"name": "Island"}
+    ],
+    "graveyard": [
+      "Goblin Chainwhirler",
+      "Fungal Infection",
+      "Forest"
+    ],
+    "library": [
+      "Forest",
+      "Swamp",
+      "Fire Elemental",
+      "Fungal Infection"
+    ]
+  },
+  "phase": "PRECOMBAT_MAIN",
+  "activePlayer": 1,
+  "priorityPlayer": 1
+}

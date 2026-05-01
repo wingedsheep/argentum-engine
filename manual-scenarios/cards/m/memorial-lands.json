@@ -1,0 +1,38 @@
+{
+  "player1Name": "Memorials",
+  "player2Name": "Opponent",
+  "player1": {
+    "lifeTotal": 20,
+    "hand": [],
+    "battlefield": [
+      {"name": "Memorial to Folly", "tapped": false},
+      {"name": "Memorial to Genius", "tapped": false},
+      {"name": "Memorial to War", "tapped": false},
+      {"name": "Memorial to Glory", "tapped": false},
+      {"name": "Plains", "tapped": false},
+      {"name": "Island", "tapped": false},
+      {"name": "Swamp", "tapped": false},
+      {"name": "Mountain", "tapped": false},
+      {"name": "Swamp", "tapped": false},
+      {"name": "Island", "tapped": false}
+    ],
+    "graveyard": ["Serra Angel", "Knight of New Benalia"],
+    "library": ["Plains", "Island", "Swamp"]
+  },
+  "player2": {
+    "lifeTotal": 20,
+    "hand": [],
+    "battlefield": [
+      {"name": "Grizzly Bears"},
+      {"name": "Forest", "tapped": false},
+      {"name": "Forest", "tapped": false}
+    ],
+    "graveyard": [],
+    "library": ["Forest", "Forest", "Forest"]
+  },
+  "phase": "PRECOMBAT_MAIN",
+  "activePlayer": 1,
+  "priorityPlayer": 1,
+  "player1StopAtSteps": [],
+  "player2StopAtSteps": []
+}

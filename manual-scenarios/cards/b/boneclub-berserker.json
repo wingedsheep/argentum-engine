@@ -1,0 +1,35 @@
+{
+  "player1Name": "Alice",
+  "player2Name": "Bob",
+  "player1": {
+    "lifeTotal": 20,
+    "hand": ["Boneclub Berserker"],
+    "battlefield": [
+      {"name": "Goblin Taskmaster"},
+      {"name": "Sparksmith"},
+      {"name": "Embermage Goblin"},
+      {"name": "Mountain"},
+      {"name": "Mountain"},
+      {"name": "Mountain"},
+      {"name": "Mountain"}
+    ],
+    "graveyard": [],
+    "library": ["Mountain", "Mountain", "Mountain"]
+  },
+  "player2": {
+    "lifeTotal": 20,
+    "hand": [],
+    "battlefield": [
+      {"name": "Glory Seeker"},
+      {"name": "Plains"},
+      {"name": "Plains"}
+    ],
+    "graveyard": [],
+    "library": ["Plains", "Plains", "Plains"]
+  },
+  "phase": "PRECOMBAT_MAIN",
+  "activePlayer": 1,
+  "priorityPlayer": 1,
+  "player1StopAtSteps": [],
+  "player2StopAtSteps": []
+}

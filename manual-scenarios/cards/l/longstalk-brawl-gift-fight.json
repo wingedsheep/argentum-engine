@@ -1,0 +1,26 @@
+{
+  "player1Name": "Alice",
+  "player2Name": "Bob",
+  "player1": {
+    "lifeTotal": 20,
+    "hand": ["Longstalk Brawl"],
+    "battlefield": [
+      {"name": "Forest"},
+      {"name": "Bark-Knuckle Boxer"}
+    ],
+    "graveyard": [],
+    "library": ["Forest", "Forest"]
+  },
+  "player2": {
+    "lifeTotal": 20,
+    "hand": [],
+    "battlefield": [
+      {"name": "Intrepid Rabbit"}
+    ],
+    "graveyard": [],
+    "library": ["Forest", "Forest"]
+  },
+  "phase": "PRECOMBAT_MAIN",
+  "activePlayer": 1,
+  "priorityPlayer": 1
+}

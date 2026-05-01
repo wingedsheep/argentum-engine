@@ -1,0 +1,38 @@
+{
+  "player1Name": "Alice",
+  "player2Name": "Bob",
+  "player1": {
+    "lifeTotal": 20,
+    "hand": ["Archangel", "Island", "Island"],
+    "battlefield": [
+      {"name": "Malcolm, Alluring Scoundrel", "counters": {"CHORUS": 2}},
+      {"name": "Island"},
+      {"name": "Island"},
+      {"name": "Island"},
+      {"name": "Island"},
+      {"name": "Island"}
+    ],
+    "graveyard": [],
+    "library": [
+      "Island", "Island", "Island", "Island", "Island", "Island",
+      "Island", "Island", "Island", "Island", "Island", "Island"
+    ]
+  },
+  "player2": {
+    "lifeTotal": 20,
+    "hand": [],
+    "battlefield": [
+      {"name": "Grizzly Bears"},
+      {"name": "Forest"},
+      {"name": "Forest"}
+    ],
+    "graveyard": [],
+    "library": [
+      "Forest", "Forest", "Forest", "Forest", "Forest", "Forest",
+      "Forest", "Forest", "Forest", "Forest", "Forest", "Forest"
+    ]
+  },
+  "phase": "PRECOMBAT_MAIN",
+  "activePlayer": 1,
+  "priorityPlayer": 1
+}

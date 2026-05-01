@@ -1,0 +1,27 @@
+{
+  "player1Name": "Attacker",
+  "player2Name": "Defender",
+  "player1": {
+    "lifeTotal": 20,
+    "hand": [],
+    "battlefield": [
+      {"name": "Blistering Firecat", "tapped": false, "summoningSickness": false},
+      {"name": "Silvos, Rogue Elemental", "tapped": false, "summoningSickness": false}
+    ],
+    "graveyard": [],
+    "library": ["Mountain", "Forest"]
+  },
+  "player2": {
+    "lifeTotal": 20,
+    "hand": [],
+    "battlefield": [
+      {"name": "Glory Seeker"},
+      {"name": "Glory Seeker"}
+    ],
+    "graveyard": [],
+    "library": ["Plains", "Plains"]
+  },
+  "phase": "PRECOMBAT_MAIN",
+  "activePlayer": 1,
+  "priorityPlayer": 1
+}

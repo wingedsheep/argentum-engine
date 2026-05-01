@@ -1,0 +1,32 @@
+{
+  "player1Name": "Alice",
+  "player2Name": "Bob",
+  "player1": {
+    "lifeTotal": 20,
+    "hand": ["Winterflame"],
+    "battlefield": [
+      {"name": "Island", "tapped": false},
+      {"name": "Mountain", "tapped": false},
+      {"name": "Swiftwater Cliffs", "tapped": false},
+      {"name": "Alpine Grizzly"}
+    ],
+    "graveyard": [],
+    "library": ["Mountain", "Island", "Mountain"]
+  },
+  "player2": {
+    "lifeTotal": 20,
+    "hand": [],
+    "battlefield": [
+      {"name": "Glory Seeker"},
+      {"name": "Sagu Archer"},
+      {"name": "Mountain", "tapped": false}
+    ],
+    "graveyard": [],
+    "library": ["Mountain", "Island", "Mountain"]
+  },
+  "phase": "PRECOMBAT_MAIN",
+  "activePlayer": 1,
+  "priorityPlayer": 1,
+  "player1StopAtSteps": [],
+  "player2StopAtSteps": []
+}

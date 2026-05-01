@@ -1,0 +1,35 @@
+{
+  "player1Name": "Alice",
+  "player2Name": "Bob",
+  "player1": {
+    "lifeTotal": 20,
+    "hand": [],
+    "battlefield": [
+      {"name": "Kheru Lich Lord"},
+      {"name": "Swamp"},
+      {"name": "Swamp"},
+      {"name": "Swamp"},
+      {"name": "Forest"},
+      {"name": "Island"}
+    ],
+    "graveyard": ["Siege Rhino", "Woolly Loxodon"],
+    "library": ["Swamp", "Swamp"]
+  },
+  "player2": {
+    "lifeTotal": 20,
+    "hand": [],
+    "battlefield": [
+      {"name": "Glory Seeker"}
+    ],
+    "graveyard": [],
+    "library": ["Plains", "Plains"]
+  },
+  "phase": "BEGINNING",
+  "step": "UPKEEP",
+  "activePlayer": 1,
+  "priorityPlayer": 1,
+  "player1StopAtSteps": ["UPKEEP"],
+  "player2StopAtSteps": [],
+  "player1OpponentStopAtSteps": [],
+  "player2OpponentStopAtSteps": []
+}

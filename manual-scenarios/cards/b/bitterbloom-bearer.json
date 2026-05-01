@@ -1,0 +1,35 @@
+{
+  "player1Name": "Alice",
+  "player2Name": "Bob",
+  "player1": {
+    "lifeTotal": 20,
+    "hand": ["Bitterbloom Bearer"],
+    "battlefield": [
+      {"name": "Bitterbloom Bearer"},
+      {"name": "Swamp"},
+      {"name": "Swamp"},
+      {"name": "Swamp"},
+      {"name": "Swamp"}
+    ],
+    "graveyard": [],
+    "library": ["Swamp", "Swamp", "Swamp"]
+  },
+  "player2": {
+    "lifeTotal": 20,
+    "hand": [],
+    "battlefield": [
+      {"name": "Glory Seeker"},
+      {"name": "Mountain"},
+      {"name": "Mountain"},
+      {"name": "Mountain"}
+    ],
+    "graveyard": [],
+    "library": ["Mountain", "Mountain", "Mountain"]
+  },
+  "phase": "BEGINNING",
+  "step": "UPKEEP",
+  "activePlayer": 1,
+  "priorityPlayer": 1,
+  "player1StopAtSteps": ["UPKEEP"],
+  "player2StopAtSteps": ["UPKEEP"]
+}

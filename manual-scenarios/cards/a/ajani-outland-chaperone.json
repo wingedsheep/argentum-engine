@@ -1,0 +1,57 @@
+{
+  "player1Name": "Alice",
+  "player2Name": "Bob",
+  "player1": {
+    "lifeTotal": 12,
+    "hand": ["Ajani, Outland Chaperone"],
+    "battlefield": [
+      {"name": "Plains"},
+      {"name": "Plains"},
+      {"name": "Plains"},
+      {"name": "Forest"}
+    ],
+    "graveyard": [],
+    "library": [
+      "Bloom Tender",
+      "Goldmeadow Nomad",
+      "Surly Farrier",
+      "Wanderbrine Preacher",
+      "Mutable Explorer",
+      "Chomping Changeling",
+      "Gloom Ripper",
+      "Plains",
+      "Forest",
+      "Island",
+      "Mountain",
+      "Swamp"
+    ]
+  },
+  "player2": {
+    "lifeTotal": 20,
+    "hand": [],
+    "battlefield": [
+      {"name": "Gloom Ripper", "tapped": true},
+      {"name": "Chomping Changeling"}
+    ],
+    "graveyard": [],
+    "library": ["Plains", "Plains",       "Bloom Tender",
+      "Goldmeadow Nomad",
+      "Surly Farrier",
+      "Wanderbrine Preacher",
+      "Mutable Explorer",
+      "Chomping Changeling",
+      "Gloom Ripper",
+      "Plains",
+      "Forest",
+      "Island",
+      "Mountain",
+      "Swamp"]
+  },
+  "phase": "PRECOMBAT_MAIN",
+  "activePlayer": 1,
+  "priorityPlayer": 1,
+  "player1StopAtSteps": [],
+  "player2StopAtSteps": [],
+  "player1OpponentStopAtSteps": [],
+  "player2OpponentStopAtSteps": []
+}

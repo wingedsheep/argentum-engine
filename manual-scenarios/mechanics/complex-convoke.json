@@ -1,0 +1,43 @@
+{
+  "player1Name": "Alice",
+  "player2Name": "Bob",
+  "player1": {
+    "lifeTotal": 20,
+    "hand": ["Harmonized Crescendo"],
+    "battlefield": [
+      {"name": "Island"},
+
+      {"name": "Gilded Lotus"},
+      {"name": "Powerstone Shard"},
+      {"name": "Powerstone Shard", "tapped": true},
+      {"name": "Springleaf Drum"},
+
+      {"name": "Llanowar Elves"},
+      {"name": "Llanowar Elves", "summoningSickness": true},
+      {"name": "Vodalian Arcanist"},
+
+      {"name": "Coral Eel"},
+      {"name": "Devoted Hero"},
+      {"name": "Grizzly Bears", "tapped": true}
+    ],
+    "graveyard": [],
+    "library": ["Plains", "Plains", "Plains", "Plains", "Plains", "Plains"]
+  },
+  "player2": {
+    "lifeTotal": 20,
+    "hand": [],
+    "battlefield": [
+      {"name": "Llanowar Elves"},
+      {"name": "Vodalian Arcanist"}
+    ],
+    "graveyard": [],
+    "library": ["Mountain", "Mountain", "Mountain"]
+  },
+  "phase": "PRECOMBAT_MAIN",
+  "activePlayer": 1,
+  "priorityPlayer": 1,
+  "player1StopAtSteps": [],
+  "player2StopAtSteps": [],
+  "player1OpponentStopAtSteps": [],
+  "player2OpponentStopAtSteps": []
+}

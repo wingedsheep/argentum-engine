@@ -1,0 +1,51 @@
+{
+  "player1Name": "Alice",
+  "player2Name": "Bob",
+  "player1": {
+    "lifeTotal": 20,
+    "hand": [
+      "Raiding Schemes",
+      "Lava Axe",
+      "Bee Sting",
+      "Hardened Scales",
+      "Cancel",
+      "Forked Lightning",
+      "Monstrous Growth",
+      "Temur Banner",
+      "Hulking Goblin",
+      "Grizzly Bears"
+    ],
+    "battlefield": [
+      {"name": "Mountain"},
+      {"name": "Mountain"},
+      {"name": "Mountain"},
+      {"name": "Forest"},
+      {"name": "Forest"},
+      {"name": "Raging Goblin"},
+      {"name": "Raging Goblin"},
+      {"name": "Willow Dryad"},
+      {"name": "Willow Dryad"}
+    ],
+    "graveyard": [],
+    "library": ["Mountain", "Forest"]
+  },
+  "player2": {
+    "lifeTotal": 20,
+    "hand": ["Cancel"],
+    "battlefield": [
+      {"name": "Island"},
+      {"name": "Island"},
+      {"name": "Island"},
+      {"name": "Merfolk of the Pearl Trident"}
+    ],
+    "graveyard": [],
+    "library": ["Island", "Island"]
+  },
+  "phase": "PRECOMBAT_MAIN",
+  "activePlayer": 1,
+  "priorityPlayer": 1,
+  "player1StopAtSteps": [],
+  "player2StopAtSteps": [],
+  "player1OpponentStopAtSteps": [],
+  "player2OpponentStopAtSteps": []
+}

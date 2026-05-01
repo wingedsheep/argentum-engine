@@ -1,0 +1,39 @@
+{
+  "player1Name": "Alice",
+  "player2Name": "Bob",
+  "player1": {
+    "lifeTotal": 20,
+    "hand": ["Puca's Eye"],
+    "battlefield": [
+      {"name": "Puca's Eye"},
+      {"name": "Glory Seeker"},
+      {"name": "Wind Drake"},
+      {"name": "Bog Imp"},
+      {"name": "Raging Goblin"},
+      {"name": "Grizzly Bears"},
+      {"name": "Island"},
+      {"name": "Island"},
+      {"name": "Island"},
+      {"name": "Island"},
+      {"name": "Island"}
+    ],
+    "graveyard": [],
+    "library": ["Grizzly Bears", "Wind Drake", "Bog Imp"]
+  },
+  "player2": {
+    "lifeTotal": 20,
+    "hand": [],
+    "battlefield": [
+      {"name": "Grizzly Bears"}
+    ],
+    "graveyard": [],
+    "library": ["Grizzly Bears", "Wind Drake"]
+  },
+  "phase": "PRECOMBAT_MAIN",
+  "activePlayer": 1,
+  "priorityPlayer": 1,
+  "player1StopAtSteps": [],
+  "player2StopAtSteps": [],
+  "player1OpponentStopAtSteps": [],
+  "player2OpponentStopAtSteps": []
+}

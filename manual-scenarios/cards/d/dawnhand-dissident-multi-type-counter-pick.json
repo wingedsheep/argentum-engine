@@ -1,0 +1,29 @@
+{
+  "player1Name": "Dissident",
+  "player2Name": "Opponent",
+  "player1": {
+    "hand": [],
+    "battlefield": [
+      { "name": "Dawnhand Dissident", "tapped": false, "summoningSickness": false },
+      { "name": "Hill Giant", "tapped": false, "summoningSickness": false,
+        "counters": { "PLUS_ONE_PLUS_ONE": 4, "STUN": 2 } },
+      { "name": "Mountain Goat", "tapped": false, "summoningSickness": false },
+      { "name": "Forest", "tapped": false },
+      { "name": "Forest", "tapped": false },
+      { "name": "Forest", "tapped": false }
+    ],
+    "graveyard": ["Grizzly Bears"],
+    "library": ["Forest", "Forest", "Forest"],
+    "lifeTotal": 20
+  },
+  "player2": {
+    "hand": [],
+    "battlefield": [],
+    "graveyard": [],
+    "library": ["Forest", "Forest"],
+    "lifeTotal": 20
+  },
+  "phase": "PRECOMBAT_MAIN",
+  "activePlayer": 1,
+  "priorityPlayer": 1
+}

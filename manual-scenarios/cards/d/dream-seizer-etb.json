@@ -1,0 +1,29 @@
+{
+  "player1Name": "Alice",
+  "player2Name": "Bob",
+  "player1": {
+    "lifeTotal": 20,
+    "hand": ["Dream Seizer"],
+    "battlefield": [
+      {"name": "Swamp"},
+      {"name": "Swamp"},
+      {"name": "Swamp"},
+      {"name": "Swamp"},
+      {"name": "Barbed Bloodletter"}
+    ],
+    "graveyard": [],
+    "library": ["Swamp", "Swamp"]
+  },
+  "player2": {
+    "lifeTotal": 20,
+    "hand": ["Goldmeadow Nomad", "Lasting Tarfire", "Swamp"],
+    "battlefield": [
+      {"name": "Gloom Ripper"}
+    ],
+    "graveyard": [],
+    "library": ["Swamp", "Swamp"]
+  },
+  "phase": "PRECOMBAT_MAIN",
+  "activePlayer": 1,
+  "priorityPlayer": 1
+}

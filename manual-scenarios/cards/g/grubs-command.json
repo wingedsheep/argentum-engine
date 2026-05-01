@@ -1,0 +1,43 @@
+{
+  "player1Name": "Alice",
+  "player2Name": "Bob",
+  "player1": {
+    "lifeTotal": 20,
+    "hand": ["Grub's Command"],
+    "battlefield": [
+      {"name": "Mountain"},
+      {"name": "Mountain"},
+      {"name": "Mountain"},
+      {"name": "Swamp"},
+      {"name": "Swamp"},
+      {"name": "Goblin Piledriver"}
+    ],
+    "graveyard": [],
+    "library": ["Goblin Sledder", "Skirk Prospector", "Foothill Guide", "Mountain", "Swamp", "Mountain"]
+  },
+  "player2": {
+    "lifeTotal": 20,
+    "hand": [],
+    "battlefield": [
+      {"name": "Glory Seeker"},
+      {"name": "Springleaf Drum"}
+    ],
+    "graveyard": [],
+    "library": [
+      "Goblin Sledder",
+      "Sparksmith",
+      "Mountain",
+      "Foothill Guide",
+      "Glory Seeker",
+      "Skirk Prospector",
+      "Mountain"
+    ]
+  },
+  "phase": "PRECOMBAT_MAIN",
+  "activePlayer": 1,
+  "priorityPlayer": 1,
+  "player1StopAtSteps": [],
+  "player2StopAtSteps": [],
+  "player1OpponentStopAtSteps": [],
+  "player2OpponentStopAtSteps": []
+}

@@ -1,0 +1,36 @@
+{
+  "player1Name": "Alice",
+  "player2Name": "Bob",
+  "player1": {
+    "lifeTotal": 20,
+    "hand": ["Boneclub Berserker"],
+    "battlefield": [
+      {"name": "Doran, Besieged by Time"},
+      {"name": "Great Forest Druid"},
+      {"name": "Gnarlbark Elm"},
+      {"name": "Plains"},
+      {"name": "Swamp"},
+      {"name": "Forest"},
+      {"name": "Mountain"}
+    ],
+    "graveyard": [],
+    "library": ["Forest", "Plains"]
+  },
+  "player2": {
+    "lifeTotal": 20,
+    "hand": [],
+    "battlefield": [
+      {"name": "Glory Seeker"}
+    ],
+    "graveyard": [],
+    "library": ["Forest", "Plains"]
+  },
+  "phase": "PRECOMBAT_MAIN",
+  "step": "PRECOMBAT_MAIN",
+  "activePlayer": 1,
+  "priorityPlayer": 1,
+  "player1StopAtSteps": [],
+  "player2StopAtSteps": [],
+  "player1OpponentStopAtSteps": [],
+  "player2OpponentStopAtSteps": []
+}

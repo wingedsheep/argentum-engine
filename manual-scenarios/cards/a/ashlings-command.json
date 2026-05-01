@@ -1,0 +1,37 @@
+{
+  "player1Name": "Alice",
+  "player2Name": "Bob",
+  "player1": {
+    "lifeTotal": 20,
+    "hand": ["Ashling's Command"],
+    "battlefield": [
+      {"name": "Lavaleaper"},
+      {"name": "Island"},
+      {"name": "Island"},
+      {"name": "Mountain"},
+      {"name": "Steam Vents"},
+      {"name": "Mountain"}
+    ],
+    "graveyard": [],
+    "library": ["Island", "Mountain", "Mountain"]
+  },
+  "player2": {
+    "lifeTotal": 20,
+    "hand": [],
+    "battlefield": [
+      {"name": "Glory Seeker"},
+      {"name": "Goldmeadow Nomad"},
+      {"name": "Forest"},
+      {"name": "Forest"}
+    ],
+    "graveyard": [],
+    "library": ["Forest", "Forest", "Forest"]
+  },
+  "phase": "PRECOMBAT_MAIN",
+  "activePlayer": 1,
+  "priorityPlayer": 1,
+  "player1StopAtSteps": [],
+  "player2StopAtSteps": [],
+  "player1OpponentStopAtSteps": [],
+  "player2OpponentStopAtSteps": []
+}

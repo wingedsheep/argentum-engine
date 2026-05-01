@@ -1,0 +1,33 @@
+{
+  "player1Name": "Alice",
+  "player2Name": "Bob",
+  "player1": {
+    "lifeTotal": 20,
+    "hand": [],
+    "battlefield": [
+      {"name": "Morcant's Loyalist"},
+      {"name": "Wirewood Herald"},
+      {"name": "Forest"},
+      {"name": "Swamp"}
+    ],
+    "graveyard": ["Lys Alana Dignitary"],
+    "library": ["Forest", "Swamp"]
+  },
+  "player2": {
+    "lifeTotal": 20,
+    "hand": ["Nameless Inversion"],
+    "battlefield": [
+      {"name": "Swamp"},
+      {"name": "Swamp"}
+    ],
+    "graveyard": [],
+    "library": ["Swamp", "Swamp"]
+  },
+  "phase": "PRECOMBAT_MAIN",
+  "activePlayer": 1,
+  "priorityPlayer": 1,
+  "player1StopAtSteps": [],
+  "player2StopAtSteps": [],
+  "player1OpponentStopAtSteps": [],
+  "player2OpponentStopAtSteps": []
+}

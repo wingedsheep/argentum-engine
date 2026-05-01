@@ -1,0 +1,35 @@
+{
+  "player1Name": "Player1",
+  "player2Name": "Opponent",
+  "player1": {
+    "lifeTotal": 20,
+    "hand": ["Three Tree City", "Calamitous Tide"],
+    "battlefield": [
+      {"name": "Forest", "tapped": false},
+      {"name": "Forest", "tapped": false},
+      {"name": "Forest", "tapped": false},
+      {"name": "Forest", "tapped": false},
+      {"name": "Island", "tapped": false},
+      {"name": "Bellowing Crier"},
+      {"name": "Dour Port-Mage"},
+      {"name": "Mistbreath Elder"}
+    ],
+    "graveyard": [],
+    "library": ["Forest", "Forest", "Island"]
+  },
+  "player2": {
+    "lifeTotal": 20,
+    "hand": [],
+    "battlefield": [
+      {"name": "Forest"},
+      {"name": "Island"}
+    ],
+    "graveyard": [],
+    "library": ["Forest", "Forest"]
+  },
+  "phase": "PRECOMBAT_MAIN",
+  "activePlayer": 1,
+  "priorityPlayer": 1,
+  "player1StopAtSteps": [],
+  "player2StopAtSteps": []
+}

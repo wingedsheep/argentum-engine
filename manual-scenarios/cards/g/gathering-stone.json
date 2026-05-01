@@ -1,0 +1,54 @@
+{
+  "player1Name": "Alice",
+  "player2Name": "Bob",
+  "player1": {
+    "lifeTotal": 20,
+    "hand": [
+      "Gathering Stone",
+      "Elvish Vanguard",
+      "Wirewood Elf",
+      "Goblin Sky Raider"
+    ],
+    "battlefield": [
+      { "name": "Forest" },
+      { "name": "Forest" },
+      { "name": "Forest" },
+      { "name": "Forest" },
+      { "name": "Forest" },
+      { "name": "Forest" },
+      { "name": "Forest" },
+      { "name": "Mountain" }
+    ],
+    "graveyard": [],
+    "library": [
+      "Wirewood Herald",
+      "Mountain",
+      "Elvish Warrior",
+      "Forest",
+      "Plains"
+    ]
+  },
+  "player2": {
+    "lifeTotal": 20,
+    "hand": [],
+    "battlefield": [
+      { "name": "Coral Eel" },
+      { "name": "Island" },
+      { "name": "Island" }
+    ],
+    "graveyard": [],
+    "library": [
+      "Mountain",
+      "Island",
+      "Forest",
+      "Plains"
+    ]
+  },
+  "phase": "PRECOMBAT_MAIN",
+  "activePlayer": 1,
+  "priorityPlayer": 1,
+  "player1StopAtSteps": ["UPKEEP"],
+  "player2StopAtSteps": ["UPKEEP"],
+  "player1OpponentStopAtSteps": [],
+  "player2OpponentStopAtSteps": []
+}

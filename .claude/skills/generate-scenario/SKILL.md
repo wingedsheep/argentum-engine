@@ -126,11 +126,11 @@ Create a valid `ScenarioRequest` JSON matching this schema:
 ## Step 4: Save the Scenario
 
 1. Choose a descriptive filename based on the scenario (kebab-case, `.json` extension)
-2. Write the file to `test-scenarios/<filename>.json`
+2. Write the file to `manual-scenarios/<filename>.json` (use the `cards/<first-letter>/` subdir for single-card scenarios; `mechanics/`, `bugs/`, or `ui/` for non-card scenarios)
 3. Present the scenario to the user with:
    - The file path
    - A brief description of the board state
-   - How to use it: `curl -X POST http://localhost:8080/api/dev/scenarios -H "Content-Type: application/json" -d @test-scenarios/<filename>.json`
+   - How to use it: `curl -X POST http://localhost:8080/api/dev/scenarios -H "Content-Type: application/json" -d @manual-scenarios/<path>/<filename>.json`
    - Or remind them they can paste the JSON into the Swagger UI at `http://localhost:8080/swagger-ui.html`
 
 ## Step 5: Verify Card Names

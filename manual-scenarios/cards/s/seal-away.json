@@ -1,0 +1,32 @@
+{
+  "player1Name": "SealAway",
+  "player2Name": "Opponent",
+  "player1": {
+    "lifeTotal": 15,
+    "hand": ["Seal Away"],
+    "battlefield": [
+      {"name": "Grizzly Bears"},
+      {"name": "Plains", "tapped": false},
+      {"name": "Plains", "tapped": false}
+    ],
+    "graveyard": [],
+    "library": ["Plains", "Plains", "Plains"]
+  },
+  "player2": {
+    "lifeTotal": 20,
+    "hand": [],
+    "battlefield": [
+      {"name": "Hill Giant", "tapped": true},
+      {"name": "Steel Leaf Champion", "tapped": true},
+      {"name": "Grizzly Bears"},
+      {"name": "Forest", "tapped": false}
+    ],
+    "graveyard": [],
+    "library": ["Forest", "Forest", "Forest"]
+  },
+  "phase": "POSTCOMBAT_MAIN",
+  "activePlayer": 2,
+  "priorityPlayer": 2,
+  "player1StopAtSteps": [],
+  "player2StopAtSteps": []
+}

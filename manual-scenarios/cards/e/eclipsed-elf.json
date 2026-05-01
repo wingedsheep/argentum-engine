@@ -1,0 +1,32 @@
+{
+  "player1Name": "Alice",
+  "player2Name": "Bob",
+  "player1": {
+    "lifeTotal": 20,
+    "hand": ["Eclipsed Elf"],
+    "battlefield": [
+      {"name": "Forest"},
+      {"name": "Swamp"},
+      {"name": "Forest"}
+    ],
+    "graveyard": [],
+    "library": [
+      "Bloom Tender",
+      "Adept Watershaper",
+      "Forest",
+      "Brigid's Command",
+      "Swamp",
+      "Iron-Shield Elf"
+    ]
+  },
+  "player2": {
+    "lifeTotal": 20,
+    "hand": [],
+    "battlefield": [],
+    "graveyard": [],
+    "library": ["Forest", "Plains"]
+  },
+  "phase": "PRECOMBAT_MAIN",
+  "activePlayer": 1,
+  "priorityPlayer": 1
+}

@@ -1,0 +1,56 @@
+{
+  "player1Name": "Alice",
+  "player2Name": "Bob",
+  "player1": {
+    "lifeTotal": 20,
+    "hand": [
+      "Champion of the Weird",
+      "Gristle Glutton"
+    ],
+    "battlefield": [
+      {"name": "Swamp"},
+      {"name": "Swamp"},
+      {"name": "Swamp"},
+      {"name": "Swamp"},
+      {"name": "Bile-Vial Boggart"},
+      {"name": "Moonshadow"}
+    ],
+    "graveyard": [],
+    "library": [
+      "Swamp",
+      "Moonshadow",
+      "Bile-Vial Boggart"
+    ]
+  },
+  "player2": {
+    "lifeTotal": 20,
+    "hand": [
+      "Murderous Cut"
+    ],
+    "battlefield": [
+      {"name": "Swamp"},
+      {"name": "Swamp"},
+      {"name": "Swamp"},
+      {"name": "Swamp"},
+      {"name": "Swamp"},
+      {"name": "Boggart Prankster"},
+      {"name": "Boggart Prankster"}
+    ],
+    "graveyard": [
+      "Swamp",
+      "Swamp",
+      "Swamp",
+      "Swamp"
+    ],
+    "library": [
+      "Swamp",
+      "Swamp",
+      "Boggart Prankster"
+    ]
+  },
+  "phase": "PRECOMBAT_MAIN",
+  "activePlayer": 1,
+  "priorityPlayer": 1,
+  "player1StopAtSteps": [],
+  "player2StopAtSteps": []
+}

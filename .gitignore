@@ -179,6 +179,3 @@ gradle-app.setting
 # Local environment files
 .env
 /web-client/tsconfig.tsbuildinfo
-
-# Test scenario files (generated, user-specific)
-/test-scenarios/

@@ -1,0 +1,43 @@
+{
+  "player1Name": "Alice",
+  "player2Name": "Bob",
+  "player1": {
+    "lifeTotal": 18,
+    "hand": [],
+    "battlefield": [
+      {"name": "Ajani, Outland Chaperone", "counters": {"LOYALTY": 3}},
+      {"name": "Plains"},
+      {"name": "Plains"},
+      {"name": "Plains"}
+    ],
+    "graveyard": [],
+    "library": [
+      "Goldmeadow Nomad",
+      "Bloom Tender",
+      "Plains",
+      "Forest"
+    ]
+  },
+  "player2": {
+    "lifeTotal": 20,
+    "hand": ["Sear"],
+    "battlefield": [
+      {"name": "Mountain"},
+      {"name": "Mountain"},
+      {"name": "Chomping Changeling"}
+    ],
+    "graveyard": [],
+    "library": [
+      "Mountain",
+      "Mountain",
+      "Lasting Tarfire"
+    ]
+  },
+  "phase": "PRECOMBAT_MAIN",
+  "activePlayer": 1,
+  "priorityPlayer": 1,
+  "player1StopAtSteps": [],
+  "player2StopAtSteps": [],
+  "player1OpponentStopAtSteps": [],
+  "player2OpponentStopAtSteps": []
+}

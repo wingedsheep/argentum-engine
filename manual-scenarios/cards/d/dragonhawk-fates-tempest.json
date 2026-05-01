@@ -1,0 +1,39 @@
+{
+  "player1Name": "Alice",
+  "player2Name": "Bob",
+  "player1": {
+    "lifeTotal": 20,
+    "hand": ["Dragonhawk, Fate's Tempest"],
+    "battlefield": [
+      {"name": "Mountain", "tapped": false},
+      {"name": "Mountain", "tapped": false},
+      {"name": "Mountain", "tapped": false},
+      {"name": "Mountain", "tapped": false},
+      {"name": "Mountain", "tapped": false},
+      {"name": "Mountain", "tapped": false},
+      {"name": "Quaketusk Boar", "summoningSickness": false},
+      {"name": "Junkblade Bruiser", "summoningSickness": false}
+    ],
+    "graveyard": [],
+    "library": ["Wildfire Howl", "Teapot Slinger", "Heartfire Hero", "Shore Up", "Mountain", "Mountain"]
+  },
+  "player2": {
+    "lifeTotal": 14,
+    "hand": ["Shore Up"],
+    "battlefield": [
+      {"name": "Mountain", "tapped": false},
+      {"name": "Island", "tapped": false},
+      {"name": "Forest", "tapped": false},
+      {"name": "Bark-Knuckle Boxer", "summoningSickness": false},
+      {"name": "Veteran Guardmouse", "summoningSickness": false},
+      {"name": "Intrepid Rabbit", "summoningSickness": false}
+    ],
+    "graveyard": [],
+    "library": ["Mountain", "Mountain"]
+  },
+  "phase": "PRECOMBAT_MAIN",
+  "activePlayer": 1,
+  "priorityPlayer": 1,
+  "player1StopAtSteps": [],
+  "player2StopAtSteps": []
+}

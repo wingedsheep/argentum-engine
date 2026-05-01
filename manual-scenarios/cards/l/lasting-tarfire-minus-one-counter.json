@@ -1,0 +1,32 @@
+{
+  "player1Name": "Tarfire Player",
+  "player2Name": "Opponent",
+  "player1": {
+    "lifeTotal": 20,
+    "hand": ["Cinder Strike"],
+    "battlefield": [
+      {"name": "Lasting Tarfire"},
+      {"name": "Grizzly Bears"},
+      {"name": "Mountain", "tapped": false}
+    ],
+    "graveyard": [],
+    "library": ["Mountain", "Forest", "Mountain"]
+  },
+  "player2": {
+    "lifeTotal": 20,
+    "hand": [],
+    "battlefield": [
+      {"name": "Hill Giant"}
+    ],
+    "graveyard": [],
+    "library": ["Forest", "Mountain", "Forest"]
+  },
+  "phase": "PRECOMBAT_MAIN",
+  "step": "PRECOMBAT_MAIN",
+  "activePlayer": 1,
+  "priorityPlayer": 1,
+  "player1StopAtSteps": ["END"],
+  "player2StopAtSteps": [],
+  "player1OpponentStopAtSteps": [],
+  "player2OpponentStopAtSteps": []
+}

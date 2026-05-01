@@ -1,0 +1,50 @@
+{
+  "player1Name": "Alice",
+  "player2Name": "Bob",
+  "player1": {
+    "lifeTotal": 20,
+    "hand": [
+      "Emptiness"
+    ],
+    "battlefield": [
+      { "name": "Plains" },
+      { "name": "Plains" },
+      { "name": "Swamp" },
+      { "name": "Swamp" },
+      { "name": "Plains" },
+      { "name": "Swamp" }
+    ],
+    "graveyard": [
+      "Goldmeadow Nomad",
+      "Armored Pegasus"
+    ],
+    "library": [
+      "Plains",
+      "Swamp",
+      "Forest"
+    ]
+  },
+  "player2": {
+    "lifeTotal": 20,
+    "hand": [],
+    "battlefield": [
+      { "name": "Hill Giant" },
+      { "name": "Elvish Ranger" },
+      { "name": "Mountain" },
+      { "name": "Forest" }
+    ],
+    "graveyard": [],
+    "library": [
+      "Mountain",
+      "Island",
+      "Forest"
+    ]
+  },
+  "phase": "PRECOMBAT_MAIN",
+  "activePlayer": 1,
+  "priorityPlayer": 1,
+  "player1StopAtSteps": [],
+  "player2StopAtSteps": [],
+  "player1OpponentStopAtSteps": [],
+  "player2OpponentStopAtSteps": []
+}

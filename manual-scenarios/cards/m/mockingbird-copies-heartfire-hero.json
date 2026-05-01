@@ -1,0 +1,34 @@
+{
+  "_description": "Tests EntersAsCopy replacement + inherited triggers + additional subtypes/keywords. Plan: P1 casts Mockingbird for {X}{U} with X=1 (MV=2, total mana spent=2). As it enters, the optional replacement lets it enter as a copy of Heartfire Hero (MV=1, legal because <=2). The copy IS Heartfire Hero PLUS additionally Bird with Flying. It should inherit Valiant and the 'dies -> damage = power to each opponent' trigger. Then cast Rabid Gnaw targeting the Mockingbird-copy -> Valiant fires (first time this turn for THIS creature; the original Heartfire Hero's per-turn target flag is independent), +1/+1 counter. Attack for flying damage. If it dies, dies-trigger fires because the copy has Heartfire Hero's text. Common engine bugs: (1) copy loses triggered abilities, (2) Bird/Flying not stacking additively with copied subtypes, (3) Valiant flag keyed off card name rather than entity ID so original Heartfire Hero's flag blocks the copy's trigger, (4) X-cost mana-value not tracked so Mockingbird refuses legal copy targets.",
+  "player1Name": "Alice",
+  "player2Name": "Bob",
+  "player1": {
+    "lifeTotal": 15,
+    "hand": ["Mockingbird", "Rabid Gnaw"],
+    "battlefield": [
+      {"name": "Heartfire Hero", "summoningSickness": false},
+      {"name": "Island"},
+      {"name": "Island"},
+      {"name": "Mountain"},
+      {"name": "Mountain"}
+    ],
+    "graveyard": [],
+    "library": ["Island", "Mountain"]
+  },
+  "player2": {
+    "lifeTotal": 8,
+    "hand": [],
+    "battlefield": [
+      {"name": "Glory Seeker"},
+      {"name": "Plains"},
+      {"name": "Plains"}
+    ],
+    "graveyard": [],
+    "library": ["Plains", "Plains"]
+  },
+  "phase": "PRECOMBAT_MAIN",
+  "activePlayer": 1,
+  "priorityPlayer": 1,
+  "player1StopAtSteps": [],
+  "player2StopAtSteps": []
+}

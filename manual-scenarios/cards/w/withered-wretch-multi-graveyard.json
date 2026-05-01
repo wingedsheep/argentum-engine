@@ -1,0 +1,37 @@
+{
+  "player1Name": "Alice",
+  "player2Name": "Bob",
+  "player1": {
+    "lifeTotal": 20,
+    "hand": [],
+    "battlefield": [
+      {"name": "Withered Wretch"},
+      {"name": "Swamp"},
+      {"name": "Swamp"},
+      {"name": "Swamp"}
+    ],
+    "graveyard": [
+      "Grizzly Bears",
+      "Mind Rot",
+      "Scorching Spear"
+    ],
+    "library": ["Swamp", "Swamp"]
+  },
+  "player2": {
+    "lifeTotal": 20,
+    "hand": [],
+    "battlefield": [
+      {"name": "Glory Seeker"},
+      {"name": "Plains"}
+    ],
+    "graveyard": [
+      "Volcanic Hammer",
+      "Hill Giant",
+      "Blessed Reversal"
+    ],
+    "library": ["Plains", "Plains"]
+  },
+  "phase": "PRECOMBAT_MAIN",
+  "activePlayer": 1,
+  "priorityPlayer": 1
+}

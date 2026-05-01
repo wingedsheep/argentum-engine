@@ -1,0 +1,46 @@
+{
+  "player1Name": "Alice",
+  "player2Name": "Bob",
+  "player1": {
+    "lifeTotal": 20,
+    "hand": [
+      "Glamermite"
+    ],
+    "battlefield": [
+      { "name": "Armored Pegasus", "tapped": true },
+      { "name": "Island" },
+      { "name": "Island" },
+      { "name": "Island" }
+    ],
+    "graveyard": [],
+    "library": [
+      "Island",
+      "Plains",
+      "Forest"
+    ]
+  },
+  "player2": {
+    "lifeTotal": 20,
+    "hand": [],
+    "battlefield": [
+      { "name": "Hill Giant" },
+      { "name": "Raging Goblin" },
+      { "name": "Mountain" },
+      { "name": "Mountain" }
+    ],
+    "graveyard": [],
+    "library": [
+      "Mountain",
+      "Swamp",
+      "Forest"
+    ]
+  },
+  "phase": "COMBAT",
+  "step": "BEGIN_COMBAT",
+  "activePlayer": 2,
+  "priorityPlayer": 2,
+  "player1StopAtSteps": [],
+  "player2StopAtSteps": [],
+  "player1OpponentStopAtSteps": ["BEGIN_COMBAT"],
+  "player2OpponentStopAtSteps": []
+}

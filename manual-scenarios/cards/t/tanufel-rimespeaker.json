@@ -1,0 +1,42 @@
+{
+  "player1Name": "Alice",
+  "player2Name": "Bob",
+  "player1": {
+    "lifeTotal": 20,
+    "hand": [
+      "Tanufel Rimespeaker",
+      "Nameless Inversion"
+    ],
+    "battlefield": [
+      {"name": "Tanufel Rimespeaker"},
+      {"name": "Island"},
+      {"name": "Island"},
+      {"name": "Island"},
+      {"name": "Island"},
+      {"name": "Swamp"}
+    ],
+    "graveyard": [],
+    "library": [
+      "Island",
+      "Island",
+      "Swamp"
+    ]
+  },
+  "player2": {
+    "lifeTotal": 20,
+    "hand": [],
+    "battlefield": [
+      {"name": "Gloom Ripper"},
+      {"name": "Island"},
+      {"name": "Island"}
+    ],
+    "graveyard": [],
+    "library": [
+      "Island",
+      "Island"
+    ]
+  },
+  "phase": "PRECOMBAT_MAIN",
+  "activePlayer": 1,
+  "priorityPlayer": 1
+}

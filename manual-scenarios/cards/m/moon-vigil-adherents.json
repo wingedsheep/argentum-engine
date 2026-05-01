@@ -1,0 +1,35 @@
+{
+  "player1Name": "Alice",
+  "player2Name": "Bob",
+  "player1": {
+    "lifeTotal": 20,
+    "hand": ["Moon-Vigil Adherents"],
+    "battlefield": [
+      {"name": "Forest"},
+      {"name": "Forest"},
+      {"name": "Forest"},
+      {"name": "Forest"},
+      {"name": "Grizzly Bears"},
+      {"name": "Grizzly Bears"},
+      {"name": "Llanowar Elves"}
+    ],
+    "graveyard": [
+      "Grizzly Bears",
+      "Wood Elves",
+      "Llanowar Elves"
+    ],
+    "library": ["Forest", "Forest"]
+  },
+  "player2": {
+    "lifeTotal": 20,
+    "hand": [],
+    "battlefield": [
+      {"name": "Grizzly Bears"}
+    ],
+    "graveyard": [],
+    "library": ["Forest", "Forest"]
+  },
+  "phase": "PRECOMBAT_MAIN",
+  "activePlayer": 1,
+  "priorityPlayer": 1
+}

@@ -1,0 +1,33 @@
+{
+  "player1Name": "Caster",
+  "player2Name": "Counterspell",
+  "player1": {
+    "lifeTotal": 20,
+    "hand": ["Hill Giant", "Grizzly Bears"],
+    "battlefield": [
+      {"name": "Forest"},
+      {"name": "Forest"},
+      {"name": "Forest"},
+      {"name": "Forest"}
+    ],
+    "graveyard": [],
+    "library": ["Forest", "Forest"]
+  },
+  "player2": {
+    "lifeTotal": 20,
+    "hand": ["Wild Unraveling"],
+    "battlefield": [
+      {"name": "Island"},
+      {"name": "Island"},
+      {"name": "Island"},
+      {"name": "Hill Giant", "summoningSickness": false}
+    ],
+    "graveyard": [],
+    "library": ["Island", "Island"]
+  },
+  "phase": "PRECOMBAT_MAIN",
+  "activePlayer": 1,
+  "priorityPlayer": 1,
+  "player1StopAtSteps": [],
+  "player2StopAtSteps": []
+}

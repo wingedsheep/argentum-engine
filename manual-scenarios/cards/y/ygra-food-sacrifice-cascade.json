@@ -1,0 +1,34 @@
+{
+  "_description": "Tests layer 4 type-change + granted activated abilities + trigger cascade. Ygra makes OTHER creatures Food artifacts with '{2},{T},Sac: gain 3 life'. P1 controls Pawpatch Recruit (normally a Rabbit Scout, here also a Food). P1 should be able to activate the granted Food ability on Pawpatch Recruit — {2}, tap, sacrifice -> gain 3 life. When the sacrificed creature dies as a Food, Ygra's trigger fires: +2 +1/+1 counters on Ygra. Common engine bugs: (1) not recognizing non-food creatures as Foods for ability purposes, (2) granted activated ability not appearing as a legal action, (3) missing Ygra's self-trigger because the dying creature's base type isn't Food, (4) Ygra itself (who says 'OTHER creatures') incorrectly self-applying the type change.",
+  "player1Name": "Alice",
+  "player2Name": "Bob",
+  "player1": {
+    "lifeTotal": 12,
+    "hand": [],
+    "battlefield": [
+      {"name": "Ygra, Eater of All", "summoningSickness": false},
+      {"name": "Pawpatch Recruit", "summoningSickness": false},
+      {"name": "Forest"},
+      {"name": "Forest"},
+      {"name": "Swamp"},
+      {"name": "Swamp"}
+    ],
+    "graveyard": [],
+    "library": ["Forest", "Swamp"]
+  },
+  "player2": {
+    "lifeTotal": 20,
+    "hand": [],
+    "battlefield": [
+      {"name": "Plains"},
+      {"name": "Plains"}
+    ],
+    "graveyard": [],
+    "library": ["Plains", "Plains"]
+  },
+  "phase": "PRECOMBAT_MAIN",
+  "activePlayer": 1,
+  "priorityPlayer": 1,
+  "player1StopAtSteps": [],
+  "player2StopAtSteps": []
+}

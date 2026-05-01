@@ -1,0 +1,46 @@
+{
+  "player1Name": "Morcant",
+  "player2Name": "Opponent",
+  "player1": {
+    "lifeTotal": 18,
+    "hand": ["Elvish Warrior"],
+    "battlefield": [
+      {"name": "High Perfect Morcant"},
+      {"name": "Elvish Ranger"},
+      {"name": "Elvish Warrior"},
+      {"name": "Llanowar Elves", "counters": {"PLUS_ONE_PLUS_ONE": 1, "FLYING": 1}},
+      {"name": "Ajani, Outland Chaperone", "counters": {"LOYALTY": 3}},
+      {"name": "Forest"},
+      {"name": "Forest"},
+      {"name": "Swamp"}
+    ],
+    "graveyard": [],
+    "library": ["Forest", "Swamp", "Plains"]
+  },
+  "player2": {
+    "lifeTotal": 14,
+    "hand": [],
+    "battlefield": [
+      {
+        "name": "Horned Turtle",
+        "counters": {
+          "MINUS_ONE_MINUS_ONE": 1,
+          "STUN": 1,
+          "CHARGE": 2
+        }
+      },
+      {"name": "Glory Seeker", "counters": {"AIM": 1}},
+      {"name": "Plains"},
+      {"name": "Plains"}
+    ],
+    "graveyard": [],
+    "library": ["Plains", "Forest", "Mountain"]
+  },
+  "phase": "PRECOMBAT_MAIN",
+  "activePlayer": 1,
+  "priorityPlayer": 1,
+  "player1StopAtSteps": [],
+  "player2StopAtSteps": [],
+  "player1OpponentStopAtSteps": [],
+  "player2OpponentStopAtSteps": []
+}

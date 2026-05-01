@@ -1,0 +1,41 @@
+{
+  "player1Name": "Alice",
+  "player2Name": "Bob",
+  "player1": {
+    "lifeTotal": 20,
+    "hand": [],
+    "battlefield": [
+      {"name": "Brave the Sands"},
+      {"name": "Alabaster Kirin"},
+      {"name": "Seeker of the Way"},
+      {"name": "Plains"},
+      {"name": "Plains"},
+      {"name": "Plains"},
+      {"name": "Plains"}
+    ],
+    "graveyard": [],
+    "library": ["Plains", "Plains"]
+  },
+  "player2": {
+    "lifeTotal": 20,
+    "hand": [],
+    "battlefield": [
+      {"name": "Alpine Grizzly"},
+      {"name": "Monastery Swiftspear"},
+      {"name": "Wetland Sambar"},
+      {"name": "Summit Prowler"},
+      {"name": "Mountain"},
+      {"name": "Mountain"},
+      {"name": "Forest"},
+      {"name": "Island"}
+    ],
+    "graveyard": [],
+    "library": ["Mountain", "Mountain"]
+  },
+  "phase": "COMBAT",
+  "step": "DECLARE_ATTACKERS",
+  "activePlayer": 2,
+  "priorityPlayer": 2,
+  "player1StopAtSteps": [],
+  "player2StopAtSteps": []
+}

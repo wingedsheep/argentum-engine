@@ -1,0 +1,35 @@
+{
+  "player1Name": "Defender",
+  "player2Name": "Attacker",
+  "player1": {
+    "lifeTotal": 20,
+    "hand": ["Swat Away", "Shock"],
+    "battlefield": [
+      {"name": "Island"},
+      {"name": "Island"},
+      {"name": "Island"},
+      {"name": "Mountain"}
+    ],
+    "graveyard": [],
+    "library": ["Island", "Island", "Mountain"]
+  },
+  "player2": {
+    "lifeTotal": 20,
+    "hand": ["Shock"],
+    "battlefield": [
+      {"name": "Glory Seeker"},
+      {"name": "Grizzly Bears"},
+      {"name": "Mountain"},
+      {"name": "Mountain"},
+      {"name": "Mountain"}
+    ],
+    "graveyard": [],
+    "library": ["Mountain", "Mountain", "Forest"]
+  },
+  "phase": "COMBAT",
+  "step": "DECLARE_ATTACKERS",
+  "activePlayer": 2,
+  "priorityPlayer": 2,
+  "player1StopAtSteps": ["DECLARE_BLOCKERS"],
+  "player2StopAtSteps": ["DECLARE_ATTACKERS"]
+}

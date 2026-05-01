@@ -1,0 +1,44 @@
+{
+  "player1Name": "Alice",
+  "player2Name": "Bob",
+  "player1": {
+    "lifeTotal": 20,
+    "hand": ["Grizzly Bears", "Glory Seeker", "Shock", "Cancel"],
+    "battlefield": [
+      {"name": "Sparksmith"},
+      {"name": "Forest"},
+      {"name": "Forest"},
+      {"name": "Plains"},
+      {"name": "Plains"},
+      {"name": "Mountain"},
+      {"name": "Mountain"},
+      {"name": "Island"},
+      {"name": "Island"},
+      {"name": "Island"}
+    ],
+    "graveyard": [],
+    "library": ["Forest", "Island", "Plains"]
+  },
+  "player2": {
+    "lifeTotal": 20,
+    "hand": ["Glen Elendra's Answer", "Shock"],
+    "battlefield": [
+      {"name": "Bog Imp"},
+      {"name": "Mountain"},
+      {"name": "Island"},
+      {"name": "Island"},
+      {"name": "Island"},
+      {"name": "Island"}
+    ],
+    "graveyard": [],
+    "library": ["Island", "Island", "Island"]
+  },
+  "phase": "PRECOMBAT_MAIN",
+  "step": "PRECOMBAT_MAIN",
+  "activePlayer": 1,
+  "priorityPlayer": 1,
+  "player1StopAtSteps": [],
+  "player2StopAtSteps": [],
+  "player1OpponentStopAtSteps": [],
+  "player2OpponentStopAtSteps": []
+}

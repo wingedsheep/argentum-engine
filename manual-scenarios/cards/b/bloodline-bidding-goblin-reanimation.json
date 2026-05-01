@@ -1,0 +1,47 @@
+{
+  "player1Name": "Alice",
+  "player2Name": "Bob",
+  "player1": {
+    "lifeTotal": 10,
+    "hand": ["Bloodline Bidding"],
+    "battlefield": [
+      {"name": "Swamp"},
+      {"name": "Swamp"},
+      {"name": "Swamp"},
+      {"name": "Bile-Vial Boggart"},
+      {"name": "Chaos Spewer"},
+      {"name": "Feisty Spikeling"},
+      {"name": "Unwelcome Sprite"},
+      {"name": "Virulent Emissary"},
+      {"name": "Lys Alana Dignitary"}
+    ],
+    "graveyard": [
+      "Boggart Prankster",
+      "Heirloom Auntie",
+      "Gristle Glutton",
+      "Gloom Ripper",
+      "Moonshadow",
+      "Dawnhand Eulogist"
+    ],
+    "library": ["Swamp", "Swamp", "Swamp"]
+  },
+  "player2": {
+    "lifeTotal": 18,
+    "hand": [],
+    "battlefield": [
+      {"name": "Great Forest Druid"},
+      {"name": "Vinebred Brawler"},
+      {"name": "Forest"},
+      {"name": "Forest"}
+    ],
+    "graveyard": [],
+    "library": ["Forest", "Forest", "Forest"]
+  },
+  "phase": "PRECOMBAT_MAIN",
+  "activePlayer": 1,
+  "priorityPlayer": 1,
+  "player1StopAtSteps": [],
+  "player2StopAtSteps": [],
+  "player1OpponentStopAtSteps": [],
+  "player2OpponentStopAtSteps": []
+}

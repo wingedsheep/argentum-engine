@@ -1,0 +1,35 @@
+{
+  "player1Name": "Primevals",
+  "player2Name": "Opponent",
+  "player1": {
+    "lifeTotal": 10,
+    "hand": ["Primevals' Glorious Rebirth"],
+    "battlefield": [
+      {"name": "Arvad the Cursed"},
+      {"name": "Plains", "tapped": false},
+      {"name": "Plains", "tapped": false},
+      {"name": "Plains", "tapped": false},
+      {"name": "Swamp", "tapped": false},
+      {"name": "Swamp", "tapped": false},
+      {"name": "Swamp", "tapped": false},
+      {"name": "Swamp", "tapped": false}
+    ],
+    "graveyard": ["Lyra Dawnbringer", "Josu Vess, Lich Knight", "Blackblade Reforged", "Gilded Lotus"],
+    "library": ["Plains", "Swamp", "Plains"]
+  },
+  "player2": {
+    "lifeTotal": 20,
+    "hand": [],
+    "battlefield": [
+      {"name": "Fire Elemental"},
+      {"name": "Mountain", "tapped": false}
+    ],
+    "graveyard": [],
+    "library": ["Mountain", "Mountain", "Mountain"]
+  },
+  "phase": "PRECOMBAT_MAIN",
+  "activePlayer": 1,
+  "priorityPlayer": 1,
+  "player1StopAtSteps": [],
+  "player2StopAtSteps": []
+}

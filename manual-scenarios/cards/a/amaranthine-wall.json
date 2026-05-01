@@ -1,0 +1,35 @@
+{
+  "player1Name": "Wall",
+  "player2Name": "Opponent",
+  "player1": {
+    "lifeTotal": 10,
+    "hand": [],
+    "battlefield": [
+      {"name": "Amaranthine Wall"},
+      {"name": "Plains", "tapped": false},
+      {"name": "Plains", "tapped": false},
+      {"name": "Plains", "tapped": false}
+    ],
+    "graveyard": [],
+    "library": ["Plains", "Plains", "Plains"]
+  },
+  "player2": {
+    "lifeTotal": 20,
+    "hand": ["Cast Down"],
+    "battlefield": [
+      {"name": "Verdant Force"},
+      {"name": "Hill Giant"},
+      {"name": "Swamp", "tapped": false},
+      {"name": "Swamp", "tapped": false},
+      {"name": "Forest", "tapped": false},
+      {"name": "Forest", "tapped": false}
+    ],
+    "graveyard": [],
+    "library": ["Forest", "Forest", "Forest"]
+  },
+  "phase": "PRECOMBAT_MAIN",
+  "activePlayer": 2,
+  "priorityPlayer": 2,
+  "player1StopAtSteps": [],
+  "player2StopAtSteps": []
+}

@@ -1,0 +1,35 @@
+{
+  "_description": "Tests dynamic P/T (characteristic-defining) + ETB composite effect + mid-resolution state churn. Plan: P1 casts Lumra ({4}{G}{G}). She enters with 6 lands -> 6/6. ETB resolves: mill 4 (top 4 cards -> graveyard). Pre-mill graveyard has 3 Forest cards. Library top is arranged so mill produces 2 more Forests + 1 Plains + 1 Mountain. Then 'return all land cards from graveyard to battlefield tapped' puts 5 Forests onto battlefield tapped. After resolution: 11 lands controlled -> Lumra should be 11/11. Common engine bugs: (1) dynamic stats computed once at ETB and cached, (2) not recomputing P/T after the return-lands effect within the same ability, (3) returned lands counted for power but still considered 'in graveyard' for filters, (4) mill sending lands to exile via replacement effects not short-circuiting the return.",
+  "player1Name": "Alice",
+  "player2Name": "Bob",
+  "player1": {
+    "lifeTotal": 20,
+    "hand": ["Lumra, Bellow of the Woods"],
+    "battlefield": [
+      {"name": "Forest"},
+      {"name": "Forest"},
+      {"name": "Forest"},
+      {"name": "Forest"},
+      {"name": "Forest"},
+      {"name": "Forest"}
+    ],
+    "graveyard": ["Forest", "Forest", "Forest"],
+    "library": ["Forest", "Plains", "Forest", "Mountain", "Island", "Swamp"]
+  },
+  "player2": {
+    "lifeTotal": 20,
+    "hand": [],
+    "battlefield": [
+      {"name": "Glory Seeker"},
+      {"name": "Plains"},
+      {"name": "Plains"}
+    ],
+    "graveyard": [],
+    "library": ["Plains", "Plains"]
+  },
+  "phase": "PRECOMBAT_MAIN",
+  "activePlayer": 1,
+  "priorityPlayer": 1,
+  "player1StopAtSteps": [],
+  "player2StopAtSteps": []
+}

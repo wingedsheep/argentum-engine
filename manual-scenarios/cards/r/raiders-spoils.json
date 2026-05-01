@@ -1,0 +1,35 @@
+{
+  "player1Name": "Alice",
+  "player2Name": "Bob",
+  "player1": {
+    "lifeTotal": 20,
+    "hand": [],
+    "battlefield": [
+      {"name": "Raiders' Spoils"},
+      {"name": "Chief of the Edge"},
+      {"name": "Mardu Hateblade"},
+      {"name": "Alpine Grizzly"},
+      {"name": "Swamp", "tapped": true},
+      {"name": "Swamp", "tapped": true},
+      {"name": "Swamp", "tapped": true},
+      {"name": "Swamp", "tapped": true}
+    ],
+    "graveyard": [],
+    "library": ["Swamp", "Swamp", "Swamp"]
+  },
+  "player2": {
+    "lifeTotal": 20,
+    "hand": [],
+    "battlefield": [
+      {"name": "Forest", "tapped": true},
+      {"name": "Forest", "tapped": true}
+    ],
+    "graveyard": [],
+    "library": ["Forest", "Forest", "Forest"]
+  },
+  "phase": "PRECOMBAT_MAIN",
+  "activePlayer": 1,
+  "priorityPlayer": 1,
+  "player1StopAtSteps": [],
+  "player2StopAtSteps": []
+}

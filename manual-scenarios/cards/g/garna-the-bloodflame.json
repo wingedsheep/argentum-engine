@@ -1,0 +1,37 @@
+{
+  "player1Name": "Garna",
+  "player2Name": "Opponent",
+  "player1": {
+    "lifeTotal": 20,
+    "hand": ["Garna, the Bloodflame"],
+    "battlefield": [
+      {"name": "Llanowar Elves"},
+      {"name": "Grizzly Bears"},
+      {"name": "Knight of New Benalia"},
+      {"name": "Mountain", "tapped": false},
+      {"name": "Mountain", "tapped": false},
+      {"name": "Swamp", "tapped": false},
+      {"name": "Swamp", "tapped": false},
+      {"name": "Swamp", "tapped": false}
+    ],
+    "graveyard": [],
+    "library": ["Mountain", "Swamp", "Mountain"]
+  },
+  "player2": {
+    "lifeTotal": 20,
+    "hand": ["Goblin Chainwhirler"],
+    "battlefield": [
+      {"name": "Hill Giant"},
+      {"name": "Mountain", "tapped": false},
+      {"name": "Mountain", "tapped": false},
+      {"name": "Mountain", "tapped": false}
+    ],
+    "graveyard": [],
+    "library": ["Mountain", "Mountain", "Mountain"]
+  },
+  "phase": "PRECOMBAT_MAIN",
+  "activePlayer": 2,
+  "priorityPlayer": 2,
+  "player1StopAtSteps": [],
+  "player2StopAtSteps": []
+}

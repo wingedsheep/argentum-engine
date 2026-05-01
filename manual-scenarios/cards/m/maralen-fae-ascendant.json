@@ -1,0 +1,39 @@
+{
+  "player1Name": "Alice",
+  "player2Name": "Bob",
+  "player1": {
+    "lifeTotal": 20,
+    "hand": ["Glamer Gifter"],
+    "battlefield": [
+      {"name": "Maralen, Fae Ascendant"},
+      {"name": "Virulent Emissary"},
+      {"name": "Swamp"},
+      {"name": "Forest"},
+      {"name": "Island"},
+      {"name": "Island"}
+    ],
+    "graveyard": [],
+    "library": ["Forest", "Island", "Swamp"]
+  },
+  "player2": {
+    "lifeTotal": 20,
+    "hand": [],
+    "battlefield": [
+      {"name": "Mountain"},
+      {"name": "Mountain"}
+    ],
+    "graveyard": [],
+    "library": [
+      "Lasting Tarfire",
+      "Unwelcome Sprite",
+      "Lys Alana Dignitary",
+      "Mountain",
+      "Mountain"
+    ]
+  },
+  "phase": "PRECOMBAT_MAIN",
+  "activePlayer": 1,
+  "priorityPlayer": 1,
+  "player1StopAtSteps": [],
+  "player2StopAtSteps": []
+}
