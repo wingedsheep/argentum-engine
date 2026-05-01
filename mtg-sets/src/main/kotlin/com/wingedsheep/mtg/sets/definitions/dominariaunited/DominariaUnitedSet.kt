@@ -15,6 +15,7 @@ object DominariaUnitedSet {
 
     val allCards = listOf(
         AdarkarWastes,
+        CavesOfKoilos,
         CombatResearch,
         KarplusanForest,
         ShivanReef,
