@@ -16,5 +16,6 @@ object DominariaUnitedSet {
     val allCards = listOf(
         AdarkarWastes,
         CombatResearch,
+        KarplusanForest,
     )
 }
