@@ -59,6 +59,26 @@ type SortMode = 'name' | 'cmc' | 'color' | 'rarity'
 
 const PAGE_SIZE = 120
 
+// Evergreen keywords most commonly used as filters. Surface as chips; the rest
+// remain reachable via free-text `kw:` / `is:` tokens.
+const KEYWORD_TOKENS = [
+  'Flying',
+  'Trample',
+  'Vigilance',
+  'Lifelink',
+  'Deathtouch',
+  'Haste',
+  'First strike',
+  'Double strike',
+  'Reach',
+  'Menace',
+  'Hexproof',
+  'Defender',
+  'Indestructible',
+  'Flash',
+  'Ward',
+]
+
 interface ValidationIssue {
   code: string
   message: string
@@ -281,36 +301,24 @@ export function DeckbuilderPage() {
           onRename={handleRenameSaved}
           onDelete={handleDeleteSaved}
         />
-        <FilterSection query={query} onQueryChange={setQuery} />
+        <FilterSection query={query} onQueryChange={setQuery} catalog={catalog} />
       </aside>
 
       {/* Center */}
       <main className={styles.center}>
-        <div className={styles.searchBar}>
-          <input
-            className={styles.searchInput}
-            placeholder='Search — try: c:r cmc<=3 t:creature, o:flying, -is:legendary'
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-          />
-          <select
-            className={styles.sortSelect}
-            value={sortMode}
-            onChange={(e) => setSortMode(e.target.value as SortMode)}
-          >
-            <option value="name">Name</option>
-            <option value="cmc">Mana value</option>
-            <option value="color">Colour</option>
-            <option value="rarity">Rarity</option>
-          </select>
-          <span className={styles.resultCount}>
-            {catalog.length === 0
+        <SearchBar
+          query={query}
+          onQueryChange={setQuery}
+          sortMode={sortMode}
+          onSortChange={setSortMode}
+          resultLabel={
+            catalog.length === 0
               ? 'Loading…'
               : displayed.length === filtered.length
               ? `${filtered.length} / ${catalog.length}`
-              : `Showing ${displayed.length} of ${filtered.length}`}
-          </span>
-        </div>
+              : `Showing ${displayed.length} of ${filtered.length}`
+          }
+        />
         <CardGrid
           cards={displayed}
           deckCards={deckCards}
@@ -466,18 +474,135 @@ function SavedDecksSection({
   )
 }
 
-function FilterSection({
+function SearchBar({
   query,
   onQueryChange,
+  sortMode,
+  onSortChange,
+  resultLabel,
 }: {
   query: string
   onQueryChange: (next: string) => void
+  sortMode: SortMode
+  onSortChange: (m: SortMode) => void
+  resultLabel: string
+}) {
+  const [helpOpen, setHelpOpen] = useState(false)
+  return (
+    <div className={styles.searchBar}>
+      <input
+        className={styles.searchInput}
+        placeholder='Search — try: c:r cmc<=3 t:creature, o:flying, -is:legendary'
+        value={query}
+        onChange={(e) => onQueryChange(e.target.value)}
+      />
+      <button
+        className={`${styles.iconButton} ${helpOpen ? styles.chipActive : ''}`}
+        onClick={() => setHelpOpen((v) => !v)}
+        title="Search syntax"
+        type="button"
+      >
+        ?
+      </button>
+      <select
+        className={styles.sortSelect}
+        value={sortMode}
+        onChange={(e) => onSortChange(e.target.value as SortMode)}
+      >
+        <option value="name">Name</option>
+        <option value="cmc">Mana value</option>
+        <option value="color">Colour</option>
+        <option value="rarity">Rarity</option>
+      </select>
+      <span className={styles.resultCount}>{resultLabel}</span>
+      {helpOpen && <SearchHelp onClose={() => setHelpOpen(false)} onInsert={(t) => onQueryChange(t)} />}
+    </div>
+  )
+}
+
+function SearchHelp({ onClose, onInsert }: { onClose: () => void; onInsert: (t: string) => void }) {
+  const examples: Array<{ syntax: string; desc: string }> = [
+    { syntax: 'lightning', desc: 'name contains "lightning"' },
+    { syntax: 't:creature', desc: 'card type / supertype / subtype' },
+    { syntax: 't:goblin', desc: 'subtype (tribe) lookup' },
+    { syntax: 'o:flying', desc: 'oracle text contains' },
+    { syntax: 'c:r', desc: 'colour includes red (also wu, br, wubrg)' },
+    { syntax: 'c=wu', desc: 'colours are exactly white + blue' },
+    { syntax: 'c<=rw', desc: 'colours are a subset of red / white' },
+    { syntax: 'c:colorless', desc: 'no colours' },
+    { syntax: 'cmc:3', desc: 'mana value (also <=, >=, <, >, !=)' },
+    { syntax: 'pow>=4', desc: 'power (numeric only)' },
+    { syntax: 'tou<=2', desc: 'toughness' },
+    { syntax: 'r:rare', desc: 'rarity (common / uncommon / rare / mythic)' },
+    { syntax: 's:blb', desc: 'set code' },
+    { syntax: 'is:legendary', desc: 'shorthand: land/creature/spell/permanent/legendary/basic' },
+    { syntax: 'kw:flying', desc: 'keyword' },
+    { syntax: '-t:creature', desc: 'negate any term' },
+    { syntax: '"lord of"', desc: 'quote multi-word values' },
+  ]
+  return (
+    <>
+      <div className={styles.helpBackdrop} onClick={onClose} />
+      <div className={styles.helpPopover} role="dialog" aria-label="Search syntax">
+        <div className={styles.helpHeader}>
+          <strong>Search syntax</strong>
+          <button className={styles.linkButton} onClick={onClose} type="button">
+            Close
+          </button>
+        </div>
+        <p className={styles.helpHint}>
+          Combine tokens with spaces (AND). Click an example to drop it into the search box.
+        </p>
+        <ul className={styles.helpList}>
+          {examples.map((ex) => (
+            <li key={ex.syntax}>
+              <button
+                className={styles.helpExample}
+                onClick={() => {
+                  onInsert(ex.syntax)
+                  onClose()
+                }}
+                type="button"
+              >
+                <code>{ex.syntax}</code>
+              </button>
+              <span className={styles.helpDesc}>{ex.desc}</span>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </>
+  )
+}
+
+function FilterSection({
+  query,
+  onQueryChange,
+  catalog,
+}: {
+  query: string
+  onQueryChange: (next: string) => void
+  catalog: CardSummary[]
 }) {
   const toggle = (token: string) => onQueryChange(toggleToken(query, token))
 
-  // Numeric CMC filters parse current values out of the query so the boxes
+  // Numeric range filters parse current values out of the query so the boxes
   // round-trip with whatever the user typed.
-  const [cmcMin, cmcMax] = useMemo(() => extractCmcRange(query), [query])
+  const [cmcMin, cmcMax] = useMemo(() => extractRange(query, 'cmc'), [query])
+  const [powMin, powMax] = useMemo(() => extractRange(query, 'pow'), [query])
+  const [touMin, touMax] = useMemo(() => extractRange(query, 'tou'), [query])
+
+  // Distinct set codes from the catalogue (sorted), for the Set dropdown.
+  const setCodes = useMemo(() => {
+    const set = new Set<string>()
+    for (const c of catalog) if (c.setCode) set.add(c.setCode)
+    return [...set].sort()
+  }, [catalog])
+
+  const activeSet = useMemo(() => {
+    const m = query.match(/(?:^|\s)s:([^\s]+)/)
+    return m ? m[1]! : ''
+  }, [query])
 
   return (
     <>
@@ -550,27 +675,77 @@ function FilterSection({
 
       <section className={styles.section}>
         <h2 className={styles.sectionLabel}>Mana value</h2>
-        <div className={styles.numericRow}>
-          <span>min</span>
-          <input
-            type="number"
-            min={0}
-            max={20}
-            className={styles.numericInput}
-            value={cmcMin ?? ''}
-            onChange={(e) => onQueryChange(setCmcRange(query, e.target.value, cmcMax))}
-          />
-          <span>max</span>
-          <input
-            type="number"
-            min={0}
-            max={20}
-            className={styles.numericInput}
-            value={cmcMax ?? ''}
-            onChange={(e) => onQueryChange(setCmcRange(query, cmcMin, e.target.value))}
-          />
+        <RangeRow
+          token="cmc"
+          min={cmcMin}
+          max={cmcMax}
+          onMin={(v) => onQueryChange(setRange(query, 'cmc', v, cmcMax))}
+          onMax={(v) => onQueryChange(setRange(query, 'cmc', cmcMin, v))}
+        />
+      </section>
+
+      <section className={styles.section}>
+        <h2 className={styles.sectionLabel}>Power / Toughness</h2>
+        <RangeRow
+          token="pow"
+          label="Pow"
+          min={powMin}
+          max={powMax}
+          onMin={(v) => onQueryChange(setRange(query, 'pow', v, powMax))}
+          onMax={(v) => onQueryChange(setRange(query, 'pow', powMin, v))}
+        />
+        <RangeRow
+          token="tou"
+          label="Tou"
+          min={touMin}
+          max={touMax}
+          onMin={(v) => onQueryChange(setRange(query, 'tou', v, touMax))}
+          onMax={(v) => onQueryChange(setRange(query, 'tou', touMin, v))}
+        />
+      </section>
+
+      <section className={styles.section}>
+        <h2 className={styles.sectionLabel}>Keywords</h2>
+        <div className={styles.filterRow}>
+          {KEYWORD_TOKENS.map((label) => {
+            const token = `kw:${label.toLowerCase().replace(/\s+/g, '_')}`
+            // KEYWORD enum names use underscores; the parser is case-insensitive.
+            const active = hasToken(query, token)
+            return (
+              <button
+                key={label}
+                className={`${styles.chip} ${active ? styles.chipActive : ''}`}
+                onClick={() => toggle(token)}
+                type="button"
+              >
+                {label}
+              </button>
+            )
+          })}
         </div>
       </section>
+
+      {setCodes.length > 0 && (
+        <section className={styles.section}>
+          <h2 className={styles.sectionLabel}>Set</h2>
+          <select
+            className={styles.sortSelect}
+            value={activeSet}
+            onChange={(e) => {
+              const next = e.target.value
+              const without = query.replace(/(?:^|\s)s:[^\s]+(?=\s|$)/g, '').trim()
+              onQueryChange(next ? (without ? `${without} s:${next}` : `s:${next}`) : without)
+            }}
+          >
+            <option value="">All sets</option>
+            {setCodes.map((code) => (
+              <option key={code} value={code}>
+                {code}
+              </option>
+            ))}
+          </select>
+        </section>
+      )}
 
       <section className={styles.section}>
         <button
@@ -582,6 +757,45 @@ function FilterSection({
         </button>
       </section>
     </>
+  )
+}
+
+function RangeRow({
+  label,
+  min,
+  max,
+  onMin,
+  onMax,
+}: {
+  token: string
+  label?: string
+  min: number | null
+  max: number | null
+  onMin: (v: string) => void
+  onMax: (v: string) => void
+}) {
+  return (
+    <div className={styles.numericRow}>
+      {label && <span style={{ minWidth: 32 }}>{label}</span>}
+      <span>min</span>
+      <input
+        type="number"
+        min={0}
+        max={20}
+        className={styles.numericInput}
+        value={min ?? ''}
+        onChange={(e) => onMin(e.target.value)}
+      />
+      <span>max</span>
+      <input
+        type="number"
+        min={0}
+        max={20}
+        className={styles.numericInput}
+        value={max ?? ''}
+        onChange={(e) => onMax(e.target.value)}
+      />
+    </div>
   )
 }
 
@@ -939,23 +1153,35 @@ function statusLabel(v: ValidationResult | null, total: number): string {
 }
 
 // ---------------------------------------------------------------------------
-// CMC range helpers (numeric inputs ↔ query string)
+// Range helpers (numeric inputs ↔ query string)
 //
-// These manipulate `cmc>=N` and `cmc<=N` tokens directly so the menu and the
-// raw query string stay in sync.
+// Manipulate `<key>>=N` and `<key><=N` tokens directly so the menu and the
+// raw query string stay in sync. Generic over key (cmc, pow, tou).
 // ---------------------------------------------------------------------------
 
-function extractCmcRange(query: string): [number | null, number | null] {
-  const minMatch = query.match(/(?:^|\s)cmc>=(\d+)(?:\s|$)/)
-  const maxMatch = query.match(/(?:^|\s)cmc<=(\d+)(?:\s|$)/)
-  return [minMatch ? parseInt(minMatch[1]!, 10) : null, maxMatch ? parseInt(maxMatch[1]!, 10) : null]
+function extractRange(query: string, key: string): [number | null, number | null] {
+  const minRe = new RegExp(`(?:^|\\s)${key}>=(\\d+)(?:\\s|$)`)
+  const maxRe = new RegExp(`(?:^|\\s)${key}<=(\\d+)(?:\\s|$)`)
+  const minMatch = query.match(minRe)
+  const maxMatch = query.match(maxRe)
+  return [
+    minMatch ? parseInt(minMatch[1]!, 10) : null,
+    maxMatch ? parseInt(maxMatch[1]!, 10) : null,
+  ]
 }
 
-function setCmcRange(query: string, min: string | number | null, max: string | number | null): string {
-  let next = query.replace(/(?:^|\s)cmc>=\d+(?=\s|$)/g, '').replace(/(?:^|\s)cmc<=\d+(?=\s|$)/g, '').trim()
+function setRange(
+  query: string,
+  key: string,
+  min: string | number | null,
+  max: string | number | null
+): string {
+  const minRe = new RegExp(`(?:^|\\s)${key}>=\\d+(?=\\s|$)`, 'g')
+  const maxRe = new RegExp(`(?:^|\\s)${key}<=\\d+(?=\\s|$)`, 'g')
+  let next = query.replace(minRe, '').replace(maxRe, '').trim()
   const minN = typeof min === 'string' ? (min === '' ? null : parseInt(min, 10)) : min
   const maxN = typeof max === 'string' ? (max === '' ? null : parseInt(max, 10)) : max
-  if (minN !== null && Number.isFinite(minN)) next = `${next} cmc>=${minN}`.trim()
-  if (maxN !== null && Number.isFinite(maxN)) next = `${next} cmc<=${maxN}`.trim()
+  if (minN !== null && Number.isFinite(minN)) next = `${next} ${key}>=${minN}`.trim()
+  if (maxN !== null && Number.isFinite(maxN)) next = `${next} ${key}<=${maxN}`.trim()
   return next
 }
