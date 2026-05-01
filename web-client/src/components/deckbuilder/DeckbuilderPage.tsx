@@ -19,6 +19,8 @@ import {
   parseQuery,
   toggleToken,
   hasToken,
+  addToken,
+  removeToken,
   type CardSummary,
 } from './cardFilter'
 import styles from './DeckbuilderPage.module.css'
@@ -497,9 +499,10 @@ function SearchBar({
         onChange={(e) => onQueryChange(e.target.value)}
       />
       <button
-        className={`${styles.iconButton} ${helpOpen ? styles.chipActive : ''}`}
+        className={helpOpen ? styles.helpIconActive : styles.helpIcon}
         onClick={() => setHelpOpen((v) => !v)}
         title="Search syntax"
+        aria-label="Show search syntax help"
         type="button"
       >
         ?
@@ -604,19 +607,37 @@ function FilterSection({
     return m ? m[1]! : ''
   }, [query])
 
+  // Color mode is derived from the query so a directly typed `c=wu` immediately
+  // re-selects the "Exactly" segment without a separate state to drift.
+  const colorOp = useMemo(() => detectColorOp(query), [query])
+  const colorLetters = useMemo(() => collectColorLetters(query), [query])
+
+  const toggleColorLetter = (letter: string) => {
+    const next = new Set(colorLetters)
+    if (next.has(letter)) next.delete(letter)
+    else next.add(letter)
+    onQueryChange(rewriteColorTokens(query, colorOp, next))
+  }
+
+  const changeColorMode = (newOp: ColorOp) => {
+    onQueryChange(rewriteColorTokens(query, newOp, colorLetters))
+  }
+
   return (
     <>
       <section className={styles.section}>
-        <h2 className={styles.sectionLabel}>Colour</h2>
+        <div className={styles.sectionHeader}>
+          <h2 className={styles.sectionLabel}>Colour</h2>
+          <ColorModeSegmented op={colorOp} onChange={changeColorMode} />
+        </div>
         <div className={styles.filterRow}>
           {COLOR_TOKENS.map(({ letter, label }) => {
-            const token = `c:${letter}`
-            const active = hasToken(query, token)
+            const active = colorLetters.has(letter)
             return (
               <button
                 key={letter}
                 className={`${styles.chip} ${active ? styles.chipActive : ''}`}
-                onClick={() => toggle(token)}
+                onClick={() => toggleColorLetter(letter)}
                 type="button"
               >
                 {label}
@@ -627,6 +648,7 @@ function FilterSection({
             className={`${styles.chip} ${hasToken(query, 'is:colorless') ? styles.chipActive : ''}`}
             onClick={() => toggle('is:colorless')}
             type="button"
+            title="Colourless cards"
           >
             C
           </button>
@@ -652,6 +674,8 @@ function FilterSection({
           })}
         </div>
       </section>
+
+      <SubtypeSection query={query} onQueryChange={onQueryChange} catalog={catalog} />
 
       <section className={styles.section}>
         <h2 className={styles.sectionLabel}>Rarity</h2>
@@ -758,6 +782,171 @@ function FilterSection({
       </section>
     </>
   )
+}
+
+// ---------------------------------------------------------------------------
+// Subtype / tribe filter
+// ---------------------------------------------------------------------------
+
+function SubtypeSection({
+  query,
+  onQueryChange,
+  catalog,
+}: {
+  query: string
+  onQueryChange: (next: string) => void
+  catalog: CardSummary[]
+}) {
+  const [input, setInput] = useState('')
+
+  const allSubtypes = useMemo(() => {
+    const set = new Set<string>()
+    for (const c of catalog) for (const s of c.subtypes) set.add(s)
+    return [...set].sort()
+  }, [catalog])
+
+  // Active subtype tokens: any t:<X> where X (case-insensitive) is a known
+  // subtype. This lets the type-row chips (t:Creature, etc.) coexist without
+  // showing as subtype chips here.
+  const activeSubtypes = useMemo(() => {
+    if (allSubtypes.length === 0) return [] as Array<{ token: string; label: string }>
+    const subSet = new Set(allSubtypes.map((s) => s.toLowerCase()))
+    const tokens = query.match(/(?:^|\s)(-?t:(?:"[^"]+"|[^\s]+))/g) ?? []
+    const out: Array<{ token: string; label: string }> = []
+    for (const raw of tokens) {
+      const trimmed = raw.trim()
+      const m = trimmed.match(/^-?t:"?([^"]+?)"?$/)
+      if (m && subSet.has(m[1]!.toLowerCase())) {
+        out.push({ token: trimmed, label: m[1]! })
+      }
+    }
+    return out
+  }, [query, allSubtypes])
+
+  const addSubtype = (raw: string) => {
+    const trimmed = raw.trim()
+    if (!trimmed) return
+    const canonical = allSubtypes.find((s) => s.toLowerCase() === trimmed.toLowerCase()) ?? trimmed
+    const tokenValue = canonical.includes(' ') ? `"${canonical}"` : canonical
+    onQueryChange(addToken(query, `t:${tokenValue}`))
+    setInput('')
+  }
+
+  if (allSubtypes.length === 0) return null
+
+  return (
+    <section className={styles.section}>
+      <h2 className={styles.sectionLabel}>Subtype / tribe</h2>
+      {activeSubtypes.length > 0 && (
+        <div className={styles.filterRow}>
+          {activeSubtypes.map(({ token, label }) => (
+            <button
+              key={token}
+              className={`${styles.chip} ${styles.chipActive}`}
+              onClick={() => onQueryChange(removeToken(query, token))}
+              type="button"
+              title="Click to remove"
+            >
+              {label} ✕
+            </button>
+          ))}
+        </div>
+      )}
+      <input
+        list="deckbuilder-subtypes"
+        className={styles.textInput}
+        value={input}
+        onChange={(e) => setInput(e.target.value)}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter') {
+            e.preventDefault()
+            addSubtype(input)
+          }
+        }}
+        onBlur={() => {
+          // Auto-add on blur if the entry exactly matches a known subtype,
+          // so picking from the datalist (which doesn't always fire Enter)
+          // still works.
+          const exact = allSubtypes.find((s) => s.toLowerCase() === input.trim().toLowerCase())
+          if (exact) addSubtype(exact)
+        }}
+        placeholder="Goblin, Wizard, Beast…"
+      />
+      <datalist id="deckbuilder-subtypes">
+        {allSubtypes.map((s) => (
+          <option key={s} value={s} />
+        ))}
+      </datalist>
+    </section>
+  )
+}
+
+// ---------------------------------------------------------------------------
+// Color mode segmented control + helpers
+// ---------------------------------------------------------------------------
+
+type ColorOp = ':' | '=' | '<='
+
+function ColorModeSegmented({
+  op,
+  onChange,
+}: {
+  op: ColorOp
+  onChange: (op: ColorOp) => void
+}) {
+  const options: Array<{ op: ColorOp; label: string; title: string }> = [
+    { op: ':', label: 'Includes', title: 'Cards that include the chosen colour(s)' },
+    { op: '=', label: 'Exactly', title: 'Cards whose colours are exactly the chosen set' },
+    { op: '<=', label: 'At most', title: 'Cards whose colours are a subset of the chosen set' },
+  ]
+  return (
+    <div className={styles.modeSegmented} role="group" aria-label="Colour comparison mode">
+      {options.map((opt) => (
+        <button
+          key={opt.op}
+          className={op === opt.op ? styles.modeButtonActive : styles.modeButton}
+          onClick={() => onChange(opt.op)}
+          title={opt.title}
+          type="button"
+        >
+          {opt.label}
+        </button>
+      ))}
+    </div>
+  )
+}
+
+const C_TOKEN_RE = /(?:^|\s)c(<=|=|:)([wubrg]+)(?=\s|$)/gi
+
+function detectColorOp(query: string): ColorOp {
+  C_TOKEN_RE.lastIndex = 0
+  const match = C_TOKEN_RE.exec(query)
+  return ((match?.[1] as ColorOp) ?? ':')
+}
+
+function collectColorLetters(query: string): Set<string> {
+  const out = new Set<string>()
+  C_TOKEN_RE.lastIndex = 0
+  let m: RegExpExecArray | null
+  while ((m = C_TOKEN_RE.exec(query)) !== null) {
+    for (const ch of m[2]!.toLowerCase()) out.add(ch)
+  }
+  return out
+}
+
+function rewriteColorTokens(query: string, op: ColorOp, letters: Set<string>): string {
+  // Strip every existing colour token regardless of operator so we don't
+  // leave stale `c:X` behind when switching to exactly/at-most.
+  const cleaned = query.replace(/(?:^|\s)c(?:<=|=|:)[wubrgWUBRG]+(?=\s|$)/g, '').trim()
+  if (letters.size === 0) return cleaned
+  const sorted = [...letters].sort().join('')
+  if (op === ':') {
+    // Per-letter tokens — "must contain each chosen colour" reads cleanly
+    // and stays compatible with the existing chip-toggle UX.
+    const tokens = [...sorted].map((l) => `c:${l}`).join(' ')
+    return cleaned ? `${cleaned} ${tokens}` : tokens
+  }
+  return cleaned ? `${cleaned} c${op}${sorted}` : `c${op}${sorted}`
 }
 
 function RangeRow({
