@@ -21,5 +21,6 @@ object MurdersAtKarlovManorSet {
         RaucousTheater,
         ShadowyBackstreet,
         ThunderingFalls,
+        UndercitySewers,
     )
 }
