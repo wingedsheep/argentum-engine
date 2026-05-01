@@ -112,13 +112,14 @@ class CastSpellHandler(
     private val conditionEvaluator: ConditionEvaluator,
     private val triggerDetector: TriggerDetector,
     private val triggerProcessor: TriggerProcessor,
+    private val manaAbilitySideEffectExecutor: com.wingedsheep.engine.mechanics.mana.ManaAbilitySideEffectExecutor,
     private val targetFinder: com.wingedsheep.engine.handlers.TargetFinder = com.wingedsheep.engine.handlers.TargetFinder(),
 ) : ActionHandler<CastSpell> {
     override val actionType: KClass<CastSpell> = CastSpell::class
 
     private val predicateEvaluator = PredicateEvaluator()
     private val zoneResolver = CastZoneResolver(cardRegistry, conditionEvaluator)
-    private val paymentProcessor = CastPaymentProcessor(manaSolver, costHandler)
+    private val paymentProcessor = CastPaymentProcessor(manaSolver, costHandler, manaAbilitySideEffectExecutor)
     private val grantedKeywordResolver = com.wingedsheep.engine.mechanics.mana.GrantedKeywordResolver(cardRegistry)
 
     override fun validate(state: GameState, action: CastSpell): String? {
@@ -2309,6 +2310,7 @@ class CastSpellHandler(
                 services.conditionEvaluator,
                 services.triggerDetector,
                 services.triggerProcessor,
+                services.manaAbilitySideEffectExecutor,
                 services.targetFinder
             )
         }
