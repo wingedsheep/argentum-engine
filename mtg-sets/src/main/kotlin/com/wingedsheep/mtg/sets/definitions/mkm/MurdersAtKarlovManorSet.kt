@@ -14,7 +14,16 @@ object MurdersAtKarlovManorSet {
     const val SET_NAME = "Murders at Karlov Manor"
 
     val allCards = listOf(
+        CommercialDistrict,
+        ElegantParlor,
+        HedgeMaze,
+        LushPortico,
         MeticulousArchive,
         NoMoreLies,
+        RaucousTheater,
+        ShadowyBackstreet,
+        ThunderingFalls,
+        UndercitySewers,
+        UndergroundMortuary,
     )
 }
