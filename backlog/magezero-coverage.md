@@ -33,27 +33,27 @@ one enchantment (Unholy Annex) are double-faced / modal DFCs and depend on DFC s
 
 ### Creatures (14)
 - [x] Malcolm, Alluring Scoundrel ×4 *(Lost Caverns of Ixalan)*
-- [ ] Skrelv, Defector Mite ×4
-- [ ] Sleep-Cursed Faerie ×2
+- [x] Skrelv, Defector Mite ×4
+- [x] Sleep-Cursed Faerie ×2
 - [x] Kitsa, Otterball Elite ×4 *(Bloomburrow)*
 
 ### Instants (14)
-- [ ] Bounce Off ×4
+- [x] Bounce Off ×4
 - [x] Negate ×2 *(Foundations)*
-- [ ] No More Lies ×4
-- [ ] Soul Partition ×2
-- [ ] Spell Pierce ×2
+- [x] No More Lies ×4
+- [x] Soul Partition ×2
+- [x] Spell Pierce ×2
 
 ### Enchantments (10)
-- [ ] Combat Research ×4
-- [ ] Shardmage's Rescue ×2
-- [ ] Sheltered by Ghosts ×4
+- [x] Combat Research ×4
+- [x] Shardmage's Rescue ×2
+- [x] Sheltered by Ghosts ×4
 
 ### Lands (22)
-- [ ] Adarkar Wastes ×4
-- [ ] Floodfarm Verge ×3
-- [ ] Meticulous Archive ×4
-- [ ] Seachrome Coast ×4
+- [x] Adarkar Wastes ×4
+- [x] Floodfarm Verge ×3
+- [x] Meticulous Archive ×4
+- [x] Seachrome Coast ×4
 - [x] Island ×7
 
 ## Standard-MonoU (60 cards)
@@ -79,7 +79,7 @@ one enchantment (Unholy Annex) are double-faced / modal DFCs and depend on DFC s
 - [ ] Impulse ×2
 - [ ] Memory Deluge ×1
 - [x] Negate ×2 *(shared with UWTempo)*
-- [ ] Spell Pierce ×2 *(shared with UWTempo)*
+- [x] Spell Pierce ×2 *(shared with UWTempo)*
 - [ ] Thirst for Discovery ×2
 
 ### Lands (23)
