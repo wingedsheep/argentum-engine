@@ -2,7 +2,7 @@
 
 **Set Size:** 261 booster cards (excluding basic lands)
 **Release Date:** August 1, 2025
-**Implemented:** 4 / 261
+**Implemented:** 5 / 261
 
 ---
 
@@ -16,7 +16,7 @@
 - [x] Archenemy's Charm
 - [ ] Astelli Reclaimer
 - [ ] Atmospheric Greenhouse
-- [ ] Atomic Microsizer
+- [x] Atomic Microsizer
 - [ ] Auxiliary Boosters
 - [ ] Banishing Light
 - [ ] Beamsaw Prospector
