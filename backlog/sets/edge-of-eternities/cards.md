@@ -2,7 +2,7 @@
 
 **Set Size:** 261 booster cards (excluding basic lands)
 **Release Date:** August 1, 2025
-**Implemented:** 21 / 261
+**Implemented:** 22 / 261
 
 ---
 
@@ -256,7 +256,7 @@
 - [ ] Voidforged Titan
 - [ ] Vote Out
 - [ ] Warmaker Gunship
-- [ ] Watery Grave
+- [x] Watery Grave
 - [ ] Weapons Manufacturing
 - [ ] Wedgelight Rammer
 - [ ] Weftblade Enhancer

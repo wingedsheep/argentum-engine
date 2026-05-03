@@ -45,6 +45,7 @@ object EdgeOfEternitiesSet {
         GodlessShrine,
         SeamRip,
         SledgeClassSeedship,
+        WateryGrave,
 
         // Basic lands
     ) + EdgeOfEternitiesBasicLands
