@@ -2,7 +2,7 @@
 
 **Set Size:** 261 booster cards (excluding basic lands)
 **Release Date:** August 1, 2025
-**Implemented:** 11 / 261
+**Implemented:** 12 / 261
 
 ---
 
@@ -49,7 +49,7 @@
 - [x] Dark Endurance
 - [ ] Dauntless Scrapbot
 - [ ] Dawnsire, Sunstar Dreadnought
-- [ ] Dawnstrike Vanguard
+- [x] Dawnstrike Vanguard
 - [ ] Debris Field Crusher
 - [ ] Decode Transmissions
 - [ ] Depressurize
