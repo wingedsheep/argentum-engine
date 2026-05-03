@@ -2,7 +2,7 @@
 
 **Set Size:** 261 booster cards (excluding basic lands)
 **Release Date:** August 1, 2025
-**Implemented:** 9 / 261
+**Implemented:** 10 / 261
 
 ---
 
@@ -43,7 +43,7 @@
 - [ ] Consult the Star Charts
 - [ ] Cosmogoyf
 - [ ] Cosmogrand Zenith
-- [ ] Cryogen Relic
+- [x] Cryogen Relic
 - [x] Cryoshatter
 - [ ] Cut Propulsion
 - [ ] Dark Endurance

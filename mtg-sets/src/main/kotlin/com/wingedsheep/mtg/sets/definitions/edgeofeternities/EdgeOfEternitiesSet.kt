@@ -31,6 +31,7 @@ object EdgeOfEternitiesSet {
         ChromeCompanion,
         CloudsculptTechnician,
         CometCrawler,
+        CryogenRelic,
         Cryoshatter,
         SeamRip,
         SledgeClassSeedship,
