@@ -63,9 +63,9 @@ one enchantment (Unholy Annex) are double-faced / modal DFCs and depend on DFC s
 
 ### Creatures (10)
 - [ ] Chrome Host Seedshark ×1
-- [ ] Haughty Djinn ×4
+- [x] Haughty Djinn ×4
 - [ ] Hullbreaker Horror ×2
-- [ ] Tolarian Terror ×3
+- [x] Tolarian Terror ×3
 
 ### Sorceries (1)
 - [ ] Blue Sun's Twilight ×1
@@ -73,10 +73,10 @@ one enchantment (Unholy Annex) are double-faced / modal DFCs and depend on DFC s
 ### Instants (25)
 - [ ] Consider ×4
 - [ ] Dissipate ×4
-- [ ] Essence Scatter ×2
+- [x] Essence Scatter ×2
 - [ ] Fading Hope ×4
-- [ ] Flow of Knowledge ×2
-- [ ] Impulse ×2
+- [x] Flow of Knowledge ×2
+- [x] Impulse ×2
 - [ ] Memory Deluge ×1
 - [x] Negate ×2 *(shared with UWTempo)*
 - [ ] Spell Pierce ×2 *(shared with UWTempo)*
