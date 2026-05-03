@@ -2,7 +2,7 @@
 
 **Set Size:** 261 booster cards (excluding basic lands)
 **Release Date:** August 1, 2025
-**Implemented:** 27 / 261
+**Implemented:** 28 / 261
 
 ---
 
@@ -101,7 +101,7 @@
 - [x] Hardlight Containment
 - [x] Harmonious Grovestrider
 - [ ] Hemosymbic Mite
-- [ ] Honor
+- [x] Honor
 - [ ] Honored Knight-Captain
 - [ ] Hullcarver
 - [ ] Hylderblade
