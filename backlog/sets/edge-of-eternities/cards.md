@@ -2,7 +2,7 @@
 
 **Set Size:** 261 booster cards (excluding basic lands)
 **Release Date:** August 1, 2025
-**Implemented:** 5 / 261
+**Implemented:** 6 / 261
 
 ---
 
@@ -32,7 +32,7 @@
 - [ ] Brightspear Zealot
 - [ ] Broodguard Elite
 - [ ] Bygone Colossus
-- [ ] Cerebral Download
+- [x] Cerebral Download
 - [ ] Chorale of the Void
 - [ ] Chrome Companion
 - [ ] Close Encounter
