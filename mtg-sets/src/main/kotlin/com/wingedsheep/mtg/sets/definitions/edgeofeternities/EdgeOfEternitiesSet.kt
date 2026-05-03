@@ -50,6 +50,7 @@ object EdgeOfEternitiesSet {
         HonoredKnightCaptain,
         Hullcarver,
         IcecaveCrasher,
+        IllvoiGaleblade,
         SacredFoundry,
         SeamRip,
         SledgeClassSeedship,

@@ -2,7 +2,7 @@
 
 **Set Size:** 261 booster cards (excluding basic lands)
 **Release Date:** August 1, 2025
-**Implemented:** 31 / 261
+**Implemented:** 32 / 261
 
 ---
 
@@ -108,7 +108,7 @@
 - [ ] Hymn of the Faller
 - [x] Icecave Crasher
 - [ ] Icetill Explorer
-- [ ] Illvoi Galeblade
+- [x] Illvoi Galeblade
 - [ ] Illvoi Infiltrator
 - [ ] Illvoi Light Jammer
 - [ ] Illvoi Operative
