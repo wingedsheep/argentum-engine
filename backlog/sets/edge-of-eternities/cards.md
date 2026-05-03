@@ -2,7 +2,7 @@
 
 **Set Size:** 261 booster cards (excluding basic lands)
 **Release Date:** August 1, 2025
-**Implemented:** 2 / 261
+**Implemented:** 3 / 261
 
 ---
 
@@ -11,7 +11,7 @@
 - [ ] All-Fates Stalker
 - [ ] Alpharael, Dreaming Acolyte
 - [ ] Alpharael, Stonechosen
-- [ ] Annul
+- [x] Annul
 - [ ] Anticausal Vestige
 - [ ] Archenemy's Charm
 - [ ] Astelli Reclaimer
@@ -188,7 +188,7 @@
 - [ ] Scour for Scrap
 - [ ] Scout for Survivors
 - [ ] Scrounge for Eternity
-- [ ] Seam Rip
+- [x] Seam Rip
 - [ ] Secluded Starforge
 - [ ] Seedship Agrarian
 - [ ] Seedship Broodtender
