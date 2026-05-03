@@ -23,7 +23,7 @@
 - [ ] Beyond the Quiet
 - [ ] Bioengineered Future
 - [ ] Biomechan Engineer
-- [ ] Biosynthic Burst
+- [x] Biosynthic Burst
 - [ ] Biotech Specialist
 - [ ] Blade of the Swarm
 - [ ] Blooming Stinger

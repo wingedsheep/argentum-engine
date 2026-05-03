@@ -23,6 +23,7 @@ object EdgeOfEternitiesSet {
         Annul,
         ArchenemysCharm,
         AtomicMicrosizer,
+        BiosynthicBurst,
         Cryoshatter,
         SeamRip,
         SledgeClassSeedship,
