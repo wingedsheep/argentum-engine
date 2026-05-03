@@ -17,6 +17,7 @@ object DominariaUnitedSet {
         AdarkarWastes,
         CavesOfKoilos,
         CombatResearch,
+        EssenceScatter,
         HaughtyDjinn,
         KarplusanForest,
         ShivanReef,
