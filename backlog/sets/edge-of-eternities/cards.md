@@ -2,7 +2,7 @@
 
 **Set Size:** 261 booster cards (excluding basic lands)
 **Release Date:** August 1, 2025
-**Implemented:** 7 / 261
+**Implemented:** 8 / 261
 
 ---
 
@@ -36,7 +36,7 @@
 - [ ] Chorale of the Void
 - [x] Chrome Companion
 - [ ] Close Encounter
-- [ ] Cloudsculpt Technician
+- [x] Cloudsculpt Technician
 - [ ] Codecracker Hound
 - [ ] Comet Crawler
 - [ ] Command Bridge
