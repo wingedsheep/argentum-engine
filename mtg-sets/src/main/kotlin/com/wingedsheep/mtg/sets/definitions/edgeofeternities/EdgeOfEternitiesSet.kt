@@ -24,6 +24,7 @@ object EdgeOfEternitiesSet {
         ArchenemysCharm,
         AtomicMicrosizer,
         BiosynthicBurst,
+        BloomingStinger,
         Cryoshatter,
         SeamRip,
         SledgeClassSeedship,

@@ -26,7 +26,7 @@
 - [x] Biosynthic Burst
 - [ ] Biotech Specialist
 - [ ] Blade of the Swarm
-- [ ] Blooming Stinger
+- [x] Blooming Stinger
 - [ ] Bombard
 - [ ] Breeding Pool
 - [ ] Brightspear Zealot
