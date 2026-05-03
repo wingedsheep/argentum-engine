@@ -21,6 +21,7 @@ object DominariaUnitedSet {
         KarplusanForest,
         ShivanReef,
         SulfurousSprings,
+        TolarianTerror,
         YavimayaCoast,
     )
 }
