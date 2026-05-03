@@ -35,6 +35,7 @@ object EdgeOfEternitiesSet {
         Cryoshatter,
         DarkEndurance,
         DawnstrikeVanguard,
+        Depressurize,
         SeamRip,
         SledgeClassSeedship,
 

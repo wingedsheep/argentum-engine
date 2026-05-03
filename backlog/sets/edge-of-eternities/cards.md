@@ -2,7 +2,7 @@
 
 **Set Size:** 261 booster cards (excluding basic lands)
 **Release Date:** August 1, 2025
-**Implemented:** 12 / 261
+**Implemented:** 13 / 261
 
 ---
 
@@ -52,7 +52,7 @@
 - [x] Dawnstrike Vanguard
 - [ ] Debris Field Crusher
 - [ ] Decode Transmissions
-- [ ] Depressurize
+- [x] Depressurize
 - [ ] Desculpting Blast
 - [ ] Devastating Onslaught
 - [ ] Diplomatic Relations
