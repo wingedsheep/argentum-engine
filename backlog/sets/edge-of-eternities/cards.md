@@ -2,7 +2,7 @@
 
 **Set Size:** 261 booster cards (excluding basic lands)
 **Release Date:** August 1, 2025
-**Implemented:** 13 / 261
+**Implemented:** 14 / 261
 
 ---
 
@@ -55,7 +55,7 @@
 - [x] Depressurize
 - [ ] Desculpting Blast
 - [ ] Devastating Onslaught
-- [ ] Diplomatic Relations
+- [x] Diplomatic Relations
 - [ ] Divert Disaster
 - [ ] Dockworker Drone
 - [ ] Drill Too Deep

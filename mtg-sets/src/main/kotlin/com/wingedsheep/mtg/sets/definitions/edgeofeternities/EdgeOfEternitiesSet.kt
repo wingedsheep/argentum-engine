@@ -36,6 +36,7 @@ object EdgeOfEternitiesSet {
         DarkEndurance,
         DawnstrikeVanguard,
         Depressurize,
+        DiplomaticRelations,
         SeamRip,
         SledgeClassSeedship,
 
