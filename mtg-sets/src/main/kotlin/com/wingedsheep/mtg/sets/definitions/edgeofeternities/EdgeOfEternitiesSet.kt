@@ -38,6 +38,7 @@ object EdgeOfEternitiesSet {
         Depressurize,
         DiplomaticRelations,
         DualSunAdepts,
+        DualSunTechnique,
         SeamRip,
         SledgeClassSeedship,
 

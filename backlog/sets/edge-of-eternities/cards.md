@@ -2,7 +2,7 @@
 
 **Set Size:** 261 booster cards (excluding basic lands)
 **Release Date:** August 1, 2025
-**Implemented:** 15 / 261
+**Implemented:** 16 / 261
 
 ---
 
@@ -61,7 +61,7 @@
 - [ ] Drill Too Deep
 - [ ] Drix Fatemaker
 - [x] Dual-Sun Adepts
-- [ ] Dual-Sun Technique
+- [x] Dual-Sun Technique
 - [ ] Dubious Delicacy
 - [ ] Dyadrine, Synthesis Amalgam
 - [ ] Edge Rover
