@@ -26,10 +26,7 @@ val CometCrawler = card("Comet Crawler") {
     toughness = 3
     oracleText = "Lifelink\nWhenever this creature attacks, you may sacrifice another creature or artifact. If you do, this creature gets +2/+0 until end of turn."
 
-    // Lifelink keyword
-    staticAbility {
-        effect = Effects.GrantKeyword(Keyword.LIFELINK)
-    }
+    keywords(Keyword.LIFELINK)
 
     // Triggered ability: When attacks, may sacrifice another creature or artifact for +2/+0
     triggeredAbility {

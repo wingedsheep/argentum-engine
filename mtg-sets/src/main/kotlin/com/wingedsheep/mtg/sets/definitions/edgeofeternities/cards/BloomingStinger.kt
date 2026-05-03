@@ -23,10 +23,7 @@ val BloomingStinger = card("Blooming Stinger") {
     toughness = 2
     oracleText = "Deathtouch\nWhen this creature enters, another target creature you control gains deathtouch until end of turn."
 
-    // Static ability: Deathtouch
-    staticAbility {
-        effect = Effects.GrantKeyword(Keyword.DEATHTOUCH)
-    }
+    keywords(Keyword.DEATHTOUCH)
 
     // Triggered ability: When this creature enters...
     triggeredAbility {
