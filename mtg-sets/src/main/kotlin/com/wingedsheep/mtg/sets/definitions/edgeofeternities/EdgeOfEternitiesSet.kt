@@ -34,7 +34,6 @@ object EdgeOfEternitiesSet {
         CryogenRelic,
         Cryoshatter,
         DarkEndurance,
-        DawnstrikeVanguard,
         Depressurize,
         DiplomaticRelations,
         DualSunAdepts,

@@ -49,7 +49,7 @@
 - [x] Dark Endurance
 - [ ] Dauntless Scrapbot
 - [ ] Dawnsire, Sunstar Dreadnought
-- [x] Dawnstrike Vanguard
+- [ ] Dawnstrike Vanguard
 - [ ] Debris Field Crusher
 - [ ] Decode Transmissions
 - [x] Depressurize
