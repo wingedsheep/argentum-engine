@@ -2,7 +2,7 @@
 
 **Set Size:** 261 booster cards (excluding basic lands)
 **Release Date:** August 1, 2025
-**Implemented:** 6 / 261
+**Implemented:** 7 / 261
 
 ---
 
@@ -34,7 +34,7 @@
 - [ ] Bygone Colossus
 - [x] Cerebral Download
 - [ ] Chorale of the Void
-- [ ] Chrome Companion
+- [x] Chrome Companion
 - [ ] Close Encounter
 - [ ] Cloudsculpt Technician
 - [ ] Codecracker Hound

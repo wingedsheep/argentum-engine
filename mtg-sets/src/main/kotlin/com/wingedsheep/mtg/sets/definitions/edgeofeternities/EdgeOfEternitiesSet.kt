@@ -28,6 +28,7 @@ object EdgeOfEternitiesSet {
         Bombard,
         BreedingPool,
         CerebralDownload,
+        ChromeCompanion,
         Cryoshatter,
         SeamRip,
         SledgeClassSeedship,
