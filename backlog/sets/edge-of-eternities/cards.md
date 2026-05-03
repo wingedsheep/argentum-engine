@@ -2,7 +2,7 @@
 
 **Set Size:** 261 booster cards (excluding basic lands)
 **Release Date:** August 1, 2025
-**Implemented:** 29 / 261
+**Implemented:** 30 / 261
 
 ---
 
@@ -103,7 +103,7 @@
 - [ ] Hemosymbic Mite
 - [x] Honor
 - [x] Honored Knight-Captain
-- [ ] Hullcarver
+- [x] Hullcarver
 - [ ] Hylderblade
 - [ ] Hymn of the Faller
 - [ ] Icecave Crasher
