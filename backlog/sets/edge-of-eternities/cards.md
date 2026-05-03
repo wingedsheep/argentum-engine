@@ -2,7 +2,7 @@
 
 **Set Size:** 261 booster cards (excluding basic lands)
 **Release Date:** August 1, 2025
-**Implemented:** 16 / 261
+**Implemented:** 17 / 261
 
 ---
 
@@ -62,7 +62,7 @@
 - [ ] Drix Fatemaker
 - [x] Dual-Sun Adepts
 - [x] Dual-Sun Technique
-- [ ] Dubious Delicacy
+- [x] Dubious Delicacy
 - [ ] Dyadrine, Synthesis Amalgam
 - [ ] Edge Rover
 - [ ] Elegy Acolyte

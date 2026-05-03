@@ -39,6 +39,7 @@ object EdgeOfEternitiesSet {
         DiplomaticRelations,
         DualSunAdepts,
         DualSunTechnique,
+        DubiousDelicacy,
         SeamRip,
         SledgeClassSeedship,
 
