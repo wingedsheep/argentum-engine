@@ -41,6 +41,7 @@ object EdgeOfEternitiesSet {
         DualSunTechnique,
         DubiousDelicacy,
         EumidianTerrabotanist,
+        ExosuitSavior,
         SeamRip,
         SledgeClassSeedship,
 

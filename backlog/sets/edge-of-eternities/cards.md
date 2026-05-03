@@ -2,7 +2,7 @@
 
 **Set Size:** 261 booster cards (excluding basic lands)
 **Release Date:** August 1, 2025
-**Implemented:** 18 / 261
+**Implemented:** 20 / 261
 
 ---
 
@@ -74,7 +74,7 @@
 - [ ] Eusocial Engineering
 - [ ] Evendo, Waking Haven
 - [ ] Exalted Sunborn
-- [ ] Exosuit Savior
+- [x] Exosuit Savior
 - [ ] Extinguisher Battleship
 - [ ] Faller's Faithful
 - [ ] Famished Worldsire
