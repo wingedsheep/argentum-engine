@@ -2,10 +2,12 @@ package com.wingedsheep.mtg.sets.definitions.edgeofeternities.cards
 
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.dsl.card
-import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Conditions
-import com.wingedsheep.sdk.dsl.Filters
+import com.wingedsheep.sdk.model.Rarity
+import com.wingedsheep.sdk.scripting.ConditionalStaticAbility
+import com.wingedsheep.sdk.scripting.GrantDynamicStatsEffect
+import com.wingedsheep.sdk.scripting.StaticTarget
+import com.wingedsheep.sdk.scripting.values.DynamicAmount
 
 /**
  * Cloudsculpt Technician
@@ -21,15 +23,17 @@ val CloudsculptTechnician = card("Cloudsculpt Technician") {
     toughness = 4
     oracleText = "Flying\nAs long as you control an artifact, this creature gets +1/+0."
 
-    // Flying keyword
-    staticAbility {
-        effect = Effects.GrantKeyword(Keyword.FLYING)
-    }
+    keywords(Keyword.FLYING)
 
-    // Static ability: +1/+0 as long as you control an artifact
     staticAbility {
-        condition = Conditions.ControlArtifact
-        effect = Effects.ModifyStats(1, 0)
+        ability = ConditionalStaticAbility(
+            ability = GrantDynamicStatsEffect(
+                target = StaticTarget.SourceCreature,
+                powerBonus = DynamicAmount.Fixed(1),
+                toughnessBonus = DynamicAmount.Fixed(0)
+            ),
+            condition = Conditions.ControlArtifact
+        )
     }
 
     metadata {

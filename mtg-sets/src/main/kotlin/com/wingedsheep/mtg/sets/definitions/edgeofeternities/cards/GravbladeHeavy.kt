@@ -1,10 +1,14 @@
 package com.wingedsheep.mtg.sets.definitions.edgeofeternities.cards
 
+import com.wingedsheep.sdk.core.Keyword
+import com.wingedsheep.sdk.dsl.Conditions
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.core.Keyword
-import com.wingedsheep.sdk.dsl.Effects
-import com.wingedsheep.sdk.dsl.Conditions
+import com.wingedsheep.sdk.scripting.ConditionalStaticAbility
+import com.wingedsheep.sdk.scripting.GrantDynamicStatsEffect
+import com.wingedsheep.sdk.scripting.GrantKeyword
+import com.wingedsheep.sdk.scripting.StaticTarget
+import com.wingedsheep.sdk.scripting.values.DynamicAmount
 
 /**
  * Gravblade Heavy
@@ -19,15 +23,22 @@ val GravbladeHeavy = card("Gravblade Heavy") {
     toughness = 4
     oracleText = "As long as you control an artifact, this creature gets +1/+0 and has deathtouch."
 
-    // Static ability: gets +1/+0 and deathtouch as long as you control an artifact
     staticAbility {
-        condition = Conditions.ControlArtifact
-        effect = Effects.ModifyStats(1, 0)
+        ability = ConditionalStaticAbility(
+            ability = GrantDynamicStatsEffect(
+                target = StaticTarget.SourceCreature,
+                powerBonus = DynamicAmount.Fixed(1),
+                toughnessBonus = DynamicAmount.Fixed(0)
+            ),
+            condition = Conditions.ControlArtifact
+        )
     }
-    
+
     staticAbility {
-        condition = Conditions.ControlArtifact
-        effect = Effects.GrantKeyword(Keyword.DEATHTOUCH)
+        ability = ConditionalStaticAbility(
+            ability = GrantKeyword(Keyword.DEATHTOUCH, StaticTarget.SourceCreature),
+            condition = Conditions.ControlArtifact
+        )
     }
 
     metadata {
