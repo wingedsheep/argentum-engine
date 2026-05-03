@@ -2,7 +2,7 @@
 
 **Set Size:** 261 booster cards (excluding basic lands)
 **Release Date:** August 1, 2025
-**Implemented:** 17 / 261
+**Implemented:** 18 / 261
 
 ---
 
@@ -70,7 +70,7 @@
 - [ ] Emergency Eject
 - [ ] Emissary Escort
 - [ ] Entropic Battlecruiser
-- [ ] Eumidian Terrabotanist
+- [x] Eumidian Terrabotanist
 - [ ] Eusocial Engineering
 - [ ] Evendo, Waking Haven
 - [ ] Exalted Sunborn
