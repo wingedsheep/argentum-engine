@@ -37,6 +37,7 @@ object EdgeOfEternitiesSet {
         DawnstrikeVanguard,
         Depressurize,
         DiplomaticRelations,
+        DualSunAdepts,
         SeamRip,
         SledgeClassSeedship,
 
