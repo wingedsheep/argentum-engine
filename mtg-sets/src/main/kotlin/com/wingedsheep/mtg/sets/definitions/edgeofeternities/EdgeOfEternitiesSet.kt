@@ -47,6 +47,7 @@ object EdgeOfEternitiesSet {
         HardlightContainment,
         HarmoniousGrovestrider,
         Honor,
+        HonoredKnightCaptain,
         SacredFoundry,
         SeamRip,
         SledgeClassSeedship,
