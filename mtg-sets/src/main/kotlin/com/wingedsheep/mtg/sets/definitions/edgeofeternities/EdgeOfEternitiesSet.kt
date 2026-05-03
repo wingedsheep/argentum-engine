@@ -33,6 +33,7 @@ object EdgeOfEternitiesSet {
         CometCrawler,
         CryogenRelic,
         Cryoshatter,
+        DarkEndurance,
         SeamRip,
         SledgeClassSeedship,
 

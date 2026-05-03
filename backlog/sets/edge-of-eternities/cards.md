@@ -2,7 +2,7 @@
 
 **Set Size:** 261 booster cards (excluding basic lands)
 **Release Date:** August 1, 2025
-**Implemented:** 10 / 261
+**Implemented:** 11 / 261
 
 ---
 
@@ -46,7 +46,7 @@
 - [x] Cryogen Relic
 - [x] Cryoshatter
 - [ ] Cut Propulsion
-- [ ] Dark Endurance
+- [x] Dark Endurance
 - [ ] Dauntless Scrapbot
 - [ ] Dawnsire, Sunstar Dreadnought
 - [ ] Dawnstrike Vanguard
