@@ -21,6 +21,7 @@ object EdgeOfEternitiesSet {
      */
     val allCards = listOf(
         Annul,
+        ArchenemysCharm,
         Cryoshatter,
         SeamRip,
         SledgeClassSeedship,
