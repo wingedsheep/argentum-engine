@@ -2,7 +2,7 @@
 
 **Set Size:** 261 booster cards (excluding basic lands)
 **Release Date:** August 1, 2025
-**Implemented:** 24 / 261
+**Implemented:** 25 / 261
 
 ---
 
@@ -93,7 +93,7 @@
 - [ ] Gigastorm Titan
 - [ ] Glacier Godmaw
 - [x] Godless Shrine
-- [ ] Gravblade Heavy
+- [x] Gravblade Heavy
 - [ ] Gravkill
 - [ ] Gravpack Monoist
 - [ ] Haliya, Ascendant Cadet
