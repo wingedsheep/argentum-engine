@@ -19,6 +19,7 @@ object DominariaUnitedSet {
         CombatResearch,
         EssenceScatter,
         HaughtyDjinn,
+        Impulse,
         KarplusanForest,
         ShivanReef,
         SulfurousSprings,
