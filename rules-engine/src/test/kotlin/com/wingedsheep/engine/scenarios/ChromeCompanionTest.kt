@@ -41,7 +41,7 @@ class ChromeCompanionTest : FunSpec({
         val activePlayer = driver.activePlayer!!
         driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
 
-        val companion = driver.putPermanentOnBattlefield(activePlayer, "Chrome Companion")
+        val companion = driver.putCreatureOnBattlefield(activePlayer, "Chrome Companion")
         driver.removeSummoningSickness(companion)
 
         // Put a card in the opponent's graveyard to target
@@ -79,14 +79,17 @@ class ChromeCompanionTest : FunSpec({
 
         val activePlayer = driver.activePlayer!!
         val opponent = driver.getOpponent(activePlayer)
-        driver.passPriorityUntil(Step.DECLARE_ATTACKERS)
 
-        val companion = driver.putPermanentOnBattlefield(activePlayer, "Chrome Companion")
+        val companion = driver.putCreatureOnBattlefield(activePlayer, "Chrome Companion")
         driver.removeSummoningSickness(companion)
 
-        driver.declareAttackers(activePlayer, listOf(companion), opponent)
+        driver.passPriorityUntil(Step.DECLARE_ATTACKERS)
+
+        val attackResult = driver.declareAttackers(activePlayer, listOf(companion), opponent)
+        attackResult.isSuccess shouldBe true
 
         // BecomesTapped trigger fires when Chrome Companion is tapped during attack
+        driver.bothPass()
         driver.bothPass()
         driver.getLifeTotal(activePlayer) shouldBe 21
     }
@@ -101,7 +104,7 @@ class ChromeCompanionTest : FunSpec({
         val activePlayer = driver.activePlayer!!
         driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
 
-        val companion = driver.putPermanentOnBattlefield(activePlayer, "Chrome Companion")
+        val companion = driver.putCreatureOnBattlefield(activePlayer, "Chrome Companion")
         driver.removeSummoningSickness(companion)
 
         // Put a card in own graveyard
@@ -134,10 +137,10 @@ class ChromeCompanionTest : FunSpec({
         val activePlayer = driver.activePlayer!!
         driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
 
-        val companion = driver.putPermanentOnBattlefield(activePlayer, "Chrome Companion")
+        val companion = driver.putCreatureOnBattlefield(activePlayer, "Chrome Companion")
         driver.removeSummoningSickness(companion)
 
-        val battlefieldCreature = driver.putPermanentOnBattlefield(activePlayer, "Grizzly Bears")
+        val battlefieldCreature = driver.putCreatureOnBattlefield(activePlayer, "Grizzly Bears")
         driver.giveColorlessMana(activePlayer, 2)
 
         val result = driver.submit(
@@ -162,7 +165,7 @@ class ChromeCompanionTest : FunSpec({
         val opponent = driver.getOpponent(activePlayer)
         driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
 
-        val companion = driver.putPermanentOnBattlefield(activePlayer, "Chrome Companion")
+        val companion = driver.putCreatureOnBattlefield(activePlayer, "Chrome Companion")
         driver.removeSummoningSickness(companion)
 
         val targetCard = driver.putCardInGraveyard(opponent, "Grizzly Bears")
