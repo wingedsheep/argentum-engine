@@ -27,7 +27,7 @@
 - [ ] Biotech Specialist
 - [ ] Blade of the Swarm
 - [x] Blooming Stinger
-- [ ] Bombard
+- [x] Bombard
 - [ ] Breeding Pool
 - [ ] Brightspear Zealot
 - [ ] Broodguard Elite
