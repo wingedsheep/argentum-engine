@@ -2,7 +2,6 @@ package com.wingedsheep.mtg.sets.definitions.edgeofeternities.cards
 
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.ReplacementEffect
 import com.wingedsheep.sdk.scripting.EntersTapped
 
 /**

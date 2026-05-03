@@ -42,6 +42,7 @@ object EdgeOfEternitiesSet {
         DubiousDelicacy,
         EumidianTerrabotanist,
         ExosuitSavior,
+        GodlessShrine,
         SeamRip,
         SledgeClassSeedship,
 

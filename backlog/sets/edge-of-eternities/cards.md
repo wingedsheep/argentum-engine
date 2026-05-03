@@ -2,7 +2,7 @@
 
 **Set Size:** 261 booster cards (excluding basic lands)
 **Release Date:** August 1, 2025
-**Implemented:** 20 / 261
+**Implemented:** 21 / 261
 
 ---
 
@@ -92,7 +92,7 @@
 - [ ] Germinating Wurm
 - [ ] Gigastorm Titan
 - [ ] Glacier Godmaw
-- [ ] Godless Shrine
+- [x] Godless Shrine
 - [ ] Gravblade Heavy
 - [ ] Gravkill
 - [ ] Gravpack Monoist
