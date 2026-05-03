@@ -2,7 +2,7 @@
 
 **Set Size:** 261 booster cards (excluding basic lands)
 **Release Date:** August 1, 2025
-**Implemented:** 22 / 261
+**Implemented:** 23 / 261
 
 ---
 
@@ -212,7 +212,7 @@
 - [ ] Starwinder
 - [ ] Station Monitor
 - [ ] Steelswarm Operator
-- [ ] Stomping Ground
+- [x] Stomping Ground
 - [ ] Sunset Saboteur
 - [ ] Sunstar Chaplain
 - [ ] Sunstar Expansionist
