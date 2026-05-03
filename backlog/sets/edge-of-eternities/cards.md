@@ -2,7 +2,7 @@
 
 **Set Size:** 261 booster cards (excluding basic lands)
 **Release Date:** August 1, 2025
-**Implemented:** 25 / 261
+**Implemented:** 26 / 261
 
 ---
 
@@ -98,7 +98,7 @@
 - [ ] Gravpack Monoist
 - [ ] Haliya, Ascendant Cadet
 - [ ] Haliya, Guided by Light
-- [ ] Hardlight Containment
+- [x] Hardlight Containment
 - [ ] Harmonious Grovestrider
 - [ ] Hemosymbic Mite
 - [ ] Honor
