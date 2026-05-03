@@ -2,7 +2,7 @@
 
 **Set Size:** 261 booster cards (excluding basic lands)
 **Release Date:** August 1, 2025
-**Implemented:** 23 / 261
+**Implemented:** 24 / 261
 
 ---
 
@@ -181,7 +181,7 @@
 - [ ] Roving Actuator
 - [ ] Ruinous Rampage
 - [ ] Rust Harvester
-- [ ] Sacred Foundry
+- [x] Sacred Foundry
 - [ ] Sami's Curiosity
 - [ ] Sami, Ship's Engineer
 - [ ] Sami, Wildcat Captain

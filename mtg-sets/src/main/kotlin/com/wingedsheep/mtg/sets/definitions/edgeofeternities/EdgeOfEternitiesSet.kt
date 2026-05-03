@@ -43,6 +43,7 @@ object EdgeOfEternitiesSet {
         EumidianTerrabotanist,
         ExosuitSavior,
         GodlessShrine,
+        SacredFoundry,
         SeamRip,
         SledgeClassSeedship,
         StompingGround,
