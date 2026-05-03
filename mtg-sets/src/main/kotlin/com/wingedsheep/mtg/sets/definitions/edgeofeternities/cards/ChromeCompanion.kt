@@ -10,7 +10,6 @@ import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
 import com.wingedsheep.sdk.scripting.effects.ZonePlacement
 import com.wingedsheep.sdk.scripting.targets.TargetObject
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
-import com.wingedsheep.sdk.scripting.GameObjectFilter
 
 /**
  * Chrome Companion
@@ -26,18 +25,16 @@ val ChromeCompanion = card("Chrome Companion") {
     toughness = 1
     oracleText = "Whenever this creature becomes tapped, you gain 1 life.\n{2}, {T}: Put target card from a graveyard on the bottom of its owner's library."
 
-    // Triggered ability: Gain 1 life when this creature becomes tapped
     triggeredAbility {
         trigger = Triggers.BecomesTapped
         effect = Effects.GainLife(1)
     }
 
-    // Activated ability: {2}, {T}: Put target card from a graveyard on the bottom of its owner's library
     activatedAbility {
         cost = Costs.Composite(Costs.Mana("{2}"), Costs.Tap)
         val cardInGraveyard = target(
             "target card from a graveyard",
-            TargetObject(filter = TargetFilter(GameObjectFilter.Any))
+            TargetObject(filter = TargetFilter.CardInGraveyard)
         )
         effect = MoveToZoneEffect(
             target = cardInGraveyard,
