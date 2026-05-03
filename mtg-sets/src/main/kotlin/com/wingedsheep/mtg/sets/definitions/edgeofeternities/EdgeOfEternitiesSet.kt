@@ -45,6 +45,7 @@ object EdgeOfEternitiesSet {
         GodlessShrine,
         GravbladeHeavy,
         HardlightContainment,
+        HarmoniousGrovestrider,
         SacredFoundry,
         SeamRip,
         SledgeClassSeedship,

@@ -2,7 +2,7 @@
 
 **Set Size:** 261 booster cards (excluding basic lands)
 **Release Date:** August 1, 2025
-**Implemented:** 26 / 261
+**Implemented:** 27 / 261
 
 ---
 
@@ -99,7 +99,7 @@
 - [ ] Haliya, Ascendant Cadet
 - [ ] Haliya, Guided by Light
 - [x] Hardlight Containment
-- [ ] Harmonious Grovestrider
+- [x] Harmonious Grovestrider
 - [ ] Hemosymbic Mite
 - [ ] Honor
 - [ ] Honored Knight-Captain
