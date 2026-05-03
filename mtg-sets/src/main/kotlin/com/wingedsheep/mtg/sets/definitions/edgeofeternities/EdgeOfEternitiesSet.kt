@@ -30,6 +30,7 @@ object EdgeOfEternitiesSet {
         CerebralDownload,
         ChromeCompanion,
         CloudsculptTechnician,
+        CometCrawler,
         Cryoshatter,
         SeamRip,
         SledgeClassSeedship,

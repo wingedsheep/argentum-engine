@@ -2,7 +2,7 @@
 
 **Set Size:** 261 booster cards (excluding basic lands)
 **Release Date:** August 1, 2025
-**Implemented:** 8 / 261
+**Implemented:** 9 / 261
 
 ---
 
@@ -38,7 +38,7 @@
 - [ ] Close Encounter
 - [x] Cloudsculpt Technician
 - [ ] Codecracker Hound
-- [ ] Comet Crawler
+- [x] Comet Crawler
 - [ ] Command Bridge
 - [ ] Consult the Star Charts
 - [ ] Cosmogoyf
