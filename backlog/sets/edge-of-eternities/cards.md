@@ -28,7 +28,7 @@
 - [ ] Blade of the Swarm
 - [x] Blooming Stinger
 - [x] Bombard
-- [ ] Breeding Pool
+- [x] Breeding Pool
 - [ ] Brightspear Zealot
 - [ ] Broodguard Elite
 - [ ] Bygone Colossus

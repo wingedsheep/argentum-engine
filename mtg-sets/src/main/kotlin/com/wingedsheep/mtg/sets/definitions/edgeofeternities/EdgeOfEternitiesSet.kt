@@ -26,6 +26,7 @@ object EdgeOfEternitiesSet {
         BiosynthicBurst,
         BloomingStinger,
         Bombard,
+        BreedingPool,
         Cryoshatter,
         SeamRip,
         SledgeClassSeedship,
