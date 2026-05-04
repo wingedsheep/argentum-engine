@@ -39,6 +39,8 @@ import com.wingedsheep.sdk.scripting.effects.CantBlockEffect
 import com.wingedsheep.sdk.scripting.effects.CantBlockGroupEffect
 import com.wingedsheep.sdk.scripting.effects.CantCastSpellsEffect
 import com.wingedsheep.sdk.scripting.effects.CompositeEffect
+import com.wingedsheep.sdk.scripting.effects.IfYouDoEffect
+import com.wingedsheep.sdk.scripting.effects.SuccessCriterion
 import com.wingedsheep.sdk.scripting.effects.GrantDamageBonusEffect
 import com.wingedsheep.sdk.scripting.effects.DealDamageEffect
 import com.wingedsheep.sdk.scripting.effects.DrawCardsEffect
@@ -1149,6 +1151,18 @@ object Effects {
      */
     fun RepeatWhile(body: Effect, repeatCondition: RepeatCondition): Effect =
         RepeatWhileEffect(body, repeatCondition)
+
+    /**
+     * "[action]. If you do, [ifYouDo]" — gates [ifYouDo] on whether [action] actually
+     * accomplished its work, not on a yes/no decision. Wrap with `MayEffect` for the
+     * common "You may [action]. If you do, [effect]" pattern.
+     */
+    fun IfYouDo(
+        action: Effect,
+        ifYouDo: Effect,
+        ifYouDont: Effect? = null,
+        successCriterion: SuccessCriterion = SuccessCriterion.Auto
+    ): Effect = IfYouDoEffect(action, ifYouDo, ifYouDont, successCriterion)
 
     /**
      * Present a player with labeled options and execute the chosen effect.

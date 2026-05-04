@@ -28,6 +28,7 @@ class CompositeExecutors(
     private val createDelayedTriggerExecutor by lazy { CreateDelayedTriggerExecutor() }
     private val forEachTargetExecutor by lazy { ForEachTargetExecutor(effectExecutor) }
     private val forEachPlayerExecutor by lazy { ForEachPlayerExecutor(effectExecutor) }
+    private val ifYouDoEffectExecutor by lazy { IfYouDoEffectExecutor(effectExecutor) }
     private val mayEffectExecutor by lazy { MayEffectExecutor(effectExecutor) }
     private val mayPayManaExecutor by lazy { MayPayManaExecutor(cardRegistry, effectExecutor) }
     private val mayPayXForEffectExecutor by lazy { MayPayXForEffectExecutor(cardRegistry, effectExecutor) }
@@ -61,6 +62,7 @@ class CompositeExecutors(
         forEachTargetExecutor,
         forEachPlayerExecutor,
         forEachInGroupExecutor,
+        ifYouDoEffectExecutor,
         mayEffectExecutor,
         mayPayManaExecutor,
         mayPayXForEffectExecutor,

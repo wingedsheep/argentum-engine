@@ -91,6 +91,20 @@ class CoreAutoResumerModule(
             mergeAndContinue(searchResult, events, checkForMore)
         },
 
+        autoResumer(IfYouDoContinuation::class) { state, continuation, events, checkForMore ->
+            val branchResult = com.wingedsheep.engine.handlers.effects.composite.IfYouDoEffectExecutor.evaluateAndDispatch(
+                state = state,
+                ifYouDo = continuation.ifYouDo,
+                ifYouDont = continuation.ifYouDont,
+                criterion = continuation.successCriterion,
+                snapshot = continuation.snapshot,
+                effectContext = continuation.effectContext,
+                priorEvents = emptyList(),
+                effectExecutor = services.effectExecutorRegistry::execute
+            )
+            mergeAndContinue(branchResult.toExecutionResult(), events, checkForMore)
+        },
+
         autoResumer(EffectContinuation::class, canResume = { it.remainingEffects.isNotEmpty() }) { state, continuation, events, checkForMore ->
             val runResult = effectRunner.executeRemainingEffects(state, continuation.remainingEffects, continuation.effectContext)
             if (runResult.isPaused) {

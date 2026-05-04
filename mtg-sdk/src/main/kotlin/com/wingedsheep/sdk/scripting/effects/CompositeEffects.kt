@@ -234,6 +234,96 @@ data class ModalEffect(
 }
 
 /**
+ * Conditional execution gated on whether [action] actually accomplished its work.
+ *
+ * Models MTG's "[action]. If you do, [ifYouDo]" templating, where the downstream
+ * payoff is conditional on the preceding instruction being carried out — not on a
+ * yes/no decision. The classic case: "You may discard a card. If you do, draw a
+ * card" — when the player declines or the hand is empty, no discard happens, so
+ * no draw happens.
+ *
+ * Differences from related effects:
+ * - [MayEffect] gates on the *decision* (yes/no), not the *outcome*. A "yes" with
+ *   nothing to discard still passes through MayEffect. Wrap with `MayEffect` for
+ *   "You may [action]. If you do, [effect]": `MayEffect(IfYouDoEffect(action, then))`.
+ * - [OptionalCostEffect] gates on *paying a recognized cost primitive* (mana / life)
+ *   via a payability check before prompting. It does not handle discard / sacrifice /
+ *   mill / etc. where success is data-driven.
+ * - [CompositeEffect].`stopOnError` aborts on raised errors only — silent
+ *   zero-progress actions (empty hand, no legal sacrifice) still let downstream
+ *   effects run.
+ *
+ * @property action The action whose outcome gates [ifYouDo]
+ * @property ifYouDo Effect that runs only if [action] performed its work
+ * @property ifYouDont Optional effect that runs if [action] did nothing
+ * @property successCriterion How to determine "did it happen". Defaults to
+ *           [SuccessCriterion.Auto], which infers from the action shape (pipeline
+ *           ending in a move → destination zone grew).
+ */
+@SerialName("IfYouDo")
+@Serializable
+data class IfYouDoEffect(
+    val action: Effect,
+    val ifYouDo: Effect,
+    val ifYouDont: Effect? = null,
+    val successCriterion: SuccessCriterion = SuccessCriterion.Auto,
+    val descriptionOverride: String? = null
+) : Effect {
+    override val description: String = descriptionOverride ?: buildString {
+        append(action.description.replaceFirstChar { it.uppercase() })
+        append(". If you do, ")
+        append(ifYouDo.description.replaceFirstChar { it.lowercase() })
+        if (ifYouDont != null) {
+            append(". If you don't, ")
+            append(ifYouDont.description.replaceFirstChar { it.lowercase() })
+        }
+    }
+
+    override fun applyTextReplacement(replacer: TextReplacer): Effect {
+        val newAction = action.applyTextReplacement(replacer)
+        val newIfYouDo = ifYouDo.applyTextReplacement(replacer)
+        val newIfYouDont = ifYouDont?.applyTextReplacement(replacer)
+        return if (newAction !== action || newIfYouDo !== ifYouDo || newIfYouDont !== ifYouDont)
+            copy(action = newAction, ifYouDo = newIfYouDo, ifYouDont = newIfYouDont) else this
+    }
+}
+
+/**
+ * How to determine whether an [IfYouDoEffect] action accomplished its work.
+ */
+@Serializable
+sealed interface SuccessCriterion {
+    /**
+     * Infer success from the action's shape. The executor walks [IfYouDoEffect.action]
+     * looking for a terminal [MoveCollectionEffect]; if found, the destination zone is
+     * snapshot pre-execution and counted as "succeeded" iff it grew by at least one
+     * entry. Anything else falls through to [Always] (fail-open) — add explicit
+     * criteria for atomic actions whose outcome doesn't reduce to a zone-size delta.
+     */
+    @SerialName("SuccessCriterion.Auto")
+    @Serializable
+    data object Auto : SuccessCriterion
+
+    /**
+     * Action succeeded iff `pipeline.storedCollections[name].size >= min` after the
+     * action runs. Use when [Auto] inference is wrong (e.g. multi-phase pipelines
+     * where you want to gate on a specific intermediate result rather than the
+     * terminal move's destination).
+     */
+    @SerialName("SuccessCriterion.CollectionNonEmpty")
+    @Serializable
+    data class CollectionNonEmpty(val name: String, val min: Int = 1) : SuccessCriterion
+
+    /**
+     * Action always counts as having happened. Equivalent to dropping the gate
+     * entirely; mostly useful as the default fallback for unrecognized action shapes.
+     */
+    @SerialName("SuccessCriterion.Always")
+    @Serializable
+    data object Always : SuccessCriterion
+}
+
+/**
  * Effect with an optional cost - "You may [cost]. If you do, [ifPaid]."
  *
  * This is the fundamental building block for optional effects like:

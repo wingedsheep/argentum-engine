@@ -2,8 +2,10 @@ package com.wingedsheep.engine.core
 
 import com.wingedsheep.engine.event.PendingTrigger
 import com.wingedsheep.engine.handlers.EffectContext
+import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.effects.Effect
+import com.wingedsheep.sdk.scripting.effects.SuccessCriterion
 import com.wingedsheep.sdk.scripting.targets.TargetRequirement
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import kotlinx.serialization.Serializable
@@ -120,6 +122,44 @@ data class ResolveSpellContinuation(
     val spellId: EntityId,
     val casterId: EntityId
 ) : ContinuationFrame
+
+/**
+ * Pre-pushed by [com.wingedsheep.engine.handlers.effects.composite.IfYouDoEffectExecutor]
+ * before executing the gated action. Auto-resumes once the action's own continuation
+ * stack has fully resolved; evaluates [successCriterion] against the snapshot to decide
+ * whether to dispatch [ifYouDo] or [ifYouDont].
+ *
+ * @property snapshot Pre-execution data the criterion needs to compute the delta
+ *           (e.g., destination zone size before the action ran).
+ */
+@Serializable
+data class IfYouDoContinuation(
+    override val decisionId: String,
+    val ifYouDo: Effect,
+    val ifYouDont: Effect?,
+    val successCriterion: SuccessCriterion,
+    val snapshot: IfYouDoSnapshot,
+    val effectContext: EffectContext
+) : ContinuationFrame
+
+/**
+ * Probe data captured before [IfYouDoContinuation]'s action ran.
+ *
+ * For pipeline-shaped actions ending in a `MoveCollectionEffect`, [destinationZoneOwner]
+ * + [destinationZoneType] identify a zone whose pre-action size is stored in
+ * [destinationZonePreSize]; the criterion evaluates "did the zone grow."
+ *
+ * Atomic action probes (life paid, sacrifice count, damage dealt) will add their own
+ * fields here as they're implemented — this snapshot is intentionally extensible
+ * rather than a sealed union of probe modes, since one action may need multiple
+ * probes simultaneously.
+ */
+@Serializable
+data class IfYouDoSnapshot(
+    val destinationZoneOwner: EntityId? = null,
+    val destinationZoneType: Zone? = null,
+    val destinationZonePreSize: Int = 0
+)
 
 /**
  * Resume after player makes a yes/no choice (may abilities).
