@@ -4,6 +4,7 @@ import com.wingedsheep.engine.core.ClassLevelChangedEvent
 import com.wingedsheep.engine.core.CountersAddedEvent
 import com.wingedsheep.engine.core.AttackersDeclaredEvent
 import com.wingedsheep.engine.core.CardCycledEvent
+import com.wingedsheep.engine.core.CardsDrawnEvent
 import com.wingedsheep.engine.core.ControlChangedEvent
 import com.wingedsheep.engine.core.DamageDealtEvent
 import com.wingedsheep.engine.core.PermanentsSacrificedEvent
@@ -712,6 +713,23 @@ class TriggerDetector(
                                     )
                                 )
                             }
+                        }
+                    }
+                    // For "whenever you draw a card" (DrawEvent), drawing N cards via a single
+                    // effect creates N separate trigger firings — one per card drawn (CR 121.2 +
+                    // 603.2). The engine emits a single aggregate CardsDrawnEvent, so expand it
+                    // to `event.count` triggers here.
+                    else if (ability.trigger is GameEvent.DrawEvent && event is CardsDrawnEvent) {
+                        repeat(event.count) {
+                            triggers.add(
+                                PendingTrigger(
+                                    ability = ability,
+                                    sourceId = entityId,
+                                    sourceName = cardComponent.name,
+                                    controllerId = controllerId,
+                                    triggerContext = TriggerContext.fromEvent(event)
+                                )
+                            )
                         }
                     } else {
                         // For abilities like Death Match where the triggered ability should be
