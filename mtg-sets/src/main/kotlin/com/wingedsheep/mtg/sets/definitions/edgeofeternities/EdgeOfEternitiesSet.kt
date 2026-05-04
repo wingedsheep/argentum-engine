@@ -43,6 +43,7 @@ object EdgeOfEternitiesSet {
         ExosuitSavior,
         GodlessShrine,
         GravbladeHeavy,
+        GalvanizingSawship,
         HardlightContainment,
         HarmoniousGrovestrider,
         Honor,

@@ -2,7 +2,7 @@
 
 **Set Size:** 261 booster cards (excluding basic lands)
 **Release Date:** August 1, 2025
-**Implemented:** 44 / 261
+**Implemented:** 45 / 261
 
 ---
 
@@ -86,7 +86,7 @@
 - [ ] Full Bore
 - [ ] Fungal Colossus
 - [ ] Galactic Wayfarer
-- [ ] Galvanizing Sawship
+- [x] Galvanizing Sawship
 - [ ] Genemorph Imago
 - [ ] Gene Pollinator
 - [ ] Germinating Wurm
