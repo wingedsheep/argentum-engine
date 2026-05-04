@@ -67,6 +67,7 @@ object EdgeOfEternitiesSet {
         RigForWar,
         RustHarvester,
         SacredFoundry,
+        SamisCuriosity,
         SecludedStarforge,
         SeamRip,
         SlagdrillScrapper,

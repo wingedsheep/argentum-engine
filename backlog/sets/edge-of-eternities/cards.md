@@ -2,7 +2,7 @@
 
 **Set Size:** 261 booster cards (excluding basic lands)
 **Release Date:** August 1, 2025
-**Implemented:** 54 / 261
+**Implemented:** 55 / 261
 
 ---
 
@@ -182,7 +182,7 @@
 - [ ] Ruinous Rampage
 - [x] Rust Harvester
 - [x] Sacred Foundry
-- [ ] Sami's Curiosity
+- [x] Sami's Curiosity
 - [ ] Sami, Ship's Engineer
 - [ ] Sami, Wildcat Captain
 - [ ] Scour for Scrap
