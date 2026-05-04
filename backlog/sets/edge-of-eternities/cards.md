@@ -194,7 +194,7 @@
 - [ ] Seedship Broodtender
 - [ ] Seedship Impact
 - [ ] Selfcraft Mechan
-- [ ] Shattered Wings
+- [x] Shattered Wings
 - [ ] Singularity Rupture
 - [ ] Sinister Cryologist
 - [ ] Skystinger

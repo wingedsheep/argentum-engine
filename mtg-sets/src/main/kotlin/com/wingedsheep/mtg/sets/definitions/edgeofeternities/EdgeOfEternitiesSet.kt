@@ -75,6 +75,7 @@ object EdgeOfEternitiesSet {
         SamisCuriosity,
         SecludedStarforge,
         SeedshipAgrarian,
+        ShatteredWings,
         SeamRip,
         SlagdrillScrapper,
         SledgeClassSeedship,
