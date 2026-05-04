@@ -2,7 +2,7 @@
 
 **Set Size:** 261 booster cards (excluding basic lands)
 **Release Date:** August 1, 2025
-**Implemented:** 53 / 261
+**Implemented:** 54 / 261
 
 ---
 
@@ -91,7 +91,7 @@
 - [ ] Gene Pollinator
 - [ ] Germinating Wurm
 - [ ] Gigastorm Titan
-- [ ] Glacier Godmaw
+- [x] Glacier Godmaw
 - [x] Godless Shrine
 - [x] Gravblade Heavy
 - [ ] Gravkill

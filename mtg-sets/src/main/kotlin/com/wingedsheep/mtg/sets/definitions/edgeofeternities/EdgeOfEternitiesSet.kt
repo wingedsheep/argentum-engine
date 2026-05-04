@@ -52,6 +52,7 @@ object EdgeOfEternitiesSet {
         GravbladeHeavy,
         GalacticWayfarer,
         GalvanizingSawship,
+        GlacierGodmaw,
         HardlightContainment,
         HarmoniousGrovestrider,
         Honor,
