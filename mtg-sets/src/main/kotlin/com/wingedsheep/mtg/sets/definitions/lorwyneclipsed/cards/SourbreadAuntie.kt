@@ -71,7 +71,7 @@ val SourbreadAuntie = card("Sourbread Auntie") {
                     )
                 )
             ),
-            description_override = "You may blight 2. If you do, create two 1/1 black and red Goblin creature tokens."
+            descriptionOverride = "You may blight 2. If you do, create two 1/1 black and red Goblin creature tokens."
         )
     }
 

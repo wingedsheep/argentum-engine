@@ -53,7 +53,7 @@ val DragonBreath = card("Dragon Breath") {
         triggerZone = Zone.GRAVEYARD
         effect = MayEffect(
             effect = Effects.ReturnSelfToBattlefieldAttached(),
-            description_override = "Attach Dragon Breath to this creature?",
+            descriptionOverride = "Attach Dragon Breath to this creature?",
             sourceRequiredZone = Zone.GRAVEYARD,
             inlineOnTrigger = true
         )

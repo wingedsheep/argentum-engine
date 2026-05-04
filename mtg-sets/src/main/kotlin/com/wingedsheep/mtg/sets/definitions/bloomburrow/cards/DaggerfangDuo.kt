@@ -28,7 +28,7 @@ val DaggerfangDuo = card("Daggerfang Duo") {
         trigger = Triggers.EntersBattlefield
         effect = MayEffect(
             effect = EffectPatterns.mill(2),
-            description_override = "You may mill two cards."
+            descriptionOverride = "You may mill two cards."
         )
     }
 

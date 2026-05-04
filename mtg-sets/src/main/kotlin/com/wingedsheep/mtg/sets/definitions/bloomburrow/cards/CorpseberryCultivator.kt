@@ -39,7 +39,7 @@ val CorpseberryCultivator = card("Corpseberry Cultivator") {
             effect = EffectPatterns.forage(
                 afterEffect = Effects.AddCounters("PLUS_ONE_PLUS_ONE", 1, EffectTarget.Self)
             ),
-            description_override = "You may forage",
+            descriptionOverride = "You may forage",
             hint = "Exile three cards from your graveyard or sacrifice a Food"
         )
     }

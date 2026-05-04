@@ -33,7 +33,7 @@ val FlaringCinder = card("Flaring Cinder") {
         effect = MayEffect(
             effect = EffectPatterns.discardCards(1)
                 .then(Effects.DrawCards(1)),
-            description_override = "You may discard a card. If you do, draw a card."
+            descriptionOverride = "You may discard a card. If you do, draw a card."
         )
     }
 
@@ -48,7 +48,7 @@ val FlaringCinder = card("Flaring Cinder") {
         effect = MayEffect(
             effect = EffectPatterns.discardCards(1)
                 .then(Effects.DrawCards(1)),
-            description_override = "You may discard a card. If you do, draw a card."
+            descriptionOverride = "You may discard a card. If you do, draw a card."
         )
     }
 

@@ -46,7 +46,7 @@ val BushyBodyguard = card("Bushy Bodyguard") {
             effect = EffectPatterns.forage(
                 afterEffect = Effects.AddCounters(Counters.PLUS_ONE_PLUS_ONE, 2, EffectTarget.Self)
             ),
-            description_override = "You may forage",
+            descriptionOverride = "You may forage",
             hint = "Exile three cards from your graveyard or sacrifice a Food"
         )
     }

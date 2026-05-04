@@ -33,7 +33,7 @@ val DreamSeizer = card("Dream Seizer") {
         effect = MayEffect(
             effect = EffectPatterns.blight(1)
                 .then(Effects.EachOpponentDiscards(1)),
-            description_override = "You may blight 1. If you do, each opponent discards a card."
+            descriptionOverride = "You may blight 1. If you do, each opponent discards a card."
         )
     }
 

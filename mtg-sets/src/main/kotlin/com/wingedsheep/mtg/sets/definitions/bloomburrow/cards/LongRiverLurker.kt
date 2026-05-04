@@ -65,7 +65,7 @@ val LongRiverLurker = card("Long River Lurker") {
                         MoveToZoneEffect(EffectTarget.ContextTarget(0), Zone.EXILE),
                         MoveToZoneEffect(EffectTarget.ContextTarget(0), Zone.BATTLEFIELD)
                     )),
-                    description_override = "You may exile that creature. If you do, return it to the battlefield under its owner's control."
+                    descriptionOverride = "You may exile that creature. If you do, return it to the battlefield under its owner's control."
                 ),
                 trigger = Triggers.DealsCombatDamage,
                 watchedTarget = EffectTarget.ContextTarget(0),

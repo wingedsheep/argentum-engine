@@ -83,7 +83,7 @@ private val GrubNotoriousAuntie = card("Grub, Notorious Auntie") {
                     )
                 )
             ),
-            description_override = "You may blight 1. If you do, create a tapped and attacking token that's a copy of the blighted creature."
+            descriptionOverride = "You may blight 1. If you do, create a tapped and attacking token that's a copy of the blighted creature."
         )
     }
 

@@ -29,7 +29,7 @@ val Tweeze = card("Tweeze") {
                     EffectPatterns.discardCards(1),
                     Effects.DrawCards(1)
                 )),
-                description_override = "You may discard a card. If you do, draw a card."
+                descriptionOverride = "You may discard a card. If you do, draw a card."
             )
         ))
     }

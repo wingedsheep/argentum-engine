@@ -35,7 +35,7 @@ import com.wingedsheep.sdk.scripting.targets.EffectTarget
 
 private val rummageMay = MayEffect(
     effect = EffectPatterns.rummage(1),
-    description_override = "You may discard a card. If you do, draw a card."
+    descriptionOverride = "You may discard a card. If you do, draw a card."
 )
 
 private val addRimeboundMana = CompositeEffect(

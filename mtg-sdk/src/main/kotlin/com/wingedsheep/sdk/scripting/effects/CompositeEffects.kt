@@ -73,13 +73,13 @@ data class CompositeEffect(
 @Serializable
 data class MayEffect(
     val effect: Effect,
-    val description_override: String? = null,
+    val descriptionOverride: String? = null,
     val sourceRequiredZone: Zone? = null,
     val inlineOnTrigger: Boolean = false,
     /** Optional hint text shown below the prompt (e.g., keyword reminder text) */
     val hint: String? = null
 ) : Effect {
-    override val description: String = description_override ?: "You may ${effect.description.lowercase()}"
+    override val description: String = descriptionOverride ?: "You may ${effect.description.lowercase()}"
 
     override fun applyTextReplacement(replacer: TextReplacer): Effect {
         val newEffect = effect.applyTextReplacement(replacer)

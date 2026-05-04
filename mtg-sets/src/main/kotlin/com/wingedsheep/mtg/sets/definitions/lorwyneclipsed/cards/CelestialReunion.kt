@@ -58,7 +58,7 @@ val CelestialReunion = card("Celestial Reunion") {
             listOf(
                 // Optional: choose a creature type and behold two creatures of that type.
                 MayEffect(
-                    description_override = "Choose a creature type and behold two creatures of that type?",
+                    descriptionOverride = "Choose a creature type and behold two creatures of that type?",
                     effect = CompositeEffect(
                         listOf(
                             ChooseOptionEffect(

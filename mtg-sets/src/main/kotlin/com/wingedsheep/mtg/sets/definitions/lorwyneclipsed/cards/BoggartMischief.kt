@@ -80,7 +80,7 @@ val BoggartMischief = card("Boggart Mischief") {
                     )
                 )
             ),
-            description_override = "You may blight 1. If you do, create two 1/1 black and red Goblin creature tokens."
+            descriptionOverride = "You may blight 1. If you do, create two 1/1 black and red Goblin creature tokens."
         )
     }
 
