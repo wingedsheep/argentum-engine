@@ -95,7 +95,8 @@ val TeferiTemporalPilgrim = card("Teferi, Temporal Pilgrim") {
                     selection = SelectionMode.ChooseExactly(DynamicAmount.Fixed(1)),
                     chooser = Chooser.TargetPlayer,
                     storeSelected = "chosen",
-                    prompt = "Choose a permanent you control to return to its owner's hand"
+                    prompt = "Choose a permanent you control to return to its owner's hand",
+                    useTargetingUI = true
                 ),
                 MoveCollectionEffect(
                     from = "chosen",
