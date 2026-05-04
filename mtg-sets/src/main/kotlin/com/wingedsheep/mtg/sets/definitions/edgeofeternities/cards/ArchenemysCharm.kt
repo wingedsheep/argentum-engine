@@ -6,9 +6,7 @@ import com.wingedsheep.sdk.dsl.Targets
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
-import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
-import com.wingedsheep.sdk.scripting.targets.TargetCreature
 import com.wingedsheep.sdk.scripting.targets.TargetObject
 
 /**
@@ -29,7 +27,7 @@ val ArchenemysCharm = card("Archenemy's Charm") {
         modal(chooseCount = 1) {
             mode("Exile target creature or planeswalker") {
                 val target = target("target creature or planeswalker", Targets.CreatureOrPlaneswalker)
-                effect = MoveToZoneEffect(target, Zone.EXILE)
+                effect = Effects.Exile(target)
             }
             mode("Return one or two target creature and/or planeswalker cards from your graveyard to your hand") {
                 val targets = target("target creature and/or planeswalker cards", TargetObject(filter = TargetFilter(GameObjectFilter.CreatureOrPlaneswalker, zone = Zone.GRAVEYARD), count = 2, minCount = 1))

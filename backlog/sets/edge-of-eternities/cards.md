@@ -2,7 +2,7 @@
 
 **Set Size:** 261 booster cards (excluding basic lands)
 **Release Date:** August 1, 2025
-**Implemented:** 48 / 261
+**Implemented:** 70 / 261
 
 ---
 
@@ -15,14 +15,14 @@
 - [ ] Anticausal Vestige
 - [x] Archenemy's Charm
 - [ ] Astelli Reclaimer
-- [ ] Atmospheric Greenhouse
+- [x] Atmospheric Greenhouse
 - [x] Atomic Microsizer
-- [ ] Auxiliary Boosters
+- [x] Auxiliary Boosters
 - [ ] Banishing Light
-- [ ] Beamsaw Prospector
+- [x] Beamsaw Prospector
 - [ ] Beyond the Quiet
 - [ ] Bioengineered Future
-- [ ] Biomechan Engineer
+- [x] Biomechan Engineer
 - [x] Biosynthic Burst
 - [ ] Biotech Specialist
 - [ ] Blade of the Swarm
@@ -85,22 +85,22 @@
 - [ ] Frontline War-Rager
 - [ ] Full Bore
 - [ ] Fungal Colossus
-- [ ] Galactic Wayfarer
+- [x] Galactic Wayfarer
 - [x] Galvanizing Sawship
 - [ ] Genemorph Imago
 - [ ] Gene Pollinator
 - [ ] Germinating Wurm
 - [ ] Gigastorm Titan
-- [ ] Glacier Godmaw
+- [x] Glacier Godmaw
 - [x] Godless Shrine
 - [x] Gravblade Heavy
 - [ ] Gravkill
-- [ ] Gravpack Monoist
+- [x] Gravpack Monoist
 - [ ] Haliya, Ascendant Cadet
 - [ ] Haliya, Guided by Light
 - [x] Hardlight Containment
 - [x] Harmonious Grovestrider
-- [ ] Hemosymbic Mite
+- [x] Hemosymbic Mite
 - [x] Honor
 - [x] Honored Knight-Captain
 - [x] Hullcarver
@@ -115,12 +115,12 @@
 - [ ] Infinite Guideline Station
 - [ ] Insatiable Skittermaw
 - [ ] Interceptor Mechan
-- [ ] Intrepid Tenderfoot
+- [x] Intrepid Tenderfoot
 - [ ] Invasive Maneuvers
 - [x] Kavaron Harrier
 - [ ] Kavaron, Memorial World
 - [ ] Kavaron Skywarden
-- [ ] Kavaron Turbodrone
+- [x] Kavaron Turbodrone
 - [ ] Kav Landseeker
 - [ ] Knight Luminary
 - [ ] Larval Scoutlander
@@ -129,16 +129,16 @@
 - [ ] Lightstall Inquisitor
 - [ ] Lithobraking
 - [ ] Loading Zone
-- [ ] Lost in Space
+- [x] Lost in Space
 - [x] Lumen-Class Frigate
 - [ ] Luxknight Breacher
 - [ ] Mechan Assembler
-- [ ] Mechan Navigator
+- [x] Mechan Navigator
 - [ ] Mechanozoa
 - [ ] Mechan Shieldmate
 - [x] Melded Moxite
 - [ ] Meltstrider Eulogist
-- [ ] Meltstrider's Gear
+- [x] Meltstrider's Gear
 - [ ] Meltstrider's Resolve
 - [ ] Memorial Team Leader
 - [ ] Memorial Vault
@@ -146,9 +146,9 @@
 - [ ] Mightform Harmonizer
 - [ ] Mm'menon, the Right Hand
 - [ ] Mm'menon, Uthros Exile
-- [ ] Molecular Modifier
+- [x] Molecular Modifier
 - [ ] Monoist Circuit-Feeder
-- [ ] Monoist Sentry
+- [x] Monoist Sentry
 - [ ] Moonlit Meditation
 - [ ] Mouth of the Storm
 - [ ] Mutinous Massacre
@@ -169,20 +169,20 @@
 - [ ] Pull Through the Weft
 - [ ] Pulsar Squadron Ace
 - [ ] Quantum Riddler
-- [ ] Radiant Strike
+- [x] Radiant Strike
 - [ ] Ragost, Deft Gastronaut
 - [ ] Rayblade Trooper
 - [ ] Red Tiger Mechan
 - [x] Remnant Elemental
 - [ ] Requiem Monolith
-- [ ] Reroute Systems
+- [x] Reroute Systems
 - [ ] Rescue Skiff
 - [x] Rig for War
 - [ ] Roving Actuator
 - [ ] Ruinous Rampage
 - [x] Rust Harvester
 - [x] Sacred Foundry
-- [ ] Sami's Curiosity
+- [x] Sami's Curiosity
 - [ ] Sami, Ship's Engineer
 - [ ] Sami, Wildcat Captain
 - [ ] Scour for Scrap
@@ -190,11 +190,11 @@
 - [ ] Scrounge for Eternity
 - [x] Seam Rip
 - [x] Secluded Starforge
-- [ ] Seedship Agrarian
+- [x] Seedship Agrarian
 - [ ] Seedship Broodtender
 - [ ] Seedship Impact
 - [ ] Selfcraft Mechan
-- [ ] Shattered Wings
+- [x] Shattered Wings
 - [ ] Singularity Rupture
 - [ ] Sinister Cryologist
 - [ ] Skystinger
@@ -225,7 +225,7 @@
 - [ ] Synthesizer Labship
 - [ ] Syr Vondam, Sunstar Exemplar
 - [ ] Syr Vondam, the Lucent
-- [ ] Systems Override
+- [x] Systems Override
 - [ ] Tannuk, Memorial Ensign
 - [ ] Tannuk, Steadfast Second
 - [ ] Tapestry Warden
@@ -236,7 +236,7 @@
 - [ ] Territorial Bruntar
 - [ ] Tezzeret, Cruel Captain
 - [ ] Thaumaton Torpedo
-- [ ] Thawbringer
+- [x] Thawbringer
 - [ ] The Dominion Bracelet
 - [ ] The Endstone
 - [ ] The Eternity Elevator
