@@ -136,7 +136,7 @@
 - [ ] Mechan Navigator
 - [ ] Mechanozoa
 - [ ] Mechan Shieldmate
-- [ ] Melded Moxite
+- [x] Melded Moxite
 - [ ] Meltstrider Eulogist
 - [ ] Meltstrider's Gear
 - [ ] Meltstrider's Resolve
