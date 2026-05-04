@@ -23,6 +23,7 @@ object EdgeOfEternitiesSet {
         Annul,
         ArchenemysCharm,
         AtmosphericGreenhouse,
+        BeamsawProspector,
         AuxiliaryBoosters,
         AtomicMicrosizer,
         BiosynthicBurst,
