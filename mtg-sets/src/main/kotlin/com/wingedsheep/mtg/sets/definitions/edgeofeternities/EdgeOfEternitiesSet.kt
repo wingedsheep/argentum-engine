@@ -51,6 +51,7 @@ object EdgeOfEternitiesSet {
         IcecaveCrasher,
         IllvoiGaleblade,
         KavaronHarrier,
+        LumenClassFrigate,
         MeldedMoxite,
         RigForWar,
         RustHarvester,

@@ -130,7 +130,7 @@
 - [ ] Lithobraking
 - [ ] Loading Zone
 - [ ] Lost in Space
-- [ ] Lumen-Class Frigate
+- [x] Lumen-Class Frigate
 - [ ] Luxknight Breacher
 - [ ] Mechan Assembler
 - [ ] Mechan Navigator
