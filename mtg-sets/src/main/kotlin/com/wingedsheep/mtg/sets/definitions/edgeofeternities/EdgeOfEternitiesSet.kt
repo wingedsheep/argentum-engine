@@ -53,6 +53,7 @@ object EdgeOfEternitiesSet {
         RustHarvester,
         SacredFoundry,
         SeamRip,
+        SlagdrillScrapper,
         SledgeClassSeedship,
         StompingGround,
         WateryGrave,
