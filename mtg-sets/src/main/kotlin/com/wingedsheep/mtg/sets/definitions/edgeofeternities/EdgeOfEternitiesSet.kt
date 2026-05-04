@@ -73,6 +73,7 @@ object EdgeOfEternitiesSet {
         RigForWar,
         RustHarvester,
         RadiantStrike,
+        RerouteSystems,
         SacredFoundry,
         SamisCuriosity,
         SecludedStarforge,

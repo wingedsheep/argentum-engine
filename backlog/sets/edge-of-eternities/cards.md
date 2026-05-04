@@ -2,7 +2,7 @@
 
 **Set Size:** 261 booster cards (excluding basic lands)
 **Release Date:** August 1, 2025
-**Implemented:** 66 / 261
+**Implemented:** 67 / 261
 
 ---
 
@@ -175,7 +175,7 @@
 - [ ] Red Tiger Mechan
 - [x] Remnant Elemental
 - [ ] Requiem Monolith
-- [ ] Reroute Systems
+- [x] Reroute Systems
 - [ ] Rescue Skiff
 - [x] Rig for War
 - [ ] Roving Actuator
