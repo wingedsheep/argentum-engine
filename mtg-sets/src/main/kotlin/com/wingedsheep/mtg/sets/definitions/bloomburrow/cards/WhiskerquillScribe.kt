@@ -7,6 +7,7 @@ import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.effects.MayEffect
 import com.wingedsheep.sdk.scripting.references.Player
+import com.wingedsheep.sdk.scripting.values.DynamicAmount
 
 /**
  * Whiskerquill Scribe
@@ -27,7 +28,7 @@ val WhiskerquillScribe = card("Whiskerquill Scribe") {
         trigger = Triggers.Valiant
         effect = MayEffect(
             effect = EffectPatterns.discardCards(1)
-                .then(Effects.DrawCards(1)),
+                .then(Effects.DrawCards(DynamicAmount.VariableReference("discarded_count"))),
             description_override = "You may discard a card. If you do, draw a card."
         )
     }
