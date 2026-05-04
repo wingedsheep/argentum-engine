@@ -64,6 +64,7 @@ object EdgeOfEternitiesSet {
         IllvoiGaleblade,
         IntrepidTenderfoot,
         KavaronHarrier,
+        KavaronTurbodrone,
         LumenClassFrigate,
         LostInSpace,
         MeldedMoxite,
