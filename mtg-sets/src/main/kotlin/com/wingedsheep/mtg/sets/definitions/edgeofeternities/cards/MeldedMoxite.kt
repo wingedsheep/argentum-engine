@@ -41,6 +41,7 @@ val MeldedMoxite = card("Melded Moxite") {
             colors = setOf(), // colorless
             creatureTypes = setOf("Robot"),
             tapped = true,
+            artifactToken = true,
             imageUri = "https://cards.scryfall.io/normal/front/c/4/c46f9a07-005c-44b7-8057-b2f00b274dd6.jpg?1756281130"
         )
     }
