@@ -67,6 +67,7 @@ object EdgeOfEternitiesSet {
         RemnantElemental,
         RigForWar,
         RustHarvester,
+        RadiantStrike,
         SacredFoundry,
         SamisCuriosity,
         SecludedStarforge,

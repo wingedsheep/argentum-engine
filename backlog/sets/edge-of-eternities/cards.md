@@ -169,7 +169,7 @@
 - [ ] Pull Through the Weft
 - [ ] Pulsar Squadron Ace
 - [ ] Quantum Riddler
-- [ ] Radiant Strike
+- [x] Radiant Strike
 - [ ] Ragost, Deft Gastronaut
 - [ ] Rayblade Trooper
 - [ ] Red Tiger Mechan
