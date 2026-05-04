@@ -1,0 +1,32 @@
+{
+  "player1Name": "Alice",
+  "player2Name": "Bob",
+  "player1": {
+    "lifeTotal": 20,
+    "hand": [],
+    "battlefield": [
+      {"name": "Island"},
+      {"name": "Island"},
+      {"name": "Gravelgill Scoundrel"},
+      {"name": "Goldmeadow Nomad"}
+    ],
+    "graveyard": [],
+    "library": ["Island", "Island", "Island"]
+  },
+  "player2": {
+    "lifeTotal": 20,
+    "hand": [],
+    "battlefield": [
+      {"name": "Glory Seeker"}
+    ],
+    "graveyard": [],
+    "library": ["Plains", "Plains", "Plains"]
+  },
+  "phase": "PRECOMBAT_MAIN",
+  "activePlayer": 1,
+  "priorityPlayer": 1,
+  "player1StopAtSteps": ["DECLARE_ATTACKERS"],
+  "player2StopAtSteps": ["DECLARE_BLOCKERS"],
+  "player1OpponentStopAtSteps": [],
+  "player2OpponentStopAtSteps": []
+}
