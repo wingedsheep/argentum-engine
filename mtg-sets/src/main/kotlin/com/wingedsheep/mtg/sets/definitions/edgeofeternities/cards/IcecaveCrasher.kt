@@ -5,6 +5,7 @@ import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Triggers
+import com.wingedsheep.sdk.scripting.targets.EffectTarget
 
 /**
  * Icecave Crasher
@@ -26,7 +27,7 @@ val IcecaveCrasher = card("Icecave Crasher") {
     // Landfall triggered ability: +1/+0 until end of turn when land enters
     triggeredAbility {
         trigger = Triggers.LandYouControlEnters
-        effect = Effects.ModifyStats(1, 0)
+        effect = Effects.ModifyStats(1, 0, EffectTarget.Self)
     }
 
     metadata {
