@@ -41,6 +41,7 @@ object EdgeOfEternitiesSet {
         DubiousDelicacy,
         EumidianTerrabotanist,
         ExosuitSavior,
+        EvendoWakingHaven,
         GodlessShrine,
         GravbladeHeavy,
         GalvanizingSawship,
