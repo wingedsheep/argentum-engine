@@ -22,10 +22,10 @@ additional baseline opponents. Those deck lists aren't public; start with the th
 
 ## Coverage summary
 
-**Implemented** (6 / 44 unique cards): Kitsa, Otterball Elite · Iridescent Vinelasher ·
-Malcolm, Alluring Scoundrel · Negate · Island · Swamp.
+**Implemented** (7 / 44 unique cards): Kitsa, Otterball Elite · Iridescent Vinelasher ·
+Malcolm, Alluring Scoundrel · Negate · Consider · Island · Swamp.
 
-**Missing** (38 unique cards — 6 creatures + 1 planeswalker + 13 instants + 1 sorcery +
+**Missing** (37 unique cards — 6 creatures + 1 planeswalker + 12 instants + 1 sorcery +
 4 enchantments + 6 nonbasic lands + 7 more creatures). One card (Cecil, Dark Knight) and
 one enchantment (Unholy Annex) are double-faced / modal DFCs and depend on DFC support.
 
@@ -71,7 +71,7 @@ one enchantment (Unholy Annex) are double-faced / modal DFCs and depend on DFC s
 - [ ] Blue Sun's Twilight ×1
 
 ### Instants (25)
-- [ ] Consider ×4
+- [x] Consider ×4 *(Innistrad: Midnight Hunt)*
 - [ ] Dissipate ×4
 - [x] Essence Scatter ×2
 - [ ] Fading Hope ×4

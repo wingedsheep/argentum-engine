@@ -33,6 +33,7 @@ data class SetsProperties(
     val murdersAtKarlovManorEnabled: Boolean = true,
     val foundationsEnabled: Boolean = true,
     val duskmournEnabled: Boolean = true,
+    val innistradMidnightHuntEnabled: Boolean = true,
     val spiderManEnabled: Boolean = true,
     val wildsOfEldrainEnabled: Boolean = true
 )

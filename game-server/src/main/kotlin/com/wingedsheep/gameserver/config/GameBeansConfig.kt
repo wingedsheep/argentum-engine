@@ -20,6 +20,7 @@ import com.wingedsheep.mtg.sets.definitions.lorwyneclipsed.LorwynEclipsedSet
 import com.wingedsheep.mtg.sets.definitions.lostcavernsofixalan.LostCavernsOfIxalanSet
 import com.wingedsheep.mtg.sets.definitions.mkm.MurdersAtKarlovManorSet
 import com.wingedsheep.mtg.sets.definitions.duskmourn.DuskmournSet
+import com.wingedsheep.mtg.sets.definitions.innistradmidnighthunt.InnistradMidnightHuntSet
 import com.wingedsheep.mtg.sets.definitions.spiderman.SpiderManSet
 import com.wingedsheep.mtg.sets.definitions.wildsofeldraineset.WildsOfEldrainSet
 import com.wingedsheep.mtg.sets.definitions.foundations.FoundationsSet
@@ -98,6 +99,9 @@ class GameBeansConfig(
         }
         if (gameProperties.sets.duskmournEnabled) {
             register(DuskmournSet.allCards)
+        }
+        if (gameProperties.sets.innistradMidnightHuntEnabled) {
+            register(InnistradMidnightHuntSet.allCards)
         }
         if (gameProperties.sets.spiderManEnabled) {
             register(SpiderManSet.allCards)
