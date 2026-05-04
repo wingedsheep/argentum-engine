@@ -17,7 +17,7 @@
 - [ ] Astelli Reclaimer
 - [ ] Atmospheric Greenhouse
 - [x] Atomic Microsizer
-- [ ] Auxiliary Boosters
+- [x] Auxiliary Boosters
 - [ ] Banishing Light
 - [ ] Beamsaw Prospector
 - [ ] Beyond the Quiet
