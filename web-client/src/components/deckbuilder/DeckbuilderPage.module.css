@@ -711,3 +711,138 @@
   color: #ff8888;
   border-color: rgba(255, 100, 100, 0.3);
 }
+
+/* ------------- Import-deck modal ------------- */
+.importBackdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  z-index: 100;
+}
+
+.importDialog {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: min(620px, 92vw);
+  max-height: 86vh;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-4);
+  background: var(--bg-surface-3, #1c1f25);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: var(--radius-md);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
+  z-index: 101;
+}
+
+.importHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.importHint {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  margin: 0;
+  line-height: 1.4;
+}
+
+.importHint code {
+  font-family: var(--font-mono, monospace);
+  background: rgba(255, 255, 255, 0.06);
+  padding: 1px 4px;
+  border-radius: 3px;
+  font-size: 0.7rem;
+}
+
+.importTextarea {
+  width: 100%;
+  min-height: 220px;
+  resize: vertical;
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: var(--radius-sm);
+  padding: 8px 10px;
+  color: var(--text-primary);
+  font-size: 0.85rem;
+  font-family: var(--font-mono, monospace);
+  line-height: 1.4;
+}
+
+.importTextarea:focus {
+  outline: none;
+  border-color: var(--accent-primary, #6aa3ff);
+}
+
+.importPreview {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  font-size: 0.8rem;
+  max-height: 220px;
+  overflow-y: auto;
+  padding: var(--space-2);
+  background: rgba(0, 0, 0, 0.25);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: var(--radius-sm);
+}
+
+.importSummary {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+  color: var(--text-secondary);
+}
+
+.importMutedBadge {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 999px;
+  padding: 1px 8px;
+}
+
+.importBadBadge {
+  font-size: 0.7rem;
+  color: #ff8888;
+  background: rgba(255, 100, 100, 0.12);
+  border-radius: 999px;
+  padding: 1px 8px;
+}
+
+.importDetails {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.importDetails summary {
+  cursor: pointer;
+  color: var(--text-secondary);
+  padding: 2px 0;
+}
+
+.importDetails ul {
+  margin: 4px 0 4px var(--space-3);
+  padding: 0;
+  list-style: disc;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.importDetails code {
+  font-family: var(--font-mono, monospace);
+  color: var(--text-primary);
+}
+
+.importActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-2);
+  margin-top: var(--space-1);
+}

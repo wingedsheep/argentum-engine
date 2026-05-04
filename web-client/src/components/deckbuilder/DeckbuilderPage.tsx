@@ -23,6 +23,11 @@ import {
   removeToken,
   type CardSummary,
 } from './cardFilter'
+import {
+  parseArenaDeckList,
+  resolveAgainstCatalog,
+  type ResolveResult,
+} from './parseArenaDeck'
 import styles from './DeckbuilderPage.module.css'
 
 // ---------------------------------------------------------------------------
@@ -152,6 +157,9 @@ export function DeckbuilderPage() {
     }
   }, [hydrated, deckId, getDeck])
 
+  // Import-from-text modal visibility.
+  const [importOpen, setImportOpen] = useState(false)
+
   // Search & filters.
   const [query, setQuery] = useState('')
   const [sortMode, setSortMode] = useState<SortMode>('name')
@@ -276,6 +284,14 @@ export function DeckbuilderPage() {
     if (deck.id === activeDeckId) handleNew()
   }
 
+  const handleImport = (cards: Record<string, number>, suggestedName: string | null) => {
+    setDeckCards(cards)
+    setActiveDeckId(null)
+    if (suggestedName) setDeckName(suggestedName)
+    navigate('/deckbuilder')
+    setImportOpen(false)
+  }
+
   // ----- Render -----
 
   const totalCards = Object.values(deckCards).reduce((a, b) => a + b, 0)
@@ -289,10 +305,22 @@ export function DeckbuilderPage() {
         </button>
         <h1 className={styles.title}>Deckbuilder</h1>
         <div className={styles.topbarSpacer} />
+        <button className={styles.iconButton} onClick={() => setImportOpen(true)}>
+          Import deck
+        </button>
         <button className={styles.iconButton} onClick={handleNew}>
           New deck
         </button>
       </header>
+
+      {importOpen && (
+        <ImportDeckModal
+          catalog={catalog}
+          hasExisting={Object.keys(deckCards).length > 0}
+          onCancel={() => setImportOpen(false)}
+          onImport={handleImport}
+        />
+      )}
 
       {/* Left rail */}
       <aside className={styles.left}>
@@ -403,6 +431,166 @@ export function DeckbuilderPage() {
           </button>
         </div>
       </aside>
+    </div>
+  )
+}
+
+// ---------------------------------------------------------------------------
+// Import-deck modal (MTG Arena format)
+// ---------------------------------------------------------------------------
+
+const IMPORT_PLACEHOLDER = `Deck
+4 Lightning Bolt (LEA) 161
+2 Counterspell
+20 Mountain
+
+Sideboard
+2 Disenchant`
+
+function ImportDeckModal({
+  catalog,
+  hasExisting,
+  onCancel,
+  onImport,
+}: {
+  catalog: CardSummary[]
+  hasExisting: boolean
+  onCancel: () => void
+  onImport: (cards: Record<string, number>, suggestedName: string | null) => void
+}) {
+  const [text, setText] = useState('')
+
+  // Re-parse on every keystroke. The catalog is fixed for the modal lifetime,
+  // so only the text input drives the preview.
+  const preview = useMemo(() => {
+    if (text.trim() === '') return null
+    const parsed = parseArenaDeckList(text)
+    const resolved = resolveAgainstCatalog(parsed.entries, catalog)
+    return { parsed, resolved }
+  }, [text, catalog])
+
+  const canImport = !!preview && preview.resolved.matchedCards > 0
+
+  const handleConfirm = () => {
+    if (!preview || !canImport) return
+    if (
+      hasExisting &&
+      !window.confirm('Replace your current deck contents with the imported list?')
+    ) {
+      return
+    }
+    onImport(preview.resolved.deckCards, null)
+  }
+
+  return (
+    <>
+      <div className={styles.importBackdrop} onClick={onCancel} />
+      <div className={styles.importDialog} role="dialog" aria-label="Import deck">
+        <div className={styles.importHeader}>
+          <strong>Import deck (MTG Arena format)</strong>
+          <button className={styles.linkButton} onClick={onCancel} type="button">
+            Close
+          </button>
+        </div>
+        <p className={styles.importHint}>
+          Paste a deck list. Each line is <code>count name</code>, optionally followed by{' '}
+          <code>(SET) NUM</code>. Lines starting with <code>//</code> are ignored. Use{' '}
+          <code>Deck</code> / <code>Sideboard</code> headers to delimit sections — only the main
+          deck is imported.
+        </p>
+        <textarea
+          className={styles.importTextarea}
+          value={text}
+          onChange={(e) => setText(e.target.value)}
+          placeholder={IMPORT_PLACEHOLDER}
+          spellCheck={false}
+          autoFocus
+        />
+        {preview && <ImportPreview preview={preview} />}
+        <div className={styles.importActions}>
+          <button className={styles.secondaryButton} onClick={onCancel} type="button">
+            Cancel
+          </button>
+          <button
+            className={styles.primaryButton}
+            onClick={handleConfirm}
+            disabled={!canImport}
+            type="button"
+          >
+            Import
+            {preview ? ` (${preview.resolved.matchedCards} cards)` : ''}
+          </button>
+        </div>
+      </div>
+    </>
+  )
+}
+
+function ImportPreview({
+  preview,
+}: {
+  preview: {
+    parsed: ReturnType<typeof parseArenaDeckList>
+    resolved: ResolveResult
+  }
+}) {
+  const { parsed, resolved } = preview
+  const issueCount = parsed.errors.length + resolved.unmatched.length + resolved.truncated.length
+  return (
+    <div className={styles.importPreview}>
+      <div className={styles.importSummary}>
+        <span>
+          <strong>{resolved.matchedCards}</strong> matched
+          {resolved.totalCards !== resolved.matchedCards
+            ? ` of ${resolved.totalCards}`
+            : ''}
+        </span>
+        {parsed.sideboard.length > 0 && (
+          <span className={styles.importMutedBadge}>
+            sideboard ignored ({parsed.sideboard.reduce((a, e) => a + e.count, 0)})
+          </span>
+        )}
+        {issueCount > 0 && <span className={styles.importBadBadge}>{issueCount} issue{issueCount === 1 ? '' : 's'}</span>}
+      </div>
+
+      {resolved.unmatched.length > 0 && (
+        <details className={styles.importDetails} open>
+          <summary>Unknown card names ({resolved.unmatched.length})</summary>
+          <ul>
+            {resolved.unmatched.map((u) => (
+              <li key={`${u.entry.line}-${u.entry.raw}`}>
+                Line {u.entry.line}: <code>{u.entry.raw}</code>
+              </li>
+            ))}
+          </ul>
+        </details>
+      )}
+
+      {parsed.errors.length > 0 && (
+        <details className={styles.importDetails}>
+          <summary>Unparseable lines ({parsed.errors.length})</summary>
+          <ul>
+            {parsed.errors.map((e) => (
+              <li key={`${e.line}-${e.raw}`}>
+                Line {e.line}: <code>{e.raw}</code> — {e.reason}
+              </li>
+            ))}
+          </ul>
+        </details>
+      )}
+
+      {resolved.truncated.length > 0 && (
+        <details className={styles.importDetails}>
+          <summary>Capped to 4 copies ({resolved.truncated.length})</summary>
+          <ul>
+            {resolved.truncated.map((t) => (
+              <li key={t.name}>
+                {t.name}: requested {t.requested}, kept {t.capped}
+              </li>
+            ))}
+          </ul>
+        </details>
+      )}
     </div>
   )
 }
