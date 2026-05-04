@@ -36,6 +36,7 @@ object EdgeOfEternitiesSet {
         DarkEndurance,
         Depressurize,
         DiplomaticRelations,
+        DrillTooDeep,
         DualSunAdepts,
         DualSunTechnique,
         DubiousDelicacy,
