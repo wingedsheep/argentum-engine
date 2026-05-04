@@ -2,14 +2,12 @@ package com.wingedsheep.mtg.sets.definitions.edgeofeternities.cards
 
 import com.wingedsheep.sdk.core.Counters
 import com.wingedsheep.sdk.core.Zone
+import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Targets
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.AddCountersEffect
-import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
-import com.wingedsheep.sdk.scripting.references.Player
-import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import com.wingedsheep.sdk.scripting.targets.TargetPermanent
 
@@ -34,11 +32,8 @@ val DrillTooDeep = card("Drill Too Deep") {
             }
             
             mode("Destroy target artifact") {
-                val target = target(
-                    "target artifact",
-                    Targets.Artifact
-                )
-                effect = MoveToZoneEffect(target, Zone.GRAVEYARD, byDestruction = true)
+                val t = target("target artifact", Targets.Artifact)
+                effect = Effects.Destroy(t)
             }
         }
     }

@@ -4,9 +4,12 @@ import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Targets
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
+import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.ModalEffect
 import com.wingedsheep.sdk.scripting.effects.Mode
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
+import com.wingedsheep.sdk.scripting.targets.TargetPermanent
+import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 
 /**
  * Radiant Strike
@@ -20,7 +23,7 @@ val RadiantStrike = card("Radiant Strike") {
     oracleText = "Destroy target artifact or tapped creature. You gain 3 life."
 
     spell {
-        val t = target("target", TargetPermanent(filter = TargetFilter(GameObjectFilter.Artifact or GameObjectFilter.TappedCreature)))
+        val t = target("target", TargetPermanent(filter = TargetFilter(GameObjectFilter.Artifact or GameObjectFilter.Creature.tapped())))
         effect = Effects.Composite(
                     listOf(
                         Effects.Destroy(t),
