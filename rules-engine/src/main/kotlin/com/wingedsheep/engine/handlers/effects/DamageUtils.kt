@@ -179,7 +179,7 @@ object DamageUtils {
                 state.getEntity(sourceId)?.get<SpellGrantedKeywordsComponent>()?.keywords?.contains(Keyword.WITHER.name) == true
             )
             if (hasWither) {
-                // Wither (CR 702.79): damage to creatures is dealt in the form of -1/-1 counters
+                // Wither (CR 702.80): damage to creatures is dealt in the form of -1/-1 counters
                 val counters = newState.getEntity(targetId)?.get<CountersComponent>() ?: CountersComponent()
                 newState = newState.updateEntity(targetId) { container ->
                     container.with(counters.withAdded(CounterType.MINUS_ONE_MINUS_ONE, effectiveAmount))

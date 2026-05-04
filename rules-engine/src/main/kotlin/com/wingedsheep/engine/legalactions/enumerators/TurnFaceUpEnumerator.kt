@@ -14,7 +14,7 @@ import com.wingedsheep.sdk.scripting.costs.PayCost
  * Enumerates turn-face-up actions for face-down creatures on the battlefield.
  *
  * Turning a creature face up is a special action that doesn't use the stack
- * and can be done any time the player has priority (CR 702.36e).
+ * and can be done any time the player has priority (CR 702.37e).
  *
  * Handles morph costs: Mana (including X), PayLife, ReturnToHand, Sacrifice,
  * Discard, RevealCard, and Exile.

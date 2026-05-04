@@ -562,7 +562,7 @@ internal class CombatDamageManager(
     }
 
     /**
-     * Apply combat damage to a planeswalker by removing loyalty counters (Rule 119.3a).
+     * Apply combat damage to a planeswalker by removing loyalty counters (Rule 120.3c).
      * SBA will handle putting it into graveyard if loyalty reaches 0.
      */
     private fun applyDamageToPlaneswalker(
@@ -714,7 +714,7 @@ internal class CombatDamageManager(
             val projected = newState.projectedState
             val hasWither = projected.hasKeyword(sourceId, Keyword.WITHER)
             if (hasWither) {
-                // Wither (CR 702.79): damage to creatures is dealt in the form of -1/-1 counters
+                // Wither (CR 702.80): damage to creatures is dealt in the form of -1/-1 counters
                 val counters = newState.getEntity(targetId)?.get<CountersComponent>() ?: CountersComponent()
                 newState = newState.updateEntity(targetId) { container ->
                     container.with(counters.withAdded(com.wingedsheep.sdk.core.CounterType.MINUS_ONE_MINUS_ONE, amount))

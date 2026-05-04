@@ -39,7 +39,7 @@ import io.kotest.matchers.shouldBe
  * - Activation restrictions (Weathered Wayfarer's "only if an opponent controls
  *   more lands")
  * - Unaffordable cost emits greyed entry
- * - Face-down suppression (Rule 707.2)
+ * - Face-down suppression (Rule 708.2)
  * - Opponent's permanents not surfaced for me
  * - Target-requirement paths — ordinary `TargetCreature` (Visara the Dreadful)
  * - Composite Tap + Sacrifice (Orcish Vandal): `SacrificePermanent` cost info
@@ -241,7 +241,7 @@ class ActivatedAbilityEnumeratorTest : FunSpec({
     }
 
     // -------------------------------------------------------------------------
-    context("Face-down suppression (Rule 707.2)") {
+    context("Face-down suppression (Rule 708.2)") {
 
         test("a face-down permanent produces no activated abilities") {
             val driver = setupP1(

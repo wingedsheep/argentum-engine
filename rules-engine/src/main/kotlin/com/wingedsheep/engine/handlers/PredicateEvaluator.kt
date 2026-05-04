@@ -93,7 +93,7 @@ class PredicateEvaluator {
     /**
      * Evaluate a GameObjectFilter against an entity using projected state.
      * This version uses the projected characteristics (types, colors, keywords)
-     * which correctly handles face-down creatures (Rule 707.2).
+     * which correctly handles face-down creatures (Rule 708.2).
      */
     fun matchesWithProjection(
         state: GameState,
@@ -189,7 +189,7 @@ class PredicateEvaluator {
             CardPredicate.IsMonocolored -> colors.size == 1
 
             // Subtype predicates - use projected subtypes when available (for text-changing effects)
-            // Face-down creatures have no subtypes (Rule 707.2)
+            // Face-down creatures have no subtypes (Rule 708.2)
             is CardPredicate.HasSubtype -> {
                 if (projectedValues?.isFaceDown == true) {
                     false
@@ -241,7 +241,7 @@ class PredicateEvaluator {
             is CardPredicate.HasKeyword -> predicate.keyword.name in keywords
             is CardPredicate.NotKeyword -> predicate.keyword.name !in keywords
 
-            // Mana value predicates - face-down has CMC 0 (Rule 707.2)
+            // Mana value predicates - face-down has CMC 0 (Rule 708.2)
             is CardPredicate.ManaValueEquals -> {
                 val cmc = if (projectedValues?.isFaceDown == true) 0 else card.manaValue
                 cmc == predicate.value
@@ -495,7 +495,7 @@ class PredicateEvaluator {
             CardPredicate.IsMulticolored -> card.colors.size > 1
             CardPredicate.IsMonocolored -> card.colors.size == 1
 
-            // Subtype predicates - face-down creatures have no subtypes (Rule 707.2)
+            // Subtype predicates - face-down creatures have no subtypes (Rule 708.2)
             is CardPredicate.HasSubtype -> {
                 if (container.has<FaceDownComponent>()) false
                 else typeLine.hasSubtype(predicate.subtype) ||
@@ -870,7 +870,7 @@ class PredicateEvaluator {
      * Only card predicates are evaluated — state and controller predicates are skipped
      * since they're not meaningful for historical cast records.
      *
-     * Face-down spells have no characteristics per CR 707.2, so only filters with
+     * Face-down spells have no characteristics per CR 708.2, so only filters with
      * no card predicates (i.e. GameObjectFilter.Any) match them.
      */
     fun matchesFilter(record: CastSpellRecord, filter: GameObjectFilter): Boolean {

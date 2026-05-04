@@ -49,7 +49,7 @@ class ManaAbilityEnumerator : ActionEnumerator {
             val container = state.getEntity(entityId) ?: continue
             val cardComponent = container.get<CardComponent>() ?: continue
 
-            // Face-down creatures have no abilities (Rule 707.2)
+            // Face-down creatures have no abilities (Rule 708.2)
             if (container.has<FaceDownComponent>()) continue
 
             val entityLostAllAbilities = projected.hasLostAllAbilities(entityId)

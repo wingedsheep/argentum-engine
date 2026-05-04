@@ -19,10 +19,10 @@ import kotlin.reflect.KClass
  *
  * Copies a targeted triggered ability on the stack and pushes the copy as a new
  * [TriggeredAbilityOnStackComponent] entity. If the original ability has targets, the
- * copy's controller may choose new targets (Rule 706.10). Modal choices and inherited
- * values (triggering entity, X, counters, etc.) are preserved per Rule 707.7/707.10.
+ * copy's controller may choose new targets (Rule 707.10c). Modal choices and inherited
+ * values (triggering entity, X, counters, etc.) are preserved per Rule 707.10.
  *
- * Per Rule 706.10: "A copy of a spell or ability isn't cast or activated. The copy is
+ * Per Rule 707.10: "A copy of a spell or ability isn't cast or activated. The copy is
  * created on the stack. The copy's controller is the controller of the spell or ability
  * that created it."
  */
@@ -119,8 +119,8 @@ class CopyTargetTriggeredAbilityExecutor(
         /**
          * Clone a source triggered ability into a fresh component. The copy inherits
          * every cast-time value (triggering entity, X, counter counts, modal choices,
-         * chosen modes, damage distribution) per Rule 707.7/707.10, and is controlled
-         * by [copyController] per Rule 706.10.
+         * chosen modes, damage distribution) per Rule 707.10, and is controlled
+         * by [copyController] per Rule 707.10.
          */
         fun cloneAbility(
             source: TriggeredAbilityOnStackComponent,

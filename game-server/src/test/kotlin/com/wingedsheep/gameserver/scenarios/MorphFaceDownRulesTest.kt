@@ -14,7 +14,7 @@ import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 
 /**
- * Scenario tests for face-down morph creature rules (Rule 707.2).
+ * Scenario tests for face-down morph creature rules (Rule 708.2).
  *
  * A face-down creature is a 2/2 colorless creature with no name, no creature types,
  * and no abilities. It can only be turned face-up by paying its morph cost.
@@ -28,7 +28,7 @@ import io.kotest.matchers.shouldNotBe
 class MorphFaceDownRulesTest : ScenarioTestBase() {
 
     init {
-        context("Face-down creatures and group effects (Rule 707.2)") {
+        context("Face-down creatures and group effects (Rule 708.2)") {
 
             test("Akroma's Blessing grants protection to face-down morph creature") {
                 // Face-down creatures are creatures, so "Creatures you control gain protection"
@@ -90,7 +90,7 @@ class MorphFaceDownRulesTest : ScenarioTestBase() {
             }
         }
 
-        context("Face-down creatures have no abilities (Rule 707.2)") {
+        context("Face-down creatures have no abilities (Rule 708.2)") {
 
             test("face-down Whipcorder cannot use its tap ability") {
                 // Whipcorder has "{W}, {T}: Tap target creature" but face-down it has no abilities.

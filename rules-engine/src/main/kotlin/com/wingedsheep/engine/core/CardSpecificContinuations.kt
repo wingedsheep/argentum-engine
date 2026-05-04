@@ -136,7 +136,7 @@ data class StormCopyTargetContinuation(
 ) : ContinuationFrame
 
 /**
- * Resume Storm modal target selection (rule 702.40a + 707.7c).
+ * Resume Storm modal target selection (rule 702.40a + 707.10).
  *
  * Modal Storm spells keep their chosen modes on every copy (700.2g — modes are
  * decided once by the caster), but the copy controller may re-choose targets

@@ -325,7 +325,7 @@ class TriggerMatcher(
                 when (predicate) {
                     is com.wingedsheep.sdk.scripting.predicates.CardPredicate.IsCreature -> {
                         // For dying creatures: use base state (they're already in graveyard)
-                        // Face-down permanents are 2/2 creatures (Rule 707.2) and count.
+                        // Face-down permanents are 2/2 creatures (Rule 708.2) and count.
                         val isCreature = isFaceDown || typeLine?.isCreature == true
                         if (!isCreature) return false
                     }
@@ -704,7 +704,7 @@ class TriggerMatcher(
 
         val container = state.getEntity(event.spellEntityId) ?: return false
 
-        // Face-down spells have no characteristics (CR 707.2) — they don't match any type filter
+        // Face-down spells have no characteristics (CR 708.2) — they don't match any type filter
         val isFaceDown = container.get<SpellOnStackComponent>()?.castFaceDown == true
         if (isFaceDown) return false
 

@@ -303,7 +303,7 @@ class StackResolver(
     /**
      * Put a copy of a spell on the stack.
      *
-     * Per rule 707.7/707.12, a copy of an instant or sorcery spell is itself a spell on the
+     * Per rule 707.10, a copy of an instant or sorcery spell is itself a spell on the
      * stack with the original's characteristics. We clone the source's [CardComponent] and
      * [SpellOnStackComponent] onto a new entity, tag it with [CopyOfComponent], and push it.
      *
@@ -354,10 +354,10 @@ class StackResolver(
         }
 
         // Clone the card characteristics. The CardComponent keeps the same cardDefinitionId,
-        // name, types, colors, mana cost, and spellEffect (707.7c / 707.12).
+        // name, types, colors, mana cost, and spellEffect (707.10).
         val copiedCardComp = sourceCard.copy(ownerId = copyController)
 
-        // Clone cast-time state; per 707.7c the copy inherits every decision made for
+        // Clone cast-time state; per 707.10 the copy inherits every decision made for
         // the original. The data-class copy preserves: xValue, wasKicked, wasBlightPaid,
         // wasWarped, wasEvoked, sacrificedPermanents (snapshots of P/T + subtypes), damageDistribution,
         // chosenCreatureType, exiledCardCount, castFromZone, beheldCards, and the
@@ -916,7 +916,7 @@ class StackResolver(
         }
 
         // Handle double-faced cards entering the battlefield (Rule 712)
-        // DFCs always enter on their front face (Rule 712.4).
+        // A resolving DFC spell enters with the same face that was up on the stack (Rule 712.13).
         if (cardDef != null && !spellComponent.castFaceDown && cardDef.isDoubleFaced) {
             val backFace = cardDef.backFace!!
             newState = newState.updateEntity(spellId) { c ->

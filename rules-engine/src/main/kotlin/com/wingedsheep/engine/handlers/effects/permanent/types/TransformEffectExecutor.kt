@@ -17,7 +17,7 @@ import com.wingedsheep.sdk.scripting.effects.TransformEffect
 import kotlin.reflect.KClass
 
 /**
- * Executor for [TransformEffect] (CR 701.28).
+ * Executor for [TransformEffect] (CR 701.27).
  *
  * Swaps the target's [CardComponent] to the opposite face of its [DoubleFacedComponent].
  * Counters, damage, attachments, controller, and timestamp all persist — only the identity
@@ -52,7 +52,7 @@ class TransformEffectExecutor(
         val dfc = container.get<DoubleFacedComponent>()
             ?: return EffectResult.error(state, "Target is not a double-faced permanent")
 
-        // Rule 712.4a: transforming a DFC flips to the opposite face.
+        // Rule 701.27a: transforming a DFC flips to the opposite face.
         val nextFace = when (dfc.currentFace) {
             DoubleFacedComponent.Face.FRONT -> DoubleFacedComponent.Face.BACK
             DoubleFacedComponent.Face.BACK -> DoubleFacedComponent.Face.FRONT

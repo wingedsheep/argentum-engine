@@ -131,7 +131,7 @@ class ModalCopyPreservationTest : FunSpec({
         // Both pass so Copy Spell resolves first (LIFO).
         d.bothPass()
 
-        // Per 706.10d, resolution pauses asking the copy's controller (P2) to pick new
+        // Per 707.10c, resolution pauses asking the copy's controller (P2) to pick new
         // targets for each targeted mode. First prompt: mode index 2 ("target creature
         // you control +3/+3") — P2's only creature is Goblin Guide.
         val firstDecision = d.pendingDecision

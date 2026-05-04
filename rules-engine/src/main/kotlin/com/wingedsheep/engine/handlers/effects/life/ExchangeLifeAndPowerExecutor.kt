@@ -21,10 +21,10 @@ import kotlin.reflect.KClass
  * Executor for ExchangeLifeAndPowerEffect.
  * Exchanges a player's life total with a creature's power.
  *
- * Per MTG Rule 118.7, the exchange is simultaneous:
+ * Per MTG Rule 701.12g, the exchange is simultaneous:
  * 1. Read both the player's life total and the creature's projected power
  * 2. Set the creature's base power to the player's former life total (floating effect at Layer 7b)
- * 3. Set the player's life total to the creature's former power (gain/lose per Rule 118.5)
+ * 3. Set the player's life total to the creature's former power (gain/lose per Rule 119.3)
  *
  * If the creature isn't on the battlefield when the ability resolves, the exchange doesn't happen.
  */

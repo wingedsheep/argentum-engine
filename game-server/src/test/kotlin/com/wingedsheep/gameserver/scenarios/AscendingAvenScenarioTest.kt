@@ -19,13 +19,13 @@ import io.kotest.matchers.shouldNotBe
  * Ascending Aven: {2}{U}{U} 3/2 Bird Soldier
  * "Flying. Ascending Aven can block only creatures with flying. Morph {2}{U}"
  *
- * Key rule (Rule 707.2): face-down creatures have no abilities. While face-down,
+ * Key rule (Rule 708.2): face-down creatures have no abilities. While face-down,
  * Ascending Aven is a vanilla 2/2 and its blocking restriction does not apply.
  */
 class AscendingAvenScenarioTest : ScenarioTestBase() {
 
     init {
-        context("Ascending Aven face-down loses its blocking restriction (Rule 707.2)") {
+        context("Ascending Aven face-down loses its blocking restriction (Rule 708.2)") {
 
             test("face-down Ascending Aven can block a non-flying creature") {
                 // Set up on player 1's turn so they can cast the morph
@@ -75,7 +75,7 @@ class AscendingAvenScenarioTest : ScenarioTestBase() {
                 game.passUntilPhase(Phase.COMBAT, Step.DECLARE_BLOCKERS)
 
                 // Player 1 blocks with face-down Ascending Aven — should succeed because
-                // face-down creatures have no abilities (Rule 707.2), so the
+                // face-down creatures have no abilities (Rule 708.2), so the
                 // "can block only creatures with flying" restriction is gone
                 val blockResult = game.execute(
                     DeclareBlockers(game.player1Id, mapOf(faceDownId!! to listOf(bearsId)))

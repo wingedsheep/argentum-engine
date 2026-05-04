@@ -47,7 +47,7 @@ class AutoPassManager {
     private val logger = LoggerFactory.getLogger(AutoPassManager::class.java)
 
     companion object {
-        /** Combat steps the engine auto-skips when no creatures are attacking (CR 508.8, 510.4, 511.4) */
+        /** Combat steps the engine auto-skips when no creatures are attacking (CR 508.8) */
         private val COMBAT_STEPS_SKIPPED_WITHOUT_ATTACKERS = setOf(
             Step.DECLARE_BLOCKERS,
             Step.FIRST_STRIKE_COMBAT_DAMAGE,
@@ -429,7 +429,7 @@ class AutoPassManager {
             }
 
             // Declare Attackers (after declaration) - STOP if we have instant-speed responses.
-            // This is the priority window after attackers are declared (CR 507.4) where
+            // This is the priority window after attackers are declared (CR 508.2) where
             // the defending player can cast instants/activate abilities before blockers.
             Step.DECLARE_ATTACKERS -> {
                 if (hasInstantSpeedResponses) {

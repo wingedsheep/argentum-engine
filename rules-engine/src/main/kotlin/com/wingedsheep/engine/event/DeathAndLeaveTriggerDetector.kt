@@ -41,7 +41,7 @@ class DeathAndLeaveTriggerDetector(
     private fun resolveDyingEntity(state: GameState, event: ZoneChangeEvent): DyingEntityInfo? {
         val container = state.getEntity(event.entityId)
         if (container != null) {
-            // Face-down creatures have no abilities (Rule 707.2)
+            // Face-down creatures have no abilities (Rule 708.2)
             if (container.has<FaceDownComponent>()) return null
             val cardComponent = container.get<CardComponent>() ?: return null
             return DyingEntityInfo(cardComponent.cardDefinitionId, cardComponent.name)

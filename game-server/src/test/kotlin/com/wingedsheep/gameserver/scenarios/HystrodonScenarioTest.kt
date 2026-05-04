@@ -193,7 +193,7 @@ class HystrodonScenarioTest : ScenarioTestBase() {
 
         context("Hystrodon morph") {
 
-            test("face-down Hystrodon does not trigger draw on combat damage (Rule 707.2)") {
+            test("face-down Hystrodon does not trigger draw on combat damage (Rule 708.2)") {
                 val game = scenario()
                     .withPlayers("Attacker", "Defender")
                     .withCardOnBattlefield(1, "Hystrodon")

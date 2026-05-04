@@ -36,7 +36,7 @@ data class ZoneChangeEvent(
     val lastKnownMinusOneMinusOneCounterCount: Int = 0,
     /** Last known total counter count (all counter types) when leaving battlefield. Used by triggers that care about any counter (e.g., Shadow Urchin). */
     val lastKnownTotalCounterCount: Int = 0,
-    /** True if the leaving entity was a token. Used to suppress persist-style return triggers on tokens (Rule 702.79b). */
+    /** True if the leaving entity was a token. Used to suppress persist-style return triggers on tokens (Rule 704.5d — tokens cease to exist when they leave the battlefield). */
     val lastKnownWasToken: Boolean = false,
     /** Last known projected power when leaving battlefield (for trigger filters needing last known info) */
     val lastKnownPower: Int? = null,
@@ -767,7 +767,7 @@ data class TurnedFaceDownEvent(
 ) : GameEvent
 
 /**
- * A double-faced permanent transformed (CR 701.28).
+ * A double-faced permanent transformed (CR 701.27).
  *
  * [intoBackFace] is true when the permanent transformed from its front face to its back face,
  * and false when it transformed from its back face to its front face.

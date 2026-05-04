@@ -1630,7 +1630,7 @@ class TriggerDetector(
         val container = state.getEntity(entityId) ?: return
         val cardComponent = container.get<CardComponent>() ?: return
 
-        // Face-down creatures have no abilities (Rule 707.2)
+        // Face-down creatures have no abilities (Rule 708.2)
         if (container.has<FaceDownComponent>()) return
 
         // Only fire if control actually changed

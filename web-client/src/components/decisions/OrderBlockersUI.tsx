@@ -12,10 +12,11 @@ interface OrderBlockersUIProps {
 /**
  * UI for ordering blockers for damage assignment.
  *
- * Per MTG CR 509.2, when an attacker is blocked by multiple creatures,
- * the attacking player must declare the order in which blockers receive damage.
- * The first creature in the order receives damage first, and must receive
- * lethal damage before the next can receive any.
+ * Per MTG CR 510.1c, when an attacker is blocked by multiple creatures,
+ * its damage is divided among them as the attacker's controller chooses.
+ * The engine surfaces this as an explicit ordering: the first creature in
+ * the order receives damage first, and must receive lethal damage before
+ * the next can receive any.
  *
  * Features:
  * - Full-screen dark overlay

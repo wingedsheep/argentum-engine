@@ -10,7 +10,7 @@ import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 
 /**
- * Scenario tests for the Wither keyword (CR 702.79).
+ * Scenario tests for the Wither keyword (CR 702.80).
  *
  * Wither: damage dealt to creatures is dealt in the form of -1/-1 counters.
  * Damage to players is unaffected. Lifelink and damage triggers still fire.

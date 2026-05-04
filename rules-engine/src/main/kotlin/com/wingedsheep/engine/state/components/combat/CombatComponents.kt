@@ -40,8 +40,9 @@ data class DamageAssignmentComponent(
  * Stores the order in which blockers receive damage from an attacker.
  * Set during the Declare Blockers step when an attacker is blocked by multiple creatures.
  *
- * Per Rule 509.2: "The attacking player announces the damage assignment order
- * among the blocking creatures."
+ * Per Rule 510.1c: an attacker blocked by 2+ creatures has its damage divided
+ * among them as its controller chooses; the engine surfaces this as an explicit
+ * ordering of blockers.
  *
  * @property orderedBlockers Index 0 is the first creature to receive damage
  */
@@ -101,8 +102,9 @@ data object BlockersDeclaredThisCombatComponent : Component
  * Stores the order in which attackers receive damage from a blocker that blocks multiple attackers.
  * Set during the Declare Blockers step when a blocker blocks multiple attacking creatures.
  *
- * Per Rule 509.3: The attacking player announces the damage assignment order
- * among the attacking creatures the blocker is blocking.
+ * Per Rule 510.1d: a blocker blocking 2+ attackers has its damage divided
+ * among them as its controller chooses; the engine surfaces this as an explicit
+ * ordering of attackers.
  *
  * @property orderedAttackers Index 0 is the first creature to receive damage
  */

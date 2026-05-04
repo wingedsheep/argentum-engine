@@ -12,7 +12,7 @@ import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 
 /**
- * Face-down morph spells have no characteristics (CR 707.2), so they should NOT
+ * Face-down morph spells have no characteristics (CR 708.2), so they should NOT
  * trigger "whenever you cast a historic spell" abilities like Daring Archaeologist.
  */
 class MorphFaceDownHistoricTest : ScenarioTestBase() {

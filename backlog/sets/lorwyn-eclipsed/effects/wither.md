@@ -9,7 +9,7 @@
 
 > Wither *(This deals damage to creatures in the form of -1/-1 counters.)*
 
-CR 702.79: when a source with wither would deal damage to a creature, that damage is replaced by
+CR 702.80: when a source with wither would deal damage to a creature, that damage is replaced by
 putting that many -1/-1 counters on the creature instead. Still counts as damage dealt for
 triggered abilities like lifelink and "whenever this deals damage" hooks.
 

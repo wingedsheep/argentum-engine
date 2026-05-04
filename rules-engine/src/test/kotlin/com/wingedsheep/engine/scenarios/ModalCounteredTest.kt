@@ -83,7 +83,7 @@ class ModalCounteredTest : FunSpec({
             )
         ).isSuccess shouldBe true
 
-        // Command sits on the stack; per Rule 117.1 the active player retains priority
+        // Command sits on the stack; per Rule 117.3c the active player retains priority
         // immediately after casting a spell. P1 passes so P2 gets priority.
         d.state.stack.size shouldBe 1
         d.state.priorityPlayerId shouldBe p1

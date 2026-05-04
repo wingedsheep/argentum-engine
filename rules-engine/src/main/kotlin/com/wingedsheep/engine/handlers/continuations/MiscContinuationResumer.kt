@@ -218,7 +218,7 @@ class MiscContinuationResumer(
             legalTargetsMap[index] = legalTargets
         }
 
-        // 707.7b: if no legal replacement exists for any remaining copy, still put
+        // 707.10c: if no legal replacement exists for any remaining copy, still put
         // each copy on the stack inheriting the source's (illegal) targets so it
         // fizzles on resolution per 608.2b / 112.3b. The battlefield doesn't change
         // between copy creations, so legality is the same for all remaining copies.

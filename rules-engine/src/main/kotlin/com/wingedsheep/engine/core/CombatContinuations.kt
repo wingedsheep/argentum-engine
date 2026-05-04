@@ -37,9 +37,10 @@ data class AssignAsUnblockedContinuation(
 /**
  * Resume after attacking player declares damage assignment order for blockers.
  *
- * Per MTG CR 509.2, after the defending player declares blockers, the attacking
- * player must declare the damage assignment order for each attacking creature
- * that's blocked by multiple creatures.
+ * Per MTG CR 510.1c, an attacking creature blocked by two or more creatures
+ * assigns its combat damage to those creatures divided as its controller chooses.
+ * The engine surfaces this as an explicit ordering decision so the attacking
+ * player can specify the division before damage is dealt.
  *
  * @property attackingPlayerId The attacking player who must order the blockers
  * @property attackerId The attacking creature whose blockers are being ordered
@@ -59,7 +60,7 @@ data class BlockerOrderContinuation(
  * Resume after the attacking player orders their attackers for a blocker's damage assignment.
  *
  * When a single blocker blocks multiple attackers, the attacking player must order those
- * attackers to determine how the blocker divides its combat damage (CR 509.3).
+ * attackers to determine how the blocker divides its combat damage (CR 510.1d).
  *
  * @property attackingPlayerId The attacking player who must order their attackers
  * @property blockerId The blocking creature whose attackers are being ordered

@@ -79,7 +79,7 @@ class SmotherScenarioTest : ScenarioTestBase() {
                 }
             }
 
-            test("can target face-down morph creature (mana value 0 per Rule 707.2)") {
+            test("can target face-down morph creature (mana value 0 per Rule 708.2)") {
                 // Battering Craghorn costs 2RR (MV 4) face-up, but face-down it has MV 0
                 val game = scenario()
                     .withPlayers("Player", "Opponent")

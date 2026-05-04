@@ -128,7 +128,7 @@ class HeedlessOneScenarioTest : ScenarioTestBase() {
                 }
             }
 
-            test("face-down Elf does not count as an Elf (Rule 707.2)") {
+            test("face-down Elf does not count as an Elf (Rule 708.2)") {
                 val game = scenario()
                     .withPlayers("Player", "Opponent")
                     .withCardOnBattlefield(1, "Heedless One")

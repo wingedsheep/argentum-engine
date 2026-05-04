@@ -28,7 +28,7 @@ import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 
 /**
- * Phase 5 of `backlog/storm-implementation-correctness.md`: per rule 707.7b a
+ * Phase 5 of `backlog/storm-implementation-correctness.md`: per rule 707.10c a
  * copy whose targets can't be legally replaced is still put on the stack — it
  * then fizzles on resolution per 608.2b / 112.3b. Previously the executor
  * short-circuited and silently skipped the copy when no legal targets existed.

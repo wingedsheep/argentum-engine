@@ -97,7 +97,7 @@ class ThrashingMudspawnScenarioTest : ScenarioTestBase() {
         }
 
         context("Thrashing Mudspawn morph - face-down should not trigger") {
-            test("face-down Thrashing Mudspawn does not trigger life loss when dealt damage (Rule 707.2)") {
+            test("face-down Thrashing Mudspawn does not trigger life loss when dealt damage (Rule 708.2)") {
                 val game = scenario()
                     .withPlayers("Player", "Opponent")
                     .withCardInHand(1, "Thrashing Mudspawn")
@@ -141,13 +141,13 @@ class ThrashingMudspawnScenarioTest : ScenarioTestBase() {
                 game.resolveStack()
 
                 // Face-down creature is 2/2, Shock deals 2 — it dies
-                // But the trigger should NOT have fired (Rule 707.2)
+                // But the trigger should NOT have fired (Rule 708.2)
                 withClue("Controller should NOT lose life from face-down trigger") {
                     game.getLifeTotal(1) shouldBe initialLife
                 }
             }
 
-            test("face-down Thrashing Mudspawn survives 1 damage and does not trigger (Rule 707.2)") {
+            test("face-down Thrashing Mudspawn survives 1 damage and does not trigger (Rule 708.2)") {
                 val game = scenario()
                     .withPlayers("Player", "Opponent")
                     .withCardInHand(1, "Thrashing Mudspawn")
@@ -197,13 +197,13 @@ class ThrashingMudspawnScenarioTest : ScenarioTestBase() {
                     } shouldBe true
                 }
 
-                // Trigger should NOT have fired (Rule 707.2)
+                // Trigger should NOT have fired (Rule 708.2)
                 withClue("Controller should NOT lose life from face-down trigger") {
                     game.getLifeTotal(1) shouldBe initialLife
                 }
             }
 
-            test("face-down Thrashing Mudspawn blocking does not trigger life loss from combat damage (Rule 707.2)") {
+            test("face-down Thrashing Mudspawn blocking does not trigger life loss from combat damage (Rule 708.2)") {
                 val game = scenario()
                     .withPlayers("Defender", "Attacker")
                     .withCardInHand(1, "Thrashing Mudspawn")
@@ -249,7 +249,7 @@ class ThrashingMudspawnScenarioTest : ScenarioTestBase() {
                     iterations++
                 }
 
-                // Trigger should NOT have fired (Rule 707.2)
+                // Trigger should NOT have fired (Rule 708.2)
                 withClue("Controller should NOT lose life from face-down combat damage trigger") {
                     game.getLifeTotal(1) shouldBe initialLife
                 }

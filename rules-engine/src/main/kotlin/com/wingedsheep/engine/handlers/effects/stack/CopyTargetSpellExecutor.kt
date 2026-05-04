@@ -57,7 +57,7 @@ class CopyTargetSpellExecutor(
         val inheritedChosenModes = sourceSpell?.chosenModes ?: emptyList()
         val inheritedModeTargetRequirements = sourceSpell?.modeTargetRequirements ?: emptyMap()
 
-        // Modal source (700.2g): modes are fixed for the copy, but per 706.10d the
+        // Modal source (700.2g): modes are fixed for the copy, but per 707.10c the
         // copy controller may pick new targets per mode. If no mode has target
         // requirements, inherit verbatim; otherwise drive per-mode retargeting via
         // StormCopyEffectExecutor.driveStormModalCopies with a single copy.

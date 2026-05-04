@@ -14,9 +14,9 @@ import io.kotest.matchers.types.shouldBeInstanceOf
 /**
  * Scenario tests for blocker damage assignment order.
  *
- * Per MTG CR 509.2: After blockers are declared, the attacking player must
- * declare the damage assignment order for each attacking creature that is
- * blocked by two or more creatures.
+ * Per MTG CR 510.1c: an attacker blocked by 2+ creatures has its damage
+ * divided among them as its controller chooses; the engine surfaces this
+ * as an explicit ordering of blockers.
  *
  * These tests verify:
  * 1. The game pauses for blocker order decision when multiple blockers exist

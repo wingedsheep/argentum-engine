@@ -11,7 +11,7 @@
 
 **Scourge Storm cards currently relying on this:** Tendrils of Agony, Dragonstorm, Wing Shards, Sprouting Vines, Mind's Desire, Astral Steel, Hindering Touch, Brain Freeze, Scattershot, Hunting Pack, Reaping the Graves, Temporal Fissure. Also: Ral, Crackling Wit (grants Storm via emblem).
 
-**Relevant comprehensive rules:** 702.40, 707.7, 707.10, 707.12, 608.2b, 603.3b.
+**Relevant comprehensive rules:** 702.40, 707.10, 608.2b, 603.3b.
 
 ---
 
@@ -25,10 +25,8 @@ From CR 702.40 (verbatim, 2026-02-27):
 
 Cross-referenced rules that matter for copies:
 
-- **707.7c** — a copy of a spell copies the characteristics *and all decisions made* for it, including modes, targets, the value of X, divided damage, and additional/alternative costs paid. The copy's controller may choose new targets (Storm explicitly allows this).
-- **707.7b** — if, when the copy would be put on the stack, the spell it's copying has illegal targets that the copier's controller can't replace, the copy is still put on the stack but will fizzle on resolution.
-- **707.10** — "The act of copying a spell or ability is not the same as casting or activating." Copies aren't cast — they don't trigger "whenever you cast" abilities, and they don't count toward Storm for later spells.
-- **707.12** — the copy is a spell (for instants/sorceries) with the same name, types, subtypes, colors, mana value — meaning it can be countered, can be the target of "target spell" effects, etc.
+- **707.10** — a copy of a spell copies the characteristics *and all decisions made* for it, including modes, targets, the value of X, divided damage, and additional/alternative costs paid. The copy is itself a spell on the stack (countertargetable, etc.), it isn't cast (so "whenever you cast" abilities don't trigger and it doesn't count toward Storm later), and the copy's controller may choose new targets if the effect creating the copy allows.
+- **707.10c** — if, when the copy would be put on the stack, the spell it's copying has illegal targets that the copier's controller can't replace, the copy is still put on the stack but will fizzle on resolution.
 - **603.3b** — when the Storm spell is cast, Storm triggers and goes on the stack *on top of* the spell itself. Storm resolves first (creating copies), then the spell resolves.
 
 ---
@@ -73,7 +71,7 @@ Since `applyTextReplacement(...)` is already wired into the effect hierarchy and
 
 ### 3. Cast-time decisions other than chosen modes are not propagated to copies
 
-Per 707.7c, a copy inherits *all* decisions made for the original. Today we only copy `chosenModes` / `modeTargetsOrdered` / `modeTargetRequirements`. We drop everything else that's stored on `SpellOnStackComponent`:
+Per 707.10, a copy inherits *all* decisions made for the original. Today we only copy `chosenModes` / `modeTargetsOrdered` / `modeTargetRequirements`. We drop everything else that's stored on `SpellOnStackComponent`:
 
 | Field dropped | Affected scenario |
 |---|---|
@@ -94,7 +92,7 @@ We should build copies by cloning the `SpellOnStackComponent` of the original (m
 
 ### 5. No-legal-targets copies are skipped instead of fizzling on the stack
 
-Per 707.7b, a copy that has no legal replacement for an illegal target is *still put on the stack* and fails to resolve. `StormCopyEffectExecutor.kt` lines 114–118 just return success with no state change when any requirement has zero legal targets, so:
+Per 707.10c, a copy that has no legal replacement for an illegal target is *still put on the stack* and fails to resolve. `StormCopyEffectExecutor.kt` lines 114–118 just return success with no state change when any requirement has zero legal targets, so:
 
 - Downstream "whenever a copy is put onto the stack" style triggers don't fire.
 - Players/opponents don't see the copy appear briefly (stack-based log).

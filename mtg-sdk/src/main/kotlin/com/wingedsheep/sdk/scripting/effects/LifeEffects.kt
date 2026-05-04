@@ -123,9 +123,9 @@ data class SetLifeTotalEffect(
  * Exchange a player's life total with a creature's power.
  * "{4}: Exchange your life total with Evra's power."
  *
- * Per MTG Rule 118.7, the exchange is simultaneous — the creature's power becomes the
+ * Per MTG Rule 701.12g, the exchange is simultaneous — the creature's power becomes the
  * player's former life total, and the player's life total becomes the creature's former power.
- * The life change follows Rule 118.5 (gain or lose the necessary amount of life).
+ * The life change follows Rule 119.3 (gain or lose the necessary amount of life).
  * The power change creates a floating effect at Layer 7b (SET_VALUES).
  *
  * @property target The creature whose power is being exchanged (defaults to Self)

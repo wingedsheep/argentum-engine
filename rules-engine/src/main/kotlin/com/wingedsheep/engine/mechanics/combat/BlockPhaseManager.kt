@@ -123,8 +123,8 @@ internal class BlockPhaseManager(
         val blockersEvent = BlockersDeclaredEvent(blockers, blockerNameMap, attackerNameMap)
         val blockTaxEvents = blockTaxResult.events
 
-        // Per MTG CR 509.2: After blockers are declared, the attacking player must
-        // declare damage assignment order for each attacker blocked by 2+ creatures
+        // Per MTG CR 510.1c: An attacker blocked by 2+ creatures has its damage divided
+        // among them as its controller chooses; the engine collects this as an explicit order
         val attackersNeedingOrder = findAttackersWithMultipleBlockers(newState)
         if (attackersNeedingOrder.isNotEmpty()) {
             val attackingPlayer = state.activePlayerId!!
@@ -137,8 +137,8 @@ internal class BlockPhaseManager(
             )
         }
 
-        // Per MTG CR 509.3: The attacking player must also declare damage assignment
-        // order for each blocker that blocks 2+ attacking creatures
+        // Per MTG CR 510.1d: A blocker blocking 2+ attackers has its damage divided
+        // among them as its controller chooses; the engine collects this as an explicit order
         val blockersNeedingOrder = findBlockersWithMultipleAttackers(newState)
         if (blockersNeedingOrder.isNotEmpty()) {
             val attackingPlayer = state.activePlayerId!!
@@ -682,7 +682,7 @@ internal class BlockPhaseManager(
 
     /**
      * Create a pending decision for the attacking player to order their attackers
-     * for a blocker's damage assignment (CR 509.3).
+     * for a blocker's damage assignment (CR 510.1d).
      */
     fun createAttackerOrderDecision(
         state: GameState,

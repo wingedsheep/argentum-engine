@@ -28,7 +28,7 @@ import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 
 /**
- * Phase 3 of `backlog/storm-implementation-correctness.md`: per rule 707.7c the copy
+ * Phase 3 of `backlog/storm-implementation-correctness.md`: per rule 707.10 the copy
  * inherits *all* decisions made for the original — modes, targets, and the broader
  * cast-time state (X, kicker, warp, evoke, sacrifices, divided damage, chosen creature
  * type, variable exile count, beheld cards, mana-spent colors, the zone cast from).

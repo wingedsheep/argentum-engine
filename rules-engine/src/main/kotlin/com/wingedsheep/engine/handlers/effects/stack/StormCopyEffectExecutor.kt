@@ -126,7 +126,7 @@ class StormCopyEffectExecutor(
 
         // Walk copies one at a time. If the copy can be retargeted legally, pause
         // with a ChooseTargetsDecision; otherwise put it on the stack inheriting
-        // the source's (now-illegal) targets per 707.7b — it fizzles on resolution
+        // the source's (now-illegal) targets per 707.10c — it fizzles on resolution
         // per 608.2b / 112.3b.
         while (copiesLeft > 0) {
             val legalTargetsMap = mutableMapOf<Int, List<EntityId>>()
@@ -257,7 +257,7 @@ class StormCopyEffectExecutor(
 
                     val hasNoLegalTargets = legalTargetsMap.any { (_, t) -> t.isEmpty() }
                     if (hasNoLegalTargets) {
-                        // 707.7b: no legal replacement — the copy still goes on the stack
+                        // 707.10c: no legal replacement — the copy still goes on the stack
                         // with the source's (now-illegal) targets for this mode and fizzles
                         // on resolution per 608.2b / 112.3b.
                         accumulated = accumulated + listOf(sourceModeTargetsOrdered.getOrNull(ordinal) ?: emptyList())

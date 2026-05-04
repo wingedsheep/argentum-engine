@@ -131,7 +131,7 @@ class PersistScenarioTest : FunSpec({
         driver.getGraveyardCardNames(caster).count { it == "Safehold Elite" } shouldBe 1
     }
 
-    test("persist does not fire on tokens (Rule 702.79b)") {
+    test("persist does not fire on tokens (Rule 704.5d — tokens cease to exist)") {
         val driver = createDriver()
         val caster = driver.activePlayer!!
 

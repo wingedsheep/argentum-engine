@@ -271,7 +271,7 @@ class TargetValidator {
             return "Target must be on the battlefield"
         }
 
-        // Use unified filter with projection (face-down creatures have CMC 0 per Rule 707.2)
+        // Use unified filter with projection (face-down creatures have CMC 0 per Rule 708.2)
         val projected = state.projectedState
         val predicateContext = PredicateContext(controllerId = casterId, sourceId = sourceId)
         val matches = predicateEvaluator.matchesWithProjection(state, projected, target.entityId, filter.baseFilter, predicateContext)
@@ -344,7 +344,7 @@ class TargetValidator {
                     ?: return "Target not found"
                 val cardComponent = container.get<CardComponent>()
                     ?: return "Target is not a card"
-                // Face-down permanents are always creatures (Rule 707.2)
+                // Face-down permanents are always creatures (Rule 708.2)
                 if (!cardComponent.typeLine.isCreature && !container.has<FaceDownComponent>()) {
                     return "Target must be a creature or player"
                 }
@@ -417,7 +417,7 @@ class TargetValidator {
         val cardComponent = container.get<CardComponent>()
             ?: return "Target is not a card"
         val isPlaneswalker = CardType.PLANESWALKER in cardComponent.typeLine.cardTypes
-        // Face-down permanents are always creatures (Rule 707.2)
+        // Face-down permanents are always creatures (Rule 708.2)
         val isFaceDown = container.has<FaceDownComponent>()
         if (!cardComponent.typeLine.isCreature && !isPlaneswalker && !isFaceDown) {
             return "Target must be a creature or planeswalker"
