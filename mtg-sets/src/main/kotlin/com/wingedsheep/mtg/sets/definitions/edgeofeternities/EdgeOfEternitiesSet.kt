@@ -26,6 +26,7 @@ object EdgeOfEternitiesSet {
         BeamsawProspector,
         AuxiliaryBoosters,
         AtomicMicrosizer,
+        BiomechanEngineer,
         BiosynthicBurst,
         BloomingStinger,
         Bombard,

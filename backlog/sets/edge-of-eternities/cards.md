@@ -2,7 +2,7 @@
 
 **Set Size:** 261 booster cards (excluding basic lands)
 **Release Date:** August 1, 2025
-**Implemented:** 51 / 261
+**Implemented:** 52 / 261
 
 ---
 
@@ -22,7 +22,7 @@
 - [x] Beamsaw Prospector
 - [ ] Beyond the Quiet
 - [ ] Bioengineered Future
-- [ ] Biomechan Engineer
+- [x] Biomechan Engineer
 - [x] Biosynthic Burst
 - [ ] Biotech Specialist
 - [ ] Blade of the Swarm
