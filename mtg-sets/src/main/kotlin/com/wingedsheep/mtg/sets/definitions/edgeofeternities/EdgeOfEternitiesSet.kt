@@ -63,6 +63,7 @@ object EdgeOfEternitiesSet {
         KavaronHarrier,
         LumenClassFrigate,
         MeldedMoxite,
+        MeltstridersGear,
         MolecularModifier,
         RemnantElemental,
         RigForWar,

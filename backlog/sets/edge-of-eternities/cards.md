@@ -2,7 +2,7 @@
 
 **Set Size:** 261 booster cards (excluding basic lands)
 **Release Date:** August 1, 2025
-**Implemented:** 59 / 261
+**Implemented:** 60 / 261
 
 ---
 
@@ -138,7 +138,7 @@
 - [ ] Mechan Shieldmate
 - [x] Melded Moxite
 - [ ] Meltstrider Eulogist
-- [ ] Meltstrider's Gear
+- [x] Meltstrider's Gear
 - [ ] Meltstrider's Resolve
 - [ ] Memorial Team Leader
 - [ ] Memorial Vault
