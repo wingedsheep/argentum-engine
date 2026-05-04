@@ -1,0 +1,36 @@
+{
+  "player1Name": "Phyrexian",
+  "player2Name": "Resistance",
+  "player1": {
+    "lifeTotal": 20,
+    "hand": [],
+    "battlefield": [
+      {"name": "Skrelv, Defector Mite"},
+      {"name": "Grizzly Bears"},
+      {"name": "Plains", "tapped": false},
+      {"name": "Plains", "tapped": false},
+      {"name": "Plains", "tapped": false}
+    ],
+    "graveyard": [],
+    "library": ["Plains", "Plains", "Plains"]
+  },
+  "player2": {
+    "lifeTotal": 20,
+    "hand": [],
+    "battlefield": [
+      {"name": "Wood Elves"},
+      {"name": "Raging Goblin"},
+      {"name": "Merfolk of the Pearl Trident"},
+      {"name": "Forest", "tapped": false}
+    ],
+    "graveyard": [],
+    "library": ["Forest", "Forest", "Forest"]
+  },
+  "phase": "PRECOMBAT_MAIN",
+  "activePlayer": 1,
+  "priorityPlayer": 1,
+  "player1StopAtSteps": [],
+  "player2StopAtSteps": [],
+  "player1OpponentStopAtSteps": [],
+  "player2OpponentStopAtSteps": []
+}

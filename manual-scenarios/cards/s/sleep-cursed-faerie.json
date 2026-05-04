@@ -1,0 +1,37 @@
+{
+  "player1Name": "Faerie Player",
+  "player2Name": "Opponent",
+  "player1": {
+    "lifeTotal": 20,
+    "hand": ["Sleep-Cursed Faerie"],
+    "battlefield": [
+      {"name": "Island", "tapped": false},
+      {"name": "Island", "tapped": false},
+      {"name": "Island", "tapped": false},
+      {"name": "Island", "tapped": false},
+      {"name": "Island", "tapped": false},
+      {"name": "Island", "tapped": false}
+    ],
+    "graveyard": [],
+    "library": ["Island", "Island", "Island"]
+  },
+  "player2": {
+    "lifeTotal": 20,
+    "hand": ["Shock"],
+    "battlefield": [
+      {"name": "Grizzly Bears"},
+      {"name": "Mountain", "tapped": false},
+      {"name": "Mountain", "tapped": false},
+      {"name": "Mountain", "tapped": false}
+    ],
+    "graveyard": [],
+    "library": ["Mountain", "Mountain", "Mountain"]
+  },
+  "phase": "PRECOMBAT_MAIN",
+  "activePlayer": 1,
+  "priorityPlayer": 1,
+  "player1StopAtSteps": [],
+  "player2StopAtSteps": [],
+  "player1OpponentStopAtSteps": [],
+  "player2OpponentStopAtSteps": []
+}
