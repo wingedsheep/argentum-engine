@@ -69,6 +69,7 @@ object EdgeOfEternitiesSet {
         MeldedMoxite,
         MeltstridersGear,
         MolecularModifier,
+        MonoistSentry,
         RemnantElemental,
         RigForWar,
         RustHarvester,

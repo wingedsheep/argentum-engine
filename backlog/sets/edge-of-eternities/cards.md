@@ -2,7 +2,7 @@
 
 **Set Size:** 261 booster cards (excluding basic lands)
 **Release Date:** August 1, 2025
-**Implemented:** 67 / 261
+**Implemented:** 68 / 261
 
 ---
 
@@ -148,7 +148,7 @@
 - [ ] Mm'menon, Uthros Exile
 - [x] Molecular Modifier
 - [ ] Monoist Circuit-Feeder
-- [ ] Monoist Sentry
+- [x] Monoist Sentry
 - [ ] Moonlit Meditation
 - [ ] Mouth of the Storm
 - [ ] Mutinous Massacre
