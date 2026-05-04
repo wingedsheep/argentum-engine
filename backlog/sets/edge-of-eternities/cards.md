@@ -2,7 +2,7 @@
 
 **Set Size:** 261 booster cards (excluding basic lands)
 **Release Date:** August 1, 2025
-**Implemented:** 43 / 261
+**Implemented:** 44 / 261
 
 ---
 
@@ -189,7 +189,7 @@
 - [ ] Scout for Survivors
 - [ ] Scrounge for Eternity
 - [x] Seam Rip
-- [ ] Secluded Starforge
+- [x] Secluded Starforge
 - [ ] Seedship Agrarian
 - [ ] Seedship Broodtender
 - [ ] Seedship Impact
