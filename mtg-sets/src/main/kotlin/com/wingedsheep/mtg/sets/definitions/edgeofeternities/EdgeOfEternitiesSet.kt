@@ -62,6 +62,7 @@ object EdgeOfEternitiesSet {
         IllvoiGaleblade,
         KavaronHarrier,
         LumenClassFrigate,
+        LostInSpace,
         MeldedMoxite,
         MeltstridersGear,
         MolecularModifier,

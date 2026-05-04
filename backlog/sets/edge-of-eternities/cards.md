@@ -2,7 +2,7 @@
 
 **Set Size:** 261 booster cards (excluding basic lands)
 **Release Date:** August 1, 2025
-**Implemented:** 60 / 261
+**Implemented:** 61 / 261
 
 ---
 
@@ -129,7 +129,7 @@
 - [ ] Lightstall Inquisitor
 - [ ] Lithobraking
 - [ ] Loading Zone
-- [ ] Lost in Space
+- [x] Lost in Space
 - [x] Lumen-Class Frigate
 - [ ] Luxknight Breacher
 - [ ] Mechan Assembler
