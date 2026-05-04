@@ -4,6 +4,7 @@ import com.wingedsheep.engine.core.*
 import com.wingedsheep.engine.core.DistributionResponse
 import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.mtg.sets.definitions.bloomburrow.BloomburrowSet
+import com.wingedsheep.mtg.sets.definitions.brotherswar.TheBrothersWarSet
 import com.wingedsheep.mtg.sets.definitions.duskmourn.DuskmournSet
 import com.wingedsheep.mtg.sets.definitions.spiderman.SpiderManSet
 import com.wingedsheep.mtg.sets.definitions.wildsofeldraineset.WildsOfEldrainSet
@@ -68,6 +69,7 @@ abstract class ScenarioTestBase : FunSpec() {
         register(KhansOfTarkirSet.allCards)
         register(DominariaSet.allCards)
         register(BloomburrowSet.allCards)
+        register(TheBrothersWarSet.allCards)
         register(DuskmournSet.allCards)
         register(SpiderManSet.allCards)
         register(WildsOfEldrainSet.allCards)

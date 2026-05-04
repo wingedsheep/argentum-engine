@@ -19,6 +19,7 @@ object TheBrothersWarSet {
         Brushland,
         LlanowarWastes,
         SoulPartition,
+        TeferiTemporalPilgrim,
         UndergroundRiver,
     )
 }
