@@ -1,0 +1,6 @@
+- Kavaron Harrier (exile, not sacrifice)
+- Evendo, Waking Haven (available before 12)
+- Diplomatic Relations gives +1/+0 to TO creature if FROM creature is dead
+- Secluded Starforge: 2,T: can not tap artifacts.
+- Chrome Companion should keep the bottom of the library visible.
+- Intrepid Tenderfoot, stacks pumps, but it's sorcery.
