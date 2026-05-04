@@ -75,6 +75,7 @@ object EdgeOfEternitiesSet {
         SlagdrillScrapper,
         SledgeClassSeedship,
         StompingGround,
+        Thawbringer,
         VirusBeetle,
         WateryGrave,
 

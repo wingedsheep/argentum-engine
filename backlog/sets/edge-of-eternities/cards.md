@@ -2,7 +2,7 @@
 
 **Set Size:** 261 booster cards (excluding basic lands)
 **Release Date:** August 1, 2025
-**Implemented:** 57 / 261
+**Implemented:** 58 / 261
 
 ---
 
@@ -236,7 +236,7 @@
 - [ ] Territorial Bruntar
 - [ ] Tezzeret, Cruel Captain
 - [ ] Thaumaton Torpedo
-- [ ] Thawbringer
+- [x] Thawbringer
 - [ ] The Dominion Bracelet
 - [ ] The Endstone
 - [ ] The Eternity Elevator
