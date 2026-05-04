@@ -61,6 +61,7 @@ object EdgeOfEternitiesSet {
         SlagdrillScrapper,
         SledgeClassSeedship,
         StompingGround,
+        VirusBeetle,
         WateryGrave,
 
         // Basic lands

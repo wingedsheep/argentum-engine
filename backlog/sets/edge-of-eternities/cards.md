@@ -2,7 +2,7 @@
 
 **Set Size:** 261 booster cards (excluding basic lands)
 **Release Date:** August 1, 2025
-**Implemented:** 39 / 261
+**Implemented:** 43 / 261
 
 ---
 
@@ -252,7 +252,7 @@
 - [ ] Uthros, Titanic Godcore
 - [ ] Vaultguard Trooper
 - [ ] Virulent Silencer
-- [ ] Virus Beetle
+- [x] Virus Beetle
 - [ ] Voidforged Titan
 - [ ] Vote Out
 - [ ] Warmaker Gunship
