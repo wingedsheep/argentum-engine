@@ -14,6 +14,10 @@ object TheBrothersWarSet {
     const val SET_NAME = "The Brothers' War"
 
     val allCards = listOf(
+        BattlefieldForge,
+        Brushland,
+        LlanowarWastes,
         SoulPartition,
+        UndergroundRiver,
     )
 }
