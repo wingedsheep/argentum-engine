@@ -117,7 +117,7 @@
 - [ ] Interceptor Mechan
 - [ ] Intrepid Tenderfoot
 - [ ] Invasive Maneuvers
-- [ ] Kavaron Harrier
+- [x] Kavaron Harrier
 - [ ] Kavaron, Memorial World
 - [ ] Kavaron Skywarden
 - [ ] Kavaron Turbodrone

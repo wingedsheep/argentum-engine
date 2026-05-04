@@ -50,6 +50,7 @@ object EdgeOfEternitiesSet {
         Hullcarver,
         IcecaveCrasher,
         IllvoiGaleblade,
+        KavaronHarrier,
         RustHarvester,
         SacredFoundry,
         SeamRip,
