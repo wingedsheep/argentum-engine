@@ -50,6 +50,7 @@ object EdgeOfEternitiesSet {
         EvendoWakingHaven,
         GodlessShrine,
         GravbladeHeavy,
+        GalacticWayfarer,
         GalvanizingSawship,
         HardlightContainment,
         HarmoniousGrovestrider,
