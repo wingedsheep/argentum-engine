@@ -2,7 +2,7 @@
 
 **Set Size:** 261 booster cards (excluding basic lands)
 **Release Date:** August 1, 2025
-**Implemented:** 62 / 261
+**Implemented:** 66 / 261
 
 ---
 
@@ -100,7 +100,7 @@
 - [ ] Haliya, Guided by Light
 - [x] Hardlight Containment
 - [x] Harmonious Grovestrider
-- [ ] Hemosymbic Mite
+- [x] Hemosymbic Mite
 - [x] Honor
 - [x] Honored Knight-Captain
 - [x] Hullcarver
@@ -115,7 +115,7 @@
 - [ ] Infinite Guideline Station
 - [ ] Insatiable Skittermaw
 - [ ] Interceptor Mechan
-- [ ] Intrepid Tenderfoot
+- [x] Intrepid Tenderfoot
 - [ ] Invasive Maneuvers
 - [x] Kavaron Harrier
 - [ ] Kavaron, Memorial World
