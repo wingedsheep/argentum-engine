@@ -59,7 +59,7 @@ one enchantment (Unholy Annex) are double-faced / modal DFCs and depend on DFC s
 ## Standard-MonoU (60 cards)
 
 ### Planeswalkers (1)
-- [ ] Teferi, Temporal Pilgrim ×1
+- [x] Teferi, Temporal Pilgrim ×1
 
 ### Creatures (10)
 - [ ] Chrome Host Seedshark ×1
