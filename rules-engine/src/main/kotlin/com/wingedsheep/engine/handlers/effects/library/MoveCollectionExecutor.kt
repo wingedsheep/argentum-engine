@@ -524,6 +524,10 @@ class MoveCollectionExecutor(
         var newState = state
 
         val movedIds = mutableListOf<EntityId>()
+        // Track every library that received at least one card so per-card owner routing
+        // (e.g., a permanent owned by another player going to its owner's library) shuffles
+        // and reveal-marks every affected library, not just the destination's nominal owner.
+        val librariesReceivingCards = linkedSetOf<EntityId>()
 
         // Determine library placement for ZoneTransitionService
         val libraryPlacement = when (destination.placement) {
@@ -553,11 +557,15 @@ class MoveCollectionExecutor(
             // Find current zone for controller override logic
             val fromZone = findCurrentZone(newState, cardId, ownerId)
 
-            // Determine actual destination player based on moveType and zones
+            // Determine actual destination player based on moveType and zones.
+            // A permanent leaving the battlefield always goes to its owner's hand/library/exile/
+            // graveyard — never to a "destination player" chosen by the effect — so routing
+            // collapses to ownerId for those cases regardless of the destination's nominal player.
             val actualDestPlayerId = when {
                 (moveType == MoveType.Sacrifice || moveType == MoveType.Destroy) && destZone == Zone.GRAVEYARD -> ownerId
                 destZone == Zone.HAND && fromZone == Zone.BATTLEFIELD -> ownerId
                 destZone == Zone.EXILE && fromZone == Zone.BATTLEFIELD -> ownerId
+                destZone == Zone.LIBRARY && fromZone == Zone.BATTLEFIELD -> ownerId
                 underOwnersControl && destZone == Zone.BATTLEFIELD -> ownerId
                 else -> destPlayerId
             }
@@ -579,16 +587,24 @@ class MoveCollectionExecutor(
             events.addAll(transitionResult.events)
 
             movedIds.add(cardId)
+            if (destZone == Zone.LIBRARY) {
+                librariesReceivingCards.add(actualDestPlayerId)
+            }
         }
 
-        // Handle shuffled placement — shuffle once after all cards are placed
+        // Handle shuffled placement — shuffle every affected library once after all cards are placed.
+        // Per-card owner routing means a single MoveCollection can deposit cards in multiple libraries
+        // (e.g., target opponent shuffles permanents they control but don't own).
         if (destination.placement == ZonePlacement.Shuffled && destZone == Zone.LIBRARY) {
-            val destZoneKey = ZoneKey(destPlayerId, Zone.LIBRARY)
-            // Strip reveals before shuffling — once shuffled, no one knows positions any more
-            newState = LibraryRevealUtils.clearLibraryReveals(newState, destPlayerId)
-            val library = newState.getZone(destZoneKey)
-            newState = newState.copy(zones = newState.zones + (destZoneKey to library.shuffled()))
-            events.add(LibraryShuffledEvent(destPlayerId))
+            val toShuffle = if (librariesReceivingCards.isNotEmpty()) librariesReceivingCards else linkedSetOf(destPlayerId)
+            for (libraryOwnerId in toShuffle) {
+                val destZoneKey = ZoneKey(libraryOwnerId, Zone.LIBRARY)
+                // Strip reveals before shuffling — once shuffled, no one knows positions any more
+                newState = LibraryRevealUtils.clearLibraryReveals(newState, libraryOwnerId)
+                val library = newState.getZone(destZoneKey)
+                newState = newState.copy(zones = newState.zones + (destZoneKey to library.shuffled()))
+                events.add(LibraryShuffledEvent(libraryOwnerId))
+            }
         }
 
         // Persist reveals when cards are moved into a library at a known position.
