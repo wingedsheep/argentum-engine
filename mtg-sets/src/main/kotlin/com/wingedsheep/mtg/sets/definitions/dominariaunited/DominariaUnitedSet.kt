@@ -17,9 +17,13 @@ object DominariaUnitedSet {
         AdarkarWastes,
         CavesOfKoilos,
         CombatResearch,
+        EssenceScatter,
+        HaughtyDjinn,
+        Impulse,
         KarplusanForest,
         ShivanReef,
         SulfurousSprings,
+        TolarianTerror,
         YavimayaCoast,
     )
 }
