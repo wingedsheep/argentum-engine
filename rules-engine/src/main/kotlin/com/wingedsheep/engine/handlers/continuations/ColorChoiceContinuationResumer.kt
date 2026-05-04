@@ -14,12 +14,14 @@ import com.wingedsheep.engine.state.components.identity.FaceDownComponent
 import com.wingedsheep.sdk.model.EntityId
 
 class ColorChoiceContinuationResumer(
-    private val services: com.wingedsheep.engine.core.EngineServices
+    private val services: com.wingedsheep.engine.core.EngineServices,
+    private val effectRunner: EffectContinuationRunner
 ) : ContinuationResumerModule {
 
     override fun resumers(): List<ContinuationResumer<*>> = listOf(
         resumer(ChooseColorProtectionContinuation::class, ::resumeChooseColorProtection),
         resumer(ChooseColorProtectionTargetContinuation::class, ::resumeChooseColorProtectionTarget),
+        resumer(ChooseColorThenContinuation::class, ::resumeChooseColorThen),
         resumer(ChooseColorForTargetContinuation::class, ::resumeChooseColorForTarget)
     )
 
@@ -132,6 +134,27 @@ class ColorChoiceContinuationResumer(
         )
 
         return checkForMore(newState, events)
+    }
+
+    fun resumeChooseColorThen(
+        state: GameState,
+        continuation: ChooseColorThenContinuation,
+        response: DecisionResponse,
+        checkForMore: CheckForMore
+    ): ExecutionResult {
+        if (response !is ColorChosenResponse) {
+            return ExecutionResult.error(state, "Expected color choice response for ChooseColorThen effect")
+        }
+
+        val contextWithColor = continuation.baseContext.copy(chosenColor = response.color)
+        val effectResult = effectRunner.executeRemainingEffects(
+            state,
+            listOf(continuation.then),
+            contextWithColor
+        )
+
+        if (effectResult.isPaused) return effectResult.toExecutionResult()
+        return checkForMore(effectResult.state, effectResult.events.toList())
     }
 
     fun resumeChooseColorForTarget(

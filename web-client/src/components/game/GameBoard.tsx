@@ -399,7 +399,7 @@ export function GameBoard({ spectatorMode = false, topOffset = 0 }: GameBoardPro
         <div style={{ ...styles.centerLifeSection, ...styles.centerLifeSectionLeft }}>
           {effectiveOpponent && (
             <>
-              <LifeDisplay life={effectiveOpponent.life} playerId={effectiveOpponent.playerId} playerName={effectiveOpponent.name} spectatorMode={spectatorMode} />
+              <LifeDisplay life={effectiveOpponent.life} playerId={effectiveOpponent.playerId} playerName={effectiveOpponent.name} spectatorMode={spectatorMode} poisonCounters={effectiveOpponent.poisonCounters} />
               {!responsive.isMobile && <ActiveEffectsBadges effects={effectiveOpponent.activeEffects} />}
               {!responsive.isMobile && effectiveOpponent.manaPool && <ManaPool manaPool={effectiveOpponent.manaPool} />}
             </>
@@ -432,7 +432,7 @@ export function GameBoard({ spectatorMode = false, topOffset = 0 }: GameBoardPro
         <div style={{ ...styles.centerLifeSection, ...styles.centerLifeSectionRight }}>
           {effectiveViewingPlayer && (
             <>
-              <LifeDisplay life={effectiveViewingPlayer.life} isPlayer playerId={effectiveViewingPlayer.playerId} playerName={effectiveViewingPlayer.name} spectatorMode={spectatorMode} />
+              <LifeDisplay life={effectiveViewingPlayer.life} isPlayer playerId={effectiveViewingPlayer.playerId} playerName={effectiveViewingPlayer.name} spectatorMode={spectatorMode} poisonCounters={effectiveViewingPlayer.poisonCounters} />
               {!responsive.isMobile && <ActiveEffectsBadges effects={effectiveViewingPlayer.activeEffects} />}
               {!responsive.isMobile && effectiveViewingPlayer.manaPool && <ManaPool manaPool={effectiveViewingPlayer.manaPool} />}
             </>

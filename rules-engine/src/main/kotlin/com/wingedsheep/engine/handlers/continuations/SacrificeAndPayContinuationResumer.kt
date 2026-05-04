@@ -645,20 +645,12 @@ class SacrificeAndPayContinuationResumer(
         var newState = state
         val events = mutableListOf<GameEvent>()
 
-        // Untap the permanents that the player did NOT choose to keep tapped
-        // Handle stun counters: remove a stun counter instead of untapping (CR 122.1b)
+        // Untap the permanents that the player did NOT choose to keep tapped.
+        // Stun counters replace each untap event per Rule 122.1d.
         for (entityId in toUntap) {
-            val cardName = newState.getEntity(entityId)?.get<CardComponent>()?.name ?: "Permanent"
-            val stunCounters = newState.getEntity(entityId)?.get<CountersComponent>()?.getCount(CounterType.STUN) ?: 0
-            if (stunCounters > 0) {
-                newState = newState.updateEntity(entityId) { container ->
-                    val counters = container.get<CountersComponent>() ?: CountersComponent()
-                    container.with(counters.withRemoved(CounterType.STUN, 1))
-                }
-            } else {
-                newState = newState.updateEntity(entityId) { it.without<TappedComponent>() }
-                events.add(UntappedEvent(entityId, cardName))
-            }
+            val (afterUntap, event) = untapOrConsumeStun(newState, entityId)
+            newState = afterUntap
+            if (event != null) events.add(event)
         }
 
         // Remove WhileSourceTapped floating effects whose source is no longer tapped

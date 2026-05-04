@@ -246,6 +246,15 @@ class GameInitializer(
             container = container.with(HexproofFromColorComponent(hexproofFromColors))
         }
 
+        // Toxic N (702.164). Multiple instances stack per Rule 702.164b — sum across
+        // any printed Toxic abilities so the projector can emit a single TOXIC_<n>.
+        val toxicAmount = cardDef.keywordAbilities
+            .filterIsInstance<KeywordAbility.Toxic>()
+            .sumOf { it.count }
+        if (toxicAmount > 0) {
+            container = container.with(ToxicComponent(toxicAmount))
+        }
+
         return container
     }
 

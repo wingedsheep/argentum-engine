@@ -29,6 +29,10 @@ import com.wingedsheep.sdk.scripting.effects.SetBasePowerEffect
 
 import com.wingedsheep.sdk.scripting.effects.ChooseColorAndGrantProtectionToGroupEffect
 import com.wingedsheep.sdk.scripting.effects.ChooseColorAndGrantProtectionToTargetEffect
+import com.wingedsheep.sdk.scripting.effects.ChooseColorThenEffect
+import com.wingedsheep.sdk.scripting.effects.GrantHexproofFromChosenColorEffect
+import com.wingedsheep.sdk.scripting.effects.GrantCantBeBlockedByChosenColorEffect
+import com.wingedsheep.sdk.scripting.effects.GrantToxicEffect
 import com.wingedsheep.sdk.scripting.effects.CantAttackGroupEffect
 import com.wingedsheep.sdk.scripting.effects.CantAttackEffect
 import com.wingedsheep.sdk.scripting.effects.CantBlockEffect
@@ -1052,6 +1056,46 @@ object Effects {
         target: EffectTarget = EffectTarget.Self,
         duration: Duration = Duration.EndOfTurn
     ): Effect = ChooseColorAndGrantProtectionToTargetEffect(target, duration)
+
+    /**
+     * Choose a color, then run [then] with the chosen color exposed via the effect
+     * context. Atomic effects under [then] (e.g. [GrantHexproofFromChosenColor],
+     * [GrantCantBeBlockedByChosenColor]) read the color and apply per-color
+     * modifications. Compose with [Composite] for multi-grant cards (e.g. Skrelv).
+     */
+    fun ChooseColorThen(
+        then: Effect,
+        prompt: String = "Choose a color"
+    ): Effect = ChooseColorThenEffect(then, prompt)
+
+    /**
+     * Grant Toxic N to a target until end of turn. Resolves to a `TOXIC_<n>`
+     * keyword grant; combat damage reads granted toxic amounts from projected keywords.
+     */
+    fun GrantToxic(
+        amount: Int,
+        target: EffectTarget = EffectTarget.ContextTarget(0),
+        duration: Duration = Duration.EndOfTurn
+    ): Effect = GrantToxicEffect(amount, target, duration)
+
+    /**
+     * Grant "hexproof from the chosen color" to a target. Must run inside a
+     * [ChooseColorThen] block — reads the chosen color from the effect context.
+     */
+    fun GrantHexproofFromChosenColor(
+        target: EffectTarget = EffectTarget.ContextTarget(0),
+        duration: Duration = Duration.EndOfTurn
+    ): Effect = GrantHexproofFromChosenColorEffect(target, duration)
+
+    /**
+     * Grant "can't be blocked by creatures of the chosen color" to a target.
+     * Must run inside a [ChooseColorThen] block — reads the chosen color from
+     * the effect context.
+     */
+    fun GrantCantBeBlockedByChosenColor(
+        target: EffectTarget = EffectTarget.ContextTarget(0),
+        duration: Duration = Duration.EndOfTurn
+    ): Effect = GrantCantBeBlockedByChosenColorEffect(target, duration)
 
     // =========================================================================
     // Control Effects

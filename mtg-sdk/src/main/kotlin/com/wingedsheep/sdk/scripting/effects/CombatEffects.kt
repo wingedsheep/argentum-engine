@@ -242,6 +242,25 @@ data class GrantCantBeBlockedExceptByColorEffect(
 }
 
 /**
+ * Grant "can't be blocked by creatures of the chosen color" to a target. Must
+ * run inside a [com.wingedsheep.sdk.scripting.effects.ChooseColorThenEffect] —
+ * the executor reads the chosen color from the effect context.
+ */
+@SerialName("GrantCantBeBlockedByChosenColor")
+@Serializable
+data class GrantCantBeBlockedByChosenColorEffect(
+    val target: EffectTarget = EffectTarget.ContextTarget(0),
+    val duration: Duration = Duration.EndOfTurn
+) : Effect {
+    override val description: String = buildString {
+        append("${target.description} can't be blocked by creatures of the chosen color")
+        if (duration.description.isNotEmpty()) append(" ${duration.description}")
+    }
+
+    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
+}
+
+/**
  * Force a target creature to block a specific attacker this combat if able.
  * Unlike Provoke, this does NOT untap the target creature.
  * "Target creature defending player controls blocks this creature this combat if able."

@@ -24,6 +24,7 @@ import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.FaceDownComponent
 import com.wingedsheep.engine.state.components.identity.LifeTotalComponent
 import com.wingedsheep.sdk.core.Keyword
+import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.AssignCombatDamageAsUnblocked
 import com.wingedsheep.sdk.scripting.DivideCombatDamageFreely
@@ -545,6 +546,15 @@ internal class CombatDamageManager(
             sourceName = sourceName, targetName = "Player", targetIsPlayer = true))
         events.add(LifeChangedEvent(targetId, currentLife, newLife, LifeChangeReason.DAMAGE))
 
+        val toxicAmount = getToxicAmount(newState, newState.projectedState, sourceId)
+        if (toxicAmount > 0) {
+            val counters = newState.getEntity(targetId)?.get<CountersComponent>() ?: CountersComponent()
+            newState = newState.updateEntity(targetId) { container ->
+                container.with(counters.withAdded(CounterType.POISON, toxicAmount))
+            }
+            events.add(CountersAddedEvent(targetId, CounterType.POISON.name, toxicAmount, "Player"))
+        }
+
         // Reflection (Harsh Justice)
         newState = applyDamageReflection(newState, sourceId, targetId, originalAmount, events)
 
@@ -672,6 +682,15 @@ internal class CombatDamageManager(
             events.add(DamageDealtEvent(sourceId, targetId, amount, true,
                 sourceName = sourceName, targetName = "Player", targetIsPlayer = true))
             events.add(LifeChangedEvent(targetId, currentLife, newLife, LifeChangeReason.DAMAGE))
+
+            val toxicAmount = getToxicAmount(newState, projected, sourceId)
+            if (toxicAmount > 0) {
+                val counters = newState.getEntity(targetId)?.get<CountersComponent>() ?: CountersComponent()
+                newState = newState.updateEntity(targetId) { container ->
+                    container.with(counters.withAdded(CounterType.POISON, toxicAmount))
+                }
+                events.add(CountersAddedEvent(targetId, CounterType.POISON.name, toxicAmount, "Player"))
+            }
         } else if (isPlaneswalker) {
             if (targetId !in newState.getBattlefield()) return newState
             val counters = newState.getEntity(targetId)?.get<CountersComponent>() ?: CountersComponent()
@@ -732,6 +751,27 @@ internal class CombatDamageManager(
         }
 
         return newState
+    }
+
+    /**
+     * Toxic N total — printed and granted flow through the same projected `TOXIC_<n>`
+     * keyword form (see [com.wingedsheep.engine.state.components.identity.ToxicComponent]
+     * + [com.wingedsheep.engine.mechanics.layers.StateProjector]). Sums per-instance counts
+     * across all `TOXIC_<n>` strings. A bare `TOXIC` keyword without a count contributes
+     * zero, by design — only `KeywordAbility.Toxic(n)` (or a granted toxic effect) grants
+     * combat poison.
+     */
+    private fun getToxicAmount(state: GameState, projected: ProjectedState, sourceId: EntityId): Int {
+        if (sourceId !in state.getBattlefield()) return 0
+        val sourceContainer = state.getEntity(sourceId) ?: return 0
+        if (sourceContainer.has<FaceDownComponent>()) return 0
+
+        return projected.getKeywords(sourceId).sumOf { parseToxic(it) }
+    }
+
+    private fun parseToxic(keyword: String): Int {
+        if (!keyword.startsWith("TOXIC_")) return 0
+        return keyword.removePrefix("TOXIC_").toIntOrNull() ?: 0
     }
 
     // =========================================================================

@@ -60,3 +60,46 @@ data class ChooseColorAndGrantProtectionToTargetEffect(
 
     override fun applyTextReplacement(replacer: TextReplacer): Effect = this
 }
+
+/**
+ * Choose a color, then run [then] with the chosen color exposed on the
+ * [com.wingedsheep.sdk.scripting.targets.EffectTarget] context. Atomic effects under
+ * [then] (e.g., [GrantHexproofFromChosenColorEffect]) read the color from context
+ * to apply per-color modifications.
+ *
+ * Use this combinator instead of inventing a new monolithic "choose color, then do
+ * X+Y+Z" effect for every card. Compose with [CompositeEffect] when [then] is a
+ * sequence of grants.
+ */
+@SerialName("ChooseColorThen")
+@Serializable
+data class ChooseColorThenEffect(
+    val then: Effect,
+    val prompt: String = "Choose a color"
+) : Effect {
+    override val description: String = "Choose a color. ${then.description}"
+
+    override fun applyTextReplacement(replacer: TextReplacer): Effect {
+        val newThen = then.applyTextReplacement(replacer)
+        return if (newThen !== then) copy(then = newThen) else this
+    }
+}
+
+/**
+ * Grant "hexproof from the chosen color" to a target. Must run inside a
+ * [ChooseColorThenEffect] — the executor reads the chosen color from the
+ * effect context. Resolves to a `HEXPROOF_FROM_<COLOR>` keyword grant.
+ */
+@SerialName("GrantHexproofFromChosenColor")
+@Serializable
+data class GrantHexproofFromChosenColorEffect(
+    val target: EffectTarget = EffectTarget.ContextTarget(0),
+    val duration: Duration = Duration.EndOfTurn
+) : Effect {
+    override val description: String = buildString {
+        append("${target.description} gains hexproof from the chosen color")
+        if (duration.description.isNotEmpty()) append(" ${duration.description}")
+    }
+
+    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
+}

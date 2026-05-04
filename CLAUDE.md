@@ -8,6 +8,10 @@ Guidance for Claude Code working in this repository.
   revert, stash, or discard others' changes — that's likely another agent's in-flight work. Pause until the user
   confirms it is safe to continue.
 - **Implementing a card from a backlog file** (e.g., `backlog/sets/scourge/cards.md`) → always use the `add-card` skill.
+- **Verify MTG rule numbers before citing them.** Rule numbers are easy to misremember (613.8 vs 613.7, 704.5 vs
+  704.6, etc.). Whenever you reference a specific rule number in code comments, commit messages, PR descriptions,
+  or chat, look it up first at <https://yawgatog.com/resources/magic-rules/> to confirm the number matches the
+  actual rule text. If you can't verify, describe the rule by name instead of guessing a number.
 
 ## Project Overview
 

@@ -1,8 +1,10 @@
 package com.wingedsheep.engine.core
 
+import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.Duration
+import com.wingedsheep.sdk.scripting.effects.Effect
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.scripting.targets.TargetRequirement
 import kotlinx.serialization.Serializable
@@ -49,6 +51,23 @@ data class ChooseColorProtectionTargetContinuation(
     val sourceName: String?,
     val targetEntityId: EntityId,
     val duration: Duration
+) : ContinuationFrame
+
+/**
+ * Resume after player chooses a color for a [com.wingedsheep.sdk.scripting.effects.ChooseColorThenEffect].
+ *
+ * The resumer stamps the chosen color onto [baseContext] and dispatches [then]
+ * through the standard effect runner, so any composition of atomic effects can
+ * read the chosen color from `EffectContext.chosenColor`.
+ */
+@Serializable
+data class ChooseColorThenContinuation(
+    override val decisionId: String,
+    val controllerId: EntityId,
+    val sourceId: EntityId?,
+    val sourceName: String?,
+    val then: Effect,
+    val baseContext: EffectContext
 ) : ContinuationFrame
 
 /**

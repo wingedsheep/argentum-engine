@@ -29,6 +29,7 @@ export const keywordManaClass: Record<string, string> = {
   MORPH: 'ability-morph',
   PROTECTION: 'ability-protection',
   WITHER: 'ability-infect',
+  TOXIC: 'ability-toxic',
   CANT_BE_BLOCKED: 'ability-unblockable',
   CHANGELING: 'ability-changeling',
 }
@@ -39,7 +40,7 @@ export const displayableKeywords = new Set([
   'LIFELINK', 'VIGILANCE', 'HASTE', 'HEXPROOF',
   'SHROUD', 'INDESTRUCTIBLE', 'DEFENDER', 'MENACE', 'FEAR',
   'FLASH', 'PROWESS', 'WARD', 'INTIMIDATE', 'INFECT',
-  'WITHER', 'CANT_BE_BLOCKED', 'CHANGELING',
+  'WITHER', 'TOXIC', 'CANT_BE_BLOCKED', 'CHANGELING',
 ])
 
 /** Maps engine CounterType to mana-font counter class suffixes */

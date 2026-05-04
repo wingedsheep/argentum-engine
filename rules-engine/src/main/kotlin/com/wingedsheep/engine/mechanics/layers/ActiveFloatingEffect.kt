@@ -167,6 +167,13 @@ sealed interface SerializableModification {
     data class CantBeBlockedExceptByColor(val color: String) : SerializableModification
 
     /**
+     * Blocking restriction: creature can't be blocked by creatures of a specific color.
+     * Used by Skrelv, Defector Mite and similar effects.
+     */
+    @Serializable
+    data class CantBeBlockedByColor(val color: String) : SerializableModification
+
+    /**
      * Attack/block tax: creature can't attack or block unless its controller pays
      * {manaCostPer} for each creature of the specified type on the battlefield.
      * Used by Whipgrass Entangler and similar effects.
@@ -395,6 +402,8 @@ fun SerializableModification.toModification(): Modification = when (this) {
     is SerializableModification.PreventDamageFromAttackingCreatures -> Modification.NoOp
     // CantBeBlockedExceptByColor doesn't map to a layer modification - it's checked by CombatManager directly
     is SerializableModification.CantBeBlockedExceptByColor -> Modification.NoOp
+    // CantBeBlockedByColor doesn't map to a layer modification - it's checked by CombatManager directly
+    is SerializableModification.CantBeBlockedByColor -> Modification.NoOp
     // AttackBlockTaxPerCreatureType doesn't map to a layer modification - it's checked by CombatManager directly
     is SerializableModification.AttackBlockTaxPerCreatureType -> Modification.NoOp
     // ReflectCombatDamage doesn't map to a layer modification - it's checked by CombatManager directly
