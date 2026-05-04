@@ -257,19 +257,29 @@ function ConnectionOverlay({
                 </p>
               )}
 
-              <button
-                onClick={handleCreate}
-                className={gameMode === 'tournament' ? styles.tournamentButton : styles.primaryButton}
-              >
-                {gameMode === 'tournament' ? 'Create Lobby' : 'Create Quick Game'}
-              </button>
-
-              {gameMode === 'normal' && aiEnabled && (
+              {gameMode === 'normal' ? (
+                <div className={styles.createButtonRow}>
+                  <button
+                    onClick={handleCreate}
+                    className={styles.primaryButton}
+                  >
+                    Create Quick Game
+                  </button>
+                  {aiEnabled && (
+                    <button
+                      onClick={handlePlayVsAi}
+                      className={styles.aiButton}
+                    >
+                      Play vs AI
+                    </button>
+                  )}
+                </div>
+              ) : (
                 <button
-                  onClick={handlePlayVsAi}
-                  className={styles.aiButton}
+                  onClick={handleCreate}
+                  className={styles.tournamentButton}
                 >
-                  Play vs AI
+                  Create Lobby
                 </button>
               )}
 
@@ -297,19 +307,20 @@ function ConnectionOverlay({
                 </button>
               </div>
 
-              <button
-                onClick={() => navigate('/deckbuilder')}
-                className={styles.replayLinkButton}
-              >
-                Deckbuilder
-              </button>
-
-              <button
-                onClick={() => setShowReplays(true)}
-                className={styles.replayLinkButton}
-              >
-                Game Replays
-              </button>
+              <div className={styles.secondaryButtonRow}>
+                <button
+                  onClick={() => navigate('/deckbuilder')}
+                  className={styles.secondaryButton}
+                >
+                  Deckbuilder
+                </button>
+                <button
+                  onClick={() => setShowReplays(true)}
+                  className={styles.secondaryButton}
+                >
+                  Game Replays
+                </button>
+              </div>
             </div>
           )}
 
