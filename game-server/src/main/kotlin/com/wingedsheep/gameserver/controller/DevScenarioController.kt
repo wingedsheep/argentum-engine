@@ -811,6 +811,14 @@ class DevScenarioController(
                 container = container.with(HexproofFromColorComponent(hexproofFromColors))
             }
 
+            // Add ToxicComponent for cards with printed Toxic N (sums per Rule 702.164b)
+            val toxicAmount = cardDef.keywordAbilities
+                .filterIsInstance<KeywordAbility.Toxic>()
+                .sumOf { it.count }
+            if (toxicAmount > 0) {
+                container = container.with(ToxicComponent(toxicAmount))
+            }
+
             state = state.withEntity(cardId, container)
             return cardId
         }

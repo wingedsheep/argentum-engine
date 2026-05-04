@@ -75,6 +75,12 @@ data class EffectContext(
     // --- Choice state ---
     /** Color chosen for "add one mana of any color" abilities */
     val manaColorChoice: Color? = null,
+    /**
+     * Color chosen during a [com.wingedsheep.sdk.scripting.effects.ChooseColorThenEffect]
+     * resolution. Set by the resumer before dispatching the inner effect; read by atomic
+     * "...FromChosenColor" executors.
+     */
+    val chosenColor: Color? = null,
     /** Creature type chosen during casting (e.g., Aphetto Dredging) */
     val chosenCreatureType: String? = null,
     // --- Zone state ---

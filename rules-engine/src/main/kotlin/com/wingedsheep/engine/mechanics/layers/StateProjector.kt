@@ -11,6 +11,7 @@ import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.identity.FaceDownComponent
 import com.wingedsheep.engine.state.components.identity.HexproofFromColorComponent
 import com.wingedsheep.engine.state.components.identity.ProtectionComponent
+import com.wingedsheep.engine.state.components.identity.ToxicComponent
 import com.wingedsheep.engine.state.components.identity.TextReplacementComponent
 import com.wingedsheep.sdk.core.AbilityFlag
 import com.wingedsheep.sdk.core.CounterType
@@ -90,7 +91,8 @@ class StateProjector(
                         cardComponent.baseFlags.map { it.name } +
                         (container.get<ProtectionComponent>()?.colors?.map { "PROTECTION_FROM_${it.name}" } ?: emptyList()) +
                         (container.get<ProtectionComponent>()?.subtypes?.map { "PROTECTION_FROM_SUBTYPE_${it.uppercase()}" } ?: emptyList()) +
-                        (container.get<HexproofFromColorComponent>()?.colors?.map { "HEXPROOF_FROM_${it.name}" } ?: emptyList())).toMutableSet(),
+                        (container.get<HexproofFromColorComponent>()?.colors?.map { "HEXPROOF_FROM_${it.name}" } ?: emptyList()) +
+                        (container.get<ToxicComponent>()?.let { listOf("TOXIC_${it.amount}") } ?: emptyList())).toMutableSet(),
                     colors = cardComponent.colors.map { it.name }.toMutableSet(),
                     types = extractTypes(cardComponent),
                     subtypes = cardComponent.typeLine.subtypes.map { it.value }.toMutableSet(),

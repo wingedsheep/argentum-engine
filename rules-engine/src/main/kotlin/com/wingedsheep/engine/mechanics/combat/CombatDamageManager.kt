@@ -26,7 +26,6 @@ import com.wingedsheep.engine.state.components.identity.LifeTotalComponent
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.model.EntityId
-import com.wingedsheep.sdk.scripting.KeywordAbility
 import com.wingedsheep.sdk.scripting.AssignCombatDamageAsUnblocked
 import com.wingedsheep.sdk.scripting.DivideCombatDamageFreely
 import java.util.UUID
@@ -754,29 +753,25 @@ internal class CombatDamageManager(
         return newState
     }
 
+    /**
+     * Toxic N total — printed and granted flow through the same projected `TOXIC_<n>`
+     * keyword form (see [com.wingedsheep.engine.state.components.identity.ToxicComponent]
+     * + [com.wingedsheep.engine.mechanics.layers.StateProjector]). Sums per-instance counts
+     * across all `TOXIC_<n>` strings. A bare `TOXIC` keyword without a count contributes
+     * zero, by design — only `KeywordAbility.Toxic(n)` (or a granted toxic effect) grants
+     * combat poison.
+     */
     private fun getToxicAmount(state: GameState, projected: ProjectedState, sourceId: EntityId): Int {
         if (sourceId !in state.getBattlefield()) return 0
         val sourceContainer = state.getEntity(sourceId) ?: return 0
         if (sourceContainer.has<FaceDownComponent>()) return 0
 
-        val card = sourceContainer.get<CardComponent>() ?: return 0
-        val cardDefinition = cardRegistry.getCard(card.cardDefinitionId)
-            ?: cardRegistry.getCard(card.name)
-        val printedToxic = cardDefinition
-            ?.keywordAbilities
-            ?.filterIsInstance<KeywordAbility.Toxic>()
-            ?.sumOf { it.count }
-            ?: 0
-        val printedToxicFallback = if (printedToxic == 0 && card.baseKeywords.contains(Keyword.TOXIC)) 1 else 0
+        return projected.getKeywords(sourceId).sumOf { parseToxic(it) }
+    }
 
-        val grantedToxic = projected.getKeywords(sourceId).sumOf { keyword ->
-            keyword.removePrefix("TOXIC_")
-                .takeIf { it != keyword }
-                ?.toIntOrNull()
-                ?: 0
-        }
-
-        return printedToxic + printedToxicFallback + grantedToxic
+    private fun parseToxic(keyword: String): Int {
+        if (!keyword.startsWith("TOXIC_")) return 0
+        return keyword.removePrefix("TOXIC_").toIntOrNull() ?: 0
     }
 
     // =========================================================================

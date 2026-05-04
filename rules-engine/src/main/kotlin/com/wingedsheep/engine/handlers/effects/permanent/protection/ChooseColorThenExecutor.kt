@@ -1,6 +1,6 @@
 package com.wingedsheep.engine.handlers.effects.permanent.protection
 
-import com.wingedsheep.engine.core.ChooseColorToxicHexproofEvasionContinuation
+import com.wingedsheep.engine.core.ChooseColorThenContinuation
 import com.wingedsheep.engine.core.DecisionPhase
 import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.handlers.DecisionHandler
@@ -8,46 +8,46 @@ import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.identity.CardComponent
-import com.wingedsheep.sdk.scripting.effects.ChooseColorGrantToxicHexproofAndCantBeBlockedByColorEffect
+import com.wingedsheep.sdk.scripting.effects.ChooseColorThenEffect
 import kotlin.reflect.KClass
 
 /**
- * Executor for choose-color effects that grant toxic, hexproof from that color,
- * and "can't be blocked by creatures of that color" to a target.
+ * Executor for [ChooseColorThenEffect] — generic "choose a color, then run X".
+ *
+ * Pauses for a color decision and pushes a [ChooseColorThenContinuation] carrying
+ * the inner effect plus a snapshot of the current [EffectContext]. The resumer
+ * dispatches the inner effect with `chosenColor` set, so atomic per-color grants
+ * read the chosen color uniformly via `EffectContext`.
  */
-class ChooseColorToxicHexproofEvasionExecutor(
+class ChooseColorThenExecutor(
     private val decisionHandler: DecisionHandler
-) : EffectExecutor<ChooseColorGrantToxicHexproofAndCantBeBlockedByColorEffect> {
+) : EffectExecutor<ChooseColorThenEffect> {
 
-    override val effectType: KClass<ChooseColorGrantToxicHexproofAndCantBeBlockedByColorEffect> =
-        ChooseColorGrantToxicHexproofAndCantBeBlockedByColorEffect::class
+    override val effectType: KClass<ChooseColorThenEffect> = ChooseColorThenEffect::class
 
     override fun execute(
         state: GameState,
-        effect: ChooseColorGrantToxicHexproofAndCantBeBlockedByColorEffect,
+        effect: ChooseColorThenEffect,
         context: EffectContext
     ): EffectResult {
-        val targetEntityId = context.resolveTarget(effect.target, state)
-            ?: return EffectResult.error(state, "Could not resolve target for color evasion effect")
-
         val sourceName = context.sourceId?.let { state.getEntity(it)?.get<CardComponent>()?.name } ?: "Unknown"
+
         val decisionResult = decisionHandler.createColorDecision(
             state = state,
             playerId = context.controllerId,
             sourceId = context.sourceId,
             sourceName = sourceName,
-            prompt = "Choose a color",
+            prompt = effect.prompt,
             phase = DecisionPhase.RESOLUTION
         )
 
-        val continuation = ChooseColorToxicHexproofEvasionContinuation(
+        val continuation = ChooseColorThenContinuation(
             decisionId = decisionResult.pendingDecision!!.id,
             controllerId = context.controllerId,
             sourceId = context.sourceId,
             sourceName = sourceName,
-            targetEntityId = targetEntityId,
-            toxicAmount = effect.toxicAmount,
-            duration = effect.duration
+            then = effect.then,
+            baseContext = context
         )
 
         return EffectResult.paused(

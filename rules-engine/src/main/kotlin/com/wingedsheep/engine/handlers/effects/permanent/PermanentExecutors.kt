@@ -28,9 +28,12 @@ import com.wingedsheep.engine.handlers.effects.permanent.counters.DistributeCoun
 import com.wingedsheep.engine.handlers.effects.permanent.counters.DistributeCountersFromSelfExecutor
 import com.wingedsheep.engine.handlers.effects.permanent.counters.ProliferateExecutor
 import com.wingedsheep.engine.handlers.effects.permanent.counters.RemoveCountersExecutor
+import com.wingedsheep.engine.handlers.effects.permanent.abilities.GrantToxicExecutor
 import com.wingedsheep.engine.handlers.effects.permanent.protection.ChooseColorProtectionExecutor
 import com.wingedsheep.engine.handlers.effects.permanent.protection.ChooseColorProtectionTargetExecutor
-import com.wingedsheep.engine.handlers.effects.permanent.protection.ChooseColorToxicHexproofEvasionExecutor
+import com.wingedsheep.engine.handlers.effects.permanent.protection.ChooseColorThenExecutor
+import com.wingedsheep.engine.handlers.effects.permanent.protection.GrantCantBeBlockedByChosenColorExecutor
+import com.wingedsheep.engine.handlers.effects.permanent.protection.GrantHexproofFromChosenColorExecutor
 import com.wingedsheep.engine.handlers.effects.permanent.stats.ModifyStatsExecutor
 import com.wingedsheep.engine.handlers.effects.permanent.stats.SetBasePowerExecutor
 import com.wingedsheep.engine.handlers.effects.permanent.stats.SetBasePowerToughnessExecutor
@@ -137,6 +140,9 @@ class PermanentExecutors(
         // protection
         ChooseColorProtectionExecutor(decisionHandler),
         ChooseColorProtectionTargetExecutor(decisionHandler),
-        ChooseColorToxicHexproofEvasionExecutor(decisionHandler)
+        ChooseColorThenExecutor(decisionHandler),
+        GrantHexproofFromChosenColorExecutor(),
+        GrantCantBeBlockedByChosenColorExecutor(),
+        GrantToxicExecutor()
     )
 }

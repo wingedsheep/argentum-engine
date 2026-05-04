@@ -7,6 +7,7 @@ import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.AbilityCost
 import com.wingedsheep.sdk.scripting.CantBlock
 import com.wingedsheep.sdk.scripting.KeywordAbility
+import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import com.wingedsheep.sdk.scripting.targets.TargetCreature
 
@@ -39,13 +40,25 @@ val SkrelvDefectorMite = card("Skrelv, Defector Mite") {
     activatedAbility {
         cost = AbilityCost.Composite(listOf(AbilityCost.Mana(ManaCost.parse("{W}")), AbilityCost.Tap))
         val t = target("another target creature you control", TargetCreature(filter = TargetFilter.OtherCreatureYouControl))
-        effect = Effects.ChooseColorGrantToxicHexproofAndCantBeBlockedByColor(t, toxicAmount = 1)
+        effect = Effects.ChooseColorThen(
+            CompositeEffect(listOf(
+                Effects.GrantToxic(1, t),
+                Effects.GrantHexproofFromChosenColor(t),
+                Effects.GrantCantBeBlockedByChosenColor(t)
+            ))
+        )
     }
 
     activatedAbility {
         cost = AbilityCost.Composite(listOf(AbilityCost.PayLife(2), AbilityCost.Tap))
         val t = target("another target creature you control", TargetCreature(filter = TargetFilter.OtherCreatureYouControl))
-        effect = Effects.ChooseColorGrantToxicHexproofAndCantBeBlockedByColor(t, toxicAmount = 1)
+        effect = Effects.ChooseColorThen(
+            CompositeEffect(listOf(
+                Effects.GrantToxic(1, t),
+                Effects.GrantHexproofFromChosenColor(t),
+                Effects.GrantCantBeBlockedByChosenColor(t)
+            ))
+        )
     }
 
     metadata {

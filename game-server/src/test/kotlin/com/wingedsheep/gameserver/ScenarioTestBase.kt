@@ -33,6 +33,7 @@ import com.wingedsheep.engine.state.components.identity.LifeTotalComponent
 import com.wingedsheep.engine.state.components.identity.OwnerComponent
 import com.wingedsheep.engine.state.components.identity.PlayerComponent
 import com.wingedsheep.engine.state.components.identity.HexproofFromColorComponent
+import com.wingedsheep.engine.state.components.identity.ToxicComponent
 import com.wingedsheep.engine.state.components.identity.ProtectionComponent
 import com.wingedsheep.engine.state.components.player.LandDropsComponent
 import com.wingedsheep.engine.state.components.combat.AttackersDeclaredThisCombatComponent
@@ -388,6 +389,14 @@ abstract class ScenarioTestBase : FunSpec() {
                 .toSet()
             if (hexproofFromColors.isNotEmpty()) {
                 container = container.with(HexproofFromColorComponent(hexproofFromColors))
+            }
+
+            // Attach ToxicComponent for cards with printed Toxic N (sums per Rule 702.164b)
+            val toxicAmount = cardDef.keywordAbilities
+                .filterIsInstance<KeywordAbility.Toxic>()
+                .sumOf { it.count }
+            if (toxicAmount > 0) {
+                container = container.with(ToxicComponent(toxicAmount))
             }
 
             state = state.withEntity(cardId, container)

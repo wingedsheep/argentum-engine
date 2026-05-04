@@ -583,7 +583,12 @@ class ClientStateTransformer(
         val power = projectedValues?.power ?: if (isFaceDown) 2 else cardComponent.baseStats?.basePower
         val toughness = projectedValues?.toughness ?: if (isFaceDown) 2 else cardComponent.baseStats?.baseToughness
         val rawKeywords = projectedValues?.keywords?.mapNotNull {
-            try { Keyword.valueOf(it) } catch (_: Exception) { null }
+            when {
+                // Granted toxic floats as TOXIC_<N> (e.g. Skrelv's activated ability); collapse
+                // to the bare TOXIC keyword so the icon-render path picks it up.
+                it.startsWith("TOXIC_") -> Keyword.TOXIC
+                else -> try { Keyword.valueOf(it) } catch (_: Exception) { null }
+            }
         }?.toSet() ?: cardComponent.baseKeywords
         val abilityFlags = projectedValues?.keywords?.mapNotNull {
             try { AbilityFlag.valueOf(it) } catch (_: Exception) { null }

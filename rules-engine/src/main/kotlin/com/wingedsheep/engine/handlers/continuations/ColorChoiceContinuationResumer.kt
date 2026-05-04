@@ -14,13 +14,14 @@ import com.wingedsheep.engine.state.components.identity.FaceDownComponent
 import com.wingedsheep.sdk.model.EntityId
 
 class ColorChoiceContinuationResumer(
-    private val services: com.wingedsheep.engine.core.EngineServices
+    private val services: com.wingedsheep.engine.core.EngineServices,
+    private val effectRunner: EffectContinuationRunner
 ) : ContinuationResumerModule {
 
     override fun resumers(): List<ContinuationResumer<*>> = listOf(
         resumer(ChooseColorProtectionContinuation::class, ::resumeChooseColorProtection),
         resumer(ChooseColorProtectionTargetContinuation::class, ::resumeChooseColorProtectionTarget),
-        resumer(ChooseColorToxicHexproofEvasionContinuation::class, ::resumeChooseColorToxicHexproofEvasion),
+        resumer(ChooseColorThenContinuation::class, ::resumeChooseColorThen),
         resumer(ChooseColorForTargetContinuation::class, ::resumeChooseColorForTarget)
     )
 
@@ -135,70 +136,25 @@ class ColorChoiceContinuationResumer(
         return checkForMore(newState, events)
     }
 
-    fun resumeChooseColorToxicHexproofEvasion(
+    fun resumeChooseColorThen(
         state: GameState,
-        continuation: ChooseColorToxicHexproofEvasionContinuation,
+        continuation: ChooseColorThenContinuation,
         response: DecisionResponse,
         checkForMore: CheckForMore
     ): ExecutionResult {
         if (response !is ColorChosenResponse) {
-            return ExecutionResult.error(state, "Expected color choice response for toxic hexproof evasion effect")
+            return ExecutionResult.error(state, "Expected color choice response for ChooseColorThen effect")
         }
 
-        val targetEntityId = continuation.targetEntityId
-        val container = state.getEntity(targetEntityId)
-        val cardComponent = container?.get<CardComponent>()
-        if (container == null || cardComponent == null || !state.getBattlefield().contains(targetEntityId)) {
-            return checkForMore(state, emptyList())
-        }
-
-        val chosenColor = response.color
-        val displayName = if (container.has<FaceDownComponent>()) "Face-down creature" else cardComponent.name
-        val sourceName = continuation.sourceName ?: "Unknown"
-        val context = EffectContext(
-            sourceId = continuation.sourceId,
-            controllerId = continuation.controllerId,
-            opponentId = null
+        val contextWithColor = continuation.baseContext.copy(chosenColor = response.color)
+        val effectResult = effectRunner.executeRemainingEffects(
+            state,
+            listOf(continuation.then),
+            contextWithColor
         )
 
-        var newState = state.addFloatingEffect(
-            layer = Layer.ABILITY,
-            modification = SerializableModification.GrantKeyword("TOXIC_${continuation.toxicAmount}"),
-            affectedEntities = setOf(targetEntityId),
-            duration = continuation.duration,
-            context = context
-        )
-        newState = newState.addFloatingEffect(
-            layer = Layer.ABILITY,
-            modification = SerializableModification.GrantKeyword("HEXPROOF_FROM_${chosenColor.name}"),
-            affectedEntities = setOf(targetEntityId),
-            duration = continuation.duration,
-            context = context
-        )
-        newState = newState.addFloatingEffect(
-            layer = Layer.ABILITY,
-            modification = SerializableModification.CantBeBlockedByColor(chosenColor.name),
-            affectedEntities = setOf(targetEntityId),
-            duration = continuation.duration,
-            context = context
-        )
-
-        val events = listOf(
-            KeywordGrantedEvent(
-                targetId = targetEntityId,
-                targetName = displayName,
-                keyword = "Toxic ${continuation.toxicAmount}",
-                sourceName = sourceName
-            ),
-            KeywordGrantedEvent(
-                targetId = targetEntityId,
-                targetName = displayName,
-                keyword = "Hexproof from ${chosenColor.displayName.lowercase()}",
-                sourceName = sourceName
-            )
-        )
-
-        return checkForMore(newState, events)
+        if (effectResult.isPaused) return effectResult.toExecutionResult()
+        return checkForMore(effectResult.state, effectResult.events.toList())
     }
 
     fun resumeChooseColorForTarget(

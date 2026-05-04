@@ -29,7 +29,7 @@ export const keywordManaClass: Record<string, string> = {
   MORPH: 'ability-morph',
   PROTECTION: 'ability-protection',
   WITHER: 'ability-infect',
-  TOXIC: 'ability-infect',
+  TOXIC: 'ability-toxic',
   CANT_BE_BLOCKED: 'ability-unblockable',
   CHANGELING: 'ability-changeling',
 }
