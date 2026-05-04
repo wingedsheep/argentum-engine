@@ -2,7 +2,7 @@
 
 **Set Size:** 261 booster cards (excluding basic lands)
 **Release Date:** August 1, 2025
-**Implemented:** 55 / 261
+**Implemented:** 56 / 261
 
 ---
 
@@ -190,7 +190,7 @@
 - [ ] Scrounge for Eternity
 - [x] Seam Rip
 - [x] Secluded Starforge
-- [ ] Seedship Agrarian
+- [x] Seedship Agrarian
 - [ ] Seedship Broodtender
 - [ ] Seedship Impact
 - [ ] Selfcraft Mechan
