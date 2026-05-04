@@ -173,7 +173,7 @@
 - [ ] Ragost, Deft Gastronaut
 - [ ] Rayblade Trooper
 - [ ] Red Tiger Mechan
-- [ ] Remnant Elemental
+- [x] Remnant Elemental
 - [ ] Requiem Monolith
 - [ ] Reroute Systems
 - [ ] Rescue Skiff

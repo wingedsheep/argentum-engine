@@ -53,6 +53,7 @@ object EdgeOfEternitiesSet {
         KavaronHarrier,
         LumenClassFrigate,
         MeldedMoxite,
+        RemnantElemental,
         RigForWar,
         RustHarvester,
         SacredFoundry,
