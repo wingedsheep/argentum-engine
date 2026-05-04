@@ -2,12 +2,12 @@
 
 **Set Size:** 273 cards (main set, per Scryfall `set:ecl`)
 **Release Date:** January 23, 2026
-**Implemented:** 224 / 273
+**Implemented:** 225 / 273
 
 | Color      | Total | Done |
 |------------|-------|------|
 | White      | 39    | 32   |
-| Blue       | 39    | 33   |
+| Blue       | 39    | 34   |
 | Black      | 38    | 32   |
 | Red        | 39    | 29   |
 | Green      | 39    | 30   |
@@ -72,7 +72,7 @@
 - [x] Glamermite
 - [x] Glen Elendra Guardian
 - [x] Glen Elendra's Answer
-- [ ] Gravelgill Scoundrel
+- [x] Gravelgill Scoundrel
 - [x] Harmonized Crescendo
 - [x] Illusion Spinners
 - [x] Kulrath Mystic

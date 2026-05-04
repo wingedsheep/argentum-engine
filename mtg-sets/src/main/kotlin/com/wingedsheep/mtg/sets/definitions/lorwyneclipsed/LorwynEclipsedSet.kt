@@ -111,6 +111,7 @@ object LorwynEclipsedSet {
         GnarlbarkElm,
         Goatnap,
         GoldmeadowNomad,
+        GravelgillScoundrel,
         Graveshifter,
         GreatForestDruid,
         GrubStoriedMatriarch,
