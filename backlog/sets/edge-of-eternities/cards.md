@@ -2,7 +2,7 @@
 
 **Set Size:** 261 booster cards (excluding basic lands)
 **Release Date:** August 1, 2025
-**Implemented:** 2 / 261
+**Implemented:** 48 / 261
 
 ---
 
@@ -11,70 +11,70 @@
 - [ ] All-Fates Stalker
 - [ ] Alpharael, Dreaming Acolyte
 - [ ] Alpharael, Stonechosen
-- [ ] Annul
+- [x] Annul
 - [ ] Anticausal Vestige
-- [ ] Archenemy's Charm
+- [x] Archenemy's Charm
 - [ ] Astelli Reclaimer
 - [ ] Atmospheric Greenhouse
-- [ ] Atomic Microsizer
+- [x] Atomic Microsizer
 - [ ] Auxiliary Boosters
 - [ ] Banishing Light
 - [ ] Beamsaw Prospector
 - [ ] Beyond the Quiet
 - [ ] Bioengineered Future
 - [ ] Biomechan Engineer
-- [ ] Biosynthic Burst
+- [x] Biosynthic Burst
 - [ ] Biotech Specialist
 - [ ] Blade of the Swarm
-- [ ] Blooming Stinger
-- [ ] Bombard
-- [ ] Breeding Pool
+- [x] Blooming Stinger
+- [x] Bombard
+- [x] Breeding Pool
 - [ ] Brightspear Zealot
 - [ ] Broodguard Elite
 - [ ] Bygone Colossus
-- [ ] Cerebral Download
+- [x] Cerebral Download
 - [ ] Chorale of the Void
-- [ ] Chrome Companion
+- [x] Chrome Companion
 - [ ] Close Encounter
-- [ ] Cloudsculpt Technician
+- [x] Cloudsculpt Technician
 - [ ] Codecracker Hound
-- [ ] Comet Crawler
+- [x] Comet Crawler
 - [ ] Command Bridge
 - [ ] Consult the Star Charts
 - [ ] Cosmogoyf
 - [ ] Cosmogrand Zenith
-- [ ] Cryogen Relic
+- [x] Cryogen Relic
 - [x] Cryoshatter
 - [ ] Cut Propulsion
-- [ ] Dark Endurance
+- [x] Dark Endurance
 - [ ] Dauntless Scrapbot
 - [ ] Dawnsire, Sunstar Dreadnought
 - [ ] Dawnstrike Vanguard
 - [ ] Debris Field Crusher
 - [ ] Decode Transmissions
-- [ ] Depressurize
+- [x] Depressurize
 - [ ] Desculpting Blast
 - [ ] Devastating Onslaught
-- [ ] Diplomatic Relations
+- [x] Diplomatic Relations
 - [ ] Divert Disaster
 - [ ] Dockworker Drone
-- [ ] Drill Too Deep
+- [x] Drill Too Deep
 - [ ] Drix Fatemaker
-- [ ] Dual-Sun Adepts
-- [ ] Dual-Sun Technique
-- [ ] Dubious Delicacy
+- [x] Dual-Sun Adepts
+- [x] Dual-Sun Technique
+- [x] Dubious Delicacy
 - [ ] Dyadrine, Synthesis Amalgam
 - [ ] Edge Rover
 - [ ] Elegy Acolyte
-- [ ] Embrace Oblivion
+- [x] Embrace Oblivion
 - [ ] Emergency Eject
 - [ ] Emissary Escort
 - [ ] Entropic Battlecruiser
-- [ ] Eumidian Terrabotanist
+- [x] Eumidian Terrabotanist
 - [ ] Eusocial Engineering
-- [ ] Evendo, Waking Haven
+- [x] Evendo, Waking Haven
 - [ ] Exalted Sunborn
-- [ ] Exosuit Savior
+- [x] Exosuit Savior
 - [ ] Extinguisher Battleship
 - [ ] Faller's Faithful
 - [ ] Famished Worldsire
@@ -86,29 +86,29 @@
 - [ ] Full Bore
 - [ ] Fungal Colossus
 - [ ] Galactic Wayfarer
-- [ ] Galvanizing Sawship
+- [x] Galvanizing Sawship
 - [ ] Genemorph Imago
 - [ ] Gene Pollinator
 - [ ] Germinating Wurm
 - [ ] Gigastorm Titan
 - [ ] Glacier Godmaw
-- [ ] Godless Shrine
-- [ ] Gravblade Heavy
+- [x] Godless Shrine
+- [x] Gravblade Heavy
 - [ ] Gravkill
 - [ ] Gravpack Monoist
 - [ ] Haliya, Ascendant Cadet
 - [ ] Haliya, Guided by Light
-- [ ] Hardlight Containment
-- [ ] Harmonious Grovestrider
+- [x] Hardlight Containment
+- [x] Harmonious Grovestrider
 - [ ] Hemosymbic Mite
-- [ ] Honor
-- [ ] Honored Knight-Captain
-- [ ] Hullcarver
+- [x] Honor
+- [x] Honored Knight-Captain
+- [x] Hullcarver
 - [ ] Hylderblade
 - [ ] Hymn of the Faller
-- [ ] Icecave Crasher
+- [x] Icecave Crasher
 - [ ] Icetill Explorer
-- [ ] Illvoi Galeblade
+- [x] Illvoi Galeblade
 - [ ] Illvoi Infiltrator
 - [ ] Illvoi Light Jammer
 - [ ] Illvoi Operative
@@ -117,7 +117,7 @@
 - [ ] Interceptor Mechan
 - [ ] Intrepid Tenderfoot
 - [ ] Invasive Maneuvers
-- [ ] Kavaron Harrier
+- [x] Kavaron Harrier
 - [ ] Kavaron, Memorial World
 - [ ] Kavaron Skywarden
 - [ ] Kavaron Turbodrone
@@ -130,13 +130,13 @@
 - [ ] Lithobraking
 - [ ] Loading Zone
 - [ ] Lost in Space
-- [ ] Lumen-Class Frigate
+- [x] Lumen-Class Frigate
 - [ ] Luxknight Breacher
 - [ ] Mechan Assembler
 - [ ] Mechan Navigator
 - [ ] Mechanozoa
 - [ ] Mechan Shieldmate
-- [ ] Melded Moxite
+- [x] Melded Moxite
 - [ ] Meltstrider Eulogist
 - [ ] Meltstrider's Gear
 - [ ] Meltstrider's Resolve
@@ -173,23 +173,23 @@
 - [ ] Ragost, Deft Gastronaut
 - [ ] Rayblade Trooper
 - [ ] Red Tiger Mechan
-- [ ] Remnant Elemental
+- [x] Remnant Elemental
 - [ ] Requiem Monolith
 - [ ] Reroute Systems
 - [ ] Rescue Skiff
-- [ ] Rig for War
+- [x] Rig for War
 - [ ] Roving Actuator
 - [ ] Ruinous Rampage
-- [ ] Rust Harvester
-- [ ] Sacred Foundry
+- [x] Rust Harvester
+- [x] Sacred Foundry
 - [ ] Sami's Curiosity
 - [ ] Sami, Ship's Engineer
 - [ ] Sami, Wildcat Captain
 - [ ] Scour for Scrap
 - [ ] Scout for Survivors
 - [ ] Scrounge for Eternity
-- [ ] Seam Rip
-- [ ] Secluded Starforge
+- [x] Seam Rip
+- [x] Secluded Starforge
 - [ ] Seedship Agrarian
 - [ ] Seedship Broodtender
 - [ ] Seedship Impact
@@ -198,7 +198,7 @@
 - [ ] Singularity Rupture
 - [ ] Sinister Cryologist
 - [ ] Skystinger
-- [ ] Slagdrill Scrapper
+- [x] Slagdrill Scrapper
 - [x] Sledge-Class Seedship
 - [ ] Sothera, the Supervoid
 - [ ] Space-Time Anomaly
@@ -212,7 +212,7 @@
 - [ ] Starwinder
 - [ ] Station Monitor
 - [ ] Steelswarm Operator
-- [ ] Stomping Ground
+- [x] Stomping Ground
 - [ ] Sunset Saboteur
 - [ ] Sunstar Chaplain
 - [ ] Sunstar Expansionist
@@ -252,11 +252,11 @@
 - [ ] Uthros, Titanic Godcore
 - [ ] Vaultguard Trooper
 - [ ] Virulent Silencer
-- [ ] Virus Beetle
+- [x] Virus Beetle
 - [ ] Voidforged Titan
 - [ ] Vote Out
 - [ ] Warmaker Gunship
-- [ ] Watery Grave
+- [x] Watery Grave
 - [ ] Weapons Manufacturing
 - [ ] Wedgelight Rammer
 - [ ] Weftblade Enhancer
