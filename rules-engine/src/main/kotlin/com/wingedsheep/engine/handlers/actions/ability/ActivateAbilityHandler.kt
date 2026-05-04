@@ -496,7 +496,8 @@ class ActivateAbilityHandler(
         }
 
         // Emit events for cost types
-        when (ability.cost) {
+        val abilityCost = ability.cost
+        when (abilityCost) {
             is AbilityCost.Tap -> {
                 events.add(TappedEvent(action.sourceId, cardComponent.name))
             }
@@ -507,9 +508,23 @@ class ActivateAbilityHandler(
                     events.add(TappedEvent(attachedId, attachedName))
                 }
             }
+            is AbilityCost.Composite -> {
+                for (subCost in abilityCost.costs) {
+                    when (subCost) {
+                        is AbilityCost.Tap -> events.add(TappedEvent(action.sourceId, cardComponent.name))
+                        is AbilityCost.TapAttachedCreature -> {
+                            val attachedId = container.get<com.wingedsheep.engine.state.components.battlefield.AttachedToComponent>()?.targetId
+                            if (attachedId != null) {
+                                val attachedName = currentState.getEntity(attachedId)?.get<CardComponent>()?.name ?: "Unknown"
+                                events.add(TappedEvent(attachedId, attachedName))
+                            }
+                        }
+                        else -> {}
+                    }
+                }
+            }
             is AbilityCost.Loyalty -> {
-                val loyaltyCost = ability.cost as AbilityCost.Loyalty
-                events.add(LoyaltyChangedEvent(action.sourceId, cardComponent.name, loyaltyCost.change))
+                events.add(LoyaltyChangedEvent(action.sourceId, cardComponent.name, abilityCost.change))
             }
             else -> {}
         }

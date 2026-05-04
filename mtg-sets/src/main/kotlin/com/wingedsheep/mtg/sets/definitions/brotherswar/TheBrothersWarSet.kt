@@ -15,6 +15,10 @@ object TheBrothersWarSet {
 
     val allCards = listOf(
         FlowOfKnowledge,
+        BattlefieldForge,
+        Brushland,
+        LlanowarWastes,
         SoulPartition,
+        UndergroundRiver,
     )
 }
