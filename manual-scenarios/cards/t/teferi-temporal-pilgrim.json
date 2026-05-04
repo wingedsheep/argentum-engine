@@ -1,0 +1,39 @@
+{
+  "player1Name": "Alice",
+  "player2Name": "Bob",
+  "player1": {
+    "lifeTotal": 20,
+    "hand": ["Touch of Brilliance"],
+    "battlefield": [
+      {"name": "Island"},
+      {"name": "Island"},
+      {"name": "Island"},
+      {"name": "Island"},
+      {"name": "Island"},
+      {"name": "Teferi, Temporal Pilgrim", "counters": {"LOYALTY": 12}}
+    ],
+    "graveyard": [],
+    "library": ["Island", "Island", "Plains", "Plains"]
+  },
+  "player2": {
+    "lifeTotal": 20,
+    "hand": [],
+    "battlefield": [
+      {"name": "Glory Seeker"},
+      {"name": "Grizzly Bears"},
+      {"name": "Hill Giant"},
+      {"name": "Mana Echoes"},
+      {"name": "Forest"},
+      {"name": "Mountain"}
+    ],
+    "graveyard": [],
+    "library": ["Forest", "Mountain", "Plains"]
+  },
+  "phase": "PRECOMBAT_MAIN",
+  "activePlayer": 1,
+  "priorityPlayer": 1,
+  "player1StopAtSteps": [],
+  "player2StopAtSteps": [],
+  "player1OpponentStopAtSteps": [],
+  "player2OpponentStopAtSteps": []
+}
