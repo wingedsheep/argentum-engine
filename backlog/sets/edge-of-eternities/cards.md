@@ -180,7 +180,7 @@
 - [ ] Rig for War
 - [ ] Roving Actuator
 - [ ] Ruinous Rampage
-- [ ] Rust Harvester
+- [x] Rust Harvester
 - [x] Sacred Foundry
 - [ ] Sami's Curiosity
 - [ ] Sami, Ship's Engineer
