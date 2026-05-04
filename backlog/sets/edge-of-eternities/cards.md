@@ -2,7 +2,7 @@
 
 **Set Size:** 261 booster cards (excluding basic lands)
 **Release Date:** August 1, 2025
-**Implemented:** 32 / 261
+**Implemented:** 39 / 261
 
 ---
 
@@ -177,7 +177,7 @@
 - [ ] Requiem Monolith
 - [ ] Reroute Systems
 - [ ] Rescue Skiff
-- [ ] Rig for War
+- [x] Rig for War
 - [ ] Roving Actuator
 - [ ] Ruinous Rampage
 - [x] Rust Harvester
