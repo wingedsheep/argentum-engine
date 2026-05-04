@@ -39,6 +39,7 @@ object EdgeOfEternitiesSet {
         DualSunAdepts,
         DualSunTechnique,
         DubiousDelicacy,
+        EmbraceOblivion,
         EumidianTerrabotanist,
         ExosuitSavior,
         EvendoWakingHaven,

@@ -2,7 +2,7 @@
 
 **Set Size:** 261 booster cards (excluding basic lands)
 **Release Date:** August 1, 2025
-**Implemented:** 46 / 261
+**Implemented:** 47 / 261
 
 ---
 
@@ -66,7 +66,7 @@
 - [ ] Dyadrine, Synthesis Amalgam
 - [ ] Edge Rover
 - [ ] Elegy Acolyte
-- [ ] Embrace Oblivion
+- [x] Embrace Oblivion
 - [ ] Emergency Eject
 - [ ] Emissary Escort
 - [ ] Entropic Battlecruiser
