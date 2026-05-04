@@ -67,6 +67,7 @@ object EdgeOfEternitiesSet {
         LumenClassFrigate,
         LostInSpace,
         MeldedMoxite,
+        MechanNavigator,
         MeltstridersGear,
         MolecularModifier,
         MonoistSentry,

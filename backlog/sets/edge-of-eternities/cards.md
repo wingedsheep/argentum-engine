@@ -2,7 +2,7 @@
 
 **Set Size:** 261 booster cards (excluding basic lands)
 **Release Date:** August 1, 2025
-**Implemented:** 68 / 261
+**Implemented:** 69 / 261
 
 ---
 
@@ -133,7 +133,7 @@
 - [x] Lumen-Class Frigate
 - [ ] Luxknight Breacher
 - [ ] Mechan Assembler
-- [ ] Mechan Navigator
+- [x] Mechan Navigator
 - [ ] Mechanozoa
 - [ ] Mechan Shieldmate
 - [x] Melded Moxite
