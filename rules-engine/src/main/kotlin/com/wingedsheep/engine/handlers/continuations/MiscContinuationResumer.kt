@@ -27,6 +27,7 @@ class MiscContinuationResumer(
         resumer(StormCopyModalTargetContinuation::class, ::resumeStormCopyModalTarget),
         resumer(CopyTriggeredAbilityTargetContinuation::class, ::resumeCopyTriggeredAbilityTarget),
         resumer(DistributeCountersContinuation::class, ::resumeDistributeCounters),
+        resumer(RemoveAnyNumberOfCountersContinuation::class, ::resumeRemoveAnyNumberOfCounters),
         resumer(ProliferateContinuation::class, ::resumeProliferate),
         resumer(AddDynamicManaContinuation::class, ::resumeAddDynamicMana),
         resumer(ReturnFromLinkedExileContinuation::class) { state, continuation, response, checkForMore ->
@@ -408,6 +409,99 @@ class MiscContinuationResumer(
         }
 
         return checkForMore(newState, events)
+    }
+
+    private fun resumeRemoveAnyNumberOfCounters(
+        state: GameState,
+        continuation: RemoveAnyNumberOfCountersContinuation,
+        response: DecisionResponse,
+        checkForMore: CheckForMore
+    ): ExecutionResult {
+        if (response !is NumberChosenResponse) {
+            return ExecutionResult.error(state, "Expected number response for remove-any-counters")
+        }
+
+        val chosen = response.number.coerceIn(0, continuation.currentMaxAmount)
+        val counterType = com.wingedsheep.engine.handlers.effects.permanent.counters
+            .resolveCounterType(continuation.currentCounterType)
+
+        var newState = state
+        val events = mutableListOf<GameEvent>()
+
+        if (chosen > 0) {
+            val current = newState.getEntity(continuation.targetId)
+                ?.get<com.wingedsheep.engine.state.components.battlefield.CountersComponent>()
+                ?: com.wingedsheep.engine.state.components.battlefield.CountersComponent()
+            newState = newState.updateEntity(continuation.targetId) { container ->
+                container.with(current.withRemoved(counterType, chosen))
+            }
+            events.add(
+                CountersRemovedEvent(
+                    continuation.targetId,
+                    continuation.currentCounterType,
+                    chosen,
+                    continuation.targetName
+                )
+            )
+        }
+
+        // If more counter kinds remain, prompt for the next one. Re-read live counts so a
+        // counter kind that was removed by an interaction during this resolution is skipped.
+        val live = newState.getEntity(continuation.targetId)
+            ?.get<com.wingedsheep.engine.state.components.battlefield.CountersComponent>()
+        val nextPrompt = continuation.remainingCounterTypes
+            .map { (type, _) ->
+                type to (live?.getCount(
+                    com.wingedsheep.engine.handlers.effects.permanent.counters.resolveCounterType(type)
+                ) ?: 0)
+            }
+            .firstOrNull { it.second > 0 }
+
+        if (nextPrompt == null) {
+            return checkForMore(newState, events)
+        }
+
+        val (nextType, nextMax) = nextPrompt
+        val remainingAfter = continuation.remainingCounterTypes
+            .dropWhile { it.first != nextType }
+            .drop(1)
+
+        val decisionId = java.util.UUID.randomUUID().toString()
+        val decision = ChooseNumberDecision(
+            id = decisionId,
+            playerId = continuation.controllerId,
+            prompt = "Remove how many $nextType counters from ${continuation.targetName}? (0-$nextMax)",
+            context = DecisionContext(
+                sourceId = continuation.sourceId,
+                sourceName = continuation.sourceName,
+                phase = DecisionPhase.RESOLUTION
+            ),
+            minValue = 0,
+            maxValue = nextMax
+        )
+        val nextContinuation = RemoveAnyNumberOfCountersContinuation(
+            decisionId = decisionId,
+            targetId = continuation.targetId,
+            controllerId = continuation.controllerId,
+            currentCounterType = nextType,
+            currentMaxAmount = nextMax,
+            remainingCounterTypes = remainingAfter,
+            targetName = continuation.targetName,
+            sourceId = continuation.sourceId,
+            sourceName = continuation.sourceName
+        )
+        events.add(
+            DecisionRequestedEvent(
+                decisionId = decisionId,
+                playerId = continuation.controllerId,
+                decisionType = "CHOOSE_NUMBER",
+                prompt = decision.prompt
+            )
+        )
+        val pausedState = newState
+            .withPendingDecision(decision)
+            .pushContinuation(nextContinuation)
+        return ExecutionResult.paused(pausedState, decision, events)
     }
 
     private fun resumeReturnFromLinkedExile(

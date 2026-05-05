@@ -180,6 +180,7 @@ object LorwynEclipsedSet {
         ReapingWillow,
         RecklessRansacking,
         RetchedWretch,
+        RhysTheEvermore,
         RimeChill,
         RimefireTorque,
         RiverguardsReflexes,

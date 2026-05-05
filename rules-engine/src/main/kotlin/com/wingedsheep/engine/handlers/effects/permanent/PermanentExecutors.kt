@@ -27,6 +27,7 @@ import com.wingedsheep.engine.handlers.effects.permanent.counters.AddDynamicCoun
 import com.wingedsheep.engine.handlers.effects.permanent.counters.DistributeCountersAmongTargetsExecutor
 import com.wingedsheep.engine.handlers.effects.permanent.counters.DistributeCountersFromSelfExecutor
 import com.wingedsheep.engine.handlers.effects.permanent.counters.ProliferateExecutor
+import com.wingedsheep.engine.handlers.effects.permanent.counters.RemoveAnyNumberOfCountersExecutor
 import com.wingedsheep.engine.handlers.effects.permanent.counters.RemoveCountersExecutor
 import com.wingedsheep.engine.handlers.effects.permanent.abilities.GrantToxicExecutor
 import com.wingedsheep.engine.handlers.effects.permanent.protection.ChooseColorProtectionExecutor
@@ -87,6 +88,7 @@ class PermanentExecutors(
         AddDynamicCountersExecutor(),
         AddCountersToCollectionExecutor(),
         RemoveCountersExecutor(),
+        RemoveAnyNumberOfCountersExecutor(),
         DistributeCountersFromSelfExecutor(),
         DistributeCountersAmongTargetsExecutor(),
         ProliferateExecutor(),

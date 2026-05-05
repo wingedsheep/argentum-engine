@@ -72,6 +72,34 @@ data class DistributeCountersContinuation(
 ) : ContinuationFrame
 
 /**
+ * Resume after the controller picks how many counters of one kind to remove
+ * from a target permanent. The executor for [RemoveAnyNumberOfCountersEffect]
+ * issues one decision per counter kind currently on the target; on resume,
+ * the response is applied and the next kind (if any) is prompted.
+ *
+ * @property targetId The permanent whose counters are being removed
+ * @property controllerId The player making the choices
+ * @property currentCounterType The counter kind the active decision is for
+ * @property currentMaxAmount Cap shown to the player (0..currentMaxAmount)
+ * @property remainingCounterTypes Pending (counterType, maxAmount) prompts
+ * @property targetName Display name for follow-up prompts
+ * @property sourceId Source emitting the effect (for prompt context)
+ * @property sourceName Source name for prompt context
+ */
+@Serializable
+data class RemoveAnyNumberOfCountersContinuation(
+    override val decisionId: String,
+    val targetId: EntityId,
+    val controllerId: EntityId,
+    val currentCounterType: String,
+    val currentMaxAmount: Int,
+    val remainingCounterTypes: List<Pair<String, Int>>,
+    val targetName: String,
+    val sourceId: EntityId?,
+    val sourceName: String?
+) : ContinuationFrame
+
+/**
  * Resume after the controller picks the permanents and/or players that should
  * each receive another counter of each kind already on them (Proliferate).
  *

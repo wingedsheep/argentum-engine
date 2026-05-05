@@ -733,6 +733,14 @@ object Effects {
         RemoveCountersEffect(counterType, count, target)
 
     /**
+     * Remove any number of counters from a target permanent. The controller chooses
+     * how many of each kind to remove (one prompt per counter kind currently on the
+     * target). Used by Rhys, the Evermore.
+     */
+    fun RemoveAnyNumberOfCounters(target: EffectTarget = EffectTarget.ContextTarget(0)): Effect =
+        com.wingedsheep.sdk.scripting.effects.RemoveAnyNumberOfCountersEffect(target)
+
+    /**
      * Add counters to all entities in a named collection.
      */
     fun AddCountersToCollection(collectionName: String, counterType: String, count: Int = 1): Effect =
