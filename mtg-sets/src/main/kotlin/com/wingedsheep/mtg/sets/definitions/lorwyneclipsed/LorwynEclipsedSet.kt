@@ -91,6 +91,7 @@ object LorwynEclipsedSet {
         EnragedFlamecaster,
         EvershrikesGift,
         EvolvingWilds,
+        ExplosiveProdigy,
         FeedTheFlames,
         FeistySpikeling,
         FigureOfFable,
