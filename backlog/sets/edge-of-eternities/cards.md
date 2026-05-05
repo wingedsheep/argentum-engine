@@ -2,7 +2,7 @@
 
 **Set Size:** 261 booster cards (excluding basic lands)
 **Release Date:** August 1, 2025
-**Implemented:** 85 / 261
+**Implemented:** 87 / 261
 
 ---
 
@@ -224,7 +224,7 @@
 - [ ] Swarm Culler
 - [ ] Synthesizer Labship
 - [ ] Syr Vondam, Sunstar Exemplar
-- [ ] Syr Vondam, the Lucent
+- [x] Syr Vondam, the Lucent
 - [x] Systems Override
 - [ ] Tannuk, Memorial Ensign
 - [ ] Tannuk, Steadfast Second

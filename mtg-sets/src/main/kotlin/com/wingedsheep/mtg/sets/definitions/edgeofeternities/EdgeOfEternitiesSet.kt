@@ -100,6 +100,7 @@ object EdgeOfEternitiesSet {
         StarfighterPilot,
         SunstarExpansionist,
         SunstarLightsmith,
+        SyrVondamTheLucent,
         SystemsOverride,
         Thawbringer,
         VirusBeetle,
