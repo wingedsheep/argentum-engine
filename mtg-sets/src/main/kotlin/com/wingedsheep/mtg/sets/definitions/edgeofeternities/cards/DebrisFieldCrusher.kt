@@ -64,29 +64,25 @@ val DebrisFieldCrusher = card("Debris Field Crusher") {
         timing = TimingRule.SorcerySpeed
     }
 
+    // Station threshold: 8+ charge counters on this Spacecraft
+    val charge8 = Compare(
+        left = DynamicAmount.EntityProperty(
+            entity = EntityReference.Source,
+            numericProperty = EntityNumericProperty.CounterCount(CounterTypeFilter.Named(Counters.CHARGE))
+        ),
+        operator = ComparisonOperator.GTE,
+        right = DynamicAmount.Fixed(8)
+    )
+
     // Conditional type change: artifact creature at 8+ charge counters
     staticAbility {
-        condition = Compare(
-            left = DynamicAmount.EntityProperty(
-                entity = EntityReference.Source,
-                numericProperty = EntityNumericProperty.CounterCount(CounterTypeFilter.Named(Counters.CHARGE))
-            ),
-            operator = ComparisonOperator.GTE,
-            right = DynamicAmount.Fixed(8)
-        )
+        condition = charge8
         ability = GrantCardType("CREATURE", StaticTarget.SourceCreature)
     }
 
     // 8+ charge counters: Flying
     staticAbility {
-        condition = Compare(
-            left = DynamicAmount.EntityProperty(
-                entity = EntityReference.Source,
-                numericProperty = EntityNumericProperty.CounterCount(CounterTypeFilter.Named(Counters.CHARGE))
-            ),
-            operator = ComparisonOperator.GTE,
-            right = DynamicAmount.Fixed(8)
-        )
+        condition = charge8
         ability = GrantKeyword(Keyword.FLYING.name, StaticTarget.SourceCreature)
     }
 

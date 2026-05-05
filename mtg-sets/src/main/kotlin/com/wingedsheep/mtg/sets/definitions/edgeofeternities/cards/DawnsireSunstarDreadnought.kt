@@ -55,19 +55,6 @@ val DawnsireSunstarDreadnought = card("Dawnsire, Sunstar Dreadnought") {
         timing = TimingRule.SorcerySpeed
     }
 
-    // Conditional type change: artifact creature at 20+ charge counters
-    staticAbility {
-        condition = Compare(
-            left = DynamicAmount.EntityProperty(
-                entity = EntityReference.Source,
-                numericProperty = EntityNumericProperty.CounterCount(CounterTypeFilter.Named(Counters.CHARGE))
-            ),
-            operator = ComparisonOperator.GTE,
-            right = DynamicAmount.Fixed(20)
-        )
-        ability = GrantCardType("CREATURE", StaticTarget.SourceCreature)
-    }
-
     // 10+ charge counters: Whenever you attack, deal 100 damage to target
     triggeredAbility {
         trigger = Triggers.YouAttack
@@ -85,16 +72,23 @@ val DawnsireSunstarDreadnought = card("Dawnsire, Sunstar Dreadnought") {
         )
     }
 
-    // 20+ charge counters: Flying
+    // 20+ charge counters
+    val charge20 = Compare(
+        left = DynamicAmount.EntityProperty(
+            entity = EntityReference.Source,
+            numericProperty = EntityNumericProperty.CounterCount(CounterTypeFilter.Named(Counters.CHARGE))
+        ),
+        operator = ComparisonOperator.GTE,
+        right = DynamicAmount.Fixed(20)
+    )
+
     staticAbility {
-        condition = Compare(
-            left = DynamicAmount.EntityProperty(
-                entity = EntityReference.Source,
-                numericProperty = EntityNumericProperty.CounterCount(CounterTypeFilter.Named(Counters.CHARGE))
-            ),
-            operator = ComparisonOperator.GTE,
-            right = DynamicAmount.Fixed(20)
-        )
+        condition = charge20
+        ability = GrantCardType("CREATURE", StaticTarget.SourceCreature)
+    }
+
+    staticAbility {
+        condition = charge20
         ability = GrantKeyword(Keyword.FLYING.name, StaticTarget.SourceCreature)
     }
 
