@@ -2,7 +2,7 @@
 
 **Set Size:** 261 booster cards (excluding basic lands)
 **Release Date:** August 1, 2025
-**Implemented:** 75 / 261
+**Implemented:** 76 / 261
 
 ---
 
@@ -258,7 +258,7 @@
 - [ ] Warmaker Gunship
 - [x] Watery Grave
 - [ ] Weapons Manufacturing
-- [ ] Wedgelight Rammer
+- [x] Wedgelight Rammer
 - [ ] Weftblade Enhancer
 - [ ] Weftstalker Ardent
 - [ ] Weftwalking

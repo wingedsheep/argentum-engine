@@ -94,6 +94,7 @@ object EdgeOfEternitiesSet {
         SystemsOverride,
         Thawbringer,
         VirusBeetle,
+        WedgelightRammer,
         WateryGrave,
 
         // Basic lands
