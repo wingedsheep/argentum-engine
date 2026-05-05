@@ -216,6 +216,7 @@ object LorwynEclipsedSet {
         TasterOfWares,
         TempleGarden,
         TemporalCleansing,
+        TendTheSprigs,
         ThirstForIdentity,
         ThoughtweftCharge,
         ThoughtweftImbuer,
