@@ -99,6 +99,7 @@ object LorwynEclipsedSet {
         FlaringCinder,
         FlitterwingNuisance,
         ForagingWickermaw,
+        FormidableSpeaker,
         GallantFowlknight,
         GanglyStompling,
         GatheringStone,

@@ -2,7 +2,7 @@
 
 **Set Size:** 273 cards (main set, per Scryfall `set:ecl`)
 **Release Date:** January 23, 2026
-**Implemented:** 231 / 273
+**Implemented:** 232 / 273
 
 | Color      | Total | Done |
 |------------|-------|------|
@@ -10,7 +10,7 @@
 | Blue       | 39    | 34   |
 | Black      | 38    | 32   |
 | Red        | 39    | 29   |
-| Green      | 39    | 31   |
+| Green      | 39    | 32   |
 | Multicolor | 49    | 44   |
 | Colorless  | 18    | 15   |
 | Land       | 12    | 11   |
@@ -200,7 +200,7 @@
 - [ ] Crossroads Watcher
 - [x] Dawn's Light Archer
 - [ ] Dundoolin Weaver
-- [ ] Formidable Speaker
+- [x] Formidable Speaker
 - [x] Gilt-Leaf's Embrace
 - [x] Great Forest Druid
 - [x] Luminollusk
