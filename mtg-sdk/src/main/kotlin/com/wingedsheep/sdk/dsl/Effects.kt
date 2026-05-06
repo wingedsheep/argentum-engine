@@ -535,6 +535,23 @@ object Effects {
     ): Effect = GrantFreeCastTargetFromExileEffect(target, exileAfterResolve)
 
     /**
+     * Mark a spell on the stack so that it is exiled with the given counters on
+     * it instead of being put into its owner's graveyard when it resolves.
+     * Used by triggered abilities that read like a replacement effect, e.g.
+     * Goliath Daydreamer's "exile that card with a dream counter on it instead
+     * of putting it into your graveyard as it resolves".
+     */
+    fun MarkSpellExileWithCounters(
+        target: EffectTarget = EffectTarget.TriggeringEntity,
+        counterType: String = com.wingedsheep.sdk.core.Counters.PLUS_ONE_PLUS_ONE,
+        count: Int = 1
+    ): Effect = com.wingedsheep.sdk.scripting.effects.MarkSpellExileWithCountersEffect(
+        target = target,
+        counterType = counterType,
+        count = count
+    )
+
+    /**
      * Put onto the battlefield.
      */
     fun PutOntoBattlefield(target: EffectTarget, tapped: Boolean = false): Effect =

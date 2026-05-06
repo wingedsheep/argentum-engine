@@ -34,6 +34,7 @@ import {
   getFloodCounters,
   getCoinCounters,
   getChorusCounters,
+  getDreamCounters,
 } from '../board/shared'
 import { styles } from '../board/styles'
 import {
@@ -1343,6 +1344,20 @@ export function GameCard({
           <i className={`ms ms-${counterManaClass.CHORUS}`} style={{ fontSize: responsive.badges.counterIconFontSize }} />
           <span style={{ fontWeight: 700 }}>
             {getChorusCounters(card)}
+          </span>
+        </div>
+      )}
+
+      {/* Dream counter badge — visible in exile too, since that's where dream-counter cards live */}
+      {getDreamCounters(card) > 0 && (
+        <div style={{
+          ...styles.dreamCounterBadge,
+          fontSize: responsive.badges.counterTextFontSize,
+          padding: responsive.badges.badgePadding,
+        }}>
+          <i className={`ms ms-${counterManaClass.DREAM}`} style={{ fontSize: responsive.badges.counterIconFontSize }} />
+          <span style={{ fontWeight: 700 }}>
+            {getDreamCounters(card)}
           </span>
         </div>
       )}

@@ -397,6 +397,14 @@ export function getChorusCounters(card: ClientCard): number {
 }
 
 /**
+ * Get the number of dream counters on a card. Dream counters appear on instant
+ * and sorcery cards exiled by Goliath Daydreamer's first ability.
+ */
+export function getDreamCounters(card: ClientCard): number {
+  return card.counters[CounterType.DREAM] ?? 0
+}
+
+/**
  * Get an emoji or icon for an effect based on its icon identifier.
  */
 export function getEffectIcon(icon: string): string {

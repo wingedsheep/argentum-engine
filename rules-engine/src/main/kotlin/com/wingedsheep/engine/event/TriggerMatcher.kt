@@ -140,7 +140,8 @@ class TriggerMatcher(
                 event is SpellCastEvent &&
                     matchesPlayer(trigger.player, event.casterId, controllerId) &&
                     matchesSpellFilter(trigger.spellFilter, event, state, sourceId) &&
-                    (trigger.kicked == null || trigger.kicked == event.wasKicked)
+                    (trigger.kicked == null || trigger.kicked == event.wasKicked) &&
+                    matchesCastFromZone(trigger.castFromZone, event, state)
             }
             is GameEvent.NthSpellCastEvent -> {
                 // Fires on SpellCastEvent when the casting player's per-turn spell count
@@ -719,6 +720,21 @@ class TriggerMatcher(
             sourceId = triggerSourceId
         )
         return predicateEvaluator.matches(state, event.spellEntityId, spellFilter, context)
+    }
+
+    /**
+     * Check whether the spell was cast from the zone required by the trigger
+     * (e.g., HAND for "Whenever you cast a spell from your hand"). When the
+     * trigger doesn't specify a zone, every cast matches.
+     */
+    private fun matchesCastFromZone(
+        requiredZone: Zone?,
+        event: SpellCastEvent,
+        state: GameState
+    ): Boolean {
+        if (requiredZone == null) return true
+        val spellComponent = state.getEntity(event.spellEntityId)?.get<SpellOnStackComponent>() ?: return false
+        return spellComponent.castFromZone == requiredZone
     }
 
     /**

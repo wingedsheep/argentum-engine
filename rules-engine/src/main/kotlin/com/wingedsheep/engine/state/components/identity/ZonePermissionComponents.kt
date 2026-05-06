@@ -114,6 +114,18 @@ data class PlayWithCostIncreaseComponent(
  *
  * The [StackResolver] checks for this component when determining the destination zone
  * after a spell resolves or fizzles.
+ *
+ * @param withCounters Counter types to add to the card after it is exiled (one of each).
+ *   Used by Goliath Daydreamer's "exile that card with a dream counter on it" wording.
  */
 @Serializable
-data object ExileAfterResolveComponent : Component
+data class ExileAfterResolveComponent(
+    val withCounters: List<com.wingedsheep.sdk.core.CounterType> = emptyList(),
+    /**
+     * When true, the spell only goes to exile if it actually resolves. If it is
+     * countered or fizzles, it goes to its owner's graveyard normally. Used by
+     * Goliath Daydreamer per ruling: "If a spell is countered or otherwise fails
+     * to resolve, Goliath Daydreamer's first ability won't exile it."
+     */
+    val onlyIfResolved: Boolean = false
+) : Component

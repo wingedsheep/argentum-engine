@@ -638,6 +638,18 @@ object Triggers {
     )
 
     /**
+     * Whenever you cast an instant or sorcery spell from your hand.
+     */
+    val YouCastInstantOrSorceryFromHand: TriggerSpec = TriggerSpec(
+        event = SpellCastEvent(
+            spellFilter = GameObjectFilter.InstantOrSorcery,
+            player = Player.You,
+            castFromZone = com.wingedsheep.sdk.core.Zone.HAND
+        ),
+        binding = TriggerBinding.ANY
+    )
+
+    /**
      * Whenever you cast an enchantment spell.
      */
     val YouCastEnchantment: TriggerSpec = TriggerSpec(

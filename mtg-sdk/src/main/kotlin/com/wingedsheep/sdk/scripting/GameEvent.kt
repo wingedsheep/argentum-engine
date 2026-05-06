@@ -576,7 +576,10 @@ sealed interface GameEvent : TextReplaceable<GameEvent> {
     data class SpellCastEvent(
         val spellFilter: GameObjectFilter = GameObjectFilter.Any,
         val kicked: Boolean? = null,
-        val player: Player = Player.You
+        val player: Player = Player.You,
+        /** When non-null, only triggers if the spell was cast from this zone
+         *  (e.g., HAND for "Whenever you cast a spell from your hand"). */
+        val castFromZone: com.wingedsheep.sdk.core.Zone? = null
     ) : GameEvent {
         override val description: String = buildString {
             append(player.description)
@@ -588,6 +591,15 @@ sealed interface GameEvent : TextReplaceable<GameEvent> {
             } else {
                 if (kicked != true) append("a ") else Unit
                 append("$filterDesc spell")
+            }
+            if (castFromZone != null) {
+                append(" from ")
+                append(when (castFromZone) {
+                    com.wingedsheep.sdk.core.Zone.HAND -> "your hand"
+                    com.wingedsheep.sdk.core.Zone.GRAVEYARD -> "your graveyard"
+                    com.wingedsheep.sdk.core.Zone.EXILE -> "exile"
+                    else -> "your ${castFromZone.displayName.lowercase()}"
+                })
             }
         }
 

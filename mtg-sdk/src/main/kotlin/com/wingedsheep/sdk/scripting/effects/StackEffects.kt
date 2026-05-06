@@ -470,3 +470,41 @@ data class CopyEachSpellCastEffect(
 
     override fun applyTextReplacement(replacer: TextReplacer): Effect = this
 }
+
+// =============================================================================
+// Stack Effects — Mark for Exile-After-Resolve with Counters
+// =============================================================================
+
+/**
+ * Mark a spell on the stack so that, when it resolves, it is exiled with the
+ * specified counters on it instead of being put into its owner's graveyard.
+ *
+ * Used by replacement effects that read like a triggered ability but actually
+ * change the spell's resolution destination — for example Goliath Daydreamer's
+ * "Whenever you cast an instant or sorcery spell from your hand, exile that
+ * card with a dream counter on it instead of putting it into your graveyard
+ * as it resolves."
+ *
+ * Per the ruling, if the spell is countered or otherwise fails to resolve, the
+ * exile-with-counter does not happen — so this effect sets the
+ * `onlyIfResolved` flag on the underlying ExileAfterResolveComponent.
+ *
+ * @property target The spell on the stack to mark (typically the triggering entity).
+ * @property counterType Counter type string (see [com.wingedsheep.sdk.core.Counters]).
+ * @property count How many counters of [counterType] to add when the spell exiles.
+ */
+@SerialName("MarkSpellExileWithCounters")
+@Serializable
+data class MarkSpellExileWithCountersEffect(
+    val target: com.wingedsheep.sdk.scripting.targets.EffectTarget = com.wingedsheep.sdk.scripting.targets.EffectTarget.TriggeringEntity,
+    val counterType: String = com.wingedsheep.sdk.core.Counters.PLUS_ONE_PLUS_ONE,
+    val count: Int = 1
+) : Effect {
+    override val description: String = buildString {
+        append("Exile that card with ")
+        if (count == 1) append("a $counterType counter") else append("$count $counterType counters")
+        append(" on it instead of putting it into your graveyard as it resolves")
+    }
+
+    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
+}

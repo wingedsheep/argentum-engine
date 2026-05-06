@@ -37,7 +37,7 @@ class GrantFreeCastTargetFromExileExecutor : EffectExecutor<GrantFreeCastTargetF
                 .with(MayPlayFromExileComponent(controllerId = controllerId))
                 .with(PlayWithoutPayingCostComponent(controllerId = controllerId))
             if (effect.exileAfterResolve) {
-                updated = updated.with(ExileAfterResolveComponent)
+                updated = updated.with(ExileAfterResolveComponent())
             }
             updated
         }

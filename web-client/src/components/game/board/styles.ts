@@ -1157,6 +1157,22 @@ export const styles: Record<string, React.CSSProperties> = {
     fontWeight: 700,
     zIndex: 5,
   } as React.CSSProperties,
+  // Dream counter badge (for Goliath Daydreamer's exiled instants/sorceries)
+  dreamCounterBadge: {
+    position: 'absolute',
+    top: 4,
+    right: 4,
+    backgroundColor: 'rgba(40, 20, 80, 0.95)',
+    borderRadius: 4,
+    border: '1px solid rgba(160, 140, 240, 0.7)',
+    display: 'flex',
+    alignItems: 'center',
+    gap: 2,
+    color: '#c8b8ff',
+    fontWeight: 700,
+    zIndex: 5,
+    textShadow: '0 0 4px rgba(160, 140, 240, 0.8)',
+  } as React.CSSProperties,
   // Blight counter badge (for Rottenmouth Viper etc.)
   blightCounterBadge: {
     position: 'absolute',
