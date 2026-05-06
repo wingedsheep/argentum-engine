@@ -205,6 +205,7 @@ object LorwynEclipsedSet {
         ShoreLurker,
         SilvergillMentor,
         SilvergillPeddler,
+        SlumberingWalker,
         SoulbrightSeeker,
         SourbreadAuntie,
         SpellSnare,
