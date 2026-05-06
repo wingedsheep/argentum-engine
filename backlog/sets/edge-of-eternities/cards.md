@@ -2,7 +2,7 @@
 
 **Set Size:** 261 booster cards (excluding basic lands)
 **Release Date:** August 1, 2025
-**Implemented:** 98 / 261
+**Implemented:** 99 / 261
 
 ---
 
@@ -162,7 +162,7 @@
 - [ ] Pain for All
 - [ ] Perigee Beckoner
 - [ ] Pinnacle Emissary
-- [ ] Pinnacle Kill-Ship
+- [x] Pinnacle Kill-Ship
 - [ ] Pinnacle Starcage
 - [ ] Plasma Bolt
 - [ ] Possibility Technician

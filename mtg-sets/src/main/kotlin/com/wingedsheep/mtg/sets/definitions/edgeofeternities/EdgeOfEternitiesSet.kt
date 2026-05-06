@@ -94,6 +94,7 @@ object EdgeOfEternitiesSet {
         NanoformSentinel,
         NebulaDragon,
         NutrientBlock,
+        PinnacleKillShip,
         RadiantStrike,
         RemnantElemental,
         RerouteSystems,
