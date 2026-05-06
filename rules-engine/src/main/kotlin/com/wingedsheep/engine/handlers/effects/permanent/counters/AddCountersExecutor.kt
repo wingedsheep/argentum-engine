@@ -27,7 +27,7 @@ class AddCountersExecutor : EffectExecutor<AddCountersEffect> {
         effect: AddCountersEffect,
         context: EffectContext
     ): EffectResult {
-        val targetId = context.resolveTarget(effect.target)
+        val targetId = context.resolveTarget(effect.target, state)
             ?: return EffectResult.error(state, "No valid target for counters")
 
         if (state.projectedState.hasKeyword(targetId, AbilityFlag.CANT_RECEIVE_COUNTERS)) {

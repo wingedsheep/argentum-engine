@@ -28,6 +28,7 @@ object FoundationsSet : MtgSet {
         Bushwhack,
         MossbornHydra,
         Negate,
+        OrdealOfNylea,
         SnakeskinVeil,
         SpringbloomDruid,
     )
