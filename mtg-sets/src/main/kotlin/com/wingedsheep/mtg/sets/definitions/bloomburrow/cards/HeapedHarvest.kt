@@ -18,10 +18,6 @@ import com.wingedsheep.sdk.scripting.effects.MayEffect
  * When this artifact enters and when you sacrifice it, you may search your
  * library for a basic land card, put it onto the battlefield tapped, then shuffle.
  * {2}, {T}, Sacrifice this artifact: You gain 3 life.
- *
- * Note: The "when you sacrifice it" trigger is approximated using
- * PutIntoGraveyardFromBattlefield (also fires on destruction, a minor
- * simplification vs. sacrifice-only).
  */
 val HeapedHarvest = card("Heaped Harvest") {
     manaCost = "{2}{G}"
@@ -44,9 +40,8 @@ val HeapedHarvest = card("Heaped Harvest") {
     }
 
     // When you sacrifice it, you may search for a basic land
-    // (approximated as "when put into graveyard from battlefield")
     triggeredAbility {
-        trigger = Triggers.PutIntoGraveyardFromBattlefield
+        trigger = Triggers.Sacrificed
         effect = MayEffect(
             EffectPatterns.searchLibrary(
                 filter = GameObjectFilter.BasicLand,

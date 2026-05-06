@@ -1101,10 +1101,16 @@ class TriggerDetector(
     }
 
     /**
-     * Detect "whenever you sacrifice one or more [permanents]" batching triggers.
+     * Detect "whenever you sacrifice one or more [permanents]" batching triggers
+     * (ANY binding) and "when you sacrifice this" self-targeted triggers (SELF binding).
      *
-     * Groups PermanentsSacrificedEvent by controller and fires the trigger at most once
-     * per controller, regardless of how many sacrifice events occurred.
+     * For ANY binding: groups PermanentsSacrificedEvent by controller and fires the
+     * trigger at most once per controller, regardless of how many sacrifice events
+     * occurred.
+     *
+     * For SELF binding: fires once per sacrificed permanent that has a matching trigger.
+     * The source has already moved to the graveyard by the time detection runs, so it
+     * is not in the trigger index — abilities are looked up directly by card definition.
      */
     private fun detectSacrificeBatchTriggers(
         state: GameState,
@@ -1121,11 +1127,12 @@ class TriggerDetector(
         }
         if (sacrificeByController.isEmpty()) return
 
-        // Check battlefield permanents with sacrifice batch triggers
+        // ANY binding: check battlefield permanents with sacrifice batch triggers
         for (entry in index.getEntitiesForCategory(TriggerCategory.SACRIFICE)) {
             for (ability in entry.abilities) {
                 val trigger = ability.trigger
                 if (trigger !is GameEvent.PermanentsSacrificedEvent) continue
+                if (ability.binding != TriggerBinding.ANY) continue
 
                 // This trigger watches the controller's own sacrifices
                 val controllerId = entry.controllerId
@@ -1134,23 +1141,7 @@ class TriggerDetector(
                 // Check if any of the sacrificed permanents match the filter
                 val hasMatch = controllerEvents.any { event ->
                     event.permanentIds.any { permanentId ->
-                        if (trigger.filter == GameObjectFilter.Any) return@any true
-                        // Look up the entity (should be in graveyard or still accessible)
-                        val entity = state.getEntity(permanentId)
-                        val cardComponent = entity?.get<CardComponent>()
-                        if (cardComponent != null) {
-                            trigger.filter.cardPredicates.all { predicate ->
-                                when (predicate) {
-                                    is com.wingedsheep.sdk.scripting.predicates.CardPredicate.IsCreature ->
-                                        cardComponent.typeLine.isCreature
-                                    is com.wingedsheep.sdk.scripting.predicates.CardPredicate.IsArtifact ->
-                                        cardComponent.typeLine.isArtifact
-                                    is com.wingedsheep.sdk.scripting.predicates.CardPredicate.HasSubtype ->
-                                        cardComponent.typeLine.hasSubtype(predicate.subtype)
-                                    else -> true
-                                }
-                            }
-                        } else false
+                        sacrificedPermanentMatchesFilter(state, permanentId, trigger.filter)
                     }
                 }
 
@@ -1165,6 +1156,60 @@ class TriggerDetector(
                         )
                     )
                 }
+            }
+        }
+
+        // SELF binding: source has left the battlefield, so it isn't in the index.
+        // Look up triggered abilities directly from each sacrificed permanent.
+        for ((controllerId, controllerEvents) in sacrificeByController) {
+            for (event in controllerEvents) {
+                for (permanentId in event.permanentIds) {
+                    val container = state.getEntity(permanentId) ?: continue
+                    if (container.has<FaceDownComponent>()) continue
+                    val cardComponent = container.get<CardComponent>() ?: continue
+
+                    val abilities = abilityResolver.getTriggeredAbilities(
+                        permanentId, cardComponent.cardDefinitionId, state
+                    )
+                    for (ability in abilities) {
+                        if (ability.binding != TriggerBinding.SELF) continue
+                        val trigger = ability.trigger
+                        if (trigger !is GameEvent.PermanentsSacrificedEvent) continue
+                        if (ability.activeZone != Zone.BATTLEFIELD) continue
+                        if (!sacrificedPermanentMatchesFilter(state, permanentId, trigger.filter)) continue
+
+                        triggers.add(
+                            PendingTrigger(
+                                ability = ability,
+                                sourceId = permanentId,
+                                sourceName = cardComponent.name,
+                                controllerId = controllerId,
+                                triggerContext = TriggerContext()
+                            )
+                        )
+                    }
+                }
+            }
+        }
+    }
+
+    private fun sacrificedPermanentMatchesFilter(
+        state: GameState,
+        permanentId: EntityId,
+        filter: GameObjectFilter
+    ): Boolean {
+        if (filter == GameObjectFilter.Any) return true
+        val entity = state.getEntity(permanentId) ?: return false
+        val cardComponent = entity.get<CardComponent>() ?: return false
+        return filter.cardPredicates.all { predicate ->
+            when (predicate) {
+                is com.wingedsheep.sdk.scripting.predicates.CardPredicate.IsCreature ->
+                    cardComponent.typeLine.isCreature
+                is com.wingedsheep.sdk.scripting.predicates.CardPredicate.IsArtifact ->
+                    cardComponent.typeLine.isArtifact
+                is com.wingedsheep.sdk.scripting.predicates.CardPredicate.HasSubtype ->
+                    cardComponent.typeLine.hasSubtype(predicate.subtype)
+                else -> true
             }
         }
     }

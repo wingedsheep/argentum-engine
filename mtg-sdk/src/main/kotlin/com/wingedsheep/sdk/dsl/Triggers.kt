@@ -999,6 +999,16 @@ object Triggers {
         binding = TriggerBinding.ANY
     )
 
+    /**
+     * When you sacrifice this permanent.
+     * Distinct from [PutIntoGraveyardFromBattlefield] / [Dies], which fire on any
+     * battlefield-to-graveyard transition (including destruction).
+     */
+    val Sacrificed: TriggerSpec = TriggerSpec(
+        event = PermanentsSacrificedEvent(),
+        binding = TriggerBinding.SELF
+    )
+
     // =========================================================================
     // Leave Battlefield Without Dying Triggers
     // =========================================================================
