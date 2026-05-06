@@ -4,6 +4,7 @@ import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.targets.AnyTarget
+import com.wingedsheep.sdk.scripting.targets.TargetOther
 
 /**
  * Boulder Dash
@@ -19,7 +20,10 @@ val BoulderDash = card("Boulder Dash") {
 
     spell {
         val first = target("first target", AnyTarget(descriptionOverride = "any target (takes 2 damage)"))
-        val second = target("second target", AnyTarget(descriptionOverride = "any other target (takes 1 damage)"))
+        val second = target(
+            "second target",
+            TargetOther(AnyTarget(descriptionOverride = "any other target (takes 1 damage)"))
+        )
         effect = Effects.DealDamage(2, first)
             .then(Effects.DealDamage(1, second))
     }

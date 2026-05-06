@@ -66,6 +66,11 @@ class TargetEnumerationUtils(
                 creatures + planeswalkers
             }
             is TargetObject -> findValidObjectTargets(state, playerId, requirement.filter, sourceId)
+            is TargetOther -> {
+                val baseTargets = findValidTargets(state, playerId, requirement.baseRequirement, sourceId)
+                val excludeId = requirement.excludeSourceId ?: sourceId
+                if (excludeId != null) baseTargets.filter { it != excludeId } else baseTargets
+            }
             is TargetSpellOrPermanent -> {
                 val permanentFilter = requirement.permanentFilter
                 val permanents = if (permanentFilter == null) {
@@ -86,7 +91,6 @@ class TargetEnumerationUtils(
                 val spells = findValidSpellTargets(state, playerId, TargetFilter.SpellOnStack)
                 permanents + spells
             }
-            else -> emptyList()
         }
     }
 

@@ -281,8 +281,13 @@ data class TargetObject(
 // =============================================================================
 
 /**
- * Target another target (for modal spells, redirection, etc.).
- * E.g., "Change the target of target spell with a single target"
+ * Marks a target as needing to be different from other targets of the same spell or
+ * ability — used for "any other target" / "another target" wording. Validation
+ * delegates to [baseRequirement] and additionally rejects any chosen target that
+ * matches a target chosen for an earlier requirement of the same cast/activation.
+ *
+ * If [excludeSourceId] is set (or sourceId is provided at validation time), that id
+ * is also excluded — useful for "another target spell" semantics.
  */
 @SerialName("TargetOther")
 @Serializable
@@ -291,7 +296,7 @@ data class TargetOther(
     val excludeSourceId: EntityId? = null,
     override val id: String? = null
 ) : TargetRequirement {
-    override val description: String = "target other ${baseRequirement.description}"
+    override val description: String = baseRequirement.description
     override val count: Int = baseRequirement.count
     override val optional: Boolean = baseRequirement.optional
 

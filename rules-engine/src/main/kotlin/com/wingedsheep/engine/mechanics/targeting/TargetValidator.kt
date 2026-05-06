@@ -77,6 +77,16 @@ class TargetValidator {
                 val error = validateSingleTarget(state, target, requirement, casterId, sourceColors, sourceSubtypes, sourceId)
                 if (error != null) return error
             }
+
+            // "Another target" — must differ from any earlier target chosen for this same cast
+            if (requirement is TargetOther) {
+                val priorTargets = targets.subList(0, startIdx.coerceAtMost(targets.size))
+                for (target in targetsForReq) {
+                    if (priorTargets.any { it == target }) {
+                        return "Target must be different from the other chosen targets"
+                    }
+                }
+            }
         }
 
         return null
