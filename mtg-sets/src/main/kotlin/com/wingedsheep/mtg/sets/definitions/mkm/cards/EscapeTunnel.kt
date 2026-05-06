@@ -27,7 +27,7 @@ val EscapeTunnel = card("Escape Tunnel") {
             Costs.SacrificeSelf
         )
         effect = EffectPatterns.searchLibrary(
-            filter = GameObjectFilter.Land,
+            filter = GameObjectFilter.BasicLand,
             count = 1,
             destination = SearchDestination.BATTLEFIELD,
             entersTapped = true,
