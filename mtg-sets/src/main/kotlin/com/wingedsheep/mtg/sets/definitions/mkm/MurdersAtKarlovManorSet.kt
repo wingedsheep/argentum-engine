@@ -16,6 +16,8 @@ object MurdersAtKarlovManorSet {
     val allCards = listOf(
         CommercialDistrict,
         ElegantParlor,
+        EscapeTunnel,
+        HardHittingQuestion,
         HedgeMaze,
         LushPortico,
         MeticulousArchive,

@@ -23,6 +23,10 @@ object FoundationsSet {
      * All cards implemented from this set.
      */
     val allCards = listOf(
+        Bushwhack,
+        MossbornHydra,
         Negate,
+        SnakeskinVeil,
+        SpringbloomDruid,
     )
 }
