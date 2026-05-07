@@ -48,6 +48,7 @@ class PlayerExecutors(
         GrantDamageBonusExecutor(),
         GrantHexproofExecutor(),
         GrantShroudExecutor(),
+        HijackNextTurnExecutor(),
         LoseGameExecutor(),
         payOrSufferExecutor,
         PlayAdditionalLandsExecutor(),

@@ -204,6 +204,24 @@ data class SkipNextTurnEffect(
 }
 
 /**
+ * The ability's controller controls the target player during that player's next turn.
+ *
+ * Used for Mindslaver-style effects (e.g., The Dominion Bracelet). PR 1 ships this effect
+ * as a no-op that emits a TurnHijackedEvent only — full input/visibility routing is
+ * delivered in a follow-up PR.
+ */
+@SerialName("HijackNextTurn")
+@Serializable
+data class HijackNextTurnEffect(
+    val target: EffectTarget = EffectTarget.PlayerRef(Player.TargetOpponent)
+) : Effect {
+    override val description: String =
+        "Controller controls ${target.description} during their next turn"
+
+    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
+}
+
+/**
  * Target player can't cast spells for the specified duration.
  * Used for cards like Xantid Swarm: "Whenever this creature attacks, defending player can't cast spells this turn."
  *

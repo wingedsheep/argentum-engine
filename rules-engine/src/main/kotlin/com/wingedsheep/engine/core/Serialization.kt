@@ -98,6 +98,7 @@ val engineSerializersModule = SerializersModule {
         subclass(GiftGivenEvent::class)
         subclass(HandLookedAtEvent::class)
         subclass(RoomFullyUnlockedEvent::class)
+        subclass(TurnHijackedEvent::class)
         subclass(HandRevealedEvent::class)
         subclass(KeywordGrantedEvent::class)
         subclass(LibraryReorderedEvent::class)

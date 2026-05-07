@@ -880,6 +880,20 @@ data class CoinFlipEvent(
     val sourceName: String
 ) : GameEvent
 
+/**
+ * Emitted when a player has been scheduled to control another player's next turn
+ * (Mindslaver-style hijack). PR 1 ships this as informational only — the full
+ * input/visibility routing arrives in a follow-up PR.
+ */
+@Serializable
+@SerialName("TurnHijackedEvent")
+data class TurnHijackedEvent(
+    val controllerId: EntityId,
+    val hijackedPlayerId: EntityId,
+    val sourceId: EntityId,
+    val sourceName: String
+) : GameEvent
+
 // =============================================================================
 // Room Events (DSK)
 // =============================================================================

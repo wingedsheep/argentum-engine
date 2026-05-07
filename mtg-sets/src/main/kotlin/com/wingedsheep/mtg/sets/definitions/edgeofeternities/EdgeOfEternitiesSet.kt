@@ -126,6 +126,7 @@ object EdgeOfEternitiesSet {
         SwarmCuller,
         SyrVondamTheLucent,
         SystemsOverride,
+        TheDominionBracelet,
         Thawbringer,
         UmbralCollarZealot,
         UthrosScanship,

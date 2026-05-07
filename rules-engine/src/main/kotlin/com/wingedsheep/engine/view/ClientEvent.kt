@@ -1052,7 +1052,8 @@ is PermanentsSacrificedEvent -> {
             is BecomesTargetEvent,
             is SpellCopiedEvent,
             is ClassLevelChangedEvent,
-            is RoomFullyUnlockedEvent -> null
+            is RoomFullyUnlockedEvent,
+            is TurnHijackedEvent -> null
         }
     }
 }

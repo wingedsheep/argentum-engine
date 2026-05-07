@@ -128,6 +128,7 @@ import com.wingedsheep.sdk.scripting.effects.PreventDamageEffect
 import com.wingedsheep.sdk.scripting.effects.PreventionDirection
 import com.wingedsheep.sdk.scripting.effects.PreventionScope
 import com.wingedsheep.sdk.scripting.effects.PreventionSourceFilter
+import com.wingedsheep.sdk.scripting.effects.HijackNextTurnEffect
 import com.wingedsheep.sdk.scripting.effects.SkipNextTurnEffect
 import com.wingedsheep.sdk.scripting.effects.ChooseActionEffect
 import com.wingedsheep.sdk.scripting.effects.EffectChoice
@@ -1449,6 +1450,13 @@ object Effects {
      */
     fun SkipNextTurn(target: EffectTarget = EffectTarget.Controller): Effect =
         SkipNextTurnEffect(target)
+
+    /**
+     * Controller controls the target player during that player's next turn (Mindslaver-style).
+     * Used by The Dominion Bracelet. PR 1 ships as a no-op event; full mechanic lands later.
+     */
+    fun HijackNextTurn(target: EffectTarget = EffectTarget.PlayerRef(com.wingedsheep.sdk.scripting.references.Player.TargetOpponent)): Effect =
+        HijackNextTurnEffect(target)
 
     /**
      * Grant a flat damage bonus to a player's sources this turn.
