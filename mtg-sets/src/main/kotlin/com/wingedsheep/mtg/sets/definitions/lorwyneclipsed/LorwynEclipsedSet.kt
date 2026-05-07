@@ -120,6 +120,7 @@ object LorwynEclipsedSet {
         Glamermite,
         GlenElendraGuardian,
         GlenElendrasAnswer,
+        GlisterBairn,
         GloomRipper,
         GnarlbarkElm,
         Goatnap,
