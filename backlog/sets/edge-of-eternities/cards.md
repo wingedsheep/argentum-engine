@@ -2,7 +2,7 @@
 
 **Set Size:** 261 booster cards (excluding basic lands)
 **Release Date:** August 1, 2025
-**Implemented:** 130 / 261
+**Implemented:** 131 / 261
 
 ---
 
@@ -172,7 +172,7 @@
 - [x] Radiant Strike
 - [ ] Ragost, Deft Gastronaut
 - [ ] Rayblade Trooper
-- [ ] Red Tiger Mechan
+- [x] Red Tiger Mechan
 - [x] Remnant Elemental
 - [ ] Requiem Monolith
 - [x] Reroute Systems
