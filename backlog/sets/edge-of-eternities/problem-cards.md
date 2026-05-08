@@ -77,7 +77,6 @@ https://api.scryfall.com/cards/named?exact=Beyond%20the%20Quiet&set=eoe
 ## Drone token:
 - [ ] Desculpting Blast
 - [ ] Station Monitor
-@SekshaasEarlySleeper
 
 ## Complex:
 - [ ] Consult the Star Charts
@@ -111,7 +110,6 @@ https://api.scryfall.com/cards/named?exact=Beyond%20the%20Quiet&set=eoe
 
 ## Enters with counters, not trigger new counters, (Enters with dynamic counters)
 - [ ] Luxknight Breacher
-@BristlebaneBattler.kt
 
 ## You may cast artifact spells from the top of your library.
 - [ ] Mm'menon, the Right Hand
@@ -130,7 +128,6 @@ https://api.scryfall.com/cards/named?exact=Beyond%20the%20Quiet&set=eoe
 
 ## This ability costs {2} less to activate if you control a creature with a +1/+1 counter on it.
 - [ ] Starport Security
-@ShadowUrchin?
 
 ## up to one other target artifact you control becomes an artifact creature with base power and toughness 2/2 and gains flying until end of turn
 - [ ] Synthesizer Labship
@@ -196,7 +193,6 @@ https://api.scryfall.com/cards/named?exact=Beyond%20the%20Quiet&set=eoe
 
 ## Whenever one or more creatures you control with +1/+1 counters on them deal combat damage to a player, draw a card. (Only keyword by counter exists)
 - [ ] Haliya, Ascendant Cadet
-@AbzanFalconer
 
 ## This creature can’t be blocked if you’ve cast two or more spells this turn
 - [ ] Illvoi Infiltrator
@@ -222,7 +218,6 @@ https://api.scryfall.com/cards/named?exact=Beyond%20the%20Quiet&set=eoe
 
 ## Whenever a creature you control with a +1/+1 counter on it dies, draw a card.
 - [ ] Meltstrider Eulogist
-@ShadowUrchin
 
 ## Exile the top X cards of your library, where X is one plus the mana value of the sacrificed artifact. You may play those cards this turn.
 - [ ] Memorial Vault
@@ -268,7 +263,6 @@ https://api.scryfall.com/cards/named?exact=Beyond%20the%20Quiet&set=eoe
 
 ## Spend this mana only to cast an artifact spell
 - [ ] Steelswarm Operator
-@ManaRestriction
 
 ## Draw cards equal to the sacrificed creature’s power
 - [ ] Susur Secundi, Void Altar
