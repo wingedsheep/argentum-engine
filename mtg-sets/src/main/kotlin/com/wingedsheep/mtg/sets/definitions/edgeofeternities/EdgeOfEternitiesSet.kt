@@ -35,6 +35,7 @@ object EdgeOfEternitiesSet {
         BloomingStinger,
         Bombard,
         BreedingPool,
+        BrightspearZealot,
         BiotechSpecialist,
         BygoneColossus,
         CerebralDownload,

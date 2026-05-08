@@ -563,6 +563,8 @@ class StaticAbilityHandler(
             is com.wingedsheep.sdk.scripting.conditions.YouLostLifeThisTurn -> SourceProjectionCondition.ControllerLostLifeThisTurn
             is com.wingedsheep.sdk.scripting.conditions.YouAttackedWithCreaturesThisTurn ->
                 SourceProjectionCondition.ControllerAttackedWithCreaturesThisTurn(condition.filter, condition.atLeast)
+            is com.wingedsheep.sdk.scripting.conditions.YouCastSpellsThisTurn ->
+                SourceProjectionCondition.ControllerCastSpellsThisTurn(condition.filter, condition.atLeast)
             is com.wingedsheep.sdk.scripting.conditions.SourceEnteredThisTurn -> SourceProjectionCondition.SourceEnteredThisTurn
             is com.wingedsheep.sdk.scripting.conditions.SourceIsModified -> SourceProjectionCondition.SourceIsModified
             is Compare -> SourceProjectionCondition.Compare(condition.left, condition.operator, condition.right)

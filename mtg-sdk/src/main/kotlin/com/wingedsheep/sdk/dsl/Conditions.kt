@@ -411,6 +411,18 @@ object Conditions {
         com.wingedsheep.sdk.scripting.conditions.YouAttackedWithCreaturesThisTurn(filter, atLeast)
 
     /**
+     * As long as you've cast [atLeast] or more spells matching [filter] this turn.
+     * Counts every spell cast — countered, fizzled, or still on the stack all count.
+     * Defaults to any spell, matching the typical "you've cast two or more spells
+     * this turn" pattern (Brightspear Zealot, Illvoi Infiltrator).
+     */
+    fun YouCastSpellsThisTurn(
+        atLeast: Int,
+        filter: com.wingedsheep.sdk.scripting.GameObjectFilter = com.wingedsheep.sdk.scripting.GameObjectFilter.Any
+    ): ConditionInterface =
+        com.wingedsheep.sdk.scripting.conditions.YouCastSpellsThisTurn(filter, atLeast)
+
+    /**
      * If you gained or lost life this turn.
      * Used for Star Charter and similar Bloomburrow cards.
      */

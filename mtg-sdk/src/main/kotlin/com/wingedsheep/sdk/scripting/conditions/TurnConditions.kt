@@ -110,6 +110,32 @@ data class YouAttackedWithCreaturesThisTurn(
 }
 
 /**
+ * Condition: "If you've cast [atLeast] or more spells matching [filter] this turn".
+ * Counts the controller's `CastSpellRecord`s captured at cast time, so every spell
+ * cast counts even if it was countered, fizzled, or is still on the stack.
+ *
+ * Used for cards like Brightspear Zealot ("as long as you've cast two or more
+ * spells this turn") and Illvoi Infiltrator ("if you've cast two or more spells
+ * this turn"). Pass `GameObjectFilter.Any` for the unfiltered "any spell" form.
+ */
+@SerialName("YouCastSpellsThisTurn")
+@Serializable
+data class YouCastSpellsThisTurn(
+    val filter: GameObjectFilter = GameObjectFilter.Any,
+    val atLeast: Int
+) : Condition {
+    override val description: String =
+        if (filter == GameObjectFilter.Any)
+            "if you've cast $atLeast or more spells this turn"
+        else
+            "if you've cast $atLeast or more ${DynamicAmount.pluralize(filter.description)} spells this turn"
+    override fun applyTextReplacement(replacer: TextReplacer): Condition {
+        val newFilter = filter.applyTextReplacement(replacer)
+        return if (newFilter !== filter) copy(filter = newFilter) else this
+    }
+}
+
+/**
  * Condition: "If an opponent lost life this turn"
  * Checks whether any opponent has lost life (from any source: damage, life loss, payment)
  * at any point during the current turn. Per MTG rules, this cares about whether life was

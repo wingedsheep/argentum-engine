@@ -333,6 +333,35 @@ internal class EffectApplicator(
                 }
             }
         }
+        is SourceProjectionCondition.ControllerCastSpellsThisTurn -> {
+            if (condition.atLeast <= 0) {
+                true
+            } else {
+                val controllerId = sourceValues?.controllerId ?: effect.sourceId.let {
+                    state.getEntity(it)?.get<ControllerComponent>()?.playerId
+                }
+                if (controllerId == null) {
+                    false
+                } else {
+                    val records = state.spellsCastThisTurnByPlayer[controllerId] ?: emptyList()
+                    if (records.size < condition.atLeast) {
+                        false
+                    } else if (condition.filter == com.wingedsheep.sdk.scripting.GameObjectFilter.Any) {
+                        true
+                    } else {
+                        val predicateEvaluator = PredicateEvaluator()
+                        var matches = 0
+                        for (record in records) {
+                            if (predicateEvaluator.matchesFilter(record, condition.filter)) {
+                                matches++
+                                if (matches >= condition.atLeast) break
+                            }
+                        }
+                        matches >= condition.atLeast
+                    }
+                }
+            }
+        }
         is SourceProjectionCondition.Not -> !evaluateSourceCondition(condition.condition, effect, state, projectedValues, sourceValues)
         is SourceProjectionCondition.Compare -> {
             val controllerId = sourceValues?.controllerId ?: effect.sourceId

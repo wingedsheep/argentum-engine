@@ -69,7 +69,7 @@ https://api.scryfall.com/cards/named?exact=Beyond%20the%20Quiet&set=eoe
 - [x] Adagia, Windswept Bastion
 
 ## NthSpell static ability
-- [ ] Brightspear Zealot
+- [x] Brightspear Zealot
 
 ## Number of cards you own in exile
 - [ ] Cosmogoyf

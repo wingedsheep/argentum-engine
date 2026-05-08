@@ -81,6 +81,7 @@ import com.wingedsheep.sdk.scripting.conditions.BlightWasPaid
 import com.wingedsheep.sdk.scripting.conditions.YouControlSource
 import com.wingedsheep.sdk.scripting.conditions.YouAttackedThisTurn
 import com.wingedsheep.sdk.scripting.conditions.YouAttackedWithCreaturesThisTurn
+import com.wingedsheep.sdk.scripting.conditions.YouCastSpellsThisTurn
 import com.wingedsheep.sdk.scripting.conditions.YouWereAttackedThisStep
 import com.wingedsheep.sdk.scripting.conditions.YouWereDealtCombatDamageThisTurn
 import com.wingedsheep.sdk.scripting.conditions.VoidCondition
@@ -157,6 +158,7 @@ class ConditionEvaluator {
             is SacrificedFoodThisTurn -> evaluateSacrificedFoodThisTurn(state, context)
             is PutCounterOnCreatureThisTurn -> evaluatePutCounterOnCreatureThisTurn(state, context)
             is IsFirstSpellOfTypeCastThisTurn -> evaluateFirstSpellOfType(state, condition, context)
+            is YouCastSpellsThisTurn -> evaluateYouCastSpellsThisTurn(state, condition, context)
             is SourceAbilityResolvedNTimesThisTurn -> evaluateSourceAbilityResolvedNTimes(state, condition, context)
 
             // Void (Edge of Eternities ability word)
@@ -631,6 +633,28 @@ class ConditionEvaluator {
         val records = state.spellsCastThisTurnByPlayer[context.controllerId] ?: return false
         val count = records.count { evaluator.matchesFilter(it, condition.spellFilter) }
         return count == 1
+    }
+
+    private fun evaluateYouCastSpellsThisTurn(
+        state: GameState,
+        condition: YouCastSpellsThisTurn,
+        context: EffectContext
+    ): Boolean {
+        if (condition.atLeast <= 0) return true
+        val records = state.spellsCastThisTurnByPlayer[context.controllerId] ?: return false
+        if (records.size < condition.atLeast) return false
+        if (condition.filter == com.wingedsheep.sdk.scripting.GameObjectFilter.Any) {
+            return records.size >= condition.atLeast
+        }
+        val evaluator = PredicateEvaluator()
+        var matches = 0
+        for (record in records) {
+            if (evaluator.matchesFilter(record, condition.filter)) {
+                matches++
+                if (matches >= condition.atLeast) return true
+            }
+        }
+        return false
     }
 
     private fun evaluateSourceAbilityResolvedNTimes(

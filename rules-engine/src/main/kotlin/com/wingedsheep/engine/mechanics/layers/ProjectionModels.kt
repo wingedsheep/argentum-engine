@@ -333,6 +333,19 @@ sealed interface SourceProjectionCondition {
         val filter: GameObjectFilter,
         val atLeast: Int
     ) : SourceProjectionCondition
+
+    /**
+     * The source permanent's controller has cast at least [atLeast] spells matching
+     * [filter] this turn. Counts every spell cast (countered, fizzled, or still on
+     * the stack all count) via the per-player `CastSpellRecord` history.
+     * Used for cards like Brightspear Zealot: "as long as you've cast two or more
+     * spells this turn".
+     */
+    @Serializable
+    data class ControllerCastSpellsThisTurn(
+        val filter: GameObjectFilter,
+        val atLeast: Int
+    ) : SourceProjectionCondition
 }
 
 /**
