@@ -8,72 +8,14 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 /**
- * Prevents a creature from attacking.
- * Used for auras like Pacifism or effects that prevent attacking.
+ * Prevents the affected permanents from attacking.
+ * Use [GroupFilter.source] for "this creature can't attack", [GroupFilter.attachedCreature]
+ * for Pacifism-style auras, or any battlefield filter for "Creatures can't attack" effects.
  */
 @SerialName("CantAttack")
 @Serializable
 data class CantAttack(
-    val target: StaticTarget = StaticTarget.SourceCreature
-) : StaticAbility {
-    override val description: String = "${target.toString().lowercase()} can't attack"
-    override fun applyTextReplacement(replacer: TextReplacer): StaticAbility = this
-}
-
-/**
- * Forces a creature to attack each combat if able.
- * Used for creatures like Goblin Brigand: "This creature attacks each combat if able."
- */
-@SerialName("MustAttack")
-@Serializable
-data class MustAttack(
-    val target: StaticTarget = StaticTarget.SourceCreature
-) : StaticAbility {
-    override val description: String = "attacks each combat if able"
-    override fun applyTextReplacement(replacer: TextReplacer): StaticAbility = this
-}
-
-/**
- * Prevents a creature from blocking.
- * Used for cards like Jungle Lion or effects like "Target creature can't block".
- */
-@SerialName("CantBlock")
-@Serializable
-data class CantBlock(
-    val target: StaticTarget = StaticTarget.SourceCreature
-) : StaticAbility {
-    override val description: String = "${target.toString().lowercase()} can't block"
-    override fun applyTextReplacement(replacer: TextReplacer): StaticAbility = this
-}
-
-/**
- * Prevents a group of creatures matching a filter from blocking.
- * Used for cards like Frenetic Raptor: "Beasts can't block."
- *
- * @property filter The group of creatures that can't block
- */
-@SerialName("CantBlockForCreatureGroup")
-@Serializable
-data class CantBlockForCreatureGroup(
-    val filter: GroupFilter
-) : StaticAbility {
-    override val description: String = "${filter.description} can't block"
-    override fun applyTextReplacement(replacer: TextReplacer): StaticAbility {
-        val newFilter = filter.applyTextReplacement(replacer)
-        return if (newFilter !== filter) copy(filter = newFilter) else this
-    }
-}
-
-/**
- * Prevents a group of creatures matching a filter from attacking.
- * Used for enchantments like "Creatures can't attack."
- *
- * @property filter The group of creatures that can't attack
- */
-@SerialName("CantAttackForCreatureGroup")
-@Serializable
-data class CantAttackForCreatureGroup(
-    val filter: GroupFilter
+    val filter: GroupFilter = GroupFilter.source()
 ) : StaticAbility {
     override val description: String = "${filter.description} can't attack"
     override fun applyTextReplacement(replacer: TextReplacer): StaticAbility {
@@ -83,15 +25,14 @@ data class CantAttackForCreatureGroup(
 }
 
 /**
- * Forces a group of creatures matching a filter to attack each combat if able.
- * Used for enchantments like Grand Melee: "All creatures attack each combat if able."
- *
- * @property filter The group of creatures that must attack
+ * Forces the affected permanents to attack each combat if able.
+ * Use [GroupFilter.source] for "this creature attacks each combat", or any battlefield
+ * filter for "All creatures attack each combat if able" effects (e.g. Grand Melee).
  */
-@SerialName("MustAttackForCreatureGroup")
+@SerialName("MustAttack")
 @Serializable
-data class MustAttackForCreatureGroup(
-    val filter: GroupFilter
+data class MustAttack(
+    val filter: GroupFilter = GroupFilter.source()
 ) : StaticAbility {
     override val description: String = "${filter.description} attack each combat if able"
     override fun applyTextReplacement(replacer: TextReplacer): StaticAbility {
@@ -101,15 +42,30 @@ data class MustAttackForCreatureGroup(
 }
 
 /**
- * Forces a group of creatures matching a filter to block each combat if able.
- * Used for enchantments like Grand Melee: "All creatures block each combat if able."
- *
- * @property filter The group of creatures that must block
+ * Prevents the affected permanents from blocking.
+ * Use [GroupFilter.source] for "this creature can't block", or any battlefield filter
+ * for "Beasts can't block" / "Creatures can't block" effects.
  */
-@SerialName("MustBlockForCreatureGroup")
+@SerialName("CantBlock")
 @Serializable
-data class MustBlockForCreatureGroup(
-    val filter: GroupFilter
+data class CantBlock(
+    val filter: GroupFilter = GroupFilter.source()
+) : StaticAbility {
+    override val description: String = "${filter.description} can't block"
+    override fun applyTextReplacement(replacer: TextReplacer): StaticAbility {
+        val newFilter = filter.applyTextReplacement(replacer)
+        return if (newFilter !== filter) copy(filter = newFilter) else this
+    }
+}
+
+/**
+ * Forces the affected permanents to block each combat if able.
+ * Used for enchantments like Grand Melee: "All creatures block each combat if able."
+ */
+@SerialName("MustBlock")
+@Serializable
+data class MustBlock(
+    val filter: GroupFilter = GroupFilter.source()
 ) : StaticAbility {
     override val description: String = "${filter.description} block each combat if able"
     override fun applyTextReplacement(replacer: TextReplacer): StaticAbility {
@@ -126,7 +82,7 @@ data class MustBlockForCreatureGroup(
 @SerialName("AssignDamageEqualToToughness")
 @Serializable
 data class AssignDamageEqualToToughness(
-    val target: StaticTarget = StaticTarget.AttachedCreature,
+    val filter: GroupFilter = GroupFilter.attachedCreature(),
     val onlyWhenToughnessGreaterThanPower: Boolean = true
 ) : StaticAbility {
     override val description: String = buildString {
@@ -137,7 +93,10 @@ data class AssignDamageEqualToToughness(
         }
         append("assigns combat damage equal to its toughness rather than its power")
     }
-    override fun applyTextReplacement(replacer: TextReplacer): StaticAbility = this
+    override fun applyTextReplacement(replacer: TextReplacer): StaticAbility {
+        val newFilter = filter.applyTextReplacement(replacer)
+        return if (newFilter !== filter) copy(filter = newFilter) else this
+    }
 }
 
 /**
@@ -150,11 +109,14 @@ data class AssignDamageEqualToToughness(
 @SerialName("DivideCombatDamageFreely")
 @Serializable
 data class DivideCombatDamageFreely(
-    val target: StaticTarget = StaticTarget.SourceCreature
+    val filter: GroupFilter = GroupFilter.source()
 ) : StaticAbility {
     override val description: String =
         "You may assign this creature's combat damage divided as you choose among defending player and/or any number of creatures they control"
-    override fun applyTextReplacement(replacer: TextReplacer): StaticAbility = this
+    override fun applyTextReplacement(replacer: TextReplacer): StaticAbility {
+        val newFilter = filter.applyTextReplacement(replacer)
+        return if (newFilter !== filter) copy(filter = newFilter) else this
+    }
 }
 
 /**
@@ -165,11 +127,14 @@ data class DivideCombatDamageFreely(
 @SerialName("AssignCombatDamageAsUnblocked")
 @Serializable
 data class AssignCombatDamageAsUnblocked(
-    val target: StaticTarget = StaticTarget.SourceCreature
+    val filter: GroupFilter = GroupFilter.source()
 ) : StaticAbility {
     override val description: String =
         "You may have this creature assign its combat damage as though it weren't blocked"
-    override fun applyTextReplacement(replacer: TextReplacer): StaticAbility = this
+    override fun applyTextReplacement(replacer: TextReplacer): StaticAbility {
+        val newFilter = filter.applyTextReplacement(replacer)
+        return if (newFilter !== filter) copy(filter = newFilter) else this
+    }
 }
 
 /**
@@ -180,16 +145,19 @@ data class AssignCombatDamageAsUnblocked(
  * "opponent" = the defending player.
  *
  * @property condition The condition that must be met for the creature to attack
- * @property target What this ability applies to
+ * @property filter What this ability applies to
  */
 @SerialName("CantAttackUnless")
 @Serializable
 data class CantAttackUnless(
     val condition: Condition,
-    val target: StaticTarget = StaticTarget.SourceCreature
+    val filter: GroupFilter = GroupFilter.source()
 ) : StaticAbility {
     override val description: String = "can't attack unless ${condition.description}"
-    override fun applyTextReplacement(replacer: TextReplacer): StaticAbility = this
+    override fun applyTextReplacement(replacer: TextReplacer): StaticAbility {
+        val newFilter = filter.applyTextReplacement(replacer)
+        return if (newFilter !== filter) copy(filter = newFilter) else this
+    }
 }
 
 /**
@@ -200,16 +168,19 @@ data class CantAttackUnless(
  * "opponent" = the attacking player.
  *
  * @property condition The condition that must be met for the creature to block
- * @property target What this ability applies to
+ * @property filter What this ability applies to
  */
 @SerialName("CantBlockUnless")
 @Serializable
 data class CantBlockUnless(
     val condition: Condition,
-    val target: StaticTarget = StaticTarget.SourceCreature
+    val filter: GroupFilter = GroupFilter.source()
 ) : StaticAbility {
     override val description: String = "can't block unless ${condition.description}"
-    override fun applyTextReplacement(replacer: TextReplacer): StaticAbility = this
+    override fun applyTextReplacement(replacer: TextReplacer): StaticAbility {
+        val newFilter = filter.applyTextReplacement(replacer)
+        return if (newFilter !== filter) copy(filter = newFilter) else this
+    }
 }
 
 /**

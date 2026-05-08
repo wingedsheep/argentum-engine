@@ -4,7 +4,7 @@ import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
-import com.wingedsheep.sdk.scripting.ModifyStatsForCreatureGroup
+import com.wingedsheep.sdk.scripting.ModifyStats
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 
 /**
@@ -25,7 +25,7 @@ val ArvadTheCursed = card("Arvad the Cursed") {
     keywords(Keyword.DEATHTOUCH, Keyword.LIFELINK)
 
     staticAbility {
-        ability = ModifyStatsForCreatureGroup(
+        ability = ModifyStats(
             powerBonus = 2,
             toughnessBonus = 2,
             filter = GroupFilter(GameObjectFilter.Creature.legendary(), excludeSelf = true)

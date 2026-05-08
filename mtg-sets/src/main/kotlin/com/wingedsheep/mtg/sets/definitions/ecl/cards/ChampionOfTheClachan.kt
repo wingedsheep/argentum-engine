@@ -8,7 +8,7 @@ import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.AdditionalCost
 import com.wingedsheep.sdk.scripting.GameObjectFilter
-import com.wingedsheep.sdk.scripting.ModifyStatsForCreatureGroup
+import com.wingedsheep.sdk.scripting.ModifyStats
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 
 /**
@@ -39,7 +39,7 @@ val ChampionOfTheClachan = card("Champion of the Clachan") {
     additionalCost(AdditionalCost.BeholdAndExile(filter = Filters.WithSubtype("Kithkin")))
 
     staticAbility {
-        ability = ModifyStatsForCreatureGroup(
+        ability = ModifyStats(
             powerBonus = 1,
             toughnessBonus = 1,
             filter = GroupFilter(

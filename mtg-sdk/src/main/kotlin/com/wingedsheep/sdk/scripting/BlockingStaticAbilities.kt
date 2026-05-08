@@ -13,7 +13,7 @@ import kotlinx.serialization.Serializable
 @SerialName("CantBeBlocked")
 @Serializable
 data class CantBeBlocked(
-    val target: StaticTarget = StaticTarget.SourceCreature
+    val filter: GroupFilter = GroupFilter.source()
 ) : StaticAbility {
     override val description: String = "This creature can't be blocked."
     override fun applyTextReplacement(replacer: TextReplacer): StaticAbility = this
@@ -36,7 +36,7 @@ data class CantBeBlocked(
 @Serializable
 data class CantBeBlockedBy(
     val blockerFilter: GameObjectFilter,
-    val target: StaticTarget = StaticTarget.SourceCreature
+    val filter: GroupFilter = GroupFilter.source()
 ) : StaticAbility {
     override val description: String = "can't be blocked by ${blockerFilter.description}"
     override fun applyTextReplacement(replacer: TextReplacer): StaticAbility = this
@@ -56,7 +56,7 @@ data class CantBeBlockedBy(
 @Serializable
 data class CantBeBlockedExceptBy(
     val blockerFilter: GameObjectFilter,
-    val target: StaticTarget = StaticTarget.SourceCreature
+    val filter: GroupFilter = GroupFilter.source()
 ) : StaticAbility {
     override val description: String = "can't be blocked except by ${blockerFilter.description}"
     override fun applyTextReplacement(replacer: TextReplacer): StaticAbility = this
@@ -70,7 +70,7 @@ data class CantBeBlockedExceptBy(
 @Serializable
 data class CanOnlyBlockCreaturesWithKeyword(
     val keyword: Keyword,
-    val target: StaticTarget = StaticTarget.SourceCreature
+    val filter: GroupFilter = GroupFilter.source()
 ) : StaticAbility {
     override val description: String = "can block only creatures with ${keyword.displayName.lowercase()}"
     override fun applyTextReplacement(replacer: TextReplacer): StaticAbility = this
@@ -108,7 +108,7 @@ data class GrantCantBeBlockedExceptBySubtype(
 @SerialName("CantBlockCreaturesWithGreaterPower")
 @Serializable
 data class CantBlockCreaturesWithGreaterPower(
-    val target: StaticTarget = StaticTarget.SourceCreature
+    val filter: GroupFilter = GroupFilter.source()
 ) : StaticAbility {
     override val description: String = "can't block creatures with power greater than this creature's power"
     override fun applyTextReplacement(replacer: TextReplacer): StaticAbility = this
@@ -125,7 +125,7 @@ data class CantBlockCreaturesWithGreaterPower(
 @Serializable
 data class CantBeBlockedByMoreThan(
     val maxBlockers: Int,
-    val target: StaticTarget = StaticTarget.SourceCreature
+    val filter: GroupFilter = GroupFilter.source()
 ) : StaticAbility {
     override val description: String = "can't be blocked by more than ${
         if (maxBlockers == 1) "one creature" else "$maxBlockers creatures"
@@ -170,7 +170,7 @@ data class GrantCantBeBlockedToSmallCreatures(
 @Serializable
 data class CantBeBlockedIfCastSpellType(
     val spellFilter: GameObjectFilter,
-    val target: StaticTarget = StaticTarget.SourceCreature
+    val filter: GroupFilter = GroupFilter.source()
 ) : StaticAbility {
     override val description: String = "can't be blocked if you've cast a ${spellFilter.description} spell this turn"
     override fun applyTextReplacement(replacer: TextReplacer): StaticAbility = this
@@ -185,7 +185,7 @@ data class CantBeBlockedIfCastSpellType(
 @SerialName("CanBlockAnyNumber")
 @Serializable
 data class CanBlockAnyNumber(
-    val target: StaticTarget = StaticTarget.SourceCreature
+    val filter: GroupFilter = GroupFilter.source()
 ) : StaticAbility {
     override val description: String = "can block any number of creatures"
     override fun applyTextReplacement(replacer: TextReplacer): StaticAbility = this
@@ -222,7 +222,7 @@ data class CanBlockAdditionalForCreatureGroup(
 @Serializable
 data class CantBeBlockedUnlessDefenderSharesCreatureType(
     val minSharedCount: Int,
-    val target: StaticTarget = StaticTarget.SourceCreature
+    val filter: GroupFilter = GroupFilter.source()
 ) : StaticAbility {
     override val description: String = "can't be blocked unless defending player controls $minSharedCount or more creatures that share a creature type"
     override fun applyTextReplacement(replacer: TextReplacer): StaticAbility = this

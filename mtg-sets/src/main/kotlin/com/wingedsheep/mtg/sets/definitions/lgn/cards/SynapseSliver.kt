@@ -5,7 +5,7 @@ import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
-import com.wingedsheep.sdk.scripting.GrantTriggeredAbilityToCreatureGroup
+import com.wingedsheep.sdk.scripting.GrantTriggeredAbility
 import com.wingedsheep.sdk.scripting.TriggeredAbility
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 
@@ -26,7 +26,7 @@ val SynapseSliver = card("Synapse Sliver") {
     val sliverFilter = GroupFilter(GameObjectFilter.Creature.withSubtype("Sliver"))
 
     staticAbility {
-        ability = GrantTriggeredAbilityToCreatureGroup(
+        ability = GrantTriggeredAbility(
             ability = TriggeredAbility.create(
                 trigger = Triggers.DealsCombatDamageToPlayer.event,
                 binding = Triggers.DealsCombatDamageToPlayer.binding,

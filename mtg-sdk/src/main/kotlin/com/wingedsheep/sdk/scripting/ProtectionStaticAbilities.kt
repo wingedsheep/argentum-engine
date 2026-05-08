@@ -17,10 +17,13 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class GrantProtection(
     val color: Color,
-    val target: StaticTarget = StaticTarget.AttachedCreature
+    val filter: GroupFilter = GroupFilter.attachedCreature()
 ) : StaticAbility {
-    override val description: String = "Grants protection from ${color.displayName.lowercase()}"
-    override fun applyTextReplacement(replacer: TextReplacer): StaticAbility = this
+    override val description: String = "${filter.description} have protection from ${color.displayName.lowercase()}"
+    override fun applyTextReplacement(replacer: TextReplacer): StaticAbility {
+        val newFilter = filter.applyTextReplacement(replacer)
+        return if (newFilter !== filter) copy(filter = newFilter) else this
+    }
 }
 
 /**
@@ -75,10 +78,13 @@ data class GrantHexproofFromOwnColorsToGroup(
 @SerialName("CantReceiveCounters")
 @Serializable
 data class CantReceiveCounters(
-    val target: StaticTarget = StaticTarget.AttachedCreature
+    val filter: GroupFilter = GroupFilter.attachedCreature()
 ) : StaticAbility {
-    override val description: String = "${target.toString().lowercase()} can't have counters put on it"
-    override fun applyTextReplacement(replacer: TextReplacer): StaticAbility = this
+    override val description: String = "${filter.description} can't have counters put on it"
+    override fun applyTextReplacement(replacer: TextReplacer): StaticAbility {
+        val newFilter = filter.applyTextReplacement(replacer)
+        return if (newFilter !== filter) copy(filter = newFilter) else this
+    }
 }
 
 /**

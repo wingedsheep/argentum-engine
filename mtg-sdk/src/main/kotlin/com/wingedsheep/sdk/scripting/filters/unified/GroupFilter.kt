@@ -3,10 +3,37 @@ package com.wingedsheep.sdk.scripting.filters.unified
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Subtype
+import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.text.TextReplaceable
 import com.wingedsheep.sdk.scripting.text.TextReplacer
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+
+/**
+ * Where a [GroupFilter] applies. Most filters scan the battlefield (`Battlefield`),
+ * but some refer to a specific permanent relative to the source — the source itself
+ * (`Self`), the creature this Aura/Equipment is attached to (`AttachedTo`), or a
+ * pre-bound entity (`Specific`).
+ */
+@Serializable
+sealed interface Scope {
+    @SerialName("Battlefield")
+    @Serializable
+    data object Battlefield : Scope
+
+    @SerialName("AttachedTo")
+    @Serializable
+    data object AttachedTo : Scope
+
+    @SerialName("Self")
+    @Serializable
+    data object Self : Scope
+
+    @SerialName("Specific")
+    @Serializable
+    data class Specific(val entityId: EntityId) : Scope
+}
 
 /**
  * Filter for selecting groups of permanents (for mass effects).
@@ -43,17 +70,29 @@ data class GroupFilter(
      * in `EffectContext.chosenValues[chosenSubtypeKey]` at resolution time.
      * Used for "creatures of the chosen type" patterns with pipeline effects.
      */
-    val chosenSubtypeKey: String? = null
+    val chosenSubtypeKey: String? = null,
+    /**
+     * Where this filter applies. Defaults to scanning the battlefield. Use
+     * [Scope.Self] for "this creature", [Scope.AttachedTo] for "enchanted/equipped
+     * creature", or [Scope.Specific] for a bound entity. When non-Battlefield,
+     * [baseFilter] / [excludeSelf] are ignored by the projection layer.
+     */
+    val scope: Scope = Scope.Battlefield
 ) : TextReplaceable<GroupFilter> {
     val description: String
         get() = buildDescription()
 
-    private fun buildDescription(): String = buildString {
-        append("all ")
-        if (excludeSelf) append("other ")
-        append(baseFilter.description)
-        if (!baseFilter.description.endsWith("s")) {
-            append("s")  // Pluralize simple types
+    private fun buildDescription(): String = when (scope) {
+        is Scope.Self -> "this creature"
+        is Scope.AttachedTo -> "enchanted/equipped creature"
+        is Scope.Specific -> "the chosen permanent"
+        is Scope.Battlefield -> buildString {
+            append("all ")
+            if (excludeSelf) append("other ")
+            append(baseFilter.description)
+            if (!baseFilter.description.endsWith("s")) {
+                append("s")  // Pluralize simple types
+            }
         }
     }
 
@@ -144,6 +183,20 @@ data class GroupFilter(
          */
         fun ChosenSubtypeCreatures(key: String = "chosenCreatureType", excludeSelf: Boolean = false) =
             GroupFilter(GameObjectFilter.Companion.Creature, excludeSelf = excludeSelf, chosenSubtypeKey = key)
+
+        // =============================================================================
+        // Scope-based factories (replaces former StaticTarget cases)
+        // =============================================================================
+
+        /** "This creature" — the source permanent itself. */
+        fun source() = GroupFilter(GameObjectFilter.Companion.Permanent, scope = Scope.Self)
+
+        /** "Enchanted/equipped creature" — the creature this Aura/Equipment is attached to. */
+        fun attachedCreature() = GroupFilter(GameObjectFilter.Companion.Permanent, scope = Scope.AttachedTo)
+
+        /** A specific pre-bound entity. */
+        fun specific(entityId: EntityId) =
+            GroupFilter(GameObjectFilter.Companion.Permanent, scope = Scope.Specific(entityId))
     }
 
     // =============================================================================

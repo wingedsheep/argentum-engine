@@ -9,7 +9,7 @@ import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.ConditionalStaticAbility
 import com.wingedsheep.sdk.scripting.GameObjectFilter
-import com.wingedsheep.sdk.scripting.ModifyStatsForCreatureGroup
+import com.wingedsheep.sdk.scripting.ModifyStats
 import com.wingedsheep.sdk.scripting.TriggerBinding
 import com.wingedsheep.sdk.scripting.TriggerSpec
 import com.wingedsheep.sdk.scripting.GameEvent.ZoneChangeEvent
@@ -56,7 +56,7 @@ val FecundGreenshell = card("Fecund Greenshell") {
     // Conditional lord: 10+ lands → creatures you control get +2/+2
     staticAbility {
         ability = ConditionalStaticAbility(
-            ability = ModifyStatsForCreatureGroup(
+            ability = ModifyStats(
                 powerBonus = 2,
                 toughnessBonus = 2,
                 filter = GroupFilter.AllCreaturesYouControl

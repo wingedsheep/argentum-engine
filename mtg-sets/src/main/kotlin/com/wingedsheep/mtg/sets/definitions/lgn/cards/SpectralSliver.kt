@@ -7,7 +7,7 @@ import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.AbilityId
 import com.wingedsheep.sdk.scripting.ActivatedAbility
 import com.wingedsheep.sdk.scripting.GameObjectFilter
-import com.wingedsheep.sdk.scripting.GrantActivatedAbilityToCreatureGroup
+import com.wingedsheep.sdk.scripting.GrantActivatedAbility
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 
@@ -28,7 +28,7 @@ val SpectralSliver = card("Spectral Sliver") {
     val sliverFilter = GroupFilter(GameObjectFilter.Creature.withSubtype("Sliver"))
 
     staticAbility {
-        ability = GrantActivatedAbilityToCreatureGroup(
+        ability = GrantActivatedAbility(
             ability = ActivatedAbility(
                 id = AbilityId.generate(),
                 cost = Costs.Mana("{2}"),

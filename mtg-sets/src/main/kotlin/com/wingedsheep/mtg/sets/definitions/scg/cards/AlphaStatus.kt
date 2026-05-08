@@ -1,10 +1,10 @@
 package com.wingedsheep.mtg.sets.definitions.scg.cards
 
+import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.dsl.Targets
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GrantDynamicStatsEffect
-import com.wingedsheep.sdk.scripting.StaticTarget
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
 import com.wingedsheep.sdk.scripting.values.EntityReference
 
@@ -26,7 +26,7 @@ val AlphaStatus = card("Alpha Status") {
     staticAbility {
         val sharedTypeCount = DynamicAmount.CreaturesSharingTypeWithEntity(EntityReference.AffectedEntity)
         ability = GrantDynamicStatsEffect(
-            target = StaticTarget.AttachedCreature,
+            filter = GroupFilter.attachedCreature(),
             powerBonus = DynamicAmount.Multiply(sharedTypeCount, 2),
             toughnessBonus = DynamicAmount.Multiply(sharedTypeCount, 2)
         )

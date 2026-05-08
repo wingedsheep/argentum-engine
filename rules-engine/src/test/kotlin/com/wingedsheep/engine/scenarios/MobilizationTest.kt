@@ -12,7 +12,7 @@ import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Deck
 import com.wingedsheep.sdk.scripting.effects.CreateTokenEffect
 import com.wingedsheep.sdk.scripting.GameObjectFilter
-import com.wingedsheep.sdk.scripting.GrantKeywordToCreatureGroup
+import com.wingedsheep.sdk.scripting.GrantKeyword
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
@@ -33,7 +33,7 @@ class MobilizationTest : FunSpec({
         typeLine = "Enchantment"
 
         staticAbility {
-            ability = GrantKeywordToCreatureGroup(
+            ability = GrantKeyword(
                 keyword = Keyword.VIGILANCE,
                 filter = GroupFilter(GameObjectFilter.Creature.withSubtype("Soldier"))
             )

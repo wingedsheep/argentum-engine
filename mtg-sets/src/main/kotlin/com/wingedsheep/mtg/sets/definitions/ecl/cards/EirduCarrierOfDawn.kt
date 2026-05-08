@@ -7,7 +7,7 @@ import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
-import com.wingedsheep.sdk.scripting.GrantKeywordToCreatureGroup
+import com.wingedsheep.sdk.scripting.GrantKeyword
 import com.wingedsheep.sdk.scripting.GrantKeywordToOwnSpells
 import com.wingedsheep.sdk.scripting.effects.MayPayManaEffect
 import com.wingedsheep.sdk.scripting.effects.TransformEffect
@@ -44,7 +44,7 @@ private val IsiluCarrierOfTwilight = card("Isilu, Carrier of Twilight") {
     keywords(Keyword.FLYING, Keyword.LIFELINK)
 
     staticAbility {
-        ability = GrantKeywordToCreatureGroup(
+        ability = GrantKeyword(
             keyword = Keyword.PERSIST,
             filter = GroupFilter(
                 baseFilter = GameObjectFilter.Creature.youControl().nontoken(),

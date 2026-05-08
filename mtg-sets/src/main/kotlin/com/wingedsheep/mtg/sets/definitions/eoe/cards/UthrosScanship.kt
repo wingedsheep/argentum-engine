@@ -1,5 +1,6 @@
 package com.wingedsheep.mtg.sets.definitions.eoe.cards
 
+import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.core.Counters
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.dsl.Effects
@@ -11,7 +12,6 @@ import com.wingedsheep.sdk.scripting.AbilityCost
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.GrantCardType
 import com.wingedsheep.sdk.scripting.GrantKeyword
-import com.wingedsheep.sdk.scripting.StaticTarget
 import com.wingedsheep.sdk.scripting.TimingRule
 import com.wingedsheep.sdk.scripting.conditions.Compare
 import com.wingedsheep.sdk.scripting.conditions.ComparisonOperator
@@ -73,12 +73,12 @@ val UthrosScanship = card("Uthros Scanship") {
 
     staticAbility {
         condition = charge8
-        ability = GrantCardType("CREATURE", StaticTarget.SourceCreature)
+        ability = GrantCardType("CREATURE", GroupFilter.source())
     }
 
     staticAbility {
         condition = charge8
-        ability = GrantKeyword(Keyword.FLYING, StaticTarget.SourceCreature)
+        ability = GrantKeyword(Keyword.FLYING, GroupFilter.source())
     }
 
     metadata {

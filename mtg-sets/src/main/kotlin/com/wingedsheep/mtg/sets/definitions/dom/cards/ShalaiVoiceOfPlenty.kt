@@ -6,7 +6,7 @@ import com.wingedsheep.sdk.dsl.Costs
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GrantHexproofToController
-import com.wingedsheep.sdk.scripting.GrantKeywordToCreatureGroup
+import com.wingedsheep.sdk.scripting.GrantKeyword
 import com.wingedsheep.sdk.scripting.effects.AddCountersEffect
 import com.wingedsheep.sdk.scripting.effects.ForEachInGroupEffect
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
@@ -37,7 +37,7 @@ val ShalaiVoiceOfPlenty = card("Shalai, Voice of Plenty") {
 
     // Planeswalkers you control have hexproof
     staticAbility {
-        ability = GrantKeywordToCreatureGroup(
+        ability = GrantKeyword(
             keyword = Keyword.HEXPROOF,
             filter = GroupFilter.PlaneswalkersYouControl
         )
@@ -45,7 +45,7 @@ val ShalaiVoiceOfPlenty = card("Shalai, Voice of Plenty") {
 
     // Other creatures you control have hexproof
     staticAbility {
-        ability = GrantKeywordToCreatureGroup(
+        ability = GrantKeyword(
             keyword = Keyword.HEXPROOF,
             filter = GroupFilter.OtherCreaturesYouControl
         )

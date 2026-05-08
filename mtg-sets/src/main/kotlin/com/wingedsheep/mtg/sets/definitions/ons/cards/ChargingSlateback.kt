@@ -1,9 +1,9 @@
 package com.wingedsheep.mtg.sets.definitions.ons.cards
 
+import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.CantBlock
-import com.wingedsheep.sdk.scripting.StaticTarget
 
 /**
  * Charging Slateback
@@ -22,7 +22,7 @@ val ChargingSlateback = card("Charging Slateback") {
     oracleText = "Charging Slateback can't block.\nMorph {4}{R}"
 
     staticAbility {
-        ability = CantBlock(StaticTarget.SourceCreature)
+        ability = CantBlock(GroupFilter.source())
     }
     morph = "{4}{R}"
 

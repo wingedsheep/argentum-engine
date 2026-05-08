@@ -271,8 +271,9 @@ class CastPermissionUtils(
 
             val cardDef = cardRegistry.getCard(card.cardDefinitionId) ?: continue
             for (ability in cardDef.staticAbilities) {
-                when (ability) {
-                    is com.wingedsheep.sdk.scripting.GrantActivatedAbilityToCreatureGroup -> {
+                if (ability !is com.wingedsheep.sdk.scripting.GrantActivatedAbility) continue
+                when (val scope = ability.filter.scope) {
+                    is com.wingedsheep.sdk.scripting.filters.unified.Scope.Battlefield -> {
                         if (ability.filter.excludeSelf && permanentId == entityId) continue
                         val filter = ability.filter.baseFilter
                         val matchesAll = filter.cardPredicates.all { predicate ->
@@ -288,13 +289,18 @@ class CastPermissionUtils(
                             result.add(StaticGrantedAbility(ability.ability, permanentId))
                         }
                     }
-                    is com.wingedsheep.sdk.scripting.GrantActivatedAbilityToAttachedCreature -> {
+                    is com.wingedsheep.sdk.scripting.filters.unified.Scope.AttachedTo -> {
                         val attachedTo = container.get<com.wingedsheep.engine.state.components.battlefield.AttachedToComponent>()
                         if (attachedTo != null && attachedTo.targetId == entityId) {
                             result.add(StaticGrantedAbility(ability.ability, permanentId))
                         }
                     }
-                    else -> {}
+                    is com.wingedsheep.sdk.scripting.filters.unified.Scope.Self -> {
+                        if (permanentId == entityId) result.add(StaticGrantedAbility(ability.ability, permanentId))
+                    }
+                    is com.wingedsheep.sdk.scripting.filters.unified.Scope.Specific -> {
+                        if (scope.entityId == entityId) result.add(StaticGrantedAbility(ability.ability, permanentId))
+                    }
                 }
             }
         }

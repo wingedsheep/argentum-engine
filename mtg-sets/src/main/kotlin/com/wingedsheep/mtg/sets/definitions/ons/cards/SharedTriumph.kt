@@ -4,7 +4,7 @@ import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.ChoiceType
 import com.wingedsheep.sdk.scripting.EntersWithChoice
-import com.wingedsheep.sdk.scripting.ModifyStatsForCreatureGroup
+import com.wingedsheep.sdk.scripting.ModifyStats
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 
 /**
@@ -22,7 +22,7 @@ val SharedTriumph = card("Shared Triumph") {
     replacementEffect(EntersWithChoice(ChoiceType.CREATURE_TYPE))
 
     staticAbility {
-        ability = ModifyStatsForCreatureGroup(
+        ability = ModifyStats(
             powerBonus = 1,
             toughnessBonus = 1,
             filter = GroupFilter.ChosenSubtypeCreatures()

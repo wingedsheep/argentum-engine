@@ -6,7 +6,7 @@ import com.wingedsheep.gameserver.session.GameSession
 import com.wingedsheep.gameserver.session.PlayerSession
 import com.wingedsheep.sdk.core.Phase
 import com.wingedsheep.sdk.core.Step
-import com.wingedsheep.sdk.scripting.GrantActivatedAbilityToAttachedCreature
+import com.wingedsheep.sdk.scripting.GrantActivatedAbility
 import io.kotest.assertions.withClue
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
@@ -164,7 +164,7 @@ class SingingBellStrikeScenarioTest : ScenarioTestBase() {
                 // Get the ability ID from the card definition
                 val singingBellDef = cardRegistry.getCard("Singing Bell Strike")!!
                 val grantAbility = singingBellDef.staticAbilities
-                    .filterIsInstance<GrantActivatedAbilityToAttachedCreature>()
+                    .filterIsInstance<GrantActivatedAbility>()
                     .first()
                 val untapAbilityId = grantAbility.ability.id
 

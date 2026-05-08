@@ -941,7 +941,7 @@ class CardDslTest : DescribeSpec({
                 keywords(Keyword.FLYING, Keyword.VIGILANCE, Keyword.TRAMPLE)
 
                 staticAbility {
-                    ability = GrantKeyword(Keyword.HEXPROOF, StaticTarget.SourceCreature)
+                    ability = GrantKeyword(Keyword.HEXPROOF, GroupFilter.source())
                     condition = NotCondition(SourceHasDealtDamage)
                 }
             }
@@ -958,7 +958,7 @@ class CardDslTest : DescribeSpec({
 
             val grantKeyword = conditional.ability.shouldBeInstanceOf<GrantKeyword>()
             grantKeyword.keyword shouldBe Keyword.HEXPROOF.name
-            grantKeyword.target shouldBe StaticTarget.SourceCreature
+            grantKeyword.filter shouldBe GroupFilter.source()
 
             val notCondition = conditional.condition.shouldBeInstanceOf<NotCondition>()
             notCondition.condition shouldBe SourceHasDealtDamage
@@ -973,7 +973,7 @@ class CardDslTest : DescribeSpec({
 
                 // Gets +2/+2 while attacking
                 staticAbility {
-                    ability = ModifyStats(2, 2, StaticTarget.SourceCreature)
+                    ability = ModifyStats(2, 2, GroupFilter.source())
                     condition = SourceIsAttacking
                 }
             }
@@ -997,7 +997,7 @@ class CardDslTest : DescribeSpec({
 
                 // Can't block unless you have more life than an opponent
                 staticAbility {
-                    ability = CantBlock(StaticTarget.SourceCreature)
+                    ability = CantBlock(GroupFilter.source())
                     condition = Conditions.Not(Conditions.MoreLifeThanOpponent)
                 }
             }
@@ -1011,11 +1011,11 @@ class CardDslTest : DescribeSpec({
 
         it("should describe conditional abilities correctly") {
             val conditional = ConditionalStaticAbility(
-                ability = GrantKeyword(Keyword.HEXPROOF, StaticTarget.SourceCreature),
+                ability = GrantKeyword(Keyword.HEXPROOF, GroupFilter.source()),
                 condition = NotCondition(SourceHasDealtDamage)
             )
 
-            conditional.description shouldBe "Grants hexproof if not (this creature has dealt damage)"
+            conditional.description shouldBe "this creature have hexproof if not (this creature has dealt damage)"
         }
     }
 })

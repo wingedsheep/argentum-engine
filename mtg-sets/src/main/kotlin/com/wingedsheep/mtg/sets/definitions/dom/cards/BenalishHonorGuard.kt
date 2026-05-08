@@ -1,10 +1,10 @@
 package com.wingedsheep.mtg.sets.definitions.dom.cards
 
+import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.GrantDynamicStatsEffect
-import com.wingedsheep.sdk.scripting.StaticTarget
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
 
@@ -24,7 +24,7 @@ val BenalishHonorGuard = card("Benalish Honor Guard") {
 
     staticAbility {
         ability = GrantDynamicStatsEffect(
-            target = StaticTarget.SourceCreature,
+            filter = GroupFilter.source(),
             powerBonus = DynamicAmount.AggregateBattlefield(Player.You, GameObjectFilter.Creature.legendary()),
             toughnessBonus = DynamicAmount.Fixed(0)
         )

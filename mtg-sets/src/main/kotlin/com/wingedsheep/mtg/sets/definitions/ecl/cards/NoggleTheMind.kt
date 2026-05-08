@@ -1,12 +1,12 @@
 package com.wingedsheep.mtg.sets.definitions.ecl.cards
 
+import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.dsl.Targets
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.LoseAllAbilities
 import com.wingedsheep.sdk.scripting.SetBasePowerToughnessStatic
-import com.wingedsheep.sdk.scripting.StaticTarget
 import com.wingedsheep.sdk.scripting.TransformPermanent
 
 /**
@@ -33,16 +33,16 @@ val NoggleTheMind = card("Noggle the Mind") {
             setCardTypes = setOf("CREATURE"),
             setSubtypes = setOf("Noggle"),
             setColors = emptySet(),
-            target = StaticTarget.AttachedCreature
+            filter = GroupFilter.attachedCreature()
         )
     }
 
     staticAbility {
-        ability = LoseAllAbilities(target = StaticTarget.AttachedCreature)
+        ability = LoseAllAbilities(filter = GroupFilter.attachedCreature())
     }
 
     staticAbility {
-        ability = SetBasePowerToughnessStatic(1, 1, target = StaticTarget.AttachedCreature)
+        ability = SetBasePowerToughnessStatic(1, 1, filter = GroupFilter.attachedCreature())
     }
 
     metadata {

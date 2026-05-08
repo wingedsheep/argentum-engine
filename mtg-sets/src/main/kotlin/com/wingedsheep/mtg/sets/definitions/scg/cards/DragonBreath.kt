@@ -1,5 +1,6 @@
 package com.wingedsheep.mtg.sets.definitions.scg.cards
 
+import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.dsl.Costs
@@ -10,7 +11,6 @@ import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameEvent.ZoneChangeEvent
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.GrantKeyword
-import com.wingedsheep.sdk.scripting.StaticTarget
 import com.wingedsheep.sdk.scripting.TriggerBinding
 import com.wingedsheep.sdk.scripting.TriggerSpec
 import com.wingedsheep.sdk.scripting.effects.MayEffect
@@ -34,7 +34,7 @@ val DragonBreath = card("Dragon Breath") {
     auraTarget = Targets.Creature
 
     staticAbility {
-        ability = GrantKeyword(Keyword.HASTE, StaticTarget.AttachedCreature)
+        ability = GrantKeyword(Keyword.HASTE, GroupFilter.attachedCreature())
     }
 
     activatedAbility {

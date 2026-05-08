@@ -10,7 +10,6 @@ import com.wingedsheep.sdk.scripting.AbilityCost
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.GrantCardType
 import com.wingedsheep.sdk.scripting.GrantKeyword
-import com.wingedsheep.sdk.scripting.StaticTarget
 import com.wingedsheep.sdk.scripting.TimingRule
 import com.wingedsheep.sdk.scripting.conditions.Compare
 import com.wingedsheep.sdk.scripting.conditions.ComparisonOperator
@@ -76,7 +75,7 @@ val AtmosphericGreenhouse = card("Atmospheric Greenhouse") {
             operator = ComparisonOperator.GTE,
             right = DynamicAmount.Fixed(8)
         )
-        ability = GrantCardType("CREATURE", StaticTarget.SourceCreature)
+        ability = GrantCardType("CREATURE", GroupFilter.source())
     }
 
     // Conditional keywords: flying and trample at 8+ charge counters
@@ -89,7 +88,7 @@ val AtmosphericGreenhouse = card("Atmospheric Greenhouse") {
             operator = ComparisonOperator.GTE,
             right = DynamicAmount.Fixed(8)
         )
-        ability = GrantKeyword(Keyword.FLYING.name, StaticTarget.SourceCreature)
+        ability = GrantKeyword(Keyword.FLYING.name, GroupFilter.source())
     }
 
     staticAbility {
@@ -101,7 +100,7 @@ val AtmosphericGreenhouse = card("Atmospheric Greenhouse") {
             operator = ComparisonOperator.GTE,
             right = DynamicAmount.Fixed(8)
         )
-        ability = GrantKeyword(Keyword.TRAMPLE.name, StaticTarget.SourceCreature)
+        ability = GrantKeyword(Keyword.TRAMPLE.name, GroupFilter.source())
     }
 
     metadata {

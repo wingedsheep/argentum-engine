@@ -10,8 +10,7 @@ import com.wingedsheep.sdk.scripting.AbilityCost
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.GrantCardType
 import com.wingedsheep.sdk.scripting.GrantKeyword
-import com.wingedsheep.sdk.scripting.ModifyStatsForCreatureGroup
-import com.wingedsheep.sdk.scripting.StaticTarget
+import com.wingedsheep.sdk.scripting.ModifyStats
 import com.wingedsheep.sdk.scripting.TimingRule
 import com.wingedsheep.sdk.scripting.conditions.Compare
 import com.wingedsheep.sdk.scripting.conditions.ComparisonOperator
@@ -66,7 +65,7 @@ val LumenClassFrigate = card("Lumen-Class Frigate") {
             operator = ComparisonOperator.GTE,
             right = DynamicAmount.Fixed(12)
         )
-        ability = GrantCardType("CREATURE", StaticTarget.SourceCreature)
+        ability = GrantCardType("CREATURE", GroupFilter.source())
     }
 
     // Conditional ability: +1/+1 to other creatures at 2+ charge counters
@@ -79,7 +78,7 @@ val LumenClassFrigate = card("Lumen-Class Frigate") {
             operator = ComparisonOperator.GTE,
             right = DynamicAmount.Fixed(2)
         )
-        ability = ModifyStatsForCreatureGroup(
+        ability = ModifyStats(
             powerBonus = 1,
             toughnessBonus = 1,
             filter = GroupFilter(GameObjectFilter.Creature.youControl(), excludeSelf = true)
@@ -96,7 +95,7 @@ val LumenClassFrigate = card("Lumen-Class Frigate") {
             operator = ComparisonOperator.GTE,
             right = DynamicAmount.Fixed(12)
         )
-        ability = GrantKeyword(Keyword.FLYING.name, StaticTarget.SourceCreature)
+        ability = GrantKeyword(Keyword.FLYING.name, GroupFilter.source())
     }
 
     staticAbility {
@@ -108,7 +107,7 @@ val LumenClassFrigate = card("Lumen-Class Frigate") {
             operator = ComparisonOperator.GTE,
             right = DynamicAmount.Fixed(12)
         )
-        ability = GrantKeyword(Keyword.LIFELINK.name, StaticTarget.SourceCreature)
+        ability = GrantKeyword(Keyword.LIFELINK.name, GroupFilter.source())
     }
 
     metadata {

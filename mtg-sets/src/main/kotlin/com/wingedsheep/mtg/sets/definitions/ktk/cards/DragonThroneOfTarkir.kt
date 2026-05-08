@@ -6,7 +6,7 @@ import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.AbilityId
 import com.wingedsheep.sdk.scripting.ActivatedAbility
-import com.wingedsheep.sdk.scripting.GrantActivatedAbilityToAttachedCreature
+import com.wingedsheep.sdk.scripting.GrantActivatedAbility
 import com.wingedsheep.sdk.scripting.GrantKeyword
 import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.ForEachInGroupEffect
@@ -43,7 +43,7 @@ val DragonThroneOfTarkir = card("Dragon Throne of Tarkir") {
     // Equipped creature has "{2}, {T}: Other creatures you control gain trample and get +X/+X
     // until end of turn, where X is this creature's power."
     staticAbility {
-        ability = GrantActivatedAbilityToAttachedCreature(
+        ability = GrantActivatedAbility(
             ability = ActivatedAbility(
                 id = AbilityId.generate(),
                 cost = Costs.Composite(Costs.Mana("{2}"), Costs.Tap),

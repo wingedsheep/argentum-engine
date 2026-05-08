@@ -5,7 +5,7 @@ import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.AdditionalManaOnLandTap
 import com.wingedsheep.sdk.scripting.GameObjectFilter
-import com.wingedsheep.sdk.scripting.GrantKeywordToCreatureGroup
+import com.wingedsheep.sdk.scripting.GrantKeyword
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 
 /**
@@ -25,7 +25,7 @@ val Lavaleaper = card("Lavaleaper") {
         "Whenever a player taps a basic land for mana, that player adds one mana of any type that land produced."
 
     staticAbility {
-        ability = GrantKeywordToCreatureGroup(
+        ability = GrantKeyword(
             keyword = Keyword.HASTE,
             filter = GroupFilter.AllCreatures
         )

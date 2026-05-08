@@ -6,7 +6,7 @@ import com.wingedsheep.sdk.dsl.Targets
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.GrantTriggeredAbilityToAttachedCreature
+import com.wingedsheep.sdk.scripting.GrantTriggeredAbility
 import com.wingedsheep.sdk.scripting.GrantWard
 import com.wingedsheep.sdk.scripting.ModifyStats
 import com.wingedsheep.sdk.scripting.TriggeredAbility
@@ -28,7 +28,7 @@ val CombatResearch = card("Combat Research") {
     auraTarget = Targets.Creature
 
     staticAbility {
-        ability = GrantTriggeredAbilityToAttachedCreature(
+        ability = GrantTriggeredAbility(
             TriggeredAbility.create(
                 trigger = Triggers.DealsCombatDamageToPlayer.event,
                 binding = Triggers.DealsCombatDamageToPlayer.binding,

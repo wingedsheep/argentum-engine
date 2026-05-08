@@ -1,5 +1,6 @@
 package com.wingedsheep.mtg.sets.definitions.dom.cards
 
+import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.core.Counters
 import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.core.Zone
@@ -7,7 +8,6 @@ import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.GrantDynamicStatsEffect
-import com.wingedsheep.sdk.scripting.StaticTarget
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
 import com.wingedsheep.sdk.scripting.effects.Chooser
@@ -104,7 +104,7 @@ val KarnScionOfUrza = card("Karn, Scion of Urza") {
             artifactToken = true,
             staticAbilities = listOf(
                 GrantDynamicStatsEffect(
-                    target = StaticTarget.SourceCreature,
+                    filter = GroupFilter.source(),
                     powerBonus = DynamicAmount.AggregateBattlefield(
                         Player.You,
                         GameObjectFilter.Artifact

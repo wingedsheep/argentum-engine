@@ -75,7 +75,7 @@ class LayerSystemTest : FunSpec({
         manaCost = ManaCost.parse("{U}"),
         script = CardScript(
             staticAbilities = listOf(
-                GrantColor(color = Color.BLUE, target = StaticTarget.AttachedCreature)
+                GrantColor(color = Color.BLUE, filter = GroupFilter.attachedCreature())
             )
         )
     )
@@ -88,7 +88,7 @@ class LayerSystemTest : FunSpec({
         manaCost = ManaCost.parse("{2}{U}"),
         script = CardScript(
             staticAbilities = listOf(
-                GrantKeywordToCreatureGroup(
+                GrantKeyword(
                     keyword = Keyword.FLYING,
                     filter = GroupFilter.AllCreatures
                 )
@@ -102,7 +102,7 @@ class LayerSystemTest : FunSpec({
         manaCost = ManaCost.parse("{1}{W}"),
         script = CardScript(
             staticAbilities = listOf(
-                GrantKeywordToCreatureGroup(
+                GrantKeyword(
                     keyword = Keyword.VIGILANCE,
                     filter = GroupFilter.AllCreaturesYouControl
                 )
@@ -116,8 +116,8 @@ class LayerSystemTest : FunSpec({
         manaCost = ManaCost.parse("{2}{W}{W}"),
         script = CardScript(
             staticAbilities = listOf(
-                LoseAllAbilities(target = StaticTarget.SourceCreature),
-                SetBasePowerToughnessStatic(power = 1, toughness = 1, target = StaticTarget.SourceCreature)
+                LoseAllAbilities(filter = GroupFilter.source()),
+                SetBasePowerToughnessStatic(power = 1, toughness = 1, filter = GroupFilter.source())
             )
         )
     )
@@ -128,7 +128,7 @@ class LayerSystemTest : FunSpec({
         manaCost = ManaCost.parse("{1}{B}"),
         script = CardScript(
             staticAbilities = listOf(
-                LoseAllAbilities(target = StaticTarget.AttachedCreature)
+                LoseAllAbilities(filter = GroupFilter.attachedCreature())
             )
         )
     )
@@ -141,7 +141,7 @@ class LayerSystemTest : FunSpec({
         manaCost = ManaCost.parse("{1}{W}{W}"),
         script = CardScript(
             staticAbilities = listOf(
-                ModifyStatsForCreatureGroup(
+                ModifyStats(
                     powerBonus = 1,
                     toughnessBonus = 1,
                     filter = GroupFilter.AllCreatures
@@ -159,7 +159,7 @@ class LayerSystemTest : FunSpec({
         toughness = 2,
         script = CardScript(
             staticAbilities = listOf(
-                ModifyStatsForCreatureGroup(
+                ModifyStats(
                     powerBonus = 1,
                     toughnessBonus = 1,
                     filter = GroupFilter.OtherCreaturesYouControl
@@ -177,7 +177,7 @@ class LayerSystemTest : FunSpec({
         toughness = 2,
         script = CardScript(
             staticAbilities = listOf(
-                ModifyStatsForCreatureGroup(
+                ModifyStats(
                     powerBonus = 1,
                     toughnessBonus = 1,
                     filter = GroupFilter.allCreaturesWithSubtype("Bear").other()
@@ -192,7 +192,7 @@ class LayerSystemTest : FunSpec({
         manaCost = ManaCost.parse("{1}{U}"),
         script = CardScript(
             staticAbilities = listOf(
-                SetBasePowerToughnessStatic(power = 0, toughness = 4, target = StaticTarget.AttachedCreature)
+                SetBasePowerToughnessStatic(power = 0, toughness = 4, filter = GroupFilter.attachedCreature())
             )
         )
     )
@@ -203,7 +203,7 @@ class LayerSystemTest : FunSpec({
         manaCost = ManaCost.parse("{1}{G}"),
         script = CardScript(
             staticAbilities = listOf(
-                ModifyStats(powerBonus = 2, toughnessBonus = 2, target = StaticTarget.AttachedCreature)
+                ModifyStats(powerBonus = 2, toughnessBonus = 2, filter = GroupFilter.attachedCreature())
             )
         )
     )
@@ -216,9 +216,9 @@ class LayerSystemTest : FunSpec({
         manaCost = ManaCost.parse("{4}{W}"),
         script = CardScript(
             staticAbilities = listOf(
-                LoseAllAbilities(target = StaticTarget.SourceCreature),
-                SetBasePowerToughnessStatic(power = 1, toughness = 1, target = StaticTarget.SourceCreature),
-                ModifyStatsForCreatureGroup(
+                LoseAllAbilities(filter = GroupFilter.source()),
+                SetBasePowerToughnessStatic(power = 1, toughness = 1, filter = GroupFilter.source()),
+                ModifyStats(
                     powerBonus = 1,
                     toughnessBonus = 1,
                     filter = GroupFilter.AllCreatures
@@ -255,8 +255,8 @@ class LayerSystemTest : FunSpec({
         manaCost = ManaCost.parse("{1}{U}"),
         script = CardScript(
             staticAbilities = listOf(
-                ModifyStats(powerBonus = 1, toughnessBonus = 1, target = StaticTarget.AttachedCreature),
-                GrantKeyword(keyword = Keyword.FLYING, target = StaticTarget.AttachedCreature)
+                ModifyStats(powerBonus = 1, toughnessBonus = 1, filter = GroupFilter.attachedCreature()),
+                GrantKeyword(keyword = Keyword.FLYING, filter = GroupFilter.attachedCreature())
             )
         )
     )
@@ -1140,7 +1140,7 @@ class LayerSystemTest : FunSpec({
                 manaCost = ManaCost.parse("{1}{R}"),
                 script = CardScript(
                     staticAbilities = listOf(
-                        SetBasePowerToughnessStatic(power = 5, toughness = 1, target = StaticTarget.AttachedCreature)
+                        SetBasePowerToughnessStatic(power = 5, toughness = 1, filter = GroupFilter.attachedCreature())
                     )
                 )
             )

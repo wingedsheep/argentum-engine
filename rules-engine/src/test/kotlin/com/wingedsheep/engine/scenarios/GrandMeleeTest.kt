@@ -10,8 +10,8 @@ import com.wingedsheep.sdk.core.TypeLine
 import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.CardScript
 import com.wingedsheep.sdk.model.Deck
-import com.wingedsheep.sdk.scripting.MustAttackForCreatureGroup
-import com.wingedsheep.sdk.scripting.MustBlockForCreatureGroup
+import com.wingedsheep.sdk.scripting.MustAttack
+import com.wingedsheep.sdk.scripting.MustBlock
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
@@ -33,8 +33,8 @@ class GrandMeleeTest : FunSpec({
         oracleText = "All creatures attack each combat if able.\nAll creatures block each combat if able.",
         script = CardScript.permanent(
             staticAbilities = listOf(
-                MustAttackForCreatureGroup(GroupFilter.AllCreatures),
-                MustBlockForCreatureGroup(GroupFilter.AllCreatures)
+                MustAttack(GroupFilter.AllCreatures),
+                MustBlock(GroupFilter.AllCreatures)
             )
         )
     )

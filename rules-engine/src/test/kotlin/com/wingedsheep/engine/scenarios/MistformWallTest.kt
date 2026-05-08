@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.scenarios
 
+import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.engine.core.ActivateAbility
 import com.wingedsheep.engine.core.ChooseOptionDecision
 import com.wingedsheep.engine.core.OptionChosenResponse
@@ -20,7 +21,6 @@ import com.wingedsheep.sdk.scripting.ConditionalStaticAbility
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.GrantKeyword
 import com.wingedsheep.sdk.scripting.conditions.SourceHasSubtype
-import com.wingedsheep.sdk.scripting.StaticTarget
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 import java.util.UUID
@@ -54,7 +54,7 @@ class MistformWallTest : FunSpec({
             ),
             staticAbilities = listOf(
                 ConditionalStaticAbility(
-                    ability = GrantKeyword(Keyword.DEFENDER, StaticTarget.SourceCreature),
+                    ability = GrantKeyword(Keyword.DEFENDER, GroupFilter.source()),
                     condition = SourceHasSubtype(Subtype("Wall"))
                 )
             )

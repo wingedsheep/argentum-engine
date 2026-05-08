@@ -1,5 +1,6 @@
 package com.wingedsheep.mtg.sets.definitions.ktk.cards
 
+import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.core.Counters
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.dsl.Conditions
@@ -10,7 +11,6 @@ import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.ConditionalStaticAbility
 import com.wingedsheep.sdk.scripting.GrantKeyword
 import com.wingedsheep.sdk.scripting.MustAttack
-import com.wingedsheep.sdk.scripting.StaticTarget
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 
 /**
@@ -39,7 +39,7 @@ val ZurgoHelmsmasher = card("Zurgo Helmsmasher") {
 
     staticAbility {
         ability = ConditionalStaticAbility(
-            ability = GrantKeyword(Keyword.INDESTRUCTIBLE, StaticTarget.SourceCreature),
+            ability = GrantKeyword(Keyword.INDESTRUCTIBLE, GroupFilter.source()),
             condition = Conditions.IsYourTurn
         )
     }

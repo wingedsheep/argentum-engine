@@ -4,8 +4,8 @@ import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
-import com.wingedsheep.sdk.scripting.GrantKeywordToCreatureGroup
-import com.wingedsheep.sdk.scripting.ModifyStatsForCreatureGroup
+import com.wingedsheep.sdk.scripting.GrantKeyword
+import com.wingedsheep.sdk.scripting.ModifyStats
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 
 /**
@@ -26,7 +26,7 @@ val LyraDawnbringer = card("Lyra Dawnbringer") {
     keywords(Keyword.FLYING, Keyword.FIRST_STRIKE, Keyword.LIFELINK)
 
     staticAbility {
-        ability = ModifyStatsForCreatureGroup(
+        ability = ModifyStats(
             powerBonus = 1,
             toughnessBonus = 1,
             filter = GroupFilter(GameObjectFilter.Creature.youControl().withSubtype("Angel"), excludeSelf = true)
@@ -34,7 +34,7 @@ val LyraDawnbringer = card("Lyra Dawnbringer") {
     }
 
     staticAbility {
-        ability = GrantKeywordToCreatureGroup(
+        ability = GrantKeyword(
             keyword = Keyword.LIFELINK,
             filter = GroupFilter(GameObjectFilter.Creature.youControl().withSubtype("Angel"), excludeSelf = true)
         )

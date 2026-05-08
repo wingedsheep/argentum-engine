@@ -5,7 +5,7 @@ import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
-import com.wingedsheep.sdk.scripting.ModifyStatsForCreatureGroup
+import com.wingedsheep.sdk.scripting.ModifyStats
 import com.wingedsheep.sdk.scripting.effects.CreateTokenCopyOfTargetEffect
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
@@ -57,7 +57,7 @@ val CaretakersTalent = card("Caretaker's Talent") {
     // Level 3: Creature tokens you control get +2/+2.
     classLevel(3, "{3}{W}") {
         staticAbility {
-            ability = ModifyStatsForCreatureGroup(
+            ability = ModifyStats(
                 powerBonus = 2,
                 toughnessBonus = 2,
                 filter = GroupFilter(

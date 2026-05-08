@@ -1,5 +1,6 @@
 package com.wingedsheep.mtg.sets.definitions.ons.cards
 
+import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.dsl.Costs
@@ -9,7 +10,6 @@ import com.wingedsheep.sdk.scripting.effects.BecomeCreatureTypeEffect
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.GrantKeyword
 import com.wingedsheep.sdk.scripting.conditions.SourceHasSubtype
-import com.wingedsheep.sdk.scripting.StaticTarget
 
 /**
  * Mistform Wall
@@ -27,7 +27,7 @@ val MistformWall = card("Mistform Wall") {
     oracleText = "This creature has defender as long as it's a Wall.\n{1}: Mistform Wall becomes the creature type of your choice until end of turn."
 
     staticAbility {
-        ability = GrantKeyword(Keyword.DEFENDER, StaticTarget.SourceCreature)
+        ability = GrantKeyword(Keyword.DEFENDER, GroupFilter.source())
         condition = SourceHasSubtype(Subtype("Wall"))
     }
 

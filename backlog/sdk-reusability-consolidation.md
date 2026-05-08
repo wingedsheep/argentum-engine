@@ -34,22 +34,34 @@ happened.
 
 **Win:** ~25 case classes deleted, ~14KB removed.
 
-### 2. Static-ability single-vs-group unification — [HIGH]
+### 2. Static-ability single-vs-group unification — [HIGH] ✅ done
 
-Every grant-X has both a `StaticTarget` form and a `GroupFilter` form:
+Every grant-X had both a `StaticTarget` form and a `GroupFilter` form:
 `GrantKeyword` / `GrantKeywordToCreatureGroup`, `ModifyStats` / `ModifyStatsForCreatureGroup`,
 `GrantWard` / `GrantWardToGroup`, `CantAttack` / `CantAttackForCreatureGroup`,
 `CantBlock` / `CantBlockForCreatureGroup`, `MustAttack` / `MustAttackForCreatureGroup`,
-`GrantSubtype` / `GrantAdditionalTypesToGroup`, `GrantTriggeredAbilityToAttachedCreature` /
-`GrantTriggeredAbilityToCreatureGroup`, `GrantActivatedAbilityToAttachedCreature` /
-`GrantActivatedAbilityToCreatureGroup`, etc.
+`GrantTriggeredAbilityToAttachedCreature` / `GrantTriggeredAbilityToCreatureGroup`,
+`GrantActivatedAbilityToAttachedCreature` / `GrantActivatedAbilityToCreatureGroup`, etc.
 
-**Fix:** unify on `GroupFilter`. `StaticTarget.AttachedCreature` becomes
-`GroupFilter.attachedCreature()`; `StaticTarget.SourceCreature` becomes
-`GroupFilter.source()`. `StaticTarget` is then deleted entirely (use `EffectTarget`
-where a single reference is needed).
+**Fix applied:** `GroupFilter` gained a `scope: Scope` field
+(`Battlefield` / `Self` / `AttachedTo` / `Specific`) plus `source()` / `attachedCreature()` /
+`specific(id)` factories. Every static ability now carries `filter: GroupFilter`
+(default `attachedCreature()` for Aura/Equipment-shaped grants, `source()` for
+"this creature ..." grants). The engine's `convertGroupFilter` short-circuits on
+non-Battlefield scope before falling through to the existing battlefield logic.
+`StaticTarget` and `convertStaticTarget` deleted entirely; `Filters.kt` aliases
+retyped from `StaticTarget` to `GroupFilter`. `GrantSubtype` and
+`GrantAdditionalTypesToGroup` were left as separate classes — both already take
+`GroupFilter`, and the only duplicated dimension was `StaticTarget`-vs-`GroupFilter`.
 
-**Win:** ~15 case classes deleted across the static-abilities files.
+Merged-and-deleted classes (15): `GrantKeywordToCreatureGroup`,
+`ModifyStatsForCreatureGroup`, `GrantWardToGroup`,
+`CantAttackForCreatureGroup`, `CantBlockForCreatureGroup`,
+`MustAttackForCreatureGroup`, `MustBlockForCreatureGroup`,
+`GrantTriggeredAbilityToAttachedCreature`, `GrantTriggeredAbilityToCreatureGroup`
+(merged into `GrantTriggeredAbility`), `GrantActivatedAbilityToAttachedCreature`,
+`GrantActivatedAbilityToCreatureGroup` (merged into `GrantActivatedAbility`), plus
+the `StaticTarget` sealed interface and its five subtypes.
 
 ### 3. `CostStaticAbilities` cost-modifier sprawl — [HIGH]
 

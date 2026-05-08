@@ -69,7 +69,7 @@ class TriggerDetector(
      *
      * Also pre-computes:
      * - Aura entities indexed by their attachment targets
-     * - Grant providers (GrantTriggeredAbilityToCreatureGroup static abilities)
+     * - Grant providers (GrantTriggeredAbility static abilities)
      * - Damage observer trigger lists for specialized detection methods
      */
     private fun buildTriggerIndex(state: GameState): TriggerIndex {
@@ -86,7 +86,9 @@ class TriggerDetector(
             val cardDef = registry.getCard(card.cardDefinitionId) ?: continue
             val classLevel = container.get<ClassLevelComponent>()?.currentLevel
             for (ability in cardDef.script.effectiveStaticAbilities(classLevel)) {
-                if (ability is GrantTriggeredAbilityToCreatureGroup) {
+                if (ability is GrantTriggeredAbility &&
+                    ability.filter.scope is com.wingedsheep.sdk.scripting.filters.unified.Scope.Battlefield
+                ) {
                     grantProviders.add(TriggerIndex.GrantProviderEntry(ability, sourceControllerId))
                 }
             }

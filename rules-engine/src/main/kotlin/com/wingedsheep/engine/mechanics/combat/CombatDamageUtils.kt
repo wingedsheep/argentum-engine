@@ -9,7 +9,7 @@ import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.AssignDamageEqualToToughness
 import com.wingedsheep.sdk.scripting.ConditionalStaticAbility
 import com.wingedsheep.sdk.scripting.StaticAbility
-import com.wingedsheep.sdk.scripting.StaticTarget
+import com.wingedsheep.sdk.scripting.filters.unified.Scope
 
 /**
  * Helpers for calculating the amount of combat damage a creature assigns.
@@ -51,19 +51,19 @@ internal object CombatDamageUtils {
         power: Int,
         toughness: Int,
     ): Boolean {
-        // The creature itself (e.g., Doran the Siege Tower, target = SourceCreature)
+        // The creature itself (e.g., Doran the Siege Tower, filter scope = Self)
         val selfCardId = state.getEntity(creatureId)?.get<CardComponent>()?.cardDefinitionId
         if (selfCardId != null) {
             val abilities = cardRegistry.getCard(selfCardId)?.staticAbilities.orEmpty()
-            if (matches(abilities, StaticTarget.SourceCreature, power, toughness)) return true
+            if (matches(abilities, Scope.Self, power, toughness)) return true
         }
 
-        // Equipment/Aura attached to the creature (e.g., Bark of Doran, target = AttachedCreature)
+        // Equipment/Aura attached to the creature (e.g., Bark of Doran, filter scope = AttachedTo)
         val attachments = state.getEntity(creatureId)?.get<AttachmentsComponent>()?.attachedIds.orEmpty()
         for (attachId in attachments) {
             val attachCardId = state.getEntity(attachId)?.get<CardComponent>()?.cardDefinitionId ?: continue
             val abilities = cardRegistry.getCard(attachCardId)?.staticAbilities.orEmpty()
-            if (matches(abilities, StaticTarget.AttachedCreature, power, toughness)) return true
+            if (matches(abilities, Scope.AttachedTo, power, toughness)) return true
         }
 
         return false
@@ -71,14 +71,14 @@ internal object CombatDamageUtils {
 
     private fun matches(
         abilities: List<StaticAbility>,
-        expectedTarget: StaticTarget,
+        expectedScope: Scope,
         power: Int,
         toughness: Int,
     ): Boolean {
         for (ability in abilities) {
             val unwrapped = if (ability is ConditionalStaticAbility) ability.ability else ability
             if (unwrapped !is AssignDamageEqualToToughness) continue
-            if (unwrapped.target != expectedTarget) continue
+            if (unwrapped.filter.scope != expectedScope) continue
             if (unwrapped.onlyWhenToughnessGreaterThanPower && toughness <= power) continue
             return true
         }

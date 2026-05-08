@@ -1,10 +1,10 @@
 package com.wingedsheep.mtg.sets.definitions.lgn.cards
 
+import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.dsl.Conditions
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.ModifyStats
-import com.wingedsheep.sdk.scripting.StaticTarget
 
 /**
  * Vexing Beetle
@@ -23,7 +23,7 @@ val VexingBeetle = card("Vexing Beetle") {
     cantBeCountered = true
 
     staticAbility {
-        ability = ModifyStats(3, 3, StaticTarget.SourceCreature)
+        ability = ModifyStats(3, 3, GroupFilter.source())
         condition = Conditions.Not(Conditions.OpponentControlsCreature)
     }
 

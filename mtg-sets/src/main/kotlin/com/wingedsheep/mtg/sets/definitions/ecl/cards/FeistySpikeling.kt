@@ -1,12 +1,12 @@
 package com.wingedsheep.mtg.sets.definitions.ecl.cards
 
+import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.dsl.Conditions
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.ConditionalStaticAbility
 import com.wingedsheep.sdk.scripting.GrantKeyword
-import com.wingedsheep.sdk.scripting.StaticTarget
 
 /**
  * Feisty Spikeling
@@ -28,7 +28,7 @@ val FeistySpikeling = card("Feisty Spikeling") {
 
     staticAbility {
         ability = ConditionalStaticAbility(
-            ability = GrantKeyword(Keyword.FIRST_STRIKE, StaticTarget.SourceCreature),
+            ability = GrantKeyword(Keyword.FIRST_STRIKE, GroupFilter.source()),
             condition = Conditions.IsYourTurn
         )
     }

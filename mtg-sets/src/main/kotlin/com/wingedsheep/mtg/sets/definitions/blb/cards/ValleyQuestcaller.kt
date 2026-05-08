@@ -7,7 +7,7 @@ import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.GameEvent.ZoneChangeEvent
-import com.wingedsheep.sdk.scripting.ModifyStatsForCreatureGroup
+import com.wingedsheep.sdk.scripting.ModifyStats
 import com.wingedsheep.sdk.scripting.TriggerBinding
 import com.wingedsheep.sdk.scripting.TriggerSpec
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
@@ -48,7 +48,7 @@ val ValleyQuestcaller = card("Valley Questcaller") {
 
     // Static lord: other Rabbits, Bats, Birds, and Mice you control get +1/+1
     staticAbility {
-        ability = ModifyStatsForCreatureGroup(
+        ability = ModifyStats(
             powerBonus = 1,
             toughnessBonus = 1,
             filter = GroupFilter(valleyCreatureFilter, excludeSelf = true)

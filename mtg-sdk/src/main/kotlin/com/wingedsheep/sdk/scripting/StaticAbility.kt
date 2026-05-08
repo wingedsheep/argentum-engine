@@ -1,8 +1,6 @@
 package com.wingedsheep.sdk.scripting
 
-import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.text.TextReplaceable
-import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 /**
@@ -23,34 +21,14 @@ import kotlinx.serialization.Serializable
  * - ProtectionStaticAbilities.kt - protection and targeting restrictions
  * - SpellStaticAbilities.kt - casting permissions and spell modifications
  * - MiscStaticAbilities.kt - miscellaneous static abilities
+ *
+ * Each concrete subtype carries a `filter: GroupFilter` field that determines
+ * which permanents the ability affects. Use [com.wingedsheep.sdk.scripting.filters.unified.GroupFilter.source]
+ * for "this creature", [com.wingedsheep.sdk.scripting.filters.unified.GroupFilter.attachedCreature]
+ * for "the attached/equipped/enchanted creature", or any battlefield-scoped filter
+ * for lord/sliver-style "all X creatures have ..." effects.
  */
 @Serializable
 sealed interface StaticAbility : TextReplaceable<StaticAbility> {
     val description: String
-}
-
-/**
- * Target for static abilities (what the ability affects).
- */
-@Serializable
-sealed interface StaticTarget {
-    @SerialName("AttachedCreature")
-    @Serializable
-    data object AttachedCreature : StaticTarget
-
-    @SerialName("SourceCreature")
-    @Serializable
-    data object SourceCreature : StaticTarget
-
-    @SerialName("Controller")
-    @Serializable
-    data object Controller : StaticTarget
-
-    @SerialName("AllControlledCreatures")
-    @Serializable
-    data object AllControlledCreatures : StaticTarget
-
-    @SerialName("SpecificCard")
-    @Serializable
-    data class SpecificCard(val entityId: EntityId) : StaticTarget
 }

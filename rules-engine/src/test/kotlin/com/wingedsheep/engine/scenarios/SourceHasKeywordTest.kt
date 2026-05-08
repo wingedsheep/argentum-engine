@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.scenarios
 
+import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.engine.mechanics.layers.StateProjector
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
@@ -10,7 +11,6 @@ import com.wingedsheep.sdk.model.CreatureStats
 import com.wingedsheep.sdk.model.Deck
 import com.wingedsheep.sdk.scripting.ConditionalStaticAbility
 import com.wingedsheep.sdk.scripting.ModifyStats
-import com.wingedsheep.sdk.scripting.StaticTarget
 import com.wingedsheep.sdk.scripting.GrantKeyword
 import com.wingedsheep.sdk.scripting.conditions.SourceHasKeyword
 import io.kotest.core.spec.style.FunSpec
@@ -34,7 +34,7 @@ class SourceHasKeywordTest : FunSpec({
         script = CardScript.permanent(
             staticAbilities = listOf(
                 ConditionalStaticAbility(
-                    ability = ModifyStats(2, 2, StaticTarget.SourceCreature),
+                    ability = ModifyStats(2, 2, GroupFilter.source()),
                     condition = SourceHasKeyword(Keyword.FLYING)
                 )
             )
@@ -51,7 +51,7 @@ class SourceHasKeywordTest : FunSpec({
         script = CardScript.permanent(
             staticAbilities = listOf(
                 ConditionalStaticAbility(
-                    ability = ModifyStats(2, 2, StaticTarget.SourceCreature),
+                    ability = ModifyStats(2, 2, GroupFilter.source()),
                     condition = SourceHasKeyword(Keyword.FLYING)
                 )
             )
@@ -112,7 +112,7 @@ class SourceHasKeywordTest : FunSpec({
                 oracleText = "All creatures you control have flying.",
                 script = CardScript.permanent(
                     staticAbilities = listOf(
-                        GrantKeyword(Keyword.FLYING, StaticTarget.AllControlledCreatures)
+                        GrantKeyword(Keyword.FLYING, GroupFilter.AllCreaturesYouControl)
                     )
                 )
             )

@@ -5,8 +5,8 @@ import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
-import com.wingedsheep.sdk.scripting.GrantTriggeredAbilityToCreatureGroup
-import com.wingedsheep.sdk.scripting.ModifyStatsForCreatureGroup
+import com.wingedsheep.sdk.scripting.GrantTriggeredAbility
+import com.wingedsheep.sdk.scripting.ModifyStats
 import com.wingedsheep.sdk.scripting.TriggeredAbility
 import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.MayEffect
@@ -27,7 +27,7 @@ val RaidersSpoils = card("Raiders' Spoils") {
     oracleText = "Creatures you control get +1/+0.\nWhenever a Warrior you control deals combat damage to a player, you may pay 1 life. If you do, draw a card."
 
     staticAbility {
-        ability = ModifyStatsForCreatureGroup(
+        ability = ModifyStats(
             powerBonus = 1,
             toughnessBonus = 0,
             filter = GroupFilter(GameObjectFilter.Creature.youControl())
@@ -35,7 +35,7 @@ val RaidersSpoils = card("Raiders' Spoils") {
     }
 
     staticAbility {
-        ability = GrantTriggeredAbilityToCreatureGroup(
+        ability = GrantTriggeredAbility(
             ability = TriggeredAbility.create(
                 trigger = Triggers.DealsCombatDamageToPlayer.event,
                 binding = Triggers.DealsCombatDamageToPlayer.binding,

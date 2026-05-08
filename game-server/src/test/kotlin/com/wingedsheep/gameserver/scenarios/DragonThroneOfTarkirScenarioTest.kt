@@ -7,7 +7,7 @@ import com.wingedsheep.gameserver.ScenarioTestBase
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Phase
 import com.wingedsheep.sdk.core.Step
-import com.wingedsheep.sdk.scripting.GrantActivatedAbilityToAttachedCreature
+import com.wingedsheep.sdk.scripting.GrantActivatedAbility
 import io.kotest.assertions.withClue
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
@@ -104,7 +104,7 @@ class DragonThroneOfTarkirScenarioTest : ScenarioTestBase() {
 
                 // Get the granted activated ability
                 val grantAbility = cardDef.script.staticAbilities
-                    .filterIsInstance<GrantActivatedAbilityToAttachedCreature>()
+                    .filterIsInstance<GrantActivatedAbility>()
                     .first()
                 val grantedAbilityId = grantAbility.ability.id
 

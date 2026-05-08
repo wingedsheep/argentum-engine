@@ -1,5 +1,6 @@
 package com.wingedsheep.mtg.sets.definitions.ecl.cards
 
+import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Filters
@@ -7,7 +8,6 @@ import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.IsAllCreatureTypes
-import com.wingedsheep.sdk.scripting.StaticTarget
 
 /**
  * Stalactite Dagger
@@ -42,7 +42,7 @@ val StalactiteDagger = card("Stalactite Dagger") {
     }
 
     staticAbility {
-        ability = IsAllCreatureTypes(StaticTarget.AttachedCreature)
+        ability = IsAllCreatureTypes(GroupFilter.attachedCreature())
     }
 
     equipAbility("{2}")

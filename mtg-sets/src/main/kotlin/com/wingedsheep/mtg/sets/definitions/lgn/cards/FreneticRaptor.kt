@@ -2,7 +2,7 @@ package com.wingedsheep.mtg.sets.definitions.lgn.cards
 
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.CantBlockForCreatureGroup
+import com.wingedsheep.sdk.scripting.CantBlock
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 
@@ -21,7 +21,7 @@ val FreneticRaptor = card("Frenetic Raptor") {
     oracleText = "Beasts can't block."
 
     staticAbility {
-        ability = CantBlockForCreatureGroup(
+        ability = CantBlock(
             GroupFilter(GameObjectFilter.Creature.withSubtype("Beast"))
         )
     }

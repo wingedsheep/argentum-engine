@@ -996,7 +996,7 @@ data class CostPaymentChoices(
     val blightChoices: List<EntityId> = emptyList(),
     /**
      * The permanent that granted the activated ability being paid for, when the
-     * ability comes from a static grant (e.g., GrantActivatedAbilityToAttachedCreature).
+     * ability comes from a static grant (e.g., GrantActivatedAbility scoped to the attached creature).
      * Read by the executor for [AbilityCost.ExileGrantingPermanent].
      */
     val granterId: EntityId? = null

@@ -19,7 +19,7 @@ import com.wingedsheep.sdk.scripting.effects.BecomeCreatureTypeEffect
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
-import com.wingedsheep.sdk.scripting.ModifyStatsForCreatureGroup
+import com.wingedsheep.sdk.scripting.ModifyStats
 import com.wingedsheep.sdk.scripting.targets.TargetCreature
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.collections.shouldNotContain
@@ -154,7 +154,7 @@ class ImagecrafterTest : FunSpec({
             keywords = setOf(Keyword.FLYING),
             script = CardScript.permanent(
                 staticAbilities = listOf(
-                    ModifyStatsForCreatureGroup(
+                    ModifyStats(
                         powerBonus = 1,
                         toughnessBonus = 1,
                         filter = GroupFilter(GameObjectFilter.Creature.withSubtype("Soldier"), excludeSelf = true)

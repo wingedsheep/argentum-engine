@@ -8,7 +8,7 @@ import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.ConditionalStaticAbility
 import com.wingedsheep.sdk.scripting.GameObjectFilter
-import com.wingedsheep.sdk.scripting.ModifyStatsForCreatureGroup
+import com.wingedsheep.sdk.scripting.ModifyStats
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 
 /**
@@ -44,7 +44,7 @@ val DeepwayNavigator = card("Deepway Navigator") {
 
     staticAbility {
         ability = ConditionalStaticAbility(
-            ability = ModifyStatsForCreatureGroup(
+            ability = ModifyStats(
                 powerBonus = 1,
                 toughnessBonus = 0,
                 filter = GroupFilter(GameObjectFilter.Creature.withSubtype("Merfolk").youControl())

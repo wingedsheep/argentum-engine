@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.scenarios
 
+import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.engine.core.ChooseTargetsDecision
 import com.wingedsheep.engine.core.SelectCardsDecision
 import com.wingedsheep.engine.state.ZoneKey
@@ -65,8 +66,8 @@ class TemptingWurmTest : FunSpec({
         script = CardScript.aura(
             enchantTarget = TargetCreature(),
             staticAbilities = listOf(
-                CantAttack(target = StaticTarget.AttachedCreature),
-                CantBlock(target = StaticTarget.AttachedCreature)
+                CantAttack(filter = GroupFilter.attachedCreature()),
+                CantBlock(filter = GroupFilter.attachedCreature())
             )
         )
     )

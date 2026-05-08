@@ -37,7 +37,7 @@ import com.wingedsheep.sdk.scripting.ActivatedAbility
 import com.wingedsheep.sdk.scripting.AdditionalManaOnLandTap
 import com.wingedsheep.sdk.scripting.AdditionalManaOnTap
 import com.wingedsheep.sdk.scripting.DampLandManaProduction
-import com.wingedsheep.sdk.scripting.GrantActivatedAbilityToCreatureGroup
+import com.wingedsheep.sdk.scripting.GrantActivatedAbility
 import com.wingedsheep.sdk.scripting.predicates.CardPredicate
 import com.wingedsheep.engine.state.components.identity.ChosenColorComponent
 import com.wingedsheep.engine.state.components.identity.ChosenCreatureTypeComponent
@@ -1055,7 +1055,8 @@ class ManaSolver(
 
             val cardDef = cardRegistry.getCard(card.cardDefinitionId) ?: continue
             for (ability in cardDef.staticAbilities) {
-                if (ability is GrantActivatedAbilityToCreatureGroup) {
+                if (ability is GrantActivatedAbility &&
+                    ability.filter.scope is com.wingedsheep.sdk.scripting.filters.unified.Scope.Battlefield) {
                     if (ability.filter.excludeSelf && permanentId == entityId) continue
                     val filter = ability.filter.baseFilter
                     val matchesAll = filter.cardPredicates.all { predicate ->

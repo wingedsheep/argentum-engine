@@ -1,5 +1,6 @@
 package com.wingedsheep.mtg.sets.definitions.ons.cards
 
+import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.dsl.Conditions
@@ -10,7 +11,6 @@ import com.wingedsheep.sdk.scripting.ActivationRestriction
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.GrantKeyword
 import com.wingedsheep.sdk.scripting.effects.RegenerateEffect
-import com.wingedsheep.sdk.scripting.StaticTarget
 
 /**
  * Tribal Golem
@@ -30,22 +30,22 @@ val TribalGolem = card("Tribal Golem") {
     oracleText = "Tribal Golem has trample as long as you control a Beast, haste as long as you control a Goblin, first strike as long as you control a Soldier, flying as long as you control a Wizard, and \"{B}: Regenerate Tribal Golem\" as long as you control a Zombie."
 
     staticAbility {
-        ability = GrantKeyword(Keyword.TRAMPLE, StaticTarget.SourceCreature)
+        ability = GrantKeyword(Keyword.TRAMPLE, GroupFilter.source())
         condition = Conditions.ControlCreatureOfType(Subtype("Beast"))
     }
 
     staticAbility {
-        ability = GrantKeyword(Keyword.HASTE, StaticTarget.SourceCreature)
+        ability = GrantKeyword(Keyword.HASTE, GroupFilter.source())
         condition = Conditions.ControlCreatureOfType(Subtype("Goblin"))
     }
 
     staticAbility {
-        ability = GrantKeyword(Keyword.FIRST_STRIKE, StaticTarget.SourceCreature)
+        ability = GrantKeyword(Keyword.FIRST_STRIKE, GroupFilter.source())
         condition = Conditions.ControlCreatureOfType(Subtype("Soldier"))
     }
 
     staticAbility {
-        ability = GrantKeyword(Keyword.FLYING, StaticTarget.SourceCreature)
+        ability = GrantKeyword(Keyword.FLYING, GroupFilter.source())
         condition = Conditions.ControlCreatureOfType(Subtype("Wizard"))
     }
 

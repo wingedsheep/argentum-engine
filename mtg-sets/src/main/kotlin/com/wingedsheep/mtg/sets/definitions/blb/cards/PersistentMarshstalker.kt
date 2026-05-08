@@ -1,5 +1,6 @@
 package com.wingedsheep.mtg.sets.definitions.blb.cards
 
+import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.dsl.Conditions
@@ -8,7 +9,6 @@ import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.GrantDynamicStatsEffect
-import com.wingedsheep.sdk.scripting.StaticTarget
 import com.wingedsheep.sdk.scripting.effects.MayPayManaEffect
 import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
 import com.wingedsheep.sdk.scripting.effects.ZonePlacement
@@ -35,7 +35,7 @@ val PersistentMarshstalker = card("Persistent Marshstalker") {
 
     staticAbility {
         ability = GrantDynamicStatsEffect(
-            target = StaticTarget.SourceCreature,
+            filter = GroupFilter.source(),
             powerBonus = DynamicAmount.AggregateBattlefield(
                 Player.You,
                 GameObjectFilter.Creature.withSubtype("Rat"),

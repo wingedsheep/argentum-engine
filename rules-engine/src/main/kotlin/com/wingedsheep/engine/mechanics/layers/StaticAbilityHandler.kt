@@ -22,7 +22,7 @@ import com.wingedsheep.sdk.scripting.CantBeBlocked
 import com.wingedsheep.sdk.scripting.CantAttack
 import com.wingedsheep.sdk.scripting.CantBlock
 import com.wingedsheep.sdk.scripting.CanBlockAdditionalForCreatureGroup
-import com.wingedsheep.sdk.scripting.CantBlockForCreatureGroup
+import com.wingedsheep.sdk.scripting.MustBlock
 import com.wingedsheep.sdk.scripting.MustAttack
 import com.wingedsheep.sdk.scripting.ConditionalStaticAbility
 import com.wingedsheep.sdk.scripting.conditions.Compare
@@ -58,25 +58,18 @@ import com.wingedsheep.sdk.scripting.conditions.SourceHasKeyword
 import com.wingedsheep.sdk.scripting.conditions.SourceHasSubtype
 import com.wingedsheep.sdk.scripting.conditions.SourceIsTapped
 import com.wingedsheep.sdk.scripting.conditions.SourceIsUntapped
-import com.wingedsheep.sdk.scripting.CantAttackForCreatureGroup
-import com.wingedsheep.sdk.scripting.MustAttackForCreatureGroup
-import com.wingedsheep.sdk.scripting.MustBlockForCreatureGroup
 import com.wingedsheep.sdk.scripting.GrantKeyword
 import com.wingedsheep.sdk.scripting.RemoveKeywordStatic
 import com.wingedsheep.sdk.scripting.GrantCantBeBlockedExceptBySubtype
 import com.wingedsheep.sdk.scripting.GrantCantBeBlockedToSmallCreatures
 import com.wingedsheep.sdk.scripting.GrantDynamicStatsEffect
-import com.wingedsheep.sdk.scripting.GrantKeywordToCreatureGroup
 import com.wingedsheep.sdk.scripting.GrantWard
-import com.wingedsheep.sdk.scripting.GrantWardToGroup
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.scripting.predicates.CardPredicate
 import com.wingedsheep.sdk.scripting.predicates.ControllerPredicate
 import com.wingedsheep.sdk.scripting.ModifyStats
-import com.wingedsheep.sdk.scripting.ModifyStatsForCreatureGroup
 import com.wingedsheep.sdk.scripting.predicates.StatePredicate
 import com.wingedsheep.sdk.scripting.StaticAbility
-import com.wingedsheep.sdk.scripting.StaticTarget
 
 /**
  * Converts static abilities from card definitions into ContinuousEffectSourceComponent.
@@ -260,7 +253,7 @@ class StaticAbilityHandler(
      * "Enchanted permanent is a colorless Food artifact..."
      */
     private fun convertTransformPermanent(ability: TransformPermanent): List<ContinuousEffectData> {
-        val filter = convertStaticTarget(ability.target)
+        val filter = convertGroupFilter(ability.filter)
         val effects = mutableListOf<ContinuousEffectData>()
 
         // Layer 4 (TYPE): Set card types (replaces all existing)
@@ -299,17 +292,9 @@ class StaticAbilityHandler(
      */
     private fun convertStaticAbility(ability: StaticAbility): ContinuousEffectData? {
         return when (ability) {
-            is GrantKeywordToCreatureGroup -> {
+            is GrantKeyword -> {
                 ContinuousEffectData(
-                    modification = Modification.GrantKeyword(ability.keyword.name),
-                    affectsFilter = convertGroupFilter(ability.filter)
-                )
-            }
-            is GrantWardToGroup -> {
-                // Grant the WARD keyword for display; the triggered ability is generated
-                // by TriggerAbilityResolver.getWardTriggeredAbilities()
-                ContinuousEffectData(
-                    modification = Modification.GrantKeyword("WARD"),
+                    modification = Modification.GrantKeyword(ability.keyword),
                     affectsFilter = convertGroupFilter(ability.filter)
                 )
             }
@@ -318,12 +303,6 @@ class StaticAbilityHandler(
                 // by TriggerAbilityResolver.getWardTriggeredAbilities()
                 ContinuousEffectData(
                     modification = Modification.GrantKeyword("WARD"),
-                    affectsFilter = convertStaticTarget(ability.target)
-                )
-            }
-            is ModifyStatsForCreatureGroup -> {
-                ContinuousEffectData(
-                    modification = Modification.ModifyPowerToughness(ability.powerBonus, ability.toughnessBonus),
                     affectsFilter = convertGroupFilter(ability.filter)
                 )
             }
@@ -342,64 +321,40 @@ class StaticAbilityHandler(
             is ModifyStats -> {
                 ContinuousEffectData(
                     modification = Modification.ModifyPowerToughness(ability.powerBonus, ability.toughnessBonus),
-                    affectsFilter = convertStaticTarget(ability.target)
+                    affectsFilter = convertGroupFilter(ability.filter)
                 )
             }
             is GrantDynamicStatsEffect -> {
                 ContinuousEffectData(
                     modification = Modification.ModifyPowerToughnessDynamic(ability.powerBonus, ability.toughnessBonus),
-                    affectsFilter = convertStaticTarget(ability.target)
-                )
-            }
-            is GrantKeyword -> {
-                ContinuousEffectData(
-                    modification = Modification.GrantKeyword(ability.keyword),
-                    affectsFilter = convertStaticTarget(ability.target)
+                    affectsFilter = convertGroupFilter(ability.filter)
                 )
             }
             is RemoveKeywordStatic -> {
                 ContinuousEffectData(
                     modification = Modification.RemoveKeyword(ability.keyword),
-                    affectsFilter = convertStaticTarget(ability.target)
+                    affectsFilter = convertGroupFilter(ability.filter)
                 )
             }
             is CantBeBlocked -> {
                 ContinuousEffectData(
                     modification = Modification.GrantKeyword(com.wingedsheep.sdk.core.AbilityFlag.CANT_BE_BLOCKED.name),
-                    affectsFilter = convertStaticTarget(ability.target)
+                    affectsFilter = convertGroupFilter(ability.filter)
                 )
             }
             is CantAttack -> {
                 ContinuousEffectData(
                     modification = Modification.SetCantAttack,
-                    affectsFilter = convertStaticTarget(ability.target)
+                    affectsFilter = convertGroupFilter(ability.filter)
                 )
             }
             is CantBlock -> {
                 ContinuousEffectData(
                     modification = Modification.SetCantBlock,
-                    affectsFilter = convertStaticTarget(ability.target)
-                )
-            }
-            is CantBlockForCreatureGroup -> {
-                ContinuousEffectData(
-                    modification = Modification.SetCantBlock,
                     affectsFilter = convertGroupFilter(ability.filter)
                 )
             }
-            is CantAttackForCreatureGroup -> {
-                ContinuousEffectData(
-                    modification = Modification.SetCantAttack,
-                    affectsFilter = convertGroupFilter(ability.filter)
-                )
-            }
-            is MustAttackForCreatureGroup -> {
-                ContinuousEffectData(
-                    modification = Modification.SetMustAttack,
-                    affectsFilter = convertGroupFilter(ability.filter)
-                )
-            }
-            is MustBlockForCreatureGroup -> {
+            is MustBlock -> {
                 ContinuousEffectData(
                     modification = Modification.SetMustBlock,
                     affectsFilter = convertGroupFilter(ability.filter)
@@ -414,7 +369,7 @@ class StaticAbilityHandler(
             is MustAttack -> {
                 ContinuousEffectData(
                     modification = Modification.SetMustAttack,
-                    affectsFilter = convertStaticTarget(ability.target)
+                    affectsFilter = convertGroupFilter(ability.filter)
                 )
             }
             is ControlEnchantedPermanent -> {
@@ -458,37 +413,37 @@ class StaticAbilityHandler(
             is GrantSubtype -> {
                 ContinuousEffectData(
                     modification = Modification.AddSubtype(ability.subtype),
-                    affectsFilter = convertStaticTarget(ability.target)
+                    affectsFilter = convertGroupFilter(ability.filter)
                 )
             }
             is IsAllCreatureTypes -> {
                 ContinuousEffectData(
                     modification = Modification.AddAllCreatureTypes,
-                    affectsFilter = convertStaticTarget(ability.target)
+                    affectsFilter = convertGroupFilter(ability.filter)
                 )
             }
             is GrantSupertype -> {
                 ContinuousEffectData(
                     modification = Modification.AddType(ability.supertype),
-                    affectsFilter = convertStaticTarget(ability.target)
+                    affectsFilter = convertGroupFilter(ability.filter)
                 )
             }
             is GrantCardType -> {
                 ContinuousEffectData(
                     modification = Modification.AddType(ability.cardType.uppercase()),
-                    affectsFilter = convertStaticTarget(ability.target)
+                    affectsFilter = convertGroupFilter(ability.filter)
                 )
             }
             is GrantProtection -> {
                 ContinuousEffectData(
                     modification = Modification.GrantProtectionFromColor(ability.color.name),
-                    affectsFilter = convertStaticTarget(ability.target)
+                    affectsFilter = convertGroupFilter(ability.filter)
                 )
             }
             is CantReceiveCounters -> {
                 ContinuousEffectData(
                     modification = Modification.GrantKeyword(com.wingedsheep.sdk.core.AbilityFlag.CANT_RECEIVE_COUNTERS.name),
-                    affectsFilter = convertStaticTarget(ability.target)
+                    affectsFilter = convertGroupFilter(ability.filter)
                 )
             }
             is GrantCantBeBlockedExceptBySubtype -> {
@@ -500,19 +455,19 @@ class StaticAbilityHandler(
             is GrantColor -> {
                 ContinuousEffectData(
                     modification = Modification.AddColor(setOf(ability.color.name)),
-                    affectsFilter = convertStaticTarget(ability.target)
+                    affectsFilter = convertGroupFilter(ability.filter)
                 )
             }
             is GrantChosenColor -> {
                 ContinuousEffectData(
                     modification = Modification.AddChosenColor,
-                    affectsFilter = convertStaticTarget(ability.target)
+                    affectsFilter = convertGroupFilter(ability.filter)
                 )
             }
             is SetBasePowerToughnessStatic -> {
                 ContinuousEffectData(
                     modification = Modification.SetPowerToughness(ability.power, ability.toughness),
-                    affectsFilter = convertStaticTarget(ability.target)
+                    affectsFilter = convertGroupFilter(ability.filter)
                 )
             }
             is SetBaseToughnessForCreatureGroup -> {
@@ -524,7 +479,7 @@ class StaticAbilityHandler(
             is LoseAllAbilities -> {
                 ContinuousEffectData(
                     modification = Modification.RemoveAllAbilities,
-                    affectsFilter = convertStaticTarget(ability.target)
+                    affectsFilter = convertGroupFilter(ability.filter)
                 )
             }
             is ConditionalStaticAbility -> convertConditionalStaticAbility(ability)
@@ -611,19 +566,6 @@ class StaticAbilityHandler(
     }
 
     /**
-     * Convert a StaticTarget to an AffectsFilter.
-     */
-    private fun convertStaticTarget(target: StaticTarget): AffectsFilter {
-        return when (target) {
-            is StaticTarget.AttachedCreature -> AffectsFilter.AttachedPermanent
-            is StaticTarget.SourceCreature -> AffectsFilter.Self
-            is StaticTarget.AllControlledCreatures -> AffectsFilter.AllCreaturesYouControl
-            is StaticTarget.Controller -> AffectsFilter.Self
-            is StaticTarget.SpecificCard -> AffectsFilter.SpecificEntities(setOf(target.entityId))
-        }
-    }
-
-    /**
      * Creates a ReplacementEffectSourceComponent for a permanent if it has any
      * runtime-relevant replacement effects (e.g., PreventDamage).
      * Zone-change replacement effects like EntersTapped are handled elsewhere.
@@ -676,6 +618,16 @@ class StaticAbilityHandler(
      * Convert a GroupFilter to an AffectsFilter.
      */
     private fun convertGroupFilter(filter: GroupFilter): AffectsFilter {
+        // Scope short-circuits — non-Battlefield filters refer to specific entities
+        // relative to the source rather than scanning the battlefield.
+        when (val scope = filter.scope) {
+            is com.wingedsheep.sdk.scripting.filters.unified.Scope.Self -> return AffectsFilter.Self
+            is com.wingedsheep.sdk.scripting.filters.unified.Scope.AttachedTo -> return AffectsFilter.AttachedPermanent
+            is com.wingedsheep.sdk.scripting.filters.unified.Scope.Specific ->
+                return AffectsFilter.SpecificEntities(setOf(scope.entityId))
+            is com.wingedsheep.sdk.scripting.filters.unified.Scope.Battlefield -> { /* fall through */ }
+        }
+
         val baseFilter = filter.baseFilter
         val controllerPredicate = baseFilter.controllerPredicate
         val hasExcludeSelf = filter.excludeSelf

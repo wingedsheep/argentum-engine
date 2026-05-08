@@ -80,7 +80,7 @@ class ClassicLayerScenariosTest : FunSpec({
     // =========================================================================
 
     // --- Humility: "All creatures lose all abilities and have base P/T 1/1." ---
-    // Uses direct ContinuousEffectData injection since LoseAllAbilities only supports StaticTarget.
+    // Uses direct ContinuousEffectData injection since LoseAllAbilities only supports GroupFilter scope.
     val HumilityEffects = listOf(
         ContinuousEffectData(
             modification = Modification.RemoveAllAbilities,
@@ -262,7 +262,7 @@ class ClassicLayerScenariosTest : FunSpec({
                 manaCost = ManaCost.parse("{1}{W}{W}"),
                 script = CardScript(
                     staticAbilities = listOf(
-                        ModifyStatsForCreatureGroup(
+                        ModifyStats(
                             powerBonus = 1,
                             toughnessBonus = 1,
                             filter = GroupFilter.AllCreatures
@@ -678,7 +678,7 @@ class ClassicLayerScenariosTest : FunSpec({
             manaCost = ManaCost.parse("{1}{G}"),
             script = CardScript(
                 staticAbilities = listOf(
-                    SetBasePowerToughnessStatic(power = 0, toughness = 4, target = StaticTarget.AttachedCreature)
+                    SetBasePowerToughnessStatic(power = 0, toughness = 4, filter = GroupFilter.attachedCreature())
                 )
             )
         )
@@ -689,7 +689,7 @@ class ClassicLayerScenariosTest : FunSpec({
             manaCost = ManaCost.parse("{1}{W}"),
             script = CardScript(
                 staticAbilities = listOf(
-                    SetBasePowerToughnessStatic(power = 0, toughness = 1, target = StaticTarget.AttachedCreature)
+                    SetBasePowerToughnessStatic(power = 0, toughness = 1, filter = GroupFilter.attachedCreature())
                 )
             )
         )
@@ -700,7 +700,7 @@ class ClassicLayerScenariosTest : FunSpec({
             manaCost = ManaCost.parse("{1}{U}"),
             script = CardScript(
                 staticAbilities = listOf(
-                    SetBasePowerToughnessStatic(power = 1, toughness = 1, target = StaticTarget.AttachedCreature)
+                    SetBasePowerToughnessStatic(power = 1, toughness = 1, filter = GroupFilter.attachedCreature())
                 )
             )
         )
@@ -711,7 +711,7 @@ class ClassicLayerScenariosTest : FunSpec({
             manaCost = ManaCost.parse("{3}{G}"),
             script = CardScript(
                 staticAbilities = listOf(
-                    SetBasePowerToughnessStatic(power = 5, toughness = 5, target = StaticTarget.AttachedCreature)
+                    SetBasePowerToughnessStatic(power = 5, toughness = 5, filter = GroupFilter.attachedCreature())
                 )
             )
         )
@@ -780,7 +780,7 @@ class ClassicLayerScenariosTest : FunSpec({
                 manaCost = ManaCost.parse("{1}{G}"),
                 script = CardScript(
                     staticAbilities = listOf(
-                        ModifyStats(powerBonus = 2, toughnessBonus = 2, target = StaticTarget.AttachedCreature)
+                        ModifyStats(powerBonus = 2, toughnessBonus = 2, filter = GroupFilter.attachedCreature())
                     )
                 )
             )
@@ -836,7 +836,7 @@ class ClassicLayerScenariosTest : FunSpec({
             toughness = 2,
             script = CardScript(
                 staticAbilities = listOf(
-                    ModifyStatsForCreatureGroup(
+                    ModifyStats(
                         powerBonus = 1,
                         toughnessBonus = 1,
                         filter = GroupFilter.OtherCreaturesYouControl
@@ -850,7 +850,7 @@ class ClassicLayerScenariosTest : FunSpec({
             manaCost = ManaCost.parse("{1}{W}{W}"),
             script = CardScript(
                 staticAbilities = listOf(
-                    ModifyStatsForCreatureGroup(
+                    ModifyStats(
                         powerBonus = 1,
                         toughnessBonus = 1,
                         filter = GroupFilter.AllCreatures
@@ -954,7 +954,7 @@ class ClassicLayerScenariosTest : FunSpec({
             toughness = 3,
             script = CardScript(
                 staticAbilities = listOf(
-                    ModifyStatsForCreatureGroup(
+                    ModifyStats(
                         powerBonus = 1,
                         toughnessBonus = 1,
                         filter = GroupFilter.allCreaturesWithSubtype("Angel").other()
@@ -1028,7 +1028,7 @@ class ClassicLayerScenariosTest : FunSpec({
             manaCost = ManaCost.parse("{1}{B}"),
             script = CardScript(
                 staticAbilities = listOf(
-                    LoseAllAbilities(target = StaticTarget.AttachedCreature)
+                    LoseAllAbilities(filter = GroupFilter.attachedCreature())
                 )
             )
         )
@@ -1039,7 +1039,7 @@ class ClassicLayerScenariosTest : FunSpec({
             manaCost = ManaCost.parse("{2}{U}"),
             script = CardScript(
                 staticAbilities = listOf(
-                    GrantKeywordToCreatureGroup(
+                    GrantKeyword(
                         keyword = Keyword.FLYING,
                         filter = GroupFilter.AllCreatures
                     )
@@ -1053,7 +1053,7 @@ class ClassicLayerScenariosTest : FunSpec({
             manaCost = ManaCost.parse("{1}{W}"),
             script = CardScript(
                 staticAbilities = listOf(
-                    GrantKeywordToCreatureGroup(
+                    GrantKeyword(
                         keyword = Keyword.VIGILANCE,
                         filter = GroupFilter.AllCreaturesYouControl
                     )
@@ -1169,7 +1169,7 @@ class ClassicLayerScenariosTest : FunSpec({
                 manaCost = ManaCost.parse("{1}{W}{W}"),
                 script = CardScript(
                     staticAbilities = listOf(
-                        ModifyStatsForCreatureGroup(
+                        ModifyStats(
                             powerBonus = 1,
                             toughnessBonus = 1,
                             filter = GroupFilter.AllCreatures
@@ -1182,7 +1182,7 @@ class ClassicLayerScenariosTest : FunSpec({
                 manaCost = ManaCost.parse("{2}{U}"),
                 script = CardScript(
                     staticAbilities = listOf(
-                        GrantKeywordToCreatureGroup(
+                        GrantKeyword(
                             keyword = Keyword.FLYING,
                             filter = GroupFilter.AllCreatures
                         )

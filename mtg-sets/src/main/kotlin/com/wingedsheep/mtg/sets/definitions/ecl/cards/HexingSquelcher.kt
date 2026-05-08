@@ -5,7 +5,7 @@ import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.GrantCantBeCountered
-import com.wingedsheep.sdk.scripting.GrantWardToGroup
+import com.wingedsheep.sdk.scripting.GrantWard
 import com.wingedsheep.sdk.scripting.KeywordAbility
 import com.wingedsheep.sdk.scripting.effects.WardCost
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
@@ -44,7 +44,7 @@ val HexingSquelcher = card("Hexing Squelcher") {
 
     // Other creatures you control have "Ward—Pay 2 life."
     staticAbility {
-        ability = GrantWardToGroup(
+        ability = GrantWard(
             cost = WardCost.Life(2),
             filter = GroupFilter(GameObjectFilter.Creature.youControl()).other()
         )

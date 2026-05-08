@@ -1,12 +1,12 @@
 package com.wingedsheep.mtg.sets.definitions.scg.cards
 
+import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.dsl.Conditions
 import com.wingedsheep.sdk.dsl.Targets
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.ModifyStats
-import com.wingedsheep.sdk.scripting.StaticTarget
 import com.wingedsheep.sdk.scripting.conditions.EnchantedCreatureHasSubtype
 
 /**
@@ -24,12 +24,12 @@ val ClutchOfUndeath = card("Clutch of Undeath") {
     auraTarget = Targets.Creature
 
     staticAbility {
-        ability = ModifyStats(3, 3, StaticTarget.AttachedCreature)
+        ability = ModifyStats(3, 3, GroupFilter.attachedCreature())
         condition = EnchantedCreatureHasSubtype(Subtype("Zombie"))
     }
 
     staticAbility {
-        ability = ModifyStats(-3, -3, StaticTarget.AttachedCreature)
+        ability = ModifyStats(-3, -3, GroupFilter.attachedCreature())
         condition = Conditions.Not(EnchantedCreatureHasSubtype(Subtype("Zombie")))
     }
 

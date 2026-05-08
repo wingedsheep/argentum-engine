@@ -27,7 +27,6 @@ import com.wingedsheep.sdk.scripting.CanBlockAnyNumber
 import com.wingedsheep.sdk.scripting.CantBeBlockedByMoreThan
 import com.wingedsheep.sdk.scripting.CantBlock
 import com.wingedsheep.sdk.scripting.CantBlockUnless
-import com.wingedsheep.sdk.scripting.StaticTarget
 import java.util.UUID
 
 /**
@@ -345,7 +344,7 @@ internal class BlockPhaseManager(
         val cantBlockAbility = cardDef.staticAbilities.filterIsInstance<CantBlock>().firstOrNull()
             ?: return null
 
-        if (cantBlockAbility.target == StaticTarget.SourceCreature) {
+        if (cantBlockAbility.filter.scope is com.wingedsheep.sdk.scripting.filters.unified.Scope.Self) {
             return "${blockerCard.name} can't block"
         }
 
@@ -361,7 +360,7 @@ internal class BlockPhaseManager(
         val cantBlockAbility = cardDef.staticAbilities.filterIsInstance<CantBlock>().firstOrNull()
             ?: return false
 
-        return cantBlockAbility.target == StaticTarget.SourceCreature
+        return cantBlockAbility.filter.scope is com.wingedsheep.sdk.scripting.filters.unified.Scope.Self
     }
 
     /**
@@ -458,7 +457,7 @@ internal class BlockPhaseManager(
 
             val limit = cardDef.staticAbilities
                 .filterIsInstance<CantBeBlockedByMoreThan>()
-                .filter { it.target == StaticTarget.SourceCreature }
+                .filter { it.filter.scope is com.wingedsheep.sdk.scripting.filters.unified.Scope.Self }
                 .minOfOrNull { it.maxBlockers } ?: continue
 
             if (count > limit) {
@@ -872,7 +871,7 @@ internal class BlockPhaseManager(
 
         val restriction = cardDef.staticAbilities
             .filterIsInstance<CantBlockUnless>()
-            .firstOrNull { it.target == StaticTarget.SourceCreature } ?: return null
+            .firstOrNull { it.filter.scope is com.wingedsheep.sdk.scripting.filters.unified.Scope.Self } ?: return null
 
         val attackers = state.entities.filter { (_, c) -> c.has<AttackingComponent>() }
         if (attackers.isEmpty()) return null
@@ -908,7 +907,7 @@ internal class BlockPhaseManager(
 
         val restriction = cardDef.staticAbilities
             .filterIsInstance<CantBlockUnless>()
-            .firstOrNull { it.target == StaticTarget.SourceCreature } ?: return false
+            .firstOrNull { it.filter.scope is com.wingedsheep.sdk.scripting.filters.unified.Scope.Self } ?: return false
 
         val attackers = state.entities.filter { (_, c) -> c.has<AttackingComponent>() }
         if (attackers.isEmpty()) return false

@@ -1,5 +1,6 @@
 package com.wingedsheep.mtg.sets.definitions.blb.cards
 
+import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.dsl.Conditions
 import com.wingedsheep.sdk.dsl.Costs
 import com.wingedsheep.sdk.dsl.EffectPatterns
@@ -7,7 +8,6 @@ import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.ConditionalStaticAbility
 import com.wingedsheep.sdk.scripting.ModifyStats
-import com.wingedsheep.sdk.scripting.StaticTarget
 
 /**
  * Mind Drill Assailant
@@ -29,7 +29,7 @@ val MindDrillAssailant = card("Mind Drill Assailant") {
     // Threshold: +3/+0
     staticAbility {
         ability = ConditionalStaticAbility(
-            ability = ModifyStats(3, 0, StaticTarget.SourceCreature),
+            ability = ModifyStats(3, 0, GroupFilter.source()),
             condition = Conditions.CardsInGraveyardAtLeast(7)
         )
     }

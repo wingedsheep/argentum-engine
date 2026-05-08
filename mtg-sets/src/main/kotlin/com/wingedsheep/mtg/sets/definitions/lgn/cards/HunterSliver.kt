@@ -7,8 +7,8 @@ import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
-import com.wingedsheep.sdk.scripting.GrantKeywordToCreatureGroup
-import com.wingedsheep.sdk.scripting.GrantTriggeredAbilityToCreatureGroup
+import com.wingedsheep.sdk.scripting.GrantKeyword
+import com.wingedsheep.sdk.scripting.GrantTriggeredAbility
 import com.wingedsheep.sdk.scripting.TriggeredAbility
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
@@ -32,7 +32,7 @@ val HunterSliver = card("Hunter Sliver") {
 
     // Grant provoke keyword to all Slivers (display in layer system)
     staticAbility {
-        ability = GrantKeywordToCreatureGroup(
+        ability = GrantKeyword(
             keyword = Keyword.PROVOKE,
             filter = sliverFilter
         )
@@ -40,7 +40,7 @@ val HunterSliver = card("Hunter Sliver") {
 
     // Grant the provoke triggered ability to all Slivers (functional)
     staticAbility {
-        ability = GrantTriggeredAbilityToCreatureGroup(
+        ability = GrantTriggeredAbility(
             ability = TriggeredAbility.create(
                 trigger = Triggers.Attacks.event,
                 binding = Triggers.Attacks.binding,

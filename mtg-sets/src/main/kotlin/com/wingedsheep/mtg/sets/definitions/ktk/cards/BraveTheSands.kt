@@ -4,7 +4,7 @@ import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.CanBlockAdditionalForCreatureGroup
-import com.wingedsheep.sdk.scripting.GrantKeywordToCreatureGroup
+import com.wingedsheep.sdk.scripting.GrantKeyword
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 
 /**
@@ -20,7 +20,7 @@ val BraveTheSands = card("Brave the Sands") {
     oracleText = "Creatures you control have vigilance.\nEach creature you control can block an additional creature each combat."
 
     staticAbility {
-        ability = GrantKeywordToCreatureGroup(
+        ability = GrantKeyword(
             keyword = Keyword.VIGILANCE,
             filter = GroupFilter.AllCreaturesYouControl
         )

@@ -7,7 +7,7 @@ import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.AbilityId
 import com.wingedsheep.sdk.scripting.ActivatedAbility
-import com.wingedsheep.sdk.scripting.GrantActivatedAbilityToAttachedCreature
+import com.wingedsheep.sdk.scripting.GrantActivatedAbility
 import com.wingedsheep.sdk.scripting.effects.DealDamageEffect
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
@@ -33,7 +33,7 @@ val LavamancersSkill = card("Lavamancer's Skill") {
     auraTarget = Targets.Creature
 
     staticAbility {
-        ability = GrantActivatedAbilityToAttachedCreature(
+        ability = GrantActivatedAbility(
             ability = ActivatedAbility(
                 id = AbilityId.generate(),
                 cost = Costs.Tap,

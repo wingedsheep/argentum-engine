@@ -1,5 +1,6 @@
 package com.wingedsheep.mtg.sets.definitions.dsk.cards
 
+import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.dsl.DynamicAmounts
 import com.wingedsheep.sdk.dsl.Targets
@@ -8,7 +9,6 @@ import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.GrantDynamicStatsEffect
 import com.wingedsheep.sdk.scripting.GrantKeyword
-import com.wingedsheep.sdk.scripting.StaticTarget
 import com.wingedsheep.sdk.scripting.references.Player
 
 /**
@@ -28,7 +28,7 @@ val EtherealArmor = card("Ethereal Armor") {
     staticAbility {
         val enchantmentCount = DynamicAmounts.battlefield(Player.You, GameObjectFilter.Enchantment).count()
         ability = GrantDynamicStatsEffect(
-            target = StaticTarget.AttachedCreature,
+            filter = GroupFilter.attachedCreature(),
             powerBonus = enchantmentCount,
             toughnessBonus = enchantmentCount
         )

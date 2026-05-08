@@ -3,7 +3,7 @@ package com.wingedsheep.mtg.sets.definitions.ktk.cards
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
-import com.wingedsheep.sdk.scripting.ModifyStatsForCreatureGroup
+import com.wingedsheep.sdk.scripting.ModifyStats
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 
 /**
@@ -21,7 +21,7 @@ val ChiefOfTheEdge = card("Chief of the Edge") {
     oracleText = "Other Warrior creatures you control get +1/+0."
 
     staticAbility {
-        ability = ModifyStatsForCreatureGroup(
+        ability = ModifyStats(
             powerBonus = 1,
             toughnessBonus = 0,
             filter = GroupFilter(GameObjectFilter.Creature.withSubtype("Warrior").youControl(), excludeSelf = true)

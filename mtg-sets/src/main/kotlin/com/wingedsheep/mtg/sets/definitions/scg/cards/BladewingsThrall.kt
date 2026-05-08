@@ -1,5 +1,6 @@
 package com.wingedsheep.mtg.sets.definitions.scg.cards
 
+import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.core.Zone
@@ -11,7 +12,6 @@ import com.wingedsheep.sdk.scripting.ConditionalStaticAbility
 import com.wingedsheep.sdk.scripting.GameEvent.ZoneChangeEvent
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.GrantKeyword
-import com.wingedsheep.sdk.scripting.StaticTarget
 import com.wingedsheep.sdk.scripting.TriggerBinding
 import com.wingedsheep.sdk.scripting.TriggerSpec
 import com.wingedsheep.sdk.scripting.effects.MayEffect
@@ -38,7 +38,7 @@ val BladewingsThrall = card("Bladewing's Thrall") {
 
     staticAbility {
         ability = ConditionalStaticAbility(
-            ability = GrantKeyword(Keyword.FLYING, StaticTarget.SourceCreature),
+            ability = GrantKeyword(Keyword.FLYING, GroupFilter.source()),
             condition = Conditions.ControlCreatureOfType(Subtype("Dragon"))
         )
     }

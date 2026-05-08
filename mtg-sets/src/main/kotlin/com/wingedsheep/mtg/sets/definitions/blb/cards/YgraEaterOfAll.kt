@@ -9,7 +9,7 @@ import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.ActivatedAbility
 import com.wingedsheep.sdk.scripting.GameObjectFilter
-import com.wingedsheep.sdk.scripting.GrantActivatedAbilityToCreatureGroup
+import com.wingedsheep.sdk.scripting.GrantActivatedAbility
 import com.wingedsheep.sdk.scripting.GrantAdditionalTypesToGroup
 import com.wingedsheep.sdk.scripting.KeywordAbility
 import com.wingedsheep.sdk.scripting.TriggerBinding
@@ -51,7 +51,7 @@ val YgraEaterOfAll = card("Ygra, Eater of All") {
 
     // Other creatures have "{2}, {T}, Sacrifice this permanent: You gain 3 life."
     staticAbility {
-        ability = GrantActivatedAbilityToCreatureGroup(
+        ability = GrantActivatedAbility(
             ability = ActivatedAbility(
                 cost = Costs.Composite(Costs.Mana("{2}"), Costs.Tap, Costs.SacrificeSelf),
                 effect = Effects.GainLife(3)

@@ -1,5 +1,6 @@
 package com.wingedsheep.mtg.sets.definitions.dom.cards
 
+import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.dsl.card
@@ -8,7 +9,6 @@ import com.wingedsheep.sdk.scripting.ConditionalStaticAbility
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.GrantDynamicStatsEffect
 import com.wingedsheep.sdk.scripting.GrantKeyword
-import com.wingedsheep.sdk.scripting.StaticTarget
 import com.wingedsheep.sdk.scripting.conditions.Compare
 import com.wingedsheep.sdk.scripting.conditions.ComparisonOperator
 import com.wingedsheep.sdk.scripting.references.Player
@@ -38,7 +38,7 @@ val GhituLavarunner = card("Ghitu Lavarunner") {
     staticAbility {
         ability = ConditionalStaticAbility(
             ability = GrantDynamicStatsEffect(
-                target = StaticTarget.SourceCreature,
+                filter = GroupFilter.source(),
                 powerBonus = DynamicAmount.Fixed(1),
                 toughnessBonus = DynamicAmount.Fixed(0)
             ),
@@ -48,7 +48,7 @@ val GhituLavarunner = card("Ghitu Lavarunner") {
 
     staticAbility {
         ability = ConditionalStaticAbility(
-            ability = GrantKeyword(Keyword.HASTE, StaticTarget.SourceCreature),
+            ability = GrantKeyword(Keyword.HASTE, GroupFilter.source()),
             condition = condition
         )
     }

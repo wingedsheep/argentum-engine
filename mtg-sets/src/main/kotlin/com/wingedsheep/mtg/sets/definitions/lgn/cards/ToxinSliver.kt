@@ -5,7 +5,7 @@ import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
-import com.wingedsheep.sdk.scripting.GrantTriggeredAbilityToCreatureGroup
+import com.wingedsheep.sdk.scripting.GrantTriggeredAbility
 import com.wingedsheep.sdk.scripting.TriggeredAbility
 import com.wingedsheep.sdk.scripting.effects.CantBeRegeneratedEffect
 import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
@@ -29,7 +29,7 @@ val ToxinSliver = card("Toxin Sliver") {
     val sliverFilter = GroupFilter(GameObjectFilter.Creature.withSubtype("Sliver"))
 
     staticAbility {
-        ability = GrantTriggeredAbilityToCreatureGroup(
+        ability = GrantTriggeredAbility(
             ability = TriggeredAbility.create(
                 trigger = Triggers.DealsCombatDamageToCreature.event,
                 binding = Triggers.DealsCombatDamageToCreature.binding,

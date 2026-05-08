@@ -1,11 +1,11 @@
 package com.wingedsheep.mtg.sets.definitions.ons.cards
 
+import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.core.Counters
 import com.wingedsheep.sdk.dsl.Targets
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GrantDynamicStatsEffect
-import com.wingedsheep.sdk.scripting.StaticTarget
 import com.wingedsheep.sdk.scripting.effects.AddCountersEffect
 import com.wingedsheep.sdk.scripting.events.CounterTypeFilter
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
@@ -40,7 +40,7 @@ val WitheringHex = card("Withering Hex") {
             EntityNumericProperty.CounterCount(CounterTypeFilter.Named(Counters.PLAGUE))
         )
         ability = GrantDynamicStatsEffect(
-            target = StaticTarget.AttachedCreature,
+            filter = GroupFilter.attachedCreature(),
             powerBonus = DynamicAmount.Multiply(plagueCounters, -1),
             toughnessBonus = DynamicAmount.Multiply(plagueCounters, -1)
         )

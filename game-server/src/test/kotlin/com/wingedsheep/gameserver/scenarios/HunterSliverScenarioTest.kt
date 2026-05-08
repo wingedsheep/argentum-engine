@@ -12,7 +12,7 @@ import io.kotest.matchers.shouldNotBe
 import io.kotest.matchers.string.shouldContain
 
 /**
- * Scenario tests for Hunter Sliver's GrantTriggeredAbilityToCreatureGroup.
+ * Scenario tests for Hunter Sliver's GrantTriggeredAbility.
  *
  * Card reference:
  * - Hunter Sliver ({1}{R}): 1/1 Creature — Sliver
@@ -26,7 +26,7 @@ import io.kotest.matchers.string.shouldContain
 class HunterSliverScenarioTest : ScenarioTestBase() {
 
     init {
-        context("Hunter Sliver - GrantTriggeredAbilityToCreatureGroup") {
+        context("Hunter Sliver - GrantTriggeredAbility") {
 
             test("another Sliver gains provoke from Hunter Sliver") {
                 val game = scenario()

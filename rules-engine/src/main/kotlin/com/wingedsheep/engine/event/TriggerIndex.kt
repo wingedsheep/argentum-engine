@@ -24,7 +24,7 @@ import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.GameEvent as SdkGameEvent
 import com.wingedsheep.sdk.scripting.GameObjectFilter
-import com.wingedsheep.sdk.scripting.GrantTriggeredAbilityToCreatureGroup
+import com.wingedsheep.sdk.scripting.GrantTriggeredAbility
 import com.wingedsheep.sdk.scripting.TriggerBinding
 import com.wingedsheep.sdk.scripting.TriggeredAbility
 import com.wingedsheep.sdk.scripting.events.DamageType
@@ -121,7 +121,7 @@ class TriggerIndex(
      * Needed to evaluate controller predicates like "you control" relative to the source.
      */
     data class GrantProviderEntry(
-        val grant: GrantTriggeredAbilityToCreatureGroup,
+        val grant: GrantTriggeredAbility,
         val sourceControllerId: EntityId,
     )
 

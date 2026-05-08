@@ -8,7 +8,7 @@ import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.scripting.ActivatedAbility
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
-import com.wingedsheep.sdk.scripting.GrantActivatedAbilityToAttachedCreature
+import com.wingedsheep.sdk.scripting.GrantActivatedAbility
 import com.wingedsheep.sdk.scripting.LoseAllAbilities
 import com.wingedsheep.sdk.scripting.TransformPermanent
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
@@ -64,7 +64,7 @@ val SugarCoat = card("Sugar Coat") {
 
     // "with '{2}, {T}, Sacrifice this artifact: You gain 3 life'" — Layer 6
     staticAbility {
-        ability = GrantActivatedAbilityToAttachedCreature(
+        ability = GrantActivatedAbility(
             ability = ActivatedAbility(
                 cost = Costs.Composite(
                     Costs.Mana("{2}"),

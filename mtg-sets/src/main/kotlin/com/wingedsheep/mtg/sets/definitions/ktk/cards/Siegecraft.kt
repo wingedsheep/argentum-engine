@@ -1,10 +1,10 @@
 package com.wingedsheep.mtg.sets.definitions.ktk.cards
 
+import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.dsl.Targets
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.ModifyStats
-import com.wingedsheep.sdk.scripting.StaticTarget
 
 /**
  * Siegecraft
@@ -21,7 +21,7 @@ val Siegecraft = card("Siegecraft") {
     auraTarget = Targets.Creature
 
     staticAbility {
-        ability = ModifyStats(2, 4, StaticTarget.AttachedCreature)
+        ability = ModifyStats(2, 4, GroupFilter.attachedCreature())
     }
 
     metadata {

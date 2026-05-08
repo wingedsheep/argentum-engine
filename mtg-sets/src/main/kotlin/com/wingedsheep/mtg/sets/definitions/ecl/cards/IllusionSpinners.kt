@@ -1,5 +1,6 @@
 package com.wingedsheep.mtg.sets.definitions.ecl.cards
 
+import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.dsl.card
@@ -7,7 +8,6 @@ import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.ConditionalStaticAbility
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.GrantKeyword
-import com.wingedsheep.sdk.scripting.StaticTarget
 import com.wingedsheep.sdk.scripting.conditions.Exists
 import com.wingedsheep.sdk.scripting.conditions.SourceIsUntapped
 import com.wingedsheep.sdk.scripting.references.Player
@@ -32,7 +32,7 @@ val IllusionSpinners = card("Illusion Spinners") {
 
     staticAbility {
         ability = ConditionalStaticAbility(
-            ability = GrantKeyword(Keyword.HEXPROOF, StaticTarget.SourceCreature),
+            ability = GrantKeyword(Keyword.HEXPROOF, GroupFilter.source()),
             condition = SourceIsUntapped
         )
     }

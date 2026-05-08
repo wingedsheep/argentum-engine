@@ -1,11 +1,11 @@
 package com.wingedsheep.mtg.sets.definitions.eoe.cards
 
+import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.dsl.Targets
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.ModifyStats
-import com.wingedsheep.sdk.scripting.StaticTarget
 import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.core.Zone
@@ -26,7 +26,7 @@ val Cryoshatter = card("Cryoshatter") {
     auraTarget = Targets.Creature
 
     staticAbility {
-        ability = ModifyStats(-5, 0, StaticTarget.AttachedCreature)
+        ability = ModifyStats(-5, 0, GroupFilter.attachedCreature())
     }
 
     triggeredAbility {

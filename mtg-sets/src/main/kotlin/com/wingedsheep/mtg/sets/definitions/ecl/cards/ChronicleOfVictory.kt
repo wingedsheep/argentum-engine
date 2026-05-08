@@ -10,8 +10,8 @@ import com.wingedsheep.sdk.scripting.ChoiceType
 import com.wingedsheep.sdk.scripting.EntersWithChoice
 import com.wingedsheep.sdk.scripting.GameEvent.SpellCastEvent
 import com.wingedsheep.sdk.scripting.GameObjectFilter
-import com.wingedsheep.sdk.scripting.GrantKeywordToCreatureGroup
-import com.wingedsheep.sdk.scripting.ModifyStatsForCreatureGroup
+import com.wingedsheep.sdk.scripting.GrantKeyword
+import com.wingedsheep.sdk.scripting.ModifyStats
 import com.wingedsheep.sdk.scripting.TriggerBinding
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.scripting.references.Player
@@ -39,7 +39,7 @@ val ChronicleOfVictory = card("Chronicle of Victory") {
     )
 
     staticAbility {
-        ability = ModifyStatsForCreatureGroup(
+        ability = ModifyStats(
             powerBonus = 2,
             toughnessBonus = 2,
             filter = chosenTypeYouControl
@@ -47,11 +47,11 @@ val ChronicleOfVictory = card("Chronicle of Victory") {
     }
 
     staticAbility {
-        ability = GrantKeywordToCreatureGroup(Keyword.FIRST_STRIKE, chosenTypeYouControl)
+        ability = GrantKeyword(Keyword.FIRST_STRIKE, chosenTypeYouControl)
     }
 
     staticAbility {
-        ability = GrantKeywordToCreatureGroup(Keyword.TRAMPLE, chosenTypeYouControl)
+        ability = GrantKeyword(Keyword.TRAMPLE, chosenTypeYouControl)
     }
 
     triggeredAbility {

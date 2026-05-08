@@ -6,7 +6,7 @@ import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.ConditionalStaticAbility
-import com.wingedsheep.sdk.scripting.ModifyStatsForCreatureGroup
+import com.wingedsheep.sdk.scripting.ModifyStats
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 
 /**
@@ -35,7 +35,7 @@ val Mindwhisker = card("Mindwhisker") {
     // Threshold: creatures your opponents control get -1/-0
     staticAbility {
         ability = ConditionalStaticAbility(
-            ability = ModifyStatsForCreatureGroup(
+            ability = ModifyStats(
                 powerBonus = -1,
                 toughnessBonus = 0,
                 filter = GroupFilter.AllCreaturesOpponentsControl

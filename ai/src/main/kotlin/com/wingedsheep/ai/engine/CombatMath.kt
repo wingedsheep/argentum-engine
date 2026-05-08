@@ -14,7 +14,6 @@ import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.sdk.scripting.CanOnlyBlockCreaturesWithKeyword
 import com.wingedsheep.sdk.scripting.CantBeBlockedBy
 import com.wingedsheep.sdk.scripting.CantBlockCreaturesWithGreaterPower
-import com.wingedsheep.sdk.scripting.StaticTarget
 
 /**
  * Pure utility functions for combat math used by CombatAdvisor.
@@ -100,7 +99,7 @@ object CombatMath {
                     val attackerController = projected.getController(attacker)
                     val predicateEvaluator = PredicateEvaluator()
                     for (ability in attackerDef.staticAbilities.filterIsInstance<CantBeBlockedBy>()) {
-                        if (ability.target == StaticTarget.SourceCreature && attackerController != null) {
+                        if (ability.filter.scope is com.wingedsheep.sdk.scripting.filters.unified.Scope.Self && attackerController != null) {
                             val ctx = PredicateContext(controllerId = attackerController, sourceId = attacker)
                             if (predicateEvaluator.matchesWithProjection(state, projected, blocker, ability.blockerFilter, ctx)) {
                                 return false
@@ -118,11 +117,11 @@ object CombatMath {
                     for (ability in cardDef.staticAbilities) {
                         when (ability) {
                             is CanOnlyBlockCreaturesWithKeyword -> {
-                                if (ability.target == StaticTarget.SourceCreature &&
+                                if (ability.filter.scope is com.wingedsheep.sdk.scripting.filters.unified.Scope.Self &&
                                     !projected.hasKeyword(attacker, ability.keyword)) return false
                             }
                             is CantBlockCreaturesWithGreaterPower -> {
-                                if (ability.target == StaticTarget.SourceCreature) {
+                                if (ability.filter.scope is com.wingedsheep.sdk.scripting.filters.unified.Scope.Self) {
                                     val aPower = projected.getPower(attacker) ?: 0
                                     val bPower2 = projected.getPower(blocker) ?: 0
                                     if (aPower > bPower2) return false

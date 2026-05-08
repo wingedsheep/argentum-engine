@@ -1,5 +1,6 @@
 package com.wingedsheep.mtg.sets.definitions.eoe.cards
 
+import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.dsl.Conditions
@@ -11,7 +12,6 @@ import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.ConditionalStaticAbility
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.GrantKeyword
-import com.wingedsheep.sdk.scripting.StaticTarget
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
 import com.wingedsheep.sdk.scripting.effects.ChooseActionEffect
@@ -92,7 +92,7 @@ val AlpharaelDreamingAcolyte = card("Alpharael, Dreaming Acolyte") {
     // Conditional deathtouch during your turn
     staticAbility {
         ability = ConditionalStaticAbility(
-            ability = GrantKeyword(Keyword.DEATHTOUCH, StaticTarget.SourceCreature),
+            ability = GrantKeyword(Keyword.DEATHTOUCH, GroupFilter.source()),
             condition = Conditions.IsYourTurn
         )
     }

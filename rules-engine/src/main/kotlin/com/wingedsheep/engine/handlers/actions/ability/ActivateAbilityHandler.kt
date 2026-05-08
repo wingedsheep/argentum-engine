@@ -48,8 +48,8 @@ import com.wingedsheep.sdk.scripting.ActivatedAbility
 import com.wingedsheep.sdk.scripting.ActivationRestriction
 import com.wingedsheep.sdk.scripting.DampLandManaProduction
 import com.wingedsheep.sdk.scripting.ExtraLoyaltyActivation
-import com.wingedsheep.sdk.scripting.GrantActivatedAbilityToAttachedCreature
-import com.wingedsheep.sdk.scripting.GrantActivatedAbilityToCreatureGroup
+import com.wingedsheep.sdk.scripting.GrantActivatedAbility
+import com.wingedsheep.sdk.scripting.filters.unified.Scope
 import com.wingedsheep.sdk.scripting.TimingRule
 import com.wingedsheep.sdk.scripting.effects.LevelUpClassEffect
 import com.wingedsheep.sdk.scripting.effects.AddAnyColorManaEffect
@@ -1530,8 +1530,8 @@ class ActivateAbilityHandler(
      * Get activated abilities granted to an entity by static abilities on battlefield permanents,
      * paired with the EntityId of the permanent that granted each ability.
      * E.g., Spectral Sliver grants a pump ability to all Sliver creatures via
-     * GrantActivatedAbilityToCreatureGroup. The Dominion Bracelet grants its activated
-     * ability to the equipped creature via GrantActivatedAbilityToAttachedCreature; the
+     * GrantActivatedAbility. The Dominion Bracelet grants its activated
+     * ability to the equipped creature via GrantActivatedAbility; the
      * granter ID is needed to resolve AbilityCost.ExileGrantingPermanent.
      */
     private fun getStaticGrantedAbilitiesWithGranter(
@@ -1550,8 +1550,9 @@ class ActivateAbilityHandler(
 
             val cardDef = cardRegistry.getCard(card.cardDefinitionId) ?: continue
             for (ability in cardDef.staticAbilities) {
-                when (ability) {
-                    is GrantActivatedAbilityToCreatureGroup -> {
+                if (ability !is GrantActivatedAbility) continue
+                when (ability.filter.scope) {
+                    is Scope.Battlefield -> {
                         if (ability.filter.excludeSelf && permanentId == entityId) continue
                         val filter = ability.filter.baseFilter
                         val matchesAll = filter.cardPredicates.all { predicate ->
@@ -1567,13 +1568,20 @@ class ActivateAbilityHandler(
                             result.add(ability.ability to permanentId)
                         }
                     }
-                    is GrantActivatedAbilityToAttachedCreature -> {
+                    is Scope.AttachedTo -> {
                         val attachedTo = container.get<AttachedToComponent>()
                         if (attachedTo != null && attachedTo.targetId == entityId) {
                             result.add(ability.ability to permanentId)
                         }
                     }
-                    else -> {}
+                    is Scope.Self -> {
+                        if (permanentId == entityId) result.add(ability.ability to permanentId)
+                    }
+                    is Scope.Specific -> {
+                        if ((ability.filter.scope as Scope.Specific).entityId == entityId) {
+                            result.add(ability.ability to permanentId)
+                        }
+                    }
                 }
             }
         }

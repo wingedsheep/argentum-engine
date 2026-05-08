@@ -1,5 +1,6 @@
 package com.wingedsheep.mtg.sets.definitions.blb.cards
 
+import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Subtype
@@ -10,7 +11,6 @@ import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.GrantDynamicStatsEffect
 import com.wingedsheep.sdk.scripting.RedirectZoneChange
-import com.wingedsheep.sdk.scripting.StaticTarget
 import com.wingedsheep.sdk.scripting.effects.CreateTokenEffect
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
@@ -64,7 +64,7 @@ val VrenTheRelentless = card("Vren, the Relentless") {
             imageUri = "https://cards.scryfall.io/normal/front/1/c/1c0977b2-3342-4b7e-b1c7-f06bd8ab7fbf.jpg?1721428982",
             staticAbilities = listOf(
                 GrantDynamicStatsEffect(
-                    target = StaticTarget.SourceCreature,
+                    filter = GroupFilter.source(),
                     powerBonus = DynamicAmount.AggregateBattlefield(
                         player = Player.You,
                         filter = GameObjectFilter.Creature.withSubtype(Subtype("Rat")),

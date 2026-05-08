@@ -241,7 +241,7 @@ class CardSerializationRoundTripTest : DescribeSpec({
                 manaCost = "{1}{W}{W}"
                 typeLine = "Enchantment"
                 staticAbility {
-                    ability = ModifyStatsForCreatureGroup(
+                    ability = ModifyStats(
                         powerBonus = 1,
                         toughnessBonus = 1,
                         filter = GroupFilter.AllCreaturesYouControl
@@ -250,11 +250,11 @@ class CardSerializationRoundTripTest : DescribeSpec({
             }
 
             val serialized = CardLoader.toJson(card)
-            serialized shouldContain "ModifyStatsForCreatureGroup"
+            serialized shouldContain "ModifyStats"
 
             val deserialized = CardLoader.fromJson(serialized)
             deserialized.script.staticAbilities.size shouldBe 1
-            deserialized.script.staticAbilities[0].shouldBeInstanceOf<ModifyStatsForCreatureGroup>()
+            deserialized.script.staticAbilities[0].shouldBeInstanceOf<ModifyStats>()
         }
     }
 

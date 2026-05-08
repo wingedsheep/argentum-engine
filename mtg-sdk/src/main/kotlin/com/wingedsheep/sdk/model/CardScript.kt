@@ -73,7 +73,7 @@ enum class CastTimeCreatureTypeSource {
  * ```kotlin
  * CardScript(
  *     staticAbilities = listOf(
- *         ModifyStats(1, 1, StaticTarget.AllControlledCreatures)
+ *         ModifyStats(1, 1, GroupFilter.AllCreaturesYouControl)
  *     )
  * )
  * ```

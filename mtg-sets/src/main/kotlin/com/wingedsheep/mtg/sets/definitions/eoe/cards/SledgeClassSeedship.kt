@@ -1,5 +1,6 @@
 package com.wingedsheep.mtg.sets.definitions.eoe.cards
 
+import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.core.Counters
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Zone
@@ -12,7 +13,6 @@ import com.wingedsheep.sdk.scripting.AbilityCost
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.GrantCardType
 import com.wingedsheep.sdk.scripting.GrantKeyword
-import com.wingedsheep.sdk.scripting.StaticTarget
 import com.wingedsheep.sdk.scripting.TimingRule
 import com.wingedsheep.sdk.scripting.conditions.Compare
 import com.wingedsheep.sdk.scripting.conditions.ComparisonOperator
@@ -67,7 +67,7 @@ val SledgeClassSeedship = card("Sledge-Class Seedship") {
             operator = ComparisonOperator.GTE,
             right = DynamicAmount.Fixed(7)
         )
-        ability = GrantCardType("CREATURE", StaticTarget.SourceCreature)
+        ability = GrantCardType("CREATURE", GroupFilter.source())
     }
 
     // Conditional keyword: flying at 7+ charge counters
@@ -80,7 +80,7 @@ val SledgeClassSeedship = card("Sledge-Class Seedship") {
             operator = ComparisonOperator.GTE,
             right = DynamicAmount.Fixed(7)
         )
-        ability = GrantKeyword(Keyword.FLYING.name, StaticTarget.SourceCreature)
+        ability = GrantKeyword(Keyword.FLYING.name, GroupFilter.source())
     }
 
     // Attack trigger: you may put a creature card from hand onto the battlefield

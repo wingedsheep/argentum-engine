@@ -5,7 +5,6 @@ import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
-import com.wingedsheep.sdk.scripting.StaticTarget
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import com.wingedsheep.sdk.core.Zone
 
@@ -117,38 +116,23 @@ object Filters {
 
 
     // =========================================================================
-    // Static Targets (for equipment/auras)
+    // Static-ability filter aliases (for equipment/auras and self-grants)
     // =========================================================================
 
-    /**
-     * The creature this equipment/aura is attached to.
-     */
-    val AttachedCreature: StaticTarget = StaticTarget.AttachedCreature
+    /** The creature this equipment/aura is attached to. */
+    val AttachedCreature: GroupFilter = GroupFilter.attachedCreature()
 
-    /**
-     * The creature this equipment is equipped to.
-     */
-    val EquippedCreature: StaticTarget = StaticTarget.AttachedCreature
+    /** The creature this equipment is equipped to. */
+    val EquippedCreature: GroupFilter = GroupFilter.attachedCreature()
 
-    /**
-     * The creature this aura is enchanting.
-     */
-    val EnchantedCreature: StaticTarget = StaticTarget.AttachedCreature
+    /** The creature this aura is enchanting. */
+    val EnchantedCreature: GroupFilter = GroupFilter.attachedCreature()
 
-    /**
-     * The source permanent itself.
-     */
-    val Self: StaticTarget = StaticTarget.SourceCreature
+    /** The source permanent itself. */
+    val Self: GroupFilter = GroupFilter.source()
 
-    /**
-     * The controller of the source.
-     */
-    val Controller: StaticTarget = StaticTarget.Controller
-
-    /**
-     * All creatures the controller owns.
-     */
-    val AllControlledCreatures: StaticTarget = StaticTarget.AllControlledCreatures
+    /** All creatures the controller controls. */
+    val AllControlledCreatures: GroupFilter = GroupFilter.AllCreaturesYouControl
 
     // =========================================================================
     // Unified Filters (NEW - composable predicate-based filtering)

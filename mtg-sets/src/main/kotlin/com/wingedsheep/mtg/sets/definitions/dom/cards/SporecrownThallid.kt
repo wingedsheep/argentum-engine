@@ -3,7 +3,7 @@ package com.wingedsheep.mtg.sets.definitions.dom.cards
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
-import com.wingedsheep.sdk.scripting.ModifyStatsForCreatureGroup
+import com.wingedsheep.sdk.scripting.ModifyStats
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 
 /**
@@ -21,7 +21,7 @@ val SporecrownThallid = card("Sporecrown Thallid") {
     oracleText = "Each other creature you control that's a Fungus or Saproling gets +1/+1."
 
     staticAbility {
-        ability = ModifyStatsForCreatureGroup(
+        ability = ModifyStats(
             powerBonus = 1,
             toughnessBonus = 1,
             filter = GroupFilter(

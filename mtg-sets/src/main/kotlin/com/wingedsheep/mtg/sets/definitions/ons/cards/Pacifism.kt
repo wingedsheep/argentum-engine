@@ -1,11 +1,11 @@
 package com.wingedsheep.mtg.sets.definitions.ons.cards
 
+import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.dsl.Targets
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.CantAttack
 import com.wingedsheep.sdk.scripting.CantBlock
-import com.wingedsheep.sdk.scripting.StaticTarget
 
 /**
  * Pacifism
@@ -22,11 +22,11 @@ val Pacifism = card("Pacifism") {
     auraTarget = Targets.Creature
 
     staticAbility {
-        ability = CantAttack(target = StaticTarget.AttachedCreature)
+        ability = CantAttack(filter = GroupFilter.attachedCreature())
     }
 
     staticAbility {
-        ability = CantBlock(target = StaticTarget.AttachedCreature)
+        ability = CantBlock(filter = GroupFilter.attachedCreature())
     }
 
     metadata {

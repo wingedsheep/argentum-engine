@@ -1,5 +1,6 @@
 package com.wingedsheep.mtg.sets.definitions.blb.cards
 
+import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.dsl.Costs
@@ -9,7 +10,6 @@ import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.ConditionalStaticAbility
 import com.wingedsheep.sdk.scripting.GrantKeyword
 import com.wingedsheep.sdk.scripting.ModifyStats
-import com.wingedsheep.sdk.scripting.StaticTarget
 import com.wingedsheep.sdk.scripting.conditions.Compare
 import com.wingedsheep.sdk.scripting.conditions.ComparisonOperator
 import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
@@ -36,14 +36,14 @@ val KeenEyedCurator = card("Keen-Eyed Curator") {
 
     staticAbility {
         ability = ConditionalStaticAbility(
-            ability = ModifyStats(4, 4, StaticTarget.SourceCreature),
+            ability = ModifyStats(4, 4, GroupFilter.source()),
             condition = fourOrMoreCardTypes
         )
     }
 
     staticAbility {
         ability = ConditionalStaticAbility(
-            ability = GrantKeyword(Keyword.TRAMPLE, StaticTarget.SourceCreature),
+            ability = GrantKeyword(Keyword.TRAMPLE, GroupFilter.source()),
             condition = fourOrMoreCardTypes
         )
     }

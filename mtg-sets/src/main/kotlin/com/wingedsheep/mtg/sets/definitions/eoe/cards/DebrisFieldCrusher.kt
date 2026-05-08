@@ -1,5 +1,6 @@
 package com.wingedsheep.mtg.sets.definitions.eoe.cards
 
+import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.core.Counters
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.dsl.Costs
@@ -12,7 +13,6 @@ import com.wingedsheep.sdk.scripting.AbilityCost
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.GrantCardType
 import com.wingedsheep.sdk.scripting.GrantKeyword
-import com.wingedsheep.sdk.scripting.StaticTarget
 import com.wingedsheep.sdk.scripting.TimingRule
 import com.wingedsheep.sdk.scripting.conditions.Compare
 import com.wingedsheep.sdk.scripting.conditions.ComparisonOperator
@@ -77,13 +77,13 @@ val DebrisFieldCrusher = card("Debris Field Crusher") {
     // Conditional type change: artifact creature at 8+ charge counters
     staticAbility {
         condition = charge8
-        ability = GrantCardType("CREATURE", StaticTarget.SourceCreature)
+        ability = GrantCardType("CREATURE", GroupFilter.source())
     }
 
     // 8+ charge counters: Flying
     staticAbility {
         condition = charge8
-        ability = GrantKeyword(Keyword.FLYING.name, StaticTarget.SourceCreature)
+        ability = GrantKeyword(Keyword.FLYING.name, GroupFilter.source())
     }
 
     // Activated ability: {1}{R}: +2/+0 until end of turn

@@ -19,7 +19,7 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class GrantSubtype(
     val subtype: String,
-    val target: StaticTarget = StaticTarget.SourceCreature
+    val filter: GroupFilter = GroupFilter.source()
 ) : StaticAbility {
     override val description: String = "is a $subtype in addition to its other types"
     override fun applyTextReplacement(replacer: TextReplacer): StaticAbility {
@@ -41,7 +41,7 @@ data class GrantSubtype(
 @SerialName("IsAllCreatureTypes")
 @Serializable
 data class IsAllCreatureTypes(
-    val target: StaticTarget = StaticTarget.AttachedCreature
+    val filter: GroupFilter = GroupFilter.attachedCreature()
 ) : StaticAbility {
     override val description: String = "is all creature types"
     override fun applyTextReplacement(replacer: TextReplacer): StaticAbility = this
@@ -60,7 +60,7 @@ data class IsAllCreatureTypes(
 @Serializable
 data class GrantCardType(
     val cardType: String,
-    val target: StaticTarget = StaticTarget.SourceCreature
+    val filter: GroupFilter = GroupFilter.source()
 ) : StaticAbility {
     override val description: String = "is also ${
         if (cardType.first().lowercaseChar() in "aeiou") "an" else "a"
@@ -81,7 +81,7 @@ data class GrantCardType(
 @Serializable
 data class GrantSupertype(
     val supertype: String,
-    val target: StaticTarget = StaticTarget.AttachedCreature
+    val filter: GroupFilter = GroupFilter.attachedCreature()
 ) : StaticAbility {
     override val description: String = "is ${supertype.lowercase()}"
     override fun applyTextReplacement(replacer: TextReplacer): StaticAbility = this
@@ -100,7 +100,7 @@ data class GrantSupertype(
 @Serializable
 data class GrantColor(
     val color: Color,
-    val target: StaticTarget = StaticTarget.AttachedCreature
+    val filter: GroupFilter = GroupFilter.attachedCreature()
 ) : StaticAbility {
     override val description: String = "is ${color.name.lowercase()} in addition to its other colors"
     override fun applyTextReplacement(replacer: TextReplacer): StaticAbility = this
@@ -114,13 +114,13 @@ data class GrantColor(
  * (e.g., somehow on the battlefield without a choice), no color is added.
  *
  * @property target What this ability applies to (typically AttachedCreature for auras;
- *   for enchant-land auras use `StaticTarget.AttachedCreature` — it resolves to whatever
+ *   for enchant-land auras use `GroupFilter.attachedCreature()` — it resolves to whatever
  *   permanent the aura is attached to via `AttachedToComponent`).
  */
 @SerialName("GrantChosenColor")
 @Serializable
 data class GrantChosenColor(
-    val target: StaticTarget = StaticTarget.AttachedCreature
+    val filter: GroupFilter = GroupFilter.attachedCreature()
 ) : StaticAbility {
     override val description: String = "is the chosen color"
     override fun applyTextReplacement(replacer: TextReplacer): StaticAbility = this
@@ -183,7 +183,7 @@ data class AddLandTypeByCounter(
 @SerialName("LoseAllAbilities")
 @Serializable
 data class LoseAllAbilities(
-    val target: StaticTarget = StaticTarget.AttachedCreature
+    val filter: GroupFilter = GroupFilter.attachedCreature()
 ) : StaticAbility {
     override val description: String = "loses all abilities"
     override fun applyTextReplacement(replacer: TextReplacer): StaticAbility = this
@@ -286,7 +286,7 @@ data class AnimateLandGroup(
  * - Layer 4 (TYPE): SetCardTypes to replace all card types, SetAllSubtypes to replace all subtypes
  * - Layer 5 (COLOR): ChangeColor to set color identity (empty set = colorless)
  *
- * Note: Combine with LoseAllAbilities and GrantActivatedAbilityToAttachedCreature
+ * Note: Combine with LoseAllAbilities and GrantActivatedAbility
  * separately for ability removal/granting.
  *
  * @property setCardTypes Card types to set (replaces ALL existing card types)
@@ -300,7 +300,7 @@ data class TransformPermanent(
     val setCardTypes: Set<String> = emptySet(),
     val setSubtypes: Set<String> = emptySet(),
     val setColors: Set<Color>? = null,
-    val target: StaticTarget = StaticTarget.AttachedCreature
+    val filter: GroupFilter = GroupFilter.attachedCreature()
 ) : StaticAbility {
     override val description: String = buildString {
         append("is ")

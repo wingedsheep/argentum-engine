@@ -1,5 +1,6 @@
 package com.wingedsheep.mtg.sets.definitions.eoe.cards
 
+import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.core.Counters
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.dsl.Effects
@@ -18,7 +19,6 @@ import com.wingedsheep.sdk.scripting.AbilityCost
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.GrantCardType
 import com.wingedsheep.sdk.scripting.GrantKeyword
-import com.wingedsheep.sdk.scripting.StaticTarget
 import com.wingedsheep.sdk.scripting.TimingRule
 
 /**
@@ -76,12 +76,12 @@ val SusurianDirgecraft = card("Susurian Dirgecraft") {
 
     staticAbility {
         condition = charge7
-        ability = GrantCardType("CREATURE", StaticTarget.SourceCreature)
+        ability = GrantCardType("CREATURE", GroupFilter.source())
     }
 
     staticAbility {
         condition = charge7
-        ability = GrantKeyword(Keyword.FLYING, StaticTarget.SourceCreature)
+        ability = GrantKeyword(Keyword.FLYING, GroupFilter.source())
     }
 
     metadata {

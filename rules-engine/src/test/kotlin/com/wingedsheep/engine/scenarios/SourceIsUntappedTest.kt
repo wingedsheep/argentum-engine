@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.scenarios
 
+import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.engine.mechanics.layers.StateProjector
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
@@ -14,7 +15,6 @@ import com.wingedsheep.sdk.model.CreatureStats
 import com.wingedsheep.sdk.model.Deck
 import com.wingedsheep.sdk.scripting.ConditionalStaticAbility
 import com.wingedsheep.sdk.scripting.GrantKeyword
-import com.wingedsheep.sdk.scripting.StaticTarget
 import com.wingedsheep.sdk.scripting.conditions.SourceIsUntapped
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
@@ -35,7 +35,7 @@ class SourceIsUntappedTest : FunSpec({
         script = CardScript.permanent(
             staticAbilities = listOf(
                 ConditionalStaticAbility(
-                    ability = GrantKeyword(Keyword.HEXPROOF, StaticTarget.SourceCreature),
+                    ability = GrantKeyword(Keyword.HEXPROOF, GroupFilter.source()),
                     condition = SourceIsUntapped
                 )
             )

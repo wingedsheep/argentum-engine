@@ -6,7 +6,7 @@ import com.wingedsheep.gameserver.session.GameSession
 import com.wingedsheep.gameserver.session.PlayerSession
 import com.wingedsheep.sdk.core.Phase
 import com.wingedsheep.sdk.core.Step
-import com.wingedsheep.sdk.scripting.GrantActivatedAbilityToCreatureGroup
+import com.wingedsheep.sdk.scripting.GrantActivatedAbility
 import io.kotest.assertions.withClue
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
@@ -78,7 +78,7 @@ class SpectralSliverScenarioTest : ScenarioTestBase() {
                 // Get the pump ability ID from the Spectral Sliver card definition
                 val spectralDef = cardRegistry.getCard("Spectral Sliver")!!
                 val grantAbility = spectralDef.staticAbilities
-                    .filterIsInstance<GrantActivatedAbilityToCreatureGroup>()
+                    .filterIsInstance<GrantActivatedAbility>()
                     .first()
                 val pumpAbilityId = grantAbility.ability.id
 

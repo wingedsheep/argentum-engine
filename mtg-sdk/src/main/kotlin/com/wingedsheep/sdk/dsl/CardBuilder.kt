@@ -17,6 +17,7 @@ import com.wingedsheep.sdk.scripting.effects.ModalEffect
 import com.wingedsheep.sdk.scripting.effects.Mode
 import com.wingedsheep.sdk.scripting.effects.AttachEquipmentEffect
 import com.wingedsheep.sdk.scripting.effects.ModifyStatsEffect
+import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.targets.TargetCreature
@@ -993,7 +994,7 @@ class ActivatedAbilityBuilder {
 @CardDsl
 class StaticAbilityBuilder {
     var effect: Effect? = null
-    var filter: Any? = null  // Can be GroupFilter or StaticTarget
+    var filter: GroupFilter? = null
 
     /**
      * Condition that must be met for this static ability to apply.
@@ -1020,16 +1021,17 @@ class StaticAbilityBuilder {
     }
 
     private fun buildFromEffect(): StaticAbility {
+        val effectiveFilter = filter ?: GroupFilter.attachedCreature()
         // Convert effect to appropriate StaticAbility type
         return when (val e = effect) {
             is ModifyStatsEffect -> ModifyStats(
                 (e.powerModifier as? DynamicAmount.Fixed)?.amount ?: 0,
                 (e.toughnessModifier as? DynamicAmount.Fixed)?.amount ?: 0,
-                filter as? StaticTarget ?: StaticTarget.AttachedCreature
+                effectiveFilter
             )
             is GrantKeywordEffect -> GrantKeyword(
                 e.keyword,
-                filter as? StaticTarget ?: StaticTarget.AttachedCreature
+                effectiveFilter
             )
             is CompositeEffect -> {
                 // For composite, we create a ModifyStats with the first stat mod found
@@ -1039,19 +1041,19 @@ class StaticAbilityBuilder {
                     ModifyStats(
                         (statMod.powerModifier as? DynamicAmount.Fixed)?.amount ?: 0,
                         (statMod.toughnessModifier as? DynamicAmount.Fixed)?.amount ?: 0,
-                        filter as? StaticTarget ?: StaticTarget.AttachedCreature
+                        effectiveFilter
                     )
                 } else {
                     // Fallback for keyword grants in composites
                     val keyword = e.effects.filterIsInstance<GrantKeywordEffect>().firstOrNull()
                     if (keyword != null) {
-                        GrantKeyword(keyword.keyword, filter as? StaticTarget ?: StaticTarget.AttachedCreature)
+                        GrantKeyword(keyword.keyword, effectiveFilter)
                     } else {
-                        ModifyStats(0, 0, StaticTarget.AttachedCreature)
+                        ModifyStats(0, 0, effectiveFilter)
                     }
                 }
             }
-            else -> ModifyStats(0, 0, StaticTarget.AttachedCreature)
+            else -> ModifyStats(0, 0, effectiveFilter)
         }
     }
 }

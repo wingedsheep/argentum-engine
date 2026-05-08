@@ -10,7 +10,7 @@ import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Deck
 import com.wingedsheep.sdk.scripting.GameObjectFilter
-import com.wingedsheep.sdk.scripting.GrantWardToGroup
+import com.wingedsheep.sdk.scripting.GrantWard
 import com.wingedsheep.sdk.scripting.KeywordAbility
 import com.wingedsheep.sdk.scripting.effects.WardCost
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
@@ -24,7 +24,7 @@ import io.kotest.matchers.types.shouldBeInstanceOf
  * Tests for life-cost ward: Ward—Pay N life.
  *
  * Verifies both the intrinsic-ward path (KeywordAbility.Ward + WardCost.Life)
- * and the static-grant path (GrantWardToGroup with WardCost.Life).
+ * and the static-grant path (GrantWard with WardCost.Life).
  */
 class WardLifeCounterTest : FunSpec({
 
@@ -45,7 +45,7 @@ class WardLifeCounterTest : FunSpec({
         power = 2
         toughness = 2
         staticAbility {
-            ability = GrantWardToGroup(
+            ability = GrantWard(
                 cost = WardCost.Life(2),
                 filter = GroupFilter(GameObjectFilter.Creature.youControl()).other()
             )

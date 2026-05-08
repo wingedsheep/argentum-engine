@@ -11,7 +11,7 @@ import com.wingedsheep.sdk.scripting.AbilityId
 import com.wingedsheep.sdk.scripting.ActivatedAbility
 import com.wingedsheep.sdk.scripting.GameEvent.ZoneChangeEvent
 import com.wingedsheep.sdk.scripting.GameObjectFilter
-import com.wingedsheep.sdk.scripting.GrantActivatedAbilityToCreatureGroup
+import com.wingedsheep.sdk.scripting.GrantActivatedAbility
 import com.wingedsheep.sdk.scripting.TimingRule
 import com.wingedsheep.sdk.scripting.TriggerBinding
 import com.wingedsheep.sdk.scripting.TriggerSpec
@@ -102,7 +102,7 @@ val ClementTheWorrywort = card("Clement, the Worrywort") {
 
     // Frogs you control have "{T}: Add {G} or {U}. Spend this mana only to cast a creature spell."
     staticAbility {
-        ability = GrantActivatedAbilityToCreatureGroup(
+        ability = GrantActivatedAbility(
             ability = ActivatedAbility(
                 id = AbilityId.generate(),
                 cost = Costs.Tap,

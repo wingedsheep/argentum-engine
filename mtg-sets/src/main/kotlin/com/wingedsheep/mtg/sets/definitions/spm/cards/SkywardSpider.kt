@@ -1,12 +1,12 @@
 package com.wingedsheep.mtg.sets.definitions.spm.cards
 
+import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.ConditionalStaticAbility
 import com.wingedsheep.sdk.scripting.GrantKeyword
 import com.wingedsheep.sdk.scripting.KeywordAbility
-import com.wingedsheep.sdk.scripting.StaticTarget
 import com.wingedsheep.sdk.scripting.conditions.SourceIsModified
 import com.wingedsheep.sdk.scripting.effects.WardCost
 
@@ -32,7 +32,7 @@ val SkywardSpider = card("Skyward Spider") {
 
     staticAbility {
         ability = ConditionalStaticAbility(
-            ability = GrantKeyword(Keyword.FLYING, StaticTarget.SourceCreature),
+            ability = GrantKeyword(Keyword.FLYING, GroupFilter.source()),
             condition = SourceIsModified
         )
     }

@@ -1,5 +1,6 @@
 package com.wingedsheep.mtg.sets.definitions.ecl.cards
 
+import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.dsl.Costs
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Targets
@@ -7,7 +8,6 @@ import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.CantAttack
 import com.wingedsheep.sdk.scripting.CantBlock
-import com.wingedsheep.sdk.scripting.StaticTarget
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 
 /**
@@ -30,11 +30,11 @@ val SpiralIntoSolitude = card("Spiral into Solitude") {
     auraTarget = Targets.Creature
 
     staticAbility {
-        ability = CantAttack(target = StaticTarget.AttachedCreature)
+        ability = CantAttack(filter = GroupFilter.attachedCreature())
     }
 
     staticAbility {
-        ability = CantBlock(target = StaticTarget.AttachedCreature)
+        ability = CantBlock(filter = GroupFilter.attachedCreature())
     }
 
     activatedAbility {

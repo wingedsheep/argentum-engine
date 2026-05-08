@@ -13,7 +13,6 @@ import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.CantAttackUnless
 import com.wingedsheep.sdk.scripting.CantBeAttackedWithout
-import com.wingedsheep.sdk.scripting.StaticTarget
 
 // =========================================================================
 // Per-creature attack restrictions (AttackRestrictionRule)
@@ -133,7 +132,7 @@ class CantAttackUnlessDefenderRule : AttackDefenderRule {
 
         val restriction = cardDef.staticAbilities
             .filterIsInstance<CantAttackUnless>()
-            .firstOrNull { it.target == StaticTarget.SourceCreature } ?: return null
+            .firstOrNull { it.filter.scope is com.wingedsheep.sdk.scripting.filters.unified.Scope.Self } ?: return null
 
         val defendingPlayer = findDefendingPlayer(ctx, defenderId)
 

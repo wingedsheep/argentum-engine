@@ -1,5 +1,6 @@
 package com.wingedsheep.mtg.sets.definitions.lgn.cards
 
+import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.dsl.Conditions
@@ -7,7 +8,6 @@ import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GrantKeyword
 import com.wingedsheep.sdk.scripting.ModifyStats
-import com.wingedsheep.sdk.scripting.StaticTarget
 
 /**
  * Skirk Outrider
@@ -24,12 +24,12 @@ val SkirkOutrider = card("Skirk Outrider") {
     toughness = 2
 
     staticAbility {
-        ability = ModifyStats(2, 2, StaticTarget.SourceCreature)
+        ability = ModifyStats(2, 2, GroupFilter.source())
         condition = Conditions.ControlCreatureOfType(Subtype("Beast"))
     }
 
     staticAbility {
-        ability = GrantKeyword(Keyword.TRAMPLE, StaticTarget.SourceCreature)
+        ability = GrantKeyword(Keyword.TRAMPLE, GroupFilter.source())
         condition = Conditions.ControlCreatureOfType(Subtype("Beast"))
     }
 

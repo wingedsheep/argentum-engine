@@ -8,7 +8,7 @@ import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.CardScript
 import com.wingedsheep.sdk.model.Deck
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
-import com.wingedsheep.sdk.scripting.GrantKeywordToCreatureGroup
+import com.wingedsheep.sdk.scripting.GrantKeyword
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 
@@ -29,7 +29,7 @@ class StaticAbilityKeywordGrantTest : FunSpec({
         toughness = 4,
         script = CardScript(
             staticAbilities = listOf(
-                GrantKeywordToCreatureGroup(
+                GrantKeyword(
                     keyword = Keyword.INDESTRUCTIBLE,
                     filter = GroupFilter.OtherTappedCreaturesYouControl
                 )

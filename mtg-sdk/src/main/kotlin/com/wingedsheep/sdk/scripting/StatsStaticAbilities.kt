@@ -7,33 +7,18 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 /**
- * Modifies power/toughness (e.g., +2/+2 from an Equipment).
+ * Modifies power/toughness on a filtered set of permanents.
+ *
+ * Use [GroupFilter.attachedCreature] for "Equipped/Enchanted creature gets +X/+Y"
+ * (Equipment, Auras), [GroupFilter.source] for "this creature gets +X/+Y", or any
+ * battlefield-scoped filter for lord effects like "Other Bird creatures get +1/+1".
  */
-@SerialName("StaticModifyStats")
+@SerialName("ModifyStats")
 @Serializable
 data class ModifyStats(
     val powerBonus: Int,
     val toughnessBonus: Int,
-    val target: StaticTarget = StaticTarget.AttachedCreature
-) : StaticAbility {
-    override val description: String = buildString {
-        val powerStr = if (powerBonus >= 0) "+$powerBonus" else "$powerBonus"
-        val toughStr = if (toughnessBonus >= 0) "+$toughnessBonus" else "$toughnessBonus"
-        append("$powerStr/$toughStr")
-    }
-    override fun applyTextReplacement(replacer: TextReplacer): StaticAbility = this
-}
-
-/**
- * Modifies power/toughness for a group of creatures (continuous static ability).
- * Used for lord effects like "Other Bird creatures get +1/+1."
- */
-@SerialName("ModifyStatsForCreatureGroup")
-@Serializable
-data class ModifyStatsForCreatureGroup(
-    val powerBonus: Int,
-    val toughnessBonus: Int,
-    val filter: GroupFilter
+    val filter: GroupFilter = GroupFilter.attachedCreature()
 ) : StaticAbility {
     override val description: String = buildString {
         val powerStr = if (powerBonus >= 0) "+$powerBonus" else "$powerBonus"
@@ -53,7 +38,7 @@ data class ModifyStatsForCreatureGroup(
 @SerialName("GrantDynamicStats")
 @Serializable
 data class GrantDynamicStatsEffect(
-    val target: StaticTarget,
+    val filter: GroupFilter,
     val powerBonus: DynamicAmount,
     val toughnessBonus: DynamicAmount
 ) : StaticAbility {
@@ -61,9 +46,11 @@ data class GrantDynamicStatsEffect(
         append("Creatures get +X/+X where X is ${powerBonus.description}")
     }
     override fun applyTextReplacement(replacer: TextReplacer): StaticAbility {
+        val newFilter = filter.applyTextReplacement(replacer)
         val newPower = powerBonus.applyTextReplacement(replacer)
         val newToughness = toughnessBonus.applyTextReplacement(replacer)
-        return if (newPower !== powerBonus || newToughness !== toughnessBonus) copy(powerBonus = newPower, toughnessBonus = newToughness) else this
+        return if (newFilter !== filter || newPower !== powerBonus || newToughness !== toughnessBonus)
+            copy(filter = newFilter, powerBonus = newPower, toughnessBonus = newToughness) else this
     }
 }
 
@@ -106,7 +93,7 @@ data class SetBaseToughnessForCreatureGroup(
 data class SetBasePowerToughnessStatic(
     val power: Int,
     val toughness: Int,
-    val target: StaticTarget = StaticTarget.AttachedCreature
+    val filter: GroupFilter = GroupFilter.attachedCreature()
 ) : StaticAbility {
     override val description: String = "has base power and toughness $power/$toughness"
     override fun applyTextReplacement(replacer: TextReplacer): StaticAbility = this

@@ -1,11 +1,11 @@
 package com.wingedsheep.mtg.sets.definitions.ecl.cards
 
+import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.dsl.DynamicAmounts
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GrantDynamicStatsEffect
-import com.wingedsheep.sdk.scripting.StaticTarget
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
 
 /**
@@ -32,7 +32,7 @@ val MoonVigilAdherents = card("Moon-Vigil Adherents") {
 
     staticAbility {
         ability = GrantDynamicStatsEffect(
-            target = StaticTarget.SourceCreature,
+            filter = GroupFilter.source(),
             powerBonus = bonus,
             toughnessBonus = bonus
         )

@@ -1,5 +1,6 @@
 package com.wingedsheep.mtg.sets.definitions.scg.cards
 
+import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.dsl.Effects
@@ -10,7 +11,6 @@ import com.wingedsheep.sdk.scripting.GameEvent.ZoneChangeEvent
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.GrantKeyword
 import com.wingedsheep.sdk.scripting.ModifyStats
-import com.wingedsheep.sdk.scripting.StaticTarget
 import com.wingedsheep.sdk.scripting.TriggerBinding
 import com.wingedsheep.sdk.scripting.TriggerSpec
 import com.wingedsheep.sdk.scripting.effects.MayEffect
@@ -32,11 +32,11 @@ val DragonScales = card("Dragon Scales") {
     auraTarget = Targets.Creature
 
     staticAbility {
-        ability = ModifyStats(1, 2, StaticTarget.AttachedCreature)
+        ability = ModifyStats(1, 2, GroupFilter.attachedCreature())
     }
 
     staticAbility {
-        ability = GrantKeyword(Keyword.VIGILANCE, StaticTarget.AttachedCreature)
+        ability = GrantKeyword(Keyword.VIGILANCE, GroupFilter.attachedCreature())
     }
 
     triggeredAbility {

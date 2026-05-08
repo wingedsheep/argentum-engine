@@ -5,7 +5,7 @@ import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
-import com.wingedsheep.sdk.scripting.ModifyStatsForCreatureGroup
+import com.wingedsheep.sdk.scripting.ModifyStats
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 
 /**
@@ -21,7 +21,7 @@ val SecretPlans = card("Secret Plans") {
     oracleText = "Face-down creatures you control get +0/+1.\nWhenever a permanent you control is turned face up, draw a card."
 
     staticAbility {
-        ability = ModifyStatsForCreatureGroup(
+        ability = ModifyStats(
             powerBonus = 0,
             toughnessBonus = 1,
             filter = GroupFilter(GameObjectFilter.Creature.youControl().faceDown())

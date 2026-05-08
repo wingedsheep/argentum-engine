@@ -370,7 +370,7 @@ class CanOnlyBlockCreaturesWithKeywordRule : BlockEvasionRule {
             .filterIsInstance<com.wingedsheep.sdk.scripting.CanOnlyBlockCreaturesWithKeyword>().firstOrNull()
             ?: return null
 
-        if (restriction.target != com.wingedsheep.sdk.scripting.StaticTarget.SourceCreature) return null
+        if (restriction.filter.scope !is com.wingedsheep.sdk.scripting.filters.unified.Scope.Self) return null
 
         if (!ctx.projected.hasKeyword(ctx.attackerId, restriction.keyword)) {
             return "${blockerCard.name} can block only creatures with ${restriction.keyword.displayName.lowercase()}"
@@ -393,7 +393,7 @@ class CantBlockCreaturesWithGreaterPowerRule : BlockEvasionRule {
             .filterIsInstance<com.wingedsheep.sdk.scripting.CantBlockCreaturesWithGreaterPower>().firstOrNull()
             ?: return null
 
-        if (restriction.target != com.wingedsheep.sdk.scripting.StaticTarget.SourceCreature) return null
+        if (restriction.filter.scope !is com.wingedsheep.sdk.scripting.filters.unified.Scope.Self) return null
 
         val blockerPower = ctx.projected.getPower(ctx.blockerId) ?: 0
         val attackerPower = ctx.projected.getPower(ctx.attackerId) ?: 0

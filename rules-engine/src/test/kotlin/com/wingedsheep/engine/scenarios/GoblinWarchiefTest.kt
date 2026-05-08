@@ -11,7 +11,7 @@ import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Deck
 import com.wingedsheep.sdk.scripting.GameObjectFilter
-import com.wingedsheep.sdk.scripting.GrantKeywordToCreatureGroup
+import com.wingedsheep.sdk.scripting.GrantKeyword
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.scripting.ReduceSpellCostBySubtype
 import io.kotest.core.spec.style.FunSpec
@@ -39,7 +39,7 @@ class GoblinWarchiefTest : FunSpec({
         }
 
         staticAbility {
-            ability = GrantKeywordToCreatureGroup(
+            ability = GrantKeyword(
                 keyword = Keyword.HASTE,
                 filter = GroupFilter(GameObjectFilter.Creature.withSubtype("Goblin"))
             )

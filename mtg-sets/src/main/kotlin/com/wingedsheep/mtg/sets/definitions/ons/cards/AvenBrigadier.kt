@@ -5,7 +5,7 @@ import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
-import com.wingedsheep.sdk.scripting.ModifyStatsForCreatureGroup
+import com.wingedsheep.sdk.scripting.ModifyStats
 
 /**
  * Aven Brigadier
@@ -26,7 +26,7 @@ val AvenBrigadier = card("Aven Brigadier") {
     keywords(Keyword.FLYING)
 
     staticAbility {
-        ability = ModifyStatsForCreatureGroup(
+        ability = ModifyStats(
             powerBonus = 1,
             toughnessBonus = 1,
             filter = GroupFilter(GameObjectFilter.Creature.withSubtype("Bird"), excludeSelf = true)
@@ -34,7 +34,7 @@ val AvenBrigadier = card("Aven Brigadier") {
     }
 
     staticAbility {
-        ability = ModifyStatsForCreatureGroup(
+        ability = ModifyStats(
             powerBonus = 1,
             toughnessBonus = 1,
             filter = GroupFilter(GameObjectFilter.Creature.withSubtype("Soldier"), excludeSelf = true)

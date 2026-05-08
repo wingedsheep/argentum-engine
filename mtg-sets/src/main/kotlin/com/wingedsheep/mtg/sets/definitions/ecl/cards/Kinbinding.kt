@@ -1,5 +1,6 @@
 package com.wingedsheep.mtg.sets.definitions.ecl.cards
 
+import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Triggers
@@ -7,7 +8,6 @@ import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.GrantDynamicStatsEffect
-import com.wingedsheep.sdk.scripting.StaticTarget
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
 
@@ -28,7 +28,7 @@ val Kinbinding = card("Kinbinding") {
 
     staticAbility {
         ability = GrantDynamicStatsEffect(
-            target = StaticTarget.AllControlledCreatures,
+            filter = GroupFilter.AllCreaturesYouControl,
             powerBonus = DynamicAmount.AggregateBattlefield(
                 Player.You,
                 GameObjectFilter.Creature.enteredThisTurn()

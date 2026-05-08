@@ -5,7 +5,7 @@ import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.ChoiceType
 import com.wingedsheep.sdk.scripting.EntersWithChoice
-import com.wingedsheep.sdk.scripting.GrantKeywordToCreatureGroup
+import com.wingedsheep.sdk.scripting.GrantKeyword
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 
 /**
@@ -23,7 +23,7 @@ val SteelyResolve = card("Steely Resolve") {
     replacementEffect(EntersWithChoice(ChoiceType.CREATURE_TYPE))
 
     staticAbility {
-        ability = GrantKeywordToCreatureGroup(Keyword.SHROUD, GroupFilter.ChosenSubtypeCreatures())
+        ability = GrantKeyword(Keyword.SHROUD, GroupFilter.ChosenSubtypeCreatures())
     }
 
     metadata {

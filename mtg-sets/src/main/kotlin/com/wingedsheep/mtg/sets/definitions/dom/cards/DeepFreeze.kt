@@ -1,5 +1,6 @@
 package com.wingedsheep.mtg.sets.definitions.dom.cards
 
+import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.dsl.Targets
@@ -10,7 +11,6 @@ import com.wingedsheep.sdk.scripting.GrantKeyword
 import com.wingedsheep.sdk.scripting.GrantSubtype
 import com.wingedsheep.sdk.scripting.LoseAllAbilities
 import com.wingedsheep.sdk.scripting.SetBasePowerToughnessStatic
-import com.wingedsheep.sdk.scripting.StaticTarget
 
 /**
  * Deep Freeze
@@ -40,7 +40,7 @@ val DeepFreeze = card("Deep Freeze") {
     }
 
     staticAbility {
-        ability = GrantSubtype("Wall", target = StaticTarget.AttachedCreature)
+        ability = GrantSubtype("Wall", filter = GroupFilter.attachedCreature())
     }
 
     staticAbility {

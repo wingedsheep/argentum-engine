@@ -9,7 +9,7 @@ import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.DoubleCounterPlacement
 import com.wingedsheep.sdk.scripting.GameEvent
 import com.wingedsheep.sdk.scripting.GameObjectFilter
-import com.wingedsheep.sdk.scripting.GrantWardToGroup
+import com.wingedsheep.sdk.scripting.GrantWard
 import com.wingedsheep.sdk.scripting.effects.WardCost
 import com.wingedsheep.sdk.scripting.events.CounterTypeFilter
 import com.wingedsheep.sdk.scripting.events.RecipientFilter
@@ -49,7 +49,7 @@ val InnkeepersTalent = card("Innkeeper's Talent") {
     // Level 2: Permanents you control with counters on them have ward {1}
     classLevel(2, "{G}") {
         staticAbility {
-            ability = GrantWardToGroup(
+            ability = GrantWard(
                 cost = WardCost.Mana("{1}"),
                 filter = GroupFilter(GameObjectFilter.Permanent.youControl().withAnyCounter())
             )

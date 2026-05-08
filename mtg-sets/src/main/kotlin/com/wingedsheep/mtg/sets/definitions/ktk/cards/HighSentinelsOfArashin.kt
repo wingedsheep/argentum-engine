@@ -1,5 +1,6 @@
 package com.wingedsheep.mtg.sets.definitions.ktk.cards
 
+import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.core.Counters
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.dsl.Costs
@@ -8,7 +9,6 @@ import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.GrantDynamicStatsEffect
-import com.wingedsheep.sdk.scripting.StaticTarget
 import com.wingedsheep.sdk.scripting.effects.AddCountersEffect
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
@@ -34,7 +34,7 @@ val HighSentinelsOfArashin = card("High Sentinels of Arashin") {
     // Gets +1/+1 for each other creature you control with a +1/+1 counter on it
     staticAbility {
         ability = GrantDynamicStatsEffect(
-            target = StaticTarget.SourceCreature,
+            filter = GroupFilter.source(),
             powerBonus = DynamicAmount.AggregateBattlefield(
                 player = Player.You,
                 filter = GameObjectFilter.Creature.withCounter(Counters.PLUS_ONE_PLUS_ONE),

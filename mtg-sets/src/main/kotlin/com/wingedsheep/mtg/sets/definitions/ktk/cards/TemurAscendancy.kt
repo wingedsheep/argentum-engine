@@ -7,7 +7,7 @@ import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameEvent.ZoneChangeEvent
 import com.wingedsheep.sdk.scripting.GameObjectFilter
-import com.wingedsheep.sdk.scripting.GrantKeywordToCreatureGroup
+import com.wingedsheep.sdk.scripting.GrantKeyword
 import com.wingedsheep.sdk.scripting.TriggerBinding
 import com.wingedsheep.sdk.scripting.TriggerSpec
 import com.wingedsheep.sdk.scripting.effects.MayEffect
@@ -27,7 +27,7 @@ val TemurAscendancy = card("Temur Ascendancy") {
     oracleText = "Creatures you control have haste.\nWhenever a creature with power 4 or greater enters under your control, you may draw a card."
 
     staticAbility {
-        ability = GrantKeywordToCreatureGroup(
+        ability = GrantKeyword(
             keyword = Keyword.HASTE,
             filter = GroupFilter.AllCreaturesYouControl
         )

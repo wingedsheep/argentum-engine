@@ -1,5 +1,6 @@
 package com.wingedsheep.mtg.sets.definitions.blb.cards
 
+import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.dsl.card
@@ -8,7 +9,6 @@ import com.wingedsheep.sdk.scripting.ConditionalStaticAbility
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.GrantKeyword
 import com.wingedsheep.sdk.scripting.ModifyStats
-import com.wingedsheep.sdk.scripting.StaticTarget
 import com.wingedsheep.sdk.scripting.conditions.Exists
 import com.wingedsheep.sdk.scripting.references.Player
 
@@ -30,14 +30,14 @@ val DruidOfTheSpade = card("Druid of the Spade") {
 
     staticAbility {
         ability = ConditionalStaticAbility(
-            ability = ModifyStats(2, 0, StaticTarget.SourceCreature),
+            ability = ModifyStats(2, 0, GroupFilter.source()),
             condition = controlAToken
         )
     }
 
     staticAbility {
         ability = ConditionalStaticAbility(
-            ability = GrantKeyword(Keyword.TRAMPLE, StaticTarget.SourceCreature),
+            ability = GrantKeyword(Keyword.TRAMPLE, GroupFilter.source()),
             condition = controlAToken
         )
     }
