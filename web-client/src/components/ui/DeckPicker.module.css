@@ -117,6 +117,16 @@
   font-weight: 600;
 }
 
+/* Variant for the format the deck was *saved* against (vs. the green pills
+ * showing formats it's currently *legal* in). Accent-blue to read as
+ * "intent" rather than "validation status". */
+.savedItemFormatBadgeSaved {
+  composes: savedItemFormatBadge;
+  background: rgba(106, 163, 255, 0.16);
+  color: #b9d4ff;
+  border-color: rgba(106, 163, 255, 0.45);
+}
+
 .savedItemActions {
   display: flex;
   gap: var(--space-1);

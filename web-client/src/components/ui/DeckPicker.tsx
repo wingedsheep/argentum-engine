@@ -549,13 +549,27 @@ function SavedDecksPanel({
               <div className={styles.savedItemMeta}>
                 <span className={styles.savedItemName}>{d.name}</span>
                 <span className={styles.savedItemCount}>{total} cards</span>
-                {legalIn.length > 0 && (
+                {(d.format || legalIn.length > 0) && (
                   <span className={styles.savedItemFormats}>
-                    {legalIn.map((f) => (
-                      <span key={f} className={styles.savedItemFormatBadge}>
-                        {labelForFormat(f)}
+                    {d.format && (
+                      <span
+                        className={styles.savedItemFormatBadgeSaved}
+                        title={`Saved as ${labelForFormat(d.format)}`}
+                      >
+                        {labelForFormat(d.format)}
                       </span>
-                    ))}
+                    )}
+                    {legalIn
+                      .filter((f) => f !== d.format)
+                      .map((f) => (
+                        <span
+                          key={f}
+                          className={styles.savedItemFormatBadge}
+                          title={`Legal in ${labelForFormat(f)}`}
+                        >
+                          {labelForFormat(f)}
+                        </span>
+                      ))}
                   </span>
                 )}
               </div>

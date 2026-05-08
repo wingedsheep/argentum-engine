@@ -1481,7 +1481,29 @@ function DeckCard({
         <div className={styles.deckCardMeta}>
           <span>{updated}</span>
         </div>
-        {legalFormats.length > 0 && <FormatLegalityBadges formats={legalFormats} />}
+        {(deck.format || legalFormats.length > 0) && (
+          <span className={styles.formatBadges}>
+            {deck.format && (
+              <span
+                className={styles.formatBadgeSaved}
+                title={`Saved as ${labelForFormat(deck.format)}`}
+              >
+                {labelForFormat(deck.format)}
+              </span>
+            )}
+            {legalFormats
+              .filter((f) => f !== deck.format)
+              .map((f) => (
+                <span
+                  key={f}
+                  className={styles.formatBadge}
+                  title={`Legal in ${labelForFormat(f)}`}
+                >
+                  {labelForFormat(f)}
+                </span>
+              ))}
+          </span>
+        )}
       </div>
       <div className={styles.deckCardActions} onClick={(e) => e.stopPropagation()}>
         <button

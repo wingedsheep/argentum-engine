@@ -966,6 +966,16 @@
   font-weight: 600;
 }
 
+/* Saved-format badge: a single accent-blue pill that shows the format the deck
+ * was authored against. Sits next to the green legality badges to make the two
+ * dimensions (intent vs. legality) visually distinct. */
+.formatBadgeSaved {
+  composes: formatBadge;
+  background: rgba(106, 163, 255, 0.16);
+  color: #b9d4ff;
+  border-color: rgba(106, 163, 255, 0.45);
+}
+
 .deckRowCount {
   text-align: right;
   color: var(--text-muted);
