@@ -5,10 +5,14 @@ import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.scripting.Duration
 import com.wingedsheep.sdk.scripting.GameObjectFilter
+import com.wingedsheep.sdk.core.Counters
+import com.wingedsheep.sdk.scripting.effects.AddCountersEffect
+import com.wingedsheep.sdk.scripting.effects.CREATED_TOKENS
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
 import com.wingedsheep.sdk.scripting.effects.ChooseActionEffect
 import com.wingedsheep.sdk.scripting.effects.CompositeEffect
+import com.wingedsheep.sdk.scripting.effects.CreatePredefinedTokenEffect
 import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
 import com.wingedsheep.sdk.scripting.effects.GatherSubtypesEffect
 import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
@@ -397,6 +401,25 @@ object EffectPatterns {
         tokenImageUri: String? = null
     ): ForEachPlayerEffect =
         ExilePatterns.eachPlayerRevealCreaturesCreateTokens(tokenPower, tokenToughness, tokenColors, tokenCreatureTypes, tokenImageUri)
+
+    /**
+     * Incubate N (CR 701.53). Atomic composition: create the (DFC) Incubator token, then
+     * place N +1/+1 counters on it via the pipeline-published entity ID.
+     *
+     * The Incubator's `{2}: Transform this token` activated ability is declared on the
+     * front-face CardDefinition in `PredefinedTokens.kt`. The transform mechanism is the
+     * same one used for ordinary DFCs.
+     */
+    fun incubate(n: Int): CompositeEffect = CompositeEffect(
+        listOf(
+            CreatePredefinedTokenEffect(tokenType = "Incubator", count = 1),
+            AddCountersEffect(
+                counterType = Counters.PLUS_ONE_PLUS_ONE,
+                count = n,
+                target = EffectTarget.PipelineTarget(CREATED_TOKENS, 0)
+            )
+        )
+    )
 
     // =========================================================================
     // Group Effect Patterns (GroupPatterns)

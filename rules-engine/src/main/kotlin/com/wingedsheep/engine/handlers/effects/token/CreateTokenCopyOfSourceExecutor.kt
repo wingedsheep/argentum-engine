@@ -16,6 +16,7 @@ import com.wingedsheep.engine.state.components.battlefield.EnteredThisTurnCompon
 import com.wingedsheep.engine.state.components.battlefield.SummoningSicknessComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
+import com.wingedsheep.engine.state.components.identity.DoubleFacedComponent
 import com.wingedsheep.engine.state.components.identity.TokenComponent
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.CreatureStats
@@ -82,6 +83,19 @@ class CreateTokenCopyOfSourceExecutor(
                 SummoningSicknessComponent,
                 EnteredThisTurnComponent
             )
+            // CR 701.53d / TDFC token rules: a copy of a transforming permanent is itself a
+            // transforming permanent and enters with the same face up as the source. Counters
+            // are intentionally not copied (handled by the absence of CountersComponent copy
+            // throughout this executor).
+            sourceContainer.get<DoubleFacedComponent>()?.let { sourceDfc ->
+                components.add(
+                    DoubleFacedComponent(
+                        frontCardDefinitionId = sourceDfc.frontCardDefinitionId,
+                        backCardDefinitionId = sourceDfc.backCardDefinitionId,
+                        currentFace = sourceDfc.currentFace
+                    )
+                )
+            }
 
             var container = ComponentContainer.of(*components.toTypedArray())
 

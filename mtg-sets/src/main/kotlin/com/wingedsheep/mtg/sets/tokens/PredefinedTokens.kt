@@ -10,8 +10,10 @@ import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.scripting.TimingRule
+import com.wingedsheep.sdk.model.CardDefinition.Companion.doubleFacedPermanent
 import com.wingedsheep.sdk.scripting.effects.BecomeCreatureEffect
 import com.wingedsheep.sdk.scripting.effects.SearchDestination
+import com.wingedsheep.sdk.scripting.effects.TransformEffect
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 
@@ -233,6 +235,36 @@ object PredefinedTokens {
     }
 
     /**
+     * Phyrexian — back face of the Incubator token.
+     * Colorless 0/0 Phyrexian artifact creature.
+     */
+    val Phyrexian = card("Phyrexian") {
+        typeLine = "Artifact Creature — Phyrexian"
+        power = 0
+        toughness = 0
+    }
+
+    /**
+     * Incubator — front face of the Incubator token created by [Effects.Incubate].
+     * Colorless artifact with "{2}: Transform this token." Transforms into [Phyrexian].
+     *
+     * Per CR 701.53b the token is a transforming double-faced permanent. The
+     * `+1/+1` counters from "Incubate N" are placed by the [Effects.Incubate] composite,
+     * not declared here.
+     */
+    val Incubator = doubleFacedPermanent(
+        frontFace = card("Incubator") {
+            typeLine = "Artifact — Incubator"
+
+            activatedAbility {
+                cost = Costs.Mana("{2}")
+                effect = TransformEffect(EffectTarget.Self)
+            }
+        },
+        backFace = Phyrexian
+    )
+
+    /**
      * All predefined token definitions.
      * Register these in the CardRegistry so token abilities are resolved.
      */
@@ -244,6 +276,7 @@ object PredefinedTokens {
         Sword,
         Cragflame,
         Mutavault,
-        SorcererRole
+        SorcererRole,
+        Incubator
     )
 }

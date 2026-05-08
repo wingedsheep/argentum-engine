@@ -140,10 +140,23 @@ data class CreateTokenEffect(
 }
 
 /**
+ * Pipeline collection name under which [CreatePredefinedTokenEffect] publishes the
+ * entity IDs of the tokens it just created. Sibling effects in a [CompositeEffect]
+ * can address those tokens via `EffectTarget.PipelineTarget(CREATED_TOKENS, index)`.
+ *
+ * Used by composition patterns like Incubate, where one atomic creates the token
+ * and the next atomic puts counters on it.
+ */
+const val CREATED_TOKENS = "createdTokens"
+
+/**
  * Create predefined artifact tokens (Treasure, Food, Lander, etc.).
  *
  * The [tokenType] must match a CardDefinition registered in PredefinedTokens. The engine
  * looks up the token's type line, abilities, and metadata from the CardDefinition at runtime.
+ *
+ * Created token entity IDs are published to the pipeline under [CREATED_TOKENS] so
+ * sibling effects in a composite (e.g. AddCounters for Incubate) can address them.
  *
  * To add a new predefined token type:
  * 1. Add a CardDefinition to `PredefinedTokens.kt` (mtg-sets)

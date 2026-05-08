@@ -12,10 +12,12 @@ import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
+import com.wingedsheep.engine.state.components.identity.DoubleFacedComponent
 import com.wingedsheep.engine.state.components.identity.TokenComponent
 import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
+import com.wingedsheep.sdk.scripting.effects.CREATED_TOKENS
 import com.wingedsheep.sdk.scripting.effects.CreatePredefinedTokenEffect
 import kotlin.reflect.KClass
 
@@ -83,6 +85,19 @@ class CreatePredefinedTokenExecutor(
                 container = container.with(TappedComponent)
             }
 
+            // Transforming double-faced tokens (CR 701.53b — Incubator). The token
+            // enters with its front face up; the back face's CardDefinition is
+            // already auto-registered in the CardRegistry by registry.register(...).
+            cardDef.backFace?.let { backFace ->
+                container = container.with(
+                    DoubleFacedComponent(
+                        frontCardDefinitionId = cardDef.name,
+                        backCardDefinitionId = backFace.name,
+                        currentFace = DoubleFacedComponent.Face.FRONT
+                    )
+                )
+            }
+
             // Wire up static abilities (e.g., equip bonuses, lord effects) from the
             // predefined token's CardDefinition into a ContinuousEffectSourceComponent
             // so the StateProjector applies them.
@@ -107,6 +122,15 @@ class CreatePredefinedTokenExecutor(
             )
         }
 
-        return EffectResult.success(newState, events)
+        // Publish the freshly-created token entity IDs to the pipeline so
+        // sibling effects in a CompositeEffect can address them via
+        // EffectTarget.PipelineTarget(CREATED_TOKENS, index). This is how
+        // Effects.Incubate(N) puts +1/+1 counters on the token it just
+        // produced without threading an entity reference through a custom executor.
+        return EffectResult(
+            state = newState,
+            events = events,
+            updatedCollections = mapOf(CREATED_TOKENS to createdTokenIds)
+        )
     }
 }

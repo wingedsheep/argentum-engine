@@ -103,6 +103,7 @@ import com.wingedsheep.sdk.scripting.effects.CreateTokenCopyOfEquippedCreatureEf
 import com.wingedsheep.sdk.scripting.effects.CreateTokenCopyOfSourceEffect
 import com.wingedsheep.sdk.scripting.effects.CreateTokenCopyOfTargetEffect
 import com.wingedsheep.sdk.scripting.effects.CreateTokenEffect
+import com.wingedsheep.sdk.scripting.effects.CREATED_TOKENS
 import com.wingedsheep.sdk.scripting.effects.CreatePredefinedTokenEffect
 import com.wingedsheep.sdk.scripting.effects.CreateRoleTokenEffect
 import com.wingedsheep.sdk.scripting.effects.CounterAllOnStackEffect
@@ -1081,6 +1082,16 @@ object Effects {
      */
     fun CreateRoleToken(roleName: String, target: EffectTarget = EffectTarget.ContextTarget(0)): Effect =
         CreateRoleTokenEffect(roleName, target)
+
+    /**
+     * Incubate N (CR 701.53). Create an Incubator token with N +1/+1 counters on it
+     * and "{2}: Transform this token." It transforms into a 0/0 Phyrexian artifact creature.
+     *
+     * Implemented purely as composition: the predefined token executor publishes the
+     * created token's entity ID into pipeline collection [CREATED_TOKENS], and a
+     * subsequent [AddCountersEffect] places the +1/+1 counters via [EffectTarget.PipelineTarget].
+     */
+    fun Incubate(n: Int): Effect = EffectPatterns.incubate(n)
 
     // =========================================================================
     // Protection Effects

@@ -365,6 +365,20 @@ data class CardDefinition(
         }
 
         /**
+         * Creates a double-faced transforming permanent of any permanent type.
+         * Use this for non-creature TDFCs (e.g., Incubator tokens whose front face is
+         * an artifact and back face is an artifact creature).
+         */
+        fun doubleFacedPermanent(
+            frontFace: CardDefinition,
+            backFace: CardDefinition
+        ): CardDefinition {
+            require(frontFace.isPermanent) { "Front face must be a permanent: ${frontFace.name}" }
+            require(backFace.isPermanent) { "Back face must be a permanent: ${backFace.name}" }
+            return frontFace.copy(backFace = backFace)
+        }
+
+        /**
          * Creates a planeswalker card.
          * @param name Card name
          * @param manaCost Mana cost
