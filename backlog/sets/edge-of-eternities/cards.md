@@ -2,7 +2,7 @@
 
 **Set Size:** 261 booster cards (excluding basic lands)
 **Release Date:** August 1, 2025
-**Implemented:** 121 / 261
+**Implemented:** 122 / 261
 
 ---
 
@@ -122,7 +122,7 @@
 - [ ] Kavaron Skywarden
 - [x] Kavaron Turbodrone
 - [ ] Kav Landseeker
-- [ ] Knight Luminary
+- [x] Knight Luminary
 - [ ] Larval Scoutlander
 - [ ] Lashwhip Predator
 - [x] Lightless Evangel
