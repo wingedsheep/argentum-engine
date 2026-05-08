@@ -1,4 +1,4 @@
-package com.wingedsheep.mtg.sets.definitions.finalfantasy.cards
+package com.wingedsheep.mtg.sets.definitions.fin.cards
 
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.dsl.Triggers
