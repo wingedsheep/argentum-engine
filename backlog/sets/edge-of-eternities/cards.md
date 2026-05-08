@@ -2,7 +2,7 @@
 
 **Set Size:** 261 booster cards (excluding basic lands)
 **Release Date:** August 1, 2025
-**Implemented:** 126 / 261
+**Implemented:** 127 / 261
 
 ---
 
@@ -140,7 +140,7 @@
 - [ ] Meltstrider Eulogist
 - [x] Meltstrider's Gear
 - [x] Meltstrider's Resolve
-- [ ] Memorial Team Leader
+- [x] Memorial Team Leader
 - [ ] Memorial Vault
 - [ ] Mental Modulation
 - [ ] Mightform Harmonizer
