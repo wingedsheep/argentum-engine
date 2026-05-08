@@ -15,5 +15,6 @@ object FinalFantasySet {
 
     val allCards = listOf(
         SazhsChocobo,
+        TravelingChocobo,
     )
 }
