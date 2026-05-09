@@ -2,7 +2,7 @@
 
 **Set Size:** 261 booster cards (excluding basic lands)
 **Release Date:** August 1, 2025
-**Implemented:** 131 / 261
+**Implemented:** 132 / 261
 
 ---
 
@@ -12,7 +12,7 @@
 - [x] Alpharael, Dreaming Acolyte
 - [ ] Alpharael, Stonechosen
 - [x] Annul
-- [ ] Anticausal Vestige
+- [x] Anticausal Vestige
 - [x] Archenemy's Charm
 - [ ] Astelli Reclaimer
 - [x] Atmospheric Greenhouse
