@@ -254,6 +254,16 @@ class PredicateEvaluator {
                 val cmc = if (projectedValues?.isFaceDown == true) 0 else card.manaValue
                 cmc >= predicate.min
             }
+            CardPredicate.ManaValueAtMostX -> {
+                val xValue = context?.xValue
+                    ?: context?.sourceId?.let { srcId ->
+                        state.getEntity(srcId)?.get<SpellOnStackComponent>()?.xValue
+                            ?: state.getEntity(srcId)?.get<TriggeredAbilityOnStackComponent>()?.xValue
+                            ?: state.getEntity(srcId)?.get<ActivatedAbilityOnStackComponent>()?.xValue
+                    } ?: return true // X not yet determined (pre-cast enumeration); allow all
+                val cmc = if (projectedValues?.isFaceDown == true) 0 else card.manaValue
+                cmc <= xValue
+            }
 
             // Power/toughness predicates - use projected P/T
             is CardPredicate.PowerEquals -> {
@@ -538,6 +548,15 @@ class PredicateEvaluator {
             is CardPredicate.ManaValueEquals -> card.manaValue == predicate.value
             is CardPredicate.ManaValueAtMost -> card.manaValue <= predicate.max
             is CardPredicate.ManaValueAtLeast -> card.manaValue >= predicate.min
+            CardPredicate.ManaValueAtMostX -> {
+                val xValue = context?.xValue
+                    ?: context?.sourceId?.let { srcId ->
+                        state.getEntity(srcId)?.get<SpellOnStackComponent>()?.xValue
+                            ?: state.getEntity(srcId)?.get<TriggeredAbilityOnStackComponent>()?.xValue
+                            ?: state.getEntity(srcId)?.get<ActivatedAbilityOnStackComponent>()?.xValue
+                    } ?: return true // X not yet determined (pre-cast enumeration); allow all
+                card.manaValue <= xValue
+            }
 
             // Power/toughness predicates
             is CardPredicate.PowerEquals -> {
@@ -923,6 +942,7 @@ class PredicateEvaluator {
             is CardPredicate.ManaValueEquals -> record.manaValue == predicate.value
             is CardPredicate.ManaValueAtMost -> record.manaValue <= predicate.max
             is CardPredicate.ManaValueAtLeast -> record.manaValue >= predicate.min
+            CardPredicate.ManaValueAtMostX -> false // no spell context available for cast records
 
             // Power/toughness — not meaningful for cast records
             is CardPredicate.PowerEquals, is CardPredicate.PowerAtMost, is CardPredicate.PowerAtLeast,
@@ -968,6 +988,8 @@ data class PredicateContext(
     val ownerId: EntityId? = null,
     /** The entity that caused the trigger to fire (for SharesCreatureTypeWithTriggeringEntity) */
     val triggeringEntityId: EntityId? = null,
+    /** X value for X-cost spells; set during cast-time target validation to enforce ManaValueAtMostX. */
+    val xValue: Int? = null,
     /** Named values chosen by the player during pipeline execution (e.g., creature type, color). */
     val chosenValues: Map<String, String> = emptyMap(),
     /** Named string lists stored by pipeline effects (e.g., chosen creature types). */
@@ -1018,6 +1040,7 @@ data class PredicateContext(
                 targetOpponentId = context.opponentId,
                 targetPlayerId = chosenPlayerTarget ?: context.opponentId,
                 sourceId = context.sourceId,
+                xValue = context.xValue,
                 triggeringEntityId = context.triggeringEntityId,
                 chosenValues = context.pipeline.chosenValues,
                 storedStringLists = context.pipeline.storedStringLists,

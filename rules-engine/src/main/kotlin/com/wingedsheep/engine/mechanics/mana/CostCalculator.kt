@@ -794,6 +794,7 @@ class CostCalculator(
 
             CardPredicate.IsActivatedOrTriggeredAbility -> false
             CardPredicate.IsTriggeredAbility -> false
+            CardPredicate.ManaValueAtMostX -> true // no spell context at cost-calculation time; allow all
         }
     }
 

@@ -430,7 +430,8 @@ class CastSpellHandler(
                     action.playerId,
                     sourceColors = cardDef.colors,
                     sourceSubtypes = cardDef.typeLine.subtypes.map { it.value }.toSet(),
-                    sourceId = action.cardId
+                    sourceId = action.cardId,
+                    xValue = action.xValue
                 )
                 if (targetError != null) {
                     return targetError

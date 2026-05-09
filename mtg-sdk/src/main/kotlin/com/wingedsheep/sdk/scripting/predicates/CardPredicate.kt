@@ -279,6 +279,14 @@ sealed interface CardPredicate : TextReplaceable<CardPredicate> {
         override fun applyTextReplacement(replacer: TextReplacer): CardPredicate = this
     }
 
+    /** Mana value ≤ X, where X is the X value of the source spell on the stack. */
+    @SerialName("ManaValueAtMostX")
+    @Serializable
+    data object ManaValueAtMostX : CardPredicate {
+        override val description: String = "with mana value X or less"
+        override fun applyTextReplacement(replacer: TextReplacer): CardPredicate = this
+    }
+
     // =============================================================================
     // Power/Toughness Predicates
     // =============================================================================

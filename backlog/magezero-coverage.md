@@ -69,7 +69,7 @@ one enchantment (Unholy Annex) are double-faced / modal DFCs and depend on DFC s
 - [x] Tolarian Terror ×3
 
 ### Sorceries (1)
-- [ ] Blue Sun's Twilight ×1
+- [x] Blue Sun's Twilight ×1
 
 ### Instants (25)
 - [x] Consider ×4 *(Innistrad: Midnight Hunt)*

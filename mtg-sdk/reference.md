@@ -699,7 +699,7 @@ constructors.
 - `Filters.Unified.any` / `.creature` / `.land` / `.basicLand` / `.artifact` / `.enchantment` / `.planeswalker`
 - `Filters.Unified.instant` / `.sorcery` / `.permanent` / `.nonlandPermanent` / `.instantOrSorcery`
 - `Filters.Unified.withColor(color)` / `.withSubtype(subtype)` / `.withAnyOfSubtypes(listOf(Subtype("A"), Subtype("B")))` / `.withKeyword(keyword)`
-- `Filters.Unified.manaValueAtMost(max)` / `.manaValueAtLeast(min)`
+- `Filters.Unified.manaValueAtMost(max)` / `.manaValueAtLeast(min)` / `.manaValueAtMostX()` (reads X from source spell; use `TargetFilter.Creature.manaValueAtMostX()` for X-cost targeting)
 - `GameObjectFilter.Creature.totalPowerAndToughnessAtMost(max)` — creature cards/permanents with combined P/T at most `max`
 
 ---
