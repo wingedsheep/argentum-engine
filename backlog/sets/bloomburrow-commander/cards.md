@@ -1,0 +1,331 @@
+# Bloomburrow Commander (BLC) - Card Checklist
+
+**Set Size:** 312 cards
+**Release Date:** August 2, 2024
+**Implemented:** 0 / 312
+
+| Color      | Total | Done |
+|------------|-------|------|
+| White      | 37    | 0    |
+| Blue       | 27    | 0    |
+| Black      | 20    | 0    |
+| Red        | 24    | 0    |
+| Green      | 62    | 0    |
+| Multicolor | 40    | 0    |
+| Colorless  | 33    | 0    |
+| Land       | 69    | 0    |
+
+---
+
+- [ ] Abrade
+- [ ] Academy Manufactor
+- [ ] Adarkar Wastes
+- [ ] Aether Channeler
+- [ ] Aetherize
+- [ ] Agate Instigator
+- [ ] Alchemist's Talent
+- [ ] An Offer You Can't Refuse
+- [ ] Angel of the Ruins
+- [ ] Ant Queen
+- [ ] Arasta of the Endless Web
+- [ ] Arcane Signet
+- [ ] Arthur, Marigold Knight
+- [ ] Azorius Signet
+- [ ] Baird, Steward of Argive
+- [ ] Baleful Strix
+- [ ] Barren Moor
+- [ ] Bastion of Remembrance
+- [ ] Battlefield Forge
+- [ ] Beast Within
+- [ ] Beastmaster Ascension
+- [ ] Beledros Witherbloom
+- [ ] Bello, Bard of the Brambles
+- [ ] Berserkers' Onslaught
+- [ ] Bident of Thassa
+- [ ] Big Score
+- [ ] Binding the Old Gods
+- [ ] Birds of Paradise
+- [ ] Blade Splicer
+- [ ] Blasphemous Act
+- [ ] Bloodroot Apothecary
+- [ ] Body of Knowledge
+- [ ] Bojuka Bog
+- [ ] Bootleggers' Stash
+- [ ] Boros Signet
+- [ ] Boss's Chauffeur
+- [ ] Brightcap Badger // Fungus Frolic
+- [ ] Broken Wings
+- [ ] Brushland
+- [ ] Burnished Hart
+- [ ] Calamity of Cinders
+- [ ] Canopy Vista
+- [ ] Cascade Bluffs
+- [ ] Castle Ardenvale
+- [ ] Casualties of War
+- [ ] Chaos Warp
+- [ ] Chart a Course
+- [ ] Chasm Skulker
+- [ ] Chatterfang, Squirrel General
+- [ ] Chatterstorm
+- [ ] Chittering Witch
+- [ ] Chitterspitter
+- [ ] Cinder Glade
+- [ ] Circuit Mender
+- [ ] Clifftop Retreat
+- [ ] Cloudblazer
+- [ ] Coiling Oracle
+- [ ] Combat Celebrant
+- [ ] Command Tower
+- [ ] Communal Brewing
+- [ ] Copperline Gorge
+- [ ] Coveted Jewel
+- [ ] Cultivate
+- [ ] Curiosity Crafter
+- [ ] Cut a Deal
+- [ ] Deadly Dispute
+- [ ] Decimate
+- [ ] Decree of Pain
+- [ ] Deep Forest Hermit
+- [ ] Derevi, Empyrial Tactician
+- [ ] Devilish Valet
+- [ ] Domri, Anarch of Bolas
+- [ ] Dusk // Dawn
+- [ ] Echoing Assault
+- [ ] Elspeth, Sun's Champion
+- [ ] End-Raze Forerunners
+- [ ] Esika's Chariot
+- [ ] Etali, Primal Storm
+- [ ] Evercoat Ursine
+- [ ] Evolving Wilds
+- [ ] Exotic Orchard
+- [ ] Explore
+- [ ] Faeburrow Elder
+- [ ] Farseek
+- [ ] Fellwar Stone
+- [ ] Ferrous Lake
+- [ ] Fisher's Talent
+- [ ] Flooded Grove
+- [ ] Flubs, the Fool
+- [ ] Forgotten Ancient
+- [ ] Forgotten Cave
+- [ ] Fortune Teller's Talent
+- [ ] Game Trail
+- [ ] Garruk's Packleader
+- [ ] Garruk's Uprising
+- [ ] Garruk, Cursed Huntsman
+- [ ] Generous Gift
+- [ ] Ghalta, Primal Hunger
+- [ ] Ghirapur Orrery
+- [ ] Gilded Goose
+- [ ] Gilded Lotus
+- [ ] Glacial Fortress
+- [ ] Golgari Rot Farm
+- [ ] Golgari Signet
+- [ ] Goreclaw, Terror of Qal Sisma
+- [ ] Gourmand's Talent
+- [ ] Gratuitous Violence
+- [ ] Greater Good
+- [ ] Grim Backwoods
+- [ ] Grothama, All-Devouring
+- [ ] Grumgully, the Generous
+- [ ] Gruul Signet
+- [ ] Gruul Turf
+- [ ] Hanged Executioner
+- [ ] Harmonize
+- [ ] Haunted Mire
+- [ ] Haywire Mite
+- [ ] Hazel of the Rootbloom
+- [ ] Hazel's Brewmaster
+- [ ] Hedron Archive
+- [ ] Helm of the Host
+- [ ] Hinterland Harbor
+- [ ] Hoofprints of the Stag
+- [ ] Idol of Oblivion
+- [ ] Illusionist's Gambit
+- [ ] Illusory Ambusher
+- [ ] Inferno Titan
+- [ ] Ink-Eyes, Servant of Oni
+- [ ] Insatiable Frugivore
+- [ ] Inspiring Overseer
+- [ ] Intellectual Offering
+- [ ] Ishai, Ojutai Dragonspeaker
+- [ ] Izzet Signet
+- [ ] Jace, the Mind Sculptor
+- [ ] Jacked Rabbit
+- [ ] Jazal Goldmane
+- [ ] Jolrael, Mwonvuli Recluse
+- [ ] Jungle Hollow
+- [ ] Junk Winder
+- [ ] Kalonian Hydra
+- [ ] Karn, the Great Creator
+- [ ] Karplusan Forest
+- [ ] Kodama of the East Tree
+- [ ] Kwain, Itinerant Meddler
+- [ ] Kykar, Wind's Fury
+- [ ] Liliana of the Dark Realms
+- [ ] Llanowar Loamspeaker
+- [ ] Llanowar Wastes
+- [ ] Loran of the Third Path
+- [ ] Lotus Cobra
+- [ ] Loyal Warhound
+- [ ] Luminous Broodmoth
+- [ ] Maelstrom Pulse
+- [ ] Managorger Hydra
+- [ ] Mangara, the Diplomat
+- [ ] Marrow-Gnawer
+- [ ] Martial Coup
+- [ ] Martial Impetus
+- [ ] Maskwood Nexus
+- [ ] Mind Stone
+- [ ] Moldervine Reclamation
+- [ ] Moonstone Eulogist
+- [ ] Morbid Opportunist
+- [ ] Mossfire Valley
+- [ ] Mosswort Bridge
+- [ ] Mr. Foxglove
+- [ ] Ms. Bumbleflower
+- [ ] Murmuration
+- [ ] Mystic Monastery
+- [ ] Nadier's Nightblade
+- [ ] Narset, Parter of Veils
+- [ ] Necroblossom Snarl
+- [ ] Nested Shambler
+- [ ] Nissa, Who Shakes the World
+- [ ] Octomancer
+- [ ] Ogre Slumlord
+- [ ] Oran-Rief, the Vastwood
+- [ ] Ornithopter of Paradise
+- [ ] Outpost Siege
+- [ ] Overflowing Basin
+- [ ] Path of Ancestry
+- [ ] Path of Discovery
+- [ ] Path to Exile
+- [ ] Perch Protection
+- [ ] Perplexing Test
+- [ ] Plaguecrafter
+- [ ] Plumb the Forbidden
+- [ ] Poison-Tip Archer
+- [ ] Pollywog Prodigy
+- [ ] Prairie Stream
+- [ ] Primeval Bounty
+- [ ] Promise of Loyalty
+- [ ] Prosperous Bandit
+- [ ] Prosperous Innkeeper
+- [ ] Psychosis Crawler
+- [ ] Pull from Tomorrow
+- [ ] Putrefy
+- [ ] Pyreswipe Hawk
+- [ ] Raging Ravine
+- [ ] Rain of Riches
+- [ ] Rampaging Baloths
+- [ ] Rampant Growth
+- [ ] Rapid Augmenter
+- [ ] Rapid Hybridization
+- [ ] Ravenous Squirrel
+- [ ] Razorverge Thicket
+- [ ] Realm-Cloaked Giant // Cast Off
+- [ ] Reliquary Tower
+- [ ] Restoration Angel
+- [ ] Riot Control
+- [ ] Rishkar, Peema Renegade
+- [ ] Rites of Flourishing
+- [ ] Rolling Hamsphere
+- [ ] Rootbound Crag
+- [ ] Rootcast Apprenticeship
+- [ ] Rose Room Treasurer
+- [ ] Rowdy Research
+- [ ] Rugged Prairie
+- [ ] Sakura-Tribe Elder
+- [ ] Saw in Half
+- [ ] Scurry of Squirrels
+- [ ] Seachrome Coast
+- [ ] Seaside Citadel
+- [ ] Second Harvest
+- [ ] Secret Rendezvous
+- [ ] Selfless Spirit
+- [ ] Selvala, Explorer Returned
+- [ ] Shamanic Revelation
+- [ ] Sheltered Thicket
+- [ ] Shield Broker
+- [ ] Shivan Reef
+- [ ] Siege-Gang Commander
+- [ ] Simic Ascendancy
+- [ ] Skullclamp
+- [ ] Skyclave Apparition
+- [ ] Skycloud Expanse
+- [ ] Skyfisher Spider
+- [ ] Sol Ring
+- [ ] Solemn Simulacrum
+- [ ] Sphinx of Enlightenment
+- [ ] Spine of Ish Sah
+- [ ] Spirited Companion
+- [ ] Spore Frog
+- [ ] Squirrel Mob
+- [ ] Squirrel Nest
+- [ ] Squirrel Sovereign
+- [ ] Starstorm
+- [ ] Steelburr Champion
+- [ ] Stolen by the Fae
+- [ ] Storm of Souls
+- [ ] Sulfur Falls
+- [ ] Sun Titan
+- [ ] Sunbird's Invocation
+- [ ] Sungrass Prairie
+- [ ] Sunpetal Grove
+- [ ] Sunscorch Regent
+- [ ] Sunscorched Divide
+- [ ] Swarmyard
+- [ ] Swarmyard Massacre
+- [ ] Swiftfoot Boots
+- [ ] Sword of the Squeak
+- [ ] Swords to Plowshares
+- [ ] Tainted Wood
+- [ ] Talisman of Impulse
+- [ ] Talisman of Resilience
+- [ ] Tamiyo, Field Researcher
+- [ ] Tear Asunder
+- [ ] Teferi, Time Raveler
+- [ ] Temple of Abandon
+- [ ] Temple of Enlightenment
+- [ ] Temple of Epiphany
+- [ ] Temple of Malady
+- [ ] Temple of Mystery
+- [ ] Temple of Plenty
+- [ ] Temple of Triumph
+- [ ] Tempt with Bunnies
+- [ ] Tempt with Discovery
+- [ ] Tendershoot Dryad
+- [ ] Tenuous Truce
+- [ ] Terramorphic Expanse
+- [ ] Tetsuko Umezawa, Fugitive
+- [ ] The Gitrog Monster
+- [ ] The Odd Acorn Gang
+- [ ] Thickest in the Thicket
+- [ ] Thopter Engineer
+- [ ] Thought Vessel
+- [ ] Thran Dynamo
+- [ ] Thriving Bluff
+- [ ] Thriving Grove
+- [ ] Thriving Heath
+- [ ] Thriving Isle
+- [ ] Time Wipe
+- [ ] Tireless Provisioner
+- [ ] Toski, Bearer of Secrets
+- [ ] Trailtracker Scout
+- [ ] Tranquil Thicket
+- [ ] Triskaidekaphile
+- [ ] Twenty-Toed Toad
+- [ ] Twilight Mire
+- [ ] Unnatural Growth
+- [ ] Viridescent Bog
+- [ ] Warstorm Surge
+- [ ] Wildsear, Scouring Maw
+- [ ] Windgrace's Judgment
+- [ ] Wizard Class
+- [ ] Woe Strider
+- [ ] Wolfwillow Haven
+- [ ] Wooded Ridgeline
+- [ ] Woodland Cemetery
+- [ ] Yavimaya Coast
+- [ ] Zinnia, Valley's Voice
+- [ ] Zulaport Cutthroat
