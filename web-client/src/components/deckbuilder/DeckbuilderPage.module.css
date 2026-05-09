@@ -1442,6 +1442,11 @@
   font-variant-numeric: tabular-nums;
 }
 
+.deckSummaryWrap {
+  padding: var(--space-3);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
 .actionRow {
   display: flex;
   gap: var(--space-2);
@@ -1815,19 +1820,6 @@
 .deckHeaderInline .nameInput {
   flex: 0 1 360px;
   min-width: 200px;
-}
-
-.deckHeaderInlineSpacer {
-  flex: 1;
-}
-
-.deckHeaderInlineCount {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-3);
-  font-size: 0.85rem;
-  color: var(--text-secondary);
-  font-variant-numeric: tabular-nums;
 }
 
 /* Scrollable deck body. Uses CSS multi-column so groups flow into 1–4 columns

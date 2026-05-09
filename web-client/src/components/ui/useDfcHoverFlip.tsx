@@ -1,4 +1,4 @@
-import { useEffect, useState, type ReactNode } from 'react'
+import { useCallback, useEffect, useState, type ReactNode } from 'react'
 
 export interface DfcHoverable {
   readonly name: string
@@ -46,13 +46,17 @@ export function useDfcHoverFlip(hoveredCard: DfcHoverable | null): DfcHoverFlip 
       : hoveredCard.imageUri
     : null
 
+  // Stable identity so memoized hover-handler consumers don't re-create their
+  // useCallback-wrapped closures on every render of this hook.
+  const resetFlip = useCallback(() => setDfcFlipped(false), [])
+
   return {
     isHoveredDfc,
     dfcFlipped,
     displayName,
     displayImageUri,
     hint: isHoveredDfc ? <DfcFlipHint flipped={dfcFlipped} /> : undefined,
-    resetFlip: () => setDfcFlipped(false),
+    resetFlip,
   }
 }
 

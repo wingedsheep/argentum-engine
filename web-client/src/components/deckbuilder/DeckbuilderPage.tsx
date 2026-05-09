@@ -9,7 +9,7 @@
  * Decoupled from gameStore — runs offline. Persistence is via useDeckLibrary
  * (localStorage). Server validation reuses POST /api/decks/validate.
  */
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import {
   useDeckLibrary,
@@ -766,11 +766,13 @@ export function DeckbuilderPage() {
               }
             />
 
-            <DeckSummary
-              validation={validation}
-              totalCards={totalCards}
-              stats={stats}
-            />
+            <div className={styles.deckSummaryWrap}>
+              <DeckSummary
+                validation={validation}
+                totalCards={totalCards}
+                stats={stats}
+              />
+            </div>
 
             <DeckActionRow
               activeDeckId={activeDeckId}
@@ -794,13 +796,6 @@ export function DeckbuilderPage() {
               activeFormat={activeFormat}
               onChange={setActiveFormat}
             />
-            <div className={styles.deckHeaderInlineSpacer} />
-            <span className={styles.deckHeaderInlineCount}>
-              <span>{totalCards} cards</span>
-              <span className={statusClass(validation, totalCards)}>
-                {statusLabel(validation, totalCards)}
-              </span>
-            </span>
           </div>
 
           <AddCardSearch
@@ -2503,6 +2498,20 @@ function CardGrid({
   )
   const resetDfcFlip = dfc.resetFlip
 
+  // Stable hover handlers so memoized CardTiles don't re-render every time the
+  // hovered card changes — without this, swapping hovered card replaces both
+  // closures' identity for all ~100 visible tiles.
+  const handleTileHover = useCallback(
+    (c: CardSummary) => {
+      setHoverCard((prev) => {
+        if (prev?.name !== c.name) resetDfcFlip()
+        return c
+      })
+    },
+    [resetDfcFlip],
+  )
+  const handleTileLeave = useCallback(() => setHoverCard(null), [])
+
   if (cards.length === 0) {
     return (
       <div className={styles.gridScroll}>
@@ -2524,13 +2533,8 @@ function CardGrid({
               count={deckCards[card.name] ?? 0}
               onAdd={onAdd}
               onRemove={onRemove}
-              onHover={(c) => {
-                setHoverCard((prev) => {
-                  if (prev?.name !== c.name) resetDfcFlip()
-                  return c
-                })
-              }}
-              onLeave={() => setHoverCard(null)}
+              onHover={handleTileHover}
+              onLeave={handleTileLeave}
             />
           ))}
         </div>
@@ -2551,7 +2555,10 @@ function CardGrid({
   )
 }
 
-function CardTile({
+// Memoized: hover state is owned by the parent CardGrid, and a hovered-card
+// change re-renders CardGrid. Without memo, every visible tile re-renders on
+// every hover transition — the visible cause of the deckbuilder hover lag.
+const CardTile = memo(function CardTile({
   card,
   count,
   onAdd,
@@ -2626,7 +2633,7 @@ function CardTile({
       {count > 0 && <span className={styles.cardCountBadge}>{count}</span>}
     </div>
   )
-}
+})
 
 function CardTextFallback({ card }: { card: CardSummary }) {
   const typeLabel = [card.supertypes, card.cardTypes, card.subtypes]
@@ -2756,15 +2763,23 @@ function DeckListPanel({
   )
   const resetDfcFlip = dfc.resetFlip
 
-  const handleEnter = (entry: { name: string; card: CardSummary | undefined }) => {
-    if (hoverName !== entry.name) resetDfcFlip()
-    setHoverName(entry.name)
-    setHoverCard(entry.card ?? null)
-  }
-  const handleLeave = () => {
+  // Stable identities so memoized DeckRow children skip re-render when hover
+  // state changes. Functional setters keep us correct without putting hoverName
+  // in the deps array.
+  const handleEnter = useCallback(
+    (entry: { name: string; card: CardSummary | undefined }) => {
+      setHoverName((prev) => {
+        if (prev !== entry.name) resetDfcFlip()
+        return entry.name
+      })
+      setHoverCard(entry.card ?? null)
+    },
+    [resetDfcFlip],
+  )
+  const handleLeave = useCallback(() => {
     setHoverName(null)
     setHoverCard(null)
-  }
+  }, [])
 
   useEffect(() => {
     if (hoverName && !(hoverName in deckCards)) {
@@ -2807,7 +2822,7 @@ function DeckListPanel({
               onAdd={onAdd}
               onRemove={onRemove}
               onToggleCommander={onToggleCommander}
-              onEnter={() => handleEnter(entry)}
+              onEnter={handleEnter}
               onLeave={handleLeave}
             />
           ))}
@@ -2833,7 +2848,12 @@ function DeckListPanel({
 // same +/-/count/name/crown/cost shape with the same validation visuals.
 // ---------------------------------------------------------------------------
 
-function DeckRow({
+// Memoized: hover state lives one level up; without memo every row re-renders
+// on every hover transition. `onEnter` takes the row's entry as an argument so
+// the parent can supply a stable handler (the per-row closure that binds the
+// entry is created here, where it's cheap because memo prevents re-renders
+// when hover state changes).
+const DeckRow = memo(function DeckRow({
   entry,
   activeFormat,
   commander,
@@ -2855,7 +2875,7 @@ function DeckRow({
   onAdd: (card: CardSummary) => void
   onRemove: (name: string) => void
   onToggleCommander: (name: string) => void
-  onEnter: () => void
+  onEnter: (entry: { name: string; card: CardSummary | undefined }) => void
   onLeave: () => void
 }) {
   const illegal =
@@ -2929,7 +2949,7 @@ function DeckRow({
     <div
       className={rowClasses}
       title={rowTitle}
-      onMouseEnter={onEnter}
+      onMouseEnter={() => onEnter(entry)}
       onMouseLeave={onLeave}
     >
       <button
@@ -3000,7 +3020,7 @@ function DeckRow({
       </span>
     </div>
   )
-}
+})
 
 // ---------------------------------------------------------------------------
 // Add-card search bar (deck-centric mode).
@@ -3232,7 +3252,7 @@ function DeckCentricView({
                 onAdd={onAdd}
                 onRemove={onRemove}
                 onToggleCommander={onToggleCommander}
-                onEnter={() => onHoverEnter(entry)}
+                onEnter={onHoverEnter}
                 onLeave={onHoverLeave}
               />
             ))}
