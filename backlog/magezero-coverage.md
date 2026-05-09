@@ -93,9 +93,9 @@ one enchantment (Unholy Annex) are double-faced / modal DFCs and depend on DFC s
 - [x] Cecil, Dark Knight // Cecil, Redeemed Paladin ×3 *(DFC — requires DFC support)*
 - [ ] Deep-Cavern Bat ×4
 - [ ] Forsaken Miner ×4
-- [ ] Gatekeeper of Malakir ×4
-- [ ] Mai, Scornful Striker ×3
-- [ ] Unstoppable Slasher ×4
+- [x] Gatekeeper of Malakir ×4
+- [x] Mai, Scornful Striker ×3
+- [x] Unstoppable Slasher ×4
 - [x] Iridescent Vinelasher ×4 *(Bloomburrow)*
 
 ### Instants (2)
@@ -106,7 +106,7 @@ one enchantment (Unholy Annex) are double-faced / modal DFCs and depend on DFC s
 
 ### Lands (24)
 - [ ] Realm of Koh ×4
-- [ ] Soulstone Sanctuary ×2
+- [x] Soulstone Sanctuary ×2
 - [x] Swamp ×18
 
 ## Mechanic gaps to watch
