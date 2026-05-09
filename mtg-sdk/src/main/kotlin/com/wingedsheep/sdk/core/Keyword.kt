@@ -68,6 +68,12 @@ enum class Keyword(val displayName: String) {
     WITHER("Wither"),
     TOXIC("Toxic"),
 
+    // ── Avatar: The Last Airbender mechanics ──────────────
+    /** Earthbend N — animate a land as 0/0 creature-land with haste and N +1/+1 counters. */
+    EARTHBEND("Earthbend"),
+    /** Internal marker granted to earthbended lands; triggers return from death or exile. */
+    EARTHBENDED("Earthbended"),
+
     // ── Numeric (parameterized by N) ──────────────────────
     ANNIHILATOR("Annihilator"),
     BUSHIDO("Bushido"),

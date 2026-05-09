@@ -804,11 +804,17 @@ class TriggerDetector(
             deathAndLeaveDetector.detectDeadAuraAttachmentTriggers(state, event, triggers)
             // Handle persist (CR 702.79) — nontoken creature with persist dies with no -1/-1 counter
             deathAndLeaveDetector.detectPersistTriggers(state, event, triggers)
+            // Handle earthbend return — EARTHBENDED land dies, return to battlefield tapped
+            deathAndLeaveDetector.detectEarthbendReturnTriggers(state, event, triggers)
         }
 
         // Handle leaves-the-battlefield triggers (source is no longer on battlefield)
         if (event is ZoneChangeEvent && event.fromZone == Zone.BATTLEFIELD) {
             deathAndLeaveDetector.detectLeavesBattlefieldTriggers(state, event, triggers)
+            // Handle earthbend return for exile (death case is handled in the graveyard block above)
+            if (event.toZone == Zone.EXILE) {
+                deathAndLeaveDetector.detectEarthbendReturnTriggers(state, event, triggers)
+            }
         }
 
         // Handle cycling triggers on the cycled card itself (e.g., Renewed Faith)

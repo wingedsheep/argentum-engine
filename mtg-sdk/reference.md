@@ -87,6 +87,7 @@ constructors.
 - `Effects.AddCountersToCollection(collectionName, counterType, count)` — add counters to all entities in a named collection
 - `Effects.SetBasePower(target = Self, power: DynamicAmount, duration = Permanent)` — set creature's base power
 - `Effects.AnimateLand(target, power, toughness, duration)` — turn land into creature
+- `Effects.Earthbend(amount: Int, target)` — animate land as 0/0 creature-land with haste (permanent) + `amount` +1/+1 counters + grant `EARTHBENDED` keyword so the trigger detector returns it tapped when it dies or is exiled
 - `Effects.DistributeCountersFromSelf(counterType)` — move counters from self to other creatures (player chooses)
 - `Effects.DistributeCountersAmongTargets(totalCounters, counterType, minPerTarget)` — distribute N counters among targets from context (deterministic distribution)
 - `Effects.Proliferate()` — choose any number of permanents and/or players that have a counter, then give each another counter of each kind already there

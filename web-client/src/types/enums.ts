@@ -194,6 +194,8 @@ export enum Keyword {
   PERSIST = 'PERSIST',
   // Ability words
   EERIE = 'EERIE',
+  // Avatar: The Last Airbender
+  EARTHBEND = 'EARTHBEND',
 }
 
 export const KeywordDisplayNames: Record<Keyword, string> = {
@@ -239,6 +241,7 @@ export const KeywordDisplayNames: Record<Keyword, string> = {
   [Keyword.TOXIC]: 'Toxic',
   [Keyword.PERSIST]: 'Persist',
   [Keyword.EERIE]: 'Eerie',
+  [Keyword.EARTHBEND]: 'Earthbend',
 }
 
 /**

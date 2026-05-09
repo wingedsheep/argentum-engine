@@ -16,6 +16,7 @@ import com.wingedsheep.sdk.scripting.TriggeredAbility
 import com.wingedsheep.sdk.scripting.effects.AddCountersEffect
 import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
+import com.wingedsheep.sdk.scripting.effects.ZonePlacement
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.engine.core.GameEvent as EngineGameEvent
 
@@ -291,6 +292,50 @@ class DeathAndLeaveTriggerDetector(
         triggers.add(
             PendingTrigger(
                 ability = persistAbility,
+                sourceId = event.entityId,
+                sourceName = info.name,
+                controllerId = event.ownerId,
+                triggerContext = TriggerContext.fromEvent(event)
+            )
+        )
+    }
+
+    /**
+     * Detect earthbend-return triggers (TLA Earthbend mechanic).
+     *
+     * When a permanent marked with the EARTHBENDED keyword dies or is exiled from the battlefield,
+     * it returns to the battlefield tapped. Fires for both graveyard and exile destinations.
+     */
+    fun detectEarthbendReturnTriggers(
+        state: GameState,
+        event: ZoneChangeEvent,
+        triggers: MutableList<PendingTrigger>
+    ) {
+        if (event.fromZone != Zone.BATTLEFIELD) return
+        if (event.toZone != Zone.GRAVEYARD && event.toZone != Zone.EXILE) return
+        if (event.lastKnownWasToken) return
+        if (Keyword.EARTHBENDED.name !in event.lastKnownKeywords) return
+
+        val info = resolveDyingEntity(state, event) ?: return
+
+        val returnAbility = TriggeredAbility.create(
+            trigger = GameEvent.ZoneChangeEvent(from = Zone.BATTLEFIELD, to = event.toZone),
+            binding = TriggerBinding.SELF,
+            // fromZone ensures the return only fires if the card is still in the zone it
+            // entered when it left the battlefield. If exiled from the graveyard before this
+            // trigger resolves, the move is skipped (card stays in exile per MTG rules).
+            effect = MoveToZoneEffect(
+                target = EffectTarget.Self,
+                destination = Zone.BATTLEFIELD,
+                placement = ZonePlacement.Tapped,
+                fromZone = event.toZone
+            ),
+            descriptionOverride = "Earthbend — Return ${info.name} to the battlefield tapped"
+        )
+
+        triggers.add(
+            PendingTrigger(
+                ability = returnAbility,
                 sourceId = event.entityId,
                 sourceName = info.name,
                 controllerId = event.ownerId,

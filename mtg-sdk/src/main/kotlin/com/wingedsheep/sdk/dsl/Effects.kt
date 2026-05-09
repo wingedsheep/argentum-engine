@@ -1661,6 +1661,17 @@ object Effects {
     ): Effect = AnimateLandEffect(target, power, toughness, duration)
 
     /**
+     * Earthbend N — target land becomes a 0/0 creature-land with haste; put N +1/+1 counters on it;
+     * and it gains the EARTHBENDED internal keyword so the trigger detector returns it when it dies or is exiled.
+     */
+    fun Earthbend(amount: Int, target: EffectTarget): Effect = CompositeEffect(listOf(
+        AnimateLandEffect(target, 0, 0, com.wingedsheep.sdk.scripting.Duration.Permanent),
+        GrantKeywordEffect(com.wingedsheep.sdk.core.Keyword.HASTE, target, com.wingedsheep.sdk.scripting.Duration.Permanent),
+        AddCountersEffect(com.wingedsheep.sdk.core.Counters.PLUS_ONE_PLUS_ONE, amount, target),
+        GrantKeywordEffect(com.wingedsheep.sdk.core.Keyword.EARTHBENDED, target, com.wingedsheep.sdk.scripting.Duration.Permanent)
+    ))
+
+    /**
      * Target permanent becomes a creature with specified characteristics.
      * More general than AnimateLand — can remove types, grant keywords, set subtypes, change color.
      */
