@@ -46,6 +46,45 @@ enum class Rarity {
 }
 
 /**
+ * Layout family of a card. Drives how zones (hand, stack, battlefield) render the card and
+ * how the engine treats casting and characteristics.
+ *
+ * - [NORMAL]: a standard single-face card. Top-level [CardDefinition] fields fully describe it.
+ * - [SPLIT]: a card with two or more named halves printed on one card and a shared type line
+ *   (CR 709.5). Each half has its own name, mana cost, and rules text. Off-battlefield, the card
+ *   has the combined characteristics of every half (709.4c). Examples: Rooms (Duskmourn), Fuse,
+ *   Aftermath. Faces live in [CardDefinition.cardFaces].
+ */
+@Serializable
+enum class CardLayout {
+    NORMAL,
+    SPLIT,
+}
+
+/**
+ * One face of a multi-face card.
+ *
+ * For [CardLayout.SPLIT] cards, every face carries its own name, mana cost, type line, oracle text,
+ * keywords, and per-face script. The engine reads abilities from a face's script when that face's
+ * door / mode is "active" for the permanent (see CR 709.5 for Rooms, where locked halves are
+ * suppressed).
+ *
+ * Phase 1 deliberately keeps this minimal — no spell effect / aura target / replacement effects.
+ * Today it's only used by Rooms (which are permanents that don't carry a spell effect) and the
+ * supported abilities are triggered, activated, and static. Adventure / Aftermath / Fuse layouts
+ * will add what they need on top.
+ */
+@Serializable
+data class CardFace(
+    val name: String,
+    val manaCost: ManaCost,
+    val typeLine: TypeLine,
+    val oracleText: String = "",
+    val keywords: Set<Keyword> = emptySet(),
+    val script: CardScript = CardScript.EMPTY,
+)
+
+/**
  * Complete definition of a Magic: The Gathering card.
  *
  * CardDefinition combines static attributes (name, cost, types, stats) with
@@ -81,7 +120,9 @@ data class CardDefinition(
     val metadata: ScryfallMetadata = ScryfallMetadata(),  // Scryfall metadata for web client
     val startingLoyalty: Int? = null,  // For planeswalkers
     val legalFormats: Set<DeckFormat> = emptySet(),  // Formats in which the card is legal (Scryfall-sourced)
-    val colorIdentityOverride: Set<Color>? = null  // Authoritative Scryfall color identity; null = derive from heuristic
+    val colorIdentityOverride: Set<Color>? = null,  // Authoritative Scryfall color identity; null = derive from heuristic
+    val layout: CardLayout = CardLayout.NORMAL,
+    val cardFaces: List<CardFace> = emptyList()  // Populated for non-NORMAL layouts (e.g. SPLIT Rooms)
 ) {
     init {
         if (typeLine.isCreature) {
@@ -144,6 +185,7 @@ data class CardDefinition(
     val isEquipment: Boolean get() = typeLine.isEquipment
     val isPermanent: Boolean get() = typeLine.isPermanent
     val isDoubleFaced: Boolean get() = backFace != null
+    val isSplit: Boolean get() = layout == CardLayout.SPLIT
     val isPlaneswalker: Boolean get() = CardType.PLANESWALKER in typeLine.cardTypes
     val isClass: Boolean get() = typeLine.isClass
     val isSaga: Boolean get() = typeLine.isSaga

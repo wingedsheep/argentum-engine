@@ -1,9 +1,11 @@
 package com.wingedsheep.sdk.serialization
 
 import com.wingedsheep.sdk.core.*
+import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Targets
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
+import com.wingedsheep.sdk.model.CardLayout
 import com.wingedsheep.sdk.scripting.*
 import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.CreateTokenEffect
@@ -409,6 +411,49 @@ class CardSerializationRoundTripTest : DescribeSpec({
 
             val deserialized = CardLoader.fromJson(serialized)
             deserialized.script.activatedAbilities.size shouldBe 1
+        }
+    }
+
+    describe("Split-card round-trip") {
+
+        it("should round-trip a SPLIT card with two faces") {
+            val annex = card("Unholy Annex // Ritual Chamber") {
+                layout = CardLayout.SPLIT
+                face("Unholy Annex") {
+                    manaCost = "{2}{B}"
+                    typeLine = "Enchantment — Room"
+                    oracleText = "At the beginning of your end step, draw a card."
+                    triggeredAbility {
+                        trigger = Triggers.YourEndStep
+                        effect = Effects.DrawCards(1)
+                    }
+                }
+                face("Ritual Chamber") {
+                    manaCost = "{3}{B}{B}"
+                    typeLine = "Enchantment — Room"
+                    oracleText = "When this enters, draw a card."
+                    triggeredAbility {
+                        trigger = Triggers.EntersBattlefield
+                        effect = Effects.DrawCards(1)
+                    }
+                }
+            }
+
+            val serialized = CardLoader.toJson(annex)
+            serialized shouldContain "\"layout\""
+            serialized shouldContain "SPLIT"
+            serialized shouldContain "Unholy Annex"
+            serialized shouldContain "Ritual Chamber"
+
+            val deserialized = CardLoader.fromJson(serialized)
+            deserialized.layout shouldBe CardLayout.SPLIT
+            deserialized.cardFaces.size shouldBe 2
+            deserialized.cardFaces[0].name shouldBe "Unholy Annex"
+            deserialized.cardFaces[0].manaCost.toString() shouldBe "{2}{B}"
+            deserialized.cardFaces[0].script.triggeredAbilities.size shouldBe 1
+            deserialized.cardFaces[1].name shouldBe "Ritual Chamber"
+            deserialized.cardFaces[1].manaCost.toString() shouldBe "{3}{B}{B}"
+            deserialized.cardFaces[1].script.triggeredAbilities.size shouldBe 1
         }
     }
 })

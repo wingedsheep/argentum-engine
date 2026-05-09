@@ -264,6 +264,13 @@ class CardBuilder(private val name: String) {
      */
     var evoke: String? = null
 
+    /**
+     * Layout family of this card. Defaults to [CardLayout.NORMAL] (standard single-face card).
+     * Set to [CardLayout.SPLIT] for cards with two or more halves (e.g. Rooms). Use the
+     * [face] DSL block to declare each half.
+     */
+    var layout: CardLayout = CardLayout.NORMAL
+
     // =========================================================================
     // Internal State
     // =========================================================================
@@ -279,6 +286,7 @@ class CardBuilder(private val name: String) {
     private val replacementEffects: MutableList<ReplacementEffect> = mutableListOf()
     private val classLevelsList: MutableList<ClassLevelAbility> = mutableListOf()
     private val sagaChaptersList: MutableList<SagaChapterAbility> = mutableListOf()
+    private val cardFaceList: MutableList<CardFace> = mutableListOf()
     private var equipCost: ManaCost? = null
     private var metadataBuilder: MetadataBuilder? = null
 
@@ -535,6 +543,26 @@ class CardBuilder(private val name: String) {
     }
 
     // =========================================================================
+    // Split-card faces
+    // =========================================================================
+
+    /**
+     * Declare one face of a multi-face card. Used together with [layout] = [CardLayout.SPLIT]
+     * to define cards like Rooms (Duskmourn) where each half has its own name, mana cost,
+     * type line, oracle text, and abilities.
+     *
+     * Each face's abilities (triggered / activated / static) are stored on the face's own
+     * [CardScript] and are scoped to that face. The engine reads them when the face is
+     * "active" for the permanent (e.g. unlocked for a Room). Phase 1 only stores the data;
+     * casting and unlock semantics are wired up in later phases.
+     */
+    fun face(name: String, init: CardFaceBuilder.() -> Unit) {
+        val builder = CardFaceBuilder(name)
+        builder.init()
+        cardFaceList.add(builder.build())
+    }
+
+    // =========================================================================
     // Metadata
     // =========================================================================
 
@@ -552,6 +580,24 @@ class CardBuilder(private val name: String) {
     // =========================================================================
 
     fun build(): CardDefinition {
+        // For SPLIT cards (CR 709), top-level fields are the combined characteristics off the
+        // battlefield (709.4c). Authors usually only fill in the face blocks, so derive
+        // sensible top-level defaults when fields are blank:
+        //  - typeLine: split cards with a shared type line share it (709.5a). Take face[0]'s.
+        //  - oracleText: combined as `"<face1>\n//\n<face2>"`.
+        //  - manaCost: left as-is. The combined "cost" off the battlefield is each face's cost
+        //    side by side, which doesn't fit a single ManaCost. Engines that need MV can sum
+        //    the per-face costs from `cardFaces`.
+        if (layout == CardLayout.SPLIT && cardFaceList.isNotEmpty()) {
+            require(cardFaceList.size >= 2) { "SPLIT layout requires at least 2 faces: $name" }
+            if (typeLine.isBlank()) {
+                typeLine = cardFaceList.first().typeLine.toString()
+            }
+            if (oracleText.isBlank()) {
+                oracleText = cardFaceList.joinToString("\n//\n") { it.oracleText }
+            }
+        }
+
         val parsedTypeLine = TypeLine.parse(typeLine)
         val parsedManaCost = if (manaCost.isNotEmpty()) ManaCost.parse(manaCost) else ManaCost.ZERO
 
@@ -632,7 +678,9 @@ class CardBuilder(private val name: String) {
             equipCost = equipCost,
             startingLoyalty = startingLoyalty,
             metadata = metadata,
-            colorIdentityOverride = parsedColorIdentity
+            colorIdentityOverride = parsedColorIdentity,
+            layout = layout,
+            cardFaces = cardFaceList.toList()
         )
     }
 }
@@ -1247,4 +1295,70 @@ class MetadataBuilder {
         imageUri = imageUri,
         rulings = _rulings.toList()
     )
+}
+
+// =============================================================================
+// Card Face Builder (split-card faces)
+// =============================================================================
+
+/**
+ * Builder for one face of a split-layout card.
+ *
+ * A face owns its name, mana cost, type line, oracle text, keywords, and a per-face
+ * [CardScript] holding triggered / activated / static abilities scoped to that face.
+ *
+ * Phase 1 deliberately omits face-level spell effects, aura targets, and replacement
+ * effects — Rooms (the first SPLIT consumer) don't need them. Add them when later split
+ * layouts (Aftermath, Fuse, Adventure) require it.
+ */
+@CardDsl
+class CardFaceBuilder(private val name: String) {
+    var manaCost: String = ""
+    var typeLine: String = ""
+    var oracleText: String = ""
+
+    private val keywordSet: MutableSet<Keyword> = mutableSetOf()
+    private val triggeredAbilities: MutableList<TriggeredAbility> = mutableListOf()
+    private val activatedAbilities: MutableList<ActivatedAbility> = mutableListOf()
+    private val staticAbilities: MutableList<StaticAbility> = mutableListOf()
+
+    fun keywords(vararg keywords: Keyword) {
+        keywordSet.addAll(keywords)
+    }
+
+    fun triggeredAbility(init: TriggeredAbilityBuilder.() -> Unit) {
+        val builder = TriggeredAbilityBuilder()
+        builder.init()
+        triggeredAbilities.add(builder.build())
+    }
+
+    fun activatedAbility(init: ActivatedAbilityBuilder.() -> Unit) {
+        val builder = ActivatedAbilityBuilder()
+        builder.init()
+        activatedAbilities.add(builder.build())
+    }
+
+    fun staticAbility(init: StaticAbilityBuilder.() -> Unit) {
+        val builder = StaticAbilityBuilder()
+        builder.init()
+        staticAbilities.add(builder.build())
+    }
+
+    fun build(): CardFace {
+        val parsedManaCost = if (manaCost.isNotEmpty()) ManaCost.parse(manaCost) else ManaCost.ZERO
+        val parsedTypeLine = TypeLine.parse(typeLine)
+        val script = CardScript(
+            triggeredAbilities = triggeredAbilities.toList(),
+            activatedAbilities = activatedAbilities.toList(),
+            staticAbilities = staticAbilities.toList(),
+        )
+        return CardFace(
+            name = name,
+            manaCost = parsedManaCost,
+            typeLine = parsedTypeLine,
+            oracleText = oracleText,
+            keywords = keywordSet.toSet(),
+            script = script,
+        )
+    }
 }

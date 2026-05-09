@@ -180,6 +180,7 @@ value class Subtype(val value: String) {
         val AURA = Subtype("Aura")
         val CLASS = Subtype("Class")
         val ROLE = Subtype("Role")
+        val ROOM = Subtype("Room")
         val SAGA = Subtype("Saga")
 
         // Artifact subtypes

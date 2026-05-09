@@ -3,6 +3,7 @@ package com.wingedsheep.sdk.dsl
 import com.wingedsheep.sdk.core.*
 import com.wingedsheep.sdk.dsl.EffectPatterns
 import com.wingedsheep.sdk.dsl.Effects
+import com.wingedsheep.sdk.model.CardLayout
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.*
 import com.wingedsheep.sdk.scripting.conditions.NotCondition
@@ -1026,6 +1027,86 @@ class CardDslTest : DescribeSpec({
             )
 
             conditional.description shouldBe "this creature have hexproof if not (this creature has dealt damage)"
+        }
+    }
+
+    describe("Split-layout cards (Rooms)") {
+
+        it("should default to NORMAL layout with no faces for ordinary cards") {
+            val bolt = card("Lightning Bolt") {
+                manaCost = "{R}"
+                typeLine = "Instant"
+                oracleText = "Lightning Bolt deals 3 damage to any target."
+            }
+
+            bolt.layout shouldBe CardLayout.NORMAL
+            bolt.cardFaces shouldHaveSize 0
+            bolt.isSplit shouldBe false
+        }
+
+        it("should define a SPLIT card with two faces and per-face abilities") {
+            // Stand-in for Unholy Annex // Ritual Chamber. We don't yet have a "door unlock"
+            // trigger, so this test exercises shape only — that face-scoped triggered abilities
+            // are stored on each face's CardScript, not on the top-level script.
+            val annex = card("Unholy Annex // Ritual Chamber") {
+                layout = CardLayout.SPLIT
+
+                face("Unholy Annex") {
+                    manaCost = "{2}{B}"
+                    typeLine = "Enchantment — Room"
+                    oracleText = "At the beginning of your end step, draw a card."
+                    triggeredAbility {
+                        trigger = Triggers.YourEndStep
+                        effect = Effects.DrawCards(1)
+                    }
+                }
+
+                face("Ritual Chamber") {
+                    manaCost = "{3}{B}{B}"
+                    typeLine = "Enchantment — Room"
+                    oracleText = "When this enters, do something."
+                    triggeredAbility {
+                        trigger = Triggers.EntersBattlefield
+                        effect = Effects.DrawCards(1)
+                    }
+                }
+            }
+
+            annex.layout shouldBe CardLayout.SPLIT
+            annex.isSplit shouldBe true
+            annex.cardFaces shouldHaveSize 2
+
+            // Top-level type line and oracle text are derived from faces (CR 709.4c / 709.5a).
+            annex.typeLine.toString() shouldBe "Enchantment — Room"
+            annex.typeLine.subtypes shouldContain Subtype.ROOM
+            annex.oracleText shouldBe
+                "At the beginning of your end step, draw a card.\n//\nWhen this enters, do something."
+
+            val unholy = annex.cardFaces[0]
+            val ritual = annex.cardFaces[1]
+            unholy.name shouldBe "Unholy Annex"
+            unholy.manaCost.toString() shouldBe "{2}{B}"
+            unholy.script.triggeredAbilities shouldHaveSize 1
+            ritual.name shouldBe "Ritual Chamber"
+            ritual.manaCost.toString() shouldBe "{3}{B}{B}"
+            ritual.script.triggeredAbilities shouldHaveSize 1
+
+            // Face abilities must NOT bleed into the top-level script — the engine reads them
+            // per-face in later phases when filtering by which door is unlocked.
+            annex.script.triggeredAbilities shouldHaveSize 0
+        }
+
+        it("should reject SPLIT layout with fewer than two faces") {
+            val ex = io.kotest.assertions.throwables.shouldThrow<IllegalArgumentException> {
+                card("Half a card") {
+                    layout = CardLayout.SPLIT
+                    face("Lonely") {
+                        manaCost = "{B}"
+                        typeLine = "Enchantment — Room"
+                    }
+                }
+            }
+            ex.message?.contains("at least 2 faces") shouldBe true
         }
     }
 })
