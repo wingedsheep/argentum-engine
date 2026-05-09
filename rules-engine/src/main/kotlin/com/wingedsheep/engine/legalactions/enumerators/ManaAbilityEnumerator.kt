@@ -5,7 +5,11 @@ import com.wingedsheep.engine.legalactions.ActionEnumerator
 import com.wingedsheep.engine.legalactions.AdditionalCostData
 import com.wingedsheep.engine.legalactions.EnumerationContext
 import com.wingedsheep.engine.legalactions.LegalAction
+import com.wingedsheep.engine.handlers.PredicateContext
+import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.mechanics.mana.IntrinsicManaAbilities
+import com.wingedsheep.engine.mechanics.mana.LandManaColorInspector
+import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.battlefield.SummoningSicknessComponent
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
@@ -28,6 +32,8 @@ import com.wingedsheep.sdk.scripting.effects.AddManaEffect
 import com.wingedsheep.sdk.scripting.effects.AddManaOfColorAmongEffect
 import com.wingedsheep.sdk.scripting.effects.AddManaOfColorLandsCouldProduceEffect
 import com.wingedsheep.sdk.scripting.effects.CompositeEffect
+import com.wingedsheep.sdk.scripting.effects.Effect
+import com.wingedsheep.sdk.scripting.effects.LandControllerScope
 import com.wingedsheep.sdk.scripting.predicates.CardPredicate
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
 
@@ -245,6 +251,8 @@ class ManaAbilityEnumerator : ActionEnumerator {
                 // Compute runtime description for abilities with dynamic mana amounts
                 val description = runtimeDescription(ability, state, entityId, playerId, context)
 
+                val availableManaColors = constrainedColors(ability.effect, state, entityId, playerId, context)
+
                 result.add(
                     LegalAction(
                         actionType = "ActivateAbility",
@@ -261,6 +269,7 @@ class ManaAbilityEnumerator : ActionEnumerator {
                                 (ability.effect as CompositeEffect).effects.any {
                                     it is AddAnyColorManaEffect || it is AddAnyColorManaSpendOnChosenTypeEffect
                                 }),
+                        availableManaColors = availableManaColors,
                         manaCostString = manaAbilityManaCostString
                     )
                 )
@@ -352,5 +361,82 @@ class ManaAbilityEnumerator : ActionEnumerator {
             }
         }
         return override
+    }
+
+    /**
+     * Resolves the constrained set of producible colors for an ability whose effect
+     * narrows the player's color choice (Mox Amber, Fellwar Stone, Reflecting Pool, ...).
+     *
+     * Returns `null` when the ability accepts any of the five colors (plain
+     * AddAnyColorMana / AddAnyColorManaSpendOnChosenType), so the UI can render the
+     * full picker. Returns an explicit list (possibly empty) for constrained effects;
+     * an empty list signals "no producible color right now" and the picker should
+     * either be skipped or show no options.
+     */
+    private fun constrainedColors(
+        effect: Effect,
+        state: GameState,
+        sourceId: EntityId,
+        playerId: EntityId,
+        context: EnumerationContext,
+    ): List<Color>? = when (effect) {
+        is AddManaOfColorAmongEffect -> matchingPermanentColors(effect.filter, state, playerId, context)
+        is AddManaOfColorLandsCouldProduceEffect -> landScopeColors(effect.scope, state, sourceId, playerId, context)
+        is CompositeEffect -> {
+            val constrained = effect.effects.firstNotNullOfOrNull {
+                when (it) {
+                    is AddManaOfColorAmongEffect ->
+                        matchingPermanentColors(it.filter, state, playerId, context)
+                    is AddManaOfColorLandsCouldProduceEffect ->
+                        landScopeColors(it.scope, state, sourceId, playerId, context)
+                    else -> null
+                }
+            }
+            constrained
+        }
+        else -> null
+    }
+
+    private fun matchingPermanentColors(
+        filter: GameObjectFilter,
+        state: GameState,
+        playerId: EntityId,
+        context: EnumerationContext,
+    ): List<Color> {
+        val projected = context.projected
+        val predicateEvaluator = PredicateEvaluator()
+        val predCtx = PredicateContext(controllerId = playerId)
+        val colors = mutableSetOf<Color>()
+        for (bfId in state.getBattlefield()) {
+            if (!predicateEvaluator.matchesWithProjection(state, projected, bfId, filter, predCtx)) continue
+            for (colorName in projected.getColors(bfId)) {
+                Color.entries.find { it.name == colorName }?.let { colors.add(it) }
+            }
+        }
+        return colors.toList()
+    }
+
+    private fun landScopeColors(
+        scope: LandControllerScope,
+        state: GameState,
+        @Suppress("UNUSED_PARAMETER") sourceId: EntityId,
+        playerId: EntityId,
+        context: EnumerationContext,
+    ): List<Color> {
+        val projected = context.projected
+        val targetPlayers = when (scope) {
+            LandControllerScope.YOU -> setOf(playerId)
+            LandControllerScope.OPPONENTS -> state.turnOrder.filter { it != playerId }.toSet()
+            LandControllerScope.ANY -> state.turnOrder.toSet()
+        }
+        if (targetPlayers.isEmpty()) return emptyList()
+        val landIds = state.getBattlefield().filter { permId ->
+            val container = state.getEntity(permId) ?: return@filter false
+            val card = container.get<CardComponent>() ?: return@filter false
+            card.typeLine.isLand && projected.getController(permId) in targetPlayers
+        }
+        return LandManaColorInspector
+            .colorsLandsCouldProduce(state, projected, landIds, context.cardRegistry)
+            .toList()
     }
 }

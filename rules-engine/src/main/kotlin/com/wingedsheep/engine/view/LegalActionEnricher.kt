@@ -48,6 +48,7 @@ class LegalActionEnricher(
             minX = action.minX,
             isManaAbility = action.isManaAbility,
             requiresManaColorChoice = action.requiresManaColorChoice,
+            availableManaColors = action.availableManaColors?.map { it.name },
             additionalCostInfo = action.additionalCostInfo?.toDto(),
             hasConvoke = action.hasConvoke,
             validConvokeCreatures = action.convokeCreatures?.map { it.toDto() },

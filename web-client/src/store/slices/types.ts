@@ -290,6 +290,10 @@ export interface ConvokeCreatureSelection {
 export interface ManaColorSelectionState {
   /** The action ready to submit (with costPayment already set) */
   action: GameAction
+  /**
+   * Restricted set of producible colors for this ability ("WHITE", ...). Undefined = all five.
+   */
+  availableColors?: readonly string[]
 }
 
 /**

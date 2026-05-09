@@ -605,7 +605,10 @@ export function enterPhase(
     }
 
     case 'manaColorChoice': {
-      store.startManaColorSelection({ action })
+      store.startManaColorSelection({
+        action,
+        ...(actionInfo.availableManaColors ? { availableColors: actionInfo.availableManaColors } : {}),
+      })
       break
     }
 

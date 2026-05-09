@@ -11,10 +11,13 @@ const COLOR_STYLES: Record<string, { bg: string; hover: string; label: string }>
   GREEN: { bg: '#1a5a2a', hover: '#1e6e34', label: 'Green' },
 }
 
-const COLORS = ['WHITE', 'BLUE', 'BLACK', 'RED', 'GREEN']
+const COLORS = ['WHITE', 'BLUE', 'BLACK', 'RED', 'GREEN'] as const
 
 /**
  * Overlay for selecting a mana color when activating "add one mana of any color" abilities.
+ *
+ * For color-constrained abilities (Mox Amber, Fellwar Stone, Reflecting Pool) the server
+ * sends `availableManaColors` and the picker only renders those colors.
  */
 export function ManaColorSelectionOverlay() {
   const manaColorSelectionState = useGameStore((s) => s.manaColorSelectionState)
@@ -22,6 +25,11 @@ export function ManaColorSelectionOverlay() {
   const cancelManaColorSelection = useGameStore((s) => s.cancelManaColorSelection)
 
   if (!manaColorSelectionState) return null
+
+  const allowedColors = manaColorSelectionState.availableColors
+  const colorsToShow = allowedColors
+    ? COLORS.filter((c) => allowedColors.includes(c))
+    : COLORS
 
   return (
     <div
@@ -60,7 +68,12 @@ export function ManaColorSelectionOverlay() {
           justifyContent: 'center',
         }}
       >
-        {COLORS.map((color) => {
+        {colorsToShow.length === 0 ? (
+          <div style={{ color: '#ccc', fontSize: 16 }}>
+            No producible color available right now.
+          </div>
+        ) : null}
+        {colorsToShow.map((color) => {
           const style = COLOR_STYLES[color]!
           const isLight = color === 'WHITE'
           return (

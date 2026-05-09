@@ -50,6 +50,15 @@ data class LegalAction(
     // Mana abilities
     val isManaAbility: Boolean = false,
     val requiresManaColorChoice: Boolean = false,
+    /**
+     * Constrained set of colors the ability can produce, when known.
+     *
+     * Null means the ability accepts all five colors (e.g. plain "Add one mana of any color"
+     * — Gilded Lotus, Birds of Paradise). When non-null, the UI must restrict the color
+     * picker to these colors (Mox Amber, Fellwar Stone, Reflecting Pool). An empty list
+     * means no color is producible right now and the action effectively no-ops if activated.
+     */
+    val availableManaColors: List<Color>? = null,
 
     // Auto-tap (engine computes the solution; server enriches with full mana source info)
     val autoTapPreview: List<EntityId>? = null,

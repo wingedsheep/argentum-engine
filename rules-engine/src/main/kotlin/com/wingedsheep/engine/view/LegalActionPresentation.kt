@@ -58,6 +58,13 @@ data class LegalActionInfo(
     val autoTapPreview: List<EntityId>? = null,
     val availableManaSources: List<ManaSourceInfo>? = null,
     val requiresManaColorChoice: Boolean = false,
+    /**
+     * Restricted color names ("WHITE", "BLUE", ...) when the ability can only produce a
+     * subset (Mox Amber, Fellwar Stone, Reflecting Pool). Null = all five colors are valid
+     * (Gilded Lotus, Birds of Paradise). The client must hide unproducible colors from the
+     * picker. See [LegalAction.availableManaColors].
+     */
+    val availableManaColors: List<String>? = null,
     val sourceZone: String? = null,
     val blockerMaxBlockCounts: Map<EntityId, Int>? = null,
     val mandatoryBlockerAssignments: Map<EntityId, List<EntityId>>? = null,

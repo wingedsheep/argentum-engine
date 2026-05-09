@@ -593,6 +593,13 @@ export interface LegalActionInfo {
   readonly availableManaSources?: readonly ManaSourceInfo[]
   /** Whether this ability produces mana of any color and needs a color choice from the player */
   readonly requiresManaColorChoice?: boolean
+  /**
+   * Restricted set of producible color names ("WHITE", "BLUE", "BLACK", "RED", "GREEN")
+   * for color-constrained abilities (Mox Amber, Fellwar Stone, Reflecting Pool).
+   * Undefined means all five colors are valid (Gilded Lotus, Birds of Paradise).
+   * The picker must hide colors not present in this list.
+   */
+  readonly availableManaColors?: readonly string[]
   /** Source zone if this action is from a non-hand zone (e.g., "LIBRARY" for Future Sight) */
   readonly sourceZone?: string
   /** Max block counts for blockers that can block more than one attacker */
