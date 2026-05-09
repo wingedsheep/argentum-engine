@@ -15,6 +15,7 @@ import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
+import com.wingedsheep.sdk.scripting.predicates.CardPredicate
 import com.wingedsheep.sdk.scripting.predicates.ControllerPredicate
 import com.wingedsheep.sdk.scripting.targets.*
 
@@ -198,9 +199,32 @@ class TargetEnumerationUtils(
                 minTargets = req.effectiveMinCount,
                 maxTargets = req.count,
                 validTargets = validTargets,
-                targetZone = getTargetZone(req)
+                targetZone = getTargetZone(req),
+                xConstrainsManaValue = requirementUsesManaValueAtMostX(req)
             )
         }
+    }
+
+    /**
+     * True when [requirement] is a [TargetObject] whose filter contains
+     * [CardPredicate.ManaValueAtMostX] (anywhere in the predicate tree).
+     *
+     * Surfaced to the client so it can re-filter [TargetInfo.validTargets] by the
+     * chosen X after X selection — the enumerator's list is permissive (X is unbound
+     * at enumeration time) and would otherwise let the player click an over-MV
+     * target that the server then rejects on cast.
+     */
+    fun requirementUsesManaValueAtMostX(requirement: TargetRequirement): Boolean {
+        val filter = (requirement as? TargetObject)?.filter ?: return false
+        return filter.baseFilter.cardPredicates.any { containsManaValueAtMostX(it) }
+    }
+
+    private fun containsManaValueAtMostX(predicate: CardPredicate): Boolean = when (predicate) {
+        CardPredicate.ManaValueAtMostX -> true
+        is CardPredicate.And -> predicate.predicates.any { containsManaValueAtMostX(it) }
+        is CardPredicate.Or -> predicate.predicates.any { containsManaValueAtMostX(it) }
+        is CardPredicate.Not -> containsManaValueAtMostX(predicate.predicate)
+        else -> false
     }
 
     fun allRequirementsSatisfied(targetInfos: List<TargetInfo>): Boolean {

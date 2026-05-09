@@ -367,6 +367,7 @@ export function enterPhase(
   actionInfo: LegalActionInfo,
   action: GameAction,
   store: PipelineStoreMethods,
+  gameState?: ClientGameState,
 ): void {
   switch (phase.type) {
     case 'counterDistribution': {
@@ -575,11 +576,33 @@ export function enterPhase(
     }
 
     case 'targeting': {
+      // X-cost spells with "mana value X or less" target restrictions: the engine
+      // enumerates targets permissively because X is unbound at enumeration time.
+      // Once X has been chosen (cast-time or activation-time), narrow the candidate
+      // list to creatures whose mana value the chosen X actually covers.
+      const chosenX: number | null = (() => {
+        if (gameState == null) return null
+        if (action.type === 'CastSpell' || action.type === 'ActivateAbility' || action.type === 'TurnFaceUp') {
+          return typeof action.xValue === 'number' ? action.xValue : null
+        }
+        return null
+      })()
+      const filterByX = (
+        ids: readonly EntityId[],
+        constrained: boolean | undefined,
+      ): EntityId[] => {
+        if (!constrained || chosenX == null || gameState == null) return [...ids]
+        return ids.filter((id) => {
+          const mv = gameState.cards[id]?.manaValue
+          return typeof mv === 'number' && mv <= chosenX
+        })
+      }
+
       if (actionInfo.targetRequirements && actionInfo.targetRequirements.length > 1) {
         const firstReq = actionInfo.targetRequirements[0]!
         store.startTargeting({
           action,
-          validTargets: [...firstReq.validTargets],
+          validTargets: filterByX(firstReq.validTargets, firstReq.xConstrainsManaValue),
           selectedTargets: [],
           minTargets: firstReq.minTargets,
           maxTargets: firstReq.maxTargets,
@@ -594,7 +617,7 @@ export function enterPhase(
       } else {
         store.startTargeting({
           action,
-          validTargets: [...(actionInfo.validTargets ?? [])],
+          validTargets: filterByX(actionInfo.validTargets ?? [], actionInfo.xConstrainsTargetManaValue),
           selectedTargets: [],
           minTargets: actionInfo.minTargets ?? actionInfo.targetCount ?? 1,
           maxTargets: actionInfo.targetCount ?? 1,

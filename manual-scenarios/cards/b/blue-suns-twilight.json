@@ -1,0 +1,35 @@
+{
+  "player1Name": "Alice",
+  "player2Name": "Bob",
+  "player1": {
+    "lifeTotal": 20,
+    "hand": ["Blue Sun's Twilight"],
+    "battlefield": [
+      {"name": "Island", "tapped": false},
+      {"name": "Island", "tapped": false},
+      {"name": "Island", "tapped": false},
+      {"name": "Island", "tapped": false},
+      {"name": "Island", "tapped": false},
+      {"name": "Island", "tapped": false},
+      {"name": "Island", "tapped": false}
+    ],
+    "graveyard": [],
+    "library": ["Island", "Island", "Island"]
+  },
+  "player2": {
+    "lifeTotal": 20,
+    "hand": [],
+    "battlefield": [
+      {"name": "Grizzly Bears", "summoningSickness": false},
+      {"name": "Hill Giant", "summoningSickness": false},
+      {"name": "Exalted Angel", "summoningSickness": false}
+    ],
+    "graveyard": [],
+    "library": ["Island", "Island", "Island"]
+  },
+  "phase": "PRECOMBAT_MAIN",
+  "activePlayer": 1,
+  "priorityPlayer": 1,
+  "player1StopAtSteps": [],
+  "player2StopAtSteps": []
+}

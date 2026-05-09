@@ -77,7 +77,14 @@ export const createPipelineSlice: SliceCreator<PipelineSlice> = (set, get) => ({
     })
 
     const firstPhase = phases[0]!
-    enterPhase(firstPhase, actionInfo, accumulatedAction, getStoreMethods(get))
+    const gameStateForPhase = get().gameState
+    enterPhase(
+      firstPhase,
+      actionInfo,
+      accumulatedAction,
+      getStoreMethods(get),
+      gameStateForPhase ?? undefined,
+    )
     get().selectCard(null)
   },
 
@@ -205,7 +212,7 @@ export const createPipelineSlice: SliceCreator<PipelineSlice> = (set, get) => ({
     })
 
     const nextPhase = nextPhases[0]!
-    enterPhase(nextPhase, actionInfo, mergedAction, getStoreMethods(get))
+    enterPhase(nextPhase, actionInfo, mergedAction, getStoreMethods(get), gameState)
   },
 
   cancelPipeline: () => {

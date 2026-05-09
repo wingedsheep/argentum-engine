@@ -146,6 +146,7 @@ class CastFromZoneEnumerator : ActionEnumerator {
                             minTargets = firstReq.effectiveMinCount,
                             targetDescription = firstReq.description,
                             targetRequirements = if (targetInfos.size > 1) targetInfos else null,
+                            xConstrainsTargetManaValue = firstInfo.xConstrainsManaValue,
                             hasXCost = hasXCost,
                             maxAffordableX = maxAffordableX,
                             manaCostString = manaCostString,
@@ -269,6 +270,7 @@ class CastFromZoneEnumerator : ActionEnumerator {
                                         minTargets = firstReq.effectiveMinCount,
                                         targetDescription = firstReq.description,
                                         targetRequirements = if (targetInfos.size > 1) targetInfos else null,
+                                        xConstrainsTargetManaValue = firstInfo.xConstrainsManaValue,
                                         hasXCost = hasXCost,
                                         maxAffordableX = maxAffordableX,
                                         manaCostString = manaCostString,
@@ -451,6 +453,7 @@ class CastFromZoneEnumerator : ActionEnumerator {
                                         minTargets = firstReq.effectiveMinCount,
                                         targetDescription = firstReq.description,
                                         targetRequirements = if (targetInfos.size > 1) targetInfos else null,
+                                        xConstrainsTargetManaValue = firstInfo.xConstrainsManaValue,
                                         manaCostString = costString,
                                         hasXCost = hasXCost,
                                         maxAffordableX = maxAffordableX,
@@ -688,6 +691,7 @@ class CastFromZoneEnumerator : ActionEnumerator {
                                         minTargets = firstReq.effectiveMinCount,
                                         targetDescription = firstReq.description,
                                         targetRequirements = if (targetInfos.size > 1) targetInfos else null,
+                                        xConstrainsTargetManaValue = firstInfo.xConstrainsManaValue,
                                         manaCostString = costString,
                                         sourceZone = "EXILE",
                                         additionalCostInfo = linkedAdditionalCostInfo
@@ -861,6 +865,7 @@ class CastFromZoneEnumerator : ActionEnumerator {
                                         minTargets = firstReq.effectiveMinCount,
                                         targetDescription = firstReq.description,
                                         targetRequirements = if (targetInfos.size > 1) targetInfos else null,
+                                        xConstrainsTargetManaValue = firstInfo.xConstrainsManaValue,
                                         manaCostString = costString,
                                         sourceZone = sourceZoneName
                                     )

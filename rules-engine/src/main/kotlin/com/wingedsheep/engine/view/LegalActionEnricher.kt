@@ -37,6 +37,7 @@ class LegalActionEnricher(
             minTargets = action.minTargets,
             targetDescription = action.targetDescription,
             targetRequirements = action.targetRequirements?.map { it.toDto() },
+            xConstrainsTargetManaValue = action.xConstrainsTargetManaValue,
             validAttackers = action.validAttackers,
             mandatoryAttackers = action.mandatoryAttackers,
             validAttackTargets = action.validAttackTargets,
@@ -113,7 +114,8 @@ class LegalActionEnricher(
         minTargets = minTargets,
         maxTargets = maxTargets,
         validTargets = validTargets,
-        targetZone = targetZone
+        targetZone = targetZone,
+        xConstrainsManaValue = xConstrainsManaValue
     )
 
     private fun AdditionalCostData.toDto() = AdditionalCostInfo(

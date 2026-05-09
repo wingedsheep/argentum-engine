@@ -164,6 +164,9 @@ class BlueSunsTwilightScenarioTest : ScenarioTestBase() {
                 withClue("Hill Giant should appear among the candidate targets surfaced to the UI") {
                     cast!!.validTargets shouldNotBe emptyList<Any>()
                 }
+                withClue("xConstrainsTargetManaValue must be true so the client re-filters by chosen X") {
+                    cast!!.xConstrainsTargetManaValue shouldBe true
+                }
             }
         }
 
