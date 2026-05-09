@@ -69,7 +69,7 @@ one enchantment (Unholy Annex) are double-faced / modal DFCs and depend on DFC s
 - [x] Tolarian Terror ×3
 
 ### Sorceries (1)
-- [ ] Blue Sun's Twilight ×1
+- [x] Blue Sun's Twilight ×1
 
 ### Instants (25)
 - [x] Consider ×4 *(Innistrad: Midnight Hunt)*
@@ -78,10 +78,10 @@ one enchantment (Unholy Annex) are double-faced / modal DFCs and depend on DFC s
 - [x] Fading Hope ×4
 - [x] Flow of Knowledge ×2
 - [x] Impulse ×2
-- [ ] Memory Deluge ×1
+- [x] Memory Deluge ×1
 - [x] Negate ×2 *(shared with UWTempo)*
 - [x] Spell Pierce ×2 *(shared with UWTempo)*
-- [ ] Thirst for Discovery ×2
+- [x] Thirst for Discovery ×2
 
 ### Lands (23)
 - [x] Island ×23
