@@ -22,11 +22,11 @@ additional baseline opponents. Those deck lists aren't public; start with the th
 
 ## Coverage summary
 
-**Implemented** (9 / 44 unique cards): Kitsa, Otterball Elite · Iridescent Vinelasher ·
+**Implemented** (10 / 44 unique cards): Kitsa, Otterball Elite · Iridescent Vinelasher ·
 Malcolm, Alluring Scoundrel · Negate · Consider · Chrome Host Seedshark ·
-Hullbreaker Horror · Island · Swamp.
+Hullbreaker Horror · Deep-Cavern Bat · Island · Swamp.
 
-**Missing** (35 unique cards — 4 creatures + 1 planeswalker + 12 instants + 1 sorcery +
+**Missing** (34 unique cards — 3 creatures + 1 planeswalker + 12 instants + 1 sorcery +
 4 enchantments + 6 nonbasic lands + 7 more creatures). One card (Cecil, Dark Knight) and
 one enchantment (Unholy Annex) are double-faced / modal DFCs and depend on DFC support.
 
@@ -91,7 +91,7 @@ one enchantment (Unholy Annex) are double-faced / modal DFCs and depend on DFC s
 ### Creatures (30)
 - [ ] Bloodletter of Aclazotz ×4
 - [x] Cecil, Dark Knight // Cecil, Redeemed Paladin ×3 *(DFC — requires DFC support)*
-- [ ] Deep-Cavern Bat ×4
+- [x] Deep-Cavern Bat ×4 *(Lost Caverns of Ixalan)*
 - [ ] Forsaken Miner ×4
 - [x] Gatekeeper of Malakir ×4
 - [x] Mai, Scornful Striker ×3
