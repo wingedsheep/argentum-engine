@@ -6,7 +6,6 @@ https://api.scryfall.com/cards/named?exact=Beyond%20the%20Quiet&set=eoe
 ## Warp, and related
 
 - [x] Bygone Colossus
-- [ ] Starfield Shepherd
 - [ ] Anticausal Vestige
 - [ ] All-Fates Stalker
 - [ ] Astelli Reclaimer

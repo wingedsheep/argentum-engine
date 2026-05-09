@@ -205,7 +205,7 @@
 - [ ] Specimen Freighter
 - [x] Squire's Lightblade
 - [x] Starbreach Whale
-- [ ] Starfield Shepherd
+- [x] Starfield Shepherd
 - [ ] Starfield Vocalist
 - [x] Starfighter Pilot
 - [ ] Starport Security
