@@ -1692,15 +1692,18 @@ function SavedDecksBrowser({
             >
               <ManaSymbol symbol="C" size={18} />
             </button>
-            {colorFilter.size > 0 && (
-              <button
-                className={styles.linkButton}
-                onClick={() => setColorFilter(new Set())}
-                type="button"
-              >
-                clear
-              </button>
-            )}
+            {/* Always rendered (with `visibility: hidden` when inactive) so toggling a
+             * colour doesn't widen the chip group and shift the chips leftwards. */}
+            <button
+              className={`${styles.linkButton} ${styles.colorChipsClear}`}
+              onClick={() => setColorFilter(new Set())}
+              type="button"
+              aria-hidden={colorFilter.size === 0}
+              tabIndex={colorFilter.size === 0 ? -1 : 0}
+              style={colorFilter.size === 0 ? { visibility: 'hidden' } : undefined}
+            >
+              clear
+            </button>
           </div>
         </div>
 

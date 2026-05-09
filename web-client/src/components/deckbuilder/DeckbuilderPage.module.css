@@ -422,6 +422,13 @@
   gap: 4px;
 }
 
+/* Reserves a stable slot for the "clear" link so the chip row's width stays
+ * constant whether or not a colour is selected. Without this, toggling a colour
+ * inserts the link, widens the chip group, and pushes the icons leftwards. */
+.colorChipsClear {
+  flex: 0 0 auto;
+}
+
 .browserGrid {
   flex: 1;
   overflow-y: auto;
