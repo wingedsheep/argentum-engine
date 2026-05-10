@@ -122,6 +122,36 @@ class PossibilityTechnicianScenarioTest : ScenarioTestBase() {
                     shockResult.error shouldNotBe null
                 }
             }
+
+            test("ETB of another Kavu also triggers — exercises the 'or another Kavu' filter half") {
+                val game = scenario()
+                    .withPlayers("Player1", "Player2")
+                    .withCardOnBattlefield(1, "Possibility Technician") // existing Kavu
+                    .withCardInHand(1, "Possibility Technician")        // a second Kavu to cast
+                    .withLandsOnBattlefield(1, "Mountain", 3)
+                    .withCardInLibrary(1, "Shock")
+                    .withCardInLibrary(1, "Mountain")
+                    .withCardInLibrary(1, "Mountain")
+                    .withCardInLibrary(2, "Mountain")
+                    .withActivePlayer(1)
+                    .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                    .build()
+
+                val exileBefore = game.state.getExile(game.player1Id).size
+                game.castSpell(1, "Possibility Technician")
+                game.resolveStack() // resolve the spell
+                game.resolveStack() // resolve first triggered ability
+                game.resolveStack() // resolve second triggered ability if any
+
+                val exileAfter = game.state.getExile(game.player1Id).size
+                // When the new Tech enters, the existing Tech's ETB ability also triggers
+                // ("Whenever this creature OR another Kavu you control enters"), so two
+                // exile-and-may-play triggers fire — one for the entering creature, one
+                // for the existing creature observing another Kavu's entry.
+                withClue("Both Kavus' triggers should fire — exile two cards (1 from each trigger)") {
+                    (exileAfter - exileBefore) shouldBe 2
+                }
+            }
         }
     }
 }
