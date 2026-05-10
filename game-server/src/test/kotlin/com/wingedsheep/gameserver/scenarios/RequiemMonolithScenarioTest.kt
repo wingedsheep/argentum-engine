@@ -232,6 +232,70 @@ class RequiemMonolithScenarioTest : ScenarioTestBase() {
                     game.isOnBattlefield("Towering Baloth") shouldBe true
                 }
             }
+
+            // Multi-blocker combat: cumulative observable totals match the Scryfall ruling
+            // (2025-07-25, "the creature's controller draws cards and loses life equal to the
+            // total amount of damage dealt"). The mechanism differs from the ruling though:
+            // the engine emits a separate DamageReceivedEvent per source, so the trigger fires
+            // N times with per-source amounts instead of once with the aggregated total. The
+            // sum is the same for Requiem Monolith, but the trigger *count* differs — which
+            // matters for counter-the-trigger interactions and replacement effects on draws.
+            // This test pins the totals; the trigger-count semantics are an engine-wide gap
+            // (also affects Thrashing Mudspawn et al.) that needs DamageReceivedEvent
+            // aggregation per target before the ruling is faithfully implemented.
+            test("multi-blocker combat: cumulative draws + life loss match total damage taken") {
+                val game = scenario()
+                    .withPlayers("Player1", "Player2")
+                    .withCardOnBattlefield(1, "Requiem Monolith")
+                    .withCardOnBattlefield(1, "Towering Baloth") // 7/6 attacker
+                    .withCardOnBattlefield(2, "Glory Seeker") // 2/2 blocker A
+                    .withCardOnBattlefield(2, "Devoted Hero") // 1/2 blocker B
+                    .withLandsOnBattlefield(1, "Swamp", 4)
+                    .withCardInLibrary(1, "Swamp")
+                    .withCardInLibrary(1, "Swamp")
+                    .withCardInLibrary(1, "Swamp")
+                    .withCardInLibrary(1, "Swamp")
+                    .withCardInLibrary(2, "Mountain")
+                    .withActivePlayer(1)
+                    .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                    .build()
+
+                val monolithId = game.findPermanent("Requiem Monolith")!!
+                val balothId = game.findPermanent("Towering Baloth")!!
+                val ability = cardRegistry.getCard("Requiem Monolith")!!.script.activatedAbilities.first()
+
+                // Grant the trigger to our attacker; decline the self-ping.
+                game.execute(
+                    ActivateAbility(
+                        playerId = game.player1Id,
+                        sourceId = monolithId,
+                        abilityId = ability.id,
+                        targets = listOf(ChosenTarget.Permanent(balothId))
+                    )
+                )
+                game.resolveStack()
+                game.answerYesNo(false)
+                game.resolveStack()
+
+                val handAfterGrant = game.handSize(1)
+                val lifeAfterGrant = game.getLifeTotal(1)
+
+                // Combat: Baloth attacks, both opposing creatures block — total 2 + 1 = 3 damage to Baloth.
+                game.passUntilPhase(Phase.COMBAT, Step.DECLARE_ATTACKERS)
+                game.declareAttackers(mapOf("Towering Baloth" to 2))
+                game.passUntilPhase(Phase.COMBAT, Step.DECLARE_BLOCKERS)
+                game.declareBlockers(mapOf("Glory Seeker" to listOf("Towering Baloth"), "Devoted Hero" to listOf("Towering Baloth")))
+
+                // Drive priority through combat damage and let the granted trigger(s) resolve.
+                game.passUntilPhase(Phase.POSTCOMBAT_MAIN, Step.POSTCOMBAT_MAIN)
+
+                withClue("Net cards drawn equals total combat damage to Baloth (2 + 1 = 3)") {
+                    game.handSize(1) shouldBe handAfterGrant + 3
+                }
+                withClue("Net life lost equals total combat damage to Baloth (2 + 1 = 3)") {
+                    game.getLifeTotal(1) shouldBe lifeAfterGrant - 3
+                }
+            }
         }
     }
 }
