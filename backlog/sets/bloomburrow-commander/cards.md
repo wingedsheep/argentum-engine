@@ -2,7 +2,7 @@
 
 **Set Size:** 312 cards
 **Release Date:** August 2, 2024
-**Implemented:** 8 / 312
+**Implemented:** 9 / 312
 
 | Color      | Total | Done |
 |------------|-------|------|
@@ -13,7 +13,7 @@
 | Green      | 62    | 2    |
 | Multicolor | 40    | 1    |
 | Colorless  | 33    | 1    |
-| Land       | 69    | 5    |
+| Land       | 69    | 6    |
 
 ---
 
@@ -288,7 +288,7 @@
 - [x] Temple of Abandon
 - [x] Temple of Enlightenment
 - [x] Temple of Epiphany
-- [ ] Temple of Malady
+- [x] Temple of Malady
 - [ ] Temple of Mystery
 - [x] Temple of Plenty
 - [ ] Temple of Triumph
