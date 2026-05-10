@@ -168,17 +168,7 @@ class DynamicAmountEvaluator(
                     }
                     return resolveNumericProperty(state, entityId, amount.numericProperty, context, useProjected = false)
                 }
-                // CreatureTypeCount uses the projectedState passed in (e.g., intermediate
-                // projected state from EffectApplicator) to read post-layer-4 subtypes, then
-                // falls back to base card subtypes if projection is unavailable.
-                if (amount.numericProperty is EntityNumericProperty.CreatureTypeCount) {
-                    val subtypes = projectedState?.getSubtypes(entityId)
-                        ?: state.getEntity(entityId)?.get<CardComponent>()?.typeLine?.subtypes
-                            ?.map { it.value }?.toSet()
-                        ?: emptySet()
-                    return subtypes.size
-                }
-                resolveNumericProperty(state, entityId, amount.numericProperty, context, useProjected = true)
+                resolveNumericProperty(state, entityId, amount.numericProperty, context, useProjected = true, explicitProjected = projectedState)
             }
 
             is DynamicAmount.Divide -> {
@@ -643,7 +633,8 @@ class DynamicAmountEvaluator(
         entityId: EntityId,
         property: EntityNumericProperty,
         context: EffectContext,
-        useProjected: Boolean
+        useProjected: Boolean,
+        explicitProjected: ProjectedState? = null
     ): Int {
         return when (property) {
             is EntityNumericProperty.Power ->
@@ -668,11 +659,28 @@ class DynamicAmountEvaluator(
                     ?.get<com.wingedsheep.engine.state.components.combat.BlockedComponent>()
                     ?.blockerIds?.size ?: 0
 
-            // Handled earlier in evaluate() where projectedState is available.
-            // This fallback uses base subtypes only (projected path is in evaluate()).
-            is EntityNumericProperty.CreatureTypeCount ->
-                state.getEntity(entityId)?.get<CardComponent>()?.typeLine?.subtypes?.size ?: 0
+            // Read from projected state when available so layer-4 type-changing effects
+            // (including Changeling) are honored. Falls back to base subtypes off the battlefield.
+            is EntityNumericProperty.SubtypeCount ->
+                resolveSubtypeCount(state, entityId, useProjected, explicitProjected)
         }
+    }
+
+    private fun resolveSubtypeCount(
+        state: GameState,
+        entityId: EntityId,
+        useProjected: Boolean,
+        explicitProjected: ProjectedState?
+    ): Int {
+        if (useProjected) {
+            val projected = explicitProjected
+                ?: if (projectForBattlefieldCounting) state.projectedState else null
+            if (projected != null) {
+                val projectedSubtypes = projected.getSubtypes(entityId)
+                if (projectedSubtypes.isNotEmpty()) return projectedSubtypes.size
+            }
+        }
+        return state.getEntity(entityId)?.get<CardComponent>()?.typeLine?.subtypes?.size ?: 0
     }
 
     /**

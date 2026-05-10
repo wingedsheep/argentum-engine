@@ -6,6 +6,7 @@ import com.wingedsheep.sdk.scripting.values.DynamicAmount
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
+
 /**
  * Modifies power/toughness on a filtered set of permanents.
  *
@@ -96,28 +97,5 @@ data class SetBasePowerToughnessStatic(
     val filter: GroupFilter = GroupFilter.attachedCreature()
 ) : StaticAbility {
     override val description: String = "has base power and toughness $power/$toughness"
-    override fun applyTextReplacement(replacer: TextReplacer): StaticAbility = this
-}
-
-/**
- * Permanents matching [filter] get +[bonusPerType]/+[bonusPerType] for each of their own
- * creature types, up to a maximum of [maxBonus].
- *
- * Each affected creature is evaluated individually — a creature with 3 types gets +3/+3,
- * one with 1 type gets +1/+1, a Changeling (all types) is capped at [maxBonus].
- *
- * @property filter Creatures to affect (e.g., non-Human creatures you control)
- * @property bonusPerType P/T bonus per creature type (usually 1)
- * @property maxBonus Maximum total P/T bonus
- */
-@SerialName("BonusPerCreatureType")
-@Serializable
-data class BonusPerCreatureType(
-    val filter: GroupFilter,
-    val bonusPerType: Int = 1,
-    val maxBonus: Int = 10
-) : StaticAbility {
-    override val description: String =
-        "gets +$bonusPerType/+$bonusPerType for each of its creature types (max +$maxBonus/+$maxBonus)"
     override fun applyTextReplacement(replacer: TextReplacer): StaticAbility = this
 }

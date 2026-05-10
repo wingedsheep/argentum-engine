@@ -52,12 +52,17 @@ sealed interface EntityNumericProperty {
     }
 
     /**
-     * The number of distinct creature types this entity has (from projected state).
-     * Used by BonusPerCreatureType static ability (e.g., Diligent Zookeeper).
+     * The number of distinct subtypes this entity has, read from projected state when
+     * available (so layer-4 type-changing effects, including Changeling, are honored).
+     *
+     * Note: this counts every subtype string on the entity, not only creature types.
+     * For creature cards without type-changing effects to non-creature subtypes (the
+     * common case) this matches CR 205.3m's "creature types"; cards that gain artifact
+     * or vehicle subtypes will be over-counted.
      */
-    @SerialName("CreatureTypeCount")
+    @SerialName("SubtypeCount")
     @Serializable
-    data object CreatureTypeCount : EntityNumericProperty {
-        override val description: String = "the number of its creature types"
+    data object SubtypeCount : EntityNumericProperty {
+        override val description: String = "the number of its subtypes"
     }
 }

@@ -3,9 +3,12 @@ package com.wingedsheep.mtg.sets.definitions.tla.cards
 import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.BonusPerCreatureType
 import com.wingedsheep.sdk.scripting.GameObjectFilter
+import com.wingedsheep.sdk.scripting.GrantDynamicStatsEffect
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
+import com.wingedsheep.sdk.scripting.values.DynamicAmount
+import com.wingedsheep.sdk.scripting.values.EntityNumericProperty
+import com.wingedsheep.sdk.scripting.values.EntityReference
 
 /**
  * Diligent Zookeeper — {3}{G}
@@ -23,10 +26,20 @@ val DiligentZookeeper = card("Diligent Zookeeper") {
     toughness = 4
 
     staticAbility {
-        ability = BonusPerCreatureType(
+        // Each affected creature gets +N/+N where N = min(its subtype count, 10).
+        // EntityReference.AffectedEntity resolves per-entity inside EffectApplicator,
+        // so each creature is evaluated against its own type count.
+        val bonus = DynamicAmount.Min(
+            DynamicAmount.EntityProperty(
+                entity = EntityReference.AffectedEntity,
+                numericProperty = EntityNumericProperty.SubtypeCount
+            ),
+            DynamicAmount.Fixed(10)
+        )
+        ability = GrantDynamicStatsEffect(
             filter = GroupFilter(GameObjectFilter.Creature.notSubtype(Subtype.HUMAN).youControl()),
-            bonusPerType = 1,
-            maxBonus = 10
+            powerBonus = bonus,
+            toughnessBonus = bonus
         )
     }
 

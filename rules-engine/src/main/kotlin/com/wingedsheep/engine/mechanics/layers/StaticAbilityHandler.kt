@@ -61,10 +61,6 @@ import com.wingedsheep.sdk.scripting.conditions.SourceIsUntapped
 import com.wingedsheep.sdk.scripting.GrantKeyword
 import com.wingedsheep.sdk.scripting.RemoveKeywordStatic
 import com.wingedsheep.sdk.scripting.GrantCantBeBlockedToSmallCreatures
-import com.wingedsheep.sdk.scripting.BonusPerCreatureType
-import com.wingedsheep.sdk.scripting.values.DynamicAmount
-import com.wingedsheep.sdk.scripting.values.EntityNumericProperty
-import com.wingedsheep.sdk.scripting.values.EntityReference
 import com.wingedsheep.sdk.scripting.GrantDynamicStatsEffect
 import com.wingedsheep.sdk.scripting.GrantWard
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
@@ -330,23 +326,6 @@ class StaticAbilityHandler(
             is GrantDynamicStatsEffect -> {
                 ContinuousEffectData(
                     modification = Modification.ModifyPowerToughnessDynamic(ability.powerBonus, ability.toughnessBonus),
-                    affectsFilter = convertGroupFilter(ability.filter)
-                )
-            }
-            is BonusPerCreatureType -> {
-                // +bonusPerType/+bonusPerType per creature type of the affected entity, capped at maxBonus.
-                // EntityReference.AffectedEntity resolves to the entity being pumped (set by EffectApplicator),
-                // so each creature is evaluated against its own type count.
-                val typeCountAmount = DynamicAmount.EntityProperty(
-                    entity = EntityReference.AffectedEntity,
-                    numericProperty = EntityNumericProperty.CreatureTypeCount
-                )
-                val bonusAmount = DynamicAmount.Min(
-                    left = DynamicAmount.Multiply(typeCountAmount, ability.bonusPerType),
-                    right = DynamicAmount.Fixed(ability.maxBonus)
-                )
-                ContinuousEffectData(
-                    modification = Modification.ModifyPowerToughnessDynamic(bonusAmount, bonusAmount),
                     affectsFilter = convertGroupFilter(ability.filter)
                 )
             }
