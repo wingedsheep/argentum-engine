@@ -2,7 +2,7 @@
 
 **Set Size:** 312 cards
 **Release Date:** August 2, 2024
-**Implemented:** 6 / 312
+**Implemented:** 11 / 312
 
 | Color      | Total | Done |
 |------------|-------|------|
@@ -13,7 +13,7 @@
 | Green      | 62    | 2    |
 | Multicolor | 40    | 1    |
 | Colorless  | 33    | 1    |
-| Land       | 69    | 1    |
+| Land       | 69    | 8    |
 
 ---
 
@@ -285,13 +285,13 @@
 - [ ] Tamiyo, Field Researcher
 - [ ] Tear Asunder
 - [ ] Teferi, Time Raveler
-- [ ] Temple of Abandon
-- [ ] Temple of Enlightenment
-- [ ] Temple of Epiphany
-- [ ] Temple of Malady
-- [ ] Temple of Mystery
-- [ ] Temple of Plenty
-- [ ] Temple of Triumph
+- [x] Temple of Abandon
+- [x] Temple of Enlightenment
+- [x] Temple of Epiphany
+- [x] Temple of Malady
+- [x] Temple of Mystery
+- [x] Temple of Plenty
+- [x] Temple of Triumph
 - [ ] Tempt with Bunnies
 - [ ] Tempt with Discovery
 - [ ] Tendershoot Dryad
