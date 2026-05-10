@@ -43,6 +43,30 @@ class DemonWallScenarioTest : ScenarioTestBase() {
                 }
             }
 
+            test("can attack when it has any counter type (finality counter)") {
+                val game = scenario()
+                    .withPlayers("Player1", "Player2")
+                    .withCardOnBattlefield(1, "Demon Wall")
+                    .withCardInLibrary(1, "Plains")
+                    .withCardInLibrary(2, "Plains")
+                    .withActivePlayer(1)
+                    .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                    .build()
+
+                val demonWallId = game.findPermanent("Demon Wall")!!
+                game.state = game.state.updateEntity(demonWallId) { container ->
+                    val counters = container.get<CountersComponent>() ?: CountersComponent()
+                    container.with(counters.withAdded(CounterType.FINALITY, 1))
+                }
+
+                game.passUntilPhase(Phase.COMBAT, Step.DECLARE_ATTACKERS)
+
+                val result = game.declareAttackers(mapOf("Demon Wall" to 2))
+                withClue("Demon Wall with a finality counter should be able to attack") {
+                    result.error shouldBe null
+                }
+            }
+
             test("can attack when it has a +1/+1 counter") {
                 val game = scenario()
                     .withPlayers("Player1", "Player2")

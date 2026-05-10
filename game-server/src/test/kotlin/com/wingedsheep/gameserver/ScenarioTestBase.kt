@@ -7,6 +7,7 @@ import com.wingedsheep.mtg.sets.definitions.blb.BloomburrowSet
 import com.wingedsheep.mtg.sets.definitions.blc.BloomburrowCommanderSet
 import com.wingedsheep.mtg.sets.definitions.bro.BrothersWarSet
 import com.wingedsheep.mtg.sets.definitions.dsk.DuskmournSet
+import com.wingedsheep.mtg.sets.definitions.fin.FinalFantasySet
 import com.wingedsheep.mtg.sets.definitions.spm.SpiderManSet
 import com.wingedsheep.mtg.sets.definitions.woe.WildsOfEldrainSet
 import com.wingedsheep.mtg.sets.definitions.eoe.EdgeOfEternitiesSet
@@ -80,6 +81,7 @@ abstract class ScenarioTestBase : FunSpec() {
         register(BloomburrowCommanderSet.cards); register(BloomburrowCommanderSet.basicLands)
         register(BrothersWarSet.cards)
         register(DuskmournSet.cards)
+        register(FinalFantasySet.cards)
         register(SpiderManSet.cards)
         register(WildsOfEldrainSet.cards)
         register(EdgeOfEternitiesSet.cards); register(EdgeOfEternitiesSet.basicLands)

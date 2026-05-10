@@ -13,6 +13,7 @@ import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.CanAttackDespiteDefender
 import com.wingedsheep.sdk.scripting.CantAttackUnless
+import com.wingedsheep.sdk.scripting.filters.unified.Scope
 import com.wingedsheep.sdk.scripting.CantBeAttackedWithout
 
 // =========================================================================
@@ -76,7 +77,7 @@ class SummoningSicknessAttackRule : AttackRestrictionRule {
 }
 
 /**
- * Cannot have defender keyword, unless a CanAttackDespiteDefender ability's condition is met.
+ * Cannot have defender keyword, unless the creature has a conditional ability to bypass defender.
  */
 class DefenderAttackRule : AttackRestrictionRule {
     override fun check(ctx: AttackCheckContext): String? {
@@ -89,6 +90,7 @@ class DefenderAttackRule : AttackRestrictionRule {
         val effectContext = EffectContext(sourceId = ctx.attackerId, controllerId = ctx.attackingPlayer, opponentId = null)
         val canAttackDespite = cardDef.staticAbilities
             .filterIsInstance<CanAttackDespiteDefender>()
+            .filter { it.filter.scope is Scope.Self }
             .any { conditionEvaluator.evaluate(ctx.state, it.condition, effectContext) }
 
         if (canAttackDespite) return null
