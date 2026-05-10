@@ -36,6 +36,7 @@ import com.wingedsheep.sdk.scripting.effects.LandControllerScope
 import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.ManaRestriction
 import com.wingedsheep.sdk.scripting.ActivatedAbility
+import com.wingedsheep.sdk.scripting.AdditionalManaFromCreatureTap
 import com.wingedsheep.sdk.scripting.AdditionalManaOnLandTap
 import com.wingedsheep.sdk.scripting.AdditionalManaOnTap
 import com.wingedsheep.sdk.scripting.DampLandManaProduction
@@ -844,6 +845,7 @@ class ManaSolver(
             )
         }.map { source -> augmentWithAuraBonusMana(state, source, playerId) }
             .map { source -> augmentWithGlobalLandTapBonusMana(state, source) }
+            .map { source -> augmentWithCreatureTapBonusMana(state, source, playerId) }
             .let { sources ->
                 if (hasDampLandManaProduction(state)) applyLandManaDampening(sources) else sources
             }
@@ -1055,6 +1057,63 @@ class ManaSolver(
             source.copy(
                 bonusManaPerTap = source.bonusManaPerTap + totalBonus,
                 bonusManaColor = source.bonusManaColor ?: landColor
+            )
+        } else {
+            source
+        }
+    }
+
+    /**
+     * If any permanent the player controls has [AdditionalManaFromCreatureTap], add bonus
+     * mana to creature mana sources. Mirrors [augmentWithGlobalLandTapBonusMana] but for
+     * creatures. Also fires for projected creatures (e.g., earthbended lands).
+     */
+    private fun augmentWithCreatureTapBonusMana(
+        state: GameState,
+        source: ManaSource,
+        playerId: EntityId
+    ): ManaSource {
+        // Only augment sources that are tapped as creatures (projected creature check)
+        val isProjectedCreature = state.projectedState.isCreature(source.entityId)
+        if (!isProjectedCreature) return source
+
+        val sourceController = state.getEntity(source.entityId)
+            ?.get<ControllerComponent>()?.playerId ?: return source
+        if (sourceController != playerId) return source
+
+        var totalBonus = 0
+        var bonusColor: Color? = null
+        for (entityId in state.getBattlefield()) {
+            val container = state.getEntity(entityId) ?: continue
+            val controller = container.get<ControllerComponent>()?.playerId ?: continue
+            if (controller != playerId) continue
+
+            val card = container.get<CardComponent>() ?: continue
+            val cardDef = cardRegistry.getCard(card.cardDefinitionId) ?: continue
+
+            for (staticAbility in cardDef.script.staticAbilities) {
+                val onCreatureTap = staticAbility as? AdditionalManaFromCreatureTap ?: continue
+                val opponentId = state.turnOrder.firstOrNull { it != playerId }
+                val context = EffectContext(
+                    sourceId = entityId,
+                    controllerId = playerId,
+                    opponentId = opponentId,
+                    targets = emptyList(),
+                    xValue = null
+                )
+                val amount = dynamicAmountEvaluator.evaluate(state, onCreatureTap.amount, context)
+                if (amount > 0) {
+                    totalBonus += amount
+                    bonusColor = onCreatureTap.color
+                }
+            }
+        }
+
+        return if (totalBonus > 0 && bonusColor != null) {
+            source.copy(
+                bonusManaPerTap = source.bonusManaPerTap + totalBonus,
+                bonusManaColor = source.bonusManaColor ?: bonusColor,
+                producesColors = source.producesColors + bonusColor
             )
         } else {
             source
