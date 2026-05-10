@@ -165,6 +165,8 @@ export type {
   ConnectMessage,
   CreateGameMessage,
   JoinGameMessage,
+  DeckEntry,
+  PrintingRef,
   SubmitActionMessage,
   KeepHandMessage,
   MulliganMessage,

@@ -7,8 +7,27 @@
  *
  * Storage format is a versioned envelope so we can migrate the shape later without losing
  * users' decks.
+ *
+ * ## Storage versions
+ * - **v1** — `cards: Record<string, number>` only. No per-printing pinning.
+ * - **v2** — adds optional `entries: SavedDeckEntry[]` and `commanderPrinting?: PrintingRef`
+ *   so users can pick specific printings of cards (e.g. M10 vs. 2X2 Lightning Bolt). When
+ *   `entries` is undefined the deck behaves identically to v1 (name-only).
+ *
+ * v1 envelopes load forward into v2 with `entries === undefined` and `commanderPrinting`
+ * absent — no data loss, no shape coercion. The next save persists as v2.
  */
 import { create } from 'zustand'
+import type { PrintingRef } from '@/types'
+
+export interface SavedDeckEntry {
+  /** Card name (oracle identity). Same as the key in [SavedDeck.cards]. */
+  name: string
+  /** How many copies. Sum of `count` across entries with the same `name` MUST equal `cards[name]`. */
+  count: number
+  /** Optional pinned printing — when absent, server uses the card's default printing. */
+  printing?: PrintingRef
+}
 
 export interface SavedDeck {
   id: string
@@ -24,16 +43,36 @@ export interface SavedDeck {
    * Populated by the deckbuilder when the user marks a row with the crown toggle.
    */
   commander?: string
+  /**
+   * Optional v2 — pinned printing for the commander. Honoured when `commander` is set
+   * and the lobby format is commander-shaped. Independent of `entries`: the commander
+   * itself is stored separately, not inside `entries`.
+   */
+  commanderPrinting?: PrintingRef
+  /**
+   * Optional v2 — per-entry rows that pin specific printings. When present, this is
+   * authoritative over `cards` for the deckbuilder picker (which renders by entry, not
+   * by name) and gets sent over the wire as `cardEntries`. The flat `cards` map is kept
+   * in sync so legacy code paths (counts, summaries) keep working unchanged.
+   */
+  entries?: readonly SavedDeckEntry[]
   updatedAt: number
 }
 
-interface DeckLibraryStorage {
+interface DeckLibraryStorageV1 {
   version: 1
+  decks: Array<Omit<SavedDeck, 'entries' | 'commanderPrinting'>>
+}
+
+interface DeckLibraryStorageV2 {
+  version: 2
   decks: SavedDeck[]
 }
 
+type DeckLibraryStorage = DeckLibraryStorageV1 | DeckLibraryStorageV2
+
 const STORAGE_KEY = 'argentum.decks'
-const STORAGE_VERSION = 1
+const STORAGE_VERSION = 2
 
 interface DeckLibraryState {
   decks: SavedDeck[]
@@ -52,8 +91,16 @@ function loadFromStorage(): SavedDeck[] {
     const raw = window.localStorage.getItem(STORAGE_KEY)
     if (!raw) return []
     const parsed = JSON.parse(raw) as DeckLibraryStorage
-    if (parsed?.version !== STORAGE_VERSION || !Array.isArray(parsed.decks)) return []
-    return parsed.decks
+    if (!parsed || !Array.isArray(parsed.decks)) return []
+    if (parsed.version === STORAGE_VERSION) {
+      return parsed.decks
+    }
+    if (parsed.version === 1) {
+      // v1 → v2: leave the new optional fields undefined; v1 decks are name-only and
+      // continue to round-trip through `cards` exactly as before.
+      return parsed.decks.map((d) => ({ ...d } as SavedDeck))
+    }
+    return []
   } catch {
     return []
   }
@@ -61,7 +108,7 @@ function loadFromStorage(): SavedDeck[] {
 
 function persist(decks: SavedDeck[]) {
   if (typeof window === 'undefined') return
-  const envelope: DeckLibraryStorage = { version: STORAGE_VERSION, decks }
+  const envelope: DeckLibraryStorageV2 = { version: STORAGE_VERSION, decks }
   window.localStorage.setItem(STORAGE_KEY, JSON.stringify(envelope))
 }
 
@@ -105,6 +152,27 @@ export function stripCommanderFromCards(
   return next
 }
 
+/**
+ * Convert v2 [SavedDeckEntry] rows to the wire-format `cardEntries` list. Returns
+ * undefined when `entries` is absent or empty so the message factory falls back to
+ * the legacy name-only path.
+ *
+ * Each entry expands to its `count` rows so server-side counting (4-of, singleton,
+ * total deck size) collapses identically across printings.
+ */
+export function toCardEntries(
+  entries: readonly SavedDeckEntry[] | undefined,
+): import('@/types').DeckEntry[] | undefined {
+  if (!entries || entries.length === 0) return undefined
+  const out: import('@/types').DeckEntry[] = []
+  for (const entry of entries) {
+    for (let i = 0; i < entry.count; i++) {
+      out.push(entry.printing ? { name: entry.name, printing: entry.printing } : { name: entry.name })
+    }
+  }
+  return out
+}
+
 export const useDeckLibrary = create<DeckLibraryState>((set, get) => ({
   decks: [],
   hydrated: false,
@@ -125,6 +193,8 @@ export const useDeckLibrary = create<DeckLibraryState>((set, get) => ({
       ...(input.format !== undefined ? { format: input.format } : {}),
       ...(input.setCode !== undefined ? { setCode: input.setCode } : {}),
       ...(input.commander !== undefined ? { commander: input.commander } : {}),
+      ...(input.commanderPrinting !== undefined ? { commanderPrinting: input.commanderPrinting } : {}),
+      ...(input.entries !== undefined ? { entries: input.entries } : {}),
       updatedAt: now,
     }
     const decks = existing

@@ -1378,6 +1378,29 @@ export interface ConnectMessage {
 }
 
 /**
+ * Reference to a specific printing of a card. Pairs `(setCode, collectorNumber)`,
+ * which Scryfall guarantees as unique. Used by the deckbuilder picker to pin a
+ * specific print's art when multiple printings of the same card exist. Mirrors
+ * `com.wingedsheep.sdk.model.PrintingRef` on the server.
+ */
+export interface PrintingRef {
+  readonly setCode: string
+  readonly collectorNumber: string
+}
+
+/**
+ * One card in a deck-submission payload, optionally pinned to a specific [PrintingRef].
+ * Mirrors `com.wingedsheep.gameserver.protocol.DeckEntryDTO`. When the rich `cardEntries`
+ * list is non-empty on a deck-carrying message, the server treats it as authoritative
+ * over `deckList`. When `printing` is undefined the server resolves the card's default
+ * printing — identical to the legacy name-only path.
+ */
+export interface DeckEntry {
+  readonly name: string
+  readonly printing?: PrintingRef
+}
+
+/**
  * Create a new game with a deck list.
  */
 export interface CreateGameMessage {
@@ -1385,6 +1408,8 @@ export interface CreateGameMessage {
   readonly deckList: Record<string, number>
   readonly vsAi?: boolean
   readonly setCode?: string
+  /** Rich entries with optional pinned printings. See [DeckEntry]. */
+  readonly cardEntries?: readonly DeckEntry[]
 }
 
 /**
@@ -1394,6 +1419,7 @@ export interface JoinGameMessage {
   readonly type: 'joinGame'
   readonly sessionId: string
   readonly deckList: Record<string, number>
+  readonly cardEntries?: readonly DeckEntry[]
 }
 
 /**
@@ -1470,6 +1496,10 @@ export interface SubmitSealedDeckMessage {
   readonly type: 'submitSealedDeck'
   readonly deckList: Record<string, number>
   readonly commander?: string | null
+  /** Rich entries with optional pinned printings. See [DeckEntry]. */
+  readonly cardEntries?: readonly DeckEntry[]
+  /** Optional pinned printing for the commander. Ignored when `commander` is null. */
+  readonly commanderPrinting?: PrintingRef
 }
 
 // ============================================================================
@@ -1553,13 +1583,33 @@ export function createConnectMessage(playerName: string, token?: string): Connec
   return token ? { type: 'connect', playerName, token } : { type: 'connect', playerName }
 }
 
-export function createCreateGameMessage(deckList: Record<string, number>, vsAi?: boolean, setCode?: string): CreateGameMessage {
-  const msg: CreateGameMessage = { type: 'createGame', deckList, ...(vsAi ? { vsAi } : {}), ...(setCode ? { setCode } : {}) }
+export function createCreateGameMessage(
+  deckList: Record<string, number>,
+  vsAi?: boolean,
+  setCode?: string,
+  cardEntries?: readonly DeckEntry[],
+): CreateGameMessage {
+  const msg: CreateGameMessage = {
+    type: 'createGame',
+    deckList,
+    ...(vsAi ? { vsAi } : {}),
+    ...(setCode ? { setCode } : {}),
+    ...(cardEntries && cardEntries.length > 0 ? { cardEntries } : {}),
+  }
   return msg
 }
 
-export function createJoinGameMessage(sessionId: string, deckList: Record<string, number>): JoinGameMessage {
-  return { type: 'joinGame', sessionId, deckList }
+export function createJoinGameMessage(
+  sessionId: string,
+  deckList: Record<string, number>,
+  cardEntries?: readonly DeckEntry[],
+): JoinGameMessage {
+  return {
+    type: 'joinGame',
+    sessionId,
+    deckList,
+    ...(cardEntries && cardEntries.length > 0 ? { cardEntries } : {}),
+  }
 }
 
 export function createSubmitActionMessage(action: GameAction): SubmitActionMessage {
@@ -1598,12 +1648,16 @@ export function createJoinSealedGameMessage(sessionId: string): JoinSealedGameMe
 export function createSubmitSealedDeckMessage(
   deckList: Record<string, number>,
   commander?: string | null,
+  cardEntries?: readonly DeckEntry[],
+  commanderPrinting?: PrintingRef,
 ): SubmitSealedDeckMessage {
-  const msg: SubmitSealedDeckMessage = { type: 'submitSealedDeck', deckList }
-  if (commander) {
-    return { ...msg, commander }
+  return {
+    type: 'submitSealedDeck',
+    deckList,
+    ...(commander ? { commander } : {}),
+    ...(cardEntries && cardEntries.length > 0 ? { cardEntries } : {}),
+    ...(commanderPrinting ? { commanderPrinting } : {}),
   }
-  return msg
 }
 
 // ============================================================================
@@ -2093,6 +2147,10 @@ export interface SubmitQuickGameLobbyDeckMessage {
   readonly deckList: Record<string, number>
   /** Designated commander card name for commander-shape lobby formats. */
   readonly commander?: string
+  /** Rich entries with optional pinned printings. See [DeckEntry]. */
+  readonly cardEntries?: readonly DeckEntry[]
+  /** Optional pinned printing for the commander. Ignored when `commander` is null. */
+  readonly commanderPrinting?: PrintingRef
 }
 
 export interface SetQuickGameLobbyReadyMessage {
@@ -2138,11 +2196,15 @@ export function createLeaveQuickGameLobbyMessage(): LeaveQuickGameLobbyMessage {
 export function createSubmitQuickGameLobbyDeckMessage(
   deckList: Record<string, number>,
   commander?: string | null,
+  cardEntries?: readonly DeckEntry[],
+  commanderPrinting?: PrintingRef,
 ): SubmitQuickGameLobbyDeckMessage {
   return {
     type: 'submitQuickGameLobbyDeck',
     deckList,
     ...(commander ? { commander } : {}),
+    ...(cardEntries && cardEntries.length > 0 ? { cardEntries } : {}),
+    ...(commanderPrinting ? { commanderPrinting } : {}),
   }
 }
 export function createSetQuickGameLobbyReadyMessage(ready: boolean): SetQuickGameLobbyReadyMessage {
