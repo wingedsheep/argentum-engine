@@ -1066,6 +1066,7 @@ Set via `staticAbility { ability = ... }`:
 - `MustAttackForCreatureGroup(filter: GroupFilter)` — forces creatures matching filter to attack each combat if able
 - `MustBlockForCreatureGroup(filter: GroupFilter)` — forces creatures matching filter to block each combat if able
 - `CantAttackUnless(condition: Condition, target)` — conditional attack restriction (use `Conditions.ControlMoreCreatures`, `Conditions.OpponentControlsLandType(landType)`)
+- `CanAttackDespiteDefender(condition: Condition, filter)` — creature can attack as though it didn't have defender while condition is met (e.g., `Conditions.SourceHasCounter(CounterTypeFilter.Any)` for "as long as this creature has a counter on it")
 - `CantBlockUnless(condition: Condition, target)` — conditional block restriction (uses any `Condition`)
 - `CantBlockCreaturesWithGreaterPower(target)`
 - `CanOnlyBlockCreaturesWith(blockerFilter: GameObjectFilter, filter: GroupFilter)` — can block only creatures matching filter (e.g., Cloud Spirit: flying-only blockers, Spirit token: "can't block non-Spirit creatures")

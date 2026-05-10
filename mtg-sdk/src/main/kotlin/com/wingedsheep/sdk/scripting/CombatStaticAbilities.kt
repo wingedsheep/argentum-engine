@@ -203,6 +203,29 @@ data class AttackTax(
 }
 
 /**
+ * This creature can attack as though it didn't have defender, as long as a condition is met.
+ * "As long as this creature has a counter on it, it can attack as though it didn't have defender."
+ *
+ * Checked at attack declaration time. The condition is evaluated with "you" = the creature's
+ * controller. The filter defaults to the source creature itself.
+ *
+ * @property condition The condition under which the defender restriction is bypassed
+ * @property filter What this ability applies to
+ */
+@SerialName("CanAttackDespiteDefender")
+@Serializable
+data class CanAttackDespiteDefender(
+    val condition: Condition,
+    val filter: GroupFilter = GroupFilter.source()
+) : StaticAbility {
+    override val description: String = "can attack as though it didn't have defender as long as ${condition.description}"
+    override fun applyTextReplacement(replacer: TextReplacer): StaticAbility {
+        val newFilter = filter.applyTextReplacement(replacer)
+        return if (newFilter !== filter) copy(filter = newFilter) else this
+    }
+}
+
+/**
  * Creatures without a specified keyword can't attack the controller of this permanent.
  * Used for Form of the Dragon: "Creatures without flying can't attack you."
  *
