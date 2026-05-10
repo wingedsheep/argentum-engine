@@ -1,5 +1,6 @@
 package com.wingedsheep.gameserver.scenarios
 
+import com.wingedsheep.engine.core.PlayLand
 import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.identity.MayPlayFromExileComponent
 import com.wingedsheep.gameserver.ScenarioTestBase
@@ -143,13 +144,52 @@ class PossibilityTechnicianScenarioTest : ScenarioTestBase() {
                 game.resolveStack() // resolve first triggered ability
                 game.resolveStack() // resolve second triggered ability if any
 
-                val exileAfter = game.state.getExile(game.player1Id).size
+                val exileIds = game.state.getExile(game.player1Id)
                 // When the new Tech enters, the existing Tech's ETB ability also triggers
                 // ("Whenever this creature OR another Kavu you control enters"), so two
                 // exile-and-may-play triggers fire — one for the entering creature, one
                 // for the existing creature observing another Kavu's entry.
                 withClue("Both Kavus' triggers should fire — exile two cards (1 from each trigger)") {
-                    (exileAfter - exileBefore) shouldBe 2
+                    (exileIds.size - exileBefore) shouldBe 2
+                }
+                withClue("Each exiled card carries the conditional may-play stamp owned by player1") {
+                    for (cardId in exileIds) {
+                        val mayPlay = game.state.getEntity(cardId)!!.get<MayPlayFromExileComponent>()
+                        mayPlay shouldNotBe null
+                        mayPlay!!.controllerId shouldBe game.player1Id
+                        mayPlay.condition shouldNotBe null
+                    }
+                }
+            }
+
+            test("cannot play exiled land via PlayLand action while gate is closed") {
+                val game = scenario()
+                    .withPlayers("Player1", "Player2")
+                    .withCardInHand(1, "Possibility Technician")
+                    .withLandsOnBattlefield(1, "Mountain", 3) // to cast Tech
+                    .withCardInLibrary(1, "Mountain") // top — gets exiled by ETB
+                    .withCardInLibrary(1, "Plains")
+                    .withCardInLibrary(2, "Mountain")
+                    .withActivePlayer(1)
+                    .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                    .build()
+
+                game.castSpell(1, "Possibility Technician")
+                game.resolveStack()
+                game.resolveStack() // ETB exiles Mountain
+
+                val exiledLandId = game.state.getExile(game.player1Id).first()
+                val techId = game.findPermanent("Possibility Technician")!!
+                // Remove the only Kavu — gate closes.
+                game.state = game.state.moveToZone(
+                    techId,
+                    ZoneKey(game.player1Id, Zone.BATTLEFIELD),
+                    ZoneKey(game.player1Id, Zone.GRAVEYARD)
+                )
+
+                val playResult = game.execute(PlayLand(game.player1Id, exiledLandId))
+                withClue("Should NOT be able to play exiled Mountain as a land without a Kavu in play") {
+                    playResult.error shouldNotBe null
                 }
             }
         }

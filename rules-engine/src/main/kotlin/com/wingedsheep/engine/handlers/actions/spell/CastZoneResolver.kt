@@ -5,6 +5,7 @@ import com.wingedsheep.engine.handlers.DynamicAmountEvaluator
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.PredicateContext
 import com.wingedsheep.engine.handlers.PredicateEvaluator
+import com.wingedsheep.engine.handlers.permissions.gateOpen
 import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
@@ -82,21 +83,12 @@ class CastZoneResolver(
         }
         if (!inExileOrGraveyard) return false
 
-        // Check direct MayPlayFromExileComponent grant
+        // Check direct MayPlayFromExileComponent grant. When the grant carries a runtime
+        // condition (Possibility Technician's "if you control a Kavu"), fall through to
+        // linked-exile granters when the gate is closed — those are independent permission
+        // sources and may still apply.
         val component = state.getEntity(cardId)?.get<MayPlayFromExileComponent>()
-        if (component?.controllerId == playerId) {
-            // Honor optional condition gate (Possibility Technician's "if you control a Kavu").
-            if (component.condition != null) {
-                val opponentId = state.turnOrder.firstOrNull { it != playerId }
-                val gateContext = com.wingedsheep.engine.handlers.EffectContext(
-                    sourceId = cardId,
-                    controllerId = playerId,
-                    opponentId = opponentId
-                )
-                val gateOk = com.wingedsheep.engine.handlers.ConditionEvaluator()
-                    .evaluate(state, component.condition, gateContext)
-                if (!gateOk) return hasLinkedExileCastPermission(state, playerId, cardId)
-            }
+        if (component?.controllerId == playerId && component.gateOpen(state, cardId, conditionEvaluator)) {
             return true
         }
 

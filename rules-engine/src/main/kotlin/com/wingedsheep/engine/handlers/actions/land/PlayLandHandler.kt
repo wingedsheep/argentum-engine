@@ -19,6 +19,7 @@ import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.engine.handlers.ConditionEvaluator
 import com.wingedsheep.engine.handlers.EffectContext
+import com.wingedsheep.engine.handlers.permissions.gateOpen
 import com.wingedsheep.engine.state.components.battlefield.GraveyardPlayPermissionUsedComponent
 import com.wingedsheep.sdk.core.CardType
 import com.wingedsheep.sdk.scripting.ChoiceType
@@ -39,7 +40,8 @@ import kotlin.reflect.KClass
 class PlayLandHandler(
     private val cardRegistry: CardRegistry,
     private val triggerDetector: TriggerDetector,
-    private val triggerProcessor: TriggerProcessor
+    private val triggerProcessor: TriggerProcessor,
+    private val conditionEvaluator: ConditionEvaluator,
 ) : ActionHandler<PlayLand> {
     override val actionType: KClass<PlayLand> = PlayLand::class
 
@@ -351,8 +353,9 @@ class PlayLandHandler(
             cardId in state.getZone(ZoneKey(pid, Zone.EXILE))
         }
         if (!inAnyExile) return false
-        val component = state.getEntity(cardId)?.get<MayPlayFromExileComponent>()
-        return component?.controllerId == playerId
+        val component = state.getEntity(cardId)?.get<MayPlayFromExileComponent>() ?: return false
+        if (component.controllerId != playerId) return false
+        return component.gateOpen(state, cardId, conditionEvaluator)
     }
 
     private fun hasPlayFromTopOfLibrary(state: GameState, playerId: EntityId): Boolean {
@@ -421,7 +424,12 @@ class PlayLandHandler(
 
     companion object {
         fun create(services: EngineServices): PlayLandHandler {
-            return PlayLandHandler(services.cardRegistry, services.triggerDetector, services.triggerProcessor)
+            return PlayLandHandler(
+                services.cardRegistry,
+                services.triggerDetector,
+                services.triggerProcessor,
+                services.conditionEvaluator,
+            )
         }
     }
 }
