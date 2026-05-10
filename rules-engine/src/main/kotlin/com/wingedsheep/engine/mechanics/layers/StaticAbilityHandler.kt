@@ -9,6 +9,8 @@ import com.wingedsheep.engine.state.components.battlefield.GrantsCantLoseGameCom
 import com.wingedsheep.engine.state.components.battlefield.GrantsControllerHexproofComponent
 import com.wingedsheep.engine.state.components.battlefield.GrantsControllerShroudComponent
 import com.wingedsheep.engine.state.components.battlefield.ReplacementEffectSourceComponent
+import com.wingedsheep.engine.state.components.battlefield.SuppressesHexproofForGroupComponent
+import com.wingedsheep.engine.state.components.battlefield.SuppressesWardForGroupComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.scripting.DoubleDamage
@@ -150,6 +152,22 @@ class StaticAbilityHandler(
             .firstOrNull()
         if (smallCreaturesAbility != null) {
             result = result.with(GrantCantBeBlockedToSmallCreaturesComponent(smallCreaturesAbility.maxValue))
+        }
+
+        // Add component for "creatures matching filter can be targeted as though they didn't have hexproof"
+        val suppressHexproofFilters = allStaticAbilities
+            .filterIsInstance<com.wingedsheep.sdk.scripting.SuppressHexproofForGroup>()
+            .map { it.filter }
+        if (suppressHexproofFilters.isNotEmpty()) {
+            result = result.with(SuppressesHexproofForGroupComponent(suppressHexproofFilters))
+        }
+
+        // Add component for "ward abilities of creatures matching filter don't trigger"
+        val suppressWardFilters = allStaticAbilities
+            .filterIsInstance<com.wingedsheep.sdk.scripting.SuppressWardForGroup>()
+            .map { it.filter }
+        if (suppressWardFilters.isNotEmpty()) {
+            result = result.with(SuppressesWardForGroupComponent(suppressWardFilters))
         }
 
         return result

@@ -3,6 +3,7 @@ package com.wingedsheep.engine.legalactions.utils
 import com.wingedsheep.engine.handlers.PredicateContext
 import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.legalactions.TargetInfo
+import com.wingedsheep.engine.mechanics.targeting.HexproofSuppression
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.battlefield.GrantsControllerHexproofComponent
@@ -83,7 +84,8 @@ class TargetEnumerationUtils(
                         val container = state.getEntity(entityId) ?: return@filter false
                         val entityController = container.get<ControllerComponent>()?.playerId
                         if (projected.hasKeyword(entityId, Keyword.HEXPROOF) &&
-                            entityController != playerId
+                            entityController != playerId &&
+                            !HexproofSuppression.isSuppressedForCaster(state, projected, entityId, playerId)
                         ) return@filter false
                         if (projected.hasKeyword(entityId, Keyword.SHROUD)) return@filter false
                         predicateEvaluator.matchesWithProjection(state, projected, entityId, permanentFilter, context)
@@ -117,7 +119,9 @@ class TargetEnumerationUtils(
         return battlefield.filter { entityId ->
             if (filter.excludeSelf && entityId == sourceId) return@filter false
             val entityController = state.getEntity(entityId)?.get<ControllerComponent>()?.playerId
-            if (projected.hasKeyword(entityId, Keyword.HEXPROOF) && entityController != playerId) return@filter false
+            if (projected.hasKeyword(entityId, Keyword.HEXPROOF) && entityController != playerId &&
+                !HexproofSuppression.isSuppressedForCaster(state, projected, entityId, playerId)
+            ) return@filter false
             if (projected.hasKeyword(entityId, Keyword.SHROUD)) return@filter false
             predicateEvaluator.matchesWithProjection(state, projected, entityId, filter.baseFilter, context)
         }

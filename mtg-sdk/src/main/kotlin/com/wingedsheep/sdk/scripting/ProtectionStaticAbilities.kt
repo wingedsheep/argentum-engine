@@ -140,3 +140,49 @@ data object GrantCantLoseGame : StaticAbility {
     override val description: String = "You can't lose the game"
     override fun applyTextReplacement(replacer: TextReplacer): StaticAbility = this
 }
+
+/**
+ * Creatures matching [filter] can be the targets of spells and abilities as though
+ * they didn't have hexproof.
+ *
+ * Used for Nowhere to Run: "Creatures your opponents control can be the targets of
+ * spells and abilities as though they didn't have hexproof."
+ *
+ * The filter is evaluated with the controller of this permanent as the "you" context,
+ * so [GroupFilter.AllCreaturesOpponentsControl] means "creatures opponents of the
+ * controller of this permanent control" — which is what "your opponents" means.
+ *
+ * Does NOT suppress shroud (shroud still prevents targeting by all players).
+ */
+@SerialName("SuppressHexproofForGroup")
+@Serializable
+data class SuppressHexproofForGroup(
+    val filter: GroupFilter = GroupFilter.AllCreaturesOpponentsControl
+) : StaticAbility {
+    override val description: String = "${filter.description} can be targeted as though they didn't have hexproof"
+    override fun applyTextReplacement(replacer: TextReplacer): StaticAbility {
+        val newFilter = filter.applyTextReplacement(replacer)
+        return if (newFilter !== filter) copy(filter = newFilter) else this
+    }
+}
+
+/**
+ * Ward abilities of creatures matching [filter] don't trigger.
+ *
+ * Used for Nowhere to Run: "Ward abilities of those creatures don't trigger."
+ *
+ * The filter is evaluated with the controller of this permanent as the "you" context.
+ * Suppresses both intrinsic ward (from the creature's own keywords) and granted ward
+ * (from GrantWard static abilities) for affected creatures.
+ */
+@SerialName("SuppressWardForGroup")
+@Serializable
+data class SuppressWardForGroup(
+    val filter: GroupFilter = GroupFilter.AllCreaturesOpponentsControl
+) : StaticAbility {
+    override val description: String = "Ward abilities of ${filter.description} don't trigger"
+    override fun applyTextReplacement(replacer: TextReplacer): StaticAbility {
+        val newFilter = filter.applyTextReplacement(replacer)
+        return if (newFilter !== filter) copy(filter = newFilter) else this
+    }
+}

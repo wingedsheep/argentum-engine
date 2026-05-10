@@ -1101,6 +1101,8 @@ Set via `staticAbility { ability = ... }`:
 - `GrantShroudToController` — controller has shroud
 - `GrantHexproofToController` — controller has hexproof (opponents can't target; self-targeting still allowed)
 - `GrantCantLoseGame` — controller can't lose the game (Lich's Mastery, Platinum Angel)
+- `SuppressHexproofForGroup(filter: GroupFilter)` — creatures matching the filter can be targeted as though they didn't have hexproof; filter evaluated with this permanent's controller as context; does NOT suppress shroud (Nowhere to Run). Engine stores a `SuppressesHexproofForGroupComponent` tag on the permanent; `TargetEnumerationUtils` and `TargetValidator` consult it.
+- `SuppressWardForGroup(filter: GroupFilter)` — ward abilities of creatures matching the filter don't trigger (Nowhere to Run). Engine stores a `SuppressesWardForGroupComponent` tag; `TriggerAbilityResolver.getWardTriggeredAbilities()` returns empty when suppressed.
 - `ExtraLoyaltyActivation` — activate loyalty abilities of planeswalkers you control twice each turn (Oath of Teferi)
 - `AdditionalETBTriggers(creatureFilter)` — when a creature matching the filter ETBs under your control, triggered abilities of your permanents that fired from that event trigger an additional time (Naban, Dean of Iteration)
 - `AdditionalSourceTriggers(sourceFilter, excludeSelf = true)` — if a triggered ability of a permanent matching the filter you control triggers, it triggers an additional time (Twinflame Travelers — "another Elemental"). Works for *all* triggers (not just ETB). `excludeSelf` skips the doubler's own source to honour "another" wording.

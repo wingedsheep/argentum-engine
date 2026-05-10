@@ -395,7 +395,9 @@ script. When a deck pins `PrintingRef("2X2", "117")`, `GameInitializer` resolves
 
 If `backlog/sets/{set-name}/cards.md` exists:
 - Mark card as implemented: `- [ ] Card Name` → `- [x] Card Name`
-- Update implementation count in header if present
+- Run `just fix-backlog` to resync the `**Implemented:** N / M` header (the script
+  rewrites the header to match the actual `[x]` count and full checklist size).
+- `just check-backlog` is the read-only verification mode used in CI / manual review.
 
 ## Step 12: Commit Changes
 

@@ -4,8 +4,6 @@
 **Release Date:** August 1, 2025
 **Implemented:** 142 / 261
 
----
-
 - [x] Adagia, Windswept Bastion
 - [x] All-Fates Scroll
 - [x] All-Fates Stalker

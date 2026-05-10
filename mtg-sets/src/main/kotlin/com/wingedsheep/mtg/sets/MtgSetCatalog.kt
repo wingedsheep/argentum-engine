@@ -26,6 +26,7 @@ import com.wingedsheep.mtg.sets.definitions.por.PortalSet
 import com.wingedsheep.mtg.sets.definitions.scg.ScourgeSet
 import com.wingedsheep.mtg.sets.definitions.otj.OutlawsOfThunderJunctionSet
 import com.wingedsheep.mtg.sets.definitions.spm.SpiderManSet
+import com.wingedsheep.mtg.sets.definitions.tdm.TarkirDragonstormSet
 import com.wingedsheep.mtg.sets.definitions.tla.AvatarTheLastAirbenderSet
 import com.wingedsheep.mtg.sets.definitions.woe.WildsOfEldrainSet
 import com.wingedsheep.sdk.model.MtgSet
@@ -67,6 +68,7 @@ object MtgSetCatalog {
         LorwynEclipsedSet,
         OutlawsOfThunderJunctionSet,
         SpiderManSet,
+        TarkirDragonstormSet,
         AvatarTheLastAirbenderSet,
     )
 

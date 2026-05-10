@@ -50,6 +50,16 @@ clean:
 check:
     ./gradlew check
 
+# Verify backlog/sets/*/cards.md headers match actual [x] / [x]+[ ] counts
+[group: 'build']
+check-backlog:
+    scripts/check-card-counts.py --check
+
+# Rewrite backlog/sets/*/cards.md headers to match actual [x] / [x]+[ ] counts
+[group: 'build']
+fix-backlog:
+    scripts/check-card-counts.py --fix
+
 # Start the game server (loads .env if present)
 [group: 'dev']
 server:

@@ -55,6 +55,7 @@ import com.wingedsheep.engine.handlers.DynamicAmountEvaluator
 import com.wingedsheep.engine.handlers.PredicateContext
 import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.handlers.TargetingSourceType
+import com.wingedsheep.engine.mechanics.targeting.HexproofSuppression
 import com.wingedsheep.engine.state.components.battlefield.CantBeTargetedByOpponentAbilitiesComponent
 import com.wingedsheep.engine.state.components.battlefield.ReplacementEffectSourceComponent
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
@@ -1832,11 +1833,13 @@ class StackResolver(
                     if (projected.hasKeyword(target.entityId, "SHROUD")) return@filterIndexed false
 
                     // Check hexproof — can't be targeted by opponents (Rule 702.11)
-                    val entityController = state.getEntity(target.entityId)?.get<ControllerComponent>()?.playerId
-                    if (projected.hasKeyword(target.entityId, "HEXPROOF") && entityController != controllerId) return@filterIndexed false
+                    val entityController = projected.getController(target.entityId)
+                        ?: state.getEntity(target.entityId)?.get<ControllerComponent>()?.playerId
+                    val hexproofSuppressed = HexproofSuppression.isSuppressedForCaster(state, projected, target.entityId, controllerId)
+                    if (!hexproofSuppressed && projected.hasKeyword(target.entityId, "HEXPROOF") && entityController != controllerId) return@filterIndexed false
 
                     // Check hexproof from color (Rule 702.11b)
-                    if (entityController != controllerId) {
+                    if (!hexproofSuppressed && entityController != controllerId) {
                         for (color in sourceColors) {
                             if (projected.hasKeyword(target.entityId, "HEXPROOF_FROM_${color.name}")) {
                                 return@filterIndexed false
@@ -2182,4 +2185,5 @@ class StackResolver(
             }
         }
     }
+
 }

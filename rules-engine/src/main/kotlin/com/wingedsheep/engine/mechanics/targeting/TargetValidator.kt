@@ -159,7 +159,9 @@ class TargetValidator {
             val cardName = state.getEntity(entityId)?.get<CardComponent>()?.name ?: "target"
             return "$cardName has shroud"
         }
-        if (projected.hasKeyword(entityId, Keyword.HEXPROOF) && entityController != casterId) {
+        if (projected.hasKeyword(entityId, Keyword.HEXPROOF) && entityController != casterId &&
+            !HexproofSuppression.isSuppressedForCaster(state, projected, entityId, casterId)
+        ) {
             val cardName = state.getEntity(entityId)?.get<CardComponent>()?.name ?: "target"
             return "$cardName has hexproof"
         }
@@ -192,10 +194,13 @@ class TargetValidator {
         if (entityController == casterId) return null
 
         val projected = state.projectedState
-        for (color in sourceColors) {
-            if (projected.hasKeyword(entityId, "HEXPROOF_FROM_${color.name}")) {
-                val cardName = state.getEntity(entityId)?.get<CardComponent>()?.name ?: "target"
-                return "$cardName has hexproof from ${color.displayName.lowercase()}"
+        val hexproofSuppressed = HexproofSuppression.isSuppressedForCaster(state, projected, entityId, casterId)
+        if (!hexproofSuppressed) {
+            for (color in sourceColors) {
+                if (projected.hasKeyword(entityId, "HEXPROOF_FROM_${color.name}")) {
+                    val cardName = state.getEntity(entityId)?.get<CardComponent>()?.name ?: "target"
+                    return "$cardName has hexproof from ${color.displayName.lowercase()}"
+                }
             }
         }
         return null
