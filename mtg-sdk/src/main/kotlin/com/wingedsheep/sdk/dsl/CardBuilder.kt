@@ -562,6 +562,20 @@ class CardBuilder(private val name: String) {
         cardFaceList.add(builder.build())
     }
 
+    /**
+     * Declare the Adventure face of an adventurer card (CR 715). Sets [layout] to
+     * [CardLayout.ADVENTURE] and registers the named face. Inside the block, declare
+     * the Adventure's `manaCost`, `typeLine` (e.g. `"Instant — Adventure"`), `oracleText`,
+     * and a `spell { … }` block for its effect / targets.
+     *
+     * The creature face is described by the surrounding [CardBuilder]'s top-level fields
+     * (`manaCost`, `typeLine`, `power`, `toughness`, plus any creature-side abilities).
+     */
+    fun adventure(name: String, init: CardFaceBuilder.() -> Unit) {
+        layout = CardLayout.ADVENTURE
+        face(name, init)
+    }
+
     // =========================================================================
     // Metadata
     // =========================================================================
@@ -595,6 +609,19 @@ class CardBuilder(private val name: String) {
             }
             if (oracleText.isBlank()) {
                 oracleText = cardFaceList.joinToString("\n//\n") { it.oracleText }
+            }
+        }
+
+        // ADVENTURE layout (CR 715): the surrounding CardBuilder fields describe the creature
+        // face; cardFaces[0] is the Adventure. Combine oracle text for off-stack display when
+        // the author hasn't supplied a combined string.
+        if (layout == CardLayout.ADVENTURE) {
+            require(cardFaceList.size == 1) {
+                "ADVENTURE layout requires exactly one face (the Adventure): $name"
+            }
+            val adventureFace = cardFaceList.first()
+            require(adventureFace.script.spellEffect != null) {
+                "Adventure face '${adventureFace.name}' must declare a spell { } effect"
             }
         }
 
@@ -1321,6 +1348,8 @@ class CardFaceBuilder(private val name: String) {
     private val triggeredAbilities: MutableList<TriggeredAbility> = mutableListOf()
     private val activatedAbilities: MutableList<ActivatedAbility> = mutableListOf()
     private val staticAbilities: MutableList<StaticAbility> = mutableListOf()
+    private val additionalCostsList: MutableList<AdditionalCost> = mutableListOf()
+    private var spellBuilder: SpellBuilder? = null
 
     fun keywords(vararg keywords: Keyword) {
         keywordSet.addAll(keywords)
@@ -1344,13 +1373,36 @@ class CardFaceBuilder(private val name: String) {
         staticAbilities.add(builder.build())
     }
 
+    /**
+     * Define the spell effect for this face. Used by Adventure faces (instant/sorcery — Adventure)
+     * and any future split layout that casts a face as a non-permanent spell.
+     */
+    fun spell(init: SpellBuilder.() -> Unit) {
+        val builder = SpellBuilder()
+        builder.init()
+        spellBuilder = builder
+    }
+
+    fun additionalCost(cost: AdditionalCost) {
+        additionalCostsList.add(cost)
+    }
+
     fun build(): CardFace {
         val parsedManaCost = if (manaCost.isNotEmpty()) ManaCost.parse(manaCost) else ManaCost.ZERO
         val parsedTypeLine = TypeLine.parse(typeLine)
+        val rawSpellEffect = spellBuilder?.effect
+        val spellEffect = if (spellBuilder?.condition != null && rawSpellEffect != null) {
+            ConditionalEffect(spellBuilder!!.condition!!, rawSpellEffect)
+        } else {
+            rawSpellEffect
+        }
         val script = CardScript(
+            spellEffect = spellEffect,
+            targetRequirements = spellBuilder?.targetRequirements ?: emptyList(),
             triggeredAbilities = triggeredAbilities.toList(),
             activatedAbilities = activatedAbilities.toList(),
             staticAbilities = staticAbilities.toList(),
+            additionalCosts = additionalCostsList.toList(),
         )
         return CardFace(
             name = name,

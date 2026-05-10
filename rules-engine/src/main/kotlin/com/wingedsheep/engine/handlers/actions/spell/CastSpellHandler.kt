@@ -174,8 +174,11 @@ class CastSpellHandler(
             return validatePayment(state, action, morphCastCost)
         }
 
-        // Check timing
-        if (!cardComponent.typeLine.isInstant) {
+        // Check timing — for Adventure / split faces use the face's type line (CR 715 / 709.4)
+        val effectiveTypeLine = action.faceIndex
+            ?.let { cardDef?.cardFaces?.getOrNull(it)?.typeLine }
+            ?: cardComponent.typeLine
+        if (!effectiveTypeLine.isInstant) {
             val hasFlash = cardDef?.keywords?.contains(Keyword.FLASH) == true
             val grantedFlash = hasFlash || zoneResolver.hasGrantedFlash(state, action.cardId)
             if (!grantedFlash && !turnManager.canPlaySorcerySpeed(state, action.playerId)) {
@@ -409,7 +412,10 @@ class CastSpellHandler(
         // Validate targets (include auraTarget as a target requirement for aura spells)
         // Use mode-specific targets for modal spells, kickerTargetRequirements when kicked
         if (cardDef != null) {
-            val modalEffect = cardDef.script.spellEffect as? com.wingedsheep.sdk.scripting.effects.ModalEffect
+            // Adventure / split face cast (CR 715 / 709) — read targets from the face's script.
+            val faceScript = action.faceIndex?.let { cardDef.cardFaces.getOrNull(it)?.script }
+            val effectiveScript = faceScript ?: cardDef.script
+            val modalEffect = effectiveScript.spellEffect as? com.wingedsheep.sdk.scripting.effects.ModalEffect
             val baseTargetReqs = if (action.chosenModes.isNotEmpty() && modalEffect != null) {
                 // Modal spell with mode(s) chosen at cast time — validate against the union of per-mode requirements.
                 action.chosenModes.flatMap { modeIndex ->
@@ -418,7 +424,7 @@ class CastSpellHandler(
             } else if (action.wasKicked && cardDef.script.kickerTargetRequirements.isNotEmpty()) {
                 cardDef.script.kickerTargetRequirements
             } else {
-                cardDef.script.targetRequirements
+                effectiveScript.targetRequirements
             }
             val targetRequirements = buildList {
                 addAll(baseTargetReqs)
@@ -1715,6 +1721,8 @@ class CastSpellHandler(
             } else emptyMap()
 
         val spellTargetRequirements = if (cardDef != null) {
+            // Adventure / split face cast (CR 715 / 709) — read targets from the face's script.
+            val faceScriptForTargets = action.faceIndex?.let { cardDef.cardFaces.getOrNull(it)?.script }
             val baseTargetReqs = if (action.chosenModes.isNotEmpty() && modalEffectForTargets != null) {
                 // Modal spell with modes chosen at cast time — union per-mode requirements
                 action.chosenModes.flatMap { idx ->
@@ -1723,7 +1731,7 @@ class CastSpellHandler(
             } else if (action.wasKicked && cardDef.script.kickerTargetRequirements.isNotEmpty()) {
                 cardDef.script.kickerTargetRequirements
             } else {
-                cardDef.script.targetRequirements
+                (faceScriptForTargets ?: cardDef.script).targetRequirements
             }
             buildList {
                 addAll(baseTargetReqs)

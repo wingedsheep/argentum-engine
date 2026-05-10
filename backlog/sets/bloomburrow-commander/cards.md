@@ -2,7 +2,7 @@
 
 **Set Size:** 312 cards
 **Release Date:** August 2, 2024
-**Implemented:** 5 / 312
+**Implemented:** 6 / 312
 
 | Color      | Total | Done |
 |------------|-------|------|
@@ -10,7 +10,7 @@
 | Blue       | 27    | 0    |
 | Black      | 20    | 0    |
 | Red        | 24    | 0    |
-| Green      | 62    | 1    |
+| Green      | 62    | 2    |
 | Multicolor | 40    | 1    |
 | Colorless  | 33    | 1    |
 | Land       | 69    | 1    |
@@ -53,7 +53,7 @@
 - [ ] Bootleggers' Stash
 - [ ] Boros Signet
 - [ ] Boss's Chauffeur
-- [ ] Brightcap Badger // Fungus Frolic
+- [x] Brightcap Badger // Fungus Frolic
 - [ ] Broken Wings
 - [ ] Brushland
 - [ ] Burnished Hart

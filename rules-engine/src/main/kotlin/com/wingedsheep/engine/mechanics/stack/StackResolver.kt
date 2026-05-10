@@ -559,8 +559,17 @@ class StackResolver(
         var newState = state
         val events = mutableListOf<GameEvent>()
 
-        // Check if permanent or non-permanent
-        val isPermanent = cardComponent?.typeLine?.isPermanent ?: false
+        // Check if permanent or non-permanent.
+        // Adventure / split face cast (CR 715 / 709) — when the spell was cast as a face, route
+        // resolution by the face's type line. An Adventure (instant/sorcery) face on a creature
+        // card must take the non-permanent path even though the card's primary characteristics
+        // describe a creature.
+        val faceTypeLine = spellComponent.faceIndex?.let { idx ->
+            val def = cardComponent?.let { cardRegistry.getCard(it.name) }
+            def?.cardFaces?.getOrNull(idx)?.typeLine
+        }
+        val resolvedTypeLine = faceTypeLine ?: cardComponent?.typeLine
+        val isPermanent = resolvedTypeLine?.isPermanent ?: false
 
         if (isPermanent) {
             // Put permanent on battlefield
@@ -574,14 +583,15 @@ class StackResolver(
             }
             newState = permanentResult.state
             events.addAll(permanentResult.events)
-            events.add(ResolvedEvent(spellId, cardComponent.name))
+            val permanentName = cardComponent?.name ?: "Unknown"
+            events.add(ResolvedEvent(spellId, permanentName))
             events.add(
                 ZoneChangeEvent(
                     spellId,
-                    cardComponent.name,
+                    permanentName,
                     null, // Was on stack
                     Zone.BATTLEFIELD,
-                    cardComponent.ownerId ?: spellComponent.casterId,
+                    cardComponent?.ownerId ?: spellComponent.casterId,
                     xValue = spellComponent.xValue
                 )
             )
@@ -1063,12 +1073,18 @@ class StackResolver(
 
         // Execute the spell effect if present, applying text replacement if the spell
         // was modified by a text-changing effect (e.g., Artificial Evolution)
-        // Use kickerSpellEffect when the spell was kicked and an alternate effect is defined
-        val baseSpellEffect = if (spellComponent.wasKicked && cardComponent != null) {
-            val cardDef = cardRegistry.getCard(cardComponent.name)
-            cardDef?.script?.kickerSpellEffect ?: cardComponent.spellEffect
-        } else {
-            cardComponent?.spellEffect
+        // Use kickerSpellEffect when the spell was kicked and an alternate effect is defined.
+        // Adventure / split face cast (CR 715 / 709) — when the spell was cast as a face, read
+        // the face's spell effect from `cardDef.cardFaces[faceIndex].script.spellEffect`.
+        val resolvedCardDef = cardComponent?.let { cardRegistry.getCard(it.name) }
+        val faceSpellEffect = spellComponent.faceIndex?.let { idx ->
+            resolvedCardDef?.cardFaces?.getOrNull(idx)?.script?.spellEffect
+        }
+        val baseSpellEffect = when {
+            faceSpellEffect != null -> faceSpellEffect
+            spellComponent.wasKicked && cardComponent != null ->
+                resolvedCardDef?.script?.kickerSpellEffect ?: cardComponent.spellEffect
+            else -> cardComponent?.spellEffect
         }
         val rawSpellEffect = baseSpellEffect
         val textReplacement = state.getEntity(spellId)?.get<TextReplacementComponent>()
@@ -1130,7 +1146,9 @@ class StackResolver(
                     pausedCardDef?.keywordAbilities?.any { it is KeywordAbility.Flashback } == true
                 val pausedExileAfterResolveComp = effectResult.state.getEntity(spellId)?.get<ExileAfterResolveComponent>()
                 val pausedExileAfterResolve = pausedExileAfterResolveComp != null
-                val pausedIntended = if (pausedSelfExile || pausedFlashbackExile || pausedExileAfterResolve) Zone.EXILE else Zone.GRAVEYARD
+                val pausedAdventureFaceExile = pausedCardDef?.layout == com.wingedsheep.sdk.model.CardLayout.ADVENTURE &&
+                    spellComponent.faceIndex != null
+                val pausedIntended = if (pausedSelfExile || pausedFlashbackExile || pausedExileAfterResolve || pausedAdventureFaceExile) Zone.EXILE else Zone.GRAVEYARD
 
                 // Apply RedirectZoneChange replacement effects (e.g., Festival of Embers).
                 val pausedRedirect = com.wingedsheep.engine.handlers.effects.ZoneMovementUtils.checkZoneChangeRedirect(
@@ -1144,6 +1162,18 @@ class StackResolver(
                     c.without<SpellOnStackComponent>().without<TargetsComponent>()
                 }
                 pausedState = pausedState.addToZone(pausedDestZoneKey, spellId)
+
+                // CR 715.5 — Adventure exiled by its own resolution: re-grant cast-from-exile.
+                if (pausedAdventureFaceExile && pausedDestZone == Zone.EXILE) {
+                    pausedState = pausedState.updateEntity(spellId) { c ->
+                        c.with(
+                            com.wingedsheep.engine.state.components.identity.MayPlayFromExileComponent(
+                                controllerId = spellComponent.casterId,
+                                permanent = true
+                            )
+                        )
+                    }
+                }
 
                 val pausedCounterEvents = mutableListOf<GameEvent>()
                 if (pausedDestZone == Zone.EXILE && pausedExileAfterResolveComp != null && pausedExileAfterResolveComp.withCounters.isNotEmpty()) {
@@ -1196,7 +1226,12 @@ class StackResolver(
             cardDef?.keywordAbilities?.any { it is KeywordAbility.Flashback } == true
         val exileAfterResolveComp = newState.getEntity(spellId)?.get<ExileAfterResolveComponent>()
         val exileAfterResolve = exileAfterResolveComp != null
-        val intendedDestination = if (selfExile || flashbackExile || exileAfterResolve) Zone.EXILE else Zone.GRAVEYARD
+        // Adventure face (CR 715.4): when an Adventure resolves, exile it instead of putting
+        // it in its owner's graveyard, and grant the caster permission to cast it as the
+        // creature spell while it remains exiled (CR 715.5).
+        val adventureFaceExile = cardDef?.layout == com.wingedsheep.sdk.model.CardLayout.ADVENTURE &&
+            spellComponent.faceIndex != null
+        val intendedDestination = if (selfExile || flashbackExile || exileAfterResolve || adventureFaceExile) Zone.EXILE else Zone.GRAVEYARD
 
         // Apply RedirectZoneChange replacement effects (e.g., Festival of Embers
         // exiles cards that would go to your graveyard from anywhere).
@@ -1215,6 +1250,21 @@ class StackResolver(
                 .without<ExileAfterResolveComponent>()
         }
         newState = newState.addToZone(destZoneKey, spellId)
+
+        // CR 715.5 — an Adventure card exiled by its own resolution may be cast as the creature
+        // by the spell's controller while it remains in exile. Re-attach the permission after
+        // the prior `.without<MayPlayFromExileComponent>()` strip so the cast-from-exile
+        // enumerator can pick it up.
+        if (adventureFaceExile && destinationZone == Zone.EXILE) {
+            newState = newState.updateEntity(spellId) { c ->
+                c.with(
+                    com.wingedsheep.engine.state.components.identity.MayPlayFromExileComponent(
+                        controllerId = spellComponent.casterId,
+                        permanent = true
+                    )
+                )
+            }
+        }
 
         // Add counters granted by ExileAfterResolveComponent (e.g., Goliath Daydreamer's dream counter).
         if (destinationZone == Zone.EXILE && exileAfterResolveComp != null && exileAfterResolveComp.withCounters.isNotEmpty()) {

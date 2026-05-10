@@ -1324,6 +1324,35 @@ Used in `OptionalCostEffect`, `MayPayManaEffect`, `AnyPlayerMayPayEffect`, `PayO
 
 ---
 
+## Card Layouts (multi-face cards)
+
+`CardLayout` selects how a card's faces are stored and resolved:
+
+- `NORMAL` — single-face card. All characteristics live on the top-level `CardDefinition`.
+- `SPLIT` — two halves with a shared off-battlefield card (CR 709). Each face in `cardFaces[]` carries its own name / mana cost / type line / oracle text / abilities. Casting passes `CastSpell.faceIndex` to pick a half.
+- `ADVENTURE` — adventurer card (CR 715). The top-level `CardDefinition` describes the creature; `cardFaces[0]` is the Adventure (instant or sorcery — Adventure) with its own mana cost, type line, target requirements, and `spell { … }` effect. Casting `faceIndex = 0` runs the Adventure: on resolution the card is exiled (instead of going to the graveyard) and the caster gains `MayPlayFromExileComponent` so the creature can be cast from exile while it remains there. Casting with `faceIndex = null` casts the creature normally.
+
+Adventure DSL example:
+
+```kotlin
+val card = card("Brightcap Badger") {
+    manaCost = "{3}{G}"; typeLine = "Creature — Badger Druid"; power = 3; toughness = 4
+    // creature-side abilities…
+
+    adventure("Fungus Frolic") {
+        manaCost = "{2}{G}"
+        typeLine = "Instant — Adventure"
+        spell {
+            effect = Effects.CreateToken(power = 1, toughness = 1, ..., count = 2)
+        }
+    }
+}
+```
+
+`adventure(name) { … }` is sugar for `layout = CardLayout.ADVENTURE; face(name) { … }`. The `face { spell { … } }` block is also available on plain `face` builders for any future split layout that needs a per-face spell effect.
+
+---
+
 ## Key File Paths
 
 | File                                                                                             | Purpose                              |

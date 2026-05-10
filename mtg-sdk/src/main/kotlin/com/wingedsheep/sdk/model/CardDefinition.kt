@@ -59,6 +59,19 @@ enum class Rarity {
 enum class CardLayout {
     NORMAL,
     SPLIT,
+
+    /**
+     * Adventurer card (CR 715). The primary characteristics in [CardDefinition] describe the
+     * creature face; [CardDefinition.cardFaces] holds the single Adventure face (an instant or
+     * sorcery with its own name, mana cost, type line, oracle text, target requirements, and
+     * spell effect).
+     *
+     * Casting flow: from hand the owner may cast either the creature (primary characteristics)
+     * or the Adventure (face[0]'s alternative characteristics, signalled by [CastSpell.faceIndex]).
+     * When an Adventure resolves, the card is exiled instead of going to the graveyard, and the
+     * caster gains permission to cast the creature face from exile (CR 715.4-5).
+     */
+    ADVENTURE,
 }
 
 /**
@@ -186,6 +199,7 @@ data class CardDefinition(
     val isPermanent: Boolean get() = typeLine.isPermanent
     val isDoubleFaced: Boolean get() = backFace != null
     val isSplit: Boolean get() = layout == CardLayout.SPLIT
+    val isAdventure: Boolean get() = layout == CardLayout.ADVENTURE
 
     /**
      * True if this card is a Room (CR 709.5 + 205.3h). A Room is a split-layout enchantment whose

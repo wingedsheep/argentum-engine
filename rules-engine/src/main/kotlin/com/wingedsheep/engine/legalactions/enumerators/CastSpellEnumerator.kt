@@ -70,6 +70,15 @@ class CastSpellEnumerator : ActionEnumerator {
             // behold, kicker, or convoke for split halves — Rooms (the only Phase 5 consumer)
             // don't use any of them. Layouts that need this (Aftermath, Fuse, Adventure) will
             // extend this branch when they land.
+            // Adventure layout (CR 715) — emit one cast option for the Adventure face, then fall
+            // through so the surrounding code also enumerates the creature face. The Adventure
+            // face has its own mana cost, type line (instant/sorcery — Adventure), target
+            // requirements, and spell effect; the creature face uses the card's primary fields.
+            if (cardDef.layout == com.wingedsheep.sdk.model.CardLayout.ADVENTURE && cardDef.cardFaces.isNotEmpty()) {
+                enumerateAdventureFace(context, cardId, cardDef, result)
+                // Don't `continue` — let the surrounding loop also enumerate the creature face.
+            }
+
             if (cardDef.layout == com.wingedsheep.sdk.model.CardLayout.SPLIT && cardDef.cardFaces.isNotEmpty()) {
                 val isSorceryFace = cardDef.cardFaces.all { face ->
                     !face.typeLine.isInstant
@@ -1515,6 +1524,83 @@ class CastSpellEnumerator : ActionEnumerator {
             autoTapPreview = modeAutoTapPreview,
             targetInfos = modeTargetInfos,
             allTargetRequirementsSatisfied = allTargetRequirementsSatisfied
+        )
+    }
+
+    // =========================================================================
+    // Adventure face (CR 715)
+    // =========================================================================
+
+    /**
+     * Emit a [LegalAction] for casting the Adventure face of an adventurer card from hand.
+     * The card's creature face is enumerated by the surrounding loop's normal cast path; this
+     * method only adds the alternative-characteristics cast that uses [CastSpell.faceIndex] = 0.
+     *
+     * Supports mana cost, instant/sorcery timing, and per-face target requirements. Additional
+     * costs declared on the Adventure face's script are honoured for affordability but the full
+     * additional-cost UX (sacrifice picker, blight, etc.) is not yet wired for Adventure faces —
+     * cards that need that can extend this method later.
+     */
+    private fun enumerateAdventureFace(
+        context: EnumerationContext,
+        cardId: EntityId,
+        cardDef: CardDefinition,
+        result: MutableList<LegalAction>,
+    ) {
+        val state = context.state
+        val playerId = context.playerId
+        val face = cardDef.cardFaces.firstOrNull() ?: return
+        val playerEntity = state.getEntity(playerId) ?: return
+
+        val isInstantAdventure = face.typeLine.isInstant
+        if (!isInstantAdventure && !context.canPlaySorcerySpeed) return
+
+        val effectiveCost = context.costCalculator
+            .calculateEffectiveCostWithAlternativeBase(state, cardDef, face.manaCost, playerId)
+        val cachedSources = context.availableManaSources
+        val canAfford = context.manaSolver
+            .canPay(state, playerId, effectiveCost, precomputedSources = cachedSources)
+        if (!canAfford) return
+
+        val targetReqs = face.script.targetRequirements
+        val autoTapPreview = if (context.skipAutoTapPreview) null else {
+            context.manaSolver
+                .solve(state, playerId, effectiveCost, precomputedSources = cachedSources)
+                ?.sources?.map { it.entityId }
+        }
+        val manaCostString = effectiveCost.toString()
+
+        if (targetReqs.isEmpty()) {
+            result.add(
+                LegalAction(
+                    actionType = "CastSpell",
+                    description = "Cast ${face.name}",
+                    action = CastSpell(playerId, cardId, faceIndex = 0),
+                    manaCostString = manaCostString,
+                    autoTapPreview = autoTapPreview,
+                )
+            )
+            return
+        }
+
+        val targetInfos = context.targetUtils.buildTargetInfos(state, playerId, targetReqs)
+        if (!context.targetUtils.allRequirementsSatisfied(targetInfos)) return
+        val firstReq = targetReqs.first()
+        val firstInfo = targetInfos.first()
+        result.add(
+            LegalAction(
+                actionType = "CastSpell",
+                description = "Cast ${face.name}",
+                action = CastSpell(playerId, cardId, faceIndex = 0),
+                validTargets = firstInfo.validTargets,
+                requiresTargets = true,
+                targetCount = firstReq.count,
+                minTargets = firstReq.effectiveMinCount,
+                targetDescription = firstReq.description,
+                targetRequirements = if (targetInfos.size > 1) targetInfos else null,
+                manaCostString = manaCostString,
+                autoTapPreview = autoTapPreview,
+            )
         )
     }
 }
