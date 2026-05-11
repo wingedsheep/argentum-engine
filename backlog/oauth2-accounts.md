@@ -2,10 +2,10 @@
 
 A direct OAuth2 / OIDC + Spring Security implementation that replaces the current ephemeral
 `PlayerIdentity` (random UUID in `localStorage`) with persistent user accounts backed by Postgres,
-and moves the client-side deck library to a server-side store keyed by the new account. **Google**
-is the first wired-up provider; **GitHub** and **Microsoft** are designed-for follow-ups that drop
-in via a new `ClientRegistration` and a per-provider claim mapper. Anonymous guest play stays
-intact for casual games and dev scenario E2E tests.
+and starts recording per-account game outcomes so logged-in users can see their win/loss record
+over time. **Google** is the first wired-up provider; **GitHub** and **Microsoft** are
+designed-for follow-ups that drop in via a new `ClientRegistration` and a per-provider claim
+mapper. Anonymous guest play stays intact for casual games and dev scenario E2E tests.
 
 ## Why direct OAuth (not Keycloak)
 
@@ -28,20 +28,24 @@ Spring is low, and the ops cost of running a Keycloak instance is not.
 ## Scope
 
 - **Phase 1 — Google sign-in + persistent accounts** (Postgres-backed, schema `auth`).
-- **Phase 2 — Deck library moves server-side** (Postgres schema `decks`, keyed by `userAccountId`),
-  with a one-shot upload on first sign-in that imports any existing `localStorage["argentum.decks"]`
-  entries.
+- **Phase 2 — Per-account stats tracking** (Postgres schema `stats`): one row per completed game
+  per authenticated participant, with simple aggregation endpoints. Guests don't record stats.
 - **Schema and abstractions are provider-agnostic from day one.** Each provider is identified by a
   `(provider, subject)` tuple; the JIT-provisioning flow goes through a `ProviderClaimMapper`
   abstraction so adding GitHub / Microsoft is purely additive (no migrations, no rewiring).
 - **Each provider gets a separate account.** Signing in with Google produces one
   `auth.user_accounts` row; later signing in with GitHub as the same human produces a second row.
   See [Open Questions](#open-questions--risks) for the rationale and the linking-as-follow-up note.
-- **Session token lives in `localStorage` for V1.** The JWT is delivered to the SPA via a URL
-  fragment on the OAuth callback redirect, then stored at `localStorage["argentum-session"]` and
-  attached to REST requests as `Authorization: Bearer <jwt>` and to the WebSocket via the existing
-  `ClientMessage.Connect.token` field. **No browser cookies.** Cookies are tracked as a hardening
-  follow-up; see Security Notes.
+- **Session tokens live in `localStorage` for V1.** The browser holds a short-lived access JWT
+  (`localStorage["argentum-session"]`, 1h) plus an opaque refresh token
+  (`localStorage["argentum-refresh"]`, 30-day sliding). Both are delivered to the SPA via a URL
+  fragment on the OAuth callback redirect. The access JWT is attached to REST as
+  `Authorization: Bearer <jwt>` and to the WebSocket via the existing
+  `ClientMessage.Connect.token` field; the refresh token only ever hits `POST /auth/refresh`.
+  **No browser cookies.** Cookies are tracked as a hardening follow-up; see Security Notes.
+- **Decks stay on the client.** Migrating the deck library (`localStorage["argentum.decks"]`) to
+  a server-side store keyed by `userAccountId` is **deferred to a dedicated deck-library backlog
+  item**, which will define both the server schema and the one-shot upload-on-first-login flow.
 
 ## Dependencies
 
@@ -53,7 +57,7 @@ This feature depends on:
   the auth flow needs a cleaner identity lifecycle than the current ad-hoc model.
 
 This feature is a prerequisite for any feature that needs durable cross-device identity (player
-profiles, match history, leagues, etc.).
+profiles, deck library, match history, leagues, etc.).
 
 ---
 
@@ -62,8 +66,8 @@ profiles, match history, leagues, etc.).
 The codebase today persists everything (game sessions, lobbies, tournament state) in **Redis with a
 24-hour TTL**, via the pattern `interface XRepository` + `RedisXRepository` + `InMemoryXRepository`
 gated by `cache.redis.enabled` (see `RedisGameRepository`, `RedisLobbyRepository`, and their
-in-memory counterparts). **No durable, no-TTL data exists yet** — auth accounts and (Phase 2) decks
-would be the first.
+in-memory counterparts). **No durable, no-TTL data exists yet** — auth accounts and (Phase 2) stats
+rows would be the first.
 
 Two plausible approaches:
 
@@ -81,8 +85,8 @@ Two plausible approaches:
 **We choose Postgres.** Auth is the first piece of a relational backbone the project will need
 anyway (profiles, deck library, match history, leagues). Paying the infra cost once now is cheaper
 than running auth on Redis and migrating later, and SQL constraints (`UNIQUE`, foreign keys for
-future tables — including the Phase 2 deck table) are exactly the integrity guarantees we want for
-user data.
+future tables — including the Phase 2 stats table and the eventual deck table) are exactly the
+integrity guarantees we want for user data.
 
 Redis-backed auth stays a sensible Plan B if this feature ships alone for longer than expected and
 we'd rather defer the "first relational store" decision until a second persistent feature lands —
@@ -97,7 +101,7 @@ the `UserAccountRepository` interface in Phase 1.3 keeps that swap localized.
 - Add Postgres service to `docker-compose.local.yml` (and prod `docker-compose.yml`) alongside Redis.
 - Dev defaults: `postgres:16-alpine`, port `5432`, db `argentum`, user `argentum`, password from env.
 - **One shared database, per-feature Postgres schemas (namespaces).** Auth tables live in an `auth`
-  schema; the Phase 2 deck tables live in a `decks` schema. Future features get their own schema.
+  schema; the Phase 2 stats tables live in a `stats` schema. Future features get their own schema.
   Keeps related tables grouped, makes migrations per-feature, and lets us grant scoped DB roles
   later without splitting databases.
 - Spring Boot config (`application.yml`):
@@ -118,7 +122,7 @@ the `UserAccountRepository` interface in Phase 1.3 keeps that swap localized.
 - Add `flyway-core` + `flyway-database-postgresql` to `game-server/build.gradle.kts`.
 - Migration directory: `game-server/src/main/resources/db/migration/`.
 - `V1__auth_schema.sql` creates the `auth` schema and `auth.user_accounts` (Phase 1.4).
-- `V2__decks_schema.sql` creates the `decks` schema and `decks.decks` (Phase 2.1).
+- `V2__stats_schema.sql` creates the `stats` schema and `stats.game_results` (Phase 2.1).
 - Future migrations live as further `V*__*.sql` files in the same directory, each creating and
   populating its own Postgres schema for the feature it owns.
 
@@ -127,7 +131,7 @@ the `UserAccountRepository` interface in Phase 1.3 keeps that swap localized.
 Use **Spring Data JPA**. The codebase has no existing relational data-access layer to match, so the
 choice is between JPA, Exposed, jOOQ, and raw JDBC. JPA is the most familiar option in Spring-land
 and the simplest fit for the small set of tables in this feature. Wrap it behind
-`UserAccountRepository` / `DeckRepository` interfaces so the Postgres ↔ Redis decision in the
+`UserAccountRepository` / `GameResultRepository` interfaces so the Postgres ↔ Redis decision in the
 Persistence section above stays reversible.
 
 Add to `game-server/build.gradle.kts`:
@@ -281,28 +285,59 @@ spring:
      - if missing: insert new row (id = UUID.randomUUID(), createdAt = now)
      - if present: update email/displayName/avatarUrl from latest claims, set lastLoginAt = now
 
-4. SessionTokenService.issue(userAccount):
-     - sign a self-issued JWT via Spring Security's JwtEncoder (Nimbus, transitively present)
-     - HS256 with a server-side secret (env `GAME_SESSION_SECRET`); easy to swap to RS256/JWKS later
-     - claims: sub = userAccount.id, name = displayName, prv = userAccount.provider,
-               jti = UUID.randomUUID() (used by the revocation list — see Security Notes),
-               exp = now+12h, iss = "argentum"
-     - matching JwtDecoder bean (sessionJwtDecoder) is wired into the API/WebSocket filter chain.
+4. SessionTokenService.issuePair(userAccount):
+     - **Access JWT** (short-lived, ~1h):
+       - sign via Spring Security's JwtEncoder (Nimbus, transitively present)
+       - HS256 with a server-side secret (env `GAME_SESSION_SECRET`); easy to swap to RS256/JWKS later
+       - claims: sub = userAccount.id, name = displayName, prv = userAccount.provider,
+                 jti = UUID.randomUUID() (used by the revocation list — see Security Notes),
+                 exp = now+1h, iss = "argentum"
+       - matching JwtDecoder bean (sessionJwtDecoder) is wired into the API/WebSocket filter chain.
+     - **Refresh token** (long-lived, opaque):
+       - 256-bit random, URL-safe encoded.
+       - stored in Redis at `auth:refresh:{token}` as JSON
+         `{ userAccountId, family: UUID, issuedAt: Instant }` with **30-day sliding TTL**
+         (reset on each successful use).
+       - `family` is a UUID shared across every refresh in the rotation chain; used for theft
+         detection (see refresh flow below).
+       - also indexed at `auth:refresh-by-account:{userAccountId}` (SADD the token) so we can
+         revoke all of a user's sessions in one shot.
 
-5. Redirect the browser to the SPA with the JWT in a URL fragment:
-       302 -> https://app/#auth_token=<jwt>
-   Fragment (not query string) so the JWT isn't sent on the redirect request and isn't logged in
-   access logs. The SPA reads `window.location.hash`, persists the JWT to
-   `localStorage["argentum-session"]`, and clears the fragment via `history.replaceState` so the
-   token doesn't linger in browser history or get accidentally copy-pasted.
+5. Redirect the browser to the SPA with both tokens in a URL fragment:
+       302 -> https://app/#auth_token=<jwt>&refresh_token=<refresh>
+   Fragment (not query string) so neither token is sent on the redirect request or logged in
+   access logs. The SPA reads `window.location.hash`, persists the access JWT to
+   `localStorage["argentum-session"]` and the refresh token to `localStorage["argentum-refresh"]`,
+   then clears the fragment via `history.replaceState` so the tokens don't linger in browser
+   history or get accidentally copy-pasted.
 ```
 
-We issue **our own JWT** rather than passing the provider's `id_token`/access token to the SPA:
+We issue **our own tokens** rather than passing the provider's `id_token`/access token to the SPA:
 - The provider token carries PII and provider-specific claims we don't want on the client; our
-  session JWT only carries `userAccountId`, `displayName`, and `provider`.
-- We control rotation and revocation (Redis `jti` blocklist — Security Notes).
-- Refresh is decoupled from the provider: we don't store provider refresh tokens. When the session
-  JWT expires (12h) the user re-authenticates with one click.
+  access JWT only carries `userAccountId`, `displayName`, and `provider`.
+- We control rotation and revocation (Redis `jti` blocklist + refresh-token family — Security Notes).
+- We don't store **provider** refresh tokens; we issue our own server-side refresh tokens instead.
+  When our refresh token's sliding 30-day TTL runs out, the user re-authenticates with the provider
+  (one click).
+
+**Token refresh flow** (`POST /auth/refresh`, body `{ refreshToken: "..." }`):
+
+1. Look up `auth:refresh:{token}` in Redis.
+   - **Missing** → check `auth:refresh-tombstone:{token}`. If a tombstone exists, see step 3
+     (reuse). Otherwise → 401, client clears both local tokens and drops to the guest flow.
+   - **Found** → continue to step 2.
+2. **Rotate**: delete the old refresh token, write a tombstone
+   `auth:refresh-tombstone:{token} = family` with the family's remaining TTL, issue a fresh access
+   JWT and a new refresh token **in the same `family`**, update the per-account index. Return
+   `{ accessToken, refreshToken, expiresIn: 3600 }`.
+3. **Family-reuse detection.** A presented token that's missing but tombstoned was rotated away —
+   the legitimate client should already be carrying the new token, so reuse means theft. Revoke
+   **every refresh token in that family** (delete all members of
+   `auth:refresh-by-account:{userAccountId}` whose stored `family` matches) and force re-auth on
+   every device. Also blocklist any currently outstanding access JWT in that family by `jti`.
+
+Sliding TTL means a user who visits at least monthly stays logged in indefinitely; one who doesn't
+gets bounced back to the OAuth flow.
 
 ### 1.7 WebSocket Authentication
 
@@ -341,6 +376,10 @@ Reconnect resolution order in `handleConnect()`:
 2. Else `token` matches an existing guest UUID → existing token-based reconnect.
 3. Else → fresh guest identity.
 
+If the WebSocket close is triggered server-side by an expired JWT (or the server rejects a
+`Connect` carrying an expired one), the SPA hits `/auth/refresh`, then reconnects with the new
+JWT. See 1.11.
+
 No `HandshakeInterceptor`, no cookies, no CORS-with-credentials. The existing
 `setAllowedOrigins("*")` stays as-is for V1 — bearer tokens in a custom message field aren't
 subject to the cookie auto-attachment risk that wildcard CORS otherwise enables. (Origin tightening
@@ -356,8 +395,9 @@ Anonymous play continues to work and is explicitly supported:
 - `PlayerIdentity.userAccountId` is null for guests; `SessionRegistry` still indexes guests by `token`.
 - Server-issued UUID token is returned in `ServerMessage.Connected` and stored in
   `localStorage["argentum-token"]` (the existing key, untouched by this feature).
-- Account-scoped REST endpoints (`/api/me`, `/api/decks/**`) **reject** unauthenticated requests
-  (`401`); gameplay endpoints (lobby create, quick-game, dev scenarios) remain open.
+- Account-scoped REST endpoints (`/api/me`, `/api/me/stats`, `/api/me/games`) **reject**
+  unauthenticated requests (`401`); gameplay endpoints (lobby create, quick-game, dev scenarios)
+  remain open.
 
 This preserves:
 - Drop-in casual play (no account barrier).
@@ -376,12 +416,15 @@ Spring's defaults handle the OAuth dance per registration; the per-provider URLs
 GET    /oauth2/authorization/google     Initiates Google OAuth2 (Spring redirects)
 GET    /login/oauth2/code/google        Callback (Spring handles, we run successHandler)
                                         (mirror routes appear automatically for /github, /microsoft)
-POST   /auth/logout                     Revokes the JWT via the Redis jti blocklist; client clears
-                                        localStorage["argentum-session"] on success.
+POST   /auth/refresh                    Exchange refresh token for a new access+refresh pair
+                                        (body: { refreshToken }; see 1.6 refresh flow)
+POST   /auth/logout                     Revokes the current access JWT (jti blocklist) AND every
+                                        refresh token in its family; client clears both localStorage
+                                        keys on success.
 GET    /api/me                          Returns the current UserAccount (or 401 if no/invalid JWT)
 PATCH  /api/me                          Update displayName (only mutable field by user)
 DELETE /api/me                          Soft-delete: status=DELETED, anonymize email/displayName,
-                                        cascade-delete decks (see Phase 2)
+                                        cascade-delete stats rows (see Phase 2)
 ```
 
 `/api/me` shape:
@@ -413,158 +456,160 @@ DELETE /api/me                          Soft-delete: status=DELETED, anonymize e
 `web-client` changes (`src/store/slices/connectionSlice.ts`, `connectionHandlers.ts`,
 `src/components/landing/`, plus a new `authSlice`):
 
-- **OAuth callback bootstrap**: on app load, `App.tsx` (or root effect) checks
-  `window.location.hash` for `#auth_token=<jwt>`. If present:
-  1. Write to `localStorage["argentum-session"]`.
+- **OAuth callback bootstrap**: on app load, the root effect checks `window.location.hash` for
+  `#auth_token=<jwt>&refresh_token=<refresh>`. If present:
+  1. Write the JWT to `localStorage["argentum-session"]` and the refresh token to
+     `localStorage["argentum-refresh"]`.
   2. `history.replaceState(null, '', window.location.pathname + window.location.search)` to scrub.
 - **Login button(s)**: Phase 1 shows "Sign in with Google" →
   `window.location.href = '/oauth2/authorization/google'`. The button list is data-driven so adding
   GitHub / Microsoft is a one-line change.
 - **Session detection**: on boot, if a JWT exists in localStorage, `GET /api/me` with
-  `Authorization: Bearer <jwt>` → store user in `authSlice`. 401 (expired/revoked) → clear the
-  JWT, fall through to guest.
-- **WebSocket connect**: include the JWT (if present) as the `token` field in
+  `Authorization: Bearer <jwt>` → store user in `authSlice`. 401 → fall through to the refresh
+  flow below.
+- **Auto-refresh on 401** (REST): a shared `apiFetch()` wrapper retries once. On `401`, call
+  `POST /auth/refresh` with the stored refresh token; on success, persist the new pair and retry
+  the original request. On refresh failure (401 from `/auth/refresh`), clear both localStorage
+  keys + `authSlice` and demote to guest. **Single retry only** — no infinite loops.
+- **WebSocket connect**: include the current access JWT (if present) as the `token` field in
   `ClientMessage.Connect`. Guests keep using `localStorage["argentum-token"]`. The dev-scenario
   `?token=` URL param keeps working as it does today (server side decides whether the value is a
   JWT or a guest UUID).
+- **WebSocket expiry**: if the server rejects `Connect` with a token-expired reason (or closes the
+  WS with the same), the SPA runs the refresh flow once and reconnects. Same single-retry rule.
 - **Display name**: pre-fill the player-name input with `me.displayName` for authenticated users
   (still editable for the session — open question whether we want per-game name override now that
   accounts exist).
-- **Logout**: `POST /auth/logout` (with the JWT) → clear `localStorage["argentum-session"]` and
-  the `authSlice` → close + reopen the WebSocket so it reconnects as a guest.
+- **Logout**: `POST /auth/logout` (with the access JWT) → clear both localStorage keys and the
+  `authSlice` → close + reopen the WebSocket so it reconnects as a guest.
 - **Reverse proxy**: in dev, the Vite proxy must cover `/oauth2/**` and `/login/oauth2/**` so the
   redirect dance works from `localhost:5173`. No cookie forwarding needed. The Google OAuth client
   must whitelist `http://localhost:5173/login/oauth2/code/google` and the prod equivalent.
 
 ---
 
-## Phase 2 — Deck Library Migration
+## Phase 2 — Player Stats
 
-Move the saved deck library from per-device `localStorage["argentum.decks"]` to a Postgres-backed
-table keyed by `userAccountId`, and run a one-shot upload on first sign-in so existing users don't
-lose what they've built.
+Persist per-account game outcomes so logged-in users can see their record over time. Append-only:
+each completed game inserts one row per authenticated participant. Guests don't track stats.
 
-### 2.1 `decks.decks` Schema
+### 2.1 `stats.game_results` Schema
 
 ```sql
-CREATE SCHEMA IF NOT EXISTS decks;
+CREATE SCHEMA IF NOT EXISTS stats;
 
-CREATE TABLE decks.decks (
-    id                 UUID PRIMARY KEY,
-    user_account_id    UUID NOT NULL REFERENCES auth.user_accounts(id) ON DELETE CASCADE,
-    name               VARCHAR(120) NOT NULL,
-    format             VARCHAR(32),                 -- nullable; matches client's optional field
-    set_code           VARCHAR(8),                  -- for sealed/limited decks
-    commander          VARCHAR(200),                -- nullable
-    commander_printing VARCHAR(64),                 -- nullable
-    cards              TEXT NOT NULL,               -- serialized deck body (see 2.2)
-    schema_version     SMALLINT NOT NULL,           -- 1 or 2, preserving the client envelope
-    created_at         TIMESTAMPTZ NOT NULL,
-    updated_at         TIMESTAMPTZ NOT NULL
+CREATE TABLE stats.game_results (
+    id                UUID PRIMARY KEY,
+    user_account_id   UUID NOT NULL REFERENCES auth.user_accounts(id) ON DELETE CASCADE,
+    game_session_id   VARCHAR(64) NOT NULL,         -- the existing in-memory game session id
+    outcome           VARCHAR(16) NOT NULL,         -- WON, LOST, DRAW, CONCEDED
+    format            VARCHAR(32),                  -- constructed, sealed, draft, commander, ...
+    opponents_count   SMALLINT NOT NULL,
+    duration_seconds  INTEGER,
+    played_at         TIMESTAMPTZ NOT NULL
 );
-CREATE INDEX idx_decks_user ON decks.decks (user_account_id);
+CREATE INDEX idx_game_results_user_played_at
+    ON stats.game_results (user_account_id, played_at DESC);
 ```
 
 Notes:
-- **`cards` is `TEXT` storing `kotlinx.serialization` JSON.** Keeps wire-compat with the existing
-  client `SavedDeck` shape (`Record<cardName, count>` for v1, the entries array with per-card
-  printing pins for v2). Promote to `JSONB` later (`ALTER TABLE … USING (cards::jsonb)`) when we
-  need server-side card-level queries — none in scope here.
-- **`ON DELETE CASCADE`** ties deck lifetime to the account. Account soft-delete (Phase 1.9
-  `DELETE /api/me`) also cascade-deletes decks rather than orphaning them; same effect, no DB-level
-  trigger needed.
-- **`schema_version`** preserves the client's v1↔v2 envelope so we don't have to do a forced
-  upgrade on import. Server treats `cards` as opaque blob; only the client cares about the inner
-  shape.
+- **Append-only, no aggregation table for now.** Aggregations (`games_played`, `win_rate`, etc.)
+  are computed at read time via SQL `GROUP BY`. With current player counts this is well under a
+  millisecond; we can add a materialized view later if it stops being free.
+- **`game_session_id` is `VARCHAR(64)` and not a foreign key** — game sessions live in Redis with
+  a 24h TTL, so there's no durable referent for an FK.
+- **`outcome` enum** — `WON`, `LOST`, `DRAW`, `CONCEDED`. Concedes are tracked separately from a
+  clean loss because the future UI may want to surface "completion rate" alongside "win rate".
+- **`ON DELETE CASCADE`** on the account FK so soft-deleting an account also drops its stats rows.
+  (`DELETE /api/me` in Phase 1.9 mentions this cascade.)
 
 ### 2.2 Entity & Repository
 
 ```kotlin
 @Entity
-@Table(name = "decks", schema = "decks", indexes = [Index(columnList = "userAccountId")])
-class Deck(
+@Table(name = "game_results", schema = "stats")
+class GameResult(
     @Id val id: UUID,
     @Column(nullable = false) val userAccountId: UUID,
-    @Column(nullable = false) var name: String,
-    var format: String?,
-    var setCode: String?,
-    var commander: String?,
-    var commanderPrinting: String?,
-    @Column(nullable = false, columnDefinition = "TEXT") var cards: String,   // kotlinx-serialized
-    @Column(nullable = false) val schemaVersion: Short,
-    val createdAt: Instant,
-    var updatedAt: Instant
+    @Column(nullable = false) val gameSessionId: String,
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false) val outcome: GameOutcome,   // WON, LOST, DRAW, CONCEDED
+    val format: String?,
+    @Column(nullable = false) val opponentsCount: Short,
+    val durationSeconds: Int?,
+    @Column(nullable = false) val playedAt: Instant
 )
+
+enum class GameOutcome { WON, LOST, DRAW, CONCEDED }
 ```
 
-`DeckRepository : JpaRepository<Deck, UUID>` with:
-- `findAllByUserAccountId(userId: UUID): List<Deck>`
-- `findByIdAndUserAccountId(id: UUID, userId: UUID): Deck?` (so handlers can fail-closed without
-  cross-user leaks even if the controller forgets to filter)
+`GameResultRepository : JpaRepository<GameResult, UUID>` with:
+- `findAllByUserAccountIdOrderByPlayedAtDesc(userId: UUID, pageable: Pageable): Page<GameResult>`
+- a `@Query` aggregation projection used by `/api/me/stats` — `count(*) FILTER (WHERE outcome = ?)`
+  grouped per outcome, plus `max(played_at)`.
 
-`DeckService` converts between the entity's `cards: String` and the client-facing `SavedDeck` DTO
-via `kotlinx.serialization` (same `persistenceJson` instance the Redis repos use). No new
-serializer.
+### 2.3 Recording Game Outcomes
 
-### 2.3 REST Endpoints
+A new `StatsRecorder` listens for game-completion and writes one `GameResult` row per
+authenticated participant. The hook sits next to the existing game-end handling in `game-server`
+(wherever the engine signals "game over"). For each player in the final state:
+
+- If `PlayerIdentity.userAccountId != null` → insert a `GameResult` row.
+- Otherwise → skip (guests don't track stats).
+
+The write is **best-effort and asynchronous** — it doesn't gate game-end notifications to clients,
+and a failure logs an error but doesn't roll back the game outcome on the client. Concedes vs
+clean wins are distinguished by reading the existing end-state reason; the engine already produces
+this distinction for spectator UI.
+
+Format is read from the lobby's configured format (where present); null otherwise. Duration is
+`endedAt - startedAt` from the existing game-session metadata.
+
+### 2.4 REST Endpoints
 
 ```
-GET    /api/decks                     List the current user's decks (lightweight summary)
-GET    /api/decks/{id}                Get one deck's full content
-POST   /api/decks                     Create a new deck
-PUT    /api/decks/{id}                Replace a deck (atomic; updatedAt bumped)
-DELETE /api/decks/{id}                Delete a deck
-POST   /api/decks/import              Bulk import — used by the first-login upload flow (see 2.4)
+GET    /api/me/stats                    Aggregated stats for the current user
+GET    /api/me/games                    Recent game history (paginated)
 ```
 
-All under the API chain (require a valid bearer JWT). 404 (not 403) when a deck ID doesn't belong
-to the caller, to avoid leaking existence.
-
-Summary shape (`GET /api/decks`):
+`GET /api/me/stats`:
 ```json
-{ "id": "uuid", "name": "string", "format": "string|null", "cardCount": 60, "updatedAt": "iso8601" }
+{
+  "gamesPlayed": 42,
+  "gamesWon": 23,
+  "gamesLost": 16,
+  "gamesDrawn": 1,
+  "gamesConceded": 2,
+  "lastPlayedAt": "iso8601|null"
+}
 ```
 
-Full shape (`GET /api/decks/{id}` and `PUT /api/decks/{id}` body): mirrors the existing client
-`SavedDeck` so the SPA can swap the storage backend without changing the shape it consumes.
+`GET /api/me/games?cursor=…` (default page size 20):
+```json
+{
+  "items": [
+    {
+      "id": "uuid",
+      "outcome": "WON",
+      "format": "constructed",
+      "opponentsCount": 1,
+      "durationSeconds": 1340,
+      "playedAt": "iso8601"
+    }
+  ],
+  "nextCursor": "string|null"
+}
+```
 
-### 2.4 First-Login Upload Flow
+Both endpoints require a valid bearer JWT (the API chain rejects anonymous). Pagination uses an
+opaque cursor (base64-encoded `(playedAt, id)`) rather than offsets so new games landing during
+pagination don't shift the window.
 
-Triggered the first time the SPA sees a brand-new authenticated session **and** has non-empty
-`localStorage["argentum.decks"]`:
+### 2.5 Frontend (light)
 
-1. After `GET /api/me` succeeds, the SPA reads `localStorage["argentum.decks"]` and parses the
-   envelope.
-2. The SPA calls `GET /api/decks` once. If the server-side library is empty, it sends `POST
-   /api/decks/import` with the full local library as the body.
-3. On success the SPA marks `localStorage["argentum.decks.uploaded_to_account"] = userAccountId`
-   so we don't re-upload on every login. We do **not** delete the local copy — see migration
-   strategy below.
-4. From this point on, the SPA reads decks from the server (`GET /api/decks` / `GET /api/decks/{id}`)
-   instead of from `localStorage["argentum.decks"]`.
-
-Import endpoint is idempotent per `(userAccountId, deck.name)`: if a deck with the same name already
-exists, the import skips it. Cheaper than UUID collision handling, and the v1/v2 deck IDs from the
-client are device-local so we wouldn't trust them anyway. The server mints fresh UUIDs.
-
-### 2.5 Frontend Refactor
-
-- `web-client/src/store/deckLibrary.ts` — the existing Zustand store grows a backend mode.
-  Authenticated users hit the new REST endpoints; guests keep their localStorage-only flow
-  unchanged. Pseudocode:
-  ```ts
-  const isAuthed = !!useAuthSlice.getState().user
-  saveDeck = isAuthed
-      ? (d) => fetch('/api/decks', { method: 'POST', headers: bearer(), body: JSON.stringify(d) })
-      : saveDeckLocally
-  ```
-- `DeckPicker` and `DeckBuilderOverlay` — no API changes required; they consume the Zustand store,
-  which now decides where to read from.
-- **Guest decks stay local.** Guests get the same per-device deck library as today
-  (`localStorage["argentum.decks"]`). Logging in triggers the upload-on-first-login flow above.
-- **Sealed/draft autosave** (`sessionStorage["argentum-deck-state"]`) stays purely client-side for
-  both guests and authenticated users — it's an in-flight build, not a saved deck, and migrating it
-  buys nothing.
+Phase 2 ships the data plumbing only — no stats UI. A profile badge or sidebar section showing
+win/loss can land in a follow-up; the endpoints above unblock that work without adding any new
+WebSocket plumbing.
 
 ---
 
@@ -597,12 +642,12 @@ non-obvious bits.
 
 ### Infrastructure Additions
 
-| Component        | Purpose                                                       | Dev Setup                       | Prod Setup                       |
-|------------------|---------------------------------------------------------------|---------------------------------|----------------------------------|
-| **Postgres**     | `auth.user_accounts`, `decks.decks`, + future relational data | Docker Compose                  | Managed Postgres                 |
-| **Flyway**       | Schema migrations                                             | Bundled in `bootRun`            | Bundled in deploy                |
-| **OAuth IdPs**   | Identity providers (Google now; GitHub / Microsoft to follow) | OAuth client secret(s) in `.env` | Same, in deploy secret store    |
-| **Redis**        | Game cache (already present) + JWT revocation list            | Already configured              | Already configured               |
+| Component        | Purpose                                                                  | Dev Setup                       | Prod Setup                       |
+|------------------|--------------------------------------------------------------------------|---------------------------------|----------------------------------|
+| **Postgres**     | `auth.user_accounts`, `stats.game_results`, + future relational data     | Docker Compose                  | Managed Postgres                 |
+| **Flyway**       | Schema migrations                                                        | Bundled in `bootRun`            | Bundled in deploy                |
+| **OAuth IdPs**   | Identity providers (Google now; GitHub / Microsoft to follow)            | OAuth client secret(s) in `.env` | Same, in deploy secret store    |
+| **Redis**        | Game cache (already present) + JWT revocation list + refresh-token store | Already configured              | Already configured               |
 
 ### Migration Strategy from Ephemeral PlayerIdentity
 
@@ -616,17 +661,16 @@ The current ephemeral `PlayerIdentity` (random UUID in `localStorage`) must coex
    `userAccountId`-keyed identity, or to start a fresh authenticated identity and let the in-flight
    game finish under the guest token. Recommended default: **start a fresh authenticated identity
    on next connect; let the in-flight guest session complete naturally**.
-3. **Future authenticated features** (profiles, match history, etc.) require an account — there is
-   no server-side history to claim, so pre-account games stay anonymous forever.
-4. **Deck library** is the exception (Phase 2): on first sign-in we upload the contents of
-   `localStorage["argentum.decks"]` to the server via `POST /api/decks/import` and mark the local
-   copy as "uploaded". The local copy is **not deleted** — kept as a read-only fallback for now in
-   case the user logs out, and as belt-and-braces if the upload partially fails.
-5. **Other client localStorage data is left in place.** Preferences (`argentum-auto-tap`,
-   `argentum-stop-overrides`), display name (`argentum-player-name`), last lobby
-   (`argentum-lobby-id`), background (`argentum-bg`) remain per-device. Moving these is not in
-   scope; later features can migrate them individually.
-6. **E2E scenarios** keep using the existing `?token=` + `DevScenarioController.preRegisterIdentity()`
+3. **Pre-account games stay anonymous.** Phase 2 only records stats for games completed *after*
+   the player's account exists; there's no backfill path for past anonymous play.
+4. **Client localStorage data is left in place.** Per-device data already exists today: saved
+   decks at `localStorage["argentum.decks"]` (`web-client/src/store/deckLibrary.ts`), preferences
+   at `argentum-auto-tap` / `argentum-stop-overrides`, plus `argentum-player-name`,
+   `argentum-token`, `argentum-lobby-id`, `argentum-bg`. This feature does **not** touch any of it
+   on first sign-in; decks and preferences remain per-device. Migrating the deck library to a
+   server-side store (keyed by `userAccountId`) is **deferred to a dedicated deck-library backlog
+   item**, which will define both the server schema and the one-shot upload-on-first-login flow.
+5. **E2E scenarios** keep using the existing `?token=` + `DevScenarioController.preRegisterIdentity()`
    path verbatim; that is the guest path. No test rewrites required.
 
 ### Security Notes
@@ -634,18 +678,26 @@ The current ephemeral `PlayerIdentity` (random UUID in `localStorage`) must coex
 - **Session JWT signing key**: HMAC secret in env (`GAME_SESSION_SECRET`), rotated by writing a new
   secret and accepting both old + new during a grace window. (Or RS256 with a JWKS endpoint if we
   want zero-downtime rotation built in.)
-- **JWT in `localStorage` is XSS-exposed.** Any script running on our origin can read the JWT and
-  exfiltrate it. We accept this risk for V1 because:
+- **Tokens in `localStorage` are XSS-exposed.** Any script running on our origin can read both the
+  access JWT and the refresh token. We accept this risk for V1 because:
   - The product surface today is small (no payments, no third-party scripts).
   - React with the existing render patterns (no `dangerouslySetInnerHTML` on user input) gives
     decent baseline protection.
-  - JWT lifetime is capped at 12h, limiting blast radius.
-  - The server has a revocation list (Redis `jti` blocklist) so a leaked token can be killed.
+  - Access JWT lifetime is capped at 1h — a stolen access token gives an attacker at most an hour
+    of activity (or until `/auth/logout` blocklists the `jti`).
+  - Refresh tokens **rotate on every use**; reuse of a rotated-out token triggers family-wide
+    revocation, which means a stealthy attacker still trips a tripwire the moment the legitimate
+    client refreshes (or vice-versa). Worst case is a stolen refresh token used silently until the
+    legitimate client next refreshes — typically minutes to hours.
   Tracked follow-up: migrate to `HttpOnly`, `Secure`, `SameSite=Lax` cookies. That requires
   tightening WebSocket origins (today `setAllowedOrigins("*")` — incompatible with cookie-bearing
   upgrades), exposing a `HandshakeInterceptor` to read the cookie at upgrade, and adding a
   `Set-Cookie` step to the success handler. Worth the work when we add anything sensitive
   (payments, real-time chat history, etc.).
+- **Refresh tokens** are opaque, stored only in Redis (never in the JWT signing material), rotated
+  on each `/auth/refresh`, and family-tagged so a single theft event invalidates the whole chain.
+  Per-account index (`auth:refresh-by-account:{userAccountId}`) supports global "sign out
+  everywhere" without scanning.
 - **CSRF**: not applicable in V1. Bearer tokens in `Authorization` headers don't auto-attach
   cross-origin and aren't sent on form posts. When we eventually move to cookies, revisit.
 - **Open redirect**: the success handler must validate any post-login redirect target against an
@@ -655,30 +707,36 @@ The current ephemeral `PlayerIdentity` (random UUID in `localStorage`) must coex
   — that would let a hostile IdP take over an account by claiming a victim's address. Different
   providers → different accounts. If account-linking is added later it must require the user to be
   authenticated with the first identity first.
-- **Rate limiting**: `/oauth2/authorization/*`, `PATCH /api/me`, and `POST /api/decks/import` —
-  basic per-IP throttling via a Spring filter.
-- **Logout revocation**: blocklist the JWT's `jti` in Redis with TTL = remaining lifetime; the
-  resource-server JWT decoder consults the blocklist on each request.
+- **Rate limiting**: `/oauth2/authorization/*`, `POST /auth/refresh`, and `PATCH /api/me` — basic
+  per-IP throttling via a Spring filter. The refresh endpoint is the most attractive brute-force
+  target so it should be the tightest.
+- **Logout revocation**: blocklist the access JWT's `jti` in Redis with TTL = remaining lifetime
+  AND delete every refresh token in the same family. The resource-server JWT decoder consults the
+  blocklist on each request; the refresh endpoint already checks family membership.
 
 ### Reconnection Semantics
 
 | Scenario                                            | Outcome                                                                                                                                                                                  |
 |-----------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Authenticated reconnect, same browser               | JWT in `localStorage["argentum-session"]` → included in `ClientMessage.Connect.token` → decoded → `PlayerIdentity` found via `identityByAccountId` → in-flight game/lobby restored.       |
+| Authenticated reconnect, same browser, JWT fresh    | JWT in `localStorage["argentum-session"]` → included in `ClientMessage.Connect.token` → decoded → `PlayerIdentity` found via `identityByAccountId` → in-flight game/lobby restored.       |
+| Authenticated reconnect, JWT expired                | Connect rejected (or server closes WS) → SPA hits `/auth/refresh`, stores the new pair, reconnects with the new JWT. Silent to the user.                                                  |
 | Authenticated reconnect, different browser/device   | The new device has no JWT until the user logs in there too. After login it has its own JWT pointing at the same `userAccountId`, so the server-side `PlayerIdentity` is resumed.          |
+| Refresh token also expired (>30d inactive)          | `/auth/refresh` returns 401 → SPA clears tokens → user is back to the landing page guest flow → must click "Sign in with Google" again.                                                   |
 | Guest reconnect                                     | `localStorage["argentum-token"]` (legacy UUID) → existing token-based reconnect, unchanged from today.                                                                                    |
-| Authenticated user clears `localStorage` mid-game   | Next `Connect` has no JWT → treated as guest → cannot resume; game auto-concedes after the existing grace period.                                                                         |
+| Authenticated user clears `localStorage` mid-game   | Next `Connect` has no token → treated as guest → cannot resume; game auto-concedes after the existing grace period.                                                                       |
 | Guest logs in mid-game                              | See Migration Strategy #2 — current game finishes as guest, next session is authenticated.                                                                                                |
 
 ### Scaling Notes
 
 - `auth.user_accounts` is tiny and read-heavy. The `(provider, subject)` unique constraint and
   `lower(email)` index are sufficient indefinitely.
-- `decks.decks` grows linearly with active users × decks-per-user. The `(user_account_id)` index
-  handles the only access pattern (list-my-decks). Decks are small JSON blobs (a few KB each).
-- JWT validation is local (no DB hit per request) — only logout and admin-role check hit Postgres;
-  every request consults the Redis `jti` blocklist (single GET, sub-ms).
-- Postgres connection pool size: 10 is plenty for auth + decks workload.
+- `stats.game_results` grows linearly with games × authenticated participants. The composite index
+  on `(user_account_id, played_at DESC)` covers both `/api/me/stats` and `/api/me/games`. Rows are
+  small; we can keep history indefinitely until volume becomes a reason to partition by month.
+- JWT validation is local (no DB hit per request) — only `/auth/refresh`, logout, and admin-role
+  checks hit Postgres / Redis; every request consults the Redis `jti` blocklist (single GET,
+  sub-ms).
+- Postgres connection pool size: 10 is plenty for auth + stats workload.
 
 ---
 
@@ -711,29 +769,29 @@ The current ephemeral `PlayerIdentity` (random UUID in `localStorage`) must coex
    check in Phase 1 — schedule its removal as a separate cleanup item once an admin account exists
    and the admin UI sends the session JWT.
 
-6. **Refresh tokens.** We intentionally do **not** store provider refresh tokens — re-auth at
-   session expiry is acceptable for a game (re-login takes one click). Revisit only if 12-hour
-   sessions become annoying.
-
-7. **Multiple browser tabs.** Each tab opens its own WebSocket. Today this works because identities
+6. **Multiple browser tabs.** Each tab opens its own WebSocket. Today this works because identities
    are token-keyed. With account-keyed auth, all tabs share an account; the `SessionRegistry`
    needs to decide whether to allow multiple concurrent WebSockets per `userAccountId` (probably
    yes — spectating one game while in another lobby) or enforce single-session (kick the older
    socket). Recommendation: allow multiple, but route `GameSession` participation through the
    `currentGameSessionId` field on `PlayerIdentity` so only one tab is the player.
 
-8. **Deck upload conflict on first login.** If a user has already done first-login on device A and
-   built decks server-side, then signs in on device B which still has its own
-   `localStorage["argentum.decks"]` from before, what do we do? Default: import the local decks if
-   they don't conflict by name; otherwise skip them and show a "couldn't import N decks (name
-   conflict)" toast. Don't merge automatically — name conflicts almost certainly mean different
-   decks despite the shared name.
-
-9. **`AccountStatus.SUSPENDED`.** Listed in the enum for future use but no V1 trigger
+7. **`AccountStatus.SUSPENDED`.** Listed in the enum for future use but no V1 trigger
    (admin action vs auto-abuse-detection). Drop the value from V1 and reintroduce when there's a
    real use case, or keep it as a placeholder. Currently leaning toward **drop until needed.**
 
-10. **GDPR right-to-be-forgotten vs soft-delete.** `DELETE /api/me` is currently soft-delete +
-    anonymize, which is generally accepted as compliant when PII fields are nulled. If we ever
-    need hard deletion (e.g. explicit right-to-erasure request that doesn't accept anonymization),
-    add a separate admin path that cascades through `auth.user_accounts` and any FK-linked tables.
+8. **GDPR right-to-be-forgotten vs soft-delete.** `DELETE /api/me` is currently soft-delete +
+   anonymize, which is generally accepted as compliant when PII fields are nulled. If we ever
+   need hard deletion (e.g. explicit right-to-erasure request that doesn't accept anonymization),
+   add a separate admin path that cascades through `auth.user_accounts` and any FK-linked tables
+   (`stats.game_results` already cascades).
+
+9. **Stats for AI/bot opponents.** Should games against the AI count toward `games_played` and
+   `gamesWon`? Default proposed: **yes, all completed games count** — simpler, and bot-vs-human
+   is already tagged by `PlayerIdentity.isAi`, so we can filter at the UI level later if we want a
+   "vs humans only" view. Decide before shipping the stats endpoints.
+
+10. **Refresh-token horizon vs forced re-login policy.** 30-day sliding TTL is generous; some
+    products bake in a hard maximum (e.g. 90 days absolute, regardless of activity) to force
+    occasional re-auth. Keep the simple sliding model for V1; revisit if a security incident
+    demands a hard ceiling.
