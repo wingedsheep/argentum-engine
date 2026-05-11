@@ -5,6 +5,7 @@ import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.scripting.effects.ManaRestriction
+import com.wingedsheep.sdk.scripting.effects.ManaSpellRider
 import com.wingedsheep.sdk.scripting.events.SourceFilter
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import kotlinx.serialization.Serializable
@@ -86,8 +87,13 @@ data class ManaPoolComponent(
      * Add restricted mana to the pool.
      * Each unit of restricted mana is tracked individually with its restriction.
      */
-    fun addRestricted(color: Color?, amount: Int, restriction: ManaRestriction): ManaPoolComponent {
-        val entries = (1..amount).map { RestrictedManaEntry(color, restriction) }
+    fun addRestricted(
+        color: Color?,
+        amount: Int,
+        restriction: ManaRestriction,
+        riders: Set<ManaSpellRider> = emptySet()
+    ): ManaPoolComponent {
+        val entries = (1..amount).map { RestrictedManaEntry(color, restriction, riders) }
         return copy(restrictedMana = restrictedMana + entries)
     }
 
@@ -101,11 +107,14 @@ data class ManaPoolComponent(
  * A single unit of mana with a spending restriction.
  * @param color The color of the mana, or null for colorless.
  * @param restriction The restriction on how this mana can be spent.
+ * @param riders Side-effects applied to a spell when this mana is spent on it
+ *   (e.g. [ManaSpellRider.MakesSpellUncounterable] for Cavern of Souls).
  */
 @Serializable
 data class RestrictedManaEntry(
     val color: Color?,
-    val restriction: ManaRestriction
+    val restriction: ManaRestriction,
+    val riders: Set<ManaSpellRider> = emptySet()
 )
 
 /**

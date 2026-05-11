@@ -15,14 +15,21 @@ import com.wingedsheep.engine.mechanics.mana.ManaPool
 import com.wingedsheep.engine.mechanics.mana.SpellPaymentContext
 import com.wingedsheep.engine.mechanics.mana.isSatisfiedBy
 import com.wingedsheep.engine.state.components.player.RestrictedManaEntry
+import com.wingedsheep.sdk.scripting.effects.ManaSpellRider
 
 /**
  * Result of a mana payment attempt.
+ *
+ * @property consumedRiders Union of [ManaSpellRider]s carried by the mana actually
+ *   spent on this payment (from both restricted floating mana and freshly-tapped
+ *   sources). The caller applies each rider to the spell as it goes on the stack —
+ *   e.g. [ManaSpellRider.MakesSpellUncounterable] stamps `CantBeCounteredComponent`.
  */
 data class PaymentResult(
     val state: GameState,
     val events: List<GameEvent>,
-    val error: String?
+    val error: String?,
+    val consumedRiders: Set<ManaSpellRider> = emptySet()
 )
 
 /**
@@ -183,7 +190,8 @@ class CastPaymentProcessor(
             colorless = colorlessSpent
         )
 
-        return PaymentResult(newState, listOf(event), null)
+        val consumedRiders = ridersConsumedDuringPayment(poolComponent.restrictedMana, poolAfterPayment.restrictedMana)
+        return PaymentResult(newState, listOf(event), null, consumedRiders)
     }
 
     private fun autoPay(
@@ -269,9 +277,11 @@ class CastPaymentProcessor(
         }
 
         // Tap lands for remaining cost (using xRemainingToPay instead of full xValue)
+        var solutionConsumedRiders: Set<ManaSpellRider> = emptySet()
         if (!remainingCost.isEmpty() || xRemainingToPay > 0) {
             val solution = manaSolver.solve(currentState, playerId, remainingCost, xRemainingToPay, excludeSources = excludeSources, spellContext = spellContext)
                 ?: return PaymentResult(currentState, events, "Not enough mana to auto-pay")
+            solutionConsumedRiders = solution.consumedRiders
 
             // Tap each source AND run any non-mana side effects of the matching
             // activated mana ability (e.g. Adarkar Wastes' "this land deals 1
@@ -318,7 +328,9 @@ class CastPaymentProcessor(
             )
         )
 
-        return PaymentResult(currentState, events, null)
+        val consumedRiders =
+            ridersConsumedDuringPayment(poolComponent.restrictedMana, poolAfterPayment.restrictedMana) + solutionConsumedRiders
+        return PaymentResult(currentState, events, null, consumedRiders)
     }
 
     /**
@@ -364,5 +376,28 @@ class CastPaymentProcessor(
         return beforeCounts.mapValues { (color, count) ->
             count - (afterCounts[color] ?: 0)
         }.filter { it.value > 0 }
+    }
+
+    /**
+     * Union of [ManaSpellRider]s carried by restricted mana entries that disappeared
+     * during payment (present in [before], gone from [after] after multiset
+     * subtraction). Used to detect that e.g. Cavern of Souls' floating restricted
+     * mana was spent on the cast.
+     */
+    private fun ridersConsumedDuringPayment(
+        before: List<RestrictedManaEntry>,
+        after: List<RestrictedManaEntry>
+    ): Set<ManaSpellRider> {
+        val remaining = after.toMutableList()
+        val consumed = mutableSetOf<ManaSpellRider>()
+        for (entry in before) {
+            val idx = remaining.indexOfFirst { it == entry }
+            if (idx >= 0) {
+                remaining.removeAt(idx)
+            } else if (entry.riders.isNotEmpty()) {
+                consumed.addAll(entry.riders)
+            }
+        }
+        return consumed
     }
 }

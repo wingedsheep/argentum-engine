@@ -42,10 +42,10 @@ class AddAnyColorManaSpendOnChosenTypeExecutor(
             return EffectResult.success(state)
         }
 
-        val restriction = ManaRestriction.SubtypeSpellsOrAbilitiesOnly(chosenType)
+        val restriction = ManaRestriction.SubtypeSpellsOrAbilitiesOnly(chosenType, effect.creatureOnly)
         val newState = state.updateEntity(context.controllerId) { container ->
             val manaPool = container.get<ManaPoolComponent>() ?: ManaPoolComponent()
-            container.with(manaPool.addRestricted(color, amount, restriction))
+            container.with(manaPool.addRestricted(color, amount, restriction, effect.riders))
         }
         return EffectResult.success(newState)
     }

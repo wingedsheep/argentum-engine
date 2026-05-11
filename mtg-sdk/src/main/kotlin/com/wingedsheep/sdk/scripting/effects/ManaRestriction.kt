@@ -62,16 +62,31 @@ sealed interface ManaRestriction {
 
     /**
      * "Spend this mana only to cast a spell of the specified subtype
-     * or to activate an ability of a source of that subtype."
+     * (or, when [creatureOnly] is false, also to activate an ability of a source of that subtype)."
      *
      * The [subtype] is baked at the moment the mana is added to the pool
      * (e.g., read from the source's ChosenCreatureTypeComponent), so the
      * restriction becomes self-contained and serializable.
+     *
+     * When [creatureOnly] is true, only creature spells of that subtype satisfy the
+     * restriction — abilities of objects of the subtype don't (Cavern of Souls shape).
+     * When false, the restriction also allows activated abilities of sources of the
+     * subtype (Unclaimed Territory shape).
+     *
+     * Any rider side-effect of spending this mana (e.g. "the spell can't be countered")
+     * is carried on the [com.wingedsheep.sdk.scripting.effects.ManaSpellRider] set
+     * attached to the produced mana entry, not on this type.
      */
     @SerialName("SubtypeSpellsOrAbilitiesOnly")
     @Serializable
-    data class SubtypeSpellsOrAbilitiesOnly(val subtype: String) : ManaRestriction {
-        override val description: String =
+    data class SubtypeSpellsOrAbilitiesOnly(
+        val subtype: String,
+        val creatureOnly: Boolean = false
+    ) : ManaRestriction {
+        override val description: String = if (creatureOnly) {
+            "Spend this mana only to cast a creature spell of the chosen type"
+        } else {
             "Spend this mana only to cast a spell of the chosen type or activate an ability of a source of the chosen type"
+        }
     }
 }

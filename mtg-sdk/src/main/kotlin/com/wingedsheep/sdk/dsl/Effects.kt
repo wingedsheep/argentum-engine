@@ -18,6 +18,7 @@ import com.wingedsheep.sdk.scripting.effects.AddManaOfColorLandsCouldProduceEffe
 import com.wingedsheep.sdk.scripting.effects.LandControllerScope
 import com.wingedsheep.sdk.scripting.effects.AddOneManaOfEachColorAmongEffect
 import com.wingedsheep.sdk.scripting.effects.ManaRestriction
+import com.wingedsheep.sdk.scripting.effects.ManaSpellRider
 import com.wingedsheep.sdk.scripting.effects.AddCardTypeEffect
 import com.wingedsheep.sdk.scripting.effects.AddCountersEffect
 import com.wingedsheep.sdk.scripting.effects.AddDynamicCountersEffect
@@ -917,13 +918,24 @@ object Effects {
         AddAnyColorManaEffect(amount, restriction)
 
     /**
-     * Add one mana of any color, restricted to spells/abilities of the source's chosen subtype.
-     * Used for cards like Eclipsed Realms — the executor reads the source's
-     * `ChosenCreatureTypeComponent` and bakes that subtype into the restriction
-     * at the moment mana is added to the pool.
+     * Add one mana of any color, restricted to spells (and optionally activated abilities)
+     * of the source's chosen subtype, optionally carrying spell riders.
+     *
+     * Examples:
+     *  - Unclaimed Territory / Eclipsed Realms variants — default args:
+     *    `AddAnyColorManaSpendOnChosenType()`
+     *  - Cavern of Souls — creature spells only, uncounterable:
+     *    `AddAnyColorManaSpendOnChosenType(creatureOnly = true,
+     *     riders = setOf(ManaSpellRider.MakesSpellUncounterable))`
+     *
+     * The executor reads the source's `ChosenCreatureTypeComponent` and bakes that
+     * subtype into the restriction at the moment mana is added to the pool.
      */
-    fun AddAnyColorManaSpendOnChosenType(amount: Int = 1): Effect =
-        AddAnyColorManaSpendOnChosenTypeEffect(amount)
+    fun AddAnyColorManaSpendOnChosenType(
+        amount: Int = 1,
+        creatureOnly: Boolean = false,
+        riders: Set<ManaSpellRider> = emptySet()
+    ): Effect = AddAnyColorManaSpendOnChosenTypeEffect(amount, creatureOnly, riders)
 
     /**
      * Add X mana in any combination of the allowed colors.

@@ -132,28 +132,49 @@ data class AddDynamicManaEffect(
 }
 
 /**
- * Add one mana of any color, restricted to spells/abilities of the source's chosen subtype.
- * "{T}: Add one mana of any color. Spend this mana only to cast a spell of the chosen
- * type or activate an ability of a source of the chosen type."
+ * Add one mana of any color, restricted to spells (and optionally activated abilities)
+ * of the source's chosen subtype, optionally carrying spell riders.
+ *
+ * Examples:
+ *  - Unclaimed Territory: `AddAnyColorManaSpendOnChosenTypeEffect()` —
+ *    "Spend this mana only to cast a spell of the chosen type or activate an ability of a
+ *    source of the chosen type."
+ *  - Cavern of Souls: `AddAnyColorManaSpendOnChosenTypeEffect(creatureOnly = true,
+ *    riders = setOf(ManaSpellRider.MakesSpellUncounterable))` —
+ *    "Spend this mana only to cast a creature spell of the chosen type, and that spell
+ *    can't be countered."
  *
  * At resolution, the executor reads the source's ChosenCreatureTypeComponent,
  * prompts the player to choose a color, and adds restricted mana whose
  * [ManaRestriction] is a freshly-minted [ManaRestriction.SubtypeSpellsOrAbilitiesOnly]
- * carrying that subtype. If no creature type has been chosen, no mana is produced.
+ * carrying that subtype (and [creatureOnly]), with [riders] propagated. If no creature
+ * type has been chosen, no mana is produced.
  */
 @SerialName("AddAnyColorManaSpendOnChosenType")
 @Serializable
 data class AddAnyColorManaSpendOnChosenTypeEffect(
-    val amount: DynamicAmount = DynamicAmount.Fixed(1)
+    val amount: DynamicAmount = DynamicAmount.Fixed(1),
+    val creatureOnly: Boolean = false,
+    val riders: Set<ManaSpellRider> = emptySet()
 ) : Effect {
     constructor(amount: Int) : this(DynamicAmount.Fixed(amount))
+    constructor(
+        amount: Int,
+        creatureOnly: Boolean = false,
+        riders: Set<ManaSpellRider> = emptySet()
+    ) : this(DynamicAmount.Fixed(amount), creatureOnly, riders)
 
     override val description: String = buildString {
         append(when (val a = amount) {
             is DynamicAmount.Fixed -> if (a.amount == 1) "Add one mana of any color" else "Add ${a.amount} mana of any color"
             else -> "Add ${a.description} mana of any color"
         })
-        append(". Spend this mana only to cast a spell of the chosen type or activate an ability of a source of the chosen type")
+        if (creatureOnly) {
+            append(". Spend this mana only to cast a creature spell of the chosen type")
+        } else {
+            append(". Spend this mana only to cast a spell of the chosen type or activate an ability of a source of the chosen type")
+        }
+        for (rider in riders) append(". ${rider.description}")
     }
 
     override fun applyTextReplacement(replacer: TextReplacer): Effect = this

@@ -45,6 +45,7 @@ import com.wingedsheep.engine.state.components.battlefield.CountersComponent
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.sdk.core.Counters
 import com.wingedsheep.sdk.core.CounterType
+import com.wingedsheep.engine.state.components.identity.CantBeCounteredComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.permissions.activeMayPlayFor
@@ -1847,6 +1848,11 @@ class CastSpellHandler(
         var currentCastState = castResult.newState
         var allEvents = events + castResult.events
 
+        // Apply any spell riders carried by the mana that paid for this spell.
+        for (rider in paymentResult.consumedRiders) {
+            currentCastState = applyManaSpellRider(currentCastState, action.cardId, rider)
+        }
+
         // Record Muldrotha graveyard cast permission usage
         if (castingFromGraveyardViaMuldrotha) {
             val typeName = zoneResolver.choosePermanentTypeForGraveyardPermission(currentCastState, action.playerId, cardComponent)
@@ -2410,6 +2416,20 @@ class CastSpellHandler(
             cursor += slotCount
         }
         return result
+    }
+
+    /**
+     * Apply a single [com.wingedsheep.sdk.scripting.effects.ManaSpellRider] to a
+     * spell on the stack. Each rider variant maps to a specific component or
+     * marker on the spell card.
+     */
+    private fun applyManaSpellRider(
+        state: GameState,
+        spellEntityId: com.wingedsheep.sdk.model.EntityId,
+        rider: com.wingedsheep.sdk.scripting.effects.ManaSpellRider
+    ): GameState = when (rider) {
+        is com.wingedsheep.sdk.scripting.effects.ManaSpellRider.MakesSpellUncounterable ->
+            state.updateEntity(spellEntityId) { c -> c.with(CantBeCounteredComponent) }
     }
 
     companion object {
