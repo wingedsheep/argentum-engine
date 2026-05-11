@@ -527,6 +527,3 @@ The current ephemeral `PlayerIdentity` (random UUID in `localStorage`) must coex
    yes — spectating one game while in another lobby) or enforce single-session (kick the older
    socket). Recommendation: allow multiple, but route `GameSession` participation through the
    `currentGameSessionId` field on `PlayerIdentity` so only one tab is the player.
-
-10. **Filename.** The file is still named `google-oauth2-accounts.md` for now even though the scope
-    broadened. Renaming to `oauth2-accounts.md` is a one-line `git mv` whenever convenient.

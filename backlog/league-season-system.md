@@ -13,7 +13,7 @@ This feature depends on:
 
 ## Phase 1 — Accounts & Authentication
 
-**Superseded by [google-oauth2-accounts.md](google-oauth2-accounts.md).** That document is the
+**Superseded by [oauth2-accounts.md](oauth2-accounts.md).** That document is the
 authoritative plan for the account system. It drops Keycloak in favour of direct Spring Security +
 Google OAuth2, adds Postgres + Flyway, defines the `UserAccount` entity and JIT provisioning, and
 specifies how the session cookie bridges into the WebSocket handshake while preserving guest mode.
