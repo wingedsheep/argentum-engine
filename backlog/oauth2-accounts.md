@@ -2,10 +2,11 @@
 
 A direct OAuth2 / OIDC + Spring Security implementation that replaces the current ephemeral
 `PlayerIdentity` (random UUID in `localStorage`) with persistent user accounts backed by Postgres,
-and starts recording per-account game outcomes so logged-in users can see their win/loss record
-over time. **Google** is the first wired-up provider; **GitHub** and **Microsoft** are
-designed-for follow-ups that drop in via a new `ClientRegistration` and a per-provider claim
-mapper. Anonymous guest play stays intact for casual games and dev scenario E2E tests.
+and starts recording rich per-account game stats — overall W/L, color and format breakdowns,
+streaks, and life-margin — surfaced through a dedicated Stats page in the web client. **Google**
+is the first wired-up provider; **GitHub** and **Microsoft** are designed-for follow-ups that drop
+in via a new `ClientRegistration` and a per-provider claim mapper. Anonymous guest play stays
+intact for casual games and dev scenario E2E tests.
 
 ## Why direct OAuth (not Keycloak)
 
@@ -28,8 +29,14 @@ Spring is low, and the ops cost of running a Keycloak instance is not.
 ## Scope
 
 - **Phase 1 — Google sign-in + persistent accounts** (Postgres-backed, schema `auth`).
-- **Phase 2 — Per-account stats tracking** (Postgres schema `stats`): one row per completed game
-  per authenticated participant, with simple aggregation endpoints. Guests don't record stats.
+- **Phase 2 — Per-account stats** (Postgres schema `stats`): one row per completed game per
+  authenticated participant, capturing outcome, colors, format, life margin, streak-relevant
+  metadata, and a head-to-head opponent link. Aggregation endpoints + a Stats page in the web
+  client expose them. Guests don't record stats.
+- **Display names are non-unique with Discord-style discriminators.** Each account gets an
+  auto-assigned `discriminator` (e.g. `Alice#0042`) at JIT-provision time. Display names alone are
+  not identifiers — the UUID is — but the discriminator gives head-to-head views a stable
+  human-readable label that survives collisions.
 - **Schema and abstractions are provider-agnostic from day one.** Each provider is identified by a
   `(provider, subject)` tuple; the JIT-provisioning flow goes through a `ProviderClaimMapper`
   abstraction so adding GitHub / Microsoft is purely additive (no migrations, no rewiring).
@@ -166,12 +173,17 @@ class UserAccount(
     var email: String,                           // provider's email at last login (may change over time)
     @Column(nullable = false)
     var displayName: String,                     // editable by user; defaults to provider's name
+    @Column(nullable = false)
+    var discriminator: Short,                    // 1..9999, auto-assigned; unique within (lower(displayName))
     var avatarUrl: String?,                      // provider's avatar (may be null, e.g. MS personal)
     val createdAt: Instant,
     var lastLoginAt: Instant,
     @Enumerated(EnumType.STRING)
     var status: AccountStatus = AccountStatus.ACTIVE   // ACTIVE, DELETED  (SUSPENDED is a future addition)
-)
+) {
+    /** Stable human-readable handle: `Alice#0042`. */
+    val handle: String get() = "$displayName#${discriminator.toString().padStart(4, '0')}"
+}
 ```
 
 Initial migration (`V1__auth_schema.sql`):
@@ -184,6 +196,7 @@ CREATE TABLE auth.user_accounts (
     subject         VARCHAR(128) NOT NULL,
     email           VARCHAR(320) NOT NULL,
     display_name    VARCHAR(80)  NOT NULL,
+    discriminator   SMALLINT     NOT NULL CHECK (discriminator BETWEEN 1 AND 9999),
     avatar_url      TEXT,
     created_at      TIMESTAMPTZ  NOT NULL,
     last_login_at   TIMESTAMPTZ  NOT NULL,
@@ -191,10 +204,28 @@ CREATE TABLE auth.user_accounts (
     UNIQUE (provider, subject)
 );
 CREATE INDEX idx_user_accounts_email ON auth.user_accounts (lower(email));
+-- handle uniqueness: case-insensitive on display_name, paired with discriminator
+CREATE UNIQUE INDEX uq_user_accounts_handle
+    ON auth.user_accounts (lower(display_name), discriminator);
 ```
 
-`UserAccountRepository : JpaRepository<UserAccount, UUID>` exposes
-`findByProviderAndSubject(provider: String, subject: String)`.
+`UserAccountRepository : JpaRepository<UserAccount, UUID>` exposes:
+- `findByProviderAndSubject(provider: String, subject: String)`
+- `findFirstByDisplayNameIgnoreCaseAndDiscriminator(displayName: String, discriminator: Short)`
+  (for `/api/users/by-handle/{handle}` lookups used by head-to-head pages).
+
+**Discriminator allocation.** On insert (JIT provision) or display-name change,
+`DiscriminatorAllocator.allocate(displayName)` runs:
+1. Take the lowest unused `discriminator` in `[1..9999]` for that
+   `lower(display_name)`.
+2. Attempt insert. On unique-constraint violation (concurrent allocator picked the same number),
+   retry up to 5 times by re-running step 1.
+3. If all 9999 are taken for a name (vanishingly unlikely for the foreseeable user count), fail
+   the request with a `409` and ask the user to pick a different name.
+
+A Postgres advisory lock keyed by `hashtext(lower(display_name))` during the allocator's
+read+insert window is a cheaper alternative to retries — fine to use either. The retry path is
+simpler to reason about; pick that unless contention becomes measurable.
 
 ### 1.5 OAuth2 Login Flow (Spring Security)
 
@@ -282,8 +313,10 @@ spring:
 
 3. AccountProvisioner.findOrCreate(identity):
      - lookup auth.user_accounts WHERE provider = identity.provider AND subject = identity.subject
-     - if missing: insert new row (id = UUID.randomUUID(), createdAt = now)
+     - if missing: assign a discriminator via DiscriminatorAllocator (Phase 1.4), then insert a
+       new row (id = UUID.randomUUID(), createdAt = now)
      - if present: update email/displayName/avatarUrl from latest claims, set lastLoginAt = now
+       (displayName change → re-allocate discriminator for the new name)
 
 4. SessionTokenService.issuePair(userAccount):
      - **Access JWT** (short-lived, ~1h):
@@ -432,12 +465,18 @@ DELETE /api/me                          Soft-delete: status=DELETED, anonymize e
 {
   "id": "uuid",
   "provider": "google",
-  "displayName": "string",
+  "displayName": "Alice",
+  "discriminator": 42,
+  "handle": "Alice#0042",
   "email": "string",
   "avatarUrl": "string|null",
   "createdAt": "iso8601"
 }
 ```
+
+`PATCH /api/me` body accepts `{ "displayName": "..." }`; the server reassigns the discriminator for
+the new name and returns the updated shape. The old `displayName#discriminator` slot is freed for
+other users.
 
 ### 1.10 Roles & Admin Migration
 
@@ -490,8 +529,10 @@ DELETE /api/me                          Soft-delete: status=DELETED, anonymize e
 
 ## Phase 2 — Player Stats
 
-Persist per-account game outcomes so logged-in users can see their record over time. Append-only:
-each completed game inserts one row per authenticated participant. Guests don't track stats.
+Persist rich per-account game outcomes so logged-in users can browse their record over time:
+overall W/L, win-rate breakdowns by color and format, current and longest streaks, life-margin
+on wins/losses, and head-to-head vs other authenticated players. Append-only: each completed
+game inserts one row per authenticated participant. Guests don't track stats.
 
 ### 2.1 `stats.game_results` Schema
 
@@ -499,29 +540,49 @@ each completed game inserts one row per authenticated participant. Guests don't 
 CREATE SCHEMA IF NOT EXISTS stats;
 
 CREATE TABLE stats.game_results (
-    id                UUID PRIMARY KEY,
-    user_account_id   UUID NOT NULL REFERENCES auth.user_accounts(id) ON DELETE CASCADE,
-    game_session_id   VARCHAR(64) NOT NULL,         -- the existing in-memory game session id
-    outcome           VARCHAR(16) NOT NULL,         -- WON, LOST, DRAW, CONCEDED
-    format            VARCHAR(32),                  -- constructed, sealed, draft, commander, ...
-    opponents_count   SMALLINT NOT NULL,
-    duration_seconds  INTEGER,
-    played_at         TIMESTAMPTZ NOT NULL
+    id                    UUID PRIMARY KEY,
+    user_account_id       UUID NOT NULL REFERENCES auth.user_accounts(id) ON DELETE CASCADE,
+    opponent_account_id   UUID REFERENCES auth.user_accounts(id) ON DELETE SET NULL,
+    game_session_id       VARCHAR(64)  NOT NULL,
+    outcome               VARCHAR(16)  NOT NULL,         -- WON, LOST, DRAW, CONCEDED
+    format                VARCHAR(32),                    -- constructed, sealed, draft, commander, ...
+    opponents_count       SMALLINT     NOT NULL,
+    on_the_play           BOOLEAN,                        -- nullable: not all formats expose this cleanly
+    starting_life         SMALLINT     NOT NULL,          -- 20 standard, 40 Commander, etc.
+    final_life_self       SMALLINT     NOT NULL,          -- can be negative (took lethal damage)
+    final_life_opponent   SMALLINT,                       -- 1v1 only; null for multiplayer
+    colors                VARCHAR(5),                     -- deck color identity, WUBRG-alphabetized, e.g. "BR"
+    commander_name        VARCHAR(200),                   -- Commander format only
+    opponent_is_ai        BOOLEAN      NOT NULL,
+    turn_count            INTEGER,
+    duration_seconds      INTEGER,
+    played_at             TIMESTAMPTZ  NOT NULL
 );
-CREATE INDEX idx_game_results_user_played_at
-    ON stats.game_results (user_account_id, played_at DESC);
+CREATE INDEX idx_game_results_user_played_at ON stats.game_results (user_account_id, played_at DESC);
+CREATE INDEX idx_game_results_user_colors    ON stats.game_results (user_account_id, colors);
+CREATE INDEX idx_game_results_user_format    ON stats.game_results (user_account_id, format);
+CREATE INDEX idx_game_results_user_opponent  ON stats.game_results (user_account_id, opponent_account_id)
+    WHERE opponent_account_id IS NOT NULL;
 ```
 
 Notes:
-- **Append-only, no aggregation table for now.** Aggregations (`games_played`, `win_rate`, etc.)
-  are computed at read time via SQL `GROUP BY`. With current player counts this is well under a
-  millisecond; we can add a materialized view later if it stops being free.
-- **`game_session_id` is `VARCHAR(64)` and not a foreign key** — game sessions live in Redis with
-  a 24h TTL, so there's no durable referent for an FK.
-- **`outcome` enum** — `WON`, `LOST`, `DRAW`, `CONCEDED`. Concedes are tracked separately from a
-  clean loss because the future UI may want to surface "completion rate" alongside "win rate".
+- **`opponent_account_id`** is recorded when the opponent is also a logged-in user. Drives the
+  head-to-head section (2.4). Nullable for guests, AI, or multiplayer. Uses `ON DELETE SET NULL`
+  rather than `CASCADE` so deleting one account doesn't lose history rows from games where the
+  deleted account was the opponent — those rows just lose their H2H link.
+- **`final_life_self`** is signed — a player who takes lethal damage finishes below 0. Useful for
+  "how close was it" margins; the UI clamps to 0 for display if it wants.
+- **`final_life_opponent`** is only meaningful in 1v1 games. Multiplayer leaves it null; the UI
+  shows `—` rather than a margin.
+- **`colors`** is the deck's color identity (5-char max, alphabetized WUBRG, empty string =
+  colorless). Picked from the deck definition or the post-build registered deck for sealed/draft.
+  Stored as a string for cheap equality grouping in `GROUP BY colors`.
+- **Append-only, no aggregation table for now.** Aggregations are computed at read time via SQL.
+  Per-user row count is low (single-digit thousands at most); even with window functions for
+  streaks, response times stay sub-millisecond. Add a materialized view later if needed.
+- **`game_session_id` is `VARCHAR(64)` and not an FK** — game sessions live in Redis with a 24h
+  TTL, so there's no durable referent.
 - **`ON DELETE CASCADE`** on the account FK so soft-deleting an account also drops its stats rows.
-  (`DELETE /api/me` in Phase 1.9 mentions this cascade.)
 
 ### 2.2 Entity & Repository
 
@@ -531,11 +592,20 @@ Notes:
 class GameResult(
     @Id val id: UUID,
     @Column(nullable = false) val userAccountId: UUID,
+    val opponentAccountId: UUID?,
     @Column(nullable = false) val gameSessionId: String,
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false) val outcome: GameOutcome,   // WON, LOST, DRAW, CONCEDED
+    @Column(nullable = false) val outcome: GameOutcome,
     val format: String?,
     @Column(nullable = false) val opponentsCount: Short,
+    val onThePlay: Boolean?,
+    @Column(nullable = false) val startingLife: Short,
+    @Column(nullable = false) val finalLifeSelf: Short,
+    val finalLifeOpponent: Short?,
+    val colors: String?,
+    val commanderName: String?,
+    @Column(nullable = false) val opponentIsAi: Boolean,
+    val turnCount: Int?,
     val durationSeconds: Int?,
     @Column(nullable = false) val playedAt: Instant
 )
@@ -543,73 +613,199 @@ class GameResult(
 enum class GameOutcome { WON, LOST, DRAW, CONCEDED }
 ```
 
-`GameResultRepository : JpaRepository<GameResult, UUID>` with:
-- `findAllByUserAccountIdOrderByPlayedAtDesc(userId: UUID, pageable: Pageable): Page<GameResult>`
-- a `@Query` aggregation projection used by `/api/me/stats` — `count(*) FILTER (WHERE outcome = ?)`
-  grouped per outcome, plus `max(played_at)`.
+`GameResultRepository : JpaRepository<GameResult, UUID>` exposes:
+- `findAllByUserAccountIdOrderByPlayedAtDesc(userId, pageable): Page<GameResult>` — history list.
+- A `@Query` aggregation projection for the summary in `/api/me/stats` — `count(*) FILTER (WHERE
+  outcome = ?)` grouped by `outcome`, `format`, and `colors`; plus aggregates over
+  `final_life_self`, `duration_seconds`, and `on_the_play`.
+- A head-to-head aggregation joining to `auth.user_accounts` for opponent display names:
+  ```sql
+  SELECT a.id, a.display_name, a.discriminator,
+         COUNT(*)                                       AS games,
+         COUNT(*) FILTER (WHERE r.outcome = 'WON')      AS wins
+  FROM stats.game_results r
+  JOIN auth.user_accounts a ON a.id = r.opponent_account_id
+  WHERE r.user_account_id = :userId
+  GROUP BY a.id, a.display_name, a.discriminator
+  ORDER BY games DESC
+  LIMIT 20;
+  ```
+- A streak query using window functions to find consecutive same-outcome runs:
+  ```sql
+  WITH ordered AS (
+    SELECT outcome, played_at,
+           ROW_NUMBER() OVER (ORDER BY played_at) -
+           ROW_NUMBER() OVER (PARTITION BY outcome ORDER BY played_at) AS grp
+    FROM stats.game_results
+    WHERE user_account_id = :userId
+  )
+  SELECT outcome, COUNT(*) AS streak_len, MAX(played_at) AS last_played
+  FROM ordered
+  GROUP BY outcome, grp;
+  ```
+  The service layer picks the most recent group (current streak) and the per-outcome maxima
+  (longest win/loss streaks).
 
 ### 2.3 Recording Game Outcomes
 
-A new `StatsRecorder` listens for game-completion and writes one `GameResult` row per
-authenticated participant. The hook sits next to the existing game-end handling in `game-server`
-(wherever the engine signals "game over"). For each player in the final state:
+A new `StatsRecorder` listens for game-completion and writes one `GameResult` per authenticated
+participant. The hook sits next to the existing game-end handling in `game-server`. For each
+player in the final game state, if `PlayerIdentity.userAccountId != null`, capture:
 
-- If `PlayerIdentity.userAccountId != null` → insert a `GameResult` row.
-- Otherwise → skip (guests don't track stats).
+| Field                  | Source                                                                            |
+|------------------------|-----------------------------------------------------------------------------------|
+| `outcome`              | End-of-game reason from the engine (`WON` / `LOST` / `DRAW` / `CONCEDED`).        |
+| `final_life_self`      | `gameState.lifeTotals[playerEntityId]` (may be negative).                         |
+| `final_life_opponent`  | Other player's life, if 1v1; else null.                                           |
+| `starting_life`        | From the format/lobby config (20 / 40 / etc.).                                    |
+| `on_the_play`          | First-player flag captured at game start.                                         |
+| `turn_count`           | `gameState.turn` at game end.                                                     |
+| `format`               | Lobby's configured format, if any.                                                |
+| `colors`               | Deck's color identity from the deck definition; alphabetized WUBRG.               |
+| `commander_name`       | From the deck, Commander-format only.                                             |
+| `opponents_count`      | Number of opponent players in this game.                                          |
+| `opponent_is_ai`       | `opponent.PlayerIdentity.isAi` (true if any opponent is AI in multiplayer).       |
+| `opponent_account_id`  | `opponent.PlayerIdentity.userAccountId` (1v1 only; null for guest/AI/multiplayer).|
+| `duration_seconds`     | `endedAt - startedAt` from the game-session metadata.                             |
+| `played_at`            | `endedAt`.                                                                        |
 
-The write is **best-effort and asynchronous** — it doesn't gate game-end notifications to clients,
-and a failure logs an error but doesn't roll back the game outcome on the client. Concedes vs
-clean wins are distinguished by reading the existing end-state reason; the engine already produces
-this distinction for spectator UI.
+All of this is already present in the engine's final state or the game-session metadata; no new
+in-engine tracking is needed.
 
-Format is read from the lobby's configured format (where present); null otherwise. Duration is
-`endedAt - startedAt` from the existing game-session metadata.
+Writes are **best-effort and asynchronous** — they don't gate game-end notifications to clients,
+and a failure logs an error without affecting the game outcome on the client.
 
 ### 2.4 REST Endpoints
 
 ```
 GET    /api/me/stats                    Aggregated stats for the current user
-GET    /api/me/games                    Recent game history (paginated)
+GET    /api/me/games                    Recent game history (cursor-paginated)
+GET    /api/users/by-handle/{handle}    Public profile lookup by displayName#discriminator
+                                        (returns id + handle + avatarUrl; used to deep-link H2H)
 ```
 
 `GET /api/me/stats`:
 ```json
 {
-  "gamesPlayed": 42,
-  "gamesWon": 23,
-  "gamesLost": 16,
-  "gamesDrawn": 1,
-  "gamesConceded": 2,
-  "lastPlayedAt": "iso8601|null"
+  "gamesPlayed":          42,
+  "gamesWon":             23,
+  "gamesLost":            16,
+  "gamesDrawn":           1,
+  "gamesConceded":        2,
+  "winRate":              0.55,
+  "lastPlayedAt":         "iso8601|null",
+  "totalPlayTimeSeconds": 56000,
+  "currentStreak":        { "type": "WIN", "length": 3 },
+  "longestWinStreak":     7,
+  "longestLossStreak":    4,
+  "averageLifeOnWin":     12.5,
+  "averageLifeOnLoss":    -2.1,
+  "onThePlayWinRate":     0.62,
+  "onTheDrawWinRate":     0.48,
+  "byFormat": [
+    { "format": "constructed", "gamesPlayed": 30, "gamesWon": 18, "winRate": 0.60 },
+    { "format": "sealed",      "gamesPlayed": 12, "gamesWon": 5,  "winRate": 0.42 }
+  ],
+  "byColors": [
+    { "colors": "UR", "gamesPlayed": 12, "gamesWon": 8, "winRate": 0.67 },
+    { "colors": "BG", "gamesPlayed": 5,  "gamesWon": 1, "winRate": 0.20 }
+  ],
+  "headToHead": [
+    {
+      "opponent": {
+        "id": "uuid",
+        "displayName": "Bob",
+        "discriminator": 7,
+        "handle": "Bob#0007"
+      },
+      "gamesPlayed": 9,
+      "gamesWon":    5,
+      "winRate":     0.56,
+      "lastPlayedAt": "iso8601"
+    }
+  ]
 }
 ```
+
+- `winRate` is `gamesWon / max(gamesPlayed, 1)`. Concedes count as `gamesPlayed` and as a loss
+  (`gamesLost`).
+- `currentStreak.type` is `WIN` | `LOSS`; length is 0 when the most recent result is a draw.
+- `averageLifeOnWin` / `averageLifeOnLoss` use `final_life_self`; multiplayer wins use the same
+  field. Draws are excluded.
+- `byFormat`, `byColors`, and `headToHead` are sorted by `gamesPlayed DESC` and clipped to the
+  top 10 (top 20 for `headToHead`) on the server to keep the payload small.
 
 `GET /api/me/games?cursor=…` (default page size 20):
 ```json
 {
   "items": [
     {
-      "id": "uuid",
-      "outcome": "WON",
-      "format": "constructed",
-      "opponentsCount": 1,
-      "durationSeconds": 1340,
-      "playedAt": "iso8601"
+      "id":                 "uuid",
+      "outcome":            "WON",
+      "format":             "constructed",
+      "opponentsCount":     1,
+      "onThePlay":          true,
+      "finalLifeSelf":      8,
+      "finalLifeOpponent":  -3,
+      "colors":             "UR",
+      "commanderName":      null,
+      "opponentIsAi":       false,
+      "opponent": {
+        "id": "uuid",
+        "displayName": "Bob",
+        "discriminator": 7,
+        "handle": "Bob#0007"
+      },
+      "turnCount":          11,
+      "durationSeconds":    1340,
+      "playedAt":           "iso8601"
     }
   ],
   "nextCursor": "string|null"
 }
 ```
+The `opponent` object is present only when `opponentAccountId IS NOT NULL` (i.e. the opponent was
+also authenticated). Joined in via the same handle projection used by head-to-head.
 
-Both endpoints require a valid bearer JWT (the API chain rejects anonymous). Pagination uses an
-opaque cursor (base64-encoded `(playedAt, id)`) rather than offsets so new games landing during
-pagination don't shift the window.
+All `/api/me/**` endpoints require a valid bearer JWT. `/api/users/by-handle/{handle}` requires
+auth too (no public discovery in V1). Pagination uses an opaque cursor (base64-encoded
+`(playedAt, id)`) rather than offsets so new games landing mid-pagination don't shift the window.
 
-### 2.5 Frontend (light)
+### 2.5 Frontend — Stats View
 
-Phase 2 ships the data plumbing only — no stats UI. A profile badge or sidebar section showing
-win/loss can land in a follow-up; the endpoints above unblock that work without adding any new
-WebSocket plumbing.
+A new authenticated-only **Stats** page (route `/stats`, reachable from the user menu and from a
+sidebar item that shows only when logged in) renders the data above. Sketch of the sections:
+
+- **Header card** — large numbers: games played, win rate, current streak (W/L badge + length),
+  total play time formatted as "Xh Ym".
+- **Streaks row** — best win streak, best loss streak (small captions).
+- **Breakdown grid** —
+  - Format breakdown table (one row per format, with `gamesPlayed`, win-rate bar, W-L-D split).
+  - Color breakdown grid: deck color identity rendered as colored pip badges (reusing the existing
+    card-color pip components from the deck builder), each tile showing `gamesPlayed` and
+    `winRate`.
+- **On-the-play vs on-the-draw** — small two-row comparison: `onThePlayWinRate` vs
+  `onTheDrawWinRate`.
+- **Life margin** — two compact stats: average life remaining on win, average life on loss
+  (rendered as e.g. `+12.5 ❤` and `-2.1 💀`).
+- **Head-to-head** — table of opponents with `displayName#discriminator`, avatar, games played,
+  W-L, and win-rate bar. Each row links to a per-opponent detail view that filters
+  `/api/me/games` by `opponentAccountId` (`/stats/vs/{handle}`); the detail view shows recent
+  matchups, color matchup grid, and average life margin against that opponent.
+- **Recent games** — paginated list using `/api/me/games`. Each row shows outcome chip, colors
+  pips, format tag, opponent handle (or "vs AI"/"guest"), life-margin badge (e.g. `8 → -3`),
+  turn count, and played-at relative time.
+
+Implementation notes:
+- Two new Zustand slices: `statsSlice` (summary, cached) and `gamesSlice` (paginated, infinite
+  scroll).
+- A small `<ColorPips colors="UR" />` reused from the deck builder for color rendering — no new
+  asset work.
+- Opponent handles are click-through to `/stats/vs/{handle}`; the route resolves via
+  `/api/users/by-handle/{handle}` so users can share H2H links directly.
+- Empty state: friendly "play your first ranked game" copy + a CTA to "Find a match".
+- The stats page survives stale auth: if the access JWT 401s, the `apiFetch()` wrapper from Phase
+  1.11 silently refreshes; if refresh fails, the user lands back on the guest landing page.
 
 ---
 
@@ -755,10 +951,12 @@ The current ephemeral `PlayerIdentity` (random UUID in `localStorage`) must coex
    another identity, which inserts a row into a separate `auth.linked_identities` table; the
    schema added in Phase 1 stays compatible.
 
-3. **Display-name uniqueness.** Multiple accounts can share a display name (especially across
-   providers). Do we enforce uniqueness? Recommendation: **no** — display names are not
-   identifiers, the UUID is. We can show a `#1234` suffix or provider badge in disambiguating
-   contexts.
+3. ~~**Display-name uniqueness.**~~ Resolved: display names are **not** unique. Each account
+   gets a Discord-style `discriminator` (1–9999, auto-assigned per `lower(display_name)`) so the
+   handle `Alice#0042` is uniquely addressable while the bare display name stays
+   collision-friendly. See Phase 1.4 for the allocator and uniqueness index. (If a user hits the
+   9999 ceiling for some massively popular display name we'll revisit — extremely unlikely at
+   foreseeable user counts.)
 
 4. **Email change handling.** If the provider's primary email changes between logins, we update
    the row in JIT provisioning. This is silent; surface it in `/api/me` so the user sees it on
