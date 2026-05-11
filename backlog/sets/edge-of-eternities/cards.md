@@ -104,7 +104,7 @@
 - [x] Honored Knight-Captain
 - [x] Hullcarver
 - [x] Hylderblade
-- [ ] Hymn of the Faller
+- [x] Hymn of the Faller
 - [x] Icecave Crasher
 - [ ] Icetill Explorer
 - [x] Illvoi Galeblade

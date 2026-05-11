@@ -30,8 +30,6 @@ https://api.scryfall.com/cards/named?exact=Beyond%20the%20Quiet&set=eoe
 ## Void:
 
 - [x] Alpharael, Stonechosen
-- [ ] Hylderblade
-- [ ] Hymn of the Faller
 - [ ] Insatiable Skittermaw
 - [ ] Temporal Intervention
 - [x] Tragic Trajectory
