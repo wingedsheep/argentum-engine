@@ -1,27 +1,39 @@
-# Google OAuth2 Accounts & Persistent Identity
+# OAuth2 Accounts & Persistent Identity
 
-A direct Google OAuth2 + Spring Security implementation that replaces the current ephemeral
+A direct OAuth2 / OIDC + Spring Security implementation that replaces the current ephemeral
 `PlayerIdentity` (random UUID in `localStorage`) with persistent user accounts backed by Postgres.
-Provides a durable cross-session identity for any feature that needs one — while preserving
-anonymous guest play for casual games and dev scenario E2E tests.
+**Google** is the first wired-up provider; **GitHub** and **Microsoft** are designed-for follow-ups
+that drop in via a new `ClientRegistration` and a per-provider claim mapper. Provides a durable
+cross-session identity for any feature that needs one — while preserving anonymous guest play for
+casual games and dev scenario E2E tests.
 
-## Why direct Google OAuth (not Keycloak)
+## Why direct OAuth (not Keycloak)
 
-We use a direct Google OAuth2 integration via `spring-boot-starter-oauth2-client` /
-`spring-boot-starter-oauth2-resource-server` rather than fronting Google with Keycloak.
+We use direct OAuth2 / OIDC integration via `spring-boot-starter-oauth2-client` /
+`spring-boot-starter-oauth2-resource-server` rather than fronting providers with Keycloak.
 
-| Concern              | Keycloak                                            | Direct Google OAuth                                 |
+| Concern              | Keycloak                                            | Direct OAuth                                        |
 |----------------------|-----------------------------------------------------|-----------------------------------------------------|
-| Infra cost           | Extra service to deploy, upgrade, back up           | None — Google is the IdP                            |
-| Dev ergonomics       | Docker Compose service + realm/client config        | Two env vars (`client-id`, `client-secret`)         |
-| User experience      | Google login via intermediate Keycloak redirect     | One redirect, no extra branding                     |
-| Multi-provider later | Trivial (Keycloak federates Discord/GitHub natively) | Requires per-provider Spring registration           |
-| Token model          | Keycloak issues JWTs, we validate via JWKS          | We issue our own session/JWT after OAuth callback   |
-| Lock-in              | Keycloak schema, admin API                          | Standard Spring Security; provider is swappable     |
+| Infra cost           | Extra service to deploy, upgrade, back up           | None — the IdPs do the work                         |
+| Dev ergonomics       | Docker Compose service + realm/client config        | One env-var pair per provider                       |
+| User experience      | Provider login via intermediate Keycloak redirect   | One redirect, no extra branding                     |
+| Multi-provider later | Trivial (Keycloak federates Discord/GitHub natively) | One `ClientRegistration` + claim mapper per provider |
+| Token model          | Keycloak issues JWTs, we validate via JWKS          | We issue our own session JWT after OAuth callback   |
+| Lock-in              | Keycloak schema, admin API                          | Standard Spring Security; providers are swappable   |
 
-For a small player base with one realistic IdP for now (Google), the operational simplicity of
-direct OAuth outweighs the federation flexibility Keycloak offers. If we later want Discord/GitHub
-login we add another `ClientRegistration` — Spring Security supports N providers out of the box.
+Spring Security supports N providers out of the box; adding GitHub or Microsoft is a small follow-up
+once Google is in place. Keycloak's federation advantage is real but the per-provider overhead in
+Spring is low, and the ops cost of running a Keycloak instance is not.
+
+## Scope
+
+- **Phase 1 ships Google sign-in end-to-end.**
+- **Schema and abstractions are provider-agnostic from day one.** Each provider is identified by a
+  `(provider, subject)` tuple; the JIT-provisioning flow goes through a `ProviderClaimMapper`
+  abstraction so adding GitHub / Microsoft is purely additive (no migrations, no rewiring).
+- **Each provider gets a separate account.** Signing in with Google produces one
+  `auth.user_accounts` row; later signing in with GitHub as the same human produces a second row.
+  See [Open Questions](#open-questions--risks) for the rationale and the linking-as-follow-up note.
 
 ## Dependencies
 
@@ -89,16 +101,22 @@ implementation("com.auth0:java-jwt:4.x")    // for issuing our own session JWTs 
 
 ```kotlin
 @Entity
-@Table(name = "user_accounts", schema = "auth")
+@Table(
+    name = "user_accounts",
+    schema = "auth",
+    uniqueConstraints = [UniqueConstraint(columnNames = ["provider", "subject"])]
+)
 class UserAccount(
     @Id val id: UUID,                            // our own UUID, generated on JIT provision
-    @Column(nullable = false, unique = true)
-    val googleSubject: String,                   // Google `sub` claim — stable per-Google-account
     @Column(nullable = false)
-    var email: String,                           // mutable: Google can change primary email
+    val provider: String,                        // 'google' (Phase 1), 'github', 'microsoft', ...
     @Column(nullable = false)
-    var displayName: String,                     // editable by user; defaults to Google name
-    var avatarUrl: String?,                      // Google `picture` claim
+    val subject: String,                         // provider's stable per-user ID (Google sub, GitHub id, MS oid)
+    @Column(nullable = false)
+    var email: String,                           // provider's email at last login (may change over time)
+    @Column(nullable = false)
+    var displayName: String,                     // editable by user; defaults to provider's name
+    var avatarUrl: String?,                      // provider's avatar (may be null, e.g. MS personal)
     val createdAt: Instant,
     var lastLoginAt: Instant,
     @Enumerated(EnumType.STRING)
@@ -112,24 +130,28 @@ CREATE SCHEMA IF NOT EXISTS auth;
 
 CREATE TABLE auth.user_accounts (
     id              UUID PRIMARY KEY,
-    google_subject  VARCHAR(64)  NOT NULL UNIQUE,
+    provider        VARCHAR(32)  NOT NULL,
+    subject         VARCHAR(128) NOT NULL,
     email           VARCHAR(320) NOT NULL,
     display_name    VARCHAR(80)  NOT NULL,
     avatar_url      TEXT,
     created_at      TIMESTAMPTZ  NOT NULL,
     last_login_at   TIMESTAMPTZ  NOT NULL,
-    status          VARCHAR(16)  NOT NULL DEFAULT 'ACTIVE'
+    status          VARCHAR(16)  NOT NULL DEFAULT 'ACTIVE',
+    UNIQUE (provider, subject)
 );
 CREATE INDEX idx_user_accounts_email ON auth.user_accounts (lower(email));
 ```
 
-`UserAccountRepository : JpaRepository<UserAccount, UUID>` exposes `findByGoogleSubject(sub)`.
+`UserAccountRepository : JpaRepository<UserAccount, UUID>` exposes
+`findByProviderAndSubject(provider: String, subject: String)`.
 
 ### 1.5 OAuth2 Login Flow (Spring Security)
 
 Configure two Spring Security filter chains:
 
-1. **OAuth2 login chain** — `/auth/**` endpoints handle the browser-initiated Google OAuth2 flow.
+1. **OAuth2 login chain** — `/oauth2/**` and `/login/oauth2/**` handle the browser-initiated flow
+   for any registered provider.
 2. **API/WebSocket chain** — `/api/**` and `/game` validate our own session token (see 1.6).
 
 `SecurityConfig.kt`:
@@ -142,9 +164,8 @@ class SecurityConfig(
 ) {
     @Bean @Order(1)
     fun authChain(http: HttpSecurity): SecurityFilterChain = http
-        .securityMatcher("/auth/**", "/login/**", "/oauth2/**")
+        .securityMatcher("/oauth2/**", "/login/oauth2/**", "/auth/**")
         .oauth2Login { o -> o
-            .userInfoEndpoint { it.userService(googleOidcUserService()) }
             .successHandler(::onLoginSuccess)
             .failureHandler(::onLoginFailure)
         }
@@ -166,7 +187,8 @@ class SecurityConfig(
 }
 ```
 
-Spring `application.yml`:
+Spring `application.yml` — Phase 1 wires only Google; the `github:` / `microsoft:` blocks slot in
+later without other changes:
 ```yaml
 spring:
   security:
@@ -178,40 +200,66 @@ spring:
             client-secret: ${GOOGLE_OAUTH_CLIENT_SECRET:}
             scope: openid, profile, email
             redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
+          # github:        # add when wiring GitHub login
+          #   client-id: ${GITHUB_OAUTH_CLIENT_ID:}
+          #   client-secret: ${GITHUB_OAUTH_CLIENT_SECRET:}
+          #   scope: read:user, user:email
+          # microsoft:     # add when wiring Microsoft login
+          #   client-id: ${MS_OAUTH_CLIENT_ID:}
+          #   client-secret: ${MS_OAUTH_CLIENT_SECRET:}
+          #   scope: openid, profile, email
+          #   provider: microsoft
+        # provider:
+        #   microsoft:
+        #     issuer-uri: https://login.microsoftonline.com/common/v2.0
 ```
 
 ### 1.6 JIT Provisioning & Session Token Issuance
 
-When a user completes Google OAuth2 the success handler runs:
-
 ```
-1. Spring's oauth2Login filter validates the Google id_token and gives us an OidcUser.
-2. AccountProvisioner.findOrCreate(oidcUser):
-     - lookup auth.user_accounts.google_subject = oidcUser.sub
+1. Spring's oauth2Login filter validates the provider's response and gives us an OAuth2User /
+   OidcUser plus the OAuth2AuthenticationToken (carries `registrationId`, e.g. "google").
+
+2. ProviderClaimMapper.map(registrationId, oauth2User) -> ProviderIdentity(
+       provider:     registrationId,
+       subject:      provider's stable user ID,
+       email:        primary verified email (may require a follow-up call, see Provider Notes),
+       displayName:  provider's name (fallback: provider's login/handle),
+       avatarUrl:    provider's picture/avatar URL (nullable)
+   )
+   Phase 1 registers only a Google mapper. The interface is the only thing GitHub/Microsoft need
+   to implement when they land.
+
+3. AccountProvisioner.findOrCreate(identity):
+     - lookup auth.user_accounts WHERE provider = identity.provider AND subject = identity.subject
      - if missing: insert new row (id = UUID.randomUUID(), createdAt = now)
-     - if present: update email/avatarUrl if changed, set lastLoginAt = now
-3. SessionTokenService.issue(userAccount):
+     - if present: update email/displayName/avatarUrl from latest claims, set lastLoginAt = now
+
+4. SessionTokenService.issue(userAccount):
      - sign a self-issued JWT (HS256 with a server-side secret, or RS256 if we want key rotation)
-     - claims: sub = userAccount.id, name = displayName, exp = now+12h, iss = "argentum"
-4. Set the JWT as an HttpOnly, Secure, SameSite=Lax cookie `argentum_session`.
-     (HttpOnly so JS can't read it; SameSite=Lax so it survives the redirect from Google.)
-5. Redirect to the SPA: 302 -> https://app/<original_target_or_/>
+     - claims: sub = userAccount.id, name = displayName, prv = userAccount.provider,
+               exp = now+12h, iss = "argentum"
+
+5. Set the JWT as an HttpOnly, Secure, SameSite=Lax cookie `argentum_session`.
+     (HttpOnly so JS can't read it; SameSite=Lax so it survives the redirect from the provider.)
+
+6. Redirect to the SPA: 302 -> https://app/<original_target_or_/>
 ```
 
-We issue **our own JWT** rather than passing Google's `id_token` to the SPA. Reasons:
-- The id_token contains PII (email) that we don't want exposed to the frontend cookie surface beyond
-  what we choose; our session JWT only carries `userAccountId` + `displayName`.
-- We control rotation and revocation. (See 1.10 — a revocation list in Redis for forced logout.)
-- Refresh is decoupled from Google: a long-lived refresh token isn't needed in the browser; the
-  user re-authenticates with Google after the session JWT expires.
+We issue **our own JWT** rather than passing the provider's `id_token`/access token to the SPA:
+- The provider token contains PII and provider-specific claims that we don't want on the frontend
+  cookie surface; our session JWT only carries `userAccountId`, `displayName`, and `provider`.
+- We control rotation and revocation. (See 1.10 — revocation list in Redis for forced logout.)
+- Refresh is decoupled from the provider: a long-lived refresh token isn't needed in the browser;
+  the user re-authenticates when the session JWT expires (one click).
 
 ### 1.7 WebSocket Authentication Bridge
 
 This is the trickiest part. `WebSocketConfig` registers `/game` with `setAllowedOrigins("*")` and
 `GameWebSocketHandler` currently authenticates on the first `ClientMessage.Connect`. WebSocket
-upgrades cannot easily participate in the OAuth2 redirect flow (browsers don't expose `Authorization`
-headers to `new WebSocket()`), so we keep auth in-message but **read the session cookie at upgrade
-time** and attach the resolved account.
+upgrades cannot easily participate in the OAuth2 redirect flow (browsers don't expose
+`Authorization` headers to `new WebSocket()`), so we keep auth in-message but **read the session
+cookie at upgrade time** and attach the resolved account.
 
 Implementation:
 
@@ -274,19 +322,24 @@ This preserves:
 
 ### 1.9 REST Endpoints
 
+Spring's defaults handle the OAuth dance per registration; the per-provider URLs are derived from
+`registrationId`:
+
 ```
-GET    /auth/login/google          Initiates Google OAuth2 (Spring redirects to Google)
-GET    /login/oauth2/code/google   OAuth2 callback (Spring handles, we run successHandler)
-POST   /auth/logout                Clears argentum_session cookie + revokes JWT (Redis blocklist)
-GET    /api/me                     Returns the current UserAccount (or 401 if guest)
-PATCH  /api/me                     Update displayName (only mutable field by user)
-DELETE /api/me                     Soft-delete: status=DELETED, anonymize email/displayName
+GET    /oauth2/authorization/google     Initiates Google OAuth2 (Spring redirects)
+GET    /login/oauth2/code/google        Callback (Spring handles, we run successHandler)
+                                        (mirror routes appear automatically for /github, /microsoft)
+POST   /auth/logout                     Clears argentum_session cookie + revokes JWT (Redis blocklist)
+GET    /api/me                          Returns the current UserAccount (or 401 if guest)
+PATCH  /api/me                          Update displayName (only mutable field by user)
+DELETE /api/me                          Soft-delete: status=DELETED, anonymize email/displayName
 ```
 
 `/api/me` shape:
 ```json
 {
   "id": "uuid",
+  "provider": "google",
   "displayName": "string",
   "email": "string",
   "avatarUrl": "string|null",
@@ -299,8 +352,9 @@ DELETE /api/me                     Soft-delete: status=DELETED, anonymize email/
 - Add `auth.user_accounts.roles VARCHAR[]` (Postgres array) or an `auth.user_roles` join table for `ADMIN`.
 - The `X-Admin-Password` check in `AdminController.checkAuth()` is preserved as a fallback during
   rollout but is deprecated; admin access also accepts a session JWT with the `ADMIN` role.
-- A bootstrap admin can be promoted via a one-time `SQL` migration referencing their `google_subject`,
-  or via an env-configured allowlist `GAME_ADMIN_EMAILS` checked at JIT-provision time.
+- A bootstrap admin can be promoted via a one-time SQL migration referencing their
+  `(provider, subject)`, or via env-configured allowlists (e.g. `GAME_ADMIN_GOOGLE_EMAILS`) checked
+  at JIT-provision time.
 - Schedule removal of the `X-Admin-Password` header as a separate cleanup item once at least one
   admin account exists and the admin UI sends the session cookie.
 
@@ -309,20 +363,46 @@ DELETE /api/me                     Soft-delete: status=DELETED, anonymize email/
 `web-client` changes (`src/store/slices/connectionSlice.ts`, `connectionHandlers.ts`,
 `src/components/landing/`):
 
-- **Login button**: top-right "Sign in with Google" → `window.location.href = '/auth/login/google'`.
-  Spring handles the redirect dance; the SPA never sees Google.
-- **Session detection**: on app boot, `GET /api/me`. 200 → store user in a new `authSlice`. 401 →
-  user is a guest (current behaviour).
+- **Login button(s)**: Phase 1 shows "Sign in with Google" →
+  `window.location.href = '/oauth2/authorization/google'`. The button list is data-driven so adding
+  GitHub / Microsoft is a one-line change (target URL: `/oauth2/authorization/{provider}`).
+- **Session detection**: on app boot, `GET /api/me`. 200 → store user (incl. `provider`) in a new
+  `authSlice`. 401 → user is a guest (current behaviour).
 - **WebSocket connect**: drop the `?token=` URL param for authenticated users — the cookie travels
   on the WS upgrade automatically. Guests keep the current `localStorage['argentum-token']` path.
 - **Display name**: pre-fill the player-name input with `me.displayName` for authenticated users
   (still editable for the session — though we should consider whether per-game name override is
   desirable now that accounts exist).
 - **Logout**: `POST /auth/logout` → clear `authSlice` → reload to drop the WebSocket session.
-- **Reverse proxy**: in dev, the Vite proxy (`/game`, `/api`) must also proxy `/auth` and
+- **Reverse proxy**: in dev, the Vite proxy (`/game`, `/api`) must also proxy `/oauth2` and
   `/login/oauth2` and forward cookies (`Set-Cookie` rewriting for the `localhost:5173` origin).
-  The Google OAuth client must whitelist `http://localhost:5173/login/oauth2/code/google` and
-  the prod origin.
+  Each OAuth provider's console must whitelist
+  `http://localhost:5173/login/oauth2/code/{provider}` and the prod equivalent.
+
+---
+
+## Provider Notes
+
+Each new provider needs three small additions: a `ClientRegistration` in `application.yml`, a
+`ProviderClaimMapper` implementation, and a button on the frontend. The quirks below are the only
+non-obvious bits.
+
+- **Google (Phase 1).** OIDC standard. Claims used: `sub` → `subject`, `email`, `name` →
+  `displayName`, `picture` → `avatarUrl`. Spring auto-configures everything via
+  `CommonOAuth2Provider.GOOGLE`.
+
+- **GitHub (follow-up).** OAuth2, not OIDC. Userinfo from `GET https://api.github.com/user`. Map
+  `id` (stringify the integer) → `subject`, `name ?? login` → `displayName`, `avatar_url` →
+  `avatarUrl`. **Email may be null** if the user keeps it private — request the `user:email` scope
+  and call `GET /user/emails` to find the primary verified address. Fallback for fully-private
+  users: `{login}@users.noreply.github.com` (synthetic but stable).
+
+- **Microsoft (follow-up).** OIDC via Microsoft identity platform / Entra ID. Use
+  `issuer-uri: https://login.microsoftonline.com/common/v2.0` to accept both personal and
+  work/school accounts. Subject: prefer `oid` (object ID, cross-tenant stable) and fall back to
+  `sub` if absent. Email lives in `email` or `preferred_username`. **Profile picture is not in the
+  ID token** — getting it requires a Microsoft Graph call (`GET /me/photo/$value`) with the
+  `User.Read` scope; skip it on first cut and leave `avatarUrl` null.
 
 ---
 
@@ -330,12 +410,12 @@ DELETE /api/me                     Soft-delete: status=DELETED, anonymize email/
 
 ### Infrastructure Additions
 
-| Component    | Purpose                                            | Dev Setup                 | Prod Setup                  |
-|--------------|----------------------------------------------------|---------------------------|-----------------------------|
-| **Postgres** | UserAccount + future relational data               | Docker Compose            | Managed Postgres            |
-| **Flyway**   | Schema migrations                                  | Bundled in `bootRun`      | Bundled in deploy           |
-| **Google**   | OAuth2 identity provider                           | OAuth Client Secret in `.env` | Same, in deploy secret store |
-| **Redis**    | Game cache (already present) + JWT revocation list | Already configured        | Already configured           |
+| Component        | Purpose                                                       | Dev Setup                       | Prod Setup                       |
+|------------------|---------------------------------------------------------------|---------------------------------|----------------------------------|
+| **Postgres**     | UserAccount + future relational data                          | Docker Compose                  | Managed Postgres                 |
+| **Flyway**       | Schema migrations                                             | Bundled in `bootRun`            | Bundled in deploy                |
+| **OAuth IdPs**   | Identity providers (Google now; GitHub / Microsoft to follow) | OAuth client secret(s) in `.env` | Same, in deploy secret store    |
+| **Redis**        | Game cache (already present) + JWT revocation list            | Already configured              | Already configured               |
 
 ### Migration Strategy from Ephemeral PlayerIdentity
 
@@ -370,9 +450,12 @@ The current ephemeral `PlayerIdentity` (random UUID in `localStorage`) must coex
   Switch to `setAllowedOriginPatterns(env-driven exact list)`.
 - **Open redirect**: the success handler must validate any post-login redirect URL against an
   allowlist of own-origin paths.
-- **Account takeover via email reuse**: do not trust `email` as the lookup key — always
-  `google_subject`. (Email can change; sub cannot.)
-- **Rate limiting**: `/auth/login/google` and `/api/me` PATCH — basic per-IP throttling via a
+- **Account takeover via email is not a thing here.** Accounts are keyed by `(provider, subject)`,
+  never by email. A new sign-in is **never auto-linked** to an existing account by matching email
+  — that would let a hostile IdP take over an account by claiming a victim's address. Different
+  providers → different accounts. If account-linking is added later it must require the user to be
+  authenticated with the first identity first.
+- **Rate limiting**: `/oauth2/authorization/*` and `PATCH /api/me` — basic per-IP throttling via a
   Spring filter.
 - **Logout revocation**: blocklist the JWT's `jti` in Redis with TTL = remaining lifetime; the
   resource-server JWT decoder consults the blocklist.
@@ -389,8 +472,8 @@ The current ephemeral `PlayerIdentity` (random UUID in `localStorage`) must coex
 
 ### Scaling Notes
 
-- `auth.user_accounts` is tiny and read-heavy. A simple b-tree on `google_subject` + `lower(email)`
-  is sufficient indefinitely.
+- `auth.user_accounts` is tiny and read-heavy. A simple b-tree on `(provider, subject)` (the unique
+  constraint) plus `lower(email)` is sufficient indefinitely.
 - JWT validation is local (no DB hit per request) — only logout and admin-role check hit Postgres.
 - Postgres connection pool size: 10 is plenty for an auth-only workload.
 
@@ -398,11 +481,11 @@ The current ephemeral `PlayerIdentity` (random UUID in `localStorage`) must coex
 
 ## Open Questions / Risks
 
-1. **Guest → account merge UX.** If a guest is mid-game when they hit "Sign in with Google", do we
+1. **Guest → account merge UX.** If a guest is mid-game when they hit "Sign in with …", do we
    (a) defer login until game-over, (b) silently swap the underlying identity (risky — `EntityId`
    for the player is engine-internal and may be referenced from `GameState`), or (c) finish the
    guest game and start the next session authenticated? Default proposed: (c). Decide before
-   shipping the login button.
+   shipping the login buttons.
 
 2. **WebSocket origin tightening breaks E2E?** Switching from `setAllowedOrigins("*")` to an exact
    list may break Playwright runs that connect to `localhost:8080` from arbitrary ports. Plan: add
@@ -413,25 +496,37 @@ The current ephemeral `PlayerIdentity` (random UUID in `localStorage`) must coex
    with `localStorage` data, then signs in, won't see their guest history. Documented behaviour:
    pre-account play is permanently anonymous, no claiming.
 
-4. **Display-name uniqueness.** Multiple Google accounts can share a display name. Do we enforce
-   uniqueness? Recommendation: **no** — display names are not identifiers, the UUID is. We can
-   show a `#1234` suffix or partial email in disambiguating contexts.
+4. **Same human across providers = separate accounts.** Signing in with Google then later with
+   GitHub creates two `auth.user_accounts` rows. Trade-off: a simpler, safer model than
+   email-based auto-linking (which is exploitable — see Security Notes). If we later want a single
+   account with multiple linked sign-ins, it's a follow-up feature: an authenticated user adds
+   another identity, which inserts a row into a separate `auth.linked_identities` table; the
+   schema added in Phase 1 stays compatible.
 
-5. **Email change handling.** If Google's primary email changes between logins, we update the row
-   in JIT provisioning. This is silent; surface it in `/api/me` so the user sees it on next view.
+5. **Display-name uniqueness.** Multiple accounts can share a display name (especially across
+   providers). Do we enforce uniqueness? Recommendation: **no** — display names are not
+   identifiers, the UUID is. We can show a `#1234` suffix or provider badge in disambiguating
+   contexts.
 
-6. **Admin migration cutover.** Until we promote at least one admin to a `UserAccount` with the
+6. **Email change handling.** If the provider's primary email changes between logins, we update
+   the row in JIT provisioning. This is silent; surface it in `/api/me` so the user sees it on
+   next view.
+
+7. **Admin migration cutover.** Until we promote at least one admin to a `UserAccount` with the
    `ADMIN` role, the `X-Admin-Password` header is the only admin path. Don't remove the header
    check in Phase 1 — schedule its removal as a separate cleanup item once an admin account exists
    and the replay UI sends the session cookie.
 
-7. **Refresh tokens.** We intentionally do **not** store Google refresh tokens — re-auth at session
-   expiry is acceptable for a game (re-login takes one click). Revisit only if 12-hour sessions
-   become annoying.
+8. **Refresh tokens.** We intentionally do **not** store provider refresh tokens — re-auth at
+   session expiry is acceptable for a game (re-login takes one click). Revisit only if 12-hour
+   sessions become annoying.
 
-8. **Multiple browser tabs.** Each tab opens its own WebSocket. Today this works because identities
+9. **Multiple browser tabs.** Each tab opens its own WebSocket. Today this works because identities
    are token-keyed. With cookie-keyed auth, all tabs share an account; the `SessionRegistry`
    needs to decide whether to allow multiple concurrent WebSockets per `userAccountId` (probably
    yes — spectating one game while in another lobby) or enforce single-session (kick the older
    socket). Recommendation: allow multiple, but route `GameSession` participation through the
    `currentGameSessionId` field on `PlayerIdentity` so only one tab is the player.
+
+10. **Filename.** The file is still named `google-oauth2-accounts.md` for now even though the scope
+    broadened. Renaming to `oauth2-accounts.md` is a one-line `git mv` whenever convenient.
