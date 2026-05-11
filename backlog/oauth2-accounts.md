@@ -463,9 +463,15 @@ The current ephemeral `PlayerIdentity` (random UUID in `localStorage`) must coex
    game finish under the guest token. Recommended default: **start a fresh authenticated identity
    on next connect; let the in-flight guest session complete naturally**.
 3. **Future authenticated features** (profiles, match history, etc.) require an account — there is
-   no upgrade path for past anonymous play to be claimed (acceptable trade-off; pre-account games
-   stay anonymous forever).
-4. **E2E scenarios** keep using the existing `?token=` + `DevScenarioController.preRegisterIdentity()`
+   no server-side history to claim, so pre-account games stay anonymous forever.
+4. **Client localStorage data is left in place.** Per-device data already exists today: saved
+   decks at `localStorage["argentum.decks"]` (`web-client/src/store/deckLibrary.ts`), preferences
+   at `argentum-auto-tap` / `argentum-stop-overrides`, plus `argentum-player-name`,
+   `argentum-token`, `argentum-lobby-id`, `argentum-bg`. This feature does **not** touch any of it
+   on first sign-in; decks and preferences remain per-device. Migrating the deck library to a
+   server-side store (keyed by `userAccountId`) is deferred to a dedicated deck-library backlog
+   item, which will define both the server schema and the one-shot upload-on-first-login flow.
+5. **E2E scenarios** keep using the existing `?token=` + `DevScenarioController.preRegisterIdentity()`
    path verbatim; that is the guest path. No test rewrites required.
 
 ### Security Notes
