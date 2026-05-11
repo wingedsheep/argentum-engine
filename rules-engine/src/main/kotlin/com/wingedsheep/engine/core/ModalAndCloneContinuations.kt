@@ -190,12 +190,15 @@ data class EntersWithChoiceSpellContinuation(
  *
  * Unlike [EntersWithChoiceSpellContinuation] (used for spells), the land is already on
  * the battlefield when this continuation fires — it just needs the chosen value stored.
- * After storing, checks for chained choices (e.g., a land with both color and creature type).
+ * After storing, checks for chained choices (e.g., a land with both color and creature type),
+ * and once the final choice resolves, fires triggers from the land entering (e.g. landfall).
  *
  * @property landId The land entity already on the battlefield
  * @property controllerId The player who played the land
  * @property choiceType What kind of choice was presented
  * @property creatureTypes For CREATURE_TYPE choices, the list of options presented
+ * @property fromZone The zone the land was played from (needed to fire entry triggers
+ *   after the final choice resolves)
  */
 @Serializable
 data class EntersWithChoiceLandContinuation(
@@ -203,7 +206,8 @@ data class EntersWithChoiceLandContinuation(
     val landId: EntityId,
     val controllerId: EntityId,
     val choiceType: com.wingedsheep.sdk.scripting.ChoiceType,
-    val creatureTypes: List<String> = emptyList()
+    val creatureTypes: List<String> = emptyList(),
+    val fromZone: Zone = Zone.HAND
 ) : ContinuationFrame
 
 /**

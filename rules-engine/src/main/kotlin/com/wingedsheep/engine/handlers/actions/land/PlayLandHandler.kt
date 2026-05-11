@@ -248,7 +248,8 @@ class PlayLandHandler(
                             decisionId = decisionId,
                             landId = action.cardId,
                             controllerId = action.playerId,
-                            choiceType = ChoiceType.COLOR
+                            choiceType = ChoiceType.COLOR,
+                            fromZone = fromZone
                         )
                         val pausedState = newState
                             .pushContinuation(continuation)
@@ -277,7 +278,8 @@ class PlayLandHandler(
                             landId = action.cardId,
                             controllerId = action.playerId,
                             choiceType = ChoiceType.CREATURE_TYPE,
-                            creatureTypes = creatureTypeOptions
+                            creatureTypes = creatureTypeOptions,
+                            fromZone = fromZone
                         )
                         val pausedState = newState
                             .pushContinuation(continuation)
