@@ -2,17 +2,13 @@
 
 A direct Google OAuth2 + Spring Security implementation that replaces the current ephemeral
 `PlayerIdentity` (random UUID in `localStorage`) with persistent user accounts backed by Postgres.
-Provides the account foundation needed for leagues, seasons, player profiles, and any other feature
-that requires durable cross-session identity — while preserving anonymous guest play for casual
-games and dev scenario E2E tests.
+Provides a durable cross-session identity for any feature that needs one — while preserving
+anonymous guest play for casual games and dev scenario E2E tests.
 
-## Supersedes
+## Why direct Google OAuth (not Keycloak)
 
-This backlog item **replaces Phase 1 of [league-season-system.md](league-season-system.md)** —
-the original plan called for Keycloak SSO. We are dropping Keycloak in favour of a direct Google
-OAuth2 integration using `spring-boot-starter-oauth2-client` / `spring-boot-starter-oauth2-resource-server`.
-
-**Rationale for direct Google OAuth over Keycloak:**
+We use a direct Google OAuth2 integration via `spring-boot-starter-oauth2-client` /
+`spring-boot-starter-oauth2-resource-server` rather than fronting Google with Keycloak.
 
 | Concern              | Keycloak                                            | Direct Google OAuth                                 |
 |----------------------|-----------------------------------------------------|-----------------------------------------------------|
@@ -26,7 +22,6 @@ OAuth2 integration using `spring-boot-starter-oauth2-client` / `spring-boot-star
 For a small player base with one realistic IdP for now (Google), the operational simplicity of
 direct OAuth outweighs the federation flexibility Keycloak offers. If we later want Discord/GitHub
 login we add another `ClientRegistration` — Spring Security supports N providers out of the box.
-`league-season-system.md` Phase 1 has been updated to point at this file as the authoritative auth plan.
 
 ## Dependencies
 
@@ -37,10 +32,8 @@ This feature depends on:
   ([architecture #6](archived/game-server-architecture.md#6-formalize-playeridentity-state-machine)) —
   the auth flow needs a cleaner identity lifecycle than the current ad-hoc model.
 
-This feature is a prerequisite for:
-- Leagues & seasons ([league-season-system.md](league-season-system.md) Phase 2+)
-- Player profiles, deck library, match history
-- Any feature that needs durable cross-device identity
+This feature is a prerequisite for any feature that needs durable cross-device identity (player
+profiles, deck library, match history, etc.).
 
 ---
 
@@ -50,6 +43,9 @@ This feature is a prerequisite for:
 
 - Add Postgres service to `docker-compose.local.yml` (and prod `docker-compose.yml`) alongside Redis.
 - Dev defaults: `postgres:16-alpine`, port `5432`, db `argentum`, user `argentum`, password from env.
+- **One shared database, per-feature Postgres schemas (namespaces).** Auth tables live in an `auth`
+  schema; future features get their own schema. Keeps related tables grouped, makes migrations
+  per-feature, and lets us grant scoped DB roles later without splitting databases.
 - Spring Boot config (`application.yml`):
   ```yaml
   spring:
@@ -67,8 +63,10 @@ This feature is a prerequisite for:
 
 - Add `flyway-core` + `flyway-database-postgresql` to `game-server/build.gradle.kts`.
 - Migration directory: `game-server/src/main/resources/db/migration/`.
-- First migration `V1__user_accounts.sql` creates the schema described in Phase 1.4.
-- All future schema (leagues, seasons, etc.) live as further `V*__*.sql` files in the same dir.
+- First migration `V1__auth_schema.sql` creates the `auth` schema and the `user_accounts` table
+  (see Phase 1.4 for the DDL).
+- Future migrations live as further `V*__*.sql` files in the same directory, each creating and
+  populating its own Postgres schema for the feature it owns.
 
 ### 1.3 Data Access Layer
 
@@ -91,7 +89,7 @@ implementation("com.auth0:java-jwt:4.x")    // for issuing our own session JWTs 
 
 ```kotlin
 @Entity
-@Table(name = "user_accounts")
+@Table(name = "user_accounts", schema = "auth")
 class UserAccount(
     @Id val id: UUID,                            // our own UUID, generated on JIT provision
     @Column(nullable = false, unique = true)
@@ -108,9 +106,11 @@ class UserAccount(
 )
 ```
 
-Initial migration (`V1__user_accounts.sql`):
+Initial migration (`V1__auth_schema.sql`):
 ```sql
-CREATE TABLE user_accounts (
+CREATE SCHEMA IF NOT EXISTS auth;
+
+CREATE TABLE auth.user_accounts (
     id              UUID PRIMARY KEY,
     google_subject  VARCHAR(64)  NOT NULL UNIQUE,
     email           VARCHAR(320) NOT NULL,
@@ -120,7 +120,7 @@ CREATE TABLE user_accounts (
     last_login_at   TIMESTAMPTZ  NOT NULL,
     status          VARCHAR(16)  NOT NULL DEFAULT 'ACTIVE'
 );
-CREATE INDEX idx_user_accounts_email ON user_accounts (lower(email));
+CREATE INDEX idx_user_accounts_email ON auth.user_accounts (lower(email));
 ```
 
 `UserAccountRepository : JpaRepository<UserAccount, UUID>` exposes `findByGoogleSubject(sub)`.
@@ -187,7 +187,7 @@ When a user completes Google OAuth2 the success handler runs:
 ```
 1. Spring's oauth2Login filter validates the Google id_token and gives us an OidcUser.
 2. AccountProvisioner.findOrCreate(oidcUser):
-     - lookup user_accounts.google_subject = oidcUser.sub
+     - lookup auth.user_accounts.google_subject = oidcUser.sub
      - if missing: insert new row (id = UUID.randomUUID(), createdAt = now)
      - if present: update email/avatarUrl if changed, set lastLoginAt = now
 3. SessionTokenService.issue(userAccount):
@@ -262,8 +262,8 @@ Anonymous play continues to work and is explicitly supported:
 - The client sends `ClientMessage.Connect(playerName, token=…)` exactly as today.
 - `PlayerIdentity.userAccountId` is null; `SessionRegistry` still indexes by `token`.
 - Server-issued token is returned in `ServerMessage.Connected` and stored in `localStorage`.
-- League/season/profile REST endpoints **reject** unauthenticated requests (`401`); gameplay
-  endpoints (lobby create, quick-game, dev scenarios) remain open.
+- Account-scoped REST endpoints (`/api/me`, etc.) **reject** unauthenticated requests (`401`);
+  gameplay endpoints (lobby create, quick-game, dev scenarios) remain open.
 
 This preserves:
 - Drop-in casual play (no account barrier).
@@ -296,7 +296,7 @@ DELETE /api/me                     Soft-delete: status=DELETED, anonymize email/
 
 ### 1.10 Roles & Admin Migration
 
-- Add `user_accounts.roles VARCHAR[]` (Postgres array) or a `user_roles` join table for `ADMIN`.
+- Add `auth.user_accounts.roles VARCHAR[]` (Postgres array) or an `auth.user_roles` join table for `ADMIN`.
 - The `X-Admin-Password` check in `AdminController.checkAuth()` is preserved as a fallback during
   rollout but is deprecated; admin access also accepts a session JWT with the `ADMIN` role.
 - A bootstrap admin can be promoted via a one-time `SQL` migration referencing their `google_subject`,
@@ -349,9 +349,9 @@ The current ephemeral `PlayerIdentity` (random UUID in `localStorage`) must coex
    `userAccountId`-keyed identity, or to start a fresh authenticated identity and let the in-flight
    game finish under the guest token. Recommended default: **start a fresh authenticated identity
    on next connect; let the in-flight guest session complete naturally**.
-3. **League/season features (Phase 2+ of league-season-system.md)** require an authenticated
-   account — there is no upgrade path for past anonymous match history to be claimed (acceptable
-   trade-off; pre-account games stay anonymous forever).
+3. **Future authenticated features** (profiles, match history, etc.) require an account — there is
+   no upgrade path for past anonymous play to be claimed (acceptable trade-off; pre-account games
+   stay anonymous forever).
 4. **E2E scenarios** keep using the existing `?token=` + `DevScenarioController.preRegisterIdentity()`
    path verbatim; that is the guest path. No test rewrites required.
 
@@ -362,8 +362,8 @@ The current ephemeral `PlayerIdentity` (random UUID in `localStorage`) must coex
   want zero-downtime rotation built in.)
 - **Cookie flags**: `HttpOnly`, `Secure` (prod), `SameSite=Lax`, `Path=/`, 12-hour `Max-Age`.
 - **CSRF**: REST + WebSocket are stateless and bearer-token-like via the cookie. Lax SameSite blocks
-  cross-site form posts. State-changing endpoints (`PATCH /api/me`, `DELETE /api/me`, league
-  mutations later) should additionally require a `X-Requested-With: XMLHttpRequest` header to
+  cross-site form posts. State-changing endpoints (`PATCH /api/me`, `DELETE /api/me`, and other
+  account mutations) should additionally require an `X-Requested-With: XMLHttpRequest` header to
   defeat SameSite=Lax loopholes via top-level GET redirects (which we don't accept POSTs for anyway).
 - **CORS**: the current `setAllowedOrigins("*")` on the WebSocket handler is **incompatible with
   cookie-bearing upgrades** — browsers refuse to send cookies cross-origin to wildcard origins.
@@ -389,10 +389,10 @@ The current ephemeral `PlayerIdentity` (random UUID in `localStorage`) must coex
 
 ### Scaling Notes
 
-- `user_accounts` is tiny and read-heavy. A simple b-tree on `google_subject` + `lower(email)` is
-  sufficient indefinitely.
+- `auth.user_accounts` is tiny and read-heavy. A simple b-tree on `google_subject` + `lower(email)`
+  is sufficient indefinitely.
 - JWT validation is local (no DB hit per request) — only logout and admin-role check hit Postgres.
-- Postgres connection pool size: 10 is plenty until leagues launch.
+- Postgres connection pool size: 10 is plenty for an auth-only workload.
 
 ---
 
@@ -410,13 +410,12 @@ The current ephemeral `PlayerIdentity` (random UUID in `localStorage`) must coex
    `dev-endpoints.enabled=true`.
 
 3. **Single device / single account during transition.** A user who has been playing as a guest
-   with `localStorage` data, then signs in, won't see their guest history (there is no history
-   yet, but this matters once leagues exist). Documented behaviour: pre-account play is
-   permanently anonymous, no claiming.
+   with `localStorage` data, then signs in, won't see their guest history. Documented behaviour:
+   pre-account play is permanently anonymous, no claiming.
 
 4. **Display-name uniqueness.** Multiple Google accounts can share a display name. Do we enforce
    uniqueness? Recommendation: **no** — display names are not identifiers, the UUID is. We can
-   show a `#1234` suffix or partial email in disambiguating contexts (e.g. league member list).
+   show a `#1234` suffix or partial email in disambiguating contexts.
 
 5. **Email change handling.** If Google's primary email changes between logins, we update the row
    in JIT provisioning. This is silent; surface it in `/api/me` so the user sees it on next view.
@@ -436,10 +435,3 @@ The current ephemeral `PlayerIdentity` (random UUID in `localStorage`) must coex
    yes — spectating one game while in another lobby) or enforce single-session (kick the older
    socket). Recommendation: allow multiple, but route `GameSession` participation through the
    `currentGameSessionId` field on `PlayerIdentity` so only one tab is the player.
-
----
-
-## Phase 2+
-
-Phases 2 (Leagues), 3 (Seasons & Standings), and 4 (Social & Polish) from
-[league-season-system.md](league-season-system.md) remain valid and depend on this phase.
