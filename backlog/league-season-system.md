@@ -11,56 +11,12 @@ This feature depends on:
 
 ---
 
-## Phase 1 — Accounts & Authentication (Keycloak SSO)
+## Phase 1 — Accounts & Authentication
 
-Replace the current ephemeral `PlayerIdentity` (UUID token in sessionStorage) with persistent user accounts backed by
-Keycloak.
-
-### 1.1 Keycloak Setup
-
-- Deploy Keycloak instance (Docker Compose for dev, managed service for prod)
-- Configure realm: `argentum`
-- Enable Google as identity provider (Social Login → Google OAuth2)
-- Future: add Discord, GitHub, etc. as additional providers
-- Configure client: `argentum-web` (public client, PKCE flow)
-- Configure client: `argentum-server` (confidential client, for token validation)
-
-### 1.2 Backend Integration (Spring Security + Keycloak)
-
-- Add `spring-boot-starter-oauth2-resource-server` dependency
-- Configure Spring Security to validate Keycloak JWTs on WebSocket upgrade and REST endpoints
-- Extract user identity (sub, email, display name, avatar URL) from JWT claims
-- Create `UserAccount` entity persisted to database:
-  ```
-  UserAccount {
-      id: UUID                  // Keycloak subject ID
-      displayName: String
-      email: String
-      avatarUrl: String?
-      createdAt: Instant
-      lastLoginAt: Instant
-  }
-  ```
-- Auto-create `UserAccount` on first login (JIT provisioning from JWT claims)
-- Replace `PlayerIdentity.token` (random UUID) with Keycloak access token for session binding
-- Maintain backward compatibility: allow anonymous/guest play without login for casual games
-
-### 1.3 Frontend Integration
-
-- Add `keycloak-js` or `oidc-client-ts` library to web-client
-- Login page with "Sign in with Google" button (Keycloak handles the OAuth redirect)
-- Store access token + refresh token in memory (not localStorage for security)
-- Attach access token to WebSocket connection (query param or first message)
-- Token refresh flow: refresh before expiry, reconnect WebSocket on new token
-- Show user profile (name, avatar) in nav bar; allow display name changes
-- Guest mode: skip login, play with ephemeral identity (current behavior)
-
-### 1.4 Database
-
-- Add PostgreSQL (or keep Redis + add Postgres for relational data)
-- Tables: `user_accounts`, plus league/season tables in Phase 2
-- Flyway or Liquibase for migrations
-- Spring Data JPA or Exposed for data access
+**Superseded by [google-oauth2-accounts.md](google-oauth2-accounts.md).** That document is the
+authoritative plan for the account system. It drops Keycloak in favour of direct Spring Security +
+Google OAuth2, adds Postgres + Flyway, defines the `UserAccount` entity and JIT provisioning, and
+specifies how the session cookie bridges into the WebSocket handshake while preserving guest mode.
 
 ---
 

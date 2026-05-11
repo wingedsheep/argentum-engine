@@ -5,12 +5,14 @@ import com.wingedsheep.engine.core.PaymentStrategy
 import com.wingedsheep.engine.state.components.battlefield.WarpedComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.WarpExiledComponent
+import com.wingedsheep.engine.handlers.effects.ZoneTransitionService
 import com.wingedsheep.engine.legalactions.LegalActionEnumerator
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Step
+import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Deck
 import io.kotest.core.spec.style.FunSpec
@@ -300,5 +302,82 @@ class WarpMechanicTest : FunSpec({
         permanent shouldNotBe null
         driver.state.getEntity(permanent!!)?.has<WarpedComponent>() shouldBe false
         driver.state.spellWarpedThisTurn shouldBe false
+    }
+
+    test("warped creature killed after re-cast from exile cannot be cast from graveyard") {
+        // Bug regression: after warp exile + re-cast from exile, the MayPlayPermission
+        // was not cleaned up when the permanent entered the battlefield. When the creature
+        // was subsequently killed it ended up in the graveyard while the permission was
+        // still active, making it castable from the graveyard.
+        val driver = createDriver()
+        driver.initMirrorMatch(deck = Deck.of("Mountain" to 40))
+        driver.gotoMainPhase()
+
+        val player = driver.activePlayer!!
+        val cardId = driver.putCardInHand(player, "Warp Test Creature")
+        driver.giveMana(player, Color.RED, 2)
+
+        // Step 1: cast with warp cost
+        driver.submit(
+            CastSpell(
+                playerId = player,
+                cardId = cardId,
+                useAlternativeCost = true,
+                paymentStrategy = PaymentStrategy.FromPool
+            )
+        )
+        driver.bothPass()
+
+        // Step 2: advance to end step — warp exile trigger fires
+        driver.passPriorityUntil(Step.END)
+        driver.bothPass()
+
+        val exiledCardId = driver.getExile(player).first {
+            driver.state.getEntity(it)?.get<CardComponent>()?.name == "Warp Test Creature"
+        }
+        driver.state.getEntity(exiledCardId)?.has<WarpExiledComponent>() shouldBe true
+
+        // Step 3: advance to player's next main phase
+        driver.passPriorityUntil(Step.END)
+        driver.bothPass()
+        driver.passPriorityUntil(Step.END)
+        driver.bothPass()
+        driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
+
+        // Step 4: re-cast from exile at regular cost
+        driver.giveMana(player, Color.RED, 5)
+        val recastResult = driver.submit(
+            CastSpell(
+                playerId = player,
+                cardId = exiledCardId,
+                useAlternativeCost = false,
+                paymentStrategy = PaymentStrategy.FromPool
+            )
+        )
+        recastResult.isSuccess shouldBe true
+        driver.bothPass()
+
+        val permanent = driver.findPermanent(player, "Warp Test Creature")
+        permanent shouldNotBe null
+
+        // Step 5: kill the creature (send it directly to the graveyard)
+        val transitionResult = ZoneTransitionService.moveToZone(
+            state = driver.state,
+            entityId = permanent!!,
+            destinationZone = Zone.GRAVEYARD
+        )
+        driver.replaceState(transitionResult.state)
+
+        driver.findPermanent(player, "Warp Test Creature") shouldBe null
+        driver.getGraveyardCardNames(player).contains("Warp Test Creature") shouldBe true
+
+        // Step 6: the creature must NOT be castable from the graveyard
+        val enumerator = LegalActionEnumerator.create(driver.cardRegistry)
+        val legalActions = enumerator.enumerate(driver.state, player)
+        val castFromGraveyard = legalActions.firstOrNull { action ->
+            (action.action as? CastSpell)?.cardId == permanent &&
+                action.sourceZone == "GRAVEYARD"
+        }
+        castFromGraveyard shouldBe null
     }
 })

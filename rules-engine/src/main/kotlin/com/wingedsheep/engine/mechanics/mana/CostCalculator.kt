@@ -303,6 +303,8 @@ class CostCalculator(
                     source.amount
                 else 0
             }
+            is CostReductionSource.DifferentlyNamedPermanentsYouControl ->
+                countDifferentlyNamedPermanents(state, playerId, source.filter)
         }
     }
 
@@ -595,6 +597,24 @@ class CostCalculator(
         }
 
         return colors.size
+    }
+
+    private fun countDifferentlyNamedPermanents(
+        state: GameState,
+        playerId: EntityId,
+        filter: GameObjectFilter
+    ): Int {
+        val projectedState = state.projectedState
+        val names = mutableSetOf<String>()
+        for (entityId in state.getBattlefield(playerId)) {
+            val card = state.getEntity(entityId)?.get<CardComponent>() ?: continue
+            val cardDef = cardRegistry.getCard(card.cardDefinitionId) ?: continue
+            val matches = filter.cardPredicates.all { predicate ->
+                matchesBattlefieldPredicate(entityId, cardDef, predicate, projectedState)
+            }
+            if (matches) names.add(card.name)
+        }
+        return names.size
     }
 
     /**

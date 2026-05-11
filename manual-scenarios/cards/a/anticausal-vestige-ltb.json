@@ -3,7 +3,7 @@
   "player2Name": "Bob",
   "player1": {
     "lifeTotal": 20,
-    "hand": ["Protective Response", "Smother", "Serra Angel", "Leonin Vanguard", "Fading Hope"],
+    "hand": ["Protective Response", "Smother", "Serra Angel", "Leonin Vanguard", "Fading Hope", "Anticausal Vestige"],
     "battlefield": [
       {"name": "Anticausal Vestige"},
       {"name": "Plains"},
@@ -11,9 +11,12 @@
       {"name": "Swamp"},
       {"name": "Island"}
     ],
-    "graveyard": [],
+    "graveyard": ["Serra Angel", "Leonin Vanguard"],
     "library": [
       "Scarblade Scout",
+      "Plains",
+      "Plains",
+      "Plains",
       "Plains",
       "Plains",
       "Plains",
@@ -22,11 +25,23 @@
   },
   "player2": {
     "lifeTotal": 20,
-    "hand": [],
-    "battlefield": [],
+    "hand": ["Eviscerate", "Path of Peace", "Smother"],
+    "battlefield": [
+      {"name": "Swamp"},
+      {"name": "Swamp"},
+      {"name": "Swamp"},
+      {"name": "Plains"},
+      {"name": "Plains"},
+      {"name": "Plains"}
+    ],
     "graveyard": [],
     "library": [
-      "Plains",
+      "Swamp",
+      "Eviscerate",
+      "Eviscerate",
+      "Swamp",
+      "Swamp",
+      "Swamp",
       "Plains",
       "Plains",
       "Plains"

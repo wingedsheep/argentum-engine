@@ -29,20 +29,8 @@ https://api.scryfall.com/cards/named?exact=Beyond%20the%20Quiet&set=eoe
 
 ## Void:
 
-- [ ] Alpharael, Stonechosen
-- [ ] Chorale of the Void
-- [ ] Decode Transmissions
-- [ ] Elegy Acolyte
-- [ ] Hylderblade
-- [ ] Hymn of the Faller
-- [ ] Insatiable Skittermaw
-- [ ] Temporal Intervention
-- [ ] Tragic Trajectory
-- [ ] Voidforged Titan
-- [ ] Kavaron Skywarden
 - [x] Plasma Bolt
 - [ ] Roving Actuator
-- [ ] Interceptor Mechan
 
 ## Differently named lands:
 - [x] All-Fates Scroll

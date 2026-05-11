@@ -1015,7 +1015,9 @@ class StackResolver(
             }
         }
 
-        // Add to battlefield
+        // Add to battlefield — clean up any may-play permission first (mirrors the same
+        // cleanup done in resolveNonPermanentSpell before the card goes to the graveyard).
+        newState = newState.removeMayPlayPermissionsForCard(spellId)
         val battlefieldZone = ZoneKey(controllerId, Zone.BATTLEFIELD)
         newState = newState.addToZone(battlefieldZone, spellId)
 
