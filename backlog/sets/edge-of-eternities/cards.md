@@ -2,7 +2,7 @@
 
 **Set Size:** 261 booster cards (excluding basic lands)
 **Release Date:** August 1, 2025
-**Implemented:** 152 / 261
+**Implemented:** 153 / 261
 ---
 
 - [x] Adagia, Windswept Bastion
@@ -83,7 +83,7 @@
 - [x] Frenzied Baloth
 - [ ] Frontline War-Rager
 - [ ] Full Bore
-- [ ] Fungal Colossus
+- [x] Fungal Colossus
 - [x] Galactic Wayfarer
 - [x] Galvanizing Sawship
 - [ ] Genemorph Imago

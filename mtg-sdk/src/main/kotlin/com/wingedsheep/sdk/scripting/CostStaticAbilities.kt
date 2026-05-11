@@ -358,4 +358,19 @@ sealed interface CostReductionSource {
         override val description: String =
             "$amount if a nonland permanent left the battlefield this turn or a spell was warped this turn"
     }
+
+    /**
+     * Reduces cost by the number of differently named permanents the caster controls
+     * matching a filter. Used for Fungal Colossus ("This spell costs {X} less to cast,
+     * where X is the number of differently named lands you control") via
+     * `DifferentlyNamedPermanentsYouControl(Filters.Land)`.
+     */
+    @SerialName("DifferentlyNamedPermanentsYouControl")
+    @Serializable
+    data class DifferentlyNamedPermanentsYouControl(
+        val filter: GameObjectFilter
+    ) : CostReductionSource {
+        override val description: String =
+            "the number of differently named ${filter.description} you control"
+    }
 }
