@@ -28,7 +28,7 @@
 - [x] Blooming Stinger
 - [x] Bombard
 - [x] Breeding Pool
-- [ ] Brightspear Zealot
+- [x] Brightspear Zealot
 - [ ] Broodguard Elite
 - [x] Bygone Colossus
 - [x] Cerebral Download
@@ -87,7 +87,7 @@
 - [x] Galactic Wayfarer
 - [x] Galvanizing Sawship
 - [ ] Genemorph Imago
-- [ ] Gene Pollinator
+- [x] Gene Pollinator
 - [x] Germinating Wurm
 - [ ] Gigastorm Titan
 - [x] Glacier Godmaw
@@ -96,7 +96,7 @@
 - [x] Gravkill
 - [x] Gravpack Monoist
 - [ ] Haliya, Ascendant Cadet
-- [ ] Haliya, Guided by Light
+- [x] Haliya, Guided by Light
 - [x] Hardlight Containment
 - [x] Harmonious Grovestrider
 - [x] Hemosymbic Mite

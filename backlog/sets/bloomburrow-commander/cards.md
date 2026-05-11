@@ -18,7 +18,7 @@
 
 - [ ] Abrade
 - [ ] Academy Manufactor
-- [ ] Adarkar Wastes
+- [x] Adarkar Wastes
 - [ ] Aether Channeler
 - [ ] Aetherize
 - [ ] Agate Instigator
@@ -30,11 +30,11 @@
 - [ ] Arcane Signet
 - [ ] Arthur, Marigold Knight
 - [ ] Azorius Signet
-- [ ] Baird, Steward of Argive
+- [x] Baird, Steward of Argive
 - [ ] Baleful Strix
-- [ ] Barren Moor
+- [x] Barren Moor
 - [ ] Bastion of Remembrance
-- [ ] Battlefield Forge
+- [x] Battlefield Forge
 - [ ] Beast Within
 - [x] Beastmaster Ascension
 - [ ] Beledros Witherbloom
@@ -54,7 +54,7 @@
 - [ ] Boss's Chauffeur
 - [x] Brightcap Badger // Fungus Frolic
 - [ ] Broken Wings
-- [ ] Brushland
+- [x] Brushland
 - [x] Burnished Hart
 - [ ] Calamity of Cinders
 - [ ] Canopy Vista
@@ -70,20 +70,20 @@
 - [ ] Chitterspitter
 - [ ] Cinder Glade
 - [ ] Circuit Mender
-- [ ] Clifftop Retreat
+- [x] Clifftop Retreat
 - [ ] Cloudblazer
 - [ ] Coiling Oracle
 - [ ] Combat Celebrant
 - [ ] Command Tower
 - [ ] Communal Brewing
-- [ ] Copperline Gorge
+- [x] Copperline Gorge
 - [ ] Coveted Jewel
 - [ ] Cultivate
 - [ ] Curiosity Crafter
 - [ ] Cut a Deal
 - [ ] Deadly Dispute
 - [ ] Decimate
-- [ ] Decree of Pain
+- [x] Decree of Pain
 - [ ] Deep Forest Hermit
 - [ ] Derevi, Empyrial Tactician
 - [ ] Devilish Valet
@@ -95,7 +95,7 @@
 - [ ] Esika's Chariot
 - [ ] Etali, Primal Storm
 - [ ] Evercoat Ursine
-- [ ] Evolving Wilds
+- [x] Evolving Wilds
 - [ ] Exotic Orchard
 - [ ] Explore
 - [ ] Faeburrow Elder
@@ -105,8 +105,8 @@
 - [ ] Fisher's Talent
 - [ ] Flooded Grove
 - [ ] Flubs, the Fool
-- [ ] Forgotten Ancient
-- [ ] Forgotten Cave
+- [x] Forgotten Ancient
+- [x] Forgotten Cave
 - [ ] Fortune Teller's Talent
 - [ ] Game Trail
 - [ ] Garruk's Packleader
@@ -116,13 +116,13 @@
 - [ ] Ghalta, Primal Hunger
 - [ ] Ghirapur Orrery
 - [ ] Gilded Goose
-- [ ] Gilded Lotus
+- [x] Gilded Lotus
 - [ ] Glacial Fortress
 - [ ] Golgari Rot Farm
 - [ ] Golgari Signet
 - [ ] Goreclaw, Terror of Qal Sisma
 - [ ] Gourmand's Talent
-- [ ] Gratuitous Violence
+- [x] Gratuitous Violence
 - [ ] Greater Good
 - [ ] Grim Backwoods
 - [ ] Grothama, All-Devouring
@@ -136,8 +136,8 @@
 - [ ] Hazel of the Rootbloom
 - [ ] Hazel's Brewmaster
 - [ ] Hedron Archive
-- [ ] Helm of the Host
-- [ ] Hinterland Harbor
+- [x] Helm of the Host
+- [x] Hinterland Harbor
 - [ ] Hoofprints of the Stag
 - [ ] Idol of Oblivion
 - [ ] Illusionist's Gambit
@@ -153,7 +153,7 @@
 - [ ] Jacked Rabbit
 - [ ] Jazal Goldmane
 - [ ] Jolrael, Mwonvuli Recluse
-- [ ] Jungle Hollow
+- [x] Jungle Hollow
 - [ ] Junk Winder
 - [ ] Kalonian Hydra
 - [ ] Karn, the Great Creator
@@ -163,7 +163,7 @@
 - [ ] Kykar, Wind's Fury
 - [ ] Liliana of the Dark Realms
 - [ ] Llanowar Loamspeaker
-- [ ] Llanowar Wastes
+- [x] Llanowar Wastes
 - [ ] Loran of the Third Path
 - [ ] Lotus Cobra
 - [ ] Loyal Warhound
@@ -184,7 +184,7 @@
 - [ ] Mr. Foxglove
 - [ ] Ms. Bumbleflower
 - [ ] Murmuration
-- [ ] Mystic Monastery
+- [x] Mystic Monastery
 - [ ] Nadier's Nightblade
 - [ ] Narset, Parter of Veils
 - [ ] Necroblossom Snarl
@@ -221,7 +221,7 @@
 - [ ] Rapid Augmenter
 - [ ] Rapid Hybridization
 - [ ] Ravenous Squirrel
-- [ ] Razorverge Thicket
+- [x] Razorverge Thicket
 - [ ] Realm-Cloaked Giant // Cast Off
 - [ ] Reliquary Tower
 - [ ] Restoration Angel
@@ -237,7 +237,7 @@
 - [ ] Sakura-Tribe Elder
 - [ ] Saw in Half
 - [ ] Scurry of Squirrels
-- [ ] Seachrome Coast
+- [x] Seachrome Coast
 - [ ] Seaside Citadel
 - [ ] Second Harvest
 - [ ] Secret Rendezvous
@@ -246,8 +246,8 @@
 - [ ] Shamanic Revelation
 - [ ] Sheltered Thicket
 - [ ] Shield Broker
-- [ ] Shivan Reef
-- [ ] Siege-Gang Commander
+- [x] Shivan Reef
+- [x] Siege-Gang Commander
 - [x] Simic Ascendancy
 - [ ] Skullclamp
 - [ ] Skyclave Apparition
@@ -262,11 +262,11 @@
 - [ ] Squirrel Mob
 - [ ] Squirrel Nest
 - [ ] Squirrel Sovereign
-- [ ] Starstorm
+- [x] Starstorm
 - [ ] Steelburr Champion
 - [ ] Stolen by the Fae
 - [ ] Storm of Souls
-- [ ] Sulfur Falls
+- [x] Sulfur Falls
 - [ ] Sun Titan
 - [ ] Sunbird's Invocation
 - [ ] Sungrass Prairie
@@ -296,7 +296,7 @@
 - [ ] Tendershoot Dryad
 - [ ] Tenuous Truce
 - [ ] Terramorphic Expanse
-- [ ] Tetsuko Umezawa, Fugitive
+- [x] Tetsuko Umezawa, Fugitive
 - [ ] The Gitrog Monster
 - [ ] The Odd Acorn Gang
 - [ ] Thickest in the Thicket
@@ -311,7 +311,7 @@
 - [ ] Tireless Provisioner
 - [ ] Toski, Bearer of Secrets
 - [ ] Trailtracker Scout
-- [ ] Tranquil Thicket
+- [x] Tranquil Thicket
 - [ ] Triskaidekaphile
 - [ ] Twenty-Toed Toad
 - [ ] Twilight Mire
@@ -324,7 +324,7 @@
 - [ ] Woe Strider
 - [ ] Wolfwillow Haven
 - [ ] Wooded Ridgeline
-- [ ] Woodland Cemetery
-- [ ] Yavimaya Coast
+- [x] Woodland Cemetery
+- [x] Yavimaya Coast
 - [ ] Zinnia, Valley's Voice
 - [ ] Zulaport Cutthroat

@@ -60,6 +60,16 @@ check-backlog:
 fix-backlog:
     scripts/check-card-counts.py --fix
 
+# Verify every backlog [ ] entry is genuinely unimplemented (cross-checks Kotlin sources)
+[group: 'build']
+check-backlog-implementations:
+    scripts/check-backlog-implementations.py --check
+
+# Tick [x] for backlog entries that already have a CardDefinition or Printing
+[group: 'build']
+fix-backlog-implementations:
+    scripts/check-backlog-implementations.py --fix
+
 # Start the game server (loads .env if present)
 [group: 'dev']
 server:
