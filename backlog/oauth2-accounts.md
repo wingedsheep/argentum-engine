@@ -49,6 +49,37 @@ profiles, deck library, match history, etc.).
 
 ---
 
+## Persistence approach — Postgres vs Redis
+
+The codebase today persists everything (game sessions, lobbies, tournament state) in **Redis with a
+24-hour TTL**, via the pattern `interface XRepository` + `RedisXRepository` + `InMemoryXRepository`
+gated by `cache.redis.enabled` (see `RedisGameRepository`, `RedisLobbyRepository`, and their
+in-memory counterparts). **No durable, no-TTL data exists yet** — auth accounts would be the first.
+
+Two plausible approaches:
+
+| Concern              | Postgres + JPA (this plan)                                       | Redis-backed `UserAccountRepository`                                   |
+|----------------------|------------------------------------------------------------------|------------------------------------------------------------------------|
+| New infra            | Postgres + Flyway                                                | None — Redis is already deployed                                       |
+| Convention fit       | First JPA + first relational store in the project                | Matches the existing `RedisXRepository` + `InMemoryXRepository` shape  |
+| Uniqueness           | DB-enforced `UNIQUE(provider, subject)`                          | App-enforced via a secondary-index key + MULTI/WATCH                   |
+| Future queries       | SQL — admin lists, signup metrics, joins to future tables        | SCAN, or hand-rolled indexes per query                                 |
+| TTL story            | No TTL by default — straightforward                              | First-ever non-expiring keys; ops must be careful with FLUSHDB/backups |
+| Migrations           | Flyway-versioned SQL                                             | One-off scripts                                                        |
+| Serializer           | JPA-managed entities                                             | `kotlinx.serialization` (matches the rest of the codebase)             |
+| Audit posture        | Standard                                                         | Auditors / future-you side-eye user accounts in Redis                  |
+
+**We choose Postgres.** Auth is the first piece of a relational backbone the project will need
+anyway (profiles, deck library, match history, leagues). Paying the infra cost once now is cheaper
+than running auth on Redis and migrating later, and SQL constraints (`UNIQUE`, foreign keys for
+future tables) are exactly the integrity guarantees we want for user data.
+
+Redis-backed auth stays a sensible Plan B if this feature ships alone for longer than expected and
+we'd rather defer the "first relational store" decision until a second persistent feature lands —
+the `UserAccountRepository` interface in Phase 1.3 keeps that swap localized.
+
+---
+
 ## Phase 1 — Infrastructure & Persistence
 
 ### 1.1 Postgres Setup
@@ -82,8 +113,10 @@ profiles, deck library, match history, etc.).
 
 ### 1.3 Data Access Layer
 
-Choose **Spring Data JPA** (rather than Exposed) for consistency with the existing Spring stack and
-because there is no incumbent Kotlin DSL preference in the codebase.
+Use **Spring Data JPA**. The codebase has no existing relational data-access layer to match, so the
+choice is between JPA, Exposed, jOOQ, and raw JDBC. JPA is the most familiar option in Spring-land
+and the simplest fit for a handful of small auth tables. Wrap it behind a `UserAccountRepository`
+interface so the Postgres ↔ Redis decision in the Persistence section above stays reversible.
 
 Add to `game-server/build.gradle.kts`:
 ```kotlin
