@@ -29,9 +29,6 @@ https://api.scryfall.com/cards/named?exact=Beyond%20the%20Quiet&set=eoe
 
 ## Void:
 
-- [x] Alpharael, Stonechosen
-- [x] Tragic Trajectory
-- [ ] Voidforged Titan
 - [ ] Kavaron Skywarden
 - [x] Plasma Bolt
 - [ ] Roving Actuator

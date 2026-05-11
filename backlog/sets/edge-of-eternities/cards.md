@@ -2,7 +2,7 @@
 
 **Set Size:** 261 booster cards (excluding basic lands)
 **Release Date:** August 1, 2025
-**Implemented:** 149 / 261
+**Implemented:** 150 / 261
 ---
 
 - [x] Adagia, Windswept Bastion
@@ -252,7 +252,7 @@
 - [ ] Vaultguard Trooper
 - [ ] Virulent Silencer
 - [x] Virus Beetle
-- [ ] Voidforged Titan
+- [x] Voidforged Titan
 - [x] Vote Out
 - [ ] Warmaker Gunship
 - [x] Watery Grave
