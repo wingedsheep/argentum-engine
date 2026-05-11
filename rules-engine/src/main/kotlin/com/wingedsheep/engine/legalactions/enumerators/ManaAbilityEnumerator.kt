@@ -28,6 +28,7 @@ import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.scripting.OverrideEnchantedLandManaColor
 import com.wingedsheep.sdk.scripting.effects.AddAnyColorManaEffect
 import com.wingedsheep.sdk.scripting.effects.AddAnyColorManaSpendOnChosenTypeEffect
+import com.wingedsheep.sdk.scripting.effects.AddAnyColorManaSpendOnChosenTypeUncounterableEffect
 import com.wingedsheep.sdk.scripting.effects.AddManaEffect
 import com.wingedsheep.sdk.scripting.effects.AddManaOfColorAmongEffect
 import com.wingedsheep.sdk.scripting.effects.AddManaOfColorLandsCouldProduceEffect
@@ -263,11 +264,13 @@ class ManaAbilityEnumerator : ActionEnumerator {
                         additionalCostInfo = costInfo,
                         requiresManaColorChoice = ability.effect is AddAnyColorManaEffect ||
                             ability.effect is AddAnyColorManaSpendOnChosenTypeEffect ||
+                            ability.effect is AddAnyColorManaSpendOnChosenTypeUncounterableEffect ||
                             ability.effect is AddManaOfColorAmongEffect ||
                             ability.effect is AddManaOfColorLandsCouldProduceEffect ||
                             (ability.effect is CompositeEffect &&
                                 (ability.effect as CompositeEffect).effects.any {
-                                    it is AddAnyColorManaEffect || it is AddAnyColorManaSpendOnChosenTypeEffect
+                                    it is AddAnyColorManaEffect || it is AddAnyColorManaSpendOnChosenTypeEffect ||
+                                        it is AddAnyColorManaSpendOnChosenTypeUncounterableEffect
                                 }),
                         availableManaColors = availableManaColors,
                         manaCostString = manaAbilityManaCostString

@@ -10,6 +10,7 @@ import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.scripting.*
 import com.wingedsheep.sdk.scripting.effects.AddAnyColorManaEffect
 import com.wingedsheep.sdk.scripting.effects.AddAnyColorManaSpendOnChosenTypeEffect
+import com.wingedsheep.sdk.scripting.effects.AddAnyColorManaSpendOnChosenTypeUncounterableEffect
 import com.wingedsheep.sdk.scripting.effects.AddColorlessManaEffect
 import com.wingedsheep.sdk.scripting.effects.AddDynamicManaEffect
 import com.wingedsheep.sdk.scripting.effects.AddManaOfChosenColorEffect
@@ -924,6 +925,14 @@ object Effects {
      */
     fun AddAnyColorManaSpendOnChosenType(amount: Int = 1): Effect =
         AddAnyColorManaSpendOnChosenTypeEffect(amount)
+
+    /**
+     * Add one mana of any color, restricted to creature spells of the source's chosen subtype,
+     * and that spell can't be countered.
+     * Used for Cavern of Souls.
+     */
+    fun AddAnyColorManaSpendOnChosenTypeUncounterable(amount: Int = 1): Effect =
+        AddAnyColorManaSpendOnChosenTypeUncounterableEffect(amount)
 
     /**
      * Add X mana in any combination of the allowed colors.

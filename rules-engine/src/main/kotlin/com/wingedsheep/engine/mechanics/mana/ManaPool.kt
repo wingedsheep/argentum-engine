@@ -34,6 +34,8 @@ fun ManaRestriction.isSatisfiedBy(context: SpellPaymentContext): Boolean = when 
     is ManaRestriction.CreatureSpellsOnly -> context.isCreature
     is ManaRestriction.SubtypeSpellsOrAbilitiesOnly ->
         context.subtypes.any { it.equals(subtype, ignoreCase = true) }
+    is ManaRestriction.CreatureSubtypeUncounterableOnly ->
+        context.isCreature && context.subtypes.any { it.equals(subtype, ignoreCase = true) }
 }
 
 @Serializable

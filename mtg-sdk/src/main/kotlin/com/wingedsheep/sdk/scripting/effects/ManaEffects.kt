@@ -160,6 +160,35 @@ data class AddAnyColorManaSpendOnChosenTypeEffect(
 }
 
 /**
+ * Add one mana of any color, restricted to creature spells of the source's chosen subtype,
+ * and spending this mana makes the spell uncounterable.
+ * "{T}: Add one mana of any color. Spend this mana only to cast a creature spell of the chosen
+ * type, and that spell can't be countered."
+ *
+ * At resolution, the executor reads the source's ChosenCreatureTypeComponent,
+ * prompts the player to choose a color, and adds restricted mana whose
+ * [ManaRestriction] is a freshly-minted [ManaRestriction.CreatureSubtypeUncounterableOnly].
+ * If no creature type has been chosen, no mana is produced.
+ */
+@SerialName("AddAnyColorManaSpendOnChosenTypeUncounterable")
+@Serializable
+data class AddAnyColorManaSpendOnChosenTypeUncounterableEffect(
+    val amount: DynamicAmount = DynamicAmount.Fixed(1)
+) : Effect {
+    constructor(amount: Int) : this(DynamicAmount.Fixed(amount))
+
+    override val description: String = buildString {
+        append(when (val a = amount) {
+            is DynamicAmount.Fixed -> if (a.amount == 1) "Add one mana of any color" else "Add ${a.amount} mana of any color"
+            else -> "Add ${a.description} mana of any color"
+        })
+        append(". Spend this mana only to cast a creature spell of the chosen type, and that spell can't be countered")
+    }
+
+    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
+}
+
+/**
  * Add one mana of the color chosen as the permanent entered the battlefield.
  * "{T}: Add one mana of the chosen color."
  *

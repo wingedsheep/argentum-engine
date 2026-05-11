@@ -45,6 +45,7 @@ import com.wingedsheep.engine.state.components.battlefield.CountersComponent
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.sdk.core.Counters
 import com.wingedsheep.sdk.core.CounterType
+import com.wingedsheep.engine.state.components.identity.CantBeCounteredComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.permissions.activeMayPlayFor
@@ -1846,6 +1847,13 @@ class CastSpellHandler(
 
         var currentCastState = castResult.newState
         var allEvents = events + castResult.events
+
+        // If Cavern-of-Souls-style uncounterable mana was spent, stamp the spell
+        if (paymentResult.usedUncounterableMana) {
+            currentCastState = currentCastState.updateEntity(action.cardId) { c ->
+                c.with(CantBeCounteredComponent)
+            }
+        }
 
         // Record Muldrotha graveyard cast permission usage
         if (castingFromGraveyardViaMuldrotha) {

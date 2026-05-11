@@ -15,6 +15,7 @@ import com.wingedsheep.engine.mechanics.mana.ManaPool
 import com.wingedsheep.engine.mechanics.mana.SpellPaymentContext
 import com.wingedsheep.engine.mechanics.mana.isSatisfiedBy
 import com.wingedsheep.engine.state.components.player.RestrictedManaEntry
+import com.wingedsheep.sdk.scripting.effects.ManaRestriction
 
 /**
  * Result of a mana payment attempt.
@@ -22,7 +23,8 @@ import com.wingedsheep.engine.state.components.player.RestrictedManaEntry
 data class PaymentResult(
     val state: GameState,
     val events: List<GameEvent>,
-    val error: String?
+    val error: String?,
+    val usedUncounterableMana: Boolean = false
 )
 
 /**
@@ -183,7 +185,8 @@ class CastPaymentProcessor(
             colorless = colorlessSpent
         )
 
-        return PaymentResult(newState, listOf(event), null)
+        val usedUncounterable = wasUncounterableManaSpent(poolComponent.restrictedMana, poolAfterPayment.restrictedMana)
+        return PaymentResult(newState, listOf(event), null, usedUncounterable)
     }
 
     private fun autoPay(
@@ -318,7 +321,8 @@ class CastPaymentProcessor(
             )
         )
 
-        return PaymentResult(currentState, events, null)
+        val usedUncounterable = wasUncounterableManaSpent(poolComponent.restrictedMana, poolAfterPayment.restrictedMana)
+        return PaymentResult(currentState, events, null, usedUncounterable)
     }
 
     /**
@@ -364,5 +368,18 @@ class CastPaymentProcessor(
         return beforeCounts.mapValues { (color, count) ->
             count - (afterCounts[color] ?: 0)
         }.filter { it.value > 0 }
+    }
+
+    /**
+     * Returns true if any [ManaRestriction.CreatureSubtypeUncounterableOnly] restricted mana
+     * was consumed (present in [before] but not in [after]).
+     */
+    private fun wasUncounterableManaSpent(
+        before: List<RestrictedManaEntry>,
+        after: List<RestrictedManaEntry>
+    ): Boolean {
+        val beforeCount = before.count { it.restriction is ManaRestriction.CreatureSubtypeUncounterableOnly }
+        val afterCount = after.count { it.restriction is ManaRestriction.CreatureSubtypeUncounterableOnly }
+        return beforeCount > afterCount
     }
 }

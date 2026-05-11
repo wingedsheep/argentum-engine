@@ -74,4 +74,19 @@ sealed interface ManaRestriction {
         override val description: String =
             "Spend this mana only to cast a spell of the chosen type or activate an ability of a source of the chosen type"
     }
+
+    /**
+     * "Spend this mana only to cast a creature spell of the specified subtype,
+     * and that spell can't be countered."
+     *
+     * Like [SubtypeSpellsOrAbilitiesOnly] but restricted to creature spells only,
+     * and spending this mana grants [CantBeCounteredComponent] to the spell.
+     * Used by Cavern of Souls.
+     */
+    @SerialName("CreatureSubtypeUncounterableOnly")
+    @Serializable
+    data class CreatureSubtypeUncounterableOnly(val subtype: String) : ManaRestriction {
+        override val description: String =
+            "Spend this mana only to cast a creature spell of the chosen type. That spell can't be countered"
+    }
 }

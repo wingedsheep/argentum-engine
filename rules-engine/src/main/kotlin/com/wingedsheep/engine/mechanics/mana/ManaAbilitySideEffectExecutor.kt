@@ -13,6 +13,7 @@ import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.ActivatedAbility
 import com.wingedsheep.sdk.scripting.effects.AddAnyColorManaEffect
 import com.wingedsheep.sdk.scripting.effects.AddAnyColorManaSpendOnChosenTypeEffect
+import com.wingedsheep.sdk.scripting.effects.AddAnyColorManaSpendOnChosenTypeUncounterableEffect
 import com.wingedsheep.sdk.scripting.effects.AddColorlessManaEffect
 import com.wingedsheep.sdk.scripting.effects.AddDynamicManaEffect
 import com.wingedsheep.sdk.scripting.effects.AddManaEffect
@@ -134,6 +135,7 @@ class ManaAbilitySideEffectExecutor(
         is AddColorlessManaEffect -> color == null
         is AddAnyColorManaEffect,
         is AddAnyColorManaSpendOnChosenTypeEffect,
+        is AddAnyColorManaSpendOnChosenTypeUncounterableEffect,
         is AddManaOfColorAmongEffect,
         is AddManaOfColorLandsCouldProduceEffect,
         is AddManaOfChosenColorEffect -> color != null  // any non-null color
@@ -155,6 +157,7 @@ class ManaAbilitySideEffectExecutor(
         effect is AddColorlessManaEffect ||
         effect is AddAnyColorManaEffect ||
         effect is AddAnyColorManaSpendOnChosenTypeEffect ||
+        effect is AddAnyColorManaSpendOnChosenTypeUncounterableEffect ||
         effect is AddManaOfColorAmongEffect ||
         effect is AddManaOfColorLandsCouldProduceEffect ||
         effect is AddManaOfChosenColorEffect ||

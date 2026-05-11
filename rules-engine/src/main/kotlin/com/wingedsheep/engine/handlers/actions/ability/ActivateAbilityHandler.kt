@@ -54,6 +54,7 @@ import com.wingedsheep.sdk.scripting.TimingRule
 import com.wingedsheep.sdk.scripting.effects.LevelUpClassEffect
 import com.wingedsheep.sdk.scripting.effects.AddAnyColorManaEffect
 import com.wingedsheep.sdk.scripting.effects.AddAnyColorManaSpendOnChosenTypeEffect
+import com.wingedsheep.sdk.scripting.effects.AddAnyColorManaSpendOnChosenTypeUncounterableEffect
 import com.wingedsheep.sdk.scripting.effects.AddManaOfChosenColorEffect
 import com.wingedsheep.sdk.scripting.effects.AddColorlessManaEffect
 import com.wingedsheep.sdk.scripting.effects.AddManaEffect
@@ -704,6 +705,21 @@ class ActivateAbilityHandler(
                         colorless = 0
                     )
                 }
+                is AddAnyColorManaSpendOnChosenTypeUncounterableEffect -> {
+                    val chosenColor = action.manaColorChoice ?: Color.GREEN
+                    val amount = dynamicAmountEvaluator.evaluate(state, effect.amount, context)
+                    ManaAddedEvent(
+                        playerId = action.playerId,
+                        sourceId = action.sourceId,
+                        sourceName = cardComponent.name,
+                        white = if (chosenColor == Color.WHITE) amount else 0,
+                        blue = if (chosenColor == Color.BLUE) amount else 0,
+                        black = if (chosenColor == Color.BLACK) amount else 0,
+                        red = if (chosenColor == Color.RED) amount else 0,
+                        green = if (chosenColor == Color.GREEN) amount else 0,
+                        colorless = 0
+                    )
+                }
                 is AddManaOfChosenColorEffect -> {
                     val chosenColor = state.getEntity(action.sourceId)
                         ?.get<com.wingedsheep.engine.state.components.identity.ChosenColorComponent>()?.color
@@ -762,7 +778,8 @@ class ActivateAbilityHandler(
                         it is AddManaEffect ||
                             it is AddColorlessManaEffect ||
                             it is AddAnyColorManaEffect ||
-                            it is AddAnyColorManaSpendOnChosenTypeEffect
+                            it is AddAnyColorManaSpendOnChosenTypeEffect ||
+                            it is AddAnyColorManaSpendOnChosenTypeUncounterableEffect
                     }) {
                         is AddManaEffect -> {
                             val amount = dynamicAmountEvaluator.evaluate(state, manaEffect.amount, context)
@@ -803,6 +820,21 @@ class ActivateAbilityHandler(
                             )
                         }
                         is AddAnyColorManaSpendOnChosenTypeEffect -> {
+                            val chosenColor = action.manaColorChoice ?: Color.GREEN
+                            val amount = dynamicAmountEvaluator.evaluate(state, manaEffect.amount, context)
+                            ManaAddedEvent(
+                                playerId = action.playerId,
+                                sourceId = action.sourceId,
+                                sourceName = cardComponent.name,
+                                white = if (chosenColor == Color.WHITE) amount else 0,
+                                blue = if (chosenColor == Color.BLUE) amount else 0,
+                                black = if (chosenColor == Color.BLACK) amount else 0,
+                                red = if (chosenColor == Color.RED) amount else 0,
+                                green = if (chosenColor == Color.GREEN) amount else 0,
+                                colorless = 0
+                            )
+                        }
+                        is AddAnyColorManaSpendOnChosenTypeUncounterableEffect -> {
                             val chosenColor = action.manaColorChoice ?: Color.GREEN
                             val amount = dynamicAmountEvaluator.evaluate(state, manaEffect.amount, context)
                             ManaAddedEvent(

@@ -26,6 +26,7 @@ import com.wingedsheep.sdk.scripting.AbilityCost
 import com.wingedsheep.sdk.scripting.ActivationRestriction
 import com.wingedsheep.sdk.scripting.effects.AddAnyColorManaEffect
 import com.wingedsheep.sdk.scripting.effects.AddAnyColorManaSpendOnChosenTypeEffect
+import com.wingedsheep.sdk.scripting.effects.AddAnyColorManaSpendOnChosenTypeUncounterableEffect
 import com.wingedsheep.sdk.scripting.effects.AddColorlessManaEffect
 import com.wingedsheep.sdk.scripting.effects.AddDynamicManaEffect
 import com.wingedsheep.sdk.scripting.effects.AddManaEffect
@@ -646,6 +647,7 @@ class ManaSolver(
                             it is AddColorlessManaEffect ||
                             it is AddAnyColorManaEffect ||
                             it is AddAnyColorManaSpendOnChosenTypeEffect ||
+                            it is AddAnyColorManaSpendOnChosenTypeUncounterableEffect ||
                             it is AddManaOfColorAmongEffect ||
                             it is AddManaOfColorLandsCouldProduceEffect ||
                             it is AddManaOfChosenColorEffect ||
@@ -683,6 +685,17 @@ class ManaSolver(
                             val manaAmount = evaluateManaAmount(effect.amount, state, entityId, playerId)
                             maxManaAmount = maxOf(maxManaAmount, manaAmount)
                             com.wingedsheep.sdk.scripting.effects.ManaRestriction.SubtypeSpellsOrAbilitiesOnly(chosenType)
+                        } else null
+                    }
+                    is AddAnyColorManaSpendOnChosenTypeUncounterableEffect -> {
+                        val chosenType = state.getEntity(entityId)
+                            ?.get<ChosenCreatureTypeComponent>()?.creatureType
+                        if (chosenType != null) {
+                            combinedColors.addAll(Color.entries)
+                            effectColors.addAll(Color.entries)
+                            val manaAmount = evaluateManaAmount(effect.amount, state, entityId, playerId)
+                            maxManaAmount = maxOf(maxManaAmount, manaAmount)
+                            com.wingedsheep.sdk.scripting.effects.ManaRestriction.CreatureSubtypeUncounterableOnly(chosenType)
                         } else null
                     }
                     is AddManaOfColorAmongEffect -> {
@@ -1337,6 +1350,10 @@ class ManaSolver(
                         anyColorTotal += activationCount * amount
                     }
                     is AddAnyColorManaSpendOnChosenTypeEffect -> {
+                        val amount = (effect.amount as? DynamicAmount.Fixed)?.amount ?: 1
+                        anyColorTotal += activationCount * amount
+                    }
+                    is AddAnyColorManaSpendOnChosenTypeUncounterableEffect -> {
                         val amount = (effect.amount as? DynamicAmount.Fixed)?.amount ?: 1
                         anyColorTotal += activationCount * amount
                     }

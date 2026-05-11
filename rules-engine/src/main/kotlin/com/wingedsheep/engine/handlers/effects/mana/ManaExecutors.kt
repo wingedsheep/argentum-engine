@@ -17,6 +17,7 @@ class ManaExecutors(
         AddColorlessManaExecutor(amountEvaluator),
         AddAnyColorManaExecutor(amountEvaluator),
         AddAnyColorManaSpendOnChosenTypeExecutor(amountEvaluator),
+        AddAnyColorManaSpendOnChosenTypeUncounterableExecutor(amountEvaluator),
         AddDynamicManaExecutor(amountEvaluator),
         AddManaOfChosenColorExecutor(amountEvaluator),
         AddManaOfColorAmongExecutor(),
