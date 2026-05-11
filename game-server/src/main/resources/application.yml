@@ -4,6 +4,27 @@ server:
 spring:
   application:
     name: argentum-game-server
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/argentum}
+    username: ${DB_USER:argentum}
+    password: ${DB_PASSWORD:argentum}
+    hikari:
+      maximum-pool-size: 10
+      pool-name: argentum-pool
+  jpa:
+    hibernate:
+      ddl-auto: validate   # Flyway owns the schema; Hibernate validates only.
+    open-in-view: false
+    properties:
+      hibernate:
+        jdbc:
+          time_zone: UTC
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    schemas: auth, stats
+    default-schema: public      # version-history table lives in public; per-feature schemas hold actual data.
+    create-schemas: true
 
 cache:
   redis:

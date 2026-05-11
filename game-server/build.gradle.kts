@@ -16,6 +16,10 @@ dependencies {
     implementation(libs.bundles.kotlinxEcosystem)
     implementation(libs.bundles.springBootWeb)
     implementation(libs.springBootStarterDataRedis)
+    implementation(libs.springBootStarterDataJpa)
+    implementation(libs.flywayCore)
+    runtimeOnly(libs.flywayPostgresql)
+    runtimeOnly(libs.postgresql)
     implementation(libs.springdocOpenapi)
     implementation(kotlin("reflect"))
 

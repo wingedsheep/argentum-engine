@@ -13,6 +13,8 @@ springBoot = "4.0.5"
 springdocOpenapi = "3.0.2"
 kover = "0.9.1"
 classgraph = "4.8.179"
+postgresql = "42.7.4"
+flyway = "11.5.0"
 
 [libraries]
 kotlinGradlePlugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
@@ -33,6 +35,12 @@ springBootStarterWeb = { module = "org.springframework.boot:spring-boot-starter-
 springBootStarterWebsocket = { module = "org.springframework.boot:spring-boot-starter-websocket", version.ref = "springBoot" }
 springBootStarterTest = { module = "org.springframework.boot:spring-boot-starter-test", version.ref = "springBoot" }
 springBootStarterDataRedis = { module = "org.springframework.boot:spring-boot-starter-data-redis", version.ref = "springBoot" }
+springBootStarterDataJpa = { module = "org.springframework.boot:spring-boot-starter-data-jpa", version.ref = "springBoot" }
+
+# Persistence
+postgresql = { module = "org.postgresql:postgresql", version.ref = "postgresql" }
+flywayCore = { module = "org.flywaydb:flyway-core", version.ref = "flyway" }
+flywayPostgresql = { module = "org.flywaydb:flyway-database-postgresql", version.ref = "flyway" }
 
 # SpringDoc OpenAPI (Swagger UI)
 springdocOpenapi = { module = "org.springdoc:springdoc-openapi-starter-webmvc-ui", version.ref = "springdocOpenapi" }

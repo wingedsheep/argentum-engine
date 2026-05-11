@@ -7,6 +7,22 @@ services:
       - redis_data:/data
     command: redis-server --appendonly yes
 
+  postgres:
+    image: postgres:16-alpine
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-argentum}
+      POSTGRES_USER: ${POSTGRES_USER:-argentum}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-argentum}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-argentum} -d ${POSTGRES_DB:-argentum}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
   ollama:
     image: ollama/ollama:latest
     ports:
@@ -18,4 +34,5 @@ services:
 
 volumes:
   redis_data:
+  postgres_data:
   ollama_data:
