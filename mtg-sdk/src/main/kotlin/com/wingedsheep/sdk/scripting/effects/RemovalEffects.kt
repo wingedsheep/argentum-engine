@@ -519,3 +519,17 @@ data class WarpExileEffect(
     override val description: String = "Exile ${target.description} (warp)"
     override fun applyTextReplacement(replacer: TextReplacer): Effect = this
 }
+
+/**
+ * Return target creature card from the controller's graveyard to their hand.
+ * Only creature cards in the controller's graveyard are legal targets.
+ */
+@SerialName("ReturnTargetCreatureCardFromGraveyardToHand")
+@Serializable
+data class ReturnTargetCreatureCardFromGraveyardToHandEffect(
+    val target: EffectTarget
+) : Effect {
+    override val description: String =
+        "Return target creature card from your graveyard to your hand"
+    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
+}
