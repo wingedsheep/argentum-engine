@@ -242,13 +242,12 @@ object ZoneTransitionService {
             newState = newState.updateEntity(entityId) { c -> stripBattlefieldComponents(c) }
             newState = removeFloatingEffectsTargeting(newState, entityId)
 
-            // Re-attach LinkedExileComponent on graveyard/exile destinations so LTB triggers
-            // that reference it (like Seam Rip's return effect) still have access to it.
-            // The component will be absent on any new battlefield entry (cards in hand/library
-            // never carry it to a new casting, and stripBattlefieldComponents removes it on
-            // re-entry from exile/graveyard — so Rule 400.7 is satisfied at the correct time).
-            if (preStripLinkedExile != null &&
-                (actualDestZone == Zone.GRAVEYARD || actualDestZone == Zone.EXILE)) {
+            // Re-attach LinkedExileComponent on any non-battlefield destination so LTB triggers
+            // that reference it (like Seam Rip's return effect or Champion of the Clachan's
+            // bounce-back) still have access to it after the source has left. Rule 400.7 is
+            // honoured because applyBattlefieldEntry strips the component when the card
+            // re-enters the battlefield as a new object.
+            if (preStripLinkedExile != null && actualDestZone != Zone.BATTLEFIELD) {
                 newState = newState.updateEntity(entityId) { c ->
                     c.with(preStripLinkedExile)
                 }
