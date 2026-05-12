@@ -299,6 +299,22 @@ sealed interface KeywordAbility {
     }
 
     // =========================================================================
+    // Mayhem
+    // =========================================================================
+
+    /**
+     * Mayhem with a mana cost.
+     * "Mayhem {2}{R}" - You may cast this card from your graveyard for its mayhem cost
+     * if you discarded it this turn. Then exile it.
+     */
+    @SerialName("Mayhem")
+    @Serializable
+    data class Mayhem(val cost: ManaCost) : KeywordAbility {
+        override val keyword: Keyword = Keyword.MAYHEM
+        override val description: String = "Mayhem $cost"
+    }
+
+    // =========================================================================
     // Warp
     // =========================================================================
 

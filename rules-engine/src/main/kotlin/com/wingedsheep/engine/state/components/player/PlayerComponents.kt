@@ -527,6 +527,21 @@ data class LoseAtEndStepComponent(
 ) : Component
 
 /**
+ * Tracks the set of card entity IDs that this player discarded during the current turn.
+ * Cleared at end of turn by CleanupPhaseManager.
+ *
+ * Used by the Mayhem mechanic: a card with Mayhem may be cast from the graveyard for
+ * its mayhem cost only if it was discarded this turn.
+ */
+@Serializable
+data class CardsDiscardedThisTurnComponent(
+    val cardIds: Set<EntityId> = emptySet()
+) : Component {
+    fun withCard(cardId: EntityId): CardsDiscardedThisTurnComponent =
+        copy(cardIds = cardIds + cardId)
+}
+
+/**
  * Component granting a flat damage bonus to sources a player controls.
  * Applied by effects like The Flame of Keld Chapter III: "If a red source you control
  * would deal damage to a permanent or player this turn, it deals that much damage plus 2 instead."

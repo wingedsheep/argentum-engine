@@ -15,6 +15,7 @@ import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.permissions.activeMayPlayFor
 import com.wingedsheep.engine.state.permissions.hasMayPlayFor
 import com.wingedsheep.engine.state.components.player.MayCastCreaturesFromGraveyardWithForageComponent
+import com.wingedsheep.engine.handlers.keywords.MayhemHandler
 import com.wingedsheep.engine.state.components.identity.PlayWithAdditionalCostComponent
 import com.wingedsheep.engine.state.components.identity.PlayWithCostIncreaseComponent
 import com.wingedsheep.engine.state.components.identity.PlayWithoutPayingCostComponent
@@ -56,6 +57,7 @@ class CastFromZoneEnumerator : ActionEnumerator {
         enumerateGraveyardPermanents(context, result)
         enumerateGraveyardCreaturesWithForage(context, result)
         enumerateFlashback(context, result)
+        enumerateMayhem(context, result)
         enumerateGraveyardWithLifeCost(context, result)
         enumerateWarpFromHand(context, result)
         enumerateCommandZone(context, result)
@@ -1149,6 +1151,81 @@ class CastFromZoneEnumerator : ActionEnumerator {
                     )
                 )
             }
+        }
+    }
+
+    // =========================================================================
+    // Mayhem (graveyard alternative cost — discarded this turn)
+    // =========================================================================
+
+    private fun enumerateMayhem(
+        context: EnumerationContext,
+        result: MutableList<LegalAction>
+    ) {
+        val state = context.state
+        val playerId = context.playerId
+        val graveyardCards = state.getZone(ZoneKey(playerId, Zone.GRAVEYARD))
+
+        for (cardId in graveyardCards) {
+            val container = state.getEntity(cardId) ?: continue
+            val cardComponent = container.get<CardComponent>() ?: continue
+            val cardDef = context.cardRegistry.getCard(cardComponent.cardDefinitionId) ?: continue
+
+            val mayhem = MayhemHandler.mayhemAbilityFor(state, playerId, cardId, cardDef.keywordAbilities)
+                ?: continue
+
+            // Mayhem is always sorcery speed (cards with Mayhem are non-instants)
+            if (!context.canPlaySorcerySpeed) continue
+
+            if (context.cantCastSpells) {
+                result.add(
+                    LegalAction(
+                        actionType = "CastWithMayhem",
+                        description = "Cast ${cardComponent.name} (Mayhem)",
+                        action = CastSpell(playerId, cardId, useAlternativeCost = true),
+                        affordable = false,
+                        manaCostString = mayhem.cost.toString(),
+                        sourceZone = "GRAVEYARD"
+                    )
+                )
+                continue
+            }
+
+            val effectiveCost = context.costCalculator.calculateEffectiveCostWithAlternativeBase(
+                state, cardDef, mayhem.cost, playerId
+            )
+            val costString = effectiveCost.toString()
+            val canAfford = context.manaSolver.canPay(state, playerId, effectiveCost, precomputedSources = context.availableManaSources)
+
+            if (!canAfford) {
+                result.add(
+                    LegalAction(
+                        actionType = "CastWithMayhem",
+                        description = "Cast ${cardComponent.name} (Mayhem)",
+                        action = CastSpell(playerId, cardId, useAlternativeCost = true),
+                        affordable = false,
+                        manaCostString = costString,
+                        sourceZone = "GRAVEYARD"
+                    )
+                )
+                continue
+            }
+
+            val autoTapPreview = if (context.skipAutoTapPreview) null else {
+                context.manaSolver.solve(state, playerId, effectiveCost, precomputedSources = context.availableManaSources)
+                    ?.sources?.map { it.entityId }
+            }
+
+            result.add(
+                LegalAction(
+                    actionType = "CastWithMayhem",
+                    description = "Cast ${cardComponent.name} (Mayhem)",
+                    action = CastSpell(playerId, cardId, useAlternativeCost = true),
+                    manaCostString = costString,
+                    autoTapPreview = autoTapPreview,
+                    sourceZone = "GRAVEYARD"
+                )
+            )
         }
     }
 
