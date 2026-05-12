@@ -104,7 +104,7 @@
 - [ ] Risky Research
 - [ ] Robotics Mastery
 - [ ] Rocket-Powered Goblin Glider
-- [ ] Romantic Rendezvous
+- [x] Romantic Rendezvous
 - [ ] SP//dr, Piloted by Peni
 - [ ] Sandman's Quicksand
 - [ ] Sandman, Shifting Scoundrel

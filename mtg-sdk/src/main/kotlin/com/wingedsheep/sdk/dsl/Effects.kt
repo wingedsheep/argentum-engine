@@ -311,6 +311,13 @@ object Effects {
     fun ReadTheRunes(): Effect = ReadTheRunesEffect
 
     /**
+     * Target player discards N cards (controller chooses, mandatory).
+     * Delegates to the EffectPatterns pipeline: Gather → Select → Move (Discard).
+     */
+    fun Discard(count: Int = 1, target: EffectTarget = EffectTarget.Controller): Effect =
+        EffectPatterns.discardCards(count, target)
+
+    /**
      * Each opponent discards N cards.
      * Delegates to the EffectPatterns pipeline: ForEachPlayer(EachOpponent) → Gather → Select → Move.
      */
