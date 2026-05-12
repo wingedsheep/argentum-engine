@@ -3,6 +3,7 @@ package com.wingedsheep.engine.support
 import com.wingedsheep.engine.core.*
 import com.wingedsheep.engine.core.ChooseTargetsDecision
 import com.wingedsheep.engine.core.TargetsResponse
+import com.wingedsheep.engine.handlers.SagaChapterAbilitiesHandler
 import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
@@ -54,7 +55,8 @@ import com.wingedsheep.sdk.model.EntityId
  */
 class GameTestDriver {
     val cardRegistry: CardRegistry = CardRegistry()
-    private val processor: ActionProcessor = ActionProcessor(cardRegistry)
+    private val services: EngineServices = EngineServices(cardRegistry)
+    private val processor: ActionProcessor = ActionProcessor(services)
     private var _state: GameState = GameState()
     private val _events = mutableListOf<GameEvent>()
 
@@ -768,6 +770,15 @@ class GameTestDriver {
 
         val battlefieldZone = ZoneKey(playerId, Zone.BATTLEFIELD)
         _state = _state.addToZone(battlefieldZone, cardId)
+
+        // Apply ETB lore-counter rule for Sagas (Rule 702.149b) and queue chapter I trigger
+        if (cardDef.isSaga) {
+            val (newState, etbEvents) = SagaChapterAbilitiesHandler.applyEtbLoreCounter(_state, cardId, cardRegistry)
+            _state = newState
+            val triggerResult = services.triggerProcessor.detectAndProcess(_state, etbEvents, services.triggerDetector)
+            _state = triggerResult.newState
+            _events.addAll(etbEvents + triggerResult.events)
+        }
 
         return cardId
     }
