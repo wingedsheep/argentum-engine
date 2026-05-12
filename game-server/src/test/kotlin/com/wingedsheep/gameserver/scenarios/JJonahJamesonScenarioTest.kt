@@ -14,10 +14,16 @@ import io.kotest.matchers.shouldBe
  * Card reference:
  * - J. Jonah Jameson ({2}{R}): Legendary Creature — Human Citizen, 2/2
  *   "When J. Jonah Jameson enters, suspect up to one target creature an opponent controls."
+ *   "Whenever a creature with menace attacks, create a Treasure token."
  */
 class JJonahJamesonScenarioTest : ScenarioTestBase() {
 
     private val stateProjector = StateProjector()
+
+    private fun ScenarioBuilder.withLibraryCards(playerNumber: Int, cardName: String, count: Int): ScenarioBuilder {
+        repeat(count) { withCardInLibrary(playerNumber, cardName) }
+        return this
+    }
 
     init {
         context("J. Jonah Jameson ETB suspect") {
@@ -97,6 +103,70 @@ class JJonahJamesonScenarioTest : ScenarioTestBase() {
 
                 withClue("J. Jonah Jameson should be on the battlefield even with no suspect target") {
                     game.isOnBattlefield("J. Jonah Jameson") shouldBe true
+                }
+            }
+        }
+
+        context("J. Jonah Jameson menace-attacker trigger") {
+
+            test("creates a Treasure token when a creature with menace attacks") {
+                val game = scenario()
+                    .withPlayers("ActivePlayer", "Opponent")
+                    .withCardOnBattlefield(1, "J. Jonah Jameson")
+                    .withCardOnBattlefield(1, "Ravine Raider") // 1/1 with menace (BLB)
+                    .withLibraryCards(1, "Mountain", 5)
+                    .withLibraryCards(2, "Mountain", 5)
+                    .withActivePlayer(1)
+                    .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                    .build()
+
+                game.passUntilPhase(Phase.COMBAT, Step.DECLARE_ATTACKERS)
+                game.declareAttackers(mapOf("Ravine Raider" to 2))
+                game.resolveStack()
+
+                withClue("A Treasure token should be created when a menace creature attacks") {
+                    game.findAllPermanents("Treasure").size shouldBe 1
+                }
+            }
+
+            test("does not create a Treasure when only a non-menace creature attacks") {
+                val game = scenario()
+                    .withPlayers("ActivePlayer", "Opponent")
+                    .withCardOnBattlefield(1, "J. Jonah Jameson")
+                    .withCardOnBattlefield(1, "Grizzly Bears") // 2/2, no menace
+                    .withLibraryCards(1, "Mountain", 5)
+                    .withLibraryCards(2, "Mountain", 5)
+                    .withActivePlayer(1)
+                    .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                    .build()
+
+                game.passUntilPhase(Phase.COMBAT, Step.DECLARE_ATTACKERS)
+                game.declareAttackers(mapOf("Grizzly Bears" to 2))
+                game.resolveStack()
+
+                withClue("No Treasure should be created when only a non-menace creature attacks") {
+                    game.findAllPermanents("Treasure").size shouldBe 0
+                }
+            }
+
+            test("creates one Treasure per menace attacker when multiple menace creatures attack") {
+                val game = scenario()
+                    .withPlayers("ActivePlayer", "Opponent")
+                    .withCardOnBattlefield(1, "J. Jonah Jameson")
+                    .withCardOnBattlefield(1, "Ravine Raider")   // 1/1 with menace (BLB)
+                    .withCardOnBattlefield(1, "Teapot Slinger")  // 3/4 with menace (BLB)
+                    .withLibraryCards(1, "Mountain", 5)
+                    .withLibraryCards(2, "Mountain", 5)
+                    .withActivePlayer(1)
+                    .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                    .build()
+
+                game.passUntilPhase(Phase.COMBAT, Step.DECLARE_ATTACKERS)
+                game.declareAttackers(mapOf("Ravine Raider" to 2, "Teapot Slinger" to 2))
+                game.resolveStack()
+
+                withClue("Two Treasure tokens should be created when two menace creatures attack") {
+                    game.findAllPermanents("Treasure").size shouldBe 2
                 }
             }
         }
