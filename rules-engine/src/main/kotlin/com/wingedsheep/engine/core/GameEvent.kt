@@ -953,3 +953,22 @@ data class DoorUnlockedEvent(
      */
     val becameFullyUnlocked: Boolean
 ) : GameEvent
+
+// =============================================================================
+// Comparative Death Trigger Events
+// =============================================================================
+
+/**
+ * Emitted by [GreatestPowerAmongControllersCreaturesDiesTrigger] when a creature dies that
+ * had the strictly greatest power among all creatures the same player controlled at the
+ * instant it left the battlefield. [observingPlayerId] is a player for whom the dead
+ * creature's controller is an opponent (one event per qualifying observer).
+ */
+@Serializable
+@SerialName("GreatestPowerOpponentCreatureDiedEvent")
+data class GreatestPowerOpponentCreatureDiedEvent(
+    val dyingEntityId: EntityId,
+    val dyingEntityName: String,
+    val controllingPlayerId: EntityId,
+    val observingPlayerId: EntityId
+) : GameEvent

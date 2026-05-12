@@ -12,6 +12,7 @@ import com.wingedsheep.engine.event.TriggerDetector
 import com.wingedsheep.engine.event.TriggerProcessor
 import com.wingedsheep.engine.core.EngineServices
 import com.wingedsheep.engine.handlers.actions.ActionHandler
+import com.wingedsheep.engine.handlers.triggers.GreatestPowerAmongControllersCreaturesDiesTrigger
 import com.wingedsheep.engine.mechanics.StateBasedActionChecker
 import com.wingedsheep.engine.mechanics.stack.StackResolver
 import com.wingedsheep.engine.state.GameState
@@ -42,6 +43,7 @@ class PassPriorityHandler(
     private val triggerDetector: TriggerDetector,
     private val triggerProcessor: TriggerProcessor
 ) : ActionHandler<PassPriority> {
+    private val greatestPowerTrigger = GreatestPowerAmongControllersCreaturesDiesTrigger()
     override val actionType: KClass<PassPriority> = PassPriority::class
 
     override fun validate(state: GameState, action: PassPriority): String? {
@@ -224,6 +226,9 @@ class PassPriorityHandler(
 
         // Track nontoken creature deaths from SBA events
         val sbaTrackedState = trackNonTokenCreatureDeaths(sbaResult.newState, sbaResult.events)
+
+        // Emit per-controller greatest-power death events
+        combinedEvents = combinedEvents + greatestPowerTrigger.handle(sbaTrackedState, combinedEvents)
 
         // Detect triggers from SBA events (e.g., death triggers) on post-SBA state
         val sbaTriggers = triggerDetector.detectTriggers(sbaTrackedState, sbaResult.events)

@@ -1104,7 +1104,8 @@ is PermanentsSacrificedEvent -> {
             )
 
             is TurnHijackedEvent,
-            is CommitCrimeEvent -> null
+            is CommitCrimeEvent,
+            is GreatestPowerOpponentCreatureDiedEvent -> null
         }
     }
 }
