@@ -123,3 +123,21 @@ data class DealDamagePerEntityInZoneEffect(
 
     override fun applyTextReplacement(replacer: TextReplacer): Effect = this
 }
+
+/**
+ * Deal damage equal to the greatest power among creature cards in the controller's graveyard
+ * to a target creature. Non-creature cards and the opponent's graveyard are ignored.
+ *
+ * Used for Kraven's Last Hunt and similar effects.
+ */
+@SerialName("DealDamageEqualToGreatestPowerAmongCreatureCardsInYourGraveyard")
+@Serializable
+data class DealDamageEqualToGreatestPowerAmongCreatureCardsInYourGraveyardEffect(
+    val target: EffectTarget,
+    val cantBePrevented: Boolean = false
+) : Effect {
+    override val description: String =
+        "Deal damage equal to the greatest power among creature cards in your graveyard to ${target.description}"
+
+    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
+}
