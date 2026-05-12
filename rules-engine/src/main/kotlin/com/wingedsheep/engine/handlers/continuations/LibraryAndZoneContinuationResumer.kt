@@ -370,6 +370,7 @@ class LibraryAndZoneContinuationResumer(
             val kept = mutableSetOf<EntityId>()
             val claimedTypes = mutableSetOf<com.wingedsheep.sdk.core.CardType>()
             val claimedColors = mutableSetOf<com.wingedsheep.sdk.core.Color>()
+            val claimedNames = mutableSetOf<String>()
             for (cardId in response.selectedCards) {
                 val acceptsAllRestrictions = continuation.restrictions.all { restriction ->
                     when (restriction) {
@@ -385,6 +386,12 @@ class LibraryAndZoneContinuationResumer(
                                 ?.colors ?: emptySet()
                             // Colourless cards are not constrained by this restriction.
                             cardColors.isEmpty() || cardColors.none { it in claimedColors }
+                        }
+                        is SelectionRestriction.OnePerCardName -> {
+                            val cardName = state.getEntity(cardId)
+                                ?.get<com.wingedsheep.engine.state.components.identity.CardComponent>()
+                                ?.name
+                            cardName == null || cardName !in claimedNames
                         }
                     }
                 }
@@ -402,6 +409,12 @@ class LibraryAndZoneContinuationResumer(
                                 claimedColors += state.getEntity(cardId)
                                     ?.get<com.wingedsheep.engine.state.components.identity.CardComponent>()
                                     ?.colors ?: emptySet()
+                            }
+                            is SelectionRestriction.OnePerCardName -> {
+                                val cardName = state.getEntity(cardId)
+                                    ?.get<com.wingedsheep.engine.state.components.identity.CardComponent>()
+                                    ?.name
+                                if (cardName != null) claimedNames += cardName
                             }
                         }
                     }

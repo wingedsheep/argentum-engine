@@ -287,6 +287,19 @@ sealed interface SelectionRestriction {
             }
         }
     }
+
+    /**
+     * At most one card of each name may be selected. Cards with the same name
+     * are treated as interchangeable; only the first such card (in response order)
+     * is kept.
+     *
+     * Used for "creature cards with different names" effects like Behold the Sinister Six!.
+     */
+    @SerialName("OnePerCardName")
+    @Serializable
+    data object OnePerCardName : SelectionRestriction {
+        override val description: String = "at most one card of each name"
+    }
 }
 
 /**

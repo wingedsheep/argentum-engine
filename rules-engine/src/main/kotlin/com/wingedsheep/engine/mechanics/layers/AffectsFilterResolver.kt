@@ -331,6 +331,7 @@ internal class AffectsFilterResolver {
                 state.getEntity(attachId)?.get<CardComponent>()?.typeLine?.isEquipment == true
             }
         }
+        StatePredicate.IsModified -> com.wingedsheep.engine.handlers.predicates.isModified(state, entityId)
         StatePredicate.HasGreatestPower -> hasGreatestPowerInProjection(state, entityId, container, projectedValues)
         StatePredicate.HasAnyCounter -> {
             val counters = container.get<CountersComponent>()

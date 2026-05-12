@@ -160,6 +160,13 @@ sealed interface StatePredicate {
         override val description: String = "equipped"
     }
 
+    /** Has an Equipment attached, an Aura attached, or any counter (MTG "modified" definition) */
+    @SerialName("IsModified")
+    @Serializable
+    data object IsModified : StatePredicate {
+        override val description: String = "modified"
+    }
+
     // =============================================================================
     // Composite / Logical Combinators
     // =============================================================================

@@ -254,6 +254,11 @@ class SelectFromCollectionExecutor : EffectExecutor<SelectFromCollectionEffect> 
                         distinctColors.size + colourlessCount
                     }
                 }
+                is SelectionRestriction.OnePerCardName -> {
+                    eligibleCards.mapNotNull { cardId ->
+                        state.getEntity(cardId)?.get<CardComponent>()?.name
+                    }.toSet().size.coerceAtLeast(0)
+                }
             }
             if (limit < ceiling) ceiling = limit
         }
@@ -324,7 +329,8 @@ class SelectFromCollectionExecutor : EffectExecutor<SelectFromCollectionEffect> 
             nonSelectableOptions = nonSelectableCards,
             onePerCardType = effect.restrictions.any { it is SelectionRestriction.OnePerCardType },
             onePerColor = effect.restrictions.any { it is SelectionRestriction.OnePerColor },
-            availableColors = controllerPermanentColors?.map { it.name }
+            availableColors = controllerPermanentColors?.map { it.name },
+            onePerCardName = effect.restrictions.any { it is SelectionRestriction.OnePerCardName }
         )
 
         val continuation = SelectFromCollectionContinuation(

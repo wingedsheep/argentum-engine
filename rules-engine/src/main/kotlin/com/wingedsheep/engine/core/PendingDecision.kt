@@ -147,7 +147,9 @@ data class SelectCardsDecision(
      * (e.g., Sanar's Vivid trigger). One pip per colour name (e.g., ["WHITE","BLUE"]). When null
      * or empty, the UI falls back to a generic five-colour list.
      */
-    val availableColors: List<String>? = null
+    val availableColors: List<String>? = null,
+    /** When true, at most one card of each name may be selected */
+    val onePerCardName: Boolean = false
 ) : PendingDecision
 
 /**

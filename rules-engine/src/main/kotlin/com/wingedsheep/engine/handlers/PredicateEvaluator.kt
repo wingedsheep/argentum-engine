@@ -799,6 +799,8 @@ class PredicateEvaluator {
                 }
             }
 
+            StatePredicate.IsModified -> com.wingedsheep.engine.handlers.predicates.isModified(state, entityId)
+
             // Relative power
             StatePredicate.HasGreatestPower -> {
                 val projected = state.projectedState
