@@ -11,6 +11,7 @@ import com.wingedsheep.engine.core.ZoneChangeEvent
 import com.wingedsheep.engine.core.GameEvent as EngineGameEvent
 import com.wingedsheep.engine.handlers.ConditionEvaluator
 import com.wingedsheep.engine.handlers.EffectContext
+import com.wingedsheep.engine.handlers.ExcessDamageDetectionHandler
 import com.wingedsheep.engine.handlers.PredicateContext
 import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.state.GameState
@@ -232,7 +233,8 @@ object DamageUtils {
         val targetName = targetContainer?.get<CardComponent>()?.name
         val targetIsPlayer = targetContainer?.get<LifeTotalComponent>() != null
         val targetIsFaceDown = targetContainer?.has<FaceDownComponent>() == true
-        events.add(DamageDealtEvent(sourceId, targetId, effectiveAmount, false, sourceName = sourceName, targetName = targetName, targetIsPlayer = targetIsPlayer, targetWasFaceDown = targetIsFaceDown))
+        val excessDamage = ExcessDamageDetectionHandler.computeExcessDamage(state, targetId, effectiveAmount)
+        events.add(DamageDealtEvent(sourceId, targetId, effectiveAmount, false, sourceName = sourceName, targetName = targetName, targetIsPlayer = targetIsPlayer, targetWasFaceDown = targetIsFaceDown, excessDamage = excessDamage))
 
         // Lifelink: if the source has lifelink, its controller gains life equal to the damage dealt (Rule 702.15)
         if (sourceId != null) {
