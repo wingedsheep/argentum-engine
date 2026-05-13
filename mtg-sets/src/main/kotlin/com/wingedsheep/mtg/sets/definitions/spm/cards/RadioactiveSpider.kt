@@ -24,5 +24,6 @@ val RadioactiveSpider = card("Radioactive Spider") {
 
     metadata {
         rarity = Rarity.COMMON
+        imageUri = "https://cards.scryfall.io/normal/front/f/2/f2d267f5-7f12-45f8-8fcb-e0ba3fbdeddc.jpg?1757377503"
     }
 }
