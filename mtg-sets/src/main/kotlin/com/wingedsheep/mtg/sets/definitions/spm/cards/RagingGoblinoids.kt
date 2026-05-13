@@ -25,5 +25,6 @@ val RagingGoblinoids = card("Raging Goblinoids") {
 
     metadata {
         rarity = Rarity.COMMON
+        imageUri = "https://cards.scryfall.io/normal/front/8/5/8519598f-ab7f-49b0-90cc-c0b6422ebdf8.jpg?1757377315"
     }
 }
