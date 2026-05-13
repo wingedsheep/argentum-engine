@@ -71,6 +71,21 @@ data class ChooseColorThenContinuation(
 ) : ContinuationFrame
 
 /**
+ * Resume after the controller of an [com.wingedsheep.sdk.scripting.effects.AddAnyColorManaEffect]
+ * picks the mana color. The resumer re-runs the effect via the executor registry with
+ * `manaColorChoice` populated on [baseContext], so dynamic amounts evaluate consistently.
+ */
+@Serializable
+data class ChooseManaColorContinuation(
+    override val decisionId: String,
+    val controllerId: EntityId,
+    val sourceId: EntityId?,
+    val sourceName: String?,
+    val effect: Effect,
+    val baseContext: EffectContext
+) : ContinuationFrame
+
+/**
  * Resume after a player chooses a color to store on a permanent.
  */
 @Serializable

@@ -2,11 +2,8 @@
 
 **Set Size:** 188 booster cards (excluding basic lands and tokens)
 **Release Date:** September 26, 2025
-**Implemented:** 5 / 188
----
-
+**Implemented:** 16 / 189
 - [x] Agent Venom
-- [ ] Alien Symbiosis
 - [x] Angry Rabble
 - [x] Amazing Acrobatics
 - [ ] Anti-Venom, Horrifying Healer
@@ -84,7 +81,7 @@
 - [ ] News Helicopter
 - [ ] Norman Osborn // Green Goblin
 - [ ] Ominous Asylum
-- [ ] Origin of Spider-Man
+- [x] Origin of Spider-Man
 - [ ] Oscorp Industries
 - [ ] Oscorp Research Team
 - [ ] Parker Luck
@@ -94,15 +91,17 @@
 - [ ] Pictures of Spider-Man
 - [ ] Prison Break
 - [ ] Professional Wrestler
-- [ ] Prowler, Clawed Thief
+- [x] Prowler, Clawed Thief
 - [ ] Pumpkin Bombardment
 - [ ] Radioactive Spider
 - [x] Raging Goblinoids
-- [ ] Rent Is Due
+- [x] Rent Is Due
 - [ ] Rhino's Rampage
-- [ ] Rhino, Barreling Brute
-- [ ] Risky Research
-- [ ] Robotics Mastery
+- [x] Rhino, Barreling Brute
+- [x] Risky Research
+- [x] Robotics Mastery
+- [x] Risky Research
+- [x] Robotics Mastery
 - [ ] Rocket-Powered Goblin Glider
 - [x] Romantic Rendezvous
 - [ ] SP//dr, Piloted by Peni
@@ -112,8 +111,8 @@
 - [ ] Scarlet Spider, Ben Reilly
 - [ ] Scarlet Spider, Kaine
 - [ ] School Daze
-- [ ] Scorpion's Sting
-- [ ] Scorpion, Seething Striker
+- [x] Scorpion's Sting
+- [x] Scorpion, Seething Striker
 - [ ] Scout the City
 - [ ] Secret Identity
 - [ ] Selfless Police Captain
@@ -124,7 +123,7 @@
 - [ ] Silk, Web Weaver
 - [ ] Silver Sable, Mercenary Leader
 - [ ] Sinister Hideout
-- [ ] Skyward Spider
+- [x] Skyward Spider
 - [ ] Spectacular Spider-Man
 - [ ] Spectacular Tactics
 - [ ] Spider Manifestation

@@ -267,6 +267,21 @@ data object MayPlayPermanentsFromGraveyard : StaticAbility {
 }
 
 /**
+ * You may play lands from your graveyard.
+ * Used for Crucible of Worlds / Icetill Explorer style effects.
+ *
+ * Unlike [MayPlayPermanentsFromGraveyard] (Muldrotha), no per-turn usage tracking
+ * is needed — the land-drop counter already limits how many lands can be played.
+ * Multiple copies are redundant.
+ */
+@SerialName("MayPlayLandsFromGraveyard")
+@Serializable
+data object MayPlayLandsFromGraveyard : StaticAbility {
+    override val description: String = "You may play lands from your graveyard"
+    override fun applyTextReplacement(replacer: TextReplacer): StaticAbility = this
+}
+
+/**
  * Prevents all players from cycling cards.
  * Used for Stabilizer: "Players can't cycle cards."
  *

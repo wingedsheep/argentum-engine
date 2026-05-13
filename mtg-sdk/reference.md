@@ -1123,6 +1123,7 @@ Set via `staticAbility { ability = ... }`:
 - `MayCastSelfFromZones(zones: List<Zone>)` — intrinsic permission to cast this card from specified zones (e.g., graveyard, exile)
 - `MayCastFromGraveyardWithLifeCost(filter, lifeCost, duringYourTurnOnly)` — controller may cast matching spells from graveyard by paying life (e.g., Festival of Embers)
 - `MayPlayPermanentsFromGraveyard` — during each of your turns, play a land and cast a permanent spell of each type from your graveyard (Muldrotha). Tracks per-type usage via `GraveyardPlayPermissionUsedComponent` on the source permanent, cleared at end of turn.
+- `MayPlayLandsFromGraveyard` — you may play lands from your graveyard (Crucible of Worlds / Icetill Explorer style). No per-turn usage tracking; the land-drop counter already limits plays. Handled by `PlayLandEnumerator` and `PlayLandHandler` via `hasLandGraveyardPlayPermission()` — no interaction with `GraveyardPlayPermissionUsedComponent`.
 - `GrantMayCastFromLinkedExile(filter, duringYourTurnOnly = false, additionalCost = null)` — you may cast cards exiled with this permanent that match the filter (Rona, Disciple of Gix). `duringYourTurnOnly` restricts the permission to the controller's turn; `additionalCost` (any `AdditionalCost`) must be paid alongside the spell's normal costs (e.g., Dawnhand Dissident's `RemoveCountersFromYourCreatures(3)`). Works with `LinkedExileComponent`.
 - `LookAtFaceDownCreatures` — look at face-down creatures you don't control any time
 - `PreventCycling` — players can't cycle cards

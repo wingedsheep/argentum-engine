@@ -2,6 +2,8 @@ package com.wingedsheep.engine.handlers.continuations
 
 import com.wingedsheep.engine.core.*
 import com.wingedsheep.engine.handlers.DecisionHandler
+import com.wingedsheep.engine.handlers.effects.ConniveEffectHandler
+import com.wingedsheep.engine.handlers.effects.ZoneTransitionService
 import com.wingedsheep.engine.handlers.effects.drawing.EachPlayerDiscardsOrLoseLifeExecutor
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
@@ -15,7 +17,8 @@ class DiscardAndDrawContinuationResumer(
 
     override fun resumers(): List<ContinuationResumer<*>> = listOf(
         resumer(HandSizeDiscardContinuation::class, ::resumeHandSizeDiscard),
-        resumer(EachPlayerDiscardsOrLoseLifeContinuation::class, ::resumeEachPlayerDiscardsOrLoseLife)
+        resumer(EachPlayerDiscardsOrLoseLifeContinuation::class, ::resumeEachPlayerDiscardsOrLoseLife),
+        resumer(ConniveContinuation::class, ::resumeConnive)
     )
 
     fun resumeHandSizeDiscard(
@@ -28,27 +31,9 @@ class DiscardAndDrawContinuationResumer(
             return ExecutionResult.error(state, "Expected card selection response for hand size discard")
         }
 
-        val playerId = continuation.playerId
-        val selectedCards = response.selectedCards
-
-        // Move selected cards from hand to graveyard
-        var newState = state
-        val handZone = ZoneKey(playerId, Zone.HAND)
-        val graveyardZone = ZoneKey(playerId, Zone.GRAVEYARD)
-
-        for (cardId in selectedCards) {
-            newState = newState.removeFromZone(handZone, cardId)
-            newState = newState.addToZone(graveyardZone, cardId)
-        }
-        newState = newState.recordCardsDiscardedThisTurn(playerId, selectedCards)
-
-        val discardNames = selectedCards.map { state.getEntity(it)?.get<CardComponent>()?.name ?: "Card" }
-        val events = listOf(
-            CardsDiscardedEvent(playerId, selectedCards, discardNames)
-        )
-
-        // Check if there are more continuations to process
-        return checkForMore(newState, events)
+        val result = ZoneTransitionService.discardCards(state, continuation.playerId, response.selectedCards)
+        val newState = result.state.recordCardsDiscardedThisTurn(continuation.playerId, response.selectedCards)
+        return checkForMore(newState, result.events)
     }
 
     fun resumeEachPlayerDiscardsOrLoseLife(
@@ -64,30 +49,16 @@ class DiscardAndDrawContinuationResumer(
         val selectedCards = response.selectedCards
         val currentPlayerId = continuation.currentPlayerId
 
-        // Discard the selected card
-        var newState = state
-        val handZone = ZoneKey(currentPlayerId, Zone.HAND)
-        val graveyardZone = ZoneKey(currentPlayerId, Zone.GRAVEYARD)
-
-        for (cardId in selectedCards) {
-            newState = newState.removeFromZone(handZone, cardId)
-            newState = newState.addToZone(graveyardZone, cardId)
-        }
-        if (selectedCards.isNotEmpty()) {
-            newState = newState.recordCardsDiscardedThisTurn(currentPlayerId, selectedCards)
-        }
-
-        val discardEvents: List<GameEvent> = if (selectedCards.isNotEmpty()) {
-            val discardNames = selectedCards.map { state.getEntity(it)?.get<CardComponent>()?.name ?: "Card" }
-            listOf(CardsDiscardedEvent(currentPlayerId, selectedCards, discardNames))
-        } else {
-            emptyList()
-        }
-
-        // Check if the discarded card was a creature
+        // Snapshot creature-ness before the cards leave the battlefield-adjacent zone —
+        // by the time discardCards finishes, CardComponent on the entity may not be the
+        // right lookup anchor for downstream queries.
         val discardedCreatureCard = selectedCards.any { cardId ->
             state.getEntity(cardId)?.get<CardComponent>()?.isCreature == true
         }
+
+        val discardResult = ZoneTransitionService.discardCards(state, currentPlayerId, selectedCards)
+        val newState = discardResult.state.recordCardsDiscardedThisTurn(currentPlayerId, selectedCards)
+        val discardEvents: List<GameEvent> = discardResult.events
 
         val newDiscardedCreature = continuation.discardedCreature + (currentPlayerId to discardedCreatureCard)
 
@@ -117,22 +88,17 @@ class DiscardAndDrawContinuationResumer(
             if (nextHand.size == 1) {
                 val cardId = nextHand.first()
                 val isCreature = newState.getEntity(cardId)?.get<CardComponent>()?.isCreature == true
-                val nextGraveyardZone = ZoneKey(nextPlayer, Zone.GRAVEYARD)
-                newState = newState.removeFromZone(nextHandZone, cardId)
-                newState = newState.addToZone(nextGraveyardZone, cardId)
-                newState = newState.recordCardsDiscardedThisTurn(nextPlayer, listOf(cardId))
-
-                val autoDiscardCardName = newState.getEntity(cardId)?.get<CardComponent>()?.name ?: "Card"
-                val autoDiscardEvents = discardEvents + listOf(CardsDiscardedEvent(nextPlayer, listOf(cardId), listOf(autoDiscardCardName)))
+                val autoResult = ZoneTransitionService.discardCard(newState, nextPlayer, cardId)
+                val autoStateWithRecord = autoResult.state.recordCardsDiscardedThisTurn(nextPlayer, listOf(cardId))
                 val autoDiscardedCreature = newDiscardedCreature + (nextPlayer to isCreature)
 
                 return continueEachPlayerDiscardsOrLoseLife(
-                    newState,
+                    autoStateWithRecord,
                     continuation.copy(
                         remainingPlayers = nextRemainingPlayers,
                         discardedCreature = autoDiscardedCreature
                     ),
-                    autoDiscardEvents,
+                    discardEvents + autoResult.events,
                     checkForMore
                 )
             }
@@ -222,22 +188,17 @@ class DiscardAndDrawContinuationResumer(
         if (nextHand.size == 1) {
             val cardId = nextHand.first()
             val isCreature = state.getEntity(cardId)?.get<CardComponent>()?.isCreature == true
-            val graveyardZone = ZoneKey(nextPlayer, Zone.GRAVEYARD)
-            var newState = state.removeFromZone(nextHandZone, cardId)
-            newState = newState.addToZone(graveyardZone, cardId)
-            newState = newState.recordCardsDiscardedThisTurn(nextPlayer, listOf(cardId))
-
-            val autoDiscardCardName = state.getEntity(cardId)?.get<CardComponent>()?.name ?: "Card"
-            val autoDiscardEvents = priorEvents + listOf(CardsDiscardedEvent(nextPlayer, listOf(cardId), listOf(autoDiscardCardName)))
+            val autoResult = ZoneTransitionService.discardCard(state, nextPlayer, cardId)
+            val autoStateWithRecord = autoResult.state.recordCardsDiscardedThisTurn(nextPlayer, listOf(cardId))
             val autoDiscardedCreature = continuation.discardedCreature + (nextPlayer to isCreature)
 
             return continueEachPlayerDiscardsOrLoseLife(
-                newState,
+                autoStateWithRecord,
                 continuation.copy(
                     remainingPlayers = nextRemainingPlayers,
                     discardedCreature = autoDiscardedCreature
                 ),
-                autoDiscardEvents,
+                priorEvents + autoResult.events,
                 checkForMore
             )
         }
@@ -270,6 +231,40 @@ class DiscardAndDrawContinuationResumer(
             decisionResult.pendingDecision,
             priorEvents + decisionResult.events
         )
+    }
+
+    fun resumeConnive(
+        state: GameState,
+        continuation: ConniveContinuation,
+        response: DecisionResponse,
+        checkForMore: CheckForMore
+    ): ExecutionResult {
+        if (response !is CardsSelectedResponse) {
+            return ExecutionResult.error(state, "Expected card selection response for Connive")
+        }
+
+        val selectedCards = response.selectedCards
+        val controllerId = continuation.controllerId
+        var newState = state
+        val events = mutableListOf<GameEvent>()
+
+        var discardedNonland = false
+        for (cardId in selectedCards) {
+            val isNonland = state.getEntity(cardId)?.get<CardComponent>()?.isLand == false
+            val discardResult = com.wingedsheep.engine.handlers.effects.ZoneTransitionService
+                .discardCard(newState, controllerId, cardId)
+            newState = discardResult.state
+            events.addAll(discardResult.events)
+            if (isNonland) discardedNonland = true
+        }
+
+        if (discardedNonland) {
+            val (counterState, counterEvents) = ConniveEffectHandler.addPlusOnePlusOne(newState, continuation.targetCreatureId)
+            newState = counterState
+            events.addAll(counterEvents)
+        }
+
+        return checkForMore(newState, events)
     }
 
 }

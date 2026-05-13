@@ -310,27 +310,10 @@ class ReadTheRunesExecutor(
          * Discard a card.
          */
         fun discardCard(state: GameState, playerId: EntityId, cardId: EntityId): EffectResult {
-            val handZone = ZoneKey(playerId, Zone.HAND)
-            val graveyardZone = ZoneKey(playerId, Zone.GRAVEYARD)
-
-            val cardName = state.getEntity(cardId)?.get<CardComponent>()?.name ?: "Unknown"
-
-            var newState = state.removeFromZone(handZone, cardId)
-            newState = newState.addToZone(graveyardZone, cardId)
-            newState = newState.recordCardsDiscardedThisTurn(playerId, listOf(cardId))
-
-            val events = listOf(
-                CardsDiscardedEvent(playerId, listOf(cardId), listOf(cardName)),
-                ZoneChangeEvent(
-                    entityId = cardId,
-                    entityName = cardName,
-                    fromZone = Zone.HAND,
-                    toZone = Zone.GRAVEYARD,
-                    ownerId = playerId
-                )
-            )
-
-            return EffectResult.success(newState, events)
+            val result = com.wingedsheep.engine.handlers.effects.ZoneTransitionService
+                .discardCard(state, playerId, cardId)
+            val newState = result.state.recordCardsDiscardedThisTurn(playerId, listOf(cardId))
+            return EffectResult.success(newState, result.events)
         }
     }
 }
