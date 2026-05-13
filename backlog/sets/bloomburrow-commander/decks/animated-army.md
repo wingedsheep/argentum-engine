@@ -23,7 +23,7 @@
 - [x] 1 Llanowar Loamspeaker
 - [x] 1 Lotus Cobra
 - [x] 1 Prosperous Bandit
-- [ ] 1 Pyreswipe Hawk
+- [x] 1 Pyreswipe Hawk
 - [ ] 1 Rampaging Baloths
 - [ ] 1 Sakura-Tribe Elder
 - [ ] 1 Teapot Slinger
