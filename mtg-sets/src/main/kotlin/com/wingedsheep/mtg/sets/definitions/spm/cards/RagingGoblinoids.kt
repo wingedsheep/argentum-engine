@@ -24,7 +24,10 @@ val RagingGoblinoids = card("Raging Goblinoids") {
     keywords(Keyword.HASTE)
 
     metadata {
-        rarity = Rarity.COMMON
+        rarity = Rarity.UNCOMMON
+        collectorNumber = "85"
+        artist = "Filipe Pagliuso"
+        flavorText = "\"As if one goblin wasn't bad enough.\"\n—Spider-Man"
         imageUri = "https://cards.scryfall.io/normal/front/8/5/8519598f-ab7f-49b0-90cc-c0b6422ebdf8.jpg?1757377315"
     }
 }
