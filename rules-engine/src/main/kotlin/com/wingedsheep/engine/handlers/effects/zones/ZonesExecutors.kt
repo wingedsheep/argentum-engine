@@ -2,7 +2,6 @@ package com.wingedsheep.engine.handlers.effects.zones
 
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.handlers.effects.ExecutorModule
-import com.wingedsheep.engine.handlers.effects.ReturnTargetCreatureCardFromGraveyardToHandHandler
 import com.wingedsheep.engine.registry.CardRegistry
 
 /**
@@ -26,7 +25,6 @@ class ZonesExecutors(
         ReturnCreaturesPutInGraveyardThisTurnExecutor(),
         ReturnSelfToBattlefieldAttachedExecutor(cardRegistry),
         ExileOpponentsGraveyardsExecutor(),
-        DestroyAllEquipmentOnTargetExecutor(),
-        ReturnTargetCreatureCardFromGraveyardToHandHandler()
+        DestroyAllEquipmentOnTargetExecutor()
     )
 }
