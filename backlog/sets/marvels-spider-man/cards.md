@@ -2,7 +2,7 @@
 
 **Set Size:** 188 booster cards (excluding basic lands and tokens)
 **Release Date:** September 26, 2025
-**Implemented:** 4 / 188
+**Implemented:** 5 / 188
 ---
 
 - [x] Agent Venom
@@ -47,7 +47,7 @@
 - [ ] Gwen Stacy // Ghost-Spider
 - [ ] Gwenom, Remorseless
 - [ ] Heroes' Hangout
-- [ ] Hide on the Ceiling
+- [x] Hide on the Ceiling
 - [ ] Hobgoblin, Mantled Marauder
 - [ ] Hot Dog Cart
 - [ ] Hydro-Man, Fluid Felon
