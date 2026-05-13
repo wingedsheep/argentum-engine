@@ -113,6 +113,7 @@ val engineSerializersModule = SerializersModule {
         subclass(TurnFaceUpEvent::class)
         subclass(TurnedFaceDownEvent::class)
         subclass(TransformedEvent::class)
+        subclass(GreatestPowerOpponentCreatureDiedEvent::class)
     }
 
     // PendingDecision hierarchy
