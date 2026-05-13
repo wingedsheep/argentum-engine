@@ -93,12 +93,12 @@
 - [ ] Peter Parker's Camera
 - [ ] Pictures of Spider-Man
 - [ ] Prison Break
-- [ ] Professional Wrestler
+- [x] Professional Wrestler
 - [ ] Prowler, Clawed Thief
 - [ ] Pumpkin Bombardment
 - [ ] Radioactive Spider
 - [ ] Raging Goblinoids
-- [x] Rent Is Due
+- [ ] Rent Is Due
 - [ ] Rhino's Rampage
 - [ ] Rhino, Barreling Brute
 - [ ] Risky Research
