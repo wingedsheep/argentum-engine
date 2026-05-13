@@ -20,6 +20,7 @@ import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.ChosenCreatureTypeComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
+import com.wingedsheep.engine.state.components.player.recordCardsDiscardedThisTurn
 import com.wingedsheep.engine.state.components.identity.LifeTotalComponent
 import com.wingedsheep.engine.state.components.identity.OwnerComponent
 import com.wingedsheep.sdk.core.CounterType
@@ -319,6 +320,7 @@ class CostHandler(
 
                 var newState = state.removeFromZone(handZone, toDiscard)
                 newState = newState.addToZone(graveyardZone, toDiscard)
+                newState = newState.recordCardsDiscardedThisTurn(discardOwner, listOf(toDiscard))
 
                 val discardCardName = discardContainer.get<CardComponent>()?.name ?: "Card"
                 val events = listOf(
@@ -370,6 +372,7 @@ class CostHandler(
                 if (discardedIds.isNotEmpty()) {
                     val discardedNames = discardedIds.map { state.getEntity(it)?.get<CardComponent>()?.name ?: "Card" }
                     events.add(0, CardsDiscardedEvent(controllerId, discardedIds, discardedNames))
+                    newState = newState.recordCardsDiscardedThisTurn(controllerId, discardedIds)
                 }
 
                 CostPaymentResult.success(newState, manaPool, events)
@@ -401,6 +404,7 @@ class CostHandler(
                 val graveyardZone = ZoneKey(ownerId, Zone.GRAVEYARD)
                 var newState = state.removeFromZone(handZone, sourceId)
                 newState = newState.addToZone(graveyardZone, sourceId)
+                newState = newState.recordCardsDiscardedThisTurn(ownerId, listOf(sourceId))
 
                 val cardName = sourceContainer.get<CardComponent>()?.name ?: "Card"
                 val events = listOf<GameEvent>(

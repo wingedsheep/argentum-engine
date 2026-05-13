@@ -19,6 +19,7 @@ import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.core.EngineServices
 import com.wingedsheep.engine.handlers.actions.ActionHandler
 import com.wingedsheep.engine.handlers.effects.ZoneMovementUtils
+import com.wingedsheep.engine.state.components.player.recordCardsDiscardedThisTurn
 import com.wingedsheep.engine.mechanics.layers.StaticAbilityHandler
 import com.wingedsheep.engine.mechanics.mana.CostCalculator
 import com.wingedsheep.engine.mechanics.mana.ManaPool
@@ -446,6 +447,7 @@ class TurnFaceUpHandler(
                     events.addAll(result.events)
                 }
                 events.add(0, CardsDiscardedEvent(action.playerId, discardedIds, discardedNames))
+                currentState = currentState.recordCardsDiscardedThisTurn(action.playerId, discardedIds)
             }
             is PayCost.RevealCard -> {
                 // Reveal the card(s) — they stay in hand

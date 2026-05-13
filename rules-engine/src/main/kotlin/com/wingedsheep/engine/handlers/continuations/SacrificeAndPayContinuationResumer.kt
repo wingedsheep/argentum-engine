@@ -19,6 +19,7 @@ import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.engine.state.components.player.ManaPoolComponent
+import com.wingedsheep.engine.state.components.player.recordCardsDiscardedThisTurn
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.scripting.Duration
 import com.wingedsheep.sdk.scripting.costs.PayCost
@@ -243,6 +244,7 @@ class SacrificeAndPayContinuationResumer(
 
         val discardNames = selectedCards.map { state.getEntity(it)?.get<CardComponent>()?.name ?: "Card" }
         events.add(0, CardsDiscardedEvent(playerId, selectedCards, discardNames))
+        newState = newState.recordCardsDiscardedThisTurn(playerId, selectedCards)
         return checkForMore(newState, events)
     }
 

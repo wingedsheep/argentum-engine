@@ -9,6 +9,7 @@ import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.identity.CardComponent
+import com.wingedsheep.engine.state.components.player.recordCardsDiscardedThisTurn
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.effects.EachPlayerDiscardsOrLoseLifeEffect
@@ -83,6 +84,7 @@ class EachPlayerDiscardsOrLoseLifeExecutor(
             val graveyardZone = ZoneKey(playerId, Zone.GRAVEYARD)
             var newState = state.removeFromZone(handZone, cardId)
             newState = newState.addToZone(graveyardZone, cardId)
+            newState = newState.recordCardsDiscardedThisTurn(playerId, listOf(cardId))
 
             val cardName = state.getEntity(cardId)?.get<CardComponent>()?.name ?: "Card"
             val events = listOf(com.wingedsheep.engine.core.CardsDiscardedEvent(playerId, listOf(cardId), listOf(cardName)))

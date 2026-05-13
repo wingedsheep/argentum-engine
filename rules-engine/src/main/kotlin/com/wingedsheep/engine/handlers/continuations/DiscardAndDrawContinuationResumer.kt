@@ -6,6 +6,7 @@ import com.wingedsheep.engine.handlers.effects.drawing.EachPlayerDiscardsOrLoseL
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.identity.CardComponent
+import com.wingedsheep.engine.state.components.player.recordCardsDiscardedThisTurn
 import com.wingedsheep.sdk.core.Zone
 
 class DiscardAndDrawContinuationResumer(
@@ -39,6 +40,7 @@ class DiscardAndDrawContinuationResumer(
             newState = newState.removeFromZone(handZone, cardId)
             newState = newState.addToZone(graveyardZone, cardId)
         }
+        newState = newState.recordCardsDiscardedThisTurn(playerId, selectedCards)
 
         val discardNames = selectedCards.map { state.getEntity(it)?.get<CardComponent>()?.name ?: "Card" }
         val events = listOf(
@@ -70,6 +72,9 @@ class DiscardAndDrawContinuationResumer(
         for (cardId in selectedCards) {
             newState = newState.removeFromZone(handZone, cardId)
             newState = newState.addToZone(graveyardZone, cardId)
+        }
+        if (selectedCards.isNotEmpty()) {
+            newState = newState.recordCardsDiscardedThisTurn(currentPlayerId, selectedCards)
         }
 
         val discardEvents: List<GameEvent> = if (selectedCards.isNotEmpty()) {
@@ -115,6 +120,7 @@ class DiscardAndDrawContinuationResumer(
                 val nextGraveyardZone = ZoneKey(nextPlayer, Zone.GRAVEYARD)
                 newState = newState.removeFromZone(nextHandZone, cardId)
                 newState = newState.addToZone(nextGraveyardZone, cardId)
+                newState = newState.recordCardsDiscardedThisTurn(nextPlayer, listOf(cardId))
 
                 val autoDiscardCardName = newState.getEntity(cardId)?.get<CardComponent>()?.name ?: "Card"
                 val autoDiscardEvents = discardEvents + listOf(CardsDiscardedEvent(nextPlayer, listOf(cardId), listOf(autoDiscardCardName)))
@@ -219,6 +225,7 @@ class DiscardAndDrawContinuationResumer(
             val graveyardZone = ZoneKey(nextPlayer, Zone.GRAVEYARD)
             var newState = state.removeFromZone(nextHandZone, cardId)
             newState = newState.addToZone(graveyardZone, cardId)
+            newState = newState.recordCardsDiscardedThisTurn(nextPlayer, listOf(cardId))
 
             val autoDiscardCardName = state.getEntity(cardId)?.get<CardComponent>()?.name ?: "Card"
             val autoDiscardEvents = priorEvents + listOf(CardsDiscardedEvent(nextPlayer, listOf(cardId), listOf(autoDiscardCardName)))

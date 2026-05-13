@@ -86,6 +86,7 @@ import com.wingedsheep.sdk.core.Keyword
 
 import com.wingedsheep.engine.handlers.effects.TargetResolutionUtils.toEntityId
 import com.wingedsheep.engine.state.components.player.GrantedSpellKeywordsComponent
+import com.wingedsheep.engine.state.components.player.recordCardsDiscardedThisTurn
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.engine.state.components.stack.PermanentSnapshot
 import com.wingedsheep.engine.state.components.stack.TriggeredAbilityOnStackComponent
@@ -1367,6 +1368,7 @@ class CastSpellHandler(
                         }
                         val discardNames = discardedCards.map { currentState.getEntity(it)?.get<CardComponent>()?.name ?: "Card" }
                         events.add(CardsDiscardedEvent(action.playerId, discardedCards, discardNames))
+                        currentState = currentState.recordCardsDiscardedThisTurn(action.playerId, discardedCards)
                     }
                     is AdditionalCost.ExileVariableCards, is AdditionalCost.ExileCards -> {
                         val exiledCards = action.additionalCostPayment.exiledCards

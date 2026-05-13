@@ -11,6 +11,7 @@ import com.wingedsheep.engine.mechanics.mana.ManaSolver
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.identity.CardComponent
+import com.wingedsheep.engine.state.components.player.recordCardsDiscardedThisTurn
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.GameObjectFilter
@@ -789,6 +790,7 @@ class PayOrSufferExecutor(
 
             val discardNames = cardsToDiscard.map { state.getEntity(it)?.get<CardComponent>()?.name ?: "Card" }
             events.add(0, CardsDiscardedEvent(playerId, cardsToDiscard, discardNames))
+            newState = newState.recordCardsDiscardedThisTurn(playerId, cardsToDiscard)
 
             return EffectResult.success(newState, events)
         }

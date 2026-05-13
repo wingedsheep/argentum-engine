@@ -539,6 +539,28 @@ data class CardsDiscardedThisTurnComponent(
 ) : Component {
     fun withCard(cardId: EntityId): CardsDiscardedThisTurnComponent =
         copy(cardIds = cardIds + cardId)
+
+    fun withCards(ids: Iterable<EntityId>): CardsDiscardedThisTurnComponent =
+        copy(cardIds = cardIds + ids)
+}
+
+/**
+ * Append [discardedCardIds] to [playerId]'s [CardsDiscardedThisTurnComponent], creating
+ * the component if it does not yet exist. Call this anywhere a `CardsDiscardedEvent`
+ * is emitted so the Mayhem mechanic (and other "discarded this turn" effects) sees
+ * the cards in the player's discard set.
+ */
+fun com.wingedsheep.engine.state.GameState.recordCardsDiscardedThisTurn(
+    playerId: EntityId,
+    discardedCardIds: Iterable<EntityId>
+): com.wingedsheep.engine.state.GameState {
+    val ids = discardedCardIds.toList()
+    if (ids.isEmpty()) return this
+    return updateEntity(playerId) { container ->
+        val existing = container.get<CardsDiscardedThisTurnComponent>()
+            ?: CardsDiscardedThisTurnComponent()
+        container.with(existing.withCards(ids))
+    }
 }
 
 /**

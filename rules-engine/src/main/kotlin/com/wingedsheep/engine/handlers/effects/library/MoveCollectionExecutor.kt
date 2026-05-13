@@ -15,6 +15,7 @@ import com.wingedsheep.engine.state.components.battlefield.CountersComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.identity.OwnerComponent
+import com.wingedsheep.engine.state.components.player.recordCardsDiscardedThisTurn
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
@@ -668,6 +669,7 @@ class MoveCollectionExecutor(
         if (moveType == MoveType.Discard && cards.isNotEmpty()) {
             val discardNames = cards.map { state.getEntity(it)?.get<CardComponent>()?.name ?: "Card" }
             events.add(CardsDiscardedEvent(destPlayerId, cards, discardNames))
+            newState = newState.recordCardsDiscardedThisTurn(destPlayerId, cards)
         }
 
         // Emit sacrifice event if configured

@@ -8,6 +8,7 @@ import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.identity.CardComponent
+import com.wingedsheep.engine.state.components.player.recordCardsDiscardedThisTurn
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.effects.ReadTheRunesEffect
@@ -316,6 +317,7 @@ class ReadTheRunesExecutor(
 
             var newState = state.removeFromZone(handZone, cardId)
             newState = newState.addToZone(graveyardZone, cardId)
+            newState = newState.recordCardsDiscardedThisTurn(playerId, listOf(cardId))
 
             val events = listOf(
                 CardsDiscardedEvent(playerId, listOf(cardId), listOf(cardName)),

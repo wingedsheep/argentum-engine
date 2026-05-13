@@ -7,6 +7,7 @@ import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.identity.OwnerComponent
+import com.wingedsheep.engine.state.components.player.recordCardsDiscardedThisTurn
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.engine.state.components.stack.SpellOnStackComponent
 import com.wingedsheep.engine.state.components.stack.TriggeredAbilityOnStackComponent
@@ -446,6 +447,7 @@ class ChainSpellContinuationResumer(
                     newState = newState.removeFromZone(handZone, cardId)
                     newState = newState.addToZone(graveyardZone, cardId)
                 }
+                newState = newState.recordCardsDiscardedThisTurn(controllerId, selectedCards)
 
                 val cardNames = selectedCards.map { newState.getEntity(it)?.get<CardComponent>()?.name ?: state.getEntity(it)?.get<CardComponent>()?.name ?: "Card" }
                 events.add(CardsDiscardedEvent(controllerId, selectedCards, cardNames))
