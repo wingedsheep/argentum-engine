@@ -69,6 +69,10 @@ class ProfessionalWrestlerScenarioTest : ScenarioTestBase() {
                     game.isInHand(1, "Professional Wrestler") shouldBe false
                 }
 
+                withClue("ETB trigger should have created exactly one Treasure token") {
+                    game.findAllPermanents("Treasure").size shouldBe 1
+                }
+
                 withClue("All four lands should be tapped after paying {3}{G}") {
                     val untappedLands = game.state.getBattlefield().count { entityId ->
                         val container = game.state.getEntity(entityId) ?: return@count false
