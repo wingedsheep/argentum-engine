@@ -48,7 +48,6 @@ import com.wingedsheep.sdk.scripting.effects.IfYouDoEffect
 import com.wingedsheep.sdk.scripting.effects.SuccessCriterion
 import com.wingedsheep.sdk.scripting.effects.GrantDamageBonusEffect
 import com.wingedsheep.sdk.scripting.effects.DealDamageEffect
-import com.wingedsheep.sdk.scripting.effects.DealDamageEqualToGreatestPowerAmongCreatureCardsInYourGraveyardEffect
 import com.wingedsheep.sdk.scripting.effects.DrawCardsEffect
 import com.wingedsheep.sdk.scripting.effects.EachPlayerReturnsPermanentToHandEffect
 import com.wingedsheep.sdk.scripting.effects.Effect
@@ -187,13 +186,6 @@ object Effects {
      */
     fun DealXDamage(target: EffectTarget): Effect =
         DealDamageEffect(DynamicAmount.XValue, target)
-
-    /**
-     * Deal damage equal to the greatest power among creature cards in the controller's graveyard
-     * to a target creature.
-     */
-    fun DealDamageEqualToGreatestPowerAmongCreatureCardsInYourGraveyard(target: EffectTarget): Effect =
-        DealDamageEqualToGreatestPowerAmongCreatureCardsInYourGraveyardEffect(target)
 
     /**
      * Two creatures fight — each deals damage equal to its power to the other.
