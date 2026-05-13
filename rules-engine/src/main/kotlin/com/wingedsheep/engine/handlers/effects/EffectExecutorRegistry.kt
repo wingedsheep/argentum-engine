@@ -67,6 +67,7 @@ class EffectExecutorRegistry(
         registerModule(compositeExecutors)
         drawingExecutors.initialize(::execute)
         registerModule(drawingExecutors)
+        register(ConniveEffectHandler(::execute))
         playerExecutors.initialize(::execute)
         registerModule(playerExecutors)
         chainExecutors.initialize(::execute)

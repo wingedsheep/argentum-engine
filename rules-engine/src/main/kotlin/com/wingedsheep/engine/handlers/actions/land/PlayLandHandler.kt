@@ -24,6 +24,7 @@ import com.wingedsheep.sdk.core.CardType
 import com.wingedsheep.sdk.scripting.ChoiceType
 import com.wingedsheep.sdk.scripting.EntersTapped
 import com.wingedsheep.sdk.scripting.EntersWithChoice
+import com.wingedsheep.sdk.scripting.MayPlayLandsFromGraveyard
 import com.wingedsheep.sdk.scripting.MayPlayPermanentsFromGraveyard
 import com.wingedsheep.engine.legalactions.utils.LandDropUtils
 import com.wingedsheep.sdk.scripting.PlayFromTopOfLibrary
@@ -371,8 +372,9 @@ class PlayLandHandler(
     }
 
     /**
-     * Check if a land card is in the player's graveyard and there's a Muldrotha-like permanent
-     * with unused land permission.
+     * Check if a land card is in the player's graveyard and there's permission to play it.
+     * Handles both Crucible-style (MayPlayLandsFromGraveyard, no usage tracking) and
+     * Muldrotha-style (MayPlayPermanentsFromGraveyard, per-type usage tracked).
      */
     private fun isInGraveyardWithPlayPermission(
         state: GameState,
@@ -381,7 +383,21 @@ class PlayLandHandler(
     ): Boolean {
         val graveyardZone = ZoneKey(playerId, Zone.GRAVEYARD)
         if (cardId !in state.getZone(graveyardZone)) return false
+        if (hasLandGraveyardPlayPermission(state, playerId)) return true
         return findGraveyardPlayPermissionSource(state, playerId, CardType.LAND.name) != null
+    }
+
+    /**
+     * Returns true if the player controls a permanent with [MayPlayLandsFromGraveyard]
+     * (Crucible of Worlds style — no per-turn usage tracking needed).
+     */
+    private fun hasLandGraveyardPlayPermission(state: GameState, playerId: EntityId): Boolean {
+        for (entityId in state.getBattlefield(playerId)) {
+            val card = state.getEntity(entityId)?.get<CardComponent>() ?: continue
+            val cardDef = cardRegistry.getCard(card.cardDefinitionId) ?: continue
+            if (cardDef.script.staticAbilities.any { it is MayPlayLandsFromGraveyard }) return true
+        }
+        return false
     }
 
     /**

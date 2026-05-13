@@ -1,0 +1,27 @@
+{
+  "player1Name": "Alice",
+  "player2Name": "Bob",
+  "player1": {
+    "lifeTotal": 20,
+    "hand": ["Duress"],
+    "battlefield": [
+      {"name": "Temple of Deceit", "tapped": false}
+    ],
+    "graveyard": [],
+    "library": ["Healer's Hawk", "Negate"]
+  },
+  "player2": {
+    "lifeTotal": 20,
+    "hand": ["Negate", "Healer's Hawk", "Temple of Deceit"],
+    "battlefield": [],
+    "graveyard": [],
+    "library": ["Duress", "Negate"]
+  },
+  "phase": "PRECOMBAT_MAIN",
+  "activePlayer": 1,
+  "priorityPlayer": 1,
+  "player1StopAtSteps": [],
+  "player2StopAtSteps": [],
+  "player1OpponentStopAtSteps": [],
+  "player2OpponentStopAtSteps": []
+}

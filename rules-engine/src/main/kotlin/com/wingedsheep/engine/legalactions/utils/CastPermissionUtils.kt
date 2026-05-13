@@ -19,6 +19,7 @@ import com.wingedsheep.sdk.scripting.CastSpellTypesFromTopOfLibrary
 import com.wingedsheep.sdk.scripting.ExtraLoyaltyActivation
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.GrantFlashToSpellType
+import com.wingedsheep.sdk.scripting.MayPlayLandsFromGraveyard
 import com.wingedsheep.sdk.scripting.MayPlayPermanentsFromGraveyard
 import com.wingedsheep.sdk.scripting.PlayFromTopOfLibrary
 import com.wingedsheep.sdk.scripting.PlayLandsAndCastFilteredFromTopOfLibrary
@@ -242,6 +243,12 @@ class CastPermissionUtils(
                 if (tracker == null || !tracker.hasUsedType(typeName)) {
                     return true
                 }
+            }
+            // Crucible of Worlds style: unlimited land plays from graveyard (land-drop is the limit)
+            if (typeName == com.wingedsheep.sdk.core.CardType.LAND.name &&
+                cardDef.script.staticAbilities.any { it is MayPlayLandsFromGraveyard }
+            ) {
+                return true
             }
         }
         return false

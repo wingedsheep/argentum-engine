@@ -24,6 +24,6 @@ val RomanticRendezvous = card("Romantic Rendezvous") {
         rarity = Rarity.COMMON
         collectorNumber = "86"
         artist = "Dmitry Burmak"
-        imageUri = "https://cards.scryfall.io/normal/front/b/7/b7e1c2ef-6e83-4b87-84c6-7dbf5dec8e50.jpg?1757377869"
+        imageUri = "https://cards.scryfall.io/normal/front/3/8/38120361-153f-414e-8a45-f86bb2e35a17.jpg?1757377322"
     }
 }

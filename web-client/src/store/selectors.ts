@@ -641,6 +641,9 @@ export function useGhostCards(playerId: EntityId | null): readonly ClientCard[] 
           if (!gyCardIds.has(action.cardId)) continue
           if (actionInfo.isAffordable === false) continue
           ghostCardIds.add(action.cardId)
+        } else if (action.type === 'PlayLand' && actionInfo.sourceZone === 'GRAVEYARD') {
+          if (!gyCardIds.has(action.cardId)) continue
+          ghostCardIds.add(action.cardId)
         }
       }
     }

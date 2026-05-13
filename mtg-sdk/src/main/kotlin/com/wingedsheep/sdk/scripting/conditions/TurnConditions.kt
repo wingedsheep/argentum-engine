@@ -189,3 +189,19 @@ data object OpponentSpellOnStack : Condition {
     override fun applyTextReplacement(replacer: TextReplacer): Condition = this
 }
 
+// =============================================================================
+// Death Conditions
+// =============================================================================
+
+/**
+ * Intervening-if condition (Rule 603.4): "if a creature died this turn".
+ * True when the controlling player's CreaturesDiedThisTurnComponent has count > 0.
+ * Evaluated both at trigger time and at resolution per Rule 603.4.
+ */
+@SerialName("CreatureDiedThisTurn")
+@Serializable
+data object CreatureDiedThisTurnCondition : Condition {
+    override val description: String = "if a creature died this turn"
+    override fun applyTextReplacement(replacer: TextReplacer): Condition = this
+}
+

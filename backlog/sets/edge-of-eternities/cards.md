@@ -2,7 +2,7 @@
 
 **Set Size:** 261 booster cards (excluding basic lands)
 **Release Date:** August 1, 2025
-**Implemented:** 166 / 261
+**Implemented:** 167 / 261
 ---
 
 - [x] Adagia, Windswept Bastion
@@ -106,7 +106,7 @@
 - [x] Hylderblade
 - [x] Hymn of the Faller
 - [x] Icecave Crasher
-- [ ] Icetill Explorer
+- [x] Icetill Explorer
 - [x] Illvoi Galeblade
 - [x] Illvoi Infiltrator
 - [x] Illvoi Light Jammer

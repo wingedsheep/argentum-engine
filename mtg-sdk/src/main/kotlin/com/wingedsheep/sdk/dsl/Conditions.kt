@@ -525,6 +525,13 @@ object Conditions {
         trackerAtLeast(com.wingedsheep.sdk.scripting.values.TurnTracker.COUNTERS_PUT_ON_CREATURE)
 
     /**
+     * Intervening-if: "if a creature died this turn" (global — any controller).
+     * Used for cards like Scorpion, Seething Striker.
+     */
+    val CreatureDiedThisTurn: ConditionInterface =
+        com.wingedsheep.sdk.scripting.conditions.CreatureDiedThisTurnCondition
+
+    /**
      * If this is the Nth time this ability has resolved this turn.
      * Used for cards like Harvestrite Host.
      */

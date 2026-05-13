@@ -5,6 +5,7 @@ import com.wingedsheep.engine.core.PlayLand
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.gameserver.ScenarioTestBase
+import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.Phase
 import com.wingedsheep.sdk.core.Step
 import io.kotest.assertions.withClue
@@ -89,7 +90,8 @@ class GrandColiseumScenarioTest : ScenarioTestBase() {
                     ActivateAbility(
                         playerId = game.player1Id,
                         sourceId = coliseumId,
-                        abilityId = anyColorManaAbility.id
+                        abilityId = anyColorManaAbility.id,
+                        manaColorChoice = Color.GREEN
                     )
                 )
 

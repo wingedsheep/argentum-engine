@@ -69,6 +69,7 @@ check-backlog-implementations:
 [group: 'build']
 fix-backlog-implementations:
     scripts/check-backlog-implementations.py --fix
+    scripts/check-card-counts.py --fix
 
 # Start the game server (loads .env if present)
 [group: 'dev']

@@ -2,7 +2,7 @@
 
 **Set Size:** 312 cards
 **Release Date:** August 2, 2024
-**Implemented:** 44 / 312
+**Implemented:** 52 / 312
 | Color      | Total | Done |
 |------------|-------|------|
 | White      | 37    | 0    |
@@ -94,7 +94,7 @@
 - [ ] End-Raze Forerunners
 - [ ] Esika's Chariot
 - [x] Etali, Primal Storm
-- [ ] Evercoat Ursine
+- [x] Evercoat Ursine
 - [x] Evolving Wilds
 - [ ] Exotic Orchard
 - [ ] Explore
@@ -109,24 +109,24 @@
 - [x] Forgotten Cave
 - [ ] Fortune Teller's Talent
 - [ ] Game Trail
-- [ ] Garruk's Packleader
+- [x] Garruk's Packleader
 - [ ] Garruk's Uprising
 - [ ] Garruk, Cursed Huntsman
 - [ ] Generous Gift
-- [ ] Ghalta, Primal Hunger
+- [x] Ghalta, Primal Hunger
 - [ ] Ghirapur Orrery
 - [ ] Gilded Goose
 - [x] Gilded Lotus
 - [ ] Glacial Fortress
 - [ ] Golgari Rot Farm
 - [ ] Golgari Signet
-- [ ] Goreclaw, Terror of Qal Sisma
+- [x] Goreclaw, Terror of Qal Sisma
 - [ ] Gourmand's Talent
 - [x] Gratuitous Violence
 - [ ] Greater Good
 - [ ] Grim Backwoods
-- [ ] Grothama, All-Devouring
-- [ ] Grumgully, the Generous
+- [x] Grothama, All-Devouring
+- [x] Grumgully, the Generous
 - [ ] Gruul Signet
 - [ ] Gruul Turf
 - [ ] Hanged Executioner
@@ -162,10 +162,10 @@
 - [ ] Kwain, Itinerant Meddler
 - [ ] Kykar, Wind's Fury
 - [ ] Liliana of the Dark Realms
-- [ ] Llanowar Loamspeaker
+- [x] Llanowar Loamspeaker
 - [x] Llanowar Wastes
 - [ ] Loran of the Third Path
-- [ ] Lotus Cobra
+- [x] Lotus Cobra
 - [ ] Loyal Warhound
 - [ ] Luminous Broodmoth
 - [ ] Maelstrom Pulse

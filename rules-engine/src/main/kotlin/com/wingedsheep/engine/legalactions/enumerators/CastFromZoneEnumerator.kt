@@ -464,7 +464,7 @@ class CastFromZoneEnumerator : ActionEnumerator {
                                 )
                                 // Emit the blight path as a second action when the card has
                                 // a printed BlightOrPay and the player controls a creature.
-                                if (canAffordBlightPath && printedBlightOrPay != null) {
+                                if (canAffordBlightPath) {
                                     result.add(
                                         LegalAction(
                                             actionType = "CastSpell",
@@ -503,7 +503,7 @@ class CastFromZoneEnumerator : ActionEnumerator {
                                     additionalCostInfo = exileAdditionalCostInfo
                                 )
                             )
-                            if (canAffordBlightPath && printedBlightOrPay != null) {
+                            if (canAffordBlightPath) {
                                 result.add(
                                     LegalAction(
                                         actionType = "CastSpell",

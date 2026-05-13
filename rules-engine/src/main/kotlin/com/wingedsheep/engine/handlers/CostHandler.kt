@@ -1,8 +1,6 @@
 package com.wingedsheep.engine.handlers
 
-import com.wingedsheep.engine.core.ExecutionResult
 import com.wingedsheep.engine.core.GameEvent
-import com.wingedsheep.engine.core.CardsDiscardedEvent
 import com.wingedsheep.engine.core.CountersAddedEvent
 import com.wingedsheep.engine.core.LifeChangedEvent
 import com.wingedsheep.engine.core.LifeChangeReason
@@ -314,65 +312,18 @@ class CostHandler(
                 val discardOwner = discardContainer.get<ControllerComponent>()?.playerId
                     ?: return CostPaymentResult.failure("Card to discard has no owner")
 
-                val handZone = ZoneKey(discardOwner, Zone.HAND)
-                val graveyardZone = ZoneKey(discardOwner, Zone.GRAVEYARD)
-
-                var newState = state.removeFromZone(handZone, toDiscard)
-                newState = newState.addToZone(graveyardZone, toDiscard)
-
-                val discardCardName = discardContainer.get<CardComponent>()?.name ?: "Card"
-                val events = listOf(
-                    CardsDiscardedEvent(discardOwner, listOf(toDiscard), listOf(discardCardName)),
-                    ZoneChangeEvent(
-                        entityId = toDiscard,
-                        entityName = discardContainer.get<CardComponent>()?.name ?: "Unknown",
-                        fromZone = Zone.HAND,
-                        toZone = Zone.GRAVEYARD,
-                        ownerId = discardOwner
-                    )
-                )
-
-                CostPaymentResult.success(newState, manaPool, events)
+                val result = com.wingedsheep.engine.handlers.effects.ZoneTransitionService
+                    .discardCard(state, discardOwner, toDiscard)
+                CostPaymentResult.success(result.state, manaPool, result.events)
             }
             is AbilityCost.DiscardHand -> {
-                // Discard all cards from the controller's hand
-                val handZone = ZoneKey(controllerId, Zone.HAND)
-                val graveyardZone = ZoneKey(controllerId, Zone.GRAVEYARD)
-                val cardsInHand = state.getZone(handZone)
-
+                val cardsInHand = state.getZone(ZoneKey(controllerId, Zone.HAND))
                 if (cardsInHand.isEmpty()) {
                     return CostPaymentResult.success(state, manaPool)
                 }
-
-                var newState = state
-                val events = mutableListOf<GameEvent>()
-                val discardedIds = mutableListOf<com.wingedsheep.sdk.model.EntityId>()
-
-                for (cardId in cardsInHand) {
-                    val cardContainer = newState.getEntity(cardId) ?: continue
-                    val cardName = cardContainer.get<CardComponent>()?.name ?: "Unknown"
-
-                    newState = newState.removeFromZone(handZone, cardId)
-                    newState = newState.addToZone(graveyardZone, cardId)
-                    discardedIds.add(cardId)
-
-                    events.add(
-                        ZoneChangeEvent(
-                            entityId = cardId,
-                            entityName = cardName,
-                            fromZone = Zone.HAND,
-                            toZone = Zone.GRAVEYARD,
-                            ownerId = controllerId
-                        )
-                    )
-                }
-
-                if (discardedIds.isNotEmpty()) {
-                    val discardedNames = discardedIds.map { state.getEntity(it)?.get<CardComponent>()?.name ?: "Card" }
-                    events.add(0, CardsDiscardedEvent(controllerId, discardedIds, discardedNames))
-                }
-
-                CostPaymentResult.success(newState, manaPool, events)
+                val result = com.wingedsheep.engine.handlers.effects.ZoneTransitionService
+                    .discardCards(state, controllerId, cardsInHand)
+                CostPaymentResult.success(result.state, manaPool, result.events)
             }
             is AbilityCost.ExileFromGraveyard -> {
                 exileCardsFromGraveyard(state, controllerId, cost.count, cost.filter, choices.exileChoices, manaPool)
@@ -393,28 +344,13 @@ class CostHandler(
                     ?: sourceContainer.get<ControllerComponent>()?.playerId
                     ?: return CostPaymentResult.failure("Source card has no owner")
 
-                val handZone = ZoneKey(ownerId, Zone.HAND)
-                if (!state.getZone(handZone).contains(sourceId)) {
+                if (!state.getZone(ZoneKey(ownerId, Zone.HAND)).contains(sourceId)) {
                     return CostPaymentResult.failure("Source card is not in its owner's hand")
                 }
 
-                val graveyardZone = ZoneKey(ownerId, Zone.GRAVEYARD)
-                var newState = state.removeFromZone(handZone, sourceId)
-                newState = newState.addToZone(graveyardZone, sourceId)
-
-                val cardName = sourceContainer.get<CardComponent>()?.name ?: "Card"
-                val events = listOf<GameEvent>(
-                    CardsDiscardedEvent(ownerId, listOf(sourceId), listOf(cardName)),
-                    ZoneChangeEvent(
-                        entityId = sourceId,
-                        entityName = cardName,
-                        fromZone = Zone.HAND,
-                        toZone = Zone.GRAVEYARD,
-                        ownerId = ownerId
-                    )
-                )
-
-                CostPaymentResult.success(newState, manaPool, events)
+                val result = com.wingedsheep.engine.handlers.effects.ZoneTransitionService
+                    .discardCard(state, ownerId, sourceId)
+                CostPaymentResult.success(result.state, manaPool, result.events)
             }
             is AbilityCost.SacrificeSelf -> {
                 // Sacrifice the source permanent

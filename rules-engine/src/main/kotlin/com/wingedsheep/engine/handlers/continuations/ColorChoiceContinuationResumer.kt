@@ -22,6 +22,7 @@ class ColorChoiceContinuationResumer(
         resumer(ChooseColorProtectionContinuation::class, ::resumeChooseColorProtection),
         resumer(ChooseColorProtectionTargetContinuation::class, ::resumeChooseColorProtectionTarget),
         resumer(ChooseColorThenContinuation::class, ::resumeChooseColorThen),
+        resumer(ChooseManaColorContinuation::class, ::resumeChooseManaColor),
         resumer(ChooseColorForTargetContinuation::class, ::resumeChooseColorForTarget)
     )
 
@@ -150,6 +151,27 @@ class ColorChoiceContinuationResumer(
         val effectResult = effectRunner.executeRemainingEffects(
             state,
             listOf(continuation.then),
+            contextWithColor
+        )
+
+        if (effectResult.isPaused) return effectResult.toExecutionResult()
+        return checkForMore(effectResult.state, effectResult.events.toList())
+    }
+
+    fun resumeChooseManaColor(
+        state: GameState,
+        continuation: ChooseManaColorContinuation,
+        response: DecisionResponse,
+        checkForMore: CheckForMore
+    ): ExecutionResult {
+        if (response !is ColorChosenResponse) {
+            return ExecutionResult.error(state, "Expected color choice response for AddAnyColorMana effect")
+        }
+
+        val contextWithColor = continuation.baseContext.copy(manaColorChoice = response.color)
+        val effectResult = effectRunner.executeRemainingEffects(
+            state,
+            listOf(continuation.effect),
             contextWithColor
         )
 
