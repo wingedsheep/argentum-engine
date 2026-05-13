@@ -9,7 +9,6 @@ import com.wingedsheep.sdk.scripting.GameEvent.AttackEvent
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.TriggerBinding
 import com.wingedsheep.sdk.scripting.TriggerSpec
-import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import com.wingedsheep.sdk.scripting.targets.TargetCreature
 
 /**
@@ -18,8 +17,8 @@ import com.wingedsheep.sdk.scripting.targets.TargetCreature
  * Legendary Creature — Human Citizen
  * 2/2
  *
- * When J. Jonah Jameson enters, suspect up to one target creature an opponent controls.
- * Whenever a creature with menace attacks, create a Treasure token.
+ * When J. Jonah Jameson enters, suspect up to one target creature.
+ * Whenever a creature you control with menace attacks, create a Treasure token.
  */
 val JJonahJameson = card("J. Jonah Jameson") {
     manaCost = "{2}{R}"
@@ -27,21 +26,22 @@ val JJonahJameson = card("J. Jonah Jameson") {
     typeLine = "Legendary Creature — Human Citizen"
     power = 2
     toughness = 2
-    oracleText = "When J. Jonah Jameson enters, suspect up to one target creature an opponent controls.\n" +
-        "Whenever a creature with menace attacks, create a Treasure token."
+    oracleText = "When J. Jonah Jameson enters, suspect up to one target creature. " +
+        "(A suspected creature has menace and can't block.)\n" +
+        "Whenever a creature you control with menace attacks, create a Treasure token."
 
     triggeredAbility {
         trigger = Triggers.EntersBattlefield
         val t = target(
-            "up to one target creature an opponent controls",
-            TargetCreature(count = 1, optional = true, filter = TargetFilter.CreatureOpponentControls)
+            "up to one target creature",
+            TargetCreature(count = 1, optional = true)
         )
         effect = Effects.Suspect(t)
     }
 
     triggeredAbility {
         trigger = TriggerSpec(
-            AttackEvent(filter = GameObjectFilter.Creature.withKeyword(Keyword.MENACE)),
+            AttackEvent(filter = GameObjectFilter.Creature.withKeyword(Keyword.MENACE).youControl()),
             TriggerBinding.ANY
         )
         effect = Effects.CreateTreasure()
@@ -49,8 +49,8 @@ val JJonahJameson = card("J. Jonah Jameson") {
 
     metadata {
         rarity = Rarity.RARE
-        collectorNumber = "54"
-        artist = "Polar Engine"
-        imageUri = "https://cards.scryfall.io/normal/front/0/e/0e8ec0d7-2f35-4280-a4f4-a80eb52e2f49.jpg?1757377845"
+        collectorNumber = "81"
+        artist = "Paolo Rivera"
+        imageUri = "https://cards.scryfall.io/normal/front/9/e/9ee905d6-b647-4eb1-a8d9-89add9bafc31.jpg?1761565998"
     }
 }

@@ -11,18 +11,9 @@ import com.wingedsheep.sdk.dsl.Targets
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Deck
-import com.wingedsheep.sdk.scripting.effects.CompositeEffect
-import com.wingedsheep.sdk.scripting.effects.Effect
-import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import io.kotest.assertions.withClue
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
-
-// Stub for Effects.Suspect until SuspectEffectHandler is implemented.
-// In Kotlin, member functions take precedence over extension functions, so once the
-// real Effects.Suspect() member is added to the Effects object this stub is silently
-// superseded and the test exercises the real implementation.
-private fun Effects.Suspect(target: EffectTarget): Effect = CompositeEffect(emptyList())
 
 /**
  * Step 4 — BDD test: ETB trigger suspects a chosen target creature, granting menace and no-block.
