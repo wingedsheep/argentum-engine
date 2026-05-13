@@ -1157,7 +1157,9 @@ class StackResolver(
                 val pausedCardDef = cardComponent?.let { cardRegistry.getCard(it.name) }
                 val pausedSelfExile = pausedCardDef?.script?.selfExileOnResolve == true
                 val pausedFlashbackExile = spellComponent.castFromZone == Zone.GRAVEYARD &&
-                    pausedCardDef?.keywordAbilities?.any { it is KeywordAbility.Flashback } == true
+                    pausedCardDef?.keywordAbilities?.any {
+                        it is KeywordAbility.Flashback || it is KeywordAbility.Mayhem
+                    } == true
                 val pausedExileAfterResolveComp = effectResult.state.getEntity(spellId)?.get<ExileAfterResolveComponent>()
                 val pausedExileAfterResolve = pausedExileAfterResolveComp != null
                 val pausedAdventureFaceExile = pausedCardDef?.layout == com.wingedsheep.sdk.model.CardLayout.ADVENTURE &&
@@ -1233,12 +1235,14 @@ class StackResolver(
             return ExecutionResult.success(newState, events)
         }
 
-        // Move to graveyard (or exile if selfExileOnResolve, flashback, or ExileAfterResolveComponent)
+        // Move to graveyard (or exile if selfExileOnResolve, flashback/mayhem, or ExileAfterResolveComponent)
         val ownerId = cardComponent?.ownerId ?: spellComponent.casterId
         val cardDef = cardComponent?.let { cardRegistry.getCard(it.name) }
         val selfExile = cardDef?.script?.selfExileOnResolve == true
         val flashbackExile = spellComponent.castFromZone == Zone.GRAVEYARD &&
-            cardDef?.keywordAbilities?.any { it is KeywordAbility.Flashback } == true
+            cardDef?.keywordAbilities?.any {
+                it is KeywordAbility.Flashback || it is KeywordAbility.Mayhem
+            } == true
         val exileAfterResolveComp = newState.getEntity(spellId)?.get<ExileAfterResolveComponent>()
         val exileAfterResolve = exileAfterResolveComp != null
         // Adventure face (CR 715.3d): when an Adventure resolves, exile it instead of putting
@@ -1353,7 +1357,9 @@ class StackResolver(
         val ownerId = cardComponent?.ownerId ?: spellComponent.casterId
         val cardDef = cardComponent?.let { cardRegistry.getCard(it.name) }
         val flashbackExile = spellComponent.castFromZone == Zone.GRAVEYARD &&
-            cardDef?.keywordAbilities?.any { it is KeywordAbility.Flashback } == true
+            cardDef?.keywordAbilities?.any {
+                it is KeywordAbility.Flashback || it is KeywordAbility.Mayhem
+            } == true
         val exileAfterResolveComp = state.getEntity(spellId)?.get<ExileAfterResolveComponent>()
         // Goliath Daydreamer-style components only exile on actual resolution; if the spell
         // fizzles or is countered they go to graveyard normally.
