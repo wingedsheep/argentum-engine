@@ -1191,6 +1191,10 @@ class CastFromZoneEnumerator : ActionEnumerator {
                 continue
             }
 
+            // Honor cast restrictions (e.g., "Cast this only during your turn") before offering Mayhem.
+            val castRestrictions = cardDef.script.castRestrictions
+            if (!context.castPermissionUtils.checkCastRestrictions(state, playerId, castRestrictions)) continue
+
             val effectiveCost = context.costCalculator.calculateEffectiveCostWithAlternativeBase(
                 state, cardDef, mayhem.cost, playerId
             )

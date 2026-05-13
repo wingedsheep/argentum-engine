@@ -512,6 +512,11 @@ sealed interface KeywordAbility {
         )
 
         /**
+         * Create Mayhem with mana cost from string.
+         */
+        fun mayhem(cost: String): KeywordAbility = Mayhem(ManaCost.parse(cost))
+
+        /**
          * Create Warp with mana cost from string.
          */
         fun warp(cost: String): KeywordAbility = Warp(ManaCost.parse(cost))
