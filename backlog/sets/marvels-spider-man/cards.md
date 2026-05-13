@@ -2,7 +2,7 @@
 
 **Set Size:** 188 booster cards (excluding basic lands and tokens)
 **Release Date:** September 26, 2025
-**Implemented:** 5 / 188
+**Implemented:** 4 / 188
 ---
 
 - [x] Agent Venom
@@ -58,7 +58,7 @@
 - [ ] J. Jonah Jameson
 - [ ] Jackal, Genius Geneticist
 - [ ] Kapow!
-- [x] Kraven the Hunter
+- [ ] Kraven the Hunter
 - [ ] Kraven's Cats
 - [ ] Kraven's Last Hunt
 - [ ] Kraven, Proud Predator
