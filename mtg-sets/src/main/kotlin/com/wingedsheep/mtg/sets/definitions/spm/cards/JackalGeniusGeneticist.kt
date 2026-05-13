@@ -38,8 +38,9 @@ val JackalGeniusGeneticist = card("Jackal, Genius Geneticist") {
 
     metadata {
         rarity = Rarity.RARE
-        collectorNumber = "167"
-        artist = "Josu Hernaiz"
+        collectorNumber = "131"
+        artist = "Pavel Kolomeyets"
+        flavorText = "For Professor Miles Warren, all any problem needs is a lot of clones and not a lot of ethics."
         imageUri = "https://cards.scryfall.io/normal/front/c/0/c0ab07d6-b7c3-4129-9aef-cfdcfabec4b2.jpg?1757377692"
     }
 }
