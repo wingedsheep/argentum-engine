@@ -28,9 +28,10 @@ val ImpostorSyndrome = card("Impostor Syndrome") {
     }
 
     metadata {
-        rarity = Rarity.RARE
-        collectorNumber = "54"
-        artist = "Mike McKone"
+        rarity = Rarity.MYTHIC
+        collectorNumber = "34"
+        artist = "Javier Charro"
+        flavorText = "\"I'm the real Spider-Man!\"\n\"No, *I'm* the real Spider-Man!\""
         imageUri = "https://cards.scryfall.io/normal/front/0/8/08da9f92-0e25-4f39-aaa4-d8974af81a41.jpg?1757376952"
     }
 }
