@@ -23,7 +23,10 @@ val RadioactiveSpider = card("Radioactive Spider") {
     keywords(Keyword.REACH, Keyword.DEATHTOUCH)
 
     metadata {
-        rarity = Rarity.COMMON
+        rarity = Rarity.RARE
+        collectorNumber = "111"
+        artist = "Pavel Kolomeyets"
+        flavorText = "\"Ow! A spider! It bit me! But why is it glowing that way?\"\n—Peter Parker"
         imageUri = "https://cards.scryfall.io/normal/front/f/2/f2d267f5-7f12-45f8-8fcb-e0ba3fbdeddc.jpg?1757377503"
     }
 }
