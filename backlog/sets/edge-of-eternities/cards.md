@@ -2,7 +2,7 @@
 
 **Set Size:** 261 booster cards (excluding basic lands)
 **Release Date:** August 1, 2025
-**Implemented:** 179 / 261
+**Implemented:** 186 / 261
 ---
 
 - [x] Adagia, Windswept Bastion
@@ -36,7 +36,7 @@
 - [x] Chrome Companion
 - [x] Close Encounter
 - [x] Cloudsculpt Technician
-- [ ] Codecracker Hound
+- [x] Codecracker Hound
 - [x] Comet Crawler
 - [ ] Command Bridge
 - [ ] Consult the Star Charts
@@ -63,7 +63,7 @@
 - [x] Dual-Sun Technique
 - [x] Dubious Delicacy
 - [ ] Dyadrine, Synthesis Amalgam
-- [ ] Edge Rover
+- [x] Edge Rover
 - [x] Elegy Acolyte
 - [x] Embrace Oblivion
 - [x] Emergency Eject
@@ -199,7 +199,7 @@
 - [ ] Skystinger
 - [x] Slagdrill Scrapper
 - [x] Sledge-Class Seedship
-- [ ] Sothera, the Supervoid
+- [x] Sothera, the Supervoid
 - [ ] Space-Time Anomaly
 - [x] Specimen Freighter
 - [x] Squire's Lightblade
@@ -221,7 +221,7 @@
 - [ ] Susurian Voidborn
 - [ ] Susur Secundi, Void Altar
 - [x] Swarm Culler
-- [ ] Synthesizer Labship
+- [x] Synthesizer Labship
 - [x] Syr Vondam, Sunstar Exemplar
 - [x] Syr Vondam, the Lucent
 - [x] Systems Override
@@ -230,7 +230,7 @@
 - [x] Tapestry Warden
 - [x] Temporal Intervention
 - [ ] Terminal Velocity
-- [ ] Terrapact Intimidator
+- [x] Terrapact Intimidator
 - [ ] Terrasymbiosis
 - [ ] Territorial Bruntar
 - [ ] Tezzeret, Cruel Captain
@@ -249,7 +249,7 @@
 - [ ] Uthros Psionicist
 - [x] Uthros Scanship
 - [ ] Uthros, Titanic Godcore
-- [ ] Vaultguard Trooper
+- [x] Vaultguard Trooper
 - [ ] Virulent Silencer
 - [x] Virus Beetle
 - [x] Voidforged Titan
