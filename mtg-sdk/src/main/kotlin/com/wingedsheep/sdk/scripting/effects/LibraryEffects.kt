@@ -115,22 +115,21 @@ data class ExileLibraryUntilManaValueEffect(
 }
 
 /**
- * Cascade (CR 702.85). Resolves the cascade ability of the triggering spell:
+ * Cascade (CR 702.85a). Resolves the cascade ability of the triggering spell:
  * 1. Exile cards from the top of the controller's library one at a time.
  * 2. Stop when a nonland card with mana value strictly less than the triggering
  *    spell's mana value is exiled. That card becomes the "cascade card".
- * 3. The controller may cast the cascade card without paying its mana cost
- *    (until end of turn).
- * 4. Put the other exiled cards (the ones skipped over) on the bottom of the
- *    library in a random order.
+ * 3. The controller is asked whether to cast the cascade card without paying
+ *    its mana cost. On yes the cast is synthesized immediately (still during
+ *    cascade resolution); on no the cascade card stays uncast.
+ * 4. Every exiled card that wasn't cast is put on the bottom of the library
+ *    in a random order.
  *
  * The threshold is read at execution time from the triggering spell pointed at
- * by [com.wingedsheep.engine.handlers.EffectContext.triggeringEntityId]. If the
- * triggering entity is missing or has no mana value, the cascade trigger fizzles
- * (does nothing).
- *
- * If no qualifying card is found (library exhausted), every exiled card is put
- * on the bottom of the library in a random order; no spell is cast for free.
+ * by the engine's trigger context. If the triggering entity is missing or has
+ * no mana value, the cascade trigger fizzles (does nothing). If no qualifying
+ * card is found (library exhausted), no may-cast decision is offered and every
+ * exiled card is put on the bottom.
  */
 @SerialName("Cascade")
 @Serializable

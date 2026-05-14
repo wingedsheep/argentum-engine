@@ -251,6 +251,7 @@ val engineSerializersModule = SerializersModule {
         subclass(ReflexiveTriggerTargetContinuation::class)
         subclass(ReturnFromGraveyardContinuation::class)
         subclass(ReturnFromLinkedExileContinuation::class)
+        subclass(CascadeMayCastContinuation::class)
         subclass(StaticDrawReplacementContinuation::class)
         subclass(TokenCreationReplacementContinuation::class)
     }

@@ -1,8 +1,11 @@
 package com.wingedsheep.engine.handlers.effects.library
 
 import com.wingedsheep.engine.core.CardsRevealedEvent
+import com.wingedsheep.engine.core.CascadeMayCastContinuation
+import com.wingedsheep.engine.core.DecisionPhase
 import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.core.GameEvent as EngineGameEvent
+import com.wingedsheep.engine.handlers.DecisionHandler
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.handlers.effects.LibraryPlacement
@@ -12,9 +15,6 @@ import com.wingedsheep.engine.handlers.effects.ZoneTransitionService
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.identity.CardComponent
-import com.wingedsheep.engine.state.components.identity.PlayWithoutPayingCostComponent
-import com.wingedsheep.engine.state.permissions.MayPlayPermission
-import com.wingedsheep.engine.state.permissions.addMayPlayPermission
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.effects.CascadeEffect
@@ -23,28 +23,27 @@ import kotlin.reflect.KClass
 /**
  * Executor for [CascadeEffect] (CR 702.85).
  *
- * The cascade trigger is built so that its `triggeringEntityId` is the spell
- * being cast — i.e. the spell whose cascade is resolving (or the spell that was
- * granted cascade by another effect such as Wildsear, Scouring Maw). The
- * executor reads that spell's mana value to derive the threshold, then walks
- * the controller's library top-down, exiling each card until either:
- *   - a nonland card with mana value strictly less than the threshold is
- *     exiled (the "cascade card"), or
- *   - the library is exhausted.
+ * The cascade trigger fires with the triggering spell pointed at by
+ * [EffectContext.triggeringEntityId] — either a spell with cascade or, as on
+ * Wildsear, Scouring Maw, a spell that was granted cascade. The executor reads
+ * that spell's mana value to derive the threshold and walks the controller's
+ * library top-down, exiling cards until a nonland card with mana value strictly
+ * less than the threshold is exiled (the "cascade card") or the library is
+ * exhausted.
  *
- * On a hit, the controller may cast the cascade card for free until end of
- * turn. All other cards exiled by this cascade are then put on the bottom of
- * the controller's library in a random order. If no qualifying card is found,
- * every exiled card is put on the bottom in a random order and no spell is
- * granted free cast.
+ * The "may cast / bottom remainder" flow then follows CR 702.85a:
  *
- * Limitation: if the controller chooses not to cast the cascade card, it
- * lingers in exile after the permission expires rather than being moved to
- * the bottom of the library. This mirrors the existing
- * `shuffleAndExileTopPlayFree` / Mind's Desire flow and is consistent with the
- * codebase's may-play-from-exile pattern.
+ *  - If a cascade card was found, pause with a yes/no decision and push a
+ *    [com.wingedsheep.engine.core.CascadeMayCastContinuation]; the resumer in
+ *    [com.wingedsheep.engine.handlers.continuations.LibraryAndZoneContinuationResumer]
+ *    casts the card for free on yes and bottom-randomizes every uncast exiled
+ *    card afterwards.
+ *  - If no qualifying card was found, every exiled card is bottom-randomized
+ *    here and no spell is offered.
  */
-class CascadeExecutor : EffectExecutor<CascadeEffect> {
+class CascadeExecutor(
+    private val decisionHandler: DecisionHandler = DecisionHandler()
+) : EffectExecutor<CascadeEffect> {
 
     override val effectType: KClass<CascadeEffect> = CascadeEffect::class
 
@@ -83,18 +82,16 @@ class CascadeExecutor : EffectExecutor<CascadeEffect> {
         val sourceName = context.sourceId?.let {
             currentState.getEntity(it)?.get<CardComponent>()?.name
         }
-        val cardNames = exiledCards.map { id ->
-            currentState.getEntity(id)?.get<CardComponent>()?.name ?: "Unknown"
-        }
-        val imageUris = exiledCards.map { id ->
-            currentState.getEntity(id)?.get<CardComponent>()?.imageUri
-        }
         allEvents.add(
             CardsRevealedEvent(
                 revealingPlayerId = controllerId,
                 cardIds = exiledCards.toList(),
-                cardNames = cardNames,
-                imageUris = imageUris,
+                cardNames = exiledCards.map { id ->
+                    currentState.getEntity(id)?.get<CardComponent>()?.name ?: "Unknown"
+                },
+                imageUris = exiledCards.map { id ->
+                    currentState.getEntity(id)?.get<CardComponent>()?.imageUri
+                },
                 source = sourceName
             )
         )
@@ -107,36 +104,77 @@ class CascadeExecutor : EffectExecutor<CascadeEffect> {
             }
         }
 
-        if (cascadeCard != null) {
-            currentState = currentState.updateEntity(cascadeCard) { container ->
-                container.with(PlayWithoutPayingCostComponent(controllerId = controllerId))
+        if (cascadeCard == null) {
+            // Library exhausted without a qualifying card — bottom-randomize everything
+            // exiled this way and finish, no may-cast offered.
+            val bottomEvents = bottomRandomize(currentState, controllerId, exiledCards) { newState ->
+                currentState = newState
             }
-            currentState = currentState.addMayPlayPermission(
-                MayPlayPermission(
-                    id = EntityId.generate(),
-                    cardIds = setOf(cascadeCard),
-                    controllerId = controllerId,
-                    sourceId = context.sourceId,
-                    timestamp = currentState.timestamp,
-                )
-            )
+            allEvents.addAll(bottomEvents)
+            return EffectResult.success(currentState, allEvents)
         }
 
-        val toBottom = exiledCards.filter { it != cascadeCard }.shuffled()
-        for (cardId in toBottom) {
-            val result = ZoneTransitionService.moveToZone(
-                state = currentState,
-                entityId = cardId,
-                destinationZone = Zone.LIBRARY,
-                options = ZoneEntryOptions(
-                    controllerId = controllerId,
-                    libraryPlacement = LibraryPlacement.Bottom
-                )
-            )
-            currentState = result.state
-            allEvents.addAll(result.events)
-        }
+        val cascadeName = currentState.getEntity(cascadeCard)
+            ?.get<CardComponent>()?.name ?: "the exiled card"
+        val pause = decisionHandler.createYesNoDecision(
+            state = currentState,
+            playerId = controllerId,
+            sourceId = context.sourceId,
+            sourceName = sourceName,
+            prompt = "Cast $cascadeName without paying its mana cost?",
+            yesText = "Cast for free",
+            noText = "Decline",
+            phase = DecisionPhase.RESOLUTION
+        )
 
-        return EffectResult.success(currentState, allEvents)
+        val pendingDecision = pause.pendingDecision
+            ?: error("createYesNoDecision must return a pending decision")
+        val continuation = CascadeMayCastContinuation(
+            decisionId = pendingDecision.id,
+            playerId = controllerId,
+            sourceId = context.sourceId,
+            exiledCards = exiledCards.toList(),
+            cascadeCardId = cascadeCard
+        )
+        val stateWithCont = pause.state.pushContinuation(continuation)
+
+        return EffectResult.paused(
+            stateWithCont,
+            pendingDecision,
+            allEvents + pause.events
+        )
+    }
+
+    companion object {
+        /**
+         * Move [cards] (each currently in exile) to the bottom of [playerId]'s library
+         * in a random order. Returns the emitted zone-change events; the caller wires
+         * the updated state through [updateState] so we can keep [currentState] mutable
+         * outside the helper.
+         */
+        fun bottomRandomize(
+            state: GameState,
+            playerId: EntityId,
+            cards: List<EntityId>,
+            updateState: (GameState) -> Unit
+        ): List<EngineGameEvent> {
+            val events = mutableListOf<EngineGameEvent>()
+            var current = state
+            for (cardId in cards.shuffled()) {
+                val result = ZoneTransitionService.moveToZone(
+                    state = current,
+                    entityId = cardId,
+                    destinationZone = Zone.LIBRARY,
+                    options = ZoneEntryOptions(
+                        controllerId = playerId,
+                        libraryPlacement = LibraryPlacement.Bottom
+                    )
+                )
+                current = result.state
+                events.addAll(result.events)
+            }
+            updateState(current)
+            return events
+        }
     }
 }
