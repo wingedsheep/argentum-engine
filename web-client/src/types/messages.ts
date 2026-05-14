@@ -436,6 +436,12 @@ export interface ManaSourceOption {
   readonly name: string
   readonly producesColors: readonly string[]
   readonly producesColorless: boolean
+  /**
+   * Selecting this source sacrifices the permanent in addition to tapping it
+   * (e.g. Treasure tokens — "{T}, Sacrifice this artifact: Add one mana of any color").
+   * Auto-pay never picks these; manual selection performs the sacrifice explicitly.
+   */
+  readonly requiresSacrifice?: boolean
 }
 
 /**

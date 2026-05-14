@@ -195,13 +195,19 @@ data class CounterUnlessPaysLifeContinuation(
 
 /**
  * Information about a mana source available for manual selection.
+ *
+ * @property requiresSacrifice Selecting this source also sacrifices the permanent
+ *   (e.g. Treasure tokens — "{T}, Sacrifice this artifact: Add one mana of any color").
+ *   Auto-pay never picks these; the manual-selection resumer performs the sacrifice
+ *   when the player explicitly opts in.
  */
 @Serializable
 data class ManaSourceOption(
     val entityId: EntityId,
     val name: String,
     val producesColors: Set<Color>,
-    val producesColorless: Boolean
+    val producesColorless: Boolean,
+    val requiresSacrifice: Boolean = false
 )
 
 /**
