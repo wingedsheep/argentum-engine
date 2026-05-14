@@ -25,6 +25,8 @@ import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.identity.TokenComponent
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
+import com.wingedsheep.sdk.scripting.DoubleTokenCreation
+import com.wingedsheep.sdk.scripting.ModifyTokenCount
 import com.wingedsheep.sdk.scripting.ReplaceTokenCreationWithEquippedCopy
 import com.wingedsheep.sdk.scripting.effects.Effect
 import java.util.UUID
@@ -35,6 +37,48 @@ import java.util.UUID
  * EffectResult with a yes/no decision; otherwise returns null.
  */
 object TokenCreationReplacementHelper {
+
+    /**
+     * Apply token-count replacement effects controlled by [tokenControllerId]:
+     * - [DoubleTokenCreation] (Anointed Procession / Exalted Sunborn) multiplies
+     *   the count by 2 per source; stacks multiplicatively when several are in play.
+     * - [ModifyTokenCount] shifts the count by a fixed amount per source (clamped at zero).
+     *
+     * Both replacements live on permanents with [ReplacementEffectSourceComponent].
+     * Token-doubling cards are uncommon enough that "the affected player chooses
+     * the order" only matters when both modifier kinds are present, which is rare
+     * — we apply doublers first, then modifiers, which is the same order any
+     * sensible player would pick.
+     */
+    fun applyCountReplacements(
+        state: GameState,
+        tokenControllerId: EntityId,
+        baseCount: Int
+    ): Int {
+        if (baseCount <= 0) return baseCount
+
+        var doublings = 0
+        var modifier = 0
+        for (entityId in state.getBattlefield()) {
+            val container = state.getEntity(entityId) ?: continue
+            val sourceController = container.get<ControllerComponent>()?.playerId ?: continue
+            if (sourceController != tokenControllerId) continue
+            val repl = container.get<ReplacementEffectSourceComponent>() ?: continue
+            for (effect in repl.replacementEffects) {
+                when (effect) {
+                    is DoubleTokenCreation -> doublings += 1
+                    is ModifyTokenCount -> modifier += effect.modifier
+                    else -> {}
+                }
+            }
+        }
+
+        var count = baseCount
+        repeat(doublings) { count *= 2 }
+        count += modifier
+        return count.coerceAtLeast(0)
+    }
+
 
     /**
      * Check if any equipment controlled by the token creator has a

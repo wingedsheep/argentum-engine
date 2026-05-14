@@ -642,7 +642,8 @@ class StaticAbilityHandler(
         it is com.wingedsheep.sdk.scripting.RedirectZoneChange || it is com.wingedsheep.sdk.scripting.PreventExtraTurns ||
         it is com.wingedsheep.sdk.scripting.RedirectZoneChangeWithEffect || it is com.wingedsheep.sdk.scripting.EntersWithCounters ||
         it is com.wingedsheep.sdk.scripting.EntersWithDynamicCounters || it is com.wingedsheep.sdk.scripting.DoubleCounterPlacement ||
-        it is com.wingedsheep.sdk.scripting.ReplaceTokenCreationWithEquippedCopy
+        it is com.wingedsheep.sdk.scripting.ReplaceTokenCreationWithEquippedCopy ||
+        it is com.wingedsheep.sdk.scripting.DoubleTokenCreation || it is com.wingedsheep.sdk.scripting.ModifyTokenCount
 
     /**
      * Convert a GroupFilter to an AffectsFilter.

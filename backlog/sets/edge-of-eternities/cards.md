@@ -2,7 +2,7 @@
 
 **Set Size:** 261 booster cards (excluding basic lands)
 **Release Date:** August 1, 2025
-**Implemented:** 167 / 261
+**Implemented:** 169 / 261
 ---
 
 - [x] Adagia, Windswept Bastion
@@ -72,7 +72,7 @@
 - [x] Eumidian Terrabotanist
 - [x] Eusocial Engineering
 - [x] Evendo, Waking Haven
-- [ ] Exalted Sunborn
+- [x] Exalted Sunborn
 - [x] Exosuit Savior
 - [x] Extinguisher Battleship
 - [ ] Faller's Faithful

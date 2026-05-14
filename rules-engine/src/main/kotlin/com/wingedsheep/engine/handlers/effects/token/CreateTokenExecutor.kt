@@ -58,8 +58,8 @@ class CreateTokenExecutor(
         effect: CreateTokenEffect,
         context: EffectContext
     ): EffectResult {
-        val count = amountEvaluator.evaluate(state, effect.count, context)
-        if (count <= 0) return EffectResult.success(state)
+        val baseCount = amountEvaluator.evaluate(state, effect.count, context)
+        if (baseCount <= 0) return EffectResult.success(state)
 
         // Resolve who receives the token — defaults to spell/ability controller
         val controller = effect.controller
@@ -69,6 +69,13 @@ class CreateTokenExecutor(
         } else {
             context.controllerId
         }
+
+        // Apply token-count replacements (Doubling Season / Exalted Sunborn,
+        // and per-N modifiers) before downstream replacements get a look.
+        val count = TokenCreationReplacementHelper.applyCountReplacements(
+            state, tokenControllerId, baseCount
+        )
+        if (count <= 0) return EffectResult.success(state)
 
         // Check for token creation replacement effects (e.g., Mirrormind Crown)
         val replacementResult = TokenCreationReplacementHelper.checkReplacement(
