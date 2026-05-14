@@ -59,9 +59,15 @@ class GraveyardAbilityEnumerator : ActionEnumerator {
                 var blightCost: AbilityCost.Blight? = null
                 var blightCreatures: List<EntityId> = emptyList()
 
+                val abilityContext = com.wingedsheep.engine.mechanics.mana.SpellPaymentContext(
+                    isAbilityActivation = true,
+                    isAbilityFromArtifactSource = cardComponent.typeLine.isArtifact,
+                    subtypes = cardComponent.typeLine.subtypes.map { it.value }.toSet(),
+                )
+
                 when (effectiveCost) {
                     is AbilityCost.Mana -> {
-                        if (!context.manaSolver.canPay(state, playerId, effectiveCost.cost, precomputedSources = context.availableManaSources)) costCanBePaid = false
+                        if (!context.manaSolver.canPay(state, playerId, effectiveCost.cost, precomputedSources = context.availableManaSources, spellContext = abilityContext)) costCanBePaid = false
                     }
                     is AbilityCost.Discard -> {
                         hasDiscardCost = true
@@ -77,7 +83,7 @@ class GraveyardAbilityEnumerator : ActionEnumerator {
                         for (subCost in effectiveCost.costs) {
                             when (subCost) {
                                 is AbilityCost.Mana -> {
-                                    if (!context.manaSolver.canPay(state, playerId, subCost.cost, precomputedSources = context.availableManaSources)) {
+                                    if (!context.manaSolver.canPay(state, playerId, subCost.cost, precomputedSources = context.availableManaSources, spellContext = abilityContext)) {
                                         costCanBePaid = false; break
                                     }
                                 }

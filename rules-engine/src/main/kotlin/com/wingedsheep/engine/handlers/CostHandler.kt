@@ -54,6 +54,13 @@ class CostHandler(
     }
 
     /**
+     * Check if a mana cost can be paid from a player's mana pool, considering ability-payment context.
+     */
+    fun canPayManaCost(manaPool: ManaPool, cost: ManaCost, spellContext: SpellPaymentContext?): Boolean {
+        return manaPool.canPay(cost, spellContext)
+    }
+
+    /**
      * Check if an ability cost can be paid.
      */
     fun canPayAbilityCost(
@@ -61,7 +68,8 @@ class CostHandler(
         cost: AbilityCost,
         sourceId: EntityId,
         controllerId: EntityId,
-        manaPool: ManaPool
+        manaPool: ManaPool,
+        abilityContext: SpellPaymentContext? = null,
     ): Boolean {
         return when (cost) {
             is AbilityCost.Free -> true
@@ -72,7 +80,7 @@ class CostHandler(
                 state.getEntity(sourceId)!!.has<TappedComponent>()
             }
             is AbilityCost.Mana -> {
-                canPayManaCost(manaPool, cost.cost)
+                canPayManaCost(manaPool, cost.cost, abilityContext)
             }
             is AbilityCost.PayLife -> {
                 val life = state.getEntity(controllerId)?.get<LifeTotalComponent>()?.life ?: 0
@@ -180,7 +188,7 @@ class CostHandler(
                 projected.getBattlefieldControlledBy(controllerId).any { projected.isCreature(it) }
             }
             is AbilityCost.Composite -> {
-                cost.costs.all { canPayAbilityCost(state, it, sourceId, controllerId, manaPool) }
+                cost.costs.all { canPayAbilityCost(state, it, sourceId, controllerId, manaPool, abilityContext) }
             }
             is AbilityCost.Loyalty -> {
                 // Check if we have enough loyalty to pay the cost
@@ -206,7 +214,8 @@ class CostHandler(
         sourceId: EntityId,
         controllerId: EntityId,
         manaPool: ManaPool,
-        choices: CostPaymentChoices = CostPaymentChoices()
+        choices: CostPaymentChoices = CostPaymentChoices(),
+        abilityContext: SpellPaymentContext? = null,
     ): CostPaymentResult {
         return when (cost) {
             is AbilityCost.Free -> {
@@ -221,7 +230,7 @@ class CostHandler(
                 CostPaymentResult.success(newState, manaPool)
             }
             is AbilityCost.Mana -> {
-                val newPool = payManaCost(manaPool, cost.cost)
+                val newPool = payManaCost(manaPool, cost.cost, abilityContext)
                     ?: return CostPaymentResult.failure("Cannot pay mana cost")
                 CostPaymentResult.success(state, newPool)
             }
@@ -585,7 +594,7 @@ class CostHandler(
                 var currentPool = manaPool
                 val allEvents = mutableListOf<GameEvent>()
                 for (subCost in cost.costs) {
-                    val result = payAbilityCost(currentState, subCost, sourceId, controllerId, currentPool, choices)
+                    val result = payAbilityCost(currentState, subCost, sourceId, controllerId, currentPool, choices, abilityContext)
                     if (!result.success) return result
                     currentState = result.newState!!
                     currentPool = result.newManaPool!!

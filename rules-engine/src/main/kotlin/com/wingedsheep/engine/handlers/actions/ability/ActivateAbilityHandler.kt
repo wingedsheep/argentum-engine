@@ -21,6 +21,7 @@ import com.wingedsheep.engine.mechanics.mana.AlternativePaymentHandler
 import com.wingedsheep.engine.mechanics.mana.IntrinsicManaAbilities
 import com.wingedsheep.engine.mechanics.mana.ManaPool
 import com.wingedsheep.engine.mechanics.mana.ManaSolver
+import com.wingedsheep.engine.mechanics.mana.SpellPaymentContext
 import com.wingedsheep.engine.mechanics.stack.StackResolver
 import com.wingedsheep.engine.mechanics.targeting.TargetValidator
 import com.wingedsheep.engine.registry.CardRegistry
@@ -252,7 +253,9 @@ class ActivateAbilityHandler(
             } else effectiveCost
         } else effectiveCost
 
-        if (action.paymentStrategy !is PaymentStrategy.Explicit && !canPayAbilityCostWithSources(state, costAfterConvokeReduction, action.sourceId, action.playerId)) {
+        val abilityPaymentContext = buildAbilityPaymentContext(state, action.sourceId, cardComponent)
+
+        if (action.paymentStrategy !is PaymentStrategy.Explicit && !canPayAbilityCostWithSources(state, costAfterConvokeReduction, action.sourceId, action.playerId, abilityPaymentContext)) {
             return when (effectiveCost) {
                 is AbilityCost.Tap -> "This permanent is already tapped"
                 is AbilityCost.TapAttachedCreature -> "Enchanted creature is tapped"
@@ -345,6 +348,8 @@ class ActivateAbilityHandler(
         // "{X} less, where X is this creature's power"). Locked in before payment.
         val effectiveCost = applyGenericCostReduction(rawCost, ability, state, action.sourceId, action.playerId)
 
+        val executeAbilityContext = buildAbilityPaymentContext(state, action.sourceId, cardComponent)
+
         var currentState = state
         val events = mutableListOf<GameEvent>()
 
@@ -409,7 +414,7 @@ class ActivateAbilityHandler(
                     }
                 }
                 else -> {
-                    val autoTapResult = autoTapForManaCost(currentState, action.playerId, manaPool, manaCost, cardComponent.name, manaXValue, selfExcludedSources)
+                    val autoTapResult = autoTapForManaCost(currentState, action.playerId, manaPool, manaCost, cardComponent.name, manaXValue, selfExcludedSources, executeAbilityContext)
                         ?: return ExecutionResult.error(state, "Not enough mana to activate this ability")
                     currentState = autoTapResult.newState
                     manaPool = autoTapResult.newPool
@@ -467,7 +472,8 @@ class ActivateAbilityHandler(
             action.sourceId,
             action.playerId,
             manaPool,
-            costChoices
+            costChoices,
+            executeAbilityContext,
         )
 
         if (!costResult.success) {
@@ -895,7 +901,7 @@ class ActivateAbilityHandler(
 
                 // Auto-tap for mana cost
                 if (manaCost != null) {
-                    val autoTapResult = autoTapForManaCost(currentState, action.playerId, repeatPool, manaCost, cardComponent.name, 0)
+                    val autoTapResult = autoTapForManaCost(currentState, action.playerId, repeatPool, manaCost, cardComponent.name, 0, abilityContext = executeAbilityContext)
                         ?: break // Can't afford — stop early
                     currentState = autoTapResult.newState
                     repeatPool = autoTapResult.newPool
@@ -904,7 +910,7 @@ class ActivateAbilityHandler(
 
                 // Pay the cost
                 val repeatCostResult = costHandler.payAbilityCost(
-                    currentState, effectiveCost, action.sourceId, action.playerId, repeatPool, CostPaymentChoices()
+                    currentState, effectiveCost, action.sourceId, action.playerId, repeatPool, CostPaymentChoices(), executeAbilityContext
                 )
                 if (!repeatCostResult.success) break // Can't pay — stop early
 
@@ -976,7 +982,8 @@ class ActivateAbilityHandler(
         state: GameState,
         cost: AbilityCost,
         sourceId: com.wingedsheep.sdk.model.EntityId,
-        playerId: com.wingedsheep.sdk.model.EntityId
+        playerId: com.wingedsheep.sdk.model.EntityId,
+        abilityContext: SpellPaymentContext? = null,
     ): Boolean {
         val poolComponent = state.getEntity(playerId)?.get<ManaPoolComponent>() ?: ManaPoolComponent()
         val manaPool = ManaPool(
@@ -985,22 +992,50 @@ class ActivateAbilityHandler(
             black = poolComponent.black,
             red = poolComponent.red,
             green = poolComponent.green,
-            colorless = poolComponent.colorless
+            colorless = poolComponent.colorless,
+            restrictedMana = poolComponent.restrictedMana,
         )
         return when (cost) {
-            is AbilityCost.Mana -> manaSolver.canPay(state, playerId, cost.cost)
+            is AbilityCost.Mana -> manaSolver.canPay(state, playerId, cost.cost, spellContext = abilityContext)
             is AbilityCost.Composite -> {
                 // If composite cost includes Tap, the source itself can't also be used as a mana source
                 val excludeSources = if (hasTapCost(cost)) setOf(sourceId) else emptySet()
                 cost.costs.all { subCost ->
                     when (subCost) {
-                        is AbilityCost.Mana -> manaSolver.canPay(state, playerId, subCost.cost, excludeSources = excludeSources)
-                        else -> costHandler.canPayAbilityCost(state, subCost, sourceId, playerId, manaPool)
+                        is AbilityCost.Mana -> manaSolver.canPay(state, playerId, subCost.cost, excludeSources = excludeSources, spellContext = abilityContext)
+                        else -> costHandler.canPayAbilityCost(state, subCost, sourceId, playerId, manaPool, abilityContext)
                     }
                 }
             }
-            else -> costHandler.canPayAbilityCost(state, cost, sourceId, playerId, manaPool)
+            else -> costHandler.canPayAbilityCost(state, cost, sourceId, playerId, manaPool, abilityContext)
         }
+    }
+
+    /**
+     * Build a [SpellPaymentContext] flagged as an ability activation, capturing properties of
+     * the source object that mana-spending restrictions check at payment time
+     * (e.g. [com.wingedsheep.sdk.scripting.effects.ManaRestriction.ArtifactSourceAbilitiesOnly],
+     * [com.wingedsheep.sdk.scripting.effects.ManaRestriction.SubtypeSpellsOrAbilitiesOnly]).
+     *
+     * The source's card-type and subtypes are read from its [CardComponent] so the context is
+     * meaningful regardless of which zone the ability is activated from (battlefield, hand,
+     * graveyard, etc.).
+     */
+    private fun buildAbilityPaymentContext(
+        state: GameState,
+        sourceId: EntityId,
+        cardComponent: CardComponent,
+    ): SpellPaymentContext {
+        val projected = state.projectedState
+        val isArtifactSource = cardComponent.typeLine.isArtifact ||
+            projected.hasType(sourceId, "ARTIFACT")
+        val subtypes = (cardComponent.typeLine.subtypes.map { it.value } +
+            projected.getSubtypes(sourceId)).toSet()
+        return SpellPaymentContext(
+            isAbilityActivation = true,
+            isAbilityFromArtifactSource = isArtifactSource,
+            subtypes = subtypes,
+        )
     }
 
     /**
@@ -1078,19 +1113,22 @@ class ActivateAbilityHandler(
         cost: ManaCost,
         sourceName: String,
         xValue: Int = 0,
-        excludeSources: Set<com.wingedsheep.sdk.model.EntityId> = emptySet()
+        excludeSources: Set<com.wingedsheep.sdk.model.EntityId> = emptySet(),
+        abilityContext: SpellPaymentContext? = null,
     ): AutoTapResult? {
-        // Determine what the floating pool can cover
-        val partialResult = pool.payPartial(cost)
+        // Determine what the floating pool can cover (with the ability context so restricted
+        // mana eligible for this activation counts toward coverage)
+        val partialResult = pool.payPartial(cost, abilityContext)
         val remainingCost = partialResult.remainingCost
 
-        // If floating pool covers everything (and no X to pay), no tapping needed
+        // If floating pool covers everything (and no X to pay), no tapping needed.
+        // Return the original pool unchanged — `payAbilityCost` performs the actual deduction.
         if (remainingCost.isEmpty() && xValue == 0) {
             return AutoTapResult(state, pool, emptyList())
         }
 
         // Tap sources for the remaining cost (xValue is treated as additional generic mana)
-        val solution = manaSolver.solve(state, playerId, remainingCost, xValue, excludeSources = excludeSources)
+        val solution = manaSolver.solve(state, playerId, remainingCost, xValue, excludeSources = excludeSources, spellContext = abilityContext)
             ?: return null
 
         var currentState = state

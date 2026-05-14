@@ -95,4 +95,25 @@ sealed interface ManaRestriction {
     data object CastFromExileOnly : ManaRestriction {
         override val description: String = "Spend this mana only to cast spells from exile"
     }
+
+    /**
+     * "Spend this mana only to cast an artifact spell."
+     */
+    @SerialName("ArtifactSpellsOnly")
+    @Serializable
+    data object ArtifactSpellsOnly : ManaRestriction {
+        override val description: String = "Spend this mana only to cast an artifact spell"
+    }
+
+    /**
+     * "Spend this mana only to activate abilities of artifact sources."
+     *
+     * An "artifact source" is any object with the card type artifact, in any zone
+     * (battlefield, hand, graveyard, exile, library, command, stack).
+     */
+    @SerialName("ArtifactSourceAbilitiesOnly")
+    @Serializable
+    data object ArtifactSourceAbilitiesOnly : ManaRestriction {
+        override val description: String = "Spend this mana only to activate abilities of artifact sources"
+    }
 }

@@ -1567,6 +1567,7 @@ class CastFromZoneEnumerator : ActionEnumerator {
                 isInstantOrSorcery = cardComponent.typeLine.isInstant || cardComponent.typeLine.isSorcery,
                 isKicked = true,
                 isCreature = cardComponent.typeLine.isCreature,
+                isArtifact = cardComponent.typeLine.isArtifact,
                 manaValue = cardComponent.manaCost.cmc,
                 hasXInCost = cardComponent.manaCost.hasX,
                 subtypes = cardComponent.typeLine.subtypes.map { it.value }.toSet()

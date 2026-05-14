@@ -187,9 +187,17 @@ class ManaSolver(
         spellContext: SpellPaymentContext? = null,
         precomputedSources: List<ManaSource>? = null
     ): ManaSolution? {
-        // Get all untapped mana sources controlled by the player
-        // Filter out restricted sources that are ineligible for the spell being cast
-        val availableSources = (precomputedSources ?: findAvailableManaSources(state, playerId))
+        // Get all untapped mana sources controlled by the player.
+        // When a spell/ability payment context is provided, recompute (bypass the
+        // pre-built cache) so that sources with mixed-restriction mana abilities are
+        // built with the right per-ability filtering. Then drop restricted sources whose
+        // (combined) restriction is still incompatible with the context.
+        val rawSources = if (spellContext != null) {
+            findAvailableManaSources(state, playerId, spellContext)
+        } else {
+            precomputedSources ?: findAvailableManaSources(state, playerId)
+        }
+        val availableSources = rawSources
             .filter { it.entityId !in excludeSources }
             // Auto-pay must not silently sacrifice permanents (e.g. Treasure tokens).
             // The bonus-mana accounting in canPay() still counts these via
@@ -524,7 +532,11 @@ class ManaSolver(
      * - hasPainCost/painAmount: true if the mana ability costs life
      * - canAttack: true for creatures that can attack (no summoning sickness or has haste)
      */
-    fun findAvailableManaSources(state: GameState, playerId: EntityId): List<ManaSource> {
+    fun findAvailableManaSources(
+        state: GameState,
+        playerId: EntityId,
+        spellContext: SpellPaymentContext? = null,
+    ): List<ManaSource> {
         // Project state once to get all keywords and projected controllers
         val projected = state.projectedState
 
@@ -550,7 +562,21 @@ class ManaSolver(
             // Include mana abilities granted by static effects from other permanents
             // (e.g., Clement, the Worrywort granting {T}: Add {G} or {U} to Frogs)
             val staticGrantedManaAbilities = getStaticGrantedManaAbilities(entityId, card, state)
-            val manaAbilities = allAbilities.filter { it.isManaAbility } + staticGrantedManaAbilities
+            val rawManaAbilities = allAbilities.filter { it.isManaAbility } + staticGrantedManaAbilities
+
+            // When a spell/ability payment context is provided, drop mana abilities whose
+            // restriction is incompatible. Otherwise the combiner below would treat a
+            // source with two mutually-exclusive restricted abilities (e.g. Steelswarm
+            // Operator's ArtifactSpellsOnly + ArtifactSourceAbilitiesOnly) as unrestricted
+            // and over-produce mana for the actual spend.
+            val manaAbilities = if (spellContext != null) {
+                rawManaAbilities.filter { ability ->
+                    val r = extractManaRestriction(ability.effect)
+                    r == null || r.isSatisfiedBy(spellContext)
+                }
+            } else {
+                rawManaAbilities
+            }
 
             // Detect non-mana activated abilities (utility land/creature)
             val hasNonManaAbilities = allAbilities.any { !it.isManaAbility }
@@ -967,6 +993,38 @@ class ManaSolver(
      * Evaluates a DynamicAmount for a mana ability, returning the actual mana count.
      * Returns 0 when the amount evaluates to zero (e.g., no creatures of the chosen type).
      */
+    /**
+     * Extract the [ManaRestriction] (if any) attached to the mana-producing effect of a
+     * mana ability. Used to filter abilities by spell/ability payment context before
+     * combining multiple abilities on the same source.
+     */
+    private fun extractManaRestriction(effect: com.wingedsheep.sdk.scripting.effects.Effect): ManaRestriction? {
+        val manaEffect = when (effect) {
+            is CompositeEffect -> effect.effects.firstOrNull {
+                it is AddManaEffect ||
+                    it is AddColorlessManaEffect ||
+                    it is AddAnyColorManaEffect ||
+                    it is AddManaOfColorAmongEffect ||
+                    it is AddManaOfColorLandsCouldProduceEffect ||
+                    it is AddManaOfChosenColorEffect ||
+                    it is AddDynamicManaEffect
+            } ?: effect
+            else -> effect
+        }
+        return when (manaEffect) {
+            is AddManaEffect -> manaEffect.restriction
+            is AddColorlessManaEffect -> manaEffect.restriction
+            is AddAnyColorManaEffect -> manaEffect.restriction
+            is AddManaOfColorAmongEffect -> manaEffect.restriction
+            is AddManaOfColorLandsCouldProduceEffect -> manaEffect.restriction
+            is AddManaOfChosenColorEffect -> manaEffect.restriction
+            is AddDynamicManaEffect -> manaEffect.restriction
+            // AddAnyColorManaSpendOnChosenTypeEffect derives its restriction at resolution
+            // time from the source's ChosenCreatureTypeComponent, so we don't pre-filter it.
+            else -> null
+        }
+    }
+
     private fun evaluateManaAmount(
         amount: DynamicAmount,
         state: GameState,
