@@ -1613,7 +1613,8 @@ class ActivateAbilityHandler(
             if (container.has<FaceDownComponent>()) continue
 
             val cardDef = cardRegistry.getCard(card.cardDefinitionId) ?: continue
-            for (ability in cardDef.staticAbilities) {
+            val classLevel = container.get<com.wingedsheep.engine.state.components.battlefield.ClassLevelComponent>()?.currentLevel
+            for (ability in cardDef.script.effectiveStaticAbilities(classLevel)) {
                 if (ability !is GrantActivatedAbility) continue
                 when (ability.filter.scope) {
                     is Scope.Battlefield -> {

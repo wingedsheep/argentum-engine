@@ -83,7 +83,7 @@ class AddAnyColorManaExecutor(
             return EffectResult.success(state)
         }
 
-        val newState = state.updateEntity(context.controllerId) { container ->
+        var newState = state.updateEntity(context.controllerId) { container ->
             val manaPool = container.get<ManaPoolComponent>() ?: ManaPoolComponent()
             val updatedPool = if (effect.restriction != null) {
                 manaPool.addRestricted(color, amount, effect.restriction!!)
@@ -91,6 +91,10 @@ class AddAnyColorManaExecutor(
                 manaPool.add(color, amount)
             }
             container.with(updatedPool)
+        }
+
+        if (effect.restriction == null) {
+            newState = TreasureManaTracker.tagAddedMana(newState, context.controllerId, context.sourceId, amount)
         }
 
         val sourceName = context.sourceId?.let { newState.getEntity(it)?.get<CardComponent>()?.name }

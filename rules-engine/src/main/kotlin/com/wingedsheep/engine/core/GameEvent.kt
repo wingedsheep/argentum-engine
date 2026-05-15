@@ -206,7 +206,14 @@ data class SpellCastEvent(
     val xValue: Int? = null,
     val wasKicked: Boolean = false,
     /** Total mana spent to cast this spell (for Expend trigger detection) */
-    val totalManaSpent: Int = 0
+    val totalManaSpent: Int = 0,
+    /**
+     * True when any of the mana spent on this cast was tagged as Treasure
+     * mana (see [com.wingedsheep.engine.state.components.player.ManaPoolComponent.treasureMana]).
+     * Drives the SDK trigger
+     * [com.wingedsheep.sdk.dsl.Triggers.YouCastSpellPaidWithTreasureMana].
+     */
+    val paidWithTreasureMana: Boolean = false
 ) : GameEvent
 
 /**

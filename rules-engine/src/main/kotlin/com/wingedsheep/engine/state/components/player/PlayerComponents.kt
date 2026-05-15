@@ -21,7 +21,18 @@ data class ManaPoolComponent(
     val red: Int = 0,
     val green: Int = 0,
     val colorless: Int = 0,
-    val restrictedMana: List<RestrictedManaEntry> = emptyList()
+    val restrictedMana: List<RestrictedManaEntry> = emptyList(),
+    /**
+     * Count of mana units currently in the pool that were added by a permanent
+     * with the Treasure subtype (Treasure tokens, etc.). Treasure mana is
+     * fungible — `treasureMana` does not track color or position in the pool,
+     * only the count. When mana is spent for a spell, [CastPaymentProcessor]
+     * consumes from this counter proportional to the total mana taken from the
+     * pool and flags the spell as "paid with Treasure mana" if any was
+     * consumed. Powers Alchemist's Talent level 3. The counter is cleared
+     * whenever the pool empties.
+     */
+    val treasureMana: Int = 0
 ) : Component {
     /**
      * Add mana of a specific color.
@@ -79,9 +90,10 @@ data class ManaPoolComponent(
     val total: Int get() = white + blue + black + red + green + colorless + restrictedMana.size
 
     /**
-     * Check if pool is empty.
+     * Check if pool is empty. Includes the `treasureMana` counter so a stale
+     * tag without backing mana still triggers the end-of-step pool reset.
      */
-    val isEmpty: Boolean get() = total == 0
+    val isEmpty: Boolean get() = total == 0 && treasureMana == 0
 
     /**
      * Add restricted mana to the pool.

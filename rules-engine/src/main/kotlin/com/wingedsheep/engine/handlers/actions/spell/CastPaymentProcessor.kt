@@ -29,7 +29,16 @@ data class PaymentResult(
     val state: GameState,
     val events: List<GameEvent>,
     val error: String?,
-    val consumedRiders: Set<ManaSpellRider> = emptySet()
+    val consumedRiders: Set<ManaSpellRider> = emptySet(),
+    /**
+     * True when any of the mana spent on this payment was tagged as having
+     * come from a Treasure permanent (see
+     * [com.wingedsheep.engine.state.components.player.ManaPoolComponent.treasureMana]).
+     * Powers Alchemist's Talent level 3 — the cast handler propagates the flag
+     * onto the engine [com.wingedsheep.engine.core.SpellCastEvent] so triggers
+     * filtering on "paid with Treasure mana" can fire.
+     */
+    val paidWithTreasureMana: Boolean = false
 )
 
 /**
@@ -48,7 +57,8 @@ class CastPaymentProcessor(
         red = component.red,
         green = component.green,
         colorless = component.colorless,
-        restrictedMana = component.restrictedMana
+        restrictedMana = component.restrictedMana,
+        treasureMana = component.treasureMana
     )
 
     private fun toComponent(pool: ManaPool) = ManaPoolComponent(
@@ -58,7 +68,8 @@ class CastPaymentProcessor(
         red = pool.red,
         green = pool.green,
         colorless = pool.colorless,
-        restrictedMana = pool.restrictedMana
+        restrictedMana = pool.restrictedMana,
+        treasureMana = pool.treasureMana
     )
 
     fun processPayment(
@@ -175,8 +186,15 @@ class CastPaymentProcessor(
             return PaymentResult(state, emptyList(), "Insufficient mana in pool for X cost")
         }
 
+        // Consume `treasureMana` proportional to mana actually pulled from the
+        // pool. Restricted mana doesn't participate (treasure tokens always add
+        // unrestricted mana).
+        val unrestrictedSpent = (whiteSpent + blueSpent + blackSpent + redSpent + greenSpent + colorlessSpent) - restrictedSpent
+        val treasureConsumed = minOf(pool.treasureMana, maxOf(0, unrestrictedSpent))
+        val poolWithTreasureUpdated = poolAfterPayment.copy(treasureMana = pool.treasureMana - treasureConsumed)
+
         val newState = state.updateEntity(playerId) { container ->
-            container.with(toComponent(poolAfterPayment))
+            container.with(toComponent(poolWithTreasureUpdated))
         }
 
         val event = ManaSpentEvent(
@@ -191,7 +209,7 @@ class CastPaymentProcessor(
         )
 
         val consumedRiders = ridersConsumedDuringPayment(poolComponent.restrictedMana, poolAfterPayment.restrictedMana)
-        return PaymentResult(newState, listOf(event), null, consumedRiders)
+        return PaymentResult(newState, listOf(event), null, consumedRiders, paidWithTreasureMana = treasureConsumed > 0)
     }
 
     private fun autoPay(
@@ -272,8 +290,25 @@ class CastPaymentProcessor(
             }
         }
 
+        // Consume `treasureMana` proportional to unrestricted mana pulled from
+        // the pool during the floating-mana phase. AutoPay does not currently
+        // tap Treasures directly (their `{T}, Sacrifice` ability is filtered
+        // out of the solver), so only the floating-mana path contributes here.
+        val poolRestrictedSpentTotal = poolComponent.restrictedMana.size - poolAfterPayment.restrictedMana.size
+        val poolUnrestrictedSpent = maxOf(
+            0,
+            (poolComponent.white - poolAfterPayment.white) +
+                (poolComponent.blue - poolAfterPayment.blue) +
+                (poolComponent.black - poolAfterPayment.black) +
+                (poolComponent.red - poolAfterPayment.red) +
+                (poolComponent.green - poolAfterPayment.green) +
+                (poolComponent.colorless - poolAfterPayment.colorless)
+        )
+        val treasureConsumedFromPool = minOf(pool.treasureMana, poolUnrestrictedSpent)
+        val poolWithTreasureUpdated = poolAfterPayment.copy(treasureMana = pool.treasureMana - treasureConsumedFromPool)
+
         currentState = currentState.updateEntity(playerId) { container ->
-            container.with(toComponent(poolAfterPayment))
+            container.with(toComponent(poolWithTreasureUpdated))
         }
 
         // Tap lands for remaining cost (using xRemainingToPay instead of full xValue)
@@ -336,7 +371,13 @@ class CastPaymentProcessor(
 
         val consumedRiders =
             ridersConsumedDuringPayment(poolComponent.restrictedMana, poolAfterPayment.restrictedMana) + solutionConsumedRiders
-        return PaymentResult(currentState, events, null, consumedRiders)
+        return PaymentResult(
+            currentState,
+            events,
+            null,
+            consumedRiders,
+            paidWithTreasureMana = treasureConsumedFromPool > 0
+        )
     }
 
     /**

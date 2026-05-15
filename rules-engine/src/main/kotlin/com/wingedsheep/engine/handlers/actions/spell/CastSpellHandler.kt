@@ -1942,7 +1942,8 @@ class CastSpellHandler(
             manaSpentRed = manaSpentEvent?.red ?: 0,
             manaSpentGreen = manaSpentEvent?.green ?: 0,
             manaSpentColorless = manaSpentEvent?.colorless ?: 0,
-            faceIndex = action.faceIndex
+            faceIndex = action.faceIndex,
+            paidWithTreasureMana = paymentResult.paidWithTreasureMana
         )
 
         if (!castResult.isSuccess) {

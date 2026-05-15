@@ -579,7 +579,15 @@ sealed interface GameEvent : TextReplaceable<GameEvent> {
         val player: Player = Player.You,
         /** When non-null, only triggers if the spell was cast from this zone
          *  (e.g., HAND for "Whenever you cast a spell from your hand"). */
-        val castFromZone: com.wingedsheep.sdk.core.Zone? = null
+        val castFromZone: com.wingedsheep.sdk.core.Zone? = null,
+        /**
+         * When non-null, the cast must match the engine's `paidWithTreasureMana`
+         * flag on the spell-cast event. Used by Alchemist's Talent level 3
+         * ("if mana from a Treasure was spent to cast it"). The flag is set
+         * when any mana spent on the cast was added to the pool by a
+         * permanent with the Treasure subtype.
+         */
+        val paidWithTreasureMana: Boolean? = null
     ) : GameEvent {
         override val description: String = buildString {
             append(player.description)

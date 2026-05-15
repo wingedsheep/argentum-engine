@@ -64,7 +64,12 @@ data class ManaPool(
     val red: Int = 0,
     val green: Int = 0,
     val colorless: Int = 0,
-    val restrictedMana: List<RestrictedManaEntry> = emptyList()
+    val restrictedMana: List<RestrictedManaEntry> = emptyList(),
+    /**
+     * Count of mana in the pool added by a permanent with the Treasure
+     * subtype. See [com.wingedsheep.engine.state.components.player.ManaPoolComponent.treasureMana].
+     */
+    val treasureMana: Int = 0
 ) {
     /**
      * Get amount of mana for a specific color.

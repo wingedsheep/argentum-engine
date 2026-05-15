@@ -121,7 +121,8 @@ class StackResolver(
         manaSpentRed: Int = 0,
         manaSpentGreen: Int = 0,
         manaSpentColorless: Int = 0,
-        faceIndex: Int? = null
+        faceIndex: Int? = null,
+        paidWithTreasureMana: Boolean = false
     ): ExecutionResult {
         val container = state.getEntity(cardId)
             ?: return ExecutionResult.error(state, "Card not found: $cardId")
@@ -266,7 +267,7 @@ class StackResolver(
             }
         }
 
-        val events = mutableListOf<GameEvent>(SpellCastEvent(cardId, eventName, casterId, targetNames, xValue, wasKicked, totalManaSpent))
+        val events = mutableListOf<GameEvent>(SpellCastEvent(cardId, eventName, casterId, targetNames, xValue, wasKicked, totalManaSpent, paidWithTreasureMana))
 
         // Crime detection (CR Outlaws of Thunder Junction). Emit at most once per cast,
         // regardless of how many opponent-controlled targets the spell chose.

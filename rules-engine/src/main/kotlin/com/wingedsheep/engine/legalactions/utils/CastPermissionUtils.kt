@@ -276,7 +276,8 @@ class CastPermissionUtils(
             if (container.has<com.wingedsheep.engine.state.components.identity.FaceDownComponent>()) continue
 
             val cardDef = cardRegistry.getCard(card.cardDefinitionId) ?: continue
-            for (ability in cardDef.staticAbilities) {
+            val classLevel = container.get<com.wingedsheep.engine.state.components.battlefield.ClassLevelComponent>()?.currentLevel
+            for (ability in cardDef.script.effectiveStaticAbilities(classLevel)) {
                 if (ability !is com.wingedsheep.sdk.scripting.GrantActivatedAbility) continue
                 when (val scope = ability.filter.scope) {
                     is com.wingedsheep.sdk.scripting.filters.unified.Scope.Battlefield -> {

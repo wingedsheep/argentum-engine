@@ -1345,7 +1345,8 @@ class ManaSolver(
             if (container.has<FaceDownComponent>()) continue
 
             val cardDef = cardRegistry.getCard(card.cardDefinitionId) ?: continue
-            for (ability in cardDef.staticAbilities) {
+            val classLevel = container.get<com.wingedsheep.engine.state.components.battlefield.ClassLevelComponent>()?.currentLevel
+            for (ability in cardDef.script.effectiveStaticAbilities(classLevel)) {
                 if (ability is GrantActivatedAbility &&
                     ability.filter.scope is com.wingedsheep.sdk.scripting.filters.unified.Scope.Battlefield) {
                     if (ability.filter.excludeSelf && permanentId == entityId) continue

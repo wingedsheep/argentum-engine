@@ -650,6 +650,18 @@ object Triggers {
     )
 
     /**
+     * Whenever you cast a spell, if mana from a Treasure was spent to cast it.
+     *
+     * Used by Alchemist's Talent level 3. The engine records on each cast whether
+     * any of the mana spent was added to the controller's mana pool by a
+     * permanent with the Treasure subtype.
+     */
+    val YouCastSpellPaidWithTreasureMana: TriggerSpec = TriggerSpec(
+        event = SpellCastEvent(player = Player.You, paidWithTreasureMana = true),
+        binding = TriggerBinding.ANY
+    )
+
+    /**
      * Whenever you cast a noncreature spell.
      */
     val YouCastNoncreature: TriggerSpec = TriggerSpec(

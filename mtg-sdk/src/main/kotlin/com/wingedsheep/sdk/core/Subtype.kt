@@ -187,6 +187,7 @@ value class Subtype(val value: String) {
         val EQUIPMENT = Subtype("Equipment")
         val FOOD = Subtype("Food")
         val LANDER = Subtype("Lander")
+        val TREASURE = Subtype("Treasure")
         val VEHICLE = Subtype("Vehicle")
 
         // Planeswalker subtypes

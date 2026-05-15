@@ -2,7 +2,7 @@
 
 **Set Size:** 312 cards
 **Release Date:** August 2, 2024
-**Implemented:** 83 / 312
+**Implemented:** 84 / 312
 | Color      | Total | Done |
 |------------|-------|------|
 | White      | 37    | 0    |
@@ -22,7 +22,7 @@
 - [ ] Aether Channeler
 - [ ] Aetherize
 - [ ] Agate Instigator
-- [ ] Alchemist's Talent
+- [x] Alchemist's Talent
 - [ ] An Offer You Can't Refuse
 - [ ] Angel of the Ruins
 - [ ] Ant Queen

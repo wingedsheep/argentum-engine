@@ -142,7 +142,8 @@ class TriggerMatcher(
                     matchesPlayer(trigger.player, event.casterId, controllerId) &&
                     matchesSpellFilter(trigger.spellFilter, event, state, sourceId) &&
                     (trigger.kicked == null || trigger.kicked == event.wasKicked) &&
-                    matchesCastFromZone(trigger.castFromZone, event, state)
+                    matchesCastFromZone(trigger.castFromZone, event, state) &&
+                    (trigger.paidWithTreasureMana == null || trigger.paidWithTreasureMana == event.paidWithTreasureMana)
             }
             is GameEvent.NthSpellCastEvent -> {
                 // Fires on SpellCastEvent when the casting player's per-turn spell count
